@@ -21,11 +21,8 @@
     --netto-surface: #15130F;
     --netto-line: #2B2619;
     --netto-gold: #D4AF37;
-    --netto-gold-light: #F5E6A8;
-    --netto-gold-deep: #9C7A2E;
     --netto-text: #F3EEE2;
     --netto-text-muted: #A9A190;
-    --netto-gold-gradient: linear-gradient(135deg, var(--netto-gold-light) 0%, var(--netto-gold) 45%, var(--netto-gold-deep) 100%);
     color-scheme: dark;
 }
 
@@ -62,18 +59,8 @@ h1:focus {
     font-family: "Fraunces", Georgia, serif;
     font-weight: 600;
     letter-spacing: 0.01em;
-    background: var(--netto-gold-gradient);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+    color: var(--netto-gold);
     text-decoration: none;
-}
-
-.gold-text {
-    background: var(--netto-gold-gradient);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
 }
 
 .boot-splash {
