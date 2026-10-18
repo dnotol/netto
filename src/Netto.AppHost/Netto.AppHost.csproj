@@ -1,0 +1,27 @@
+<Project Sdk="Aspire.AppHost.Sdk/13.6.1">
+
+  <!-- TargetFramework, ImplicitUsings, Nullable, LangVersion come from ..\..\Directory.Build.props -->
+
+  <!-- Starts Netto.Web locally under the Aspire dashboard. Only a launcher for now: ServiceDefaults
+       (telemetry, health checks, resilience) joins once there is an API to observe. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <UserSecretsId>2bc22c34-bee2-4bd3-86a5-91db2a3c2b8d</UserSecretsId>
+    <!-- DCP and the dashboard come from NuGet, which is what lets dotnet run and Rider launch the
+         AppHost without the Aspire CLI installed. ASPIRE010 only says the CLI bundle is off; Aspire's
+         diagnostics page recommends exactly this pair when staying on NuGet. -->
+    <AspireUseCliBundle>false</AspireUseCliBundle>
+    <NoWarn>$(NoWarn);ASPIRE010</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Netto.Web\Netto.Web.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Lifts the copy StreamJsonRpc brings in (2.5.302) past GHSA-qhrr-8q5h-9q3h, a denial of
+         service on untrusted payloads. Drop it once Aspire's own graph resolves 2.5.303 or later. -->
+    <PackageReference Include="MessagePack" />
+  </ItemGroup>
+
+</Project>

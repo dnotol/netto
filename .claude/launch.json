@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "netto-apphost",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": ["run", "--project", "src/Netto.AppHost", "--launch-profile", "http"],
+      "port": 15187
+    }
+  ]
+}
