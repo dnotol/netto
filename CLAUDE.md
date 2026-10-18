@@ -44,6 +44,7 @@ The tracker is Notion: the « Netto Development » page, holding **Work Items** 
 ## Stack
 
 - .NET 10, Blazor Web App with WebAssembly interactivity, Aspire 13 AppHost as the local launcher.
+- MudBlazor 9 in `Netto.Web.Client` for every component, and `Microsoft.Extensions.Localization` for the interface text.
 - Test projects carry BOTH the native MTP runner (`xunit.v3.mtp-v2`) and the VSTest bridge (`Microsoft.NET.Test.Sdk` + `xunit.runner.visualstudio`), referenced once in `tests/Directory.Build.props`, so Rider still discovers tests: **remove neither**.
 - `Microsoft.AspNetCore.Components.WebAssembly` and `.WebAssembly.Server` move together, always to the same version.
 - `MessagePack` is a security pin in the AppHost only (see its csproj). Drop it once Aspire's own graph resolves a patched version, never earlier.
@@ -58,7 +59,16 @@ The tracker is Notion: the « Netto Development » page, holding **Work Items** 
 - **Rules come only from official, current sources** (tax administration, Moniteur belge, INASTI), each amount with its source and income year. An amount that is not published yet is marked as such, never guessed. The Lever catalogue holds the sources.
 - **Eligibility is declared by the user, never decided by the engine**: Core takes a status (VVPRbis shares, reduced corporate rate, small-company status) as input and shows its conditions.
 - **User data stays in the browser**: browser storage and file export, no accounts, nothing sent to a server.
-- UI copy is English only, and interface text lives in resource files so a translation can be added later (« Goal & scope »).
+- UI copy is English only, and interface text lives in resource files so a translation can be added later (« Goal & scope »): a `.resx` beside each component (`Pages/Home.resx` for `Pages/Home.razor`), read through an injected `IStringLocalizer<TComponent>`. No interface text inline in a `.razor` file; the wordmark « Netto » is a brand, not copy. A misspelt key fails silently (the page shows the key), so read the page in the browser after adding one.
+- **The front page makes no claim the product does not keep yet**: no amounts, no results, no testimonials, and an « In development » label until the planner ships.
+
+## UI
+
+- **One dark theme**, `Layout/NettoTheme.cs`: gold primary on a warm black. Its colours are literal hex because MudBlazor parses each one to derive hover and darker variants, and the `:root` block in `Netto.Web/wwwroot/app.css` mirrors them as CSS variables for hand-written CSS. **Change both together.**
+- **Fonts are self-hosted** (`Netto.Web/wwwroot/fonts`: Inter for text, Fraunces for headlines). Never link a font service such as Google Fonts: it sends every visitor's address to a third party, which breaks « nothing leaves your browser ».
+- **`MudBlazor.min.css` loads before `app.css`** (`App.razor`), so `app.css` wins at equal specificity. Scoped `.razor.css` reaches the elements MudBlazor renders only through `::deep` from an element of the component's own markup.
+- **Nothing is prerendered, so the page is empty while the runtime downloads.** `App.razor` shows a splash, and `app.css` hides it as soon as `.netto-app` (the layout's root) exists. A layout without that class leaves the splash on screen.
+- Blazor gotcha: **a link to `/#section` from another page lands at the top**. Blazor scrolls to a fragment only on a same-page link; after a cross-page navigation, `blazor.web.js` resets the scroll to the top once the new page has rendered, undoing any scroll towards the section. So the header's section links render only on the front page, and the front page scrolls to one of its own sections itself when opened directly (`/#principles`), for a fixed list of ids, because the fragment becomes a CSS selector.
 
 ## Testing
 
