@@ -1,6 +1,8 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/Netto.Core/Netto.Core.csproj" />
+    <Project Path="src/Netto.Web/Netto.Web.csproj" />
+    <Project Path="src/Netto.Web.Client/Netto.Web.Client.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Netto.Tests.Unit/Netto.Tests.Unit.csproj" />

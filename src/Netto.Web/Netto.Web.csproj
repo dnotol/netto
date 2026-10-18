@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <!-- TargetFramework, ImplicitUsings, Nullable, LangVersion come from ..\..\Directory.Build.props -->
+
+  <!-- The host only serves the WebAssembly app: every page renders in the browser and none is
+       prerendered (Components/App.razor), so no user figure ever reaches this process. If Netto
+       ever gets an API, it lives here. -->
+  <PropertyGroup>
+    <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Netto.Web.Client\Netto.Web.Client.csproj" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />
+  </ItemGroup>
+
+</Project>
