@@ -1,0 +1,15 @@
+@page "/plan"
+@inject IStringLocalizer<Plan> L
+
+<PageTitle>@L["PageTitle"]</PageTitle>
+
+<section class="page-placeholder">
+    <MudContainer MaxWidth="MaxWidth.Small">
+        <MudChip T="string" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small">@L["Badge"]</MudChip>
+        <MudText Typo="Typo.h2">@L["Title"]</MudText>
+        <MudText Typo="Typo.body1">@L["Body"]</MudText>
+        <MudButton Href="/" Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.ArrowBack">
+            @L["Back"]
+        </MudButton>
+    </MudContainer>
+</section>

@@ -1,0 +1,390 @@
+/* ::deep reaches the elements MudBlazor renders (MudContainer, MudText, MudChip, MudButton,
+   MudIcon), which carry no scope attribute of their own. Elements written in this file's markup,
+   even inside a Mud component's content, are scoped normally. */
+
+/* Hero */
+
+.hero {
+    position: relative;
+    overflow: hidden;
+    padding: clamp(3.5rem, 9vw, 7.5rem) 0 clamp(4rem, 8vw, 6.5rem);
+}
+
+.hero__grid-lines {
+    position: absolute;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(212, 175, 55, 0.07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(212, 175, 55, 0.07) 1px, transparent 1px);
+    background-size: 64px 64px;
+    -webkit-mask-image: radial-gradient(ellipse 70% 60% at 70% 35%, #000 0%, transparent 75%);
+    mask-image: radial-gradient(ellipse 70% 60% at 70% 35%, #000 0%, transparent 75%);
+    pointer-events: none;
+}
+
+.hero__glow {
+    position: absolute;
+    top: -18rem;
+    right: -14rem;
+    width: min(62rem, 130vw);
+    aspect-ratio: 1;
+    background: radial-gradient(circle, rgba(212, 175, 55, 0.2) 0%, rgba(212, 175, 55, 0.06) 35%, transparent 65%);
+    pointer-events: none;
+}
+
+.hero ::deep .hero__inner {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+    align-items: center;
+    gap: clamp(2.5rem, 6vw, 5rem);
+}
+
+@media (max-width: 960px) {
+    .hero ::deep .hero__inner {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.hero ::deep .hero__badge {
+    margin: 0 0 1.75rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.hero ::deep .hero__title {
+    margin-bottom: 1.5rem;
+}
+
+.hero__accent {
+    display: block;
+}
+
+.hero ::deep .hero__lede {
+    max-width: 36rem;
+    margin-bottom: 2.25rem;
+    color: var(--netto-text-muted);
+    font-size: clamp(1.05rem, 1.6vw, 1.2rem);
+    line-height: 1.7;
+}
+
+.hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1rem;
+    margin-bottom: 2.5rem;
+}
+
+.hero ::deep .hero__cta,
+.section ::deep .hero__cta {
+    padding-inline: 1.75rem;
+    box-shadow: 0 10px 40px -12px rgba(212, 175, 55, 0.55);
+}
+
+.hero__trust {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1.75rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    color: var(--netto-text-muted);
+    font-size: 0.9rem;
+}
+
+    .hero__trust li {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .hero__trust ::deep .mud-icon-root {
+        color: var(--netto-gold);
+    }
+
+/* The example plan */
+
+.plan-card {
+    position: relative;
+    margin: 0;
+    padding: 1.75rem;
+    border-radius: 22px;
+    background:
+        linear-gradient(180deg, rgba(243, 238, 226, 0.045), rgba(243, 238, 226, 0.01)),
+        var(--netto-surface);
+    box-shadow:
+        0 40px 90px -40px rgba(0, 0, 0, 0.9),
+        0 0 80px -30px rgba(212, 175, 55, 0.25);
+}
+
+    /* A hairline gold border that fades out towards the bottom right. */
+    .plan-card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        padding: 1px;
+        border-radius: inherit;
+        background: linear-gradient(140deg, rgba(245, 230, 168, 0.7), rgba(212, 175, 55, 0.18) 40%, rgba(43, 38, 25, 0.9) 75%);
+        -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+        pointer-events: none;
+    }
+
+.plan-card__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.plan-card__title {
+    font-family: "Fraunces", Georgia, serif;
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+.plan-card__moves {
+    display: grid;
+    gap: 0.7rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.plan-card__move {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 0.85rem 1rem;
+    border: 1px solid rgba(243, 238, 226, 0.05);
+    border-radius: 14px;
+    background: rgba(243, 238, 226, 0.025);
+    font-size: 0.93rem;
+}
+
+    .plan-card__move ::deep .mud-icon-root {
+        color: var(--netto-gold);
+    }
+
+/* Where an amount would sit: a shimmering gold bar, never a number. */
+.plan-card__gain {
+    width: 4.5rem;
+    height: 0.6rem;
+    border-radius: 999px;
+    background: linear-gradient(90deg, rgba(156, 122, 46, 0.35), rgba(245, 230, 168, 0.85), rgba(156, 122, 46, 0.35));
+    background-size: 200% 100%;
+    animation: shimmer 2.8s ease-in-out infinite;
+}
+
+.plan-card__gain--total {
+    width: 7rem;
+    height: 0.75rem;
+}
+
+.plan-card__total {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 1.25rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--netto-line);
+    font-weight: 600;
+}
+
+.plan-card__note {
+    margin-top: 1rem;
+    color: var(--netto-text-muted);
+    font-size: 0.8rem;
+}
+
+@media (max-width: 480px) {
+    .plan-card {
+        padding: 1.25rem;
+    }
+
+    .plan-card__move {
+        gap: 0.7rem;
+        padding: 0.75rem 0.85rem;
+    }
+
+    .plan-card__gain {
+        width: 2.75rem;
+    }
+
+    .plan-card__gain--total {
+        width: 5rem;
+    }
+}
+
+@keyframes shimmer {
+    0% { background-position: 100% 0; }
+    100% { background-position: -100% 0; }
+}
+
+/* Sections */
+
+.section {
+    padding: clamp(4rem, 9vw, 7rem) 0;
+}
+
+.section--ruled {
+    border-top: 1px solid var(--netto-line);
+    border-bottom: 1px solid var(--netto-line);
+    background: rgba(243, 238, 226, 0.012);
+}
+
+.section--glow {
+    background: radial-gradient(ellipse 60% 50% at 50% 0%, rgba(212, 175, 55, 0.1), transparent 70%);
+}
+
+.section__eyebrow {
+    margin: 0 0 0.85rem;
+    color: var(--netto-gold);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+.section ::deep .section__title {
+    max-width: 44rem;
+    margin-bottom: 1rem;
+}
+
+.section__intro {
+    max-width: 38rem;
+    margin: 0 0 3rem;
+    color: var(--netto-text-muted);
+    font-size: 1.08rem;
+    line-height: 1.7;
+}
+
+/* What Netto optimises */
+
+.levers {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    gap: 1.25rem;
+}
+
+.lever {
+    padding: 1.75rem;
+    border: 1px solid var(--netto-line);
+    border-radius: 20px;
+    background: var(--netto-surface);
+    transition: border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+    .lever:hover {
+        border-color: rgba(212, 175, 55, 0.45);
+        transform: translateY(-4px);
+        box-shadow: 0 24px 50px -28px rgba(212, 175, 55, 0.45);
+    }
+
+.lever__icon {
+    display: inline-grid;
+    place-items: center;
+    width: 2.9rem;
+    height: 2.9rem;
+    margin-bottom: 1.25rem;
+    border: 1px solid rgba(212, 175, 55, 0.28);
+    border-radius: 14px;
+    background: rgba(212, 175, 55, 0.08);
+    color: var(--netto-gold);
+}
+
+.lever__title,
+.step__title,
+.principle__title {
+    margin: 0 0 0.5rem;
+    font-family: "Fraunces", Georgia, serif;
+    font-size: 1.3rem;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.lever__text,
+.step__text,
+.principle__text {
+    margin: 0;
+    color: var(--netto-text-muted);
+    line-height: 1.65;
+}
+
+/* How it works */
+
+.steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+    gap: 1.5rem 2.5rem;
+    margin: 3rem 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.step {
+    padding: 0.25rem 0 0 1.5rem;
+    border-left: 1px solid rgba(212, 175, 55, 0.3);
+}
+
+.step__number {
+    display: block;
+    margin-bottom: 1rem;
+    font-family: "Fraunces", Georgia, serif;
+    font-size: 3rem;
+    font-weight: 500;
+    line-height: 1;
+    background: var(--netto-gold-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+/* Principles */
+
+.principles {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+    gap: 2rem 2.5rem;
+    margin-top: 3rem;
+}
+
+.principle {
+    display: flex;
+    gap: 1rem;
+}
+
+    .principle ::deep .principle__icon {
+        flex: none;
+        margin-top: 0.2rem;
+        color: var(--netto-gold);
+    }
+
+/* Closing call to action */
+
+.cta {
+    padding: clamp(3rem, 7vw, 4.5rem) clamp(1.5rem, 5vw, 4rem);
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    border-radius: 28px;
+    background:
+        radial-gradient(ellipse 80% 70% at 50% 0%, rgba(212, 175, 55, 0.16), transparent 70%),
+        var(--netto-surface);
+    text-align: center;
+}
+
+    .cta ::deep .cta__title {
+        margin-bottom: 0.75rem;
+    }
+
+.cta__text {
+    max-width: 32rem;
+    margin: 0 auto 2rem;
+    color: var(--netto-text-muted);
+    font-size: 1.08rem;
+    line-height: 1.7;
+}

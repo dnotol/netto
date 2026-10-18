@@ -1,7 +1,192 @@
 ﻿@page "/"
+@inject IStringLocalizer<Home> L
+@inject NavigationManager Navigation
+@inject IScrollManager ScrollManager
 
-<PageTitle>Netto</PageTitle>
+<PageTitle>@L["PageTitle"]</PageTitle>
 
-<h1>Netto</h1>
+<section class="hero">
+    <div class="hero__grid-lines" aria-hidden="true"></div>
+    <div class="hero__glow" aria-hidden="true"></div>
+    <MudContainer MaxWidth="MaxWidth.Large" Class="hero__inner">
+        <div class="hero__copy">
+            <MudChip T="string" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" Class="hero__badge">
+                @L["HeroBadge"]
+            </MudChip>
+            <MudText Typo="Typo.h1" Class="hero__title">
+                @L["HeroTitle"]
+                <span class="hero__accent gold-text">@L["HeroTitleAccent"]</span>
+            </MudText>
+            <MudText Typo="Typo.body1" Class="hero__lede">@L["HeroLede"]</MudText>
+            <div class="hero__actions">
+                <MudButton Href="/plan" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large"
+                           EndIcon="@Icons.Material.Rounded.ArrowForward" Class="hero__cta">
+                    @L["CtaStart"]
+                </MudButton>
+                <MudButton Href="/#how-it-works" Variant="Variant.Text" Color="Color.Secondary" Size="Size.Large">
+                    @L["CtaHow"]
+                </MudButton>
+            </div>
+            <ul class="hero__trust">
+                <li><MudIcon Icon="@Icons.Material.Outlined.Lock" Size="Size.Small" />@L["TrustPrivate"]</li>
+                <li><MudIcon Icon="@Icons.Material.Outlined.Verified" Size="Size.Small" />@L["TrustOfficial"]</li>
+                <li><MudIcon Icon="@Icons.Material.Outlined.ReceiptLong" Size="Size.Small" />@L["TrustTraceable"]</li>
+            </ul>
+        </div>
 
-<p>How to pay yourself from your Belgian SRL so that the most money reaches your pocket. Work in progress.</p>
+        @* An example of the plan's shape, not a result: no amount is shown, only where the gains go. *@
+        <figure class="plan-card" aria-label="@L["PlanCardLabel"]">
+            <div class="plan-card__head">
+                <span class="plan-card__title">@L["PlanCardTitle"]</span>
+                <MudChip T="string" Variant="Variant.Text" Color="Color.Secondary" Size="Size.Small">@L["PlanCardBadge"]</MudChip>
+            </div>
+            <ol class="plan-card__moves">
+                <li class="plan-card__move">
+                    <MudIcon Icon="@Icons.Material.Rounded.TaskAlt" Size="Size.Small" />
+                    <span>@L["PlanMovePay"]</span>
+                    <span class="plan-card__gain" aria-hidden="true"></span>
+                </li>
+                <li class="plan-card__move">
+                    <MudIcon Icon="@Icons.Material.Rounded.TaskAlt" Size="Size.Small" />
+                    <span>@L["PlanMoveAllowance"]</span>
+                    <span class="plan-card__gain" aria-hidden="true"></span>
+                </li>
+                <li class="plan-card__move">
+                    <MudIcon Icon="@Icons.Material.Rounded.TaskAlt" Size="Size.Small" />
+                    <span>@L["PlanMoveRent"]</span>
+                    <span class="plan-card__gain" aria-hidden="true"></span>
+                </li>
+                <li class="plan-card__move">
+                    <MudIcon Icon="@Icons.Material.Rounded.TaskAlt" Size="Size.Small" />
+                    <span>@L["PlanMoveAdvance"]</span>
+                    <span class="plan-card__gain" aria-hidden="true"></span>
+                </li>
+            </ol>
+            <div class="plan-card__total">
+                <span>@L["PlanCardTotal"]</span>
+                <span class="plan-card__gain plan-card__gain--total" aria-hidden="true"></span>
+            </div>
+            <figcaption class="plan-card__note">@L["PlanCardNote"]</figcaption>
+        </figure>
+    </MudContainer>
+</section>
+
+<section id="levers" class="section">
+    <MudContainer MaxWidth="MaxWidth.Large">
+        <p class="section__eyebrow">@L["LeversEyebrow"]</p>
+        <MudText Typo="Typo.h2" Class="section__title">@L["LeversTitle"]</MudText>
+        <p class="section__intro">@L["LeversIntro"]</p>
+        <div class="levers">
+            <article class="lever">
+                <span class="lever__icon"><MudIcon Icon="@Icons.Material.Outlined.Balance" /></span>
+                <h3 class="lever__title">@L["LeverPayTitle"]</h3>
+                <p class="lever__text">@L["LeverPayText"]</p>
+            </article>
+            <article class="lever">
+                <span class="lever__icon"><MudIcon Icon="@Icons.Material.Outlined.HomeWork" /></span>
+                <h3 class="lever__title">@L["LeverCostsTitle"]</h3>
+                <p class="lever__text">@L["LeverCostsText"]</p>
+            </article>
+            <article class="lever">
+                <span class="lever__icon"><MudIcon Icon="@Icons.Material.Outlined.EventAvailable" /></span>
+                <h3 class="lever__title">@L["LeverAdvanceTitle"]</h3>
+                <p class="lever__text">@L["LeverAdvanceText"]</p>
+            </article>
+            <article class="lever">
+                <span class="lever__icon"><MudIcon Icon="@Icons.Material.Outlined.Savings" /></span>
+                <h3 class="lever__title">@L["LeverReserveTitle"]</h3>
+                <p class="lever__text">@L["LeverReserveText"]</p>
+            </article>
+        </div>
+    </MudContainer>
+</section>
+
+<section id="how-it-works" class="section section--ruled">
+    <MudContainer MaxWidth="MaxWidth.Large">
+        <p class="section__eyebrow">@L["StepsEyebrow"]</p>
+        <MudText Typo="Typo.h2" Class="section__title">@L["StepsTitle"]</MudText>
+        <ol class="steps">
+            <li class="step">
+                <span class="step__number" aria-hidden="true">01</span>
+                <h3 class="step__title">@L["StepDescribeTitle"]</h3>
+                <p class="step__text">@L["StepDescribeText"]</p>
+            </li>
+            <li class="step">
+                <span class="step__number" aria-hidden="true">02</span>
+                <h3 class="step__title">@L["StepOptimiseTitle"]</h3>
+                <p class="step__text">@L["StepOptimiseText"]</p>
+            </li>
+            <li class="step">
+                <span class="step__number" aria-hidden="true">03</span>
+                <h3 class="step__title">@L["StepActTitle"]</h3>
+                <p class="step__text">@L["StepActText"]</p>
+            </li>
+        </ol>
+    </MudContainer>
+</section>
+
+<section id="principles" class="section section--glow">
+    <MudContainer MaxWidth="MaxWidth.Large">
+        <p class="section__eyebrow">@L["PrinciplesEyebrow"]</p>
+        <MudText Typo="Typo.h2" Class="section__title">@L["PrinciplesTitle"]</MudText>
+        <div class="principles">
+            <div class="principle">
+                <MudIcon Icon="@Icons.Material.Outlined.Shield" Class="principle__icon" />
+                <div>
+                    <h3 class="principle__title">@L["PrinciplePrivateTitle"]</h3>
+                    <p class="principle__text">@L["PrinciplePrivateText"]</p>
+                </div>
+            </div>
+            <div class="principle">
+                <MudIcon Icon="@Icons.Material.Outlined.AccountBalance" Class="principle__icon" />
+                <div>
+                    <h3 class="principle__title">@L["PrincipleSourcesTitle"]</h3>
+                    <p class="principle__text">@L["PrincipleSourcesText"]</p>
+                </div>
+            </div>
+            <div class="principle">
+                <MudIcon Icon="@Icons.Material.Outlined.Handshake" Class="principle__icon" />
+                <div>
+                    <h3 class="principle__title">@L["PrincipleAdviceTitle"]</h3>
+                    <p class="principle__text">@L["PrincipleAdviceText"]</p>
+                </div>
+            </div>
+        </div>
+    </MudContainer>
+</section>
+
+<section class="section">
+    <MudContainer MaxWidth="MaxWidth.Medium">
+        <div class="cta">
+            <MudText Typo="Typo.h2" Class="cta__title">@L["CtaBandTitle"]</MudText>
+            <p class="cta__text">@L["CtaBandText"]</p>
+            <MudButton Href="/plan" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large"
+                       EndIcon="@Icons.Material.Rounded.ArrowForward" Class="hero__cta">
+                @L["CtaStart"]
+            </MudButton>
+        </div>
+    </MudContainer>
+</section>
+
+@code {
+    // Only this page's own sections: the fragment becomes a CSS selector, and a typed one such as
+    // "#1abc" would make the browser throw.
+    private static readonly HashSet<string> Sections = ["levers", "how-it-works", "principles"];
+
+    // Blazor scrolls to a #section on a same-page link, but not when the link comes from another
+    // page (/plan to /#levers) or the address is opened directly: the section only exists once
+    // this page has rendered, so the scroll happens here.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+
+        var fragment = new Uri(Navigation.Uri).Fragment.TrimStart('#');
+        if (Sections.Contains(fragment))
+        {
+            await ScrollManager.ScrollIntoViewAsync($"#{fragment}", ScrollBehavior.Auto);
+        }
+    }
+}
