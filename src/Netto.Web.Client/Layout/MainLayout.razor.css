@@ -1,20 +1,104 @@
+/* ::deep reaches the elements MudBlazor renders (MudContainer, MudButton), which carry no scope
+   attribute of their own. */
+.site-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: rgba(11, 10, 8, 0.72);
+    backdrop-filter: saturate(140%) blur(14px);
+    -webkit-backdrop-filter: saturate(140%) blur(14px);
+    border-bottom: 1px solid rgba(243, 238, 226, 0.06);
+}
+
+    .site-header ::deep .site-header__inner {
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        height: 4.25rem;
+    }
+
+.site-header__wordmark {
+    font-size: 1.6rem;
+}
+
+.site-header__end {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    margin-left: auto;
+}
+
+.site-nav {
+    display: flex;
+    gap: 2rem;
+}
+
+    .site-nav a {
+        color: var(--netto-text-muted);
+        font-size: 0.92rem;
+        text-decoration: none;
+        transition: color 0.2s ease;
+    }
+
+        .site-nav a:hover,
+        .site-nav a:focus-visible {
+            color: var(--netto-text);
+        }
+
+@media (max-width: 720px) {
+    .site-nav {
+        display: none;
+    }
+}
+
+.site-footer {
+    margin-top: 2rem;
+    padding: 2.5rem 0;
+    border-top: 1px solid var(--netto-line);
+}
+
+    .site-footer ::deep .site-footer__inner {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem 2rem;
+    }
+
+.site-footer__wordmark {
+    font-size: 1.25rem;
+}
+
+.site-footer__note {
+    margin: 0;
+    color: var(--netto-text-muted);
+    font-size: 0.88rem;
+}
+
 #blazor-error-ui {
-    color-scheme: light only;
-    background: lightyellow;
+    color-scheme: dark only;
+    background: var(--netto-surface);
+    border-top: 1px solid var(--netto-gold);
+    color: var(--netto-text);
     bottom: 0;
-    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.6);
     box-sizing: border-box;
     display: none;
     left: 0;
-    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
+    padding: 0.8rem 1.25rem 0.9rem 1.25rem;
     position: fixed;
     width: 100%;
     z-index: 1000;
 }
 
+    #blazor-error-ui .reload {
+        color: var(--netto-gold);
+        margin-left: 0.5rem;
+    }
+
     #blazor-error-ui .dismiss {
         cursor: pointer;
         position: absolute;
         right: 0.75rem;
-        top: 0.5rem;
+        top: 0.6rem;
     }

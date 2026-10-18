@@ -4,8 +4,15 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0B0A08" />
     <base href="/" />
     <ResourcePreloader />
+    @* Preload paths must match the url() paths inside app.css, and fonts are CORS-fetched even
+       same-origin: without crossorigin the browser downloads each font twice. *@
+    <link rel="preload" href="fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="fonts/fraunces-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
+    @* MudBlazor first, so app.css wins over it at equal specificity. *@
+    <link rel="stylesheet" href="@Assets["_content/MudBlazor/MudBlazor.min.css"]" />
     <link rel="stylesheet" href="@Assets["app.css"]" />
     <link rel="stylesheet" href="@Assets["Netto.Web.styles.css"]" />
     <ImportMap />
@@ -13,10 +20,14 @@
 </head>
 
 <body>
+    @* Nothing is prerendered, so the page is empty while the runtime downloads. The splash fills
+       that gap and app.css hides it as soon as the layout (.netto-app) has rendered. *@
+    <div class="boot-splash" aria-hidden="true"><span class="wordmark">Netto</span></div>
     @* Every page is WebAssembly and none is prerendered: the server never runs a component, so the
        engine and the user's figures only ever exist in the browser. *@
     <Routes @rendermode="new InteractiveWebAssemblyRenderMode(prerender: false)" />
     <script src="@Assets["_framework/blazor.web.js"]"></script>
+    <script src="@Assets["_content/MudBlazor/MudBlazor.min.js"]"></script>
 </body>
 
 </html>

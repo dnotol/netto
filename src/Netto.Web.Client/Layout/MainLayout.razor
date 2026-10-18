@@ -1,9 +1,52 @@
 ﻿@inherits LayoutComponentBase
+@inject IStringLocalizer<MainLayout> L
+@inject NavigationManager Navigation
 
-@Body
+<MudThemeProvider Theme="NettoTheme.Theme" IsDarkMode="true" />
+<MudPopoverProvider />
+
+@* .netto-app is also the signal app.css uses to hide the boot splash. *@
+<div class="netto-app">
+    <header class="site-header">
+        <MudContainer MaxWidth="MaxWidth.Large" Class="site-header__inner">
+            <a href="/" class="wordmark site-header__wordmark">Netto</a>
+            <div class="site-header__end">
+                @* The section links exist only on the front page, where they are same-page links Blazor
+                   scrolls to. Arriving from another page, Blazor resets the scroll to the top once the
+                   new page has rendered (blazor.web.js), undoing any scroll towards the section. *@
+                @if (OnFrontPage)
+                {
+                    <nav class="site-nav" aria-label="@L["NavLabel"]">
+                        <a href="/#levers">@L["NavLevers"]</a>
+                        <a href="/#how-it-works">@L["NavHowItWorks"]</a>
+                        <a href="/#principles">@L["NavPrinciples"]</a>
+                    </nav>
+                }
+                <MudButton Href="/plan" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small">
+                    @L["NavStart"]
+                </MudButton>
+            </div>
+        </MudContainer>
+    </header>
+
+    <main>
+        @Body
+    </main>
+
+    <footer class="site-footer">
+        <MudContainer MaxWidth="MaxWidth.Large" Class="site-footer__inner">
+            <span class="wordmark site-footer__wordmark">Netto</span>
+            <p class="site-footer__note">@L["FooterDisclaimer"]</p>
+        </MudContainer>
+    </footer>
+</div>
 
 <div id="blazor-error-ui" data-nosnippet>
-    An unhandled error has occurred.
-    <a href="." class="reload">Reload</a>
+    @L["ErrorUnhandled"]
+    <a href="." class="reload">@L["ErrorReload"]</a>
     <span class="dismiss">🗙</span>
 </div>
+
+@code {
+    private bool OnFrontPage => Navigation.ToBaseRelativePath(Navigation.Uri).Split('?', '#')[0].Length == 0;
+}

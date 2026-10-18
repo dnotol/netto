@@ -1,5 +1,16 @@
 ﻿@page "/not-found"
 @layout MainLayout
+@inject IStringLocalizer<NotFound> L
 
-<h3>Not Found</h3>
-<p>Sorry, the content you are looking for does not exist.</p>
+<PageTitle>@L["PageTitle"]</PageTitle>
+
+<section class="page-placeholder">
+    <MudContainer MaxWidth="MaxWidth.Small">
+        <MudChip T="string" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small">404</MudChip>
+        <MudText Typo="Typo.h2">@L["Title"]</MudText>
+        <MudText Typo="Typo.body1">@L["Body"]</MudText>
+        <MudButton Href="/" Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.ArrowBack">
+            @L["Back"]
+        </MudButton>
+    </MudContainer>
+</section>
