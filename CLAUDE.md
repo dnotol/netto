@@ -65,6 +65,7 @@ The tracker is Notion: the « Netto Development » page, holding **Work Items** 
 ## UI
 
 - **One dark theme**, `Layout/NettoTheme.cs`: gold primary on a warm black. Its colours are literal hex because MudBlazor parses each one to derive hover and darker variants, and the `:root` block in `Netto.Web/wwwroot/app.css` mirrors them as CSS variables for hand-written CSS. **Change both together.**
+- **Gold is an accent, not decoration**: the main button, active states (hover, focus), small icons and, later, key figures. No gold gradients, no glows, no animated gold. On a site about keeping more money, they read as a get-rich scheme and cost the trust the product sells. Eyebrows, icon tiles and borders stay neutral.
 - **Fonts are self-hosted** (`Netto.Web/wwwroot/fonts`: Inter for text, Fraunces for headlines). Never link a font service such as Google Fonts: it sends every visitor's address to a third party, which breaks « nothing leaves your browser ».
 - **`MudBlazor.min.css` loads before `app.css`** (`App.razor`), so `app.css` wins at equal specificity. Scoped `.razor.css` reaches the elements MudBlazor renders only through `::deep` from an element of the component's own markup.
 - **Nothing is prerendered, so the page is empty while the runtime downloads.** `App.razor` shows a splash, and `app.css` hides it as soon as `.netto-app` (the layout's root) exists. A layout without that class leaves the splash on screen.
