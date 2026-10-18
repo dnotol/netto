@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Netto.Core/Netto.Core.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Netto.Tests.Unit/Netto.Tests.Unit.csproj" />
+  </Folder>
+</Solution>

@@ -1,0 +1,32 @@
+<Project>
+
+  <!-- Shared by every test project; each csproj keeps only its distinctive bits. MSBuild reads only
+       the nearest Directory.Build.props, so this one imports the root file first. Literal relative
+       paths in items resolve against each importing project's directory, so "xunit.runner.json"
+       works for every one of them. -->
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+    <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <!-- Deliberately BOTH the native MTP runner (xunit.v3.mtp-v2) and the VSTest bridge
+       (Microsoft.NET.Test.Sdk + xunit.runner.visualstudio): dotnet test runs through MTP
+       (global.json opts in), Rider still discovers tests through VSTest. Remove neither. -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="Shouldly" />
+    <PackageReference Include="xunit.runner.visualstudio">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="xunit.v3.mtp-v2" />
+  </ItemGroup>
+
+</Project>

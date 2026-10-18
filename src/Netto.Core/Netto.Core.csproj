@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- TargetFramework, ImplicitUsings, Nullable, LangVersion come from ..\..\Directory.Build.props -->
+
+  <!-- The engine runs in the browser through Netto.Web.Client and may later run behind an API, so it
+       stays a plain library: no ASP.NET Core dependency (CoreDependencyTests guards it), and the
+       platform analyzer warns (CA1416) on any API the browser runtime does not support. -->
+  <ItemGroup>
+    <SupportedPlatform Include="browser" />
+  </ItemGroup>
+
+</Project>

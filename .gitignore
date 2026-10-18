@@ -1,0 +1,10 @@
+.idea/
+.vs/
+bin/
+obj/
+*.user
+TestResults/
+
+# The operator's real figures (company accounts, past returns) for personal checks against the
+# engine. They never enter the repository: the test suite uses made-up cases only.
+/local/

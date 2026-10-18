@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Common test-project setup lives in ..\Directory.Build.props -->
+
+  <PropertyGroup>
+    <RootNamespace>Netto.Tests</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Netto.Core\Netto.Core.csproj" />
+  </ItemGroup>
+
+</Project>

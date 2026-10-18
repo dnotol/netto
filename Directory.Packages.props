@@ -1,0 +1,22 @@
+<Project>
+
+  <!-- Central Package Management: every NuGet version is declared here once, and each csproj
+       carries <PackageReference Include="..."/> with no Version. A Version left on a
+       PackageReference fails as NU1008, and a reference with no line here fails as NU1015. -->
+
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.10.0" />
+    <PackageVersion Include="Shouldly" Version="4.3.0" />
+
+    <!-- The dual runner (CLAUDE.md, Stack): xunit.v3.mtp-v2 runs dotnet test through MTP, the
+         VSTest bridge keeps Rider's discovery working. Held at Tavern's 3.x pair, which Rider is
+         known to discover on this machine. -->
+    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
+    <PackageVersion Include="xunit.v3.mtp-v2" Version="3.2.2" />
+  </ItemGroup>
+
+</Project>
