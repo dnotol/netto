@@ -29,12 +29,40 @@
                     <MudSlider T="decimal" Value="_grossPay" ValueChanged="OnGrossPayChanged" Min="0m" Max="200000m" Step="100m"
                                Immediate="true" Color="Color.Primary" Culture="Formats.Culture" aria-labelledby="gross-pay-label" />
                 </div>
-                @* No Min or Max: MudBlazor would clamp a rate out of range silently, and the engine's
-                   refusal, with its message, is what the user has to see. *@
-                <MudNumericField T="decimal" Value="_ratePercent" ValueChanged="OnRateChanged" Label="@L["RateLabel"]"
-                                 HelperText="@L["RateHelper"]" Step="0.1m" Format="0.0" Adornment="Adornment.End" AdornmentText="%"
-                                 Variant="Variant.Outlined" Immediate="true" Error="RateRefused" Culture="Formats.Culture"
-                                 Class="inputs__rate" />
+                <div class="inputs__place">
+                    <div class="inputs__fields">
+                        @* Strict off, so reopening the list after a pick shows every municipality again. *@
+                        <MudAutocomplete T="Municipality" Value="_choice.Municipality" ValueChanged="OnMunicipalityChanged"
+                                         SearchFunc="SearchMunicipalities" ToStringFunc="@(municipality => municipality?.Name)"
+                                         Label="@L["MunicipalityLabel", Formats.Day(_choice.Rates.ResidenceDate)]" Variant="Variant.Outlined"
+                                         MaxItems="null" Strict="false" Clearable="true" ResetValueOnEmptyText="true"
+                                         Class="inputs__municipality">
+                            <ItemTemplate Context="municipality">
+                                <span class="municipality-option">
+                                    <span>@municipality.Name</span>
+                                    <span class="municipality-option__rate">@Formats.MunicipalRate(municipality.Rate.Value)</span>
+                                </span>
+                            </ItemTemplate>
+                            <NoItemsTemplate>
+                                <p class="municipality-none">@L["MunicipalityNoMatch"]</p>
+                            </NoItemsTemplate>
+                        </MudAutocomplete>
+                        @* No Min or Max: MudBlazor would clamp a rate out of range silently, and the engine's
+                           refusal, with its message, is what the user has to see. *@
+                        <MudNumericField T="decimal" Value="RatePercent" ValueChanged="OnRateChanged" Label="@L["RateLabel"]"
+                                         Step="0.1m" Format="0.0" Adornment="Adornment.End" AdornmentText="%"
+                                         Variant="Variant.Outlined" Immediate="true" Error="RateRefused" Culture="Formats.Culture"
+                                         Class="inputs__rate" />
+                    </div>
+                    <p class="inputs__note">
+                        @L[_choice.Note.Key, _choice.Note.Args.ToArray<object>()]
+                        @if (_choice.IsOverridden)
+                        {
+                            <MudButton Variant="Variant.Text" Size="Size.Small" Color="Color.Primary" OnClick="UseOfficialRate"
+                                       Class="inputs__official">@L["UseOfficialRate"]</MudButton>
+                        }
+                    </p>
+                </div>
             </div>
         </div>
 
@@ -170,12 +198,14 @@
     private const int IncomeYear = 2026;
 
     private decimal _grossPay = 50_000m;
-    private decimal _ratePercent = 7.0m;
+    private MunicipalityChoice _choice = MunicipalityChoice.Start(MunicipalRates.IncomeYear2026, 0.07m);
     private GrossToNetResult? _result;
     private GrossToNetView? _view;
     private string? _error;
 
     private bool RateRefused => _error == GrossToNet.MunicipalRateOutOfRange;
+
+    private decimal RatePercent => _choice.Rate * 100m;
 
     protected override void OnInitialized() => Compute();
 
@@ -188,13 +218,28 @@
     // One decimal, as municipalities set their rates: what the field shows is what is computed.
     private void OnRateChanged(decimal ratePercent)
     {
-        _ratePercent = Math.Round(ratePercent, 1, MidpointRounding.AwayFromZero);
+        _choice = _choice.Enter(Math.Round(ratePercent, 1, MidpointRounding.AwayFromZero) / 100m);
         Compute();
     }
 
+    private void OnMunicipalityChanged(Municipality? municipality)
+    {
+        _choice = _choice.Pick(municipality);
+        Compute();
+    }
+
+    private void UseOfficialRate()
+    {
+        _choice = _choice.UseOfficialRate();
+        Compute();
+    }
+
+    private Task<IEnumerable<Municipality>> SearchMunicipalities(string? text, CancellationToken cancellationToken) =>
+        Task.FromResult<IEnumerable<Municipality>>(_choice.Search(text));
+
     private void Compute()
     {
-        (_result, _error) = GrossToNet.Compute(IncomeYear, _grossPay, MunicipalRates.Entered(_ratePercent / 100m));
+        (_result, _error) = GrossToNet.Compute(IncomeYear, _grossPay, _choice.MunicipalRate);
         _view = _result is null ? null : GrossToNetView.From(_result);
     }
 

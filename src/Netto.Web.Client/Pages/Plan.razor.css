@@ -1,7 +1,7 @@
 /* ::deep reaches the elements MudBlazor renders (MudContainer, MudText, MudChip, MudSlider,
-   MudNumericField, MudExpansionPanels, MudAlert, MudIcon), which carry no scope attribute of their
-   own. Elements written in this file's markup, even inside a Mud component's content, are scoped
-   normally.
+   MudAutocomplete, MudNumericField, MudButton, MudExpansionPanels, MudAlert, MudIcon), which carry
+   no scope attribute of their own. Elements written in this file's markup, even inside a Mud
+   component's content, are scoped normally.
 
    Colours stay neutral (the warm off-white of the text at several strengths) except the net in
    pocket, the one key figure, which is gold (CLAUDE.md, UI: gold is an accent). Nothing relies on
@@ -55,11 +55,12 @@
     line-height: 1.7;
 }
 
-/* Inputs: the slider takes two thirds of the row and the rate one third; below 720px they stack. */
+/* Inputs: the slider takes half the row and the municipality with its rate the other half; below
+   960px, where the municipality's label would be cut, they stack. */
 
 .inputs {
     display: grid;
-    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     align-items: start;
     gap: 1.25rem 2.5rem;
     padding: 1.5rem 1.75rem 1.25rem;
@@ -84,9 +85,14 @@
     }
 }
 
-@media (max-width: 720px) {
+@media (max-width: 959.98px) {
     .inputs {
         grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@media (max-width: 720px) {
+    .inputs {
         padding: 1.25rem 1.25rem 1rem;
     }
 }
@@ -109,6 +115,62 @@
     font-size: clamp(1.6rem, 4vw, 2.1rem);
     font-weight: 600;
     font-variant-numeric: tabular-nums;
+}
+
+/* The municipality takes what the rate leaves; on a narrow phone the rate goes under it. */
+.inputs__fields {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 8rem;
+    align-items: start;
+    gap: 0.75rem;
+}
+
+@media (max-width: 480px) {
+    .inputs__fields {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+/* The outlined fields carry a bottom margin of their own; the note sits right under them. */
+.inputs__fields ::deep .mud-input-control {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.inputs__note {
+    margin: 0.5rem 0 0;
+    color: var(--netto-text-muted);
+    font-size: 0.85rem;
+    line-height: 1.5;
+}
+
+.inputs__note ::deep .inputs__official {
+    margin-left: 0.25rem;
+    padding: 0 0.35rem;
+    font-size: 0.85rem;
+    text-transform: none;
+    vertical-align: baseline;
+}
+
+/* An option of the municipality list: the name, and its rate on the right. The option's markup is
+   written here (ItemTemplate), so it is scoped even though it renders in MudBlazor's popover. */
+.municipality-option {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    width: 100%;
+}
+
+.municipality-option__rate {
+    color: var(--netto-text-muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.municipality-none {
+    margin: 0;
+    padding: 0.75rem 1rem;
+    color: var(--netto-text-muted);
+    font-size: 0.9rem;
 }
 
 /* Assumed */

@@ -21,6 +21,12 @@ internal static class Formats
 
     public static string Share(decimal fraction) => fraction.ToString("0.0%", Culture);
 
+    // One decimal, as municipalities set their rates (CIR 92 art. 468): 8% reads 8.0%.
+    public static string MunicipalRate(decimal fraction) => fraction.ToString("0.0%", Culture);
+
+    // The invariant culture's month names are English: 1 January 2027.
+    public static string Day(DateOnly date) => date.ToString("d MMMM yyyy", Culture);
+
     // The rule sets hold rates as fractions (20.50% is 0.205), under keys ending in _rate or _factor.
     public static string RuleAmount(RuleAmount amount) =>
         amount.Key.EndsWith("_rate", StringComparison.Ordinal) || amount.Key.EndsWith("_factor", StringComparison.Ordinal)

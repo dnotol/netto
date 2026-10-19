@@ -57,12 +57,32 @@ public class FormatsTests
         text.ShouldBe("16.6%");
     }
 
+    // Municipalities set their rate with one decimal, so 8% reads 8.0%, like the rate field.
+    [Theory]
+    [InlineData("0.08", "8.0%")]
+    [InlineData("0.085", "8.5%")]
+    public void MunicipalRate_fraction_isAPercentageWithOneDecimal(string value, string expected)
+    {
+        var text = Formats.MunicipalRate(decimal.Parse(value, System.Globalization.CultureInfo.InvariantCulture));
+
+        text.ShouldBe(expected);
+    }
+
+    [Fact]
+    public void Day_date_isTheDayTheMonthNameAndTheYear()
+    {
+        var text = Formats.Day(new DateOnly(2027, 1, 1));
+
+        text.ShouldBe("1 January 2027");
+    }
+
     // Rates are fractions in the rule sets (20.50% is 0.205), and their keys end in _rate or _factor.
     [Theory]
     [InlineData("first_band_rate", "0.205", "20.5%")]
     [InlineData("second_band_rate", "0.1416", "14.16%")]
     [InlineData("autonomy_factor", "0.24957", "24.957%")]
     [InlineData("municipal_rate", "0.07", "7%")]
+    [InlineData("entered_municipal_rate", "0.073", "7.3%")]
     [InlineData("minimum_income", "17374.08", "€17,374.08")]
     [InlineData("bracket_1_upper_limit", "16720", "€16,720.00")]
     [InlineData("flat_rate_costs_maximum", "3200", "€3,200.00")]
