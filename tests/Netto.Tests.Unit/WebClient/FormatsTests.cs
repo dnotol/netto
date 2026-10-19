@@ -50,6 +50,14 @@ public class FormatsTests
     }
 
     [Fact]
+    public void Addition_amount_isPrefixedWithAPlusSign()
+    {
+        var text = Formats.Addition(149.94m);
+
+        text.ShouldBe("+€149.94");
+    }
+
+    [Fact]
     public void Share_fraction_isAPercentageWithOneDecimal()
     {
         var text = Formats.Share(0.16588m);

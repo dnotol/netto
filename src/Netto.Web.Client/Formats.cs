@@ -19,6 +19,9 @@ internal static class Formats
     // Prefixed even at zero, so every part paid out reads as a subtraction.
     public static string Deduction(decimal amount) => $"{Culture.NumberFormat.NegativeSign}{Euros(amount)}";
 
+    // Money that comes back, such as a refund.
+    public static string Addition(decimal amount) => $"{Culture.NumberFormat.PositiveSign}{Euros(amount)}";
+
     public static string Share(decimal fraction) => fraction.ToString("0.0%", Culture);
 
     // One decimal, as municipalities set their rates (CIR 92 art. 468): 8% reads 8.0%.

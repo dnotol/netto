@@ -102,4 +102,46 @@
   <data name="Amount_entered_municipal_rate" xml:space="preserve">
     <value>Municipal rate, as you entered it</value>
   </data>
+  <data name="Title_corporate_tax" xml:space="preserve">
+    <value>Corporate tax</value>
+  </data>
+  <data name="Title_dividend_withholding" xml:space="preserve">
+    <value>Withholding tax on the dividend</value>
+  </data>
+  <data name="Title_dividend_exemption_refund" xml:space="preserve">
+    <value>Refund on the exempt dividends</value>
+  </data>
+  <data name="Rule_corporate_tax" xml:space="preserve">
+    <value>The company's taxable income is its profit after your director pay, with no disallowed expenses and no losses carried forward. A small company pays the reduced rate on a first slice and the standard rate on the rest. From its fifth tax period, it keeps the reduced rate only if a director's pay reaches the minimum, or if its taxable income does not exceed that pay; otherwise the standard rate applies to all of it.</value>
+  </data>
+  <data name="Rule_dividend_withholding" xml:space="preserve">
+    <value>The company withholds tax on the dividend it pays you, at the rate you declare: the standard rate, or a reduced rate for VVPRbis shares, which depends on which distribution after the capital contribution this is. The withholding is the final tax on the dividend: no income tax, no municipal surcharge and no social contributions come on top.</value>
+  </data>
+  <data name="Rule_dividend_exemption_refund" xml:space="preserve">
+    <value>The first slice of ordinary dividends a person receives each year is exempt from personal tax. The company still withholds on it, so you declare that withholding in your return and it is credited back, even when you owe no other tax.</value>
+  </data>
+  <data name="Amount_standard_rate" xml:space="preserve">
+    <value>Standard rate</value>
+  </data>
+  <data name="Amount_reduced_rate" xml:space="preserve">
+    <value>Reduced rate</value>
+  </data>
+  <data name="Amount_reduced_rate_ceiling" xml:space="preserve">
+    <value>Reduced rate up to</value>
+  </data>
+  <data name="Amount_minimum_director_pay" xml:space="preserve">
+    <value>Minimum director pay</value>
+  </data>
+  <data name="Amount_dividend_standard_rate" xml:space="preserve">
+    <value>Standard withholding rate</value>
+  </data>
+  <data name="Amount_vvprbis_second_year_rate" xml:space="preserve">
+    <value>VVPRbis rate, second distribution</value>
+  </data>
+  <data name="Amount_vvprbis_third_year_onwards_rate" xml:space="preserve">
+    <value>VVPRbis rate, third distribution onwards</value>
+  </data>
+  <data name="Amount_exempt_dividends" xml:space="preserve">
+    <value>Exempt dividends per year</value>
+  </data>
 </root>

@@ -1,6 +1,8 @@
 using System.Globalization;
 using System.Resources;
+using Netto.Core.CorporateTax;
 using Netto.Core.DirectorPay;
+using Netto.Core.Dividends;
 using Netto.Core.PersonalTax;
 using Netto.Core.Rules;
 using Netto.Core.Simulation;
@@ -31,6 +33,22 @@ public class StepTextTests
     public void StepDetailsResx_everyKeyOfTheDirectorPaySteps_hasAText(string rateOrigin)
     {
         var (value, _) = GrossToNet.Compute(2026, 50_000m, RatesByOrigin[rateOrigin]);
+
+        MissingTexts(value.ShouldNotBeNull().Steps).ShouldBeEmpty();
+    }
+
+    // The overview's steps: the company's, the director pay's and the dividend's, under each
+    // withholding rate the user can declare.
+    [Theory]
+    [InlineData(WithholdingCategory.Standard)]
+    [InlineData(WithholdingCategory.VvprbisSecondYear)]
+    [InlineData(WithholdingCategory.VvprbisThirdYearOnwards)]
+    public void StepDetailsResx_everyKeyOfTheYearsSteps_hasAText(WithholdingCategory category)
+    {
+        var scenario = new Scenario(2026, 120_000m, 20_000m, new CompanyStatus(SmallCompany: true, FirstFourTaxPeriods: false),
+            50_000m, MunicipalRates.Entered(0.07m), 40_000m, category);
+
+        var (value, _) = YearSimulation.Run(scenario);
 
         MissingTexts(value.ShouldNotBeNull().Steps).ShouldBeEmpty();
     }

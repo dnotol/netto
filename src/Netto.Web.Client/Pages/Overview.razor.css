@@ -1,0 +1,431 @@
+/* ::deep reaches the elements MudBlazor renders (MudContainer, MudText, MudChip, MudNumericField,
+   MudCheckBox, MudSelect, MudAlert), which carry no scope attribute of their own. Elements written in
+   this file's markup are scoped normally.
+
+   Colours stay neutral except the net in pocket, the one key figure, which is gold (CLAUDE.md, UI:
+   gold is an accent). Nothing relies on colour alone: every part of the split has its label, amount
+   and share beside it, and every ledger row its sign. */
+
+.overview {
+    padding: clamp(2.5rem, 6vw, 4.5rem) 0 clamp(3rem, 7vw, 5rem);
+}
+
+/* Head */
+
+.overview__head {
+    max-width: 46rem;
+    margin-bottom: 2.25rem;
+}
+
+.overview__eyebrow-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1rem;
+    margin-bottom: 1rem;
+}
+
+.overview__eyebrow {
+    margin: 0;
+    color: var(--netto-text-muted);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+.overview__eyebrow-row ::deep .mud-chip {
+    margin: 0;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.overview__head ::deep .overview__title {
+    margin-bottom: 1rem;
+}
+
+.overview__lede {
+    margin: 0;
+    color: var(--netto-text-muted);
+    font-size: 1.08rem;
+    line-height: 1.7;
+}
+
+.overview__example {
+    margin: 0 0 0.75rem;
+    color: var(--netto-text-muted);
+    font-size: 0.9rem;
+}
+
+/* The current setup: three groups in as many columns of at least 18rem as fit, so they sit side by
+   side on a laptop and stack on a phone. min(100%, 18rem) keeps a group from overflowing a screen
+   narrower than 18rem, and each group's single column, minmax(0, 1fr), keeps a long selected value
+   from widening its fields past the group's edge. */
+
+.setup {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+    align-items: start;
+    gap: 1.25rem;
+}
+
+.setup__group {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.9rem;
+    min-width: 0;
+    margin: 0;
+    padding: 1.25rem 1.5rem 1.5rem;
+    border: 1px solid var(--netto-line);
+    border-radius: 20px;
+    background: var(--netto-surface);
+}
+
+/* Floated, a legend is laid out inside its fieldset like any heading instead of on the border. */
+.setup__title {
+    float: left;
+    width: 100%;
+    padding: 0;
+    margin: 0 0 0.25rem;
+    font-family: "Fraunces", Georgia, serif;
+    font-size: 1.15rem;
+    font-weight: 600;
+}
+
+/* The outlined fields carry margins of their own; the group's gap spaces them instead. */
+.setup__group ::deep .mud-input-control {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.setup__hint {
+    margin: -0.5rem 0 0;
+    color: var(--netto-text-muted);
+    font-size: 0.85rem;
+    line-height: 1.5;
+}
+
+/* A checkbox's label wraps under itself rather than past the group's edge. */
+.setup__group ::deep .mud-checkbox {
+    align-items: flex-start;
+    margin: 0 0 0 -0.6rem;
+}
+
+    .setup__group ::deep .mud-checkbox .mud-typography {
+        padding-top: 0.55rem;
+        line-height: 1.45;
+    }
+
+/* Assumed */
+
+.assumed {
+    margin: 1rem 0 0;
+}
+
+.assumed__title {
+    margin: 0 0 0.6rem;
+    color: var(--netto-text-muted);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.assumed__list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+    .assumed__list li {
+        padding: 0.3rem 0.8rem;
+        border: 1px solid var(--netto-line);
+        border-radius: 999px;
+        color: var(--netto-text-muted);
+        font-size: 0.85rem;
+    }
+
+/* Error */
+
+.overview ::deep .overview__error {
+    margin-top: 2.5rem;
+}
+
+/* Net in pocket */
+
+.net {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.25rem 1rem;
+    margin: 2.5rem 0 0;
+}
+
+.net__label {
+    width: 100%;
+    color: var(--netto-text-muted);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.net__amount {
+    font-family: "Fraunces", Georgia, serif;
+    font-size: clamp(2.4rem, 7vw, 3.5rem);
+    font-weight: 600;
+    line-height: 1.1;
+    color: var(--netto-gold);
+    font-variant-numeric: tabular-nums;
+}
+
+.net__from {
+    color: var(--netto-text-muted);
+}
+
+/* Sections */
+
+.overview__section-title {
+    margin: 3rem 0 1.25rem;
+    font-family: "Fraunces", Georgia, serif;
+    font-size: clamp(1.5rem, 3vw, 1.9rem);
+    font-weight: 600;
+    line-height: 1.25;
+}
+
+.overview__section-intro {
+    max-width: 44rem;
+    margin: -0.5rem 0 1.25rem;
+    color: var(--netto-text-muted);
+    line-height: 1.6;
+}
+
+/* Where the profit goes: one bar cut in five, each part as wide as its share (flex-basis), with a
+   legend under it that carries the amounts and percentages. */
+
+.split__card {
+    padding: 1.5rem;
+    border: 1px solid var(--netto-line);
+    border-radius: 20px;
+    background: var(--netto-surface);
+}
+
+.split__bar {
+    display: flex;
+    height: 0.9rem;
+    margin-bottom: 1.25rem;
+    border-radius: 999px;
+    background: rgba(243, 238, 226, 0.04);
+    overflow: hidden;
+}
+
+.split__segment {
+    flex: 0 0 auto;
+}
+
+    /* A thin gap in the card's colour between parts. */
+    .split__segment + .split__segment {
+        border-left: 2px solid var(--netto-surface);
+    }
+
+.split__none {
+    margin: 0 0 1.25rem;
+    color: var(--netto-text-muted);
+    font-size: 0.9rem;
+}
+
+.split__segment--corporate_tax,
+.split__part--corporate_tax .split__swatch {
+    background: rgba(243, 238, 226, 0.7);
+}
+
+.split__segment--social_contributions,
+.split__part--social_contributions .split__swatch {
+    background: rgba(243, 238, 226, 0.45);
+}
+
+.split__segment--personal_tax,
+.split__part--personal_tax .split__swatch {
+    background: rgba(243, 238, 226, 0.25);
+}
+
+.split__segment--net_in_pocket,
+.split__part--net_in_pocket .split__swatch {
+    background: var(--netto-gold);
+}
+
+/* What stays in the company is not spent: an outline, not a fill. */
+.split__segment--kept_in_company,
+.split__part--kept_in_company .split__swatch {
+    background: rgba(243, 238, 226, 0.06);
+    box-shadow: inset 0 0 0 1px rgba(243, 238, 226, 0.5);
+}
+
+.split__parts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr));
+    gap: 1rem 1.5rem;
+    margin: 0;
+}
+
+.split__part dt {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--netto-text-muted);
+    font-size: 0.85rem;
+}
+
+.split__part dd {
+    margin: 0.3rem 0 0;
+    font-size: 1.1rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.split__part--net_in_pocket dd {
+    color: var(--netto-gold);
+    font-weight: 600;
+}
+
+.split__share {
+    margin-left: 0.5rem;
+    color: var(--netto-text-muted);
+    font-size: 0.9rem;
+    font-weight: 400;
+}
+
+.split__swatch {
+    flex: none;
+    width: 0.75rem;
+    height: 0.75rem;
+    border-radius: 3px;
+}
+
+/* Who gets what: one ledger per party, in as many columns of at least 18rem as fit. */
+
+.ledgers {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+    gap: 1.25rem;
+}
+
+.ledger {
+    min-width: 0;
+    padding: 1.5rem;
+    border: 1px solid var(--netto-line);
+    border-radius: 20px;
+    background: var(--netto-surface);
+}
+
+.ledger__title {
+    margin: 0 0 0.25rem;
+    font-family: "Fraunces", Georgia, serif;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.ledger__hint {
+    margin: 0 0 1.25rem;
+    color: var(--netto-text-muted);
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.ledger__rows {
+    display: grid;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.ledger-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: baseline;
+    gap: 1rem;
+    padding: 0.45rem 0;
+    font-size: 0.93rem;
+}
+
+.ledger-row__amount {
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.ledger-row--out .ledger-row__label,
+.ledger-row--paid-out .ledger-row__label,
+.ledger-row--back .ledger-row__label {
+    padding-left: 0.75rem;
+    color: var(--netto-text-muted);
+}
+
+/* A balance closes what is above it: a rule over it. */
+.ledger-row--subtotal,
+.ledger-row--end {
+    border-top: 1px solid var(--netto-line);
+}
+
+.ledger-row--end {
+    font-weight: 600;
+}
+
+.ledger__note {
+    margin: 1rem 0 0;
+    padding-top: 1rem;
+    border-top: 1px dashed var(--netto-line);
+    color: var(--netto-text-muted);
+    font-size: 0.85rem;
+    line-height: 1.55;
+}
+
+.ledger__link {
+    display: inline-block;
+    margin-top: 1rem;
+    color: var(--netto-text);
+    font-size: 0.9rem;
+    text-decoration: underline;
+    text-decoration-color: rgba(243, 238, 226, 0.35);
+    text-underline-offset: 3px;
+    transition: color 0.2s ease;
+}
+
+    /* Hover and focus are active states, so they may turn gold. */
+    .ledger__link:hover,
+    .ledger__link:focus-visible {
+        color: var(--netto-gold);
+        text-decoration-color: var(--netto-gold);
+    }
+
+/* Not counted yet */
+
+.limits {
+    margin-top: 3rem;
+    padding: 1.5rem 1.75rem;
+    border: 1px dashed var(--netto-line);
+    border-radius: 20px;
+}
+
+.limits__title {
+    margin: 0 0 0.75rem;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.limits__list {
+    margin: 0 0 1rem;
+    padding-left: 1.25rem;
+    color: var(--netto-text-muted);
+    line-height: 1.7;
+}
+
+.limits__note {
+    margin: 0;
+    color: var(--netto-text-muted);
+    font-size: 0.88rem;
+    line-height: 1.6;
+}

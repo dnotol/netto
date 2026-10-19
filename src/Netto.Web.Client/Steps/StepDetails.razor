@@ -10,7 +10,7 @@
                 <TitleContent>
                     <span class="step-details__head">
                         <span>@L[StepText.Title(detail.RuleKey)]</span>
-                        <span class="step-details__amount">@Formats.Euros(detail.Amount)</span>
+                        <span class="step-details__amount">@Amount(detail)</span>
                     </span>
                 </TitleContent>
                 <ChildContent>
@@ -45,4 +45,8 @@
 @code {
     [Parameter, EditorRequired]
     public IReadOnlyList<StepDetail> Details { get; set; } = [];
+
+    // A step paid out with a negative amount is money that comes back: the refund on exempt dividends.
+    private static string Amount(StepDetail detail) =>
+        detail.Amount < 0m ? Formats.Addition(-detail.Amount) : Formats.Euros(detail.Amount);
 }
