@@ -11,6 +11,13 @@ Netto tells a Belgian SRL owner-director how to pay themselves for the year so t
 | `CLAUDE.md` (this file) | Instructions only: what an agent must do, must not do, or would otherwise get wrong. No status, no history, no domain spec. Edit it when a slice changed a convention, an architecture rule or a gotcha. |
 | Notion, « Netto Development » | Every unit of work (Work Items, User Stories), the product contract (the « Goal & scope » page: what v1 is and is not) and the Lever catalogue (one page per fiscal lever, with its official sources). There is no backlog file, and what shipped is the git history. |
 | `official-docs/` | The official documents the rules are taken from, as they were when read, each with the income years it applies to and its status (`INDEX.md`). Its `README.md` says how to file one. |
+| The River Map, an Artifact ([link](https://claude.ai/artifact/C2gkexviNGUUMzDbpaqaEX)) | The river as decided: each module with what it asks and where its money goes, the buckets, the dated rules the river follows and what is still open. |
+
+**Always current: the River Map and the official documents.**
+
+- **The River Map is updated in the slice that changes the river** (a module, a bucket, a rule, a figure it quotes), in place at the same URL: read it first (`Artifact read`, then `path: "index.html"` for its file, whose publish skeleton is stripped before republishing), add a dated rule, and bump its date and the `main` commit in its footer.
+- **`official-docs/` is checked for newer editions regularly**: at the start of every slice that touches a layer, for the documents that layer's rule sets cite (a newer coordinated article on Fisconetplus, a new indexation notice, a law or programme law published since), and each year once the next income year's amounts are published. A newer edition is filed (downloading needs the operator's go) and the old one marked superseded, and the rule set that cites it is checked against it in the same slice.
+- **Every Artifact that states Netto's rules or figures is faithful to `official-docs/`**, the River Map first: each rule and amount it shows is the one the current documents give for its income year, and it changes when they do.
 
 ## Skills
 
@@ -98,7 +105,7 @@ A slice (or any task) is done only when ALL of:
 
 1. `dotnet build` clean (no warnings) and `dotnet test` green, run from the repo root.
 2. The acceptance criteria of the slice's Notion item are met and demonstrated in the running app (browser-verified through the AppHost), not only in tests.
-3. Docs are true again: « Goal & scope » edited where the contract changed, any convention here that the slice changed updated, and the Notion item moved to `Done`.
+3. Docs are true again: « Goal & scope » edited where the contract changed, any convention here that the slice changed updated, the River Map updated where the river changed, `official-docs/` holding the current edition of every document the slice's rule sets cite, and the Notion item moved to `Done`.
 4. The branch's commits are listed (contents + messages) and the fast-forward onto `main` is operator-approved. Pushing, once a remote exists, needs separate explicit approval.
 
 ## Commands
