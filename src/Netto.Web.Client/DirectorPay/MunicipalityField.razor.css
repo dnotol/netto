@@ -1,0 +1,58 @@
+/* ::deep reaches the elements MudBlazor renders (MudAutocomplete, MudNumericField, MudButton), which
+   carry no scope attribute of their own. */
+
+/* The municipality takes what the rate leaves; on a narrow phone the rate goes under it. */
+.municipality-field__inputs {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 8rem;
+    align-items: start;
+    gap: 0.75rem;
+}
+
+@media (max-width: 480px) {
+    .municipality-field__inputs {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+/* The outlined fields carry a bottom margin of their own; the note sits right under them. */
+.municipality-field__inputs ::deep .mud-input-control {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.municipality-field__note {
+    margin: 0.5rem 0 0;
+    color: var(--netto-text-muted);
+    font-size: 0.85rem;
+    line-height: 1.5;
+}
+
+.municipality-field__note ::deep .municipality-field__official {
+    margin-left: 0.25rem;
+    padding: 0 0.35rem;
+    font-size: 0.85rem;
+    text-transform: none;
+    vertical-align: baseline;
+}
+
+/* An option of the municipality list: the name, and its rate on the right. The option's markup is
+   written here (ItemTemplate), so it is scoped even though it renders in MudBlazor's popover. */
+.municipality-option {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    width: 100%;
+}
+
+.municipality-option__rate {
+    color: var(--netto-text-muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.municipality-none {
+    margin: 0;
+    padding: 0.75rem 1rem;
+    color: var(--netto-text-muted);
+    font-size: 0.9rem;
+}

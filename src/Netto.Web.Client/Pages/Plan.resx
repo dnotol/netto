@@ -30,33 +30,6 @@
   <data name="GrossLabel" xml:space="preserve">
     <value>Gross director pay for the year</value>
   </data>
-  <data name="MunicipalityLabel" xml:space="preserve">
-    <value>Municipality on {0}</value>
-  </data>
-  <data name="MunicipalityNoMatch" xml:space="preserve">
-    <value>No Walloon municipality matches. You can enter its rate instead.</value>
-  </data>
-  <data name="RateLabel" xml:space="preserve">
-    <value>Surcharge rate</value>
-  </data>
-  <data name="RateNote_example" xml:space="preserve">
-    <value>An example rate: pick your municipality, or enter its rate.</value>
-  </data>
-  <data name="RateNote_entered" xml:space="preserve">
-    <value>The rate you entered. Pick your municipality to use its official rate.</value>
-  </data>
-  <data name="RateNote_official" xml:space="preserve">
-    <value>{0}'s official rate for income {1}.</value>
-  </data>
-  <data name="RateNote_official_earlier" xml:space="preserve">
-    <value>{0}'s rate for income {1}: the {2} rate is not published yet.</value>
-  </data>
-  <data name="RateNote_overridden" xml:space="preserve">
-    <value>Your rate replaces {0}'s official {1}.</value>
-  </data>
-  <data name="UseOfficialRate" xml:space="preserve">
-    <value>Use the official rate</value>
-  </data>
   <data name="AssumedTitle" xml:space="preserve">
     <value>Assumed in this window</value>
   </data>

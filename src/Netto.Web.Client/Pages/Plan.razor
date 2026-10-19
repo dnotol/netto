@@ -31,38 +31,7 @@
                                Immediate="true" Color="Color.Primary" Culture="Formats.Culture" aria-labelledby="gross-pay-label" />
                 </div>
                 <div class="inputs__place">
-                    <div class="inputs__fields">
-                        @* Strict off, so reopening the list after a pick shows every municipality again. *@
-                        <MudAutocomplete T="Municipality" Value="_choice.Municipality" ValueChanged="OnMunicipalityChanged"
-                                         SearchFunc="SearchMunicipalities" ToStringFunc="@(municipality => municipality?.Name)"
-                                         Label="@L["MunicipalityLabel", Formats.Day(_choice.Rates.ResidenceDate)]" Variant="Variant.Outlined"
-                                         MaxItems="null" Strict="false" Clearable="true" ResetValueOnEmptyText="true"
-                                         Class="inputs__municipality">
-                            <ItemTemplate Context="municipality">
-                                <span class="municipality-option">
-                                    <span>@municipality.Name</span>
-                                    <span class="municipality-option__rate">@Formats.MunicipalRate(municipality.Rate.Value)</span>
-                                </span>
-                            </ItemTemplate>
-                            <NoItemsTemplate>
-                                <p class="municipality-none">@L["MunicipalityNoMatch"]</p>
-                            </NoItemsTemplate>
-                        </MudAutocomplete>
-                        @* No Min or Max: MudBlazor would clamp a rate out of range silently, and the engine's
-                           refusal, with its message, is what the user has to see. *@
-                        <MudNumericField T="decimal" Value="RatePercent" ValueChanged="OnRateChanged" Label="@L["RateLabel"]"
-                                         Step="0.1m" Format="0.0" Adornment="Adornment.End" AdornmentText="%"
-                                         Variant="Variant.Outlined" Immediate="true" Error="RateRefused" Culture="Formats.Culture"
-                                         Class="inputs__rate" />
-                    </div>
-                    <p class="inputs__note">
-                        @L[_choice.Note.Key, _choice.Note.Args.ToArray<object>()]
-                        @if (_choice.IsOverridden)
-                        {
-                            <MudButton Variant="Variant.Text" Size="Size.Small" Color="Color.Primary" OnClick="UseOfficialRate"
-                                       Class="inputs__official">@L["UseOfficialRate"]</MudButton>
-                        }
-                    </p>
+                    <MunicipalityField Choice="_choice" ChoiceChanged="OnChoiceChanged" Refused="RateRefused" />
                 </div>
             </div>
         </div>
@@ -170,8 +139,6 @@
 
     private bool RateRefused => _error == GrossToNet.MunicipalRateOutOfRange;
 
-    private decimal RatePercent => _choice.Rate * 100m;
-
     protected override void OnInitialized() => Compute();
 
     private void OnGrossPayChanged(decimal grossPay)
@@ -180,27 +147,11 @@
         Compute();
     }
 
-    // One decimal, as municipalities set their rates: what the field shows is what is computed.
-    private void OnRateChanged(decimal ratePercent)
+    private void OnChoiceChanged(MunicipalityChoice choice)
     {
-        _choice = _choice.Enter(Math.Round(ratePercent, 1, MidpointRounding.AwayFromZero) / 100m);
+        _choice = choice;
         Compute();
     }
-
-    private void OnMunicipalityChanged(Municipality? municipality)
-    {
-        _choice = _choice.Pick(municipality);
-        Compute();
-    }
-
-    private void UseOfficialRate()
-    {
-        _choice = _choice.UseOfficialRate();
-        Compute();
-    }
-
-    private Task<IEnumerable<Municipality>> SearchMunicipalities(string? text, CancellationToken cancellationToken) =>
-        Task.FromResult<IEnumerable<Municipality>>(_choice.Search(text));
 
     private void Compute()
     {

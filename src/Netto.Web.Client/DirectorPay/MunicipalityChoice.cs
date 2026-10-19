@@ -4,11 +4,12 @@ using Netto.Core.Rules;
 
 namespace Netto.Web.Client.DirectorPay;
 
-// What the municipality picker and the rate field on /plan hold, and which rate the engine gets: a
-// municipality's official rate with its source, or a rate the user typed, which replaces the
-// municipality's while one is picked. The rates and the year they were set for come from
-// MunicipalRates in Netto.Core; this only tracks the user's choice.
-internal sealed record MunicipalityChoice(MunicipalRates Rates, Municipality? Municipality, decimal Rate, RateOrigin Origin)
+// What the municipality picker and the rate field of MunicipalityField hold, and which rate the
+// engine gets: a municipality's official rate with its source, or a rate the user typed, which
+// replaces the municipality's while one is picked. The rates and the year they were set for come
+// from MunicipalRates in Netto.Core; this only tracks the user's choice. Public because
+// MunicipalityField, a component, takes it as a parameter.
+public sealed record MunicipalityChoice(MunicipalRates Rates, Municipality? Municipality, decimal Rate, RateOrigin Origin)
 {
     // Until a municipality is picked or a rate typed, an example rate shows figures at once.
     public static MunicipalityChoice Start(MunicipalRates rates, decimal exampleRate) => new(rates, null, exampleRate, RateOrigin.Example);
@@ -89,7 +90,7 @@ internal sealed record MunicipalityChoice(MunicipalRates Rates, Municipality? Mu
     }
 }
 
-internal enum RateOrigin
+public enum RateOrigin
 {
     // The page's starting rate, shown until the user picks a municipality or types a rate.
     Example,
@@ -101,5 +102,5 @@ internal enum RateOrigin
     Entered,
 }
 
-// A resource key in Plan.resx and the values for its placeholders.
-internal sealed record RateNote(string Key, IReadOnlyList<string> Args);
+// A resource key in MunicipalityField.resx and the values for its placeholders.
+public sealed record RateNote(string Key, IReadOnlyList<string> Args);
