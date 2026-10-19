@@ -16,7 +16,7 @@ Read the *Applies to* column before taking an amount: a rule set for income year
 
 ## Filing a document
 
-1. Put it in the folder of the layer it serves (`personal-tax/`, `social-contributions/`, `municipal-surcharge/`), named `<issuer>_<short-title>_<version date>.<ext>`, in lower case with hyphens. The version date is the one the issuer gives (publication, version or last-modified date), never the download date.
+1. Put it in the folder of the layer it serves (`corporate-tax/`, `personal-tax/`, `social-contributions/`, `municipal-surcharge/`), named `<issuer>_<short-title>_<version date>.<ext>`, in lower case with hyphens. The version date is the one the issuer gives (publication, version or last-modified date), never the download date.
 2. A web page whose content changes in place (a rates page, a contributions page) is saved as a dated snapshot, PDF or HTML, the day an amount is read from it.
 3. Add its row to `INDEX.md`: file, issuer, title, URL, version date, date retrieved, the income years it applies to, status.
 4. A new edition is a new file, never an overwrite. Mark the old row `superseded by <new file>`.
