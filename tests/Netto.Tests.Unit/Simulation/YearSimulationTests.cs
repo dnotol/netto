@@ -98,6 +98,22 @@ public class YearSimulationTests
     }
 
     [Fact]
+    public void Run_2026_theMaximumDividendIsTheProfitAfterTax()
+    {
+        var result = Run(Scenario(directorPay: 50_000m, dividend: 25_000m));
+
+        (result.ProfitAfterTax, result.MaximumDividend).ShouldBe((40_000.00m, 40_000.00m));
+    }
+
+    [Fact]
+    public void Run_2026Loss_allowsNoDividend()
+    {
+        var result = Run(Scenario(directorPay: 30_000m, dividend: 0m, revenue: 40_000m));
+
+        (result.ProfitAfterTax, result.MaximumDividend).ShouldBe((-10_000m, 0m));
+    }
+
+    [Fact]
     public void Run_2026PartOfTheProfitPaidOut_keepsTheRestInTheCompany()
     {
         var result = Run(Scenario(directorPay: 50_000m, dividend: 25_000m));

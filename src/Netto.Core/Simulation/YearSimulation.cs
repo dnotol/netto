@@ -37,7 +37,8 @@ public static class YearSimulation
         var profitBeforePay = scenario.Revenue - scenario.RunningCosts;
         var company = CorporateTaxCalculator.Compute(corporateRules, profitBeforePay - pay.GrossPay, pay.GrossPay, scenario.Company);
         var profitAfterTax = company.TaxableIncome - company.CorporateTax;
-        if (scenario.Dividend > Math.Max(0m, profitAfterTax))
+        var maximumDividend = Math.Max(0m, profitAfterTax);
+        if (scenario.Dividend > maximumDividend)
             return (null, DividendAboveProfitAfterTax);
 
         var dividend = DividendCalculator.Compute(dividendRules, scenario.Dividend, scenario.DividendCategory);
@@ -65,6 +66,8 @@ public static class YearSimulation
             PaidOut(steps, Layer.Personal),
             pay.NetInPocket + dividend.NetDividend,
             profitAfterTax - dividend.Dividend,
+            profitAfterTax,
+            maximumDividend,
             steps), null);
     }
 
