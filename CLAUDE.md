@@ -57,6 +57,8 @@ The tracker is Notion: the « Netto Development » page, holding **Work Items** 
 - **`Netto.Web` only serves the app.** If Netto ever gets an API, it goes there, not in a new project.
 - **No tax rule outside `Netto.Core`.** A component growing an `if` about tax behaviour means that logic belongs in Core. Core returns data and error keys, never display text; the page turns a key into English.
 - **Rules come only from official, current sources** (tax administration, Moniteur belge, INASTI), each amount with its source and income year. An amount that is not published yet is marked as such, never guessed. The Lever catalogue holds the sources.
+- **One rules record per layer, one instance per income year** (`SocialContributionRules.IncomeYear2026`, `PersonalTaxRules.IncomeYear2025`, found through `For(year)`). Every amount is a `RuleAmount` carrying its `Source`, and rates are fractions (20.50% is `0.205m`). A new year is a new instance, never an edit of last year's.
+- **Round where the administration rounds**: `Money.RoundToCent` (half away from zero) on each line its calculation detail shows rounded, not once at the end. INASTI bills four rounded quarters; Tax-Calc rounds the flat-rate costs, the basic tax, the federal share and the Walloon tax each on its own.
 - **Eligibility is declared by the user, never decided by the engine**: Core takes a status (VVPRbis shares, reduced corporate rate, small-company status) as input and shows its conditions.
 - **User data stays in the browser**: browser storage and file export, no accounts, nothing sent to a server.
 - UI copy is English only, and interface text lives in resource files so a translation can be added later (« Goal & scope »): a `.resx` beside each component (`Pages/Home.resx` for `Pages/Home.razor`), read through an injected `IStringLocalizer<TComponent>`. No interface text inline in a `.razor` file; the wordmark « Netto » is a brand, not copy. A misspelt key fails silently (the page shows the key), so read the page in the browser after adding one.
@@ -75,7 +77,8 @@ The tracker is Notion: the « Netto Development » page, holding **Work Items** 
 
 - **Test-first in `Netto.Core`.** `Netto.Tests.Unit` mirrors Core's folders, plus `Architecture/` for the guards on the project graph, and runs without Docker.
 - **No real figures in the repository.** Tests use made-up cases. The operator's own figures live under `/local/`, which git ignores; never copy them into a test, a commit message or Notion.
-- A personal-tax expected value comes from a Tax-Calc run on the same inputs, and the test names the income year it covers.
+- A personal-tax expected value comes from a Tax-Calc run on the same inputs, and the test names the income year it covers. For a year Tax-Calc does not cover yet, it is derived from the official amounts and the test says so.
+- **Tax-Calc** (the SPF's anonymous simulator, latest income year only) is driven in the browser, and each submission needs the operator's go. « Encodage rapide » takes codes 1001 (single), 1400 (director pay), 1405 (own contributions) and 1407 (withholding: required whenever 1400 is filled, 0 is fine); cadre I needs a postal code, the municipal rate and a birth date. Read « Détail du calcul »: it also shows lines Netto does not model yet (special social security contribution, low-income tax credit, advance-payment surcharge).
 
 ## Definition of done
 
