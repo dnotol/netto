@@ -4,7 +4,9 @@
 
 @* One slider over the profit after tax: kept in the company on one side, paid out as a dividend on
    the other, so the dividend can never exceed what is there. It is withheld at the rate the user
-   declares, and the withholding on the exempt part comes back through the tax return. *@
+   declares, and the withholding on the exempt part comes back through the tax return. What is kept
+   can be typed exactly, taken when the field is left, so the field shows what the profit after tax
+   allows (the split's field does the same). *@
 <ModuleCard Title="@L["Title"]" Summary="@Summary" Skipped="Inputs.Company is null" Details="@Details" DetailsLabel="@L["DetailsLabel"]">
     @if (Inputs.Company is null)
     {
@@ -21,7 +23,7 @@
             }
             <MudNumericField T="decimal" InputId="river-reserve" Value="@(_view?.Kept ?? Inputs.Reserve.Value)" ValueChanged="OnReserveChanged"
                              Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
-                             Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400" Error="@(Refused is not null)" />
+                             Variant="Variant.Outlined" Margin="Margin.Dense" Error="@(Refused is not null)" />
         </RiverField>
         @if (_view is not null)
         {
