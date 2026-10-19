@@ -51,7 +51,7 @@ The tracker is Notion: the « Netto Development » page, holding **Work Items** 
 
 ## Architecture
 
-- **Projects and dependency direction**: `Netto.Web.Client` → `Netto.Core`; `Netto.Web` → `Netto.Web.Client`; `Netto.AppHost` → `Netto.Web`; tests → `Netto.Core`. Never the reverse.
+- **Projects and dependency direction**: `Netto.Web.Client` → `Netto.Core`; `Netto.Web` → `Netto.Web.Client`; `Netto.AppHost` → `Netto.Web`; tests → `Netto.Core`, `Netto.Web.Client`. Never the reverse.
 - **`Netto.Core` is the tax engine and stays a plain library**: no ASP.NET Core dependency (`CoreDependencyTests` fails if one appears) and nothing the browser runtime cannot run (`SupportedPlatform=browser` raises CA1416; fix it, never suppress it). That is what lets the engine move behind an API later without a rewrite.
 - **Every page is WebAssembly and none is prerendered.** `App.razor` sets the render mode once, on `<Routes>` and `<HeadOutlet>`, so the server never runs a component and a user's figures only ever exist in the browser. Pages live in `Netto.Web.Client` and carry **no** `@rendermode` line; declaring one inside the already-interactive tree throws. Never add prerendering, a server-side component or a server endpoint that receives user figures without the operator deciding it.
 - **`Netto.Web` only serves the app.** If Netto ever gets an API, it goes there, not in a new project.
@@ -77,6 +77,7 @@ The tracker is Notion: the « Netto Development » page, holding **Work Items** 
 ## Testing
 
 - **Test-first in `Netto.Core`.** `Netto.Tests.Unit` mirrors Core's folders, plus `Architecture/` for the guards on the project graph, and runs without Docker.
+- **A page's own logic is a view model, tested first too**: plain C# in `Netto.Web.Client` (`internal`, visible to the tests) that turns the engine's result into what the page draws, tested under `Netto.Tests.Unit/WebClient/`. The `.razor` file only binds it. The view model never decides a tax outcome; it selects, orders and scales the engine's steps.
 - **No real figures in the repository.** Tests use made-up cases. The operator's own figures live under `/local/`, which git ignores; never copy them into a test, a commit message or Notion.
 - A personal-tax expected value comes from a Tax-Calc run on the same inputs, and the test names the income year it covers. For a year Tax-Calc does not cover yet, it is derived from the official amounts and the test says so.
 - **Tax-Calc** (the SPF's anonymous simulator, latest income year only) is driven in the browser, and each submission needs the operator's go. « Encodage rapide » takes codes 1001 (single), 1400 (director pay), 1405 (own contributions) and 1407 (withholding: required whenever 1400 is filled, 0 is fine); cadre I needs a postal code, the municipal rate and a birth date. Read « Détail du calcul »: it also shows lines Netto does not model yet (special social security contribution, low-income tax credit, advance-payment surcharge).

@@ -15,4 +15,8 @@
     <ProjectReference Include="..\Netto.Core\Netto.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Netto.Tests.Unit" />
+  </ItemGroup>
+
 </Project>

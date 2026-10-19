@@ -6,8 +6,11 @@
     <RootNamespace>Netto.Tests</RootNamespace>
   </PropertyGroup>
 
+  <!-- Netto.Web.Client for the pages' view models: plain C# that turns the engine's result into what
+       a page draws, tested here like the engine. The client's internals are visible to this project. -->
   <ItemGroup>
     <ProjectReference Include="..\..\src\Netto.Core\Netto.Core.csproj" />
+    <ProjectReference Include="..\..\src\Netto.Web.Client\Netto.Web.Client.csproj" />
   </ItemGroup>
 
 </Project>
