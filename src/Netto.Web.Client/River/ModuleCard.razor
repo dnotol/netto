@@ -1,0 +1,55 @@
+@inject IStringLocalizer<ModuleCard> L
+
+@* The frame every module of the river shares: its title and what flows through it, its controls,
+   and its detail view, opened inline under them. A skipped module is drawn dashed, waiting for the
+   amounts it needs. *@
+<section class="module-card @(Skipped ? "module-card--skipped" : null)" aria-labelledby="@_titleId">
+    <header class="module-card__head">
+        <h2 id="@_titleId" class="module-card__title">@Title</h2>
+        @if (Summary is not null)
+        {
+            <span class="module-card__summary">@Summary</span>
+        }
+    </header>
+    @ChildContent
+    @if (Details is not null)
+    {
+        <div class="module-card__details">
+            <MudButton Variant="Variant.Text" Size="Size.Small" Color="Color.Primary" OnClick="Toggle" aria-expanded="@(_open ? "true" : "false")"
+                       EndIcon="@(_open ? Icons.Material.Rounded.ExpandLess : Icons.Material.Rounded.ExpandMore)">
+                @(_open ? L["HideDetails"] : DetailsLabel)
+            </MudButton>
+            @if (_open)
+            {
+                <div class="module-card__detail">@Details</div>
+            }
+        </div>
+    }
+</section>
+
+@code {
+    [Parameter, EditorRequired]
+    public string Title { get; set; } = "";
+
+    // What flows in and out, in a few words beside the title.
+    [Parameter]
+    public string? Summary { get; set; }
+
+    [Parameter]
+    public bool Skipped { get; set; }
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    // The depth behind the module's figures: the pay slip, the rules and their sources.
+    [Parameter]
+    public RenderFragment? Details { get; set; }
+
+    [Parameter]
+    public string DetailsLabel { get; set; } = "";
+
+    private readonly string _titleId = $"module-{Guid.NewGuid():N}";
+    private bool _open;
+
+    private void Toggle() => _open = !_open;
+}

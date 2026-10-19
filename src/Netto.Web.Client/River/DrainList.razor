@@ -1,0 +1,34 @@
+@inject IStringLocalizer<DrainList> L
+
+@* Where a module's money goes, line by line: what leaves into a bucket of taxes, what comes back
+   out of one, and what is passed on to the pocket, the company's reserve or the next module. *@
+<ul class="drain-list">
+    @foreach (var drain in Drains)
+    {
+        <li class="drain drain--@Modifier(drain.Kind) drain--to-@drain.To">
+            <span class="drain__label">@L[DrainListText.Drain(drain.Key)]</span>
+            <span class="drain__amount">@Amount(drain)</span>
+            <span class="drain__to">@L[DrainListText.Destination(drain)]</span>
+        </li>
+    }
+</ul>
+
+@code {
+    [Parameter, EditorRequired]
+    public IReadOnlyList<Drain> Drains { get; set; } = [];
+
+    private static string Amount(Drain drain) => drain.Kind switch
+    {
+        DrainKind.PaidOut => Formats.Deduction(drain.Amount),
+        DrainKind.Back => Formats.Addition(drain.Amount),
+        _ => Formats.Euros(drain.Amount),
+    };
+
+    private static string Modifier(DrainKind kind) => kind switch
+    {
+        DrainKind.PaidOut => "paid-out",
+        DrainKind.Back => "back",
+        DrainKind.PassedOn => "passed-on",
+        _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, null),
+    };
+}

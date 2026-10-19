@@ -1,0 +1,10 @@
+@inject IStringLocalizer<OriginChip> L
+
+@* Where an input's value comes from, beside the input: the user's, a default rate or status, derived
+   from the modules above, or the example's. The hover text says what that means. *@
+<span class="origin-chip origin-chip--@Origin.ToString().ToLowerInvariant()" title="@L[OriginChipText.Hint(Origin)]">@L[OriginChipText.Origin(Origin)]</span>
+
+@code {
+    [Parameter, EditorRequired]
+    public InputOrigin Origin { get; set; }
+}

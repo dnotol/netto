@@ -1,0 +1,58 @@
+/* The card frames only itself: what a module puts inside is styled by that module's own .razor.css.
+   ::deep reaches the MudButton of the detail toggle. */
+.module-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+    min-width: 0;
+    padding: 1.25rem 1.5rem 1.5rem;
+    border: 1px solid var(--netto-line);
+    border-radius: 20px;
+    background: var(--netto-surface);
+}
+
+/* Waiting for the amounts it needs: an outline, not a filled card. */
+.module-card--skipped {
+    border-style: dashed;
+    background: transparent;
+}
+
+.module-card__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.25rem 1rem;
+}
+
+.module-card__title {
+    margin: 0;
+    font-family: "Fraunces", Georgia, serif;
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1.25;
+}
+
+.module-card__summary {
+    color: var(--netto-text-muted);
+    font-size: 0.85rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.module-card__details {
+    display: grid;
+    gap: 0.75rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--netto-line);
+}
+
+    .module-card__details ::deep .mud-button-root {
+        justify-self: start;
+        margin-left: -0.5rem;
+    }
+
+.module-card__detail {
+    display: grid;
+    gap: 1.25rem;
+    min-width: 0;
+}

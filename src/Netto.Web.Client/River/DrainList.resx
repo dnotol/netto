@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Drain_social_contributions" xml:space="preserve">
+    <value>Social contributions</value>
+  </data>
+  <data name="Drain_income_tax" xml:space="preserve">
+    <value>Income tax</value>
+  </data>
+  <data name="Drain_municipal_surcharge" xml:space="preserve">
+    <value>Municipal surcharge</value>
+  </data>
+  <data name="Drain_net_pay" xml:space="preserve">
+    <value>Net pay</value>
+  </data>
+  <data name="Drain_corporate_tax" xml:space="preserve">
+    <value>Corporate tax</value>
+  </data>
+  <data name="Drain_profit_after_tax" xml:space="preserve">
+    <value>Profit after tax</value>
+  </data>
+  <data name="Drain_dividend_withholding" xml:space="preserve">
+    <value>Withholding tax</value>
+  </data>
+  <data name="Drain_dividend_exemption_refund" xml:space="preserve">
+    <value>Refund on the exempt part</value>
+  </data>
+  <data name="Drain_net_dividend" xml:space="preserve">
+    <value>Net dividend</value>
+  </data>
+  <data name="Drain_kept_in_company" xml:space="preserve">
+    <value>Kept</value>
+  </data>
+  <data name="To_taxes_on_pay" xml:space="preserve">
+    <value>to taxes on pay</value>
+  </data>
+  <data name="To_taxes_on_profit" xml:space="preserve">
+    <value>to taxes on profit</value>
+  </data>
+  <data name="From_taxes_on_profit" xml:space="preserve">
+    <value>back from taxes on profit, through your tax return</value>
+  </data>
+  <data name="To_pocket" xml:space="preserve">
+    <value>to your pocket</value>
+  </data>
+  <data name="To_kept_in_company" xml:space="preserve">
+    <value>stays in the company</value>
+  </data>
+  <data name="To_dividend" xml:space="preserve">
+    <value>on to the dividend</value>
+  </data>
+</root>

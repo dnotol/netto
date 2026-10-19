@@ -1,0 +1,13 @@
+@inject IStringLocalizer<RefusedMessage> L
+
+@* The engine's refusal, in words, on the card that holds the refused field. *@
+@if (Error is not null)
+{
+    <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Dense="true" Class="refused-message">@L[RefusedMessageText.Error(Error)]</MudAlert>
+}
+
+@code {
+    // The engine's error key, or null when nothing on this card is refused.
+    [Parameter]
+    public string? Error { get; set; }
+}

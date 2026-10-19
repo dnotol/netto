@@ -1,0 +1,39 @@
+/* Each drain is a small grid: the label and the amount on one line, where it goes under both. Only
+   what reaches the pocket is gold, the river's key figure. */
+.drain-list {
+    display: grid;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--netto-line);
+    list-style: none;
+}
+
+.drain {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.1rem 1rem;
+    padding: 0.45rem 0;
+    border-bottom: 1px solid var(--netto-line);
+    font-size: 0.92rem;
+}
+
+.drain__amount {
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.drain__to {
+    grid-column: 1 / -1;
+    color: var(--netto-text-muted);
+    font-size: 0.75rem;
+}
+
+.drain--passed-on .drain__label {
+    font-weight: 600;
+}
+
+.drain--to-pocket .drain__amount,
+.drain--to-pocket .drain__to {
+    color: var(--netto-gold);
+}

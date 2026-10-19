@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Origin_Example" xml:space="preserve">
+    <value>example</value>
+  </data>
+  <data name="Origin_Default" xml:space="preserve">
+    <value>default</value>
+  </data>
+  <data name="Origin_Derived" xml:space="preserve">
+    <value>derived</value>
+  </data>
+  <data name="Origin_Yours" xml:space="preserve">
+    <value>yours</value>
+  </data>
+  <data name="Hint_Example" xml:space="preserve">
+    <value>An amount of the example the river opens on. Enter yours.</value>
+  </data>
+  <data name="Hint_Default" xml:space="preserve">
+    <value>A typical rate or status, assumed until you change it.</value>
+  </data>
+  <data name="Hint_Derived" xml:space="preserve">
+    <value>Computed from the modules above, or published for what you picked.</value>
+  </data>
+  <data name="Hint_Yours" xml:space="preserve">
+    <value>You entered or moved it.</value>
+  </data>
+</root>
