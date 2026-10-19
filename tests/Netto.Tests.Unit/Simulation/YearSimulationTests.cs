@@ -155,6 +155,67 @@ public class YearSimulationTests
         (result.CorporateTax, result.KeptInCompany).ShouldBe((0m, -10_000m));
     }
 
+    // 40,000 of this year's profit after tax and 60,000 kept from earlier years: 30,000 stays and
+    // 70,000 is paid out, withheld at 18% (12,600) with the refund on the exempt 833 once (149.94).
+    [Fact]
+    public void Run_2026EarlierProfits_paysOutWhatTheReserveLeavesOfBoth()
+    {
+        var result = Run(Scenario(directorPay: 50_000m, reserve: 30_000m, earlierProfits: 60_000m));
+
+        (result.Dividend.Dividend, result.Dividend.Withholding, result.Dividend.ExemptionRefund, result.Dividend.NetDividend, result.KeptInCompany)
+            .ShouldBe((70_000m, 12_600.00m, 149.94m, 57_549.94m, 30_000m));
+    }
+
+    [Fact]
+    public void Run_2026EarlierProfits_reachThePocket()
+    {
+        Run(Scenario(directorPay: 50_000m, reserve: 30_000m, earlierProfits: 60_000m)).NetInPocket.ShouldBe(87_129.24m);
+    }
+
+    [Fact]
+    public void Run_2026EarlierProfits_canAllBePaidOutWithTheProfitAfterTax()
+    {
+        var result = Run(Scenario(directorPay: 50_000m, reserve: 0m, earlierProfits: 60_000m));
+
+        (result.ProfitAfterTax, result.MaximumDividend).ShouldBe((40_000.00m, 100_000.00m));
+    }
+
+    // The loss of the year eats into the earlier profits before any of them can be paid out.
+    [Fact]
+    public void Run_2026LossWithEarlierProfits_paysOutWhatTheLossLeaves()
+    {
+        var result = Run(Scenario(directorPay: 30_000m, reserve: 0m, revenue: 40_000m, earlierProfits: 60_000m));
+
+        (result.ProfitAfterTax, result.MaximumDividend, result.Dividend.Dividend, result.KeptInCompany).ShouldBe((-10_000m, 50_000m, 50_000m, 0m));
+    }
+
+    public static TheoryData<decimal, decimal, decimal, decimal> SetupsWithEarlierProfits => new()
+    {
+        { 50_000m, 100_000m, 30_000m, 60_000m },
+        { 21_000m, 100_000m, 150_000m, 60_000m },
+        { 30_000m, 20_000m, 0m, 60_000m },
+        { 0m, 0m, 5_000m, 1_000m },
+    };
+
+    [Theory]
+    [MemberData(nameof(SetupsWithEarlierProfits))]
+    public void Run_2026EarlierProfits_layersPocketAndCompanyAddUpToTheProfitBeforePayAndThem(
+        decimal directorPay, decimal profitBeforePay, decimal reserve, decimal earlierProfits)
+    {
+        var result = Run(Scenario(directorPay: directorPay, reserve: reserve, revenue: profitBeforePay + 20_000m, earlierProfits: earlierProfits));
+
+        (result.CorporateTax + result.SocialContributions + result.PersonalTax + result.NetInPocket + result.KeptInCompany)
+            .ShouldBe(profitBeforePay + earlierProfits);
+    }
+
+    [Fact]
+    public void Run_negativeEarlierProfits_isRefused()
+    {
+        var (value, error) = YearSimulation.Run(Scenario(directorPay: 50_000m, reserve: 0m, earlierProfits: -0.01m));
+
+        (value, error).ShouldBe((null, YearSimulation.EarlierProfitsNegative));
+    }
+
     [Fact]
     public void Run_negativeRevenue_isRefused()
     {
@@ -211,8 +272,9 @@ public class YearSimulationTests
         decimal directorPay,
         decimal reserve,
         WithholdingCategory category = WithholdingCategory.VvprbisThirdYearOnwards,
-        decimal revenue = 120_000m) =>
-        new(2026, revenue, 20_000m, SmallPastStartUp, directorPay, MunicipalRates.Entered(0.07m), reserve, category);
+        decimal revenue = 120_000m,
+        decimal earlierProfits = 0m) =>
+        new(2026, revenue, 20_000m, SmallPastStartUp, directorPay, MunicipalRates.Entered(0.07m), reserve, category, earlierProfits);
 
     private static YearResult Run(Scenario scenario)
     {

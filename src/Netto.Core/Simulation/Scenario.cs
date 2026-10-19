@@ -6,8 +6,9 @@ namespace Netto.Core.Simulation;
 
 // One income year as the user describes it: the company's revenue and running costs, excluding VAT,
 // what they declare about the company, the director pay and the municipal rate it is taxed at, the
-// reserve they keep in the company out of the year's profit after tax, and the withholding rate they
-// declare for the dividend paid out of the rest. A lever adds its own inputs here.
+// reserve they keep in the company at year end, the withholding rate they declare for the dividend
+// paid out of the rest, and the profits the company kept from earlier years, after tax, which that
+// dividend can pay out too (none unless given). A lever adds its own inputs here.
 public sealed record Scenario(
     int IncomeYear,
     decimal Revenue,
@@ -16,7 +17,8 @@ public sealed record Scenario(
     decimal DirectorPay,
     RuleAmount MunicipalRate,
     decimal Reserve,
-    WithholdingCategory DividendCategory)
+    WithholdingCategory DividendCategory,
+    decimal EarlierProfits = 0m)
 {
     // What the director pay and the company's profit share between them.
     public decimal ProfitBeforePay => Revenue - RunningCosts;

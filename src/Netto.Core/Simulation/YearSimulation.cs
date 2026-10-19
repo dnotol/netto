@@ -5,16 +5,18 @@ using Netto.Core.Dividends;
 namespace Netto.Core.Simulation;
 
 // One income year in the order the law computes it: the director pay lowers the company's taxable
-// income, corporate tax takes its share of what is left, and the dividend is the profit after tax
-// less the reserve the user keeps in the company, never below zero. In steady state the year pays
-// out its own profit (decided 2026-10-19); earlier reserves are not modelled yet. No disallowed expenses, no losses carried
-// forward, no advance-payment surcharges, and INASTI's company contribution sits in the running costs.
+// income, corporate tax takes its share of what is left, and the dividend is the profit after tax and
+// the profits kept from earlier years, less the reserve the user keeps in the company, never below
+// zero. In steady state the year pays out its own profit (decided 2026-10-19). No disallowed
+// expenses, no losses carried forward, no advance-payment surcharges, and INASTI's company
+// contribution sits in the running costs.
 public static class YearSimulation
 {
     public const string IncomeYearNotSupported = GrossToNet.IncomeYearNotSupported;
     public const string RevenueNegative = "revenue_negative";
     public const string RunningCostsNegative = "running_costs_negative";
     public const string ReserveNegative = "reserve_negative";
+    public const string EarlierProfitsNegative = "earlier_profits_negative";
 
     public static (YearResult? Value, string? Error) Run(Scenario scenario)
     {
@@ -28,6 +30,8 @@ public static class YearSimulation
             return (null, RunningCostsNegative);
         if (scenario.Reserve < 0m)
             return (null, ReserveNegative);
+        if (scenario.EarlierProfits < 0m)
+            return (null, EarlierProfitsNegative);
 
         var (pay, payError) = GrossToNet.Compute(scenario.IncomeYear, scenario.DirectorPay, scenario.MunicipalRate);
         if (pay is null)
@@ -81,16 +85,21 @@ public static class YearSimulation
     }
 
     // What follows the director pay: corporate tax on the profit it leaves, then the dividend out of the
-    // profit after tax once the reserve is kept. What is not kept is paid out: a reserve above the
-    // profit after tax leaves no dividend.
+    // profit after tax and the profits kept from earlier years, once the reserve is kept. The reserve
+    // is what stays in the whole company at year end (decided 2026-10-19): what is not kept is paid
+    // out, and a reserve above what the company holds leaves no dividend. A loss eats into the
+    // earlier profits first. The law withholds on the distribution, whatever year its profits come
+    // from (CIR 92 art. 269 §2), so the whole dividend takes the declared rate and the exempt 833
+    // once.
     private static CompanyFigures Company(Scenario scenario, CorporateTaxRules corporateRules, DividendRules dividendRules, decimal netPay)
     {
         var tax = CorporateTaxCalculator.Compute(corporateRules, scenario.ProfitBeforePay - scenario.DirectorPay, scenario.DirectorPay, scenario.Company);
         var profitAfterTax = tax.TaxableIncome - tax.CorporateTax;
-        var maximumDividend = Math.Max(0m, profitAfterTax);
+        var held = profitAfterTax + scenario.EarlierProfits;
+        var maximumDividend = Math.Max(0m, held);
         var dividend = DividendCalculator.Compute(dividendRules, Math.Max(0m, maximumDividend - scenario.Reserve), scenario.DividendCategory);
 
-        return new CompanyFigures(tax, profitAfterTax, maximumDividend, dividend, netPay + dividend.NetDividend, profitAfterTax - dividend.Dividend);
+        return new CompanyFigures(tax, profitAfterTax, maximumDividend, dividend, netPay + dividend.NetDividend, held - dividend.Dividend);
     }
 
     private static decimal PaidOut(IReadOnlyList<Step> steps, Layer layer) =>

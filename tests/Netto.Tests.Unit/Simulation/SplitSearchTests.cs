@@ -135,6 +135,24 @@ public class SplitSearchTests
         curve.ShouldAllBe(level => level.KeepsReserve == level.Pay <= 20_000m);
     }
 
+    // 60,000 kept from earlier years above a 30,000 reserve are paid out at every pay, at 18% once the
+    // dividend is past the exempt 833: they add the same to every pay, so the best pay stays 20,799.
+    [Fact]
+    public void Run_2026EarlierProfits_addTheSameAtEveryPay()
+    {
+        var best = Search(Scenario(reserve: 30_000m, earlierProfits: 60_000m)).Best.ShouldNotBeNull();
+
+        (best.Pay, best.NetInPocket).ShouldBe((20_799m, 89_312.81m));
+    }
+
+    // With 60,000 kept from earlier years every pay keeps a 60,000 reserve, which the year's own
+    // profit after tax covers only up to 20,000 (Run_2026Reserve60000_marksWhichPaysKeepIt).
+    [Fact]
+    public void Run_2026EarlierProfitsCoveringTheReserve_everyPayKeepsIt()
+    {
+        Search(Scenario(reserve: 60_000m, earlierProfits: 60_000m)).Curve.ShouldAllBe(level => level.KeepsReserve);
+    }
+
     // The most the year can keep is 75,000, at no pay.
     [Fact]
     public void Run_2026ReserveNoPayCanKeep_namesNoBestPay()
@@ -240,9 +258,10 @@ public class SplitSearchTests
         decimal directorPay = 50_000m,
         decimal reserve = 0m,
         decimal revenue = 120_000m,
-        CompanyStatus? company = null) =>
+        CompanyStatus? company = null,
+        decimal earlierProfits = 0m) =>
         new(2026, revenue, 20_000m, company ?? SmallPastStartUp, directorPay, MunicipalRates.Entered(0.07m), reserve,
-            WithholdingCategory.VvprbisThirdYearOnwards);
+            WithholdingCategory.VvprbisThirdYearOnwards, earlierProfits);
 
     private static SplitSearchResult Search(Scenario scenario)
     {
