@@ -35,3 +35,15 @@ internal static class DividendCardText
 {
     public static string Category(WithholdingCategory category) => $"Category_{category}";
 }
+
+internal static class SplitCardText
+{
+    // The sentence names the best pay on the other side of the threshold only when one keeps the
+    // reserve.
+    public static string Rate(RateWeighing rate) => rate switch
+    {
+        { Choice: RateChoice.NotWeighed } => "Rate_NotWeighed",
+        { Other: null } => $"Rate_{rate.Choice}Only",
+        _ => $"Rate_{rate.Choice}",
+    };
+}

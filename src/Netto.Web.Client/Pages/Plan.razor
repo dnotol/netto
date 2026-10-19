@@ -1,4 +1,5 @@
 @page "/plan"
+@using Netto.Core.Simulation
 @using Netto.Web.Client.River
 @inject IStringLocalizer<Plan> L
 @inject RiverState State
@@ -27,7 +28,7 @@
             <CompanyYearCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Refused="@Refused(RiverModule.CompanyYear)" />
             @if (_inputs.Company is not null)
             {
-                <SplitCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Refused="@Refused(RiverModule.Split)" />
+                <SplitCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Search="_search" Refused="@Refused(RiverModule.Split)" />
                 <p class="river__fork" aria-hidden="true">@L["Fork"]</p>
             }
             <div class="river__streams">
@@ -72,6 +73,8 @@
 @code {
     private RiverInputs _inputs = default!;
     private RiverRun _run = default!;
+    private SplitSearchResult? _search;
+    private RiverInputs? _searched;
 
     protected override void OnInitialized() => Show(State.Inputs);
 
@@ -81,10 +84,17 @@
         Show(inputs);
     }
 
+    // The split's search runs the year at every pay, so it runs again only when an input other than
+    // the pay changes: dragging the pay moves its marker along the same curve.
     private void Show(RiverInputs inputs)
     {
         _inputs = inputs;
         _run = inputs.Run();
+        if (_searched is null || !inputs.SameBesidesPay(_searched))
+        {
+            _search = inputs.SearchSplit();
+            _searched = inputs;
+        }
     }
 
     // The engine's refusal goes to the card holding the refused field, and only there.

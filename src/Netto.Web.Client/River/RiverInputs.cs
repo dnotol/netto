@@ -76,6 +76,13 @@ public sealed record RiverInputs(
         return new RiverRun(year?.DirectorPay, year, error);
     }
 
+    // The year at every pay out of the profit before pay, everything else as set, for the split's
+    // curve: none while the company is skipped or an input other than the pay is refused. It does
+    // not depend on the pay, so the pay moving alone needs no new search (SameBesidesPay).
+    public SplitSearchResult? SearchSplit() => Company is null ? null : SplitSearch.Run(Scenario(DirectorPay.Value)).Value;
+
+    public bool SameBesidesPay(RiverInputs other) => this with { DirectorPay = other.DirectorPay } == other;
+
     private static CompanyFigures Nothing { get; } = new(Yours(0m), Yours(0m));
 
     private static Input<T> Yours<T>(T value) => new(value, InputOrigin.Yours);

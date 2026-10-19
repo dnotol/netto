@@ -24,6 +24,8 @@ public class RiverTextTests
 
     private static readonly ResourceManager DividendCardResources = new("Netto.Web.Client.River.DividendCard", typeof(DividendCard).Assembly);
 
+    private static readonly ResourceManager SplitCardResources = new("Netto.Web.Client.River.SplitCard", typeof(SplitCard).Assembly);
+
     [Fact]
     public void OriginChipResx_everyOrigin_hasAWordAndAHint()
     {
@@ -70,6 +72,18 @@ public class RiverTextTests
     public void DividendCardResx_everyWithholdingCategory_hasAText()
     {
         Missing(DividendCardResources, Enum.GetValues<WithholdingCategory>().Select(DividendCardText.Category)).ShouldBeEmpty();
+    }
+
+    // Each way the best pay can stand against the reduced rate, with or without a pay on the other
+    // side that keeps the reserve.
+    [Fact]
+    public void SplitCardResx_everyWayOfWeighingTheRate_hasAText()
+    {
+        var other = new PayLevel(50_000m, 62_529.24m, 40_000m, 0m, ReducedRateCondition.TaxableIncomeNotAbovePay, true);
+        var weighings = Enum.GetValues<RateChoice>()
+            .SelectMany(choice => new[] { new RateWeighing(choice, 50_000m, other, 2_183.57m), new RateWeighing(choice, 50_000m, null, null) });
+
+        Missing(SplitCardResources, weighings.Select(SplitCardText.Rate)).ShouldBeEmpty();
     }
 
     private static IEnumerable<string> Missing(ResourceManager resources, IEnumerable<string> keys) =>

@@ -36,4 +36,61 @@
   <data name="Ceiling" xml:space="preserve">
     <value>Up to {0}, the profit before your pay.</value>
   </data>
+  <data name="CurveHint" xml:space="preserve">
+    <value>The gold line is what reaches your pocket at each pay, with everything else as you set it. Point at it to read a pay; click to move yours there.</value>
+  </data>
+  <data name="ChartLabel" xml:space="preserve">
+    <value>Net in your pocket at each director pay, from {0} to {1}</value>
+  </data>
+  <data name="KeyYourPay" xml:space="preserve">
+    <value>Your pay</value>
+  </data>
+  <data name="KeyBest" xml:space="preserve">
+    <value>Best pay</value>
+  </data>
+  <data name="KeyThreshold" xml:space="preserve">
+    <value>Reduced corporate rate from {0}</value>
+  </data>
+  <data name="KeyMissesReserve" xml:space="preserve">
+    <value>Too little profit to keep {0}</value>
+  </data>
+  <data name="PointerAt" xml:space="preserve">
+    <value>At a pay of {0}: {1} in your pocket. Click to move your pay there.</value>
+  </data>
+  <data name="PointerMissesReserve" xml:space="preserve">
+    <value>At a pay of {0}: {1} in your pocket, but only {2} stays in the company, under the {3} you keep.</value>
+  </data>
+  <data name="PointerYours" xml:space="preserve">
+    <value>At your pay, {0}: {1} in your pocket.</value>
+  </data>
+  <data name="Best" xml:space="preserve">
+    <value>Best pay for this year: {0}, with a dividend of {1}. It leaves {2} in your pocket, {3} more than at your pay.</value>
+  </data>
+  <data name="BestOverReserve" xml:space="preserve">
+    <value>Best pay that keeps the {0} you keep in the company: {1}, with a dividend of {2}. It leaves {3} in your pocket. Your pay leaves {4}, but only {5} can stay in the company.</value>
+  </data>
+  <data name="BestIsYours" xml:space="preserve">
+    <value>Your pay is the best for this year: {0} in your pocket, with a dividend of {1}.</value>
+  </data>
+  <data name="NoBest" xml:space="preserve">
+    <value>No pay leaves enough profit after tax to keep the {0} you keep in the company: at most {1} can stay there.</value>
+  </data>
+  <data name="Rate_NotWeighed" xml:space="preserve">
+    <value>Your pay does not change the corporate rate here; Corporate tax says why.</value>
+  </data>
+  <data name="Rate_KeepsIt" xml:space="preserve">
+    <value>It keeps the reduced corporate rate, which takes a pay of at least {0}. Giving it up leaves at most {1}, {2} less.</value>
+  </data>
+  <data name="Rate_KeepsItOnly" xml:space="preserve">
+    <value>It keeps the reduced corporate rate, which takes a pay of at least {0}.</value>
+  </data>
+  <data name="Rate_GivesItUp" xml:space="preserve">
+    <value>It gives up the reduced corporate rate on purpose. Keeping it takes a pay of at least {0} and leaves at most {1}, {2} less.</value>
+  </data>
+  <data name="Rate_GivesItUpOnly" xml:space="preserve">
+    <value>It gives up the reduced corporate rate: no pay of at least {0} leaves enough profit to keep your reserve.</value>
+  </data>
+  <data name="MoveToBest" xml:space="preserve">
+    <value>Move to the best pay</value>
+  </data>
 </root>

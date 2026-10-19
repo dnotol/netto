@@ -186,4 +186,52 @@ public class RiverInputsTests
 
         (run.Year, run.Error).ShouldBe((null, YearSimulation.ReserveNegative));
     }
+
+    // SplitSearchTests: on the example, 20,799 leaves the most.
+    [Fact]
+    public void SearchSplit_example_findsTheBestPay()
+    {
+        RiverInputs.Example.SearchSplit().ShouldNotBeNull().Best.ShouldNotBeNull().Pay.ShouldBe(20_799m);
+    }
+
+    [Fact]
+    public void SearchSplit_holdsTheReserveSet()
+    {
+        RiverInputs.Example.WithReserve(30_000m).SearchSplit().ShouldNotBeNull().Best.ShouldNotBeNull().KeptInCompany.ShouldBe(30_000m);
+    }
+
+    [Fact]
+    public void SearchSplit_companySkipped_isNone()
+    {
+        RiverInputs.Example.SkipCompany().SearchSplit().ShouldBeNull();
+    }
+
+    [Fact]
+    public void SearchSplit_inputRefused_isNone()
+    {
+        RiverInputs.Example.WithReserve(-0.01m).SearchSplit().ShouldBeNull();
+    }
+
+    // The search does not depend on the pay, so moving it alone needs no new search.
+    [Fact]
+    public void SameBesidesPay_onlyThePayMoved_isTrue()
+    {
+        RiverInputs.Example.WithDirectorPay(20_799m).SameBesidesPay(RiverInputs.Example).ShouldBeTrue();
+    }
+
+    [Fact]
+    public void SameBesidesPay_anotherInputChanged_isFalse()
+    {
+        var changed = new[]
+        {
+            RiverInputs.Example.WithReserve(10_000m),
+            RiverInputs.Example.WithRevenue(130_000m),
+            RiverInputs.Example.WithSmallCompany(false),
+            RiverInputs.Example.WithMunicipality(RiverInputs.Example.Municipality.Enter(0.08m)),
+            RiverInputs.Example.WithDividendCategory(WithholdingCategory.Standard),
+            RiverInputs.Example.SkipCompany(),
+        };
+
+        changed.ShouldAllBe(inputs => !inputs.SameBesidesPay(RiverInputs.Example));
+    }
 }

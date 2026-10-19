@@ -41,6 +41,20 @@ public class FormatsTests
         text.ShouldBe("€50,000");
     }
 
+    // A chart's axis: short enough to sit beside the plot on a phone.
+    [Theory]
+    [InlineData("0", "€0")]
+    [InlineData("25000", "€25k")]
+    [InlineData("2500", "€2.5k")]
+    [InlineData("1000000", "€1,000k")]
+    [InlineData("-5000", "−€5k")]
+    public void ThousandsOfEuros_amount_isCountedInThousands(string value, string expected)
+    {
+        var text = Formats.ThousandsOfEuros(decimal.Parse(value, System.Globalization.CultureInfo.InvariantCulture));
+
+        text.ShouldBe(expected);
+    }
+
     [Fact]
     public void Deduction_amount_isPrefixedWithAMinusSign()
     {

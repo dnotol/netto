@@ -1,23 +1,125 @@
+@using System.Globalization
+@using Netto.Core.Simulation
 @inject IStringLocalizer<SplitCard> L
 
 @* One pay slider over the profit before pay: every euro taken as pay is a euro less of company
-   profit. The exact amount can be typed beside it, taken when the field is left rather than while
-   typing: SplitView keeps the pay within the profit, and MudBlazor redraws a field's text from its
-   value only once it has lost focus. *@
+   profit. Above it, the engine's search draws the net in pocket at every pay, with the pay set and
+   the best pay marked; pointing at the curve reads a pay, a click moves the pay there, and the best
+   pay says what it gains and how it stands against the reduced corporate rate. The exact amount can
+   be typed below, taken when the field is left rather than while typing: SplitView keeps the pay
+   within the profit, and MudBlazor redraws a field's text from its value only once it has lost focus.
+
+   The plot stretches to the card's width (preserveAspectRatio="none"), so its lines keep their
+   width through vector-effect, and what must keep its shape (the best pay's dot, the axes' labels) is
+   HTML placed over it in percentages. *@
 <ModuleCard Title="@L["Title"]" Summary="@Summary">
     <p class="split__hint">@L["Hint"]</p>
+    @if (_search is not null)
+    {
+        <p class="split__hint">@L["CurveHint"]</p>
+    }
     <RiverField Label="@L["PayLabel"]" For="river-split-pay" Origin="Inputs.DirectorPay.Origin">
-        <MudSlider T="decimal" Value="_view.Pay" ValueChanged="OnPayChanged" Min="0m" Max="_view.Ceiling" Step="100m"
-                   Immediate="true" Color="Color.Primary" Culture="Formats.Culture" Disabled="@(_view.Ceiling == 0m)"
-                   aria-labelledby="river-split-pay-label" />
+        <div class="pay-curve @(_search is null ? "pay-curve--bare" : null)">
+            @if (_search is { } search)
+            {
+                var curve = search.Curve;
+                <div class="pay-curve__net-axis" aria-hidden="true">
+                    @foreach (var tick in curve.NetTicks)
+                    {
+                        <span class="pay-curve__net-tick" style="bottom: @Percent(tick.At)">@Formats.ThousandsOfEuros(tick.Amount)</span>
+                    }
+                </div>
+                <div class="pay-curve__plot" @onmouseleave="ClearPointer">
+                    <svg viewBox="0 0 1000 1000" preserveAspectRatio="none" role="img" aria-label="@ChartLabel">
+                        @foreach (var tick in curve.NetTicks)
+                        {
+                            <line class="pay-curve__grid" x1="0" x2="1000" y1="@Y(tick.At)" y2="@Y(tick.At)" />
+                        }
+                        @if (curve.ThresholdAt is { } threshold)
+                        {
+                            <line class="pay-curve__threshold" x1="@X(threshold)" x2="@X(threshold)" y1="0" y2="1000" />
+                        }
+                        @foreach (var run in curve.Runs)
+                        {
+                            <polyline class="pay-curve__net @(run.KeepsReserve ? null : "pay-curve__net--misses")" points="@Points(run.Points)" />
+                        }
+                        <line class="pay-curve__yours" x1="@X(curve.PayAt)" x2="@X(curve.PayAt)" y1="0" y2="1000" />
+                        @if (_pointer is { } pointed)
+                        {
+                            <line class="pay-curve__pointer" x1="@X(pointed.Pay / _top)" x2="@X(pointed.Pay / _top)" y1="0" y2="1000" />
+                        }
+                        @foreach (var band in curve.Bands)
+                        {
+                            <rect class="pay-curve__band" x="@X(band.From)" width="@Length(band.To - band.From)" y="0" height="1000"
+                                  @onmouseover="() => Point(band.Level)" @onclick="() => MoveTo(band.Level.Pay)" />
+                        }
+                    </svg>
+                    @if (curve.BestAt is { } best)
+                    {
+                        <span class="pay-curve__best" style="left: @Percent(best.X); bottom: @Percent(best.Y)"></span>
+                    }
+                </div>
+                <div class="pay-curve__pay-axis" aria-hidden="true">
+                    @foreach (var tick in curve.PayTicks)
+                    {
+                        <span class="pay-curve__pay-tick" style="left: @Percent(tick.At)">@Formats.ThousandsOfEuros(tick.Amount)</span>
+                    }
+                </div>
+            }
+            <div class="pay-curve__slider">
+                <MudSlider T="decimal" Value="_view.Pay" ValueChanged="OnPayChanged" Min="0m" Max="_view.Ceiling" Step="100m"
+                           Immediate="true" Color="Color.Primary" Culture="Formats.Culture" Disabled="@(_view.Ceiling == 0m)"
+                           aria-labelledby="river-split-pay-label" />
+            </div>
+        </div>
         <MudNumericField T="decimal" InputId="river-split-pay" Value="_view.FieldPay" ValueChanged="OnPayChanged"
                          Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
                          Variant="Variant.Outlined" Margin="Margin.Dense" Error="@(Refused is not null)" />
     </RiverField>
+    @if (_search is { } shown)
+    {
+        <ul class="pay-curve__key">
+            <li><span class="pay-curve__key-mark pay-curve__key-mark--yours"></span>@L["KeyYourPay"]</li>
+            @if (shown.Best is not null)
+            {
+                <li><span class="pay-curve__key-mark pay-curve__key-mark--best"></span>@L["KeyBest"]</li>
+            }
+            @if (Search?.SmallestPayKeepingReducedRate is { } smallest)
+            {
+                <li><span class="pay-curve__key-mark pay-curve__key-mark--threshold"></span>@L["KeyThreshold", Formats.Euros(smallest)]</li>
+            }
+            @if (shown.Curve.SomeMissReserve)
+            {
+                <li><span class="pay-curve__key-mark pay-curve__key-mark--misses"></span>@L["KeyMissesReserve", Formats.Euros(Inputs.Reserve.Value)]</li>
+            }
+        </ul>
+    }
     <div class="split__ends">
         <span>@L["PayEnd"] <b>@Formats.Euros(_view.Pay)</b></span>
         <span>@L["CompanyEnd"] <b>@(_view.CompanyProfit is { } profit ? Formats.Euros(profit) : L["NoFigure"])</b></span>
     </div>
+    @if (_search is { } weighed)
+    {
+        <p class="split__pointer" aria-live="polite">@PointerText</p>
+        @if (weighed.Best is { } best)
+        {
+            <p class="split__best">@BestText(best)</p>
+            @if (weighed.Rate is { } rate)
+            {
+                <p class="split__rate">@RateText(rate)</p>
+            }
+            @if (!best.IsYours)
+            {
+                <div class="split__actions">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => MoveTo(best.Level.Pay))">@L["MoveToBest"]</MudButton>
+                </div>
+            }
+        }
+        else
+        {
+            <p class="split__best">@L["NoBest", Formats.Euros(Inputs.Reserve.Value), Formats.Euros(weighed.MostKept)]</p>
+        }
+    }
     <p class="split__ceiling">@L["Ceiling", Formats.Euros(_view.Ceiling)]</p>
     <RefusedMessage Error="@Refused" />
 </ModuleCard>
@@ -32,17 +134,74 @@
     [Parameter, EditorRequired]
     public RiverRun Run { get; set; } = default!;
 
+    // The engine's search across every pay, which the page runs again only when an input other than
+    // the pay changes.
+    [Parameter]
+    public SplitSearchResult? Search { get; set; }
+
     // The engine's error key when it refuses the pay.
     [Parameter]
     public string? Refused { get; set; }
 
     private SplitView _view = default!;
+    private SplitSearchView? _search;
+    private decimal _top;
+    private PayLevel? _pointer;
 
-    protected override void OnParametersSet() => _view = SplitView.From(Inputs, Run);
+    protected override void OnParametersSet()
+    {
+        _view = SplitView.From(Inputs, Run);
+        _search = SplitSearchView.From(Inputs, Run, Search);
+        _top = Search?.Curve[^1].Pay ?? 0m;
+        if (_search is null)
+            _pointer = null;
+    }
 
     private string? Summary => _view.CompanyProfit is { } profit
         ? L["Summary", Formats.WholeEuros(_view.Pay), Formats.WholeEuros(profit)].Value
         : null;
 
+    private string ChartLabel => L["ChartLabel", Formats.Euros(0m), Formats.Euros(_top)].Value;
+
+    private string PointerText => _pointer switch
+    {
+        { KeepsReserve: true } level => L["PointerAt", Formats.Euros(level.Pay), Formats.Euros(level.NetInPocket)].Value,
+        { } level => L["PointerMissesReserve", Formats.Euros(level.Pay), Formats.Euros(level.NetInPocket), Formats.Euros(level.KeptInCompany),
+            Formats.Euros(Inputs.Reserve.Value)].Value,
+        null => Run.Year is { } year ? L["PointerYours", Formats.Euros(year.DirectorPay.GrossPay), Formats.Euros(year.NetInPocket)].Value : "",
+    };
+
+    private string BestText(BestPayView best) => best switch
+    {
+        { IsYours: true } => L["BestIsYours", Formats.Euros(best.Level.NetInPocket), Formats.Euros(best.Level.Dividend)].Value,
+        { YoursKeepsReserve: false } when Run.Year is { } year => L["BestOverReserve", Formats.Euros(Inputs.Reserve.Value), Formats.Euros(best.Level.Pay),
+            Formats.Euros(best.Level.Dividend), Formats.Euros(best.Level.NetInPocket), Formats.Euros(year.NetInPocket), Formats.Euros(year.KeptInCompany)].Value,
+        _ => L["Best", Formats.Euros(best.Level.Pay), Formats.Euros(best.Level.Dividend), Formats.Euros(best.Level.NetInPocket), Formats.Euros(best.Gain)].Value,
+    };
+
+    private string RateText(RateWeighing rate) => L[SplitCardText.Rate(rate),
+        rate.SmallestPay is { } smallest ? Formats.Euros(smallest) : "",
+        rate.Other is { } other ? Formats.Euros(other.NetInPocket) : "",
+        rate.Difference is { } difference ? Formats.Euros(difference) : ""].Value;
+
+    private void Point(PayLevel level) => _pointer = level;
+
+    private void ClearPointer() => _pointer = null;
+
+    private Task MoveTo(decimal pay) => InputsChanged.InvokeAsync(Inputs.WithDirectorPay(pay));
+
     private Task OnPayChanged(decimal pay) => InputsChanged.InvokeAsync(Inputs.WithDirectorPay(pay));
+
+    // The plot's coordinates run from 0 to 1,000 both ways, the net in pocket upwards.
+    private static string X(decimal at) => Coordinate(at * 1_000m);
+
+    private static string Y(decimal at) => Coordinate((1m - at) * 1_000m);
+
+    private static string Length(decimal fraction) => Coordinate(fraction * 1_000m);
+
+    private static string Points(IReadOnlyList<ChartPoint> points) => string.Join(' ', points.Select(point => $"{X(point.X)},{Y(point.Y)}"));
+
+    private static string Percent(decimal at) => $"{Coordinate(at * 100m)}%";
+
+    private static string Coordinate(decimal value) => Math.Round(value, 2).ToString("0.##", CultureInfo.InvariantCulture);
 }

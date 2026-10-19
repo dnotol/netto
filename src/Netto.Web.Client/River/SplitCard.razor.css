@@ -25,3 +25,204 @@
         color: var(--netto-text);
         font-weight: 500;
     }
+
+/* What the pointer reads keeps its room, so the lines below do not jump as it moves. */
+.split__pointer,
+.split__best,
+.split__rate {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.55;
+}
+
+.split__pointer {
+    min-height: 3.1em;
+    color: var(--netto-text-muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.split__rate {
+    color: var(--netto-text-muted);
+}
+
+.split__actions {
+    display: flex;
+}
+
+/* The net in pocket at every pay: the amounts up the left, the plot, the pays under it and the
+   slider under them, the plot and the pays inset by the slider thumb's radius so that a pay sits
+   right above the thumb that sets it. A small MudSlider's thumb is 2px wide, scaled up only to draw. */
+.pay-curve {
+    --pay-curve-axis: 2.75rem;
+    --pay-curve-inset: 1px;
+    display: grid;
+    grid-template-columns: var(--pay-curve-axis) minmax(0, 1fr);
+    grid-template-areas:
+        "net plot"
+        ". pays"
+        ". slider";
+    row-gap: 0.2rem;
+    /* Room for the top amount, centred on the plot's top edge, under the field's label. */
+    margin-top: 0.6rem;
+}
+
+.pay-curve--bare {
+    display: block;
+}
+
+.pay-curve__net-axis {
+    grid-area: net;
+    position: relative;
+}
+
+.pay-curve__net-tick,
+.pay-curve__pay-tick {
+    position: absolute;
+    color: var(--netto-text-muted);
+    font-size: 0.72rem;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.pay-curve__net-tick {
+    right: 0.45rem;
+    transform: translateY(50%);
+}
+
+.pay-curve__plot {
+    grid-area: plot;
+    position: relative;
+    height: 11rem;
+    margin-inline: var(--pay-curve-inset);
+    cursor: crosshair;
+}
+
+    .pay-curve__plot svg {
+        display: block;
+        width: 100%;
+        height: 100%;
+        overflow: visible;
+    }
+
+.pay-curve__pay-axis {
+    grid-area: pays;
+    position: relative;
+    height: 0.9rem;
+    margin-inline: var(--pay-curve-inset);
+}
+
+.pay-curve__pay-tick {
+    top: 0;
+    transform: translateX(-50%);
+}
+
+    .pay-curve__pay-tick:first-child {
+        transform: none;
+    }
+
+    .pay-curve__pay-tick:last-child {
+        transform: translateX(-100%);
+    }
+
+.pay-curve__slider {
+    grid-area: slider;
+    min-width: 0;
+}
+
+/* Hairline grid, the gold pocket line, and the neutral marks over it (CLAUDE.md, UI). */
+.pay-curve__grid,
+.pay-curve__threshold,
+.pay-curve__yours,
+.pay-curve__pointer,
+.pay-curve__net {
+    vector-effect: non-scaling-stroke;
+}
+
+.pay-curve__grid {
+    stroke: var(--netto-line);
+    stroke-width: 1;
+}
+
+.pay-curve__threshold {
+    stroke: var(--netto-text-muted);
+    stroke-width: 1;
+    stroke-dasharray: 3 4;
+}
+
+.pay-curve__net {
+    fill: none;
+    stroke: var(--netto-gold);
+    stroke-width: 2;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+}
+
+.pay-curve__net--misses {
+    stroke: var(--netto-text-muted);
+    stroke-dasharray: 4 4;
+}
+
+.pay-curve__yours {
+    stroke: var(--netto-text);
+    stroke-width: 1;
+}
+
+.pay-curve__pointer {
+    stroke: var(--netto-text-muted);
+    stroke-width: 1;
+}
+
+.pay-curve__band {
+    fill: transparent;
+}
+
+.pay-curve__best {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--netto-gold);
+    box-shadow: 0 0 0 2px var(--netto-surface);
+    transform: translate(-50%, 50%);
+    pointer-events: none;
+}
+
+.pay-curve__key {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1.1rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    color: var(--netto-text-muted);
+    font-size: 0.8rem;
+}
+
+    .pay-curve__key li {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+    }
+
+.pay-curve__key-mark {
+    display: inline-block;
+    width: 14px;
+    border-top: 1px solid var(--netto-text);
+}
+
+.pay-curve__key-mark--threshold {
+    border-top: 1px dashed var(--netto-text-muted);
+}
+
+.pay-curve__key-mark--misses {
+    border-top: 2px dashed var(--netto-text-muted);
+}
+
+.pay-curve__key-mark--best {
+    width: 10px;
+    height: 10px;
+    border: none;
+    border-radius: 50%;
+    background: var(--netto-gold);
+}

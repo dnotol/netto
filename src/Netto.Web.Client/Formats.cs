@@ -16,6 +16,14 @@ internal static class Formats
 
     public static string WholeEuros(decimal amount) => amount.ToString("C0", Culture);
 
+    // A chart's axis, short enough to sit beside the plot on a phone: €25k, €2.5k.
+    public static string ThousandsOfEuros(decimal amount)
+    {
+        var sign = amount < 0m ? Culture.NumberFormat.NegativeSign : "";
+        var thousands = (Math.Abs(amount) / 1_000m).ToString("#,0.#", Culture);
+        return amount == 0m ? $"{Culture.NumberFormat.CurrencySymbol}0" : $"{sign}{Culture.NumberFormat.CurrencySymbol}{thousands}k";
+    }
+
     // Prefixed even at zero, so every part paid out reads as a subtraction.
     public static string Deduction(decimal amount) => $"{Culture.NumberFormat.NegativeSign}{Euros(amount)}";
 
