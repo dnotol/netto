@@ -1,11 +1,12 @@
 using Netto.Core.PersonalTax;
 using Netto.Core.Rules;
 using Netto.Web.Client.DirectorPay;
+using Netto.Web.Client.River;
 using Shouldly;
 
 namespace Netto.Tests.WebClient.DirectorPay;
 
-// The picker and the rate field on /plan, on income year 2026's rates (Namur 8.5%, Liège 8.0%,
+// The picker and the rate field of Director pay, on income year 2026's rates (Namur 8.5%, Liège 8.0%,
 // borrowed from income year 2025) and, for the search order and for a year whose own rates are
 // published, on made-up municipalities.
 public class MunicipalityChoiceTests
@@ -124,6 +125,31 @@ public class MunicipalityChoiceTests
     }
 
     // Folded to compare: alpha beta, ehein, ete, zeta.
+    // The example rate is a default: a typical rate, assumed until the user picks or types one.
+    [Fact]
+    public void Start_exampleRate_isADefault()
+    {
+        Start().Origin.ShouldBe(InputOrigin.Default);
+    }
+
+    [Fact]
+    public void Pick_municipality_derivesTheRateFromIt()
+    {
+        Start().Pick(Namur).Origin.ShouldBe(InputOrigin.Derived);
+    }
+
+    [Fact]
+    public void Enter_rate_makesItTheUsers()
+    {
+        Start().Pick(Namur).Enter(0.09m).Origin.ShouldBe(InputOrigin.Yours);
+    }
+
+    [Fact]
+    public void Pick_nothingFromTheStart_keepsTheDefault()
+    {
+        Start().Pick(null).Origin.ShouldBe(InputOrigin.Default);
+    }
+
     [Fact]
     public void Search_emptyText_listsEveryMunicipalityInNameOrderIgnoringAccents()
     {

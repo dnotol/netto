@@ -1,47 +1,49 @@
 using System.Text;
 using Netto.Core.PersonalTax;
 using Netto.Core.Rules;
+using Netto.Web.Client.River;
 
 namespace Netto.Web.Client.DirectorPay;
 
 // What the municipality picker and the rate field of MunicipalityField hold, and which rate the
 // engine gets: a municipality's official rate with its source, or a rate the user typed, which
 // replaces the municipality's while one is picked. The rates and the year they were set for come
-// from MunicipalRates in Netto.Core; this only tracks the user's choice. Public because
-// MunicipalityField, a component, takes it as a parameter.
-public sealed record MunicipalityChoice(MunicipalRates Rates, Municipality? Municipality, decimal Rate, RateOrigin Origin)
+// from MunicipalRates in Netto.Core; this only tracks the user's choice. The rate's origin is a
+// default until a municipality is picked (derived from it) or a rate typed (the user's). Public
+// because MunicipalityField, a component, takes it as a parameter.
+public sealed record MunicipalityChoice(MunicipalRates Rates, Municipality? Municipality, decimal Rate, InputOrigin Origin)
 {
     // Until a municipality is picked or a rate typed, an example rate shows figures at once.
-    public static MunicipalityChoice Start(MunicipalRates rates, decimal exampleRate) => new(rates, null, exampleRate, RateOrigin.Example);
+    public static MunicipalityChoice Start(MunicipalRates rates, decimal exampleRate) => new(rates, null, exampleRate, InputOrigin.Default);
 
-    public bool IsOverridden => Municipality is not null && Origin == RateOrigin.Entered;
+    public bool IsOverridden => Municipality is not null && Origin == InputOrigin.Yours;
 
     public RuleAmount MunicipalRate =>
-        Origin == RateOrigin.Official && Municipality is { } municipality ? municipality.Rate : MunicipalRates.Entered(Rate);
+        Origin == InputOrigin.Derived && Municipality is { } municipality ? municipality.Rate : MunicipalRates.Entered(Rate);
 
     public RateNote Note => (Origin, Municipality) switch
     {
-        (RateOrigin.Official, { } municipality) when Rates.RatesIncomeYear == Rates.IncomeYear =>
+        (InputOrigin.Derived, { } municipality) when Rates.RatesIncomeYear == Rates.IncomeYear =>
             new RateNote("RateNote_official", [municipality.Name, Year(Rates.IncomeYear)]),
-        (RateOrigin.Official, { } municipality) =>
+        (InputOrigin.Derived, { } municipality) =>
             new RateNote("RateNote_official_earlier", [municipality.Name, Year(Rates.RatesIncomeYear), Year(Rates.IncomeYear)]),
-        (RateOrigin.Entered, { } municipality) =>
+        (InputOrigin.Yours, { } municipality) =>
             new RateNote("RateNote_overridden", [municipality.Name, Formats.MunicipalRate(municipality.Rate.Value)]),
-        (RateOrigin.Entered, null) => new RateNote("RateNote_entered", []),
+        (InputOrigin.Yours, null) => new RateNote("RateNote_entered", []),
         _ => new RateNote("RateNote_example", []),
     };
 
     // Picking a municipality takes its official rate. Clearing it keeps the rate on screen, which
     // is then the user's own, unless it was still the example.
     public MunicipalityChoice Pick(Municipality? municipality) => municipality is null
-        ? this with { Municipality = null, Origin = Origin == RateOrigin.Example ? RateOrigin.Example : RateOrigin.Entered }
-        : this with { Municipality = municipality, Rate = municipality.Rate.Value, Origin = RateOrigin.Official };
+        ? this with { Municipality = null, Origin = Origin == InputOrigin.Default ? InputOrigin.Default : InputOrigin.Yours }
+        : this with { Municipality = municipality, Rate = municipality.Rate.Value, Origin = InputOrigin.Derived };
 
     // A typed rate replaces the municipality's, unless it is that very rate.
     public MunicipalityChoice Enter(decimal rate) => this with
     {
         Rate = rate,
-        Origin = Municipality is not null && rate == Municipality.Rate.Value ? RateOrigin.Official : RateOrigin.Entered,
+        Origin = Municipality is not null && rate == Municipality.Rate.Value ? InputOrigin.Derived : InputOrigin.Yours,
     };
 
     public MunicipalityChoice UseOfficialRate() => Municipality is null ? this : Pick(Municipality);
@@ -88,18 +90,6 @@ public sealed record MunicipalityChoice(MunicipalRates Rates, Municipality? Muni
 
         return folded.ToString().TrimEnd();
     }
-}
-
-public enum RateOrigin
-{
-    // The page's starting rate, shown until the user picks a municipality or types a rate.
-    Example,
-
-    // The picked municipality's rate, as published.
-    Official,
-
-    // A rate the user typed.
-    Entered,
 }
 
 // A resource key in MunicipalityField.resx and the values for its placeholders.
