@@ -1,38 +1,42 @@
 @page "/plan"
-@using Netto.Core.DirectorPay
-@using Netto.Core.PersonalTax
-@using Netto.Web.Client.DirectorPay
-@using Netto.Web.Client.Steps
+@using Netto.Web.Client.River
 @inject IStringLocalizer<Plan> L
+@inject RiverState State
 
 <PageTitle>@L["PageTitle"]</PageTitle>
 
-@* The first window onto the year: the director pay, gross to net. Every figure comes from
-   GrossToNet in Netto.Core; this page only binds GrossToNetView to markup. *@
-<section class="plan">
+@* The river: the year from the company's revenue to the director's pocket, as module cards that each
+   edit their part of one scenario and draw their view of one run, under the bar of buckets that sums
+   it up. Every figure comes from Netto.Core; the page only holds the inputs and runs them. *@
+<BucketBar Run="_run" />
+
+<section class="river">
     <MudContainer MaxWidth="MaxWidth.Large">
-        <header class="plan__head">
-            <div class="plan__eyebrow-row">
-                <p class="plan__eyebrow">@L["Eyebrow"]</p>
+        <header class="river__head">
+            <div class="river__eyebrow-row">
+                <p class="river__eyebrow">@L["Eyebrow"]</p>
                 <MudChip T="string" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small">@L["Badge"]</MudChip>
             </div>
-            <MudText Typo="Typo.h2" HtmlTag="h1" Class="plan__title">@L["Title"]</MudText>
-            <p class="plan__lede">@L["Lede"]</p>
-            <a href="/overview" class="plan__overview-link">@L["OverviewLink"]</a>
+            <MudText Typo="Typo.h2" HtmlTag="h1" Class="river__title">@L["Title"]</MudText>
+            <p class="river__lede">@L["Lede"]</p>
         </header>
 
-        <div class="inputs-band">
-            <div class="inputs">
-                <div class="inputs__pay">
-                    <div class="inputs__pay-head">
-                        <span id="gross-pay-label" class="inputs__label">@L["GrossLabel"]</span>
-                        <span class="inputs__pay-amount">@Formats.WholeEuros(_grossPay)</span>
-                    </div>
-                    <MudSlider T="decimal" Value="_grossPay" ValueChanged="OnGrossPayChanged" Min="0m" Max="200000m" Step="100m"
-                               Immediate="true" Color="Color.Primary" Culture="Formats.Culture" aria-labelledby="gross-pay-label" />
+        <RefusedMessage Error="@Refused(RiverModule.River)" />
+
+        <div class="river__flow">
+            <CompanyYearCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Refused="@Refused(RiverModule.CompanyYear)" />
+            @if (_inputs.Company is not null)
+            {
+                <SplitCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Refused="@Refused(RiverModule.Split)" />
+                <p class="river__fork" aria-hidden="true">@L["Fork"]</p>
+            }
+            <div class="river__streams">
+                <div class="river__stream">
+                    <DirectorPayCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Refused="@Refused(RiverModule.DirectorPay)" />
                 </div>
-                <div class="inputs__place">
-                    <MunicipalityField Choice="_choice" ChoiceChanged="OnChoiceChanged" Refused="RateRefused" />
+                <div class="river__stream">
+                    <CorporateTaxCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" />
+                    <DividendCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Refused="@Refused(RiverModule.Dividend)" />
                 </div>
             </div>
         </div>
@@ -43,85 +47,22 @@
                 <li>@L["AssumedSingle"]</li>
                 <li>@L["AssumedWallonia"]</li>
                 <li>@L["AssumedMainOccupation"]</li>
-                <li>@L["AssumedOnlyIncome"]</li>
                 <li>@L["AssumedNoSpecialContribution"]</li>
+                <li>@L["AssumedCalendarYear"]</li>
+                <li>@L["AssumedSteadyState"]</li>
                 <li>@L["AssumedFinalContributions"]</li>
             </ul>
         </aside>
 
-        @if (_error is not null)
-        {
-            <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Class="plan__error">@L[PlanText.Error(_error)]</MudAlert>
-        }
-        else if (_result is not null && _view is not null)
-        {
-            <div class="net">
-                <span class="net__label">@L["NetLabel"]</span>
-                <span class="net__amount">@Formats.Euros(_result.NetInPocket)</span>
-                <span class="net__from">@L["NetFromGross", Formats.Euros(_result.GrossPay)]</span>
-            </div>
-
-            <h2 class="plan__section-title">@L["FunnelTitle"]</h2>
-            <div class="funnel">
-                @foreach (var track in _view.Tracks)
-                {
-                    <article class="funnel__track">
-                        <h3 class="funnel__track-title">@L[PlanText.Track(track.Key)]</h3>
-                        <p class="funnel__track-hint">@L[PlanText.TrackHint(track.Key)]</p>
-                        <ol class="funnel__rows">
-                            @foreach (var row in track.Rows)
-                            {
-                                <li class="funnel-row funnel-row--@Modifier(row.Kind)">
-                                    <span class="funnel-row__label">@L[PlanText.Row(row.Key)]</span>
-                                    <span class="funnel-row__amount">@(row.IsDeduction ? Formats.Deduction(row.Amount) : Formats.Euros(row.Amount))</span>
-                                    <span class="funnel-row__track" aria-hidden="true">
-                                        <span class="funnel-row__bar" style="@BarStyle(row)"></span>
-                                    </span>
-                                    @if (row.Kind == RowKind.TaxBaseOnly)
-                                    {
-                                        <span class="funnel-row__note">@L["TaxBaseOnlyNote"]</span>
-                                    }
-                                </li>
-                            }
-                        </ol>
-                    </article>
-                }
-            </div>
-
-            <section class="next" aria-labelledby="next-title">
-                <h2 id="next-title" class="plan__section-title">@L["NextTitle"]</h2>
-                <div class="next__card">
-                    <div class="next__bar" aria-hidden="true">
-                        @foreach (var part in _view.NextThousand)
-                        {
-                            <span class="next__segment next__segment--@part.Key" style="@SegmentStyle(part)"></span>
-                        }
-                    </div>
-                    <dl class="next__parts">
-                        @foreach (var part in _view.NextThousand)
-                        {
-                            <div class="next__part next__part--@part.Key">
-                                <dt><span class="next__swatch" aria-hidden="true"></span>@L[PlanText.Row(part.Key)]</dt>
-                                <dd>@Formats.Euros(part.Amount)<span class="next__share">@Formats.Share(part.Share)</span></dd>
-                            </div>
-                        }
-                    </dl>
-                </div>
-            </section>
-
-            <section class="details" aria-labelledby="details-title">
-                <h2 id="details-title" class="plan__section-title">@L["DetailsTitle"]</h2>
-                <p class="plan__section-intro">@L["DetailsIntro", _result.IncomeYear]</p>
-                <StepDetails Details="_view.Details" />
-            </section>
-        }
-
         <aside class="limits" aria-labelledby="limits-title">
             <h2 id="limits-title" class="limits__title">@L["LimitsTitle"]</h2>
             <ul class="limits__list">
+                <li>@L["LimitReserves"]</li>
+                <li>@L["LimitCompanyContribution"]</li>
+                <li>@L["LimitDisallowed"]</li>
+                <li>@L["LimitAdvanceSurcharge"]</li>
                 <li>@L["LimitManagementFee"]</li>
                 <li>@L["LimitLowIncomeCredit"]</li>
-                <li>@L["LimitAdvanceSurcharge"]</li>
             </ul>
             <p class="limits__note">@L["LimitTaxCalc"]</p>
         </aside>
@@ -129,51 +70,24 @@
 </section>
 
 @code {
-    // The only year with both INASTI and personal-tax amounts; choosing the year is a later item.
-    private const int IncomeYear = 2026;
+    private RiverInputs _inputs = default!;
+    private RiverRun _run = default!;
 
-    private decimal _grossPay = 50_000m;
-    private MunicipalityChoice _choice = MunicipalityChoice.Start(MunicipalRates.IncomeYear2026, 0.07m);
-    private GrossToNetResult? _result;
-    private GrossToNetView? _view;
-    private string? _error;
+    protected override void OnInitialized() => Show(State.Inputs);
 
-    private bool RateRefused => _error == GrossToNet.MunicipalRateOutOfRange;
-
-    protected override void OnInitialized() => Compute();
-
-    private void OnGrossPayChanged(decimal grossPay)
+    private void OnInputsChanged(RiverInputs inputs)
     {
-        _grossPay = grossPay;
-        Compute();
+        State.Inputs = inputs;
+        Show(inputs);
     }
 
-    private void OnChoiceChanged(MunicipalityChoice choice)
+    private void Show(RiverInputs inputs)
     {
-        _choice = choice;
-        Compute();
+        _inputs = inputs;
+        _run = inputs.Run();
     }
 
-    private void Compute()
-    {
-        (_result, _error) = GrossToNet.Compute(IncomeYear, _grossPay, _choice.MunicipalRate);
-        _view = _result is null ? null : GrossToNetView.From(_result);
-    }
-
-    private static string Modifier(RowKind kind) => kind switch
-    {
-        RowKind.Gross => "gross",
-        RowKind.PaidOut => "paid-out",
-        RowKind.TaxBaseOnly => "tax-base-only",
-        RowKind.TaxableIncome => "taxable-income",
-        RowKind.NetInPocket => "net",
-        _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, null),
-    };
-
-    // CSS wants a dot as decimal separator whatever the culture.
-    private static string BarStyle(FunnelRow row) =>
-        FormattableString.Invariant($"left: {row.BarStart:0.###}%; width: {row.BarEnd - row.BarStart:0.###}%");
-
-    private static string SegmentStyle(NextThousandPart part) =>
-        FormattableString.Invariant($"flex-basis: {part.Share * 100m:0.###}%");
+    // The engine's refusal goes to the card holding the refused field, and only there.
+    private string? Refused(RiverModule module) =>
+        _run.Error is { } error && RiverErrors.Owner(error, _inputs.Company is null) == module ? error : null;
 }

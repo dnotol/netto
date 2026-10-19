@@ -13,25 +13,25 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="PageTitle" xml:space="preserve">
-    <value>Director pay, gross to net: Netto</value>
+    <value>Your year: Netto</value>
   </data>
   <data name="Badge" xml:space="preserve">
     <value>In development</value>
   </data>
   <data name="Eyebrow" xml:space="preserve">
-    <value>Director pay · Income year 2026</value>
+    <value>Your year · Income year 2026</value>
   </data>
   <data name="Title" xml:space="preserve">
-    <value>From gross pay to net in pocket</value>
+    <value>From what your company earns to what reaches you</value>
   </data>
   <data name="Lede" xml:space="preserve">
-    <value>Move your gross director pay for the year and see where each euro goes: social contributions, income tax, the municipal surcharge, and what is left for you. Every figure shows the official text it comes from.</value>
+    <value>Each card takes a part of the money and passes the rest on, and the bar above follows every change. It opens on an example year: replace its amounts with yours, or clear the company's figures to start at your pay. Every figure shows the official text it comes from.</value>
   </data>
-  <data name="GrossLabel" xml:space="preserve">
-    <value>Gross director pay for the year</value>
+  <data name="Fork" xml:space="preserve">
+    <value>↓ Your pay on one side, the company's profit on the other ↓</value>
   </data>
   <data name="AssumedTitle" xml:space="preserve">
-    <value>Assumed in this window</value>
+    <value>Assumed</value>
   </data>
   <data name="AssumedSingle" xml:space="preserve">
     <value>Single, with no dependants</value>
@@ -42,80 +42,32 @@
   <data name="AssumedMainOccupation" xml:space="preserve">
     <value>Self-employed director in main occupation</value>
   </data>
-  <data name="AssumedOnlyIncome" xml:space="preserve">
-    <value>Director pay is your only income</value>
-  </data>
   <data name="AssumedNoSpecialContribution" xml:space="preserve">
     <value>So no special social security contribution: not owed in main occupation</value>
+  </data>
+  <data name="AssumedCalendarYear" xml:space="preserve">
+    <value>The company's accounting year is the calendar year</value>
+  </data>
+  <data name="AssumedSteadyState" xml:space="preserve">
+    <value>Each year pays out its own profit</value>
   </data>
   <data name="AssumedFinalContributions" xml:space="preserve">
     <value>Social contributions are the final amount owed on this year's income</value>
   </data>
-  <data name="NetLabel" xml:space="preserve">
-    <value>Net in pocket</value>
-  </data>
-  <data name="NetFromGross" xml:space="preserve">
-    <value>from {0} gross pay</value>
-  </data>
-  <data name="FunnelTitle" xml:space="preserve">
-    <value>Step by step</value>
-  </data>
-  <data name="Track_cash" xml:space="preserve">
-    <value>What you pay</value>
-  </data>
-  <data name="TrackHint_cash" xml:space="preserve">
-    <value>From your gross pay to what reaches your pocket.</value>
-  </data>
-  <data name="Track_tax_base" xml:space="preserve">
-    <value>What you are taxed on</value>
-  </data>
-  <data name="TrackHint_tax_base" xml:space="preserve">
-    <value>From your gross pay to the taxable income the income tax is computed on.</value>
-  </data>
-  <data name="TaxBaseOnlyNote" xml:space="preserve">
-    <value>Lowers the tax base, not paid out</value>
-  </data>
-  <data name="Row_gross_pay" xml:space="preserve">
-    <value>Gross pay</value>
-  </data>
-  <data name="Row_social_contributions" xml:space="preserve">
-    <value>Social contributions</value>
-  </data>
-  <data name="Row_flat_rate_costs" xml:space="preserve">
-    <value>Flat-rate professional costs</value>
-  </data>
-  <data name="Row_taxable_income" xml:space="preserve">
-    <value>Taxable income</value>
-  </data>
-  <data name="Row_income_tax" xml:space="preserve">
-    <value>Income tax</value>
-  </data>
-  <data name="Row_municipal_surcharge" xml:space="preserve">
-    <value>Municipal surcharge</value>
-  </data>
-  <data name="Row_net_in_pocket" xml:space="preserve">
-    <value>Net in pocket</value>
-  </data>
-  <data name="NextTitle" xml:space="preserve">
-    <value>Where the next €1,000 of gross pay goes</value>
-  </data>
-  <data name="DetailsTitle" xml:space="preserve">
-    <value>Where each figure comes from</value>
-  </data>
-  <data name="DetailsIntro" xml:space="preserve">
-    <value>Each step with its rule, the official texts behind it and the income year {0} amounts it uses.</value>
-  </data>
-  <data name="Error_gross_pay_negative" xml:space="preserve">
-    <value>Gross pay cannot be negative.</value>
-  </data>
-  <data name="Error_municipal_rate_out_of_range" xml:space="preserve">
-    <value>Enter a municipal rate between 0% and 10% to see the figures.</value>
-  </data>
-  <data name="Error_income_year_not_supported" xml:space="preserve">
-    <value>This income year is not supported yet.</value>
-  </data>
   <data name="LimitsTitle" xml:space="preserve">
     <value>Not counted yet</value>
+  </data>
+  <data name="LimitReserves" xml:space="preserve">
+    <value>Profits kept from earlier years, and dividends paid out of them.</value>
+  </data>
+  <data name="LimitCompanyContribution" xml:space="preserve">
+    <value>The company's yearly contribution to INASTI: count it in the running costs.</value>
+  </data>
+  <data name="LimitDisallowed" xml:space="preserve">
+    <value>Disallowed expenses, and losses carried forward from earlier years.</value>
+  </data>
+  <data name="LimitAdvanceSurcharge" xml:space="preserve">
+    <value>The surcharges for paying too little tax in advance, for the company and for you.</value>
   </data>
   <data name="LimitManagementFee" xml:space="preserve">
     <value>Your social insurance fund's management fee, charged on top of the contributions.</value>
@@ -123,13 +75,7 @@
   <data name="LimitLowIncomeCredit" xml:space="preserve">
     <value>The tax credit for low earned income.</value>
   </data>
-  <data name="LimitAdvanceSurcharge" xml:space="preserve">
-    <value>The surcharge for paying too little income tax in advance during the year.</value>
-  </data>
   <data name="LimitTaxCalc" xml:space="preserve">
-    <value>The 2026 income tax is computed from the official 2026 amounts. The administration's Tax-Calc simulator does not cover 2026 yet, so it has not been checked against it; on 2025, the same method matches Tax-Calc to the cent.</value>
-  </data>
-  <data name="OverviewLink" xml:space="preserve">
-    <value>Add your company and a dividend: see your whole year</value>
+    <value>The 2026 figures are computed from the official 2026 amounts. Tax-Calc does not cover 2026 yet; on 2025, the same method matches it to the cent on the income tax and on the dividend refund.</value>
   </data>
 </root>

@@ -12,7 +12,7 @@ using Shouldly;
 namespace Netto.Tests.WebClient.Steps;
 
 // StepDetails.razor builds resource keys from the engine's keys. A key without a text in
-// StepDetails.resx would show on screen as the key itself, so every step a window lists for 2026,
+// StepDetails.resx would show on screen as the key itself, so every step a card lists for 2026,
 // with every amount it used, must have one, with a municipality's rate and with a rate the user
 // entered.
 public class StepTextTests
@@ -37,8 +37,8 @@ public class StepTextTests
         MissingTexts(value.ShouldNotBeNull().Steps).ShouldBeEmpty();
     }
 
-    // The overview's steps: the company's, the director pay's and the dividend's, under each
-    // withholding rate the user can declare.
+    // The river's steps: the company's, the director pay's and the dividend's, nothing kept so a
+    // dividend is paid, under each withholding rate the user can declare.
     [Theory]
     [InlineData(WithholdingCategory.Standard)]
     [InlineData(WithholdingCategory.VvprbisSecondYear)]
@@ -46,7 +46,7 @@ public class StepTextTests
     public void StepDetailsResx_everyKeyOfTheYearsSteps_hasAText(WithholdingCategory category)
     {
         var scenario = new Scenario(2026, 120_000m, 20_000m, new CompanyStatus(SmallCompany: true, FirstFourTaxPeriods: false),
-            50_000m, MunicipalRates.Entered(0.07m), 40_000m, category);
+            50_000m, MunicipalRates.Entered(0.07m), 0m, category);
 
         var (value, _) = YearSimulation.Run(scenario);
 

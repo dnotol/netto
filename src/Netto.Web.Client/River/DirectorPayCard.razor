@@ -30,7 +30,7 @@
         <MunicipalityField Choice="Inputs.Municipality" ChoiceChanged="OnMunicipalityChanged"
                            Refused="@(Refused == GrossToNet.MunicipalRateOutOfRange)" />
     </RiverField>
-    <RefusedMessage Error="Refused" />
+    <RefusedMessage Error="@Refused" />
     @if (_view is not null)
     {
         <DrainList Drains="_view.Drains" />

@@ -17,7 +17,7 @@
         <span>@L["CompanyEnd"] <b>@(_view.CompanyProfit is { } profit ? Formats.Euros(profit) : L["NoFigure"])</b></span>
     </div>
     <p class="split__ceiling">@L["Ceiling", Formats.Euros(_view.Ceiling)]</p>
-    <RefusedMessage Error="Refused" />
+    <RefusedMessage Error="@Refused" />
 </ModuleCard>
 
 @code {

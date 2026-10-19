@@ -22,7 +22,7 @@
                                  Error="@(Refused == YearSimulation.RunningCostsNegative)" />
             </RiverField>
         </div>
-        <RefusedMessage Error="Refused" />
+        <RefusedMessage Error="@Refused" />
         <div class="company-year__actions">
             <MudButton Variant="Variant.Outlined" Size="Size.Small" OnClick="SkipCompany">@L["Clear"]</MudButton>
         </div>

@@ -3,7 +3,7 @@ using Netto.Core.Simulation;
 
 namespace Netto.Web.Client.Steps;
 
-// One step as a window lists it under « where each figure comes from »: its amount, then each
+// One step as a module card lists it under « where each figure comes from »: its amount, then each
 // official text behind it with the amounts of the year it used. Public because StepDetails, a
 // component, takes it as a parameter.
 public sealed record StepDetail(string RuleKey, decimal Amount, IReadOnlyList<SourceGroup> Sources)

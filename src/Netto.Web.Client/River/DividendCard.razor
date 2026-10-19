@@ -30,7 +30,7 @@
                 <span>@L["KeptEnd"] <b>@Formats.Euros(_view.Kept)</b></span>
             </div>
         }
-        <RefusedMessage Error="Refused" />
+        <RefusedMessage Error="@Refused" />
         <RiverField Label="@L["CategoryLabel"]" Origin="Inputs.DividendCategory.Origin">
             <div class="dividend__categories">
                 <MudChipSet T="WithholdingCategory" SelectedValue="Inputs.DividendCategory.Value" SelectedValueChanged="OnCategoryChanged"
