@@ -88,14 +88,17 @@ internal sealed record GrossToNetView(
 
     private sealed record Line(string Key, RowKind Kind, decimal Amount)
     {
-        public bool IsDeduction => Kind is RowKind.PaidOut or RowKind.TaxBaseOnly;
+        public bool IsDeduction => Kind.IsDeduction();
     }
 }
 
 internal sealed record FunnelTrack(string Key, IReadOnlyList<FunnelRow> Rows);
 
 // One bar of a track. BarStart and BarEnd are percentages of the shared scale's width.
-internal sealed record FunnelRow(string Key, RowKind Kind, decimal Amount, decimal BarStart, decimal BarEnd);
+internal sealed record FunnelRow(string Key, RowKind Kind, decimal Amount, decimal BarStart, decimal BarEnd)
+{
+    public bool IsDeduction => Kind.IsDeduction();
+}
 
 internal enum RowKind
 {
@@ -109,6 +112,11 @@ internal enum RowKind
 
     TaxableIncome,
     NetInPocket,
+}
+
+internal static class RowKindExtensions
+{
+    public static bool IsDeduction(this RowKind kind) => kind is RowKind.PaidOut or RowKind.TaxBaseOnly;
 }
 
 // Share is a fraction of the next 1,000: 0.16588 for 165.88.

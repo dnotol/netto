@@ -13,18 +13,198 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="PageTitle" xml:space="preserve">
-    <value>Your plan: Netto</value>
+    <value>Director pay, gross to net: Netto</value>
   </data>
   <data name="Badge" xml:space="preserve">
     <value>In development</value>
   </data>
+  <data name="Eyebrow" xml:space="preserve">
+    <value>Director pay · Income year 2026</value>
+  </data>
   <data name="Title" xml:space="preserve">
-    <value>The planner is being built.</value>
+    <value>From gross pay to net in pocket</value>
   </data>
-  <data name="Body" xml:space="preserve">
-    <value>Its first version will plan one income year for a one-person SRL: your director pay, your dividends, your allowances and your advance payments, from your own figures and without them ever leaving your browser.</value>
+  <data name="Lede" xml:space="preserve">
+    <value>Move your gross director pay for the year and see where each euro goes: social contributions, income tax, the municipal surcharge, and what is left for you. Every figure shows the official text it comes from.</value>
   </data>
-  <data name="Back" xml:space="preserve">
-    <value>Back to the front page</value>
+  <data name="GrossLabel" xml:space="preserve">
+    <value>Gross director pay for the year</value>
+  </data>
+  <data name="RateLabel" xml:space="preserve">
+    <value>Municipal surcharge rate</value>
+  </data>
+  <data name="RateHelper" xml:space="preserve">
+    <value>An example rate: replace it with your municipality's.</value>
+  </data>
+  <data name="AssumedTitle" xml:space="preserve">
+    <value>Assumed in this window</value>
+  </data>
+  <data name="AssumedSingle" xml:space="preserve">
+    <value>Single, with no dependants</value>
+  </data>
+  <data name="AssumedWallonia" xml:space="preserve">
+    <value>Resident in Wallonia</value>
+  </data>
+  <data name="AssumedMainOccupation" xml:space="preserve">
+    <value>Self-employed director in main occupation</value>
+  </data>
+  <data name="AssumedOnlyIncome" xml:space="preserve">
+    <value>Director pay is your only income</value>
+  </data>
+  <data name="AssumedFinalContributions" xml:space="preserve">
+    <value>Social contributions are the final amount owed on this year's income</value>
+  </data>
+  <data name="NetLabel" xml:space="preserve">
+    <value>Net in pocket</value>
+  </data>
+  <data name="NetFromGross" xml:space="preserve">
+    <value>from {0} gross pay</value>
+  </data>
+  <data name="FunnelTitle" xml:space="preserve">
+    <value>Step by step</value>
+  </data>
+  <data name="Track_cash" xml:space="preserve">
+    <value>What you pay</value>
+  </data>
+  <data name="TrackHint_cash" xml:space="preserve">
+    <value>From your gross pay to what reaches your pocket.</value>
+  </data>
+  <data name="Track_tax_base" xml:space="preserve">
+    <value>What you are taxed on</value>
+  </data>
+  <data name="TrackHint_tax_base" xml:space="preserve">
+    <value>From your gross pay to the taxable income the income tax is computed on.</value>
+  </data>
+  <data name="TaxBaseOnlyNote" xml:space="preserve">
+    <value>Lowers the tax base, not paid out</value>
+  </data>
+  <data name="Row_gross_pay" xml:space="preserve">
+    <value>Gross pay</value>
+  </data>
+  <data name="Row_social_contributions" xml:space="preserve">
+    <value>Social contributions</value>
+  </data>
+  <data name="Row_flat_rate_costs" xml:space="preserve">
+    <value>Flat-rate professional costs</value>
+  </data>
+  <data name="Row_taxable_income" xml:space="preserve">
+    <value>Taxable income</value>
+  </data>
+  <data name="Row_income_tax" xml:space="preserve">
+    <value>Income tax</value>
+  </data>
+  <data name="Row_municipal_surcharge" xml:space="preserve">
+    <value>Municipal surcharge</value>
+  </data>
+  <data name="Row_net_in_pocket" xml:space="preserve">
+    <value>Net in pocket</value>
+  </data>
+  <data name="NextTitle" xml:space="preserve">
+    <value>Where the next €1,000 of gross pay goes</value>
+  </data>
+  <data name="DetailsTitle" xml:space="preserve">
+    <value>Where each figure comes from</value>
+  </data>
+  <data name="DetailsIntro" xml:space="preserve">
+    <value>Each step with its rule, the official texts behind it and the income year {0} amounts it uses.</value>
+  </data>
+  <data name="Rule_social_contributions" xml:space="preserve">
+    <value>The final contributions of a self-employed person in main occupation, owed on the year's net taxable professional income: one rate up to a first ceiling, a lower rate up to a second ceiling, nothing above it, and never less than the contribution on the minimum income. The social insurance fund bills them in four equal quarters, each rounded to the cent. The contributions lower the very income they are computed on, so the two are solved together.</value>
+  </data>
+  <data name="Rule_flat_rate_costs" xml:space="preserve">
+    <value>A director who does not prove real professional costs deducts flat-rate costs: a percentage of the pay left after the social contributions, up to a yearly maximum. They lower the taxable income and are never paid out.</value>
+  </data>
+  <data name="Rule_taxable_income" xml:space="preserve">
+    <value>Gross pay less your own social contributions and the flat-rate costs. It is never below zero.</value>
+  </data>
+  <data name="Rule_income_tax" xml:space="preserve">
+    <value>The progressive scale applied to the taxable income, less the reduction for the tax-free amount, gives the State tax. The federal government keeps that tax less the autonomy factor, and Wallonia adds its regional tax on the federal share. Each of the two is rounded to the cent, and the income tax is their sum.</value>
+  </data>
+  <data name="Rule_municipal_surcharge" xml:space="preserve">
+    <value>Your municipality's rate applied to the income tax, that is the federal share plus the Walloon tax.</value>
+  </data>
+  <data name="Amount_minimum_income" xml:space="preserve">
+    <value>Minimum income</value>
+  </data>
+  <data name="Amount_first_band_rate" xml:space="preserve">
+    <value>Rate up to the first ceiling</value>
+  </data>
+  <data name="Amount_first_band_ceiling" xml:space="preserve">
+    <value>First ceiling</value>
+  </data>
+  <data name="Amount_second_band_rate" xml:space="preserve">
+    <value>Rate up to the second ceiling</value>
+  </data>
+  <data name="Amount_second_band_ceiling" xml:space="preserve">
+    <value>Second ceiling</value>
+  </data>
+  <data name="Amount_flat_rate_costs_rate" xml:space="preserve">
+    <value>Flat-rate costs rate</value>
+  </data>
+  <data name="Amount_flat_rate_costs_maximum" xml:space="preserve">
+    <value>Flat-rate costs maximum</value>
+  </data>
+  <data name="Amount_bracket_1_rate" xml:space="preserve">
+    <value>Bracket 1 rate</value>
+  </data>
+  <data name="Amount_bracket_1_upper_limit" xml:space="preserve">
+    <value>Bracket 1 upper limit</value>
+  </data>
+  <data name="Amount_bracket_2_rate" xml:space="preserve">
+    <value>Bracket 2 rate</value>
+  </data>
+  <data name="Amount_bracket_2_upper_limit" xml:space="preserve">
+    <value>Bracket 2 upper limit</value>
+  </data>
+  <data name="Amount_bracket_3_rate" xml:space="preserve">
+    <value>Bracket 3 rate</value>
+  </data>
+  <data name="Amount_bracket_3_upper_limit" xml:space="preserve">
+    <value>Bracket 3 upper limit</value>
+  </data>
+  <data name="Amount_bracket_4_rate" xml:space="preserve">
+    <value>Bracket 4 rate, above the last limit</value>
+  </data>
+  <data name="Amount_tax_free_amount" xml:space="preserve">
+    <value>Tax-free amount</value>
+  </data>
+  <data name="Amount_tax_free_amount_rate" xml:space="preserve">
+    <value>Rate of the tax-free amount reduction</value>
+  </data>
+  <data name="Amount_autonomy_factor" xml:space="preserve">
+    <value>Autonomy factor</value>
+  </data>
+  <data name="Amount_regional_additional_rate" xml:space="preserve">
+    <value>Walloon additional rate</value>
+  </data>
+  <data name="Amount_municipal_rate" xml:space="preserve">
+    <value>Municipal rate, as you entered it</value>
+  </data>
+  <data name="Error_gross_pay_negative" xml:space="preserve">
+    <value>Gross pay cannot be negative.</value>
+  </data>
+  <data name="Error_municipal_rate_out_of_range" xml:space="preserve">
+    <value>Enter a municipal rate between 0% and 10% to see the figures.</value>
+  </data>
+  <data name="Error_income_year_not_supported" xml:space="preserve">
+    <value>This income year is not supported yet.</value>
+  </data>
+  <data name="LimitsTitle" xml:space="preserve">
+    <value>Not counted yet</value>
+  </data>
+  <data name="LimitManagementFee" xml:space="preserve">
+    <value>Your social insurance fund's management fee, charged on top of the contributions.</value>
+  </data>
+  <data name="LimitLowIncomeCredit" xml:space="preserve">
+    <value>The tax credit for low earned income.</value>
+  </data>
+  <data name="LimitSpecialContribution" xml:space="preserve">
+    <value>The special social security contribution, if a self-employed director owes it: still being confirmed.</value>
+  </data>
+  <data name="LimitAdvanceSurcharge" xml:space="preserve">
+    <value>The surcharge for paying too little income tax in advance during the year.</value>
+  </data>
+  <data name="LimitTaxCalc" xml:space="preserve">
+    <value>The 2026 income tax is computed from the official 2026 amounts. The administration's Tax-Calc simulator does not cover 2026 yet, so it has not been checked against it; on 2025, the same method matches Tax-Calc to the cent.</value>
   </data>
 </root>
