@@ -22,7 +22,7 @@ An income year that borrows a document until its own edition is published (the l
 
 *Notes* says the rest: the tax years, what the document gives, why a year is borrowed. Income year Y is taxed in tax year (assessment year) Y + 1, and many documents are titled by the tax year.
 
-Read *Applies to* and *Status* before taking an amount: a rule set for income year Y cites only documents that apply to Y and are `current`. Each `Source` in `Netto.Core` names its file in `Document`, the path the *File* column gives.
+Read *Applies to* and *Status* before taking an amount: a rule set for income year Y cites only documents that apply to Y and are `current`. Each `Source` in `Netto.Core` names its file in `Document`, the path the *File* column gives, and `SourceDocumentTests` fails when an amount of a rule set, or a source its steps cite, points to a document that is missing here or from this folder, listed at another URL, not `current`, or not applying to that income year.
 
 ## Filing a document
 
