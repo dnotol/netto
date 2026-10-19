@@ -229,7 +229,8 @@ public class GrossToNetViewTests
         {
             (PersonalTaxRules.IncomeTaxScale, "bracket_1_rate bracket_1_upper_limit bracket_2_rate bracket_2_upper_limit "
                 + "bracket_3_rate bracket_3_upper_limit bracket_4_rate"),
-            (rules.TaxFreeAmount.Source, "tax_free_amount tax_free_amount_rate"),
+            (rules.TaxFreeAmount.Source, "tax_free_amount"),
+            (rules.TaxFreeAmountRate.Source, "tax_free_amount_rate"),
             (rules.AutonomyFactor.Source, "autonomy_factor"),
             (rules.RegionalAdditionalRate.Source, "regional_additional_rate"),
         });
@@ -238,14 +239,11 @@ public class GrossToNetViewTests
     [Fact]
     public void From_gross50000_groupsTheFlatRateCostsAmountsUnderTheirSources()
     {
-        var rules = PersonalTaxRules.IncomeYear2026;
-
         var flatRateCosts = View(50_000m).Details.Single(detail => detail.RuleKey == "flat_rate_costs");
 
         flatRateCosts.Sources.Select(group => (group.Source, Keys(group))).ShouldBe(new[]
         {
-            (PersonalTaxRules.DirectorPayDeductions, "flat_rate_costs_rate"),
-            (rules.FlatRateCostsMaximum.Source, "flat_rate_costs_maximum"),
+            (PersonalTaxRules.DirectorPayDeductions, "flat_rate_costs_rate flat_rate_costs_maximum"),
         });
     }
 

@@ -21,21 +21,47 @@ public sealed record PersonalTaxRules(
     RuleAmount RegionalAdditionalRate,
     LowEarnedIncomeCreditRules LowEarnedIncomeCredit)
 {
-    private static readonly Source TaxRatesPage = new(
-        "SPF Finances, « Taux d'imposition »",
-        "Brackets for income years 2025 and 2026; tax-free amount for income year 2025",
-        new Uri("https://fin.belgium.be/fr/particuliers/declaration-impot/revenus/taux-imposition"));
+    // Each amount cites the administration's coordinated article of its own income year, which carries
+    // that year's indexed amounts (filed in official-docs/personal-tax/).
+    private static readonly Source Article130Income2025 = new(
+        "CIR 92, art. 130 (revenus 2025), coordinated text on Fisconetplus, last modified 24.01.2025",
+        "The scale: 25% up to 16,320, 40% up to 28,800, 45% up to 49,840, 50% above",
+        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/68216320-026d-4a35-a81d-1221bfe21b53"));
 
-    private static readonly Source IndexationNotice2027 = new(
-        "Indexation notice for assessment year 2027, version 03.08.2026, adapted to the law of 15.07.2026",
-        "CIR 92 art. 131 (tax-free amount), art. 134 §2 (special scale, first slice 11,750 at 25%), art. 51 (director flat-rate maximum)",
-        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/042cb526-403e-4f40-9a45-dbccd0a12583"));
+    private static readonly Source Article130Income2026 = new(
+        "CIR 92, art. 130 (revenus 2026), coordinated text on Fisconetplus, last modified 18.02.2026",
+        "The scale: 25% up to 16,720, 40% up to 29,510, 45% up to 51,070, 50% above",
+        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/aff72054-004a-4858-8747-1d70964c8e3d"));
 
-    // The income year 2026 edition is not published yet; the 3% rate is unchanged.
-    private static readonly Source ReturnExplanations2026Part2 = new(
-        "SPF Finances, return explanations 2026, part 2 (income year 2025)",
-        "Cadre XVI: own social contributions are deducted, then flat-rate costs of 3%, at most 3,130",
-        new Uri("https://fin.belgium.be/sites/default/files/media/documents/explications-partie-2-2026.pdf"));
+    private static readonly Source Article131Income2025 = new(
+        "CIR 92, art. 131 (revenus 2025), coordinated text on Fisconetplus, last modified 23.01.2025",
+        "Tax-free amount of 10,910",
+        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/d888718e-4593-44a2-bb28-7e26d17baa94"));
+
+    private static readonly Source Article131Income2026 = new(
+        "CIR 92, art. 131 (revenus 2026), coordinated text on Fisconetplus, last modified 03.08.2026",
+        "Tax-free amount of 11,550, as raised by the law of 15.07.2026",
+        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/2fb89ed0-b93e-47d7-816c-85f1ac679b8a"));
+
+    private static readonly Source Article134Income2025 = new(
+        "CIR 92, art. 134 (revenus 2025), coordinated text on Fisconetplus, last modified 14.01.2026",
+        "§2: the tax on the tax-free amount, deducted from the tax on the scale, is 25% of it up to 11,460",
+        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/09b708c4-3d54-468c-a652-9053bd16e2eb"));
+
+    private static readonly Source Article134Income2026 = new(
+        "CIR 92, art. 134 (revenus 2026), coordinated text on Fisconetplus, last modified 05.08.2026",
+        "§2: the tax on the tax-free amount, deducted from the tax on the scale, is 25% of it up to 11,750",
+        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/56f7c2a3-94ab-45dd-85d0-2a0c7f6ddebc"));
+
+    private static readonly Source Article51Income2025 = new(
+        "CIR 92, art. 51 (revenus 2025), coordinated text on Fisconetplus, last modified 14.01.2026",
+        "A director's pay, less the own social contributions of art. 52, 7°: flat-rate costs of 3%, at most 3,130",
+        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/1c87b91e-3a27-418d-9743-bfa0fecdc5e2"));
+
+    private static readonly Source Article51Income2026 = new(
+        "CIR 92, art. 51 (revenus 2026), coordinated text on Fisconetplus, last modified 18.02.2026",
+        "A director's pay, less the own social contributions of art. 52, 7°: flat-rate costs of 3%, at most 3,200",
+        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/21dd9b61-2989-4125-a2e0-6142c607eec8"));
 
     private static readonly Source AutonomyFactorDecree = new(
         "Royal decree of 19.12.2017 fixing the autonomy factor (MB 22.12.2017)",
@@ -60,27 +86,29 @@ public sealed record PersonalTaxRules(
         "Tax credit for low earned income: none above 29,120 of total net income; on the activity income, from 6,710 rising to 910 at 8,960, 910 up to 22,400, falling to none at 29,120. Refunded beyond the tax (art. 304, §2)",
         new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/af20504b-71e6-4daa-89d6-4d3c000c8718"));
 
-    public static Source DirectorPayDeductions => ReturnExplanations2026Part2;
+    // The rules the steps cite. Only income year 2026 runs produce steps (GrossToNet has no other
+    // year's contributions), so these are the 2026 articles; they become per year with the next one.
+    public static Source DirectorPayDeductions => Article51Income2026;
 
-    public static Source IncomeTaxScale => TaxRatesPage;
+    public static Source IncomeTaxScale => Article130Income2026;
 
     public static Source MunicipalSurcharge { get; } = new(
-        "Code des impôts sur les revenus 1992",
-        "Art. 465 to 470: municipal additional tax on the State tax and the regional additional tax, at the municipality's rate",
-        new Uri("https://www.ejustice.just.fgov.be/cgi_loi/change_lg.pl?language=fr&la=F&cn=1992041032&table_name=loi"));
+        "CIR 92, art. 466 and 468 (revenus 2026), coordinated text on Fisconetplus, art. 466 last modified 23.04.2026",
+        "Art. 466: the municipal additional tax is computed on the total tax, the federal share and the regional tax together. Art. 468: at one uniform rate per municipality, with at most one decimal",
+        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/aa4241fb-2007-4bf8-aaf7-a5cb46dcb853"));
 
     public static PersonalTaxRules IncomeYear2025 { get; } = new(
         2025,
         [
-            new TaxBracket(new RuleAmount("bracket_1_rate", 0.25m, TaxRatesPage), new RuleAmount("bracket_1_upper_limit", 16_320m, TaxRatesPage)),
-            new TaxBracket(new RuleAmount("bracket_2_rate", 0.40m, TaxRatesPage), new RuleAmount("bracket_2_upper_limit", 28_800m, TaxRatesPage)),
-            new TaxBracket(new RuleAmount("bracket_3_rate", 0.45m, TaxRatesPage), new RuleAmount("bracket_3_upper_limit", 49_840m, TaxRatesPage)),
-            new TaxBracket(new RuleAmount("bracket_4_rate", 0.50m, TaxRatesPage), null),
+            new TaxBracket(new RuleAmount("bracket_1_rate", 0.25m, Article130Income2025), new RuleAmount("bracket_1_upper_limit", 16_320m, Article130Income2025)),
+            new TaxBracket(new RuleAmount("bracket_2_rate", 0.40m, Article130Income2025), new RuleAmount("bracket_2_upper_limit", 28_800m, Article130Income2025)),
+            new TaxBracket(new RuleAmount("bracket_3_rate", 0.45m, Article130Income2025), new RuleAmount("bracket_3_upper_limit", 49_840m, Article130Income2025)),
+            new TaxBracket(new RuleAmount("bracket_4_rate", 0.50m, Article130Income2025), null),
         ],
-        new RuleAmount("tax_free_amount", 10_910m, TaxRatesPage),
-        new RuleAmount("tax_free_amount_rate", 0.25m, TaxRatesPage),
-        new RuleAmount("flat_rate_costs_rate", 0.03m, ReturnExplanations2026Part2),
-        new RuleAmount("flat_rate_costs_maximum", 3_130m, ReturnExplanations2026Part2),
+        new RuleAmount("tax_free_amount", 10_910m, Article131Income2025),
+        new RuleAmount("tax_free_amount_rate", 0.25m, Article134Income2025),
+        new RuleAmount("flat_rate_costs_rate", 0.03m, Article51Income2025),
+        new RuleAmount("flat_rate_costs_maximum", 3_130m, Article51Income2025),
         new RuleAmount("autonomy_factor", 0.24957m, AutonomyFactorDecree),
         new RuleAmount("regional_additional_rate", 0.33257m, WalloonTaxDecree),
         new LowEarnedIncomeCreditRules(
@@ -94,15 +122,15 @@ public sealed record PersonalTaxRules(
     public static PersonalTaxRules IncomeYear2026 { get; } = new(
         2026,
         [
-            new TaxBracket(new RuleAmount("bracket_1_rate", 0.25m, TaxRatesPage), new RuleAmount("bracket_1_upper_limit", 16_720m, TaxRatesPage)),
-            new TaxBracket(new RuleAmount("bracket_2_rate", 0.40m, TaxRatesPage), new RuleAmount("bracket_2_upper_limit", 29_510m, TaxRatesPage)),
-            new TaxBracket(new RuleAmount("bracket_3_rate", 0.45m, TaxRatesPage), new RuleAmount("bracket_3_upper_limit", 51_070m, TaxRatesPage)),
-            new TaxBracket(new RuleAmount("bracket_4_rate", 0.50m, TaxRatesPage), null),
+            new TaxBracket(new RuleAmount("bracket_1_rate", 0.25m, Article130Income2026), new RuleAmount("bracket_1_upper_limit", 16_720m, Article130Income2026)),
+            new TaxBracket(new RuleAmount("bracket_2_rate", 0.40m, Article130Income2026), new RuleAmount("bracket_2_upper_limit", 29_510m, Article130Income2026)),
+            new TaxBracket(new RuleAmount("bracket_3_rate", 0.45m, Article130Income2026), new RuleAmount("bracket_3_upper_limit", 51_070m, Article130Income2026)),
+            new TaxBracket(new RuleAmount("bracket_4_rate", 0.50m, Article130Income2026), null),
         ],
-        new RuleAmount("tax_free_amount", 11_550m, IndexationNotice2027),
-        new RuleAmount("tax_free_amount_rate", 0.25m, IndexationNotice2027),
-        new RuleAmount("flat_rate_costs_rate", 0.03m, ReturnExplanations2026Part2),
-        new RuleAmount("flat_rate_costs_maximum", 3_200m, IndexationNotice2027),
+        new RuleAmount("tax_free_amount", 11_550m, Article131Income2026),
+        new RuleAmount("tax_free_amount_rate", 0.25m, Article134Income2026),
+        new RuleAmount("flat_rate_costs_rate", 0.03m, Article51Income2026),
+        new RuleAmount("flat_rate_costs_maximum", 3_200m, Article51Income2026),
         new RuleAmount("autonomy_factor", 0.24957m, AutonomyFactorDecree),
         new RuleAmount("regional_additional_rate", 0.33257m, WalloonTaxDecree),
         new LowEarnedIncomeCreditRules(
