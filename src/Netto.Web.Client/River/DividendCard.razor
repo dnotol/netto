@@ -1,12 +1,15 @@
 @using Netto.Core.Dividends
+@using Netto.Core.Simulation
 @using Netto.Web.Client.Steps
 @inject IStringLocalizer<DividendCard> L
 
-@* One slider over the profit after tax: kept in the company on one side, paid out as a dividend on
-   the other, so the dividend can never exceed what is there. It is withheld at the rate the user
-   declares, and the withholding on the exempt part comes back through the tax return. What is kept
-   can be typed exactly, taken when the field is left, so the field shows what the profit after tax
-   allows (the split's field does the same). *@
+@* One slider over what the company can pay out, this year's profit after tax and the profits kept
+   from earlier years: kept in the company at year end on one side, paid out as a dividend on the
+   other, so the dividend can never exceed what is there. It is withheld at the rate the user
+   declares, whatever year its profits come from, and the withholding on the exempt part comes back
+   through the tax return. The earlier profits are taken while typing, like revenue, since nothing
+   bounds them. What is kept can be typed exactly, taken when the field is left, so the field shows
+   what can be paid out (the split's field does the same). *@
 <ModuleCard Title="@L["Title"]" Summary="@Summary" Skipped="Inputs.Company is null" Details="@Details" DetailsLabel="@L["DetailsLabel"]">
     @if (Inputs.Company is null)
     {
@@ -14,6 +17,13 @@
     }
     else
     {
+        <RiverField Label="@L["EarlierLabel"]" For="river-earlier-profits" Origin="Inputs.EarlierProfits.Origin">
+            <MudNumericField T="decimal" InputId="river-earlier-profits" Value="Inputs.EarlierProfits.Value" ValueChanged="OnEarlierProfitsChanged"
+                             Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
+                             Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
+                             Error="@(Refused == YearSimulation.EarlierProfitsNegative)" />
+            <p class="dividend__hint">@L["EarlierHint"]</p>
+        </RiverField>
         <RiverField Label="@L["KeptLabel"]" For="river-reserve" Origin="Inputs.Reserve.Origin">
             @if (_view is not null)
             {
@@ -23,7 +33,7 @@
             }
             <MudNumericField T="decimal" InputId="river-reserve" Value="@(_view?.Kept ?? Inputs.Reserve.Value)" ValueChanged="OnReserveChanged"
                              Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
-                             Variant="Variant.Outlined" Margin="Margin.Dense" Error="@(Refused is not null)" />
+                             Variant="Variant.Outlined" Margin="Margin.Dense" Error="@(Refused == YearSimulation.ReserveNegative)" />
         </RiverField>
         @if (_view is not null)
         {
@@ -31,6 +41,10 @@
                 <span>@L["DividendEnd"] <b>@Formats.Euros(_view.Dividend)</b></span>
                 <span>@L["KeptEnd"] <b>@Formats.Euros(_view.Kept)</b></span>
             </div>
+            @if (_view.EarlierProfits > 0m)
+            {
+                <p class="dividend__hint">@L["OutOf", Formats.Euros(_view.ProfitAfterTax), Formats.Euros(_view.EarlierProfits)]</p>
+            }
         }
         <RefusedMessage Error="@Refused" />
         <RiverField Label="@L["CategoryLabel"]" Origin="Inputs.DividendCategory.Origin">
@@ -87,6 +101,8 @@
         L[DividendCardText.Category(category), DividendRules.For(Inputs.IncomeYear)?.Rate(category) is { } rate ? Formats.RuleAmount(rate) : ""];
 
     private Task OnReserveChanged(decimal reserve) => InputsChanged.InvokeAsync(Inputs.WithReserve(reserve));
+
+    private Task OnEarlierProfitsChanged(decimal earlierProfits) => InputsChanged.InvokeAsync(Inputs.WithEarlierProfits(earlierProfits));
 
     private Task OnCategoryChanged(WithholdingCategory category) => InputsChanged.InvokeAsync(Inputs.WithDividendCategory(category));
 }

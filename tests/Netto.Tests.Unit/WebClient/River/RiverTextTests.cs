@@ -56,7 +56,7 @@ public class RiverTextTests
         var errors = new[]
         {
             YearSimulation.IncomeYearNotSupported, YearSimulation.RevenueNegative, YearSimulation.RunningCostsNegative,
-            YearSimulation.ReserveNegative, GrossToNet.GrossPayNegative, GrossToNet.MunicipalRateOutOfRange,
+            YearSimulation.ReserveNegative, YearSimulation.EarlierProfitsNegative, GrossToNet.GrossPayNegative, GrossToNet.MunicipalRateOutOfRange,
         };
 
         Missing(RefusedMessageResources, errors.Select(RefusedMessageText.Error)).ShouldBeEmpty();

@@ -49,7 +49,7 @@
     <value>The company's accounting year is the calendar year</value>
   </data>
   <data name="AssumedSteadyState" xml:space="preserve">
-    <value>Each year pays out its own profit</value>
+    <value>Each year pays out its own profit, and profits kept from earlier years go out with it at the same rate</value>
   </data>
   <data name="AssumedFinalContributions" xml:space="preserve">
     <value>Social contributions are the final amount owed on this year's income</value>
@@ -58,7 +58,7 @@
     <value>Not counted yet</value>
   </data>
   <data name="LimitReserves" xml:space="preserve">
-    <value>Profits kept from earlier years, and dividends paid out of them.</value>
+    <value>The company-law tests on what can be paid out, and the liquidation reserve: profits kept from earlier years are taken as ordinary retained earnings.</value>
   </data>
   <data name="LimitCompanyContribution" xml:space="preserve">
     <value>The company's yearly contribution to INASTI: count it in the running costs.</value>

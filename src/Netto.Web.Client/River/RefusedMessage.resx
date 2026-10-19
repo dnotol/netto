@@ -27,6 +27,9 @@
   <data name="Error_reserve_negative" xml:space="preserve">
     <value>What you keep in the company cannot be negative.</value>
   </data>
+  <data name="Error_earlier_profits_negative" xml:space="preserve">
+    <value>The profits kept from earlier years cannot be negative. Enter 0 if the company has none.</value>
+  </data>
   <data name="Error_income_year_not_supported" xml:space="preserve">
     <value>This income year is not supported yet.</value>
   </data>

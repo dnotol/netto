@@ -30,6 +30,9 @@
   <data name="FromProfit" xml:space="preserve">
     <value>Out of {0} of profit before your pay.</value>
   </data>
+  <data name="FromProfitAndEarlier" xml:space="preserve">
+    <value>Out of {0} of profit before your pay and {1} kept from earlier years.</value>
+  </data>
   <data name="FromPay" xml:space="preserve">
     <value>Out of {0} of gross pay. Enter your company's year to see the rest of the river.</value>
   </data>

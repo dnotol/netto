@@ -18,7 +18,8 @@ public sealed record RiverInputs(
     Input<decimal> DirectorPay,
     MunicipalityChoice Municipality,
     Input<decimal> Reserve,
-    Input<WithholdingCategory> DividendCategory)
+    Input<WithholdingCategory> DividendCategory,
+    Input<decimal> EarlierProfits)
 {
     // The only year with every layer's amounts; choosing the year is a later item.
     private const int ExampleYear = 2026;
@@ -33,7 +34,8 @@ public sealed record RiverInputs(
         new Input<decimal>(50_000m, InputOrigin.Example),
         MunicipalityChoice.Start(MunicipalRates.IncomeYear2026, 0.07m),
         new Input<decimal>(0m, InputOrigin.Example),
-        new Input<WithholdingCategory>(WithholdingCategory.VvprbisThirdYearOnwards, InputOrigin.Default));
+        new Input<WithholdingCategory>(WithholdingCategory.VvprbisThirdYearOnwards, InputOrigin.Default),
+        new Input<decimal>(0m, InputOrigin.Example));
 
     // The most the split can give as pay: the profit before pay, never below zero. None while the
     // company is skipped, when the pay has a slider of its own.
@@ -56,6 +58,8 @@ public sealed record RiverInputs(
     public RiverInputs WithReserve(decimal reserve) => this with { Reserve = Yours(reserve) };
 
     public RiverInputs WithDividendCategory(WithholdingCategory category) => this with { DividendCategory = Yours(category) };
+
+    public RiverInputs WithEarlierProfits(decimal earlierProfits) => this with { EarlierProfits = Yours(earlierProfits) };
 
     public RiverInputs SkipCompany() => this with { Company = null };
 
@@ -95,7 +99,8 @@ public sealed record RiverInputs(
         directorPay,
         Municipality.MunicipalRate,
         Reserve.Value,
-        DividendCategory.Value);
+        DividendCategory.Value,
+        EarlierProfits.Value);
 }
 
 // The company's year as the user enters it, excluding VAT.

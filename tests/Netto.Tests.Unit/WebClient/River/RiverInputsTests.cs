@@ -24,8 +24,35 @@ public class RiverInputsTests
     {
         var inputs = RiverInputs.Example;
 
-        new[] { inputs.Company!.Revenue.Origin, inputs.Company.RunningCosts.Origin, inputs.DirectorPay.Origin, inputs.Reserve.Origin }
+        new[] { inputs.Company!.Revenue.Origin, inputs.Company.RunningCosts.Origin, inputs.DirectorPay.Origin, inputs.Reserve.Origin, inputs.EarlierProfits.Origin }
             .ShouldAllBe(origin => origin == InputOrigin.Example);
+    }
+
+    [Fact]
+    public void Example_hasNoEarlierProfits()
+    {
+        RiverInputs.Example.EarlierProfits.Value.ShouldBe(0m);
+    }
+
+    [Fact]
+    public void WithEarlierProfits_makesThemTheUsers()
+    {
+        RiverInputs.Example.WithEarlierProfits(60_000m).EarlierProfits.ShouldBe(new Input<decimal>(60_000m, InputOrigin.Yours));
+    }
+
+    // YearSimulationTests: 60,000 kept from earlier years, 30,000 kept at year end.
+    [Fact]
+    public void Run_earlierProfitsReachTheEngine()
+    {
+        RiverInputs.Example.WithEarlierProfits(60_000m).WithReserve(30_000m).Run().Year.ShouldNotBeNull().NetInPocket.ShouldBe(87_129.24m);
+    }
+
+    [Fact]
+    public void Run_negativeEarlierProfits_isRefusedWithTheEnginesKey()
+    {
+        var run = RiverInputs.Example.WithEarlierProfits(-0.01m).Run();
+
+        (run.Year, run.Error).ShouldBe((null, YearSimulation.EarlierProfitsNegative));
     }
 
     [Fact]
@@ -229,6 +256,7 @@ public class RiverInputsTests
             RiverInputs.Example.WithSmallCompany(false),
             RiverInputs.Example.WithMunicipality(RiverInputs.Example.Municipality.Enter(0.08m)),
             RiverInputs.Example.WithDividendCategory(WithholdingCategory.Standard),
+            RiverInputs.Example.WithEarlierProfits(60_000m),
             RiverInputs.Example.SkipCompany(),
         };
 

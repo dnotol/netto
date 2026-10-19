@@ -31,6 +31,10 @@
             {
                 @L["FromPay", Formats.Euros(View.Start)]
             }
+            else if (View.EarlierProfits > 0m)
+            {
+                @L["FromProfitAndEarlier", Formats.Euros(View.Start - View.EarlierProfits), Formats.Euros(View.EarlierProfits)]
+            }
             else
             {
                 @L["FromProfit", Formats.Euros(View.Start)]

@@ -22,7 +22,16 @@
     <value>Waiting for the company's year.</value>
   </data>
   <data name="KeptLabel" xml:space="preserve">
-    <value>Kept in the company out of this year's profit after tax</value>
+    <value>Kept in the company at year end</value>
+  </data>
+  <data name="EarlierLabel" xml:space="preserve">
+    <value>Profits kept from earlier years, after tax</value>
+  </data>
+  <data name="EarlierHint" xml:space="preserve">
+    <value>What the company kept from earlier years' profits and can still pay out. They are paid out with this year's dividend, at the same rate. Leave 0 if it has none.</value>
+  </data>
+  <data name="OutOf" xml:space="preserve">
+    <value>Out of {0} of this year's profit after tax and {1} kept from earlier years.</value>
   </data>
   <data name="DividendEnd" xml:space="preserve">
     <value>Dividend</value>

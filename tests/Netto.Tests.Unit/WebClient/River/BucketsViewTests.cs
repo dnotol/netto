@@ -49,6 +49,21 @@ public class BucketsViewTests
         view.Buckets.Sum(bucket => bucket.Amount).ShouldBe(view.Start);
     }
 
+    // The river starts from the profit before pay and the profits kept from earlier years together.
+    [Fact]
+    public void From_earlierProfits_startsAtTheProfitBeforePayAndThem()
+    {
+        var view = BucketsView.From(RiverInputs.Example.WithEarlierProfits(60_000m).WithReserve(30_000m).Run()).ShouldNotBeNull();
+
+        (view.Start, view.EarlierProfits, view.Buckets.Sum(bucket => bucket.Amount)).ShouldBe((160_000m, 60_000m, 160_000m));
+    }
+
+    [Fact]
+    public void From_example_hasNoEarlierProfits()
+    {
+        BucketsView.From(RiverInputs.Example.Run()).ShouldNotBeNull().EarlierProfits.ShouldBe(0m);
+    }
+
     [Fact]
     public void From_reserve_keepsItInTheCompanyBucket()
     {

@@ -213,9 +213,18 @@ internal sealed record CorporateTaxView(
     }
 }
 
-// The slider runs over the profit after tax, the dividend on one side and what is kept on the other;
-// Kept is where it sits, never above the profit after tax.
-internal sealed record DividendView(decimal Maximum, decimal Kept, decimal Dividend, decimal Rate, IReadOnlyList<Drain> Drains, IReadOnlyList<StepDetail> Details)
+// The slider runs over what the company can pay out, this year's profit after tax and the profits
+// kept from earlier years, the dividend on one side and what is kept on the other; Kept is where it
+// sits, never above what can be paid out.
+internal sealed record DividendView(
+    decimal Maximum,
+    decimal ProfitAfterTax,
+    decimal EarlierProfits,
+    decimal Kept,
+    decimal Dividend,
+    decimal Rate,
+    IReadOnlyList<Drain> Drains,
+    IReadOnlyList<StepDetail> Details)
 {
     public static DividendView From(YearResult year)
     {
@@ -223,6 +232,8 @@ internal sealed record DividendView(decimal Maximum, decimal Kept, decimal Divid
 
         return new DividendView(
             year.MaximumDividend,
+            year.ProfitAfterTax,
+            year.Scenario.EarlierProfits,
             year.MaximumDividend - year.Dividend.Dividend,
             year.Dividend.Dividend,
             year.Dividend.Rate,
@@ -244,7 +255,7 @@ internal static class RiverErrors
         YearSimulation.RevenueNegative or YearSimulation.RunningCostsNegative => RiverModule.CompanyYear,
         GrossToNet.GrossPayNegative => companySkipped ? RiverModule.DirectorPay : RiverModule.Split,
         GrossToNet.MunicipalRateOutOfRange => RiverModule.DirectorPay,
-        YearSimulation.ReserveNegative => RiverModule.Dividend,
+        YearSimulation.ReserveNegative or YearSimulation.EarlierProfitsNegative => RiverModule.Dividend,
         _ => RiverModule.River,
     };
 }

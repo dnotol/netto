@@ -181,6 +181,16 @@ public class ModuleViewsTests
         (view.Maximum, view.Dividend, view.Drains[^1].Amount).ShouldBe((0m, 0m, -10_000m));
     }
 
+    // 40,000 of this year's profit after tax and 60,000 kept from earlier years: the slider runs over
+    // both, 30,000 kept and 70,000 paid out.
+    [Fact]
+    public void Dividend_earlierProfits_slidesOverThemAndTheProfitAfterTax()
+    {
+        var view = Dividend(RiverInputs.Example.WithEarlierProfits(60_000m).WithReserve(30_000m));
+
+        (view.Maximum, view.ProfitAfterTax, view.EarlierProfits, view.Kept, view.Dividend).ShouldBe((100_000m, 40_000m, 60_000m, 30_000m, 70_000m));
+    }
+
     [Fact]
     public void Dividend_example_listsOnlyTheDividendsSteps()
     {
@@ -195,6 +205,7 @@ public class ModuleViewsTests
     [InlineData(GrossToNet.GrossPayNegative, true, "DirectorPay")]
     [InlineData(GrossToNet.MunicipalRateOutOfRange, false, "DirectorPay")]
     [InlineData(YearSimulation.ReserveNegative, false, "Dividend")]
+    [InlineData(YearSimulation.EarlierProfitsNegative, false, "Dividend")]
     [InlineData(YearSimulation.IncomeYearNotSupported, false, "River")]
     public void RiverErrors_engineRefusal_isShownOnTheModuleHoldingTheField(string error, bool companySkipped, string module)
     {
