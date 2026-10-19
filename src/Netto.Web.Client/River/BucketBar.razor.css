@@ -22,12 +22,6 @@
     margin: 0;
 }
 
-@media (max-width: 640px) {
-    .bucket-bar__buckets {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-}
-
 .bucket {
     display: grid;
     min-width: 0;
@@ -112,4 +106,39 @@
     margin: 0;
     color: var(--netto-text-muted);
     font-size: 0.8rem;
+}
+
+/* On a phone the bar shares the screen with the sticky site header: two rows of buckets, tighter, so
+   the cards keep most of the height. */
+@media (max-width: 640px) {
+    .bucket-bar ::deep .mud-container {
+        gap: 0.35rem;
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+    }
+
+    .bucket-bar__buckets {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.3rem 1rem;
+    }
+
+    .bucket__label {
+        font-size: 0.62rem;
+    }
+
+    .bucket__amount {
+        font-size: 1.02rem;
+    }
+
+    .bucket--pocket .bucket__amount {
+        font-size: 1.15rem;
+    }
+
+    .bucket-bar__stack {
+        height: 0.4rem;
+    }
+
+    .bucket-bar__from {
+        font-size: 0.72rem;
+    }
 }
