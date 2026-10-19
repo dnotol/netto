@@ -4,7 +4,8 @@ namespace Netto.Core.Simulation;
 // items the director also uses privately), joins as another value.
 public enum Track
 {
-    // Money that leaves: social contributions, income tax, municipal surcharge.
+    // Money that leaves: corporate tax, social contributions, income tax, municipal surcharge, dividend
+    // withholding. What comes back, the withholding refunded on exempt dividends, is a negative amount.
     PaidOut,
 
     // Only lowers the tax base and is never subtracted from net in pocket: the flat-rate costs.
