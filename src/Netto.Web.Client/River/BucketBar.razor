@@ -1,0 +1,56 @@
+@inject IStringLocalizer<BucketBar> L
+
+@* The river's summary, always in view under the site header: where the money ends up, out of what
+   the river starts from. Every amount is the engine's, regrouped by BucketsView. *@
+<div class="bucket-bar" aria-live="polite">
+    <MudContainer MaxWidth="MaxWidth.Large">
+        <dl class="bucket-bar__buckets">
+            @foreach (var key in BucketsView.Keys)
+            {
+                <div class="bucket bucket--@key">
+                    <dt class="bucket__label"><span class="bucket__swatch" aria-hidden="true"></span>@L[BucketBarText.Bucket(key)]</dt>
+                    <dd class="bucket__amount">@Amount(key)</dd>
+                </div>
+            }
+        </dl>
+        @if (View is { } view && view.Buckets.All(bucket => bucket.Share is not null))
+        {
+            <div class="bucket-bar__stack" aria-hidden="true">
+                @foreach (var bucket in view.Buckets)
+                {
+                    <span class="bucket-bar__segment bucket--@bucket.Key" style="@SegmentStyle(bucket)"></span>
+                }
+            </div>
+        }
+        <p class="bucket-bar__from">
+            @if (View is null)
+            {
+                @L["Refused"]
+            }
+            else if (View.StartsAtPay)
+            {
+                @L["FromPay", Formats.Euros(View.Start)]
+            }
+            else
+            {
+                @L["FromProfit", Formats.Euros(View.Start)]
+            }
+        </p>
+    </MudContainer>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public RiverRun Run { get; set; } = default!;
+
+    private BucketsView? View { get; set; }
+
+    protected override void OnParametersSet() => View = BucketsView.From(Run);
+
+    private string Amount(string key) =>
+        View?.Buckets.Single(bucket => bucket.Key == key).Amount is { } amount ? Formats.Euros(amount) : L["NoFigure"];
+
+    // CSS wants a dot as decimal separator whatever the culture.
+    private static string SegmentStyle(Bucket bucket) =>
+        FormattableString.Invariant($"flex-basis: {(bucket.Share ?? 0m) * 100m:0.###}%");
+}

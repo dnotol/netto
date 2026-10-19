@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Bucket_pocket" xml:space="preserve">
+    <value>Your pocket</value>
+  </data>
+  <data name="Bucket_taxes_on_pay" xml:space="preserve">
+    <value>Taxes on pay</value>
+  </data>
+  <data name="Bucket_taxes_on_profit" xml:space="preserve">
+    <value>Taxes on profit</value>
+  </data>
+  <data name="Bucket_kept_in_company" xml:space="preserve">
+    <value>Kept in company</value>
+  </data>
+  <data name="NoFigure" xml:space="preserve">
+    <value>—</value>
+  </data>
+  <data name="FromProfit" xml:space="preserve">
+    <value>Out of {0} of profit before your pay.</value>
+  </data>
+  <data name="FromPay" xml:space="preserve">
+    <value>Out of {0} of gross pay. Enter your company's year to see the rest of the river.</value>
+  </data>
+  <data name="Refused" xml:space="preserve">
+    <value>No figures until the amount marked below is corrected.</value>
+  </data>
+</root>
