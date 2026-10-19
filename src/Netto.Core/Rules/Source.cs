@@ -2,4 +2,7 @@ namespace Netto.Core.Rules;
 
 // Where a rule or an amount comes from: an official text (tax administration, Moniteur belge,
 // INASTI), the place in it, and where to read it. Every figure Netto shows traces back to one.
-public sealed record Source(string Title, string Reference, Uri Url);
+// Document is the text as it was read, filed in official-docs/ under the path INDEX.md's File column
+// gives it: its row there says which income years may cite it, so an edition the URL alone cannot
+// tell apart is still pinned.
+public sealed record Source(string Title, string Reference, Uri Url, string Document);

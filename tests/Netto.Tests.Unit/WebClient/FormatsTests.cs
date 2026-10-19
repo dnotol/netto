@@ -6,7 +6,7 @@ namespace Netto.Tests.WebClient;
 
 public class FormatsTests
 {
-    private static readonly Source AnySource = new("Title", "Reference", new Uri("https://example.org"));
+    private static readonly Source AnySource = new("Title", "Reference", new Uri("https://example.org"), "layer/issuer_title_2026-01-01.pdf");
 
     [Fact]
     public void Euros_amount_isEnglishStyleToTheCent()
