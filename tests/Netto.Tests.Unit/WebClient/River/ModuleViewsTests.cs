@@ -166,6 +166,13 @@ public class ModuleViewsTests
         });
     }
 
+    // With no dividend the refund is zero, and still money that comes back rather than a payment.
+    [Fact]
+    public void Dividend_noDividend_listsTheRefundAsComingBack()
+    {
+        Dividend(RiverInputs.Example.WithReserve(50_000m)).Drains[1].ShouldBe(new Drain("dividend_exemption_refund", DrainKind.Back, 0m, "taxes_on_profit"));
+    }
+
     [Fact]
     public void Dividend_lossYear_keepsTheLossInTheCompany()
     {

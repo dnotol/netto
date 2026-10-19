@@ -119,7 +119,8 @@ internal enum RiverModule
 public sealed record Drain(string Key, DrainKind Kind, decimal Amount, string To)
 {
     // A step paid out with a negative amount is money coming back: the refund on exempt dividends.
-    internal static Drain PaidOutTo(Step step, string bucket) => step.Amount < 0m
+    // The engine negates the refund, so a refund of nothing is a negative zero and still comes back.
+    internal static Drain PaidOutTo(Step step, string bucket) => decimal.IsNegative(step.Amount)
         ? new Drain(step.RuleKey, DrainKind.Back, -step.Amount, bucket)
         : new Drain(step.RuleKey, DrainKind.PaidOut, step.Amount, bucket);
 }
