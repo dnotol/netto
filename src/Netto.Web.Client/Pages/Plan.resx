@@ -72,6 +72,9 @@
   <data name="AssumedOnlyIncome" xml:space="preserve">
     <value>Director pay is your only income</value>
   </data>
+  <data name="AssumedNoSpecialContribution" xml:space="preserve">
+    <value>So no special social security contribution: not owed in main occupation</value>
+  </data>
   <data name="AssumedFinalContributions" xml:space="preserve">
     <value>Social contributions are the final amount owed on this year's income</value>
   </data>
@@ -221,9 +224,6 @@
   </data>
   <data name="LimitLowIncomeCredit" xml:space="preserve">
     <value>The tax credit for low earned income.</value>
-  </data>
-  <data name="LimitSpecialContribution" xml:space="preserve">
-    <value>The special social security contribution, if a self-employed director owes it: still being confirmed.</value>
   </data>
   <data name="LimitAdvanceSurcharge" xml:space="preserve">
     <value>The surcharge for paying too little income tax in advance during the year.</value>

@@ -5,6 +5,9 @@ namespace Netto.Core.PersonalTax;
 // Personal income tax of a single resident of Wallonia whose only income is director pay, for one
 // income year. Income year 2025 is here for the tests only: it is the latest year Tax-Calc covers,
 // so it proves the method and the rounding against the administration's own simulator.
+// The special social security contribution collected with the tax is not here: a self-employed
+// person in main occupation does not owe it (law of 30.03.1994, art. 106 §4 and art. 125, 2°,
+// still so after the law of 15.07.2026 makes it per person from income year 2028).
 public sealed record PersonalTaxRules(
     int IncomeYear,
     IReadOnlyList<TaxBracket> Scale,
