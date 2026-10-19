@@ -45,6 +45,9 @@
   <data name="AssumedNoSpecialContribution" xml:space="preserve">
     <value>So no special social security contribution: not owed in main occupation</value>
   </data>
+  <data name="AssumedLowIncomeCredit" xml:space="preserve">
+    <value>And the tax credit for low earned income on a low pay, the dividend, taxed at source, being left out of your return</value>
+  </data>
   <data name="AssumedCalendarYear" xml:space="preserve">
     <value>The company's accounting year is the calendar year</value>
   </data>
@@ -72,10 +75,7 @@
   <data name="LimitManagementFee" xml:space="preserve">
     <value>Your social insurance fund's management fee, charged on top of the contributions.</value>
   </data>
-  <data name="LimitLowIncomeCredit" xml:space="preserve">
-    <value>The tax credit for low earned income.</value>
-  </data>
   <data name="LimitTaxCalc" xml:space="preserve">
-    <value>The 2026 figures are computed from the official 2026 amounts. Tax-Calc does not cover 2026 yet; on 2025, the same method matches it to the cent on the income tax and on the dividend refund.</value>
+    <value>The 2026 figures are computed from the official 2026 amounts. Tax-Calc does not cover 2026 yet; on 2025, the same method matches it to the cent on the income tax, the tax credit for low earned income and the dividend refund.</value>
   </data>
 </root>

@@ -15,6 +15,10 @@ internal sealed record GrossToNetView(
 {
     private const decimal NextSlice = 1_000m;
 
+    // The next 1,000's bar: the parts with a width, since one of none would still draw the gap that
+    // separates segments. The legend lists every part.
+    public IReadOnlyList<NextThousandPart> NextThousandBar => [.. NextThousand.Where(part => part.Width > 0m)];
+
     public static GrossToNetView From(GrossToNetResult result)
     {
         var gross = new Line("gross_pay", RowKind.Gross, result.GrossPay);

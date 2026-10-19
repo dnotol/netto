@@ -34,7 +34,7 @@
     <section class="next" aria-labelledby="next-title">
         <h3 id="next-title" class="next__title">@L["NextTitle"]</h3>
         <div class="next__bar" aria-hidden="true">
-            @foreach (var part in _view.NextThousand)
+            @foreach (var part in _view.NextThousandBar)
             {
                 <span class="next__segment next__segment--@part.Key" style="@SegmentStyle(part)"></span>
             }

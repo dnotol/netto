@@ -170,6 +170,15 @@ public class GrossToNetViewTests
         });
     }
 
+    // A part of no width would still draw the gap that separates segments.
+    [Fact]
+    public void From_gross50000_barLeavesOutThePartsOfNoWidth()
+    {
+        var bar = View(50_000m).NextThousandBar;
+
+        bar.Select(part => part.Key).ShouldBe(["social_contributions", "income_tax", "municipal_surcharge", "net_in_pocket"]);
+    }
+
     [Fact]
     public void From_grossWhereCreditFalls_drawsTheCreditLostAtItsShare()
     {
