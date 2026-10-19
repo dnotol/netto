@@ -1,0 +1,228 @@
+/* Moved from the pay page, which drew it as cards of their own; inside Director pay's card the two
+   tracks and the next 1,000 are outlined instead. The funnel takes as many columns of at least 22rem
+   as fit, so in a card half a laptop wide the tracks stack. */
+
+.pay-slip {
+    display: grid;
+    gap: 1.25rem;
+    min-width: 0;
+}
+
+/* min(100%, 22rem) keeps a track from overflowing a screen narrower than 22rem. */
+.funnel {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+    gap: 1.25rem;
+}
+
+.funnel__track {
+    min-width: 0;
+    padding: 1rem 1.1rem;
+    border: 1px solid var(--netto-line);
+    border-radius: 14px;
+}
+
+.funnel__track-title {
+    margin: 0 0 0.25rem;
+    font-family: "Fraunces", Georgia, serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.funnel__track-hint {
+    margin: 0 0 1.25rem;
+    color: var(--netto-text-muted);
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.funnel__rows {
+    display: grid;
+    gap: 0.9rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+/* Each row is a small grid: the label and the amount on one line, the bar under both, then the
+   note if there is one. */
+.funnel-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: baseline;
+    gap: 0.35rem 1rem;
+}
+
+.funnel-row__label,
+.funnel-row__amount {
+    font-size: 0.93rem;
+}
+
+.funnel-row__amount {
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+/* The bar's lane spans the scale shared by both tracks; the bar inside is placed by the left and
+   width percentages GrossToNetView computes, so a part paid out starts where the previous bar
+   ended. */
+.funnel-row__track {
+    position: relative;
+    grid-column: 1 / -1;
+    height: 0.7rem;
+    border-radius: 999px;
+    background: rgba(243, 238, 226, 0.04);
+    overflow: hidden;
+}
+
+.funnel-row__bar {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    border-radius: 999px;
+}
+
+.funnel-row--gross .funnel-row__bar {
+    background: rgba(243, 238, 226, 0.7);
+}
+
+.funnel-row--paid-out .funnel-row__bar {
+    background: rgba(243, 238, 226, 0.3);
+}
+
+/* Stripes, not a colour, mark what is never paid out. A neutral repeating gradient draws them. */
+.funnel-row--tax-base-only .funnel-row__bar,
+.funnel-row__note::before {
+    background: repeating-linear-gradient(135deg, rgba(243, 238, 226, 0.55) 0 2px, transparent 2px 6px);
+    box-shadow: inset 0 0 0 1px rgba(243, 238, 226, 0.35);
+}
+
+.funnel-row--taxable-income .funnel-row__bar {
+    background: rgba(243, 238, 226, 0.12);
+    box-shadow: inset 0 0 0 1px rgba(243, 238, 226, 0.6);
+}
+
+.funnel-row--net .funnel-row__bar {
+    background: var(--netto-gold);
+}
+
+.funnel-row--net .funnel-row__label,
+.funnel-row--net .funnel-row__amount {
+    font-weight: 600;
+}
+
+.funnel-row--net .funnel-row__amount {
+    color: var(--netto-gold);
+}
+
+.funnel-row__note {
+    display: inline-flex;
+    grid-column: 1 / -1;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--netto-text-muted);
+    font-size: 0.8rem;
+}
+
+    .funnel-row__note::before {
+        content: "";
+        flex: none;
+        width: 1.1rem;
+        height: 0.6rem;
+        border-radius: 3px;
+    }
+
+/* Next 1,000: one bar cut in four, each part as wide as its share (flex-basis), with a legend
+   under it that carries the amounts and percentages. */
+
+.next {
+    padding: 1rem 1.1rem;
+    border: 1px solid var(--netto-line);
+    border-radius: 14px;
+}
+
+.next__title {
+    margin: 0 0 1rem;
+    font-family: "Fraunces", Georgia, serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.next__bar {
+    display: flex;
+    height: 0.9rem;
+    margin-bottom: 1.25rem;
+    border-radius: 999px;
+    background: rgba(243, 238, 226, 0.04);
+    overflow: hidden;
+}
+
+.next__segment {
+    flex: 0 0 auto;
+}
+
+    /* A thin gap in the card's colour between parts. */
+    .next__segment + .next__segment {
+        border-left: 2px solid var(--netto-surface);
+    }
+
+.next__segment--social_contributions,
+.next__part--social_contributions .next__swatch {
+    background: rgba(243, 238, 226, 0.55);
+}
+
+.next__segment--income_tax,
+.next__part--income_tax .next__swatch {
+    background: rgba(243, 238, 226, 0.3);
+}
+
+.next__segment--municipal_surcharge,
+.next__part--municipal_surcharge .next__swatch {
+    background: rgba(243, 238, 226, 0.12);
+    box-shadow: inset 0 0 0 1px rgba(243, 238, 226, 0.5);
+}
+
+.next__segment--net_in_pocket,
+.next__part--net_in_pocket .next__swatch {
+    background: var(--netto-gold);
+}
+
+.next__parts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
+    gap: 1rem 1.5rem;
+    margin: 0;
+}
+
+.next__part dt {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--netto-text-muted);
+    font-size: 0.85rem;
+}
+
+.next__part dd {
+    margin: 0.3rem 0 0;
+    font-size: 1.1rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.next__part--net_in_pocket dd {
+    color: var(--netto-gold);
+    font-weight: 600;
+}
+
+.next__share {
+    margin-left: 0.5rem;
+    color: var(--netto-text-muted);
+    font-size: 0.9rem;
+    font-weight: 400;
+}
+
+.next__swatch {
+    flex: none;
+    width: 0.75rem;
+    height: 0.75rem;
+    border-radius: 3px;
+}

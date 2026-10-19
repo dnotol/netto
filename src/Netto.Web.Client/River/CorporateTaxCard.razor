@@ -1,0 +1,67 @@
+@using Netto.Web.Client.Steps
+@inject IStringLocalizer<CorporateTaxCard> L
+
+@* Corporate tax on the company's profit after pay, at 25% or 20% on its first slice. The user
+   declares what Netto cannot see; the engine tests the minimum pay, set on the split, and the card
+   says which condition decided the rate. *@
+<ModuleCard Title="@L["Title"]" Summary="@Summary" Skipped="Inputs.Company is null" Details="@Details" DetailsLabel="@L["DetailsLabel"]">
+    @if (Inputs.Company is null)
+    {
+        <p class="corporate-tax__waiting">@L["Waiting"]</p>
+    }
+    else
+    {
+        <div class="corporate-tax__statuses">
+            <div class="corporate-tax__status">
+                <MudCheckBox T="bool" Value="Inputs.SmallCompany.Value" ValueChanged="OnSmallCompanyChanged" Color="Color.Primary"
+                             Label="@L["SmallCompanyLabel"]" />
+                <OriginChip Origin="Inputs.SmallCompany.Origin" />
+            </div>
+            <p class="corporate-tax__hint">@L["SmallCompanyHint"]</p>
+            <div class="corporate-tax__status">
+                <MudCheckBox T="bool" Value="Inputs.FirstFourTaxPeriods.Value" ValueChanged="OnFirstFourTaxPeriodsChanged" Color="Color.Primary"
+                             Label="@L["FirstFourLabel"]" Disabled="!Inputs.SmallCompany.Value" />
+                <OriginChip Origin="Inputs.FirstFourTaxPeriods.Origin" />
+            </div>
+        </div>
+        @if (_view is not null)
+        {
+            <p class="corporate-tax__condition">
+                @(_view.NoTaxableProfit
+                    ? L["NoTaxableProfit"]
+                    : L[CorporateTaxCardText.Condition(_view.Condition), Formats.Euros(_view.MinimumDirectorPay)])
+            </p>
+            <DrainList Drains="_view.Drains" />
+        }
+    }
+</ModuleCard>
+
+@code {
+    [Parameter, EditorRequired]
+    public RiverInputs Inputs { get; set; } = default!;
+
+    [Parameter]
+    public EventCallback<RiverInputs> InputsChanged { get; set; }
+
+    [Parameter, EditorRequired]
+    public RiverRun Run { get; set; } = default!;
+
+    private CorporateTaxView? _view;
+
+    protected override void OnParametersSet() => _view = Run.Year is { } year ? CorporateTaxView.From(year) : null;
+
+    private string? Summary => Run.Year is { } year
+        ? L["Summary", Formats.Euros(year.Company.TaxableIncome), Formats.Euros(year.ProfitAfterTax)].Value
+        : null;
+
+    private RenderFragment? Details => _view is { } view && Run.Year is { } year
+        ? @<text>
+              <h3 class="corporate-tax__sources">@L["SourcesTitle", year.Scenario.IncomeYear]</h3>
+              <StepDetails Details="view.Details" />
+          </text>
+        : null;
+
+    private Task OnSmallCompanyChanged(bool smallCompany) => InputsChanged.InvokeAsync(Inputs.WithSmallCompany(smallCompany));
+
+    private Task OnFirstFourTaxPeriodsChanged(bool firstFour) => InputsChanged.InvokeAsync(Inputs.WithFirstFourTaxPeriods(firstFour));
+}

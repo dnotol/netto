@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve">
+    <value>The split</value>
+  </data>
+  <data name="Summary" xml:space="preserve">
+    <value>{0} to your pay · {1} to the company</value>
+  </data>
+  <data name="Hint" xml:space="preserve">
+    <value>Move your pay: every euro you take as director pay is a euro less of company profit.</value>
+  </data>
+  <data name="PayLabel" xml:space="preserve">
+    <value>Gross director pay for the year</value>
+  </data>
+  <data name="PayEnd" xml:space="preserve">
+    <value>Your pay</value>
+  </data>
+  <data name="CompanyEnd" xml:space="preserve">
+    <value>Company profit before tax</value>
+  </data>
+  <data name="NoFigure" xml:space="preserve">
+    <value>—</value>
+  </data>
+  <data name="Ceiling" xml:space="preserve">
+    <value>Up to {0}, the profit before your pay.</value>
+  </data>
+</root>

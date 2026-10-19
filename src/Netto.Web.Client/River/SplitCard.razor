@@ -1,0 +1,46 @@
+@inject IStringLocalizer<SplitCard> L
+
+@* One pay slider over the profit before pay: every euro taken as pay is a euro less of company
+   profit. The exact amount can be typed beside it; SplitView keeps the pay within the profit. *@
+<ModuleCard Title="@L["Title"]" Summary="@Summary">
+    <p class="split__hint">@L["Hint"]</p>
+    <RiverField Label="@L["PayLabel"]" For="river-split-pay" Origin="Inputs.DirectorPay.Origin">
+        <MudSlider T="decimal" Value="_view.Pay" ValueChanged="OnPayChanged" Min="0m" Max="_view.Ceiling" Step="100m"
+                   Immediate="true" Color="Color.Primary" Culture="Formats.Culture" Disabled="@(_view.Ceiling == 0m)"
+                   aria-labelledby="river-split-pay-label" />
+        <MudNumericField T="decimal" InputId="river-split-pay" Value="_view.FieldPay" ValueChanged="OnPayChanged"
+                         Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
+                         Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400" Error="@(Refused is not null)" />
+    </RiverField>
+    <div class="split__ends">
+        <span>@L["PayEnd"] <b>@Formats.Euros(_view.Pay)</b></span>
+        <span>@L["CompanyEnd"] <b>@(_view.CompanyProfit is { } profit ? Formats.Euros(profit) : L["NoFigure"])</b></span>
+    </div>
+    <p class="split__ceiling">@L["Ceiling", Formats.Euros(_view.Ceiling)]</p>
+    <RefusedMessage Error="Refused" />
+</ModuleCard>
+
+@code {
+    [Parameter, EditorRequired]
+    public RiverInputs Inputs { get; set; } = default!;
+
+    [Parameter]
+    public EventCallback<RiverInputs> InputsChanged { get; set; }
+
+    [Parameter, EditorRequired]
+    public RiverRun Run { get; set; } = default!;
+
+    // The engine's error key when it refuses the pay.
+    [Parameter]
+    public string? Refused { get; set; }
+
+    private SplitView _view = default!;
+
+    protected override void OnParametersSet() => _view = SplitView.From(Inputs, Run);
+
+    private string? Summary => _view.CompanyProfit is { } profit
+        ? L["Summary", Formats.WholeEuros(_view.Pay), Formats.WholeEuros(profit)].Value
+        : null;
+
+    private Task OnPayChanged(decimal pay) => InputsChanged.InvokeAsync(Inputs.WithDirectorPay(pay));
+}

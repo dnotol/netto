@@ -1,6 +1,8 @@
 using System.Globalization;
 using System.Resources;
+using Netto.Core.CorporateTax;
 using Netto.Core.DirectorPay;
+using Netto.Core.Dividends;
 using Netto.Core.Simulation;
 using Netto.Web.Client.River;
 using Shouldly;
@@ -17,6 +19,10 @@ public class RiverTextTests
     private static readonly ResourceManager DrainListResources = new("Netto.Web.Client.River.DrainList", typeof(DrainList).Assembly);
 
     private static readonly ResourceManager RefusedMessageResources = new("Netto.Web.Client.River.RefusedMessage", typeof(RefusedMessage).Assembly);
+
+    private static readonly ResourceManager CorporateTaxCardResources = new("Netto.Web.Client.River.CorporateTaxCard", typeof(CorporateTaxCard).Assembly);
+
+    private static readonly ResourceManager DividendCardResources = new("Netto.Web.Client.River.DividendCard", typeof(DividendCard).Assembly);
 
     [Fact]
     public void OriginChipResx_everyOrigin_hasAWordAndAHint()
@@ -52,6 +58,18 @@ public class RiverTextTests
         };
 
         Missing(RefusedMessageResources, errors.Select(RefusedMessageText.Error)).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void CorporateTaxCardResx_everyReducedRateCondition_hasAText()
+    {
+        Missing(CorporateTaxCardResources, Enum.GetValues<ReducedRateCondition>().Select(CorporateTaxCardText.Condition)).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void DividendCardResx_everyWithholdingCategory_hasAText()
+    {
+        Missing(DividendCardResources, Enum.GetValues<WithholdingCategory>().Select(DividendCardText.Category)).ShouldBeEmpty();
     }
 
     private static IEnumerable<string> Missing(ResourceManager resources, IEnumerable<string> keys) =>

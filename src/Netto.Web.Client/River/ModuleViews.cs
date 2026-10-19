@@ -1,7 +1,6 @@
 using Netto.Core.CorporateTax;
 using Netto.Core.DirectorPay;
 using Netto.Core.Simulation;
-using Netto.Web.Client.DirectorPay;
 using Netto.Web.Client.Steps;
 
 namespace Netto.Web.Client.River;
@@ -10,19 +9,24 @@ namespace Netto.Web.Client.River;
 // the engine's figures and steps; no card calculates on its own.
 
 // The pay slider over the profit before pay, and the company's profit it leaves. While another
-// card's amount is refused there is no company profit to show, but the slider keeps its place.
-internal sealed record SplitView(decimal Ceiling, decimal Pay, decimal? CompanyProfit)
+// card's amount is refused there is no company profit to show, but the slider keeps its place. The
+// exact amount field shows the pay the split gives, or what was typed while that is refused.
+internal sealed record SplitView(decimal Ceiling, decimal Pay, decimal FieldPay, decimal? CompanyProfit)
 {
     public static SplitView From(RiverInputs inputs, RiverRun run)
     {
         var ceiling = inputs.PayCeiling ?? 0m;
-        return new SplitView(ceiling, run.Pay?.GrossPay ?? Math.Clamp(inputs.DirectorPay.Value, 0m, ceiling), run.Year?.Company.TaxableIncome);
+        return new SplitView(
+            ceiling,
+            run.Pay?.GrossPay ?? Math.Clamp(inputs.DirectorPay.Value, 0m, ceiling),
+            run.Pay?.GrossPay ?? inputs.DirectorPay.Value,
+            run.Year?.Company.TaxableIncome);
     }
 }
 
 // The pay is derived from the split, or the user's own while the company is skipped. Its detail
-// view is the pay slip: the gross-to-net view of the same result.
-internal sealed record DirectorPayView(InputOrigin PayOrigin, IReadOnlyList<Drain> Drains, GrossToNetView PaySlip)
+// view is the pay slip, drawn from the same result, and its steps' sources.
+internal sealed record DirectorPayView(InputOrigin PayOrigin, IReadOnlyList<Drain> Drains, IReadOnlyList<StepDetail> Details)
 {
     public static DirectorPayView From(RiverInputs inputs, GrossToNetResult pay) => new(
         inputs.Company is null ? inputs.DirectorPay.Origin : InputOrigin.Derived,
@@ -30,7 +34,7 @@ internal sealed record DirectorPayView(InputOrigin PayOrigin, IReadOnlyList<Drai
             .. pay.Steps.Where(step => step.Track == Track.PaidOut).Select(step => Drain.PaidOutTo(step, "taxes_on_pay")),
             new Drain("net_pay", DrainKind.PassedOn, pay.NetInPocket, "pocket"),
         ],
-        GrossToNetView.From(pay));
+        pay.Steps.Select(StepDetail.From).ToList());
 }
 
 // The condition is the engine's: which part of art. 215 decided the rate, against which minimum pay.

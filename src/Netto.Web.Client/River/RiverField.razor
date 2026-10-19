@@ -1,0 +1,31 @@
+@* An input of the river under its label, with its origin beside the label. The input is the child
+   content: a field takes the label through InputId (For), a slider through aria-labelledby
+   ({For}-label). Without For, the label names a group of fields that carry their own. *@
+<div class="river-field">
+    <div class="river-field__head">
+        @if (For is not null)
+        {
+            <label id="@($"{For}-label")" class="river-field__label" for="@For">@Label</label>
+        }
+        else
+        {
+            <span class="river-field__label">@Label</span>
+        }
+        <OriginChip Origin="Origin" />
+    </div>
+    @ChildContent
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public string Label { get; set; } = "";
+
+    [Parameter]
+    public string? For { get; set; }
+
+    [Parameter, EditorRequired]
+    public InputOrigin Origin { get; set; }
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+}

@@ -1,0 +1,31 @@
+/* ::deep reaches the MudBlazor inputs of the child content, which carry no scope attribute of
+   their own: their own margins go, the field's gap spaces them instead. */
+.river-field {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.4rem;
+    min-width: 0;
+}
+
+.river-field__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.2rem 0.75rem;
+}
+
+.river-field__label {
+    font-size: 0.92rem;
+    font-weight: 500;
+}
+
+.river-field ::deep .mud-input-control {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+/* The slider's own vertical padding is generous; the field's gap is enough. */
+.river-field ::deep .mud-slider {
+    margin: 0.25rem 0;
+}

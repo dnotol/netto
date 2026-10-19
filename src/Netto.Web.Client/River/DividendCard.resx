@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve">
+    <value>Dividend</value>
+  </data>
+  <data name="Summary" xml:space="preserve">
+    <value>{0} in · {1} to your pocket</value>
+  </data>
+  <data name="Waiting" xml:space="preserve">
+    <value>Waiting for the company's year.</value>
+  </data>
+  <data name="KeptLabel" xml:space="preserve">
+    <value>Kept in the company out of this year's profit after tax</value>
+  </data>
+  <data name="DividendEnd" xml:space="preserve">
+    <value>Dividend</value>
+  </data>
+  <data name="KeptEnd" xml:space="preserve">
+    <value>Kept</value>
+  </data>
+  <data name="CategoryLabel" xml:space="preserve">
+    <value>Withholding rate you declare</value>
+  </data>
+  <data name="Category_Standard" xml:space="preserve">
+    <value>{0} · ordinary shares</value>
+  </data>
+  <data name="Category_VvprbisSecondYear" xml:space="preserve">
+    <value>{0} · VVPRbis, second distribution</value>
+  </data>
+  <data name="Category_VvprbisThirdYearOnwards" xml:space="preserve">
+    <value>{0} · VVPRbis, third distribution on</value>
+  </data>
+  <data name="CategoryHint" xml:space="preserve">
+    <value>VVPRbis shares pay the ordinary rate on their first distributions; the second-distribution rate is for a contribution made by 2025.</value>
+  </data>
+  <data name="DetailsLabel" xml:space="preserve">
+    <value>Where these figures come from</value>
+  </data>
+  <data name="SourcesTitle" xml:space="preserve">
+    <value>The rules, with the income year {0} amounts</value>
+  </data>
+</root>

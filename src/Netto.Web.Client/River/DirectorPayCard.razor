@@ -1,0 +1,76 @@
+@using Netto.Core.DirectorPay
+@using Netto.Web.Client.DirectorPay
+@using Netto.Web.Client.Steps
+@inject IStringLocalizer<DirectorPayCard> L
+
+@* The director's gross pay through INASTI's contributions, the income tax and the municipal
+   surcharge to the net. The pay comes from the split, or has a slider of its own once the company
+   is skipped. The pay slip and the rules behind each figure are its detail view. *@
+<ModuleCard Title="@L["Title"]" Summary="@Summary" Details="@Details" DetailsLabel="@L["DetailsLabel"]">
+    @if (Inputs.Company is null)
+    {
+        <RiverField Label="@L["OwnPayLabel"]" For="river-pay" Origin="Inputs.DirectorPay.Origin">
+            <MudSlider T="decimal" Value="@Math.Clamp(Inputs.DirectorPay.Value, 0m, OwnPayMaximum)" ValueChanged="OnPayChanged"
+                       Min="0m" Max="OwnPayMaximum" Step="100m" Immediate="true" Color="Color.Primary" Culture="Formats.Culture"
+                       aria-labelledby="river-pay-label" />
+            <MudNumericField T="decimal" InputId="river-pay" Value="Inputs.DirectorPay.Value" ValueChanged="OnPayChanged"
+                             Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
+                             Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
+                             Error="@(Refused == GrossToNet.GrossPayNegative)" />
+        </RiverField>
+    }
+    else if (Run.Pay is { } pay)
+    {
+        <p class="director-pay__pay">
+            @L["PayFromSplit"] <b>@Formats.Euros(pay.GrossPay)</b>
+            <OriginChip Origin="InputOrigin.Derived" />
+        </p>
+    }
+    <RiverField Label="@L["MunicipalityHead"]" Origin="Inputs.Municipality.Origin">
+        <MunicipalityField Choice="Inputs.Municipality" ChoiceChanged="OnMunicipalityChanged"
+                           Refused="@(Refused == GrossToNet.MunicipalRateOutOfRange)" />
+    </RiverField>
+    <RefusedMessage Error="Refused" />
+    @if (_view is not null)
+    {
+        <DrainList Drains="_view.Drains" />
+    }
+</ModuleCard>
+
+@code {
+    // As far as the pay page's slider went; the exact amount field takes any amount.
+    private const decimal OwnPayMaximum = 200_000m;
+
+    [Parameter, EditorRequired]
+    public RiverInputs Inputs { get; set; } = default!;
+
+    [Parameter]
+    public EventCallback<RiverInputs> InputsChanged { get; set; }
+
+    [Parameter, EditorRequired]
+    public RiverRun Run { get; set; } = default!;
+
+    // The engine's error key when it refuses the rate, or the pay once the company is skipped.
+    [Parameter]
+    public string? Refused { get; set; }
+
+    private DirectorPayView? _view;
+
+    protected override void OnParametersSet() => _view = Run.Pay is { } pay ? DirectorPayView.From(Inputs, pay) : null;
+
+    private string? Summary => Run.Pay is { } pay
+        ? L["Summary", Formats.Euros(pay.GrossPay), Formats.Euros(pay.NetInPocket)].Value
+        : null;
+
+    private RenderFragment? Details => Run.Pay is { } pay && _view is { } view
+        ? @<text>
+              <PaySlip Pay="pay" />
+              <h3 class="director-pay__sources">@L["SourcesTitle", pay.IncomeYear]</h3>
+              <StepDetails Details="view.Details" />
+          </text>
+        : null;
+
+    private Task OnPayChanged(decimal pay) => InputsChanged.InvokeAsync(Inputs.WithDirectorPay(pay));
+
+    private Task OnMunicipalityChanged(MunicipalityChoice choice) => InputsChanged.InvokeAsync(Inputs.WithMunicipality(choice));
+}

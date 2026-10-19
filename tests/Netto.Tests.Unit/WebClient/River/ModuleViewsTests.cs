@@ -43,6 +43,19 @@ public class ModuleViewsTests
         Split(RiverInputs.Example.WithDirectorPay(-1m)).Pay.ShouldBe(0m);
     }
 
+    // The exact amount field shows the pay the split gives, or what was typed while it is refused.
+    [Fact]
+    public void Split_example_fieldShowsThePayTheSplitGives()
+    {
+        Split(RiverInputs.Example.WithRevenue(60_000m)).FieldPay.ShouldBe(40_000m);
+    }
+
+    [Fact]
+    public void Split_negativePayRefused_fieldKeepsWhatWasTyped()
+    {
+        Split(RiverInputs.Example.WithDirectorPay(-1m)).FieldPay.ShouldBe(-1m);
+    }
+
     [Fact]
     public void DirectorPay_example_drainsToTaxesOnPayAndThePocket()
     {
@@ -71,13 +84,10 @@ public class ModuleViewsTests
         (DirectorPay(inputs).PayOrigin, DirectorPay(inputs.WithDirectorPay(40_000m)).PayOrigin).ShouldBe((InputOrigin.Example, InputOrigin.Yours));
     }
 
-    // The pay slip is the gross-to-net view the pay page drew, on the same result.
     [Fact]
-    public void DirectorPay_example_paySlipIsTheGrossToNetViewOfThePay()
+    public void DirectorPay_example_listsThePaysStepsWithTheirSources()
     {
-        var view = DirectorPay(RiverInputs.Example);
-
-        view.PaySlip.Details.Select(detail => detail.RuleKey)
+        DirectorPay(RiverInputs.Example).Details.Select(detail => detail.RuleKey)
             .ShouldBe(["social_contributions", "flat_rate_costs", "taxable_income", "income_tax", "municipal_surcharge"]);
     }
 

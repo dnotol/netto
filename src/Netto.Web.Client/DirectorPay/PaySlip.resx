@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Track_cash" xml:space="preserve">
+    <value>What you pay</value>
+  </data>
+  <data name="TrackHint_cash" xml:space="preserve">
+    <value>From your gross pay to what reaches your pocket.</value>
+  </data>
+  <data name="Track_tax_base" xml:space="preserve">
+    <value>What you are taxed on</value>
+  </data>
+  <data name="TrackHint_tax_base" xml:space="preserve">
+    <value>From your gross pay to the taxable income the income tax is computed on.</value>
+  </data>
+  <data name="TaxBaseOnlyNote" xml:space="preserve">
+    <value>Lowers the tax base, not paid out</value>
+  </data>
+  <data name="Row_gross_pay" xml:space="preserve">
+    <value>Gross pay</value>
+  </data>
+  <data name="Row_social_contributions" xml:space="preserve">
+    <value>Social contributions</value>
+  </data>
+  <data name="Row_flat_rate_costs" xml:space="preserve">
+    <value>Flat-rate professional costs</value>
+  </data>
+  <data name="Row_taxable_income" xml:space="preserve">
+    <value>Taxable income</value>
+  </data>
+  <data name="Row_income_tax" xml:space="preserve">
+    <value>Income tax</value>
+  </data>
+  <data name="Row_municipal_surcharge" xml:space="preserve">
+    <value>Municipal surcharge</value>
+  </data>
+  <data name="Row_net_in_pocket" xml:space="preserve">
+    <value>Net in pocket</value>
+  </data>
+  <data name="NextTitle" xml:space="preserve">
+    <value>Where the next €1,000 of gross pay goes</value>
+  </data>
+</root>

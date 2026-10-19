@@ -1,0 +1,80 @@
+@using Netto.Core.DirectorPay
+@inject IStringLocalizer<PaySlip> L
+
+@* Director pay's detail view: the gross pay through what is paid out to the net, beside what lowers
+   the tax base to the taxable income, on one shared scale, and where the next €1,000 would go.
+   Every figure is GrossToNet's; GrossToNetView only places them. *@
+<div class="pay-slip">
+    <div class="funnel">
+        @foreach (var track in _view.Tracks)
+        {
+            <article class="funnel__track">
+                <h3 class="funnel__track-title">@L[PaySlipText.Track(track.Key)]</h3>
+                <p class="funnel__track-hint">@L[PaySlipText.TrackHint(track.Key)]</p>
+                <ol class="funnel__rows">
+                    @foreach (var row in track.Rows)
+                    {
+                        <li class="funnel-row funnel-row--@Modifier(row.Kind)">
+                            <span class="funnel-row__label">@L[PaySlipText.Row(row.Key)]</span>
+                            <span class="funnel-row__amount">@(row.IsDeduction ? Formats.Deduction(row.Amount) : Formats.Euros(row.Amount))</span>
+                            <span class="funnel-row__track" aria-hidden="true">
+                                <span class="funnel-row__bar" style="@BarStyle(row)"></span>
+                            </span>
+                            @if (row.Kind == RowKind.TaxBaseOnly)
+                            {
+                                <span class="funnel-row__note">@L["TaxBaseOnlyNote"]</span>
+                            }
+                        </li>
+                    }
+                </ol>
+            </article>
+        }
+    </div>
+
+    <section class="next" aria-labelledby="next-title">
+        <h3 id="next-title" class="next__title">@L["NextTitle"]</h3>
+        <div class="next__bar" aria-hidden="true">
+            @foreach (var part in _view.NextThousand)
+            {
+                <span class="next__segment next__segment--@part.Key" style="@SegmentStyle(part)"></span>
+            }
+        </div>
+        <dl class="next__parts">
+            @foreach (var part in _view.NextThousand)
+            {
+                <div class="next__part next__part--@part.Key">
+                    <dt><span class="next__swatch" aria-hidden="true"></span>@L[PaySlipText.Row(part.Key)]</dt>
+                    <dd>@Formats.Euros(part.Amount)<span class="next__share">@Formats.Share(part.Share)</span></dd>
+                </div>
+            }
+        </dl>
+    </section>
+</div>
+
+@code {
+    // The engine's result rather than its view: a component's parameters are public types, and
+    // GrossToNetView is internal.
+    [Parameter, EditorRequired]
+    public GrossToNetResult Pay { get; set; } = default!;
+
+    private GrossToNetView _view = default!;
+
+    protected override void OnParametersSet() => _view = GrossToNetView.From(Pay);
+
+    private static string Modifier(RowKind kind) => kind switch
+    {
+        RowKind.Gross => "gross",
+        RowKind.PaidOut => "paid-out",
+        RowKind.TaxBaseOnly => "tax-base-only",
+        RowKind.TaxableIncome => "taxable-income",
+        RowKind.NetInPocket => "net",
+        _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, null),
+    };
+
+    // CSS wants a dot as decimal separator whatever the culture.
+    private static string BarStyle(FunnelRow row) =>
+        FormattableString.Invariant($"left: {row.BarStart:0.###}%; width: {row.BarEnd - row.BarStart:0.###}%");
+
+    private static string SegmentStyle(NextThousandPart part) =>
+        FormattableString.Invariant($"flex-basis: {part.Share * 100m:0.###}%");
+}

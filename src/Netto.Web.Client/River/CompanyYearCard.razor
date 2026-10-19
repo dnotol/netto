@@ -1,0 +1,64 @@
+@using Netto.Core.Simulation
+@inject IStringLocalizer<CompanyYearCard> L
+
+@* Where the river starts: the company's revenue and running costs for the year, excluding VAT, from
+   which the engine derives the profit before pay. Cleared, the module is skipped and the river
+   starts at the pay. No Min or Max on the amounts: MudBlazor would clamp a value silently, and the
+   engine's refusal, with its message, is what the user has to see. *@
+<ModuleCard Title="@L["Title"]" Summary="@Summary" Skipped="Inputs.Company is null">
+    @if (Inputs.Company is { } company)
+    {
+        <div class="company-year__fields">
+            <RiverField Label="@L["RevenueLabel"]" For="river-revenue" Origin="company.Revenue.Origin">
+                <MudNumericField T="decimal" InputId="river-revenue" Value="company.Revenue.Value" ValueChanged="OnRevenueChanged"
+                                 Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
+                                 Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
+                                 Error="@(Refused == YearSimulation.RevenueNegative)" />
+            </RiverField>
+            <RiverField Label="@L["RunningCostsLabel"]" For="river-running-costs" Origin="company.RunningCosts.Origin">
+                <MudNumericField T="decimal" InputId="river-running-costs" Value="company.RunningCosts.Value" ValueChanged="OnRunningCostsChanged"
+                                 Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
+                                 Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
+                                 Error="@(Refused == YearSimulation.RunningCostsNegative)" />
+            </RiverField>
+        </div>
+        <RefusedMessage Error="Refused" />
+        <div class="company-year__actions">
+            <MudButton Variant="Variant.Outlined" Size="Size.Small" OnClick="SkipCompany">@L["Clear"]</MudButton>
+        </div>
+    }
+    else
+    {
+        <p class="company-year__skipped">@L["Skipped"]</p>
+        <div class="company-year__actions">
+            <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="EnterCompany">@L["Enter"]</MudButton>
+        </div>
+    }
+</ModuleCard>
+
+@code {
+    [Parameter, EditorRequired]
+    public RiverInputs Inputs { get; set; } = default!;
+
+    [Parameter]
+    public EventCallback<RiverInputs> InputsChanged { get; set; }
+
+    [Parameter, EditorRequired]
+    public RiverRun Run { get; set; } = default!;
+
+    // The engine's error key when it refuses a field of this card.
+    [Parameter]
+    public string? Refused { get; set; }
+
+    private string? Summary => Run.Year is { } year
+        ? L["Summary", Formats.Euros(year.Scenario.Revenue), Formats.Euros(year.ProfitBeforePay)].Value
+        : null;
+
+    private Task OnRevenueChanged(decimal revenue) => InputsChanged.InvokeAsync(Inputs.WithRevenue(revenue));
+
+    private Task OnRunningCostsChanged(decimal runningCosts) => InputsChanged.InvokeAsync(Inputs.WithRunningCosts(runningCosts));
+
+    private Task SkipCompany() => InputsChanged.InvokeAsync(Inputs.SkipCompany());
+
+    private Task EnterCompany() => InputsChanged.InvokeAsync(Inputs.EnterCompany());
+}
