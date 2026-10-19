@@ -87,6 +87,14 @@ public class CorporateTaxCalculatorTests
     }
 
     [Fact]
+    public void Compute_2026_saysTheMinimumPayItTestedAgainst()
+    {
+        var result = CorporateTaxCalculator.Compute(Rules2026, 80_000m, 30_000m, SmallPastStartUp);
+
+        result.MinimumDirectorPay.ShouldBe(51_000m);
+    }
+
+    [Fact]
     public void Compute_2026Loss_paysNoTax()
     {
         var result = CorporateTaxCalculator.Compute(Rules2026, -10_000m, 51_000m, SmallPastStartUp);

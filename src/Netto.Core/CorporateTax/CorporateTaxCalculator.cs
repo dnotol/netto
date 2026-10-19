@@ -12,7 +12,7 @@ public static class CorporateTaxCalculator
         var reducedSlice = condition.AppliesReducedRate() ? Math.Min(taxed, rules.ReducedRateCeiling.Value) : 0m;
         var tax = rules.ReducedRate.Value * reducedSlice + rules.StandardRate.Value * (taxed - reducedSlice);
 
-        return new CorporateTaxResult(taxableIncome, condition, Money.RoundToCent(tax));
+        return new CorporateTaxResult(taxableIncome, condition, rules.MinimumDirectorPay.Value, Money.RoundToCent(tax));
     }
 
     private static ReducedRateCondition Condition(CorporateTaxRules rules, decimal taxableIncome, decimal directorPay, CompanyStatus status)
