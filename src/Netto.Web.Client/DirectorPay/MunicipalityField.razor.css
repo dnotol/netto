@@ -1,7 +1,12 @@
 /* ::deep reaches the elements MudBlazor renders (MudAutocomplete, MudNumericField, MudButton), which
    carry no scope attribute of their own. */
 
-/* The municipality takes what the rate leaves; on a narrow phone the rate goes under it. */
+/* The municipality takes what the rate leaves; where the field itself is narrow (a phone, or a
+   card in a row of three), the rate goes under it, or the municipality's label would be cut. */
+.municipality-field {
+    container-type: inline-size;
+}
+
 .municipality-field__inputs {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 8rem;
@@ -9,7 +14,7 @@
     gap: 0.75rem;
 }
 
-@media (max-width: 480px) {
+@container (max-width: 30rem) {
     .municipality-field__inputs {
         grid-template-columns: minmax(0, 1fr);
     }
