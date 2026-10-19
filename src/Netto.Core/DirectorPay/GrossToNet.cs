@@ -78,12 +78,12 @@ public static class GrossToNet
     private static IReadOnlyList<Step> Steps(
         SocialContributionRules socialRules, PersonalTaxRules taxRules, Figures figures, RuleAmount municipalRate) =>
     [
-        new Step("social_contributions", Track.PaidOut, figures.SocialContributions, socialRules.Source, socialRules.Amounts),
-        new Step("flat_rate_costs", Track.TaxBaseOnly, figures.Tax.FlatRateCosts,
+        new Step("social_contributions", Layer.Social, TaxableEvent.DirectorPay, Track.PaidOut, figures.SocialContributions, socialRules.Source, socialRules.Amounts),
+        new Step("flat_rate_costs", Layer.Personal, TaxableEvent.DirectorPay, Track.TaxBaseOnly, figures.Tax.FlatRateCosts,
             PersonalTaxRules.DirectorPayDeductions, taxRules.FlatRateCostsAmounts),
-        new Step("taxable_income", Track.TaxBaseOnly, figures.Tax.TaxableIncome, PersonalTaxRules.DirectorPayDeductions, []),
-        new Step("income_tax", Track.PaidOut, figures.Tax.IncomeTax, PersonalTaxRules.IncomeTaxScale, taxRules.IncomeTaxAmounts),
-        new Step("municipal_surcharge", Track.PaidOut, figures.Tax.MunicipalSurcharge, PersonalTaxRules.MunicipalSurcharge, [municipalRate]),
+        new Step("taxable_income", Layer.Personal, TaxableEvent.DirectorPay, Track.TaxBaseOnly, figures.Tax.TaxableIncome, PersonalTaxRules.DirectorPayDeductions, []),
+        new Step("income_tax", Layer.Personal, TaxableEvent.DirectorPay, Track.PaidOut, figures.Tax.IncomeTax, PersonalTaxRules.IncomeTaxScale, taxRules.IncomeTaxAmounts),
+        new Step("municipal_surcharge", Layer.Personal, TaxableEvent.DirectorPay, Track.PaidOut, figures.Tax.MunicipalSurcharge, PersonalTaxRules.MunicipalSurcharge, [municipalRate]),
     ];
 
     private sealed record Figures(decimal SocialContributions, PersonalTaxResult Tax, decimal NetInPocket)

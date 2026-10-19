@@ -130,6 +130,21 @@ public class GrossToNetTests
     }
 
     [Fact]
+    public void Compute_2026_tagsEveryStepWithItsLayerAndDirectorPay()
+    {
+        var result = Compute2026(50_000m);
+
+        result.Steps.Select(step => (step.RuleKey, step.Layer, step.Event)).ShouldBe(new[]
+        {
+            ("social_contributions", Layer.Social, TaxableEvent.DirectorPay),
+            ("flat_rate_costs", Layer.Personal, TaxableEvent.DirectorPay),
+            ("taxable_income", Layer.Personal, TaxableEvent.DirectorPay),
+            ("income_tax", Layer.Personal, TaxableEvent.DirectorPay),
+            ("municipal_surcharge", Layer.Personal, TaxableEvent.DirectorPay),
+        });
+    }
+
+    [Fact]
     public void Compute_2026_everyStepHasASourceWithAReferenceAndAnAddress()
     {
         var result = Compute2026(50_000m);
