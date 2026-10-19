@@ -55,6 +55,23 @@
     line-height: 1.7;
 }
 
+.plan__overview-link {
+    display: inline-block;
+    margin-top: 1rem;
+    color: var(--netto-text);
+    text-decoration: underline;
+    text-decoration-color: rgba(243, 238, 226, 0.35);
+    text-underline-offset: 3px;
+    transition: color 0.2s ease;
+}
+
+    /* Hover and focus are active states, so they may turn gold. */
+    .plan__overview-link:hover,
+    .plan__overview-link:focus-visible {
+        color: var(--netto-gold);
+        text-decoration-color: var(--netto-gold);
+    }
+
 /* Inputs: the slider takes half the row and the municipality with its rate the other half; below
    960px, where the municipality's label would be cut, they stack. */
 

@@ -129,4 +129,7 @@
   <data name="LimitTaxCalc" xml:space="preserve">
     <value>The 2026 income tax is computed from the official 2026 amounts. The administration's Tax-Calc simulator does not cover 2026 yet, so it has not been checked against it; on 2025, the same method matches Tax-Calc to the cent.</value>
   </data>
+  <data name="OverviewLink" xml:space="preserve">
+    <value>Add your company and a dividend: see your whole year</value>
+  </data>
 </root>
