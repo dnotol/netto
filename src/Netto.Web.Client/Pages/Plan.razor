@@ -1,5 +1,6 @@
 @page "/plan"
 @using Netto.Core.DirectorPay
+@using Netto.Core.PersonalTax
 @using Netto.Web.Client.DirectorPay
 @inject IStringLocalizer<Plan> L
 
@@ -193,7 +194,7 @@
 
     private void Compute()
     {
-        (_result, _error) = GrossToNet.Compute(IncomeYear, _grossPay, _ratePercent / 100m);
+        (_result, _error) = GrossToNet.Compute(IncomeYear, _grossPay, MunicipalRates.Entered(_ratePercent / 100m));
         _view = _result is null ? null : GrossToNetView.From(_result);
     }
 

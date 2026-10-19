@@ -178,6 +178,9 @@
     <value>Walloon additional rate</value>
   </data>
   <data name="Amount_municipal_rate" xml:space="preserve">
+    <value>Your municipality's rate</value>
+  </data>
+  <data name="Amount_entered_municipal_rate" xml:space="preserve">
     <value>Municipal rate, as you entered it</value>
   </data>
   <data name="Error_gross_pay_negative" xml:space="preserve">

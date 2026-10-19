@@ -17,7 +17,7 @@ public static class GrossToNet
     private const decimal Convergence = 0.000001m;
     private const int MaximumPasses = 100;
 
-    public static (GrossToNetResult? Value, string? Error) Compute(int incomeYear, decimal grossPay, decimal municipalRate)
+    public static (GrossToNetResult? Value, string? Error) Compute(int incomeYear, decimal grossPay, RuleAmount municipalRate)
     {
         var socialRules = SocialContributionRules.For(incomeYear);
         var taxRules = PersonalTaxRules.For(incomeYear);
@@ -25,16 +25,16 @@ public static class GrossToNet
             return (null, IncomeYearNotSupported);
         if (grossPay < 0m)
             return (null, GrossPayNegative);
-        if (municipalRate is < 0m or > MaximumMunicipalRate)
+        if (municipalRate.Value is < 0m or > MaximumMunicipalRate)
             return (null, MunicipalRateOutOfRange);
 
-        var figures = Figures.For(socialRules, taxRules, grossPay, municipalRate);
-        var next = Figures.For(socialRules, taxRules, grossPay + NextSlice, municipalRate);
+        var figures = Figures.For(socialRules, taxRules, grossPay, municipalRate.Value);
+        var next = Figures.For(socialRules, taxRules, grossPay + NextSlice, municipalRate.Value);
 
         return (new GrossToNetResult(
             incomeYear,
             grossPay,
-            municipalRate,
+            municipalRate.Value,
             figures.SocialContributions,
             figures.Tax.FlatRateCosts,
             figures.Tax.TaxableIncome,
@@ -75,15 +75,14 @@ public static class GrossToNet
     }
 
     private static IReadOnlyList<Step> Steps(
-        SocialContributionRules socialRules, PersonalTaxRules taxRules, Figures figures, decimal municipalRate) =>
+        SocialContributionRules socialRules, PersonalTaxRules taxRules, Figures figures, RuleAmount municipalRate) =>
     [
         new Step("social_contributions", Track.PaidOut, figures.SocialContributions, socialRules.Source, socialRules.Amounts),
         new Step("flat_rate_costs", Track.TaxBaseOnly, figures.Tax.FlatRateCosts,
             PersonalTaxRules.DirectorPayDeductions, taxRules.FlatRateCostsAmounts),
         new Step("taxable_income", Track.TaxBaseOnly, figures.Tax.TaxableIncome, PersonalTaxRules.DirectorPayDeductions, []),
         new Step("income_tax", Track.PaidOut, figures.Tax.IncomeTax, PersonalTaxRules.IncomeTaxScale, taxRules.IncomeTaxAmounts),
-        new Step("municipal_surcharge", Track.PaidOut, figures.Tax.MunicipalSurcharge, PersonalTaxRules.MunicipalSurcharge,
-            [new RuleAmount("municipal_rate", municipalRate, PersonalTaxRules.MunicipalSurcharge)]),
+        new Step("municipal_surcharge", Track.PaidOut, figures.Tax.MunicipalSurcharge, PersonalTaxRules.MunicipalSurcharge, [municipalRate]),
     ];
 
     private sealed record Figures(decimal SocialContributions, PersonalTaxResult Tax, decimal NetInPocket)

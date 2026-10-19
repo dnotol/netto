@@ -181,7 +181,7 @@ public class GrossToNetViewTests
 
     private static GrossToNetView View(decimal grossPay)
     {
-        var (value, error) = GrossToNet.Compute(2026, grossPay, 0.07m);
+        var (value, error) = GrossToNet.Compute(2026, grossPay, MunicipalRates.Entered(0.07m));
 
         error.ShouldBeNull();
         return GrossToNetView.From(value.ShouldNotBeNull());

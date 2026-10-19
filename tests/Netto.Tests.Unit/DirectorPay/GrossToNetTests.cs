@@ -1,4 +1,6 @@
 using Netto.Core.DirectorPay;
+using Netto.Core.PersonalTax;
+using Netto.Core.Rules;
 using Netto.Core.SocialContributions;
 using Shouldly;
 
@@ -146,8 +148,43 @@ public class GrossToNetTests
             ("taxable_income", ""),
             ("income_tax", "bracket_1_rate bracket_1_upper_limit bracket_2_rate bracket_2_upper_limit bracket_3_rate "
                 + "bracket_3_upper_limit bracket_4_rate tax_free_amount tax_free_amount_rate autonomy_factor regional_additional_rate"),
-            ("municipal_surcharge", "municipal_rate"),
+            ("municipal_surcharge", "entered_municipal_rate"),
         });
+    }
+
+    // The surcharge step cites the articles that set it up as its rule, and the rate under its own
+    // source: the SPW file for a municipality's rate.
+    [Fact]
+    public void Compute_2026MunicipalityRate_surchargeStepUsesItWithItsSource()
+    {
+        var namur = MunicipalRates.IncomeYear2026.Municipalities.Single(municipality => municipality.Name == "Namur");
+
+        var surcharge = Compute2026(50_000m, namur.Rate).Steps.Single(step => step.RuleKey == "municipal_surcharge");
+
+        (surcharge.Source, surcharge.AmountsUsed.Single()).ShouldBe((PersonalTaxRules.MunicipalSurcharge, namur.Rate));
+    }
+
+    [Fact]
+    public void Compute_2026EnteredRate_surchargeStepUsesItWithTheArticlesAsSource()
+    {
+        var entered = MunicipalRates.Entered(0.07m);
+
+        var surcharge = Compute2026(50_000m, entered).Steps.Single(step => step.RuleKey == "municipal_surcharge");
+
+        surcharge.AmountsUsed.Single().ShouldBe(new RuleAmount("entered_municipal_rate", 0.07m, PersonalTaxRules.MunicipalSurcharge));
+    }
+
+    // Namur's 8.5%: where the rate comes from changes its source, never the figures.
+    [Fact]
+    public void Compute_2026MunicipalityRate_givesTheFiguresOfTheSameRateEntered()
+    {
+        var namur = MunicipalRates.IncomeYear2026.Municipalities.Single(municipality => municipality.Name == "Namur");
+
+        var official = Compute2026(50_000m, namur.Rate);
+        var entered = Compute2026(50_000m, MunicipalRates.Entered(0.085m));
+
+        (official.MunicipalRate, official.MunicipalSurcharge, official.NetInPocket)
+            .ShouldBe((0.085m, entered.MunicipalSurcharge, entered.NetInPocket));
     }
 
     [Fact]
@@ -161,7 +198,7 @@ public class GrossToNetTests
     [Fact]
     public void Compute_negativeGrossPay_isRefused()
     {
-        var (value, error) = GrossToNet.Compute(2026, -0.01m, 0.07m);
+        var (value, error) = GrossToNet.Compute(2026, -0.01m, MunicipalRates.Entered(0.07m));
 
         (value, error).ShouldBe((null, GrossToNet.GrossPayNegative));
     }
@@ -170,7 +207,7 @@ public class GrossToNetTests
     [MemberData(nameof(MunicipalRatesOutOfRange))]
     public void Compute_municipalRateOutsideZeroToTenPercent_isRefused(decimal municipalRate)
     {
-        var (value, error) = GrossToNet.Compute(2026, 50_000m, municipalRate);
+        var (value, error) = GrossToNet.Compute(2026, 50_000m, MunicipalRates.Entered(municipalRate));
 
         (value, error).ShouldBe((null, GrossToNet.MunicipalRateOutOfRange));
     }
@@ -179,7 +216,7 @@ public class GrossToNetTests
     [MemberData(nameof(MunicipalRatesAtTheLimits))]
     public void Compute_municipalRateAtZeroOrTenPercent_isAccepted(decimal municipalRate)
     {
-        var (_, error) = GrossToNet.Compute(2026, 50_000m, municipalRate);
+        var (_, error) = GrossToNet.Compute(2026, 50_000m, MunicipalRates.Entered(municipalRate));
 
         error.ShouldBeNull();
     }
@@ -191,14 +228,16 @@ public class GrossToNetTests
     [InlineData(2027)]
     public void Compute_incomeYearOtherThan2026_isRefused(int incomeYear)
     {
-        var (value, error) = GrossToNet.Compute(incomeYear, 50_000m, 0.07m);
+        var (value, error) = GrossToNet.Compute(incomeYear, 50_000m, MunicipalRates.Entered(0.07m));
 
         (value, error).ShouldBe((null, GrossToNet.IncomeYearNotSupported));
     }
 
-    private static GrossToNetResult Compute2026(decimal grossPay)
+    private static GrossToNetResult Compute2026(decimal grossPay) => Compute2026(grossPay, MunicipalRates.Entered(0.07m));
+
+    private static GrossToNetResult Compute2026(decimal grossPay, RuleAmount municipalRate)
     {
-        var (value, error) = GrossToNet.Compute(2026, grossPay, 0.07m);
+        var (value, error) = GrossToNet.Compute(2026, grossPay, municipalRate);
 
         error.ShouldBeNull();
         return value.ShouldNotBeNull();
