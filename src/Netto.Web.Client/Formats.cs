@@ -3,18 +3,21 @@ using Netto.Core.Rules;
 
 namespace Netto.Web.Client;
 
-// How amounts read on an English page: €50,000.00. Program.cs makes this the app's culture, so the
-// MudBlazor fields parse and print numbers the same way whatever the browser's language.
+// How amounts read on an English page, whatever the browser's language: €50,000.00. The culture is
+// the invariant one with the euro sign rather than a named one such as en-IE: Blazor loads only the
+// browser language's ICU data and refuses a change of the app's culture, and the invariant culture
+// needs no ICU data, so the browser and the tests format alike. MudBlazor inputs take it through
+// their Culture parameter.
 internal static class Formats
 {
-    public static CultureInfo Culture { get; } = CultureInfo.GetCultureInfo("en-IE");
+    public static CultureInfo Culture { get; } = EnglishWithEuro();
 
     public static string Euros(decimal amount) => amount.ToString("C2", Culture);
 
     public static string WholeEuros(decimal amount) => amount.ToString("C0", Culture);
 
-    // U+2212, the minus sign, which lines up with the digits where a hyphen would not.
-    public static string Deduction(decimal amount) => $"−{Euros(amount)}";
+    // Prefixed even at zero, so every part paid out reads as a subtraction.
+    public static string Deduction(decimal amount) => $"{Culture.NumberFormat.NegativeSign}{Euros(amount)}";
 
     public static string Share(decimal fraction) => fraction.ToString("0.0%", Culture);
 
@@ -23,4 +26,17 @@ internal static class Formats
         amount.Key.EndsWith("_rate", StringComparison.Ordinal) || amount.Key.EndsWith("_factor", StringComparison.Ordinal)
             ? amount.Value.ToString("0.###%", Culture)
             : Euros(amount.Value);
+
+    private static CultureInfo EnglishWithEuro()
+    {
+        var culture = (CultureInfo)CultureInfo.InvariantCulture.Clone();
+        culture.NumberFormat.CurrencySymbol = "€";
+        culture.NumberFormat.CurrencyPositivePattern = 0; // €n
+        culture.NumberFormat.CurrencyNegativePattern = 1; // -€n
+
+        // U+2212, the minus sign, which is as wide as a digit where a hyphen is not. Parsing still
+        // accepts a typed hyphen.
+        culture.NumberFormat.NegativeSign = char.ConvertFromUtf32(0x2212);
+        return CultureInfo.ReadOnly(culture);
+    }
 }

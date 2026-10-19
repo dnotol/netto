@@ -17,11 +17,20 @@ public class FormatsTests
     }
 
     [Fact]
-    public void Euros_negativeAmount_carriesALeadingMinus()
+    public void Euros_negativeAmount_carriesALeadingMinusSign()
     {
         var text = Formats.Euros(-3_561.68m);
 
-        text.ShouldBe("-€3,561.68");
+        text.ShouldBe("−€3,561.68");
+    }
+
+    // The MudBlazor rate field parses with this culture, and a user types a hyphen, not U+2212.
+    [Fact]
+    public void Culture_parsingATypedHyphen_readsANegativeNumber()
+    {
+        var value = decimal.Parse("-1.5", Formats.Culture);
+
+        value.ShouldBe(-1.5m);
     }
 
     [Fact]
