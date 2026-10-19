@@ -1,4 +1,5 @@
 using Netto.Core.DirectorPay;
+using Netto.Core.PersonalTax;
 using Netto.Web.Client.DirectorPay;
 using Shouldly;
 
@@ -117,6 +118,66 @@ public class GrossToNetViewTests
             new NextThousandPart("net_in_pocket", 444.55m, 0.44455m),
         });
     }
+
+    [Fact]
+    public void From_gross50000_detailsEveryStepInTheEngineOrder()
+    {
+        var view = View(50_000m);
+
+        view.Details.Select(detail => (detail.RuleKey, detail.Amount)).ShouldBe(new[]
+        {
+            ("social_contributions", 8_293.36m),
+            ("flat_rate_costs", 1_251.20m),
+            ("taxable_income", 40_455.44m),
+            ("income_tax", 11_333.96m),
+            ("municipal_surcharge", 793.38m),
+        });
+    }
+
+    // The step's own source comes first, then each other source in the order its amounts appear.
+    [Fact]
+    public void From_gross50000_groupsTheIncomeTaxAmountsUnderTheirSources()
+    {
+        var rules = PersonalTaxRules.IncomeYear2026;
+
+        var incomeTax = View(50_000m).Details.Single(detail => detail.RuleKey == "income_tax");
+
+        incomeTax.Sources.Select(group => (group.Source, Keys(group))).ShouldBe(new[]
+        {
+            (PersonalTaxRules.IncomeTaxScale, "bracket_1_rate bracket_1_upper_limit bracket_2_rate bracket_2_upper_limit "
+                + "bracket_3_rate bracket_3_upper_limit bracket_4_rate"),
+            (rules.TaxFreeAmount.Source, "tax_free_amount tax_free_amount_rate"),
+            (rules.AutonomyFactor.Source, "autonomy_factor"),
+            (rules.RegionalAdditionalRate.Source, "regional_additional_rate"),
+        });
+    }
+
+    [Fact]
+    public void From_gross50000_groupsTheFlatRateCostsAmountsUnderTheirSources()
+    {
+        var rules = PersonalTaxRules.IncomeYear2026;
+
+        var flatRateCosts = View(50_000m).Details.Single(detail => detail.RuleKey == "flat_rate_costs");
+
+        flatRateCosts.Sources.Select(group => (group.Source, Keys(group))).ShouldBe(new[]
+        {
+            (PersonalTaxRules.DirectorPayDeductions, "flat_rate_costs_rate"),
+            (rules.FlatRateCostsMaximum.Source, "flat_rate_costs_maximum"),
+        });
+    }
+
+    [Fact]
+    public void From_gross50000_keepsTheSourceOfAStepWithNoAmountOfItsOwn()
+    {
+        var taxableIncome = View(50_000m).Details.Single(detail => detail.RuleKey == "taxable_income");
+
+        taxableIncome.Sources.Select(group => (group.Source, Keys(group))).ShouldBe(new[]
+        {
+            (PersonalTaxRules.DirectorPayDeductions, ""),
+        });
+    }
+
+    private static string Keys(SourceGroup group) => string.Join(' ', group.Amounts.Select(amount => amount.Key));
 
     private static GrossToNetView View(decimal grossPay)
     {
