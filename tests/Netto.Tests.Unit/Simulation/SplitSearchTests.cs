@@ -70,7 +70,7 @@ public class SplitSearchTests
     {
         var pays = Search(Scenario()).Curve.Select(level => level.Pay).ToList();
 
-        (pays[0], pays[^1], pays.Count(pay => pay % 500m == 0m)).ShouldBe((0m, 100_000m, 201));
+        (pays[0], pays[^1], pays.Count(pay => pay % 1_000m == 0m)).ShouldBe((0m, 100_000m, 101));
     }
 
     [Fact]
@@ -192,13 +192,13 @@ public class SplitSearchTests
             .ShouldBe((0m, (decimal?)0m, (decimal?)-3_561.68m));
     }
 
-    // 1,000,000 of profit is drawn every 5,000.
+    // 1,000,000 of profit is drawn every 10,000.
     [Fact]
-    public void Run_2026LargeProfit_drawsAboutTwoHundredPays()
+    public void Run_2026LargeProfit_drawsAboutAHundredPays()
     {
         var pays = Search(Scenario(revenue: 1_020_000m)).Curve.Select(level => level.Pay).ToList();
 
-        (pays.Count(pay => pay % 5_000m == 0m), pays.Count <= 210).ShouldBe((201, true));
+        (pays.Count(pay => pay % 10_000m == 0m), pays.Count <= 110).ShouldBe((101, true));
     }
 
     [Theory]

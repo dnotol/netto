@@ -33,18 +33,13 @@ public static class YearSimulation
         if (pay is null)
             return (null, payError);
 
-        var profitBeforePay = scenario.ProfitBeforePay;
-        var company = CorporateTaxCalculator.Compute(corporateRules, profitBeforePay - pay.GrossPay, pay.GrossPay, scenario.Company);
-        var profitAfterTax = company.TaxableIncome - company.CorporateTax;
-        var maximumDividend = Math.Max(0m, profitAfterTax);
-
-        // What is not kept is paid out: a reserve above the profit after tax leaves no dividend.
-        var dividend = DividendCalculator.Compute(dividendRules, Math.Max(0m, maximumDividend - scenario.Reserve), scenario.DividendCategory);
+        var company = Company(scenario, corporateRules, dividendRules, pay.NetInPocket);
+        var dividend = company.Dividend;
         var rate = dividendRules.Rate(scenario.DividendCategory);
 
         IReadOnlyList<Step> steps =
         [
-            new Step("corporate_tax", Layer.Corporate, TaxableEvent.CompanyProfit, Track.PaidOut, company.CorporateTax,
+            new Step("corporate_tax", Layer.Corporate, TaxableEvent.CompanyProfit, Track.PaidOut, company.Tax.CorporateTax,
                 CorporateTaxRules.Source, corporateRules.Amounts),
             .. pay.Steps,
             new Step("dividend_withholding", Layer.Personal, TaxableEvent.Dividend, Track.PaidOut, dividend.Withholding,
@@ -55,20 +50,57 @@ public static class YearSimulation
 
         return (new YearResult(
             scenario,
-            profitBeforePay,
-            company,
+            scenario.ProfitBeforePay,
+            company.Tax,
             pay,
             dividend,
             PaidOut(steps, Layer.Corporate),
             PaidOut(steps, Layer.Social),
             PaidOut(steps, Layer.Personal),
-            pay.NetInPocket + dividend.NetDividend,
-            profitAfterTax - dividend.Dividend,
-            profitAfterTax,
-            maximumDividend,
+            company.NetInPocket,
+            company.KeptInCompany,
+            company.ProfitAfterTax,
+            company.MaximumDividend,
             steps), null);
+    }
+
+    // The year at the scenario's pay as the split's search reads it: Run's figures for the pocket, the
+    // dividend and the company, without its steps or the pay's next 1,000, since the search runs the
+    // year at a hundred pays and more. The scenario's other inputs have passed Run already; null for a
+    // year without rules.
+    internal static PayLevel? Level(Scenario scenario)
+    {
+        if (CorporateTaxRules.For(scenario.IncomeYear) is not { } corporateRules || DividendRules.For(scenario.IncomeYear) is not { } dividendRules)
+            return null;
+        if (GrossToNet.NetInPocket(scenario.IncomeYear, scenario.DirectorPay, scenario.MunicipalRate.Value) is not { } netPay)
+            return null;
+
+        var company = Company(scenario, corporateRules, dividendRules, netPay);
+        return new PayLevel(scenario.DirectorPay, company.NetInPocket, company.Dividend.Dividend, company.KeptInCompany, company.Tax.Condition,
+            company.MaximumDividend >= scenario.Reserve);
+    }
+
+    // What follows the director pay: corporate tax on the profit it leaves, then the dividend out of the
+    // profit after tax once the reserve is kept. What is not kept is paid out: a reserve above the
+    // profit after tax leaves no dividend.
+    private static CompanyFigures Company(Scenario scenario, CorporateTaxRules corporateRules, DividendRules dividendRules, decimal netPay)
+    {
+        var tax = CorporateTaxCalculator.Compute(corporateRules, scenario.ProfitBeforePay - scenario.DirectorPay, scenario.DirectorPay, scenario.Company);
+        var profitAfterTax = tax.TaxableIncome - tax.CorporateTax;
+        var maximumDividend = Math.Max(0m, profitAfterTax);
+        var dividend = DividendCalculator.Compute(dividendRules, Math.Max(0m, maximumDividend - scenario.Reserve), scenario.DividendCategory);
+
+        return new CompanyFigures(tax, profitAfterTax, maximumDividend, dividend, netPay + dividend.NetDividend, profitAfterTax - dividend.Dividend);
     }
 
     private static decimal PaidOut(IReadOnlyList<Step> steps, Layer layer) =>
         steps.Where(step => step.Layer == layer && step.Track == Track.PaidOut).Sum(step => step.Amount);
+
+    private sealed record CompanyFigures(
+        CorporateTaxResult Tax,
+        decimal ProfitAfterTax,
+        decimal MaximumDividend,
+        DividendResult Dividend,
+        decimal NetInPocket,
+        decimal KeptInCompany);
 }

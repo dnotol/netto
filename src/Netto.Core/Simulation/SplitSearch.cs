@@ -16,8 +16,10 @@ namespace Netto.Core.Simulation;
 // through, then tries every euro left. A tie goes to the lower pay.
 public static class SplitSearch
 {
-    // At most this many steps of the grid, each a round amount: €500 for €100,000 of profit.
-    private const int MaximumSteps = 200;
+    // At most this many steps of the grid, each a round amount: €1,000 for €100,000 of profit. The
+    // curve is a straight line between most of them, and the browser runs the search again at every
+    // change of an input other than the pay.
+    private const int MaximumSteps = 100;
     private static readonly decimal[] RoundSteps = [100m, 200m, 250m, 500m];
 
     // Below this width every euro is tried.
@@ -91,12 +93,8 @@ public static class SplitSearch
             if (_byPay.TryGetValue(pay, out var known))
                 return known;
 
-            var (year, error) = YearSimulation.Run(scenario with { DirectorPay = pay });
-            if (year is null)
-                throw new InvalidOperationException($"The year was refused at a pay of {pay} although its other inputs were not: {error}.");
-
-            var level = new PayLevel(pay, year.NetInPocket, year.Dividend.Dividend, year.KeptInCompany, year.Company.Condition,
-                year.MaximumDividend >= scenario.Reserve);
+            var level = YearSimulation.Level(scenario with { DirectorPay = pay })
+                ?? throw new InvalidOperationException($"The year has no rules at a pay of {pay} although it ran at no pay.");
             _byPay[pay] = level;
             return level;
         }

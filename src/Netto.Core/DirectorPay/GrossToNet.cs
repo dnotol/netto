@@ -50,6 +50,17 @@ public static class GrossToNet
                 next.NetInPocket - figures.NetInPocket)), null);
     }
 
+    // The net in pocket alone, for the split's search, which runs the year at a hundred pays and more
+    // and reads nothing else of them: no steps, and not the next 1,000, which costs as much again.
+    // Null for a year without rules; the pay and the rate are Compute's to refuse.
+    internal static decimal? NetInPocket(int incomeYear, decimal grossPay, decimal municipalRate)
+    {
+        if (SocialContributionRules.For(incomeYear) is not { } socialRules || PersonalTaxRules.For(incomeYear) is not { } taxRules)
+            return null;
+
+        return Figures.For(socialRules, taxRules, grossPay, municipalRate).NetInPocket;
+    }
+
     // The contributions are owed on the year's net taxable income, which is the gross less the
     // contributions themselves and less the flat-rate costs on what is left: a fixed point. Each
     // pass shrinks the error at least fivefold (the steepest rate is 20.50%), so it is solved
