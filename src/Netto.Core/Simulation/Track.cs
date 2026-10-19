@@ -1,4 +1,4 @@
-namespace Netto.Core.DirectorPay;
+namespace Netto.Core.Simulation;
 
 // What a step means for the director's pocket. A later track, « muddy in pocket » (company-paid
 // items the director also uses privately), joins as another value.

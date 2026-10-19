@@ -1,6 +1,6 @@
 using Netto.Core.Rules;
 
-namespace Netto.Core.DirectorPay;
+namespace Netto.Core.Simulation;
 
 // One step from gross pay to net in pocket: the rule it applies, the amount it gives, the official
 // text behind it and the amounts of that income year it used.

@@ -1,6 +1,7 @@
 using Netto.Core.DirectorPay;
 using Netto.Core.PersonalTax;
 using Netto.Core.Rules;
+using Netto.Core.Simulation;
 using Netto.Core.SocialContributions;
 using Shouldly;
 

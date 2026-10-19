@@ -1,3 +1,5 @@
+using Netto.Core.Simulation;
+
 namespace Netto.Core.DirectorPay;
 
 public sealed record GrossToNetResult(
