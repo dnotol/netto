@@ -11,9 +11,5 @@ internal static class PlanText
 
     public static string Row(string key) => $"Row_{key}";
 
-    public static string Rule(string ruleKey) => $"Rule_{ruleKey}";
-
-    public static string Amount(string key) => $"Amount_{key}";
-
     public static string Error(string errorKey) => $"Error_{errorKey}";
 }

@@ -37,9 +37,6 @@ public class PlanTextTests
             .Concat(view.Tracks.Select(track => PlanText.TrackHint(track.Key)))
             .Concat(view.Tracks.SelectMany(track => track.Rows).Select(row => PlanText.Row(row.Key)))
             .Concat(view.NextThousand.Select(part => PlanText.Row(part.Key)))
-            .Concat(view.Details.Select(detail => PlanText.Row(detail.RuleKey)))
-            .Concat(result.Steps.Select(step => PlanText.Rule(step.RuleKey)))
-            .Concat(result.Steps.SelectMany(step => step.AmountsUsed).Select(amount => PlanText.Amount(amount.Key)))
             .Concat(new[] { GrossToNet.GrossPayNegative, GrossToNet.MunicipalRateOutOfRange, GrossToNet.IncomeYearNotSupported }
                 .Select(PlanText.Error));
 

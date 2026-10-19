@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title_social_contributions" xml:space="preserve">
+    <value>Social contributions</value>
+  </data>
+  <data name="Title_flat_rate_costs" xml:space="preserve">
+    <value>Flat-rate professional costs</value>
+  </data>
+  <data name="Title_taxable_income" xml:space="preserve">
+    <value>Taxable income</value>
+  </data>
+  <data name="Title_income_tax" xml:space="preserve">
+    <value>Income tax</value>
+  </data>
+  <data name="Title_municipal_surcharge" xml:space="preserve">
+    <value>Municipal surcharge</value>
+  </data>
+  <data name="Rule_social_contributions" xml:space="preserve">
+    <value>The final contributions of a self-employed person in main occupation, owed on the year's net taxable professional income: one rate up to a first ceiling, a lower rate up to a second ceiling, nothing above it, and never less than the contribution on the minimum income. The social insurance fund bills them in four equal quarters, each rounded to the cent. The contributions lower the very income they are computed on, so the two are solved together.</value>
+  </data>
+  <data name="Rule_flat_rate_costs" xml:space="preserve">
+    <value>A director who does not prove real professional costs deducts flat-rate costs: a percentage of the pay left after the social contributions, up to a yearly maximum. They lower the taxable income and are never paid out.</value>
+  </data>
+  <data name="Rule_taxable_income" xml:space="preserve">
+    <value>Gross pay less your own social contributions and the flat-rate costs. It is never below zero.</value>
+  </data>
+  <data name="Rule_income_tax" xml:space="preserve">
+    <value>The progressive scale applied to the taxable income, less the reduction for the tax-free amount, gives the State tax. The federal government keeps that tax less the autonomy factor, and Wallonia adds its regional tax on the federal share. Each of the two is rounded to the cent, and the income tax is their sum.</value>
+  </data>
+  <data name="Rule_municipal_surcharge" xml:space="preserve">
+    <value>Your municipality's rate applied to the income tax, that is the federal share plus the Walloon tax.</value>
+  </data>
+  <data name="Amount_minimum_income" xml:space="preserve">
+    <value>Minimum income</value>
+  </data>
+  <data name="Amount_first_band_rate" xml:space="preserve">
+    <value>Rate up to the first ceiling</value>
+  </data>
+  <data name="Amount_first_band_ceiling" xml:space="preserve">
+    <value>First ceiling</value>
+  </data>
+  <data name="Amount_second_band_rate" xml:space="preserve">
+    <value>Rate up to the second ceiling</value>
+  </data>
+  <data name="Amount_second_band_ceiling" xml:space="preserve">
+    <value>Second ceiling</value>
+  </data>
+  <data name="Amount_flat_rate_costs_rate" xml:space="preserve">
+    <value>Flat-rate costs rate</value>
+  </data>
+  <data name="Amount_flat_rate_costs_maximum" xml:space="preserve">
+    <value>Flat-rate costs maximum</value>
+  </data>
+  <data name="Amount_bracket_1_rate" xml:space="preserve">
+    <value>Bracket 1 rate</value>
+  </data>
+  <data name="Amount_bracket_1_upper_limit" xml:space="preserve">
+    <value>Bracket 1 upper limit</value>
+  </data>
+  <data name="Amount_bracket_2_rate" xml:space="preserve">
+    <value>Bracket 2 rate</value>
+  </data>
+  <data name="Amount_bracket_2_upper_limit" xml:space="preserve">
+    <value>Bracket 2 upper limit</value>
+  </data>
+  <data name="Amount_bracket_3_rate" xml:space="preserve">
+    <value>Bracket 3 rate</value>
+  </data>
+  <data name="Amount_bracket_3_upper_limit" xml:space="preserve">
+    <value>Bracket 3 upper limit</value>
+  </data>
+  <data name="Amount_bracket_4_rate" xml:space="preserve">
+    <value>Bracket 4 rate, above the last limit</value>
+  </data>
+  <data name="Amount_tax_free_amount" xml:space="preserve">
+    <value>Tax-free amount</value>
+  </data>
+  <data name="Amount_tax_free_amount_rate" xml:space="preserve">
+    <value>Rate of the tax-free amount reduction</value>
+  </data>
+  <data name="Amount_autonomy_factor" xml:space="preserve">
+    <value>Autonomy factor</value>
+  </data>
+  <data name="Amount_regional_additional_rate" xml:space="preserve">
+    <value>Walloon additional rate</value>
+  </data>
+  <data name="Amount_municipal_rate" xml:space="preserve">
+    <value>Your municipality's rate</value>
+  </data>
+  <data name="Amount_entered_municipal_rate" xml:space="preserve">
+    <value>Municipal rate, as you entered it</value>
+  </data>
+</root>

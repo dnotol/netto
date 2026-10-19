@@ -1,0 +1,48 @@
+@inject IStringLocalizer<StepDetails> L
+
+@* Each step of a window with its rule, the official texts behind it and that year's amounts it used.
+   Every window lists its steps the same way, from the same engine steps. *@
+<div class="step-details">
+    <MudExpansionPanels MultiExpansion="true" Outlined="true" Elevation="0">
+        @foreach (var detail in Details)
+        {
+            <MudExpansionPanel>
+                <TitleContent>
+                    <span class="step-details__head">
+                        <span>@L[StepText.Title(detail.RuleKey)]</span>
+                        <span class="step-details__amount">@Formats.Euros(detail.Amount)</span>
+                    </span>
+                </TitleContent>
+                <ChildContent>
+                    <p class="step-details__rule">@L[StepText.Rule(detail.RuleKey)]</p>
+                    @foreach (var group in detail.Sources)
+                    {
+                        <div class="step-details__source">
+                            <a href="@group.Source.Url" target="_blank" rel="noopener noreferrer" class="step-details__link">
+                                @group.Source.Title<MudIcon Icon="@Icons.Material.Rounded.OpenInNew" Size="Size.Small" aria-hidden="true" />
+                            </a>
+                            <p class="step-details__reference">@group.Source.Reference</p>
+                            @if (group.Amounts.Count > 0)
+                            {
+                                <dl class="step-details__amounts">
+                                    @foreach (var amount in group.Amounts)
+                                    {
+                                        <div>
+                                            <dt>@L[StepText.Amount(amount.Key)]</dt>
+                                            <dd>@Formats.RuleAmount(amount)</dd>
+                                        </div>
+                                    }
+                                </dl>
+                            }
+                        </div>
+                    }
+                </ChildContent>
+            </MudExpansionPanel>
+        }
+    </MudExpansionPanels>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public IReadOnlyList<StepDetail> Details { get; set; } = [];
+}

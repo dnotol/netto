@@ -2,6 +2,7 @@
 @using Netto.Core.DirectorPay
 @using Netto.Core.PersonalTax
 @using Netto.Web.Client.DirectorPay
+@using Netto.Web.Client.Steps
 @inject IStringLocalizer<Plan> L
 
 <PageTitle>@L["PageTitle"]</PageTitle>
@@ -141,43 +142,7 @@
             <section class="details" aria-labelledby="details-title">
                 <h2 id="details-title" class="plan__section-title">@L["DetailsTitle"]</h2>
                 <p class="plan__section-intro">@L["DetailsIntro", _result.IncomeYear]</p>
-                <MudExpansionPanels MultiExpansion="true" Outlined="true" Elevation="0">
-                    @foreach (var detail in _view.Details)
-                    {
-                        <MudExpansionPanel>
-                            <TitleContent>
-                                <span class="details__head">
-                                    <span>@L[PlanText.Row(detail.RuleKey)]</span>
-                                    <span class="details__amount">@Formats.Euros(detail.Amount)</span>
-                                </span>
-                            </TitleContent>
-                            <ChildContent>
-                                <p class="details__rule">@L[PlanText.Rule(detail.RuleKey)]</p>
-                                @foreach (var group in detail.Sources)
-                                {
-                                    <div class="details__source">
-                                        <a href="@group.Source.Url" target="_blank" rel="noopener noreferrer" class="details__link">
-                                            @group.Source.Title<MudIcon Icon="@Icons.Material.Rounded.OpenInNew" Size="Size.Small" aria-hidden="true" />
-                                        </a>
-                                        <p class="details__reference">@group.Source.Reference</p>
-                                        @if (group.Amounts.Count > 0)
-                                        {
-                                            <dl class="details__amounts">
-                                                @foreach (var amount in group.Amounts)
-                                                {
-                                                    <div>
-                                                        <dt>@L[PlanText.Amount(amount.Key)]</dt>
-                                                        <dd>@Formats.RuleAmount(amount)</dd>
-                                                    </div>
-                                                }
-                                            </dl>
-                                        }
-                                    </div>
-                                }
-                            </ChildContent>
-                        </MudExpansionPanel>
-                    }
-                </MudExpansionPanels>
+                <StepDetails Details="_view.Details" />
             </section>
         }
 

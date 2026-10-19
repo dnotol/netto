@@ -1,6 +1,6 @@
 using Netto.Core.DirectorPay;
-using Netto.Core.Rules;
 using Netto.Core.Simulation;
+using Netto.Web.Client.Steps;
 
 namespace Netto.Web.Client.DirectorPay;
 
@@ -47,17 +47,8 @@ internal sealed record GrossToNetView(
                 Part("municipal_surcharge", result.NextThousand.MunicipalSurcharge),
                 Part("net_in_pocket", result.NextThousand.NetInPocket),
             ],
-            result.Steps.Select(Detail).ToList());
+            result.Steps.Select(StepDetail.From).ToList());
     }
-
-    // The step's own source first, even with no amount of its own, then each other source in the
-    // order its amounts appear.
-    private static StepDetail Detail(Step step) =>
-        new(step.RuleKey, step.Amount, step.AmountsUsed.Select(amount => amount.Source)
-            .Prepend(step.Source)
-            .Distinct()
-            .Select(source => new SourceGroup(source, step.AmountsUsed.Where(amount => amount.Source == source).ToList()))
-            .ToList());
 
     private static Line Deduction(Step step) =>
         new(step.RuleKey, step.Track == Track.PaidOut ? RowKind.PaidOut : RowKind.TaxBaseOnly, step.Amount);
@@ -122,7 +113,3 @@ internal static class RowKindExtensions
 
 // Share is a fraction of the next 1,000: 0.16588 for 165.88.
 internal sealed record NextThousandPart(string Key, decimal Amount, decimal Share);
-
-internal sealed record StepDetail(string RuleKey, decimal Amount, IReadOnlyList<SourceGroup> Sources);
-
-internal sealed record SourceGroup(Source Source, IReadOnlyList<RuleAmount> Amounts);

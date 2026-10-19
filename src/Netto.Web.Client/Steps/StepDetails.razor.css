@@ -1,0 +1,91 @@
+/* ::deep reaches the elements MudBlazor renders (MudExpansionPanels, MudIcon), which carry no scope
+   attribute of their own; the markup written in this file's TitleContent and ChildContent is
+   scoped normally. Neutral colours, except the gold of an active link (CLAUDE.md, UI). */
+
+.step-details ::deep .mud-expand-panel {
+    background: var(--netto-surface);
+}
+
+.step-details__head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.25rem 1rem;
+    width: 100%;
+    padding-right: 0.5rem;
+}
+
+.step-details__amount {
+    color: var(--netto-text-muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.step-details__rule {
+    max-width: 46rem;
+    margin: 0 0 1rem;
+    line-height: 1.65;
+}
+
+.step-details__source {
+    padding: 1rem 0 0.75rem;
+    border-top: 1px solid var(--netto-line);
+}
+
+.step-details__link {
+    color: var(--netto-text);
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-color: rgba(243, 238, 226, 0.35);
+    text-underline-offset: 3px;
+    overflow-wrap: anywhere;
+    transition: color 0.2s ease;
+}
+
+    /* Hover and focus are active states, so they may turn gold. */
+    .step-details__link:hover,
+    .step-details__link:focus-visible {
+        color: var(--netto-gold);
+        text-decoration-color: var(--netto-gold);
+    }
+
+    .step-details__link ::deep .mud-icon-root {
+        margin-left: 0.35rem;
+        font-size: 1rem;
+        vertical-align: -0.15em;
+    }
+
+.step-details__reference {
+    margin: 0.35rem 0 0.75rem;
+    color: var(--netto-text-muted);
+    font-size: 0.85rem;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+/* Label and value pairs in as many columns of at least 15rem as fit. */
+.step-details__amounts {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
+    gap: 0 2rem;
+    margin: 0;
+}
+
+    .step-details__amounts div {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0.4rem 0;
+        border-bottom: 1px dashed rgba(243, 238, 226, 0.08);
+    }
+
+    .step-details__amounts dt {
+        color: var(--netto-text-muted);
+        font-size: 0.88rem;
+    }
+
+    .step-details__amounts dd {
+        margin: 0;
+        font-size: 0.88rem;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+    }
