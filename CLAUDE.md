@@ -10,6 +10,7 @@ Netto tells a Belgian SRL owner-director how to pay themselves for the year so t
 |---|---|
 | `CLAUDE.md` (this file) | Instructions only: what an agent must do, must not do, or would otherwise get wrong. No status, no history, no domain spec. Edit it when a slice changed a convention, an architecture rule or a gotcha. |
 | Notion, « Netto Development » | Every unit of work (Work Items, User Stories), the product contract (the « Goal & scope » page: what v1 is and is not) and the Lever catalogue (one page per fiscal lever, with its official sources). There is no backlog file, and what shipped is the git history. |
+| `official-docs/` | The official documents the rules are taken from, as they were when read, each with the income years it applies to and its status (`INDEX.md`). Its `README.md` says how to file one. |
 
 ## Skills
 
@@ -57,7 +58,7 @@ The tracker is Notion: the « Netto Development » page, holding **Work Items** 
 - **`Netto.Web` only serves the app.** If Netto ever gets an API, it goes there, not in a new project.
 - **No tax rule outside `Netto.Core`.** A component growing an `if` about tax behaviour means that logic belongs in Core. Core returns data and error keys, never display text; the page turns a key into English.
 - **The engine follows the law's order of computation** (Notion, « Engine architecture »): layer calculators composed by one year simulation, and each page is a window that reads its steps instead of calculating on its own; a new income year is a rule set, a lever is scenario inputs plus a rule in the layer it touches plus its steps. The plausible swap seams are the regional tax and how director pay is paid.
-- **Rules come only from official, current sources** (tax administration, Moniteur belge, INASTI), each amount with its source and income year. An amount that is not published yet is marked as such, never guessed. The Lever catalogue holds the sources.
+- **Rules come only from official, current sources** (tax administration, Moniteur belge, INASTI), each amount with its source and income year. An amount that is not published yet is marked as such, never guessed; a rule set that borrows the latest published amounts records the year they were set for (`MunicipalRates.RatesIncomeYear`). The Lever catalogue holds the research; the document an amount is read from is filed in `official-docs/` (downloading one needs the operator's go), and a rule set cites only documents current for its income year.
 - **One rules record per layer, one instance per income year** (`SocialContributionRules.IncomeYear2026`, `PersonalTaxRules.IncomeYear2025`, found through `For(year)`). Every amount is a `RuleAmount` carrying its `Source`, and rates are fractions (20.50% is `0.205m`). A new year is a new instance, never an edit of last year's.
 - **Round where the administration rounds**: `Money.RoundToCent` (half away from zero) on each line its calculation detail shows rounded, not once at the end. INASTI bills four rounded quarters; Tax-Calc rounds the flat-rate costs, the basic tax, the federal share and the Walloon tax each on its own.
 - **Eligibility is declared by the user, never decided by the engine**: Core takes a status (VVPRbis shares, reduced corporate rate, small-company status) as input and shows its conditions.
