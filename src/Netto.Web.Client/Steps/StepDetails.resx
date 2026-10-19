@@ -27,6 +27,9 @@
   <data name="Title_municipal_surcharge" xml:space="preserve">
     <value>Municipal surcharge</value>
   </data>
+  <data name="Title_low_earned_income_credit" xml:space="preserve">
+    <value>Tax credit for low earned income</value>
+  </data>
   <data name="Rule_social_contributions" xml:space="preserve">
     <value>The final contributions of a self-employed person in main occupation, owed on the year's net taxable professional income: one rate up to a first ceiling, a lower rate up to a second ceiling, nothing above it, and never less than the contribution on the minimum income. The social insurance fund bills them in four equal quarters, each rounded to the cent. The contributions lower the very income they are computed on, so the two are solved together.</value>
   </data>
@@ -41,6 +44,9 @@
   </data>
   <data name="Rule_municipal_surcharge" xml:space="preserve">
     <value>Your municipality's rate applied to the income tax, that is the federal share plus the Walloon tax.</value>
+  </data>
+  <data name="Rule_low_earned_income_credit" xml:space="preserve">
+    <value>A federal tax credit on a modest taxable income from your own work, which a self-employed director's pay is. It rises from nothing to its full amount, stays there, then falls back to nothing at the ceiling. It comes off after the municipal surcharge, which it leaves as it is, and what your tax does not absorb is refunded. Your dividend, taxed at source and not declared, does not count; a director under an employment contract or in a side activity does not get it.</value>
   </data>
   <data name="Amount_minimum_income" xml:space="preserve">
     <value>Minimum income</value>
@@ -101,6 +107,21 @@
   </data>
   <data name="Amount_entered_municipal_rate" xml:space="preserve">
     <value>Municipal rate, as you entered it</value>
+  </data>
+  <data name="Amount_low_earned_income_credit" xml:space="preserve">
+    <value>Full credit</value>
+  </data>
+  <data name="Amount_low_earned_income_floor" xml:space="preserve">
+    <value>Starts above a taxable income of</value>
+  </data>
+  <data name="Amount_low_earned_income_full_from" xml:space="preserve">
+    <value>Full from</value>
+  </data>
+  <data name="Amount_low_earned_income_full_up_to" xml:space="preserve">
+    <value>Full up to</value>
+  </data>
+  <data name="Amount_low_earned_income_ceiling" xml:space="preserve">
+    <value>None from</value>
   </data>
   <data name="Title_corporate_tax" xml:space="preserve">
     <value>Corporate tax</value>

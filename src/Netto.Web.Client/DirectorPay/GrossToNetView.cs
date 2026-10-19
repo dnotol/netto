@@ -41,22 +41,40 @@ internal sealed record GrossToNetView(
                 track.Key,
                 track.Bars.Select(bar => new FunnelRow(bar.Line.Key, bar.Line.Kind, bar.Line.Amount, Percent(bar.From), Percent(bar.To))).ToList()))
                 .ToList(),
+            Parts(
             [
-                Part("social_contributions", result.NextThousand.SocialContributions),
-                Part("income_tax", result.NextThousand.IncomeTax),
-                Part("municipal_surcharge", result.NextThousand.MunicipalSurcharge),
-                Part("net_in_pocket", result.NextThousand.NetInPocket),
-            ],
+                ("social_contributions", result.NextThousand.SocialContributions),
+                ("income_tax", result.NextThousand.IncomeTax),
+                ("municipal_surcharge", result.NextThousand.MunicipalSurcharge),
+                ("low_earned_income_credit_lost", result.NextThousand.LowEarnedIncomeCredit),
+                ("net_in_pocket", result.NextThousand.NetInPocket),
+            ]),
             result.Steps.Select(StepDetail.From).ToList());
     }
 
-    private static Line Deduction(Step step) =>
-        new(step.RuleKey, step.Track == Track.PaidOut ? RowKind.PaidOut : RowKind.TaxBaseOnly, step.Amount);
+    // A step paid out with a negative amount is money that comes back: the tax credit for low earned
+    // income. The engine negates it, so a credit of nothing is a negative zero and still comes back.
+    private static Line Deduction(Step step) => step.Track switch
+    {
+        Track.PaidOut when decimal.IsNegative(step.Amount) => new(step.RuleKey, RowKind.Back, -step.Amount),
+        Track.PaidOut => new(step.RuleKey, RowKind.PaidOut, step.Amount),
+        _ => new(step.RuleKey, RowKind.TaxBaseOnly, step.Amount),
+    };
 
-    private static NextThousandPart Part(string key, decimal amount) => new(key, amount, amount / NextSlice);
+    // Where the credit rises, the next 1,000 gains some of it: that part is negative and the pocket's is
+    // more than the 1,000. The bar then draws only the parts that take money, each as wide as its share
+    // of them; where none is negative, that is its share of the 1,000.
+    private static List<NextThousandPart> Parts(IReadOnlyList<(string Key, decimal Amount)> parts)
+    {
+        var drawn = parts.Sum(part => Math.Max(0m, part.Amount));
+        return parts
+            .Select(part => new NextThousandPart(part.Key, part.Amount, part.Amount / NextSlice, drawn == 0m ? 0m : Math.Max(0m, part.Amount) / drawn))
+            .ToList();
+    }
 
     // A total is drawn between zero and its amount, a deduction from the balance it leaves to the
-    // balance before it, so each part paid out sits where the previous bar ended.
+    // balance before it, so each part paid out sits where the previous bar ended, and what comes back
+    // from the balance it finds up to the balance it leaves.
     private static List<(Line Line, decimal From, decimal To)> Bars(IReadOnlyList<Line> lines)
     {
         var bars = new List<(Line, decimal, decimal)>();
@@ -67,6 +85,11 @@ internal sealed record GrossToNetView(
             {
                 bars.Add((line, balance - line.Amount, balance));
                 balance -= line.Amount;
+            }
+            else if (line.Kind == RowKind.Back)
+            {
+                bars.Add((line, balance, balance + line.Amount));
+                balance += line.Amount;
             }
             else
             {
@@ -99,6 +122,9 @@ internal enum RowKind
     // Leaves the pocket: social contributions, income tax, municipal surcharge.
     PaidOut,
 
+    // Comes back to the pocket after the tax: the tax credit for low earned income.
+    Back,
+
     // Only lowers the tax base and is never paid out: the flat-rate costs.
     TaxBaseOnly,
 
@@ -111,5 +137,6 @@ internal static class RowKindExtensions
     public static bool IsDeduction(this RowKind kind) => kind is RowKind.PaidOut or RowKind.TaxBaseOnly;
 }
 
-// Share is a fraction of the next 1,000: 0.16588 for 165.88.
-internal sealed record NextThousandPart(string Key, decimal Amount, decimal Share);
+// Share is a fraction of the next 1,000: 0.16588 for 165.88, negative for credit gained. Width is the
+// fraction of the bar it takes, the same as its share unless a part is negative.
+internal sealed record NextThousandPart(string Key, decimal Amount, decimal Share, decimal Width);

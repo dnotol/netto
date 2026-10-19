@@ -45,6 +45,12 @@
   <data name="Row_municipal_surcharge" xml:space="preserve">
     <value>Municipal surcharge</value>
   </data>
+  <data name="Row_low_earned_income_credit" xml:space="preserve">
+    <value>Tax credit for low earned income</value>
+  </data>
+  <data name="Row_low_earned_income_credit_lost" xml:space="preserve">
+    <value>Tax credit for low earned income lost</value>
+  </data>
   <data name="Row_net_in_pocket" xml:space="preserve">
     <value>Net in pocket</value>
   </data>

@@ -46,7 +46,8 @@
     [Parameter, EditorRequired]
     public IReadOnlyList<StepDetail> Details { get; set; } = [];
 
-    // A step paid out with a negative amount is money that comes back: the refund on exempt dividends.
+    // A step paid out with a negative amount is money that comes back: the refund on exempt dividends,
+    // the tax credit for low earned income.
     private static string Amount(StepDetail detail) =>
         detail.Amount < 0m ? Formats.Addition(-detail.Amount) : Formats.Euros(detail.Amount);
 }

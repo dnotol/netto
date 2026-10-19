@@ -21,6 +21,9 @@
   <data name="Drain_municipal_surcharge" xml:space="preserve">
     <value>Municipal surcharge</value>
   </data>
+  <data name="Drain_low_earned_income_credit" xml:space="preserve">
+    <value>Tax credit for low earned income</value>
+  </data>
   <data name="Drain_net_pay" xml:space="preserve">
     <value>Net pay</value>
   </data>
@@ -50,6 +53,9 @@
   </data>
   <data name="From_taxes_on_profit" xml:space="preserve">
     <value>back from taxes on profit, through your tax return</value>
+  </data>
+  <data name="From_taxes_on_pay" xml:space="preserve">
+    <value>back from taxes on pay, through your tax return</value>
   </data>
   <data name="To_pocket" xml:space="preserve">
     <value>to your pocket</value>

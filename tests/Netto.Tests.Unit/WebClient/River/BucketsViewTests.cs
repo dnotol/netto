@@ -32,6 +32,23 @@ public class BucketsViewTests
         });
     }
 
+    // At the best pay the tax credit for low earned income comes back out of the taxes on pay:
+    // contributions 3,561.68, income tax 1,292.58 and surcharge 90.48, less 910. Taxes on profit are
+    // corporate tax 19,800.25 and withholding 10,692.14, less the refund of 149.94.
+    [Fact]
+    public void From_bestPay_creditLowersTheTaxesOnPay()
+    {
+        var view = BucketsView.From(RiverInputs.Example.WithDirectorPay(20_799m).Run()).ShouldNotBeNull();
+
+        view.Buckets.Select(bucket => (bucket.Key, bucket.Amount)).ShouldBe(new[]
+        {
+            ("pocket", 65_622.81m),
+            ("taxes_on_pay", 4_034.74m),
+            ("taxes_on_profit", 30_342.45m),
+            ("kept_in_company", 0m),
+        });
+    }
+
     [Fact]
     public void From_example_startsAtTheProfitBeforePay()
     {

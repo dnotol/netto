@@ -4,7 +4,7 @@ using Shouldly;
 namespace Netto.Tests.WebClient.River;
 
 // What the split draws from the search, on the river's example (SplitSearchTests): 100,000 of profit
-// before pay, where 20,799 leaves the most, 64,712.81, and gives up the reduced corporate rate, which
+// before pay, where 20,799 leaves the most, 65,622.81, and gives up the reduced corporate rate, which
 // 50,000, the pay set, keeps for 62,529.24. The net in pocket runs from 50,368.00 (all of it as pay)
 // to that peak.
 public class SplitSearchViewTests
@@ -14,7 +14,7 @@ public class SplitSearchViewTests
     {
         var best = View(RiverInputs.Example).Best.ShouldNotBeNull();
 
-        (best.Level.Pay, best.Level.Dividend, best.Gain, best.IsYours).ShouldBe((20_799m, 59_400.75m, 2_183.57m, false));
+        (best.Level.Pay, best.Level.Dividend, best.Gain, best.IsYours).ShouldBe((20_799m, 59_400.75m, 3_093.57m, false));
     }
 
     [Fact]
@@ -23,7 +23,7 @@ public class SplitSearchViewTests
         var rate = View(RiverInputs.Example).Rate.ShouldNotBeNull();
 
         (rate.Choice, rate.SmallestPay, rate.Other?.Pay, rate.Other?.NetInPocket, rate.Difference)
-            .ShouldBe((RateChoice.GivesItUp, (decimal?)50_000m, (decimal?)50_000m, (decimal?)62_529.24m, (decimal?)2_183.57m));
+            .ShouldBe((RateChoice.GivesItUp, (decimal?)50_000m, (decimal?)50_000m, (decimal?)62_529.24m, (decimal?)3_093.57m));
     }
 
     [Fact]
@@ -116,7 +116,7 @@ public class SplitSearchViewTests
     [Fact]
     public void Example_bestSitsOnTheCurveAtItsNet()
     {
-        View(RiverInputs.Example).Curve.BestAt.ShouldNotBeNull().Y.ShouldBe(14_712.81m / 15_000m);
+        View(RiverInputs.Example).Curve.BestAt.ShouldNotBeNull().Y.ShouldBe(15_622.81m / 20_000m);
     }
 
     [Fact]
@@ -125,9 +125,10 @@ public class SplitSearchViewTests
         View(RiverInputs.Example).Curve.NetTicks.ShouldBe(new[]
         {
             new AxisTick(0m, 50_000m),
-            new AxisTick(5_000m / 15_000m, 55_000m),
-            new AxisTick(10_000m / 15_000m, 60_000m),
-            new AxisTick(1m, 65_000m),
+            new AxisTick(5_000m / 20_000m, 55_000m),
+            new AxisTick(10_000m / 20_000m, 60_000m),
+            new AxisTick(15_000m / 20_000m, 65_000m),
+            new AxisTick(1m, 70_000m),
         });
     }
 

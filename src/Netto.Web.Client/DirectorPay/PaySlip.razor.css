@@ -90,6 +90,15 @@
     background: rgba(243, 238, 226, 0.3);
 }
 
+/* Dots mark the tax credit for low earned income, here and in the next 1,000: money that comes back
+   to the pocket after the tax, neutral like the rest, since only the net is gold. */
+.funnel-row--back .funnel-row__bar,
+.next__segment--low_earned_income_credit_lost,
+.next__part--low_earned_income_credit_lost .next__swatch {
+    background: radial-gradient(circle, rgba(243, 238, 226, 0.7) 1px, transparent 1.5px) 0 0 / 5px 5px;
+    box-shadow: inset 0 0 0 1px rgba(243, 238, 226, 0.35);
+}
+
 /* Stripes, not a colour, mark what is never paid out. A neutral repeating gradient draws them. */
 .funnel-row--tax-base-only .funnel-row__bar,
 .funnel-row__note::before {
@@ -132,8 +141,8 @@
         border-radius: 3px;
     }
 
-/* Next 1,000: one bar cut in four, each part as wide as its share (flex-basis), with a legend
-   under it that carries the amounts and percentages. */
+/* Next 1,000: one bar cut in five, each part as wide as its share (flex-basis, GrossToNetView's
+   width), with a legend under it that carries the amounts and percentages. */
 
 .next {
     padding: 1rem 1.1rem;

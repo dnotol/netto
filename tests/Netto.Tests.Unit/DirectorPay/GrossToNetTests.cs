@@ -62,7 +62,7 @@ public class GrossToNetTests
         var result = Compute2026(50_000m);
 
         result.NextThousand.ShouldBe(new NextThousand(
-            SocialContributions: 165.88m, IncomeTax: 364.09m, MunicipalSurcharge: 25.48m, NetInPocket: 444.55m));
+            SocialContributions: 165.88m, IncomeTax: 364.09m, MunicipalSurcharge: 25.48m, LowEarnedIncomeCredit: 0m, NetInPocket: 444.55m));
     }
 
     [Fact]
@@ -102,7 +102,37 @@ public class GrossToNetTests
     {
         var result = Compute2026(grossPay);
 
-        result.NetInPocket.ShouldBe(grossPay - result.SocialContributions - result.IncomeTax - result.MunicipalSurcharge);
+        result.NetInPocket.ShouldBe(
+            grossPay - result.SocialContributions - result.IncomeTax - result.MunicipalSurcharge + result.LowEarnedIncomeCredit);
+    }
+
+    // 20,000 leaves 15,945.17 taxable, where the 2026 credit is 910 in full: tax 1,098.78 and
+    // surcharge 76.91 on the contributions' minimum of 3,561.68, and the credit refunded on top.
+    [Fact]
+    public void Compute_2026GrossInFullCreditBand_addsTheWholeCreditToTheNet()
+    {
+        var result = Compute2026(20_000m);
+
+        (result.TaxableIncome, result.IncomeTax, result.MunicipalSurcharge, result.LowEarnedIncomeCredit, result.NetInPocket)
+            .ShouldBe((15_945.17m, 1_098.78m, 76.91m, 910m, 16_172.63m));
+    }
+
+    [Fact]
+    public void Compute_2026GrossInFullCreditBand_creditStepComesBackPaidOut()
+    {
+        var credit = Compute2026(20_000m).Steps.Single(step => step.RuleKey == "low_earned_income_credit");
+
+        (credit.Track, credit.Amount).ShouldBe((Track.PaidOut, -910m));
+    }
+
+    // At 30,000 the taxable income lies where the credit falls, so the next 1,000 loses some of it.
+    [Fact]
+    public void Compute_2026GrossWhereCreditFalls_nextThousandLosesPartOfIt()
+    {
+        var (here, next) = (Compute2026(30_000m), Compute2026(31_000m));
+
+        (here.NextThousand.LowEarnedIncomeCredit, here.NextThousand.LowEarnedIncomeCredit > 0m)
+            .ShouldBe((here.LowEarnedIncomeCredit - next.LowEarnedIncomeCredit, true));
     }
 
     [Theory]
@@ -111,7 +141,8 @@ public class GrossToNetTests
     {
         var next = Compute2026(grossPay).NextThousand;
 
-        (next.SocialContributions + next.IncomeTax + next.MunicipalSurcharge + next.NetInPocket).ShouldBe(1_000m);
+        (next.SocialContributions + next.IncomeTax + next.MunicipalSurcharge + next.LowEarnedIncomeCredit + next.NetInPocket)
+            .ShouldBe(1_000m);
     }
 
     [Fact]
@@ -126,6 +157,7 @@ public class GrossToNetTests
             ("taxable_income", Track.TaxBaseOnly, 40_455.44m),
             ("income_tax", Track.PaidOut, 11_333.96m),
             ("municipal_surcharge", Track.PaidOut, 793.38m),
+            ("low_earned_income_credit", Track.PaidOut, 0m),
         });
     }
 
@@ -141,6 +173,7 @@ public class GrossToNetTests
             ("taxable_income", Layer.Personal, TaxableEvent.DirectorPay),
             ("income_tax", Layer.Personal, TaxableEvent.DirectorPay),
             ("municipal_surcharge", Layer.Personal, TaxableEvent.DirectorPay),
+            ("low_earned_income_credit", Layer.Personal, TaxableEvent.DirectorPay),
         });
     }
 
@@ -165,6 +198,8 @@ public class GrossToNetTests
             ("income_tax", "bracket_1_rate bracket_1_upper_limit bracket_2_rate bracket_2_upper_limit bracket_3_rate "
                 + "bracket_3_upper_limit bracket_4_rate tax_free_amount tax_free_amount_rate autonomy_factor regional_additional_rate"),
             ("municipal_surcharge", "entered_municipal_rate"),
+            ("low_earned_income_credit", "low_earned_income_credit low_earned_income_floor low_earned_income_full_from "
+                + "low_earned_income_full_up_to low_earned_income_ceiling"),
         });
     }
 

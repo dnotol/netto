@@ -12,6 +12,8 @@ namespace Netto.Tests.Simulation;
 // YearSimulation's figure at that pay; the best pays were found by running the year at every euro
 // from 0 to the profit before pay (2026-10-19). On this company the net in pocket climbs to 20,799,
 // where it peaks, and jumps at 50,000, half the profit, where the reduced corporate rate is kept.
+// The tax credit for low earned income added 910 to each best pay and moved none: each sits where
+// the credit is whole (taxable income from 8,960 to 22,400), and the credit is never more.
 public class SplitSearchTests
 {
     private static readonly CompanyStatus SmallPastStartUp = new(SmallCompany: true, FirstFourTaxPeriods: false);
@@ -21,7 +23,7 @@ public class SplitSearchTests
     {
         var best = Search(Scenario()).Best.ShouldNotBeNull();
 
-        (best.Pay, best.NetInPocket, best.Dividend).ShouldBe((20_799m, 64_712.81m, 59_400.75m));
+        (best.Pay, best.NetInPocket, best.Dividend).ShouldBe((20_799m, 65_622.81m, 59_400.75m));
     }
 
     [Fact]
@@ -45,14 +47,14 @@ public class SplitSearchTests
             .ShouldBe(((decimal?)50_000m, (decimal?)62_529.24m, (decimal?)20_799m));
     }
 
-    // Keeping the rate takes the 51,000 minimum here, and costs 345.02 against the best pay.
+    // Keeping the rate takes the 51,000 minimum here, and costs 1,255.02 against the best pay.
     [Fact]
     public void Run_2026Profit150000_keepsTheRateAtTheMinimumAndTheBestStillGivesItUp()
     {
         var result = Search(Scenario(revenue: 170_000m));
 
         (result.BestKeepingReducedRate?.Pay, result.BestKeepingReducedRate?.NetInPocket, result.Best?.Pay, result.Best?.NetInPocket)
-            .ShouldBe(((decimal?)51_000m, (decimal?)95_117.79m, (decimal?)20_799m, (decimal?)95_462.81m));
+            .ShouldBe(((decimal?)51_000m, (decimal?)95_117.79m, (decimal?)20_799m, (decimal?)96_372.81m));
     }
 
     [Fact]
@@ -112,7 +114,7 @@ public class SplitSearchTests
     {
         var best = Search(Scenario(reserve: 40_000m)).Best.ShouldNotBeNull();
 
-        (best.Pay, best.NetInPocket, best.KeptInCompany).ShouldBe((20_799m, 31_912.81m, 40_000m));
+        (best.Pay, best.NetInPocket, best.KeptInCompany).ShouldBe((20_799m, 32_822.81m, 40_000m));
     }
 
     // The best pay overall, 20,799, would leave 59,400.75 of profit after tax, under the reserve. Up
@@ -124,7 +126,7 @@ public class SplitSearchTests
         var result = Search(Scenario(reserve: 60_000m));
 
         (result.Best?.Pay, result.Best?.NetInPocket, result.Best?.Dividend, result.BestKeepingReducedRate)
-            .ShouldBe(((decimal?)18_890m, (decimal?)15_273.13m, (decimal?)832.50m, (PayLevel?)null));
+            .ShouldBe(((decimal?)18_890m, (decimal?)16_183.13m, (decimal?)832.50m, (PayLevel?)null));
     }
 
     [Fact]
@@ -142,7 +144,7 @@ public class SplitSearchTests
     {
         var best = Search(Scenario(reserve: 30_000m, earlierProfits: 60_000m)).Best.ShouldNotBeNull();
 
-        (best.Pay, best.NetInPocket).ShouldBe((20_799m, 89_312.81m));
+        (best.Pay, best.NetInPocket).ShouldBe((20_799m, 90_222.81m));
     }
 
     // With 60,000 kept from earlier years every pay keeps a 60,000 reserve, which the year's own
@@ -176,7 +178,7 @@ public class SplitSearchTests
     {
         var best = Search(Scenario(company: new CompanyStatus(SmallCompany: true, FirstFourTaxPeriods: true))).Best.ShouldNotBeNull();
 
-        (best.Pay, best.NetInPocket).ShouldBe((20_799m, 67_960.06m));
+        (best.Pay, best.NetInPocket).ShouldBe((20_799m, 68_870.06m));
     }
 
     [Fact]

@@ -16,7 +16,7 @@
                     {
                         <li class="funnel-row funnel-row--@Modifier(row.Kind)">
                             <span class="funnel-row__label">@L[PaySlipText.Row(row.Key)]</span>
-                            <span class="funnel-row__amount">@(row.IsDeduction ? Formats.Deduction(row.Amount) : Formats.Euros(row.Amount))</span>
+                            <span class="funnel-row__amount">@Amount(row)</span>
                             <span class="funnel-row__track" aria-hidden="true">
                                 <span class="funnel-row__bar" style="@BarStyle(row)"></span>
                             </span>
@@ -65,10 +65,18 @@
     {
         RowKind.Gross => "gross",
         RowKind.PaidOut => "paid-out",
+        RowKind.Back => "back",
         RowKind.TaxBaseOnly => "tax-base-only",
         RowKind.TaxableIncome => "taxable-income",
         RowKind.NetInPocket => "net",
         _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, null),
+    };
+
+    private static string Amount(FunnelRow row) => row.Kind switch
+    {
+        RowKind.Back => Formats.Addition(row.Amount),
+        _ when row.IsDeduction => Formats.Deduction(row.Amount),
+        _ => Formats.Euros(row.Amount),
     };
 
     // CSS wants a dot as decimal separator whatever the culture.
@@ -76,5 +84,5 @@
         FormattableString.Invariant($"left: {row.BarStart:0.###}%; width: {row.BarEnd - row.BarStart:0.###}%");
 
     private static string SegmentStyle(NextThousandPart part) =>
-        FormattableString.Invariant($"flex-basis: {part.Share * 100m:0.###}%");
+        FormattableString.Invariant($"flex-basis: {part.Width * 100m:0.###}%");
 }

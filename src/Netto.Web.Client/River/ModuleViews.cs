@@ -279,8 +279,9 @@ internal enum RiverModule
 // Public because Drains, a component, takes it as a parameter.
 public sealed record Drain(string Key, DrainKind Kind, decimal Amount, string To)
 {
-    // A step paid out with a negative amount is money coming back: the refund on exempt dividends.
-    // The engine negates the refund, so a refund of nothing is a negative zero and still comes back.
+    // A step paid out with a negative amount is money coming back: the refund on exempt dividends, the
+    // tax credit for low earned income.
+    // The engine negates both, so a refund or a credit of nothing is a negative zero and still comes back.
     internal static Drain PaidOutTo(Step step, string bucket) => decimal.IsNegative(step.Amount)
         ? new Drain(step.RuleKey, DrainKind.Back, -step.Amount, bucket)
         : new Drain(step.RuleKey, DrainKind.PaidOut, step.Amount, bucket);
@@ -291,7 +292,8 @@ public enum DrainKind
     // Leaves for good, into a bucket of taxes.
     PaidOut,
 
-    // Comes back out of a bucket of taxes: the withholding refunded on the exempt dividend.
+    // Comes back out of a bucket of taxes: the withholding refunded on the exempt dividend, the tax
+    // credit for low earned income.
     Back,
 
     // Passed on whole: to the pocket, to what is kept in the company, or to the next module.

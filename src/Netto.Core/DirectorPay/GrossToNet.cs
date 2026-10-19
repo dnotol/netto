@@ -41,12 +41,14 @@ public static class GrossToNet
             figures.Tax.TaxableIncome,
             figures.Tax.IncomeTax,
             figures.Tax.MunicipalSurcharge,
+            figures.Tax.LowEarnedIncomeCredit,
             figures.NetInPocket,
             Steps(socialRules, taxRules, figures, municipalRate),
             new NextThousand(
                 next.SocialContributions - figures.SocialContributions,
                 next.Tax.IncomeTax - figures.Tax.IncomeTax,
                 next.Tax.MunicipalSurcharge - figures.Tax.MunicipalSurcharge,
+                figures.Tax.LowEarnedIncomeCredit - next.Tax.LowEarnedIncomeCredit,
                 next.NetInPocket - figures.NetInPocket)), null);
     }
 
@@ -95,6 +97,8 @@ public static class GrossToNet
         new Step("taxable_income", Layer.Personal, TaxableEvent.DirectorPay, Track.TaxBaseOnly, figures.Tax.TaxableIncome, PersonalTaxRules.DirectorPayDeductions, []),
         new Step("income_tax", Layer.Personal, TaxableEvent.DirectorPay, Track.PaidOut, figures.Tax.IncomeTax, PersonalTaxRules.IncomeTaxScale, taxRules.IncomeTaxAmounts),
         new Step("municipal_surcharge", Layer.Personal, TaxableEvent.DirectorPay, Track.PaidOut, figures.Tax.MunicipalSurcharge, PersonalTaxRules.MunicipalSurcharge, [municipalRate]),
+        new Step("low_earned_income_credit", Layer.Personal, TaxableEvent.DirectorPay, Track.PaidOut, -figures.Tax.LowEarnedIncomeCredit,
+            taxRules.LowEarnedIncomeCredit.Source, taxRules.LowEarnedIncomeCredit.Amounts),
     ];
 
     private sealed record Figures(decimal SocialContributions, PersonalTaxResult Tax, decimal NetInPocket)
@@ -106,7 +110,9 @@ public static class GrossToNet
             var tax = PersonalTaxCalculator.Compute(taxRules, grossPay, contributions, municipalRate);
 
             // The flat-rate costs only lower the tax base: they are never subtracted from the pocket.
-            return new Figures(contributions, tax, grossPay - contributions - tax.IncomeTax - tax.MunicipalSurcharge);
+            // The credit for low earned income is refunded where it exceeds the tax, so it all comes back.
+            return new Figures(
+                contributions, tax, grossPay - contributions - tax.IncomeTax - tax.MunicipalSurcharge + tax.LowEarnedIncomeCredit);
         }
     }
 }

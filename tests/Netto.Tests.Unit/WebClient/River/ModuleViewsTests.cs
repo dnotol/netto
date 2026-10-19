@@ -66,8 +66,19 @@ public class ModuleViewsTests
             new Drain("social_contributions", DrainKind.PaidOut, 8_293.36m, "taxes_on_pay"),
             new Drain("income_tax", DrainKind.PaidOut, 11_333.96m, "taxes_on_pay"),
             new Drain("municipal_surcharge", DrainKind.PaidOut, 793.38m, "taxes_on_pay"),
+            new Drain("low_earned_income_credit", DrainKind.Back, 0m, "taxes_on_pay"),
             new Drain("net_pay", DrainKind.PassedOn, 29_579.30m, "pocket"),
         });
+    }
+
+    // At the best pay the taxable income is 16,720.20, where the credit is whole.
+    [Fact]
+    public void DirectorPay_bestPay_creditComesBackFromTaxesOnPay()
+    {
+        var view = DirectorPay(RiverInputs.Example.WithDirectorPay(20_799m));
+
+        view.Drains.Single(drain => drain.Key == "low_earned_income_credit")
+            .ShouldBe(new Drain("low_earned_income_credit", DrainKind.Back, 910m, "taxes_on_pay"));
     }
 
     [Fact]
@@ -88,7 +99,7 @@ public class ModuleViewsTests
     public void DirectorPay_example_listsThePaysStepsWithTheirSources()
     {
         DirectorPay(RiverInputs.Example).Details.Select(detail => detail.RuleKey)
-            .ShouldBe(["social_contributions", "flat_rate_costs", "taxable_income", "income_tax", "municipal_surcharge"]);
+            .ShouldBe(["social_contributions", "flat_rate_costs", "taxable_income", "income_tax", "municipal_surcharge", "low_earned_income_credit"]);
     }
 
     [Fact]
