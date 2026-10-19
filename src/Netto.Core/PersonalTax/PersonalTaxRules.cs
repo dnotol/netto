@@ -43,6 +43,8 @@ public sealed record PersonalTaxRules(
 
     public static Source DirectorPayDeductions => ReturnExplanations2026Part2;
 
+    public static Source IncomeTaxScale => TaxRatesPage;
+
     public static Source MunicipalSurcharge { get; } = new(
         "Code des impôts sur les revenus 1992",
         "Art. 465 to 470: municipal additional tax on the State tax and the regional additional tax, at the municipality's rate",

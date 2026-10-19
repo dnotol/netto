@@ -6,7 +6,9 @@ public static class SocialContributionCalculator
     // is four rounded quarters: 4 × 890.42 at the minimum, where rounding once a year would give
     // 3,561.69.
     public static decimal Annual(SocialContributionRules rules, decimal incomeBase) =>
-        4 * Money.RoundToCent(Unrounded(rules, incomeBase) / 4);
+        Billed(Unrounded(rules, incomeBase));
+
+    internal static decimal Billed(decimal unroundedAnnual) => 4 * Money.RoundToCent(unroundedAnnual / 4);
 
     // The exact yearly amount before billing, for the gross-to-net fixed point, which has to be
     // solved without rounding (see GrossToNet).
