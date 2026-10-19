@@ -24,6 +24,12 @@ public static class PersonalTaxCalculator
         var regionalAdditionalTax = Money.RoundToCent(reducedStateTax * rules.RegionalAdditionalRate.Value);
         var incomeTax = reducedStateTax + regionalAdditionalTax;
 
+        // The surcharge is a share of the tax before any credit comes off it (circular AFER 39/2008,
+        // n° 51), so the credit for low earned income comes last and leaves it as it is. The
+        // director's pay is all their income: the dividend, which bore its withholding, is not
+        // declared (art. 313) and the exempt part is exempt. So the activity income, the net
+        // professional income and the total net income of art. 289ter are all the taxable income,
+        // and the credit's two limits on them (§2, al. 3 and 4) change nothing.
         return new PersonalTaxResult(
             flatRateCosts,
             taxableIncome,
@@ -33,7 +39,29 @@ public static class PersonalTaxCalculator
             reducedStateTax,
             regionalAdditionalTax,
             incomeTax,
-            Money.RoundToCent(incomeTax * municipalRate));
+            Money.RoundToCent(incomeTax * municipalRate),
+            LowEarnedIncomeCredit(rules, taxableIncome));
+    }
+
+    // Art. 289ter, §2 on the activity income: a straight line up from the floor to the full amount,
+    // then down from the end of the full amount to nothing at the ceiling, rounded to the cent as the
+    // administration's examples and Tax-Calc round it. Past the ceiling the total net income is too
+    // high for any credit (§1).
+    public static decimal LowEarnedIncomeCredit(PersonalTaxRules rules, decimal activityIncome)
+    {
+        var credit = rules.LowEarnedIncomeCredit;
+        var (full, floor, fullFrom, fullUpTo, ceiling) =
+            (credit.FullAmount.Value, credit.Floor.Value, credit.FullFrom.Value, credit.FullUpTo.Value, credit.Ceiling.Value);
+
+        var amount = activityIncome switch
+        {
+            _ when activityIncome <= floor || activityIncome >= ceiling => 0m,
+            _ when activityIncome < fullFrom => full * (activityIncome - floor) / (fullFrom - floor),
+            _ when activityIncome <= fullUpTo => full,
+            _ => full * (ceiling - activityIncome) / (ceiling - fullUpTo),
+        };
+
+        return Money.RoundToCent(amount);
     }
 
     // A percentage of the pay left after the director's own social contributions, rounded to the

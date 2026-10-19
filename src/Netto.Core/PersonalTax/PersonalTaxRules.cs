@@ -7,7 +7,9 @@ namespace Netto.Core.PersonalTax;
 // so it proves the method and the rounding against the administration's own simulator.
 // The special social security contribution collected with the tax is not here: a self-employed
 // person in main occupation does not owe it (law of 30.03.1994, art. 106 §4 and art. 125, 2°,
-// still so after the law of 15.07.2026 makes it per person from income year 2028).
+// still so after the law of 15.07.2026 makes it per person from income year 2028). The tax credit
+// for low earned income is, as a self-employed director's pay is activity income (art. 289ter, §1,
+// al. 2, which leaves out only directors under an employment contract and side activities).
 public sealed record PersonalTaxRules(
     int IncomeYear,
     IReadOnlyList<TaxBracket> Scale,
@@ -16,7 +18,8 @@ public sealed record PersonalTaxRules(
     RuleAmount FlatRateCostsRate,
     RuleAmount FlatRateCostsMaximum,
     RuleAmount AutonomyFactor,
-    RuleAmount RegionalAdditionalRate)
+    RuleAmount RegionalAdditionalRate,
+    LowEarnedIncomeCreditRules LowEarnedIncomeCredit)
 {
     private static readonly Source TaxRatesPage = new(
         "SPF Finances, « Taux d'imposition »",
@@ -44,6 +47,19 @@ public sealed record PersonalTaxRules(
         "Art. 33: regional additional tax of 33.257% of the reduced State tax, from assessment year 2018 (art. 39)",
         new Uri("https://www.ejustice.just.fgov.be/eli/decret/2017/12/13/2017032048/justel"));
 
+    // The law of 15.07.2026 leaves art. 289ter as it was; its title 16 changes art. 289ter/1, the
+    // employees' « bonus emploi fiscal ». What the credit leaves over after the tax is set against the
+    // municipal surcharge and refunded (art. 304, §2), so it reaches the pocket in full.
+    private static readonly Source Article289terIncome2025 = new(
+        "CIR 92, art. 289ter (revenus 2025), coordinated text on Fisconetplus, last modified 30.01.2025",
+        "Tax credit for low earned income: none above 28,420 of total net income; on the activity income, from 6,550 rising to 880 at 8,740, 880 up to 21,860, falling to none at 28,420. Refunded beyond the tax (art. 304, §2)",
+        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/e8b166ab-07c3-4964-aa70-716fb1dae0be"));
+
+    private static readonly Source Article289terIncome2026 = new(
+        "CIR 92, art. 289ter (revenus 2026), coordinated text on Fisconetplus, last modified 19.02.2026",
+        "Tax credit for low earned income: none above 29,120 of total net income; on the activity income, from 6,710 rising to 910 at 8,960, 910 up to 22,400, falling to none at 29,120. Refunded beyond the tax (art. 304, §2)",
+        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/af20504b-71e6-4daa-89d6-4d3c000c8718"));
+
     public static Source DirectorPayDeductions => ReturnExplanations2026Part2;
 
     public static Source IncomeTaxScale => TaxRatesPage;
@@ -66,7 +82,14 @@ public sealed record PersonalTaxRules(
         new RuleAmount("flat_rate_costs_rate", 0.03m, ReturnExplanations2026Part2),
         new RuleAmount("flat_rate_costs_maximum", 3_130m, ReturnExplanations2026Part2),
         new RuleAmount("autonomy_factor", 0.24957m, AutonomyFactorDecree),
-        new RuleAmount("regional_additional_rate", 0.33257m, WalloonTaxDecree));
+        new RuleAmount("regional_additional_rate", 0.33257m, WalloonTaxDecree),
+        new LowEarnedIncomeCreditRules(
+            Article289terIncome2025,
+            new RuleAmount("low_earned_income_credit", 880m, Article289terIncome2025),
+            new RuleAmount("low_earned_income_floor", 6_550m, Article289terIncome2025),
+            new RuleAmount("low_earned_income_full_from", 8_740m, Article289terIncome2025),
+            new RuleAmount("low_earned_income_full_up_to", 21_860m, Article289terIncome2025),
+            new RuleAmount("low_earned_income_ceiling", 28_420m, Article289terIncome2025)));
 
     public static PersonalTaxRules IncomeYear2026 { get; } = new(
         2026,
@@ -81,7 +104,14 @@ public sealed record PersonalTaxRules(
         new RuleAmount("flat_rate_costs_rate", 0.03m, ReturnExplanations2026Part2),
         new RuleAmount("flat_rate_costs_maximum", 3_200m, IndexationNotice2027),
         new RuleAmount("autonomy_factor", 0.24957m, AutonomyFactorDecree),
-        new RuleAmount("regional_additional_rate", 0.33257m, WalloonTaxDecree));
+        new RuleAmount("regional_additional_rate", 0.33257m, WalloonTaxDecree),
+        new LowEarnedIncomeCreditRules(
+            Article289terIncome2026,
+            new RuleAmount("low_earned_income_credit", 910m, Article289terIncome2026),
+            new RuleAmount("low_earned_income_floor", 6_710m, Article289terIncome2026),
+            new RuleAmount("low_earned_income_full_from", 8_960m, Article289terIncome2026),
+            new RuleAmount("low_earned_income_full_up_to", 22_400m, Article289terIncome2026),
+            new RuleAmount("low_earned_income_ceiling", 29_120m, Article289terIncome2026)));
 
     public static PersonalTaxRules? For(int incomeYear) => incomeYear switch
     {
