@@ -53,13 +53,13 @@
 
             <fieldset class="setup__group">
                 <legend class="setup__title">@L["DividendTitle"]</legend>
-                <MudNumericField T="decimal" Value="_dividend" ValueChanged="OnDividendChanged" Label="@L["DividendLabel"]"
+                <MudNumericField T="decimal" Value="_reserve" ValueChanged="OnReserveChanged" Label="@L["ReserveLabel"]"
                                  Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
                                  Variant="Variant.Outlined" Immediate="true" DebounceInterval="400"
-                                 Error="@(_error is YearSimulation.DividendNegative or YearSimulation.DividendAboveProfitAfterTax)" />
+                                 Error="@(_error == YearSimulation.ReserveNegative)" />
                 @if (_maximumDividend is { } maximum)
                 {
-                    <p class="setup__hint">@L["DividendHint", Formats.Euros(maximum)]</p>
+                    <p class="setup__hint">@L["ReserveHint", Formats.Euros(maximum)]</p>
                 }
                 <MudSelect T="WithholdingCategory" Value="_category" ValueChanged="OnCategoryChanged" Label="@L["CategoryLabel"]"
                            ToStringFunc="CategoryText"
@@ -196,7 +196,7 @@
     private bool _firstFourTaxPeriods;
     private decimal _directorPay = 50_000m;
     private MunicipalityChoice _choice = MunicipalityChoice.Start(MunicipalRates.IncomeYear2026, 0.07m);
-    private decimal _dividend = 40_000m;
+    private decimal _reserve;
     private WithholdingCategory _category = WithholdingCategory.VvprbisThirdYearOnwards;
 
     private YearResult? _result;
@@ -218,7 +218,7 @@
 
     private void OnChoiceChanged(MunicipalityChoice choice) => Set(() => _choice = choice);
 
-    private void OnDividendChanged(decimal dividend) => Set(() => _dividend = dividend);
+    private void OnReserveChanged(decimal reserve) => Set(() => _reserve = reserve);
 
     private void OnCategoryChanged(WithholdingCategory category) => Set(() => _category = category);
 
@@ -231,12 +231,12 @@
     private void Compute()
     {
         var company = new CompanyStatus(_smallCompany, _firstFourTaxPeriods);
-        var scenario = new Scenario(IncomeYear, _revenue, _runningCosts, company, _directorPay, _choice.MunicipalRate, _dividend, _category);
+        var scenario = new Scenario(IncomeYear, _revenue, _runningCosts, company, _directorPay, _choice.MunicipalRate, _reserve, _category);
         (_result, _error) = YearSimulation.Run(scenario);
         _view = _result is null ? null : YearView.From(_result);
 
-        // The largest dividend does not depend on the dividend, so a refused one can still say it.
-        _maximumDividend = (_result ?? YearSimulation.Run(scenario with { Dividend = 0m }).Value)?.MaximumDividend;
+        // The profit after tax does not depend on the reserve, so a refused one can still say it.
+        _maximumDividend = (_result ?? YearSimulation.Run(scenario with { Reserve = 0m }).Value)?.MaximumDividend;
     }
 
     private string CategoryText(WithholdingCategory category) =>

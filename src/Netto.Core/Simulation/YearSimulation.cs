@@ -5,17 +5,16 @@ using Netto.Core.Dividends;
 namespace Netto.Core.Simulation;
 
 // One income year in the order the law computes it: the director pay lowers the company's taxable
-// income, corporate tax takes its share of what is left, and the dividend comes out of the profit
-// after tax. In steady state the year pays out its own profit (decided 2026-10-19), so the dividend
-// cannot exceed it; earlier reserves are not modelled yet. No disallowed expenses, no losses carried
+// income, corporate tax takes its share of what is left, and the dividend is the profit after tax
+// less the reserve the user keeps in the company, never below zero. In steady state the year pays
+// out its own profit (decided 2026-10-19); earlier reserves are not modelled yet. No disallowed expenses, no losses carried
 // forward, no advance-payment surcharges, and INASTI's company contribution sits in the running costs.
 public static class YearSimulation
 {
     public const string IncomeYearNotSupported = GrossToNet.IncomeYearNotSupported;
     public const string RevenueNegative = "revenue_negative";
     public const string RunningCostsNegative = "running_costs_negative";
-    public const string DividendNegative = "dividend_negative";
-    public const string DividendAboveProfitAfterTax = "dividend_above_profit_after_tax";
+    public const string ReserveNegative = "reserve_negative";
 
     public static (YearResult? Value, string? Error) Run(Scenario scenario)
     {
@@ -27,21 +26,20 @@ public static class YearSimulation
             return (null, RevenueNegative);
         if (scenario.RunningCosts < 0m)
             return (null, RunningCostsNegative);
-        if (scenario.Dividend < 0m)
-            return (null, DividendNegative);
+        if (scenario.Reserve < 0m)
+            return (null, ReserveNegative);
 
         var (pay, payError) = GrossToNet.Compute(scenario.IncomeYear, scenario.DirectorPay, scenario.MunicipalRate);
         if (pay is null)
             return (null, payError);
 
-        var profitBeforePay = scenario.Revenue - scenario.RunningCosts;
+        var profitBeforePay = scenario.ProfitBeforePay;
         var company = CorporateTaxCalculator.Compute(corporateRules, profitBeforePay - pay.GrossPay, pay.GrossPay, scenario.Company);
         var profitAfterTax = company.TaxableIncome - company.CorporateTax;
         var maximumDividend = Math.Max(0m, profitAfterTax);
-        if (scenario.Dividend > maximumDividend)
-            return (null, DividendAboveProfitAfterTax);
 
-        var dividend = DividendCalculator.Compute(dividendRules, scenario.Dividend, scenario.DividendCategory);
+        // What is not kept is paid out: a reserve above the profit after tax leaves no dividend.
+        var dividend = DividendCalculator.Compute(dividendRules, Math.Max(0m, maximumDividend - scenario.Reserve), scenario.DividendCategory);
         var rate = dividendRules.Rate(scenario.DividendCategory);
 
         IReadOnlyList<Step> steps =

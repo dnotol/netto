@@ -8,15 +8,15 @@ using Shouldly;
 namespace Netto.Tests.WebClient.Year;
 
 // Income year 2026 at a 7% municipal rate, on the engine's own figures (YearSimulationTests): 100,000
-// of profit before pay, 50,000 of director pay and a 40,000 VVPRbis dividend give corporate tax
-// 10,000, social contributions 8,293.36, personal tax 19,177.40, net in pocket 62,529.24 and nothing
+// of profit before pay, 50,000 of director pay and nothing kept, so a 40,000 VVPRbis dividend, give
+// corporate tax 10,000, social contributions 8,293.36, personal tax 19,177.40, net in pocket 62,529.24 and nothing
 // kept in the company.
 public class YearViewTests
 {
     [Fact]
     public void From_2026Example_splitsTheProfitBeforePayIntoFiveParts()
     {
-        var view = View(directorPay: 50_000m, dividend: 40_000m);
+        var view = View(directorPay: 50_000m, reserve: 0m);
 
         view.Split.Select(part => (part.Key, part.Amount)).ShouldBe(new[]
         {
@@ -31,7 +31,7 @@ public class YearViewTests
     [Fact]
     public void From_2026Example_givesEachPartItsShareOfTheProfitBeforePay()
     {
-        var view = View(directorPay: 50_000m, dividend: 40_000m);
+        var view = View(directorPay: 50_000m, reserve: 0m);
 
         view.Split.Select(part => part.Share).ShouldBe(new decimal?[] { 0.1m, 0.0829336m, 0.191774m, 0.6252924m, 0m });
     }
@@ -39,7 +39,7 @@ public class YearViewTests
     [Fact]
     public void From_2026Loss_drawsNoShares()
     {
-        var view = View(directorPay: 30_000m, dividend: 0m, revenue: 40_000m);
+        var view = View(directorPay: 30_000m, reserve: 0m, revenue: 40_000m);
 
         view.Split.ShouldAllBe(part => part.Share == null);
     }
@@ -47,7 +47,7 @@ public class YearViewTests
     [Fact]
     public void From_2026Example_drawsTheCompanyThenTheDirectorPayThenTheDividend()
     {
-        var view = View(directorPay: 50_000m, dividend: 40_000m);
+        var view = View(directorPay: 50_000m, reserve: 0m);
 
         view.Ledgers.Select(ledger => ledger.Key).ShouldBe(["company", "director_pay", "dividend"]);
     }
@@ -55,7 +55,7 @@ public class YearViewTests
     [Fact]
     public void From_2026Example_companyLedgerRunsFromTheProfitBeforePayToWhatItKeeps()
     {
-        var company = View(directorPay: 50_000m, dividend: 25_000m).Ledgers[0];
+        var company = View(directorPay: 50_000m, reserve: 15_000m).Ledgers[0];
 
         company.Rows.Select(row => (row.Key, row.Kind, row.Amount)).ShouldBe(new[]
         {
@@ -72,7 +72,7 @@ public class YearViewTests
     [Fact]
     public void From_2026Example_directorPayLedgerRunsFromGrossThroughWhatIsPaidOutToNet()
     {
-        var pay = View(directorPay: 50_000m, dividend: 40_000m).Ledgers[1];
+        var pay = View(directorPay: 50_000m, reserve: 0m).Ledgers[1];
 
         pay.Rows.Select(row => (row.Key, row.Kind, row.Amount)).ShouldBe(new[]
         {
@@ -88,7 +88,7 @@ public class YearViewTests
     [Fact]
     public void From_2026Example_dividendLedgerShowsTheRefundComingBack()
     {
-        var dividend = View(directorPay: 50_000m, dividend: 40_000m).Ledgers[2];
+        var dividend = View(directorPay: 50_000m, reserve: 0m).Ledgers[2];
 
         dividend.Rows.Select(row => (row.Key, row.Kind, row.Amount)).ShouldBe(new[]
         {
@@ -102,7 +102,7 @@ public class YearViewTests
     [Fact]
     public void From_2026Example_listsEveryStepWithItsAmount()
     {
-        var view = View(directorPay: 50_000m, dividend: 40_000m);
+        var view = View(directorPay: 50_000m, reserve: 0m);
 
         view.Details.Select(detail => (detail.RuleKey, detail.Amount)).ShouldBe(new[]
         {
@@ -120,15 +120,15 @@ public class YearViewTests
     [Fact]
     public void From_2026Example_saysWhichConditionDecidedTheCorporateRate()
     {
-        var view = View(directorPay: 50_000m, dividend: 40_000m);
+        var view = View(directorPay: 50_000m, reserve: 0m);
 
         view.Condition.ShouldBe(ReducedRateCondition.TaxableIncomeNotAbovePay);
     }
 
-    private static YearView View(decimal directorPay, decimal dividend, decimal revenue = 120_000m)
+    private static YearView View(decimal directorPay, decimal reserve, decimal revenue = 120_000m)
     {
         var scenario = new Scenario(2026, revenue, 20_000m, new CompanyStatus(SmallCompany: true, FirstFourTaxPeriods: false),
-            directorPay, MunicipalRates.Entered(0.07m), dividend, WithholdingCategory.VvprbisThirdYearOnwards);
+            directorPay, MunicipalRates.Entered(0.07m), reserve, WithholdingCategory.VvprbisThirdYearOnwards);
         var (value, error) = YearSimulation.Run(scenario);
 
         error.ShouldBeNull();

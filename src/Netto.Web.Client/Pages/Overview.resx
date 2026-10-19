@@ -25,7 +25,7 @@
     <value>What your current setup leaves in your pocket</value>
   </data>
   <data name="Lede" xml:space="preserve">
-    <value>Enter your company's year and how you pay yourself today: director pay and a dividend. Netto follows the money from the company's profit to your pocket, layer by layer, and shows where every figure comes from. It is the baseline every plan is measured against.</value>
+    <value>Enter your company's year and how you pay yourself today: director pay, and what you keep in the company rather than pay out as a dividend. Netto follows the money from the company's profit to your pocket, layer by layer, and shows where every figure comes from. It is the baseline every plan is measured against.</value>
   </data>
   <data name="ExampleNote" xml:space="preserve">
     <value>An example year to start from: replace it with your own figures.</value>
@@ -60,11 +60,11 @@
   <data name="DividendTitle" xml:space="preserve">
     <value>Your dividend</value>
   </data>
-  <data name="DividendLabel" xml:space="preserve">
-    <value>Dividend out of this year's profit</value>
+  <data name="ReserveLabel" xml:space="preserve">
+    <value>Kept in the company out of this year's profit</value>
   </data>
-  <data name="DividendHint" xml:space="preserve">
-    <value>At most {0}, the profit left after corporate tax.</value>
+  <data name="ReserveHint" xml:space="preserve">
+    <value>Out of {0}, the profit left after corporate tax. What you do not keep is your dividend.</value>
   </data>
   <data name="CategoryLabel" xml:space="preserve">
     <value>Withholding rate</value>
@@ -225,11 +225,8 @@
   <data name="Error_running_costs_negative" xml:space="preserve">
     <value>Running costs cannot be negative.</value>
   </data>
-  <data name="Error_dividend_negative" xml:space="preserve">
-    <value>The dividend cannot be negative.</value>
-  </data>
-  <data name="Error_dividend_above_profit_after_tax" xml:space="preserve">
-    <value>The dividend can be at most {0} this year, the profit left after corporate tax. Reserves from earlier years are not counted yet.</value>
+  <data name="Error_reserve_negative" xml:space="preserve">
+    <value>What you keep in the company cannot be negative.</value>
   </data>
   <data name="Error_gross_pay_negative" xml:space="preserve">
     <value>Director pay cannot be negative.</value>

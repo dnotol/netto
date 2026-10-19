@@ -23,7 +23,7 @@ public class OverviewTextTests
     public void OverviewResx_everyKeyThePageBuildsFromThe2026Result_hasAText()
     {
         var scenario = new Scenario(2026, 120_000m, 20_000m, new CompanyStatus(SmallCompany: true, FirstFourTaxPeriods: false),
-            50_000m, MunicipalRates.Entered(0.07m), 40_000m, WithholdingCategory.VvprbisThirdYearOnwards);
+            50_000m, MunicipalRates.Entered(0.07m), 0m, WithholdingCategory.VvprbisThirdYearOnwards);
         var (value, _) = YearSimulation.Run(scenario);
         var view = YearView.From(value.ShouldNotBeNull());
 
@@ -53,7 +53,7 @@ public class OverviewTextTests
         var errors = new[]
         {
             YearSimulation.IncomeYearNotSupported, YearSimulation.RevenueNegative, YearSimulation.RunningCostsNegative,
-            YearSimulation.DividendNegative, YearSimulation.DividendAboveProfitAfterTax,
+            YearSimulation.ReserveNegative,
             GrossToNet.GrossPayNegative, GrossToNet.MunicipalRateOutOfRange,
         };
 
