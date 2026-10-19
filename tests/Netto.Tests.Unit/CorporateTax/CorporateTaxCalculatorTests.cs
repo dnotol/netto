@@ -102,6 +102,51 @@ public class CorporateTaxCalculatorTests
         (result.TaxableIncome, result.CorporateTax).ShouldBe((-10_000m, 0m));
     }
 
+    // The pay meets the condition once it reaches the minimum, or once the taxable income, the profit
+    // before pay less the pay, does not exceed it: at half the profit.
+    public static TheoryData<decimal, decimal> SmallestPays => new()
+    {
+        { 100_000m, 50_000m },
+        { 102_000m, 51_000m },
+        { 150_000m, 51_000m },
+        { 75_000.01m, 37_500.01m },
+        { 75_000.03m, 37_500.02m },
+    };
+
+    public static TheoryData<decimal> Profits => new() { 100_000m, 150_000m, 75_000.03m };
+
+    [Theory]
+    [MemberData(nameof(SmallestPays))]
+    public void SmallestPayKeepingReducedRate_2026SmallPastStartUp_isTheMinimumOrHalfTheProfit(decimal profitBeforePay, decimal expected)
+    {
+        CorporateTaxCalculator.SmallestPayKeepingReducedRate(Rules2026, profitBeforePay, SmallPastStartUp).ShouldBe(expected);
+    }
+
+    [Theory]
+    [MemberData(nameof(Profits))]
+    public void SmallestPayKeepingReducedRate_2026_keepsTheRateWhereACentLessLosesIt(decimal profitBeforePay)
+    {
+        var pay = CorporateTaxCalculator.SmallestPayKeepingReducedRate(Rules2026, profitBeforePay, SmallPastStartUp)!.Value;
+
+        (Applies(profitBeforePay, pay), Applies(profitBeforePay, pay - 0.01m)).ShouldBe((true, false));
+    }
+
+    [Fact]
+    public void SmallestPayKeepingReducedRate_2026Loss_isNoPay()
+    {
+        CorporateTaxCalculator.SmallestPayKeepingReducedRate(Rules2026, -10_000m, SmallPastStartUp).ShouldBe(0m);
+    }
+
+    // The rate does not depend on the pay: kept whatever it is, or lost whatever it is.
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public void SmallestPayKeepingReducedRate_2026RateNotSetByThePay_isNull(bool smallCompany, bool firstFourTaxPeriods)
+    {
+        CorporateTaxCalculator.SmallestPayKeepingReducedRate(Rules2026, 100_000m, new CompanyStatus(smallCompany, firstFourTaxPeriods)).ShouldBeNull();
+    }
+
     [Theory]
     [InlineData(2025)]
     [InlineData(2027)]
@@ -109,4 +154,7 @@ public class CorporateTaxCalculatorTests
     {
         CorporateTaxRules.For(incomeYear).ShouldBeNull();
     }
+
+    private static bool Applies(decimal profitBeforePay, decimal pay) =>
+        CorporateTaxCalculator.Compute(Rules2026, profitBeforePay - pay, pay, SmallPastStartUp).Condition.AppliesReducedRate();
 }
