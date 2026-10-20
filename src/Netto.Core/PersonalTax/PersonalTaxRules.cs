@@ -19,7 +19,8 @@ public sealed record PersonalTaxRules(
     RuleAmount FlatRateCostsMaximum,
     RuleAmount AutonomyFactor,
     RuleAmount RegionalAdditionalRate,
-    LowEarnedIncomeCreditRules LowEarnedIncomeCredit)
+    LowEarnedIncomeCreditRules LowEarnedIncomeCredit,
+    IncomeTaxAdvancePaymentRules AdvancePayments)
 {
     // Each amount cites the administration's coordinated article of its own income year, which carries
     // that year's indexed amounts (filed in official-docs/personal-tax/).
@@ -130,7 +131,8 @@ public sealed record PersonalTaxRules(
             new RuleAmount("low_earned_income_floor", 6_550m, Article289terIncome2025),
             new RuleAmount("low_earned_income_full_from", 8_740m, Article289terIncome2025),
             new RuleAmount("low_earned_income_full_up_to", 21_860m, Article289terIncome2025),
-            new RuleAmount("low_earned_income_ceiling", 28_420m, Article289terIncome2025)));
+            new RuleAmount("low_earned_income_ceiling", 28_420m, Article289terIncome2025)),
+        IncomeTaxAdvancePaymentRules.IncomeYear2025);
 
     public static PersonalTaxRules IncomeYear2026 { get; } = new(
         2026,
@@ -152,7 +154,8 @@ public sealed record PersonalTaxRules(
             new RuleAmount("low_earned_income_floor", 6_710m, Article289terIncome2026),
             new RuleAmount("low_earned_income_full_from", 8_960m, Article289terIncome2026),
             new RuleAmount("low_earned_income_full_up_to", 22_400m, Article289terIncome2026),
-            new RuleAmount("low_earned_income_ceiling", 29_120m, Article289terIncome2026)));
+            new RuleAmount("low_earned_income_ceiling", 29_120m, Article289terIncome2026)),
+        IncomeTaxAdvancePaymentRules.IncomeYear2026);
 
     public static PersonalTaxRules? For(int incomeYear) => incomeYear switch
     {
