@@ -93,6 +93,12 @@
   <data name="To_split" xml:space="preserve">
     <value>on to the split</value>
   </data>
+  <data name="Drain_left_after_vouchers" xml:space="preserve">
+    <value>Left after the vouchers</value>
+  </data>
+  <data name="To_allowances" xml:space="preserve">
+    <value>on to the expense allowances</value>
+  </data>
   <data name="Drain_office_allowance" xml:space="preserve">
     <value>Office allowance</value>
   </data>

@@ -5,7 +5,8 @@
 @* What the company pays the director besides pay, before the split: meal vouchers, one per day
    worked, with the most the company may pay into each, and the year's eco and sport/culture
    vouchers. They reach the pocket untaxed and outside INASTI, and the company pays them out of its
-   profit before pay; what it cannot deduct of them is added back to its taxable income. Netto cannot
+   profit before pay; what it cannot deduct of them is added back to its taxable income. What they
+   leave goes on to the expense allowances, the next card down the river. Netto cannot
    see the agreement or the days worked, so the card lists the conditions with their texts. The
    amounts are taken while typing, like revenue, and carry no Min or Max: the engine refuses what the
    rules do not allow, and its message is what the user has to see. Skipped with the company. *@
@@ -106,8 +107,8 @@
         _rules = VoucherRules.For(Inputs.IncomeYear);
     }
 
-    private string? Summary => _view is { } view && Run.Year is { } year
-        ? L["Summary", Formats.Euros(view.Total), Formats.Euros(year.ProfitBeforePay)].Value
+    private string? Summary => _view is { } view
+        ? L["Summary", Formats.Euros(view.Total), Formats.Euros(view.Left)].Value
         : null;
 
     private RenderFragment? Details => _view is { Details.Count: > 0 } view && Run.Year is { } year

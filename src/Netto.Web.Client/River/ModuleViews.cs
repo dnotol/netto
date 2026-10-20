@@ -13,22 +13,28 @@ namespace Netto.Web.Client.River;
 // the engine's figures and steps; no card calculates on its own.
 
 // What the vouchers bring to the pocket, one drain for each kind once the company grants any, what the
-// company deducts of them and what it cannot, and the profit before pay they leave for the split, from
-// the year's voucher steps. The shares, the yearly maximums and the conditions are the year's rules,
-// which the card reads beside it, so they stay while an amount is refused.
-internal sealed record VoucherView(decimal Total, decimal Deductible, decimal Disallowed, IReadOnlyList<Drain> Drains, IReadOnlyList<StepDetail> Details)
+// company deducts of them and what it cannot, and what they leave of what the company earns, passed
+// on to the expense allowances, the next module down the river: what it earns less what reaches the
+// pocket through them, from the year's voucher steps. The shares, the yearly maximums and the
+// conditions are the year's rules, which the card reads beside it, so they stay while an amount is
+// refused.
+internal sealed record VoucherView(
+    decimal Total, decimal Deductible, decimal Disallowed, decimal Left, IReadOnlyList<Drain> Drains, IReadOnlyList<StepDetail> Details)
 {
     public static VoucherView From(YearResult year)
     {
         var steps = year.Steps.Where(step => step.Event == TaxableEvent.Vouchers).ToList();
+        var inPocket = steps.Where(step => step.Track == Track.InPocket).ToList();
+        var left = year.Scenario.ProfitBeforeDirector - inPocket.Sum(step => step.Amount);
 
         return new VoucherView(
             year.Vouchers.Total,
             year.Vouchers.Deductible,
             year.Vouchers.Disallowed,
+            left,
             [
-                .. steps.Where(step => step.Track == Track.InPocket).Select(step => new Drain(step.RuleKey, DrainKind.PassedOn, step.Amount, "pocket")),
-                new Drain("profit_before_pay", DrainKind.PassedOn, year.ProfitBeforePay, "split"),
+                .. inPocket.Select(step => new Drain(step.RuleKey, DrainKind.PassedOn, step.Amount, "pocket")),
+                new Drain("left_after_vouchers", DrainKind.PassedOn, left, "allowances"),
             ],
             steps.Select(StepDetail.From).ToList());
     }

@@ -453,26 +453,34 @@ public class ModuleViewsTests
         Dividend(Prepaid).Details.Select(detail => detail.RuleKey).ShouldBe(["dividend_withholding", "dividend_exemption_refund"]);
     }
 
-    // No vouchers: the profit before pay goes on to the split whole, and there are no steps to list.
+    // No vouchers: what the company earns goes on to the expense allowances whole, and there are no
+    // steps to list.
     [Fact]
-    public void Vouchers_example_passTheProfitBeforePayOnToTheSplit()
+    public void Vouchers_example_passWhatTheCompanyEarnsOnToTheAllowances()
     {
         var view = Vouchers(RiverInputs.Example);
 
-        (view.Total, view.Deductible, view.Disallowed, view.Details.Count, view.Drains.Single())
-            .ShouldBe((0m, 0m, 0m, 0, new Drain("profit_before_pay", DrainKind.PassedOn, 100_000m, "split")));
+        (view.Total, view.Deductible, view.Disallowed, view.Left, view.Details.Count, view.Drains.Single())
+            .ShouldBe((0m, 0m, 0m, 100_000m, 0, new Drain("left_after_vouchers", DrainKind.PassedOn, 100_000m, "allowances")));
     }
 
     [Fact]
-    public void Vouchers_allThree_drainEachToThePocketAndTheRestToTheSplit()
+    public void Vouchers_allThree_drainEachToThePocketAndTheRestToTheAllowances()
     {
         Vouchers(AllVouchers).Drains.ShouldBe(new[]
         {
             new Drain("meal_vouchers", DrainKind.PassedOn, 1_960.20m, "pocket"),
             new Drain("eco_vouchers", DrainKind.PassedOn, 250m, "pocket"),
             new Drain("sport_culture_vouchers", DrainKind.PassedOn, 100m, "pocket"),
-            new Drain("profit_before_pay", DrainKind.PassedOn, 97_689.80m, "split"),
+            new Drain("left_after_vouchers", DrainKind.PassedOn, 97_689.80m, "allowances"),
         });
+    }
+
+    // The river runs on: what the vouchers leave is what they leave, whatever the allowances take next.
+    [Fact]
+    public void Vouchers_withAllowances_passOnWhatTheVouchersLeave()
+    {
+        Vouchers(FlatRateAllowances(AllVouchers)).Left.ShouldBe(97_689.80m);
     }
 
     [Fact]
