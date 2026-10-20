@@ -1,7 +1,8 @@
 @inject IStringLocalizer<StepDetails> L
 
-@* Each step of a module card with its rule, the official texts behind it and that year's amounts it
-   used. Every card lists its steps the same way, from the same engine steps. *@
+@* Each step of a module card with its rule, the lines of its computation when the rule is a chain
+   of them, the official texts behind it and that year's amounts it used. Every card lists its steps
+   the same way, from the same engine steps. *@
 <div class="step-details">
     <MudExpansionPanels MultiExpansion="true" Outlined="true" Elevation="0">
         @foreach (var detail in Details)
@@ -15,6 +16,18 @@
                 </TitleContent>
                 <ChildContent>
                     <p class="step-details__rule">@L[StepText.Rule(detail.RuleKey)]</p>
+                    @if (detail.Lines.Count > 0)
+                    {
+                        <dl class="step-details__lines">
+                            @foreach (var line in detail.Lines)
+                            {
+                                <div>
+                                    <dt>@L[StepText.Line(line.Key)]</dt>
+                                    <dd>@Formats.Euros(line.Amount)</dd>
+                                </div>
+                            }
+                        </dl>
+                    }
                     @foreach (var group in detail.Sources)
                     {
                         <div class="step-details__source">

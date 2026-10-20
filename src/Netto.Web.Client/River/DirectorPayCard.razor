@@ -1,15 +1,18 @@
 @using Netto.Core.DirectorPay
 @using Netto.Core.Simulation
+@using Netto.Core.SocialContributions
 @using Netto.Web.Client.DirectorPay
 @using Netto.Web.Client.Steps
 @inject IStringLocalizer<DirectorPayCard> L
 
 @* The director's gross pay through INASTI's contributions, the income tax and the municipal
    surcharge to the net. The pay comes from the split, or has a slider of its own once the company
-   is skipped. What was withheld on the pay and what the director paid in advance are taken while
-   typing, since nothing bounds them, and the card says what they leave on the tax, the bonus they
-   earn and what more by the last deadline leaves no surcharge due. The pay slip and the rules
-   behind each figure are its detail view. *@
+   is skipped. The user says who pays the contributions; when the company does, they are pay too
+   and the card says what the pay costs it. What was withheld on the pay is the pay slip's amount,
+   derived, until the user types the amount actually withheld, with a way back; it and what the
+   director paid in advance are taken while typing, since nothing bounds them, and the card says
+   what they leave on the tax, the bonus they earn and what more by the last deadline leaves no
+   surcharge due. The pay slip and the rules behind each figure are its detail view. *@
 <ModuleCard Title="@L["Title"]" Summary="@Summary" Details="@Details" DetailsLabel="@L["DetailsLabel"]">
     @if (Inputs.Company is null)
     {
@@ -30,6 +33,23 @@
             <OriginChip Origin="InputOrigin.Derived" />
         </p>
     }
+    <RiverField Label="@L["PaidByLabel"]" Origin="Inputs.ContributionsPaidBy.Origin">
+        <div class="director-pay__payers">
+            <MudChipSet T="ContributionsPaidBy" SelectedValue="Inputs.ContributionsPaidBy.Value" SelectedValueChanged="OnPaidByChanged"
+                        SelectionMode="SelectionMode.SingleSelection" CheckMark="false" Variant="Variant.Outlined" SelectedColor="Color.Primary"
+                        Size="Size.Small">
+                @foreach (var payer in Enum.GetValues<ContributionsPaidBy>())
+                {
+                    <MudChip T="ContributionsPaidBy" Value="payer" Text="@L[DirectorPayCardText.PaidBy(payer)]" />
+                }
+            </MudChipSet>
+        </div>
+        <p class="director-pay__note">@L["PaidByHint"]</p>
+        @if (_view is { CompanyPaysContributions: true } costing)
+        {
+            <p class="director-pay__cost">@L["CompanyCost", Formats.Euros(costing.CompanyCost)]</p>
+        }
+    </RiverField>
     <RiverField Label="@L["MunicipalityHead"]" Origin="Inputs.Municipality.Origin">
         <MunicipalityField Choice="Inputs.Municipality" ChoiceChanged="OnMunicipalityChanged"
                            Refused="@(Refused == GrossToNet.MunicipalRateOutOfRange)" />
@@ -37,11 +57,19 @@
     <div class="director-pay__prepayments">
         <h3 class="director-pay__prepayments-title">@L["PrepaymentsTitle"]</h3>
         <p class="director-pay__note">@L["PrepaymentsHint"]</p>
-        <RiverField Label="@L["WithheldLabel", Inputs.IncomeYear]" For="river-tax-withheld" Origin="Inputs.TaxPrepayments.Withheld.Origin">
-            <MudNumericField T="decimal" InputId="river-tax-withheld" Value="@(Inputs.TaxPrepayments.Withheld.Value ?? Run.Pay?.Assessment.Withheld ?? 0m)" ValueChanged="OnWithheldChanged"
+        <RiverField Label="@L["WithheldLabel", Inputs.IncomeYear]" For="river-tax-withheld" Origin="_withheld.Origin">
+            <MudNumericField T="decimal" InputId="river-tax-withheld" Value="_withheld.Amount" ValueChanged="OnWithheldChanged"
                              Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
                              Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
                              Error="@(Refused == GrossToNet.TaxWithheldNegative)" />
+            <p class="director-pay__note">
+                @(_withheld.IsYours ? L["WithheldYours"] : L["WithheldDerived"])
+                @if (_withheld.IsYours)
+                {
+                    <MudButton Variant="Variant.Text" Size="Size.Small" Color="Color.Primary" OnClick="OnWithheldAsPaySlip"
+                               Class="director-pay__pay-slip-amount">@L["WithheldAsPaySlip"]</MudButton>
+                }
+            </p>
         </RiverField>
         <div class="director-pay__deadlines">
             @foreach (var field in TaxAdvancePaymentFields.From(Inputs))
@@ -97,11 +125,17 @@
     public string? Refused { get; set; }
 
     private DirectorPayView? _view;
+    private WithheldFieldView _withheld = default!;
 
-    protected override void OnParametersSet() => _view = Run.Pay is { } pay ? DirectorPayView.From(Inputs, pay) : null;
+    protected override void OnParametersSet()
+    {
+        _view = Run.Pay is { } pay ? DirectorPayView.From(Inputs, pay) : null;
+        _withheld = WithheldFieldView.From(Inputs, Run);
+    }
 
+    // What flows in is what the pay costs the company: the gross, plus the contributions it pays.
     private string? Summary => Run.Pay is { } pay
-        ? L["Summary", Formats.Euros(pay.GrossPay), Formats.Euros(pay.NetInPocket)].Value
+        ? L["Summary", Formats.Euros(pay.CompanyCost), Formats.Euros(pay.NetInPocket)].Value
         : null;
 
     private RenderFragment? Details => Run.Pay is { } pay && _view is { } view
@@ -116,7 +150,11 @@
 
     private Task OnMunicipalityChanged(MunicipalityChoice choice) => InputsChanged.InvokeAsync(Inputs.WithMunicipality(choice));
 
+    private Task OnPaidByChanged(ContributionsPaidBy paidBy) => InputsChanged.InvokeAsync(Inputs.WithContributionsPaidBy(paidBy));
+
     private Task OnWithheldChanged(decimal withheld) => InputsChanged.InvokeAsync(Inputs.WithTaxWithheld(withheld));
+
+    private Task OnWithheldAsPaySlip() => InputsChanged.InvokeAsync(Inputs.WithTaxWithheldAsThePaySlip());
 
     private Task OnAdvancePaymentChanged(int deadline, decimal amount) => InputsChanged.InvokeAsync(Inputs.WithTaxAdvancePayment(deadline, amount));
 

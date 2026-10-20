@@ -62,6 +62,37 @@
     overflow-wrap: anywhere;
 }
 
+/* The lines of a computation, one under the other in the rule's order, the last one the step's amount. */
+.step-details__lines {
+    display: grid;
+    max-width: 46rem;
+    margin: 0 0 1rem;
+}
+
+    .step-details__lines div {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0.4rem 0;
+        border-bottom: 1px dashed rgba(243, 238, 226, 0.08);
+    }
+
+    .step-details__lines dt {
+        font-size: 0.88rem;
+    }
+
+    .step-details__lines dd {
+        margin: 0;
+        font-size: 0.88rem;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+    }
+
+    .step-details__lines div:last-child dt,
+    .step-details__lines div:last-child dd {
+        font-weight: 600;
+    }
+
 /* Label and value pairs in as many columns of at least 15rem as fit. */
 .step-details__amounts {
     display: grid;

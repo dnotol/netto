@@ -1,4 +1,5 @@
-/* ::deep reaches the MudCheckBox, which carries no scope attribute of its own. */
+/* ::deep reaches the MudCheckBox, the MudChipSet's chips and the MudButton, which carry no scope
+   attribute of their own. */
 .director-pay__pay {
     display: flex;
     flex-wrap: wrap;
@@ -13,6 +14,32 @@
         font-weight: 600;
         font-variant-numeric: tabular-nums;
     }
+
+/* What the pay costs the company when it pays the contributions: a figure beside the pay, not a
+   warning. */
+.director-pay__cost {
+    margin: 0;
+    font-size: 0.88rem;
+    font-variant-numeric: tabular-nums;
+}
+
+/* A chip's text wraps rather than widening the card on a phone. */
+.director-pay__payers ::deep .mud-chip {
+    height: auto;
+    min-height: 1.75rem;
+    margin: 0 0.4rem 0.4rem 0;
+    white-space: normal;
+}
+
+/* The way back to the pay slip's amount sits in the field's note, as the municipality's official
+   rate does. */
+.director-pay__note ::deep .director-pay__pay-slip-amount {
+    margin-left: 0.25rem;
+    padding: 0 0.35rem;
+    font-size: 0.82rem;
+    text-transform: none;
+    vertical-align: baseline;
+}
 
 .director-pay__sources {
     margin: 0;

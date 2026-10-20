@@ -209,6 +209,9 @@ internal sealed record AssessmentView(
     BalanceKind Kind,
     StepDetail Detail)
 {
+    // The balance as the slip shows it, without its sign: the kind says which way it goes.
+    public decimal Amount => Math.Abs(Balance);
+
     public static AssessmentView From(Assessment assessment) => new(
         assessment.FinalTax,
         assessment.Withheld,

@@ -179,7 +179,8 @@ public class GrossToNetViewTests
     {
         var balance = View(50_000m, new TaxPrepayments(20_000m, AdvancePayments.None)).Balance;
 
-        (balance.Withheld, balance.WithheldGiven, balance.Balance, balance.Kind).ShouldBe((20_000m, true, -7_872.66m, BalanceKind.Refunded));
+        (balance.Withheld, balance.WithheldGiven, balance.Balance, balance.Kind, balance.Amount)
+            .ShouldBe((20_000m, true, -7_872.66m, BalanceKind.Refunded, 7_872.66m));
     }
 
     [Fact]

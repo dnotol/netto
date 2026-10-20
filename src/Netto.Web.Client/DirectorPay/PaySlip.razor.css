@@ -1,6 +1,7 @@
 /* Moved from the pay page, which drew it as cards of their own; inside Director pay's card the two
-   tracks and the next 1,000 are outlined instead. The funnel takes as many columns of at least 22rem
-   as fit, so in a card half a laptop wide the tracks stack. */
+   tracks, the statement, the balance and the next 1,000 are outlined instead. The funnel takes as
+   many columns of at least 22rem as fit, so in a card half a laptop wide the tracks stack. ::deep
+   reaches nothing here: StepDetails styles itself. */
 
 .pay-slip {
     display: grid;
@@ -141,26 +142,174 @@
         border-radius: 3px;
     }
 
-/* Next 1,000: one bar cut in five, each part as wide as its share (flex-basis, GrossToNetView's
-   width), with a legend under it that carries the amounts and percentages. */
-
+/* The statement, the balance and the next 1,000 share one outline and one title. */
+.statement,
+.balance,
 .next {
+    display: grid;
+    gap: 1rem;
+    min-width: 0;
     padding: 1rem 1.1rem;
     border: 1px solid var(--netto-line);
     border-radius: 14px;
 }
 
-.next__title {
-    margin: 0 0 1rem;
+.slip-section__title {
+    margin: 0;
     font-family: "Fraunces", Georgia, serif;
     font-size: 1.1rem;
     font-weight: 600;
 }
 
+.slip-section__hint {
+    margin: -0.5rem 0 0;
+    color: var(--netto-text-muted);
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+/* The statement is a table of twelve months, each amount in its column. The table never widens
+   the page: where the card is narrower than the columns, each month stacks its amounts under its
+   name instead (the container query below), and between the two the table scrolls on its own. */
+.statement {
+    container-type: inline-size;
+}
+
+.statement__scroll {
+    overflow-x: auto;
+}
+
+.statement__table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+
+    .statement__table th,
+    .statement__table td {
+        padding: 0.4rem 0.5rem;
+        border-bottom: 1px solid var(--netto-line);
+        text-align: right;
+        white-space: nowrap;
+    }
+
+    .statement__table thead th {
+        color: var(--netto-text-muted);
+        font-size: 0.78rem;
+        font-weight: 500;
+    }
+
+    .statement__table td {
+        font-variant-numeric: tabular-nums;
+    }
+
+.statement__month {
+    padding-left: 0;
+    text-align: left;
+    font-weight: 500;
+}
+
+.statement__net {
+    padding-right: 0;
+    font-weight: 600;
+}
+
+/* A month whose rules Netto does not model yet: marked, not greyed, since its figures still hold
+   by the formula shown. */
+.statement__mark {
+    margin-left: 0.2rem;
+    color: var(--netto-text-muted);
+    text-decoration: none;
+    cursor: help;
+}
+
+.statement__note {
+    margin: 0;
+    color: var(--netto-text-muted);
+    font-size: 0.82rem;
+    line-height: 1.5;
+}
+
+/* On a phone the columns cannot fit: each month becomes a block, its name as a heading and each
+   amount on its own line with the column's label before it. */
+@container (max-width: 32rem) {
+    .statement__table thead {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+    }
+
+    .statement__table,
+    .statement__table tbody,
+    .statement__table tr,
+    .statement__table th,
+    .statement__table td {
+        display: block;
+    }
+
+    .statement__table tr {
+        padding: 0.4rem 0;
+        border-bottom: 1px solid var(--netto-line);
+    }
+
+    .statement__table th,
+    .statement__table td {
+        padding: 0.15rem 0;
+        border-bottom: 0;
+    }
+
+    .statement__table td {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+    }
+
+        .statement__table td::before {
+            content: attr(data-label);
+            color: var(--netto-text-muted);
+            font-variant-numeric: normal;
+        }
+}
+
+/* The balance: four lines, the last one the result. */
+.balance__lines {
+    display: grid;
+    margin: 0;
+}
+
+.balance__line {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.4rem 0;
+    border-bottom: 1px solid var(--netto-line);
+    font-size: 0.9rem;
+}
+
+    .balance__line dt {
+        color: var(--netto-text-muted);
+    }
+
+    .balance__line dd {
+        margin: 0;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+    }
+
+.balance__line--result dt,
+.balance__line--result dd {
+    color: var(--netto-text);
+    font-weight: 600;
+}
+
+/* Next 1,000: one bar cut in five, each part as wide as its share (flex-basis, GrossToNetView's
+   width), with a legend under it that carries the amounts and percentages. */
+
 .next__bar {
     display: flex;
     height: 0.9rem;
-    margin-bottom: 1.25rem;
     border-radius: 999px;
     background: rgba(243, 238, 226, 0.04);
     overflow: hidden;
@@ -234,4 +383,11 @@
     width: 0.75rem;
     height: 0.75rem;
     border-radius: 3px;
+}
+
+.next__note {
+    margin: 0;
+    color: var(--netto-text-muted);
+    font-size: 0.82rem;
+    line-height: 1.5;
 }
