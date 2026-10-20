@@ -66,6 +66,18 @@ public class PersonalTaxCalculatorTests
             LowEarnedIncomeCredit: 0.00m));
     }
 
+    // T4 read as the company-paid case (« The company can pay the director's social contributions on
+    // their behalf »): a payslip gross of 41,700 with 8,300 of contributions paid by the company is a
+    // pay of 50,000 (cadre XVI, 1) with 8,300 of own contributions deducted (cadre XVI, 10), so it
+    // gives T4's figures: the final tax equals the director-pays case for the same taxable pay.
+    [Fact]
+    public void Compute_2025TaxCalcT4AsCompanyPaidContributions_isThePayPlusThemWithThemDeducted()
+    {
+        var result = PersonalTaxCalculator.Compute(Rules2025, 41_700.00m + 8_300.00m, 8_300.00m, 0.07m);
+
+        (result.FlatRateCosts, result.TaxableIncome, result.IncomeTax, result.MunicipalSurcharge).ShouldBe((1_251.00m, 40_449.00m, 11_586.55m, 811.06m));
+    }
+
     [Fact]
     public void Compute_2025TaxCalcT5OtherMunicipalRate_changesOnlyTheSurcharge()
     {
@@ -168,6 +180,15 @@ public class PersonalTaxCalculatorTests
             BasicTax: 14_218.55m, TaxFreeAmountReduction: 2_887.50m, StateTax: 11_331.05m,
             ReducedStateTax: 8_503.16m, RegionalAdditionalTax: 2_827.90m, IncomeTax: 11_331.06m, MunicipalSurcharge: 793.17m,
             LowEarnedIncomeCredit: 0.00m));
+    }
+
+    // The derived T4 read as the company-paid case, like T4 on the 2025 amounts.
+    [Fact]
+    public void Compute_2026DerivedT4AsCompanyPaidContributions_isThePayPlusThemWithThemDeducted()
+    {
+        var result = PersonalTaxCalculator.Compute(Rules2026, 41_700.00m + 8_300.00m, 8_300.00m, 0.07m);
+
+        (result.FlatRateCosts, result.TaxableIncome, result.IncomeTax, result.MunicipalSurcharge).ShouldBe((1_251.00m, 40_449.00m, 11_331.06m, 793.17m));
     }
 
     [Fact]
