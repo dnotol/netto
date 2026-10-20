@@ -2,6 +2,7 @@ using Netto.Core.Allowances;
 using Netto.Core.CorporateTax;
 using Netto.Core.Dividends;
 using Netto.Core.PersonalTax;
+using Netto.Core.Rent;
 using Netto.Core.Simulation;
 using Netto.Core.SocialContributions;
 using Netto.Core.Vouchers;
@@ -21,7 +22,7 @@ namespace Netto.Tests.Simulation;
 // says otherwise, and withholds more than any director pay's tax; the payments it makes and what it
 // withholds are held at every pay, like the rest of the scenario, and so is who pays the
 // contributions: the director unless a test says the company does, and the vouchers it grants and
-// the expense allowances it pays: none unless a test says otherwise.
+// the expense allowances and the rent it pays: none unless a test says otherwise.
 public class SplitSearchTests
 {
     private static readonly CompanyStatus SmallPastStartUp = new(SmallCompany: true, FirstFourTaxPeriods: false);
@@ -37,6 +38,9 @@ public class SplitSearchTests
 
     // 2,418.44, all of it deducted by the company.
     private static readonly ExpenseAllowances FlatRateAllowances = new(1_938.44m, 240m, 240m, 0m);
+
+    // 12% of a cadastral income of 1,200 let for the 2026 cap, 1,380.00: 828.00 of net rent.
+    private static readonly HomeOfficeRent RentAtTheCap = new(1_200m, 0.12m, 1_380m);
 
     [Fact]
     public void Run_2026Example_findsThePayThatLeavesTheMost()
@@ -406,6 +410,60 @@ public class SplitSearchTests
             () => curve.ShouldAllBe(level => level == LevelOf(level.Pay, 0m, null, null, ContributionsPaidBy.Director, AllVouchers, FlatRateAllowances)));
     }
 
+    // The rent at the 2026 cap costs the company 1,380.00: the split shares the 98,620 it leaves.
+    [Fact]
+    public void Run_2026Rent_drawsEveryPayFromNoneToTheProfitItLeaves()
+    {
+        var pays = Search(Scenario(rent: RentAtTheCap)).Curve.Select(level => level.Pay).ToList();
+
+        (pays[0], pays[^1]).ShouldBe((0m, 98_620m));
+    }
+
+    // Its tax depends on the pay it is taxed with, so each level is the year at that pay, rent's tax
+    // included.
+    [Fact]
+    public void Run_2026Rent_eachLevelIsTheYearAtThatPayWithIt()
+    {
+        var curve = Search(Scenario(rent: RentAtTheCap)).Curve;
+
+        curve.ShouldAllBe(level => level == LevelOf(level.Pay, 0m, null, null, ContributionsPaidBy.Director, null, null, RentAtTheCap));
+    }
+
+    [Fact]
+    public void Run_2026RentNothingWithheld_eachLevelIsTheYearAtThatPayWithIt()
+    {
+        var curve = Search(Scenario(taxPrepayments: TaxPrepayments.None, rent: RentAtTheCap)).Curve;
+
+        curve.ShouldAllBe(level => level == LevelOf(level.Pay, 0m, null, TaxPrepayments.None, ContributionsPaidBy.Director, null, null, RentAtTheCap));
+    }
+
+    // Deducted in full, and never pay: the rate is kept from half of 98,620.
+    [Fact]
+    public void Run_2026Rent_keepsTheRateFromHalfTheTaxableIncomeItLeavesAtNoPay()
+    {
+        Search(Scenario(rent: RentAtTheCap)).SmallestPayKeepingReducedRate.ShouldBe(49_310m);
+    }
+
+    // Found by running the year at every euro from 0 to 98,620 with the rent (2026-10-20). Its 828 of
+    // net rent joins the total net income, so the credit for low earned income starts falling 828
+    // lower down the pay: the best pay moves from 20,799 to 19,945.
+    [Fact]
+    public void Run_2026Rent_findsTheBestPaysWithIt()
+    {
+        var result = Search(Scenario(rent: RentAtTheCap));
+
+        (result.Best?.Pay, result.Best?.NetInPocket, result.Best?.Dividend, result.BestKeepingReducedRate?.Pay, result.BestKeepingReducedRate?.NetInPocket)
+            .ShouldBe(((decimal?)19_945m, (decimal?)65_825.45m, (decimal?)59_006.25m, (decimal?)49_310m, (decimal?)62_751.18m));
+    }
+
+    [Fact]
+    public void Run_rentAboveTheCap_isRefusedWithTheCalculatorsKey()
+    {
+        var (value, error) = SplitSearch.Run(Scenario(rent: new HomeOfficeRent(1_200m, 0.12m, 1_380.01m)));
+
+        (value, error).ShouldBe((null, RentCalculator.RentAboveCap));
+    }
+
     [Fact]
     public void Run_officeAllowanceAboveTheMaximum_isRefusedWithTheCalculatorsKey()
     {
@@ -579,7 +637,8 @@ public class SplitSearchTests
         TaxPrepayments? taxPrepayments = null,
         ContributionsPaidBy paidBy = ContributionsPaidBy.Director,
         VoucherGrants? vouchers = null,
-        ExpenseAllowances? allowances = null) =>
+        ExpenseAllowances? allowances = null,
+        HomeOfficeRent? rent = null) =>
         new(2026, revenue, 20_000m, company ?? SmallPastStartUp, directorPay, MunicipalRates.Entered(0.07m), reserve,
             WithholdingCategory.VvprbisThirdYearOnwards, earlierProfits)
         {
@@ -588,6 +647,7 @@ public class SplitSearchTests
             ContributionsPaidBy = paidBy,
             Vouchers = vouchers ?? VoucherGrants.None,
             Allowances = allowances ?? ExpenseAllowances.None,
+            Rent = rent ?? HomeOfficeRent.None,
         };
 
     private static SplitSearchResult Search(Scenario scenario)
@@ -608,10 +668,11 @@ public class SplitSearchTests
 
     private static PayLevel LevelOf(
         decimal pay, decimal reserve, AdvancePayments? advancePayments = null, TaxPrepayments? taxPrepayments = null,
-        ContributionsPaidBy paidBy = ContributionsPaidBy.Director, VoucherGrants? vouchers = null, ExpenseAllowances? allowances = null)
+        ContributionsPaidBy paidBy = ContributionsPaidBy.Director, VoucherGrants? vouchers = null, ExpenseAllowances? allowances = null,
+        HomeOfficeRent? rent = null)
     {
         var year = Year(Scenario(directorPay: pay, reserve: reserve, advancePayments: advancePayments, taxPrepayments: taxPrepayments, paidBy: paidBy,
-            vouchers: vouchers, allowances: allowances));
+            vouchers: vouchers, allowances: allowances, rent: rent));
 
         return new PayLevel(pay, year.NetInPocket, year.Dividend.Dividend, year.KeptInCompany, year.Company.Condition,
             year.MaximumDividend >= reserve);

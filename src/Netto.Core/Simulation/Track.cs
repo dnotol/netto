@@ -9,9 +9,11 @@ public enum Track
     PaidOut,
 
     // Only sets the tax base and is never subtracted from net in pocket: the flat-rate costs, the
-    // taxable income they leave, what the company cannot deduct of the vouchers.
+    // taxable income they leave, what the company cannot deduct of the vouchers, the rent's charges
+    // and the income it leaves taxable.
     TaxBaseOnly,
 
-    // Reaches the pocket outside the pay and the dividend: a voucher's value, an expense allowance.
+    // Reaches the pocket outside the pay and the dividend: a voucher's value, an expense allowance, the
+    // rent.
     InPocket,
 }

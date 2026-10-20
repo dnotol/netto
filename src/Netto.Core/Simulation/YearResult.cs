@@ -1,23 +1,27 @@
 using Netto.Core.CorporateTax;
 using Netto.Core.DirectorPay;
 using Netto.Core.Dividends;
+using Netto.Core.Rent;
 using Netto.Core.Vouchers;
 
 namespace Netto.Core.Simulation;
 
-// The year from the company's profit before pay, what the vouchers and the expense allowances leave of
-// what it earns, to the director's pocket. Corporate tax, social contributions, personal tax, net in
-// pocket, the vouchers and the allowances in it, and what stays in the company add up to what the
-// company earns before it pays its director anything (Scenario.ProfitBeforeDirector) plus the profits
-// kept from earlier years; the corporate tax among them includes the surcharge the advance payments
-// left. The disallowed expenses are what the company cannot deduct of what it pays the director besides
-// pay, added back to its taxable income. The dividend is what the profit after tax and those earlier
+// The year from the company's profit before pay, what the vouchers, the expense allowances and the
+// rent of a home office leave of what it earns, to the director's pocket. Corporate tax, social
+// contributions, personal tax, the rent's included, net in pocket, the vouchers, the allowances and the
+// rent in it, and what stays in the company add up to what the company earns before it pays its
+// director anything (Scenario.ProfitBeforeDirector) plus the profits kept from earlier years; the
+// corporate tax among them includes the surcharge the advance payments left. Rent is the rent as the
+// rules take it, all zero without one; the pay's own figures are DirectorPay's, and what the rent adds
+// to the personal tax its OtherIncomeTax. The disallowed expenses are what the company cannot deduct of
+// what it pays the director besides pay, added back to its taxable income. The dividend is what the profit after tax and those earlier
 // profits leave once the reserve is kept; the largest the year allows is both together, less a loss,
 // never below zero.
 public sealed record YearResult(
     Scenario Scenario,
     decimal ProfitBeforePay,
     VoucherResult Vouchers,
+    RentResult Rent,
     decimal DisallowedExpenses,
     CorporateTaxResult Company,
     AdvancePaymentResult AdvancePayments,

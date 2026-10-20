@@ -2,14 +2,19 @@ using Netto.Core.Allowances;
 using Netto.Core.CorporateTax;
 using Netto.Core.DirectorPay;
 using Netto.Core.Dividends;
+using Netto.Core.PersonalTax;
+using Netto.Core.Rent;
+using Netto.Core.Rules;
 using Netto.Core.SocialContributions;
 using Netto.Core.Vouchers;
 
 namespace Netto.Core.Simulation;
 
 // One income year in the order the law computes it: what the company pays the director besides pay,
-// the vouchers and the expense allowances, comes off what it earns and reaches the pocket untaxed,
-// which leaves the profit before pay the split shares; the company's cost of the director pay, the
+// the vouchers, the expense allowances and the rent of a home office, comes off what it earns and
+// reaches the pocket, which leaves the profit before pay the split shares; the vouchers and the
+// allowances untaxed, the rent taxed with the pay, its tax paid out of the pocket (GrossToNet's
+// OtherIncomeTax); the company's cost of the director pay, the
 // gross and the social contributions it pays on the director's behalf, lowers the company's taxable
 // income, what it cannot deduct of the vouchers is added back to it, corporate tax takes its share,
 // with the surcharge the advance payments did not cover, and the dividend is the profit after tax and
@@ -29,9 +34,8 @@ public static class YearSimulation
     {
         var corporateRules = CorporateTaxRules.For(scenario.IncomeYear);
         var dividendRules = DividendRules.For(scenario.IncomeYear);
-        var voucherRules = VoucherRules.For(scenario.IncomeYear);
-        var allowanceRules = AllowanceRules.For(scenario.IncomeYear);
-        if (corporateRules is null || dividendRules is null || voucherRules is null || allowanceRules is null)
+        var levers = LeverRules.For(scenario.IncomeYear);
+        if (corporateRules is null || dividendRules is null || levers is null)
             return (null, IncomeYearNotSupported);
         if (scenario.Revenue < 0m)
             return (null, RevenueNegative);
@@ -44,27 +48,30 @@ public static class YearSimulation
         if (scenario.AdvancePayments.ByDeadline.Any(amount => amount < 0m))
             return (null, AdvancePaymentNegative);
 
-        var (besidesPay, besidesPayError) = BesidesPayOf(scenario, voucherRules, allowanceRules);
+        var (besidesPay, besidesPayError) = BesidesPayOf(scenario, levers);
         if (besidesPay is null)
             return (null, besidesPayError);
 
-        var (pay, payError) = GrossToNet.Compute(scenario.IncomeYear, scenario.DirectorPay, scenario.MunicipalRate, scenario.TaxPrepayments, scenario.ContributionsPaidBy);
+        var (pay, payError) = GrossToNet.Compute(
+            scenario.IncomeYear, scenario.DirectorPay, scenario.MunicipalRate, scenario.TaxPrepayments, scenario.ContributionsPaidBy, besidesPay.Rent.NetRent);
         if (pay is null)
             return (null, payError);
 
-        var company = Company(scenario, corporateRules, dividendRules, besidesPay, pay.NetInPocket, pay.TaxablePay, pay.CompanyCost);
+        var company = Company(scenario, corporateRules, dividendRules, besidesPay, pay.NetInPocket - pay.OtherIncomeTax.Total, pay.TaxablePay, pay.CompanyCost);
         var dividend = company.Dividend;
         var rate = dividendRules.Rate(scenario.DividendCategory);
 
         IReadOnlyList<Step> steps =
         [
-            .. scenario.Vouchers.Any ? VoucherSteps(voucherRules, besidesPay.Vouchers) : [],
-            .. scenario.Allowances.Any ? AllowanceSteps(allowanceRules, besidesPay.Allowances) : [],
+            .. scenario.Vouchers.Any ? VoucherSteps(levers.Vouchers, besidesPay.Vouchers) : [],
+            .. scenario.Allowances.Any ? AllowanceSteps(levers.Allowances, besidesPay.Allowances) : [],
+            .. scenario.Rent.Any ? RentSteps(levers.Rent, besidesPay.Rent) : [],
             new Step("corporate_tax", Layer.Corporate, TaxableEvent.CompanyProfit, Track.PaidOut, company.Tax.CorporateTax,
                 CorporateTaxRules.Source, corporateRules.Amounts),
             new Step("advance_payment_surcharge", Layer.Corporate, TaxableEvent.CompanyProfit, Track.PaidOut, company.AdvancePayments.Surcharge,
                 corporateRules.AdvancePayments.Source, corporateRules.AdvancePayments.Amounts),
             .. pay.Steps,
+            .. scenario.Rent.Any ? RentTaxSteps(PersonalTaxRules.For(scenario.IncomeYear)!, pay.OtherIncomeTax, scenario.MunicipalRate) : [],
             new Step("dividend_withholding", Layer.Personal, TaxableEvent.Dividend, Track.PaidOut, dividend.Withholding,
                 rate.Source, [rate]),
             new Step("dividend_exemption_refund", Layer.Personal, TaxableEvent.Dividend, Track.PaidOut, -dividend.ExemptionRefund,
@@ -75,6 +82,7 @@ public static class YearSimulation
             scenario,
             company.ProfitBeforePay,
             besidesPay.Vouchers,
+            besidesPay.Rent,
             besidesPay.Disallowed,
             company.Tax,
             company.AdvancePayments,
@@ -91,11 +99,11 @@ public static class YearSimulation
     }
 
     // What the director pay and the company's profit share between them: what the company earns less
-    // what it pays the director in vouchers and expense allowances, taken as given even while the rules
-    // refuse them, so the split keeps its place. Null for a year without voucher rules.
+    // what it pays the director in vouchers, expense allowances and rent, taken as given even while the
+    // rules refuse them, so the split keeps its place. Null for a year without voucher rules.
     public static decimal? ProfitBeforePay(Scenario scenario) =>
         VoucherRules.For(scenario.IncomeYear) is { } rules
-            ? scenario.ProfitBeforeDirector - VoucherCalculator.Cost(rules, scenario.Vouchers) - scenario.Allowances.Total
+            ? scenario.ProfitBeforeDirector - VoucherCalculator.Cost(rules, scenario.Vouchers) - scenario.Allowances.Total - scenario.Rent.Rent
             : null;
 
     // The year at the scenario's pay as the split's search reads it: Run's figures for the pocket, the
@@ -105,15 +113,16 @@ public static class YearSimulation
     internal static PayLevel? Level(Scenario scenario)
     {
         if (CorporateTaxRules.For(scenario.IncomeYear) is not { } corporateRules || DividendRules.For(scenario.IncomeYear) is not { } dividendRules
-            || VoucherRules.For(scenario.IncomeYear) is not { } voucherRules || AllowanceRules.For(scenario.IncomeYear) is not { } allowanceRules)
+            || LeverRules.For(scenario.IncomeYear) is not { } levers)
             return null;
-        if (BesidesPayOf(scenario, voucherRules, allowanceRules).Value is not { } besidesPay)
+        if (BesidesPayOf(scenario, levers).Value is not { } besidesPay)
             return null;
-        if (GrossToNet.Level(scenario.IncomeYear, scenario.DirectorPay, scenario.MunicipalRate.Value, scenario.TaxPrepayments, scenario.ContributionsPaidBy, 0m)
+        if (GrossToNet.Level(
+                scenario.IncomeYear, scenario.DirectorPay, scenario.MunicipalRate.Value, scenario.TaxPrepayments, scenario.ContributionsPaidBy, besidesPay.Rent.NetRent)
             is not { } pay)
             return null;
 
-        var company = Company(scenario, corporateRules, dividendRules, besidesPay, pay.NetInPocket, pay.TaxablePay, pay.CompanyCost);
+        var company = Company(scenario, corporateRules, dividendRules, besidesPay, pay.YearNetInPocket, pay.TaxablePay, pay.CompanyCost);
         return new PayLevel(scenario.DirectorPay, company.NetInPocket, company.Dividend.Dividend, company.KeptInCompany, company.Tax.Condition,
             company.MaximumDividend >= scenario.Reserve);
     }
@@ -128,9 +137,8 @@ public static class YearSimulation
     // add back.
     internal static decimal? SmallestPayKeepingReducedRate(Scenario scenario)
     {
-        if (CorporateTaxRules.For(scenario.IncomeYear) is not { } corporateRules || VoucherRules.For(scenario.IncomeYear) is not { } voucherRules
-            || AllowanceRules.For(scenario.IncomeYear) is not { } allowanceRules
-            || BesidesPayOf(scenario, voucherRules, allowanceRules).Value is not { } besidesPay)
+        if (CorporateTaxRules.For(scenario.IncomeYear) is not { } corporateRules || LeverRules.For(scenario.IncomeYear) is not { } levers
+            || BesidesPayOf(scenario, levers).Value is not { } besidesPay)
             return null;
 
         var profitBeforePay = scenario.ProfitBeforeDirector - besidesPay.Total;
@@ -143,19 +151,24 @@ public static class YearSimulation
             : taxablePay <= ceiling ? taxablePay : null;
     }
 
-    // What the company pays the director besides pay as the rules accept it, the vouchers then the
-    // expense allowances, or the key of the first the rules refuse.
-    private static (BesidesPay? Value, string? Error) BesidesPayOf(Scenario scenario, VoucherRules voucherRules, AllowanceRules allowanceRules)
+    // What the company pays the director besides pay as the rules accept it, the vouchers, the expense
+    // allowances then the rent, which the office allowance excludes, or the key of the first the rules
+    // refuse.
+    private static (BesidesPay? Value, string? Error) BesidesPayOf(Scenario scenario, LeverRules levers)
     {
-        var (vouchers, voucherError) = VoucherCalculator.Compute(voucherRules, scenario.Vouchers);
+        var (vouchers, voucherError) = VoucherCalculator.Compute(levers.Vouchers, scenario.Vouchers);
         if (vouchers is null)
             return (null, voucherError);
 
-        var (allowances, allowanceError) = AllowanceCalculator.Accept(allowanceRules, scenario.Allowances);
+        var (allowances, allowanceError) = AllowanceCalculator.Accept(levers.Allowances, scenario.Allowances);
         if (allowances is null)
             return (null, allowanceError);
 
-        return (new BesidesPay(vouchers, allowances), null);
+        var (rent, rentError) = RentCalculator.Compute(levers.Rent, scenario.Rent, allowances.Office);
+        if (rent is null)
+            return (null, rentError);
+
+        return (new BesidesPay(vouchers, allowances, rent), null);
     }
 
     // What follows the director pay: its cost to the company comes off the profit before pay, and art. 215
@@ -218,17 +231,57 @@ public static class YearSimulation
             rules.Reimbursement, []),
     ];
 
+    // The rent reaches the pocket at what the company pays, kept at or below the cap so that none of it
+    // is pay; the director is taxed on it, never less than the floor, less its flat charges. The
+    // company deducts it in full, so none of it joins its taxable income. Only once it pays one, so a
+    // year without it keeps its steps.
+    private static IEnumerable<Step> RentSteps(RentRules rules, RentResult rent) =>
+    [
+        new Step("rent", Layer.Personal, TaxableEvent.Rent, Track.InPocket, rent.Rent,
+            rules.Cap, [rules.CapMultiplier, rules.RevaluationCoefficient]),
+        new Step("rent_charges", Layer.Personal, TaxableEvent.Rent, Track.TaxBaseOnly, rent.Charges,
+            rules.NetRent, [rules.ChargesRate, rules.ChargesLimitMultiplier, rules.RevaluationCoefficient]),
+        new Step("rent_taxable_income", Layer.Personal, TaxableEvent.Rent, Track.TaxBaseOnly, rent.NetRent,
+            rules.RentAsIncome, [rules.FloorUplift, rules.IndexationCoefficient]),
+    ];
+
+    // What the rent adds to the director's personal tax, taxed with the pay: the income tax and the
+    // municipal surcharge on the total less the pay's own, the credit for low earned income it takes
+    // away, and what that lost credit adds to the surcharge on the pay's tax, less the bonus. Each is
+    // paid out of the pocket, the credit's as a positive amount since it is lost, not refunded.
+    private static IEnumerable<Step> RentTaxSteps(PersonalTaxRules rules, OtherIncomeTax tax, RuleAmount municipalRate) =>
+    [
+        new Step("rent_income_tax", Layer.Personal, TaxableEvent.Rent, Track.PaidOut, tax.IncomeTax,
+            PersonalTaxRules.IncomeTaxScale, rules.IncomeTaxAmounts),
+        new Step("rent_municipal_surcharge", Layer.Personal, TaxableEvent.Rent, Track.PaidOut, tax.MunicipalSurcharge,
+            PersonalTaxRules.MunicipalSurcharge, [municipalRate]),
+        new Step("rent_low_earned_income_credit_lost", Layer.Personal, TaxableEvent.Rent, Track.PaidOut, tax.LowEarnedIncomeCreditLost,
+            rules.LowEarnedIncomeCredit.Source, rules.LowEarnedIncomeCredit.Amounts),
+        new Step("rent_income_tax_advance_payments", Layer.Personal, TaxableEvent.Rent, Track.PaidOut, tax.AdvancePayments,
+            rules.AdvancePayments.Source, rules.AdvancePayments.SurchargeAmounts),
+    ];
+
     private static decimal PaidOut(IReadOnlyList<Step> steps, Layer layer) =>
         steps.Where(step => step.Layer == layer && step.Track == Track.PaidOut).Sum(step => step.Amount);
 
     // What the company pays the director besides pay, lever by lever: what it costs the company and
-    // brings the pocket, the same amount, and what the company cannot deduct of it, the vouchers' part
-    // alone, since it deducts the expense allowances in full.
-    private sealed record BesidesPay(VoucherResult Vouchers, ExpenseAllowances Allowances)
+    // brings the pocket before the personal tax on the rent, the same amount, and what the company
+    // cannot deduct of it, the vouchers' part alone, since it deducts the expense allowances and the
+    // rent in full.
+    private sealed record BesidesPay(VoucherResult Vouchers, ExpenseAllowances Allowances, RentResult Rent)
     {
-        public decimal Total => Vouchers.Total + Allowances.Total;
+        public decimal Total => Vouchers.Total + Allowances.Total + Rent.Rent;
 
         public decimal Disallowed => Vouchers.Disallowed;
+    }
+
+    // The rules of the levers paid besides pay, for one income year, or null when one has none.
+    private sealed record LeverRules(VoucherRules Vouchers, AllowanceRules Allowances, RentRules Rent)
+    {
+        public static LeverRules? For(int incomeYear) =>
+            VoucherRules.For(incomeYear) is { } vouchers && AllowanceRules.For(incomeYear) is { } allowances && RentRules.For(incomeYear) is { } rent
+                ? new LeverRules(vouchers, allowances, rent)
+                : null;
     }
 
     private sealed record CompanyFigures(

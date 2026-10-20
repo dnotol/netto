@@ -3,6 +3,7 @@ using Netto.Core.CorporateTax;
 using Netto.Core.DirectorPay;
 using Netto.Core.Dividends;
 using Netto.Core.PersonalTax;
+using Netto.Core.Rent;
 using Netto.Core.Simulation;
 using Netto.Core.SocialContributions;
 using Netto.Core.Vouchers;
@@ -20,8 +21,9 @@ namespace Netto.Tests.Simulation;
 // IncomeTaxAdvancePaymentCalculatorTests. The director pays the contributions unless a test says the
 // company does; those figures are GrossToNetTests' too (50,000: contributions 9,942.52, income tax
 // 14,954.01, surcharge 1,046.78, net 33,999.21, company cost 59,942.52). The company grants no
-// vouchers and pays no expense allowances unless a test says it does; their figures follow
-// VoucherCalculatorTests and AllowanceCalculatorTests.
+// vouchers, pays no expense allowances and no rent unless a test says it does; their figures follow
+// VoucherCalculatorTests, AllowanceCalculatorTests and RentCalculatorTests, and the rent's tax
+// GrossToNetTests.
 public class YearSimulationTests
 {
     private static readonly CompanyStatus SmallPastStartUp = new(SmallCompany: true, FirstFourTaxPeriods: false);
@@ -43,6 +45,9 @@ public class YearSimulationTests
 
     // With 600 of phone costs reimbursed on invoices: 3,018.44.
     private static readonly ExpenseAllowances AllAllowances = new(1_938.44m, 240m, 240m, 600m);
+
+    // 12% of a cadastral income of 1,200 let for the 2026 cap, 1,380.00: 828.00 of net rent.
+    private static readonly HomeOfficeRent RentAtTheCap = new(1_200m, 0.12m, 1_380m);
 
     public static TheoryData<decimal, decimal, decimal, WithholdingCategory> Setups => new()
     {
@@ -642,6 +647,178 @@ public class YearSimulationTests
         (value, error).ShouldBe((null, expected));
     }
 
+    // The 2026 cap on 12% of a cadastral income of 1,200 (RentCalculatorTests): 1,380.00 a year, the
+    // company deducts all of it, which leaves 98,620 for the split and 48,620 of taxable income beside
+    // the 50,000 pay, not above it: 20%.
+    [Fact]
+    public void Run_2026RentAtTheCap_comesOffTheProfitBeforePayAndTheTaxableIncomeAlike()
+    {
+        var result = Run(Scenario(directorPay: 50_000m, reserve: 0m, rent: RentAtTheCap));
+
+        (result.ProfitBeforePay, result.ProfitAfterPay, result.Company.TaxableIncome, result.Company.Condition, result.CorporateTax, result.DisallowedExpenses)
+            .ShouldBe((98_620m, 48_620m, 48_620m, ReducedRateCondition.TaxableIncomeNotAbovePay, 9_724.00m, 0m));
+    }
+
+    // Its 828 of net rent is taxed with the pay's 40,455.44, at 45%: 372.60 of income tax and 26.08 of
+    // municipal surcharge (GrossToNetTests). The pocket gets the pay's 29,579.30 less those 398.68, the
+    // rent's 1,380.00 and the dividend of the 38,896.00 left after tax at 18%, 32,044.66: 76.04 more
+    // than the 62,529.24 without it. The personal tax is the pay's 12,127.34, the rent's 398.68 and the
+    // dividend's 7,001.28 less the 149.94 refunded.
+    [Fact]
+    public void Run_2026RentAtTheCap_reachesThePocketLessItsTax()
+    {
+        var result = Run(Scenario(directorPay: 50_000m, reserve: 0m, rent: RentAtTheCap));
+
+        (result.ProfitAfterTax, result.Dividend.NetDividend, result.PersonalTax, result.NetInPocket).ShouldBe((38_896.00m, 32_044.66m, 19_377.36m, 62_605.28m));
+    }
+
+    // Income from immovable property, not professional income: no INASTI on it, and the pay's own
+    // figures stay the pay's.
+    [Fact]
+    public void Run_2026RentAtTheCap_leavesThePaysContributionsAndOwnTaxesAsTheyAre()
+    {
+        var without = Run(Scenario(directorPay: 50_000m, reserve: 0m));
+        var with = Run(Scenario(directorPay: 50_000m, reserve: 0m, rent: RentAtTheCap));
+
+        (with.SocialContributions, with.DirectorPay.IncomeTax, with.DirectorPay.MunicipalSurcharge, with.DirectorPay.NetInPocket)
+            .ShouldBe((without.SocialContributions, without.DirectorPay.IncomeTax, without.DirectorPay.MunicipalSurcharge, without.DirectorPay.NetInPocket));
+    }
+
+    // The rent and what it leaves taxable come first, after the other levers' steps; its taxes come
+    // after the pay's, on the total the pay's own tax leaves.
+    [Fact]
+    public void Run_2026RentAtTheCap_putsTheRentBeforeTheCorporateTaxAndItsTaxesAfterThePays()
+    {
+        var result = Run(Scenario(directorPay: 50_000m, reserve: 0m, rent: RentAtTheCap));
+
+        result.Steps.Select(step => (step.RuleKey, step.Layer, step.Event, step.Track, step.Amount)).ShouldBe(new[]
+        {
+            ("rent", Layer.Personal, TaxableEvent.Rent, Track.InPocket, 1_380.00m),
+            ("rent_charges", Layer.Personal, TaxableEvent.Rent, Track.TaxBaseOnly, 552.00m),
+            ("rent_taxable_income", Layer.Personal, TaxableEvent.Rent, Track.TaxBaseOnly, 828.00m),
+            ("corporate_tax", Layer.Corporate, TaxableEvent.CompanyProfit, Track.PaidOut, 9_724.00m),
+            ("advance_payment_surcharge", Layer.Corporate, TaxableEvent.CompanyProfit, Track.PaidOut, 0m),
+            ("social_contributions", Layer.Social, TaxableEvent.DirectorPay, Track.PaidOut, 8_293.36m),
+            ("flat_rate_costs", Layer.Personal, TaxableEvent.DirectorPay, Track.TaxBaseOnly, 1_251.20m),
+            ("taxable_income", Layer.Personal, TaxableEvent.DirectorPay, Track.TaxBaseOnly, 40_455.44m),
+            ("income_tax", Layer.Personal, TaxableEvent.DirectorPay, Track.PaidOut, 11_333.96m),
+            ("municipal_surcharge", Layer.Personal, TaxableEvent.DirectorPay, Track.PaidOut, 793.38m),
+            ("low_earned_income_credit", Layer.Personal, TaxableEvent.DirectorPay, Track.PaidOut, 0m),
+            ("income_tax_advance_payment_surcharge", Layer.Personal, TaxableEvent.DirectorPay, Track.PaidOut, 0m),
+            ("income_tax_advance_payment_bonus", Layer.Personal, TaxableEvent.DirectorPay, Track.PaidOut, -0m),
+            ("rent_income_tax", Layer.Personal, TaxableEvent.Rent, Track.PaidOut, 372.60m),
+            ("rent_municipal_surcharge", Layer.Personal, TaxableEvent.Rent, Track.PaidOut, 26.08m),
+            ("rent_low_earned_income_credit_lost", Layer.Personal, TaxableEvent.Rent, Track.PaidOut, 0m),
+            ("rent_income_tax_advance_payments", Layer.Personal, TaxableEvent.Rent, Track.PaidOut, 0m),
+            ("dividend_withholding", Layer.Personal, TaxableEvent.Dividend, Track.PaidOut, 7_001.28m),
+            ("dividend_exemption_refund", Layer.Personal, TaxableEvent.Dividend, Track.PaidOut, -149.94m),
+        });
+    }
+
+    // 2,000.00 of net rent beside a 27,000 pay, nothing withheld or prepaid on it (GrossToNetTests):
+    // the rent takes away 195.81 of the credit and adds 7.93 to the surcharge that credit no longer
+    // lowers. 400 of cadastral income let whole, for 3,333.33 less its 40%, under the cap of 3,833.33.
+    [Fact]
+    public void Run_2026RentBesideALowPay_takesAwayPartOfTheCreditAndRaisesTheSurcharge()
+    {
+        var result = Run(Scenario(directorPay: 27_000m, reserve: 0m, taxPrepayments: TaxPrepayments.None, rent: new HomeOfficeRent(400m, 1m, 3_333.33m)));
+
+        result.Steps.Where(step => step.Event == TaxableEvent.Rent && step.Track == Track.PaidOut).Select(step => (step.RuleKey, step.Amount)).ShouldBe(new[]
+        {
+            ("rent_income_tax", 799.99m),
+            ("rent_municipal_surcharge", 56.00m),
+            ("rent_low_earned_income_credit_lost", 195.81m),
+            ("rent_income_tax_advance_payments", 7.93m),
+        });
+    }
+
+    // The year's balance on the assessment includes the rent's tax: 12,127.34 on the pay alone and
+    // 398.68 on the rent, set against the 10,000 withheld.
+    [Fact]
+    public void Run_2026RentAtTheCap_theBalanceOnTheAssessmentIncludesItsTax()
+    {
+        var result = Run(Scenario(directorPay: 50_000m, reserve: 0m, taxPrepayments: new TaxPrepayments(10_000m, AdvancePayments.None), rent: RentAtTheCap));
+
+        (result.DirectorPay.Assessment.FinalTax, result.DirectorPay.Assessment.Balance).ShouldBe((12_526.02m, 2_526.02m));
+    }
+
+    // 105,000 before the director: 53,620 of taxable income once the rent is paid, above the 50,000
+    // pay, 25% on all of it. Pay and rent, 51,380, would meet the 51,000 minimum, but rent is not pay.
+    [Fact]
+    public void Run_2026RentAtTheCap_art215NeverCountsItAsPay()
+    {
+        var result = Run(Scenario(directorPay: 50_000m, reserve: 0m, revenue: 125_000m, rent: RentAtTheCap));
+
+        (result.Company.TaxableIncome, result.Company.Condition, result.CorporateTax).ShouldBe((53_620m, ReducedRateCondition.MinimumPayNotMet, 13_405.00m));
+    }
+
+    [Fact]
+    public void Run_2026NoRent_listsNoStepOfIt()
+    {
+        Run(Scenario(directorPay: 50_000m, reserve: 0m)).Steps.ShouldNotContain(step => step.Event == TaxableEvent.Rent);
+    }
+
+    [Fact]
+    public void Run_2026RentAtTheCap_everyStepHasASourceWithAReferenceAndAnAddress()
+    {
+        var result = Run(Scenario(directorPay: 50_000m, reserve: 0m, rent: RentAtTheCap));
+
+        result.Steps.ShouldAllBe(step => step.Source.Reference.Length > 0 && step.Source.Url.IsAbsoluteUri);
+    }
+
+    // The rent cites the cap it is kept under, what it leaves taxable the floor of art. 7 and its
+    // charges art. 13's 40% and their limit.
+    [Fact]
+    public void Run_2026RentAtTheCap_citesItsArticles()
+    {
+        var rules = RentRules.IncomeYear2026;
+
+        var steps = Run(Scenario(directorPay: 50_000m, reserve: 0m, rent: RentAtTheCap)).Steps.Where(step => step.Event == TaxableEvent.Rent).Take(3);
+
+        steps.Select(step => step.Source).ShouldBe([rules.Cap, rules.NetRent, rules.RentAsIncome]);
+    }
+
+    [Theory]
+    [MemberData(nameof(Setups))]
+    public void Run_2026RentAtTheCap_layersPocketAndCompanyAddUpToTheProfitBeforeTheDirector(
+        decimal directorPay, decimal profitBeforeDirector, decimal reserve, WithholdingCategory category)
+    {
+        var result = Run(Scenario(directorPay: directorPay, reserve: reserve, category: category, revenue: profitBeforeDirector + 20_000m,
+            vouchers: AllVouchers, rent: RentAtTheCap));
+
+        (result.CorporateTax + result.SocialContributions + result.PersonalTax + result.NetInPocket + result.KeptInCompany)
+            .ShouldBe(profitBeforeDirector);
+    }
+
+    [Theory]
+    [MemberData(nameof(Setups))]
+    public void Run_2026RentCompanyPaysAndNothingPrepaid_layersPocketAndCompanyAddUpToTheProfitBeforeTheDirector(
+        decimal directorPay, decimal profitBeforeDirector, decimal reserve, WithholdingCategory category)
+    {
+        var result = Run(Scenario(directorPay: directorPay, reserve: reserve, category: category, revenue: profitBeforeDirector + 20_000m,
+            advancePayments: AdvancePayments.None, taxPrepayments: TaxPrepayments.AsWithheld, paidBy: ContributionsPaidBy.Company,
+            rent: new HomeOfficeRent(400m, 1m, 3_333.33m)));
+
+        (result.CorporateTax + result.SocialContributions + result.PersonalTax + result.NetInPocket + result.KeptInCompany)
+            .ShouldBe(profitBeforeDirector);
+    }
+
+    public static TheoryData<HomeOfficeRent, decimal, string> RentsOutsideTheRules => new()
+    {
+        { new HomeOfficeRent(1_200m, 0.12m, 1_380.01m), 0m, RentCalculator.RentAboveCap },
+        { new HomeOfficeRent(1_200m, 0.12m, 1_000m), 1_938.44m, RentCalculator.RentWithOfficeAllowance },
+        { new HomeOfficeRent(1_200m, 1.20m, 1_000m), 0m, RentCalculator.ShareLetOutOfRange },
+    };
+
+    [Theory]
+    [MemberData(nameof(RentsOutsideTheRules))]
+    public void Run_rentOutsideTheRules_isRefusedWithTheCalculatorsKey(HomeOfficeRent rent, decimal officeAllowance, string expected)
+    {
+        var (value, error) = YearSimulation.Run(Scenario(directorPay: 50_000m, reserve: 0m, allowances: new ExpenseAllowances(officeAllowance, 0m, 0m, 0m), rent: rent));
+
+        (value, error).ShouldBe((null, expected));
+    }
+
     [Fact]
     public void Run_negativeTaxWithheld_isRefusedWithGrossToNetsKey()
     {
@@ -853,6 +1030,15 @@ public class YearSimulationTests
         YearSimulation.ProfitBeforePay(Scenario(directorPay: 50_000m, reserve: 0m, allowances: new ExpenseAllowances(2_000m, 0m, 0m, 0m))).ShouldBe(98_000m);
     }
 
+    // 100,000 less the 1,380.00 of rent, and taken as given while it is refused above the cap.
+    [Theory]
+    [InlineData(1_380.00, 98_620.00)]
+    [InlineData(2_000.00, 98_000.00)]
+    public void ProfitBeforePay_rent_isWhatTheCompanyHasLeftOnceItPaidIt(decimal rent, decimal profitBeforePay)
+    {
+        YearSimulation.ProfitBeforePay(Scenario(directorPay: 50_000m, reserve: 0m, rent: new HomeOfficeRent(1_200m, 0.12m, rent))).ShouldBe(profitBeforePay);
+    }
+
     [Fact]
     public void ProfitBeforePay_incomeYear2027_isUnknown()
     {
@@ -889,7 +1075,8 @@ public class YearSimulationTests
         TaxPrepayments? taxPrepayments = null,
         ContributionsPaidBy paidBy = ContributionsPaidBy.Director,
         VoucherGrants? vouchers = null,
-        ExpenseAllowances? allowances = null) =>
+        ExpenseAllowances? allowances = null,
+        HomeOfficeRent? rent = null) =>
         new(2026, revenue, 20_000m, SmallPastStartUp, directorPay, MunicipalRates.Entered(0.07m), reserve, category, earlierProfits)
         {
             AdvancePayments = advancePayments ?? Prepaid,
@@ -897,6 +1084,7 @@ public class YearSimulationTests
             ContributionsPaidBy = paidBy,
             Vouchers = vouchers ?? VoucherGrants.None,
             Allowances = allowances ?? ExpenseAllowances.None,
+            Rent = rent ?? HomeOfficeRent.None,
         };
 
     private static YearResult Run(Scenario scenario)
