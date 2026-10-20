@@ -166,8 +166,8 @@ public static class YearSimulation
     }
 
     // Each kind of voucher reaches the pocket exempt, at what the company pays into it, and what the
-    // company cannot deduct of them joins its profit before tax. Only once it grants any, so a year
-    // without them keeps its steps.
+    // company cannot deduct of them, the vouchers as the corporate layer taxes them, joins its taxable
+    // income. Only once it grants any, so a year without them keeps its steps.
     private static IEnumerable<Step> VoucherSteps(VoucherRules rules, VoucherResult vouchers) =>
     [
         new Step("meal_vouchers", Layer.Personal, TaxableEvent.Vouchers, Track.InPocket, vouchers.MealVouchers,
@@ -176,7 +176,7 @@ public static class YearSimulation
             rules.Exemption, [rules.EcoVouchersMaximum, rules.EcoVoucherFaceValueMaximum]),
         new Step("sport_culture_vouchers", Layer.Personal, TaxableEvent.Vouchers, Track.InPocket, vouchers.SportCultureVouchers,
             rules.Exemption, [rules.SportCultureVouchersMaximum]),
-        new Step("disallowed_vouchers", Layer.Corporate, TaxableEvent.CompanyProfit, Track.TaxBaseOnly, vouchers.Disallowed,
+        new Step("disallowed_vouchers", Layer.Corporate, TaxableEvent.Vouchers, Track.TaxBaseOnly, vouchers.Disallowed,
             rules.NonDeductible, [rules.MealVoucherCompanyShare, rules.MealVoucherDeduction, rules.MealVoucherDeductionAtMaximum]),
     ];
 

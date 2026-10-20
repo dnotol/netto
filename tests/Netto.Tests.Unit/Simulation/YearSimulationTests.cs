@@ -365,7 +365,7 @@ public class YearSimulationTests
     }
 
     // What reaches the pocket comes first, as the vouchers come before the pay, then what the company
-    // cannot deduct, which joins the company's profit before its tax.
+    // cannot deduct of them, the vouchers as the corporate layer taxes them.
     [Fact]
     public void Run_2026Vouchers_putTheirStepsBeforeTheCorporateTaxWithTheirTags()
     {
@@ -376,7 +376,7 @@ public class YearSimulationTests
             ("meal_vouchers", Layer.Personal, TaxableEvent.Vouchers, Track.InPocket, 1_960.20m),
             ("eco_vouchers", Layer.Personal, TaxableEvent.Vouchers, Track.InPocket, 250m),
             ("sport_culture_vouchers", Layer.Personal, TaxableEvent.Vouchers, Track.InPocket, 100m),
-            ("disallowed_vouchers", Layer.Corporate, TaxableEvent.CompanyProfit, Track.TaxBaseOnly, 1_430.20m),
+            ("disallowed_vouchers", Layer.Corporate, TaxableEvent.Vouchers, Track.TaxBaseOnly, 1_430.20m),
             ("corporate_tax", Layer.Corporate, TaxableEvent.CompanyProfit, Track.PaidOut, 9_824.00m),
         });
     }
