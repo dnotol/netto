@@ -203,13 +203,14 @@
         font-variant-numeric: tabular-nums;
     }
 
-.statement__month {
+/* The month's name on the left, the net on the right edge: both outweigh the cells' own rule. */
+.statement__table .statement__month {
     padding-left: 0;
     text-align: left;
     font-weight: 500;
 }
 
-.statement__net {
+.statement__table .statement__net {
     padding-right: 0;
     font-weight: 600;
 }
