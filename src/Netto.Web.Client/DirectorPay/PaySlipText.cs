@@ -15,4 +15,7 @@ internal static class PaySlipText
     public static string Withheld(bool given) => given ? "Withheld_Given" : "Withheld_Derived";
 
     public static string Balance(BalanceKind kind) => $"Balance_{kind}";
+
+    // The final tax says it is on the rent too once a rent is taxed with the pay.
+    public static string FinalTax(bool withOtherIncome) => withOtherIncome ? "FinalTax_WithRent" : "FinalTax";
 }

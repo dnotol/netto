@@ -4,6 +4,7 @@ using Netto.Core.Allowances;
 using Netto.Core.CorporateTax;
 using Netto.Core.DirectorPay;
 using Netto.Core.Dividends;
+using Netto.Core.Rent;
 using Netto.Core.Simulation;
 using Netto.Core.SocialContributions;
 using Netto.Core.Vouchers;
@@ -35,6 +36,8 @@ public class RiverTextTests
 
     private static readonly ResourceManager AllowanceCardResources = new("Netto.Web.Client.River.AllowanceCard", typeof(AllowanceCard).Assembly);
 
+    private static readonly ResourceManager RentCardResources = new("Netto.Web.Client.River.RentCard", typeof(RentCard).Assembly);
+
     [Fact]
     public void OriginChipResx_everyOrigin_hasAWordAndAHint()
     {
@@ -44,7 +47,9 @@ public class RiverTextTests
     }
 
     // The example, with a reserve so every drain has an amount, every kind of voucher and every
-    // allowance, is every drain a card can list, the director's contributions paid by either.
+    // allowance, is every drain a card can list, the director's contributions paid by either; the
+    // rent, which the office allowance excludes, on a year of its own, beside a low pay with nothing
+    // withheld so it takes away part of the credit and moves the surcharge.
     [Theory]
     [InlineData(ContributionsPaidBy.Director)]
     [InlineData(ContributionsPaidBy.Company)]
@@ -55,8 +60,11 @@ public class RiverTextTests
             .WithOfficeAllowance(1_938.44m).WithInternetAllowance(240m).WithComputerAllowance(240m).WithPhoneCosts(600m);
         var run = inputs.Run();
         var year = run.Year.ShouldNotBeNull();
+        var rentYear = RiverInputs.Example.WithContributionsPaidBy(paidBy).WithDirectorPay(27_000m).WithTaxWithheld(0m)
+            .WithCadastralIncome(400m).WithShareLet(1m).WithRent(3_333.33m).Run().Year.ShouldNotBeNull();
         var drains = VoucherView.From(year).Drains
             .Concat(AllowanceView.From(year).Drains)
+            .Concat(RentView.From(rentYear).Drains)
             .Concat(DirectorPayView.From(inputs, run.Pay.ShouldNotBeNull()).Drains)
             .Concat(CorporateTaxView.From(year).Drains)
             .Concat(DividendView.From(year).Drains)
@@ -79,6 +87,8 @@ public class RiverTextTests
             AllowanceCalculator.OfficeAllowanceNegative, AllowanceCalculator.OfficeAllowanceAboveMaximum, AllowanceCalculator.InternetAllowanceNegative,
             AllowanceCalculator.InternetAllowanceAboveMaximum, AllowanceCalculator.ComputerAllowanceNegative, AllowanceCalculator.ComputerAllowanceAboveMaximum,
             AllowanceCalculator.PhoneCostsNegative,
+            RentCalculator.CadastralIncomeNegative, RentCalculator.ShareLetOutOfRange, RentCalculator.RentNegative, RentCalculator.RentAboveCap,
+            RentCalculator.RentWithOfficeAllowance,
         };
 
         Missing(RefusedMessageResources, errors.Select(RefusedMessageText.Error)).ShouldBeEmpty();
@@ -143,6 +153,12 @@ public class RiverTextTests
     {
         Missing(AllowanceCardResources, AllowanceRules.IncomeYear2026.Conditions.Select(condition => AllowanceCardText.Condition(condition.Key)))
             .ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void RentCardResx_everyConditionOfTheRent_hasAText()
+    {
+        Missing(RentCardResources, RentRules.IncomeYear2026.Conditions.Select(condition => RentCardText.Condition(condition.Key))).ShouldBeEmpty();
     }
 
     private static IEnumerable<string> Missing(ResourceManager resources, IEnumerable<string> keys) =>

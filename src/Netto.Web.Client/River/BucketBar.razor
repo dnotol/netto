@@ -8,7 +8,7 @@
             @foreach (var key in BucketsView.Keys)
             {
                 <div class="bucket bucket--@key">
-                    <dt class="bucket__label"><span class="bucket__swatch" aria-hidden="true"></span>@L[BucketBarText.Bucket(key)]</dt>
+                    <dt class="bucket__label"><span class="bucket__swatch" aria-hidden="true"></span>@L[BucketBarText.Bucket(key, View?.TaxesOnPayIncludeRent ?? false)]</dt>
                     <dd class="bucket__amount">@Amount(key)</dd>
                 </div>
             }

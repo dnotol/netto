@@ -12,9 +12,12 @@ namespace Netto.Web.Client.DirectorPay;
 // scales the engine's figures; every amount is the engine's. When the company pays the contributions
 // on the director's behalf (CompanyPaysContributions) they are pay that goes straight back out, so
 // both tracks start from what the pay costs the company, the gross plus them, which is also the pay
-// the director declares, and the contributions stay paid out.
+// the director declares, and the contributions stay paid out. With a rent taxed with the pay
+// (TaxedWithOtherIncome) the tracks stay the pay's own, while the next 1,000 and the balance are the
+// year's, the rent's tax in them.
 internal sealed record GrossToNetView(
     bool CompanyPaysContributions,
+    bool TaxedWithOtherIncome,
     IReadOnlyList<FunnelTrack> Tracks,
     IReadOnlyList<NextThousandPart> NextThousand,
     StatementView Statement,
@@ -55,6 +58,7 @@ internal sealed record GrossToNetView(
 
         return new GrossToNetView(
             companyPays,
+            result.OtherIncomeTax.Income > 0m,
             tracks.Select(track => new FunnelTrack(
                 track.Key,
                 track.Bars.Select(bar => new FunnelRow(bar.Line.Key, bar.Line.Kind, bar.Line.Amount, Percent(bar.From), Percent(bar.To))).ToList()))
@@ -70,7 +74,7 @@ internal sealed record GrossToNetView(
             ]),
             StatementView.From(result.Statement, companyPays),
             Withholding(result.Statement),
-            AssessmentView.From(result.Assessment),
+            AssessmentView.From(result.Assessment, result.OtherIncomeTax),
             result.Steps.Select(StepDetail.From).ToList());
     }
 
@@ -198,10 +202,12 @@ internal sealed record StatementView(
         new(statement.Months, companyPays, statement.Months.Any(month => month.UnmodelledRules), statement.UnmodelledRulesFrom.Value);
 }
 
-// The balance on the assessment as the slip draws it: the engine's lines, which way the balance
-// goes, and the balance as a step citing the article it follows, with no amount of the year.
+// The balance on the assessment as the slip draws it: the engine's lines, how much of the final tax is
+// on the income taxed with the pay (OnOtherIncome, the rent's), which way the balance goes, and the
+// balance as a step citing the article it follows, with no amount of the year.
 internal sealed record AssessmentView(
     decimal FinalTax,
+    decimal OnOtherIncome,
     decimal Withheld,
     bool WithheldGiven,
     decimal AdvancePayments,
@@ -212,8 +218,9 @@ internal sealed record AssessmentView(
     // The balance as the slip shows it, without its sign: the kind says which way it goes.
     public decimal Amount => Math.Abs(Balance);
 
-    public static AssessmentView From(Assessment assessment) => new(
+    public static AssessmentView From(Assessment assessment, OtherIncomeTax otherIncomeTax) => new(
         assessment.FinalTax,
+        otherIncomeTax.Total,
         assessment.Withheld,
         assessment.WithheldGiven,
         assessment.AdvancePayments,

@@ -129,4 +129,13 @@
   <data name="Balance_Settled" xml:space="preserve">
     <value>Nothing left to pay</value>
   </data>
+  <data name="FinalTax_WithRent" xml:space="preserve">
+    <value>Final tax on your pay and the rent taxed with it</value>
+  </data>
+  <data name="FinalTaxOnRent" xml:space="preserve">
+    <value>of which the rent adds</value>
+  </data>
+  <data name="NextRentNote" xml:space="preserve">
+    <value>Your home office rent is taxed with your pay, so these are the year's taxes: the next €1,000 of pay also raises the tax on the rent, which is in its parts.</value>
+  </data>
 </root>

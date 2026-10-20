@@ -200,6 +200,31 @@ public class GrossToNetViewTests
         (balance.FinalTax, balance.AdvancePayments, balance.Balance).ShouldBe((12_037.23m, 12_014m, 23.23m));
     }
 
+    // A rent's 828 of net rent taxed with the pay (GrossToNetTests): the final tax is the year's,
+    // 398.68 of it the rent's, and the balance sets the pay's withholding against all of it.
+    [Fact]
+    public void From_gross50000WithRent_balanceSaysHowMuchOfTheFinalTaxIsTheRents()
+    {
+        var balance = View(50_000m, TaxPrepayments.AsWithheld, otherIncome: 828m).Balance;
+
+        (balance.FinalTax, balance.OnOtherIncome, balance.Balance).ShouldBe((12_526.02m, 398.68m, 1_834.74m));
+    }
+
+    [Fact]
+    public void From_gross50000_balanceHasNothingOnOtherIncome()
+    {
+        View(50_000m, TaxPrepayments.AsWithheld).Balance.OnOtherIncome.ShouldBe(0m);
+    }
+
+    // The next 1,000 is the year's once a rent is taxed with the pay: the slip says so.
+    [Theory]
+    [InlineData(0, false)]
+    [InlineData(828, true)]
+    public void From_gross50000_saysWhetherTheNextThousandIsTaxedWithARent(decimal otherIncome, bool taxedWithOtherIncome)
+    {
+        View(50_000m, Withheld, otherIncome: otherIncome).TaxedWithOtherIncome.ShouldBe(taxedWithOtherIncome);
+    }
+
     [Fact]
     public void From_gross50000_balanceDetailCitesArticle304()
     {
@@ -477,9 +502,10 @@ public class GrossToNetViewTests
 
     private static GrossToNetView CompanyPaysView(decimal grossPay) => View(grossPay, Withheld, ContributionsPaidBy.Company);
 
-    private static GrossToNetView View(decimal grossPay, TaxPrepayments prepayments, ContributionsPaidBy paidBy = ContributionsPaidBy.Director)
+    private static GrossToNetView View(
+        decimal grossPay, TaxPrepayments prepayments, ContributionsPaidBy paidBy = ContributionsPaidBy.Director, decimal otherIncome = 0m)
     {
-        var (value, error) = GrossToNet.Compute(2026, grossPay, MunicipalRates.Entered(0.07m), prepayments, paidBy);
+        var (value, error) = GrossToNet.Compute(2026, grossPay, MunicipalRates.Entered(0.07m), prepayments, paidBy, otherIncome);
 
         error.ShouldBeNull();
         return GrossToNetView.From(value.ShouldNotBeNull());

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve">
+    <value>Home office rent</value>
+  </data>
+  <data name="Summary" xml:space="preserve">
+    <value>{0} to your pocket after its tax · {1} before your pay</value>
+  </data>
+  <data name="Waiting" xml:space="preserve">
+    <value>Waiting for the company's year.</value>
+  </data>
+  <data name="Hint" xml:space="preserve">
+    <value>If the company uses part of your home as its office, it can rent that part from you, unfurnished, under a lease. It pays the rent out of its profit, before your pay, and deducts it; you are taxed on it with your pay, on less than the rent and without social contributions.</value>
+  </data>
+  <data name="CadastralIncomeLabel" xml:space="preserve">
+    <value>Cadastral income of your home</value>
+  </data>
+  <data name="CadastralIncomeHint" xml:space="preserve">
+    <value>Not indexed, as your property-tax notice or MyMinfin gives it.</value>
+  </data>
+  <data name="ShareLabel" xml:space="preserve">
+    <value>Share let to the company</value>
+  </data>
+  <data name="ShareHint" xml:space="preserve">
+    <value>The part of your home the company uses, usually by floor area.</value>
+  </data>
+  <data name="RentLabel" xml:space="preserve">
+    <value>Rent for the year</value>
+  </data>
+  <data name="Cap" xml:space="preserve">
+    <value>At most {0} for the year: 5/3 of {1}, the cadastral income of the part let, revalued by {2}. Above it, the excess would be taxed as director pay.</value>
+  </data>
+  <data name="UseTheCap" xml:space="preserve">
+    <value>Use {0}</value>
+  </data>
+  <data name="TaxedOnTheRent" xml:space="preserve">
+    <value>You are taxed on the rent, {0}, less {1} of flat charges: {2} joins the taxable income of your pay and adds {3} to your personal tax, line by line below.</value>
+  </data>
+  <data name="TaxedOnTheFloor" xml:space="preserve">
+    <value>The rent is under the floor, so you are taxed on the floor, {0}: the cadastral income of the part let, indexed, plus 40%. Less {1} of flat charges, {2} joins the taxable income of your pay and adds {3} to your personal tax, line by line below.</value>
+  </data>
+  <data name="Deducted" xml:space="preserve">
+    <value>The company deducts all {0} of it, like its own running costs: nothing is added back to its taxable income, and it is never pay.</value>
+  </data>
+  <data name="ConditionsTitle" xml:space="preserve">
+    <value>What the rent takes</value>
+  </data>
+  <data name="ConditionsHint" xml:space="preserve">
+    <value>Netto cannot check these: enter a rent only if they hold.</value>
+  </data>
+  <data name="Condition_share_yours_to_justify" xml:space="preserve">
+    <value>The share let is yours to justify, usually by the floor area the company really uses: the floor and the cap are on the cadastral income of that part.</value>
+  </data>
+  <data name="Condition_not_with_office_allowance" xml:space="preserve">
+    <value>No office allowance beside it: the allowance already covers the room, its rent included.</value>
+  </data>
+  <data name="DetailsLabel" xml:space="preserve">
+    <value>Where these figures come from</value>
+  </data>
+  <data name="SourcesTitle" xml:space="preserve">
+    <value>The rules, with the income year {0} amounts</value>
+  </data>
+</root>

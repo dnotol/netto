@@ -193,7 +193,7 @@
     <value>Advance-payment surcharge on your tax</value>
   </data>
   <data name="Rule_income_tax_advance_payment_surcharge" xml:space="preserve">
-    <value>The income tax on your director pay that was neither withheld by the company nor paid in advance by you during the year is increased. The base is the tax at 106%, less what was withheld and the tax credit for low earned income. It is surcharged at a multiple of the reference rate, less a credit for each advance payment, a smaller multiple of it the later the deadline it was paid by, and 90% of what is left is due. Nothing is due when that is under the minimum or under its share of the base, nor in the first three years of a first self-employed activity.</value>
+    <value>The income tax on your director pay, taken alone without any rent taxed with it, that was neither withheld by the company nor paid in advance by you during the year is increased. The base is the tax at 106%, less what was withheld and the tax credit for low earned income you get. It is surcharged at a multiple of the reference rate, less a credit for each advance payment, a smaller multiple of it the later the deadline it was paid by, and 90% of what is left is due. Nothing is due when that is under the minimum or under its share of the base, nor in the first three years of a first self-employed activity.</value>
   </data>
   <data name="Title_income_tax_advance_payment_bonus" xml:space="preserve">
     <value>Bonus on your advance payments</value>
@@ -319,7 +319,7 @@
     <value>Balance on your assessment</value>
   </data>
   <data name="Rule_assessment_balance" xml:space="preserve">
-    <value>Your assessment charges the final tax on your pay: the income tax with the municipal surcharge, less the tax credit for low earned income, plus the advance-payment surcharge and less the bonus. What the company withheld on your pay over the year and what you paid in advance are set against it: what is left is to pay, and what was paid beyond it is refunded.</value>
+    <value>Your assessment charges the final tax on your year's income, your pay and any rent the company pays you, which is taxed with it: the income tax with the municipal surcharge, less the tax credit for low earned income, plus the advance-payment surcharge and less the bonus. What the company withheld on your pay over the year and what you paid in advance are set against it: what is left is to pay, and what was paid beyond it is refunded.</value>
   </data>
   <data name="Title_meal_vouchers" xml:space="preserve">
     <value>Meal vouchers</value>
@@ -404,5 +404,65 @@
   </data>
   <data name="Amount_computer_allowance_monthly_maximum" xml:space="preserve">
     <value>Computer allowance, most a month</value>
+  </data>
+  <data name="Title_rent" xml:space="preserve">
+    <value>Rent for your home office</value>
+  </data>
+  <data name="Rule_rent" xml:space="preserve">
+    <value>The rent the company pays you for the part of your home it uses as an office, unfurnished, reaches your pocket, and the company deducts all of it like its other costs. Kept at or below the cap, 5/3 of the cadastral income of the part let revalued by the year's coefficient, none of it is director pay; above it, the excess would be taxed as pay, with social contributions and no charges deducted.</value>
+  </data>
+  <data name="Title_rent_charges" xml:space="preserve">
+    <value>Flat charges on the rent</value>
+  </data>
+  <data name="Rule_rent_charges" xml:space="preserve">
+    <value>A built property let to a company is taxed on its rent less 40% for maintenance and repairs, at most 2/3 of the cadastral income of the part let revalued by the year's coefficient: at the cap, the 40% is that limit exactly. They lower the taxable rent and are never paid out.</value>
+  </data>
+  <data name="Title_rent_taxable_income" xml:space="preserve">
+    <value>Taxable rent</value>
+  </data>
+  <data name="Rule_rent_taxable_income" xml:space="preserve">
+    <value>The rent, never less than the cadastral income of the part let, indexed by the year's coefficient, plus 40%, less its flat charges. It is income from immovable property, taxed with your pay; not professional income, so no social contributions are owed on it.</value>
+  </data>
+  <data name="Title_rent_income_tax" xml:space="preserve">
+    <value>Income tax on the rent</value>
+  </data>
+  <data name="Rule_rent_income_tax" xml:space="preserve">
+    <value>The taxable rent joins the taxable income of your pay: the progressive scale and the tax-free amount apply to both together. What that adds to the income tax on your pay alone is the rent's.</value>
+  </data>
+  <data name="Title_rent_municipal_surcharge" xml:space="preserve">
+    <value>Municipal surcharge on the rent</value>
+  </data>
+  <data name="Rule_rent_municipal_surcharge" xml:space="preserve">
+    <value>Your municipality's rate applied to the income tax the rent adds.</value>
+  </data>
+  <data name="Title_rent_low_earned_income_credit_lost" xml:space="preserve">
+    <value>Tax credit for low earned income the rent takes away</value>
+  </data>
+  <data name="Rule_rent_low_earned_income_credit_lost" xml:space="preserve">
+    <value>The credit follows your pay, but your total net income, the rent included, limits it: none above the ceiling, and from where the full credit ends up to the ceiling, at most what the same falling line gives on that total. What the rent takes away of the credit your pay alone would get is lost.</value>
+  </data>
+  <data name="Title_rent_income_tax_advance_payments" xml:space="preserve">
+    <value>Advance-payment surcharge the lost credit adds</value>
+  </data>
+  <data name="Rule_rent_income_tax_advance_payments" xml:space="preserve">
+    <value>The advance-payment surcharge is on the tax on your pay taken alone, so the rent's own tax is never surcharged. But its base is that tax at 106% less what was withheld and the credit you actually get: a credit the rent takes away raises it, and with it the surcharge, less any change in the bonus.</value>
+  </data>
+  <data name="Amount_rent_cap_multiplier" xml:space="preserve">
+    <value>Cap, 5/3 of the revalued cadastral income</value>
+  </data>
+  <data name="Amount_cadastral_income_revaluation_coefficient" xml:space="preserve">
+    <value>Revaluation coefficient of the cadastral income</value>
+  </data>
+  <data name="Amount_rent_floor_uplift_rate" xml:space="preserve">
+    <value>Floor, above the indexed cadastral income</value>
+  </data>
+  <data name="Amount_cadastral_income_indexation_coefficient" xml:space="preserve">
+    <value>Indexation coefficient of the cadastral income</value>
+  </data>
+  <data name="Amount_rent_charges_rate" xml:space="preserve">
+    <value>Flat charges</value>
+  </data>
+  <data name="Amount_rent_charges_limit_multiplier" xml:space="preserve">
+    <value>Charges, at most 2/3 of the revalued cadastral income</value>
   </data>
 </root>

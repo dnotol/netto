@@ -56,6 +56,15 @@ public class PaySlipTextTests
         keys.Distinct().Where(key => Resources.GetString(key, CultureInfo.InvariantCulture) is null).ShouldBeEmpty();
     }
 
+    // With a rent taxed with the pay, the final tax and the next 1,000 say so.
+    [Fact]
+    public void PaySlipResx_everyKeyOfARentTaxedWithThePay_hasAText()
+    {
+        string[] keys = [PaySlipText.FinalTax(false), PaySlipText.FinalTax(true), "FinalTaxOnRent", "NextRentNote"];
+
+        keys.Where(key => Resources.GetString(key, CultureInfo.InvariantCulture) is null).ShouldBeEmpty();
+    }
+
     [Fact]
     public void PaySlipResx_everyWayTheBalanceCanGo_hasAText()
     {

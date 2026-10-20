@@ -6,11 +6,13 @@ namespace Netto.Web.Client.River;
 // river starts from, what the company earns before it pays its director anything, pay, vouchers or
 // expense allowances, with the profits kept from earlier years or, with the company skipped, what the
 // pay costs the company, the gross plus the contributions it pays on the director's behalf when it
-// does (CompanyPaysContributions). The vouchers and the allowances are in the pocket. Taxes on pay are
-// the director pay's steps paid out; taxes on profit, the company's and the dividend's, the refund on
-// the exempt dividend coming back. It only regroups the engine's figures and steps, so the buckets
-// add up to the start.
-internal sealed record BucketsView(decimal Start, decimal EarlierProfits, bool StartsAtPay, bool CompanyPaysContributions, IReadOnlyList<Bucket> Buckets)
+// does (CompanyPaysContributions). The vouchers, the allowances and the rent are in the pocket. Taxes
+// on pay are the director's personal tax: the director pay's steps paid out and, once the company pays
+// a rent, the rent's, which it is taxed with (TaxesOnPayIncludeRent); taxes on profit, the company's
+// and the dividend's, the refund on the exempt dividend coming back. It only regroups the engine's
+// figures and steps, so the buckets add up to the start.
+internal sealed record BucketsView(
+    decimal Start, decimal EarlierProfits, bool StartsAtPay, bool CompanyPaysContributions, bool TaxesOnPayIncludeRent, IReadOnlyList<Bucket> Buckets)
 {
     // In the order the bar shows them, the pocket first; also when there is no figure to show.
     public static IReadOnlyList<string> Keys { get; } = ["pocket", "taxes_on_pay", "taxes_on_profit", "kept_in_company"];
@@ -28,7 +30,7 @@ internal sealed record BucketsView(decimal Start, decimal EarlierProfits, bool S
         var amounts = Keys.Zip(new[]
         {
             pocket,
-            PaidOut(steps, TaxableEvent.DirectorPay),
+            PaidOut(steps, TaxableEvent.DirectorPay) + PaidOut(steps, TaxableEvent.Rent),
             PaidOut(steps, TaxableEvent.CompanyProfit) + PaidOut(steps, TaxableEvent.Dividend),
             kept,
         }, (key, amount) => (Key: key, Amount: amount)).ToList();
@@ -39,6 +41,7 @@ internal sealed record BucketsView(decimal Start, decimal EarlierProfits, bool S
             earlierProfits,
             run.Year is null,
             pay.ContributionsPaidByCompany > 0m,
+            steps.Any(step => step.Event == TaxableEvent.Rent),
             amounts.Select(bucket => new Bucket(bucket.Key, bucket.Amount, drawn ? bucket.Amount / start : null)).ToList());
     }
 

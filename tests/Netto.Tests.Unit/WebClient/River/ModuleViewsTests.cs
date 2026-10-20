@@ -1,6 +1,7 @@
 using Netto.Core.Allowances;
 using Netto.Core.CorporateTax;
 using Netto.Core.DirectorPay;
+using Netto.Core.Rent;
 using Netto.Core.Simulation;
 using Netto.Core.SocialContributions;
 using Netto.Core.Vouchers;
@@ -20,7 +21,9 @@ namespace Netto.Tests.WebClient.River;
 // company cannot deduct, which leaves 97,689.80 for the split and 49,120.00 of taxable income, taxed
 // 9,824.00 and, nothing prepaid, surcharged 663.12. The example pays no expense allowances; the
 // allowances' cards pay the most the circular allows for the office, internet and a computer, 2,418.44
-// (YearSimulationTests), and 600 of phone costs where they say so, all of it deducted.
+// (YearSimulationTests), and 600 of phone costs where they say so, all of it deducted. The example
+// pays no rent; the rent's cards let 12% of a cadastral income of 1,200 for the 2026 cap, 1,380.00,
+// all of it deducted, whose 828.00 of net rent adds 398.68 to the personal tax (RiverInputsTests).
 public class ModuleViewsTests
 {
     private static readonly RiverInputs Prepaid = RiverInputs.Example.WithAdvancePayment(0, 7_500m).WithTaxWithheld(11_334m);
@@ -511,17 +514,18 @@ public class ModuleViewsTests
         });
     }
 
-    // No allowances: the profit before pay goes on to the split whole, and there are no steps to list.
+    // No allowances: what the company earns goes on to the rent whole, and there are no steps to list.
     [Fact]
-    public void Allowances_example_passTheProfitBeforePayOnToTheSplit()
+    public void Allowances_example_passWhatTheCompanyEarnsOnToTheRent()
     {
         var view = Allowances(RiverInputs.Example);
 
-        (view.Total, view.Details.Count, view.Drains.Single()).ShouldBe((0m, 0, new Drain("profit_before_pay", DrainKind.PassedOn, 100_000m, "split")));
+        (view.Total, view.Left, view.Details.Count, view.Drains.Single())
+            .ShouldBe((0m, 100_000m, 0, new Drain("left_after_allowances", DrainKind.PassedOn, 100_000m, "rent")));
     }
 
     [Fact]
-    public void Allowances_all_drainEachToThePocketAndTheRestToTheSplit()
+    public void Allowances_all_drainEachToThePocketAndTheRestToTheRent()
     {
         Allowances(AllAllowances(RiverInputs.Example)).Drains.ShouldBe(new[]
         {
@@ -529,7 +533,7 @@ public class ModuleViewsTests
             new Drain("internet_allowance", DrainKind.PassedOn, 240m, "pocket"),
             new Drain("computer_allowance", DrainKind.PassedOn, 240m, "pocket"),
             new Drain("phone_costs", DrainKind.PassedOn, 600m, "pocket"),
-            new Drain("profit_before_pay", DrainKind.PassedOn, 96_981.56m, "split"),
+            new Drain("left_after_allowances", DrainKind.PassedOn, 96_981.56m, "rent"),
         });
     }
 
@@ -539,11 +543,140 @@ public class ModuleViewsTests
         Allowances(AllAllowances(RiverInputs.Example)).Total.ShouldBe(3_018.44m);
     }
 
-    // After the vouchers' 2,310.20 and the allowances' 2,418.44, 95,271.36 go on to the split.
+    // After the vouchers' 2,310.20 and the allowances' 2,418.44, 95,271.36 go on to the rent.
     [Fact]
-    public void Allowances_afterVouchers_passOnTheProfitBothLeave()
+    public void Allowances_afterVouchers_passOnWhatBothLeave()
     {
-        Allowances(FlatRateAllowances(AllVouchers)).Drains[^1].ShouldBe(new Drain("profit_before_pay", DrainKind.PassedOn, 95_271.36m, "split"));
+        Allowances(FlatRateAllowances(AllVouchers)).Drains[^1].ShouldBe(new Drain("left_after_allowances", DrainKind.PassedOn, 95_271.36m, "rent"));
+    }
+
+    // The river runs on: what the allowances leave is what they leave, whatever the rent takes next.
+    // Internet and computer only, 480, since the office allowance excludes a rent.
+    [Fact]
+    public void Allowances_withRent_passOnWhatTheAllowancesLeave()
+    {
+        Allowances(RentAtTheCap(RiverInputs.Example).WithInternetAllowance(240m).WithComputerAllowance(240m)).Left.ShouldBe(99_520m);
+    }
+
+    // No rent: the profit before pay goes on to the split whole, and there are no steps to list.
+    [Fact]
+    public void Rent_example_passesTheProfitBeforePayOnToTheSplit()
+    {
+        var view = Rent(RiverInputs.Example);
+
+        (view.Rent, view.Tax, view.Details.Count, view.Drains.Single()).ShouldBe((0m, 0m, 0, new Drain("profit_before_pay", DrainKind.PassedOn, 100_000m, "split")));
+    }
+
+    // Its tax is the year's taxes on pay, line by line (GrossToNetTests); the rest reaches the pocket,
+    // and the profit before pay, 100,000 less the 1,380.00, goes on to the split.
+    [Fact]
+    public void Rent_atTheCap_drainsItsTaxToTaxesOnPayTheRestToThePocketAndTheProfitToTheSplit()
+    {
+        Rent(RentAtTheCap(RiverInputs.Example)).Drains.ShouldBe(new[]
+        {
+            new Drain("rent_income_tax", DrainKind.PaidOut, 372.60m, "taxes_on_pay"),
+            new Drain("rent_municipal_surcharge", DrainKind.PaidOut, 26.08m, "taxes_on_pay"),
+            new Drain("rent_low_earned_income_credit_lost", DrainKind.PaidOut, 0m, "taxes_on_pay"),
+            new Drain("rent_income_tax_advance_payments", DrainKind.PaidOut, 0m, "taxes_on_pay"),
+            new Drain("rent_after_tax", DrainKind.PassedOn, 981.32m, "pocket"),
+            new Drain("profit_before_pay", DrainKind.PassedOn, 98_620m, "split"),
+        });
+    }
+
+    // Taxed on the rent less 40% of charges, at their limit at the cap (RentCalculatorTests).
+    [Fact]
+    public void Rent_atTheCap_saysWhatItIsTaxedOnAndWhatItCosts()
+    {
+        var view = Rent(RentAtTheCap(RiverInputs.Example));
+
+        (view.Rent, view.TaxableRent, view.TaxedOnTheFloor, view.Charges, view.NetRent, view.Tax, view.AfterTax)
+            .ShouldBe((1_380m, 1_380m, false, 552m, 828m, 398.68m, 981.32m));
+    }
+
+    // Under the floor, the indexed cadastral income plus 40%, it is taxed on the floor.
+    [Fact]
+    public void Rent_underTheFloor_saysItIsTaxedOnTheFloor()
+    {
+        var view = Rent(RentAtTheCap(RiverInputs.Example).WithRent(400m));
+
+        (view.TaxableRent, view.TaxedOnTheFloor, view.NetRent).ShouldBe((463.68m, true, 278.21m));
+    }
+
+    [Fact]
+    public void Rent_atTheCap_listsItsStepsAndNoneOfTheOtherLevers()
+    {
+        Rent(RentAtTheCap(AllVouchers)).Details.Select(detail => detail.RuleKey).ShouldBe(
+        [
+            "rent", "rent_charges", "rent_taxable_income", "rent_income_tax", "rent_municipal_surcharge", "rent_low_earned_income_credit_lost",
+            "rent_income_tax_advance_payments",
+        ]);
+    }
+
+    // The rent cites the cap it is kept under with its multiplier, then the revaluation coefficient
+    // under art. 13, which sets it.
+    [Fact]
+    public void Rent_atTheCap_citesTheCapThenTheRevaluationCoefficient()
+    {
+        var rent = Rent(RentAtTheCap(RiverInputs.Example)).Details[0];
+
+        rent.Sources.Select(group => (group.Source, group.Amounts.Count)).ShouldBe(new[] { (RentRules.IncomeYear2026.Cap, 1), (RentRules.IncomeYear2026.NetRent, 1) });
+    }
+
+    // The cap the card shows and offers: 5/3 of the 144 of cadastral income let, revalued by 5.75.
+    [Fact]
+    public void RentCap_twelvePercentOf1200_isTheCapOnTheCadastralIncomeLet()
+    {
+        var cap = RentCap(RentAtTheCap(RiverInputs.Example)).ShouldNotBeNull();
+
+        (cap.CadastralIncomeLet, cap.Cap, cap.IsTheRent).ShouldBe((144m, 1_380m, true));
+    }
+
+    // From the inputs, so it stays while the engine refuses a rent above it.
+    [Fact]
+    public void RentCap_rentAboveItRefused_isStillShown()
+    {
+        var cap = RentCap(RentAtTheCap(RiverInputs.Example).WithRent(2_000m)).ShouldNotBeNull();
+
+        (cap.Cap, cap.IsTheRent).ShouldBe((1_380m, false));
+    }
+
+    public static TheoryData<decimal, decimal> NoPartLet => new()
+    {
+        { 0m, 0.12m },
+        { 1_200m, 0m },
+        { -1m, 0.12m },
+        { 1_200m, 1.01m },
+    };
+
+    // Nothing let, or a cadastral income or a share the engine refuses: no cap to show.
+    [Theory]
+    [MemberData(nameof(NoPartLet))]
+    public void RentCap_noPartLet_isNone(decimal cadastralIncome, decimal shareLet)
+    {
+        RentCap(RiverInputs.Example.WithCadastralIncome(cadastralIncome).WithShareLet(shareLet)).ShouldBeNull();
+    }
+
+    [Fact]
+    public void RentCap_companySkipped_isNone()
+    {
+        RentCap(RentAtTheCap(RiverInputs.Example).SkipCompany()).ShouldBeNull();
+    }
+
+    // The company deducts the rent in full: what the split leaves the company is the profit the rent
+    // leaves less the pay, and Corporate tax adds nothing back.
+    [Fact]
+    public void Split_rent_givesThePayAndTheCompanysProfitOutOfWhatItLeaves()
+    {
+        var view = Split(RentAtTheCap(RiverInputs.Example));
+
+        (view.Ceiling, view.Pay, view.CompanyProfit).ShouldBe((98_620m, 50_000m, (decimal?)48_620m));
+    }
+
+    // The pay's own drains stay the pay's: the rent's tax is the rent card's.
+    [Fact]
+    public void DirectorPay_rent_drainsOnlyThePaysOwnTaxes()
+    {
+        DirectorPay(RentAtTheCap(RiverInputs.Example)).Drains.ShouldBe(DirectorPay(RiverInputs.Example).Drains);
     }
 
     [Fact]
@@ -609,6 +742,11 @@ public class ModuleViewsTests
     [InlineData(AllowanceCalculator.ComputerAllowanceNegative, false, "Allowances")]
     [InlineData(AllowanceCalculator.ComputerAllowanceAboveMaximum, false, "Allowances")]
     [InlineData(AllowanceCalculator.PhoneCostsNegative, false, "Allowances")]
+    [InlineData(RentCalculator.CadastralIncomeNegative, false, "Rent")]
+    [InlineData(RentCalculator.ShareLetOutOfRange, false, "Rent")]
+    [InlineData(RentCalculator.RentNegative, false, "Rent")]
+    [InlineData(RentCalculator.RentAboveCap, false, "Rent")]
+    [InlineData(RentCalculator.RentWithOfficeAllowance, false, "Rent")]
     [InlineData(YearSimulation.IncomeYearNotSupported, false, "River")]
     public void RiverErrors_engineRefusal_isShownOnTheModuleHoldingTheField(string error, bool companySkipped, string module)
     {
@@ -638,4 +776,12 @@ public class ModuleViewsTests
         inputs.WithOfficeAllowance(1_938.44m).WithInternetAllowance(240m).WithComputerAllowance(240m);
 
     private static RiverInputs AllAllowances(RiverInputs inputs) => FlatRateAllowances(inputs).WithPhoneCosts(600m);
+
+    private static RentView Rent(RiverInputs inputs) =>
+        RentView.From(inputs.Run().Year.ShouldNotBeNull());
+
+    private static RentCapView? RentCap(RiverInputs inputs) => RentCapView.From(inputs);
+
+    // 12% of a cadastral income of 1,200 let for the 2026 cap, 1,380.00 (RentCalculatorTests).
+    private static RiverInputs RentAtTheCap(RiverInputs inputs) => inputs.WithCadastralIncome(1_200m).WithShareLet(0.12m).WithRent(1_380m);
 }

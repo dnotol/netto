@@ -81,4 +81,19 @@
   <data name="Error_phone_costs_negative" xml:space="preserve">
     <value>Phone costs cannot be negative. Enter 0 if the company reimburses none.</value>
   </data>
+  <data name="Error_cadastral_income_negative" xml:space="preserve">
+    <value>The cadastral income cannot be negative. Enter your home's, as your property-tax notice gives it.</value>
+  </data>
+  <data name="Error_share_let_out_of_range" xml:space="preserve">
+    <value>The share let to the company is a part of your home: between 0% and 100%.</value>
+  </data>
+  <data name="Error_rent_negative" xml:space="preserve">
+    <value>The rent cannot be negative. Enter 0 if the company pays none.</value>
+  </data>
+  <data name="Error_rent_above_cap" xml:space="preserve">
+    <value>More rent than the cap: what the company pays above it would be taxed as director pay, with social contributions and no charges deducted. Netto keeps the rent at or below the cap.</value>
+  </data>
+  <data name="Error_rent_with_office_allowance" xml:space="preserve">
+    <value>A rent and an office allowance cannot go together: the office allowance already covers the room, its rent included. Set the office allowance to 0 to rent the room, or the rent to 0 to keep the allowance.</value>
+  </data>
 </root>

@@ -2,6 +2,8 @@ using Netto.Core.Allowances;
 using Netto.Core.CorporateTax;
 using Netto.Core.DirectorPay;
 using Netto.Core.PersonalTax;
+using Netto.Core.Rent;
+using Netto.Core.Rules;
 using Netto.Core.Simulation;
 using Netto.Core.SocialContributions;
 using Netto.Core.Vouchers;
@@ -41,22 +43,85 @@ internal sealed record VoucherView(
 }
 
 // What the expense allowances bring to the pocket, one drain for each once the company pays any, and
-// the profit before pay they leave for the split, from the year's allowance steps. The maxima and the
-// conditions are the year's rules, which the card reads beside it, so they stay while an amount is
-// refused. The company deducts them in full: nothing of them reaches Corporate tax.
-internal sealed record AllowanceView(decimal Total, IReadOnlyList<Drain> Drains, IReadOnlyList<StepDetail> Details)
+// what the vouchers and they leave of what the company earns, passed on to the rent, the next module
+// down the river: the profit before pay with the rent the company pays still in it. The maxima and
+// the conditions are the year's rules, which the card reads beside it, so they stay while an amount
+// is refused. The company deducts them in full: nothing of them reaches Corporate tax.
+internal sealed record AllowanceView(decimal Total, decimal Left, IReadOnlyList<Drain> Drains, IReadOnlyList<StepDetail> Details)
 {
     public static AllowanceView From(YearResult year)
     {
         var steps = year.Steps.Where(step => step.Event == TaxableEvent.ExpenseAllowances).ToList();
+        var left = year.ProfitBeforePay + year.Rent.Rent;
 
         return new AllowanceView(
             steps.Where(step => step.Track == Track.InPocket).Sum(step => step.Amount),
+            left,
             [
                 .. steps.Where(step => step.Track == Track.InPocket).Select(step => new Drain(step.RuleKey, DrainKind.PassedOn, step.Amount, "pocket")),
+                new Drain("left_after_allowances", DrainKind.PassedOn, left, "rent"),
+            ],
+            steps.Select(StepDetail.From).ToList());
+    }
+}
+
+// What the rent costs in personal tax, each line of it into the taxes on pay, what reaches the pocket
+// once that is paid, and the profit before pay it leaves for the split, from the year's rent steps;
+// and what the rules tax it on: the rent, or the floor when it is less (TaxedOnTheFloor), less its
+// flat charges. The cap and the conditions are the year's rules, which the card reads beside it
+// (RentCapView), so they stay while the rent is refused. The company deducts it in full: nothing of it
+// reaches Corporate tax.
+internal sealed record RentView(
+    decimal Rent,
+    decimal TaxableRent,
+    bool TaxedOnTheFloor,
+    decimal Charges,
+    decimal NetRent,
+    decimal Tax,
+    decimal AfterTax,
+    IReadOnlyList<Drain> Drains,
+    IReadOnlyList<StepDetail> Details)
+{
+    public static RentView From(YearResult year)
+    {
+        var steps = year.Steps.Where(step => step.Event == TaxableEvent.Rent).ToList();
+        var paidOut = steps.Where(step => step.Track == Track.PaidOut).ToList();
+        var rent = year.Rent;
+        var tax = paidOut.Sum(step => step.Amount);
+        IEnumerable<Drain> afterTax = steps.Count > 0 ? [new Drain("rent_after_tax", DrainKind.PassedOn, rent.Rent - tax, "pocket")] : [];
+
+        return new RentView(
+            rent.Rent,
+            rent.TaxableRent,
+            rent.Rent > 0m && rent.TaxableRent > rent.Rent,
+            rent.Charges,
+            rent.NetRent,
+            tax,
+            rent.Rent - tax,
+            [
+                .. paidOut.Select(step => Drain.PaidOutTo(step, "taxes_on_pay")),
+                .. afterTax,
                 new Drain("profit_before_pay", DrainKind.PassedOn, year.ProfitBeforePay, "split"),
             ],
             steps.Select(StepDetail.From).ToList());
+    }
+}
+
+// The cap the rent card shows under the rent and offers, the year's rules on what the user entered,
+// so it stays while the engine refuses the rent: 5/3 of the cadastral income of the part let,
+// revalued by the year's coefficient. None until a part is let, while the cadastral income or the
+// share is refused, or while the company is skipped. IsTheRent says the rent entered is the cap.
+internal sealed record RentCapView(decimal CadastralIncomeLet, decimal Cap, RuleAmount RevaluationCoefficient, bool IsTheRent)
+{
+    public static RentCapView? From(RiverInputs inputs)
+    {
+        var rent = inputs.Rent.Values;
+        if (inputs.Company is null || RentRules.For(inputs.IncomeYear) is not { } rules
+            || rent.CadastralIncome <= 0m || rent.ShareLet is <= 0m or > 1m)
+            return null;
+
+        var cap = RentCalculator.Cap(rules, rent);
+        return new RentCapView(RentCalculator.CadastralIncomeLet(rent), cap, rules.RevaluationCoefficient, rent.Rent == cap);
     }
 }
 
@@ -444,6 +509,8 @@ internal static class RiverErrors
         AllowanceCalculator.OfficeAllowanceNegative or AllowanceCalculator.OfficeAllowanceAboveMaximum or AllowanceCalculator.InternetAllowanceNegative
             or AllowanceCalculator.InternetAllowanceAboveMaximum or AllowanceCalculator.ComputerAllowanceNegative
             or AllowanceCalculator.ComputerAllowanceAboveMaximum or AllowanceCalculator.PhoneCostsNegative => RiverModule.Allowances,
+        RentCalculator.CadastralIncomeNegative or RentCalculator.ShareLetOutOfRange or RentCalculator.RentNegative or RentCalculator.RentAboveCap
+            or RentCalculator.RentWithOfficeAllowance => RiverModule.Rent,
         GrossToNet.GrossPayNegative => companySkipped ? RiverModule.DirectorPay : RiverModule.Split,
         GrossToNet.MunicipalRateOutOfRange => RiverModule.DirectorPay,
         YearSimulation.ReserveNegative or YearSimulation.EarlierProfitsNegative => RiverModule.Dividend,
@@ -463,6 +530,8 @@ internal enum RiverModule
     Vouchers,
 
     Allowances,
+
+    Rent,
 
     Split,
 

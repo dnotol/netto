@@ -5,5 +5,7 @@ namespace Netto.Web.Client.River;
 // test instead of showing on screen.
 internal static class BucketBarText
 {
-    public static string Bucket(string key) => $"Bucket_{key}";
+    // The taxes on pay say they hold the rent's tax too once there is one.
+    public static string Bucket(string key, bool taxesOnPayIncludeRent) =>
+        taxesOnPayIncludeRent && key == "taxes_on_pay" ? "Bucket_taxes_on_pay_and_rent" : $"Bucket_{key}";
 }

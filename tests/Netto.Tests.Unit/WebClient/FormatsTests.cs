@@ -111,8 +111,12 @@ public class FormatsTests
     }
 
     // Rates are fractions in the rule sets (20.50% is 0.205), and their keys end in _rate or _factor;
-    // a multiple of a rate ends in _multiplier.
+    // a multiple of a rate ends in _multiplier; a coefficient, a bare number to four decimals, in
+    // _coefficient: art. 518's 2.2446 must not read 2.24.
     [Theory]
+    [InlineData("cadastral_income_indexation_coefficient", "2.2446", "2.2446")]
+    [InlineData("cadastral_income_indexation_coefficient", "2.3000", "2.3")]
+    [InlineData("cadastral_income_revaluation_coefficient", "5.75", "5.75")]
     [InlineData("first_band_rate", "0.205", "20.5%")]
     [InlineData("second_band_rate", "0.1416", "14.16%")]
     [InlineData("autonomy_factor", "0.24957", "24.957%")]

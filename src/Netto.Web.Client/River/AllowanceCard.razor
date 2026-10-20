@@ -5,7 +5,8 @@
 @* What the company pays the director besides pay after the vouchers, before the split: flat-rate
    allowances for an office, internet and a computer at home, each for the year, and the phone costs it
    reimburses on invoices. A reimbursement of the company's own costs is not pay: they reach the pocket
-   untaxed and outside INASTI, and the company deducts them in full. The circular's flat amounts are not
+   untaxed and outside INASTI, and the company deducts them in full. What they leave goes on to the
+   home office rent, the next card down the river. The circular's flat amounts are not
    written for directors and Netto cannot see the costs, so the card lists the conditions with their
    texts, the director's own case first. The amounts are taken while typing, like revenue, and carry no
    Min or Max: the engine refuses what the rules do not allow, and its message is what the user has to
@@ -113,8 +114,8 @@
         _rules = AllowanceRules.For(Inputs.IncomeYear);
     }
 
-    private string? Summary => _view is { } view && Run.Year is { } year
-        ? L["Summary", Formats.Euros(view.Total), Formats.Euros(year.ProfitBeforePay)].Value
+    private string? Summary => _view is { } view
+        ? L["Summary", Formats.Euros(view.Total), Formats.Euros(view.Left)].Value
         : null;
 
     private RenderFragment? Details => _view is { Details.Count: > 0 } view && Run.Year is { } year

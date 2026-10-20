@@ -16,7 +16,7 @@
     <value>Expense allowances</value>
   </data>
   <data name="Summary" xml:space="preserve">
-    <value>{0} to your pocket · {1} before your pay</value>
+    <value>{0} to your pocket · {1} left after them</value>
   </data>
   <data name="Waiting" xml:space="preserve">
     <value>Waiting for the company's year.</value>

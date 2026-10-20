@@ -305,6 +305,12 @@
     font-weight: 600;
 }
 
+/* A part of the line above it, the rent's share of the final tax: indented and smaller. */
+.balance__line--part {
+    padding-left: 1rem;
+    font-size: 0.82rem;
+}
+
 /* Next 1,000: one bar cut in five, each part as wide as its share (flex-basis, GrossToNetView's
    width), with a legend under it that carries the amounts and percentages. */
 

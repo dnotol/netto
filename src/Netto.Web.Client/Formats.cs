@@ -42,13 +42,16 @@ internal static class Formats
     public static string Month(int year, int month) => new DateOnly(year, month, 1).ToString("MMMM", Culture);
 
     // The rule sets hold rates as fractions (20.50% is 0.205), under keys ending in _rate or _factor,
-    // and multiples of a rate under keys ending in _multiplier: 2.25 reads 2.25×.
+    // multiples of a rate under keys ending in _multiplier: 2.25 reads 2.25×, and coefficients, bare
+    // numbers published to four decimals, under keys ending in _coefficient.
     public static string RuleAmount(RuleAmount amount) =>
         amount.Key.EndsWith("_rate", StringComparison.Ordinal) || amount.Key.EndsWith("_factor", StringComparison.Ordinal)
             ? amount.Value.ToString("0.###%", Culture)
             : amount.Key.EndsWith("_multiplier", StringComparison.Ordinal)
                 ? $"{amount.Value.ToString("0.##", Culture)}×"
-                : Euros(amount.Value);
+                : amount.Key.EndsWith("_coefficient", StringComparison.Ordinal)
+                    ? amount.Value.ToString("0.####", Culture)
+                    : Euros(amount.Value);
 
     private static CultureInfo EnglishWithEuro()
     {

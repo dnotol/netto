@@ -5,6 +5,7 @@ using Netto.Core.CorporateTax;
 using Netto.Core.DirectorPay;
 using Netto.Core.Dividends;
 using Netto.Core.PersonalTax;
+using Netto.Core.Rent;
 using Netto.Core.Rules;
 using Netto.Core.Simulation;
 using Netto.Core.SocialContributions;
@@ -75,6 +76,18 @@ public class StepTextTests
     {
         var scenario = new Scenario(2026, 120_000m, 20_000m, new CompanyStatus(SmallCompany: true, FirstFourTaxPeriods: false),
             50_000m, MunicipalRates.Entered(0.07m), 0m, WithholdingCategory.Standard) { Allowances = new ExpenseAllowances(1_938.44m, 240m, 240m, 600m) };
+
+        var (value, _) = YearSimulation.Run(scenario);
+
+        MissingTexts(value.ShouldNotBeNull().Steps).ShouldBeEmpty();
+    }
+
+    // The rent's steps, with the amounts of the cap, the floor, the charges and the taxes it moves.
+    [Fact]
+    public void StepDetailsResx_everyKeyOfTheRentsSteps_hasAText()
+    {
+        var scenario = new Scenario(2026, 120_000m, 20_000m, new CompanyStatus(SmallCompany: true, FirstFourTaxPeriods: false),
+            50_000m, MunicipalRates.Entered(0.07m), 0m, WithholdingCategory.Standard) { Rent = new HomeOfficeRent(1_200m, 0.12m, 1_380m) };
 
         var (value, _) = YearSimulation.Run(scenario);
 

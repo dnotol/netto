@@ -18,6 +18,9 @@
   <data name="Bucket_taxes_on_pay" xml:space="preserve">
     <value>Taxes on pay</value>
   </data>
+  <data name="Bucket_taxes_on_pay_and_rent" xml:space="preserve">
+    <value>Taxes on pay and rent</value>
+  </data>
   <data name="Bucket_taxes_on_profit" xml:space="preserve">
     <value>Taxes on profit</value>
   </data>

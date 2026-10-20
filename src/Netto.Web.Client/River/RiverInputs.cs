@@ -3,6 +3,7 @@ using Netto.Core.CorporateTax;
 using Netto.Core.DirectorPay;
 using Netto.Core.Dividends;
 using Netto.Core.PersonalTax;
+using Netto.Core.Rent;
 using Netto.Core.Simulation;
 using Netto.Core.SocialContributions;
 using Netto.Core.Vouchers;
@@ -12,13 +13,14 @@ namespace Netto.Web.Client.River;
 
 // Everything the user describes in the river, each input with its origin, and the one run of the
 // year every card reads, so the river always adds up. Company is null once its figures are cleared:
-// the river then starts at the pay, and the vouchers and the expense allowances wait for it. Public
-// because the cards, components, take it as a parameter.
+// the river then starts at the pay, and the vouchers, the expense allowances and the rent wait for it.
+// Public because the cards, components, take it as a parameter.
 public sealed record RiverInputs(
     int IncomeYear,
     CompanyFigures? Company,
     VoucherInputs Vouchers,
     AllowanceInputs Allowances,
+    RentInputs Rent,
     Input<bool> SmallCompany,
     Input<FinancialYear> FinancialYear,
     AdvancePaymentInputs AdvancePayments,
@@ -40,13 +42,14 @@ public sealed record RiverInputs(
     // is prepaid by the company nor on the pay, so the example shows the company's surcharge and
     // what cancels it; the pay is withheld on as the key formula says, what a real payslip shows
     // (decided 2026-10-20), so the withheld amount is derived and the example's year balance is
-    // what is left to pay on the assessment. It grants no vouchers and pays no expense allowances, so
-    // its figures are a year without them.
+    // what is left to pay on the assessment. It grants no vouchers and pays no expense allowances and
+    // no rent, so its figures are a year without them.
     public static RiverInputs Example { get; } = new(
         ExampleYear,
         new CompanyFigures(new Input<decimal>(120_000m, InputOrigin.Example), new Input<decimal>(20_000m, InputOrigin.Example)),
         new VoucherInputs(new Input<int>(0, InputOrigin.Example), ExampleNothing, ExampleNothing),
         new AllowanceInputs(ExampleNothing, ExampleNothing, ExampleNothing, ExampleNothing),
+        new RentInputs(ExampleNothing, ExampleNothing, ExampleNothing),
         new Input<bool>(true, InputOrigin.Default),
         new Input<FinancialYear>(River.FinancialYear.FifthOrLater, InputOrigin.Default),
         new AdvancePaymentInputs(ExampleNothing, ExampleNothing, ExampleNothing, ExampleNothing),
@@ -61,8 +64,8 @@ public sealed record RiverInputs(
         new Input<decimal>(0m, InputOrigin.Example),
         new Input<ContributionsPaidBy>(Core.SocialContributions.ContributionsPaidBy.Director, InputOrigin.Default));
 
-    // The most the split can give as pay: the profit before pay, what the vouchers and the expense
-    // allowances leave of what the company earns, never below zero. None while the company is skipped,
+    // The most the split can give as pay: the profit before pay, what the vouchers, the expense
+    // allowances and the rent leave of what the company earns, never below zero. None while the company is skipped,
     // when the pay has a slider of its own.
     public decimal? PayCeiling => Company is null ? null : Math.Max(0m, YearSimulation.ProfitBeforePay(Scenario(DirectorPay.Value)) ?? 0m);
 
@@ -85,6 +88,13 @@ public sealed record RiverInputs(
     public RiverInputs WithComputerAllowance(decimal amount) => this with { Allowances = Allowances with { Computer = Yours(amount) } };
 
     public RiverInputs WithPhoneCosts(decimal amount) => this with { Allowances = Allowances with { Phone = Yours(amount) } };
+
+    public RiverInputs WithCadastralIncome(decimal amount) => this with { Rent = Rent with { CadastralIncome = Yours(amount) } };
+
+    // The share of the dwelling let to the company, a fraction: 12% is 0.12.
+    public RiverInputs WithShareLet(decimal share) => this with { Rent = Rent with { ShareLet = Yours(share) } };
+
+    public RiverInputs WithRent(decimal amount) => this with { Rent = Rent with { Rent = Yours(amount) } };
 
     public RiverInputs WithSmallCompany(bool smallCompany) => this with { SmallCompany = Yours(smallCompany) };
 
@@ -163,6 +173,7 @@ public sealed record RiverInputs(
         ContributionsPaidBy = ContributionsPaidBy.Value,
         Vouchers = Vouchers.Values,
         Allowances = Allowances.Values,
+        Rent = Rent.Values,
     };
 }
 
@@ -213,6 +224,13 @@ public sealed record VoucherInputs(Input<int> MealVoucherDays, Input<decimal> Ec
 public sealed record AllowanceInputs(Input<decimal> Office, Input<decimal> Internet, Input<decimal> Computer, Input<decimal> Phone)
 {
     public ExpenseAllowances Values => new(Office.Value, Internet.Value, Computer.Value, Phone.Value);
+}
+
+// The part of their home the director lets to the company as an office, as the user enters it: the
+// dwelling's cadastral income, not indexed, the share of it let, a fraction, and the yearly rent.
+public sealed record RentInputs(Input<decimal> CadastralIncome, Input<decimal> ShareLet, Input<decimal> Rent)
+{
+    public HomeOfficeRent Values => new(CadastralIncome.Value, ShareLet.Value, Rent.Value);
 }
 
 // A value of the river with where it comes from.

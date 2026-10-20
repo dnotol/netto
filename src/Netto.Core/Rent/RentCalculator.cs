@@ -45,5 +45,5 @@ public static class RentCalculator
         Math.Floor(CadastralIncomeLet(rent) * rules.RevaluationCoefficient.Value * rules.CapMultiplier.Value * 100m) / 100m;
 
     // The dwelling's cadastral income times the share let, to the cent.
-    private static decimal CadastralIncomeLet(HomeOfficeRent rent) => Money.RoundToCent(rent.CadastralIncome * rent.ShareLet);
+    public static decimal CadastralIncomeLet(HomeOfficeRent rent) => Money.RoundToCent(rent.CadastralIncome * rent.ShareLet);
 }

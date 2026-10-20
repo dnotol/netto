@@ -111,4 +111,25 @@
   <data name="Drain_phone_costs" xml:space="preserve">
     <value>Phone costs</value>
   </data>
+  <data name="Drain_left_after_allowances" xml:space="preserve">
+    <value>Left after the allowances</value>
+  </data>
+  <data name="To_rent" xml:space="preserve">
+    <value>on to the home office rent</value>
+  </data>
+  <data name="Drain_rent_income_tax" xml:space="preserve">
+    <value>Income tax on the rent</value>
+  </data>
+  <data name="Drain_rent_municipal_surcharge" xml:space="preserve">
+    <value>Municipal surcharge on the rent</value>
+  </data>
+  <data name="Drain_rent_low_earned_income_credit_lost" xml:space="preserve">
+    <value>Tax credit for low earned income the rent takes away</value>
+  </data>
+  <data name="Drain_rent_income_tax_advance_payments" xml:space="preserve">
+    <value>Advance-payment surcharge the lost credit adds</value>
+  </data>
+  <data name="Drain_rent_after_tax" xml:space="preserve">
+    <value>Rent, once its tax is paid</value>
+  </data>
 </root>

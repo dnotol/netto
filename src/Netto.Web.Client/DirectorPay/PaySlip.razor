@@ -5,8 +5,9 @@
 @* Director pay's detail view: the pay through what is paid out to the net, beside what lowers the
    tax base to the taxable income, on one shared scale; the pay month by month as the company pays
    it, with the key formula's withholding as a step behind it; the balance the assessment leaves,
-   with the article it follows behind it; and where the next €1,000 would go. Every figure is
-   GrossToNet's; GrossToNetView only places them. *@
+   with the article it follows behind it; and where the next €1,000 would go. With a rent taxed with
+   the pay, the balance and the next €1,000 are the year's and say so. Every figure is GrossToNet's;
+   GrossToNetView only places them. *@
 <div class="pay-slip">
     <div class="funnel">
         @foreach (var track in _view.Tracks)
@@ -88,9 +89,16 @@
         <p class="slip-section__hint">@L["BalanceHint"]</p>
         <dl class="balance__lines">
             <div class="balance__line">
-                <dt>@L["FinalTax"]</dt>
+                <dt>@L[PaySlipText.FinalTax(_view.TaxedWithOtherIncome)]</dt>
                 <dd>@Formats.Euros(_view.Balance.FinalTax)</dd>
             </div>
+            @if (_view.TaxedWithOtherIncome)
+            {
+                <div class="balance__line balance__line--part">
+                    <dt>@L["FinalTaxOnRent"]</dt>
+                    <dd>@Formats.Euros(_view.Balance.OnOtherIncome)</dd>
+                </div>
+            }
             <div class="balance__line">
                 <dt>@L[PaySlipText.Withheld(_view.Balance.WithheldGiven)]</dt>
                 <dd>@Formats.Deduction(_view.Balance.Withheld)</dd>
@@ -127,6 +135,10 @@
         @if (_view.CompanyPaysContributions)
         {
             <p class="next__note">@L["NextCompanyPaysNote"]</p>
+        }
+        @if (_view.TaxedWithOtherIncome)
+        {
+            <p class="next__note">@L["NextRentNote"]</p>
         }
     </section>
 </div>

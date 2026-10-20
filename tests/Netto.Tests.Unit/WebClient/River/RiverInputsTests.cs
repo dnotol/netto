@@ -3,6 +3,7 @@ using Netto.Core.CorporateTax;
 using Netto.Core.DirectorPay;
 using Netto.Core.Dividends;
 using Netto.Core.PersonalTax;
+using Netto.Core.Rent;
 using Netto.Core.Simulation;
 using Netto.Core.SocialContributions;
 using Netto.Core.Vouchers;
@@ -581,6 +582,90 @@ public class RiverInputsTests
         (inputs.Run().Year, inputs.Run().Pay?.NetInPocket, inputs.Allowances.Office.Value).ShouldBe((null, 29_579.30m, 1_938.44m));
     }
 
+    [Fact]
+    public void Example_paysNoRent()
+    {
+        var nothing = new Input<decimal>(0m, InputOrigin.Example);
+
+        RiverInputs.Example.Rent.ShouldBe(new RentInputs(nothing, nothing, nothing));
+    }
+
+    [Fact]
+    public void WithRent_makesEachTheUsers()
+    {
+        RentAtTheCap(RiverInputs.Example).Rent.ShouldBe(new RentInputs(
+            new Input<decimal>(1_200m, InputOrigin.Yours), new Input<decimal>(0.12m, InputOrigin.Yours), new Input<decimal>(1_380m, InputOrigin.Yours)));
+    }
+
+    // 1,380.00 off the profit before pay, deducted in full: 48,620 of taxable income at 20%, 9,724.00,
+    // and, nothing prepaid, a surcharge of 656.37, which leaves 38,239.63 to pay out, 31,506.44 net. The
+    // pocket gets the pay's 29,579.30 less the rent's 398.68 of tax (GrossToNetTests), the rent's
+    // 1,380.00 and that dividend: 91.32 more than the example's 61,975.74. The balance on the
+    // assessment adds the rent's tax to the example's 1,436.06.
+    [Fact]
+    public void Run_rentReachesTheEngine()
+    {
+        var run = RentAtTheCap(RiverInputs.Example).Run();
+        var year = run.Year.ShouldNotBeNull();
+
+        (year.ProfitBeforePay, year.ProfitAfterTax, year.NetInPocket, run.Pay?.Assessment.Balance).ShouldBe((98_620m, 38_239.63m, 62_067.06m, (decimal?)1_834.74m));
+    }
+
+    [Fact]
+    public void PayCeiling_rent_isTheProfitItLeaves()
+    {
+        RentAtTheCap(RiverInputs.Example).PayCeiling.ShouldBe(98_620m);
+    }
+
+    [Fact]
+    public void Run_rentAboveTheCap_isRefusedWithTheEnginesKey()
+    {
+        var run = RentAtTheCap(RiverInputs.Example).WithRent(1_380.01m).Run();
+
+        (run.Year, run.Error).ShouldBe((null, RentCalculator.RentAboveCap));
+    }
+
+    [Fact]
+    public void Run_rentWithAnOfficeAllowance_isRefusedWithTheEnginesKey()
+    {
+        var run = RentAtTheCap(RiverInputs.Example).WithOfficeAllowance(100m).Run();
+
+        (run.Year, run.Error).ShouldBe((null, RentCalculator.RentWithOfficeAllowance));
+    }
+
+    // The split's search holds the rent, so a new rent needs a new search.
+    [Theory]
+    [InlineData("cadastral income")]
+    [InlineData("share")]
+    [InlineData("rent")]
+    public void SameBesidesPay_rentChanged_isNot(string changed)
+    {
+        var inputs = changed switch
+        {
+            "cadastral income" => RiverInputs.Example.WithCadastralIncome(1_200m),
+            "share" => RiverInputs.Example.WithShareLet(0.12m),
+            _ => RiverInputs.Example.WithRent(100m),
+        };
+
+        RiverInputs.Example.SameBesidesPay(inputs).ShouldBeFalse();
+    }
+
+    [Fact]
+    public void SearchSplit_rent_drawsEveryPayUpToTheProfitItLeaves()
+    {
+        RentAtTheCap(RiverInputs.Example).SearchSplit().ShouldNotBeNull().Curve[^1].Pay.ShouldBe(98_620m);
+    }
+
+    // Skipped with the company: the pay alone runs without it, taxed alone, and it comes back with it.
+    [Fact]
+    public void SkipCompany_runsThePayWithoutTheRent()
+    {
+        var inputs = RentAtTheCap(RiverInputs.Example).SkipCompany();
+        var pay = inputs.Run().Pay.ShouldNotBeNull();
+
+        (inputs.Run().Year, pay.NetInPocket, pay.OtherIncomeTax, inputs.Rent.Rent.Value).ShouldBe((null, 29_579.30m, OtherIncomeTax.None, 1_380m));
+    }
+
     // SplitSearchTests: on the example, 20,799 leaves the most.
     [Fact]
     public void SearchSplit_example_findsTheBestPay()
@@ -634,4 +719,7 @@ public class RiverInputsTests
 
     private static RiverInputs FlatRateAllowances(RiverInputs inputs) =>
         inputs.WithOfficeAllowance(1_938.44m).WithInternetAllowance(240m).WithComputerAllowance(240m);
+
+    // 12% of a cadastral income of 1,200 let for the 2026 cap, 1,380.00 (RentCalculatorTests).
+    private static RiverInputs RentAtTheCap(RiverInputs inputs) => inputs.WithCadastralIncome(1_200m).WithShareLet(0.12m).WithRent(1_380m);
 }

@@ -246,9 +246,52 @@ public class BucketsViewTests
         (view.Start, view.Buckets.Sum(bucket => bucket.Amount)).ShouldBe((revenue - 20_000m, revenue - 20_000m));
     }
 
+    // The rent at the 2026 cap (RiverInputsTests): its 398.68 of tax joins the taxes on pay, 20,819.38,
+    // the rest of it the pocket, 62,067.06; the taxes on profit fall to 17,113.56: corporate tax
+    // 9,724.00 and its surcharge 656.37, withholding 6,883.13 on the 38,239.63 left, less the refund of
+    // 149.94.
+    [Fact]
+    public void From_rent_putsItsTaxInTheTaxesOnPayAndTheRestInThePocket()
+    {
+        var view = BucketsView.From(RentAtTheCap(RiverInputs.Example).Run()).ShouldNotBeNull();
+
+        view.ShouldSatisfyAllConditions(
+            () => view.Start.ShouldBe(100_000m),
+            () => view.Buckets.Select(bucket => (bucket.Key, bucket.Amount)).ShouldBe(new[]
+            {
+                ("pocket", 62_067.06m),
+                ("taxes_on_pay", 20_819.38m),
+                ("taxes_on_profit", 17_113.56m),
+                ("kept_in_company", 0m),
+            }));
+    }
+
+    // The bucket says it holds the rent's tax too once there is one.
+    [Fact]
+    public void From_rent_saysTheTaxesOnPayIncludeIt()
+    {
+        (BucketsView.From(RentAtTheCap(RiverInputs.Example).Run())?.TaxesOnPayIncludeRent, BucketsView.From(RiverInputs.Example.Run())?.TaxesOnPayIncludeRent)
+            .ShouldBe((true, false));
+    }
+
+    [Theory]
+    [MemberData(nameof(Years))]
+    public void From_anyYearWithVouchersAndRent_bucketsAddUpToWhatTheCompanyEarnsBeforePayingTheDirector(decimal revenue, decimal pay, decimal reserve)
+    {
+        var inputs = RentAtTheCap(RiverInputs.Example.WithRevenue(revenue).WithDirectorPay(pay).WithReserve(reserve)
+            .WithMealVoucherDays(220).WithEcoVouchers(250m).WithSportCultureVouchers(100m).WithInternetAllowance(240m));
+
+        var view = BucketsView.From(inputs.Run()).ShouldNotBeNull();
+
+        (view.Start, view.Buckets.Sum(bucket => bucket.Amount)).ShouldBe((revenue - 20_000m, revenue - 20_000m));
+    }
+
     [Fact]
     public void From_refusedInput_drawsNothing()
     {
         BucketsView.From(RiverInputs.Example.WithReserve(-1m).Run()).ShouldBeNull();
     }
+
+    // 12% of a cadastral income of 1,200 let for the 2026 cap, 1,380.00 (RentCalculatorTests).
+    private static RiverInputs RentAtTheCap(RiverInputs inputs) => inputs.WithCadastralIncome(1_200m).WithShareLet(0.12m).WithRent(1_380m);
 }
