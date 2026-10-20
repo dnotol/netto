@@ -4,10 +4,12 @@ namespace Netto.Web.Client.River;
 
 // What the bar of buckets draws from one run of the river: where the money ends up, out of what the
 // river starts from, the profit before pay with the profits kept from earlier years or, with the
-// company skipped, the gross pay. Taxes on pay are the director pay's steps paid out; taxes on
-// profit, the company's and the dividend's, the refund on the exempt dividend coming back. It only
-// regroups the engine's figures and steps, so the buckets add up to the start.
-internal sealed record BucketsView(decimal Start, decimal EarlierProfits, bool StartsAtPay, IReadOnlyList<Bucket> Buckets)
+// company skipped, what the pay costs the company, the gross plus the contributions it pays on the
+// director's behalf when it does (CompanyPaysContributions). Taxes on pay are the director pay's
+// steps paid out; taxes on profit, the company's and the dividend's, the refund on the exempt
+// dividend coming back. It only regroups the engine's figures and steps, so the buckets add up to
+// the start.
+internal sealed record BucketsView(decimal Start, decimal EarlierProfits, bool StartsAtPay, bool CompanyPaysContributions, IReadOnlyList<Bucket> Buckets)
 {
     // In the order the bar shows them, the pocket first; also when there is no figure to show.
     public static IReadOnlyList<string> Keys { get; } = ["pocket", "taxes_on_pay", "taxes_on_profit", "kept_in_company"];
@@ -20,7 +22,7 @@ internal sealed record BucketsView(decimal Start, decimal EarlierProfits, bool S
         var earlierProfits = run.Year?.Scenario.EarlierProfits ?? 0m;
         var (start, pocket, kept, steps) = run.Year is { } year
             ? (year.ProfitBeforePay + earlierProfits, year.NetInPocket, year.KeptInCompany, year.Steps)
-            : (pay.GrossPay, pay.NetInPocket, 0m, pay.Steps);
+            : (pay.CompanyCost, pay.NetInPocket, 0m, pay.Steps);
 
         var amounts = Keys.Zip(new[]
         {
@@ -35,6 +37,7 @@ internal sealed record BucketsView(decimal Start, decimal EarlierProfits, bool S
             start,
             earlierProfits,
             run.Year is null,
+            pay.ContributionsPaidByCompany > 0m,
             amounts.Select(bucket => new Bucket(bucket.Key, bucket.Amount, drawn ? bucket.Amount / start : null)).ToList());
     }
 

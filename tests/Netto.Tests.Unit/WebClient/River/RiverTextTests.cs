@@ -4,6 +4,7 @@ using Netto.Core.CorporateTax;
 using Netto.Core.DirectorPay;
 using Netto.Core.Dividends;
 using Netto.Core.Simulation;
+using Netto.Core.SocialContributions;
 using Netto.Web.Client.River;
 using Shouldly;
 
@@ -36,11 +37,14 @@ public class RiverTextTests
         Missing(OriginChipResources, keys).ShouldBeEmpty();
     }
 
-    // The example, with a reserve so every drain has an amount, is every drain a card can list.
-    [Fact]
-    public void DrainListResx_everyDrainOfEveryCard_hasALabelAndADestination()
+    // The example, with a reserve so every drain has an amount, is every drain a card can list, the
+    // director's contributions paid by either.
+    [Theory]
+    [InlineData(ContributionsPaidBy.Director)]
+    [InlineData(ContributionsPaidBy.Company)]
+    public void DrainListResx_everyDrainOfEveryCard_hasALabelAndADestination(ContributionsPaidBy paidBy)
     {
-        var inputs = RiverInputs.Example.WithReserve(15_000m);
+        var inputs = RiverInputs.Example.WithReserve(15_000m).WithContributionsPaidBy(paidBy);
         var run = inputs.Run();
         var year = run.Year.ShouldNotBeNull();
         var drains = DirectorPayView.From(inputs, run.Pay.ShouldNotBeNull()).Drains
@@ -81,6 +85,12 @@ public class RiverTextTests
     public void DirectorPayCardResx_everyTaxSurchargeState_hasAText()
     {
         Missing(DirectorPayCardResources, Enum.GetValues<TaxSurchargeState>().Select(DirectorPayCardText.Surcharge)).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void DirectorPayCardResx_everyPayerOfTheContributions_hasAText()
+    {
+        Missing(DirectorPayCardResources, Enum.GetValues<ContributionsPaidBy>().Select(DirectorPayCardText.PaidBy)).ShouldBeEmpty();
     }
 
     [Fact]

@@ -24,6 +24,21 @@
   <data name="PayFromSplit" xml:space="preserve">
     <value>Gross pay from the split</value>
   </data>
+  <data name="PaidByLabel" xml:space="preserve">
+    <value>Who pays your social contributions</value>
+  </data>
+  <data name="PaidBy_Director" xml:space="preserve">
+    <value>I pay them myself</value>
+  </data>
+  <data name="PaidBy_Company" xml:space="preserve">
+    <value>The company pays them for me</value>
+  </data>
+  <data name="PaidByHint" xml:space="preserve">
+    <value>Contributions the company pays on your behalf count as pay: you are taxed on your gross plus them, and they cost the company that much on top of your gross.</value>
+  </data>
+  <data name="CompanyCost" xml:space="preserve">
+    <value>Costs the company {0}, your gross plus the contributions it pays for you</value>
+  </data>
   <data name="MunicipalityHead" xml:space="preserve">
     <value>Where you live, for the municipal surcharge</value>
   </data>

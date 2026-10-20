@@ -1,5 +1,6 @@
 using Netto.Core.CorporateTax;
 using Netto.Core.Dividends;
+using Netto.Core.SocialContributions;
 
 namespace Netto.Web.Client.River;
 
@@ -38,6 +39,8 @@ internal static class CorporateTaxCardText
 internal static class DirectorPayCardText
 {
     public static string Surcharge(TaxSurchargeState state) => $"Surcharge_{state}";
+
+    public static string PaidBy(ContributionsPaidBy paidBy) => $"PaidBy_{paidBy}";
 }
 
 internal static class DividendCardText

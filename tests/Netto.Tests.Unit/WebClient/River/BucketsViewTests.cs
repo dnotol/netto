@@ -1,3 +1,4 @@
+using Netto.Core.SocialContributions;
 using Netto.Web.Client.River;
 using Shouldly;
 
@@ -129,6 +130,48 @@ public class BucketsViewTests
             ("taxes_on_profit", 0m),
             ("kept_in_company", 0m),
         });
+    }
+
+    // The company's 9,942.52 of contributions are pay, so the river starts from its cost of the
+    // 50,000, 59,942.52: 33,999.21 to the pocket, the formula's withholding leaving no surcharge, and
+    // 25,943.31 of taxes on pay (contributions 9,942.52, income tax 14,954.01, surcharge 1,046.78).
+    [Fact]
+    public void From_payAloneCompanyPays_startsAtTheCompanysCostAndTheBucketsAddUpToIt()
+    {
+        var view = BucketsView.From(RiverInputs.Example.SkipCompany().WithContributionsPaidBy(ContributionsPaidBy.Company).Run()).ShouldNotBeNull();
+
+        (view.Start, view.StartsAtPay, view.CompanyPaysContributions, view.Buckets.Sum(bucket => bucket.Amount))
+            .ShouldBe((59_942.52m, true, true, 59_942.52m));
+    }
+
+    [Fact]
+    public void From_payAloneCompanyPays_givesEachBucketItsAmount()
+    {
+        var view = BucketsView.From(RiverInputs.Example.SkipCompany().WithContributionsPaidBy(ContributionsPaidBy.Company).Run()).ShouldNotBeNull();
+
+        view.Buckets.Select(bucket => (bucket.Key, bucket.Amount)).ShouldBe(new[]
+        {
+            ("pocket", 33_999.21m),
+            ("taxes_on_pay", 25_943.31m),
+            ("taxes_on_profit", 0m),
+            ("kept_in_company", 0m),
+        });
+    }
+
+    [Fact]
+    public void From_payAlone_saysTheDirectorPaysTheContributions()
+    {
+        BucketsView.From(RiverInputs.Example.SkipCompany().Run()).ShouldNotBeNull().CompanyPaysContributions.ShouldBeFalse();
+    }
+
+    // With the company there, its cost of the pay comes off its profit: the river still starts from
+    // the profit before pay.
+    [Fact]
+    public void From_companyPays_bucketsAddUpToTheProfitBeforePay()
+    {
+        var view = BucketsView.From(RiverInputs.Example.WithContributionsPaidBy(ContributionsPaidBy.Company).Run()).ShouldNotBeNull();
+
+        (view.Start, view.Buckets.Sum(bucket => bucket.Amount)).ShouldBe((100_000m, 100_000m));
     }
 
     [Fact]

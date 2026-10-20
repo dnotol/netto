@@ -2,6 +2,7 @@ using Netto.Core.CorporateTax;
 using Netto.Core.DirectorPay;
 using Netto.Core.PersonalTax;
 using Netto.Core.Simulation;
+using Netto.Core.SocialContributions;
 using Netto.Web.Client.Steps;
 
 namespace Netto.Web.Client.River;
@@ -176,11 +177,15 @@ internal enum RateChoice
 }
 
 // The pay is derived from the split, or the user's own while the company is skipped. Its detail
-// view is the pay slip, drawn from the same result, and its steps' sources. The engine says what the
-// withholding and the advance payments leave on its tax, the bonus they earn, and what more by the
-// last deadline leaves no surcharge due.
+// view is the pay slip, drawn from the same result, and its steps' sources. When the company pays
+// the contributions on the director's behalf they are pay too, so the card shows what the pay costs
+// the company, the gross plus them, and the contributions drain says the company pays them. The
+// engine says what the withholding and the advance payments leave on its tax, the bonus they earn,
+// and what more by the last deadline leaves no surcharge due.
 internal sealed record DirectorPayView(
     InputOrigin PayOrigin,
+    bool CompanyPaysContributions,
+    decimal CompanyCost,
     TaxSurchargeState Surcharge,
     decimal SurchargeAmount,
     decimal TopUp,
@@ -192,9 +197,12 @@ internal sealed record DirectorPayView(
     public static DirectorPayView From(RiverInputs inputs, GrossToNetResult pay)
     {
         var payments = pay.AdvancePayments;
+        var companyPays = inputs.ContributionsPaidBy.Value == ContributionsPaidBy.Company;
 
         return new DirectorPayView(
             inputs.Company is null ? inputs.DirectorPay.Origin : InputOrigin.Derived,
+            companyPays,
+            pay.CompanyCost,
             payments switch
             {
                 { Exempt: true } => TaxSurchargeState.Exempt,
@@ -208,11 +216,27 @@ internal sealed record DirectorPayView(
             TaxAdvancePaymentFields.Deadlines(pay.IncomeYear)[^1].Date.Value,
             payments.Bonus,
             [
-                .. pay.Steps.Where(step => step.Track == Track.PaidOut).Select(step => Drain.PaidOutTo(step, "taxes_on_pay")),
+                .. pay.Steps.Where(step => step.Track == Track.PaidOut).Select(step => Drain.PaidOutTo(step, "taxes_on_pay")).Select(drain => Payer(drain, companyPays)),
                 new Drain("net_pay", DrainKind.PassedOn, pay.NetInPocket, "pocket"),
             ],
             pay.Steps.Select(StepDetail.From).ToList());
     }
+
+    // The contributions drain is the same step of the engine whoever pays; its label says when the
+    // company does.
+    private static Drain Payer(Drain drain, bool companyPays) =>
+        companyPays && drain.Key == "social_contributions" ? drain with { Key = "social_contributions_paid_by_company" } : drain;
+}
+
+// The card's field for what was withheld on the pay: the amount the user gave, or, while it is left
+// to the pay slip, the year's withholding the engine derives from it, twelve times the month's. While
+// another input is refused there is no pay slip to derive from, and the field shows nothing.
+internal sealed record WithheldFieldView(decimal Amount, InputOrigin Origin)
+{
+    public bool IsYours => Origin == InputOrigin.Yours;
+
+    public static WithheldFieldView From(RiverInputs inputs, RiverRun run) =>
+        new(inputs.TaxPrepayments.Withheld.Value ?? run.Pay?.Assessment.Withheld ?? 0m, inputs.TaxPrepayments.Withheld.Origin);
 }
 
 // What the withholding and the advance payments leave on the income tax on the pay.

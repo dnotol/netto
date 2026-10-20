@@ -1,6 +1,7 @@
 using Netto.Core.CorporateTax;
 using Netto.Core.DirectorPay;
 using Netto.Core.Simulation;
+using Netto.Core.SocialContributions;
 using Netto.Web.Client.River;
 using Shouldly;
 
@@ -87,6 +88,27 @@ public class ModuleViewsTests
             .ShouldBe(new Drain("low_earned_income_credit", DrainKind.Back, 910m, "taxes_on_pay"));
     }
 
+    // The company's 9,942.52 of contributions are pay: its cost of the 50,000 is 59,942.52, and the
+    // contributions drain says the company pays them. The formula withholds 14,336.52 on the taxable
+    // pay, which leaves a surcharge under the minimum, so the net is 33,999.21.
+    [Fact]
+    public void DirectorPay_companyPays_showsTheCompanysCostAndDrainsTheContributionsAsPaidByIt()
+    {
+        var view = DirectorPay(RiverInputs.Example.WithContributionsPaidBy(ContributionsPaidBy.Company));
+
+        (view.CompanyPaysContributions, view.CompanyCost, view.Drains[0], view.Drains[^1]).ShouldBe((true, 59_942.52m,
+            new Drain("social_contributions_paid_by_company", DrainKind.PaidOut, 9_942.52m, "taxes_on_pay"),
+            new Drain("net_pay", DrainKind.PassedOn, 33_999.21m, "pocket")));
+    }
+
+    [Fact]
+    public void DirectorPay_example_companysCostIsTheGross()
+    {
+        var view = DirectorPay(RiverInputs.Example);
+
+        (view.CompanyPaysContributions, view.CompanyCost).ShouldBe((false, 50_000m));
+    }
+
     [Fact]
     public void DirectorPay_example_payIsDerivedFromTheSplit()
     {
@@ -160,6 +182,47 @@ public class ModuleViewsTests
         var view = DirectorPay(RiverInputs.Example.WithTaxWithheld(0m).WithTaxAdvancePayment(0, 12_014m));
 
         (view.Surcharge, view.Bonus).ShouldBe((TaxSurchargeState.Covered, 90.11m));
+    }
+
+    // The field shows the year's withholding the pay slip gives, twelve times the month's, as derived.
+    [Fact]
+    public void WithheldField_example_showsThePaySlipsAmountAsDerived()
+    {
+        var field = WithheldField(RiverInputs.Example);
+
+        (field.Amount, field.Origin, field.IsYours).ShouldBe((10_691.28m, InputOrigin.Derived, false));
+    }
+
+    [Fact]
+    public void WithheldField_amountEntered_showsItAsYours()
+    {
+        var field = WithheldField(RiverInputs.Example.WithTaxWithheld(10_000m));
+
+        (field.Amount, field.Origin, field.IsYours).ShouldBe((10_000m, InputOrigin.Yours, true));
+    }
+
+    [Fact]
+    public void WithheldField_backToThePaySlips_showsItAsDerivedAgain()
+    {
+        var field = WithheldField(RiverInputs.Example.WithTaxWithheld(10_000m).WithTaxWithheldAsThePaySlip());
+
+        (field.Amount, field.Origin).ShouldBe((10_691.28m, InputOrigin.Derived));
+    }
+
+    // While another card's amount is refused there is no pay slip to derive from; the field keeps
+    // its place.
+    [Fact]
+    public void WithheldField_derivedWhileAnotherInputIsRefused_showsNothing()
+    {
+        var field = WithheldField(RiverInputs.Example.WithReserve(-1m));
+
+        (field.Amount, field.Origin).ShouldBe((0m, InputOrigin.Derived));
+    }
+
+    [Fact]
+    public void WithheldField_negativeAmountRefused_keepsWhatWasTyped()
+    {
+        WithheldField(RiverInputs.Example.WithTaxWithheld(-1m)).Amount.ShouldBe(-1m);
     }
 
     [Fact]
@@ -355,6 +418,8 @@ public class ModuleViewsTests
 
     private static DirectorPayView DirectorPay(RiverInputs inputs) =>
         DirectorPayView.From(inputs, inputs.Run().Pay.ShouldNotBeNull());
+
+    private static WithheldFieldView WithheldField(RiverInputs inputs) => WithheldFieldView.From(inputs, inputs.Run());
 
     private static CorporateTaxView CorporateTax(RiverInputs inputs) =>
         CorporateTaxView.From(inputs.Run().Year.ShouldNotBeNull());

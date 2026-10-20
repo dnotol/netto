@@ -15,6 +15,9 @@
   <data name="Drain_social_contributions" xml:space="preserve">
     <value>Social contributions</value>
   </data>
+  <data name="Drain_social_contributions_paid_by_company" xml:space="preserve">
+    <value>Social contributions, paid by the company for you</value>
+  </data>
   <data name="Drain_income_tax" xml:space="preserve">
     <value>Income tax</value>
   </data>

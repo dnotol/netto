@@ -29,7 +29,7 @@
             }
             else if (View.StartsAtPay)
             {
-                @L["FromPay", Formats.Euros(View.Start)]
+                @L[View.CompanyPaysContributions ? "FromPayCost" : "FromPay", Formats.Euros(View.Start)]
             }
             else if (View.EarlierProfits > 0m)
             {
