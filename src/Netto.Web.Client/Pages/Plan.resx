@@ -67,7 +67,7 @@
     <value>The company's yearly contribution to INASTI: count it in the running costs.</value>
   </data>
   <data name="LimitDisallowed" xml:space="preserve">
-    <value>Disallowed expenses, and losses carried forward from earlier years.</value>
+    <value>Disallowed expenses other than the vouchers', and losses carried forward from earlier years.</value>
   </data>
   <data name="LimitManagementFee" xml:space="preserve">
     <value>Your social insurance fund's management fee, charged on top of the contributions.</value>

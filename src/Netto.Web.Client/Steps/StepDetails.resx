@@ -133,7 +133,7 @@
     <value>Refund on the exempt dividends</value>
   </data>
   <data name="Rule_corporate_tax" xml:space="preserve">
-    <value>The company's taxable income is its profit after your director pay, with no disallowed expenses and no losses carried forward. A small company pays the reduced rate on a first slice and the standard rate on the rest. From its fifth tax period, it keeps the reduced rate only if a director's pay reaches the minimum, or if its taxable income does not exceed that pay; otherwise the standard rate applies to all of it.</value>
+    <value>The company's taxable income is its profit after your director pay, with what it cannot deduct of the vouchers added back; no other disallowed expenses and no losses carried forward. A small company pays the reduced rate on a first slice and the standard rate on the rest. From its fifth tax period, it keeps the reduced rate only if a director's pay reaches the minimum, or if its taxable income does not exceed that pay; otherwise the standard rate applies to all of it.</value>
   </data>
   <data name="Rule_dividend_withholding" xml:space="preserve">
     <value>The company withholds tax on the dividend it pays you, at the rate you declare: the standard rate, or a reduced rate for VVPRbis shares, which depends on which distribution after the capital contribution this is. The withholding is the final tax on the dividend: no income tax, no municipal surcharge and no social contributions come on top.</value>
@@ -320,5 +320,50 @@
   </data>
   <data name="Rule_assessment_balance" xml:space="preserve">
     <value>Your assessment charges the final tax on your pay: the income tax with the municipal surcharge, less the tax credit for low earned income, plus the advance-payment surcharge and less the bonus. What the company withheld on your pay over the year and what you paid in advance are set against it: what is left is to pay, and what was paid beyond it is refunded.</value>
+  </data>
+  <data name="Title_meal_vouchers" xml:space="preserve">
+    <value>Meal vouchers</value>
+  </data>
+  <data name="Rule_meal_vouchers" xml:space="preserve">
+    <value>The company's share of an electronic meal voucher is exempt for you, so it is neither taxed as pay nor counted in the income your social contributions are owed on, as long as the exemption's conditions hold. Netto gives each voucher the most the company may pay into it, the only share that earns the higher deduction; your own share, at least the amount set, buys the rest of the voucher and moves nothing.</value>
+  </data>
+  <data name="Title_eco_vouchers" xml:space="preserve">
+    <value>Eco vouchers</value>
+  </data>
+  <data name="Rule_eco_vouchers" xml:space="preserve">
+    <value>Eco vouchers, for ecological products and services, are exempt for you up to a yearly maximum, each of a face value the agreement sets, at most the amount below. Neither taxed as pay nor counted for your social contributions.</value>
+  </data>
+  <data name="Title_sport_culture_vouchers" xml:space="preserve">
+    <value>Sport/culture vouchers</value>
+  </data>
+  <data name="Rule_sport_culture_vouchers" xml:space="preserve">
+    <value>Sport/culture vouchers are exempt for you up to a yearly maximum. Neither taxed as pay nor counted for your social contributions.</value>
+  </data>
+  <data name="Title_disallowed_vouchers" xml:space="preserve">
+    <value>What the company cannot deduct of the vouchers</value>
+  </data>
+  <data name="Rule_disallowed_vouchers" xml:space="preserve">
+    <value>An exempt benefit is not a professional expense for the company, with one exception: of each meal voucher it deducts a fixed amount, raised when its share reaches the most it may pay. The rest of each meal voucher, and the whole of the eco and sport/culture vouchers, is a disallowed expense, added back to its taxable income. Paid out, it still leaves the company's profit.</value>
+  </data>
+  <data name="Amount_meal_voucher_company_share" xml:space="preserve">
+    <value>Most the company pays into a meal voucher</value>
+  </data>
+  <data name="Amount_meal_voucher_holder_share" xml:space="preserve">
+    <value>Least you pay into it</value>
+  </data>
+  <data name="Amount_meal_voucher_deduction" xml:space="preserve">
+    <value>Deduction a meal voucher</value>
+  </data>
+  <data name="Amount_meal_voucher_deduction_at_maximum" xml:space="preserve">
+    <value>Deduction a meal voucher at the company's most</value>
+  </data>
+  <data name="Amount_sport_culture_vouchers_maximum" xml:space="preserve">
+    <value>Sport/culture vouchers, most a year</value>
+  </data>
+  <data name="Amount_eco_vouchers_maximum" xml:space="preserve">
+    <value>Eco vouchers, most a year</value>
+  </data>
+  <data name="Amount_eco_voucher_face_value_maximum" xml:space="preserve">
+    <value>Face value of an eco voucher, at most</value>
   </data>
 </root>

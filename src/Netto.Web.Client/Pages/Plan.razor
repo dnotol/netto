@@ -26,6 +26,7 @@
 
         <div class="river__flow">
             <CompanyYearCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Refused="@Refused(RiverModule.CompanyYear)" />
+            <VoucherCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Refused="@Refused(RiverModule.Vouchers)" />
             @if (_inputs.Company is not null)
             {
                 <SplitCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Search="_search" Refused="@Refused(RiverModule.Split)" />

@@ -4,6 +4,7 @@ using Netto.Core.Dividends;
 using Netto.Core.PersonalTax;
 using Netto.Core.Simulation;
 using Netto.Core.SocialContributions;
+using Netto.Core.Vouchers;
 using Netto.Web.Client.River;
 using Shouldly;
 
@@ -16,7 +17,10 @@ namespace Netto.Tests.WebClient.River;
 // the 61,975.74 of a pay whose tax was withheld, and the 675.00 surcharge on the 10,000 of corporate
 // tax takes 553.50 of the 62,529.24 a company that prepaid would leave, its dividend withholding
 // the rest. With nothing withheld the 486.57 surcharge on the pay's tax takes all of itself:
-// 61,489.17. The pay alone leaves 29,579.30.
+// 61,489.17. The pay alone leaves 29,579.30. The example grants no vouchers; with 220 days of meal
+// vouchers (YearSimulationTests) the company has 98,039.80 left for the split and 49,120.00 of
+// taxable income, which pays 9,824.00 and, nothing prepaid, a surcharge of 663.12, leaving 37,552.68
+// to pay out: the pocket gets 29,579.30, the net dividend 30,943.14 and the vouchers' 1,960.20.
 public class RiverInputsTests
 {
     [Fact]
@@ -436,6 +440,75 @@ public class RiverInputsTests
         var run = RiverInputs.Example.WithReserve(-0.01m).Run();
 
         (run.Year, run.Error).ShouldBe((null, YearSimulation.ReserveNegative));
+    }
+
+    [Fact]
+    public void Example_grantsNoVouchers()
+    {
+        RiverInputs.Example.Vouchers.ShouldBe(new VoucherInputs(
+            new Input<int>(0, InputOrigin.Example), new Input<decimal>(0m, InputOrigin.Example), new Input<decimal>(0m, InputOrigin.Example)));
+    }
+
+    [Fact]
+    public void WithVouchers_makesEachTheUsers()
+    {
+        var vouchers = RiverInputs.Example.WithMealVoucherDays(220).WithEcoVouchers(250m).WithSportCultureVouchers(100m).Vouchers;
+
+        vouchers.ShouldBe(new VoucherInputs(
+            new Input<int>(220, InputOrigin.Yours), new Input<decimal>(250m, InputOrigin.Yours), new Input<decimal>(100m, InputOrigin.Yours)));
+    }
+
+    [Fact]
+    public void Run_vouchersReachTheEngine()
+    {
+        var year = RiverInputs.Example.WithMealVoucherDays(220).Run().Year.ShouldNotBeNull();
+
+        (year.Vouchers.Total, year.ProfitBeforePay, year.ProfitAfterTax, year.NetInPocket).ShouldBe((1_960.20m, 98_039.80m, 37_552.68m, 62_482.64m));
+    }
+
+    [Fact]
+    public void PayCeiling_vouchers_isTheProfitTheyLeave()
+    {
+        RiverInputs.Example.WithMealVoucherDays(220).PayCeiling.ShouldBe(98_039.80m);
+    }
+
+    // The pay set stays the user's, beyond what the vouchers leave.
+    [Fact]
+    public void Run_payAboveTheProfitTheVouchersLeave_paysThatProfit()
+    {
+        var inputs = RiverInputs.Example.WithDirectorPay(100_000m).WithMealVoucherDays(220);
+
+        (inputs.Run().Pay?.GrossPay, inputs.DirectorPay.Value).ShouldBe((98_039.80m, 100_000m));
+    }
+
+    [Fact]
+    public void Run_ecoVouchersAboveTheMaximum_isRefusedWithTheEnginesKey()
+    {
+        var run = RiverInputs.Example.WithEcoVouchers(250.01m).Run();
+
+        (run.Year, run.Error).ShouldBe((null, VoucherCalculator.EcoVouchersAboveMaximum));
+    }
+
+    // The split's search holds the vouchers, so new vouchers need a new search.
+    [Fact]
+    public void SameBesidesPay_vouchersChanged_isNot()
+    {
+        RiverInputs.Example.SameBesidesPay(RiverInputs.Example.WithMealVoucherDays(220)).ShouldBeFalse();
+    }
+
+    [Fact]
+    public void SearchSplit_vouchers_drawsEveryPayUpToTheProfitTheyLeave()
+    {
+        RiverInputs.Example.WithMealVoucherDays(220).SearchSplit().ShouldNotBeNull().Curve[^1].Pay.ShouldBe(98_039.80m);
+    }
+
+    // Skipped with the company: the pay alone runs without them, and they come back with it.
+    [Fact]
+    public void SkipCompany_runsThePayWithoutTheVouchers()
+    {
+        var inputs = RiverInputs.Example.WithMealVoucherDays(220).SkipCompany();
+
+        (inputs.Run().Year, inputs.Run().Pay?.NetInPocket, inputs.Vouchers.MealVoucherDays.Value).ShouldBe((null, 29_579.30m, 220));
     }
 
     // SplitSearchTests: on the example, 20,799 leaves the most.

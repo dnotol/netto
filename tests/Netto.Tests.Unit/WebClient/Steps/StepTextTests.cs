@@ -7,6 +7,7 @@ using Netto.Core.PersonalTax;
 using Netto.Core.Rules;
 using Netto.Core.Simulation;
 using Netto.Core.SocialContributions;
+using Netto.Core.Vouchers;
 using Netto.Web.Client.DirectorPay;
 using Netto.Web.Client.Steps;
 using Shouldly;
@@ -49,6 +50,18 @@ public class StepTextTests
     {
         var scenario = new Scenario(2026, 120_000m, 20_000m, new CompanyStatus(SmallCompany: true, FirstFourTaxPeriods: false),
             50_000m, MunicipalRates.Entered(0.07m), 0m, category);
+
+        var (value, _) = YearSimulation.Run(scenario);
+
+        MissingTexts(value.ShouldNotBeNull().Steps).ShouldBeEmpty();
+    }
+
+    // Every kind of voucher, and what the company cannot deduct of them.
+    [Fact]
+    public void StepDetailsResx_everyKeyOfTheVouchersSteps_hasAText()
+    {
+        var scenario = new Scenario(2026, 120_000m, 20_000m, new CompanyStatus(SmallCompany: true, FirstFourTaxPeriods: false),
+            50_000m, MunicipalRates.Entered(0.07m), 0m, WithholdingCategory.Standard) { Vouchers = new VoucherGrants(220, 250m, 100m) };
 
         var (value, _) = YearSimulation.Run(scenario);
 

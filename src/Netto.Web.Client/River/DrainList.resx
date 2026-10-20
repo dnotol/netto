@@ -78,4 +78,19 @@
   <data name="Drain_income_tax_advance_payment_bonus" xml:space="preserve">
     <value>Bonus on your advance payments</value>
   </data>
+  <data name="Drain_meal_vouchers" xml:space="preserve">
+    <value>Meal vouchers</value>
+  </data>
+  <data name="Drain_eco_vouchers" xml:space="preserve">
+    <value>Eco vouchers</value>
+  </data>
+  <data name="Drain_sport_culture_vouchers" xml:space="preserve">
+    <value>Sport/culture vouchers</value>
+  </data>
+  <data name="Drain_profit_before_pay" xml:space="preserve">
+    <value>Profit before your pay</value>
+  </data>
+  <data name="To_split" xml:space="preserve">
+    <value>on to the split</value>
+  </data>
 </root>

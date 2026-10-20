@@ -48,6 +48,11 @@ internal static class DividendCardText
     public static string Category(WithholdingCategory category) => $"Category_{category}";
 }
 
+internal static class VoucherCardText
+{
+    public static string Condition(string key) => $"Condition_{key}";
+}
+
 internal static class SplitCardText
 {
     // The sentence names the best pay on the other side of the threshold only when one keeps the

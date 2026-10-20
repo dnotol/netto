@@ -93,4 +93,7 @@
   <data name="Surcharge_Due" xml:space="preserve">
     <value>A surcharge of {0} is left: {1} more by {2} cancels it.</value>
   </data>
+  <data name="Disallowed" xml:space="preserve">
+    <value>Taxable income {0}: the {1} of vouchers the company cannot deduct are added back to its profit.</value>
+  </data>
 </root>

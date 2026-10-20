@@ -174,6 +174,43 @@ public class BucketsViewTests
         (view.Start, view.Buckets.Sum(bucket => bucket.Amount)).ShouldBe((100_000m, 100_000m));
     }
 
+    // With 220 days of meal vouchers (RiverInputsTests) the river still starts from the 100,000 the
+    // company earns before paying its director anything, of which the vouchers take 1,960.20.
+    [Fact]
+    public void From_vouchers_startsBeforeWhatTheCompanyPaysTheDirector()
+    {
+        BucketsView.From(RiverInputs.Example.WithMealVoucherDays(220).Run()).ShouldNotBeNull().Start.ShouldBe(100_000m);
+    }
+
+    // 62,482.64 in the pocket with the vouchers, 20,420.70 of taxes on pay as without them, and
+    // 17,096.66 of taxes on profit: corporate tax 9,824.00 and its surcharge 663.12, withholding
+    // 6,759.48 on the 37,552.68 left, less the refund of 149.94.
+    [Fact]
+    public void From_vouchers_putsThemInThePocketAndNoTaxOnPay()
+    {
+        var view = BucketsView.From(RiverInputs.Example.WithMealVoucherDays(220).Run()).ShouldNotBeNull();
+
+        view.Buckets.Select(bucket => (bucket.Key, bucket.Amount)).ShouldBe(new[]
+        {
+            ("pocket", 62_482.64m),
+            ("taxes_on_pay", 20_420.70m),
+            ("taxes_on_profit", 17_096.66m),
+            ("kept_in_company", 0m),
+        });
+    }
+
+    [Theory]
+    [MemberData(nameof(Years))]
+    public void From_anyYearWithVouchers_bucketsAddUpToWhatTheCompanyEarnsBeforePayingTheDirector(decimal revenue, decimal pay, decimal reserve)
+    {
+        var inputs = RiverInputs.Example.WithRevenue(revenue).WithDirectorPay(pay).WithReserve(reserve)
+            .WithMealVoucherDays(220).WithEcoVouchers(250m).WithSportCultureVouchers(100m);
+
+        var view = BucketsView.From(inputs.Run()).ShouldNotBeNull();
+
+        (view.Start, view.Buckets.Sum(bucket => bucket.Amount)).ShouldBe((revenue - 20_000m, revenue - 20_000m));
+    }
+
     [Fact]
     public void From_refusedInput_drawsNothing()
     {

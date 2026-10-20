@@ -2,6 +2,7 @@ using Netto.Core.CorporateTax;
 using Netto.Core.DirectorPay;
 using Netto.Core.Simulation;
 using Netto.Core.SocialContributions;
+using Netto.Core.Vouchers;
 using Netto.Web.Client.River;
 using Shouldly;
 
@@ -13,9 +14,15 @@ namespace Netto.Tests.WebClient.River;
 // because the taxable income, 50,000, does not exceed the pay, and, nothing being prepaid, a
 // surcharge of 675.00 on it. The dividend's cards prepay 7,500 by 10 April, which cancels it: 40,000
 // of profit after tax paid out as a VVPRbis dividend (withholding 7,200, refund 149.94, net 32,949.94).
+// The example grants no vouchers; the vouchers' cards grant 220 days of meal vouchers, 250 of eco and
+// 100 of sport/culture vouchers (YearSimulationTests): 2,310.20 to the pocket, 1,430.20 of it the
+// company cannot deduct, which leaves 97,689.80 for the split and 49,120.00 of taxable income, taxed
+// 9,824.00 and, nothing prepaid, surcharged 663.12.
 public class ModuleViewsTests
 {
     private static readonly RiverInputs Prepaid = RiverInputs.Example.WithAdvancePayment(0, 7_500m).WithTaxWithheld(11_334m);
+
+    private static readonly RiverInputs AllVouchers = RiverInputs.Example.WithMealVoucherDays(220).WithEcoVouchers(250m).WithSportCultureVouchers(100m);
 
     [Fact]
     public void Split_example_givesThePayAndTheCompanysProfit()
@@ -40,6 +47,16 @@ public class ModuleViewsTests
         var view = Split(RiverInputs.Example.WithReserve(-1m));
 
         (view.Pay, view.CompanyProfit).ShouldBe((50_000m, (decimal?)null));
+    }
+
+    // The company's profit before tax is what the split leaves it, without what it cannot deduct of the
+    // vouchers, which Corporate tax adds back.
+    [Fact]
+    public void Split_vouchers_givesThePayAndTheCompanysProfitOutOfWhatTheyLeave()
+    {
+        var view = Split(AllVouchers);
+
+        (view.Ceiling, view.Pay, view.CompanyProfit).ShouldBe((97_689.80m, 50_000m, (decimal?)47_689.80m));
     }
 
     [Fact]
@@ -259,6 +276,43 @@ public class ModuleViewsTests
         });
     }
 
+    // What comes in is the profit the split leaves the company; the taxable income adds back the
+    // 1,430.20 it cannot deduct of the vouchers.
+    [Fact]
+    public void CorporateTax_vouchers_saysWhatComesInAndWhatTheTaxableIncomeAddsBack()
+    {
+        var view = CorporateTax(AllVouchers);
+
+        (view.ProfitAfterPay, view.DisallowedExpenses, view.TaxableIncome).ShouldBe((47_689.80m, 1_430.20m, 49_120.00m));
+    }
+
+    // The tax, its surcharge and the profit after tax add up to what came in, 47,689.80.
+    [Fact]
+    public void CorporateTax_vouchers_drainsWhatCameIn()
+    {
+        CorporateTax(AllVouchers).Drains.ShouldBe(new[]
+        {
+            new Drain("corporate_tax", DrainKind.PaidOut, 9_824.00m, "taxes_on_profit"),
+            new Drain("advance_payment_surcharge", DrainKind.PaidOut, 663.12m, "taxes_on_profit"),
+            new Drain("profit_after_tax", DrainKind.PassedOn, 37_202.68m, "dividend"),
+        });
+    }
+
+    [Fact]
+    public void CorporateTax_vouchers_listsWhatTheCompanyCannotDeductAmongItsSteps()
+    {
+        CorporateTax(AllVouchers).Details.Select(detail => detail.RuleKey)
+            .ShouldBe(["disallowed_vouchers", "corporate_tax", "advance_payment_surcharge"]);
+    }
+
+    [Fact]
+    public void CorporateTax_example_addsNothingBack()
+    {
+        var view = CorporateTax(RiverInputs.Example);
+
+        (view.ProfitAfterPay, view.DisallowedExpenses).ShouldBe((50_000m, 0m));
+    }
+
     [Fact]
     public void CorporateTax_payUnderTheMinimum_saysTheStandardRateHeld()
     {
@@ -396,6 +450,56 @@ public class ModuleViewsTests
         Dividend(Prepaid).Details.Select(detail => detail.RuleKey).ShouldBe(["dividend_withholding", "dividend_exemption_refund"]);
     }
 
+    // No vouchers: the profit before pay goes on to the split whole, and there are no steps to list.
+    [Fact]
+    public void Vouchers_example_passTheProfitBeforePayOnToTheSplit()
+    {
+        var view = Vouchers(RiverInputs.Example);
+
+        (view.Total, view.Deductible, view.Disallowed, view.Details.Count, view.Drains.Single())
+            .ShouldBe((0m, 0m, 0m, 0, new Drain("profit_before_pay", DrainKind.PassedOn, 100_000m, "split")));
+    }
+
+    [Fact]
+    public void Vouchers_allThree_drainEachToThePocketAndTheRestToTheSplit()
+    {
+        Vouchers(AllVouchers).Drains.ShouldBe(new[]
+        {
+            new Drain("meal_vouchers", DrainKind.PassedOn, 1_960.20m, "pocket"),
+            new Drain("eco_vouchers", DrainKind.PassedOn, 250m, "pocket"),
+            new Drain("sport_culture_vouchers", DrainKind.PassedOn, 100m, "pocket"),
+            new Drain("profit_before_pay", DrainKind.PassedOn, 97_689.80m, "split"),
+        });
+    }
+
+    [Fact]
+    public void Vouchers_allThree_sayWhatTheCompanyDeductsAndWhatItCannot()
+    {
+        var view = Vouchers(AllVouchers);
+
+        (view.Total, view.Deductible, view.Disallowed).ShouldBe((2_310.20m, 880.00m, 1_430.20m));
+    }
+
+    [Fact]
+    public void Vouchers_allThree_listTheirStepsWithWhatTheCompanyCannotDeduct()
+    {
+        Vouchers(AllVouchers).Details.Select(detail => detail.RuleKey)
+            .ShouldBe(["meal_vouchers", "eco_vouchers", "sport_culture_vouchers", "disallowed_vouchers"]);
+    }
+
+    // The exemption's texts first, then the amounts each step used under the text they come from.
+    [Fact]
+    public void Vouchers_mealVouchers_citeTheExemptionAndTheShares()
+    {
+        var meal = Vouchers(AllVouchers).Details[0];
+
+        meal.Sources.Select(group => (group.Source, group.Amounts.Count)).ShouldBe(new[]
+        {
+            (VoucherRules.IncomeYear2026.Exemption, 0),
+            (VoucherRules.IncomeYear2026.MealVoucherCompanyShare.Source, 2),
+        });
+    }
+
     // The module is named rather than typed: RiverModule is internal, a theory's parameters public.
     [Theory]
     [InlineData(YearSimulation.RevenueNegative, false, "CompanyYear")]
@@ -408,6 +512,12 @@ public class ModuleViewsTests
     [InlineData(YearSimulation.AdvancePaymentNegative, false, "CorporateTax")]
     [InlineData(GrossToNet.TaxWithheldNegative, false, "DirectorPay")]
     [InlineData(GrossToNet.TaxAdvancePaymentNegative, true, "DirectorPay")]
+    [InlineData(VoucherCalculator.MealVoucherDaysNegative, false, "Vouchers")]
+    [InlineData(VoucherCalculator.MealVoucherDaysAboveYear, false, "Vouchers")]
+    [InlineData(VoucherCalculator.EcoVouchersNegative, false, "Vouchers")]
+    [InlineData(VoucherCalculator.EcoVouchersAboveMaximum, false, "Vouchers")]
+    [InlineData(VoucherCalculator.SportCultureVouchersNegative, false, "Vouchers")]
+    [InlineData(VoucherCalculator.SportCultureVouchersAboveMaximum, false, "Vouchers")]
     [InlineData(YearSimulation.IncomeYearNotSupported, false, "River")]
     public void RiverErrors_engineRefusal_isShownOnTheModuleHoldingTheField(string error, bool companySkipped, string module)
     {
@@ -426,4 +536,7 @@ public class ModuleViewsTests
 
     private static DividendView Dividend(RiverInputs inputs) =>
         DividendView.From(inputs.Run().Year.ShouldNotBeNull());
+
+    private static VoucherView Vouchers(RiverInputs inputs) =>
+        VoucherView.From(inputs.Run().Year.ShouldNotBeNull());
 }

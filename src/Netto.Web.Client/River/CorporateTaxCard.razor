@@ -2,12 +2,12 @@
 @using Netto.Web.Client.Steps
 @inject IStringLocalizer<CorporateTaxCard> L
 
-@* Corporate tax on the company's profit after pay, at 25% or 20% on its first slice, and the
-   surcharge the advance payments leave on it. The user declares what Netto cannot see, the
-   company's financial year among it; the engine tests the minimum pay, set on the split, and the
-   card says which condition decided the rate. The payments are taken while typing, like revenue,
-   since nothing bounds them, and the card says what more by the last deadline cancels the
-   surcharge. *@
+@* Corporate tax on the company's profit after pay, with what it cannot deduct of the vouchers added
+   back, at 25% or 20% on its first slice, and the surcharge the advance payments leave on it. The
+   user declares what Netto cannot see, the company's financial year among it; the engine tests the
+   minimum pay, set on the split, and the card says which condition decided the rate. The payments
+   are taken while typing, like revenue, since nothing bounds them, and the card says what more by
+   the last deadline cancels the surcharge. *@
 <ModuleCard Title="@L["Title"]" Summary="@Summary" Skipped="Inputs.Company is null" Details="@Details" DetailsLabel="@L["DetailsLabel"]">
     @if (Inputs.Company is null)
     {
@@ -36,6 +36,10 @@
             </div>
             <p class="corporate-tax__note">@L["FinancialYearHint"]</p>
         </RiverField>
+        @if (_view is { DisallowedExpenses: > 0m } addedBack)
+        {
+            <p class="corporate-tax__condition">@L["Disallowed", Formats.Euros(addedBack.TaxableIncome), Formats.Euros(addedBack.DisallowedExpenses)]</p>
+        }
         @if (_view is not null)
         {
             <p class="corporate-tax__condition">
@@ -93,7 +97,7 @@
     protected override void OnParametersSet() => _view = Run.Year is { } year ? CorporateTaxView.From(year) : null;
 
     private string? Summary => Run.Year is { } year
-        ? L["Summary", Formats.Euros(year.Company.TaxableIncome), Formats.Euros(year.ProfitAfterTax)].Value
+        ? L["Summary", Formats.Euros(year.ProfitAfterPay), Formats.Euros(year.ProfitAfterTax)].Value
         : null;
 
     private RenderFragment? Details => _view is { } view && Run.Year is { } year

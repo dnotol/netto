@@ -4,16 +4,19 @@ using Netto.Core.Dividends;
 using Netto.Core.PersonalTax;
 using Netto.Core.Simulation;
 using Netto.Core.SocialContributions;
+using Netto.Core.Vouchers;
 using Netto.Web.Client.DirectorPay;
 
 namespace Netto.Web.Client.River;
 
 // Everything the user describes in the river, each input with its origin, and the one run of the
 // year every card reads, so the river always adds up. Company is null once its figures are cleared:
-// the river then starts at the pay. Public because the cards, components, take it as a parameter.
+// the river then starts at the pay, and the vouchers wait for it. Public because the cards,
+// components, take it as a parameter.
 public sealed record RiverInputs(
     int IncomeYear,
     CompanyFigures? Company,
+    VoucherInputs Vouchers,
     Input<bool> SmallCompany,
     Input<FinancialYear> FinancialYear,
     AdvancePaymentInputs AdvancePayments,
@@ -35,10 +38,12 @@ public sealed record RiverInputs(
     // is prepaid by the company nor on the pay, so the example shows the company's surcharge and
     // what cancels it; the pay is withheld on as the key formula says, what a real payslip shows
     // (decided 2026-10-20), so the withheld amount is derived and the example's year balance is
-    // what is left to pay on the assessment.
+    // what is left to pay on the assessment. It grants no vouchers, so its figures are a year without
+    // them.
     public static RiverInputs Example { get; } = new(
         ExampleYear,
         new CompanyFigures(new Input<decimal>(120_000m, InputOrigin.Example), new Input<decimal>(20_000m, InputOrigin.Example)),
+        new VoucherInputs(new Input<int>(0, InputOrigin.Example), ExampleNothing, ExampleNothing),
         new Input<bool>(true, InputOrigin.Default),
         new Input<FinancialYear>(River.FinancialYear.FifthOrLater, InputOrigin.Default),
         new AdvancePaymentInputs(ExampleNothing, ExampleNothing, ExampleNothing, ExampleNothing),
@@ -53,8 +58,9 @@ public sealed record RiverInputs(
         new Input<decimal>(0m, InputOrigin.Example),
         new Input<ContributionsPaidBy>(Core.SocialContributions.ContributionsPaidBy.Director, InputOrigin.Default));
 
-    // The most the split can give as pay: the profit before pay, never below zero. None while the
-    // company is skipped, when the pay has a slider of its own.
+    // The most the split can give as pay: the profit before pay, what the vouchers leave of what the
+    // company earns, never below zero. None while the company is skipped, when the pay has a slider of
+    // its own.
     public decimal? PayCeiling => Company is null ? null : Math.Max(0m, YearSimulation.ProfitBeforePay(Scenario(DirectorPay.Value)) ?? 0m);
 
     public RiverInputs WithRevenue(decimal revenue) =>
@@ -62,6 +68,12 @@ public sealed record RiverInputs(
 
     public RiverInputs WithRunningCosts(decimal runningCosts) =>
         this with { Company = (Company ?? Nothing) with { RunningCosts = Yours(runningCosts) } };
+
+    public RiverInputs WithMealVoucherDays(int days) => this with { Vouchers = Vouchers with { MealVoucherDays = Yours(days) } };
+
+    public RiverInputs WithEcoVouchers(decimal amount) => this with { Vouchers = Vouchers with { EcoVouchers = Yours(amount) } };
+
+    public RiverInputs WithSportCultureVouchers(decimal amount) => this with { Vouchers = Vouchers with { SportCultureVouchers = Yours(amount) } };
 
     public RiverInputs WithSmallCompany(bool smallCompany) => this with { SmallCompany = Yours(smallCompany) };
 
@@ -138,6 +150,7 @@ public sealed record RiverInputs(
         AdvancePayments = AdvancePayments.Values,
         TaxPrepayments = TaxPrepayments.Values,
         ContributionsPaidBy = ContributionsPaidBy.Value,
+        Vouchers = Vouchers.Values,
     };
 }
 
@@ -175,6 +188,13 @@ public sealed record AdvancePaymentInputs(Input<decimal> First, Input<decimal> S
 
 // The company's year as the user enters it, excluding VAT.
 public sealed record CompanyFigures(Input<decimal> Revenue, Input<decimal> RunningCosts);
+
+// The vouchers the company grants the director as the user enters them: the days with a meal voucher
+// and the year's eco and sport/culture vouchers.
+public sealed record VoucherInputs(Input<int> MealVoucherDays, Input<decimal> EcoVouchers, Input<decimal> SportCultureVouchers)
+{
+    public VoucherGrants Values => new(MealVoucherDays.Value, EcoVouchers.Value, SportCultureVouchers.Value);
+}
 
 // A value of the river with where it comes from.
 public sealed record Input<T>(T Value, InputOrigin Origin);

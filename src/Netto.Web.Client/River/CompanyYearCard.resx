@@ -16,7 +16,7 @@
     <value>Company year</value>
   </data>
   <data name="Summary" xml:space="preserve">
-    <value>{0} in · {1} before your pay</value>
+    <value>{0} in · {1} before what it pays you</value>
   </data>
   <data name="RevenueLabel" xml:space="preserve">
     <value>Revenue, excluding VAT</value>

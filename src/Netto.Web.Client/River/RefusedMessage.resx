@@ -42,4 +42,22 @@
   <data name="Error_tax_advance_payment_negative" xml:space="preserve">
     <value>An advance payment on your tax cannot be negative. Enter 0 for a deadline you paid nothing by.</value>
   </data>
+  <data name="Error_meal_voucher_days_negative" xml:space="preserve">
+    <value>The days with a meal voucher cannot be negative. Enter 0 if the company grants none.</value>
+  </data>
+  <data name="Error_meal_voucher_days_above_year" xml:space="preserve">
+    <value>More days with a meal voucher than the year has: one voucher a day you actually work.</value>
+  </data>
+  <data name="Error_eco_vouchers_negative" xml:space="preserve">
+    <value>Eco vouchers cannot be negative. Enter 0 if the company grants none.</value>
+  </data>
+  <data name="Error_eco_vouchers_above_maximum" xml:space="preserve">
+    <value>More eco vouchers than the year allows: above the yearly maximum they are no longer exempt.</value>
+  </data>
+  <data name="Error_sport_culture_vouchers_negative" xml:space="preserve">
+    <value>Sport/culture vouchers cannot be negative. Enter 0 if the company grants none.</value>
+  </data>
+  <data name="Error_sport_culture_vouchers_above_maximum" xml:space="preserve">
+    <value>More sport/culture vouchers than the year allows: above the yearly maximum they are no longer exempt.</value>
+  </data>
 </root>

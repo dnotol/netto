@@ -1,10 +1,11 @@
 @using Netto.Core.Simulation
 @inject IStringLocalizer<CompanyYearCard> L
 
-@* Where the river starts: the company's revenue and running costs for the year, excluding VAT, from
-   which the engine derives the profit before pay. Cleared, the module is skipped and the river
-   starts at the pay. No Min or Max on the amounts: MudBlazor would clamp a value silently, and the
-   engine's refusal, with its message, is what the user has to see. *@
+@* Where the river starts: the company's revenue and running costs for the year, excluding VAT, which
+   leave what it earns before it pays its director anything; the vouchers come off it next, then the
+   pay. Cleared, the module is skipped and the river starts at the pay. No Min or Max on the amounts:
+   MudBlazor would clamp a value silently, and the engine's refusal, with its message, is what the
+   user has to see. *@
 <ModuleCard Title="@L["Title"]" Summary="@Summary" Skipped="Inputs.Company is null">
     @if (Inputs.Company is { } company)
     {
@@ -51,7 +52,7 @@
     public string? Refused { get; set; }
 
     private string? Summary => Run.Year is { } year
-        ? L["Summary", Formats.Euros(year.Scenario.Revenue), Formats.Euros(year.ProfitBeforePay)].Value
+        ? L["Summary", Formats.Euros(year.Scenario.Revenue), Formats.Euros(year.Scenario.ProfitBeforeDirector)].Value
         : null;
 
     private Task OnRevenueChanged(decimal revenue) => InputsChanged.InvokeAsync(Inputs.WithRevenue(revenue));

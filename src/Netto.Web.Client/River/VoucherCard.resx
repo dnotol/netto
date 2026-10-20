@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve">
+    <value>Vouchers</value>
+  </data>
+  <data name="Summary" xml:space="preserve">
+    <value>{0} to your pocket · {1} before your pay</value>
+  </data>
+  <data name="Waiting" xml:space="preserve">
+    <value>Waiting for the company's year.</value>
+  </data>
+  <data name="Hint" xml:space="preserve">
+    <value>What the company can give you beside your pay, free of income tax and social contributions. It pays for them out of its profit, before your pay.</value>
+  </data>
+  <data name="MealDaysLabel" xml:space="preserve">
+    <value>Days with a meal voucher</value>
+  </data>
+  <data name="MealDaysHint" xml:space="preserve">
+    <value>One a day you actually work. The company pays {0} into each, the most it may, and you pay {1}.</value>
+  </data>
+  <data name="EcoLabel" xml:space="preserve">
+    <value>Eco vouchers for the year</value>
+  </data>
+  <data name="SportCultureLabel" xml:space="preserve">
+    <value>Sport/culture vouchers for the year</value>
+  </data>
+  <data name="YearlyMaximum" xml:space="preserve">
+    <value>At most {0} a year.</value>
+  </data>
+  <data name="Disallowed" xml:space="preserve">
+    <value>Of the {0} the company pays for them, it deducts {1}. The other {2} are added back to its taxable income: Corporate tax shows them.</value>
+  </data>
+  <data name="ConditionsTitle" xml:space="preserve">
+    <value>What the exemption takes</value>
+  </data>
+  <data name="ConditionsHint" xml:space="preserve">
+    <value>Netto cannot check these: enter vouchers only if they hold.</value>
+  </data>
+  <data name="Condition_written_agreement" xml:space="preserve">
+    <value>A written individual agreement with the company grants them.</value>
+  </data>
+  <data name="Condition_not_instead_of_pay" xml:space="preserve">
+    <value>They are not granted in place of pay, a bonus or another benefit.</value>
+  </data>
+  <data name="Condition_days_actually_worked" xml:space="preserve">
+    <value>One meal voucher for each day you actually work, and you can prove those days. A director with no staff qualifies; without that proof, the company's share is taxable pay.</value>
+  </data>
+  <data name="Condition_in_your_name" xml:space="preserve">
+    <value>The meal vouchers are electronic, and every voucher is issued in your name.</value>
+  </data>
+  <data name="Condition_eco_agreement_terms" xml:space="preserve">
+    <value>For eco vouchers, the agreement states the face value of each, at most {0}, and how often they are granted in the year.</value>
+  </data>
+  <data name="DetailsLabel" xml:space="preserve">
+    <value>Where these figures come from</value>
+  </data>
+  <data name="SourcesTitle" xml:space="preserve">
+    <value>The rules, with the income year {0} amounts</value>
+  </data>
+</root>

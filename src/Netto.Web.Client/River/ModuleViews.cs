@@ -3,6 +3,7 @@ using Netto.Core.DirectorPay;
 using Netto.Core.PersonalTax;
 using Netto.Core.Simulation;
 using Netto.Core.SocialContributions;
+using Netto.Core.Vouchers;
 using Netto.Web.Client.Steps;
 
 namespace Netto.Web.Client.River;
@@ -10,9 +11,32 @@ namespace Netto.Web.Client.River;
 // What each module card draws from the one run of the river. They only select, order and regroup
 // the engine's figures and steps; no card calculates on its own.
 
-// The pay slider over the profit before pay, and the company's profit it leaves. While another
-// card's amount is refused there is no company profit to show, but the slider keeps its place. The
-// exact amount field shows the pay the split gives, or what was typed while that is refused.
+// What the vouchers bring to the pocket, one drain for each kind once the company grants any, what the
+// company deducts of them and what it cannot, and the profit before pay they leave for the split, from
+// the year's voucher steps. The shares, the yearly maximums and the conditions are the year's rules,
+// which the card reads beside it, so they stay while an amount is refused.
+internal sealed record VoucherView(decimal Total, decimal Deductible, decimal Disallowed, IReadOnlyList<Drain> Drains, IReadOnlyList<StepDetail> Details)
+{
+    public static VoucherView From(YearResult year)
+    {
+        var steps = year.Steps.Where(step => step.Event == TaxableEvent.Vouchers).ToList();
+
+        return new VoucherView(
+            year.Vouchers.Total,
+            year.Vouchers.Deductible,
+            year.Vouchers.Disallowed,
+            [
+                .. steps.Where(step => step.Track == Track.InPocket).Select(step => new Drain(step.RuleKey, DrainKind.PassedOn, step.Amount, "pocket")),
+                new Drain("profit_before_pay", DrainKind.PassedOn, year.ProfitBeforePay, "split"),
+            ],
+            steps.Select(StepDetail.From).ToList());
+    }
+}
+
+// The pay slider over the profit before pay, and the company's profit it leaves before tax. While
+// another card's amount is refused there is no company profit to show, but the slider keeps its
+// place. The exact amount field shows the pay the split gives, or what was typed while that is
+// refused.
 internal sealed record SplitView(decimal Ceiling, decimal Pay, decimal FieldPay, decimal? CompanyProfit)
 {
     public static SplitView From(RiverInputs inputs, RiverRun run)
@@ -22,7 +46,7 @@ internal sealed record SplitView(decimal Ceiling, decimal Pay, decimal FieldPay,
             ceiling,
             run.Pay?.GrossPay ?? Math.Clamp(inputs.DirectorPay.Value, 0m, ceiling),
             run.Pay?.GrossPay ?? inputs.DirectorPay.Value,
-            run.Year?.Company.TaxableIncome);
+            run.Year?.ProfitAfterPay);
     }
 }
 
@@ -270,8 +294,12 @@ internal static class TaxAdvancePaymentFields
 }
 
 // The condition is the engine's: which part of art. 215 decided the rate, against which minimum pay.
-// So is the surcharge the advance payments leave, and what more by the last deadline cancels it.
+// So is the surcharge the advance payments leave, and what more by the last deadline cancels it. What
+// comes in is the profit the split leaves the company; its taxable income adds back what it cannot
+// deduct of the vouchers. The card lists the corporate layer's steps, that one among them.
 internal sealed record CorporateTaxView(
+    decimal ProfitAfterPay,
+    decimal DisallowedExpenses,
     decimal TaxableIncome,
     ReducedRateCondition Condition,
     decimal MinimumDirectorPay,
@@ -285,10 +313,12 @@ internal sealed record CorporateTaxView(
 {
     public static CorporateTaxView From(YearResult year)
     {
-        var steps = year.Steps.Where(step => step.Event == TaxableEvent.CompanyProfit).ToList();
+        var steps = year.Steps.Where(step => step.Layer == Layer.Corporate).ToList();
         var payments = year.AdvancePayments;
 
         return new CorporateTaxView(
+            year.ProfitAfterPay,
+            year.Vouchers.Disallowed,
             year.Company.TaxableIncome,
             year.Company.Condition,
             year.Company.MinimumDirectorPay,
@@ -380,6 +410,9 @@ internal static class RiverErrors
     public static RiverModule Owner(string error, bool companySkipped) => error switch
     {
         YearSimulation.RevenueNegative or YearSimulation.RunningCostsNegative => RiverModule.CompanyYear,
+        VoucherCalculator.MealVoucherDaysNegative or VoucherCalculator.MealVoucherDaysAboveYear or VoucherCalculator.EcoVouchersNegative
+            or VoucherCalculator.EcoVouchersAboveMaximum or VoucherCalculator.SportCultureVouchersNegative
+            or VoucherCalculator.SportCultureVouchersAboveMaximum => RiverModule.Vouchers,
         GrossToNet.GrossPayNegative => companySkipped ? RiverModule.DirectorPay : RiverModule.Split,
         GrossToNet.MunicipalRateOutOfRange => RiverModule.DirectorPay,
         YearSimulation.ReserveNegative or YearSimulation.EarlierProfitsNegative => RiverModule.Dividend,
@@ -395,6 +428,8 @@ internal enum RiverModule
     River,
 
     CompanyYear,
+
+    Vouchers,
 
     Split,
 
