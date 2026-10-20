@@ -7,13 +7,14 @@ using Shouldly;
 namespace Netto.Tests.WebClient.River;
 
 // What each module card draws, on the river's example (RiverInputsTests): 100,000 of profit before
-// pay, 50,000 of pay leaving 29,579.30 net, corporate tax 10,000 at 20% because the taxable income,
+// pay, 50,000 of pay leaving 29,092.73 net once its tax, nothing of it withheld, is surcharged
+// 486.57, corporate tax 10,000 at 20% because the taxable income,
 // 50,000, does not exceed the pay, and, nothing being prepaid, a surcharge of 675.00 on it. The
 // dividend's cards prepay 7,500 by 10 April, which cancels it: 40,000 of profit after tax paid out as
 // a VVPRbis dividend (withholding 7,200, refund 149.94, net 32,949.94).
 public class ModuleViewsTests
 {
-    private static readonly RiverInputs Prepaid = RiverInputs.Example.WithAdvancePayment(0, 7_500m);
+    private static readonly RiverInputs Prepaid = RiverInputs.Example.WithAdvancePayment(0, 7_500m).WithTaxWithheld(11_334m);
 
     [Fact]
     public void Split_example_givesThePayAndTheCompanysProfit()
@@ -70,7 +71,9 @@ public class ModuleViewsTests
             new Drain("income_tax", DrainKind.PaidOut, 11_333.96m, "taxes_on_pay"),
             new Drain("municipal_surcharge", DrainKind.PaidOut, 793.38m, "taxes_on_pay"),
             new Drain("low_earned_income_credit", DrainKind.Back, 0m, "taxes_on_pay"),
-            new Drain("net_pay", DrainKind.PassedOn, 29_579.30m, "pocket"),
+            new Drain("income_tax_advance_payment_surcharge", DrainKind.PaidOut, 486.57m, "taxes_on_pay"),
+            new Drain("income_tax_advance_payment_bonus", DrainKind.Back, 0m, "taxes_on_pay"),
+            new Drain("net_pay", DrainKind.PassedOn, 29_092.73m, "pocket"),
         });
     }
 
@@ -102,7 +105,65 @@ public class ModuleViewsTests
     public void DirectorPay_example_listsThePaysStepsWithTheirSources()
     {
         DirectorPay(RiverInputs.Example).Details.Select(detail => detail.RuleKey)
-            .ShouldBe(["social_contributions", "flat_rate_costs", "taxable_income", "income_tax", "municipal_surcharge", "low_earned_income_credit"]);
+            .ShouldBe(["social_contributions", "flat_rate_costs", "taxable_income", "income_tax", "municipal_surcharge", "low_earned_income_credit",
+                "income_tax_advance_payment_surcharge", "income_tax_advance_payment_bonus"]);
+    }
+
+    // 486.57 on the pay's tax; 14,317.50 by 21 December brings it under the 100 minimum.
+    [Fact]
+    public void DirectorPay_example_saysTheSurchargeIsDueAndWhatByTheLastDeadlineLeavesNoneDue()
+    {
+        var view = DirectorPay(RiverInputs.Example);
+
+        (view.Surcharge, view.SurchargeAmount, view.TopUp, view.LastDeadline)
+            .ShouldBe((TaxSurchargeState.Due, 486.57m, 14_317.50m, new DateOnly(2026, 12, 21)));
+    }
+
+    [Fact]
+    public void DirectorPay_almostAllWithheld_saysTheSurchargeIsUnderTheMinimum()
+    {
+        DirectorPay(RiverInputs.Example.WithTaxWithheld(11_334m)).Surcharge.ShouldBe(TaxSurchargeState.BelowMinimum);
+    }
+
+    [Fact]
+    public void DirectorPay_allWithheld_saysNoneIsLeft()
+    {
+        DirectorPay(RiverInputs.Example.WithTaxWithheld(20_000m)).Surcharge.ShouldBe(TaxSurchargeState.Covered);
+    }
+
+    [Fact]
+    public void DirectorPay_starter_saysItIsExempt()
+    {
+        DirectorPay(RiverInputs.Example.WithStarter(true)).Surcharge.ShouldBe(TaxSurchargeState.Exempt);
+    }
+
+    // At no pay there is no tax to surcharge.
+    [Fact]
+    public void DirectorPay_noPay_hasNoTaxToSurcharge()
+    {
+        DirectorPay(RiverInputs.Example.WithDirectorPay(0m)).Surcharge.ShouldBe(TaxSurchargeState.NoTax);
+    }
+
+    [Fact]
+    public void DirectorPay_theWholeBaseBy10April_namesTheBonus()
+    {
+        var view = DirectorPay(RiverInputs.Example.WithTaxAdvancePayment(0, 12_014m));
+
+        (view.Surcharge, view.Bonus).ShouldBe((TaxSurchargeState.Covered, 90.11m));
+    }
+
+    [Fact]
+    public void TaxAdvancePaymentFields_example_oneFieldPerDeadlineWithItsDate()
+    {
+        var fields = TaxAdvancePaymentFields.From(RiverInputs.Example);
+
+        fields.Select(field => (field.Deadline, field.Date, field.Paid)).ShouldBe(new[]
+        {
+            (0, new DateOnly(2026, 4, 10), new Input<decimal>(0m, InputOrigin.Example)),
+            (1, new DateOnly(2026, 7, 10), new Input<decimal>(0m, InputOrigin.Example)),
+            (2, new DateOnly(2026, 10, 12), new Input<decimal>(0m, InputOrigin.Example)),
+            (3, new DateOnly(2026, 12, 21), new Input<decimal>(0m, InputOrigin.Example)),
+        });
     }
 
     [Fact]
@@ -272,6 +333,8 @@ public class ModuleViewsTests
     [InlineData(YearSimulation.ReserveNegative, false, "Dividend")]
     [InlineData(YearSimulation.EarlierProfitsNegative, false, "Dividend")]
     [InlineData(YearSimulation.AdvancePaymentNegative, false, "CorporateTax")]
+    [InlineData(GrossToNet.TaxWithheldNegative, false, "DirectorPay")]
+    [InlineData(GrossToNet.TaxAdvancePaymentNegative, true, "DirectorPay")]
     [InlineData(YearSimulation.IncomeYearNotSupported, false, "River")]
     public void RiverErrors_engineRefusal_isShownOnTheModuleHoldingTheField(string error, bool companySkipped, string module)
     {

@@ -69,4 +69,10 @@
   <data name="Drain_advance_payment_surcharge" xml:space="preserve">
     <value>Advance-payment surcharge</value>
   </data>
+  <data name="Drain_income_tax_advance_payment_surcharge" xml:space="preserve">
+    <value>Advance-payment surcharge on your tax</value>
+  </data>
+  <data name="Drain_income_tax_advance_payment_bonus" xml:space="preserve">
+    <value>Bonus on your advance payments</value>
+  </data>
 </root>

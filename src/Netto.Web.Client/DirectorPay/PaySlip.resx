@@ -57,4 +57,13 @@
   <data name="NextTitle" xml:space="preserve">
     <value>Where the next €1,000 of gross pay goes</value>
   </data>
+  <data name="Row_income_tax_advance_payment_surcharge" xml:space="preserve">
+    <value>Advance-payment surcharge</value>
+  </data>
+  <data name="Row_income_tax_advance_payment_bonus" xml:space="preserve">
+    <value>Bonus on advance payments</value>
+  </data>
+  <data name="Row_income_tax_advance_payments" xml:space="preserve">
+    <value>Advance-payment surcharge, less the bonus</value>
+  </data>
 </root>

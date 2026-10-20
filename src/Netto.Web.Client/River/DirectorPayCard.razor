@@ -1,11 +1,15 @@
 @using Netto.Core.DirectorPay
+@using Netto.Core.Simulation
 @using Netto.Web.Client.DirectorPay
 @using Netto.Web.Client.Steps
 @inject IStringLocalizer<DirectorPayCard> L
 
 @* The director's gross pay through INASTI's contributions, the income tax and the municipal
    surcharge to the net. The pay comes from the split, or has a slider of its own once the company
-   is skipped. The pay slip and the rules behind each figure are its detail view. *@
+   is skipped. What was withheld on the pay and what the director paid in advance are taken while
+   typing, since nothing bounds them, and the card says what they leave on the tax, the bonus they
+   earn and what more by the last deadline leaves no surcharge due. The pay slip and the rules
+   behind each figure are its detail view. *@
 <ModuleCard Title="@L["Title"]" Summary="@Summary" Details="@Details" DetailsLabel="@L["DetailsLabel"]">
     @if (Inputs.Company is null)
     {
@@ -30,6 +34,43 @@
         <MunicipalityField Choice="Inputs.Municipality" ChoiceChanged="OnMunicipalityChanged"
                            Refused="@(Refused == GrossToNet.MunicipalRateOutOfRange)" />
     </RiverField>
+    <div class="director-pay__prepayments">
+        <h3 class="director-pay__prepayments-title">@L["PrepaymentsTitle"]</h3>
+        <p class="director-pay__note">@L["PrepaymentsHint"]</p>
+        <RiverField Label="@L["WithheldLabel", Inputs.IncomeYear]" For="river-tax-withheld" Origin="Inputs.TaxPrepayments.Withheld.Origin">
+            <MudNumericField T="decimal" InputId="river-tax-withheld" Value="Inputs.TaxPrepayments.Withheld.Value" ValueChanged="OnWithheldChanged"
+                             Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
+                             Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
+                             Error="@(Refused == GrossToNet.TaxWithheldNegative)" />
+        </RiverField>
+        <div class="director-pay__deadlines">
+            @foreach (var field in TaxAdvancePaymentFields.From(Inputs))
+            {
+                <RiverField Label="@L["PaymentLabel", Formats.Day(field.Date)]" For="@($"river-tax-advance-payment-{field.Deadline}")" Origin="field.Paid.Origin">
+                    <MudNumericField T="decimal" InputId="@($"river-tax-advance-payment-{field.Deadline}")" Value="field.Paid.Value"
+                                     ValueChanged="@(amount => OnAdvancePaymentChanged(field.Deadline, amount))"
+                                     Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
+                                     Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
+                                     Error="@(Refused == GrossToNet.TaxAdvancePaymentNegative && field.Paid.Value < 0m)" />
+                </RiverField>
+            }
+        </div>
+        <div class="director-pay__status">
+            <MudCheckBox T="bool" Value="Inputs.TaxPrepayments.Starter.Value" ValueChanged="OnStarterChanged" Color="Color.Primary"
+                         Label="@L["StarterLabel", Inputs.IncomeYear - 2]" />
+            <OriginChip Origin="Inputs.TaxPrepayments.Starter.Origin" />
+        </div>
+        @if (_view is not null)
+        {
+            <p class="director-pay__condition">
+                @L[DirectorPayCardText.Surcharge(_view.Surcharge), Formats.Euros(_view.SurchargeAmount), Formats.Euros(_view.TopUp), Formats.Day(_view.LastDeadline)]
+                @if (_view.Bonus > 0m)
+                {
+                    @(" ")@L["Bonus", Formats.Euros(_view.Bonus)]
+                }
+            </p>
+        }
+    </div>
     <RefusedMessage Error="@Refused" />
     @if (_view is not null)
     {
@@ -50,7 +91,8 @@
     [Parameter, EditorRequired]
     public RiverRun Run { get; set; } = default!;
 
-    // The engine's error key when it refuses the rate, or the pay once the company is skipped.
+    // The engine's error key when it refuses the rate, what was withheld or paid in advance on the
+    // pay, or the pay once the company is skipped.
     [Parameter]
     public string? Refused { get; set; }
 
@@ -73,4 +115,10 @@
     private Task OnPayChanged(decimal pay) => InputsChanged.InvokeAsync(Inputs.WithDirectorPay(pay));
 
     private Task OnMunicipalityChanged(MunicipalityChoice choice) => InputsChanged.InvokeAsync(Inputs.WithMunicipality(choice));
+
+    private Task OnWithheldChanged(decimal withheld) => InputsChanged.InvokeAsync(Inputs.WithTaxWithheld(withheld));
+
+    private Task OnAdvancePaymentChanged(int deadline, decimal amount) => InputsChanged.InvokeAsync(Inputs.WithTaxAdvancePayment(deadline, amount));
+
+    private Task OnStarterChanged(bool starter) => InputsChanged.InvokeAsync(Inputs.WithStarter(starter));
 }

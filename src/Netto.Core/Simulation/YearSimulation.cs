@@ -36,7 +36,7 @@ public static class YearSimulation
         if (scenario.AdvancePayments.ByDeadline.Any(amount => amount < 0m))
             return (null, AdvancePaymentNegative);
 
-        var (pay, payError) = GrossToNet.Compute(scenario.IncomeYear, scenario.DirectorPay, scenario.MunicipalRate);
+        var (pay, payError) = GrossToNet.Compute(scenario.IncomeYear, scenario.DirectorPay, scenario.MunicipalRate, scenario.TaxPrepayments);
         if (pay is null)
             return (null, payError);
 
@@ -82,7 +82,7 @@ public static class YearSimulation
     {
         if (CorporateTaxRules.For(scenario.IncomeYear) is not { } corporateRules || DividendRules.For(scenario.IncomeYear) is not { } dividendRules)
             return null;
-        if (GrossToNet.NetInPocket(scenario.IncomeYear, scenario.DirectorPay, scenario.MunicipalRate.Value) is not { } netPay)
+        if (GrossToNet.NetInPocket(scenario.IncomeYear, scenario.DirectorPay, scenario.MunicipalRate.Value, scenario.TaxPrepayments) is not { } netPay)
             return null;
 
         var company = Company(scenario, corporateRules, dividendRules, netPay);

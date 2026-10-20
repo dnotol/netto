@@ -28,7 +28,7 @@ public class PaySlipTextTests
     [MemberData(nameof(RateOrigins))]
     public void PaySlipResx_everyKeyItBuildsFromThe2026Result_hasAText(string rateOrigin)
     {
-        var (value, _) = GrossToNet.Compute(2026, 50_000m, RatesByOrigin[rateOrigin]);
+        var (value, _) = GrossToNet.Compute(2026, 50_000m, RatesByOrigin[rateOrigin], TaxPrepayments.None);
         var view = GrossToNetView.From(value.ShouldNotBeNull());
 
         var keys = view.Tracks.Select(track => PaySlipText.Track(track.Key))

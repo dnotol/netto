@@ -18,6 +18,7 @@ public sealed record RiverInputs(
     AdvancePaymentInputs AdvancePayments,
     Input<decimal> DirectorPay,
     MunicipalityChoice Municipality,
+    TaxPrepaymentInputs TaxPrepayments,
     Input<decimal> Reserve,
     Input<WithholdingCategory> DividendCategory,
     Input<decimal> EarlierProfits)
@@ -29,7 +30,8 @@ public sealed record RiverInputs(
 
     // The example year the river opens on, every amount labelled as such, so the whole river runs
     // at once; the statuses and rates are the defaults a typical owner-director starts from. Nothing
-    // is prepaid, so the example shows the surcharge and what cancels it.
+    // is prepaid by the company, nor withheld or prepaid on the pay, so the example shows both
+    // surcharges and what cancels them.
     public static RiverInputs Example { get; } = new(
         ExampleYear,
         new CompanyFigures(new Input<decimal>(120_000m, InputOrigin.Example), new Input<decimal>(20_000m, InputOrigin.Example)),
@@ -38,6 +40,10 @@ public sealed record RiverInputs(
         new AdvancePaymentInputs(ExampleNothing, ExampleNothing, ExampleNothing, ExampleNothing),
         new Input<decimal>(50_000m, InputOrigin.Example),
         MunicipalityChoice.Start(MunicipalRates.IncomeYear2026, 0.07m),
+        new TaxPrepaymentInputs(
+            ExampleNothing,
+            new AdvancePaymentInputs(ExampleNothing, ExampleNothing, ExampleNothing, ExampleNothing),
+            new Input<bool>(false, InputOrigin.Default)),
         new Input<decimal>(0m, InputOrigin.Example),
         new Input<WithholdingCategory>(WithholdingCategory.VvprbisThirdYearOnwards, InputOrigin.Default),
         new Input<decimal>(0m, InputOrigin.Example));
@@ -63,6 +69,14 @@ public sealed record RiverInputs(
 
     public RiverInputs WithMunicipality(MunicipalityChoice municipality) => this with { Municipality = municipality };
 
+    public RiverInputs WithTaxWithheld(decimal withheld) => this with { TaxPrepayments = TaxPrepayments with { Withheld = Yours(withheld) } };
+
+    // The payment on the pay's income tax by the deadline at that place, the first being 0.
+    public RiverInputs WithTaxAdvancePayment(int deadline, decimal amount) =>
+        this with { TaxPrepayments = TaxPrepayments with { Paid = TaxPrepayments.Paid.With(deadline, Yours(amount)) } };
+
+    public RiverInputs WithStarter(bool starter) => this with { TaxPrepayments = TaxPrepayments with { Starter = Yours(starter) } };
+
     public RiverInputs WithReserve(decimal reserve) => this with { Reserve = Yours(reserve) };
 
     public RiverInputs WithDividendCategory(WithholdingCategory category) => this with { DividendCategory = Yours(category) };
@@ -80,7 +94,7 @@ public sealed record RiverInputs(
     {
         if (Company is null)
         {
-            var (pay, payError) = GrossToNet.Compute(IncomeYear, DirectorPay.Value, Municipality.MunicipalRate);
+            var (pay, payError) = GrossToNet.Compute(IncomeYear, DirectorPay.Value, Municipality.MunicipalRate, TaxPrepayments.Values);
             return new RiverRun(pay, null, payError);
         }
 
@@ -110,7 +124,8 @@ public sealed record RiverInputs(
         DividendCategory.Value,
         EarlierProfits.Value)
     {
-        AdvancePayments = new AdvancePayments(AdvancePayments.First.Value, AdvancePayments.Second.Value, AdvancePayments.Third.Value, AdvancePayments.Fourth.Value),
+        AdvancePayments = AdvancePayments.Values,
+        TaxPrepayments = TaxPrepayments.Values,
     };
 }
 
@@ -134,6 +149,8 @@ public sealed record AdvancePaymentInputs(Input<decimal> First, Input<decimal> S
 {
     public IReadOnlyList<Input<decimal>> ByDeadline => [First, Second, Third, Fourth];
 
+    public AdvancePayments Values => new(First.Value, Second.Value, Third.Value, Fourth.Value);
+
     public AdvancePaymentInputs With(int deadline, Input<decimal> payment) => deadline switch
     {
         0 => this with { First = payment },
@@ -153,3 +170,11 @@ public sealed record Input<T>(T Value, InputOrigin Origin);
 // One run of the river: the director pay every card reads, the whole year when the company's figures
 // are there, or the engine's error key when it refuses an input.
 public sealed record RiverRun(GrossToNetResult? Pay, YearResult? Year, string? Error);
+
+// What was withheld on the director pay and what the director paid in advance on its income tax, as
+// the user enters them, and whether the year falls in the first three years of their first
+// self-employed activity.
+public sealed record TaxPrepaymentInputs(Input<decimal> Withheld, AdvancePaymentInputs Paid, Input<bool> Starter)
+{
+    public TaxPrepayments Values => new(Withheld.Value, Paid.Values, Starter.Value);
+}

@@ -33,4 +33,37 @@
   <data name="SourcesTitle" xml:space="preserve">
     <value>Where each figure comes from, with the income year {0} amounts</value>
   </data>
+  <data name="PrepaymentsTitle" xml:space="preserve">
+    <value>Your income tax, paid during the year</value>
+  </data>
+  <data name="PrepaymentsHint" xml:space="preserve">
+    <value>What the company withheld on your pay, and what you paid in advance yourself. The earlier a euro is paid, the more of the surcharge it cancels; beyond what avoids it, a payment earns a bonus, and the rest is refunded.</value>
+  </data>
+  <data name="WithheldLabel" xml:space="preserve">
+    <value>Withheld on your pay in {0}</value>
+  </data>
+  <data name="PaymentLabel" xml:space="preserve">
+    <value>By {0}</value>
+  </data>
+  <data name="StarterLabel" xml:space="preserve">
+    <value>I first set up as self-employed in {0} or later</value>
+  </data>
+  <data name="Surcharge_Exempt" xml:space="preserve">
+    <value>No surcharge: none is due in the first three years of a first self-employed activity.</value>
+  </data>
+  <data name="Surcharge_NoTax" xml:space="preserve">
+    <value>No income tax on this pay, so no surcharge.</value>
+  </data>
+  <data name="Surcharge_Covered" xml:space="preserve">
+    <value>No surcharge: what was withheld and paid in advance covers it.</value>
+  </data>
+  <data name="Surcharge_BelowMinimum" xml:space="preserve">
+    <value>No surcharge: what is left of it is under the minimum, so none is due.</value>
+  </data>
+  <data name="Surcharge_Due" xml:space="preserve">
+    <value>A surcharge of {0} on your tax is due: {1} more by {2} leaves none due.</value>
+  </data>
+  <data name="Bonus" xml:space="preserve">
+    <value>Your advance payments beyond that earn a bonus of {0}.</value>
+  </data>
 </root>

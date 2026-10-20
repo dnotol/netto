@@ -35,6 +35,11 @@ internal static class CorporateTaxCardText
     public static string FinancialYear(FinancialYear year) => $"FinancialYear_{year}";
 }
 
+internal static class DirectorPayCardText
+{
+    public static string Surcharge(TaxSurchargeState state) => $"Surcharge_{state}";
+}
+
 internal static class DividendCardText
 {
     public static string Category(WithholdingCategory category) => $"Category_{category}";

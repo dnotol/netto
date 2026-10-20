@@ -1,5 +1,6 @@
 using Netto.Core.CorporateTax;
 using Netto.Core.DirectorPay;
+using Netto.Core.PersonalTax;
 using Netto.Core.Simulation;
 using Netto.Web.Client.Steps;
 
@@ -175,16 +176,73 @@ internal enum RateChoice
 }
 
 // The pay is derived from the split, or the user's own while the company is skipped. Its detail
-// view is the pay slip, drawn from the same result, and its steps' sources.
-internal sealed record DirectorPayView(InputOrigin PayOrigin, IReadOnlyList<Drain> Drains, IReadOnlyList<StepDetail> Details)
+// view is the pay slip, drawn from the same result, and its steps' sources. The engine says what the
+// withholding and the advance payments leave on its tax, the bonus they earn, and what more by the
+// last deadline leaves no surcharge due.
+internal sealed record DirectorPayView(
+    InputOrigin PayOrigin,
+    TaxSurchargeState Surcharge,
+    decimal SurchargeAmount,
+    decimal TopUp,
+    DateOnly LastDeadline,
+    decimal Bonus,
+    IReadOnlyList<Drain> Drains,
+    IReadOnlyList<StepDetail> Details)
 {
-    public static DirectorPayView From(RiverInputs inputs, GrossToNetResult pay) => new(
-        inputs.Company is null ? inputs.DirectorPay.Origin : InputOrigin.Derived,
-        [
-            .. pay.Steps.Where(step => step.Track == Track.PaidOut).Select(step => Drain.PaidOutTo(step, "taxes_on_pay")),
-            new Drain("net_pay", DrainKind.PassedOn, pay.NetInPocket, "pocket"),
-        ],
-        pay.Steps.Select(StepDetail.From).ToList());
+    public static DirectorPayView From(RiverInputs inputs, GrossToNetResult pay)
+    {
+        var payments = pay.AdvancePayments;
+
+        return new DirectorPayView(
+            inputs.Company is null ? inputs.DirectorPay.Origin : InputOrigin.Derived,
+            payments switch
+            {
+                { Exempt: true } => TaxSurchargeState.Exempt,
+                { TaxAt106Percent: 0m } => TaxSurchargeState.NoTax,
+                { BelowMinimum: true } => TaxSurchargeState.BelowMinimum,
+                { Surcharge: 0m } => TaxSurchargeState.Covered,
+                _ => TaxSurchargeState.Due,
+            },
+            payments.Surcharge,
+            payments.LastDeadlineTopUp,
+            TaxAdvancePaymentFields.Deadlines(pay.IncomeYear)[^1].Date.Value,
+            payments.Bonus,
+            [
+                .. pay.Steps.Where(step => step.Track == Track.PaidOut).Select(step => Drain.PaidOutTo(step, "taxes_on_pay")),
+                new Drain("net_pay", DrainKind.PassedOn, pay.NetInPocket, "pocket"),
+            ],
+            pay.Steps.Select(StepDetail.From).ToList());
+    }
+}
+
+// What the withholding and the advance payments leave on the income tax on the pay.
+internal enum TaxSurchargeState
+{
+    // In the first three years of a first self-employed activity, none is due.
+    Exempt,
+
+    // No income tax, nothing to surcharge.
+    NoTax,
+
+    // What was withheld and paid in advance covers it.
+    Covered,
+
+    // Some is left, but under the minimum, so none is due.
+    BelowMinimum,
+
+    // Some is due, which a payment by the last deadline can bring under the minimum.
+    Due,
+}
+
+// One field per deadline of the income year for the director's own advance payments, with its date,
+// drawn from the inputs, so the fields stay while the engine refuses one of them.
+internal static class TaxAdvancePaymentFields
+{
+    public static IReadOnlyList<PaymentField> From(RiverInputs inputs) =>
+        [.. Deadlines(inputs.IncomeYear).Select((deadline, i) => new PaymentField(i, deadline.Date.Value, inputs.TaxPrepayments.Paid.ByDeadline[i]))];
+
+    public static IReadOnlyList<IncomeTaxAdvancePaymentDeadline> Deadlines(int incomeYear) =>
+        PersonalTaxRules.For(incomeYear)?.AdvancePayments.Deadlines ?? [];
 }
 
 // The condition is the engine's: which part of art. 215 decided the rate, against which minimum pay.
@@ -302,6 +360,7 @@ internal static class RiverErrors
         GrossToNet.MunicipalRateOutOfRange => RiverModule.DirectorPay,
         YearSimulation.ReserveNegative or YearSimulation.EarlierProfitsNegative => RiverModule.Dividend,
         YearSimulation.AdvancePaymentNegative => RiverModule.CorporateTax,
+        GrossToNet.TaxWithheldNegative or GrossToNet.TaxAdvancePaymentNegative => RiverModule.DirectorPay,
         _ => RiverModule.River,
     };
 }

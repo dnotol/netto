@@ -12,14 +12,17 @@ namespace Netto.Tests.Simulation;
 // 8,293.36, income tax 11,333.96, surcharge 793.38, net 29,579.30); the company and dividend
 // figures follow CorporateTaxCalculatorTests and DividendCalculatorTests. The dividend is what the
 // profit after tax leaves once the reserve is kept in the company. The company prepays enough by
-// 10 April to leave no advance-payment surcharge unless a test says otherwise; the surcharge figures
-// follow AdvancePaymentCalculatorTests.
+// 10 April to leave no advance-payment surcharge unless a test says otherwise, and withholds more
+// than the director pay's tax; the surcharge figures follow AdvancePaymentCalculatorTests and
+// IncomeTaxAdvancePaymentCalculatorTests.
 public class YearSimulationTests
 {
     private static readonly CompanyStatus SmallPastStartUp = new(SmallCompany: true, FirstFourTaxPeriods: false);
 
     // Its credit, 9,000, covers the surcharge on any tax these tests reach.
     private static readonly AdvancePayments Prepaid = new(100_000m, 0m, 0m, 0m);
+
+    private static readonly TaxPrepayments Withheld = new(1_000_000m, AdvancePayments.None);
 
     public static TheoryData<decimal, decimal, decimal, WithholdingCategory> Setups => new()
     {
@@ -71,7 +74,7 @@ public class YearSimulationTests
     public void Run_2026_directorPayIsWhatGrossToNetGives()
     {
         var result = Run(Scenario(directorPay: 50_000m, reserve: 0m));
-        var (pay, _) = GrossToNet.Compute(2026, 50_000m, MunicipalRates.Entered(0.07m));
+        var (pay, _) = GrossToNet.Compute(2026, 50_000m, MunicipalRates.Entered(0.07m), Withheld);
 
         (result.DirectorPay.SocialContributions, result.DirectorPay.IncomeTax, result.DirectorPay.MunicipalSurcharge, result.DirectorPay.NetInPocket)
             .ShouldBe((pay!.SocialContributions, pay.IncomeTax, pay.MunicipalSurcharge, pay.NetInPocket));
@@ -92,6 +95,8 @@ public class YearSimulationTests
             ("income_tax", Layer.Personal, TaxableEvent.DirectorPay, Track.PaidOut, 11_333.96m),
             ("municipal_surcharge", Layer.Personal, TaxableEvent.DirectorPay, Track.PaidOut, 793.38m),
             ("low_earned_income_credit", Layer.Personal, TaxableEvent.DirectorPay, Track.PaidOut, 0m),
+            ("income_tax_advance_payment_surcharge", Layer.Personal, TaxableEvent.DirectorPay, Track.PaidOut, 0m),
+            ("income_tax_advance_payment_bonus", Layer.Personal, TaxableEvent.DirectorPay, Track.PaidOut, -0m),
             ("dividend_withholding", Layer.Personal, TaxableEvent.Dividend, Track.PaidOut, 7_200.00m),
             ("dividend_exemption_refund", Layer.Personal, TaxableEvent.Dividend, Track.PaidOut, -149.94m),
         });
@@ -165,6 +170,35 @@ public class YearSimulationTests
 
         (result.CorporateTax + result.SocialContributions + result.PersonalTax + result.NetInPocket + result.KeptInCompany)
             .ShouldBe(profitBeforePay);
+    }
+
+    // The 486.57 surcharge on the pay's 11,333.96 of tax is a personal tax, out of the pocket.
+    [Fact]
+    public void Run_2026NothingWithheldOrPrepaidOnThePay_surchargesItsTaxOutOfThePocket()
+    {
+        var result = Run(Scenario(directorPay: 50_000m, reserve: 0m, taxPrepayments: TaxPrepayments.None));
+
+        (result.DirectorPay.AdvancePayments.Surcharge, result.PersonalTax, result.NetInPocket).ShouldBe((486.57m, 19_663.97m, 62_042.67m));
+    }
+
+    [Theory]
+    [MemberData(nameof(Setups))]
+    public void Run_2026NothingWithheldOrPrepaidOnThePay_layersPocketAndCompanyAddUpToTheProfitBeforePay(
+        decimal directorPay, decimal profitBeforePay, decimal reserve, WithholdingCategory category)
+    {
+        var result = Run(Scenario(directorPay: directorPay, reserve: reserve, category: category, revenue: profitBeforePay + 20_000m,
+            taxPrepayments: TaxPrepayments.None));
+
+        (result.CorporateTax + result.SocialContributions + result.PersonalTax + result.NetInPocket + result.KeptInCompany)
+            .ShouldBe(profitBeforePay);
+    }
+
+    [Fact]
+    public void Run_negativeTaxWithheld_isRefusedWithGrossToNetsKey()
+    {
+        var (value, error) = YearSimulation.Run(Scenario(directorPay: 50_000m, reserve: 0m, taxPrepayments: new TaxPrepayments(-0.01m, AdvancePayments.None)));
+
+        (value, error).ShouldBe((null, GrossToNet.TaxWithheldNegative));
     }
 
     [Fact]
@@ -359,10 +393,12 @@ public class YearSimulationTests
         WithholdingCategory category = WithholdingCategory.VvprbisThirdYearOnwards,
         decimal revenue = 120_000m,
         decimal earlierProfits = 0m,
-        AdvancePayments? advancePayments = null) =>
+        AdvancePayments? advancePayments = null,
+        TaxPrepayments? taxPrepayments = null) =>
         new(2026, revenue, 20_000m, SmallPastStartUp, directorPay, MunicipalRates.Entered(0.07m), reserve, category, earlierProfits)
         {
             AdvancePayments = advancePayments ?? Prepaid,
+            TaxPrepayments = taxPrepayments ?? Withheld,
         };
 
     private static YearResult Run(Scenario scenario)

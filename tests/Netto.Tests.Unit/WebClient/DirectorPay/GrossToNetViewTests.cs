@@ -1,5 +1,6 @@
 using Netto.Core.DirectorPay;
 using Netto.Core.PersonalTax;
+using Netto.Core.Simulation;
 using Netto.Web.Client.DirectorPay;
 using Netto.Web.Client.Steps;
 using Shouldly;
@@ -33,6 +34,8 @@ public class GrossToNetViewTests
             ("income_tax", RowKind.PaidOut, 11_333.96m),
             ("municipal_surcharge", RowKind.PaidOut, 793.38m),
             ("low_earned_income_credit", RowKind.Back, 0m),
+            ("income_tax_advance_payment_surcharge", RowKind.PaidOut, 0m),
+            ("income_tax_advance_payment_bonus", RowKind.Back, 0m),
             ("net_in_pocket", RowKind.NetInPocket, 29_579.30m),
         });
     }
@@ -49,6 +52,8 @@ public class GrossToNetViewTests
             ("income_tax", RowKind.PaidOut, 1_098.78m),
             ("municipal_surcharge", RowKind.PaidOut, 76.91m),
             ("low_earned_income_credit", RowKind.Back, 910m),
+            ("income_tax_advance_payment_surcharge", RowKind.PaidOut, 0m),
+            ("income_tax_advance_payment_bonus", RowKind.Back, 0m),
             ("net_in_pocket", RowKind.NetInPocket, 16_172.63m),
         });
     }
@@ -91,6 +96,8 @@ public class GrossToNetViewTests
             (60.74536m, 83.41328m),
             (59.1586m, 60.74536m),
             (59.1586m, 59.1586m),
+            (59.1586m, 59.1586m),
+            (59.1586m, 59.1586m),
             (0m, 59.1586m),
         });
     }
@@ -123,6 +130,8 @@ public class GrossToNetViewTests
             ("income_tax", 0m, 0m),
             ("municipal_surcharge", 0m, 0m),
             ("low_earned_income_credit", 0m, 0m),
+            ("income_tax_advance_payment_surcharge", 0m, 0m),
+            ("income_tax_advance_payment_bonus", 0m, 0m),
             ("net_in_pocket", 0m, 100m),
         });
     }
@@ -148,6 +157,7 @@ public class GrossToNetViewTests
             new NextThousandPart("income_tax", 364.09m, 0.36409m, 0.36409m),
             new NextThousandPart("municipal_surcharge", 25.48m, 0.02548m, 0.02548m),
             new NextThousandPart("low_earned_income_credit_lost", 0m, 0m, 0m),
+            new NextThousandPart("income_tax_advance_payments", 0m, 0m, 0m),
             new NextThousandPart("net_in_pocket", 444.55m, 0.44455m, 0.44455m),
         });
     }
@@ -166,6 +176,7 @@ public class GrossToNetViewTests
             ("income_tax", 0m, 0m, 0m),
             ("municipal_surcharge", 0m, 0m, 0m),
             ("low_earned_income_credit_lost", -392.31m, -0.39231m, 0m),
+            ("income_tax_advance_payments", 0m, 0m, 0m),
             ("net_in_pocket", 1_392.31m, 1.39231m, 1m),
         });
     }
@@ -200,6 +211,8 @@ public class GrossToNetViewTests
             ("income_tax", 11_333.96m),
             ("municipal_surcharge", 793.38m),
             ("low_earned_income_credit", 0m),
+            ("income_tax_advance_payment_surcharge", 0m),
+            ("income_tax_advance_payment_bonus", 0m),
         });
     }
 
@@ -260,9 +273,11 @@ public class GrossToNetViewTests
 
     private static string Keys(SourceGroup group) => string.Join(' ', group.Amounts.Select(amount => amount.Key));
 
+    // The company withholds more than any tax these tests reach, so the pay slip shows no
+    // advance-payment surcharge.
     private static GrossToNetView View(decimal grossPay)
     {
-        var (value, error) = GrossToNet.Compute(2026, grossPay, MunicipalRates.Entered(0.07m));
+        var (value, error) = GrossToNet.Compute(2026, grossPay, MunicipalRates.Entered(0.07m), new TaxPrepayments(1_000_000m, AdvancePayments.None));
 
         error.ShouldBeNull();
         return GrossToNetView.From(value.ShouldNotBeNull());

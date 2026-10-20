@@ -1,4 +1,5 @@
 using Netto.Core.CorporateTax;
+using Netto.Core.DirectorPay;
 using Netto.Core.Dividends;
 using Netto.Core.PersonalTax;
 using Netto.Core.Simulation;
@@ -8,10 +9,11 @@ using Shouldly;
 namespace Netto.Tests.WebClient.River;
 
 // The river opens on the example year of YearSimulationTests: 120,000 revenue, 20,000 running costs,
-// 50,000 pay at 7%, nothing kept, VVPRbis from the third distribution and nothing prepaid, which
-// leaves 61,975.74 in the pocket: the 675.00 surcharge on the 10,000 of corporate tax takes 553.50
-// of the 62,529.24 a company that prepaid leaves, its withholding the rest. The pay alone leaves
-// 29,579.30.
+// 50,000 pay at 7%, nothing kept, VVPRbis from the third distribution, and nothing prepaid by the
+// company nor withheld or prepaid on the pay, which leaves 61,489.17 in the pocket. Of the 62,529.24
+// a company that prepaid and a pay whose tax was withheld leave, the 675.00 surcharge on the
+// 10,000 of corporate tax takes 553.50, its dividend withholding the rest, and the 486.57
+// surcharge on the pay's tax takes all of itself. The pay alone leaves 29,092.73.
 public class RiverInputsTests
 {
     [Fact]
@@ -19,7 +21,88 @@ public class RiverInputsTests
     {
         var run = RiverInputs.Example.Run();
 
-        (run.Error, run.Year?.NetInPocket).ShouldBe((null, 61_975.74m));
+        (run.Error, run.Year?.NetInPocket).ShouldBe((null, 61_489.17m));
+    }
+
+    [Fact]
+    public void Example_withholdsAndPrepaysNothingOnThePay()
+    {
+        var prepayments = RiverInputs.Example.TaxPrepayments;
+
+        (prepayments.Withheld, prepayments.Paid.ByDeadline.All(payment => payment == new Input<decimal>(0m, InputOrigin.Example)), prepayments.Starter)
+            .ShouldBe((new Input<decimal>(0m, InputOrigin.Example), true, new Input<bool>(false, InputOrigin.Default)));
+    }
+
+    // IncomeTaxAdvancePaymentCalculatorTests: 486.57 on the 11,333.96 of tax, and 14,317.50 by
+    // 21 December brings it under the 100 minimum.
+    [Fact]
+    public void Run_example_surchargesThePaysTaxAndSaysWhatBy21DecemberLeavesNoneDue()
+    {
+        var payments = RiverInputs.Example.Run().Pay.ShouldNotBeNull().AdvancePayments;
+
+        (payments.Surcharge, payments.LastDeadlineTopUp).ShouldBe((486.57m, 14_317.50m));
+    }
+
+    [Fact]
+    public void WithTaxWithheld_makesItTheUsers()
+    {
+        RiverInputs.Example.WithTaxWithheld(11_334m).TaxPrepayments.Withheld.ShouldBe(new Input<decimal>(11_334m, InputOrigin.Yours));
+    }
+
+    // 11,334 withheld leaves a surcharge under the minimum: the pocket is the 61,975.74 of a pay
+    // whose tax was withheld.
+    [Fact]
+    public void Run_taxWithheldReachesTheEngine()
+    {
+        RiverInputs.Example.WithTaxWithheld(11_334m).Run().Year.ShouldNotBeNull().NetInPocket.ShouldBe(61_975.74m);
+    }
+
+    [Fact]
+    public void WithTaxAdvancePayment_makesThatPaymentTheUsers()
+    {
+        var paid = RiverInputs.Example.WithTaxAdvancePayment(3, 1_000m).TaxPrepayments.Paid;
+
+        (paid.First, paid.Fourth).ShouldBe((new Input<decimal>(0m, InputOrigin.Example), new Input<decimal>(1_000m, InputOrigin.Yours)));
+    }
+
+    // 12,014 by 10 April avoids the surcharge and earns a bonus of 90.11.
+    [Fact]
+    public void Run_taxAdvancePaymentsReachTheEngine()
+    {
+        var pay = RiverInputs.Example.WithTaxAdvancePayment(0, 12_014m).Run().Pay.ShouldNotBeNull();
+
+        (pay.AdvancePayments.Surcharge, pay.AdvancePayments.Bonus).ShouldBe((0m, 90.11m));
+    }
+
+    [Fact]
+    public void WithStarter_makesTheStatusTheUsersAndExemptsThePaysTax()
+    {
+        var inputs = RiverInputs.Example.WithStarter(true);
+
+        (inputs.TaxPrepayments.Starter, inputs.Run().Pay.ShouldNotBeNull().AdvancePayments.Exempt)
+            .ShouldBe((new Input<bool>(true, InputOrigin.Yours), true));
+    }
+
+    [Fact]
+    public void Run_negativeTaxWithheld_isRefusedWithTheEnginesKey()
+    {
+        var run = RiverInputs.Example.WithTaxWithheld(-0.01m).Run();
+
+        (run.Year, run.Error).ShouldBe((null, GrossToNet.TaxWithheldNegative));
+    }
+
+    [Fact]
+    public void Run_companySkippedNegativeTaxAdvancePayment_isRefusedWithTheEnginesKey()
+    {
+        var run = RiverInputs.Example.SkipCompany().WithTaxAdvancePayment(1, -0.01m).Run();
+
+        (run.Pay, run.Error).ShouldBe((null, GrossToNet.TaxAdvancePaymentNegative));
+    }
+
+    [Fact]
+    public void SameBesidesPay_taxWithheldChanged_isNot()
+    {
+        RiverInputs.Example.SameBesidesPay(RiverInputs.Example.WithTaxWithheld(1_000m)).ShouldBeFalse();
     }
 
     [Fact]
@@ -51,7 +134,7 @@ public class RiverInputsTests
     {
         var year = RiverInputs.Example.WithAdvancePayment(0, 7_500m).Run().Year.ShouldNotBeNull();
 
-        (year.AdvancePayments.Surcharge, year.NetInPocket).ShouldBe((0m, 62_529.24m));
+        (year.AdvancePayments.Surcharge, year.NetInPocket).ShouldBe((0m, 62_042.67m));
     }
 
     [Fact]
@@ -114,7 +197,7 @@ public class RiverInputsTests
     [Fact]
     public void Run_earlierProfitsReachTheEngine()
     {
-        RiverInputs.Example.WithEarlierProfits(60_000m).WithReserve(30_000m).Run().Year.ShouldNotBeNull().NetInPocket.ShouldBe(86_575.74m);
+        RiverInputs.Example.WithEarlierProfits(60_000m).WithReserve(30_000m).Run().Year.ShouldNotBeNull().NetInPocket.ShouldBe(86_089.17m);
     }
 
     [Fact]
@@ -198,7 +281,7 @@ public class RiverInputsTests
     {
         var run = RiverInputs.Example.SkipCompany().Run();
 
-        (run.Year, run.Pay?.GrossPay, run.Pay?.NetInPocket).ShouldBe((null, 50_000m, 29_579.30m));
+        (run.Year, run.Pay?.GrossPay, run.Pay?.NetInPocket).ShouldBe((null, 50_000m, 29_092.73m));
     }
 
     [Fact]

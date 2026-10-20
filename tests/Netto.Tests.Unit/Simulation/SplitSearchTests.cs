@@ -15,13 +15,16 @@ namespace Netto.Tests.Simulation;
 // The tax credit for low earned income added 910 to each best pay and moved none: each sits where
 // the credit is whole (taxable income from 8,960 to 22,400), and the credit is never more. The
 // company prepays enough by 10 April to leave no advance-payment surcharge at any pay, unless a test
-// says otherwise; the payments it makes are held at every pay, like the rest of the scenario.
+// says otherwise, and withholds more than any director pay's tax; the payments it makes and what it
+// withholds are held at every pay, like the rest of the scenario.
 public class SplitSearchTests
 {
     private static readonly CompanyStatus SmallPastStartUp = new(SmallCompany: true, FirstFourTaxPeriods: false);
 
     // Its credit, 9,000, covers the surcharge on any tax these tests reach.
     private static readonly AdvancePayments Prepaid = new(100_000m, 0m, 0m, 0m);
+
+    private static readonly TaxPrepayments Withheld = new(1_000_000m, AdvancePayments.None);
 
     [Fact]
     public void Run_2026Example_findsThePayThatLeavesTheMost()
@@ -134,6 +137,29 @@ public class SplitSearchTests
         var curve = Search(Scenario(advancePayments: payments)).Curve;
 
         curve.ShouldAllBe(level => level == LevelOf(level.Pay, 0m, payments));
+    }
+
+    // Found by running the year at every euro from 0 to 100,000 with nothing withheld on the pay
+    // (2026-10-20): the best pay's tax is small enough that its surcharge, 18.64, is under the 100
+    // minimum, while 50,000 owes 486.57; the best pay does not move and gains more.
+    [Fact]
+    public void Run_2026NothingWithheldOnThePay_findsTheBestPayWithTheSurchargeOnItsTax()
+    {
+        var result = Search(Scenario(taxPrepayments: TaxPrepayments.None));
+
+        (result.Best?.Pay, result.Best?.NetInPocket, result.BestKeepingReducedRate?.Pay, result.BestKeepingReducedRate?.NetInPocket)
+            .ShouldBe(((decimal?)20_799m, (decimal?)65_622.81m, (decimal?)50_000m, (decimal?)62_042.67m));
+    }
+
+    // What is withheld and paid in advance on the pay is held at every pay, as the year would run there.
+    [Fact]
+    public void Run_2026PartWithheld_eachLevelIsTheYearAtThatPayWithTheSameWithholding()
+    {
+        var taxPrepayments = new TaxPrepayments(5_000m, new AdvancePayments(1_000m, 0m, 0m, 0m));
+
+        var curve = Search(Scenario(taxPrepayments: taxPrepayments)).Curve;
+
+        curve.ShouldAllBe(level => level == LevelOf(level.Pay, 0m, null, taxPrepayments));
     }
 
     [Fact]
@@ -297,11 +323,13 @@ public class SplitSearchTests
         decimal revenue = 120_000m,
         CompanyStatus? company = null,
         decimal earlierProfits = 0m,
-        AdvancePayments? advancePayments = null) =>
+        AdvancePayments? advancePayments = null,
+        TaxPrepayments? taxPrepayments = null) =>
         new(2026, revenue, 20_000m, company ?? SmallPastStartUp, directorPay, MunicipalRates.Entered(0.07m), reserve,
             WithholdingCategory.VvprbisThirdYearOnwards, earlierProfits)
         {
             AdvancePayments = advancePayments ?? Prepaid,
+            TaxPrepayments = taxPrepayments ?? Withheld,
         };
 
     private static SplitSearchResult Search(Scenario scenario)
@@ -320,9 +348,9 @@ public class SplitSearchTests
         return value.ShouldNotBeNull();
     }
 
-    private static PayLevel LevelOf(decimal pay, decimal reserve, AdvancePayments? advancePayments = null)
+    private static PayLevel LevelOf(decimal pay, decimal reserve, AdvancePayments? advancePayments = null, TaxPrepayments? taxPrepayments = null)
     {
-        var year = Year(Scenario(directorPay: pay, reserve: reserve, advancePayments: advancePayments));
+        var year = Year(Scenario(directorPay: pay, reserve: reserve, advancePayments: advancePayments, taxPrepayments: taxPrepayments));
 
         return new PayLevel(pay, year.NetInPocket, year.Dividend.Dividend, year.KeptInCompany, year.Company.Condition,
             year.MaximumDividend >= reserve);

@@ -7,11 +7,11 @@ namespace Netto.Tests.WebClient.River;
 // before pay, where 20,799 leaves the most, 65,622.81, and gives up the reduced corporate rate, which
 // 50,000, the pay set, keeps for 62,529.24. The net in pocket runs from 50,368.00 (all of it as pay)
 // to that peak. The example prepays 25,000 by 10 April here, whose credit, 2,250, covers the
-// advance-payment surcharge at every pay, so the figures are SplitSearchTests'; the last test runs
-// the example as it opens, with nothing prepaid.
+// advance-payment surcharge at every pay, and withholds more than any pay's tax, so the figures are
+// SplitSearchTests'; the last test runs the example as it opens, with nothing prepaid or withheld.
 public class SplitSearchViewTests
 {
-    private static readonly RiverInputs Example = RiverInputs.Example.WithAdvancePayment(0, 25_000m);
+    private static readonly RiverInputs Example = RiverInputs.Example.WithAdvancePayment(0, 25_000m).WithTaxWithheld(1_000_000m);
     [Fact]
     public void Example_namesTheBestPayAndWhatItGainsOverThePaySet()
     {
@@ -191,13 +191,14 @@ public class SplitSearchViewTests
         View(inputs).Curve.Bands.Select(band => band.Level).ShouldBe(inputs.SearchSplit().ShouldNotBeNull().Curve);
     }
 
-    // SplitSearchTests: the surcharge, 1,336.52 at the best pay and 675.00 at 50,000, moves neither.
+    // SplitSearchTests: the company's surcharge, 1,336.52 at the best pay and 675.00 at 50,000, moves
+    // neither, and the pay's, 486.57 at 50,000, is under the minimum at the best pay.
     [Fact]
     public void ExampleNothingPrepaid_namesTheBestPayAndWhatItGainsWithTheSurcharge()
     {
         var best = View(RiverInputs.Example).Best.ShouldNotBeNull();
 
-        (best.Level.Pay, best.Level.NetInPocket, best.Gain).ShouldBe((20_799m, 64_526.87m, 2_551.13m));
+        (best.Level.Pay, best.Level.NetInPocket, best.Gain).ShouldBe((20_799m, 64_526.87m, 3_037.70m));
     }
 
     private static SplitSearchView? From(RiverInputs inputs) => SplitSearchView.From(inputs, inputs.Run(), inputs.SearchSplit());

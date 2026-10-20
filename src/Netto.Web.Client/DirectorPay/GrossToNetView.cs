@@ -51,6 +51,7 @@ internal sealed record GrossToNetView(
                 ("income_tax", result.NextThousand.IncomeTax),
                 ("municipal_surcharge", result.NextThousand.MunicipalSurcharge),
                 ("low_earned_income_credit_lost", result.NextThousand.LowEarnedIncomeCredit),
+                ("income_tax_advance_payments", result.NextThousand.AdvancePayments),
                 ("net_in_pocket", result.NextThousand.NetInPocket),
             ]),
             result.Steps.Select(StepDetail.From).ToList());

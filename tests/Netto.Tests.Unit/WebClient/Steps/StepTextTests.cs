@@ -32,7 +32,7 @@ public class StepTextTests
     [MemberData(nameof(RateOrigins))]
     public void StepDetailsResx_everyKeyOfTheDirectorPaySteps_hasAText(string rateOrigin)
     {
-        var (value, _) = GrossToNet.Compute(2026, 50_000m, RatesByOrigin[rateOrigin]);
+        var (value, _) = GrossToNet.Compute(2026, 50_000m, RatesByOrigin[rateOrigin], TaxPrepayments.None);
 
         MissingTexts(value.ShouldNotBeNull().Steps).ShouldBeEmpty();
     }
