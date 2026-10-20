@@ -13,4 +13,8 @@ public enum TaxableEvent
 
     // The company's share of the meal, eco and sport/culture vouchers it grants the director.
     Vouchers,
+
+    // The company's own costs it reimburses the director: the flat-rate office, internet and computer
+    // allowances, and the phone costs on invoices.
+    ExpenseAllowances,
 }

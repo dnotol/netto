@@ -2,9 +2,10 @@ using Netto.Core.CorporateTax;
 
 namespace Netto.Core.Simulation;
 
-// The year run at every director pay out of the profit before pay, what the vouchers leave of what the
-// company earns, with everything else the scenario holds kept as it is: the vouchers, the reserve, the
-// statuses, the municipal rate, the dividend's withholding rate and who pays the social contributions.
+// The year run at every director pay out of the profit before pay, what the vouchers and the expense
+// allowances leave of what the company earns, with everything else the scenario holds kept as it is:
+// the vouchers, the allowances, the reserve, the statuses, the municipal rate, the dividend's
+// withholding rate and who pays the social contributions.
 // The pay is the gross on the payslip, whoever pays them; the scenario's own pay is not used. It finds
 // the pay that leaves the most in the pocket while the profit after tax still covers the reserve and,
 // when a pay out of that profit can keep the reduced corporate rate, the best pay on each side of the

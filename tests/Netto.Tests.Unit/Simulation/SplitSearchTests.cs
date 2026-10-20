@@ -1,3 +1,4 @@
+using Netto.Core.Allowances;
 using Netto.Core.CorporateTax;
 using Netto.Core.Dividends;
 using Netto.Core.PersonalTax;
@@ -19,8 +20,8 @@ namespace Netto.Tests.Simulation;
 // company prepays enough by 10 April to leave no advance-payment surcharge at any pay, unless a test
 // says otherwise, and withholds more than any director pay's tax; the payments it makes and what it
 // withholds are held at every pay, like the rest of the scenario, and so is who pays the
-// contributions: the director unless a test says the company does, and the vouchers it grants: none
-// unless a test says otherwise.
+// contributions: the director unless a test says the company does, and the vouchers it grants and
+// the expense allowances it pays: none unless a test says otherwise.
 public class SplitSearchTests
 {
     private static readonly CompanyStatus SmallPastStartUp = new(SmallCompany: true, FirstFourTaxPeriods: false);
@@ -33,6 +34,9 @@ public class SplitSearchTests
     private static readonly VoucherGrants MealVouchersOn220Days = new(220, 0m, 0m);
 
     private static readonly VoucherGrants AllVouchers = new(220, 250m, 100m);
+
+    // 2,418.44, all of it deducted by the company.
+    private static readonly ExpenseAllowances FlatRateAllowances = new(1_938.44m, 240m, 240m, 0m);
 
     [Fact]
     public void Run_2026Example_findsThePayThatLeavesTheMost()
@@ -347,6 +351,69 @@ public class SplitSearchTests
         (value, error).ShouldBe((null, VoucherCalculator.EcoVouchersAboveMaximum));
     }
 
+    // The allowances cost the company 2,418.44: the split shares the 97,581.56 they leave.
+    [Fact]
+    public void Run_2026Allowances_drawsEveryPayFromNoneToTheProfitTheyLeave()
+    {
+        var pays = Search(Scenario(allowances: FlatRateAllowances)).Curve.Select(level => level.Pay).ToList();
+
+        (pays[0], pays[^1]).ShouldBe((0m, 97_581.56m));
+    }
+
+    [Fact]
+    public void Run_2026Allowances_eachLevelIsTheYearAtThatPayWithThem()
+    {
+        var curve = Search(Scenario(allowances: FlatRateAllowances)).Curve;
+
+        curve.ShouldAllBe(level => level == LevelOf(level.Pay, 0m, null, null, ContributionsPaidBy.Director, null, FlatRateAllowances));
+    }
+
+    [Fact]
+    public void Run_2026AllowancesCompanyPaysContributions_eachLevelIsTheYearAtThatPay()
+    {
+        var curve = Search(Scenario(paidBy: ContributionsPaidBy.Company, allowances: FlatRateAllowances)).Curve;
+
+        curve.ShouldAllBe(level => level == LevelOf(level.Pay, 0m, null, null, ContributionsPaidBy.Company, null, FlatRateAllowances));
+    }
+
+    // Deducted in full, they lower the taxable income at no pay as much as the profit before pay: the
+    // rate is kept from half of 97,581.56.
+    [Fact]
+    public void Run_2026Allowances_keepsTheRateFromHalfTheTaxableIncomeTheyLeaveAtNoPay()
+    {
+        Search(Scenario(allowances: FlatRateAllowances)).SmallestPayKeepingReducedRate.ShouldBe(48_790.78m);
+    }
+
+    // Found by running the year at every euro from 0 to 97,581.56 with the allowances (2026-10-20):
+    // they add to every pay's pocket and move neither best pay off its place on its side of the rate.
+    [Fact]
+    public void Run_2026Allowances_findsTheBestPaysWithThem()
+    {
+        var result = Search(Scenario(allowances: FlatRateAllowances));
+
+        (result.Best?.Pay, result.Best?.NetInPocket, result.Best?.Dividend, result.BestKeepingReducedRate?.Pay, result.BestKeepingReducedRate?.NetInPocket)
+            .ShouldBe(((decimal?)20_799m, (decimal?)66_553.91m, (decimal?)57_586.92m, (decimal?)48_790.78m, (decimal?)63_616.87m));
+    }
+
+    // 100,000 less the vouchers' 2,310.20 and the allowances' 2,418.44.
+    [Fact]
+    public void Run_2026VouchersAndAllowances_drawsEveryPayUpToTheProfitBothLeave()
+    {
+        var curve = Search(Scenario(vouchers: AllVouchers, allowances: FlatRateAllowances)).Curve;
+
+        curve.ShouldSatisfyAllConditions(
+            () => curve[^1].Pay.ShouldBe(95_271.36m),
+            () => curve.ShouldAllBe(level => level == LevelOf(level.Pay, 0m, null, null, ContributionsPaidBy.Director, AllVouchers, FlatRateAllowances)));
+    }
+
+    [Fact]
+    public void Run_officeAllowanceAboveTheMaximum_isRefusedWithTheCalculatorsKey()
+    {
+        var (value, error) = SplitSearch.Run(Scenario(allowances: new ExpenseAllowances(1_938.45m, 0m, 0m, 0m)));
+
+        (value, error).ShouldBe((null, AllowanceCalculator.OfficeAllowanceAboveMaximum));
+    }
+
     [Fact]
     public void Run_negativeAdvancePayment_isRefusedWithYearSimulationsKey()
     {
@@ -511,7 +578,8 @@ public class SplitSearchTests
         AdvancePayments? advancePayments = null,
         TaxPrepayments? taxPrepayments = null,
         ContributionsPaidBy paidBy = ContributionsPaidBy.Director,
-        VoucherGrants? vouchers = null) =>
+        VoucherGrants? vouchers = null,
+        ExpenseAllowances? allowances = null) =>
         new(2026, revenue, 20_000m, company ?? SmallPastStartUp, directorPay, MunicipalRates.Entered(0.07m), reserve,
             WithholdingCategory.VvprbisThirdYearOnwards, earlierProfits)
         {
@@ -519,6 +587,7 @@ public class SplitSearchTests
             TaxPrepayments = taxPrepayments ?? Withheld,
             ContributionsPaidBy = paidBy,
             Vouchers = vouchers ?? VoucherGrants.None,
+            Allowances = allowances ?? ExpenseAllowances.None,
         };
 
     private static SplitSearchResult Search(Scenario scenario)
@@ -539,10 +608,10 @@ public class SplitSearchTests
 
     private static PayLevel LevelOf(
         decimal pay, decimal reserve, AdvancePayments? advancePayments = null, TaxPrepayments? taxPrepayments = null,
-        ContributionsPaidBy paidBy = ContributionsPaidBy.Director, VoucherGrants? vouchers = null)
+        ContributionsPaidBy paidBy = ContributionsPaidBy.Director, VoucherGrants? vouchers = null, ExpenseAllowances? allowances = null)
     {
         var year = Year(Scenario(directorPay: pay, reserve: reserve, advancePayments: advancePayments, taxPrepayments: taxPrepayments, paidBy: paidBy,
-            vouchers: vouchers));
+            vouchers: vouchers, allowances: allowances));
 
         return new PayLevel(pay, year.NetInPocket, year.Dividend.Dividend, year.KeptInCompany, year.Company.Condition,
             year.MaximumDividend >= reserve);

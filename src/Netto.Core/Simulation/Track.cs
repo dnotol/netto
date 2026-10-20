@@ -12,6 +12,6 @@ public enum Track
     // taxable income they leave, what the company cannot deduct of the vouchers.
     TaxBaseOnly,
 
-    // Reaches the pocket outside the pay and the dividend: a voucher's value.
+    // Reaches the pocket outside the pay and the dividend: a voucher's value, an expense allowance.
     InPocket,
 }
