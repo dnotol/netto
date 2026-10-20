@@ -278,6 +278,96 @@ public class PersonalTaxCalculatorTests
         (result.TaxableIncome, result.StateTax).ShouldBe((taxableIncome, stateTax));
     }
 
+    // Tax-Calc T13 of 2026-10-20 (Notion, « Rent for the office in my home reaches my pocket, kept at
+    // or below the cap »): T4's pay with 810.72 of net rent from a home office let to the company
+    // (codes 1109 and 1110: a cadastral income of 144 let for 1,351.20), globalised with the pay's
+    // 40,449.00: one scale and one tax-free amount on 41,259.72, the surcharge on the whole tax.
+    [Fact]
+    public void Compute_2025TaxCalcT13PayAndRent_taxesTheTotalNetIncomeOnOneScale()
+    {
+        var result = PersonalTaxCalculator.Compute(Rules2025, 50_000.00m, 8_300.00m, 0.07m, 810.72m);
+
+        result.ShouldBe(new PersonalTaxResult(
+            FlatRateCosts: 1_251.00m, TaxableIncome: 40_449.00m,
+            BasicTax: 14_678.87m, TaxFreeAmountReduction: 2_727.50m, StateTax: 11_951.37m,
+            ReducedStateTax: 8_968.67m, RegionalAdditionalTax: 2_982.71m, IncomeTax: 11_951.38m, MunicipalSurcharge: 836.60m,
+            LowEarnedIncomeCredit: 0.00m, OtherIncome: 810.72m));
+    }
+
+    [Fact]
+    public void Compute_2025TaxCalcT13PayAndRent_totalNetIncomeIsThePaysTaxableIncomeAndTheRent()
+    {
+        var result = PersonalTaxCalculator.Compute(Rules2025, 50_000.00m, 8_300.00m, 0.07m, 810.72m);
+
+        result.TotalNetIncome.ShouldBe(41_259.72m);
+    }
+
+    // Tax-Calc T14 of 2026-10-20: 28,033.00 of pay and the same 810.72 of rent, 28,843.72 of total net
+    // income, above 2025's ceiling of 28,420: no credit at all, although the pay alone gets one.
+    [Fact]
+    public void Compute_2025TaxCalcT14RentTakesTheTotalAboveTheCeiling_leavesNoCredit()
+    {
+        var result = PersonalTaxCalculator.Compute(Rules2025, 32_500.00m, 3_600.00m, 0.07m, 810.72m);
+
+        result.ShouldBe(new PersonalTaxResult(
+            FlatRateCosts: 867.00m, TaxableIncome: 28_033.00m,
+            BasicTax: 9_091.67m, TaxFreeAmountReduction: 2_727.50m, StateTax: 6_364.17m,
+            ReducedStateTax: 4_775.86m, RegionalAdditionalTax: 1_588.31m, IncomeTax: 6_364.17m, MunicipalSurcharge: 445.49m,
+            LowEarnedIncomeCredit: 0.00m, OtherIncome: 810.72m));
+    }
+
+    // T14's pay alone, derived from the official amounts (Tax-Calc was not run without the rent):
+    // 880 × (28,420 − 28,033) / 6,560 = 51.91.
+    [Fact]
+    public void Compute_2025DerivedT14PayAlone_getsTheFallingCredit()
+    {
+        var result = PersonalTaxCalculator.Compute(Rules2025, 32_500.00m, 3_600.00m, 0.07m);
+
+        (result.TaxableIncome, result.StateTax, result.LowEarnedIncomeCredit).ShouldBe((28_033.00m, 6_037.70m, 51.91m));
+    }
+
+    // Art. 289ter on the 2026 amounts, derived: the credit's amount follows the activity income, the
+    // pay, but none is due once the total net income exceeds 29,120 (§1), and from 22,400 to 29,120 it
+    // is at most 910 × (29,120 − total) / 6,720 (§2, al. 4), rounded to the cent like the credit itself.
+    public static TheoryData<decimal, decimal, decimal> CreditLimitedByTheTotalNetIncome2026 => new()
+    {
+        { 22_000.00m, 22_000.00m, 910.00m },
+        { 22_400.00m, 22_400.00m, 910.00m },
+        { 22_000.00m, 22_828.00m, 852.04m },
+        { 20_000.00m, 23_000.00m, 828.75m },
+        { 25_760.00m, 26_588.00m, 342.88m },
+        { 7_835.00m, 8_663.00m, 455.00m },
+        { 7_835.00m, 28_000.00m, 151.67m },
+        { 28_000.00m, 29_120.00m, 0.00m },
+        { 22_000.00m, 29_120.01m, 0.00m },
+    };
+
+    [Theory]
+    [MemberData(nameof(CreditLimitedByTheTotalNetIncome2026))]
+    public void LowEarnedIncomeCredit_2026OtherIncome_isLimitedByTheTotalNetIncome(decimal activityIncome, decimal totalNetIncome, decimal credit)
+    {
+        PersonalTaxCalculator.LowEarnedIncomeCredit(Rules2026, activityIncome, totalNetIncome).ShouldBe(credit);
+    }
+
+    // The 2026 rent at the cap on a cadastral income of 144 (RentCalculatorTests) beside a pay whose
+    // taxable income is 22,000: the credit is 910 on the pay alone, 852.04 once the 828 of rent takes
+    // the total to 22,828.
+    [Fact]
+    public void Compute_2026DerivedRentAtTheCapBesideALowPay_limitsTheCreditByTheTotal()
+    {
+        var result = PersonalTaxCalculator.Compute(Rules2026, 26_680.41m, 4_000.00m, 0.07m, 828.00m);
+
+        (result.TaxableIncome, result.TotalNetIncome, result.LowEarnedIncomeCredit).ShouldBe((22_000.00m, 22_828.00m, 852.04m));
+    }
+
+    [Fact]
+    public void Compute_2026NoOtherIncome_totalNetIncomeIsTheTaxableIncome()
+    {
+        var result = PersonalTaxCalculator.Compute(Rules2026, 50_000.00m, 8_300.00m, 0.07m);
+
+        (result.OtherIncome, result.TotalNetIncome).ShouldBe((0m, 40_449.00m));
+    }
+
     [Fact]
     public void Compute_2026ZeroMunicipalRate_isNoSurcharge()
     {

@@ -194,6 +194,30 @@ public class IncomeTaxAdvancePaymentCalculatorTests
         (result.Surcharge, result.Bonus).ShouldBe((0m, 0m));
     }
 
+    // Tax-Calc T13 and T14 of 2026-10-20, a home office's 810.72 of net rent beside the pay: the
+    // surcharge is on the tax on the pay taken separately (art. 158), not on the tax the rent raises,
+    // less the withholding and the credit actually granted. T13: 11,586.55, T12's own, less the 10,000
+    // withheld. T14: 6,037.70 at 106%, 6,399.96, with nothing taken off, since the rent's total net
+    // income above the ceiling leaves no credit; the 51.91 the pay alone would get is not deducted.
+    public static TheoryData<decimal, decimal, decimal, decimal, decimal, decimal> PayAndRent2025 => new()
+    {
+        { 50_000.00m, 8_300.00m, 10_000m, 12_281.74m, 2_281.74m, 138.62m },
+        { 32_500.00m, 3_600.00m, 0m, 6_399.96m, 6_399.96m, 388.80m },
+    };
+
+    [Theory]
+    [MemberData(nameof(PayAndRent2025))]
+    public void Compute_2025TaxCalcT13AndT14PayAndRent_surchargesThePaysOwnTaxLessTheCreditGranted(
+        decimal directorPay, decimal ownContributions, decimal withheld, decimal taxAt106Percent, decimal taxBase, decimal surcharge)
+    {
+        var pay = PersonalTaxCalculator.Compute(PersonalTaxRules.IncomeYear2025, directorPay, ownContributions, 0.07m);
+        var year = PersonalTaxCalculator.Compute(PersonalTaxRules.IncomeYear2025, directorPay, ownContributions, 0.07m, 810.72m);
+
+        var result = IncomeTaxAdvancePaymentCalculator.Compute(Rules2025, pay.IncomeTax, year.LowEarnedIncomeCredit, new TaxPrepayments(withheld, AdvancePayments.None));
+
+        (result.TaxAt106Percent, result.Base, result.Surcharge).ShouldBe((taxAt106Percent, taxBase, surcharge));
+    }
+
     // The surcharge needs the amount withheld: what the key formula withholds is GrossToNet's to set
     // before it, from the pay, so a withholding still left to the formula here is a caller's bug.
     [Fact]
