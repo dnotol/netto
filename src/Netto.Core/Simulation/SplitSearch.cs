@@ -3,10 +3,11 @@ using Netto.Core.CorporateTax;
 namespace Netto.Core.Simulation;
 
 // The year run at every director pay out of the profit before pay, with everything else the scenario
-// holds kept as it is: the reserve, the statuses, the municipal rate and the dividend's withholding
-// rate. The scenario's own pay is not used. It finds the pay that leaves the most in the pocket while
-// the profit after tax still covers the reserve and, when the reduced corporate rate depends on the
-// pay, the best pay on each side of the smallest pay that keeps it, so the split can weigh the two.
+// holds kept as it is: the reserve, the statuses, the municipal rate, the dividend's withholding rate
+// and who pays the social contributions. The pay is the gross on the payslip, whoever pays them; the
+// scenario's own pay is not used. It finds the pay that leaves the most in the pocket while the profit
+// after tax still covers the reserve and, when the reduced corporate rate depends on the pay, the best
+// pay on each side of the smallest pay that keeps it, so the split can weigh the two.
 //
 // The net in pocket is piecewise linear in the pay, with one jump, where the reduced rate is kept. A
 // grid of round amounts draws it, the jump is added a cent either side, and on each side the best pay
@@ -27,7 +28,7 @@ public static class SplitSearch
 
     public static (SplitSearchResult? Value, string? Error) Run(Scenario scenario)
     {
-        if (CorporateTaxRules.For(scenario.IncomeYear) is not { } rules)
+        if (CorporateTaxRules.For(scenario.IncomeYear) is null)
             return (null, YearSimulation.IncomeYearNotSupported);
 
         // The scenario's other inputs are refused, if at all, whatever the pay.
@@ -39,7 +40,7 @@ public static class SplitSearch
         var ceiling = Math.Max(0m, scenario.ProfitBeforePay);
         var step = GridStep(ceiling);
         var grid = Grid(ceiling, step).Select(levels.At).ToList();
-        var threshold = CorporateTaxCalculator.SmallestPayKeepingReducedRate(rules, ceiling, scenario.Company);
+        var threshold = YearSimulation.SmallestPayKeepingReducedRate(scenario);
 
         if (threshold is not { } smallest)
         {

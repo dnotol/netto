@@ -83,6 +83,34 @@ public static class GrossToNet
         return Figures.For(socialRules, taxRules, grossPay, municipalRate, prepayments, paidBy);
     }
 
+    // When the company pays the contributions, the smallest payslip gross whose taxable pay reaches an
+    // amount, to the cent: the taxable pay rises with the gross, so it is found by halving between no
+    // pay and a ceiling whose taxable pay reaches it. Null for a year without rules.
+    internal static decimal? SmallestGrossPayWithTaxablePay(int incomeYear, decimal taxablePay, decimal ceiling)
+    {
+        if (SocialContributionRules.For(incomeYear) is not { } socialRules || PersonalTaxRules.For(incomeYear) is not { } taxRules)
+            return null;
+
+        decimal TaxablePayOf(decimal grossPay) => grossPay + CompanyPaidContributions(socialRules, taxRules, grossPay);
+
+        if (TaxablePayOf(0m) >= taxablePay)
+            return 0m;
+        if (TaxablePayOf(ceiling) < taxablePay)
+            throw new InvalidOperationException($"No payslip gross up to {ceiling} has a taxable pay of {taxablePay}.");
+
+        var (low, high) = (0m, ceiling);
+        while (high - low > 0.01m)
+        {
+            var middle = Math.Floor((low + high) * 50m) / 100m;
+            if (TaxablePayOf(middle) >= taxablePay)
+                high = middle;
+            else
+                low = middle;
+        }
+
+        return high;
+    }
+
     // Paid by the director, the contributions are owed on the year's net taxable income, which is the
     // gross less the contributions themselves and less the flat-rate costs on what is left: a fixed
     // point. Each pass shrinks the error at least fivefold (the steepest rate is 20.50%), so it is

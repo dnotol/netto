@@ -1,6 +1,7 @@
 using Netto.Core.CorporateTax;
 using Netto.Core.DirectorPay;
 using Netto.Core.Dividends;
+using Netto.Core.SocialContributions;
 
 namespace Netto.Core.Simulation;
 
@@ -90,6 +91,24 @@ public static class YearSimulation
         var company = Company(scenario, corporateRules, dividendRules, pay.NetInPocket, pay.TaxablePay, pay.CompanyCost);
         return new PayLevel(scenario.DirectorPay, company.NetInPocket, company.Dividend.Dividend, company.KeptInCompany, company.Tax.Condition,
             company.MaximumDividend >= scenario.Reserve);
+    }
+
+    // The smallest director pay, as the split moves it, that keeps the reduced corporate rate out of the
+    // profit before pay: the smallest pay art. 215 accepts and, when the company pays the contributions,
+    // the smallest payslip gross whose taxable pay reaches it. Null when the rate does not depend on the
+    // pay, or for a year without rules.
+    internal static decimal? SmallestPayKeepingReducedRate(Scenario scenario)
+    {
+        if (CorporateTaxRules.For(scenario.IncomeYear) is not { } corporateRules)
+            return null;
+
+        var ceiling = Math.Max(0m, scenario.ProfitBeforePay);
+        if (CorporateTaxCalculator.SmallestPayKeepingReducedRate(corporateRules, ceiling, scenario.Company) is not { } taxablePay)
+            return null;
+
+        return scenario.ContributionsPaidBy == ContributionsPaidBy.Company
+            ? GrossToNet.SmallestGrossPayWithTaxablePay(scenario.IncomeYear, taxablePay, ceiling)
+            : taxablePay;
     }
 
     // What follows the director pay: its cost to the company comes off the profit, and art. 215 tests its

@@ -19,8 +19,9 @@ public static class CorporateTaxCalculator
 
     // The smallest director pay that meets art. 215's pay condition out of a given profit before pay:
     // the minimum, or half the profit, rounded up to the cent, where the taxable income left no longer
-    // exceeds the pay. Null when the rate does not depend on the pay: not a small company, or still in
-    // its first four tax periods.
+    // exceeds the pay. The pay is the one art. 215 reads, the taxable pay; YearSimulation turns it into
+    // the pay the split moves. Null when the rate does not depend on the pay: not a small company, or
+    // still in its first four tax periods.
     public static decimal? SmallestPayKeepingReducedRate(CorporateTaxRules rules, decimal profitBeforePay, CompanyStatus status)
     {
         if (!status.SmallCompany || status.FirstFourTaxPeriods)

@@ -181,6 +181,67 @@ public class SplitSearchTests
         curve.ShouldAllBe(level => level == LevelOf(level.Pay, 0m, null, null, ContributionsPaidBy.Company));
     }
 
+    // The reduced rate is kept once the taxable pay, the payslip gross plus the contributions the company
+    // pays, reaches half the profit or the 51,000 minimum: from a payslip gross of 41,706.64 on 100,000
+    // of profit, whose contributions are 8,293.36, the director-pays case's at 50,000, and from 42,540.76
+    // on 150,000, where they are 8,459.24, the director-pays case's at 51,000.
+    public static TheoryData<decimal, decimal> SmallestPayslipGrossKeepingTheRate => new()
+    {
+        { 120_000m, 41_706.64m },
+        { 170_000m, 42_540.76m },
+    };
+
+    [Theory]
+    [MemberData(nameof(SmallestPayslipGrossKeepingTheRate))]
+    public void Run_2026CompanyPaysContributions_saysTheSmallestPayslipGrossKeepingTheReducedRate(decimal revenue, decimal smallest)
+    {
+        Search(Scenario(revenue: revenue, paidBy: ContributionsPaidBy.Company)).SmallestPayKeepingReducedRate.ShouldBe(smallest);
+    }
+
+    [Fact]
+    public void Run_2026CompanyPaysContributions_drawsTheJumpWhereTheReducedRateIsKept()
+    {
+        var curve = Search(Scenario(paidBy: ContributionsPaidBy.Company)).Curve;
+
+        curve.Where(level => level.Pay is 41_706.63m or 41_706.64m).Select(level => level.Condition.AppliesReducedRate())
+            .ShouldBe(new[] { false, true });
+    }
+
+    // Found by running the year at every euro from 0 to 100,000 with the company paying (2026-10-20): the
+    // best pay, 17,237 on the payslip, has 20,798.68 of taxable pay, next to the director-pays best of
+    // 20,799, and leaves the same 65,622.81. The smallest pay keeping the rate, 41,706.64, is the
+    // director-pays 50,000 to the cent and leaves its 62,529.24, where 41,707 leaves 62,529.14.
+    [Fact]
+    public void Run_2026CompanyPaysContributions_findsThePayThatLeavesTheMostAndTheBestKeepingTheRate()
+    {
+        var result = Search(Scenario(paidBy: ContributionsPaidBy.Company));
+
+        (result.Best?.Pay, result.Best?.NetInPocket, result.BestKeepingReducedRate?.Pay, result.BestKeepingReducedRate?.NetInPocket,
+                result.BestLosingReducedRate?.Pay)
+            .ShouldBe(((decimal?)17_237m, (decimal?)65_622.81m, (decimal?)41_706.64m, (decimal?)62_529.24m, (decimal?)17_237m));
+    }
+
+    [Fact]
+    public void Run_2026CompanyPaysContributions_noPayWithinAThousandEurosLeavesMore()
+    {
+        var best = Search(Scenario(paidBy: ContributionsPaidBy.Company)).Best.ShouldNotBeNull();
+
+        var around = Enumerable.Range(-1_000, 2_001).Select(euros => Year(Scenario(directorPay: best.Pay + euros, paidBy: ContributionsPaidBy.Company)).NetInPocket);
+
+        around.ShouldAllBe(net => net <= best.NetInPocket);
+    }
+
+    // Keeping the rate takes the 51,000 of taxable pay here, 42,540.76 on the payslip, and leaves the
+    // 95,117.79 the director-pays case leaves at 51,000.
+    [Fact]
+    public void Run_2026Profit150000CompanyPaysContributions_keepsTheRateFromTheMinimumTaxablePayAndTheBestStillGivesItUp()
+    {
+        var result = Search(Scenario(revenue: 170_000m, paidBy: ContributionsPaidBy.Company));
+
+        (result.BestKeepingReducedRate?.Pay, result.BestKeepingReducedRate?.NetInPocket, result.Best?.Pay, result.Best?.NetInPocket)
+            .ShouldBe(((decimal?)42_540.76m, (decimal?)95_117.79m, (decimal?)17_237m, (decimal?)96_372.81m));
+    }
+
     [Fact]
     public void Run_negativeAdvancePayment_isRefusedWithYearSimulationsKey()
     {
