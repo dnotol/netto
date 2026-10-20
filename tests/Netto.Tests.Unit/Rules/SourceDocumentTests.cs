@@ -32,7 +32,7 @@ public class SourceDocumentTests
     [Fact]
     public void RuleTypes_core_includeEveryLayer()
     {
-        string[] layers = ["SocialContributionRules", "PersonalTaxRules", "MunicipalRates", "CorporateTaxRules", "DividendRules", "WithholdingRules", "VoucherRules"];
+        string[] layers = ["SocialContributionRules", "PersonalTaxRules", "MunicipalRates", "CorporateTaxRules", "DividendRules", "WithholdingRules", "VoucherRules", "AllowanceRules"];
 
         layers.ShouldBeSubsetOf(RuleTypes.Select(type => type.Name));
     }
