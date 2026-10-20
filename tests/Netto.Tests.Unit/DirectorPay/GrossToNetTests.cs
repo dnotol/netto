@@ -612,6 +612,119 @@ public class GrossToNetTests
         (next.IncomeTax + next.MunicipalSurcharge + next.LowEarnedIncomeCredit + next.AdvancePayments + next.NetInPocket).ShouldBe(1_000m);
     }
 
+    // Another income taxed with the pay, a home office's net rent: 828.00, the 2026 cap's
+    // (RentCalculatorTests), and 2,000.00 for a larger part let. Derived from the official amounts by
+    // the method Tax-Calc T13 and T14 prove on 2025 (PersonalTaxCalculatorTests): one scale on the
+    // total, the surcharge on the pay's own tax less the credit granted.
+    public static TheoryData<decimal> OtherIncomes => [828.00m, 2_000.00m];
+
+    [Theory]
+    [MemberData(nameof(OtherIncomes))]
+    public void Compute_2026OtherIncome_leavesThePaysOwnFiguresAsTheyAre(decimal otherIncome)
+    {
+        var (alone, with) = (Compute2026(27_000m, TaxPrepayments.None), Compute2026(27_000m, TaxPrepayments.None, otherIncome));
+
+        (with.IncomeTax, with.MunicipalSurcharge, with.LowEarnedIncomeCredit, with.NetInPocket, with.Statement.Months[0].Withholding)
+            .ShouldBe((alone.IncomeTax, alone.MunicipalSurcharge, alone.LowEarnedIncomeCredit, alone.NetInPocket, alone.Statement.Months[0].Withholding));
+    }
+
+    [Theory]
+    [MemberData(nameof(OtherIncomes))]
+    public void Compute_2026OtherIncome_leavesThePaysOwnStepsAsTheyAre(decimal otherIncome)
+    {
+        var (alone, with) = (Compute2026(27_000m, TaxPrepayments.None), Compute2026(27_000m, TaxPrepayments.None, otherIncome));
+
+        with.Steps.Select(step => (step.RuleKey, step.Layer, step.Event, step.Track, step.Amount))
+            .ShouldBe(alone.Steps.Select(step => (step.RuleKey, step.Layer, step.Event, step.Track, step.Amount)));
+    }
+
+    // 828.00 more on 40,455.44, all of it at 45%: 372.60 of State tax, 372.60 of tax once split, 26.08
+    // of municipal surcharge on the total; no credit to lose, nothing to surcharge.
+    [Fact]
+    public void Compute_2026Gross50000AndOtherIncome828_saysWhatItAddsToTheTax()
+    {
+        var result = Compute2026(50_000m, Withheld, 828.00m);
+
+        (result.OtherIncomeTax, result.OtherIncomeTax.Total).ShouldBe((new OtherIncomeTax(828.00m, 372.60m, 26.08m, 0m, 0m), 398.68m));
+    }
+
+    // 12,127.34 on the pay alone and 398.68 on the rent, less the 10,000 withheld.
+    [Fact]
+    public void Compute_2026Gross50000AndOtherIncome828_balanceIncludesItsTax()
+    {
+        var assessment = Compute2026(50_000m, new TaxPrepayments(10_000m, AdvancePayments.None), 828.00m).Assessment;
+
+        (assessment.FinalTax, assessment.Balance).ShouldBe((12_526.02m, 2_526.02m));
+    }
+
+    // 27,000 leaves 21,845.95 taxable, where the credit is 910 in full; 2,000 more takes the total to
+    // 23,845.95, so the credit is at most 910 × (29,120 − 23,845.95) / 6,720 = 714.19 (art. 289ter,
+    // §2, al. 4): 195.81 lost. The tax on the total, 4,142.88, is 799.99 more, its surcharge 56.00
+    // more. Nothing withheld: the surcharge base, the pay's 3,342.89 at 106% less the credit granted,
+    // rises from 2,633.46 to 2,829.27, and the surcharge from 106.66 to 114.59, 7.93 more.
+    [Fact]
+    public void Compute_2026Gross27000AndOtherIncome2000NothingWithheld_takesAwayPartOfTheCreditAndRaisesTheSurcharge()
+    {
+        var result = Compute2026(27_000m, TaxPrepayments.None, 2_000.00m);
+
+        (result.OtherIncomeTax, result.AdvancePayments.Base, result.AdvancePayments.Surcharge)
+            .ShouldBe((new OtherIncomeTax(2_000.00m, 799.99m, 56.00m, 195.81m, 7.93m), 2_829.27m, 114.59m));
+    }
+
+    // The pay's own surcharge step stays what the pay alone leaves; the rest is the other income's.
+    [Fact]
+    public void Compute_2026Gross27000AndOtherIncome2000NothingWithheld_thePaysSurchargeStepIsThePayAlonesSurcharge()
+    {
+        var result = Compute2026(27_000m, TaxPrepayments.None, 2_000.00m);
+
+        result.Steps.Single(step => step.RuleKey == "income_tax_advance_payment_surcharge").Amount.ShouldBe(106.66m);
+    }
+
+    // 4,142.88 + 290.00 − 714.19 + 114.59, all of it to pay.
+    [Fact]
+    public void Compute_2026Gross27000AndOtherIncome2000NothingWithheld_balanceIsTheYearsFinalTax()
+    {
+        var assessment = Compute2026(27_000m, TaxPrepayments.None, 2_000.00m).Assessment;
+
+        (assessment.FinalTax, assessment.Balance).ShouldBe((3_833.28m, 3_833.28m));
+    }
+
+    // The next 1,000 of pay is taxed on the total too: it moves the other income's tax as well, so its
+    // parts are the year's. Without the 2,000 they would be 323.64, 22.66, 34.54 of credit, 15.29 of
+    // surcharge and 437.99 to the pocket.
+    [Fact]
+    public void Compute_2026Gross27000AndOtherIncome2000NothingWithheld_splitsTheNextThousandOnTheYear()
+    {
+        var result = Compute2026(27_000m, TaxPrepayments.None, 2_000.00m);
+
+        result.NextThousand.ShouldBe(new NextThousand(
+            SocialContributions: 165.88m, IncomeTax: 323.64m, MunicipalSurcharge: 22.66m, LowEarnedIncomeCredit: 109.56m, AdvancePayments: 18.33m,
+            NetInPocket: 359.93m));
+    }
+
+    [Theory]
+    [MemberData(nameof(GrossPays))]
+    public void Compute_2026OtherIncomeNothingWithheld_nextThousandPartsAddUpToOneThousand(decimal grossPay)
+    {
+        var next = Compute2026(grossPay, TaxPrepayments.None, 2_000.00m).NextThousand;
+
+        (next.SocialContributions + next.IncomeTax + next.MunicipalSurcharge + next.LowEarnedIncomeCredit + next.AdvancePayments + next.NetInPocket)
+            .ShouldBe(1_000m);
+    }
+
+    [Fact]
+    public void Compute_2026NoOtherIncome_addsNothingToTheTax()
+    {
+        Compute2026(50_000m).OtherIncomeTax.ShouldBe(OtherIncomeTax.None);
+    }
+
+    // The net rent comes from the engine's own rules, never below zero: a negative one is a bug.
+    [Fact]
+    public void Compute_negativeOtherIncome_isACallersBug()
+    {
+        Should.Throw<ArgumentOutOfRangeException>(() => GrossToNet.Compute(2026, 50_000m, MunicipalRates.Entered(0.07m), Withheld, ContributionsPaidBy.Director, -0.01m));
+    }
+
     [Fact]
     public void Compute_negativeGrossPay_isRefused()
     {
@@ -655,6 +768,14 @@ public class GrossToNetTests
     private static GrossToNetResult Compute2026(decimal grossPay, RuleAmount municipalRate, TaxPrepayments? prepayments = null)
     {
         var (value, error) = GrossToNet.Compute(2026, grossPay, municipalRate, prepayments ?? Withheld);
+
+        error.ShouldBeNull();
+        return value.ShouldNotBeNull();
+    }
+
+    private static GrossToNetResult Compute2026(decimal grossPay, TaxPrepayments prepayments, decimal otherIncome = 0m)
+    {
+        var (value, error) = GrossToNet.Compute(2026, grossPay, MunicipalRates.Entered(0.07m), prepayments, ContributionsPaidBy.Director, otherIncome);
 
         error.ShouldBeNull();
         return value.ShouldNotBeNull();

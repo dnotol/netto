@@ -109,7 +109,7 @@ public static class YearSimulation
             return null;
         if (BesidesPayOf(scenario, voucherRules, allowanceRules).Value is not { } besidesPay)
             return null;
-        if (GrossToNet.Level(scenario.IncomeYear, scenario.DirectorPay, scenario.MunicipalRate.Value, scenario.TaxPrepayments, scenario.ContributionsPaidBy)
+        if (GrossToNet.Level(scenario.IncomeYear, scenario.DirectorPay, scenario.MunicipalRate.Value, scenario.TaxPrepayments, scenario.ContributionsPaidBy, 0m)
             is not { } pay)
             return null;
 
