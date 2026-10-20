@@ -16,13 +16,13 @@
     <value>What you pay</value>
   </data>
   <data name="TrackHint_cash" xml:space="preserve">
-    <value>From your gross pay to what reaches your pocket.</value>
+    <value>From your pay to what reaches your pocket.</value>
   </data>
   <data name="Track_tax_base" xml:space="preserve">
     <value>What you are taxed on</value>
   </data>
   <data name="TrackHint_tax_base" xml:space="preserve">
-    <value>From your gross pay to the taxable income the income tax is computed on.</value>
+    <value>From your pay to the taxable income the income tax is computed on.</value>
   </data>
   <data name="TaxBaseOnlyNote" xml:space="preserve">
     <value>Lowers the tax base, not paid out</value>
@@ -65,5 +65,68 @@
   </data>
   <data name="Row_income_tax_advance_payments" xml:space="preserve">
     <value>Advance-payment surcharge, less the bonus</value>
+  </data>
+  <data name="Row_company_cost" xml:space="preserve">
+    <value>Your pay, plus the contributions the company pays for you</value>
+  </data>
+  <data name="NextCompanyPaysNote" xml:space="preserve">
+    <value>The contributions are what the next €1,000 adds to those the company pays for you, on top of it: the other parts add up to €1,000, and all of them to what it costs the company, so the shares go over 100% together.</value>
+  </data>
+  <data name="StatementTitle" xml:space="preserve">
+    <value>Your pay, month by month</value>
+  </data>
+  <data name="StatementHint" xml:space="preserve">
+    <value>Twelve equal months, each withheld on by the administration's key formula; the net paid is the gross less the withholding. A real payslip may differ by a cent where its software rounds.</value>
+  </data>
+  <data name="ColumnMonth" xml:space="preserve">
+    <value>Month</value>
+  </data>
+  <data name="ColumnGross" xml:space="preserve">
+    <value>Gross</value>
+  </data>
+  <data name="ColumnCompanyPaid" xml:space="preserve">
+    <value>Paid by the company</value>
+  </data>
+  <data name="ColumnTaxablePay" xml:space="preserve">
+    <value>Taxable pay</value>
+  </data>
+  <data name="ColumnWithholding" xml:space="preserve">
+    <value>Withholding</value>
+  </data>
+  <data name="ColumnNetPaid" xml:space="preserve">
+    <value>Net paid</value>
+  </data>
+  <data name="UnmodelledMark" xml:space="preserve">
+    <value>Rules from {0} not modelled</value>
+  </data>
+  <data name="UnmodelledNote" xml:space="preserve">
+    <value>From {0}, rules are published that Netto does not model yet: the marked months are shown with the formula of 1 January.</value>
+  </data>
+  <data name="BalanceTitle" xml:space="preserve">
+    <value>Your year's balance on the assessment</value>
+  </data>
+  <data name="BalanceHint" xml:space="preserve">
+    <value>What your tax return leaves once the withholding and your advance payments are set against the final tax.</value>
+  </data>
+  <data name="FinalTax" xml:space="preserve">
+    <value>Final tax on your pay</value>
+  </data>
+  <data name="Withheld_Derived" xml:space="preserve">
+    <value>Withheld on your pay, as the pay slip above derives it</value>
+  </data>
+  <data name="Withheld_Given" xml:space="preserve">
+    <value>Withheld on your pay, as you entered it</value>
+  </data>
+  <data name="AdvancePayments" xml:space="preserve">
+    <value>Your advance payments</value>
+  </data>
+  <data name="Balance_ToPay" xml:space="preserve">
+    <value>Left to pay</value>
+  </data>
+  <data name="Balance_Refunded" xml:space="preserve">
+    <value>To be refunded to you</value>
+  </data>
+  <data name="Balance_Settled" xml:space="preserve">
+    <value>Nothing left to pay</value>
   </data>
 </root>

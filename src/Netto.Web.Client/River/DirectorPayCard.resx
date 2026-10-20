@@ -81,4 +81,13 @@
   <data name="Bonus" xml:space="preserve">
     <value>Your advance payments beyond that earn a bonus of {0}.</value>
   </data>
+  <data name="WithheldDerived" xml:space="preserve">
+    <value>Derived from the pay slip: twelve times the month's withholding by the key formula. Enter the amount actually withheld if it differs.</value>
+  </data>
+  <data name="WithheldYours" xml:space="preserve">
+    <value>Your amount replaces the pay slip's in the year.</value>
+  </data>
+  <data name="WithheldAsPaySlip" xml:space="preserve">
+    <value>Use the pay slip's amount</value>
+  </data>
 </root>

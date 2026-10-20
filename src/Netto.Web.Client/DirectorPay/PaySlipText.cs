@@ -10,4 +10,9 @@ internal static class PaySlipText
     public static string TrackHint(string key) => $"TrackHint_{key}";
 
     public static string Row(string key) => $"Row_{key}";
+
+    // The balance's line for what was withheld says where the amount comes from.
+    public static string Withheld(bool given) => given ? "Withheld_Given" : "Withheld_Derived";
+
+    public static string Balance(BalanceKind kind) => $"Balance_{kind}";
 }

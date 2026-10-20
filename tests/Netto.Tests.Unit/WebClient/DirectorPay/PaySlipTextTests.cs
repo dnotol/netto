@@ -3,6 +3,8 @@ using System.Resources;
 using Netto.Core.DirectorPay;
 using Netto.Core.PersonalTax;
 using Netto.Core.Rules;
+using Netto.Core.Simulation;
+using Netto.Core.SocialContributions;
 using Netto.Web.Client.DirectorPay;
 using Shouldly;
 
@@ -10,7 +12,8 @@ namespace Netto.Tests.WebClient.DirectorPay;
 
 // PaySlip.razor builds resource keys from the engine's keys. A key without a text in PaySlip.resx
 // would show on screen as the key itself, so every key the engine returns for 2026 must have one,
-// with a municipality's rate and with a rate the user entered.
+// with a municipality's rate and with a rate the user entered, the contributions paid by the
+// director or by the company, and the withholding derived or given.
 public class PaySlipTextTests
 {
     // The name IStringLocalizer<PaySlip> reads DirectorPay/PaySlip.resx under.
@@ -22,20 +25,41 @@ public class PaySlipTextTests
         ["entered"] = MunicipalRates.Entered(0.07m),
     };
 
-    public static TheoryData<string> RateOrigins => [.. RatesByOrigin.Keys];
+    private static readonly Dictionary<string, TaxPrepayments> WithholdingsByOrigin = new()
+    {
+        ["derived"] = TaxPrepayments.AsWithheld,
+        ["given"] = new TaxPrepayments(10_000m, AdvancePayments.None),
+    };
+
+    public static TheoryData<string, ContributionsPaidBy, string> Cases =>
+    [
+        .. from rateOrigin in RatesByOrigin.Keys
+           from paidBy in Enum.GetValues<ContributionsPaidBy>()
+           from withholding in WithholdingsByOrigin.Keys
+           select (rateOrigin, paidBy, withholding),
+    ];
 
     [Theory]
-    [MemberData(nameof(RateOrigins))]
-    public void PaySlipResx_everyKeyItBuildsFromThe2026Result_hasAText(string rateOrigin)
+    [MemberData(nameof(Cases))]
+    public void PaySlipResx_everyKeyItBuildsFromThe2026Result_hasAText(string rateOrigin, ContributionsPaidBy paidBy, string withholding)
     {
-        var (value, _) = GrossToNet.Compute(2026, 50_000m, RatesByOrigin[rateOrigin], TaxPrepayments.None);
+        var (value, _) = GrossToNet.Compute(2026, 50_000m, RatesByOrigin[rateOrigin], WithholdingsByOrigin[withholding], paidBy);
         var view = GrossToNetView.From(value.ShouldNotBeNull());
 
         var keys = view.Tracks.Select(track => PaySlipText.Track(track.Key))
             .Concat(view.Tracks.Select(track => PaySlipText.TrackHint(track.Key)))
             .Concat(view.Tracks.SelectMany(track => track.Rows).Select(row => PaySlipText.Row(row.Key)))
-            .Concat(view.NextThousand.Select(part => PaySlipText.Row(part.Key)));
+            .Concat(view.NextThousand.Select(part => PaySlipText.Row(part.Key)))
+            .Append(PaySlipText.Withheld(view.Balance.WithheldGiven))
+            .Append(PaySlipText.Balance(view.Balance.Kind));
 
         keys.Distinct().Where(key => Resources.GetString(key, CultureInfo.InvariantCulture) is null).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void PaySlipResx_everyWayTheBalanceCanGo_hasAText()
+    {
+        Enum.GetValues<BalanceKind>().Select(PaySlipText.Balance)
+            .Where(key => Resources.GetString(key, CultureInfo.InvariantCulture) is null).ShouldBeEmpty();
     }
 }

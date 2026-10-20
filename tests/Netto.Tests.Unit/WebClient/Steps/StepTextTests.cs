@@ -6,6 +6,8 @@ using Netto.Core.Dividends;
 using Netto.Core.PersonalTax;
 using Netto.Core.Rules;
 using Netto.Core.Simulation;
+using Netto.Core.SocialContributions;
+using Netto.Web.Client.DirectorPay;
 using Netto.Web.Client.Steps;
 using Shouldly;
 
@@ -53,9 +55,25 @@ public class StepTextTests
         MissingTexts(value.ShouldNotBeNull().Steps).ShouldBeEmpty();
     }
 
-    private static IEnumerable<string> MissingTexts(IEnumerable<Step> steps) =>
-        steps.SelectMany(step => new[] { StepText.Title(step.RuleKey), StepText.Rule(step.RuleKey) }
-                .Concat(step.AmountsUsed.Select(amount => StepText.Amount(amount.Key))))
+    // The pay slip lists two steps of its own beside the engine's: the month's withholding, with the
+    // key formula's lines and the annex's amounts, and the balance on the assessment.
+    [Theory]
+    [InlineData(ContributionsPaidBy.Director)]
+    [InlineData(ContributionsPaidBy.Company)]
+    public void StepDetailsResx_everyKeyOfTheWithholdingAndTheBalance_hasAText(ContributionsPaidBy paidBy)
+    {
+        var (value, _) = GrossToNet.Compute(2026, 50_000m, MunicipalRates.Entered(0.07m), TaxPrepayments.AsWithheld, paidBy);
+        var view = GrossToNetView.From(value.ShouldNotBeNull());
+
+        MissingTexts([view.WithholdingDetail, view.Balance.Detail]).ShouldBeEmpty();
+    }
+
+    private static IEnumerable<string> MissingTexts(IEnumerable<Step> steps) => MissingTexts(steps.Select(StepDetail.From));
+
+    private static IEnumerable<string> MissingTexts(IEnumerable<StepDetail> details) =>
+        details.SelectMany(detail => new[] { StepText.Title(detail.RuleKey), StepText.Rule(detail.RuleKey) }
+                .Concat(detail.Lines.Select(line => StepText.Line(line.Key)))
+                .Concat(detail.Sources.SelectMany(group => group.Amounts).Select(amount => StepText.Amount(amount.Key))))
             .Distinct()
             .Where(key => Resources.GetString(key, CultureInfo.InvariantCulture) is null);
 }

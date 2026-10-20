@@ -225,4 +225,100 @@
   <data name="Amount_fourth_bonus_multiplier" xml:space="preserve">
     <value>Bonus for a payment by the fourth deadline, times the reference rate</value>
   </data>
+  <data name="Title_withholding" xml:space="preserve">
+    <value>Withholding tax on a month's pay</value>
+  </data>
+  <data name="Rule_withholding" xml:space="preserve">
+    <value>What the company withholds each month on your pay, by the administration's key formula: the month's pay less a reduction in place of social deductions, times twelve, less the flat-rate professional costs, is the annual net taxable amount. The basic tax on it by the scale of annex III, with a 7% municipal surcharge built in, less the tax on the tax-free amount of a single person, is the annual tax, never below zero, and a twelfth of it is withheld. Each step is rounded to the cent. Over the year the amounts withheld are set against your final tax on the assessment.</value>
+  </data>
+  <data name="Line_monthly_taxable_pay" xml:space="preserve">
+    <value>Taxable pay of the month</value>
+  </data>
+  <data name="Line_reduction" xml:space="preserve">
+    <value>Reduction in place of social deductions</value>
+  </data>
+  <data name="Line_annual_gross" xml:space="preserve">
+    <value>Annual gross: the pay less the reduction, times twelve</value>
+  </data>
+  <data name="Line_flat_rate_costs" xml:space="preserve">
+    <value>Flat-rate professional costs</value>
+  </data>
+  <data name="Line_annual_net_taxable" xml:space="preserve">
+    <value>Annual net taxable</value>
+  </data>
+  <data name="Line_basic_tax" xml:space="preserve">
+    <value>Basic tax on the scale</value>
+  </data>
+  <data name="Line_tax_free_amount_reduction" xml:space="preserve">
+    <value>Tax on the tax-free amount, taken off</value>
+  </data>
+  <data name="Line_annual_tax" xml:space="preserve">
+    <value>Annual tax, never below zero</value>
+  </data>
+  <data name="Line_monthly_withholding" xml:space="preserve">
+    <value>Withholding for the month, a twelfth of it</value>
+  </data>
+  <data name="Amount_reduction_minimum" xml:space="preserve">
+    <value>Reduction up to the first limit</value>
+  </data>
+  <data name="Amount_reduction_band_1_upper_limit" xml:space="preserve">
+    <value>First limit of the reduction</value>
+  </data>
+  <data name="Amount_reduction_band_2_rate" xml:space="preserve">
+    <value>Rate on the slice over the first limit</value>
+  </data>
+  <data name="Amount_reduction_band_2_upper_limit" xml:space="preserve">
+    <value>Second limit of the reduction</value>
+  </data>
+  <data name="Amount_reduction_band_3_base" xml:space="preserve">
+    <value>Reduction at the second limit</value>
+  </data>
+  <data name="Amount_reduction_band_3_rate" xml:space="preserve">
+    <value>Rate on the slice over the second limit</value>
+  </data>
+  <data name="Amount_reduction_band_3_upper_limit" xml:space="preserve">
+    <value>Third limit of the reduction</value>
+  </data>
+  <data name="Amount_reduction_maximum" xml:space="preserve">
+    <value>Reduction above the third limit</value>
+  </data>
+  <data name="Amount_withholding_bracket_1_rate" xml:space="preserve">
+    <value>Bracket 1 rate</value>
+  </data>
+  <data name="Amount_withholding_bracket_1_upper_limit" xml:space="preserve">
+    <value>Bracket 1 upper limit</value>
+  </data>
+  <data name="Amount_withholding_bracket_2_base" xml:space="preserve">
+    <value>Tax at the foot of bracket 2</value>
+  </data>
+  <data name="Amount_withholding_bracket_2_rate" xml:space="preserve">
+    <value>Bracket 2 rate</value>
+  </data>
+  <data name="Amount_withholding_bracket_2_upper_limit" xml:space="preserve">
+    <value>Bracket 2 upper limit</value>
+  </data>
+  <data name="Amount_withholding_bracket_3_base" xml:space="preserve">
+    <value>Tax at the foot of bracket 3</value>
+  </data>
+  <data name="Amount_withholding_bracket_3_rate" xml:space="preserve">
+    <value>Bracket 3 rate</value>
+  </data>
+  <data name="Amount_withholding_bracket_3_upper_limit" xml:space="preserve">
+    <value>Bracket 3 upper limit</value>
+  </data>
+  <data name="Amount_withholding_bracket_4_base" xml:space="preserve">
+    <value>Tax at the foot of bracket 4</value>
+  </data>
+  <data name="Amount_withholding_bracket_4_rate" xml:space="preserve">
+    <value>Bracket 4 rate, above the last limit</value>
+  </data>
+  <data name="Amount_tax_free_amount_reduction" xml:space="preserve">
+    <value>Tax on the tax-free amount of a single person</value>
+  </data>
+  <data name="Title_assessment_balance" xml:space="preserve">
+    <value>Balance on your assessment</value>
+  </data>
+  <data name="Rule_assessment_balance" xml:space="preserve">
+    <value>Your assessment charges the final tax on your pay: the income tax with the municipal surcharge, less the tax credit for low earned income, plus the advance-payment surcharge and less the bonus. What the company withheld on your pay over the year and what you paid in advance are set against it: what is left is to pay, and what was paid beyond it is refunded.</value>
+  </data>
 </root>

@@ -10,4 +10,6 @@ internal static class StepText
     public static string Rule(string ruleKey) => $"Rule_{ruleKey}";
 
     public static string Amount(string key) => $"Amount_{key}";
+
+    public static string Line(string key) => $"Line_{key}";
 }
