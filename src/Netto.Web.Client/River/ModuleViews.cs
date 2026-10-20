@@ -1,3 +1,4 @@
+using Netto.Core.Allowances;
 using Netto.Core.CorporateTax;
 using Netto.Core.DirectorPay;
 using Netto.Core.PersonalTax;
@@ -25,6 +26,26 @@ internal sealed record VoucherView(decimal Total, decimal Deductible, decimal Di
             year.Vouchers.Total,
             year.Vouchers.Deductible,
             year.Vouchers.Disallowed,
+            [
+                .. steps.Where(step => step.Track == Track.InPocket).Select(step => new Drain(step.RuleKey, DrainKind.PassedOn, step.Amount, "pocket")),
+                new Drain("profit_before_pay", DrainKind.PassedOn, year.ProfitBeforePay, "split"),
+            ],
+            steps.Select(StepDetail.From).ToList());
+    }
+}
+
+// What the expense allowances bring to the pocket, one drain for each once the company pays any, and
+// the profit before pay they leave for the split, from the year's allowance steps. The maxima and the
+// conditions are the year's rules, which the card reads beside it, so they stay while an amount is
+// refused. The company deducts them in full: nothing of them reaches Corporate tax.
+internal sealed record AllowanceView(decimal Total, IReadOnlyList<Drain> Drains, IReadOnlyList<StepDetail> Details)
+{
+    public static AllowanceView From(YearResult year)
+    {
+        var steps = year.Steps.Where(step => step.Event == TaxableEvent.ExpenseAllowances).ToList();
+
+        return new AllowanceView(
+            steps.Where(step => step.Track == Track.InPocket).Sum(step => step.Amount),
             [
                 .. steps.Where(step => step.Track == Track.InPocket).Select(step => new Drain(step.RuleKey, DrainKind.PassedOn, step.Amount, "pocket")),
                 new Drain("profit_before_pay", DrainKind.PassedOn, year.ProfitBeforePay, "split"),
@@ -295,8 +316,9 @@ internal static class TaxAdvancePaymentFields
 
 // The condition is the engine's: which part of art. 215 decided the rate, against which minimum pay.
 // So is the surcharge the advance payments leave, and what more by the last deadline cancels it. What
-// comes in is the profit the split leaves the company; its taxable income adds back what it cannot
-// deduct of the vouchers. The card lists the corporate layer's steps, that one among them.
+// comes in is the profit the split leaves the company; its taxable income adds back the disallowed
+// expenses the engine counts, what it cannot deduct of the vouchers. The card lists the corporate
+// layer's steps, that one among them.
 internal sealed record CorporateTaxView(
     decimal ProfitAfterPay,
     decimal DisallowedExpenses,
@@ -318,7 +340,7 @@ internal sealed record CorporateTaxView(
 
         return new CorporateTaxView(
             year.ProfitAfterPay,
-            year.Vouchers.Disallowed,
+            year.DisallowedExpenses,
             year.Company.TaxableIncome,
             year.Company.Condition,
             year.Company.MinimumDirectorPay,
@@ -413,6 +435,9 @@ internal static class RiverErrors
         VoucherCalculator.MealVoucherDaysNegative or VoucherCalculator.MealVoucherDaysAboveYear or VoucherCalculator.EcoVouchersNegative
             or VoucherCalculator.EcoVouchersAboveMaximum or VoucherCalculator.SportCultureVouchersNegative
             or VoucherCalculator.SportCultureVouchersAboveMaximum => RiverModule.Vouchers,
+        AllowanceCalculator.OfficeAllowanceNegative or AllowanceCalculator.OfficeAllowanceAboveMaximum or AllowanceCalculator.InternetAllowanceNegative
+            or AllowanceCalculator.InternetAllowanceAboveMaximum or AllowanceCalculator.ComputerAllowanceNegative
+            or AllowanceCalculator.ComputerAllowanceAboveMaximum or AllowanceCalculator.PhoneCostsNegative => RiverModule.Allowances,
         GrossToNet.GrossPayNegative => companySkipped ? RiverModule.DirectorPay : RiverModule.Split,
         GrossToNet.MunicipalRateOutOfRange => RiverModule.DirectorPay,
         YearSimulation.ReserveNegative or YearSimulation.EarlierProfitsNegative => RiverModule.Dividend,
@@ -430,6 +455,8 @@ internal enum RiverModule
     CompanyYear,
 
     Vouchers,
+
+    Allowances,
 
     Split,
 

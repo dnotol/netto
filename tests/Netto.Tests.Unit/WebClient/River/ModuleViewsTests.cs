@@ -1,3 +1,4 @@
+using Netto.Core.Allowances;
 using Netto.Core.CorporateTax;
 using Netto.Core.DirectorPay;
 using Netto.Core.Simulation;
@@ -17,7 +18,9 @@ namespace Netto.Tests.WebClient.River;
 // The example grants no vouchers; the vouchers' cards grant 220 days of meal vouchers, 250 of eco and
 // 100 of sport/culture vouchers (YearSimulationTests): 2,310.20 to the pocket, 1,430.20 of it the
 // company cannot deduct, which leaves 97,689.80 for the split and 49,120.00 of taxable income, taxed
-// 9,824.00 and, nothing prepaid, surcharged 663.12.
+// 9,824.00 and, nothing prepaid, surcharged 663.12. The example pays no expense allowances; the
+// allowances' cards pay the most the circular allows for the office, internet and a computer, 2,418.44
+// (YearSimulationTests), and 600 of phone costs where they say so, all of it deducted.
 public class ModuleViewsTests
 {
     private static readonly RiverInputs Prepaid = RiverInputs.Example.WithAdvancePayment(0, 7_500m).WithTaxWithheld(11_334m);
@@ -500,6 +503,79 @@ public class ModuleViewsTests
         });
     }
 
+    // No allowances: the profit before pay goes on to the split whole, and there are no steps to list.
+    [Fact]
+    public void Allowances_example_passTheProfitBeforePayOnToTheSplit()
+    {
+        var view = Allowances(RiverInputs.Example);
+
+        (view.Total, view.Details.Count, view.Drains.Single()).ShouldBe((0m, 0, new Drain("profit_before_pay", DrainKind.PassedOn, 100_000m, "split")));
+    }
+
+    [Fact]
+    public void Allowances_all_drainEachToThePocketAndTheRestToTheSplit()
+    {
+        Allowances(AllAllowances(RiverInputs.Example)).Drains.ShouldBe(new[]
+        {
+            new Drain("office_allowance", DrainKind.PassedOn, 1_938.44m, "pocket"),
+            new Drain("internet_allowance", DrainKind.PassedOn, 240m, "pocket"),
+            new Drain("computer_allowance", DrainKind.PassedOn, 240m, "pocket"),
+            new Drain("phone_costs", DrainKind.PassedOn, 600m, "pocket"),
+            new Drain("profit_before_pay", DrainKind.PassedOn, 96_981.56m, "split"),
+        });
+    }
+
+    [Fact]
+    public void Allowances_all_addUpWhatReachesThePocket()
+    {
+        Allowances(AllAllowances(RiverInputs.Example)).Total.ShouldBe(3_018.44m);
+    }
+
+    // After the vouchers' 2,310.20 and the allowances' 2,418.44, 95,271.36 go on to the split.
+    [Fact]
+    public void Allowances_afterVouchers_passOnTheProfitBothLeave()
+    {
+        Allowances(FlatRateAllowances(AllVouchers)).Drains[^1].ShouldBe(new Drain("profit_before_pay", DrainKind.PassedOn, 95_271.36m, "split"));
+    }
+
+    [Fact]
+    public void Allowances_all_listTheirStepsAndNoneOfTheVouchers()
+    {
+        Allowances(AllAllowances(AllVouchers)).Details.Select(detail => detail.RuleKey)
+            .ShouldBe(["office_allowance", "internet_allowance", "computer_allowance", "phone_costs"]);
+    }
+
+    // What makes it no pay first, then the three monthly maxima under the annex they come from.
+    [Fact]
+    public void Allowances_office_citesTheReimbursementAndTheMonthlyMaxima()
+    {
+        var office = Allowances(AllAllowances(RiverInputs.Example)).Details[0];
+
+        office.Sources.Select(group => (group.Source, group.Amounts.Count)).ShouldBe(new[]
+        {
+            (AllowanceRules.IncomeYear2026.Reimbursement, 0),
+            (AllowanceRules.IncomeYear2026.OfficeAllowanceMaxima[0].Amount.Source, 3),
+        });
+    }
+
+    // Deducted in full: Corporate tax adds back only what the company cannot deduct of the vouchers.
+    // 100,000 less 2,310.20 and 2,418.44 and the 50,000 pay: 45,271.36 comes in, and 46,701.56 is taxed.
+    [Fact]
+    public void CorporateTax_vouchersAndAllowances_addsBackOnlyTheVouchersItCannotDeduct()
+    {
+        var view = CorporateTax(FlatRateAllowances(AllVouchers));
+
+        (view.ProfitAfterPay, view.DisallowedExpenses, view.TaxableIncome).ShouldBe((45_271.36m, 1_430.20m, 46_701.56m));
+    }
+
+    [Fact]
+    public void Split_allowances_givesThePayAndTheCompanysProfitOutOfWhatTheyLeave()
+    {
+        var view = Split(FlatRateAllowances(RiverInputs.Example));
+
+        (view.Ceiling, view.Pay, view.CompanyProfit).ShouldBe((97_581.56m, 50_000m, (decimal?)47_581.56m));
+    }
+
     // The module is named rather than typed: RiverModule is internal, a theory's parameters public.
     [Theory]
     [InlineData(YearSimulation.RevenueNegative, false, "CompanyYear")]
@@ -518,6 +594,13 @@ public class ModuleViewsTests
     [InlineData(VoucherCalculator.EcoVouchersAboveMaximum, false, "Vouchers")]
     [InlineData(VoucherCalculator.SportCultureVouchersNegative, false, "Vouchers")]
     [InlineData(VoucherCalculator.SportCultureVouchersAboveMaximum, false, "Vouchers")]
+    [InlineData(AllowanceCalculator.OfficeAllowanceNegative, false, "Allowances")]
+    [InlineData(AllowanceCalculator.OfficeAllowanceAboveMaximum, false, "Allowances")]
+    [InlineData(AllowanceCalculator.InternetAllowanceNegative, false, "Allowances")]
+    [InlineData(AllowanceCalculator.InternetAllowanceAboveMaximum, false, "Allowances")]
+    [InlineData(AllowanceCalculator.ComputerAllowanceNegative, false, "Allowances")]
+    [InlineData(AllowanceCalculator.ComputerAllowanceAboveMaximum, false, "Allowances")]
+    [InlineData(AllowanceCalculator.PhoneCostsNegative, false, "Allowances")]
     [InlineData(YearSimulation.IncomeYearNotSupported, false, "River")]
     public void RiverErrors_engineRefusal_isShownOnTheModuleHoldingTheField(string error, bool companySkipped, string module)
     {
@@ -539,4 +622,12 @@ public class ModuleViewsTests
 
     private static VoucherView Vouchers(RiverInputs inputs) =>
         VoucherView.From(inputs.Run().Year.ShouldNotBeNull());
+
+    private static AllowanceView Allowances(RiverInputs inputs) =>
+        AllowanceView.From(inputs.Run().Year.ShouldNotBeNull());
+
+    private static RiverInputs FlatRateAllowances(RiverInputs inputs) =>
+        inputs.WithOfficeAllowance(1_938.44m).WithInternetAllowance(240m).WithComputerAllowance(240m);
+
+    private static RiverInputs AllAllowances(RiverInputs inputs) => FlatRateAllowances(inputs).WithPhoneCosts(600m);
 }

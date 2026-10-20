@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Resources;
+using Netto.Core.Allowances;
 using Netto.Core.CorporateTax;
 using Netto.Core.DirectorPay;
 using Netto.Core.Dividends;
@@ -62,6 +63,18 @@ public class StepTextTests
     {
         var scenario = new Scenario(2026, 120_000m, 20_000m, new CompanyStatus(SmallCompany: true, FirstFourTaxPeriods: false),
             50_000m, MunicipalRates.Entered(0.07m), 0m, WithholdingCategory.Standard) { Vouchers = new VoucherGrants(220, 250m, 100m) };
+
+        var (value, _) = YearSimulation.Run(scenario);
+
+        MissingTexts(value.ShouldNotBeNull().Steps).ShouldBeEmpty();
+    }
+
+    // Every allowance, with the office's three monthly maxima among their amounts.
+    [Fact]
+    public void StepDetailsResx_everyKeyOfTheAllowancesSteps_hasAText()
+    {
+        var scenario = new Scenario(2026, 120_000m, 20_000m, new CompanyStatus(SmallCompany: true, FirstFourTaxPeriods: false),
+            50_000m, MunicipalRates.Entered(0.07m), 0m, WithholdingCategory.Standard) { Allowances = new ExpenseAllowances(1_938.44m, 240m, 240m, 600m) };
 
         var (value, _) = YearSimulation.Run(scenario);
 

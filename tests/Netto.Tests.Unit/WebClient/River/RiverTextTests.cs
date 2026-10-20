@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Resources;
+using Netto.Core.Allowances;
 using Netto.Core.CorporateTax;
 using Netto.Core.DirectorPay;
 using Netto.Core.Dividends;
@@ -32,6 +33,8 @@ public class RiverTextTests
 
     private static readonly ResourceManager VoucherCardResources = new("Netto.Web.Client.River.VoucherCard", typeof(VoucherCard).Assembly);
 
+    private static readonly ResourceManager AllowanceCardResources = new("Netto.Web.Client.River.AllowanceCard", typeof(AllowanceCard).Assembly);
+
     [Fact]
     public void OriginChipResx_everyOrigin_hasAWordAndAHint()
     {
@@ -40,18 +43,20 @@ public class RiverTextTests
         Missing(OriginChipResources, keys).ShouldBeEmpty();
     }
 
-    // The example, with a reserve so every drain has an amount and every kind of voucher, is every
-    // drain a card can list, the director's contributions paid by either.
+    // The example, with a reserve so every drain has an amount, every kind of voucher and every
+    // allowance, is every drain a card can list, the director's contributions paid by either.
     [Theory]
     [InlineData(ContributionsPaidBy.Director)]
     [InlineData(ContributionsPaidBy.Company)]
     public void DrainListResx_everyDrainOfEveryCard_hasALabelAndADestination(ContributionsPaidBy paidBy)
     {
         var inputs = RiverInputs.Example.WithReserve(15_000m).WithContributionsPaidBy(paidBy)
-            .WithMealVoucherDays(220).WithEcoVouchers(250m).WithSportCultureVouchers(100m);
+            .WithMealVoucherDays(220).WithEcoVouchers(250m).WithSportCultureVouchers(100m)
+            .WithOfficeAllowance(1_938.44m).WithInternetAllowance(240m).WithComputerAllowance(240m).WithPhoneCosts(600m);
         var run = inputs.Run();
         var year = run.Year.ShouldNotBeNull();
         var drains = VoucherView.From(year).Drains
+            .Concat(AllowanceView.From(year).Drains)
             .Concat(DirectorPayView.From(inputs, run.Pay.ShouldNotBeNull()).Drains)
             .Concat(CorporateTaxView.From(year).Drains)
             .Concat(DividendView.From(year).Drains)
@@ -71,6 +76,9 @@ public class RiverTextTests
             GrossToNet.GrossPayNegative, GrossToNet.MunicipalRateOutOfRange, GrossToNet.TaxWithheldNegative, GrossToNet.TaxAdvancePaymentNegative,
             VoucherCalculator.MealVoucherDaysNegative, VoucherCalculator.MealVoucherDaysAboveYear, VoucherCalculator.EcoVouchersNegative,
             VoucherCalculator.EcoVouchersAboveMaximum, VoucherCalculator.SportCultureVouchersNegative, VoucherCalculator.SportCultureVouchersAboveMaximum,
+            AllowanceCalculator.OfficeAllowanceNegative, AllowanceCalculator.OfficeAllowanceAboveMaximum, AllowanceCalculator.InternetAllowanceNegative,
+            AllowanceCalculator.InternetAllowanceAboveMaximum, AllowanceCalculator.ComputerAllowanceNegative, AllowanceCalculator.ComputerAllowanceAboveMaximum,
+            AllowanceCalculator.PhoneCostsNegative,
         };
 
         Missing(RefusedMessageResources, errors.Select(RefusedMessageText.Error)).ShouldBeEmpty();
@@ -128,6 +136,13 @@ public class RiverTextTests
     public void VoucherCardResx_everyConditionOfTheVouchers_hasAText()
     {
         Missing(VoucherCardResources, VoucherRules.IncomeYear2026.Conditions.Select(condition => VoucherCardText.Condition(condition.Key))).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void AllowanceCardResx_everyConditionOfTheAllowances_hasAText()
+    {
+        Missing(AllowanceCardResources, AllowanceRules.IncomeYear2026.Conditions.Select(condition => AllowanceCardText.Condition(condition.Key)))
+            .ShouldBeEmpty();
     }
 
     private static IEnumerable<string> Missing(ResourceManager resources, IEnumerable<string> keys) =>

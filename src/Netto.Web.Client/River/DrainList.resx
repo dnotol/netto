@@ -93,4 +93,16 @@
   <data name="To_split" xml:space="preserve">
     <value>on to the split</value>
   </data>
+  <data name="Drain_office_allowance" xml:space="preserve">
+    <value>Office allowance</value>
+  </data>
+  <data name="Drain_internet_allowance" xml:space="preserve">
+    <value>Internet allowance</value>
+  </data>
+  <data name="Drain_computer_allowance" xml:space="preserve">
+    <value>Computer allowance</value>
+  </data>
+  <data name="Drain_phone_costs" xml:space="preserve">
+    <value>Phone costs</value>
+  </data>
 </root>

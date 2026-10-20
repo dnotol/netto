@@ -60,4 +60,25 @@
   <data name="Error_sport_culture_vouchers_above_maximum" xml:space="preserve">
     <value>More sport/culture vouchers than the year allows: above the yearly maximum they are no longer exempt.</value>
   </data>
+  <data name="Error_office_allowance_negative" xml:space="preserve">
+    <value>The office allowance cannot be negative. Enter 0 if the company pays none.</value>
+  </data>
+  <data name="Error_office_allowance_above_maximum" xml:space="preserve">
+    <value>More office allowance than the year allows: above the monthly maxima the administration accepts, it is no longer a reimbursement without documents.</value>
+  </data>
+  <data name="Error_internet_allowance_negative" xml:space="preserve">
+    <value>The internet allowance cannot be negative. Enter 0 if the company pays none.</value>
+  </data>
+  <data name="Error_internet_allowance_above_maximum" xml:space="preserve">
+    <value>More internet allowance than the year allows: above the monthly maximum the administration accepts, it is no longer a reimbursement without documents.</value>
+  </data>
+  <data name="Error_computer_allowance_negative" xml:space="preserve">
+    <value>The computer allowance cannot be negative. Enter 0 if the company pays none.</value>
+  </data>
+  <data name="Error_computer_allowance_above_maximum" xml:space="preserve">
+    <value>More computer allowance than the year allows: above the monthly maximum the administration accepts, it is no longer a reimbursement without documents.</value>
+  </data>
+  <data name="Error_phone_costs_negative" xml:space="preserve">
+    <value>Phone costs cannot be negative. Enter 0 if the company reimburses none.</value>
+  </data>
 </root>

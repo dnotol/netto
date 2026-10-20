@@ -1,3 +1,4 @@
+using Netto.Core.Allowances;
 using Netto.Core.CorporateTax;
 using Netto.Core.DirectorPay;
 using Netto.Core.Dividends;
@@ -20,7 +21,12 @@ namespace Netto.Tests.WebClient.River;
 // 61,489.17. The pay alone leaves 29,579.30. The example grants no vouchers; with 220 days of meal
 // vouchers (YearSimulationTests) the company has 98,039.80 left for the split and 49,120.00 of
 // taxable income, which pays 9,824.00 and, nothing prepaid, a surcharge of 663.12, leaving 37,552.68
-// to pay out: the pocket gets 29,579.30, the net dividend 30,943.14 and the vouchers' 1,960.20.
+// to pay out: the pocket gets 29,579.30, the net dividend 30,943.14 and the vouchers' 1,960.20. It
+// pays no expense allowances; with the most the circular allows for the office, internet and a
+// computer, 2,418.44 (YearSimulationTests), the company has 97,581.56 left for the split and as much
+// taxable income less the pay, 47,581.56, which pays 9,516.31 and a surcharge of 642.35, leaving
+// 37,422.90 to pay out: the pocket gets 29,579.30, the net dividend 30,836.72 and the allowances'
+// 2,418.44.
 public class RiverInputsTests
 {
     [Fact]
@@ -511,6 +517,70 @@ public class RiverInputsTests
         (inputs.Run().Year, inputs.Run().Pay?.NetInPocket, inputs.Vouchers.MealVoucherDays.Value).ShouldBe((null, 29_579.30m, 220));
     }
 
+    [Fact]
+    public void Example_paysNoAllowances()
+    {
+        var nothing = new Input<decimal>(0m, InputOrigin.Example);
+
+        RiverInputs.Example.Allowances.ShouldBe(new AllowanceInputs(nothing, nothing, nothing, nothing));
+    }
+
+    [Fact]
+    public void WithAllowances_makesEachTheUsers()
+    {
+        var allowances = RiverInputs.Example.WithOfficeAllowance(1_938.44m).WithInternetAllowance(240m).WithComputerAllowance(240m).WithPhoneCosts(600m)
+            .Allowances;
+
+        allowances.ShouldBe(new AllowanceInputs(
+            new Input<decimal>(1_938.44m, InputOrigin.Yours), new Input<decimal>(240m, InputOrigin.Yours), new Input<decimal>(240m, InputOrigin.Yours),
+            new Input<decimal>(600m, InputOrigin.Yours)));
+    }
+
+    [Fact]
+    public void Run_allowancesReachTheEngine()
+    {
+        var year = FlatRateAllowances(RiverInputs.Example).Run().Year.ShouldNotBeNull();
+
+        (year.ProfitBeforePay, year.ProfitAfterTax, year.NetInPocket).ShouldBe((97_581.56m, 37_422.90m, 62_834.46m));
+    }
+
+    [Fact]
+    public void PayCeiling_allowancesAndVouchers_isTheProfitTheyLeave()
+    {
+        (FlatRateAllowances(RiverInputs.Example).PayCeiling, FlatRateAllowances(RiverInputs.Example.WithMealVoucherDays(220)).PayCeiling)
+            .ShouldBe(((decimal?)97_581.56m, (decimal?)95_621.36m));
+    }
+
+    [Fact]
+    public void Run_officeAllowanceAboveTheMaximum_isRefusedWithTheEnginesKey()
+    {
+        var run = RiverInputs.Example.WithOfficeAllowance(1_938.45m).Run();
+
+        (run.Year, run.Error).ShouldBe((null, AllowanceCalculator.OfficeAllowanceAboveMaximum));
+    }
+
+    // The split's search holds the allowances, so new allowances need a new search.
+    [Fact]
+    public void SameBesidesPay_allowancesChanged_isNot()
+    {
+        RiverInputs.Example.SameBesidesPay(RiverInputs.Example.WithPhoneCosts(600m)).ShouldBeFalse();
+    }
+
+    [Fact]
+    public void SearchSplit_allowances_drawsEveryPayUpToTheProfitTheyLeave()
+    {
+        FlatRateAllowances(RiverInputs.Example).SearchSplit().ShouldNotBeNull().Curve[^1].Pay.ShouldBe(97_581.56m);
+    }
+
+    // Skipped with the company: the pay alone runs without them, and they come back with it.
+    [Fact]
+    public void SkipCompany_runsThePayWithoutTheAllowances()
+    {
+        var inputs = FlatRateAllowances(RiverInputs.Example).SkipCompany();
+
+        (inputs.Run().Year, inputs.Run().Pay?.NetInPocket, inputs.Allowances.Office.Value).ShouldBe((null, 29_579.30m, 1_938.44m));
+    }
+
     // SplitSearchTests: on the example, 20,799 leaves the most.
     [Fact]
     public void SearchSplit_example_findsTheBestPay()
@@ -561,4 +631,7 @@ public class RiverInputsTests
 
         changed.ShouldAllBe(inputs => !inputs.SameBesidesPay(RiverInputs.Example));
     }
+
+    private static RiverInputs FlatRateAllowances(RiverInputs inputs) =>
+        inputs.WithOfficeAllowance(1_938.44m).WithInternetAllowance(240m).WithComputerAllowance(240m);
 }

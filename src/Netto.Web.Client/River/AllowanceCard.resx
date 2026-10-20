@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve">
+    <value>Expense allowances</value>
+  </data>
+  <data name="Summary" xml:space="preserve">
+    <value>{0} to your pocket · {1} before your pay</value>
+  </data>
+  <data name="Waiting" xml:space="preserve">
+    <value>Waiting for the company's year.</value>
+  </data>
+  <data name="Hint" xml:space="preserve">
+    <value>What the company can pay you back for working from home with your own office, internet, computer and phone: costs that are its own, so neither pay nor income for your social contributions. It pays them out of its profit, before your pay, and deducts them.</value>
+  </data>
+  <data name="OfficeLabel" xml:space="preserve">
+    <value>Office allowance for the year</value>
+  </data>
+  <data name="OfficeMaximum" xml:space="preserve">
+    <value>At most {0} for the year: {1}.</value>
+  </data>
+  <data name="MonthlyFrom" xml:space="preserve">
+    <value>{0} a month from {1}</value>
+  </data>
+  <data name="ListSeparator" xml:space="preserve">
+    <value>, </value>
+  </data>
+  <data name="InternetLabel" xml:space="preserve">
+    <value>Internet allowance for the year</value>
+  </data>
+  <data name="ComputerLabel" xml:space="preserve">
+    <value>Computer allowance for the year</value>
+  </data>
+  <data name="MonthlyMaximum" xml:space="preserve">
+    <value>At most {0} a month, {1} for the year.</value>
+  </data>
+  <data name="PhoneLabel" xml:space="preserve">
+    <value>Phone costs reimbursed for the year</value>
+  </data>
+  <data name="PhoneHint" xml:space="preserve">
+    <value>The professional share of your own phone bills, on invoices: no flat amount exists for a phone.</value>
+  </data>
+  <data name="Deducted" xml:space="preserve">
+    <value>The company deducts all {0} of them, like its own running costs: nothing is added back to its taxable income.</value>
+  </data>
+  <data name="ConditionsTitle" xml:space="preserve">
+    <value>What the reimbursement takes</value>
+  </data>
+  <data name="ConditionsHint" xml:space="preserve">
+    <value>Netto cannot check these: enter amounts only if they hold.</value>
+  </data>
+  <data name="Condition_directors_case_by_case" xml:space="preserve">
+    <value>These flat amounts are the ones the administration accepts from an employer, and its circular does not apply them to company directors. A director is reimbursed on documents, or on serious and concordant flat norms judged case by case: an advance ruling from the SDA can confirm a flat amount before you rely on it.</value>
+  </data>
+  <data name="Condition_no_other_company_share" xml:space="preserve">
+    <value>The company bears none of these costs otherwise: no utilities paid for the office, no share of the internet bill, no company laptop or tablet beside the computer allowance.</value>
+  </data>
+  <data name="Condition_office_covers_rent" xml:space="preserve">
+    <value>The office allowance covers the room, its rent included: you cannot also rent the same room to the company.</value>
+  </data>
+  <data name="Condition_phone_on_invoices" xml:space="preserve">
+    <value>For the phone, the company reimburses the professional share of your own bills, on invoices: Netto takes the amount you enter as that share.</value>
+  </data>
+  <data name="DetailsLabel" xml:space="preserve">
+    <value>Where these figures come from</value>
+  </data>
+  <data name="SourcesTitle" xml:space="preserve">
+    <value>The rules, with the income year {0} amounts</value>
+  </data>
+</root>

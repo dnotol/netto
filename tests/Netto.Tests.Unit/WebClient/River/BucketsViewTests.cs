@@ -211,6 +211,41 @@ public class BucketsViewTests
         (view.Start, view.Buckets.Sum(bucket => bucket.Amount)).ShouldBe((revenue - 20_000m, revenue - 20_000m));
     }
 
+    // The allowances (RiverInputsTests) leave the start where it was, put their 2,418.44 in the pocket,
+    // 62,834.46, take nothing from the pay, and lower the taxes on profit to 16,744.84: corporate tax
+    // 9,516.31 and its surcharge 642.35, withholding 6,736.12 on the 37,422.90 left, less the refund
+    // of 149.94.
+    [Fact]
+    public void From_allowances_putsThemInThePocketAndNoTaxOnPay()
+    {
+        var inputs = RiverInputs.Example.WithOfficeAllowance(1_938.44m).WithInternetAllowance(240m).WithComputerAllowance(240m);
+
+        var view = BucketsView.From(inputs.Run()).ShouldNotBeNull();
+
+        view.ShouldSatisfyAllConditions(
+            () => view.Start.ShouldBe(100_000m),
+            () => view.Buckets.Select(bucket => (bucket.Key, bucket.Amount)).ShouldBe(new[]
+            {
+                ("pocket", 62_834.46m),
+                ("taxes_on_pay", 20_420.70m),
+                ("taxes_on_profit", 16_744.84m),
+                ("kept_in_company", 0m),
+            }));
+    }
+
+    [Theory]
+    [MemberData(nameof(Years))]
+    public void From_anyYearWithVouchersAndAllowances_bucketsAddUpToWhatTheCompanyEarnsBeforePayingTheDirector(decimal revenue, decimal pay, decimal reserve)
+    {
+        var inputs = RiverInputs.Example.WithRevenue(revenue).WithDirectorPay(pay).WithReserve(reserve)
+            .WithMealVoucherDays(220).WithEcoVouchers(250m).WithSportCultureVouchers(100m)
+            .WithOfficeAllowance(1_938.44m).WithInternetAllowance(240m).WithComputerAllowance(240m).WithPhoneCosts(600m);
+
+        var view = BucketsView.From(inputs.Run()).ShouldNotBeNull();
+
+        (view.Start, view.Buckets.Sum(bucket => bucket.Amount)).ShouldBe((revenue - 20_000m, revenue - 20_000m));
+    }
+
     [Fact]
     public void From_refusedInput_drawsNothing()
     {

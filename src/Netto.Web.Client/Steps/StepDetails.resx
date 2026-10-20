@@ -366,4 +366,43 @@
   <data name="Amount_eco_voucher_face_value_maximum" xml:space="preserve">
     <value>Face value of an eco voucher, at most</value>
   </data>
+  <data name="Title_office_allowance" xml:space="preserve">
+    <value>Office allowance</value>
+  </data>
+  <data name="Rule_office_allowance" xml:space="preserve">
+    <value>A flat-rate allowance for an office in your home covers every office cost: the room and its rent, utilities, supplies, upkeep. The company pays back a cost that is its own, so it is not pay: neither taxed nor counted in the income your social contributions are owed on, and the company deducts it. The administration accepts at most, each month, the amount ONSS accepts, which changes during the year.</value>
+  </data>
+  <data name="Title_internet_allowance" xml:space="preserve">
+    <value>Internet allowance</value>
+  </data>
+  <data name="Rule_internet_allowance" xml:space="preserve">
+    <value>A flat-rate allowance for the professional use of your private internet connection, up to a fixed amount a month that is not indexed. The company pays back a cost that is its own: not pay, and the company deducts it.</value>
+  </data>
+  <data name="Title_computer_allowance" xml:space="preserve">
+    <value>Computer allowance</value>
+  </data>
+  <data name="Rule_computer_allowance" xml:space="preserve">
+    <value>A flat-rate allowance for the professional use of your private computer and its peripherals, up to a fixed amount a month that is not indexed. The company pays back a cost that is its own: not pay, and the company deducts it.</value>
+  </data>
+  <data name="Title_phone_costs" xml:space="preserve">
+    <value>Phone costs</value>
+  </data>
+  <data name="Rule_phone_costs" xml:space="preserve">
+    <value>The professional share of your own phone bills, reimbursed on invoices: no official text sets a flat amount for a phone. The company pays back a cost that is its own: not pay, and the company deducts it.</value>
+  </data>
+  <data name="Amount_office_allowance_maximum_from_january" xml:space="preserve">
+    <value>Office allowance, most a month from January</value>
+  </data>
+  <data name="Amount_office_allowance_maximum_from_march" xml:space="preserve">
+    <value>Office allowance, most a month from March</value>
+  </data>
+  <data name="Amount_office_allowance_maximum_from_september" xml:space="preserve">
+    <value>Office allowance, most a month from September</value>
+  </data>
+  <data name="Amount_internet_allowance_monthly_maximum" xml:space="preserve">
+    <value>Internet allowance, most a month</value>
+  </data>
+  <data name="Amount_computer_allowance_monthly_maximum" xml:space="preserve">
+    <value>Computer allowance, most a month</value>
+  </data>
 </root>
