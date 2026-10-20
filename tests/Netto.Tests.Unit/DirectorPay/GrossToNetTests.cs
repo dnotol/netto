@@ -648,6 +648,17 @@ public class GrossToNetTests
         (result.OtherIncomeTax, result.OtherIncomeTax.Total).ShouldBe((new OtherIncomeTax(828.00m, 372.60m, 26.08m, 0m, 0m), 398.68m));
     }
 
+    // What the other income moves not at all is a plain zero: a negative one would read as money
+    // coming back. The river's example withholds as the key formula says, where the surcharge falls
+    // under the minimum with or without the rent.
+    [Fact]
+    public void Compute_2026Gross50000AndOtherIncome828_whatItDoesNotMoveIsAPlainZero()
+    {
+        var tax = Compute2026(50_000m, TaxPrepayments.AsWithheld, 828.00m).OtherIncomeTax;
+
+        (decimal.IsNegative(tax.LowEarnedIncomeCreditLost), decimal.IsNegative(tax.AdvancePayments)).ShouldBe((false, false));
+    }
+
     // 12,127.34 on the pay alone and 398.68 on the rent, less the 10,000 withheld.
     [Fact]
     public void Compute_2026Gross50000AndOtherIncome828_balanceIncludesItsTax()

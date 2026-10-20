@@ -262,11 +262,15 @@ public static class GrossToNet
                 yearAdvancePayments,
                 new OtherIncomeTax(
                     otherIncome,
-                    yearTax.IncomeTax - tax.IncomeTax,
-                    yearTax.MunicipalSurcharge - tax.MunicipalSurcharge,
-                    tax.LowEarnedIncomeCredit - yearTax.LowEarnedIncomeCredit,
-                    yearAdvancePayments.Surcharge - yearAdvancePayments.Bonus - advancePayments.Surcharge + advancePayments.Bonus));
+                    Difference(yearTax.IncomeTax, tax.IncomeTax),
+                    Difference(yearTax.MunicipalSurcharge, tax.MunicipalSurcharge),
+                    Difference(tax.LowEarnedIncomeCredit, yearTax.LowEarnedIncomeCredit),
+                    Difference(yearAdvancePayments.Surcharge - yearAdvancePayments.Bonus, advancePayments.Surcharge - advancePayments.Bonus)));
         }
+
+        // What the other income moves, a plain zero when it moves nothing: decimal subtraction can
+        // return a negative zero, which the steps would read as money coming back.
+        private static decimal Difference(decimal withOther, decimal alone) => withOther == alone ? 0m : withOther - alone;
 
         // The tax on the pay and the other income together, and the surcharge on the pay's own tax, as
         // art. 158 takes it separately, less the credit the total leaves.
