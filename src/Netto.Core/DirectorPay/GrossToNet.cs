@@ -10,7 +10,7 @@ namespace Netto.Core.DirectorPay;
 // final contributions owed on its income. The income tax on it is surcharged where too little of it
 // was withheld or paid in advance during the year, and the advance payments beyond what avoids that
 // earn a bonus. The pay is paid in twelve equal months, each withheld on by the key formula: the
-// statement shows them.
+// statement shows them, and the assessment what the year's tax return leaves to pay or refunds.
 public static class GrossToNet
 {
     public const string GrossPayNegative = "gross_pay_negative";
@@ -72,7 +72,8 @@ public static class GrossToNet
                 figures.Tax.LowEarnedIncomeCredit - next.Tax.LowEarnedIncomeCredit,
                 next.AdvancePayments.Surcharge - next.AdvancePayments.Bonus - figures.AdvancePayments.Surcharge + figures.AdvancePayments.Bonus,
                 next.NetInPocket - figures.NetInPocket),
-            Statement(withholdingRules, figures)), null);
+            Statement(withholdingRules, figures),
+            AssessmentCalculator.Compute(figures.Tax, advancePayments, prepayments.Withheld, prepayments.Paid)), null);
     }
 
     // The pay's figures alone, for the split's search, which runs the year at a hundred pays and more

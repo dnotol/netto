@@ -204,6 +204,44 @@ public class GrossToNetTests
             });
     }
 
+    // The assessment: 11,333.96 and 793.38 of tax, no surcharge once 10,000 is withheld (the 90.63 on
+    // the 2,014.00 left of the base is under the minimum at 90%), less the 10,000.
+    [Fact]
+    public void Compute_2026Gross50000Withheld10000_balanceIsTheFinalTaxLessTheWithholding()
+    {
+        var assessment = Compute2026(50_000m, MunicipalRates.Entered(0.07m), new TaxPrepayments(10_000m, AdvancePayments.None)).Assessment;
+
+        (assessment.FinalTax, assessment.Withheld, assessment.AdvancePayments, assessment.Balance).ShouldBe((12_127.34m, 10_000m, 0m, 2_127.34m));
+    }
+
+    [Theory]
+    [MemberData(nameof(GrossPays))]
+    public void Compute_2026NothingWithheldOrPrepaid_finalTaxIsTheTaxLessTheCreditPlusTheSurchargeAndAllOfItIsToPay(decimal grossPay)
+    {
+        var result = Compute2026(grossPay, MunicipalRates.Entered(0.07m), TaxPrepayments.None);
+
+        (result.Assessment.FinalTax, result.Assessment.Balance).ShouldBe((
+            result.IncomeTax + result.MunicipalSurcharge - result.LowEarnedIncomeCredit + result.AdvancePayments.Surcharge - result.AdvancePayments.Bonus,
+            result.Assessment.FinalTax));
+    }
+
+    // 12,014 by 10 April: no surcharge, 90.11 of bonus, and 23.23 left to pay.
+    [Fact]
+    public void Compute_2026Gross50000TheWholeBaseBy10April_setsThePaymentsAgainstTheTaxLessTheBonus()
+    {
+        var assessment = Compute2026(50_000m, MunicipalRates.Entered(0.07m), new TaxPrepayments(0m, new AdvancePayments(12_014m, 0m, 0m, 0m))).Assessment;
+
+        (assessment.FinalTax, assessment.AdvancePayments, assessment.Balance).ShouldBe((12_037.23m, 12_014m, 23.23m));
+    }
+
+    [Fact]
+    public void Compute_2026WithholdingBeyondTheTax_balanceIsNegativeToBeRefunded()
+    {
+        var assessment = Compute2026(50_000m, MunicipalRates.Entered(0.07m), new TaxPrepayments(20_000m, AdvancePayments.None)).Assessment;
+
+        assessment.Balance.ShouldBe(-7_872.66m);
+    }
+
     [Fact]
     public void Compute_negativeWithholding_isRefused()
     {

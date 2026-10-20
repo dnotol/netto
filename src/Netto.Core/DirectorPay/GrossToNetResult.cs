@@ -8,8 +8,8 @@ namespace Netto.Core.DirectorPay;
 // ContributionsPaidByCompany, nothing when the director does, and they are pay too: TaxablePay, what
 // the director declares, is the gross plus them, and so is CompanyCost, what the pay takes out of the
 // company. Both are the gross itself when the director pays. Steps is the ledger of the year's rules
-// on the pay; Statement is the pay as the director sees it month by month, a record beside the ledger,
-// not a step.
+// on the pay; Statement, the pay as the director sees it month by month, and Assessment, the balance
+// the year's tax return leaves, are records beside the ledger, not steps.
 public sealed record GrossToNetResult(
     int IncomeYear,
     decimal GrossPay,
@@ -27,7 +27,8 @@ public sealed record GrossToNetResult(
     decimal NetInPocket,
     IReadOnlyList<Step> Steps,
     NextThousand NextThousand,
-    PayStatement Statement);
+    PayStatement Statement,
+    Assessment Assessment);
 
 // Where the next 1,000 of gross pay goes. The six parts add up to 1,000 when the director pays the
 // contributions. When the company pays them, SocialContributions is what the next 1,000 adds to them,
