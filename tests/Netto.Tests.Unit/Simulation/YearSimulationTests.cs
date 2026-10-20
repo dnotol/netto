@@ -3,6 +3,7 @@ using Netto.Core.DirectorPay;
 using Netto.Core.Dividends;
 using Netto.Core.PersonalTax;
 using Netto.Core.Simulation;
+using Netto.Core.SocialContributions;
 using Shouldly;
 
 namespace Netto.Tests.Simulation;
@@ -14,7 +15,9 @@ namespace Netto.Tests.Simulation;
 // profit after tax leaves once the reserve is kept in the company. The company prepays enough by
 // 10 April to leave no advance-payment surcharge unless a test says otherwise, and withholds more
 // than the director pay's tax; the surcharge figures follow AdvancePaymentCalculatorTests and
-// IncomeTaxAdvancePaymentCalculatorTests.
+// IncomeTaxAdvancePaymentCalculatorTests. The director pays the contributions unless a test says the
+// company does; those figures are GrossToNetTests' too (50,000: contributions 9,942.52, income tax
+// 14,954.01, surcharge 1,046.78, net 33,999.21, company cost 59,942.52).
 public class YearSimulationTests
 {
     private static readonly CompanyStatus SmallPastStartUp = new(SmallCompany: true, FirstFourTaxPeriods: false);
@@ -188,6 +191,73 @@ public class YearSimulationTests
     {
         var result = Run(Scenario(directorPay: directorPay, reserve: reserve, category: category, revenue: profitBeforePay + 20_000m,
             taxPrepayments: TaxPrepayments.None));
+
+        (result.CorporateTax + result.SocialContributions + result.PersonalTax + result.NetInPocket + result.KeptInCompany)
+            .ShouldBe(profitBeforePay);
+    }
+
+    // The company's cost, 59,942.52, comes off the profit, and the taxable pay, the same amount, meets
+    // the 51,000 minimum, so the 40,057.48 left is taxed at 20%.
+    [Fact]
+    public void Run_2026CompanyPaysContributions_takesItsCostOffTheProfitAndTestsTheMinimumPayOnTheTaxablePay()
+    {
+        var result = Run(Scenario(directorPay: 50_000m, reserve: 0m, paidBy: ContributionsPaidBy.Company));
+
+        (result.DirectorPay.CompanyCost, result.Company.TaxableIncome, result.Company.Condition, result.CorporateTax)
+            .ShouldBe((59_942.52m, 40_057.48m, ReducedRateCondition.MinimumPayMet, 8_011.50m));
+    }
+
+    // The contributions are the social layer and leave the company, not the pocket, which gets the
+    // pay's net, 33,999.21, and the net dividend out of the 32,045.98 left after tax, withheld at 18%
+    // with the refund on the exempt 833.
+    [Fact]
+    public void Run_2026CompanyPaysContributions_theyAreTheSocialLayerAndLeaveTheCompanyNotThePocket()
+    {
+        var result = Run(Scenario(directorPay: 50_000m, reserve: 0m, paidBy: ContributionsPaidBy.Company));
+
+        (result.SocialContributions, result.PersonalTax, result.Dividend.Dividend, result.NetInPocket, result.KeptInCompany)
+            .ShouldBe((9_942.52m, 21_619.13m, 32_045.98m, 60_426.85m, 0m));
+    }
+
+    [Fact]
+    public void Run_2026CompanyPaysContributions_socialContributionsStepKeepsItsLayerAndTrack()
+    {
+        var step = Run(Scenario(directorPay: 50_000m, reserve: 0m, paidBy: ContributionsPaidBy.Company)).Steps.Single(step => step.RuleKey == "social_contributions");
+
+        (step.Layer, step.Event, step.Track, step.Amount).ShouldBe((Layer.Social, TaxableEvent.DirectorPay, Track.PaidOut, 9_942.52m));
+    }
+
+    // 45,000 on the payslip is under the 51,000 minimum, but with the 8,948.24 of contributions the
+    // company pays the taxable pay is 53,948.24 and meets it: what the company bears for the director
+    // is pay (cadre XVI, 1). 20% of the 96,051.76 left.
+    [Fact]
+    public void Run_2026CompanyPaysContributions_theMinimumPayIsTestedOnTheTaxablePay()
+    {
+        var directorPays = Run(Scenario(directorPay: 45_000m, reserve: 0m, revenue: 170_000m));
+        var companyPays = Run(Scenario(directorPay: 45_000m, reserve: 0m, revenue: 170_000m, paidBy: ContributionsPaidBy.Company));
+
+        (directorPays.Company.Condition, companyPays.DirectorPay.TaxablePay, companyPays.Company.Condition, companyPays.CorporateTax)
+            .ShouldBe((ReducedRateCondition.MinimumPayNotMet, 53_948.24m, ReducedRateCondition.MinimumPayMet, 19_210.35m));
+    }
+
+    [Theory]
+    [MemberData(nameof(Setups))]
+    public void Run_2026CompanyPaysContributions_companysTaxableIncomeIsTheProfitBeforePayLessItsCost(
+        decimal directorPay, decimal profitBeforePay, decimal reserve, WithholdingCategory category)
+    {
+        var result = Run(Scenario(directorPay: directorPay, reserve: reserve, category: category, revenue: profitBeforePay + 20_000m,
+            paidBy: ContributionsPaidBy.Company));
+
+        result.Company.TaxableIncome.ShouldBe(profitBeforePay - result.DirectorPay.CompanyCost);
+    }
+
+    [Theory]
+    [MemberData(nameof(Setups))]
+    public void Run_2026CompanyPaysContributions_layersPocketAndCompanyAddUpToTheProfitBeforePay(
+        decimal directorPay, decimal profitBeforePay, decimal reserve, WithholdingCategory category)
+    {
+        var result = Run(Scenario(directorPay: directorPay, reserve: reserve, category: category, revenue: profitBeforePay + 20_000m,
+            paidBy: ContributionsPaidBy.Company));
 
         (result.CorporateTax + result.SocialContributions + result.PersonalTax + result.NetInPocket + result.KeptInCompany)
             .ShouldBe(profitBeforePay);
@@ -394,11 +464,13 @@ public class YearSimulationTests
         decimal revenue = 120_000m,
         decimal earlierProfits = 0m,
         AdvancePayments? advancePayments = null,
-        TaxPrepayments? taxPrepayments = null) =>
+        TaxPrepayments? taxPrepayments = null,
+        ContributionsPaidBy paidBy = ContributionsPaidBy.Director) =>
         new(2026, revenue, 20_000m, SmallPastStartUp, directorPay, MunicipalRates.Entered(0.07m), reserve, category, earlierProfits)
         {
             AdvancePayments = advancePayments ?? Prepaid,
             TaxPrepayments = taxPrepayments ?? Withheld,
+            ContributionsPaidBy = paidBy,
         };
 
     private static YearResult Run(Scenario scenario)

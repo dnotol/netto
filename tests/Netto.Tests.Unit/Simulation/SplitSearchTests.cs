@@ -2,6 +2,7 @@ using Netto.Core.CorporateTax;
 using Netto.Core.Dividends;
 using Netto.Core.PersonalTax;
 using Netto.Core.Simulation;
+using Netto.Core.SocialContributions;
 using Shouldly;
 
 namespace Netto.Tests.Simulation;
@@ -16,7 +17,8 @@ namespace Netto.Tests.Simulation;
 // the credit is whole (taxable income from 8,960 to 22,400), and the credit is never more. The
 // company prepays enough by 10 April to leave no advance-payment surcharge at any pay, unless a test
 // says otherwise, and withholds more than any director pay's tax; the payments it makes and what it
-// withholds are held at every pay, like the rest of the scenario.
+// withholds are held at every pay, like the rest of the scenario, and so is who pays the
+// contributions: the director unless a test says the company does.
 public class SplitSearchTests
 {
     private static readonly CompanyStatus SmallPastStartUp = new(SmallCompany: true, FirstFourTaxPeriods: false);
@@ -160,6 +162,23 @@ public class SplitSearchTests
         var curve = Search(Scenario(taxPrepayments: taxPrepayments)).Curve;
 
         curve.ShouldAllBe(level => level == LevelOf(level.Pay, 0m, null, taxPrepayments));
+    }
+
+    [Fact]
+    public void Run_2026DirectorPays_findsWhatNotSayingWhoPaysFinds()
+    {
+        var director = Search(Scenario(paidBy: ContributionsPaidBy.Director));
+        var unsaid = Search(Scenario());
+
+        (director.Best, director.Curve.SequenceEqual(unsaid.Curve)).ShouldBe((unsaid.Best, true));
+    }
+
+    [Fact]
+    public void Run_2026CompanyPaysContributions_eachLevelIsTheYearAtThatPayWithTheCompanyPaying()
+    {
+        var curve = Search(Scenario(paidBy: ContributionsPaidBy.Company)).Curve;
+
+        curve.ShouldAllBe(level => level == LevelOf(level.Pay, 0m, null, null, ContributionsPaidBy.Company));
     }
 
     [Fact]
@@ -324,12 +343,14 @@ public class SplitSearchTests
         CompanyStatus? company = null,
         decimal earlierProfits = 0m,
         AdvancePayments? advancePayments = null,
-        TaxPrepayments? taxPrepayments = null) =>
+        TaxPrepayments? taxPrepayments = null,
+        ContributionsPaidBy paidBy = ContributionsPaidBy.Director) =>
         new(2026, revenue, 20_000m, company ?? SmallPastStartUp, directorPay, MunicipalRates.Entered(0.07m), reserve,
             WithholdingCategory.VvprbisThirdYearOnwards, earlierProfits)
         {
             AdvancePayments = advancePayments ?? Prepaid,
             TaxPrepayments = taxPrepayments ?? Withheld,
+            ContributionsPaidBy = paidBy,
         };
 
     private static SplitSearchResult Search(Scenario scenario)
@@ -348,9 +369,11 @@ public class SplitSearchTests
         return value.ShouldNotBeNull();
     }
 
-    private static PayLevel LevelOf(decimal pay, decimal reserve, AdvancePayments? advancePayments = null, TaxPrepayments? taxPrepayments = null)
+    private static PayLevel LevelOf(
+        decimal pay, decimal reserve, AdvancePayments? advancePayments = null, TaxPrepayments? taxPrepayments = null,
+        ContributionsPaidBy paidBy = ContributionsPaidBy.Director)
     {
-        var year = Year(Scenario(directorPay: pay, reserve: reserve, advancePayments: advancePayments, taxPrepayments: taxPrepayments));
+        var year = Year(Scenario(directorPay: pay, reserve: reserve, advancePayments: advancePayments, taxPrepayments: taxPrepayments, paidBy: paidBy));
 
         return new PayLevel(pay, year.NetInPocket, year.Dividend.Dividend, year.KeptInCompany, year.Company.Condition,
             year.MaximumDividend >= reserve);

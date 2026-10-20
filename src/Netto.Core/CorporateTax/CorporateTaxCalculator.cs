@@ -3,7 +3,9 @@ namespace Netto.Core.CorporateTax;
 public static class CorporateTaxCalculator
 {
     // A loss pays no tax. The reduced rate covers only the first slice; the rest pays the standard
-    // rate. Rounded to the cent once: the reduced slice at its ceiling is a whole amount.
+    // rate. Rounded to the cent once: the reduced slice at its ceiling is a whole amount. The director
+    // pay is the pay as art. 215 reads it, with what the company bore for the director in it: the
+    // taxable pay (YearSimulation), not only the gross on the payslip.
     public static CorporateTaxResult Compute(CorporateTaxRules rules, decimal taxableIncome, decimal directorPay, CompanyStatus status)
     {
         var condition = Condition(rules, taxableIncome, directorPay, status);
