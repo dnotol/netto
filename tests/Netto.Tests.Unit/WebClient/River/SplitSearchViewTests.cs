@@ -192,13 +192,14 @@ public class SplitSearchViewTests
     }
 
     // SplitSearchTests: the company's surcharge, 1,336.52 at the best pay and 675.00 at 50,000, moves
-    // neither, and the pay's, 486.57 at 50,000, is under the minimum at the best pay.
+    // neither, and the pay's tax, withheld as the key formula says at every pay, leaves a surcharge
+    // under the minimum at both, so the gain is over the 61,975.74 of the pay set.
     [Fact]
     public void ExampleNothingPrepaid_namesTheBestPayAndWhatItGainsWithTheSurcharge()
     {
         var best = View(RiverInputs.Example).Best.ShouldNotBeNull();
 
-        (best.Level.Pay, best.Level.NetInPocket, best.Gain).ShouldBe((20_799m, 64_526.87m, 3_037.70m));
+        (best.Level.Pay, best.Level.NetInPocket, best.Gain).ShouldBe((20_799m, 64_526.87m, 2_551.13m));
     }
 
     private static SplitSearchView? From(RiverInputs inputs) => SplitSearchView.From(inputs, inputs.Run(), inputs.SearchSplit());

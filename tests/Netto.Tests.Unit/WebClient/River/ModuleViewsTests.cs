@@ -7,11 +7,11 @@ using Shouldly;
 namespace Netto.Tests.WebClient.River;
 
 // What each module card draws, on the river's example (RiverInputsTests): 100,000 of profit before
-// pay, 50,000 of pay leaving 29,092.73 net once its tax, nothing of it withheld, is surcharged
-// 486.57, corporate tax 10,000 at 20% because the taxable income,
-// 50,000, does not exceed the pay, and, nothing being prepaid, a surcharge of 675.00 on it. The
-// dividend's cards prepay 7,500 by 10 April, which cancels it: 40,000 of profit after tax paid out as
-// a VVPRbis dividend (withholding 7,200, refund 149.94, net 32,949.94).
+// pay, 50,000 of pay leaving 29,579.30 net, its tax withheld as the key formula says, which leaves a
+// surcharge under the minimum (486.57 is due with nothing withheld), corporate tax 10,000 at 20%
+// because the taxable income, 50,000, does not exceed the pay, and, nothing being prepaid, a
+// surcharge of 675.00 on it. The dividend's cards prepay 7,500 by 10 April, which cancels it: 40,000
+// of profit after tax paid out as a VVPRbis dividend (withholding 7,200, refund 149.94, net 32,949.94).
 public class ModuleViewsTests
 {
     private static readonly RiverInputs Prepaid = RiverInputs.Example.WithAdvancePayment(0, 7_500m).WithTaxWithheld(11_334m);
@@ -71,9 +71,9 @@ public class ModuleViewsTests
             new Drain("income_tax", DrainKind.PaidOut, 11_333.96m, "taxes_on_pay"),
             new Drain("municipal_surcharge", DrainKind.PaidOut, 793.38m, "taxes_on_pay"),
             new Drain("low_earned_income_credit", DrainKind.Back, 0m, "taxes_on_pay"),
-            new Drain("income_tax_advance_payment_surcharge", DrainKind.PaidOut, 486.57m, "taxes_on_pay"),
+            new Drain("income_tax_advance_payment_surcharge", DrainKind.PaidOut, 0m, "taxes_on_pay"),
             new Drain("income_tax_advance_payment_bonus", DrainKind.Back, 0m, "taxes_on_pay"),
-            new Drain("net_pay", DrainKind.PassedOn, 29_092.73m, "pocket"),
+            new Drain("net_pay", DrainKind.PassedOn, 29_579.30m, "pocket"),
         });
     }
 
@@ -109,14 +109,22 @@ public class ModuleViewsTests
                 "income_tax_advance_payment_surcharge", "income_tax_advance_payment_bonus"]);
     }
 
-    // 486.57 on the pay's tax; 14,317.50 by 21 December brings it under the 100 minimum.
+    // Nothing withheld: 486.57 on the pay's tax, and 14,317.50 by 21 December brings it under the
+    // 100 minimum.
     [Fact]
-    public void DirectorPay_example_saysTheSurchargeIsDueAndWhatByTheLastDeadlineLeavesNoneDue()
+    public void DirectorPay_nothingWithheld_saysTheSurchargeIsDueAndWhatByTheLastDeadlineLeavesNoneDue()
     {
-        var view = DirectorPay(RiverInputs.Example);
+        var view = DirectorPay(RiverInputs.Example.WithTaxWithheld(0m));
 
         (view.Surcharge, view.SurchargeAmount, view.TopUp, view.LastDeadline)
             .ShouldBe((TaxSurchargeState.Due, 486.57m, 14_317.50m, new DateOnly(2026, 12, 21)));
+    }
+
+    // The 10,691.28 the key formula withholds leaves 59.52 of surcharge before the 90%, under the minimum.
+    [Fact]
+    public void DirectorPay_example_saysTheSurchargeIsUnderTheMinimum()
+    {
+        DirectorPay(RiverInputs.Example).Surcharge.ShouldBe(TaxSurchargeState.BelowMinimum);
     }
 
     [Fact]
@@ -144,10 +152,12 @@ public class ModuleViewsTests
         DirectorPay(RiverInputs.Example.WithDirectorPay(0m)).Surcharge.ShouldBe(TaxSurchargeState.NoTax);
     }
 
+    // With nothing withheld, 12,014 by 10 April is the whole base and earns 90.11
+    // (IncomeTaxAdvancePaymentCalculatorTests); on the example most of it is beyond the base.
     [Fact]
     public void DirectorPay_theWholeBaseBy10April_namesTheBonus()
     {
-        var view = DirectorPay(RiverInputs.Example.WithTaxAdvancePayment(0, 12_014m));
+        var view = DirectorPay(RiverInputs.Example.WithTaxWithheld(0m).WithTaxAdvancePayment(0, 12_014m));
 
         (view.Surcharge, view.Bonus).ShouldBe((TaxSurchargeState.Covered, 90.11m));
     }

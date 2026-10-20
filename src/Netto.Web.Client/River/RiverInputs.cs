@@ -3,6 +3,7 @@ using Netto.Core.DirectorPay;
 using Netto.Core.Dividends;
 using Netto.Core.PersonalTax;
 using Netto.Core.Simulation;
+using Netto.Core.SocialContributions;
 using Netto.Web.Client.DirectorPay;
 
 namespace Netto.Web.Client.River;
@@ -21,7 +22,8 @@ public sealed record RiverInputs(
     TaxPrepaymentInputs TaxPrepayments,
     Input<decimal> Reserve,
     Input<WithholdingCategory> DividendCategory,
-    Input<decimal> EarlierProfits)
+    Input<decimal> EarlierProfits,
+    Input<ContributionsPaidBy> ContributionsPaidBy)
 {
     // The only year with every layer's amounts; choosing the year is a later item.
     private const int ExampleYear = 2026;
@@ -30,8 +32,10 @@ public sealed record RiverInputs(
 
     // The example year the river opens on, every amount labelled as such, so the whole river runs
     // at once; the statuses and rates are the defaults a typical owner-director starts from. Nothing
-    // is prepaid by the company, nor withheld or prepaid on the pay, so the example shows both
-    // surcharges and what cancels them.
+    // is prepaid by the company nor on the pay, so the example shows the company's surcharge and
+    // what cancels it; the pay is withheld on as the key formula says, what a real payslip shows
+    // (decided 2026-10-20), so the withheld amount is derived and the example's year balance is
+    // what is left to pay on the assessment.
     public static RiverInputs Example { get; } = new(
         ExampleYear,
         new CompanyFigures(new Input<decimal>(120_000m, InputOrigin.Example), new Input<decimal>(20_000m, InputOrigin.Example)),
@@ -41,12 +45,13 @@ public sealed record RiverInputs(
         new Input<decimal>(50_000m, InputOrigin.Example),
         MunicipalityChoice.Start(MunicipalRates.IncomeYear2026, 0.07m),
         new TaxPrepaymentInputs(
-            ExampleNothing,
+            TaxPrepaymentInputs.AsThePaySlip,
             new AdvancePaymentInputs(ExampleNothing, ExampleNothing, ExampleNothing, ExampleNothing),
             new Input<bool>(false, InputOrigin.Default)),
         new Input<decimal>(0m, InputOrigin.Example),
         new Input<WithholdingCategory>(WithholdingCategory.VvprbisThirdYearOnwards, InputOrigin.Default),
-        new Input<decimal>(0m, InputOrigin.Example));
+        new Input<decimal>(0m, InputOrigin.Example),
+        new Input<ContributionsPaidBy>(Core.SocialContributions.ContributionsPaidBy.Director, InputOrigin.Default));
 
     // The most the split can give as pay: the profit before pay, never below zero. None while the
     // company is skipped, when the pay has a slider of its own.
@@ -69,7 +74,11 @@ public sealed record RiverInputs(
 
     public RiverInputs WithMunicipality(MunicipalityChoice municipality) => this with { Municipality = municipality };
 
-    public RiverInputs WithTaxWithheld(decimal withheld) => this with { TaxPrepayments = TaxPrepayments with { Withheld = Yours(withheld) } };
+    public RiverInputs WithTaxWithheld(decimal withheld) => this with { TaxPrepayments = TaxPrepayments with { Withheld = Yours<decimal?>(withheld) } };
+
+    // The amount withheld is the pay slip's again: what the key formula withholds on the pay, derived
+    // from it by the engine.
+    public RiverInputs WithTaxWithheldAsThePaySlip() => this with { TaxPrepayments = TaxPrepayments with { Withheld = TaxPrepaymentInputs.AsThePaySlip } };
 
     // The payment on the pay's income tax by the deadline at that place, the first being 0.
     public RiverInputs WithTaxAdvancePayment(int deadline, decimal amount) =>
@@ -83,6 +92,8 @@ public sealed record RiverInputs(
 
     public RiverInputs WithEarlierProfits(decimal earlierProfits) => this with { EarlierProfits = Yours(earlierProfits) };
 
+    public RiverInputs WithContributionsPaidBy(ContributionsPaidBy paidBy) => this with { ContributionsPaidBy = Yours(paidBy) };
+
     public RiverInputs SkipCompany() => this with { Company = null };
 
     // The user's own year starts from nothing: the example is not brought back.
@@ -94,7 +105,7 @@ public sealed record RiverInputs(
     {
         if (Company is null)
         {
-            var (pay, payError) = GrossToNet.Compute(IncomeYear, DirectorPay.Value, Municipality.MunicipalRate, TaxPrepayments.Values);
+            var (pay, payError) = GrossToNet.Compute(IncomeYear, DirectorPay.Value, Municipality.MunicipalRate, TaxPrepayments.Values, ContributionsPaidBy.Value);
             return new RiverRun(pay, null, payError);
         }
 
@@ -126,6 +137,7 @@ public sealed record RiverInputs(
     {
         AdvancePayments = AdvancePayments.Values,
         TaxPrepayments = TaxPrepayments.Values,
+        ContributionsPaidBy = ContributionsPaidBy.Value,
     };
 }
 
@@ -173,8 +185,11 @@ public sealed record RiverRun(GrossToNetResult? Pay, YearResult? Year, string? E
 
 // What was withheld on the director pay and what the director paid in advance on its income tax, as
 // the user enters them, and whether the year falls in the first three years of their first
-// self-employed activity.
-public sealed record TaxPrepaymentInputs(Input<decimal> Withheld, AdvancePaymentInputs Paid, Input<bool> Starter)
+// self-employed activity. The amount withheld is the user's, or null for the pay slip's, what the
+// key formula withholds on the pay, which the engine derives (TaxPrepayments.Withheld).
+public sealed record TaxPrepaymentInputs(Input<decimal?> Withheld, AdvancePaymentInputs Paid, Input<bool> Starter)
 {
+    public static Input<decimal?> AsThePaySlip { get; } = new(null, InputOrigin.Derived);
+
     public TaxPrepayments Values => new(Withheld.Value, Paid.Values, Starter.Value);
 }

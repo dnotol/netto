@@ -38,7 +38,7 @@
         <h3 class="director-pay__prepayments-title">@L["PrepaymentsTitle"]</h3>
         <p class="director-pay__note">@L["PrepaymentsHint"]</p>
         <RiverField Label="@L["WithheldLabel", Inputs.IncomeYear]" For="river-tax-withheld" Origin="Inputs.TaxPrepayments.Withheld.Origin">
-            <MudNumericField T="decimal" InputId="river-tax-withheld" Value="Inputs.TaxPrepayments.Withheld.Value" ValueChanged="OnWithheldChanged"
+            <MudNumericField T="decimal" InputId="river-tax-withheld" Value="@(Inputs.TaxPrepayments.Withheld.Value ?? Run.Pay?.Assessment.Withheld ?? 0m)" ValueChanged="OnWithheldChanged"
                              Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
                              Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
                              Error="@(Refused == GrossToNet.TaxWithheldNegative)" />

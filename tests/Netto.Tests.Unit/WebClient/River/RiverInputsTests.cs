@@ -3,17 +3,20 @@ using Netto.Core.DirectorPay;
 using Netto.Core.Dividends;
 using Netto.Core.PersonalTax;
 using Netto.Core.Simulation;
+using Netto.Core.SocialContributions;
 using Netto.Web.Client.River;
 using Shouldly;
 
 namespace Netto.Tests.WebClient.River;
 
 // The river opens on the example year of YearSimulationTests: 120,000 revenue, 20,000 running costs,
-// 50,000 pay at 7%, nothing kept, VVPRbis from the third distribution, and nothing prepaid by the
-// company nor withheld or prepaid on the pay, which leaves 61,489.17 in the pocket. Of the 62,529.24
-// a company that prepaid and a pay whose tax was withheld leave, the 675.00 surcharge on the
-// 10,000 of corporate tax takes 553.50, its dividend withholding the rest, and the 486.57
-// surcharge on the pay's tax takes all of itself. The pay alone leaves 29,092.73.
+// 50,000 pay at 7%, nothing kept, VVPRbis from the third distribution, the contributions paid by the
+// director, nothing prepaid by the company nor on the pay, and the pay withheld on as the key formula
+// says (decided 2026-10-20): 10,691.28, which leaves a surcharge under the minimum, so the pocket is
+// the 61,975.74 of a pay whose tax was withheld, and the 675.00 surcharge on the 10,000 of corporate
+// tax takes 553.50 of the 62,529.24 a company that prepaid would leave, its dividend withholding
+// the rest. With nothing withheld the 486.57 surcharge on the pay's tax takes all of itself:
+// 61,489.17. The pay alone leaves 29,579.30.
 public class RiverInputsTests
 {
     [Fact]
@@ -21,24 +24,36 @@ public class RiverInputsTests
     {
         var run = RiverInputs.Example.Run();
 
-        (run.Error, run.Year?.NetInPocket).ShouldBe((null, 61_489.17m));
+        (run.Error, run.Year?.NetInPocket).ShouldBe((null, 61_975.74m));
     }
 
+    // Null is what the key formula withholds, derived from the pay, not an amount of the example.
     [Fact]
-    public void Example_withholdsAndPrepaysNothingOnThePay()
+    public void Example_withholdsAsTheKeyFormulaAndPrepaysNothingOnThePay()
     {
         var prepayments = RiverInputs.Example.TaxPrepayments;
 
         (prepayments.Withheld, prepayments.Paid.ByDeadline.All(payment => payment == new Input<decimal>(0m, InputOrigin.Example)), prepayments.Starter)
-            .ShouldBe((new Input<decimal>(0m, InputOrigin.Example), true, new Input<bool>(false, InputOrigin.Default)));
+            .ShouldBe((new Input<decimal?>(null, InputOrigin.Derived), true, new Input<bool>(false, InputOrigin.Default)));
+    }
+
+    // GrossToNetTests: twelve times the 890.94 on 4,166.67; 11,333.96 and 793.38 of tax less that
+    // leaves 1,436.06 to pay, and the 59.52 of surcharge before the 90% is under the minimum.
+    [Fact]
+    public void Run_example_withholdsWhatTheKeyFormulaSaysAndLeavesNoSurcharge()
+    {
+        var pay = RiverInputs.Example.Run().Pay.ShouldNotBeNull();
+
+        (pay.Assessment.Withheld, pay.Assessment.WithheldGiven, pay.AdvancePayments.Surcharge, pay.Assessment.Balance)
+            .ShouldBe((10_691.28m, false, 0m, 1_436.06m));
     }
 
     // IncomeTaxAdvancePaymentCalculatorTests: 486.57 on the 11,333.96 of tax, and 14,317.50 by
     // 21 December brings it under the 100 minimum.
     [Fact]
-    public void Run_example_surchargesThePaysTaxAndSaysWhatBy21DecemberLeavesNoneDue()
+    public void Run_nothingWithheld_surchargesThePaysTaxAndSaysWhatBy21DecemberLeavesNoneDue()
     {
-        var payments = RiverInputs.Example.Run().Pay.ShouldNotBeNull().AdvancePayments;
+        var payments = RiverInputs.Example.WithTaxWithheld(0m).Run().Pay.ShouldNotBeNull().AdvancePayments;
 
         (payments.Surcharge, payments.LastDeadlineTopUp).ShouldBe((486.57m, 14_317.50m));
     }
@@ -46,15 +61,68 @@ public class RiverInputsTests
     [Fact]
     public void WithTaxWithheld_makesItTheUsers()
     {
-        RiverInputs.Example.WithTaxWithheld(11_334m).TaxPrepayments.Withheld.ShouldBe(new Input<decimal>(11_334m, InputOrigin.Yours));
+        RiverInputs.Example.WithTaxWithheld(11_334m).TaxPrepayments.Withheld.ShouldBe(new Input<decimal?>(11_334m, InputOrigin.Yours));
     }
 
-    // 11,334 withheld leaves a surcharge under the minimum: the pocket is the 61,975.74 of a pay
-    // whose tax was withheld.
+    [Fact]
+    public void WithTaxWithheldAsThePaySlip_leavesItToTheKeyFormulaAgain()
+    {
+        RiverInputs.Example.WithTaxWithheld(11_334m).WithTaxWithheldAsThePaySlip().TaxPrepayments.Withheld
+            .ShouldBe(new Input<decimal?>(null, InputOrigin.Derived));
+    }
+
+    // Nothing withheld leaves the whole surcharge on the pay's tax: 486.57 less in the pocket.
     [Fact]
     public void Run_taxWithheldReachesTheEngine()
     {
-        RiverInputs.Example.WithTaxWithheld(11_334m).Run().Year.ShouldNotBeNull().NetInPocket.ShouldBe(61_975.74m);
+        RiverInputs.Example.WithTaxWithheld(0m).Run().Year.ShouldNotBeNull().NetInPocket.ShouldBe(61_489.17m);
+    }
+
+    // The amount given replaces the formula's, and the result says so.
+    [Fact]
+    public void Run_taxWithheld_isTheAmountTheAssessmentSetsAgainstTheTax()
+    {
+        var assessment = RiverInputs.Example.WithTaxWithheld(10_000m).Run().Pay.ShouldNotBeNull().Assessment;
+
+        (assessment.Withheld, assessment.WithheldGiven, assessment.Balance).ShouldBe((10_000m, true, 2_127.34m));
+    }
+
+    [Fact]
+    public void Example_contributionsArePaidByTheDirectorByDefault()
+    {
+        RiverInputs.Example.ContributionsPaidBy.ShouldBe(new Input<ContributionsPaidBy>(ContributionsPaidBy.Director, InputOrigin.Default));
+    }
+
+    [Fact]
+    public void WithContributionsPaidBy_makesItTheUsers()
+    {
+        RiverInputs.Example.WithContributionsPaidBy(ContributionsPaidBy.Company).ContributionsPaidBy
+            .ShouldBe(new Input<ContributionsPaidBy>(ContributionsPaidBy.Company, InputOrigin.Yours));
+    }
+
+    // YearSimulationTests: the company's 9,942.52 of contributions are pay, so its cost of the 50,000
+    // is 59,942.52 and its taxable income 40,057.48.
+    [Fact]
+    public void Run_companyPaysTheContributions_reachesTheEngine()
+    {
+        var year = RiverInputs.Example.WithContributionsPaidBy(ContributionsPaidBy.Company).Run().Year.ShouldNotBeNull();
+
+        (year.DirectorPay.ContributionsPaidByCompany, year.DirectorPay.CompanyCost, year.Company.TaxableIncome).ShouldBe((9_942.52m, 59_942.52m, 40_057.48m));
+    }
+
+    [Fact]
+    public void Run_payAloneWithTheCompanyPayingTheContributions_reachesTheEngine()
+    {
+        var pay = RiverInputs.Example.SkipCompany().WithContributionsPaidBy(ContributionsPaidBy.Company).Run().Pay.ShouldNotBeNull();
+
+        (pay.GrossPay, pay.ContributionsPaidByCompany, pay.CompanyCost).ShouldBe((50_000m, 9_942.52m, 59_942.52m));
+    }
+
+    // The search holds who pays, since the taxable pay the reduced rate is tested on depends on it.
+    [Fact]
+    public void SameBesidesPay_whoPaysTheContributionsChanged_isNot()
+    {
+        RiverInputs.Example.SameBesidesPay(RiverInputs.Example.WithContributionsPaidBy(ContributionsPaidBy.Company)).ShouldBeFalse();
     }
 
     [Fact]
@@ -65,11 +133,12 @@ public class RiverInputsTests
         (paid.First, paid.Fourth).ShouldBe((new Input<decimal>(0m, InputOrigin.Example), new Input<decimal>(1_000m, InputOrigin.Yours)));
     }
 
-    // 12,014 by 10 April avoids the surcharge and earns a bonus of 90.11.
+    // With nothing withheld, 12,014 by 10 April avoids the surcharge and earns a bonus of 90.11; on
+    // the example most of it is beyond the base, for 9.92.
     [Fact]
     public void Run_taxAdvancePaymentsReachTheEngine()
     {
-        var pay = RiverInputs.Example.WithTaxAdvancePayment(0, 12_014m).Run().Pay.ShouldNotBeNull();
+        var pay = RiverInputs.Example.WithTaxWithheld(0m).WithTaxAdvancePayment(0, 12_014m).Run().Pay.ShouldNotBeNull();
 
         (pay.AdvancePayments.Surcharge, pay.AdvancePayments.Bonus).ShouldBe((0m, 90.11m));
     }
@@ -128,13 +197,14 @@ public class RiverInputsTests
         (payments.First, payments.Fourth).ShouldBe((new Input<decimal>(0m, InputOrigin.Example), new Input<decimal>(15_000m, InputOrigin.Yours)));
     }
 
-    // 7,500 by 10 April earns 9%, the whole 675.
+    // 7,500 by 10 April earns 9%, the whole 675: the 62,529.24 of a company that prepaid and a pay
+    // whose tax was withheld.
     [Fact]
     public void Run_advancePaymentsReachTheEngine()
     {
         var year = RiverInputs.Example.WithAdvancePayment(0, 7_500m).Run().Year.ShouldNotBeNull();
 
-        (year.AdvancePayments.Surcharge, year.NetInPocket).ShouldBe((0m, 62_042.67m));
+        (year.AdvancePayments.Surcharge, year.NetInPocket).ShouldBe((0m, 62_529.24m));
     }
 
     [Fact]
@@ -193,11 +263,12 @@ public class RiverInputsTests
         RiverInputs.Example.WithEarlierProfits(60_000m).EarlierProfits.ShouldBe(new Input<decimal>(60_000m, InputOrigin.Yours));
     }
 
-    // YearSimulationTests: 60,000 kept from earlier years, 30,000 kept at year end.
+    // YearSimulationTests: 60,000 kept from earlier years, 30,000 kept at year end, with the
+    // example's own surcharge on the corporate tax and none on the pay's tax.
     [Fact]
     public void Run_earlierProfitsReachTheEngine()
     {
-        RiverInputs.Example.WithEarlierProfits(60_000m).WithReserve(30_000m).Run().Year.ShouldNotBeNull().NetInPocket.ShouldBe(86_089.17m);
+        RiverInputs.Example.WithEarlierProfits(60_000m).WithReserve(30_000m).Run().Year.ShouldNotBeNull().NetInPocket.ShouldBe(86_575.74m);
     }
 
     [Fact]
@@ -213,7 +284,7 @@ public class RiverInputsTests
     {
         var inputs = RiverInputs.Example;
 
-        new[] { inputs.SmallCompany.Origin, inputs.FinancialYear.Origin, inputs.DividendCategory.Origin, inputs.Municipality.Origin }
+        new[] { inputs.SmallCompany.Origin, inputs.FinancialYear.Origin, inputs.DividendCategory.Origin, inputs.Municipality.Origin, inputs.ContributionsPaidBy.Origin }
             .ShouldAllBe(origin => origin == InputOrigin.Default);
     }
 
@@ -281,7 +352,7 @@ public class RiverInputsTests
     {
         var run = RiverInputs.Example.SkipCompany().Run();
 
-        (run.Year, run.Pay?.GrossPay, run.Pay?.NetInPocket).ShouldBe((null, 50_000m, 29_092.73m));
+        (run.Year, run.Pay?.GrossPay, run.Pay?.NetInPocket).ShouldBe((null, 50_000m, 29_579.30m));
     }
 
     [Fact]
@@ -410,6 +481,8 @@ public class RiverInputsTests
             RiverInputs.Example.WithMunicipality(RiverInputs.Example.Municipality.Enter(0.08m)),
             RiverInputs.Example.WithDividendCategory(WithholdingCategory.Standard),
             RiverInputs.Example.WithEarlierProfits(60_000m),
+            RiverInputs.Example.WithContributionsPaidBy(ContributionsPaidBy.Company),
+            RiverInputs.Example.WithTaxWithheld(0m),
             RiverInputs.Example.SkipCompany(),
         };
 

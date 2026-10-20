@@ -3,10 +3,10 @@ using Shouldly;
 
 namespace Netto.Tests.WebClient.River;
 
-// On the river's example (RiverInputsTests): 100,000 of profit before pay end up as 61,489.17 in the
-// pocket, 20,907.27 of taxes on pay (contributions 8,293.36, income tax 11,333.96, municipal
-// surcharge 793.38, and 486.57 of advance-payment surcharge, nothing being withheld), 17,603.56 of
-// taxes on profit (corporate tax 10,000 and its advance-payment surcharge 675,
+// On the river's example (RiverInputsTests): 100,000 of profit before pay end up as 61,975.74 in the
+// pocket, 20,420.70 of taxes on pay (contributions 8,293.36, income tax 11,333.96, municipal
+// surcharge 793.38, and no advance-payment surcharge, the pay being withheld on as the key formula
+// says), 17,603.56 of taxes on profit (corporate tax 10,000 and its advance-payment surcharge 675,
 // nothing being prepaid, withholding 7,078.50 on the 39,325 left, less the refund of 149.94) and
 // nothing kept.
 public class BucketsViewTests
@@ -27,8 +27,8 @@ public class BucketsViewTests
 
         view.Buckets.Select(bucket => (bucket.Key, bucket.Amount)).ShouldBe(new[]
         {
-            ("pocket", 61_489.17m),
-            ("taxes_on_pay", 20_907.27m),
+            ("pocket", 61_975.74m),
+            ("taxes_on_pay", 20_420.70m),
             ("taxes_on_profit", 17_603.56m),
             ("kept_in_company", 0m),
         });
@@ -97,7 +97,7 @@ public class BucketsViewTests
     {
         var view = BucketsView.From(RiverInputs.Example.Run()).ShouldNotBeNull();
 
-        view.Buckets.Select(bucket => bucket.Share).ShouldBe(new decimal?[] { 0.6148917m, 0.2090727m, 0.1760356m, 0m });
+        view.Buckets.Select(bucket => bucket.Share).ShouldBe(new decimal?[] { 0.6197574m, 0.204207m, 0.1760356m, 0m });
     }
 
     // A loss stays in the company as a negative amount, which a bar of shares cannot draw.
@@ -124,8 +124,8 @@ public class BucketsViewTests
 
         view.Buckets.Select(bucket => (bucket.Key, bucket.Amount)).ShouldBe(new[]
         {
-            ("pocket", 29_092.73m),
-            ("taxes_on_pay", 20_907.27m),
+            ("pocket", 29_579.30m),
+            ("taxes_on_pay", 20_420.70m),
             ("taxes_on_profit", 0m),
             ("kept_in_company", 0m),
         });
