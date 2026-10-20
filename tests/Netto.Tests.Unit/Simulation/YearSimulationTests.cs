@@ -4,6 +4,7 @@ using Netto.Core.Dividends;
 using Netto.Core.PersonalTax;
 using Netto.Core.Simulation;
 using Netto.Core.SocialContributions;
+using Netto.Core.Vouchers;
 using Shouldly;
 
 namespace Netto.Tests.Simulation;
@@ -17,7 +18,8 @@ namespace Netto.Tests.Simulation;
 // than the director pay's tax; the surcharge figures follow AdvancePaymentCalculatorTests and
 // IncomeTaxAdvancePaymentCalculatorTests. The director pays the contributions unless a test says the
 // company does; those figures are GrossToNetTests' too (50,000: contributions 9,942.52, income tax
-// 14,954.01, surcharge 1,046.78, net 33,999.21, company cost 59,942.52).
+// 14,954.01, surcharge 1,046.78, net 33,999.21, company cost 59,942.52). The company grants no
+// vouchers unless a test says it does; their figures follow VoucherCalculatorTests.
 public class YearSimulationTests
 {
     private static readonly CompanyStatus SmallPastStartUp = new(SmallCompany: true, FirstFourTaxPeriods: false);
@@ -26,6 +28,12 @@ public class YearSimulationTests
     private static readonly AdvancePayments Prepaid = new(100_000m, 0m, 0m, 0m);
 
     private static readonly TaxPrepayments Withheld = new(1_000_000m, AdvancePayments.None);
+
+    private static readonly VoucherGrants MealVouchersOn220Days = new(220, 0m, 0m);
+
+    // 1,960.20 of meal vouchers, 880.00 of it deductible, and the most eco and sport/culture vouchers:
+    // 2,310.20 to the pocket and 1,430.20 the company cannot deduct.
+    private static readonly VoucherGrants AllVouchers = new(220, 250m, 100m);
 
     public static TheoryData<decimal, decimal, decimal, WithholdingCategory> Setups => new()
     {
@@ -287,6 +295,150 @@ public class YearSimulationTests
             .ShouldBe(profitBeforePay);
     }
 
+    // 220 days with a meal voucher (VoucherCalculatorTests): the company pays 1,960.20 for them, which
+    // leaves 98,039.80 for the split, and deducts 880.00 of it, so the 1,080.20 it cannot deduct is
+    // added back: 49,120.00 of taxable income, which does not exceed the 50,000 pay, at 20%.
+    [Fact]
+    public void Run_2026MealVouchersOn220Days_comeOffTheProfitBeforePayAndAddTheirDisallowedPartToTheTaxableIncome()
+    {
+        var result = Run(Scenario(directorPay: 50_000m, reserve: 0m, vouchers: MealVouchersOn220Days));
+
+        (result.ProfitBeforePay, result.ProfitAfterPay, result.Company.TaxableIncome, result.Company.Condition, result.CorporateTax)
+            .ShouldBe((98_039.80m, 48_039.80m, 49_120.00m, ReducedRateCondition.TaxableIncomeNotAbovePay, 9_824.00m));
+    }
+
+    [Fact]
+    public void Run_2026MealVouchersOn220Days_raiseTheTaxableIncomeByTheirDisallowedPartOverADeductibleCost()
+    {
+        var vouchers = Run(Scenario(directorPay: 50_000m, reserve: 0m, vouchers: MealVouchersOn220Days));
+        var deductibleCost = Run(Scenario(directorPay: 50_000m, reserve: 0m) with { RunningCosts = 21_960.20m });
+
+        (vouchers.ProfitBeforePay - deductibleCost.ProfitBeforePay, vouchers.Company.TaxableIncome - deductibleCost.Company.TaxableIncome)
+            .ShouldBe((0m, 1_080.20m));
+    }
+
+    // The disallowed part was spent: the profit after tax is 49,120.00 less the 9,824.00 of tax and the
+    // 1,080.20, all paid out at 18% (withholding 6,878.84, refund 149.94). The pocket gets the pay's
+    // 29,579.30, that dividend's 31,486.90 and the vouchers' 1,960.20.
+    [Fact]
+    public void Run_2026MealVouchersOn220Days_reachThePocketBesideThePayAndTheDividend()
+    {
+        var result = Run(Scenario(directorPay: 50_000m, reserve: 0m, vouchers: MealVouchersOn220Days));
+
+        (result.ProfitAfterTax, result.Dividend.NetDividend, result.Vouchers.Total, result.NetInPocket)
+            .ShouldBe((38_215.80m, 31_486.90m, 1_960.20m, 63_026.40m));
+    }
+
+    // Eco and sport/culture vouchers are not deductible at all: the taxable income is that of a company
+    // without them, and the profit after tax is 350 lower.
+    [Fact]
+    public void Run_2026EcoAndSportCultureVouchers_reachThePocketAndNoneIsDeducted()
+    {
+        var result = Run(Scenario(directorPay: 50_000m, reserve: 0m, vouchers: new VoucherGrants(0, 250m, 100m)));
+
+        (result.ProfitBeforePay, result.Company.TaxableIncome, result.ProfitAfterTax, result.Vouchers.Total, result.Vouchers.Deductible)
+            .ShouldBe((99_650m, 50_000m, 39_650m, 350m, 0m));
+    }
+
+    // Exempt, they are neither taxed as pay nor income INASTI is owed on.
+    [Fact]
+    public void Run_2026Vouchers_leaveThePaysTaxesAndContributionsAsTheyAre()
+    {
+        var without = Run(Scenario(directorPay: 50_000m, reserve: 0m));
+        var with = Run(Scenario(directorPay: 50_000m, reserve: 0m, vouchers: AllVouchers));
+
+        (with.SocialContributions, with.DirectorPay.IncomeTax, with.DirectorPay.MunicipalSurcharge, with.DirectorPay.NetInPocket)
+            .ShouldBe((without.SocialContributions, without.DirectorPay.IncomeTax, without.DirectorPay.MunicipalSurcharge, without.DirectorPay.NetInPocket));
+    }
+
+    // With 1,000 more revenue the 1,080.20 the company cannot deduct takes its taxable income to
+    // 50,120.00, above the 50,000 pay: 25% on all of it. Deductible, they would have left 49,039.80 and
+    // the reduced rate; and the 51,960.20 of pay and vouchers would meet the 51,000 minimum, but
+    // vouchers are not pay.
+    [Fact]
+    public void Run_2026MealVouchers_art215ReadsTheTaxableIncomeWithTheirDisallowedPartAndNeverCountsThemAsPay()
+    {
+        var result = Run(Scenario(directorPay: 50_000m, reserve: 0m, revenue: 121_000m, vouchers: MealVouchersOn220Days));
+
+        (result.Company.TaxableIncome, result.Company.Condition, result.CorporateTax)
+            .ShouldBe((50_120.00m, ReducedRateCondition.MinimumPayNotMet, 12_530.00m));
+    }
+
+    // What reaches the pocket comes first, as the vouchers come before the pay, then what the company
+    // cannot deduct, which joins the company's profit before its tax.
+    [Fact]
+    public void Run_2026Vouchers_putTheirStepsBeforeTheCorporateTaxWithTheirTags()
+    {
+        var result = Run(Scenario(directorPay: 50_000m, reserve: 0m, vouchers: AllVouchers));
+
+        result.Steps.Take(5).Select(step => (step.RuleKey, step.Layer, step.Event, step.Track, step.Amount)).ShouldBe(new[]
+        {
+            ("meal_vouchers", Layer.Personal, TaxableEvent.Vouchers, Track.InPocket, 1_960.20m),
+            ("eco_vouchers", Layer.Personal, TaxableEvent.Vouchers, Track.InPocket, 250m),
+            ("sport_culture_vouchers", Layer.Personal, TaxableEvent.Vouchers, Track.InPocket, 100m),
+            ("disallowed_vouchers", Layer.Corporate, TaxableEvent.CompanyProfit, Track.TaxBaseOnly, 1_430.20m),
+            ("corporate_tax", Layer.Corporate, TaxableEvent.CompanyProfit, Track.PaidOut, 9_824.00m),
+        });
+    }
+
+    [Fact]
+    public void Run_2026Vouchers_everyStepHasASourceWithAReferenceAndAnAddress()
+    {
+        var result = Run(Scenario(directorPay: 50_000m, reserve: 0m, vouchers: AllVouchers));
+
+        result.Steps.ShouldAllBe(step => step.Source.Reference.Length > 0 && step.Source.Url.IsAbsoluteUri);
+    }
+
+    // What the company pays the director besides pay reaches the pocket, so the layers, the pocket and
+    // the company still add up to what it earned before paying its director anything.
+    [Theory]
+    [MemberData(nameof(Setups))]
+    public void Run_2026Vouchers_layersPocketAndCompanyAddUpToTheProfitBeforeTheDirector(
+        decimal directorPay, decimal profitBeforeDirector, decimal reserve, WithholdingCategory category)
+    {
+        var result = Run(Scenario(directorPay: directorPay, reserve: reserve, category: category, revenue: profitBeforeDirector + 20_000m,
+            vouchers: AllVouchers));
+
+        (result.CorporateTax + result.SocialContributions + result.PersonalTax + result.NetInPocket + result.KeptInCompany)
+            .ShouldBe(profitBeforeDirector);
+    }
+
+    [Theory]
+    [MemberData(nameof(Setups))]
+    public void Run_2026VouchersCompanyPaysAndNothingPrepaid_layersPocketAndCompanyAddUpToTheProfitBeforeTheDirector(
+        decimal directorPay, decimal profitBeforeDirector, decimal reserve, WithholdingCategory category)
+    {
+        var result = Run(Scenario(directorPay: directorPay, reserve: reserve, category: category, revenue: profitBeforeDirector + 20_000m,
+            advancePayments: AdvancePayments.None, taxPrepayments: TaxPrepayments.AsWithheld, paidBy: ContributionsPaidBy.Company,
+            vouchers: AllVouchers));
+
+        (result.CorporateTax + result.SocialContributions + result.PersonalTax + result.NetInPocket + result.KeptInCompany)
+            .ShouldBe(profitBeforeDirector);
+    }
+
+    [Fact]
+    public void Run_2026VouchersAndEarlierProfits_layersPocketAndCompanyAddUpToTheProfitBeforeTheDirectorAndThem()
+    {
+        var result = Run(Scenario(directorPay: 50_000m, reserve: 30_000m, earlierProfits: 60_000m, vouchers: AllVouchers));
+
+        (result.CorporateTax + result.SocialContributions + result.PersonalTax + result.NetInPocket + result.KeptInCompany).ShouldBe(160_000m);
+    }
+
+    public static TheoryData<int, decimal, string> VouchersOutsideTheRules => new()
+    {
+        { -1, 0m, VoucherCalculator.MealVoucherDaysNegative },
+        { 0, 250.01m, VoucherCalculator.EcoVouchersAboveMaximum },
+    };
+
+    [Theory]
+    [MemberData(nameof(VouchersOutsideTheRules))]
+    public void Run_vouchersOutsideTheRules_isRefusedWithTheCalculatorsKey(int days, decimal eco, string expected)
+    {
+        var (value, error) = YearSimulation.Run(Scenario(directorPay: 50_000m, reserve: 0m, vouchers: new VoucherGrants(days, eco, 0m)));
+
+        (value, error).ShouldBe((null, expected));
+    }
+
     [Fact]
     public void Run_negativeTaxWithheld_isRefusedWithGrossToNetsKey()
     {
@@ -454,11 +606,39 @@ public class YearSimulationTests
     }
 
     [Fact]
-    public void ProfitBeforePay_isTheRevenueLessTheRunningCosts()
+    public void ProfitBeforeDirector_isTheRevenueLessTheRunningCosts()
     {
         var scenario = Scenario(directorPay: 50_000m, reserve: 0m, revenue: 15_000m);
 
-        scenario.ProfitBeforePay.ShouldBe(-5_000m);
+        scenario.ProfitBeforeDirector.ShouldBe(-5_000m);
+    }
+
+    [Fact]
+    public void ProfitBeforePay_noVouchers_isTheRevenueLessTheRunningCosts()
+    {
+        YearSimulation.ProfitBeforePay(Scenario(directorPay: 50_000m, reserve: 0m, revenue: 15_000m)).ShouldBe(-5_000m);
+    }
+
+    // What the split shares is what is left once the company has paid for the vouchers: 220 × 8.91,
+    // 250 and 100.
+    [Fact]
+    public void ProfitBeforePay_vouchers_isWhatTheCompanyHasLeftOnceItPaidForThem()
+    {
+        YearSimulation.ProfitBeforePay(Scenario(directorPay: 50_000m, reserve: 0m, vouchers: new VoucherGrants(220, 250m, 100m)))
+            .ShouldBe(97_689.80m);
+    }
+
+    // The split's slider keeps its place while a voucher is refused: it takes them as given.
+    [Fact]
+    public void ProfitBeforePay_refusedVouchers_takesThemAsGiven()
+    {
+        YearSimulation.ProfitBeforePay(Scenario(directorPay: 50_000m, reserve: 0m, vouchers: new VoucherGrants(0, 300m, 0m))).ShouldBe(99_700m);
+    }
+
+    [Fact]
+    public void ProfitBeforePay_incomeYear2027_isUnknown()
+    {
+        YearSimulation.ProfitBeforePay(Scenario(directorPay: 50_000m, reserve: 0m) with { IncomeYear = 2027 }).ShouldBeNull();
     }
 
     [Fact]
@@ -489,12 +669,14 @@ public class YearSimulationTests
         decimal earlierProfits = 0m,
         AdvancePayments? advancePayments = null,
         TaxPrepayments? taxPrepayments = null,
-        ContributionsPaidBy paidBy = ContributionsPaidBy.Director) =>
+        ContributionsPaidBy paidBy = ContributionsPaidBy.Director,
+        VoucherGrants? vouchers = null) =>
         new(2026, revenue, 20_000m, SmallPastStartUp, directorPay, MunicipalRates.Entered(0.07m), reserve, category, earlierProfits)
         {
             AdvancePayments = advancePayments ?? Prepaid,
             TaxPrepayments = taxPrepayments ?? Withheld,
             ContributionsPaidBy = paidBy,
+            Vouchers = vouchers ?? VoucherGrants.None,
         };
 
     private static YearResult Run(Scenario scenario)

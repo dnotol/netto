@@ -10,4 +10,7 @@ public enum TaxableEvent
     DirectorPay,
 
     Dividend,
+
+    // The company's share of the meal, eco and sport/culture vouchers it grants the director.
+    Vouchers,
 }

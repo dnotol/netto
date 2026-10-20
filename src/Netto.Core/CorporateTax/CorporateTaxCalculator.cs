@@ -17,18 +17,19 @@ public static class CorporateTaxCalculator
         return new CorporateTaxResult(taxableIncome, condition, rules.MinimumDirectorPay.Value, Money.RoundToCent(tax));
     }
 
-    // The smallest director pay that meets art. 215's pay condition out of a given profit before pay:
-    // the minimum, or half the profit, rounded up to the cent, where the taxable income left no longer
-    // exceeds the pay. The pay is the one art. 215 reads, the taxable pay; YearSimulation turns it into
-    // the pay the split moves. Null when the rate does not depend on the pay: not a small company, or
-    // still in its first four tax periods.
-    public static decimal? SmallestPayKeepingReducedRate(CorporateTaxRules rules, decimal profitBeforePay, CompanyStatus status)
+    // The smallest director pay that meets art. 215's pay condition out of the taxable income the
+    // company would have at no pay, its profit before pay with what it cannot deduct added back: the
+    // minimum, or half that income, rounded up to the cent, where the taxable income the pay leaves no
+    // longer exceeds the pay. The pay is the one art. 215 reads, the taxable pay; YearSimulation turns
+    // it into the pay the split moves. Null when the rate does not depend on the pay: not a small
+    // company, or still in its first four tax periods.
+    public static decimal? SmallestPayKeepingReducedRate(CorporateTaxRules rules, decimal taxableIncomeAtNoPay, CompanyStatus status)
     {
         if (!status.SmallCompany || status.FirstFourTaxPeriods)
             return null;
 
-        var halfTheProfit = Math.Ceiling(profitBeforePay * 50m) / 100m;
-        return Math.Clamp(halfTheProfit, 0m, rules.MinimumDirectorPay.Value);
+        var halfTheIncome = Math.Ceiling(taxableIncomeAtNoPay * 50m) / 100m;
+        return Math.Clamp(halfTheIncome, 0m, rules.MinimumDirectorPay.Value);
     }
 
     private static ReducedRateCondition Condition(CorporateTaxRules rules, decimal taxableIncome, decimal directorPay, CompanyStatus status)

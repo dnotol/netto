@@ -3,6 +3,7 @@ using Netto.Core.Dividends;
 using Netto.Core.PersonalTax;
 using Netto.Core.Rules;
 using Netto.Core.SocialContributions;
+using Netto.Core.Vouchers;
 
 namespace Netto.Core.Simulation;
 
@@ -12,8 +13,9 @@ namespace Netto.Core.Simulation;
 // paid out of the rest, and the profits the company kept from earlier years, after tax, which that
 // dividend can pay out too (none unless given). A lever adds its own inputs here, as a property when
 // it has a default: the company's advance payments on its corporate tax, what was withheld on the
-// director pay and paid in advance on its income tax, none unless given, and who pays the director's
-// social contributions, the director unless given.
+// director pay and paid in advance on its income tax, none unless given, who pays the director's
+// social contributions, the director unless given, and the vouchers it grants the director, none
+// unless given.
 public sealed record Scenario(
     int IncomeYear,
     decimal Revenue,
@@ -31,6 +33,9 @@ public sealed record Scenario(
 
     public ContributionsPaidBy ContributionsPaidBy { get; init; } = ContributionsPaidBy.Director;
 
-    // What the director pay and the company's profit share between them.
-    public decimal ProfitBeforePay => Revenue - RunningCosts;
+    public VoucherGrants Vouchers { get; init; } = VoucherGrants.None;
+
+    // What the company earns before it pays its director anything, pay or vouchers. What the director
+    // pay and the company's profit share is what the vouchers leave of it (YearSimulation.ProfitBeforePay).
+    public decimal ProfitBeforeDirector => Revenue - RunningCosts;
 }

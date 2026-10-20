@@ -55,7 +55,7 @@ public sealed record RiverInputs(
 
     // The most the split can give as pay: the profit before pay, never below zero. None while the
     // company is skipped, when the pay has a slider of its own.
-    public decimal? PayCeiling => Company is null ? null : Math.Max(0m, Scenario(DirectorPay.Value).ProfitBeforePay);
+    public decimal? PayCeiling => Company is null ? null : Math.Max(0m, YearSimulation.ProfitBeforePay(Scenario(DirectorPay.Value)) ?? 0m);
 
     public RiverInputs WithRevenue(decimal revenue) =>
         this with { Company = (Company ?? Nothing) with { Revenue = Yours(revenue) } };

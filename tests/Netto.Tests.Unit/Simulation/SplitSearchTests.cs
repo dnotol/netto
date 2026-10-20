@@ -3,6 +3,7 @@ using Netto.Core.Dividends;
 using Netto.Core.PersonalTax;
 using Netto.Core.Simulation;
 using Netto.Core.SocialContributions;
+using Netto.Core.Vouchers;
 using Shouldly;
 
 namespace Netto.Tests.Simulation;
@@ -18,7 +19,8 @@ namespace Netto.Tests.Simulation;
 // company prepays enough by 10 April to leave no advance-payment surcharge at any pay, unless a test
 // says otherwise, and withholds more than any director pay's tax; the payments it makes and what it
 // withholds are held at every pay, like the rest of the scenario, and so is who pays the
-// contributions: the director unless a test says the company does.
+// contributions: the director unless a test says the company does, and the vouchers it grants: none
+// unless a test says otherwise.
 public class SplitSearchTests
 {
     private static readonly CompanyStatus SmallPastStartUp = new(SmallCompany: true, FirstFourTaxPeriods: false);
@@ -27,6 +29,10 @@ public class SplitSearchTests
     private static readonly AdvancePayments Prepaid = new(100_000m, 0m, 0m, 0m);
 
     private static readonly TaxPrepayments Withheld = new(1_000_000m, AdvancePayments.None);
+
+    private static readonly VoucherGrants MealVouchersOn220Days = new(220, 0m, 0m);
+
+    private static readonly VoucherGrants AllVouchers = new(220, 250m, 100m);
 
     [Fact]
     public void Run_2026Example_findsThePayThatLeavesTheMost()
@@ -264,6 +270,83 @@ public class SplitSearchTests
             .ShouldBe(((decimal?)42_540.76m, (decimal?)95_117.79m, (decimal?)17_237m, (decimal?)96_372.81m));
     }
 
+    // 220 days with a meal voucher cost the company 1,960.20: the split shares the 98,039.80 they leave.
+    [Fact]
+    public void Run_2026MealVouchers_drawsEveryPayFromNoneToTheProfitTheyLeave()
+    {
+        var pays = Search(Scenario(vouchers: MealVouchersOn220Days)).Curve.Select(level => level.Pay).ToList();
+
+        (pays[0], pays[^1]).ShouldBe((0m, 98_039.80m));
+    }
+
+    [Fact]
+    public void Run_2026Vouchers_eachLevelIsTheYearAtThatPayWithThem()
+    {
+        var curve = Search(Scenario(vouchers: AllVouchers)).Curve;
+
+        curve.ShouldAllBe(level => level == LevelOf(level.Pay, 0m, null, null, ContributionsPaidBy.Director, AllVouchers));
+    }
+
+    // What the company cannot deduct of them, 1,080.20, is in the taxable income art. 215 reads: the
+    // rate is kept from half of 98,039.80 and it, 49,560.
+    [Fact]
+    public void Run_2026MealVouchers_keepsTheRateFromHalfTheTaxableIncomeAtNoPay()
+    {
+        Search(Scenario(vouchers: MealVouchersOn220Days)).SmallestPayKeepingReducedRate.ShouldBe(49_560m);
+    }
+
+    // Found by running the year at every euro from 0 to 98,039.80 with the vouchers (2026-10-20): they
+    // add to every pay's pocket and move neither best pay off its place on its side of the rate.
+    [Fact]
+    public void Run_2026MealVouchers_findsTheBestPaysWithThem()
+    {
+        var result = Search(Scenario(vouchers: MealVouchersOn220Days));
+
+        (result.Best?.Pay, result.Best?.NetInPocket, result.Best?.Dividend, result.BestKeepingReducedRate?.Pay, result.BestKeepingReducedRate?.NetInPocket)
+            .ShouldBe(((decimal?)20_799m, (decimal?)66_156.05m, (decimal?)57_660.55m, (decimal?)49_560m, (decimal?)63_119.45m));
+    }
+
+    [Fact]
+    public void Run_2026VouchersCompanyPaysContributions_eachLevelIsTheYearAtThatPay()
+    {
+        var curve = Search(Scenario(paidBy: ContributionsPaidBy.Company, vouchers: AllVouchers)).Curve;
+
+        curve.ShouldAllBe(level => level == LevelOf(level.Pay, 0m, null, null, ContributionsPaidBy.Company, AllVouchers));
+    }
+
+    // Running the year at every euro with the company paying (2026-10-20) keeps the rate from 41,340.
+    [Fact]
+    public void Run_2026VouchersCompanyPaysContributions_drawsTheJumpWhereTheReducedRateIsKept()
+    {
+        var result = Search(Scenario(paidBy: ContributionsPaidBy.Company, vouchers: AllVouchers));
+        var smallest = result.SmallestPayKeepingReducedRate.ShouldNotBeNull();
+
+        result.ShouldSatisfyAllConditions(
+            () => smallest.ShouldBeInRange(41_339.01m, 41_340m),
+            () => result.Curve.Where(level => level.Pay == smallest - 0.01m || level.Pay == smallest).Select(level => level.Condition.AppliesReducedRate())
+                .ShouldBe(new[] { false, true }));
+    }
+
+    // 3,000 before the director, 1,039.80 once the vouchers are paid for, and 1,080.20 of them the
+    // company cannot deduct: a pay of 1,060 would be needed for the taxable income not to exceed it,
+    // more than there is to pay. No pay the split can give keeps the rate.
+    [Fact]
+    public void Run_2026VouchersTheCompanyCannotDeductAboveItsProfit_doesNotWeighTheRate()
+    {
+        var result = Search(Scenario(revenue: 23_000m, vouchers: MealVouchersOn220Days));
+
+        (result.Curve[^1].Pay, result.SmallestPayKeepingReducedRate, result.BestKeepingReducedRate, result.BestLosingReducedRate, result.Best?.Pay)
+            .ShouldBe((1_039.80m, (decimal?)null, (PayLevel?)null, (PayLevel?)null, (decimal?)1_039.80m));
+    }
+
+    [Fact]
+    public void Run_ecoVouchersAboveTheMaximum_isRefusedWithTheCalculatorsKey()
+    {
+        var (value, error) = SplitSearch.Run(Scenario(vouchers: new VoucherGrants(0, 250.01m, 0m)));
+
+        (value, error).ShouldBe((null, VoucherCalculator.EcoVouchersAboveMaximum));
+    }
+
     [Fact]
     public void Run_negativeAdvancePayment_isRefusedWithYearSimulationsKey()
     {
@@ -427,13 +510,15 @@ public class SplitSearchTests
         decimal earlierProfits = 0m,
         AdvancePayments? advancePayments = null,
         TaxPrepayments? taxPrepayments = null,
-        ContributionsPaidBy paidBy = ContributionsPaidBy.Director) =>
+        ContributionsPaidBy paidBy = ContributionsPaidBy.Director,
+        VoucherGrants? vouchers = null) =>
         new(2026, revenue, 20_000m, company ?? SmallPastStartUp, directorPay, MunicipalRates.Entered(0.07m), reserve,
             WithholdingCategory.VvprbisThirdYearOnwards, earlierProfits)
         {
             AdvancePayments = advancePayments ?? Prepaid,
             TaxPrepayments = taxPrepayments ?? Withheld,
             ContributionsPaidBy = paidBy,
+            Vouchers = vouchers ?? VoucherGrants.None,
         };
 
     private static SplitSearchResult Search(Scenario scenario)
@@ -454,9 +539,10 @@ public class SplitSearchTests
 
     private static PayLevel LevelOf(
         decimal pay, decimal reserve, AdvancePayments? advancePayments = null, TaxPrepayments? taxPrepayments = null,
-        ContributionsPaidBy paidBy = ContributionsPaidBy.Director)
+        ContributionsPaidBy paidBy = ContributionsPaidBy.Director, VoucherGrants? vouchers = null)
     {
-        var year = Year(Scenario(directorPay: pay, reserve: reserve, advancePayments: advancePayments, taxPrepayments: taxPrepayments, paidBy: paidBy));
+        var year = Year(Scenario(directorPay: pay, reserve: reserve, advancePayments: advancePayments, taxPrepayments: taxPrepayments, paidBy: paidBy,
+            vouchers: vouchers));
 
         return new PayLevel(pay, year.NetInPocket, year.Dividend.Dividend, year.KeptInCompany, year.Company.Condition,
             year.MaximumDividend >= reserve);
