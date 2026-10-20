@@ -4,7 +4,8 @@ namespace Netto.Core.PersonalTax;
 
 // The lines round where Tax-Calc's « Détail du calcul » rounds them (runs T9 to T11 of 2026-10-20):
 // the tax at 106%, the surcharge on the base, each payment's credit on its needed part, the 90%, and
-// each payment's bonus.
+// each payment's bonus. The amount withheld has to be known: a withholding left to the key formula
+// is GrossToNet's to derive from the pay before it comes here.
 public static class IncomeTaxAdvancePaymentCalculator
 {
     public static IncomeTaxAdvancePaymentResult Compute(IncomeTaxAdvancePaymentRules rules, decimal totalTax, decimal taxCredits, TaxPrepayments prepayments)
@@ -19,9 +20,11 @@ public static class IncomeTaxAdvancePaymentCalculator
     // read.
     internal static IncomeTaxAdvancePaymentResult Figures(IncomeTaxAdvancePaymentRules rules, decimal totalTax, decimal taxCredits, TaxPrepayments prepayments)
     {
+        var withheld = prepayments.Withheld
+            ?? throw new ArgumentException("The amount withheld is left to the key formula: GrossToNet derives it from the pay before the surcharge.", nameof(prepayments));
         var paid = prepayments.Paid.ByDeadline;
         var taxAt106 = Money.RoundToCent(totalTax * rules.BaseFactor.Value);
-        var prepaidAtSource = prepayments.Withheld + taxCredits;
+        var prepaidAtSource = withheld + taxCredits;
         var taxBase = Math.Max(0m, taxAt106 - prepaidAtSource);
         var beforeCredits = prepayments.Starter ? 0m : Money.RoundToCent(taxBase * rules.SurchargeRate);
 

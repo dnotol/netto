@@ -194,6 +194,14 @@ public class IncomeTaxAdvancePaymentCalculatorTests
         (result.Surcharge, result.Bonus).ShouldBe((0m, 0m));
     }
 
+    // The surcharge needs the amount withheld: what the key formula withholds is GrossToNet's to set
+    // before it, from the pay, so a withholding still left to the formula here is a caller's bug.
+    [Fact]
+    public void Compute_withholdingLeftToTheKeyFormula_isACallersBug()
+    {
+        Should.Throw<ArgumentException>(() => Compute2026(TaxOn50000, TaxPrepayments.AsWithheld));
+    }
+
     private static IncomeTaxAdvancePaymentResult Compute2025(TaxPrepayments prepayments) =>
         IncomeTaxAdvancePaymentCalculator.Compute(Rules2025, TaxCalcTax, TaxCalcCredit, prepayments);
 

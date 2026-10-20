@@ -36,7 +36,8 @@ public sealed record GrossToNetResult(
 // and all six to what the next 1,000 costs the company. LowEarnedIncomeCredit is the credit the next
 // 1,000 loses where the credit falls, and a negative part where it rises: the pocket then gains more
 // than the 1,000. AdvancePayments is the surcharge it adds, less the bonus it adds, with the same
-// withholding and advance payments.
+// advance payments and the same amount withheld, or, when the key formula gives it, the formula's
+// withholding on the next 1,000's own pay.
 public sealed record NextThousand(
     decimal SocialContributions,
     decimal IncomeTax,

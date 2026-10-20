@@ -69,17 +69,31 @@ public class AssessmentCalculatorTests
         Assessment2026(50_000m, 8_293.36m, TaxPrepayments.None).Source.ShouldBe(PersonalTaxRules.AssessmentBalance);
     }
 
-    private static Assessment Assessment2025(decimal directorPay, decimal ownContributions, TaxPrepayments prepayments) =>
-        Assessment(Rules2025, directorPay, ownContributions, prepayments);
-
-    private static Assessment Assessment2026(decimal directorPay, decimal ownContributions, TaxPrepayments prepayments) =>
-        Assessment(Rules2026, directorPay, ownContributions, prepayments);
-
-    private static Assessment Assessment(PersonalTaxRules rules, decimal directorPay, decimal ownContributions, TaxPrepayments prepayments)
+    // Whether the amount withheld was given or taken from the key formula is the caller's to say: the
+    // balance is the same either way.
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Compute_withheldGivenOrDerived_saysWhichAndBalancesTheSame(bool withheldGiven)
     {
+        var assessment = Assessment2026(50_000m, 8_293.36m, new TaxPrepayments(10_691.28m, AdvancePayments.None), withheldGiven);
+
+        (assessment.WithheldGiven, assessment.Balance).ShouldBe((withheldGiven, 1_436.06m));
+    }
+
+    private static Assessment Assessment2025(decimal directorPay, decimal ownContributions, TaxPrepayments prepayments) =>
+        Assessment(Rules2025, directorPay, ownContributions, prepayments, true);
+
+    private static Assessment Assessment2026(decimal directorPay, decimal ownContributions, TaxPrepayments prepayments, bool withheldGiven = true) =>
+        Assessment(Rules2026, directorPay, ownContributions, prepayments, withheldGiven);
+
+    // These tests give the amount withheld, so the surcharge takes it as it is.
+    private static Assessment Assessment(PersonalTaxRules rules, decimal directorPay, decimal ownContributions, TaxPrepayments prepayments, bool withheldGiven)
+    {
+        var withheld = prepayments.Withheld ?? throw new InvalidOperationException("These tests give the amount withheld.");
         var tax = PersonalTaxCalculator.Compute(rules, directorPay, ownContributions, 0.07m);
         var advancePayments = IncomeTaxAdvancePaymentCalculator.Compute(rules.AdvancePayments, tax.IncomeTax, tax.LowEarnedIncomeCredit, prepayments);
 
-        return AssessmentCalculator.Compute(tax, advancePayments, prepayments.Withheld, prepayments.Paid);
+        return AssessmentCalculator.Compute(tax, advancePayments, withheld, withheldGiven, prepayments.Paid);
     }
 }

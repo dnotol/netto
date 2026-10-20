@@ -164,6 +164,28 @@ public class SplitSearchTests
         curve.ShouldAllBe(level => level == LevelOf(level.Pay, 0m, null, taxPrepayments));
     }
 
+    // Nothing given as withheld: at every pay the company withholds what the key formula says on that
+    // pay, so each level is the year run there with its own withholding.
+    [Fact]
+    public void Run_2026WithholdingAsTheKeyFormula_eachLevelIsTheYearAtThatPayWithTheWithholdingOnThatPay()
+    {
+        var curve = Search(Scenario(taxPrepayments: TaxPrepayments.AsWithheld)).Curve;
+
+        curve.ShouldAllBe(level => level == LevelOf(level.Pay, 0m, null, TaxPrepayments.AsWithheld));
+    }
+
+    // The formula's withholding leaves a surcharge under the 100 minimum at 20,799 and at 50,000, as
+    // withholding everything does, and never more in the pocket than withholding everything: both best
+    // pays stay where they are, with the same net.
+    [Fact]
+    public void Run_2026WithholdingAsTheKeyFormula_findsTheBestPaysOfAPayWhoseTaxWasWithheld()
+    {
+        var result = Search(Scenario(taxPrepayments: TaxPrepayments.AsWithheld));
+
+        (result.Best?.Pay, result.Best?.NetInPocket, result.BestKeepingReducedRate?.Pay, result.BestKeepingReducedRate?.NetInPocket)
+            .ShouldBe(((decimal?)20_799m, (decimal?)65_622.81m, (decimal?)50_000m, (decimal?)62_529.24m));
+    }
+
     [Fact]
     public void Run_2026DirectorPays_findsWhatNotSayingWhoPaysFinds()
     {

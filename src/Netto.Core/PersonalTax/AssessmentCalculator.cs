@@ -9,11 +9,12 @@ namespace Netto.Core.PersonalTax;
 // modelled.
 public static class AssessmentCalculator
 {
-    public static Assessment Compute(PersonalTaxResult tax, IncomeTaxAdvancePaymentResult advancePayments, decimal withheld, AdvancePayments paid)
+    public static Assessment Compute(
+        PersonalTaxResult tax, IncomeTaxAdvancePaymentResult advancePayments, decimal withheld, bool withheldGiven, AdvancePayments paid)
     {
         var finalTax = tax.IncomeTax + tax.MunicipalSurcharge - tax.LowEarnedIncomeCredit + advancePayments.Surcharge - advancePayments.Bonus;
         var paidInAdvance = paid.ByDeadline.Sum();
 
-        return new Assessment(finalTax, withheld, paidInAdvance, finalTax - withheld - paidInAdvance, PersonalTaxRules.AssessmentBalance);
+        return new Assessment(finalTax, withheld, withheldGiven, paidInAdvance, finalTax - withheld - paidInAdvance, PersonalTaxRules.AssessmentBalance);
     }
 }

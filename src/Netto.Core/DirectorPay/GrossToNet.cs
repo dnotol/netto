@@ -10,7 +10,8 @@ namespace Netto.Core.DirectorPay;
 // final contributions owed on its income. The income tax on it is surcharged where too little of it
 // was withheld or paid in advance during the year, and the advance payments beyond what avoids that
 // earn a bonus. The pay is paid in twelve equal months, each withheld on by the key formula: the
-// statement shows them, and the assessment what the year's tax return leaves to pay or refunds.
+// statement shows them, the year's withholding is twelve times the month's unless the user gave the
+// amount, and the assessment is what the year's tax return leaves to pay or refunds.
 public static class GrossToNet
 {
     public const string GrossPayNegative = "gross_pay_negative";
@@ -47,7 +48,7 @@ public static class GrossToNet
         var figures = Figures.For(socialRules, taxRules, withholdingRules, grossPay, municipalRate.Value, prepayments, paidBy);
         var next = Figures.For(socialRules, taxRules, withholdingRules, grossPay + NextSlice, municipalRate.Value, prepayments, paidBy);
         var advancePayments = IncomeTaxAdvancePaymentCalculator.Compute(
-            taxRules.AdvancePayments, figures.Tax.IncomeTax, figures.Tax.LowEarnedIncomeCredit, prepayments);
+            taxRules.AdvancePayments, figures.Tax.IncomeTax, figures.Tax.LowEarnedIncomeCredit, prepayments with { Withheld = figures.Withheld });
 
         return (new GrossToNetResult(
             incomeYear,
@@ -73,7 +74,7 @@ public static class GrossToNet
                 next.AdvancePayments.Surcharge - next.AdvancePayments.Bonus - figures.AdvancePayments.Surcharge + figures.AdvancePayments.Bonus,
                 next.NetInPocket - figures.NetInPocket),
             Statement(withholdingRules, figures),
-            AssessmentCalculator.Compute(figures.Tax, advancePayments, prepayments.Withheld, prepayments.Paid)), null);
+            AssessmentCalculator.Compute(figures.Tax, advancePayments, figures.Withheld, figures.WithheldGiven, prepayments.Paid)), null);
     }
 
     // The pay's figures alone, for the split's search, which runs the year at a hundred pays and more
@@ -186,12 +187,15 @@ public static class GrossToNet
 
     // One pay's figures. GrossPay is the pay on the payslip; ContributionsPaidByCompany is the
     // contributions when the company pays them, nothing when the director does; Withholding is the key
-    // formula's lines on a month of the taxable pay, the taxable pay over twelve rounded to the cent.
+    // formula's lines on a month of the taxable pay, the taxable pay over twelve rounded to the cent;
+    // Withheld is the year's withholding, the amount given (WithheldGiven) or twelve times the month's.
     internal sealed record Figures(
         decimal GrossPay,
         decimal SocialContributions,
         decimal ContributionsPaidByCompany,
         WithholdingResult Withholding,
+        decimal Withheld,
+        bool WithheldGiven,
         PersonalTaxResult Tax,
         IncomeTaxAdvancePaymentResult AdvancePayments,
         decimal NetInPocket)
@@ -213,8 +217,10 @@ public static class GrossToNet
             var paidByCompany = companyPays ? contributions : 0m;
             var taxablePay = grossPay + paidByCompany;
             var withholding = WithholdingCalculator.Figures(withholdingRules, Money.RoundToCent(taxablePay / MonthsInYear));
+            var withheld = prepayments.Withheld ?? withholding.MonthlyWithholding * MonthsInYear;
             var tax = PersonalTaxCalculator.Compute(taxRules, taxablePay, contributions, municipalRate);
-            var advancePayments = IncomeTaxAdvancePaymentCalculator.Figures(taxRules.AdvancePayments, tax.IncomeTax, tax.LowEarnedIncomeCredit, prepayments);
+            var advancePayments = IncomeTaxAdvancePaymentCalculator.Figures(
+                taxRules.AdvancePayments, tax.IncomeTax, tax.LowEarnedIncomeCredit, prepayments with { Withheld = withheld });
 
             // The contributions come off the pocket when the director pays them; when the company does,
             // they are pay that goes straight back out, so the pocket starts from the payslip gross.
@@ -223,7 +229,7 @@ public static class GrossToNet
             // What was withheld or paid in advance is the tax paid early, not a cost: only the surcharge
             // and the bonus reach the pocket.
             return new Figures(
-                grossPay, contributions, paidByCompany, withholding, tax, advancePayments,
+                grossPay, contributions, paidByCompany, withholding, withheld, prepayments.Withheld is not null, tax, advancePayments,
                 taxablePay - contributions - tax.IncomeTax - tax.MunicipalSurcharge + tax.LowEarnedIncomeCredit
                 - advancePayments.Surcharge + advancePayments.Bonus);
         }

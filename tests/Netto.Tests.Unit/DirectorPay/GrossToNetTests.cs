@@ -242,6 +242,77 @@ public class GrossToNetTests
         assessment.Balance.ShouldBe(-7_872.66m);
     }
 
+    // The river's example: nothing given as withheld, so the company withholds what the key formula
+    // says, twelve times the 890.94 on 4,166.67 (PayStatementTests).
+    [Fact]
+    public void Compute_2026Gross50000WithholdingAsTheKeyFormula_withholdsTwelveTimesTheMonthlyAmount()
+    {
+        var assessment = Compute2026(50_000m, MunicipalRates.Entered(0.07m), TaxPrepayments.AsWithheld).Assessment;
+
+        (assessment.Withheld, assessment.WithheldGiven).ShouldBe((10_691.28m, false));
+    }
+
+    // The 10,691.28 counts as prepaid at source: 1,322.72 of base is left, 59.52 at 4.5%, 53.57 at
+    // 90%, under the 100 minimum, so no surcharge is due.
+    [Fact]
+    public void Compute_2026Gross50000WithholdingAsTheKeyFormula_feedsTheSurchargeWhichFallsUnderTheMinimum()
+    {
+        var payments = Compute2026(50_000m, MunicipalRates.Entered(0.07m), TaxPrepayments.AsWithheld).AdvancePayments;
+
+        (payments.Base, payments.SurchargeBeforeKeptRate, payments.BelowMinimum, payments.Surcharge).ShouldBe((1_322.72m, 59.52m, true, 0m));
+    }
+
+    // 11,333.96 and 793.38 less the 10,691.28 withheld: 1,436.06 to pay, and the pocket is the 29,579.30
+    // of a pay whose tax was withheld, since what is withheld is the tax paid early.
+    [Fact]
+    public void Compute_2026Gross50000WithholdingAsTheKeyFormula_leaves1436Point06ToPay()
+    {
+        var result = Compute2026(50_000m, MunicipalRates.Entered(0.07m), TaxPrepayments.AsWithheld);
+
+        (result.Assessment.FinalTax, result.Assessment.Balance, result.NetInPocket).ShouldBe((12_127.34m, 1_436.06m, 29_579.30m));
+    }
+
+    [Theory]
+    [MemberData(nameof(GrossPays))]
+    public void Compute_2026WithholdingAsTheKeyFormula_withheldIsTwelveTimesTheStatementsMonth(decimal grossPay)
+    {
+        var result = Compute2026(grossPay, MunicipalRates.Entered(0.07m), TaxPrepayments.AsWithheld);
+
+        (result.Assessment.Withheld, result.Assessment.WithheldGiven).ShouldBe((12 * result.Statement.Months[0].Withholding, false));
+    }
+
+    [Theory]
+    [MemberData(nameof(GrossPays))]
+    public void Compute_2026WithholdingAsTheKeyFormula_nextThousandPartsAddUpToOneThousand(decimal grossPay)
+    {
+        var next = Compute2026(grossPay, MunicipalRates.Entered(0.07m), TaxPrepayments.AsWithheld).NextThousand;
+
+        (next.SocialContributions + next.IncomeTax + next.MunicipalSurcharge + next.LowEarnedIncomeCredit + next.AdvancePayments + next.NetInPocket)
+            .ShouldBe(1_000m);
+    }
+
+    // What the user says was withheld replaces the formula's amount in the year, and the result says
+    // so; the statement still shows the formula's monthly withholding, what a real payslip shows.
+    [Fact]
+    public void Compute_2026Withheld10000_replacesTheFormulasAmountAndSaysItWasGiven()
+    {
+        var result = Compute2026(50_000m, MunicipalRates.Entered(0.07m), new TaxPrepayments(10_000m, AdvancePayments.None));
+
+        (result.Assessment.Withheld, result.Assessment.WithheldGiven, result.Assessment.Balance, result.Statement.Months[0].Withholding)
+            .ShouldBe((10_000m, true, 2_127.34m, 890.94m));
+    }
+
+    // Twelve times the 1,194.71 on 4,995.21 (PayStatementTests); 1,514.73 of base is left on the tax at
+    // 106%, 15,851.25, which gives 61.34 at 90%, under the minimum.
+    [Fact]
+    public void Compute_2026CompanyPaysGross50000WithholdingAsTheKeyFormula_withholdsOnTheTaxablePay()
+    {
+        var result = CompanyPays2026(50_000m, TaxPrepayments.AsWithheld);
+
+        (result.Assessment.Withheld, result.AdvancePayments.Base, result.AdvancePayments.Surcharge, result.Assessment.Balance)
+            .ShouldBe((14_336.52m, 1_514.73m, 0m, 1_664.27m));
+    }
+
     [Fact]
     public void Compute_negativeWithholding_isRefused()
     {
