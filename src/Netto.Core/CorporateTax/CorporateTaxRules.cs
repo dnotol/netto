@@ -3,9 +3,9 @@ using Netto.Core.Rules;
 namespace Netto.Core.CorporateTax;
 
 // Corporate tax of a company whose accounting year is the calendar year, for one income year (taxed
-// in the following assessment year), and the surcharge its advance payments did not cover. No
-// disallowed expenses and no losses carried forward: the taxable income is the year's profit after
-// director pay.
+// in the following assessment year), and the surcharge its advance payments did not cover. No losses
+// carried forward, and no disallowed expenses but what the company cannot deduct of the vouchers
+// (VoucherRules): the taxable income is the year's profit after director pay with those added back.
 public sealed record CorporateTaxRules(
     int IncomeYear,
     RuleAmount StandardRate,
