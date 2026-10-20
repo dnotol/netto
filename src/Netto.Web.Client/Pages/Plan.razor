@@ -36,7 +36,7 @@
                     <DirectorPayCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Refused="@Refused(RiverModule.DirectorPay)" />
                 </div>
                 <div class="river__stream">
-                    <CorporateTaxCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" />
+                    <CorporateTaxCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Refused="@Refused(RiverModule.CorporateTax)" />
                     <DividendCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Refused="@Refused(RiverModule.Dividend)" />
                 </div>
             </div>

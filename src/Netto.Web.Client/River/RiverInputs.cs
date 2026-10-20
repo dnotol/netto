@@ -14,7 +14,8 @@ public sealed record RiverInputs(
     int IncomeYear,
     CompanyFigures? Company,
     Input<bool> SmallCompany,
-    Input<bool> FirstFourTaxPeriods,
+    Input<FinancialYear> FinancialYear,
+    AdvancePaymentInputs AdvancePayments,
     Input<decimal> DirectorPay,
     MunicipalityChoice Municipality,
     Input<decimal> Reserve,
@@ -24,13 +25,17 @@ public sealed record RiverInputs(
     // The only year with every layer's amounts; choosing the year is a later item.
     private const int ExampleYear = 2026;
 
+    private static Input<decimal> ExampleNothing { get; } = new(0m, InputOrigin.Example);
+
     // The example year the river opens on, every amount labelled as such, so the whole river runs
-    // at once; the statuses and rates are the defaults a typical owner-director starts from.
+    // at once; the statuses and rates are the defaults a typical owner-director starts from. Nothing
+    // is prepaid, so the example shows the surcharge and what cancels it.
     public static RiverInputs Example { get; } = new(
         ExampleYear,
         new CompanyFigures(new Input<decimal>(120_000m, InputOrigin.Example), new Input<decimal>(20_000m, InputOrigin.Example)),
         new Input<bool>(true, InputOrigin.Default),
-        new Input<bool>(false, InputOrigin.Default),
+        new Input<FinancialYear>(River.FinancialYear.FifthOrLater, InputOrigin.Default),
+        new AdvancePaymentInputs(ExampleNothing, ExampleNothing, ExampleNothing, ExampleNothing),
         new Input<decimal>(50_000m, InputOrigin.Example),
         MunicipalityChoice.Start(MunicipalRates.IncomeYear2026, 0.07m),
         new Input<decimal>(0m, InputOrigin.Example),
@@ -49,7 +54,10 @@ public sealed record RiverInputs(
 
     public RiverInputs WithSmallCompany(bool smallCompany) => this with { SmallCompany = Yours(smallCompany) };
 
-    public RiverInputs WithFirstFourTaxPeriods(bool firstFourTaxPeriods) => this with { FirstFourTaxPeriods = Yours(firstFourTaxPeriods) };
+    public RiverInputs WithFinancialYear(FinancialYear financialYear) => this with { FinancialYear = Yours(financialYear) };
+
+    // The payment by the deadline at that place, the first being 0.
+    public RiverInputs WithAdvancePayment(int deadline, decimal amount) => this with { AdvancePayments = AdvancePayments.With(deadline, Yours(amount)) };
 
     public RiverInputs WithDirectorPay(decimal directorPay) => this with { DirectorPay = Yours(directorPay) };
 
@@ -95,12 +103,45 @@ public sealed record RiverInputs(
         IncomeYear,
         Company?.Revenue.Value ?? 0m,
         Company?.RunningCosts.Value ?? 0m,
-        new CompanyStatus(SmallCompany.Value, FirstFourTaxPeriods.Value),
+        new CompanyStatus(SmallCompany.Value, FinancialYear.Value <= River.FinancialYear.Fourth, FinancialYear.Value <= River.FinancialYear.Third),
         directorPay,
         Municipality.MunicipalRate,
         Reserve.Value,
         DividendCategory.Value,
-        EarlierProfits.Value);
+        EarlierProfits.Value)
+    {
+        AdvancePayments = new AdvancePayments(AdvancePayments.First.Value, AdvancePayments.Second.Value, AdvancePayments.Third.Value, AdvancePayments.Fourth.Value),
+    };
+}
+
+// Which financial year of the company the income year is, as the user declares it: one fact that
+// sets both statuses the engine takes, a small company's exemption from the advance-payment
+// surcharge in its first three (CIR 92 art. 218 §2) and from the minimum director pay in its first
+// four (art. 215 al. 3, 4°). Its financial years are its tax periods, its accounting year being the
+// calendar year.
+public enum FinancialYear
+{
+    First = 1,
+    Second,
+    Third,
+    Fourth,
+    FifthOrLater,
+}
+
+// The company's advance payments as the user enters them, paid or planned by each deadline of the
+// income year, in their order.
+public sealed record AdvancePaymentInputs(Input<decimal> First, Input<decimal> Second, Input<decimal> Third, Input<decimal> Fourth)
+{
+    public IReadOnlyList<Input<decimal>> ByDeadline => [First, Second, Third, Fourth];
+
+    public AdvancePaymentInputs With(int deadline, Input<decimal> payment) => deadline switch
+    {
+        0 => this with { First = payment },
+        1 => this with { Second = payment },
+        2 => this with { Third = payment },
+        3 => this with { Fourth = payment },
+        _ => throw new ArgumentOutOfRangeException(nameof(deadline), deadline, "An income year has four deadlines."),
+    };
 }
 
 // The company's year as the user enters it, excluding VAT.

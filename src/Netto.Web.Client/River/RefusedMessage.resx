@@ -33,4 +33,7 @@
   <data name="Error_income_year_not_supported" xml:space="preserve">
     <value>This income year is not supported yet.</value>
   </data>
+  <data name="Error_advance_payment_negative" xml:space="preserve">
+    <value>An advance payment cannot be negative. Enter 0 for a deadline the company paid nothing by.</value>
+  </data>
 </root>

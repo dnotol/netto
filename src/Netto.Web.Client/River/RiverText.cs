@@ -29,6 +29,10 @@ internal static class RefusedMessageText
 internal static class CorporateTaxCardText
 {
     public static string Condition(ReducedRateCondition condition) => $"Condition_{condition}";
+
+    public static string Surcharge(SurchargeState state) => $"Surcharge_{state}";
+
+    public static string FinancialYear(FinancialYear year) => $"FinancialYear_{year}";
 }
 
 internal static class DividendCardText

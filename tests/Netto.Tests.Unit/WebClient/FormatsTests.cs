@@ -98,7 +98,8 @@ public class FormatsTests
         text.ShouldBe("1 January 2027");
     }
 
-    // Rates are fractions in the rule sets (20.50% is 0.205), and their keys end in _rate or _factor.
+    // Rates are fractions in the rule sets (20.50% is 0.205), and their keys end in _rate or _factor;
+    // a multiple of a rate ends in _multiplier.
     [Theory]
     [InlineData("first_band_rate", "0.205", "20.5%")]
     [InlineData("second_band_rate", "0.1416", "14.16%")]
@@ -108,6 +109,8 @@ public class FormatsTests
     [InlineData("minimum_income", "17374.08", "€17,374.08")]
     [InlineData("bracket_1_upper_limit", "16720", "€16,720.00")]
     [InlineData("flat_rate_costs_maximum", "3200", "€3,200.00")]
+    [InlineData("surcharge_multiplier", "2.25", "2.25×")]
+    [InlineData("first_credit_multiplier", "3", "3×")]
     public void RuleAmount_byKey_isARateOrEuros(string key, string value, string expected)
     {
         var amount = new RuleAmount(key, decimal.Parse(value, System.Globalization.CultureInfo.InvariantCulture), AnySource);

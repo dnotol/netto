@@ -11,10 +11,15 @@ namespace Netto.Tests.Simulation;
 // unless a test says otherwise. Director pay figures are GrossToNetTests' (50,000: contributions
 // 8,293.36, income tax 11,333.96, surcharge 793.38, net 29,579.30); the company and dividend
 // figures follow CorporateTaxCalculatorTests and DividendCalculatorTests. The dividend is what the
-// profit after tax leaves once the reserve is kept in the company.
+// profit after tax leaves once the reserve is kept in the company. The company prepays enough by
+// 10 April to leave no advance-payment surcharge unless a test says otherwise; the surcharge figures
+// follow AdvancePaymentCalculatorTests.
 public class YearSimulationTests
 {
     private static readonly CompanyStatus SmallPastStartUp = new(SmallCompany: true, FirstFourTaxPeriods: false);
+
+    // Its credit, 9,000, covers the surcharge on any tax these tests reach.
+    private static readonly AdvancePayments Prepaid = new(100_000m, 0m, 0m, 0m);
 
     public static TheoryData<decimal, decimal, decimal, WithholdingCategory> Setups => new()
     {
@@ -80,6 +85,7 @@ public class YearSimulationTests
         result.Steps.Select(step => (step.RuleKey, step.Layer, step.Event, step.Track, step.Amount)).ShouldBe(new[]
         {
             ("corporate_tax", Layer.Corporate, TaxableEvent.CompanyProfit, Track.PaidOut, 10_000.00m),
+            ("advance_payment_surcharge", Layer.Corporate, TaxableEvent.CompanyProfit, Track.PaidOut, 0m),
             ("social_contributions", Layer.Social, TaxableEvent.DirectorPay, Track.PaidOut, 8_293.36m),
             ("flat_rate_costs", Layer.Personal, TaxableEvent.DirectorPay, Track.TaxBaseOnly, 1_251.20m),
             ("taxable_income", Layer.Personal, TaxableEvent.DirectorPay, Track.TaxBaseOnly, 40_455.44m),
@@ -89,6 +95,84 @@ public class YearSimulationTests
             ("dividend_withholding", Layer.Personal, TaxableEvent.Dividend, Track.PaidOut, 7_200.00m),
             ("dividend_exemption_refund", Layer.Personal, TaxableEvent.Dividend, Track.PaidOut, -149.94m),
         });
+    }
+
+    // 6.75% of the 10,000 of corporate tax, which the year counts as a corporate tax of its own.
+    [Fact]
+    public void Run_2026NothingPrepaid_surchargesTheCorporateTax()
+    {
+        var result = Run(Scenario(directorPay: 50_000m, reserve: 0m, advancePayments: AdvancePayments.None));
+
+        (result.Company.CorporateTax, result.AdvancePayments.Surcharge, result.CorporateTax).ShouldBe((10_000.00m, 675.00m, 10_675.00m));
+    }
+
+    [Fact]
+    public void Run_2026NothingPrepaid_theSurchargeIsACorporateStepOnTheCompanysProfit()
+    {
+        var result = Run(Scenario(directorPay: 50_000m, reserve: 0m, advancePayments: AdvancePayments.None));
+
+        result.Steps.Single(step => step.RuleKey == "advance_payment_surcharge")
+            .ShouldSatisfyAllConditions(
+                step => (step.Layer, step.Event, step.Track, step.Amount).ShouldBe((Layer.Corporate, TaxableEvent.CompanyProfit, Track.PaidOut, 675.00m)),
+                step => step.AmountsUsed.Select(amount => amount.Key).ShouldContain("surcharge_multiplier"));
+    }
+
+    [Fact]
+    public void Run_2026NothingPrepaid_theSurchargeComesOutOfTheProfitAfterTaxAndTheDividend()
+    {
+        var result = Run(Scenario(directorPay: 50_000m, reserve: 0m, advancePayments: AdvancePayments.None));
+
+        (result.ProfitAfterTax, result.Dividend.Dividend).ShouldBe((39_325.00m, 39_325.00m));
+    }
+
+    // The surcharge is not deductible: the taxable income, and the condition of art. 215 tested on
+    // it, are those of a company that prepaid.
+    [Fact]
+    public void Run_2026NothingPrepaid_leavesTheTaxableIncomeAndTheRateAsTheyAre()
+    {
+        var prepaid = Run(Scenario(directorPay: 30_000m, reserve: 0m));
+        var notPrepaid = Run(Scenario(directorPay: 30_000m, reserve: 0m, advancePayments: AdvancePayments.None));
+
+        (notPrepaid.Company.TaxableIncome, notPrepaid.Company.Condition, notPrepaid.Company.CorporateTax)
+            .ShouldBe((prepaid.Company.TaxableIncome, prepaid.Company.Condition, prepaid.Company.CorporateTax));
+    }
+
+    [Fact]
+    public void Run_2026PaidByAprilAndJulyOnly_saysWhatBy21DecemberCancelsTheRest()
+    {
+        var result = Run(Scenario(directorPay: 50_000m, reserve: 0m, advancePayments: new AdvancePayments(2_000m, 2_000m, 0m, 0m)));
+
+        (result.AdvancePayments.Surcharge, result.AdvancePayments.LastDeadlineTopUp).ShouldBe((345.00m, 7_666.67m));
+    }
+
+    [Fact]
+    public void Run_2026SmallCompanyInItsFirstThreeFinancialYears_paysNoSurcharge()
+    {
+        var young = new CompanyStatus(SmallCompany: true, FirstFourTaxPeriods: true, FirstThreeFinancialYears: true);
+
+        var result = Run(Scenario(directorPay: 50_000m, reserve: 0m, advancePayments: AdvancePayments.None) with { Company = young });
+
+        (result.AdvancePayments.Exempt, result.CorporateTax).ShouldBe((true, 10_000.00m));
+    }
+
+    [Theory]
+    [MemberData(nameof(Setups))]
+    public void Run_2026NothingPrepaid_layersPocketAndCompanyAddUpToTheProfitBeforePay(
+        decimal directorPay, decimal profitBeforePay, decimal reserve, WithholdingCategory category)
+    {
+        var result = Run(Scenario(directorPay: directorPay, reserve: reserve, category: category, revenue: profitBeforePay + 20_000m,
+            advancePayments: AdvancePayments.None));
+
+        (result.CorporateTax + result.SocialContributions + result.PersonalTax + result.NetInPocket + result.KeptInCompany)
+            .ShouldBe(profitBeforePay);
+    }
+
+    [Fact]
+    public void Run_negativeAdvancePayment_isRefused()
+    {
+        var (value, error) = YearSimulation.Run(Scenario(directorPay: 50_000m, reserve: 0m, advancePayments: new AdvancePayments(0m, 0m, -0.01m, 0m)));
+
+        (value, error).ShouldBe((null, YearSimulation.AdvancePaymentNegative));
     }
 
     [Fact]
@@ -274,8 +358,12 @@ public class YearSimulationTests
         decimal reserve,
         WithholdingCategory category = WithholdingCategory.VvprbisThirdYearOnwards,
         decimal revenue = 120_000m,
-        decimal earlierProfits = 0m) =>
-        new(2026, revenue, 20_000m, SmallPastStartUp, directorPay, MunicipalRates.Entered(0.07m), reserve, category, earlierProfits);
+        decimal earlierProfits = 0m,
+        AdvancePayments? advancePayments = null) =>
+        new(2026, revenue, 20_000m, SmallPastStartUp, directorPay, MunicipalRates.Entered(0.07m), reserve, category, earlierProfits)
+        {
+            AdvancePayments = advancePayments ?? Prepaid,
+        };
 
     private static YearResult Run(Scenario scenario)
     {

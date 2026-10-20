@@ -13,10 +13,15 @@ namespace Netto.Tests.Simulation;
 // from 0 to the profit before pay (2026-10-19). On this company the net in pocket climbs to 20,799,
 // where it peaks, and jumps at 50,000, half the profit, where the reduced corporate rate is kept.
 // The tax credit for low earned income added 910 to each best pay and moved none: each sits where
-// the credit is whole (taxable income from 8,960 to 22,400), and the credit is never more.
+// the credit is whole (taxable income from 8,960 to 22,400), and the credit is never more. The
+// company prepays enough by 10 April to leave no advance-payment surcharge at any pay, unless a test
+// says otherwise; the payments it makes are held at every pay, like the rest of the scenario.
 public class SplitSearchTests
 {
     private static readonly CompanyStatus SmallPastStartUp = new(SmallCompany: true, FirstFourTaxPeriods: false);
+
+    // Its credit, 9,000, covers the surcharge on any tax these tests reach.
+    private static readonly AdvancePayments Prepaid = new(100_000m, 0m, 0m, 0m);
 
     [Fact]
     public void Run_2026Example_findsThePayThatLeavesTheMost()
@@ -107,6 +112,36 @@ public class SplitSearchTests
         var curve = Search(Scenario()).Curve;
 
         curve.ShouldAllBe(level => level == LevelOf(level.Pay, 0m));
+    }
+
+    // Found by running the year at every euro from 0 to 100,000 with nothing prepaid (2026-10-20):
+    // the surcharge, 1,336.52 at the best pay and 675.00 at 50,000, moves neither best pay.
+    [Fact]
+    public void Run_2026NothingPrepaid_findsTheBestPayWithItsSurcharge()
+    {
+        var result = Search(Scenario(advancePayments: AdvancePayments.None));
+
+        (result.Best?.Pay, result.Best?.NetInPocket, result.Best?.Dividend, result.BestKeepingReducedRate?.Pay, result.BestKeepingReducedRate?.NetInPocket)
+            .ShouldBe(((decimal?)20_799m, (decimal?)64_526.87m, (decimal?)58_064.23m, (decimal?)50_000m, (decimal?)61_975.74m));
+    }
+
+    // The payments entered are held at every pay: each level carries the surcharge they leave there.
+    [Fact]
+    public void Run_2026PaidByAprilAndJulyOnly_eachLevelIsTheYearAtThatPayWithThesePayments()
+    {
+        var payments = new AdvancePayments(2_000m, 2_000m, 0m, 0m);
+
+        var curve = Search(Scenario(advancePayments: payments)).Curve;
+
+        curve.ShouldAllBe(level => level == LevelOf(level.Pay, 0m, payments));
+    }
+
+    [Fact]
+    public void Run_negativeAdvancePayment_isRefusedWithYearSimulationsKey()
+    {
+        var (value, error) = SplitSearch.Run(Scenario(advancePayments: new AdvancePayments(-0.01m, 0m, 0m, 0m)));
+
+        (value, error).ShouldBe((null, YearSimulation.AdvancePaymentNegative));
     }
 
     [Fact]
@@ -261,9 +296,13 @@ public class SplitSearchTests
         decimal reserve = 0m,
         decimal revenue = 120_000m,
         CompanyStatus? company = null,
-        decimal earlierProfits = 0m) =>
+        decimal earlierProfits = 0m,
+        AdvancePayments? advancePayments = null) =>
         new(2026, revenue, 20_000m, company ?? SmallPastStartUp, directorPay, MunicipalRates.Entered(0.07m), reserve,
-            WithholdingCategory.VvprbisThirdYearOnwards, earlierProfits);
+            WithholdingCategory.VvprbisThirdYearOnwards, earlierProfits)
+        {
+            AdvancePayments = advancePayments ?? Prepaid,
+        };
 
     private static SplitSearchResult Search(Scenario scenario)
     {
@@ -281,9 +320,9 @@ public class SplitSearchTests
         return value.ShouldNotBeNull();
     }
 
-    private static PayLevel LevelOf(decimal pay, decimal reserve)
+    private static PayLevel LevelOf(decimal pay, decimal reserve, AdvancePayments? advancePayments = null)
     {
-        var year = Year(Scenario(directorPay: pay, reserve: reserve));
+        var year = Year(Scenario(directorPay: pay, reserve: reserve, advancePayments: advancePayments));
 
         return new PayLevel(pay, year.NetInPocket, year.Dividend.Dividend, year.KeptInCompany, year.Company.Condition,
             year.MaximumDividend >= reserve);

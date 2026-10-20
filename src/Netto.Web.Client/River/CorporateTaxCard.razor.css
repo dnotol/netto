@@ -1,4 +1,4 @@
-/* ::deep reaches the MudCheckBox, which carries no scope attribute of its own. */
+/* ::deep reaches the MudCheckBox and the MudChipSet's chips, which carry no scope attribute of their own. */
 .corporate-tax__waiting,
 .corporate-tax__hint {
     margin: 0;
@@ -53,4 +53,37 @@
     font-family: "Fraunces", Georgia, serif;
     font-size: 1.1rem;
     font-weight: 600;
+}
+
+.corporate-tax__note {
+    margin: 0;
+    color: var(--netto-text-muted);
+    font-size: 0.82rem;
+    line-height: 1.55;
+}
+
+/* A chip's text wraps rather than widening the card on a phone. */
+.corporate-tax__years ::deep .mud-chip {
+    height: auto;
+    min-height: 1.75rem;
+    margin: 0 0.4rem 0.4rem 0;
+    white-space: normal;
+}
+
+.corporate-tax__payments {
+    display: grid;
+    gap: 0.6rem;
+}
+
+.corporate-tax__payments-title {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+/* Two deadlines a row where the card is wide enough, one under the other on a phone. */
+.corporate-tax__deadlines {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
+    gap: 0.6rem 0.9rem;
 }

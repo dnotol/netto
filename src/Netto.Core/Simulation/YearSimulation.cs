@@ -5,11 +5,11 @@ using Netto.Core.Dividends;
 namespace Netto.Core.Simulation;
 
 // One income year in the order the law computes it: the director pay lowers the company's taxable
-// income, corporate tax takes its share of what is left, and the dividend is the profit after tax and
-// the profits kept from earlier years, less the reserve the user keeps in the company, never below
-// zero. In steady state the year pays out its own profit (decided 2026-10-19). No disallowed
-// expenses, no losses carried forward, no advance-payment surcharges, and INASTI's company
-// contribution sits in the running costs.
+// income, corporate tax takes its share of what is left, with the surcharge the advance payments did
+// not cover, and the dividend is the profit after tax and the profits kept from earlier years, less
+// the reserve the user keeps in the company, never below zero. In steady state the year pays out its
+// own profit (decided 2026-10-19). No disallowed expenses, no losses carried forward, and INASTI's
+// company contribution sits in the running costs.
 public static class YearSimulation
 {
     public const string IncomeYearNotSupported = GrossToNet.IncomeYearNotSupported;
@@ -17,6 +17,7 @@ public static class YearSimulation
     public const string RunningCostsNegative = "running_costs_negative";
     public const string ReserveNegative = "reserve_negative";
     public const string EarlierProfitsNegative = "earlier_profits_negative";
+    public const string AdvancePaymentNegative = "advance_payment_negative";
 
     public static (YearResult? Value, string? Error) Run(Scenario scenario)
     {
@@ -32,6 +33,8 @@ public static class YearSimulation
             return (null, ReserveNegative);
         if (scenario.EarlierProfits < 0m)
             return (null, EarlierProfitsNegative);
+        if (scenario.AdvancePayments.ByDeadline.Any(amount => amount < 0m))
+            return (null, AdvancePaymentNegative);
 
         var (pay, payError) = GrossToNet.Compute(scenario.IncomeYear, scenario.DirectorPay, scenario.MunicipalRate);
         if (pay is null)
@@ -45,6 +48,8 @@ public static class YearSimulation
         [
             new Step("corporate_tax", Layer.Corporate, TaxableEvent.CompanyProfit, Track.PaidOut, company.Tax.CorporateTax,
                 CorporateTaxRules.Source, corporateRules.Amounts),
+            new Step("advance_payment_surcharge", Layer.Corporate, TaxableEvent.CompanyProfit, Track.PaidOut, company.AdvancePayments.Surcharge,
+                corporateRules.AdvancePayments.Source, corporateRules.AdvancePayments.Amounts),
             .. pay.Steps,
             new Step("dividend_withholding", Layer.Personal, TaxableEvent.Dividend, Track.PaidOut, dividend.Withholding,
                 rate.Source, [rate]),
@@ -56,6 +61,7 @@ public static class YearSimulation
             scenario,
             scenario.ProfitBeforePay,
             company.Tax,
+            company.AdvancePayments,
             pay,
             dividend,
             PaidOut(steps, Layer.Corporate),
@@ -84,8 +90,10 @@ public static class YearSimulation
             company.MaximumDividend >= scenario.Reserve);
     }
 
-    // What follows the director pay: corporate tax on the profit it leaves, then the dividend out of the
-    // profit after tax and the profits kept from earlier years, once the reserve is kept. The reserve
+    // What follows the director pay: corporate tax on the profit it leaves and the surcharge the advance
+    // payments leave on it, which is not deductible and so moves neither the taxable income nor the
+    // rate, then the dividend out of the profit after tax and the profits kept from earlier years,
+    // once the reserve is kept. The reserve
     // is what stays in the whole company at year end (decided 2026-10-19): what is not kept is paid
     // out, and a reserve above what the company holds leaves no dividend. A loss eats into the
     // earlier profits first. The law withholds on the distribution, whatever year its profits come
@@ -94,12 +102,13 @@ public static class YearSimulation
     private static CompanyFigures Company(Scenario scenario, CorporateTaxRules corporateRules, DividendRules dividendRules, decimal netPay)
     {
         var tax = CorporateTaxCalculator.Compute(corporateRules, scenario.ProfitBeforePay - scenario.DirectorPay, scenario.DirectorPay, scenario.Company);
-        var profitAfterTax = tax.TaxableIncome - tax.CorporateTax;
+        var advancePayments = AdvancePaymentCalculator.Compute(corporateRules.AdvancePayments, tax.CorporateTax, scenario.AdvancePayments, scenario.Company);
+        var profitAfterTax = tax.TaxableIncome - tax.CorporateTax - advancePayments.Surcharge;
         var held = profitAfterTax + scenario.EarlierProfits;
         var maximumDividend = Math.Max(0m, held);
         var dividend = DividendCalculator.Compute(dividendRules, Math.Max(0m, maximumDividend - scenario.Reserve), scenario.DividendCategory);
 
-        return new CompanyFigures(tax, profitAfterTax, maximumDividend, dividend, netPay + dividend.NetDividend, held - dividend.Dividend);
+        return new CompanyFigures(tax, advancePayments, profitAfterTax, maximumDividend, dividend, netPay + dividend.NetDividend, held - dividend.Dividend);
     }
 
     private static decimal PaidOut(IReadOnlyList<Step> steps, Layer layer) =>
@@ -107,6 +116,7 @@ public static class YearSimulation
 
     private sealed record CompanyFigures(
         CorporateTaxResult Tax,
+        AdvancePaymentResult AdvancePayments,
         decimal ProfitAfterTax,
         decimal MaximumDividend,
         DividendResult Dividend,

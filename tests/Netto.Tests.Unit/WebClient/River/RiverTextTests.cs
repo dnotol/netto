@@ -56,7 +56,8 @@ public class RiverTextTests
         var errors = new[]
         {
             YearSimulation.IncomeYearNotSupported, YearSimulation.RevenueNegative, YearSimulation.RunningCostsNegative,
-            YearSimulation.ReserveNegative, YearSimulation.EarlierProfitsNegative, GrossToNet.GrossPayNegative, GrossToNet.MunicipalRateOutOfRange,
+            YearSimulation.ReserveNegative, YearSimulation.EarlierProfitsNegative, YearSimulation.AdvancePaymentNegative,
+            GrossToNet.GrossPayNegative, GrossToNet.MunicipalRateOutOfRange,
         };
 
         Missing(RefusedMessageResources, errors.Select(RefusedMessageText.Error)).ShouldBeEmpty();
@@ -66,6 +67,18 @@ public class RiverTextTests
     public void CorporateTaxCardResx_everyReducedRateCondition_hasAText()
     {
         Missing(CorporateTaxCardResources, Enum.GetValues<ReducedRateCondition>().Select(CorporateTaxCardText.Condition)).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void CorporateTaxCardResx_everySurchargeState_hasAText()
+    {
+        Missing(CorporateTaxCardResources, Enum.GetValues<SurchargeState>().Select(CorporateTaxCardText.Surcharge)).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void CorporateTaxCardResx_everyFinancialYear_hasAText()
+    {
+        Missing(CorporateTaxCardResources, Enum.GetValues<FinancialYear>().Select(CorporateTaxCardText.FinancialYear)).ShouldBeEmpty();
     }
 
     [Fact]

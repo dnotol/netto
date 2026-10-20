@@ -38,11 +38,14 @@ internal static class Formats
     // The invariant culture's month names are English: 1 January 2027.
     public static string Day(DateOnly date) => date.ToString("d MMMM yyyy", Culture);
 
-    // The rule sets hold rates as fractions (20.50% is 0.205), under keys ending in _rate or _factor.
+    // The rule sets hold rates as fractions (20.50% is 0.205), under keys ending in _rate or _factor,
+    // and multiples of a rate under keys ending in _multiplier: 2.25 reads 2.25×.
     public static string RuleAmount(RuleAmount amount) =>
         amount.Key.EndsWith("_rate", StringComparison.Ordinal) || amount.Key.EndsWith("_factor", StringComparison.Ordinal)
             ? amount.Value.ToString("0.###%", Culture)
-            : Euros(amount.Value);
+            : amount.Key.EndsWith("_multiplier", StringComparison.Ordinal)
+                ? $"{amount.Value.ToString("0.##", Culture)}×"
+                : Euros(amount.Value);
 
     private static CultureInfo EnglishWithEuro()
     {

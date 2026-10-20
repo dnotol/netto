@@ -3,10 +3,11 @@ using Shouldly;
 
 namespace Netto.Tests.WebClient.River;
 
-// On the river's example (RiverInputsTests): 100,000 of profit before pay end up as 62,529.24 in the
+// On the river's example (RiverInputsTests): 100,000 of profit before pay end up as 61,975.74 in the
 // pocket, 20,420.70 of taxes on pay (contributions 8,293.36, income tax 11,333.96, surcharge
-// 793.38), 17,050.06 of taxes on profit (corporate tax 10,000, withholding 7,200, less the refund of
-// 149.94) and nothing kept.
+// 793.38), 17,603.56 of taxes on profit (corporate tax 10,000 and its advance-payment surcharge 675,
+// nothing being prepaid, withholding 7,078.50 on the 39,325 left, less the refund of 149.94) and
+// nothing kept.
 public class BucketsViewTests
 {
     public static TheoryData<decimal, decimal, decimal> Years => new()
@@ -25,16 +26,17 @@ public class BucketsViewTests
 
         view.Buckets.Select(bucket => (bucket.Key, bucket.Amount)).ShouldBe(new[]
         {
-            ("pocket", 62_529.24m),
+            ("pocket", 61_975.74m),
             ("taxes_on_pay", 20_420.70m),
-            ("taxes_on_profit", 17_050.06m),
+            ("taxes_on_profit", 17_603.56m),
             ("kept_in_company", 0m),
         });
     }
 
     // At the best pay the tax credit for low earned income comes back out of the taxes on pay:
     // contributions 3,561.68, income tax 1,292.58 and surcharge 90.48, less 910. Taxes on profit are
-    // corporate tax 19,800.25 and withholding 10,692.14, less the refund of 149.94.
+    // corporate tax 19,800.25, its advance-payment surcharge 1,336.52 and withholding 10,451.56 on the
+    // 58,064.23 left, less the refund of 149.94.
     [Fact]
     public void From_bestPay_creditLowersTheTaxesOnPay()
     {
@@ -42,9 +44,9 @@ public class BucketsViewTests
 
         view.Buckets.Select(bucket => (bucket.Key, bucket.Amount)).ShouldBe(new[]
         {
-            ("pocket", 65_622.81m),
+            ("pocket", 64_526.87m),
             ("taxes_on_pay", 4_034.74m),
-            ("taxes_on_profit", 30_342.45m),
+            ("taxes_on_profit", 31_438.39m),
             ("kept_in_company", 0m),
         });
     }
@@ -94,7 +96,7 @@ public class BucketsViewTests
     {
         var view = BucketsView.From(RiverInputs.Example.Run()).ShouldNotBeNull();
 
-        view.Buckets.Select(bucket => bucket.Share).ShouldBe(new decimal?[] { 0.6252924m, 0.204207m, 0.1705006m, 0m });
+        view.Buckets.Select(bucket => bucket.Share).ShouldBe(new decimal?[] { 0.6197574m, 0.204207m, 0.1760356m, 0m });
     }
 
     // A loss stays in the company as a negative amount, which a bar of shares cannot draw.

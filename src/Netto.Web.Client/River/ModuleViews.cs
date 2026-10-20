@@ -188,23 +188,39 @@ internal sealed record DirectorPayView(InputOrigin PayOrigin, IReadOnlyList<Drai
 }
 
 // The condition is the engine's: which part of art. 215 decided the rate, against which minimum pay.
+// So is the surcharge the advance payments leave, and what more by the last deadline cancels it.
 internal sealed record CorporateTaxView(
     decimal TaxableIncome,
     ReducedRateCondition Condition,
     decimal MinimumDirectorPay,
     bool NoTaxableProfit,
+    SurchargeState Surcharge,
+    decimal SurchargeAmount,
+    decimal TopUp,
+    DateOnly LastDeadline,
     IReadOnlyList<Drain> Drains,
     IReadOnlyList<StepDetail> Details)
 {
     public static CorporateTaxView From(YearResult year)
     {
         var steps = year.Steps.Where(step => step.Event == TaxableEvent.CompanyProfit).ToList();
+        var payments = year.AdvancePayments;
 
         return new CorporateTaxView(
             year.Company.TaxableIncome,
             year.Company.Condition,
             year.Company.MinimumDirectorPay,
             year.Company.TaxableIncome <= 0m,
+            payments switch
+            {
+                { Exempt: true } => SurchargeState.Exempt,
+                { SurchargeBeforeCredits: 0m } => SurchargeState.NoTax,
+                { Surcharge: 0m } => SurchargeState.Covered,
+                _ => SurchargeState.Due,
+            },
+            payments.Surcharge,
+            payments.LastDeadlineTopUp,
+            AdvancePaymentFields.Deadlines(year.Scenario.IncomeYear)[^1].Date.Value,
             [
                 .. steps.Where(step => step.Track == Track.PaidOut).Select(step => Drain.PaidOutTo(step, "taxes_on_profit")),
                 new Drain("profit_after_tax", DrainKind.PassedOn, year.ProfitAfterTax, "dividend"),
@@ -212,6 +228,35 @@ internal sealed record CorporateTaxView(
             steps.Select(StepDetail.From).ToList());
     }
 }
+
+// What the advance payments leave on the corporate tax.
+internal enum SurchargeState
+{
+    // A small company in its first three financial years owes none.
+    Exempt,
+
+    // No corporate tax, nothing to surcharge.
+    NoTax,
+
+    // The payments' credits cover it.
+    Covered,
+
+    // Some is left, which a payment by the last deadline can cancel.
+    Due,
+}
+
+// One field per deadline of the income year, with its date, holding what the user paid or plans by
+// it. Drawn from the inputs, so the fields stay while the engine refuses one of them.
+internal static class AdvancePaymentFields
+{
+    public static IReadOnlyList<PaymentField> From(RiverInputs inputs) =>
+        [.. Deadlines(inputs.IncomeYear).Select((deadline, i) => new PaymentField(i, deadline.Date.Value, inputs.AdvancePayments.ByDeadline[i]))];
+
+    public static IReadOnlyList<AdvancePaymentDeadline> Deadlines(int incomeYear) =>
+        CorporateTaxRules.For(incomeYear)?.AdvancePayments.Deadlines ?? [];
+}
+
+internal sealed record PaymentField(int Deadline, DateOnly Date, Input<decimal> Paid);
 
 // The slider runs over what the company can pay out, this year's profit after tax and the profits
 // kept from earlier years, the dividend on one side and what is kept on the other; Kept is where it
@@ -256,6 +301,7 @@ internal static class RiverErrors
         GrossToNet.GrossPayNegative => companySkipped ? RiverModule.DirectorPay : RiverModule.Split,
         GrossToNet.MunicipalRateOutOfRange => RiverModule.DirectorPay,
         YearSimulation.ReserveNegative or YearSimulation.EarlierProfitsNegative => RiverModule.Dividend,
+        YearSimulation.AdvancePaymentNegative => RiverModule.CorporateTax,
         _ => RiverModule.River,
     };
 }
@@ -270,6 +316,8 @@ internal enum RiverModule
     Split,
 
     DirectorPay,
+
+    CorporateTax,
 
     Dividend,
 }

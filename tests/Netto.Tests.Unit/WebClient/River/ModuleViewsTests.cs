@@ -8,10 +8,13 @@ namespace Netto.Tests.WebClient.River;
 
 // What each module card draws, on the river's example (RiverInputsTests): 100,000 of profit before
 // pay, 50,000 of pay leaving 29,579.30 net, corporate tax 10,000 at 20% because the taxable income,
-// 50,000, does not exceed the pay, then 40,000 of profit after tax paid out as a VVPRbis dividend
-// (withholding 7,200, refund 149.94, net 32,949.94).
+// 50,000, does not exceed the pay, and, nothing being prepaid, a surcharge of 675.00 on it. The
+// dividend's cards prepay 7,500 by 10 April, which cancels it: 40,000 of profit after tax paid out as
+// a VVPRbis dividend (withholding 7,200, refund 149.94, net 32,949.94).
 public class ModuleViewsTests
 {
+    private static readonly RiverInputs Prepaid = RiverInputs.Example.WithAdvancePayment(0, 7_500m);
+
     [Fact]
     public void Split_example_givesThePayAndTheCompanysProfit()
     {
@@ -117,7 +120,8 @@ public class ModuleViewsTests
         CorporateTax(RiverInputs.Example).Drains.ShouldBe(new[]
         {
             new Drain("corporate_tax", DrainKind.PaidOut, 10_000.00m, "taxes_on_profit"),
-            new Drain("profit_after_tax", DrainKind.PassedOn, 40_000.00m, "dividend"),
+            new Drain("advance_payment_surcharge", DrainKind.PaidOut, 675.00m, "taxes_on_profit"),
+            new Drain("profit_after_tax", DrainKind.PassedOn, 39_325.00m, "dividend"),
         });
     }
 
@@ -138,13 +142,63 @@ public class ModuleViewsTests
     [Fact]
     public void CorporateTax_example_listsOnlyTheCompanysSteps()
     {
-        CorporateTax(RiverInputs.Example).Details.Select(detail => detail.RuleKey).ShouldBe(["corporate_tax"]);
+        CorporateTax(RiverInputs.Example).Details.Select(detail => detail.RuleKey).ShouldBe(["corporate_tax", "advance_payment_surcharge"]);
+    }
+
+    // 675 ÷ 4.5% = 15,000 by 21 December.
+    [Fact]
+    public void CorporateTax_example_saysTheSurchargeIsDueAndWhatByTheLastDeadlineCancelsIt()
+    {
+        var view = CorporateTax(RiverInputs.Example);
+
+        (view.Surcharge, view.SurchargeAmount, view.TopUp, view.LastDeadline)
+            .ShouldBe((SurchargeState.Due, 675.00m, 15_000.00m, new DateOnly(2026, 12, 21)));
+    }
+
+    [Fact]
+    public void CorporateTax_prepaidEnough_saysThePaymentsCoverIt()
+    {
+        var view = CorporateTax(Prepaid);
+
+        (view.Surcharge, view.SurchargeAmount, view.TopUp).ShouldBe((SurchargeState.Covered, 0m, 0m));
+    }
+
+    [Fact]
+    public void CorporateTax_smallCompanyInItsSecondFinancialYear_saysItIsExempt()
+    {
+        CorporateTax(RiverInputs.Example.WithFinancialYear(FinancialYear.Second)).Surcharge.ShouldBe(SurchargeState.Exempt);
+    }
+
+    [Fact]
+    public void CorporateTax_lossBeforePay_hasNoTaxToSurcharge()
+    {
+        CorporateTax(RiverInputs.Example.WithRevenue(10_000m)).Surcharge.ShouldBe(SurchargeState.NoTax);
+    }
+
+    [Fact]
+    public void AdvancePaymentFields_example_oneFieldPerDeadlineWithItsDate()
+    {
+        var fields = AdvancePaymentFields.From(RiverInputs.Example);
+
+        fields.Select(field => (field.Deadline, field.Date, field.Paid)).ShouldBe(new[]
+        {
+            (0, new DateOnly(2026, 4, 10), new Input<decimal>(0m, InputOrigin.Example)),
+            (1, new DateOnly(2026, 7, 10), new Input<decimal>(0m, InputOrigin.Example)),
+            (2, new DateOnly(2026, 10, 12), new Input<decimal>(0m, InputOrigin.Example)),
+            (3, new DateOnly(2026, 12, 21), new Input<decimal>(0m, InputOrigin.Example)),
+        });
+    }
+
+    [Fact]
+    public void AdvancePaymentFields_paymentEntered_isTheUsers()
+    {
+        AdvancePaymentFields.From(RiverInputs.Example.WithAdvancePayment(2, 1_000m))[2].Paid.ShouldBe(new Input<decimal>(1_000m, InputOrigin.Yours));
     }
 
     [Fact]
     public void Dividend_nothingKept_paysAllOfTheProfitAfterTaxOut()
     {
-        var view = Dividend(RiverInputs.Example);
+        var view = Dividend(Prepaid);
 
         (view.Maximum, view.Kept, view.Dividend, view.Rate).ShouldBe((40_000.00m, 0m, 40_000.00m, 0.18m));
     }
@@ -152,7 +206,7 @@ public class ModuleViewsTests
     [Fact]
     public void Dividend_reserve_isKeptAndTheRestPaidOut()
     {
-        var view = Dividend(RiverInputs.Example.WithReserve(15_000m));
+        var view = Dividend(Prepaid.WithReserve(15_000m));
 
         (view.Kept, view.Dividend).ShouldBe((15_000.00m, 25_000.00m));
     }
@@ -160,7 +214,7 @@ public class ModuleViewsTests
     [Fact]
     public void Dividend_reserveAboveTheProfitAfterTax_keepsItAll()
     {
-        var view = Dividend(RiverInputs.Example.WithReserve(50_000m));
+        var view = Dividend(Prepaid.WithReserve(50_000m));
 
         (view.Kept, view.Dividend).ShouldBe((40_000.00m, 0m));
     }
@@ -168,7 +222,7 @@ public class ModuleViewsTests
     [Fact]
     public void Dividend_example_drainsTheWithholdingGetsTheRefundBackAndPassesTheRestOn()
     {
-        Dividend(RiverInputs.Example.WithReserve(15_000m)).Drains.ShouldBe(new[]
+        Dividend(Prepaid.WithReserve(15_000m)).Drains.ShouldBe(new[]
         {
             new Drain("dividend_withholding", DrainKind.PaidOut, 4_500.00m, "taxes_on_profit"),
             new Drain("dividend_exemption_refund", DrainKind.Back, 149.94m, "taxes_on_profit"),
@@ -181,13 +235,13 @@ public class ModuleViewsTests
     [Fact]
     public void Dividend_noDividend_listsTheRefundAsComingBack()
     {
-        Dividend(RiverInputs.Example.WithReserve(50_000m)).Drains[1].ShouldBe(new Drain("dividend_exemption_refund", DrainKind.Back, 0m, "taxes_on_profit"));
+        Dividend(Prepaid.WithReserve(50_000m)).Drains[1].ShouldBe(new Drain("dividend_exemption_refund", DrainKind.Back, 0m, "taxes_on_profit"));
     }
 
     [Fact]
     public void Dividend_lossYear_keepsTheLossInTheCompany()
     {
-        var view = Dividend(RiverInputs.Example.WithRevenue(10_000m));
+        var view = Dividend(Prepaid.WithRevenue(10_000m));
 
         (view.Maximum, view.Dividend, view.Drains[^1].Amount).ShouldBe((0m, 0m, -10_000m));
     }
@@ -197,7 +251,7 @@ public class ModuleViewsTests
     [Fact]
     public void Dividend_earlierProfits_slidesOverThemAndTheProfitAfterTax()
     {
-        var view = Dividend(RiverInputs.Example.WithEarlierProfits(60_000m).WithReserve(30_000m));
+        var view = Dividend(Prepaid.WithEarlierProfits(60_000m).WithReserve(30_000m));
 
         (view.Maximum, view.ProfitAfterTax, view.EarlierProfits, view.Kept, view.Dividend).ShouldBe((100_000m, 40_000m, 60_000m, 30_000m, 70_000m));
     }
@@ -205,7 +259,7 @@ public class ModuleViewsTests
     [Fact]
     public void Dividend_example_listsOnlyTheDividendsSteps()
     {
-        Dividend(RiverInputs.Example).Details.Select(detail => detail.RuleKey).ShouldBe(["dividend_withholding", "dividend_exemption_refund"]);
+        Dividend(Prepaid).Details.Select(detail => detail.RuleKey).ShouldBe(["dividend_withholding", "dividend_exemption_refund"]);
     }
 
     // The module is named rather than typed: RiverModule is internal, a theory's parameters public.
@@ -217,6 +271,7 @@ public class ModuleViewsTests
     [InlineData(GrossToNet.MunicipalRateOutOfRange, false, "DirectorPay")]
     [InlineData(YearSimulation.ReserveNegative, false, "Dividend")]
     [InlineData(YearSimulation.EarlierProfitsNegative, false, "Dividend")]
+    [InlineData(YearSimulation.AdvancePaymentNegative, false, "CorporateTax")]
     [InlineData(YearSimulation.IncomeYearNotSupported, false, "River")]
     public void RiverErrors_engineRefusal_isShownOnTheModuleHoldingTheField(string error, bool companySkipped, string module)
     {

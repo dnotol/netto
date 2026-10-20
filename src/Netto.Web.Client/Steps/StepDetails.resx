@@ -165,4 +165,28 @@
   <data name="Amount_exempt_dividends" xml:space="preserve">
     <value>Exempt dividends per year</value>
   </data>
+  <data name="Title_advance_payment_surcharge" xml:space="preserve">
+    <value>Advance-payment surcharge</value>
+  </data>
+  <data name="Rule_advance_payment_surcharge" xml:space="preserve">
+    <value>Corporate tax the company did not pay in advance during the year is increased: the tax times a multiple of the reference rate, less a credit for each advance payment, a smaller multiple of it the later the deadline it was paid by. A company has no threshold below which nothing is due and no bonus for paying more: what is paid beyond the tax is refunded. A small company owes none on the tax of its first three financial years. The surcharge is not deductible, so it does not lower the taxable income.</value>
+  </data>
+  <data name="Amount_reference_rate" xml:space="preserve">
+    <value>Reference rate for companies</value>
+  </data>
+  <data name="Amount_surcharge_multiplier" xml:space="preserve">
+    <value>Surcharge, times the reference rate</value>
+  </data>
+  <data name="Amount_first_credit_multiplier" xml:space="preserve">
+    <value>Credit for a payment by the first deadline, times the reference rate</value>
+  </data>
+  <data name="Amount_second_credit_multiplier" xml:space="preserve">
+    <value>Credit for a payment by the second deadline, times the reference rate</value>
+  </data>
+  <data name="Amount_third_credit_multiplier" xml:space="preserve">
+    <value>Credit for a payment by the third deadline, times the reference rate</value>
+  </data>
+  <data name="Amount_fourth_credit_multiplier" xml:space="preserve">
+    <value>Credit for a payment by the fourth deadline, times the reference rate</value>
+  </data>
 </root>

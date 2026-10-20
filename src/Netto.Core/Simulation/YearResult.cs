@@ -6,13 +6,15 @@ namespace Netto.Core.Simulation;
 
 // The year from the company's profit before pay to the director's pocket. Corporate tax, social
 // contributions, personal tax, net in pocket and what stays in the company add up to that profit
-// plus the profits kept from earlier years. The dividend is what the profit after tax and those
-// earlier profits leave once the reserve is kept; the largest the year allows is both together, less
-// a loss, never below zero.
+// plus the profits kept from earlier years; the corporate tax among them includes the surcharge the
+// advance payments left. The dividend is what the profit after tax and those earlier profits leave
+// once the reserve is kept; the largest the year allows is both together, less a loss, never below
+// zero.
 public sealed record YearResult(
     Scenario Scenario,
     decimal ProfitBeforePay,
     CorporateTaxResult Company,
+    AdvancePaymentResult AdvancePayments,
     GrossToNetResult DirectorPay,
     DividendResult Dividend,
     decimal CorporateTax,

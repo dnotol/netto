@@ -1,3 +1,4 @@
+using Netto.Core.CorporateTax;
 using Netto.Core.Dividends;
 using Netto.Core.PersonalTax;
 using Netto.Core.Simulation;
@@ -7,8 +8,10 @@ using Shouldly;
 namespace Netto.Tests.WebClient.River;
 
 // The river opens on the example year of YearSimulationTests: 120,000 revenue, 20,000 running costs,
-// 50,000 pay at 7%, nothing kept, VVPRbis from the third distribution, which leaves 62,529.24 in
-// the pocket; the pay alone leaves 29,579.30.
+// 50,000 pay at 7%, nothing kept, VVPRbis from the third distribution and nothing prepaid, which
+// leaves 61,975.74 in the pocket: the 675.00 surcharge on the 10,000 of corporate tax takes 553.50
+// of the 62,529.24 a company that prepaid leaves, its withholding the rest. The pay alone leaves
+// 29,579.30.
 public class RiverInputsTests
 {
     [Fact]
@@ -16,7 +19,74 @@ public class RiverInputsTests
     {
         var run = RiverInputs.Example.Run();
 
-        (run.Error, run.Year?.NetInPocket).ShouldBe((null, 62_529.24m));
+        (run.Error, run.Year?.NetInPocket).ShouldBe((null, 61_975.74m));
+    }
+
+    [Fact]
+    public void Example_prepaysNothing()
+    {
+        RiverInputs.Example.AdvancePayments.ByDeadline.ShouldAllBe(payment => payment == new Input<decimal>(0m, InputOrigin.Example));
+    }
+
+    // 675 ÷ 4.5% = 15,000.
+    [Fact]
+    public void Run_example_surchargesTheCorporateTaxAndSaysWhatBy21DecemberCancelsIt()
+    {
+        var payments = RiverInputs.Example.Run().Year.ShouldNotBeNull().AdvancePayments;
+
+        (payments.Surcharge, payments.LastDeadlineTopUp).ShouldBe((675.00m, 15_000.00m));
+    }
+
+    [Fact]
+    public void WithAdvancePayment_makesThatPaymentTheUsers()
+    {
+        var payments = RiverInputs.Example.WithAdvancePayment(3, 15_000m).AdvancePayments;
+
+        (payments.First, payments.Fourth).ShouldBe((new Input<decimal>(0m, InputOrigin.Example), new Input<decimal>(15_000m, InputOrigin.Yours)));
+    }
+
+    // 7,500 by 10 April earns 9%, the whole 675.
+    [Fact]
+    public void Run_advancePaymentsReachTheEngine()
+    {
+        var year = RiverInputs.Example.WithAdvancePayment(0, 7_500m).Run().Year.ShouldNotBeNull();
+
+        (year.AdvancePayments.Surcharge, year.NetInPocket).ShouldBe((0m, 62_529.24m));
+    }
+
+    [Fact]
+    public void Run_negativeAdvancePayment_isRefusedWithTheEnginesKey()
+    {
+        var run = RiverInputs.Example.WithAdvancePayment(1, -0.01m).Run();
+
+        (run.Year, run.Error).ShouldBe((null, YearSimulation.AdvancePaymentNegative));
+    }
+
+    // One financial year sets both statuses the engine takes: the first three are exempt from the
+    // surcharge (art. 218 §2), the first four from the minimum pay (art. 215 al. 3, 4°).
+    [Theory]
+    [InlineData(FinancialYear.First, true, ReducedRateCondition.FirstFourTaxPeriods)]
+    [InlineData(FinancialYear.Third, true, ReducedRateCondition.FirstFourTaxPeriods)]
+    [InlineData(FinancialYear.Fourth, false, ReducedRateCondition.FirstFourTaxPeriods)]
+    [InlineData(FinancialYear.FifthOrLater, false, ReducedRateCondition.TaxableIncomeNotAbovePay)]
+    public void Run_financialYear_setsBothStatuses(FinancialYear financialYear, bool exempt, ReducedRateCondition condition)
+    {
+        var year = RiverInputs.Example.WithFinancialYear(financialYear).Run().Year.ShouldNotBeNull();
+
+        (year.AdvancePayments.Exempt, year.Company.Condition).ShouldBe((exempt, condition));
+    }
+
+    [Fact]
+    public void Example_financialYearIsTheFifthOrLater()
+    {
+        RiverInputs.Example.FinancialYear.ShouldBe(new Input<FinancialYear>(FinancialYear.FifthOrLater, InputOrigin.Default));
+    }
+
+    // The split's search holds the payments, so a new payment needs a new search.
+    [Fact]
+    public void SameBesidesPay_advancePaymentChanged_isNot()
+    {
+        RiverInputs.Example.SameBesidesPay(RiverInputs.Example.WithAdvancePayment(2, 1_000m)).ShouldBeFalse();
     }
 
     [Fact]
@@ -44,7 +114,7 @@ public class RiverInputsTests
     [Fact]
     public void Run_earlierProfitsReachTheEngine()
     {
-        RiverInputs.Example.WithEarlierProfits(60_000m).WithReserve(30_000m).Run().Year.ShouldNotBeNull().NetInPocket.ShouldBe(87_129.24m);
+        RiverInputs.Example.WithEarlierProfits(60_000m).WithReserve(30_000m).Run().Year.ShouldNotBeNull().NetInPocket.ShouldBe(86_575.74m);
     }
 
     [Fact]
@@ -60,7 +130,7 @@ public class RiverInputsTests
     {
         var inputs = RiverInputs.Example;
 
-        new[] { inputs.SmallCompany.Origin, inputs.FirstFourTaxPeriods.Origin, inputs.DividendCategory.Origin, inputs.Municipality.Origin }
+        new[] { inputs.SmallCompany.Origin, inputs.FinancialYear.Origin, inputs.DividendCategory.Origin, inputs.Municipality.Origin }
             .ShouldAllBe(origin => origin == InputOrigin.Default);
     }
 
@@ -86,14 +156,14 @@ public class RiverInputsTests
         var inputs = RiverInputs.Example
             .WithRunningCosts(25_000m)
             .WithSmallCompany(false)
-            .WithFirstFourTaxPeriods(true)
+            .WithFinancialYear(FinancialYear.Fourth)
             .WithDirectorPay(40_000m)
             .WithReserve(5_000m)
             .WithDividendCategory(WithholdingCategory.Standard);
 
-        (inputs.Company!.RunningCosts, inputs.SmallCompany, inputs.FirstFourTaxPeriods, inputs.DirectorPay, inputs.Reserve, inputs.DividendCategory)
+        (inputs.Company!.RunningCosts, inputs.SmallCompany, inputs.FinancialYear, inputs.DirectorPay, inputs.Reserve, inputs.DividendCategory)
             .ShouldBe((new Input<decimal>(25_000m, InputOrigin.Yours), new Input<bool>(false, InputOrigin.Yours),
-                new Input<bool>(true, InputOrigin.Yours), new Input<decimal>(40_000m, InputOrigin.Yours),
+                new Input<FinancialYear>(FinancialYear.Fourth, InputOrigin.Yours), new Input<decimal>(40_000m, InputOrigin.Yours),
                 new Input<decimal>(5_000m, InputOrigin.Yours), new Input<WithholdingCategory>(WithholdingCategory.Standard, InputOrigin.Yours)));
     }
 
@@ -112,7 +182,7 @@ public class RiverInputsTests
     {
         var run = RiverInputs.Example.WithReserve(15_000m).WithDividendCategory(WithholdingCategory.Standard).Run();
 
-        (run.Year!.Dividend.Dividend, run.Year.Dividend.Rate).ShouldBe((25_000.00m, 0.30m));
+        (run.Year!.Dividend.Dividend, run.Year.Dividend.Rate).ShouldBe((24_325.00m, 0.30m));
     }
 
     [Fact]

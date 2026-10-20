@@ -27,9 +27,6 @@
   <data name="SmallCompanyHint" xml:space="preserve">
     <value>Small under the Companies Code, holding no shares worth more than half its capital, and not owned half or more by other companies.</value>
   </data>
-  <data name="FirstFourLabel" xml:space="preserve">
-    <value>Still in its first four tax periods</value>
-  </data>
   <data name="Condition_NotSmallCompany" xml:space="preserve">
     <value>Standard rate on all of it: the reduced rate is only for a small company that its shareholdings and shareholders do not exclude.</value>
   </data>
@@ -53,5 +50,47 @@
   </data>
   <data name="SourcesTitle" xml:space="preserve">
     <value>The rule, with the income year {0} amounts</value>
+  </data>
+  <data name="FinancialYearLabel" xml:space="preserve">
+    <value>The company's financial year in {0}</value>
+  </data>
+  <data name="FinancialYearHint" xml:space="preserve">
+    <value>A small company owes no advance-payment surcharge in its first three financial years, and needs no minimum director pay for the reduced rate in its first four.</value>
+  </data>
+  <data name="FinancialYear_First" xml:space="preserve">
+    <value>1st</value>
+  </data>
+  <data name="FinancialYear_Second" xml:space="preserve">
+    <value>2nd</value>
+  </data>
+  <data name="FinancialYear_Third" xml:space="preserve">
+    <value>3rd</value>
+  </data>
+  <data name="FinancialYear_Fourth" xml:space="preserve">
+    <value>4th</value>
+  </data>
+  <data name="FinancialYear_FifthOrLater" xml:space="preserve">
+    <value>5th or later</value>
+  </data>
+  <data name="PaymentsTitle" xml:space="preserve">
+    <value>Advance payments</value>
+  </data>
+  <data name="PaymentsHint" xml:space="preserve">
+    <value>What the company paid, or plans to pay, on this tax by each deadline. The earlier a euro is paid, the more of the surcharge it cancels; what is paid beyond the tax is refunded.</value>
+  </data>
+  <data name="PaymentLabel" xml:space="preserve">
+    <value>By {0}</value>
+  </data>
+  <data name="Surcharge_Exempt" xml:space="preserve">
+    <value>No surcharge: a small company owes none on the tax of its first three financial years.</value>
+  </data>
+  <data name="Surcharge_NoTax" xml:space="preserve">
+    <value>No corporate tax, so no surcharge.</value>
+  </data>
+  <data name="Surcharge_Covered" xml:space="preserve">
+    <value>No surcharge: the advance payments cover it.</value>
+  </data>
+  <data name="Surcharge_Due" xml:space="preserve">
+    <value>A surcharge of {0} is left: {1} more by {2} cancels it.</value>
   </data>
 </root>
