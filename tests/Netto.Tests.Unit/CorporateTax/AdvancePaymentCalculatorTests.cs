@@ -1,4 +1,5 @@
 using Netto.Core.CorporateTax;
+using Netto.Core.Simulation;
 using Shouldly;
 
 namespace Netto.Tests.CorporateTax;

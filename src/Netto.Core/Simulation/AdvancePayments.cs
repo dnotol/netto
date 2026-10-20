@@ -1,7 +1,7 @@
-namespace Netto.Core.CorporateTax;
+namespace Netto.Core.Simulation;
 
-// What the company pays in advance on the year's corporate tax, paid or planned by each of the
-// income year's four deadlines, in their order. Nothing unless given.
+// What is paid in advance on a year's tax, the company's corporate tax or the director's income tax,
+// paid or planned by each of the income year's four deadlines, in their order. Nothing unless given.
 public sealed record AdvancePayments(decimal First, decimal Second, decimal Third, decimal Fourth)
 {
     public static AdvancePayments None { get; } = new(0m, 0m, 0m, 0m);

@@ -1,3 +1,5 @@
+using Netto.Core.Simulation;
+
 namespace Netto.Core.CorporateTax;
 
 public static class AdvancePaymentCalculator
