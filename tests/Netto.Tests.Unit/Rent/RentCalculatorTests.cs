@@ -92,6 +92,15 @@ public class RentCalculatorTests
         (result.TaxableRent, result.Charges, result.NetRent).ShouldBe((0m, 0m, 0m));
     }
 
+    // A plain zero, never a negative one, which the personal tax would take for a negative income.
+    [Fact]
+    public void Compute_2026NoRent_leavesAPlainZeroOfNetRent()
+    {
+        var result = Compute(Rules2026, TwelvePercentOf1200(0m));
+
+        (decimal.IsNegative(result.Charges), decimal.IsNegative(result.NetRent)).ShouldBe((false, false));
+    }
+
     // The office allowance covers the room, its rent included (circular 2021/C/20, §31).
     [Fact]
     public void Compute_2026RentWithAnOfficeAllowance_isRefused()

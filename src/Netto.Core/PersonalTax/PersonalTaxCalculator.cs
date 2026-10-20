@@ -11,7 +11,7 @@ public static class PersonalTaxCalculator
     public static PersonalTaxResult Compute(
         PersonalTaxRules rules, decimal directorPay, decimal ownContributions, decimal municipalRate, decimal otherIncome = 0m)
     {
-        ArgumentOutOfRangeException.ThrowIfNegative(otherIncome);
+        ArgumentOutOfRangeException.ThrowIfLessThan(otherIncome, 0m);
 
         var flatRateCosts = FlatRateCosts(rules, directorPay - ownContributions);
         var taxableIncome = Math.Max(0m, directorPay - ownContributions - flatRateCosts);

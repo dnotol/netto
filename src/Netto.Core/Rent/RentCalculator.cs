@@ -30,7 +30,10 @@ public static class RentCalculator
         var cadastralIncomeLet = CadastralIncomeLet(rent);
         var indexed = Money.RoundToCent(cadastralIncomeLet * rules.IndexationCoefficient.Value);
         var floor = Money.RoundToCent(indexed * (1m + rules.FloorUplift.Value));
-        var taxableRent = rent.Any ? Math.Max(rent.Rent, floor) : 0m;
+        if (!rent.Any)
+            return (new RentResult(rent.Rent, cadastralIncomeLet, cap, indexed, floor, 0m, 0m, 0m), null);
+
+        var taxableRent = Math.Max(rent.Rent, floor);
         var chargesLimit = Money.RoundToCent(cadastralIncomeLet * rules.RevaluationCoefficient.Value * rules.ChargesLimitMultiplier.Value);
         var charges = Math.Min(Money.RoundToCent(taxableRent * rules.ChargesRate.Value), chargesLimit);
 

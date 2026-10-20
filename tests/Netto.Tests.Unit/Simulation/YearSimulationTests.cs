@@ -758,6 +758,18 @@ public class YearSimulationTests
         Run(Scenario(directorPay: 50_000m, reserve: 0m)).Steps.ShouldNotContain(step => step.Event == TaxableEvent.Rent);
     }
 
+    // The card's fields are filled one by one: a cadastral income and a share with no rent yet let
+    // nothing, and the year runs as without them.
+    [Fact]
+    public void Run_2026CadastralIncomeWithoutRent_runsTheYearWithoutIt()
+    {
+        var without = Run(Scenario(directorPay: 50_000m, reserve: 0m));
+
+        var result = Run(Scenario(directorPay: 50_000m, reserve: 0m, rent: new HomeOfficeRent(1_200m, 0.12m, 0m)));
+
+        (result.NetInPocket, result.Steps.Count(step => step.Event == TaxableEvent.Rent)).ShouldBe((without.NetInPocket, 0));
+    }
+
     [Fact]
     public void Run_2026RentAtTheCap_everyStepHasASourceWithAReferenceAndAnAddress()
     {

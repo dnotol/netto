@@ -41,7 +41,7 @@ public static class GrossToNet
         int incomeYear, decimal grossPay, RuleAmount municipalRate, TaxPrepayments prepayments, ContributionsPaidBy paidBy = ContributionsPaidBy.Director,
         decimal otherIncome = 0m)
     {
-        ArgumentOutOfRangeException.ThrowIfNegative(otherIncome);
+        ArgumentOutOfRangeException.ThrowIfLessThan(otherIncome, 0m);
 
         var socialRules = SocialContributionRules.For(incomeYear);
         var taxRules = PersonalTaxRules.For(incomeYear);

@@ -729,6 +729,15 @@ public class GrossToNetTests
         Compute2026(50_000m).OtherIncomeTax.ShouldBe(OtherIncomeTax.None);
     }
 
+    // Decimal arithmetic can leave a negative zero, which is no income at all, not a negative one.
+    [Fact]
+    public void Compute_negativeZeroOtherIncome_isNoOtherIncome()
+    {
+        var (value, error) = GrossToNet.Compute(2026, 50_000m, MunicipalRates.Entered(0.07m), Withheld, ContributionsPaidBy.Director, decimal.Negate(0m));
+
+        (error, value?.OtherIncomeTax).ShouldBe((null, OtherIncomeTax.None));
+    }
+
     // The net rent comes from the engine's own rules, never below zero: a negative one is a bug.
     [Fact]
     public void Compute_negativeOtherIncome_isACallersBug()
