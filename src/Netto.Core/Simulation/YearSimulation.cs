@@ -82,10 +82,11 @@ public static class YearSimulation
     {
         if (CorporateTaxRules.For(scenario.IncomeYear) is not { } corporateRules || DividendRules.For(scenario.IncomeYear) is not { } dividendRules)
             return null;
-        if (GrossToNet.NetInPocket(scenario.IncomeYear, scenario.DirectorPay, scenario.MunicipalRate.Value, scenario.TaxPrepayments) is not { } netPay)
+        if (GrossToNet.Level(scenario.IncomeYear, scenario.DirectorPay, scenario.MunicipalRate.Value, scenario.TaxPrepayments, scenario.ContributionsPaidBy)
+            is not { } pay)
             return null;
 
-        var company = Company(scenario, corporateRules, dividendRules, netPay);
+        var company = Company(scenario, corporateRules, dividendRules, pay.NetInPocket);
         return new PayLevel(scenario.DirectorPay, company.NetInPocket, company.Dividend.Dividend, company.KeptInCompany, company.Tax.Condition,
             company.MaximumDividend >= scenario.Reserve);
     }

@@ -3,11 +3,19 @@ using Netto.Core.Simulation;
 
 namespace Netto.Core.DirectorPay;
 
+// GrossPay is the pay on the payslip, the pay the split moves, and SocialContributions the
+// contributions on it whoever pays them. When the company pays them on the director's behalf they are
+// ContributionsPaidByCompany, nothing when the director does, and they are pay too: TaxablePay, what
+// the director declares, is the gross plus them, and so is CompanyCost, what the pay takes out of the
+// company. Both are the gross itself when the director pays.
 public sealed record GrossToNetResult(
     int IncomeYear,
     decimal GrossPay,
     decimal MunicipalRate,
     decimal SocialContributions,
+    decimal ContributionsPaidByCompany,
+    decimal TaxablePay,
+    decimal CompanyCost,
     decimal FlatRateCosts,
     decimal TaxableIncome,
     decimal IncomeTax,
@@ -18,10 +26,13 @@ public sealed record GrossToNetResult(
     IReadOnlyList<Step> Steps,
     NextThousand NextThousand);
 
-// Where the next 1,000 of gross pay goes. The six parts add up to 1,000. LowEarnedIncomeCredit is
-// the credit the next 1,000 loses where the credit falls, and a negative part where it rises: the
-// pocket then gains more than the 1,000. AdvancePayments is the surcharge it adds, less the bonus
-// it adds, with the same withholding and advance payments.
+// Where the next 1,000 of gross pay goes. The six parts add up to 1,000 when the director pays the
+// contributions. When the company pays them, SocialContributions is what the next 1,000 adds to them,
+// which the company bears on top and the pocket never loses: the other five parts add up to 1,000,
+// and all six to what the next 1,000 costs the company. LowEarnedIncomeCredit is the credit the next
+// 1,000 loses where the credit falls, and a negative part where it rises: the pocket then gains more
+// than the 1,000. AdvancePayments is the surcharge it adds, less the bonus it adds, with the same
+// withholding and advance payments.
 public sealed record NextThousand(
     decimal SocialContributions,
     decimal IncomeTax,

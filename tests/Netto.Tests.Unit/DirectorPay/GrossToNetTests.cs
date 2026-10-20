@@ -12,12 +12,16 @@ namespace Netto.Tests.DirectorPay;
 // Tax-Calc, which does not cover 2026 yet; the method is proven on 2025 in PersonalTaxCalculatorTests.
 // The company withholds more than any tax these tests reach, so no advance-payment surcharge is due
 // and the figures are the tax's own, unless a test says otherwise; the surcharge and the bonus
-// follow IncomeTaxAdvancePaymentCalculatorTests.
+// follow IncomeTaxAdvancePaymentCalculatorTests. The director pays the contributions unless a test
+// says the company does; the company-paid figures are derived the same way (Notion, « The company
+// can pay the director's social contributions on their behalf »).
 public class GrossToNetTests
 {
     private static readonly TaxPrepayments Withheld = new(1_000_000m, AdvancePayments.None);
 
     public static TheoryData<decimal> GrossPays => [0m, 10_000m, 30_000m, 50_000m, 160_000m];
+
+    public static TheoryData<decimal> CompanyPaidGrossPays => [0m, 10_000m, 20_000m, 41_700m, 50_000m, 100_000m, 160_000m];
 
     public static TheoryData<decimal> GrossPaysInFirstBand => [30_000m, 30_000.01m, 50_000m, 70_000m];
 
@@ -325,6 +329,180 @@ public class GrossToNetTests
         incomeTax.AmountsUsed.Single(amount => amount.Key == "tax_free_amount").Value.ShouldBe(11_550m);
     }
 
+    // Not saying who pays runs the pay as the director's own: every call so far keeps its figures.
+    [Fact]
+    public void Compute_2026WhoPaysNotGiven_hasTheDirectorPayTheContributions()
+    {
+        var result = Compute2026(50_000m);
+
+        (result.SocialContributions, result.ContributionsPaidByCompany, result.TaxablePay, result.CompanyCost)
+            .ShouldBe((8_293.36m, 0m, 50_000m, 50_000m));
+    }
+
+    // The contributions the company pays on the director's behalf are pay too (SPF return explanations,
+    // part 2, cadre XVI, 1) and are deducted as the director's own (cadre XVI, 10; art. 52, 7° CIR 92):
+    // the taxable pay, and what the pay costs the company, are the payslip gross plus them.
+    [Theory]
+    [MemberData(nameof(CompanyPaidGrossPays))]
+    public void Compute_2026CompanyPays_taxablePayAndCompanyCostAreTheGrossPlusTheContributions(decimal grossPay)
+    {
+        var result = CompanyPays2026(grossPay);
+
+        (result.GrossPay, result.ContributionsPaidByCompany, result.TaxablePay, result.CompanyCost)
+            .ShouldBe((grossPay, result.SocialContributions, grossPay + result.SocialContributions, grossPay + result.SocialContributions));
+    }
+
+    // The pay less the own contributions is then the payslip gross itself, so the flat-rate costs are
+    // 3% of it, up to 3,200, and the taxable income is the gross less those costs.
+    public static TheoryData<decimal, decimal> CompanyPaidFlatRateCosts => new()
+    {
+        { 0m, 0m },
+        { 20_000m, 600m },
+        { 41_700m, 1_251m },
+        { 50_000m, 1_500m },
+        { 100_000m, 3_000m },
+        { 160_000m, 3_200m },
+    };
+
+    [Theory]
+    [MemberData(nameof(CompanyPaidFlatRateCosts))]
+    public void Compute_2026CompanyPays_flatRateCostsAre3PercentOfTheGrossUpTo3200(decimal grossPay, decimal flatRateCosts)
+    {
+        CompanyPays2026(grossPay).FlatRateCosts.ShouldBe(flatRateCosts);
+    }
+
+    [Theory]
+    [MemberData(nameof(CompanyPaidGrossPays))]
+    public void Compute_2026CompanyPays_taxableIncomeIsTheGrossLessTheFlatRateCosts(decimal grossPay)
+    {
+        var result = CompanyPays2026(grossPay);
+
+        result.TaxableIncome.ShouldBe(grossPay - result.FlatRateCosts);
+    }
+
+    // No fixed point: the contributions are owed on the taxable income, which does not depend on them,
+    // so the amount recomputed from it is the contributions to the cent, with no 0.04 step.
+    [Theory]
+    [MemberData(nameof(CompanyPaidGrossPays))]
+    public void Compute_2026CompanyPays_contributionsAreThoseOwedOnTheTaxableIncomeToTheCent(decimal grossPay)
+    {
+        var result = CompanyPays2026(grossPay);
+
+        result.SocialContributions.ShouldBe(SocialContributionCalculator.Annual(SocialContributionRules.IncomeYear2026, result.TaxableIncome));
+    }
+
+    // 50,000 on the payslip: 20.50% of 48,500 is 9,942.50, billed as four quarters of 2,485.63, and the
+    // tax is that of 48,500 of taxable income on the 2026 scale, 14,954.00 of State tax, 14,954.01 once
+    // its federal share and the Walloon tax are each rounded.
+    [Fact]
+    public void Compute_2026CompanyPaysGross50000_matchesTheDerivedFigures()
+    {
+        var result = CompanyPays2026(50_000m);
+
+        (result.SocialContributions, result.TaxablePay, result.FlatRateCosts, result.TaxableIncome, result.IncomeTax, result.MunicipalSurcharge,
+                result.NetInPocket, result.CompanyCost)
+            .ShouldBe((9_942.52m, 59_942.52m, 1_500m, 48_500m, 14_954.01m, 1_046.78m, 33_999.21m, 59_942.52m));
+    }
+
+    // The item's reading of T4: a payslip gross of 41,700 leaves T4's taxable income, 40,449.00, and
+    // its tax on the 2026 amounts (PersonalTaxCalculatorTests, the derived T4). The engine's
+    // contributions on it are 8,292.04, where T4 declares 8,300.
+    [Fact]
+    public void Compute_2026CompanyPaysGross41700_taxesTheTaxableIncomeOfTheDerivedT4()
+    {
+        var result = CompanyPays2026(41_700m);
+
+        (result.SocialContributions, result.TaxableIncome, result.IncomeTax, result.MunicipalSurcharge, result.NetInPocket)
+            .ShouldBe((8_292.04m, 40_449.00m, 11_331.06m, 793.17m, 29_575.77m));
+    }
+
+    // The contributions leave the company's cost, not the pocket.
+    [Theory]
+    [MemberData(nameof(CompanyPaidGrossPays))]
+    public void Compute_2026CompanyPays_netInPocketIsTheGrossLessTheTaxesOnIt(decimal grossPay)
+    {
+        var result = CompanyPays2026(grossPay);
+
+        result.NetInPocket.ShouldBe(
+            grossPay - result.IncomeTax - result.MunicipalSurcharge + result.LowEarnedIncomeCredit
+            - result.AdvancePayments.Surcharge + result.AdvancePayments.Bonus);
+    }
+
+    // Nothing withheld: the tax at 106%, 15,851.25, bears the 4.5% surcharge, 713.31, kept at 90%.
+    [Fact]
+    public void Compute_2026CompanyPaysGross50000NothingWithheldOrPrepaid_surchargesTheTaxOutOfThePocket()
+    {
+        var result = CompanyPays2026(50_000m, TaxPrepayments.None);
+
+        (result.AdvancePayments.Surcharge, result.NetInPocket).ShouldBe((641.98m, 33_357.23m));
+    }
+
+    [Theory]
+    [MemberData(nameof(CompanyPaidGrossPays))]
+    public void Compute_2026CompanyPaysNothingWithheld_netInPocketIsTheGrossLessTheTaxesOnItAndTheSurcharge(decimal grossPay)
+    {
+        var result = CompanyPays2026(grossPay, TaxPrepayments.None);
+
+        result.NetInPocket.ShouldBe(
+            grossPay - result.IncomeTax - result.MunicipalSurcharge + result.LowEarnedIncomeCredit
+            - result.AdvancePayments.Surcharge + result.AdvancePayments.Bonus);
+    }
+
+    // So the river's buckets still add up: the company's cost less the steps paid out is the pocket.
+    [Theory]
+    [MemberData(nameof(CompanyPaidGrossPays))]
+    public void Compute_2026CompanyPays_companyCostLessWhatIsPaidOutIsTheNetInPocket(decimal grossPay)
+    {
+        var result = CompanyPays2026(grossPay);
+
+        (result.CompanyCost - result.Steps.Where(step => step.Track == Track.PaidOut).Sum(step => step.Amount)).ShouldBe(result.NetInPocket);
+    }
+
+    [Fact]
+    public void Compute_2026CompanyPays_socialContributionsStepKeepsItsLayerAndTrack()
+    {
+        var step = CompanyPays2026(50_000m).Steps.Single(step => step.RuleKey == "social_contributions");
+
+        (step.Layer, step.Event, step.Track, step.Amount).ShouldBe((Layer.Social, TaxableEvent.DirectorPay, Track.PaidOut, 9_942.52m));
+    }
+
+    // The company-paid case is the director-pays case of a pay of the taxable pay with the contributions
+    // deducted as own: the same taxable income and the same tax.
+    [Theory]
+    [InlineData(20_000)]
+    [InlineData(41_700)]
+    [InlineData(100_000)]
+    public void Compute_2026CompanyPays_taxesLikeADirectorPaidTheTaxablePayWhoDeductsTheContributions(int grossPay)
+    {
+        var result = CompanyPays2026(grossPay);
+
+        var directorPays = PersonalTaxCalculator.Compute(PersonalTaxRules.IncomeYear2026, result.TaxablePay, result.SocialContributions, 0.07m);
+
+        (result.FlatRateCosts, result.TaxableIncome, result.IncomeTax, result.MunicipalSurcharge, result.LowEarnedIncomeCredit)
+            .ShouldBe((directorPays.FlatRateCosts, directorPays.TaxableIncome, directorPays.IncomeTax, directorPays.MunicipalSurcharge, directorPays.LowEarnedIncomeCredit));
+    }
+
+    // The next 1,000 on the payslip costs the company 1,000 and the contributions it adds, 198.84, which
+    // the pocket does not lose: the parts add up to 1,198.84.
+    [Fact]
+    public void Compute_2026CompanyPaysGross50000_splitsTheNextThousandWithTheContributionsOnTop()
+    {
+        var result = CompanyPays2026(50_000m);
+
+        result.NextThousand.ShouldBe(new NextThousand(
+            SocialContributions: 198.84m, IncomeTax: 436.49m, MunicipalSurcharge: 30.56m, LowEarnedIncomeCredit: 0m, AdvancePayments: 0m,
+            NetInPocket: 532.95m));
+    }
+
+    [Theory]
+    [MemberData(nameof(CompanyPaidGrossPays))]
+    public void Compute_2026CompanyPays_nextThousandPartsOtherThanTheContributionsAddUpToOneThousand(decimal grossPay)
+    {
+        var next = CompanyPays2026(grossPay).NextThousand;
+
+        (next.IncomeTax + next.MunicipalSurcharge + next.LowEarnedIncomeCredit + next.AdvancePayments + next.NetInPocket).ShouldBe(1_000m);
+    }
+
     [Fact]
     public void Compute_negativeGrossPay_isRefused()
     {
@@ -368,6 +546,14 @@ public class GrossToNetTests
     private static GrossToNetResult Compute2026(decimal grossPay, RuleAmount municipalRate, TaxPrepayments? prepayments = null)
     {
         var (value, error) = GrossToNet.Compute(2026, grossPay, municipalRate, prepayments ?? Withheld);
+
+        error.ShouldBeNull();
+        return value.ShouldNotBeNull();
+    }
+
+    private static GrossToNetResult CompanyPays2026(decimal grossPay, TaxPrepayments? prepayments = null)
+    {
+        var (value, error) = GrossToNet.Compute(2026, grossPay, MunicipalRates.Entered(0.07m), prepayments ?? Withheld, ContributionsPaidBy.Company);
 
         error.ShouldBeNull();
         return value.ShouldNotBeNull();
