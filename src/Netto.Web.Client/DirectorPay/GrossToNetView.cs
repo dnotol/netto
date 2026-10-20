@@ -1,16 +1,25 @@
 using Netto.Core.DirectorPay;
+using Netto.Core.PersonalTax;
 using Netto.Core.Simulation;
 using Netto.Web.Client.Steps;
 
 namespace Netto.Web.Client.DirectorPay;
 
-// What the plan page draws from one gross-to-net result: each track as rows of bars on one scale
-// shared by every track, so equal amounts are equally long, the next 1,000 as shares, and each
-// step's amounts grouped under their sources. It only selects, orders and scales the engine's
-// steps; every amount is the engine's.
+// What the pay slip draws from one gross-to-net result: each track as rows of bars on one scale
+// shared by every track, so equal amounts are equally long, the next 1,000 as shares, the monthly
+// statement, the key formula's withholding as a step with its lines and sources, the balance on
+// the assessment, and each step's amounts grouped under their sources. It only selects, orders and
+// scales the engine's figures; every amount is the engine's. When the company pays the contributions
+// on the director's behalf (CompanyPaysContributions) they are pay that goes straight back out, so
+// both tracks start from what the pay costs the company, the gross plus them, which is also the pay
+// the director declares, and the contributions stay paid out.
 internal sealed record GrossToNetView(
+    bool CompanyPaysContributions,
     IReadOnlyList<FunnelTrack> Tracks,
     IReadOnlyList<NextThousandPart> NextThousand,
+    StatementView Statement,
+    StepDetail WithholdingDetail,
+    AssessmentView Balance,
     IReadOnlyList<StepDetail> Details)
 {
     private const decimal NextSlice = 1_000m;
@@ -21,7 +30,11 @@ internal sealed record GrossToNetView(
 
     public static GrossToNetView From(GrossToNetResult result)
     {
-        var gross = new Line("gross_pay", RowKind.Gross, result.GrossPay);
+        // The company's contributions are never nothing when it pays them: the minimum applies.
+        var companyPays = result.ContributionsPaidByCompany > 0m;
+        var gross = companyPays
+            ? new Line("company_cost", RowKind.Gross, result.CompanyCost)
+            : new Line("gross_pay", RowKind.Gross, result.GrossPay);
 
         // What leaves the pocket, in the engine's order, down to the net.
         var cash = new List<Line> { gross };
@@ -41,6 +54,7 @@ internal sealed record GrossToNetView(
         decimal Percent(decimal amount) => maximum == minimum ? 0m : (amount - minimum) / (maximum - minimum) * 100m;
 
         return new GrossToNetView(
+            companyPays,
             tracks.Select(track => new FunnelTrack(
                 track.Key,
                 track.Bars.Select(bar => new FunnelRow(bar.Line.Key, bar.Line.Kind, bar.Line.Amount, Percent(bar.From), Percent(bar.To))).ToList()))
@@ -54,7 +68,32 @@ internal sealed record GrossToNetView(
                 ("income_tax_advance_payments", result.NextThousand.AdvancePayments),
                 ("net_in_pocket", result.NextThousand.NetInPocket),
             ]),
+            StatementView.From(result.Statement, companyPays),
+            Withholding(result.Statement),
+            AssessmentView.From(result.Assessment),
             result.Steps.Select(StepDetail.From).ToList());
+    }
+
+    // The month's withholding as a step: the formula's lines in its order, the key formula as the
+    // rule, and the annex's amounts under the number each comes from.
+    private static StepDetail Withholding(PayStatement statement)
+    {
+        var formula = statement.Withholding;
+        return StepDetail.From("withholding", formula.MonthlyWithholding, statement.Source, statement.AmountsUsed) with
+        {
+            Lines =
+            [
+                new StepLine("monthly_taxable_pay", formula.MonthlyTaxablePay),
+                new StepLine("reduction", formula.Reduction),
+                new StepLine("annual_gross", formula.AnnualGross),
+                new StepLine("flat_rate_costs", formula.FlatRateCosts),
+                new StepLine("annual_net_taxable", formula.AnnualNetTaxable),
+                new StepLine("basic_tax", formula.BasicTax),
+                new StepLine("tax_free_amount_reduction", formula.TaxFreeAmountReduction),
+                new StepLine("annual_tax", formula.AnnualTax),
+                new StepLine("monthly_withholding", formula.MonthlyWithholding),
+            ],
+        };
     }
 
     // A step paid out with a negative amount is money that comes back: the tax credit for low earned
@@ -145,3 +184,53 @@ internal static class RowKindExtensions
 // Share is a fraction of the next 1,000: 0.16588 for 165.88, negative for credit gained. Width is the
 // fraction of the bar it takes, the same as its share unless a part is negative.
 internal sealed record NextThousandPart(string Key, decimal Amount, decimal Share, decimal Width);
+
+// The monthly statement as the slip draws it: the engine's twelve months, whether the column of
+// contributions the company pays is shown, and whether some month's rules are not modelled, from
+// which date.
+internal sealed record StatementView(
+    IReadOnlyList<PayStatementMonth> Months,
+    bool CompanyPaysContributions,
+    bool SomeUnmodelled,
+    DateOnly UnmodelledRulesFrom)
+{
+    public static StatementView From(PayStatement statement, bool companyPays) =>
+        new(statement.Months, companyPays, statement.Months.Any(month => month.UnmodelledRules), statement.UnmodelledRulesFrom.Value);
+}
+
+// The balance on the assessment as the slip draws it: the engine's lines, which way the balance
+// goes, and the balance as a step citing the article it follows, with no amount of the year.
+internal sealed record AssessmentView(
+    decimal FinalTax,
+    decimal Withheld,
+    bool WithheldGiven,
+    decimal AdvancePayments,
+    decimal Balance,
+    BalanceKind Kind,
+    StepDetail Detail)
+{
+    public static AssessmentView From(Assessment assessment) => new(
+        assessment.FinalTax,
+        assessment.Withheld,
+        assessment.WithheldGiven,
+        assessment.AdvancePayments,
+        assessment.Balance,
+        assessment.Balance switch
+        {
+            > 0m => BalanceKind.ToPay,
+            < 0m => BalanceKind.Refunded,
+            _ => BalanceKind.Settled,
+        },
+        StepDetail.From("assessment_balance", assessment.Balance, assessment.Source, []));
+}
+
+// Which way the balance on the assessment goes: the engine's balance is positive to pay, negative
+// to be refunded.
+internal enum BalanceKind
+{
+    ToPay,
+
+    Refunded,
+
+    Settled,
+}

@@ -55,6 +55,18 @@ public class FormatsTests
         text.ShouldBe(expected);
     }
 
+    // The statement names its months in English, whatever the browser's language.
+    [Theory]
+    [InlineData(1, "January")]
+    [InlineData(11, "November")]
+    [InlineData(12, "December")]
+    public void Month_ofTheIncomeYear_isItsEnglishName(int month, string expected)
+    {
+        var text = Formats.Month(2026, month);
+
+        text.ShouldBe(expected);
+    }
+
     [Fact]
     public void Deduction_amount_isPrefixedWithAMinusSign()
     {

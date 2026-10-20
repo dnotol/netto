@@ -1,6 +1,7 @@
 using Netto.Core.DirectorPay;
 using Netto.Core.PersonalTax;
 using Netto.Core.Simulation;
+using Netto.Core.SocialContributions;
 using Netto.Web.Client.DirectorPay;
 using Netto.Web.Client.Steps;
 using Shouldly;
@@ -11,9 +12,203 @@ namespace Netto.Tests.WebClient.DirectorPay;
 // the contributions are 8,293.36, the flat-rate costs 1,251.20, the taxable income 40,455.44, the
 // income tax 11,333.96, the surcharge 793.38, no tax credit for low earned income and the net
 // 29,579.30. At 20,000 the credit is 910 in full: the tax 1,098.78, the surcharge 76.91 and the net
-// 16,172.63 on the contributions' minimum of 3,561.68.
+// 16,172.63 on the contributions' minimum of 3,561.68. With the company paying the contributions
+// on the 50,000, 9,942.52, they are pay: the pay costs the company 59,942.52, which is also the
+// taxable pay, the flat-rate costs are 1,500, the taxable income 48,500, the tax 14,954.01, the
+// surcharge 1,046.78 and the net 33,999.21. The statement and the assessment are PayStatementTests'
+// and GrossToNetTests': 4,166.67 a month withheld on by 890.94, twelve times that, 10,691.28, set
+// against a final tax of 12,127.34, leaving 1,436.06 to pay.
 public class GrossToNetViewTests
 {
+    [Fact]
+    public void From_gross50000_cashTrackStartsFromTheGrossPay()
+    {
+        var view = View(50_000m);
+
+        (view.CompanyPaysContributions, view.Tracks[0].Rows[0].Key, view.Tracks[1].Rows[0].Key).ShouldBe((false, "gross_pay", "gross_pay"));
+    }
+
+    // The contributions the company pays are pay that goes straight back out: the track starts from
+    // what the pay costs the company and the contributions stay paid out, down to the same net the
+    // gross alone leaves after the tax.
+    [Fact]
+    public void From_companyPaysGross50000_cashTrackStartsFromTheCompanysCost()
+    {
+        var cash = CompanyPaysView(50_000m).Tracks[0];
+
+        cash.Rows.Select(row => (row.Key, row.Kind, row.Amount)).ShouldBe(new[]
+        {
+            ("company_cost", RowKind.Gross, 59_942.52m),
+            ("social_contributions", RowKind.PaidOut, 9_942.52m),
+            ("income_tax", RowKind.PaidOut, 14_954.01m),
+            ("municipal_surcharge", RowKind.PaidOut, 1_046.78m),
+            ("low_earned_income_credit", RowKind.Back, 0m),
+            ("income_tax_advance_payment_surcharge", RowKind.PaidOut, 0m),
+            ("income_tax_advance_payment_bonus", RowKind.Back, 0m),
+            ("net_in_pocket", RowKind.NetInPocket, 33_999.21m),
+        });
+    }
+
+    // The director declares the gross plus them and deducts them as their own contributions, so the
+    // tax base track starts from that taxable pay too.
+    [Fact]
+    public void From_companyPaysGross50000_taxBaseTrackStartsFromTheTaxablePay()
+    {
+        var taxBase = CompanyPaysView(50_000m).Tracks[1];
+
+        taxBase.Rows.Select(row => (row.Key, row.Kind, row.Amount)).ShouldBe(new[]
+        {
+            ("company_cost", RowKind.Gross, 59_942.52m),
+            ("social_contributions", RowKind.PaidOut, 9_942.52m),
+            ("flat_rate_costs", RowKind.TaxBaseOnly, 1_500m),
+            ("taxable_income", RowKind.TaxableIncome, 48_500m),
+        });
+    }
+
+    [Fact]
+    public void From_companyPaysGross50000_saysTheCompanyPaysTheContributions()
+    {
+        CompanyPaysView(50_000m).CompanyPaysContributions.ShouldBeTrue();
+    }
+
+    // The next 1,000 adds 198.84 to the contributions the company bears on top: the other five parts
+    // add up to 1,000 and the shares, as today, say what each is of the 1,000, so together they go
+    // over it; the bar's widths are shares of what takes money, which add up to one.
+    [Fact]
+    public void From_companyPaysGross50000_nextThousandSharesGoOverTheThousandByTheContributions()
+    {
+        var next = CompanyPaysView(50_000m).NextThousand;
+
+        (next.Select(part => part.Amount), next.Sum(part => part.Share), next.Sum(part => part.Width))
+            .ShouldSatisfyAllConditions(
+                parts => parts.Item1.ShouldBe([198.84m, 436.49m, 30.56m, 0m, 0m, 532.95m]),
+                parts => parts.Item2.ShouldBe(1.19884m),
+                parts => parts.Item3.ShouldBe(1m));
+    }
+
+    [Fact]
+    public void From_gross50000_statementListsTheTwelveMonthsOfTheYear()
+    {
+        var statement = View(50_000m).Statement;
+
+        (statement.Months.Count, statement.Months[0].Month, statement.Months[0].GrossPay, statement.Months[0].Withholding, statement.Months[0].NetPaid)
+            .ShouldBe((12, 1, 4_166.67m, 890.94m, 3_275.73m));
+    }
+
+    [Fact]
+    public void From_gross50000_statementSaysWhichMonthsRulesAreNotModelled()
+    {
+        var statement = View(50_000m).Statement;
+
+        (statement.SomeUnmodelled, statement.UnmodelledRulesFrom, statement.Months.Count(month => month.UnmodelledRules))
+            .ShouldBe((true, new DateOnly(2026, 11, 1), 2));
+    }
+
+    [Fact]
+    public void From_gross50000_statementHasNoColumnForContributionsTheCompanyPays()
+    {
+        View(50_000m).Statement.CompanyPaysContributions.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void From_companyPaysGross50000_statementShowsTheContributionsTheCompanyPays()
+    {
+        var statement = CompanyPaysView(50_000m).Statement;
+
+        (statement.CompanyPaysContributions, statement.Months[0].ContributionsPaidByCompany, statement.Months[0].TaxablePay)
+            .ShouldBe((true, 828.54m, 4_995.21m));
+    }
+
+    // PayStatementTests: the formula's lines on 4,166.67.
+    [Fact]
+    public void From_gross50000_withholdingDetailCarriesTheFormulasLinesForAMonth()
+    {
+        var detail = View(50_000m).WithholdingDetail;
+
+        (detail.RuleKey, detail.Amount, detail.Lines).ShouldSatisfyAllConditions(
+            withholding => withholding.RuleKey.ShouldBe("withholding"),
+            withholding => withholding.Amount.ShouldBe(890.94m),
+            withholding => withholding.Lines.ShouldBe(new[]
+            {
+                new StepLine("monthly_taxable_pay", 4_166.67m),
+                new StepLine("reduction", 965.86m),
+                new StepLine("annual_gross", 38_409.72m),
+                new StepLine("flat_rate_costs", 1_152.29m),
+                new StepLine("annual_net_taxable", 37_257.43m),
+                new StepLine("basic_tax", 13_679.25m),
+                new StepLine("tax_free_amount_reduction", 2_987.98m),
+                new StepLine("annual_tax", 10_691.27m),
+                new StepLine("monthly_withholding", 890.94m),
+            }));
+    }
+
+    // The key formula first, with no amount of its own, then the annex's amounts under the number
+    // of the annex each comes from.
+    [Fact]
+    public void From_gross50000_withholdingDetailCitesTheKeyFormulaThenTheAnnexsAmounts()
+    {
+        var rules = WithholdingRules.IncomeYear2026;
+
+        var detail = View(50_000m).WithholdingDetail;
+
+        detail.Sources.Select(group => (group.Source, Keys(group))).ShouldBe(new[]
+        {
+            (rules.Source, ""),
+            (rules.Reduction[0].UpperLimit!.Source, "reduction_minimum reduction_band_1_upper_limit reduction_band_2_rate reduction_band_2_upper_limit "
+                + "reduction_band_3_base reduction_band_3_rate reduction_band_3_upper_limit reduction_maximum"),
+            (rules.FlatRateCostsRate.Source, "flat_rate_costs_rate flat_rate_costs_maximum"),
+            (rules.Scale[0].Rate!.Source, "withholding_bracket_1_rate withholding_bracket_1_upper_limit withholding_bracket_2_base withholding_bracket_2_rate "
+                + "withholding_bracket_2_upper_limit withholding_bracket_3_base withholding_bracket_3_rate withholding_bracket_3_upper_limit "
+                + "withholding_bracket_4_base withholding_bracket_4_rate"),
+            (rules.TaxFreeAmountReduction.Source, "tax_free_amount_reduction"),
+        });
+    }
+
+    [Fact]
+    public void From_gross50000WithholdingAsTheKeyFormula_balanceIsTheFinalTaxLessWhatWasWithheldToPay()
+    {
+        var balance = View(50_000m, TaxPrepayments.AsWithheld).Balance;
+
+        (balance.FinalTax, balance.Withheld, balance.WithheldGiven, balance.AdvancePayments, balance.Balance, balance.Kind)
+            .ShouldBe((12_127.34m, 10_691.28m, false, 0m, 1_436.06m, BalanceKind.ToPay));
+    }
+
+    // GrossToNetTests: 20,000 withheld is 7,872.66 beyond the tax.
+    [Fact]
+    public void From_gross50000Withheld20000_balanceIsRefundedAndSaysTheAmountWasGiven()
+    {
+        var balance = View(50_000m, new TaxPrepayments(20_000m, AdvancePayments.None)).Balance;
+
+        (balance.Withheld, balance.WithheldGiven, balance.Balance, balance.Kind).ShouldBe((20_000m, true, -7_872.66m, BalanceKind.Refunded));
+    }
+
+    [Fact]
+    public void From_gross50000WithheldTheFinalTax_balanceIsSettled()
+    {
+        var balance = View(50_000m, new TaxPrepayments(12_127.34m, AdvancePayments.None)).Balance;
+
+        (balance.Balance, balance.Kind).ShouldBe((0m, BalanceKind.Settled));
+    }
+
+    // 12,014 by 10 April: no surcharge, a bonus of 90.11 and 23.23 left to pay.
+    [Fact]
+    public void From_gross50000PaidInAdvance_balanceSetsThePaymentsAgainstTheTax()
+    {
+        var balance = View(50_000m, new TaxPrepayments(0m, new AdvancePayments(12_014m, 0m, 0m, 0m))).Balance;
+
+        (balance.FinalTax, balance.AdvancePayments, balance.Balance).ShouldBe((12_037.23m, 12_014m, 23.23m));
+    }
+
+    [Fact]
+    public void From_gross50000_balanceDetailCitesArticle304()
+    {
+        var detail = View(50_000m, TaxPrepayments.AsWithheld).Balance.Detail;
+
+        detail.ShouldSatisfyAllConditions(
+            balance => (balance.RuleKey, balance.Amount, balance.Lines.Count).ShouldBe(("assessment_balance", 1_436.06m, 0)),
+            balance => balance.Sources.Select(group => (group.Source, Keys(group))).ShouldBe([(PersonalTaxRules.AssessmentBalance, "")]));
+    }
+
     [Fact]
     public void From_gross50000_drawsTheCashTrackThenTheTaxBaseTrack()
     {
@@ -275,9 +470,15 @@ public class GrossToNetViewTests
 
     // The company withholds more than any tax these tests reach, so the pay slip shows no
     // advance-payment surcharge.
-    private static GrossToNetView View(decimal grossPay)
+    private static readonly TaxPrepayments Withheld = new(1_000_000m, AdvancePayments.None);
+
+    private static GrossToNetView View(decimal grossPay) => View(grossPay, Withheld);
+
+    private static GrossToNetView CompanyPaysView(decimal grossPay) => View(grossPay, Withheld, ContributionsPaidBy.Company);
+
+    private static GrossToNetView View(decimal grossPay, TaxPrepayments prepayments, ContributionsPaidBy paidBy = ContributionsPaidBy.Director)
     {
-        var (value, error) = GrossToNet.Compute(2026, grossPay, MunicipalRates.Entered(0.07m), new TaxPrepayments(1_000_000m, AdvancePayments.None));
+        var (value, error) = GrossToNet.Compute(2026, grossPay, MunicipalRates.Entered(0.07m), prepayments, paidBy);
 
         error.ShouldBeNull();
         return GrossToNetView.From(value.ShouldNotBeNull());

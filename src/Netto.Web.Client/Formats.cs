@@ -38,6 +38,9 @@ internal static class Formats
     // The invariant culture's month names are English: 1 January 2027.
     public static string Day(DateOnly date) => date.ToString("d MMMM yyyy", Culture);
 
+    // A month of the income year, 1 being January, by its English name.
+    public static string Month(int year, int month) => new DateOnly(year, month, 1).ToString("MMMM", Culture);
+
     // The rule sets hold rates as fractions (20.50% is 0.205), under keys ending in _rate or _factor,
     // and multiples of a rate under keys ending in _multiplier: 2.25 reads 2.25×.
     public static string RuleAmount(RuleAmount amount) =>
