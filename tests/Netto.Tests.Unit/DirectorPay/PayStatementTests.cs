@@ -1,0 +1,132 @@
+using Netto.Core.DirectorPay;
+using Netto.Core.PersonalTax;
+using Netto.Core.Simulation;
+using Netto.Core.SocialContributions;
+using Shouldly;
+
+namespace Netto.Tests.DirectorPay;
+
+// The pay statement GrossToNet returns for income year 2026 at a 7% municipal rate: the taxable pay
+// paid in twelve equal months, each with the withholding the key formula ESS-SR/2025-0928 gives on it
+// (WithholdingCalculatorTests) and the net paid. Expected values are derived from the formula, as
+// Tax-Calc takes the withholding as an input; the pays and contributions are GrossToNetTests'
+// (50,000: contributions 8,293.36 paid by the director, 9,942.52 when the company pays them).
+public class PayStatementTests
+{
+    private static readonly WithholdingRules Rules2026 = WithholdingRules.IncomeYear2026;
+
+    private static readonly TaxPrepayments Withheld = new(1_000_000m, AdvancePayments.None);
+
+    public static TheoryData<decimal> GrossPays => [0m, 3_600m, 10_000m, 20_000m, 50_000m, 160_000m];
+
+    [Fact]
+    public void Compute_2026_statementHasTheTwelveMonthsOfTheYear()
+    {
+        var statement = Statement2026(50_000m);
+
+        statement.Months.Select(month => month.Month).ShouldBe(Enumerable.Range(1, 12));
+    }
+
+    // 50,000 over twelve is 4,166.67, on which the formula withholds 890.94 (WithholdingCalculatorTests).
+    [Fact]
+    public void Compute_2026Gross50000_eachMonthIsATwelfthOfThePayLessTheFormulasWithholding()
+    {
+        var statement = Statement2026(50_000m);
+
+        statement.Months.Select(month => (month.GrossPay, month.ContributionsPaidByCompany, month.TaxablePay, month.Withholding, month.NetPaid))
+            .ShouldBe(Enumerable.Repeat((4_166.67m, 0m, 4_166.67m, 890.94m, 3_275.73m), 12));
+    }
+
+    [Fact]
+    public void Compute_2026_flagsNovemberAndDecemberAsMonthsWithRulesNotModelled()
+    {
+        var statement = Statement2026(50_000m);
+
+        statement.Months.Select(month => month.UnmodelledRules)
+            .ShouldBe([false, false, false, false, false, false, false, false, false, false, true, true]);
+    }
+
+    [Fact]
+    public void Compute_2026Gross50000_carriesTheFormulasLinesForAMonth()
+    {
+        var statement = Statement2026(50_000m);
+
+        statement.Withholding.ShouldBe(new WithholdingResult(
+            MonthlyTaxablePay: 4_166.67m, Reduction: 965.86m, AnnualGross: 38_409.72m, FlatRateCosts: 1_152.29m, AnnualNetTaxable: 37_257.43m,
+            BasicTax: 13_679.25m, TaxFreeAmountReduction: 2_987.98m, AnnualTax: 10_691.27m, MonthlyWithholding: 890.94m));
+    }
+
+    [Theory]
+    [MemberData(nameof(GrossPays))]
+    public void Compute_2026_everyMonthWithholdsWhatTheFormulaGivesOnItsTaxablePay(decimal grossPay)
+    {
+        var statement = Statement2026(grossPay);
+
+        var formula = WithholdingCalculator.Compute(Rules2026, statement.Months[0].TaxablePay).Value.ShouldNotBeNull();
+
+        statement.Months.ShouldAllBe(month => month.Withholding == formula.MonthlyWithholding && month.NetPaid == month.GrossPay - month.Withholding);
+    }
+
+    // Each twelfth is rounded on its own: twelve of 4,166.67 are 50,000.04, and the cents are not
+    // spread over the months.
+    [Fact]
+    public void Compute_2026Gross50000_twelveRoundedTwelfthsDifferFromTheYearByCents()
+    {
+        var statement = Statement2026(50_000m);
+
+        statement.Months.Sum(month => month.GrossPay).ShouldBe(50_000.04m);
+    }
+
+    // The company's 9,942.52 of contributions are pay (cadre XVI, 1), 828.54 a month on top of the
+    // 4,166.67, so the formula withholds on 4,995.21: 1,144.00 of reduction, 46,214.52 of annual gross,
+    // 1,386.44 of costs, 17,324.52 of basic tax, 14,336.54 of annual tax. The net paid is the payslip
+    // gross less the withholding: the contributions never reach the director.
+    [Fact]
+    public void Compute_2026CompanyPaysGross50000_taxableMonthlyPayIncludesTheContributionsAndTheNetPaidDoesNot()
+    {
+        var statement = CompanyPaysStatement2026(50_000m);
+
+        statement.Months.Select(month => (month.GrossPay, month.ContributionsPaidByCompany, month.TaxablePay, month.Withholding, month.NetPaid))
+            .ShouldBe(Enumerable.Repeat((4_166.67m, 828.54m, 4_995.21m, 1_194.71m, 2_971.96m), 12));
+    }
+
+    // 3,600 over twelve is 300, under the 385 the formula takes off any pay: the reduction stays 385,
+    // the year's lines fall below zero, nothing is withheld, and the statement shows that, nothing
+    // hidden (WithholdingCalculatorTests).
+    [Fact]
+    public void Compute_2026GrossUnderTheReduction_withholdsNothingAndShowsTheFormulasLines()
+    {
+        var statement = Statement2026(3_600m);
+
+        (statement.Months[0].TaxablePay, statement.Months[0].Withholding, statement.Months[0].NetPaid,
+                statement.Withholding.Reduction, statement.Withholding.AnnualGross, statement.Withholding.AnnualTax)
+            .ShouldBe((300m, 0m, 300m, 385m, -1_020m, 0m));
+    }
+
+    [Fact]
+    public void Compute_2026_statementCitesTheKeyFormulaAndTheAnnexsAmounts()
+    {
+        var statement = Statement2026(50_000m);
+
+        statement.ShouldSatisfyAllConditions(
+            cited => cited.Source.ShouldBe(Rules2026.Source),
+            cited => cited.AmountsUsed.ShouldBe(Rules2026.Amounts),
+            cited => cited.UnmodelledRulesFrom.ShouldBe(Rules2026.UnmodelledRulesFrom));
+    }
+
+    private static PayStatement Statement2026(decimal grossPay)
+    {
+        var (value, error) = GrossToNet.Compute(2026, grossPay, MunicipalRates.Entered(0.07m), Withheld);
+
+        error.ShouldBeNull();
+        return value.ShouldNotBeNull().Statement;
+    }
+
+    private static PayStatement CompanyPaysStatement2026(decimal grossPay)
+    {
+        var (value, error) = GrossToNet.Compute(2026, grossPay, MunicipalRates.Entered(0.07m), Withheld, ContributionsPaidBy.Company);
+
+        error.ShouldBeNull();
+        return value.ShouldNotBeNull().Statement;
+    }
+}

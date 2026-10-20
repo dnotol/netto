@@ -17,6 +17,12 @@ public static class WithholdingCalculator
         if (monthlyTaxablePay < 0m)
             return (null, MonthlyPayNegative);
 
+        return (Figures(rules, monthlyTaxablePay), null);
+    }
+
+    // The lines of a pay Compute accepts, for GrossToNet, which refuses a negative pay itself.
+    internal static WithholdingResult Figures(WithholdingRules rules, decimal monthlyTaxablePay)
+    {
         var reduction = Money.RoundToCent(OnTable(rules.Reduction, monthlyTaxablePay));
         var annualGross = Money.RoundToCent(monthlyTaxablePay - reduction) * MonthsInYear;
         var flatRateCosts = Math.Min(Money.RoundToCent(annualGross * rules.FlatRateCostsRate.Value), rules.FlatRateCostsMaximum.Value);
@@ -24,7 +30,7 @@ public static class WithholdingCalculator
         var basicTax = Money.RoundToCent(OnTable(rules.Scale, annualNetTaxable));
         var annualTax = Math.Max(0m, basicTax - rules.TaxFreeAmountReduction.Value);
 
-        return (new WithholdingResult(
+        return new WithholdingResult(
             monthlyTaxablePay,
             reduction,
             annualGross,
@@ -33,7 +39,7 @@ public static class WithholdingCalculator
             basicTax,
             rules.TaxFreeAmountReduction.Value,
             annualTax,
-            Money.RoundToCent(annualTax / MonthsInYear)), null);
+            Money.RoundToCent(annualTax / MonthsInYear));
     }
 
     // What the table gives for the amount: the first band whose upper limit the amount does not
