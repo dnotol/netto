@@ -1,21 +1,29 @@
 @inject IStringLocalizer<DrainList> L
 
 @* Where a module's money goes, line by line: what leaves into a bucket of taxes, what comes back
-   out of one, and what is passed on to the pocket, the company's reserve or the next module. *@
-<ul class="drain-list">
-    @foreach (var drain in Drains)
-    {
-        <li class="drain drain--@Modifier(drain.Kind) drain--to-@drain.To">
-            <span class="drain__label">@L[DrainListText.Drain(drain.Key)]</span>
-            <span class="drain__amount">@Amount(drain)</span>
-            <span class="drain__to">@L[DrainListText.Destination(drain)]</span>
-        </li>
-    }
-</ul>
+   out of one, and what is passed on to the pocket, the company's reserve or the next module. Only
+   the lines that move money (DrainLines); none, and there is no list. *@
+@if (_shown.Count > 0)
+{
+    <ul class="drain-list">
+        @foreach (var drain in _shown)
+        {
+            <li class="drain drain--@Modifier(drain.Kind) drain--to-@drain.To">
+                <span class="drain__label">@L[DrainListText.Drain(drain.Key)]</span>
+                <span class="drain__amount">@Amount(drain)</span>
+                <span class="drain__to">@L[DrainListText.Destination(drain)]</span>
+            </li>
+        }
+    </ul>
+}
 
 @code {
     [Parameter, EditorRequired]
     public IReadOnlyList<Drain> Drains { get; set; } = [];
+
+    private IReadOnlyList<Drain> _shown = [];
+
+    protected override void OnParametersSet() => _shown = DrainLines.Shown(Drains);
 
     private static string Amount(Drain drain) => drain.Kind switch
     {
