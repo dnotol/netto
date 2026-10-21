@@ -18,7 +18,7 @@ public sealed record VoucherRules(
     RuleAmount SportCultureVouchersMaximum,
     RuleAmount EcoVouchersMaximum,
     RuleAmount EcoVoucherFaceValueMaximum,
-    IReadOnlyList<VoucherCondition> Conditions)
+    IReadOnlyList<LeverCondition> Conditions)
 {
     private static readonly Source Article38Income2026 = new(
         "CIR 92, art. 38 (revenus 2026), coordinated text on Fisconetplus, last modified 31.07.2026",
@@ -58,11 +58,11 @@ public sealed record VoucherRules(
         new RuleAmount("eco_vouchers_maximum", 250m, Article38_1Income2026),
         EcoVoucherFaceValueMaximum2026,
         [
-            new VoucherCondition("written_agreement", [Article38_1Income2026]),
-            new VoucherCondition("not_instead_of_pay", [Article38_1Income2026]),
-            new VoucherCondition("days_actually_worked", [Article38_1Income2026, ParliamentaryQuestion15220]),
-            new VoucherCondition("in_your_name", [Article38_1Income2026]),
-            new VoucherCondition("eco_agreement_terms", [Article38_1Income2026]) { Amounts = [EcoVoucherFaceValueMaximum2026] },
+            new LeverCondition("written_agreement", [Article38_1Income2026]),
+            new LeverCondition("not_instead_of_pay", [Article38_1Income2026]),
+            new LeverCondition("days_actually_worked", [Article38_1Income2026, ParliamentaryQuestion15220]),
+            new LeverCondition("in_your_name", [Article38_1Income2026]),
+            new LeverCondition("eco_agreement_terms", [Article38_1Income2026]) { Amounts = [EcoVoucherFaceValueMaximum2026] },
         ]);
 
     public static VoucherRules? For(int incomeYear) => incomeYear switch
@@ -70,11 +70,4 @@ public sealed record VoucherRules(
         2026 => IncomeYear2026,
         _ => null,
     };
-}
-
-// One condition of the exemption the user confirms, under a stable key the page gives its words, with
-// the texts it comes from and the amounts those words name.
-public sealed record VoucherCondition(string Key, IReadOnlyList<Source> Sources)
-{
-    public IReadOnlyList<RuleAmount> Amounts { get; init; } = [];
 }

@@ -19,7 +19,7 @@ public sealed record AllowanceRules(
     IReadOnlyList<MonthlyMaximum> OfficeAllowanceMaxima,
     RuleAmount InternetAllowanceMonthlyMaximum,
     RuleAmount ComputerAllowanceMonthlyMaximum,
-    IReadOnlyList<AllowanceCondition> Conditions)
+    IReadOnlyList<LeverCondition> Conditions)
 {
     private static readonly Source Article32Income2026 = new(
         "CIR 92, art. 32 (revenus 2026), coordinated text on Fisconetplus, last modified 29.01.2026",
@@ -54,10 +54,10 @@ public sealed record AllowanceRules(
         new RuleAmount("internet_allowance_monthly_maximum", 20m, Circular2021C20),
         new RuleAmount("computer_allowance_monthly_maximum", 20m, Circular2021C20),
         [
-            new AllowanceCondition("directors_case_by_case", [Circular2021C20]),
-            new AllowanceCondition("no_other_company_share", [Circular2021C20]),
-            new AllowanceCondition("office_covers_rent", [Circular2021C20]),
-            new AllowanceCondition("phone_on_invoices", [Article32Income2026, Circular2021C20]),
+            new LeverCondition("directors_case_by_case", [Circular2021C20]),
+            new LeverCondition("no_other_company_share", [Circular2021C20]),
+            new LeverCondition("office_covers_rent", [Circular2021C20]),
+            new LeverCondition("phone_on_invoices", [Article32Income2026, Circular2021C20]),
         ]);
 
     public static AllowanceRules? For(int incomeYear) => incomeYear switch
@@ -70,7 +70,3 @@ public sealed record AllowanceRules(
 // One maximum a month of the year, from the month it starts in, 1 being January, to the month before
 // the next one starts, or to December.
 public sealed record MonthlyMaximum(int FromMonth, RuleAmount Amount);
-
-// One condition the user confirms, under a stable key the page gives its words, with the texts it
-// comes from.
-public sealed record AllowanceCondition(string Key, IReadOnlyList<Source> Sources);

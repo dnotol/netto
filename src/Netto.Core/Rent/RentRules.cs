@@ -22,7 +22,7 @@ public sealed record RentRules(
     RuleAmount IndexationCoefficient,
     RuleAmount ChargesRate,
     RuleAmount ChargesLimitMultiplier,
-    IReadOnlyList<RentCondition> Conditions)
+    IReadOnlyList<LeverCondition> Conditions)
 {
     private static readonly Source Article7Income2025 = new(
         "CIR 92, art. 7 (revenus 2025), coordinated text on Fisconetplus, last modified 25.11.2024",
@@ -105,11 +105,7 @@ public sealed record RentRules(
         new RuleAmount("rent_charges_rate", 0.40m, article13),
         new RuleAmount("rent_charges_limit_multiplier", 2m / 3m, article13),
         [
-            new RentCondition("share_yours_to_justify", [article7, article32]),
-            new RentCondition("not_with_office_allowance", [Circular2021C20]),
+            new LeverCondition("share_yours_to_justify", [article7, article32]),
+            new LeverCondition("not_with_office_allowance", [Circular2021C20]),
         ]);
 }
-
-// One condition the user confirms, under a stable key the page gives its words, with the texts it
-// comes from.
-public sealed record RentCondition(string Key, IReadOnlyList<Source> Sources);
