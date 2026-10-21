@@ -10,9 +10,17 @@
 
 .bucket-bar ::deep .mud-container {
     display: grid;
-    gap: 0.5rem;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.5rem 1.5rem;
     padding-top: 0.75rem;
     padding-bottom: 0.75rem;
+}
+
+.bucket-bar__figures {
+    display: grid;
+    gap: 0.5rem;
+    min-width: 0;
 }
 
 .bucket-bar__buckets {
@@ -109,12 +117,22 @@
 }
 
 /* On a phone the bar shares the screen with the sticky site header: two rows of buckets, tighter, so
-   the cards keep most of the height. */
+   the cards keep most of the height. The figures take the whole width. */
 @media (max-width: 640px) {
     .bucket-bar ::deep .mud-container {
+        grid-template-columns: minmax(0, 1fr);
         gap: 0.35rem;
         padding-top: 0.5rem;
         padding-bottom: 0.5rem;
+    }
+
+    .bucket-bar__figures {
+        gap: 0.35rem;
+    }
+
+    /* Under the figures, at the right, until the phone's own compact bar. */
+    .bucket-bar__actions {
+        justify-self: end;
     }
 
     .bucket-bar__buckets {

@@ -1,51 +1,63 @@
 @inject IStringLocalizer<BucketBar> L
 
 @* The river's summary, always in view under the site header: where the money ends up, out of what
-   the river starts from. Every amount is the engine's, regrouped by BucketsView. *@
-<div class="bucket-bar" aria-live="polite">
+   the river starts from, and, at its right, what the page gives it (the Composition menu). Every
+   amount is the engine's, regrouped by BucketsView. Only the figures are a live region: a menu inside
+   one would be read out at every change. *@
+<div class="bucket-bar">
     <MudContainer MaxWidth="MaxWidth.Large">
-        <dl class="bucket-bar__buckets">
-            @foreach (var key in BucketsView.Keys)
+        <div class="bucket-bar__figures" aria-live="polite">
+            <dl class="bucket-bar__buckets">
+                @foreach (var key in BucketsView.Keys)
+                {
+                    <div class="bucket bucket--@key">
+                        <dt class="bucket__label"><span class="bucket__swatch" aria-hidden="true"></span>@L[BucketBarText.Bucket(key, View?.TaxesOnPayIncludeRent ?? false)]</dt>
+                        <dd class="bucket__amount">@Amount(key)</dd>
+                    </div>
+                }
+            </dl>
+            @if (View is { } view && view.Buckets.All(bucket => bucket.Share is not null))
             {
-                <div class="bucket bucket--@key">
-                    <dt class="bucket__label"><span class="bucket__swatch" aria-hidden="true"></span>@L[BucketBarText.Bucket(key, View?.TaxesOnPayIncludeRent ?? false)]</dt>
-                    <dd class="bucket__amount">@Amount(key)</dd>
+                <div class="bucket-bar__stack" aria-hidden="true">
+                    @foreach (var bucket in view.Buckets)
+                    {
+                        <span class="bucket-bar__segment bucket--@bucket.Key" style="@SegmentStyle(bucket)"></span>
+                    }
                 </div>
             }
-        </dl>
-        @if (View is { } view && view.Buckets.All(bucket => bucket.Share is not null))
-        {
-            <div class="bucket-bar__stack" aria-hidden="true">
-                @foreach (var bucket in view.Buckets)
+            <p class="bucket-bar__from">
+                @if (View is null)
                 {
-                    <span class="bucket-bar__segment bucket--@bucket.Key" style="@SegmentStyle(bucket)"></span>
+                    @L["Refused"]
                 }
-            </div>
+                else if (View.StartsAtPay)
+                {
+                    @L[View.CompanyPaysContributions ? "FromPayCost" : "FromPay", Formats.Euros(View.Start)]
+                }
+                else if (View.EarlierProfits > 0m)
+                {
+                    @L["FromProfitAndEarlier", Formats.Euros(View.Start - View.EarlierProfits), Formats.Euros(View.EarlierProfits)]
+                }
+                else
+                {
+                    @L["FromProfit", Formats.Euros(View.Start)]
+                }
+            </p>
+        </div>
+        @if (ChildContent is not null)
+        {
+            <div class="bucket-bar__actions">@ChildContent</div>
         }
-        <p class="bucket-bar__from">
-            @if (View is null)
-            {
-                @L["Refused"]
-            }
-            else if (View.StartsAtPay)
-            {
-                @L[View.CompanyPaysContributions ? "FromPayCost" : "FromPay", Formats.Euros(View.Start)]
-            }
-            else if (View.EarlierProfits > 0m)
-            {
-                @L["FromProfitAndEarlier", Formats.Euros(View.Start - View.EarlierProfits), Formats.Euros(View.EarlierProfits)]
-            }
-            else
-            {
-                @L["FromProfit", Formats.Euros(View.Start)]
-            }
-        </p>
     </MudContainer>
 </div>
 
 @code {
     [Parameter, EditorRequired]
     public RiverRun Run { get; set; } = default!;
+
+    // What sits right of the figures.
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
 
     private BucketsView? View { get; set; }
 
