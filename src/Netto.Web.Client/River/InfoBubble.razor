@@ -13,7 +13,8 @@
    time: nettoBubble (Netto.Web's wwwroot/info-bubble.js) places it under its trigger, or above where
    there is no room below, within the window, and follows the trigger as the page scrolls. The
    trigger is a button of its own: never put one inside another control, a fold's header, a button
-   or a checkbox's label; put it beside them. *@
+   or a checkbox's label; put it beside them. The button and the live region touch, with no space
+   between them, so that a term in running text is followed by the text's own punctuation. *@
 <span class="info-bubble">
     <button type="button" @ref="_trigger" class="info-bubble__trigger @TriggerKind"
             aria-expanded="@(Open ? "true" : "false")" aria-label="@AccessibleName"
@@ -26,8 +27,7 @@
         {
             @Term
         }
-    </button>
-    <span role="status" class="info-bubble__status">
+    </button><span role="status" class="info-bubble__status">
         @if (Open)
         {
             <span @ref="_bubble" class="info-bubble__box" @onmouseenter="Enter" @onmouseleave="Leave">@ChildContent</span>
