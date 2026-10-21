@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor.Services;
+using Netto.Web.Client;
 using Netto.Web.Client.River;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
@@ -11,5 +12,9 @@ builder.Services.AddMudServices();
 
 // The river's inputs, kept while the tab is open.
 builder.Services.AddScoped<RiverState>();
+
+// The viewer's preferences, kept in the browser: which folds of the river are open.
+builder.Services.AddScoped<IBrowserStorage, LocalStorage>();
+builder.Services.AddScoped<Folds>();
 
 await builder.Build().RunAsync();
