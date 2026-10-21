@@ -1,6 +1,8 @@
-/* Neutral, never gold: an origin is information about an input, not a figure. The four differ by
-   their outline and fill as well as their word, so colour is never the only cue. */
-.origin-chip {
+/* ::deep reaches the chip, the trigger InfoBubble draws, which carries no scope attribute of this
+   component's. Neutral, never gold at rest: an origin is information about an input, not a figure.
+   The four differ by their outline and fill as well as their word, so colour is never the only cue;
+   hovered or focused, the chip's edge turns gold, an active state. */
+.origin ::deep .origin-chip {
     display: inline-block;
     padding: 0.05rem 0.45rem;
     border: 1px solid transparent;
@@ -12,27 +14,39 @@
     text-transform: uppercase;
     white-space: nowrap;
     vertical-align: 0.1em;
+    transition: border-color 0.2s ease;
 }
 
-.origin-chip--yours {
+.origin ::deep .origin-chip--yours {
     border-color: rgba(243, 238, 226, 0.4);
     color: var(--netto-text);
 }
 
-.origin-chip--default {
+.origin ::deep .origin-chip--default {
     border-style: dashed;
     border-color: rgba(243, 238, 226, 0.3);
     color: var(--netto-text-muted);
 }
 
-.origin-chip--derived {
+.origin ::deep .origin-chip--derived {
     background: rgba(243, 238, 226, 0.07);
     color: var(--netto-text-muted);
 }
 
-.origin-chip--example {
+.origin ::deep .origin-chip--example {
     border-style: dashed;
     border-color: rgba(243, 238, 226, 0.3);
     color: var(--netto-text-muted);
     font-style: italic;
+}
+
+.origin ::deep .origin-chip:hover,
+.origin ::deep .origin-chip:focus-visible {
+    border-color: var(--netto-gold);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .origin ::deep .origin-chip {
+        transition: none;
+    }
 }

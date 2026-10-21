@@ -1,8 +1,13 @@
 @inject IStringLocalizer<OriginChip> L
 
 @* Where an input's value comes from, beside the input: the user's, a default rate or status, derived
-   from the modules above, or the example's. The hover text says what that means. *@
-<span class="origin-chip origin-chip--@Origin.ToString().ToLowerInvariant()" title="@L[OriginChipText.Hint(Origin)]">@L[OriginChipText.Origin(Origin)]</span>
+   from the modules above, or the example's. The chip is the trigger of an info bubble that says what
+   that means, so every chip carries it. *@
+<span class="origin">
+    <InfoBubble Term="@L[OriginChipText.Origin(Origin)]" TriggerClass="@($"origin-chip origin-chip--{Origin.ToString().ToLowerInvariant()}")">
+        @L[OriginChipText.Hint(Origin)]
+    </InfoBubble>
+</span>
 
 @code {
     [Parameter, EditorRequired]
