@@ -48,13 +48,28 @@ internal static class DirectorPayCardText
 
     public static string PaidBy(ContributionsPaidBy paidBy) => $"PaidBy_{paidBy}";
 
+    // What the key formula is, in the bubble the term opens where the withholding is derived from it.
+    public const string KeyFormulaTerm = "Term_KeyFormula";
+
     // Who pays the contributions as the line of « Your situation » states it.
     public static string SituationPaidBy(ContributionsPaidBy paidBy) => $"Situation_PaidBy_{paidBy}";
 }
 
 internal static class DividendCardText
 {
+    // What VVPRbis shares are, in the bubble the term opens where the rates are said.
+    public const string VvprbisTerm = "Term_Vvprbis";
+
     public static string Category(WithholdingCategory category) => $"Category_{category}";
+}
+
+internal static class RentCardText
+{
+    // What the cadastral income is, in the bubble the term opens in the cap's sentence.
+    public const string CadastralIncomeTerm = "Term_CadastralIncome";
+
+    // What the flat charges are, in the bubble the term opens where the rent's tax is said.
+    public const string FlatChargesTerm = "Term_FlatCharges";
 }
 
 internal static class ConditionListText
@@ -67,6 +82,9 @@ internal static class ConditionListText
 
 internal static class SplitCardText
 {
+    // What the reduced corporate rate is, in the bubble the term opens where the rate is weighed.
+    public const string ReducedRateTerm = "Term_ReducedRate";
+
     // The sentence names the best pay on the other side of the threshold only when one keeps the
     // reserve.
     public static string Rate(RateWeighing rate) => rate switch
@@ -105,4 +123,19 @@ internal static class InfoBubbleText
 {
     // The name of a bubble's (i): « More about » what it stands beside.
     public const string MoreAbout = "MoreAbout";
+}
+
+// A sentence of a card with a term of art in it, marked in its .resx text between square brackets:
+// « It keeps the [reduced corporate rate], … ». TermSentence draws the term as the trigger of an info
+// bubble that says what it means, and the rest as text.
+internal static class TermText
+{
+    // The text before the term, the term and the text after it; the whole sentence, with no term,
+    // when none is marked.
+    public static (string Before, string? Term, string After) Split(string sentence)
+    {
+        var open = sentence.IndexOf('[');
+        var close = open < 0 ? -1 : sentence.IndexOf(']', open + 1);
+        return close < 0 ? (sentence, null, "") : (sentence[..open], sentence[(open + 1)..close], sentence[(close + 1)..]);
+    }
 }

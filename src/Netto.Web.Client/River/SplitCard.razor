@@ -101,7 +101,7 @@
             <p class="split__best">@BestText(best)</p>
             @if (weighed.Rate is { } rate)
             {
-                <p class="split__rate">@RateText(rate)</p>
+                <p class="split__rate"><TermSentence Text="@RateText(rate)" Meaning="@L[SplitCardText.ReducedRateTerm]" /></p>
             }
             @if (!best.IsYours)
             {

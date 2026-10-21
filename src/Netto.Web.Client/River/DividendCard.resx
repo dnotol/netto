@@ -52,7 +52,10 @@
     <value>{0} · VVPRbis, third distribution on</value>
   </data>
   <data name="CategoryHint" xml:space="preserve">
-    <value>VVPRbis shares pay the ordinary rate on their first distributions; the second-distribution rate is for a contribution made by 2025.</value>
+    <value>[VVPRbis shares] pay the ordinary rate on their first distributions; the second-distribution rate is for a contribution made by 2025.</value>
+  </data>
+  <data name="Term_Vvprbis" xml:space="preserve">
+    <value>Shares a small company issued in return for a new contribution in cash, under the regime's conditions: their dividends can be withheld at a reduced rate from a later distribution on.</value>
   </data>
   <data name="DetailsLabel" xml:space="preserve">
     <value>Where these figures come from</value>

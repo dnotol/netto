@@ -40,16 +40,22 @@
     <value>Rent for the year</value>
   </data>
   <data name="Cap" xml:space="preserve">
-    <value>At most {0} for the year: 5/3 of {1}, the cadastral income of the part let, revalued by {2}. Above it, the excess would be taxed as director pay.</value>
+    <value>At most {0} for the year: 5/3 of {1}, the [cadastral income] of the part let, revalued by {2}. Above it, the excess would be taxed as director pay.</value>
+  </data>
+  <data name="Term_CadastralIncome" xml:space="preserve">
+    <value>The notional yearly rental income the administration sets for a property, on which its property tax is computed.</value>
+  </data>
+  <data name="Term_FlatCharges" xml:space="preserve">
+    <value>A flat deduction for maintenance and repairs in place of real costs: a share of the rent, capped by the revalued cadastral income of the part let.</value>
   </data>
   <data name="UseTheCap" xml:space="preserve">
     <value>Use {0}</value>
   </data>
   <data name="TaxedOnTheRent" xml:space="preserve">
-    <value>You are taxed on the rent, {0}, less {1} of flat charges: {2} joins the taxable income of your pay and adds {3} to your personal tax, line by line below.</value>
+    <value>You are taxed on the rent, {0}, less {1} of [flat charges]: {2} joins the taxable income of your pay and adds {3} to your personal tax, line by line below.</value>
   </data>
   <data name="TaxedOnTheFloor" xml:space="preserve">
-    <value>The rent is under the floor, so you are taxed on the floor, {0}: the cadastral income of the part let, indexed, plus 40%. Less {1} of flat charges, {2} joins the taxable income of your pay and adds {3} to your personal tax, line by line below.</value>
+    <value>The rent is under the floor, so you are taxed on the floor, {0}: the cadastral income of the part let, indexed, plus 40%. Less {1} of [flat charges], {2} joins the taxable income of your pay and adds {3} to your personal tax, line by line below.</value>
   </data>
   <data name="Deducted" xml:space="preserve">
     <value>The company deducts all {0} of it, like its own running costs: nothing is added back to its taxable income, and it is never pay.</value>

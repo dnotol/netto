@@ -40,7 +40,8 @@
                 @if (_cap is { } cap)
                 {
                     <p class="rent__note">
-                        @L["Cap", Formats.Euros(cap.Cap), Formats.Euros(cap.CadastralIncomeLet), Formats.RuleAmount(cap.RevaluationCoefficient)]
+                        <TermSentence Text="@L["Cap", Formats.Euros(cap.Cap), Formats.Euros(cap.CadastralIncomeLet), Formats.RuleAmount(cap.RevaluationCoefficient)]"
+                                      Meaning="@L[RentCardText.CadastralIncomeTerm]" />
                         @if (!cap.IsTheRent)
                         {
                             <MudButton Variant="Variant.Text" Size="Size.Small" Color="Color.Primary" OnClick="UseTheCap"
@@ -54,8 +55,9 @@
         @if (_view is { Rent: > 0m } shown)
         {
             <p class="rent__taxed">
-                @L[shown.TaxedOnTheFloor ? "TaxedOnTheFloor" : "TaxedOnTheRent", Formats.Euros(shown.TaxableRent), Formats.Euros(shown.Charges),
-                    Formats.Euros(shown.NetRent), Formats.Euros(shown.Tax)]
+                <TermSentence Text="@L[shown.TaxedOnTheFloor ? "TaxedOnTheFloor" : "TaxedOnTheRent", Formats.Euros(shown.TaxableRent), Formats.Euros(shown.Charges),
+                                  Formats.Euros(shown.NetRent), Formats.Euros(shown.Tax)]"
+                              Meaning="@L[RentCardText.FlatChargesTerm]" />
             </p>
             <p class="rent__taxed">@L["Deducted", Formats.Euros(shown.Rent)]</p>
         }

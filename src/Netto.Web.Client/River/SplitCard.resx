@@ -82,16 +82,19 @@
     <value>Your pay does not change the corporate rate here; Corporate tax says why.</value>
   </data>
   <data name="Rate_KeepsIt" xml:space="preserve">
-    <value>It keeps the reduced corporate rate, which takes a pay of at least {0}. Giving it up leaves at most {1}, {2} less.</value>
+    <value>It keeps the [reduced corporate rate], which takes a pay of at least {0}. Giving it up leaves at most {1}, {2} less.</value>
   </data>
   <data name="Rate_KeepsItOnly" xml:space="preserve">
-    <value>It keeps the reduced corporate rate, which takes a pay of at least {0}.</value>
+    <value>It keeps the [reduced corporate rate], which takes a pay of at least {0}.</value>
   </data>
   <data name="Rate_GivesItUp" xml:space="preserve">
-    <value>It gives up the reduced corporate rate on purpose. Keeping it takes a pay of at least {0} and leaves at most {1}, {2} less.</value>
+    <value>It gives up the [reduced corporate rate] on purpose. Keeping it takes a pay of at least {0} and leaves at most {1}, {2} less.</value>
   </data>
   <data name="Rate_GivesItUpOnly" xml:space="preserve">
-    <value>It gives up the reduced corporate rate: no pay of at least {0} leaves enough profit to keep your reserve.</value>
+    <value>It gives up the [reduced corporate rate]: no pay of at least {0} leaves enough profit to keep your reserve.</value>
+  </data>
+  <data name="Term_ReducedRate" xml:space="preserve">
+    <value>The lower rate a small company pays on a first slice of its taxable income. From its fifth tax period, it keeps it only if a director's pay reaches a minimum, or its taxable income does not exceed that pay.</value>
   </data>
   <data name="MoveToBest" xml:space="preserve">
     <value>Move to the best pay</value>

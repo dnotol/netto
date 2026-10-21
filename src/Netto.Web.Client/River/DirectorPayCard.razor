@@ -70,7 +70,7 @@
                                Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
                                Error="@(Refused == GrossToNet.TaxWithheldNegative)" Refusal="@Refused" />
             <p class="director-pay__note">
-                @(_withheld.IsYours ? L["WithheldYours"] : L["WithheldDerived"])
+                <TermSentence Text="@(_withheld.IsYours ? L["WithheldYours"] : L["WithheldDerived"])" Meaning="@L[DirectorPayCardText.KeyFormulaTerm]" />
                 @if (_withheld.IsYours)
                 {
                     <MudButton Variant="Variant.Text" Size="Size.Small" Color="Color.Primary" OnClick="OnWithheldAsPaySlip"

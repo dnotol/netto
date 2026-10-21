@@ -82,7 +82,10 @@
     <value>Your advance payments beyond that earn a bonus of {0}.</value>
   </data>
   <data name="WithheldDerived" xml:space="preserve">
-    <value>Derived from the pay slip: twelve times the month's withholding by the key formula. Enter the amount actually withheld if it differs.</value>
+    <value>Derived from the pay slip: twelve times the month's withholding by the [key formula]. Enter the amount actually withheld if it differs.</value>
+  </data>
+  <data name="Term_KeyFormula" xml:space="preserve">
+    <value>The administration's formula for the tax a company withholds on each month's pay, set in annex III of the royal decree implementing the income tax code.</value>
   </data>
   <data name="WithheldYours" xml:space="preserve">
     <value>Your amount replaces the pay slip's in the year.</value>

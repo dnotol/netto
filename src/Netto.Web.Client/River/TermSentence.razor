@@ -1,0 +1,26 @@
+@* A card's sentence with a term of art marked in its text ([term], TermText): the term is drawn as
+   the trigger of an info bubble that says what it means (Meaning), the rest as text. A sentence that
+   marks no term is drawn as it is. It draws no element of its own, so it sits in the card's own
+   paragraph. It has no text of its own: the card gives the sentence and the meaning. *@
+@if (_term is null)
+{
+    @_before
+}
+else
+{
+    @_before<InfoBubble Term="@_term">@Meaning</InfoBubble>@_after
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public string Text { get; set; } = "";
+
+    [Parameter, EditorRequired]
+    public string Meaning { get; set; } = "";
+
+    private string _before = "";
+    private string? _term;
+    private string _after = "";
+
+    protected override void OnParametersSet() => (_before, _term, _after) = TermText.Split(Text);
+}

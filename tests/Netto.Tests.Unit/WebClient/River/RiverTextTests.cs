@@ -42,6 +42,8 @@ public class RiverTextTests
 
     private static readonly ResourceManager InfoBubbleResources = new("Netto.Web.Client.River.InfoBubble", typeof(InfoBubble).Assembly);
 
+    private static readonly ResourceManager RentCardResources = new("Netto.Web.Client.River.RentCard", typeof(RentCard).Assembly);
+
     // The conditions of every lever the river shows, which the shared list words through one .resx.
     private static readonly IReadOnlyList<LeverCondition> LeverConditions =
     [
@@ -253,6 +255,65 @@ public class RiverTextTests
     {
         Missing(InfoBubbleResources, [InfoBubbleText.MoreAbout]).ShouldBeEmpty();
     }
+
+    // The reduced corporate rate is a term of art: every sentence weighing it marks it, for it to open
+    // a bubble that says what it means.
+    [Fact]
+    public void SplitCardResx_everySentenceWeighingTheRate_marksTheReducedRate()
+    {
+        var other = new PayLevel(50_000m, 62_529.24m, 40_000m, 0m, ReducedRateCondition.TaxableIncomeNotAbovePay, true);
+        var keys = new[] { RateChoice.KeepsIt, RateChoice.GivesItUp }
+            .SelectMany(choice => new[] { new RateWeighing(choice, 50_000m, other, 2_183.57m), new RateWeighing(choice, 50_000m, null, null) })
+            .Select(SplitCardText.Rate);
+
+        Terms(SplitCardResources, keys).ShouldAllBe(term => term == "reduced corporate rate");
+    }
+
+    [Fact]
+    public void SplitCardResx_reducedRate_saysWhatItMeans()
+    {
+        Missing(SplitCardResources, [SplitCardText.ReducedRateTerm]).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void DividendCardResx_whatTheRatesAreFor_marksVvprbis()
+    {
+        Terms(DividendCardResources, ["CategoryHint"]).ShouldBe(["VVPRbis shares"]);
+    }
+
+    [Fact]
+    public void DividendCardResx_vvprbis_saysWhatItMeans()
+    {
+        Missing(DividendCardResources, [DividendCardText.VvprbisTerm]).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void RentCardResx_theCapAndWhatTheRentIsTaxedOn_markTheirTerms()
+    {
+        Terms(RentCardResources, ["Cap", "TaxedOnTheRent", "TaxedOnTheFloor"]).ShouldBe(["cadastral income", "flat charges", "flat charges"]);
+    }
+
+    [Fact]
+    public void RentCardResx_cadastralIncomeAndFlatCharges_sayWhatTheyMean()
+    {
+        Missing(RentCardResources, [RentCardText.CadastralIncomeTerm, RentCardText.FlatChargesTerm]).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void DirectorPayCardResx_withholdingDerivedFromThePaySlip_marksTheKeyFormula()
+    {
+        Terms(DirectorPayCardResources, ["WithheldDerived"]).ShouldBe(["key formula"]);
+    }
+
+    [Fact]
+    public void DirectorPayCardResx_keyFormula_saysWhatItMeans()
+    {
+        Missing(DirectorPayCardResources, [DirectorPayCardText.KeyFormulaTerm]).ShouldBeEmpty();
+    }
+
+    // The term each sentence marks, null where its text marks none or is missing.
+    private static List<string?> Terms(ResourceManager resources, IEnumerable<string> keys) =>
+        [.. keys.Select(key => resources.GetString(key, CultureInfo.InvariantCulture) is { } text ? TermText.Split(text).Term : null)];
 
     private static IEnumerable<string> Missing(ResourceManager resources, IEnumerable<string> keys) =>
         keys.Distinct().Where(key => resources.GetString(key, CultureInfo.InvariantCulture) is null);
