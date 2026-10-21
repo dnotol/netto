@@ -29,7 +29,9 @@ internal static class NettoTheme
             TextDisabled = "#6B655A",
             ActionDefault = "#C9C1AE",
             LinesDefault = "#2B2619",
-            LinesInputs = "#3A3424",
+            // The frame of a field and of an unselected chip, the boundary that shows where it is: 3:1
+            // at least on the cards and the page (WCAG 1.4.11).
+            LinesInputs = "#726A56",
             Divider = "#2B2619",
             DividerLight = "#1E1B13",
         },

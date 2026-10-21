@@ -20,6 +20,7 @@
     --netto-black: #0B0A08;
     --netto-surface: #15130F;
     --netto-line: #2B2619;
+    --netto-line-input: #726A56;
     --netto-gold: #D4AF37;
     --netto-text: #F3EEE2;
     --netto-text-muted: #A9A190;
@@ -103,6 +104,16 @@ button:focus-visible,
 .mud-checkbox .mud-icon-button:has(.mud-checkbox-input:focus-visible) {
     outline: var(--netto-focus-ring);
     outline-offset: -4px;
+}
+
+/* A slider's track shows where it runs: drawn in the frame colour of a field, 3:1 at least on the
+   cards (WCAG 1.4.11), rather than MudBlazor's faint gold, under the gold thumb. */
+.mud-slider.mud-slider-primary .mud-slider-input::-webkit-slider-runnable-track {
+    background-color: var(--netto-line-input);
+}
+
+.mud-slider.mud-slider-primary .mud-slider-input::-moz-range-track {
+    background-color: var(--netto-line-input);
 }
 
 .wordmark {
