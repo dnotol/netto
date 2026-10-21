@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Button" xml:space="preserve">
+    <value>Composition</value>
+  </data>
+  <data name="Count" xml:space="preserve">
+    <value>· {0}</value>
+  </data>
+  <data name="ButtonLabel_None" xml:space="preserve">
+    <value>Composition: no optional module in your plan</value>
+  </data>
+  <data name="ButtonLabel_One" xml:space="preserve">
+    <value>Composition: 1 optional module in your plan</value>
+  </data>
+  <data name="ButtonLabel_Many" xml:space="preserve">
+    <value>Composition: {0} optional modules in your plan</value>
+  </data>
+  <data name="PanelLabel" xml:space="preserve">
+    <value>Composition of your plan</value>
+  </data>
+  <data name="AddTitle" xml:space="preserve">
+    <value>Add to your plan</value>
+  </data>
+  <data name="Lede" xml:space="preserve">
+    <value>What is in your plan shows and counts; what you take out keeps your values for when you add it back.</value>
+  </data>
+  <data name="Title_Vouchers" xml:space="preserve">
+    <value>Vouchers</value>
+  </data>
+  <data name="Title_Allowances" xml:space="preserve">
+    <value>Expense allowances</value>
+  </data>
+  <data name="Title_Rent" xml:space="preserve">
+    <value>Home office rent</value>
+  </data>
+  <data name="Description_Vouchers" xml:space="preserve">
+    <value>Meal, eco and sport/culture vouchers, tax-free</value>
+  </data>
+  <data name="Description_Allowances" xml:space="preserve">
+    <value>Office, internet, computer and phone, reimbursed tax-free</value>
+  </data>
+  <data name="Description_Rent" xml:space="preserve">
+    <value>Rent for the part of your home the company uses</value>
+  </data>
+  <data name="Brings_Vouchers" xml:space="preserve">
+    <value>{0} to your pocket</value>
+  </data>
+  <data name="Brings_Allowances" xml:space="preserve">
+    <value>{0} to your pocket</value>
+  </data>
+  <data name="Brings_Rent" xml:space="preserve">
+    <value>{0} to your pocket after its tax</value>
+  </data>
+  <data name="InPlan" xml:space="preserve">
+    <value>In your plan</value>
+  </data>
+  <data name="Kept" xml:space="preserve">
+    <value>Not in your plan · your values are kept</value>
+  </data>
+  <data name="CoreTitle" xml:space="preserve">
+    <value>Always in your plan</value>
+  </data>
+  <data name="Core_CompanyYear" xml:space="preserve">
+    <value>Company year</value>
+  </data>
+  <data name="Core_Split" xml:space="preserve">
+    <value>The split</value>
+  </data>
+  <data name="Core_DirectorPay" xml:space="preserve">
+    <value>Director pay</value>
+  </data>
+  <data name="Core_CorporateTax" xml:space="preserve">
+    <value>Corporate tax</value>
+  </data>
+  <data name="Core_Dividend" xml:space="preserve">
+    <value>Dividend</value>
+  </data>
+  <data name="More" xml:space="preserve">
+    <value>More modules join here as they are built.</value>
+  </data>
+  <data name="Done" xml:space="preserve">
+    <value>Done</value>
+  </data>
+</root>

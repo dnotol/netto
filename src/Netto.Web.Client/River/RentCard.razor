@@ -6,10 +6,12 @@
    rent for the part of their home it uses as an office, unfurnished. The user gives the dwelling's
    cadastral income, the share of it let and the yearly rent; the card shows the year's cap on them
    and offers it, says what the rent is taxed on and what its tax costs, each line into the taxes on
-   pay, and passes the profit before pay on to the split. The amounts are taken while typing, like
-   revenue, and carry no Min or Max: the engine refuses what the rules do not allow, and its message is
-   what the user has to see. Skipped with the company. *@
-<ModuleCard Name="rent" Title="@L["Title"]" Summary="@Summary" Skipped="Inputs.Company is null" Details="@Details" DetailsLabel="@L["DetailsLabel"]">
+   pay, and passes the profit before pay on to the split. An optional module: it shows only while in
+   the plan, and the word at its bottom takes it out, its values kept. The amounts are taken while
+   typing, like revenue, and carry no Min or Max: the engine refuses what the rules do not allow, and
+   its message is what the user has to see. Skipped with the company. *@
+<ModuleCard Name="rent" Title="@L["Title"]" Summary="@Summary" Skipped="Inputs.Company is null" Details="@Details" DetailsLabel="@L["DetailsLabel"]"
+            RemoveLabel="@L["Remove"]" OnRemove="Remove">
     @if (Inputs.Company is null)
     {
         <p class="rent__waiting">@L["Waiting"]</p>
@@ -116,4 +118,6 @@
     private Task OnRentChanged(decimal amount) => InputsChanged.InvokeAsync(Inputs.WithRent(amount));
 
     private Task UseTheCap() => _cap is { } cap ? InputsChanged.InvokeAsync(Inputs.WithRent(cap.Cap)) : Task.CompletedTask;
+
+    private Task Remove() => InputsChanged.InvokeAsync(Inputs.TakeOutOfPlan(OptionalModule.Rent));
 }

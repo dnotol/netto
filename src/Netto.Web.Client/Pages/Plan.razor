@@ -8,8 +8,13 @@
 
 @* The river: the year from the company's revenue to the director's pocket, as module cards that each
    edit their part of one scenario and draw their view of one run, under the bar of buckets that sums
-   it up. Every figure comes from Netto.Core; the page only holds the inputs and runs them. *@
-<BucketBar Run="_run" />
+   it up. Every figure comes from Netto.Core; the page only holds the inputs and runs them. The
+   optional modules show only while in the plan, which the Composition menu in the bar sets; taking
+   one out, there or from its card, shows a notice with Undo. *@
+<BucketBar Run="_run">
+    <CompositionMenu @ref="_composition" Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" />
+</BucketBar>
+<TakenOutNotice @ref="_notice" Module="_takenOut" OnUndo="Undo" OnDismiss="Dismiss" />
 
 <section class="river">
     <MudContainer MaxWidth="MaxWidth.Large">
@@ -26,9 +31,25 @@
 
         <div class="river__flow">
             <CompanyYearCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Refused="@Refused(RiverModule.CompanyYear)" />
-            <VoucherCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Refused="@Refused(RiverModule.Vouchers)" />
-            <AllowanceCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Refused="@Refused(RiverModule.Allowances)" />
-            <RentCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Refused="@Refused(RiverModule.Rent)" />
+            @if (_inputs.Composition.Count == 0)
+            {
+                <p class="river__add">
+                    @L["AddHint"]
+                    <MudButton Variant="Variant.Text" Size="Size.Small" Color="Color.Primary" OnClick="OpenComposition">@L["AddHintButton"]</MudButton>
+                </p>
+            }
+            @if (_inputs.InPlan(OptionalModule.Vouchers))
+            {
+                <VoucherCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Refused="@Refused(RiverModule.Vouchers)" />
+            }
+            @if (_inputs.InPlan(OptionalModule.Allowances))
+            {
+                <AllowanceCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Refused="@Refused(RiverModule.Allowances)" />
+            }
+            @if (_inputs.InPlan(OptionalModule.Rent))
+            {
+                <RentCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Refused="@Refused(RiverModule.Rent)" />
+            }
             @if (_inputs.Company is not null)
             {
                 <SplitCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Search="_search" Refused="@Refused(RiverModule.Split)" />
@@ -77,13 +98,56 @@
     private RiverRun _run = default!;
     private SplitSearchResult? _search;
     private RiverInputs? _searched;
+    private CompositionMenu _composition = default!;
+    private TakenOutNotice _notice = default!;
+    private OptionalModule? _takenOut;
+    private bool _focusUndo;
+    private bool _focusComposition;
 
     protected override void OnInitialized() => Show(State.Inputs);
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_focusUndo)
+        {
+            _focusUndo = false;
+            await _notice.FocusUndoAsync();
+        }
+
+        if (_focusComposition)
+        {
+            _focusComposition = false;
+            await _composition.FocusButtonAsync();
+        }
+    }
+
+    // A module taken out shows the notice. Taken out from its card, the word that did it is gone with
+    // the card, so the focus goes to Undo; from the open menu, it stays on the menu's checkbox.
     private void OnInputsChanged(RiverInputs inputs)
     {
+        var takenOut = inputs.Composition.TakenOutSince(_inputs.Composition);
+        _takenOut = RemovalNotice.About(_takenOut, _inputs.Composition, inputs.Composition);
+        _focusUndo = takenOut is not null && !_composition.IsOpen;
         State.Inputs = inputs;
         Show(inputs);
+    }
+
+    private void OpenComposition() => _composition.Open();
+
+    // Undo and Dismiss leave with the notice, so the focus goes to the Composition button, just before
+    // it, where the plan's modules are set.
+    private void Undo()
+    {
+        if (_takenOut is { } module)
+            OnInputsChanged(_inputs.AddToPlan(module));
+
+        _focusComposition = true;
+    }
+
+    private void Dismiss()
+    {
+        _takenOut = null;
+        _focusComposition = true;
     }
 
     // The split's search runs the year at every pay, so it runs again only when an input other than

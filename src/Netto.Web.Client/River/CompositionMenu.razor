@@ -1,0 +1,161 @@
+@inject IStringLocalizer<CompositionMenu> L
+
+@* Which optional modules are in the plan, from the bar of buckets. A disclosure, not an ARIA menu: the
+   button says how many the plan holds and opens a panel, a labelled group of one checkbox per optional
+   module in the river's order, each saying what it is while out of the plan, what it brings while in
+   it, and that the user's values wait while it is out; then the core modules, always there. The panel
+   takes focus when opened and closes with Escape, a click outside or Done, each giving focus back to
+   its button; Tab past either end closes it too, so no focused control hides under it. A click outside
+   lands on a clear backdrop, so it only closes the panel. What is closed is not rendered, but its frame
+   stays in the page, hidden, for aria-controls to point to. Every amount is the engine's, read through
+   CompositionView. *@
+<div class="composition" @onkeydown="OnKeyDown">
+    <MudButton @ref="_button" Variant="Variant.Outlined" Size="Size.Small" Class="composition__button" StartIcon="@Icons.Material.Rounded.Tune"
+               OnClick="Toggle" @onkeydown="OnButtonKeyDown"
+               aria-expanded="@(_open ? "true" : "false")" aria-controls="@_panelId" aria-label="@L[CompositionMenuText.ButtonLabel(_view.Count), _view.Count]">
+        @L["Button"]
+        @if (_view.Count > 0)
+        {
+            <span class="composition__count">@L["Count", _view.Count]</span>
+        }
+    </MudButton>
+    @if (_open)
+    {
+        <div class="composition__backdrop" @onclick="CloseFromOutside"></div>
+    }
+    <div id="@_panelId" class="composition__panel" role="group" aria-label="@L["PanelLabel"]" tabindex="-1" hidden="@(!_open)" @ref="_panel">
+        @if (_open)
+        {
+            <p class="composition__eyebrow">@L["AddTitle"]</p>
+            <p class="composition__lede">@L["Lede"]</p>
+            <ul class="composition__modules">
+                @foreach (var choice in _view.Modules)
+                {
+                    <li @key="choice.Module" class="composition__module">
+                        <MudCheckBox T="bool" Value="choice.InPlan" ValueChanged="@(inPlan => OnModuleChanged(choice.Module, inPlan))" Color="Color.Primary">
+                            <span class="composition__choice">
+                                <span class="composition__title">@L[CompositionMenuText.Title(choice.Module)]</span>
+                                <span class="composition__note">@Note(choice)</span>
+                                @if (choice.ValuesKept)
+                                {
+                                    <span class="composition__kept">@L["Kept"]</span>
+                                }
+                            </span>
+                        </MudCheckBox>
+                    </li>
+                }
+            </ul>
+            <p class="composition__eyebrow">@L["CoreTitle"]</p>
+            <ul class="composition__core">
+                <li>@L["Core_CompanyYear"]</li>
+                <li>@L["Core_Split"]</li>
+                <li>@L["Core_DirectorPay"]</li>
+                <li>@L["Core_CorporateTax"]</li>
+                <li>@L["Core_Dividend"]</li>
+            </ul>
+            <div class="composition__foot">
+                <span>@L["More"]</span>
+                <MudButton Variant="Variant.Outlined" Size="Size.Small" Class="composition__done" OnClick="Done" @onkeydown="OnDoneKeyDown">@L["Done"]</MudButton>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public RiverInputs Inputs { get; set; } = default!;
+
+    [Parameter]
+    public EventCallback<RiverInputs> InputsChanged { get; set; }
+
+    [Parameter, EditorRequired]
+    public RiverRun Run { get; set; } = default!;
+
+    private readonly string _panelId = $"composition-{Guid.NewGuid():N}";
+    private CompositionView _view = new(0, []);
+    private MudButton? _button;
+    private ElementReference _panel;
+    private bool _open;
+    private bool _focusPanel;
+    private bool _focusButton;
+
+    public bool IsOpen => _open;
+
+    protected override void OnParametersSet() => _view = CompositionView.From(Inputs, Run);
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_focusPanel)
+        {
+            _focusPanel = false;
+            await _panel.FocusAsync();
+        }
+
+        if (_focusButton)
+        {
+            _focusButton = false;
+            await FocusButtonAsync();
+        }
+    }
+
+    // From elsewhere on the page, such as the line under Company year that says where to add a module.
+    public void Open()
+    {
+        _open = true;
+        _focusPanel = true;
+        StateHasChanged();
+    }
+
+    public async Task FocusButtonAsync()
+    {
+        if (_button is not null)
+            await _button.FocusAsync();
+    }
+
+    private void Toggle()
+    {
+        _open = !_open;
+        _focusPanel = _open;
+    }
+
+    private void Close()
+    {
+        _open = false;
+        _focusButton = true;
+    }
+
+    private void Done() => Close();
+
+    private void CloseFromOutside() => Close();
+
+    private void OnKeyDown(KeyboardEventArgs e)
+    {
+        if (_open && e.Key == "Escape")
+            Close();
+    }
+
+    // Shift+Tab from the button leaves the menu backwards, Tab from Done forwards: the panel closes and
+    // the focus goes on where the browser takes it.
+    private void OnButtonKeyDown(KeyboardEventArgs e)
+    {
+        if (_open && e is { Key: "Tab", ShiftKey: true })
+            _open = false;
+    }
+
+    private void OnDoneKeyDown(KeyboardEventArgs e)
+    {
+        if (e is { Key: "Tab", ShiftKey: false })
+            _open = false;
+    }
+
+    private Task OnModuleChanged(OptionalModule module, bool inPlan) =>
+        InputsChanged.InvokeAsync(inPlan ? Inputs.AddToPlan(module) : Inputs.TakeOutOfPlan(module));
+
+    // What the module is while out of the plan, what it brings while in it.
+    private string Note(ModuleChoice choice) => choice switch
+    {
+        { InPlan: false } => L[CompositionMenuText.Description(choice.Module)],
+        { ToPocket: { } toPocket } => L[CompositionMenuText.Brings(choice.Module), Formats.Euros(toPocket)],
+        _ => L["InPlan"],
+    };
+}

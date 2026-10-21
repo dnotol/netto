@@ -1,0 +1,179 @@
+/* ::deep reaches the MudButtons and the MudCheckBoxes, which carry no scope attribute of their own.
+
+   The panel drops under the bar of buckets, against the right edge of its button, over the river. The
+   backdrop under it takes a click outside; both sit in the bar's own stacking context, so the site
+   header and the notice of a removal stay above them. */
+.composition {
+    position: relative;
+}
+
+    /* A pill on the card surface, its edge a little lighter than a card's so it reads as a button. */
+    .composition ::deep .composition__button {
+        position: relative;
+        z-index: 2;
+        border-color: rgba(243, 238, 226, 0.2);
+        border-radius: 999px;
+        background: var(--netto-surface);
+        color: var(--netto-text);
+        white-space: nowrap;
+    }
+
+        /* Hover and focus are active states, so they may turn gold. */
+        .composition ::deep .composition__button:hover,
+        .composition ::deep .composition__button:focus-visible {
+            border-color: var(--netto-gold);
+        }
+
+        .composition ::deep .composition__button:focus-visible {
+            outline: 2px solid var(--netto-gold);
+            outline-offset: 2px;
+        }
+
+.composition__count {
+    margin-left: 0.35rem;
+    color: var(--netto-text-muted);
+    font-weight: 500;
+}
+
+.composition__backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+}
+
+.composition__panel {
+    position: absolute;
+    top: calc(100% + 0.75rem);
+    right: 0;
+    z-index: 3;
+    display: grid;
+    gap: 0.75rem;
+    width: min(22rem, calc(100vw - 2rem));
+    max-height: calc(100vh - 13rem);
+    overflow-y: auto;
+    padding: 1rem;
+    border: 1px solid var(--netto-line);
+    border-radius: 14px;
+    background: var(--netto-surface);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
+}
+
+    /* A display set on the panel would otherwise win over the hidden attribute. */
+    .composition__panel[hidden] {
+        display: none;
+    }
+
+    .composition__panel:focus-visible {
+        outline: 2px solid var(--netto-gold);
+        outline-offset: 2px;
+    }
+
+.composition__eyebrow {
+    margin: 0;
+    color: var(--netto-text-muted);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.composition__lede {
+    margin: -0.35rem 0 0;
+    color: var(--netto-text-muted);
+    font-size: 0.82rem;
+    line-height: 1.5;
+}
+
+.composition__modules {
+    display: grid;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+/* The whole row is the checkbox's label, so a click anywhere on it switches the module. */
+.composition__module {
+    border: 1px solid var(--netto-line);
+    border-radius: 10px;
+    background: var(--netto-black);
+}
+
+    .composition__module:hover {
+        border-color: rgba(243, 238, 226, 0.18);
+    }
+
+    .composition__module ::deep .mud-checkbox {
+        display: flex;
+        align-items: flex-start;
+        width: 100%;
+        margin: 0;
+        padding: 0.25rem 0.75rem 0.5rem 0.15rem;
+    }
+
+.composition__choice {
+    display: grid;
+    gap: 0.1rem;
+    padding-top: 0.55rem;
+    line-height: 1.4;
+}
+
+.composition__title {
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.composition__note {
+    color: var(--netto-text-muted);
+    font-size: 0.8rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.composition__kept {
+    color: var(--netto-text);
+    font-size: 0.78rem;
+}
+
+.composition__core {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: -0.25rem 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+    .composition__core li {
+        padding: 0.15rem 0.6rem;
+        border: 1px solid var(--netto-line);
+        border-radius: 999px;
+        color: var(--netto-text-muted);
+        font-size: 0.75rem;
+    }
+
+.composition__foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    color: var(--netto-text-muted);
+    font-size: 0.75rem;
+    line-height: 1.4;
+}
+
+    .composition__foot ::deep .composition__done {
+        flex: none;
+        border-color: rgba(243, 238, 226, 0.2);
+        border-radius: 999px;
+        color: var(--netto-text);
+    }
+
+        .composition__foot ::deep .composition__done:hover,
+        .composition__foot ::deep .composition__done:focus-visible {
+            border-color: var(--netto-gold);
+        }
+
+        .composition__foot ::deep .composition__done:focus-visible {
+            outline: 2px solid var(--netto-gold);
+            outline-offset: 2px;
+        }

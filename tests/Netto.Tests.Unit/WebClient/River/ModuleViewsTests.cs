@@ -24,11 +24,13 @@ namespace Netto.Tests.WebClient.River;
 // (YearSimulationTests), and 600 of phone costs where they say so, all of it deducted. The example
 // pays no rent; the rent's cards let 12% of a cadastral income of 1,200 for the 2026 cap, 1,380.00,
 // all of it deducted, whose 828.00 of net rent adds 398.68 to the personal tax (RiverInputsTests).
+// The example holds none of these levers in its plan; each lever's cards add it.
 public class ModuleViewsTests
 {
     private static readonly RiverInputs Prepaid = RiverInputs.Example.WithAdvancePayment(0, 7_500m).WithTaxWithheld(11_334m);
 
-    private static readonly RiverInputs AllVouchers = RiverInputs.Example.WithMealVoucherDays(220).WithEcoVouchers(250m).WithSportCultureVouchers(100m);
+    private static readonly RiverInputs AllVouchers = RiverInputs.Example.AddToPlan(OptionalModule.Vouchers)
+        .WithMealVoucherDays(220).WithEcoVouchers(250m).WithSportCultureVouchers(100m);
 
     [Fact]
     public void Split_example_givesThePayAndTheCompanysProfit()
@@ -456,27 +458,40 @@ public class ModuleViewsTests
         Dividend(Prepaid).Details.Select(detail => detail.RuleKey).ShouldBe(["dividend_withholding", "dividend_exemption_refund"]);
     }
 
-    // No vouchers: what the company earns goes on to the expense allowances whole, and there are no
-    // steps to list.
+    // No vouchers yet: what the company earns goes on whole, to the split while the plan holds no
+    // other lever, and there are no steps to list.
     [Fact]
-    public void Vouchers_example_passWhatTheCompanyEarnsOnToTheAllowances()
+    public void Vouchers_addedWithNothing_passWhatTheCompanyEarnsOnToTheSplit()
     {
-        var view = Vouchers(RiverInputs.Example);
+        var view = Vouchers(RiverInputs.Example.AddToPlan(OptionalModule.Vouchers));
 
         (view.Total, view.Deductible, view.Disallowed, view.Left, view.Details.Count, view.Drains.Single())
-            .ShouldBe((0m, 0m, 0m, 100_000m, 0, new Drain("left_after_vouchers", DrainKind.PassedOn, 100_000m, "allowances")));
+            .ShouldBe((0m, 0m, 0m, 100_000m, 0, new Drain("left_after_vouchers", DrainKind.PassedOn, 100_000m, "split")));
     }
 
     [Fact]
-    public void Vouchers_allThree_drainEachToThePocketAndTheRestToTheAllowances()
+    public void Vouchers_allThree_drainEachToThePocketAndTheRestOnDownTheRiver()
     {
         Vouchers(AllVouchers).Drains.ShouldBe(new[]
         {
             new Drain("meal_vouchers", DrainKind.PassedOn, 1_960.20m, "pocket"),
             new Drain("eco_vouchers", DrainKind.PassedOn, 250m, "pocket"),
             new Drain("sport_culture_vouchers", DrainKind.PassedOn, 100m, "pocket"),
-            new Drain("left_after_vouchers", DrainKind.PassedOn, 97_689.80m, "allowances"),
+            new Drain("left_after_vouchers", DrainKind.PassedOn, 97_689.80m, "split"),
         });
+    }
+
+    // What the vouchers leave goes on to the next module in the plan, the split after the last.
+    [Theory]
+    [InlineData(true, true, "allowances")]
+    [InlineData(true, false, "allowances")]
+    [InlineData(false, true, "rent")]
+    [InlineData(false, false, "split")]
+    public void Vouchers_leftAfterThem_goOnToTheNextModuleInThePlan(bool allowances, bool rent, string next)
+    {
+        var inputs = AllVouchers with { Composition = new PlanComposition(true, allowances, rent) };
+
+        Vouchers(inputs).Drains[^1].ShouldBe(new Drain("left_after_vouchers", DrainKind.PassedOn, 97_689.80m, next));
     }
 
     // The river runs on: what the vouchers leave is what they leave, whatever the allowances take next.
@@ -514,18 +529,30 @@ public class ModuleViewsTests
         });
     }
 
-    // No allowances: what the company earns goes on to the rent whole, and there are no steps to list.
+    // No allowances yet: what the company earns goes on whole, to the split while the plan holds no
+    // rent, and there are no steps to list.
     [Fact]
-    public void Allowances_example_passWhatTheCompanyEarnsOnToTheRent()
+    public void Allowances_addedWithNothing_passWhatTheCompanyEarnsOnToTheSplit()
     {
-        var view = Allowances(RiverInputs.Example);
+        var view = Allowances(RiverInputs.Example.AddToPlan(OptionalModule.Allowances));
 
         (view.Total, view.Left, view.Details.Count, view.Drains.Single())
-            .ShouldBe((0m, 100_000m, 0, new Drain("left_after_allowances", DrainKind.PassedOn, 100_000m, "rent")));
+            .ShouldBe((0m, 100_000m, 0, new Drain("left_after_allowances", DrainKind.PassedOn, 100_000m, "split")));
+    }
+
+    // What the allowances leave goes on to the rent while it is in the plan, to the split otherwise.
+    [Theory]
+    [InlineData(true, "rent")]
+    [InlineData(false, "split")]
+    public void Allowances_leftAfterThem_goOnToTheNextModuleInThePlan(bool rent, string next)
+    {
+        var inputs = FlatRateAllowances(RiverInputs.Example) with { Composition = new PlanComposition(false, true, rent) };
+
+        Allowances(inputs).Drains[^1].ShouldBe(new Drain("left_after_allowances", DrainKind.PassedOn, 97_581.56m, next));
     }
 
     [Fact]
-    public void Allowances_all_drainEachToThePocketAndTheRestToTheRent()
+    public void Allowances_all_drainEachToThePocketAndTheRestOnDownTheRiver()
     {
         Allowances(AllAllowances(RiverInputs.Example)).Drains.ShouldBe(new[]
         {
@@ -533,7 +560,7 @@ public class ModuleViewsTests
             new Drain("internet_allowance", DrainKind.PassedOn, 240m, "pocket"),
             new Drain("computer_allowance", DrainKind.PassedOn, 240m, "pocket"),
             new Drain("phone_costs", DrainKind.PassedOn, 600m, "pocket"),
-            new Drain("left_after_allowances", DrainKind.PassedOn, 96_981.56m, "rent"),
+            new Drain("left_after_allowances", DrainKind.PassedOn, 96_981.56m, "split"),
         });
     }
 
@@ -547,7 +574,7 @@ public class ModuleViewsTests
     [Fact]
     public void Allowances_afterVouchers_passOnWhatBothLeave()
     {
-        Allowances(FlatRateAllowances(AllVouchers)).Drains[^1].ShouldBe(new Drain("left_after_allowances", DrainKind.PassedOn, 95_271.36m, "rent"));
+        Allowances(FlatRateAllowances(AllVouchers)).Drains[^1].ShouldBe(new Drain("left_after_allowances", DrainKind.PassedOn, 95_271.36m, "split"));
     }
 
     // The river runs on: what the allowances leave is what they leave, whatever the rent takes next.
@@ -555,7 +582,8 @@ public class ModuleViewsTests
     [Fact]
     public void Allowances_withRent_passOnWhatTheAllowancesLeave()
     {
-        Allowances(RentAtTheCap(RiverInputs.Example).WithInternetAllowance(240m).WithComputerAllowance(240m)).Left.ShouldBe(99_520m);
+        Allowances(RentAtTheCap(RiverInputs.Example).AddToPlan(OptionalModule.Allowances).WithInternetAllowance(240m).WithComputerAllowance(240m))
+            .Left.ShouldBe(99_520m);
     }
 
     // No rent: the profit before pay goes on to the split whole, and there are no steps to list.
@@ -767,13 +795,13 @@ public class ModuleViewsTests
         DividendView.From(inputs.Run().Year.ShouldNotBeNull());
 
     private static VoucherView Vouchers(RiverInputs inputs) =>
-        VoucherView.From(inputs.Run().Year.ShouldNotBeNull());
+        VoucherView.From(inputs.Run().Year.ShouldNotBeNull(), inputs.Composition);
 
     private static AllowanceView Allowances(RiverInputs inputs) =>
-        AllowanceView.From(inputs.Run().Year.ShouldNotBeNull());
+        AllowanceView.From(inputs.Run().Year.ShouldNotBeNull(), inputs.Composition);
 
     private static RiverInputs FlatRateAllowances(RiverInputs inputs) =>
-        inputs.WithOfficeAllowance(1_938.44m).WithInternetAllowance(240m).WithComputerAllowance(240m);
+        inputs.AddToPlan(OptionalModule.Allowances).WithOfficeAllowance(1_938.44m).WithInternetAllowance(240m).WithComputerAllowance(240m);
 
     private static RiverInputs AllAllowances(RiverInputs inputs) => FlatRateAllowances(inputs).WithPhoneCosts(600m);
 
@@ -783,5 +811,6 @@ public class ModuleViewsTests
     private static RentCapView? RentCap(RiverInputs inputs) => RentCapView.From(inputs);
 
     // 12% of a cadastral income of 1,200 let for the 2026 cap, 1,380.00 (RentCalculatorTests).
-    private static RiverInputs RentAtTheCap(RiverInputs inputs) => inputs.WithCadastralIncome(1_200m).WithShareLet(0.12m).WithRent(1_380m);
+    private static RiverInputs RentAtTheCap(RiverInputs inputs) =>
+        inputs.AddToPlan(OptionalModule.Rent).WithCadastralIncome(1_200m).WithShareLet(0.12m).WithRent(1_380m);
 }

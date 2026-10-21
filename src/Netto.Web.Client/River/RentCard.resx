@@ -60,4 +60,7 @@
   <data name="SourcesTitle" xml:space="preserve">
     <value>The rules, with the income year {0} amounts</value>
   </data>
+  <data name="Remove" xml:space="preserve">
+    <value>Remove home office rent from your plan</value>
+  </data>
 </root>

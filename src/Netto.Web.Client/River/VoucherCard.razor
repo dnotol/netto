@@ -6,11 +6,13 @@
    worked, with the most the company may pay into each, and the year's eco and sport/culture
    vouchers. They reach the pocket untaxed and outside INASTI, and the company pays them out of its
    profit before pay; what it cannot deduct of them is added back to its taxable income. What they
-   leave goes on to the expense allowances, the next card down the river. Netto cannot
-   see the agreement or the days worked, so the card lists the conditions with their texts. The
-   amounts are taken while typing, like revenue, and carry no Min or Max: the engine refuses what the
-   rules do not allow, and its message is what the user has to see. Skipped with the company. *@
-<ModuleCard Name="vouchers" Title="@L["Title"]" Summary="@Summary" Skipped="Inputs.Company is null" Details="@Details" DetailsLabel="@L["DetailsLabel"]">
+   leave goes on to the next module in the plan, or the split. An optional module: it shows only while
+   in the plan, and the word at its bottom takes it out, its values kept. Netto cannot see the
+   agreement or the days worked, so the card lists the conditions with their texts. The amounts are
+   taken while typing, like revenue, and carry no Min or Max: the engine refuses what the rules do not
+   allow, and its message is what the user has to see. Skipped with the company. *@
+<ModuleCard Name="vouchers" Title="@L["Title"]" Summary="@Summary" Skipped="Inputs.Company is null" Details="@Details" DetailsLabel="@L["DetailsLabel"]"
+            RemoveLabel="@L["Remove"]" OnRemove="Remove">
     @if (Inputs.Company is null)
     {
         <p class="vouchers__waiting">@L["Waiting"]</p>
@@ -86,7 +88,7 @@
 
     protected override void OnParametersSet()
     {
-        _view = Run.Year is { } year ? VoucherView.From(year) : null;
+        _view = Run.Year is { } year ? VoucherView.From(year, Inputs.Composition) : null;
         _rules = VoucherRules.For(Inputs.IncomeYear);
     }
 
@@ -106,4 +108,6 @@
     private Task OnEcoVouchersChanged(decimal amount) => InputsChanged.InvokeAsync(Inputs.WithEcoVouchers(amount));
 
     private Task OnSportCultureVouchersChanged(decimal amount) => InputsChanged.InvokeAsync(Inputs.WithSportCultureVouchers(amount));
+
+    private Task Remove() => InputsChanged.InvokeAsync(Inputs.TakeOutOfPlan(OptionalModule.Vouchers));
 }

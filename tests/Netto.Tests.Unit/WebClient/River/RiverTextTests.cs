@@ -35,6 +35,10 @@ public class RiverTextTests
 
     private static readonly ResourceManager ConditionListResources = new("Netto.Web.Client.River.ConditionList", typeof(ConditionList).Assembly);
 
+    private static readonly ResourceManager CompositionMenuResources = new("Netto.Web.Client.River.CompositionMenu", typeof(CompositionMenu).Assembly);
+
+    private static readonly ResourceManager TakenOutNoticeResources = new("Netto.Web.Client.River.TakenOutNotice", typeof(TakenOutNotice).Assembly);
+
     // The conditions of every lever the river shows, which the shared list words through one .resx.
     private static readonly IReadOnlyList<LeverCondition> LeverConditions =
     [
@@ -42,6 +46,9 @@ public class RiverTextTests
         .. AllowanceRules.IncomeYear2026.Conditions,
         .. RentRules.IncomeYear2026.Conditions,
     ];
+
+    // The vouchers in the plan with each next lever, and the split after them.
+    private static readonly PlanComposition[] Compositions = [new(true, true, true), new(true, false, true), new(true, false, false)];
 
     [Fact]
     public void OriginChipResx_everyOrigin_hasAWordAndAHint()
@@ -54,21 +61,21 @@ public class RiverTextTests
     // The example, with a reserve so every drain has an amount, every kind of voucher and every
     // allowance, is every drain a card can list, the director's contributions paid by either; the
     // rent, which the office allowance excludes, on a year of its own, beside a low pay with nothing
-    // withheld so it takes away part of the credit and moves the surcharge.
+    // withheld so it takes away part of the credit and moves the surcharge. What a lever leaves goes on
+    // to the next lever in the plan or the split, so the levers' drains are listed for each.
     [Theory]
     [InlineData(ContributionsPaidBy.Director)]
     [InlineData(ContributionsPaidBy.Company)]
     public void DrainListResx_everyDrainOfEveryCard_hasALabelAndADestination(ContributionsPaidBy paidBy)
     {
-        var inputs = RiverInputs.Example.WithReserve(15_000m).WithContributionsPaidBy(paidBy)
+        var inputs = RiverInputs.Example.AddToPlan(OptionalModule.Vouchers).AddToPlan(OptionalModule.Allowances).WithReserve(15_000m).WithContributionsPaidBy(paidBy)
             .WithMealVoucherDays(220).WithEcoVouchers(250m).WithSportCultureVouchers(100m)
             .WithOfficeAllowance(1_938.44m).WithInternetAllowance(240m).WithComputerAllowance(240m).WithPhoneCosts(600m);
         var run = inputs.Run();
         var year = run.Year.ShouldNotBeNull();
-        var rentYear = RiverInputs.Example.WithContributionsPaidBy(paidBy).WithDirectorPay(27_000m).WithTaxWithheld(0m)
+        var rentYear = RiverInputs.Example.AddToPlan(OptionalModule.Rent).WithContributionsPaidBy(paidBy).WithDirectorPay(27_000m).WithTaxWithheld(0m)
             .WithCadastralIncome(400m).WithShareLet(1m).WithRent(3_333.33m).Run().Year.ShouldNotBeNull();
-        var drains = VoucherView.From(year).Drains
-            .Concat(AllowanceView.From(year).Drains)
+        var drains = Compositions.SelectMany(composition => VoucherView.From(year, composition).Drains.Concat(AllowanceView.From(year, composition).Drains))
             .Concat(RentView.From(rentYear).Drains)
             .Concat(DirectorPayView.From(inputs, run.Pay.ShouldNotBeNull()).Drains)
             .Concat(CorporateTaxView.From(year).Drains)
@@ -166,6 +173,30 @@ public class RiverTextTests
     public void ConditionListResx_headingForAnyCount_hasAText(int count)
     {
         Missing(ConditionListResources, [ConditionListText.Heading(count)]).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void CompositionMenuResx_everyOptionalModule_hasATitleADescriptionAndWhatItBrings()
+    {
+        var keys = PlanComposition.Modules.SelectMany(module =>
+            new[] { CompositionMenuText.Title(module), CompositionMenuText.Description(module), CompositionMenuText.Brings(module) });
+
+        Missing(CompositionMenuResources, keys).ShouldBeEmpty();
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(3)]
+    public void CompositionMenuResx_buttonLabelForAnyCount_hasAText(int count)
+    {
+        Missing(CompositionMenuResources, [CompositionMenuText.ButtonLabel(count)]).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void TakenOutNoticeResx_everyOptionalModule_hasAText()
+    {
+        Missing(TakenOutNoticeResources, PlanComposition.Modules.Select(TakenOutNoticeText.TakenOut)).ShouldBeEmpty();
     }
 
     private static IEnumerable<string> Missing(ResourceManager resources, IEnumerable<string> keys) =>

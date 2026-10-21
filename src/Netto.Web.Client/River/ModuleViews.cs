@@ -16,14 +16,13 @@ namespace Netto.Web.Client.River;
 
 // What the vouchers bring to the pocket, one drain for each kind once the company grants any, what the
 // company deducts of them and what it cannot, and what they leave of what the company earns, passed
-// on to the expense allowances, the next module down the river: what it earns less what reaches the
-// pocket through them, from the year's voucher steps. The shares, the yearly maximums and the
-// conditions are the year's rules, which the card reads beside it, so they stay while an amount is
-// refused.
+// on to the next module in the plan, or the split: what it earns less what reaches the pocket through
+// them, from the year's voucher steps. The shares, the yearly maximums and the conditions are the
+// year's rules, which the card reads beside it, so they stay while an amount is refused.
 internal sealed record VoucherView(
     decimal Total, decimal Deductible, decimal Disallowed, decimal Left, IReadOnlyList<Drain> Drains, IReadOnlyList<StepDetail> Details)
 {
-    public static VoucherView From(YearResult year)
+    public static VoucherView From(YearResult year, PlanComposition composition)
     {
         var steps = year.Steps.Where(step => step.Event == TaxableEvent.Vouchers).ToList();
         var inPocket = steps.Where(step => step.Track == Track.InPocket).ToList();
@@ -36,20 +35,20 @@ internal sealed record VoucherView(
             left,
             [
                 .. inPocket.Select(step => new Drain(step.RuleKey, DrainKind.PassedOn, step.Amount, "pocket")),
-                new Drain("left_after_vouchers", DrainKind.PassedOn, left, "allowances"),
+                new Drain("left_after_vouchers", DrainKind.PassedOn, left, NextModule.After(OptionalModule.Vouchers, composition)),
             ],
             steps.Select(StepDetail.From).ToList());
     }
 }
 
 // What the expense allowances bring to the pocket, one drain for each once the company pays any, and
-// what the vouchers and they leave of what the company earns, passed on to the rent, the next module
-// down the river: the profit before pay with the rent the company pays still in it. The maxima and
+// what the vouchers and they leave of what the company earns, passed on to the rent when it is in the
+// plan, or the split: the profit before pay with the rent the company pays still in it. The maxima and
 // the conditions are the year's rules, which the card reads beside it, so they stay while an amount
 // is refused. The company deducts them in full: nothing of them reaches Corporate tax.
 internal sealed record AllowanceView(decimal Total, decimal Left, IReadOnlyList<Drain> Drains, IReadOnlyList<StepDetail> Details)
 {
-    public static AllowanceView From(YearResult year)
+    public static AllowanceView From(YearResult year, PlanComposition composition)
     {
         var steps = year.Steps.Where(step => step.Event == TaxableEvent.ExpenseAllowances).ToList();
         var left = year.ProfitBeforePay + year.Rent.Rent;
@@ -59,7 +58,7 @@ internal sealed record AllowanceView(decimal Total, decimal Left, IReadOnlyList<
             left,
             [
                 .. steps.Where(step => step.Track == Track.InPocket).Select(step => new Drain(step.RuleKey, DrainKind.PassedOn, step.Amount, "pocket")),
-                new Drain("left_after_allowances", DrainKind.PassedOn, left, "rent"),
+                new Drain("left_after_allowances", DrainKind.PassedOn, left, NextModule.After(OptionalModule.Allowances, composition)),
             ],
             steps.Select(StepDetail.From).ToList());
     }
@@ -105,6 +104,18 @@ internal sealed record RentView(
             ],
             steps.Select(StepDetail.From).ToList());
     }
+}
+
+// Where a lever passes on what it leaves: the next module in the plan down the river, or the split
+// once none is left, as a drain's destination.
+internal static class NextModule
+{
+    public static string After(OptionalModule module, PlanComposition composition) => composition.NextAfter(module) switch
+    {
+        OptionalModule.Allowances => "allowances",
+        OptionalModule.Rent => "rent",
+        _ => "split",
+    };
 }
 
 // The cap the rent card shows under the rent and offers, the year's rules on what the user entered,

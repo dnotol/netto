@@ -1,0 +1,49 @@
+namespace Netto.Web.Client.River;
+
+// The optional modules of the river, in its order down to the split: levers a plan holds only once
+// the user adds them. The core modules, Company year, the split, Director pay, Corporate tax and
+// Dividend, are always in it. Public because RiverInputs, a parameter of the cards, holds them.
+public enum OptionalModule
+{
+    Vouchers,
+    Allowances,
+    Rent,
+}
+
+// Which optional modules are in the plan, one of the plan's inputs. A module out of the plan neither
+// shows nor counts, so every figure traces back to a card on screen; its values stay in the river's
+// inputs meanwhile, and come back with it.
+public sealed record PlanComposition(bool Vouchers, bool Allowances, bool Rent)
+{
+    public static PlanComposition None { get; } = new(false, false, false);
+
+    // Every optional module, in the river's order, in the plan or not.
+    public static IReadOnlyList<OptionalModule> Modules { get; } = Enum.GetValues<OptionalModule>();
+
+    public int Count => Modules.Count(Holds);
+
+    public bool Holds(OptionalModule module) => module switch
+    {
+        OptionalModule.Vouchers => Vouchers,
+        OptionalModule.Allowances => Allowances,
+        OptionalModule.Rent => Rent,
+        _ => throw new ArgumentOutOfRangeException(nameof(module), module, null),
+    };
+
+    public PlanComposition With(OptionalModule module, bool inPlan) => module switch
+    {
+        OptionalModule.Vouchers => this with { Vouchers = inPlan },
+        OptionalModule.Allowances => this with { Allowances = inPlan },
+        OptionalModule.Rent => this with { Rent = inPlan },
+        _ => throw new ArgumentOutOfRangeException(nameof(module), module, null),
+    };
+
+    // Where what a module leaves goes on to: the next module in the plan down the river, or none when
+    // the split comes next.
+    public OptionalModule? NextAfter(OptionalModule module) =>
+        Modules.Where(next => next > module && Holds(next)).Select(next => (OptionalModule?)next).FirstOrDefault();
+
+    // The module this composition no longer holds since the one before, if one was taken out.
+    public OptionalModule? TakenOutSince(PlanComposition before) =>
+        Modules.Where(module => before.Holds(module) && !Holds(module)).Select(module => (OptionalModule?)module).FirstOrDefault();
+}

@@ -1,5 +1,5 @@
-/* ::deep reaches the elements MudBlazor renders (MudContainer, MudText, MudChip, MudAlert), which
-   carry no scope attribute of their own. The cards style themselves; this file lays out the river
+/* ::deep reaches the elements MudBlazor renders (MudContainer, MudText, MudChip, MudAlert, MudButton),
+   which carry no scope attribute of their own. The cards style themselves; this file lays out the river
    around them.
 
    A vertical river of cards: the company's year and the split across the width, then the pay
@@ -63,6 +63,27 @@
     grid-template-columns: minmax(0, 1fr);
     gap: 1.25rem;
 }
+
+/* While the plan holds no optional module, one quiet line under Company year says where to add them. */
+.river__add {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem 0.5rem;
+    margin: -0.25rem 0;
+    color: var(--netto-text-muted);
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+    .river__add ::deep .mud-button-root {
+        margin-left: -0.35rem;
+    }
+
+    .river__add ::deep .mud-button-root:focus-visible {
+        outline: 2px solid var(--netto-gold);
+        outline-offset: 2px;
+    }
 
 .river__fork {
     margin: -0.25rem 0;

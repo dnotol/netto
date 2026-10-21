@@ -14,10 +14,13 @@ namespace Netto.Web.Client.River;
 // Everything the user describes in the river, each input with its origin, and the one run of the
 // year every card reads, so the river always adds up. Company is null once its figures are cleared:
 // the river then starts at the pay, and the vouchers, the expense allowances and the rent wait for it.
-// Public because the cards, components, take it as a parameter.
+// Those three are optional modules: the year counts one only while it is in the plan (Composition),
+// and keeps its values while it is out, so adding it back restores them. Public because the cards,
+// components, take it as a parameter.
 public sealed record RiverInputs(
     int IncomeYear,
     CompanyFigures? Company,
+    PlanComposition Composition,
     VoucherInputs Vouchers,
     AllowanceInputs Allowances,
     RentInputs Rent,
@@ -42,11 +45,13 @@ public sealed record RiverInputs(
     // is prepaid by the company nor on the pay, so the example shows the company's surcharge and
     // what cancels it; the pay is withheld on as the key formula says, what a real payslip shows
     // (decided 2026-10-20), so the withheld amount is derived and the example's year balance is
-    // what is left to pay on the assessment. It grants no vouchers and pays no expense allowances and
-    // no rent, so its figures are a year without them.
+    // what is left to pay on the assessment. It holds none of the optional modules in its plan, and
+    // grants no vouchers and pays no expense allowances and no rent, so its figures are a year without
+    // them and adding a module starts it from nothing (decided 2026-10-21).
     public static RiverInputs Example { get; } = new(
         ExampleYear,
         new CompanyFigures(new Input<decimal>(120_000m, InputOrigin.Example), new Input<decimal>(20_000m, InputOrigin.Example)),
+        PlanComposition.None,
         new VoucherInputs(new Input<int>(0, InputOrigin.Example), ExampleNothing, ExampleNothing),
         new AllowanceInputs(ExampleNothing, ExampleNothing, ExampleNothing, ExampleNothing),
         new RentInputs(ExampleNothing, ExampleNothing, ExampleNothing),
@@ -65,8 +70,8 @@ public sealed record RiverInputs(
         new Input<ContributionsPaidBy>(Core.SocialContributions.ContributionsPaidBy.Director, InputOrigin.Default));
 
     // The most the split can give as pay: the profit before pay, what the vouchers, the expense
-    // allowances and the rent leave of what the company earns, never below zero. None while the company is skipped,
-    // when the pay has a slider of its own.
+    // allowances and the rent in the plan leave of what the company earns, never below zero. None while
+    // the company is skipped, when the pay has a slider of its own.
     public decimal? PayCeiling => Company is null ? null : Math.Max(0m, YearSimulation.ProfitBeforePay(Scenario(DirectorPay.Value)) ?? 0m);
 
     public RiverInputs WithRevenue(decimal revenue) =>
@@ -127,6 +132,13 @@ public sealed record RiverInputs(
 
     public RiverInputs WithContributionsPaidBy(ContributionsPaidBy paidBy) => this with { ContributionsPaidBy = Yours(paidBy) };
 
+    public bool InPlan(OptionalModule module) => Composition.Holds(module);
+
+    public RiverInputs AddToPlan(OptionalModule module) => this with { Composition = Composition.With(module, true) };
+
+    // Its values stay as they are, for when it is added back.
+    public RiverInputs TakeOutOfPlan(OptionalModule module) => this with { Composition = Composition.With(module, false) };
+
     public RiverInputs SkipCompany() => this with { Company = null };
 
     // The user's own year starts from nothing: the example is not brought back.
@@ -147,8 +159,9 @@ public sealed record RiverInputs(
     }
 
     // The year at every pay out of the profit before pay, everything else as set, for the split's
-    // curve: none while the company is skipped or an input other than the pay is refused. It does
-    // not depend on the pay, so the pay moving alone needs no new search (SameBesidesPay).
+    // curve: none while the company is skipped or an input other than the pay is refused. It runs the
+    // scenario Run runs, so a module out of the plan is out of the search too. It does not depend on
+    // the pay, so the pay moving alone needs no new search (SameBesidesPay).
     public SplitSearchResult? SearchSplit() => Company is null ? null : SplitSearch.Run(Scenario(DirectorPay.Value)).Value;
 
     public bool SameBesidesPay(RiverInputs other) => this with { DirectorPay = other.DirectorPay } == other;
@@ -157,6 +170,8 @@ public sealed record RiverInputs(
 
     private static Input<T> Yours<T>(T value) => new(value, InputOrigin.Yours);
 
+    // An optional module out of the plan is the scenario without its values: the engine never sees
+    // them, nor refuses them.
     private Scenario Scenario(decimal directorPay) => new(
         IncomeYear,
         Company?.Revenue.Value ?? 0m,
@@ -171,9 +186,9 @@ public sealed record RiverInputs(
         AdvancePayments = AdvancePayments.Values,
         TaxPrepayments = TaxPrepayments.Values,
         ContributionsPaidBy = ContributionsPaidBy.Value,
-        Vouchers = Vouchers.Values,
-        Allowances = Allowances.Values,
-        Rent = Rent.Values,
+        Vouchers = InPlan(OptionalModule.Vouchers) ? Vouchers.Values : VoucherGrants.None,
+        Allowances = InPlan(OptionalModule.Allowances) ? Allowances.Values : ExpenseAllowances.None,
+        Rent = InPlan(OptionalModule.Rent) ? Rent.Values : HomeOfficeRent.None,
     };
 }
 

@@ -6,12 +6,14 @@
    allowances for an office, internet and a computer at home, each for the year, and the phone costs it
    reimburses on invoices. A reimbursement of the company's own costs is not pay: they reach the pocket
    untaxed and outside INASTI, and the company deducts them in full. What they leave goes on to the
-   home office rent, the next card down the river. The circular's flat amounts are not
-   written for directors and Netto cannot see the costs, so the card lists the conditions with their
-   texts, the director's own case first. The amounts are taken while typing, like revenue, and carry no
-   Min or Max: the engine refuses what the rules do not allow, and its message is what the user has to
-   see. Skipped with the company. *@
-<ModuleCard Name="allowances" Title="@L["Title"]" Summary="@Summary" Skipped="Inputs.Company is null" Details="@Details" DetailsLabel="@L["DetailsLabel"]">
+   home office rent when it is in the plan, or the split. An optional module: it shows only while in
+   the plan, and the word at its bottom takes it out, its values kept. The circular's flat amounts
+   are not written for directors and Netto cannot see the costs, so the card lists the conditions with
+   their texts, the director's own case first. The amounts are taken while typing, like revenue, and
+   carry no Min or Max: the engine refuses what the rules do not allow, and its message is what the
+   user has to see. Skipped with the company. *@
+<ModuleCard Name="allowances" Title="@L["Title"]" Summary="@Summary" Skipped="Inputs.Company is null" Details="@Details" DetailsLabel="@L["DetailsLabel"]"
+            RemoveLabel="@L["Remove"]" OnRemove="Remove">
     @if (Inputs.Company is null)
     {
         <p class="allowances__waiting">@L["Waiting"]</p>
@@ -93,7 +95,7 @@
 
     protected override void OnParametersSet()
     {
-        _view = Run.Year is { } year ? AllowanceView.From(year) : null;
+        _view = Run.Year is { } year ? AllowanceView.From(year, Inputs.Composition) : null;
         _rules = AllowanceRules.For(Inputs.IncomeYear);
     }
 
@@ -120,4 +122,6 @@
     private Task OnComputerChanged(decimal amount) => InputsChanged.InvokeAsync(Inputs.WithComputerAllowance(amount));
 
     private Task OnPhoneChanged(decimal amount) => InputsChanged.InvokeAsync(Inputs.WithPhoneCosts(amount));
+
+    private Task Remove() => InputsChanged.InvokeAsync(Inputs.TakeOutOfPlan(OptionalModule.Allowances));
 }

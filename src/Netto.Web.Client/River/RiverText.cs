@@ -67,3 +67,27 @@ internal static class SplitCardText
         _ => $"Rate_{rate.Choice}",
     };
 }
+
+internal static class CompositionMenuText
+{
+    public static string Title(OptionalModule module) => $"Title_{module}";
+
+    // What the module is, said while it is out of the plan.
+    public static string Description(OptionalModule module) => $"Description_{module}";
+
+    // What it brings to the pocket, said while it is in the plan.
+    public static string Brings(OptionalModule module) => $"Brings_{module}";
+
+    // The button's name, with how many optional modules the plan holds.
+    public static string ButtonLabel(int count) => count switch
+    {
+        0 => "ButtonLabel_None",
+        1 => "ButtonLabel_One",
+        _ => "ButtonLabel_Many",
+    };
+}
+
+internal static class TakenOutNoticeText
+{
+    public static string TakenOut(OptionalModule module) => $"TakenOut_{module}";
+}

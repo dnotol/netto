@@ -9,9 +9,12 @@ namespace Netto.Tests.WebClient.River;
 // surcharge 793.38, and no advance-payment surcharge, the pay being withheld on as the key formula
 // says), 17,603.56 of taxes on profit (corporate tax 10,000 and its advance-payment surcharge 675,
 // nothing being prepaid, withholding 7,078.50 on the 39,325 left, less the refund of 149.94) and
-// nothing kept.
+// nothing kept. The example holds no lever in its plan; with every one in it and its amounts still
+// nothing, its figures stay those.
 public class BucketsViewTests
 {
+    private static readonly RiverInputs EveryLever = RiverInputs.Example with { Composition = new PlanComposition(true, true, true) };
+
     public static TheoryData<decimal, decimal, decimal> Years => new()
     {
         { 120_000m, 50_000m, 0m },
@@ -179,7 +182,7 @@ public class BucketsViewTests
     [Fact]
     public void From_vouchers_startsBeforeWhatTheCompanyPaysTheDirector()
     {
-        BucketsView.From(RiverInputs.Example.WithMealVoucherDays(220).Run()).ShouldNotBeNull().Start.ShouldBe(100_000m);
+        BucketsView.From(EveryLever.WithMealVoucherDays(220).Run()).ShouldNotBeNull().Start.ShouldBe(100_000m);
     }
 
     // 62,482.64 in the pocket with the vouchers, 20,420.70 of taxes on pay as without them, and
@@ -188,7 +191,7 @@ public class BucketsViewTests
     [Fact]
     public void From_vouchers_putsThemInThePocketAndNoTaxOnPay()
     {
-        var view = BucketsView.From(RiverInputs.Example.WithMealVoucherDays(220).Run()).ShouldNotBeNull();
+        var view = BucketsView.From(EveryLever.WithMealVoucherDays(220).Run()).ShouldNotBeNull();
 
         view.Buckets.Select(bucket => (bucket.Key, bucket.Amount)).ShouldBe(new[]
         {
@@ -203,7 +206,7 @@ public class BucketsViewTests
     [MemberData(nameof(Years))]
     public void From_anyYearWithVouchers_bucketsAddUpToWhatTheCompanyEarnsBeforePayingTheDirector(decimal revenue, decimal pay, decimal reserve)
     {
-        var inputs = RiverInputs.Example.WithRevenue(revenue).WithDirectorPay(pay).WithReserve(reserve)
+        var inputs = EveryLever.WithRevenue(revenue).WithDirectorPay(pay).WithReserve(reserve)
             .WithMealVoucherDays(220).WithEcoVouchers(250m).WithSportCultureVouchers(100m);
 
         var view = BucketsView.From(inputs.Run()).ShouldNotBeNull();
@@ -218,7 +221,7 @@ public class BucketsViewTests
     [Fact]
     public void From_allowances_putsThemInThePocketAndNoTaxOnPay()
     {
-        var inputs = RiverInputs.Example.WithOfficeAllowance(1_938.44m).WithInternetAllowance(240m).WithComputerAllowance(240m);
+        var inputs = EveryLever.WithOfficeAllowance(1_938.44m).WithInternetAllowance(240m).WithComputerAllowance(240m);
 
         var view = BucketsView.From(inputs.Run()).ShouldNotBeNull();
 
@@ -237,7 +240,7 @@ public class BucketsViewTests
     [MemberData(nameof(Years))]
     public void From_anyYearWithVouchersAndAllowances_bucketsAddUpToWhatTheCompanyEarnsBeforePayingTheDirector(decimal revenue, decimal pay, decimal reserve)
     {
-        var inputs = RiverInputs.Example.WithRevenue(revenue).WithDirectorPay(pay).WithReserve(reserve)
+        var inputs = EveryLever.WithRevenue(revenue).WithDirectorPay(pay).WithReserve(reserve)
             .WithMealVoucherDays(220).WithEcoVouchers(250m).WithSportCultureVouchers(100m)
             .WithOfficeAllowance(1_938.44m).WithInternetAllowance(240m).WithComputerAllowance(240m).WithPhoneCosts(600m);
 
@@ -278,7 +281,7 @@ public class BucketsViewTests
     [MemberData(nameof(Years))]
     public void From_anyYearWithVouchersAndRent_bucketsAddUpToWhatTheCompanyEarnsBeforePayingTheDirector(decimal revenue, decimal pay, decimal reserve)
     {
-        var inputs = RentAtTheCap(RiverInputs.Example.WithRevenue(revenue).WithDirectorPay(pay).WithReserve(reserve)
+        var inputs = RentAtTheCap(EveryLever.WithRevenue(revenue).WithDirectorPay(pay).WithReserve(reserve)
             .WithMealVoucherDays(220).WithEcoVouchers(250m).WithSportCultureVouchers(100m).WithInternetAllowance(240m));
 
         var view = BucketsView.From(inputs.Run()).ShouldNotBeNull();
@@ -293,5 +296,6 @@ public class BucketsViewTests
     }
 
     // 12% of a cadastral income of 1,200 let for the 2026 cap, 1,380.00 (RentCalculatorTests).
-    private static RiverInputs RentAtTheCap(RiverInputs inputs) => inputs.WithCadastralIncome(1_200m).WithShareLet(0.12m).WithRent(1_380m);
+    private static RiverInputs RentAtTheCap(RiverInputs inputs) =>
+        inputs.AddToPlan(OptionalModule.Rent).WithCadastralIncome(1_200m).WithShareLet(0.12m).WithRent(1_380m);
 }

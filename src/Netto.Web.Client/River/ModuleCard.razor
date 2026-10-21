@@ -1,8 +1,9 @@
 @inject IStringLocalizer<ModuleCard> L
 
 @* The frame every module of the river shares: its title and what flows through it, on the one line it
-   folds to (Fold), then its controls and its detail view, opened inline under them. A skipped module
-   is drawn dashed, waiting for the amounts it needs. *@
+   folds to (Fold), then its controls and its detail view, opened inline under them, and last, for an
+   optional module, the word that takes it out of the plan. A skipped module is drawn dashed, waiting
+   for the amounts it needs. *@
 <section class="module-card @(Skipped ? "module-card--skipped" : null)" aria-labelledby="@_titleId">
     <Fold Name="@Name" Title="@Title" TitleId="@_titleId" Summary="@Summary">
         <div class="module-card__body">
@@ -18,6 +19,12 @@
                     {
                         <div class="module-card__detail">@Details</div>
                     }
+                </div>
+            }
+            @if (RemoveLabel is not null)
+            {
+                <div class="module-card__remove">
+                    <MudButton Variant="Variant.Text" Size="Size.Small" OnClick="OnRemove">@RemoveLabel</MudButton>
                 </div>
             }
         </div>
@@ -48,6 +55,14 @@
 
     [Parameter]
     public string DetailsLabel { get; set; } = "";
+
+    // An optional module's « Remove … from your plan », a word at the bottom of the open card; none
+    // for a core module.
+    [Parameter]
+    public string? RemoveLabel { get; set; }
+
+    [Parameter]
+    public EventCallback OnRemove { get; set; }
 
     private readonly string _titleId = $"module-{Guid.NewGuid():N}";
     private bool _open;

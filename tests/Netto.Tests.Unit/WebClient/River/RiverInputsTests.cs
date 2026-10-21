@@ -27,9 +27,16 @@ namespace Netto.Tests.WebClient.River;
 // computer, 2,418.44 (YearSimulationTests), the company has 97,581.56 left for the split and as much
 // taxable income less the pay, 47,581.56, which pays 9,516.31 and a surcharge of 642.35, leaving
 // 37,422.90 to pay out: the pocket gets 29,579.30, the net dividend 30,836.72 and the allowances'
-// 2,418.44.
+// 2,418.44. The example holds none of these optional modules in its plan (decided 2026-10-21): a test
+// adds the one it is about.
 public class RiverInputsTests
 {
+    private static readonly RiverInputs VouchersInPlan = RiverInputs.Example.AddToPlan(OptionalModule.Vouchers);
+
+    private static readonly RiverInputs AllowancesInPlan = RiverInputs.Example.AddToPlan(OptionalModule.Allowances);
+
+    private static readonly RiverInputs RentInPlan = RiverInputs.Example.AddToPlan(OptionalModule.Rent);
+
     [Fact]
     public void Example_runsTheWholeYear()
     {
@@ -449,6 +456,113 @@ public class RiverInputsTests
         (run.Year, run.Error).ShouldBe((null, YearSimulation.ReserveNegative));
     }
 
+    // No optional module shows on the example, so its figures, every one above, are a year without
+    // them.
+    [Fact]
+    public void Example_holdsNoOptionalModuleInItsPlan()
+    {
+        (RiverInputs.Example.Composition, PlanComposition.Modules.Any(RiverInputs.Example.InPlan)).ShouldBe((PlanComposition.None, false));
+    }
+
+    // Its amounts for them are nothing, so adding every one changes no figure.
+    [Fact]
+    public void Run_exampleWithEveryModuleAdded_keepsTheExamplesFigures()
+    {
+        var everything = PlanComposition.Modules.Aggregate(RiverInputs.Example, (inputs, module) => inputs.AddToPlan(module));
+
+        (Figures(everything), everything.PayCeiling).ShouldBe((Figures(RiverInputs.Example), 100_000m));
+    }
+
+    [Theory]
+    [InlineData(OptionalModule.Vouchers)]
+    [InlineData(OptionalModule.Allowances)]
+    [InlineData(OptionalModule.Rent)]
+    public void AddToPlan_putsTheModuleInThePlan(OptionalModule module)
+    {
+        var inputs = RiverInputs.Example.AddToPlan(module);
+
+        (inputs.InPlan(module), inputs.Composition.Count).ShouldBe((true, 1));
+    }
+
+    // Taken out, a module neither shows nor counts: the year runs as if the company paid nothing of it.
+    [Theory]
+    [InlineData(OptionalModule.Vouchers)]
+    [InlineData(OptionalModule.Allowances)]
+    [InlineData(OptionalModule.Rent)]
+    public void Run_moduleTakenOutOfThePlan_runsTheYearWithoutIt(OptionalModule module)
+    {
+        var inputs = WithValues(module).TakeOutOfPlan(module);
+
+        (inputs.InPlan(module), Figures(inputs), inputs.PayCeiling).ShouldBe((false, Figures(RiverInputs.Example), 100_000m));
+    }
+
+    // And its values wait in the river's inputs, as the user left them.
+    [Theory]
+    [InlineData(OptionalModule.Vouchers)]
+    [InlineData(OptionalModule.Allowances)]
+    [InlineData(OptionalModule.Rent)]
+    public void TakeOutOfPlan_keepsTheModulesValues(OptionalModule module)
+    {
+        var inputs = WithValues(module);
+
+        inputs.TakeOutOfPlan(module).ShouldBe(inputs with { Composition = PlanComposition.None });
+    }
+
+    // Added back, it counts with the values it left with: the pocket of each lever's own test above.
+    [Theory]
+    [InlineData(OptionalModule.Vouchers, 62_482.64)]
+    [InlineData(OptionalModule.Allowances, 62_834.46)]
+    [InlineData(OptionalModule.Rent, 62_067.06)]
+    public void Run_moduleAddedBack_countsItsValuesAgain(OptionalModule module, decimal pocket)
+    {
+        var inputs = WithValues(module).TakeOutOfPlan(module).AddToPlan(module);
+
+        inputs.Run().Year.ShouldNotBeNull().NetInPocket.ShouldBe(pocket);
+    }
+
+    // The split's search holds exactly what the year runs: none of a module out of the plan.
+    [Theory]
+    [InlineData(OptionalModule.Vouchers)]
+    [InlineData(OptionalModule.Allowances)]
+    [InlineData(OptionalModule.Rent)]
+    public void SearchSplit_moduleOutOfThePlan_drawsEveryPayUpToTheProfitWithoutIt(OptionalModule module)
+    {
+        var search = WithValues(module).TakeOutOfPlan(module).SearchSplit().ShouldNotBeNull();
+
+        (search.Curve[^1].Pay, search.Best?.Pay).ShouldBe((100_000m, (decimal?)20_799m));
+    }
+
+    // A module joining or leaving the plan moves the year, so the split's search runs again.
+    [Theory]
+    [InlineData(OptionalModule.Vouchers)]
+    [InlineData(OptionalModule.Allowances)]
+    [InlineData(OptionalModule.Rent)]
+    public void SameBesidesPay_moduleAddedOrTakenOut_isNot(OptionalModule module)
+    {
+        var inputs = WithValues(module);
+
+        inputs.SameBesidesPay(inputs.TakeOutOfPlan(module)).ShouldBeFalse();
+    }
+
+    // A refusal of a lever only matters while it is in the plan: out of it, the engine never sees the
+    // amount, and the refusal comes back with the lever.
+    [Fact]
+    public void Run_refusedVouchersOutOfThePlan_runTheYear()
+    {
+        var refused = VouchersInPlan.WithEcoVouchers(250.01m);
+
+        (refused.TakeOutOfPlan(OptionalModule.Vouchers).Run().Error, refused.Run().Error).ShouldBe((null, VoucherCalculator.EcoVouchersAboveMaximum));
+    }
+
+    // The office allowance excludes a rent only while both are in the plan.
+    [Fact]
+    public void Run_officeAllowanceOutOfThePlan_letsTheRentBePaid()
+    {
+        var run = RentAtTheCap(AllowancesInPlan).WithOfficeAllowance(100m).TakeOutOfPlan(OptionalModule.Allowances).Run();
+
+        (run.Error, run.Year?.NetInPocket).ShouldBe((null, (decimal?)62_067.06m));
+    }
+
     [Fact]
     public void Example_grantsNoVouchers()
     {
@@ -468,7 +582,7 @@ public class RiverInputsTests
     [Fact]
     public void Run_vouchersReachTheEngine()
     {
-        var year = RiverInputs.Example.WithMealVoucherDays(220).Run().Year.ShouldNotBeNull();
+        var year = VouchersInPlan.WithMealVoucherDays(220).Run().Year.ShouldNotBeNull();
 
         (year.Vouchers.Total, year.ProfitBeforePay, year.ProfitAfterTax, year.NetInPocket).ShouldBe((1_960.20m, 98_039.80m, 37_552.68m, 62_482.64m));
     }
@@ -476,14 +590,14 @@ public class RiverInputsTests
     [Fact]
     public void PayCeiling_vouchers_isTheProfitTheyLeave()
     {
-        RiverInputs.Example.WithMealVoucherDays(220).PayCeiling.ShouldBe(98_039.80m);
+        VouchersInPlan.WithMealVoucherDays(220).PayCeiling.ShouldBe(98_039.80m);
     }
 
     // The pay set stays the user's, beyond what the vouchers leave.
     [Fact]
     public void Run_payAboveTheProfitTheVouchersLeave_paysThatProfit()
     {
-        var inputs = RiverInputs.Example.WithDirectorPay(100_000m).WithMealVoucherDays(220);
+        var inputs = VouchersInPlan.WithDirectorPay(100_000m).WithMealVoucherDays(220);
 
         (inputs.Run().Pay?.GrossPay, inputs.DirectorPay.Value).ShouldBe((98_039.80m, 100_000m));
     }
@@ -491,7 +605,7 @@ public class RiverInputsTests
     [Fact]
     public void Run_ecoVouchersAboveTheMaximum_isRefusedWithTheEnginesKey()
     {
-        var run = RiverInputs.Example.WithEcoVouchers(250.01m).Run();
+        var run = VouchersInPlan.WithEcoVouchers(250.01m).Run();
 
         (run.Year, run.Error).ShouldBe((null, VoucherCalculator.EcoVouchersAboveMaximum));
     }
@@ -500,20 +614,20 @@ public class RiverInputsTests
     [Fact]
     public void SameBesidesPay_vouchersChanged_isNot()
     {
-        RiverInputs.Example.SameBesidesPay(RiverInputs.Example.WithMealVoucherDays(220)).ShouldBeFalse();
+        VouchersInPlan.SameBesidesPay(VouchersInPlan.WithMealVoucherDays(220)).ShouldBeFalse();
     }
 
     [Fact]
     public void SearchSplit_vouchers_drawsEveryPayUpToTheProfitTheyLeave()
     {
-        RiverInputs.Example.WithMealVoucherDays(220).SearchSplit().ShouldNotBeNull().Curve[^1].Pay.ShouldBe(98_039.80m);
+        VouchersInPlan.WithMealVoucherDays(220).SearchSplit().ShouldNotBeNull().Curve[^1].Pay.ShouldBe(98_039.80m);
     }
 
     // Skipped with the company: the pay alone runs without them, and they come back with it.
     [Fact]
     public void SkipCompany_runsThePayWithoutTheVouchers()
     {
-        var inputs = RiverInputs.Example.WithMealVoucherDays(220).SkipCompany();
+        var inputs = VouchersInPlan.WithMealVoucherDays(220).SkipCompany();
 
         (inputs.Run().Year, inputs.Run().Pay?.NetInPocket, inputs.Vouchers.MealVoucherDays.Value).ShouldBe((null, 29_579.30m, 220));
     }
@@ -548,14 +662,14 @@ public class RiverInputsTests
     [Fact]
     public void PayCeiling_allowancesAndVouchers_isTheProfitTheyLeave()
     {
-        (FlatRateAllowances(RiverInputs.Example).PayCeiling, FlatRateAllowances(RiverInputs.Example.WithMealVoucherDays(220)).PayCeiling)
+        (FlatRateAllowances(RiverInputs.Example).PayCeiling, FlatRateAllowances(VouchersInPlan.WithMealVoucherDays(220)).PayCeiling)
             .ShouldBe(((decimal?)97_581.56m, (decimal?)95_621.36m));
     }
 
     [Fact]
     public void Run_officeAllowanceAboveTheMaximum_isRefusedWithTheEnginesKey()
     {
-        var run = RiverInputs.Example.WithOfficeAllowance(1_938.45m).Run();
+        var run = AllowancesInPlan.WithOfficeAllowance(1_938.45m).Run();
 
         (run.Year, run.Error).ShouldBe((null, AllowanceCalculator.OfficeAllowanceAboveMaximum));
     }
@@ -564,7 +678,7 @@ public class RiverInputsTests
     [Fact]
     public void SameBesidesPay_allowancesChanged_isNot()
     {
-        RiverInputs.Example.SameBesidesPay(RiverInputs.Example.WithPhoneCosts(600m)).ShouldBeFalse();
+        AllowancesInPlan.SameBesidesPay(AllowancesInPlan.WithPhoneCosts(600m)).ShouldBeFalse();
     }
 
     [Fact]
@@ -628,7 +742,7 @@ public class RiverInputsTests
     [Fact]
     public void Run_rentWithAnOfficeAllowance_isRefusedWithTheEnginesKey()
     {
-        var run = RentAtTheCap(RiverInputs.Example).WithOfficeAllowance(100m).Run();
+        var run = RentAtTheCap(AllowancesInPlan).WithOfficeAllowance(100m).Run();
 
         (run.Year, run.Error).ShouldBe((null, RentCalculator.RentWithOfficeAllowance));
     }
@@ -642,12 +756,12 @@ public class RiverInputsTests
     {
         var inputs = changed switch
         {
-            "cadastral income" => RiverInputs.Example.WithCadastralIncome(1_200m),
-            "share" => RiverInputs.Example.WithShareLet(0.12m),
-            _ => RiverInputs.Example.WithRent(100m),
+            "cadastral income" => RentInPlan.WithCadastralIncome(1_200m),
+            "share" => RentInPlan.WithShareLet(0.12m),
+            _ => RentInPlan.WithRent(100m),
         };
 
-        RiverInputs.Example.SameBesidesPay(inputs).ShouldBeFalse();
+        RentInPlan.SameBesidesPay(inputs).ShouldBeFalse();
     }
 
     [Fact]
@@ -717,9 +831,25 @@ public class RiverInputsTests
         changed.ShouldAllBe(inputs => !inputs.SameBesidesPay(RiverInputs.Example));
     }
 
+    // What a year shows in the bar and on the cards that hold no lever.
+    private static (decimal?, decimal?, decimal?, decimal?, decimal?) Figures(RiverInputs inputs)
+    {
+        var year = inputs.Run().Year;
+        return (year?.NetInPocket, year?.ProfitBeforePay, year?.ProfitAfterTax, year?.KeptInCompany, year?.DirectorPay.NetInPocket);
+    }
+
+    // The values each lever's own tests count, with the lever in the plan.
+    private static RiverInputs WithValues(OptionalModule module) => module switch
+    {
+        OptionalModule.Vouchers => VouchersInPlan.WithMealVoucherDays(220),
+        OptionalModule.Allowances => FlatRateAllowances(RiverInputs.Example),
+        _ => RentAtTheCap(RiverInputs.Example),
+    };
+
     private static RiverInputs FlatRateAllowances(RiverInputs inputs) =>
-        inputs.WithOfficeAllowance(1_938.44m).WithInternetAllowance(240m).WithComputerAllowance(240m);
+        inputs.AddToPlan(OptionalModule.Allowances).WithOfficeAllowance(1_938.44m).WithInternetAllowance(240m).WithComputerAllowance(240m);
 
     // 12% of a cadastral income of 1,200 let for the 2026 cap, 1,380.00 (RentCalculatorTests).
-    private static RiverInputs RentAtTheCap(RiverInputs inputs) => inputs.WithCadastralIncome(1_200m).WithShareLet(0.12m).WithRent(1_380m);
+    private static RiverInputs RentAtTheCap(RiverInputs inputs) =>
+        inputs.AddToPlan(OptionalModule.Rent).WithCadastralIncome(1_200m).WithShareLet(0.12m).WithRent(1_380m);
 }

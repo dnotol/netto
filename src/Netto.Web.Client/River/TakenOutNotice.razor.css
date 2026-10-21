@@ -1,0 +1,53 @@
+/* ::deep reaches the MudButton and the MudIconButton, which carry no scope attribute of their own.
+
+   A light pill at the bottom of the screen, above the bar of buckets and an open Composition menu, so
+   Undo can be reached from either. The frame lets clicks through while it is empty. */
+.taken-out {
+    position: fixed;
+    left: 50%;
+    bottom: 1.5rem;
+    z-index: 20;
+    width: max-content;
+    max-width: calc(100vw - 2rem);
+    transform: translateX(-50%);
+    pointer-events: none;
+}
+
+.taken-out__notice {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.35rem 0.35rem 0.35rem 1.1rem;
+    border-radius: 999px;
+    background: var(--netto-text);
+    color: var(--netto-black);
+    font-size: 0.88rem;
+    line-height: 1.4;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
+    pointer-events: auto;
+}
+
+    .taken-out__notice ::deep .taken-out__undo {
+        flex: none;
+        border-radius: 999px;
+        background: var(--netto-black);
+        color: var(--netto-text);
+    }
+
+    .taken-out__notice ::deep .taken-out__dismiss {
+        flex: none;
+        color: var(--netto-black);
+    }
+
+    /* On the light pill a gold ring would hardly show: the focus ring is black. */
+    .taken-out__notice ::deep .taken-out__undo:focus-visible,
+    .taken-out__notice ::deep .taken-out__dismiss:focus-visible {
+        outline: 2px solid var(--netto-black);
+        outline-offset: 2px;
+    }
+
+@media (max-width: 640px) {
+    .taken-out__notice {
+        border-radius: 14px;
+    }
+}
