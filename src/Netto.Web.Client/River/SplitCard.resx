@@ -18,6 +18,9 @@
   <data name="Summary" xml:space="preserve">
     <value>{0} to your pay · {1} to the company</value>
   </data>
+  <data name="SummaryWithBest" xml:space="preserve">
+    <value>{0} to your pay · {1} to the company · best pay {2}</value>
+  </data>
   <data name="Hint" xml:space="preserve">
     <value>Move your pay: every euro you take as director pay is a euro less of company profit.</value>
   </data>

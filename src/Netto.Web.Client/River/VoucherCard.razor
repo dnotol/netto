@@ -10,7 +10,7 @@
    see the agreement or the days worked, so the card lists the conditions with their texts. The
    amounts are taken while typing, like revenue, and carry no Min or Max: the engine refuses what the
    rules do not allow, and its message is what the user has to see. Skipped with the company. *@
-<ModuleCard Title="@L["Title"]" Summary="@Summary" Skipped="Inputs.Company is null" Details="@Details" DetailsLabel="@L["DetailsLabel"]">
+<ModuleCard Name="vouchers" Title="@L["Title"]" Summary="@Summary" Skipped="Inputs.Company is null" Details="@Details" DetailsLabel="@L["DetailsLabel"]">
     @if (Inputs.Company is null)
     {
         <p class="vouchers__waiting">@L["Waiting"]</p>

@@ -1,0 +1,92 @@
+/* ::deep reaches the MudIcon of the chevron, which carries no scope attribute of its own. */
+.fold__heading {
+    margin: 0;
+    font: inherit;
+}
+
+/* The whole row is the button: no frame of its own on a card, the title and the summary on one line
+   while they fit, the summary wrapping under the title otherwise, the chevron always at the end. */
+.fold__toggle {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem 0.75rem;
+    width: 100%;
+    min-height: 44px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+    /* Focus is an active state, so it may turn gold. */
+    .fold__toggle:focus-visible {
+        outline: 2px solid var(--netto-gold);
+        outline-offset: 4px;
+        border-radius: 6px;
+    }
+
+.fold__heading--card .fold__title {
+    font-family: "Fraunces", Georgia, serif;
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1.25;
+}
+
+.fold__summary {
+    flex: 1 1 14rem;
+    min-width: 0;
+    color: var(--netto-text-muted);
+    font-size: 0.85rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.fold__toggle ::deep .fold__chevron {
+    flex: 0 0 auto;
+    margin-left: auto;
+    color: var(--netto-text-muted);
+    transition: transform 0.15s ease, color 0.2s ease;
+}
+
+    .fold__toggle:hover ::deep .fold__chevron,
+    .fold__toggle:focus-visible ::deep .fold__chevron {
+        color: var(--netto-gold);
+    }
+
+    .fold__toggle ::deep .fold__chevron--open {
+        transform: rotate(180deg);
+    }
+
+@media (prefers-reduced-motion: reduce) {
+    .fold__toggle ::deep .fold__chevron {
+        transition: none;
+    }
+}
+
+/* A fold inside a card: one quiet line in a thin frame, its title taking the row. */
+.fold__heading--line .fold__toggle {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--netto-line);
+    border-radius: 10px;
+    color: var(--netto-text-muted);
+    font-size: 0.9rem;
+    line-height: 1.45;
+}
+
+.fold__heading--line .fold__title {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.fold__body {
+    min-width: 0;
+}
+
+    /* A display set on the body would otherwise win over the hidden attribute. */
+    .fold__body[hidden] {
+        display: none;
+    }

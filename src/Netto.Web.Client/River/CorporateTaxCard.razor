@@ -8,7 +8,7 @@
    minimum pay, set on the split, and the card says which condition decided the rate. The payments
    are taken while typing, like revenue, since nothing bounds them, and the card says what more by
    the last deadline cancels the surcharge. *@
-<ModuleCard Title="@L["Title"]" Summary="@Summary" Skipped="Inputs.Company is null" Details="@Details" DetailsLabel="@L["DetailsLabel"]">
+<ModuleCard Name="corporate-tax" Title="@L["Title"]" Summary="@Summary" Skipped="Inputs.Company is null" Details="@Details" DetailsLabel="@L["DetailsLabel"]">
     @if (Inputs.Company is null)
     {
         <p class="corporate-tax__waiting">@L["Waiting"]</p>

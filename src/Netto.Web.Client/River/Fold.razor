@@ -1,0 +1,70 @@
+@inject Folds Folds
+
+@* One fold of the river, the same everywhere: a module card, the conditions of a lever, later the pay
+   slip. The whole header row is a button inside the heading, so a screen reader announces a heading
+   holding a button, expanded or collapsed. The button shows the title and the summary whether
+   folded or not, and a chevron at its right, down when folded and up when open. Level 2 is a card's
+   own heading; level 3 a fold inside a card, drawn as one quiet line. What is folded is not
+   rendered, but its frame stays in the page, hidden, for aria-controls to point to. The fold is the
+   viewer's preference, remembered in the browser under its name (Folds). It has no text of its own:
+   the card gives its title and its summary. *@
+@if (Level == 3)
+{
+    <h3 class="fold__heading fold__heading--line">@Toggle</h3>
+}
+else
+{
+    <h2 class="fold__heading fold__heading--card">@Toggle</h2>
+}
+<div id="@_bodyId" class="fold__body" hidden="@(!Open)">
+    @if (Open)
+    {
+        @ChildContent
+    }
+</div>
+
+@code {
+    // Where the fold is remembered: one per fold of the page, and kept from one version to the next,
+    // or a viewer's folds are forgotten.
+    [Parameter, EditorRequired]
+    public string Name { get; set; } = "";
+
+    [Parameter, EditorRequired]
+    public string Title { get; set; } = "";
+
+    // The title's id, for a section the fold heads to be named by its title alone.
+    [Parameter]
+    public string? TitleId { get; set; }
+
+    // What flows in and out, in a few words beside the title, folded or not.
+    [Parameter]
+    public string? Summary { get; set; }
+
+    // 2 for a card's own heading, 3 for a fold inside a card.
+    [Parameter]
+    public int Level { get; set; } = 2;
+
+    // Cards are open until folded; what a card holds besides its figures, such as its conditions,
+    // opens on demand.
+    [Parameter]
+    public bool OpenByDefault { get; set; } = true;
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    private readonly string _bodyId = $"fold-{Guid.NewGuid():N}";
+
+    private bool Open => Folds.IsOpen(Name, OpenByDefault);
+
+    private void Flip() => Folds.Set(Name, !Open);
+
+    private RenderFragment Toggle =>
+        @<button type="button" class="fold__toggle" aria-expanded="@(Open ? "true" : "false")" aria-controls="@_bodyId" @onclick="Flip">
+            <span id="@TitleId" class="fold__title">@Title</span>
+            @if (Summary is not null)
+            {
+                <span class="fold__summary">@Summary</span>
+            }
+            <MudIcon Icon="@Icons.Material.Rounded.ExpandMore" Class="@(Open ? "fold__chevron fold__chevron--open" : "fold__chevron")" aria-hidden="true" />
+        </button>;
+}
