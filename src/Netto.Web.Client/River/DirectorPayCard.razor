@@ -7,12 +7,14 @@
 
 @* The director's gross pay through INASTI's contributions, the income tax and the municipal
    surcharge to the net. The pay comes from the split, or has a slider of its own once the company
-   is skipped. The user says who pays the contributions; when the company does, they are pay too
-   and the card says what the pay costs it. What was withheld on the pay is the pay slip's amount,
-   derived, until the user types the amount actually withheld, with a way back; it and what the
-   director paid in advance are taken while typing, since nothing bounds them, and the card says
-   what they leave on the tax, the bonus they earn and what more by the last deadline leaves no
-   surcharge due. The pay slip and the rules behind each figure are its detail view. *@
+   is skipped. What the user rarely changes sits behind two disclosures, each folded to a line that
+   states it: their situation, and the tax paid during the year. The user says who pays the
+   contributions; when the company does, they are pay too and the card says what the pay costs it.
+   What was withheld on the pay is the pay slip's amount, derived, until the user types the amount
+   actually withheld, with a way back; it and what the director paid in advance are taken while
+   typing, since nothing bounds them, and the card says what they leave on the tax, the bonus they
+   earn and what more by the last deadline leaves no surcharge due. The pay slip and the rules
+   behind each figure are its detail view. *@
 <ModuleCard Name="director-pay" Title="@L["Title"]" Summary="@Summary" Details="@Details" DetailsLabel="@L["DetailsLabel"]">
     @if (Inputs.Company is null)
     {
@@ -33,29 +35,35 @@
             <OriginChip Origin="InputOrigin.Derived" />
         </p>
     }
-    <RiverField Label="@L["PaidByLabel"]" Origin="Inputs.ContributionsPaidBy.Origin">
-        <div class="director-pay__payers">
-            <MudChipSet T="ContributionsPaidBy" SelectedValue="Inputs.ContributionsPaidBy.Value" SelectedValueChanged="OnPaidByChanged"
-                        SelectionMode="SelectionMode.SingleSelection" CheckMark="false" Variant="Variant.Outlined" SelectedColor="Color.Primary"
-                        Size="Size.Small">
-                @foreach (var payer in Enum.GetValues<ContributionsPaidBy>())
-                {
-                    <MudChip T="ContributionsPaidBy" Value="payer" Text="@L[DirectorPayCardText.PaidBy(payer)]" />
-                }
-            </MudChipSet>
+    <Disclosure Title="@L["SituationTitle"]" Values="@Values(_settings.Situation)" Refused="@DirectorPaySettingsView.SituationHolds(Refused)">
+        <RiverField Label="@L["PaidByLabel"]" Origin="Inputs.ContributionsPaidBy.Origin">
+            <div class="director-pay__payers">
+                <MudChipSet T="ContributionsPaidBy" SelectedValue="Inputs.ContributionsPaidBy.Value" SelectedValueChanged="OnPaidByChanged"
+                            SelectionMode="SelectionMode.SingleSelection" CheckMark="false" Variant="Variant.Outlined" SelectedColor="Color.Primary"
+                            Size="Size.Small">
+                    @foreach (var payer in Enum.GetValues<ContributionsPaidBy>())
+                    {
+                        <MudChip T="ContributionsPaidBy" Value="payer" Text="@L[DirectorPayCardText.PaidBy(payer)]" />
+                    }
+                </MudChipSet>
+            </div>
+            <p class="director-pay__note">@L["PaidByHint"]</p>
+            @if (_view is { CompanyPaysContributions: true } costing)
+            {
+                <p class="director-pay__cost">@L["CompanyCost", Formats.Euros(costing.CompanyCost)]</p>
+            }
+        </RiverField>
+        <RiverField Label="@L["MunicipalityHead"]" Origin="Inputs.Municipality.Origin">
+            <MunicipalityField Choice="Inputs.Municipality" ChoiceChanged="OnMunicipalityChanged"
+                               Refused="@(Refused == GrossToNet.MunicipalRateOutOfRange)" />
+        </RiverField>
+        <div class="director-pay__status">
+            <MudCheckBox T="bool" Value="Inputs.TaxPrepayments.Starter.Value" ValueChanged="OnStarterChanged" Color="Color.Primary"
+                         Label="@L["StarterLabel", Inputs.IncomeYear - 2]" />
+            <OriginChip Origin="Inputs.TaxPrepayments.Starter.Origin" />
         </div>
-        <p class="director-pay__note">@L["PaidByHint"]</p>
-        @if (_view is { CompanyPaysContributions: true } costing)
-        {
-            <p class="director-pay__cost">@L["CompanyCost", Formats.Euros(costing.CompanyCost)]</p>
-        }
-    </RiverField>
-    <RiverField Label="@L["MunicipalityHead"]" Origin="Inputs.Municipality.Origin">
-        <MunicipalityField Choice="Inputs.Municipality" ChoiceChanged="OnMunicipalityChanged"
-                           Refused="@(Refused == GrossToNet.MunicipalRateOutOfRange)" />
-    </RiverField>
-    <div class="director-pay__prepayments">
-        <h3 class="director-pay__prepayments-title">@L["PrepaymentsTitle"]</h3>
+    </Disclosure>
+    <Disclosure Title="@L["PrepaymentsTitle"]" Values="@Values(_settings.Prepaid)" Refused="@DirectorPaySettingsView.PrepaidHolds(Refused)">
         <p class="director-pay__note">@L["PrepaymentsHint"]</p>
         <RiverField Label="@L["WithheldLabel", Inputs.IncomeYear]" For="river-tax-withheld" Origin="_withheld.Origin">
             <RiverNumericField T="decimal" InputId="river-tax-withheld" Value="_withheld.Amount" ValueChanged="OnWithheldChanged"
@@ -83,22 +91,17 @@
                 </RiverField>
             }
         </div>
-        <div class="director-pay__status">
-            <MudCheckBox T="bool" Value="Inputs.TaxPrepayments.Starter.Value" ValueChanged="OnStarterChanged" Color="Color.Primary"
-                         Label="@L["StarterLabel", Inputs.IncomeYear - 2]" />
-            <OriginChip Origin="Inputs.TaxPrepayments.Starter.Origin" />
-        </div>
-        @if (_view is not null)
-        {
-            <p class="director-pay__condition">
-                @L[DirectorPayCardText.Surcharge(_view.Surcharge), Formats.Euros(_view.SurchargeAmount), Formats.Euros(_view.TopUp), Formats.Day(_view.LastDeadline)]
-                @if (_view.Bonus > 0m)
-                {
-                    @(" ")@L["Bonus", Formats.Euros(_view.Bonus)]
-                }
-            </p>
-        }
-    </div>
+    </Disclosure>
+    @if (_view is not null)
+    {
+        <p class="director-pay__condition">
+            @L[DirectorPayCardText.Surcharge(_view.Surcharge), Formats.Euros(_view.SurchargeAmount), Formats.Euros(_view.TopUp), Formats.Day(_view.LastDeadline)]
+            @if (_view.Bonus > 0m)
+            {
+                @(" ")@L["Bonus", Formats.Euros(_view.Bonus)]
+            }
+        </p>
+    }
     <RefusedMessage Error="@Refused" />
     @if (_view is not null)
     {
@@ -126,12 +129,17 @@
 
     private DirectorPayView? _view;
     private WithheldFieldView _withheld = default!;
+    private DirectorPaySettingsView _settings = default!;
 
     protected override void OnParametersSet()
     {
         _view = Run.Pay is { } pay ? DirectorPayView.From(Inputs, pay) : null;
         _withheld = WithheldFieldView.From(Inputs, Run);
+        _settings = DirectorPaySettingsView.From(Inputs, Run);
     }
+
+    private IReadOnlyList<SettingValue> Values(IReadOnlyList<SettingPhrase> phrases) =>
+        [.. phrases.Select(phrase => new SettingValue(L[phrase.Key, [.. phrase.Args]].Value, phrase.Origin))];
 
     // What flows in is what the pay costs the company: the gross, plus the contributions it pays.
     private string? Summary => Run.Pay is { } pay

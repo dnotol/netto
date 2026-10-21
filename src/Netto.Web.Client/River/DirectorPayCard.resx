@@ -49,7 +49,7 @@
     <value>Where each figure comes from, with the income year {0} amounts</value>
   </data>
   <data name="PrepaymentsTitle" xml:space="preserve">
-    <value>Your income tax, paid during the year</value>
+    <value>Tax paid during the year</value>
   </data>
   <data name="PrepaymentsHint" xml:space="preserve">
     <value>What the company withheld on your pay, and what you paid in advance yourself. The earlier a euro is paid, the more of the surcharge it cancels; beyond what avoids it, a payment earns a bonus, and the rest is refunded.</value>
@@ -89,5 +89,44 @@
   </data>
   <data name="WithheldAsPaySlip" xml:space="preserve">
     <value>Use the pay slip's amount</value>
+  </data>
+  <data name="SituationTitle" xml:space="preserve">
+    <value>Your situation</value>
+  </data>
+  <data name="Situation_PaidBy_Director" xml:space="preserve">
+    <value>You pay your contributions</value>
+  </data>
+  <data name="Situation_PaidBy_Company" xml:space="preserve">
+    <value>The company pays your contributions</value>
+  </data>
+  <data name="Situation_Rate" xml:space="preserve">
+    <value>a municipal rate of {0}</value>
+  </data>
+  <data name="Situation_Rate_Official" xml:space="preserve">
+    <value>{0}'s municipal rate of {1}</value>
+  </data>
+  <data name="Situation_Rate_Overridden" xml:space="preserve">
+    <value>your municipal rate of {0}, in place of {1}'s</value>
+  </data>
+  <data name="Situation_Starter" xml:space="preserve">
+    <value>first self-employed in {0} or later</value>
+  </data>
+  <data name="Situation_NotStarter" xml:space="preserve">
+    <value>first self-employed before {0}</value>
+  </data>
+  <data name="Prepaid_Withheld_PaySlip" xml:space="preserve">
+    <value>{0} withheld, as the pay slip says</value>
+  </data>
+  <data name="Prepaid_Withheld_AsPaySlip" xml:space="preserve">
+    <value>Withheld as the pay slip says</value>
+  </data>
+  <data name="Prepaid_Withheld" xml:space="preserve">
+    <value>{0} withheld</value>
+  </data>
+  <data name="Prepaid_None" xml:space="preserve">
+    <value>no advance payments</value>
+  </data>
+  <data name="Prepaid_Paid" xml:space="preserve">
+    <value>{0} paid in advance</value>
   </data>
 </root>

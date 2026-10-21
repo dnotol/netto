@@ -1,0 +1,64 @@
+@inject IStringLocalizer<Disclosure> L
+@inject IStringLocalizer<OriginChip> Origins
+
+@* Settings a user rarely changes, folded to one line that states their values, naming the origin of
+   what Netto assumed in OriginChip's words, and a « Change » that opens their fields: a word, not a
+   chevron, since it opens fields to edit rather than content to read. Open, the word reads « Done »
+   and closes them. A field inside that the engine refuses opens it, and keeps it open until the
+   refusal ends, so a refusal is never hidden. Whether it is open is plain state of the page, not
+   remembered. The button is named by its word and the title, and described by the values; what is
+   closed is not rendered, but its frame stays in the page, hidden, for aria-controls to point to. *@
+<div class="disclosure">
+    <div class="disclosure__line">
+        <div class="disclosure__text">
+            <h3 id="@($"{_id}-title")" class="disclosure__title">@Title</h3>
+            <p id="@($"{_id}-values")" class="disclosure__values">@Line</p>
+        </div>
+        <MudButton Variant="Variant.Text" Size="Size.Small" Color="Color.Primary" OnClick="Toggle" Disabled="Refused" Class="disclosure__toggle"
+                   aria-expanded="@(Open ? "true" : "false")" aria-controls="@($"{_id}-body")"
+                   aria-labelledby="@($"{_id}-action {_id}-title")" aria-describedby="@($"{_id}-values")">
+            <span id="@($"{_id}-action")">@(Open ? L["Done"] : L["Change"])</span>
+        </MudButton>
+    </div>
+    <div id="@($"{_id}-body")" class="disclosure__body" hidden="@(!Open)">
+        @if (Open)
+        {
+            @ChildContent
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public string Title { get; set; } = "";
+
+    // The values the line states, in its order.
+    [Parameter, EditorRequired]
+    public IReadOnlyList<SettingValue> Values { get; set; } = [];
+
+    // The engine refuses a field inside.
+    [Parameter]
+    public bool Refused { get; set; }
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    private readonly string _id = $"disclosure-{Guid.NewGuid():N}";
+    private bool _open;
+
+    private bool Open => _open || Refused;
+
+    private string Line => string.Join(L["Separator"], Values.Select(value => value.Origin is { } origin
+        ? L["WithOrigin", value.Text, Origins[OriginChipText.Origin(origin)]].Value
+        : value.Text));
+
+    // Opened by a refusal, it stays open once the value is accepted, for the field not to vanish
+    // under the cursor.
+    protected override void OnParametersSet()
+    {
+        if (Refused)
+            _open = true;
+    }
+
+    private void Toggle() => _open = !_open;
+}

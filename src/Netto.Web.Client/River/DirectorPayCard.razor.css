@@ -48,17 +48,6 @@
     font-weight: 600;
 }
 
-.director-pay__prepayments {
-    display: grid;
-    gap: 0.6rem;
-}
-
-.director-pay__prepayments-title {
-    margin: 0;
-    font-size: 0.95rem;
-    font-weight: 600;
-}
-
 .director-pay__note {
     margin: 0;
     color: var(--netto-text-muted);

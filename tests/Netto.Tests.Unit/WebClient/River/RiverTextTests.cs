@@ -4,6 +4,7 @@ using Netto.Core.Allowances;
 using Netto.Core.CorporateTax;
 using Netto.Core.DirectorPay;
 using Netto.Core.Dividends;
+using Netto.Core.PersonalTax;
 using Netto.Core.Rent;
 using Netto.Core.Rules;
 using Netto.Core.Simulation;
@@ -128,6 +129,43 @@ public class RiverTextTests
     public void DirectorPayCardResx_everyPayerOfTheContributions_hasAText()
     {
         Missing(DirectorPayCardResources, Enum.GetValues<ContributionsPaidBy>().Select(DirectorPayCardText.PaidBy)).ShouldBeEmpty();
+    }
+
+    // Every way the lines of Director pay's disclosures read: either payer, the default rate, a
+    // municipality's, a rate of one's own over it, a starter or not, the pay slip's withholding with
+    // and without a pay slip, an amount withheld entered, and advance payments or none.
+    [Fact]
+    public void DirectorPayCardResx_everyPhraseOfItsSettingsLines_hasAText()
+    {
+        var example = RiverInputs.Example;
+        var municipality = MunicipalRates.IncomeYear2026.Municipalities[0];
+        RiverInputs[] variations =
+        [
+            example,
+            example.WithContributionsPaidBy(ContributionsPaidBy.Company).WithStarter(true).WithTaxWithheld(1_000m).WithTaxAdvancePayment(0, 1_000m),
+            example.WithMunicipality(example.Municipality.Pick(municipality)).WithReserve(-1m),
+            example.WithMunicipality(example.Municipality.Pick(municipality).Enter(0.09m)),
+        ];
+        var phrases = variations.Select(inputs => DirectorPaySettingsView.From(inputs, inputs.Run()))
+            .SelectMany(view => view.Situation.Concat(view.Prepaid));
+
+        Missing(DirectorPayCardResources, phrases.Select(phrase => phrase.Key)).ShouldBeEmpty();
+    }
+
+    // Every way the lines of Corporate tax's disclosures read: a small company or not, in each of its
+    // financial years, advance payments or none, and a surcharge left or none.
+    [Fact]
+    public void CorporateTaxCardResx_everyPhraseOfItsSettingsLines_hasAText()
+    {
+        RiverInputs[] variations =
+        [
+            RiverInputs.Example.WithSmallCompany(false).WithAdvancePayment(0, 7_500m),
+            .. Enum.GetValues<FinancialYear>().Select(RiverInputs.Example.WithFinancialYear),
+        ];
+        var phrases = variations.Select(inputs => CorporateTaxSettingsView.From(inputs, inputs.Run()))
+            .SelectMany(view => view.Company.Concat(view.Payments));
+
+        Missing(CorporateTaxCardResources, phrases.Select(phrase => phrase.Key)).ShouldBeEmpty();
     }
 
     [Fact]

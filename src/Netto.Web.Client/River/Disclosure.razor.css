@@ -1,0 +1,65 @@
+/* ::deep reaches the MudButton of the word, which carries no scope attribute of its own. */
+.disclosure {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.75rem;
+    min-width: 0;
+}
+
+/* One quiet line in a thin frame, as a fold inside a card: the title, the values taking what is
+   left and wrapping under the title where the card is narrow, and the word at the end, beside
+   them whatever their width. */
+.disclosure__line {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-height: 44px;
+    padding: 0.35rem 0.4rem 0.35rem 0.75rem;
+    border: 1px solid var(--netto-line);
+    border-radius: 10px;
+}
+
+.disclosure__text {
+    display: flex;
+    flex: 1 1 auto;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.15rem 0.75rem;
+    min-width: 0;
+}
+
+.disclosure__title {
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+    line-height: 1.45;
+}
+
+.disclosure__values {
+    flex: 1 1 14rem;
+    min-width: 0;
+    margin: 0;
+    color: var(--netto-text-muted);
+    font-size: 0.85rem;
+    line-height: 1.45;
+    font-variant-numeric: tabular-nums;
+}
+
+.disclosure__line ::deep .disclosure__toggle {
+    flex: 0 0 auto;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.85rem;
+    text-transform: none;
+}
+
+.disclosure__body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.6rem;
+    min-width: 0;
+}
+
+    /* A display set on the body would otherwise win over the hidden attribute. */
+    .disclosure__body[hidden] {
+        display: none;
+    }

@@ -70,17 +70,6 @@
     white-space: normal;
 }
 
-.corporate-tax__payments {
-    display: grid;
-    gap: 0.6rem;
-}
-
-.corporate-tax__payments-title {
-    margin: 0;
-    font-size: 0.95rem;
-    font-weight: 600;
-}
-
 /* Two deadlines a row where the card is wide enough, one under the other on a phone. */
 .corporate-tax__deadlines {
     display: grid;

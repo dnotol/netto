@@ -96,4 +96,40 @@
   <data name="Disallowed" xml:space="preserve">
     <value>Taxable income {0}: the {1} of vouchers the company cannot deduct are added back to its profit.</value>
   </data>
+  <data name="CompanyTitle" xml:space="preserve">
+    <value>Your company</value>
+  </data>
+  <data name="Company_Small" xml:space="preserve">
+    <value>A small company, open to the reduced rate</value>
+  </data>
+  <data name="Company_NotSmall" xml:space="preserve">
+    <value>Not open to the reduced rate</value>
+  </data>
+  <data name="Company_FinancialYear_First" xml:space="preserve">
+    <value>in its 1st financial year</value>
+  </data>
+  <data name="Company_FinancialYear_Second" xml:space="preserve">
+    <value>in its 2nd financial year</value>
+  </data>
+  <data name="Company_FinancialYear_Third" xml:space="preserve">
+    <value>in its 3rd financial year</value>
+  </data>
+  <data name="Company_FinancialYear_Fourth" xml:space="preserve">
+    <value>in its 4th financial year</value>
+  </data>
+  <data name="Company_FinancialYear_FifthOrLater" xml:space="preserve">
+    <value>in its 5th financial year or later</value>
+  </data>
+  <data name="Payments_None" xml:space="preserve">
+    <value>No advance payments</value>
+  </data>
+  <data name="Payments_Paid" xml:space="preserve">
+    <value>{0} paid in advance</value>
+  </data>
+  <data name="Payments_Surcharge" xml:space="preserve">
+    <value>a surcharge of {0} is left</value>
+  </data>
+  <data name="Payments_NoSurcharge" xml:space="preserve">
+    <value>no surcharge</value>
+  </data>
 </root>

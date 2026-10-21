@@ -34,6 +34,9 @@ internal static class CorporateTaxCardText
     public static string Surcharge(SurchargeState state) => $"Surcharge_{state}";
 
     public static string FinancialYear(FinancialYear year) => $"FinancialYear_{year}";
+
+    // The financial year as the line of « Your company » states it.
+    public static string CompanyFinancialYear(FinancialYear year) => $"Company_FinancialYear_{year}";
 }
 
 internal static class DirectorPayCardText
@@ -41,6 +44,9 @@ internal static class DirectorPayCardText
     public static string Surcharge(TaxSurchargeState state) => $"Surcharge_{state}";
 
     public static string PaidBy(ContributionsPaidBy paidBy) => $"PaidBy_{paidBy}";
+
+    // Who pays the contributions as the line of « Your situation » states it.
+    public static string SituationPaidBy(ContributionsPaidBy paidBy) => $"Situation_PaidBy_{paidBy}";
 }
 
 internal static class DividendCardText
