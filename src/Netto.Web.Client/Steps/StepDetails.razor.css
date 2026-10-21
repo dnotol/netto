@@ -1,19 +1,75 @@
-/* ::deep reaches the elements MudBlazor renders (MudExpansionPanels, MudIcon), which carry no scope
-   attribute of their own; the markup written in this file's TitleContent and ChildContent is
-   scoped normally. Neutral colours, except the gold of an active link (CLAUDE.md, UI). */
+/* ::deep reaches the MudIcons, the chevron and a link's arrow, which carry no scope attribute of their
+   own. Neutral colours, except the gold of an active state (CLAUDE.md, UI). */
 
-.step-details ::deep .mud-expand-panel {
-    background: var(--netto-surface);
+/* One row a step, a thin line between two. */
+.step-details__step + .step-details__step {
+    border-top: 1px solid var(--netto-line);
+}
+
+/* The whole row is the button: the step at the left, its amount at the right, the chevron at the
+   end. MudBlazor centres a button's content, so the row starts at the left on purpose. */
+.step-details__toggle {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.5rem;
+    width: 100%;
+    min-height: 48px;
+    margin: 0;
+    padding: 0.75rem 1.5rem;
+    border: 0;
+    border-radius: 6px;
+    background: none;
+    color: inherit;
+    font: inherit;
+    font-size: 0.9375rem;
+    line-height: 1.35;
+    text-align: left;
+    cursor: pointer;
 }
 
 .step-details__head {
     display: flex;
+    flex: 1 1 auto;
     flex-wrap: wrap;
     justify-content: space-between;
     gap: 0.25rem 1rem;
-    width: 100%;
+    min-width: 0;
     padding-right: 0.5rem;
 }
+
+.step-details__toggle ::deep .step-details__chevron {
+    flex: 0 0 auto;
+    color: var(--netto-text-muted);
+    transition: transform 0.15s ease, color 0.2s ease;
+}
+
+    /* Hover and focus are active states, so they may turn gold. */
+    .step-details__toggle:hover ::deep .step-details__chevron,
+    .step-details__toggle:focus-visible ::deep .step-details__chevron {
+        color: var(--netto-gold);
+    }
+
+    .step-details__toggle ::deep .step-details__chevron--open {
+        transform: rotate(180deg);
+    }
+
+@media (prefers-reduced-motion: reduce) {
+    .step-details__toggle ::deep .step-details__chevron {
+        transition: none;
+    }
+}
+
+.step-details__body {
+    padding: 0 1.5rem 1rem;
+    font-size: 0.875rem;
+    line-height: 1.43;
+}
+
+    /* A display set on the body would otherwise win over the hidden attribute. */
+    .step-details__body[hidden] {
+        display: none;
+    }
 
 .step-details__amount {
     color: var(--netto-text-muted);

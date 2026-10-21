@@ -2,19 +2,31 @@
 
 @* Each step of a module card with its rule, the lines of its computation when the rule is a chain
    of them, the official texts behind it and that year's amounts it used. Every card lists its steps
-   the same way, from the same engine steps. *@
+   the same way, from the same engine steps. Each step folds the way every fold of the river folds
+   (River/Fold): its whole row is a button saying the step and its amount, expanded or collapsed, the
+   chevron at its right down when folded and up when open; what is folded is not rendered, but its
+   frame stays in the page, hidden, for aria-controls to point to. Which steps are open is plain state
+   of the list, not remembered, all folded at first. *@
 <div class="step-details">
-    <MudExpansionPanels MultiExpansion="true" Outlined="true" Elevation="0">
-        @foreach (var detail in Details)
-        {
-            <MudExpansionPanel>
-                <TitleContent>
-                    <span class="step-details__head">
-                        <span>@L[StepText.Title(detail.RuleKey)]</span>
-                        <span class="step-details__amount">@Amount(detail)</span>
-                    </span>
-                </TitleContent>
-                <ChildContent>
+    @for (var index = 0; index < Details.Count; index++)
+    {
+        var step = index;
+        var detail = Details[step];
+        var open = _open.Contains(step);
+        var bodyId = $"{_id}-{step}";
+        <div class="step-details__step">
+            <button type="button" class="step-details__toggle" aria-expanded="@(open ? "true" : "false")" aria-controls="@bodyId"
+                    @onclick="() => Flip(step)">
+                <span class="step-details__head">
+                    @* Razor drops the whitespace between elements: without this space, a screen reader
+                       reads the step run into its amount. A flex row does not draw it. *@
+                    <span>@L[StepText.Title(detail.RuleKey)]</span>@(" ")<span class="step-details__amount">@Amount(detail)</span>
+                </span>
+                <MudIcon Icon="@Icons.Material.Rounded.ExpandMore" Class="@(open ? "step-details__chevron step-details__chevron--open" : "step-details__chevron")" aria-hidden="true" />
+            </button>
+            <div id="@bodyId" class="step-details__body" hidden="@(!open)">
+                @if (open)
+                {
                     <p class="step-details__rule">@L[StepText.Rule(detail.RuleKey)]</p>
                     @if (detail.Lines.Count > 0)
                     {
@@ -49,15 +61,26 @@
                             }
                         </div>
                     }
-                </ChildContent>
-            </MudExpansionPanel>
-        }
-    </MudExpansionPanels>
+                }
+            </div>
+        </div>
+    }
 </div>
 
 @code {
     [Parameter, EditorRequired]
     public IReadOnlyList<StepDetail> Details { get; set; } = [];
+
+    private readonly string _id = $"step-{Guid.NewGuid():N}";
+
+    // The steps open, by their place in the list.
+    private readonly HashSet<int> _open = [];
+
+    private void Flip(int step)
+    {
+        if (!_open.Remove(step))
+            _open.Add(step);
+    }
 
     // A step paid out with a negative amount is money that comes back: the refund on exempt dividends,
     // the tax credit for low earned income.
