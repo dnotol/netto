@@ -4,6 +4,18 @@
     font: inherit;
 }
 
+/* A card's heading with its bubble after it: the heading takes the row. */
+.fold__head {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+    .fold__head .fold__heading {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
 /* The whole row is the button: no frame of its own on a card, the title and the summary on one line
    while they fit, the summary wrapping under the title otherwise, the chevron always at the end.
    MudBlazor centres a button's content, so the row starts at the left on purpose. */

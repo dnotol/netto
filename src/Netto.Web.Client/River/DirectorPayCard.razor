@@ -36,7 +36,7 @@
         </p>
     }
     <Disclosure Title="@L["SituationTitle"]" Values="@Values(_settings.Situation)" Refused="@DirectorPaySettingsView.SituationHolds(Refused)">
-        <RiverField Label="@L["PaidByLabel"]" Origin="Inputs.ContributionsPaidBy.Origin">
+        <RiverField Label="@L["PaidByLabel"]" Origin="Inputs.ContributionsPaidBy.Origin" Help="@L["PaidByHint"]">
             <div class="director-pay__payers">
                 <MudChipSet T="ContributionsPaidBy" SelectedValue="Inputs.ContributionsPaidBy.Value" SelectedValueChanged="OnPaidByChanged"
                             SelectionMode="SelectionMode.SingleSelection" CheckMark="false" Variant="Variant.Outlined" SelectedColor="Color.Primary"
@@ -47,7 +47,6 @@
                     }
                 </MudChipSet>
             </div>
-            <p class="director-pay__note">@L["PaidByHint"]</p>
             @if (_view is { CompanyPaysContributions: true } costing)
             {
                 <p class="director-pay__cost">@L["CompanyCost", Formats.Euros(costing.CompanyCost)]</p>
@@ -63,8 +62,8 @@
             <OriginChip Origin="Inputs.TaxPrepayments.Starter.Origin" />
         </div>
     </Disclosure>
-    <Disclosure Title="@L["PrepaymentsTitle"]" Values="@Values(_settings.Prepaid)" Refused="@DirectorPaySettingsView.PrepaidHolds(Refused)">
-        <p class="director-pay__note">@L["PrepaymentsHint"]</p>
+    <Disclosure Title="@L["PrepaymentsTitle"]" Values="@Values(_settings.Prepaid)" Refused="@DirectorPaySettingsView.PrepaidHolds(Refused)"
+                Help="@L["PrepaymentsHint"]">
         <RiverField Label="@L["WithheldLabel", Inputs.IncomeYear]" For="river-tax-withheld" Origin="_withheld.Origin">
             <RiverNumericField T="decimal" InputId="river-tax-withheld" Value="_withheld.Amount" ValueChanged="OnWithheldChanged"
                                Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"

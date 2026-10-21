@@ -10,15 +10,14 @@
    the plan, and the word at its bottom takes it out, its values kept. The amounts are taken while
    typing, like revenue, and carry no Min or Max: the engine refuses what the rules do not allow, and
    its message is what the user has to see. Skipped with the company. *@
-<ModuleCard Name="rent" Title="@L["Title"]" Summary="@Summary" Skipped="Inputs.Company is null" Details="@Details" DetailsLabel="@L["DetailsLabel"]"
-            RemoveLabel="@L["Remove"]" OnRemove="Remove">
+<ModuleCard Name="rent" Title="@L["Title"]" Summary="@Summary" Help="@L["Hint"]" Skipped="Inputs.Company is null" Details="@Details"
+            DetailsLabel="@L["DetailsLabel"]" RemoveLabel="@L["Remove"]" OnRemove="Remove">
     @if (Inputs.Company is null)
     {
         <p class="rent__waiting">@L["Waiting"]</p>
     }
     else
     {
-        <p class="rent__hint">@L["Hint"]</p>
         <div class="rent__fields">
             <RiverField Label="@L["CadastralIncomeLabel"]" For="river-cadastral-income" Origin="Inputs.Rent.CadastralIncome.Origin">
                 <RiverNumericField T="decimal" InputId="river-cadastral-income" Value="Inputs.Rent.CadastralIncome.Value" ValueChanged="OnCadastralIncomeChanged"
@@ -27,12 +26,11 @@
                                    Error="@(Refused == RentCalculator.CadastralIncomeNegative)" Refusal="@Refused" />
                 <p class="rent__note">@L["CadastralIncomeHint"]</p>
             </RiverField>
-            <RiverField Label="@L["ShareLabel"]" For="river-share-let" Origin="Inputs.Rent.ShareLet.Origin">
+            <RiverField Label="@L["ShareLabel"]" For="river-share-let" Origin="Inputs.Rent.ShareLet.Origin" Help="@L["ShareHint"]">
                 <RiverNumericField T="decimal" InputId="river-share-let" Value="SharePercent" ValueChanged="OnSharePercentChanged"
                                    Format="0.##" Culture="Formats.Culture" Adornment="Adornment.End" AdornmentText="%" HideSpinButtons="true"
                                    Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
                                    Error="@(Refused == RentCalculator.ShareLetOutOfRange)" Refusal="@Refused" />
-                <p class="rent__note">@L["ShareHint"]</p>
             </RiverField>
             <RiverField Label="@L["RentLabel"]" For="river-rent" Origin="Inputs.Rent.Rent.Origin">
                 <RiverNumericField T="decimal" InputId="river-rent" Value="Inputs.Rent.Rent.Value" ValueChanged="OnRentChanged"

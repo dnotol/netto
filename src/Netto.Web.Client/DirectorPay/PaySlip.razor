@@ -1,4 +1,5 @@
 @using Netto.Core.DirectorPay
+@using Netto.Web.Client.River
 @using Netto.Web.Client.Steps
 @inject IStringLocalizer<PaySlip> L
 
@@ -6,15 +7,18 @@
    tax base to the taxable income, on one shared scale; the pay month by month as the company pays
    it, with the key formula's withholding as a step behind it; the balance the assessment leaves,
    with the article it follows behind it; and where the next €1,000 would go. With a rent taxed with
-   the pay, the balance and the next €1,000 are the year's and say so. Every figure is GrossToNet's;
-   GrossToNetView only places them. *@
+   the pay, the balance and the next €1,000 are the year's and say so. What a track or a section
+   shows is in an info bubble after its title. Every figure is GrossToNet's; GrossToNetView only
+   places them. *@
 <div class="pay-slip">
     <div class="funnel">
         @foreach (var track in _view.Tracks)
         {
             <article class="funnel__track">
-                <h3 class="funnel__track-title">@L[PaySlipText.Track(track.Key)]</h3>
-                <p class="funnel__track-hint">@L[PaySlipText.TrackHint(track.Key)]</p>
+                <div class="slip-head funnel__track-head">
+                    <h3 class="funnel__track-title">@L[PaySlipText.Track(track.Key)]</h3>
+                    <InfoBubble Label="@L[PaySlipText.Track(track.Key)]">@L[PaySlipText.TrackHint(track.Key)]</InfoBubble>
+                </div>
                 <ol class="funnel__rows">
                     @foreach (var row in track.Rows)
                     {
@@ -36,8 +40,10 @@
     </div>
 
     <section class="statement" aria-labelledby="statement-title">
-        <h3 id="statement-title" class="slip-section__title">@L["StatementTitle"]</h3>
-        <p class="slip-section__hint">@L["StatementHint"]</p>
+        <div class="slip-head">
+            <h3 id="statement-title" class="slip-section__title">@L["StatementTitle"]</h3>
+            <InfoBubble Label="@L["StatementTitle"]">@L["StatementHint"]</InfoBubble>
+        </div>
         <div class="statement__scroll">
             <table class="statement__table">
                 <thead>
@@ -85,8 +91,10 @@
     </section>
 
     <section class="balance" aria-labelledby="balance-title">
-        <h3 id="balance-title" class="slip-section__title">@L["BalanceTitle"]</h3>
-        <p class="slip-section__hint">@L["BalanceHint"]</p>
+        <div class="slip-head">
+            <h3 id="balance-title" class="slip-section__title">@L["BalanceTitle"]</h3>
+            <InfoBubble Label="@L["BalanceTitle"]">@L["BalanceHint"]</InfoBubble>
+        </div>
         <dl class="balance__lines">
             <div class="balance__line">
                 <dt>@L[PaySlipText.FinalTax(_view.TaxedWithOtherIncome)]</dt>

@@ -1,5 +1,4 @@
-.vouchers__waiting,
-.vouchers__hint {
+.vouchers__waiting {
     margin: 0;
     color: var(--netto-text-muted);
     line-height: 1.55;

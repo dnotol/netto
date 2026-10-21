@@ -12,15 +12,14 @@
    their texts, the director's own case first. The amounts are taken while typing, like revenue, and
    carry no Min or Max: the engine refuses what the rules do not allow, and its message is what the
    user has to see. Skipped with the company. *@
-<ModuleCard Name="allowances" Title="@L["Title"]" Summary="@Summary" Skipped="Inputs.Company is null" Details="@Details" DetailsLabel="@L["DetailsLabel"]"
-            RemoveLabel="@L["Remove"]" OnRemove="Remove">
+<ModuleCard Name="allowances" Title="@L["Title"]" Summary="@Summary" Help="@L["Hint"]" Skipped="Inputs.Company is null" Details="@Details"
+            DetailsLabel="@L["DetailsLabel"]" RemoveLabel="@L["Remove"]" OnRemove="Remove">
     @if (Inputs.Company is null)
     {
         <p class="allowances__waiting">@L["Waiting"]</p>
     }
     else
     {
-        <p class="allowances__hint">@L["Hint"]</p>
         <div class="allowances__fields">
             <RiverField Label="@L["OfficeLabel"]" For="river-office-allowance" Origin="Inputs.Allowances.Office.Origin">
                 <RiverNumericField T="decimal" InputId="river-office-allowance" Value="Inputs.Allowances.Office.Value" ValueChanged="OnOfficeChanged"

@@ -1,6 +1,5 @@
 /* ::deep reaches the MudButton under the rent, which carries no scope attribute of its own. */
-.rent__waiting,
-.rent__hint {
+.rent__waiting {
     margin: 0;
     color: var(--netto-text-muted);
     line-height: 1.55;

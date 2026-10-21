@@ -28,6 +28,12 @@
     min-width: 0;
 }
 
+.disclosure__heading {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+}
+
 .disclosure__title {
     margin: 0;
     font-size: 0.9rem;

@@ -7,14 +7,22 @@
    own heading; level 3 a fold inside a card, drawn as one quiet line. What is folded is not
    rendered, but its frame stays in the page, hidden, for aria-controls to point to. The fold is the
    viewer's preference, remembered in the browser under its name (Folds). It has no text of its own:
-   the card gives its title and its summary. *@
+   the card gives its title and its summary, and what its module is (Help), in an info bubble at the
+   row's end, outside the heading and its button, inside which no other control may sit. *@
 @if (Level == 3)
 {
     <h3 class="fold__heading fold__heading--line">@Toggle</h3>
 }
-else
+else if (Help is null)
 {
     <h2 class="fold__heading fold__heading--card">@Toggle</h2>
+}
+else
+{
+    <div class="fold__head">
+        <h2 class="fold__heading fold__heading--card">@Toggle</h2>
+        <InfoBubble Label="@Title">@Help</InfoBubble>
+    </div>
 }
 <div id="@_bodyId" class="fold__body" hidden="@(!Open)">
     @if (Open)
@@ -43,6 +51,10 @@ else
     // 2 for a card's own heading, 3 for a fold inside a card.
     [Parameter]
     public int Level { get; set; } = 2;
+
+    // What a card's module is, in a bubble at the end of its heading's row; none for a fold inside a card.
+    [Parameter]
+    public string? Help { get; set; }
 
     // Cards are open until folded; what a card holds besides its figures, such as its conditions,
     // opens on demand.

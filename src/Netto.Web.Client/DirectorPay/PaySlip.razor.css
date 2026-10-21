@@ -23,18 +23,22 @@
     border-radius: 14px;
 }
 
+/* A title with its info bubble after it. */
+.slip-head {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+}
+
+.funnel__track-head {
+    margin-bottom: 1.25rem;
+}
+
 .funnel__track-title {
-    margin: 0 0 0.25rem;
+    margin: 0;
     font-family: "Fraunces", Georgia, serif;
     font-size: 1.1rem;
     font-weight: 600;
-}
-
-.funnel__track-hint {
-    margin: 0 0 1.25rem;
-    color: var(--netto-text-muted);
-    font-size: 0.9rem;
-    line-height: 1.5;
 }
 
 .funnel__rows {
@@ -159,13 +163,6 @@
     font-family: "Fraunces", Georgia, serif;
     font-size: 1.1rem;
     font-weight: 600;
-}
-
-.slip-section__hint {
-    margin: -0.5rem 0 0;
-    color: var(--netto-text-muted);
-    font-size: 0.9rem;
-    line-height: 1.5;
 }
 
 /* The statement is a table of twelve months, each amount in its column. The table never widens

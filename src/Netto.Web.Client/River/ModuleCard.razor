@@ -1,9 +1,9 @@
 @* The frame every module of the river shares: its title and what flows through it, on the one line it
-   folds to (Fold), then its controls and its detail view, folded under them to one line of its own
+   folds to (Fold), with what the module is in a bubble at its end (Help), then its controls and its detail view, folded under them to one line of its own
    (Fold, level 3) and opened on demand, and last, for an optional module, the word that takes it out
    of the plan. A skipped module is drawn dashed, waiting for the amounts it needs. *@
 <section class="module-card @(Skipped ? "module-card--skipped" : null)" aria-labelledby="@_titleId">
-    <Fold Name="@Name" Title="@Title" TitleId="@_titleId" Summary="@Summary">
+    <Fold Name="@Name" Title="@Title" TitleId="@_titleId" Summary="@Summary" Help="@Help">
         <div class="module-card__body">
             @ChildContent
             @if (Details is not null)
@@ -33,6 +33,10 @@
     // What flows in and out, in a few words beside the title.
     [Parameter]
     public string? Summary { get; set; }
+
+    // What the module is, in a bubble at the end of the heading's row.
+    [Parameter]
+    public string? Help { get; set; }
 
     [Parameter]
     public bool Skipped { get; set; }

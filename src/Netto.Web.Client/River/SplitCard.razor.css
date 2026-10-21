@@ -1,13 +1,8 @@
-.split__hint,
 .split__ceiling {
     margin: 0;
     color: var(--netto-text-muted);
-    font-size: 0.9rem;
-    line-height: 1.55;
-}
-
-.split__ceiling {
     font-size: 0.8rem;
+    line-height: 1.55;
 }
 
 /* The two sides of the split, one at each end, as the slider runs from pay to company. */

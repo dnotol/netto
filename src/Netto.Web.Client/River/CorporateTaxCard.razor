@@ -26,7 +26,7 @@
                 </div>
                 <p class="corporate-tax__hint">@L["SmallCompanyHint"]</p>
             </div>
-            <RiverField Label="@L["FinancialYearLabel", Inputs.IncomeYear]" Origin="Inputs.FinancialYear.Origin">
+            <RiverField Label="@L["FinancialYearLabel", Inputs.IncomeYear]" Origin="Inputs.FinancialYear.Origin" Help="@L["FinancialYearHint"]">
                 <div class="corporate-tax__years">
                     <MudChipSet T="FinancialYear" SelectedValue="Inputs.FinancialYear.Value" SelectedValueChanged="OnFinancialYearChanged"
                                 SelectionMode="SelectionMode.SingleSelection" CheckMark="false" Variant="Variant.Outlined" SelectedColor="Color.Primary"
@@ -37,7 +37,6 @@
                         }
                     </MudChipSet>
                 </div>
-                <p class="corporate-tax__note">@L["FinancialYearHint"]</p>
             </RiverField>
         </Disclosure>
         @if (_view is { DisallowedExpenses: > 0m } addedBack)
@@ -52,8 +51,8 @@
                     : L[CorporateTaxCardText.Condition(_view.Condition), Formats.Euros(_view.MinimumDirectorPay)])
             </p>
         }
-        <Disclosure Title="@L["PaymentsTitle"]" Values="@Values(_settings.Payments)" Refused="@CorporateTaxSettingsView.PaymentsHold(Refused)">
-            <p class="corporate-tax__note">@L["PaymentsHint"]</p>
+        <Disclosure Title="@L["PaymentsTitle"]" Values="@Values(_settings.Payments)" Refused="@CorporateTaxSettingsView.PaymentsHold(Refused)"
+                    Help="@L["PaymentsHint"]">
             <div class="corporate-tax__deadlines">
                 @foreach (var field in AdvancePaymentFields.From(Inputs))
                 {
