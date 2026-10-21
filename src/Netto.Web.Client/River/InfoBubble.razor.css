@@ -15,9 +15,8 @@
     cursor: pointer;
 }
 
+    /* The site's focus ring (app.css), its corners rounded. */
     .info-bubble__trigger:focus-visible {
-        outline: 2px solid var(--netto-gold);
-        outline-offset: 2px;
         border-radius: 4px;
     }
 

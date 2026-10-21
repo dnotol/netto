@@ -55,6 +55,37 @@ h1:focus {
     outline: none;
 }
 
+/* The ring every control of the site shows while the keyboard is on it. */
+:root {
+    --netto-focus-ring: 2px solid var(--netto-gold);
+    --netto-focus-offset: 2px;
+}
+
+/* Focus is an active state, so it may turn gold: a ring 2px wide, set off from the control so it
+   shows on the dark surfaces whatever the control's own colour, drawn for the keyboard only
+   (:focus-visible). MudBlazor takes the outline off its buttons, chips and sliders, so these
+   selectors weigh at least as much as its own and come after it. Its text fields keep their own sign
+   of focus, the frame turning gold and thicker; a checkbox, whose input is invisible, rings the box
+   it draws. A control that needs another ring sets its own: a fold's row, further off; Undo on the
+   light notice, black. */
+a:focus-visible,
+button:focus-visible,
+[tabindex]:not([tabindex="-1"]):focus-visible,
+.mud-slider .mud-slider-input:focus-visible {
+    outline: var(--netto-focus-ring);
+    outline-offset: var(--netto-focus-offset);
+}
+
+/* Around a slider's whole track, round at both ends. */
+.mud-slider .mud-slider-input:focus-visible {
+    border-radius: 999px;
+}
+
+.mud-checkbox .mud-icon-button:has(.mud-checkbox-input:focus-visible) {
+    outline: var(--netto-focus-ring);
+    outline-offset: -4px;
+}
+
 .wordmark {
     font-family: "Fraunces", Georgia, serif;
     font-weight: 600;

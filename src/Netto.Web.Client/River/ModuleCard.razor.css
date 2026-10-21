@@ -47,8 +47,3 @@
     .module-card__remove ::deep .mud-button-root:focus-visible {
         color: var(--netto-text);
     }
-
-    .module-card__remove ::deep .mud-button-root:focus-visible {
-        outline: 2px solid var(--netto-gold);
-        outline-offset: 2px;
-    }

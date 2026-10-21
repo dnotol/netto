@@ -24,11 +24,6 @@
             border-color: var(--netto-gold);
         }
 
-        .composition ::deep .composition__button:focus-visible {
-            outline: 2px solid var(--netto-gold);
-            outline-offset: 2px;
-        }
-
 .composition__count {
     margin-left: 0.35rem;
     color: var(--netto-text-muted);
@@ -171,9 +166,4 @@
         .composition__foot ::deep .composition__done:hover,
         .composition__foot ::deep .composition__done:focus-visible {
             border-color: var(--netto-gold);
-        }
-
-        .composition__foot ::deep .composition__done:focus-visible {
-            outline: 2px solid var(--netto-gold);
-            outline-offset: 2px;
         }

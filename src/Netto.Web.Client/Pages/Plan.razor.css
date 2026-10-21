@@ -80,11 +80,6 @@
         margin-left: -0.35rem;
     }
 
-    .river__add ::deep .mud-button-root:focus-visible {
-        outline: 2px solid var(--netto-gold);
-        outline-offset: 2px;
-    }
-
 .river__fork {
     margin: -0.25rem 0;
     color: var(--netto-text-muted);
