@@ -96,6 +96,8 @@
 
     protected override void OnParametersSet() => _view = Run.Year is { } year ? CorporateTaxView.From(year) : null;
 
+    // The profit the split leaves the company, before its tax, and what the tax and its surcharge
+    // leave of it for the dividend.
     private string? Summary => Run.Year is { } year
         ? L["Summary", Formats.Euros(year.ProfitAfterPay), Formats.Euros(year.ProfitAfterTax)].Value
         : null;

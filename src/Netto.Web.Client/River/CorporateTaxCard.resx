@@ -16,7 +16,7 @@
     <value>Corporate tax</value>
   </data>
   <data name="Summary" xml:space="preserve">
-    <value>{0} in · {1} on</value>
+    <value>{0} of profit · {1} left after tax</value>
   </data>
   <data name="Waiting" xml:space="preserve">
     <value>Waiting for the company's year.</value>
