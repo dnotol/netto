@@ -45,4 +45,22 @@
   <data name="Refused" xml:space="preserve">
     <value>No figures until the amount marked below is corrected.</value>
   </data>
+  <data name="Holds_pocket" xml:space="preserve">
+    <value>What reaches you over the year: your net pay and net dividend, and what the company pays you besides pay, less any tax on it.</value>
+  </data>
+  <data name="Holds_taxes_on_pay" xml:space="preserve">
+    <value>What leaves your pay: your social contributions, the income tax and the municipal surcharge, less the tax credit for low earned income, and any advance-payment surcharge less its bonus.</value>
+  </data>
+  <data name="Holds_taxes_on_pay_and_rent" xml:space="preserve">
+    <value>What leaves your pay and the rent taxed with it: your social contributions, the income tax and the municipal surcharge, less the tax credit for low earned income, and any advance-payment surcharge less its bonus.</value>
+  </data>
+  <data name="Holds_taxes_on_profit" xml:space="preserve">
+    <value>What leaves the company's profit: the corporate tax and its advance-payment surcharge, and the tax withheld on your dividend, less what comes back on its exempt part.</value>
+  </data>
+  <data name="Holds_kept_in_company" xml:space="preserve">
+    <value>What stays in the company at year end: the profit after tax, with what it kept from earlier years, that is not paid out as a dividend.</value>
+  </data>
+  <data name="Announced" xml:space="preserve">
+    <value>{0}: {1}.</value>
+  </data>
 </root>

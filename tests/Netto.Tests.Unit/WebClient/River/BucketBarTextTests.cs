@@ -26,4 +26,28 @@ public class BucketBarTextTests
     {
         (BucketBarText.Bucket("taxes_on_pay", true), BucketBarText.Bucket("pocket", true)).ShouldBe(("Bucket_taxes_on_pay_and_rent", "Bucket_pocket"));
     }
+
+    // What each bucket holds, in the bubble its name opens, with and without a rent among the taxes on pay.
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void BucketBarResx_everyBucket_saysWhatItHolds(bool taxesOnPayIncludeRent)
+    {
+        BucketsView.Keys.Select(key => BucketBarText.Holds(key, taxesOnPayIncludeRent))
+            .Where(key => Resources.GetString(key, CultureInfo.InvariantCulture) is null)
+            .ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void Holds_taxesOnPayWithRent_saysTheRentToo()
+    {
+        (BucketBarText.Holds("taxes_on_pay", true), BucketBarText.Holds("pocket", true)).ShouldBe(("Holds_taxes_on_pay_and_rent", "Holds_pocket"));
+    }
+
+    // The live region reads each bucket with its amount.
+    [Fact]
+    public void BucketBarResx_bucketAsTheLiveRegionReadsIt_hasAText()
+    {
+        Resources.GetString(BucketBarText.Announced, CultureInfo.InvariantCulture).ShouldNotBeNull();
+    }
 }

@@ -2,16 +2,21 @@
 
 @* The river's summary, always in view under the site header: where the money ends up, out of what
    the river starts from, and, at its right, what the page gives it (the Composition menu). Every
-   amount is the engine's, regrouped by BucketsView. Only the figures are a live region: a menu inside
-   one would be read out at every change. *@
+   amount is the engine's, regrouped by BucketsView. Each bucket's name opens an info bubble saying
+   what it holds. A live region reads the figures out as they change: one of its own, out of sight,
+   holding only them, since a bubble opening inside it would be read out as a change of the bar, and
+   a menu inside it at every change. *@
 <div class="bucket-bar">
     <MudContainer MaxWidth="MaxWidth.Large">
-        <div class="bucket-bar__figures" aria-live="polite">
+        <div class="bucket-bar__figures">
             <dl class="bucket-bar__buckets">
                 @foreach (var key in BucketsView.Keys)
                 {
                     <div class="bucket bucket--@key">
-                        <dt class="bucket__label"><span class="bucket__swatch" aria-hidden="true"></span>@L[BucketBarText.Bucket(key, View?.TaxesOnPayIncludeRent ?? false)]</dt>
+                        <dt class="bucket__label">
+                            <span class="bucket__swatch" aria-hidden="true"></span>
+                            <InfoBubble Term="@L[BucketBarText.Bucket(key, IncludesRent)]">@L[BucketBarText.Holds(key, IncludesRent)]</InfoBubble>
+                        </dt>
                         <dd class="bucket__amount">@Amount(key)</dd>
                     </div>
                 }
@@ -25,24 +30,8 @@
                     }
                 </div>
             }
-            <p class="bucket-bar__from">
-                @if (View is null)
-                {
-                    @L["Refused"]
-                }
-                else if (View.StartsAtPay)
-                {
-                    @L[View.CompanyPaysContributions ? "FromPayCost" : "FromPay", Formats.Euros(View.Start)]
-                }
-                else if (View.EarlierProfits > 0m)
-                {
-                    @L["FromProfitAndEarlier", Formats.Euros(View.Start - View.EarlierProfits), Formats.Euros(View.EarlierProfits)]
-                }
-                else
-                {
-                    @L["FromProfit", Formats.Euros(View.Start)]
-                }
-            </p>
+            <p class="bucket-bar__from">@From</p>
+            <p class="bucket-bar__live" aria-live="polite">@Announced</p>
         </div>
         @if (ChildContent is not null)
         {
@@ -61,7 +50,23 @@
 
     private BucketsView? View { get; set; }
 
+    private bool IncludesRent => View?.TaxesOnPayIncludeRent ?? false;
+
     protected override void OnParametersSet() => View = BucketsView.From(Run);
+
+    // Out of what the river starts from, or why there is no figure.
+    private string From => View switch
+    {
+        null => L["Refused"].Value,
+        { StartsAtPay: true } view => L[view.CompanyPaysContributions ? "FromPayCost" : "FromPay", Formats.Euros(view.Start)].Value,
+        { EarlierProfits: > 0m } view => L["FromProfitAndEarlier", Formats.Euros(view.Start - view.EarlierProfits), Formats.Euros(view.EarlierProfits)].Value,
+        { } view => L["FromProfit", Formats.Euros(view.Start)].Value,
+    };
+
+    // Each bucket with its amount, then out of what.
+    private string Announced => string.Join(" ", BucketsView.Keys
+        .Select(key => L[BucketBarText.Announced, L[BucketBarText.Bucket(key, IncludesRent)].Value, Amount(key)].Value)
+        .Append(From));
 
     private string Amount(string key) =>
         View?.Buckets.Single(bucket => bucket.Key == key).Amount is { } amount ? Formats.Euros(amount) : L["NoFigure"];
