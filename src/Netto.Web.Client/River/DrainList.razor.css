@@ -37,3 +37,34 @@
 .drain--to-pocket .drain__to {
     color: var(--netto-gold);
 }
+
+/* A drain's bubble: each text its step follows, then the year's amounts it used, a label and its
+   value on each line. */
+.drain-bubble,
+.drain-bubble__group,
+.drain-bubble__figures {
+    display: grid;
+}
+
+.drain-bubble {
+    gap: 0.5rem;
+}
+
+.drain-bubble__group {
+    gap: 0.2rem;
+}
+
+.drain-bubble__source {
+    color: var(--netto-text-muted);
+    font-size: 0.78rem;
+}
+
+.drain-bubble__figure {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+    .drain-bubble__figure > span:last-child {
+        white-space: nowrap;
+    }

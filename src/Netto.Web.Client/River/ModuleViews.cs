@@ -34,7 +34,7 @@ internal sealed record VoucherView(
             year.Vouchers.Disallowed,
             left,
             [
-                .. inPocket.Select(step => new Drain(step.RuleKey, DrainKind.PassedOn, step.Amount, "pocket")),
+                .. inPocket.Select(Drain.ToPocket),
                 new Drain("left_after_vouchers", DrainKind.PassedOn, left, NextModule.After(OptionalModule.Vouchers, composition)),
             ],
             steps.Select(StepDetail.From).ToList());
@@ -57,7 +57,7 @@ internal sealed record AllowanceView(decimal Total, decimal Left, IReadOnlyList<
             steps.Where(step => step.Track == Track.InPocket).Sum(step => step.Amount),
             left,
             [
-                .. steps.Where(step => step.Track == Track.InPocket).Select(step => new Drain(step.RuleKey, DrainKind.PassedOn, step.Amount, "pocket")),
+                .. steps.Where(step => step.Track == Track.InPocket).Select(Drain.ToPocket),
                 new Drain("left_after_allowances", DrainKind.PassedOn, left, NextModule.After(OptionalModule.Allowances, composition)),
             ],
             steps.Select(StepDetail.From).ToList());
@@ -555,15 +555,24 @@ internal enum RiverModule
 
 // One line of what a module passes on: the step or amount, and where it goes, a bucket or the next
 // module. Amounts are positive; the kind says which way they go, except what is kept in a loss year.
-// Public because Drains, a component, takes it as a parameter.
+// A line of the engine's steps carries them, worded as the card's sources word them (Details), for
+// its bubble to say how its amount is computed and from which texts; what a module passes on to the
+// pocket, the company or the next module has no step behind it, and none. Public because Drains, a
+// component, takes it as a parameter.
 public sealed record Drain(string Key, DrainKind Kind, decimal Amount, string To)
 {
+    public IReadOnlyList<StepDetail> Details { get; init; } = [];
+
     // A step paid out with a negative amount is money coming back: the refund on exempt dividends, the
     // tax credit for low earned income.
     // The engine negates both, so a refund or a credit of nothing is a negative zero and still comes back.
-    internal static Drain PaidOutTo(Step step, string bucket) => decimal.IsNegative(step.Amount)
+    internal static Drain PaidOutTo(Step step, string bucket) => (decimal.IsNegative(step.Amount)
         ? new Drain(step.RuleKey, DrainKind.Back, -step.Amount, bucket)
-        : new Drain(step.RuleKey, DrainKind.PaidOut, step.Amount, bucket);
+        : new Drain(step.RuleKey, DrainKind.PaidOut, step.Amount, bucket)) with { Details = [StepDetail.From(step)] };
+
+    // A step that reaches the pocket whole: a voucher, an allowance.
+    internal static Drain ToPocket(Step step) =>
+        new(step.RuleKey, DrainKind.PassedOn, step.Amount, "pocket") { Details = [StepDetail.From(step)] };
 }
 
 public enum DrainKind

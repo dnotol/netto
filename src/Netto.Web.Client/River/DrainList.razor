@@ -1,15 +1,28 @@
+@using Netto.Web.Client.Steps
 @inject IStringLocalizer<DrainList> L
+@inject IStringLocalizer<StepDetails> Steps
 
 @* Where a module's money goes, line by line: what leaves into a bucket of taxes, what comes back
    out of one, and what is passed on to the pocket, the company's reserve or the next module. Only
-   the lines that move money (DrainLines); none, and there is no list. *@
+   the lines that move money (DrainLines); none, and there is no list. A line of the engine's steps
+   opens an info bubble from its label: how its amount is computed and from which texts, each text
+   with the year's amounts the step used, worded as the card's sources word them (StepDetails). *@
 @if (_shown.Count > 0)
 {
     <ul class="drain-list">
         @foreach (var drain in _shown)
         {
             <li class="drain drain--@Modifier(drain.Kind) drain--to-@drain.To">
-                <span class="drain__label">@L[DrainListText.Drain(drain.Key)]</span>
+                <span class="drain__label">
+                    @if (drain.Details.Count > 0)
+                    {
+                        <InfoBubble Term="@L[DrainListText.Drain(drain.Key)]">@Explanation(drain.Details)</InfoBubble>
+                    }
+                    else
+                    {
+                        @L[DrainListText.Drain(drain.Key)]
+                    }
+                </span>
                 <span class="drain__amount">@Amount(drain)</span>
                 <span class="drain__to">@L[DrainListText.Destination(drain)]</span>
             </li>
@@ -24,6 +37,39 @@
     private IReadOnlyList<Drain> _shown = [];
 
     protected override void OnParametersSet() => _shown = DrainLines.Shown(Drains);
+
+    // The lines of each step's computation when it has them, then each text it follows with the
+    // amounts it used.
+    private RenderFragment Explanation(IReadOnlyList<StepDetail> details) =>
+        @<span class="drain-bubble">
+            @foreach (var detail in details)
+            {
+                @if (detail.Lines.Count > 0)
+                {
+                    <span class="drain-bubble__figures">
+                        @foreach (var line in detail.Lines)
+                        {
+                            <span class="drain-bubble__figure"><span>@Steps[StepText.Line(line.Key)]</span> <span>@Formats.Euros(line.Amount)</span></span>
+                        }
+                    </span>
+                }
+                @foreach (var group in detail.Sources)
+                {
+                    <span class="drain-bubble__group">
+                        <span class="drain-bubble__source">@L[DrainListText.Source, group.Source.Label]</span>
+                        @if (group.Amounts.Count > 0)
+                        {
+                            <span class="drain-bubble__figures">
+                                @foreach (var amount in group.Amounts)
+                                {
+                                    <span class="drain-bubble__figure"><span>@Steps[StepText.Amount(amount.Key)]</span> <span>@Formats.RuleAmount(amount)</span></span>
+                                }
+                            </span>
+                        }
+                    </span>
+                }
+            }
+        </span>;
 
     private static string Amount(Drain drain) => drain.Kind switch
     {

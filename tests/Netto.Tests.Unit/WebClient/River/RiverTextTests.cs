@@ -89,6 +89,14 @@ public class RiverTextTests
             .ShouldBeEmpty();
     }
 
+    // A drain's bubble cites each text its step follows; the amounts under it are worded by
+    // StepDetails.resx (StepTextTests).
+    [Fact]
+    public void DrainListResx_textADrainsBubbleCites_hasAText()
+    {
+        Missing(DrainListResources, [DrainListText.Source]).ShouldBeEmpty();
+    }
+
     [Fact]
     public void RefusedMessageResx_everyErrorTheRiverCanReturn_hasAText()
     {

@@ -132,4 +132,7 @@
   <data name="Drain_rent_after_tax" xml:space="preserve">
     <value>Rent, once its tax is paid</value>
   </data>
+  <data name="Source" xml:space="preserve">
+    <value>From {0}</value>
+  </data>
 </root>

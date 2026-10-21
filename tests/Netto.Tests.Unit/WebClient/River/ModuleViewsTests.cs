@@ -91,7 +91,7 @@ public class ModuleViewsTests
     {
         var view = DirectorPay(RiverInputs.Example);
 
-        view.Drains.ShouldBe(new[]
+        Lines(view.Drains).ShouldBe(new[]
         {
             new Drain("social_contributions", DrainKind.PaidOut, 8_293.36m, "taxes_on_pay"),
             new Drain("income_tax", DrainKind.PaidOut, 11_333.96m, "taxes_on_pay"),
@@ -103,13 +103,25 @@ public class ModuleViewsTests
         });
     }
 
+    // Each line of a step carries it, for its bubble to say how the amount is computed and from which
+    // text; the net pay, passed on, has no step behind it.
+    [Fact]
+    public void DirectorPay_example_eachLineOfAStepCarriesThatStep()
+    {
+        Explained(DirectorPay(RiverInputs.Example).Drains).ShouldBe(
+        [
+            "social_contributions", "income_tax", "municipal_surcharge", "low_earned_income_credit",
+            "income_tax_advance_payment_surcharge", "income_tax_advance_payment_bonus", "",
+        ]);
+    }
+
     // At the best pay the taxable income is 16,720.20, where the credit is whole.
     [Fact]
     public void DirectorPay_bestPay_creditComesBackFromTaxesOnPay()
     {
         var view = DirectorPay(RiverInputs.Example.WithDirectorPay(20_799m));
 
-        view.Drains.Single(drain => drain.Key == "low_earned_income_credit")
+        Line(view.Drains.Single(drain => drain.Key == "low_earned_income_credit"))
             .ShouldBe(new Drain("low_earned_income_credit", DrainKind.Back, 910m, "taxes_on_pay"));
     }
 
@@ -121,9 +133,18 @@ public class ModuleViewsTests
     {
         var view = DirectorPay(RiverInputs.Example.WithContributionsPaidBy(ContributionsPaidBy.Company));
 
-        (view.CompanyPaysContributions, view.CompanyCost, view.Drains[0], view.Drains[^1]).ShouldBe((true, 59_942.52m,
+        (view.CompanyPaysContributions, view.CompanyCost, Line(view.Drains[0]), view.Drains[^1]).ShouldBe((true, 59_942.52m,
             new Drain("social_contributions_paid_by_company", DrainKind.PaidOut, 9_942.52m, "taxes_on_pay"),
             new Drain("net_pay", DrainKind.PassedOn, 33_999.21m, "pocket")));
+    }
+
+    // Whoever pays them, the contributions are the same step of the engine.
+    [Fact]
+    public void DirectorPay_companyPays_contributionsLineCarriesTheirStep()
+    {
+        var view = DirectorPay(RiverInputs.Example.WithContributionsPaidBy(ContributionsPaidBy.Company));
+
+        Explained(view.Drains)[0].ShouldBe("social_contributions");
     }
 
     [Fact]
@@ -276,12 +297,18 @@ public class ModuleViewsTests
     [Fact]
     public void CorporateTax_example_drainsTheTaxAndPassesTheRestToTheDividend()
     {
-        CorporateTax(RiverInputs.Example).Drains.ShouldBe(new[]
+        Lines(CorporateTax(RiverInputs.Example).Drains).ShouldBe(new[]
         {
             new Drain("corporate_tax", DrainKind.PaidOut, 10_000.00m, "taxes_on_profit"),
             new Drain("advance_payment_surcharge", DrainKind.PaidOut, 675.00m, "taxes_on_profit"),
             new Drain("profit_after_tax", DrainKind.PassedOn, 39_325.00m, "dividend"),
         });
+    }
+
+    [Fact]
+    public void CorporateTax_example_eachLineOfAStepCarriesThatStep()
+    {
+        Explained(CorporateTax(RiverInputs.Example).Drains).ShouldBe(["corporate_tax", "advance_payment_surcharge", ""]);
     }
 
     // What comes in is the profit the split leaves the company; the taxable income adds back the
@@ -298,7 +325,7 @@ public class ModuleViewsTests
     [Fact]
     public void CorporateTax_vouchers_drainsWhatCameIn()
     {
-        CorporateTax(AllVouchers).Drains.ShouldBe(new[]
+        Lines(CorporateTax(AllVouchers).Drains).ShouldBe(new[]
         {
             new Drain("corporate_tax", DrainKind.PaidOut, 9_824.00m, "taxes_on_profit"),
             new Drain("advance_payment_surcharge", DrainKind.PaidOut, 663.12m, "taxes_on_profit"),
@@ -418,7 +445,7 @@ public class ModuleViewsTests
     [Fact]
     public void Dividend_example_drainsTheWithholdingGetsTheRefundBackAndPassesTheRestOn()
     {
-        Dividend(Prepaid.WithReserve(15_000m)).Drains.ShouldBe(new[]
+        Lines(Dividend(Prepaid.WithReserve(15_000m)).Drains).ShouldBe(new[]
         {
             new Drain("dividend_withholding", DrainKind.PaidOut, 4_500.00m, "taxes_on_profit"),
             new Drain("dividend_exemption_refund", DrainKind.Back, 149.94m, "taxes_on_profit"),
@@ -427,11 +454,17 @@ public class ModuleViewsTests
         });
     }
 
+    [Fact]
+    public void Dividend_example_eachLineOfAStepCarriesThatStep()
+    {
+        Explained(Dividend(Prepaid.WithReserve(15_000m)).Drains).ShouldBe(["dividend_withholding", "dividend_exemption_refund", "", ""]);
+    }
+
     // With no dividend the refund is zero, and still money that comes back rather than a payment.
     [Fact]
     public void Dividend_noDividend_listsTheRefundAsComingBack()
     {
-        Dividend(Prepaid.WithReserve(50_000m)).Drains[1].ShouldBe(new Drain("dividend_exemption_refund", DrainKind.Back, 0m, "taxes_on_profit"));
+        Line(Dividend(Prepaid.WithReserve(50_000m)).Drains[1]).ShouldBe(new Drain("dividend_exemption_refund", DrainKind.Back, 0m, "taxes_on_profit"));
     }
 
     [Fact]
@@ -472,13 +505,30 @@ public class ModuleViewsTests
     [Fact]
     public void Vouchers_allThree_drainEachToThePocketAndTheRestOnDownTheRiver()
     {
-        Vouchers(AllVouchers).Drains.ShouldBe(new[]
+        Lines(Vouchers(AllVouchers).Drains).ShouldBe(new[]
         {
             new Drain("meal_vouchers", DrainKind.PassedOn, 1_960.20m, "pocket"),
             new Drain("eco_vouchers", DrainKind.PassedOn, 250m, "pocket"),
             new Drain("sport_culture_vouchers", DrainKind.PassedOn, 100m, "pocket"),
             new Drain("left_after_vouchers", DrainKind.PassedOn, 97_689.80m, "split"),
         });
+    }
+
+    [Fact]
+    public void Vouchers_allThree_eachLineOfAStepCarriesThatStep()
+    {
+        Explained(Vouchers(AllVouchers).Drains).ShouldBe(["meal_vouchers", "eco_vouchers", "sport_culture_vouchers", ""]);
+    }
+
+    // The meal vouchers' line is computed with what the company pays into each voucher and what the
+    // director pays, from art. 38/1.
+    [Fact]
+    public void Vouchers_allThree_mealVouchersLineCitesTheSharesOfAVoucher()
+    {
+        var meal = Vouchers(AllVouchers).Drains[0].Details.Single();
+
+        meal.Sources.Single(group => group.Source.Label == "CIR 92, art. 38/1").Amounts.Select(amount => (amount.Key, amount.Value))
+            .ShouldBe([("meal_voucher_company_share", 8.91m), ("meal_voucher_holder_share", 1.09m)]);
     }
 
     // What the vouchers leave goes on to the next module in the plan, the split after the last.
@@ -554,7 +604,7 @@ public class ModuleViewsTests
     [Fact]
     public void Allowances_all_drainEachToThePocketAndTheRestOnDownTheRiver()
     {
-        Allowances(AllAllowances(RiverInputs.Example)).Drains.ShouldBe(new[]
+        Lines(Allowances(AllAllowances(RiverInputs.Example)).Drains).ShouldBe(new[]
         {
             new Drain("office_allowance", DrainKind.PassedOn, 1_938.44m, "pocket"),
             new Drain("internet_allowance", DrainKind.PassedOn, 240m, "pocket"),
@@ -562,6 +612,13 @@ public class ModuleViewsTests
             new Drain("phone_costs", DrainKind.PassedOn, 600m, "pocket"),
             new Drain("left_after_allowances", DrainKind.PassedOn, 96_981.56m, "split"),
         });
+    }
+
+    [Fact]
+    public void Allowances_all_eachLineOfAStepCarriesThatStep()
+    {
+        Explained(Allowances(AllAllowances(RiverInputs.Example)).Drains)
+            .ShouldBe(["office_allowance", "internet_allowance", "computer_allowance", "phone_costs", ""]);
     }
 
     [Fact]
@@ -600,7 +657,7 @@ public class ModuleViewsTests
     [Fact]
     public void Rent_atTheCap_drainsItsTaxToTaxesOnPayTheRestToThePocketAndTheProfitToTheSplit()
     {
-        Rent(RentAtTheCap(RiverInputs.Example)).Drains.ShouldBe(new[]
+        Lines(Rent(RentAtTheCap(RiverInputs.Example)).Drains).ShouldBe(new[]
         {
             new Drain("rent_income_tax", DrainKind.PaidOut, 372.60m, "taxes_on_pay"),
             new Drain("rent_municipal_surcharge", DrainKind.PaidOut, 26.08m, "taxes_on_pay"),
@@ -609,6 +666,14 @@ public class ModuleViewsTests
             new Drain("rent_after_tax", DrainKind.PassedOn, 981.32m, "pocket"),
             new Drain("profit_before_pay", DrainKind.PassedOn, 98_620m, "split"),
         });
+    }
+
+    // What the rent leaves once taxed and what goes on to the split are passed on: no step of their own.
+    [Fact]
+    public void Rent_atTheCap_eachLineOfAStepCarriesThatStep()
+    {
+        Explained(Rent(RentAtTheCap(RiverInputs.Example)).Drains).ShouldBe(
+            ["rent_income_tax", "rent_municipal_surcharge", "rent_low_earned_income_credit_lost", "rent_income_tax_advance_payments", "", ""]);
     }
 
     // Taxed on the rent less 40% of charges, at their limit at the cap (RentCalculatorTests).
@@ -704,7 +769,7 @@ public class ModuleViewsTests
     [Fact]
     public void DirectorPay_rent_drainsOnlyThePaysOwnTaxes()
     {
-        DirectorPay(RentAtTheCap(RiverInputs.Example)).Drains.ShouldBe(DirectorPay(RiverInputs.Example).Drains);
+        Lines(DirectorPay(RentAtTheCap(RiverInputs.Example)).Drains).ShouldBe(Lines(DirectorPay(RiverInputs.Example).Drains));
     }
 
     [Fact]
@@ -780,6 +845,15 @@ public class ModuleViewsTests
     {
         RiverErrors.Owner(error, companySkipped).ToString().ShouldBe(module);
     }
+
+    // A drain as a line of the list, without the step it carries.
+    private static Drain Line(Drain drain) => new(drain.Key, drain.Kind, drain.Amount, drain.To);
+
+    private static List<Drain> Lines(IEnumerable<Drain> drains) => [.. drains.Select(Line)];
+
+    // The steps each drain carries, by their rule keys, "" for a drain with none.
+    private static List<string> Explained(IEnumerable<Drain> drains) =>
+        [.. drains.Select(drain => string.Join(" + ", drain.Details.Select(detail => detail.RuleKey)))];
 
     private static SplitView Split(RiverInputs inputs) => SplitView.From(inputs, inputs.Run());
 

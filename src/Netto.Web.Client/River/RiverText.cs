@@ -16,6 +16,9 @@ internal static class OriginChipText
 
 internal static class DrainListText
 {
+    // A text the step behind a drain follows, as its bubble cites it.
+    public const string Source = "Source";
+
     public static string Drain(string key) => $"Drain_{key}";
 
     // Where a drain goes; what comes back says where from.
