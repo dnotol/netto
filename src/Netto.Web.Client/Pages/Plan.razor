@@ -6,6 +6,15 @@
 
 <PageTitle>@L["PageTitle"]</PageTitle>
 
+@* The keyboard's first stop from the top of the page, before the site header (MainLayout): it moves
+   the focus to the start of the river, so the next Tab lands on its first card, past the header's
+   links and the bar of buckets, which stays in sight above. Blazor would take a link to a fragment
+   for a navigation, so the link moves the focus itself. On arriving, Blazor puts the focus on the
+   page's title (Routes, FocusOnNavigate), after the link. *@
+<SectionContent SectionName="@MainLayout.SkipLinkSection">
+    <a href="plan#river" class="skip-link" @onclick="SkipToRiverAsync" @onclick:preventDefault>@L[PlanText.SkipToRiver]</a>
+</SectionContent>
+
 @* The river: the year from the company's revenue to the director's pocket, as module cards that each
    edit their part of one scenario and draw their view of one run, under the bar of buckets that sums
    it up. Every figure comes from Netto.Core; the page only holds the inputs and runs them. The
@@ -29,7 +38,7 @@
 
         <RefusedMessage Error="@Refused(RiverModule.River)" />
 
-        <div class="river__flow">
+        <div id="river" class="river__flow" tabindex="-1" @ref="_river">
             <CompanyYearCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Refused="@Refused(RiverModule.CompanyYear)" />
             @if (_inputs.Composition.Count == 0)
             {
@@ -100,6 +109,7 @@
     private RiverInputs? _searched;
     private CompositionMenu _composition = default!;
     private TakenOutNotice _notice = default!;
+    private ElementReference _river;
     private OptionalModule? _takenOut;
     private bool _focusUndo;
     private bool _focusComposition;
@@ -133,6 +143,9 @@
     }
 
     private void OpenComposition() => _composition.Open();
+
+    // The next Tab goes on to the first card's heading.
+    private async Task SkipToRiverAsync() => await _river.FocusAsync();
 
     // Undo and Dismiss leave with the notice, so the focus goes to the Composition button, just before
     // it, where the plan's modules are set.

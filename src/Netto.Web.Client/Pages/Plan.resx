@@ -15,6 +15,9 @@
   <data name="PageTitle" xml:space="preserve">
     <value>Your year: Netto</value>
   </data>
+  <data name="SkipToRiver" xml:space="preserve">
+    <value>Skip to the river</value>
+  </data>
   <data name="Badge" xml:space="preserve">
     <value>In development</value>
   </data>

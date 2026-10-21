@@ -7,6 +7,8 @@
 
 @* .netto-app is also the signal app.css uses to hide the boot splash. *@
 <div class="netto-app">
+    @* The page's skip link, if it has one, the keyboard's first stop, before the site header. *@
+    <SectionOutlet SectionName="@SkipLinkSection" />
     <header class="site-header">
         <MudContainer MaxWidth="MaxWidth.Large" Class="site-header__inner">
             <a href="/" class="wordmark site-header__wordmark">Netto</a>
@@ -48,5 +50,8 @@
 </div>
 
 @code {
+    // Where a page puts its skip link (SectionContent).
+    public const string SkipLinkSection = "skip-link";
+
     private bool OnFrontPage => Navigation.ToBaseRelativePath(Navigation.Uri).Split('?', '#')[0].Length == 0;
 }
