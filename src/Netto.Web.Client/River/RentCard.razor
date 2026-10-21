@@ -21,24 +21,24 @@
         <p class="rent__hint">@L["Hint"]</p>
         <div class="rent__fields">
             <RiverField Label="@L["CadastralIncomeLabel"]" For="river-cadastral-income" Origin="Inputs.Rent.CadastralIncome.Origin">
-                <MudNumericField T="decimal" InputId="river-cadastral-income" Value="Inputs.Rent.CadastralIncome.Value" ValueChanged="OnCadastralIncomeChanged"
-                                 Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
-                                 Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
-                                 Error="@(Refused == RentCalculator.CadastralIncomeNegative)" />
+                <RiverNumericField T="decimal" InputId="river-cadastral-income" Value="Inputs.Rent.CadastralIncome.Value" ValueChanged="OnCadastralIncomeChanged"
+                                   Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
+                                   Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
+                                   Error="@(Refused == RentCalculator.CadastralIncomeNegative)" Refusal="@Refused" />
                 <p class="rent__note">@L["CadastralIncomeHint"]</p>
             </RiverField>
             <RiverField Label="@L["ShareLabel"]" For="river-share-let" Origin="Inputs.Rent.ShareLet.Origin">
-                <MudNumericField T="decimal" InputId="river-share-let" Value="SharePercent" ValueChanged="OnSharePercentChanged"
-                                 Format="0.##" Culture="Formats.Culture" Adornment="Adornment.End" AdornmentText="%" HideSpinButtons="true"
-                                 Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
-                                 Error="@(Refused == RentCalculator.ShareLetOutOfRange)" />
+                <RiverNumericField T="decimal" InputId="river-share-let" Value="SharePercent" ValueChanged="OnSharePercentChanged"
+                                   Format="0.##" Culture="Formats.Culture" Adornment="Adornment.End" AdornmentText="%" HideSpinButtons="true"
+                                   Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
+                                   Error="@(Refused == RentCalculator.ShareLetOutOfRange)" Refusal="@Refused" />
                 <p class="rent__note">@L["ShareHint"]</p>
             </RiverField>
             <RiverField Label="@L["RentLabel"]" For="river-rent" Origin="Inputs.Rent.Rent.Origin">
-                <MudNumericField T="decimal" InputId="river-rent" Value="Inputs.Rent.Rent.Value" ValueChanged="OnRentChanged"
-                                 Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
-                                 Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
-                                 Error="@(Refused is RentCalculator.RentNegative or RentCalculator.RentAboveCap or RentCalculator.RentWithOfficeAllowance)" />
+                <RiverNumericField T="decimal" InputId="river-rent" Value="Inputs.Rent.Rent.Value" ValueChanged="OnRentChanged"
+                                   Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
+                                   Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
+                                   Error="@(Refused is RentCalculator.RentNegative or RentCalculator.RentAboveCap or RentCalculator.RentWithOfficeAllowance)" Refusal="@Refused" />
                 @if (_cap is { } cap)
                 {
                     <p class="rent__note">

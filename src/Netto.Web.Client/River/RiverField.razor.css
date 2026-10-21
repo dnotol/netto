@@ -29,3 +29,18 @@
 .river-field ::deep .mud-slider {
     margin: 0.25rem 0;
 }
+
+/* A refused field carries the engine's message as its error text (RiverNumericField), which a screen
+   reader reads with the field; the card shows the message in sight (RefusedMessage), so the field's
+   copy stays in the page, out of sight. MudBlazor's own errors, a number it cannot read, stay in
+   sight. */
+.river-field ::deep .river-number--refused .mud-input-control-helper-container {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}

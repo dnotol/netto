@@ -11,16 +11,16 @@
     {
         <div class="company-year__fields">
             <RiverField Label="@L["RevenueLabel"]" For="river-revenue" Origin="company.Revenue.Origin">
-                <MudNumericField T="decimal" InputId="river-revenue" Value="company.Revenue.Value" ValueChanged="OnRevenueChanged"
-                                 Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
-                                 Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
-                                 Error="@(Refused == YearSimulation.RevenueNegative)" />
+                <RiverNumericField T="decimal" InputId="river-revenue" Value="company.Revenue.Value" ValueChanged="OnRevenueChanged"
+                                   Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
+                                   Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
+                                   Error="@(Refused == YearSimulation.RevenueNegative)" Refusal="@Refused" />
             </RiverField>
             <RiverField Label="@L["RunningCostsLabel"]" For="river-running-costs" Origin="company.RunningCosts.Origin">
-                <MudNumericField T="decimal" InputId="river-running-costs" Value="company.RunningCosts.Value" ValueChanged="OnRunningCostsChanged"
-                                 Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
-                                 Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
-                                 Error="@(Refused == YearSimulation.RunningCostsNegative)" />
+                <RiverNumericField T="decimal" InputId="river-running-costs" Value="company.RunningCosts.Value" ValueChanged="OnRunningCostsChanged"
+                                   Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
+                                   Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
+                                   Error="@(Refused == YearSimulation.RunningCostsNegative)" Refusal="@Refused" />
             </RiverField>
         </div>
         <RefusedMessage Error="@Refused" />

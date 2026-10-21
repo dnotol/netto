@@ -1,4 +1,6 @@
+@using Netto.Core.DirectorPay
 @using Netto.Core.PersonalTax
+@using Netto.Web.Client.River
 @inject IStringLocalizer<MunicipalityField> L
 
 @* The municipality picker, the surcharge rate beside it and the note under both. It only edits a
@@ -22,9 +24,10 @@
         </MudAutocomplete>
         @* No Min or Max: MudBlazor would clamp a rate out of range silently, and the engine's
            refusal, with its message, is what the user has to see. *@
-        <MudNumericField T="decimal" Value="RatePercent" ValueChanged="OnRateChanged" Label="@L["RateLabel"]"
-                         Step="0.1m" Format="0.0" Adornment="Adornment.End" AdornmentText="%"
-                         Variant="Variant.Outlined" Immediate="true" Error="Refused" Culture="Formats.Culture" />
+        <RiverNumericField T="decimal" Value="RatePercent" ValueChanged="OnRateChanged" Label="@L["RateLabel"]"
+                           Step="0.1m" Format="0.0" Adornment="Adornment.End" AdornmentText="%"
+                           Variant="Variant.Outlined" Immediate="true" Error="Refused" Refusal="@GrossToNet.MunicipalRateOutOfRange"
+                           Culture="Formats.Culture" />
     </div>
     <p class="municipality-field__note">
         @L[Choice.Note.Key, Choice.Note.Args.ToArray<object>()]
@@ -43,7 +46,7 @@
     [Parameter]
     public EventCallback<MunicipalityChoice> ChoiceChanged { get; set; }
 
-    // The engine refused the rate: the field shows as in error, and the page shows why.
+    // The engine refused the rate: the field shows as in error, carrying the card's message on why.
     [Parameter]
     public bool Refused { get; set; }
 

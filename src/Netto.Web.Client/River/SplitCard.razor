@@ -72,9 +72,9 @@
                            aria-labelledby="river-split-pay-label" />
             </div>
         </div>
-        <MudNumericField T="decimal" InputId="river-split-pay" Value="_view.FieldPay" ValueChanged="OnPayChanged"
-                         Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
-                         Variant="Variant.Outlined" Margin="Margin.Dense" Error="@(Refused is not null)" />
+        <RiverNumericField T="decimal" InputId="river-split-pay" Value="_view.FieldPay" ValueChanged="OnPayChanged"
+                           Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
+                           Variant="Variant.Outlined" Margin="Margin.Dense" Error="@(Refused is not null)" Refusal="@Refused" />
     </RiverField>
     @if (_search is { } shown)
     {

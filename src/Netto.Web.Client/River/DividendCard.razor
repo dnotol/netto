@@ -18,10 +18,10 @@
     else
     {
         <RiverField Label="@L["EarlierLabel"]" For="river-earlier-profits" Origin="Inputs.EarlierProfits.Origin">
-            <MudNumericField T="decimal" InputId="river-earlier-profits" Value="Inputs.EarlierProfits.Value" ValueChanged="OnEarlierProfitsChanged"
-                             Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
-                             Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
-                             Error="@(Refused == YearSimulation.EarlierProfitsNegative)" />
+            <RiverNumericField T="decimal" InputId="river-earlier-profits" Value="Inputs.EarlierProfits.Value" ValueChanged="OnEarlierProfitsChanged"
+                               Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
+                               Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
+                               Error="@(Refused == YearSimulation.EarlierProfitsNegative)" Refusal="@Refused" />
             <p class="dividend__hint">@L["EarlierHint"]</p>
         </RiverField>
         <RiverField Label="@L["KeptLabel"]" For="river-reserve" Origin="Inputs.Reserve.Origin">
@@ -31,9 +31,9 @@
                            Immediate="true" Color="Color.Primary" Culture="Formats.Culture" Disabled="@(_view.Maximum == 0m)"
                            aria-labelledby="river-reserve-label" />
             }
-            <MudNumericField T="decimal" InputId="river-reserve" Value="@(_view?.Kept ?? Inputs.Reserve.Value)" ValueChanged="OnReserveChanged"
-                             Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
-                             Variant="Variant.Outlined" Margin="Margin.Dense" Error="@(Refused == YearSimulation.ReserveNegative)" />
+            <RiverNumericField T="decimal" InputId="river-reserve" Value="@(_view?.Kept ?? Inputs.Reserve.Value)" ValueChanged="OnReserveChanged"
+                               Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
+                               Variant="Variant.Outlined" Margin="Margin.Dense" Error="@(Refused == YearSimulation.ReserveNegative)" Refusal="@Refused" />
         </RiverField>
         @if (_view is not null)
         {

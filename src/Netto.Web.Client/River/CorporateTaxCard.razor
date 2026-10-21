@@ -55,11 +55,11 @@
                 @foreach (var field in AdvancePaymentFields.From(Inputs))
                 {
                     <RiverField Label="@L["PaymentLabel", Formats.Day(field.Date)]" For="@($"river-advance-payment-{field.Deadline}")" Origin="field.Paid.Origin">
-                        <MudNumericField T="decimal" InputId="@($"river-advance-payment-{field.Deadline}")" Value="field.Paid.Value"
-                                         ValueChanged="@(amount => OnAdvancePaymentChanged(field.Deadline, amount))"
-                                         Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
-                                         Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
-                                         Error="@(Refused == YearSimulation.AdvancePaymentNegative && field.Paid.Value < 0m)" />
+                        <RiverNumericField T="decimal" InputId="@($"river-advance-payment-{field.Deadline}")" Value="field.Paid.Value"
+                                           ValueChanged="@(amount => OnAdvancePaymentChanged(field.Deadline, amount))"
+                                           Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
+                                           Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
+                                           Error="@(Refused == YearSimulation.AdvancePaymentNegative && field.Paid.Value < 0m)" Refusal="@Refused" />
                     </RiverField>
                 }
             </div>
