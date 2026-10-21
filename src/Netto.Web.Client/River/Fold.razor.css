@@ -5,11 +5,13 @@
 }
 
 /* The whole row is the button: no frame of its own on a card, the title and the summary on one line
-   while they fit, the summary wrapping under the title otherwise, the chevron always at the end. */
+   while they fit, the summary wrapping under the title otherwise, the chevron always at the end.
+   MudBlazor centres a button's content, so the row starts at the left on purpose. */
 .fold__toggle {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
+    justify-content: flex-start;
     gap: 0.25rem 0.75rem;
     width: 100%;
     min-height: 44px;
