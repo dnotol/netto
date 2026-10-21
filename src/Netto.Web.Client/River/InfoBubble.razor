@@ -1,0 +1,135 @@
+@implements IAsyncDisposable
+@inject IStringLocalizer<InfoBubble> L
+@inject IJSRuntime JS
+
+@* A short text behind a trigger, the river's toggletip: a small (i) after a label (Label), named
+   « More about » it; a term in running text drawn with a dotted underline (Term), named by itself; or
+   a term the caller draws its own way (TriggerClass), such as an origin chip. It opens on hover, on
+   focus and on click, and stays open while the pointer is over the trigger or the bubble, or while
+   the trigger has the focus, never closing on its own; opened by a click, it stays until a second
+   click, Escape or a press outside. Escape closes it wherever the focus is and goes no further, so
+   it closes nothing else and the focus stays where it was. The bubble is drawn in a live region,
+   empty while it is closed, so a screen reader reads its text as it opens. One bubble is open at a
+   time: nettoBubble (Netto.Web's wwwroot/info-bubble.js) places it under its trigger, or above where
+   there is no room below, within the window, and follows the trigger as the page scrolls. The
+   trigger is a button of its own: never put one inside another control, a fold's header, a button
+   or a checkbox's label; put it beside them. *@
+<span class="info-bubble">
+    <button type="button" @ref="_trigger" class="info-bubble__trigger @TriggerKind"
+            aria-expanded="@(Open ? "true" : "false")" aria-label="@AccessibleName"
+            @onclick="Toggle" @onfocus="Focus" @onblur="Blur" @onmouseenter="Enter" @onmouseleave="Leave">
+        @if (Term is null)
+        {
+            <MudIcon Icon="@Icons.Material.Outlined.Info" aria-hidden="true" />
+        }
+        else
+        {
+            @Term
+        }
+    </button>
+    <span role="status" class="info-bubble__status">
+        @if (Open)
+        {
+            <span @ref="_bubble" class="info-bubble__box" @onmouseenter="Enter" @onmouseleave="Leave">@ChildContent</span>
+        }
+    </span>
+</span>
+
+@code {
+    // Long enough for the pointer to cross from the trigger to the bubble.
+    private static readonly TimeSpan LeaveDelay = TimeSpan.FromMilliseconds(250);
+
+    // What the (i) says more about: the label it stands after.
+    [Parameter]
+    public string? Label { get; set; }
+
+    // The term drawn as the trigger, in place of the (i).
+    [Parameter]
+    public string? Term { get; set; }
+
+    // The classes of a term the caller draws its own way, in place of the dotted underline.
+    [Parameter]
+    public string? TriggerClass { get; set; }
+
+    [Parameter, EditorRequired]
+    public RenderFragment? ChildContent { get; set; }
+
+    private ElementReference _trigger;
+    private ElementReference _bubble;
+    private DotNetObjectReference<InfoBubble>? _self;
+    private bool _hovered;
+    private bool _focused;
+    private bool _pinned;
+    private bool _placed;
+
+    // Counts the pointer's moves onto and off the trigger and the bubble, so that only the last
+    // leaving closes it.
+    private int _moves;
+
+    private bool Open => _pinned || _hovered || _focused;
+
+    private string TriggerKind => TriggerClass ?? (Term is null ? "info-bubble__icon" : "info-bubble__term");
+
+    private string? AccessibleName => Term is null ? L[InfoBubbleText.MoreAbout, Label ?? ""].Value : null;
+
+    // Placed again at every render while open, since its text can change its size.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (Open)
+        {
+            _self ??= DotNetObjectReference.Create(this);
+            await JS.InvokeVoidAsync("nettoBubble.show", _self, _trigger, _bubble);
+            _placed = true;
+        }
+        else if (_placed)
+        {
+            _placed = false;
+            await JS.InvokeVoidAsync("nettoBubble.hide", _trigger);
+        }
+    }
+
+    // Closed however it was opened: by Escape or a press outside, by another bubble opening, or by a
+    // second click.
+    [JSInvokable]
+    public void Dismiss()
+    {
+        _moves++;
+        (_pinned, _hovered, _focused) = (false, false, false);
+        StateHasChanged();
+    }
+
+    // Open by hover or focus, a click keeps it open; a second click closes it.
+    private void Toggle()
+    {
+        if (_pinned)
+            Dismiss();
+        else
+            _pinned = true;
+    }
+
+    private void Focus() => _focused = true;
+
+    private void Blur() => _focused = false;
+
+    private void Enter()
+    {
+        _moves++;
+        _hovered = true;
+    }
+
+    private async Task Leave()
+    {
+        var move = ++_moves;
+        await Task.Delay(LeaveDelay);
+        if (move == _moves)
+            _hovered = false;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_placed)
+            await JS.InvokeVoidAsync("nettoBubble.hide", _trigger);
+
+        _self?.Dispose();
+    }
+}

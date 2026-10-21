@@ -97,3 +97,9 @@ internal static class TakenOutNoticeText
 {
     public static string TakenOut(OptionalModule module) => $"TakenOut_{module}";
 }
+
+internal static class InfoBubbleText
+{
+    // The name of a bubble's (i): « More about » what it stands beside.
+    public const string MoreAbout = "MoreAbout";
+}

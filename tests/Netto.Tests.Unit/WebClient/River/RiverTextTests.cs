@@ -40,6 +40,8 @@ public class RiverTextTests
 
     private static readonly ResourceManager TakenOutNoticeResources = new("Netto.Web.Client.River.TakenOutNotice", typeof(TakenOutNotice).Assembly);
 
+    private static readonly ResourceManager InfoBubbleResources = new("Netto.Web.Client.River.InfoBubble", typeof(InfoBubble).Assembly);
+
     // The conditions of every lever the river shows, which the shared list words through one .resx.
     private static readonly IReadOnlyList<LeverCondition> LeverConditions =
     [
@@ -235,6 +237,13 @@ public class RiverTextTests
     public void TakenOutNoticeResx_everyOptionalModule_hasAText()
     {
         Missing(TakenOutNoticeResources, PlanComposition.Modules.Select(TakenOutNoticeText.TakenOut)).ShouldBeEmpty();
+    }
+
+    // An info bubble's (i) is named by what it says more about.
+    [Fact]
+    public void InfoBubbleResx_nameOfItsIcon_hasAText()
+    {
+        Missing(InfoBubbleResources, [InfoBubbleText.MoreAbout]).ShouldBeEmpty();
     }
 
     private static IEnumerable<string> Missing(ResourceManager resources, IEnumerable<string> keys) =>
