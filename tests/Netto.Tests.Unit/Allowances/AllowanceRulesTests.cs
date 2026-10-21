@@ -58,4 +58,13 @@ public class AllowanceRulesTests
             ("phone_on_invoices", rules.TeleworkCircular),
         });
     }
+
+    // The circular is cited whole: the allowances' conditions draw on several of its paragraphs.
+    [Fact]
+    public void Conditions_2026_citeEachTextByAShortLabel()
+    {
+        var rules = AllowanceRules.IncomeYear2026;
+
+        (rules.Reimbursement.Label, rules.TeleworkCircular.Label).ShouldBe(("CIR 92, art. 32", "Circular 2021/C/20"));
+    }
 }

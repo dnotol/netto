@@ -70,4 +70,20 @@ public class RentRulesTests
             ("not_with_office_allowance", rules.TeleworkCircular),
         });
     }
+
+    // The circular is cited by the one paragraph the rent's condition rests on.
+    [Theory]
+    [InlineData(2026)]
+    [InlineData(2025)]
+    public void Conditions_citeEachTextByAShortLabel(int incomeYear)
+    {
+        var rules = RentRules.For(incomeYear).ShouldNotBeNull();
+
+        rules.Conditions.SelectMany(condition => condition.Sources, (condition, source) => (condition.Key, source.Label)).ShouldBe(new[]
+        {
+            ("share_yours_to_justify", "CIR 92, art. 7"),
+            ("share_yours_to_justify", "CIR 92, art. 32"),
+            ("not_with_office_allowance", "Circular 2021/C/20, §31"),
+        });
+    }
 }

@@ -30,7 +30,7 @@ public sealed record VoucherRules(
         "CIR 92, art. 38/1 (revenus 2026), coordinated text on Fisconetplus, last modified 14.01.2026",
         "§1: not in replacement of pay. §2, al. 1: meal vouchers granted by a written individual agreement where no collective one is possible (1°), one per day actually worked (2°), in the holder's name (3°), the company's share at most 8.91 (5°, vouchers granted from 01.01.2026) and the holder's at least 1.09 (6°). §3: sport/culture vouchers, at most 100 a year (4°). §4: eco vouchers, the agreement stating their face value, at most 10, and how often they are granted (2°), at most 250 a year (6°)",
         new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/6a028d41-f93b-43f0-85ce-ec749722675a"),
-        "personal-tax/spf-finances_cir92-art-38-1-revenus-2026_2026-01-14.html");
+        "personal-tax/spf-finances_cir92-art-38-1-revenus-2026_2026-01-14.html") { Label = "CIR 92, art. 38/1" };
 
     private static readonly Source Article53Income2026 = new(
         "CIR 92, art. 53 (revenus 2026), coordinated text on Fisconetplus, last modified 18.02.2026",
@@ -42,7 +42,7 @@ public sealed record VoucherRules(
         "Parliamentary question n° 15220 of 01.02.2017 (CRIV 54 COM 582), on Fisconetplus, last modified 04.10.2019",
         "The Minister of Finance: directors who employ no staff are not excluded from the meal-voucher exemption, but the vouchers must match the days actually worked; without proof of them the exemption does not apply and the company's share is taxable pay",
         new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/81a0efae-d13f-4c4b-ba07-efe720ab8c7f"),
-        "personal-tax/spf-finances_question-parlementaire-15220_2019-10-04.html");
+        "personal-tax/spf-finances_question-parlementaire-15220_2019-10-04.html") { Label = "Question 15220" };
 
     private static readonly RuleAmount EcoVoucherFaceValueMaximum2026 = new("eco_voucher_face_value_maximum", 10m, Article38_1Income2026);
 

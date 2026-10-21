@@ -52,6 +52,19 @@ public class VoucherRulesTests
     }
 
     [Fact]
+    public void Conditions_2026_citeEachTextByAShortLabel()
+    {
+        VoucherRules.IncomeYear2026.Conditions.Select(condition => condition.Sources.Select(source => source.Label)).ShouldBe(new[]
+        {
+            new[] { "CIR 92, art. 38/1" },
+            ["CIR 92, art. 38/1"],
+            ["CIR 92, art. 38/1", "Question 15220"],
+            ["CIR 92, art. 38/1"],
+            ["CIR 92, art. 38/1"],
+        });
+    }
+
+    [Fact]
     public void Conditions_2026EcoAgreement_namesTheFaceValueItStates()
     {
         VoucherRules.IncomeYear2026.Conditions.Single(condition => condition.Key == "eco_agreement_terms").Amounts

@@ -28,13 +28,13 @@ public sealed record RentRules(
         "CIR 92, art. 7 (revenus 2025), coordinated text on Fisconetplus, last modified 25.11.2024",
         "§1, 2°, c: a built property let otherwise than to a natural person for housing, to a company, yields the total of the rent and the rental benefits, never less than the cadastral income plus 40%",
         new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/90f0344b-4877-42fd-a0d5-761d3d974c88"),
-        "personal-tax/spf-finances_cir92-art-7-revenus-2025_2024-11-25.html");
+        "personal-tax/spf-finances_cir92-art-7-revenus-2025_2024-11-25.html") { Label = "CIR 92, art. 7" };
 
     private static readonly Source Article7Income2026 = new(
         "CIR 92, art. 7 (revenus 2026), coordinated text on Fisconetplus, last modified 02.03.2026",
         "§1, 2°, c: a built property let otherwise than to a natural person for housing, to a company, yields the total of the rent and the rental benefits, never less than the cadastral income plus 40%",
         new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/583b6854-60c4-42fc-83bf-5476d1fd3e33"),
-        "personal-tax/spf-finances_cir92-art-7-revenus-2026_2026-03-02.html");
+        "personal-tax/spf-finances_cir92-art-7-revenus-2026_2026-03-02.html") { Label = "CIR 92, art. 7" };
 
     private static readonly Source Article13Income2025 = new(
         "CIR 92, art. 13 (revenus 2025), coordinated text on Fisconetplus, last modified 23.01.2025",
@@ -52,13 +52,13 @@ public sealed record RentRules(
         "CIR 92, art. 32 (revenus 2025), coordinated text on Fisconetplus, last modified 02.12.2024",
         "Al. 2, 3°: the rent a director receives from their company for a built property is director pay where it exceeds 5/3 of the cadastral income revalued by art. 13's coefficient, with no costs deducted from that part",
         new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/adf7c228-083c-4468-b8d1-151c1e03a067"),
-        "personal-tax/spf-finances_cir92-art-32-revenus-2025_2024-12-02.html");
+        "personal-tax/spf-finances_cir92-art-32-revenus-2025_2024-12-02.html") { Label = "CIR 92, art. 32" };
 
     private static readonly Source Article32Income2026 = new(
         "CIR 92, art. 32 (revenus 2026), coordinated text on Fisconetplus, last modified 29.01.2026",
         "Al. 2, 3°: the rent a director receives from their company for a built property is director pay where it exceeds 5/3 of the cadastral income revalued by art. 13's coefficient, with no costs deducted from that part",
         new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/7628aa2c-168a-4bd8-aec4-288108a91757"),
-        "personal-tax/spf-finances_cir92-art-32-revenus-2026_2026-01-29.html");
+        "personal-tax/spf-finances_cir92-art-32-revenus-2026_2026-01-29.html") { Label = "CIR 92, art. 32" };
 
     private static readonly Source IndexationNotice2026 = new(
         "Indexation notice for assessment year 2026, version 19.01.2026",
@@ -76,7 +76,7 @@ public sealed record RentRules(
         "Circulaire 2021/C/20 du 26.02.2021 relative aux interventions de l'employeur pour le télétravail, on Fisconetplus, last modified 09.09.2026",
         "§31: the flat-rate office allowance covers, among others, the use of an office space in the home, its rent included",
         new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/c4b263eb-091c-4a11-8ad0-24e2b11bb7db"),
-        "personal-tax/spf-finances_circulaire-2021-c-20-teletravail_2026-09-09.html");
+        "personal-tax/spf-finances_circulaire-2021-c-20-teletravail_2026-09-09.html") { Label = "Circular 2021/C/20, §31" };
 
     public static RentRules IncomeYear2025 { get; } = Of(2025, Article7Income2025, Article13Income2025, Article32Income2025, 5.63m,
         new RuleAmount("cadastral_income_indexation_coefficient", 2.2446m, IndexationNotice2026));
