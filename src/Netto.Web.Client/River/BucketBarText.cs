@@ -11,6 +11,17 @@ internal static class BucketBarText
     // Why there is no figure while the engine refuses an amount, in the bar and its live region.
     public const string Refused = "Refused";
 
+    // What the reach is out of, in the bubble its share opens.
+    public const string ReachMeaning = "ReachMeaning";
+
+    // With the company skipped, after the reach: where the rest of the river is.
+    public const string EnterCompany = "EnterCompany";
+
+    // Under the bar, what reaches the pocket and what went to taxes: of what the company does not
+    // keep, once it keeps some.
+    public static string Reach(BucketsView view) =>
+        view.Buckets.Single(bucket => bucket.Key == "kept_in_company").Amount > 0m ? "Reach_Kept" : "Reach";
+
     // The taxes on pay say they hold the rent's tax too once there is one.
     public static string Bucket(string key, bool taxesOnPayIncludeRent) =>
         taxesOnPayIncludeRent && key == "taxes_on_pay" ? "Bucket_taxes_on_pay_and_rent" : $"Bucket_{key}";

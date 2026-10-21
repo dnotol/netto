@@ -1,9 +1,13 @@
+@inject IStringLocalizer<ModuleCard> L
+
 @* The frame every module of the river shares: its title and what flows through it, on the one line it
    folds to (Fold), with what the module is in a bubble at its end (Help), then its controls and its detail view, folded under them to one line of its own
    (Fold, level 3) and opened on demand, and last, for an optional module, the word that takes it out
-   of the plan. A skipped module is drawn dashed, waiting for the amounts it needs. *@
+   of the plan. A skipped module is drawn dashed, waiting for the amounts it needs. The summary ends
+   on one share, worded here for every card: what reaches the pocket of what the module receives
+   (ToYou), or, for Corporate tax, what it passes on (PassesOn); none while no money flows through it. *@
 <section class="module-card @(Skipped ? "module-card--skipped" : null)" aria-labelledby="@_titleId">
-    <Fold Name="@Name" Title="@Title" TitleId="@_titleId" Summary="@Summary" Help="@Help">
+    <Fold Name="@Name" Title="@Title" TitleId="@_titleId" Summary="@Summary" Rate="@Rate" Help="@Help">
         <div class="module-card__body">
             @ChildContent
             @if (Details is not null)
@@ -34,6 +38,14 @@
     [Parameter]
     public string? Summary { get; set; }
 
+    // What reaches the pocket of what the module receives.
+    [Parameter]
+    public decimal? ToYou { get; set; }
+
+    // What the module passes on of what it receives, for one that reaches no pocket itself.
+    [Parameter]
+    public decimal? PassesOn { get; set; }
+
     // What the module is, in a bubble at the end of the heading's row.
     [Parameter]
     public string? Help { get; set; }
@@ -61,4 +73,11 @@
     public EventCallback OnRemove { get; set; }
 
     private readonly string _titleId = $"module-{Guid.NewGuid():N}";
+
+    private string? Rate => (ToYou, PassesOn) switch
+    {
+        ({ } share, _) => L[ModuleCardText.ToYou, Formats.WholeShare(share)].Value,
+        (_, { } share) => L[ModuleCardText.PassesOn, Formats.WholeShare(share)].Value,
+        _ => null,
+    };
 }

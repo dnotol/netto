@@ -12,7 +12,7 @@
    their texts, the director's own case first. The amounts are taken while typing, like revenue, and
    carry no Min or Max: the engine refuses what the rules do not allow, and its message is what the
    user has to see. Skipped with the company. *@
-<ModuleCard Name="allowances" Title="@L["Title"]" Summary="@Summary" Help="@L["Hint"]" Skipped="Inputs.Company is null" Details="@Details"
+<ModuleCard Name="allowances" Title="@L["Title"]" Summary="@Summary" ToYou="@_view?.ToYou" Help="@L["Hint"]" Skipped="Inputs.Company is null" Details="@Details"
             DetailsLabel="@L["DetailsLabel"]" RemoveLabel="@L["Remove"]" OnRemove="Remove">
     @if (Inputs.Company is null)
     {

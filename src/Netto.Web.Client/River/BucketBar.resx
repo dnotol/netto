@@ -37,10 +37,22 @@
     <value>Out of {0} of profit before what the company pays you and {1} kept from earlier years.</value>
   </data>
   <data name="FromPay" xml:space="preserve">
-    <value>Out of {0} of gross pay. Enter your company's year to see the rest of the river.</value>
+    <value>Out of {0} of gross pay.</value>
   </data>
   <data name="FromPayCost" xml:space="preserve">
-    <value>Out of {0}, your gross pay and the contributions the company pays for you. Enter your company's year to see the rest of the river.</value>
+    <value>Out of {0}, your gross pay and the contributions the company pays for you.</value>
+  </data>
+  <data name="EnterCompany" xml:space="preserve">
+    <value>Enter your company's year to see the rest of the river.</value>
+  </data>
+  <data name="Reach" xml:space="preserve">
+    <value>[{0} reaches you], {1} goes to taxes.</value>
+  </data>
+  <data name="Reach_Kept" xml:space="preserve">
+    <value>Of what the company does not keep, [{0} reaches you], {1} goes to taxes.</value>
+  </data>
+  <data name="ReachMeaning" xml:space="preserve">
+    <value>Your pocket, out of what the river starts from less what the company keeps at year end, which is still yours. Running costs are left out: they are not taxes, and no lever moves them.</value>
   </data>
   <data name="Refused" xml:space="preserve">
     <value>No figures until the amount marked below is corrected.</value>

@@ -72,6 +72,12 @@
   <data name="BestOverReserve" xml:space="preserve">
     <value>Best pay that keeps the {0} you keep in the company: {1}, with a dividend of {2}. It leaves {3} in your pocket. Your pay leaves {4}, but only {5} can stay in the company.</value>
   </data>
+  <data name="BestReach" xml:space="preserve">
+    <value>{0} reaches you there, against {1} at your pay.</value>
+  </data>
+  <data name="BestIsYoursReach" xml:space="preserve">
+    <value>{0} reaches you.</value>
+  </data>
   <data name="BestIsYours" xml:space="preserve">
     <value>Your pay is the best for this year: {0} in your pocket, with a dividend of {1}.</value>
   </data>

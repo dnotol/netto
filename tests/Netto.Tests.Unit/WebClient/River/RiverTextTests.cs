@@ -34,6 +34,8 @@ public class RiverTextTests
 
     private static readonly ResourceManager SplitCardResources = new("Netto.Web.Client.River.SplitCard", typeof(SplitCard).Assembly);
 
+    private static readonly ResourceManager ModuleCardResources = new("Netto.Web.Client.River.ModuleCard", typeof(ModuleCard).Assembly);
+
     private static readonly ResourceManager ConditionListResources = new("Netto.Web.Client.River.ConditionList", typeof(ConditionList).Assembly);
 
     private static readonly ResourceManager CompositionMenuResources = new("Netto.Web.Client.River.CompositionMenu", typeof(CompositionMenu).Assembly);
@@ -273,6 +275,20 @@ public class RiverTextTests
     public void SplitCardResx_reducedRate_saysWhatItMeans()
     {
         Missing(SplitCardResources, [SplitCardText.ReducedRateTerm]).ShouldBeEmpty();
+    }
+
+    // What reaches the pocket at the best pay, against the pay set, or at the pay set when it is the best.
+    [Fact]
+    public void SplitCardResx_reach_hasItsTexts()
+    {
+        Missing(SplitCardResources, [SplitCardText.BestReach, SplitCardText.BestIsYoursReach]).ShouldBeEmpty();
+    }
+
+    // The rate in a card's summary says what it measures, worded once for every card.
+    [Fact]
+    public void ModuleCardResx_rates_haveTheirTexts()
+    {
+        Missing(ModuleCardResources, [ModuleCardText.ToYou, ModuleCardText.PassesOn]).ShouldBeEmpty();
     }
 
     [Fact]

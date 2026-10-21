@@ -68,6 +68,16 @@
     font-size: 1.4rem;
 }
 
+/* A bucket's share of the start, beside its amount, small and muted: the amount stays the figure. */
+.bucket__share {
+    margin-left: 0.15rem;
+    font-family: "Inter", system-ui, sans-serif;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--netto-text-muted);
+    font-variant-numeric: tabular-nums;
+}
+
 .bucket__swatch {
     flex: none;
     width: 0.6rem;
@@ -175,5 +185,10 @@
 
     .bucket-bar__from {
         font-size: 0.72rem;
+    }
+
+    /* The phone's two rows of buckets keep to their amounts; the line under them says the reach. */
+    .bucket__share {
+        display: none;
     }
 }

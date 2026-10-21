@@ -100,7 +100,13 @@
         <p class="split__pointer">@PointerText</p>
         @if (weighed.Best is { } best)
         {
-            <p class="split__best">@BestText(best)</p>
+            <p class="split__best">
+                @BestText(best)
+                @if (ReachText(weighed, best) is { } reach)
+                {
+                    @(" ")@reach
+                }
+            </p>
             @if (weighed.Rate is { } rate)
             {
                 <p class="split__rate"><TermSentence Text="@RateText(rate)" Meaning="@L[SplitCardText.ReducedRateTerm]" /></p>
@@ -170,6 +176,16 @@
         { } level => L["PointerMissesReserve", Formats.Euros(level.Pay), Formats.Euros(level.NetInPocket), Formats.Euros(level.KeptInCompany),
             Formats.Euros(Inputs.Reserve.Value)].Value,
         null => Run.Year is { } year ? L["PointerYours", Formats.Euros(year.DirectorPay.GrossPay), Formats.Euros(year.NetInPocket)].Value : "",
+    };
+
+    // What reaches the pocket out of what leaves the company, as the bar says it: at the best pay
+    // against the pay set, or at the pay set when it is the best. None when the pay set eats into the
+    // reserve, the two not leaving the same company behind.
+    private string? ReachText(SplitSearchView search, BestPayView best) => (best, search.Reach) switch
+    {
+        ({ IsYours: true, Reach: { } reach }, _) => L[SplitCardText.BestIsYoursReach, Formats.Share(reach)].Value,
+        ({ YoursKeepsReserve: true, Reach: { } reach }, { } yours) => L[SplitCardText.BestReach, Formats.Share(reach), Formats.Share(yours)].Value,
+        _ => null,
     };
 
     private string BestText(BestPayView best) => best switch

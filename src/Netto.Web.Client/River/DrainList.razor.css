@@ -29,6 +29,20 @@
     font-size: 0.75rem;
 }
 
+/* A line's share of what its card receives, under its amount, as small and muted as where it goes. */
+.drain--shared .drain__to {
+    grid-column: 1;
+}
+
+.drain__share {
+    grid-column: 2;
+    color: var(--netto-text-muted);
+    font-size: 0.75rem;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    white-space: nowrap;
+}
+
 .drain--passed-on .drain__label {
     font-weight: 600;
 }

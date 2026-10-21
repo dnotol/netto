@@ -4,7 +4,8 @@
 
 @* Where a module's money goes, line by line: what leaves into a bucket of taxes, what comes back
    out of one, and what is passed on to the pocket, the company's reserve or the next module. Only
-   the lines that move money (DrainLines); none, and there is no list. A line of the engine's steps
+   the lines that move money (DrainLines); none, and there is no list. A line that takes part of what
+   its card receives says its share of it under its amount (Drain.Share). A line of the engine's steps
    opens an info bubble from its label: how its amount is computed and from which texts, each text
    with the year's amounts the step used, worded as the card's sources word them (StepDetails). *@
 @if (_shown.Count > 0)
@@ -12,7 +13,7 @@
     <ul class="drain-list">
         @foreach (var drain in _shown)
         {
-            <li class="drain drain--@Modifier(drain.Kind) drain--to-@drain.To">
+            <li class="drain drain--@Modifier(drain.Kind) drain--to-@drain.To @(drain.Share is null ? null : "drain--shared")">
                 <span class="drain__label">
                     @if (drain.Details.Count > 0)
                     {
@@ -25,6 +26,10 @@
                 </span>
                 <span class="drain__amount">@Amount(drain)</span>
                 <span class="drain__to">@L[DrainListText.Destination(drain)]</span>
+                @if (drain.Share is { } share)
+                {
+                    @(" ")<span class="drain__share">@Formats.Share(share)</span>
+                }
             </li>
         }
     </ul>

@@ -59,6 +59,20 @@
     font-variant-numeric: tabular-nums;
 }
 
+/* The summary's share, a neutral pill, so the cards' rates read as a column down the river. */
+.fold__rate {
+    display: inline-block;
+    margin-left: 0.25rem;
+    padding: 0 0.5rem;
+    border: 1px solid var(--netto-line-input);
+    border-radius: 999px;
+    color: var(--netto-text);
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.6;
+    white-space: nowrap;
+}
+
 .fold__toggle ::deep .fold__chevron {
     flex: 0 0 auto;
     margin-left: auto;

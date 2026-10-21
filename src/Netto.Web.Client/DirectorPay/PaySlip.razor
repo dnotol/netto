@@ -4,7 +4,7 @@
 @inject IStringLocalizer<PaySlip> L
 
 @* Director pay's detail view: the pay through what is paid out to the net, beside what lowers the
-   tax base to the taxable income, on one shared scale; the pay month by month as the company pays
+   tax base to the taxable income, on one shared scale, each row with its share of the gross; the pay month by month as the company pays
    it, with the key formula's withholding as a step behind it; the balance the assessment leaves,
    with the article it follows behind it; and where the next €1,000 would go. With a rent taxed with
    the pay, the balance and the next €1,000 are the year's and say so. What a track or a section
@@ -24,7 +24,13 @@
                     {
                         <li class="funnel-row funnel-row--@Modifier(row.Kind)">
                             <span class="funnel-row__label">@L[PaySlipText.Row(row.Key)]</span>
-                            <span class="funnel-row__amount">@Amount(row)</span>
+                            <span class="funnel-row__amount">
+                                @Amount(row)
+                                @if (row.Share is { } share)
+                                {
+                                    @(" ")<span class="funnel-row__share">@Formats.Share(share)</span>
+                                }
+                            </span>
                             <span class="funnel-row__track" aria-hidden="true">
                                 <span class="funnel-row__bar" style="@BarStyle(row)"></span>
                             </span>

@@ -56,6 +56,36 @@ public class BucketBarTextTests
         text.ShouldBe("In your pocket: €61,975.74.");
     }
 
+    // Under the bar, what reaches the pocket out of the example's 100,000, nothing being kept
+    // (BucketsViewTests), the share being the term its bubble explains.
+    [Fact]
+    public void Reach_example_saysWhatReachesThePocketAndWhatGoesToTaxes()
+    {
+        var view = BucketsView.From(RiverInputs.Example.Run()).ShouldNotBeNull();
+
+        var text = string.Format(CultureInfo.InvariantCulture, Resources.GetString(BucketBarText.Reach(view), CultureInfo.InvariantCulture) ?? "", "62%", "38%");
+
+        text.ShouldBe("[62% reaches you], 38% goes to taxes.");
+    }
+
+    // What the company keeps is still the director's: the sentence says the share is of the rest.
+    [Fact]
+    public void Reach_reserve_saysItIsOfWhatTheCompanyDoesNotKeep()
+    {
+        var view = BucketsView.From(RiverInputs.Example.WithReserve(15_000m).Run()).ShouldNotBeNull();
+
+        TermText.Split(Resources.GetString(BucketBarText.Reach(view), CultureInfo.InvariantCulture) ?? "")
+            .ShouldBe(("Of what the company does not keep, ", "{0} reaches you", ", {1} goes to taxes."));
+    }
+
+    [Fact]
+    public void BucketBarResx_reach_saysWhatItMeansAndWhereTheRestOfTheRiverIs()
+    {
+        new[] { BucketBarText.ReachMeaning, BucketBarText.EnterCompany }
+            .Where(key => Resources.GetString(key, CultureInfo.InvariantCulture) is null)
+            .ShouldBeEmpty();
+    }
+
     // While the engine refuses an amount there is no figure to announce.
     [Fact]
     public void Pocket_noFigure_isNothing()

@@ -15,7 +15,7 @@
    typing, since nothing bounds them, and the card says what they leave on the tax, the bonus they
    earn and what more by the last deadline leaves no surcharge due. The pay slip and the rules
    behind each figure are its detail view. *@
-<ModuleCard Name="director-pay" Title="@L["Title"]" Summary="@Summary" Details="@Details" DetailsLabel="@L["DetailsLabel"]">
+<ModuleCard Name="director-pay" Title="@L["Title"]" Summary="@Summary" ToYou="@_view?.ToYou" Details="@Details" DetailsLabel="@L["DetailsLabel"]">
     @if (Inputs.Company is null)
     {
         <RiverField Label="@L["OwnPayLabel"]" For="river-pay" Origin="Inputs.DirectorPay.Origin">

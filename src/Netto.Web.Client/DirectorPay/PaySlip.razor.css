@@ -68,6 +68,17 @@
     white-space: nowrap;
 }
 
+/* The row's share of the gross, after its amount, small and muted. */
+.funnel-row__share {
+    display: inline-block;
+    min-width: 3.2rem;
+    margin-left: 0.35rem;
+    color: var(--netto-text-muted);
+    font-size: 0.75rem;
+    font-weight: 400;
+    text-align: right;
+}
+
 /* The bar's lane spans the scale shared by both tracks; the bar inside is placed by the left and
    width percentages GrossToNetView computes, so a part paid out starts where the previous bar
    ended. */

@@ -80,10 +80,24 @@ internal static class ConditionListText
     public static string Heading(int count) => count == 1 ? "Heading_One" : "Heading_Many";
 }
 
+// The share a card's summary ends on, worded once in ModuleCard.resx for every card.
+internal static class ModuleCardText
+{
+    public const string ToYou = "ToYou";
+
+    public const string PassesOn = "PassesOn";
+}
+
 internal static class SplitCardText
 {
     // What the reduced corporate rate is, in the bubble the term opens where the rate is weighed.
     public const string ReducedRateTerm = "Term_ReducedRate";
+
+    // What reaches the pocket at the best pay, against the pay set.
+    public const string BestReach = "BestReach";
+
+    // What reaches the pocket at the pay set, the best.
+    public const string BestIsYoursReach = "BestIsYoursReach";
 
     // The sentence names the best pay on the other side of the threshold only when one keeps the
     // reserve.
