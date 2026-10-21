@@ -56,13 +56,22 @@ public class BucketBarTextTests
         text.ShouldBe("In your pocket: €61,975.74.");
     }
 
-    // While the engine refuses an amount there is no figure: the region empties, and the card holding
-    // the refused amount says why.
+    // While the engine refuses an amount there is no figure to announce.
     [Fact]
     public void Pocket_noFigure_isNothing()
     {
         var pocket = BucketBarAnnouncement.Pocket(null);
 
         pocket.ShouldBeNull();
+    }
+
+    // The bar, and its live region once the river settles, say instead that there is no figure until
+    // the amount the card marks is corrected.
+    [Fact]
+    public void BucketBarResx_noFigure_saysWhy()
+    {
+        var text = Resources.GetString(BucketBarText.Refused, CultureInfo.InvariantCulture);
+
+        text.ShouldBe("No figures until the amount marked below is corrected.");
     }
 }

@@ -8,6 +8,9 @@ internal static class BucketBarText
     // What reaches the pocket, as the bar's live region says it once the river settles.
     public const string PocketAnnounced = "PocketAnnounced";
 
+    // Why there is no figure while the engine refuses an amount, in the bar and its live region.
+    public const string Refused = "Refused";
+
     // The taxes on pay say they hold the rent's tax too once there is one.
     public static string Bucket(string key, bool taxesOnPayIncludeRent) =>
         taxesOnPayIncludeRent && key == "taxes_on_pay" ? "Bucket_taxes_on_pay_and_rent" : $"Bucket_{key}";

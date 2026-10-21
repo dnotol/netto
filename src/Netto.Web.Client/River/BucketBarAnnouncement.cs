@@ -8,8 +8,8 @@ internal static class BucketBarAnnouncement
     // How long the river stays still before the pocket is announced.
     public static readonly TimeSpan Settle = TimeSpan.FromMilliseconds(800);
 
-    // The pocket's amount, or nothing while the engine refuses an amount: the card that holds it
-    // says why.
+    // The pocket's amount, or nothing while the engine refuses an amount: the region then says there
+    // is no figure until it is corrected (BucketBarText.Refused).
     public static string? Pocket(BucketsView? view) =>
         view?.Buckets.Single(bucket => bucket.Key == "pocket").Amount is { } amount ? Formats.Euros(amount) : null;
 }

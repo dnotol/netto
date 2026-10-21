@@ -5,8 +5,9 @@
    the river starts from, and, at its right, what the page gives it (the Composition menu). Every
    amount is the engine's, regrouped by BucketsView. Each bucket's name opens an info bubble saying
    what it holds. A polite live region says what reaches the pocket once the river has settled
-   (BucketBarAnnouncement), not at every step of a slider dragged; the other buckets are read in the
-   bar itself. The region is one of its own, out of sight, since a bubble opening inside the figures
+   (BucketBarAnnouncement), not at every step of a slider dragged, or, while the engine refuses an
+   amount, that there is no figure until it is corrected; the other buckets are read in the bar
+   itself. The region is one of its own, out of sight, since a bubble opening inside the figures
    would be read out as a change of the bar, and a menu inside it at every change. It is empty as the
    page opens. *@
 <div class="bucket-bar">
@@ -68,7 +69,7 @@
     protected override void OnParametersSet()
     {
         View = BucketsView.From(Run);
-        var pocket = BucketBarAnnouncement.Pocket(View) is { } amount ? L[BucketBarText.PocketAnnounced, amount].Value : "";
+        var pocket = BucketBarAnnouncement.Pocket(View) is { } amount ? L[BucketBarText.PocketAnnounced, amount].Value : L[BucketBarText.Refused].Value;
         if (_pocket is null)
         {
             _pocket = pocket;
@@ -97,7 +98,7 @@
     // Out of what the river starts from, or why there is no figure.
     private string From => View switch
     {
-        null => L["Refused"].Value,
+        null => L[BucketBarText.Refused].Value,
         { StartsAtPay: true } view => L[view.CompanyPaysContributions ? "FromPayCost" : "FromPay", Formats.Euros(view.Start)].Value,
         { EarlierProfits: > 0m } view => L["FromProfitAndEarlier", Formats.Euros(view.Start - view.EarlierProfits), Formats.Euros(view.EarlierProfits)].Value,
         { } view => L["FromProfit", Formats.Euros(view.Start)].Value,
