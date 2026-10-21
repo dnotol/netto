@@ -284,6 +284,27 @@ public class RiverTextTests
         Missing(SplitCardResources, [SplitCardText.BestReach, SplitCardText.BestIsYoursReach]).ShouldBeEmpty();
     }
 
+    // Once the company keeps some, the dividend's summary starts from what it pays out, the base of its
+    // rate, not from all it could: 25,000 of the 40,000 after tax, 15,000 being kept (ModuleViewsTests).
+    [Fact]
+    public void DividendSummary_reserve_saysWhatIsPaidOut()
+    {
+        var view = DividendView.From(RiverInputs.Example.WithAdvancePayment(0, 7_500m).WithTaxWithheld(11_334m).WithReserve(15_000m).Run().Year.ShouldNotBeNull());
+
+        var text = string.Format(CultureInfo.InvariantCulture, DividendCardResources.GetString(DividendCardText.Summary(view), CultureInfo.InvariantCulture) ?? "",
+            "€25,000.00", "€20,649.94");
+
+        text.ShouldBe("€25,000.00 paid out · €20,649.94 to your pocket");
+    }
+
+    [Fact]
+    public void DividendSummary_nothingKept_saysWhatComesIn()
+    {
+        var view = DividendView.From(RiverInputs.Example.Run().Year.ShouldNotBeNull());
+
+        DividendCardText.Summary(view).ShouldBe("Summary");
+    }
+
     // The rate in a card's summary says what it measures, worded once for every card.
     [Fact]
     public void ModuleCardResx_rates_haveTheirTexts()

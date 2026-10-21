@@ -18,6 +18,9 @@
   <data name="Summary" xml:space="preserve">
     <value>{0} in · {1} to your pocket</value>
   </data>
+  <data name="Summary_PaidOut" xml:space="preserve">
+    <value>{0} paid out · {1} to your pocket</value>
+  </data>
   <data name="Waiting" xml:space="preserve">
     <value>Waiting for the company's year.</value>
   </data>

@@ -61,6 +61,10 @@ internal static class DividendCardText
     public const string VvprbisTerm = "Term_Vvprbis";
 
     public static string Category(WithholdingCategory category) => $"Category_{category}";
+
+    // The summary starts from what comes in, all of which is paid out, or, once the company keeps
+    // some, from what is paid out: the base its rate is out of.
+    public static string Summary(DividendView view) => view.Kept > 0m ? "Summary_PaidOut" : "Summary";
 }
 
 internal static class RentCardText

@@ -85,8 +85,10 @@
 
     protected override void OnParametersSet() => _view = Run.Year is { } year ? DividendView.From(year) : null;
 
-    private string? Summary => Run.Year is { } year
-        ? L["Summary", Formats.Euros(year.MaximumDividend), Formats.Euros(year.Dividend.NetDividend)].Value
+    // All that can be paid out comes in; once the company keeps some, the summary starts from what is
+    // paid out, the base of the card's rate.
+    private string? Summary => _view is { } view && Run.Year is { } year
+        ? L[DividendCardText.Summary(view), Formats.Euros(view.Kept > 0m ? view.Dividend : view.Maximum), Formats.Euros(year.Dividend.NetDividend)].Value
         : null;
 
     private RenderFragment? Details => _view is { } view && Run.Year is { } year
