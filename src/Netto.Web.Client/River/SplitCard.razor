@@ -5,7 +5,9 @@
 @* One pay slider over the profit before pay: every euro taken as pay is a euro less of company
    profit. Above it, the engine's search draws the net in pocket at every pay, with the pay set and
    the best pay marked; pointing at the curve reads a pay, a click moves the pay there, and the best
-   pay says what it gains and how it stands against the reduced corporate rate. The exact amount can
+   pay says what it gains and how it stands against the reduced corporate rate. What the pointer
+   reads is no live region: it changes at every step of the slider, and the bar of buckets says what
+   reaches the pocket once the pay settles. The exact amount can
    be typed below, taken when the field is left rather than while typing: SplitView keeps the pay
    within the profit, and MudBlazor redraws a field's text from its value only once it has lost focus.
 
@@ -95,7 +97,7 @@
     </div>
     @if (_search is { } weighed)
     {
-        <p class="split__pointer" aria-live="polite">@PointerText</p>
+        <p class="split__pointer">@PointerText</p>
         @if (weighed.Best is { } best)
         {
             <p class="split__best">@BestText(best)</p>

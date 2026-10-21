@@ -5,8 +5,8 @@ namespace Netto.Web.Client.River;
 // test instead of showing on screen.
 internal static class BucketBarText
 {
-    // A bucket with its amount, as the bar's live region reads it.
-    public const string Announced = "Announced";
+    // What reaches the pocket, as the bar's live region says it once the river settles.
+    public const string PocketAnnounced = "PocketAnnounced";
 
     // The taxes on pay say they hold the rent's tax too once there is one.
     public static string Bucket(string key, bool taxesOnPayIncludeRent) =>

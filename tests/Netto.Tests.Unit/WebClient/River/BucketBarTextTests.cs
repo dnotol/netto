@@ -44,10 +44,25 @@ public class BucketBarTextTests
         (BucketBarText.Holds("taxes_on_pay", true), BucketBarText.Holds("pocket", true)).ShouldBe(("Holds_taxes_on_pay_and_rent", "Holds_pocket"));
     }
 
-    // The live region reads each bucket with its amount.
+    // Once the river settles, the live region says what reaches the pocket, and that alone: the
+    // example's 61,975.74 (BucketsViewTests).
     [Fact]
-    public void BucketBarResx_bucketAsTheLiveRegionReadsIt_hasAText()
+    public void PocketAnnounced_example_saysThePocketAlone()
     {
-        Resources.GetString(BucketBarText.Announced, CultureInfo.InvariantCulture).ShouldNotBeNull();
+        var pocket = BucketBarAnnouncement.Pocket(BucketsView.From(RiverInputs.Example.Run()));
+
+        var text = string.Format(CultureInfo.InvariantCulture, Resources.GetString(BucketBarText.PocketAnnounced, CultureInfo.InvariantCulture) ?? "", pocket);
+
+        text.ShouldBe("In your pocket: €61,975.74.");
+    }
+
+    // While the engine refuses an amount there is no figure: the region empties, and the card holding
+    // the refused amount says why.
+    [Fact]
+    public void Pocket_noFigure_isNothing()
+    {
+        var pocket = BucketBarAnnouncement.Pocket(null);
+
+        pocket.ShouldBeNull();
     }
 }
