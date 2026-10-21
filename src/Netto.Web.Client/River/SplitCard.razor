@@ -66,7 +66,7 @@
             <div class="pay-curve__slider">
                 <MudSlider T="decimal" Value="_view.Pay" ValueChanged="OnPayChanged" Min="0m" Max="_view.Ceiling" Step="100m"
                            Immediate="true" Color="Color.Primary" Culture="Formats.Culture" Disabled="@(_view.Ceiling == 0m)"
-                           aria-labelledby="river-split-pay-label" />
+                           aria-labelledby="river-split-pay-label" aria-valuetext="@Formats.Euros(_view.Pay)" />
             </div>
         </div>
         <RiverNumericField T="decimal" InputId="river-split-pay" Value="_view.FieldPay" ValueChanged="OnPayChanged"

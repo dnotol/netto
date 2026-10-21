@@ -28,7 +28,7 @@
             {
                 <MudSlider T="decimal" Value="_view.Kept" ValueChanged="OnReserveChanged" Min="0m" Max="_view.Maximum" Step="100m"
                            Immediate="true" Color="Color.Primary" Culture="Formats.Culture" Disabled="@(_view.Maximum == 0m)"
-                           aria-labelledby="river-reserve-label" />
+                           aria-labelledby="river-reserve-label" aria-valuetext="@Formats.Euros(_view.Kept)" />
             }
             <RiverNumericField T="decimal" InputId="river-reserve" Value="@(_view?.Kept ?? Inputs.Reserve.Value)" ValueChanged="OnReserveChanged"
                                Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"

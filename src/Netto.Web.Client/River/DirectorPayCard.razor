@@ -19,9 +19,9 @@
     @if (Inputs.Company is null)
     {
         <RiverField Label="@L["OwnPayLabel"]" For="river-pay" Origin="Inputs.DirectorPay.Origin">
-            <MudSlider T="decimal" Value="@Math.Clamp(Inputs.DirectorPay.Value, 0m, OwnPayMaximum)" ValueChanged="OnPayChanged"
+            <MudSlider T="decimal" Value="@OwnPay" ValueChanged="OnPayChanged"
                        Min="0m" Max="OwnPayMaximum" Step="100m" Immediate="true" Color="Color.Primary" Culture="Formats.Culture"
-                       aria-labelledby="river-pay-label" />
+                       aria-labelledby="river-pay-label" aria-valuetext="@Formats.Euros(OwnPay)" />
             <RiverNumericField T="decimal" InputId="river-pay" Value="Inputs.DirectorPay.Value" ValueChanged="OnPayChanged"
                                Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
                                Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
@@ -136,6 +136,9 @@
         _withheld = WithheldFieldView.From(Inputs, Run);
         _settings = DirectorPaySettingsView.From(Inputs, Run);
     }
+
+    // Where the slider of a pay of its own stands: the pay, within the slider's ends.
+    private decimal OwnPay => Math.Clamp(Inputs.DirectorPay.Value, 0m, OwnPayMaximum);
 
     private IReadOnlyList<SettingValue> Values(IReadOnlyList<SettingPhrase> phrases) =>
         [.. phrases.Select(phrase => new SettingValue(L[phrase.Key, [.. phrase.Args]].Value, phrase.Origin))];
