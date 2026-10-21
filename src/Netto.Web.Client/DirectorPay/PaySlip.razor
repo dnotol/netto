@@ -16,7 +16,7 @@
         {
             <article class="funnel__track">
                 <div class="slip-head funnel__track-head">
-                    <h3 class="funnel__track-title">@L[PaySlipText.Track(track.Key)]</h3>
+                    <h4 class="funnel__track-title">@L[PaySlipText.Track(track.Key)]</h4>
                     <InfoBubble Label="@L[PaySlipText.Track(track.Key)]">@L[PaySlipText.TrackHint(track.Key)]</InfoBubble>
                 </div>
                 <ol class="funnel__rows">
@@ -41,7 +41,7 @@
 
     <section class="statement" aria-labelledby="statement-title">
         <div class="slip-head">
-            <h3 id="statement-title" class="slip-section__title">@L["StatementTitle"]</h3>
+            <h4 id="statement-title" class="slip-section__title">@L["StatementTitle"]</h4>
             <InfoBubble Label="@L["StatementTitle"]">@L["StatementHint"]</InfoBubble>
         </div>
         <div class="statement__scroll">
@@ -92,7 +92,7 @@
 
     <section class="balance" aria-labelledby="balance-title">
         <div class="slip-head">
-            <h3 id="balance-title" class="slip-section__title">@L["BalanceTitle"]</h3>
+            <h4 id="balance-title" class="slip-section__title">@L["BalanceTitle"]</h4>
             <InfoBubble Label="@L["BalanceTitle"]">@L["BalanceHint"]</InfoBubble>
         </div>
         <dl class="balance__lines">
@@ -124,7 +124,7 @@
     </section>
 
     <section class="next" aria-labelledby="next-title">
-        <h3 id="next-title" class="slip-section__title">@L["NextTitle"]</h3>
+        <h4 id="next-title" class="slip-section__title">@L["NextTitle"]</h4>
         <div class="next__bar" aria-hidden="true">
             @foreach (var part in _view.NextThousandBar)
             {

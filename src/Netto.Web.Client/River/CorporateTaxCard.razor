@@ -114,7 +114,7 @@
 
     private RenderFragment? Details => _view is { } view && Run.Year is { } year
         ? @<text>
-              <h3 class="corporate-tax__sources">@L["SourcesTitle", year.Scenario.IncomeYear]</h3>
+              <h4 class="corporate-tax__sources">@L["SourcesTitle", year.Scenario.IncomeYear]</h4>
               <StepDetails Details="view.Details" />
           </text>
         : null;

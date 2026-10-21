@@ -151,7 +151,7 @@
     private RenderFragment? Details => Run.Pay is { } pay && _view is { } view
         ? @<text>
               <PaySlip Pay="pay" />
-              <h3 class="director-pay__sources">@L["SourcesTitle", pay.IncomeYear]</h3>
+              <h4 class="director-pay__sources">@L["SourcesTitle", pay.IncomeYear]</h4>
               <StepDetails Details="view.Details" />
           </text>
         : null;

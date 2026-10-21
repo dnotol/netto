@@ -2,8 +2,8 @@
    info bubble with what helps to fill it in (Help), outside the label so that it is never part of
    what a click on the label does. The input is the child content: a field takes the label through
    InputId (For), a slider through aria-labelledby ({For}-label). Without For, the label names a group
-   of fields that carry their own. *@
-<div class="river-field">
+   of controls that carry their own names, such as a set of chips, and the field is that group. *@
+<div class="river-field" role="@(For is null ? "group" : null)" aria-labelledby="@(For is null ? _groupLabelId : null)">
     <div class="river-field__head">
         <span class="river-field__name">
             @if (For is not null)
@@ -12,7 +12,7 @@
             }
             else
             {
-                <span class="river-field__label">@Label</span>
+                <span id="@_groupLabelId" class="river-field__label">@Label</span>
             }
             @if (Help is not null)
             {
@@ -40,4 +40,6 @@
 
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
+
+    private readonly string _groupLabelId = $"river-group-{Guid.NewGuid():N}";
 }
