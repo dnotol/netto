@@ -65,24 +65,7 @@
         }
         @if (_rules is not null)
         {
-            <div class="rent__conditions">
-                <h3 class="rent__conditions-title">@L["ConditionsTitle"]</h3>
-                <p class="rent__note">@L["ConditionsHint"]</p>
-                <ul class="rent__condition-list">
-                    @foreach (var condition in _rules.Conditions)
-                    {
-                        <li class="rent__condition">
-                            <span>@L[RentCardText.Condition(condition.Key)]</span>
-                            @foreach (var source in condition.Sources)
-                            {
-                                <a href="@source.Url" target="_blank" rel="noopener noreferrer" class="rent__source">
-                                    @source.Title<MudIcon Icon="@Icons.Material.Rounded.OpenInNew" Size="Size.Small" aria-hidden="true" />
-                                </a>
-                            }
-                        </li>
-                    }
-                </ul>
-            </div>
+            <ConditionList Name="rent-conditions" Conditions="_rules.Conditions" />
         }
     }
 </ModuleCard>

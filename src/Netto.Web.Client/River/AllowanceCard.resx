@@ -54,24 +54,6 @@
   <data name="Deducted" xml:space="preserve">
     <value>The company deducts all {0} of them, like its own running costs: nothing is added back to its taxable income.</value>
   </data>
-  <data name="ConditionsTitle" xml:space="preserve">
-    <value>What the reimbursement takes</value>
-  </data>
-  <data name="ConditionsHint" xml:space="preserve">
-    <value>Netto cannot check these: enter amounts only if they hold.</value>
-  </data>
-  <data name="Condition_directors_case_by_case" xml:space="preserve">
-    <value>These flat amounts are the ones the administration accepts from an employer, and its circular does not apply them to company directors. A director is reimbursed on documents, or on serious and concordant flat norms judged case by case: an advance ruling from the SDA can confirm a flat amount before you rely on it.</value>
-  </data>
-  <data name="Condition_no_other_company_share" xml:space="preserve">
-    <value>The company bears none of these costs otherwise: no utilities paid for the office, no share of the internet bill, no company laptop or tablet beside the computer allowance.</value>
-  </data>
-  <data name="Condition_office_covers_rent" xml:space="preserve">
-    <value>The office allowance covers the room, its rent included: you cannot also rent the same room to the company.</value>
-  </data>
-  <data name="Condition_phone_on_invoices" xml:space="preserve">
-    <value>For the phone, the company reimburses the professional share of your own bills, on invoices: Netto takes the amount you enter as that share.</value>
-  </data>
   <data name="DetailsLabel" xml:space="preserve">
     <value>Where these figures come from</value>
   </data>

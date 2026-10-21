@@ -48,19 +48,12 @@ internal static class DividendCardText
     public static string Category(WithholdingCategory category) => $"Category_{category}";
 }
 
-internal static class VoucherCardText
+internal static class ConditionListText
 {
     public static string Condition(string key) => $"Condition_{key}";
-}
 
-internal static class AllowanceCardText
-{
-    public static string Condition(string key) => $"Condition_{key}";
-}
-
-internal static class RentCardText
-{
-    public static string Condition(string key) => $"Condition_{key}";
+    // « 1 condition to meet » or « 5 conditions to meet ».
+    public static string Heading(int count) => count == 1 ? "Heading_One" : "Heading_Many";
 }
 
 internal static class SplitCardText

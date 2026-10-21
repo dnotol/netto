@@ -42,27 +42,6 @@
   <data name="Disallowed" xml:space="preserve">
     <value>Of the {0} the company pays for them, it deducts {1}. The other {2} are added back to its taxable income: Corporate tax shows them.</value>
   </data>
-  <data name="ConditionsTitle" xml:space="preserve">
-    <value>What the exemption takes</value>
-  </data>
-  <data name="ConditionsHint" xml:space="preserve">
-    <value>Netto cannot check these: enter vouchers only if they hold.</value>
-  </data>
-  <data name="Condition_written_agreement" xml:space="preserve">
-    <value>A written individual agreement with the company grants them.</value>
-  </data>
-  <data name="Condition_not_instead_of_pay" xml:space="preserve">
-    <value>They are not granted in place of pay, a bonus or another benefit.</value>
-  </data>
-  <data name="Condition_days_actually_worked" xml:space="preserve">
-    <value>One meal voucher for each day you actually work, and you can prove those days. A director with no staff qualifies; without that proof, the company's share is taxable pay.</value>
-  </data>
-  <data name="Condition_in_your_name" xml:space="preserve">
-    <value>The meal vouchers are electronic, and every voucher is issued in your name.</value>
-  </data>
-  <data name="Condition_eco_agreement_terms" xml:space="preserve">
-    <value>For eco vouchers, the agreement states the face value of each, at most {0}, and how often they are granted in the year.</value>
-  </data>
   <data name="DetailsLabel" xml:space="preserve">
     <value>Where these figures come from</value>
   </data>

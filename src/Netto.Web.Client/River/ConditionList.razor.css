@@ -1,0 +1,44 @@
+/* ::deep reaches the MudIcon beside a source, which carries no scope attribute of its own. */
+.conditions__list {
+    display: grid;
+    gap: 0.6rem;
+    margin: 0.75rem 0 0;
+    padding-left: 1.1rem;
+    font-size: 0.9rem;
+    line-height: 1.55;
+}
+
+.conditions__item {
+    display: grid;
+    gap: 0.15rem;
+}
+
+/* The texts a condition comes from, side by side under it, each by its short label. */
+.conditions__sources {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 0.9rem;
+}
+
+.conditions__source {
+    color: var(--netto-text-muted);
+    font-size: 0.8rem;
+    text-decoration: underline;
+    text-decoration-color: rgba(243, 238, 226, 0.35);
+    text-underline-offset: 3px;
+    overflow-wrap: anywhere;
+    transition: color 0.2s ease;
+}
+
+    /* Hover and focus are active states, so they may turn gold. */
+    .conditions__source:hover,
+    .conditions__source:focus-visible {
+        color: var(--netto-gold);
+        text-decoration-color: var(--netto-gold);
+    }
+
+    .conditions__source ::deep .mud-icon-root {
+        margin-left: 0.3rem;
+        font-size: 0.9rem;
+        vertical-align: -0.15em;
+    }

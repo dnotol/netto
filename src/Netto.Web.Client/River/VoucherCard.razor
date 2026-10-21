@@ -62,24 +62,7 @@
         }
         @if (_rules is not null)
         {
-            <div class="vouchers__conditions">
-                <h3 class="vouchers__conditions-title">@L["ConditionsTitle"]</h3>
-                <p class="vouchers__note">@L["ConditionsHint"]</p>
-                <ul class="vouchers__condition-list">
-                    @foreach (var condition in _rules.Conditions)
-                    {
-                        <li class="vouchers__condition">
-                            <span>@L[VoucherCardText.Condition(condition.Key), [.. condition.Amounts.Select(Formats.RuleAmount)]]</span>
-                            @foreach (var source in condition.Sources)
-                            {
-                                <a href="@source.Url" target="_blank" rel="noopener noreferrer" class="vouchers__source">
-                                    @source.Title<MudIcon Icon="@Icons.Material.Rounded.OpenInNew" Size="Size.Small" aria-hidden="true" />
-                                </a>
-                            }
-                        </li>
-                    }
-                </ul>
-            </div>
+            <ConditionList Name="vouchers-conditions" Conditions="_rules.Conditions" />
         }
     }
 </ModuleCard>

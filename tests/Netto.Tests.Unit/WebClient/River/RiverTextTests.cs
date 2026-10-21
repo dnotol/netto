@@ -5,6 +5,7 @@ using Netto.Core.CorporateTax;
 using Netto.Core.DirectorPay;
 using Netto.Core.Dividends;
 using Netto.Core.Rent;
+using Netto.Core.Rules;
 using Netto.Core.Simulation;
 using Netto.Core.SocialContributions;
 using Netto.Core.Vouchers;
@@ -32,11 +33,15 @@ public class RiverTextTests
 
     private static readonly ResourceManager SplitCardResources = new("Netto.Web.Client.River.SplitCard", typeof(SplitCard).Assembly);
 
-    private static readonly ResourceManager VoucherCardResources = new("Netto.Web.Client.River.VoucherCard", typeof(VoucherCard).Assembly);
+    private static readonly ResourceManager ConditionListResources = new("Netto.Web.Client.River.ConditionList", typeof(ConditionList).Assembly);
 
-    private static readonly ResourceManager AllowanceCardResources = new("Netto.Web.Client.River.AllowanceCard", typeof(AllowanceCard).Assembly);
-
-    private static readonly ResourceManager RentCardResources = new("Netto.Web.Client.River.RentCard", typeof(RentCard).Assembly);
+    // The conditions of every lever the river shows, which the shared list words through one .resx.
+    private static readonly IReadOnlyList<LeverCondition> LeverConditions =
+    [
+        .. VoucherRules.IncomeYear2026.Conditions,
+        .. AllowanceRules.IncomeYear2026.Conditions,
+        .. RentRules.IncomeYear2026.Conditions,
+    ];
 
     [Fact]
     public void OriginChipResx_everyOrigin_hasAWordAndAHint()
@@ -143,22 +148,24 @@ public class RiverTextTests
     }
 
     [Fact]
-    public void VoucherCardResx_everyConditionOfTheVouchers_hasAText()
+    public void ConditionListResx_everyConditionOfEveryLever_hasAText()
     {
-        Missing(VoucherCardResources, VoucherRules.IncomeYear2026.Conditions.Select(condition => VoucherCardText.Condition(condition.Key))).ShouldBeEmpty();
+        Missing(ConditionListResources, LeverConditions.Select(condition => ConditionListText.Condition(condition.Key))).ShouldBeEmpty();
     }
 
+    // One text per key: a lever reusing another's key would show the other lever's words.
     [Fact]
-    public void AllowanceCardResx_everyConditionOfTheAllowances_hasAText()
+    public void ConditionListResx_everyConditionOfEveryLever_hasAKeyOfItsOwn()
     {
-        Missing(AllowanceCardResources, AllowanceRules.IncomeYear2026.Conditions.Select(condition => AllowanceCardText.Condition(condition.Key)))
-            .ShouldBeEmpty();
+        LeverConditions.Select(condition => condition.Key).ShouldBeUnique();
     }
 
-    [Fact]
-    public void RentCardResx_everyConditionOfTheRent_hasAText()
+    [Theory]
+    [InlineData(1)]
+    [InlineData(5)]
+    public void ConditionListResx_headingForAnyCount_hasAText(int count)
     {
-        Missing(RentCardResources, RentRules.IncomeYear2026.Conditions.Select(condition => RentCardText.Condition(condition.Key))).ShouldBeEmpty();
+        Missing(ConditionListResources, [ConditionListText.Heading(count)]).ShouldBeEmpty();
     }
 
     private static IEnumerable<string> Missing(ResourceManager resources, IEnumerable<string> keys) =>

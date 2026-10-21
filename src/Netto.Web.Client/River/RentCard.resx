@@ -54,18 +54,6 @@
   <data name="Deducted" xml:space="preserve">
     <value>The company deducts all {0} of it, like its own running costs: nothing is added back to its taxable income, and it is never pay.</value>
   </data>
-  <data name="ConditionsTitle" xml:space="preserve">
-    <value>What the rent takes</value>
-  </data>
-  <data name="ConditionsHint" xml:space="preserve">
-    <value>Netto cannot check these: enter a rent only if they hold.</value>
-  </data>
-  <data name="Condition_share_yours_to_justify" xml:space="preserve">
-    <value>The share let is yours to justify, usually by the floor area the company really uses: the floor and the cap are on the cadastral income of that part.</value>
-  </data>
-  <data name="Condition_not_with_office_allowance" xml:space="preserve">
-    <value>No office allowance beside it: the allowance already covers the room, its rent included.</value>
-  </data>
   <data name="DetailsLabel" xml:space="preserve">
     <value>Where these figures come from</value>
   </data>

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Heading_One" xml:space="preserve">
+    <value>{0} condition to meet: Netto cannot check it</value>
+  </data>
+  <data name="Heading_Many" xml:space="preserve">
+    <value>{0} conditions to meet: Netto cannot check them</value>
+  </data>
+  <data name="Condition_written_agreement" xml:space="preserve">
+    <value>A written individual agreement with the company grants them.</value>
+  </data>
+  <data name="Condition_not_instead_of_pay" xml:space="preserve">
+    <value>They are not granted in place of pay, a bonus or another benefit.</value>
+  </data>
+  <data name="Condition_days_actually_worked" xml:space="preserve">
+    <value>One meal voucher for each day you actually work, and you can prove those days. A director with no staff qualifies; without that proof, the company's share is taxable pay.</value>
+  </data>
+  <data name="Condition_in_your_name" xml:space="preserve">
+    <value>The meal vouchers are electronic, and every voucher is issued in your name.</value>
+  </data>
+  <data name="Condition_eco_agreement_terms" xml:space="preserve">
+    <value>For eco vouchers, the agreement states the face value of each, at most {0}, and how often they are granted in the year.</value>
+  </data>
+  <data name="Condition_directors_case_by_case" xml:space="preserve">
+    <value>These flat amounts are the ones the administration accepts from an employer, and its circular does not apply them to company directors. A director is reimbursed on documents, or on serious and concordant flat norms judged case by case: an advance ruling from the SDA can confirm a flat amount before you rely on it.</value>
+  </data>
+  <data name="Condition_no_other_company_share" xml:space="preserve">
+    <value>The company bears none of these costs otherwise: no utilities paid for the office, no share of the internet bill, no company laptop or tablet beside the computer allowance.</value>
+  </data>
+  <data name="Condition_office_covers_rent" xml:space="preserve">
+    <value>The office allowance covers the room, its rent included: you cannot also rent the same room to the company.</value>
+  </data>
+  <data name="Condition_phone_on_invoices" xml:space="preserve">
+    <value>For the phone, the company reimburses the professional share of your own bills, on invoices: Netto takes the amount you enter as that share.</value>
+  </data>
+  <data name="Condition_share_yours_to_justify" xml:space="preserve">
+    <value>The share let is yours to justify, usually by the floor area the company really uses: the floor and the cap are on the cadastral income of that part.</value>
+  </data>
+  <data name="Condition_not_with_office_allowance" xml:space="preserve">
+    <value>No office allowance beside it: the allowance already covers the room, its rent included.</value>
+  </data>
+</root>

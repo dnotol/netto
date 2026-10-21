@@ -1,5 +1,4 @@
-/* ::deep reaches the MudIcon beside a condition's text and the MudButton under the rent, which carry
-   no scope attribute of their own. */
+/* ::deep reaches the MudButton under the rent, which carries no scope attribute of its own. */
 .rent__waiting,
 .rent__hint {
     margin: 0;
@@ -38,53 +37,6 @@
     font-size: 0.9rem;
     line-height: 1.55;
 }
-
-.rent__conditions {
-    display: grid;
-    gap: 0.4rem;
-}
-
-.rent__conditions-title {
-    margin: 0;
-    font-size: 0.95rem;
-    font-weight: 600;
-}
-
-.rent__condition-list {
-    display: grid;
-    gap: 0.6rem;
-    margin: 0.4rem 0 0;
-    padding-left: 1.1rem;
-    line-height: 1.55;
-}
-
-.rent__condition {
-    display: grid;
-    gap: 0.15rem;
-}
-
-.rent__source {
-    color: var(--netto-text-muted);
-    font-size: 0.8rem;
-    text-decoration: underline;
-    text-decoration-color: rgba(243, 238, 226, 0.35);
-    text-underline-offset: 3px;
-    overflow-wrap: anywhere;
-    transition: color 0.2s ease;
-}
-
-    /* Hover and focus are active states, so they may turn gold. */
-    .rent__source:hover,
-    .rent__source:focus-visible {
-        color: var(--netto-gold);
-        text-decoration-color: var(--netto-gold);
-    }
-
-    .rent__source ::deep .mud-icon-root {
-        margin-left: 0.3rem;
-        font-size: 0.9rem;
-        vertical-align: -0.15em;
-    }
 
 .rent__sources {
     margin: 0;
