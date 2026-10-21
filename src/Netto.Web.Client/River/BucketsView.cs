@@ -17,6 +17,16 @@ internal sealed record BucketsView(
     // In the order the bar shows them, the pocket first; also when there is no figure to show.
     public static IReadOnlyList<string> Keys { get; } = ["pocket", "taxes_on_pay", "taxes_on_profit", "kept_in_company"];
 
+    // What reaches the pocket out of what leaves the company: what the river starts from less what the
+    // company keeps at year end, which is still the director's. None where the bar draws no shares.
+    public decimal? Reach => Buckets.All(bucket => bucket.Share is not null)
+        ? Shares.Of(AmountOf("pocket"), Start - AmountOf("kept_in_company"))
+        : null;
+
+    // The rest of it went to taxes: the whole less the reach as the bar rounds it, so the two read as
+    // the whole.
+    public decimal? TaxesShare => Reach is { } reach ? 1m - Math.Round(reach, 2, MidpointRounding.AwayFromZero) : null;
+
     public static BucketsView? From(RiverRun run)
     {
         if (run.Pay is not { } pay)
@@ -44,6 +54,8 @@ internal sealed record BucketsView(
             steps.Any(step => step.Event == TaxableEvent.Rent),
             amounts.Select(bucket => new Bucket(bucket.Key, bucket.Amount, drawn ? bucket.Amount / start : null)).ToList());
     }
+
+    private decimal AmountOf(string key) => Buckets.Single(bucket => bucket.Key == key).Amount;
 
     private static decimal PaidOut(IReadOnlyList<Step> steps, TaxableEvent taxableEvent) =>
         steps.Where(step => step.Event == taxableEvent && step.Track == Track.PaidOut).Sum(step => step.Amount);

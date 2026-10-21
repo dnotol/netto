@@ -113,6 +113,42 @@ public class BucketsViewTests
         view.Buckets.ShouldAllBe(bucket => bucket.Share == null);
     }
 
+    // What reaches the pocket out of the 100,000, nothing being kept; the rest went to taxes, rounded
+    // as the bar shows the reach, so the two read as the whole.
+    [Fact]
+    public void From_example_reachIsThePocketOutOfTheStart()
+    {
+        var view = BucketsView.From(RiverInputs.Example.Run()).ShouldNotBeNull();
+
+        (view.Reach, view.TaxesShare).ShouldBe(((decimal?)0.6197574m, (decimal?)0.38m));
+    }
+
+    // What the company keeps is still the director's: the reach is out of what leaves it.
+    [Fact]
+    public void From_reserve_reachLeavesOutWhatTheCompanyKeeps()
+    {
+        var view = BucketsView.From(RiverInputs.Example.WithReserve(15_000m).Run()).ShouldNotBeNull();
+
+        view.Reach.ShouldBe(view.Buckets[0].Amount / 85_000m);
+    }
+
+    [Fact]
+    public void From_lossYear_hasNoReach()
+    {
+        var view = BucketsView.From(RiverInputs.Example.WithRevenue(10_000m).Run()).ShouldNotBeNull();
+
+        (view.Reach, view.TaxesShare).ShouldBe(((decimal?)null, (decimal?)null));
+    }
+
+    // With the company skipped the river starts at the pay: the reach is the net out of the gross.
+    [Fact]
+    public void From_payAlone_reachIsTheNetOutOfTheGross()
+    {
+        var view = BucketsView.From(RiverInputs.Example.SkipCompany().Run()).ShouldNotBeNull();
+
+        view.Reach.ShouldBe(0.591586m);
+    }
+
     [Fact]
     public void From_payAlone_startsAtTheGrossPay()
     {

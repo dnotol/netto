@@ -133,7 +133,7 @@ public class ModuleViewsTests
     {
         var view = DirectorPay(RiverInputs.Example.WithContributionsPaidBy(ContributionsPaidBy.Company));
 
-        (view.CompanyPaysContributions, view.CompanyCost, Line(view.Drains[0]), view.Drains[^1]).ShouldBe((true, 59_942.52m,
+        (view.CompanyPaysContributions, view.CompanyCost, Line(view.Drains[0]), Line(view.Drains[^1])).ShouldBe((true, 59_942.52m,
             new Drain("social_contributions_paid_by_company", DrainKind.PaidOut, 9_942.52m, "taxes_on_pay"),
             new Drain("net_pay", DrainKind.PassedOn, 33_999.21m, "pocket")));
     }
@@ -153,6 +153,32 @@ public class ModuleViewsTests
         var view = DirectorPay(RiverInputs.Example);
 
         (view.CompanyPaysContributions, view.CompanyCost).ShouldBe((false, 50_000m));
+    }
+
+    // What reaches the pocket out of what the pay costs the company, and each line's share of it.
+    [Fact]
+    public void DirectorPay_example_saysTheShareOfThePayEachLineTakes()
+    {
+        var view = DirectorPay(RiverInputs.Example);
+
+        view.ToYou.ShouldBe(0.591586m);
+        Shares(view.Drains).ShouldBe([0.1658672m, 0.2266792m, 0.0158676m, 0m, 0m, 0m, 0.591586m]);
+    }
+
+    [Fact]
+    public void DirectorPay_companyPays_sharesAreOfWhatThePayCostsIt()
+    {
+        var view = DirectorPay(RiverInputs.Example.WithContributionsPaidBy(ContributionsPaidBy.Company));
+
+        (view.ToYou, view.Drains[0].Share).ShouldBe(((decimal?)(33_999.21m / 59_942.52m), (decimal?)(9_942.52m / 59_942.52m)));
+    }
+
+    [Fact]
+    public void DirectorPay_noPay_saysNoShares()
+    {
+        var view = DirectorPay(RiverInputs.Example.WithDirectorPay(0m));
+
+        (view.ToYou, view.Drains.All(drain => drain.Share == null)).ShouldBe(((decimal?)null, true));
     }
 
     [Fact]
@@ -362,6 +388,25 @@ public class ModuleViewsTests
         CorporateTax(RiverInputs.Example.WithRevenue(10_000m)).NoTaxableProfit.ShouldBeTrue();
     }
 
+    // What passes on to the dividend out of the profit the split leaves, and each line's share of it.
+    [Fact]
+    public void CorporateTax_example_saysTheShareOfTheProfitEachLineTakes()
+    {
+        var view = CorporateTax(RiverInputs.Example);
+
+        view.PassesOn.ShouldBe(0.7865m);
+        Shares(view.Drains).ShouldBe([0.2m, 0.0135m, 0.7865m]);
+    }
+
+    // A loss has no share to take of it.
+    [Fact]
+    public void CorporateTax_lossBeforePay_saysNoShares()
+    {
+        var view = CorporateTax(RiverInputs.Example.WithRevenue(10_000m));
+
+        (view.PassesOn, view.Drains.All(drain => drain.Share == null)).ShouldBe(((decimal?)null, true));
+    }
+
     [Fact]
     public void CorporateTax_example_listsOnlyTheCompanysSteps()
     {
@@ -452,6 +497,25 @@ public class ModuleViewsTests
             new Drain("net_dividend", DrainKind.PassedOn, 20_649.94m, "pocket"),
             new Drain("kept_in_company", DrainKind.PassedOn, 15_000.00m, "kept_in_company"),
         });
+    }
+
+    // Out of the 25,000 paid out: what the company keeps is not taken from the dividend, and says no
+    // share of it.
+    [Fact]
+    public void Dividend_reserve_saysTheShareOfTheDividendEachLineTakes()
+    {
+        var view = Dividend(Prepaid.WithReserve(15_000m));
+
+        view.ToYou.ShouldBe(0.8259976m);
+        Shares(view.Drains).ShouldBe([0.18m, 0.0059976m, 0.8259976m, null]);
+    }
+
+    [Fact]
+    public void Dividend_allKept_saysNoShares()
+    {
+        var view = Dividend(Prepaid.WithReserve(50_000m));
+
+        (view.ToYou, view.Drains.All(drain => drain.Share == null)).ShouldBe(((decimal?)null, true));
     }
 
     [Fact]
@@ -625,6 +689,37 @@ public class ModuleViewsTests
     public void Allowances_all_addUpWhatReachesThePocket()
     {
         Allowances(AllAllowances(RiverInputs.Example)).Total.ShouldBe(3_018.44m);
+    }
+
+    // Untaxed and outside INASTI, all of what the company pays as vouchers or allowances reaches the
+    // pocket. Their lines need no share: the card's says it, and what they leave is not theirs.
+    [Fact]
+    public void Levers_vouchersAndAllowances_allReachThePocket()
+    {
+        var (vouchers, allowances) = (Vouchers(AllVouchers), Allowances(AllAllowances(RiverInputs.Example)));
+
+        (vouchers.ToYou, allowances.ToYou, vouchers.Drains.Concat(allowances.Drains).All(drain => drain.Share == null))
+            .ShouldBe(((decimal?)1m, (decimal?)1m, true));
+    }
+
+    // Through a lever of nothing no money flows: no share to say.
+    [Fact]
+    public void Levers_addedWithNothing_sayNoShare()
+    {
+        var inputs = RiverInputs.Example.AddToPlan(OptionalModule.Vouchers).AddToPlan(OptionalModule.Allowances).AddToPlan(OptionalModule.Rent);
+
+        (Vouchers(inputs).ToYou, Allowances(inputs).ToYou, Rent(inputs).ToYou).ShouldBe(((decimal?)null, (decimal?)null, (decimal?)null));
+    }
+
+    // Out of the 1,380.00 of rent, what its tax takes and what reaches the pocket; the profit it
+    // passes on to the split is not the rent's.
+    [Fact]
+    public void Rent_atTheCap_saysTheShareOfTheRentEachLineTakes()
+    {
+        var view = Rent(RentAtTheCap(RiverInputs.Example));
+
+        view.ToYou.ShouldBe(981.32m / 1_380m);
+        Shares(view.Drains).ShouldBe([0.27m, 26.08m / 1_380m, 0m, 0m, 981.32m / 1_380m, null]);
     }
 
     // After the vouchers' 2,310.20 and the allowances' 2,418.44, 95,271.36 go on to the rent.
@@ -850,6 +945,8 @@ public class ModuleViewsTests
     private static Drain Line(Drain drain) => new(drain.Key, drain.Kind, drain.Amount, drain.To);
 
     private static List<Drain> Lines(IEnumerable<Drain> drains) => [.. drains.Select(Line)];
+
+    private static List<decimal?> Shares(IEnumerable<Drain> drains) => [.. drains.Select(drain => drain.Share)];
 
     // The steps each drain carries, by their rule keys, "" for a drain with none.
     private static List<string> Explained(IEnumerable<Drain> drains) =>

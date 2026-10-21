@@ -20,6 +20,25 @@ public class SplitSearchViewTests
         (best.Level.Pay, best.Level.Dividend, best.Gain, best.IsYours).ShouldBe((20_799m, 59_400.75m, 3_093.57m, false));
     }
 
+    // Out of the 100,000, nothing being kept: 65,622.81 at the best pay, 62,529.24 at the pay set.
+    [Fact]
+    public void Example_saysWhatReachesThePocketAtTheBestPayAndAtThePaySet()
+    {
+        var view = View(Example);
+
+        (view.Best.ShouldNotBeNull().Reach, view.Reach).ShouldBe(((decimal?)0.6562281m, (decimal?)0.6252924m));
+    }
+
+    // Each out of what leaves the company at that pay, what it keeps being the director's still.
+    [Fact]
+    public void Reserve_reachLeavesOutWhatTheCompanyKeepsAtEachPay()
+    {
+        var view = View(Example.WithReserve(10_000m));
+        var best = view.Best.ShouldNotBeNull().Level;
+
+        view.Best.Reach.ShouldBe(best.NetInPocket / (100_000m - best.KeptInCompany));
+    }
+
     [Fact]
     public void Example_bestGivesUpTheReducedRateAgainstTheBestPayKeepingIt()
     {

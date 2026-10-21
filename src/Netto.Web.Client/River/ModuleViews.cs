@@ -17,10 +17,17 @@ namespace Netto.Web.Client.River;
 // What the vouchers bring to the pocket, one drain for each kind once the company grants any, what the
 // company deducts of them and what it cannot, and what they leave of what the company earns, passed
 // on to the next module in the plan, or the split: what it earns less what reaches the pocket through
-// them, from the year's voucher steps. The shares, the yearly maximums and the conditions are the
-// year's rules, which the card reads beside it, so they stay while an amount is refused.
+// them, from the year's voucher steps, and the share of what the company pays in them that reaches the
+// pocket (ToYou). The shares, the yearly maximums and the conditions are the year's rules, which the
+// card reads beside it, so they stay while an amount is refused.
 internal sealed record VoucherView(
-    decimal Total, decimal Deductible, decimal Disallowed, decimal Left, IReadOnlyList<Drain> Drains, IReadOnlyList<StepDetail> Details)
+    decimal Total,
+    decimal Deductible,
+    decimal Disallowed,
+    decimal Left,
+    decimal? ToYou,
+    IReadOnlyList<Drain> Drains,
+    IReadOnlyList<StepDetail> Details)
 {
     public static VoucherView From(YearResult year, PlanComposition composition)
     {
@@ -33,6 +40,7 @@ internal sealed record VoucherView(
             year.Vouchers.Deductible,
             year.Vouchers.Disallowed,
             left,
+            Shares.Of(inPocket.Sum(step => step.Amount), year.Vouchers.Total),
             [
                 .. inPocket.Select(Drain.ToPocket),
                 new Drain("left_after_vouchers", DrainKind.PassedOn, left, NextModule.After(OptionalModule.Vouchers, composition)),
@@ -45,17 +53,20 @@ internal sealed record VoucherView(
 // what the vouchers and they leave of what the company earns, passed on to the rent when it is in the
 // plan, or the split: the profit before pay with the rent the company pays still in it. The maxima and
 // the conditions are the year's rules, which the card reads beside it, so they stay while an amount
-// is refused. The company deducts them in full: nothing of them reaches Corporate tax.
-internal sealed record AllowanceView(decimal Total, decimal Left, IReadOnlyList<Drain> Drains, IReadOnlyList<StepDetail> Details)
+// is refused. The company deducts them in full: nothing of them reaches Corporate tax, and all of them
+// reach the pocket (ToYou) once it pays any.
+internal sealed record AllowanceView(decimal Total, decimal Left, decimal? ToYou, IReadOnlyList<Drain> Drains, IReadOnlyList<StepDetail> Details)
 {
     public static AllowanceView From(YearResult year, PlanComposition composition)
     {
         var steps = year.Steps.Where(step => step.Event == TaxableEvent.ExpenseAllowances).ToList();
         var left = year.ProfitBeforePay + year.Rent.Rent;
+        var total = steps.Where(step => step.Track == Track.InPocket).Sum(step => step.Amount);
 
         return new AllowanceView(
-            steps.Where(step => step.Track == Track.InPocket).Sum(step => step.Amount),
+            total,
             left,
+            Shares.Of(total, total),
             [
                 .. steps.Where(step => step.Track == Track.InPocket).Select(Drain.ToPocket),
                 new Drain("left_after_allowances", DrainKind.PassedOn, left, NextModule.After(OptionalModule.Allowances, composition)),
@@ -69,7 +80,8 @@ internal sealed record AllowanceView(decimal Total, decimal Left, IReadOnlyList<
 // and what the rules tax it on: the rent, or the floor when it is less (TaxedOnTheFloor), less its
 // flat charges. The cap and the conditions are the year's rules, which the card reads beside it
 // (RentCapView), so they stay while the rent is refused. The company deducts it in full: nothing of it
-// reaches Corporate tax.
+// reaches Corporate tax. Its tax and what reaches the pocket each say their share of the rent, and the
+// card what reaches the pocket of it (ToYou); the profit passed on to the split is not the rent's.
 internal sealed record RentView(
     decimal Rent,
     decimal TaxableRent,
@@ -78,6 +90,7 @@ internal sealed record RentView(
     decimal NetRent,
     decimal Tax,
     decimal AfterTax,
+    decimal? ToYou,
     IReadOnlyList<Drain> Drains,
     IReadOnlyList<StepDetail> Details)
 {
@@ -87,7 +100,7 @@ internal sealed record RentView(
         var paidOut = steps.Where(step => step.Track == Track.PaidOut).ToList();
         var rent = year.Rent;
         var tax = paidOut.Sum(step => step.Amount);
-        IEnumerable<Drain> afterTax = steps.Count > 0 ? [new Drain("rent_after_tax", DrainKind.PassedOn, rent.Rent - tax, "pocket")] : [];
+        IEnumerable<Drain> afterTax = steps.Count > 0 ? [new Drain("rent_after_tax", DrainKind.PassedOn, rent.Rent - tax, "pocket").Of(rent.Rent)] : [];
 
         return new RentView(
             rent.Rent,
@@ -97,8 +110,9 @@ internal sealed record RentView(
             rent.NetRent,
             tax,
             rent.Rent - tax,
+            Shares.Of(rent.Rent - tax, rent.Rent),
             [
-                .. paidOut.Select(step => Drain.PaidOutTo(step, "taxes_on_pay")),
+                .. paidOut.Select(step => Drain.PaidOutTo(step, "taxes_on_pay").Of(rent.Rent)),
                 .. afterTax,
                 new Drain("profit_before_pay", DrainKind.PassedOn, year.ProfitBeforePay, "split"),
             ],
@@ -155,24 +169,31 @@ internal sealed record SplitView(decimal Ceiling, decimal Pay, decimal FieldPay,
 
 // What the split draws from the engine's search: the net in pocket at every pay, the best pay and
 // what it gains over the pay set, how it stands against the reduced corporate rate, and, when no pay
-// keeps the reserve, the most the company can keep. Nothing while an amount is refused, the company
-// is skipped or there is no profit to split.
-internal sealed record SplitSearchView(PayCurveView Curve, BestPayView? Best, RateWeighing? Rate, decimal MostKept)
+// keeps the reserve, the most the company can keep, and what reaches the pocket at the pay set as the
+// bar of buckets says it (Reach), for the best pay's to be weighed against. Nothing while an amount is
+// refused, the company is skipped or there is no profit to split.
+internal sealed record SplitSearchView(PayCurveView Curve, BestPayView? Best, RateWeighing? Rate, decimal MostKept, decimal? Reach)
 {
     public static SplitSearchView? From(RiverInputs inputs, RiverRun run, SplitSearchResult? search)
     {
         if (search is null || run.Error is not null || run.Year is not { } year || search.Curve[^1].Pay <= 0m)
             return null;
 
+        var start = year.Scenario.ProfitBeforeDirector + year.Scenario.EarlierProfits;
         var best = search.Best is { } level
-            ? new BestPayView(level, level.NetInPocket - year.NetInPocket, year.MaximumDividend >= inputs.Reserve.Value)
+            ? new BestPayView(
+                level,
+                level.NetInPocket - year.NetInPocket,
+                year.MaximumDividend >= inputs.Reserve.Value,
+                Shares.Of(level.NetInPocket, start - level.KeptInCompany))
             : null;
 
         return new SplitSearchView(
             PayCurveView.From(search, year.DirectorPay.GrossPay),
             best,
             best is null ? null : RateWeighing.From(search, best.Level),
-            search.Curve.Max(level => level.KeptInCompany));
+            search.Curve.Max(level => level.KeptInCompany),
+            Shares.Of(year.NetInPocket, start - year.KeptInCompany));
     }
 }
 
@@ -271,8 +292,9 @@ internal sealed record AxisTick(decimal At, decimal Amount);
 // The search refines the best pay to the euro, so a pay set within a euro of it is the best: no move
 // is worth offering, and the pay set may even leave a few cents more. A pay set whose profit after tax
 // cannot keep the reserve is never the best, however much it leaves in the pocket: it gets there by
-// eating into the reserve, and the gain over it can be negative.
-internal sealed record BestPayView(PayLevel Level, decimal Gain, bool YoursKeepsReserve)
+// eating into the reserve, and the gain over it can be negative. Reach is what reaches the pocket at
+// the best pay, out of what leaves the company there.
+internal sealed record BestPayView(PayLevel Level, decimal Gain, bool YoursKeepsReserve, decimal? Reach)
 {
     public bool IsYours => YoursKeepsReserve && Gain < 1m;
 }
@@ -308,11 +330,13 @@ internal enum RateChoice
 // the contributions on the director's behalf they are pay too, so the card shows what the pay costs
 // the company, the gross plus them, and the contributions drain says the company pays them. The
 // engine says what the withholding and the advance payments leave on its tax, the bonus they earn,
-// and what more by the last deadline leaves no surcharge due.
+// and what more by the last deadline leaves no surcharge due. Each line says its share of what the pay
+// costs the company, and the card what reaches the pocket of it (ToYou).
 internal sealed record DirectorPayView(
     InputOrigin PayOrigin,
     bool CompanyPaysContributions,
     decimal CompanyCost,
+    decimal? ToYou,
     TaxSurchargeState Surcharge,
     decimal SurchargeAmount,
     decimal TopUp,
@@ -330,6 +354,7 @@ internal sealed record DirectorPayView(
             inputs.Company is null ? inputs.DirectorPay.Origin : InputOrigin.Derived,
             companyPays,
             pay.CompanyCost,
+            Shares.Of(pay.NetInPocket, pay.CompanyCost),
             payments switch
             {
                 { Exempt: true } => TaxSurchargeState.Exempt,
@@ -343,8 +368,9 @@ internal sealed record DirectorPayView(
             TaxAdvancePaymentFields.Deadlines(pay.IncomeYear)[^1].Date.Value,
             payments.Bonus,
             [
-                .. pay.Steps.Where(step => step.Track == Track.PaidOut).Select(step => Drain.PaidOutTo(step, "taxes_on_pay")).Select(drain => Payer(drain, companyPays)),
-                new Drain("net_pay", DrainKind.PassedOn, pay.NetInPocket, "pocket"),
+                .. pay.Steps.Where(step => step.Track == Track.PaidOut)
+                    .Select(step => Payer(Drain.PaidOutTo(step, "taxes_on_pay"), companyPays).Of(pay.CompanyCost)),
+                new Drain("net_pay", DrainKind.PassedOn, pay.NetInPocket, "pocket").Of(pay.CompanyCost),
             ],
             pay.Steps.Select(StepDetail.From).ToList());
     }
@@ -400,9 +426,11 @@ internal static class TaxAdvancePaymentFields
 // So is the surcharge the advance payments leave, and what more by the last deadline cancels it. What
 // comes in is the profit the split leaves the company; its taxable income adds back the disallowed
 // expenses the engine counts, what it cannot deduct of the vouchers. The card lists the corporate
-// layer's steps, that one among them.
+// layer's steps, that one among them. Each line says its share of what comes in, and the card what
+// passes on to the dividend of it (PassesOn).
 internal sealed record CorporateTaxView(
     decimal ProfitAfterPay,
+    decimal? PassesOn,
     decimal DisallowedExpenses,
     decimal TaxableIncome,
     ReducedRateCondition Condition,
@@ -422,6 +450,7 @@ internal sealed record CorporateTaxView(
 
         return new CorporateTaxView(
             year.ProfitAfterPay,
+            Shares.Of(year.ProfitAfterTax, year.ProfitAfterPay),
             year.DisallowedExpenses,
             year.Company.TaxableIncome,
             year.Company.Condition,
@@ -438,8 +467,8 @@ internal sealed record CorporateTaxView(
             payments.LastDeadlineTopUp,
             AdvancePaymentFields.Deadlines(year.Scenario.IncomeYear)[^1].Date.Value,
             [
-                .. steps.Where(step => step.Track == Track.PaidOut).Select(step => Drain.PaidOutTo(step, "taxes_on_profit")),
-                new Drain("profit_after_tax", DrainKind.PassedOn, year.ProfitAfterTax, "dividend"),
+                .. steps.Where(step => step.Track == Track.PaidOut).Select(step => Drain.PaidOutTo(step, "taxes_on_profit").Of(year.ProfitAfterPay)),
+                new Drain("profit_after_tax", DrainKind.PassedOn, year.ProfitAfterTax, "dividend").Of(year.ProfitAfterPay),
             ],
             steps.Select(StepDetail.From).ToList());
     }
@@ -476,7 +505,8 @@ internal sealed record PaymentField(int Deadline, DateOnly Date, Input<decimal> 
 
 // The slider runs over what the company can pay out, this year's profit after tax and the profits
 // kept from earlier years, the dividend on one side and what is kept on the other; Kept is where it
-// sits, never above what can be paid out.
+// sits, never above what can be paid out. Each line of the dividend says its share of it, and the card
+// what reaches the pocket of it (ToYou); what the company keeps is not taken from the dividend.
 internal sealed record DividendView(
     decimal Maximum,
     decimal ProfitAfterTax,
@@ -484,6 +514,7 @@ internal sealed record DividendView(
     decimal Kept,
     decimal Dividend,
     decimal Rate,
+    decimal? ToYou,
     IReadOnlyList<Drain> Drains,
     IReadOnlyList<StepDetail> Details)
 {
@@ -498,9 +529,10 @@ internal sealed record DividendView(
             year.MaximumDividend - year.Dividend.Dividend,
             year.Dividend.Dividend,
             year.Dividend.Rate,
+            Shares.Of(year.Dividend.NetDividend, year.Dividend.Dividend),
             [
-                .. steps.Where(step => step.Track == Track.PaidOut).Select(step => Drain.PaidOutTo(step, "taxes_on_profit")),
-                new Drain("net_dividend", DrainKind.PassedOn, year.Dividend.NetDividend, "pocket"),
+                .. steps.Where(step => step.Track == Track.PaidOut).Select(step => Drain.PaidOutTo(step, "taxes_on_profit").Of(year.Dividend.Dividend)),
+                new Drain("net_dividend", DrainKind.PassedOn, year.Dividend.NetDividend, "pocket").Of(year.Dividend.Dividend),
                 new Drain("kept_in_company", DrainKind.PassedOn, year.KeptInCompany, "kept_in_company"),
             ],
             steps.Select(StepDetail.From).ToList());
@@ -557,11 +589,17 @@ internal enum RiverModule
 // module. Amounts are positive; the kind says which way they go, except what is kept in a loss year.
 // A line of the engine's steps carries them, worded as the card's sources word them (Details), for
 // its bubble to say how its amount is computed and from which texts; what a module passes on to the
-// pocket, the company or the next module has no step behind it, and none. Public because Drains, a
-// component, takes it as a parameter.
+// pocket, the company or the next module has no step behind it, and none. A line that takes part of
+// what its card receives says its share of it (Share); a remainder passed on to the next module says
+// none. Public because Drains, a component, takes it as a parameter.
 public sealed record Drain(string Key, DrainKind Kind, decimal Amount, string To)
 {
     public IReadOnlyList<StepDetail> Details { get; init; } = [];
+
+    public decimal? Share { get; init; }
+
+    // Its share of what its card receives.
+    internal Drain Of(decimal whole) => this with { Share = Shares.Of(Amount, whole) };
 
     // A step paid out with a negative amount is money coming back: the refund on exempt dividends, the
     // tax credit for low earned income.

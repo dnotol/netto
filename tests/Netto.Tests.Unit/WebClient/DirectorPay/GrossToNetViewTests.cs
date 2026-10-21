@@ -261,6 +261,40 @@ public class GrossToNetViewTests
         });
     }
 
+    // Each row's share of the gross the track starts from, the tax base's as well as the cash's.
+    [Fact]
+    public void From_gross50000_eachRowSaysItsShareOfTheGross()
+    {
+        var view = View(50_000m);
+
+        view.Tracks.Select(track => track.Rows.Select(row => (row.Key, row.Share))).ShouldBe(new[]
+        {
+            new (string, decimal?)[]
+            {
+                ("gross_pay", 1m), ("social_contributions", 0.1658672m), ("income_tax", 0.2266792m), ("municipal_surcharge", 0.0158676m),
+                ("low_earned_income_credit", 0m), ("income_tax_advance_payment_surcharge", 0m), ("income_tax_advance_payment_bonus", 0m),
+                ("net_in_pocket", 0.591586m),
+            },
+            new (string, decimal?)[] { ("gross_pay", 1m), ("social_contributions", 0.1658672m), ("flat_rate_costs", 0.025024m), ("taxable_income", 0.8091088m) },
+        });
+    }
+
+    // With the company paying the contributions both tracks start from what the pay costs it.
+    [Fact]
+    public void From_companyPaysGross50000_sharesAreOfTheCompanysCost()
+    {
+        var cash = CompanyPaysView(50_000m).Tracks[0];
+
+        cash.Rows[^1].Share.ShouldBe(33_999.21m / 59_942.52m);
+    }
+
+    // A pay of nothing has no share to take of it.
+    [Fact]
+    public void From_gross0_saysNoShares()
+    {
+        View(0m).Tracks.SelectMany(track => track.Rows).ShouldAllBe(row => row.Share == null);
+    }
+
     [Fact]
     public void From_gross20000_cashTrackShowsTheCreditComingBack()
     {
@@ -279,14 +313,15 @@ public class GrossToNetViewTests
         });
     }
 
-    // What comes back is drawn from the balance it finds, 15,262.63, up to the net it leaves.
+    // What comes back is drawn from the balance it finds, 15,262.63, up to the net it leaves; it is
+    // 4.55% of the gross.
     [Fact]
     public void From_gross20000_creditBarRisesFromTheBalanceToTheNet()
     {
         var cash = View(20_000m).Tracks[0];
 
         cash.Rows.Single(row => row.Key == "low_earned_income_credit").ShouldBe(
-            new FunnelRow("low_earned_income_credit", RowKind.Back, 910m, 76.31315m, 80.86315m));
+            new FunnelRow("low_earned_income_credit", RowKind.Back, 910m, 76.31315m, 80.86315m) { Share = 0.0455m });
     }
 
     [Fact]

@@ -91,6 +91,20 @@ public class FormatsTests
         text.ShouldBe("16.6%");
     }
 
+    // A share at a glance, in the bar of buckets and a card's summary: a whole percent, rounded half
+    // away from zero like every amount Netto shows.
+    [Theory]
+    [InlineData("0.6197574", "62%")]
+    [InlineData("0.615", "62%")]
+    [InlineData("0.0049", "0%")]
+    [InlineData("1", "100%")]
+    public void WholeShare_fraction_isAWholePercentage(string value, string expected)
+    {
+        var text = Formats.WholeShare(decimal.Parse(value, System.Globalization.CultureInfo.InvariantCulture));
+
+        text.ShouldBe(expected);
+    }
+
     // Municipalities set their rate with one decimal, so 8% reads 8.0%, like the rate field.
     [Theory]
     [InlineData("0.08", "8.0%")]

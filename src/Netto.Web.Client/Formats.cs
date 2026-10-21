@@ -32,6 +32,9 @@ internal static class Formats
 
     public static string Share(decimal fraction) => fraction.ToString("0.0%", Culture);
 
+    // A share at a glance, in the bar of buckets and a card's summary: 62%.
+    public static string WholeShare(decimal fraction) => fraction.ToString("0%", Culture);
+
     // One decimal, as municipalities set their rates (CIR 92 art. 468): 8% reads 8.0%.
     public static string MunicipalRate(decimal fraction) => fraction.ToString("0.0%", Culture);
 

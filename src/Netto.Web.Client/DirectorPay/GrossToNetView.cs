@@ -61,7 +61,10 @@ internal sealed record GrossToNetView(
             result.OtherIncomeTax.Income > 0m,
             tracks.Select(track => new FunnelTrack(
                 track.Key,
-                track.Bars.Select(bar => new FunnelRow(bar.Line.Key, bar.Line.Kind, bar.Line.Amount, Percent(bar.From), Percent(bar.To))).ToList()))
+                track.Bars.Select(bar => new FunnelRow(bar.Line.Key, bar.Line.Kind, bar.Line.Amount, Percent(bar.From), Percent(bar.To))
+                {
+                    Share = Shares.Of(bar.Line.Amount, gross.Amount),
+                }).ToList()))
                 .ToList(),
             Parts(
             [
@@ -157,9 +160,12 @@ internal sealed record GrossToNetView(
 
 internal sealed record FunnelTrack(string Key, IReadOnlyList<FunnelRow> Rows);
 
-// One bar of a track. BarStart and BarEnd are percentages of the shared scale's width.
+// One bar of a track. BarStart and BarEnd are percentages of the shared scale's width; Share is the
+// row's share of the gross the track starts from, none when there is no pay.
 internal sealed record FunnelRow(string Key, RowKind Kind, decimal Amount, decimal BarStart, decimal BarEnd)
 {
+    public decimal? Share { get; init; }
+
     public bool IsDeduction => Kind.IsDeduction();
 }
 
