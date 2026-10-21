@@ -63,8 +63,9 @@
 
 /* Over the page, fixed where nettoBubble places it, and transparent until placed so that it never
    shows at the window's corner first. The card's surface, a thin light edge and a shadow, at a
-   readable width. Whatever the text around the trigger looks like, a bucket's capitals or a chip's
-   italics, the bubble reads as plain text. */
+   readable width, and never taller than the window: what would not fit scrolls. Whatever the text
+   around the trigger looks like, a bucket's capitals or a chip's italics, the bubble reads as plain
+   text. */
 .info-bubble__box {
     position: fixed;
     top: 0;
@@ -74,6 +75,9 @@
     box-sizing: border-box;
     width: max-content;
     max-width: min(22rem, calc(100vw - 1rem));
+    max-height: calc(100vh - 1rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
     padding: 0.6rem 0.8rem;
     border: 1px solid rgba(243, 238, 226, 0.18);
     border-radius: 10px;
