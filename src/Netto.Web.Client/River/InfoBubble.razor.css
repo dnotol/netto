@@ -60,6 +60,19 @@
         text-decoration-color: var(--netto-gold);
     }
 
+/* The text the trigger is described by: in the page, laid out so a screen reader reads its lines
+   apart, but out of sight. */
+.info-bubble__text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
 /* Over the page, fixed where nettoBubble places it, and transparent until placed so that it never
    shows at the window's corner first. The card's surface, a thin light edge and a shadow, at a
    readable width, and never taller than the window: what would not fit scrolls. Whatever the text

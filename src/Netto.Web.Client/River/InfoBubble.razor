@@ -8,16 +8,19 @@
    focus and on click, and stays open while the pointer is over the trigger or the bubble, or while
    the trigger has the focus, never closing on its own; opened by a click, it stays until a second
    click, Escape or a press outside. Escape closes it wherever the focus is and goes no further, so
-   it closes nothing else and the focus stays where it was. The bubble is drawn in a live region,
-   empty while it is closed, so a screen reader reads its text as it opens. One bubble is open at a
-   time: nettoBubble (Netto.Web's wwwroot/info-bubble.js) places it under its trigger, or above where
-   there is no room below, within the window, and follows the trigger as the page scrolls. The
-   trigger is a button of its own: never put one inside another control, a fold's header, a button
-   or a checkbox's label; put it beside them. The button and the live region touch, with no space
-   between them, so that a term in running text is followed by the text's own punctuation. *@
+   it closes nothing else and the focus stays where it was. A screen reader reads the text as the
+   trigger's description, with the trigger's name as the focus lands on it: the text is always in
+   the page, out of sight and out of the reading order, and the bubble drawn is hidden from it, so
+   moving the focus announces nothing more than the control it lands on, and the text is never read
+   twice. One bubble is open at a time: nettoBubble (Netto.Web's wwwroot/info-bubble.js) places it
+   under its trigger, or above where there is no room below, within the window, and follows the
+   trigger as the page scrolls. The trigger is a button of its own: never put one inside another
+   control, a fold's header, a button or a checkbox's label; put it beside them. Nothing follows the
+   button in the line but what takes no room, so that a term in running text is followed by the
+   text's own punctuation. *@
 <span class="info-bubble">
     <button type="button" @ref="_trigger" class="info-bubble__trigger @TriggerKind"
-            aria-expanded="@(Open ? "true" : "false")" aria-label="@AccessibleName"
+            aria-label="@AccessibleName" aria-describedby="@_textId"
             @onclick="Toggle" @onfocus="Focus" @onblur="Blur" @onmouseenter="Enter" @onmouseleave="Leave">
         @if (Term is null)
         {
@@ -27,12 +30,11 @@
         {
             @Term
         }
-    </button><span role="status" class="info-bubble__status">
-        @if (Open)
-        {
-            <span @ref="_bubble" class="info-bubble__box" @onmouseenter="Enter" @onmouseleave="Leave">@ChildContent</span>
-        }
-    </span>
+    </button><span id="@_textId" class="info-bubble__text" aria-hidden="true">@ChildContent</span>
+    @if (Open)
+    {
+        <span @ref="_bubble" class="info-bubble__box" aria-hidden="true" @onmouseenter="Enter" @onmouseleave="Leave">@ChildContent</span>
+    }
 </span>
 
 @code {
@@ -53,6 +55,9 @@
 
     [Parameter, EditorRequired]
     public RenderFragment? ChildContent { get; set; }
+
+    // The text the trigger is described by.
+    private readonly string _textId = $"info-bubble-{Guid.NewGuid():N}";
 
     private ElementReference _trigger;
     private ElementReference _bubble;
