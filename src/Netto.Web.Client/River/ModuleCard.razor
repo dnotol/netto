@@ -1,25 +1,16 @@
-@inject IStringLocalizer<ModuleCard> L
-
 @* The frame every module of the river shares: its title and what flows through it, on the one line it
-   folds to (Fold), then its controls and its detail view, opened inline under them, and last, for an
-   optional module, the word that takes it out of the plan. A skipped module is drawn dashed, waiting
-   for the amounts it needs. *@
+   folds to (Fold), then its controls and its detail view, folded under them to one line of its own
+   (Fold, level 3) and opened on demand, and last, for an optional module, the word that takes it out
+   of the plan. A skipped module is drawn dashed, waiting for the amounts it needs. *@
 <section class="module-card @(Skipped ? "module-card--skipped" : null)" aria-labelledby="@_titleId">
     <Fold Name="@Name" Title="@Title" TitleId="@_titleId" Summary="@Summary">
         <div class="module-card__body">
             @ChildContent
             @if (Details is not null)
             {
-                <div class="module-card__details">
-                    <MudButton Variant="Variant.Text" Size="Size.Small" Color="Color.Primary" OnClick="Toggle" aria-expanded="@(_open ? "true" : "false")"
-                               EndIcon="@(_open ? Icons.Material.Rounded.ExpandLess : Icons.Material.Rounded.ExpandMore)">
-                        @(_open ? L["HideDetails"] : DetailsLabel)
-                    </MudButton>
-                    @if (_open)
-                    {
-                        <div class="module-card__detail">@Details</div>
-                    }
-                </div>
+                <Fold Name="@($"{Name}-details")" Title="@DetailsLabel" Level="3" OpenByDefault="false">
+                    <div class="module-card__detail">@Details</div>
+                </Fold>
             }
             @if (RemoveLabel is not null)
             {
@@ -32,7 +23,7 @@
 </section>
 
 @code {
-    // Where the card's fold is remembered.
+    // Where the card's fold is remembered, and its detail view's under the same name.
     [Parameter, EditorRequired]
     public string Name { get; set; } = "";
 
@@ -53,6 +44,7 @@
     [Parameter]
     public RenderFragment? Details { get; set; }
 
+    // The detail view's line, folded or open.
     [Parameter]
     public string DetailsLabel { get; set; } = "";
 
@@ -65,7 +57,4 @@
     public EventCallback OnRemove { get; set; }
 
     private readonly string _titleId = $"module-{Guid.NewGuid():N}";
-    private bool _open;
-
-    private void Toggle() => _open = !_open;
 }

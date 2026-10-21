@@ -1,6 +1,6 @@
-/* The card frames only itself: its heading is the fold's (Fold), and what a module puts inside is
-   styled by that module's own .razor.css. ::deep reaches the MudButtons of the detail toggle and of
-   the word that takes the module out of the plan. */
+/* The card frames only itself: its heading and its detail view's line are folds (Fold), and what a
+   module puts inside is styled by that module's own .razor.css. ::deep reaches the MudButton of the
+   word that takes the module out of the plan. */
 .module-card {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
@@ -27,22 +27,11 @@
     padding-bottom: 0.5rem;
 }
 
-.module-card__details {
-    display: grid;
-    gap: 0.75rem;
-    padding-top: 0.5rem;
-    border-top: 1px solid var(--netto-line);
-}
-
-    .module-card__details ::deep .mud-button-root {
-        justify-self: start;
-        margin-left: -0.5rem;
-    }
-
 .module-card__detail {
     display: grid;
     gap: 1.25rem;
     min-width: 0;
+    margin-top: 1rem;
 }
 
 /* A word, not a button: quiet, underlined, at the start of the card's last line. */
