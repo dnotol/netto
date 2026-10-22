@@ -50,8 +50,9 @@ public sealed record RiverInputs(
     // what is left to pay on the assessment. It holds none of the optional modules in its plan, and
     // grants no vouchers, pays no expense allowances and no rent and holds no car, so its figures are a
     // year without them and adding a module starts it from nothing (decided 2026-10-21). A car's first
-    // registration is a date, not money: the example's is the year's first day, a new car, until the
-    // user gives theirs, and the company pays no private charging unless the user says it does.
+    // registration and its order are dates, not money: the example's are the year's first day, a new
+    // car, until the user gives theirs, and its CO2 is nothing until given. It is assumed electric,
+    // the company paying no private charging, until the user says otherwise.
     public static RiverInputs Example { get; } = new(
         ExampleYear,
         new CompanyFigures(new Input<decimal>(120_000m, InputOrigin.Example), new Input<decimal>(20_000m, InputOrigin.Example)),
@@ -61,7 +62,10 @@ public sealed record RiverInputs(
         new RentInputs(ExampleNothing, ExampleNothing, ExampleNothing),
         new CarInputs(
             ExampleNothing, new Input<DateOnly>(new DateOnly(ExampleYear, 1, 1), InputOrigin.Example), ExampleNothing,
-            new Input<bool>(false, InputOrigin.Default), ExampleNothing),
+            new Input<bool>(false, InputOrigin.Default), ExampleNothing,
+            new Input<CarEngine>(CarEngine.Electric, InputOrigin.Default), new Input<int>(0, InputOrigin.Example), new Input<bool>(false, InputOrigin.Default),
+            new Input<DateOnly>(new DateOnly(ExampleYear, 1, 1), InputOrigin.Example), new Input<bool>(false, InputOrigin.Default),
+            new Input<int>(0, InputOrigin.Example), new Input<bool>(false, InputOrigin.Default), new Input<bool>(false, InputOrigin.Default)),
         new Input<bool>(true, InputOrigin.Default),
         new Input<FinancialYear>(River.FinancialYear.FifthOrLater, InputOrigin.Default),
         new AdvancePaymentInputs(ExampleNothing, ExampleNothing, ExampleNothing, ExampleNothing),
@@ -117,6 +121,22 @@ public sealed record RiverInputs(
     public RiverInputs WithPrivateEnergyPaid(bool paid) => this with { Car = Car with { CompanyPaysPrivateEnergy = Yours(paid) } };
 
     public RiverInputs WithCarContribution(decimal amount) => this with { Car = Car with { PersonalContribution = Yours(amount) } };
+
+    public RiverInputs WithCarEngine(CarEngine engine) => this with { Car = Car with { Engine = Yours(engine) } };
+
+    public RiverInputs WithCarCo2(int grams) => this with { Car = Car with { Co2 = Yours(grams) } };
+
+    public RiverInputs WithNoCo2Data(bool none) => this with { Car = Car with { NoCo2Data = Yours(none) } };
+
+    public RiverInputs WithCarAcquired(DateOnly date) => this with { Car = Car with { Acquired = Yours(date) } };
+
+    public RiverInputs WithFakeHybrid(bool fake) => this with { Car = Car with { FakeHybrid = Yours(fake) } };
+
+    public RiverInputs WithMatchingCarCo2(int grams) => this with { Car = Car with { MatchingCarCo2 = Yours(grams) } };
+
+    public RiverInputs WithNoMatchingCar(bool none) => this with { Car = Car with { NoMatchingCar = Yours(none) } };
+
+    public RiverInputs WithSmallNaturalGas(bool small) => this with { Car = Car with { SmallNaturalGas = Yours(small) } };
 
     public RiverInputs WithSmallCompany(bool smallCompany) => this with { SmallCompany = Yours(smallCompany) };
 
@@ -282,15 +302,36 @@ public sealed record RentInputs(Input<decimal> CadastralIncome, Input<decimal> S
 
 // The car the company puts at the director's disposal as the user enters it: its catalogue value, the
 // date of its first registration, its yearly costs to the company, whether the company pays the
-// charging for private use, and the director's own contribution.
+// energy for private use, and the director's own contribution; what drives it, its CO2 or that the
+// registration holds none, and when it was ordered or leased; for a plug-in hybrid, whether it is a
+// fake one and its matching car's CO2, or that it has none; for natural gas, whether it is under 12
+// fiscal horsepower.
 public sealed record CarInputs(
     Input<decimal> CatalogueValue,
     Input<DateOnly> FirstRegistration,
     Input<decimal> YearlyCosts,
     Input<bool> CompanyPaysPrivateEnergy,
-    Input<decimal> PersonalContribution)
+    Input<decimal> PersonalContribution,
+    Input<CarEngine> Engine,
+    Input<int> Co2,
+    Input<bool> NoCo2Data,
+    Input<DateOnly> Acquired,
+    Input<bool> FakeHybrid,
+    Input<int> MatchingCarCo2,
+    Input<bool> NoMatchingCar,
+    Input<bool> SmallNaturalGas)
 {
-    public CarFacts Values => new(CatalogueValue.Value, FirstRegistration.Value, YearlyCosts.Value, CompanyPaysPrivateEnergy.Value, PersonalContribution.Value);
+    public CarFacts Values => new(CatalogueValue.Value, FirstRegistration.Value, YearlyCosts.Value, CompanyPaysPrivateEnergy.Value, PersonalContribution.Value)
+    {
+        Engine = Engine.Value,
+        Co2 = Co2.Value,
+        NoCo2Data = NoCo2Data.Value,
+        Acquired = Acquired.Value,
+        FakeHybrid = FakeHybrid.Value,
+        MatchingCarCo2 = MatchingCarCo2.Value,
+        NoMatchingCar = NoMatchingCar.Value,
+        SmallNaturalGas = SmallNaturalGas.Value,
+    };
 }
 
 // A value of the river with where it comes from.

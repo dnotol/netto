@@ -876,25 +876,34 @@ public class RiverInputsTests
         (back.NetInPocket, back.MuddyPocket).ShouldBe((inputs.Run().Year.ShouldNotBeNull().NetInPocket, 8_000m));
     }
 
-    // The example holds no car: its money is nothing, its first registration the first day of the
-    // year, a new car, as an example, and the company pays no private charging, a status assumed.
+    // The example holds no car: its money and its CO2 are nothing, its first registration and its
+    // order the first day of the year, a new car, as an example; an electric car, which the company
+    // deducts in full and whose private charging it does not pay, with no fake hybrid's or natural
+    // gas's status, are assumed.
     [Fact]
-    public void Example_hasNoCarAndAssumesItsDateAndStatus()
+    public void Example_hasNoCarAndAssumesItsDatesAndStatuses()
     {
         RiverInputs.Example.Car.ShouldBe(new CarInputs(
             new Input<decimal>(0m, InputOrigin.Example), new Input<DateOnly>(new DateOnly(2026, 1, 1), InputOrigin.Example),
-            new Input<decimal>(0m, InputOrigin.Example), new Input<bool>(false, InputOrigin.Default), new Input<decimal>(0m, InputOrigin.Example)));
+            new Input<decimal>(0m, InputOrigin.Example), new Input<bool>(false, InputOrigin.Default), new Input<decimal>(0m, InputOrigin.Example),
+            new Input<CarEngine>(CarEngine.Electric, InputOrigin.Default), new Input<int>(0, InputOrigin.Example), new Input<bool>(false, InputOrigin.Default),
+            new Input<DateOnly>(new DateOnly(2026, 1, 1), InputOrigin.Example), new Input<bool>(false, InputOrigin.Default), new Input<int>(0, InputOrigin.Example),
+            new Input<bool>(false, InputOrigin.Default), new Input<bool>(false, InputOrigin.Default)));
     }
 
     [Fact]
     public void WithCar_makesEachTheUsers()
     {
         var inputs = RiverInputs.Example.WithCatalogueValue(48_500m).WithFirstRegistration(new DateOnly(2025, 6, 21)).WithCarCosts(9_250.50m)
-            .WithPrivateEnergyPaid(true).WithCarContribution(600m);
+            .WithPrivateEnergyPaid(true).WithCarContribution(600m).WithCarEngine(CarEngine.DieselPlugInHybrid).WithCarCo2(45).WithNoCo2Data(true)
+            .WithCarAcquired(new DateOnly(2025, 3, 1)).WithFakeHybrid(true).WithMatchingCarCo2(150).WithNoMatchingCar(true).WithSmallNaturalGas(true);
 
         inputs.Car.ShouldBe(new CarInputs(
             new Input<decimal>(48_500m, InputOrigin.Yours), new Input<DateOnly>(new DateOnly(2025, 6, 21), InputOrigin.Yours),
-            new Input<decimal>(9_250.50m, InputOrigin.Yours), new Input<bool>(true, InputOrigin.Yours), new Input<decimal>(600m, InputOrigin.Yours)));
+            new Input<decimal>(9_250.50m, InputOrigin.Yours), new Input<bool>(true, InputOrigin.Yours), new Input<decimal>(600m, InputOrigin.Yours),
+            new Input<CarEngine>(CarEngine.DieselPlugInHybrid, InputOrigin.Yours), new Input<int>(45, InputOrigin.Yours), new Input<bool>(true, InputOrigin.Yours),
+            new Input<DateOnly>(new DateOnly(2025, 3, 1), InputOrigin.Yours), new Input<bool>(true, InputOrigin.Yours), new Input<int>(150, InputOrigin.Yours),
+            new Input<bool>(true, InputOrigin.Yours), new Input<bool>(true, InputOrigin.Yours)));
     }
 
     [Fact]
@@ -902,7 +911,28 @@ public class RiverInputsTests
     {
         var inputs = ElectricCar(RiverInputs.Example).WithPrivateEnergyPaid(true).WithCarContribution(600m);
 
-        inputs.MoveScenario().Car.ShouldBe(new CarFacts(50_000m, new DateOnly(2026, 1, 10), 8_000m, true, 600m));
+        inputs.MoveScenario().Car.ShouldBe(new CarFacts(50_000m, new DateOnly(2026, 1, 10), 8_000m, true, 600m) { Acquired = new DateOnly(2026, 1, 1) });
+    }
+
+    [Fact]
+    public void Run_fuelCarReachesTheEngineWithItsEngineAndEmission()
+    {
+        var inputs = ElectricCar(RiverInputs.Example).WithCarEngine(CarEngine.PetrolPlugInHybrid).WithCarCo2(45).WithCarAcquired(new DateOnly(2024, 2, 1))
+            .WithFakeHybrid(true).WithMatchingCarCo2(150);
+
+        inputs.MoveScenario().Car.ShouldBe(new CarFacts(50_000m, new DateOnly(2026, 1, 10), 8_000m, false, 0m)
+        {
+            Engine = CarEngine.PetrolPlugInHybrid, Co2 = 45, Acquired = new DateOnly(2024, 2, 1), FakeHybrid = true, MatchingCarCo2 = 150,
+        });
+    }
+
+    // Switched to a car with a combustion engine, the example's CO2 of nothing is refused until given.
+    [Fact]
+    public void Run_fuelCarWithTheExamplesCo2_isRefusedWithTheEnginesKey()
+    {
+        var run = ElectricCar(RiverInputs.Example).WithCarEngine(CarEngine.Petrol).Run();
+
+        (run.Year, run.Error).ShouldBe((null, CarCalculator.Co2Missing));
     }
 
     // The car's costs, less what the director pays for it, leave 92,600 for the split.

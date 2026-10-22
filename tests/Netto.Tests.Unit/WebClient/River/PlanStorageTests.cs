@@ -1,4 +1,5 @@
 using System.Text.Json.Nodes;
+using Netto.Core.CompanyCar;
 using Netto.Core.Dividends;
 using Netto.Core.SocialContributions;
 using Netto.Web.Client.River;
@@ -18,6 +19,8 @@ public class PlanStorageTests
         .WithOfficeAllowance(1_938.44m).WithInternetAllowance(240m).WithComputerAllowance(240m).WithPhoneCosts(600m)
         .WithCadastralIncome(1_200m).WithShareLet(0.12m).WithRent(1_380m)
         .WithCatalogueValue(48_500m).WithFirstRegistration(new DateOnly(2025, 6, 21)).WithCarCosts(9_250.50m).WithPrivateEnergyPaid(true).WithCarContribution(600m)
+        .WithCarEngine(CarEngine.DieselPlugInHybrid).WithCarCo2(45).WithNoCo2Data(true).WithCarAcquired(new DateOnly(2025, 3, 1))
+        .WithFakeHybrid(true).WithMatchingCarCo2(150).WithNoMatchingCar(true).WithSmallNaturalGas(true)
         .WithSmallCompany(false).WithFinancialYear(FinancialYear.Second)
         .WithAdvancePayment(0, 3_000m).WithAdvancePayment(3, 1_250.25m)
         .WithDirectorPay(42_000m)
@@ -141,11 +144,22 @@ public class PlanStorageTests
         JsonNode.Parse(PlanStorage.Write(PlanBook.Empty))!["version"]!.GetValue<int>().ShouldBe(PlanStorage.Version);
     }
 
-    // Version 2 holds the company car.
+    // Version 2 holds the company car, its engine, CO2 and order date included: they joined version 2
+    // before it left the car's story branch (operator, 2026-10-22).
     [Fact]
     public void Version_isTwo()
     {
         PlanStorage.Version.ShouldBe(2);
+    }
+
+    // A plan saved with the car's first build, before its engine was asked, is not read with an
+    // electric car in its place: the operator accepted it does not open (2026-10-22).
+    [Fact]
+    public void Read_version2PlanMissingItsCarsEngine_makesThatPlanUnreadable()
+    {
+        var json = Edit(PlanStorage.Write(Book(("a", "Plan 1", RiverInputs.Example))), document => document["plans"]![0]!["inputs"]!["car"]!.AsObject().Remove("engine"));
+
+        PlanStorage.Read(json).Book.Plans.Single().Readable.ShouldBeFalse();
     }
 
     // A version 2 plan without its car comes from a format this version cannot read.

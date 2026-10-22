@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
+using Netto.Core.CompanyCar;
 using Netto.Core.Dividends;
 using Netto.Core.PersonalTax;
 using Netto.Core.SocialContributions;
@@ -31,7 +32,9 @@ internal sealed record PlanBook(IReadOnlyList<SavedPlan> Plans, string? Today, s
 // a plan with a default in place of what was saved. A document that cannot be read at all, or comes
 // from a newer version, is refused whole. A document of an older version is read in its own format,
 // each plan as it was saved, and is written back in this one: version 1 held no company car, so its
-// plans are read as plans without one (decided 2026-10-22).
+// plans are read as plans without one (decided 2026-10-22). The car's engine, CO2, order date and
+// statuses joined version 2 without raising it, since version 2 had not left the car's story branch;
+// a plan saved by the car's first build does not open (operator, 2026-10-22).
 internal static class PlanStorage
 {
     public const string Key = "netto.plans";
@@ -152,8 +155,7 @@ internal static class PlanStorage
             new VoucherInputs(Input(stored.Vouchers.MealVoucherDays), Input(stored.Vouchers.EcoVouchers), Input(stored.Vouchers.SportCultureVouchers)),
             new AllowanceInputs(Input(stored.Allowances.Office), Input(stored.Allowances.Internet), Input(stored.Allowances.Computer), Input(stored.Allowances.Phone)),
             new RentInputs(Input(stored.Rent.CadastralIncome), Input(stored.Rent.ShareLet), Input(stored.Rent.Rent)),
-            new CarInputs(Input(stored.Car.CatalogueValue), Input(stored.Car.FirstRegistration), Input(stored.Car.YearlyCosts),
-                Input(stored.Car.CompanyPaysPrivateEnergy), Input(stored.Car.PersonalContribution)),
+            Input(stored.Car),
             Input(stored.SmallCompany),
             Input(stored.FinancialYear),
             Input(stored.AdvancePayments),
@@ -171,7 +173,14 @@ internal static class PlanStorage
     private static Input<T> Input<T>(StoredValue<T> stored) => new(stored.Value, stored.Origin);
 
     private static StoredCar Stored(CarInputs car) => new(
-        Stored(car.CatalogueValue), Stored(car.FirstRegistration), Stored(car.YearlyCosts), Stored(car.CompanyPaysPrivateEnergy), Stored(car.PersonalContribution));
+        Stored(car.CatalogueValue), Stored(car.FirstRegistration), Stored(car.YearlyCosts), Stored(car.CompanyPaysPrivateEnergy), Stored(car.PersonalContribution),
+        Stored(car.Engine), Stored(car.Co2), Stored(car.NoCo2Data), Stored(car.Acquired), Stored(car.FakeHybrid), Stored(car.MatchingCarCo2),
+        Stored(car.NoMatchingCar), Stored(car.SmallNaturalGas));
+
+    private static CarInputs Input(StoredCar stored) => new(
+        Input(stored.CatalogueValue), Input(stored.FirstRegistration), Input(stored.YearlyCosts), Input(stored.CompanyPaysPrivateEnergy), Input(stored.PersonalContribution),
+        Input(stored.Engine), Input(stored.Co2), Input(stored.NoCo2Data), Input(stored.Acquired), Input(stored.FakeHybrid), Input(stored.MatchingCarCo2),
+        Input(stored.NoMatchingCar), Input(stored.SmallNaturalGas));
 
     private static StoredPayments Stored(AdvancePaymentInputs payments) =>
         new(Stored(payments.First), Stored(payments.Second), Stored(payments.Third), Stored(payments.Fourth));
@@ -242,7 +251,15 @@ internal sealed record StoredCar(
     StoredValue<DateOnly> FirstRegistration,
     StoredValue<decimal> YearlyCosts,
     StoredValue<bool> CompanyPaysPrivateEnergy,
-    StoredValue<decimal> PersonalContribution);
+    StoredValue<decimal> PersonalContribution,
+    StoredValue<CarEngine> Engine,
+    StoredValue<int> Co2,
+    StoredValue<bool> NoCo2Data,
+    StoredValue<DateOnly> Acquired,
+    StoredValue<bool> FakeHybrid,
+    StoredValue<int> MatchingCarCo2,
+    StoredValue<bool> NoMatchingCar,
+    StoredValue<bool> SmallNaturalGas);
 
 internal sealed record StoredPayments(StoredValue<decimal> First, StoredValue<decimal> Second, StoredValue<decimal> Third, StoredValue<decimal> Fourth);
 
