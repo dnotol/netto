@@ -63,6 +63,21 @@ html:has(.bucket-bar) {
     }
 }
 
+/* With a company car the muddy pocket is a fifth bucket (River/BucketBar.razor.css): below 960 px the
+   buckets take one more row; on a phone, three rows, and the line on Today adds the muddy pocket's
+   difference (the bar measured 331 px at 375 px wide). */
+@media (max-width: 960px) {
+    html:has(.bucket-bar__buckets--five) {
+        scroll-padding-top: calc(4.25rem + 1px + 11.5rem + 2.8rem + 1.5rem);
+    }
+}
+
+@media (max-width: 640px) {
+    html:has(.bucket-bar__buckets--five) {
+        scroll-padding-top: calc(4.25rem + 1px + 20.75rem + 1rem);
+    }
+}
+
 html:has(.taken-out__notice) {
     scroll-padding-bottom: 6rem;
 }

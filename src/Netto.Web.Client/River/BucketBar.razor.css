@@ -30,9 +30,16 @@
     margin: 0;
 }
 
-/* With a company car, the muddy pocket is a fifth bucket after the pocket. */
+/* With a company car, the muddy pocket is a fifth bucket after the pocket: five in a row while their
+   amounts fit side by side, three then two below that. */
 .bucket-bar__buckets--five {
     grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+@media (max-width: 960px) {
+    .bucket-bar__buckets--five {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
 }
 
 .bucket {
