@@ -183,7 +183,8 @@ internal sealed class DirectorAdvancePaymentFinder(DateOnly date) : IMoveFinder
             return null;
 
         var amount = GrossToNet.AdvancePaymentTopUpBy(
-            scenario.IncomeYear, scenario.DirectorPay, scenario.MunicipalRate.Value, scenario.TaxPrepayments, scenario.ContributionsPaidBy, year.Rent.NetRent, open);
+            scenario.IncomeYear, scenario.DirectorPay, scenario.MunicipalRate.Value, scenario.TaxPrepayments, scenario.ContributionsPaidBy, year.Rent.NetRent,
+            year.DirectorPay.BenefitInKind, open);
         return amount > 0m ? new DirectorAdvancePaymentMove(open, rules.Deadlines[open].Date.Value, amount.Value) : null;
     }
 }

@@ -118,7 +118,8 @@ public static class YearSimulation
         if (BesidesPayOf(scenario, levers).Value is not { } besidesPay)
             return null;
         if (GrossToNet.Level(
-                scenario.IncomeYear, scenario.DirectorPay, scenario.MunicipalRate.Value, scenario.TaxPrepayments, scenario.ContributionsPaidBy, besidesPay.Rent.NetRent)
+                scenario.IncomeYear, scenario.DirectorPay, scenario.MunicipalRate.Value, scenario.TaxPrepayments, scenario.ContributionsPaidBy, besidesPay.Rent.NetRent,
+                0m)
             is not { } pay)
             return null;
 

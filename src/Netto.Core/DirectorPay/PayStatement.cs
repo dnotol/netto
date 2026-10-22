@@ -18,14 +18,16 @@ public sealed record PayStatement(
     IReadOnlyList<RuleAmount> AmountsUsed);
 
 // One month of the statement: the month of the income year (1 is January), the payslip gross over
-// twelve, the contributions the company pays on the director's behalf over twelve, the taxable pay
-// over twelve, which is both of them, the withholding the key formula gives on it, and the net paid,
-// the gross over twelve less the withholding, since the company-paid contributions never reach the
-// director. UnmodelledRules says rules exist for the month that Netto does not model.
+// twelve, the contributions the company pays on the director's behalf over twelve, the benefit in
+// kind over twelve, the taxable pay over twelve, which is all three, the withholding the key formula
+// gives on it, and the net paid, the gross over twelve less the withholding, since neither the
+// company-paid contributions nor the benefit ever reach the director in cash. UnmodelledRules says
+// rules exist for the month that Netto does not model.
 public sealed record PayStatementMonth(
     int Month,
     decimal GrossPay,
     decimal ContributionsPaidByCompany,
+    decimal BenefitInKind,
     decimal TaxablePay,
     decimal Withholding,
     decimal NetPaid,

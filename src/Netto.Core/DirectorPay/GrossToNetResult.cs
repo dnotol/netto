@@ -7,8 +7,9 @@ namespace Netto.Core.DirectorPay;
 // contributions on it whoever pays them. When the company pays them on the director's behalf they are
 // ContributionsPaidByCompany, nothing when the director does, and they are pay too: TaxablePay, what
 // the director declares, is the gross plus them, and so is CompanyCost, what the pay takes out of the
-// company. Both are the gross itself when the director pays. Steps is the ledger of the year's rules
-// on the pay; Statement, the pay as the director sees it month by month, and Assessment, the balance
+// company. Both are the gross itself when the director pays. BenefitInKind is a benefit taxed as pay
+// and never paid, a company car's, nothing without one: it is in TaxablePay, never in CompanyCost nor
+// in NetInPocket. Steps is the ledger of the year's rules on the pay; Statement, the pay as the director sees it month by month, and Assessment, the balance
 // the year's tax return leaves, are records beside the ledger, not steps. The pay's figures, its
 // taxes, its credit, its net and its steps, are the pay's taken alone; OtherIncomeTax is what the
 // income taxed with it adds to the year's tax, and the year's figures, AdvancePayments with its
@@ -19,6 +20,7 @@ public sealed record GrossToNetResult(
     decimal MunicipalRate,
     decimal SocialContributions,
     decimal ContributionsPaidByCompany,
+    decimal BenefitInKind,
     decimal TaxablePay,
     decimal CompanyCost,
     decimal FlatRateCosts,

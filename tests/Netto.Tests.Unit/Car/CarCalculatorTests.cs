@@ -123,7 +123,7 @@ public class CarCalculatorTests
     {
         var result = Compute(Car(50_000m, new DateOnly(2026, 1, 10), contribution: 600m));
 
-        (result.AddBackRate.Value, result.AddBack).ShouldBe((0.17m, 291.43m));
+        (result.AddBackRate, result.AddBack).ShouldBe((Rules.AddBackRate, 291.43m));
     }
 
     [Fact]
@@ -131,7 +131,7 @@ public class CarCalculatorTests
     {
         var result = Compute(Car(50_000m, new DateOnly(2026, 1, 10), privateEnergy: true));
 
-        (result.AddBackRate.Value, result.AddBack).ShouldBe((0.40m, 685.72m));
+        (result.AddBackRate, result.AddBack).ShouldBe((Rules.AddBackRateWithPrivateEnergy, 685.72m));
     }
 
     // At the minimum, 17% of 1,690.00 = 287.30.
