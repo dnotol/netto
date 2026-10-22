@@ -126,4 +126,7 @@
   <data name="Error_copyright_royalty_negative" xml:space="preserve">
     <value>The royalty cannot be negative.</value>
   </data>
+  <data name="Error_copyright_creative_share_out_of_range" xml:space="preserve">
+    <value>The share of your working time spent creating is between 0% and 100%.</value>
+  </data>
 </root>

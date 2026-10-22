@@ -22,7 +22,7 @@ public class PlanStorageTests
         .WithCatalogueValue(48_500m).WithFirstRegistration(new DateOnly(2025, 6, 21)).WithCarCosts(9_250.50m).WithPrivateEnergyPaid(true).WithCarContribution(600m)
         .WithCarEngine(CarEngine.DieselPlugInHybrid).WithCarCo2(45).WithNoCo2Data(true).WithCarAcquired(new DateOnly(2025, 3, 1))
         .WithFakeHybrid(true).WithMatchingCarCo2(150).WithNoMatchingCar(true).WithSmallNaturalGas(true)
-        .WithRoyalty(12_500.50m).WithAverageWithinCap(false).WithAttestation(true)
+        .WithRoyalty(12_500.50m).WithAverageWithinCap(false).WithAttestation(true).WithCreativeShare(0.75m)
         .WithSmallCompany(false).WithFinancialYear(FinancialYear.Second)
         .WithAdvancePayment(0, 3_000m).WithAdvancePayment(3, 1_250.25m)
         .WithDirectorPay(42_000m)
@@ -172,6 +172,25 @@ public class PlanStorageTests
     {
         var json = Edit(PlanStorage.Write(Book(("a", "Plan 1", RiverInputs.Example))),
             document => document["plans"]![0]!["inputs"]!["copyright"]!.AsObject().Remove("holdsAttestation"));
+
+        PlanStorage.Read(json).Book.Plans.Single().Readable.ShouldBeFalse();
+    }
+
+    // The creative share has no default: none stored is none read back, never a share.
+    [Fact]
+    public void Read_written_givesBackNoCreativeShareAsNone()
+    {
+        var (read, _) = PlanStorage.Read(PlanStorage.Write(Book(("a", "Plan 1", RiverInputs.Example))));
+
+        read.Plans.Single().Inputs.ShouldNotBeNull().Copyright.CreativeShare.Value.ShouldBeNull();
+    }
+
+    // A plan saved before the share was asked is not read as one without it.
+    [Fact]
+    public void Read_planMissingItsRoyaltysCreativeShare_makesThatPlanUnreadable()
+    {
+        var json = Edit(PlanStorage.Write(Book(("a", "Plan 1", RiverInputs.Example))),
+            document => document["plans"]![0]!["inputs"]!["copyright"]!.AsObject().Remove("creativeShare"));
 
         PlanStorage.Read(json).Book.Plans.Single().Readable.ShouldBeFalse();
     }

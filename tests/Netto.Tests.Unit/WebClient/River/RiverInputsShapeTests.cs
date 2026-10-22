@@ -9,15 +9,15 @@ namespace Netto.Tests.WebClient.River;
 // version before reads (refused, or read with the new input's own origin), then update the shape here.
 // The exceptions so far: the car's engine, CO2, order date and statuses joined version 2 without
 // raising it, since version 2 had not left the car's story branch (operator, 2026-10-22); the rest of
-// the copyright royalty's story, its attestation du travail des arts first, joins version 3 the same way
-// (decided unattended, 2026-10-22).
+// the copyright royalty's story, its attestation du travail des arts and its creative share, joins
+// version 3 the same way (decided unattended, 2026-10-22).
 public class RiverInputsShapeTests
 {
     [Theory]
     [InlineData(typeof(RiverInputs), "IncomeYear:Int32 Company:CompanyFigures Composition:PlanComposition Vouchers:VoucherInputs Allowances:AllowanceInputs Rent:RentInputs Car:CarInputs Copyright:CopyrightInputs SmallCompany:Input`1[Boolean] FinancialYear:Input`1[FinancialYear] AdvancePayments:AdvancePaymentInputs DirectorPay:Input`1[Decimal] Municipality:MunicipalityChoice TaxPrepayments:TaxPrepaymentInputs Reserve:Input`1[Decimal] DividendCategory:Input`1[WithholdingCategory] EarlierProfits:Input`1[Decimal] ContributionsPaidBy:Input`1[ContributionsPaidBy]")]
     [InlineData(typeof(CompanyFigures), "Revenue:Input`1[Decimal] RunningCosts:Input`1[Decimal]")]
     [InlineData(typeof(PlanComposition), "Vouchers:Boolean Allowances:Boolean Rent:Boolean Car:Boolean Copyright:Boolean")]
-    [InlineData(typeof(CopyrightInputs), "Royalty:Input`1[Decimal] AverageWithinCap:Input`1[Boolean] HoldsAttestation:Input`1[Boolean]")]
+    [InlineData(typeof(CopyrightInputs), "Royalty:Input`1[Decimal] AverageWithinCap:Input`1[Boolean] HoldsAttestation:Input`1[Boolean] CreativeShare:Input`1[Nullable`1[Decimal]]")]
     [InlineData(typeof(VoucherInputs), "MealVoucherDays:Input`1[Int32] EcoVouchers:Input`1[Decimal] SportCultureVouchers:Input`1[Decimal]")]
     [InlineData(typeof(AllowanceInputs), "Office:Input`1[Decimal] Internet:Input`1[Decimal] Computer:Input`1[Decimal] Phone:Input`1[Decimal]")]
     [InlineData(typeof(RentInputs), "CadastralIncome:Input`1[Decimal] ShareLet:Input`1[Decimal] Rent:Input`1[Decimal]")]

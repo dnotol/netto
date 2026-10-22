@@ -862,28 +862,47 @@ public class RiverInputsTests
     // YearSimulationCopyrightTests' royalty within its limits: 10,000 beside the example's 50,000 of pay.
     private static RiverInputs Royalty(RiverInputs inputs) => inputs.AddToPlan(OptionalModule.Copyright).WithRoyalty(10_000m);
 
-    // The average met and no attestation are Netto's assumptions until the user says otherwise.
+    // The average met and no attestation are Netto's assumptions until the user says otherwise; the
+    // creative share has no default, none until given.
     [Fact]
-    public void Example_hasNoRoyaltyAssumesTheAverageMetAndNoAttestation()
+    public void Example_hasNoRoyaltyAssumesTheAverageMetAndNoAttestationAndHasNoCreativeShare()
     {
         RiverInputs.Example.Copyright.ShouldBe(new CopyrightInputs(
-            new Input<decimal>(0m, InputOrigin.Example), new Input<bool>(true, InputOrigin.Default), new Input<bool>(false, InputOrigin.Default)));
+            new Input<decimal>(0m, InputOrigin.Example), new Input<bool>(true, InputOrigin.Default), new Input<bool>(false, InputOrigin.Default),
+            new Input<decimal?>(null, InputOrigin.Yours)));
     }
 
     [Fact]
     public void WithRoyalty_makesEachTheUsers()
     {
-        var inputs = RiverInputs.Example.WithRoyalty(12_500.50m).WithAverageWithinCap(false).WithAttestation(true);
+        var inputs = RiverInputs.Example.WithRoyalty(12_500.50m).WithAverageWithinCap(false).WithAttestation(true).WithCreativeShare(0.75m);
 
         inputs.Copyright.ShouldBe(new CopyrightInputs(
-            new Input<decimal>(12_500.50m, InputOrigin.Yours), new Input<bool>(false, InputOrigin.Yours), new Input<bool>(true, InputOrigin.Yours)));
+            new Input<decimal>(12_500.50m, InputOrigin.Yours), new Input<bool>(false, InputOrigin.Yours), new Input<bool>(true, InputOrigin.Yours),
+            new Input<decimal?>(0.75m, InputOrigin.Yours)));
+    }
+
+    // A share cleared is none again.
+    [Fact]
+    public void WithCreativeShare_cleared_isNoneAgain()
+    {
+        RiverInputs.Example.WithCreativeShare(0.75m).WithCreativeShare(null).Copyright.CreativeShare.Value.ShouldBeNull();
     }
 
     [Fact]
-    public void Run_royaltyReachesTheEngineWithItsAverageAndItsAttestation()
+    public void Run_royaltyReachesTheEngineWithItsAverageItsAttestationAndItsShare()
     {
-        Royalty(RiverInputs.Example).WithAverageWithinCap(false).WithAttestation(true).MoveScenario().Copyright
-            .ShouldBe(new Netto.Core.Copyright.CopyrightRoyalty(10_000m) { AverageWithinCap = false, HoldsAttestation = true });
+        Royalty(RiverInputs.Example).WithAverageWithinCap(false).WithAttestation(true).WithCreativeShare(0.75m).MoveScenario().Copyright
+            .ShouldBe(new Netto.Core.Copyright.CopyrightRoyalty(10_000m) { AverageWithinCap = false, HoldsAttestation = true, CreativeShare = 0.75m });
+    }
+
+    // The share is a rate between nothing and all of the time: the card shows the engine's refusal.
+    [Fact]
+    public void Run_creativeShareAboveAll_isRefusedWithTheEnginesKey()
+    {
+        var run = RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithCreativeShare(1.5m).Run();
+
+        (run.Year, run.Error).ShouldBe((null, Netto.Core.Copyright.CopyrightCalculator.CreativeShareOutOfRange));
     }
 
     // The split shares what the royalty leaves.
@@ -1035,5 +1054,18 @@ public class RiverInputsTests
         var scenario = inputs.MoveScenario();
 
         (scenario.Rent, YearSimulation.Run(scenario).Value?.NetInPocket).ShouldBe((new HomeOfficeRent(1_200m, 0.12m, 0m), inputs.Run().Year?.NetInPocket));
+    }
+
+    // The same for the royalty: its share and statuses kept while it is out of the plan, the royalty at
+    // nothing, so the search can propose it.
+    [Fact]
+    public void MoveScenario_royaltyOutOfThePlan_keepsItsShareAndStatusesAndRunsTheSameYear()
+    {
+        var inputs = RiverInputs.Example.WithRoyalty(10_000m).WithCreativeShare(0.75m).WithAttestation(true);
+
+        var scenario = inputs.MoveScenario();
+
+        (scenario.Copyright, YearSimulation.Run(scenario).Value?.NetInPocket)
+            .ShouldBe((new Netto.Core.Copyright.CopyrightRoyalty(0m) { CreativeShare = 0.75m, HoldsAttestation = true }, inputs.Run().Year?.NetInPocket));
     }
 }

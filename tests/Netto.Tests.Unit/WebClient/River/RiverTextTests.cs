@@ -138,7 +138,7 @@ public class RiverTextTests
             CarCalculator.CatalogueValueNegative, CarCalculator.YearlyCostsNegative, CarCalculator.ContributionNegative,
             CarCalculator.Co2Negative, CarCalculator.Co2Missing, CarCalculator.MatchingCarCo2Negative, CarCalculator.MatchingCarCo2Missing,
             CarCalculator.AcquiredAfterYear, CarCalculator.PlugInFuelCapped,
-            CopyrightCalculator.RoyaltyNegative,
+            CopyrightCalculator.RoyaltyNegative, CopyrightCalculator.CreativeShareOutOfRange,
         };
 
         Missing(RefusedMessageResources, errors.Select(RefusedMessageText.Error)).ShouldBeEmpty();

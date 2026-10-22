@@ -72,4 +72,7 @@
   <data name="Total" xml:space="preserve">
     <value>Together: {0} more than Today.</value>
   </data>
+  <data name="Move_CopyrightRoyalty" xml:space="preserve">
+    <value>Pay yourself a copyright royalty of {0} a year, what a ruling accepts for {1} of your time spent creating</value>
+  </data>
 </root>

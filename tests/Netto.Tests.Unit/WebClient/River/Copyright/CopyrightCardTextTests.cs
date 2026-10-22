@@ -71,7 +71,7 @@ public class CopyrightCardTextTests
     {
         string[] keys =
         [
-            "Title", "Hint", "Waiting", "Scope", "RoyaltyLabel", "RoyaltyHint", "AverageLabel", "AverageHint", "AttestationLabel", "AttestationHint", "NoRoyaltyYet",
+            "Title", "Hint", "Waiting", "Scope", "RoyaltyLabel", "RoyaltyHint", "AverageLabel", "AverageHint", "AttestationLabel", "AttestationHint", "CreativeShareLabel", "CreativeShareHint", "NoRoyaltyYet",
             "TaxedApart", "TaxedAsPay", "Readings", "ComparisonTitle", "WithRoyalty", "WithoutRoyalty", "DetailsLabel", "SourcesTitle", "Remove",
         ];
 

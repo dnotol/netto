@@ -7,7 +7,8 @@
 @* The last lever before the split: a copyright royalty the company pays the director for the rights on
    works they created. The user gives the royalty for the year and says whether their copyright income
    of the four previous years averaged at most the year's cap, met unless they say otherwise, and
-   whether they hold an attestation du travail des arts for these works, none unless they say so. The
+   whether they hold an attestation du travail des arts for these works, none unless they say so, and
+   the share of their working time spent creating, which only the moves read, none until given. The
    card says how much of the royalty stays within the limits and how much passes them, which limit set
    it, the flat-rate costs the attestation takes off the first part, its tax apart and what the company
    withholds, the part beyond them going on to
@@ -31,6 +32,13 @@
                                    Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
                                    Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
                                    Error="@(Refused == CopyrightCalculator.RoyaltyNegative)" Refusal="@Refused" />
+            </RiverField>
+            <RiverField Label="@L["CreativeShareLabel"]" For="river-copyright-creative-share"
+                        Origin="@(Inputs.Copyright.CreativeShare.Value is null ? null : Inputs.Copyright.CreativeShare.Origin)" Help="@L["CreativeShareHint"]">
+                <RiverNumericField T="decimal?" InputId="river-copyright-creative-share" Value="CreativeSharePercent" ValueChanged="OnCreativeSharePercentChanged"
+                                   Format="0.##" Culture="Formats.Culture" Adornment="Adornment.End" AdornmentText="%" HideSpinButtons="true"
+                                   Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
+                                   Error="@(Refused == CopyrightCalculator.CreativeShareOutOfRange)" Refusal="@Refused" />
             </RiverField>
         </div>
         <div class="copyright__tick">
@@ -132,6 +140,10 @@
     private Task OnAverageChanged(bool within) => InputsChanged.InvokeAsync(Inputs.WithAverageWithinCap(within));
 
     private Task OnAttestationChanged(bool holds) => InputsChanged.InvokeAsync(Inputs.WithAttestation(holds));
+
+    private decimal? CreativeSharePercent => Inputs.Copyright.CreativeShare.Value * 100m;
+
+    private Task OnCreativeSharePercentChanged(decimal? percent) => InputsChanged.InvokeAsync(Inputs.WithCreativeShare(percent / 100m));
 
     private Task Remove() => InputsChanged.InvokeAsync(Inputs.TakeOutOfPlan(OptionalModule.Copyright));
 }

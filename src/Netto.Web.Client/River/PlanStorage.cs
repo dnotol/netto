@@ -188,7 +188,8 @@ internal static class PlanStorage
             new AllowanceInputs(Input(stored.Allowances.Office), Input(stored.Allowances.Internet), Input(stored.Allowances.Computer), Input(stored.Allowances.Phone)),
             new RentInputs(Input(stored.Rent.CadastralIncome), Input(stored.Rent.ShareLet), Input(stored.Rent.Rent)),
             Input(stored.Car),
-            new CopyrightInputs(Input(stored.Copyright.Royalty), Input(stored.Copyright.AverageWithinCap), Input(stored.Copyright.HoldsAttestation)),
+            new CopyrightInputs(
+                Input(stored.Copyright.Royalty), Input(stored.Copyright.AverageWithinCap), Input(stored.Copyright.HoldsAttestation), Input(stored.Copyright.CreativeShare)),
             Input(stored.SmallCompany),
             Input(stored.FinancialYear),
             Input(stored.AdvancePayments),
@@ -216,7 +217,7 @@ internal static class PlanStorage
         Input(stored.NoMatchingCar), Input(stored.SmallNaturalGas));
 
     private static StoredCopyright Stored(CopyrightInputs copyright) =>
-        new(Stored(copyright.Royalty), Stored(copyright.AverageWithinCap), Stored(copyright.HoldsAttestation));
+        new(Stored(copyright.Royalty), Stored(copyright.AverageWithinCap), Stored(copyright.HoldsAttestation), Stored(copyright.CreativeShare));
 
     private static StoredPayments Stored(AdvancePaymentInputs payments) =>
         new(Stored(payments.First), Stored(payments.Second), Stored(payments.Third), Stored(payments.Fourth));
@@ -299,7 +300,8 @@ internal sealed record StoredCompositionVersion2(bool Vouchers, bool Allowances,
 
 internal sealed record StoredCompositionVersion1(bool Vouchers, bool Allowances, bool Rent);
 
-internal sealed record StoredCopyright(StoredValue<decimal> Royalty, StoredValue<bool> AverageWithinCap, StoredValue<bool> HoldsAttestation);
+internal sealed record StoredCopyright(
+    StoredValue<decimal> Royalty, StoredValue<bool> AverageWithinCap, StoredValue<bool> HoldsAttestation, StoredValue<decimal?> CreativeShare);
 
 internal sealed record StoredVouchers(StoredValue<int> MealVoucherDays, StoredValue<decimal> EcoVouchers, StoredValue<decimal> SportCultureVouchers);
 

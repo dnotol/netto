@@ -19,7 +19,10 @@
                 <InfoBubble Label="@Label">@Help</InfoBubble>
             }
         </span>
-        <OriginChip Origin="Origin" />
+        @if (Origin is { } origin)
+        {
+            <OriginChip Origin="origin" />
+        }
     </div>
     @ChildContent
 </div>
@@ -31,8 +34,9 @@
     [Parameter]
     public string? For { get; set; }
 
+    // None for an input with no value yet and no default to show, such as the creative share.
     [Parameter, EditorRequired]
-    public InputOrigin Origin { get; set; }
+    public InputOrigin? Origin { get; set; }
 
     // What helps to fill the input in, in a bubble after the label.
     [Parameter]

@@ -67,6 +67,16 @@ public class MovesCardTextTests
         text.ShouldBe(expected);
     }
 
+    // The royalty with the share it is what a ruling accepts for.
+    [Fact]
+    public void Move_royalty_saysTheRoyaltyAndTheShare()
+    {
+        var text = string.Format(CultureInfo.InvariantCulture, Resources.GetString(MovesCardText.Move(new CopyrightRoyaltyMove(4_799.76m)), CultureInfo.InvariantCulture) ?? "",
+            "€4,799.76", "75%");
+
+        text.ShouldBe("Pay yourself a copyright royalty of €4,799.76 a year, what a ruling accepts for 75% of your time spent creating");
+    }
+
     // Folded without a Today, the summary says what the card waits for.
     [Fact]
     public void MovesCardResx_noToday_hasASummary()

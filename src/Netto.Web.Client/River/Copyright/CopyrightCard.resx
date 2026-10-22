@@ -70,7 +70,7 @@
     <value>The {0} beyond the limits is taxed as your pay, on Director pay: social contributions and income tax on the scale, and the advance-payment surcharge if too little is paid in advance. The company withholds 30% on it, {1}, which your assessment credits.</value>
   </data>
   <data name="Readings" xml:space="preserve">
-    <value>Where no text settles a point, Netto takes the reading that never overstates the gain: the 30% is measured on your gross pay on the payslip alone, without benefits in kind or the contributions the company pays for you; neither the royalty nor its part taxed as pay counts in the {0} minimum pay that keeps the reduced corporate rate; the royalty is always taxed apart, never with your other income; the flat-rate costs come off the part within the limits alone, the limits staying on the whole royalty; and the royalty is taken as paid on or after 11 June 2026, so the 15% withheld is on its net only with an attestation.</value>
+    <value>Where no text settles a point, Netto takes the reading that never overstates the gain: the 30% is measured on your gross pay on the payslip alone, without benefits in kind or the contributions the company pays for you; neither the royalty nor its part taxed as pay counts in the {0} minimum pay that keeps the reduced corporate rate; the royalty is always taxed apart, never with your other income; the flat-rate costs come off the part within the limits alone, the limits staying on the whole royalty; the royalty is taken as paid on or after 11 June 2026, so the 15% withheld is on its net only with an attestation; and the royalty your moves propose is measured, like the 30%, on your gross pay on the payslip alone.</value>
   </data>
   <data name="ComparisonTitle" xml:space="preserve">
     <value>With the royalty and without it</value>
@@ -110,5 +110,11 @@
   </data>
   <data name="FlatRateCosts" xml:space="preserve">
     <value>Your attestation takes {0} of flat-rate costs off it, 50% of the first {2} and 25% of the next part up to {3}: the 15% and the withholding are on the {1} left, though all of it reaches your pocket.</value>
+  </data>
+  <data name="CreativeShareLabel" xml:space="preserve">
+    <value>Share of my working time spent creating protected works</value>
+  </data>
+  <data name="CreativeShareHint" xml:space="preserve">
+    <value>Only your moves read it. A ruling of the tax administration accepts a director's royalty of at most 25% of their pay and royalty together, times this share, the basis its rulings take for directors (advance ruling 2026.0484). Once you give it, your moves propose the royalty up to that and to what keeps it within the limits. Netto cannot see it, so it proposes no royalty until you do.</value>
   </data>
 </root>

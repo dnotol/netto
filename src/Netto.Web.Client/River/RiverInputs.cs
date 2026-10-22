@@ -70,7 +70,7 @@ public sealed record RiverInputs(
             new Input<CarEngine>(CarEngine.Electric, InputOrigin.Default), new Input<int>(0, InputOrigin.Example), new Input<bool>(false, InputOrigin.Default),
             new Input<DateOnly>(new DateOnly(ExampleYear, 1, 1), InputOrigin.Example), new Input<bool>(false, InputOrigin.Default),
             new Input<int>(0, InputOrigin.Example), new Input<bool>(false, InputOrigin.Default), new Input<bool>(false, InputOrigin.Default)),
-        new CopyrightInputs(ExampleNothing, new Input<bool>(true, InputOrigin.Default), new Input<bool>(false, InputOrigin.Default)),
+        new CopyrightInputs(ExampleNothing, new Input<bool>(true, InputOrigin.Default), new Input<bool>(false, InputOrigin.Default), CopyrightInputs.NoCreativeShare),
         new Input<bool>(true, InputOrigin.Default),
         new Input<FinancialYear>(River.FinancialYear.FifthOrLater, InputOrigin.Default),
         new AdvancePaymentInputs(ExampleNothing, ExampleNothing, ExampleNothing, ExampleNothing),
@@ -149,6 +149,9 @@ public sealed record RiverInputs(
 
     public RiverInputs WithAttestation(bool holds) => this with { Copyright = Copyright with { HoldsAttestation = Yours(holds) } };
 
+    // Cleared, the share is none again.
+    public RiverInputs WithCreativeShare(decimal? share) => this with { Copyright = Copyright with { CreativeShare = Yours(share) } };
+
     public RiverInputs WithSmallCompany(bool smallCompany) => this with { SmallCompany = Yours(smallCompany) };
 
     public RiverInputs WithFinancialYear(FinancialYear financialYear) => this with { FinancialYear = Yours(financialYear) };
@@ -218,12 +221,14 @@ public sealed record RiverInputs(
     public (MovePlan? Value, string? Error)? FindMoves(DateOnly date) => Company is null ? null : MoveSearch.Run(MoveScenario(), date);
 
     // The scenario Run runs, but with the home office's facts kept while Rent is out of the plan, its
-    // rent at nothing, which the engine counts as no rent: the year is the same, and the search can
-    // propose the rent at the cap.
+    // rent at nothing, which the engine counts as no rent, and the royalty's creative share and statuses
+    // kept the same way while Copyright royalty is out, its royalty at nothing: the year is the same, and
+    // the search can propose the rent at the cap and the royalty at its ceiling.
     internal Scenario MoveScenario()
     {
         var scenario = Scenario(Math.Min(DirectorPay.Value, PayCeiling ?? 0m));
-        return InPlan(OptionalModule.Rent) ? scenario : scenario with { Rent = Rent.Values with { Rent = 0m } };
+        var withHome = InPlan(OptionalModule.Rent) ? scenario : scenario with { Rent = Rent.Values with { Rent = 0m } };
+        return InPlan(OptionalModule.Copyright) ? withHome : withHome with { Copyright = Copyright.Values with { Royalty = 0m } };
     }
 
     public bool SameBesidesPay(RiverInputs other) => this with { DirectorPay = other.DirectorPay } == other;
@@ -348,10 +353,18 @@ public sealed record CarInputs(
 
 // The copyright royalty the company pays the director as the user enters it: the gross royalty for
 // the year, whether their copyright income of the four previous years averaged at most the year's
-// cap, and whether they hold an attestation du travail des arts for these works.
-public sealed record CopyrightInputs(Input<decimal> Royalty, Input<bool> AverageWithinCap, Input<bool> HoldsAttestation)
+// cap, whether they hold an attestation du travail des arts for these works, and the share of their
+// working time spent creating protected works, which only the royalty move reads.
+public sealed record CopyrightInputs(Input<decimal> Royalty, Input<bool> AverageWithinCap, Input<bool> HoldsAttestation, Input<decimal?> CreativeShare)
 {
-    public CopyrightRoyalty Values => new(Royalty.Value) { AverageWithinCap = AverageWithinCap.Value, HoldsAttestation = HoldsAttestation.Value };
+    // The share has no default: none until the user gives it, and its origin, the user's, shows only
+    // once it is given.
+    public static Input<decimal?> NoCreativeShare { get; } = new(null, InputOrigin.Yours);
+
+    public CopyrightRoyalty Values => new(Royalty.Value)
+    {
+        AverageWithinCap = AverageWithinCap.Value, HoldsAttestation = HoldsAttestation.Value, CreativeShare = CreativeShare.Value,
+    };
 }
 
 // A value of the river with where it comes from.

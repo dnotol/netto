@@ -180,5 +180,43 @@ public class MovesViewTests
             .ShouldBe((true, 1_200m, 0.12m, 1_380.00m, true));
     }
 
+    // Today gives 75% of the time creating, its royalty out of the plan: the move is what the ruling
+    // accepts beside the pay the moves set.
+    [Fact]
+    public void Of_creativeShareGiven_proposesTheRoyalty()
+    {
+        var today = RiverInputs.Example.WithCreativeShare(0.75m);
+
+        MovesView.Of(today, AfterTheYear).Moves.ShouldContain(move => move.Move is CopyrightRoyaltyMove);
+    }
+
+    // No share, no royalty move, and nothing said about it.
+    [Fact]
+    public void Of_noCreativeShare_proposesNoRoyalty()
+    {
+        MovesView.Of(RiverInputs.Example, AfterTheYear).Moves.ShouldNotContain(move => move.Move is CopyrightRoyaltyMove);
+    }
+
+    // Applying it brings Today's share and statuses, with their origins, the royalty and the module.
+    [Fact]
+    public void Apply_royalty_bringsTodaysShareAndStatusesAndAddsTheRoyaltyToThePlan()
+    {
+        var today = RiverInputs.Example.WithCreativeShare(0.75m).WithAttestation(true);
+        var move = new PlannedMove(new CopyrightRoyaltyMove(4_799.76m), 1m);
+
+        var river = View(today).Apply(move, RiverInputs.Example);
+
+        (river.InPlan(OptionalModule.Copyright), river.Copyright, View(today).Applied(move, river))
+            .ShouldBe((true, today.Copyright with { Royalty = new Input<decimal>(4_799.76m, InputOrigin.Yours) }, true));
+    }
+
+    [Fact]
+    public void Applied_royaltyOutOfThePlan_isNot()
+    {
+        var move = new PlannedMove(new CopyrightRoyaltyMove(4_799.76m), 1m);
+
+        View().Applied(move, RiverInputs.Example.WithRoyalty(4_799.76m)).ShouldBeFalse();
+    }
+
     private static MovesView View(RiverInputs? today = null) => MovesView.Of(today ?? RiverInputs.Example, AfterTheYear);
 }

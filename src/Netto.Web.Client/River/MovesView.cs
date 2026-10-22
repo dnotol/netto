@@ -33,6 +33,7 @@ internal sealed record MovesView(MovesState State, string? Error, RiverInputs? T
         EcoVouchersMove eco => river.InPlan(OptionalModule.Vouchers) && river.Vouchers.EcoVouchers.Value == eco.Amount,
         SportCultureVouchersMove sport => river.InPlan(OptionalModule.Vouchers) && river.Vouchers.SportCultureVouchers.Value == sport.Amount,
         RentMove rent => river.InPlan(OptionalModule.Rent) && river.Rent.Rent.Value == rent.Rent,
+        CopyrightRoyaltyMove royalty => river.InPlan(OptionalModule.Copyright) && river.Copyright.Royalty.Value == royalty.Royalty,
         _ => false,
     };
 
@@ -46,12 +47,25 @@ internal sealed record MovesView(MovesState State, string? Error, RiverInputs? T
         EcoVouchersMove eco => river.WithEcoVouchers(eco.Amount).AddToPlan(OptionalModule.Vouchers),
         SportCultureVouchersMove sport => river.WithSportCultureVouchers(sport.Amount).AddToPlan(OptionalModule.Vouchers),
         RentMove rent => WithTodaysHome(river).WithRent(rent.Rent).AddToPlan(OptionalModule.Rent),
+        CopyrightRoyaltyMove royalty => WithTodaysCreativeShare(river).WithRoyalty(royalty.Royalty).AddToPlan(OptionalModule.Copyright),
         _ => throw new ArgumentOutOfRangeException(nameof(move), move, "A move the river cannot apply."),
     };
 
     // The rent is Today's home's: its cadastral income and share let come with it.
     private RiverInputs WithTodaysHome(RiverInputs river) => Today is { } today
         ? river.WithCadastralIncome(today.Rent.CadastralIncome.Value).WithShareLet(today.Rent.ShareLet.Value)
+        : river;
+
+    // The royalty is what a ruling accepts for Today's creative share, under Today's statuses: they come
+    // with it as Today holds them, origins and all.
+    private RiverInputs WithTodaysCreativeShare(RiverInputs river) => Today is { } today
+        ? river with
+        {
+            Copyright = river.Copyright with
+            {
+                CreativeShare = today.Copyright.CreativeShare, AverageWithinCap = today.Copyright.AverageWithinCap, HoldsAttestation = today.Copyright.HoldsAttestation,
+            },
+        }
         : river;
 
     private decimal Planned(CompanyAdvancePaymentMove payment) => (Today?.AdvancePayments.ByDeadline[payment.Deadline].Value ?? 0m) + payment.Amount;

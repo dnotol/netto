@@ -957,6 +957,8 @@ public class ModuleViewsTests
     [InlineData(RentCalculator.RentNegative, false, "Rent")]
     [InlineData(RentCalculator.RentAboveCap, false, "Rent")]
     [InlineData(RentCalculator.RentWithOfficeAllowance, false, "Rent")]
+    [InlineData(Netto.Core.Copyright.CopyrightCalculator.RoyaltyNegative, false, "Copyright")]
+    [InlineData(Netto.Core.Copyright.CopyrightCalculator.CreativeShareOutOfRange, false, "Copyright")]
     [InlineData(YearSimulation.IncomeYearNotSupported, false, "River")]
     public void RiverErrors_engineRefusal_isShownOnTheModuleHoldingTheField(string error, bool companySkipped, string module)
     {
