@@ -12,18 +12,18 @@
     @if (_view.State == MovesState.Moves)
     {
         <ol class="moves__list">
-            @foreach (var move in _view.Moves)
+            @foreach (var (move, index) in _view.Moves.Select((move, index) => (move, index)))
             {
                 <li class="moves__move">
                     <span class="moves__what">@What(move)</span>
                     <span class="moves__gain">@L["Gain", Formats.Euros(move.Gain)]</span>
                     @if (MovesView.Applied(move, Inputs))
                     {
-                        <span class="moves__applied">@L["Applied"]</span>
+                        <span class="moves__applied" tabindex="-1" @ref="_applied[index]">@L["Applied"]</span>
                     }
                     else
                     {
-                        <MudButton Variant="Variant.Outlined" Size="Size.Small" Class="moves__apply" OnClick="@(() => Apply(move))"
+                        <MudButton Variant="Variant.Outlined" Size="Size.Small" Class="moves__apply" OnClick="@(() => Apply(move, index))"
                                    aria-label="@L["ApplyLabel", What(move)]">@L["Apply"]</MudButton>
                     }
                 </li>
@@ -47,6 +47,8 @@
     public EventCallback<RiverInputs> InputsChanged { get; set; }
 
     private MovesView _view = MovesView.Of(null);
+    private readonly Dictionary<int, ElementReference> _applied = [];
+    private int? _focusApplied;
     private RiverInputs? _foundFor;
     private bool _found;
 
@@ -68,5 +70,19 @@
         _ => "",
     };
 
-    private Task Apply(PlannedMove move) => InputsChanged.InvokeAsync(MovesView.Apply(move, Inputs));
+    // Apply goes with the move applied, so the focus goes to what replaces it, « In the river ».
+    private async Task Apply(PlannedMove move, int index)
+    {
+        _focusApplied = index;
+        await InputsChanged.InvokeAsync(MovesView.Apply(move, Inputs));
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_focusApplied is { } index && _applied.TryGetValue(index, out var applied))
+        {
+            _focusApplied = null;
+            await applied.FocusAsync();
+        }
+    }
 }
