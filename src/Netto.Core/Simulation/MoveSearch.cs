@@ -1,7 +1,5 @@
+using Netto.Core.Calendar;
 using Netto.Core.Copyright;
-using Netto.Core.CorporateTax;
-using Netto.Core.DirectorPay;
-using Netto.Core.PersonalTax;
 using Netto.Core.Rent;
 using Netto.Core.Vouchers;
 
@@ -198,42 +196,25 @@ internal sealed class SplitMoveFinder : IMoveFinder
 }
 
 // What the company pays more by the first deadline still open on the date, so that the surcharge on
-// its corporate tax is cancelled; nothing when there is none, or every deadline is past.
+// its corporate tax is cancelled: the calendar's figure (PaymentCalendar); nothing when there is none,
+// or every deadline is past.
 internal sealed class CompanyAdvancePaymentFinder(DateOnly date) : IMoveFinder
 {
-    public Move? Find(Scenario scenario)
-    {
-        if (CorporateTaxRules.For(scenario.IncomeYear)?.AdvancePayments is not { } rules || Open(rules.Deadlines.Select(deadline => deadline.Date.Value), date) is not { } open)
-            return null;
-        if (YearSimulation.Run(scenario).Value is not { } year)
-            return null;
-
-        var amount = AdvancePaymentCalculator.TopUpBy(rules, year.Company.CorporateTax, scenario.AdvancePayments, scenario.Company, open);
-        return amount > 0m ? new CompanyAdvancePaymentMove(open, rules.Deadlines[open].Date.Value, amount) : null;
-    }
-
-    // The first deadline on or after the date: a deadline is open until the end of its day.
-    internal static int? Open(IEnumerable<DateOnly> deadlines, DateOnly date) =>
-        deadlines.Select((deadline, i) => (deadline, i)).Where(entry => entry.deadline >= date).Select(entry => (int?)entry.i).FirstOrDefault();
+    public Move? Find(Scenario scenario) =>
+        YearSimulation.Run(scenario).Value is { } year && PaymentCalendar.Of(year, date).Company is { Open: { } open, More: > 0m } company
+            ? new CompanyAdvancePaymentMove(open, company.Payments[open].Deadline.Value, company.More)
+            : null;
 }
 
 // What the director pays more by the first deadline still open on the date, so that no surcharge is
-// due on the income tax on their pay; nothing when none is, or every deadline is past.
+// due on the income tax on their pay: the calendar's figure; nothing when none is, or every deadline is
+// past.
 internal sealed class DirectorAdvancePaymentFinder(DateOnly date) : IMoveFinder
 {
-    public Move? Find(Scenario scenario)
-    {
-        if (PersonalTaxRules.For(scenario.IncomeYear)?.AdvancePayments is not { } rules
-            || CompanyAdvancePaymentFinder.Open(rules.Deadlines.Select(deadline => deadline.Date.Value), date) is not { } open)
-            return null;
-        if (YearSimulation.Run(scenario).Value is not { } year)
-            return null;
-
-        var amount = GrossToNet.AdvancePaymentTopUpBy(
-            scenario.IncomeYear, scenario.DirectorPay, scenario.MunicipalRate.Value, scenario.TaxPrepayments, scenario.ContributionsPaidBy, year.Rent.NetRent,
-            year.DirectorPay.BenefitInKind, year.Copyright.MovableIncome, open);
-        return amount > 0m ? new DirectorAdvancePaymentMove(open, rules.Deadlines[open].Date.Value, amount.Value) : null;
-    }
+    public Move? Find(Scenario scenario) =>
+        YearSimulation.Run(scenario).Value is { } year && PaymentCalendar.Of(year, date).Director is { Open: { } open, More: > 0m } director
+            ? new DirectorAdvancePaymentMove(open, director.Payments[open].Deadline.Value, director.More)
+            : null;
 }
 
 // The eco vouchers at their yearly maximum, when the company grants less: they need no fact Netto

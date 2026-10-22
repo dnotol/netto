@@ -1,0 +1,158 @@
+using Netto.Core.Calendar;
+using Netto.Core.CorporateTax;
+using Netto.Core.DirectorPay;
+using Netto.Core.Dividends;
+using Netto.Core.PersonalTax;
+using Netto.Core.Simulation;
+using Shouldly;
+
+namespace Netto.Tests.Calendar;
+
+// The river's example year as its scenario (MoveSearchTests): 50,000 of pay withheld on as the key
+// formula says, which leaves the director's surcharge under its minimum, and nothing prepaid by the
+// company, whose 10,000 of corporate tax leaves a 675.00 surcharge: 4.5% of 15,000 by 21 December, or
+// 9% of 7,500 by 10 April, cancels it. With nothing withheld the director's surcharge is 486.57, and
+// 14,317.50 by 21 December leaves none due (GrossToNetTests). Income year 2026's deadlines are 10
+// April, 10 July, 12 October and 21 December.
+public class PaymentCalendarTests
+{
+    private static readonly Scenario Example = new(
+        2026, 120_000m, 20_000m, new CompanyStatus(SmallCompany: true, FirstFourTaxPeriods: false), 50_000m, MunicipalRates.Entered(0.07m), 0m,
+        WithholdingCategory.VvprbisThirdYearOnwards)
+    {
+        TaxPrepayments = TaxPrepayments.AsWithheld,
+    };
+
+    private static readonly DateOnly On22October = new(2026, 10, 22);
+
+    private static PaymentCalendar Of(Scenario scenario, DateOnly today) =>
+        PaymentCalendar.Of(YearSimulation.Run(scenario).Value.ShouldNotBeNull(), today);
+
+    [Fact]
+    public void Of_example_givesTheYearsFourDeadlinesInOrder()
+    {
+        var calendar = Of(Example, On22October);
+
+        calendar.Company.ShouldNotBeNull().Payments.Select(payment => payment.Deadline.Value).ShouldBe(
+            [new DateOnly(2026, 4, 10), new DateOnly(2026, 7, 10), new DateOnly(2026, 10, 12), new DateOnly(2026, 12, 21)]);
+    }
+
+    [Fact]
+    public void Of_exampleOn22October_cancelsTheCompanysSurchargeBy21December()
+    {
+        var company = Of(Example, On22October).Company.ShouldNotBeNull();
+
+        (company.Surcharge, company.Open, company.More).ShouldBe((675.00m, 3, 15_000.00m));
+    }
+
+    [Fact]
+    public void Of_exampleOn22October_marksTheFirstThreeDeadlinesPast()
+    {
+        var company = Of(Example, On22October).Company.ShouldNotBeNull();
+
+        company.Payments.Select(payment => payment.Past).ShouldBe([true, true, true, false]);
+    }
+
+    // 9% of 5,000 leaves 225 of the 675, which 4.5% of 5,000 more by 21 December cancels.
+    [Fact]
+    public void Of_companyPaidBy10April_showsItAndWhatIsLeftBy21December()
+    {
+        var company = Of(Example with { AdvancePayments = new AdvancePayments(5_000m, 0m, 0m, 0m) }, On22October).Company.ShouldNotBeNull();
+
+        (company.Payments[0].Planned, company.Payments[0].More, company.Payments[3].More).ShouldBe((5_000m, 0m, 5_000.00m));
+    }
+
+    // Only the first deadline still open says what more cancels it.
+    [Fact]
+    public void Of_on1March_cancelsTheSurchargeByTheFirstDeadline()
+    {
+        var company = Of(Example, new DateOnly(2026, 3, 1)).Company.ShouldNotBeNull();
+
+        company.Payments.Select(payment => payment.More).ShouldBe([7_500.00m, 0m, 0m, 0m]);
+    }
+
+    // A deadline is open until the end of its day.
+    [Fact]
+    public void Of_onTheLastDeadline_stillCancelsTheSurchargeByIt()
+    {
+        var company = Of(Example, new DateOnly(2026, 12, 21)).Company.ShouldNotBeNull();
+
+        (company.Open, company.More).ShouldBe((3, 15_000.00m));
+    }
+
+    [Fact]
+    public void Of_afterTheLastDeadline_leavesTheSurchargeWithNothingMore()
+    {
+        var company = Of(Example, new DateOnly(2026, 12, 22)).Company.ShouldNotBeNull();
+
+        (company.Surcharge, company.Open, company.More, company.Payments.All(payment => payment.Past)).ShouldBe((675.00m, null, 0m, true));
+    }
+
+    [Fact]
+    public void Of_smallCompanyInItsThirdFinancialYear_isExemptWithNothingMore()
+    {
+        var company = Of(Example with { Company = new CompanyStatus(true, true, true) }, On22October).Company.ShouldNotBeNull();
+
+        (company.Exempt, company.Surcharge, company.More).ShouldBe((true, 0m, 0m));
+    }
+
+    [Fact]
+    public void Of_nothingWithheld_leavesNoDirectorsSurchargeDueWith14317Point50By21December()
+    {
+        var director = Of(Example with { TaxPrepayments = TaxPrepayments.None }, On22October).Director;
+
+        (director.Surcharge, director.Open, director.More).ShouldBe((486.57m, 3, 14_317.50m));
+    }
+
+    [Fact]
+    public void Of_exampleWithheldOnByTheKeyFormula_needsNothingMoreFromTheDirector()
+    {
+        var director = Of(Example, On22October).Director;
+
+        (director.Surcharge, director.More).ShouldBe((0m, 0m));
+    }
+
+    [Fact]
+    public void Of_starter_isExemptWithNothingMore()
+    {
+        var director = Of(Example with { TaxPrepayments = TaxPrepayments.None with { Starter = true } }, On22October).Director;
+
+        (director.Exempt, director.Surcharge, director.More).ShouldBe((true, 0m, 0m));
+    }
+
+    [Fact]
+    public void Of_directorsPayments_showWhatThePlanPays()
+    {
+        var paid = new AdvancePayments(1_000m, 0m, 2_000m, 0m);
+
+        var director = Of(Example with { TaxPrepayments = TaxPrepayments.None with { Paid = paid } }, On22October).Director;
+
+        director.Payments.Select(payment => payment.Planned).ShouldBe([1_000m, 0m, 2_000m, 0m]);
+    }
+
+    // What the moves propose by a deadline is the calendar's figure (MoveSearch's finders read the same).
+    [Fact]
+    public void Of_example_givesWhatTheMovesProposeByTheOpenDeadline()
+    {
+        var today = Example with { TaxPrepayments = TaxPrepayments.None };
+        var calendar = Of(today, On22October);
+
+        var finders = new IMoveFinder[] { new CompanyAdvancePaymentFinder(On22October), new DirectorAdvancePaymentFinder(On22October) };
+
+        finders.Select(finder => finder.Find(today)).ShouldBe([
+            new CompanyAdvancePaymentMove(3, new DateOnly(2026, 12, 21), calendar.Company.ShouldNotBeNull().More),
+            new DirectorAdvancePaymentMove(3, new DateOnly(2026, 12, 21), calendar.Director.More),
+        ]);
+    }
+
+    // A river that starts at the pay: the director's payments alone.
+    [Fact]
+    public void Of_payAlone_hasNoCompanyAndTheDirectorsPayments()
+    {
+        var pay = GrossToNet.Compute(2026, 50_000m, MunicipalRates.Entered(0.07m), TaxPrepayments.None).Value.ShouldNotBeNull();
+
+        var calendar = PaymentCalendar.Of(pay, AdvancePayments.None, On22October);
+
+        (calendar.Company, calendar.Director.More).ShouldBe((null, 14_317.50m));
+    }
+}

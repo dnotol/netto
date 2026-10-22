@@ -190,6 +190,25 @@ public class AdvancePaymentCalculatorTests
             .ShouldBe(AdvancePaymentCalculator.Compute(Rules2026, 20_000m, payments, SmallPastStartUp).LastDeadlineTopUp);
     }
 
+    // The result gives each deadline's, so the calendar and the moves read the same figure: the 5,000
+    // of 10 July leave 975 of the 1,350 at 9, 6 and 4.5%; by 10 July itself, the whole 1,350 at 7.5%
+    // less the 5,000 already paid.
+    [Fact]
+    public void Compute_surchargeLeft_givesWhatCancelsItByEachDeadline()
+    {
+        var result = AdvancePaymentCalculator.Compute(Rules2026, 20_000m, new AdvancePayments(0m, 5_000m, 0m, 0m), SmallPastStartUp);
+
+        result.TopUps.ShouldBe([10_833.34m, 13_000.00m, 16_250.00m, 21_666.67m]);
+    }
+
+    [Fact]
+    public void Compute_noSurcharge_givesNothingByEveryDeadline()
+    {
+        var result = AdvancePaymentCalculator.Compute(Rules2026, 20_000m, new AdvancePayments(15_000m, 0m, 0m, 0m), SmallPastStartUp);
+
+        result.TopUps.ShouldBe([0m, 0m, 0m, 0m]);
+    }
+
     [Fact]
     public void TopUpBy_noSurcharge_isNothing()
     {

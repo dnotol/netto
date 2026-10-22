@@ -11,20 +11,19 @@ public static class IncomeTaxAdvancePaymentCalculator
     public static IncomeTaxAdvancePaymentResult Compute(IncomeTaxAdvancePaymentRules rules, decimal totalTax, decimal taxCredits, TaxPrepayments prepayments)
     {
         var figures = Figures(rules, totalTax, taxCredits, prepayments);
-        var topUp = figures.Surcharge == 0m ? 0m : TopUp(rules, totalTax, taxCredits, prepayments, figures.SurchargeBeforeCredits, prepayments.Paid.ByDeadline.Count - 1);
+        var topUps = prepayments.Paid.ByDeadline
+            .Select((_, deadline) => figures.Surcharge == 0m ? 0m : TopUp(rules, totalTax, taxCredits, prepayments, figures.SurchargeBeforeCredits, deadline))
+            .ToList();
 
-        return figures with { LastDeadlineTopUp = topUp };
+        return figures with { TopUps = topUps };
     }
 
     // The smallest payment more by that deadline, the first being 0, after which no surcharge is due:
     // nothing when none is.
-    public static decimal TopUpBy(IncomeTaxAdvancePaymentRules rules, decimal totalTax, decimal taxCredits, TaxPrepayments prepayments, int deadline)
-    {
-        var figures = Figures(rules, totalTax, taxCredits, prepayments);
-        return figures.Surcharge == 0m ? 0m : TopUp(rules, totalTax, taxCredits, prepayments, figures.SurchargeBeforeCredits, deadline);
-    }
+    public static decimal TopUpBy(IncomeTaxAdvancePaymentRules rules, decimal totalTax, decimal taxCredits, TaxPrepayments prepayments, int deadline) =>
+        Compute(rules, totalTax, taxCredits, prepayments).TopUps[deadline];
 
-    // The surcharge and the bonus without the suggested payment, which the split's search does not
+    // The surcharge and the bonus without the suggested payments, which the split's search does not
     // read.
     internal static IncomeTaxAdvancePaymentResult Figures(IncomeTaxAdvancePaymentRules rules, decimal totalTax, decimal taxCredits, TaxPrepayments prepayments)
     {
@@ -63,7 +62,7 @@ public static class IncomeTaxAdvancePaymentCalculator
 
         return new IncomeTaxAdvancePaymentResult(
             taxAt106, taxBase, beforeCredits, needed, credits, beforeKeptRate, belowMinimum ? 0m : kept, belowMinimum,
-            bonuses, bonuses.Sum(), 0m, prepayments.Starter);
+            bonuses, bonuses.Sum(), [.. paid.Select(_ => 0m)], prepayments.Starter);
     }
 
     // The smallest amount in cents whose credit, rounded half away from zero, still covers what is

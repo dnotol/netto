@@ -7,8 +7,9 @@ namespace Netto.Core.PersonalTax;
 // what the credits leave; Surcharge is what is due, nothing when the 90% is under the minimum or
 // the minimum share of the base (BelowMinimum). What each payment has beyond its needed part earns
 // its deadline's bonus, earliest first, on a base of at most the tax at 106% less the withholding,
-// the credits and the needed payments. LastDeadlineTopUp is the smallest payment more by the last
-// deadline after which no surcharge is due. A starter owes none and needs no payment to avoid it.
+// the credits and the needed payments. TopUps is the smallest payment more by each deadline, in their
+// order, after which no surcharge is due; the last deadline's is LastDeadlineTopUp. A starter owes
+// none and needs no payment to avoid it.
 public sealed record IncomeTaxAdvancePaymentResult(
     decimal TaxAt106Percent,
     decimal Base,
@@ -20,5 +21,8 @@ public sealed record IncomeTaxAdvancePaymentResult(
     bool BelowMinimum,
     IReadOnlyList<decimal> Bonuses,
     decimal Bonus,
-    decimal LastDeadlineTopUp,
-    bool Exempt);
+    IReadOnlyList<decimal> TopUps,
+    bool Exempt)
+{
+    public decimal LastDeadlineTopUp => TopUps[^1];
+}

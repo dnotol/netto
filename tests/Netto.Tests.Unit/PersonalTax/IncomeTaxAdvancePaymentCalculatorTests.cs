@@ -261,6 +261,23 @@ public class IncomeTaxAdvancePaymentCalculatorTests
         topUp.ShouldBe(14_317.50m);
     }
 
+    // The result gives each deadline's, so the calendar and the moves read the same figure.
+    [Fact]
+    public void Compute_surchargeDue_givesTheSmallestPaymentByEachDeadline()
+    {
+        var result = Compute2026(TaxOn50000, new TaxPrepayments(0m, AdvancePayments.None));
+
+        (result.TopUps.Count, result.TopUps[0], result.TopUps[3]).ShouldBe((4, 7_158.75m, 14_317.50m));
+    }
+
+    [Fact]
+    public void Compute_noSurchargeDue_givesNothingByEveryDeadline()
+    {
+        var result = Compute2026(TaxOn50000, new TaxPrepayments(0m, new AdvancePayments(0m, 0m, 0m, 14_317.50m)));
+
+        result.TopUps.ShouldBe([0m, 0m, 0m, 0m]);
+    }
+
     [Fact]
     public void TopUpBy_noSurchargeDue_isNothing()
     {
