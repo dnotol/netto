@@ -331,7 +331,68 @@ public class BucketsViewTests
         BucketsView.From(RiverInputs.Example.WithReserve(-1m).Run()).ShouldBeNull();
     }
 
+    // The car's 8,000 of costs land in a bucket of their own, the muddy pocket, right after the
+    // pocket; the year's other buckets are the engine's.
+    [Fact]
+    public void From_car_putsItsCostsInTheMuddyPocketAfterThePocket()
+    {
+        var run = ElectricCar(RiverInputs.Example).Run();
+        var year = run.Year.ShouldNotBeNull();
+
+        var view = BucketsView.From(run).ShouldNotBeNull();
+
+        view.ShouldSatisfyAllConditions(
+            () => view.Buckets.Select(bucket => bucket.Key).ShouldBe(["pocket", "muddy", "taxes_on_pay", "taxes_on_profit", "kept_in_company"]),
+            () => (view.Buckets[0].Amount, view.Buckets[1].Amount).ShouldBe((year.NetInPocket, 8_000m)));
+    }
+
+    [Theory]
+    [MemberData(nameof(Years))]
+    public void From_anyYearWithACar_bucketsAddUpToWhatTheCompanyEarnsBeforePayingTheDirector(decimal revenue, decimal pay, decimal reserve)
+    {
+        var inputs = ElectricCar(EveryLever.WithRevenue(revenue).WithDirectorPay(pay).WithReserve(reserve).WithMealVoucherDays(220))
+            .WithCarContribution(600m).WithPrivateEnergyPaid(true).WithContributionsPaidBy(ContributionsPaidBy.Company);
+
+        var view = BucketsView.From(inputs.Run()).ShouldNotBeNull();
+
+        (view.Start, view.Buckets.Sum(bucket => bucket.Amount)).ShouldBe((revenue - 20_000m, revenue - 20_000m));
+    }
+
+    // Until the car counts, no muddy pocket: in the plan with nothing given, or out of it.
+    [Fact]
+    public void From_noCarCounted_hasNoMuddyPocket()
+    {
+        (BucketsView.From(RiverInputs.Example.AddToPlan(OptionalModule.Car).Run())!.HasMuddyPocket,
+                BucketsView.From(ElectricCar(RiverInputs.Example).TakeOutOfPlan(OptionalModule.Car).Run())!.HasMuddyPocket)
+            .ShouldBe((false, false));
+    }
+
+    // Its share is out of what leaves the company, like the reach, and the taxes take the rest of the
+    // whole as the bar rounds the other two.
+    [Fact]
+    public void From_car_saysTheMuddyShareBesideTheReachAndTheTaxes()
+    {
+        var view = BucketsView.From(ElectricCar(RiverInputs.Example).WithReserve(10_000m).Run()).ShouldNotBeNull();
+        var leaves = view.Start - view.Buckets.Single(bucket => bucket.Key == "kept_in_company").Amount;
+
+        view.ShouldSatisfyAllConditions(
+            () => (view.HasMuddyPocket, view.MuddyShare).ShouldBe((true, 8_000m / leaves)),
+            () => view.TaxesShare.ShouldBe(1m - Math.Round(view.Reach!.Value, 2, MidpointRounding.AwayFromZero) - Math.Round(8_000m / leaves, 2, MidpointRounding.AwayFromZero)));
+    }
+
+    [Fact]
+    public void From_noCar_hasNoMuddyShare()
+    {
+        var view = BucketsView.From(RiverInputs.Example.Run()).ShouldNotBeNull();
+
+        (view.HasMuddyPocket, view.MuddyShare).ShouldBe((false, (decimal?)null));
+    }
+
     // 12% of a cadastral income of 1,200 let for the 2026 cap, 1,380.00 (RentCalculatorTests).
     private static RiverInputs RentAtTheCap(RiverInputs inputs) =>
         inputs.AddToPlan(OptionalModule.Rent).WithCadastralIncome(1_200m).WithShareLet(0.12m).WithRent(1_380m);
+
+    // YearSimulationCarTests' electric car: 8,000 of yearly costs.
+    private static RiverInputs ElectricCar(RiverInputs inputs) =>
+        inputs.AddToPlan(OptionalModule.Car).WithCatalogueValue(50_000m).WithFirstRegistration(new DateOnly(2026, 1, 10)).WithCarCosts(8_000m);
 }

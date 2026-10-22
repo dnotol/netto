@@ -120,6 +120,44 @@ public class BucketBarTextTests
         Resources.GetString(BucketBarText.Unsaved, CultureInfo.InvariantCulture).ShouldBe("Unsaved changes.");
     }
 
+    // The muddy pocket's name and what it holds, beside the four others.
+    [Fact]
+    public void BucketBarResx_muddyPocket_hasItsNameAndWhatItHolds()
+    {
+        (Resources.GetString(BucketBarText.Bucket("muddy", false), CultureInfo.InvariantCulture),
+                Resources.GetString(BucketBarText.Holds("muddy", false), CultureInfo.InvariantCulture))
+            .ShouldSatisfyAllConditions(
+                texts => texts.Item1.ShouldBe("Muddy pocket"),
+                texts => texts.Item2.ShouldNotBeNull());
+    }
+
+    // With a car, the reach says the muddy pocket's share between what reaches the pocket and the
+    // taxes, of what the company does not keep once it keeps some.
+    [Theory]
+    [InlineData(0, "Reach_Muddy", "[62% reaches you], 8% goes to the muddy pocket, 30% goes to taxes.")]
+    [InlineData(10_000, "Reach_Muddy_Kept", "Of what the company does not keep, [62% reaches you], 8% goes to the muddy pocket, 30% goes to taxes.")]
+    public void Reach_car_saysTheMuddyShareBetweenThePocketAndTheTaxes(int reserve, string key, string expected)
+    {
+        var view = BucketsView.From(RiverInputs.Example.AddToPlan(OptionalModule.Car).WithCatalogueValue(50_000m).WithCarCosts(8_000m).WithReserve(reserve).Run())
+            .ShouldNotBeNull();
+
+        var text = string.Format(CultureInfo.InvariantCulture, Resources.GetString(BucketBarText.Reach(view), CultureInfo.InvariantCulture) ?? "", "62%", "30%", "8%");
+
+        (BucketBarText.Reach(view), text).ShouldBe((key, expected));
+    }
+
+    // When the muddy pocket differs from Today's, the bar says so beside the gain in cash.
+    [Theory]
+    [InlineData(8_000, "€8,000.00 more in the muddy pocket.")]
+    [InlineData(-8_000, "€8,000.00 less in the muddy pocket.")]
+    public void Muddy_difference_saysHowMuchMoreOrLessThanToday(int difference, string expected)
+    {
+        var text = string.Format(CultureInfo.InvariantCulture, Resources.GetString(BucketBarText.Muddy(difference), CultureInfo.InvariantCulture) ?? "",
+            Formats.Euros(Math.Abs(difference)));
+
+        text.ShouldBe(expected);
+    }
+
     // While the engine refuses an amount there is no figure to announce.
     [Fact]
     public void Pocket_noFigure_isNothing()

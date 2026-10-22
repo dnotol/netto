@@ -93,4 +93,32 @@ public class BaselineGainTests
     {
         BaselineGain.CanMark(RiverInputs.Example.WithReserve(-1m).Run()).ShouldBeFalse();
     }
+
+    // The gain stays in cash; beside it, what the muddy pocket holds more or less than Today's: the
+    // car's 8,000 of costs.
+    [Fact]
+    public void From_riverWithACarTodayWithout_saysTheMuddyPocketHoldsItsCostsMore()
+    {
+        var gain = BaselineGain.From(WithCar, Example).ShouldNotBeNull();
+
+        (gain.Amount, gain.MuddyDifference).ShouldBe((Math.Abs(WithCar.Year!.NetInPocket - Example.Year!.NetInPocket), 8_000m));
+    }
+
+    [Fact]
+    public void From_todayWithACarRiverWithout_saysTheMuddyPocketHoldsItsCostsLess()
+    {
+        BaselineGain.From(Example, WithCar).ShouldNotBeNull().MuddyDifference.ShouldBe(-8_000m);
+    }
+
+    [Fact]
+    public void From_sameMuddyPocket_isAPlainZero()
+    {
+        var difference = BaselineGain.From(WithCar, WithCar).ShouldNotBeNull().MuddyDifference;
+
+        (difference, decimal.IsNegative(difference)).ShouldBe((0m, false));
+    }
+
+    // YearSimulationCarTests' electric car on the example: 8,000 of yearly costs.
+    private static readonly RiverRun WithCar =
+        RiverInputs.Example.AddToPlan(OptionalModule.Car).WithCatalogueValue(50_000m).WithFirstRegistration(new DateOnly(2026, 1, 10)).WithCarCosts(8_000m).Run();
 }

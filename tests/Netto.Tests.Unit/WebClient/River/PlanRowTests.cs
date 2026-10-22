@@ -34,6 +34,16 @@ public class PlanRowTests
             [(true, (BaselineGain?)null), (false, new BaselineGain(GainKind.More, 2_551.13m))]);
     }
 
+    // A plan with a car says its muddy pocket against Today's, which holds none.
+    [Fact]
+    public void From_planWithACar_saysItsMuddyPocketAgainstTodays()
+    {
+        var plans = Saved(RiverInputs.Example,
+            RiverInputs.Example.AddToPlan(OptionalModule.Car).WithCatalogueValue(50_000m).WithFirstRegistration(new DateOnly(2026, 1, 10)).WithCarCosts(8_000m));
+
+        PlanRow.From(plans)[1].Gain.ShouldNotBeNull().MuddyDifference.ShouldBe(8_000m);
+    }
+
     [Fact]
     public void From_noToday_comparesNothing()
     {

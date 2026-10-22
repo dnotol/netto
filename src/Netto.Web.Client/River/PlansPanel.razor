@@ -276,10 +276,15 @@
     private string GainText(PlanRow row) => row switch
     {
         { IsToday: true } => L["IsToday"],
-        { Gain: { Kind: GainKind.More or GainKind.Less } gain } => L[PlansPanelText.Gain(gain.Kind), Formats.Euros(gain.Amount)],
-        { Gain: { } gain } => L[PlansPanelText.Gain(gain.Kind)],
+        { Gain: { Kind: GainKind.More or GainKind.Less } gain } => L[PlansPanelText.Gain(gain.Kind), Formats.Euros(gain.Amount)] + MuddyText(gain),
+        { Gain: { } gain } => L[PlansPanelText.Gain(gain.Kind)] + MuddyText(gain),
         _ => "",
     };
+
+    // Beside the gain in cash, what the plan's muddy pocket holds more or less than Today's.
+    private string MuddyText(BaselineGain gain) => gain.MuddyDifference == 0m
+        ? ""
+        : $" · {L[PlansPanelText.Muddy(gain.MuddyDifference), Formats.Euros(Math.Abs(gain.MuddyDifference))]}";
 
     private static string GainClass(PlanRow row) => row is { Gain.Kind: GainKind.More } ? "plan__gain--more" : "";
 }

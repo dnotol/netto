@@ -14,4 +14,7 @@ internal static class PlansPanelText
 
     // A plan's difference from « Today », or that the two cannot be compared (BaselineGain).
     public static string Gain(GainKind kind) => $"Gain_{kind}";
+
+    // Beside it, what the plan's muddy pocket holds more or less than Today's, when it differs.
+    public static string Muddy(decimal difference) => difference > 0m ? "Muddy_More" : "Muddy_Less";
 }

@@ -17,8 +17,8 @@
 <div class="bucket-bar">
     <MudContainer MaxWidth="MaxWidth.Large">
         <div class="bucket-bar__figures">
-            <dl class="bucket-bar__buckets">
-                @foreach (var key in BucketsView.Keys)
+            <dl class="bucket-bar__buckets @(View is { HasMuddyPocket: true } ? "bucket-bar__buckets--five" : "")">
+                @foreach (var key in View?.Buckets.Select(bucket => bucket.Key) ?? BucketsView.Keys)
                 {
                     <div class="bucket bucket--@key">
                         <dt class="bucket__label">
@@ -48,7 +48,8 @@
                 @From
                 @if (View is { Reach: { } reach } reached)
                 {
-                    @(" ")<TermSentence Text="@L[BucketBarText.Reach(reached), Formats.WholeShare(reach), Formats.WholeShare(reached.TaxesShare ?? 0m)]"
+                    @(" ")<TermSentence Text="@L[BucketBarText.Reach(reached), Formats.WholeShare(reach), Formats.WholeShare(reached.TaxesShare ?? 0m),
+                                                Formats.WholeShare(reached.MuddyShare ?? 0m)]"
                                         Meaning="@L[BucketBarText.ReachMeaning]" />
                 }
                 @if (View is { StartsAtPay: true })
@@ -62,6 +63,10 @@
                     @if (Gain is { } gain)
                     {
                         <span class="bucket-bar__gain--@gain.Kind.ToString().ToLowerInvariant()">@GainText(gain)</span>
+                        @if (gain.MuddyDifference != 0m)
+                        {
+                            @(" ")<span class="bucket-bar__muddy">@L[BucketBarText.Muddy(gain.MuddyDifference), Formats.Euros(Math.Abs(gain.MuddyDifference))]</span>
+                        }
                     }
                     @if (Unsaved)
                     {

@@ -3,29 +3,37 @@ using Netto.Core.Simulation;
 namespace Netto.Web.Client.River;
 
 // What the bar of buckets draws from one run of the river: where the money ends up, out of what the
-// river starts from, what the company earns before it pays its director anything, pay, vouchers or
-// expense allowances, with the profits kept from earlier years or, with the company skipped, what the
-// pay costs the company, the gross plus the contributions it pays on the director's behalf when it
-// does (CompanyPaysContributions). The vouchers, the allowances and the rent are in the pocket. Taxes
-// on pay are the director's personal tax: the director pay's steps paid out and, once the company pays
-// a rent, the rent's, which it is taxed with (TaxesOnPayIncludeRent); taxes on profit, the company's
-// and the dividend's, the refund on the exempt dividend coming back. It only regroups the engine's
-// figures and steps, so the buckets add up to the start.
+// river starts from, what the company earns before it pays its director anything, pay, vouchers,
+// expense allowances, rent or a car, with the profits kept from earlier years or, with the company
+// skipped, what the pay costs the company, the gross plus the contributions it pays on the director's
+// behalf when it does (CompanyPaysContributions). The vouchers, the allowances and the rent are in the
+// pocket, the director's contribution to a car out of it. Once a car counts, the muddy pocket holds
+// what the company spends on it, right after the pocket. Taxes on pay are the director's personal
+// tax: the director pay's steps paid out, a car's benefit taxed in them, and, once the company pays a
+// rent, the rent's, which it is taxed with (TaxesOnPayIncludeRent); taxes on profit, the company's and
+// the dividend's, the refund on the exempt dividend coming back. It only regroups the engine's figures
+// and steps, so the buckets add up to the start.
 internal sealed record BucketsView(
     decimal Start, decimal EarlierProfits, bool StartsAtPay, bool CompanyPaysContributions, bool TaxesOnPayIncludeRent, IReadOnlyList<Bucket> Buckets)
 {
-    // In the order the bar shows them, the pocket first; also when there is no figure to show.
+    // In the order the bar shows them, the pocket first; also when there is no figure to show. A car
+    // adds the muddy pocket after the pocket.
     public static IReadOnlyList<string> Keys { get; } = ["pocket", "taxes_on_pay", "taxes_on_profit", "kept_in_company"];
+
+    public const string Muddy = "muddy";
+
+    public bool HasMuddyPocket => Buckets.Any(bucket => bucket.Key == Muddy);
 
     // What reaches the pocket out of what leaves the company: what the river starts from less what the
     // company keeps at year end, which is still the director's. None where the bar draws no shares.
-    public decimal? Reach => Buckets.All(bucket => bucket.Share is not null)
-        ? Shares.Of(AmountOf("pocket"), Start - AmountOf("kept_in_company"))
-        : null;
+    public decimal? Reach => Drawn ? Shares.Of(AmountOf("pocket"), Leaves) : null;
 
-    // The rest of it went to taxes: the whole less the reach as the bar rounds it, so the two read as
-    // the whole.
-    public decimal? TaxesShare => Reach is { } reach ? 1m - Math.Round(reach, 2, MidpointRounding.AwayFromZero) : null;
+    // What lands in the muddy pocket out of the same, once a car counts.
+    public decimal? MuddyShare => Drawn && HasMuddyPocket ? Shares.Of(AmountOf(Muddy), Leaves) : null;
+
+    // The rest of it went to taxes: the whole less the reach and the muddy share as the bar rounds them,
+    // so the three read as the whole.
+    public decimal? TaxesShare => Reach is { } reach ? 1m - Rounded(reach) - Rounded(MuddyShare ?? 0m) : null;
 
     public static BucketsView? From(RiverRun run)
     {
@@ -37,13 +45,15 @@ internal sealed record BucketsView(
             ? (year.Scenario.ProfitBeforeDirector + earlierProfits, year.NetInPocket, year.KeptInCompany, year.Steps)
             : (pay.CompanyCost, pay.NetInPocket, 0m, pay.Steps);
 
-        var amounts = Keys.Zip(new[]
-        {
-            pocket,
-            PaidOut(steps, TaxableEvent.DirectorPay) + PaidOut(steps, TaxableEvent.Rent),
-            PaidOut(steps, TaxableEvent.CompanyProfit) + PaidOut(steps, TaxableEvent.Dividend),
-            kept,
-        }, (key, amount) => (Key: key, Amount: amount)).ToList();
+        var amounts = new List<(string Key, decimal Amount)> { ("pocket", pocket) };
+        if (run.Year is { Scenario.Car.Any: true } withCar)
+            amounts.Add((Muddy, withCar.MuddyPocket));
+        amounts.AddRange(
+        [
+            ("taxes_on_pay", PaidOut(steps, TaxableEvent.DirectorPay) + PaidOut(steps, TaxableEvent.Rent)),
+            ("taxes_on_profit", PaidOut(steps, TaxableEvent.CompanyProfit) + PaidOut(steps, TaxableEvent.Dividend)),
+            ("kept_in_company", kept),
+        ]);
         var drawn = start > 0m && amounts.All(bucket => bucket.Amount >= 0m);
 
         return new BucketsView(
@@ -55,7 +65,13 @@ internal sealed record BucketsView(
             amounts.Select(bucket => new Bucket(bucket.Key, bucket.Amount, drawn ? bucket.Amount / start : null)).ToList());
     }
 
+    private bool Drawn => Buckets.All(bucket => bucket.Share is not null);
+
+    private decimal Leaves => Start - AmountOf("kept_in_company");
+
     private decimal AmountOf(string key) => Buckets.Single(bucket => bucket.Key == key).Amount;
+
+    private static decimal Rounded(decimal share) => Math.Round(share, 2, MidpointRounding.AwayFromZero);
 
     private static decimal PaidOut(IReadOnlyList<Step> steps, TaxableEvent taxableEvent) =>
         steps.Where(step => step.Event == taxableEvent && step.Track == Track.PaidOut).Sum(step => step.Amount);
