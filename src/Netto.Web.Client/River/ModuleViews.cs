@@ -163,7 +163,7 @@ internal sealed record CarView(
             received,
             car,
             steps.Count > 0 && year.Scenario.Car.CompanyPaysPrivateEnergy,
-            Shares.Of(year.ProfitBeforePay, received),
+            steps.Count > 0 ? Shares.Of(year.ProfitBeforePay, received) : null,
             [.. drains, new Drain("profit_before_pay", DrainKind.PassedOn, year.ProfitBeforePay, "split")],
             ledger.Select(StepDetail.From).ToList());
     }

@@ -21,7 +21,8 @@ public class CarViewTests
     {
         var view = Car(RiverInputs.Example.AddToPlan(OptionalModule.Car));
 
-        (view.HasCar, view.Details.Count, view.Drains.Single()).ShouldBe((false, 0, new Drain("profit_before_pay", DrainKind.PassedOn, 100_000m, "split")));
+        (view.HasCar, view.Details.Count, view.PassesOn, view.Drains.Single())
+            .ShouldBe((false, 0, (decimal?)null, new Drain("profit_before_pay", DrainKind.PassedOn, 100_000m, "split")));
     }
 
     // Its costs go to the muddy pocket, the director's contribution comes back from the pocket, and the
