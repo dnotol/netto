@@ -1,3 +1,4 @@
+using Netto.Core.BenefitsInKind;
 using Netto.Core.CompanyCar;
 using Shouldly;
 
@@ -164,6 +165,23 @@ public class CarCalculatorTests
     public void Compute_none_isNoCar()
     {
         Compute(CarFacts.None).ShouldBe(CarResult.None);
+    }
+
+    // What the year takes of the car, as plain figures: the benefit taxed as pay after the
+    // contribution, the contribution, the costs, what the company cannot deduct with the add-back
+    // (an electric car's costs in full, so only the add-back), and the muddy pocket at the costs.
+    [Fact]
+    public void Compute_electricCar_handsTheYearItsBenefitInKind()
+    {
+        var result = Compute(Car(50_000m, new DateOnly(2026, 1, 10), yearlyCosts: 8_000m, contribution: 600m));
+
+        result.BenefitInKind.ShouldBe(new BenefitInKind(TaxedAsPay: 1_114.29m, Contribution: 600m, Costs: 8_000m, NotDeductible: 291.43m, MuddyPocket: 8_000m));
+    }
+
+    [Fact]
+    public void Compute_none_handsNoBenefitInKind()
+    {
+        Compute(CarFacts.None).BenefitInKind.ShouldBe(BenefitInKind.None);
     }
 
     [Fact]

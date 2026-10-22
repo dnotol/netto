@@ -1,4 +1,5 @@
 using Netto.Core.Allowances;
+using Netto.Core.BenefitsInKind;
 using Netto.Core.CompanyCar;
 using Netto.Core.CorporateTax;
 using Netto.Core.DirectorPay;
@@ -58,7 +59,7 @@ public static class YearSimulation
 
         var (pay, payError) = GrossToNet.Compute(
             scenario.IncomeYear, scenario.DirectorPay, scenario.MunicipalRate, scenario.TaxPrepayments, scenario.ContributionsPaidBy, besidesPay.Rent.NetRent,
-            besidesPay.Car.Benefit);
+            besidesPay.Benefits.TaxedAsPay);
         if (pay is null)
             return (null, payError);
 
@@ -98,7 +99,7 @@ public static class YearSimulation
             PaidOut(steps, Layer.Corporate),
             PaidOut(steps, Layer.Social),
             PaidOut(steps, Layer.Personal),
-            steps.Where(step => step.Track == Track.Muddy).Sum(step => step.Amount),
+            besidesPay.Benefits.MuddyPocket,
             company.NetInPocket,
             company.KeptInCompany,
             company.ProfitAfterTax,
@@ -130,7 +131,7 @@ public static class YearSimulation
             return null;
         if (GrossToNet.Level(
                 scenario.IncomeYear, scenario.DirectorPay, scenario.MunicipalRate.Value, scenario.TaxPrepayments, scenario.ContributionsPaidBy, besidesPay.Rent.NetRent,
-                besidesPay.Car.Benefit)
+                besidesPay.Benefits.TaxedAsPay)
             is not { } pay)
             return null;
 
@@ -157,7 +158,7 @@ public static class YearSimulation
 
         var profitBeforePay = scenario.ProfitBeforeDirector - besidesPay.FromProfit;
         var ceiling = Math.Max(0m, profitBeforePay);
-        var benefit = besidesPay.Car.Benefit;
+        var benefit = besidesPay.Benefits.TaxedAsPay;
         if (CorporateTaxCalculator.SmallestPayKeepingReducedRate(corporateRules, profitBeforePay + besidesPay.Disallowed, scenario.Company, benefit) is not { } taxablePay)
             return null;
 
@@ -212,7 +213,7 @@ public static class YearSimulation
     {
         var profitBeforePay = scenario.ProfitBeforeDirector - besidesPay.FromProfit;
         var tax = CorporateTaxCalculator.Compute(
-            corporateRules, profitBeforePay - companyCost + besidesPay.Disallowed, taxablePay, scenario.Company, besidesPay.Car.Benefit);
+            corporateRules, profitBeforePay - companyCost + besidesPay.Disallowed, taxablePay, scenario.Company, besidesPay.Benefits.TaxedAsPay);
         var advancePayments = AdvancePaymentCalculator.Compute(corporateRules.AdvancePayments, tax.CorporateTax, scenario.AdvancePayments, scenario.Company);
         var profitAfterTax = tax.TaxableIncome - tax.CorporateTax - advancePayments.Surcharge - besidesPay.Disallowed;
         var held = profitAfterTax + scenario.EarlierProfits;
@@ -220,7 +221,7 @@ public static class YearSimulation
         var dividend = DividendCalculator.Compute(dividendRules, Math.Max(0m, maximumDividend - scenario.Reserve), scenario.DividendCategory);
 
         return new CompanyFigures(profitBeforePay, tax, advancePayments, profitAfterTax, maximumDividend, dividend,
-            netPay + dividend.NetDividend + besidesPay.Total - besidesPay.Car.Contribution, held - dividend.Dividend);
+            netPay + dividend.NetDividend + besidesPay.Total - besidesPay.Benefits.Contribution, held - dividend.Dividend);
     }
 
     // Each kind of voucher reaches the pocket exempt, at what the company pays into it, and what the
@@ -311,16 +312,20 @@ public static class YearSimulation
 
     // What the company pays the director besides pay, lever by lever: what it costs the company and
     // brings the pocket before the personal tax on the rent, the same amount (Total), what comes off the
-    // profit before pay, that and the car's costs less the director's contribution for it (FromProfit),
-    // and what the company cannot deduct of it or adds back: the vouchers' part and the car's add-back,
-    // since it deducts the expense allowances, the rent and an electric car's costs in full.
+    // profit before pay, that and the costs of what it puts at the director's disposal less what the
+    // director pays it for that use (FromProfit), and what the company cannot deduct of it or adds back:
+    // the vouchers' part and the benefits' (Disallowed), since it deducts the expense allowances and the
+    // rent in full. The car is read for its steps and the card; its money moves only as the plain figures
+    // of its benefit in kind (Benefits), which a laptop or a phone will give the same way.
     private sealed record BesidesPay(VoucherResult Vouchers, ExpenseAllowances Allowances, RentResult Rent, CarResult Car)
     {
+        public BenefitInKind Benefits => Car.BenefitInKind;
+
         public decimal Total => Vouchers.Total + Allowances.Total + Rent.Rent;
 
-        public decimal FromProfit => Total + Car.Costs - Car.Contribution;
+        public decimal FromProfit => Total + Benefits.Costs - Benefits.Contribution;
 
-        public decimal Disallowed => Vouchers.Disallowed + Car.AddBack;
+        public decimal Disallowed => Vouchers.Disallowed + Benefits.NotDeductible;
     }
 
     // The rules of the levers paid besides pay, for one income year, or null when one has none.
