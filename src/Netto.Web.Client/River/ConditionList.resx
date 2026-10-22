@@ -78,4 +78,7 @@
   <data name="Condition_declared" xml:space="preserve">
     <value>You declare the royalty in your tax return every year, though the company withheld on it.</value>
   </data>
+  <data name="Condition_attestation" xml:space="preserve">
+    <value>For the flat-rate costs: you hold an attestation du travail des arts covering these works when the royalty is paid. The starter attestation does not count.</value>
+  </data>
 </root>

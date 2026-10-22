@@ -12,8 +12,9 @@ public class CopyrightCalculatorTests
 {
     private static readonly CopyrightRules Rules2026 = CopyrightRules.IncomeYear2026;
 
-    private static CopyrightResult Compute(decimal royalty, decimal grossPay, bool averageWithinCap = true) =>
-        CopyrightCalculator.Compute(Rules2026, new CopyrightRoyalty(royalty) { AverageWithinCap = averageWithinCap }, grossPay).Value.ShouldNotBeNull();
+    private static CopyrightResult Compute(decimal royalty, decimal grossPay, bool averageWithinCap = true, bool attestation = false) =>
+        CopyrightCalculator.Compute(Rules2026, new CopyrightRoyalty(royalty) { AverageWithinCap = averageWithinCap, HoldsAttestation = attestation }, grossPay)
+            .Value.ShouldNotBeNull();
 
     [Fact]
     public void Compute_royaltyWithinTheLimits_isAllTaxedApart()
@@ -142,6 +143,95 @@ public class CopyrightCalculatorTests
         var result = CopyrightCalculator.Compute(CopyrightRules.IncomeYear2025, new CopyrightRoyalty(100_000m), 300_000m).Value.ShouldNotBeNull();
 
         (result.WithinLimits, result.TaxedAsPay).ShouldBe((75_360m, 24_640m));
+    }
+
+    // AR/CIR 92 art. 3 al. 2 and art. 4 (revenus 2026): with an attestation du travail des arts, the part
+    // within the limits is taxed on less its flat-rate costs, 50% of the first 20,590 and 25% of the part
+    // from 20,590 to 41,180 (the indexation notice for tax year 2027). 30,000 within beside 80,000 of pay:
+    // 10,295 + 2,352.50 = 12,647.50.
+    [Fact]
+    public void Compute_attestationHolder_takesTheFlatRateCostsOffThePartWithinTheLimits()
+    {
+        var result = Compute(30_000m, 80_000m, attestation: true);
+
+        (result.WithinLimits, result.FlatRateCosts, result.TaxedApart?.Income).ShouldBe((30_000m, 12_647.50m, 17_352.50m));
+    }
+
+    // The 15% withheld within the limits is on that net (programme law of 30.05.2026, art. 12 al. 2).
+    [Fact]
+    public void Compute_attestationHolder_withholds15PercentOnTheNet()
+    {
+        Compute(30_000m, 80_000m, attestation: true).WithheldWithinLimits.ShouldBe(2_602.88m);
+    }
+
+    [Fact]
+    public void Compute_attestationHolderWithinTheFirstBand_takesHalfOff()
+    {
+        var result = Compute(10_000m, 50_000m, attestation: true);
+
+        (result.FlatRateCosts, result.TaxedApart?.Income, result.WithheldWithinLimits).ShouldBe((5_000m, 5_000m, 750m));
+    }
+
+    // Beyond 41,180 within the limits, the costs stay at their most: 10,295 + 5,147.50.
+    [Fact]
+    public void Compute_attestationHolderAboveTheSecondBand_takesAtMost15442()
+    {
+        Compute(60_000m, 200_000m, attestation: true).FlatRateCosts.ShouldBe(15_442.50m);
+    }
+
+    // The costs are movable income's, never the part taxed as pay's: 24,000 within beside 50,000 of pay,
+    // costs 10,295 + 852.50, and the 6,000 beyond as it was.
+    [Fact]
+    public void Compute_attestationHolderBeyondTheLimits_takesTheCostsOffThePartWithinAlone()
+    {
+        var result = Compute(30_000m, 50_000m, attestation: true);
+
+        (result.WithinLimits, result.FlatRateCosts, result.TaxedAsPay, result.WithheldBeyondLimits).ShouldBe((24_000m, 11_147.50m, 6_000m, 1_800m));
+    }
+
+    // The limits are on the gross royalty, the costs coming after them: the cap keeps 77,220 within.
+    [Fact]
+    public void Compute_attestationHolderAboveTheCap_keepsTheCapOnTheGross()
+    {
+        var result = Compute(100_000m, 300_000m, attestation: true);
+
+        (result.WithinLimits, result.FlatRateCosts, result.TaxedApart?.Income).ShouldBe((77_220m, 15_442.50m, 61_777.50m));
+    }
+
+    // From 2026, without an attestation, no flat-rate costs.
+    [Fact]
+    public void Compute_2026WithoutAttestation_takesNoFlatRateCosts()
+    {
+        var result = Compute(30_000m, 80_000m);
+
+        (result.FlatRateCosts, result.TaxedApart?.Income).ShouldBe((0m, 30_000m));
+    }
+
+    [Fact]
+    public void Compute_attestationHolderWhoseAverageIsAboveTheCap_hasNothingToTakeCostsOff()
+    {
+        Compute(10_000m, 50_000m, averageWithinCap: false, attestation: true).FlatRateCosts.ShouldBe(0m);
+    }
+
+    // In 2025 every author took them, 50% of the first 20,100 and 25% up to 40,190 (the indexation
+    // notice for tax year 2026): Tax-Calc T19's 12,525 on 30,000.
+    [Fact]
+    public void Compute_2025WithoutAttestation_takesTheFlatRateCostsAll2025AuthorsHad()
+    {
+        var result = CopyrightCalculator.Compute(CopyrightRules.IncomeYear2025, new CopyrightRoyalty(30_000m), 80_000m).Value.ShouldNotBeNull();
+
+        (result.FlatRateCosts, result.TaxedApart?.Income, result.WithheldWithinLimits).ShouldBe((12_525m, 17_475m, 2_621.25m));
+    }
+
+    // The year reads the royalty with its costs as plain figures: the company pays and the pocket gets
+    // the whole royalty, the tax and the withholding are on its net.
+    [Fact]
+    public void MovableIncome_attestationHolder_isPaidWholeAndTaxedOnTheNet()
+    {
+        var result = Compute(30_000m, 80_000m, attestation: true);
+
+        (result.MovableIncome, result.MovableIncome.PaidApart)
+            .ShouldBe((new MovableIncomePaid(30_000m, new Core.PersonalTax.IncomeTaxedApart(17_352.50m, Rules2026.TaxedApartRate), 0m, 2_602.88m), 30_000m));
     }
 
     // The year reads the royalty as plain figures: what the company pays, the part taxed apart, the part

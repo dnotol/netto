@@ -10,10 +10,9 @@ namespace Netto.Core.Copyright;
 // total remuneration, services included, and up to the year's cap (art. 37 al. 2, no phase-in left, art.
 // 551); what passes either is professional income, which Netto taxes as director pay (art. 32), and the
 // whole royalty is when the four previous years' copyright income averaged more than the cap. The
-// withholding is credited and refunded beyond the tax (art. 279, art. 304 §2). From 2026 the flat-rate
-// costs on copyright income are only for a holder of an attestation du travail des arts (AR/CIR 92, art.
-// 3 al. 2), which Netto does not model yet: the royalty is taxed on its gross (NoFlatRateCosts, none for
-// 2025, whose flat-rate costs Tax-Calc takes as an input the tests leave at nothing).
+// withholding is credited and refunded beyond the tax (art. 279, art. 304 §2). The part within the
+// limits is taxed and withheld on less its flat-rate costs (FlatRateCosts), which from 2026 only a
+// holder of an attestation du travail des arts takes.
 public sealed record CopyrightRules(
     int IncomeYear,
     Source Limits,
@@ -25,7 +24,7 @@ public sealed record CopyrightRules(
     Source TaxedAsPay,
     Source OutsideContributions,
     Source OutsideAdvancePaymentSurcharge,
-    Source? NoFlatRateCosts,
+    CopyrightFlatRateCosts FlatRateCosts,
     RuleAmount RelativeLimit,
     RuleAmount Cap,
     RuleAmount TaxedApartRate,
@@ -108,17 +107,62 @@ public sealed record CopyrightRules(
     private static readonly Source Article157Income2026 = Fisconet(157, 2026, "30.07.2026", "c6e47940-53f0-4608-b567-ae774014a621", "2026-07-30",
         "The surcharge is on the tax on directors' pay (art. 30, 2°) alone, as the law of 15.07.2026 leaves it");
 
+    private static readonly Source Article22 = Fisconet(22, 2026, "02.02.2026", "81a07df1-57c0-46c0-8871-fd08bdee178a", "2026-02-02",
+        "§3: the net income of copyright is its gross less the costs of acquiring or keeping it; without proof of them, the King sets them at a flat rate");
+
+    private static readonly Source ArCir3Income2025 = new(
+        "AR/CIR 92, art. 3 (revenus 2025), coordinated text on Fisconetplus, last modified 15.01.2025",
+        "Without proof of real costs, the costs of acquiring or keeping copyright income are a flat rate of its gross, which art. 4 raises",
+        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/f569b4c2-4eb8-4dd1-843d-8dc652a424ea"),
+        "personal-tax/spf-finances_arcir92-art-3-revenus-2025_2025-01-15.html") { Label = "AR/CIR 92, art. 3" };
+
     private static readonly Source ArCir3Income2026 = new(
         "AR/CIR 92, art. 3 (revenus 2026), coordinated text on Fisconetplus, last modified 17.09.2026",
         "Al. 2: from 01.01.2026 the flat-rate costs on copyright income apply only to income from activities for which the holder has an attestation du travail des arts when it is paid",
         new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/88dd058b-58eb-40d1-9346-1dfe4dcd5087"),
         "personal-tax/spf-finances_arcir92-art-3-revenus-2026_2026-09-17.html") { Label = "AR/CIR 92, art. 3" };
 
+    private static readonly Source ArCir4Income2025 = new(
+        "AR/CIR 92, art. 4 (revenus 2025), coordinated text on Fisconetplus, last modified 12.01.2026",
+        "Al. 1, 1°: for copyright income, the flat-rate costs are 50% of the first tranche and 25% of the second, for every author",
+        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/b2ffb531-81a4-4572-99ba-a4409cd451d8"),
+        "personal-tax/spf-finances_arcir92-art-4-revenus-2025_2026-01-12.html") { Label = "AR/CIR 92, art. 4" };
+
+    private static readonly Source ArCir4Income2026 = new(
+        "AR/CIR 92, art. 4 (revenus 2026), coordinated text on Fisconetplus, last modified 17.09.2026",
+        "Al. 1, 1°: for copyright income, the flat-rate costs are 50% of the first tranche and 25% of the second; al. 2: only for income from activities an attestation du travail des arts covers when it is paid, "
+        + "not the starter attestation of art. 17 of the royal decree of 13.03.2023",
+        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/800a668f-5588-4f3e-b2bb-a79c1743008c"),
+        "personal-tax/spf-finances_arcir92-art-4-revenus-2026_2026-09-17.html") { Label = "AR/CIR 92, art. 4" };
+
+    // The text of art. 4 for income 2026 still reads a second tranche « de 20.100 euros »: the ceilings
+    // are the notice's.
+    private static readonly Source IndexationNotice2026 = new(
+        "Indexation notice for assessment year 2026, version 19.01.2026",
+        "VIII: the ceilings of the flat-rate costs on copyright income (AR/CIR 92, art. 4, al. 1, 1°) are 20,100 for the first tranche and 40,190 for the second",
+        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/934106e5-36bd-4f61-8928-ba9ca100727f"),
+        "personal-tax/spf-finances_avis-indexation-exercice-2026_2026-01-19.html");
+
+    private static readonly Source IndexationNotice2027 = new(
+        "Indexation notice for assessment year 2027, version 03.08.2026, adapted to the law of 15.07.2026",
+        "VIII: the ceilings of the flat-rate costs on copyright income (AR/CIR 92, art. 4, al. 1, 1°) are 20,590 for the first tranche and 41,180 for the second",
+        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/042cb526-403e-4f40-9a45-dbccd0a12583"),
+        "personal-tax/spf-finances_avis-indexation-exercice-2027_2026-08-03.html");
+
+    private static readonly Source ProgrammeLaw = new(
+        "Loi-programme du 30.05.2026, Moniteur belge of 01.06.2026, erratum of 19.06.2026, consolidated on Justel",
+        "Art. 10 to 12: from income paid or attributed on 01.01.2026, the flat-rate costs on copyright income are only for income from activities an attestation du travail des arts covers when it is paid, "
+        + "never the starter attestation of art. 17 of the royal decree of 13.03.2023; for the withholding, from income paid or attributed on 11.06.2026",
+        new Uri("https://www.ejustice.just.fgov.be/eli/loi/2026/05/30/2026003986/justel"),
+        "personal-tax/ejustice_loi-programme-2026-05-30_2026-06-01.html") { Label = "Programme law of 30.05.2026" };
+
     public static CopyrightRules IncomeYear2025 { get; } = Of(
-        2025, Article37Income2025, Article171Income2025, Article269Income2025, Article32Income2025, Article157Income2025, null, 75_360m, []);
+        2025, Article37Income2025, Article171Income2025, Article269Income2025, Article32Income2025, Article157Income2025,
+        FlatRateCostsOf(ArCir3Income2025, ArCir4Income2025, null, IndexationNotice2026, 20_100m, 40_190m), 75_360m, []);
 
     public static CopyrightRules IncomeYear2026 { get; } = Of(
-        2026, Article37Income2026, Article171Income2026, Article269Income2026, Article32Income2026, Article157Income2026, ArCir3Income2026, 77_220m,
+        2026, Article37Income2026, Article171Income2026, Article269Income2026, Article32Income2026, Article157Income2026,
+        FlatRateCostsOf(ArCir3Income2026, ArCir4Income2026, ProgrammeLaw, IndexationNotice2027, 20_590m, 41_180m), 77_220m,
         [
             new LeverCondition("works_you_created", [Article17Income2026]),
             new LeverCondition("for_the_public", [Article17Income2026]),
@@ -126,6 +170,7 @@ public sealed record CopyrightRules(
             new LeverCondition("arm_length", [Article53Income2026]),
             new LeverCondition("fiche_281_45", [Article57]),
             new LeverCondition("declared", [Article313Income2026]),
+            new LeverCondition("attestation", [ProgrammeLaw, ArCir3Income2026, ArCir4Income2026]),
         ]);
 
     public static CopyrightRules? For(int incomeYear) => incomeYear switch
@@ -137,8 +182,8 @@ public sealed record CopyrightRules(
 
     // The rates are the same both years; the cap and the texts are the year's.
     private static CopyrightRules Of(
-        int incomeYear, Source article37, Source article171, Source article269, Source article32, Source article157, Source? noFlatRateCosts, decimal cap,
-        IReadOnlyList<LeverCondition> conditions) => new(
+        int incomeYear, Source article37, Source article171, Source article269, Source article32, Source article157, CopyrightFlatRateCosts flatRateCosts,
+        decimal cap, IReadOnlyList<LeverCondition> conditions) => new(
         incomeYear,
         article37,
         Article551,
@@ -149,13 +194,25 @@ public sealed record CopyrightRules(
         article32,
         RoyalDecree38,
         article157,
-        noFlatRateCosts,
+        flatRateCosts,
         new RuleAmount("copyright_relative_limit_rate", 0.30m, article37),
         new RuleAmount("copyright_cap", cap, article37),
         new RuleAmount("copyright_taxed_apart_rate", 0.15m, article171),
         new RuleAmount("copyright_withholding_rate", 0.15m, article269),
         new RuleAmount("copyright_beyond_limits_withholding_rate", 0.30m, article269),
         conditions);
+
+    // The rates are art. 4's both years, the ceilings the year's indexation notice's.
+    private static CopyrightFlatRateCosts FlatRateCostsOf(
+        Source article3, Source article4, Source? attestation, Source notice, decimal firstCeiling, decimal secondCeiling) => new(
+        Article22,
+        article3,
+        article4,
+        attestation,
+        new RuleAmount("copyright_flat_rate_costs_first_band_rate", 0.50m, article4),
+        new RuleAmount("copyright_flat_rate_costs_first_band", firstCeiling, notice),
+        new RuleAmount("copyright_flat_rate_costs_second_band_rate", 0.25m, article4),
+        new RuleAmount("copyright_flat_rate_costs_second_band", secondCeiling, notice));
 
     private static Source Fisconet(int article, int incomeYear, string modified, string guid, string fileDate, string reference) => new(
         $"CIR 92, art. {article} (revenus {incomeYear}), coordinated text on Fisconetplus, last modified {modified}",

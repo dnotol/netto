@@ -11,7 +11,8 @@ namespace Netto.Tests.Simulation;
 
 // YearSimulationTests' made-up company, 100,000 of profit before the director, paying its director a
 // copyright royalty for the rights on their works: 10,000 beside 50,000 of pay, within the limits, or
-// 20,000 beside 30,000, of which 15,000 within and 5,000 taxed as pay (CopyrightCalculatorTests). It
+// 20,000 beside 30,000, of which 15,000 within and 5,000 taxed as pay (CopyrightCalculatorTests), with or
+// without an attestation du travail des arts, which takes the flat-rate costs off the part within. It
 // prepays enough to leave no surcharge, and withholds more than any tax on the pay, unless a test says
 // otherwise.
 public class YearSimulationCopyrightTests
@@ -22,14 +23,18 @@ public class YearSimulationCopyrightTests
 
     private static readonly TaxPrepayments Withheld = new(1_000_000m, AdvancePayments.None);
 
-    public static TheoryData<decimal, decimal, decimal, bool> Setups => new()
+    public static TheoryData<decimal, decimal, decimal, bool, bool> Setups => new()
     {
-        { 50_000m, 100_000m, 10_000m, true },
-        { 30_000m, 100_000m, 20_000m, true },
-        { 0m, 100_000m, 10_000m, true },
-        { 160_000m, 300_000m, 100_000m, true },
-        { 50_000m, 100_000m, 10_000m, false },
-        { 5_000m, 30_000m, 20_000m, true },
+        { 50_000m, 100_000m, 10_000m, true, false },
+        { 30_000m, 100_000m, 20_000m, true, false },
+        { 0m, 100_000m, 10_000m, true, false },
+        { 160_000m, 300_000m, 100_000m, true, false },
+        { 50_000m, 100_000m, 10_000m, false, false },
+        { 5_000m, 30_000m, 20_000m, true, false },
+        { 50_000m, 100_000m, 10_000m, true, true },
+        { 30_000m, 100_000m, 20_000m, true, true },
+        { 160_000m, 300_000m, 100_000m, true, true },
+        { 50_000m, 100_000m, 10_000m, false, true },
     };
 
     // The company deducts the royalty in full like any cost (art. 49): it comes off what the split
@@ -73,13 +78,41 @@ public class YearSimulationCopyrightTests
         result.NetInPocket.ShouldBe(result.DirectorPay.NetInPocket + result.Dividend.NetDividend + 10_000m - result.DirectorPay.TaxedApartTax.Total);
     }
 
+    // The flat-rate costs only lower what is taxed: the whole part within reaches the pocket, less a tax
+    // on 5,000 of its 10,000.
+    [Fact]
+    public void Run_2026RoyaltyWithAnAttestation_reachesThePocketWholeLessTheTaxOnItsNet()
+    {
+        var result = Run(Scenario(royalty: new CopyrightRoyalty(10_000m) { HoldsAttestation = true }));
+
+        (result.DirectorPay.TaxedApartTax.Income, result.NetInPocket)
+            .ShouldBe((5_000m, result.DirectorPay.NetInPocket + result.Dividend.NetDividend + 10_000m - result.DirectorPay.TaxedApartTax.Total));
+    }
+
+    // With the costs, the tax apart is on half as much, and the pocket gains what it no longer pays.
+    [Fact]
+    public void Run_2026RoyaltyWithAnAttestation_leavesMoreInThePocketThanWithout()
+    {
+        var with = Run(Scenario(royalty: new CopyrightRoyalty(10_000m) { HoldsAttestation = true }));
+        var without = Run(Scenario(royalty: new CopyrightRoyalty(10_000m)));
+
+        (with.NetInPocket - without.NetInPocket).ShouldBe(without.DirectorPay.TaxedApartTax.Total - with.DirectorPay.TaxedApartTax.Total);
+    }
+
+    // The assessment credits what was withheld on the net: 15% of 5,000.
+    [Fact]
+    public void Run_2026RoyaltyWithAnAttestation_creditsTheWithholdingOnItsNet()
+    {
+        Run(Scenario(royalty: new CopyrightRoyalty(10_000m) { HoldsAttestation = true })).DirectorPay.Assessment.WithheldBesidesPay.ShouldBe(750m);
+    }
+
     [Theory]
     [MemberData(nameof(Setups))]
     public void Run_2026Royalty_layersPocketAndCompanyAddUpToTheProfitBeforeTheDirector(
-        decimal directorPay, decimal profitBeforeDirector, decimal royalty, bool averageWithinCap)
+        decimal directorPay, decimal profitBeforeDirector, decimal royalty, bool averageWithinCap, bool attestation)
     {
         var result = Run(Scenario(directorPay: directorPay, revenue: profitBeforeDirector + 20_000m,
-            royalty: new CopyrightRoyalty(royalty) { AverageWithinCap = averageWithinCap }));
+            royalty: new CopyrightRoyalty(royalty) { AverageWithinCap = averageWithinCap, HoldsAttestation = attestation }));
 
         (result.CorporateTax + result.SocialContributions + result.PersonalTax + result.NetInPocket + result.KeptInCompany).ShouldBe(profitBeforeDirector);
     }
@@ -87,18 +120,19 @@ public class YearSimulationCopyrightTests
     [Theory]
     [MemberData(nameof(Setups))]
     public void Run_2026RoyaltyCompanyPaysAndNothingPrepaid_layersPocketAndCompanyAddUp(
-        decimal directorPay, decimal profitBeforeDirector, decimal royalty, bool averageWithinCap)
+        decimal directorPay, decimal profitBeforeDirector, decimal royalty, bool averageWithinCap, bool attestation)
     {
         var result = Run(Scenario(directorPay: directorPay, revenue: profitBeforeDirector + 20_000m,
             advancePayments: AdvancePayments.None, taxPrepayments: TaxPrepayments.AsWithheld, paidBy: ContributionsPaidBy.Company,
-            royalty: new CopyrightRoyalty(royalty) { AverageWithinCap = averageWithinCap }));
+            royalty: new CopyrightRoyalty(royalty) { AverageWithinCap = averageWithinCap, HoldsAttestation = attestation }));
 
         (result.CorporateTax + result.SocialContributions + result.PersonalTax + result.NetInPocket + result.KeptInCompany).ShouldBe(profitBeforeDirector);
     }
 
     // What the royalty brings the ledger, in order: what the company deducts, the part within the
-    // limits reaching the pocket, the part taxed as pay; then, after the pay's steps, the tax apart and
-    // its municipal surcharge, the credit it takes away and the surcharge that adds.
+    // limits reaching the pocket, the flat-rate costs taken off it, none without an attestation, the part
+    // taxed as pay; then, after the pay's steps, the tax apart and its municipal surcharge, the credit it
+    // takes away and the surcharge that adds.
     [Fact]
     public void Run_2026Royalty_listsItsSteps()
     {
@@ -109,12 +143,22 @@ public class YearSimulationCopyrightTests
         {
             ("copyright_royalty", Layer.Corporate, Track.TaxBaseOnly, 20_000m),
             ("copyright_within_limits", Layer.Personal, Track.InPocket, 15_000.00m),
+            ("copyright_flat_rate_costs", Layer.Personal, Track.TaxBaseOnly, 0m),
             ("copyright_taxed_as_pay", Layer.Personal, Track.TaxBaseOnly, 5_000.00m),
             ("copyright_tax", Layer.Personal, Track.PaidOut, tax.IncomeTax),
             ("copyright_municipal_surcharge", Layer.Personal, Track.PaidOut, tax.MunicipalSurcharge),
             ("copyright_low_earned_income_credit_lost", Layer.Personal, Track.PaidOut, tax.LowEarnedIncomeCreditLost),
             ("copyright_income_tax_advance_payments", Layer.Personal, Track.PaidOut, tax.AdvancePayments),
         });
+    }
+
+    // 50% of the first 20,590 and 25% of the rest of the 24,000 within the limits beside 50,000 of pay.
+    [Fact]
+    public void Run_2026RoyaltyWithAnAttestation_listsItsFlatRateCosts()
+    {
+        var result = Run(Scenario(royalty: new CopyrightRoyalty(30_000m) { HoldsAttestation = true }));
+
+        result.Steps.Single(step => step.RuleKey == "copyright_flat_rate_costs").Amount.ShouldBe(11_147.50m);
     }
 
     // The tax steps come after the pay's own, the company's first.
@@ -140,7 +184,10 @@ public class YearSimulationCopyrightTests
             () => steps["copyright_within_limits"].AlsoCites.ShouldBe([rules.PhaseIn, rules.OutsideContributions, rules.OutsideAdvancePaymentSurcharge]),
             () => (steps["copyright_taxed_as_pay"].Source, steps["copyright_taxed_as_pay"].AlsoCites.Single()).ShouldBe((rules.TaxedAsPay, rules.Limits)),
             () => (steps["copyright_tax"].Source, steps["copyright_tax"].AmountsUsed[0]).ShouldBe((rules.TaxedApart, rules.TaxedApartRate)),
-            () => steps["copyright_tax"].AlsoCites.ShouldBe([rules.NoFlatRateCosts!]),
+            () => steps["copyright_tax"].AlsoCites.ShouldBeEmpty(),
+            () => steps["copyright_flat_rate_costs"].Source.ShouldBe(rules.FlatRateCosts.Bands),
+            () => steps["copyright_flat_rate_costs"].AmountsUsed.ShouldBe(rules.FlatRateCosts.Amounts),
+            () => steps["copyright_flat_rate_costs"].AlsoCites.ShouldBe([rules.FlatRateCosts.NetIncome, rules.FlatRateCosts.Who, rules.FlatRateCosts.Attestation!]),
             () => steps["copyright_municipal_surcharge"].Source.ShouldBe(PersonalTaxRules.MunicipalSurcharge));
     }
 

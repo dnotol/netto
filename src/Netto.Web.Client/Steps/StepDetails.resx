@@ -625,7 +625,7 @@
     <value>Tax apart on the royalty</value>
   </data>
   <data name="Rule_copyright_tax" xml:space="preserve">
-    <value>The part within the limits is taxed apart at 15%, never on the scale nor against the tax-free amount. That tax joins the State tax before the autonomy factor and the regional tax split it, so what it adds can be a cent off 15%. It is on the whole royalty: from 2026 the flat-rate costs are only for a holder of an attestation du travail des arts.</value>
+    <value>The part within the limits is taxed apart at 15%, never on the scale nor against the tax-free amount. That tax joins the State tax before the autonomy factor and the regional tax split it, so what it adds can be a cent off 15%. It is on that part less its flat-rate costs, which from 2026 only a holder of an attestation du travail des arts takes.</value>
   </data>
   <data name="Title_copyright_municipal_surcharge" xml:space="preserve">
     <value>Municipal surcharge on the royalty</value>
@@ -653,5 +653,23 @@
   </data>
   <data name="Amount_copyright_taxed_apart_rate" xml:space="preserve">
     <value>Rate of the tax apart</value>
+  </data>
+  <data name="Title_copyright_flat_rate_costs" xml:space="preserve">
+    <value>Flat-rate costs on the royalty</value>
+  </data>
+  <data name="Rule_copyright_flat_rate_costs" xml:space="preserve">
+    <value>Without proof of real costs, the part within the limits is taxed less flat-rate costs: 50% of the first band and 25% of the next up to the second band's ceiling, nothing beyond. From 2026 they are only for works an attestation du travail des arts covers when the royalty is paid, never the starter attestation. They lower what is taxed apart and withheld, never what reaches your pocket, and never come off the part taxed as pay.</value>
+  </data>
+  <data name="Amount_copyright_flat_rate_costs_first_band_rate" xml:space="preserve">
+    <value>Flat-rate costs on the first band</value>
+  </data>
+  <data name="Amount_copyright_flat_rate_costs_first_band" xml:space="preserve">
+    <value>Ceiling of the first band</value>
+  </data>
+  <data name="Amount_copyright_flat_rate_costs_second_band_rate" xml:space="preserve">
+    <value>Flat-rate costs on the second band</value>
+  </data>
+  <data name="Amount_copyright_flat_rate_costs_second_band" xml:space="preserve">
+    <value>Ceiling of the second band</value>
   </data>
 </root>

@@ -326,6 +326,11 @@ public static class YearSimulation
             rules.Deduction, []),
         new Step("copyright_within_limits", Layer.Personal, TaxableEvent.CopyrightRoyalty, Track.InPocket, royalty.WithinLimits,
             rules.Limits, [rules.RelativeLimit, rules.Cap]) { AlsoCites = [rules.PhaseIn, rules.OutsideContributions, rules.OutsideAdvancePaymentSurcharge] },
+        new Step("copyright_flat_rate_costs", Layer.Personal, TaxableEvent.CopyrightRoyalty, Track.TaxBaseOnly, royalty.FlatRateCosts,
+            rules.FlatRateCosts.Bands, rules.FlatRateCosts.Amounts)
+        {
+            AlsoCites = [rules.FlatRateCosts.NetIncome, rules.FlatRateCosts.Who, .. rules.FlatRateCosts.Attestation is { } attestation ? [attestation] : Array.Empty<Source>()],
+        },
         new Step("copyright_taxed_as_pay", Layer.Personal, TaxableEvent.CopyrightRoyalty, Track.TaxBaseOnly, royalty.TaxedAsPay,
             rules.TaxedAsPay, [rules.RelativeLimit, rules.Cap]) { AlsoCites = [rules.Limits] },
     ];
@@ -334,14 +339,11 @@ public static class YearSimulation
     // joined to the State tax before the split, the municipal surcharge on it, the credit for low earned
     // income it takes away, and what that lost credit adds to the surcharge on the pay's tax. Each is
     // paid out of the pocket, the credit's as a positive amount since it is lost, not refunded. The 15%
-    // is on the gross, the flat-rate costs being an attestation holder's alone from 2026.
+    // is on that part less its flat-rate costs, which an attestation holder alone takes from 2026.
     private static IEnumerable<Step> CopyrightTaxSteps(CopyrightRules copyright, PersonalTaxRules rules, OtherIncomeTax tax, RuleAmount municipalRate) =>
     [
         new Step("copyright_tax", Layer.Personal, TaxableEvent.CopyrightRoyalty, Track.PaidOut, tax.IncomeTax,
-            copyright.TaxedApart, [copyright.TaxedApartRate, rules.AutonomyFactor, rules.RegionalAdditionalRate])
-        {
-            AlsoCites = copyright.NoFlatRateCosts is { } noFlatRateCosts ? [noFlatRateCosts] : [],
-        },
+            copyright.TaxedApart, [copyright.TaxedApartRate, rules.AutonomyFactor, rules.RegionalAdditionalRate]),
         new Step("copyright_municipal_surcharge", Layer.Personal, TaxableEvent.CopyrightRoyalty, Track.PaidOut, tax.MunicipalSurcharge,
             PersonalTaxRules.MunicipalSurcharge, [municipalRate]),
         new Step("copyright_low_earned_income_credit_lost", Layer.Personal, TaxableEvent.CopyrightRoyalty, Track.PaidOut, tax.LowEarnedIncomeCreditLost,
@@ -367,7 +369,8 @@ public static class YearSimulation
 
     // What the company pays the director besides pay, lever by lever: what it costs the company and
     // brings the pocket outside the pay before the personal tax on the rent and on a royalty's part
-    // taxed apart, the same amount (Total), what comes off the profit before pay, that, a royalty's part
+    // paid apart, which reaches it whole, its flat-rate costs only lowering its tax, the same amount
+    // (Total), what comes off the profit before pay, that, a royalty's part
     // taxed as pay, which reaches the pocket with the pay, and the costs of what it puts at the
     // director's disposal less what the director pays it for that use (FromProfit), and what the company
     // cannot deduct of it or adds back: the vouchers' part and the benefits' (Disallowed), since it
@@ -381,7 +384,7 @@ public static class YearSimulation
 
         public MovableIncomePaid Movable => Copyright.MovableIncome;
 
-        public decimal Total => Vouchers.Total + Allowances.Total + Rent.Rent + Movable.TaxedApartIncome;
+        public decimal Total => Vouchers.Total + Allowances.Total + Rent.Rent + Movable.PaidApart;
 
         public decimal FromProfit => Total + Movable.TaxedAsPay + Benefits.Costs - Benefits.Contribution;
 

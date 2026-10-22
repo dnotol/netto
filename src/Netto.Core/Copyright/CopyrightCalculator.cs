@@ -12,7 +12,12 @@ public static class CopyrightCalculator
     // kind or the contributions the company pays on the director's behalf (decided unattended, the
     // smaller total, as the SDA's rulings for directors measure it), taken down to the cent so that it
     // never exceeds the law's, as the rent's cap is. A pay below nothing, which the pay's own rules
-    // refuse, counts as none here.
+    // refuse, counts as none here. The flat-rate costs come off the part within the limits alone, the
+    // limits staying on the gross: art. 37 measures the royalties, and art. 22 nets the movable income
+    // they leave; each band is rounded to the cent, and the 15% withheld on the part within is on its
+    // net (art. 269 takes the net income). The programme law of 30.05.2026 holds the withholding of a
+    // royalty paid before 11.06.2026 to the old rule, on the net for every author: Netto takes the year's
+    // royalty as paid at once under the new one.
     public static (CopyrightResult? Value, string? Error) Compute(CopyrightRules rules, CopyrightRoyalty royalty, decimal grossPay)
     {
         if (royalty.Royalty < 0m)
@@ -30,6 +35,8 @@ public static class CopyrightCalculator
             _ => (cap, CopyrightBound.Cap),
         };
         var asPay = royalty.Royalty - within;
+        var costs = royalty.HoldsAttestation || !rules.FlatRateCosts.NeedsAttestation ? FlatRateCosts(rules.FlatRateCosts, within) : 0m;
+        var net = within - costs;
 
         return (new CopyrightResult(
             royalty.Royalty,
@@ -37,10 +44,20 @@ public static class CopyrightCalculator
             relativeLimit,
             cap,
             within,
+            costs,
             asPay == 0m ? 0m : asPay,
-            Money.RoundToCent(within * rules.WithholdingRate.Value),
+            Money.RoundToCent(net * rules.WithholdingRate.Value),
             Money.RoundToCent(asPay * rules.BeyondLimitsWithholdingRate.Value),
             bound,
-            within > 0m ? new IncomeTaxedApart(within, rules.TaxedApartRate) : null), null);
+            within > 0m ? new IncomeTaxedApart(net, rules.TaxedApartRate) : null), null);
+    }
+
+    // The first band's rate on the income up to its ceiling, the second's on the part from there up to
+    // its own, nothing beyond.
+    private static decimal FlatRateCosts(CopyrightFlatRateCosts costs, decimal within)
+    {
+        var first = Math.Min(within, costs.FirstBandCeiling.Value);
+        var second = Math.Clamp(within - costs.FirstBandCeiling.Value, 0m, costs.SecondBandCeiling.Value - costs.FirstBandCeiling.Value);
+        return Money.RoundToCent(first * costs.FirstBandRate.Value) + Money.RoundToCent(second * costs.SecondBandRate.Value);
     }
 }

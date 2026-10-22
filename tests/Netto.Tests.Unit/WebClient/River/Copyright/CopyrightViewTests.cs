@@ -85,7 +85,7 @@ public class CopyrightViewTests
     public void Royalty_listsItsSteps()
     {
         Royalty(Within).Details.Select(detail => detail.RuleKey).ShouldBe([
-            "copyright_royalty", "copyright_within_limits", "copyright_taxed_as_pay", "copyright_tax", "copyright_municipal_surcharge",
+            "copyright_royalty", "copyright_within_limits", "copyright_flat_rate_costs", "copyright_taxed_as_pay", "copyright_tax", "copyright_municipal_surcharge",
             "copyright_low_earned_income_credit_lost", "copyright_income_tax_advance_payments",
         ]);
     }
