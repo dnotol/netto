@@ -27,7 +27,7 @@ internal sealed record CompositionView(int Count, IReadOnlyList<ModuleChoice> Mo
     {
         OptionalModule.Vouchers => VoucherView.From(year, composition).Total,
         OptionalModule.Allowances => AllowanceView.From(year, composition).Total,
-        OptionalModule.Rent => RentView.From(year).AfterTax,
+        OptionalModule.Rent => RentView.From(year, composition).AfterTax,
         _ => year.MuddyPocket,
     };
 

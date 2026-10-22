@@ -977,7 +977,7 @@ public class ModuleViewsTests
     private static RiverInputs AllAllowances(RiverInputs inputs) => FlatRateAllowances(inputs).WithPhoneCosts(600m);
 
     private static RentView Rent(RiverInputs inputs) =>
-        RentView.From(inputs.Run().Year.ShouldNotBeNull());
+        RentView.From(inputs.Run().Year.ShouldNotBeNull(), inputs.Composition);
 
     private static RentCapView? RentCap(RiverInputs inputs) => RentCapView.From(inputs);
 

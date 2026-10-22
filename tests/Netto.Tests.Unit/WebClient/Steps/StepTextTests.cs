@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Resources;
 using Netto.Core.Allowances;
+using Netto.Core.Car;
 using Netto.Core.CorporateTax;
 using Netto.Core.DirectorPay;
 using Netto.Core.Dividends;
@@ -88,6 +89,27 @@ public class StepTextTests
     {
         var scenario = new Scenario(2026, 120_000m, 20_000m, new CompanyStatus(SmallCompany: true, FirstFourTaxPeriods: false),
             50_000m, MunicipalRates.Entered(0.07m), 0m, WithholdingCategory.Standard) { Rent = new HomeOfficeRent(1_200m, 0.12m, 1_380m) };
+
+        var (value, _) = YearSimulation.Run(scenario);
+
+        MissingTexts(value.ShouldNotBeNull().Steps).ShouldBeEmpty();
+    }
+
+    // The car's steps, with every age band a benefit can use, both add-back rates and a contribution.
+    [Theory]
+    [InlineData(2026, false)]
+    [InlineData(2025, true)]
+    [InlineData(2024, false)]
+    [InlineData(2023, true)]
+    [InlineData(2022, false)]
+    [InlineData(2018, true)]
+    public void StepDetailsResx_everyKeyOfTheCarsSteps_hasAText(int registeredIn, bool privateEnergy)
+    {
+        var scenario = new Scenario(2026, 120_000m, 20_000m, new CompanyStatus(SmallCompany: true, FirstFourTaxPeriods: false),
+            50_000m, MunicipalRates.Entered(0.07m), 0m, WithholdingCategory.Standard)
+        {
+            Car = new CompanyCar(50_000m, new DateOnly(registeredIn, 6, 1), 8_000m, privateEnergy, 600m),
+        };
 
         var (value, _) = YearSimulation.Run(scenario);
 

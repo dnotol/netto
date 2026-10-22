@@ -1,4 +1,5 @@
 using Netto.Core.Allowances;
+using Netto.Core.Car;
 using Netto.Core.CorporateTax;
 using Netto.Core.DirectorPay;
 using Netto.Core.PersonalTax;
@@ -50,17 +51,17 @@ internal sealed record VoucherView(
 }
 
 // What the expense allowances bring to the pocket, one drain for each once the company pays any, and
-// what the vouchers and they leave of what the company earns, passed on to the rent when it is in the
-// plan, or the split: the profit before pay with the rent the company pays still in it. The maxima and
-// the conditions are the year's rules, which the card reads beside it, so they stay while an amount
-// is refused. The company deducts them in full: nothing of them reaches Corporate tax, and all of them
-// reach the pocket (ToYou) once it pays any.
+// what the vouchers and they leave of what the company earns, passed on to the next module in the
+// plan, or the split: the profit before pay with the rent the company pays and what the car costs it
+// still in it. The maxima and the conditions are the year's rules, which the card reads beside it, so
+// they stay while an amount is refused. The company deducts them in full: nothing of them reaches
+// Corporate tax, and all of them reach the pocket (ToYou) once it pays any.
 internal sealed record AllowanceView(decimal Total, decimal Left, decimal? ToYou, IReadOnlyList<Drain> Drains, IReadOnlyList<StepDetail> Details)
 {
     public static AllowanceView From(YearResult year, PlanComposition composition)
     {
         var steps = year.Steps.Where(step => step.Event == TaxableEvent.ExpenseAllowances).ToList();
-        var left = year.ProfitBeforePay + year.Rent.Rent;
+        var left = year.ProfitBeforePay + year.Rent.Rent + CarView.FromProfit(year.Car);
         var total = steps.Where(step => step.Track == Track.InPocket).Sum(step => step.Amount);
 
         return new AllowanceView(
@@ -76,12 +77,13 @@ internal sealed record AllowanceView(decimal Total, decimal Left, decimal? ToYou
 }
 
 // What the rent costs in personal tax, each line of it into the taxes on pay, what reaches the pocket
-// once that is paid, and the profit before pay it leaves for the split, from the year's rent steps;
-// and what the rules tax it on: the rent, or the floor when it is less (TaxedOnTheFloor), less its
-// flat charges. The cap and the conditions are the year's rules, which the card reads beside it
-// (RentCapView), so they stay while the rent is refused. The company deducts it in full: nothing of it
-// reaches Corporate tax. Its tax and what reaches the pocket each say their share of the rent, and the
-// card what reaches the pocket of it (ToYou); the profit passed on to the split is not the rent's.
+// once that is paid, and what it leaves of what the company earns, passed on to the car when it is in
+// the plan, or as the profit before pay to the split, from the year's rent steps; and what the rules
+// tax it on: the rent, or the floor when it is less (TaxedOnTheFloor), less its flat charges. The cap
+// and the conditions are the year's rules, which the card reads beside it (RentCapView), so they stay
+// while the rent is refused. The company deducts it in full: nothing of it reaches Corporate tax. Its
+// tax and what reaches the pocket each say their share of the rent, and the card what reaches the
+// pocket of it (ToYou); what it passes on is not the rent's.
 internal sealed record RentView(
     decimal Rent,
     decimal TaxableRent,
@@ -94,7 +96,7 @@ internal sealed record RentView(
     IReadOnlyList<Drain> Drains,
     IReadOnlyList<StepDetail> Details)
 {
-    public static RentView From(YearResult year)
+    public static RentView From(YearResult year, PlanComposition composition)
     {
         var steps = year.Steps.Where(step => step.Event == TaxableEvent.Rent).ToList();
         var paidOut = steps.Where(step => step.Track == Track.PaidOut).ToList();
@@ -114,10 +116,85 @@ internal sealed record RentView(
             [
                 .. paidOut.Select(step => Drain.PaidOutTo(step, "taxes_on_pay").Of(rent.Rent)),
                 .. afterTax,
-                new Drain("profit_before_pay", DrainKind.PassedOn, year.ProfitBeforePay, "split"),
+                NextModule.After(OptionalModule.Rent, composition) is "split"
+                    ? new Drain("profit_before_pay", DrainKind.PassedOn, year.ProfitBeforePay, "split")
+                    : new Drain("left_after_rent", DrainKind.PassedOn, year.ProfitBeforePay + CarView.FromProfit(year.Car), NextModule.After(OptionalModule.Rent, composition)),
             ],
             steps.Select(StepDetail.From).ToList());
     }
+}
+
+// What the company car costs the company, out to the muddy pocket, and the director's contribution
+// coming back from their pocket, then the profit before pay it leaves for the split, the last lever
+// before it, from the year's car steps; what it receives is what the levers above leave of what the
+// company earns. The card reads the car as the engine took it (Result): its benefit, period by period,
+// at least the minimum, less the contribution, taxed as pay, and what the company adds back of it,
+// 40% when it pays the private charging, which for an electric car is the administration's reading
+// of « fuel » (ChargingReading). Each line says its share of what the card receives, and the card what
+// it passes on of it (PassesOn). Without a car, nothing but the profit passed on.
+internal sealed record CarView(
+    decimal Received,
+    CarResult Result,
+    bool ChargingReading,
+    decimal? PassesOn,
+    IReadOnlyList<Drain> Drains,
+    IReadOnlyList<StepDetail> Details)
+{
+    public bool HasCar => Details.Count > 0;
+
+    // What the car takes off what the company earns: its costs, less what the director pays for it.
+    public static decimal FromProfit(CarResult car) => car.Costs - car.Contribution;
+
+    public static CarView From(YearResult year)
+    {
+        var ledger = year.Steps.Where(step => step.Event == TaxableEvent.CompanyCar).ToList();
+        var steps = ledger.ToDictionary(step => step.RuleKey);
+        var car = year.Car;
+        var received = year.ProfitBeforePay + FromProfit(car);
+        IEnumerable<Drain> drains = steps.Count > 0
+            ?
+            [
+                new Drain("car_costs", DrainKind.PassedOn, car.Costs, BucketsView.Muddy) { Details = [StepDetail.From(steps["car_costs"])] }.Of(received),
+                new Drain("car_contribution", DrainKind.Back, car.Contribution, "pocket") { Details = [StepDetail.From(steps["car_contribution"])] },
+            ]
+            : [];
+
+        return new CarView(
+            received,
+            car,
+            steps.Count > 0 && year.Scenario.Car.CompanyPaysPrivateEnergy,
+            Shares.Of(year.ProfitBeforePay, received),
+            [.. drains, new Drain("profit_before_pay", DrainKind.PassedOn, year.ProfitBeforePay, "split")],
+            ledger.Select(StepDetail.From).ToList());
+    }
+}
+
+// The plan with its car against the same plan without it, at the pay set: what reaches the pocket in
+// each, what the car puts in the muddy pocket, and what its benefit adds to the taxes on pay. CashCost
+// is what the car takes from the pocket, Gap what the muddy pocket holds more than that. Two runs of
+// the year, the second the river with the car out of the plan; none until a car counts, or while the
+// engine refuses an amount.
+internal sealed record CarComparison(decimal PocketWith, decimal PocketWithout, decimal Muddy, decimal TaxesOnPayAdded)
+{
+    public decimal CashCost => Difference(PocketWithout, PocketWith);
+
+    public decimal Gap => Difference(Muddy, CashCost);
+
+    public static CarComparison? From(RiverInputs inputs, RiverRun run)
+    {
+        if (run.Error is not null || run.Year is not { Scenario.Car.Any: true } with)
+            return null;
+        if (inputs.TakeOutOfPlan(OptionalModule.Car).Run().Year is not { } without)
+            return null;
+
+        return new CarComparison(with.NetInPocket, without.NetInPocket, with.MuddyPocket, Difference(TaxesOnPay(with), TaxesOnPay(without)));
+    }
+
+    private static decimal TaxesOnPay(YearResult year) =>
+        year.Steps.Where(step => step.Event == TaxableEvent.DirectorPay && step.Track == Track.PaidOut).Sum(step => step.Amount);
+
+    // A plain zero when the two are the same, never a negative one.
+    private static decimal Difference(decimal more, decimal less) => more == less ? 0m : more - less;
 }
 
 // Where a lever passes on what it leaves: the next module in the plan down the river, or the split
@@ -128,6 +205,7 @@ internal static class NextModule
     {
         OptionalModule.Allowances => "allowances",
         OptionalModule.Rent => "rent",
+        OptionalModule.Car => "car",
         _ => "split",
     };
 }
@@ -560,6 +638,7 @@ internal static class RiverErrors
             or AllowanceCalculator.ComputerAllowanceAboveMaximum or AllowanceCalculator.PhoneCostsNegative => RiverModule.Allowances,
         RentCalculator.CadastralIncomeNegative or RentCalculator.ShareLetOutOfRange or RentCalculator.RentNegative or RentCalculator.RentAboveCap
             or RentCalculator.RentWithOfficeAllowance => RiverModule.Rent,
+        CarCalculator.CatalogueValueNegative or CarCalculator.YearlyCostsNegative or CarCalculator.ContributionNegative => RiverModule.Car,
         GrossToNet.GrossPayNegative => companySkipped ? RiverModule.DirectorPay : RiverModule.Split,
         GrossToNet.MunicipalRateOutOfRange => RiverModule.DirectorPay,
         YearSimulation.ReserveNegative or YearSimulation.EarlierProfitsNegative => RiverModule.Dividend,
@@ -581,6 +660,8 @@ internal enum RiverModule
     Allowances,
 
     Rent,
+
+    Car,
 
     Split,
 

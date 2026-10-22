@@ -92,7 +92,7 @@
 
     protected override void OnParametersSet()
     {
-        _view = Run.Year is { } year ? RentView.From(year) : null;
+        _view = Run.Year is { } year ? RentView.From(year, Inputs.Composition) : null;
         _cap = RentCapView.From(Inputs);
         _rules = RentRules.For(Inputs.IncomeYear);
     }

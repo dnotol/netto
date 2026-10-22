@@ -63,6 +63,10 @@
             {
                 <RentCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Refused="@Refused(RiverModule.Rent)" />
             }
+            @if (_inputs.InPlan(OptionalModule.Car))
+            {
+                <CarCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Refused="@Refused(RiverModule.Car)" />
+            }
             @if (_inputs.Company is not null)
             {
                 <SplitCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Search="_search" Refused="@Refused(RiverModule.Split)" />

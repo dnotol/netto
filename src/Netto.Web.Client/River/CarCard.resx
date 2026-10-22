@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve">
+    <value>Company car</value>
+  </data>
+  <data name="Summary" xml:space="preserve">
+    <value>{0} a year to the muddy pocket · {1} before your pay</value>
+  </data>
+  <data name="SummaryNoCar" xml:space="preserve">
+    <value>No car yet · {0} before your pay</value>
+  </data>
+  <data name="Waiting" xml:space="preserve">
+    <value>Waiting for the company's year.</value>
+  </data>
+  <data name="Hint" xml:space="preserve">
+    <value>A car the company puts at your disposal, which you also use privately. The company pays its costs out of its profit, before your pay, and deducts them; you are taxed on a flat benefit in kind as part of your pay, though it is never paid in cash.</value>
+  </data>
+  <data name="Scope" xml:space="preserve">
+    <value>For an electric car ordered or leased before 2027. Fuel, hybrid and plug-in hybrid cars come next.</value>
+  </data>
+  <data name="CatalogueLabel" xml:space="preserve">
+    <value>Catalogue value</value>
+  </data>
+  <data name="CatalogueHint" xml:space="preserve">
+    <value>The car's price new for a private buyer, options and VAT included, any discount left out, as on its order or the maker's price list.</value>
+  </data>
+  <data name="RegistrationLabel" xml:space="preserve">
+    <value>First registered</value>
+  </data>
+  <data name="RegistrationHint" xml:space="preserve">
+    <value>The month and year of its first registration, on its registration certificate. Its benefit falls each year from that month, a month begun counting whole.</value>
+  </data>
+  <data name="MonthLabel" xml:space="preserve">
+    <value>Month</value>
+  </data>
+  <data name="YearLabel" xml:space="preserve">
+    <value>Year</value>
+  </data>
+  <data name="CostsLabel" xml:space="preserve">
+    <value>Its yearly costs to the company</value>
+  </data>
+  <data name="CostsHint" xml:space="preserve">
+    <value>Everything the car costs the company over the year, lease or depreciation, charging, insurance, upkeep and taxes, as the company bears them, the VAT it cannot recover included.</value>
+  </data>
+  <data name="ContributionLabel" xml:space="preserve">
+    <value>Your contribution for the year</value>
+  </data>
+  <data name="ContributionHint" xml:space="preserve">
+    <value>What you pay the company for the car's private use, if anything.</value>
+  </data>
+  <data name="ChargingLabel" xml:space="preserve">
+    <value>The company pays my private charging</value>
+  </data>
+  <data name="ChargingHint" xml:space="preserve">
+    <value>A charging point at your home whose electricity the company pays, or a charging card in its name, without reinvoicing you the charging of your private use.</value>
+  </data>
+  <data name="NoCarYet" xml:space="preserve">
+    <value>Enter the car's catalogue value to see its benefit and what it costs you.</value>
+  </data>
+  <data name="Benefit" xml:space="preserve">
+    <value>Your benefit in kind is {0} for the year: 6/7 of {1} times 4%, at the share of its catalogue value the car's age leaves, period by period. It is taxed as your pay, though never paid in cash.</value>
+  </data>
+  <data name="Period" xml:space="preserve">
+    <value>{0} to {1}, {2} days at {3}: {4}</value>
+  </data>
+  <data name="AtTheMinimum" xml:space="preserve">
+    <value>That makes {0}, below the year's minimum, so the benefit is the minimum, {1}.</value>
+  </data>
+  <data name="Contribution" xml:space="preserve">
+    <value>Your contribution of {0} comes off it: you are taxed on {1}.</value>
+  </data>
+  <data name="AddBack" xml:space="preserve">
+    <value>The company deducts all {0} of its costs, and adds {1} of the benefit before your contribution, {2}, back to its taxable income.</value>
+  </data>
+  <data name="AddBackReading" xml:space="preserve">
+    <value>It adds back 40% because it pays your private charging: the law says « fuel », and the administration reads it as the charging of an electric car.</value>
+  </data>
+  <data name="ComparisonTitle" xml:space="preserve">
+    <value>With the car and without it</value>
+  </data>
+  <data name="WithCar" xml:space="preserve">
+    <value>With the car, {0} reaches your pocket and {1} goes to the muddy pocket.</value>
+  </data>
+  <data name="WithoutCar" xml:space="preserve">
+    <value>Without it, the same plan at the same pay leaves {0} in your pocket.</value>
+  </data>
+  <data name="Gap_More" xml:space="preserve">
+    <value>The car takes {0} of cash from your pocket for {1} of car: the muddy pocket holds {2} more than it costs you.</value>
+  </data>
+  <data name="Gap_Less" xml:space="preserve">
+    <value>The car takes {0} of cash from your pocket for {1} of car: it costs you {2} more than the muddy pocket holds.</value>
+  </data>
+  <data name="Gap_NoCash" xml:space="preserve">
+    <value>The car takes no cash from your pocket for {1} of car.</value>
+  </data>
+  <data name="TaxesOnPay" xml:space="preserve">
+    <value>Its benefit adds {0} to your taxes on pay, on Director pay.</value>
+  </data>
+  <data name="DetailsLabel" xml:space="preserve">
+    <value>Where these figures come from</value>
+  </data>
+  <data name="SourcesTitle" xml:space="preserve">
+    <value>The rules, with the income year {0} amounts</value>
+  </data>
+  <data name="Remove" xml:space="preserve">
+    <value>Remove the company car from your plan</value>
+  </data>
+</root>

@@ -1,0 +1,93 @@
+.car__waiting,
+.car__scope {
+    margin: 0;
+    color: var(--netto-text-muted);
+    line-height: 1.55;
+}
+
+/* The inputs side by side when the card is wide enough, stacked otherwise. */
+.car__fields {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+    gap: 1rem;
+}
+
+/* The month and the year of the first registration on one line. */
+.car__registration {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    gap: 0.5rem;
+}
+
+.car__charging {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem 0.5rem;
+}
+
+/* What the car is taxed on and what the company deducts and adds back, consequences shown where they
+   start: a quiet rule on the left, as the rent's. */
+.car__benefit {
+    display: grid;
+    gap: 0.4rem;
+    padding-left: 0.75rem;
+    border-left: 2px solid rgba(243, 238, 226, 0.35);
+}
+
+.car__taxed {
+    margin: 0;
+    color: var(--netto-text-muted);
+    font-size: 0.9rem;
+    line-height: 1.55;
+}
+
+.car__periods {
+    margin: 0;
+    padding-left: 1.1rem;
+    color: var(--netto-text-muted);
+    font-size: 0.85rem;
+    line-height: 1.55;
+    font-variant-numeric: tabular-nums;
+}
+
+/* The administration's reading, a caveat that changes a figure: in sight, in the text's own colour. */
+.car__reading {
+    margin: 0;
+    color: var(--netto-text);
+    font-size: 0.85rem;
+    line-height: 1.55;
+}
+
+.car__comparison {
+    display: grid;
+    gap: 0.35rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--netto-line);
+    border-radius: 8px;
+}
+
+    .car__comparison p {
+        margin: 0;
+        font-size: 0.9rem;
+        line-height: 1.55;
+    }
+
+.car__comparison-title {
+    margin: 0;
+    font-family: "Fraunces", Georgia, serif;
+    font-size: 1.05rem;
+    font-weight: 600;
+}
+
+.car__gap {
+    color: var(--netto-text);
+    font-weight: 500;
+}
+
+.car__sources {
+    margin: 0;
+    font-family: "Fraunces", Georgia, serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+}

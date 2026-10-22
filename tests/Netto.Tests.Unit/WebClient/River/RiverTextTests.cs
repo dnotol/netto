@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Resources;
 using Netto.Core.Allowances;
+using Netto.Core.Car;
 using Netto.Core.CorporateTax;
 using Netto.Core.DirectorPay;
 using Netto.Core.Dividends;
@@ -46,12 +47,25 @@ public class RiverTextTests
 
     private static readonly ResourceManager RentCardResources = new("Netto.Web.Client.River.RentCard", typeof(RentCard).Assembly);
 
+    private static readonly ResourceManager CarCardResources = new("Netto.Web.Client.River.CarCard", typeof(CarCard).Assembly);
+
+    // What the car takes in cash against the muddy pocket, each way it can fall.
+    [Fact]
+    public void CarCardResx_everyGap_hasAText()
+    {
+        var comparisons = new[] { new CarComparison(40_000m, 43_000m, 8_000m, 1_000m), new CarComparison(30_000m, 40_000m, 8_000m, 1_000m), new CarComparison(40_000m, 40_000m, 8_000m, 0m) };
+
+        comparisons.Select(CarCardText.Gap).ShouldBe(["Gap_More", "Gap_Less", "Gap_NoCash"]);
+        Missing(CarCardResources, comparisons.Select(CarCardText.Gap)).ShouldBeEmpty();
+    }
+
     // The conditions of every lever the river shows, which the shared list words through one .resx.
     private static readonly IReadOnlyList<LeverCondition> LeverConditions =
     [
         .. VoucherRules.IncomeYear2026.Conditions,
         .. AllowanceRules.IncomeYear2026.Conditions,
         .. RentRules.IncomeYear2026.Conditions,
+        .. CarRules.IncomeYear2026.Conditions,
     ];
 
     // The vouchers in the plan with each next lever, and the split after them.
@@ -82,8 +96,14 @@ public class RiverTextTests
         var year = run.Year.ShouldNotBeNull();
         var rentYear = RiverInputs.Example.AddToPlan(OptionalModule.Rent).WithContributionsPaidBy(paidBy).WithDirectorPay(27_000m).WithTaxWithheld(0m)
             .WithCadastralIncome(400m).WithShareLet(1m).WithRent(3_333.33m).Run().Year.ShouldNotBeNull();
+        var carInputs = RiverInputs.Example.AddToPlan(OptionalModule.Rent).AddToPlan(OptionalModule.Car).WithContributionsPaidBy(paidBy)
+            .WithCadastralIncome(1_200m).WithShareLet(0.12m).WithRent(1_380m)
+            .WithCatalogueValue(50_000m).WithCarCosts(8_000m).WithCarContribution(600m);
+        var carYear = carInputs.Run().Year.ShouldNotBeNull();
         var drains = Compositions.SelectMany(composition => VoucherView.From(year, composition).Drains.Concat(AllowanceView.From(year, composition).Drains))
-            .Concat(RentView.From(rentYear).Drains)
+            .Concat(RentView.From(rentYear, PlanComposition.None.With(OptionalModule.Rent, true)).Drains)
+            .Concat(RentView.From(carYear, carInputs.Composition).Drains)
+            .Concat(CarView.From(carYear).Drains)
             .Concat(DirectorPayView.From(inputs, run.Pay.ShouldNotBeNull()).Drains)
             .Concat(CorporateTaxView.From(year).Drains)
             .Concat(DividendView.From(year).Drains)
@@ -116,6 +136,7 @@ public class RiverTextTests
             AllowanceCalculator.PhoneCostsNegative,
             RentCalculator.CadastralIncomeNegative, RentCalculator.ShareLetOutOfRange, RentCalculator.RentNegative, RentCalculator.RentAboveCap,
             RentCalculator.RentWithOfficeAllowance,
+            CarCalculator.CatalogueValueNegative, CarCalculator.YearlyCostsNegative, CarCalculator.ContributionNegative,
         };
 
         Missing(RefusedMessageResources, errors.Select(RefusedMessageText.Error)).ShouldBeEmpty();

@@ -51,4 +51,10 @@
   <data name="Condition_not_with_office_allowance" xml:space="preserve">
     <value>No office allowance beside it: the allowance already covers the room, its rent included.</value>
   </data>
+  <data name="Condition_electric_ordered_before_2027" xml:space="preserve">
+    <value>An electric car, ordered or leased before 2027: its costs stay deductible in full for as long as the company keeps it. An order counts from its date, a lease from its contract's.</value>
+  </data>
+  <data name="Condition_private_use_all_year" xml:space="preserve">
+    <value>At your disposal for private use for the whole year: the benefit is a year's, and a car you have for only part of it is not modelled yet.</value>
+  </data>
 </root>

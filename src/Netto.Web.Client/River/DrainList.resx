@@ -60,8 +60,14 @@
   <data name="From_taxes_on_pay" xml:space="preserve">
     <value>back from taxes on pay, through your tax return</value>
   </data>
+  <data name="From_pocket" xml:space="preserve">
+    <value>back from your pocket</value>
+  </data>
   <data name="To_pocket" xml:space="preserve">
     <value>to your pocket</value>
+  </data>
+  <data name="To_muddy" xml:space="preserve">
+    <value>to the muddy pocket</value>
   </data>
   <data name="To_kept_in_company" xml:space="preserve">
     <value>stays in the company</value>
@@ -117,6 +123,9 @@
   <data name="To_rent" xml:space="preserve">
     <value>on to the home office rent</value>
   </data>
+  <data name="To_car" xml:space="preserve">
+    <value>on to the company car</value>
+  </data>
   <data name="Drain_rent_income_tax" xml:space="preserve">
     <value>Income tax on the rent</value>
   </data>
@@ -131,6 +140,15 @@
   </data>
   <data name="Drain_rent_after_tax" xml:space="preserve">
     <value>Rent, once its tax is paid</value>
+  </data>
+  <data name="Drain_left_after_rent" xml:space="preserve">
+    <value>Left after the rent</value>
+  </data>
+  <data name="Drain_car_costs" xml:space="preserve">
+    <value>The car's yearly costs</value>
+  </data>
+  <data name="Drain_car_contribution" xml:space="preserve">
+    <value>Your contribution for its private use</value>
   </data>
   <data name="Source" xml:space="preserve">
     <value>From {0}</value>

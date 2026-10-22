@@ -1,0 +1,174 @@
+@using Netto.Core.Car
+@using Netto.Web.Client.Steps
+@inject IStringLocalizer<CarCard> L
+
+@* The last lever before the split: a car the company puts at the director's disposal for private use,
+   electric and ordered or leased before 2027. The user gives its catalogue value, the month and year
+   of its first registration, its yearly costs to the company, whether the company pays the private
+   charging, and their own contribution. The card says the benefit in kind taxed as pay, period by
+   period, what the company adds back of it, the costs going to the muddy pocket and the contribution
+   coming back from the pocket, then the plan with the car against the same plan without it. An
+   optional module: it shows only while in the plan, and the word at its bottom takes it out, its
+   values kept. The amounts are taken while typing and carry no Min or Max: the engine refuses what
+   the rules do not allow. Skipped with the company. *@
+<ModuleCard Name="car" Title="@L["Title"]" Summary="@Summary" PassesOn="@_view?.PassesOn" Help="@L["Hint"]" Skipped="Inputs.Company is null" Details="@Details"
+            DetailsLabel="@L["DetailsLabel"]" RemoveLabel="@L["Remove"]" OnRemove="Remove">
+    @if (Inputs.Company is null)
+    {
+        <p class="car__waiting">@L["Waiting"]</p>
+    }
+    else
+    {
+        <p class="car__scope">@L["Scope"]</p>
+        <div class="car__fields">
+            <RiverField Label="@L["CatalogueLabel"]" For="river-car-catalogue" Origin="Inputs.Car.CatalogueValue.Origin" Help="@L["CatalogueHint"]">
+                <RiverNumericField T="decimal" InputId="river-car-catalogue" Value="Inputs.Car.CatalogueValue.Value" ValueChanged="OnCatalogueValueChanged"
+                                   Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
+                                   Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
+                                   Error="@(Refused == CarCalculator.CatalogueValueNegative)" Refusal="@Refused" />
+            </RiverField>
+            <RiverField Label="@L["RegistrationLabel"]" Origin="Inputs.Car.FirstRegistration.Origin" Help="@L["RegistrationHint"]">
+                <div class="car__registration">
+                    <MudSelect T="int" Value="Inputs.Car.FirstRegistration.Value.Month" ValueChanged="OnRegistrationMonthChanged" Label="@L["MonthLabel"]"
+                               Variant="Variant.Outlined" Margin="Margin.Dense" Dense="true" Class="car__month">
+                        @for (var month = 1; month <= 12; month++)
+                        {
+                            <MudSelectItem T="int" Value="month">@Formats.Month(Inputs.IncomeYear, month)</MudSelectItem>
+                        }
+                    </MudSelect>
+                    <MudNumericField T="int" Value="Inputs.Car.FirstRegistration.Value.Year" ValueChanged="OnRegistrationYearChanged" Label="@L["YearLabel"]"
+                                     Min="FirstYear" Max="LastYear" HideSpinButtons="true" Culture="Formats.Culture" Format="0"
+                                     Variant="Variant.Outlined" Margin="Margin.Dense" Class="car__year" />
+                </div>
+            </RiverField>
+            <RiverField Label="@L["CostsLabel"]" For="river-car-costs" Origin="Inputs.Car.YearlyCosts.Origin" Help="@L["CostsHint"]">
+                <RiverNumericField T="decimal" InputId="river-car-costs" Value="Inputs.Car.YearlyCosts.Value" ValueChanged="OnCostsChanged"
+                                   Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
+                                   Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
+                                   Error="@(Refused == CarCalculator.YearlyCostsNegative)" Refusal="@Refused" />
+            </RiverField>
+            <RiverField Label="@L["ContributionLabel"]" For="river-car-contribution" Origin="Inputs.Car.PersonalContribution.Origin" Help="@L["ContributionHint"]">
+                <RiverNumericField T="decimal" InputId="river-car-contribution" Value="Inputs.Car.PersonalContribution.Value" ValueChanged="OnContributionChanged"
+                                   Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
+                                   Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
+                                   Error="@(Refused == CarCalculator.ContributionNegative)" Refusal="@Refused" />
+            </RiverField>
+        </div>
+        <div class="car__charging">
+            <MudCheckBox T="bool" Value="Inputs.Car.CompanyPaysPrivateEnergy.Value" ValueChanged="OnChargingChanged" Color="Color.Primary"
+                         Label="@L["ChargingLabel"]" />
+            <OriginChip Origin="Inputs.Car.CompanyPaysPrivateEnergy.Origin" />
+            <InfoBubble Label="@L["ChargingLabel"]">@L["ChargingHint"]</InfoBubble>
+        </div>
+        <RefusedMessage Error="@Refused" />
+        @if (_view is { HasCar: true } shown)
+        {
+            <div class="car__benefit">
+                <p class="car__taxed">@L["Benefit", Formats.Euros(shown.Result.BenefitBeforeContribution), Formats.Euros(Inputs.Car.CatalogueValue.Value)]</p>
+                <ul class="car__periods">
+                    @foreach (var period in shown.Result.Periods)
+                    {
+                        <li>@L["Period", Formats.Day(period.Period.From), Formats.Day(period.Period.To), period.Period.Days,
+                                Formats.WholeShare(period.Period.AgeCoefficient.Value), Formats.Euros(period.Benefit)]</li>
+                    }
+                </ul>
+                @if (shown.Result.AtTheMinimum)
+                {
+                    <p class="car__taxed">@L["AtTheMinimum", Formats.Euros(shown.Result.BenefitOnTheScale), Formats.Euros(shown.Result.BenefitBeforeContribution)]</p>
+                }
+                @if (shown.Result.Contribution > 0m)
+                {
+                    <p class="car__taxed">@L["Contribution", Formats.Euros(shown.Result.Contribution), Formats.Euros(shown.Result.Benefit)]</p>
+                }
+                <p class="car__taxed">@L["AddBack", Formats.Euros(shown.Result.Deductible), Formats.WholeShare(shown.Result.AddBackRate?.Value ?? 0m),
+                                         Formats.Euros(shown.Result.AddBack)]</p>
+                @if (shown.ChargingReading)
+                {
+                    <p class="car__reading">@L["AddBackReading"]</p>
+                }
+            </div>
+            @if (_comparison is { } comparison)
+            {
+                <section class="car__comparison" aria-labelledby="car-comparison-title">
+                    <h3 id="car-comparison-title" class="car__comparison-title">@L["ComparisonTitle"]</h3>
+                    <p>@L["WithCar", Formats.Euros(comparison.PocketWith), Formats.Euros(comparison.Muddy)]</p>
+                    <p>@L["WithoutCar", Formats.Euros(comparison.PocketWithout)]</p>
+                    <p class="car__gap">@L[CarCardText.Gap(comparison), Formats.Euros(comparison.CashCost), Formats.Euros(comparison.Muddy), Formats.Euros(Math.Abs(comparison.Gap))]</p>
+                    <p>@L["TaxesOnPay", Formats.Euros(comparison.TaxesOnPayAdded)]</p>
+                </section>
+            }
+        }
+        else
+        {
+            <p class="car__taxed">@L["NoCarYet"]</p>
+        }
+        @if (_view is not null)
+        {
+            <DrainList Drains="_view.Drains" />
+        }
+        @if (_rules is not null)
+        {
+            <ConditionList Name="car-conditions" Conditions="_rules.Conditions" />
+        }
+    }
+</ModuleCard>
+
+@code {
+    [Parameter, EditorRequired]
+    public RiverInputs Inputs { get; set; } = default!;
+
+    [Parameter]
+    public EventCallback<RiverInputs> InputsChanged { get; set; }
+
+    [Parameter, EditorRequired]
+    public RiverRun Run { get; set; } = default!;
+
+    // The engine's error key when it refuses an amount of the car.
+    [Parameter]
+    public string? Refused { get; set; }
+
+    // The years a first registration can be typed in: any car old enough is at its lowest share.
+    private const int FirstYear = 1950;
+    private const int LastYear = 2099;
+
+    private CarView? _view;
+    private CarComparison? _comparison;
+    private CarRules? _rules;
+
+    protected override void OnParametersSet()
+    {
+        _view = Run.Year is { } year ? CarView.From(year) : null;
+        _comparison = CarComparison.From(Inputs, Run);
+        _rules = CarRules.For(Inputs.IncomeYear);
+    }
+
+    private string? Summary => _view is { } view && Run.Year is { } year
+        ? view.HasCar
+            ? L["Summary", Formats.Euros(view.Result.Costs), Formats.Euros(year.ProfitBeforePay)].Value
+            : L["SummaryNoCar", Formats.Euros(year.ProfitBeforePay)].Value
+        : null;
+
+    private RenderFragment? Details => _view is { Details.Count: > 0 } view && Run.Year is { } year
+        ? @<text>
+              <h4 class="car__sources">@L["SourcesTitle", year.Scenario.IncomeYear]</h4>
+              <StepDetails Details="view.Details" />
+          </text>
+        : null;
+
+    private Task OnCatalogueValueChanged(decimal amount) => InputsChanged.InvokeAsync(Inputs.WithCatalogueValue(amount));
+
+    // A month begun counts whole, so the day of the first registration does not matter: the first.
+    private Task OnRegistrationMonthChanged(int month) =>
+        InputsChanged.InvokeAsync(Inputs.WithFirstRegistration(new DateOnly(Inputs.Car.FirstRegistration.Value.Year, month, 1)));
+
+    private Task OnRegistrationYearChanged(int year) =>
+        InputsChanged.InvokeAsync(Inputs.WithFirstRegistration(new DateOnly(Math.Clamp(year, FirstYear, LastYear), Inputs.Car.FirstRegistration.Value.Month, 1)));
+
+    private Task OnCostsChanged(decimal amount) => InputsChanged.InvokeAsync(Inputs.WithCarCosts(amount));
+
+    private Task OnContributionChanged(decimal amount) => InputsChanged.InvokeAsync(Inputs.WithCarContribution(amount));
+
+    private Task OnChargingChanged(bool paid) => InputsChanged.InvokeAsync(Inputs.WithPrivateEnergyPaid(paid));
+
+    private Task Remove() => InputsChanged.InvokeAsync(Inputs.TakeOutOfPlan(OptionalModule.Car));
+}

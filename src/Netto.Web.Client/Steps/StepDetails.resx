@@ -426,6 +426,36 @@
   <data name="Rule_rent_taxable_income" xml:space="preserve">
     <value>The rent, never less than the cadastral income of the part let, indexed by the year's coefficient, plus 40%, less its flat charges. It is income from immovable property, taxed with your pay; not professional income, so no social contributions are owed on it.</value>
   </data>
+  <data name="Title_car_costs" xml:space="preserve">
+    <value>The car's costs</value>
+  </data>
+  <data name="Rule_car_costs" xml:space="preserve">
+    <value>What the car costs the company over the year, as it bears them: an electric car ordered or leased before 2027 stays deductible in full. They lower the company's profit, and land in the muddy pocket.</value>
+  </data>
+  <data name="Title_car_benefit" xml:space="preserve">
+    <value>Benefit in kind</value>
+  </data>
+  <data name="Rule_car_benefit" xml:space="preserve">
+    <value>6/7 of the catalogue value times 4%, the percentage of a car that emits no CO2, at the share of the catalogue value the car's age leaves, each part of the year weighed by its days; never less than the year's minimum.</value>
+  </data>
+  <data name="Title_car_contribution" xml:space="preserve">
+    <value>Your contribution</value>
+  </data>
+  <data name="Rule_car_contribution" xml:space="preserve">
+    <value>What you pay the company for the car's private use. It comes off the benefit you are taxed on, after the minimum, and leaves your pocket for the company.</value>
+  </data>
+  <data name="Title_car_benefit_taxed" xml:space="preserve">
+    <value>Benefit taxed as pay</value>
+  </data>
+  <data name="Rule_car_benefit_taxed" xml:space="preserve">
+    <value>The benefit less your contribution, never below zero. It is director pay never paid in cash: in your social contributions' base, your income tax and the monthly withholding.</value>
+  </data>
+  <data name="Title_car_add_back" xml:space="preserve">
+    <value>Added back by the company</value>
+  </data>
+  <data name="Rule_car_add_back" xml:space="preserve">
+    <value>A share of the benefit before your contribution joins the company's taxable income: 17%, or 40% when the company pays your private charging.</value>
+  </data>
   <data name="Title_rent_income_tax" xml:space="preserve">
     <value>Income tax on the rent</value>
   </data>
@@ -464,6 +494,42 @@
   </data>
   <data name="Amount_rent_charges_rate" xml:space="preserve">
     <value>Flat charges</value>
+  </data>
+  <data name="Amount_zero_emission_deduction_rate" xml:space="preserve">
+    <value>Deductible share of an electric car's costs</value>
+  </data>
+  <data name="Amount_catalogue_share_rate" xml:space="preserve">
+    <value>Share of the catalogue value (6/7)</value>
+  </data>
+  <data name="Amount_minimum_co2_rate" xml:space="preserve">
+    <value>CO2 percentage of a car that emits none</value>
+  </data>
+  <data name="Amount_age_up_to_12_months_rate" xml:space="preserve">
+    <value>Catalogue value up to 12 months old</value>
+  </data>
+  <data name="Amount_age_13_to_24_months_rate" xml:space="preserve">
+    <value>Catalogue value from 13 to 24 months old</value>
+  </data>
+  <data name="Amount_age_25_to_36_months_rate" xml:space="preserve">
+    <value>Catalogue value from 25 to 36 months old</value>
+  </data>
+  <data name="Amount_age_37_to_48_months_rate" xml:space="preserve">
+    <value>Catalogue value from 37 to 48 months old</value>
+  </data>
+  <data name="Amount_age_49_to_60_months_rate" xml:space="preserve">
+    <value>Catalogue value from 49 to 60 months old</value>
+  </data>
+  <data name="Amount_age_from_61_months_rate" xml:space="preserve">
+    <value>Catalogue value from 61 months old</value>
+  </data>
+  <data name="Amount_minimum_car_benefit" xml:space="preserve">
+    <value>Minimum benefit for the year</value>
+  </data>
+  <data name="Amount_car_add_back_rate" xml:space="preserve">
+    <value>Share added back</value>
+  </data>
+  <data name="Amount_car_add_back_with_private_energy_rate" xml:space="preserve">
+    <value>Share added back when the company pays private charging</value>
   </data>
   <data name="Amount_rent_charges_limit_multiplier" xml:space="preserve">
     <value>Charges, at most 2/3 of the revalued cadastral income</value>
