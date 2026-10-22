@@ -163,6 +163,26 @@ public class CarViewTests
             .ShouldBe((0m, (decimal?)0m));
     }
 
+    // Corporate tax says what it adds back and why: the vouchers it cannot deduct, the car's share of
+    // its benefit, or both.
+    [Fact]
+    public void CorporateTax_carAndVouchers_sayEachAddBackAndWhichSentenceSaysThem()
+    {
+        var both = CorporateTaxView.From(ElectricCar.AddToPlan(OptionalModule.Vouchers).WithEcoVouchers(250m).Run().Year.ShouldNotBeNull());
+        var car = CorporateTaxView.From(ElectricCar.Run().Year.ShouldNotBeNull());
+
+        (both.DisallowedVouchers, both.CarAddBack, CorporateTaxCardText.Disallowed(both), CorporateTaxCardText.Disallowed(car))
+            .ShouldBe((250m, 291.43m, "Disallowed_VouchersAndCar", "Disallowed_Car"));
+    }
+
+    [Fact]
+    public void CorporateTax_vouchersAlone_keepTheirSentence()
+    {
+        var view = CorporateTaxView.From(RiverInputs.Example.AddToPlan(OptionalModule.Vouchers).WithEcoVouchers(250m).Run().Year.ShouldNotBeNull());
+
+        (view.CarAddBack, CorporateTaxCardText.Disallowed(view)).ShouldBe((0m, "Disallowed"));
+    }
+
     [Theory]
     [InlineData(CarCalculator.CatalogueValueNegative)]
     [InlineData(CarCalculator.YearlyCostsNegative)]

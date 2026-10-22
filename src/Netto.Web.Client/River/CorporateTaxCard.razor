@@ -42,7 +42,8 @@
         </Disclosure>
         @if (_view is { DisallowedExpenses: > 0m } addedBack)
         {
-            <p class="corporate-tax__condition">@L["Disallowed", Formats.Euros(addedBack.TaxableIncome), Formats.Euros(addedBack.DisallowedExpenses)]</p>
+            <p class="corporate-tax__condition">@L[CorporateTaxCardText.Disallowed(addedBack), Formats.Euros(addedBack.TaxableIncome), Formats.Euros(addedBack.DisallowedVouchers),
+                Formats.Euros(addedBack.CarAddBack)]</p>
         }
         @if (_view is not null)
         {

@@ -111,6 +111,12 @@
   <data name="Disallowed" xml:space="preserve">
     <value>Taxable income {0}: the {1} of vouchers the company cannot deduct are added back to its profit.</value>
   </data>
+  <data name="Disallowed_Car" xml:space="preserve">
+    <value>Taxable income {0}: {2} of your company car's benefit is added back to its profit.</value>
+  </data>
+  <data name="Disallowed_VouchersAndCar" xml:space="preserve">
+    <value>Taxable income {0}: the {1} of vouchers the company cannot deduct and {2} of your company car's benefit are added back to its profit.</value>
+  </data>
   <data name="CompanyTitle" xml:space="preserve">
     <value>Your company</value>
   </data>

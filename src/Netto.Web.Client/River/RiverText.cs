@@ -41,6 +41,15 @@ internal static class CorporateTaxCardText
 
     public static string Surcharge(SurchargeState state) => $"Surcharge_{state}";
 
+    // What the taxable income adds back: the vouchers the company cannot deduct, a company car's share
+    // of its benefit, or both.
+    public static string Disallowed(CorporateTaxView view) => (view.DisallowedVouchers, view.CarAddBack) switch
+    {
+        ( > 0m, > 0m) => "Disallowed_VouchersAndCar",
+        (_, > 0m) => "Disallowed_Car",
+        _ => "Disallowed",
+    };
+
     public static string FinancialYear(FinancialYear year) => $"FinancialYear_{year}";
 
     // The financial year as the line of « Your company » states it.

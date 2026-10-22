@@ -530,6 +530,12 @@ internal sealed record CorporateTaxView(
     IReadOnlyList<Drain> Drains,
     IReadOnlyList<StepDetail> Details)
 {
+    // What the added-back expenses are made of: what the company cannot deduct of the vouchers, and
+    // the share of a company car's benefit it adds back.
+    public decimal DisallowedVouchers { get; init; }
+
+    public decimal CarAddBack { get; init; }
+
     public static CorporateTaxView From(YearResult year)
     {
         var steps = year.Steps.Where(step => step.Layer == Layer.Corporate).ToList();
@@ -560,7 +566,7 @@ internal sealed record CorporateTaxView(
                 .. steps.Where(step => step.Track == Track.PaidOut).Select(step => Drain.PaidOutTo(step, "taxes_on_profit").Of(year.ProfitAfterPay)),
                 new Drain("profit_after_tax", DrainKind.PassedOn, year.ProfitAfterTax, "dividend").Of(year.ProfitAfterPay),
             ],
-            steps.Select(StepDetail.From).ToList());
+            steps.Select(StepDetail.From).ToList()) { DisallowedVouchers = year.Vouchers.Disallowed, CarAddBack = year.Car.AddBack };
     }
 }
 

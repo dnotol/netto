@@ -150,6 +150,12 @@ public class RiverTextTests
         Missing(CorporateTaxCardResources, keys).ShouldBeEmpty();
     }
 
+    [Fact]
+    public void CorporateTaxCardResx_everyAddBackSentence_hasAText()
+    {
+        Missing(CorporateTaxCardResources, ["Disallowed", "Disallowed_Car", "Disallowed_VouchersAndCar"]).ShouldBeEmpty();
+    }
+
     // With benefits in kind, the conditions the pay decides say the benefits are counted in it; the
     // others read the same.
     [Theory]
