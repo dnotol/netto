@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Resources;
+using Netto.Web.Client;
 using Netto.Web.Client.River;
 using Shouldly;
 
@@ -84,6 +85,33 @@ public class BucketBarTextTests
         new[] { BucketBarText.ReachMeaning, BucketBarText.EnterCompany }
             .Where(key => Resources.GetString(key, CultureInfo.InvariantCulture) is null)
             .ShouldBeEmpty();
+    }
+
+    [Theory]
+    [InlineData(GainKind.More)]
+    [InlineData(GainKind.Less)]
+    [InlineData(GainKind.Same)]
+    [InlineData(GainKind.NotComparable)]
+    public void BucketBarResx_everyGain_hasAText(GainKind kind)
+    {
+        Resources.GetString(BucketBarText.Gain(kind), CultureInfo.InvariantCulture).ShouldNotBeNull();
+    }
+
+    // The best pay against the example marked as the setup (BaselineGainTests).
+    [Fact]
+    public void Gain_more_saysHowMuchMoreThanTheSetup()
+    {
+        var text = string.Format(CultureInfo.InvariantCulture, Resources.GetString(BucketBarText.Gain(GainKind.More), CultureInfo.InvariantCulture) ?? "", Formats.Euros(2_551.13m));
+
+        text.ShouldBe("€2,551.13 more than your current setup.");
+    }
+
+    [Fact]
+    public void Gain_less_saysHowMuchLessThanTheSetup()
+    {
+        var text = string.Format(CultureInfo.InvariantCulture, Resources.GetString(BucketBarText.Gain(GainKind.Less), CultureInfo.InvariantCulture) ?? "", Formats.Euros(2_551.13m));
+
+        text.ShouldBe("€2,551.13 less than your current setup.");
     }
 
     // While the engine refuses an amount there is no figure to announce.

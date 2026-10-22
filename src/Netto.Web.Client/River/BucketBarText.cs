@@ -22,6 +22,10 @@ internal static class BucketBarText
     public static string Reach(BucketsView view) =>
         view.Buckets.Single(bucket => bucket.Key == "kept_in_company").Amount > 0m ? "Reach_Kept" : "Reach";
 
+    // Under the reach, what the river leaves in the pocket against the setup the user marked, or that
+    // the two cannot be compared (BaselineGain); the live region says it after the pocket.
+    public static string Gain(GainKind kind) => $"Gain_{kind}";
+
     // The taxes on pay say they hold the rent's tax too once there is one.
     public static string Bucket(string key, bool taxesOnPayIncludeRent) =>
         taxesOnPayIncludeRent && key == "taxes_on_pay" ? "Bucket_taxes_on_pay_and_rent" : $"Bucket_{key}";
