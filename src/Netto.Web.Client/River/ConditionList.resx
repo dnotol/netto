@@ -51,10 +51,13 @@
   <data name="Condition_not_with_office_allowance" xml:space="preserve">
     <value>No office allowance beside it: the allowance already covers the room, its rent included.</value>
   </data>
-  <data name="Condition_electric_ordered_before_2027" xml:space="preserve">
-    <value>An electric car, ordered or leased before 2027: its costs stay deductible in full for as long as the company keeps it. An order counts from its date, a lease from its contract's.</value>
+  <data name="Condition_ordered_or_leased" xml:space="preserve">
+    <value>Ordered or leased on the date you give: an order counts from its own date, even before the car is delivered, and a lease or a rental from its contract's; extending a lease beyond what its contract provided, or taking it over, starts a new date. An electric car ordered or leased before 2027 stays deductible in full for as long as the company keeps it.</value>
   </data>
   <data name="Condition_private_use_all_year" xml:space="preserve">
     <value>At your disposal for private use for the whole year: the benefit is a year's, and a car you have for only part of it is not modelled yet.</value>
+  </data>
+  <data name="Condition_fake_hybrid" xml:space="preserve">
+    <value>A plug-in hybrid bought or leased from 2018 is a fake hybrid when its battery holds less than 0.5 kWh per 100 kg of the car, or it emits more than 50 g/km, 75 g/km when measured under Euro 6e-bis or a later standard: its benefit and its deduction then take the CO2 of the matching car running on its fuel alone, on the SPF's list, or its own CO2 times 2.5 when there is none. You say whether yours is one.</value>
   </data>
 </root>
