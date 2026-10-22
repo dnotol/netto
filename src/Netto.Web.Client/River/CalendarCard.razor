@@ -1,0 +1,101 @@
+@inject IStringLocalizer<CalendarCard> L
+
+@* When the plan's payments fall: a lens over the whole river, not a module in it, so it has no rate and
+   no « Remove ». It reads the river's one run and the date (CalendarView over the engine's
+   PaymentCalendar): the company's and the director's advance payments by each deadline as the plan
+   holds them, the past ones marked, and at the first deadline still open what more cancels each
+   surcharge, then one sentence per tax, as its card says it. It applies nothing: the moves card is
+   where a payment is applied. Folded, it says the next payment and its date. *@
+<ModuleCard Name="calendar" Title="@L["Title"]" Summary="@Summary" Help="@L["Help"]" OpenByDefault="false">
+    @if (_view is null)
+    {
+        <p class="calendar__note">@L["Refused"]</p>
+    }
+    else
+    {
+        <h3 id="calendar-advance-payments" class="calendar__heading">@L["AdvancePayments"]</h3>
+        @if (_view.Rows.Count == 0)
+        {
+            <p class="calendar__note">@L["NoRows", _view.IncomeYear]</p>
+        }
+        else
+        {
+            <table class="calendar__table" aria-labelledby="calendar-advance-payments">
+                <thead>
+                    <tr>
+                        <th scope="col">@L["Deadline"]</th>
+                        @if (_view.Company is not null)
+                        {
+                            <th scope="col">@L["TheCompany"]</th>
+                        }
+                        <th scope="col">@L["You"]</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in _view.Rows)
+                    {
+                        <tr class="@(row.Past ? "calendar__row--past" : null)">
+                            <th scope="row" class="calendar__date">
+                                <span>@Formats.Day(row.Date)</span>
+                                @if (row.Past)
+                                {
+                                    <span class="calendar__past">@L["Past"]</span>
+                                }
+                            </th>
+                            @if (_view.Company is not null)
+                            {
+                                @Cell(row.CompanyPlanned, row.CompanyMore, "CompanyMore")
+                            }
+                            @Cell(row.DirectorPlanned, row.DirectorMore, "DirectorMore")
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        @if (_view.Company is { } company)
+        {
+            <p class="calendar__tax">@L[CalendarCardText.Company(company), Formats.Euros(company.Surcharge), Formats.Euros(company.More), Day(company.OpenDeadline), _view.IncomeYear]</p>
+        }
+        <p class="calendar__tax">@L[CalendarCardText.Director(_view.Director), Formats.Euros(_view.Director.Surcharge), Formats.Euros(_view.Director.More), Day(_view.Director.OpenDeadline), _view.IncomeYear]</p>
+    }
+</ModuleCard>
+
+@code {
+    [Parameter, EditorRequired]
+    public RiverInputs Inputs { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public RiverRun Run { get; set; } = default!;
+
+    // Today's date, which decides which deadlines are past.
+    [Parameter]
+    public DateOnly Date { get; set; }
+
+    private CalendarView? _view;
+
+    protected override void OnParametersSet() => _view = CalendarView.From(Inputs, Run, Date);
+
+    private string? Summary => _view is null
+        ? null
+        : L[CalendarCardText.Summary(_view.Next), Day(_view.Next?.Date), Formats.Euros(_view.Next?.Company ?? 0m), Formats.Euros(_view.Next?.Director ?? 0m), _view.IncomeYear].Value;
+
+    private static string Day(DateOnly? date) => date is { } day ? Formats.Day(day) : "";
+
+    // What one payer pays by the deadline as the plan stands, and what more by it cancels its
+    // surcharge; « nothing » when neither.
+    private RenderFragment Cell(decimal planned, decimal more, string moreKey) =>
+        @<td class="calendar__cell">
+            @if (planned == 0m && more == 0m)
+            {
+                <span class="calendar__nothing">@L["Nothing"]</span>
+            }
+            @if (planned > 0m)
+            {
+                <span class="calendar__amount">@Formats.Euros(planned)</span>
+            }
+            @if (more > 0m)
+            {
+                <span class="calendar__more">@L[moreKey, Formats.Euros(more)]</span>
+            }
+        </td>;
+}

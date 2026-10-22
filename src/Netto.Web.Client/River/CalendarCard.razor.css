@@ -1,0 +1,69 @@
+.calendar__heading {
+    margin: 0;
+    font-family: "Fraunces", Georgia, serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.calendar__note,
+.calendar__tax {
+    margin: 0;
+    color: var(--netto-text-muted);
+    font-size: 0.9rem;
+    line-height: 1.55;
+}
+
+/* One row per deadline, the company's column before the director's: amounts in tabular figures so
+   the columns line up. */
+.calendar__table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.92rem;
+    font-variant-numeric: tabular-nums;
+}
+
+    .calendar__table th,
+    .calendar__table td {
+        padding: 0.5rem 0.75rem 0.5rem 0;
+        border-bottom: 1px solid var(--netto-line);
+        text-align: left;
+        vertical-align: top;
+    }
+
+    .calendar__table thead th {
+        color: var(--netto-text-muted);
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+.calendar__date {
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+/* A past deadline shows what was paid by it, muted. */
+.calendar__row--past {
+    color: var(--netto-text-muted);
+}
+
+.calendar__past {
+    margin-left: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.calendar__cell span {
+    display: block;
+}
+
+.calendar__nothing {
+    color: var(--netto-text-muted);
+}
+
+/* What more by the open deadline cancels a surcharge: the step to take, in the text colour, never in
+   the pocket's gold. */
+.calendar__more {
+    font-weight: 500;
+}

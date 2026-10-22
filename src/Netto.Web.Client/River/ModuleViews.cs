@@ -379,14 +379,7 @@ internal sealed record DirectorPayView(
             companyPays,
             pay.CompanyCost,
             Shares.Of(pay.NetInPocket, inflow),
-            payments switch
-            {
-                { Exempt: true } => TaxSurchargeState.Exempt,
-                { TaxAt106Percent: 0m } => TaxSurchargeState.NoTax,
-                { BelowMinimum: true } => TaxSurchargeState.BelowMinimum,
-                { Surcharge: 0m } => TaxSurchargeState.Covered,
-                _ => TaxSurchargeState.Due,
-            },
+            SurchargeStates.Of(payments),
             payments.Surcharge,
             payments.LastDeadlineTopUp,
             TaxAdvancePaymentFields.Deadlines(pay.IncomeYear)[^1].Date.Value,
@@ -494,13 +487,7 @@ internal sealed record CorporateTaxView(
             year.Company.FlatRateBenefits,
             year.Company.ExcessBenefitsShare,
             year.Company.TaxableIncome <= 0m,
-            payments switch
-            {
-                { Exempt: true } => SurchargeState.Exempt,
-                { SurchargeBeforeCredits: 0m } => SurchargeState.NoTax,
-                { Surcharge: 0m } => SurchargeState.Covered,
-                _ => SurchargeState.Due,
-            },
+            SurchargeStates.Of(payments),
             payments.Surcharge,
             payments.LastDeadlineTopUp,
             AdvancePaymentFields.Deadlines(year.Scenario.IncomeYear)[^1].Date.Value,
@@ -515,6 +502,28 @@ internal sealed record CorporateTaxView(
             CarAddBack = year.Car.AddBack,
         };
     }
+}
+
+// What each surcharge's advance payments leave, read from the engine's result: the Director pay and
+// Corporate tax cards and the calendar say the same.
+internal static class SurchargeStates
+{
+    public static SurchargeState Of(AdvancePaymentResult payments) => payments switch
+    {
+        { Exempt: true } => SurchargeState.Exempt,
+        { SurchargeBeforeCredits: 0m } => SurchargeState.NoTax,
+        { Surcharge: 0m } => SurchargeState.Covered,
+        _ => SurchargeState.Due,
+    };
+
+    public static TaxSurchargeState Of(IncomeTaxAdvancePaymentResult payments) => payments switch
+    {
+        { Exempt: true } => TaxSurchargeState.Exempt,
+        { TaxAt106Percent: 0m } => TaxSurchargeState.NoTax,
+        { BelowMinimum: true } => TaxSurchargeState.BelowMinimum,
+        { Surcharge: 0m } => TaxSurchargeState.Covered,
+        _ => TaxSurchargeState.Due,
+    };
 }
 
 // What the advance payments leave on the corporate tax.

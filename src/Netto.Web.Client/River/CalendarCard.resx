@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve">
+    <value>When to pay</value>
+  </data>
+  <data name="Help" xml:space="preserve">
+    <value>The payments your plan implies, and when each falls due. Every amount is the river's own; the calendar only says when. Today is your device's date, and a deadline stays open until the end of its day.</value>
+  </data>
+  <data name="Summary_Company" xml:space="preserve">
+    <value>Next by {0}: {1} from the company</value>
+  </data>
+  <data name="Summary_Director" xml:space="preserve">
+    <value>Next by {0}: {2} from you</value>
+  </data>
+  <data name="Summary_Both" xml:space="preserve">
+    <value>Next by {0}: {1} from the company, {2} from you</value>
+  </data>
+  <data name="Summary_Nothing" xml:space="preserve">
+    <value>Nothing left to pay in advance in {3}</value>
+  </data>
+  <data name="Refused" xml:space="preserve">
+    <value>The payments wait for the amount the river refuses.</value>
+  </data>
+  <data name="AdvancePayments" xml:space="preserve">
+    <value>Advance payments</value>
+  </data>
+  <data name="Deadline" xml:space="preserve">
+    <value>Deadline</value>
+  </data>
+  <data name="TheCompany" xml:space="preserve">
+    <value>The company</value>
+  </data>
+  <data name="You" xml:space="preserve">
+    <value>You</value>
+  </data>
+  <data name="Past" xml:space="preserve">
+    <value>past</value>
+  </data>
+  <data name="Nothing" xml:space="preserve">
+    <value>nothing</value>
+  </data>
+  <data name="CompanyMore" xml:space="preserve">
+    <value>{0} more cancels the surcharge</value>
+  </data>
+  <data name="DirectorMore" xml:space="preserve">
+    <value>{0} more leaves no surcharge due</value>
+  </data>
+  <data name="NoRows" xml:space="preserve">
+    <value>Nothing is paid or needed in advance by any deadline of {0}.</value>
+  </data>
+  <data name="Company_Exempt" xml:space="preserve">
+    <value>The company owes no surcharge on its corporate tax: a small company in its first three financial years is exempt.</value>
+  </data>
+  <data name="Company_NoTax" xml:space="preserve">
+    <value>The company has no corporate tax, so nothing to pay in advance.</value>
+  </data>
+  <data name="Company_Covered" xml:space="preserve">
+    <value>The company's payments cancel the surcharge on its corporate tax.</value>
+  </data>
+  <data name="Company_Due" xml:space="preserve">
+    <value>The company's payments leave a surcharge of {0} on its corporate tax: {1} more by {2} cancels it.</value>
+  </data>
+  <data name="Company_TooLate" xml:space="preserve">
+    <value>The company's payments leave a surcharge of {0} on its corporate tax, and every deadline of {3} is past.</value>
+  </data>
+  <data name="Director_Exempt" xml:space="preserve">
+    <value>You owe no surcharge on the income tax on your pay: your first three years as self-employed are exempt.</value>
+  </data>
+  <data name="Director_NoTax" xml:space="preserve">
+    <value>Your pay carries no income tax, so you have nothing to pay in advance.</value>
+  </data>
+  <data name="Director_Covered" xml:space="preserve">
+    <value>What is withheld on your pay and your own payments leave no surcharge due on its income tax.</value>
+  </data>
+  <data name="Director_BelowMinimum" xml:space="preserve">
+    <value>What is withheld on your pay leaves the surcharge on its income tax under the minimum: none is due.</value>
+  </data>
+  <data name="Director_Due" xml:space="preserve">
+    <value>The income tax on your pay carries a surcharge of {0}: {1} more by {2} leaves none due.</value>
+  </data>
+  <data name="Director_TooLate" xml:space="preserve">
+    <value>The income tax on your pay carries a surcharge of {0}, and every deadline of {3} is past.</value>
+  </data>
+</root>
