@@ -120,4 +120,25 @@
   <data name="Done" xml:space="preserve">
     <value>Done</value>
   </data>
+  <data name="Export" xml:space="preserve">
+    <value>Export to a file</value>
+  </data>
+  <data name="Import" xml:space="preserve">
+    <value>Import from a file</value>
+  </data>
+  <data name="Imported_One" xml:space="preserve">
+    <value>1 plan imported.</value>
+  </data>
+  <data name="Imported_Many" xml:space="preserve">
+    <value>{0} plans imported.</value>
+  </data>
+  <data name="Imported_Some" xml:space="preserve">
+    <value>{0} imported; {1} this version of Netto cannot read, left out.</value>
+  </data>
+  <data name="Imported_None" xml:space="preserve">
+    <value>The file holds no plan this version of Netto can read.</value>
+  </data>
+  <data name="Imported_Refused" xml:space="preserve">
+    <value>This file is not one this version of Netto can read: nothing was imported.</value>
+  </data>
 </root>

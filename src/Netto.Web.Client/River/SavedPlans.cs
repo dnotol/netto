@@ -75,6 +75,32 @@ internal sealed class SavedPlans
         return inputs;
     }
 
+    // Every plan with the star, as a file to take elsewhere: the document the browser keeps
+    // (PlanStorage), so a file is read back exactly as a saved plan is.
+    public string Export() => PlanStorage.Write(_book);
+
+    // The plans of a file Netto exported, added after the ones here, never replacing one, each under
+    // a new id, so importing a file twice adds its plans twice: their names as saved. The file's
+    // « Today » is starred only while none is here, and the river stays on the plan it was opened
+    // from. A plan the file holds that this version cannot read is left out and counted; a file it
+    // cannot read at all, or of a newer version, adds nothing.
+    public PlanImport Import(string file)
+    {
+        var (book, unreadable) = PlanStorage.Read(file);
+        if (unreadable)
+            return PlanImport.Unreadable;
+
+        var readable = book.Plans.Where(plan => plan.Readable).ToList();
+        var ids = readable.ToDictionary(plan => plan.Id, _ => Guid.NewGuid().ToString("N"));
+        if (readable.Count > 0)
+        {
+            var today = Today ?? (book.Today is { } fileToday && ids.TryGetValue(fileToday, out var id) ? id : null);
+            Keep(_book with { Plans = [.. Plans, .. readable.Select(plan => plan with { Id = ids[plan.Id] })], Today = today });
+        }
+
+        return new PlanImport(readable.Count, book.Plans.Count - readable.Count, false);
+    }
+
     // Whether the river differs from the plan it was opened from, or, with none opened, from the example
     // it then starts on: changes no plan holds.
     public bool HasUnsavedChanges(RiverInputs inputs) => inputs != (OpenedPlan?.Inputs ?? RiverInputs.Example);
@@ -86,4 +112,11 @@ internal sealed class SavedPlans
         _book = book;
         _storage.Set(PlanStorage.Key, PlanStorage.Write(book));
     }
+}
+
+// What an import did: how many plans it added, how many the file held that this version cannot read,
+// and whether the file itself could not be read, which adds nothing.
+internal sealed record PlanImport(int Added, int Skipped, bool Refused)
+{
+    public static PlanImport Unreadable { get; } = new(0, 0, true);
 }

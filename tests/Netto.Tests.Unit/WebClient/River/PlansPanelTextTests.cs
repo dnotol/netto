@@ -22,6 +22,20 @@ public class PlansPanelTextTests
     }
 
     [Theory]
+    [InlineData(0, 0, true, "This file is not one this version of Netto can read: nothing was imported.")]
+    [InlineData(0, 2, false, "The file holds no plan this version of Netto can read.")]
+    [InlineData(1, 0, false, "1 plan imported.")]
+    [InlineData(3, 0, false, "3 plans imported.")]
+    [InlineData(2, 1, false, "2 imported; 1 this version of Netto cannot read, left out.")]
+    public void Imported_import_saysWhatItAdded(int added, int skipped, bool refused, string expected)
+    {
+        var text = string.Format(CultureInfo.InvariantCulture,
+            Resources.GetString(PlansPanelText.Imported(new PlanImport(added, skipped, refused)), CultureInfo.InvariantCulture) ?? "", added, skipped);
+
+        text.ShouldBe(expected);
+    }
+
+    [Theory]
     [InlineData(GainKind.More)]
     [InlineData(GainKind.Less)]
     [InlineData(GainKind.Same)]

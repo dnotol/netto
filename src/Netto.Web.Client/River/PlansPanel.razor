@@ -1,5 +1,7 @@
 @inject IStringLocalizer<PlansPanel> L
 @inject SavedPlans Plans
+@inject IJSRuntime JS
+@inject TimeProvider Clock
 
 @* The user's saved plans, from the bar of buckets: « Save this plan » keeps the river as it is as a new
    plan, never over another, and « Plans » opens a panel listing them, built like the Composition menu
@@ -7,7 +9,9 @@
    outside or Done, each giving focus back to its button. Each row says what reaches the pocket and
    its share, and its difference from the plan starred « Today », the user's current setup, with every
    figure the engine's (PlanRow). A row is renamed in place, starred, opened in the river or deleted;
-   opening over unsaved changes and deleting ask first, in the row itself. *@
+   opening over unsaved changes and deleting ask first, in the row itself. The panel's foot exports
+   every plan to a file and imports a file's plans after the ones here (SavedPlans.Export, Import):
+   the browser writes and reads the file, which never reaches a server. *@
 <div class="plans" @onkeydown="OnKeyDown">
     <MudButton Variant="Variant.Outlined" Size="Size.Small" Class="plans__save" StartIcon="@Icons.Material.Rounded.BookmarkAdd"
                Disabled="@(!CanSave)" OnClick="Save">
@@ -104,7 +108,19 @@
                     }
                 </ul>
             }
+            @if (_imported is { } imported)
+            {
+                <p class="plans__imported" role="status">@L[PlansPanelText.Imported(imported), imported.Added, imported.Skipped]</p>
+            }
             <div class="plans__foot">
+                <div class="plans__file">
+                    @if (Plans.Plans.Count > 0)
+                    {
+                        <MudButton Variant="Variant.Text" Size="Size.Small" OnClick="ExportAsync">@L["Export"]</MudButton>
+                    }
+                    <InputFile id="@_fileId" class="plans__file-input" accept=".json,application/json" OnChange="ImportAsync" />
+                    <label for="@_fileId" class="plans__import">@L["Import"]</label>
+                </div>
                 <MudButton Variant="Variant.Outlined" Size="Size.Small" Class="plans__done" OnClick="Close" @onkeydown="OnDoneKeyDown">@L["Done"]</MudButton>
             </div>
         }
@@ -128,7 +144,12 @@
     [Parameter]
     public EventCallback OnChanged { get; set; }
 
+    // A file of plans is a few kilobytes a plan: a megabyte holds hundreds.
+    private const long MaximumFileSize = 1_024 * 1_024;
+
     private readonly string _panelId = $"plans-{Guid.NewGuid():N}";
+    private readonly string _fileId = $"plans-file-{Guid.NewGuid():N}";
+    private PlanImport? _imported;
     private IReadOnlyList<PlanRow> _rows = [];
     private MudButton? _button;
     private MudButton? _cancel;
@@ -183,7 +204,33 @@
         _open = !_open;
         _focusPanel = _open;
         _confirming = null;
+        _imported = null;
         Refresh();
+    }
+
+    // Every plan with the star, named by the browser's date.
+    private async Task ExportAsync() =>
+        await JS.InvokeVoidAsync("nettoPlanFile.save", $"netto-plans-{DateOnly.FromDateTime(Clock.GetLocalNow().DateTime):yyyy-MM-dd}.json", Plans.Export());
+
+    // The file's plans join the panel; one too large to be a file of plans is not read.
+    private async Task ImportAsync(InputFileChangeEventArgs change)
+    {
+        string text;
+        try
+        {
+            await using var stream = change.File.OpenReadStream(MaximumFileSize);
+            using var reader = new StreamReader(stream);
+            text = await reader.ReadToEndAsync();
+        }
+        catch (IOException)
+        {
+            _imported = PlanImport.Unreadable;
+            return;
+        }
+
+        _imported = Plans.Import(text);
+        Refresh();
+        await OnChanged.InvokeAsync();
     }
 
     private void Close()

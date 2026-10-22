@@ -1,3 +1,4 @@
+using System.Text.Json.Nodes;
 using Netto.Web.Client;
 using Netto.Web.Client.River;
 using Shouldly;
@@ -220,6 +221,116 @@ public class SavedPlansTests
     public void RiverState_nothingSaved_startsOnTheExample()
     {
         new RiverState(new SavedPlans(new MemoryStorage())).Inputs.ShouldBe(RiverInputs.Example);
+    }
+
+    // The file is the document the browser keeps: it reads back as a saved plan does.
+    [Fact]
+    public void Export_plans_isTheDocumentTheBrowserKeeps()
+    {
+        var storage = new MemoryStorage();
+        var plans = new SavedPlans(storage);
+        plans.Save(RiverInputs.Example, Name);
+        plans.Save(BestPay, Name);
+
+        plans.Export().ShouldBe(storage.Get(PlanStorage.Key));
+    }
+
+    [Fact]
+    public void Import_file_addsItsPlansAfterTheOnesHereWithTheirNames()
+    {
+        var plans = new SavedPlans(new MemoryStorage());
+        plans.Save(RiverInputs.Example, Name);
+
+        var imported = plans.Import(FileOf(("Elsewhere", BestPay)));
+
+        plans.ShouldSatisfyAllConditions(
+            () => imported.ShouldBe(new PlanImport(1, 0, false)),
+            () => plans.Plans.Select(plan => (plan.Name, plan.Inputs)).ShouldBe([("Plan 1", RiverInputs.Example), ("Elsewhere", BestPay)]));
+    }
+
+    // The same file twice: two more plans, each under an id of its own, none replaced.
+    [Fact]
+    public void Import_sameFileTwice_addsItsPlansAgain()
+    {
+        var plans = new SavedPlans(new MemoryStorage());
+        var file = FileOf(("Elsewhere", BestPay));
+
+        plans.Import(file);
+        plans.Import(file);
+
+        (plans.Plans.Count, plans.Plans.Select(plan => plan.Id).Distinct().Count()).ShouldBe((2, 2));
+    }
+
+    [Fact]
+    public void Import_withNoTodayHere_starsTheFilesToday()
+    {
+        var plans = new SavedPlans(new MemoryStorage());
+
+        plans.Import(FileOf(("Elsewhere", BestPay)));
+
+        plans.TodayPlan.ShouldNotBeNull().Name.ShouldBe("Elsewhere");
+    }
+
+    [Fact]
+    public void Import_withTodayHere_keepsIt()
+    {
+        var plans = new SavedPlans(new MemoryStorage());
+        var today = plans.Save(RiverInputs.Example, Name);
+
+        plans.Import(FileOf(("Elsewhere", BestPay)));
+
+        plans.Today.ShouldBe(today.Id);
+    }
+
+    // The river stays on the plan it was opened from.
+    [Fact]
+    public void Import_file_opensNothing()
+    {
+        var plans = new SavedPlans(new MemoryStorage());
+        var opened = plans.Save(RiverInputs.Example, Name);
+
+        plans.Import(FileOf(("Elsewhere", BestPay)));
+
+        plans.Opened.ShouldBe(opened.Id);
+    }
+
+    [Fact]
+    public void Import_planThisVersionCannotRead_leavesItOutAndCountsIt()
+    {
+        var plans = new SavedPlans(new MemoryStorage());
+        var file = JsonNode.Parse(FileOf(("Elsewhere", BestPay), ("Broken", RiverInputs.Example)))!;
+        file["plans"]![1]!["inputs"]!["carLease"] = 850;
+
+        var imported = plans.Import(file.ToJsonString());
+
+        (imported, plans.Plans.Single().Name).ShouldBe((new PlanImport(1, 1, false), "Elsewhere"));
+    }
+
+    [Theory]
+    [InlineData("{ broken")]
+    [InlineData("")]
+    [InlineData("""{"version":99,"plans":[]}""")]
+    public void Import_fileThisVersionCannotRead_addsNothing(string file)
+    {
+        var plans = new SavedPlans(new MemoryStorage());
+        plans.Save(RiverInputs.Example, Name);
+
+        var imported = plans.Import(file);
+
+        (imported, plans.Plans.Count).ShouldBe((new PlanImport(0, 0, true), 1));
+    }
+
+    // A file of every plan, as another browser would export it.
+    private static string FileOf(params (string Name, RiverInputs Inputs)[] saved)
+    {
+        var elsewhere = new SavedPlans(new MemoryStorage());
+        foreach (var (name, inputs) in saved)
+        {
+            var plan = elsewhere.Save(inputs, Name);
+            elsewhere.Rename(plan.Id, name);
+        }
+
+        return elsewhere.Export();
     }
 
     private sealed class MemoryStorage : IBrowserStorage

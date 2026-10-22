@@ -186,7 +186,54 @@
 
 .plans__foot {
     display: flex;
-    justify-content: flex-end;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.plans__file {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem 0.75rem;
+    font-size: 0.82rem;
+}
+
+/* The file picker stays in the keyboard's reach but out of sight; its label is what is seen and
+   clicked, and shows the focus ring when the picker has it. ::deep reaches the input InputFile renders. */
+.plans__file ::deep .plans__file-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}
+
+/* Drawn as the text button beside it, « Export to a file ». */
+.plans__import {
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    color: var(--netto-text);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+    .plans__import:hover {
+        background: rgba(243, 238, 226, 0.08);
+    }
+
+.plans__file ::deep .plans__file-input:focus-visible + .plans__import {
+    outline: var(--netto-focus-ring);
+    outline-offset: var(--netto-focus-offset);
+}
+
+.plans__imported {
+    margin: 0 0 0.5rem;
+    color: var(--netto-text-muted);
+    font-size: 0.85rem;
 }
 
     .plans__foot ::deep .plans__done {
