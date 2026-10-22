@@ -93,6 +93,20 @@ public class AssessmentCalculatorTests
         (assessment.FinalTax, assessment.Balance).ShouldBe((9_300.66m, 5_550.66m));
     }
 
+    // Tax-Calc T19 of 2026-10-22: 600 withheld on the 4,000 net of a royalty of 8,000 less its 2025
+    // flat-rate costs (CopyrightCalculator's), credited in full; the surcharge on the pay's tax less the
+    // whole credit falls under its minimum. « SOLDE » 498.97.
+    [Fact]
+    public void Compute_2025TaxCalcT19RoyaltyLessItsFlatRateCosts_creditsTheWithholdingOnItsNet()
+    {
+        var royalty = Core.Copyright.CopyrightCalculator.Compute(Core.Copyright.CopyrightRules.IncomeYear2025, new Core.Copyright.CopyrightRoyalty(8_000.00m), 20_000.00m)
+            .Value.ShouldNotBeNull();
+
+        var assessment = Assessment2025(20_000.00m, 3_600.00m, TaxPrepayments.None, taxedApart: royalty.TaxedApart.ShouldNotBeNull().Income, withheldBesidesPay: royalty.Withheld);
+
+        (assessment.FinalTax, assessment.WithheldBesidesPay, assessment.Balance).ShouldBe((1_098.97m, 600.00m, 498.97m));
+    }
+
     // No tax to set the 252.35 of credit against: all of it is refunded (art. 304, §2).
     [Fact]
     public void Compute_2025TaxCalcT8CreditAndNoTax_refundsTheCredit()

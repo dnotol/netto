@@ -386,6 +386,25 @@ public class PersonalTaxCalculatorTests
             LowEarnedIncomeCredit: 0.00m, IncomeTaxedApart: 15_000.00m, TaxedApart: 2_250.00m));
     }
 
+    // Tax-Calc T19 of 2026-10-22: T17's pay with 8,000 of copyright income less the 4,000 of flat-rate
+    // costs 2025 gave every author (code 1124: Tax-Calc takes them as typed), the costs being Netto's own
+    // CopyrightCalculator's. Only the 4,000 net is taxed apart, and « Ensemble des revenus nets » counts
+    // that net, 19,908.00, which leaves the whole credit of 880.00 where T17's gross limited it to 605.27.
+    [Fact]
+    public void Compute_2025TaxCalcT19RoyaltyLessItsFlatRateCosts_taxesItsNetApartAndCountsItInTheTotalNetIncome()
+    {
+        var royalty = Core.Copyright.CopyrightCalculator.Compute(Core.Copyright.CopyrightRules.IncomeYear2025, new Core.Copyright.CopyrightRoyalty(8_000.00m), 20_000.00m)
+            .Value.ShouldNotBeNull();
+
+        var result = PersonalTaxCalculator.Compute(Rules2025, 20_000.00m, 3_600.00m, 0.07m, taxedApart: royalty.TaxedApart);
+
+        (royalty.FlatRateCosts, result.TotalNetIncome, result).ShouldBe((4_000.00m, 19_908.00m, new PersonalTaxResult(
+            FlatRateCosts: 492.00m, TaxableIncome: 15_908.00m,
+            BasicTax: 3_977.00m, TaxFreeAmountReduction: 2_727.50m, StateTax: 1_249.50m,
+            ReducedStateTax: 1_387.92m, RegionalAdditionalTax: 461.58m, IncomeTax: 1_849.50m, MunicipalSurcharge: 129.47m,
+            LowEarnedIncomeCredit: 880.00m, IncomeTaxedApart: 4_000.00m, TaxedApart: 600.00m)));
+    }
+
     // Income taxed apart meets no tax-free amount: on a pay under it, the royalty is still taxed at 15%,
     // derived from the 2026 amounts (25% of 11,550 frees the scale's whole tax on 10,000).
     [Fact]
