@@ -30,10 +30,10 @@
             <RiverField Label="@L["RegistrationLabel"]" Origin="Inputs.Car.FirstRegistration.Origin" Help="@L["RegistrationHint"]">
                 <div class="car__registration">
                     <MudSelect T="int" Value="Inputs.Car.FirstRegistration.Value.Month" ValueChanged="OnRegistrationMonthChanged" Label="@L["MonthLabel"]"
-                               Variant="Variant.Outlined" Margin="Margin.Dense" Dense="true" Class="car__month">
-                        @for (var month = 1; month <= 12; month++)
+                               ToStringFunc="@MonthName" Variant="Variant.Outlined" Margin="Margin.Dense" Dense="true" Class="car__month">
+                        @foreach (var month in Enumerable.Range(1, 12))
                         {
-                            <MudSelectItem T="int" Value="month">@Formats.Month(Inputs.IncomeYear, month)</MudSelectItem>
+                            <MudSelectItem T="int" Value="month">@MonthName(month)</MudSelectItem>
                         }
                     </MudSelect>
                     <MudNumericField T="int" Value="Inputs.Car.FirstRegistration.Value.Year" ValueChanged="OnRegistrationYearChanged" Label="@L["YearLabel"]"
@@ -141,6 +141,8 @@
         _comparison = CarComparison.From(Inputs, Run);
         _rules = CarRules.For(Inputs.IncomeYear);
     }
+
+    private string MonthName(int month) => Formats.Month(Inputs.IncomeYear, month);
 
     private string? Summary => _view is { } view && Run.Year is { } year
         ? view.HasCar
