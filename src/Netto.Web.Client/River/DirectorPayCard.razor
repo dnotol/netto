@@ -34,6 +34,10 @@
             @L["PayFromSplit"] <b>@Formats.Euros(pay.GrossPay)</b>
             <OriginChip Origin="InputOrigin.Derived" />
         </p>
+        @if (pay.BenefitInKind > 0m)
+        {
+            <p class="director-pay__benefit">@L["Benefit", Formats.Euros(pay.BenefitInKind), Formats.Euros(pay.TaxablePay)]</p>
+        }
     }
     <Disclosure Title="@L["SituationTitle"]" Values="@Values(_settings.Situation)" Refused="@DirectorPaySettingsView.SituationHolds(Refused)">
         <RiverField Label="@L["PaidByLabel"]" Origin="Inputs.ContributionsPaidBy.Origin" Help="@L["PaidByHint"]">

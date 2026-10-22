@@ -110,6 +110,10 @@
             @if (weighed.Rate is { } rate)
             {
                 <p class="split__rate"><TermSentence Text="@RateText(rate)" Meaning="@L[SplitCardText.ReducedRateTerm]" /></p>
+                @if (weighed.Benefits > 0m && rate.Choice != RateChoice.NotWeighed && Run.Year is { } weighedYear)
+                {
+                    <p class="split__rate">@L["Rate_Benefits", Formats.Euros(weighed.Benefits), Formats.WholeShare(weighedYear.Company.ExcessBenefitsShare)]</p>
+                }
             }
         }
         else

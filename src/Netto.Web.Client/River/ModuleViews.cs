@@ -252,6 +252,9 @@ internal sealed record SplitView(decimal Ceiling, decimal Pay, decimal FieldPay,
 // refused, the company is skipped or there is no profit to split.
 internal sealed record SplitSearchView(PayCurveView Curve, BestPayView? Best, RateWeighing? Rate, decimal MostKept, decimal? Reach)
 {
+    // A car's benefit taxed with the pay, which the reduced rate's tests count in it: none without.
+    public decimal Benefits { get; init; }
+
     public static SplitSearchView? From(RiverInputs inputs, RiverRun run, SplitSearchResult? search)
     {
         if (search is null || run.Error is not null || run.Year is not { } year || search.Curve[^1].Pay <= 0m)
@@ -271,7 +274,7 @@ internal sealed record SplitSearchView(PayCurveView Curve, BestPayView? Best, Ra
             best,
             best is null ? null : RateWeighing.From(search, best.Level),
             search.Curve.Max(level => level.KeptInCompany),
-            Shares.Of(year.NetInPocket, start - year.KeptInCompany));
+            Shares.Of(year.NetInPocket, start - year.KeptInCompany)) { Benefits = year.DirectorPay.BenefitInKind };
     }
 }
 
@@ -423,6 +426,9 @@ internal sealed record DirectorPayView(
     IReadOnlyList<Drain> Drains,
     IReadOnlyList<StepDetail> Details)
 {
+    // A car's benefit taxed with the pay, never paid: none without.
+    public decimal BenefitInKind { get; init; }
+
     public static DirectorPayView From(RiverInputs inputs, GrossToNetResult pay)
     {
         var payments = pay.AdvancePayments;
@@ -450,7 +456,7 @@ internal sealed record DirectorPayView(
                     .Select(step => Payer(Drain.PaidOutTo(step, "taxes_on_pay"), companyPays).Of(pay.CompanyCost)),
                 new Drain("net_pay", DrainKind.PassedOn, pay.NetInPocket, "pocket").Of(pay.CompanyCost),
             ],
-            pay.Steps.Select(StepDetail.From).ToList());
+            pay.Steps.Select(StepDetail.From).ToList()) { BenefitInKind = pay.BenefitInKind };
     }
 
     // The contributions drain is the same step of the engine whoever pays; its label says when the

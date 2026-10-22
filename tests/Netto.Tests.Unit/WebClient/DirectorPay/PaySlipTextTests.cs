@@ -56,6 +56,17 @@ public class PaySlipTextTests
         keys.Distinct().Where(key => Resources.GetString(key, CultureInfo.InvariantCulture) is null).ShouldBeEmpty();
     }
 
+    // A pay with a car's benefit adds its row to the tax base and its column to the statement.
+    [Fact]
+    public void PaySlipResx_everyKeyOfAPayWithABenefit_hasAText()
+    {
+        var (value, _) = GrossToNet.Compute(2026, 50_000m, MunicipalRates.Entered(0.07m), TaxPrepayments.AsWithheld, ContributionsPaidBy.Director, 0m, 2_400m);
+        var view = GrossToNetView.From(value.ShouldNotBeNull());
+
+        view.Tracks.SelectMany(track => track.Rows).Select(row => PaySlipText.Row(row.Key)).Append("ColumnBenefit").Append("AddedNote")
+            .Distinct().Where(key => Resources.GetString(key, CultureInfo.InvariantCulture) is null).ShouldBeEmpty();
+    }
+
     // With a rent taxed with the pay, the final tax and the next 1,000 say so.
     [Fact]
     public void PaySlipResx_everyKeyOfARentTaxedWithThePay_hasAText()

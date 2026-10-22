@@ -33,14 +33,26 @@
   <data name="Condition_FirstFourTaxPeriods" xml:space="preserve">
     <value>Reduced rate kept: in its first four tax periods, the company needs no minimum director pay.</value>
   </data>
+  <data name="Condition_FirstFourTaxPeriods_WithBenefits" xml:space="preserve">
+    <value>Reduced rate kept: in its first four tax periods, the company needs no minimum director pay, and your benefits in kind, {1}, stay within {2} of your total pay of {3}.</value>
+  </data>
   <data name="Condition_MinimumPayMet" xml:space="preserve">
     <value>Reduced rate kept by your pay: it reaches the minimum of {0}.</value>
+  </data>
+  <data name="Condition_MinimumPayMet_WithBenefits" xml:space="preserve">
+    <value>Reduced rate kept by your pay: with your benefits in kind, {3}, it reaches the minimum of {0}, and the benefits, {1}, stay within {2} of it.</value>
   </data>
   <data name="Condition_TaxableIncomeNotAbovePay" xml:space="preserve">
     <value>Reduced rate kept by your pay: it is under the minimum of {0}, but the company's taxable income does not exceed it.</value>
   </data>
+  <data name="Condition_TaxableIncomeNotAbovePay_WithBenefits" xml:space="preserve">
+    <value>Reduced rate kept by your pay: with your benefits in kind, {3}, it is under the minimum of {0}, but the company's taxable income does not exceed it, and the benefits, {1}, stay within {2} of it.</value>
+  </data>
   <data name="Condition_MinimumPayNotMet" xml:space="preserve">
     <value>Standard rate on all of it, set by your pay: it is under the minimum of {0} and the company's taxable income exceeds it.</value>
+  </data>
+  <data name="Condition_MinimumPayNotMet_WithBenefits" xml:space="preserve">
+    <value>Standard rate on all of it, set by your pay: with your benefits in kind, {3}, it is under the minimum of {0} and the company's taxable income exceeds it.</value>
   </data>
   <data name="Condition_ExcessBenefits" xml:space="preserve">
     <value>Standard rate on all of it, set by your benefits in kind: at {1}, they are more than {2} of your total pay of {3}, the benefits counted.</value>

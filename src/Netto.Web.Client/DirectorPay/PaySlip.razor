@@ -38,6 +38,10 @@
                             {
                                 <span class="funnel-row__note">@L["TaxBaseOnlyNote"]</span>
                             }
+                            @if (row.Kind == RowKind.Added)
+                            {
+                                <span class="funnel-row__note funnel-row__note--added">@L["AddedNote"]</span>
+                            }
                         </li>
                     }
                 </ol>
@@ -60,6 +64,10 @@
                         {
                             <th scope="col">@L["ColumnCompanyPaid"]</th>
                         }
+                        @if (_view.Statement.HasBenefit)
+                        {
+                            <th scope="col">@L["ColumnBenefit"]</th>
+                        }
                         <th scope="col">@L["ColumnTaxablePay"]</th>
                         <th scope="col">@L["ColumnWithholding"]</th>
                         <th scope="col">@L["ColumnNetPaid"]</th>
@@ -80,6 +88,10 @@
                             @if (_view.Statement.CompanyPaysContributions)
                             {
                                 <td data-label="@L["ColumnCompanyPaid"]">@Formats.Euros(month.ContributionsPaidByCompany)</td>
+                            }
+                            @if (_view.Statement.HasBenefit)
+                            {
+                                <td data-label="@L["ColumnBenefit"]">@Formats.Euros(month.BenefitInKind)</td>
                             }
                             <td data-label="@L["ColumnTaxablePay"]">@Formats.Euros(month.TaxablePay)</td>
                             <td data-label="@L["ColumnWithholding"]">@Formats.Deduction(month.Withholding)</td>
@@ -179,6 +191,7 @@
         RowKind.Gross => "gross",
         RowKind.PaidOut => "paid-out",
         RowKind.Back => "back",
+        RowKind.Added => "added",
         RowKind.TaxBaseOnly => "tax-base-only",
         RowKind.TaxableIncome => "taxable-income",
         RowKind.NetInPocket => "net",
@@ -187,7 +200,7 @@
 
     private static string Amount(FunnelRow row) => row.Kind switch
     {
-        RowKind.Back => Formats.Addition(row.Amount),
+        RowKind.Back or RowKind.Added => Formats.Addition(row.Amount),
         _ when row.IsDeduction => Formats.Deduction(row.Amount),
         _ => Formats.Euros(row.Amount),
     };

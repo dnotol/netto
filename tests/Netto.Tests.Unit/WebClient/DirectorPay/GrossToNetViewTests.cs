@@ -527,6 +527,59 @@ public class GrossToNetViewTests
         });
     }
 
+    // A car's benefit of 2,400 joins the tax base after the gross, never the cash: the rest of the tax
+    // base track is that of a cash pay of 52,400 (GrossToNetBenefitInKindTests).
+    [Fact]
+    public void From_gross50000WithABenefit_taxBaseTrackAddsTheBenefitToTheGross()
+    {
+        var asCash = View(52_400m).Tracks[1].Rows;
+
+        var taxBase = View(50_000m, Withheld, benefit: 2_400m).Tracks[1].Rows;
+
+        taxBase.Select(row => (row.Key, row.Kind, row.Amount)).ShouldBe(new[]
+        {
+            ("gross_pay", RowKind.Gross, 50_000m),
+            ("benefit_in_kind", RowKind.Added, 2_400m),
+            ("social_contributions", RowKind.PaidOut, asCash[1].Amount),
+            ("flat_rate_costs", RowKind.TaxBaseOnly, asCash[2].Amount),
+            ("taxable_income", RowKind.TaxableIncome, asCash[3].Amount),
+        });
+    }
+
+    // The benefit's bar rises from the gross to the gross with it.
+    [Fact]
+    public void From_gross50000WithABenefit_benefitBarRisesFromTheGross()
+    {
+        var rows = View(50_000m, Withheld, benefit: 2_400m).Tracks[1].Rows;
+
+        (rows[1].BarStart, rows[1].BarEnd).ShouldBe((rows[0].BarEnd, rows[0].BarEnd + (rows[0].BarEnd - rows[0].BarStart) * 2_400m / 50_000m));
+    }
+
+    // The cash track starts from the gross and ends on what is paid, the benefit's tax taken.
+    [Fact]
+    public void From_gross50000WithABenefit_cashTrackHasNoBenefit()
+    {
+        var cash = View(50_000m, Withheld, benefit: 2_400m).Tracks[0].Rows;
+
+        (cash[0].Amount, cash.Any(row => row.Key == "benefit_in_kind"), cash[^1].Kind).ShouldBe((50_000m, false, RowKind.NetInPocket));
+    }
+
+    [Fact]
+    public void From_gross50000WithABenefit_statementShowsItsTwelfth()
+    {
+        var statement = View(50_000m, TaxPrepayments.AsWithheld, benefit: 2_400m).Statement;
+
+        (statement.HasBenefit, statement.Months[0].BenefitInKind, statement.Months[0].TaxablePay).ShouldBe((true, 200m, 4_366.67m));
+    }
+
+    [Fact]
+    public void From_gross50000_hasNoBenefitRowNorColumn()
+    {
+        var view = View(50_000m);
+
+        (view.Statement.HasBenefit, view.Tracks[1].Rows.Any(row => row.Key == "benefit_in_kind")).ShouldBe((false, false));
+    }
+
     private static string Keys(SourceGroup group) => string.Join(' ', group.Amounts.Select(amount => amount.Key));
 
     // The company withholds more than any tax these tests reach, so the pay slip shows no
@@ -538,9 +591,9 @@ public class GrossToNetViewTests
     private static GrossToNetView CompanyPaysView(decimal grossPay) => View(grossPay, Withheld, ContributionsPaidBy.Company);
 
     private static GrossToNetView View(
-        decimal grossPay, TaxPrepayments prepayments, ContributionsPaidBy paidBy = ContributionsPaidBy.Director, decimal otherIncome = 0m)
+        decimal grossPay, TaxPrepayments prepayments, ContributionsPaidBy paidBy = ContributionsPaidBy.Director, decimal otherIncome = 0m, decimal benefit = 0m)
     {
-        var (value, error) = GrossToNet.Compute(2026, grossPay, MunicipalRates.Entered(0.07m), prepayments, paidBy, otherIncome);
+        var (value, error) = GrossToNet.Compute(2026, grossPay, MunicipalRates.Entered(0.07m), prepayments, paidBy, otherIncome, benefit);
 
         error.ShouldBeNull();
         return GrossToNetView.From(value.ShouldNotBeNull());

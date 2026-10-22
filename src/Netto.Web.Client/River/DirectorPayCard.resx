@@ -24,6 +24,9 @@
   <data name="PayFromSplit" xml:space="preserve">
     <value>Gross pay from the split</value>
   </data>
+  <data name="Benefit" xml:space="preserve">
+    <value>Taxed with your company car's benefit in kind, {0}: your taxable pay is {1}, though the benefit is never paid in cash.</value>
+  </data>
   <data name="PaidByLabel" xml:space="preserve">
     <value>Who pays your social contributions</value>
   </data>

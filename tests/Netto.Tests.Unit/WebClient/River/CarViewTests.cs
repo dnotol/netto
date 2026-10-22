@@ -142,6 +142,26 @@ public class CarViewTests
             .ShouldBe(new Drain("left_after_allowances", DrainKind.PassedOn, 99_760m, "car"));
     }
 
+    // Director pay says the benefit it is taxed with; the split, that the benefit counts in the pay
+    // the reduced rate tests.
+    [Fact]
+    public void DirectorPayAndSplit_car_sayTheBenefitInThePay()
+    {
+        var run = ElectricCar.Run();
+
+        (DirectorPayView.From(ElectricCar, run.Pay.ShouldNotBeNull()).BenefitInKind, SplitSearchView.From(ElectricCar, run, ElectricCar.SearchSplit())?.Benefits)
+            .ShouldBe((1_714.29m, (decimal?)1_714.29m));
+    }
+
+    [Fact]
+    public void DirectorPayAndSplit_noCar_sayNoBenefit()
+    {
+        var run = RiverInputs.Example.Run();
+
+        (DirectorPayView.From(RiverInputs.Example, run.Pay.ShouldNotBeNull()).BenefitInKind, SplitSearchView.From(RiverInputs.Example, run, RiverInputs.Example.SearchSplit())?.Benefits)
+            .ShouldBe((0m, (decimal?)0m));
+    }
+
     [Theory]
     [InlineData(CarCalculator.CatalogueValueNegative)]
     [InlineData(CarCalculator.YearlyCostsNegative)]

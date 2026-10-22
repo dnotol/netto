@@ -49,7 +49,7 @@
             <p class="corporate-tax__condition">
                 @(_view.NoTaxableProfit
                     ? L["NoTaxableProfit"]
-                    : L[CorporateTaxCardText.Condition(_view.Condition), Formats.Euros(_view.MinimumDirectorPay), Formats.Euros(_view.FlatRateBenefits),
+                    : L[CorporateTaxCardText.Condition(_view.Condition, _view.FlatRateBenefits > 0m), Formats.Euros(_view.MinimumDirectorPay), Formats.Euros(_view.FlatRateBenefits),
                         Formats.WholeShare(_view.ExcessBenefitsShare), Formats.Euros(_view.DirectorPay)])
             </p>
         }

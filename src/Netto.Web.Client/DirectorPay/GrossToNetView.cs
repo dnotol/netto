@@ -14,7 +14,8 @@ namespace Netto.Web.Client.DirectorPay;
 // both tracks start from what the pay costs the company, the gross plus them, which is also the pay
 // the director declares, and the contributions stay paid out. With a rent taxed with the pay
 // (TaxedWithOtherIncome) the tracks stay the pay's own, while the next 1,000 and the balance are the
-// year's, the rent's tax in them.
+// year's, the rent's tax in them. A benefit in kind, a company car's, joins the tax base track after
+// the gross, never the cash track: it is taxed as pay but never paid.
 internal sealed record GrossToNetView(
     bool CompanyPaysContributions,
     bool TaxedWithOtherIncome,
@@ -44,8 +45,11 @@ internal sealed record GrossToNetView(
         cash.AddRange(result.Steps.Where(step => step.Track == Track.PaidOut).Select(Deduction));
         cash.Add(new Line("net_in_pocket", RowKind.NetInPocket, result.NetInPocket));
 
-        // What lowers the tax base, in the engine's order, down to the taxable income it closes on.
+        // What lowers the tax base, in the engine's order, down to the taxable income it closes on, a
+        // benefit in kind added to the gross first.
         var taxBase = new List<Line> { gross };
+        if (result.BenefitInKind > 0m)
+            taxBase.Add(new Line("benefit_in_kind", RowKind.Added, result.BenefitInKind));
         taxBase.AddRange(result.Steps.TakeWhile(step => step.RuleKey != "taxable_income").Select(Deduction));
         taxBase.Add(new Line("taxable_income", RowKind.TaxableIncome, result.TaxableIncome));
 
@@ -137,7 +141,7 @@ internal sealed record GrossToNetView(
                 bars.Add((line, balance - line.Amount, balance));
                 balance -= line.Amount;
             }
-            else if (line.Kind == RowKind.Back)
+            else if (line.Kind is RowKind.Back or RowKind.Added)
             {
                 bars.Add((line, balance, balance + line.Amount));
                 balance += line.Amount;
@@ -179,6 +183,9 @@ internal enum RowKind
     // Comes back to the pocket after the tax: the tax credit for low earned income.
     Back,
 
+    // Joins the tax base without ever reaching the pocket: a benefit in kind.
+    Added,
+
     // Only lowers the tax base and is never paid out: the flat-rate costs.
     TaxBaseOnly,
 
@@ -197,13 +204,15 @@ internal sealed record NextThousandPart(string Key, decimal Amount, decimal Shar
 
 // The monthly statement as the slip draws it: the engine's twelve months, whether the column of
 // contributions the company pays is shown, and whether some month's rules are not modelled, from
-// which date.
+// which date. The column of a benefit in kind shows once the pay holds one (HasBenefit).
 internal sealed record StatementView(
     IReadOnlyList<PayStatementMonth> Months,
     bool CompanyPaysContributions,
     bool SomeUnmodelled,
     DateOnly UnmodelledRulesFrom)
 {
+    public bool HasBenefit => Months.Any(month => month.BenefitInKind > 0m);
+
     public static StatementView From(PayStatement statement, bool companyPays) =>
         new(statement.Months, companyPays, statement.Months.Any(month => month.UnmodelledRules), statement.UnmodelledRulesFrom.Value);
 }

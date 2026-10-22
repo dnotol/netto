@@ -27,8 +27,14 @@
   <data name="TaxBaseOnlyNote" xml:space="preserve">
     <value>Lowers the tax base, not paid out</value>
   </data>
+  <data name="AddedNote" xml:space="preserve">
+    <value>Taxed as pay, never paid in cash</value>
+  </data>
   <data name="Row_gross_pay" xml:space="preserve">
     <value>Gross pay</value>
+  </data>
+  <data name="Row_benefit_in_kind" xml:space="preserve">
+    <value>Benefit in kind of the company car</value>
   </data>
   <data name="Row_social_contributions" xml:space="preserve">
     <value>Social contributions</value>
@@ -86,6 +92,9 @@
   </data>
   <data name="ColumnCompanyPaid" xml:space="preserve">
     <value>Paid by the company</value>
+  </data>
+  <data name="ColumnBenefit" xml:space="preserve">
+    <value>Benefit in kind</value>
   </data>
   <data name="ColumnTaxablePay" xml:space="preserve">
     <value>Taxable pay</value>

@@ -32,7 +32,12 @@ internal static class RefusedMessageText
 
 internal static class CorporateTaxCardText
 {
-    public static string Condition(ReducedRateCondition condition) => $"Condition_{condition}";
+    // With benefits in kind, a condition the pay decides says they are counted in it.
+    public static string Condition(ReducedRateCondition condition, bool withBenefits) =>
+        withBenefits && condition is ReducedRateCondition.FirstFourTaxPeriods or ReducedRateCondition.MinimumPayMet
+            or ReducedRateCondition.TaxableIncomeNotAbovePay or ReducedRateCondition.MinimumPayNotMet
+            ? $"Condition_{condition}_WithBenefits"
+            : $"Condition_{condition}";
 
     public static string Surcharge(SurchargeState state) => $"Surcharge_{state}";
 

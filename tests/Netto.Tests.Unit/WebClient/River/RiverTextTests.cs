@@ -145,7 +145,31 @@ public class RiverTextTests
     [Fact]
     public void CorporateTaxCardResx_everyReducedRateCondition_hasAText()
     {
-        Missing(CorporateTaxCardResources, Enum.GetValues<ReducedRateCondition>().Select(CorporateTaxCardText.Condition)).ShouldBeEmpty();
+        var keys = Enum.GetValues<ReducedRateCondition>().SelectMany(condition => new[] { false, true }.Select(benefits => CorporateTaxCardText.Condition(condition, benefits)));
+
+        Missing(CorporateTaxCardResources, keys).ShouldBeEmpty();
+    }
+
+    // With benefits in kind, the conditions the pay decides say the benefits are counted in it; the
+    // others read the same.
+    [Theory]
+    [InlineData(ReducedRateCondition.MinimumPayMet, "Condition_MinimumPayMet_WithBenefits")]
+    [InlineData(ReducedRateCondition.TaxableIncomeNotAbovePay, "Condition_TaxableIncomeNotAbovePay_WithBenefits")]
+    [InlineData(ReducedRateCondition.MinimumPayNotMet, "Condition_MinimumPayNotMet_WithBenefits")]
+    [InlineData(ReducedRateCondition.FirstFourTaxPeriods, "Condition_FirstFourTaxPeriods_WithBenefits")]
+    [InlineData(ReducedRateCondition.ExcessBenefits, "Condition_ExcessBenefits")]
+    [InlineData(ReducedRateCondition.NotSmallCompany, "Condition_NotSmallCompany")]
+    public void CorporateTaxCardText_conditionWithBenefits_saysTheyAreCounted(ReducedRateCondition condition, string key)
+    {
+        CorporateTaxCardText.Condition(condition, true).ShouldBe(key);
+    }
+
+    // The split and Director pay say how a car's benefit counts in the pay.
+    [Fact]
+    public void Resx_benefitInThePay_hasItsTexts()
+    {
+        (Missing(SplitCardResources, ["Rate_Benefits"]), Missing(DirectorPayCardResources, ["Benefit"]))
+            .ShouldSatisfyAllConditions(missing => missing.Item1.ShouldBeEmpty(), missing => missing.Item2.ShouldBeEmpty());
     }
 
     [Fact]
