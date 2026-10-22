@@ -22,19 +22,21 @@ internal sealed record CompositionView(int Count, IReadOnlyList<ModuleChoice> Mo
     }
 
     // What the module's card says it brings: the vouchers and the allowances whole, the rent once its
-    // tax is paid.
+    // tax is paid, and the car its costs, in the muddy pocket.
     private static decimal ToPocket(YearResult year, PlanComposition composition, OptionalModule module) => module switch
     {
         OptionalModule.Vouchers => VoucherView.From(year, composition).Total,
         OptionalModule.Allowances => AllowanceView.From(year, composition).Total,
-        _ => RentView.From(year).AfterTax,
+        OptionalModule.Rent => RentView.From(year).AfterTax,
+        _ => year.MuddyPocket,
     };
 
     private static bool HasValues(RiverInputs inputs, OptionalModule module) => module switch
     {
         OptionalModule.Vouchers => inputs.Vouchers.Values.Any,
         OptionalModule.Allowances => inputs.Allowances.Values.Any,
-        _ => inputs.Rent.Values != HomeOfficeRent.None,
+        OptionalModule.Rent => inputs.Rent.Values != HomeOfficeRent.None,
+        _ => inputs.Car.Values != RiverInputs.Example.Car.Values,
     };
 }
 

@@ -21,6 +21,9 @@
   <data name="TakenOut_Rent" xml:space="preserve">
     <value>Home office rent taken out of your plan. Your values are kept.</value>
   </data>
+  <data name="TakenOut_Car" xml:space="preserve">
+    <value>Company car taken out of your plan. Your values are kept.</value>
+  </data>
   <data name="Undo" xml:space="preserve">
     <value>Undo</value>
   </data>

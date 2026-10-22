@@ -5,8 +5,9 @@ namespace Netto.Tests.WebClient.River;
 
 // The Composition menu on the river's example (RiverInputsTests), which holds no lever in its plan.
 // Each lever's values are those of its own tests: 220 days of meal vouchers bring 1,960.20 to the
-// pocket, the most the circular allows for the office, internet and a computer 2,418.44, and the rent
-// at the 2026 cap 981.32 once its tax is paid.
+// pocket, the most the circular allows for the office, internet and a computer 2,418.44, the rent
+// at the 2026 cap 981.32 once its tax is paid, and the electric car puts its 8,000 of costs in the
+// muddy pocket, which is what the menu says it brings.
 public class CompositionViewTests
 {
     [Fact]
@@ -21,6 +22,7 @@ public class CompositionViewTests
                 new ModuleChoice(OptionalModule.Vouchers, false, null, false),
                 new ModuleChoice(OptionalModule.Allowances, false, null, false),
                 new ModuleChoice(OptionalModule.Rent, false, null, false),
+                new ModuleChoice(OptionalModule.Car, false, null, false),
             }));
     }
 
@@ -28,6 +30,7 @@ public class CompositionViewTests
     [InlineData(OptionalModule.Vouchers, 1_960.20)]
     [InlineData(OptionalModule.Allowances, 2_418.44)]
     [InlineData(OptionalModule.Rent, 981.32)]
+    [InlineData(OptionalModule.Car, 8_000)]
     public void From_moduleInThePlan_saysWhatItBringsToThePocket(OptionalModule module, decimal toPocket)
     {
         var view = Menu(WithValues(module));
@@ -40,6 +43,7 @@ public class CompositionViewTests
     [InlineData(OptionalModule.Vouchers)]
     [InlineData(OptionalModule.Allowances)]
     [InlineData(OptionalModule.Rent)]
+    [InlineData(OptionalModule.Car)]
     public void From_moduleInThePlanWithNothing_bringsNothingYet(OptionalModule module)
     {
         Menu(RiverInputs.Example.AddToPlan(module)).Modules.Single(choice => choice.InPlan).ShouldBe(new ModuleChoice(module, true, null, false));
@@ -56,6 +60,7 @@ public class CompositionViewTests
     [InlineData(OptionalModule.Vouchers)]
     [InlineData(OptionalModule.Allowances)]
     [InlineData(OptionalModule.Rent)]
+    [InlineData(OptionalModule.Car)]
     public void From_moduleTakenOutWithValues_saysTheyAreKept(OptionalModule module)
     {
         var view = Menu(WithValues(module).TakeOutOfPlan(module));
@@ -75,13 +80,13 @@ public class CompositionViewTests
     [Fact]
     public void From_everyModuleInThePlan_countsThem()
     {
-        Menu(RiverInputs.Example with { Composition = new PlanComposition(true, true, true) }).Count.ShouldBe(3);
+        Menu(RiverInputs.Example with { Composition = new PlanComposition(true, true, true, true) }).Count.ShouldBe(4);
     }
 
     [Fact]
     public void RemovalNotice_moduleTakenOut_speaksOfIt()
     {
-        var before = new PlanComposition(true, false, true);
+        var before = new PlanComposition(true, false, true, false);
 
         RemovalNotice.About(null, before, before.With(OptionalModule.Rent, false)).ShouldBe(OptionalModule.Rent);
     }
@@ -90,7 +95,7 @@ public class CompositionViewTests
     [Fact]
     public void RemovalNotice_anotherModuleTakenOut_speaksOfTheLatest()
     {
-        var before = new PlanComposition(true, false, true);
+        var before = new PlanComposition(true, false, true, false);
 
         RemovalNotice.About(OptionalModule.Allowances, before, before.With(OptionalModule.Vouchers, false)).ShouldBe(OptionalModule.Vouchers);
     }
@@ -117,6 +122,7 @@ public class CompositionViewTests
     {
         OptionalModule.Vouchers => RiverInputs.Example.AddToPlan(module).WithMealVoucherDays(220),
         OptionalModule.Allowances => RiverInputs.Example.AddToPlan(module).WithOfficeAllowance(1_938.44m).WithInternetAllowance(240m).WithComputerAllowance(240m),
-        _ => RiverInputs.Example.AddToPlan(module).WithCadastralIncome(1_200m).WithShareLet(0.12m).WithRent(1_380m),
+        OptionalModule.Rent => RiverInputs.Example.AddToPlan(module).WithCadastralIncome(1_200m).WithShareLet(0.12m).WithRent(1_380m),
+        _ => RiverInputs.Example.AddToPlan(module).WithCatalogueValue(50_000m).WithFirstRegistration(new DateOnly(2026, 1, 10)).WithCarCosts(8_000m),
     };
 }

@@ -8,14 +8,15 @@ public enum OptionalModule
     Vouchers,
     Allowances,
     Rent,
+    Car,
 }
 
 // Which optional modules are in the plan, one of the plan's inputs. A module out of the plan neither
 // shows nor counts, so every figure traces back to a card on screen; its values stay in the river's
 // inputs meanwhile, and come back with it.
-public sealed record PlanComposition(bool Vouchers, bool Allowances, bool Rent)
+public sealed record PlanComposition(bool Vouchers, bool Allowances, bool Rent, bool Car)
 {
-    public static PlanComposition None { get; } = new(false, false, false);
+    public static PlanComposition None { get; } = new(false, false, false, false);
 
     // Every optional module, in the river's order, in the plan or not.
     public static IReadOnlyList<OptionalModule> Modules { get; } = Enum.GetValues<OptionalModule>();
@@ -27,6 +28,7 @@ public sealed record PlanComposition(bool Vouchers, bool Allowances, bool Rent)
         OptionalModule.Vouchers => Vouchers,
         OptionalModule.Allowances => Allowances,
         OptionalModule.Rent => Rent,
+        OptionalModule.Car => Car,
         _ => throw new ArgumentOutOfRangeException(nameof(module), module, null),
     };
 
@@ -35,6 +37,7 @@ public sealed record PlanComposition(bool Vouchers, bool Allowances, bool Rent)
         OptionalModule.Vouchers => this with { Vouchers = inPlan },
         OptionalModule.Allowances => this with { Allowances = inPlan },
         OptionalModule.Rent => this with { Rent = inPlan },
+        OptionalModule.Car => this with { Car = inPlan },
         _ => throw new ArgumentOutOfRangeException(nameof(module), module, null),
     };
 

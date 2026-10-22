@@ -4,10 +4,10 @@ using Shouldly;
 namespace Netto.Tests.WebClient.River;
 
 // Which optional modules a plan holds, in the river's order: the vouchers, the expense allowances,
-// then the home office rent.
+// the home office rent, then the company car.
 public class PlanCompositionTests
 {
-    private static readonly PlanComposition Everything = new(true, true, true);
+    private static readonly PlanComposition Everything = new(true, true, true, true);
 
     [Fact]
     public void None_holdsNoModule()
@@ -18,13 +18,14 @@ public class PlanCompositionTests
     [Fact]
     public void Modules_areInTheRiversOrder()
     {
-        PlanComposition.Modules.ShouldBe([OptionalModule.Vouchers, OptionalModule.Allowances, OptionalModule.Rent]);
+        PlanComposition.Modules.ShouldBe([OptionalModule.Vouchers, OptionalModule.Allowances, OptionalModule.Rent, OptionalModule.Car]);
     }
 
     [Theory]
     [InlineData(OptionalModule.Vouchers)]
     [InlineData(OptionalModule.Allowances)]
     [InlineData(OptionalModule.Rent)]
+    [InlineData(OptionalModule.Car)]
     public void With_moduleAdded_holdsItAndNoOther(OptionalModule module)
     {
         var composition = PlanComposition.None.With(module, true);
@@ -36,11 +37,12 @@ public class PlanCompositionTests
     [InlineData(OptionalModule.Vouchers)]
     [InlineData(OptionalModule.Allowances)]
     [InlineData(OptionalModule.Rent)]
+    [InlineData(OptionalModule.Car)]
     public void With_moduleTakenOut_keepsTheOthers(OptionalModule module)
     {
         var composition = Everything.With(module, false);
 
-        (composition.Holds(module), composition.Count).ShouldBe((false, 2));
+        (composition.Holds(module), composition.Count).ShouldBe((false, 3));
     }
 
     [Fact]
@@ -51,15 +53,18 @@ public class PlanCompositionTests
 
     // What a module leaves goes on to the next module in the plan, the split after the last one.
     [Theory]
-    [InlineData(true, true, true, OptionalModule.Vouchers, OptionalModule.Allowances)]
-    [InlineData(true, false, true, OptionalModule.Vouchers, OptionalModule.Rent)]
-    [InlineData(true, false, false, OptionalModule.Vouchers, null)]
-    [InlineData(true, true, true, OptionalModule.Allowances, OptionalModule.Rent)]
-    [InlineData(false, true, false, OptionalModule.Allowances, null)]
-    [InlineData(true, true, true, OptionalModule.Rent, null)]
-    public void NextAfter_isTheNextModuleInThePlan(bool vouchers, bool allowances, bool rent, OptionalModule module, OptionalModule? next)
+    [InlineData(true, true, true, false, OptionalModule.Vouchers, OptionalModule.Allowances)]
+    [InlineData(true, false, true, false, OptionalModule.Vouchers, OptionalModule.Rent)]
+    [InlineData(true, false, false, false, OptionalModule.Vouchers, null)]
+    [InlineData(true, false, false, true, OptionalModule.Vouchers, OptionalModule.Car)]
+    [InlineData(true, true, true, false, OptionalModule.Allowances, OptionalModule.Rent)]
+    [InlineData(false, true, false, false, OptionalModule.Allowances, null)]
+    [InlineData(true, true, true, false, OptionalModule.Rent, null)]
+    [InlineData(true, true, true, true, OptionalModule.Rent, OptionalModule.Car)]
+    [InlineData(true, true, true, true, OptionalModule.Car, null)]
+    public void NextAfter_isTheNextModuleInThePlan(bool vouchers, bool allowances, bool rent, bool car, OptionalModule module, OptionalModule? next)
     {
-        new PlanComposition(vouchers, allowances, rent).NextAfter(module).ShouldBe(next);
+        new PlanComposition(vouchers, allowances, rent, car).NextAfter(module).ShouldBe(next);
     }
 
     [Fact]

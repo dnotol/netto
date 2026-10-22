@@ -13,7 +13,7 @@ namespace Netto.Tests.WebClient.River;
 // nothing, its figures stay those.
 public class BucketsViewTests
 {
-    private static readonly RiverInputs EveryLever = RiverInputs.Example with { Composition = new PlanComposition(true, true, true) };
+    private static readonly RiverInputs EveryLever = RiverInputs.Example with { Composition = new PlanComposition(true, true, true, false) };
 
     public static TheoryData<decimal, decimal, decimal> Years => new()
     {

@@ -55,7 +55,7 @@ public class RiverTextTests
     ];
 
     // The vouchers in the plan with each next lever, and the split after them.
-    private static readonly PlanComposition[] Compositions = [new(true, true, true), new(true, false, true), new(true, false, false)];
+    private static readonly PlanComposition[] Compositions = [new(true, true, true, false), new(true, false, true, false), new(true, false, false, false), new(true, true, true, true)];
 
     [Fact]
     public void OriginChipResx_everyOrigin_hasAWordAndAHint()

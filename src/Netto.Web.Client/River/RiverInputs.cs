@@ -1,4 +1,5 @@
 using Netto.Core.Allowances;
+using Netto.Core.Car;
 using Netto.Core.CorporateTax;
 using Netto.Core.DirectorPay;
 using Netto.Core.Dividends;
@@ -13,10 +14,10 @@ namespace Netto.Web.Client.River;
 
 // Everything the user describes in the river, each input with its origin, and the one run of the
 // year every card reads, so the river always adds up. Company is null once its figures are cleared:
-// the river then starts at the pay, and the vouchers, the expense allowances and the rent wait for it.
-// Those three are optional modules: the year counts one only while it is in the plan (Composition),
-// and keeps its values while it is out, so adding it back restores them. Public because the cards,
-// components, take it as a parameter.
+// the river then starts at the pay, and the vouchers, the expense allowances, the rent and the car
+// wait for it. Those four are optional modules: the year counts one only while it is in the plan
+// (Composition), and keeps its values while it is out, so adding it back restores them. Public
+// because the cards, components, take it as a parameter.
 public sealed record RiverInputs(
     int IncomeYear,
     CompanyFigures? Company,
@@ -24,6 +25,7 @@ public sealed record RiverInputs(
     VoucherInputs Vouchers,
     AllowanceInputs Allowances,
     RentInputs Rent,
+    CarInputs Car,
     Input<bool> SmallCompany,
     Input<FinancialYear> FinancialYear,
     AdvancePaymentInputs AdvancePayments,
@@ -46,8 +48,10 @@ public sealed record RiverInputs(
     // what cancels it; the pay is withheld on as the key formula says, what a real payslip shows
     // (decided 2026-10-20), so the withheld amount is derived and the example's year balance is
     // what is left to pay on the assessment. It holds none of the optional modules in its plan, and
-    // grants no vouchers and pays no expense allowances and no rent, so its figures are a year without
-    // them and adding a module starts it from nothing (decided 2026-10-21).
+    // grants no vouchers, pays no expense allowances and no rent and holds no car, so its figures are a
+    // year without them and adding a module starts it from nothing (decided 2026-10-21). A car's first
+    // registration is a date, not money: the example's is the year's first day, a new car, until the
+    // user gives theirs, and the company pays no private charging unless the user says it does.
     public static RiverInputs Example { get; } = new(
         ExampleYear,
         new CompanyFigures(new Input<decimal>(120_000m, InputOrigin.Example), new Input<decimal>(20_000m, InputOrigin.Example)),
@@ -55,6 +59,9 @@ public sealed record RiverInputs(
         new VoucherInputs(new Input<int>(0, InputOrigin.Example), ExampleNothing, ExampleNothing),
         new AllowanceInputs(ExampleNothing, ExampleNothing, ExampleNothing, ExampleNothing),
         new RentInputs(ExampleNothing, ExampleNothing, ExampleNothing),
+        new CarInputs(
+            ExampleNothing, new Input<DateOnly>(new DateOnly(ExampleYear, 1, 1), InputOrigin.Example), ExampleNothing,
+            new Input<bool>(false, InputOrigin.Default), ExampleNothing),
         new Input<bool>(true, InputOrigin.Default),
         new Input<FinancialYear>(River.FinancialYear.FifthOrLater, InputOrigin.Default),
         new AdvancePaymentInputs(ExampleNothing, ExampleNothing, ExampleNothing, ExampleNothing),
@@ -70,8 +77,8 @@ public sealed record RiverInputs(
         new Input<ContributionsPaidBy>(Core.SocialContributions.ContributionsPaidBy.Director, InputOrigin.Default));
 
     // The most the split can give as pay: the profit before pay, what the vouchers, the expense
-    // allowances and the rent in the plan leave of what the company earns, never below zero. None while
-    // the company is skipped, when the pay has a slider of its own.
+    // allowances, the rent and the car in the plan leave of what the company earns, never below zero.
+    // None while the company is skipped, when the pay has a slider of its own.
     public decimal? PayCeiling => Company is null ? null : Math.Max(0m, YearSimulation.ProfitBeforePay(Scenario(DirectorPay.Value)) ?? 0m);
 
     public RiverInputs WithRevenue(decimal revenue) =>
@@ -100,6 +107,16 @@ public sealed record RiverInputs(
     public RiverInputs WithShareLet(decimal share) => this with { Rent = Rent with { ShareLet = Yours(share) } };
 
     public RiverInputs WithRent(decimal amount) => this with { Rent = Rent with { Rent = Yours(amount) } };
+
+    public RiverInputs WithCatalogueValue(decimal amount) => this with { Car = Car with { CatalogueValue = Yours(amount) } };
+
+    public RiverInputs WithFirstRegistration(DateOnly date) => this with { Car = Car with { FirstRegistration = Yours(date) } };
+
+    public RiverInputs WithCarCosts(decimal amount) => this with { Car = Car with { YearlyCosts = Yours(amount) } };
+
+    public RiverInputs WithPrivateEnergyPaid(bool paid) => this with { Car = Car with { CompanyPaysPrivateEnergy = Yours(paid) } };
+
+    public RiverInputs WithCarContribution(decimal amount) => this with { Car = Car with { PersonalContribution = Yours(amount) } };
 
     public RiverInputs WithSmallCompany(bool smallCompany) => this with { SmallCompany = Yours(smallCompany) };
 
@@ -203,6 +220,7 @@ public sealed record RiverInputs(
         Vouchers = InPlan(OptionalModule.Vouchers) ? Vouchers.Values : VoucherGrants.None,
         Allowances = InPlan(OptionalModule.Allowances) ? Allowances.Values : ExpenseAllowances.None,
         Rent = InPlan(OptionalModule.Rent) ? Rent.Values : HomeOfficeRent.None,
+        Car = InPlan(OptionalModule.Car) ? Car.Values : CompanyCar.None,
     };
 }
 
@@ -260,6 +278,19 @@ public sealed record AllowanceInputs(Input<decimal> Office, Input<decimal> Inter
 public sealed record RentInputs(Input<decimal> CadastralIncome, Input<decimal> ShareLet, Input<decimal> Rent)
 {
     public HomeOfficeRent Values => new(CadastralIncome.Value, ShareLet.Value, Rent.Value);
+}
+
+// The car the company puts at the director's disposal as the user enters it: its catalogue value, the
+// date of its first registration, its yearly costs to the company, whether the company pays the
+// charging for private use, and the director's own contribution.
+public sealed record CarInputs(
+    Input<decimal> CatalogueValue,
+    Input<DateOnly> FirstRegistration,
+    Input<decimal> YearlyCosts,
+    Input<bool> CompanyPaysPrivateEnergy,
+    Input<decimal> PersonalContribution)
+{
+    public CompanyCar Values => new(CatalogueValue.Value, FirstRegistration.Value, YearlyCosts.Value, CompanyPaysPrivateEnergy.Value, PersonalContribution.Value);
 }
 
 // A value of the river with where it comes from.

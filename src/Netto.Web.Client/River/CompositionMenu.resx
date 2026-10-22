@@ -45,6 +45,9 @@
   <data name="Title_Rent" xml:space="preserve">
     <value>Home office rent</value>
   </data>
+  <data name="Title_Car" xml:space="preserve">
+    <value>Company car</value>
+  </data>
   <data name="Description_Vouchers" xml:space="preserve">
     <value>Meal, eco and sport/culture vouchers, tax-free</value>
   </data>
@@ -54,6 +57,9 @@
   <data name="Description_Rent" xml:space="preserve">
     <value>Rent for the part of your home the company uses</value>
   </data>
+  <data name="Description_Car" xml:space="preserve">
+    <value>An electric car the company puts at your disposal</value>
+  </data>
   <data name="Brings_Vouchers" xml:space="preserve">
     <value>{0} to your pocket</value>
   </data>
@@ -62,6 +68,9 @@
   </data>
   <data name="Brings_Rent" xml:space="preserve">
     <value>{0} to your pocket after its tax</value>
+  </data>
+  <data name="Brings_Car" xml:space="preserve">
+    <value>{0} in the muddy pocket</value>
   </data>
   <data name="InPlan" xml:space="preserve">
     <value>In your plan</value>

@@ -1,4 +1,5 @@
 using Netto.Core.Allowances;
+using Netto.Core.Car;
 using Netto.Core.CorporateTax;
 using Netto.Core.DirectorPay;
 using Netto.Core.Dividends;
@@ -477,6 +478,7 @@ public class RiverInputsTests
     [InlineData(OptionalModule.Vouchers)]
     [InlineData(OptionalModule.Allowances)]
     [InlineData(OptionalModule.Rent)]
+    [InlineData(OptionalModule.Car)]
     public void AddToPlan_putsTheModuleInThePlan(OptionalModule module)
     {
         var inputs = RiverInputs.Example.AddToPlan(module);
@@ -489,6 +491,7 @@ public class RiverInputsTests
     [InlineData(OptionalModule.Vouchers)]
     [InlineData(OptionalModule.Allowances)]
     [InlineData(OptionalModule.Rent)]
+    [InlineData(OptionalModule.Car)]
     public void Run_moduleTakenOutOfThePlan_runsTheYearWithoutIt(OptionalModule module)
     {
         var inputs = WithValues(module).TakeOutOfPlan(module);
@@ -501,6 +504,7 @@ public class RiverInputsTests
     [InlineData(OptionalModule.Vouchers)]
     [InlineData(OptionalModule.Allowances)]
     [InlineData(OptionalModule.Rent)]
+    [InlineData(OptionalModule.Car)]
     public void TakeOutOfPlan_keepsTheModulesValues(OptionalModule module)
     {
         var inputs = WithValues(module);
@@ -525,6 +529,7 @@ public class RiverInputsTests
     [InlineData(OptionalModule.Vouchers)]
     [InlineData(OptionalModule.Allowances)]
     [InlineData(OptionalModule.Rent)]
+    [InlineData(OptionalModule.Car)]
     public void SearchSplit_moduleOutOfThePlan_drawsEveryPayUpToTheProfitWithoutIt(OptionalModule module)
     {
         var search = WithValues(module).TakeOutOfPlan(module).SearchSplit().ShouldNotBeNull();
@@ -537,6 +542,7 @@ public class RiverInputsTests
     [InlineData(OptionalModule.Vouchers)]
     [InlineData(OptionalModule.Allowances)]
     [InlineData(OptionalModule.Rent)]
+    [InlineData(OptionalModule.Car)]
     public void SameBesidesPay_moduleAddedOrTakenOut_isNot(OptionalModule module)
     {
         var inputs = WithValues(module);
@@ -843,7 +849,8 @@ public class RiverInputsTests
     {
         OptionalModule.Vouchers => VouchersInPlan.WithMealVoucherDays(220),
         OptionalModule.Allowances => FlatRateAllowances(RiverInputs.Example),
-        _ => RentAtTheCap(RiverInputs.Example),
+        OptionalModule.Rent => RentAtTheCap(RiverInputs.Example),
+        _ => ElectricCar(RiverInputs.Example),
     };
 
     private static RiverInputs FlatRateAllowances(RiverInputs inputs) =>
@@ -852,6 +859,83 @@ public class RiverInputsTests
     // 12% of a cadastral income of 1,200 let for the 2026 cap, 1,380.00 (RentCalculatorTests).
     private static RiverInputs RentAtTheCap(RiverInputs inputs) =>
         inputs.AddToPlan(OptionalModule.Rent).WithCadastralIncome(1_200m).WithShareLet(0.12m).WithRent(1_380m);
+
+    // YearSimulationCarTests' electric car: 50,000 of catalogue value, first registered in January
+    // 2026, 8,000 of yearly costs.
+    private static RiverInputs ElectricCar(RiverInputs inputs) =>
+        inputs.AddToPlan(OptionalModule.Car).WithCatalogueValue(50_000m).WithFirstRegistration(new DateOnly(2026, 1, 10)).WithCarCosts(8_000m);
+
+    // Taken out and added back, the car counts with the values it left with.
+    [Fact]
+    public void Run_carAddedBack_countsItsValuesAgain()
+    {
+        var inputs = ElectricCar(RiverInputs.Example);
+
+        var back = inputs.TakeOutOfPlan(OptionalModule.Car).AddToPlan(OptionalModule.Car).Run().Year.ShouldNotBeNull();
+
+        (back.NetInPocket, back.MuddyPocket).ShouldBe((inputs.Run().Year.ShouldNotBeNull().NetInPocket, 8_000m));
+    }
+
+    // The example holds no car: its money is nothing, its first registration the first day of the
+    // year, a new car, as an example, and the company pays no private charging, a status assumed.
+    [Fact]
+    public void Example_hasNoCarAndAssumesItsDateAndStatus()
+    {
+        RiverInputs.Example.Car.ShouldBe(new CarInputs(
+            new Input<decimal>(0m, InputOrigin.Example), new Input<DateOnly>(new DateOnly(2026, 1, 1), InputOrigin.Example),
+            new Input<decimal>(0m, InputOrigin.Example), new Input<bool>(false, InputOrigin.Default), new Input<decimal>(0m, InputOrigin.Example)));
+    }
+
+    [Fact]
+    public void WithCar_makesEachTheUsers()
+    {
+        var inputs = RiverInputs.Example.WithCatalogueValue(48_500m).WithFirstRegistration(new DateOnly(2025, 6, 21)).WithCarCosts(9_250.50m)
+            .WithPrivateEnergyPaid(true).WithCarContribution(600m);
+
+        inputs.Car.ShouldBe(new CarInputs(
+            new Input<decimal>(48_500m, InputOrigin.Yours), new Input<DateOnly>(new DateOnly(2025, 6, 21), InputOrigin.Yours),
+            new Input<decimal>(9_250.50m, InputOrigin.Yours), new Input<bool>(true, InputOrigin.Yours), new Input<decimal>(600m, InputOrigin.Yours)));
+    }
+
+    [Fact]
+    public void Run_carReachesTheEngine()
+    {
+        var inputs = ElectricCar(RiverInputs.Example).WithPrivateEnergyPaid(true).WithCarContribution(600m);
+
+        inputs.MoveScenario().Car.ShouldBe(new CompanyCar(50_000m, new DateOnly(2026, 1, 10), 8_000m, true, 600m));
+    }
+
+    // The car's costs, less what the director pays for it, leave 92,600 for the split.
+    [Fact]
+    public void PayCeiling_car_isTheProfitItLeaves()
+    {
+        ElectricCar(RiverInputs.Example).WithCarContribution(600m).PayCeiling.ShouldBe(92_600m);
+    }
+
+    [Fact]
+    public void Run_negativeCarCosts_isRefusedWithTheEnginesKey()
+    {
+        var run = ElectricCar(RiverInputs.Example).WithCarCosts(-1m).Run();
+
+        (run.Year, run.Error).ShouldBe((null, CarCalculator.YearlyCostsNegative));
+    }
+
+    // Like the other levers, the car waits for the company's year: the pay alone carries no benefit.
+    [Fact]
+    public void SkipCompany_runsThePayWithoutTheCar()
+    {
+        var run = ElectricCar(RiverInputs.Example).SkipCompany().Run();
+
+        (run.Year, run.Pay?.BenefitInKind).ShouldBe((null, (decimal?)0m));
+    }
+
+    [Fact]
+    public void SameBesidesPay_carChanged_isNot()
+    {
+        var inputs = ElectricCar(RiverInputs.Example);
+
+        inputs.SameBesidesPay(inputs.WithCarCosts(9_000m)).ShouldBeFalse();
+    }
 
     // The move search keeps the home's facts while Rent is out of the plan, with no rent: the year it
     // starts from is Run's.
