@@ -228,6 +228,7 @@ public sealed record CarRules(
             {
                 Ceiling = new RuleAmount("transition_deduction_ceiling_rate", 0.50m, Article550Income2026),
                 WithoutCo2Data = new RuleAmount("transition_without_data_deduction_rate", 0m, Article550Income2026),
+                PlugInReading = Question819,
             },
             new CarDeductionPeriod(new DateOnly(2026, 1, 1)) { Fixed = new RuleAmount("emitting_from_2026_deduction_rate", 0m, Article66Income2026) },
         ],
@@ -254,9 +255,12 @@ public sealed record CarAgeBand(int FromMonth, RuleAmount Coefficient);
 // How a company deducts the costs of a car that emits CO2 ordered or leased from AcquiredFrom on, up
 // to the next period: a Fixed rate, or the deduction formula between its Floor (none: nothing) and
 // its Ceiling; WithoutCo2Data when the vehicle registration holds no CO2 for the car, which a car
-// emitting HighEmissionFrom g/km or more takes too.
+// emitting HighEmissionFrom g/km or more takes too. PlugInReading is the text that says how a plug-in
+// hybrid of the period is deducted, when one does.
 public sealed record CarDeductionPeriod(DateOnly AcquiredFrom)
 {
+    public Source? PlugInReading { get; init; }
+
     public RuleAmount? Fixed { get; init; }
 
     public RuleAmount? Floor { get; init; }

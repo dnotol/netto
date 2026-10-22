@@ -25,6 +25,12 @@ public class YearSimulationCarTests
 
     private static readonly CarFacts ElectricCar = new(50_000m, new DateOnly(2026, 1, 10), 8_000m, false, 0m);
 
+    // 45,000 at 120 g/km of petrol, leased in January 2026: a benefit of 4,050.00, 9,000 of costs.
+    private static readonly CarFacts PetrolCarLeasedIn2026 = new(45_000m, new DateOnly(2026, 1, 10), 9_000m, false, 0m)
+    {
+        Engine = CarEngine.Petrol, Co2 = 120, Acquired = new DateOnly(2026, 1, 5),
+    };
+
     public static TheoryData<decimal, decimal, decimal, decimal> Setups => new()
     {
         { 50_000m, 100_000m, 0m, 0m },
@@ -127,6 +133,49 @@ public class YearSimulationCarTests
             ("car_benefit_taxed", Layer.Personal, Track.TaxBaseOnly, 1_114.29m),
             ("car_add_back", Layer.Corporate, Track.TaxBaseOnly, 291.43m),
         });
+    }
+
+    // A petrol car leased in 2026 (CarCalculatorTests): its 9,000 come off the 100,000 the split
+    // shares, but the company cannot deduct the 4,950 beyond its benefit, and adds back 688.50 of that
+    // benefit: 5,638.50 join the taxable income, 91,000 less the 50,000 of pay.
+    [Fact]
+    public void Run_2026FuelCar_addsWhatItCannotDeductToTheTaxableIncome()
+    {
+        var result = Run(Scenario(car: PetrolCarLeasedIn2026));
+
+        (result.ProfitBeforePay, result.DisallowedExpenses, result.Company.TaxableIncome).ShouldBe((91_000m, 5_638.50m, 46_638.50m));
+    }
+
+    // Its steps say what it cannot deduct beside what it adds back; an electric car, deducted in
+    // full, keeps the steps it had.
+    [Fact]
+    public void Run_2026FuelCar_listsWhatItCannotDeduct()
+    {
+        var result = Run(Scenario(car: PetrolCarLeasedIn2026));
+
+        result.Steps.Where(step => step.Event == TaxableEvent.CompanyCar).Select(step => (step.RuleKey, step.Layer, step.Track, step.Amount)).ShouldBe(new[]
+        {
+            ("car_costs", Layer.Corporate, Track.Muddy, 9_000m),
+            ("car_benefit", Layer.Personal, Track.TaxBaseOnly, 4_050m),
+            ("car_contribution", Layer.Personal, Track.InPocket, 0m),
+            ("car_benefit_taxed", Layer.Personal, Track.TaxBaseOnly, 4_050m),
+            ("car_costs_not_deductible", Layer.Corporate, Track.TaxBaseOnly, 4_950m),
+            ("car_add_back", Layer.Corporate, Track.TaxBaseOnly, 688.50m),
+        });
+    }
+
+    // The costs it cannot deduct cite art. 66, whose §3, 3° keeps the part equal to the benefit and
+    // the contribution deductible; its costs cite the rate of art. 66 for a car leased from 2026.
+    [Fact]
+    public void Run_2026FuelCar_citesItsDeductionsTexts()
+    {
+        var rules = CarRules.IncomeYear2026;
+
+        var steps = Run(Scenario(car: PetrolCarLeasedIn2026)).Steps.Where(step => step.Event == TaxableEvent.CompanyCar).ToDictionary(step => step.RuleKey);
+
+        steps.ShouldSatisfyAllConditions(
+            () => (steps["car_costs"].Source, steps["car_costs"].AmountsUsed.Single()).ShouldBe((rules.Deduction, rules.DeductionPeriods[2].Fixed!)),
+            () => (steps["car_costs_not_deductible"].Source, steps["car_costs_not_deductible"].AmountsUsed.Count).ShouldBe((rules.Deduction, 0)));
     }
 
     // A contribution of nothing moves nothing: a plain zero, never one a drain would read as money

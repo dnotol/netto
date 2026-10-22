@@ -31,6 +31,17 @@ public sealed record CarResult(
 
     public IReadOnlyList<Source> Co2Sources { get; init; } = [];
 
+    // The rate the company deducts its costs at beyond CarvedOut, the part equal to the benefit taxed
+    // and the contribution, deducted in full up to the costs (art. 66 §3, 3°), with the amounts that
+    // rate used and the texts it rests on, for the costs' step.
+    public decimal DeductionRate { get; init; }
+
+    public decimal CarvedOut { get; init; }
+
+    public IReadOnlyList<RuleAmount> DeductionAmounts { get; init; } = [];
+
+    public IReadOnlyList<Source> DeductionSources { get; init; } = [];
+
     // The benefit was raised to the year's minimum.
     public bool AtTheMinimum => BenefitBeforeContribution > BenefitOnTheScale;
 

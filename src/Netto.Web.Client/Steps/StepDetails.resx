@@ -430,7 +430,13 @@
     <value>The car's costs</value>
   </data>
   <data name="Rule_car_costs" xml:space="preserve">
-    <value>What the car costs the company over the year, as it bears them: an electric car ordered or leased before 2027 stays deductible in full. They lower the company's profit, and land in the muddy pocket.</value>
+    <value>What the car costs the company over the year, as it bears them. They lower the company's profit, and land in the muddy pocket. An electric car ordered or leased before 2027 stays deductible in full; another car at the rate its order or lease date, its engine and its CO2 give, beyond the part equal to your benefit taxed and your contribution, which stays deductible up to the costs.</value>
+  </data>
+  <data name="Title_car_costs_not_deductible" xml:space="preserve">
+    <value>Costs the company cannot deduct</value>
+  </data>
+  <data name="Rule_car_costs_not_deductible" xml:space="preserve">
+    <value>The part of the car's costs beyond your benefit taxed and your contribution that its deduction rate leaves out. It is added back to the company's taxable income; the part equal to your benefit and contribution stays deductible.</value>
   </data>
   <data name="Title_car_benefit" xml:space="preserve">
     <value>Benefit in kind</value>
@@ -497,6 +503,45 @@
   </data>
   <data name="Amount_zero_emission_deduction_rate" xml:space="preserve">
     <value>Deductible share of an electric car's costs</value>
+  </data>
+  <data name="Amount_emitting_from_2026_deduction_rate" xml:space="preserve">
+    <value>Deductible share of a car that emits CO2, ordered or leased from 2026</value>
+  </data>
+  <data name="Amount_deduction_formula_base_rate" xml:space="preserve">
+    <value>Deduction formula's starting rate</value>
+  </data>
+  <data name="Amount_deduction_formula_per_gram_rate" xml:space="preserve">
+    <value>Less, for each gram of CO2, times the coefficient</value>
+  </data>
+  <data name="Amount_diesel_coefficient" xml:space="preserve">
+    <value>Coefficient of a car running on diesel alone</value>
+  </data>
+  <data name="Amount_other_fuel_coefficient" xml:space="preserve">
+    <value>Coefficient of a car on another fuel</value>
+  </data>
+  <data name="Amount_diesel_hybrid_coefficient" xml:space="preserve">
+    <value>Coefficient of a diesel hybrid</value>
+  </data>
+  <data name="Amount_small_natural_gas_coefficient" xml:space="preserve">
+    <value>Coefficient of natural gas under 12 fiscal horsepower</value>
+  </data>
+  <data name="Amount_deduction_floor_rate" xml:space="preserve">
+    <value>Lowest deductible share, ordered or leased before 1 July 2023</value>
+  </data>
+  <data name="Amount_deduction_ceiling_rate" xml:space="preserve">
+    <value>Highest deductible share</value>
+  </data>
+  <data name="Amount_high_emission_grams" xml:space="preserve">
+    <value>Emission from which the share is fixed</value>
+  </data>
+  <data name="Amount_high_emission_deduction_rate" xml:space="preserve">
+    <value>Deductible share from that emission, or without CO2 data</value>
+  </data>
+  <data name="Amount_transition_deduction_ceiling_rate" xml:space="preserve">
+    <value>Highest deductible share, ordered or leased from 1 July 2023 to 31 December 2025</value>
+  </data>
+  <data name="Amount_transition_without_data_deduction_rate" xml:space="preserve">
+    <value>Deductible share without CO2 data, ordered or leased from 1 July 2023 to 31 December 2025</value>
   </data>
   <data name="Amount_catalogue_share_rate" xml:space="preserve">
     <value>Share of the catalogue value (6/7)</value>

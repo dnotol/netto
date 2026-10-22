@@ -359,6 +359,193 @@ public class CarCalculatorTests
             .ShouldBe((null, CarCalculator.MatchingCarCo2Missing));
     }
 
+    // A company's deduction rate by the car's order or lease date, engine and CO2 (art. 66 and 550 as
+    // art. 198bis leaves them to companies): before 01.07.2023 the formula 120% − 0.5% × coefficient
+    // × g/km, rounded to a tenth, between 50% and 100%, 40% from 200 g/km or without data, with no
+    // minimum for a car acquired before 2018; from 01.07.2023 to 31.12.2025 the formula at most 50%,
+    // never below nothing, 0% without data, a plug-in hybrid's too (question 819); from 2026 nothing.
+    // The coefficient: 1 on diesel alone, 0.95 a diesel hybrid (question 96) and the others, 0.90
+    // natural gas under 12 fiscal horsepower. An electric car, in full.
+    [Theory]
+    [InlineData(CarEngine.Petrol, 123, 2022, 5, 1, 0.616)]
+    [InlineData(CarEngine.Diesel, 130, 2022, 5, 1, 0.55)]
+    [InlineData(CarEngine.Diesel, 130, 2017, 6, 1, 0.55)]
+    [InlineData(CarEngine.Diesel, 150, 2017, 6, 1, 0.50)]
+    [InlineData(CarEngine.Petrol, 30, 2022, 5, 1, 1.00)]
+    [InlineData(CarEngine.Petrol, 200, 2023, 6, 30, 0.40)]
+    [InlineData(CarEngine.Petrol, 199, 2023, 6, 30, 0.50)]
+    [InlineData(CarEngine.DieselHybrid, 110, 2022, 5, 1, 0.678)]
+    [InlineData(CarEngine.NaturalGas, 100, 2022, 5, 1, 0.725)]
+    [InlineData(CarEngine.PetrolPlugInHybrid, 40, 2022, 12, 31, 1.00)]
+    [InlineData(CarEngine.Petrol, 100, 2023, 7, 1, 0.50)]
+    [InlineData(CarEngine.Diesel, 160, 2024, 3, 1, 0.40)]
+    [InlineData(CarEngine.Diesel, 250, 2025, 12, 31, 0)]
+    [InlineData(CarEngine.PetrolPlugInHybrid, 40, 2025, 12, 31, 0.50)]
+    [InlineData(CarEngine.Petrol, 90, 2026, 1, 1, 0)]
+    [InlineData(CarEngine.PetrolPlugInHybrid, 30, 2026, 6, 1, 0)]
+    [InlineData(CarEngine.Electric, 0, 2025, 3, 1, 1.00)]
+    [InlineData(CarEngine.Electric, 0, 2026, 3, 1, 1.00)]
+    public void Compute_deductionRate_isTheOneItsDateEngineAndCo2Give(CarEngine engine, int co2, int year, int month, int day, decimal rate)
+    {
+        var car = Car(40_000m, new DateOnly(2026, 1, 10)) with { Engine = engine, Co2 = co2, Acquired = new DateOnly(year, month, day) };
+
+        Compute(car).DeductionRate.ShouldBe(rate);
+    }
+
+    // Natural gas under 12 fiscal horsepower takes 0.90: at 100 g/km, 75.0% instead of 72.5%.
+    [Fact]
+    public void Compute_smallNaturalGasCar_takesTheReducedCoefficient()
+    {
+        var car = Car(40_000m, new DateOnly(2026, 1, 10)) with { Engine = CarEngine.NaturalGas, Co2 = 100, SmallNaturalGas = true, Acquired = new DateOnly(2022, 5, 1) };
+
+        Compute(car).DeductionRate.ShouldBe(0.75m);
+    }
+
+    // Without CO2 data, 40% before 01.07.2023 and nothing after.
+    [Theory]
+    [InlineData(2022, 5, 1, 0.40)]
+    [InlineData(2024, 3, 1, 0)]
+    public void Compute_carWithoutCo2Data_isDeductedAtTheTextsRate(int year, int month, int day, decimal rate)
+    {
+        var car = Car(40_000m, new DateOnly(2026, 1, 10)) with { Engine = CarEngine.Petrol, NoCo2Data = true, Acquired = new DateOnly(year, month, day) };
+
+        Compute(car).DeductionRate.ShouldBe(rate);
+    }
+
+    // A fake hybrid is deducted at its matching car's CO2 too: 100 g/km, 72.5%, where its own 40
+    // would give 100%.
+    [Fact]
+    public void Compute_fakeHybrid_isDeductedAtItsMatchingCarsCo2()
+    {
+        var car = Car(40_000m, new DateOnly(2026, 1, 10)) with
+        {
+            Engine = CarEngine.PetrolPlugInHybrid, Co2 = 40, Acquired = new DateOnly(2022, 5, 1), FakeHybrid = true, MatchingCarCo2 = 100,
+        };
+
+        Compute(car).DeductionRate.ShouldBe(0.725m);
+    }
+
+    // Leased in 2026, the petrol car deducts nothing beyond the part equal to its benefit, 4,050.00
+    // (art. 66 §3, 3°): 4,950.00 of its 9,000.00 are not deductible, and 17% of the benefit, 688.50, is
+    // added back besides (decided with the operator on 2026-10-22).
+    [Fact]
+    public void Compute_fuelCarLeasedIn2026_deductsOnlyThePartEqualToItsBenefit()
+    {
+        var car = Car(45_000m, new DateOnly(2026, 1, 10), yearlyCosts: 9_000m) with { Engine = CarEngine.Petrol, Co2 = 120, Acquired = new DateOnly(2026, 1, 5) };
+
+        var result = Compute(car);
+
+        (result.DeductionRate, result.CarvedOut, result.Deductible, result.AddBack).ShouldBe((0m, 4_050.00m, 4_050.00m, 688.50m));
+        result.BenefitInKind.NotDeductible.ShouldBe(5_638.50m);
+    }
+
+    // The part kept deductible is the benefit taxed and the contribution: 3,450.00 and 600.00 are
+    // still 4,050.00, and a contribution above the benefit is kept whole, 5,000.00.
+    [Theory]
+    [InlineData(600, 4_050.00)]
+    [InlineData(5_000, 5_000.00)]
+    public void Compute_contribution_isPartOfWhatStaysDeductible(decimal contribution, decimal carvedOut)
+    {
+        var car = Car(45_000m, new DateOnly(2026, 1, 10), yearlyCosts: 9_000m, contribution: contribution) with
+        {
+            Engine = CarEngine.Petrol, Co2 = 120, Acquired = new DateOnly(2026, 1, 5),
+        };
+
+        Compute(car).CarvedOut.ShouldBe(carvedOut);
+    }
+
+    // The diesel from 2019 costs 3,500.00 a year, less than its benefit of 4,932.00: the company
+    // deducts its 3,500.00 and no more (decided with the operator on 2026-10-22).
+    [Fact]
+    public void Compute_carCostingLessThanItsBenefit_deductsItsCostsAndNoMore()
+    {
+        var car = Car(60_000m, new DateOnly(2019, 3, 5), yearlyCosts: 3_500m) with { Engine = CarEngine.Diesel, Co2 = 140, Acquired = new DateOnly(2019, 2, 1) };
+
+        var result = Compute(car);
+
+        (result.DeductionRate, result.CarvedOut, result.Deductible).ShouldBe((0.50m, 3_500.00m, 3_500.00m));
+    }
+
+    // Ordered in November 2025: the carve-out, 2,185.71, in full, and the other 7,814.29 at 50%,
+    // 3,907.15; the company cannot deduct 3,907.14 and adds back 371.57.
+    [Fact]
+    public void Compute_carOrderedIn2025_deductsTheRestOfItsCostsAtItsRate()
+    {
+        var car = Car(30_000m, new DateOnly(2026, 1, 10), yearlyCosts: 10_000m) with { Engine = CarEngine.Petrol, Co2 = 100, Acquired = new DateOnly(2025, 11, 1) };
+
+        var result = Compute(car);
+
+        (result.BenefitBeforeContribution, result.CarvedOut, result.Deductible, result.AddBack).ShouldBe((2_185.71m, 2_185.71m, 6_092.86m, 371.57m));
+        result.BenefitInKind.NotDeductible.ShouldBe(4_278.71m);
+    }
+
+    // The amounts and texts the deduction used, for the costs' step: an electric car's full rate and
+    // the circular on the order date; a car from 2026 the 0% of art. 66; the formula with its
+    // coefficient and the bound it met, with art. 550 and 198bis; without data, the texts' rate.
+    [Fact]
+    public void Compute_deductionAmounts_areTheOnesTheRateUsed()
+    {
+        var rules = Rules;
+        var petrol = Car(40_000m, new DateOnly(2026, 1, 10)) with { Engine = CarEngine.Petrol, Co2 = 150 };
+
+        Compute(Car(40_000m, new DateOnly(2026, 1, 10))).DeductionAmounts.ShouldBe([rules.ZeroEmissionDeduction]);
+        Compute(petrol with { Acquired = new DateOnly(2026, 2, 1) }).DeductionAmounts.ShouldBe([rules.DeductionPeriods[2].Fixed!]);
+        Compute(petrol with { Acquired = new DateOnly(2022, 2, 1) }).DeductionAmounts
+            .ShouldBe([rules.FormulaBase, rules.FormulaPerGram, rules.OtherFuelCoefficient, rules.DeductionPeriods[0].Floor!]);
+        Compute(petrol with { Acquired = new DateOnly(2024, 2, 1), Co2 = 50 }).DeductionAmounts
+            .ShouldBe([rules.FormulaBase, rules.FormulaPerGram, rules.OtherFuelCoefficient, rules.DeductionPeriods[1].Ceiling!]);
+        Compute(petrol with { Acquired = new DateOnly(2022, 2, 1), Co2 = 0, NoCo2Data = true }).DeductionAmounts
+            .ShouldBe([rules.DeductionPeriods[0].WithoutCo2Data!]);
+        Compute(petrol with { Acquired = new DateOnly(2022, 2, 1), Co2 = 210 }).DeductionAmounts
+            .ShouldBe([rules.DeductionPeriods[0].HighEmissionFrom!, rules.DeductionPeriods[0].WithoutCo2Data!]);
+    }
+
+    [Fact]
+    public void Compute_deductionSources_areTheTextsTheRateRestsOn()
+    {
+        var rules = Rules;
+        var plugIn = Car(40_000m, new DateOnly(2026, 1, 10)) with { Engine = CarEngine.PetrolPlugInHybrid, Co2 = 40 };
+
+        Compute(Car(40_000m, new DateOnly(2026, 1, 10))).DeductionSources.ShouldBe([rules.Acquisition]);
+        Compute(plugIn with { Acquired = new DateOnly(2026, 2, 1) }).DeductionSources.ShouldBe([rules.Acquisition, rules.CompanyExclusions, rules.PlugInDeduction]);
+        Compute(plugIn with { Acquired = new DateOnly(2024, 2, 1) }).DeductionSources
+            .ShouldBe([rules.Acquisition, rules.FormulaDeduction, rules.CompanyExclusions, rules.PlugInTransition]);
+        Compute(plugIn with { Acquired = new DateOnly(2022, 2, 1), FakeHybrid = true, MatchingCarCo2 = 100 }).DeductionSources
+            .ShouldBe([rules.Acquisition, rules.FormulaDeduction, rules.CompanyExclusions, rules.PlugInDeduction]);
+    }
+
+    // An order or a lease after the income year is not a car the company holds in it.
+    [Fact]
+    public void Compute_carAcquiredAfterTheYear_isRefused()
+    {
+        CarCalculator.Compute(Rules, Car(40_000m, new DateOnly(2026, 1, 10)) with { Acquired = new DateOnly(2027, 1, 1) })
+            .ShouldBe((null, CarCalculator.AcquiredAfterYear));
+    }
+
+    // A plug-in hybrid acquired in the first half of 2023 deducts its petrol or diesel at 50% at most
+    // and its other costs at the formula (art. 550 al. 7): Netto does not split its costs yet.
+    [Theory]
+    [InlineData(2023, 1, 1)]
+    [InlineData(2023, 6, 30)]
+    public void Compute_plugInHybridAcquiredInTheFirstHalfOf2023_isRefused(int year, int month, int day)
+    {
+        CarCalculator.Compute(Rules, Car(40_000m, new DateOnly(2026, 1, 10)) with
+            {
+                Engine = CarEngine.DieselPlugInHybrid, Co2 = 45, Acquired = new DateOnly(year, month, day),
+            })
+            .ShouldBe((null, CarCalculator.PlugInFuelCapped));
+    }
+
+    [Theory]
+    [InlineData(CarEngine.DieselPlugInHybrid, 2022, 12, 31)]
+    [InlineData(CarEngine.DieselPlugInHybrid, 2023, 7, 1)]
+    [InlineData(CarEngine.DieselHybrid, 2023, 3, 1)]
+    public void Compute_carOutsideThatWindowOrNotAPlugIn_isTaken(CarEngine engine, int year, int month, int day)
+    {
+        CarCalculator.Compute(Rules, Car(40_000m, new DateOnly(2026, 1, 10)) with { Engine = engine, Co2 = 45, Acquired = new DateOnly(year, month, day) })
+            .Error.ShouldBeNull();
+    }
+
     [Fact]
     public void Compute_negativeCatalogueValue_isRefused()
     {

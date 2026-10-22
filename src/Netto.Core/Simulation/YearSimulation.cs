@@ -269,15 +269,17 @@ public static class YearSimulation
             rules.RentAsIncome, [rules.FloorUplift, rules.IndexationCoefficient]),
     ];
 
-    // The car's costs land in the muddy pocket, at what the company spends on them, deducted in full;
-    // its benefit on the scale, at least the minimum, with each age coefficient it used; the director's
-    // contribution leaving the pocket, a plain zero without one; the benefit it leaves taxed as pay, in
-    // Director pay's figures; and the share of the benefit before the contribution the company adds back
-    // to its taxable income. Only once there is a car, so a year without one keeps its steps.
+    // The car's costs land in the muddy pocket, at what the company spends on them, with the rate it
+    // deducts them at; its benefit on the scale, at least the minimum, with its CO2 percentage's
+    // amounts and each age coefficient it used; the director's contribution leaving the pocket, a
+    // plain zero without one; the benefit it leaves taxed as pay, in Director pay's figures; for a car
+    // the company does not deduct in full, the part of its costs it cannot deduct, which joins its
+    // taxable income; and the share of the benefit before the contribution the company adds back. Only
+    // once there is a car, so a year without one keeps its steps.
     private static IEnumerable<Step> CarSteps(CarRules rules, CarResult car) =>
     [
         new Step("car_costs", Layer.Corporate, TaxableEvent.CompanyCar, Track.Muddy, car.Costs,
-            rules.Deduction, [rules.ZeroEmissionDeduction]) { AlsoCites = [rules.Acquisition] },
+            rules.Deduction, car.DeductionAmounts) { AlsoCites = car.DeductionSources },
         new Step("car_benefit", Layer.Personal, TaxableEvent.CompanyCar, Track.TaxBaseOnly, car.BenefitBeforeContribution,
             rules.Benefit, [rules.CatalogueShare, .. car.Co2Amounts, .. car.Periods.Select(period => period.Period.AgeCoefficient).Distinct(), rules.MinimumBenefit])
         {
@@ -287,6 +289,10 @@ public static class YearSimulation
             rules.Benefit, []),
         new Step("car_benefit_taxed", Layer.Personal, TaxableEvent.CompanyCar, Track.TaxBaseOnly, car.Benefit,
             rules.BenefitAsPay, []) { AlsoCites = [rules.BenefitInContributions] },
+        .. car.DeductionRate < 1m
+            ? [new Step("car_costs_not_deductible", Layer.Corporate, TaxableEvent.CompanyCar, Track.TaxBaseOnly,
+                car.Costs == car.Deductible ? 0m : car.Costs - car.Deductible, rules.Deduction, [])]
+            : Array.Empty<Step>(),
         new Step("car_add_back", Layer.Corporate, TaxableEvent.CompanyCar, Track.TaxBaseOnly, car.AddBack,
             rules.AddBack, [car.AddBackRate ?? rules.AddBackRate]),
     ];

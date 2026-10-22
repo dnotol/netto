@@ -117,14 +117,20 @@ public class StepTextTests
     }
 
     // A car that emits CO2: its percentage against each fuel's reference, held to the minimum or the
-    // maximum, without CO2 data, or a fake hybrid without a matching car.
+    // maximum, without CO2 data, or a fake hybrid without a matching car; its deduction by each
+    // period, with each coefficient, each bound and the texts' rates.
     public static TheoryData<CarFacts> FuelCars => new()
     {
         FuelCar with { Engine = CarEngine.Petrol, Co2 = 120 },
         FuelCar with { Engine = CarEngine.Diesel, Co2 = 250 },
+        FuelCar with { Engine = CarEngine.Diesel, Co2 = 150 },
         FuelCar with { Engine = CarEngine.Lpg, NoCo2Data = true },
+        FuelCar with { Engine = CarEngine.Lpg, NoCo2Data = true, Acquired = new DateOnly(2024, 3, 1) },
         FuelCar with { Engine = CarEngine.PetrolPlugInHybrid, Co2 = 20 },
         FuelCar with { Engine = CarEngine.DieselPlugInHybrid, Co2 = 40, Acquired = new DateOnly(2024, 3, 1), FakeHybrid = true, NoMatchingCar = true },
+        FuelCar with { Engine = CarEngine.DieselHybrid, Co2 = 110 },
+        FuelCar with { Engine = CarEngine.NaturalGas, Co2 = 100, SmallNaturalGas = true },
+        FuelCar with { Engine = CarEngine.Diesel, Co2 = 130, Acquired = new DateOnly(2026, 3, 1) },
     };
 
     private static readonly CarFacts FuelCar = new(50_000m, new DateOnly(2026, 1, 1), 8_000m, false, 600m);
