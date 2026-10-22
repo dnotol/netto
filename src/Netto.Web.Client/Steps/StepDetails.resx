@@ -153,6 +153,9 @@
   <data name="Amount_minimum_director_pay" xml:space="preserve">
     <value>Minimum director pay</value>
   </data>
+  <data name="Amount_excess_benefits_rate" xml:space="preserve">
+    <value>Most of total director pay in flat-rate benefits</value>
+  </data>
   <data name="Amount_dividend_standard_rate" xml:space="preserve">
     <value>Standard withholding rate</value>
   </data>
