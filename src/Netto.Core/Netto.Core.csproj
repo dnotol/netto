@@ -9,4 +9,9 @@
     <SupportedPlatform Include="browser" />
   </ItemGroup>
 
+  <!-- The tests stand in for the move finders (MoveSearch's IMoveFinder) to prove the greedy rule. -->
+  <ItemGroup>
+    <InternalsVisibleTo Include="Netto.Tests.Unit" />
+  </ItemGroup>
+
 </Project>
