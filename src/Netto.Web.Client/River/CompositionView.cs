@@ -1,5 +1,6 @@
 using Netto.Core.Rent;
 using Netto.Core.Simulation;
+using Netto.Web.Client.River.Copyright;
 
 namespace Netto.Web.Client.River;
 
@@ -22,12 +23,14 @@ internal sealed record CompositionView(int Count, IReadOnlyList<ModuleChoice> Mo
     }
 
     // What the module's card says it brings: the vouchers and the allowances whole, the rent once its
-    // tax is paid, and the car its costs, in the muddy pocket.
+    // tax is paid, the car its costs, in the muddy pocket, and the royalty its part within the limits
+    // once its tax apart is paid.
     private static decimal ToPocket(YearResult year, PlanComposition composition, OptionalModule module) => module switch
     {
         OptionalModule.Vouchers => VoucherView.From(year, composition).Total,
         OptionalModule.Allowances => AllowanceView.From(year, composition).Total,
         OptionalModule.Rent => RentView.From(year, composition).AfterTax,
+        OptionalModule.Copyright => CopyrightView.From(year).AfterTax,
         _ => year.MuddyPocket,
     };
 
@@ -36,6 +39,7 @@ internal sealed record CompositionView(int Count, IReadOnlyList<ModuleChoice> Mo
         OptionalModule.Vouchers => inputs.Vouchers.Values.Any,
         OptionalModule.Allowances => inputs.Allowances.Values.Any,
         OptionalModule.Rent => inputs.Rent.Values != HomeOfficeRent.None,
+        OptionalModule.Copyright => inputs.Copyright.Values != RiverInputs.Example.Copyright.Values,
         _ => inputs.Car.Values != RiverInputs.Example.Car.Values,
     };
 }

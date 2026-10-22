@@ -4,10 +4,10 @@ using Shouldly;
 namespace Netto.Tests.WebClient.River;
 
 // Which optional modules a plan holds, in the river's order: the vouchers, the expense allowances,
-// the home office rent, then the company car.
+// the home office rent, the company car, then the copyright royalty.
 public class PlanCompositionTests
 {
-    private static readonly PlanComposition Everything = new(true, true, true, true);
+    private static readonly PlanComposition Everything = new(true, true, true, true, true);
 
     [Fact]
     public void None_holdsNoModule()
@@ -18,7 +18,7 @@ public class PlanCompositionTests
     [Fact]
     public void Modules_areInTheRiversOrder()
     {
-        PlanComposition.Modules.ShouldBe([OptionalModule.Vouchers, OptionalModule.Allowances, OptionalModule.Rent, OptionalModule.Car]);
+        PlanComposition.Modules.ShouldBe([OptionalModule.Vouchers, OptionalModule.Allowances, OptionalModule.Rent, OptionalModule.Car, OptionalModule.Copyright]);
     }
 
     [Theory]
@@ -26,6 +26,7 @@ public class PlanCompositionTests
     [InlineData(OptionalModule.Allowances)]
     [InlineData(OptionalModule.Rent)]
     [InlineData(OptionalModule.Car)]
+    [InlineData(OptionalModule.Copyright)]
     public void With_moduleAdded_holdsItAndNoOther(OptionalModule module)
     {
         var composition = PlanComposition.None.With(module, true);
@@ -38,11 +39,12 @@ public class PlanCompositionTests
     [InlineData(OptionalModule.Allowances)]
     [InlineData(OptionalModule.Rent)]
     [InlineData(OptionalModule.Car)]
+    [InlineData(OptionalModule.Copyright)]
     public void With_moduleTakenOut_keepsTheOthers(OptionalModule module)
     {
         var composition = Everything.With(module, false);
 
-        (composition.Holds(module), composition.Count).ShouldBe((false, 3));
+        (composition.Holds(module), composition.Count).ShouldBe((false, 4));
     }
 
     [Fact]
@@ -64,7 +66,17 @@ public class PlanCompositionTests
     [InlineData(true, true, true, true, OptionalModule.Car, null)]
     public void NextAfter_isTheNextModuleInThePlan(bool vouchers, bool allowances, bool rent, bool car, OptionalModule module, OptionalModule? next)
     {
-        new PlanComposition(vouchers, allowances, rent, car).NextAfter(module).ShouldBe(next);
+        new PlanComposition(vouchers, allowances, rent, car, false).NextAfter(module).ShouldBe(next);
+    }
+
+    // The royalty is the last lever before the split.
+    [Theory]
+    [InlineData(true, false, OptionalModule.Car, OptionalModule.Copyright)]
+    [InlineData(false, true, OptionalModule.Rent, OptionalModule.Copyright)]
+    [InlineData(true, true, OptionalModule.Copyright, null)]
+    public void NextAfter_withTheRoyalty_isTheRoyaltyAfterTheOthers(bool car, bool rent, OptionalModule module, OptionalModule? next)
+    {
+        new PlanComposition(false, false, rent, car, true).NextAfter(module).ShouldBe(next);
     }
 
     [Fact]

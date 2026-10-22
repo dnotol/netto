@@ -135,4 +135,7 @@
   <data name="Prepaid_Paid" xml:space="preserve">
     <value>{0} paid in advance</value>
   </data>
+  <data name="RequalifiedPay" xml:space="preserve">
+    <value>Taxed with your copyright royalty's {0} beyond its limits, paid besides your payslip: your taxable pay is {1}.</value>
+  </data>
 </root>

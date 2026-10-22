@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve">
+    <value>Copyright royalty</value>
+  </data>
+  <data name="Summary" xml:space="preserve">
+    <value>{0} to your pocket after its tax · {2} before your pay</value>
+  </data>
+  <data name="Summary_AsPay" xml:space="preserve">
+    <value>{0} to your pocket after its tax, {1} taxed as your pay · {2} before your pay</value>
+  </data>
+  <data name="SummaryNoRoyalty" xml:space="preserve">
+    <value>No royalty yet · {2} before your pay</value>
+  </data>
+  <data name="Waiting" xml:space="preserve">
+    <value>Waiting for the company's year.</value>
+  </data>
+  <data name="Hint" xml:space="preserve">
+    <value>What the company pays you for the rights on works you create, code, a game or content, which you transfer or license to it. Within the limits it stays movable income: the company deducts it in full and withholds 15%, and you are taxed on it apart at 15% plus your municipal surcharge, with no social contributions. What passes the limits is taxed as your pay.</value>
+  </data>
+  <data name="Scope" xml:space="preserve">
+    <value>For works you created yourself, whose rights you transfer or license to your company against a royalty.</value>
+  </data>
+  <data name="RoyaltyLabel" xml:space="preserve">
+    <value>Royalty for the year</value>
+  </data>
+  <data name="RoyaltyHint" xml:space="preserve">
+    <value>The gross royalty the company pays you for the year for the rights on your works, before the 15% it withholds, as on the 281.45 fiche it files for you.</value>
+  </data>
+  <data name="AverageLabel" xml:space="preserve">
+    <value>My copyright income of the four previous years averaged at most {0}</value>
+  </data>
+  <data name="AverageHint" xml:space="preserve">
+    <value>The royalty stays within its limits only while your copyright income of the four previous years, counted before those limits, averaged at most the year's cap. Netto cannot see it, so it assumes it did until you say otherwise. When it did not, Netto taxes the whole royalty as your pay: the law makes the average a condition without saying more, and that reading never overstates the gain.</value>
+  </data>
+  <data name="NoRoyaltyYet" xml:space="preserve">
+    <value>Enter the royalty for the year to see how it is taxed and what it leaves you.</value>
+  </data>
+  <data name="Limits_None" xml:space="preserve">
+    <value>All {0} stays within the limits: at most 30% of the royalty and your gross pay, {2}, and at most {3} for {5}.</value>
+  </data>
+  <data name="Limits_Relative" xml:space="preserve">
+    <value>Of your {0}, {1} stays within the limits, 30% of the royalty and your gross pay; the {4} above it is taxed as your pay. A royalty stays within 30% while it is at most 3/7 of your gross pay.</value>
+  </data>
+  <data name="Limits_Cap" xml:space="preserve">
+    <value>Of your {0}, {1} stays within the limits, the cap for {5}; the {4} above it is taxed as your pay.</value>
+  </data>
+  <data name="Limits_Average" xml:space="preserve">
+    <value>Your copyright income of the four previous years averaged more than {3}: the whole {0} is taxed as your pay.</value>
+  </data>
+  <data name="TaxedApart" xml:space="preserve">
+    <value>The {0} within the limits is taxed apart at 15%, with no social contributions and no advance-payment surcharge: {1} of tax, your municipal surcharge and any tax credit for low earned income it takes away included, which leaves {3} in your pocket. The company withholds {2} on it, which your assessment credits.</value>
+  </data>
+  <data name="OnTheGross" xml:space="preserve">
+    <value>The 15% is on the whole royalty: from {0}, the flat-rate costs are only for a holder of an attestation du travail des arts.</value>
+  </data>
+  <data name="TaxedAsPay" xml:space="preserve">
+    <value>The {0} beyond the limits is taxed as your pay, on Director pay: social contributions and income tax on the scale, and the advance-payment surcharge if too little is paid in advance. The company withholds 30% on it, {1}, which your assessment credits.</value>
+  </data>
+  <data name="Readings" xml:space="preserve">
+    <value>Where no text settles a point, Netto takes the reading that never overstates the gain: the 30% is measured on your gross pay on the payslip alone, without benefits in kind or the contributions the company pays for you; neither the royalty nor its part taxed as pay counts in the {0} minimum pay that keeps the reduced corporate rate; and the royalty is always taxed apart, never with your other income.</value>
+  </data>
+  <data name="ComparisonTitle" xml:space="preserve">
+    <value>With the royalty and without it</value>
+  </data>
+  <data name="WithRoyalty" xml:space="preserve">
+    <value>With the royalty, {0} reaches your pocket, {1} goes to taxes on pay and {2} to taxes on profit.</value>
+  </data>
+  <data name="WithoutRoyalty" xml:space="preserve">
+    <value>Without it, the same plan at the same pay leaves {0} in your pocket, {1} to taxes on pay and {2} to taxes on profit: the company keeps the royalty as profit, taxed and paid out with the dividend.</value>
+  </data>
+  <data name="Gain_More" xml:space="preserve">
+    <value>The royalty leaves {0} more in your pocket.</value>
+  </data>
+  <data name="Gain_Less" xml:space="preserve">
+    <value>The royalty leaves {0} less in your pocket.</value>
+  </data>
+  <data name="Gain_None" xml:space="preserve">
+    <value>The royalty leaves your pocket as it is.</value>
+  </data>
+  <data name="DetailsLabel" xml:space="preserve">
+    <value>Where these figures come from</value>
+  </data>
+  <data name="SourcesTitle" xml:space="preserve">
+    <value>The rules, with the income year {0} amounts</value>
+  </data>
+  <data name="Remove" xml:space="preserve">
+    <value>Remove the copyright royalty from your plan</value>
+  </data>
+</root>

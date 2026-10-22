@@ -23,6 +23,7 @@ public class CompositionViewTests
                 new ModuleChoice(OptionalModule.Allowances, false, null, false),
                 new ModuleChoice(OptionalModule.Rent, false, null, false),
                 new ModuleChoice(OptionalModule.Car, false, null, false),
+                new ModuleChoice(OptionalModule.Copyright, false, null, false),
             }));
     }
 
@@ -38,12 +39,24 @@ public class CompositionViewTests
         (view.Count, view.Modules.Single(choice => choice.InPlan)).ShouldBe((1, new ModuleChoice(module, true, toPocket, false)));
     }
 
+    // The royalty brings what its part within the limits leaves once its tax apart is paid.
+    [Fact]
+    public void From_royaltyInThePlan_saysWhatItsPartWithinTheLimitsBringsAfterItsTax()
+    {
+        var inputs = WithValues(OptionalModule.Copyright);
+        var year = inputs.Run().Year.ShouldNotBeNull();
+
+        Menu(inputs).Modules.Single(choice => choice.InPlan)
+            .ShouldBe(new ModuleChoice(OptionalModule.Copyright, true, 10_000m - year.DirectorPay.TaxedApartTax.Total, false));
+    }
+
     // Added but with nothing in it yet, it brings nothing to speak of.
     [Theory]
     [InlineData(OptionalModule.Vouchers)]
     [InlineData(OptionalModule.Allowances)]
     [InlineData(OptionalModule.Rent)]
     [InlineData(OptionalModule.Car)]
+    [InlineData(OptionalModule.Copyright)]
     public void From_moduleInThePlanWithNothing_bringsNothingYet(OptionalModule module)
     {
         Menu(RiverInputs.Example.AddToPlan(module)).Modules.Single(choice => choice.InPlan).ShouldBe(new ModuleChoice(module, true, null, false));
@@ -61,11 +74,21 @@ public class CompositionViewTests
     [InlineData(OptionalModule.Allowances)]
     [InlineData(OptionalModule.Rent)]
     [InlineData(OptionalModule.Car)]
+    [InlineData(OptionalModule.Copyright)]
     public void From_moduleTakenOutWithValues_saysTheyAreKept(OptionalModule module)
     {
         var view = Menu(WithValues(module).TakeOutOfPlan(module));
 
         (view.Count, view.Modules.Single(choice => choice.Module == module)).ShouldBe((0, new ModuleChoice(module, false, null, true)));
+    }
+
+    // A status of the royalty changed from its default is a value of the user's too.
+    [Fact]
+    public void From_royaltyTakenOutWithItsAverageChanged_saysItsValuesAreKept()
+    {
+        var inputs = RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithAverageWithinCap(false).TakeOutOfPlan(OptionalModule.Copyright);
+
+        Menu(inputs).Modules.Single(choice => choice.Module == OptionalModule.Copyright).ValuesKept.ShouldBeTrue();
     }
 
     // Nothing but zeros typed: no values of the user's wait for it.
@@ -80,13 +103,13 @@ public class CompositionViewTests
     [Fact]
     public void From_everyModuleInThePlan_countsThem()
     {
-        Menu(RiverInputs.Example with { Composition = new PlanComposition(true, true, true, true) }).Count.ShouldBe(4);
+        Menu(RiverInputs.Example with { Composition = new PlanComposition(true, true, true, true, true) }).Count.ShouldBe(5);
     }
 
     [Fact]
     public void RemovalNotice_moduleTakenOut_speaksOfIt()
     {
-        var before = new PlanComposition(true, false, true, false);
+        var before = new PlanComposition(true, false, true, false, false);
 
         RemovalNotice.About(null, before, before.With(OptionalModule.Rent, false)).ShouldBe(OptionalModule.Rent);
     }
@@ -95,7 +118,7 @@ public class CompositionViewTests
     [Fact]
     public void RemovalNotice_anotherModuleTakenOut_speaksOfTheLatest()
     {
-        var before = new PlanComposition(true, false, true, false);
+        var before = new PlanComposition(true, false, true, false, false);
 
         RemovalNotice.About(OptionalModule.Allowances, before, before.With(OptionalModule.Vouchers, false)).ShouldBe(OptionalModule.Vouchers);
     }
@@ -123,6 +146,7 @@ public class CompositionViewTests
         OptionalModule.Vouchers => RiverInputs.Example.AddToPlan(module).WithMealVoucherDays(220),
         OptionalModule.Allowances => RiverInputs.Example.AddToPlan(module).WithOfficeAllowance(1_938.44m).WithInternetAllowance(240m).WithComputerAllowance(240m),
         OptionalModule.Rent => RiverInputs.Example.AddToPlan(module).WithCadastralIncome(1_200m).WithShareLet(0.12m).WithRent(1_380m),
+        OptionalModule.Copyright => RiverInputs.Example.AddToPlan(module).WithRoyalty(10_000m),
         _ => RiverInputs.Example.AddToPlan(module).WithCatalogueValue(50_000m).WithFirstRegistration(new DateOnly(2026, 1, 10)).WithCarCosts(8_000m),
     };
 }

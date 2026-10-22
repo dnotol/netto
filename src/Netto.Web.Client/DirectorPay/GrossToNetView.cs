@@ -15,7 +15,10 @@ namespace Netto.Web.Client.DirectorPay;
 // the director declares, and the contributions stay paid out. With a rent taxed with the pay
 // (TaxedWithOtherIncome) the tracks stay the pay's own, while the next 1,000 and the balance are the
 // year's, the rent's tax in them. A benefit in kind, a company car's, joins the tax base track after
-// the gross, never the cash track: it is taxed as pay but never paid.
+// the gross, never the cash track: it is taxed as pay but never paid. A copyright royalty's part beyond
+// its limits joins both after the gross: taxed as pay and paid, though besides the payslip, so each
+// row's share is out of the gross and that part. With a royalty within its limits taxed apart
+// (TaxedApart), the balance says how much of the final tax is its and what the company withheld on it.
 internal sealed record GrossToNetView(
     bool CompanyPaysContributions,
     bool TaxedWithOtherIncome,
@@ -32,6 +35,11 @@ internal sealed record GrossToNetView(
     // separates segments. The legend lists every part.
     public IReadOnlyList<NextThousandPart> NextThousandBar => [.. NextThousand.Where(part => part.Width > 0m)];
 
+    public bool TaxedApart => Balance.OnTaxedApart != 0m || Balance.WithheldBesidesPay != 0m;
+
+    // A royalty's part taxed as pay, whose 30% limit moves with the pay: the next 1,000 holds it as it is.
+    public bool WithRequalifiedPay { get; init; }
+
     public static GrossToNetView From(GrossToNetResult result)
     {
         // The company's contributions are never nothing when it pays them: the minimum applies.
@@ -40,16 +48,21 @@ internal sealed record GrossToNetView(
             ? new Line("company_cost", RowKind.Gross, result.CompanyCost)
             : new Line("gross_pay", RowKind.Gross, result.GrossPay);
 
+        // A royalty's part taxed as pay, added to the gross on both tracks.
+        IReadOnlyList<Line> requalified = result.RequalifiedPay > 0m ? [new Line("requalified_pay", RowKind.Added, result.RequalifiedPay)] : [];
+
         // What leaves the pocket, in the engine's order, down to the net.
         var cash = new List<Line> { gross };
+        cash.AddRange(requalified);
         cash.AddRange(result.Steps.Where(step => step.Track == Track.PaidOut).Select(Deduction));
         cash.Add(new Line("net_in_pocket", RowKind.NetInPocket, result.NetInPocket));
 
         // What lowers the tax base, in the engine's order, down to the taxable income it closes on, a
-        // benefit in kind added to the gross first.
+        // benefit in kind and a royalty's part taxed as pay added to the gross first.
         var taxBase = new List<Line> { gross };
         if (result.BenefitInKind > 0m)
             taxBase.Add(new Line("benefit_in_kind", RowKind.Added, result.BenefitInKind));
+        taxBase.AddRange(requalified);
         taxBase.AddRange(result.Steps.TakeWhile(step => step.RuleKey != "taxable_income").Select(Deduction));
         taxBase.Add(new Line("taxable_income", RowKind.TaxableIncome, result.TaxableIncome));
 
@@ -67,7 +80,7 @@ internal sealed record GrossToNetView(
                 track.Key,
                 track.Bars.Select(bar => new FunnelRow(bar.Line.Key, bar.Line.Kind, bar.Line.Amount, Percent(bar.From), Percent(bar.To))
                 {
-                    Share = Shares.Of(bar.Line.Amount, gross.Amount),
+                    Share = Shares.Of(bar.Line.Amount, gross.Amount + result.RequalifiedPay),
                 }).ToList()))
                 .ToList(),
             Parts(
@@ -81,8 +94,8 @@ internal sealed record GrossToNetView(
             ]),
             StatementView.From(result.Statement, companyPays),
             Withholding(result.Statement),
-            AssessmentView.From(result.Assessment, result.OtherIncomeTax),
-            result.Steps.Select(StepDetail.From).ToList());
+            AssessmentView.From(result.Assessment, result.OtherIncomeTax, result.TaxedApartTax),
+            result.Steps.Select(StepDetail.From).ToList()) { WithRequalifiedPay = result.RequalifiedPay > 0m };
     }
 
     // The month's withholding as a step: the formula's lines in its order, the key formula as the
@@ -218,8 +231,10 @@ internal sealed record StatementView(
 }
 
 // The balance on the assessment as the slip draws it: the engine's lines, how much of the final tax is
-// on the income taxed with the pay (OnOtherIncome, the rent's), which way the balance goes, and the
-// balance as a step citing the article it follows, with no amount of the year.
+// on the income taxed with the pay (OnOtherIncome, the rent's) and on an income taxed apart
+// (OnTaxedApart, a copyright royalty's), what the company withheld at source besides the pay
+// (WithheldBesidesPay, on the royalty), which way the balance goes, and the balance as a step citing
+// the article it follows, with no amount of the year.
 internal sealed record AssessmentView(
     decimal FinalTax,
     decimal OnOtherIncome,
@@ -230,10 +245,14 @@ internal sealed record AssessmentView(
     BalanceKind Kind,
     StepDetail Detail)
 {
+    public decimal OnTaxedApart { get; init; }
+
+    public decimal WithheldBesidesPay { get; init; }
+
     // The balance as the slip shows it, without its sign: the kind says which way it goes.
     public decimal Amount => Math.Abs(Balance);
 
-    public static AssessmentView From(Assessment assessment, OtherIncomeTax otherIncomeTax) => new(
+    public static AssessmentView From(Assessment assessment, OtherIncomeTax otherIncomeTax, OtherIncomeTax taxedApartTax) => new(
         assessment.FinalTax,
         otherIncomeTax.Total,
         assessment.Withheld,
@@ -246,7 +265,11 @@ internal sealed record AssessmentView(
             < 0m => BalanceKind.Refunded,
             _ => BalanceKind.Settled,
         },
-        StepDetail.From("assessment_balance", assessment.Balance, assessment.Source, []));
+        StepDetail.From("assessment_balance", assessment.Balance, assessment.Source, []))
+    {
+        OnTaxedApart = taxedApartTax.Total,
+        WithheldBesidesPay = assessment.WithheldBesidesPay,
+    };
 }
 
 // Which way the balance on the assessment goes: the engine's balance is positive to pay, negative

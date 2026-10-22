@@ -1,5 +1,6 @@
 using Netto.Core.Allowances;
 using Netto.Core.CompanyCar;
+using Netto.Core.Copyright;
 using Netto.Core.CorporateTax;
 using Netto.Core.DirectorPay;
 using Netto.Core.PersonalTax;
@@ -53,8 +54,8 @@ internal sealed record VoucherView(
 
 // What the expense allowances bring to the pocket, one drain for each once the company pays any, and
 // what the vouchers and they leave of what the company earns, passed on to the next module in the
-// plan, or the split: the profit before pay with the rent the company pays and what the car costs it
-// still in it. The maxima and the conditions are the year's rules, which the card reads beside it, so
+// plan, or the split: the profit before pay with the rent the company pays, what the car costs it and
+// the copyright royalty it pays still in it. The maxima and the conditions are the year's rules, which the card reads beside it, so
 // they stay while an amount is refused. The company deducts them in full: nothing of them reaches
 // Corporate tax, and all of them reach the pocket (ToYou) once it pays any.
 internal sealed record AllowanceView(decimal Total, decimal Left, decimal? ToYou, IReadOnlyList<Drain> Drains, IReadOnlyList<StepDetail> Details)
@@ -62,7 +63,7 @@ internal sealed record AllowanceView(decimal Total, decimal Left, decimal? ToYou
     public static AllowanceView From(YearResult year, PlanComposition composition)
     {
         var steps = year.Steps.Where(step => step.Event == TaxableEvent.ExpenseAllowances).ToList();
-        var left = year.ProfitBeforePay + year.Rent.Rent + CarView.FromProfit(year.Car);
+        var left = year.ProfitBeforePay + year.Rent.Rent + CarView.FromProfit(year.Car) + year.Copyright.Royalty;
         var total = steps.Where(step => step.Track == Track.InPocket).Sum(step => step.Amount);
 
         return new AllowanceView(
@@ -78,8 +79,9 @@ internal sealed record AllowanceView(decimal Total, decimal Left, decimal? ToYou
 }
 
 // What the rent costs in personal tax, each line of it into the taxes on pay, what reaches the pocket
-// once that is paid, and what it leaves of what the company earns, passed on to the car when it is in
-// the plan, or as the profit before pay to the split, from the year's rent steps; and what the rules
+// once that is paid, and what it leaves of what the company earns, passed on to the car or the
+// copyright royalty when one is in the plan, or as the profit before pay to the split, from the year's
+// rent steps; and what the rules
 // tax it on: the rent, or the floor when it is less (TaxedOnTheFloor), less its flat charges. The cap
 // and the conditions are the year's rules, which the card reads beside it (RentCapView), so they stay
 // while the rent is refused. The company deducts it in full: nothing of it reaches Corporate tax. Its
@@ -119,7 +121,8 @@ internal sealed record RentView(
                 .. afterTax,
                 NextModule.After(OptionalModule.Rent, composition) is "split"
                     ? new Drain("profit_before_pay", DrainKind.PassedOn, year.ProfitBeforePay, "split")
-                    : new Drain("left_after_rent", DrainKind.PassedOn, year.ProfitBeforePay + CarView.FromProfit(year.Car), NextModule.After(OptionalModule.Rent, composition)),
+                    : new Drain("left_after_rent", DrainKind.PassedOn, year.ProfitBeforePay + CarView.FromProfit(year.Car) + year.Copyright.Royalty,
+                        NextModule.After(OptionalModule.Rent, composition)),
             ],
             steps.Select(StepDetail.From).ToList());
     }
@@ -134,6 +137,7 @@ internal static class NextModule
         OptionalModule.Allowances => "allowances",
         OptionalModule.Rent => "rent",
         OptionalModule.Car => "car",
+        OptionalModule.Copyright => "copyright",
         _ => "split",
     };
 }
@@ -340,7 +344,9 @@ internal enum RateChoice
 // the company, the gross plus them, and the contributions drain says the company pays them. The
 // engine says what the withholding and the advance payments leave on its tax, the bonus they earn,
 // and what more by the last deadline leaves no surcharge due. Each line says its share of what the pay
-// costs the company, and the card what reaches the pocket of it (ToYou).
+// costs the company, and the card what reaches the pocket of it (ToYou). A copyright royalty's part
+// beyond its limits is taxed as pay and paid besides the payslip (RequalifiedPay): what flows in is
+// then the pay's cost and that part (Inflow), which the shares are out of.
 internal sealed record DirectorPayView(
     InputOrigin PayOrigin,
     bool CompanyPaysContributions,
@@ -357,16 +363,22 @@ internal sealed record DirectorPayView(
     // A car's benefit taxed with the pay, never paid: none without.
     public decimal BenefitInKind { get; init; }
 
+    // A royalty's part taxed as pay, paid besides the payslip: none without.
+    public decimal RequalifiedPay { get; init; }
+
+    public decimal Inflow => CompanyCost + RequalifiedPay;
+
     public static DirectorPayView From(RiverInputs inputs, GrossToNetResult pay)
     {
         var payments = pay.AdvancePayments;
         var companyPays = inputs.ContributionsPaidBy.Value == ContributionsPaidBy.Company;
+        var inflow = pay.CompanyCost + pay.RequalifiedPay;
 
         return new DirectorPayView(
             inputs.Company is null ? inputs.DirectorPay.Origin : InputOrigin.Derived,
             companyPays,
             pay.CompanyCost,
-            Shares.Of(pay.NetInPocket, pay.CompanyCost),
+            Shares.Of(pay.NetInPocket, inflow),
             payments switch
             {
                 { Exempt: true } => TaxSurchargeState.Exempt,
@@ -381,10 +393,10 @@ internal sealed record DirectorPayView(
             payments.Bonus,
             [
                 .. pay.Steps.Where(step => step.Track == Track.PaidOut)
-                    .Select(step => Payer(Drain.PaidOutTo(step, "taxes_on_pay"), companyPays).Of(pay.CompanyCost)),
-                new Drain("net_pay", DrainKind.PassedOn, pay.NetInPocket, "pocket").Of(pay.CompanyCost),
+                    .Select(step => Payer(Drain.PaidOutTo(step, "taxes_on_pay"), companyPays).Of(inflow)),
+                new Drain("net_pay", DrainKind.PassedOn, pay.NetInPocket, "pocket").Of(inflow),
             ],
-            pay.Steps.Select(StepDetail.From).ToList()) { BenefitInKind = pay.BenefitInKind };
+            pay.Steps.Select(StepDetail.From).ToList()) { BenefitInKind = pay.BenefitInKind, RequalifiedPay = pay.RequalifiedPay };
     }
 
     // The contributions drain is the same step of the engine whoever pays; its label says when the
@@ -588,6 +600,7 @@ internal static class RiverErrors
         CarCalculator.CatalogueValueNegative or CarCalculator.YearlyCostsNegative or CarCalculator.ContributionNegative or CarCalculator.Co2Negative
             or CarCalculator.Co2Missing or CarCalculator.MatchingCarCo2Negative or CarCalculator.MatchingCarCo2Missing or CarCalculator.AcquiredAfterYear
             or CarCalculator.PlugInFuelCapped => RiverModule.Car,
+        CopyrightCalculator.RoyaltyNegative => RiverModule.Copyright,
         GrossToNet.GrossPayNegative => companySkipped ? RiverModule.DirectorPay : RiverModule.Split,
         GrossToNet.MunicipalRateOutOfRange => RiverModule.DirectorPay,
         YearSimulation.ReserveNegative or YearSimulation.EarlierProfitsNegative => RiverModule.Dividend,
@@ -611,6 +624,8 @@ internal enum RiverModule
     Rent,
 
     Car,
+
+    Copyright,
 
     Split,
 

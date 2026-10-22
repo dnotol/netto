@@ -147,6 +147,25 @@ public class StepTextTests
         MissingTexts(value.ShouldNotBeNull().Steps).ShouldBeEmpty();
     }
 
+    // The royalty's steps, within its limits beside a low pay with nothing withheld, so it takes away
+    // part of the credit and moves the surcharge, and beyond them.
+    [Theory]
+    [InlineData(27_000, 8_000)]
+    [InlineData(30_000, 20_000)]
+    public void StepDetailsResx_everyKeyOfTheRoyaltysSteps_hasAText(int pay, int royalty)
+    {
+        var scenario = new Scenario(2026, 120_000m, 20_000m, new CompanyStatus(SmallCompany: true, FirstFourTaxPeriods: false),
+            pay, MunicipalRates.Entered(0.07m), 0m, WithholdingCategory.Standard)
+        {
+            TaxPrepayments = TaxPrepayments.None,
+            Copyright = new Netto.Core.Copyright.CopyrightRoyalty(royalty),
+        };
+
+        var (value, _) = YearSimulation.Run(scenario);
+
+        MissingTexts(value.ShouldNotBeNull().Steps).ShouldBeEmpty();
+    }
+
     // The pay slip lists two steps of its own beside the engine's: the month's withholding, with the
     // key formula's lines and the annex's amounts, and the balance on the assessment.
     [Theory]

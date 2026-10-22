@@ -9,8 +9,10 @@ namespace Netto.Web.Client.River;
 // behalf when it does (CompanyPaysContributions). The vouchers, the allowances and the rent are in the
 // pocket, the director's contribution to a car out of it. Once a car counts, the muddy pocket holds
 // what the company spends on it, right after the pocket. Taxes on pay are the director's personal
-// tax: the director pay's steps paid out, a car's benefit taxed in them, and, once the company pays a
-// rent, the rent's, which it is taxed with (TaxesOnPayIncludeRent); taxes on profit, the company's and
+// tax: the director pay's steps paid out, a car's benefit and a royalty's part beyond its limits taxed
+// in them, once the company pays a rent, the rent's, which it is taxed with (TaxesOnPayIncludeRent),
+// and a royalty's tax apart (decided unattended: the director's income tax on money received besides
+// the dividend, as the rent's is); taxes on profit, the company's and
 // the dividend's, the refund on the exempt dividend coming back. It only regroups the engine's figures
 // and steps, so the buckets add up to the start.
 internal sealed record BucketsView(
@@ -50,7 +52,7 @@ internal sealed record BucketsView(
             amounts.Add((Muddy, withCar.MuddyPocket));
         amounts.AddRange(
         [
-            ("taxes_on_pay", PaidOut(steps, TaxableEvent.DirectorPay) + PaidOut(steps, TaxableEvent.Rent)),
+            ("taxes_on_pay", PaidOut(steps, TaxableEvent.DirectorPay) + PaidOut(steps, TaxableEvent.Rent) + PaidOut(steps, TaxableEvent.CopyrightRoyalty)),
             ("taxes_on_profit", PaidOut(steps, TaxableEvent.CompanyProfit) + PaidOut(steps, TaxableEvent.Dividend)),
             ("kept_in_company", kept),
         ]);

@@ -1,3 +1,4 @@
+using Netto.Core.Simulation;
 using Netto.Core.SocialContributions;
 using Netto.Web.Client.River;
 using Shouldly;
@@ -13,7 +14,7 @@ namespace Netto.Tests.WebClient.River;
 // nothing, its figures stay those.
 public class BucketsViewTests
 {
-    private static readonly RiverInputs EveryLever = RiverInputs.Example with { Composition = new PlanComposition(true, true, true, false) };
+    private static readonly RiverInputs EveryLever = RiverInputs.Example with { Composition = new PlanComposition(true, true, true, false, false) };
 
     public static TheoryData<decimal, decimal, decimal> Years => new()
     {
@@ -386,6 +387,30 @@ public class BucketsViewTests
         var view = BucketsView.From(RiverInputs.Example.Run()).ShouldNotBeNull();
 
         (view.HasMuddyPocket, view.MuddyShare).ShouldBe((false, (decimal?)null));
+    }
+
+    // A royalty's tax apart is the director's income tax on money received besides the dividend: it
+    // lands in the taxes on pay, as the rent's does (decided unattended).
+    [Fact]
+    public void From_royalty_putsItsTaxApartInTheTaxesOnPay()
+    {
+        var withRoyalty = RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithRoyalty(10_000m).Run();
+        var year = withRoyalty.Year.ShouldNotBeNull();
+        var taxes = year.Steps.Where(step => step.Track == Track.PaidOut && step.Event is TaxableEvent.DirectorPay or TaxableEvent.CopyrightRoyalty).Sum(step => step.Amount);
+
+        BucketsView.From(withRoyalty).ShouldNotBeNull().Buckets.Single(bucket => bucket.Key == "taxes_on_pay").Amount.ShouldBe(taxes);
+    }
+
+    [Theory]
+    [MemberData(nameof(Years))]
+    public void From_anyYearWithARoyalty_bucketsAddUpToWhatTheCompanyEarnsBeforePayingTheDirector(decimal revenue, decimal pay, decimal reserve)
+    {
+        var inputs = RentAtTheCap(EveryLever.WithRevenue(revenue).WithDirectorPay(pay).WithReserve(reserve)).AddToPlan(OptionalModule.Copyright)
+            .WithRoyalty(25_000m).WithContributionsPaidBy(ContributionsPaidBy.Company);
+
+        var view = BucketsView.From(inputs.Run()).ShouldNotBeNull();
+
+        (view.Start, view.Buckets.Sum(bucket => bucket.Amount)).ShouldBe((revenue - 20_000m, revenue - 20_000m));
     }
 
     // 12% of a cadastral income of 1,200 let for the 2026 cap, 1,380.00 (RentCalculatorTests).

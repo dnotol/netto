@@ -2,6 +2,7 @@
 @using Netto.Core.Simulation
 @using Netto.Web.Client.River
 @using Netto.Web.Client.River.CompanyCar
+@using Netto.Web.Client.River.Copyright
 @inject IStringLocalizer<Plan> L
 @inject RiverState State
 @inject SavedPlans Plans
@@ -67,6 +68,10 @@
             @if (_inputs.InPlan(OptionalModule.Car))
             {
                 <CarCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Refused="@Refused(RiverModule.Car)" />
+            }
+            @if (_inputs.InPlan(OptionalModule.Copyright))
+            {
+                <CopyrightCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Refused="@Refused(RiverModule.Copyright)" />
             }
             @if (_inputs.Company is not null)
             {

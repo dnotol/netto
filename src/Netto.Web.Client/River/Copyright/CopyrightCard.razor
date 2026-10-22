@@ -1,0 +1,125 @@
+@using Netto.Core.Copyright
+@using Netto.Core.CorporateTax
+@using Netto.Web.Client.River
+@using Netto.Web.Client.Steps
+@inject IStringLocalizer<CopyrightCard> L
+
+@* The last lever before the split: a copyright royalty the company pays the director for the rights on
+   works they created. The user gives the royalty for the year and says whether their copyright income
+   of the four previous years averaged at most the year's cap, met unless they say otherwise. The card
+   says how much of the royalty stays within the limits and how much passes them, which limit set it,
+   the tax apart on the first part and what the company withholds, the part beyond them going on to
+   Director pay, taxed as pay, then the plan with the royalty against the same plan without it, and
+   where no text settles a point, the reading Netto takes. An optional module: it shows only while in
+   the plan, and the word at its bottom takes it out, its values kept. The royalty is taken while
+   typing and carries no Min or Max: the engine refuses what the rules do not allow. Skipped with the
+   company. *@
+<ModuleCard Name="copyright" Title="@L["Title"]" Summary="@Summary" ToYou="@_view?.ToYou" Help="@L["Hint"]" Skipped="Inputs.Company is null" Details="@Details"
+            DetailsLabel="@L["DetailsLabel"]" RemoveLabel="@L["Remove"]" OnRemove="Remove">
+    @if (Inputs.Company is null)
+    {
+        <p class="copyright__waiting">@L["Waiting"]</p>
+    }
+    else
+    {
+        <p class="copyright__scope">@L["Scope"]</p>
+        <div class="copyright__fields">
+            <RiverField Label="@L["RoyaltyLabel"]" For="river-copyright-royalty" Origin="Inputs.Copyright.Royalty.Origin" Help="@L["RoyaltyHint"]">
+                <RiverNumericField T="decimal" InputId="river-copyright-royalty" Value="Inputs.Copyright.Royalty.Value" ValueChanged="OnRoyaltyChanged"
+                                   Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
+                                   Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
+                                   Error="@(Refused == CopyrightCalculator.RoyaltyNegative)" Refusal="@Refused" />
+            </RiverField>
+        </div>
+        <div class="copyright__tick">
+            <MudCheckBox T="bool" Value="Inputs.Copyright.AverageWithinCap.Value" ValueChanged="OnAverageChanged" Color="Color.Primary"
+                         Label="@L["AverageLabel", Formats.Euros(_rules?.Cap.Value ?? 0m)]" />
+            <OriginChip Origin="Inputs.Copyright.AverageWithinCap.Origin" />
+            <InfoBubble Label="@L["AverageLabel", Formats.Euros(_rules?.Cap.Value ?? 0m)]">@L["AverageHint"]</InfoBubble>
+        </div>
+        <RefusedMessage Error="@Refused" />
+        @if (_view is { HasRoyalty: true } shown)
+        {
+            var result = shown.Result;
+            <div class="copyright__taxed">
+                <p class="copyright__line">@L[CopyrightCardText.Limits(result), Formats.Euros(result.Royalty), Formats.Euros(result.WithinLimits),
+                                              Formats.Euros(result.RelativeLimit), Formats.Euros(result.Cap), Formats.Euros(result.TaxedAsPay), Inputs.IncomeYear]</p>
+                @if (result.WithinLimits > 0m)
+                {
+                    <p class="copyright__line">@L["TaxedApart", Formats.Euros(result.WithinLimits), Formats.Euros(shown.Tax), Formats.Euros(result.WithheldWithinLimits),
+                                                  Formats.Euros(shown.AfterTax)]</p>
+                    <p class="copyright__line">@L["OnTheGross", Inputs.IncomeYear]</p>
+                }
+                @if (result.TaxedAsPay > 0m)
+                {
+                    <p class="copyright__line">@L["TaxedAsPay", Formats.Euros(result.TaxedAsPay), Formats.Euros(result.WithheldBeyondLimits)]</p>
+                }
+                <p class="copyright__reading">@L["Readings", Formats.Euros(CorporateTaxRules.For(Inputs.IncomeYear)?.MinimumDirectorPay.Value ?? 0m)]</p>
+            </div>
+            @if (_comparison is { } comparison)
+            {
+                <section class="copyright__comparison" aria-labelledby="copyright-comparison-title">
+                    <h3 id="copyright-comparison-title" class="copyright__comparison-title">@L["ComparisonTitle"]</h3>
+                    <p>@L["WithRoyalty", Formats.Euros(comparison.PocketWith), Formats.Euros(comparison.TaxesOnPayWith), Formats.Euros(comparison.TaxesOnProfitWith)]</p>
+                    <p>@L["WithoutRoyalty", Formats.Euros(comparison.PocketWithout), Formats.Euros(comparison.TaxesOnPayWithout), Formats.Euros(comparison.TaxesOnProfitWithout)]</p>
+                    <p class="copyright__gain">@L[CopyrightCardText.Gain(comparison), Formats.Euros(Math.Abs(comparison.Gain))]</p>
+                </section>
+            }
+        }
+        else if (Refused is null)
+        {
+            <p class="copyright__line">@L["NoRoyaltyYet"]</p>
+        }
+        @if (_view is not null)
+        {
+            <DrainList Drains="_view.Drains" />
+        }
+        @if (_rules is not null)
+        {
+            <ConditionList Name="copyright-conditions" Conditions="_rules.Conditions" />
+        }
+    }
+</ModuleCard>
+
+@code {
+    [Parameter, EditorRequired]
+    public RiverInputs Inputs { get; set; } = default!;
+
+    [Parameter]
+    public EventCallback<RiverInputs> InputsChanged { get; set; }
+
+    [Parameter, EditorRequired]
+    public RiverRun Run { get; set; } = default!;
+
+    // The engine's error key when it refuses the royalty.
+    [Parameter]
+    public string? Refused { get; set; }
+
+    private CopyrightView? _view;
+    private CopyrightComparison? _comparison;
+    private CopyrightRules? _rules;
+
+    protected override void OnParametersSet()
+    {
+        _view = Run.Year is { } year ? CopyrightView.From(year) : null;
+        _comparison = CopyrightComparison.From(Inputs, Run);
+        _rules = CopyrightRules.For(Inputs.IncomeYear);
+    }
+
+    private string? Summary => _view is { } view && Run.Year is { } year
+        ? L[CopyrightCardText.Summary(view), Formats.Euros(view.AfterTax), Formats.Euros(view.Result.TaxedAsPay), Formats.Euros(year.ProfitBeforePay)].Value
+        : null;
+
+    private RenderFragment? Details => _view is { Details.Count: > 0 } view && Run.Year is { } year
+        ? @<text>
+              <h4 class="copyright__sources">@L["SourcesTitle", year.Scenario.IncomeYear]</h4>
+              <StepDetails Details="view.Details" />
+          </text>
+        : null;
+
+    private Task OnRoyaltyChanged(decimal amount) => InputsChanged.InvokeAsync(Inputs.WithRoyalty(amount));
+
+    private Task OnAverageChanged(bool within) => InputsChanged.InvokeAsync(Inputs.WithAverageWithinCap(within));
+
+    private Task Remove() => InputsChanged.InvokeAsync(Inputs.TakeOutOfPlan(OptionalModule.Copyright));
+}

@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Resources;
 using Netto.Core.Allowances;
 using Netto.Core.CompanyCar;
+using Netto.Core.Copyright;
 using Netto.Core.CorporateTax;
 using Netto.Core.DirectorPay;
 using Netto.Core.Dividends;
@@ -13,6 +14,7 @@ using Netto.Core.SocialContributions;
 using Netto.Core.Vouchers;
 using Netto.Web.Client.River;
 using Netto.Web.Client.River.CompanyCar;
+using Netto.Web.Client.River.Copyright;
 using Shouldly;
 
 namespace Netto.Tests.WebClient.River;
@@ -55,10 +57,11 @@ public class RiverTextTests
         .. AllowanceRules.IncomeYear2026.Conditions,
         .. RentRules.IncomeYear2026.Conditions,
         .. CarRules.IncomeYear2026.Conditions,
+        .. CopyrightRules.IncomeYear2026.Conditions,
     ];
 
     // The vouchers in the plan with each next lever, and the split after them.
-    private static readonly PlanComposition[] Compositions = [new(true, true, true, false), new(true, false, true, false), new(true, false, false, false), new(true, true, true, true)];
+    private static readonly PlanComposition[] Compositions = [new(true, true, true, false, false), new(true, false, true, false, false), new(true, false, false, false, false), new(true, true, true, true, false), new(true, true, true, true, true)];
 
     [Fact]
     public void OriginChipResx_everyOrigin_hasAWordAndAHint()
@@ -89,11 +92,18 @@ public class RiverTextTests
             .WithCadastralIncome(1_200m).WithShareLet(0.12m).WithRent(1_380m)
             .WithCatalogueValue(50_000m).WithCarCosts(8_000m).WithCarContribution(600m);
         var carYear = carInputs.Run().Year.ShouldNotBeNull();
+        var royaltyInputs = carInputs.AddToPlan(OptionalModule.Copyright).WithDirectorPay(27_000m).WithTaxWithheld(0m).WithRoyalty(20_000m);
+        var royaltyRun = royaltyInputs.Run();
+        var royaltyYear = royaltyRun.Year.ShouldNotBeNull();
         var drains = Compositions.SelectMany(composition => VoucherView.From(year, composition).Drains.Concat(AllowanceView.From(year, composition).Drains))
             .Concat(RentView.From(rentYear, PlanComposition.None.With(OptionalModule.Rent, true)).Drains)
             .Concat(RentView.From(carYear, carInputs.Composition).Drains)
-            .Concat(CarView.From(carYear).Drains)
+            .Concat(CarView.From(carYear, carInputs.Composition).Drains)
+            .Concat(CarView.From(royaltyYear, royaltyInputs.Composition).Drains)
+            .Concat(CopyrightView.From(royaltyYear).Drains)
+            .Concat(RentView.From(royaltyYear, royaltyInputs.Composition).Drains)
             .Concat(DirectorPayView.From(inputs, run.Pay.ShouldNotBeNull()).Drains)
+            .Concat(DirectorPayView.From(royaltyInputs, royaltyRun.Pay.ShouldNotBeNull()).Drains)
             .Concat(CorporateTaxView.From(year).Drains)
             .Concat(DividendView.From(year).Drains)
             .ToList();
@@ -128,6 +138,7 @@ public class RiverTextTests
             CarCalculator.CatalogueValueNegative, CarCalculator.YearlyCostsNegative, CarCalculator.ContributionNegative,
             CarCalculator.Co2Negative, CarCalculator.Co2Missing, CarCalculator.MatchingCarCo2Negative, CarCalculator.MatchingCarCo2Missing,
             CarCalculator.AcquiredAfterYear, CarCalculator.PlugInFuelCapped,
+            CopyrightCalculator.RoyaltyNegative,
         };
 
         Missing(RefusedMessageResources, errors.Select(RefusedMessageText.Error)).ShouldBeEmpty();

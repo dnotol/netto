@@ -153,4 +153,31 @@
   <data name="Source" xml:space="preserve">
     <value>From {0}</value>
   </data>
+  <data name="Drain_copyright_tax" xml:space="preserve">
+    <value>Tax apart on the royalty</value>
+  </data>
+  <data name="Drain_copyright_municipal_surcharge" xml:space="preserve">
+    <value>Municipal surcharge on the royalty</value>
+  </data>
+  <data name="Drain_copyright_low_earned_income_credit_lost" xml:space="preserve">
+    <value>Tax credit for low earned income the royalty takes away</value>
+  </data>
+  <data name="Drain_copyright_income_tax_advance_payments" xml:space="preserve">
+    <value>Advance-payment surcharge the lost credit adds</value>
+  </data>
+  <data name="Drain_copyright_after_tax" xml:space="preserve">
+    <value>Royalty within the limits, once its tax is paid</value>
+  </data>
+  <data name="Drain_copyright_taxed_as_pay" xml:space="preserve">
+    <value>Royalty beyond the limits</value>
+  </data>
+  <data name="Drain_left_after_car" xml:space="preserve">
+    <value>Left after the car</value>
+  </data>
+  <data name="To_copyright" xml:space="preserve">
+    <value>on to the copyright royalty</value>
+  </data>
+  <data name="To_director_pay" xml:space="preserve">
+    <value>on to Director pay, taxed as your pay</value>
+  </data>
 </root>

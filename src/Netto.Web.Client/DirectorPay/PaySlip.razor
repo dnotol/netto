@@ -125,10 +125,24 @@
                     <dd>@Formats.Euros(_view.Balance.OnOtherIncome)</dd>
                 </div>
             }
+            @if (_view.TaxedApart)
+            {
+                <div class="balance__line balance__line--part">
+                    <dt>@L["FinalTaxOnRoyalty"]</dt>
+                    <dd>@Formats.Euros(_view.Balance.OnTaxedApart)</dd>
+                </div>
+            }
             <div class="balance__line">
                 <dt>@L[PaySlipText.Withheld(_view.Balance.WithheldGiven)]</dt>
                 <dd>@Formats.Deduction(_view.Balance.Withheld)</dd>
             </div>
+            @if (_view.Balance.WithheldBesidesPay > 0m)
+            {
+                <div class="balance__line">
+                    <dt>@L["WithheldOnRoyalty"]</dt>
+                    <dd>@Formats.Deduction(_view.Balance.WithheldBesidesPay)</dd>
+                </div>
+            }
             <div class="balance__line">
                 <dt>@L["AdvancePayments"]</dt>
                 <dd>@Formats.Deduction(_view.Balance.AdvancePayments)</dd>
@@ -165,6 +179,10 @@
         @if (_view.TaxedWithOtherIncome)
         {
             <p class="next__note">@L["NextRentNote"]</p>
+        }
+        @if (_view.WithRequalifiedPay)
+        {
+            <p class="next__note">@L["NextRoyaltyNote"]</p>
         }
     </section>
 </div>

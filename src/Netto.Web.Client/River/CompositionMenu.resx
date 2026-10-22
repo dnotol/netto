@@ -102,4 +102,13 @@
   <data name="Done" xml:space="preserve">
     <value>Done</value>
   </data>
+  <data name="Title_Copyright" xml:space="preserve">
+    <value>Copyright royalty</value>
+  </data>
+  <data name="Description_Copyright" xml:space="preserve">
+    <value>A royalty for the rights on works you create, taxed apart at 15%</value>
+  </data>
+  <data name="Brings_Copyright" xml:space="preserve">
+    <value>{0} to your pocket after its tax</value>
+  </data>
 </root>

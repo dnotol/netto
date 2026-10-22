@@ -1,0 +1,79 @@
+.copyright__waiting,
+.copyright__scope {
+    margin: 0;
+    color: var(--netto-text-muted);
+    line-height: 1.55;
+}
+
+/* The royalty's field, as wide as the car's fields. */
+.copyright__fields {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+    align-items: end;
+    gap: 1rem;
+}
+
+/* A status the user ticks, with its origin and its bubble. */
+.copyright__tick {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem 0.5rem;
+}
+
+/* How the royalty is taxed, consequences shown where they start: a quiet rule on the left, as the
+   car's. */
+.copyright__taxed {
+    display: grid;
+    gap: 0.4rem;
+    padding-left: 0.75rem;
+    border-left: 2px solid rgba(243, 238, 226, 0.35);
+}
+
+.copyright__line {
+    margin: 0;
+    color: var(--netto-text-muted);
+    font-size: 0.9rem;
+    line-height: 1.55;
+}
+
+/* Netto's readings, a caveat that changes figures: in sight, in the text's own colour. */
+.copyright__reading {
+    margin: 0;
+    color: var(--netto-text);
+    font-size: 0.85rem;
+    line-height: 1.55;
+}
+
+.copyright__comparison {
+    display: grid;
+    gap: 0.35rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--netto-line);
+    border-radius: 8px;
+}
+
+    .copyright__comparison p {
+        margin: 0;
+        font-size: 0.9rem;
+        line-height: 1.55;
+    }
+
+.copyright__comparison-title {
+    margin: 0;
+    font-family: "Fraunces", Georgia, serif;
+    font-size: 1.05rem;
+    font-weight: 600;
+}
+
+.copyright__gain {
+    color: var(--netto-text);
+    font-weight: 500;
+}
+
+.copyright__sources {
+    margin: 0;
+    font-family: "Fraunces", Georgia, serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+}

@@ -30,4 +30,7 @@
   <data name="Dismiss" xml:space="preserve">
     <value>Dismiss</value>
   </data>
+  <data name="TakenOut_Copyright" xml:space="preserve">
+    <value>Copyright royalty taken out of your plan. Your values are kept.</value>
+  </data>
 </root>

@@ -123,4 +123,7 @@
   <data name="Error_rent_with_office_allowance" xml:space="preserve">
     <value>A rent and an office allowance cannot go together: the office allowance already covers the room, its rent included. Set the office allowance to 0 to rent the room, or the rent to 0 to keep the allowance.</value>
   </data>
+  <data name="Error_copyright_royalty_negative" xml:space="preserve">
+    <value>The royalty cannot be negative.</value>
+  </data>
 </root>

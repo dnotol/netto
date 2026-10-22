@@ -147,4 +147,16 @@
   <data name="NextRentNote" xml:space="preserve">
     <value>Your home office rent is taxed with your pay, so these are the year's taxes: the next €1,000 of pay also raises the tax on the rent, which is in its parts.</value>
   </data>
+  <data name="Row_requalified_pay" xml:space="preserve">
+    <value>Copyright royalty beyond its limits</value>
+  </data>
+  <data name="FinalTaxOnRoyalty" xml:space="preserve">
+    <value>of which on your copyright royalty within its limits</value>
+  </data>
+  <data name="WithheldOnRoyalty" xml:space="preserve">
+    <value>Withheld by the company on your copyright royalty</value>
+  </data>
+  <data name="NextRoyaltyNote" xml:space="preserve">
+    <value>The next 1,000 holds your copyright royalty's part beyond its limits as it is, though 30% of the pay moves that limit: the split's curve weighs it.</value>
+  </data>
 </root>

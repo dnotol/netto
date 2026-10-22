@@ -222,7 +222,7 @@
 
     protected override void OnParametersSet()
     {
-        _view = Run.Year is { } year ? CarView.From(year) : null;
+        _view = Run.Year is { } year ? CarView.From(year, Inputs.Composition) : null;
         _comparison = CarComparison.From(Inputs, Run);
         _rules = CarRules.For(Inputs.IncomeYear);
     }

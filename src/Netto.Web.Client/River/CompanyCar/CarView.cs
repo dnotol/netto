@@ -6,9 +6,9 @@ using Netto.Web.Client.Steps;
 namespace Netto.Web.Client.River.CompanyCar;
 
 // What the company car costs the company, out to the muddy pocket, and the director's contribution
-// coming back from their pocket, then the profit before pay it leaves for the split, the last lever
-// before it, from the year's car steps; what it receives is what the levers above leave of what the
-// company earns. The card reads the car as the engine took it (Result): its benefit, period by period,
+// coming back from their pocket, then what it leaves, passed on to the copyright royalty when it is in
+// the plan, or as the profit before pay to the split, from the year's car steps; what it receives is
+// what the levers above leave of what the company earns. The card reads the car as the engine took it (Result): its benefit, period by period,
 // at its CO2 percentage, at least the minimum, less the contribution, taxed as pay, what the company
 // deducts of its costs, and what it adds back of the benefit, 40% when it pays the private energy,
 // which for a car it charges, electric or plug-in hybrid, is the administration's reading of « fuel »
@@ -27,12 +27,13 @@ internal sealed record CarView(
     // What the car takes off what the company earns: its costs, less what the director pays for it.
     public static decimal FromProfit(CarResult car) => car.Costs - car.Contribution;
 
-    public static CarView From(YearResult year)
+    public static CarView From(YearResult year, PlanComposition composition)
     {
         var ledger = year.Steps.Where(step => step.Event == TaxableEvent.CompanyCar).ToList();
         var steps = ledger.ToDictionary(step => step.RuleKey);
         var car = year.Car;
-        var received = year.ProfitBeforePay + FromProfit(car);
+        var left = year.ProfitBeforePay + year.Copyright.Royalty;
+        var received = left + FromProfit(car);
         IEnumerable<Drain> drains = steps.Count > 0
             ?
             [
@@ -45,8 +46,13 @@ internal sealed record CarView(
             received,
             car,
             steps.Count > 0 && year.Scenario.Car.CompanyPaysPrivateEnergy && CarCardText.Reading(year.Scenario.Car.Engine) is not null,
-            steps.Count > 0 ? Shares.Of(year.ProfitBeforePay, received) : null,
-            [.. drains, new Drain("profit_before_pay", DrainKind.PassedOn, year.ProfitBeforePay, "split")],
+            steps.Count > 0 ? Shares.Of(left, received) : null,
+            [
+                .. drains,
+                NextModule.After(OptionalModule.Car, composition) is "split"
+                    ? new Drain("profit_before_pay", DrainKind.PassedOn, year.ProfitBeforePay, "split")
+                    : new Drain("left_after_car", DrainKind.PassedOn, left, NextModule.After(OptionalModule.Car, composition)),
+            ],
             ledger.Select(StepDetail.From).ToList());
     }
 

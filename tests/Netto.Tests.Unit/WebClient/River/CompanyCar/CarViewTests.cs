@@ -39,6 +39,15 @@ public class CarViewTests
         });
     }
 
+    // With the royalty in the plan, what the car leaves goes on to it: the royalty is still in it.
+    [Fact]
+    public void Car_withTheRoyaltyInThePlan_passesWhatItLeavesOnToTheRoyalty()
+    {
+        var view = Car(ElectricCar.AddToPlan(OptionalModule.Copyright).WithRoyalty(10_000m));
+
+        (view.Received, view.Drains[^1], view.PassesOn).ShouldBe((100_000m, new Drain("left_after_car", DrainKind.PassedOn, 92_000m, "copyright"), (decimal?)0.92m));
+    }
+
     // The costs and the contribution are steps of the ledger: their lines carry them.
     [Fact]
     public void Car_eachLineOfAStepCarriesThatStep()
@@ -312,7 +321,7 @@ public class CarViewTests
         RiverErrors.Owner(error, companySkipped: false).ShouldBe(RiverModule.Car);
     }
 
-    private static CarView Car(RiverInputs inputs) => CarView.From(inputs.Run().Year.ShouldNotBeNull());
+    private static CarView Car(RiverInputs inputs) => CarView.From(inputs.Run().Year.ShouldNotBeNull(), inputs.Composition);
 
     private static decimal TaxesOnPay(YearResult year) =>
         year.Steps.Where(step => step.Event == TaxableEvent.DirectorPay && step.Track == Track.PaidOut).Sum(step => step.Amount);

@@ -103,6 +103,28 @@ public class ModuleViewsTests
         });
     }
 
+    [Fact]
+    public void DirectorPay_example_hasNoRoyaltyTaxedAsPay()
+    {
+        var view = DirectorPay(RiverInputs.Example);
+
+        (view.RequalifiedPay, view.Inflow).ShouldBe((0m, view.CompanyCost));
+    }
+
+    // A royalty of 30,000 beside the example's 50,000 passes 30% of 80,000 by 6,000, taxed here as pay:
+    // what flows in is the pay's cost and that part, which the net and each line's share are out of.
+    [Fact]
+    public void DirectorPay_royaltyBeyondItsLimits_takesThePartTaxedAsPayIn()
+    {
+        var inputs = RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithRoyalty(30_000m);
+        var pay = inputs.Run().Pay.ShouldNotBeNull();
+
+        var view = DirectorPay(inputs);
+
+        (view.RequalifiedPay, view.Inflow, view.ToYou, view.Drains[^1].Share)
+            .ShouldBe((6_000m, 56_000m, Netto.Web.Client.Shares.Of(pay.NetInPocket, 56_000m), Netto.Web.Client.Shares.Of(pay.NetInPocket, 56_000m)));
+    }
+
     // Each line of a step carries it, for its bubble to say how the amount is computed and from which
     // text; the net pay, passed on, has no step behind it.
     [Fact]
@@ -603,7 +625,7 @@ public class ModuleViewsTests
     [InlineData(false, false, "split")]
     public void Vouchers_leftAfterThem_goOnToTheNextModuleInThePlan(bool allowances, bool rent, string next)
     {
-        var inputs = AllVouchers with { Composition = new PlanComposition(true, allowances, rent, false) };
+        var inputs = AllVouchers with { Composition = new PlanComposition(true, allowances, rent, false, false) };
 
         Vouchers(inputs).Drains[^1].ShouldBe(new Drain("left_after_vouchers", DrainKind.PassedOn, 97_689.80m, next));
     }
@@ -660,7 +682,7 @@ public class ModuleViewsTests
     [InlineData(false, "split")]
     public void Allowances_leftAfterThem_goOnToTheNextModuleInThePlan(bool rent, string next)
     {
-        var inputs = FlatRateAllowances(RiverInputs.Example) with { Composition = new PlanComposition(false, true, rent, false) };
+        var inputs = FlatRateAllowances(RiverInputs.Example) with { Composition = new PlanComposition(false, true, rent, false, false) };
 
         Allowances(inputs).Drains[^1].ShouldBe(new Drain("left_after_allowances", DrainKind.PassedOn, 97_581.56m, next));
     }

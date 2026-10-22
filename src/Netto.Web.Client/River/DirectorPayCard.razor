@@ -38,6 +38,10 @@
         {
             <p class="director-pay__benefit">@L["Benefit", Formats.Euros(pay.BenefitInKind), Formats.Euros(pay.TaxablePay)]</p>
         }
+        @if (pay.RequalifiedPay > 0m)
+        {
+            <p class="director-pay__benefit">@L["RequalifiedPay", Formats.Euros(pay.RequalifiedPay), Formats.Euros(pay.TaxablePay)]</p>
+        }
     }
     <Disclosure Title="@L["SituationTitle"]" Values="@Values(_settings.Situation)" Refused="@DirectorPaySettingsView.SituationHolds(Refused)">
         <RiverField Label="@L["PaidByLabel"]" Origin="Inputs.ContributionsPaidBy.Origin" Help="@L["PaidByHint"]">
@@ -147,9 +151,10 @@
     private IReadOnlyList<SettingValue> Values(IReadOnlyList<SettingPhrase> phrases) =>
         [.. phrases.Select(phrase => new SettingValue(L[phrase.Key, [.. phrase.Args]].Value, phrase.Origin))];
 
-    // What flows in is what the pay costs the company: the gross, plus the contributions it pays.
+    // What flows in is what the pay costs the company, the gross plus the contributions it pays, and a
+    // copyright royalty's part taxed as pay.
     private string? Summary => Run.Pay is { } pay
-        ? L["Summary", Formats.Euros(pay.CompanyCost), Formats.Euros(pay.NetInPocket)].Value
+        ? L["Summary", Formats.Euros(pay.CompanyCost + pay.RequalifiedPay), Formats.Euros(pay.NetInPocket)].Value
         : null;
 
     private RenderFragment? Details => Run.Pay is { } pay && _view is { } view

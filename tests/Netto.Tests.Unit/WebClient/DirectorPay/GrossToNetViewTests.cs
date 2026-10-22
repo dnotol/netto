@@ -1,4 +1,5 @@
 using Netto.Core.DirectorPay;
+using Netto.Core.MovableIncome;
 using Netto.Core.PersonalTax;
 using Netto.Core.Simulation;
 using Netto.Core.SocialContributions;
@@ -580,6 +581,61 @@ public class GrossToNetViewTests
         (view.Statement.HasBenefit, view.Tracks[1].Rows.Any(row => row.Key == "benefit_in_kind")).ShouldBe((false, false));
     }
 
+    // A royalty's part beyond its limits, 5,000, is pay paid besides the payslip: it joins both tracks
+    // after the gross, and the rest of each is that of a cash pay of 55,000 (GrossToNetMovableIncomeTests).
+    [Fact]
+    public void From_gross50000WithARoyaltyBeyondItsLimits_bothTracksAddThePartTaxedAsPay()
+    {
+        var view = View(50_000m, Withheld, movable: new MovableIncomePaid(5_000m, null, 5_000m, 1_500m));
+
+        view.Tracks.Select(track => track.Rows.Take(2).Select(row => (row.Key, row.Kind, row.Amount)).ToList()).ShouldBe(new[]
+        {
+            new List<(string, RowKind, decimal)> { ("gross_pay", RowKind.Gross, 50_000m), ("requalified_pay", RowKind.Added, 5_000m) },
+            [("gross_pay", RowKind.Gross, 50_000m), ("requalified_pay", RowKind.Added, 5_000m)],
+        });
+    }
+
+    [Fact]
+    public void From_gross50000WithARoyaltyBeyondItsLimits_endsOnTheCashPaysNetAndTaxableIncome()
+    {
+        var asCash = View(55_000m);
+
+        var view = View(50_000m, Withheld, movable: new MovableIncomePaid(5_000m, null, 5_000m, 1_500m));
+
+        (view.Tracks[0].Rows[^1].Amount, view.Tracks[1].Rows[^1].Amount).ShouldBe((asCash.Tracks[0].Rows[^1].Amount, asCash.Tracks[1].Rows[^1].Amount));
+    }
+
+    // The shares are out of what the tracks start from, the gross and that part.
+    [Fact]
+    public void From_gross50000WithARoyaltyBeyondItsLimits_sharesAreOutOfTheGrossAndThatPart()
+    {
+        var view = View(50_000m, Withheld, movable: new MovableIncomePaid(5_000m, null, 5_000m, 1_500m));
+
+        view.Tracks[0].Rows[1].Share.ShouldBe(5_000m / 55_000m);
+    }
+
+    // With a royalty within its limits, the balance says how much of the final tax is the royalty's
+    // and what the company withheld on it.
+    [Fact]
+    public void From_gross50000WithARoyaltyWithinItsLimits_balanceSaysTheRoyaltysTaxAndWithholding()
+    {
+        var (pay, _) = GrossToNet.Compute(2026, 50_000m, MunicipalRates.Entered(0.07m), Withheld, ContributionsPaidBy.Director, 0m, 0m, Royalty10000());
+        var balance = GrossToNetView.From(pay!).Balance;
+
+        (balance.OnTaxedApart, balance.WithheldBesidesPay).ShouldBe((pay!.TaxedApartTax.Total, 1_500m));
+    }
+
+    [Fact]
+    public void From_gross50000_hasNoRoyaltyOnTheBalance()
+    {
+        var balance = View(50_000m).Balance;
+
+        (balance.OnTaxedApart, balance.WithheldBesidesPay).ShouldBe((0m, 0m));
+    }
+
+    private static MovableIncomePaid Royalty10000() =>
+        new(10_000m, new IncomeTaxedApart(10_000m, Netto.Core.Copyright.CopyrightRules.IncomeYear2026.TaxedApartRate), 0m, 1_500m);
+
     private static string Keys(SourceGroup group) => string.Join(' ', group.Amounts.Select(amount => amount.Key));
 
     // The company withholds more than any tax these tests reach, so the pay slip shows no
@@ -591,9 +647,10 @@ public class GrossToNetViewTests
     private static GrossToNetView CompanyPaysView(decimal grossPay) => View(grossPay, Withheld, ContributionsPaidBy.Company);
 
     private static GrossToNetView View(
-        decimal grossPay, TaxPrepayments prepayments, ContributionsPaidBy paidBy = ContributionsPaidBy.Director, decimal otherIncome = 0m, decimal benefit = 0m)
+        decimal grossPay, TaxPrepayments prepayments, ContributionsPaidBy paidBy = ContributionsPaidBy.Director, decimal otherIncome = 0m, decimal benefit = 0m,
+        MovableIncomePaid? movable = null)
     {
-        var (value, error) = GrossToNet.Compute(2026, grossPay, MunicipalRates.Entered(0.07m), prepayments, paidBy, otherIncome, benefit);
+        var (value, error) = GrossToNet.Compute(2026, grossPay, MunicipalRates.Entered(0.07m), prepayments, paidBy, otherIncome, benefit, movable);
 
         error.ShouldBeNull();
         return GrossToNetView.From(value.ShouldNotBeNull());

@@ -60,4 +60,22 @@
   <data name="Condition_fake_hybrid" xml:space="preserve">
     <value>A plug-in hybrid bought or leased from 2018 is a fake hybrid when its battery holds less than 0.5 kWh per 100 kg of the car, or it emits more than 50 g/km, 75 g/km when measured under Euro 6e-bis or a later standard: its benefit and its deduction then take the CO2 of the matching car running on its fuel alone, on the SPF's list, or its own CO2 times 2.5 when there is none. You say whether yours is one.</value>
   </data>
+  <data name="Condition_works_you_created" xml:space="preserve">
+    <value>You created the works yourself, original ones, and transfer or license your rights on them to the company in writing, with the royalty, its scope and its duration.</value>
+  </data>
+  <data name="Condition_for_the_public" xml:space="preserve">
+    <value>Unless you hold an attestation du travail des arts, the company exploits them for communication to the public, public performance or reproduction: a game or software it sells or licenses to the public qualifies, code for one client's own use likely not.</value>
+  </data>
+  <data name="Condition_effectively_exploited" xml:space="preserve">
+    <value>The company effectively exploits the rights, according to the honest practices of your profession.</value>
+  </data>
+  <data name="Condition_arm_length" xml:space="preserve">
+    <value>The royalty is at an arm's-length price: what exceeds the company's professional needs unreasonably is not deductible. An advance ruling can confirm it.</value>
+  </data>
+  <data name="Condition_fiche_281_45" xml:space="preserve">
+    <value>The company files a 281.45 fiche for you each year, without which it cannot deduct the royalty.</value>
+  </data>
+  <data name="Condition_declared" xml:space="preserve">
+    <value>You declare the royalty in your tax return every year, though the company withheld on it.</value>
+  </data>
 </root>

@@ -67,6 +67,20 @@ public class PaySlipTextTests
             .Distinct().Where(key => Resources.GetString(key, CultureInfo.InvariantCulture) is null).ShouldBeEmpty();
     }
 
+    // A royalty beyond its limits adds its row to both tracks and says what the next 1,000 holds; one
+    // within them adds its lines to the balance.
+    [Fact]
+    public void PaySlipResx_everyKeyOfAPayWithARoyalty_hasAText()
+    {
+        var movable = new Netto.Core.MovableIncome.MovableIncomePaid(
+            30_000m, new IncomeTaxedApart(24_000m, Netto.Core.Copyright.CopyrightRules.IncomeYear2026.TaxedApartRate), 6_000m, 5_400m);
+        var (value, _) = GrossToNet.Compute(2026, 50_000m, MunicipalRates.Entered(0.07m), TaxPrepayments.AsWithheld, ContributionsPaidBy.Director, 0m, 0m, movable);
+        var view = GrossToNetView.From(value.ShouldNotBeNull());
+
+        view.Tracks.SelectMany(track => track.Rows).Select(row => PaySlipText.Row(row.Key)).Concat(["FinalTaxOnRoyalty", "WithheldOnRoyalty", "NextRoyaltyNote"])
+            .Distinct().Where(key => Resources.GetString(key, CultureInfo.InvariantCulture) is null).ShouldBeEmpty();
+    }
+
     // With a rent taxed with the pay, the final tax and the next 1,000 say so.
     [Fact]
     public void PaySlipResx_everyKeyOfARentTaxedWithThePay_hasAText()

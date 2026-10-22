@@ -1,5 +1,6 @@
 using Netto.Core.Allowances;
 using Netto.Core.CompanyCar;
+using Netto.Core.Copyright;
 using Netto.Core.CorporateTax;
 using Netto.Core.DirectorPay;
 using Netto.Core.Dividends;
@@ -14,10 +15,10 @@ namespace Netto.Web.Client.River;
 
 // Everything the user describes in the river, each input with its origin, and the one run of the
 // year every card reads, so the river always adds up. Company is null once its figures are cleared:
-// the river then starts at the pay, and the vouchers, the expense allowances, the rent and the car
-// wait for it. Those four are optional modules: the year counts one only while it is in the plan
-// (Composition), and keeps its values while it is out, so adding it back restores them. Public
-// because the cards, components, take it as a parameter.
+// the river then starts at the pay, and the vouchers, the expense allowances, the rent, the car and
+// the copyright royalty wait for it. Those five are optional modules: the year counts one only while
+// it is in the plan (Composition), and keeps its values while it is out, so adding it back restores
+// them. Public because the cards, components, take it as a parameter.
 public sealed record RiverInputs(
     int IncomeYear,
     CompanyFigures? Company,
@@ -26,6 +27,7 @@ public sealed record RiverInputs(
     AllowanceInputs Allowances,
     RentInputs Rent,
     CarInputs Car,
+    CopyrightInputs Copyright,
     Input<bool> SmallCompany,
     Input<FinancialYear> FinancialYear,
     AdvancePaymentInputs AdvancePayments,
@@ -52,7 +54,9 @@ public sealed record RiverInputs(
     // year without them and adding a module starts it from nothing (decided 2026-10-21). A car's first
     // registration and its order are dates, not money: the example's are the year's first day, a new
     // car, until the user gives theirs, and its CO2 is nothing until given. It is assumed electric,
-    // the company paying no private charging, until the user says otherwise.
+    // the company paying no private charging, until the user says otherwise. It pays no copyright
+    // royalty, and assumes the four previous years' copyright income averaged within the cap, a
+    // status, until the user says otherwise.
     public static RiverInputs Example { get; } = new(
         ExampleYear,
         new CompanyFigures(new Input<decimal>(120_000m, InputOrigin.Example), new Input<decimal>(20_000m, InputOrigin.Example)),
@@ -66,6 +70,7 @@ public sealed record RiverInputs(
             new Input<CarEngine>(CarEngine.Electric, InputOrigin.Default), new Input<int>(0, InputOrigin.Example), new Input<bool>(false, InputOrigin.Default),
             new Input<DateOnly>(new DateOnly(ExampleYear, 1, 1), InputOrigin.Example), new Input<bool>(false, InputOrigin.Default),
             new Input<int>(0, InputOrigin.Example), new Input<bool>(false, InputOrigin.Default), new Input<bool>(false, InputOrigin.Default)),
+        new CopyrightInputs(ExampleNothing, new Input<bool>(true, InputOrigin.Default)),
         new Input<bool>(true, InputOrigin.Default),
         new Input<FinancialYear>(River.FinancialYear.FifthOrLater, InputOrigin.Default),
         new AdvancePaymentInputs(ExampleNothing, ExampleNothing, ExampleNothing, ExampleNothing),
@@ -137,6 +142,10 @@ public sealed record RiverInputs(
     public RiverInputs WithNoMatchingCar(bool none) => this with { Car = Car with { NoMatchingCar = Yours(none) } };
 
     public RiverInputs WithSmallNaturalGas(bool small) => this with { Car = Car with { SmallNaturalGas = Yours(small) } };
+
+    public RiverInputs WithRoyalty(decimal amount) => this with { Copyright = Copyright with { Royalty = Yours(amount) } };
+
+    public RiverInputs WithAverageWithinCap(bool within) => this with { Copyright = Copyright with { AverageWithinCap = Yours(within) } };
 
     public RiverInputs WithSmallCompany(bool smallCompany) => this with { SmallCompany = Yours(smallCompany) };
 
@@ -241,6 +250,7 @@ public sealed record RiverInputs(
         Allowances = InPlan(OptionalModule.Allowances) ? Allowances.Values : ExpenseAllowances.None,
         Rent = InPlan(OptionalModule.Rent) ? Rent.Values : HomeOfficeRent.None,
         Car = InPlan(OptionalModule.Car) ? Car.Values : CarFacts.None,
+        Copyright = InPlan(OptionalModule.Copyright) ? Copyright.Values : CopyrightRoyalty.None,
     };
 }
 
@@ -332,6 +342,14 @@ public sealed record CarInputs(
         NoMatchingCar = NoMatchingCar.Value,
         SmallNaturalGas = SmallNaturalGas.Value,
     };
+}
+
+// The copyright royalty the company pays the director as the user enters it: the gross royalty for
+// the year, and whether their copyright income of the four previous years averaged at most the
+// year's cap.
+public sealed record CopyrightInputs(Input<decimal> Royalty, Input<bool> AverageWithinCap)
+{
+    public CopyrightRoyalty Values => new(Royalty.Value) { AverageWithinCap = AverageWithinCap.Value };
 }
 
 // A value of the river with where it comes from.

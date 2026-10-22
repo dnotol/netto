@@ -603,4 +603,55 @@
   <data name="Amount_rent_charges_limit_multiplier" xml:space="preserve">
     <value>Charges, at most 2/3 of the revalued cadastral income</value>
   </data>
+  <data name="Title_copyright_royalty" xml:space="preserve">
+    <value>Copyright royalty</value>
+  </data>
+  <data name="Rule_copyright_royalty" xml:space="preserve">
+    <value>The royalty the company pays you for the rights on your works, deducted in full like its other costs, provided it files the 281.45 fiche for you. It comes off its profit before your pay.</value>
+  </data>
+  <data name="Title_copyright_within_limits" xml:space="preserve">
+    <value>Royalty within the limits</value>
+  </data>
+  <data name="Rule_copyright_within_limits" xml:space="preserve">
+    <value>The part of the royalty that keeps its quality of movable income: at most 30% of the royalty and your gross pay, and at most the year's cap, while your copyright income of the four previous years averaged at most that cap. It reaches your pocket taxed apart, outside your social contributions and the advance-payment surcharge.</value>
+  </data>
+  <data name="Title_copyright_taxed_as_pay" xml:space="preserve">
+    <value>Royalty taxed as pay</value>
+  </data>
+  <data name="Rule_copyright_taxed_as_pay" xml:space="preserve">
+    <value>What the royalty passes the limits by is professional income, which Netto taxes as your director pay: with your pay, in your social contributions' base, on the scale and in the advance-payment surcharge's base, though never on your payslip.</value>
+  </data>
+  <data name="Title_copyright_tax" xml:space="preserve">
+    <value>Tax apart on the royalty</value>
+  </data>
+  <data name="Rule_copyright_tax" xml:space="preserve">
+    <value>The part within the limits is taxed apart at 15%, never on the scale nor against the tax-free amount. That tax joins the State tax before the autonomy factor and the regional tax split it, so what it adds can be a cent off 15%. It is on the whole royalty: from 2026 the flat-rate costs are only for a holder of an attestation du travail des arts.</value>
+  </data>
+  <data name="Title_copyright_municipal_surcharge" xml:space="preserve">
+    <value>Municipal surcharge on the royalty</value>
+  </data>
+  <data name="Rule_copyright_municipal_surcharge" xml:space="preserve">
+    <value>Your municipality's rate applied to the tax the royalty adds: the surcharge is on the whole tax.</value>
+  </data>
+  <data name="Title_copyright_low_earned_income_credit_lost" xml:space="preserve">
+    <value>Tax credit for low earned income the royalty takes away</value>
+  </data>
+  <data name="Rule_copyright_low_earned_income_credit_lost" xml:space="preserve">
+    <value>The credit follows your pay alone, but your total net income, the royalty within the limits included, limits it: none above the ceiling, and from where the full credit ends up to the ceiling, at most what the same falling line gives on that total. What the royalty takes away of the credit is lost.</value>
+  </data>
+  <data name="Title_copyright_income_tax_advance_payments" xml:space="preserve">
+    <value>Advance-payment surcharge the lost credit adds</value>
+  </data>
+  <data name="Rule_copyright_income_tax_advance_payments" xml:space="preserve">
+    <value>The royalty's own tax is never surcharged. But the surcharge on your pay's tax is on that tax at 106% less what was withheld and the credit you actually get: a credit the royalty takes away raises it, less any change in the bonus.</value>
+  </data>
+  <data name="Amount_copyright_relative_limit_rate" xml:space="preserve">
+    <value>Share of the royalty and the pay within the limits</value>
+  </data>
+  <data name="Amount_copyright_cap" xml:space="preserve">
+    <value>Cap on the royalty within the limits</value>
+  </data>
+  <data name="Amount_copyright_taxed_apart_rate" xml:space="preserve">
+    <value>Rate of the tax apart</value>
+  </data>
 </root>

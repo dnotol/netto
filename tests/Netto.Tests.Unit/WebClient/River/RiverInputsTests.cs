@@ -479,6 +479,7 @@ public class RiverInputsTests
     [InlineData(OptionalModule.Allowances)]
     [InlineData(OptionalModule.Rent)]
     [InlineData(OptionalModule.Car)]
+    [InlineData(OptionalModule.Copyright)]
     public void AddToPlan_putsTheModuleInThePlan(OptionalModule module)
     {
         var inputs = RiverInputs.Example.AddToPlan(module);
@@ -492,6 +493,7 @@ public class RiverInputsTests
     [InlineData(OptionalModule.Allowances)]
     [InlineData(OptionalModule.Rent)]
     [InlineData(OptionalModule.Car)]
+    [InlineData(OptionalModule.Copyright)]
     public void Run_moduleTakenOutOfThePlan_runsTheYearWithoutIt(OptionalModule module)
     {
         var inputs = WithValues(module).TakeOutOfPlan(module);
@@ -505,6 +507,7 @@ public class RiverInputsTests
     [InlineData(OptionalModule.Allowances)]
     [InlineData(OptionalModule.Rent)]
     [InlineData(OptionalModule.Car)]
+    [InlineData(OptionalModule.Copyright)]
     public void TakeOutOfPlan_keepsTheModulesValues(OptionalModule module)
     {
         var inputs = WithValues(module);
@@ -530,6 +533,7 @@ public class RiverInputsTests
     [InlineData(OptionalModule.Allowances)]
     [InlineData(OptionalModule.Rent)]
     [InlineData(OptionalModule.Car)]
+    [InlineData(OptionalModule.Copyright)]
     public void SearchSplit_moduleOutOfThePlan_drawsEveryPayUpToTheProfitWithoutIt(OptionalModule module)
     {
         var search = WithValues(module).TakeOutOfPlan(module).SearchSplit().ShouldNotBeNull();
@@ -543,6 +547,7 @@ public class RiverInputsTests
     [InlineData(OptionalModule.Allowances)]
     [InlineData(OptionalModule.Rent)]
     [InlineData(OptionalModule.Car)]
+    [InlineData(OptionalModule.Copyright)]
     public void SameBesidesPay_moduleAddedOrTakenOut_isNot(OptionalModule module)
     {
         var inputs = WithValues(module);
@@ -850,8 +855,58 @@ public class RiverInputsTests
         OptionalModule.Vouchers => VouchersInPlan.WithMealVoucherDays(220),
         OptionalModule.Allowances => FlatRateAllowances(RiverInputs.Example),
         OptionalModule.Rent => RentAtTheCap(RiverInputs.Example),
+        OptionalModule.Copyright => Royalty(RiverInputs.Example),
         _ => ElectricCar(RiverInputs.Example),
     };
+
+    // YearSimulationCopyrightTests' royalty within its limits: 10,000 beside the example's 50,000 of pay.
+    private static RiverInputs Royalty(RiverInputs inputs) => inputs.AddToPlan(OptionalModule.Copyright).WithRoyalty(10_000m);
+
+    [Fact]
+    public void Example_hasNoRoyaltyAndAssumesTheAverageMet()
+    {
+        RiverInputs.Example.Copyright.ShouldBe(new CopyrightInputs(new Input<decimal>(0m, InputOrigin.Example), new Input<bool>(true, InputOrigin.Default)));
+    }
+
+    [Fact]
+    public void WithRoyalty_makesEachTheUsers()
+    {
+        var inputs = RiverInputs.Example.WithRoyalty(12_500.50m).WithAverageWithinCap(false);
+
+        inputs.Copyright.ShouldBe(new CopyrightInputs(new Input<decimal>(12_500.50m, InputOrigin.Yours), new Input<bool>(false, InputOrigin.Yours)));
+    }
+
+    [Fact]
+    public void Run_royaltyReachesTheEngineWithItsAverage()
+    {
+        Royalty(RiverInputs.Example).WithAverageWithinCap(false).MoveScenario().Copyright
+            .ShouldBe(new Netto.Core.Copyright.CopyrightRoyalty(10_000m) { AverageWithinCap = false });
+    }
+
+    // The split shares what the royalty leaves.
+    [Fact]
+    public void PayCeiling_royalty_isTheProfitItLeaves()
+    {
+        Royalty(RiverInputs.Example).PayCeiling.ShouldBe(90_000m);
+    }
+
+    [Fact]
+    public void Run_negativeRoyalty_isRefusedWithTheEnginesKey()
+    {
+        var run = Royalty(RiverInputs.Example).WithRoyalty(-1m).Run();
+
+        (run.Year, run.Error).ShouldBe((null, Netto.Core.Copyright.CopyrightCalculator.RoyaltyNegative));
+    }
+
+    // Added back, the royalty counts with the values it left with.
+    [Fact]
+    public void Run_royaltyAddedBack_countsItsValuesAgain()
+    {
+        var inputs = Royalty(RiverInputs.Example);
+
+        inputs.TakeOutOfPlan(OptionalModule.Copyright).AddToPlan(OptionalModule.Copyright).Run().Year.ShouldNotBeNull().Copyright
+            .ShouldBe(inputs.Run().Year.ShouldNotBeNull().Copyright);
+    }
 
     private static RiverInputs FlatRateAllowances(RiverInputs inputs) =>
         inputs.AddToPlan(OptionalModule.Allowances).WithOfficeAllowance(1_938.44m).WithInternetAllowance(240m).WithComputerAllowance(240m);
