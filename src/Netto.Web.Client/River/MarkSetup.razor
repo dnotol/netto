@@ -2,9 +2,10 @@
 
 @* Keeps the river as it is as the user's current setup, which the bar then compares the river with;
    pressed again, it replaces it. Disabled while the engine refuses an amount, there being no figure
-   to keep (BaselineGain.CanMark). *@
+   to keep (BaselineGain.CanMark). Once marked its word is short, so the bar's figures keep their room;
+   its name for a screen reader says the rest, starting with the word in sight. *@
 <MudButton Variant="Variant.Outlined" Size="Size.Small" Class="mark-setup" StartIcon="@Icons.Material.Rounded.BookmarkBorder"
-           Disabled="@(!CanMark)" OnClick="OnMark">
+           Disabled="@(!CanMark)" OnClick="OnMark" aria-label="@L[Marked ? "MarkAgainLabel" : "Mark"]">
     @L[Marked ? "MarkAgain" : "Mark"]
 </MudButton>
 

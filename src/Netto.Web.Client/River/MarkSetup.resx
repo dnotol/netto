@@ -16,6 +16,9 @@
     <value>Mark as my current setup</value>
   </data>
   <data name="MarkAgain" xml:space="preserve">
+    <value>Mark again</value>
+  </data>
+  <data name="MarkAgainLabel" xml:space="preserve">
     <value>Mark again as my current setup</value>
   </data>
 </root>
