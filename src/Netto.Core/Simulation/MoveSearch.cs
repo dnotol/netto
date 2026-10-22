@@ -14,6 +14,10 @@ public abstract record Move
 
     // Moves of one kind change the same value: a later one replaces the earlier in the plan.
     public virtual object Kind => GetType();
+
+    // This move taken after an earlier one of its kind, as the plan's line shows the two: the later
+    // value, for a move that sets one.
+    public virtual Move After(Move earlier) => this;
 }
 
 // The director pay set to Pay, the split's best.
@@ -28,6 +32,9 @@ public sealed record CompanyAdvancePaymentMove(int Deadline, DateOnly Date, deci
 {
     public override object Kind => (GetType(), Deadline);
 
+    // A payment adds to what is paid by its deadline: two are their sum.
+    public override Move After(Move earlier) => earlier is CompanyAdvancePaymentMove paid ? this with { Amount = paid.Amount + Amount } : this;
+
     public override Scenario Apply(Scenario scenario) => scenario with { AdvancePayments = scenario.AdvancePayments.Add(Deadline, Amount) };
 }
 
@@ -36,6 +43,8 @@ public sealed record CompanyAdvancePaymentMove(int Deadline, DateOnly Date, deci
 public sealed record DirectorAdvancePaymentMove(int Deadline, DateOnly Date, decimal Amount) : Move
 {
     public override object Kind => (GetType(), Deadline);
+
+    public override Move After(Move earlier) => earlier is DirectorAdvancePaymentMove paid ? this with { Amount = paid.Amount + Amount } : this;
 
     public override Scenario Apply(Scenario scenario) =>
         scenario with { TaxPrepayments = scenario.TaxPrepayments with { Paid = scenario.TaxPrepayments.Paid.Add(Deadline, Amount) } };
@@ -125,7 +134,7 @@ public static class MoveSearch
             if (taken < 0)
                 moves.Add(new PlannedMove(move.Move, move.Gain));
             else
-                moves[taken] = new PlannedMove(move.Move, moves[taken].Gain + move.Gain);
+                moves[taken] = new PlannedMove(move.Move.After(moves[taken].Move), moves[taken].Gain + move.Gain);
             current = move.After;
             inPocket += move.Gain;
         }

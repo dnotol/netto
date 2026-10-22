@@ -105,6 +105,30 @@ public class MoveSearchTests
         plan.Moves.ShouldBe([new PlannedMove(new PayMove(20_799m), Pocket(noPay with { DirectorPay = 20_799m }) - Pocket(noPay))]);
     }
 
+    // A payment adds to what is paid by its deadline: a second one by the same deadline joins the
+    // first in its line, the two amounts together.
+    [Fact]
+    public void Run_paymentsByOneDeadline_areOneLineOfBothAmounts()
+    {
+        var finder = new Steps(new CompanyAdvancePaymentMove(3, new DateOnly(2026, 12, 21), 10_000m), new CompanyAdvancePaymentMove(3, new DateOnly(2026, 12, 21), 5_000m));
+
+        var plan = MoveSearch.Run(Today, [finder]).Value.ShouldNotBeNull();
+
+        plan.Moves.ShouldBe([new PlannedMove(new CompanyAdvancePaymentMove(3, new DateOnly(2026, 12, 21), 15_000m),
+            Pocket(Today with { AdvancePayments = new AdvancePayments(0m, 0m, 0m, 15_000m) }) - Pocket(Today))]);
+    }
+
+    [Fact]
+    public void Run_directorPaymentsByOneDeadline_areOneLineOfBothAmounts()
+    {
+        var nothingWithheld = Today with { TaxPrepayments = TaxPrepayments.None };
+        var finder = new Steps(new DirectorAdvancePaymentMove(3, new DateOnly(2026, 12, 21), 7_000m), new DirectorAdvancePaymentMove(3, new DateOnly(2026, 12, 21), 7_317.50m));
+
+        var plan = MoveSearch.Run(nothingWithheld, [finder]).Value.ShouldNotBeNull();
+
+        plan.Moves.Single().Move.ShouldBe(new DirectorAdvancePaymentMove(3, new DateOnly(2026, 12, 21), 14_317.50m));
+    }
+
     // A payment by another deadline is another line.
     [Fact]
     public void Run_paymentsByTwoDeadlines_areTwoLines()
