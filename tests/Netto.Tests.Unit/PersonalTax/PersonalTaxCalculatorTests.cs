@@ -333,6 +333,72 @@ public class PersonalTaxCalculatorTests
             LowEarnedIncomeCredit: 0.00m));
     }
 
+    // Tax-Calc T16 of 2026-10-22 (Notion, « I can weigh a copyright royalty in my plan »): T4's pay with
+    // 10,000 of copyright income (code 1123, no costs in 1124), taxed apart at 15%. The 1,500.00 joins the
+    // State tax before the autonomy factor, « Impôt Etat » 13,086.55, which is split into 9,820.54 and
+    // 3,266.02 of regional tax: the total tax is 13,086.56, and the municipal surcharge is on it.
+    [Fact]
+    public void Compute_2025TaxCalcT16PayAndRoyalty_taxesTheRoyaltyApartBeforeTheSplit()
+    {
+        var result = PersonalTaxCalculator.Compute(Rules2025, 50_000.00m, 8_300.00m, 0.07m, taxedApart: Royalty2025(10_000.00m));
+
+        result.ShouldBe(new PersonalTaxResult(
+            FlatRateCosts: 1_251.00m, TaxableIncome: 40_449.00m,
+            BasicTax: 14_314.05m, TaxFreeAmountReduction: 2_727.50m, StateTax: 11_586.55m,
+            ReducedStateTax: 9_820.54m, RegionalAdditionalTax: 3_266.02m, IncomeTax: 13_086.56m, MunicipalSurcharge: 916.06m,
+            LowEarnedIncomeCredit: 0.00m, IncomeTaxedApart: 10_000.00m, TaxedApart: 1_500.00m));
+    }
+
+    // Tax-Calc T17 of 2026-10-22: T2's pay with 8,000 of copyright income. « Ensemble des revenus nets »
+    // counts the royalty, 23,908.00, which limits the credit to 880 × (28,420 − 23,908) / 6,560 = 605.27,
+    // though its base, « Revenus d'activité », is the pay's 15,908.00 alone.
+    [Fact]
+    public void Compute_2025TaxCalcT17RoyaltyRaisesTheTotalNetIncome_limitsTheCreditButNotItsBase()
+    {
+        var result = PersonalTaxCalculator.Compute(Rules2025, 20_000.00m, 3_600.00m, 0.07m, taxedApart: Royalty2025(8_000.00m));
+
+        result.ShouldBe(new PersonalTaxResult(
+            FlatRateCosts: 492.00m, TaxableIncome: 15_908.00m,
+            BasicTax: 3_977.00m, TaxFreeAmountReduction: 2_727.50m, StateTax: 1_249.50m,
+            ReducedStateTax: 1_838.18m, RegionalAdditionalTax: 611.32m, IncomeTax: 2_449.50m, MunicipalSurcharge: 171.47m,
+            LowEarnedIncomeCredit: 605.27m, IncomeTaxedApart: 8_000.00m, TaxedApart: 1_200.00m));
+    }
+
+    [Fact]
+    public void Compute_2025TaxCalcT17RoyaltyRaisesTheTotalNetIncome_countsItThere()
+    {
+        var result = PersonalTaxCalculator.Compute(Rules2025, 20_000.00m, 3_600.00m, 0.07m, taxedApart: Royalty2025(8_000.00m));
+
+        result.TotalNetIncome.ShouldBe(23_908.00m);
+    }
+
+    // Tax-Calc T18 of 2026-10-22: a royalty of 20,000 beside 30,000 of pay, of which 15,000 within the
+    // limits and taxed apart, and 5,000 beyond them declared with the pay in code 1400, 35,000 in all.
+    [Fact]
+    public void Compute_2025TaxCalcT18RoyaltyBeyondTheLimits_taxesTheExcessWithThePay()
+    {
+        var result = PersonalTaxCalculator.Compute(Rules2025, 35_000.00m, 6_000.00m, 0.07m, taxedApart: Royalty2025(15_000.00m));
+
+        result.ShouldBe(new PersonalTaxResult(
+            FlatRateCosts: 870.00m, TaxableIncome: 28_130.00m,
+            BasicTax: 8_804.00m, TaxFreeAmountReduction: 2_727.50m, StateTax: 6_076.50m,
+            ReducedStateTax: 6_248.46m, RegionalAdditionalTax: 2_078.05m, IncomeTax: 8_326.51m, MunicipalSurcharge: 582.86m,
+            LowEarnedIncomeCredit: 0.00m, IncomeTaxedApart: 15_000.00m, TaxedApart: 2_250.00m));
+    }
+
+    // Income taxed apart meets no tax-free amount: on a pay under it, the royalty is still taxed at 15%,
+    // derived from the 2026 amounts (25% of 11,550 frees the scale's whole tax on 10,000).
+    [Fact]
+    public void Compute_2026RoyaltyBesideAPayUnderTheTaxFreeAmount_isStillTaxedAt15Percent()
+    {
+        var result = PersonalTaxCalculator.Compute(Rules2026, 10_000.00m, 0m, 0.07m,
+            taxedApart: new IncomeTaxedApart(5_000.00m, Core.Copyright.CopyrightRules.IncomeYear2026.TaxedApartRate));
+
+        (result.StateTax, result.TaxedApart, result.IncomeTax).ShouldBe((0m, 750.00m, 750.00m));
+    }
+
+    private static IncomeTaxedApart Royalty2025(decimal royalty) => new(royalty, Core.Copyright.CopyrightRules.IncomeYear2025.TaxedApartRate);
+
     // T14's pay alone, derived from the official amounts (Tax-Calc was not run without the rent):
     // 880 × (28,420 − 28,033) / 6,560 = 51.91.
     [Fact]

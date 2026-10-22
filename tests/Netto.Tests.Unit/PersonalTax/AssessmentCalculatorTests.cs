@@ -60,6 +60,39 @@ public class AssessmentCalculatorTests
         (assessment.FinalTax, assessment.Balance).ShouldBe((7_198.46m, 7_198.46m));
     }
 
+    // Tax-Calc T16 of 2026-10-22: T12's pay with nothing withheld and 10,000 of copyright income taxed
+    // apart, 1,500 withheld on it (code 1119). The tax on all of it, 13,086.56, its municipal surcharge,
+    // 916.06, and the surcharge on the pay's tax alone, 746.12, which the royalty's withholding does not
+    // lower, less that withholding, credited (art. 279): « SOLDE » 13,248.74.
+    [Fact]
+    public void Compute_2025TaxCalcT16PayAndRoyalty_creditsTheRoyaltysWithholding()
+    {
+        var assessment = Assessment2025(50_000.00m, 8_300.00m, TaxPrepayments.None, taxedApart: 10_000.00m, withheldBesidesPay: 1_500.00m);
+
+        (assessment.FinalTax, assessment.Withheld, assessment.WithheldBesidesPay, assessment.Balance).ShouldBe((14_748.74m, 0m, 1_500.00m, 13_248.74m));
+    }
+
+    // Tax-Calc T17 of 2026-10-22: the credit the royalty leaves, 605.27, comes off the surcharge's base,
+    // which then falls under the minimum: « SOLDE » 815.70.
+    [Fact]
+    public void Compute_2025TaxCalcT17RoyaltyLimitingTheCredit_leavesTheSurchargeUnderItsMinimum()
+    {
+        var assessment = Assessment2025(20_000.00m, 3_600.00m, TaxPrepayments.None, taxedApart: 8_000.00m, withheldBesidesPay: 1_200.00m);
+
+        (assessment.FinalTax, assessment.Balance).ShouldBe((2_015.70m, 815.70m));
+    }
+
+    // Tax-Calc T18 of 2026-10-22: 3,750 withheld on a royalty whose 15,000 within the limits are taxed
+    // apart and whose 5,000 beyond them are declared with the pay: all of it is credited, more than 15%
+    // of what is taxed apart. « SOLDE » 5,550.66.
+    [Fact]
+    public void Compute_2025TaxCalcT18RoyaltyBeyondTheLimits_creditsAllOfItsWithholding()
+    {
+        var assessment = Assessment2025(35_000.00m, 6_000.00m, TaxPrepayments.None, taxedApart: 15_000.00m, withheldBesidesPay: 3_750.00m);
+
+        (assessment.FinalTax, assessment.Balance).ShouldBe((9_300.66m, 5_550.66m));
+    }
+
     // No tax to set the 252.35 of credit against: all of it is refunded (art. 304, §2).
     [Fact]
     public void Compute_2025TaxCalcT8CreditAndNoTax_refundsTheCredit()
@@ -105,22 +138,26 @@ public class AssessmentCalculatorTests
         (assessment.WithheldGiven, assessment.Balance).ShouldBe((withheldGiven, 1_436.06m));
     }
 
-    private static Assessment Assessment2025(decimal directorPay, decimal ownContributions, TaxPrepayments prepayments, decimal otherIncome = 0m) =>
-        Assessment(Rules2025, directorPay, ownContributions, prepayments, true, otherIncome);
+    private static Assessment Assessment2025(
+        decimal directorPay, decimal ownContributions, TaxPrepayments prepayments, decimal otherIncome = 0m, decimal taxedApart = 0m, decimal withheldBesidesPay = 0m) =>
+        Assessment(Rules2025, directorPay, ownContributions, prepayments, true, otherIncome, taxedApart, withheldBesidesPay);
 
     private static Assessment Assessment2026(decimal directorPay, decimal ownContributions, TaxPrepayments prepayments, bool withheldGiven = true) =>
-        Assessment(Rules2026, directorPay, ownContributions, prepayments, withheldGiven, 0m);
+        Assessment(Rules2026, directorPay, ownContributions, prepayments, withheldGiven, 0m, 0m, 0m);
 
     // These tests give the amount withheld, so the surcharge takes it as it is. The tax is on the whole
-    // income, the rent's included; the surcharge, on the pay's own tax less the credit granted.
+    // income, the rent's and a royalty taxed apart included; the surcharge, on the pay's own tax less the
+    // credit granted.
     private static Assessment Assessment(
-        PersonalTaxRules rules, decimal directorPay, decimal ownContributions, TaxPrepayments prepayments, bool withheldGiven, decimal otherIncome)
+        PersonalTaxRules rules, decimal directorPay, decimal ownContributions, TaxPrepayments prepayments, bool withheldGiven, decimal otherIncome,
+        decimal taxedApart, decimal withheldBesidesPay)
     {
         var withheld = prepayments.Withheld ?? throw new InvalidOperationException("These tests give the amount withheld.");
+        var apart = taxedApart > 0m ? new IncomeTaxedApart(taxedApart, Core.Copyright.CopyrightRules.For(rules.IncomeYear)!.TaxedApartRate) : null;
         var pay = PersonalTaxCalculator.Compute(rules, directorPay, ownContributions, 0.07m);
-        var tax = PersonalTaxCalculator.Compute(rules, directorPay, ownContributions, 0.07m, otherIncome);
+        var tax = PersonalTaxCalculator.Compute(rules, directorPay, ownContributions, 0.07m, otherIncome, apart);
         var advancePayments = IncomeTaxAdvancePaymentCalculator.Compute(rules.AdvancePayments, pay.IncomeTax, tax.LowEarnedIncomeCredit, prepayments);
 
-        return AssessmentCalculator.Compute(tax, advancePayments, withheld, withheldGiven, prepayments.Paid);
+        return AssessmentCalculator.Compute(tax, advancePayments, withheld, withheldGiven, prepayments.Paid, withheldBesidesPay);
     }
 }

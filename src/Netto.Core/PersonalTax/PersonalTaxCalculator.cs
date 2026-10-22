@@ -7,27 +7,33 @@ public static class PersonalTaxCalculator
     // The other income is the net income of another category taxed with the pay, the net rent of a
     // home office let to the company (art. 7 and 13), never negative. None unless given. It is
     // globalised with the pay's net professional income, as Tax-Calc T13 and T14 show: the scale, the
-    // tax-free amount and so the municipal surcharge apply to their total.
+    // tax-free amount and so the municipal surcharge apply to their total. The income taxed apart, a
+    // copyright royalty within its limits, is taxed at its own rate, never on the scale nor against the
+    // tax-free amount (art. 171), and that tax joins the State tax before the autonomy factor, so the
+    // split and the municipal surcharge are on everything (Tax-Calc T16 to T18); none unless given.
     public static PersonalTaxResult Compute(
-        PersonalTaxRules rules, decimal directorPay, decimal ownContributions, decimal municipalRate, decimal otherIncome = 0m)
+        PersonalTaxRules rules, decimal directorPay, decimal ownContributions, decimal municipalRate, decimal otherIncome = 0m, IncomeTaxedApart? taxedApart = null)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(otherIncome, 0m);
+        ArgumentOutOfRangeException.ThrowIfLessThan(taxedApart?.Income ?? 0m, 0m);
 
         var flatRateCosts = FlatRateCosts(rules, directorPay - ownContributions);
         var taxableIncome = Math.Max(0m, directorPay - ownContributions - flatRateCosts);
-        var totalNetIncome = taxableIncome + otherIncome;
+        var globalisedIncome = taxableIncome + otherIncome;
+        var incomeTaxedApart = taxedApart?.Income ?? 0m;
 
         // A tax-free amount larger than the income only frees what there is: a single person cannot
         // pass the unused part on to anyone.
-        var basicTax = Money.RoundToCent(TaxOnScale(rules.Scale, totalNetIncome));
+        var basicTax = Money.RoundToCent(TaxOnScale(rules.Scale, globalisedIncome));
         var taxFreeAmountReduction = Money.RoundToCent(
-            rules.TaxFreeAmountRate.Value * Math.Min(rules.TaxFreeAmount.Value, totalNetIncome));
+            rules.TaxFreeAmountRate.Value * Math.Min(rules.TaxFreeAmount.Value, globalisedIncome));
         var stateTax = Math.Max(0m, basicTax - taxFreeAmountReduction);
+        var taxApart = taxedApart is null ? 0m : Money.RoundToCent(incomeTaxedApart * taxedApart.Rate.Value);
 
         // The federal government keeps the State tax less the autonomy factor, and Wallonia adds its
         // regional tax on that share. The two rates are set to cancel out, but each part is rounded
         // on its own, so their sum can be a few cents off the State tax.
-        var reducedStateTax = Money.RoundToCent(stateTax * (1 - rules.AutonomyFactor.Value));
+        var reducedStateTax = Money.RoundToCent((stateTax + taxApart) * (1 - rules.AutonomyFactor.Value));
         var regionalAdditionalTax = Money.RoundToCent(reducedStateTax * rules.RegionalAdditionalRate.Value);
         var incomeTax = reducedStateTax + regionalAdditionalTax;
 
@@ -35,8 +41,8 @@ public static class PersonalTaxCalculator
         // n° 51), so the credit for low earned income comes last and leaves it as it is. The dividend,
         // which bore its withholding, is not declared (art. 313) and the exempt part is exempt, so the
         // pay is all the professional income and all of it is activity income (art. 289ter, §2, al. 3
-        // changes nothing); the rent is not professional income, but it joins the total net income
-        // that §1 and §2, al. 4 limit the credit by.
+        // changes nothing); the rent and an income taxed apart are not professional income, but they
+        // join the total net income that §1 and §2, al. 4 limit the credit by (Tax-Calc T17).
         return new PersonalTaxResult(
             flatRateCosts,
             taxableIncome,
@@ -47,8 +53,10 @@ public static class PersonalTaxCalculator
             regionalAdditionalTax,
             incomeTax,
             Money.RoundToCent(incomeTax * municipalRate),
-            LowEarnedIncomeCredit(rules, taxableIncome, totalNetIncome),
-            otherIncome);
+            LowEarnedIncomeCredit(rules, taxableIncome, globalisedIncome + incomeTaxedApart),
+            otherIncome,
+            incomeTaxedApart,
+            taxApart);
     }
 
     // Art. 289ter, §2 on the activity income alone, as when it is the whole income.

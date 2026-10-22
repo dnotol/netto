@@ -15,4 +15,10 @@ public sealed record Assessment(
     bool WithheldGiven,
     decimal AdvancePayments,
     decimal Balance,
-    Source Source);
+    Source Source)
+{
+    // What the company withheld at source on movable income it paid the director besides the pay, a
+    // copyright royalty's withholding, credited too (art. 279) and refunded beyond the tax (art. 304,
+    // §2); nothing without one.
+    public decimal WithheldBesidesPay { get; init; }
+}
