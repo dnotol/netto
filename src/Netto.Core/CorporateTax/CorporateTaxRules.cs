@@ -75,6 +75,15 @@ public sealed record CorporateTaxRules(
 
     public static Source Source => Article215Income2026;
 
+    // The balance on the company's assessment: its tax less what it paid in advance, the excess
+    // refunded. The article is common to every income tax; its second paragraph speaks of companies.
+    public static Source AssessmentBalance { get; } = new(
+        "CIR 92, art. 304 (revenus 2026), coordinated text on Fisconetplus, last modified 19.02.2026",
+        "§2, al. 2: for a resident company, the excess of the advance payments of art. 157 to 168 and 218 over the tax is set against the separate assessments, "
+        + "and the rest is refunded once it reaches 2.50",
+        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/bda433e6-7da6-4dc9-882c-0c9d92591877"),
+        "personal-tax/spf-finances_cir92-art-304-revenus-2026_2026-02-19.html");
+
     public static CorporateTaxRules IncomeYear2026 { get; } = new(
         2026,
         new RuleAmount("standard_rate", 0.25m, Article215Income2026),

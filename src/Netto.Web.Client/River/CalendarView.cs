@@ -7,13 +7,18 @@ namespace Netto.Web.Client.River;
 // something or needs to, in their order; a deadline with nothing paid and nothing needed is left out,
 // as a drain of nothing is. Company is null for a river that starts at the pay, and each tax says
 // what its payments leave, worded as its card words it (SurchargeStates). Next is the first row still
-// open with something to pay. The view only selects and orders the engine's figures.
+// open with something to pay. Pay is the pay statement's month, the same every month, and Balances
+// what each assessment leaves after the year, the company's first. The view only selects and orders
+// the engine's figures.
 internal sealed record CalendarView(
     int IncomeYear,
     IReadOnlyList<CalendarRow> Rows,
     CalendarTax<SurchargeState>? Company,
     CalendarTax<TaxSurchargeState> Director,
-    CalendarRow? Next)
+    CalendarRow? Next,
+    CalendarPay Pay,
+    AssessmentDue? CompanyBalance,
+    AssessmentDue DirectorBalance)
 {
     // None while the engine refuses an input: there is no year to place.
     public static CalendarView? From(RiverInputs inputs, RiverRun run, DateOnly today)
@@ -40,7 +45,10 @@ internal sealed record CalendarView(
             rows,
             company is null || run.Year is not { } companyYear ? null : Tax(SurchargeStates.Of(companyYear.AdvancePayments), company),
             Tax(SurchargeStates.Of(directorPay.AdvancePayments), director),
-            rows.FirstOrDefault(row => !row.Past));
+            rows.FirstOrDefault(row => !row.Past),
+            CalendarPay.Of(calendar.Months, directorPay.Assessment),
+            calendar.CompanyBalance,
+            calendar.DirectorBalance);
     }
 
     private static CalendarTax<TState> Tax<TState>(TState state, AdvancePaymentSchedule schedule) where TState : struct, Enum =>
@@ -56,6 +64,29 @@ internal sealed record CalendarRow(DateOnly Date, bool Past, decimal CompanyPlan
     public decimal Director => DirectorPlanned + DirectorMore;
 
     public decimal Total => Company + Director;
+}
+
+// The director's pay each month, the statement's month, the same for all twelve: the gross on the
+// payslip, what the key formula withholds and the net paid. Left is the months not ended yet, the
+// first and the last, none once the year is over; UnmodelledFrom the first month whose rules Netto
+// does not model yet, none when no month is flagged. WithheldGiven is the year's withholding the user
+// gave, which the months do not split: they show the key formula's.
+internal sealed record CalendarPay(
+    decimal GrossPay, decimal Withholding, decimal NetPaid, (DateOnly First, DateOnly Last)? Left, DateOnly? UnmodelledFrom, decimal? WithheldGiven)
+{
+    public static CalendarPay Of(IReadOnlyList<CalendarMonth> months, Netto.Core.PersonalTax.Assessment assessment)
+    {
+        var month = months[0].Pay;
+        var left = months.Where(each => !each.Past).Select(each => each.Month).ToList();
+
+        return new CalendarPay(
+            month.GrossPay,
+            month.Withholding,
+            month.NetPaid,
+            left.Count == 0 ? null : (left[0], left[^1]),
+            months.FirstOrDefault(each => each.Pay.UnmodelledRules)?.Month,
+            assessment.WithheldGiven ? assessment.Withheld : null);
+    }
 }
 
 // What one tax's payments leave: its state as its card says it, the surcharge left, what more by the

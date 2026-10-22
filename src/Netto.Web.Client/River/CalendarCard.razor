@@ -4,8 +4,9 @@
    no « Remove ». It reads the river's one run and the date (CalendarView over the engine's
    PaymentCalendar): the company's and the director's advance payments by each deadline as the plan
    holds them, the past ones marked, and at the first deadline still open what more cancels each
-   surcharge, then one sentence per tax, as its card says it. It applies nothing: the moves card is
-   where a payment is applied. Folded, it says the next payment and its date. *@
+   surcharge, then one sentence per tax, as its card says it; the pay each month, as the pay slip
+   gives it; and after the year, what each assessment leaves. It applies nothing: the moves card is
+   where a payment is applied. Folded, it says the next advance payment and its date. *@
 <ModuleCard Name="calendar" Title="@L["Title"]" Summary="@Summary" Help="@L["Help"]" OpenByDefault="false">
     @if (_view is null)
     {
@@ -57,6 +58,28 @@
             <p class="calendar__tax">@L[CalendarCardText.Company(company), Formats.Euros(company.Surcharge), Formats.Euros(company.More), Day(company.OpenDeadline), _view.IncomeYear]</p>
         }
         <p class="calendar__tax">@L[CalendarCardText.Director(_view.Director), Formats.Euros(_view.Director.Surcharge), Formats.Euros(_view.Director.More), Day(_view.Director.OpenDeadline), _view.IncomeYear]</p>
+
+        <h3 class="calendar__heading">@L["PayHeading"]</h3>
+        <p class="calendar__line">@L["PayLine", Formats.Euros(_view.Pay.GrossPay), Formats.Euros(_view.Pay.Withholding), Formats.Euros(_view.Pay.NetPaid)]</p>
+        @if (_view.Pay.Left is { } left)
+        {
+            <p class="calendar__note">@(left.First == left.Last ? L["PayLeftOne", Month(left.First), _view.IncomeYear] : L["PayLeft", Month(left.First), Month(left.Last), _view.IncomeYear])</p>
+        }
+        @if (_view.Pay.UnmodelledFrom is { } unmodelled)
+        {
+            <p class="calendar__note">@L["PayUnmodelled", Formats.Day(unmodelled)]</p>
+        }
+        @if (_view.Pay.WithheldGiven is { } given)
+        {
+            <p class="calendar__note">@L["PayWithheldGiven", Formats.Euros(given)]</p>
+        }
+
+        <h3 class="calendar__heading">@L["AfterHeading"]</h3>
+        @if (_view.CompanyBalance is { } companyBalance)
+        {
+            <p class="calendar__line">@L[CalendarCardText.CompanyBalance(companyBalance.Balance), companyBalance.TaxYear, Formats.Euros(Math.Abs(companyBalance.Balance))]</p>
+        }
+        <p class="calendar__line">@L[CalendarCardText.DirectorBalance(_view.DirectorBalance.Balance), _view.DirectorBalance.TaxYear, Formats.Euros(Math.Abs(_view.DirectorBalance.Balance))]</p>
     }
 </ModuleCard>
 
@@ -80,6 +103,8 @@
         : L[CalendarCardText.Summary(_view.Next), Day(_view.Next?.Date), Formats.Euros(_view.Next?.Company ?? 0m), Formats.Euros(_view.Next?.Director ?? 0m), _view.IncomeYear].Value;
 
     private static string Day(DateOnly? date) => date is { } day ? Formats.Day(day) : "";
+
+    private static string Month(DateOnly month) => Formats.Month(month.Year, month.Month);
 
     // What one payer pays by the deadline as the plan stands, and what more by it cancels its
     // surcharge; « nothing » when neither.

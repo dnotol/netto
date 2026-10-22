@@ -8,10 +8,21 @@ namespace Netto.Core.Calendar;
 
 // When the year's payments fall, seen on a date (Today): the company's advance payments on its
 // corporate tax and the director's on the income tax on their pay, each by the income year's four
-// deadlines. A record beside the ledger, as the pay statement is: a step is the year's total, the
-// calendar says when it is paid. Company is null for a river that starts at the pay. Every figure is
-// the year's own; the calendar only places it in time.
-public sealed record PaymentCalendar(int IncomeYear, DateOnly Today, AdvancePaymentSchedule? Company, AdvancePaymentSchedule Director)
+// deadlines; the director's pay month by month, as the pay statement gives it; and after the year,
+// the balance on each assessment of the following tax year, to pay when positive, refunded when
+// negative, on the day the administration sets. A record beside the ledger, as the pay statement is:
+// a step is the year's total, the calendar says when it is paid. Company and CompanyBalance are null
+// for a river that starts at the pay. Every figure is the year's own; the calendar only places it in
+// time, but for the company's balance, its corporate tax with the surcharge less what it paid in
+// advance (art. 304, §2, al. 2, which refunds the excess).
+public sealed record PaymentCalendar(
+    int IncomeYear,
+    DateOnly Today,
+    AdvancePaymentSchedule? Company,
+    AdvancePaymentSchedule Director,
+    IReadOnlyList<CalendarMonth> Months,
+    AssessmentDue? CompanyBalance,
+    AssessmentDue DirectorBalance)
 {
     public static PaymentCalendar Of(YearResult year, DateOnly today)
     {
@@ -19,34 +30,55 @@ public sealed record PaymentCalendar(int IncomeYear, DateOnly Today, AdvancePaym
         var companyRules = CorporateTaxRules.For(incomeYear)?.AdvancePayments
             ?? throw new ArgumentException($"Income year {incomeYear} has no rules for the company's advance payments.", nameof(year));
         var payments = year.AdvancePayments;
+        var paid = year.Scenario.AdvancePayments;
 
-        return new PaymentCalendar(
-            incomeYear,
-            today,
-            AdvancePaymentSchedule.Of(
-                companyRules.Deadlines.Select(deadline => deadline.Date).ToList(), year.Scenario.AdvancePayments, payments.TopUps, payments.Surcharge, payments.Exempt, today),
-            DirectorSchedule(year.DirectorPay, year.Scenario.TaxPrepayments.Paid, today));
+        return Of(year.DirectorPay, year.Scenario.TaxPrepayments.Paid, today) with
+        {
+            Company = AdvancePaymentSchedule.Of(
+                companyRules.Deadlines.Select(deadline => deadline.Date).ToList(), paid, payments.TopUps, payments.Surcharge, payments.Exempt, today),
+            CompanyBalance = new AssessmentDue(
+                incomeYear + 1, year.Company.CorporateTax + payments.Surcharge - paid.ByDeadline.Sum(), CorporateTaxRules.AssessmentBalance),
+        };
     }
 
     // A river that starts at the pay: what the director paid in advance by each deadline is the
     // scenario's, which the pay's result does not keep.
-    public static PaymentCalendar Of(GrossToNetResult pay, AdvancePayments paid, DateOnly today) =>
-        new(pay.IncomeYear, today, null, DirectorSchedule(pay, paid, today));
-
-    // The first deadline on or after the date, the first being 0, none once every one is past: a
-    // deadline is open until the end of its day.
-    public static int? FirstOpen(IEnumerable<DateOnly> deadlines, DateOnly date) =>
-        deadlines.Select((deadline, i) => (deadline, i)).Where(entry => entry.deadline >= date).Select(entry => (int?)entry.i).FirstOrDefault();
-
-    private static AdvancePaymentSchedule DirectorSchedule(GrossToNetResult pay, AdvancePayments paid, DateOnly today)
+    public static PaymentCalendar Of(GrossToNetResult pay, AdvancePayments paid, DateOnly today)
     {
         var rules = PersonalTaxRules.For(pay.IncomeYear)?.AdvancePayments
             ?? throw new ArgumentException($"Income year {pay.IncomeYear} has no rules for the director's advance payments.", nameof(pay));
         var payments = pay.AdvancePayments;
 
-        return AdvancePaymentSchedule.Of(rules.Deadlines.Select(deadline => deadline.Date).ToList(), paid, payments.TopUps, payments.Surcharge, payments.Exempt, today);
+        return new PaymentCalendar(
+            pay.IncomeYear,
+            today,
+            null,
+            AdvancePaymentSchedule.Of(rules.Deadlines.Select(deadline => deadline.Date).ToList(), paid, payments.TopUps, payments.Surcharge, payments.Exempt, today),
+            [.. pay.Statement.Months.Select(month => CalendarMonth.Of(pay.IncomeYear, month, today))],
+            null,
+            new AssessmentDue(pay.IncomeYear + 1, pay.Assessment.Balance, pay.Assessment.Source));
+    }
+
+    // The first deadline on or after the date, the first being 0, none once every one is past: a
+    // deadline is open until the end of its day.
+    public static int? FirstOpen(IEnumerable<DateOnly> deadlines, DateOnly date) =>
+        deadlines.Select((deadline, i) => (deadline, i)).Where(entry => entry.deadline >= date).Select(entry => (int?)entry.i).FirstOrDefault();
+}
+
+// One month of the director's pay, from its first day, as the pay statement gives it, and whether it
+// has ended on the calendar's date.
+public sealed record CalendarMonth(DateOnly Month, PayStatementMonth Pay, bool Past)
+{
+    internal static CalendarMonth Of(int incomeYear, PayStatementMonth pay, DateOnly today)
+    {
+        var month = new DateOnly(incomeYear, pay.Month, 1);
+        return new CalendarMonth(month, pay, month.AddMonths(1) <= today);
     }
 }
+
+// The balance an assessment of the tax year leaves, to pay when positive, refunded when negative, with
+// the text it follows. The administration sets its day.
+public sealed record AssessmentDue(int TaxYear, decimal Balance, Source Source);
 
 // The payments on one tax by the income year's deadlines, in their order, the surcharge they leave,
 // and whether the tax is exempt from it (a small company in its first three financial years, a

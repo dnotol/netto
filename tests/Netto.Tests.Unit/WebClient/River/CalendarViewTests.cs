@@ -79,6 +79,42 @@ public class CalendarViewTests
         (view.Company, view.Rows.Single()).ShouldBe((null, new CalendarRow(On21December, false, 0m, 0m, 0m, 14_317.50m)));
     }
 
+    // The pay slip's month (PaySlipViewTests): 4,166.67 gross, 890.94 withheld.
+    [Fact]
+    public void From_example_givesThePaySlipsMonthAndTheMonthsLeft()
+    {
+        var pay = View(RiverInputs.Example, On22October).Pay;
+
+        (pay.GrossPay, pay.Withholding, pay.NetPaid, pay.Left, pay.UnmodelledFrom, pay.WithheldGiven).ShouldBe(
+            (4_166.67m, 890.94m, 3_275.73m, (new DateOnly(2026, 10, 1), new DateOnly(2026, 12, 1)), new DateOnly(2026, 11, 1), null));
+    }
+
+    [Fact]
+    public void From_withholdingGiven_saysTheYearsAmount()
+    {
+        View(RiverInputs.Example.WithTaxWithheld(9_000m), On22October).Pay.WithheldGiven.ShouldBe(9_000m);
+    }
+
+    [Fact]
+    public void From_afterTheYear_hasNoMonthLeft()
+    {
+        View(RiverInputs.Example, new DateOnly(2027, 1, 1)).Pay.Left.ShouldBeNull();
+    }
+
+    [Fact]
+    public void From_example_givesBothBalancesForTaxYear2027()
+    {
+        var view = View(RiverInputs.Example, On22October);
+
+        (view.CompanyBalance?.Balance, view.DirectorBalance.Balance, view.DirectorBalance.TaxYear).ShouldBe((10_675.00m, 1_436.06m, 2027));
+    }
+
+    [Fact]
+    public void From_riverStartingAtThePay_hasNoCompanyBalance()
+    {
+        View(RiverInputs.Example.SkipCompany(), On22October).CompanyBalance.ShouldBeNull();
+    }
+
     [Fact]
     public void From_refusedInput_isNone()
     {

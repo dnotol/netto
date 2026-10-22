@@ -155,4 +155,59 @@ public class PaymentCalendarTests
 
         (calendar.Company, calendar.Director.More).ShouldBe((null, 14_317.50m));
     }
+
+    [Fact]
+    public void Of_example_givesTheTwelveMonthsOfThePaySlip()
+    {
+        var year = YearSimulation.Run(Example).Value.ShouldNotBeNull();
+
+        var calendar = PaymentCalendar.Of(year, On22October);
+
+        calendar.Months.Select(month => month.Pay).ShouldBe(year.DirectorPay.Statement.Months);
+    }
+
+    // A month is past once it has ended: October is still under way on the 22nd.
+    [Fact]
+    public void Of_exampleOn22October_marksJanuaryToSeptemberPast()
+    {
+        var calendar = Of(Example, On22October);
+
+        calendar.Months.Select(month => month.Past).ShouldBe([.. Enumerable.Repeat(true, 9), false, false, false]);
+    }
+
+    [Fact]
+    public void Of_example_givesTheDirectorsBalanceForTaxYear2027()
+    {
+        var director = Of(Example, On22October).DirectorBalance;
+
+        (director.TaxYear, director.Balance, director.Source).ShouldBe((2027, 1_436.06m, PersonalTaxRules.AssessmentBalance));
+    }
+
+    // 10,000 of corporate tax and its 675 surcharge, nothing paid in advance.
+    [Fact]
+    public void Of_example_givesTheCompanysBalanceItsTaxWithTheSurcharge()
+    {
+        var company = Of(Example, On22October).CompanyBalance.ShouldNotBeNull();
+
+        (company.TaxYear, company.Balance, company.Source).ShouldBe((2027, 10_675.00m, CorporateTaxRules.AssessmentBalance));
+    }
+
+    // 15,000 by 10 April leaves no surcharge, and 5,000 more than the 10,000 of tax comes back.
+    [Fact]
+    public void Of_companyPaidMoreThanItsTax_refundsTheExcess()
+    {
+        var company = Of(Example with { AdvancePayments = new AdvancePayments(15_000m, 0m, 0m, 0m) }, On22October).CompanyBalance.ShouldNotBeNull();
+
+        company.Balance.ShouldBe(-5_000.00m);
+    }
+
+    [Fact]
+    public void Of_payAlone_hasTheDirectorsBalanceAlone()
+    {
+        var pay = GrossToNet.Compute(2026, 50_000m, MunicipalRates.Entered(0.07m), TaxPrepayments.AsWithheld).Value.ShouldNotBeNull();
+
+        var calendar = PaymentCalendar.Of(pay, AdvancePayments.None, On22October);
+
+        (calendar.CompanyBalance, calendar.DirectorBalance.Balance).ShouldBe((null, pay.Assessment.Balance));
+    }
 }

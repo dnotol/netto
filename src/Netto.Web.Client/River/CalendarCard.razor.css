@@ -5,6 +5,17 @@
     font-weight: 600;
 }
 
+/* A heading after the first starts a new part of the card: the pay, then what follows the year. */
+.calendar__heading:not(:first-child) {
+    margin-top: 0.75rem;
+}
+
+.calendar__line {
+    margin: 0;
+    font-size: 0.95rem;
+    font-variant-numeric: tabular-nums;
+}
+
 .calendar__note,
 .calendar__tax {
     margin: 0;

@@ -52,6 +52,24 @@ public class CalendarCardTextTests
         text.ShouldBe(expected);
     }
 
+    [Theory]
+    [InlineData(1)]
+    [InlineData(-1)]
+    [InlineData(0)]
+    public void CalendarCardResx_everyBalance_hasAText(int balance)
+    {
+        Text(CalendarCardText.CompanyBalance(balance)).ShouldNotBeNull();
+        Text(CalendarCardText.DirectorBalance(balance)).ShouldNotBeNull();
+    }
+
+    [Fact]
+    public void DirectorBalance_toPay_saysTheTaxYearAndTheAmount()
+    {
+        var text = string.Format(CultureInfo.InvariantCulture, Text(CalendarCardText.DirectorBalance(1_436.06m)) ?? "", 2027, "€1,436.06");
+
+        text.ShouldBe("On your assessment for tax year 2027: €1,436.06 to pay, on the day the administration sets.");
+    }
+
     [Fact]
     public void Company_dueWithADeadlineOpen_saysWhatMoreCancelsItByWhen()
     {
