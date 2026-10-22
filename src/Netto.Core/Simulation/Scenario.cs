@@ -1,5 +1,6 @@
 using Netto.Core.Allowances;
 using Netto.Core.CompanyCar;
+using Netto.Core.Copyright;
 using Netto.Core.CorporateTax;
 using Netto.Core.Dividends;
 using Netto.Core.PersonalTax;
@@ -18,8 +19,8 @@ namespace Netto.Core.Simulation;
 // it has a default: the company's advance payments on its corporate tax, what was withheld on the
 // director pay and paid in advance on its income tax, none unless given, who pays the director's
 // social contributions, the director unless given, the vouchers it grants the director, the expense
-// allowances it pays them, the rent it pays for the part of their home it uses as an office and the
-// car it puts at their disposal, none unless given.
+// allowances it pays them, the rent it pays for the part of their home it uses as an office, the car
+// it puts at their disposal and the copyright royalty it pays them, none unless given.
 public sealed record Scenario(
     int IncomeYear,
     decimal Revenue,
@@ -45,8 +46,10 @@ public sealed record Scenario(
 
     public CarFacts Car { get; init; } = CarFacts.None;
 
+    public CopyrightRoyalty Copyright { get; init; } = CopyrightRoyalty.None;
+
     // What the company earns before it pays its director anything, pay, vouchers, expense allowances,
-    // rent or a car. What the director pay and the company's profit share is what those levers leave
-    // of it (YearSimulation.ProfitBeforePay).
+    // rent, a car or a royalty. What the director pay and the company's profit share is what those
+    // levers leave of it (YearSimulation.ProfitBeforePay).
     public decimal ProfitBeforeDirector => Revenue - RunningCosts;
 }

@@ -246,6 +246,19 @@ public class MoveSearchTests
         YearSimulation.Run(move.Apply(withCar)).Value.ShouldNotBeNull().DirectorPay.AdvancePayments.Surcharge.ShouldBe(0m);
     }
 
+    // A royalty beyond its limits is taxed as pay that nothing withholds on: the payment the finder
+    // proposes is on the tax with that part, and leaves no surcharge.
+    [Fact]
+    public void Run_nothingWithheldWithARoyaltyBeyondItsLimits_paysWhatLeavesNoSurchargeOnTheTaxWithIt()
+    {
+        var withRoyalty = Today with { TaxPrepayments = TaxPrepayments.None, Copyright = new Core.Copyright.CopyrightRoyalty(30_000m) };
+
+        var plan = MoveSearch.Run(withRoyalty, [new DirectorAdvancePaymentFinder(On22October)]).Value.ShouldNotBeNull();
+        var move = plan.Moves.Single().Move.ShouldBeOfType<DirectorAdvancePaymentMove>();
+
+        YearSimulation.Run(move.Apply(withRoyalty)).Value.ShouldNotBeNull().DirectorPay.AdvancePayments.Surcharge.ShouldBe(0m);
+    }
+
     [Fact]
     public void Run_everyKindWithACar_neverMovesTheCar()
     {

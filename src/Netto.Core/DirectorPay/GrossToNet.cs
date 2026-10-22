@@ -1,3 +1,4 @@
+using Netto.Core.MovableIncome;
 using Netto.Core.PersonalTax;
 using Netto.Core.Rules;
 using Netto.Core.Simulation;
@@ -25,6 +26,15 @@ namespace Netto.Core.DirectorPay;
 // joins the taxable pay, so INASTI's base, the income tax and the key formula's withholding (annex
 // III, n° 14.1) take it as they would the same amount paid in cash, while the pocket and the
 // company's cost of the pay leave it out; the statement shows its twelfth beside the gross.
+//
+// Movable income the company pays besides the payslip, a copyright royalty, comes as plain figures.
+// The part the law taxes as director pay (RequalifiedPay) is pay paid in cash: in INASTI's base, on
+// the scale, in the surcharge's base and in the pocket, but not on the payslip, so the key formula
+// does not withhold on it and the pay's cost to the company leaves it out, the company paying it as
+// the income it is; what the company pays for the director's contributions on it is pay too. The
+// part taxed apart is on the year's figures, the pay's own staying the pay's, and TaxedApartTax is
+// what it adds on top of the pay and the rent. What the company withheld at source on all of it is
+// credited on the assessment, never in the surcharge's base (Tax-Calc T16 to T18).
 public static class GrossToNet
 {
     public const string GrossPayNegative = "gross_pay_negative";
@@ -41,14 +51,19 @@ public static class GrossToNet
 
     // The gross pay is the pay on the payslip, whoever pays the contributions; not saying who runs the
     // pay as the director's own. The other income is the net income taxed with the pay, none unless
-    // given, and the benefit in kind the year's benefit taxed as pay, none unless given; the engine's
-    // own rules give both, never below zero.
+    // given, the benefit in kind the year's benefit taxed as pay, none unless given, and the movable
+    // income what the company pays besides the payslip, none unless given; the engine's own rules give
+    // them, never below zero.
     public static (GrossToNetResult? Value, string? Error) Compute(
         int incomeYear, decimal grossPay, RuleAmount municipalRate, TaxPrepayments prepayments, ContributionsPaidBy paidBy = ContributionsPaidBy.Director,
-        decimal otherIncome = 0m, decimal benefitInKind = 0m)
+        decimal otherIncome = 0m, decimal benefitInKind = 0m, MovableIncomePaid? movable = null)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(otherIncome, 0m);
         ArgumentOutOfRangeException.ThrowIfLessThan(benefitInKind, 0m);
+        movable ??= MovableIncomePaid.None;
+        ArgumentOutOfRangeException.ThrowIfLessThan(movable.TaxedAsPay, 0m);
+        ArgumentOutOfRangeException.ThrowIfLessThan(movable.TaxedApartIncome, 0m);
+        ArgumentOutOfRangeException.ThrowIfLessThan(movable.Withheld, 0m);
 
         var socialRules = SocialContributionRules.For(incomeYear);
         var taxRules = PersonalTaxRules.For(incomeYear);
@@ -64,9 +79,9 @@ public static class GrossToNet
         if (prepayments.Paid.ByDeadline.Any(amount => amount < 0m))
             return (null, TaxAdvancePaymentNegative);
 
-        var figures = Figures.For(socialRules, taxRules, withholdingRules, grossPay, municipalRate.Value, prepayments, paidBy, otherIncome, benefitInKind);
+        var figures = Figures.For(socialRules, taxRules, withholdingRules, grossPay, municipalRate.Value, prepayments, paidBy, otherIncome, benefitInKind, movable);
         var next = Figures.For(
-            socialRules, taxRules, withholdingRules, grossPay + NextSlice, municipalRate.Value, prepayments, paidBy, otherIncome, benefitInKind);
+            socialRules, taxRules, withholdingRules, grossPay + NextSlice, municipalRate.Value, prepayments, paidBy, otherIncome, benefitInKind, movable);
         var advancePayments = IncomeTaxAdvancePaymentCalculator.Compute(
             taxRules.AdvancePayments, figures.Tax.IncomeTax, figures.YearTax.LowEarnedIncomeCredit, prepayments with { Withheld = figures.Withheld });
 
@@ -95,8 +110,13 @@ public static class GrossToNet
                 next.YearAdvancePayments.Surcharge - next.YearAdvancePayments.Bonus - figures.YearAdvancePayments.Surcharge + figures.YearAdvancePayments.Bonus,
                 next.YearNetInPocket - figures.YearNetInPocket),
             Statement(withholdingRules, figures),
-            AssessmentCalculator.Compute(figures.YearTax, advancePayments, figures.Withheld, figures.WithheldGiven, prepayments.Paid),
-            figures.OtherIncomeTax), null);
+            AssessmentCalculator.Compute(figures.YearTax, advancePayments, figures.Withheld, figures.WithheldGiven, prepayments.Paid, movable.Withheld),
+            figures.OtherIncomeTax)
+        {
+            RequalifiedPay = figures.RequalifiedPay,
+            TaxablePayWithoutRequalified = figures.TaxablePayWithoutRequalified,
+            TaxedApartTax = figures.TaxedApartTax,
+        }, null);
     }
 
     // What the director pays more by the deadline, the first being 0, so that no surcharge is due on
@@ -104,13 +124,13 @@ public static class GrossToNet
     // Compute; null for a year without rules. The inputs are Compute's to refuse.
     internal static decimal? AdvancePaymentTopUpBy(
         int incomeYear, decimal grossPay, decimal municipalRate, TaxPrepayments prepayments, ContributionsPaidBy paidBy, decimal otherIncome,
-        decimal benefitInKind, int deadline)
+        decimal benefitInKind, MovableIncomePaid movable, int deadline)
     {
         if (SocialContributionRules.For(incomeYear) is not { } socialRules || PersonalTaxRules.For(incomeYear) is not { } taxRules
             || WithholdingRules.For(incomeYear) is not { } withholdingRules)
             return null;
 
-        var figures = Figures.For(socialRules, taxRules, withholdingRules, grossPay, municipalRate, prepayments, paidBy, otherIncome, benefitInKind);
+        var figures = Figures.For(socialRules, taxRules, withholdingRules, grossPay, municipalRate, prepayments, paidBy, otherIncome, benefitInKind, movable);
         return IncomeTaxAdvancePaymentCalculator.TopUpBy(
             taxRules.AdvancePayments, figures.Tax.IncomeTax, figures.YearTax.LowEarnedIncomeCredit, prepayments with { Withheld = figures.Withheld }, deadline);
     }
@@ -121,13 +141,13 @@ public static class GrossToNet
     // year without rules; the pay and the rate are Compute's to refuse.
     internal static Figures? Level(
         int incomeYear, decimal grossPay, decimal municipalRate, TaxPrepayments prepayments, ContributionsPaidBy paidBy, decimal otherIncome,
-        decimal benefitInKind)
+        decimal benefitInKind, MovableIncomePaid movable)
     {
         if (SocialContributionRules.For(incomeYear) is not { } socialRules || PersonalTaxRules.For(incomeYear) is not { } taxRules
             || WithholdingRules.For(incomeYear) is not { } withholdingRules)
             return null;
 
-        return Figures.For(socialRules, taxRules, withholdingRules, grossPay, municipalRate, prepayments, paidBy, otherIncome, benefitInKind);
+        return Figures.For(socialRules, taxRules, withholdingRules, grossPay, municipalRate, prepayments, paidBy, otherIncome, benefitInKind, movable);
     }
 
     // When the company pays the contributions, the smallest payslip gross whose taxable pay, a benefit
@@ -230,17 +250,20 @@ public static class GrossToNet
 
     // One pay's figures. GrossPay is the pay on the payslip; ContributionsPaidByCompany is the
     // contributions when the company pays them, nothing when the director does; BenefitInKind is the
-    // benefit taxed as pay and never paid; Withholding is the key
-    // formula's lines on a month of the taxable pay, the taxable pay over twelve rounded to the cent;
-    // Withheld is the year's withholding, the amount given (WithheldGiven) or twelve times the month's.
-    // Tax, AdvancePayments and NetInPocket are the pay's taken alone; YearTax and YearAdvancePayments
-    // are on the whole income, the same as the pay's when nothing else is taxed with it, and
-    // OtherIncomeTax is what the rest adds.
+    // benefit taxed as pay and never paid; RequalifiedPay is movable income taxed as pay, paid besides
+    // the payslip; Withholding is the key formula's lines on a month of the payslip's taxable pay, over
+    // twelve rounded to the cent; Withheld is the year's withholding, the amount given (WithheldGiven)
+    // or twelve times the month's. Tax, AdvancePayments and NetInPocket are the pay's taken alone, the
+    // requalified pay in it; YearTax and YearAdvancePayments are on the whole income, the same as the
+    // pay's when nothing else is taxed with it; OtherIncomeTax is what the rent adds to the pay, and
+    // TaxedApartTax what an income taxed apart adds on top of both.
     internal sealed record Figures(
         decimal GrossPay,
         decimal SocialContributions,
         decimal ContributionsPaidByCompany,
         decimal BenefitInKind,
+        decimal RequalifiedPay,
+        decimal TaxablePayWithoutRequalified,
         WithholdingResult Withholding,
         decimal Withheld,
         bool WithheldGiven,
@@ -249,38 +272,45 @@ public static class GrossToNet
         decimal NetInPocket,
         PersonalTaxResult YearTax,
         IncomeTaxAdvancePaymentResult YearAdvancePayments,
-        OtherIncomeTax OtherIncomeTax)
+        OtherIncomeTax OtherIncomeTax,
+        OtherIncomeTax TaxedApartTax)
     {
-        // What the director declares as pay: the gross, what the company bore for them and the benefits
-        // in kind (cadre XVI, 1).
-        public decimal TaxablePay => GrossPay + ContributionsPaidByCompany + BenefitInKind;
+        // What the director declares as pay: the gross, what the company bore for them, the benefits
+        // in kind (cadre XVI, 1) and movable income taxed as pay (Tax-Calc T18).
+        public decimal TaxablePay => GrossPay + ContributionsPaidByCompany + BenefitInKind + RequalifiedPay;
 
         // What the pay takes out of the company: the gross and what it bears for the director, which is
-        // pay. What a benefit costs the company is its own, a car's costs.
+        // pay. What a benefit costs the company is its own, a car's costs, and so is movable income.
         public decimal CompanyCost => GrossPay + ContributionsPaidByCompany;
 
-        // What the pay leaves once the other income's tax is paid too, the other income itself aside.
-        public decimal YearNetInPocket => NetInPocket - OtherIncomeTax.Total;
+        // What the pay leaves once the other income's tax and the tax apart are paid too, those incomes
+        // themselves aside.
+        public decimal YearNetInPocket => NetInPocket - OtherIncomeTax.Total - TaxedApartTax.Total;
 
         public static Figures For(
             SocialContributionRules socialRules, PersonalTaxRules taxRules, WithholdingRules withholdingRules, decimal grossPay, decimal municipalRate,
-            TaxPrepayments prepayments, ContributionsPaidBy paidBy, decimal otherIncome, decimal benefitInKind)
+            TaxPrepayments prepayments, ContributionsPaidBy paidBy, decimal otherIncome, decimal benefitInKind, MovableIncomePaid movable)
         {
-            // The contributions are owed on the benefit as on the gross, on their total.
+            // The contributions are owed on the benefit and the requalified pay as on the gross, on their
+            // total.
+            var asPay = movable.TaxedAsPay;
             var companyPays = paidBy == ContributionsPaidBy.Company;
             var contributions = companyPays
-                ? CompanyPaidContributions(socialRules, taxRules, grossPay + benefitInKind)
-                : SolveContributions(socialRules, taxRules, grossPay + benefitInKind);
+                ? CompanyPaidContributions(socialRules, taxRules, grossPay + benefitInKind + asPay)
+                : SolveContributions(socialRules, taxRules, grossPay + benefitInKind + asPay);
             var paidByCompany = companyPays ? contributions : 0m;
-            var taxablePay = grossPay + paidByCompany + benefitInKind;
-            var withholding = WithholdingCalculator.Figures(withholdingRules, Money.RoundToCent(taxablePay / MonthsInYear));
+            var taxablePay = grossPay + paidByCompany + benefitInKind + asPay;
+            var withholding = WithholdingCalculator.Figures(withholdingRules, Money.RoundToCent((taxablePay - asPay) / MonthsInYear));
             var withheld = prepayments.Withheld ?? withholding.MonthlyWithholding * MonthsInYear;
             var withWithheld = prepayments with { Withheld = withheld };
             var tax = PersonalTaxCalculator.Compute(taxRules, taxablePay, contributions, municipalRate);
             var advancePayments = IncomeTaxAdvancePaymentCalculator.Figures(taxRules.AdvancePayments, tax.IncomeTax, tax.LowEarnedIncomeCredit, withWithheld);
-            var (yearTax, yearAdvancePayments) = otherIncome == 0m
+            var (withOther, withOtherAdvancePayments) = otherIncome == 0m
                 ? (tax, advancePayments)
-                : YearOf(taxRules, taxablePay, contributions, municipalRate, otherIncome, tax, withWithheld);
+                : YearOf(taxRules, taxablePay, contributions, municipalRate, otherIncome, null, tax, withWithheld);
+            var (yearTax, yearAdvancePayments) = movable.TaxedApart is null
+                ? (withOther, withOtherAdvancePayments)
+                : YearOf(taxRules, taxablePay, contributions, municipalRate, otherIncome, movable.TaxedApart, tax, withWithheld);
 
             // The contributions come off the pocket when the director pays them; when the company does,
             // they are pay that goes straight back out, so the pocket starts from the payslip gross.
@@ -288,32 +318,43 @@ public static class GrossToNet
             // The credit for low earned income is refunded where it exceeds the tax, so it all comes back.
             // What was withheld or paid in advance is the tax paid early, not a cost: only the surcharge
             // and the bonus reach the pocket. The benefit in kind is never paid: the pocket bears its
-            // tax, not the benefit.
+            // tax, not the benefit. The requalified pay is paid, as the income it is.
             return new Figures(
-                grossPay, contributions, paidByCompany, benefitInKind, withholding, withheld, prepayments.Withheld is not null, tax, advancePayments,
+                grossPay, contributions, paidByCompany, benefitInKind, asPay,
+                asPay == 0m ? taxablePay : grossPay + benefitInKind + (companyPays ? CompanyPaidContributions(socialRules, taxRules, grossPay + benefitInKind) : 0m),
+                withholding, withheld, prepayments.Withheld is not null, tax, advancePayments,
                 taxablePay - benefitInKind - contributions - tax.IncomeTax - tax.MunicipalSurcharge + tax.LowEarnedIncomeCredit
                 - advancePayments.Surcharge + advancePayments.Bonus,
                 yearTax,
                 yearAdvancePayments,
-                new OtherIncomeTax(
-                    otherIncome,
-                    Difference(yearTax.IncomeTax, tax.IncomeTax),
-                    Difference(yearTax.MunicipalSurcharge, tax.MunicipalSurcharge),
-                    Difference(tax.LowEarnedIncomeCredit, yearTax.LowEarnedIncomeCredit),
-                    Difference(yearAdvancePayments.Surcharge - yearAdvancePayments.Bonus, advancePayments.Surcharge - advancePayments.Bonus)));
+                Added(otherIncome, withOther, withOtherAdvancePayments, tax, advancePayments),
+                Added(movable.TaxedApartIncome, yearTax, yearAdvancePayments, withOther, withOtherAdvancePayments));
         }
+
+        // What an income moves from the figures without it to those with it: the income tax and the
+        // municipal surcharge it adds, the credit it takes away, and the surcharge less the bonus that
+        // lost credit adds.
+        private static OtherIncomeTax Added(
+            decimal income, PersonalTaxResult with, IncomeTaxAdvancePaymentResult withAdvancePayments, PersonalTaxResult without,
+            IncomeTaxAdvancePaymentResult withoutAdvancePayments) =>
+            new(
+                income,
+                Difference(with.IncomeTax, without.IncomeTax),
+                Difference(with.MunicipalSurcharge, without.MunicipalSurcharge),
+                Difference(without.LowEarnedIncomeCredit, with.LowEarnedIncomeCredit),
+                Difference(withAdvancePayments.Surcharge - withAdvancePayments.Bonus, withoutAdvancePayments.Surcharge - withoutAdvancePayments.Bonus));
 
         // What the other income moves, a plain zero when it moves nothing: decimal subtraction can
         // return a negative zero, which the steps would read as money coming back.
         private static decimal Difference(decimal withOther, decimal alone) => withOther == alone ? 0m : withOther - alone;
 
-        // The tax on the pay and the other income together, and the surcharge on the pay's own tax, as
-        // art. 158 takes it separately, less the credit the total leaves.
+        // The tax on the pay, the other income and an income taxed apart together, and the surcharge on
+        // the pay's own tax, as art. 158 takes it separately, less the credit the total leaves.
         private static (PersonalTaxResult Tax, IncomeTaxAdvancePaymentResult AdvancePayments) YearOf(
-            PersonalTaxRules taxRules, decimal taxablePay, decimal contributions, decimal municipalRate, decimal otherIncome, PersonalTaxResult payTax,
-            TaxPrepayments prepayments)
+            PersonalTaxRules taxRules, decimal taxablePay, decimal contributions, decimal municipalRate, decimal otherIncome, IncomeTaxedApart? taxedApart,
+            PersonalTaxResult payTax, TaxPrepayments prepayments)
         {
-            var yearTax = PersonalTaxCalculator.Compute(taxRules, taxablePay, contributions, municipalRate, otherIncome);
+            var yearTax = PersonalTaxCalculator.Compute(taxRules, taxablePay, contributions, municipalRate, otherIncome, taxedApart);
             return (yearTax, IncomeTaxAdvancePaymentCalculator.Figures(taxRules.AdvancePayments, payTax.IncomeTax, yearTax.LowEarnedIncomeCredit, prepayments));
         }
     }

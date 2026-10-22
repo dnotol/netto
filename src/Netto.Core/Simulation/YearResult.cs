@@ -1,4 +1,5 @@
 using Netto.Core.CompanyCar;
+using Netto.Core.Copyright;
 using Netto.Core.CorporateTax;
 using Netto.Core.DirectorPay;
 using Netto.Core.Dividends;
@@ -19,13 +20,16 @@ namespace Netto.Core.Simulation;
 // expenses are what the company cannot deduct of what it pays the director besides pay and what it
 // adds back of the car's benefit, added to its taxable income. The dividend is what the profit after
 // tax and those earlier profits leave once the reserve is kept; the largest the year allows is both
-// together, less a loss, never below zero.
+// together, less a loss, never below zero. Copyright is the royalty as the rules took it, all nothing
+// without one: its part taxed as pay is in the pay's figures, and what its part taxed apart adds to the
+// personal tax is DirectorPay's TaxedApartTax.
 public sealed record YearResult(
     Scenario Scenario,
     decimal ProfitBeforePay,
     VoucherResult Vouchers,
     RentResult Rent,
     CarResult Car,
+    CopyrightResult Copyright,
     decimal DisallowedExpenses,
     CorporateTaxResult Company,
     AdvancePaymentResult AdvancePayments,

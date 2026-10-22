@@ -1,9 +1,11 @@
 using Netto.Core.Allowances;
 using Netto.Core.BenefitsInKind;
 using Netto.Core.CompanyCar;
+using Netto.Core.Copyright;
 using Netto.Core.CorporateTax;
 using Netto.Core.DirectorPay;
 using Netto.Core.Dividends;
+using Netto.Core.MovableIncome;
 using Netto.Core.PersonalTax;
 using Netto.Core.Rent;
 using Netto.Core.Rules;
@@ -23,9 +25,11 @@ namespace Netto.Core.Simulation;
 // what it adds back of the car's benefit join it, corporate tax takes its share, with the surcharge
 // the advance payments did not cover, and the dividend is the profit after tax and the profits kept
 // from earlier years, less the reserve the user keeps in the company, never below zero. The car's
-// costs land in the muddy pocket. In steady state the year pays out its own profit (decided
-// 2026-10-19). No other disallowed expenses, no losses carried forward, and INASTI's company
-// contribution sits in the running costs.
+// costs land in the muddy pocket. A copyright royalty comes off what it earns too, deducted in full: its
+// part within the limits reaches the pocket taxed apart (GrossToNet's TaxedApartTax), its part beyond
+// them is taxed as the director's pay, and art. 215's minimum pay counts neither. In steady state the
+// year pays out its own profit (decided 2026-10-19). No other disallowed expenses, no losses carried
+// forward, and INASTI's company contribution sits in the running costs.
 public static class YearSimulation
 {
     public const string IncomeYearNotSupported = GrossToNet.IncomeYearNotSupported;
@@ -59,11 +63,13 @@ public static class YearSimulation
 
         var (pay, payError) = GrossToNet.Compute(
             scenario.IncomeYear, scenario.DirectorPay, scenario.MunicipalRate, scenario.TaxPrepayments, scenario.ContributionsPaidBy, besidesPay.Rent.NetRent,
-            besidesPay.Benefits.TaxedAsPay);
+            besidesPay.Benefits.TaxedAsPay, besidesPay.Movable);
         if (pay is null)
             return (null, payError);
 
-        var company = Company(scenario, corporateRules, dividendRules, besidesPay, pay.NetInPocket - pay.OtherIncomeTax.Total, pay.TaxablePay, pay.CompanyCost);
+        var company = Company(
+            scenario, corporateRules, dividendRules, besidesPay, pay.NetInPocket - pay.OtherIncomeTax.Total - pay.TaxedApartTax.Total, pay.TaxablePayWithoutRequalified,
+            pay.CompanyCost);
         var dividend = company.Dividend;
         var rate = dividendRules.Rate(scenario.DividendCategory);
 
@@ -73,12 +79,14 @@ public static class YearSimulation
             .. scenario.Allowances.Any ? AllowanceSteps(levers.Allowances, besidesPay.Allowances) : [],
             .. scenario.Rent.Any ? RentSteps(levers.Rent, besidesPay.Rent) : [],
             .. scenario.Car.Any ? CarSteps(levers.Car, besidesPay.Car) : [],
+            .. scenario.Copyright.Any ? CopyrightSteps(levers.Copyright, besidesPay.Copyright) : [],
             new Step("corporate_tax", Layer.Corporate, TaxableEvent.CompanyProfit, Track.PaidOut, company.Tax.CorporateTax,
                 CorporateTaxRules.Source, corporateRules.Amounts) { AlsoCites = [corporateRules.PayTested, corporateRules.ExcessBenefitsMemorandum] },
             new Step("advance_payment_surcharge", Layer.Corporate, TaxableEvent.CompanyProfit, Track.PaidOut, company.AdvancePayments.Surcharge,
                 corporateRules.AdvancePayments.Source, corporateRules.AdvancePayments.Amounts),
             .. pay.Steps,
             .. scenario.Rent.Any ? RentTaxSteps(PersonalTaxRules.For(scenario.IncomeYear)!, pay.OtherIncomeTax, scenario.MunicipalRate) : [],
+            .. scenario.Copyright.Any ? CopyrightTaxSteps(levers.Copyright, PersonalTaxRules.For(scenario.IncomeYear)!, pay.TaxedApartTax, scenario.MunicipalRate) : [],
             new Step("dividend_withholding", Layer.Personal, TaxableEvent.Dividend, Track.PaidOut, dividend.Withholding,
                 rate.Source, [rate]),
             new Step("dividend_exemption_refund", Layer.Personal, TaxableEvent.Dividend, Track.PaidOut, -dividend.ExemptionRefund,
@@ -91,6 +99,7 @@ public static class YearSimulation
             besidesPay.Vouchers,
             besidesPay.Rent,
             besidesPay.Car,
+            besidesPay.Copyright,
             besidesPay.Disallowed,
             company.Tax,
             company.AdvancePayments,
@@ -108,14 +117,14 @@ public static class YearSimulation
     }
 
     // What the director pay and the company's profit share between them: what the company earns less
-    // what it pays the director in vouchers, expense allowances and rent and what its car costs it, plus
-    // what the director pays it for the car, taken as given even while the rules refuse them, so the
-    // split keeps its place. A car counts once its catalogue value is given. Null for a year without
-    // voucher rules.
+    // what it pays the director in vouchers, expense allowances, rent and a copyright royalty and what its
+    // car costs it, plus what the director pays it for the car, taken as given even while the rules
+    // refuse them, so the split keeps its place. A car counts once its catalogue value is given. Null
+    // for a year without voucher rules.
     public static decimal? ProfitBeforePay(Scenario scenario) =>
         VoucherRules.For(scenario.IncomeYear) is { } rules
             ? scenario.ProfitBeforeDirector - VoucherCalculator.Cost(rules, scenario.Vouchers) - scenario.Allowances.Total - scenario.Rent.Rent
-              - (scenario.Car.Any ? scenario.Car.YearlyCosts - scenario.Car.PersonalContribution : 0m)
+              - (scenario.Car.Any ? scenario.Car.YearlyCosts - scenario.Car.PersonalContribution : 0m) - scenario.Copyright.Royalty
             : null;
 
     // The year at the scenario's pay as the split's search reads it: Run's figures for the pocket, the
@@ -131,11 +140,11 @@ public static class YearSimulation
             return null;
         if (GrossToNet.Level(
                 scenario.IncomeYear, scenario.DirectorPay, scenario.MunicipalRate.Value, scenario.TaxPrepayments, scenario.ContributionsPaidBy, besidesPay.Rent.NetRent,
-                besidesPay.Benefits.TaxedAsPay)
+                besidesPay.Benefits.TaxedAsPay, besidesPay.Movable)
             is not { } pay)
             return null;
 
-        var company = Company(scenario, corporateRules, dividendRules, besidesPay, pay.YearNetInPocket, pay.TaxablePay, pay.CompanyCost);
+        var company = Company(scenario, corporateRules, dividendRules, besidesPay, pay.YearNetInPocket, pay.TaxablePayWithoutRequalified, pay.CompanyCost);
         return new PayLevel(scenario.DirectorPay, company.NetInPocket, company.Dividend.Dividend, company.KeptInCompany, company.Tax.Condition,
             company.MaximumDividend >= scenario.Reserve);
     }
@@ -168,8 +177,8 @@ public static class YearSimulation
     }
 
     // What the company pays the director besides pay as the rules accept it, the vouchers, the expense
-    // allowances then the rent, which the office allowance excludes, and the car, or the key of the
-    // first the rules refuse.
+    // allowances then the rent, which the office allowance excludes, the car and the copyright royalty,
+    // whose limits are on the pay set, or the key of the first the rules refuse.
     private static (BesidesPay? Value, string? Error) BesidesPayOf(Scenario scenario, LeverRules levers)
     {
         var (vouchers, voucherError) = VoucherCalculator.Compute(levers.Vouchers, scenario.Vouchers);
@@ -188,13 +197,19 @@ public static class YearSimulation
         if (car is null)
             return (null, carError);
 
-        return (new BesidesPay(vouchers, allowances, rent, car), null);
+        var (copyright, copyrightError) = CopyrightCalculator.Compute(levers.Copyright, scenario.Copyright, scenario.DirectorPay);
+        if (copyright is null)
+            return (null, copyrightError);
+
+        return (new BesidesPay(vouchers, allowances, rent, car, copyright), null);
     }
 
     // What follows the director pay: its cost to the company comes off the profit before pay, and art. 215
     // tests its minimum pay on the taxable pay, which counts what the company bore for the director and
     // the car's benefit too (SPF return explanations, part 2, cadre XVI, 1; the commentary on art. 215,
-    // n° 215/44), and holds that benefit within its share of it (al. 3, 5°); the cost is the gross plus
+    // n° 215/44), but never a royalty's part taxed as pay (decided unattended: art. 215 asks for pay to
+    // an art. 32 director, and leaving it out never overstates the gain), and holds that benefit within
+    // its share of it (al. 3, 5°); the cost is the gross plus
     // the contributions the company pays on the director's behalf, or the gross alone. What the company
     // pays the director besides pay is never pay: what it cannot deduct of it, and what it adds back of
     // the car's benefit, join its taxable income, which art. 215's condition reads; the vouchers', spent,
@@ -301,6 +316,40 @@ public static class YearSimulation
     // municipal surcharge on the total less the pay's own, the credit for low earned income it takes
     // away, and what that lost credit adds to the surcharge on the pay's tax, less the bonus. Each is
     // paid out of the pocket, the credit's as a positive amount since it is lost, not refunded.
+    // The royalty the company pays and deducts in full; its part within the limits, reaching the pocket,
+    // with the limits it used, outside INASTI's base and the advance-payment surcharge's; and its part
+    // beyond them, taxed as pay with the pay, a plain zero without one. Only once there is a royalty, so
+    // a year without one keeps its steps.
+    private static IEnumerable<Step> CopyrightSteps(CopyrightRules rules, CopyrightResult royalty) =>
+    [
+        new Step("copyright_royalty", Layer.Corporate, TaxableEvent.CopyrightRoyalty, Track.TaxBaseOnly, royalty.Royalty,
+            rules.Deduction, []),
+        new Step("copyright_within_limits", Layer.Personal, TaxableEvent.CopyrightRoyalty, Track.InPocket, royalty.WithinLimits,
+            rules.Limits, [rules.RelativeLimit, rules.Cap]) { AlsoCites = [rules.PhaseIn, rules.OutsideContributions, rules.OutsideAdvancePaymentSurcharge] },
+        new Step("copyright_taxed_as_pay", Layer.Personal, TaxableEvent.CopyrightRoyalty, Track.TaxBaseOnly, royalty.TaxedAsPay,
+            rules.TaxedAsPay, [rules.RelativeLimit, rules.Cap]) { AlsoCites = [rules.Limits] },
+    ];
+
+    // What the royalty's part within the limits adds to the director's personal tax: its tax apart,
+    // joined to the State tax before the split, the municipal surcharge on it, the credit for low earned
+    // income it takes away, and what that lost credit adds to the surcharge on the pay's tax. Each is
+    // paid out of the pocket, the credit's as a positive amount since it is lost, not refunded. The 15%
+    // is on the gross, the flat-rate costs being an attestation holder's alone from 2026.
+    private static IEnumerable<Step> CopyrightTaxSteps(CopyrightRules copyright, PersonalTaxRules rules, OtherIncomeTax tax, RuleAmount municipalRate) =>
+    [
+        new Step("copyright_tax", Layer.Personal, TaxableEvent.CopyrightRoyalty, Track.PaidOut, tax.IncomeTax,
+            copyright.TaxedApart, [copyright.TaxedApartRate, rules.AutonomyFactor, rules.RegionalAdditionalRate])
+        {
+            AlsoCites = copyright.NoFlatRateCosts is { } noFlatRateCosts ? [noFlatRateCosts] : [],
+        },
+        new Step("copyright_municipal_surcharge", Layer.Personal, TaxableEvent.CopyrightRoyalty, Track.PaidOut, tax.MunicipalSurcharge,
+            PersonalTaxRules.MunicipalSurcharge, [municipalRate]),
+        new Step("copyright_low_earned_income_credit_lost", Layer.Personal, TaxableEvent.CopyrightRoyalty, Track.PaidOut, tax.LowEarnedIncomeCreditLost,
+            rules.LowEarnedIncomeCredit.Source, rules.LowEarnedIncomeCredit.Amounts),
+        new Step("copyright_income_tax_advance_payments", Layer.Personal, TaxableEvent.CopyrightRoyalty, Track.PaidOut, tax.AdvancePayments,
+            rules.AdvancePayments.Source, rules.AdvancePayments.SurchargeAmounts),
+    ];
+
     private static IEnumerable<Step> RentTaxSteps(PersonalTaxRules rules, OtherIncomeTax tax, RuleAmount municipalRate) =>
     [
         new Step("rent_income_tax", Layer.Personal, TaxableEvent.Rent, Track.PaidOut, tax.IncomeTax,
@@ -317,30 +366,35 @@ public static class YearSimulation
         steps.Where(step => step.Layer == layer && step.Track == Track.PaidOut).Sum(step => step.Amount);
 
     // What the company pays the director besides pay, lever by lever: what it costs the company and
-    // brings the pocket before the personal tax on the rent, the same amount (Total), what comes off the
-    // profit before pay, that and the costs of what it puts at the director's disposal less what the
-    // director pays it for that use (FromProfit), and what the company cannot deduct of it or adds back:
-    // the vouchers' part and the benefits' (Disallowed), since it deducts the expense allowances and the
-    // rent in full. The car is read for its steps and the card; its money moves only as the plain figures
-    // of its benefit in kind (Benefits), which a laptop or a phone will give the same way.
-    private sealed record BesidesPay(VoucherResult Vouchers, ExpenseAllowances Allowances, RentResult Rent, CarResult Car)
+    // brings the pocket outside the pay before the personal tax on the rent and on a royalty's part
+    // taxed apart, the same amount (Total), what comes off the profit before pay, that, a royalty's part
+    // taxed as pay, which reaches the pocket with the pay, and the costs of what it puts at the
+    // director's disposal less what the director pays it for that use (FromProfit), and what the company
+    // cannot deduct of it or adds back: the vouchers' part and the benefits' (Disallowed), since it
+    // deducts the expense allowances, the rent and a royalty in full. The car and the royalty are read
+    // for their steps and their cards; their money moves only as plain figures, the car's benefit in
+    // kind (Benefits), which a laptop or a phone will give the same way, and the royalty's movable
+    // income (Movable).
+    private sealed record BesidesPay(VoucherResult Vouchers, ExpenseAllowances Allowances, RentResult Rent, CarResult Car, CopyrightResult Copyright)
     {
         public BenefitInKind Benefits => Car.BenefitInKind;
 
-        public decimal Total => Vouchers.Total + Allowances.Total + Rent.Rent;
+        public MovableIncomePaid Movable => Copyright.MovableIncome;
 
-        public decimal FromProfit => Total + Benefits.Costs - Benefits.Contribution;
+        public decimal Total => Vouchers.Total + Allowances.Total + Rent.Rent + Movable.TaxedApartIncome;
+
+        public decimal FromProfit => Total + Movable.TaxedAsPay + Benefits.Costs - Benefits.Contribution;
 
         public decimal Disallowed => Vouchers.Disallowed + Benefits.NotDeductible;
     }
 
     // The rules of the levers paid besides pay, for one income year, or null when one has none.
-    private sealed record LeverRules(VoucherRules Vouchers, AllowanceRules Allowances, RentRules Rent, CarRules Car)
+    private sealed record LeverRules(VoucherRules Vouchers, AllowanceRules Allowances, RentRules Rent, CarRules Car, CopyrightRules Copyright)
     {
         public static LeverRules? For(int incomeYear) =>
             VoucherRules.For(incomeYear) is { } vouchers && AllowanceRules.For(incomeYear) is { } allowances && RentRules.For(incomeYear) is { } rent
-            && CarRules.For(incomeYear) is { } car
-                ? new LeverRules(vouchers, allowances, rent, car)
+            && CarRules.For(incomeYear) is { } car && CopyrightRules.For(incomeYear) is { } copyright
+                ? new LeverRules(vouchers, allowances, rent, car, copyright)
                 : null;
     }
 
