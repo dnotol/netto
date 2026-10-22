@@ -1,3 +1,4 @@
+using Netto.Core.Copyright;
 using Netto.Core.CorporateTax;
 using Netto.Core.DirectorPay;
 using Netto.Core.PersonalTax;
@@ -68,6 +69,13 @@ public sealed record RentMove(decimal Rent) : Move
     public override Scenario Apply(Scenario scenario) => scenario with { Rent = scenario.Rent with { Rent = Rent } };
 }
 
+// The copyright royalty the company pays the director raised to Royalty, what a ruling accepts for
+// their creative share within the limits.
+public sealed record CopyrightRoyaltyMove(decimal Royalty) : Move
+{
+    public override Scenario Apply(Scenario scenario) => scenario with { Copyright = scenario.Copyright with { Royalty = Royalty } };
+}
+
 // A move in the plan with what it adds to the pocket on top of the moves before it.
 public sealed record PlannedMove(Move Move, decimal Gain);
 
@@ -85,12 +93,23 @@ internal interface IMoveFinder
     Move? Find(Scenario scenario);
 }
 
+// A finder whose moves hold only while a condition on the rest of the plan does, which a later move of
+// another kind can break: whether the plan still keeps it, against Today.
+internal interface IMoveGuard
+{
+    bool Holds(Scenario today, Scenario plan);
+}
+
 // The moves from Today, found greedily: every finder proposes its move from where the plan stands,
 // the one that adds the most to the pocket is taken, and the others are asked again on top of it,
 // until no move adds a euro or more. A move of a kind already taken (Move.Kind) replaces it in its
-// line, which then adds both gains, so the plan has one line per value it changes. A move that leaves the company less than the reserve is never
-// taken, nor one the engine refuses. Every gain is the difference of two runs of the year
-// (YearSimulation.Run), never arithmetic of its own.
+// line, which then adds both gains, so the plan has one line per value it changes. A move that leaves
+// the company less than the reserve is never taken, nor one the engine refuses, nor one after which a
+// finder's guard (IMoveGuard) no longer holds. A guarded move taken early can stop moves that would
+// have left more had it come last, so when a guarding finder has a move from Today the search runs a
+// second time, those finders joining only once the others have none left, and keeps the plan that
+// leaves more. Every gain is the difference of two runs of the year (YearSimulation.Run), never
+// arithmetic of its own.
 public static class MoveSearch
 {
     // Less than this is not worth a move.
@@ -103,7 +122,7 @@ public static class MoveSearch
     public static (MovePlan? Value, string? Error) Run(Scenario today, DateOnly date) =>
         Run(today, [
             new SplitMoveFinder(), new CompanyAdvancePaymentFinder(date), new DirectorAdvancePaymentFinder(date),
-            new EcoVouchersFinder(), new SportCultureVouchersFinder(), new RentFinder(),
+            new EcoVouchersFinder(), new SportCultureVouchersFinder(), new RentFinder(), new CopyrightRoyaltyFinder(),
         ]);
 
     internal static (MovePlan? Value, string? Error) Run(Scenario today, IReadOnlyList<IMoveFinder> finders)
@@ -113,20 +132,33 @@ public static class MoveSearch
         if (year is null)
             return (null, error);
 
+        var guards = finders.OfType<IMoveGuard>().ToList();
+        var guarding = finders.Where(finder => finder is IMoveGuard).ToList();
+        var plan = Search(today, year.NetInPocket, finders, [], guards);
+        if (guarding.All(finder => finder.Find(today) is null))
+            return (plan, null);
+
+        var late = Search(today, year.NetInPocket, finders.Except(guarding).ToList(), guarding, guards);
+        return (late.PlanInPocket > plan.PlanInPocket ? late : plan, null);
+    }
+
+    // Round after round from Today with the early finders, the late ones joining once the early ones
+    // have no move left.
+    private static MovePlan Search(
+        Scenario today, decimal todayInPocket, IReadOnlyList<IMoveFinder> early, IReadOnlyList<IMoveFinder> late, IReadOnlyList<IMoveGuard> guards)
+    {
+        var asked = early;
         var current = today;
-        var inPocket = year.NetInPocket;
+        var inPocket = todayInPocket;
         var moves = new List<PlannedMove>();
         for (var round = 0; round < MaximumRounds; round++)
         {
-            var best = finders
-                .Select(finder => finder.Find(current))
-                .OfType<Move>()
-                .Select(move => (Move: move, After: move.Apply(current)))
-                .Select(candidate => (candidate.Move, candidate.After, Year: YearSimulation.Run(candidate.After).Value))
-                .Where(candidate => candidate.Year is { } after && after.MaximumDividend >= candidate.After.Reserve)
-                .Select(candidate => (candidate.Move, candidate.After, Gain: candidate.Year!.NetInPocket - inPocket))
-                .Where(candidate => candidate.Gain >= SmallestGain)
-                .Aggregate(((Move Move, Scenario After, decimal Gain)?)null, (taken, candidate) => taken is { } kept && kept.Gain >= candidate.Gain ? kept : candidate);
+            var best = Best(asked, today, current, inPocket, guards);
+            if (best is null && late.Count > 0 && asked == early)
+            {
+                asked = [.. early, .. late];
+                best = Best(asked, today, current, inPocket, guards);
+            }
             if (best is not { } move)
                 break;
 
@@ -139,8 +171,23 @@ public static class MoveSearch
             inPocket += move.Gain;
         }
 
-        return (new MovePlan(year.NetInPocket, moves, inPocket), null);
+        return new MovePlan(todayInPocket, moves, inPocket);
     }
+
+    // The move that adds the most from where the plan stands, of those the engine takes, that keep the
+    // reserve and every guard, and add a euro or more; none otherwise.
+    private static (Move Move, Scenario After, decimal Gain)? Best(
+        IReadOnlyList<IMoveFinder> finders, Scenario today, Scenario current, decimal inPocket, IReadOnlyList<IMoveGuard> guards) =>
+        finders
+            .Select(finder => finder.Find(current))
+            .OfType<Move>()
+            .Select(move => (Move: move, After: move.Apply(current)))
+            .Where(candidate => guards.All(guard => guard.Holds(today, candidate.After)))
+            .Select(candidate => (candidate.Move, candidate.After, Year: YearSimulation.Run(candidate.After).Value))
+            .Where(candidate => candidate.Year is { } after && after.MaximumDividend >= candidate.After.Reserve)
+            .Select(candidate => (candidate.Move, candidate.After, Gain: candidate.Year!.NetInPocket - inPocket))
+            .Where(candidate => candidate.Gain >= SmallestGain)
+            .Aggregate(((Move Move, Scenario After, decimal Gain)?)null, (taken, candidate) => taken is { } kept && kept.Gain >= candidate.Gain ? kept : candidate);
 }
 
 // The split's best pay, when it is not the pay already set.
@@ -220,4 +267,21 @@ internal sealed class RentFinder : IMoveFinder
         var cap = RentCalculator.Cap(rules, rent);
         return rent.Rent < cap ? new RentMove(cap) : null;
     }
+}
+
+// The royalty a ruling accepts for the director's creative share, within the limits, once the share is
+// given and when it is above the royalty paid (CopyrightCalculator.Ceiling): never a lower royalty. It
+// guards what it raised: a royalty the moves raised above Today's stays at most its ceiling at the
+// plan's pay, so a later move that lowers the pay is not taken; a royalty Today already holds is the
+// user's, never a reason to refuse a move.
+internal sealed class CopyrightRoyaltyFinder : IMoveFinder, IMoveGuard
+{
+    public Move? Find(Scenario scenario) =>
+        Ceiling(scenario) is { } ceiling && ceiling > scenario.Copyright.Royalty ? new CopyrightRoyaltyMove(ceiling) : null;
+
+    public bool Holds(Scenario today, Scenario plan) =>
+        plan.Copyright.Royalty <= today.Copyright.Royalty || plan.Copyright.Royalty <= Ceiling(plan);
+
+    private static decimal? Ceiling(Scenario scenario) =>
+        CopyrightRules.For(scenario.IncomeYear) is { } rules ? CopyrightCalculator.Ceiling(rules, scenario.Copyright, scenario.DirectorPay) : null;
 }
