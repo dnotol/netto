@@ -223,6 +223,108 @@ public class CopyrightCalculatorTests
         (result.FlatRateCosts, result.TaxedApart?.Income, result.WithheldWithinLimits).ShouldBe((12_525m, 17_475m, 2_621.25m));
     }
 
+    // The share of working time spent creating is a rate between nothing and all of it.
+    [Theory]
+    [InlineData(-0.01)]
+    [InlineData(1.01)]
+    public void Compute_creativeShareOutsideNothingToAll_isRefused(double share)
+    {
+        CopyrightCalculator.Compute(Rules2026, new CopyrightRoyalty(10_000m) { CreativeShare = (decimal)share }, 50_000m)
+            .ShouldBe((null, CopyrightCalculator.CreativeShareOutOfRange));
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    public void Compute_creativeShareAtItsBounds_isTaken(int share)
+    {
+        CopyrightCalculator.Compute(Rules2026, new CopyrightRoyalty(10_000m) { CreativeShare = share }, 50_000m).Error.ShouldBeNull();
+    }
+
+    // The royalty move's ceiling (ruling 2026.0484, points 11 and 31): at most 25% of the envelope, pay
+    // plus royalty, times the creative share, so R ≤ 0.25·s·P / (1 − 0.25·s), taken down to the cent.
+    // 75% beside 50,000 of pay: 9,375 / 0.8125 = 11,538.46.
+    [Fact]
+    public void Ceiling_creativeShareGiven_isWhatTheRulingAcceptsOfTheEnvelope()
+    {
+        CopyrightCalculator.Ceiling(Rules2026, Share(0.75m), 50_000m).ShouldBe(11_538.46m);
+    }
+
+    // At the ceiling the royalty is within 18.75% of the envelope; a cent more is not.
+    [Fact]
+    public void Ceiling_creativeShareGiven_isTheLargestRoyaltyWithinTheRulingsShare()
+    {
+        var ceiling = CopyrightCalculator.Ceiling(Rules2026, Share(0.75m), 50_000m).ShouldNotBeNull();
+
+        (ceiling <= 0.1875m * (50_000m + ceiling), ceiling + 0.01m <= 0.1875m * (50_000m + ceiling + 0.01m)).ShouldBe((true, false));
+    }
+
+    // All of the time creating beside 300,000 of pay: the ruling's 100,000 passes the cap, 77,220.
+    [Fact]
+    public void Ceiling_rulingAboveTheCap_isTheCap()
+    {
+        CopyrightCalculator.Ceiling(Rules2026, Share(1m), 300_000m).ShouldBe(77_220m);
+    }
+
+    // The ruling's 25% of the share stays under the law's 30%, so the relative limit never binds today;
+    // under a limit of 20% it would: 20% / 80% of 50,000.
+    [Fact]
+    public void Ceiling_rulingAboveTheRelativeLimit_isTheRelativeLimit()
+    {
+        var rules = Rules2026 with { RelativeLimit = Rules2026.RelativeLimit with { Value = 0.20m } };
+
+        CopyrightCalculator.Ceiling(rules, Share(1m), 50_000m).ShouldBe(12_500m);
+    }
+
+    // At the ceiling the whole royalty stays within the limits.
+    [Theory]
+    [InlineData(0.75, 50_000)]
+    [InlineData(1, 20_799)]
+    [InlineData(1, 300_000)]
+    [InlineData(0.33, 61_234.57)]
+    public void Ceiling_royaltyAtIt_isAllWithinTheLimits(double share, double pay)
+    {
+        var ceiling = CopyrightCalculator.Ceiling(Rules2026, Share((decimal)share), (decimal)pay).ShouldNotBeNull();
+
+        Compute(ceiling, (decimal)pay).TaxedAsPay.ShouldBe(0m);
+    }
+
+    // Until the share is given there is no ceiling, so no move.
+    [Fact]
+    public void Ceiling_noCreativeShare_isNone()
+    {
+        CopyrightCalculator.Ceiling(Rules2026, new CopyrightRoyalty(0m), 50_000m).ShouldBeNull();
+    }
+
+    // When the four previous years averaged above the cap, every royalty is taxed as pay: none.
+    [Fact]
+    public void Ceiling_averageAboveTheCap_isNone()
+    {
+        CopyrightCalculator.Ceiling(Rules2026, Share(0.75m) with { AverageWithinCap = false }, 50_000m).ShouldBeNull();
+    }
+
+    [Fact]
+    public void Ceiling_yearWithoutAnEnvelope_isNone()
+    {
+        CopyrightCalculator.Ceiling(CopyrightRules.IncomeYear2025, Share(0.75m), 50_000m).ShouldBeNull();
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-5_000)]
+    public void Ceiling_noPay_isNothing(int pay)
+    {
+        CopyrightCalculator.Ceiling(Rules2026, Share(1m), pay).ShouldBe(0m);
+    }
+
+    [Fact]
+    public void Ceiling_noTimeCreating_isNothing()
+    {
+        CopyrightCalculator.Ceiling(Rules2026, Share(0m), 50_000m).ShouldBe(0m);
+    }
+
+    private static CopyrightRoyalty Share(decimal share) => new(0m) { CreativeShare = share };
+
     // The year reads the royalty with its costs as plain figures: the company pays and the pocket gets
     // the whole royalty, the tax and the withholding are on its net.
     [Fact]

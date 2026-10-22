@@ -12,7 +12,10 @@ namespace Netto.Core.Copyright;
 // whole royalty is when the four previous years' copyright income averaged more than the cap. The
 // withholding is credited and refunded beyond the tax (art. 279, art. 304 §2). The part within the
 // limits is taxed and withheld on less its flat-rate costs (FlatRateCosts), which from 2026 only a
-// holder of an attestation du travail des arts takes.
+// holder of an attestation du travail des arts takes. EnvelopeRate is the share of the yearly envelope,
+// director pay plus royalty, that the SDA's rulings accept as a royalty for all of a director's time
+// spent creating, the basis of the royalty Netto proposes as a move: none for 2025, whose rules serve
+// the Tax-Calc tests only.
 public sealed record CopyrightRules(
     int IncomeYear,
     Source Limits,
@@ -30,6 +33,7 @@ public sealed record CopyrightRules(
     RuleAmount TaxedApartRate,
     RuleAmount WithholdingRate,
     RuleAmount BeyondLimitsWithholdingRate,
+    RuleAmount? EnvelopeRate,
     IReadOnlyList<LeverCondition> Conditions)
 {
     private static readonly Source Article17Income2026 = Fisconet(17, 2026, "30.07.2026", "91154b02-bee7-4b6b-b039-48f3172766a2", "2026-07-30",
@@ -156,13 +160,21 @@ public sealed record CopyrightRules(
         new Uri("https://www.ejustice.just.fgov.be/eli/loi/2026/05/30/2026003986/justel"),
         "personal-tax/ejustice_loi-programme-2026-05-30_2026-06-01.html") { Label = "Programme law of 30.05.2026" };
 
+    private static readonly Source Ruling2026_0484 = new(
+        "Décision anticipée n° 2026.0484 du 18.08.2026 of the Service des Décisions Anticipées, on Fisconetplus, last modified 17.09.2026",
+        "Points 11 and 31: a director's copyright royalty is at most 25% of the yearly envelope, director pay plus royalty, times the share of their working time spent creating protected works; "
+        + "the pay is the gross actually paid or attributed in cash or in kind, without the company car's benefit in kind",
+        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/c0b563e3-ccbe-47ff-b26b-e4bd671c0bc7"),
+        "personal-tax/spf-finances_decision-anticipee-2026-0484_2026-09-17.html") { Label = "Advance ruling 2026.0484" };
+
     public static CopyrightRules IncomeYear2025 { get; } = Of(
         2025, Article37Income2025, Article171Income2025, Article269Income2025, Article32Income2025, Article157Income2025,
-        FlatRateCostsOf(ArCir3Income2025, ArCir4Income2025, null, IndexationNotice2026, 20_100m, 40_190m), 75_360m, []);
+        FlatRateCostsOf(ArCir3Income2025, ArCir4Income2025, null, IndexationNotice2026, 20_100m, 40_190m), 75_360m, null, []);
 
     public static CopyrightRules IncomeYear2026 { get; } = Of(
         2026, Article37Income2026, Article171Income2026, Article269Income2026, Article32Income2026, Article157Income2026,
         FlatRateCostsOf(ArCir3Income2026, ArCir4Income2026, ProgrammeLaw, IndexationNotice2027, 20_590m, 41_180m), 77_220m,
+        new RuleAmount("copyright_envelope_rate", 0.25m, Ruling2026_0484),
         [
             new LeverCondition("works_you_created", [Article17Income2026]),
             new LeverCondition("for_the_public", [Article17Income2026]),
@@ -183,7 +195,7 @@ public sealed record CopyrightRules(
     // The rates are the same both years; the cap and the texts are the year's.
     private static CopyrightRules Of(
         int incomeYear, Source article37, Source article171, Source article269, Source article32, Source article157, CopyrightFlatRateCosts flatRateCosts,
-        decimal cap, IReadOnlyList<LeverCondition> conditions) => new(
+        decimal cap, RuleAmount? envelopeRate, IReadOnlyList<LeverCondition> conditions) => new(
         incomeYear,
         article37,
         Article551,
@@ -200,6 +212,7 @@ public sealed record CopyrightRules(
         new RuleAmount("copyright_taxed_apart_rate", 0.15m, article171),
         new RuleAmount("copyright_withholding_rate", 0.15m, article269),
         new RuleAmount("copyright_beyond_limits_withholding_rate", 0.30m, article269),
+        envelopeRate,
         conditions);
 
     // The rates are art. 4's both years, the ceilings the year's indexation notice's.

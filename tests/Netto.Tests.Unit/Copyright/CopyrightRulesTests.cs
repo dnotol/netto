@@ -95,6 +95,23 @@ public class CopyrightRulesTests
         ]);
     }
 
+    // The SDA's ruling 2026.0484 of 18.08.2026, points 11 and 31: a royalty of at most 25% of the yearly
+    // envelope, director pay plus royalty, times the share of working time spent creating.
+    [Fact]
+    public void IncomeYear2026_holdsTheShareOfTheEnvelopeARulingAccepts()
+    {
+        var rate = CopyrightRules.IncomeYear2026.EnvelopeRate.ShouldNotBeNull();
+
+        (rate.Key, rate.Value, rate.Source.Document).ShouldBe(("copyright_envelope_rate", 0.25m, "personal-tax/spf-finances_decision-anticipee-2026-0484_2026-09-17.html"));
+    }
+
+    // The ruling is of 2026; the 2025 rules, for the Tax-Calc tests, hold none.
+    [Fact]
+    public void IncomeYear2025_holdsNoEnvelope()
+    {
+        CopyrightRules.IncomeYear2025.EnvelopeRate.ShouldBeNull();
+    }
+
     // The conditions the card lists, each with the texts it comes from: works the director created and
     // transferred, for communication to the public, public performance or reproduction, effectively
     // exploited (art. 17 §1, 5°), at a price within professional needs (art. 53, 10°), the 281.45 fiche
