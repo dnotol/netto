@@ -23,24 +23,36 @@ internal sealed record MovesView(MovesState State, string? Error, RiverInputs? T
             : new MovesView(MovesState.Moves, null, today, pay, plan.Moves, plan.Gain);
     }
 
-    // Whether the river holds the move's values already: its pay, or Today's payment by the deadline
-    // with the move's amount on top.
+    // Whether the river holds the move's values already: its pay, Today's payment by the deadline with
+    // the move's amount on top, or a lever's amount with its module in the plan.
     public bool Applied(PlannedMove move, RiverInputs river) => move.Move switch
     {
         PayMove pay => river.DirectorPay.Value == pay.Pay,
         CompanyAdvancePaymentMove payment => river.AdvancePayments.ByDeadline[payment.Deadline].Value == Planned(payment),
         DirectorAdvancePaymentMove payment => river.TaxPrepayments.Paid.ByDeadline[payment.Deadline].Value == Planned(payment),
+        EcoVouchersMove eco => river.InPlan(OptionalModule.Vouchers) && river.Vouchers.EcoVouchers.Value == eco.Amount,
+        SportCultureVouchersMove sport => river.InPlan(OptionalModule.Vouchers) && river.Vouchers.SportCultureVouchers.Value == sport.Amount,
+        RentMove rent => river.InPlan(OptionalModule.Rent) && river.Rent.Rent.Value == rent.Rent,
         _ => false,
     };
 
-    // The river with the move's values, everything else as it is.
+    // The river with the move's values, everything else as it is. Applying a lever's move is the one
+    // action that adds a module to the plan: the user asked for it.
     public RiverInputs Apply(PlannedMove move, RiverInputs river) => move.Move switch
     {
         PayMove pay => river.WithDirectorPay(pay.Pay),
         CompanyAdvancePaymentMove payment => river.WithAdvancePayment(payment.Deadline, Planned(payment)),
         DirectorAdvancePaymentMove payment => river.WithTaxAdvancePayment(payment.Deadline, Planned(payment)),
+        EcoVouchersMove eco => river.WithEcoVouchers(eco.Amount).AddToPlan(OptionalModule.Vouchers),
+        SportCultureVouchersMove sport => river.WithSportCultureVouchers(sport.Amount).AddToPlan(OptionalModule.Vouchers),
+        RentMove rent => WithTodaysHome(river).WithRent(rent.Rent).AddToPlan(OptionalModule.Rent),
         _ => throw new ArgumentOutOfRangeException(nameof(move), move, "A move the river cannot apply."),
     };
+
+    // The rent is Today's home's: its cadastral income and share let come with it.
+    private RiverInputs WithTodaysHome(RiverInputs river) => Today is { } today
+        ? river.WithCadastralIncome(today.Rent.CadastralIncome.Value).WithShareLet(today.Rent.ShareLet.Value)
+        : river;
 
     private decimal Planned(CompanyAdvancePaymentMove payment) => (Today?.AdvancePayments.ByDeadline[payment.Deadline].Value ?? 0m) + payment.Amount;
 

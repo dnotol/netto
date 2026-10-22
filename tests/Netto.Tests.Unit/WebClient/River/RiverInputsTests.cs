@@ -852,4 +852,16 @@ public class RiverInputsTests
     // 12% of a cadastral income of 1,200 let for the 2026 cap, 1,380.00 (RentCalculatorTests).
     private static RiverInputs RentAtTheCap(RiverInputs inputs) =>
         inputs.AddToPlan(OptionalModule.Rent).WithCadastralIncome(1_200m).WithShareLet(0.12m).WithRent(1_380m);
+
+    // The move search keeps the home's facts while Rent is out of the plan, with no rent: the year it
+    // starts from is Run's.
+    [Fact]
+    public void MoveScenario_rentFactsOutOfThePlan_runsTheSameYear()
+    {
+        var inputs = RiverInputs.Example.WithCadastralIncome(1_200m).WithShareLet(0.12m).WithRent(1_380m);
+
+        var scenario = inputs.MoveScenario();
+
+        (scenario.Rent, YearSimulation.Run(scenario).Value?.NetInPocket).ShouldBe((new HomeOfficeRent(1_200m, 0.12m, 0m), inputs.Run().Year?.NetInPocket));
+    }
 }

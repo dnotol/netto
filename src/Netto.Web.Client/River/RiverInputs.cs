@@ -167,8 +167,16 @@ public sealed record RiverInputs(
     // The moves Netto recommends from this river taken as Today, the user's current setup, at the pay
     // Run runs, on that date (MoveSearch): none while the company is skipped, the split being where
     // they start.
-    public (MovePlan? Value, string? Error)? FindMoves(DateOnly date) =>
-        Company is null ? null : MoveSearch.Run(Scenario(Math.Min(DirectorPay.Value, PayCeiling ?? 0m)), date);
+    public (MovePlan? Value, string? Error)? FindMoves(DateOnly date) => Company is null ? null : MoveSearch.Run(MoveScenario(), date);
+
+    // The scenario Run runs, but with the home office's facts kept while Rent is out of the plan, its
+    // rent at nothing, which the engine counts as no rent: the year is the same, and the search can
+    // propose the rent at the cap.
+    internal Scenario MoveScenario()
+    {
+        var scenario = Scenario(Math.Min(DirectorPay.Value, PayCeiling ?? 0m));
+        return InPlan(OptionalModule.Rent) ? scenario : scenario with { Rent = Rent.Values with { Rent = 0m } };
+    }
 
     public bool SameBesidesPay(RiverInputs other) => this with { DirectorPay = other.DirectorPay } == other;
 

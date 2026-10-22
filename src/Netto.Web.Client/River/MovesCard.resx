@@ -45,6 +45,15 @@
   <data name="Move_DirectorPayment" xml:space="preserve">
     <value>Pay {0} by {1} on your income tax</value>
   </data>
+  <data name="Move_EcoVouchers" xml:space="preserve">
+    <value>Grant {0} of eco vouchers a year</value>
+  </data>
+  <data name="Move_SportCultureVouchers" xml:space="preserve">
+    <value>Grant {0} of sport and culture vouchers a year</value>
+  </data>
+  <data name="Move_Rent" xml:space="preserve">
+    <value>Rent the office in your home to the company for {0} a year</value>
+  </data>
   <data name="Gain" xml:space="preserve">
     <value>{0} more</value>
   </data>

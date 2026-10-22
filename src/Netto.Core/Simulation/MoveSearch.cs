@@ -1,6 +1,8 @@
 using Netto.Core.CorporateTax;
 using Netto.Core.DirectorPay;
 using Netto.Core.PersonalTax;
+using Netto.Core.Rent;
+using Netto.Core.Vouchers;
 
 namespace Netto.Core.Simulation;
 
@@ -9,6 +11,9 @@ namespace Netto.Core.Simulation;
 public abstract record Move
 {
     public abstract Scenario Apply(Scenario scenario);
+
+    // Moves of one kind change the same value: a later one replaces the earlier in the plan.
+    public virtual object Kind => GetType();
 }
 
 // The director pay set to Pay, the split's best.
@@ -21,6 +26,8 @@ public sealed record PayMove(decimal Pay) : Move
 // tax: what cancels the surcharge, by the date of that deadline.
 public sealed record CompanyAdvancePaymentMove(int Deadline, DateOnly Date, decimal Amount) : Move
 {
+    public override object Kind => (GetType(), Deadline);
+
     public override Scenario Apply(Scenario scenario) => scenario with { AdvancePayments = scenario.AdvancePayments.Add(Deadline, Amount) };
 }
 
@@ -28,8 +35,28 @@ public sealed record CompanyAdvancePaymentMove(int Deadline, DateOnly Date, deci
 // surcharge due.
 public sealed record DirectorAdvancePaymentMove(int Deadline, DateOnly Date, decimal Amount) : Move
 {
+    public override object Kind => (GetType(), Deadline);
+
     public override Scenario Apply(Scenario scenario) =>
         scenario with { TaxPrepayments = scenario.TaxPrepayments with { Paid = scenario.TaxPrepayments.Paid.Add(Deadline, Amount) } };
+}
+
+// The eco vouchers the company grants raised to Amount, their yearly maximum.
+public sealed record EcoVouchersMove(decimal Amount) : Move
+{
+    public override Scenario Apply(Scenario scenario) => scenario with { Vouchers = scenario.Vouchers with { EcoVouchers = Amount } };
+}
+
+// The sport/culture vouchers the company grants raised to Amount, their yearly maximum.
+public sealed record SportCultureVouchersMove(decimal Amount) : Move
+{
+    public override Scenario Apply(Scenario scenario) => scenario with { Vouchers = scenario.Vouchers with { SportCultureVouchers = Amount } };
+}
+
+// The rent the company pays for the office in the director's home raised to Rent, the cap.
+public sealed record RentMove(decimal Rent) : Move
+{
+    public override Scenario Apply(Scenario scenario) => scenario with { Rent = scenario.Rent with { Rent = Rent } };
 }
 
 // A move in the plan with what it adds to the pocket on top of the moves before it.
@@ -51,7 +78,8 @@ internal interface IMoveFinder
 
 // The moves from Today, found greedily: every finder proposes its move from where the plan stands,
 // the one that adds the most to the pocket is taken, and the others are asked again on top of it,
-// until no move adds a euro or more. A move that leaves the company less than the reserve is never
+// until no move adds a euro or more. A move of a kind already taken (Move.Kind) replaces it in its
+// line, which then adds both gains, so the plan has one line per value it changes. A move that leaves the company less than the reserve is never
 // taken, nor one the engine refuses. Every gain is the difference of two runs of the year
 // (YearSimulation.Run), never arithmetic of its own.
 public static class MoveSearch
@@ -64,7 +92,10 @@ public static class MoveSearch
 
     // On that date: a payment is proposed by the first deadline not yet past, none once all are.
     public static (MovePlan? Value, string? Error) Run(Scenario today, DateOnly date) =>
-        Run(today, [new SplitMoveFinder(), new CompanyAdvancePaymentFinder(date), new DirectorAdvancePaymentFinder(date)]);
+        Run(today, [
+            new SplitMoveFinder(), new CompanyAdvancePaymentFinder(date), new DirectorAdvancePaymentFinder(date),
+            new EcoVouchersFinder(), new SportCultureVouchersFinder(), new RentFinder(),
+        ]);
 
     internal static (MovePlan? Value, string? Error) Run(Scenario today, IReadOnlyList<IMoveFinder> finders)
     {
@@ -90,7 +121,11 @@ public static class MoveSearch
             if (best is not { } move)
                 break;
 
-            moves.Add(new PlannedMove(move.Move, move.Gain));
+            var taken = moves.FindIndex(planned => Equals(planned.Move.Kind, move.Move.Kind));
+            if (taken < 0)
+                moves.Add(new PlannedMove(move.Move, move.Gain));
+            else
+                moves[taken] = new PlannedMove(move.Move, moves[taken].Gain + move.Gain);
             current = move.After;
             inPocket += move.Gain;
         }
@@ -141,5 +176,38 @@ internal sealed class DirectorAdvancePaymentFinder(DateOnly date) : IMoveFinder
         var amount = GrossToNet.AdvancePaymentTopUpBy(
             scenario.IncomeYear, scenario.DirectorPay, scenario.MunicipalRate.Value, scenario.TaxPrepayments, scenario.ContributionsPaidBy, year.Rent.NetRent, open);
         return amount > 0m ? new DirectorAdvancePaymentMove(open, rules.Deadlines[open].Date.Value, amount.Value) : null;
+    }
+}
+
+// The eco vouchers at their yearly maximum, when the company grants less: they need no fact Netto
+// cannot see, only the conditions the Vouchers card lists.
+internal sealed class EcoVouchersFinder : IMoveFinder
+{
+    public Move? Find(Scenario scenario) =>
+        VoucherRules.For(scenario.IncomeYear)?.EcoVouchersMaximum.Value is { } maximum && scenario.Vouchers.EcoVouchers < maximum
+            ? new EcoVouchersMove(maximum)
+            : null;
+}
+
+// The sport/culture vouchers at their yearly maximum, when the company grants less.
+internal sealed class SportCultureVouchersFinder : IMoveFinder
+{
+    public Move? Find(Scenario scenario) =>
+        VoucherRules.For(scenario.IncomeYear)?.SportCultureVouchersMaximum.Value is { } maximum && scenario.Vouchers.SportCultureVouchers < maximum
+            ? new SportCultureVouchersMove(maximum)
+            : null;
+}
+
+// The rent at the cap, when the cadastral income and the share let are given and the rent is below
+// it.
+internal sealed class RentFinder : IMoveFinder
+{
+    public Move? Find(Scenario scenario)
+    {
+        if (RentRules.For(scenario.IncomeYear) is not { } rules || scenario.Rent is not { CadastralIncome: > 0m, ShareLet: > 0m } rent)
+            return null;
+
+        var cap = RentCalculator.Cap(rules, rent);
+        return rent.Rent < cap ? new RentMove(cap) : null;
     }
 }

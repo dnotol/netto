@@ -25,27 +25,40 @@ public class MovesViewTests
         MovesView.Of(null, On22October).State.ShouldBe(MovesState.NoToday);
     }
 
+    // After the year: the pay first, then the vouchers the example does not grant.
     [Fact]
-    public void Of_exampleAfterTheYear_movesThePayToTheBest()
+    public void Of_exampleAfterTheYear_movesThePayThenGrantsTheVouchers()
     {
         var view = MovesView.Of(RiverInputs.Example, AfterTheYear);
 
-        (view.State, view.TodayPay, view.Total).ShouldBe((MovesState.Moves, 50_000m, 2_551.13m));
-        view.Moves.ShouldBe([BestPay]);
+        (view.State, view.TodayPay, view.Moves[0]).ShouldBe((MovesState.Moves, 50_000m, BestPay));
+        view.Moves.Skip(1).Select(move => move.Move).ShouldBe([new EcoVouchersMove(250m), new SportCultureVouchersMove(100m)], ignoreOrder: true);
     }
 
     [Fact]
-    public void Of_exampleOn22October_paysTheCompanysSurchargeToo()
+    public void Of_exampleOn22October_paysTheCompanysSurchargeAfterThePay()
     {
         var view = MovesView.Of(RiverInputs.Example, On22October);
 
-        view.Moves.Select(move => move.Move).ShouldBe([BestPay.Move, CompanyPays.Move]);
+        view.Moves.Take(2).Select(move => move.Move).ShouldBe([BestPay.Move, CompanyPays.Move]);
+    }
+
+    // Every move applied, nothing is left to move.
+    [Fact]
+    public void Of_todayWithEveryMoveApplied_isAlreadyBest()
+    {
+        var view = MovesView.Of(RiverInputs.Example, On22October);
+        var planned = view.Moves.Aggregate(RiverInputs.Example, (river, move) => view.Apply(move, river));
+
+        MovesView.Of(planned, On22October).State.ShouldBe(MovesState.AlreadyBest);
     }
 
     [Fact]
-    public void Of_todayAtTheBestPay_isAlreadyBest()
+    public void Of_exampleOn22October_totalsItsMoves()
     {
-        MovesView.Of(RiverInputs.Example.WithDirectorPay(20_799m), AfterTheYear).State.ShouldBe(MovesState.AlreadyBest);
+        var view = MovesView.Of(RiverInputs.Example, On22October);
+
+        view.Total.ShouldBe(view.Moves.Sum(move => move.Gain));
     }
 
     [Fact]
@@ -118,6 +131,53 @@ public class MovesViewTests
         var river = View().Apply(DirectorPays, RiverInputs.Example);
 
         (river.TaxPrepayments.Paid.Fourth.Value, View().Applied(DirectorPays, river)).ShouldBe((14_317.50m, true));
+    }
+
+    // Applying a voucher move adds Vouchers to the plan, which the example does not hold.
+    [Fact]
+    public void Apply_ecoVouchers_addsVouchersToThePlan()
+    {
+        var river = View().Apply(new PlannedMove(new EcoVouchersMove(250m), 1m), RiverInputs.Example);
+
+        (river.InPlan(OptionalModule.Vouchers), river.Vouchers.EcoVouchers.Value).ShouldBe((true, 250m));
+    }
+
+    [Fact]
+    public void Applied_ecoVouchersWithVouchersOutOfThePlan_isFalse()
+    {
+        var river = RiverInputs.Example.WithEcoVouchers(250m);
+
+        View().Applied(new PlannedMove(new EcoVouchersMove(250m), 1m), river).ShouldBeFalse();
+    }
+
+    [Fact]
+    public void Apply_sportCultureVouchers_isApplied()
+    {
+        var move = new PlannedMove(new SportCultureVouchersMove(100m), 1m);
+
+        View().Applied(move, View().Apply(move, RiverInputs.Example)).ShouldBeTrue();
+    }
+
+    // Rent out of Today's plan with its home's facts kept: the move is the cap, and applying it brings
+    // the home's facts, the rent and the Rent module into the river.
+    [Fact]
+    public void Of_rentFactsOutOfThePlan_rentsAtTheCap()
+    {
+        var today = RiverInputs.Example.WithCadastralIncome(1_200m).WithShareLet(0.12m);
+
+        MovesView.Of(today, AfterTheYear).Moves.Select(move => move.Move).ShouldContain(new RentMove(1_380.00m));
+    }
+
+    [Fact]
+    public void Apply_rent_bringsTodaysHomeAndAddsRentToThePlan()
+    {
+        var today = RiverInputs.Example.WithCadastralIncome(1_200m).WithShareLet(0.12m);
+        var move = new PlannedMove(new RentMove(1_380.00m), 1m);
+
+        var river = View(today).Apply(move, RiverInputs.Example);
+
+        (river.InPlan(OptionalModule.Rent), river.Rent.CadastralIncome.Value, river.Rent.ShareLet.Value, river.Rent.Rent.Value, View(today).Applied(move, river))
+            .ShouldBe((true, 1_200m, 0.12m, 1_380.00m, true));
     }
 
     private static MovesView View(RiverInputs? today = null) => MovesView.Of(today ?? RiverInputs.Example, AfterTheYear);

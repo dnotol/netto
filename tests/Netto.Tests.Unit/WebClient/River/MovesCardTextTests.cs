@@ -50,4 +50,20 @@ public class MovesCardTextTests
 
         text.ShouldBe(expected);
     }
+
+    public static TheoryData<Move, string, string> Levers => new()
+    {
+        { new EcoVouchersMove(250m), "€250.00", "Grant €250.00 of eco vouchers a year" },
+        { new SportCultureVouchersMove(100m), "€100.00", "Grant €100.00 of sport and culture vouchers a year" },
+        { new RentMove(1_380m), "€1,380.00", "Rent the office in your home to the company for €1,380.00 a year" },
+    };
+
+    [Theory]
+    [MemberData(nameof(Levers))]
+    public void Move_lever_saysWhatTheCompanyPays(Move move, string amount, string expected)
+    {
+        var text = string.Format(CultureInfo.InvariantCulture, Resources.GetString(MovesCardText.Move(move), CultureInfo.InvariantCulture) ?? "", amount);
+
+        text.ShouldBe(expected);
+    }
 }

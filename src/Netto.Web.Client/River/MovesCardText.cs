@@ -13,6 +13,9 @@ internal static class MovesCardText
         PayMove => "Move_Pay",
         CompanyAdvancePaymentMove => "Move_CompanyPayment",
         DirectorAdvancePaymentMove => "Move_DirectorPayment",
+        EcoVouchersMove => "Move_EcoVouchers",
+        SportCultureVouchersMove => "Move_SportCultureVouchers",
+        RentMove => "Move_Rent",
         _ => throw new ArgumentOutOfRangeException(nameof(move), move, "A move the card has no words for."),
     };
 
