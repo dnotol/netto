@@ -17,6 +17,10 @@ public enum ReducedRateCondition
 
     // The pay is under the minimum and the taxable income exceeds it: 25% on everything.
     MinimumPayNotMet,
+
+    // The flat-rate benefits are worth more than their share of the total pay, the benefits in it
+    // (al. 3, 5° and art. 2 §1, 25°): 25% on everything, whatever the pay and the tax period.
+    ExcessBenefits,
 }
 
 public static class ReducedRateConditionExtensions

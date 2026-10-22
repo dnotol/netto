@@ -422,8 +422,8 @@ internal static class TaxAdvancePaymentFields
         PersonalTaxRules.For(incomeYear)?.AdvancePayments.Deadlines ?? [];
 }
 
-// The condition is the engine's: which part of art. 215 decided the rate, against which minimum pay.
-// So is the surcharge the advance payments leave, and what more by the last deadline cancels it. What
+// The condition is the engine's: which part of art. 215 decided the rate, against which minimum pay,
+// and against which share of the total pay its flat-rate benefits may reach. So is the surcharge the advance payments leave, and what more by the last deadline cancels it. What
 // comes in is the profit the split leaves the company; its taxable income adds back the disallowed
 // expenses the engine counts, what it cannot deduct of the vouchers. The card lists the corporate
 // layer's steps, that one among them. Each line says its share of what comes in, and the card what
@@ -435,6 +435,9 @@ internal sealed record CorporateTaxView(
     decimal TaxableIncome,
     ReducedRateCondition Condition,
     decimal MinimumDirectorPay,
+    decimal DirectorPay,
+    decimal FlatRateBenefits,
+    decimal ExcessBenefitsShare,
     bool NoTaxableProfit,
     SurchargeState Surcharge,
     decimal SurchargeAmount,
@@ -455,6 +458,9 @@ internal sealed record CorporateTaxView(
             year.Company.TaxableIncome,
             year.Company.Condition,
             year.Company.MinimumDirectorPay,
+            year.Company.DirectorPay,
+            year.Company.FlatRateBenefits,
+            year.Company.ExcessBenefitsShare,
             year.Company.TaxableIncome <= 0m,
             payments switch
             {

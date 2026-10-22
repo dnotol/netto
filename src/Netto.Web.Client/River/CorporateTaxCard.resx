@@ -42,6 +42,9 @@
   <data name="Condition_MinimumPayNotMet" xml:space="preserve">
     <value>Standard rate on all of it, set by your pay: it is under the minimum of {0} and the company's taxable income exceeds it.</value>
   </data>
+  <data name="Condition_ExcessBenefits" xml:space="preserve">
+    <value>Standard rate on all of it, set by your benefits in kind: at {1}, they are more than {2} of your total pay of {3}, the benefits counted.</value>
+  </data>
   <data name="NoTaxableProfit" xml:space="preserve">
     <value>No taxable profit: no corporate tax, and no dividend this year.</value>
   </data>

@@ -49,7 +49,8 @@
             <p class="corporate-tax__condition">
                 @(_view.NoTaxableProfit
                     ? L["NoTaxableProfit"]
-                    : L[CorporateTaxCardText.Condition(_view.Condition), Formats.Euros(_view.MinimumDirectorPay)])
+                    : L[CorporateTaxCardText.Condition(_view.Condition), Formats.Euros(_view.MinimumDirectorPay), Formats.Euros(_view.FlatRateBenefits),
+                        Formats.WholeShare(_view.ExcessBenefitsShare), Formats.Euros(_view.DirectorPay)])
             </p>
         }
         <Disclosure Title="@L["PaymentsTitle"]" Values="@Values(_settings.Payments)" Refused="@CorporateTaxSettingsView.PaymentsHold(Refused)"
