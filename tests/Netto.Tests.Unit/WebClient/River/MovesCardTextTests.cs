@@ -27,4 +27,27 @@ public class MovesCardTextTests
 
         text.ShouldBe("Pay yourself €20,799.00 instead of €50,000.00");
     }
+
+    public static TheoryData<Move, string> Payments => new()
+    {
+        { new CompanyAdvancePaymentMove(3, new DateOnly(2026, 12, 21), 29_700.45m), "Pay €29,700.45 by 21 December 2026 on the company's corporate tax" },
+        { new DirectorAdvancePaymentMove(3, new DateOnly(2026, 12, 21), 14_317.50m), "Pay €14,317.50 by 21 December 2026 on your income tax" },
+    };
+
+    [Theory]
+    [MemberData(nameof(Payments))]
+    public void Move_payment_saysTheAmountTheDateAndTheTax(Move move, string expected)
+    {
+        var (amount, date) = move switch
+        {
+            CompanyAdvancePaymentMove payment => (payment.Amount, payment.Date),
+            DirectorAdvancePaymentMove payment => (payment.Amount, payment.Date),
+            _ => throw new ArgumentOutOfRangeException(nameof(move)),
+        };
+
+        var text = string.Format(CultureInfo.InvariantCulture, Resources.GetString(MovesCardText.Move(move), CultureInfo.InvariantCulture) ?? "",
+            Netto.Web.Client.Formats.Euros(amount), Netto.Web.Client.Formats.Day(date));
+
+        text.ShouldBe(expected);
+    }
 }

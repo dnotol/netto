@@ -16,6 +16,9 @@ builder.Services.AddScoped<IBrowserStorage, LocalStorage>();
 builder.Services.AddScoped<Folds>();
 builder.Services.AddScoped<SavedPlans>();
 
+// The browser's clock: which advance-payment deadlines are still open.
+builder.Services.AddSingleton(TimeProvider.System);
+
 // The river's inputs while the tab is open, starting on the plan last opened.
 builder.Services.AddScoped<RiverState>();
 

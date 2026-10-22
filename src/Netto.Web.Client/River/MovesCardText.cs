@@ -11,6 +11,8 @@ internal static class MovesCardText
     public static string Move(Move move) => move switch
     {
         PayMove => "Move_Pay",
+        CompanyAdvancePaymentMove => "Move_CompanyPayment",
+        DirectorAdvancePaymentMove => "Move_DirectorPayment",
         _ => throw new ArgumentOutOfRangeException(nameof(move), move, "A move the card has no words for."),
     };
 

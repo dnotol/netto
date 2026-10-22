@@ -165,9 +165,10 @@ public sealed record RiverInputs(
     public SplitSearchResult? SearchSplit() => Company is null ? null : SplitSearch.Run(Scenario(DirectorPay.Value)).Value;
 
     // The moves Netto recommends from this river taken as Today, the user's current setup, at the pay
-    // Run runs (MoveSearch): none while the company is skipped, the split being where they start.
-    public (MovePlan? Value, string? Error)? FindMoves() =>
-        Company is null ? null : MoveSearch.Run(Scenario(Math.Min(DirectorPay.Value, PayCeiling ?? 0m)));
+    // Run runs, on that date (MoveSearch): none while the company is skipped, the split being where
+    // they start.
+    public (MovePlan? Value, string? Error)? FindMoves(DateOnly date) =>
+        Company is null ? null : MoveSearch.Run(Scenario(Math.Min(DirectorPay.Value, PayCeiling ?? 0m)), date);
 
     public bool SameBesidesPay(RiverInputs other) => this with { DirectorPay = other.DirectorPay } == other;
 

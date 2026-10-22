@@ -39,6 +39,12 @@
   <data name="Move_Pay" xml:space="preserve">
     <value>Pay yourself {0} instead of {1}</value>
   </data>
+  <data name="Move_CompanyPayment" xml:space="preserve">
+    <value>Pay {0} by {1} on the company's corporate tax</value>
+  </data>
+  <data name="Move_DirectorPayment" xml:space="preserve">
+    <value>Pay {0} by {1} on your income tax</value>
+  </data>
   <data name="Gain" xml:space="preserve">
     <value>{0} more</value>
   </data>

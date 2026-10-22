@@ -17,7 +17,7 @@
                 <li class="moves__move">
                     <span class="moves__what">@What(move)</span>
                     <span class="moves__gain">@L["Gain", Formats.Euros(move.Gain)]</span>
-                    @if (MovesView.Applied(move, Inputs))
+                    @if (_view.Applied(move, Inputs))
                     {
                         <span class="moves__applied" tabindex="-1" @ref="_applied[index]">@L["Applied"]</span>
                     }
@@ -38,6 +38,10 @@
     [Parameter]
     public RiverInputs? Today { get; set; }
 
+    // Today's date, which decides the deadline a payment is proposed by.
+    [Parameter]
+    public DateOnly Date { get; set; }
+
     // The river as it is, to tell the moves it holds.
     [Parameter, EditorRequired]
     public RiverInputs Inputs { get; set; } = default!;
@@ -46,19 +50,21 @@
     [Parameter]
     public EventCallback<RiverInputs> InputsChanged { get; set; }
 
-    private MovesView _view = MovesView.Of(null);
+    private MovesView _view = MovesView.Of(null, default);
     private readonly Dictionary<int, ElementReference> _applied = [];
     private int? _focusApplied;
     private RiverInputs? _foundFor;
+    private DateOnly _foundOn;
     private bool _found;
 
     protected override void OnParametersSet()
     {
-        if (_found && Today == _foundFor)
+        if (_found && Today == _foundFor && Date == _foundOn)
             return;
 
-        _view = MovesView.Of(Today);
+        _view = MovesView.Of(Today, Date);
         _foundFor = Today;
+        _foundOn = Date;
         _found = true;
     }
 
@@ -67,6 +73,8 @@
     private string What(PlannedMove move) => move.Move switch
     {
         PayMove pay => L[MovesCardText.Move(pay), Formats.Euros(pay.Pay), Formats.Euros(_view.TodayPay)],
+        CompanyAdvancePaymentMove payment => L[MovesCardText.Move(payment), Formats.Euros(payment.Amount), Formats.Day(payment.Date)],
+        DirectorAdvancePaymentMove payment => L[MovesCardText.Move(payment), Formats.Euros(payment.Amount), Formats.Day(payment.Date)],
         _ => "",
     };
 
@@ -74,7 +82,7 @@
     private async Task Apply(PlannedMove move, int index)
     {
         _focusApplied = index;
-        await InputsChanged.InvokeAsync(MovesView.Apply(move, Inputs));
+        await InputsChanged.InvokeAsync(_view.Apply(move, Inputs));
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

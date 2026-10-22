@@ -90,6 +90,21 @@ public static class GrossToNet
             figures.OtherIncomeTax), null);
     }
 
+    // What the director pays more by the deadline, the first being 0, so that no surcharge is due on
+    // the income tax on the pay (IncomeTaxAdvancePaymentCalculator.TopUpBy), on the same figures as
+    // Compute; null for a year without rules. The inputs are Compute's to refuse.
+    internal static decimal? AdvancePaymentTopUpBy(
+        int incomeYear, decimal grossPay, decimal municipalRate, TaxPrepayments prepayments, ContributionsPaidBy paidBy, decimal otherIncome, int deadline)
+    {
+        if (SocialContributionRules.For(incomeYear) is not { } socialRules || PersonalTaxRules.For(incomeYear) is not { } taxRules
+            || WithholdingRules.For(incomeYear) is not { } withholdingRules)
+            return null;
+
+        var figures = Figures.For(socialRules, taxRules, withholdingRules, grossPay, municipalRate, prepayments, paidBy, otherIncome);
+        return IncomeTaxAdvancePaymentCalculator.TopUpBy(
+            taxRules.AdvancePayments, figures.Tax.IncomeTax, figures.YearTax.LowEarnedIncomeCredit, prepayments with { Withheld = figures.Withheld }, deadline);
+    }
+
     // The pay's figures alone, for the split's search, which runs the year at a hundred pays and more
     // and reads only the net in pocket, the other income's tax, the taxable pay and the company's cost
     // of them: no steps, no statement, and not the next 1,000, which costs as much again. Null for a
