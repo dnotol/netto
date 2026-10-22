@@ -147,10 +147,9 @@
     font-size: 0.8rem;
 }
 
+/* On the gain's line, so the bar stays one line taller at most. */
 .bucket-bar__unsaved {
-    margin: 0;
     color: var(--netto-text-muted);
-    font-size: 0.8rem;
     font-style: italic;
 }
 
@@ -169,6 +168,19 @@
     overflow: hidden;
     clip-path: inset(50%);
     white-space: nowrap;
+}
+
+/* Below a wide screen the buttons would squeeze the four amounts into each other: they go under the
+   figures, at the right, and the figures take the whole width. */
+@media (max-width: 1200px) {
+    .bucket-bar ::deep .mud-container {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 0.5rem;
+    }
+
+    .bucket-bar__actions {
+        justify-self: end;
+    }
 }
 
 /* On a phone the bar shares the screen with the sticky site header: two rows of buckets, tighter, so

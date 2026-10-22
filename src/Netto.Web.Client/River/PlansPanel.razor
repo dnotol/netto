@@ -79,9 +79,9 @@
                             {
                                 <div class="plan__confirm" role="group" aria-label="@L[confirming.Delete ? "ConfirmDelete" : "ConfirmOpen", row.Plan.Name]">
                                     <span>@L[confirming.Delete ? "ConfirmDelete" : "ConfirmOpen", row.Plan.Name]</span>
-                                    <MudButton @ref="_confirm" Variant="Variant.Filled" Size="Size.Small" Class="plan__yes"
+                                    <MudButton Variant="Variant.Filled" Size="Size.Small" Class="plan__yes"
                                                OnClick="@(() => Confirm(row))">@L[confirming.Delete ? "DeleteYes" : "OpenYes"]</MudButton>
-                                    <MudButton Variant="Variant.Text" Size="Size.Small" OnClick="Cancel">@L["Cancel"]</MudButton>
+                                    <MudButton @ref="_cancel" Variant="Variant.Text" Size="Size.Small" OnClick="Cancel">@L["Cancel"]</MudButton>
                                 </div>
                             }
                             else
@@ -131,7 +131,7 @@
     private readonly string _panelId = $"plans-{Guid.NewGuid():N}";
     private IReadOnlyList<PlanRow> _rows = [];
     private MudButton? _button;
-    private MudButton? _confirm;
+    private MudButton? _cancel;
     private ElementReference _panel;
     private bool _open;
     private bool _focusPanel;
@@ -155,11 +155,12 @@
             await _panel.FocusAsync();
         }
 
+        // A question that drops changes or a plan lands on Cancel, so Enter pressed on its way loses nothing.
         if (_focusConfirm)
         {
             _focusConfirm = false;
-            if (_confirm is not null)
-                await _confirm.FocusAsync();
+            if (_cancel is not null)
+                await _cancel.FocusAsync();
         }
 
         if (_focusButton)

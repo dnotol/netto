@@ -56,13 +56,18 @@
                     @(" ")@L[BucketBarText.EnterCompany]
                 }
             </p>
-            @if (Gain is { } gain)
+            @if (Gain is not null || Unsaved)
             {
-                <p class="bucket-bar__gain bucket-bar__gain--@gain.Kind.ToString().ToLowerInvariant()">@GainText(gain)</p>
-            }
-            @if (Unsaved)
-            {
-                <p class="bucket-bar__unsaved">@L[BucketBarText.Unsaved]</p>
+                <p class="bucket-bar__gain">
+                    @if (Gain is { } gain)
+                    {
+                        <span class="bucket-bar__gain--@gain.Kind.ToString().ToLowerInvariant()">@GainText(gain)</span>
+                    }
+                    @if (Unsaved)
+                    {
+                        @(Gain is null ? "" : " ")<span class="bucket-bar__unsaved">@L[BucketBarText.Unsaved]</span>
+                    }
+                </p>
             }
             <p class="bucket-bar__live" aria-live="polite">@_announced</p>
         </div>

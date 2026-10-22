@@ -43,11 +43,18 @@ html {
 
 /* On the river, the bar of buckets sticks under the header too (River/BucketBar.razor.css), so a
    control reached with Tab stops below both, its focus ring in sight: the header's 4.25rem and
-   border (Layout/MainLayout.razor.css), the bar's 7.25rem and room for its last line to wrap; on a
+   border (Layout/MainLayout.razor.css), the bar's 9rem with its line on the setup starred Today, and
+   room for its last line to wrap; below a wide screen, its buttons in a row under the figures; on a
    phone, its two rows of buckets and the row of its menu under them. A notice of a removal at the
    bottom of the screen (River/TakenOutNotice) hides nothing either. */
 html:has(.bucket-bar) {
-    scroll-padding-top: calc(4.25rem + 1px + 7.25rem + 1.5rem);
+    scroll-padding-top: calc(4.25rem + 1px + 9rem + 1.5rem);
+}
+
+@media (max-width: 1200px) {
+    html:has(.bucket-bar) {
+        scroll-padding-top: calc(4.25rem + 1px + 11.5rem + 1.5rem);
+    }
 }
 
 @media (max-width: 640px) {
