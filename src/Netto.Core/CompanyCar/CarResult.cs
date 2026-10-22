@@ -21,6 +21,16 @@ public sealed record CarResult(
 {
     public static CarResult None { get; } = new([], 0m, 0m, 0m, 0m, null, 0m, 0m, 0m);
 
+    // The CO2 in g/km the benefit counts (nothing for an electric car), and its CO2 percentage, with
+    // the amounts that percentage used and the texts beside them, for the benefit's step.
+    public decimal Co2Counted { get; init; }
+
+    public decimal Co2Percentage { get; init; }
+
+    public IReadOnlyList<RuleAmount> Co2Amounts { get; init; } = [];
+
+    public IReadOnlyList<Source> Co2Sources { get; init; } = [];
+
     // The benefit was raised to the year's minimum.
     public bool AtTheMinimum => BenefitBeforeContribution > BenefitOnTheScale;
 

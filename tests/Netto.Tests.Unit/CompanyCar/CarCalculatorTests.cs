@@ -184,6 +184,181 @@ public class CarCalculatorTests
         Compute(CarFacts.None).BenefitInKind.ShouldBe(BenefitInKind.None);
     }
 
+    // A car that emits CO2 takes 5.5% at its fuel's reference for 2026, a tenth of a point per gram
+    // above it: petrol at 120 g/km against 70, 10.5%; 45,000 × 6/7 × 10.5% = 4,050.00.
+    [Fact]
+    public void Compute_petrolCar_takesItsCo2PercentageAgainstThePetrolReference()
+    {
+        var result = Compute(Car(45_000m, new DateOnly(2026, 1, 10)) with { Engine = CarEngine.Petrol, Co2 = 120 });
+
+        (result.Co2Counted, result.Co2Percentage, result.BenefitOnTheScale).ShouldBe((120m, 0.105m, 4_050.00m));
+    }
+
+    // Diesel at 140 g/km against 58: 13.7%; first registered in 2019, so 70% of its catalogue value:
+    // 60,000 × 70% × 6/7 × 13.7% = 4,932.00.
+    [Fact]
+    public void Compute_dieselCar_takesItsCo2PercentageAgainstTheDieselReference()
+    {
+        var result = Compute(Car(60_000m, new DateOnly(2019, 3, 5)) with { Engine = CarEngine.Diesel, Co2 = 140 });
+
+        (result.Co2Percentage, result.BenefitOnTheScale).ShouldBe((0.137m, 4_932.00m));
+    }
+
+    // The reference is petrol's for every car whose engine runs on petrol, LPG or natural gas, and
+    // diesel's for every one running on diesel, hybrids and plug-in hybrids included: at 100 g/km,
+    // 8.5% against 70 and 9.7% against 58.
+    [Theory]
+    [InlineData(CarEngine.Petrol, 0.085)]
+    [InlineData(CarEngine.Lpg, 0.085)]
+    [InlineData(CarEngine.NaturalGas, 0.085)]
+    [InlineData(CarEngine.PetrolHybrid, 0.085)]
+    [InlineData(CarEngine.PetrolPlugInHybrid, 0.085)]
+    [InlineData(CarEngine.Diesel, 0.097)]
+    [InlineData(CarEngine.DieselHybrid, 0.097)]
+    [InlineData(CarEngine.DieselPlugInHybrid, 0.097)]
+    public void Compute_carAtOneHundredGrams_takesItsFuelsReference(CarEngine engine, decimal percentage)
+    {
+        Compute(Car(50_000m, new DateOnly(2026, 1, 10)) with { Engine = engine, Co2 = 100 }).Co2Percentage.ShouldBe(percentage);
+    }
+
+    // 5.5% − 4 points at 30 g/km would be 1.5%: the percentage is never below 4%.
+    [Fact]
+    public void Compute_carFarBelowTheReference_takesTheMinimumPercentage()
+    {
+        var result = Compute(Car(50_000m, new DateOnly(2026, 1, 10)) with { Engine = CarEngine.PetrolPlugInHybrid, Co2 = 30 });
+
+        (result.Co2Percentage, result.BenefitOnTheScale).ShouldBe((0.04m, 1_714.29m));
+    }
+
+    // Diesel at 200 g/km would be 19.7%: the percentage is never above 18%.
+    [Fact]
+    public void Compute_carFarAboveTheReference_takesTheMaximumPercentage()
+    {
+        Compute(Car(50_000m, new DateOnly(2026, 1, 10)) with { Engine = CarEngine.Diesel, Co2 = 200 }).Co2Percentage.ShouldBe(0.18m);
+    }
+
+    // Without CO2 data at the vehicle registration, a car counts as 205 g/km on petrol, LPG or natural
+    // gas and 195 g/km on diesel, so 18% either way.
+    [Theory]
+    [InlineData(CarEngine.Petrol, 205)]
+    [InlineData(CarEngine.Lpg, 205)]
+    [InlineData(CarEngine.Diesel, 195)]
+    public void Compute_carWithoutCo2Data_countsAsTheTextsEmission(CarEngine engine, int counted)
+    {
+        var result = Compute(Car(50_000m, new DateOnly(2026, 1, 10)) with { Engine = engine, NoCo2Data = true });
+
+        (result.Co2Counted, result.Co2Percentage).ShouldBe((counted, 0.18m));
+    }
+
+    // A fake hybrid bought or leased from 2018 counts at the CO2 of its matching fuel car: 150 g/km
+    // against 70, 13.5%; 55,000 × 6/7 × 13.5% = 6,364.29.
+    [Fact]
+    public void Compute_fakeHybrid_countsAtItsMatchingCarsCo2()
+    {
+        var result = Compute(Car(55_000m, new DateOnly(2026, 1, 10)) with
+        {
+            Engine = CarEngine.PetrolPlugInHybrid, Co2 = 45, Acquired = new DateOnly(2025, 12, 1), FakeHybrid = true, MatchingCarCo2 = 150,
+        });
+
+        (result.Co2Counted, result.Co2Percentage, result.BenefitOnTheScale).ShouldBe((150m, 0.135m, 6_364.29m));
+    }
+
+    // Without a matching car, its own CO2 × 2.5: 112.5 g/km, 9.75%; 55,000 × 6/7 × 9.75% = 4,596.43.
+    [Fact]
+    public void Compute_fakeHybridWithoutAMatchingCar_countsTwoAndAHalfTimesItsOwnCo2()
+    {
+        var result = Compute(Car(55_000m, new DateOnly(2026, 1, 10)) with
+        {
+            Engine = CarEngine.PetrolPlugInHybrid, Co2 = 45, Acquired = new DateOnly(2025, 12, 1), FakeHybrid = true, NoMatchingCar = true,
+        });
+
+        (result.Co2Counted, result.Co2Percentage, result.BenefitOnTheScale).ShouldBe((112.5m, 0.0975m, 4_596.43m));
+    }
+
+    // The fake-hybrid rule holds for a plug-in hybrid bought or leased from 2018, and only for a
+    // plug-in hybrid: otherwise the car counts at its own CO2, whatever was ticked.
+    [Theory]
+    [InlineData(CarEngine.PetrolPlugInHybrid, 2017)]
+    [InlineData(CarEngine.PetrolHybrid, 2024)]
+    [InlineData(CarEngine.Petrol, 2024)]
+    public void Compute_fakeHybridTickWhereTheRuleDoesNotHold_keepsTheCarsOwnCo2(CarEngine engine, int acquiredIn)
+    {
+        var result = Compute(Car(55_000m, new DateOnly(acquiredIn, 6, 1)) with
+        {
+            Engine = engine, Co2 = 45, Acquired = new DateOnly(acquiredIn, 5, 1), FakeHybrid = true, MatchingCarCo2 = 150,
+        });
+
+        result.Co2Counted.ShouldBe(45m);
+    }
+
+    // An electric car emits nothing, whatever its CO2 field holds: 4%.
+    [Fact]
+    public void Compute_electricCar_takesTheMinimumPercentageWhateverItsCo2Field()
+    {
+        var result = Compute(Car(50_000m, new DateOnly(2026, 1, 10)) with { Co2 = 120 });
+
+        (result.Co2Counted, result.Co2Percentage, result.BenefitOnTheScale).ShouldBe((0m, 0.04m, 1_714.29m));
+    }
+
+    // The amounts the benefit's CO2 percentage used, for its step: the base, the step per gram and the
+    // fuel's reference, with the emission the texts give a car without data, the fake hybrid's
+    // multiplier, and the minimum or the maximum when the percentage is held to it; an electric car's
+    // the minimum alone.
+    [Fact]
+    public void Compute_co2Amounts_areTheOnesThePercentageUsed()
+    {
+        Compute(Car(50_000m, new DateOnly(2026, 1, 10)) with { Engine = CarEngine.Petrol, Co2 = 120 }).Co2Amounts
+            .ShouldBe([Rules.BaseCo2Percentage, Rules.Co2PercentagePerGram, Rules.PetrolReferenceEmission]);
+        Compute(Car(50_000m, new DateOnly(2026, 1, 10)) with { Engine = CarEngine.Diesel, NoCo2Data = true }).Co2Amounts
+            .ShouldBe([Rules.BaseCo2Percentage, Rules.Co2PercentagePerGram, Rules.DieselReferenceEmission, Rules.DieselEmissionWithoutData, Rules.MaximumCo2Percentage]);
+        Compute(Car(50_000m, new DateOnly(2026, 1, 10)) with
+            {
+                Engine = CarEngine.PetrolPlugInHybrid, Co2 = 20, Acquired = new DateOnly(2025, 12, 1), FakeHybrid = true, NoMatchingCar = true,
+            }).Co2Amounts
+            .ShouldBe([Rules.BaseCo2Percentage, Rules.Co2PercentagePerGram, Rules.PetrolReferenceEmission, Rules.FakeHybridWithoutMatch, Rules.MinimumCo2Percentage]);
+        Compute(Car(50_000m, new DateOnly(2026, 1, 10))).Co2Amounts.ShouldBe([Rules.MinimumCo2Percentage]);
+    }
+
+    [Fact]
+    public void Compute_negativeCo2_isRefused()
+    {
+        CarCalculator.Compute(Rules, Car(50_000m, new DateOnly(2026, 1, 10)) with { Engine = CarEngine.Petrol, Co2 = -1 })
+            .ShouldBe((null, CarCalculator.Co2Negative));
+    }
+
+    // A car with a combustion engine emits CO2: until its figure is given, or the user says the
+    // vehicle registration holds none, Netto has nothing to take.
+    [Theory]
+    [InlineData(CarEngine.Petrol)]
+    [InlineData(CarEngine.DieselHybrid)]
+    [InlineData(CarEngine.PetrolPlugInHybrid)]
+    public void Compute_combustionCarWithoutItsCo2_isRefused(CarEngine engine)
+    {
+        CarCalculator.Compute(Rules, Car(50_000m, new DateOnly(2026, 1, 10)) with { Engine = engine })
+            .ShouldBe((null, CarCalculator.Co2Missing));
+    }
+
+    [Fact]
+    public void Compute_negativeMatchingCarCo2_isRefused()
+    {
+        CarCalculator.Compute(Rules, Car(50_000m, new DateOnly(2026, 1, 10)) with
+            {
+                Engine = CarEngine.PetrolPlugInHybrid, Co2 = 45, Acquired = new DateOnly(2025, 12, 1), FakeHybrid = true, MatchingCarCo2 = -1,
+            })
+            .ShouldBe((null, CarCalculator.MatchingCarCo2Negative));
+    }
+
+    // A fake hybrid needs its matching car's CO2, or the user's word that there is none.
+    [Fact]
+    public void Compute_fakeHybridWithoutItsMatchingCarsCo2_isRefused()
+    {
+        CarCalculator.Compute(Rules, Car(50_000m, new DateOnly(2026, 1, 10)) with
+            {
+                Engine = CarEngine.PetrolPlugInHybrid, Co2 = 45, Acquired = new DateOnly(2025, 12, 1), FakeHybrid = true,
+            })
+            .ShouldBe((null, CarCalculator.MatchingCarCo2Missing));
+    }
+
     [Fact]
     public void Compute_negativeCatalogueValue_isRefused()
     {

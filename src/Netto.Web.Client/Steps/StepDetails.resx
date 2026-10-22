@@ -436,7 +436,7 @@
     <value>Benefit in kind</value>
   </data>
   <data name="Rule_car_benefit" xml:space="preserve">
-    <value>6/7 of the catalogue value times 4%, the percentage of a car that emits no CO2, at the share of the catalogue value the car's age leaves, each part of the year weighed by its days; never less than the year's minimum.</value>
+    <value>6/7 of the catalogue value times the car's CO2 percentage, at the share of the catalogue value the car's age leaves, each part of the year weighed by its days; never less than the year's minimum. The percentage is 5.5% at the year's reference emission for the car's fuel, a tenth of a point more or less for each gram above or below it, between 4%, which a car that emits no CO2 takes, and 18%.</value>
   </data>
   <data name="Title_car_contribution" xml:space="preserve">
     <value>Your contribution</value>
@@ -502,7 +502,31 @@
     <value>Share of the catalogue value (6/7)</value>
   </data>
   <data name="Amount_minimum_co2_rate" xml:space="preserve">
-    <value>CO2 percentage of a car that emits none</value>
+    <value>Lowest CO2 percentage, which a car that emits none takes</value>
+  </data>
+  <data name="Amount_maximum_co2_rate" xml:space="preserve">
+    <value>Highest CO2 percentage</value>
+  </data>
+  <data name="Amount_base_co2_rate" xml:space="preserve">
+    <value>CO2 percentage at the reference emission</value>
+  </data>
+  <data name="Amount_co2_per_gram_rate" xml:space="preserve">
+    <value>More or less for each gram above or below the reference</value>
+  </data>
+  <data name="Amount_petrol_reference_grams" xml:space="preserve">
+    <value>Reference emission on petrol, LPG or natural gas</value>
+  </data>
+  <data name="Amount_diesel_reference_grams" xml:space="preserve">
+    <value>Reference emission on diesel</value>
+  </data>
+  <data name="Amount_petrol_without_data_grams" xml:space="preserve">
+    <value>Emission counted without CO2 data, on petrol, LPG or natural gas</value>
+  </data>
+  <data name="Amount_diesel_without_data_grams" xml:space="preserve">
+    <value>Emission counted without CO2 data, on diesel</value>
+  </data>
+  <data name="Amount_fake_hybrid_without_match_multiplier" xml:space="preserve">
+    <value>A fake hybrid's own CO2 without a matching car, times</value>
   </data>
   <data name="Amount_age_up_to_12_months_rate" xml:space="preserve">
     <value>Catalogue value up to 12 months old</value>

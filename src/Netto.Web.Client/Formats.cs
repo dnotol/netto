@@ -45,8 +45,9 @@ internal static class Formats
     public static string Month(int year, int month) => new DateOnly(year, month, 1).ToString("MMMM", Culture);
 
     // The rule sets hold rates as fractions (20.50% is 0.205), under keys ending in _rate or _factor,
-    // multiples of a rate under keys ending in _multiplier: 2.25 reads 2.25×, and coefficients, bare
-    // numbers published to four decimals, under keys ending in _coefficient.
+    // multiples of a rate under keys ending in _multiplier: 2.25 reads 2.25×, coefficients, bare
+    // numbers published to four decimals, under keys ending in _coefficient, and emissions in grams of
+    // CO2 per kilometre under keys ending in _grams: 70 reads 70 g/km.
     public static string RuleAmount(RuleAmount amount) =>
         amount.Key.EndsWith("_rate", StringComparison.Ordinal) || amount.Key.EndsWith("_factor", StringComparison.Ordinal)
             ? amount.Value.ToString("0.###%", Culture)
@@ -54,7 +55,9 @@ internal static class Formats
                 ? $"{amount.Value.ToString("0.##", Culture)}×"
                 : amount.Key.EndsWith("_coefficient", StringComparison.Ordinal)
                     ? amount.Value.ToString("0.####", Culture)
-                    : Euros(amount.Value);
+                    : amount.Key.EndsWith("_grams", StringComparison.Ordinal)
+                        ? $"{amount.Value.ToString("0.#", Culture)} g/km"
+                        : Euros(amount.Value);
 
     private static CultureInfo EnglishWithEuro()
     {

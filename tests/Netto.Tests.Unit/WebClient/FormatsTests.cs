@@ -126,8 +126,10 @@ public class FormatsTests
 
     // Rates are fractions in the rule sets (20.50% is 0.205), and their keys end in _rate or _factor;
     // a multiple of a rate ends in _multiplier; a coefficient, a bare number to four decimals, in
-    // _coefficient: art. 518's 2.2446 must not read 2.24.
+    // _coefficient: art. 518's 2.2446 must not read 2.24; an emission in grams of CO2 per km, in _grams.
     [Theory]
+    [InlineData("petrol_reference_grams", "70", "70 g/km")]
+    [InlineData("high_emission_grams", "200", "200 g/km")]
     [InlineData("cadastral_income_indexation_coefficient", "2.2446", "2.2446")]
     [InlineData("cadastral_income_indexation_coefficient", "2.3000", "2.3")]
     [InlineData("cadastral_income_revaluation_coefficient", "5.75", "5.75")]

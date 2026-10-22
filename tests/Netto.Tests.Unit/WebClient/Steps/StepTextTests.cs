@@ -116,6 +116,31 @@ public class StepTextTests
         MissingTexts(value.ShouldNotBeNull().Steps).ShouldBeEmpty();
     }
 
+    // A car that emits CO2: its percentage against each fuel's reference, held to the minimum or the
+    // maximum, without CO2 data, or a fake hybrid without a matching car.
+    public static TheoryData<CarFacts> FuelCars => new()
+    {
+        FuelCar with { Engine = CarEngine.Petrol, Co2 = 120 },
+        FuelCar with { Engine = CarEngine.Diesel, Co2 = 250 },
+        FuelCar with { Engine = CarEngine.Lpg, NoCo2Data = true },
+        FuelCar with { Engine = CarEngine.PetrolPlugInHybrid, Co2 = 20 },
+        FuelCar with { Engine = CarEngine.DieselPlugInHybrid, Co2 = 40, Acquired = new DateOnly(2024, 3, 1), FakeHybrid = true, NoMatchingCar = true },
+    };
+
+    private static readonly CarFacts FuelCar = new(50_000m, new DateOnly(2026, 1, 1), 8_000m, false, 600m);
+
+    [Theory]
+    [MemberData(nameof(FuelCars))]
+    public void StepDetailsResx_everyKeyOfAFuelCarsSteps_hasAText(CarFacts car)
+    {
+        var scenario = new Scenario(2026, 120_000m, 20_000m, new CompanyStatus(SmallCompany: true, FirstFourTaxPeriods: false),
+            50_000m, MunicipalRates.Entered(0.07m), 0m, WithholdingCategory.Standard) { Car = car };
+
+        var (value, _) = YearSimulation.Run(scenario);
+
+        MissingTexts(value.ShouldNotBeNull().Steps).ShouldBeEmpty();
+    }
+
     // The pay slip lists two steps of its own beside the engine's: the month's withholding, with the
     // key formula's lines and the annex's amounts, and the balance on the assessment.
     [Theory]

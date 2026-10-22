@@ -279,9 +279,9 @@ public static class YearSimulation
         new Step("car_costs", Layer.Corporate, TaxableEvent.CompanyCar, Track.Muddy, car.Costs,
             rules.Deduction, [rules.ZeroEmissionDeduction]) { AlsoCites = [rules.Acquisition] },
         new Step("car_benefit", Layer.Personal, TaxableEvent.CompanyCar, Track.TaxBaseOnly, car.BenefitBeforeContribution,
-            rules.Benefit, [rules.CatalogueShare, rules.MinimumCo2Percentage, .. car.Periods.Select(period => period.Period.AgeCoefficient).Distinct(), rules.MinimumBenefit])
+            rules.Benefit, [rules.CatalogueShare, .. car.Co2Amounts, .. car.Periods.Select(period => period.Period.AgeCoefficient).Distinct(), rules.MinimumBenefit])
         {
-            AlsoCites = [rules.BenefitMethod],
+            AlsoCites = [rules.BenefitMethod, .. car.Co2Sources],
         },
         new Step("car_contribution", Layer.Personal, TaxableEvent.CompanyCar, Track.InPocket, car.Contribution == 0m ? 0m : -car.Contribution,
             rules.Benefit, []),
