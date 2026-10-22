@@ -130,6 +130,27 @@
     font-size: 0.8rem;
 }
 
+/* Right of the figures: marking the setup, then the Composition menu. */
+.bucket-bar__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
+/* What the river leaves in the pocket against the setup the user marked: muted like the line above,
+   a gain in the pocket's gold, since it is money reaching the director. */
+.bucket-bar__gain {
+    margin: 0;
+    color: var(--netto-text-muted);
+    font-size: 0.8rem;
+}
+
+.bucket-bar__gain--more {
+    color: var(--netto-gold);
+}
+
 /* What the live region reads, out of sight: the figures in sight hold the bubbles of the buckets'
    names, which a live region would read out as a change of the bar. */
 .bucket-bar__live {

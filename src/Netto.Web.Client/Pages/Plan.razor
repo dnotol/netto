@@ -20,7 +20,8 @@
    it up. Every figure comes from Netto.Core; the page only holds the inputs and runs them. The
    optional modules show only while in the plan, which the Composition menu in the bar sets; taking
    one out, there or from its card, shows a notice with Undo. *@
-<BucketBar Run="_run">
+<BucketBar Run="_run" Setup="State.Setup?.Run">
+    <MarkSetup Marked="State.Setup is not null" CanMark="BaselineGain.CanMark(_run)" OnMark="MarkSetup" />
     <CompositionMenu @ref="_composition" Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" />
 </BucketBar>
 <TakenOutNotice @ref="_notice" Module="_takenOut" OnUndo="Undo" OnDismiss="Dismiss" />
@@ -143,6 +144,9 @@
     }
 
     private void OpenComposition() => _composition.Open();
+
+    // The river as it is becomes the setup the bar compares it with, replacing any marked before.
+    private void MarkSetup() => State.Setup = SetupSnapshot.Of(_inputs);
 
     // The next Tab goes on to the first card's heading.
     private async Task SkipToRiverAsync() => await _river.FocusAsync();

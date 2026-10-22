@@ -1,0 +1,21 @@
+@inject IStringLocalizer<MarkSetup> L
+
+@* Keeps the river as it is as the user's current setup, which the bar then compares the river with;
+   pressed again, it replaces it. Disabled while the engine refuses an amount, there being no figure
+   to keep (BaselineGain.CanMark). *@
+<MudButton Variant="Variant.Outlined" Size="Size.Small" Class="mark-setup" StartIcon="@Icons.Material.Rounded.BookmarkBorder"
+           Disabled="@(!CanMark)" OnClick="OnMark">
+    @L[Marked ? "MarkAgain" : "Mark"]
+</MudButton>
+
+@code {
+    // Whether a setup is marked already.
+    [Parameter]
+    public bool Marked { get; set; }
+
+    [Parameter]
+    public bool CanMark { get; set; }
+
+    [Parameter]
+    public EventCallback OnMark { get; set; }
+}

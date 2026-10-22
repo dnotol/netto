@@ -5,7 +5,9 @@
    the river starts from, and, at its right, what the page gives it (the Composition menu). Every
    amount is the engine's, regrouped by BucketsView. Each bucket's name opens an info bubble saying
    what it holds, and its amount says its share of the start; under them, what reaches the pocket out
-   of what leaves the company (BucketsView.Reach), its bubble saying so. A polite live region says what reaches the pocket once the river has settled
+   of what leaves the company (BucketsView.Reach), its bubble saying so, and, once the user has marked
+   their current setup, what the river leaves in the pocket against it (BaselineGain). A polite live
+   region says what reaches the pocket, and that gain, once the river has settled
    (BucketBarAnnouncement), not at every step of a slider dragged, or, while the engine refuses an
    amount, that there is no figure until it is corrected; the other buckets are read in the bar
    itself. The region is one of its own, out of sight, since a bubble opening inside the figures
@@ -53,6 +55,10 @@
                     @(" ")@L[BucketBarText.EnterCompany]
                 }
             </p>
+            @if (Gain is { } gain)
+            {
+                <p class="bucket-bar__gain bucket-bar__gain--@gain.Kind.ToString().ToLowerInvariant()">@GainText(gain)</p>
+            }
             <p class="bucket-bar__live" aria-live="polite">@_announced</p>
         </div>
         @if (ChildContent is not null)
@@ -66,11 +72,17 @@
     [Parameter, EditorRequired]
     public RiverRun Run { get; set; } = default!;
 
+    // The run of the setup the user marked as theirs, or null before they mark one.
+    [Parameter]
+    public RiverRun? Setup { get; set; }
+
     // What sits right of the figures.
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
     private BucketsView? View { get; set; }
+
+    private BaselineGain? Gain { get; set; }
 
     // What the live region says, and what it will say once the river settles; null before the first
     // run, which is not announced.
@@ -87,7 +99,10 @@
     protected override void OnParametersSet()
     {
         View = BucketsView.From(Run);
+        Gain = BaselineGain.From(Run, Setup);
         var pocket = BucketBarAnnouncement.Pocket(View) is { } amount ? L[BucketBarText.PocketAnnounced, amount].Value : L[BucketBarText.Refused].Value;
+        if (Gain is { } gain)
+            pocket = $"{pocket} {GainText(gain)}";
         if (_pocket is null)
         {
             _pocket = pocket;
@@ -121,6 +136,11 @@
         { EarlierProfits: > 0m } view => L["FromProfitAndEarlier", Formats.Euros(view.Start - view.EarlierProfits), Formats.Euros(view.EarlierProfits)].Value,
         { } view => L["FromProfit", Formats.Euros(view.Start)].Value,
     };
+
+    // What the river leaves in the pocket against the setup, or that the two cannot be compared.
+    private string GainText(BaselineGain gain) => gain.Kind is GainKind.More or GainKind.Less
+        ? L[BucketBarText.Gain(gain.Kind), Formats.Euros(gain.Amount)]
+        : L[BucketBarText.Gain(gain.Kind)];
 
     // A bucket's share of what the river starts from, where the bar draws shares.
     private decimal? ShareOf(string key) => View?.Buckets.Single(bucket => bucket.Key == key).Share;
