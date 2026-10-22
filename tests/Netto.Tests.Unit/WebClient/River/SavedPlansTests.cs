@@ -306,6 +306,19 @@ public class SavedPlansTests
         (imported, plans.Plans.Single().Name).ShouldBe((new PlanImport(1, 1, false), "Elsewhere"));
     }
 
+    // A file edited by hand can hold one id twice: each plan still joins under an id of its own.
+    [Fact]
+    public void Import_fileHoldingOneIdTwice_addsBothPlans()
+    {
+        var plans = new SavedPlans(new MemoryStorage());
+        var file = JsonNode.Parse(FileOf(("First", RiverInputs.Example), ("Second", BestPay)))!;
+        file["plans"]![1]!["id"] = file["plans"]![0]!["id"]!.GetValue<string>();
+
+        var imported = plans.Import(file.ToJsonString());
+
+        (imported.Added, plans.Plans.Select(plan => plan.Id).Distinct().Count(), plans.TodayPlan?.Name).ShouldBe((2, 2, "First"));
+    }
+
     [Theory]
     [InlineData("{ broken")]
     [InlineData("")]

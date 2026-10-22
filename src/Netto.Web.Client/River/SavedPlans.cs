@@ -90,15 +90,15 @@ internal sealed class SavedPlans
         if (unreadable)
             return PlanImport.Unreadable;
 
-        var readable = book.Plans.Where(plan => plan.Readable).ToList();
-        var ids = readable.ToDictionary(plan => plan.Id, _ => Guid.NewGuid().ToString("N"));
-        if (readable.Count > 0)
+        // Each plan paired with its new id, so a file holding one id twice still adds both.
+        var added = book.Plans.Where(plan => plan.Readable).Select(plan => (Plan: plan, Id: Guid.NewGuid().ToString("N"))).ToList();
+        if (added.Count > 0)
         {
-            var today = Today ?? (book.Today is { } fileToday && ids.TryGetValue(fileToday, out var id) ? id : null);
-            Keep(_book with { Plans = [.. Plans, .. readable.Select(plan => plan with { Id = ids[plan.Id] })], Today = today });
+            var today = Today ?? added.FirstOrDefault(pair => pair.Plan.Id == book.Today).Id;
+            Keep(_book with { Plans = [.. Plans, .. added.Select(pair => pair.Plan with { Id = pair.Id })], Today = today });
         }
 
-        return new PlanImport(readable.Count, book.Plans.Count - readable.Count, false);
+        return new PlanImport(added.Count, book.Plans.Count - added.Count, false);
     }
 
     // Whether the river differs from the plan it was opened from, or, with none opened, from the example
