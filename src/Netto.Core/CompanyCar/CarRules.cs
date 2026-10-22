@@ -1,6 +1,6 @@
 using Netto.Core.Rules;
 
-namespace Netto.Core.Car;
+namespace Netto.Core.CompanyCar;
 
 // A car the company puts at its director's disposal for private use, for one income year. The
 // director is taxed on its benefit in kind as pay (art. 31 and 32): 6/7 of its catalogue value times

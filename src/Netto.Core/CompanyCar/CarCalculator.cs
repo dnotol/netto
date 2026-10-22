@@ -1,4 +1,4 @@
-namespace Netto.Core.Car;
+namespace Netto.Core.CompanyCar;
 
 public static class CarCalculator
 {
@@ -11,7 +11,7 @@ public static class CarCalculator
     // year's × 6/7 × the CO2 percentage, rounded to the cent, then their sum at least the minimum,
     // less the contribution, never below zero. The company adds back its share of the benefit before
     // the contribution, rounded to the cent, and deducts an electric car's costs in full.
-    public static (CarResult? Value, string? Error) Compute(CarRules rules, CompanyCar car)
+    public static (CarResult? Value, string? Error) Compute(CarRules rules, CarFacts car)
     {
         if (car.CatalogueValue < 0m)
             return (null, CatalogueValueNegative);

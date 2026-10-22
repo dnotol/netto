@@ -1,8 +1,8 @@
-using Netto.Core.Car;
+using Netto.Core.CompanyCar;
 using Netto.Core.CorporateTax;
 using Shouldly;
 
-namespace Netto.Tests.Car;
+namespace Netto.Tests.CompanyCar;
 
 // Art. 36, 66 and 198 CIR 92 (revenus 2026), the administration's FAQ on car benefits, circular
 // 2024/C/50 and the SPF course's Module 5.3, as they stand for income year 2026.

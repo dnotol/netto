@@ -1,5 +1,5 @@
 using Netto.Core.Allowances;
-using Netto.Core.Car;
+using Netto.Core.CompanyCar;
 using Netto.Core.CorporateTax;
 using Netto.Core.Dividends;
 using Netto.Core.PersonalTax;
@@ -43,7 +43,7 @@ public sealed record Scenario(
 
     public HomeOfficeRent Rent { get; init; } = HomeOfficeRent.None;
 
-    public CompanyCar Car { get; init; } = CompanyCar.None;
+    public CarFacts Car { get; init; } = CarFacts.None;
 
     // What the company earns before it pays its director anything, pay, vouchers, expense allowances,
     // rent or a car. What the director pay and the company's profit share is what those levers leave

@@ -1,9 +1,10 @@
-using Netto.Core.Car;
+using Netto.Core.CompanyCar;
 using Netto.Core.Simulation;
 using Netto.Web.Client.River;
+using Netto.Web.Client.River.CompanyCar;
 using Shouldly;
 
-namespace Netto.Tests.WebClient.River;
+namespace Netto.Tests.WebClient.River.CompanyCar;
 
 // The Company car card on the river's example (RiverInputsTests), 100,000 of profit before the
 // director, with YearSimulationCarTests' electric car: 50,000 of catalogue value, first registered in

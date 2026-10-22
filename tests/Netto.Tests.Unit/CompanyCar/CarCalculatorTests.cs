@@ -1,7 +1,7 @@
-using Netto.Core.Car;
+using Netto.Core.CompanyCar;
 using Shouldly;
 
-namespace Netto.Tests.Car;
+namespace Netto.Tests.CompanyCar;
 
 // Made-up electric cars for income year 2026, derived from the official amounts (art. 36 §2, art. 198
 // §1, 9° and 9°bis) and the FAQ's method: each period of the year at its age coefficient, weighed by
@@ -11,11 +11,11 @@ public class CarCalculatorTests
 {
     private static readonly CarRules Rules = CarRules.IncomeYear2026;
 
-    private static CompanyCar Car(decimal catalogueValue, DateOnly firstRegistration, decimal yearlyCosts = 6_000m, bool privateEnergy = false,
+    private static CarFacts Car(decimal catalogueValue, DateOnly firstRegistration, decimal yearlyCosts = 6_000m, bool privateEnergy = false,
         decimal contribution = 0m) =>
         new(catalogueValue, firstRegistration, yearlyCosts, privateEnergy, contribution);
 
-    private static CarResult Compute(CompanyCar car)
+    private static CarResult Compute(CarFacts car)
     {
         var (result, error) = CarCalculator.Compute(Rules, car);
         error.ShouldBeNull();
@@ -163,7 +163,7 @@ public class CarCalculatorTests
     [Fact]
     public void Compute_none_isNoCar()
     {
-        Compute(CompanyCar.None).ShouldBe(CarResult.None);
+        Compute(CarFacts.None).ShouldBe(CarResult.None);
     }
 
     [Fact]

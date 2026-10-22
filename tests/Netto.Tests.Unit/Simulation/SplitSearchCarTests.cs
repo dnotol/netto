@@ -1,4 +1,4 @@
-using Netto.Core.Car;
+using Netto.Core.CompanyCar;
 using Netto.Core.CorporateTax;
 using Netto.Core.Dividends;
 using Netto.Core.PersonalTax;
@@ -22,7 +22,7 @@ public class SplitSearchCarTests
 
     private static readonly TaxPrepayments Withheld = new(1_000_000m, AdvancePayments.None);
 
-    private static readonly CompanyCar ElectricCar = new(50_000m, new DateOnly(2026, 1, 10), 8_000m, false, 0m);
+    private static readonly CarFacts ElectricCar = new(50_000m, new DateOnly(2026, 1, 10), 8_000m, false, 0m);
 
     [Fact]
     public void Run_2026Car_drawsEveryPayFromNoneToTheProfitItLeaves()
@@ -115,13 +115,13 @@ public class SplitSearchCarTests
         CompanyStatus? company = null,
         TaxPrepayments? taxPrepayments = null,
         ContributionsPaidBy paidBy = ContributionsPaidBy.Director,
-        CompanyCar? car = null) =>
+        CarFacts? car = null) =>
         new(2026, revenue, 20_000m, company ?? SmallPastStartUp, 50_000m, MunicipalRates.Entered(0.07m), 0m, WithholdingCategory.VvprbisThirdYearOnwards)
         {
             AdvancePayments = Prepaid,
             TaxPrepayments = taxPrepayments ?? Withheld,
             ContributionsPaidBy = paidBy,
-            Car = car ?? CompanyCar.None,
+            Car = car ?? CarFacts.None,
         };
 
     private static SplitSearchResult Search(Scenario scenario)

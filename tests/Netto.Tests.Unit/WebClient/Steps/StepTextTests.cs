@@ -1,7 +1,7 @@
 using System.Globalization;
 using System.Resources;
 using Netto.Core.Allowances;
-using Netto.Core.Car;
+using Netto.Core.CompanyCar;
 using Netto.Core.CorporateTax;
 using Netto.Core.DirectorPay;
 using Netto.Core.Dividends;
@@ -108,7 +108,7 @@ public class StepTextTests
         var scenario = new Scenario(2026, 120_000m, 20_000m, new CompanyStatus(SmallCompany: true, FirstFourTaxPeriods: false),
             50_000m, MunicipalRates.Entered(0.07m), 0m, WithholdingCategory.Standard)
         {
-            Car = new CompanyCar(50_000m, new DateOnly(registeredIn, 6, 1), 8_000m, privateEnergy, 600m),
+            Car = new CarFacts(50_000m, new DateOnly(registeredIn, 6, 1), 8_000m, privateEnergy, 600m),
         };
 
         var (value, _) = YearSimulation.Run(scenario);

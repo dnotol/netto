@@ -1,4 +1,4 @@
-using Netto.Core.Car;
+using Netto.Core.CompanyCar;
 using Netto.Core.CorporateTax;
 using Netto.Core.DirectorPay;
 using Netto.Core.Dividends;

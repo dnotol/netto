@@ -1,5 +1,5 @@
 using Netto.Core.Allowances;
-using Netto.Core.Car;
+using Netto.Core.CompanyCar;
 using Netto.Core.Rent;
 using Netto.Core.Vouchers;
 using Netto.Core.CorporateTax;
@@ -238,7 +238,7 @@ public class MoveSearchTests
     [Fact]
     public void Run_nothingWithheldWithACar_paysWhatLeavesNoSurchargeOnTheTaxWithItsBenefit()
     {
-        var withCar = Today with { TaxPrepayments = TaxPrepayments.None, Car = new CompanyCar(50_000m, new DateOnly(2026, 1, 10), 8_000m, false, 0m) };
+        var withCar = Today with { TaxPrepayments = TaxPrepayments.None, Car = new CarFacts(50_000m, new DateOnly(2026, 1, 10), 8_000m, false, 0m) };
 
         var plan = MoveSearch.Run(withCar, [new DirectorAdvancePaymentFinder(On22October)]).Value.ShouldNotBeNull();
         var move = plan.Moves.Single().Move.ShouldBeOfType<DirectorAdvancePaymentMove>();
@@ -249,7 +249,7 @@ public class MoveSearchTests
     [Fact]
     public void Run_everyKindWithACar_neverMovesTheCar()
     {
-        var withCar = Today with { Car = new CompanyCar(50_000m, new DateOnly(2026, 1, 10), 8_000m, false, 0m) };
+        var withCar = Today with { Car = new CarFacts(50_000m, new DateOnly(2026, 1, 10), 8_000m, false, 0m) };
 
         var plan = MoveSearch.Run(withCar, On22October).Value.ShouldNotBeNull();
 

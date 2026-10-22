@@ -1,6 +1,6 @@
 using Netto.Core.Rules;
 
-namespace Netto.Core.Car;
+namespace Netto.Core.CompanyCar;
 
 // The car as the rules take it. Periods are the parts of the year at one age coefficient, each with
 // its benefit rounded to the cent; BenefitOnTheScale is their sum, BenefitBeforeContribution that sum

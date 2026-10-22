@@ -1,5 +1,5 @@
 using Netto.Core.Allowances;
-using Netto.Core.Car;
+using Netto.Core.CompanyCar;
 using Netto.Core.CorporateTax;
 using Netto.Core.DirectorPay;
 using Netto.Core.Dividends;
@@ -220,7 +220,7 @@ public sealed record RiverInputs(
         Vouchers = InPlan(OptionalModule.Vouchers) ? Vouchers.Values : VoucherGrants.None,
         Allowances = InPlan(OptionalModule.Allowances) ? Allowances.Values : ExpenseAllowances.None,
         Rent = InPlan(OptionalModule.Rent) ? Rent.Values : HomeOfficeRent.None,
-        Car = InPlan(OptionalModule.Car) ? Car.Values : CompanyCar.None,
+        Car = InPlan(OptionalModule.Car) ? Car.Values : CarFacts.None,
     };
 }
 
@@ -290,7 +290,7 @@ public sealed record CarInputs(
     Input<bool> CompanyPaysPrivateEnergy,
     Input<decimal> PersonalContribution)
 {
-    public CompanyCar Values => new(CatalogueValue.Value, FirstRegistration.Value, YearlyCosts.Value, CompanyPaysPrivateEnergy.Value, PersonalContribution.Value);
+    public CarFacts Values => new(CatalogueValue.Value, FirstRegistration.Value, YearlyCosts.Value, CompanyPaysPrivateEnergy.Value, PersonalContribution.Value);
 }
 
 // A value of the river with where it comes from.

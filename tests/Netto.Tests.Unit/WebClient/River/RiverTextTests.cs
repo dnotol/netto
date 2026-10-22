@@ -1,7 +1,7 @@
 using System.Globalization;
 using System.Resources;
 using Netto.Core.Allowances;
-using Netto.Core.Car;
+using Netto.Core.CompanyCar;
 using Netto.Core.CorporateTax;
 using Netto.Core.DirectorPay;
 using Netto.Core.Dividends;
@@ -12,6 +12,7 @@ using Netto.Core.Simulation;
 using Netto.Core.SocialContributions;
 using Netto.Core.Vouchers;
 using Netto.Web.Client.River;
+using Netto.Web.Client.River.CompanyCar;
 using Shouldly;
 
 namespace Netto.Tests.WebClient.River;
@@ -46,18 +47,6 @@ public class RiverTextTests
     private static readonly ResourceManager InfoBubbleResources = new("Netto.Web.Client.River.InfoBubble", typeof(InfoBubble).Assembly);
 
     private static readonly ResourceManager RentCardResources = new("Netto.Web.Client.River.RentCard", typeof(RentCard).Assembly);
-
-    private static readonly ResourceManager CarCardResources = new("Netto.Web.Client.River.CarCard", typeof(CarCard).Assembly);
-
-    // What the car takes in cash against the muddy pocket, each way it can fall.
-    [Fact]
-    public void CarCardResx_everyGap_hasAText()
-    {
-        var comparisons = new[] { new CarComparison(40_000m, 43_000m, 8_000m, 1_000m), new CarComparison(30_000m, 40_000m, 8_000m, 1_000m), new CarComparison(40_000m, 40_000m, 8_000m, 0m) };
-
-        comparisons.Select(CarCardText.Gap).ShouldBe(["Gap_More", "Gap_Less", "Gap_NoCash"]);
-        Missing(CarCardResources, comparisons.Select(CarCardText.Gap)).ShouldBeEmpty();
-    }
 
     // The conditions of every lever the river shows, which the shared list words through one .resx.
     private static readonly IReadOnlyList<LeverCondition> LeverConditions =

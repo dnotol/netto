@@ -1,5 +1,5 @@
 using Netto.Core.Allowances;
-using Netto.Core.Car;
+using Netto.Core.CompanyCar;
 using Netto.Core.CorporateTax;
 using Netto.Core.DirectorPay;
 using Netto.Core.Dividends;
@@ -902,7 +902,7 @@ public class RiverInputsTests
     {
         var inputs = ElectricCar(RiverInputs.Example).WithPrivateEnergyPaid(true).WithCarContribution(600m);
 
-        inputs.MoveScenario().Car.ShouldBe(new CompanyCar(50_000m, new DateOnly(2026, 1, 10), 8_000m, true, 600m));
+        inputs.MoveScenario().Car.ShouldBe(new CarFacts(50_000m, new DateOnly(2026, 1, 10), 8_000m, true, 600m));
     }
 
     // The car's costs, less what the director pays for it, leave 92,600 for the split.

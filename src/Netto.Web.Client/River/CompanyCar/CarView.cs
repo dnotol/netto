@@ -1,0 +1,78 @@
+using Netto.Core.CompanyCar;
+using Netto.Core.Simulation;
+using Netto.Web.Client.Steps;
+
+namespace Netto.Web.Client.River.CompanyCar;
+
+// What the company car costs the company, out to the muddy pocket, and the director's contribution
+// coming back from their pocket, then the profit before pay it leaves for the split, the last lever
+// before it, from the year's car steps; what it receives is what the levers above leave of what the
+// company earns. The card reads the car as the engine took it (Result): its benefit, period by period,
+// at least the minimum, less the contribution, taxed as pay, and what the company adds back of it,
+// 40% when it pays the private charging, which for an electric car is the administration's reading
+// of « fuel » (ChargingReading). Each line says its share of what the card receives, and the card what
+// it passes on of it (PassesOn). Without a car, nothing but the profit passed on.
+internal sealed record CarView(
+    decimal Received,
+    CarResult Result,
+    bool ChargingReading,
+    decimal? PassesOn,
+    IReadOnlyList<Drain> Drains,
+    IReadOnlyList<StepDetail> Details)
+{
+    public bool HasCar => Details.Count > 0;
+
+    // What the car takes off what the company earns: its costs, less what the director pays for it.
+    public static decimal FromProfit(CarResult car) => car.Costs - car.Contribution;
+
+    public static CarView From(YearResult year)
+    {
+        var ledger = year.Steps.Where(step => step.Event == TaxableEvent.CompanyCar).ToList();
+        var steps = ledger.ToDictionary(step => step.RuleKey);
+        var car = year.Car;
+        var received = year.ProfitBeforePay + FromProfit(car);
+        IEnumerable<Drain> drains = steps.Count > 0
+            ?
+            [
+                new Drain("car_costs", DrainKind.PassedOn, car.Costs, BucketsView.Muddy) { Details = [StepDetail.From(steps["car_costs"])] }.Of(received),
+                new Drain("car_contribution", DrainKind.Back, car.Contribution, "pocket") { Details = [StepDetail.From(steps["car_contribution"])] },
+            ]
+            : [];
+
+        return new CarView(
+            received,
+            car,
+            steps.Count > 0 && year.Scenario.Car.CompanyPaysPrivateEnergy,
+            steps.Count > 0 ? Shares.Of(year.ProfitBeforePay, received) : null,
+            [.. drains, new Drain("profit_before_pay", DrainKind.PassedOn, year.ProfitBeforePay, "split")],
+            ledger.Select(StepDetail.From).ToList());
+    }
+}
+
+// The plan with its car against the same plan without it, at the pay set: what reaches the pocket in
+// each, what the car puts in the muddy pocket, and what its benefit adds to the taxes on pay. CashCost
+// is what the car takes from the pocket, Gap what the muddy pocket holds more than that. Two runs of
+// the year, the second the river with the car out of the plan; none until a car counts, or while the
+// engine refuses an amount.
+internal sealed record CarComparison(decimal PocketWith, decimal PocketWithout, decimal Muddy, decimal TaxesOnPayAdded)
+{
+    public decimal CashCost => Difference(PocketWithout, PocketWith);
+
+    public decimal Gap => Difference(Muddy, CashCost);
+
+    public static CarComparison? From(RiverInputs inputs, RiverRun run)
+    {
+        if (run.Error is not null || run.Year is not { Scenario.Car.Any: true } with)
+            return null;
+        if (inputs.TakeOutOfPlan(OptionalModule.Car).Run().Year is not { } without)
+            return null;
+
+        return new CarComparison(with.NetInPocket, without.NetInPocket, with.MuddyPocket, Difference(TaxesOnPay(with), TaxesOnPay(without)));
+    }
+
+    private static decimal TaxesOnPay(YearResult year) =>
+        year.Steps.Where(step => step.Event == TaxableEvent.DirectorPay && step.Track == Track.PaidOut).Sum(step => step.Amount);
+
+    // A plain zero when the two are the same, never a negative one.
+    private static decimal Difference(decimal more, decimal less) => more == less ? 0m : more - less;
+}
