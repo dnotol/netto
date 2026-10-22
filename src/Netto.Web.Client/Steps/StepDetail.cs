@@ -11,13 +11,14 @@ public sealed record StepDetail(string RuleKey, decimal Amount, IReadOnlyList<So
 {
     public IReadOnlyList<StepLine> Lines { get; init; } = [];
 
-    public static StepDetail From(Step step) => From(step.RuleKey, step.Amount, step.Source, step.AmountsUsed);
+    public static StepDetail From(Step step) => From(step.RuleKey, step.Amount, step.Source, step.AmountsUsed, step.AlsoCites);
 
     // The step's own source first, even with no amount of its own, then each other source in the
-    // order its amounts appear.
-    public static StepDetail From(string ruleKey, decimal amount, Source source, IReadOnlyList<RuleAmount> amountsUsed) =>
+    // order its amounts appear, then the other texts the rule rests on.
+    public static StepDetail From(string ruleKey, decimal amount, Source source, IReadOnlyList<RuleAmount> amountsUsed, IReadOnlyList<Source>? alsoCites = null) =>
         new(ruleKey, amount, amountsUsed.Select(used => used.Source)
             .Prepend(source)
+            .Concat(alsoCites ?? [])
             .Distinct()
             .Select(each => new SourceGroup(each, amountsUsed.Where(used => used.Source == each).ToList()))
             .ToList());

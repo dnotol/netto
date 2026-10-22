@@ -12,11 +12,14 @@ namespace Netto.Core.Car;
 // 9°bis), which for an electric car is its charging (the SPF course's Module 5.3). This income year
 // holds an electric car ordered or leased before 2027: the CO2 percentage is the minimum, and its
 // costs stay deductible in full for its whole life (circular 2024/C/50). A fuel, hybrid or plug-in
-// car adds its CO2 percentage and its deduction schedule beside these.
+// car adds its CO2 percentage and its deduction schedule beside these. The benefit taxed is pay
+// (BenefitAsPay), so it is in the income INASTI's contributions are owed on (BenefitInContributions).
 public sealed record CarRules(
     int IncomeYear,
     Source Benefit,
     Source BenefitMethod,
+    Source BenefitAsPay,
+    Source BenefitInContributions,
     Source Deduction,
     Source Acquisition,
     Source AddBack,
@@ -43,6 +46,18 @@ public sealed record CarRules(
         "The age is counted from the first day of the month of the first registration; the year's benefit weighs each period at its percentage by its calendar days out of the year's, each part rounded to the cent",
         new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/8c873a40-df98-4d8d-832a-6baff8743303"),
         "personal-tax/spf-finances_faq-avantage-vehicule-mis-a-disposition_2022-03-15.html") { Label = "SPF FAQ on car benefits" };
+
+    private static readonly Source Article31Income2026 = new(
+        "CIR 92, art. 31 (revenus 2026), coordinated text on Fisconetplus, last modified 30.07.2026",
+        "Al. 2, 2°: pay includes the benefits in kind obtained because of the activity, which art. 32 applies to a director's pay",
+        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/72ee79ba-3c3f-47a6-83a5-f0a1ec0e5209"),
+        "personal-tax/spf-finances_cir92-art-31-revenus-2026_2026-07-30.html") { Label = "CIR 92, art. 31" };
+
+    private static readonly Source RoyalDecree38 = new(
+        "Arrêté royal n° 38 du 27.07.1967 organisant le statut social des travailleurs indépendants, consolidated on Justel, updated to 01.06.2026",
+        "Art. 11 §1 and §2: the contributions are a percentage of the professional income as the income tax law sets it, gross less the professional costs",
+        new Uri("https://www.ejustice.just.fgov.be/eli/arrete/1967/07/27/1967072702/justel"),
+        "social-contributions/ejustice_arrete-royal-38-statut-social-independants_2026-06-01.html") { Label = "Royal decree n° 38, art. 11" };
 
     private static readonly Source Article66Income2026 = new(
         "CIR 92, art. 66 (revenus 2026), coordinated text on Fisconetplus, last modified 15.06.2026",
@@ -73,6 +88,8 @@ public sealed record CarRules(
         2026,
         Article36Income2026,
         CarBenefitFaq,
+        Article31Income2026,
+        RoyalDecree38,
         Article66Income2026,
         Circular2024C50,
         Article198Income2026,

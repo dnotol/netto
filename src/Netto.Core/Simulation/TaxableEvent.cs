@@ -1,7 +1,7 @@
 namespace Netto.Core.Simulation;
 
-// What the money is, as each layer taxes it. Benefits in kind and IP income join as values when their
-// levers arrive.
+// What the money is, as each layer taxes it. Other benefits in kind and IP income join as values when
+// their levers arrive.
 public enum TaxableEvent
 {
     // The company's profit after director pay, which corporate tax takes its share of.
@@ -21,4 +21,8 @@ public enum TaxableEvent
     // The rent the company pays the director for the part of their home it uses as an office, income
     // from immovable property taxed with the pay.
     Rent,
+
+    // A car the company puts at the director's disposal for private use: its costs to the company, its
+    // benefit in kind, taxed as pay, the director's contribution and what the company adds back.
+    CompanyCar,
 }

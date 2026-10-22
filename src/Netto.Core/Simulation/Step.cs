@@ -5,7 +5,8 @@ namespace Netto.Core.Simulation;
 // One step of the year, from the company's profit to the director's pocket: the rule it applies, the
 // layer that applies it, the money it applies to, what it means for the pocket, the amount it gives,
 // the official text behind it and the amounts of that income year it used. A module card of the
-// river selects and orders steps by these tags; the engine knows nothing about the cards.
+// river selects and orders steps by these tags; the engine knows nothing about the cards. A rule that
+// rests on more texts than its own and its amounts' names them in AlsoCites, none unless given.
 public sealed record Step(
     string RuleKey,
     Layer Layer,
@@ -13,4 +14,7 @@ public sealed record Step(
     Track Track,
     decimal Amount,
     Source Source,
-    IReadOnlyList<RuleAmount> AmountsUsed);
+    IReadOnlyList<RuleAmount> AmountsUsed)
+{
+    public IReadOnlyList<Source> AlsoCites { get; init; } = [];
+}

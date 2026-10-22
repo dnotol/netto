@@ -1,3 +1,4 @@
+using Netto.Core.Car;
 using Netto.Core.CorporateTax;
 using Netto.Core.DirectorPay;
 using Netto.Core.Dividends;
@@ -6,22 +7,25 @@ using Netto.Core.Vouchers;
 
 namespace Netto.Core.Simulation;
 
-// The year from the company's profit before pay, what the vouchers, the expense allowances and the
-// rent of a home office leave of what it earns, to the director's pocket. Corporate tax, social
-// contributions, personal tax, the rent's included, net in pocket, the vouchers, the allowances and the
-// rent in it, and what stays in the company add up to what the company earns before it pays its
+// The year from the company's profit before pay, what the vouchers, the expense allowances, the rent
+// of a home office and a company car leave of what it earns, to the director's pocket. Corporate tax,
+// social contributions, personal tax, the rent's included, net in pocket, the vouchers, the allowances
+// and the rent in it and the car's contribution out of it, the muddy pocket, what the company spends
+// on the car, and what stays in the company add up to what the company earns before it pays its
 // director anything (Scenario.ProfitBeforeDirector) plus the profits kept from earlier years; the
 // corporate tax among them includes the surcharge the advance payments left. Rent is the rent as the
-// rules take it, all zero without one; the pay's own figures are DirectorPay's, and what the rent adds
-// to the personal tax its OtherIncomeTax. The disallowed expenses are what the company cannot deduct of
-// what it pays the director besides pay, added back to its taxable income. The dividend is what the profit after tax and those earlier
-// profits leave once the reserve is kept; the largest the year allows is both together, less a loss,
-// never below zero.
+// rules take it, Car the car, all zero without one; the pay's own figures are DirectorPay's, the car's
+// benefit taxed in them, and what the rent adds to the personal tax its OtherIncomeTax. The disallowed
+// expenses are what the company cannot deduct of what it pays the director besides pay and what it
+// adds back of the car's benefit, added to its taxable income. The dividend is what the profit after
+// tax and those earlier profits leave once the reserve is kept; the largest the year allows is both
+// together, less a loss, never below zero.
 public sealed record YearResult(
     Scenario Scenario,
     decimal ProfitBeforePay,
     VoucherResult Vouchers,
     RentResult Rent,
+    CarResult Car,
     decimal DisallowedExpenses,
     CorporateTaxResult Company,
     AdvancePaymentResult AdvancePayments,
@@ -30,6 +34,7 @@ public sealed record YearResult(
     decimal CorporateTax,
     decimal SocialContributions,
     decimal PersonalTax,
+    decimal MuddyPocket,
     decimal NetInPocket,
     decimal KeptInCompany,
     decimal ProfitAfterTax,

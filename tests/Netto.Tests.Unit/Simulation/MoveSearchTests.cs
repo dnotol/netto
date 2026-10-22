@@ -1,4 +1,5 @@
 using Netto.Core.Allowances;
+using Netto.Core.Car;
 using Netto.Core.Rent;
 using Netto.Core.Vouchers;
 using Netto.Core.CorporateTax;
@@ -230,6 +231,29 @@ public class MoveSearchTests
         var plan = MoveSearch.Run(nothingWithheld, [new DirectorAdvancePaymentFinder(On22October)]).Value.ShouldNotBeNull();
 
         plan.Moves.ShouldBe([new PlannedMove(new DirectorAdvancePaymentMove(3, new DateOnly(2026, 12, 21), 14_317.50m), 486.57m)]);
+    }
+
+    // With a company car, its benefit is taxed with the pay: the payment proposed leaves no surcharge
+    // on that tax either, and the car itself is never a move.
+    [Fact]
+    public void Run_nothingWithheldWithACar_paysWhatLeavesNoSurchargeOnTheTaxWithItsBenefit()
+    {
+        var withCar = Today with { TaxPrepayments = TaxPrepayments.None, Car = new CompanyCar(50_000m, new DateOnly(2026, 1, 10), 8_000m, false, 0m) };
+
+        var plan = MoveSearch.Run(withCar, [new DirectorAdvancePaymentFinder(On22October)]).Value.ShouldNotBeNull();
+        var move = plan.Moves.Single().Move.ShouldBeOfType<DirectorAdvancePaymentMove>();
+
+        YearSimulation.Run(move.Apply(withCar)).Value.ShouldNotBeNull().DirectorPay.AdvancePayments.Surcharge.ShouldBe(0m);
+    }
+
+    [Fact]
+    public void Run_everyKindWithACar_neverMovesTheCar()
+    {
+        var withCar = Today with { Car = new CompanyCar(50_000m, new DateOnly(2026, 1, 10), 8_000m, false, 0m) };
+
+        var plan = MoveSearch.Run(withCar, On22October).Value.ShouldNotBeNull();
+
+        plan.Moves.Select(move => move.Move.Apply(withCar).Car).ShouldAllBe(car => car == withCar.Car);
     }
 
     // Without vouchers, each kind is proposed at its yearly maximum, 250 and 100 for 2026.

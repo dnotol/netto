@@ -1,4 +1,5 @@
 using Netto.Core.Allowances;
+using Netto.Core.Car;
 using Netto.Core.CorporateTax;
 using Netto.Core.DirectorPay;
 using Netto.Core.Dividends;
@@ -12,15 +13,18 @@ namespace Netto.Core.Simulation;
 
 // One income year in the order the law computes it: what the company pays the director besides pay,
 // the vouchers, the expense allowances and the rent of a home office, comes off what it earns and
-// reaches the pocket, which leaves the profit before pay the split shares; the vouchers and the
-// allowances untaxed, the rent taxed with the pay, its tax paid out of the pocket (GrossToNet's
-// OtherIncomeTax); the company's cost of the director pay, the
-// gross and the social contributions it pays on the director's behalf, lowers the company's taxable
-// income, what it cannot deduct of the vouchers is added back to it, corporate tax takes its share,
-// with the surcharge the advance payments did not cover, and the dividend is the profit after tax and
-// the profits kept from earlier years, less the reserve the user keeps in the company, never below
-// zero. In steady state the year pays out its own profit (decided 2026-10-19). No other disallowed
-// expenses, no losses carried forward, and INASTI's company contribution sits in the running costs.
+// reaches the pocket, and the costs of a car it puts at the director's disposal come off it too, less
+// what the director pays it for the car's private use, which leaves the profit before pay the split
+// shares; the vouchers and the allowances untaxed, the rent taxed with the pay, its tax paid out of
+// the pocket (GrossToNet's OtherIncomeTax), the car's benefit in kind taxed as pay but never paid;
+// the company's cost of the director pay, the gross and the social contributions it pays on the
+// director's behalf, lowers the company's taxable income, what it cannot deduct of the vouchers and
+// what it adds back of the car's benefit join it, corporate tax takes its share, with the surcharge
+// the advance payments did not cover, and the dividend is the profit after tax and the profits kept
+// from earlier years, less the reserve the user keeps in the company, never below zero. The car's
+// costs land in the muddy pocket. In steady state the year pays out its own profit (decided
+// 2026-10-19). No other disallowed expenses, no losses carried forward, and INASTI's company
+// contribution sits in the running costs.
 public static class YearSimulation
 {
     public const string IncomeYearNotSupported = GrossToNet.IncomeYearNotSupported;
@@ -53,7 +57,8 @@ public static class YearSimulation
             return (null, besidesPayError);
 
         var (pay, payError) = GrossToNet.Compute(
-            scenario.IncomeYear, scenario.DirectorPay, scenario.MunicipalRate, scenario.TaxPrepayments, scenario.ContributionsPaidBy, besidesPay.Rent.NetRent);
+            scenario.IncomeYear, scenario.DirectorPay, scenario.MunicipalRate, scenario.TaxPrepayments, scenario.ContributionsPaidBy, besidesPay.Rent.NetRent,
+            besidesPay.Car.Benefit);
         if (pay is null)
             return (null, payError);
 
@@ -66,8 +71,9 @@ public static class YearSimulation
             .. scenario.Vouchers.Any ? VoucherSteps(levers.Vouchers, besidesPay.Vouchers) : [],
             .. scenario.Allowances.Any ? AllowanceSteps(levers.Allowances, besidesPay.Allowances) : [],
             .. scenario.Rent.Any ? RentSteps(levers.Rent, besidesPay.Rent) : [],
+            .. scenario.Car.Any ? CarSteps(levers.Car, besidesPay.Car) : [],
             new Step("corporate_tax", Layer.Corporate, TaxableEvent.CompanyProfit, Track.PaidOut, company.Tax.CorporateTax,
-                CorporateTaxRules.Source, corporateRules.Amounts),
+                CorporateTaxRules.Source, corporateRules.Amounts) { AlsoCites = [corporateRules.PayTested, corporateRules.ExcessBenefitsMemorandum] },
             new Step("advance_payment_surcharge", Layer.Corporate, TaxableEvent.CompanyProfit, Track.PaidOut, company.AdvancePayments.Surcharge,
                 corporateRules.AdvancePayments.Source, corporateRules.AdvancePayments.Amounts),
             .. pay.Steps,
@@ -83,6 +89,7 @@ public static class YearSimulation
             company.ProfitBeforePay,
             besidesPay.Vouchers,
             besidesPay.Rent,
+            besidesPay.Car,
             besidesPay.Disallowed,
             company.Tax,
             company.AdvancePayments,
@@ -91,6 +98,7 @@ public static class YearSimulation
             PaidOut(steps, Layer.Corporate),
             PaidOut(steps, Layer.Social),
             PaidOut(steps, Layer.Personal),
+            steps.Where(step => step.Track == Track.Muddy).Sum(step => step.Amount),
             company.NetInPocket,
             company.KeptInCompany,
             company.ProfitAfterTax,
@@ -99,11 +107,14 @@ public static class YearSimulation
     }
 
     // What the director pay and the company's profit share between them: what the company earns less
-    // what it pays the director in vouchers, expense allowances and rent, taken as given even while the
-    // rules refuse them, so the split keeps its place. Null for a year without voucher rules.
+    // what it pays the director in vouchers, expense allowances and rent and what its car costs it, plus
+    // what the director pays it for the car, taken as given even while the rules refuse them, so the
+    // split keeps its place. A car counts once its catalogue value is given. Null for a year without
+    // voucher rules.
     public static decimal? ProfitBeforePay(Scenario scenario) =>
         VoucherRules.For(scenario.IncomeYear) is { } rules
             ? scenario.ProfitBeforeDirector - VoucherCalculator.Cost(rules, scenario.Vouchers) - scenario.Allowances.Total - scenario.Rent.Rent
+              - (scenario.Car.Any ? scenario.Car.YearlyCosts - scenario.Car.PersonalContribution : 0m)
             : null;
 
     // The year at the scenario's pay as the split's search reads it: Run's figures for the pocket, the
@@ -119,7 +130,7 @@ public static class YearSimulation
             return null;
         if (GrossToNet.Level(
                 scenario.IncomeYear, scenario.DirectorPay, scenario.MunicipalRate.Value, scenario.TaxPrepayments, scenario.ContributionsPaidBy, besidesPay.Rent.NetRent,
-                0m)
+                besidesPay.Car.Benefit)
             is not { } pay)
             return null;
 
@@ -130,31 +141,34 @@ public static class YearSimulation
 
     // The smallest director pay, as the split moves it, that keeps the reduced corporate rate out of the
     // profit before pay: the smallest pay art. 215 accepts out of the taxable income the company would
-    // have at no pay, which adds back what it cannot deduct of the vouchers, and, when the company pays
-    // the contributions, the smallest payslip gross whose taxable pay reaches it. Null when the rate does
-    // not depend on the pay, when no pay up to the profit before pay keeps it (more of the vouchers the
-    // company cannot deduct than that profit), or for a year without rules. When the company pays the
-    // contributions some gross always keeps it: their minimum alone is more than half of what it can
-    // add back.
+    // have at no pay, which adds back what it cannot deduct of the vouchers and the car's benefit, with
+    // the car's benefit counted in the pay and held within its share of it (CorporateTaxCalculator),
+    // and, when the company pays the contributions, the smallest payslip gross whose taxable pay, the
+    // benefit aside, reaches it. Null when the rate does not depend on the pay, when no pay up to the
+    // profit before pay keeps it (more of the vouchers the company cannot deduct than that profit, or a
+    // benefit beyond its share of any pay), or for a year without rules. When the company pays the
+    // contributions and no benefit is capped, some gross always keeps it: their minimum alone is more
+    // than half of what it can add back.
     internal static decimal? SmallestPayKeepingReducedRate(Scenario scenario)
     {
         if (CorporateTaxRules.For(scenario.IncomeYear) is not { } corporateRules || LeverRules.For(scenario.IncomeYear) is not { } levers
             || BesidesPayOf(scenario, levers).Value is not { } besidesPay)
             return null;
 
-        var profitBeforePay = scenario.ProfitBeforeDirector - besidesPay.Total;
+        var profitBeforePay = scenario.ProfitBeforeDirector - besidesPay.FromProfit;
         var ceiling = Math.Max(0m, profitBeforePay);
-        if (CorporateTaxCalculator.SmallestPayKeepingReducedRate(corporateRules, profitBeforePay + besidesPay.Disallowed, scenario.Company) is not { } taxablePay)
+        var benefit = besidesPay.Car.Benefit;
+        if (CorporateTaxCalculator.SmallestPayKeepingReducedRate(corporateRules, profitBeforePay + besidesPay.Disallowed, scenario.Company, benefit) is not { } taxablePay)
             return null;
 
         return scenario.ContributionsPaidBy == ContributionsPaidBy.Company
-            ? GrossToNet.SmallestGrossPayWithTaxablePay(scenario.IncomeYear, taxablePay, ceiling)
+            ? GrossToNet.SmallestGrossPayWithTaxablePay(scenario.IncomeYear, taxablePay, ceiling, benefit)
             : taxablePay <= ceiling ? taxablePay : null;
     }
 
     // What the company pays the director besides pay as the rules accept it, the vouchers, the expense
-    // allowances then the rent, which the office allowance excludes, or the key of the first the rules
-    // refuse.
+    // allowances then the rent, which the office allowance excludes, and the car, or the key of the
+    // first the rules refuse.
     private static (BesidesPay? Value, string? Error) BesidesPayOf(Scenario scenario, LeverRules levers)
     {
         var (vouchers, voucherError) = VoucherCalculator.Compute(levers.Vouchers, scenario.Vouchers);
@@ -169,28 +183,36 @@ public static class YearSimulation
         if (rent is null)
             return (null, rentError);
 
-        return (new BesidesPay(vouchers, allowances, rent), null);
+        var (car, carError) = CarCalculator.Compute(levers.Car, scenario.Car);
+        if (car is null)
+            return (null, carError);
+
+        return (new BesidesPay(vouchers, allowances, rent, car), null);
     }
 
     // What follows the director pay: its cost to the company comes off the profit before pay, and art. 215
-    // tests its minimum pay on the taxable pay, which counts what the company bore for the director too
-    // (SPF return explanations, part 2, cadre XVI, 1); both are the gross plus the contributions the
-    // company pays on the director's behalf, or the gross alone. What the company pays the director
-    // besides pay is never pay: what it cannot deduct of it is added back to its taxable income, which
-    // art. 215's condition reads, and, spent, comes out of the profit after tax. Corporate tax on that
+    // tests its minimum pay on the taxable pay, which counts what the company bore for the director and
+    // the car's benefit too (SPF return explanations, part 2, cadre XVI, 1; the commentary on art. 215,
+    // n° 215/44), and holds that benefit within its share of it (al. 3, 5°); the cost is the gross plus
+    // the contributions the company pays on the director's behalf, or the gross alone. What the company
+    // pays the director besides pay is never pay: what it cannot deduct of it, and what it adds back of
+    // the car's benefit, join its taxable income, which art. 215's condition reads; the vouchers', spent,
+    // and the add-back, never spent, come out of the profit after tax again. Corporate tax on that
     // taxable income and the surcharge the advance payments leave on it, which is not deductible and so
     // moves neither the taxable income nor the rate, then the dividend out of the profit after tax and
     // the profits kept from earlier years, once the reserve is kept. The reserve is what stays in the
     // whole company at year end (decided 2026-10-19): what is not kept is paid out, and a reserve above
     // what the company holds leaves no dividend. A loss eats into the earlier profits first. The law
     // withholds on the distribution, whatever year its profits come from (CIR 92 art. 269 §2), so the
-    // whole dividend takes the declared rate and the exempt 833 once.
+    // whole dividend takes the declared rate and the exempt 833 once. The director's contribution for the
+    // car leaves the pocket for the company.
     private static CompanyFigures Company(
         Scenario scenario, CorporateTaxRules corporateRules, DividendRules dividendRules, BesidesPay besidesPay, decimal netPay, decimal taxablePay,
         decimal companyCost)
     {
-        var profitBeforePay = scenario.ProfitBeforeDirector - besidesPay.Total;
-        var tax = CorporateTaxCalculator.Compute(corporateRules, profitBeforePay - companyCost + besidesPay.Disallowed, taxablePay, scenario.Company);
+        var profitBeforePay = scenario.ProfitBeforeDirector - besidesPay.FromProfit;
+        var tax = CorporateTaxCalculator.Compute(
+            corporateRules, profitBeforePay - companyCost + besidesPay.Disallowed, taxablePay, scenario.Company, besidesPay.Car.Benefit);
         var advancePayments = AdvancePaymentCalculator.Compute(corporateRules.AdvancePayments, tax.CorporateTax, scenario.AdvancePayments, scenario.Company);
         var profitAfterTax = tax.TaxableIncome - tax.CorporateTax - advancePayments.Surcharge - besidesPay.Disallowed;
         var held = profitAfterTax + scenario.EarlierProfits;
@@ -198,7 +220,7 @@ public static class YearSimulation
         var dividend = DividendCalculator.Compute(dividendRules, Math.Max(0m, maximumDividend - scenario.Reserve), scenario.DividendCategory);
 
         return new CompanyFigures(profitBeforePay, tax, advancePayments, profitAfterTax, maximumDividend, dividend,
-            netPay + dividend.NetDividend + besidesPay.Total, held - dividend.Dividend);
+            netPay + dividend.NetDividend + besidesPay.Total - besidesPay.Car.Contribution, held - dividend.Dividend);
     }
 
     // Each kind of voucher reaches the pocket exempt, at what the company pays into it, and what the
@@ -246,6 +268,28 @@ public static class YearSimulation
             rules.RentAsIncome, [rules.FloorUplift, rules.IndexationCoefficient]),
     ];
 
+    // The car's costs land in the muddy pocket, at what the company spends on them, deducted in full;
+    // its benefit on the scale, at least the minimum, with each age coefficient it used; the director's
+    // contribution leaving the pocket, a plain zero without one; the benefit it leaves taxed as pay, in
+    // Director pay's figures; and the share of the benefit before the contribution the company adds back
+    // to its taxable income. Only once there is a car, so a year without one keeps its steps.
+    private static IEnumerable<Step> CarSteps(CarRules rules, CarResult car) =>
+    [
+        new Step("car_costs", Layer.Corporate, TaxableEvent.CompanyCar, Track.Muddy, car.Costs,
+            rules.Deduction, [rules.ZeroEmissionDeduction]) { AlsoCites = [rules.Acquisition] },
+        new Step("car_benefit", Layer.Personal, TaxableEvent.CompanyCar, Track.TaxBaseOnly, car.BenefitBeforeContribution,
+            rules.Benefit, [rules.CatalogueShare, rules.MinimumCo2Percentage, .. car.Periods.Select(period => period.Period.AgeCoefficient).Distinct(), rules.MinimumBenefit])
+        {
+            AlsoCites = [rules.BenefitMethod],
+        },
+        new Step("car_contribution", Layer.Personal, TaxableEvent.CompanyCar, Track.InPocket, car.Contribution == 0m ? 0m : -car.Contribution,
+            rules.Benefit, []),
+        new Step("car_benefit_taxed", Layer.Personal, TaxableEvent.CompanyCar, Track.TaxBaseOnly, car.Benefit,
+            rules.BenefitAsPay, []) { AlsoCites = [rules.BenefitInContributions] },
+        new Step("car_add_back", Layer.Corporate, TaxableEvent.CompanyCar, Track.TaxBaseOnly, car.AddBack,
+            rules.AddBack, [car.AddBackRate ?? rules.AddBackRate]),
+    ];
+
     // What the rent adds to the director's personal tax, taxed with the pay: the income tax and the
     // municipal surcharge on the total less the pay's own, the credit for low earned income it takes
     // away, and what that lost credit adds to the surcharge on the pay's tax, less the bonus. Each is
@@ -266,22 +310,26 @@ public static class YearSimulation
         steps.Where(step => step.Layer == layer && step.Track == Track.PaidOut).Sum(step => step.Amount);
 
     // What the company pays the director besides pay, lever by lever: what it costs the company and
-    // brings the pocket before the personal tax on the rent, the same amount, and what the company
-    // cannot deduct of it, the vouchers' part alone, since it deducts the expense allowances and the
-    // rent in full.
-    private sealed record BesidesPay(VoucherResult Vouchers, ExpenseAllowances Allowances, RentResult Rent)
+    // brings the pocket before the personal tax on the rent, the same amount (Total), what comes off the
+    // profit before pay, that and the car's costs less the director's contribution for it (FromProfit),
+    // and what the company cannot deduct of it or adds back: the vouchers' part and the car's add-back,
+    // since it deducts the expense allowances, the rent and an electric car's costs in full.
+    private sealed record BesidesPay(VoucherResult Vouchers, ExpenseAllowances Allowances, RentResult Rent, CarResult Car)
     {
         public decimal Total => Vouchers.Total + Allowances.Total + Rent.Rent;
 
-        public decimal Disallowed => Vouchers.Disallowed;
+        public decimal FromProfit => Total + Car.Costs - Car.Contribution;
+
+        public decimal Disallowed => Vouchers.Disallowed + Car.AddBack;
     }
 
     // The rules of the levers paid besides pay, for one income year, or null when one has none.
-    private sealed record LeverRules(VoucherRules Vouchers, AllowanceRules Allowances, RentRules Rent)
+    private sealed record LeverRules(VoucherRules Vouchers, AllowanceRules Allowances, RentRules Rent, CarRules Car)
     {
         public static LeverRules? For(int incomeYear) =>
             VoucherRules.For(incomeYear) is { } vouchers && AllowanceRules.For(incomeYear) is { } allowances && RentRules.For(incomeYear) is { } rent
-                ? new LeverRules(vouchers, allowances, rent)
+            && CarRules.For(incomeYear) is { } car
+                ? new LeverRules(vouchers, allowances, rent, car)
                 : null;
     }
 

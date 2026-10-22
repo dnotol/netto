@@ -8,7 +8,9 @@ namespace Netto.Core.CorporateTax;
 // (VoucherRules) and what it adds back of a company car's benefit (CarRules): the taxable income is
 // the year's profit after director pay with those added back. A small company keeps the reduced rate
 // only while its directors' flat-rate benefits are worth at most ExcessBenefitsShare of their total
-// pay (art. 215 al. 3, 5°).
+// pay (art. 215 al. 3, 5°). The pay art. 215 tests is the gross with what the company bears for the
+// director and the benefits in kind (PayTested), and the total pay the benefits are held to counts
+// them too (ExcessBenefitsMemorandum).
 public sealed record CorporateTaxRules(
     int IncomeYear,
     RuleAmount StandardRate,
@@ -16,11 +18,14 @@ public sealed record CorporateTaxRules(
     RuleAmount ReducedRateCeiling,
     RuleAmount MinimumDirectorPay,
     RuleAmount ExcessBenefitsShare,
+    Source PayTested,
+    Source ExcessBenefitsMemorandum,
     AdvancePaymentRules AdvancePayments)
 {
     private static readonly Source Article215Income2026 = new(
         "CIR 92, art. 215 (revenus 2026), coordinated text on Fisconetplus, last modified 03.08.2026",
-        "Al. 1: 25%. Al. 2: 20% on the first 100,000 for a small company. Al. 3, 4°: from its fifth tax period, only if a director's pay reaches the indexed minimum, or the taxable income does not exceed that pay",
+        "Al. 1: 25%. Al. 2: 20% on the first 100,000 for a small company. Al. 3, 4°: from its fifth tax period, only if a director's pay reaches the indexed minimum, or the taxable income does not exceed that pay. "
+        + "Al. 3, 5°: not for a company that allots its directors the excessive part of benefits in kind of art. 2 §1, 25°",
         new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/7132fb4e-e229-4008-a585-4ad4853edca5"),
         "corporate-tax/spf-finances_cir92-art-215-revenus-2026_2026-08-03.html");
 
@@ -29,6 +34,18 @@ public sealed record CorporateTaxRules(
         "§1, 25° (from tax year 2027): the excessive part of the benefits in kind allotted to directors is the part of the total of the flat-rate benefits (art. 36 §1, al. 2 or §2) worth more than 20% of the total pay allotted to directors in the taxable period, which art. 215 al. 3, 5° takes the reduced rate for",
         new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/8a86d077-36f5-4f5f-ba01-49395a2cf922"),
         "corporate-tax/spf-finances_cir92-art-2-revenus-2026_2026-07-30.html");
+
+    private static readonly Source Article215Commentary = new(
+        "Commentaire de l'art. 215 CIR 92, Fisconetplus, last modified 30.11.2020",
+        "N° 215/44: the pay al. 3, 4° tests is the gross pay of art. 32, before the social charges withheld, with the social charges the company bears for the director and the benefits in kind added",
+        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/7a4d742d-e4f4-42c2-ae58-e20ab2fc9be0"),
+        "corporate-tax/spf-finances_commentaire-cir92-art-215_2020-11-30.html") { Label = "Commentary on art. 215, n° 215/44" };
+
+    private static readonly Source Doc561243 = new(
+        "Chambre des représentants, DOC 56 1243/001, projet de loi portant réforme de l'impôt des personnes physiques, filed 17.12.2025",
+        "The memorandum on art. 2 §1, 25° and art. 215 al. 3, 5°: the flat-rate benefits are counted in the total pay they are held to; 30,000 in cash, a car of 6,000 and housing of 20,000 make 26,000 of benefits on 56,000, more than 20%, and the rate is lost although the pay reaches the minimum",
+        new Uri("https://www.lachambre.be/FLWB/PDF/56/1243/56K1243001.pdf"),
+        "corporate-tax/lachambre_doc-56-1243-001-projet-loi-reforme-ipp_2025-12-17.pdf") { Label = "DOC 56 1243/001" };
 
     private static readonly Source IndexationNotice2027 = new(
         "Indexation notice for assessment year 2027, version 03.08.2026, adapted to the law of 15.07.2026",
@@ -65,6 +82,8 @@ public sealed record CorporateTaxRules(
         new RuleAmount("reduced_rate_ceiling", 100_000m, Article215Income2026),
         new RuleAmount("minimum_director_pay", 51_000m, IndexationNotice2027),
         new RuleAmount("excess_benefits_rate", 0.20m, Article2Income2026),
+        Article215Commentary,
+        Doc561243,
         new AdvancePaymentRules(
             Article218Income2026,
             // Art. 161 gives the ECB's marginal lending rate on 1 January 2026 rounded down, below

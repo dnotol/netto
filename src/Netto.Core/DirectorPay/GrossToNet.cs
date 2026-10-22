@@ -130,20 +130,22 @@ public static class GrossToNet
         return Figures.For(socialRules, taxRules, withholdingRules, grossPay, municipalRate, prepayments, paidBy, otherIncome, benefitInKind);
     }
 
-    // When the company pays the contributions, the smallest payslip gross whose taxable pay reaches an
-    // amount, to the cent: the taxable pay rises with the gross, so it is found by halving between no
-    // pay and a ceiling whose taxable pay reaches it. Null for a year without rules.
-    internal static decimal? SmallestGrossPayWithTaxablePay(int incomeYear, decimal taxablePay, decimal ceiling)
+    // When the company pays the contributions, the smallest payslip gross whose taxable pay, a benefit
+    // in kind beside it left out, reaches an amount, to the cent: the contributions are owed on the
+    // gross and the benefit, and the taxable pay rises with the gross, so it is found by halving between
+    // no pay and the ceiling. Null when no gross up to the ceiling reaches it, or for a year without
+    // rules.
+    internal static decimal? SmallestGrossPayWithTaxablePay(int incomeYear, decimal taxablePay, decimal ceiling, decimal benefitInKind)
     {
         if (SocialContributionRules.For(incomeYear) is not { } socialRules || PersonalTaxRules.For(incomeYear) is not { } taxRules)
             return null;
 
-        decimal TaxablePayOf(decimal grossPay) => grossPay + CompanyPaidContributions(socialRules, taxRules, grossPay);
+        decimal TaxablePayOf(decimal grossPay) => grossPay + CompanyPaidContributions(socialRules, taxRules, grossPay + benefitInKind);
 
         if (TaxablePayOf(0m) >= taxablePay)
             return 0m;
         if (TaxablePayOf(ceiling) < taxablePay)
-            throw new InvalidOperationException($"No payslip gross up to {ceiling} has a taxable pay of {taxablePay}.");
+            return null;
 
         var (low, high) = (0m, ceiling);
         while (high - low > 0.01m)
