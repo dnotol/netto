@@ -42,11 +42,13 @@ internal static class CorporateTaxCardText
     public static string Surcharge(SurchargeState state) => $"Surcharge_{state}";
 
     // What the taxable income adds back: the vouchers the company cannot deduct, a company car's share
-    // of its benefit, or both.
-    public static string Disallowed(CorporateTaxView view) => (view.DisallowedVouchers, view.CarAddBack) switch
+    // of its benefit with the costs it cannot deduct when there are any, or both.
+    public static string Disallowed(CorporateTaxView view) => (view.DisallowedVouchers, view.CarCostsNotDeductible, view.CarAddBack) switch
     {
-        ( > 0m, > 0m) => "Disallowed_VouchersAndCar",
-        (_, > 0m) => "Disallowed_Car",
+        ( > 0m, > 0m, _) => "Disallowed_VouchersAndCarCosts",
+        ( > 0m, _, > 0m) => "Disallowed_VouchersAndCar",
+        (_, > 0m, _) => "Disallowed_CarCosts",
+        (_, _, > 0m) => "Disallowed_Car",
         _ => "Disallowed",
     };
 

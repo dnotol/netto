@@ -25,10 +25,10 @@
     <value>Waiting for the company's year.</value>
   </data>
   <data name="Hint" xml:space="preserve">
-    <value>A car the company puts at your disposal, which you also use privately. The company pays its costs out of its profit, before your pay, and deducts them; you are taxed on a flat benefit in kind as part of your pay, though it is never paid in cash.</value>
+    <value>A car the company puts at your disposal, which you also use privately. The company pays its costs out of its profit, before your pay, and deducts them as its order date, its engine and its CO2 allow; you are taxed on a flat benefit in kind as part of your pay, though it is never paid in cash.</value>
   </data>
   <data name="Scope" xml:space="preserve">
-    <value>For an electric car ordered or leased before 2027. Fuel, hybrid and plug-in hybrid cars come next.</value>
+    <value>For an electric, fuel, hybrid or plug-in hybrid car ordered or leased by the end of the year.</value>
   </data>
   <data name="CatalogueLabel" xml:space="preserve">
     <value>Catalogue value</value>
@@ -52,7 +52,7 @@
     <value>Its yearly costs to the company</value>
   </data>
   <data name="CostsHint" xml:space="preserve">
-    <value>Everything the car costs the company over the year, lease or depreciation, charging, insurance, upkeep and taxes, as the company bears them, the VAT it cannot recover included.</value>
+    <value>Everything the car costs the company over the year, lease or depreciation, fuel or charging, insurance, upkeep and taxes, as the company bears them, the VAT it cannot recover included.</value>
   </data>
   <data name="ContributionLabel" xml:space="preserve">
     <value>Your contribution for the year</value>
@@ -60,17 +60,11 @@
   <data name="ContributionHint" xml:space="preserve">
     <value>What you pay the company for the car's private use, if anything.</value>
   </data>
-  <data name="ChargingLabel" xml:space="preserve">
-    <value>The company pays my private charging</value>
-  </data>
-  <data name="ChargingHint" xml:space="preserve">
-    <value>A charging point at your home whose electricity the company pays, or a charging card in its name, without reinvoicing you the charging of your private use.</value>
-  </data>
   <data name="NoCarYet" xml:space="preserve">
     <value>Enter the car's catalogue value to see its benefit and what it costs you.</value>
   </data>
   <data name="Benefit" xml:space="preserve">
-    <value>Your benefit in kind is {0} for the year: 6/7 of {1} times 4%, at the share of its catalogue value the car's age leaves, period by period. It is taxed as your pay, though never paid in cash.</value>
+    <value>Your benefit in kind is {0} for the year: 6/7 of {1} times {2}, at the share of its catalogue value the car's age leaves, period by period. It is taxed as your pay, though never paid in cash.</value>
   </data>
   <data name="Period" xml:space="preserve">
     <value>{0} to {1}, {2} days at {3}: {4}</value>
@@ -82,7 +76,7 @@
     <value>Your contribution of {0} comes off it: you are taxed on {1}.</value>
   </data>
   <data name="AddBack" xml:space="preserve">
-    <value>The company deducts all {0} of its costs, and adds {1} of the benefit before your contribution, {2}, back to its taxable income.</value>
+    <value>It adds {0} of the benefit before your contribution, {1}, back to its taxable income.</value>
   </data>
   <data name="AddBackReading" xml:space="preserve">
     <value>It adds back 40% because it pays your private charging: the law says « fuel », and the administration reads it as the charging of an electric car.</value>
@@ -116,5 +110,125 @@
   </data>
   <data name="Remove" xml:space="preserve">
     <value>Remove the company car from your plan</value>
+  </data>
+  <data name="EngineLabel" xml:space="preserve">
+    <value>What drives it</value>
+  </data>
+  <data name="EngineHint" xml:space="preserve">
+    <value>Its engine, as on its registration certificate. A hybrid charges its battery as it drives; a plug-in hybrid also from a socket.</value>
+  </data>
+  <data name="Engine_Electric" xml:space="preserve">
+    <value>Electric</value>
+  </data>
+  <data name="Engine_Petrol" xml:space="preserve">
+    <value>Petrol</value>
+  </data>
+  <data name="Engine_Diesel" xml:space="preserve">
+    <value>Diesel</value>
+  </data>
+  <data name="Engine_Lpg" xml:space="preserve">
+    <value>LPG</value>
+  </data>
+  <data name="Engine_NaturalGas" xml:space="preserve">
+    <value>Natural gas</value>
+  </data>
+  <data name="Engine_PetrolHybrid" xml:space="preserve">
+    <value>Petrol hybrid</value>
+  </data>
+  <data name="Engine_DieselHybrid" xml:space="preserve">
+    <value>Diesel hybrid</value>
+  </data>
+  <data name="Engine_PetrolPlugInHybrid" xml:space="preserve">
+    <value>Petrol plug-in hybrid</value>
+  </data>
+  <data name="Engine_DieselPlugInHybrid" xml:space="preserve">
+    <value>Diesel plug-in hybrid</value>
+  </data>
+  <data name="Co2Label" xml:space="preserve">
+    <value>Its CO2 emission</value>
+  </data>
+  <data name="Co2Hint" xml:space="preserve">
+    <value>In grams per kilometre, as the vehicle registration holds it: on its registration certificate or its certificate of conformity.</value>
+  </data>
+  <data name="NoCo2Label" xml:space="preserve">
+    <value>No CO2 figure is registered for it</value>
+  </data>
+  <data name="AcquiredLabel" xml:space="preserve">
+    <value>Ordered or leased</value>
+  </data>
+  <data name="AcquiredHint" xml:space="preserve">
+    <value>The month and year the company ordered it, even before it was delivered, or signed its lease or rental contract. What the company may deduct of its costs rests on that date.</value>
+  </data>
+  <data name="FakeHybridLabel" xml:space="preserve">
+    <value>It is a fake hybrid</value>
+  </data>
+  <data name="FakeHybridHint" xml:space="preserve">
+    <value>A plug-in hybrid bought or leased from 2018 whose battery holds less than 0.5 kWh per 100 kg of the car, or that emits more than 50 g/km, 75 g/km under Euro 6e-bis. The SPF lists them with their matching cars.</value>
+  </data>
+  <data name="MatchingCo2Label" xml:space="preserve">
+    <value>Its matching car's CO2</value>
+  </data>
+  <data name="MatchingCo2Hint" xml:space="preserve">
+    <value>The CO2 of the same car running on its fuel alone, as the SPF's list of matching cars gives it.</value>
+  </data>
+  <data name="NoMatchingLabel" xml:space="preserve">
+    <value>It has no matching car</value>
+  </data>
+  <data name="SmallGasLabel" xml:space="preserve">
+    <value>It has less than 12 fiscal horsepower</value>
+  </data>
+  <data name="PrivateEnergy_Charging" xml:space="preserve">
+    <value>The company pays my private charging</value>
+  </data>
+  <data name="PrivateEnergy_FuelOrCharging" xml:space="preserve">
+    <value>The company pays my private fuel or charging</value>
+  </data>
+  <data name="PrivateEnergy_Fuel" xml:space="preserve">
+    <value>The company pays my private fuel</value>
+  </data>
+  <data name="PrivateEnergyHint_Charging" xml:space="preserve">
+    <value>A charging point at your home whose electricity the company pays, or a charging card in its name, without reinvoicing you the charging of your private use.</value>
+  </data>
+  <data name="PrivateEnergyHint_FuelOrCharging" xml:space="preserve">
+    <value>A fuel card in the company's name, a charging point at your home whose electricity it pays, or a charging card in its name, without reinvoicing you what your private use takes.</value>
+  </data>
+  <data name="PrivateEnergyHint_Fuel" xml:space="preserve">
+    <value>A fuel card in the company's name, or the fuel of your private trips paid back to you, without reinvoicing you what your private use takes.</value>
+  </data>
+  <data name="AddBackReading_PlugIn" xml:space="preserve">
+    <value>It adds back 40% because it pays your private fuel or charging: the law says « fuel », and the administration counts a plug-in hybrid's charging as fuel too.</value>
+  </data>
+  <data name="Co2_Electric" xml:space="preserve">
+    <value>An electric car emits no CO2, so it takes the lowest percentage, {2}.</value>
+  </data>
+  <data name="Co2_Registered" xml:space="preserve">
+    <value>Its CO2 of {0} is measured against the {3} reference for its fuel, {1}: {2}.</value>
+  </data>
+  <data name="Co2_WithoutData" xml:space="preserve">
+    <value>With no CO2 registered, it counts as {0}, measured against the {3} reference for its fuel, {1}: {2}.</value>
+  </data>
+  <data name="Co2_MatchingCar" xml:space="preserve">
+    <value>As a fake hybrid, it counts at its matching car's {0}, measured against the {3} reference for its fuel, {1}: {2}.</value>
+  </data>
+  <data name="Co2_OwnTimesMultiplier" xml:space="preserve">
+    <value>As a fake hybrid without a matching car, it counts at its own CO2 times 2.5, {0}, measured against the {3} reference for its fuel, {1}: {2}.</value>
+  </data>
+  <data name="Co2_HeldToMinimum" xml:space="preserve">
+    <value>That is the lowest percentage: its CO2 would give less.</value>
+  </data>
+  <data name="Co2_HeldToMaximum" xml:space="preserve">
+    <value>That is the highest percentage: its CO2 would give more.</value>
+  </data>
+  <data name="Deduction_Full" xml:space="preserve">
+    <value>The company deducts all {0} of its costs.</value>
+  </data>
+  <data name="Deduction_AllCarvedOut" xml:space="preserve">
+    <value>The company deducts all {0} of its costs: they are no more than your benefit taxed and your contribution, which stay deductible.</value>
+  </data>
+  <data name="Deduction_None" xml:space="preserve">
+    <value>Of its {0} of costs, the company deducts only the {1} equal to your benefit taxed and your contribution: its order date, its engine and its CO2 leave nothing more deductible. The other {4} are added back to its taxable income.</value>
+  </data>
+  <data name="Deduction_Rate" xml:space="preserve">
+    <value>Of its {0} of costs, the company deducts the {1} equal to your benefit taxed and your contribution in full, and the rest at {2}, the rate its order date, its engine and its CO2 give: {3} in all. The {4} it cannot deduct are added back to its taxable income.</value>
   </data>
 </root>

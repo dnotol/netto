@@ -1,4 +1,5 @@
 using Netto.Core.CompanyCar;
+using Netto.Core.Rules;
 using Netto.Core.Simulation;
 using Netto.Web.Client.Steps;
 
@@ -8,10 +9,11 @@ namespace Netto.Web.Client.River.CompanyCar;
 // coming back from their pocket, then the profit before pay it leaves for the split, the last lever
 // before it, from the year's car steps; what it receives is what the levers above leave of what the
 // company earns. The card reads the car as the engine took it (Result): its benefit, period by period,
-// at least the minimum, less the contribution, taxed as pay, and what the company adds back of it,
-// 40% when it pays the private charging, which for an electric car is the administration's reading
-// of « fuel » (ChargingReading). Each line says its share of what the card receives, and the card what
-// it passes on of it (PassesOn). Without a car, nothing but the profit passed on.
+// at its CO2 percentage, at least the minimum, less the contribution, taxed as pay, what the company
+// deducts of its costs, and what it adds back of the benefit, 40% when it pays the private energy,
+// which for a car it charges, electric or plug-in hybrid, is the administration's reading of « fuel »
+// (ChargingReading). Each line says its share of what the card receives, and the card what it passes
+// on of it (PassesOn). Without a car, nothing but the profit passed on.
 internal sealed record CarView(
     decimal Received,
     CarResult Result,
@@ -42,11 +44,16 @@ internal sealed record CarView(
         return new CarView(
             received,
             car,
-            steps.Count > 0 && year.Scenario.Car.CompanyPaysPrivateEnergy,
+            steps.Count > 0 && year.Scenario.Car.CompanyPaysPrivateEnergy && CarCardText.Reading(year.Scenario.Car.Engine) is not null,
             steps.Count > 0 ? Shares.Of(year.ProfitBeforePay, received) : null,
             [.. drains, new Drain("profit_before_pay", DrainKind.PassedOn, year.ProfitBeforePay, "split")],
             ledger.Select(StepDetail.From).ToList());
     }
+
+    // The conditions the card lists for what drives the car: what makes a plug-in hybrid a fake one
+    // only for a plug-in hybrid.
+    public static IReadOnlyList<LeverCondition> Conditions(CarRules rules, CarEngine engine) =>
+        rules.Conditions.Where(condition => condition.Key != "fake_hybrid" || engine.IsPlugInHybrid()).ToList();
 }
 
 // The plan with its car against the same plan without it, at the pay set: what reaches the pocket in

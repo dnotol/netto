@@ -124,6 +124,25 @@ public class FormatsTests
         text.ShouldBe("1 January 2027");
     }
 
+    // A car's CO2 percentage or deduction rate, as exact as the rules make it: 9.75% is not 9.8%.
+    [Theory]
+    [InlineData("0.105", "10.5%")]
+    [InlineData("0.0975", "9.75%")]
+    [InlineData("0.18", "18%")]
+    [InlineData("0.616", "61.6%")]
+    public void Percentage_fraction_readsWithTheDecimalsItHas(string fraction, string expected)
+    {
+        Formats.Percentage(decimal.Parse(fraction, System.Globalization.CultureInfo.InvariantCulture)).ShouldBe(expected);
+    }
+
+    [Theory]
+    [InlineData("120", "120 g/km")]
+    [InlineData("112.5", "112.5 g/km")]
+    public void Grams_emission_readsInGramsPerKilometre(string grams, string expected)
+    {
+        Formats.Grams(decimal.Parse(grams, System.Globalization.CultureInfo.InvariantCulture)).ShouldBe(expected);
+    }
+
     // Rates are fractions in the rule sets (20.50% is 0.205), and their keys end in _rate or _factor;
     // a multiple of a rate ends in _multiplier; a coefficient, a bare number to four decimals, in
     // _coefficient: art. 518's 2.2446 must not read 2.24; an emission in grams of CO2 per km, in _grams.

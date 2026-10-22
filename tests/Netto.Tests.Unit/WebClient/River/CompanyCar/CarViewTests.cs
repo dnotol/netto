@@ -184,10 +184,129 @@ public class CarViewTests
         (view.CarAddBack, CorporateTaxCardText.Disallowed(view)).ShouldBe((0m, "Disallowed"));
     }
 
+    // A fuel car on the same plan: CarCalculatorTests' petrol car leased in January 2026, 45,000 at
+    // 120 g/km, a benefit of 4,050.00 and 9,000 of costs, of which the company cannot deduct 4,950.00.
+    private static readonly RiverInputs PetrolCar = ElectricCar.WithCatalogueValue(45_000m).WithCarCosts(9_000m)
+        .WithCarEngine(CarEngine.Petrol).WithCarCo2(120).WithCarAcquired(new DateOnly(2026, 1, 5));
+
+    // Corporate tax says what it adds back of a car it cannot deduct in full: the costs beyond the
+    // benefit, and the share of the benefit, alone or beside the vouchers.
+    [Fact]
+    public void CorporateTax_fuelCar_saysTheCostsItCannotDeductBesideItsAddBack()
+    {
+        var car = CorporateTaxView.From(PetrolCar.Run().Year.ShouldNotBeNull());
+        var both = CorporateTaxView.From(PetrolCar.AddToPlan(OptionalModule.Vouchers).WithEcoVouchers(250m).Run().Year.ShouldNotBeNull());
+
+        (car.CarCostsNotDeductible, car.CarAddBack, CorporateTaxCardText.Disallowed(car), CorporateTaxCardText.Disallowed(both))
+            .ShouldBe((4_950m, 688.50m, "Disallowed_CarCosts", "Disallowed_VouchersAndCarCosts"));
+    }
+
+    [Fact]
+    public void CorporateTax_electricCar_hasNoCostsItCannotDeduct()
+    {
+        var view = CorporateTaxView.From(ElectricCar.Run().Year.ShouldNotBeNull());
+
+        (view.CarCostsNotDeductible, decimal.IsNegative(view.CarCostsNotDeductible)).ShouldBe((0m, false));
+    }
+
+    // The card says what its CO2 percentage counts: nothing for an electric car, the CO2 registered,
+    // the texts' emission without data, a fake hybrid's matching car or its own × 2.5.
+    [Fact]
+    public void Car_co2_saysWhatThePercentageCounts()
+    {
+        var plugIn = PetrolCar.WithCarEngine(CarEngine.PetrolPlugInHybrid).WithCarCo2(45).WithCarAcquired(new DateOnly(2025, 12, 1));
+
+        new[]
+            {
+                ElectricCar, PetrolCar, PetrolCar.WithNoCo2Data(true), plugIn.WithFakeHybrid(true).WithMatchingCarCo2(150),
+                plugIn.WithFakeHybrid(true).WithNoMatchingCar(true),
+            }
+            .Select(inputs => CarCardText.Co2(Car(inputs).Result))
+            .ShouldBe(["Co2_Electric", "Co2_Registered", "Co2_WithoutData", "Co2_MatchingCar", "Co2_OwnTimesMultiplier"]);
+    }
+
+    // And when the percentage is held to the lowest or the highest, which an electric car's always is.
+    [Fact]
+    public void Car_co2HeldToABound_saysSo()
+    {
+        var rules = CarRules.IncomeYear2026;
+
+        new[] { ElectricCar, PetrolCar, PetrolCar.WithCarEngine(CarEngine.PetrolPlugInHybrid).WithCarCo2(20), PetrolCar.WithCarEngine(CarEngine.Diesel).WithCarCo2(250) }
+            .Select(inputs => CarCardText.Co2Held(Car(inputs).Result, rules))
+            .ShouldBe([null, null, "Co2_HeldToMinimum", "Co2_HeldToMaximum"]);
+    }
+
+    // How the company deducts the car's costs: in full; the part equal to the benefit and the
+    // contribution in full and the rest at its rate; that part alone; or all of them, being no more
+    // than that part.
+    [Fact]
+    public void Car_deduction_saysHowTheCompanyDeductsItsCosts()
+    {
+        var orderedIn2025 = PetrolCar.WithCatalogueValue(30_000m).WithCarCosts(10_000m).WithCarCo2(100).WithCarAcquired(new DateOnly(2025, 11, 1));
+        var cheapDiesel = PetrolCar.WithCatalogueValue(60_000m).WithFirstRegistration(new DateOnly(2019, 3, 5)).WithCarCosts(3_500m)
+            .WithCarEngine(CarEngine.Diesel).WithCarCo2(140).WithCarAcquired(new DateOnly(2019, 2, 1));
+
+        new[] { ElectricCar, orderedIn2025, PetrolCar, cheapDiesel }
+            .Select(inputs => CarCardText.Deduction(Car(inputs).Result))
+            .ShouldBe(["Deduction_Full", "Deduction_Rate", "Deduction_None", "Deduction_AllCarvedOut"]);
+    }
+
+    [Fact]
+    public void Car_fuelCar_listsWhatItCannotDeduct()
+    {
+        Car(PetrolCar).Details.Select(detail => detail.RuleKey)
+            .ShouldBe(["car_costs", "car_benefit", "car_contribution", "car_benefit_taxed", "car_costs_not_deductible", "car_add_back"]);
+    }
+
+    // The private energy the company pays is the charging of an electric car, the fuel or the charging
+    // of a plug-in hybrid (Module 5.3), and the fuel of any other.
+    [Theory]
+    [InlineData(CarEngine.Electric, "Charging")]
+    [InlineData(CarEngine.PetrolPlugInHybrid, "FuelOrCharging")]
+    [InlineData(CarEngine.DieselPlugInHybrid, "FuelOrCharging")]
+    [InlineData(CarEngine.Petrol, "Fuel")]
+    [InlineData(CarEngine.DieselHybrid, "Fuel")]
+    [InlineData(CarEngine.NaturalGas, "Fuel")]
+    public void PrivateEnergy_isWordedByWhatDrivesTheCar(CarEngine engine, string energy)
+    {
+        (CarCardText.PrivateEnergy(engine), CarCardText.PrivateEnergyHint(engine)).ShouldBe(($"PrivateEnergy_{energy}", $"PrivateEnergyHint_{energy}"));
+    }
+
+    // The 40% rests on the administration's reading for a car it charges: an electric car's charging,
+    // a plug-in hybrid's too; for a fuel car the law's own word.
+    [Fact]
+    public void Car_fortyPercentOnACarItCharges_saysItIsTheAdministrationsReading()
+    {
+        var plugIn = PetrolCar.WithCarEngine(CarEngine.PetrolPlugInHybrid).WithCarCo2(45).WithCarAcquired(new DateOnly(2025, 12, 1)).WithPrivateEnergyPaid(true);
+
+        (Car(plugIn).ChargingReading, Car(PetrolCar.WithPrivateEnergyPaid(true)).ChargingReading, CarCardText.Reading(CarEngine.Electric),
+                CarCardText.Reading(CarEngine.PetrolPlugInHybrid))
+            .ShouldBe((true, false, "AddBackReading", "AddBackReading_PlugIn"));
+    }
+
+    // The fake-hybrid condition only for a plug-in hybrid.
+    [Theory]
+    [InlineData(CarEngine.Electric, false)]
+    [InlineData(CarEngine.Petrol, false)]
+    [InlineData(CarEngine.PetrolPlugInHybrid, true)]
+    [InlineData(CarEngine.DieselPlugInHybrid, true)]
+    public void Conditions_fakeHybrid_isListedForAPlugInHybridOnly(CarEngine engine, bool listed)
+    {
+        var keys = CarView.Conditions(CarRules.IncomeYear2026, engine).Select(condition => condition.Key).ToList();
+
+        (keys.Contains("fake_hybrid"), keys.Contains("ordered_or_leased"), keys.Contains("private_use_all_year")).ShouldBe((listed, true, true));
+    }
+
     [Theory]
     [InlineData(CarCalculator.CatalogueValueNegative)]
     [InlineData(CarCalculator.YearlyCostsNegative)]
     [InlineData(CarCalculator.ContributionNegative)]
+    [InlineData(CarCalculator.Co2Negative)]
+    [InlineData(CarCalculator.Co2Missing)]
+    [InlineData(CarCalculator.MatchingCarCo2Negative)]
+    [InlineData(CarCalculator.MatchingCarCo2Missing)]
+    [InlineData(CarCalculator.AcquiredAfterYear)]
+    [InlineData(CarCalculator.PlugInFuelCapped)]
     public void RiverErrors_carRefusal_isShownOnTheCarCard(string error)
     {
         RiverErrors.Owner(error, companySkipped: false).ShouldBe(RiverModule.Car);

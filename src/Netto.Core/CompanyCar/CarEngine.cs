@@ -16,6 +16,18 @@ public enum CarEngine
     DieselPlugInHybrid,
 }
 
+// What the CO2 a car's benefit counts rests on: nothing for an electric car (None), the CO2 the
+// vehicle registration holds, the texts' emission when it holds none, a fake hybrid's matching car's,
+// or a fake hybrid's own CO2 times the texts' multiplier when it has no matching car.
+public enum CarCo2Basis
+{
+    None,
+    Registered,
+    WithoutData,
+    MatchingCar,
+    OwnTimesMultiplier,
+}
+
 public static class CarEngines
 {
     // Every engine but an electric motor alone burns a fuel, so emits CO2.

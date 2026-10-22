@@ -74,6 +74,8 @@ public static class CarCalculator
         {
             Co2Counted = co2.Counted,
             Co2Percentage = co2.Percentage,
+            Co2Basis = co2.Basis,
+            Co2Reference = co2.Reference,
             Co2Amounts = co2.Amounts,
             Co2Sources = co2.Sources,
             DeductionRate = deduction.Rate,
@@ -112,7 +114,7 @@ public static class CarCalculator
 
         var coefficient = Coefficient(rules, car);
         List<RuleAmount> amounts = [rules.FormulaBase, rules.FormulaPerGram, coefficient];
-        if (co2.Amounts.Contains(rules.FakeHybridWithoutMatch))
+        if (co2.Basis == CarCo2Basis.OwnTimesMultiplier)
             amounts.Add(rules.FakeHybridWithoutMatch);
         var rate = Math.Round(rules.FormulaBase.Value - rules.FormulaPerGram.Value * coefficient.Value * co2.Counted, 3, MidpointRounding.AwayFromZero);
         if (period.Floor is { } floor && rate < floor.Value)
@@ -154,17 +156,18 @@ public static class CarCalculator
     private static Co2Taken Co2(CarRules rules, CarFacts car)
     {
         if (!car.Engine.EmitsCo2())
-            return new Co2Taken(0m, rules.MinimumCo2Percentage.Value, [rules.MinimumCo2Percentage], []);
+            return new Co2Taken(CarCo2Basis.None, 0m, null, rules.MinimumCo2Percentage.Value, [rules.MinimumCo2Percentage], []);
 
         var diesel = car.Engine.RunsOnDiesel();
         var reference = diesel ? rules.DieselReferenceEmission : rules.PetrolReferenceEmission;
         List<RuleAmount> amounts = [rules.BaseCo2Percentage, rules.Co2PercentagePerGram, reference];
         List<Source> sources = [rules.ReferenceDecree];
+        CarCo2Basis basis;
         decimal counted;
         if (car.NoCo2Data)
         {
             var withoutData = diesel ? rules.DieselEmissionWithoutData : rules.PetrolEmissionWithoutData;
-            counted = withoutData.Value;
+            (basis, counted) = (CarCo2Basis.WithoutData, withoutData.Value);
             amounts.Add(withoutData);
         }
         else if (FakeHybridHolds(rules, car))
@@ -172,17 +175,17 @@ public static class CarCalculator
             sources.Add(rules.FakeHybrid);
             if (car.NoMatchingCar)
             {
-                counted = car.Co2 * rules.FakeHybridWithoutMatch.Value;
+                (basis, counted) = (CarCo2Basis.OwnTimesMultiplier, car.Co2 * rules.FakeHybridWithoutMatch.Value);
                 amounts.Add(rules.FakeHybridWithoutMatch);
             }
             else
             {
-                counted = car.MatchingCarCo2;
+                (basis, counted) = (CarCo2Basis.MatchingCar, car.MatchingCarCo2);
             }
         }
         else
         {
-            counted = car.Co2;
+            (basis, counted) = (CarCo2Basis.Registered, car.Co2);
         }
 
         var percentage = rules.BaseCo2Percentage.Value + rules.Co2PercentagePerGram.Value * (counted - reference.Value);
@@ -197,10 +200,11 @@ public static class CarCalculator
             amounts.Add(rules.MaximumCo2Percentage);
         }
 
-        return new Co2Taken(counted, percentage, amounts, sources);
+        return new Co2Taken(basis, counted, reference, percentage, amounts, sources);
     }
 
-    private sealed record Co2Taken(decimal Counted, decimal Percentage, IReadOnlyList<RuleAmount> Amounts, IReadOnlyList<Source> Sources);
+    private sealed record Co2Taken(
+        CarCo2Basis Basis, decimal Counted, RuleAmount? Reference, decimal Percentage, IReadOnlyList<RuleAmount> Amounts, IReadOnlyList<Source> Sources);
 
     // The parts of the income year at one age coefficient. The age is counted in months from the
     // first day of the month of the first registration, that month being the first (a month begun

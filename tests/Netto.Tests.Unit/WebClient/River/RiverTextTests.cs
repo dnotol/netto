@@ -126,6 +126,8 @@ public class RiverTextTests
             RentCalculator.CadastralIncomeNegative, RentCalculator.ShareLetOutOfRange, RentCalculator.RentNegative, RentCalculator.RentAboveCap,
             RentCalculator.RentWithOfficeAllowance,
             CarCalculator.CatalogueValueNegative, CarCalculator.YearlyCostsNegative, CarCalculator.ContributionNegative,
+            CarCalculator.Co2Negative, CarCalculator.Co2Missing, CarCalculator.MatchingCarCo2Negative, CarCalculator.MatchingCarCo2Missing,
+            CarCalculator.AcquiredAfterYear, CarCalculator.PlugInFuelCapped,
         };
 
         Missing(RefusedMessageResources, errors.Select(RefusedMessageText.Error)).ShouldBeEmpty();
@@ -142,7 +144,8 @@ public class RiverTextTests
     [Fact]
     public void CorporateTaxCardResx_everyAddBackSentence_hasAText()
     {
-        Missing(CorporateTaxCardResources, ["Disallowed", "Disallowed_Car", "Disallowed_VouchersAndCar"]).ShouldBeEmpty();
+        Missing(CorporateTaxCardResources, ["Disallowed", "Disallowed_Car", "Disallowed_VouchersAndCar", "Disallowed_CarCosts", "Disallowed_VouchersAndCarCosts"])
+            .ShouldBeEmpty();
     }
 
     // With benefits in kind, the conditions the pay decides say the benefits are counted in it; the

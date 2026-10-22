@@ -458,9 +458,11 @@ internal sealed record CorporateTaxView(
     IReadOnlyList<Drain> Drains,
     IReadOnlyList<StepDetail> Details)
 {
-    // What the added-back expenses are made of: what the company cannot deduct of the vouchers, and
-    // the share of a company car's benefit it adds back.
+    // What the added-back expenses are made of: what the company cannot deduct of the vouchers, what
+    // it cannot deduct of a company car's costs, and the share of the car's benefit it adds back.
     public decimal DisallowedVouchers { get; init; }
+
+    public decimal CarCostsNotDeductible { get; init; }
 
     public decimal CarAddBack { get; init; }
 
@@ -494,7 +496,12 @@ internal sealed record CorporateTaxView(
                 .. steps.Where(step => step.Track == Track.PaidOut).Select(step => Drain.PaidOutTo(step, "taxes_on_profit").Of(year.ProfitAfterPay)),
                 new Drain("profit_after_tax", DrainKind.PassedOn, year.ProfitAfterTax, "dividend").Of(year.ProfitAfterPay),
             ],
-            steps.Select(StepDetail.From).ToList()) { DisallowedVouchers = year.Vouchers.Disallowed, CarAddBack = year.Car.AddBack };
+            steps.Select(StepDetail.From).ToList())
+        {
+            DisallowedVouchers = year.Vouchers.Disallowed,
+            CarCostsNotDeductible = year.Car.Costs == year.Car.Deductible ? 0m : year.Car.Costs - year.Car.Deductible,
+            CarAddBack = year.Car.AddBack,
+        };
     }
 }
 
@@ -578,7 +585,9 @@ internal static class RiverErrors
             or AllowanceCalculator.ComputerAllowanceAboveMaximum or AllowanceCalculator.PhoneCostsNegative => RiverModule.Allowances,
         RentCalculator.CadastralIncomeNegative or RentCalculator.ShareLetOutOfRange or RentCalculator.RentNegative or RentCalculator.RentAboveCap
             or RentCalculator.RentWithOfficeAllowance => RiverModule.Rent,
-        CarCalculator.CatalogueValueNegative or CarCalculator.YearlyCostsNegative or CarCalculator.ContributionNegative => RiverModule.Car,
+        CarCalculator.CatalogueValueNegative or CarCalculator.YearlyCostsNegative or CarCalculator.ContributionNegative or CarCalculator.Co2Negative
+            or CarCalculator.Co2Missing or CarCalculator.MatchingCarCo2Negative or CarCalculator.MatchingCarCo2Missing or CarCalculator.AcquiredAfterYear
+            or CarCalculator.PlugInFuelCapped => RiverModule.Car,
         GrossToNet.GrossPayNegative => companySkipped ? RiverModule.DirectorPay : RiverModule.Split,
         GrossToNet.MunicipalRateOutOfRange => RiverModule.DirectorPay,
         YearSimulation.ReserveNegative or YearSimulation.EarlierProfitsNegative => RiverModule.Dividend,

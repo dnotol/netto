@@ -56,8 +56,15 @@ internal static class Formats
                 : amount.Key.EndsWith("_coefficient", StringComparison.Ordinal)
                     ? amount.Value.ToString("0.####", Culture)
                     : amount.Key.EndsWith("_grams", StringComparison.Ordinal)
-                        ? $"{amount.Value.ToString("0.#", Culture)} g/km"
+                        ? Grams(amount.Value)
                         : Euros(amount.Value);
+
+    // A percentage with as many decimals as it has, up to three: a car's CO2 percentage of 9.75%, a
+    // deduction rate of 61.6%.
+    public static string Percentage(decimal fraction) => fraction.ToString("0.###%", Culture);
+
+    // An emission in grams of CO2 per kilometre: 120 g/km, a fake hybrid's 112.5 g/km.
+    public static string Grams(decimal grams) => $"{grams.ToString("0.#", Culture)} g/km";
 
     private static CultureInfo EnglishWithEuro()
     {

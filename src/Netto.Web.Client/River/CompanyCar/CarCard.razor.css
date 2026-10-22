@@ -5,21 +5,24 @@
     line-height: 1.55;
 }
 
-/* The inputs side by side when the card is wide enough, stacked otherwise. */
+/* The inputs side by side when the card is wide enough, stacked otherwise; a row lines its inputs up
+   along their bottoms, whichever labels wrap. */
 .car__fields {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+    align-items: end;
     gap: 1rem;
 }
 
-/* The month and the year of the first registration on one line. */
-.car__registration {
+/* The month and the year of the first registration, or of the order, on one line. */
+.car__month-year {
     display: grid;
     grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
     gap: 0.5rem;
 }
 
-.car__charging {
+/* A status the user ticks, with its origin and, where it needs one, its bubble. */
+.car__tick {
     display: flex;
     flex-wrap: wrap;
     align-items: center;

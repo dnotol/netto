@@ -99,6 +99,24 @@
   <data name="Error_car_contribution_negative" xml:space="preserve">
     <value>Your contribution cannot be negative. Enter 0 if you pay nothing for the car's private use.</value>
   </data>
+  <data name="Error_car_co2_negative" xml:space="preserve">
+    <value>The car's CO2 cannot be negative. Enter it in grams per kilometre, as on its registration certificate.</value>
+  </data>
+  <data name="Error_car_co2_missing" xml:space="preserve">
+    <value>A car with an engine that burns fuel emits CO2: enter its emission in grams per kilometre, as on its registration certificate, or tick that none is registered for it.</value>
+  </data>
+  <data name="Error_car_matching_co2_negative" xml:space="preserve">
+    <value>The matching car's CO2 cannot be negative. Enter it in grams per kilometre.</value>
+  </data>
+  <data name="Error_car_matching_co2_missing" xml:space="preserve">
+    <value>A fake hybrid is taxed at the CO2 of its matching car: enter it, as the SPF's list gives it, or tick that it has none.</value>
+  </data>
+  <data name="Error_car_acquired_after_year" xml:space="preserve">
+    <value>A car ordered or leased after the end of the year is not the company's during it: enter the date of its order or its lease contract, within the year or before.</value>
+  </data>
+  <data name="Error_car_plug_in_first_half_2023" xml:space="preserve">
+    <value>A plug-in hybrid ordered or leased in the first half of 2023 deducts its petrol or diesel at 50% at most and its other costs at another rate, and Netto does not split its costs yet: it cannot weigh this car for now.</value>
+  </data>
   <data name="Error_rent_above_cap" xml:space="preserve">
     <value>More rent than the cap: what the company pays above it would be taxed as director pay, with social contributions and no charges deducted. Netto keeps the rent at or below the cap.</value>
   </data>

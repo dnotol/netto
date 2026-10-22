@@ -300,6 +300,29 @@ public class CarCalculatorTests
         (result.Co2Counted, result.Co2Percentage, result.BenefitOnTheScale).ShouldBe((0m, 0.04m, 1_714.29m));
     }
 
+    // What the CO2 counted rests on, and the reference it is measured against, for the card to say.
+    [Fact]
+    public void Compute_co2Basis_saysWhatTheCo2CountedRestsOn()
+    {
+        var plugIn = Car(55_000m, new DateOnly(2026, 1, 10)) with { Engine = CarEngine.PetrolPlugInHybrid, Co2 = 45, Acquired = new DateOnly(2025, 12, 1) };
+
+        new[]
+            {
+                Compute(Car(50_000m, new DateOnly(2026, 1, 10))),
+                Compute(plugIn),
+                Compute(plugIn with { NoCo2Data = true }),
+                Compute(plugIn with { FakeHybrid = true, MatchingCarCo2 = 150 }),
+                Compute(plugIn with { FakeHybrid = true, NoMatchingCar = true }),
+                Compute(plugIn with { Engine = CarEngine.Diesel }),
+            }
+            .Select(result => (result.Co2Basis, result.Co2Reference))
+            .ShouldBe([
+                (CarCo2Basis.None, null), (CarCo2Basis.Registered, Rules.PetrolReferenceEmission), (CarCo2Basis.WithoutData, Rules.PetrolReferenceEmission),
+                (CarCo2Basis.MatchingCar, Rules.PetrolReferenceEmission), (CarCo2Basis.OwnTimesMultiplier, Rules.PetrolReferenceEmission),
+                (CarCo2Basis.Registered, Rules.DieselReferenceEmission),
+            ]);
+    }
+
     // The amounts the benefit's CO2 percentage used, for its step: the base, the step per gram and the
     // fuel's reference, with the emission the texts give a car without data, the fake hybrid's
     // multiplier, and the minimum or the maximum when the percentage is held to it; an electric car's

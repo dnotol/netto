@@ -27,6 +27,12 @@ public sealed record CarResult(
 
     public decimal Co2Percentage { get; init; }
 
+    // What Co2Counted rests on, and the year's reference emission for the car's fuel it is measured
+    // against, none for an electric car.
+    public CarCo2Basis Co2Basis { get; init; }
+
+    public RuleAmount? Co2Reference { get; init; }
+
     public IReadOnlyList<RuleAmount> Co2Amounts { get; init; } = [];
 
     public IReadOnlyList<Source> Co2Sources { get; init; } = [];

@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Resources;
+using Netto.Core.CompanyCar;
 using Netto.Web.Client.River.CompanyCar;
 using Shouldly;
 
@@ -20,4 +21,26 @@ public class CarCardTextTests
         comparisons.Select(CarCardText.Gap).ShouldBe(["Gap_More", "Gap_Less", "Gap_NoCash"]);
         comparisons.Select(CarCardText.Gap).Where(key => Resources.GetString(key, CultureInfo.InvariantCulture) is null).ShouldBeEmpty();
     }
+
+    // Every engine's name, the private energy it is worded with, its hint and its reading.
+    [Fact]
+    public void CarCardResx_everyEngine_hasItsTexts()
+    {
+        var keys = Enum.GetValues<CarEngine>().SelectMany(engine => new[] { CarCardText.Engine(engine), CarCardText.PrivateEnergy(engine), CarCardText.PrivateEnergyHint(engine) }
+            .Concat(CarCardText.Reading(engine) is { } reading ? [reading] : []));
+
+        Missing(keys).ShouldBeEmpty();
+    }
+
+    // Every way the CO2 percentage is taken, and every way the company deducts the costs.
+    [Fact]
+    public void CarCardResx_everyCo2AndDeductionSentence_hasAText()
+    {
+        var keys = Enum.GetValues<CarCo2Basis>().Select(basis => CarCardText.Co2(CarResult.None with { Co2Basis = basis }))
+            .Concat(["Co2_HeldToMinimum", "Co2_HeldToMaximum", "Deduction_Full", "Deduction_Rate", "Deduction_None", "Deduction_AllCarvedOut"]);
+
+        Missing(keys).ShouldBeEmpty();
+    }
+
+    private static IEnumerable<string> Missing(IEnumerable<string> keys) => keys.Where(key => Resources.GetString(key, CultureInfo.InvariantCulture) is null);
 }
