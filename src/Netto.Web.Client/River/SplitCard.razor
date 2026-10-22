@@ -111,12 +111,6 @@
             {
                 <p class="split__rate"><TermSentence Text="@RateText(rate)" Meaning="@L[SplitCardText.ReducedRateTerm]" /></p>
             }
-            @if (!best.IsYours)
-            {
-                <div class="split__actions">
-                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => MoveTo(best.Level.Pay))">@L["MoveToBest"]</MudButton>
-                </div>
-            }
         }
         else
         {

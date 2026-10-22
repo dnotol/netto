@@ -40,10 +40,6 @@
     color: var(--netto-text-muted);
 }
 
-.split__actions {
-    display: flex;
-}
-
 /* The net in pocket at every pay: the amounts up the left, the plot, the pays under it and the
    slider under them, the plot and the pays inset by the slider thumb's radius so that a pay sits
    right above the thumb that sets it. A small MudSlider's thumb is 2px wide, scaled up only to draw. */

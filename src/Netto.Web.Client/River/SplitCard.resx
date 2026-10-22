@@ -102,7 +102,4 @@
   <data name="Term_ReducedRate" xml:space="preserve">
     <value>The lower rate a small company pays on a first slice of its taxable income. From its fifth tax period, it keeps it only if a director's pay reaches a minimum, or its taxable income does not exceed that pay.</value>
   </data>
-  <data name="MoveToBest" xml:space="preserve">
-    <value>Move to the best pay</value>
-  </data>
 </root>

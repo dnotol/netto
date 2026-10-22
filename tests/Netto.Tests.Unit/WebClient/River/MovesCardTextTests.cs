@@ -66,4 +66,11 @@ public class MovesCardTextTests
 
         text.ShouldBe(expected);
     }
+
+    // Folded without a Today, the summary says what the card waits for.
+    [Fact]
+    public void MovesCardResx_noToday_hasASummary()
+    {
+        Resources.GetString("SummaryNoToday", CultureInfo.InvariantCulture).ShouldBe("save and star your current setup to see them");
+    }
 }

@@ -54,6 +54,9 @@
   <data name="Move_Rent" xml:space="preserve">
     <value>Rent the office in your home to the company for {0} a year</value>
   </data>
+  <data name="SummaryNoToday" xml:space="preserve">
+    <value>save and star your current setup to see them</value>
+  </data>
   <data name="Gain" xml:space="preserve">
     <value>{0} more</value>
   </data>

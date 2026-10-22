@@ -7,7 +7,7 @@
    on one share, worded here for every card: what reaches the pocket of what the module receives
    (ToYou), or, for Corporate tax, what it passes on (PassesOn); none while no money flows through it. *@
 <section class="module-card @(Skipped ? "module-card--skipped" : null)" aria-labelledby="@_titleId">
-    <Fold Name="@Name" Title="@Title" TitleId="@_titleId" Summary="@Summary" Rate="@Rate" Help="@Help">
+    <Fold Name="@Name" Title="@Title" TitleId="@_titleId" Summary="@Summary" Rate="@Rate" Help="@Help" OpenByDefault="@OpenByDefault">
         <div class="module-card__body">
             @ChildContent
             @if (Details is not null)
@@ -59,6 +59,10 @@
     // The depth behind the module's figures: the pay slip, the rules and their sources.
     [Parameter]
     public RenderFragment? Details { get; set; }
+
+    // Cards are open until folded; one with nothing to show yet starts folded to its summary.
+    [Parameter]
+    public bool OpenByDefault { get; set; } = true;
 
     // The detail view's line, folded or open.
     [Parameter]
