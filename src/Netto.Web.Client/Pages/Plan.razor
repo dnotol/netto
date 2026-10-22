@@ -3,6 +3,7 @@
 @using Netto.Web.Client.River
 @inject IStringLocalizer<Plan> L
 @inject RiverState State
+@inject SavedPlans Plans
 
 <PageTitle>@L["PageTitle"]</PageTitle>
 
@@ -20,8 +21,8 @@
    it up. Every figure comes from Netto.Core; the page only holds the inputs and runs them. The
    optional modules show only while in the plan, which the Composition menu in the bar sets; taking
    one out, there or from its card, shows a notice with Undo. *@
-<BucketBar Run="_run" Setup="State.Setup?.Run">
-    <MarkSetup Marked="State.Setup is not null" CanMark="BaselineGain.CanMark(_run)" OnMark="MarkSetup" />
+<BucketBar Run="_run" Setup="_today?.Run" Unsaved="Plans.HasUnsavedChanges(_inputs)">
+    <PlansPanel Inputs="_inputs" CanSave="BaselineGain.CanMark(_run)" OnOpen="OnInputsChanged" OnChanged="OnPlansChanged" />
     <CompositionMenu @ref="_composition" Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" />
 </BucketBar>
 <TakenOutNotice @ref="_notice" Module="_takenOut" OnUndo="Undo" OnDismiss="Dismiss" />
@@ -107,6 +108,7 @@
     private RiverInputs _inputs = default!;
     private RiverRun _run = default!;
     private SplitSearchResult? _search;
+    private (string Id, RiverRun Run)? _today;
     private RiverInputs? _searched;
     private CompositionMenu _composition = default!;
     private TakenOutNotice _notice = default!;
@@ -115,7 +117,11 @@
     private bool _focusUndo;
     private bool _focusComposition;
 
-    protected override void OnInitialized() => Show(State.Inputs);
+    protected override void OnInitialized()
+    {
+        OnPlansChanged();
+        Show(State.Inputs);
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -145,8 +151,12 @@
 
     private void OpenComposition() => _composition.Open();
 
-    // The river as it is becomes the setup the bar compares it with, replacing any marked before.
-    private void MarkSetup() => State.Setup = SetupSnapshot.Of(_inputs);
+    // The plan starred « Today » runs once, again only when the star moves to another plan.
+    private void OnPlansChanged()
+    {
+        if (_today?.Id != Plans.Today)
+            _today = Plans.TodayPlan is { Inputs: { } inputs } today ? (today.Id, inputs.Run()) : null;
+    }
 
     // The next Tab goes on to the first card's heading.
     private async Task SkipToRiverAsync() => await _river.FocusAsync();

@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Save" xml:space="preserve">
+    <value>Save this plan</value>
+  </data>
+  <data name="Button" xml:space="preserve">
+    <value>Plans</value>
+  </data>
+  <data name="Count" xml:space="preserve">
+    <value>· {0}</value>
+  </data>
+  <data name="ButtonLabel_None" xml:space="preserve">
+    <value>Plans: none saved yet</value>
+  </data>
+  <data name="ButtonLabel_One" xml:space="preserve">
+    <value>Plans: 1 saved</value>
+  </data>
+  <data name="ButtonLabel_Many" xml:space="preserve">
+    <value>Plans: {0} saved</value>
+  </data>
+  <data name="PanelLabel" xml:space="preserve">
+    <value>Your saved plans</value>
+  </data>
+  <data name="Title" xml:space="preserve">
+    <value>Your plans</value>
+  </data>
+  <data name="NoPlan" xml:space="preserve">
+    <value>No plan saved yet. « Save this plan » keeps the river as it is, and the first plan you save is starred as Today, your current setup.</value>
+  </data>
+  <data name="Lede" xml:space="preserve">
+    <value>The starred plan is Today, your current setup: every other plan says what it leaves in your pocket against it.</value>
+  </data>
+  <data name="LedeNoToday" xml:space="preserve">
+    <value>No plan is starred as Today: star your current setup to compare the others with it.</value>
+  </data>
+  <data name="CouldNotRead" xml:space="preserve">
+    <value>Your saved plans could not be read by this version of Netto. They are kept aside in your browser, untouched.</value>
+  </data>
+  <data name="DefaultName" xml:space="preserve">
+    <value>Plan {0}</value>
+  </data>
+  <data name="StarLabel" xml:space="preserve">
+    <value>Today: {0}</value>
+  </data>
+  <data name="NameLabel" xml:space="preserve">
+    <value>Name of the plan</value>
+  </data>
+  <data name="Unreadable" xml:space="preserve">
+    <value>This plan cannot be opened by this version of Netto. It is kept as it was saved.</value>
+  </data>
+  <data name="Pocket" xml:space="preserve">
+    <value>{0} in your pocket</value>
+  </data>
+  <data name="NoFigure" xml:space="preserve">
+    <value>No figures: an amount of this plan is refused.</value>
+  </data>
+  <data name="IsToday" xml:space="preserve">
+    <value>Today, your current setup</value>
+  </data>
+  <data name="Gain_More" xml:space="preserve">
+    <value>{0} more than Today</value>
+  </data>
+  <data name="Gain_Less" xml:space="preserve">
+    <value>{0} less than Today</value>
+  </data>
+  <data name="Gain_Same" xml:space="preserve">
+    <value>The same as Today</value>
+  </data>
+  <data name="Gain_NotComparable" xml:space="preserve">
+    <value>Not comparable with Today: one starts from the company's year, the other at the pay.</value>
+  </data>
+  <data name="InRiver" xml:space="preserve">
+    <value>In the river now</value>
+  </data>
+  <data name="Open" xml:space="preserve">
+    <value>Open</value>
+  </data>
+  <data name="OpenLabel" xml:space="preserve">
+    <value>Open {0} in the river</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="DeleteLabel" xml:space="preserve">
+    <value>Delete {0}</value>
+  </data>
+  <data name="ConfirmOpen" xml:space="preserve">
+    <value>Your changes in the river are not saved. Open {0} anyway?</value>
+  </data>
+  <data name="OpenYes" xml:space="preserve">
+    <value>Open anyway</value>
+  </data>
+  <data name="ConfirmDelete" xml:space="preserve">
+    <value>Delete {0}?</value>
+  </data>
+  <data name="DeleteYes" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Done" xml:space="preserve">
+    <value>Done</value>
+  </data>
+</root>

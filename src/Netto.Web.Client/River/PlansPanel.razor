@@ -1,0 +1,284 @@
+@inject IStringLocalizer<PlansPanel> L
+@inject SavedPlans Plans
+
+@* The user's saved plans, from the bar of buckets: « Save this plan » keeps the river as it is as a new
+   plan, never over another, and « Plans » opens a panel listing them, built like the Composition menu
+   (a disclosure, not an ARIA menu): it takes focus when opened and closes with Escape, a click
+   outside or Done, each giving focus back to its button. Each row says what reaches the pocket and
+   its share, and its difference from the plan starred « Today », the user's current setup, with every
+   figure the engine's (PlanRow). A row is renamed in place, starred, opened in the river or deleted;
+   opening over unsaved changes and deleting ask first, in the row itself. *@
+<div class="plans" @onkeydown="OnKeyDown">
+    <MudButton Variant="Variant.Outlined" Size="Size.Small" Class="plans__save" StartIcon="@Icons.Material.Rounded.BookmarkAdd"
+               Disabled="@(!CanSave)" OnClick="Save">
+        @L["Save"]
+    </MudButton>
+    <MudButton @ref="_button" Variant="Variant.Outlined" Size="Size.Small" Class="plans__button" StartIcon="@Icons.Material.Rounded.FolderOpen"
+               OnClick="Toggle" aria-expanded="@(_open ? "true" : "false")" aria-controls="@_panelId"
+               aria-label="@L[PlansPanelText.ButtonLabel(Plans.Plans.Count), Plans.Plans.Count]">
+        @L["Button"]
+        @if (Plans.Plans.Count > 0)
+        {
+            <span class="plans__count">@L["Count", Plans.Plans.Count]</span>
+        }
+    </MudButton>
+    @if (_open)
+    {
+        <div class="plans__backdrop" @onclick="Close"></div>
+    }
+    <div id="@_panelId" class="plans__panel" role="group" aria-label="@L["PanelLabel"]" tabindex="-1" hidden="@(!_open)" @ref="_panel">
+        @if (_open)
+        {
+            <p class="plans__eyebrow">@L["Title"]</p>
+            @if (Plans.CouldNotRead)
+            {
+                <p class="plans__warning" role="note">@L["CouldNotRead"]</p>
+            }
+            @if (_rows.Count == 0)
+            {
+                <p class="plans__lede">@L["NoPlan"]</p>
+            }
+            else
+            {
+                <p class="plans__lede">@L[Plans.Today is null ? "LedeNoToday" : "Lede"]</p>
+                <ul class="plans__list">
+                    @foreach (var row in _rows)
+                    {
+                        <li @key="row.Plan.Id" class="plan @(row.IsOpened ? "plan--opened" : "")">
+                            <div class="plan__head">
+                                <MudIconButton Size="Size.Small" Class="plan__star"
+                                               Icon="@(row.IsToday ? Icons.Material.Rounded.Star : Icons.Material.Rounded.StarBorder)"
+                                               OnClick="@(() => Star(row))" aria-pressed="@(row.IsToday ? "true" : "false")"
+                                               aria-label="@L["StarLabel", row.Plan.Name]" />
+                                <input class="plan__name" value="@row.Plan.Name" aria-label="@L["NameLabel"]"
+                                       @onchange="@(change => Rename(row, change.Value as string))" />
+                            </div>
+                            @if (!row.Plan.Readable)
+                            {
+                                <p class="plan__unreadable">@L["Unreadable"]</p>
+                            }
+                            else
+                            {
+                                <p class="plan__figures">
+                                    @if (row.Pocket is { } pocket)
+                                    {
+                                        <span class="plan__pocket">@L["Pocket", Formats.Euros(pocket)]</span>
+                                        @if (row.Reach is { } reach)
+                                        {
+                                            @(" ")<span class="plan__reach">@Formats.WholeShare(reach)</span>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <span>@L["NoFigure"]</span>
+                                    }
+                                </p>
+                                <p class="plan__gain @GainClass(row)">@GainText(row)</p>
+                            }
+                            @if (_confirming is { } confirming && confirming.Id == row.Plan.Id)
+                            {
+                                <div class="plan__confirm" role="group" aria-label="@L[confirming.Delete ? "ConfirmDelete" : "ConfirmOpen", row.Plan.Name]">
+                                    <span>@L[confirming.Delete ? "ConfirmDelete" : "ConfirmOpen", row.Plan.Name]</span>
+                                    <MudButton @ref="_confirm" Variant="Variant.Filled" Size="Size.Small" Class="plan__yes"
+                                               OnClick="@(() => Confirm(row))">@L[confirming.Delete ? "DeleteYes" : "OpenYes"]</MudButton>
+                                    <MudButton Variant="Variant.Text" Size="Size.Small" OnClick="Cancel">@L["Cancel"]</MudButton>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="plan__actions">
+                                    @if (row.IsOpened && !Plans.HasUnsavedChanges(Inputs))
+                                    {
+                                        <span class="plan__in-river">@L["InRiver"]</span>
+                                    }
+                                    else
+                                    {
+                                        <MudButton Variant="Variant.Text" Size="Size.Small" Disabled="@(!row.Plan.Readable)"
+                                                   OnClick="@(() => Open(row))" aria-label="@L["OpenLabel", row.Plan.Name]">@L["Open"]</MudButton>
+                                    }
+                                    <MudButton Variant="Variant.Text" Size="Size.Small" OnClick="@(() => AskDelete(row))"
+                                               aria-label="@L["DeleteLabel", row.Plan.Name]">@L["Delete"]</MudButton>
+                                </div>
+                            }
+                        </li>
+                    }
+                </ul>
+            }
+            <div class="plans__foot">
+                <MudButton Variant="Variant.Outlined" Size="Size.Small" Class="plans__done" OnClick="Close" @onkeydown="OnDoneKeyDown">@L["Done"]</MudButton>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    // The river as it is now, what « Save this plan » keeps.
+    [Parameter, EditorRequired]
+    public RiverInputs Inputs { get; set; } = default!;
+
+    // Whether the river can be kept: not while the engine refuses an amount.
+    [Parameter]
+    public bool CanSave { get; set; }
+
+    // A plan opened, for the river to show.
+    [Parameter]
+    public EventCallback<RiverInputs> OnOpen { get; set; }
+
+    // The plans changed: saved, starred, renamed or deleted.
+    [Parameter]
+    public EventCallback OnChanged { get; set; }
+
+    private readonly string _panelId = $"plans-{Guid.NewGuid():N}";
+    private IReadOnlyList<PlanRow> _rows = [];
+    private MudButton? _button;
+    private MudButton? _confirm;
+    private ElementReference _panel;
+    private bool _open;
+    private bool _focusPanel;
+    private bool _focusButton;
+    private bool _focusConfirm;
+
+    // The row asking to open over unsaved changes, or to delete.
+    private (string Id, bool Delete)? _confirming;
+
+    protected override void OnParametersSet()
+    {
+        if (_open)
+            _rows = PlanRow.From(Plans);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_focusPanel)
+        {
+            _focusPanel = false;
+            await _panel.FocusAsync();
+        }
+
+        if (_focusConfirm)
+        {
+            _focusConfirm = false;
+            if (_confirm is not null)
+                await _confirm.FocusAsync();
+        }
+
+        if (_focusButton)
+        {
+            _focusButton = false;
+            if (_button is not null)
+                await _button.FocusAsync();
+        }
+    }
+
+    private async Task Save()
+    {
+        Plans.Save(Inputs, number => L["DefaultName", number]);
+        Refresh();
+        await OnChanged.InvokeAsync();
+    }
+
+    private void Toggle()
+    {
+        _open = !_open;
+        _focusPanel = _open;
+        _confirming = null;
+        Refresh();
+    }
+
+    private void Close()
+    {
+        _open = false;
+        _confirming = null;
+        _focusButton = true;
+    }
+
+    private void OnKeyDown(KeyboardEventArgs e)
+    {
+        if (_open && e.Key == "Escape")
+            Close();
+    }
+
+    // Tab from Done leaves the panel forwards: it closes, and the focus goes on where the browser takes it.
+    private void OnDoneKeyDown(KeyboardEventArgs e)
+    {
+        if (e is { Key: "Tab", ShiftKey: false })
+            _open = false;
+    }
+
+    private async Task Star(PlanRow row)
+    {
+        Plans.Star(row.Plan.Id);
+        Refresh();
+        await OnChanged.InvokeAsync();
+    }
+
+    private async Task Rename(PlanRow row, string? name)
+    {
+        Plans.Rename(row.Plan.Id, name ?? "");
+        Refresh();
+        await OnChanged.InvokeAsync();
+    }
+
+    // Over unsaved changes, the row asks first.
+    private async Task Open(PlanRow row)
+    {
+        if (Plans.HasUnsavedChanges(Inputs))
+        {
+            _confirming = (row.Plan.Id, false);
+            _focusConfirm = true;
+            return;
+        }
+
+        await OpenNow(row);
+    }
+
+    private void AskDelete(PlanRow row)
+    {
+        _confirming = (row.Plan.Id, true);
+        _focusConfirm = true;
+    }
+
+    private async Task Confirm(PlanRow row)
+    {
+        var delete = _confirming?.Delete ?? false;
+        _confirming = null;
+        if (!delete)
+        {
+            await OpenNow(row);
+            return;
+        }
+
+        Plans.Delete(row.Plan.Id);
+        Refresh();
+        _focusPanel = true;
+        await OnChanged.InvokeAsync();
+    }
+
+    private void Cancel()
+    {
+        _confirming = null;
+        _focusPanel = true;
+    }
+
+    // The river takes the plan, and the panel closes on it.
+    private async Task OpenNow(PlanRow row)
+    {
+        if (Plans.Open(row.Plan.Id) is not { } inputs)
+            return;
+
+        Close();
+        await OnOpen.InvokeAsync(inputs);
+    }
+
+    private void Refresh() => _rows = PlanRow.From(Plans);
+
+    private string GainText(PlanRow row) => row switch
+    {
+        { IsToday: true } => L["IsToday"],
+        { Gain: { Kind: GainKind.More or GainKind.Less } gain } => L[PlansPanelText.Gain(gain.Kind), Formats.Euros(gain.Amount)],
+        { Gain: { } gain } => L[PlansPanelText.Gain(gain.Kind)],
+        _ => "",
+    };
+
+    private static string GainClass(PlanRow row) => row is { Gain.Kind: GainKind.More } ? "plan__gain--more" : "";
+}

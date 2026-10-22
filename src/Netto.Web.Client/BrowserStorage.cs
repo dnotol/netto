@@ -2,9 +2,9 @@ using Microsoft.JSInterop;
 
 namespace Netto.Web.Client;
 
-// The browser's own storage, which keeps a viewer's preferences on their device across reloads. Only
-// preferences go there, never the plan's figures. An interface because the tests stand in for the
-// browser.
+// The browser's own storage, which keeps on the viewer's device, across reloads, their preferences
+// and the plans they save (SavedPlans), never sent to a server. An interface because the tests stand
+// in for the browser.
 internal interface IBrowserStorage
 {
     // Null when nothing is stored under the key, or when the browser refuses storage.

@@ -76,15 +76,18 @@
     <value>In your pocket: {0}.</value>
   </data>
   <data name="Gain_More" xml:space="preserve">
-    <value>{0} more than your current setup.</value>
+    <value>{0} more than Today, your current setup.</value>
   </data>
   <data name="Gain_Less" xml:space="preserve">
-    <value>{0} less than your current setup.</value>
+    <value>{0} less than Today, your current setup.</value>
   </data>
   <data name="Gain_Same" xml:space="preserve">
-    <value>The same as your current setup.</value>
+    <value>The same as Today, your current setup.</value>
   </data>
   <data name="Gain_NotComparable" xml:space="preserve">
-    <value>Not comparable with your current setup: one starts from the company's year, the other at the pay.</value>
+    <value>Not comparable with Today, your current setup: one starts from the company's year, the other at the pay.</value>
+  </data>
+  <data name="Unsaved" xml:space="preserve">
+    <value>Unsaved changes.</value>
   </data>
 </root>

@@ -10,11 +10,13 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.Services.AddLocalization();
 builder.Services.AddMudServices();
 
-// The river's inputs, kept while the tab is open.
-builder.Services.AddScoped<RiverState>();
-
-// The viewer's preferences, kept in the browser: which folds of the river are open.
+// What is kept in the browser, never on a server: the viewer's preferences, which folds of the river
+// are open, and the plans they save.
 builder.Services.AddScoped<IBrowserStorage, LocalStorage>();
 builder.Services.AddScoped<Folds>();
+builder.Services.AddScoped<SavedPlans>();
+
+// The river's inputs while the tab is open, starting on the plan last opened.
+builder.Services.AddScoped<RiverState>();
 
 await builder.Build().RunAsync();

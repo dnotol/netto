@@ -1,0 +1,80 @@
+using Netto.Web.Client;
+using Netto.Web.Client.River;
+using Shouldly;
+
+namespace Netto.Tests.WebClient.River;
+
+// The example leaves 61,975.74 in the pocket, 62% of the 100,000; the best pay 64,526.87, 65%,
+// 2,551.13 more (BucketsViewTests, BaselineGainTests).
+public class PlanRowTests
+{
+    private static readonly RiverInputs BestPay = RiverInputs.Example.WithDirectorPay(20_799m);
+
+    [Fact]
+    public void From_noPlan_isNoRow()
+    {
+        PlanRow.From(new SavedPlans(new MemoryStorage())).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void From_plans_givesEachItsPocketAndShare()
+    {
+        var plans = Saved(RiverInputs.Example, BestPay);
+
+        PlanRow.From(plans).Select(row => (row.Pocket, row.Reach)).ShouldBe(
+            [((decimal?)61_975.74m, (decimal?)0.6197574m), (64_526.87m, 0.6452687m)]);
+    }
+
+    [Fact]
+    public void From_plans_comparesEachWithTodayButTodayItself()
+    {
+        var plans = Saved(RiverInputs.Example, BestPay);
+
+        PlanRow.From(plans).Select(row => (row.IsToday, row.Gain)).ShouldBe(
+            [(true, (BaselineGain?)null), (false, new BaselineGain(GainKind.More, 2_551.13m))]);
+    }
+
+    [Fact]
+    public void From_noToday_comparesNothing()
+    {
+        var plans = Saved(RiverInputs.Example, BestPay);
+        plans.Delete(plans.Plans[0].Id);
+
+        PlanRow.From(plans).Single().Gain.ShouldBeNull();
+    }
+
+    [Fact]
+    public void From_plans_marksTheOneTheRiverWasOpenedFrom()
+    {
+        var plans = Saved(RiverInputs.Example, BestPay);
+
+        PlanRow.From(plans).Select(row => row.IsOpened).ShouldBe([false, true]);
+    }
+
+    // A refused plan has no figure, like the bar.
+    [Fact]
+    public void From_refusedPlan_hasNoFigure()
+    {
+        var plans = Saved(RiverInputs.Example, RiverInputs.Example.WithReserve(-1m));
+
+        PlanRow.From(plans)[1].ShouldSatisfyAllConditions(
+            row => (row.Pocket, row.Reach, row.Gain).ShouldBe((null, null, null)));
+    }
+
+    private static SavedPlans Saved(params RiverInputs[] inputs)
+    {
+        var plans = new SavedPlans(new MemoryStorage());
+        foreach (var plan in inputs)
+            plans.Save(plan, number => $"Plan {number}");
+        return plans;
+    }
+
+    private sealed class MemoryStorage : IBrowserStorage
+    {
+        private readonly Dictionary<string, string> _stored = [];
+
+        public string? Get(string key) => _stored.GetValueOrDefault(key);
+
+        public void Set(string key, string value) => _stored[key] = value;
+    }
+}

@@ -103,7 +103,7 @@ public class BucketBarTextTests
     {
         var text = string.Format(CultureInfo.InvariantCulture, Resources.GetString(BucketBarText.Gain(GainKind.More), CultureInfo.InvariantCulture) ?? "", Formats.Euros(2_551.13m));
 
-        text.ShouldBe("€2,551.13 more than your current setup.");
+        text.ShouldBe("€2,551.13 more than Today, your current setup.");
     }
 
     [Fact]
@@ -111,7 +111,13 @@ public class BucketBarTextTests
     {
         var text = string.Format(CultureInfo.InvariantCulture, Resources.GetString(BucketBarText.Gain(GainKind.Less), CultureInfo.InvariantCulture) ?? "", Formats.Euros(2_551.13m));
 
-        text.ShouldBe("€2,551.13 less than your current setup.");
+        text.ShouldBe("€2,551.13 less than Today, your current setup.");
+    }
+
+    [Fact]
+    public void BucketBarResx_unsaved_saysTheRiverHasChangesNoPlanHolds()
+    {
+        Resources.GetString(BucketBarText.Unsaved, CultureInfo.InvariantCulture).ShouldBe("Unsaved changes.");
     }
 
     // While the engine refuses an amount there is no figure to announce.

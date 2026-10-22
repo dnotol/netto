@@ -1,0 +1,201 @@
+/* ::deep reaches the MudButtons, which carry no scope attribute of their own.
+
+   Built like the Composition menu: the panel drops under the bar of buckets, against the right edge
+   of its buttons, over the river, with a clear backdrop under it that takes a click outside. */
+.plans {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+    /* Pills on the card surface, like the Composition button. */
+    .plans ::deep .plans__save,
+    .plans ::deep .plans__button {
+        position: relative;
+        z-index: 2;
+        border-color: rgba(243, 238, 226, 0.2);
+        border-radius: 999px;
+        background: var(--netto-surface);
+        color: var(--netto-text);
+        white-space: nowrap;
+    }
+
+        .plans ::deep .plans__save:hover,
+        .plans ::deep .plans__save:focus-visible,
+        .plans ::deep .plans__button:hover,
+        .plans ::deep .plans__button:focus-visible {
+            border-color: var(--netto-gold);
+        }
+
+.plans__count {
+    margin-left: 0.35rem;
+    color: var(--netto-text-muted);
+    font-weight: 500;
+}
+
+.plans__backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+}
+
+.plans__panel {
+    position: absolute;
+    top: calc(100% + 0.75rem);
+    right: 0;
+    z-index: 3;
+    display: grid;
+    gap: 0.75rem;
+    width: min(26rem, calc(100vw - 2rem));
+    max-height: calc(100vh - 13rem);
+    overflow-y: auto;
+    padding: 1rem;
+    border: 1px solid var(--netto-line);
+    border-radius: 14px;
+    background: var(--netto-surface);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
+}
+
+    /* A display set on the panel would otherwise win over the hidden attribute. */
+    .plans__panel[hidden] {
+        display: none;
+    }
+
+    .plans__panel:focus-visible {
+        outline: 2px solid var(--netto-gold);
+        outline-offset: 2px;
+    }
+
+.plans__eyebrow {
+    margin: 0;
+    color: var(--netto-text-muted);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.plans__lede,
+.plans__warning {
+    margin: -0.35rem 0 0;
+    color: var(--netto-text-muted);
+    font-size: 0.82rem;
+    line-height: 1.5;
+}
+
+.plans__warning {
+    margin: 0;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--netto-line);
+    border-radius: 10px;
+    color: var(--netto-text);
+}
+
+.plans__list {
+    display: grid;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.plan {
+    display: grid;
+    gap: 0.3rem;
+    padding: 0.5rem 0.75rem 0.5rem 0.35rem;
+    border: 1px solid var(--netto-line);
+    border-radius: 10px;
+    background: var(--netto-black);
+}
+
+/* The plan the river shows is outlined a little lighter, never in gold: gold is for active states. */
+.plan--opened {
+    border-color: var(--netto-line-input);
+}
+
+.plan__head {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+    .plan__head ::deep .plan__star {
+        color: var(--netto-gold);
+    }
+
+/* The name is edited in place: text until hovered or focused, then a field. */
+.plan__name {
+    flex: 1;
+    min-width: 0;
+    padding: 0.2rem 0.4rem;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--netto-text);
+    font: inherit;
+    font-size: 0.92rem;
+    font-weight: 600;
+}
+
+    .plan__name:hover {
+        border-color: var(--netto-line-input);
+    }
+
+    .plan__name:focus-visible {
+        border-color: var(--netto-gold);
+    }
+
+.plan__figures,
+.plan__gain,
+.plan__unreadable {
+    margin: 0 0 0 0.45rem;
+    font-size: 0.82rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.plan__pocket {
+    color: var(--netto-text);
+}
+
+.plan__reach,
+.plan__gain,
+.plan__unreadable {
+    color: var(--netto-text-muted);
+}
+
+/* More in the pocket than Today is money reaching the director: the pocket's gold. */
+.plan__gain--more {
+    color: var(--netto-gold);
+}
+
+.plan__actions,
+.plan__confirm {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem 0.5rem;
+    margin-left: 0.2rem;
+    font-size: 0.82rem;
+}
+
+.plan__in-river {
+    padding: 0 0.3rem;
+    color: var(--netto-text-muted);
+}
+
+.plans__foot {
+    display: flex;
+    justify-content: flex-end;
+}
+
+    .plans__foot ::deep .plans__done {
+        border-color: rgba(243, 238, 226, 0.2);
+        border-radius: 999px;
+        color: var(--netto-text);
+    }
+
+        .plans__foot ::deep .plans__done:hover,
+        .plans__foot ::deep .plans__done:focus-visible {
+            border-color: var(--netto-gold);
+        }

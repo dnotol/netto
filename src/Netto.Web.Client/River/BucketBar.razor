@@ -6,7 +6,8 @@
    amount is the engine's, regrouped by BucketsView. Each bucket's name opens an info bubble saying
    what it holds, and its amount says its share of the start; under them, what reaches the pocket out
    of what leaves the company (BucketsView.Reach), its bubble saying so, and, once the user has marked
-   their current setup, what the river leaves in the pocket against it (BaselineGain). A polite live
+   their current setup, the plan starred « Today », what the river leaves in the pocket against it
+   (BaselineGain), and whether the river has changes no plan holds. A polite live
    region says what reaches the pocket, and that gain, once the river has settled
    (BucketBarAnnouncement), not at every step of a slider dragged, or, while the engine refuses an
    amount, that there is no figure until it is corrected; the other buckets are read in the bar
@@ -59,6 +60,10 @@
             {
                 <p class="bucket-bar__gain bucket-bar__gain--@gain.Kind.ToString().ToLowerInvariant()">@GainText(gain)</p>
             }
+            @if (Unsaved)
+            {
+                <p class="bucket-bar__unsaved">@L[BucketBarText.Unsaved]</p>
+            }
             <p class="bucket-bar__live" aria-live="polite">@_announced</p>
         </div>
         @if (ChildContent is not null)
@@ -72,9 +77,13 @@
     [Parameter, EditorRequired]
     public RiverRun Run { get; set; } = default!;
 
-    // The run of the setup the user marked as theirs, or null before they mark one.
+    // The run of the plan starred « Today », the user's current setup, or null while none is.
     [Parameter]
     public RiverRun? Setup { get; set; }
+
+    // Whether the river has changes no saved plan holds.
+    [Parameter]
+    public bool Unsaved { get; set; }
 
     // What sits right of the figures.
     [Parameter]

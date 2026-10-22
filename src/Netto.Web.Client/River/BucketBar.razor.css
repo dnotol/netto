@@ -130,7 +130,7 @@
     font-size: 0.8rem;
 }
 
-/* Right of the figures: marking the setup, then the Composition menu. */
+/* Right of the figures: saving the plan and the saved plans, then the Composition menu. */
 .bucket-bar__actions {
     display: flex;
     flex-wrap: wrap;
@@ -139,12 +139,19 @@
     gap: 0.5rem;
 }
 
-/* What the river leaves in the pocket against the setup the user marked: muted like the line above,
+/* What the river leaves in the pocket against the plan starred « Today »: muted like the line above,
    a gain in the pocket's gold, since it is money reaching the director. */
 .bucket-bar__gain {
     margin: 0;
     color: var(--netto-text-muted);
     font-size: 0.8rem;
+}
+
+.bucket-bar__unsaved {
+    margin: 0;
+    color: var(--netto-text-muted);
+    font-size: 0.8rem;
+    font-style: italic;
 }
 
 .bucket-bar__gain--more {
