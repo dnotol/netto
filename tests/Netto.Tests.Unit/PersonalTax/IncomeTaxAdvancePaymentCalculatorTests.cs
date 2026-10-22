@@ -231,4 +231,34 @@ public class IncomeTaxAdvancePaymentCalculatorTests
 
     private static IncomeTaxAdvancePaymentResult Compute2026(decimal totalTax, TaxPrepayments prepayments) =>
         IncomeTaxAdvancePaymentCalculator.Compute(Rules2026, totalTax, 0m, prepayments);
+
+    // By 10 April, at 6%: 7,158.75 earns 429.53 (429.525 rounded half away from zero), the credit that
+    // leaves 99.99 due at 90%, under the 100 minimum; a cent less earns 429.52.
+    [Fact]
+    public void TopUpBy_2026NothingPrepaidFirstDeadline_isTheSmallestPaymentAfterWhichNoneIsDue()
+    {
+        var topUp = IncomeTaxAdvancePaymentCalculator.TopUpBy(Rules2026, TaxOn50000, 0m, new TaxPrepayments(0m, AdvancePayments.None), 0);
+
+        topUp.ShouldBe(7_158.75m);
+    }
+
+    [Fact]
+    public void TopUpBy_lastDeadline_isTheLastDeadlinesTopUp()
+    {
+        var topUp = IncomeTaxAdvancePaymentCalculator.TopUpBy(Rules2026, TaxOn50000, 0m, new TaxPrepayments(0m, AdvancePayments.None), 3);
+
+        topUp.ShouldBe(14_317.50m);
+    }
+
+    [Fact]
+    public void TopUpBy_noSurchargeDue_isNothing()
+    {
+        IncomeTaxAdvancePaymentCalculator.TopUpBy(Rules2026, TaxOn50000, 0m, new TaxPrepayments(0m, new AdvancePayments(0m, 0m, 0m, 14_317.50m)), 0).ShouldBe(0m);
+    }
+
+    [Fact]
+    public void TopUpBy_starter_isNothing()
+    {
+        IncomeTaxAdvancePaymentCalculator.TopUpBy(Rules2026, TaxOn50000, 0m, new TaxPrepayments(0m, AdvancePayments.None, Starter: true), 0).ShouldBe(0m);
+    }
 }

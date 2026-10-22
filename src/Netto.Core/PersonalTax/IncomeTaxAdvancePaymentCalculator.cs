@@ -11,9 +11,17 @@ public static class IncomeTaxAdvancePaymentCalculator
     public static IncomeTaxAdvancePaymentResult Compute(IncomeTaxAdvancePaymentRules rules, decimal totalTax, decimal taxCredits, TaxPrepayments prepayments)
     {
         var figures = Figures(rules, totalTax, taxCredits, prepayments);
-        var topUp = figures.Surcharge == 0m ? 0m : TopUp(rules, totalTax, taxCredits, prepayments, figures.SurchargeBeforeCredits);
+        var topUp = figures.Surcharge == 0m ? 0m : TopUp(rules, totalTax, taxCredits, prepayments, figures.SurchargeBeforeCredits, prepayments.Paid.ByDeadline.Count - 1);
 
         return figures with { LastDeadlineTopUp = topUp };
+    }
+
+    // The smallest payment more by that deadline, the first being 0, after which no surcharge is due:
+    // nothing when none is.
+    public static decimal TopUpBy(IncomeTaxAdvancePaymentRules rules, decimal totalTax, decimal taxCredits, TaxPrepayments prepayments, int deadline)
+    {
+        var figures = Figures(rules, totalTax, taxCredits, prepayments);
+        return figures.Surcharge == 0m ? 0m : TopUp(rules, totalTax, taxCredits, prepayments, figures.SurchargeBeforeCredits, deadline);
     }
 
     // The surcharge and the bonus without the suggested payment, which the split's search does not
@@ -62,18 +70,17 @@ public static class IncomeTaxAdvancePaymentCalculator
     // left: Tax-Calc's « VA nécessaires pour éviter la majoration ».
     private static decimal SmallestCovering(decimal left, decimal rate) => Math.Ceiling((left - 0.005m) / rate * 100m) / 100m;
 
-    // The smallest payment more by the last deadline after which no surcharge is due, to the cent:
-    // the surcharge only falls as that payment rises, and paying what covers the whole surcharge
-    // before credits there leaves none.
-    private static decimal TopUp(IncomeTaxAdvancePaymentRules rules, decimal totalTax, decimal taxCredits, TaxPrepayments prepayments, decimal beforeCredits)
+    // The smallest payment more by the deadline after which no surcharge is due, to the cent: the
+    // surcharge only falls as that payment rises, and paying what covers the whole surcharge before
+    // credits there leaves none.
+    private static decimal TopUp(IncomeTaxAdvancePaymentRules rules, decimal totalTax, decimal taxCredits, TaxPrepayments prepayments, decimal beforeCredits, int deadline)
     {
-        var last = prepayments.Paid.ByDeadline.Count - 1;
         var low = 0m;
-        var high = SmallestCovering(beforeCredits, rules.Deadlines[last].CreditRate(rules));
+        var high = SmallestCovering(beforeCredits, rules.Deadlines[deadline].CreditRate(rules));
         while (high - low > 0.01m)
         {
             var middle = Math.Floor((low + high) * 50m) / 100m;
-            if (Figures(rules, totalTax, taxCredits, WithMoreByTheLastDeadline(prepayments, middle)).Surcharge == 0m)
+            if (Figures(rules, totalTax, taxCredits, WithMoreBy(prepayments, deadline, middle)).Surcharge == 0m)
                 high = middle;
             else
                 low = middle;
@@ -82,6 +89,6 @@ public static class IncomeTaxAdvancePaymentCalculator
         return high;
     }
 
-    private static TaxPrepayments WithMoreByTheLastDeadline(TaxPrepayments prepayments, decimal more) =>
-        prepayments with { Paid = prepayments.Paid with { Fourth = prepayments.Paid.Fourth + more } };
+    private static TaxPrepayments WithMoreBy(TaxPrepayments prepayments, int deadline, decimal more) =>
+        prepayments with { Paid = prepayments.Paid.Add(deadline, more) };
 }

@@ -155,4 +155,50 @@ public class AdvancePaymentCalculatorTests
 
         result.Surcharge.ShouldBe(1_350.00m);
     }
+
+    // What cancels the 1,350 of surcharge on 20,000 of tax, paid by one deadline alone: its credit,
+    // 9% by 10 April, 4.5% by 21 December, covers it.
+    [Theory]
+    [InlineData(0, 15_000.00)]
+    [InlineData(1, 18_000.00)]
+    [InlineData(2, 22_500.00)]
+    [InlineData(3, 30_000.00)]
+    public void TopUpBy_2026NothingPaid_isWhatCancelsTheSurchargeByThatDeadline(int deadline, double expected)
+    {
+        var topUp = AdvancePaymentCalculator.TopUpBy(Rules2026, 20_000m, AdvancePayments.None, SmallPastStartUp, deadline);
+
+        topUp.ShouldBe((decimal)expected);
+    }
+
+    // The payments made earn their credits: by 10 April what the 5,000 of 10 July leave, 975 of
+    // 1,350, rounded up to the cent.
+    [Fact]
+    public void TopUpBy_2026SomePaid_isWhatCancelsWhatTheOthersLeave()
+    {
+        var topUp = AdvancePaymentCalculator.TopUpBy(Rules2026, 20_000m, new AdvancePayments(0m, 5_000m, 0m, 0m), SmallPastStartUp, 0);
+
+        topUp.ShouldBe(10_833.34m);
+    }
+
+    // The last deadline's is the one the card shows (LastDeadlineTopUp).
+    [Fact]
+    public void TopUpBy_lastDeadline_isTheLastDeadlinesTopUp()
+    {
+        var payments = new AdvancePayments(3_000m, 0m, 0m, 0m);
+
+        AdvancePaymentCalculator.TopUpBy(Rules2026, 20_000m, payments, SmallPastStartUp, 3)
+            .ShouldBe(AdvancePaymentCalculator.Compute(Rules2026, 20_000m, payments, SmallPastStartUp).LastDeadlineTopUp);
+    }
+
+    [Fact]
+    public void TopUpBy_noSurcharge_isNothing()
+    {
+        AdvancePaymentCalculator.TopUpBy(Rules2026, 20_000m, new AdvancePayments(15_000m, 0m, 0m, 0m), SmallPastStartUp, 2).ShouldBe(0m);
+    }
+
+    [Fact]
+    public void TopUpBy_exemptCompany_isNothing()
+    {
+        AdvancePaymentCalculator.TopUpBy(Rules2026, 20_000m, AdvancePayments.None, new CompanyStatus(true, true, true), 0).ShouldBe(0m);
+    }
 }
