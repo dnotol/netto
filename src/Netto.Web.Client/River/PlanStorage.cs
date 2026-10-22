@@ -188,7 +188,7 @@ internal static class PlanStorage
             new AllowanceInputs(Input(stored.Allowances.Office), Input(stored.Allowances.Internet), Input(stored.Allowances.Computer), Input(stored.Allowances.Phone)),
             new RentInputs(Input(stored.Rent.CadastralIncome), Input(stored.Rent.ShareLet), Input(stored.Rent.Rent)),
             Input(stored.Car),
-            new CopyrightInputs(Input(stored.Copyright.Royalty), Input(stored.Copyright.AverageWithinCap)),
+            new CopyrightInputs(Input(stored.Copyright.Royalty), Input(stored.Copyright.AverageWithinCap), Input(stored.Copyright.HoldsAttestation)),
             Input(stored.SmallCompany),
             Input(stored.FinancialYear),
             Input(stored.AdvancePayments),
@@ -215,7 +215,8 @@ internal static class PlanStorage
         Input(stored.Engine), Input(stored.Co2), Input(stored.NoCo2Data), Input(stored.Acquired), Input(stored.FakeHybrid), Input(stored.MatchingCarCo2),
         Input(stored.NoMatchingCar), Input(stored.SmallNaturalGas));
 
-    private static StoredCopyright Stored(CopyrightInputs copyright) => new(Stored(copyright.Royalty), Stored(copyright.AverageWithinCap));
+    private static StoredCopyright Stored(CopyrightInputs copyright) =>
+        new(Stored(copyright.Royalty), Stored(copyright.AverageWithinCap), Stored(copyright.HoldsAttestation));
 
     private static StoredPayments Stored(AdvancePaymentInputs payments) =>
         new(Stored(payments.First), Stored(payments.Second), Stored(payments.Third), Stored(payments.Fourth));
@@ -298,7 +299,7 @@ internal sealed record StoredCompositionVersion2(bool Vouchers, bool Allowances,
 
 internal sealed record StoredCompositionVersion1(bool Vouchers, bool Allowances, bool Rent);
 
-internal sealed record StoredCopyright(StoredValue<decimal> Royalty, StoredValue<bool> AverageWithinCap);
+internal sealed record StoredCopyright(StoredValue<decimal> Royalty, StoredValue<bool> AverageWithinCap, StoredValue<bool> HoldsAttestation);
 
 internal sealed record StoredVouchers(StoredValue<int> MealVoucherDays, StoredValue<decimal> EcoVouchers, StoredValue<decimal> SportCultureVouchers);
 

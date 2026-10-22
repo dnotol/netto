@@ -6,9 +6,11 @@
 
 @* The last lever before the split: a copyright royalty the company pays the director for the rights on
    works they created. The user gives the royalty for the year and says whether their copyright income
-   of the four previous years averaged at most the year's cap, met unless they say otherwise. The card
-   says how much of the royalty stays within the limits and how much passes them, which limit set it,
-   the tax apart on the first part and what the company withholds, the part beyond them going on to
+   of the four previous years averaged at most the year's cap, met unless they say otherwise, and
+   whether they hold an attestation du travail des arts for these works, none unless they say so. The
+   card says how much of the royalty stays within the limits and how much passes them, which limit set
+   it, the flat-rate costs the attestation takes off the first part, its tax apart and what the company
+   withholds, the part beyond them going on to
    Director pay, taxed as pay, then the plan with the royalty against the same plan without it, and
    where no text settles a point, the reading Netto takes. An optional module: it shows only while in
    the plan, and the word at its bottom takes it out, its values kept. The royalty is taken while
@@ -37,6 +39,12 @@
             <OriginChip Origin="Inputs.Copyright.AverageWithinCap.Origin" />
             <InfoBubble Label="@L["AverageLabel", Formats.Euros(_rules?.Cap.Value ?? 0m)]">@L["AverageHint"]</InfoBubble>
         </div>
+        <div class="copyright__tick">
+            <MudCheckBox T="bool" Value="Inputs.Copyright.HoldsAttestation.Value" ValueChanged="OnAttestationChanged" Color="Color.Primary"
+                         Label="@L["AttestationLabel"]" />
+            <OriginChip Origin="Inputs.Copyright.HoldsAttestation.Origin" />
+            <InfoBubble Label="@L["AttestationLabel"]">@L["AttestationHint"]</InfoBubble>
+        </div>
         <RefusedMessage Error="@Refused" />
         @if (_view is { HasRoyalty: true } shown)
         {
@@ -48,7 +56,9 @@
                 {
                     <p class="copyright__line">@L["TaxedApart", Formats.Euros(result.WithinLimits), Formats.Euros(shown.Tax), Formats.Euros(result.WithheldWithinLimits),
                                                   Formats.Euros(shown.AfterTax)]</p>
-                    <p class="copyright__line">@L["OnTheGross", Inputs.IncomeYear]</p>
+                    <p class="copyright__line">@L[CopyrightCardText.Costs(result), Formats.Euros(result.FlatRateCosts), Formats.Euros(result.TaxedApart?.Income ?? 0m),
+                                                  Formats.Euros(_rules?.FlatRateCosts.FirstBandCeiling.Value ?? 0m),
+                                                  Formats.Euros(_rules?.FlatRateCosts.SecondBandCeiling.Value ?? 0m), Inputs.IncomeYear]</p>
                 }
                 @if (result.TaxedAsPay > 0m)
                 {
@@ -120,6 +130,8 @@
     private Task OnRoyaltyChanged(decimal amount) => InputsChanged.InvokeAsync(Inputs.WithRoyalty(amount));
 
     private Task OnAverageChanged(bool within) => InputsChanged.InvokeAsync(Inputs.WithAverageWithinCap(within));
+
+    private Task OnAttestationChanged(bool holds) => InputsChanged.InvokeAsync(Inputs.WithAttestation(holds));
 
     private Task Remove() => InputsChanged.InvokeAsync(Inputs.TakeOutOfPlan(OptionalModule.Copyright));
 }

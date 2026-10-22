@@ -862,25 +862,28 @@ public class RiverInputsTests
     // YearSimulationCopyrightTests' royalty within its limits: 10,000 beside the example's 50,000 of pay.
     private static RiverInputs Royalty(RiverInputs inputs) => inputs.AddToPlan(OptionalModule.Copyright).WithRoyalty(10_000m);
 
+    // The average met and no attestation are Netto's assumptions until the user says otherwise.
     [Fact]
-    public void Example_hasNoRoyaltyAndAssumesTheAverageMet()
+    public void Example_hasNoRoyaltyAssumesTheAverageMetAndNoAttestation()
     {
-        RiverInputs.Example.Copyright.ShouldBe(new CopyrightInputs(new Input<decimal>(0m, InputOrigin.Example), new Input<bool>(true, InputOrigin.Default)));
+        RiverInputs.Example.Copyright.ShouldBe(new CopyrightInputs(
+            new Input<decimal>(0m, InputOrigin.Example), new Input<bool>(true, InputOrigin.Default), new Input<bool>(false, InputOrigin.Default)));
     }
 
     [Fact]
     public void WithRoyalty_makesEachTheUsers()
     {
-        var inputs = RiverInputs.Example.WithRoyalty(12_500.50m).WithAverageWithinCap(false);
+        var inputs = RiverInputs.Example.WithRoyalty(12_500.50m).WithAverageWithinCap(false).WithAttestation(true);
 
-        inputs.Copyright.ShouldBe(new CopyrightInputs(new Input<decimal>(12_500.50m, InputOrigin.Yours), new Input<bool>(false, InputOrigin.Yours)));
+        inputs.Copyright.ShouldBe(new CopyrightInputs(
+            new Input<decimal>(12_500.50m, InputOrigin.Yours), new Input<bool>(false, InputOrigin.Yours), new Input<bool>(true, InputOrigin.Yours)));
     }
 
     [Fact]
-    public void Run_royaltyReachesTheEngineWithItsAverage()
+    public void Run_royaltyReachesTheEngineWithItsAverageAndItsAttestation()
     {
-        Royalty(RiverInputs.Example).WithAverageWithinCap(false).MoveScenario().Copyright
-            .ShouldBe(new Netto.Core.Copyright.CopyrightRoyalty(10_000m) { AverageWithinCap = false });
+        Royalty(RiverInputs.Example).WithAverageWithinCap(false).WithAttestation(true).MoveScenario().Copyright
+            .ShouldBe(new Netto.Core.Copyright.CopyrightRoyalty(10_000m) { AverageWithinCap = false, HoldsAttestation = true });
     }
 
     // The split shares what the royalty leaves.

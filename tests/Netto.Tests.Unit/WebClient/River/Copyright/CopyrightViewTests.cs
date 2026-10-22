@@ -53,6 +53,19 @@ public class CopyrightViewTests
         Royalty(Within).Tax.ShouldBeInRange(1_604.99m, 1_605.02m);
     }
 
+    // With an attestation, the flat-rate costs halve what is taxed apart: the tax is about half, and all
+    // the rest of the 10,000 reaches the pocket.
+    [Fact]
+    public void Royalty_withAnAttestation_taxesHalfAndPassesTheRestToThePocket()
+    {
+        var view = Royalty(Within.WithAttestation(true));
+
+        (view.Result.FlatRateCosts, view.Tax, view.AfterTax).ShouldSatisfyAllConditions(
+            figures => figures.FlatRateCosts.ShouldBe(5_000m),
+            figures => figures.Tax.ShouldBeInRange(802.49m, 802.51m),
+            figures => figures.AfterTax.ShouldBe(10_000m - figures.Tax));
+    }
+
     // The part beyond the limits goes on to Director pay, taxed as pay there.
     [Fact]
     public void Royalty_beyondTheLimits_passesThatPartOnToDirectorPay()
@@ -122,6 +135,15 @@ public class CopyrightViewTests
     public void Comparison_royaltyWithinTheLimits_leavesMoreInThePocket()
     {
         CopyrightComparison.From(Within, Within.Run()).ShouldNotBeNull().Gain.ShouldBeGreaterThan(0m);
+    }
+
+    // The flat-rate costs add to that gain the tax apart they spare.
+    [Fact]
+    public void Comparison_royaltyWithAnAttestation_gainsMoreThanWithout()
+    {
+        var holder = Within.WithAttestation(true);
+
+        CopyrightComparison.From(holder, holder.Run()).ShouldNotBeNull().Gain.ShouldBeGreaterThan(CopyrightComparison.From(Within, Within.Run()).ShouldNotBeNull().Gain);
     }
 
     [Fact]

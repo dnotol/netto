@@ -18,6 +18,9 @@ internal static class CopyrightCardText
         _ => "Summary",
     };
 
+    // Whether the flat-rate costs came off the part within the limits, as the engine took them.
+    public static string Costs(CopyrightResult result) => result.FlatRateCosts > 0m ? "FlatRateCosts" : "OnTheGross";
+
     // What the royalty leaves in the pocket against the same plan without it: more, less, or the same.
     public static string Gain(CopyrightComparison comparison) => comparison.Gain switch
     {

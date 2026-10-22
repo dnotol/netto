@@ -37,6 +37,20 @@ public class CopyrightCardTextTests
         Missing(["SummaryNoRoyalty", "Summary", "Summary_AsPay", "Summary_AllAsPay"]).ShouldBeEmpty();
     }
 
+    // With an attestation the card says the flat-rate costs it takes; without one, that the 15% is on the
+    // whole royalty.
+    [Theory]
+    [InlineData(true, "FlatRateCosts")]
+    [InlineData(false, "OnTheGross")]
+    public void Costs_royaltyWithinTheLimits_saysWhetherTheFlatRateCostsCameOff(bool attestation, string key)
+    {
+        var inputs = RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithRoyalty(10_000m).WithAttestation(attestation);
+
+        var text = CopyrightCardText.Costs(CopyrightView.From(inputs.Run().Year!).Result);
+
+        (text, Missing([text]).Any()).ShouldBe((key, false));
+    }
+
     // What the royalty leaves against the plan without it, each way it can fall.
     [Fact]
     public void CopyrightCardResx_everyGain_hasAText()
@@ -57,8 +71,8 @@ public class CopyrightCardTextTests
     {
         string[] keys =
         [
-            "Title", "Hint", "Waiting", "Scope", "RoyaltyLabel", "RoyaltyHint", "AverageLabel", "AverageHint", "NoRoyaltyYet", "TaxedApart", "OnTheGross",
-            "TaxedAsPay", "Readings", "ComparisonTitle", "WithRoyalty", "WithoutRoyalty", "DetailsLabel", "SourcesTitle", "Remove",
+            "Title", "Hint", "Waiting", "Scope", "RoyaltyLabel", "RoyaltyHint", "AverageLabel", "AverageHint", "AttestationLabel", "AttestationHint", "NoRoyaltyYet",
+            "TaxedApart", "TaxedAsPay", "Readings", "ComparisonTitle", "WithRoyalty", "WithoutRoyalty", "DetailsLabel", "SourcesTitle", "Remove",
         ];
 
         Missing(keys).ShouldBeEmpty();

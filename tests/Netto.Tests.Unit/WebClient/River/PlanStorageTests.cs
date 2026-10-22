@@ -22,7 +22,7 @@ public class PlanStorageTests
         .WithCatalogueValue(48_500m).WithFirstRegistration(new DateOnly(2025, 6, 21)).WithCarCosts(9_250.50m).WithPrivateEnergyPaid(true).WithCarContribution(600m)
         .WithCarEngine(CarEngine.DieselPlugInHybrid).WithCarCo2(45).WithNoCo2Data(true).WithCarAcquired(new DateOnly(2025, 3, 1))
         .WithFakeHybrid(true).WithMatchingCarCo2(150).WithNoMatchingCar(true).WithSmallNaturalGas(true)
-        .WithRoyalty(12_500.50m).WithAverageWithinCap(false)
+        .WithRoyalty(12_500.50m).WithAverageWithinCap(false).WithAttestation(true)
         .WithSmallCompany(false).WithFinancialYear(FinancialYear.Second)
         .WithAdvancePayment(0, 3_000m).WithAdvancePayment(3, 1_250.25m)
         .WithDirectorPay(42_000m)
@@ -160,6 +160,18 @@ public class PlanStorageTests
     public void Read_planMissingItsCarsEngine_makesThatPlanUnreadable()
     {
         var json = Edit(PlanStorage.Write(Book(("a", "Plan 1", RiverInputs.Example))), document => document["plans"]![0]!["inputs"]!["car"]!.AsObject().Remove("engine"));
+
+        PlanStorage.Read(json).Book.Plans.Single().Readable.ShouldBeFalse();
+    }
+
+    // A plan saved with the royalty's first build, before its attestation was asked, is not read as a
+    // plan without one: it does not open, as the car's first build's did not (decided unattended,
+    // 2026-10-22).
+    [Fact]
+    public void Read_planMissingItsRoyaltysAttestation_makesThatPlanUnreadable()
+    {
+        var json = Edit(PlanStorage.Write(Book(("a", "Plan 1", RiverInputs.Example))),
+            document => document["plans"]![0]!["inputs"]!["copyright"]!.AsObject().Remove("holdsAttestation"));
 
         PlanStorage.Read(json).Book.Plans.Single().Readable.ShouldBeFalse();
     }

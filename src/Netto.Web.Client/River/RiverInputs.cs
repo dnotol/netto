@@ -70,7 +70,7 @@ public sealed record RiverInputs(
             new Input<CarEngine>(CarEngine.Electric, InputOrigin.Default), new Input<int>(0, InputOrigin.Example), new Input<bool>(false, InputOrigin.Default),
             new Input<DateOnly>(new DateOnly(ExampleYear, 1, 1), InputOrigin.Example), new Input<bool>(false, InputOrigin.Default),
             new Input<int>(0, InputOrigin.Example), new Input<bool>(false, InputOrigin.Default), new Input<bool>(false, InputOrigin.Default)),
-        new CopyrightInputs(ExampleNothing, new Input<bool>(true, InputOrigin.Default)),
+        new CopyrightInputs(ExampleNothing, new Input<bool>(true, InputOrigin.Default), new Input<bool>(false, InputOrigin.Default)),
         new Input<bool>(true, InputOrigin.Default),
         new Input<FinancialYear>(River.FinancialYear.FifthOrLater, InputOrigin.Default),
         new AdvancePaymentInputs(ExampleNothing, ExampleNothing, ExampleNothing, ExampleNothing),
@@ -146,6 +146,8 @@ public sealed record RiverInputs(
     public RiverInputs WithRoyalty(decimal amount) => this with { Copyright = Copyright with { Royalty = Yours(amount) } };
 
     public RiverInputs WithAverageWithinCap(bool within) => this with { Copyright = Copyright with { AverageWithinCap = Yours(within) } };
+
+    public RiverInputs WithAttestation(bool holds) => this with { Copyright = Copyright with { HoldsAttestation = Yours(holds) } };
 
     public RiverInputs WithSmallCompany(bool smallCompany) => this with { SmallCompany = Yours(smallCompany) };
 
@@ -345,11 +347,11 @@ public sealed record CarInputs(
 }
 
 // The copyright royalty the company pays the director as the user enters it: the gross royalty for
-// the year, and whether their copyright income of the four previous years averaged at most the
-// year's cap.
-public sealed record CopyrightInputs(Input<decimal> Royalty, Input<bool> AverageWithinCap)
+// the year, whether their copyright income of the four previous years averaged at most the year's
+// cap, and whether they hold an attestation du travail des arts for these works.
+public sealed record CopyrightInputs(Input<decimal> Royalty, Input<bool> AverageWithinCap, Input<bool> HoldsAttestation)
 {
-    public CopyrightRoyalty Values => new(Royalty.Value) { AverageWithinCap = AverageWithinCap.Value };
+    public CopyrightRoyalty Values => new(Royalty.Value) { AverageWithinCap = AverageWithinCap.Value, HoldsAttestation = HoldsAttestation.Value };
 }
 
 // A value of the river with where it comes from.
