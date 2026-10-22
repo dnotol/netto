@@ -108,6 +108,33 @@
   <data name="PayWithheldGiven" xml:space="preserve">
     <value>You gave {0} as withheld over the year; the months show what the key formula withholds.</value>
   </data>
+  <data name="ContributionsHeading" xml:space="preserve">
+    <value>Social contributions each quarter</value>
+  </data>
+  <data name="ContributionsLine" xml:space="preserve">
+    <value>Each quarter: {0} on this year's income, which pays the year's contributions as it goes.</value>
+  </data>
+  <data name="ContributionsLine_Company" xml:space="preserve">
+    <value>Each quarter: {0} on this year's income, paid by the company on your behalf.</value>
+  </data>
+  <data name="QuartersLeft" xml:space="preserve">
+    <value>Quarters still to come in {1}: {0} of 4.</value>
+  </data>
+  <data name="BilledLabel" xml:space="preserve">
+    <value>Billed by your fund each quarter in {0}</value>
+  </data>
+  <data name="BilledHint" xml:space="preserve">
+    <value>The provisional contribution on your social insurance fund's notice. It rests on your income of three years before, revalued, so it can differ from what this year's income costs; the difference is regularised once your fund knows this year's income. Netto's figures use this year's.</value>
+  </data>
+  <data name="Regularisation_Pay" xml:space="preserve">
+    <value>Once your fund knows this year's income: {0} more to pay, the regularisation.</value>
+  </data>
+  <data name="Regularisation_Refund" xml:space="preserve">
+    <value>Once your fund knows this year's income: {0} back, the regularisation.</value>
+  </data>
+  <data name="Regularisation_Nothing" xml:space="preserve">
+    <value>What your fund bills covers this year's contributions: nothing to regularise.</value>
+  </data>
   <data name="AfterHeading" xml:space="preserve">
     <value>After the year</value>
   </data>

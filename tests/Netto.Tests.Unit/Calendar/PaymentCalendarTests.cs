@@ -201,6 +201,65 @@ public class PaymentCalendarTests
         company.Balance.ShouldBe(-5_000.00m);
     }
 
+    // The contributions on the example's pay are billed as four rounded quarters (GrossToNet).
+    [Fact]
+    public void Of_example_givesAQuarterOfTheYearsContributions()
+    {
+        var year = YearSimulation.Run(Example).Value.ShouldNotBeNull();
+
+        var contributions = PaymentCalendar.Of(year, On22October).Contributions;
+
+        (contributions.EachQuarter * 4, contributions.PaidByCompany, contributions.Billed, contributions.Regularisation)
+            .ShouldBe((year.DirectorPay.SocialContributions, false, null, null));
+    }
+
+    // A quarter is past once it has ended: the fourth is under way on 22 October.
+    [Fact]
+    public void Of_exampleOn22October_marksTheFirstThreeQuartersPast()
+    {
+        Of(Example, On22October).Contributions.Quarters.Select(quarter => quarter.Past).ShouldBe([true, true, true, false]);
+    }
+
+    [Fact]
+    public void Of_companyPaysTheContributions_saysSo()
+    {
+        Of(Example with { ContributionsPaidBy = Netto.Core.SocialContributions.ContributionsPaidBy.Company }, On22October).Contributions.PaidByCompany.ShouldBeTrue();
+    }
+
+    // What the fund bills each quarter, four times, against the final contribution: the rest is
+    // regularised, to pay when the bills fall short.
+    [Fact]
+    public void WithBilled_lessThanTheFinal_leavesTheRestToPay()
+    {
+        var calendar = Of(Example, On22October);
+        var final = calendar.Contributions.EachQuarter * 4;
+
+        var contributions = calendar.WithBilled(2_000m).Value.ShouldNotBeNull().Contributions;
+
+        (contributions.Billed, contributions.Regularisation).ShouldBe((2_000m, final - 8_000m));
+    }
+
+    [Fact]
+    public void WithBilled_moreThanTheFinal_refundsTheExcess()
+    {
+        var calendar = Of(Example, On22October);
+        var final = calendar.Contributions.EachQuarter * 4;
+
+        calendar.WithBilled(5_000m).Value.ShouldNotBeNull().Contributions.Regularisation.ShouldBe(final - 20_000m);
+    }
+
+    [Fact]
+    public void WithBilled_none_leavesNoRegularisation()
+    {
+        Of(Example, On22October).WithBilled(null).Value.ShouldNotBeNull().Contributions.Regularisation.ShouldBeNull();
+    }
+
+    [Fact]
+    public void WithBilled_negative_isRefused()
+    {
+        Of(Example, On22October).WithBilled(-1m).ShouldBe((null, PaymentCalendar.BilledContributionsNegative));
+    }
+
     [Fact]
     public void Of_payAlone_hasTheDirectorsBalanceAlone()
     {

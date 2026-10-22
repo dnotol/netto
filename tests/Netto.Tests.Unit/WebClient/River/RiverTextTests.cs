@@ -139,6 +139,7 @@ public class RiverTextTests
             CarCalculator.Co2Negative, CarCalculator.Co2Missing, CarCalculator.MatchingCarCo2Negative, CarCalculator.MatchingCarCo2Missing,
             CarCalculator.AcquiredAfterYear, CarCalculator.PlugInFuelCapped,
             CopyrightCalculator.RoyaltyNegative, CopyrightCalculator.CreativeShareOutOfRange,
+            Netto.Core.Calendar.PaymentCalendar.BilledContributionsNegative,
         };
 
         Missing(RefusedMessageResources, errors.Select(RefusedMessageText.Error)).ShouldBeEmpty();

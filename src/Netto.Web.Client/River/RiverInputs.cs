@@ -37,8 +37,14 @@ public sealed record RiverInputs(
     Input<decimal> Reserve,
     Input<WithholdingCategory> DividendCategory,
     Input<decimal> EarlierProfits,
-    Input<ContributionsPaidBy> ContributionsPaidBy)
+    Input<ContributionsPaidBy> ContributionsPaidBy,
+    Input<decimal?> BilledContributions)
 {
+    // What the social insurance fund bills each quarter as provisional contributions, from its notice:
+    // none until the user gives it, with no example, since it rests on the income of three years
+    // before. Only the calendar reads it; the river's figures use the final contribution.
+    public static Input<decimal?> NoBilledContributions { get; } = new(null, InputOrigin.Yours);
+
     // The only year with every layer's amounts; choosing the year is a later item.
     private const int ExampleYear = 2026;
 
@@ -83,7 +89,8 @@ public sealed record RiverInputs(
         new Input<decimal>(0m, InputOrigin.Example),
         new Input<WithholdingCategory>(WithholdingCategory.VvprbisThirdYearOnwards, InputOrigin.Default),
         new Input<decimal>(0m, InputOrigin.Example),
-        new Input<ContributionsPaidBy>(Core.SocialContributions.ContributionsPaidBy.Director, InputOrigin.Default));
+        new Input<ContributionsPaidBy>(Core.SocialContributions.ContributionsPaidBy.Director, InputOrigin.Default),
+        NoBilledContributions);
 
     // The most the split can give as pay: the profit before pay, what the vouchers, the expense
     // allowances, the rent and the car in the plan leave of what the company earns, never below zero.
@@ -182,6 +189,8 @@ public sealed record RiverInputs(
     public RiverInputs WithEarlierProfits(decimal earlierProfits) => this with { EarlierProfits = Yours(earlierProfits) };
 
     public RiverInputs WithContributionsPaidBy(ContributionsPaidBy paidBy) => this with { ContributionsPaidBy = Yours(paidBy) };
+
+    public RiverInputs WithBilledContributions(decimal? billed) => this with { BilledContributions = Yours(billed) };
 
     public bool InPlan(OptionalModule module) => Composition.Holds(module);
 

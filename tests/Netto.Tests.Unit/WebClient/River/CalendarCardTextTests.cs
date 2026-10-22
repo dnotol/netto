@@ -60,6 +60,7 @@ public class CalendarCardTextTests
     {
         Text(CalendarCardText.CompanyBalance(balance)).ShouldNotBeNull();
         Text(CalendarCardText.DirectorBalance(balance)).ShouldNotBeNull();
+        Text(CalendarCardText.Regularisation(balance)).ShouldNotBeNull();
     }
 
     [Fact]

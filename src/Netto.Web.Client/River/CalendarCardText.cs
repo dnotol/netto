@@ -16,6 +16,9 @@ internal static class CalendarCardText
 
     public static string DirectorBalance(decimal balance) => $"DirectorBalance_{Balance(balance)}";
 
+    // What the year's contributions leave over what the fund bills: more to pay, back, or nothing.
+    public static string Regularisation(decimal regularisation) => $"Regularisation_{Balance(regularisation)}";
+
     private static string Balance(decimal balance) => balance switch
     {
         > 0m => "Pay",

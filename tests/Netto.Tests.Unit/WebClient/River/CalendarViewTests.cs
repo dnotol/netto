@@ -116,6 +116,31 @@ public class CalendarViewTests
     }
 
     [Fact]
+    public void From_exampleOn22October_hasOneQuarterLeftAndNothingBilled()
+    {
+        var view = View(RiverInputs.Example, On22October);
+
+        (view.QuartersLeft, view.Contributions.Billed, view.Contributions.Regularisation, view.BilledRefused).ShouldBe((1, null, null, null));
+    }
+
+    [Fact]
+    public void From_billedGiven_regularisesWhatTheYearLeavesOverIt()
+    {
+        var view = View(RiverInputs.Example.WithBilledContributions(2_000m), On22October);
+
+        view.Contributions.Regularisation.ShouldBe(view.Contributions.EachQuarter * 4 - 8_000m);
+    }
+
+    // A refused bill leaves the rest of the calendar, with no regularisation.
+    [Fact]
+    public void From_negativeBilled_isRefusedOnTheCard()
+    {
+        var view = View(RiverInputs.Example.WithBilledContributions(-1m), On22October);
+
+        (view.BilledRefused, view.Contributions.Regularisation, view.Rows.Count).ShouldBe((Netto.Core.Calendar.PaymentCalendar.BilledContributionsNegative, null, 1));
+    }
+
+    [Fact]
     public void From_refusedInput_isNone()
     {
         var inputs = RiverInputs.Example.WithReserve(-1m);

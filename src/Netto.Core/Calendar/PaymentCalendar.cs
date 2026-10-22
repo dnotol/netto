@@ -3,27 +3,43 @@ using Netto.Core.DirectorPay;
 using Netto.Core.PersonalTax;
 using Netto.Core.Rules;
 using Netto.Core.Simulation;
+using Netto.Core.SocialContributions;
 
 namespace Netto.Core.Calendar;
 
 // When the year's payments fall, seen on a date (Today): the company's advance payments on its
 // corporate tax and the director's on the income tax on their pay, each by the income year's four
-// deadlines; the director's pay month by month, as the pay statement gives it; and after the year,
-// the balance on each assessment of the following tax year, to pay when positive, refunded when
-// negative, on the day the administration sets. A record beside the ledger, as the pay statement is:
-// a step is the year's total, the calendar says when it is paid. Company and CompanyBalance are null
-// for a river that starts at the pay. Every figure is the year's own; the calendar only places it in
-// time, but for the company's balance, its corporate tax with the surcharge less what it paid in
-// advance (art. 304, §2, al. 2, which refunds the excess).
+// deadlines; the director's pay month by month, as the pay statement gives it; INASTI's quarters;
+// and after the year, the balance on each assessment of the following tax year, to pay when positive,
+// refunded when negative, on the day the administration sets. A record beside the ledger, as the pay
+// statement is: a step is the year's total, the calendar says when it is paid. Company and
+// CompanyBalance are null for a river that starts at the pay. Every figure is the year's own; the
+// calendar only places it in time, but for the company's balance, its corporate tax with the
+// surcharge less what it paid in advance (art. 304, §2, al. 2, which refunds the excess), and the
+// contributions' regularisation once the user gives what the fund bills (WithBilled).
 public sealed record PaymentCalendar(
     int IncomeYear,
     DateOnly Today,
     AdvancePaymentSchedule? Company,
     AdvancePaymentSchedule Director,
     IReadOnlyList<CalendarMonth> Months,
+    ContributionQuarters Contributions,
     AssessmentDue? CompanyBalance,
     AssessmentDue DirectorBalance)
 {
+    public const string BilledContributionsNegative = "billed_contributions_negative";
+
+    // The calendar with what the social insurance fund bills each quarter as provisional
+    // contributions, from its notice, none until given: they rest on the income of three years
+    // before, which Netto does not hold, and the decisions keep the final contribution on the year's
+    // income. Their regularisation is what the year's contributions leave over four of them.
+    public (PaymentCalendar? Value, string? Error) WithBilled(decimal? billedEachQuarter) => billedEachQuarter switch
+    {
+        < 0m => (null, BilledContributionsNegative),
+        { } billed => (this with { Contributions = Contributions with { Billed = billed, Regularisation = Contributions.EachQuarter * 4 - billed * 4 } }, null),
+        null => (this with { Contributions = Contributions with { Billed = null, Regularisation = null } }, null),
+    };
+
     public static PaymentCalendar Of(YearResult year, DateOnly today)
     {
         var incomeYear = year.Scenario.IncomeYear;
@@ -55,6 +71,7 @@ public sealed record PaymentCalendar(
             null,
             AdvancePaymentSchedule.Of(rules.Deadlines.Select(deadline => deadline.Date).ToList(), paid, payments.TopUps, payments.Surcharge, payments.Exempt, today),
             [.. pay.Statement.Months.Select(month => CalendarMonth.Of(pay.IncomeYear, month, today))],
+            ContributionQuarters.Of(pay, today),
             null,
             new AssessmentDue(pay.IncomeYear + 1, pay.Assessment.Balance, pay.Assessment.Source));
     }
@@ -75,6 +92,35 @@ public sealed record CalendarMonth(DateOnly Month, PayStatementMonth Pay, bool P
         return new CalendarMonth(month, pay, month.AddMonths(1) <= today);
     }
 }
+
+// INASTI's quarters of the year, each from its first day and past once ended, and a quarter of the
+// final contribution on the year's income, which INASTI bills as four rounded quarters
+// (SocialContributionCalculator.Billed), so four of them are the year's: what pays the year as it
+// goes. PaidByCompany when the company pays them on the director's behalf. Billed is what the fund
+// bills each quarter as provisional contributions, once the user gives it, and Regularisation what
+// the year's contributions leave over four of those, to pay when positive, refunded when negative,
+// once the fund knows the year's income; the day of each quarter's payment is not modelled. Source is
+// INASTI's leaflet, which gives both kinds of contribution.
+public sealed record ContributionQuarters(
+    IReadOnlyList<CalendarQuarter> Quarters, decimal EachQuarter, bool PaidByCompany, decimal? Billed, decimal? Regularisation, Source Source)
+{
+    private const int QuartersInYear = 4;
+
+    internal static ContributionQuarters Of(GrossToNetResult pay, DateOnly today)
+    {
+        var rules = SocialContributionRules.For(pay.IncomeYear)
+            ?? throw new ArgumentException($"Income year {pay.IncomeYear} has no social contribution rules.", nameof(pay));
+        var quarters = Enumerable.Range(0, QuartersInYear)
+            .Select(i => new DateOnly(pay.IncomeYear, 1 + 3 * i, 1))
+            .Select(from => new CalendarQuarter(from, from.AddMonths(3) <= today))
+            .ToList();
+
+        return new ContributionQuarters(quarters, pay.SocialContributions / QuartersInYear, pay.ContributionsPaidByCompany > 0m, null, null, rules.Source);
+    }
+}
+
+// One quarter of the year, from its first day, and whether it has ended on the calendar's date.
+public sealed record CalendarQuarter(DateOnly From, bool Past);
 
 // The balance an assessment of the tax year leaves, to pay when positive, refunded when negative, with
 // the text it follows. The administration sets its day.

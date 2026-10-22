@@ -32,8 +32,9 @@ internal sealed record PlanBook(IReadOnlyList<SavedPlan> Plans, string? Today, s
 // a plan with a default in place of what was saved. A document that cannot be read at all, or comes
 // from a newer version, is refused whole. A document of an older version is read in its own format,
 // each plan as it was saved, and is written back in this one: version 1 held no company car, so its
-// plans are read as plans without one (decided 2026-10-22), and versions 1 and 2 no copyright royalty,
-// so theirs are read without one. The car's engine, CO2, order date and statuses joined version 2
+// plans are read as plans without one (decided 2026-10-22), versions 1 and 2 no copyright royalty,
+// so theirs are read without one, and versions 1 to 3 no provisional contributions billed by the fund,
+// so theirs are read with none given. The car's engine, CO2, order date and statuses joined version 2
 // without raising it, since version 2 had not left the car's story branch; a plan saved by the car's
 // first build does not open (operator, 2026-10-22). The rest of the royalty's story joins version 3
 // the same way (decided unattended, 2026-10-22).
@@ -44,8 +45,10 @@ internal static class PlanStorage
     // Where a document that cannot be read is kept aside before anything is written over it.
     public const string UnreadableKey = "netto.plans.unreadable";
 
-    // 2: the company car. 3: the copyright royalty.
-    public const int Version = 3;
+    // 2: the company car. 3: the copyright royalty. 4: what the fund bills each quarter.
+    public const int Version = 4;
+
+    private const int Version3 = 3;
 
     private const int Version1 = 1;
 
@@ -67,12 +70,13 @@ internal static class PlanStorage
             return (PlanBook.Empty, true);
         }
 
-        if (stored is null || stored.Version is not (Version or Version2 or Version1))
+        if (stored is null || stored.Version is not (Version or Version3 or Version2 or Version1))
             return (PlanBook.Empty, true);
 
         var plans = stored.Plans.Select(plan => stored.Version switch
         {
             Version => Plan(plan),
+            Version3 => PlanOfOlderVersion(plan, PlanJson.Default.StoredInputsVersion3, FromVersion3),
             Version2 => PlanOfOlderVersion(plan, PlanJson.Default.StoredInputsVersion2, FromVersion2),
             _ => PlanOfOlderVersion(plan, PlanJson.Default.StoredInputsVersion1, FromVersion1),
         }).ToList();
@@ -107,7 +111,8 @@ internal static class PlanStorage
         }
     }
 
-    // A plan of version 1, which held no car and no royalty: out of the plan, with the example's values.
+    // A plan of version 1, which held no car and no royalty: out of the plan, with the example's values,
+    // and no billed contributions: none given.
     private static StoredInputs FromVersion1(StoredInputsVersion1 stored) => new(
         stored.IncomeYear,
         stored.Company,
@@ -126,9 +131,11 @@ internal static class PlanStorage
         stored.Reserve,
         stored.DividendCategory,
         stored.EarlierProfits,
-        stored.ContributionsPaidBy);
+        stored.ContributionsPaidBy,
+        Stored(RiverInputs.Example.BilledContributions));
 
-    // A plan of version 2, which held no royalty: out of the plan, with the example's values.
+    // A plan of version 2, which held no royalty: out of the plan, with the example's values, and no
+    // billed contributions: none given.
     private static StoredInputs FromVersion2(StoredInputsVersion2 stored) => new(
         stored.IncomeYear,
         stored.Company,
@@ -147,7 +154,30 @@ internal static class PlanStorage
         stored.Reserve,
         stored.DividendCategory,
         stored.EarlierProfits,
-        stored.ContributionsPaidBy);
+        stored.ContributionsPaidBy,
+        Stored(RiverInputs.Example.BilledContributions));
+
+    // A plan of version 3, which held no billed contributions: none given.
+    private static StoredInputs FromVersion3(StoredInputsVersion3 stored) => new(
+        stored.IncomeYear,
+        stored.Company,
+        stored.Composition,
+        stored.Vouchers,
+        stored.Allowances,
+        stored.Rent,
+        stored.Car,
+        stored.Copyright,
+        stored.SmallCompany,
+        stored.FinancialYear,
+        stored.AdvancePayments,
+        stored.DirectorPay,
+        stored.Municipality,
+        stored.TaxPrepayments,
+        stored.Reserve,
+        stored.DividendCategory,
+        stored.EarlierProfits,
+        stored.ContributionsPaidBy,
+        Stored(RiverInputs.Example.BilledContributions));
 
     private static StoredInputs Stored(RiverInputs inputs) => new(
         inputs.IncomeYear,
@@ -167,7 +197,8 @@ internal static class PlanStorage
         Stored(inputs.Reserve),
         Stored(inputs.DividendCategory),
         Stored(inputs.EarlierProfits),
-        Stored(inputs.ContributionsPaidBy));
+        Stored(inputs.ContributionsPaidBy),
+        Stored(inputs.BilledContributions));
 
     // Null when the year has no municipal rates or no longer lists the municipality saved: a plan is
     // never opened with another rate than the one it was saved with.
@@ -199,7 +230,8 @@ internal static class PlanStorage
             Input(stored.Reserve),
             Input(stored.DividendCategory),
             Input(stored.EarlierProfits),
-            Input(stored.ContributionsPaidBy));
+            Input(stored.ContributionsPaidBy),
+            Input(stored.BilledContributions));
     }
 
     private static StoredValue<T> Stored<T>(Input<T> input) => new(input.Value, input.Origin);
@@ -226,12 +258,34 @@ internal static class PlanStorage
         new(Input(stored.First), Input(stored.Second), Input(stored.Third), Input(stored.Fourth));
 }
 
-// The stored document and plan, version 3. Renaming or removing a member changes the format.
+// The stored document and plan, version 4. Renaming or removing a member changes the format.
 internal sealed record StoredBook(int Version, string? Today, string? Opened, IReadOnlyList<StoredPlan> Plans);
 
 internal sealed record StoredPlan(string Id, string Name, JsonElement Inputs);
 
 internal sealed record StoredInputs(
+    int IncomeYear,
+    StoredCompany? Company,
+    StoredComposition Composition,
+    StoredVouchers Vouchers,
+    StoredAllowances Allowances,
+    StoredRent Rent,
+    StoredCar Car,
+    StoredCopyright Copyright,
+    StoredValue<bool> SmallCompany,
+    StoredValue<FinancialYear> FinancialYear,
+    StoredPayments AdvancePayments,
+    StoredValue<decimal> DirectorPay,
+    StoredMunicipality Municipality,
+    StoredTaxPrepayments TaxPrepayments,
+    StoredValue<decimal> Reserve,
+    StoredValue<WithholdingCategory> DividendCategory,
+    StoredValue<decimal> EarlierProfits,
+    StoredValue<ContributionsPaidBy> ContributionsPaidBy,
+    StoredValue<decimal?> BilledContributions);
+
+// A plan as version 3 stored it: no billed contributions.
+internal sealed record StoredInputsVersion3(
     int IncomeYear,
     StoredCompany? Company,
     StoredComposition Composition,
@@ -342,6 +396,7 @@ internal sealed record StoredTaxPrepayments(StoredValue<decimal?> Withheld, Stor
     UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow)]
 [JsonSerializable(typeof(StoredBook))]
 [JsonSerializable(typeof(StoredInputs))]
+[JsonSerializable(typeof(StoredInputsVersion3))]
 [JsonSerializable(typeof(StoredInputsVersion2))]
 [JsonSerializable(typeof(StoredInputsVersion1))]
 internal sealed partial class PlanJson : JsonSerializerContext;

@@ -17,9 +17,17 @@ internal sealed record CalendarView(
     CalendarTax<TaxSurchargeState> Director,
     CalendarRow? Next,
     CalendarPay Pay,
+    ContributionQuarters Contributions,
     AssessmentDue? CompanyBalance,
     AssessmentDue DirectorBalance)
 {
+    // The engine's refusal of what the user says the fund bills, shown on the card's field; the
+    // calendar then shows no regularisation.
+    public string? BilledRefused { get; init; }
+
+    // The quarters of the year not ended yet.
+    public int QuartersLeft => Contributions.Quarters.Count(quarter => !quarter.Past);
+
     // None while the engine refuses an input: there is no year to place.
     public static CalendarView? From(RiverInputs inputs, RiverRun run, DateOnly today)
     {
@@ -31,6 +39,9 @@ internal sealed record CalendarView(
         };
         if (calendar is null || run.Pay is not { } directorPay)
             return null;
+
+        var (billed, billedRefused) = calendar.WithBilled(inputs.BilledContributions.Value);
+        calendar = billed ?? calendar;
 
         var company = calendar.Company;
         var director = calendar.Director;
@@ -47,8 +58,9 @@ internal sealed record CalendarView(
             Tax(SurchargeStates.Of(directorPay.AdvancePayments), director),
             rows.FirstOrDefault(row => !row.Past),
             CalendarPay.Of(calendar.Months, directorPay.Assessment),
+            calendar.Contributions,
             calendar.CompanyBalance,
-            calendar.DirectorBalance);
+            calendar.DirectorBalance) { BilledRefused = billedRefused };
     }
 
     private static CalendarTax<TState> Tax<TState>(TState state, AdvancePaymentSchedule schedule) where TState : struct, Enum =>
