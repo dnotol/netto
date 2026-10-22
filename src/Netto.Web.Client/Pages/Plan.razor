@@ -41,6 +41,7 @@
         <RefusedMessage Error="@Refused(RiverModule.River)" />
 
         <div id="river" class="river__flow" tabindex="-1" @ref="_river">
+            <MovesCard Today="Plans.TodayPlan?.Inputs" Inputs="_inputs" InputsChanged="OnInputsChanged" />
             <CompanyYearCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Refused="@Refused(RiverModule.CompanyYear)" />
             @if (_inputs.Composition.Count == 0)
             {

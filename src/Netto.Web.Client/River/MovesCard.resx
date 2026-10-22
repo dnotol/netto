@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve">
+    <value>Your moves</value>
+  </data>
+  <data name="Help" xml:space="preserve">
+    <value>What Netto would change in Today, your current setup, to leave more in your pocket. Each move adds what it says on top of the moves above it, so together they add up to the whole plan's gain.</value>
+  </data>
+  <data name="Summary" xml:space="preserve">
+    <value>{0} more than Today</value>
+  </data>
+  <data name="State_NoToday" xml:space="preserve">
+    <value>Save your current setup with « Save this plan » and star it as Today: the moves are measured from it.</value>
+  </data>
+  <data name="State_StartsAtPay" xml:space="preserve">
+    <value>Today starts at your pay: open it from Plans and enter its company's year to see the moves.</value>
+  </data>
+  <data name="State_Refused" xml:space="preserve">
+    <value>An amount of Today is refused: open it from Plans and correct it to see the moves.</value>
+  </data>
+  <data name="State_AlreadyBest" xml:space="preserve">
+    <value>Today is already the best Netto finds.</value>
+  </data>
+  <data name="State_Moves" xml:space="preserve">
+    <value>From Today, your current setup:</value>
+  </data>
+  <data name="Move_Pay" xml:space="preserve">
+    <value>Pay yourself {0} instead of {1}</value>
+  </data>
+  <data name="Gain" xml:space="preserve">
+    <value>{0} more</value>
+  </data>
+  <data name="Apply" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="ApplyLabel" xml:space="preserve">
+    <value>Apply: {0}</value>
+  </data>
+  <data name="Applied" xml:space="preserve">
+    <value>In the river</value>
+  </data>
+  <data name="Total" xml:space="preserve">
+    <value>Together: {0} more than Today.</value>
+  </data>
+</root>

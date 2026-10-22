@@ -1,0 +1,72 @@
+@using Netto.Core.Simulation
+@inject IStringLocalizer<MovesCard> L
+
+@* What Netto would change in the plan starred « Today », the user's current setup, to leave more in
+   the pocket: the engine's moves (MoveSearch, through MovesView), each adding what it says on top of
+   the ones above it, and their total. « Apply » sets the river's values to the move's; Today stays as
+   it was saved. The moves are found once per Today, the search running the split at every move; which
+   ones the river holds is read at each change. Without a Today, or while Netto cannot run it, the
+   card says why. *@
+<ModuleCard Name="moves" Title="@L["Title"]" Summary="@Summary" Help="@L["Help"]">
+    <p class="moves__state">@L[MovesCardText.State(_view.State)]</p>
+    @if (_view.State == MovesState.Moves)
+    {
+        <ol class="moves__list">
+            @foreach (var move in _view.Moves)
+            {
+                <li class="moves__move">
+                    <span class="moves__what">@What(move)</span>
+                    <span class="moves__gain">@L["Gain", Formats.Euros(move.Gain)]</span>
+                    @if (MovesView.Applied(move, Inputs))
+                    {
+                        <span class="moves__applied">@L["Applied"]</span>
+                    }
+                    else
+                    {
+                        <MudButton Variant="Variant.Outlined" Size="Size.Small" Class="moves__apply" OnClick="@(() => Apply(move))"
+                                   aria-label="@L["ApplyLabel", What(move)]">@L["Apply"]</MudButton>
+                    }
+                </li>
+            }
+        </ol>
+        <p class="moves__total">@L["Total", Formats.Euros(_view.Total)]</p>
+    }
+</ModuleCard>
+
+@code {
+    // The plan starred « Today », or null while none is.
+    [Parameter]
+    public RiverInputs? Today { get; set; }
+
+    // The river as it is, to tell the moves it holds.
+    [Parameter, EditorRequired]
+    public RiverInputs Inputs { get; set; } = default!;
+
+    // The river with a move applied.
+    [Parameter]
+    public EventCallback<RiverInputs> InputsChanged { get; set; }
+
+    private MovesView _view = MovesView.Of(null);
+    private RiverInputs? _foundFor;
+    private bool _found;
+
+    protected override void OnParametersSet()
+    {
+        if (_found && Today == _foundFor)
+            return;
+
+        _view = MovesView.Of(Today);
+        _foundFor = Today;
+        _found = true;
+    }
+
+    private string? Summary => _view.State == MovesState.Moves ? L["Summary", Formats.Euros(_view.Total)].Value : null;
+
+    private string What(PlannedMove move) => move.Move switch
+    {
+        PayMove pay => L[MovesCardText.Move(pay), Formats.Euros(pay.Pay), Formats.Euros(_view.TodayPay)],
+        _ => "",
+    };
+
+    private Task Apply(PlannedMove move) => InputsChanged.InvokeAsync(MovesView.Apply(move, Inputs));
+}

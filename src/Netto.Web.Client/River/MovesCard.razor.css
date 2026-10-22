@@ -1,0 +1,60 @@
+/* ::deep reaches the MudButtons, which carry no scope attribute of their own. */
+.moves__state,
+.moves__total {
+    margin: 0;
+    color: var(--netto-text-muted);
+    font-size: 0.9rem;
+}
+
+.moves__list {
+    display: grid;
+    gap: 0.5rem;
+    margin: 0.75rem 0;
+    padding: 0;
+    list-style: none;
+}
+
+/* One row per move: what changes, what it adds, and Apply. */
+.moves__move {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    align-items: center;
+    gap: 0.5rem 1rem;
+    padding: 0.6rem 0.9rem;
+    border: 1px solid var(--netto-line);
+    border-radius: 10px;
+    background: var(--netto-black);
+}
+
+
+.moves__what {
+    font-size: 0.95rem;
+}
+
+/* What a move adds is money reaching the director: the pocket's gold. */
+.moves__gain {
+    color: var(--netto-gold);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.moves__applied {
+    color: var(--netto-text-muted);
+    font-size: 0.85rem;
+    white-space: nowrap;
+}
+
+.moves__move ::deep .moves__apply {
+    border-color: rgba(243, 238, 226, 0.2);
+    border-radius: 999px;
+    color: var(--netto-text);
+}
+
+    .moves__move ::deep .moves__apply:hover,
+    .moves__move ::deep .moves__apply:focus-visible {
+        border-color: var(--netto-gold);
+    }
+
+.moves__total {
+    color: var(--netto-text);
+}
