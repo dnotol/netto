@@ -115,7 +115,7 @@
         </div>
         <dl class="balance__lines">
             <div class="balance__line">
-                <dt>@L[PaySlipText.FinalTax(_view.TaxedWithOtherIncome)]</dt>
+                <dt>@L[PaySlipText.FinalTax(_view.TaxedWithOtherIncome, _view.TaxedApart)]</dt>
                 <dd>@Formats.Euros(_view.Balance.FinalTax)</dd>
             </div>
             @if (_view.TaxedWithOtherIncome)

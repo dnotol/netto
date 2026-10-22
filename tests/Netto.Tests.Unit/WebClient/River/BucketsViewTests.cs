@@ -401,6 +401,15 @@ public class BucketsViewTests
         BucketsView.From(withRoyalty).ShouldNotBeNull().Buckets.Single(bucket => bucket.Key == "taxes_on_pay").Amount.ShouldBe(taxes);
     }
 
+    // The bucket says it holds the royalty's tax too once there is one.
+    [Fact]
+    public void From_royalty_saysTheTaxesOnPayIncludeIt()
+    {
+        (BucketsView.From(RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithRoyalty(10_000m).Run())?.TaxesOnPayIncludeRoyalty,
+                BucketsView.From(RiverInputs.Example.Run())?.TaxesOnPayIncludeRoyalty)
+            .ShouldBe((true, false));
+    }
+
     [Theory]
     [MemberData(nameof(Years))]
     public void From_anyYearWithARoyalty_bucketsAddUpToWhatTheCompanyEarnsBeforePayingTheDirector(decimal revenue, decimal pay, decimal reserve)

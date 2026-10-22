@@ -9,10 +9,11 @@ internal static class CopyrightCardText
     // Which limit set the part within them, as the engine says it was.
     public static string Limits(CopyrightResult result) => $"Limits_{result.Bound}";
 
-    // The summary names the part taxed as pay once there is one.
+    // The summary names the part taxed as pay once there is one, and says when all of it is.
     public static string Summary(CopyrightView view) => view switch
     {
         { HasRoyalty: false } => "SummaryNoRoyalty",
+        { Result.WithinLimits: 0m } => "Summary_AllAsPay",
         { Result.TaxedAsPay: > 0m } => "Summary_AsPay",
         _ => "Summary",
     };

@@ -19,20 +19,22 @@ public class CopyrightCardTextTests
         Missing(Enum.GetValues<CopyrightBound>().Select(bound => CopyrightCardText.Limits(CopyrightResult.None with { Bound = bound }))).ShouldBeEmpty();
     }
 
-    // No royalty yet, a royalty within its limits, and one beyond them.
+    // No royalty yet, a royalty within its limits, one beyond them, and one whose four previous years
+    // averaged above the cap.
     [Fact]
     public void CopyrightCardResx_everySummary_hasAText()
     {
         var inputs = RiverInputs.Example.AddToPlan(OptionalModule.Copyright);
-        var views = new[] { inputs, inputs.WithRoyalty(10_000m), inputs.WithRoyalty(30_000m) }.Select(river => CopyrightView.From(river.Run().Year!));
+        var views = new[] { inputs, inputs.WithRoyalty(10_000m), inputs.WithRoyalty(30_000m), inputs.WithRoyalty(10_000m).WithAverageWithinCap(false) }
+            .Select(river => CopyrightView.From(river.Run().Year!));
 
-        views.Select(CopyrightCardText.Summary).ShouldBe(["SummaryNoRoyalty", "Summary", "Summary_AsPay"]);
+        views.Select(CopyrightCardText.Summary).ShouldBe(["SummaryNoRoyalty", "Summary", "Summary_AsPay", "Summary_AllAsPay"]);
     }
 
     [Fact]
     public void CopyrightCardResx_everySummaryKey_hasAText()
     {
-        Missing(["SummaryNoRoyalty", "Summary", "Summary_AsPay"]).ShouldBeEmpty();
+        Missing(["SummaryNoRoyalty", "Summary", "Summary_AsPay", "Summary_AllAsPay"]).ShouldBeEmpty();
     }
 
     // What the royalty leaves against the plan without it, each way it can fall.

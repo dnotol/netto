@@ -28,6 +28,27 @@ public class BucketBarTextTests
         (BucketBarText.Bucket("taxes_on_pay", true), BucketBarText.Bucket("pocket", true)).ShouldBe(("Bucket_taxes_on_pay_and_rent", "Bucket_pocket"));
     }
 
+    // What each bucket holds, with a copyright royalty's tax apart among the taxes on pay, with or
+    // without a rent.
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void BucketBarResx_everyBucketWithARoyalty_saysWhatItHolds(bool taxesOnPayIncludeRent)
+    {
+        BucketsView.Keys.Select(key => BucketBarText.Holds(key, taxesOnPayIncludeRent, true))
+            .Where(key => Resources.GetString(key, CultureInfo.InvariantCulture) is null)
+            .ShouldBeEmpty();
+    }
+
+    // The royalty's tax is said in what the taxes on pay hold; their name keeps « pay », to fit the bar.
+    [Theory]
+    [InlineData(false, "Holds_taxes_on_pay_and_royalty")]
+    [InlineData(true, "Holds_taxes_on_pay_rent_and_royalty")]
+    public void Holds_taxesOnPayWithARoyalty_saysTheRoyaltyToo(bool taxesOnPayIncludeRent, string holds)
+    {
+        (BucketBarText.Holds("taxes_on_pay", taxesOnPayIncludeRent, true), BucketBarText.Holds("pocket", true, true)).ShouldBe((holds, "Holds_pocket"));
+    }
+
     // What each bucket holds, in the bubble its name opens, with and without a rent among the taxes on pay.
     [Theory]
     [InlineData(false)]

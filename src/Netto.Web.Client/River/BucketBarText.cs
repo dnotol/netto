@@ -32,11 +32,24 @@ internal static class BucketBarText
     // Beside the gain, what the muddy pocket holds more or less than Today's, when it differs.
     public static string Muddy(decimal difference) => difference > 0m ? "Muddy_More" : "Muddy_Less";
 
-    // The taxes on pay say they hold the rent's tax too once there is one.
+    // The taxes on pay say they hold the rent's tax too once there is one. A copyright royalty's tax is
+    // said in what the bucket holds alone: the name keeps « pay » (decided unattended), which fits the
+    // bar's five buckets.
     public static string Bucket(string key, bool taxesOnPayIncludeRent) =>
-        taxesOnPayIncludeRent && key == "taxes_on_pay" ? "Bucket_taxes_on_pay_and_rent" : $"Bucket_{key}";
+        $"Bucket_{key}{TaxesOnPayWith(key, taxesOnPayIncludeRent, false)}";
 
-    // What the bucket holds, in the bubble its name opens: the rent's tax too, once there is one.
-    public static string Holds(string key, bool taxesOnPayIncludeRent) =>
-        taxesOnPayIncludeRent && key == "taxes_on_pay" ? "Holds_taxes_on_pay_and_rent" : $"Holds_{key}";
+    // What the bucket holds, in the bubble its name opens: the rent's tax and a royalty's too, once
+    // there is one.
+    public static string Holds(string key, bool taxesOnPayIncludeRent, bool taxesOnPayIncludeRoyalty = false) =>
+        $"Holds_{key}{TaxesOnPayWith(key, taxesOnPayIncludeRent, taxesOnPayIncludeRoyalty)}";
+
+    private static string TaxesOnPayWith(string key, bool rent, bool royalty) => key != "taxes_on_pay"
+        ? ""
+        : (rent, royalty) switch
+        {
+            (true, true) => "_rent_and_royalty",
+            (true, false) => "_and_rent",
+            (false, true) => "_and_royalty",
+            _ => "",
+        };
 }

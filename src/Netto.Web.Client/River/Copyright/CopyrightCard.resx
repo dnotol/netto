@@ -99,4 +99,7 @@
   <data name="Remove" xml:space="preserve">
     <value>Remove the copyright royalty from your plan</value>
   </data>
+  <data name="Summary_AllAsPay" xml:space="preserve">
+    <value>All {1} taxed as your pay · {2} before your pay</value>
+  </data>
 </root>

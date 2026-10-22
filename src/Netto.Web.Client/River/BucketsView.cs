@@ -26,6 +26,9 @@ internal sealed record BucketsView(
 
     public bool HasMuddyPocket => Buckets.Any(bucket => bucket.Key == Muddy);
 
+    // The taxes on pay hold a copyright royalty's tax apart too, once there is one.
+    public bool TaxesOnPayIncludeRoyalty { get; init; }
+
     // What reaches the pocket out of what leaves the company: what the river starts from less what the
     // company keeps at year end, which is still the director's. None where the bar draws no shares.
     public decimal? Reach => Drawn ? Shares.Of(AmountOf("pocket"), Leaves) : null;
@@ -64,7 +67,10 @@ internal sealed record BucketsView(
             run.Year is null,
             pay.ContributionsPaidByCompany > 0m,
             steps.Any(step => step.Event == TaxableEvent.Rent),
-            amounts.Select(bucket => new Bucket(bucket.Key, bucket.Amount, drawn ? bucket.Amount / start : null)).ToList());
+            amounts.Select(bucket => new Bucket(bucket.Key, bucket.Amount, drawn ? bucket.Amount / start : null)).ToList())
+        {
+            TaxesOnPayIncludeRoyalty = steps.Any(step => step.Event == TaxableEvent.CopyrightRoyalty),
+        };
     }
 
     private bool Drawn => Buckets.All(bucket => bucket.Share is not null);

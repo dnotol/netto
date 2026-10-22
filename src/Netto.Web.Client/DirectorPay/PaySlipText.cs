@@ -16,6 +16,13 @@ internal static class PaySlipText
 
     public static string Balance(BalanceKind kind) => $"Balance_{kind}";
 
-    // The final tax says it is on the rent too once a rent is taxed with the pay.
-    public static string FinalTax(bool withOtherIncome) => withOtherIncome ? "FinalTax_WithRent" : "FinalTax";
+    // The final tax says it is on the rent too once a rent is taxed with the pay, and on a copyright
+    // royalty once one is taxed apart.
+    public static string FinalTax(bool withOtherIncome, bool withRoyalty = false) => (withOtherIncome, withRoyalty) switch
+    {
+        (true, true) => "FinalTax_WithRentAndRoyalty",
+        (true, false) => "FinalTax_WithRent",
+        (false, true) => "FinalTax_WithRoyalty",
+        _ => "FinalTax",
+    };
 }

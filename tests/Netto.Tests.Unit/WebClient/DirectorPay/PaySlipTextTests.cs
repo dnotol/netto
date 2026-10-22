@@ -77,8 +77,19 @@ public class PaySlipTextTests
         var (value, _) = GrossToNet.Compute(2026, 50_000m, MunicipalRates.Entered(0.07m), TaxPrepayments.AsWithheld, ContributionsPaidBy.Director, 0m, 0m, movable);
         var view = GrossToNetView.From(value.ShouldNotBeNull());
 
-        view.Tracks.SelectMany(track => track.Rows).Select(row => PaySlipText.Row(row.Key)).Concat(["FinalTaxOnRoyalty", "WithheldOnRoyalty", "NextRoyaltyNote"])
+        view.Tracks.SelectMany(track => track.Rows).Select(row => PaySlipText.Row(row.Key))
+            .Concat([PaySlipText.FinalTax(false, true), PaySlipText.FinalTax(true, true), "FinalTaxOnRoyalty", "WithheldOnRoyalty", "NextRoyaltyNote"])
             .Distinct().Where(key => Resources.GetString(key, CultureInfo.InvariantCulture) is null).ShouldBeEmpty();
+    }
+
+    [Theory]
+    [InlineData(false, false, "FinalTax")]
+    [InlineData(true, false, "FinalTax_WithRent")]
+    [InlineData(false, true, "FinalTax_WithRoyalty")]
+    [InlineData(true, true, "FinalTax_WithRentAndRoyalty")]
+    public void FinalTax_saysWhatItIsOn(bool withRent, bool withRoyalty, string key)
+    {
+        PaySlipText.FinalTax(withRent, withRoyalty).ShouldBe(key);
     }
 
     // With a rent taxed with the pay, the final tax and the next 1,000 say so.

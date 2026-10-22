@@ -108,4 +108,10 @@
   <data name="Unsaved" xml:space="preserve">
     <value>Unsaved changes.</value>
   </data>
+  <data name="Holds_taxes_on_pay_and_royalty" xml:space="preserve">
+    <value>What leaves your pay and your copyright royalty: your social contributions, the income tax, the royalty's tax apart and the municipal surcharge, less the tax credit for low earned income, and any advance-payment surcharge less its bonus.</value>
+  </data>
+  <data name="Holds_taxes_on_pay_rent_and_royalty" xml:space="preserve">
+    <value>What leaves your pay, the rent taxed with it and your copyright royalty: your social contributions, the income tax, the royalty's tax apart and the municipal surcharge, less the tax credit for low earned income, and any advance-payment surcharge less its bonus.</value>
+  </data>
 </root>

@@ -79,7 +79,7 @@
     <value>The 2026 figures are computed from the official 2026 amounts. Tax-Calc does not cover 2026 yet; on 2025, the same method matches it to the cent on the income tax, the tax credit for low earned income, the dividend refund, and the surcharge and bonus on your advance payments.</value>
   </data>
   <data name="AddHint" xml:space="preserve">
-    <value>The company can also pay you vouchers, expense allowances or rent for your home office, or put a car at your disposal.</value>
+    <value>The company can also pay you vouchers, expense allowances or rent for your home office, put a car at your disposal, or pay you a royalty for the rights on your works.</value>
   </data>
   <data name="AddHintButton" xml:space="preserve">
     <value>Add them from Composition</value>

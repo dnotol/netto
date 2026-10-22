@@ -159,4 +159,10 @@
   <data name="NextRoyaltyNote" xml:space="preserve">
     <value>The next 1,000 holds your copyright royalty's part beyond its limits as it is, though 30% of the pay moves that limit: the split's curve weighs it.</value>
   </data>
+  <data name="FinalTax_WithRoyalty" xml:space="preserve">
+    <value>Final tax on your pay and your copyright royalty</value>
+  </data>
+  <data name="FinalTax_WithRentAndRoyalty" xml:space="preserve">
+    <value>Final tax on your pay, the rent taxed with it and your copyright royalty</value>
+  </data>
 </root>

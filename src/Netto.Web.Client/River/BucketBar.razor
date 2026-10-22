@@ -23,7 +23,7 @@
                     <div class="bucket bucket--@key">
                         <dt class="bucket__label">
                             <span class="bucket__swatch" aria-hidden="true"></span>
-                            <InfoBubble Term="@L[BucketBarText.Bucket(key, IncludesRent)]">@L[BucketBarText.Holds(key, IncludesRent)]</InfoBubble>
+                            <InfoBubble Term="@L[BucketBarText.Bucket(key, IncludesRent)]">@L[BucketBarText.Holds(key, IncludesRent, IncludesRoyalty)]</InfoBubble>
                         </dt>
                         <dd class="bucket__amount">
                             @Amount(key)
@@ -114,6 +114,8 @@
     private bool _disposed;
 
     private bool IncludesRent => View?.TaxesOnPayIncludeRent ?? false;
+
+    private bool IncludesRoyalty => View?.TaxesOnPayIncludeRoyalty ?? false;
 
     protected override void OnParametersSet()
     {
