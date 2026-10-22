@@ -52,8 +52,8 @@ public sealed record PaymentCalendar(
         {
             Company = AdvancePaymentSchedule.Of(
                 companyRules.Deadlines.Select(deadline => deadline.Date).ToList(), paid, payments.TopUps, payments.Surcharge, payments.Exempt, today),
-            CompanyBalance = new AssessmentDue(
-                incomeYear + 1, year.Company.CorporateTax + payments.Surcharge - paid.ByDeadline.Sum(), CorporateTaxRules.AssessmentBalance),
+            // The year's corporate tax holds the surcharge already (its corporate steps paid out).
+            CompanyBalance = new AssessmentDue(incomeYear + 1, year.CorporateTax - paid.ByDeadline.Sum(), CorporateTaxRules.AssessmentBalance),
         };
     }
 
