@@ -316,6 +316,23 @@ public class PersonalTaxCalculatorTests
             LowEarnedIncomeCredit: 0.00m, OtherIncome: 810.72m));
     }
 
+    // Tax-Calc T15 of 2026-10-22 (Notion, « An electric company car joins the plan »): 40,000 of pay
+    // with a company car's benefit of 2,400, which the director's 281.20 sums with the pay and the
+    // return declares with it in code 1400 (cadre XVI has no code of its own for a benefit), 7,000 of
+    // own contributions, nothing withheld. The benefit is taxed exactly as pay: flat-rate costs on it,
+    // one scale on the 34,338.00 it leaves.
+    [Fact]
+    public void Compute_2025TaxCalcT15PayWithACarBenefit_taxesTheBenefitAsPay()
+    {
+        var result = PersonalTaxCalculator.Compute(Rules2025, 40_000.00m + 2_400.00m, 7_000.00m, 0.07m);
+
+        result.ShouldBe(new PersonalTaxResult(
+            FlatRateCosts: 1_062.00m, TaxableIncome: 34_338.00m,
+            BasicTax: 11_564.10m, TaxFreeAmountReduction: 2_727.50m, StateTax: 8_836.60m,
+            ReducedStateTax: 6_631.25m, RegionalAdditionalTax: 2_205.35m, IncomeTax: 8_836.60m, MunicipalSurcharge: 618.56m,
+            LowEarnedIncomeCredit: 0.00m));
+    }
+
     // T14's pay alone, derived from the official amounts (Tax-Calc was not run without the rent):
     // 880 × (28,420 − 28,033) / 6,560 = 51.91.
     [Fact]

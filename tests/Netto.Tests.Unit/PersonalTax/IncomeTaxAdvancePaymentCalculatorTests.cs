@@ -29,6 +29,17 @@ public class IncomeTaxAdvancePaymentCalculatorTests
         (result.TaxAt106Percent, result.Base, result.SurchargeBeforeCredits, result.Surcharge).ShouldBe((4_096.80m, 3_316.20m, 223.84m, 201.46m));
     }
 
+    // Tax-Calc T15 of 2026-10-22 (PersonalTaxCalculatorTests): 8,836.60 of tax on a pay with a company
+    // car's benefit, no credit, nothing withheld or prepaid: the surcharge is on the tax with the
+    // benefit, 6.75% of 106% of it, kept at 90%.
+    [Fact]
+    public void Compute_2025TaxCalcT15PayWithACarBenefit_surchargesTheTaxWithTheBenefit()
+    {
+        var result = IncomeTaxAdvancePaymentCalculator.Compute(Rules2025, 8_836.60m, 0m, new TaxPrepayments(0m, AdvancePayments.None));
+
+        (result.TaxAt106Percent, result.Base, result.SurchargeBeforeCredits, result.Surcharge).ShouldBe((9_366.80m, 9_366.80m, 632.26m, 569.03m));
+    }
+
     [Fact]
     public void Compute_2025TaxCalcT9PaidByTheFirstDeadline_countsOnlyWhatAvoidsTheSurchargeAsNeeded()
     {
