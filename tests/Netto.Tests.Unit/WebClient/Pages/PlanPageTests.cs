@@ -128,7 +128,7 @@ public class PlanPageTests
     [Theory]
     [InlineData("optimisation", "moves__state")]
     [InlineData("when-to-pay", "calendar__table")]
-    [InlineData("compare", "Your saved plans side by side")]
+    [InlineData("compare", "Two of your saved plans side by side, layer by layer: the second measured against the first, the plan starred Today unless you pick another.")]
     public async Task Plan_onAnotherTab_showsItsOwnContentWithoutTheRiver(string tab, string content)
     {
         var html = await RenderPlanAsync(new Folds(new BrowserStorage()), tab);

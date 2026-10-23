@@ -19,7 +19,7 @@
     <value>Compare plans</value>
   </data>
   <data name="Lede" xml:space="preserve">
-    <value>Your saved plans side by side, layer by layer, each measured against the one starred Today.</value>
+    <value>Two of your saved plans side by side, layer by layer: the second measured against the first, the plan starred Today unless you pick another.</value>
   </data>
   <data name="Group_result" xml:space="preserve">
     <value>The year's result</value>
