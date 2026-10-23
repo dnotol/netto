@@ -2,7 +2,7 @@ using Netto.Core.Calendar;
 
 namespace Netto.Web.Client.River;
 
-// What the calendar card draws: the payments the plan in the river implies (PaymentCalendar), seen on
+// What the When to pay tab draws: the payments the plan in the river implies (PaymentCalendar), seen on
 // the date the card is shown. Rows are the deadlines by which the company or the director pays
 // something or needs to, in their order; a deadline with nothing paid and nothing needed is left out,
 // as a drain of nothing is. Company is null for a river that starts at the pay, and each tax says

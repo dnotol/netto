@@ -22,12 +22,6 @@ public enum GlanceKind
 
     // What the company has left after its tax.
     LeftAfterTax,
-
-    // What Netto's moves add to the pocket against the plan starred Today.
-    MoreThanToday,
-
-    // The date of the next advance payment.
-    NextBy,
 }
 
 // One figure of a card's summary, formatted as the summary formats it from the same value, for the
@@ -36,7 +30,7 @@ public sealed record CardGlance(GlanceKind Kind, string Figure)
 {
     // The bucket of the bar the figure lands in, whose icon the glance carries (BucketIcons): only money
     // that ends up there. Money still on its way (the revenue, the pay, what the company has left after
-    // its tax), a difference (the moves' gain) and a date land in none.
+    // its tax) lands in none.
     internal string? Bucket => Kind switch
     {
         GlanceKind.ToYou => "pocket",

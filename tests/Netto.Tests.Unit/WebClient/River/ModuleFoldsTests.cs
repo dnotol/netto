@@ -142,7 +142,7 @@ public class ModuleFoldsTests
         OpenCards(folds).ShouldBeEmpty();
     }
 
-    // A move applied from the moves card: the river with the move's values, and the card of a module the
+    // A move applied from the Optimisation tab: the river with the move's values, and the card of a module the
     // move grants open. A move that only moves a value of the plan opens nothing.
     [Fact]
     public void Applied_moveGrantingAModule_opensItsCardAndReturnsTheAppliedRiver()

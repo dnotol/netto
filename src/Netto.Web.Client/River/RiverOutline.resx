@@ -45,10 +45,4 @@
   <data name="Glance_LeftAfterTax" xml:space="preserve">
     <value>{0} left after tax</value>
   </data>
-  <data name="Glance_MoreThanToday" xml:space="preserve">
-    <value>{0} more than Today</value>
-  </data>
-  <data name="Glance_NextBy" xml:space="preserve">
-    <value>Next by {0}</value>
-  </data>
 </root>

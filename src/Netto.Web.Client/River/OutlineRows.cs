@@ -39,7 +39,7 @@ internal sealed class OutlineRows(Folds folds)
 
     public IReadOnlyList<OutlineRow> Rows => [.. Order.Where(_cards.ContainsKey).Select(name => _cards[name].Row)];
 
-    // Whether every card listed is open, by the viewer, for the visit or by default.
+    // Whether every card listed is open, by the viewer or for the visit.
     public bool AllOpen => _cards.Values.All(card => IsOpen(card.Row));
 
     // The card as it is drawn, with how to draw it again.
@@ -103,12 +103,13 @@ internal sealed class OutlineRows(Folds folds)
         return (reaching.Count > 0 ? reaching : passed).MaxBy(box => box.Top)!.Name;
     }
 
-    private bool IsOpen(OutlineRow row) => folds.IsOpen(row.Name, row.OpenByDefault);
+    // A card opens folded to its title and summary (ModuleCard).
+    private bool IsOpen(OutlineRow row) => folds.IsOpen(row.Name, openByDefault: false);
 }
 
-// A card as the outline lists it: its fold's name, its title, its glance, none while its summary has no
-// figure, and whether it opens by default.
-internal sealed record OutlineRow(string Name, string Title, CardGlance? Glance, bool OpenByDefault);
+// A card as the outline lists it: its fold's name, its title, and its glance, none while its summary has
+// no figure.
+internal sealed record OutlineRow(string Name, string Title, CardGlance? Glance);
 
 // Where a card stands in the window: its top and its bottom, in pixels from the window's top.
 internal sealed record CardBox(string Name, double Top, double Bottom);

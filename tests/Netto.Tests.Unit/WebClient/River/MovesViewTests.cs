@@ -45,42 +45,6 @@ public class MovesViewTests
             .ShouldBe((MovesState.NoToday, MovesState.StartsAtPay));
     }
 
-    // The one card of the river that opens by itself: what it says is the answer, and every state
-    // of a Today it says something the user has to read (its moves, a refusal, where to start).
-    // Without a Today it is folded to what it waits for, like the other cards.
-    [Fact]
-    public void OpenByDefault_noToday_isFalse()
-    {
-        MovesView.Of(null, On22October).OpenByDefault.ShouldBeFalse();
-    }
-
-    [Fact]
-    public void OpenByDefault_todayWithMoves_isTrue()
-    {
-        MovesView.Of(RiverInputs.Example, On22October).OpenByDefault.ShouldBeTrue();
-    }
-
-    [Fact]
-    public void OpenByDefault_todayAlreadyBest_isTrue()
-    {
-        var view = MovesView.Of(RiverInputs.Example, On22October);
-        var planned = view.Moves.Aggregate(RiverInputs.Example, (river, move) => view.Apply(move, river));
-
-        MovesView.Of(planned, On22October).OpenByDefault.ShouldBeTrue();
-    }
-
-    [Fact]
-    public void OpenByDefault_todaySkipsTheCompany_isTrue()
-    {
-        MovesView.Of(RiverInputs.Example.SkipCompany(), On22October).OpenByDefault.ShouldBeTrue();
-    }
-
-    [Fact]
-    public void OpenByDefault_todayRefused_isTrue()
-    {
-        MovesView.Of(RiverInputs.Example.WithReserve(-1m), On22October).OpenByDefault.ShouldBeTrue();
-    }
-
     // After the year: the pay first, then the vouchers the example does not grant.
     [Fact]
     public void Of_exampleAfterTheYear_movesThePayThenGrantsTheVouchers()

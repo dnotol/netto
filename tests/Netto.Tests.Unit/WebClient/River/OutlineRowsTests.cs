@@ -99,20 +99,16 @@ public class OutlineRowsTests
         (new Folds(storage).IsOpen("vouchers", false), redrawn).ShouldBe((true, 1));
     }
 
-    // A card already open, by the viewer, for the visit or by default, is left as it is: nothing is
-    // written over the viewer's folds.
-    [Theory]
-    [InlineData(true, false)]
-    [InlineData(false, true)]
-    public void Open_cardAlreadyOpen_writesNoFold(bool openByDefault, bool revealed)
+    // A card already open for the visit is left as it is: nothing is written over the viewer's folds.
+    [Fact]
+    public void Open_cardOpenForTheVisit_writesNoFold()
     {
         var storage = new Storage();
         var folds = new Folds(storage);
-        if (revealed)
-            folds.Reveal("split");
+        folds.Reveal("split");
         var rows = new OutlineRows(folds);
         var redrawn = 0;
-        rows.Report(Row("split", openByDefault: openByDefault), () => redrawn++);
+        rows.Report(Row("split"), () => redrawn++);
 
         rows.Open("split");
 
@@ -142,7 +138,7 @@ public class OutlineRowsTests
         rows.AllOpen.ShouldBeFalse();
     }
 
-    // Open by the viewer, for the visit or by default: each counts as open.
+    // Open by the viewer or for the visit: each counts as open.
     [Fact]
     public void AllOpen_everyCardOpen_isTrue()
     {
@@ -152,7 +148,6 @@ public class OutlineRowsTests
         var rows = new OutlineRows(folds);
         rows.Report(Row("split"), Nothing);
         rows.Report(Row("vouchers"), Nothing);
-        rows.Report(Row("company-year", openByDefault: true), Nothing);
 
         rows.AllOpen.ShouldBeTrue();
     }
@@ -166,7 +161,7 @@ public class OutlineRowsTests
         var rows = new OutlineRows(new Folds(storage));
         var redrawn = new List<string>();
         foreach (var name in new[] { "company-year", "split", "dividend" })
-            rows.Report(Row(name, openByDefault: name == "company-year"), () => redrawn.Add(name));
+            rows.Report(Row(name), () => redrawn.Add(name));
 
         rows.SetAll(true);
 
@@ -250,8 +245,8 @@ public class OutlineRowsTests
         OutlineRows.InView([], Line, atEnd: false).ShouldBeNull();
     }
 
-    private static OutlineRow Row(string name, string? figure = "€1,000.00", bool openByDefault = false) =>
-        new(name, name, figure is null ? null : new CardGlance(GlanceKind.ToYou, figure), openByDefault);
+    private static OutlineRow Row(string name, string? figure = "€1,000.00") =>
+        new(name, name, figure is null ? null : new CardGlance(GlanceKind.ToYou, figure));
 
     private static CardBox Box(string name, double top, double bottom) => new(name, top, bottom);
 

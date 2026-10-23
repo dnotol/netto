@@ -22,7 +22,7 @@ public class FoldTests
     [Fact]
     public void Fold_defaultState_isFolded()
     {
-        (new Fold().OpenByDefault, new ModuleCard().OpenByDefault).ShouldBe((false, false));
+        new Fold().OpenByDefault.ShouldBeFalse();
     }
 
     [Fact]
@@ -41,9 +41,9 @@ public class FoldTests
     public async Task Fold_foldedByTheViewerOverADefaultOpen_isFolded()
     {
         var folds = new Folds(new BrowserStorage());
-        folds.Set("moves", false);
+        folds.Set("split", false);
 
-        var html = await RenderAsync<Fold>(folds, Parameters("moves", ("OpenByDefault", true)));
+        var html = await RenderAsync<Fold>(folds, Parameters("split", ("OpenByDefault", true)));
 
         (IsOpen(html), html.Contains(Body)).ShouldBe((false, false));
     }

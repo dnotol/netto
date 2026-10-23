@@ -2,16 +2,11 @@ using Netto.Core.Simulation;
 
 namespace Netto.Web.Client.River;
 
-// What the moves card draws: the engine's moves from the plan starred « Today » (MoveSearch), or why
+// What the Optimisation tab draws: the engine's moves from the plan starred « Today » (MoveSearch), or why
 // there are none. Found once per Today, since the search runs the split at every move; which moves
 // the river already holds is read from the river at each change.
 internal sealed record MovesView(MovesState State, string? Error, RiverInputs? Today, decimal TodayPay, IReadOnlyList<PlannedMove> Moves, decimal Total)
 {
-    // The one card of the river that opens by itself, whatever it says of a Today: its moves, a
-    // refusal, where to start or that none adds a euro, since each is the answer. Without a Today it
-    // is folded to what it waits for, like the other cards.
-    public bool OpenByDefault => State != MovesState.NoToday;
-
     // On that date, which decides the deadline a payment is proposed by.
     public static MovesView Of(RiverInputs? today, DateOnly date) => Of(today, today?.FindMoves(date));
 

@@ -42,7 +42,7 @@ internal static class ModuleFolds
         return changed;
     }
 
-    // The moves card's « Apply »: the river with the move's values (MovesView.Apply). A move that grants a
+    // The Optimisation tab's « Apply »: the river with the move's values (MovesView.Apply). A move that grants a
     // lever the plan lacks adds its module, so its card opens for the user to see what the move put
     // there; one that only moves a value opens nothing.
     public static RiverInputs Applied(Folds folds, MovesView view, PlannedMove move, RiverInputs river)

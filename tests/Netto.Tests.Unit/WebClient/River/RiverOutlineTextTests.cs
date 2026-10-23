@@ -27,8 +27,6 @@ public class RiverOutlineTextTests
     [InlineData(GlanceKind.MuddyPocket, "€120,000.00 to the muddy pocket")]
     [InlineData(GlanceKind.TaxedAsPay, "€120,000.00 taxed as your pay")]
     [InlineData(GlanceKind.LeftAfterTax, "€120,000.00 left after tax")]
-    [InlineData(GlanceKind.MoreThanToday, "€120,000.00 more than Today")]
-    [InlineData(GlanceKind.NextBy, "Next by €120,000.00")]
     public void RiverOutlineResx_everyGlance_saysItsFigureInTheSummarysWords(GlanceKind kind, string expected)
     {
         string.Format(CultureInfo.InvariantCulture, Text(RiverOutlineText.Glance(kind)) ?? "", "€120,000.00").ShouldBe(expected);
