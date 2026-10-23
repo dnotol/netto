@@ -144,13 +144,18 @@ public class CarViewTests
 
     // Against the same car bought privately, the company car gains what that car would cost less the
     // 6,162.66 of cash it takes from the pocket: a gain, a loss, or the same to the cent.
-    [Theory]
-    [InlineData(10_000, 3_837.34, "Private_Gain")]
-    [InlineData(1_000, -5_162.66, "Private_Loss")]
-    [InlineData(6_162.66, 0, "Private_Tie")]
-    public void Comparison_privateCost_isWhatItWouldCostLessTheCashTheCarTakes(double privateCost, double gain, string key)
+    public static TheoryData<decimal, decimal, string> PrivateCosts => new()
     {
-        var inputs = ElectricCar.WithCarPrivateCost((decimal)privateCost);
+        { 10_000m, 3_837.34m, "Private_Gain" },
+        { 1_000m, -5_162.66m, "Private_Loss" },
+        { 6_162.66m, 0m, "Private_Tie" },
+    };
+
+    [Theory]
+    [MemberData(nameof(PrivateCosts))]
+    public void Comparison_privateCost_isWhatItWouldCostLessTheCashTheCarTakes(decimal privateCost, decimal gain, string key)
+    {
+        var inputs = ElectricCar.WithCarPrivateCost(privateCost);
 
         var comparison = CarComparison.From(inputs, inputs.Run()).ShouldNotBeNull();
 
