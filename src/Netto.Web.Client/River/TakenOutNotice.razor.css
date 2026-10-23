@@ -20,29 +20,29 @@
     padding: 0.35rem 0.35rem 0.35rem 1.1rem;
     border-radius: 999px;
     background: var(--netto-text);
-    color: var(--netto-black);
+    color: var(--netto-page);
     font-size: 0.88rem;
     line-height: 1.4;
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
+    box-shadow: var(--netto-shadow-float);
     pointer-events: auto;
 }
 
     .taken-out__notice ::deep .taken-out__undo {
         flex: none;
         border-radius: 999px;
-        background: var(--netto-black);
+        background: var(--netto-page);
         color: var(--netto-text);
     }
 
     .taken-out__notice ::deep .taken-out__dismiss {
         flex: none;
-        color: var(--netto-black);
+        color: var(--netto-page);
     }
 
-    /* On the light pill a gold ring would hardly show: the focus ring is black. */
+    /* On the inverted pill a gold ring would hardly show: the focus ring is in the page's colour. */
     .taken-out__notice ::deep .taken-out__undo:focus-visible,
     .taken-out__notice ::deep .taken-out__dismiss:focus-visible {
-        outline: 2px solid var(--netto-black);
+        outline: 2px solid var(--netto-focus-inverse);
         outline-offset: 2px;
     }
 

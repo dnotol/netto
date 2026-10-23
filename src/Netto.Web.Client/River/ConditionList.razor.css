@@ -24,7 +24,7 @@
     color: var(--netto-text-muted);
     font-size: 0.8rem;
     text-decoration: underline;
-    text-decoration-color: rgba(243, 238, 226, 0.35);
+    text-decoration-color: var(--netto-rule);
     text-underline-offset: 3px;
     overflow-wrap: anywhere;
     transition: color 0.2s ease;

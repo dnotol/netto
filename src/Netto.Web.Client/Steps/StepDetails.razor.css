@@ -91,7 +91,7 @@
     color: var(--netto-text);
     font-weight: 600;
     text-decoration: underline;
-    text-decoration-color: rgba(243, 238, 226, 0.35);
+    text-decoration-color: var(--netto-rule);
     text-underline-offset: 3px;
     overflow-wrap: anywhere;
     transition: color 0.2s ease;
@@ -130,7 +130,7 @@
         justify-content: space-between;
         gap: 1rem;
         padding: 0.4rem 0;
-        border-bottom: 1px dashed rgba(243, 238, 226, 0.08);
+        border-bottom: 1px dashed var(--netto-tint);
     }
 
     .step-details__lines dt {
@@ -162,7 +162,7 @@
         justify-content: space-between;
         gap: 1rem;
         padding: 0.4rem 0;
-        border-bottom: 1px dashed rgba(243, 238, 226, 0.08);
+        border-bottom: 1px dashed var(--netto-tint);
     }
 
     .step-details__amounts dt {

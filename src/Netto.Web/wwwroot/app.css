@@ -14,16 +14,41 @@
     font-display: swap;
 }
 
-/* Mirrors NettoTheme (Netto.Web.Client/Layout/NettoTheme.cs) for hand-written CSS: MudBlazor needs
-   literal hex there, so the two are kept equal by hand. */
+/* The design system's tokens (CLAUDE.md's docs map), every colour a hand-written rule draws. The
+   plain ones mirror NettoTheme (Netto.Web.Client/Layout/NettoTheme.cs): MudBlazor needs literal hex
+   there, so the two are kept equal by hand. The ramp and the data marks are the text colour at an
+   opacity, so they weigh the same on the page and on a card. */
 :root {
-    --netto-black: #0B0A08;
+    --netto-page: #0B0A08;
     --netto-surface: #15130F;
+    --netto-header: rgba(11, 10, 8, 0.72);
+    --netto-text: #F3EEE2;
+    --netto-text-muted: #A9A190;
     --netto-line: #2B2619;
     --netto-line-input: #726A56;
     --netto-gold: #D4AF37;
-    --netto-text: #F3EEE2;
-    --netto-text-muted: #A9A190;
+    --netto-focus-inverse: var(--netto-page);
+    --netto-selection: rgba(212, 175, 55, 0.35);
+    --netto-wash: rgba(243, 238, 226, 0.04);
+    --netto-tint: rgba(243, 238, 226, 0.07);
+    --netto-edge: rgba(243, 238, 226, 0.2);
+    --netto-chip-edge: rgba(243, 238, 226, 0.3);
+    --netto-chip-edge-strong: rgba(243, 238, 226, 0.4);
+    --netto-rule: rgba(243, 238, 226, 0.35);
+    --netto-underline: rgba(243, 238, 226, 0.55);
+    --netto-data-strong: rgba(243, 238, 226, 0.7);
+    --netto-data-high: rgba(243, 238, 226, 0.55);
+    --netto-data-mid: rgba(243, 238, 226, 0.3);
+    --netto-data-low: rgba(243, 238, 226, 0.12);
+    --netto-gold-grid: rgba(212, 175, 55, 0.045);
+    --netto-gold-glow: rgba(212, 175, 55, 0.07);
+    --netto-gold-soft: rgba(212, 175, 55, 0.35);
+    --netto-gold-placeholder: rgba(212, 175, 55, 0.28);
+    --netto-gold-placeholder-strong: rgba(212, 175, 55, 0.5);
+    --netto-shadow-float: 0 12px 32px rgba(0, 0, 0, 0.55);
+    --netto-shadow-lift: 0 24px 50px -28px rgba(0, 0, 0, 0.9);
+    --netto-shadow-showcase: 0 40px 90px -40px rgba(0, 0, 0, 0.9);
+    --netto-shadow-edge: 0 -8px 30px rgba(0, 0, 0, 0.6);
     color-scheme: dark;
 }
 
@@ -31,7 +56,7 @@
 html,
 body {
     margin: 0;
-    background: var(--netto-black);
+    background: var(--netto-page);
     color: var(--netto-text);
 }
 
@@ -89,7 +114,7 @@ body {
 }
 
 ::selection {
-    background: rgba(212, 175, 55, 0.35);
+    background: var(--netto-selection);
     color: var(--netto-text);
 }
 

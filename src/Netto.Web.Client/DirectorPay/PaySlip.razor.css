@@ -87,7 +87,7 @@
     grid-column: 1 / -1;
     height: 0.7rem;
     border-radius: 999px;
-    background: rgba(243, 238, 226, 0.04);
+    background: var(--netto-wash);
     overflow: hidden;
 }
 
@@ -99,11 +99,11 @@
 }
 
 .funnel-row--gross .funnel-row__bar {
-    background: rgba(243, 238, 226, 0.7);
+    background: var(--netto-data-strong);
 }
 
 .funnel-row--paid-out .funnel-row__bar {
-    background: rgba(243, 238, 226, 0.3);
+    background: var(--netto-data-mid);
 }
 
 /* Dots mark the tax credit for low earned income, here and in the next 1,000: money that comes back
@@ -111,28 +111,28 @@
 .funnel-row--back .funnel-row__bar,
 .next__segment--low_earned_income_credit_lost,
 .next__part--low_earned_income_credit_lost .next__swatch {
-    background: radial-gradient(circle, rgba(243, 238, 226, 0.7) 1px, transparent 1.5px) 0 0 / 5px 5px;
-    box-shadow: inset 0 0 0 1px rgba(243, 238, 226, 0.35);
+    background: radial-gradient(circle, var(--netto-data-strong) 1px, transparent 1.5px) 0 0 / 5px 5px;
+    box-shadow: inset 0 0 0 1px var(--netto-rule);
 }
 
 /* Stripes, not a colour, mark what is never paid out. A neutral repeating gradient draws them. */
 .funnel-row--tax-base-only .funnel-row__bar,
 .funnel-row__note::before {
-    background: repeating-linear-gradient(135deg, rgba(243, 238, 226, 0.55) 0 2px, transparent 2px 6px);
-    box-shadow: inset 0 0 0 1px rgba(243, 238, 226, 0.35);
+    background: repeating-linear-gradient(135deg, var(--netto-data-high) 0 2px, transparent 2px 6px);
+    box-shadow: inset 0 0 0 1px var(--netto-rule);
 }
 
 /* A benefit in kind joins the tax base but never the cash: hatched like the muddy pocket it comes
    from, neutral. */
 .funnel-row--added .funnel-row__bar,
 .funnel-row__note--added::before {
-    background: repeating-linear-gradient(45deg, rgba(243, 238, 226, 0.55) 0 2px, rgba(243, 238, 226, 0.12) 2px 4px);
-    box-shadow: inset 0 0 0 1px rgba(243, 238, 226, 0.35);
+    background: repeating-linear-gradient(45deg, var(--netto-data-high) 0 2px, var(--netto-data-low) 2px 4px);
+    box-shadow: inset 0 0 0 1px var(--netto-rule);
 }
 
 .funnel-row--taxable-income .funnel-row__bar {
-    background: rgba(243, 238, 226, 0.12);
-    box-shadow: inset 0 0 0 1px rgba(243, 238, 226, 0.6);
+    background: var(--netto-data-low);
+    box-shadow: inset 0 0 0 1px var(--netto-data-strong);
 }
 
 .funnel-row--net .funnel-row__bar {
@@ -334,7 +334,7 @@
     display: flex;
     height: 0.9rem;
     border-radius: 999px;
-    background: rgba(243, 238, 226, 0.04);
+    background: var(--netto-wash);
     overflow: hidden;
 }
 
@@ -349,18 +349,18 @@
 
 .next__segment--social_contributions,
 .next__part--social_contributions .next__swatch {
-    background: rgba(243, 238, 226, 0.55);
+    background: var(--netto-data-high);
 }
 
 .next__segment--income_tax,
 .next__part--income_tax .next__swatch {
-    background: rgba(243, 238, 226, 0.3);
+    background: var(--netto-data-mid);
 }
 
 .next__segment--municipal_surcharge,
 .next__part--municipal_surcharge .next__swatch {
-    background: rgba(243, 238, 226, 0.12);
-    box-shadow: inset 0 0 0 1px rgba(243, 238, 226, 0.5);
+    background: var(--netto-data-low);
+    box-shadow: inset 0 0 0 1px var(--netto-data-high);
 }
 
 .next__segment--net_in_pocket,

@@ -14,8 +14,8 @@
     position: absolute;
     inset: 0;
     background-image:
-        linear-gradient(rgba(212, 175, 55, 0.045) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(212, 175, 55, 0.045) 1px, transparent 1px);
+        linear-gradient(var(--netto-gold-grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--netto-gold-grid) 1px, transparent 1px);
     background-size: 64px 64px;
     -webkit-mask-image: radial-gradient(ellipse 70% 60% at 70% 35%, #000 0%, transparent 75%);
     mask-image: radial-gradient(ellipse 70% 60% at 70% 35%, #000 0%, transparent 75%);
@@ -29,7 +29,7 @@
     width: min(62rem, 130vw);
     aspect-ratio: 1;
     /* A trace of warm light for depth, not a glow (CLAUDE.md, UI: gold is an accent). */
-    background: radial-gradient(circle, rgba(212, 175, 55, 0.07) 0%, rgba(212, 175, 55, 0.02) 35%, transparent 65%);
+    background: radial-gradient(circle, var(--netto-gold-glow) 0%, transparent 65%);
     pointer-events: none;
 }
 
@@ -114,9 +114,9 @@
     border: 1px solid var(--netto-line);
     border-radius: 22px;
     background:
-        linear-gradient(180deg, rgba(243, 238, 226, 0.045), rgba(243, 238, 226, 0.01)),
+        linear-gradient(180deg, var(--netto-wash), transparent),
         var(--netto-surface);
-    box-shadow: 0 40px 90px -40px rgba(0, 0, 0, 0.9);
+    box-shadow: var(--netto-shadow-showcase);
 }
 
 .plan-card__head {
@@ -147,9 +147,9 @@
     align-items: center;
     gap: 0.85rem;
     padding: 0.85rem 1rem;
-    border: 1px solid rgba(243, 238, 226, 0.05);
+    border: 1px solid var(--netto-tint);
     border-radius: 14px;
-    background: rgba(243, 238, 226, 0.025);
+    background: var(--netto-wash);
     font-size: 0.93rem;
 }
 
@@ -162,13 +162,13 @@
     width: 4.5rem;
     height: 0.6rem;
     border-radius: 999px;
-    background: rgba(212, 175, 55, 0.28);
+    background: var(--netto-gold-placeholder);
 }
 
 .plan-card__gain--total {
     width: 7rem;
     height: 0.75rem;
-    background: rgba(212, 175, 55, 0.5);
+    background: var(--netto-gold-placeholder-strong);
 }
 
 .plan-card__total {
@@ -215,7 +215,7 @@
 .section--ruled {
     border-top: 1px solid var(--netto-line);
     border-bottom: 1px solid var(--netto-line);
-    background: rgba(243, 238, 226, 0.012);
+    background: var(--netto-wash);
 }
 
 .section__eyebrow {
@@ -258,9 +258,9 @@
 
     /* The hover is an active state, so it may show gold; its shadow stays neutral. */
     .lever:hover {
-        border-color: rgba(212, 175, 55, 0.35);
+        border-color: var(--netto-gold-soft);
         transform: translateY(-4px);
-        box-shadow: 0 24px 50px -28px rgba(0, 0, 0, 0.9);
+        box-shadow: var(--netto-shadow-lift);
     }
 
 .lever__icon {
@@ -271,7 +271,7 @@
     margin-bottom: 1.25rem;
     border: 1px solid var(--netto-line);
     border-radius: 14px;
-    background: rgba(243, 238, 226, 0.03);
+    background: var(--netto-wash);
     color: var(--netto-gold);
 }
 
@@ -346,7 +346,7 @@
     border: 1px solid var(--netto-line);
     border-radius: 28px;
     background:
-        linear-gradient(180deg, rgba(243, 238, 226, 0.035), rgba(243, 238, 226, 0)),
+        linear-gradient(180deg, var(--netto-wash), transparent),
         var(--netto-surface);
     text-align: center;
 }

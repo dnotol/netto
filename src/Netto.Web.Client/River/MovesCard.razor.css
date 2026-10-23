@@ -23,7 +23,7 @@
     padding: 0.6rem 0.9rem;
     border: 1px solid var(--netto-line);
     border-radius: 10px;
-    background: var(--netto-black);
+    background: var(--netto-page);
 }
 
 
@@ -45,7 +45,7 @@
 }
 
 .moves__move ::deep .moves__apply {
-    border-color: rgba(243, 238, 226, 0.2);
+    border-color: var(--netto-edge);
     border-radius: 999px;
     color: var(--netto-text);
 }

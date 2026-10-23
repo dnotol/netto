@@ -14,7 +14,7 @@
     .plans ::deep .plans__button {
         position: relative;
         z-index: 2;
-        border-color: rgba(243, 238, 226, 0.2);
+        border-color: var(--netto-edge);
         border-radius: 999px;
         background: var(--netto-surface);
         color: var(--netto-text);
@@ -54,7 +54,7 @@
     border: 1px solid var(--netto-line);
     border-radius: 14px;
     background: var(--netto-surface);
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
+    box-shadow: var(--netto-shadow-float);
 }
 
     /* A display set on the panel would otherwise win over the hidden attribute. */
@@ -106,7 +106,7 @@
     padding: 0.5rem 0.75rem 0.5rem 0.35rem;
     border: 1px solid var(--netto-line);
     border-radius: 10px;
-    background: var(--netto-black);
+    background: var(--netto-page);
 }
 
 /* The plan the river shows is outlined a little lighter, never in gold: gold is for active states. */
@@ -222,7 +222,7 @@
 }
 
     .plans__import:hover {
-        background: rgba(243, 238, 226, 0.08);
+        background: var(--netto-tint);
     }
 
 .plans__file ::deep .plans__file-input:focus-visible + .plans__import {
@@ -237,7 +237,7 @@
 }
 
     .plans__foot ::deep .plans__done {
-        border-color: rgba(243, 238, 226, 0.2);
+        border-color: var(--netto-edge);
         border-radius: 999px;
         color: var(--netto-text);
     }

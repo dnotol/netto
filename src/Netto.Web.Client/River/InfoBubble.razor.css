@@ -48,7 +48,7 @@
 
 /* A term of running text: its own colour, a dotted underline. */
 .info-bubble__term {
-    text-decoration: underline dotted rgba(243, 238, 226, 0.55);
+    text-decoration: underline dotted var(--netto-underline);
     text-decoration-thickness: 1px;
     text-underline-offset: 3px;
     transition: color 0.2s ease, text-decoration-color 0.2s ease;
@@ -91,10 +91,10 @@
     overflow-y: auto;
     overscroll-behavior: contain;
     padding: 0.6rem 0.8rem;
-    border: 1px solid rgba(243, 238, 226, 0.18);
+    border: 1px solid var(--netto-edge);
     border-radius: 10px;
     background: var(--netto-surface);
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
+    box-shadow: var(--netto-shadow-float);
     color: var(--netto-text);
     font: 400 0.84rem/1.5 "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     font-variant-numeric: tabular-nums;

@@ -11,7 +11,7 @@
     .composition ::deep .composition__button {
         position: relative;
         z-index: 2;
-        border-color: rgba(243, 238, 226, 0.2);
+        border-color: var(--netto-edge);
         border-radius: 999px;
         background: var(--netto-surface);
         color: var(--netto-text);
@@ -50,7 +50,7 @@
     border: 1px solid var(--netto-line);
     border-radius: 14px;
     background: var(--netto-surface);
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
+    box-shadow: var(--netto-shadow-float);
 }
 
     /* A display set on the panel would otherwise win over the hidden attribute. */
@@ -91,11 +91,11 @@
 .composition__module {
     border: 1px solid var(--netto-line);
     border-radius: 10px;
-    background: var(--netto-black);
+    background: var(--netto-page);
 }
 
     .composition__module:hover {
-        border-color: rgba(243, 238, 226, 0.18);
+        border-color: var(--netto-edge);
     }
 
     .composition__module ::deep .mud-checkbox {
@@ -158,7 +158,7 @@
 
     .composition__foot ::deep .composition__done {
         flex: none;
-        border-color: rgba(243, 238, 226, 0.2);
+        border-color: var(--netto-edge);
         border-radius: 999px;
         color: var(--netto-text);
     }

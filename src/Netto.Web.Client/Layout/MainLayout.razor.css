@@ -4,10 +4,10 @@
     position: sticky;
     top: 0;
     z-index: 10;
-    background: rgba(11, 10, 8, 0.72);
+    background: var(--netto-header);
     backdrop-filter: saturate(140%) blur(14px);
     -webkit-backdrop-filter: saturate(140%) blur(14px);
-    border-bottom: 1px solid rgba(243, 238, 226, 0.06);
+    border-bottom: 1px solid var(--netto-tint);
 }
 
     .site-header ::deep .site-header__inner {
@@ -76,12 +76,11 @@
 }
 
 #blazor-error-ui {
-    color-scheme: dark only;
     background: var(--netto-surface);
     border-top: 1px solid var(--netto-gold);
     color: var(--netto-text);
     bottom: 0;
-    box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.6);
+    box-shadow: var(--netto-shadow-edge);
     box-sizing: border-box;
     display: none;
     left: 0;
