@@ -1,7 +1,5 @@
 using System.Globalization;
-using System.Net;
 using System.Resources;
-using System.Text.RegularExpressions;
 using Netto.Core.CompanyCar;
 using Netto.Web.Client;
 using Netto.Web.Client.River;
@@ -69,7 +67,7 @@ public class CarCardTests
     {
         var html = await RenderOpenAsync<CarCard>(OptionalModule.Car, RiverInputs.Example.AddToPlan(OptionalModule.Car));
 
-        (Bubble(html, Text("AcquiredLabel")), CardHtml.Prose(html).Contains(Text("Scope"))).ShouldBe(($"{Text("AcquiredHint")} {Text("Scope")}", false));
+        (CardHtml.BubbleAfter(html, Text("AcquiredLabel")), CardHtml.Prose(html).Contains(Text("Scope"))).ShouldBe(($"{Text("AcquiredHint")} {Text("Scope")}", false));
     }
 
     // What the CO2 percentage counts and why 40% is added back of a car the company charges are rules the
@@ -177,11 +175,6 @@ public class CarCardTests
 
     // A drain list's text, which CarAndRoyaltyCardsTests reads too.
     internal static string Drains(string key) => DrainTexts.GetString(key, CultureInfo.InvariantCulture) ?? key;
-
-    // What the bubble after that label says, as a screen reader hears it.
-    private static string Bubble(string html, string label) =>
-        WebUtility.HtmlDecode(Regex.Match(html, $"aria-label=\"More about {Regex.Escape(label)}\".*?class=\"info-bubble__text\"[^>]*>(.*?)</span>", RegexOptions.Singleline)
-            .Groups[1].Value);
 
     // The card's details, from their fold's body on.
     private static string Details(string html) =>

@@ -120,7 +120,7 @@ public class StreamCardsFiguresTests
     public async Task Split_filledPlan_keepsThePaysBoundInSightAndWhyInItsBubble()
     {
         var html = await CardAsync("split");
-        var bubble = WebUtility.HtmlDecode(Regex.Match(FieldHead(html, "river-split-pay"), "class=\"info-bubble__text\"[^>]*>([^<]*)<").Groups[1].Value);
+        var bubble = CardHtml.BubbleAfter(html, "Gross director pay for the year");
 
         html.ShouldSatisfyAllConditions(
             () => CardHtml.Prose(html).ShouldContain("At most €76,326.08"),
