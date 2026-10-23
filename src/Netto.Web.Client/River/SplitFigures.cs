@@ -77,8 +77,8 @@ internal static class SplitFigures
             [Formats.Euros(level.Pay), Formats.Euros(level.NetInPocket), Formats.Euros(level.KeptInCompany), Formats.Euros(level.Royalty)]),
     };
 
-    // The lines that say something: the first, which heads them, and every other one of more than
-    // nothing, as Formats reads it to the cent.
+    // The lines that say something: the first, which heads them, and every other one that is not
+    // nothing as Formats reads it to the cent, a negative one kept.
     private static IReadOnlyList<FigureLine> Shown(FigureLine first, params FigureLine?[] rest) =>
         [first, .. rest.OfType<FigureLine>().Where(line => Math.Round(line.Amount, 2, MidpointRounding.AwayFromZero) != 0m)];
 }
