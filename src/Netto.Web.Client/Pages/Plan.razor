@@ -111,7 +111,6 @@ else
                         @if (_inputs.Company is not null)
                         {
                             <SplitCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Search="_search" Refused="@Refused(RiverModule.Split)" />
-                            <p class="river__fork" aria-hidden="true">@L[PlanText.Fork(_inputs.InPlan(OptionalModule.Copyright))]</p>
                         }
                         <div class="river__streams">
                             <div class="river__stream">

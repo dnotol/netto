@@ -177,6 +177,17 @@ public class LeverCardsFiguresTests
         CardHtml.Prose(html).ShouldBe(["Skipped: no company figures, so the river starts at your pay."]);
     }
 
+    // Where the river's amounts come from is said where the river starts, in the bubble after Company
+    // year's title, rather than in the page's lede.
+    [Fact]
+    public async Task CompanyYear_bubble_saysTheRiverStartsOnAnExample()
+    {
+        var html = await OpenCardAsync(Filled, "company-year");
+
+        BubbleAfter(html, "Company year")
+            .ShouldBe("The river starts on an example year: replace its amounts with yours, or clear the company's figures to start at your pay.");
+    }
+
     // What a module passes on goes to the card under it, named in a few words; what a royalty leaves
     // beyond its limits says it is taxed there as pay. Where a line goes into a bucket says the bucket's
     // name as the bar does (BucketNamesTests).

@@ -43,13 +43,7 @@
     <value>From what your company earns to what reaches you</value>
   </data>
   <data name="Lede" xml:space="preserve">
-    <value>Each card takes a part of the money and passes the rest on, and the bar above follows every change. The cards open folded to what flows through them: open one to change its amounts. The river starts on an example year: replace its amounts with yours, or clear the company's figures to start at your pay. Every figure shows the official text it comes from.</value>
-  </data>
-  <data name="Fork" xml:space="preserve">
-    <value>↓ Your pay on one side, the company's profit on the other ↓</value>
-  </data>
-  <data name="Fork_Royalty" xml:space="preserve">
-    <value>↓ Your pay and royalty on one side, the company's profit on the other ↓</value>
+    <value>Each card takes a part of the money and passes the rest on, and the bar above follows every change. Every figure shows the official text it comes from.</value>
   </data>
   <data name="AssumedTitle" xml:space="preserve">
     <value>Assumed</value>
@@ -103,7 +97,7 @@
     <value>The 2026 figures are computed from the official 2026 amounts. Tax-Calc does not cover 2026 yet; on 2025, the same method matches it to the cent on the income tax, the tax credit for low earned income, the dividend refund, and the surcharge and bonus on your advance payments.</value>
   </data>
   <data name="AddHint" xml:space="preserve">
-    <value>The company can also pay you vouchers, expense allowances or rent for your home office, put a car at your disposal, or pay you a royalty for the rights on your works.</value>
+    <value>Beside your pay: vouchers, allowances, home office rent, a car, a royalty.</value>
   </data>
   <data name="AddHintButton" xml:space="preserve">
     <value>Add them from Composition</value>

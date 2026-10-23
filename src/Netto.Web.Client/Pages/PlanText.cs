@@ -18,9 +18,6 @@ internal static class PlanText
         _ => throw new ArgumentOutOfRangeException(nameof(tab), tab, null),
     };
 
-    // Under the split: the pay, and the royalty once it is in the plan, on the director's side.
-    public static string Fork(bool royalty) => royalty ? "Fork_Royalty" : "Fork";
-
     // The two notes under the river, each a fold of its own (River/Fold) that the viewer opens: where it
     // is remembered, kept from one version to the next, or a viewer's folds are forgotten.
     public const string AssumedFold = "assumed";

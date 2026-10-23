@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Resources;
+using System.Text.RegularExpressions;
 using Netto.Web.Client.Pages;
 using Netto.Web.Client.Tabs;
 using Shouldly;
@@ -101,12 +102,51 @@ public class PlanTextTests
             .Select(entry => (string)entry.Key)
             .Where(key => key.StartsWith(prefix, StringComparison.Ordinal));
 
-    // Under the split, the royalty runs down the director's side with the pay once it is in the plan.
-    [Theory]
-    [InlineData(false, "↓ Your pay on one side, the company's profit on the other ↓")]
-    [InlineData(true, "↓ Your pay and royalty on one side, the company's profit on the other ↓")]
-    public void PlanResx_fork_saysWhatRunsDownEachSide(bool royalty, string expected)
+    // The river's lede says what the cards and the bar do, in two sentences at most: how a card opens is
+    // its chevron's to say, and where the example comes from is Company year's, in its bubble.
+    [Fact]
+    public void PlanResx_lede_isAtMostTwoSentences()
     {
-        Resources.GetString(PlanText.Fork(royalty), CultureInfo.InvariantCulture).ShouldBe(expected);
+        Sentences(Text("Lede")).Count.ShouldBeLessThanOrEqualTo(2);
     }
+
+    [Theory]
+    [InlineData("fold")]
+    [InlineData("open")]
+    [InlineData("example")]
+    public void PlanResx_lede_namesNeitherHowACardOpensNorTheExample(string word)
+    {
+        Text("Lede").ShouldNotContain(word, Case.Insensitive);
+    }
+
+    // Half the 66 words it held before the story.
+    [Fact]
+    public void PlanResx_lede_isAtMostHalfItsWords()
+    {
+        Words(Text("Lede")).ShouldBeLessThanOrEqualTo(33);
+    }
+
+    // While the plan holds no optional module, one short line under Company year names them, its button
+    // saying where they are added.
+    [Fact]
+    public void PlanResx_addHint_isAtMostTwelveWords()
+    {
+        Words(Text("AddHint")).ShouldBeLessThanOrEqualTo(12);
+    }
+
+    // The cards under the split say what runs down each side: no line between them says it again.
+    [Theory]
+    [InlineData("Fork")]
+    [InlineData("Fork_Royalty")]
+    public void PlanResx_forkUnderTheSplit_isGone(string key)
+    {
+        Resources.GetString(key, CultureInfo.InvariantCulture).ShouldBeNull();
+    }
+
+    private static string Text(string key) => Resources.GetString(key, CultureInfo.InvariantCulture) ?? "";
+
+    // A sentence ends on its full stop, or the text's end.
+    private static List<string> Sentences(string text) => [.. Regex.Split(text.Trim(), @"(?<=[.!?])\s+").Where(sentence => sentence.Length > 0)];
+
+    private static int Words(string text) => text.Split(' ', StringSplitOptions.RemoveEmptyEntries).Count(word => word.Any(char.IsLetterOrDigit));
 }
