@@ -97,6 +97,15 @@
     border-radius: 2px;
 }
 
+/* The bucket's icon (BucketIcons), between the swatch and the name: small, and no taller than the
+   name's line, so the bar keeps its height. */
+.bucket__icon {
+    flex: none;
+    font-size: 0.8rem;
+    letter-spacing: 0;
+    line-height: 1;
+}
+
 .bucket-bar__stack {
     display: flex;
     height: 0.5rem;

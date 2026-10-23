@@ -3,7 +3,8 @@
 
 @* The river's summary, always in view under the site header: where the money ends up, out of what
    the river starts from, and, at its right, what the page gives it (the Composition menu). Every
-   amount is the engine's, regrouped by BucketsView. Each bucket's name opens an info bubble saying
+   amount is the engine's, regrouped by BucketsView. Each bucket's name follows its icon (BucketIcons),
+   which a screen reader skips, and opens an info bubble saying
    what it holds, and its amount says its share of the start; under them, what reaches the pocket out
    of what leaves the company (BucketsView.Reach), its bubble saying so, and, once the user has marked
    their current setup, the plan starred « Today », what the river leaves in the pocket against it
@@ -23,6 +24,7 @@
                     <div class="bucket bucket--@key">
                         <dt class="bucket__label">
                             <span class="bucket__swatch" aria-hidden="true"></span>
+                            <span class="bucket__icon" aria-hidden="true">@BucketIcons.For(key)</span>
                             <InfoBubble Term="@L[BucketBarText.Bucket(key, IncludesRent)]">@L[BucketBarText.Holds(key, IncludesRent, IncludesRoyalty)]</InfoBubble>
                         </dt>
                         <dd class="bucket__amount">
