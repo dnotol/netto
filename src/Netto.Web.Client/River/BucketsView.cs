@@ -37,6 +37,11 @@ internal sealed record BucketsView(
     // the whole.
     public decimal? TaxesShare => Reach is { } reach ? 1m - Rounded(reach) : null;
 
+    // What the river starts from once there is a year of the company, the one start every reach is out
+    // of, the split's included (SplitSearchView): what the company earns before it pays its director
+    // anything, less what its car costs it, plus the profits kept from earlier years.
+    public static decimal StartOf(YearResult year) => year.Scenario.ProfitBeforeDirector - year.Car.Costs + year.Scenario.EarlierProfits;
+
     public static BucketsView? From(RiverRun run)
     {
         if (run.Pay is not { } pay)
@@ -45,7 +50,7 @@ internal sealed record BucketsView(
         var earlierProfits = run.Year?.Scenario.EarlierProfits ?? 0m;
         var carCosts = run.Year?.Car.Costs ?? 0m;
         var (start, pocket, kept, steps) = run.Year is { } year
-            ? (year.Scenario.ProfitBeforeDirector - carCosts + earlierProfits, year.NetInPocket, year.KeptInCompany, year.Steps)
+            ? (StartOf(year), year.NetInPocket, year.KeptInCompany, year.Steps)
             : (pay.CompanyCost, pay.NetInPocket, 0m, pay.Steps);
 
         (string Key, decimal Amount)[] amounts =

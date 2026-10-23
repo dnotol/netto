@@ -1,3 +1,4 @@
+using Netto.Web.Client;
 using Netto.Web.Client.River;
 using Shouldly;
 
@@ -37,6 +38,23 @@ public class SplitSearchViewTests
         var best = view.Best.ShouldNotBeNull().Level;
 
         view.Best.Reach.ShouldBe(best.NetInPocket / (100_000m - best.KeptInCompany));
+    }
+
+    // With YearSimulationCarTests' electric car, the river starts after its 8,000 of costs, a cost of
+    // the company like its running costs, from 92,000: the reach at the pay set is the bar's, and the
+    // best pay's is out of the same start, less what the company keeps at that pay.
+    [Fact]
+    public void Car_reachIsOutOfTheStartTheBarDrawsAfterItsCosts()
+    {
+        var inputs = Example.AddToPlan(OptionalModule.Car).WithCatalogueValue(50_000m).WithFirstRegistration(new DateOnly(2026, 1, 10)).WithCarCosts(8_000m);
+        var run = inputs.Run();
+
+        var view = SplitSearchView.From(inputs, run, inputs.SearchSplit()).ShouldNotBeNull();
+        var best = view.Best.ShouldNotBeNull().Level;
+
+        view.ShouldSatisfyAllConditions(
+            () => view.Reach.ShouldBe(BucketsView.From(run).ShouldNotBeNull().Reach),
+            () => view.Best.Reach.ShouldBe(Shares.Of(best.NetInPocket, 92_000m - best.KeptInCompany)));
     }
 
     [Fact]

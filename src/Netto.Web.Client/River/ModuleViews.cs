@@ -219,7 +219,7 @@ internal sealed record SplitSearchView(PayCurveView Curve, BestPayView? Best, Ra
         if (search is null || run.Error is not null || run.Year is not { } year || search.Curve[^1].Pay <= 0m)
             return null;
 
-        var start = year.Scenario.ProfitBeforeDirector + year.Scenario.EarlierProfits;
+        var start = BucketsView.StartOf(year);
         var best = search.Best is { } level
             ? new BestPayView(
                 level,
