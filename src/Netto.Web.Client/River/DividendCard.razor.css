@@ -1,30 +1,9 @@
 /* ::deep reaches the MudChipSet's chips, which carry no scope attribute of their own. */
-.dividend__waiting,
-.dividend__hint {
+.dividend__waiting {
     margin: 0;
     color: var(--netto-text-muted);
     line-height: 1.55;
 }
-
-.dividend__hint {
-    font-size: 0.82rem;
-}
-
-/* The two sides of the slider, one at each end: paid out on the left, kept on the right. */
-.dividend__ends {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    gap: 0.25rem 1rem;
-    color: var(--netto-text-muted);
-    font-size: 0.88rem;
-    font-variant-numeric: tabular-nums;
-}
-
-    .dividend__ends b {
-        color: var(--netto-text);
-        font-weight: 500;
-    }
 
 /* A chip's text wraps rather than widening the card on a phone. */
 .dividend__categories ::deep .mud-chip {

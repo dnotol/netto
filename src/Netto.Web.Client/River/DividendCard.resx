@@ -33,15 +33,6 @@
   <data name="EarlierHint" xml:space="preserve">
     <value>What the company kept from earlier years' profits and can still pay out. They are paid out with this year's dividend, at the same rate. Leave 0 if it has none.</value>
   </data>
-  <data name="OutOf" xml:space="preserve">
-    <value>Out of {0} of this year's profit after tax and {1} kept from earlier years.</value>
-  </data>
-  <data name="DividendEnd" xml:space="preserve">
-    <value>Dividend</value>
-  </data>
-  <data name="KeptEnd" xml:space="preserve">
-    <value>Kept</value>
-  </data>
   <data name="CategoryLabel" xml:space="preserve">
     <value>Withholding rate you declare</value>
   </data>
@@ -54,11 +45,14 @@
   <data name="Category_VvprbisThirdYearOnwards" xml:space="preserve">
     <value>{0} · VVPRbis, third distribution on</value>
   </data>
-  <data name="CategoryHint" xml:space="preserve">
-    <value>[VVPRbis shares] pay the ordinary rate on their first distributions; the second-distribution rate is for a contribution made by 2025.</value>
+  <data name="Help_Category" xml:space="preserve">
+    <value>VVPRbis shares are shares a small company issued in return for a new contribution in cash, under the regime's conditions: their dividends can be withheld at a reduced rate from a later distribution on. They pay the ordinary rate on their first distributions; the second-distribution rate is for a contribution made by 2025.</value>
   </data>
-  <data name="Term_Vvprbis" xml:space="preserve">
-    <value>Shares a small company issued in return for a new contribution in cash, under the regime's conditions: their dividends can be withheld at a reduced rate from a later distribution on.</value>
+  <data name="Figure_ProfitAfterTax" xml:space="preserve">
+    <value>This year's profit after tax</value>
+  </data>
+  <data name="Figure_Dividend" xml:space="preserve">
+    <value>Dividend</value>
   </data>
   <data name="DetailsLabel" xml:space="preserve">
     <value>Where these figures come from</value>

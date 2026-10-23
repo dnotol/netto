@@ -4,14 +4,16 @@
 @inject IStringLocalizer<DividendCard> L
 
 @* One slider over what the company can pay out, this year's profit after tax and the profits kept
-   from earlier years: kept in the company at year end on one side, paid out as a dividend on the
-   other, so the dividend can never exceed what is there. It is withheld at the rate the user
-   declares, whatever year its profits come from, and the withholding on the exempt part comes back
-   through the tax return. What the user rarely changes, the earlier profits and the rate they
-   declare, sits behind one disclosure, folded to a line that states it; the earlier profits are taken
-   while typing, like revenue, since nothing bounds them. What is kept can be typed exactly, taken
-   when the field is left, so the field shows what can be paid out (the split's field does the
-   same). *@
+   from earlier years: what is kept in the company at year end, the rest paid out as a dividend, so
+   the dividend can never exceed what is there. It is withheld at the rate the user declares, whatever
+   year its profits come from, and the withholding on the exempt part comes back through the tax
+   return. What the user rarely changes, the earlier profits and the rate they declare, sits behind one
+   disclosure, folded to a line that states it, what VVPRbis shares are in the bubble after the rate's
+   label; the earlier profits are taken while typing, like revenue, since nothing bounds them. What is
+   kept can be typed exactly, taken when the field is left, so the field shows what can be paid out
+   (the split's field does the same). Under it, the dividend's figure as lines, this year's profit
+   after tax beside earlier profits and the dividend paid out (DividendFigures), then where the
+   dividend goes and what is kept. *@
 <ModuleCard Name="dividend" Title="@L["Title"]" Summary="@Summary" Glance="@Glance" ToYou="@_view?.ToYou" Skipped="Inputs.Company is null" Refused="@Refused" Details="@Details"
             DetailsLabel="@L["DetailsLabel"]">
     @if (Inputs.Company is null)
@@ -27,7 +29,7 @@
                                    Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
                                    Error="@(Refused == YearSimulation.EarlierProfitsNegative)" Refusal="@Refused" />
             </RiverField>
-            <RiverField Label="@L["CategoryLabel"]" Origin="Inputs.DividendCategory.Origin">
+            <RiverField Label="@L["CategoryLabel"]" Origin="Inputs.DividendCategory.Origin" Help="@L[DividendCardText.CategoryHelp]">
                 <div class="dividend__categories">
                     <MudChipSet T="WithholdingCategory" SelectedValue="Inputs.DividendCategory.Value" SelectedValueChanged="OnCategoryChanged"
                                 SelectionMode="SelectionMode.SingleSelection" CheckMark="false" Variant="Variant.Outlined" SelectedColor="Color.Primary"
@@ -38,7 +40,6 @@
                         }
                     </MudChipSet>
                 </div>
-                <p class="dividend__hint"><TermSentence Text="@L["CategoryHint"]" Meaning="@L[DividendCardText.VvprbisTerm]" /></p>
             </RiverField>
         </Disclosure>
         <RiverField Label="@L["KeptLabel"]" For="river-reserve" Origin="Inputs.Reserve.Origin">
@@ -52,20 +53,10 @@
                                Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
                                Variant="Variant.Outlined" Margin="Margin.Dense" Error="@(Refused == YearSimulation.ReserveNegative)" Refusal="@Refused" />
         </RiverField>
-        @if (_view is not null)
-        {
-            <div class="dividend__ends">
-                <span>@L["DividendEnd"] <b>@Formats.Euros(_view.Dividend)</b></span>
-                <span>@L["KeptEnd"] <b>@Formats.Euros(_view.Kept)</b></span>
-            </div>
-            @if (_view.EarlierProfits > 0m)
-            {
-                <p class="dividend__hint">@L["OutOf", Formats.Euros(_view.ProfitAfterTax), Formats.Euros(_view.EarlierProfits)]</p>
-            }
-        }
         <RefusedMessage Error="@Refused" />
         @if (_view is not null)
         {
+            <FigureList Figures="@FigureWords.Of(L, DividendFigures.From(_view))" />
             <DrainList Drains="_view.Drains" />
         }
     }

@@ -54,21 +54,13 @@ public class DividendCardTextTests
         Missing(phrases.Select(phrase => phrase.Key).Append("SharesTitle")).ShouldBeEmpty();
     }
 
+    // What VVPRbis shares are, in the bubble after the rate's label, which draws its text as it is: a term
+    // marked in it would show its brackets.
     [Fact]
-    public void DividendCardResx_whatTheRatesAreFor_marksVvprbis()
+    public void DividendCardResx_rateBubble_hasATextMarkingNoTerm()
     {
-        Terms(["CategoryHint"]).ShouldBe(["VVPRbis shares"]);
+        (Resources.GetString(DividendCardText.CategoryHelp, CultureInfo.InvariantCulture) is { } text ? TermText.Split(text).Term : "missing").ShouldBeNull();
     }
-
-    [Fact]
-    public void DividendCardResx_vvprbis_saysWhatItMeans()
-    {
-        Missing([DividendCardText.VvprbisTerm]).ShouldBeEmpty();
-    }
-
-    // The term each sentence marks, null where its text marks none or is missing.
-    private static List<string?> Terms(IEnumerable<string> keys) =>
-        [.. keys.Select(key => Resources.GetString(key, CultureInfo.InvariantCulture) is { } text ? TermText.Split(text).Term : null)];
 
     private static IEnumerable<string> Missing(IEnumerable<string> keys) =>
         keys.Distinct().Where(key => Resources.GetString(key, CultureInfo.InvariantCulture) is null);

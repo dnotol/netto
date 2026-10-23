@@ -4,7 +4,6 @@ using System.Resources;
 using System.Text.RegularExpressions;
 using Netto.Web.Client.River;
 using Shouldly;
-using static Netto.Tests.WebClient.River.RiverRendering;
 
 namespace Netto.Tests.WebClient.River;
 
@@ -39,6 +38,9 @@ public class LeverCardsFiguresTests
     // Under the floor of 463.68 the 12% let of the home sets (RentFiguresTests).
     private static readonly NamedRiver UnderTheFloor = Filled.With("a rent under its floor", inputs => inputs.WithRent(300m));
 
+    // All of what can be paid out goes as a dividend.
+    private static readonly NamedRiver NothingKept = Filled.With("nothing kept", inputs => inputs.WithReserve(0m));
+
     // Each card's summary, by its fold's name, on the river it is drawn on.
     public static TheoryData<string, NamedRiver, string> Summaries => new()
     {
@@ -47,6 +49,7 @@ public class LeverCardsFiguresTests
         { "allowances", Filled, "€1,000.00 to your pocket · €96,938.00 left" },
         { "rent", Filled, "€711.11 to your pocket · €88,538.00 before your pay and royalty" },
         { "rent", NoRoyalty, "€711.11 to your pocket · €88,538.00 before your pay" },
+        { "dividend", Filled, "€44,978.48 paid out · €37,032.29 to your pocket" },
     };
 
     [Theory]
@@ -64,7 +67,7 @@ public class LeverCardsFiguresTests
         { "rent", Filled },
         { "rent", NoRoyalty },
         { "dividend", Filled },
-        { "dividend", Filled.With("nothing kept", inputs => inputs.WithReserve(0m)) },
+        { "dividend", NothingKept },
     };
 
     // Between its middle dots, a summary holds a figure and a few words naming it: no sentence, so no
@@ -89,6 +92,8 @@ public class LeverCardsFiguresTests
         { "allowances", Filled },
         { "rent", Filled },
         { "rent", UnderTheFloor },
+        { "dividend", Filled },
+        { "dividend", NothingKept },
     };
 
     [Theory]
@@ -102,13 +107,15 @@ public class LeverCardsFiguresTests
     }
 
     // The words in sight on each card of the filled plan, open, held under its cut: before the story it
-    // drew 26 on Company year, 131 on Vouchers, 161 on Expense allowances and 192 on Home office rent.
+    // drew 26 on Company year, 131 on Vouchers, 161 on Expense allowances, 192 on Home office rent and 99 on
+    // Dividend.
     public static TheoryData<string, int> Cuts => new()
     {
         { "company-year", 24 },
         { "vouchers", 100 },
         { "allowances", 101 },
         { "rent", 115 },
+        { "dividend", 88 },
     };
 
     [Theory]
@@ -126,6 +133,7 @@ public class LeverCardsFiguresTests
         { "vouchers", Filled, ["€8.91 each from the company at most, €1.09 from you.", "At most €250.00 a year.", "At most €100.00 a year."] },
         { "allowances", Filled, ["At most €1,938.44 for the year.", "At most €20.00 a month, €240.00 for the year.", "At most €20.00 a month, €240.00 for the year."] },
         { "rent", Filled, ["Cadastral income €1,200.00 · 12% let to the company", "At most €1,380.00 for the year.Use €1,380.00"] },
+        { "dividend", Filled, ["€20,000.00 kept from earlier years · VVPRbis shares, third distribution on, 18% withheld (default)"] },
     };
 
     [Theory]
@@ -140,10 +148,23 @@ public class LeverCardsFiguresTests
     [Fact]
     public async Task Allowances_officeField_saysItsMonthlyMaximaInItsBubble()
     {
-        var html = WebUtility.HtmlDecode(await OpenCardAsync(Filled, "allowances"));
+        var html = await OpenCardAsync(Filled, "allowances");
 
-        Bubbles(FieldHead(html, "river-office-allowance"))
-            .ShouldBe(["At most €157.83 a month from January, €160.99 a month from March, €164.21 a month from September."]);
+        BubbleAfter(html, "Office allowance for the year")
+            .ShouldBe("At most €157.83 a month from January, €160.99 a month from March, €164.21 a month from September.");
+    }
+
+    // The rate a dividend is withheld at is declared: what VVPRbis shares are, and which of their rates is
+    // for which distribution, are in the bubble after its label, inside the disclosure a refusal opens.
+    [Fact]
+    public async Task Dividend_withholdingRate_saysWhatVvprbisSharesAreInItsBubble()
+    {
+        var html = await OpenCardAsync(Filled.With("earlier profits refused", inputs => inputs.WithEarlierProfits(-1m)), "dividend");
+
+        BubbleAfter(html, "Withholding rate you declare").ShouldBe(
+            "VVPRbis shares are shares a small company issued in return for a new contribution in cash, under the regime's conditions: " +
+            "their dividends can be withheld at a reduced rate from a later distribution on. They pay the ordinary rate on their first " +
+            "distributions; the second-distribution rate is for a contribution made by 2025.");
     }
 
     // Skipped, Company year says where the river starts; that the cards which need the company's figures
@@ -192,9 +213,16 @@ public class LeverCardsFiguresTests
     // The card of that fold's name on the Plan page, every card open.
     private static async Task<string> OpenCardAsync(NamedRiver river, string card) => CardHtml.Card(await CardHtml.RenderPlanOpenAsync(river.Inputs), card);
 
-    // The text of each bubble in that HTML, as a screen reader is given it.
-    private static List<string> Bubbles(string html) =>
-        [.. Regex.Matches(html, "class=\"info-bubble__text\"[^>]*>(.*?)</span>", RegexOptions.Singleline).Select(match => match.Groups[1].Value)];
+    // What the bubble after that label says, as a screen reader is given it: the text its (i), named
+    // « More about » the label, is described by.
+    private static string BubbleAfter(string html, string label)
+    {
+        var decoded = WebUtility.HtmlDecode(html);
+        var trigger = decoded.IndexOf($"aria-label=\"More about {label}\"", StringComparison.Ordinal);
+        trigger.ShouldBeGreaterThan(-1, $"No bubble follows « {label} ».");
+
+        return Regex.Match(decoded[trigger..], "class=\"info-bubble__text\"[^>]*>(.*?)</span>", RegexOptions.Singleline).Groups[1].Value;
+    }
 
     // An amount without the sign a line gives what it takes or what comes back: −€400.00 is €400.00.
     private static string Unsigned(string amount) => amount.TrimStart('−', '+');
