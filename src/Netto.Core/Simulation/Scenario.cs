@@ -20,7 +20,8 @@ namespace Netto.Core.Simulation;
 // director pay and paid in advance on its income tax, none unless given, who pays the director's
 // social contributions, the director unless given, the vouchers it grants the director, the expense
 // allowances it pays them, the rent it pays for the part of their home it uses as an office, the car
-// it puts at their disposal and the copyright royalty it pays them, none unless given.
+// it puts at their disposal and the copyright royalty it pays them, none unless given: an amount the
+// user fixes, or one that follows the pay, what an advance ruling accepts at each pay.
 public sealed record Scenario(
     int IncomeYear,
     decimal Revenue,
