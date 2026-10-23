@@ -105,6 +105,62 @@ public class LeverCardsFiguresTests
         CardHtml.Prose(html).Where(paragraph => Amounts.Matches(paragraph).Any(amount => amounts.Contains(Unsigned(amount.Value)))).ShouldBeEmpty();
     }
 
+    // An open card draws its figure line by line, each label with its amount, above where its money goes:
+    // the figure's lines first, then the first drain line. The vouchers cost the company 200 × €8.91 and
+    // the eco and sport/culture vouchers given, €4.00 of each meal voucher deducted; the rent above its
+    // floor loses 40% of flat charges, under it the floor of €463.68 its own (RentFiguresTests); the
+    // dividend pays this year's profit after tax and the €20,000.00 from earlier years, less what is kept.
+    public static TheoryData<string, NamedRiver, string[], string> FiguresAboveDrains => new()
+    {
+        { "vouchers", Filled, ["The company pays €2,062.00", "Added back to its taxable income €1,262.00"], "Meal vouchers" },
+        { "rent", Filled, ["Taxed on the rent €1,000.00", "Flat charges −€400.00", "Joins your taxable income €600.00"], "Income tax on the rent" },
+        { "rent", UnderTheFloor, ["Taxed on the floor €463.68", "Flat charges −€185.47", "Joins your taxable income €278.21"], "Income tax on the rent" },
+        { "dividend", Filled, ["This year's profit after tax €29,978.48", "Dividend €44,978.48"], "Withholding tax" },
+        { "dividend", NothingKept, ["This year's profit after tax €29,978.48", "Dividend €49,978.48"], "Withholding tax" },
+    };
+
+    [Theory]
+    [MemberData(nameof(FiguresAboveDrains))]
+    public async Task Card_open_drawsItsFigureLinesAboveItsDrainLines(string card, NamedRiver river, string[] figures, string firstDrain)
+    {
+        var lines = CardHtml.Lines(await OpenCardAsync(river, card));
+
+        string?[] drawn = [.. lines.Take(figures.Length).Select(line => $"{line.Label} {line.Amount}"), lines.Skip(figures.Length).Select(line => line.Label).FirstOrDefault()];
+        drawn.ShouldBe([.. figures, firstDrain]);
+    }
+
+    // How the cap under the rent is set is in the bubble after the rent's label: 5/3 of the cadastral
+    // income of the 12% let, €144.00, revalued by the 2026 coefficient.
+    [Fact]
+    public async Task Rent_rentField_saysHowTheCapIsSetInItsBubble()
+    {
+        var html = await OpenCardAsync(Filled, "rent");
+
+        CardHtml.BubbleAfter(html, "Rent for the year").ShouldBe(
+            "At most €1,380.00 for the year: 5/3 of €144.00, the cadastral income of the part let, revalued by 5.75. Above it, the excess would be taxed as director pay.");
+    }
+
+    // Under the floor, the bubbles after the rent's lines say what the floor and the flat charges are.
+    [Theory]
+    [InlineData("Taxed on the floor", "The rent is under the floor, so you are taxed on the floor: the cadastral income of the part let, indexed, plus 40%.")]
+    [InlineData("Flat charges",
+        "A flat deduction for maintenance and repairs in place of real costs: a share of the rent, capped by the revalued cadastral income of the part let.")]
+    public async Task Rent_underTheFloor_explainsItsLinesInTheirBubbles(string line, string bubble)
+    {
+        CardHtml.BubbleAfter(await OpenCardAsync(UnderTheFloor, "rent"), line).ShouldBe(bubble);
+    }
+
+    // Every text the page draws on a plan whose levers hold amounts, in sight or not, is in its component's
+    // texts: the figure lines, their bubbles and the home's facts among them.
+    public static TheoryData<NamedRiver> FilledPlans => new() { Filled, UnderTheFloor, NothingKept };
+
+    [Theory]
+    [MemberData(nameof(FilledPlans))]
+    public async Task RenderPlanOpenAsync_filledPlan_leavesNoKeyOnThePage(NamedRiver river)
+    {
+        CardHtml.LeakedKeys(await CardHtml.RenderPlanOpenAsync(river.Inputs)).ShouldBeEmpty();
+    }
+
     // The words in sight on each card of the filled plan, open, held under its cut: before the story it
     // drew 26 on Company year, 131 on Vouchers, 161 on Expense allowances, 192 on Home office rent and 99 on
     // Dividend.
