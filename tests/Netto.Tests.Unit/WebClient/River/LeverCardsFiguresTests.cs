@@ -24,40 +24,41 @@ public class LeverCardsFiguresTests
     // Every lever in the plan with an amount of each kind given, each under its maximum so that a bound
     // under its field never reads as one of the card's lines, a rent above its floor, profits kept from
     // earlier years and part of the year's kept in the company: the plan the story counts the cards on.
-    private static readonly RiverInputs Filled = PlanComposition.Modules.Aggregate(RiverInputs.Example, (inputs, module) => inputs.AddToPlan(module))
+    private static readonly NamedRiver Filled = new("the filled plan", PlanComposition.Modules.Aggregate(RiverInputs.Example, (inputs, module) => inputs.AddToPlan(module))
         .WithMealVoucherDays(200).WithEcoVouchers(200m).WithSportCultureVouchers(80m)
         .WithInternetAllowance(200m).WithComputerAllowance(200m).WithPhoneCosts(600m)
         .WithCadastralIncome(1_200m).WithShareLet(0.12m).WithRent(1_000m)
         .WithCatalogueValue(50_000m).WithCarCosts(8_000m).WithCarContribution(600m)
-        .WithEarlierProfits(20_000m).WithReserve(5_000m);
+        .WithEarlierProfits(20_000m).WithReserve(5_000m));
 
     // Each card's summary, by its fold's name, on the river it is drawn on.
-    public static TheoryData<string, RiverInputs, string> Summaries => new()
+    public static TheoryData<string, NamedRiver, string> Summaries => new()
     {
         { "company-year", Filled, "€120,000.00 in · €100,000.00 before your pay" },
+        { "vouchers", Filled, "€2,062.00 to your pocket · €97,938.00 left" },
     };
 
     [Theory]
     [MemberData(nameof(Summaries))]
-    public async Task Summary_card_isItsFiguresWithTheirLabels(string card, RiverInputs river, string expected)
+    public async Task Summary_card_isItsFiguresWithTheirLabels(string card, NamedRiver river, string expected)
     {
         CardHtml.Summary(await OpenCardAsync(river, card)).ShouldBe(expected);
     }
 
-    public static TheoryData<string, RiverInputs> Cards => new()
+    public static TheoryData<string, NamedRiver> Cards => new()
     {
         { "company-year", Filled },
         { "vouchers", Filled },
         { "allowances", Filled },
         { "dividend", Filled },
-        { "dividend", Filled.WithReserve(0m) },
+        { "dividend", Filled.With("nothing kept", inputs => inputs.WithReserve(0m)) },
     };
 
     // Between its middle dots, a summary holds a figure and a few words naming it: no sentence, so no
     // punctuation once its amounts are left out.
     [Theory]
     [MemberData(nameof(Cards))]
-    public async Task Summary_card_holdsNoSentence(string card, RiverInputs river)
+    public async Task Summary_card_holdsNoSentence(string card, NamedRiver river)
     {
         var summary = CardHtml.Summary(await OpenCardAsync(river, card)).ShouldNotBeNull();
 
@@ -67,11 +68,29 @@ public class LeverCardsFiguresTests
             () => labels.Where(label => label.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length > 5).ShouldBeEmpty());
     }
 
+    // An open card's paragraphs say what its lines cannot: none restates an amount one of its lines shows,
+    // whichever way the line's amount goes.
+    public static TheoryData<string, NamedRiver> CardsWithLines => new()
+    {
+        { "vouchers", Filled },
+    };
+
+    [Theory]
+    [MemberData(nameof(CardsWithLines))]
+    public async Task Card_open_proseRestatesNoAmountOfItsLines(string card, NamedRiver river)
+    {
+        var html = await OpenCardAsync(river, card);
+
+        var amounts = CardHtml.LineAmounts(html).Select(Unsigned).ToHashSet();
+        CardHtml.Prose(html).Where(paragraph => Amounts.Matches(paragraph).Any(amount => amounts.Contains(Unsigned(amount.Value)))).ShouldBeEmpty();
+    }
+
     // The words in sight on each card of the filled plan, open, held under its cut: before the story it
-    // drew 26 on Company year.
+    // drew 26 on Company year and 131 on Vouchers.
     public static TheoryData<string, int> Cuts => new()
     {
         { "company-year", 24 },
+        { "vouchers", 100 },
     };
 
     [Theory]
@@ -86,7 +105,9 @@ public class LeverCardsFiguresTests
     [Fact]
     public async Task CompanyYear_skipped_saysWhereTheRiverStarts()
     {
-        CardHtml.Prose(await OpenCardAsync(Filled.SkipCompany(), "company-year")).ShouldBe(["Skipped: no company figures, so the river starts at your pay."]);
+        var html = await OpenCardAsync(Filled.With("no company figures", inputs => inputs.SkipCompany()), "company-year");
+
+        CardHtml.Prose(html).ShouldBe(["Skipped: no company figures, so the river starts at your pay."]);
     }
 
     // What a module passes on goes to the card under it, named in a few words; what a royalty leaves
@@ -123,5 +144,16 @@ public class LeverCardsFiguresTests
     }
 
     // The card of that fold's name on the Plan page, every card open.
-    private static async Task<string> OpenCardAsync(RiverInputs river, string card) => CardHtml.Card(await CardHtml.RenderPlanOpenAsync(river), card);
+    private static async Task<string> OpenCardAsync(NamedRiver river, string card) => CardHtml.Card(await CardHtml.RenderPlanOpenAsync(river.Inputs), card);
+
+    // An amount without the sign a line gives what it takes or what comes back: −€400.00 is €400.00.
+    private static string Unsigned(string amount) => amount.TrimStart('−', '+');
+
+    // A river the cards are drawn on, named for what it holds, as a test names it.
+    public sealed record NamedRiver(string Name, RiverInputs Inputs)
+    {
+        public NamedRiver With(string change, Func<RiverInputs, RiverInputs> changed) => new($"{Name}, {change}", changed(Inputs));
+
+        public override string ToString() => Name;
+    }
 }

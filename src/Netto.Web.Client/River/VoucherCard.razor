@@ -5,12 +5,14 @@
 @* What the company pays the director besides pay, before the split: meal vouchers, one per day
    worked, with the most the company may pay into each, and the year's eco and sport/culture
    vouchers. They reach the pocket untaxed and outside INASTI, and the company pays them out of its
-   profit before pay; what it cannot deduct of them is added back to its taxable income. What they
-   leave goes on to the next module in the plan, or the split. An optional module: it shows only while
-   in the plan, and the word at its bottom takes it out, its values kept. Netto cannot see the
-   agreement or the days worked, so the card lists the conditions with their texts. The amounts are
-   taken while typing, like revenue, and carry no Min or Max: the engine refuses what the rules do not
-   allow, and its message is what the user has to see. Skipped with the company. *@
+   profit before pay; what it cannot deduct of them is added back to its taxable income. Under the
+   fields, the card's figures as lines, what the company pays and what it adds back (VoucherFigures),
+   then where the vouchers go, each to the pocket, and what they leave, on to the next module in the
+   plan, or the split. An optional module: it shows only while in the plan, and the word at its bottom
+   takes it out, its values kept. Netto cannot see the agreement or the days worked, so the card lists
+   the conditions with their texts. The amounts are taken while typing, like revenue, and carry no Min
+   or Max: the engine refuses what the rules do not allow, and its message is what the user has to
+   see. Skipped with the company. *@
 <ModuleCard Name="@ModuleFolds.Name(OptionalModule.Vouchers)" Title="@L["Title"]" Summary="@Summary" Glance="@Glance" ToYou="@_view?.ToYou" Help="@L["Hint"]" Skipped="Inputs.Company is null" Refused="@Refused"
             Details="@Details"
             DetailsLabel="@L["DetailsLabel"]" RemoveLabel="@L["Remove"]" OnRemove="Remove">
@@ -54,12 +56,9 @@
             </RiverField>
         </div>
         <RefusedMessage Error="@Refused" />
-        @if (_view is { Total: > 0m } shown)
-        {
-            <p class="vouchers__disallowed">@L["Disallowed", Formats.Euros(shown.Total), Formats.Euros(shown.Deductible), Formats.Euros(shown.Disallowed)]</p>
-        }
         @if (_view is not null)
         {
+            <FigureList Figures="@FigureWords.Of(L, VoucherFigures.From(_view))" />
             <DrainList Drains="_view.Drains" />
         }
         @if (_rules is not null)

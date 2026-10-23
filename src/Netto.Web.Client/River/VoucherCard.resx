@@ -16,7 +16,7 @@
     <value>Vouchers</value>
   </data>
   <data name="Summary" xml:space="preserve">
-    <value>{0} to your pocket · {1} left after them</value>
+    <value>{0} to your pocket · {1} left</value>
   </data>
   <data name="Waiting" xml:space="preserve">
     <value>Waiting for the company's year.</value>
@@ -28,7 +28,7 @@
     <value>Days with a meal voucher</value>
   </data>
   <data name="MealDaysHint" xml:space="preserve">
-    <value>One a day you actually work. The company pays {0} into each, the most it may, and you pay {1}.</value>
+    <value>{0} each from the company at most, {1} from you.</value>
   </data>
   <data name="EcoLabel" xml:space="preserve">
     <value>Eco vouchers for the year</value>
@@ -39,8 +39,11 @@
   <data name="YearlyMaximum" xml:space="preserve">
     <value>At most {0} a year.</value>
   </data>
-  <data name="Disallowed" xml:space="preserve">
-    <value>Of the {0} the company pays for them, it deducts {1}. The other {2} are added back to its taxable income: Corporate tax shows them.</value>
+  <data name="Figure_CompanyPays" xml:space="preserve">
+    <value>The company pays</value>
+  </data>
+  <data name="Figure_AddedBack" xml:space="preserve">
+    <value>Added back to its taxable income</value>
   </data>
   <data name="DetailsLabel" xml:space="preserve">
     <value>Where these figures come from</value>
