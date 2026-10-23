@@ -1,4 +1,6 @@
 @using System.Globalization
+@using Netto.Core.Copyright
+@using Netto.Core.DirectorPay
 @using Netto.Core.Simulation
 @inject IStringLocalizer<SplitCard> L
 
@@ -11,10 +13,17 @@
    be typed below, taken when the field is left rather than while typing: SplitView keeps the pay
    within the profit, and MudBlazor redraws a field's text from its value only once it has lost focus.
 
+   With Copyright royalty in the plan, the split also pays the royalty beside the pay, and shares what
+   the levers leave three ways (operator, 2026-10-23): the royalty follows the pay, what an advance
+   ruling accepts at each pay, so moving the pay moves it and the curve weighs both, or it is a fixed
+   amount, typed here, taken while typing. Following, it says how the engine set it, or why it is none;
+   the creative share it reads is set on the Copyright royalty card below, with the royalty's other
+   facts. A refusal of the royalty marks its field, of the pay the pay's.
+
    The plot stretches to the card's width (preserveAspectRatio="none"), so its lines keep their
    width through vector-effect, and what must keep its shape (the best pay's dot, the axes' labels) is
    HTML placed over it in percentages. *@
-<ModuleCard Name="split" Title="@L["Title"]" Summary="@Summary" Help="@L["Hint"]">
+<ModuleCard Name="split" Title="@L["Title"]" Summary="@Summary" Help="@L[SplitCardText.Hint(_view.Royalty)]">
     <RiverField Label="@L["PayLabel"]" For="river-split-pay" Origin="Inputs.DirectorPay.Origin" Help="@(_search is null ? null : L["CurveHint"].Value)">
         <div class="pay-curve @(_search is null ? "pay-curve--bare" : null)">
             @if (_search is { } search)
@@ -66,12 +75,12 @@
             <div class="pay-curve__slider">
                 <MudSlider T="decimal" Value="_view.Pay" ValueChanged="OnPayChanged" Min="0m" Max="_view.Ceiling" Step="100m"
                            Immediate="true" Color="Color.Primary" Culture="Formats.Culture" Disabled="@(_view.Ceiling == 0m)"
-                           aria-labelledby="river-split-pay-label" aria-valuetext="@Formats.Euros(_view.Pay)" />
+                           aria-labelledby="river-split-pay-label" aria-valuetext="@SliderValue" />
             </div>
         </div>
         <RiverNumericField T="decimal" InputId="river-split-pay" Value="_view.FieldPay" ValueChanged="OnPayChanged"
                            Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
-                           Variant="Variant.Outlined" Margin="Margin.Dense" Error="@(Refused is not null)" Refusal="@Refused" />
+                           Variant="Variant.Outlined" Margin="Margin.Dense" Error="@(Refused == GrossToNet.GrossPayNegative)" Refusal="@Refused" />
     </RiverField>
     @if (_search is { } shown)
     {
@@ -91,8 +100,39 @@
             }
         </ul>
     }
+    @if (_view.Royalty is { } royalty)
+    {
+        <RiverField Label="@L["RoyaltyLabel"]" Origin="royalty.FollowsPay.Origin" Help="@L["RoyaltyHint"]">
+            <div class="split__policies">
+                <MudChipSet T="bool" SelectedValue="royalty.FollowsPay.Value" SelectedValueChanged="OnPolicyChanged"
+                            SelectionMode="SelectionMode.SingleSelection" CheckMark="false" Variant="Variant.Outlined" SelectedColor="Color.Primary"
+                            Size="Size.Small">
+                    <MudChip T="bool" Value="true" Text="@L[SplitCardText.Policy(true)]" />
+                    <MudChip T="bool" Value="false" Text="@L[SplitCardText.Policy(false)]" />
+                </MudChipSet>
+            </div>
+            @if (royalty is { FollowsPay.Value: true, Following: { } following })
+            {
+                <p class="split__following">@L[SplitCardText.Following(following), Formats.Euros(royalty.Amount ?? 0m),
+                                                Formats.Percentage(Inputs.Copyright.CreativeShare.Value ?? 0m), Inputs.IncomeYear]</p>
+            }
+        </RiverField>
+        @if (!royalty.FollowsPay.Value)
+        {
+            <RiverField Label="@L["FixedRoyaltyLabel"]" For="river-split-royalty" Origin="royalty.Fixed.Origin" Help="@L["FixedRoyaltyHint"]">
+                <RiverNumericField T="decimal" InputId="river-split-royalty" Value="royalty.Fixed.Value" ValueChanged="OnRoyaltyChanged"
+                                   Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
+                                   Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
+                                   Error="@RoyaltyRefused" Refusal="@Refused" />
+            </RiverField>
+        }
+    }
     <div class="split__ends">
         <span>@L["PayEnd"] <b>@Formats.Euros(_view.Pay)</b></span>
+        @if (_view.Royalty is { } shared)
+        {
+            <span>@L[SplitCardText.RoyaltyEnd(shared)] <b>@(shared.Amount is { } amount ? Formats.Euros(amount) : L["NoFigure"])</b></span>
+        }
         <span>@L["CompanyEnd"] <b>@(_view.CompanyProfit is { } profit ? Formats.Euros(profit) : L["NoFigure"])</b></span>
     </div>
     @if (_search is { } weighed)
@@ -121,7 +161,7 @@
             <p class="split__best">@L["NoBest", Formats.Euros(Inputs.Reserve.Value), Formats.Euros(weighed.MostKept)]</p>
         }
     }
-    <p class="split__ceiling">@L["Ceiling", Formats.Euros(_view.Ceiling)]</p>
+    <p class="split__ceiling">@L[SplitCardText.Ceiling(_view.Royalty), Formats.Euros(_view.Ceiling)]</p>
     <RefusedMessage Error="@Refused" />
 </ModuleCard>
 
@@ -140,7 +180,7 @@
     [Parameter]
     public SplitSearchResult? Search { get; set; }
 
-    // The engine's error key when it refuses the pay.
+    // The engine's error key when it refuses the pay or the royalty.
     [Parameter]
     public string? Refused { get; set; }
 
@@ -158,23 +198,34 @@
             _pointer = null;
     }
 
-    // The best pay is in the summary too, so the split folded still says where the pay could go.
-    private string? Summary => (_view.CompanyProfit, _search?.Best) switch
-    {
-        ({ } profit, { } best) => L["SummaryWithBest", Formats.WholeEuros(_view.Pay), Formats.WholeEuros(profit), Formats.WholeEuros(best.Level.Pay)].Value,
-        ({ } profit, null) => L["Summary", Formats.WholeEuros(_view.Pay), Formats.WholeEuros(profit)].Value,
-        _ => null,
-    };
+    // The best pay is in the summary too, so the split folded still says where the pay could go; the
+    // royalty too, once it is in the plan.
+    private string? Summary => _view.CompanyProfit is { } profit
+        ? L[SplitCardText.Summary(_view.Royalty, _search?.Best is not null), Formats.WholeEuros(_view.Pay), Formats.WholeEuros(profit),
+            _search?.Best is { } best ? Formats.WholeEuros(best.Level.Pay) : "", Formats.WholeEuros(_view.Royalty?.Amount ?? 0m)].Value
+        : null;
 
     private string ChartLabel => L["ChartLabel", Formats.Euros(0m), Formats.Euros(_top)].Value;
 
+    // The pay, and the royalty beside it while it follows the pay, so the slider says both as it moves.
+    private string SliderValue => _view.Royalty is { FollowsPay.Value: true, Amount: { } royalty }
+        ? L[SplitCardText.SliderValueWithRoyalty, Formats.Euros(_view.Pay), Formats.Euros(royalty)].Value
+        : Formats.Euros(_view.Pay);
+
     private string PointerText => _pointer switch
     {
-        { KeepsReserve: true } level => L["PointerAt", Formats.Euros(level.Pay), Formats.Euros(level.NetInPocket)].Value,
-        { } level => L["PointerMissesReserve", Formats.Euros(level.Pay), Formats.Euros(level.NetInPocket), Formats.Euros(level.KeptInCompany),
-            Formats.Euros(Inputs.Reserve.Value)].Value,
-        null => Run.Year is { } year ? L["PointerYours", Formats.Euros(year.DirectorPay.GrossPay), Formats.Euros(year.NetInPocket)].Value : "",
+        { KeepsReserve: true } level => L[Along("PointerAt"), Formats.Euros(level.Pay), Formats.Euros(level.NetInPocket), Formats.Euros(level.Royalty)].Value,
+        { } level => L[Along("PointerMissesReserve"), Formats.Euros(level.Pay), Formats.Euros(level.NetInPocket), Formats.Euros(level.KeptInCompany),
+            Formats.Euros(Inputs.Reserve.Value), Formats.Euros(level.Royalty)].Value,
+        null => Run.Year is { } year
+            ? L[Along("PointerYours"), Formats.Euros(year.DirectorPay.GrossPay), Formats.Euros(year.NetInPocket), Formats.Euros(year.Copyright.Royalty)].Value
+            : "",
     };
+
+    // A sentence about one pay of the curve, naming the royalty beside it while it follows the pay.
+    private string Along(string key) => SplitCardText.AlongTheCurve(key, _view.Royalty);
+
+    private bool RoyaltyRefused => Refused is CopyrightCalculator.RoyaltyNegative or CopyrightCalculator.RoyaltyAboveProfit;
 
     // What reaches the pocket out of what leaves the company, as the bar says it: at the best pay
     // against the pay set, or at the pay set when it is the best. None when the pay set eats into the
@@ -188,10 +239,12 @@
 
     private string BestText(BestPayView best) => best switch
     {
-        { IsYours: true } => L["BestIsYours", Formats.Euros(best.Level.NetInPocket), Formats.Euros(best.Level.Dividend)].Value,
-        { YoursKeepsReserve: false } when Run.Year is { } year => L["BestOverReserve", Formats.Euros(Inputs.Reserve.Value), Formats.Euros(best.Level.Pay),
-            Formats.Euros(best.Level.Dividend), Formats.Euros(best.Level.NetInPocket), Formats.Euros(year.NetInPocket), Formats.Euros(year.KeptInCompany)].Value,
-        _ => L["Best", Formats.Euros(best.Level.Pay), Formats.Euros(best.Level.Dividend), Formats.Euros(best.Level.NetInPocket), Formats.Euros(best.Gain)].Value,
+        { IsYours: true } => L[Along("BestIsYours"), Formats.Euros(best.Level.NetInPocket), Formats.Euros(best.Level.Dividend), Formats.Euros(best.Level.Royalty)].Value,
+        { YoursKeepsReserve: false } when Run.Year is { } year => L[Along("BestOverReserve"), Formats.Euros(Inputs.Reserve.Value), Formats.Euros(best.Level.Pay),
+            Formats.Euros(best.Level.Dividend), Formats.Euros(best.Level.NetInPocket), Formats.Euros(year.NetInPocket), Formats.Euros(year.KeptInCompany),
+            Formats.Euros(best.Level.Royalty)].Value,
+        _ => L[Along("Best"), Formats.Euros(best.Level.Pay), Formats.Euros(best.Level.Dividend), Formats.Euros(best.Level.NetInPocket), Formats.Euros(best.Gain),
+            Formats.Euros(best.Level.Royalty)].Value,
     };
 
     private string RateText(RateWeighing rate) => L[SplitCardText.Rate(rate),
@@ -206,6 +259,12 @@
     private Task MoveTo(decimal pay) => InputsChanged.InvokeAsync(Inputs.WithDirectorPay(pay));
 
     private Task OnPayChanged(decimal pay) => InputsChanged.InvokeAsync(Inputs.WithDirectorPay(pay));
+
+    // Fixed from following, the royalty stays what it came to at the pay.
+    private Task OnPolicyChanged(bool followsPay) =>
+        InputsChanged.InvokeAsync(followsPay ? Inputs.WithRoyaltyFollowingPay() : Inputs.WithRoyaltyFixed());
+
+    private Task OnRoyaltyChanged(decimal amount) => InputsChanged.InvokeAsync(Inputs.WithRoyalty(amount));
 
     // The plot's coordinates run from 0 to 1,000 both ways, the net in pocket upwards.
     private static string X(decimal at) => Coordinate(at * 1_000m);

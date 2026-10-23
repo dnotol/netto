@@ -164,12 +164,14 @@ internal sealed record RentCapView(decimal CadastralIncomeLet, decimal Cap, Rule
     }
 }
 
-// The pay slider over the profit before pay, and the company's profit it leaves before tax. While
-// another card's amount is refused there is no company profit to show, but the slider keeps its
-// place. The exact amount field shows the pay the split gives, or what was typed while that is
-// refused.
+// The pay slider over the profit before pay, and the company's profit it leaves before tax, and, while
+// Copyright royalty is in the plan, the royalty the split pays beside the pay (Royalty). While another
+// card's amount is refused there is no company profit to show, but the slider keeps its place. The
+// exact amount field shows the pay the split gives, or what was typed while that is refused.
 internal sealed record SplitView(decimal Ceiling, decimal Pay, decimal FieldPay, decimal? CompanyProfit)
 {
+    public SplitRoyaltyView? Royalty { get; init; }
+
     public static SplitView From(RiverInputs inputs, RiverRun run)
     {
         var ceiling = inputs.PayCeiling ?? 0m;
@@ -177,8 +179,25 @@ internal sealed record SplitView(decimal Ceiling, decimal Pay, decimal FieldPay,
             ceiling,
             run.Pay?.GrossPay ?? Math.Clamp(inputs.DirectorPay.Value, 0m, ceiling),
             run.Pay?.GrossPay ?? inputs.DirectorPay.Value,
-            run.Year?.ProfitAfterPay);
+            run.Year?.ProfitAfterPay) { Royalty = SplitRoyaltyView.From(inputs, run) };
     }
+}
+
+// The royalty the split pays beside the pay (operator, 2026-10-23): what the year paid, none while an
+// amount is refused; whether it follows the pay or is fixed, with where that comes from, and the amount
+// given for a fixed one, kept while it follows; how the engine set one that follows the pay, or why it
+// is none (Following); and what the pay, the royalty and the company's profit before tax share, the
+// three adding up to it. None while Copyright royalty is out of the plan, or the company is skipped.
+internal sealed record SplitRoyaltyView(decimal? Amount, Input<bool> FollowsPay, Input<decimal> Fixed, CopyrightFollowing? Following, decimal? Shared)
+{
+    public static SplitRoyaltyView? From(RiverInputs inputs, RiverRun run) => inputs.Company is null || !inputs.InPlan(OptionalModule.Copyright)
+        ? null
+        : new SplitRoyaltyView(
+            run.Year?.Copyright.Royalty,
+            inputs.Copyright.FollowsPay,
+            inputs.Copyright.Royalty,
+            run.Year?.Copyright.Following,
+            run.Year is { } year ? year.ProfitBeforePay + year.Copyright.Royalty : null);
 }
 
 // What the split draws from the engine's search: the net in pocket at every pay, the best pay and
@@ -596,7 +615,8 @@ internal sealed record DividendView(
 }
 
 // The module whose card shows an engine refusal: the one holding the refused field. The pay is
-// the split's while the company is there, Director pay's own once it is skipped.
+// the split's while the company is there, Director pay's own once it is skipped; the royalty is the
+// split's, the royalty's creative share Copyright royalty's.
 internal static class RiverErrors
 {
     public static RiverModule Owner(string error, bool companySkipped) => error switch
@@ -613,7 +633,8 @@ internal static class RiverErrors
         CarCalculator.CatalogueValueNegative or CarCalculator.YearlyCostsNegative or CarCalculator.ContributionNegative or CarCalculator.Co2Negative
             or CarCalculator.Co2Missing or CarCalculator.MatchingCarCo2Negative or CarCalculator.MatchingCarCo2Missing or CarCalculator.AcquiredAfterYear
             or CarCalculator.PlugInFuelCapped => RiverModule.Car,
-        CopyrightCalculator.RoyaltyNegative or CopyrightCalculator.CreativeShareOutOfRange or CopyrightCalculator.RoyaltyAboveProfit => RiverModule.Copyright,
+        CopyrightCalculator.RoyaltyNegative or CopyrightCalculator.RoyaltyAboveProfit => RiverModule.Split,
+        CopyrightCalculator.CreativeShareOutOfRange => RiverModule.Copyright,
         GrossToNet.GrossPayNegative => companySkipped ? RiverModule.DirectorPay : RiverModule.Split,
         GrossToNet.MunicipalRateOutOfRange => RiverModule.DirectorPay,
         YearSimulation.ReserveNegative or YearSimulation.EarlierProfitsNegative => RiverModule.Dividend,

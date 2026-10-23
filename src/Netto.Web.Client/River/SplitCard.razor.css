@@ -5,7 +5,25 @@
     line-height: 1.55;
 }
 
-/* The two sides of the split, one at each end, as the slider runs from pay to company. */
+/* The royalty's two ways, chips as Director pay's payers are. */
+.split__policies ::deep .mud-chip {
+    height: auto;
+    min-height: 1.75rem;
+    margin: 0 0.4rem 0.4rem 0;
+    white-space: normal;
+}
+
+/* How the engine set a royalty that follows the pay, or why it is none. */
+.split__following {
+    margin: 0;
+    color: var(--netto-text-muted);
+    font-size: 0.88rem;
+    line-height: 1.55;
+    font-variant-numeric: tabular-nums;
+}
+
+/* The sides of the split, one at each end, as the slider runs from pay to company, the royalty
+   between them while it is in the plan. */
 .split__ends {
     display: flex;
     flex-wrap: wrap;

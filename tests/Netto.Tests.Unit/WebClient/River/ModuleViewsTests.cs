@@ -86,6 +86,88 @@ public class ModuleViewsTests
         Split(RiverInputs.Example.WithDirectorPay(-1m)).FieldPay.ShouldBe(-1m);
     }
 
+    // At 75% of the time spent creating, the royalty that follows the example's 50,000 of pay is
+    // 11,538.46 (RiverInputsTests).
+    private static readonly RiverInputs FollowingRoyalty = RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithCreativeShare(0.75m);
+
+    [Fact]
+    public void Split_noRoyaltyInThePlan_isTwoWays()
+    {
+        Split(RiverInputs.Example.WithRoyalty(10_000m)).Royalty.ShouldBeNull();
+    }
+
+    // The split shares the 100,000 three ways: the pay, the royalty that follows it and the company's
+    // profit before tax.
+    [Fact]
+    public void Split_royaltyFollowingThePay_sharesWhatTheLeversLeaveThreeWays()
+    {
+        var view = Split(FollowingRoyalty);
+        var royalty = view.Royalty.ShouldNotBeNull();
+
+        (view.Pay, royalty.Amount, view.CompanyProfit, royalty.Shared).ShouldBe((50_000m, (decimal?)11_538.46m, (decimal?)38_461.54m, (decimal?)100_000m));
+    }
+
+    // It says the royalty follows the pay, a status of the user's or the default, and how the engine set
+    // it.
+    [Fact]
+    public void Split_royaltyFollowingThePay_saysItFollowsAndHowItWasSet()
+    {
+        var royalty = Split(FollowingRoyalty).Royalty.ShouldNotBeNull();
+
+        (royalty.FollowsPay, royalty.Following).ShouldBe((new Input<bool>(true, InputOrigin.Default), (Netto.Core.Copyright.CopyrightFollowing?)Netto.Core.Copyright.CopyrightFollowing.AtCeiling));
+    }
+
+    // Without a creative share, the royalty that follows the pay is none, and the engine says why.
+    [Fact]
+    public void Split_royaltyFollowingWithoutAShare_isNoneAndSaysTheShareIsNeeded()
+    {
+        var royalty = Split(RiverInputs.Example.AddToPlan(OptionalModule.Copyright)).Royalty.ShouldNotBeNull();
+
+        (royalty.Amount, royalty.Following).ShouldBe(((decimal?)0m, (Netto.Core.Copyright.CopyrightFollowing?)Netto.Core.Copyright.CopyrightFollowing.NoCreativeShare));
+    }
+
+    [Fact]
+    public void Split_royaltyFollowingWithTheAverageAboveTheCap_isNoneAndSaysWhy()
+    {
+        var royalty = Split(FollowingRoyalty.WithAverageWithinCap(false)).Royalty.ShouldNotBeNull();
+
+        (royalty.Amount, royalty.Following).ShouldBe(((decimal?)0m, (Netto.Core.Copyright.CopyrightFollowing?)Netto.Core.Copyright.CopyrightFollowing.AverageAboveCap));
+    }
+
+    // The pay and the royalty that follows it rise together up to 81,250 beside 18,750.
+    [Fact]
+    public void Split_royaltyFollowingThePay_reachesTheLargestPayTheCompanyPaysBesideIt()
+    {
+        Split(FollowingRoyalty).Ceiling.ShouldBe(81_250m);
+    }
+
+    // A fixed royalty says so, with its amount's origin, and the pay shares what it leaves.
+    [Fact]
+    public void Split_fixedRoyalty_saysItIsFixedWithItsAmount()
+    {
+        var view = Split(RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithRoyalty(10_000m));
+        var royalty = view.Royalty.ShouldNotBeNull();
+
+        (view.Ceiling, royalty.Amount, royalty.FollowsPay.Value, royalty.Fixed, royalty.Following)
+            .ShouldBe((90_000m, (decimal?)10_000m, false, new Input<decimal>(10_000m, InputOrigin.Yours), (Netto.Core.Copyright.CopyrightFollowing?)null));
+    }
+
+    // While the royalty is refused it keeps its place, the amount typed in its field, with no figure.
+    [Fact]
+    public void Split_royaltyRefused_keepsTheAmountTypedWithoutAFigure()
+    {
+        var royalty = Split(RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithRoyalty(-1m)).Royalty.ShouldNotBeNull();
+
+        (royalty.Amount, royalty.Fixed.Value, royalty.Shared).ShouldBe(((decimal?)null, -1m, (decimal?)null));
+    }
+
+    // With the company skipped there is no split.
+    [Fact]
+    public void Split_companySkipped_hasNoRoyalty()
+    {
+        Split(FollowingRoyalty.SkipCompany()).Royalty.ShouldBeNull();
+    }
+
     [Fact]
     public void DirectorPay_example_drainsToTaxesOnPayAndThePocket()
     {
@@ -957,9 +1039,9 @@ public class ModuleViewsTests
     [InlineData(RentCalculator.RentNegative, false, "Rent")]
     [InlineData(RentCalculator.RentAboveCap, false, "Rent")]
     [InlineData(RentCalculator.RentWithOfficeAllowance, false, "Rent")]
-    [InlineData(Netto.Core.Copyright.CopyrightCalculator.RoyaltyNegative, false, "Copyright")]
+    [InlineData(Netto.Core.Copyright.CopyrightCalculator.RoyaltyNegative, false, "Split")]
     [InlineData(Netto.Core.Copyright.CopyrightCalculator.CreativeShareOutOfRange, false, "Copyright")]
-    [InlineData(Netto.Core.Copyright.CopyrightCalculator.RoyaltyAboveProfit, false, "Copyright")]
+    [InlineData(Netto.Core.Copyright.CopyrightCalculator.RoyaltyAboveProfit, false, "Split")]
     [InlineData(YearSimulation.IncomeYearNotSupported, false, "River")]
     public void RiverErrors_engineRefusal_isShownOnTheModuleHoldingTheField(string error, bool companySkipped, string module)
     {

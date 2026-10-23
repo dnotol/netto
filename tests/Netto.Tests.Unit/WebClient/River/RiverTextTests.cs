@@ -142,7 +142,7 @@ public class RiverTextTests
             CarCalculator.CatalogueValueNegative, CarCalculator.YearlyCostsNegative, CarCalculator.ContributionNegative,
             CarCalculator.Co2Negative, CarCalculator.Co2Missing, CarCalculator.MatchingCarCo2Negative, CarCalculator.MatchingCarCo2Missing,
             CarCalculator.AcquiredAfterYear, CarCalculator.PlugInFuelCapped,
-            CopyrightCalculator.RoyaltyNegative, CopyrightCalculator.CreativeShareOutOfRange,
+            CopyrightCalculator.RoyaltyNegative, CopyrightCalculator.CreativeShareOutOfRange, CopyrightCalculator.RoyaltyAboveProfit,
             Netto.Core.Calendar.PaymentCalendar.BilledContributionsNegative,
         };
 
@@ -341,6 +341,43 @@ public class RiverTextTests
     public void SplitCardResx_reach_hasItsTexts()
     {
         Missing(SplitCardResources, [SplitCardText.BestReach, SplitCardText.BestIsYoursReach]).ShouldBeEmpty();
+    }
+
+    // Every text the split says about the royalty it pays beside the pay: its two ways and its end, the
+    // summary, the help and the ceiling with no royalty, a fixed one and one that follows the pay, the
+    // curve's sentences naming the royalty that follows each pay, and how the engine set it.
+    [Fact]
+    public void SplitCardResx_everyTextOfTheRoyalty_hasAText()
+    {
+        var following = RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithCreativeShare(0.75m);
+        var royalties = new[] { RiverInputs.Example, following, following.WithRoyalty(10_000m) }.Select(inputs => SplitView.From(inputs, inputs.Run()).Royalty).ToList();
+        string[] curve = ["PointerAt", "PointerMissesReserve", "PointerYours", "Best", "BestOverReserve", "BestIsYours"];
+        IEnumerable<string> keys =
+        [
+            SplitCardText.Policy(true), SplitCardText.Policy(false), SplitCardText.SliderValueWithRoyalty, "RoyaltyLabel", "RoyaltyHint", "FixedRoyaltyLabel", "FixedRoyaltyHint",
+            .. royalties.OfType<SplitRoyaltyView>().Select(SplitCardText.RoyaltyEnd),
+            .. royalties.SelectMany(royalty => new[]
+            {
+                SplitCardText.Summary(royalty, false), SplitCardText.Summary(royalty, true), SplitCardText.Hint(royalty), SplitCardText.Ceiling(royalty),
+            }),
+            .. royalties.SelectMany(royalty => curve.Select(key => SplitCardText.AlongTheCurve(key, royalty))),
+            .. Enum.GetValues<CopyrightFollowing>().Select(SplitCardText.Following),
+        ];
+
+        Missing(SplitCardResources, keys).ShouldBeEmpty();
+    }
+
+    // The curve's sentences name the royalty only while it follows the pay: a fixed one is the same at
+    // every pay.
+    [Theory]
+    [InlineData(false, "PointerAt")]
+    [InlineData(true, "PointerAt_Royalty")]
+    public void AlongTheCurve_namesTheRoyaltyOnlyWhileItFollowsThePay(bool followsPay, string key)
+    {
+        var inputs = RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithCreativeShare(0.75m).WithRoyalty(10_000m);
+        var shown = followsPay ? inputs.WithRoyaltyFollowingPay() : inputs;
+
+        SplitCardText.AlongTheCurve("PointerAt", SplitView.From(shown, shown.Run()).Royalty).ShouldBe(key);
     }
 
     // Once the company keeps some, the dividend's summary starts from what it pays out, the base of its

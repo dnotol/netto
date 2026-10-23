@@ -6,18 +6,17 @@
 
 @* At the top of the director's stream, after the split, which pays it beside the pay: a copyright
    royalty the company pays the director for the rights on works they created, which the card receives
-   and drains. The user gives the royalty for the year and says whether their copyright income
-   of the four previous years averaged at most the year's cap, met unless they say otherwise, and
-   whether they hold an attestation du travail des arts for these works, none unless they say so, and
-   the share of their working time spent creating, which only the moves read, none until given; the
-   three sit behind one disclosure, « Your copyright situation », folded to a line that states them,
-   the royalty staying in sight. The card says how much of the royalty stays within the limits and how much passes them, which limit set
-   it, the flat-rate costs the attestation takes off the first part, its tax apart and what the company
-   withholds, the part beyond them going on to
-   Director pay, taxed as pay, then the plan with the royalty against the same plan without it, and
-   where no text settles a point, the reading Netto takes. An optional module: it shows only while in
-   the plan, and the word at its bottom takes it out, its values kept. The royalty is taken while
-   typing and carries no Min or Max: the engine refuses what the rules do not allow. Skipped with the
+   and drains. The split decides it, following the pay or fixed (operator, 2026-10-23); here the user
+   says whether their copyright income of the four previous years averaged at most the year's cap, met
+   unless they say otherwise, whether they hold an attestation du travail des arts for these works, none
+   unless they say so, and the share of their working time spent creating, which a royalty that
+   follows the pay and the moves read, none until given; the three sit behind one disclosure, « Your
+   copyright situation », folded to a line that states them. The card says how much of the royalty
+   stays within the limits and how much passes them, which limit set it, the flat-rate costs the
+   attestation takes off the first part, its tax apart and what the company withholds, the part beyond
+   them going on to Director pay, taxed as pay, then the plan with the royalty against the same plan
+   without it, and where no text settles a point, the reading Netto takes. An optional module: it shows
+   only while in the plan, and the word at its bottom takes it out, its values kept. Skipped with the
    company. *@
 <ModuleCard Name="copyright" Title="@L["Title"]" Summary="@Summary" ToYou="@_view?.ToYou" Help="@L["Hint"]" Skipped="Inputs.Company is null" Details="@Details"
             DetailsLabel="@L["DetailsLabel"]" RemoveLabel="@L["Remove"]" OnRemove="Remove">
@@ -28,14 +27,6 @@
     else
     {
         <p class="copyright__scope">@L["Scope"]</p>
-        <div class="copyright__fields">
-            <RiverField Label="@L["RoyaltyLabel"]" For="river-copyright-royalty" Origin="Inputs.Copyright.Royalty.Origin" Help="@L["RoyaltyHint"]">
-                <RiverNumericField T="decimal" InputId="river-copyright-royalty" Value="Inputs.Copyright.Royalty.Value" ValueChanged="OnRoyaltyChanged"
-                                   Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
-                                   Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
-                                   Error="@(Refused == CopyrightCalculator.RoyaltyNegative)" Refusal="@Refused" />
-            </RiverField>
-        </div>
         <Disclosure Title="@L["SituationTitle"]" Values="@SettingWords.Of(L, _settings.Situation)" Refused="@CopyrightSettingsView.SituationHolds(Refused)">
             <RiverField Label="@L["CreativeShareLabel"]" For="river-copyright-creative-share"
                         Origin="@(Inputs.Copyright.CreativeShare.Value is null ? null : Inputs.Copyright.CreativeShare.Origin)" Help="@L["CreativeShareHint"]">
@@ -113,7 +104,7 @@
     [Parameter, EditorRequired]
     public RiverRun Run { get; set; } = default!;
 
-    // The engine's error key when it refuses the royalty.
+    // The engine's error key when it refuses the royalty's creative share.
     [Parameter]
     public string? Refused { get; set; }
 
@@ -140,8 +131,6 @@
               <StepDetails Details="view.Details" />
           </text>
         : null;
-
-    private Task OnRoyaltyChanged(decimal amount) => InputsChanged.InvokeAsync(Inputs.WithRoyalty(amount));
 
     private Task OnAverageChanged(bool within) => InputsChanged.InvokeAsync(Inputs.WithAverageWithinCap(within));
 

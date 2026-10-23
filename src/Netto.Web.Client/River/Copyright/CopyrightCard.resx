@@ -33,12 +33,6 @@
   <data name="Scope" xml:space="preserve">
     <value>For works you created yourself, whose rights you transfer or license to your company against a royalty.</value>
   </data>
-  <data name="RoyaltyLabel" xml:space="preserve">
-    <value>Royalty for the year</value>
-  </data>
-  <data name="RoyaltyHint" xml:space="preserve">
-    <value>The gross royalty the company pays you for the year for the rights on your works, before the 15% it withholds, as on the 281.45 fiche it files for you.</value>
-  </data>
   <data name="AverageLabel" xml:space="preserve">
     <value>My copyright income of the four previous years averaged at most {0}</value>
   </data>
@@ -46,7 +40,7 @@
     <value>The royalty stays within its limits only while your copyright income of the four previous years, counted before those limits, averaged at most the year's cap. Netto cannot see it, so it assumes it did until you say otherwise. When it did not, Netto taxes the whole royalty as your pay: the law makes the average a condition without saying more, and that reading never overstates the gain.</value>
   </data>
   <data name="NoRoyaltyYet" xml:space="preserve">
-    <value>Enter the royalty for the year to see how it is taxed and what it leaves you.</value>
+    <value>No royalty yet: the split above pays it beside your pay. Once it pays one, this card says how it is taxed and what it leaves you.</value>
   </data>
   <data name="Limits_None" xml:space="preserve">
     <value>All {0} stays within the limits: at most 30% of the royalty and your gross pay, {2}, and at most {3} for {5}.</value>
@@ -70,7 +64,7 @@
     <value>The {0} beyond the limits is taxed as your pay, on Director pay: social contributions and income tax on the scale, and the advance-payment surcharge if too little is paid in advance. The company withholds 30% on it, {1}, which your assessment credits.</value>
   </data>
   <data name="Readings" xml:space="preserve">
-    <value>Where no text settles a point, Netto takes the reading that never overstates the gain: the 30% is measured on your gross pay on the payslip alone, without benefits in kind or the contributions the company pays for you; neither the royalty nor its part taxed as pay counts in the {0} minimum pay that keeps the reduced corporate rate; the royalty is always taxed apart, never with your other income; the flat-rate costs come off the part within the limits alone, the limits staying on the whole royalty; the royalty is taken as paid on or after 11 June 2026, so the 15% withheld is on its net only with an attestation; and the royalty your moves propose is measured, like the 30%, on your gross pay on the payslip alone.</value>
+    <value>Where no text settles a point, Netto takes the reading that never overstates the gain: the 30% is measured on your gross pay on the payslip alone, without benefits in kind or the contributions the company pays for you; neither the royalty nor its part taxed as pay counts in the {0} minimum pay that keeps the reduced corporate rate; the royalty is always taxed apart, never with your other income; the flat-rate costs come off the part within the limits alone, the limits staying on the whole royalty; the royalty is taken as paid on or after 11 June 2026, so the 15% withheld is on its net only with an attestation; and the royalty that follows your pay is measured, like the 30%, on your gross pay on the payslip alone.</value>
   </data>
   <data name="ComparisonTitle" xml:space="preserve">
     <value>With the royalty and without it</value>
@@ -115,7 +109,7 @@
     <value>Share of my working time spent creating protected works</value>
   </data>
   <data name="CreativeShareHint" xml:space="preserve">
-    <value>Only your moves read it. A ruling of the tax administration accepts a director's royalty of at most 25% of their pay and royalty together, times this share, the basis its rulings take for directors (advance ruling 2026.0484). Once you give it, your moves propose the royalty up to that and to what keeps it within the limits. Netto cannot see it, so it proposes no royalty until you do.</value>
+    <value>A royalty that follows your pay reads it, and so do your moves. A ruling of the tax administration accepts a director's royalty of at most 25% of their pay and royalty together, times this share, the basis its rulings take for directors (advance ruling 2026.0484). A royalty that follows your pay is that, kept within the limits. Netto cannot see it, so such a royalty is none until you give it.</value>
   </data>
   <data name="SituationTitle" xml:space="preserve">
     <value>Your copyright situation</value>
