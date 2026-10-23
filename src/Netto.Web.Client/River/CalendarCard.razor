@@ -7,7 +7,7 @@
    surcharge, then one sentence per tax, as its card says it; the pay each month, as the pay slip
    gives it; and after the year, what each assessment leaves. It applies nothing: the moves card is
    where a payment is applied. Folded, it says the next advance payment and its date. *@
-<ModuleCard Name="calendar" Title="@L["Title"]" Summary="@Summary" Help="@L["Help"]" OpenByDefault="false" Refused="@_view?.BilledRefused">
+<ModuleCard Name="calendar" Title="@L["Title"]" Summary="@Summary" Glance="@Glance" Help="@L["Help"]" OpenByDefault="false" Refused="@_view?.BilledRefused">
     @if (_view is null)
     {
         <p class="calendar__note">@L["Refused"]</p>
@@ -126,6 +126,9 @@
     private string? Summary => _view is null
         ? null
         : L[CalendarCardText.Summary(_view.Next), Day(_view.Next?.Date), Formats.Euros(_view.Next?.Company ?? 0m), Formats.Euros(_view.Next?.Director ?? 0m), _view.IncomeYear].Value;
+
+    // The next advance payment's date, for the card's row in the river's outline; nothing once none is left.
+    private CardGlance? Glance => _view?.Next is { } next ? new(GlanceKind.NextBy, Formats.Day(next.Date)) : null;
 
     private static string Day(DateOnly? date) => date is { } day ? Formats.Day(day) : "";
 

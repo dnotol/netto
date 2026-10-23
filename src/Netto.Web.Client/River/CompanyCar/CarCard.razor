@@ -19,7 +19,7 @@
    car against the same plan without it. An optional module: it shows only while in the plan, and the
    word at its bottom takes it out, its values kept. The amounts are taken while typing and carry no
    Min or Max: the engine refuses what the rules do not allow. Skipped with the company. *@
-<ModuleCard Name="@ModuleFolds.Name(OptionalModule.Car)" Title="@L["Title"]" Summary="@Summary" PassesOn="@_view?.PassesOn" Help="@L["Hint"]" Skipped="Inputs.Company is null"
+<ModuleCard Name="@ModuleFolds.Name(OptionalModule.Car)" Title="@L["Title"]" Summary="@Summary" Glance="@Glance" PassesOn="@_view?.PassesOn" Help="@L["Hint"]" Skipped="Inputs.Company is null"
             Refused="@Refused" Details="@Details"
             DetailsLabel="@L["DetailsLabel"]" RemoveLabel="@L["Remove"]" OnRemove="Remove">
     @if (Inputs.Company is null)
@@ -249,6 +249,10 @@
             ? L[CarCardText.Summary(true, Inputs.InPlan(OptionalModule.Copyright)), Formats.Euros(view.Result.Costs), Formats.Euros(view.SplitShares)].Value
             : L[CarCardText.Summary(false, Inputs.InPlan(OptionalModule.Copyright)), Formats.Euros(view.SplitShares)].Value
         : null;
+
+    // What the car costs the company in the muddy pocket, for the card's row in the river's outline;
+    // nothing before there is a car.
+    private CardGlance? Glance => _view is { HasCar: true } view ? new(GlanceKind.MuddyPocket, Formats.Euros(view.Result.Costs)) : null;
 
     private RenderFragment? Details => _view is { Details.Count: > 0 } view && Run.Year is { } year
         ? @<text>

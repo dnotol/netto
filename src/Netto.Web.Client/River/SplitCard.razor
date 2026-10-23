@@ -23,7 +23,7 @@
    The plot stretches to the card's width (preserveAspectRatio="none"), so its lines keep their
    width through vector-effect, and what must keep its shape (the best pay's dot, the axes' labels) is
    HTML placed over it in percentages. *@
-<ModuleCard Name="split" Title="@L["Title"]" Summary="@Summary" Help="@L[SplitCardText.Hint(_view.Royalty)]" Refused="@Refused">
+<ModuleCard Name="split" Title="@L["Title"]" Summary="@Summary" Glance="@Glance" Help="@L[SplitCardText.Hint(_view.Royalty)]" Refused="@Refused">
     <RiverField Label="@L["PayLabel"]" For="river-split-pay" Origin="Inputs.DirectorPay.Origin" Help="@(_search is null ? null : L["CurveHint"].Value)">
         <div class="pay-curve @(_search is null ? "pay-curve--bare" : null)">
             @if (_search is { } search)
@@ -204,6 +204,9 @@
         ? L[SplitCardText.Summary(_view.Royalty, _search?.Best is not null), Formats.WholeEuros(_view.Pay), Formats.WholeEuros(profit),
             _search?.Best is { } best ? Formats.WholeEuros(best.Level.Pay) : "", Formats.WholeEuros(_view.Royalty?.Amount ?? 0m)].Value
         : null;
+
+    // What the split gives the pay, for the card's row in the river's outline.
+    private CardGlance? Glance => _view.CompanyProfit is not null ? new(GlanceKind.ToYourPay, Formats.WholeEuros(_view.Pay)) : null;
 
     private string ChartLabel => L["ChartLabel", Formats.Euros(0m), Formats.Euros(_top)].Value;
 

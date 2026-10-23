@@ -15,7 +15,7 @@
    typing, since nothing bounds them, and the card says what they leave on the tax, the bonus they
    earn and what more by the last deadline leaves no surcharge due. The pay slip and the rules
    behind each figure are its detail view. *@
-<ModuleCard Name="director-pay" Title="@L["Title"]" Summary="@Summary" ToYou="@_view?.ToYou" Refused="@Refused" Details="@Details" DetailsLabel="@L["DetailsLabel"]">
+<ModuleCard Name="director-pay" Title="@L["Title"]" Summary="@Summary" Glance="@Glance" ToYou="@_view?.ToYou" Refused="@Refused" Details="@Details" DetailsLabel="@L["DetailsLabel"]">
     @if (Inputs.Company is null)
     {
         <RiverField Label="@L["OwnPayLabel"]" For="river-pay" Origin="Inputs.DirectorPay.Origin">
@@ -156,6 +156,9 @@
     private string? Summary => Run.Pay is { } pay
         ? L["Summary", Formats.Euros(pay.CompanyCost + pay.RequalifiedPay), Formats.Euros(pay.NetInPocket)].Value
         : null;
+
+    // What reaches the pocket, for the card's row in the river's outline.
+    private CardGlance? Glance => Run.Pay is { } pay ? new(GlanceKind.ToYou, Formats.Euros(pay.NetInPocket)) : null;
 
     private RenderFragment? Details => Run.Pay is { } pay && _view is { } view
         ? @<text>

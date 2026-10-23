@@ -12,7 +12,7 @@
    while typing, like revenue, since nothing bounds them. What is kept can be typed exactly, taken
    when the field is left, so the field shows what can be paid out (the split's field does the
    same). *@
-<ModuleCard Name="dividend" Title="@L["Title"]" Summary="@Summary" ToYou="@_view?.ToYou" Skipped="Inputs.Company is null" Refused="@Refused" Details="@Details"
+<ModuleCard Name="dividend" Title="@L["Title"]" Summary="@Summary" Glance="@Glance" ToYou="@_view?.ToYou" Skipped="Inputs.Company is null" Refused="@Refused" Details="@Details"
             DetailsLabel="@L["DetailsLabel"]">
     @if (Inputs.Company is null)
     {
@@ -99,6 +99,9 @@
     private string? Summary => _view is { } view && Run.Year is { } year
         ? L[DividendCardText.Summary(view), Formats.Euros(view.Kept > 0m ? view.Dividend : view.Maximum), Formats.Euros(year.Dividend.NetDividend)].Value
         : null;
+
+    // What reaches the pocket, for the card's row in the river's outline.
+    private CardGlance? Glance => _view is not null && Run.Year is { } year ? new(GlanceKind.ToYou, Formats.Euros(year.Dividend.NetDividend)) : null;
 
     private RenderFragment? Details => _view is { } view && Run.Year is { } year
         ? @<text>

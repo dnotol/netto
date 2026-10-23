@@ -14,7 +14,7 @@
    values kept. The amounts are taken while typing, like revenue, and carry no Min or Max: the engine
    refuses what the rules do not allow, and its message is what the user has to see. Skipped with the
    company. *@
-<ModuleCard Name="@ModuleFolds.Name(OptionalModule.Rent)" Title="@L["Title"]" Summary="@Summary" ToYou="@_view?.ToYou" Help="@L["Hint"]" Skipped="Inputs.Company is null"
+<ModuleCard Name="@ModuleFolds.Name(OptionalModule.Rent)" Title="@L["Title"]" Summary="@Summary" Glance="@Glance" ToYou="@_view?.ToYou" Help="@L["Hint"]" Skipped="Inputs.Company is null"
             Refused="@Refused" Details="@Details"
             DetailsLabel="@L["DetailsLabel"]" RemoveLabel="@L["Remove"]" OnRemove="Remove">
     @if (Inputs.Company is null)
@@ -116,6 +116,9 @@
     private string? Summary => _view is { } view
         ? L[RentCardText.Summary(Inputs.InPlan(OptionalModule.Copyright)), Formats.Euros(view.AfterTax), Formats.Euros(view.SplitShares)].Value
         : null;
+
+    // What reaches the pocket after the rent's tax, for the card's row in the river's outline.
+    private CardGlance? Glance => _view is { } view ? new(GlanceKind.ToYou, Formats.Euros(view.AfterTax)) : null;
 
     private RenderFragment? Details => _view is { Details.Count: > 0 } view && Run.Year is { } year
         ? @<text>

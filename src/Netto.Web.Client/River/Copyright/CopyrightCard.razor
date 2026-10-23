@@ -18,7 +18,7 @@
    without it, and where no text settles a point, the reading Netto takes. An optional module: it shows
    only while in the plan, and the word at its bottom takes it out, its values kept. Skipped with the
    company. *@
-<ModuleCard Name="@ModuleFolds.Name(OptionalModule.Copyright)" Title="@L["Title"]" Summary="@Summary" ToYou="@_view?.ToYou" Help="@L["Hint"]" Skipped="Inputs.Company is null"
+<ModuleCard Name="@ModuleFolds.Name(OptionalModule.Copyright)" Title="@L["Title"]" Summary="@Summary" Glance="@Glance" ToYou="@_view?.ToYou" Help="@L["Hint"]" Skipped="Inputs.Company is null"
             Refused="@Refused" Details="@Details"
             DetailsLabel="@L["DetailsLabel"]" RemoveLabel="@L["Remove"]" OnRemove="Remove">
     @if (Inputs.Company is null)
@@ -126,6 +126,15 @@
     private string? Summary => _view is { } view
         ? L[CopyrightCardText.Summary(view), Formats.Euros(view.AfterTax), Formats.Euros(view.Result.TaxedAsPay)].Value
         : null;
+
+    // The summary's first figure, for the card's row in the river's outline: what reaches the pocket after
+    // the tax apart, or, with nothing within the limits, what is taxed as pay; nothing without a royalty.
+    private CardGlance? Glance => _view switch
+    {
+        null or { HasRoyalty: false } => null,
+        { Result.WithinLimits: 0m } view => new(GlanceKind.TaxedAsPay, Formats.Euros(view.Result.TaxedAsPay)),
+        { } view => new(GlanceKind.ToYou, Formats.Euros(view.AfterTax)),
+    };
 
     private RenderFragment? Details => _view is { Details.Count: > 0 } view && Run.Year is { } year
         ? @<text>
