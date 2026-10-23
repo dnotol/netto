@@ -67,14 +67,15 @@ public class MovesCardTextTests
         text.ShouldBe(expected);
     }
 
-    // The royalty with the share it is what a ruling accepts for.
+    // Letting the royalty follow the pay, with the share it reads, and the pay it may hold down so the
+    // company pays both.
     [Fact]
-    public void Move_royalty_saysTheRoyaltyAndTheShare()
+    public void Move_royaltyFollowingThePay_saysTheShareAndThatThePayStaysWithinWhatTheCompanyPays()
     {
-        var text = string.Format(CultureInfo.InvariantCulture, Resources.GetString(MovesCardText.Move(new CopyrightRoyaltyMove(4_799.76m)), CultureInfo.InvariantCulture) ?? "",
-            "€4,799.76", "75%");
+        var text = string.Format(CultureInfo.InvariantCulture, Resources.GetString(MovesCardText.Move(new CopyrightFollowsPayMove()), CultureInfo.InvariantCulture) ?? "",
+            "75%");
 
-        text.ShouldBe("Pay yourself a copyright royalty of €4,799.76 a year, what a ruling accepts for 75% of your time spent creating");
+        text.ShouldBe("Let your copyright royalty follow your pay, at what a ruling accepts for 75% of your time spent creating, your pay kept within what the company can pay beside it");
     }
 
     // Folded without a Today, the summary says what the card waits for.

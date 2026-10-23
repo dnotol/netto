@@ -86,7 +86,7 @@
         EcoVouchersMove eco => L[MovesCardText.Move(eco), Formats.Euros(eco.Amount)],
         SportCultureVouchersMove sport => L[MovesCardText.Move(sport), Formats.Euros(sport.Amount)],
         RentMove rent => L[MovesCardText.Move(rent), Formats.Euros(rent.Rent)],
-        CopyrightRoyaltyMove royalty => L[MovesCardText.Move(royalty), Formats.Euros(royalty.Royalty), Formats.Percentage(_view.Today?.Copyright.CreativeShare.Value ?? 0m)],
+        CopyrightFollowsPayMove following => L[MovesCardText.Move(following), Formats.Percentage(_view.Today?.Copyright.CreativeShare.Value ?? 0m)],
         _ => "",
     };
 

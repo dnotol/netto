@@ -24,7 +24,8 @@ internal sealed record MovesView(MovesState State, string? Error, RiverInputs? T
     }
 
     // Whether the river holds the move's values already: its pay, Today's payment by the deadline with
-    // the move's amount on top, or a lever's amount with its module in the plan.
+    // the move's amount on top, a lever's amount with its module in the plan, or a royalty in the plan
+    // that follows the pay.
     public bool Applied(PlannedMove move, RiverInputs river) => move.Move switch
     {
         PayMove pay => river.DirectorPay.Value == pay.Pay,
@@ -33,12 +34,13 @@ internal sealed record MovesView(MovesState State, string? Error, RiverInputs? T
         EcoVouchersMove eco => river.InPlan(OptionalModule.Vouchers) && river.Vouchers.EcoVouchers.Value == eco.Amount,
         SportCultureVouchersMove sport => river.InPlan(OptionalModule.Vouchers) && river.Vouchers.SportCultureVouchers.Value == sport.Amount,
         RentMove rent => river.InPlan(OptionalModule.Rent) && river.Rent.Rent.Value == rent.Rent,
-        CopyrightRoyaltyMove royalty => river.InPlan(OptionalModule.Copyright) && river.Copyright.Royalty.Value == royalty.Royalty,
+        CopyrightFollowsPayMove => river.InPlan(OptionalModule.Copyright) && river.Copyright.FollowsPay.Value,
         _ => false,
     };
 
     // The river with the move's values, everything else as it is. Applying a lever's move is the one
-    // action that adds a module to the plan: the user asked for it.
+    // action that adds a module to the plan: the user asked for it. A royalty that follows the pay holds
+    // a pay above what the company pays beside it there, as the move does, in the river's own run.
     public RiverInputs Apply(PlannedMove move, RiverInputs river) => move.Move switch
     {
         PayMove pay => river.WithDirectorPay(pay.Pay),
@@ -47,7 +49,7 @@ internal sealed record MovesView(MovesState State, string? Error, RiverInputs? T
         EcoVouchersMove eco => river.WithEcoVouchers(eco.Amount).AddToPlan(OptionalModule.Vouchers),
         SportCultureVouchersMove sport => river.WithSportCultureVouchers(sport.Amount).AddToPlan(OptionalModule.Vouchers),
         RentMove rent => WithTodaysHome(river).WithRent(rent.Rent).AddToPlan(OptionalModule.Rent),
-        CopyrightRoyaltyMove royalty => WithTodaysCreativeShare(river).WithRoyalty(royalty.Royalty).AddToPlan(OptionalModule.Copyright),
+        CopyrightFollowsPayMove => WithTodaysCreativeShare(river).WithRoyaltyFollowingPay().AddToPlan(OptionalModule.Copyright),
         _ => throw new ArgumentOutOfRangeException(nameof(move), move, "A move the river cannot apply."),
     };
 
@@ -56,8 +58,8 @@ internal sealed record MovesView(MovesState State, string? Error, RiverInputs? T
         ? river.WithCadastralIncome(today.Rent.CadastralIncome.Value).WithShareLet(today.Rent.ShareLet.Value)
         : river;
 
-    // The royalty is what a ruling accepts for Today's creative share, under Today's statuses: they come
-    // with it as Today holds them, origins and all.
+    // The royalty follows the pay at what a ruling accepts for Today's creative share, under Today's
+    // statuses: they come with it as Today holds them, origins and all.
     private RiverInputs WithTodaysCreativeShare(RiverInputs river) => Today is { } today
         ? river with
         {

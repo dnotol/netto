@@ -180,42 +180,64 @@ public class MovesViewTests
             .ShouldBe((true, 1_200m, 0.12m, 1_380.00m, true));
     }
 
-    // Today gives 75% of the time creating, its royalty out of the plan: the move is what the ruling
-    // accepts beside the pay the moves set.
+    // Today gives 75% of the time creating, its royalty out of the plan: the move lets the royalty follow
+    // the pay, what a ruling accepts beside the pay the moves set.
     [Fact]
-    public void Of_creativeShareGiven_proposesTheRoyalty()
+    public void Of_creativeShareGiven_proposesLettingTheRoyaltyFollowThePay()
     {
         var today = RiverInputs.Example.WithCreativeShare(0.75m);
 
-        MovesView.Of(today, AfterTheYear).Moves.ShouldContain(move => move.Move is CopyrightRoyaltyMove);
+        MovesView.Of(today, AfterTheYear).Moves.ShouldContain(move => move.Move is CopyrightFollowsPayMove);
     }
 
     // No share, no royalty move, and nothing said about it.
     [Fact]
     public void Of_noCreativeShare_proposesNoRoyalty()
     {
-        MovesView.Of(RiverInputs.Example, AfterTheYear).Moves.ShouldNotContain(move => move.Move is CopyrightRoyaltyMove);
+        MovesView.Of(RiverInputs.Example, AfterTheYear).Moves.ShouldNotContain(move => move.Move is CopyrightFollowsPayMove);
     }
 
-    // Applying it brings Today's share and statuses, with their origins, the royalty and the module.
+    // Applying it brings Today's share and statuses, with their origins, lets the royalty follow the pay
+    // and adds it to the plan; the amount given before stays.
     [Fact]
-    public void Apply_royalty_bringsTodaysShareAndStatusesAndAddsTheRoyaltyToThePlan()
+    public void Apply_royaltyFollowingThePay_bringsTodaysShareAndStatusesAndAddsTheRoyaltyToThePlan()
     {
         var today = RiverInputs.Example.WithCreativeShare(0.75m).WithAttestation(true);
-        var move = new PlannedMove(new CopyrightRoyaltyMove(4_799.76m), 1m);
+        var move = new PlannedMove(new CopyrightFollowsPayMove(), 1m);
 
-        var river = View(today).Apply(move, RiverInputs.Example);
+        var river = View(today).Apply(move, RiverInputs.Example.WithRoyalty(2_000m));
 
         (river.InPlan(OptionalModule.Copyright), river.Copyright, View(today).Applied(move, river))
-            .ShouldBe((true, today.Copyright with { Royalty = new Input<decimal>(4_799.76m, InputOrigin.Yours), FollowsPay = new Input<bool>(false, InputOrigin.Yours) }, true));
+            .ShouldBe((true, today.Copyright with { Royalty = new Input<decimal>(2_000m, InputOrigin.Yours), FollowsPay = new Input<bool>(true, InputOrigin.Yours) }, true));
+    }
+
+    // From a pay above what the company pays beside the royalty, the river holds the pay there itself,
+    // as the move does: 81,250 beside 18,750 of the 100,000 at 75%.
+    [Fact]
+    public void Apply_royaltyFollowingFromAPayAboveWhatTheCompanyPays_runsThePayTheMovePlanned()
+    {
+        var today = RiverInputs.Example.WithCreativeShare(0.75m);
+        var move = new PlannedMove(new CopyrightFollowsPayMove(), 1m);
+
+        var year = View(today).Apply(move, RiverInputs.Example.WithDirectorPay(90_000m)).Run().Year.ShouldNotBeNull();
+
+        (year.DirectorPay.GrossPay, year.Copyright.Royalty).ShouldBe((81_250m, 18_750m));
     }
 
     [Fact]
     public void Applied_royaltyOutOfThePlan_isNot()
     {
-        var move = new PlannedMove(new CopyrightRoyaltyMove(4_799.76m), 1m);
+        var move = new PlannedMove(new CopyrightFollowsPayMove(), 1m);
 
-        View().Applied(move, RiverInputs.Example.WithRoyalty(4_799.76m)).ShouldBeFalse();
+        View().Applied(move, RiverInputs.Example.WithCreativeShare(0.75m)).ShouldBeFalse();
+    }
+
+    [Fact]
+    public void Applied_fixedRoyaltyInThePlan_isNot()
+    {
+        var move = new PlannedMove(new CopyrightFollowsPayMove(), 1m);
+
+        View().Applied(move, RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithRoyalty(5_000m)).ShouldBeFalse();
     }
 
     private static MovesView View(RiverInputs? today = null) => MovesView.Of(today ?? RiverInputs.Example, AfterTheYear);

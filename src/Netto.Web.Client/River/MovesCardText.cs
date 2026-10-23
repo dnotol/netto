@@ -16,7 +16,7 @@ internal static class MovesCardText
         EcoVouchersMove => "Move_EcoVouchers",
         SportCultureVouchersMove => "Move_SportCultureVouchers",
         RentMove => "Move_Rent",
-        CopyrightRoyaltyMove => "Move_CopyrightRoyalty",
+        CopyrightFollowsPayMove => "Move_CopyrightFollowsPay",
         _ => throw new ArgumentOutOfRangeException(nameof(move), move, "A move the card has no words for."),
     };
 
