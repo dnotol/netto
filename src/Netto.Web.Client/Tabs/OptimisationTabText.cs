@@ -23,4 +23,7 @@ internal static class OptimisationTabText
 
     // Why there are no moves, or that there are.
     public static string State(MovesState state) => $"State_{state}";
+
+    // One sentence of why a move helps (MoveReasons): « It cancels the surcharge of {0} on your income tax. »
+    public static string Why(MoveReasonKind kind) => $"Why_{kind}";
 }

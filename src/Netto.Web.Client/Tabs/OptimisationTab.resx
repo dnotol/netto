@@ -72,4 +72,40 @@
   <data name="Move_CopyrightFollowsPay" xml:space="preserve">
     <value>Let your copyright royalty follow your pay, at what a ruling accepts for {0} of your time spent creating, your pay kept within what the company can pay beside it</value>
   </data>
+  <data name="Why_Pay" xml:space="preserve">
+    <value>Your pay goes from {0} to {1}, and the dividend paid out from {2} to {3}.</value>
+  </data>
+  <data name="Why_PayWithRoyalty" xml:space="preserve">
+    <value>Your pay goes from {0} to {1}, your copyright royalty from {2} to {3}, and the dividend paid out from {4} to {5}.</value>
+  </data>
+  <data name="Why_ReducedRateGivenUp" xml:space="preserve">
+    <value>With it, the company gives up the reduced rate of corporate tax.</value>
+  </data>
+  <data name="Why_ReducedRateGained" xml:space="preserve">
+    <value>With it, the company qualifies for the reduced rate of corporate tax.</value>
+  </data>
+  <data name="Why_CompanySurcharge" xml:space="preserve">
+    <value>The surcharge on the company's corporate tax goes from {0} to {1}.</value>
+  </data>
+  <data name="Why_CompanySurchargeCancelled" xml:space="preserve">
+    <value>It cancels the surcharge of {0} on the company's corporate tax.</value>
+  </data>
+  <data name="Why_DirectorSurcharge" xml:space="preserve">
+    <value>The surcharge on your income tax goes from {0} to {1}.</value>
+  </data>
+  <data name="Why_DirectorSurchargeCancelled" xml:space="preserve">
+    <value>It cancels the surcharge of {0} on your income tax.</value>
+  </data>
+  <data name="Why_Vouchers" xml:space="preserve">
+    <value>{0} more reaches you tax-free; the company deducts {1} of it.</value>
+  </data>
+  <data name="Why_VouchersNotDeducted" xml:space="preserve">
+    <value>{0} more reaches you tax-free; the company deducts none of it.</value>
+  </data>
+  <data name="Why_Rent" xml:space="preserve">
+    <value>The rent the company pays you goes from {0} to {1}, and what reaches you of it after its tax from {2} to {3}.</value>
+  </data>
+  <data name="Why_CopyrightFollowsPay" xml:space="preserve">
+    <value>Your copyright royalty goes from {0} to {1}, and the tax on it apart from your pay from {2} to {3}.</value>
+  </data>
 </root>
