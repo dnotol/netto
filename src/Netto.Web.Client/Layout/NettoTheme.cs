@@ -2,9 +2,10 @@ using MudBlazor;
 
 namespace Netto.Web.Client.Layout;
 
-// Dark and gold. Colours are literal hex because MudBlazor parses each one to derive its hover,
-// lighten and darken variants: a "var(--netto-gold)" string cannot be parsed. The :root block in
-// Netto.Web's app.css mirrors these for hand-written CSS; change both together.
+// Dark and gold, and a light theme designed beside it (the design system, CLAUDE.md's docs map).
+// Colours are literal hex because MudBlazor parses each one to derive its hover, lighten and darken
+// variants: a "var(--netto-gold)" string cannot be parsed. The :root blocks in Netto.Web's app.css
+// mirror these for hand-written CSS; change both together (NettoThemeTests holds them equal).
 internal static class NettoTheme
 {
     private static readonly string[] Display = ["Fraunces", "Georgia", "serif"];
@@ -34,6 +35,33 @@ internal static class NettoTheme
             LinesInputs = "#726A56",
             Divider = "#2B2619",
             DividerLight = "#1E1B13",
+        },
+        // The inks swap: the page is the dark theme's text colour. Gold deepens for what is read, as
+        // #D4AF37 reads 1.8:1 on this page, so MudBlazor's own gold fills take the card's colour as
+        // text; the main button keeps the brand gold through its class (Home.razor.css).
+        PaletteLight = new PaletteLight
+        {
+            Primary = "#7E5F0B",
+            PrimaryContrastText = "#FBF9F4",
+            Secondary = "#5E4D1F",
+            SecondaryContrastText = "#FBF9F4",
+            Tertiary = "#9C7A2E",
+            Background = "#F3EEE2",
+            BackgroundGray = "#EAE4D6",
+            Surface = "#FBF9F4",
+            AppbarBackground = "#F3EEE2",
+            AppbarText = "#1B1812",
+            DrawerBackground = "#FBF9F4",
+            TextPrimary = "#1B1812",
+            TextSecondary = "#5F5747",
+            TextDisabled = "#9D9584",
+            ActionDefault = "#57503F",
+            LinesDefault = "#DCD4C2",
+            LinesInputs = "#8A806C",
+            Divider = "#DCD4C2",
+            DividerLight = "#E9E3D5",
+            Warning = "#8A5600",
+            Error = "#B42335",
         },
         Typography = new Typography
         {

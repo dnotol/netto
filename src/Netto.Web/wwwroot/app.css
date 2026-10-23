@@ -27,6 +27,9 @@
     --netto-line: #2B2619;
     --netto-line-input: #726A56;
     --netto-gold: #D4AF37;
+    --netto-gold-fill: #D4AF37;
+    --netto-gold-fill-hover: #B99727;
+    --netto-on-gold: #0B0A08;
     --netto-focus-inverse: var(--netto-page);
     --netto-selection: rgba(212, 175, 55, 0.35);
     --netto-wash: rgba(243, 238, 226, 0.04);
@@ -50,6 +53,43 @@
     --netto-shadow-showcase: 0 40px 90px -40px rgba(0, 0, 0, 0.9);
     --netto-shadow-edge: 0 -8px 30px rgba(0, 0, 0, 0.6);
     color-scheme: dark;
+}
+
+/* Light, set on the page by theme.js before it paints. The inks swap; gold deepens for what is read
+   and stays the brand gold only as the main button's fill; the ramp is the light text at an opacity,
+   re-tuned so a bar or a rule weighs what it does in dark. */
+:root[data-theme="light"] {
+    --netto-page: #F3EEE2;
+    --netto-surface: #FBF9F4;
+    --netto-header: rgba(243, 238, 226, 0.72);
+    --netto-text: #1B1812;
+    --netto-text-muted: #5F5747;
+    --netto-line: #DCD4C2;
+    --netto-line-input: #8A806C;
+    --netto-gold: #7E5F0B;
+    --netto-on-gold: #1B1812;
+    --netto-selection: rgba(212, 175, 55, 0.5);
+    --netto-wash: rgba(27, 24, 18, 0.06);
+    --netto-tint: rgba(27, 24, 18, 0.07);
+    --netto-edge: rgba(27, 24, 18, 0.24);
+    --netto-chip-edge: rgba(27, 24, 18, 0.38);
+    --netto-chip-edge-strong: rgba(27, 24, 18, 0.5);
+    --netto-rule: rgba(27, 24, 18, 0.4);
+    --netto-underline: rgba(27, 24, 18, 0.55);
+    --netto-data-strong: rgba(27, 24, 18, 0.78);
+    --netto-data-high: rgba(27, 24, 18, 0.55);
+    --netto-data-mid: rgba(27, 24, 18, 0.32);
+    --netto-data-low: rgba(27, 24, 18, 0.12);
+    --netto-gold-grid: rgba(126, 95, 11, 0.07);
+    --netto-gold-glow: rgba(212, 175, 55, 0.16);
+    --netto-gold-soft: rgba(166, 128, 22, 0.45);
+    --netto-gold-placeholder: rgba(166, 128, 22, 0.3);
+    --netto-gold-placeholder-strong: rgba(166, 128, 22, 0.55);
+    --netto-shadow-float: 0 12px 32px rgba(27, 24, 18, 0.18);
+    --netto-shadow-lift: 0 24px 50px -28px rgba(27, 24, 18, 0.35);
+    --netto-shadow-showcase: 0 40px 90px -40px rgba(27, 24, 18, 0.35);
+    --netto-shadow-edge: 0 -8px 30px rgba(27, 24, 18, 0.18);
+    color-scheme: light;
 }
 
 /* Painted before the theme provider runs, so the first frame is already dark. */

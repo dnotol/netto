@@ -79,10 +79,19 @@
     margin-bottom: 2.5rem;
 }
 
+/* The main button keeps the brand gold in both themes. MudBlazor's Primary deepens in light, where
+   #D4AF37 would read too faint as text, so the fill is set here rather than taken from the palette. */
 .hero ::deep .hero__cta,
 .section ::deep .hero__cta {
     padding-inline: 1.75rem;
+    background-color: var(--netto-gold-fill);
+    color: var(--netto-on-gold);
 }
+
+    .hero ::deep .hero__cta:hover,
+    .section ::deep .hero__cta:hover {
+        background-color: var(--netto-gold-fill-hover);
+    }
 
 .hero__trust {
     display: flex;
