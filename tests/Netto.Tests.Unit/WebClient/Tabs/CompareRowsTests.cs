@@ -155,16 +155,33 @@ public class CompareRowsTests
     }
 
     // A car on one side: the result is the pocket, its share and what the company keeps, as for any plan,
-    // the car's costs being the company's, left out of the bar like its running costs.
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void Rows_carOnOneSide_haveTheResultOfAnyPlan(bool carFirst)
+    // out of the 92,000 the river starts from once the car's 8,000 of costs are paid, a cost of the
+    // company like its running costs: 55,813.08 reaches the pocket, 6,162.66 less than without the car,
+    // and the company keeps nothing.
+    [Fact]
+    public void Rows_carOnTheSecondSide_sayItsPocketItsShareAndWhatTheCompanyKeeps()
     {
-        var view = carFirst ? Compare(ElectricCar, RiverInputs.Example) : Compare(RiverInputs.Example, ElectricCar);
+        var result = Result(Compare(RiverInputs.Example, ElectricCar));
 
-        view.Groups.Single(group => group.Key == "result").Rows.Select(row => row.Key).ShouldBe(["pocket", "reach", "kept"]);
+        result.Select(row => (row.Key, row.Against)).ShouldBe(CarResult);
     }
+
+    [Fact]
+    public void Rows_carOnTheFirstSide_sayItsPocketItsShareAndWhatTheCompanyKeeps()
+    {
+        var result = Result(Compare(ElectricCar, RiverInputs.Example));
+
+        result.Select(row => (row.Key, row.Plan)).ShouldBe(CarResult);
+    }
+
+    private static readonly (string Key, CompareFigure Figure)[] CarResult =
+    [
+        ("pocket", CompareFigure.Money(55_813.08m)),
+        ("reach", CompareFigure.Share(55_813.08m / 92_000m)),
+        ("kept", CompareFigure.Money(0m)),
+    ];
+
+    private static IReadOnlyList<CompareRow> Result(CompareView view) => view.Groups.Single(group => group.Key == "result").Rows;
 
     // A river without a year of the company has no corporate tax, no kept profits: the rows of its pay.
     [Fact]
