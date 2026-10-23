@@ -3,6 +3,7 @@
 @using Netto.Web.Client.River
 @using Netto.Web.Client.River.CompanyCar
 @using Netto.Web.Client.River.Copyright
+@using Netto.Web.Client.Tabs
 @inject IStringLocalizer<Plan> L
 @inject RiverState State
 @inject SavedPlans Plans
@@ -37,14 +38,7 @@
 
 <section class="river">
     <MudContainer MaxWidth="MaxWidth.Large">
-        <header class="river__head">
-            <div class="river__eyebrow-row">
-                <p class="river__eyebrow">@L["Eyebrow"]</p>
-                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small">@L["Badge"]</MudChip>
-            </div>
-            <MudText Typo="Typo.h2" HtmlTag="h1" Class="river__title">@L["Title"]</MudText>
-            <p class="river__lede">@L["Lede"]</p>
-        </header>
+        <TabHead Eyebrow="@L["Eyebrow"]" Title="@L["Title"]" Lede="@L["Lede"]" />
 
         <RefusedMessage Error="@Refused(RiverModule.River)" />
 

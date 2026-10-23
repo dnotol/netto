@@ -1,0 +1,39 @@
+@inject IStringLocalizer<TabHead> L
+
+@* The head every tab of the plan page opens on: an eyebrow with the planner's « In development » chip,
+   the tab's title, the page's one h1, and a lede. The title takes the focus when the head is first
+   drawn, which is when the viewer arrives at its tab, so a screen reader says where they are. On the
+   page's first draw Blazor does the same (Routes, FocusOnNavigate), but not on a switch of tab: the tabs
+   are one page, and FocusOnNavigate moves the focus only when the page changes. So a tab draws its head
+   once, at its top, never inside a branch its own state can draw again, or the focus would leave what
+   the viewer is on. The title is focused without scrolling: the page is already at its top. *@
+<header class="tab-head">
+    <div class="tab-head__eyebrow-row">
+        <p class="tab-head__eyebrow">@Eyebrow</p>
+        <MudChip T="string" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small">@L["InDevelopment"]</MudChip>
+    </div>
+    @* MudText draws no element the focus can be put on, so the h1 is drawn here, in its classes. *@
+    <h1 class="mud-typography mud-typography-h2 tab-head__title" tabindex="-1" @ref="_title">@Title</h1>
+    <p class="tab-head__lede">@Lede</p>
+</header>
+
+@code {
+    // A line above the title saying what the tab is about.
+    [Parameter, EditorRequired]
+    public string Eyebrow { get; set; } = "";
+
+    [Parameter, EditorRequired]
+    public string Title { get; set; } = "";
+
+    // What the tab holds, in a sentence or two.
+    [Parameter, EditorRequired]
+    public string Lede { get; set; } = "";
+
+    private ElementReference _title;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+            await _title.FocusAsync(preventScroll: true);
+    }
+}
