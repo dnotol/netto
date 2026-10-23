@@ -609,7 +609,7 @@ internal static class RiverErrors
         CarCalculator.CatalogueValueNegative or CarCalculator.YearlyCostsNegative or CarCalculator.ContributionNegative or CarCalculator.Co2Negative
             or CarCalculator.Co2Missing or CarCalculator.MatchingCarCo2Negative or CarCalculator.MatchingCarCo2Missing or CarCalculator.AcquiredAfterYear
             or CarCalculator.PlugInFuelCapped => RiverModule.Car,
-        CopyrightCalculator.RoyaltyNegative or CopyrightCalculator.CreativeShareOutOfRange => RiverModule.Copyright,
+        CopyrightCalculator.RoyaltyNegative or CopyrightCalculator.CreativeShareOutOfRange or CopyrightCalculator.RoyaltyAboveProfit => RiverModule.Copyright,
         GrossToNet.GrossPayNegative => companySkipped ? RiverModule.DirectorPay : RiverModule.Split,
         GrossToNet.MunicipalRateOutOfRange => RiverModule.DirectorPay,
         YearSimulation.ReserveNegative or YearSimulation.EarlierProfitsNegative => RiverModule.Dividend,

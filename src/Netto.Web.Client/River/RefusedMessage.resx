@@ -129,6 +129,9 @@
   <data name="Error_billed_contributions_negative" xml:space="preserve">
     <value>What your fund bills each quarter cannot be negative.</value>
   </data>
+  <data name="Error_copyright_royalty_above_profit" xml:space="preserve">
+    <value>More royalty than the company has before your pay: it would pay the royalty at a loss. Keep the royalty at or below what the company earns, less what the cards above pay you and its car costs.</value>
+  </data>
   <data name="Error_copyright_creative_share_out_of_range" xml:space="preserve">
     <value>The share of your working time spent creating is between 0% and 100%.</value>
   </data>
