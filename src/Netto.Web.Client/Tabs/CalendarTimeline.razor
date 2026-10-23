@@ -117,7 +117,7 @@
                 @foreach (var mark in lane.Marks)
                 {
                     <span class="@MarkClass(mark)" style="left: @Percent(mark.At)"></span>
-                    <span class="@LabelClass(mark)" style="@Anchor(mark.At, mark.LabelEnd)">@MarkLabel(mark)</span>
+                    <span class="@LabelClass(mark)" style="@Anchor(mark.At, mark.Anchor == LabelAnchor.End)">@MarkLabel(mark)</span>
                 }
             </div>
         </div>;
@@ -169,7 +169,7 @@
 
     private static string LabelClass(TimelineMark mark) => "timeline__label"
         + mark.State switch { MarkState.Past => " timeline__label--past", MarkState.Next => " timeline__label--next", _ => "" }
-        + (mark.LabelEnd ? " timeline__label--end" : "");
+        + mark.Anchor switch { LabelAnchor.Start => " timeline__label--start", LabelAnchor.End => " timeline__label--end", _ => "" };
 
     private static string BlockClass(TimelineBlock block) => $"timeline__block timeline__block--{(block.Past ? "past" : "coming")}";
 
@@ -228,8 +228,9 @@
 
     private static string Month(DateOnly month) => Formats.Month(month.Year, month.Month);
 
-    // A label stands by a mark's side that has room: its left edge early in the year, its right edge
-    // late, so it never leaves the plot.
+    // A label is centred on its mark, set by its left edge and moved back by half its width; one that a
+    // centred label would push out of the plot is set by the edge that has room, its left edge early in
+    // the year, its right edge late. A lane's caption always is.
     private static string Anchor(decimal at, bool end) => end ? $"right: {Percent(1m - at)}" : $"left: {Percent(at)}";
 
     // The plot's positions are fractions of the year: percentages for the HTML over it, and 0 to 1,000

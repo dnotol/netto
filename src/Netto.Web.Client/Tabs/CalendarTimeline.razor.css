@@ -4,6 +4,7 @@
    size and fill, a block in outline or fill, and the key names them. */
 .timeline {
     --timeline-title: 11rem;
+    --timeline-end: 3.5rem;
     --timeline-today-row: 1.6rem;
     display: grid;
     grid-template-columns: minmax(0, 1fr);
@@ -28,9 +29,14 @@
     overflow-x: auto;
 }
 
+/* The plot's minimum is what keeps the labels of two neighbouring deadlines apart: the closest are 12
+   October and 21 December, under a fifth of the year (0.19), so at this minimum the plot is 664px and
+   leaves 127px between their centres, where a label of an amount up to €99,999.99 and a day is 118px.
+   The year's end has a margin of its own (--timeline-end) for the last label, which is centred on its
+   mark a fortnight short of the year's end. */
 .timeline__chart {
     position: relative;
-    min-width: 48rem;
+    min-width: 56rem;
 }
 
 @media (max-width: 960px) {
@@ -47,7 +53,7 @@
     top: var(--timeline-today-row);
     bottom: 0;
     left: var(--timeline-title);
-    right: 0;
+    right: var(--timeline-end);
     pointer-events: none;
 }
 
@@ -77,7 +83,7 @@
 /* A row: its title, stuck at the left while the plot scrolls, and its track across the year. */
 .timeline__row {
     display: grid;
-    grid-template-columns: var(--timeline-title) minmax(0, 1fr);
+    grid-template-columns: var(--timeline-title) minmax(0, 1fr) var(--timeline-end);
 }
 
 .timeline__row:not(.timeline__row--today):not(.timeline__row--months) {
@@ -202,13 +208,13 @@
     height: 0.55rem;
 }
 
-/* A label's text wraps within a few words, its edge set by the view: left early in the year, right
-   late. It sits on the card's colour, so Today's line passes behind it rather than through it. */
+/* A label is one line, as wide as its amount and its day: nothing in it breaks. It is centred on its
+   mark; the one a centred label would push out of the plot is set by its first or last edge instead
+   (the view says which). It sits on the card's colour, so Today's line passes behind it rather than
+   through it. */
 .timeline__label {
     position: absolute;
     top: 1.6rem;
-    max-width: 7rem;
-    margin-left: -0.55rem;
     padding: 0 0.2rem;
     border-radius: 2px;
     background: var(--netto-surface);
@@ -216,12 +222,21 @@
     font-size: 0.72rem;
     line-height: 1.25;
     font-variant-numeric: tabular-nums;
+    text-align: center;
+    white-space: nowrap;
+    transform: translateX(-50%);
+}
+
+.timeline__label--start {
+    margin-left: -0.55rem;
+    text-align: left;
+    transform: none;
 }
 
 .timeline__label--end {
-    margin-left: 0;
     margin-right: -0.55rem;
     text-align: right;
+    transform: none;
 }
 
 .timeline__label--past {

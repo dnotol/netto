@@ -1,3 +1,4 @@
+using System.Globalization;
 using Netto.Core.SocialContributions;
 using Netto.Web.Client.River;
 using Netto.Web.Client.Tabs;
@@ -221,13 +222,33 @@ public class TimelineViewTests
         axis[1].Width.ShouldBe(28m / 365m, Tolerance);
     }
 
-    // A label in the second half of the year leans left, so it never leaves the plot on the right.
+    // A deadline's label stands centred on its mark, the last of the year's four included: two labels
+    // side by side then keep the room the marks leave them, where one leaning towards the other would
+    // meet it (12 October and 21 December are 70 days apart, under a fifth of the year).
     [Fact]
-    public void Of_example_labelsLeanLeftLateInTheYearAndRightEarly()
+    public void Of_example_centresEveryDeadlineLabelOnItsMark()
     {
-        var company = Of(RiverInputs.Example, On23October).Timeline.Company.ShouldNotBeNull();
+        var timeline = Of(RiverInputs.Example, On23October).Timeline;
 
-        company.Marks.Select(mark => mark.LabelEnd).ShouldBe([false, false, true, true]);
+        timeline.Company.ShouldNotBeNull().Marks.Concat(timeline.Director.Marks).Select(mark => mark.Anchor.ToString()).Distinct().ShouldBe(["Centre"]);
+    }
+
+    // Only a label a centred one would push out of the plot is anchored, to the side that has room: the
+    // mark within a fiftieth of the year of its start leans right, of its end leans left.
+    [Theory]
+    [InlineData("0.0014", "Start")]
+    [InlineData("0.0199", "Start")]
+    [InlineData("0.02", "Centre")]
+    [InlineData("0.5", "Centre")]
+    [InlineData("0.9712", "Centre")]
+    [InlineData("0.98", "Centre")]
+    [InlineData("0.9801", "End")]
+    [InlineData("0.9986", "End")]
+    public void Anchor_markNearAnEdgeOfTheYear_leansInward(string at, string expected)
+    {
+        var mark = new TimelineMark(On21December, decimal.Parse(at, CultureInfo.InvariantCulture), MarkState.ToCome, 0m);
+
+        mark.Anchor.ToString().ShouldBe(expected);
     }
 
     // The pay's twelve months tile the year, each with the net the pay statement pays in it.

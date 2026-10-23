@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text.RegularExpressions;
+using Netto.Core.Calendar;
 using Netto.Core.SocialContributions;
 using Netto.Web.Client;
 using Netto.Web.Client.River;
@@ -276,12 +277,34 @@ public class CalendarTimelineTests
         html.ShouldNotContain("aria-live");
     }
 
-    // A label of a mark in the second half of the year is marked to lean left, so the layout can lean it.
+    // A label stands centred on its mark, whatever its place in the year: none leans, and each is at its
+    // mark's position.
     [Fact]
-    public async Task Timeline_example_leansLateLabelsLeft()
+    public async Task Timeline_example_centresEveryLabelOnItsMark()
     {
         var html = await RenderAsync(RiverInputs.Example, On23October);
 
-        (Count(html, "class=\"timeline__label[^\"]*timeline__label--end"), Count(html, "timeline__label timeline__label--next timeline__label--end")).ShouldBe((4, 1));
+        Count(html, "timeline__label--start|timeline__label--end").ShouldBe(0);
+        var marks = Regex.Matches(html, "timeline__diamond--[a-z]+\" style=\"left: ([0-9.]+)%\"").Select(match => match.Groups[1].Value);
+        var labels = Regex.Matches(html, "class=\"timeline__label[^\"]*\" style=\"left: ([0-9.]+)%\"").Select(match => match.Groups[1].Value);
+        labels.ShouldBe(marks);
+    }
+
+    // A deadline a centred label would push out of the plot is anchored to the side that has room: the
+    // label's left edge at a mark early in the year, its right edge at one late in it.
+    [Fact]
+    public async Task Timeline_deadlinesAtTheEdgesOfTheYear_anchorTheirLabelsInward()
+    {
+        var river = RiverInputs.Example;
+        var calendar = CalendarView.From(river, river.Run(), On23October).ShouldNotBeNull().Calendar;
+        var payments = calendar.Director.Payments;
+        var early = payments[0] with { Deadline = payments[0].Deadline with { Value = new DateOnly(2026, 1, 2) } };
+        var late = payments[3] with { Deadline = payments[3].Deadline with { Value = new DateOnly(2026, 12, 30) } };
+        var edges = calendar with { Director = calendar.Director with { Payments = [early, payments[1], payments[2], late] } };
+
+        var html = WebUtility.HtmlDecode(await RenderAsync<CalendarTimeline>(new Folds(new BrowserStorage()), new() { ["Calendar"] = edges, ["NextDate"] = null }));
+
+        Regex.IsMatch(html, "class=\"timeline__label[^\"]*timeline__label--start\" style=\"left: 0.41%\"[^>]*>2 Jan<").ShouldBeTrue();
+        Regex.IsMatch(html, "class=\"timeline__label[^\"]*timeline__label--end\" style=\"right: 0.41%\"[^>]*>30 Dec<").ShouldBeTrue();
     }
 }

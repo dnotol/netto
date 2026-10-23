@@ -88,6 +88,20 @@ public class TimelineTextTests
         Regex.Matches(css, @"#[0-9A-Fa-f]{3,8}\b|\b(?:rgb|rgba|hsl|hsla)\(").Select(match => match.Value).ShouldBeEmpty();
     }
 
+    // A label is one line: nothing breaks inside its amount or its date (at 1,920 px a label read
+    // « €8,312.67 by 21 » over « Dec »). It is as wide as its text, never wrapped within a width.
+    [Fact]
+    public void CalendarTimelineCss_aLabelAndACaptionNeverWrap()
+    {
+        var css = File.ReadAllText(FindUp("src", "Netto.Web.Client", "Tabs", "CalendarTimeline.razor.css"));
+
+        foreach (var selector in new[] { "timeline__label", "timeline__caption" })
+        {
+            var rule = Regex.Match(css, @"\." + selector + @"\s*\{([^}]*)\}").Groups[1].Value;
+            (rule.Contains("white-space: nowrap"), rule.Contains("max-width")).ShouldBe((true, false), selector);
+        }
+    }
+
     [Fact]
     public void CalendarTimelineCss_everyTokenItUsesIsDeclaredInAppCss()
     {

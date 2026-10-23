@@ -19,9 +19,13 @@ internal sealed record TimelineView(
     SpanLane Pay,
     SpanLane Contributions)
 {
-    // A label whose mark lies beyond this fraction of the year leans left of it, so it stays inside the
-    // plot on the right.
+    // Today's label, and the caption of a lane of blocks, stand left of their line or block when it lies
+    // beyond this fraction of the year, so they stay inside the plot on the right.
     public const decimal LabelsLeanLeftAfter = 0.6m;
+
+    // A deadline's label stands centred on its mark, unless the mark is within this fraction of the
+    // year's start or end: there a centred label would leave the plot, so it leans inward.
+    public const decimal LabelsAnchorWithin = 0.02m;
 
     // Each payer's next payment, if the next deadline carries one of theirs.
     public TimelineMark? NextCompany => Company?.Marks.FirstOrDefault(mark => mark.State == MarkState.Next);
@@ -149,8 +153,22 @@ internal enum MarkState
 // figure for the date.
 internal sealed record TimelineMark(DateOnly Date, decimal At, MarkState State, decimal Amount)
 {
-    // The label leans left of the mark, ending at it, when the mark lies late in the year.
-    public bool LabelEnd => At > TimelineView.LabelsLeanLeftAfter;
+    // The label stands centred on the mark. A mark so near an edge of the year that a centred label would
+    // leave the plot anchors it to the side that has room, its first edge at the mark early in the year,
+    // its last late in it: none of the income year's deadlines is (the first is April's, the last
+    // December's), the rule only keeps a label inside the plot whatever the date.
+    public LabelAnchor Anchor => At < TimelineView.LabelsAnchorWithin ? LabelAnchor.Start
+        : At > 1m - TimelineView.LabelsAnchorWithin ? LabelAnchor.End
+        : LabelAnchor.Centre;
+}
+
+// Which edge of a deadline's label stands at its mark: the left (leaning right of it), the right (leaning
+// left of it), or neither, the label centred on it.
+internal enum LabelAnchor
+{
+    Start,
+    Centre,
+    End,
 }
 
 internal enum LaneNote
