@@ -1,5 +1,7 @@
 using System.Net;
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.DependencyInjection;
 using Netto.Web.Client.River;
 using Shouldly;
 using static Netto.Tests.WebClient.River.RiverRendering;
@@ -237,7 +239,47 @@ public class StreamCardsFiguresTests
         CardHtml.Prose(await CardAsync("corporate-tax")).ShouldContain("Reduced rate kept: your pay with benefits reaches the €51,000.00 minimum; benefits within 20%.");
     }
 
+    // What a small company is is the checkbox's bubble: its text is the bubble's, the bubble beside the
+    // checkbox and never inside its label, where a click on the label would toggle it, and no paragraph
+    // under the checkbox says it again. The card is drawn with its disclosures open (OpenDisclosures).
+    [Fact]
+    public async Task CorporateTax_smallCompany_explainsItInABubbleOutsideTheCheckboxsLabel()
+    {
+        var texts = InterfaceTexts.Of(typeof(CorporateTaxCard)).ToDictionary(text => text.Key, text => text.Value);
+        var html = WebUtility.HtmlDecode(await RenderAsync(typeof(CorporateTaxCard), OpenCard("corporate-tax"),
+            new() { ["Inputs"] = RiverInputs.Example, ["Run"] = RiverInputs.Example.Run(), ["Refused"] = null },
+            services => services.AddSingleton<IComponentActivator>(new OpenDisclosures())));
+        var label = Regex.Match(html, @"<label[^>]*>(?:(?!</label>).)*</label>", RegexOptions.Singleline);
+
+        html.ShouldSatisfyAllConditions(
+            () => Regex.IsMatch(html, $"class=\"info-bubble__text\"[^>]*>{Regex.Escape(texts["SmallCompanyHint"])}</span>").ShouldBeTrue(),
+            () => (label.Value.Contains(texts["SmallCompanyLabel"], StringComparison.Ordinal), label.Value.Contains("info-bubble", StringComparison.Ordinal)).ShouldBe((true, false)),
+            () => CardHtml.Prose(html).ShouldNotContain(paragraph => paragraph.Contains(texts["SmallCompanyHint"], StringComparison.Ordinal)));
+    }
+
     private static async Task<string> CardAsync(string card) => CardHtml.Card(await Page.Value, card);
+
+    // A card opened by the viewer, as a fold of its own.
+    private static Folds OpenCard(string name)
+    {
+        var folds = new Folds(new BrowserStorage());
+        folds.Set(name, true);
+        return folds;
+    }
+
+    // Draws every disclosure open, as « Change » leaves it, which no click can do in a render without a
+    // browser: Blazor builds each component through this activator, and a disclosure starts open.
+    private sealed class OpenDisclosures : IComponentActivator
+    {
+        public IComponent CreateInstance(Type componentType) => componentType == typeof(Disclosure)
+            ? new OpenDisclosure()
+            : Activator.CreateInstance(componentType) as IComponent ?? throw new InvalidOperationException($"{componentType.Name} is no component.");
+    }
+
+    private sealed class OpenDisclosure : Disclosure
+    {
+        public OpenDisclosure() => OpenByDefault = true;
+    }
 
     private static string Unsigned(string amount) => amount.TrimStart('−', '+');
 }
