@@ -3,10 +3,7 @@ using System.Resources;
 using Netto.Core.Allowances;
 using Netto.Core.CompanyCar;
 using Netto.Core.Copyright;
-using Netto.Core.CorporateTax;
 using Netto.Core.DirectorPay;
-using Netto.Core.Dividends;
-using Netto.Core.PersonalTax;
 using Netto.Core.Rent;
 using Netto.Core.Rules;
 using Netto.Core.Simulation;
@@ -30,14 +27,6 @@ public class RiverTextTests
 
     private static readonly ResourceManager RefusedMessageResources = new("Netto.Web.Client.River.RefusedMessage", typeof(RefusedMessage).Assembly);
 
-    private static readonly ResourceManager CorporateTaxCardResources = new("Netto.Web.Client.River.CorporateTaxCard", typeof(CorporateTaxCard).Assembly);
-
-    private static readonly ResourceManager DirectorPayCardResources = new("Netto.Web.Client.River.DirectorPayCard", typeof(DirectorPayCard).Assembly);
-
-    private static readonly ResourceManager DividendCardResources = new("Netto.Web.Client.River.DividendCard", typeof(DividendCard).Assembly);
-
-    private static readonly ResourceManager SplitCardResources = new("Netto.Web.Client.River.SplitCard", typeof(SplitCard).Assembly);
-
     private static readonly ResourceManager ModuleCardResources = new("Netto.Web.Client.River.ModuleCard", typeof(ModuleCard).Assembly);
 
     private static readonly ResourceManager ConditionListResources = new("Netto.Web.Client.River.ConditionList", typeof(ConditionList).Assembly);
@@ -47,12 +36,6 @@ public class RiverTextTests
     private static readonly ResourceManager TakenOutNoticeResources = new("Netto.Web.Client.River.TakenOutNotice", typeof(TakenOutNotice).Assembly);
 
     private static readonly ResourceManager InfoBubbleResources = new("Netto.Web.Client.River.InfoBubble", typeof(InfoBubble).Assembly);
-
-    private static readonly ResourceManager RentCardResources = new("Netto.Web.Client.River.RentCard", typeof(RentCard).Assembly);
-
-    private static readonly ResourceManager CarCardResources = new("Netto.Web.Client.River.CompanyCar.CarCard", typeof(CarCard).Assembly);
-
-    private static readonly ResourceManager CopyrightCardResources = new("Netto.Web.Client.River.Copyright.CopyrightCard", typeof(CopyrightCard).Assembly);
 
     // The conditions of every lever the river shows, which the shared list words through one .resx.
     private static readonly IReadOnlyList<LeverCondition> LeverConditions =
@@ -152,122 +135,6 @@ public class RiverTextTests
     }
 
     [Fact]
-    public void CorporateTaxCardResx_everyReducedRateCondition_hasAText()
-    {
-        var keys = Enum.GetValues<ReducedRateCondition>().SelectMany(condition => new[] { false, true }.Select(benefits => CorporateTaxCardText.Condition(condition, benefits)));
-
-        Missing(CorporateTaxCardResources, keys).ShouldBeEmpty();
-    }
-
-    [Fact]
-    public void CorporateTaxCardResx_everyAddBackSentence_hasAText()
-    {
-        Missing(CorporateTaxCardResources, ["Disallowed", "Disallowed_Car", "Disallowed_VouchersAndCar", "Disallowed_CarCosts", "Disallowed_VouchersAndCarCosts"])
-            .ShouldBeEmpty();
-    }
-
-    // With benefits in kind, the conditions the pay decides say the benefits are counted in it; the
-    // others read the same.
-    [Theory]
-    [InlineData(ReducedRateCondition.MinimumPayMet, "Condition_MinimumPayMet_WithBenefits")]
-    [InlineData(ReducedRateCondition.TaxableIncomeNotAbovePay, "Condition_TaxableIncomeNotAbovePay_WithBenefits")]
-    [InlineData(ReducedRateCondition.MinimumPayNotMet, "Condition_MinimumPayNotMet_WithBenefits")]
-    [InlineData(ReducedRateCondition.FirstFourTaxPeriods, "Condition_FirstFourTaxPeriods_WithBenefits")]
-    [InlineData(ReducedRateCondition.ExcessBenefits, "Condition_ExcessBenefits")]
-    [InlineData(ReducedRateCondition.NotSmallCompany, "Condition_NotSmallCompany")]
-    public void CorporateTaxCardText_conditionWithBenefits_saysTheyAreCounted(ReducedRateCondition condition, string key)
-    {
-        CorporateTaxCardText.Condition(condition, true).ShouldBe(key);
-    }
-
-    // The split and Director pay say how a car's benefit counts in the pay.
-    [Fact]
-    public void Resx_benefitInThePay_hasItsTexts()
-    {
-        (Missing(SplitCardResources, ["Rate_Benefits"]), Missing(DirectorPayCardResources, ["Benefit"]))
-            .ShouldSatisfyAllConditions(missing => missing.Item1.ShouldBeEmpty(), missing => missing.Item2.ShouldBeEmpty());
-    }
-
-    [Fact]
-    public void CorporateTaxCardResx_everySurchargeState_hasAText()
-    {
-        Missing(CorporateTaxCardResources, Enum.GetValues<SurchargeState>().Select(CorporateTaxCardText.Surcharge)).ShouldBeEmpty();
-    }
-
-    [Fact]
-    public void DirectorPayCardResx_everyTaxSurchargeState_hasAText()
-    {
-        Missing(DirectorPayCardResources, Enum.GetValues<TaxSurchargeState>().Select(DirectorPayCardText.Surcharge)).ShouldBeEmpty();
-    }
-
-    [Fact]
-    public void DirectorPayCardResx_everyPayerOfTheContributions_hasAText()
-    {
-        Missing(DirectorPayCardResources, Enum.GetValues<ContributionsPaidBy>().Select(DirectorPayCardText.PaidBy)).ShouldBeEmpty();
-    }
-
-    // Every way the lines of Director pay's disclosures read: either payer, the default rate, a
-    // municipality's, a rate of one's own over it, a starter or not, the pay slip's withholding with
-    // and without a pay slip, an amount withheld entered, and advance payments or none.
-    [Fact]
-    public void DirectorPayCardResx_everyPhraseOfItsSettingsLines_hasAText()
-    {
-        var example = RiverInputs.Example;
-        var municipality = MunicipalRates.IncomeYear2026.Municipalities[0];
-        RiverInputs[] variations =
-        [
-            example,
-            example.WithContributionsPaidBy(ContributionsPaidBy.Company).WithStarter(true).WithTaxWithheld(1_000m).WithTaxAdvancePayment(0, 1_000m),
-            example.WithMunicipality(example.Municipality.Pick(municipality)).WithReserve(-1m),
-            example.WithMunicipality(example.Municipality.Pick(municipality).Enter(0.09m)),
-        ];
-        var phrases = variations.Select(inputs => DirectorPaySettingsView.From(inputs, inputs.Run()))
-            .SelectMany(view => view.Situation.Concat(view.Prepaid));
-
-        Missing(DirectorPayCardResources, phrases.Select(phrase => phrase.Key)).ShouldBeEmpty();
-    }
-
-    // Every way the lines of Corporate tax's disclosures read: a small company or not, in each of its
-    // financial years, advance payments or none, and a surcharge left or none.
-    [Fact]
-    public void CorporateTaxCardResx_everyPhraseOfItsSettingsLines_hasAText()
-    {
-        RiverInputs[] variations =
-        [
-            RiverInputs.Example.WithSmallCompany(false).WithAdvancePayment(0, 7_500m),
-            .. Enum.GetValues<FinancialYear>().Select(RiverInputs.Example.WithFinancialYear),
-        ];
-        var phrases = variations.Select(inputs => CorporateTaxSettingsView.From(inputs, inputs.Run()))
-            .SelectMany(view => view.Company.Concat(view.Payments));
-
-        Missing(CorporateTaxCardResources, phrases.Select(phrase => phrase.Key)).ShouldBeEmpty();
-    }
-
-    [Fact]
-    public void CorporateTaxCardResx_everyFinancialYear_hasAText()
-    {
-        Missing(CorporateTaxCardResources, Enum.GetValues<FinancialYear>().Select(CorporateTaxCardText.FinancialYear)).ShouldBeEmpty();
-    }
-
-    [Fact]
-    public void DividendCardResx_everyWithholdingCategory_hasAText()
-    {
-        Missing(DividendCardResources, Enum.GetValues<WithholdingCategory>().Select(DividendCardText.Category)).ShouldBeEmpty();
-    }
-
-    // Each way the best pay can stand against the reduced rate, with or without a pay on the other
-    // side that keeps the reserve.
-    [Fact]
-    public void SplitCardResx_everyWayOfWeighingTheRate_hasAText()
-    {
-        var other = new PayLevel(50_000m, 62_529.24m, 40_000m, 0m, ReducedRateCondition.TaxableIncomeNotAbovePay, true);
-        var weighings = Enum.GetValues<RateChoice>()
-            .SelectMany(choice => new[] { new RateWeighing(choice, 50_000m, other, 2_183.57m), new RateWeighing(choice, 50_000m, null, null) });
-
-        Missing(SplitCardResources, weighings.Select(SplitCardText.Rate)).ShouldBeEmpty();
-    }
-
-    [Fact]
     public void ConditionListResx_everyConditionOfEveryLever_hasAText()
     {
         Missing(ConditionListResources, LeverConditions.Select(condition => ConditionListText.Condition(condition.Key))).ShouldBeEmpty();
@@ -319,250 +186,12 @@ public class RiverTextTests
         Missing(InfoBubbleResources, [InfoBubbleText.MoreAbout]).ShouldBeEmpty();
     }
 
-    // The reduced corporate rate is a term of art: every sentence weighing it marks it, for it to open
-    // a bubble that says what it means.
-    [Fact]
-    public void SplitCardResx_everySentenceWeighingTheRate_marksTheReducedRate()
-    {
-        var other = new PayLevel(50_000m, 62_529.24m, 40_000m, 0m, ReducedRateCondition.TaxableIncomeNotAbovePay, true);
-        var keys = new[] { RateChoice.KeepsIt, RateChoice.GivesItUp }
-            .SelectMany(choice => new[] { new RateWeighing(choice, 50_000m, other, 2_183.57m), new RateWeighing(choice, 50_000m, null, null) })
-            .Select(SplitCardText.Rate);
-
-        Terms(SplitCardResources, keys).ShouldAllBe(term => term == "reduced corporate rate");
-    }
-
-    [Fact]
-    public void SplitCardResx_reducedRate_saysWhatItMeans()
-    {
-        Missing(SplitCardResources, [SplitCardText.ReducedRateTerm]).ShouldBeEmpty();
-    }
-
-    // What reaches the pocket at the best pay, against the pay set, or at the pay set when it is the best.
-    [Fact]
-    public void SplitCardResx_reach_hasItsTexts()
-    {
-        Missing(SplitCardResources, [SplitCardText.BestReach, SplitCardText.BestIsYoursReach]).ShouldBeEmpty();
-    }
-
-    // Every text the split says about the royalty it pays beside the pay: its two ways and its end, the
-    // summary, the help and the ceiling with no royalty, a fixed one and one that follows the pay, the
-    // curve's sentences naming the royalty that follows each pay, and how the engine set it.
-    [Fact]
-    public void SplitCardResx_everyTextOfTheRoyalty_hasAText()
-    {
-        var following = RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithCreativeShare(0.75m);
-        var royalties = new[] { RiverInputs.Example, following, following.WithRoyalty(10_000m) }.Select(inputs => SplitView.From(inputs, inputs.Run()).Royalty).ToList();
-        string[] curve = ["PointerAt", "PointerMissesReserve", "PointerYours", "Best", "BestOverReserve", "BestIsYours"];
-        IEnumerable<string> keys =
-        [
-            SplitCardText.Policy(true), SplitCardText.Policy(false), SplitCardText.SliderValueWithRoyalty, "RoyaltyLabel", "RoyaltyHint", "FixedRoyaltyLabel", "FixedRoyaltyHint",
-            .. royalties.OfType<SplitRoyaltyView>().Select(SplitCardText.RoyaltyEnd),
-            .. royalties.SelectMany(royalty => new[]
-            {
-                SplitCardText.Summary(royalty, false), SplitCardText.Summary(royalty, true), SplitCardText.Hint(royalty), SplitCardText.Ceiling(royalty),
-            }),
-            .. royalties.SelectMany(royalty => curve.Select(key => SplitCardText.AlongTheCurve(key, royalty))),
-            .. Enum.GetValues<CopyrightFollowing>().Select(SplitCardText.Following),
-        ];
-
-        Missing(SplitCardResources, keys).ShouldBeEmpty();
-    }
-
-    // How far the pay goes: beside a royalty that follows the pay only while the engine set it at what a
-    // ruling accepts; one that is none leaves the whole profit before pay, as no royalty does.
-    // The rent's and the car's summaries end on what the split shares: « before your pay », and « before
-    // your pay and royalty » once the royalty is in the plan.
-    [Fact]
-    public void RentAndCarCardResx_everySummary_hasAText()
-    {
-        Missing(RentCardResources, [RentCardText.Summary(false), RentCardText.Summary(true)])
-            .Concat(Missing(CarCardResources, [CarCardText.Summary(true, false), CarCardText.Summary(true, true), CarCardText.Summary(false, false), CarCardText.Summary(false, true)]))
-            .ShouldBeEmpty();
-    }
-
-    [Theory]
-    [InlineData(false, "Summary")]
-    [InlineData(true, "Summary_Royalty")]
-    public void RentSummary_royaltyInThePlan_saysBeforeYourPayAndRoyalty(bool royalty, string key)
-    {
-        RentCardText.Summary(royalty).ShouldBe(key);
-    }
-
-    [Theory]
-    [InlineData(true, false, "Summary")]
-    [InlineData(true, true, "Summary_Royalty")]
-    [InlineData(false, false, "SummaryNoCar")]
-    [InlineData(false, true, "SummaryNoCar_Royalty")]
-    public void CarSummary_royaltyInThePlan_saysBeforeYourPayAndRoyalty(bool hasCar, bool royalty, string key)
-    {
-        CarCardText.Summary(hasCar, royalty).ShouldBe(key);
-    }
-
-    private static readonly Dictionary<string, RiverInputs> Royalties = new()
-    {
-        ["none"] = RiverInputs.Example,
-        ["following without a share"] = RiverInputs.Example.AddToPlan(OptionalModule.Copyright),
-        ["following above the cap"] = RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithAverageWithinCap(false).WithCreativeShare(0.75m),
-        ["following at 75%"] = RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithCreativeShare(0.75m),
-        ["fixed"] = RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithRoyalty(10_000m),
-    };
-
-    [Theory]
-    [InlineData("none", "Ceiling")]
-    [InlineData("following without a share", "Ceiling")]
-    [InlineData("following above the cap", "Ceiling")]
-    [InlineData("following at 75%", "Ceiling_Follows")]
-    [InlineData("fixed", "Ceiling_Fixed")]
-    public void Ceiling_namesTheFollowingRoyaltyOnlyWhileARulingAcceptsOne(string royalty, string key)
-    {
-        var inputs = Royalties[royalty];
-
-        SplitCardText.Ceiling(SplitView.From(inputs, inputs.Run()).Royalty).ShouldBe(key);
-    }
-
-    // The curve's sentences name the royalty only while it follows the pay: a fixed one is the same at
-    // every pay.
-    [Theory]
-    [InlineData(false, "PointerAt")]
-    [InlineData(true, "PointerAt_Royalty")]
-    public void AlongTheCurve_namesTheRoyaltyOnlyWhileItFollowsThePay(bool followsPay, string key)
-    {
-        var inputs = RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithCreativeShare(0.75m).WithRoyalty(10_000m);
-        var shown = followsPay ? inputs.WithRoyaltyFollowingPay() : inputs;
-
-        SplitCardText.AlongTheCurve("PointerAt", SplitView.From(shown, shown.Run()).Royalty).ShouldBe(key);
-    }
-
-    // Once the company keeps some, the dividend's summary starts from what it pays out, the base of its
-    // rate, not from all it could: 25,000 of the 40,000 after tax, 15,000 being kept (ModuleViewsTests).
-    [Fact]
-    public void DividendSummary_reserve_saysWhatIsPaidOut()
-    {
-        var view = DividendView.From(RiverInputs.Example.WithAdvancePayment(0, 7_500m).WithTaxWithheld(11_334m).WithReserve(15_000m).Run().Year.ShouldNotBeNull());
-
-        var text = string.Format(CultureInfo.InvariantCulture, DividendCardResources.GetString(DividendCardText.Summary(view), CultureInfo.InvariantCulture) ?? "",
-            "€25,000.00", "€20,649.94");
-
-        text.ShouldBe("€25,000.00 paid out · €20,649.94 to your pocket");
-    }
-
-    [Fact]
-    public void DividendSummary_nothingKept_saysWhatComesIn()
-    {
-        var view = DividendView.From(RiverInputs.Example.Run().Year.ShouldNotBeNull());
-
-        DividendCardText.Summary(view).ShouldBe("Summary");
-    }
-
     // The rate in a card's summary says what it measures, worded once for every card.
     [Fact]
     public void ModuleCardResx_rates_haveTheirTexts()
     {
         Missing(ModuleCardResources, [ModuleCardText.ToYou, ModuleCardText.PassesOn]).ShouldBeEmpty();
     }
-
-    // The line of « Your shares and earlier profits »: profits kept or none, and each category.
-    [Fact]
-    public void DividendCardResx_everyPhraseOfItsSettingsLine_hasAText()
-    {
-        RiverInputs[] variations =
-        [
-            RiverInputs.Example,
-            .. Enum.GetValues<WithholdingCategory>().Select(category => RiverInputs.Example.WithEarlierProfits(80_000m).WithDividendCategory(category)),
-        ];
-        var phrases = variations.SelectMany(inputs => DividendSettingsView.From(inputs).Facts);
-
-        Missing(DividendCardResources, phrases.Select(phrase => phrase.Key).Append("SharesTitle")).ShouldBeEmpty();
-    }
-
-    [Fact]
-    public void DividendCardResx_whatTheRatesAreFor_marksVvprbis()
-    {
-        Terms(DividendCardResources, ["CategoryHint"]).ShouldBe(["VVPRbis shares"]);
-    }
-
-    [Fact]
-    public void DividendCardResx_vvprbis_saysWhatItMeans()
-    {
-        Missing(DividendCardResources, [DividendCardText.VvprbisTerm]).ShouldBeEmpty();
-    }
-
-    [Fact]
-    public void RentCardResx_theCapAndWhatTheRentIsTaxedOn_markTheirTerms()
-    {
-        Terms(RentCardResources, ["Cap", "TaxedOnTheRent", "TaxedOnTheFloor"]).ShouldBe(["cadastral income", "flat charges", "flat charges"]);
-    }
-
-    [Fact]
-    public void RentCardResx_cadastralIncomeAndFlatCharges_sayWhatTheyMean()
-    {
-        Missing(RentCardResources, [RentCardText.CadastralIncomeTerm, RentCardText.FlatChargesTerm]).ShouldBeEmpty();
-    }
-
-    // The lines of « Your home »: the example's facts and facts given.
-    [Fact]
-    public void RentCardResx_everyPhraseOfItsSettingsLine_hasAText()
-    {
-        RiverInputs[] variations = [RiverInputs.Example, RiverInputs.Example.WithCadastralIncome(1_200m).WithShareLet(0.12m)];
-        var phrases = variations.SelectMany(inputs => RentSettingsView.From(inputs).Home);
-
-        Missing(RentCardResources, phrases.Select(phrase => phrase.Key).Append("HomeTitle")).ShouldBeEmpty();
-    }
-
-    // Every way the line of « Your car » reads: each engine, its CO2 given, not given or none
-    // registered, a plug-in hybrid real or fake with or without a matching car, a natural gas car small
-    // or not, and the dates.
-    [Fact]
-    public void CarCardResx_everyPhraseOfItsSettingsLine_hasAText()
-    {
-        var example = RiverInputs.Example.WithCatalogueValue(45_000m).WithFirstRegistration(new DateOnly(2021, 3, 1));
-        RiverInputs[] variations =
-        [
-            example,
-            .. Enum.GetValues<CarEngine>().SelectMany(engine => new[]
-            {
-                example.WithCarEngine(engine),
-                example.WithCarEngine(engine).WithCarCo2(118),
-                example.WithCarEngine(engine).WithCarCo2(118).WithNoCo2Data(true),
-                example.WithCarEngine(engine).WithCarCo2(118).WithFakeHybrid(true).WithMatchingCarCo2(112),
-                example.WithCarEngine(engine).WithCarCo2(118).WithFakeHybrid(true).WithNoMatchingCar(true),
-                example.WithCarEngine(engine).WithCarCo2(118).WithFakeHybrid(true),
-                example.WithCarEngine(engine).WithCarCo2(118).WithSmallNaturalGas(true),
-            }),
-        ];
-        var phrases = variations.SelectMany(inputs => CarSettingsView.From(inputs).Car);
-
-        Missing(CarCardResources, phrases.Select(phrase => phrase.Key).Append("CarTitle")).ShouldBeEmpty();
-    }
-
-    // The line of « Your copyright situation »: the statuses as assumed and as said, and the share
-    // given, needed by a royalty that follows the pay, or not given beside a fixed one.
-    [Fact]
-    public void CopyrightCardResx_everyPhraseOfItsSettingsLine_hasAText()
-    {
-        var royalty = RiverInputs.Example.AddToPlan(OptionalModule.Copyright);
-        RiverInputs[] variations = [royalty, royalty.WithRoyalty(10_000m), royalty.WithAverageWithinCap(false).WithAttestation(true).WithCreativeShare(0.4m)];
-        var phrases = variations.SelectMany(inputs => CopyrightSettingsView.From(inputs, inputs.Run()).Situation);
-
-        Missing(CopyrightCardResources, phrases.Select(phrase => phrase.Key).Append("SituationTitle")).ShouldBeEmpty();
-    }
-
-    [Fact]
-    public void DirectorPayCardResx_withholdingDerivedFromThePaySlip_marksTheKeyFormula()
-    {
-        Terms(DirectorPayCardResources, ["WithheldDerived"]).ShouldBe(["key formula"]);
-    }
-
-    [Fact]
-    public void DirectorPayCardResx_keyFormula_saysWhatItMeans()
-    {
-        Missing(DirectorPayCardResources, [DirectorPayCardText.KeyFormulaTerm]).ShouldBeEmpty();
-    }
-
-    // The term each sentence marks, null where its text marks none or is missing.
-    private static List<string?> Terms(ResourceManager resources, IEnumerable<string> keys) =>
-        [.. keys.Select(key => resources.GetString(key, CultureInfo.InvariantCulture) is { } text ? TermText.Split(text).Term : null)];
 
     private static IEnumerable<string> Missing(ResourceManager resources, IEnumerable<string> keys) =>
         keys.Distinct().Where(key => resources.GetString(key, CultureInfo.InvariantCulture) is null);

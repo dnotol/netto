@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Resources;
 using Netto.Core.CompanyCar;
+using Netto.Web.Client.River;
 using Netto.Web.Client.River.CompanyCar;
 using Shouldly;
 
@@ -77,6 +78,51 @@ public class CarCardTextTests
             .Concat(["Co2_HeldToMinimum", "Co2_HeldToMaximum", "Deduction_Full", "Deduction_Rate", "Deduction_None", "Deduction_AllCarvedOut"]);
 
         Missing(keys).ShouldBeEmpty();
+    }
+
+    // The car's summary ends on what the split shares: « before your pay », and « before your pay and
+    // royalty » once the royalty is in the plan.
+    [Fact]
+    public void CarCardResx_everySummary_hasAText()
+    {
+        Missing([CarCardText.Summary(true, false), CarCardText.Summary(true, true), CarCardText.Summary(false, false), CarCardText.Summary(false, true)])
+            .ShouldBeEmpty();
+    }
+
+    [Theory]
+    [InlineData(true, false, "Summary")]
+    [InlineData(true, true, "Summary_Royalty")]
+    [InlineData(false, false, "SummaryNoCar")]
+    [InlineData(false, true, "SummaryNoCar_Royalty")]
+    public void CarSummary_royaltyInThePlan_saysBeforeYourPayAndRoyalty(bool hasCar, bool royalty, string key)
+    {
+        CarCardText.Summary(hasCar, royalty).ShouldBe(key);
+    }
+
+    // Every way the line of « Your car » reads: each engine, its CO2 given, not given or none
+    // registered, a plug-in hybrid real or fake with or without a matching car, a natural gas car small
+    // or not, and the dates.
+    [Fact]
+    public void CarCardResx_everyPhraseOfItsSettingsLine_hasAText()
+    {
+        var example = RiverInputs.Example.WithCatalogueValue(45_000m).WithFirstRegistration(new DateOnly(2021, 3, 1));
+        RiverInputs[] variations =
+        [
+            example,
+            .. Enum.GetValues<CarEngine>().SelectMany(engine => new[]
+            {
+                example.WithCarEngine(engine),
+                example.WithCarEngine(engine).WithCarCo2(118),
+                example.WithCarEngine(engine).WithCarCo2(118).WithNoCo2Data(true),
+                example.WithCarEngine(engine).WithCarCo2(118).WithFakeHybrid(true).WithMatchingCarCo2(112),
+                example.WithCarEngine(engine).WithCarCo2(118).WithFakeHybrid(true).WithNoMatchingCar(true),
+                example.WithCarEngine(engine).WithCarCo2(118).WithFakeHybrid(true),
+                example.WithCarEngine(engine).WithCarCo2(118).WithSmallNaturalGas(true),
+            }),
+        ];
+        var phrases = variations.SelectMany(inputs => CarSettingsView.From(inputs).Car);
+
+        Missing(phrases.Select(phrase => phrase.Key).Append("CarTitle")).ShouldBeEmpty();
     }
 
     private static IEnumerable<string> Missing(IEnumerable<string> keys) => keys.Where(key => Resources.GetString(key, CultureInfo.InvariantCulture) is null);

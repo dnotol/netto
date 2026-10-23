@@ -109,5 +109,17 @@ public class CopyrightCardTextTests
         Missing(keys).ShouldBeEmpty();
     }
 
+    // The line of « Your copyright situation »: the statuses as assumed and as said, and the share
+    // given, needed by a royalty that follows the pay, or not given beside a fixed one.
+    [Fact]
+    public void CopyrightCardResx_everyPhraseOfItsSettingsLine_hasAText()
+    {
+        var royalty = RiverInputs.Example.AddToPlan(OptionalModule.Copyright);
+        RiverInputs[] variations = [royalty, royalty.WithRoyalty(10_000m), royalty.WithAverageWithinCap(false).WithAttestation(true).WithCreativeShare(0.4m)];
+        var phrases = variations.SelectMany(inputs => CopyrightSettingsView.From(inputs, inputs.Run()).Situation);
+
+        Missing(phrases.Select(phrase => phrase.Key).Append("SituationTitle")).ShouldBeEmpty();
+    }
+
     private static IEnumerable<string> Missing(IEnumerable<string> keys) => keys.Where(key => Resources.GetString(key, CultureInfo.InvariantCulture) is null);
 }
