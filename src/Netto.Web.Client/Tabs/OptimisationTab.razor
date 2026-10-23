@@ -23,7 +23,8 @@
     {
         <dl class="moves__figures">
             <div class="moves__pair">
-                <dt class="moves__term">@Starred(L[OptimisationTabText.TodayInPocket])</dt>
+                @* The star the Plans panel marks Today with, drawn for the eye: the words say it. *@
+                <dt class="moves__term"><MudIcon Icon="@Icons.Material.Rounded.Star" Size="Size.Small" Class="moves__star" aria-hidden="true" /> @L[OptimisationTabText.TodayInPocket]</dt>
                 <dd class="moves__figure">@Formats.Euros(_view.TodayInPocket)</dd>
             </div>
             @if (_view.State == MovesState.Moves)
@@ -120,17 +121,6 @@
     private string Why(PlannedMove move) =>
         string.Join(" ", MoveReasons.Of(move).Select(reason =>
             L[OptimisationTabText.Why(reason.Kind), [.. reason.Amounts.Select(amount => (object)Formats.Euros(amount))]].Value));
-
-    // The star that marks Today's plan, drawn for the eye: a screen reader hears the words around it.
-    private static RenderFragment Starred(string text)
-    {
-        var star = text.IndexOf(OptimisationTabText.Star, StringComparison.Ordinal);
-        if (star < 0)
-            return @<text>@text</text>;
-
-        var (before, after) = (text[..star], text[(star + OptimisationTabText.Star.Length)..]);
-        return @<text>@before<span class="moves__star" aria-hidden="true">@OptimisationTabText.Star</span>@after</text>;
-    }
 
     // Apply goes with the move applied, so the focus goes to what replaces it, « In the river ». A lever
     // the move adds to the plan opens its card in the river (ModuleFolds), so the viewer sees what the

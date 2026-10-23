@@ -16,10 +16,6 @@ internal static class OptimisationTabText
 
     public const string MoreThanToday = "Figure_Gain";
 
-    // The star that marks Today's plan, inside TodayInPocket's text, drawn for the eye only: whoever
-    // translates the text keeps it.
-    public const string Star = "★";
-
     // What the pocket holds once a move is taken, with the moves above it: « {0} in your pocket after it ».
     public const string After = "After";
 

@@ -127,7 +127,7 @@
     <value>{0}: {1}</value>
   </data>
   <data name="Figure_Today" xml:space="preserve">
-    <value>Today ★, in your pocket</value>
+    <value>Today, in your pocket</value>
   </data>
   <data name="Figure_Plan" xml:space="preserve">
     <value>With every move below</value>

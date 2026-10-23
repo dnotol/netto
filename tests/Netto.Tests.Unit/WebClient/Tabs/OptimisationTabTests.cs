@@ -96,19 +96,23 @@ public class OptimisationTabTests
         var figures = Figures(await RenderTabAsync(RiverInputs.Example, RiverInputs.Example));
 
         figures.ShouldBe([
-            ("Today ★, in your pocket", Formats.Euros(view.TodayInPocket)),
+            ("Today, in your pocket", Formats.Euros(view.TodayInPocket)),
             ("With every move below", Formats.Euros(view.PlanInPocket)),
             ("More than Today", Formats.Addition(view.Total)),
         ]);
     }
 
-    // The star says which plan Today is; a screen reader hears « Today, in your pocket ».
+    // The star the Plans panel marks Today with says which plan this is, drawn for the eye: a screen reader
+    // hears « Today, in your pocket ».
     [Fact]
-    public async Task Optimisation_todaysStar_isHiddenFromScreenReaders()
+    public async Task Optimisation_todaysStar_isThePlansPanelsIconHiddenFromScreenReaders()
     {
         var html = await RenderTabAsync(RiverInputs.Example, RiverInputs.Example);
 
-        Regex.IsMatch(html, "<dt class=\"moves__term\"[^>]*>Today <span class=\"moves__star\" aria-hidden=\"true\"[^>]*>★</span>, in your pocket</dt>").ShouldBeTrue();
+        var term = Regex.Match(html, "<dt class=\"moves__term\"[^>]*>(.*?)</dt>", RegexOptions.Singleline).Groups[1].Value;
+        (Regex.IsMatch(term, "^<svg[^>]*aria-hidden=\"true\"[^>]*>.*</svg>\\s*Today, in your pocket$", RegexOptions.Singleline),
+                term.Contains(MudBlazor.Icons.Material.Rounded.Star, StringComparison.Ordinal))
+            .ShouldBe((true, true));
     }
 
     // The moves in the engine's order, numbered for the eye: the list says its own count and place.
@@ -208,7 +212,7 @@ public class OptimisationTabTests
         var html = await RenderTabAsync(planned, planned);
 
         (Figures(html).Single(), html.Contains("<ol"))
-            .ShouldBe((("Today ★, in your pocket", Formats.Euros(MovesView.Of(planned, On22October).TodayInPocket)), false));
+            .ShouldBe((("Today, in your pocket", Formats.Euros(MovesView.Of(planned, On22October).TodayInPocket)), false));
     }
 
     // The tab announces nothing: no live region, no status, no alert.
@@ -230,11 +234,11 @@ public class OptimisationTabTests
         _ => throw new ArgumentOutOfRangeException(nameof(today), today, null),
     };
 
-    // Each term of the description list with its figure, the star's markup left out.
+    // Each term of the description list with its figure, the star's icon left out.
     private static IReadOnlyList<(string Term, string Figure)> Figures(string html) =>
     [
         .. Regex.Matches(html, "<dt class=\"moves__term\"[^>]*>(.*?)</dt>\\s*<dd class=\"moves__figure[^\"]*\"[^>]*>(.*?)</dd>")
-            .Select(match => (Regex.Replace(match.Groups[1].Value, "<[^>]+>", ""), match.Groups[2].Value)),
+            .Select(match => (Regex.Replace(match.Groups[1].Value, "<svg.*?</svg>|<[^>]+>", "", RegexOptions.Singleline).Trim(), match.Groups[2].Value)),
     ];
 
     private static int Applies(string html) => Regex.Matches(html, "aria-label=\"Apply: ").Count;

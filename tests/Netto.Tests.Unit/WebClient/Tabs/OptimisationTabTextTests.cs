@@ -29,11 +29,11 @@ public class OptimisationTabTextTests
             .ShouldBeEmpty();
     }
 
-    // Today's star is drawn for the eye alone, which the tab finds in the text by the star itself.
+    // Today's star is an icon beside the words, not a character in them.
     [Fact]
-    public void TodayInPocket_holdsTodaysStar()
+    public void TodayInPocket_readsTodayInYourPocket()
     {
-        Resources.GetString(OptimisationTabText.TodayInPocket, CultureInfo.InvariantCulture).ShouldBe($"Today {OptimisationTabText.Star}, in your pocket");
+        Resources.GetString(OptimisationTabText.TodayInPocket, CultureInfo.InvariantCulture).ShouldBe("Today, in your pocket");
     }
 
     [Fact]
