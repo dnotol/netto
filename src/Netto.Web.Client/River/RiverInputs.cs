@@ -60,7 +60,8 @@ public sealed record RiverInputs(
     // year without them and adding a module starts it from nothing (decided 2026-10-21). A car's first
     // registration and its order are dates, not money: the example's are the year's first day, a new
     // car, until the user gives theirs, and its CO2 is nothing until given. It is assumed electric,
-    // the company paying no private charging, until the user says otherwise. It pays no copyright
+    // the company paying no private charging, until the user says otherwise; what the same car would
+    // cost privately is none until given, with no example (operator, 2026-10-23). It pays no copyright
     // royalty; one added to the plan follows the pay, a status, none until a creative share is given
     // (operator, 2026-10-23), and assumes the four previous years' copyright income averaged within the
     // cap, a status, until the user says otherwise.
@@ -76,7 +77,8 @@ public sealed record RiverInputs(
             new Input<bool>(false, InputOrigin.Default), ExampleNothing,
             new Input<CarEngine>(CarEngine.Electric, InputOrigin.Default), new Input<int>(0, InputOrigin.Example), new Input<bool>(false, InputOrigin.Default),
             new Input<DateOnly>(new DateOnly(ExampleYear, 1, 1), InputOrigin.Example), new Input<bool>(false, InputOrigin.Default),
-            new Input<int>(0, InputOrigin.Example), new Input<bool>(false, InputOrigin.Default), new Input<bool>(false, InputOrigin.Default)),
+            new Input<int>(0, InputOrigin.Example), new Input<bool>(false, InputOrigin.Default), new Input<bool>(false, InputOrigin.Default),
+            CarInputs.NoPrivateCost),
         new CopyrightInputs(
             ExampleNothing, new Input<bool>(true, InputOrigin.Default), new Input<bool>(true, InputOrigin.Default), new Input<bool>(false, InputOrigin.Default),
             CopyrightInputs.NoCreativeShare),
@@ -154,6 +156,9 @@ public sealed record RiverInputs(
     public RiverInputs WithNoMatchingCar(bool none) => this with { Car = Car with { NoMatchingCar = Yours(none) } };
 
     public RiverInputs WithSmallNaturalGas(bool small) => this with { Car = Car with { SmallNaturalGas = Yours(small) } };
+
+    // Cleared, the cost is none again.
+    public RiverInputs WithCarPrivateCost(decimal? amount) => this with { Car = Car with { PrivateCost = Yours(amount) } };
 
     // A royalty typed is a fixed one.
     public RiverInputs WithRoyalty(decimal amount) => this with { Copyright = Copyright with { Royalty = Yours(amount), FollowsPay = Yours(false) } };
@@ -354,7 +359,8 @@ public sealed record RentInputs(Input<decimal> CadastralIncome, Input<decimal> S
 // energy for private use, and the director's own contribution; what drives it, its CO2 or that the
 // registration holds none, and when it was ordered or leased; for a plug-in hybrid, whether it is a
 // fake one and its matching car's CO2, or that it has none; for natural gas, whether it is under 12
-// fiscal horsepower.
+// fiscal horsepower; and what the same car would cost the director privately for the year, which no
+// rule reads: only the card weighs the company car against it, so the engine never sees it (Values).
 public sealed record CarInputs(
     Input<decimal> CatalogueValue,
     Input<DateOnly> FirstRegistration,
@@ -368,8 +374,13 @@ public sealed record CarInputs(
     Input<bool> FakeHybrid,
     Input<int> MatchingCarCo2,
     Input<bool> NoMatchingCar,
-    Input<bool> SmallNaturalGas)
+    Input<bool> SmallNaturalGas,
+    Input<decimal?> PrivateCost)
 {
+    // The private cost has no default and no example: none until the user gives it, and its origin,
+    // the user's, shows only once it is given.
+    public static Input<decimal?> NoPrivateCost { get; } = new(null, InputOrigin.Yours);
+
     public CarFacts Values => new(CatalogueValue.Value, FirstRegistration.Value, YearlyCosts.Value, CompanyPaysPrivateEnergy.Value, PersonalContribution.Value)
     {
         Engine = Engine.Value,

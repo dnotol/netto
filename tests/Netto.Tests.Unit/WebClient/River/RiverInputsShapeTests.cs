@@ -11,7 +11,7 @@ namespace Netto.Tests.WebClient.River;
 // raising it, since version 2 had not left the car's story branch (operator, 2026-10-22); the rest of
 // the copyright royalty's story, its attestation du travail des arts and its creative share, joins
 // version 3 the same way (decided unattended, 2026-10-22). Whether the royalty follows the pay raised
-// version 5 (2026-10-23).
+// version 5 (2026-10-23), and what the same car would cost privately version 6 (2026-10-23).
 public class RiverInputsShapeTests
 {
     [Theory]
@@ -22,7 +22,7 @@ public class RiverInputsShapeTests
     [InlineData(typeof(VoucherInputs), "MealVoucherDays:Input`1[Int32] EcoVouchers:Input`1[Decimal] SportCultureVouchers:Input`1[Decimal]")]
     [InlineData(typeof(AllowanceInputs), "Office:Input`1[Decimal] Internet:Input`1[Decimal] Computer:Input`1[Decimal] Phone:Input`1[Decimal]")]
     [InlineData(typeof(RentInputs), "CadastralIncome:Input`1[Decimal] ShareLet:Input`1[Decimal] Rent:Input`1[Decimal]")]
-    [InlineData(typeof(CarInputs), "CatalogueValue:Input`1[Decimal] FirstRegistration:Input`1[DateOnly] YearlyCosts:Input`1[Decimal] CompanyPaysPrivateEnergy:Input`1[Boolean] PersonalContribution:Input`1[Decimal] Engine:Input`1[CarEngine] Co2:Input`1[Int32] NoCo2Data:Input`1[Boolean] Acquired:Input`1[DateOnly] FakeHybrid:Input`1[Boolean] MatchingCarCo2:Input`1[Int32] NoMatchingCar:Input`1[Boolean] SmallNaturalGas:Input`1[Boolean]")]
+    [InlineData(typeof(CarInputs), "CatalogueValue:Input`1[Decimal] FirstRegistration:Input`1[DateOnly] YearlyCosts:Input`1[Decimal] CompanyPaysPrivateEnergy:Input`1[Boolean] PersonalContribution:Input`1[Decimal] Engine:Input`1[CarEngine] Co2:Input`1[Int32] NoCo2Data:Input`1[Boolean] Acquired:Input`1[DateOnly] FakeHybrid:Input`1[Boolean] MatchingCarCo2:Input`1[Int32] NoMatchingCar:Input`1[Boolean] SmallNaturalGas:Input`1[Boolean] PrivateCost:Input`1[Nullable`1[Decimal]]")]
     [InlineData(typeof(AdvancePaymentInputs), "First:Input`1[Decimal] Second:Input`1[Decimal] Third:Input`1[Decimal] Fourth:Input`1[Decimal]")]
     [InlineData(typeof(TaxPrepaymentInputs), "Withheld:Input`1[Nullable`1[Decimal]] Paid:AdvancePaymentInputs Starter:Input`1[Boolean]")]
     [InlineData(typeof(MunicipalityChoice), "Rates:MunicipalRates Municipality:Municipality Rate:Decimal Origin:InputOrigin")]

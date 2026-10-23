@@ -1031,7 +1031,7 @@ public class RiverInputsTests
     // The example holds no car: its money and its CO2 are nothing, its first registration and its
     // order the first day of the year, a new car, as an example; an electric car, which the company
     // deducts in full and whose private charging it does not pay, with no fake hybrid's or natural
-    // gas's status, are assumed.
+    // gas's status, are assumed. What the same car would cost privately is none.
     [Fact]
     public void Example_hasNoCarAndAssumesItsDatesAndStatuses()
     {
@@ -1040,7 +1040,7 @@ public class RiverInputsTests
             new Input<decimal>(0m, InputOrigin.Example), new Input<bool>(false, InputOrigin.Default), new Input<decimal>(0m, InputOrigin.Example),
             new Input<CarEngine>(CarEngine.Electric, InputOrigin.Default), new Input<int>(0, InputOrigin.Example), new Input<bool>(false, InputOrigin.Default),
             new Input<DateOnly>(new DateOnly(2026, 1, 1), InputOrigin.Example), new Input<bool>(false, InputOrigin.Default), new Input<int>(0, InputOrigin.Example),
-            new Input<bool>(false, InputOrigin.Default), new Input<bool>(false, InputOrigin.Default)));
+            new Input<bool>(false, InputOrigin.Default), new Input<bool>(false, InputOrigin.Default), new Input<decimal?>(null, InputOrigin.Yours)));
     }
 
     [Fact]
@@ -1048,14 +1048,37 @@ public class RiverInputsTests
     {
         var inputs = RiverInputs.Example.WithCatalogueValue(48_500m).WithFirstRegistration(new DateOnly(2025, 6, 21)).WithCarCosts(9_250.50m)
             .WithPrivateEnergyPaid(true).WithCarContribution(600m).WithCarEngine(CarEngine.DieselPlugInHybrid).WithCarCo2(45).WithNoCo2Data(true)
-            .WithCarAcquired(new DateOnly(2025, 3, 1)).WithFakeHybrid(true).WithMatchingCarCo2(150).WithNoMatchingCar(true).WithSmallNaturalGas(true);
+            .WithCarAcquired(new DateOnly(2025, 3, 1)).WithFakeHybrid(true).WithMatchingCarCo2(150).WithNoMatchingCar(true).WithSmallNaturalGas(true)
+            .WithCarPrivateCost(7_200m);
 
         inputs.Car.ShouldBe(new CarInputs(
             new Input<decimal>(48_500m, InputOrigin.Yours), new Input<DateOnly>(new DateOnly(2025, 6, 21), InputOrigin.Yours),
             new Input<decimal>(9_250.50m, InputOrigin.Yours), new Input<bool>(true, InputOrigin.Yours), new Input<decimal>(600m, InputOrigin.Yours),
             new Input<CarEngine>(CarEngine.DieselPlugInHybrid, InputOrigin.Yours), new Input<int>(45, InputOrigin.Yours), new Input<bool>(true, InputOrigin.Yours),
             new Input<DateOnly>(new DateOnly(2025, 3, 1), InputOrigin.Yours), new Input<bool>(true, InputOrigin.Yours), new Input<int>(150, InputOrigin.Yours),
-            new Input<bool>(true, InputOrigin.Yours), new Input<bool>(true, InputOrigin.Yours)));
+            new Input<bool>(true, InputOrigin.Yours), new Input<bool>(true, InputOrigin.Yours), new Input<decimal?>(7_200m, InputOrigin.Yours)));
+    }
+
+    // What the same car would cost the director privately for the year has no default and no example:
+    // none until given, the user's once given, and none again once cleared. Its origin shows only once
+    // it is given (the card's field), as the royalty's creative share's does.
+    [Fact]
+    public void WithCarPrivateCost_isTheUsersAndClearedIsNoneAgain()
+    {
+        var given = RiverInputs.Example.WithCarPrivateCost(7_200m);
+
+        (RiverInputs.Example.Car.PrivateCost, given.Car.PrivateCost, given.WithCarPrivateCost(null).Car.PrivateCost)
+            .ShouldBe((CarInputs.NoPrivateCost, new Input<decimal?>(7_200m, InputOrigin.Yours), new Input<decimal?>(null, InputOrigin.Yours)));
+    }
+
+    // No rule reads it: the engine never sees it, and the year's figures stay the same.
+    [Fact]
+    public void Run_privateCost_changesNoFigureOfTheYear()
+    {
+        var inputs = ElectricCar(RiverInputs.Example);
+        var withCost = inputs.WithCarPrivateCost(7_200m);
+
+        (Figures(withCost), withCost.MoveScenario()).ShouldBe((Figures(inputs), inputs.MoveScenario()));
     }
 
     [Fact]
