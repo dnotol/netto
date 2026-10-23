@@ -1,3 +1,5 @@
+using Netto.Core.Simulation;
+
 namespace Netto.Web.Client.River;
 
 // The folds of the optional modules' cards. A viewer's folds are remembered under the card's name, so
@@ -27,5 +29,27 @@ internal static class ModuleFolds
     {
         foreach (var module in Added(before, after))
             folds.Reveal(Name(module));
+    }
+
+    // The Composition menu's change: the river with the module in the plan or out of it. The card of a
+    // module just added opens so it can be filled; one taken out keeps its fold, so Undo brings it back
+    // as it was.
+    public static RiverInputs Toggled(Folds folds, RiverInputs river, OptionalModule module, bool inPlan)
+    {
+        var changed = inPlan ? river.AddToPlan(module) : river.TakeOutOfPlan(module);
+        RevealAdded(folds, river.Composition, changed.Composition);
+
+        return changed;
+    }
+
+    // The moves card's « Apply »: the river with the move's values (MovesView.Apply). A move that grants a
+    // lever the plan lacks adds its module, so its card opens for the user to see what the move put
+    // there; one that only moves a value opens nothing.
+    public static RiverInputs Applied(Folds folds, MovesView view, PlannedMove move, RiverInputs river)
+    {
+        var applied = view.Apply(move, river);
+        RevealAdded(folds, river.Composition, applied.Composition);
+
+        return applied;
     }
 }

@@ -92,15 +92,11 @@
     };
 
     // Apply goes with the move applied, so the focus goes to what replaces it, « In the river ». A lever
-    // the move adds to the plan opens its card, for the session, so the user sees what the move put
-    // there.
+    // the move adds to the plan opens its card (ModuleFolds), so the user sees what the move put there.
     private async Task Apply(PlannedMove move, int index)
     {
         _focusApplied = index;
-        var applied = _view.Apply(move, Inputs);
-        ModuleFolds.RevealAdded(Folds, Inputs.Composition, applied.Composition);
-
-        await InputsChanged.InvokeAsync(applied);
+        await InputsChanged.InvokeAsync(ModuleFolds.Applied(Folds, _view, move, Inputs));
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
