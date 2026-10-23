@@ -1,13 +1,10 @@
-using Netto.Core.Copyright;
-using Netto.Core.CorporateTax;
-using Netto.Core.Dividends;
-using Netto.Core.SocialContributions;
-
 namespace Netto.Web.Client.River;
 
-// The resource keys the river's components build from values and the engine's keys, one class per
-// component. The components and RiverTextTests both go through these, so a key without a text in
-// its .resx fails a test instead of showing on screen.
+// The resource keys the river's components other than its cards build from values and the engine's
+// keys, one class per component: the blocks several cards show, the bar's menu and the notice of a
+// module taken out. Each card's own keys sit beside the card, in a file of their own (RentCardText.cs,
+// CompanyCar/CarCardText.cs). The components and RiverTextTests both go through these, so a key
+// without a text in its .resx fails a test instead of showing on screen.
 internal static class OriginChipText
 {
     public static string Origin(InputOrigin origin) => $"Origin_{origin}";
@@ -31,72 +28,6 @@ internal static class RefusedMessageText
     public static string Error(string errorKey) => $"Error_{errorKey}";
 }
 
-internal static class CorporateTaxCardText
-{
-    // With benefits in kind, a condition the pay decides says they are counted in it.
-    public static string Condition(ReducedRateCondition condition, bool withBenefits) =>
-        withBenefits && condition is ReducedRateCondition.FirstFourTaxPeriods or ReducedRateCondition.MinimumPayMet
-            or ReducedRateCondition.TaxableIncomeNotAbovePay or ReducedRateCondition.MinimumPayNotMet
-            ? $"Condition_{condition}_WithBenefits"
-            : $"Condition_{condition}";
-
-    public static string Surcharge(SurchargeState state) => $"Surcharge_{state}";
-
-    // What the taxable income adds back: the vouchers the company cannot deduct, a company car's share
-    // of its benefit with the costs it cannot deduct when there are any, or both.
-    public static string Disallowed(CorporateTaxView view) => (view.DisallowedVouchers, view.CarCostsNotDeductible, view.CarAddBack) switch
-    {
-        ( > 0m, > 0m, _) => "Disallowed_VouchersAndCarCosts",
-        ( > 0m, _, > 0m) => "Disallowed_VouchersAndCar",
-        (_, > 0m, _) => "Disallowed_CarCosts",
-        (_, _, > 0m) => "Disallowed_Car",
-        _ => "Disallowed",
-    };
-
-    public static string FinancialYear(FinancialYear year) => $"FinancialYear_{year}";
-
-    // The financial year as the line of « Your company » states it.
-    public static string CompanyFinancialYear(FinancialYear year) => $"Company_FinancialYear_{year}";
-}
-
-internal static class DirectorPayCardText
-{
-    public static string Surcharge(TaxSurchargeState state) => $"Surcharge_{state}";
-
-    public static string PaidBy(ContributionsPaidBy paidBy) => $"PaidBy_{paidBy}";
-
-    // What the key formula is, in the bubble the term opens where the withholding is derived from it.
-    public const string KeyFormulaTerm = "Term_KeyFormula";
-
-    // Who pays the contributions as the line of « Your situation » states it.
-    public static string SituationPaidBy(ContributionsPaidBy paidBy) => $"Situation_PaidBy_{paidBy}";
-}
-
-internal static class DividendCardText
-{
-    // What VVPRbis shares are, in the bubble the term opens where the rates are said.
-    public const string VvprbisTerm = "Term_Vvprbis";
-
-    public static string Category(WithholdingCategory category) => $"Category_{category}";
-
-    // The summary starts from what comes in, all of which is paid out, or, once the company keeps
-    // some, from what is paid out: the base its rate is out of.
-    public static string Summary(DividendView view) => view.Kept > 0m ? "Summary_PaidOut" : "Summary";
-}
-
-internal static class RentCardText
-{
-    // What the cadastral income is, in the bubble the term opens in the cap's sentence.
-    public const string CadastralIncomeTerm = "Term_CadastralIncome";
-
-    // What the flat charges are, in the bubble the term opens where the rent's tax is said.
-    public const string FlatChargesTerm = "Term_FlatCharges";
-
-    // The summary ends on what the split shares: « before your pay and royalty » while the royalty is
-    // in the plan.
-    public static string Summary(bool royalty) => royalty ? "Summary_Royalty" : "Summary";
-}
-
 internal static class ConditionListText
 {
     public static string Condition(string key) => $"Condition_{key}";
@@ -111,60 +42,6 @@ internal static class ModuleCardText
     public const string ToYou = "ToYou";
 
     public const string PassesOn = "PassesOn";
-}
-
-internal static class SplitCardText
-{
-    // What the reduced corporate rate is, in the bubble the term opens where the rate is weighed.
-    public const string ReducedRateTerm = "Term_ReducedRate";
-
-    // What reaches the pocket at the best pay, against the pay set.
-    public const string BestReach = "BestReach";
-
-    // What reaches the pocket at the pay set, the best.
-    public const string BestIsYoursReach = "BestIsYoursReach";
-
-    // What the slider says of its value while the royalty follows the pay: the pay and the royalty
-    // beside it.
-    public const string SliderValueWithRoyalty = "SliderValue_Royalty";
-
-    // The royalty's two ways, one chip each.
-    public static string Policy(bool followsPay) => followsPay ? "Policy_Follows" : "Policy_Fixed";
-
-    // The royalty's figure among the split's ends says which way it is set.
-    public static string RoyaltyEnd(SplitRoyaltyView royalty) => royalty.FollowsPay.Value ? "RoyaltyEnd_Follows" : "RoyaltyEnd_Fixed";
-
-    // The summary names the royalty once it is in the plan, and the best pay once there is one.
-    public static string Summary(SplitRoyaltyView? royalty, bool withBest) => (withBest ? "SummaryWithBest" : "Summary") + (royalty is null ? "" : "_Royalty");
-
-    public static string Hint(SplitRoyaltyView? royalty) => royalty is null ? "Hint" : "Hint_Royalty";
-
-    // How far the pay goes: the profit before pay, what a fixed royalty leaves of it, or where the pay
-    // and the royalty that follows it take all of it, while the engine set that royalty at what a
-    // ruling accepts; one that is none leaves the whole profit before pay.
-    public static string Ceiling(SplitRoyaltyView? royalty) => royalty switch
-    {
-        null => "Ceiling",
-        { FollowsPay.Value: true, Following: CopyrightFollowing.AtCeiling } => "Ceiling_Follows",
-        { FollowsPay.Value: true } => "Ceiling",
-        _ => "Ceiling_Fixed",
-    };
-
-    // How the engine set a royalty that follows the pay, or why it is none.
-    public static string Following(CopyrightFollowing following) => $"Following_{following}";
-
-    // A sentence about one pay of the curve names the royalty beside it while the royalty follows the
-    // pay; a fixed one is the same at every pay.
-    public static string AlongTheCurve(string key, SplitRoyaltyView? royalty) => royalty is { FollowsPay.Value: true } ? $"{key}_Royalty" : key;
-
-    // The sentence names the best pay on the other side of the threshold only when one keeps the
-    // reserve.
-    public static string Rate(RateWeighing rate) => rate switch
-    {
-        { Choice: RateChoice.NotWeighed } => "Rate_NotWeighed",
-        { Other: null } => $"Rate_{rate.Choice}Only",
-        _ => $"Rate_{rate.Choice}",
-    };
 }
 
 internal static class CompositionMenuText
