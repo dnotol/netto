@@ -165,6 +165,46 @@ public class FoldsTests
         folds.IsOpen("rent", false).ShouldBeTrue();
     }
 
+    // What reads the folds from outside them, the outline's « Open all » or « Fold all », hears of every
+    // fold the viewer opens or closes, and of every fold the page opens.
+    [Fact]
+    public void Set_aFold_tellsItsReaders()
+    {
+        var folds = new Folds(new BrowserStorage());
+        var told = 0;
+        folds.Changed += () => told++;
+
+        folds.Set("split", true);
+
+        told.ShouldBe(1);
+    }
+
+    [Fact]
+    public void Reveal_aFold_tellsItsReaders()
+    {
+        var folds = new Folds(new BrowserStorage());
+        var told = 0;
+        folds.Changed += () => told++;
+
+        folds.Reveal("rent");
+
+        told.ShouldBe(1);
+    }
+
+    // A refused card reveals its fold at every draw: only the first opens anything.
+    [Fact]
+    public void Reveal_foldAlreadyRevealed_tellsNoOne()
+    {
+        var folds = new Folds(new BrowserStorage());
+        folds.Reveal("rent");
+        var told = 0;
+        folds.Changed += () => told++;
+
+        folds.Reveal("rent");
+
+        told.ShouldBe(0);
+    }
+
     private sealed class BrowserStorage : IBrowserStorage
     {
         private readonly Dictionary<string, string> _stored = [];

@@ -11,14 +11,18 @@ namespace Netto.Web.Client.River;
 //    over a fold the viewer made, and is never stored: after a reload the river is back to its
 //    summaries. The viewer's next Set replaces it.
 //
-// Neither notifies anything: a fold reads its state when it is drawn, so a change made outside it shows
-// the next time its page draws.
+// A fold reads its state when it is drawn, so a change made outside it shows the next time its page
+// draws. What reads the folds from outside them, the river's outline and its « Open all » or « Fold
+// all », hears of each change (Changed): every word of the viewer's, and a fold the page opens.
 internal sealed class Folds(IBrowserStorage storage)
 {
     internal const string StorageKey = "netto.folds";
 
     private readonly Dictionary<string, bool> _open = Parse(storage.Get(StorageKey));
     private readonly HashSet<string> _revealed = [];
+
+    // A fold opened or closed, by the viewer or the page.
+    public event Action? Changed;
 
     public bool IsOpen(string name, bool openByDefault) => _revealed.Contains(name) || _open.GetValueOrDefault(name, openByDefault);
 
@@ -28,10 +32,16 @@ internal sealed class Folds(IBrowserStorage storage)
         _revealed.Remove(name);
         _open[name] = open;
         storage.Set(StorageKey, string.Join(';', _open.Select(fold => $"{fold.Key}={(fold.Value ? 1 : 0)}")));
+        Changed?.Invoke();
     }
 
-    // The page's: open for the session, not remembered.
-    public void Reveal(string name) => _revealed.Add(name);
+    // The page's: open for the session, not remembered. A refused fold reveals itself at every draw;
+    // only the first reveal changes anything.
+    public void Reveal(string name)
+    {
+        if (_revealed.Add(name))
+            Changed?.Invoke();
+    }
 
     // Each fold the viewer touched as name=1, open, or name=0, folded; anything else is ignored.
     private static Dictionary<string, bool> Parse(string? stored)
