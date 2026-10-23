@@ -117,4 +117,25 @@
   <data name="CreativeShareHint" xml:space="preserve">
     <value>Only your moves read it. A ruling of the tax administration accepts a director's royalty of at most 25% of their pay and royalty together, times this share, the basis its rulings take for directors (advance ruling 2026.0484). Once you give it, your moves propose the royalty up to that and to what keeps it within the limits. Netto cannot see it, so it proposes no royalty until you do.</value>
   </data>
+  <data name="SituationTitle" xml:space="preserve">
+    <value>Your copyright situation</value>
+  </data>
+  <data name="Settings_AverageWithin" xml:space="preserve">
+    <value>Copyright income of the four previous years averaged within the cap</value>
+  </data>
+  <data name="Settings_AverageAbove" xml:space="preserve">
+    <value>Copyright income of the four previous years averaged above the cap</value>
+  </data>
+  <data name="Settings_Attestation_Holds" xml:space="preserve">
+    <value>holds an attestation du travail des arts</value>
+  </data>
+  <data name="Settings_Attestation_None" xml:space="preserve">
+    <value>no attestation du travail des arts</value>
+  </data>
+  <data name="Settings_CreativeShare" xml:space="preserve">
+    <value>{0} of your working time spent creating</value>
+  </data>
+  <data name="Settings_CreativeShare_None" xml:space="preserve">
+    <value>creative share not given</value>
+  </data>
 </root>

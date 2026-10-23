@@ -52,6 +52,8 @@ public class RiverTextTests
 
     private static readonly ResourceManager CarCardResources = new("Netto.Web.Client.River.CompanyCar.CarCard", typeof(CarCard).Assembly);
 
+    private static readonly ResourceManager CopyrightCardResources = new("Netto.Web.Client.River.Copyright.CopyrightCard", typeof(CopyrightCard).Assembly);
+
     // The conditions of every lever the river shows, which the shared list words through one .resx.
     private static readonly IReadOnlyList<LeverCondition> LeverConditions =
     [
@@ -427,6 +429,17 @@ public class RiverTextTests
         var phrases = variations.SelectMany(inputs => CarSettingsView.From(inputs).Car);
 
         Missing(CarCardResources, phrases.Select(phrase => phrase.Key).Append("CarTitle")).ShouldBeEmpty();
+    }
+
+    // The line of « Your copyright situation »: the statuses as assumed and as said, and the share
+    // given or not.
+    [Fact]
+    public void CopyrightCardResx_everyPhraseOfItsSettingsLine_hasAText()
+    {
+        RiverInputs[] variations = [RiverInputs.Example, RiverInputs.Example.WithAverageWithinCap(false).WithAttestation(true).WithCreativeShare(0.4m)];
+        var phrases = variations.SelectMany(inputs => CopyrightSettingsView.From(inputs).Situation);
+
+        Missing(CopyrightCardResources, phrases.Select(phrase => phrase.Key).Append("SituationTitle")).ShouldBeEmpty();
     }
 
     [Fact]

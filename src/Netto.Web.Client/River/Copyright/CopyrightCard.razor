@@ -8,8 +8,9 @@
    works they created. The user gives the royalty for the year and says whether their copyright income
    of the four previous years averaged at most the year's cap, met unless they say otherwise, and
    whether they hold an attestation du travail des arts for these works, none unless they say so, and
-   the share of their working time spent creating, which only the moves read, none until given. The
-   card says how much of the royalty stays within the limits and how much passes them, which limit set
+   the share of their working time spent creating, which only the moves read, none until given; the
+   three sit behind one disclosure, « Your copyright situation », folded to a line that states them,
+   the royalty staying in sight. The card says how much of the royalty stays within the limits and how much passes them, which limit set
    it, the flat-rate costs the attestation takes off the first part, its tax apart and what the company
    withholds, the part beyond them going on to
    Director pay, taxed as pay, then the plan with the royalty against the same plan without it, and
@@ -33,6 +34,8 @@
                                    Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
                                    Error="@(Refused == CopyrightCalculator.RoyaltyNegative)" Refusal="@Refused" />
             </RiverField>
+        </div>
+        <Disclosure Title="@L["SituationTitle"]" Values="@SettingWords.Of(L, _settings.Situation)" Refused="@CopyrightSettingsView.SituationHolds(Refused)">
             <RiverField Label="@L["CreativeShareLabel"]" For="river-copyright-creative-share"
                         Origin="@(Inputs.Copyright.CreativeShare.Value is null ? null : Inputs.Copyright.CreativeShare.Origin)" Help="@L["CreativeShareHint"]">
                 <RiverNumericField T="decimal?" InputId="river-copyright-creative-share" Value="CreativeSharePercent" ValueChanged="OnCreativeSharePercentChanged"
@@ -40,19 +43,19 @@
                                    Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
                                    Error="@(Refused == CopyrightCalculator.CreativeShareOutOfRange)" Refusal="@Refused" />
             </RiverField>
-        </div>
-        <div class="copyright__tick">
-            <MudCheckBox T="bool" Value="Inputs.Copyright.AverageWithinCap.Value" ValueChanged="OnAverageChanged" Color="Color.Primary"
-                         Label="@L["AverageLabel", Formats.Euros(_rules?.Cap.Value ?? 0m)]" />
-            <OriginChip Origin="Inputs.Copyright.AverageWithinCap.Origin" />
-            <InfoBubble Label="@L["AverageLabel", Formats.Euros(_rules?.Cap.Value ?? 0m)]">@L["AverageHint"]</InfoBubble>
-        </div>
-        <div class="copyright__tick">
-            <MudCheckBox T="bool" Value="Inputs.Copyright.HoldsAttestation.Value" ValueChanged="OnAttestationChanged" Color="Color.Primary"
-                         Label="@L["AttestationLabel"]" />
-            <OriginChip Origin="Inputs.Copyright.HoldsAttestation.Origin" />
-            <InfoBubble Label="@L["AttestationLabel"]">@L["AttestationHint"]</InfoBubble>
-        </div>
+            <div class="copyright__tick">
+                <MudCheckBox T="bool" Value="Inputs.Copyright.AverageWithinCap.Value" ValueChanged="OnAverageChanged" Color="Color.Primary"
+                             Label="@L["AverageLabel", Formats.Euros(_rules?.Cap.Value ?? 0m)]" />
+                <OriginChip Origin="Inputs.Copyright.AverageWithinCap.Origin" />
+                <InfoBubble Label="@L["AverageLabel", Formats.Euros(_rules?.Cap.Value ?? 0m)]">@L["AverageHint"]</InfoBubble>
+            </div>
+            <div class="copyright__tick">
+                <MudCheckBox T="bool" Value="Inputs.Copyright.HoldsAttestation.Value" ValueChanged="OnAttestationChanged" Color="Color.Primary"
+                             Label="@L["AttestationLabel"]" />
+                <OriginChip Origin="Inputs.Copyright.HoldsAttestation.Origin" />
+                <InfoBubble Label="@L["AttestationLabel"]">@L["AttestationHint"]</InfoBubble>
+            </div>
+        </Disclosure>
         <RefusedMessage Error="@Refused" />
         @if (_view is { HasRoyalty: true } shown)
         {
@@ -116,12 +119,14 @@
     private CopyrightView? _view;
     private CopyrightComparison? _comparison;
     private CopyrightRules? _rules;
+    private CopyrightSettingsView _settings = default!;
 
     protected override void OnParametersSet()
     {
         _view = Run.Year is { } year ? CopyrightView.From(year) : null;
         _comparison = CopyrightComparison.From(Inputs, Run);
         _rules = CopyrightRules.For(Inputs.IncomeYear);
+        _settings = CopyrightSettingsView.From(Inputs);
     }
 
     private string? Summary => _view is { } view && Run.Year is { } year

@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Localization;
 using Netto.Core.CompanyCar;
+using Netto.Core.Copyright;
 using Netto.Core.DirectorPay;
 using Netto.Core.Rent;
 using Netto.Core.Simulation;
@@ -200,4 +201,29 @@ internal sealed record CarSettingsView(IReadOnlyList<SettingPhrase> Car, bool Ne
 
     // January 2026: a month begun counts whole, so the day does not matter.
     private static string[] MonthAndYear(DateOnly date) => [Formats.Month(date.Year, date.Month), date.Year.ToString(Formats.Culture)];
+}
+
+// The copyright royalty's one disclosure, « Your copyright situation »: what Netto cannot see of the
+// director's copyright income and works, whether the four previous years' income averaged within the
+// cap, whether they hold an attestation du travail des arts, and the share of their working time
+// spent creating protected works. The royalty itself stays in sight. The share has no default: it
+// says it is not given, and names no origin, until the user gives it.
+internal sealed record CopyrightSettingsView(IReadOnlyList<SettingPhrase> Situation)
+{
+    public static CopyrightSettingsView From(RiverInputs inputs)
+    {
+        var copyright = inputs.Copyright;
+
+        return new CopyrightSettingsView(
+            [
+                SettingPhrase.Of(copyright.AverageWithinCap.Value ? "Settings_AverageWithin" : "Settings_AverageAbove", copyright.AverageWithinCap.Origin),
+                SettingPhrase.Of(copyright.HoldsAttestation.Value ? "Settings_Attestation_Holds" : "Settings_Attestation_None", copyright.HoldsAttestation.Origin),
+                copyright.CreativeShare.Value is { } share
+                    ? SettingPhrase.Of("Settings_CreativeShare", copyright.CreativeShare.Origin, Formats.Percentage(share))
+                    : SettingPhrase.Of("Settings_CreativeShare_None", InputOrigin.Yours),
+            ]);
+    }
+
+    // The royalty's own refusal is on the field in sight.
+    public static bool SituationHolds(string? error) => error == CopyrightCalculator.CreativeShareOutOfRange;
 }

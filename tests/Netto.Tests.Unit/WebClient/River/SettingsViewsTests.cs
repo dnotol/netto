@@ -1,4 +1,5 @@
 using Netto.Core.CompanyCar;
+using Netto.Core.Copyright;
 using Netto.Core.DirectorPay;
 using Netto.Core.PersonalTax;
 using Netto.Core.Rent;
@@ -376,6 +377,52 @@ public class SettingsViewsTests
     public void CarHolds_refusal_opensTheDisclosureHoldingItsField(string? error, bool car)
     {
         CarSettingsView.CarHolds(error).ShouldBe(car);
+    }
+
+    // The copyright royalty's disclosure, « Your copyright situation »: what Netto cannot see of the
+    // director's copyright income and works. The royalty itself stays in sight. The share of working
+    // time spent creating has no default: it is none until given, and names no origin.
+    [Fact]
+    public void Situation_royaltyExample_statesTheStatusesAsDefaultsAndNoCreativeShare()
+    {
+        Phrases(CopyrightSettingsView.From(RiverInputs.Example).Situation).ShouldBe(
+        [
+            ("Settings_AverageWithin", "", InputOrigin.Default),
+            ("Settings_Attestation_None", "", InputOrigin.Default),
+            ("Settings_CreativeShare_None", "", null),
+        ]);
+    }
+
+    [Fact]
+    public void Situation_statusesAndShareGiven_stateThemWithNoOrigin()
+    {
+        var inputs = RiverInputs.Example.WithAverageWithinCap(false).WithAttestation(true).WithCreativeShare(0.4m);
+
+        Phrases(CopyrightSettingsView.From(inputs).Situation).ShouldBe(
+        [
+            ("Settings_AverageAbove", "", null),
+            ("Settings_Attestation_Holds", "", null),
+            ("Settings_CreativeShare", "40%", null),
+        ]);
+    }
+
+    [Fact]
+    public void Situation_creativeShareCleared_isNoneAgain()
+    {
+        var inputs = RiverInputs.Example.WithCreativeShare(0.4m).WithCreativeShare(null);
+
+        Phrases(CopyrightSettingsView.From(inputs).Situation)[2].ShouldBe(("Settings_CreativeShare_None", "", null));
+    }
+
+    // Only the share's refusal is on a field inside; the royalty's is on the field in sight.
+    [Theory]
+    [InlineData(CopyrightCalculator.CreativeShareOutOfRange, true)]
+    [InlineData(CopyrightCalculator.RoyaltyNegative, false)]
+    [InlineData(GrossToNet.GrossPayNegative, false)]
+    [InlineData(null, false)]
+    public void SituationHolds_refusal_opensTheDisclosureHoldingItsField(string? error, bool situation)
+    {
+        CopyrightSettingsView.SituationHolds(error).ShouldBe(situation);
     }
 
     private static DirectorPaySettingsView DirectorPaySettings(RiverInputs inputs) => DirectorPaySettingsView.From(inputs, inputs.Run());
