@@ -106,43 +106,44 @@ html {
     scroll-padding-top: 5.5rem;
 }
 
-/* On the river, the bar of buckets sticks under the header too (River/BucketBar.razor.css), so a
-   control reached with Tab stops below both, its focus ring in sight: the header's 4.25rem and
-   border (Layout/MainLayout.razor.css), the bar's 9rem with its line on the setup starred Today, and
-   room for its last line to wrap; below a wide screen, its buttons in a row under the figures; on a
-   phone, its two rows of buckets and the row of its menu under them. A notice of a removal at the
-   bottom of the screen (River/TakenOutNotice) hides nothing either. The line is one value for each
-   width, --netto-under-bar, which the river's outline sticks at too (River/RiverOutline), and where a
-   card it jumps to lands. */
+/* On the plan page, the bar of buckets sticks under the header too (River/BucketBar.razor.css), its
+   row of tabs as its last row (Tabs/PlanTabBar), so a control reached with Tab stops below both, its
+   focus ring in sight: the header's 4.25rem and border (Layout/MainLayout.razor.css), the bar's 9rem
+   with its line on the setup starred Today, and room for its last line to wrap; below a wide screen,
+   its buttons in a row under the figures; on a phone, its two rows of buckets and the row of its menu
+   under them; and last the tabs, 2.5rem more than the bar's own bottom padding they take the place
+   of (2.35rem on a phone). A notice of a removal at the bottom of the screen (River/TakenOutNotice)
+   hides nothing either. The line is one value for each width, --netto-under-bar, which the river's
+   outline sticks at too (River/RiverOutline), and where a card it jumps to lands. */
 html:has(.bucket-bar) {
-    --netto-under-bar: calc(4.25rem + 1px + 9rem + 1.5rem);
+    --netto-under-bar: calc(4.25rem + 1px + 9rem + 1.5rem + 2.5rem);
     scroll-padding-top: var(--netto-under-bar);
 }
 
 @media (max-width: 1200px) {
     html:has(.bucket-bar) {
-        --netto-under-bar: calc(4.25rem + 1px + 11.5rem + 1.5rem);
+        --netto-under-bar: calc(4.25rem + 1px + 11.5rem + 1.5rem + 2.5rem);
     }
 }
 
 @media (max-width: 640px) {
     html:has(.bucket-bar) {
-        --netto-under-bar: calc(4.25rem + 1px + 12rem + 1rem);
+        --netto-under-bar: calc(4.25rem + 1px + 12rem + 1rem + 2.35rem);
     }
 }
 
 /* With a company car the muddy pocket is a fifth bucket (River/BucketBar.razor.css): below 960 px the
    buckets take one more row; on a phone, three rows, and the line on Today adds the muddy pocket's
-   difference (the bar measured 331 px at 375 px wide). */
+   difference (the bar measured 331 px at 375 px wide, before its row of tabs). */
 @media (max-width: 960px) {
     html:has(.bucket-bar__buckets--five) {
-        --netto-under-bar: calc(4.25rem + 1px + 11.5rem + 2.8rem + 1.5rem);
+        --netto-under-bar: calc(4.25rem + 1px + 11.5rem + 2.8rem + 1.5rem + 2.5rem);
     }
 }
 
 @media (max-width: 640px) {
     html:has(.bucket-bar__buckets--five) {
-        --netto-under-bar: calc(4.25rem + 1px + 20.75rem + 1rem);
+        --netto-under-bar: calc(4.25rem + 1px + 20.75rem + 1rem + 2.35rem);
     }
 }
 
