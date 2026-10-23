@@ -108,4 +108,22 @@
   <data name="Why_CopyrightFollowsPay" xml:space="preserve">
     <value>Your copyright royalty goes from {0} to {1}, and the tax on it apart from your pay from {2} to {3}.</value>
   </data>
+  <data name="Link_split" xml:space="preserve">
+    <value>See it on The split</value>
+  </data>
+  <data name="Link_vouchers" xml:space="preserve">
+    <value>See it on Vouchers</value>
+  </data>
+  <data name="Link_rent" xml:space="preserve">
+    <value>See it on Home office rent</value>
+  </data>
+  <data name="Link_copyright" xml:space="preserve">
+    <value>See it on Copyright royalty</value>
+  </data>
+  <data name="Link_WhenToPay" xml:space="preserve">
+    <value>See it in When to pay</value>
+  </data>
+  <data name="LinkLabel" xml:space="preserve">
+    <value>{0}: {1}</value>
+  </data>
 </root>

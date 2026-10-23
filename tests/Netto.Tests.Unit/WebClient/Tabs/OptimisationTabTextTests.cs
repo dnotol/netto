@@ -58,6 +58,16 @@ public class OptimisationTabTextTests
         text.ShouldBe(expected);
     }
 
+    // A link's name starts with what it shows, then says which move it is about.
+    [Fact]
+    public void LinkLabel_startsWithTheLinksTextThenNamesTheMove()
+    {
+        var text = string.Format(CultureInfo.InvariantCulture, Resources.GetString(OptimisationTabText.LinkLabel, CultureInfo.InvariantCulture) ?? "",
+            "See it on The split", "Pay yourself €20,799.00 instead of €50,000.00");
+
+        text.ShouldBe("See it on The split: Pay yourself €20,799.00 instead of €50,000.00");
+    }
+
     // The example's move (MovesViewTests).
     [Fact]
     public void Move_pay_saysThePayFromAndTo()

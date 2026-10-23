@@ -26,4 +26,10 @@ internal static class OptimisationTabText
 
     // One sentence of why a move helps (MoveReasons): « It cancels the surcharge of {0} on your income tax. »
     public static string Why(MoveReasonKind kind) => $"Why_{kind}";
+
+    // Where a move links to, by the card's name or the tab's: « See it on The split ».
+    public static string Link(MoveLink link) => link.Card is { } card ? $"Link_{card}" : $"Link_{link.Tab}";
+
+    // The link's name for a screen reader, its text then the move it is about: « See it on The split: {move} ».
+    public const string LinkLabel = "LinkLabel";
 }
