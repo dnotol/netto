@@ -17,9 +17,9 @@ Netto tells a Belgian SRL owner-director how to pay themselves for the year so t
 
 **Always current: the River Map, the subsystem maps and the official documents.**
 
-- **A map is updated in the slice that changes what it draws** (a module, a bucket, a rule, a figure it quotes), in place at the same URL: read it first (`Artifact read`, then `path: "index.html"` for its file, whose publish skeleton is stripped before republishing), add a dated rule, and bump its date and the `main` commit in its footer. A slice that changes a mechanism with a map of its own updates that map, and the River Map only where the river itself changed.
+- **A map is updated in the slice that changes what it draws** (a module, a bucket, a rule, a figure it quotes), in place at the same URL: read it first (`Artifact read`, then `path: "index.html"` for its file, whose publish skeleton is stripped before republishing), add a dated rule, and bump its date and the `main` commit in its footer. A slice that changes a mechanism with a map of its own updates that map, and the River Map only where the river itself changed. The hivemind does it, since drones cannot publish an Artifact: a drone's report says what its slice changed on a map, and the hivemind updates the map when it integrates that slice.
 - **Every complex part of the domain has a clear diagram, as current as the code**: the whole river on the River Map, and each mechanism that reaches beyond one card or one layer (a company car: its costs off the profit, its benefit in kind taxed as pay, what Corporate tax adds back and tests, the muddy pocket) on a subsystem map of its own, which the River Map links. That mechanism's rules, amounts and decisions live on its map, not on the River Map or in this file. A map is drawn while the mechanism is analysed, before its first slice, marks what is not decided yet as such, and is redrawn in the slice that changes the mechanism, never left showing what the code no longer runs.
-- **`official-docs/` is checked for newer editions regularly**: at the start of every slice that touches a layer, for the documents that layer's rule sets cite (a newer coordinated article on Fisconetplus, a new indexation notice, a law or programme law published since), and each year once the next income year's amounts are published. A newer edition is filed (downloading needs the operator's go) and the old one marked superseded, and the rule set that cites it is checked against it in the same slice.
+- **`official-docs/` is checked for newer editions regularly**: when a story's slices are analysed, for the documents that the rule sets of each layer they touch cite (a newer coordinated article on Fisconetplus, a new indexation notice, a law or programme law published since; a forager per layer), and each year once the next income year's amounts are published. A newer edition is filed (downloading needs the operator's go) and the old one marked superseded, and the rule set that cites it is checked against it in the same story. Unattended, the hivemind works from the forager's reading, logs it, and files the document at landing once the operator gives the go.
 - **Every Artifact that states Netto's rules or figures is faithful to `official-docs/`**, the River Map and the subsystem maps first: each rule and amount it shows is the one the current documents give for its income year, and it changes when they do.
 
 ## Skills
@@ -28,29 +28,48 @@ The generic rules live in the `skillz` plugin, not in this file. Load the matchi
 
 | Skill | Before |
 |---|---|
+| `hivemind` | Doing any picked work: every story or item runs through it (« Methodology ») |
+| `drone-protocol` | Working a slice as a drone (preloaded into every drone) |
 | `csharp-standards` | Writing or changing any C# |
 | `csharp-testing` | Implementing or changing any behaviour: the failing test is written first |
-| `task-analysis` | Turning a Work Item into a plan |
+| `task-analysis` | Sizing picked work and cutting it into slices |
 | `external-tracking` | Reading or writing Notion |
-| `git-branching` | Starting a slice, committing, landing it on `main` |
+| `git-branching` | Committing, and landing a story on `main` |
 
 **If the `skillz` skills are not available in the session, say so and stop**: this file does not carry those rules.
 
 ## Where work comes from
 
-**Work is operator-picked, one slice at a time, never self-started.**
+**Work is operator-picked and never self-started, and whatever is picked runs through the hivemind.**
 
 The tracker is Notion: the « Netto Development » page, holding **Work Items** (the executable unit, typed Task / Bug / Technical, filed under an `Area`: Tax engine · Web app · Content · Plumbing · Intendance), **User Stories** (a user-facing outcome grouping several items; a technical item with no story is normal) and the **Lever catalogue**. `Status` runs Backlog → Selected → Doing → Done, and **`Selected` is the operator's pick**. A lever is in scope only once the operator sets it to `In v1`.
 
 - **Read Notion freely**, starting with « Goal & scope » before planning anything.
-- **Write narrowly.** While implementing: set `Doing` / `Done` on the item being worked, create a new item at `Backlog` for something discovered mid-slice, and edit « Goal & scope » where the slice changed the contract. When the task is plainly analysis, writing the related pages is the work. Never re-prioritise, re-file or reorganise unless asked.
-- **A session is self-contained.** If a slice ends unfinished, say what is done and what is left in a comment on its Notion item.
+- **Write narrowly, and only the hivemind writes.** Drones report what should change. While implementing: set `Doing` / `Done` on the items being worked, create a new item at `Backlog` for something discovered mid-slice, and edit « Goal & scope » where a slice changed the contract. When the task is plainly analysis, writing the related pages is the work. Never re-prioritise, re-file or reorganise unless asked.
+- **A hive outlives its session.** Its state is in Notion and git: the items' statuses, the slice and story branches, and the decision log on the story. `/skillz:hivemind resume <story>` picks it up. A run that ends unfinished says what is done and what is left in a comment on the story.
 
 ## Methodology
 
-- **One slice = one session = one feature branch**, carrying focused commits and fast-forwarded onto `main` when the slice is done (`git-branching`).
+- **Every picked story or item runs through `/skillz:hivemind`**: one session on Fable leads it, a drone builds each slice on a branch of its own, and the hivemind integrates the slices onto one story branch, `feature/<story-slug>`, which carries their focused commits and is fast-forwarded onto `main` when the story is done (`git-branching`). A size-S request the hivemind builds itself, on one branch.
+- **Attended or unattended.** Unattended, a run starts with a kickoff while the operator is there, then decides what it can, logs every decision on the story under « Decisions taken without you », and parks only critical questions. Nothing reaches `main` without the operator.
 - **Work is named, never numbered**: a Work Item is cited by its title.
-- Plan first on any non-trivial task and wait for operator approval before writing code. Minimal diffs: no refactoring outside the current task.
+- The plan gate is the approval: no drone builds before the operator approved the plan, at the kickoff when unattended. Minimal diffs: no refactoring outside the current task.
+
+## Parallel work
+
+What the hivemind needs to run a hive here.
+
+- **Start the hivemind from the main checkout**, not from a worktree session. Its story branch and its drones live in worktrees under `.claude/worktrees/`, and Rider keeps the main checkout.
+- **Drones load** `csharp-standards` and `csharp-testing`.
+- **Build and test** from the worktree's root, in Release: `dotnet build -c Release`, `dotnet test -c Release`, and the fast loop `dotnet test tests/Netto.Tests.Unit -c Release`. No test needs Docker.
+- **The app from a worktree.** Rider's AppHost holds ports 5274 and 15187, so serve `Netto.Web` alone: `dotnet run --project src/Netto.Web -c Release --launch-profile http -- --urls http://localhost:5290`, from the worktree, in the background. Stop it before the next build of that worktree, whose `Netto.Web.dll` it locks. `--no-launch-profile` runs in Production, where the WebAssembly assets are not served. Port 5290 is the hivemind's: it runs the browser checks, drones verify with tests.
+- **Hot files** that slices tend to share: `src/Netto.Core/Simulation/YearSimulation.cs`, `src/Netto.Web.Client/River/RiverInputs.cs` with `PlanStorage.cs` and `PlanComposition.cs` beside it, `BucketsView.cs`, `src/Netto.Web/wwwroot/app.css` with `Layout/NettoTheme.cs`, and `Directory.Packages.props`. Two slices that both write one of them are built one after the other.
+- **Exclusive resources beyond the defaults:**
+  - Raising `PlanStorage.Version`: one slice of a story raises it, and a later slice of the same story adds to that format (« Architecture »).
+  - The maps and the design system: only the hivemind publishes an Artifact.
+  - `official-docs/`: only the hivemind files a document, after the operator's go to download it.
+  - Tax-Calc: only the hivemind drives it, and each submission needs the operator's go. Unattended, a test's expected value is derived from the official amounts, the test says so, and the Tax-Calc check is left for landing.
+  - « Goal & scope » and this file: a drone reports what its slice changed, and the hivemind edits them.
 
 ## Stack
 
@@ -131,9 +150,9 @@ The tracker is Notion: the « Netto Development » page, holding **Work Items** 
 A slice (or any task) is done only when ALL of:
 
 1. `dotnet build` clean (no warnings) and `dotnet test` green, run from the repo root.
-2. The acceptance criteria of the slice's Notion item are met and demonstrated in the running app (browser-verified through the AppHost), not only in tests.
+2. The acceptance criteria of the slice's Notion item are met and demonstrated in the running app (browser-verified by the hivemind, through the AppHost or `Netto.Web` alone on 5290: « Parallel work »), not only in tests.
 3. Docs are true again: « Goal & scope » edited where the contract changed, any convention here that the slice changed updated, the River Map updated where the river changed, its diagrams with it, `official-docs/` holding the current edition of every document the slice's rule sets cite, and the Notion item moved to `Done`.
-4. The branch's commits are listed (contents + messages) and the fast-forward onto `main` is operator-approved. Pushing, once a remote exists, needs separate explicit approval.
+4. The story branch's commits are listed slice by slice (contents + messages), with the decision log, and the fast-forward onto `main` is operator-approved. Pushing, once a remote exists, needs separate explicit approval.
 
 ## Commands
 
