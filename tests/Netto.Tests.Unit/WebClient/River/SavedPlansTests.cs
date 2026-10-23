@@ -364,22 +364,26 @@ public class SavedPlansTests
         raised.ShouldBe(7);
     }
 
-    // Nothing changed, nothing to hear: an empty name, a star on a plan that is not there, a file that
-    // adds nothing, a plan that cannot be opened.
+    // Nothing changed, nothing to hear and nothing written: an empty name, a plan that is not there to
+    // rename, star, open or delete, a file that adds nothing.
     [Fact]
-    public void Changed_nothingChanges_isNotRaised()
+    public void Changed_nothingChanges_isNotRaisedNorWritten()
     {
-        var plans = new SavedPlans(new MemoryStorage());
+        var storage = new MemoryStorage();
+        var plans = new SavedPlans(storage);
         var first = plans.Save(RiverInputs.Example, Name);
+        var kept = storage.Get(PlanStorage.Key);
         var raised = 0;
         plans.Changed += () => raised++;
 
         plans.Rename(first.Id, "  ");
+        plans.Rename("nobody", "Elsewhere");
         plans.Star("nobody");
         plans.Open("nobody");
+        plans.Delete("nobody");
         plans.Import("not a file");
 
-        raised.ShouldBe(0);
+        (raised, storage.Get(PlanStorage.Key)).ShouldBe((0, kept));
     }
 
     // The event is raised once the plans are kept, so a listener reads the plans as they now are.

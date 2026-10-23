@@ -49,10 +49,10 @@ internal sealed class SavedPlans
         return saved;
     }
 
-    // Trimmed; an empty name keeps the old one.
+    // Trimmed; an empty name keeps the old one, and a plan that is not there is not renamed.
     public void Rename(string id, string name)
     {
-        if (string.IsNullOrWhiteSpace(name))
+        if (string.IsNullOrWhiteSpace(name) || Find(id) is null)
             return;
 
         Keep(_book with { Plans = [.. Plans.Select(plan => plan.Id == id ? plan with { Name = name.Trim() } : plan)] });
@@ -65,10 +65,17 @@ internal sealed class SavedPlans
     }
 
     // Deleting « Today » leaves no star; deleting the plan the river was opened from leaves none opened.
-    public void Delete(string id) => Keep(new PlanBook(
-        [.. Plans.Where(plan => plan.Id != id)],
-        Today == id ? null : Today,
-        Opened == id ? null : Opened));
+    // A plan that is not there is not deleted, and nothing is kept.
+    public void Delete(string id)
+    {
+        if (Find(id) is null)
+            return;
+
+        Keep(new PlanBook(
+            [.. Plans.Where(plan => plan.Id != id)],
+            Today == id ? null : Today,
+            Opened == id ? null : Opened));
+    }
 
     // The plan's inputs for the river, or null for a plan that cannot be read, which is not opened.
     public RiverInputs? Open(string id)
