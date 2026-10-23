@@ -41,6 +41,8 @@ public static class YearSimulation
     public const string EarlierProfitsNegative = "earlier_profits_negative";
     public const string AdvancePaymentNegative = "advance_payment_negative";
 
+    private const decimal Cent = 0.01m;
+
     public static (YearResult? Value, string? Error) Run(Scenario scenario)
     {
         var corporateRules = CorporateTaxRules.For(scenario.IncomeYear);
@@ -130,6 +132,41 @@ public static class YearSimulation
         VoucherRules.For(scenario.IncomeYear) is { } rules && CopyrightRules.For(scenario.IncomeYear) is { } copyright
             ? BeforeRoyalty(scenario, rules) - CopyrightCalculator.AtPay(copyright, scenario.Copyright, scenario.DirectorPay).Royalty
             : null;
+
+    // The most the split gives as pay: the profit before pay, never below zero, beside a fixed royalty;
+    // beside one that follows the pay, the largest pay the company pays together with what a ruling
+    // accepts beside it, out of what the two share, to the cent. The pay and its royalty rise together,
+    // so that pay is found by halving between no pay and all of it, which holds where the cap stops the
+    // royalty too. Taken as given even while the rules refuse an amount, so the split keeps its place.
+    // Null for a year without rules.
+    public static decimal? PayCeiling(Scenario scenario)
+    {
+        if (VoucherRules.For(scenario.IncomeYear) is not { } vouchers || CopyrightRules.For(scenario.IncomeYear) is not { } copyright)
+            return null;
+
+        var shared = BeforeRoyalty(scenario, vouchers);
+        if (!scenario.Copyright.FollowsPay)
+            return Math.Max(0m, shared - scenario.Copyright.Royalty);
+        if (shared <= 0m)
+            return 0m;
+
+        bool Fits(decimal pay) => pay + CopyrightCalculator.AtPay(copyright, scenario.Copyright, pay).Royalty <= shared;
+
+        if (Fits(shared))
+            return shared;
+
+        var (low, high) = (0m, shared);
+        while (high - low > Cent)
+        {
+            var middle = Math.Floor((low + high) * 50m) / 100m;
+            if (Fits(middle))
+                low = middle;
+            else
+                high = middle;
+        }
+
+        return low;
+    }
 
     // The year at the scenario's pay as the split's search reads it: Run's figures for the pocket, the
     // dividend and the company, without its steps or the pay's next 1,000, since the search runs the

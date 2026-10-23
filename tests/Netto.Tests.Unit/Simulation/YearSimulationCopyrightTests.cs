@@ -350,6 +350,64 @@ public class YearSimulationCopyrightTests
         YearSimulation.ProfitBeforePay(Scenario(royalty: Following(0.75m))).ShouldBe(88_461.54m);
     }
 
+    // The most the split gives as pay beside a fixed royalty is the profit before pay, never below zero.
+    [Theory]
+    [InlineData(10_000, 90_000)]
+    [InlineData(-1_000, 101_000)]
+    [InlineData(150_000, 0)]
+    public void PayCeiling_fixedRoyalty_isTheProfitBeforePayNeverBelowZero(int royalty, int expected)
+    {
+        YearSimulation.PayCeiling(Scenario(royalty: new CopyrightRoyalty(royalty))).ShouldBe(expected);
+    }
+
+    // Beside a royalty that follows the pay, the largest pay the company pays together with what a ruling
+    // accepts beside it: a share r of the envelope leaves the pay 1 − r of what both share, 81,250 of
+    // 100,000 at 18.75%, and once the royalty reaches the cap, what both share less the cap.
+    [Theory]
+    [InlineData(100_000, 0.75, 81_250)]
+    [InlineData(100_000, 0.6, 85_000)]
+    [InlineData(80_000, 1, 60_000)]
+    [InlineData(400_000, 1, 322_780)]
+    public void PayCeiling_royaltyFollowingThePay_isTheLargestPayTheProfitPaysWithWhatARulingAccepts(int profit, double share, int expected)
+    {
+        YearSimulation.PayCeiling(Scenario(revenue: profit + 20_000m, royalty: Following((decimal)share))).ShouldBe(expected);
+    }
+
+    // To the cent: the ceiling and its royalty fit what both share, a cent more of pay and its royalty do
+    // not.
+    [Theory]
+    [InlineData(99_999.99, 0.75)]
+    [InlineData(123_456.78, 0.33)]
+    [InlineData(333_333.33, 1)]
+    public void PayCeiling_royaltyFollowingThePay_aCentMoreIsMoreThanTheProfitPays(double profit, double share)
+    {
+        var royalty = Following((decimal)share);
+        decimal WithItsRoyalty(decimal pay) => pay + CopyrightCalculator.Ceiling(CopyrightRules.IncomeYear2026, royalty, pay).ShouldNotBeNull();
+
+        var ceiling = YearSimulation.PayCeiling(Scenario(revenue: (decimal)profit + 20_000m, royalty: royalty)).ShouldNotBeNull();
+
+        (WithItsRoyalty(ceiling) <= (decimal)profit, WithItsRoyalty(ceiling + 0.01m) <= (decimal)profit).ShouldBe((true, false));
+    }
+
+    // While a ruling accepts nothing, the pay alone shares what the company has.
+    [Fact]
+    public void PayCeiling_royaltyFollowingWithoutAShare_isWhatThePayAndTheRoyaltyShare()
+    {
+        YearSimulation.PayCeiling(Scenario(royalty: Following(null))).ShouldBe(100_000m);
+    }
+
+    [Fact]
+    public void PayCeiling_royaltyFollowingTheLossBeforePay_isNothing()
+    {
+        YearSimulation.PayCeiling(Scenario(revenue: 10_000m, royalty: Following(0.75m))).ShouldBe(0m);
+    }
+
+    [Fact]
+    public void PayCeiling_yearWithoutRules_isNone()
+    {
+        YearSimulation.PayCeiling(Scenario(royalty: Following(0.75m)) with { IncomeYear = 2024 }).ShouldBeNull();
+    }
+
     private static CopyrightRoyalty Following(decimal? share) => new(0m) { CreativeShare = share, FollowsPay = true };
 
     // The year's figures, with the royalty as the rules took it but not how it was set, and each step by
