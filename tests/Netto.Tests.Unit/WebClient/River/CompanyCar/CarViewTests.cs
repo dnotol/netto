@@ -131,6 +131,56 @@ public class CarViewTests
         (comparison.TaxesOnPayAdded > 0m, comparison.CashCost, CarCardText.Cash(comparison)).ShouldBe((true, 6_162.66m, "Cash_Takes"));
     }
 
+    // Until the user gives what the same car would cost privately, the comparison with a private car
+    // waits for it: there is nothing to weigh the cash against.
+    [Fact]
+    public void Comparison_noPrivateCost_waitsForIt()
+    {
+        var comparison = CarComparison.From(ElectricCar, ElectricCar.Run()).ShouldNotBeNull();
+
+        (comparison.PrivateCost, comparison.AgainstPrivate, comparison.Refused, CarCardText.Private(comparison))
+            .ShouldBe(((decimal?)null, (decimal?)null, (string?)null, "Private_Waiting"));
+    }
+
+    // Against the same car bought privately, the company car gains what that car would cost less the
+    // 6,162.66 of cash it takes from the pocket: a gain, a loss, or the same to the cent.
+    [Theory]
+    [InlineData(10_000, 3_837.34, "Private_Gain")]
+    [InlineData(1_000, -5_162.66, "Private_Loss")]
+    [InlineData(6_162.66, 0, "Private_Tie")]
+    public void Comparison_privateCost_isWhatItWouldCostLessTheCashTheCarTakes(double privateCost, double gain, string key)
+    {
+        var inputs = ElectricCar.WithCarPrivateCost((decimal)privateCost);
+
+        var comparison = CarComparison.From(inputs, inputs.Run()).ShouldNotBeNull();
+
+        (comparison.PrivateCost, comparison.AgainstPrivate, CarCardText.Private(comparison)).ShouldBe(((decimal?)privateCost, (decimal?)gain, key));
+    }
+
+    // A tie is a plain zero, never a negative one a sentence would read as a loss.
+    [Fact]
+    public void Comparison_privateCostEqualToTheCash_isAPlainZero()
+    {
+        var inputs = ElectricCar.WithCarPrivateCost(6_162.66m);
+
+        var against = CarComparison.From(inputs, inputs.Run()).ShouldNotBeNull().AgainstPrivate.ShouldNotBeNull();
+
+        decimal.IsNegative(against).ShouldBeFalse();
+    }
+
+    // What the same car would cost privately cannot be negative: the card refuses it, and the comparison
+    // waits for a cost it can weigh.
+    [Fact]
+    public void Comparison_negativePrivateCost_isRefused()
+    {
+        var inputs = ElectricCar.WithCarPrivateCost(-0.01m);
+
+        var comparison = CarComparison.From(inputs, inputs.Run()).ShouldNotBeNull();
+
+        (comparison.Refused, comparison.AgainstPrivate, CarCardText.Private(comparison))
+            .ShouldBe((CarComparison.PrivateCostNegative, (decimal?)null, "Private_Waiting"));
+    }
+
     [Fact]
     public void Comparison_noCarCounted_isNone()
     {

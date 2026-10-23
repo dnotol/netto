@@ -117,6 +117,9 @@
   <data name="Error_car_plug_in_first_half_2023" xml:space="preserve">
     <value>A plug-in hybrid ordered or leased in the first half of 2023 deducts its petrol or diesel at 50% at most and its other costs at another rate, and Netto does not split its costs yet: it cannot weigh this car for now.</value>
   </data>
+  <data name="Error_car_private_cost_negative" xml:space="preserve">
+    <value>What the same car would cost you privately cannot be negative.</value>
+  </data>
   <data name="Error_rent_above_cap" xml:space="preserve">
     <value>More rent than the cap: what the company pays above it would be taxed as director pay, with social contributions and no charges deducted. Netto keeps the rent at or below the cap.</value>
   </data>

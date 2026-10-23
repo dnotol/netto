@@ -141,7 +141,7 @@ public class RiverTextTests
             RentCalculator.RentWithOfficeAllowance,
             CarCalculator.CatalogueValueNegative, CarCalculator.YearlyCostsNegative, CarCalculator.ContributionNegative,
             CarCalculator.Co2Negative, CarCalculator.Co2Missing, CarCalculator.MatchingCarCo2Negative, CarCalculator.MatchingCarCo2Missing,
-            CarCalculator.AcquiredAfterYear, CarCalculator.PlugInFuelCapped,
+            CarCalculator.AcquiredAfterYear, CarCalculator.PlugInFuelCapped, CarComparison.PrivateCostNegative,
             CopyrightCalculator.RoyaltyNegative, CopyrightCalculator.CreativeShareOutOfRange, CopyrightCalculator.RoyaltyAboveProfit,
             Netto.Core.Calendar.PaymentCalendar.BilledContributionsNegative,
         };

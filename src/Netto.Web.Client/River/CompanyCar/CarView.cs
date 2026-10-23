@@ -70,12 +70,28 @@ internal sealed record CarView(
 
 // The plan with its car against the same plan without it, at the pay set: what reaches the pocket in
 // each, and what its benefit adds to the taxes on pay. CashCost is what the car takes from the pocket,
-// in cash (operator, 2026-10-23), below zero when the plan with the car leaves more there. Two runs of
-// the year, the second the river with the car out of the plan; none until a car counts, or while the
-// engine refuses an amount.
+// in cash (operator, 2026-10-23), below zero when the plan with the car leaves more there. Then the
+// company car against the same car bought privately, once the user gives what that car would cost
+// them for the year (PrivateCost), which no rule reads: AgainstPrivate is that cost less the cash the
+// company car takes, what the company car gains above zero, what it costs more below. Two runs of the
+// year, the second the river with the car out of the plan; none until a car counts, or while the engine
+// refuses an amount.
 internal sealed record CarComparison(decimal PocketWith, decimal PocketWithout, decimal TaxesOnPayAdded)
 {
+    // What the same car would cost privately cannot be below nothing; the card refuses it, the engine
+    // never seeing it.
+    public const string PrivateCostNegative = "car_private_cost_negative";
+
+    // As the user gives it, or none until given.
+    public decimal? PrivateCost { get; init; }
+
     public decimal CashCost => Difference(PocketWithout, PocketWith);
+
+    // None until the private cost is given, or while it is refused; a plain zero for a tie.
+    public decimal? AgainstPrivate => PrivateCost is { } cost && cost >= 0m ? Difference(cost, CashCost) : null;
+
+    // The private cost's refusal, or none.
+    public string? Refused => PrivateCost < 0m ? PrivateCostNegative : null;
 
     public static CarComparison? From(RiverInputs inputs, RiverRun run)
     {
@@ -84,7 +100,10 @@ internal sealed record CarComparison(decimal PocketWith, decimal PocketWithout, 
         if (inputs.TakeOutOfPlan(OptionalModule.Car).Run().Year is not { } without)
             return null;
 
-        return new CarComparison(with.NetInPocket, without.NetInPocket, Difference(TaxesOnPay(with), TaxesOnPay(without)));
+        return new CarComparison(with.NetInPocket, without.NetInPocket, Difference(TaxesOnPay(with), TaxesOnPay(without)))
+        {
+            PrivateCost = inputs.Car.PrivateCost.Value,
+        };
     }
 
     private static decimal TaxesOnPay(YearResult year) =>

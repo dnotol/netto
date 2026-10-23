@@ -108,6 +108,24 @@
   <data name="TaxesOnPay" xml:space="preserve">
     <value>Its benefit adds {0} to your taxes on pay, on Director pay.</value>
   </data>
+  <data name="PrivateCostLabel" xml:space="preserve">
+    <value>What the same car would cost you privately, a year</value>
+  </data>
+  <data name="PrivateCostHint" xml:space="preserve">
+    <value>A private lease of the same car, or what owning and running it would cost you over the year: its depreciation, fuel or charging, insurance, upkeep and taxes, VAT included.</value>
+  </data>
+  <data name="Private_Waiting" xml:space="preserve">
+    <value>To weigh it against a private car, enter what the same car would cost you privately.</value>
+  </data>
+  <data name="Private_Gain" xml:space="preserve">
+    <value>Against the same car bought privately for {1}, the company car leaves you {0} more.</value>
+  </data>
+  <data name="Private_Loss" xml:space="preserve">
+    <value>Against the same car bought privately for {1}, the company car costs you {0} more.</value>
+  </data>
+  <data name="Private_Tie" xml:space="preserve">
+    <value>The company car costs you what the same car bought privately would, {1}.</value>
+  </data>
   <data name="DetailsLabel" xml:space="preserve">
     <value>Where these figures come from</value>
   </data>

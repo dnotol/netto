@@ -14,6 +14,16 @@ internal static class CarCardText
         _ => "Cash_None",
     };
 
+    // The company car against the same car bought privately: what it gains, what it costs more, the
+    // same, or the comparison waits for what that car would cost, while it is not given or is refused.
+    public static string Private(CarComparison comparison) => comparison.AgainstPrivate switch
+    {
+        null => "Private_Waiting",
+        > 0m => "Private_Gain",
+        < 0m => "Private_Loss",
+        _ => "Private_Tie",
+    };
+
     // The summary ends on what the split shares: « before your pay and royalty » while the royalty is in
     // the plan.
     public static string Summary(bool hasCar, bool royalty) => (hasCar ? "Summary" : "SummaryNoCar") + (royalty ? "_Royalty" : "");

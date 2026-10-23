@@ -16,10 +16,12 @@
    kind taxed as pay, its CO2 percentage,
    period by period, what the company deducts of the costs and adds back of the benefit, the costs
    paid out of the river, a cost of the company like its running costs, and the contribution coming
-   back from the pocket, then the plan with the car against the same plan without it, in cash. An
-   optional module: it shows only while in the plan, and the word at its bottom takes it out, its
-   values kept. The amounts are taken while typing and carry no Min or Max: the engine refuses what
-   the rules do not allow. Skipped with the company. *@
+   back from the pocket, then the plan with the car against the same plan without it, in cash, and,
+   once the user gives what the same car would cost them privately, the company car against it; until
+   then it says that comparison waits. An optional module: it shows only while in the plan, and the
+   word at its bottom takes it out, its values kept. The amounts are taken while typing and carry no
+   Min or Max: the engine refuses what the rules do not allow, and the card a negative private cost,
+   which the engine never sees. Skipped with the company. *@
 <ModuleCard Name="@ModuleFolds.Name(OptionalModule.Car)" Title="@L["Title"]" Summary="@Summary" Glance="@Glance" PassesOn="@_view?.PassesOn" Help="@L["Hint"]" Skipped="Inputs.Company is null"
             Refused="@Refused" Details="@Details"
             DetailsLabel="@L["DetailsLabel"]" RemoveLabel="@L["Remove"]" OnRemove="Remove">
@@ -190,6 +192,17 @@
                     <p>@L["WithoutCar", Formats.Euros(comparison.PocketWithout)]</p>
                     <p class="car__gap">@L[CarCardText.Cash(comparison), Formats.Euros(Math.Abs(comparison.CashCost))]</p>
                     <p>@L["TaxesOnPay", Formats.Euros(comparison.TaxesOnPayAdded)]</p>
+                    <div class="car__fields">
+                        <RiverField Label="@L["PrivateCostLabel"]" For="river-car-private-cost"
+                                    Origin="@(Inputs.Car.PrivateCost.Value is null ? null : Inputs.Car.PrivateCost.Origin)" Help="@L["PrivateCostHint"]">
+                            <RiverNumericField T="decimal?" InputId="river-car-private-cost" Value="Inputs.Car.PrivateCost.Value" ValueChanged="OnPrivateCostChanged"
+                                               Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
+                                               Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
+                                               Error="@(comparison.Refused is not null)" Refusal="@comparison.Refused" />
+                        </RiverField>
+                    </div>
+                    <RefusedMessage Error="@comparison.Refused" />
+                    <p class="car__gap">@L[CarCardText.Private(comparison), Formats.Euros(Math.Abs(comparison.AgainstPrivate ?? 0m)), Formats.Euros(comparison.PrivateCost ?? 0m)]</p>
                 </section>
             }
         }
@@ -299,6 +312,9 @@
     private Task OnContributionChanged(decimal amount) => InputsChanged.InvokeAsync(Inputs.WithCarContribution(amount));
 
     private Task OnPrivateEnergyChanged(bool paid) => InputsChanged.InvokeAsync(Inputs.WithPrivateEnergyPaid(paid));
+
+    // Cleared, the private cost is none again.
+    private Task OnPrivateCostChanged(decimal? amount) => InputsChanged.InvokeAsync(Inputs.WithCarPrivateCost(amount));
 
     private Task Remove() => InputsChanged.InvokeAsync(Inputs.TakeOutOfPlan(OptionalModule.Car));
 }

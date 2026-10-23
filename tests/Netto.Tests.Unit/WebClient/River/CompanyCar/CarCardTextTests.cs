@@ -32,6 +32,33 @@ public class CarCardTextTests
         string.Format(CultureInfo.InvariantCulture, Resources.GetString(key, CultureInfo.InvariantCulture) ?? "", "€3,000.00").ShouldBe(expected);
     }
 
+    // The company car against the same car bought privately, each way it can fall, and the field that
+    // asks what that car would cost, with what to count.
+    [Fact]
+    public void CarCardResx_everyPrivateSentenceAndTheField_haveATextEach()
+    {
+        var comparisons = new[]
+        {
+            new CarComparison(40_000m, 43_000m, 1_000m),
+            new CarComparison(40_000m, 43_000m, 1_000m) { PrivateCost = 5_000m },
+            new CarComparison(40_000m, 43_000m, 1_000m) { PrivateCost = 1_000m },
+            new CarComparison(40_000m, 43_000m, 1_000m) { PrivateCost = 3_000m },
+        };
+
+        comparisons.Select(CarCardText.Private).ShouldBe(["Private_Waiting", "Private_Gain", "Private_Loss", "Private_Tie"]);
+        Missing(comparisons.Select(CarCardText.Private).Concat(["PrivateCostLabel", "PrivateCostHint"])).ShouldBeEmpty();
+    }
+
+    // The gain or loss first, then the private cost it is weighed against.
+    [Theory]
+    [InlineData("Private_Gain", "Against the same car bought privately for €9,000.00, the company car leaves you €2,000.00 more.")]
+    [InlineData("Private_Loss", "Against the same car bought privately for €9,000.00, the company car costs you €2,000.00 more.")]
+    [InlineData("Private_Tie", "The company car costs you what the same car bought privately would, €9,000.00.")]
+    public void Private_eachWay_saysTheGainOrLossAgainstThePrivateCost(string key, string expected)
+    {
+        string.Format(CultureInfo.InvariantCulture, Resources.GetString(key, CultureInfo.InvariantCulture) ?? "", "€2,000.00", "€9,000.00").ShouldBe(expected);
+    }
+
     // Every engine's name, the private energy it is worded with, its hint and its reading.
     [Fact]
     public void CarCardResx_everyEngine_hasItsTexts()
