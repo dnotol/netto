@@ -32,7 +32,7 @@ internal static class ConditionListText
 {
     public static string Condition(string key) => $"Condition_{key}";
 
-    // « 1 condition to meet » or « 5 conditions to meet ».
+    // « 1 condition Netto cannot check » or « 5 conditions Netto cannot check ».
     public static string Heading(int count) => count == 1 ? "Heading_One" : "Heading_Many";
 }
 
