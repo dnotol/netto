@@ -23,7 +23,7 @@
    The plot stretches to the card's width (preserveAspectRatio="none"), so its lines keep their
    width through vector-effect, and what must keep its shape (the best pay's dot, the axes' labels) is
    HTML placed over it in percentages. *@
-<ModuleCard Name="split" Title="@L["Title"]" Summary="@Summary" Help="@L[SplitCardText.Hint(_view.Royalty)]">
+<ModuleCard Name="split" Title="@L["Title"]" Summary="@Summary" Help="@L[SplitCardText.Hint(_view.Royalty)]" Refused="@Refused">
     <RiverField Label="@L["PayLabel"]" For="river-split-pay" Origin="Inputs.DirectorPay.Origin" Help="@(_search is null ? null : L["CurveHint"].Value)">
         <div class="pay-curve @(_search is null ? "pay-curve--bare" : null)">
             @if (_search is { } search)

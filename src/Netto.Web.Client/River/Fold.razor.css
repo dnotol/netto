@@ -44,6 +44,12 @@
         border-radius: 6px;
     }
 
+    /* A refusal inside holds the fold open: the button keeps the title and the summary at their colours
+       and does nothing, and says so by its pointer and by being disabled. */
+    .fold__toggle:disabled {
+        cursor: default;
+    }
+
 .fold__heading--card .fold__title {
     font-family: "Fraunces", Georgia, serif;
     font-size: 1.25rem;
@@ -80,7 +86,7 @@
     transition: transform 0.15s ease, color 0.2s ease;
 }
 
-    .fold__toggle:hover ::deep .fold__chevron,
+    .fold__toggle:hover:not(:disabled) ::deep .fold__chevron,
     .fold__toggle:focus-visible ::deep .fold__chevron {
         color: var(--netto-gold);
     }

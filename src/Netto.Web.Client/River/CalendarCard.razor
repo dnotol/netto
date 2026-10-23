@@ -7,7 +7,7 @@
    surcharge, then one sentence per tax, as its card says it; the pay each month, as the pay slip
    gives it; and after the year, what each assessment leaves. It applies nothing: the moves card is
    where a payment is applied. Folded, it says the next advance payment and its date. *@
-<ModuleCard Name="calendar" Title="@L["Title"]" Summary="@Summary" Help="@L["Help"]" OpenByDefault="false">
+<ModuleCard Name="calendar" Title="@L["Title"]" Summary="@Summary" Help="@L["Help"]" OpenByDefault="false" Refused="@_view?.BilledRefused">
     @if (_view is null)
     {
         <p class="calendar__note">@L["Refused"]</p>

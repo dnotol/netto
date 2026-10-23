@@ -1,13 +1,15 @@
 @inject IStringLocalizer<ModuleCard> L
 
 @* The frame every module of the river shares: its title and what flows through it, on the one line it
-   folds to (Fold), with what the module is in a bubble at its end (Help), then its controls and its detail view, folded under them to one line of its own
+   folds to (Fold), where it starts until opened, and which a refusal inside opens (Refused), with what
+   the module is in a bubble at its end (Help), then its controls and its detail view, folded under them to one line of its own
    (Fold, level 3) and opened on demand, and last, for an optional module, the word that takes it out
    of the plan. A skipped module is drawn dashed, waiting for the amounts it needs. The summary ends
    on one share, worded here for every card: what reaches the pocket of what the module receives
    (ToYou), or, for Corporate tax, what it passes on (PassesOn); none while no money flows through it. *@
 <section class="module-card @(Skipped ? "module-card--skipped" : null)" aria-labelledby="@_titleId">
-    <Fold Name="@Name" Title="@Title" TitleId="@_titleId" Summary="@Summary" Rate="@Rate" Help="@Help" OpenByDefault="@OpenByDefault">
+    <Fold Name="@Name" Title="@Title" TitleId="@_titleId" Summary="@Summary" Rate="@Rate" Help="@Help" OpenByDefault="@OpenByDefault"
+          Refused="@(Refused is not null)">
         <div class="module-card__body">
             @ChildContent
             @if (Details is not null)
@@ -60,9 +62,15 @@
     [Parameter]
     public RenderFragment? Details { get; set; }
 
-    // Cards are open until folded; one with nothing to show yet starts folded to its summary.
+    // A card starts folded to its title and summary; one that must be read first says so (the moves
+    // card, once a plan is starred Today).
     [Parameter]
-    public bool OpenByDefault { get; set; } = true;
+    public bool OpenByDefault { get; set; }
+
+    // The engine's error key when it refuses a field of this card: the card opens, and stays open, so a
+    // refusal is never hidden.
+    [Parameter]
+    public string? Refused { get; set; }
 
     // The detail view's line, folded or open.
     [Parameter]

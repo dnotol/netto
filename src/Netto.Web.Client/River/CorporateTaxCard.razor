@@ -10,7 +10,7 @@
    and its advance payments with the surcharge they leave. The payments are taken while typing,
    like revenue, since nothing bounds them, and the card says what more by the last deadline
    cancels the surcharge. *@
-<ModuleCard Name="corporate-tax" Title="@L["Title"]" Summary="@Summary" PassesOn="@_view?.PassesOn" Skipped="Inputs.Company is null" Details="@Details"
+<ModuleCard Name="corporate-tax" Title="@L["Title"]" Summary="@Summary" PassesOn="@_view?.PassesOn" Skipped="Inputs.Company is null" Refused="@Refused" Details="@Details"
             DetailsLabel="@L["DetailsLabel"]">
     @if (Inputs.Company is null)
     {

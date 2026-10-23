@@ -12,7 +12,7 @@
    while typing, like revenue, since nothing bounds them. What is kept can be typed exactly, taken
    when the field is left, so the field shows what can be paid out (the split's field does the
    same). *@
-<ModuleCard Name="dividend" Title="@L["Title"]" Summary="@Summary" ToYou="@_view?.ToYou" Skipped="Inputs.Company is null" Details="@Details"
+<ModuleCard Name="dividend" Title="@L["Title"]" Summary="@Summary" ToYou="@_view?.ToYou" Skipped="Inputs.Company is null" Refused="@Refused" Details="@Details"
             DetailsLabel="@L["DetailsLabel"]">
     @if (Inputs.Company is null)
     {

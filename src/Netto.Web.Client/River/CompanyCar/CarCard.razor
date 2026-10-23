@@ -19,7 +19,8 @@
    car against the same plan without it. An optional module: it shows only while in the plan, and the
    word at its bottom takes it out, its values kept. The amounts are taken while typing and carry no
    Min or Max: the engine refuses what the rules do not allow. Skipped with the company. *@
-<ModuleCard Name="car" Title="@L["Title"]" Summary="@Summary" PassesOn="@_view?.PassesOn" Help="@L["Hint"]" Skipped="Inputs.Company is null" Details="@Details"
+<ModuleCard Name="@ModuleFolds.Name(OptionalModule.Car)" Title="@L["Title"]" Summary="@Summary" PassesOn="@_view?.PassesOn" Help="@L["Hint"]" Skipped="Inputs.Company is null"
+            Refused="@Refused" Details="@Details"
             DetailsLabel="@L["DetailsLabel"]" RemoveLabel="@L["Remove"]" OnRemove="Remove">
     @if (Inputs.Company is null)
     {

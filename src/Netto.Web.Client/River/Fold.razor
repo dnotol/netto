@@ -6,9 +6,13 @@
    folded or not, and a chevron at its right, down when folded and up when open. Level 2 is a card's
    own heading; level 3 a fold inside a card, drawn as one quiet line. What is folded is not
    rendered, but its frame stays in the page, hidden, for aria-controls to point to. The fold is the
-   viewer's preference, remembered in the browser under its name (Folds). It has no text of its own:
-   the card gives its title and its summary, and what its module is (Help), in an info bubble at the
-   row's end, outside the heading and its button, inside which no other control may sit. *@
+   viewer's preference, remembered in the browser under its name (Folds). It starts folded, to its
+   title and its summary, until the viewer opens it. A refusal inside (Refused) is never hidden: the
+   fold opens, as Disclosure does, and its button cannot fold it while the refusal stands; once the
+   amount is accepted it stays open, for the field not to vanish under the cursor, until the viewer
+   folds it. It has no text of its own: the card gives its title and its summary, and what its module
+   is (Help), in an info bubble at the row's end, outside the heading and its button, inside which no
+   other control may sit. *@
 @if (Level == 3)
 {
     <h3 class="fold__heading fold__heading--line">@Toggle</h3>
@@ -60,10 +64,16 @@ else
     [Parameter]
     public string? Help { get; set; }
 
-    // Cards are open until folded; what a card holds besides its figures, such as its conditions,
-    // opens on demand.
+    // Folded until the viewer opens it: a card shows its title and its summary, and what a card holds
+    // besides its figures, such as its conditions, opens on demand. A card that must be read first
+    // says so (the moves card, once a plan is starred Today).
     [Parameter]
-    public bool OpenByDefault { get; set; } = true;
+    public bool OpenByDefault { get; set; }
+
+    // The engine refuses a field inside: the fold opens now, and its button cannot fold it until the
+    // refusal ends.
+    [Parameter]
+    public bool Refused { get; set; }
 
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
@@ -72,10 +82,18 @@ else
 
     private bool Open => Folds.IsOpen(Name, OpenByDefault);
 
+    // A refusal reveals the fold, so it stays open once the amount is accepted.
+    protected override void OnParametersSet()
+    {
+        if (Refused)
+            Folds.Reveal(Name);
+    }
+
+    // The button is disabled while the fold is refused, so it is never pressed then.
     private void Flip() => Folds.Set(Name, !Open);
 
     private RenderFragment Toggle =>
-        @<button type="button" class="fold__toggle" aria-expanded="@(Open ? "true" : "false")" aria-controls="@_bodyId" @onclick="Flip">
+        @<button type="button" class="fold__toggle" aria-expanded="@(Open ? "true" : "false")" aria-controls="@_bodyId" disabled="@Refused" @onclick="Flip">
             <span id="@TitleId" class="fold__title">@Title</span>
             @if (Summary is not null)
             {

@@ -6,7 +6,7 @@
    the rent in the plan come off it next, then the pay. Cleared, the module is skipped and the river starts at the pay. No Min or Max on the amounts:
    MudBlazor would clamp a value silently, and the engine's refusal, with its message, is what the
    user has to see. *@
-<ModuleCard Name="company-year" Title="@L["Title"]" Summary="@Summary" Skipped="Inputs.Company is null">
+<ModuleCard Name="company-year" Title="@L["Title"]" Summary="@Summary" Skipped="Inputs.Company is null" Refused="@Refused">
     @if (Inputs.Company is { } company)
     {
         <div class="company-year__fields">

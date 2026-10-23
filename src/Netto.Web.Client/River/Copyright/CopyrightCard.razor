@@ -18,7 +18,8 @@
    without it, and where no text settles a point, the reading Netto takes. An optional module: it shows
    only while in the plan, and the word at its bottom takes it out, its values kept. Skipped with the
    company. *@
-<ModuleCard Name="copyright" Title="@L["Title"]" Summary="@Summary" ToYou="@_view?.ToYou" Help="@L["Hint"]" Skipped="Inputs.Company is null" Details="@Details"
+<ModuleCard Name="@ModuleFolds.Name(OptionalModule.Copyright)" Title="@L["Title"]" Summary="@Summary" ToYou="@_view?.ToYou" Help="@L["Hint"]" Skipped="Inputs.Company is null"
+            Refused="@Refused" Details="@Details"
             DetailsLabel="@L["DetailsLabel"]" RemoveLabel="@L["Remove"]" OnRemove="Remove">
     @if (Inputs.Company is null)
     {
