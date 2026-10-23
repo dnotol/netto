@@ -1,8 +1,10 @@
+/* How far the pay goes, under its field: a bound stays in sight, why in the field's bubble. */
 .split__ceiling {
     margin: 0;
     color: var(--netto-text-muted);
     font-size: 0.8rem;
     line-height: 1.55;
+    font-variant-numeric: tabular-nums;
 }
 
 /* The royalty's two ways, chips as Director pay's payers are. */
@@ -13,7 +15,7 @@
     white-space: normal;
 }
 
-/* How the engine set a royalty that follows the pay, or why it is none. */
+/* Why a royalty that follows the pay is none. */
 .split__following {
     margin: 0;
     color: var(--netto-text-muted);
@@ -22,24 +24,8 @@
     font-variant-numeric: tabular-nums;
 }
 
-/* The sides of the split, one at each end, as the slider runs from pay to company, the royalty
-   between them while it is in the plan. */
-.split__ends {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    gap: 0.25rem 1rem;
-    color: var(--netto-text-muted);
-    font-size: 0.88rem;
-    font-variant-numeric: tabular-nums;
-}
-
-    .split__ends b {
-        color: var(--netto-text);
-        font-weight: 500;
-    }
-
-/* What the pointer reads keeps its room, so the lines below do not jump as it moves. */
+/* What the pointer reads keeps the room of two lines while the pointer is away, so the lines below
+   never jump as it comes and goes. */
 .split__pointer,
 .split__best,
 .split__rate {

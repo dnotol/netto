@@ -27,17 +27,17 @@
   <data name="PayLabel" xml:space="preserve">
     <value>Gross director pay for the year</value>
   </data>
-  <data name="PayEnd" xml:space="preserve">
-    <value>Your pay</value>
-  </data>
-  <data name="CompanyEnd" xml:space="preserve">
-    <value>Company profit before tax</value>
-  </data>
-  <data name="NoFigure" xml:space="preserve">
-    <value>—</value>
-  </data>
   <data name="Ceiling" xml:space="preserve">
+    <value>At most {0}</value>
+  </data>
+  <data name="CeilingHint" xml:space="preserve">
     <value>Up to {0}, the profit before your pay.</value>
+  </data>
+  <data name="CeilingHint_Follows" xml:space="preserve">
+    <value>Up to {0}, where the royalty that follows your pay takes the rest of what your pay and royalty share.</value>
+  </data>
+  <data name="CeilingHint_Fixed" xml:space="preserve">
+    <value>Up to {0}, the profit before your pay once your fixed royalty is paid.</value>
   </data>
   <data name="CurveHint" xml:space="preserve">
     <value>The gold line is what reaches your pocket at each pay, with everything else as you set it. Point at it to read a pay; click to move yours there.</value>
@@ -57,50 +57,71 @@
   <data name="KeyMissesReserve" xml:space="preserve">
     <value>Too little profit to keep {0}</value>
   </data>
+  <data name="Figure_Pay" xml:space="preserve">
+    <value>Your pay</value>
+  </data>
+  <data name="Figure_Royalty" xml:space="preserve">
+    <value>Royalty</value>
+  </data>
+  <data name="Figure_Company" xml:space="preserve">
+    <value>Company profit before tax</value>
+  </data>
+  <data name="Figure_Best" xml:space="preserve">
+    <value>Best pay</value>
+  </data>
+  <data name="Figure_BestIsYours" xml:space="preserve">
+    <value>Your pay is the best</value>
+  </data>
+  <data name="Figure_BestKeepingReserve" xml:space="preserve">
+    <value>Best pay keeping {0} in the company</value>
+  </data>
+  <data name="Figure_Dividend" xml:space="preserve">
+    <value>Dividend</value>
+  </data>
+  <data name="Figure_InPocket" xml:space="preserve">
+    <value>In your pocket</value>
+  </data>
+  <data name="Figure_InPocketThere" xml:space="preserve">
+    <value>In your pocket there</value>
+  </data>
+  <data name="Figure_MoreThanYours" xml:space="preserve">
+    <value>More than at your pay</value>
+  </data>
+  <data name="Figure_InPocketAtYours" xml:space="preserve">
+    <value>In your pocket at your pay</value>
+  </data>
+  <data name="Figure_KeptAtYours" xml:space="preserve">
+    <value>Kept in the company at your pay</value>
+  </data>
   <data name="PointerAt" xml:space="preserve">
-    <value>At a pay of {0}: {1} in your pocket. Click to move your pay there.</value>
+    <value>At a pay of {0}: {1} in your pocket.</value>
   </data>
   <data name="PointerMissesReserve" xml:space="preserve">
-    <value>At a pay of {0}: {1} in your pocket, but only {2} stays in the company, under the {3} you keep.</value>
-  </data>
-  <data name="PointerYours" xml:space="preserve">
-    <value>At your pay, {0}: {1} in your pocket.</value>
-  </data>
-  <data name="Best" xml:space="preserve">
-    <value>Best pay for this year: {0}, with a dividend of {1}. It leaves {2} in your pocket, {3} more than at your pay.</value>
-  </data>
-  <data name="BestOverReserve" xml:space="preserve">
-    <value>Best pay that keeps the {0} you keep in the company: {1}, with a dividend of {2}. It leaves {3} in your pocket. Your pay leaves {4}, but only {5} can stay in the company.</value>
-  </data>
-  <data name="BestReach" xml:space="preserve">
-    <value>{0} reaches you there, against {1} at your pay.</value>
-  </data>
-  <data name="BestIsYoursReach" xml:space="preserve">
-    <value>{0} reaches you.</value>
-  </data>
-  <data name="BestIsYours" xml:space="preserve">
-    <value>Your pay is the best for this year: {0} in your pocket, with a dividend of {1}.</value>
+    <value>At a pay of {0}: {1} in your pocket, only {2} kept.</value>
   </data>
   <data name="NoBest" xml:space="preserve">
-    <value>No pay leaves enough profit after tax to keep the {0} you keep in the company: at most {1} can stay there.</value>
+    <value>No pay keeps {0} in the company: at most {1} can stay there.</value>
   </data>
   <data name="Rate_NotWeighed" xml:space="preserve">
     <value>Your pay does not change the corporate rate here; Corporate tax says why.</value>
   </data>
   <data name="Rate_KeepsIt" xml:space="preserve">
-    <value>It keeps the [reduced corporate rate], which takes a pay of at least {0}. Giving it up leaves at most {1}, {2} less.</value>
+    <value>It keeps the [reduced corporate rate]: giving it up leaves {2} less.</value>
   </data>
   <data name="Rate_KeepsItOnly" xml:space="preserve">
-    <value>It keeps the [reduced corporate rate], which takes a pay of at least {0}.</value>
+    <value>It keeps the [reduced corporate rate].</value>
+  </data>
+  <data name="Rate_KeepsItYours" xml:space="preserve">
+    <value>It keeps the [reduced corporate rate]: your pay is the best giving it up.</value>
   </data>
   <data name="Rate_GivesItUp" xml:space="preserve">
-    <value>It gives up the [reduced corporate rate] on purpose. Keeping it takes a pay of at least {0} and leaves at most {1}, {2} less.</value>
+    <value>It gives up the [reduced corporate rate] on purpose: keeping it leaves {2} less.</value>
   </data>
   <data name="Rate_GivesItUpOnly" xml:space="preserve">
-    <value>It gives up the [reduced corporate rate]: no pay of at least {0} leaves enough profit to keep your reserve.</value>
+    <value>It gives up the [reduced corporate rate]: every pay keeping it misses your reserve.</value>
   </data>
-  <data name="Rate_Benefits" xml:space="preserve">
-    <value>Your company car's benefit, {0}, counts in that pay, and the rate also needs it to stay within {1} of your pay with it.</value>
+  <data name="Rate_GivesItUpYours" xml:space="preserve">
+    <value>It gives up the [reduced corporate rate]: your pay is the best keeping it.</value>
   </data>
   <data name="Summary_Royalty" xml:space="preserve">
     <value>{0} to your pay · {3} royalty · {1} to the company</value>
@@ -129,50 +150,23 @@
   <data name="FixedRoyaltyHint" xml:space="preserve">
     <value>The gross royalty the company pays you for the year for the rights on your works, before the 15% it withholds, as on the 281.45 fiche it files for you.</value>
   </data>
-  <data name="Following_AtCeiling" xml:space="preserve">
-    <value>{0} at your pay: what a ruling accepts for {1} of your time spent creating.</value>
-  </data>
   <data name="Following_NoCreativeShare" xml:space="preserve">
-    <value>None until you give the share of your time spent creating, in your copyright situation on the Copyright royalty card below.</value>
+    <value>None until you give your creative share, on the Copyright royalty card below.</value>
   </data>
   <data name="Following_AverageAboveCap" xml:space="preserve">
-    <value>None: your copyright income of the four previous years averaged above the cap, so any royalty would be taxed as your pay.</value>
+    <value>None: your copyright income of the four previous years averaged above the cap.</value>
   </data>
   <data name="Following_NoEnvelopeRate" xml:space="preserve">
-    <value>None: Netto has no rate yet for what a ruling accepts in {2}. Fix an amount to pay one.</value>
-  </data>
-  <data name="RoyaltyEnd_Follows" xml:space="preserve">
-    <value>Royalty, following your pay</value>
-  </data>
-  <data name="RoyaltyEnd_Fixed" xml:space="preserve">
-    <value>Royalty, fixed</value>
-  </data>
-  <data name="Ceiling_Follows" xml:space="preserve">
-    <value>Up to {0}, where the royalty that follows your pay takes the rest of what your pay and royalty share.</value>
-  </data>
-  <data name="Ceiling_Fixed" xml:space="preserve">
-    <value>Up to {0}, the profit before your pay once your fixed royalty is paid.</value>
+    <value>None: Netto has no rate yet for what a ruling accepts in {2}.</value>
   </data>
   <data name="SliderValue_Royalty" xml:space="preserve">
     <value>{0}, with a royalty of {1}</value>
   </data>
   <data name="PointerAt_Royalty" xml:space="preserve">
-    <value>At a pay of {0}, with a royalty of {2}: {1} in your pocket. Click to move your pay there.</value>
+    <value>At {0} with a royalty of {2}: {1} in your pocket.</value>
   </data>
   <data name="PointerMissesReserve_Royalty" xml:space="preserve">
-    <value>At a pay of {0}, with a royalty of {4}: {1} in your pocket, but only {2} stays in the company, under the {3} you keep.</value>
-  </data>
-  <data name="PointerYours_Royalty" xml:space="preserve">
-    <value>At your pay, {0}, with a royalty of {2}: {1} in your pocket.</value>
-  </data>
-  <data name="Best_Royalty" xml:space="preserve">
-    <value>Best pay for this year: {0}, with a royalty of {4} and a dividend of {1}. It leaves {2} in your pocket, {3} more than at your pay.</value>
-  </data>
-  <data name="BestOverReserve_Royalty" xml:space="preserve">
-    <value>Best pay that keeps the {0} you keep in the company: {1}, with a royalty of {6} and a dividend of {2}. It leaves {3} in your pocket. Your pay leaves {4}, but only {5} can stay in the company.</value>
-  </data>
-  <data name="BestIsYours_Royalty" xml:space="preserve">
-    <value>Your pay is the best for this year: {0} in your pocket, with a royalty of {2} and a dividend of {1}.</value>
+    <value>At {0} with a royalty of {3}: {1} in your pocket, only {2} kept.</value>
   </data>
   <data name="Term_ReducedRate" xml:space="preserve">
     <value>The lower rate a small company pays on a first slice of its taxable income. From its fifth tax period, it keeps it only if a director's pay reaches a minimum, or its taxable income does not exceed that pay.</value>

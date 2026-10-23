@@ -15,15 +15,8 @@ public class SplitCardTextTests
     // The name IStringLocalizer<SplitCard> reads River/SplitCard.resx under.
     private static readonly ResourceManager Resources = new("Netto.Web.Client.River.SplitCard", typeof(SplitCard).Assembly);
 
-    // The split says how a car's benefit counts in the pay.
-    [Fact]
-    public void SplitCardResx_benefitInThePay_hasItsText()
-    {
-        Missing(["Rate_Benefits"]).ShouldBeEmpty();
-    }
-
     // Each way the best pay can stand against the reduced rate, with or without a pay on the other
-    // side that keeps the reserve.
+    // side that keeps the reserve, that pay being the pay set or another.
     [Fact]
     public void SplitCardResx_everyWayOfWeighingTheRate_hasAText()
     {
@@ -31,7 +24,21 @@ public class SplitCardTextTests
         var weighings = Enum.GetValues<RateChoice>()
             .SelectMany(choice => new[] { new RateWeighing(choice, 50_000m, other, 2_183.57m), new RateWeighing(choice, 50_000m, null, null) });
 
-        Missing(weighings.Select(SplitCardText.Rate)).ShouldBeEmpty();
+        Missing(weighings.SelectMany(rate => new[] { SplitCardText.Rate(rate, 50_000m), SplitCardText.Rate(rate, 40_000m) })).ShouldBeEmpty();
+    }
+
+    // The best pay on the other side of the threshold is the pay set: what keeping the rate costs is
+    // then what the best pay gains over it, which its line says, and the sentence names no amount.
+    [Theory]
+    [InlineData(nameof(RateChoice.GivesItUp), 50_000, "Rate_GivesItUpYours")]
+    [InlineData(nameof(RateChoice.GivesItUp), 40_000, "Rate_GivesItUp")]
+    [InlineData(nameof(RateChoice.KeepsIt), 50_000, "Rate_KeepsItYours")]
+    [InlineData(nameof(RateChoice.KeepsIt), 40_000, "Rate_KeepsIt")]
+    public void Rate_otherSideAtThePaySet_saysItWithoutItsAmount(string choice, int pay, string key)
+    {
+        var other = new PayLevel(50_000m, 62_529.24m, 40_000m, 0m, ReducedRateCondition.TaxableIncomeNotAbovePay, true);
+
+        SplitCardText.Rate(new RateWeighing(Enum.Parse<RateChoice>(choice), 50_000m, other, 2_183.57m), pay).ShouldBe(key);
     }
 
     // The reduced corporate rate is a term of art: every sentence weighing it marks it, for it to open
@@ -42,7 +49,7 @@ public class SplitCardTextTests
         var other = new PayLevel(50_000m, 62_529.24m, 40_000m, 0m, ReducedRateCondition.TaxableIncomeNotAbovePay, true);
         var keys = new[] { RateChoice.KeepsIt, RateChoice.GivesItUp }
             .SelectMany(choice => new[] { new RateWeighing(choice, 50_000m, other, 2_183.57m), new RateWeighing(choice, 50_000m, null, null) })
-            .Select(SplitCardText.Rate);
+            .SelectMany(rate => new[] { SplitCardText.Rate(rate, 50_000m), SplitCardText.Rate(rate, 40_000m) });
 
         Terms(keys).ShouldAllBe(term => term == "reduced corporate rate");
     }
@@ -53,32 +60,47 @@ public class SplitCardTextTests
         Missing([SplitCardText.ReducedRateTerm]).ShouldBeEmpty();
     }
 
-    // What reaches the pocket at the best pay, against the pay set, or at the pay set when it is the best.
+    // Every label the split's lines can carry: its sides with and without a royalty, and the best pay
+    // as the search finds it, the pay set's own, beyond the pay set's reserve, and beside a royalty that
+    // follows the pay.
     [Fact]
-    public void SplitCardResx_reach_hasItsTexts()
+    public void SplitCardResx_everyLabelOfItsLines_hasAText()
     {
-        Missing([SplitCardText.BestReach, SplitCardText.BestIsYoursReach]).ShouldBeEmpty();
+        var example = RiverInputs.Example.WithAdvancePayment(0, 25_000m).WithTaxWithheld(1_000_000m);
+        RiverInputs[] rivers =
+        [
+            example, example.WithDirectorPay(20_799m), example.WithReserve(60_000m),
+            RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithCreativeShare(0.75m),
+        ];
+        var keys = rivers.SelectMany(inputs =>
+        {
+            var run = inputs.Run();
+            var view = SplitView.From(inputs, run);
+            var search = SplitSearchView.From(inputs, run, inputs.SearchSplit()).ShouldNotBeNull();
+            return SplitFigures.Sides(view, run.Year).Concat(SplitFigures.Best(search, run.Year.ShouldNotBeNull(), view.Royalty, inputs.Reserve.Value));
+        }).Select(line => line.Key);
+
+        Missing(["Ceiling", .. keys]).ShouldBeEmpty();
     }
 
-    // Every text the split says about the royalty it pays beside the pay: its two ways and its end, the
-    // summary, the help and the ceiling with no royalty, a fixed one and one that follows the pay, the
-    // curve's sentences naming the royalty that follows each pay, and how the engine set it.
+    // Every text the split says about the royalty it pays beside the pay: its two ways, the summary,
+    // the help and why the pay goes no further with no royalty, a fixed one and one that follows the
+    // pay, what the pointer reads beside each, and why one that follows the pay is none.
     [Fact]
     public void SplitCardResx_everyTextOfTheRoyalty_hasAText()
     {
         var following = RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithCreativeShare(0.75m);
         var royalties = new[] { RiverInputs.Example, following, following.WithRoyalty(10_000m) }.Select(inputs => SplitView.From(inputs, inputs.Run()).Royalty).ToList();
-        string[] curve = ["PointerAt", "PointerMissesReserve", "PointerYours", "Best", "BestOverReserve", "BestIsYours"];
+        string[] curve = ["PointerAt", "PointerMissesReserve"];
         IEnumerable<string> keys =
         [
             SplitCardText.Policy(true), SplitCardText.Policy(false), SplitCardText.SliderValueWithRoyalty, "RoyaltyLabel", "RoyaltyHint", "FixedRoyaltyLabel", "FixedRoyaltyHint",
-            .. royalties.OfType<SplitRoyaltyView>().Select(SplitCardText.RoyaltyEnd),
             .. royalties.SelectMany(royalty => new[]
             {
-                SplitCardText.Summary(royalty, false), SplitCardText.Summary(royalty, true), SplitCardText.Hint(royalty), SplitCardText.Ceiling(royalty),
+                SplitCardText.Summary(royalty, false), SplitCardText.Summary(royalty, true), SplitCardText.Hint(royalty), SplitCardText.CeilingHint(royalty),
             }),
             .. royalties.SelectMany(royalty => curve.Select(key => SplitCardText.AlongTheCurve(key, royalty))),
-            .. Enum.GetValues<CopyrightFollowing>().Select(SplitCardText.Following),
+            .. Enum.GetValues<CopyrightFollowing>().Select(SplitCardText.Following).OfType<string>(),
         ];
 
         Missing(keys).ShouldBeEmpty();
@@ -93,32 +115,44 @@ public class SplitCardTextTests
         ["fixed"] = RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithRoyalty(10_000m),
     };
 
-    // How far the pay goes: beside a royalty that follows the pay only while the engine set it at what a
-    // ruling accepts; one that is none leaves the whole profit before pay, as no royalty does.
+    // Why the pay goes no further: beside a royalty that follows the pay only while the engine set it at
+    // what a ruling accepts; one that is none leaves the whole profit before pay, as no royalty does.
     [Theory]
-    [InlineData("none", "Ceiling")]
-    [InlineData("following without a share", "Ceiling")]
-    [InlineData("following above the cap", "Ceiling")]
-    [InlineData("following at 75%", "Ceiling_Follows")]
-    [InlineData("fixed", "Ceiling_Fixed")]
-    public void Ceiling_namesTheFollowingRoyaltyOnlyWhileARulingAcceptsOne(string royalty, string key)
+    [InlineData("none", "CeilingHint")]
+    [InlineData("following without a share", "CeilingHint")]
+    [InlineData("following above the cap", "CeilingHint")]
+    [InlineData("following at 75%", "CeilingHint_Follows")]
+    [InlineData("fixed", "CeilingHint_Fixed")]
+    public void CeilingHint_namesTheFollowingRoyaltyOnlyWhileARulingAcceptsOne(string royalty, string key)
     {
         var inputs = Royalties[royalty];
 
-        SplitCardText.Ceiling(SplitView.From(inputs, inputs.Run()).Royalty).ShouldBe(key);
+        SplitCardText.CeilingHint(SplitView.From(inputs, inputs.Run()).Royalty).ShouldBe(key);
+    }
+
+    // A royalty that follows the pay says why it is none; set at what a ruling accepts, its figure is
+    // among the split's sides, and no sentence says it again.
+    [Theory]
+    [InlineData(CopyrightFollowing.AtCeiling, null)]
+    [InlineData(CopyrightFollowing.NoCreativeShare, "Following_NoCreativeShare")]
+    [InlineData(CopyrightFollowing.AverageAboveCap, "Following_AverageAboveCap")]
+    [InlineData(CopyrightFollowing.NoEnvelopeRate, "Following_NoEnvelopeRate")]
+    public void Following_saysOnlyWhyTheRoyaltyIsNone(CopyrightFollowing following, string? key)
+    {
+        SplitCardText.Following(following).ShouldBe(key);
     }
 
     // The curve's sentences name the royalty only while it follows the pay: a fixed one is the same at
     // every pay.
     [Theory]
-    [InlineData(false, "PointerAt")]
-    [InlineData(true, "PointerAt_Royalty")]
-    public void AlongTheCurve_namesTheRoyaltyOnlyWhileItFollowsThePay(bool followsPay, string key)
+    [InlineData("none", "PointerAt")]
+    [InlineData("fixed", "PointerAt")]
+    [InlineData("following at 75%", "PointerAt_Royalty")]
+    public void AlongTheCurve_namesTheRoyaltyOnlyWhileItFollowsThePay(string royalty, string key)
     {
-        var inputs = RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithCreativeShare(0.75m).WithRoyalty(10_000m);
-        var shown = followsPay ? inputs.WithRoyaltyFollowingPay() : inputs;
+        var inputs = Royalties[royalty];
 
-        SplitCardText.AlongTheCurve("PointerAt", SplitView.From(shown, shown.Run()).Royalty).ShouldBe(key);
+        SplitCardText.AlongTheCurve("PointerAt", SplitView.From(inputs, inputs.Run()).Royalty).ShouldBe(key);
     }
 
     // The term each sentence marks, null where its text marks none or is missing.

@@ -6,17 +6,23 @@
 
 @* One pay slider over the profit before pay: every euro taken as pay is a euro less of company
    profit. Above it, the engine's search draws the net in pocket at every pay, with the pay set and
-   the best pay marked; pointing at the curve reads a pay, a click moves the pay there, and the best
-   pay says what it gains and how it stands against the reduced corporate rate. What the pointer
-   reads is no live region: it changes at every step of the slider, and the bar of buckets says what
-   reaches the pocket once the pay settles. The exact amount can
-   be typed below, taken when the field is left rather than while typing: SplitView keeps the pay
-   within the profit, and MudBlazor redraws a field's text from its value only once it has lost focus.
+   the best pay marked; pointing at the curve reads a pay, in a line that keeps its room while the
+   pointer is away, and a click moves the pay there. What the pointer reads is no live region: it
+   changes at every step of the slider, and the bar of buckets says what reaches the pocket once the
+   pay settles. The exact amount can be typed below, taken when the field is left rather than while
+   typing: SplitView keeps the pay within the profit, and MudBlazor redraws a field's text from its
+   value only once it has lost focus. How far the pay goes stays in sight under the field, why in its
+   bubble.
+
+   Then the card's figures, as lines (SplitFigures): what the split shares, each side out of what it
+   receives, and the best pay with what it leaves against the pay set, a sentence saying only how it
+   stands against the reduced corporate rate, or that no pay keeps the reserve.
 
    With Copyright royalty in the plan, the split also pays the royalty beside the pay, and shares what
    the levers leave three ways (operator, 2026-10-23): the royalty follows the pay, what an advance
    ruling accepts at each pay, so moving the pay moves it and the curve weighs both, or it is a fixed
-   amount, typed here, taken while typing. Following, it says how the engine set it, or why it is none;
+   amount, typed here, taken while typing. Following, its figure is among the split's sides, or the
+   card says why it is none;
    the creative share it reads is set on the Copyright royalty card below, with the royalty's other
    facts. A refusal of the royalty marks its field, of the pay the pay's.
 
@@ -24,7 +30,7 @@
    width through vector-effect, and what must keep its shape (the best pay's dot, the axes' labels) is
    HTML placed over it in percentages. *@
 <ModuleCard Name="split" Title="@L["Title"]" Summary="@Summary" Glance="@Glance" Help="@L[SplitCardText.Hint(_view.Royalty)]" Refused="@Refused">
-    <RiverField Label="@L["PayLabel"]" For="river-split-pay" Origin="Inputs.DirectorPay.Origin" Help="@(_search is null ? null : L["CurveHint"].Value)">
+    <RiverField Label="@L["PayLabel"]" For="river-split-pay" Origin="Inputs.DirectorPay.Origin" Help="@PayHelp">
         <div class="pay-curve @(_search is null ? "pay-curve--bare" : null)">
             @if (_search is { } search)
             {
@@ -81,6 +87,7 @@
         <RiverNumericField T="decimal" InputId="river-split-pay" Value="_view.FieldPay" ValueChanged="OnPayChanged"
                            Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
                            Variant="Variant.Outlined" Margin="Margin.Dense" Error="@(Refused == GrossToNet.GrossPayNegative)" Refusal="@Refused" />
+        <p class="split__ceiling">@L["Ceiling", Formats.Euros(_view.Ceiling)]</p>
     </RiverField>
     @if (_search is { } shown)
     {
@@ -111,10 +118,9 @@
                     <MudChip T="bool" Value="false" Text="@L[SplitCardText.Policy(false)]" />
                 </MudChipSet>
             </div>
-            @if (royalty is { FollowsPay.Value: true, Following: { } following })
+            @if (royalty is { FollowsPay.Value: true, Following: { } following } && SplitCardText.Following(following) is { } none)
             {
-                <p class="split__following">@L[SplitCardText.Following(following), Formats.Euros(royalty.Amount ?? 0m),
-                                                Formats.Percentage(Inputs.Copyright.CreativeShare.Value ?? 0m), Inputs.IncomeYear]</p>
+                <p class="split__following">@L[none, Formats.Euros(royalty.Amount ?? 0m), Formats.Percentage(Inputs.Copyright.CreativeShare.Value ?? 0m), Inputs.IncomeYear]</p>
             }
         </RiverField>
         @if (!royalty.FollowsPay.Value)
@@ -127,33 +133,17 @@
             </RiverField>
         }
     }
-    <div class="split__ends">
-        <span>@L["PayEnd"] <b>@Formats.Euros(_view.Pay)</b></span>
-        @if (_view.Royalty is { } shared)
-        {
-            <span>@L[SplitCardText.RoyaltyEnd(shared)] <b>@(shared.Amount is { } amount ? Formats.Euros(amount) : L["NoFigure"])</b></span>
-        }
-        <span>@L["CompanyEnd"] <b>@(_view.CompanyProfit is { } profit ? Formats.Euros(profit) : L["NoFigure"])</b></span>
-    </div>
-    @if (_search is { } weighed)
+    <RefusedMessage Error="@Refused" />
+    <FigureList Figures="@FigureWords.Of(L, SplitFigures.Sides(_view, Run.Year))" />
+    @if (_search is { } weighed && Run.Year is { } year)
     {
         <p class="split__pointer">@PointerText</p>
-        @if (weighed.Best is { } best)
+        @if (weighed.Best is not null)
         {
-            <p class="split__best">
-                @BestText(best)
-                @if (ReachText(weighed, best) is { } reach)
-                {
-                    @(" ")@reach
-                }
-            </p>
+            <FigureList Figures="@FigureWords.Of(L, SplitFigures.Best(weighed, year, _view.Royalty, Inputs.Reserve.Value))" />
             @if (weighed.Rate is { } rate)
             {
                 <p class="split__rate"><TermSentence Text="@RateText(rate)" Meaning="@L[SplitCardText.ReducedRateTerm]" /></p>
-                @if (weighed.Benefits > 0m && rate.Choice != RateChoice.NotWeighed && Run.Year is { } weighedYear)
-                {
-                    <p class="split__rate">@L["Rate_Benefits", Formats.Euros(weighed.Benefits), Formats.WholeShare(weighedYear.Company.ExcessBenefitsShare)]</p>
-                }
             }
         }
         else
@@ -161,8 +151,6 @@
             <p class="split__best">@L["NoBest", Formats.Euros(Inputs.Reserve.Value), Formats.Euros(weighed.MostKept)]</p>
         }
     }
-    <p class="split__ceiling">@L[SplitCardText.Ceiling(_view.Royalty), Formats.Euros(_view.Ceiling)]</p>
-    <RefusedMessage Error="@Refused" />
 </ModuleCard>
 
 @code {
@@ -210,47 +198,22 @@
 
     private string ChartLabel => L["ChartLabel", Formats.Euros(0m), Formats.Euros(_top)].Value;
 
+    // Why the pay goes no further, and, with the curve drawn, how to read it.
+    private string PayHelp => _search is null ? Ceiling : $"{Ceiling} {L["CurveHint"]}";
+
+    private string Ceiling => L[SplitCardText.CeilingHint(_view.Royalty), Formats.Euros(_view.Ceiling)].Value;
+
     // The pay, and the royalty beside it while it follows the pay, so the slider says both as it moves.
     private string SliderValue => _view.Royalty is { FollowsPay.Value: true, Amount: { } royalty }
         ? L[SplitCardText.SliderValueWithRoyalty, Formats.Euros(_view.Pay), Formats.Euros(royalty)].Value
         : Formats.Euros(_view.Pay);
 
-    private string PointerText => _pointer switch
-    {
-        { KeepsReserve: true } level => L[Along("PointerAt"), Formats.Euros(level.Pay), Formats.Euros(level.NetInPocket), Formats.Euros(level.Royalty)].Value,
-        { } level => L[Along("PointerMissesReserve"), Formats.Euros(level.Pay), Formats.Euros(level.NetInPocket), Formats.Euros(level.KeptInCompany),
-            Formats.Euros(Inputs.Reserve.Value), Formats.Euros(level.Royalty)].Value,
-        null => Run.Year is { } year
-            ? L[Along("PointerYours"), Formats.Euros(year.DirectorPay.GrossPay), Formats.Euros(year.NetInPocket), Formats.Euros(year.Copyright.Royalty)].Value
-            : "",
-    };
-
-    // A sentence about one pay of the curve, naming the royalty beside it while it follows the pay.
-    private string Along(string key) => SplitCardText.AlongTheCurve(key, _view.Royalty);
+    // What the pointer reads of the pay it is on; nothing while it is away from the curve.
+    private string PointerText => SplitFigures.Pointer(_pointer, _view.Royalty) is { } reading ? L[reading.Key, [.. reading.Args]].Value : "";
 
     private bool RoyaltyRefused => Refused is CopyrightCalculator.RoyaltyNegative or CopyrightCalculator.RoyaltyAboveProfit;
 
-    // What reaches the pocket out of what leaves the company, as the bar says it: at the best pay
-    // against the pay set, or at the pay set when it is the best. None when the pay set eats into the
-    // reserve, the two not leaving the same company behind.
-    private string? ReachText(SplitSearchView search, BestPayView best) => (best, search.Reach) switch
-    {
-        ({ IsYours: true, Reach: { } reach }, _) => L[SplitCardText.BestIsYoursReach, Formats.Share(reach)].Value,
-        ({ YoursKeepsReserve: true, Reach: { } reach }, { } yours) => L[SplitCardText.BestReach, Formats.Share(reach), Formats.Share(yours)].Value,
-        _ => null,
-    };
-
-    private string BestText(BestPayView best) => best switch
-    {
-        { IsYours: true } => L[Along("BestIsYours"), Formats.Euros(best.Level.NetInPocket), Formats.Euros(best.Level.Dividend), Formats.Euros(best.Level.Royalty)].Value,
-        { YoursKeepsReserve: false } when Run.Year is { } year => L[Along("BestOverReserve"), Formats.Euros(Inputs.Reserve.Value), Formats.Euros(best.Level.Pay),
-            Formats.Euros(best.Level.Dividend), Formats.Euros(best.Level.NetInPocket), Formats.Euros(year.NetInPocket), Formats.Euros(year.KeptInCompany),
-            Formats.Euros(best.Level.Royalty)].Value,
-        _ => L[Along("Best"), Formats.Euros(best.Level.Pay), Formats.Euros(best.Level.Dividend), Formats.Euros(best.Level.NetInPocket), Formats.Euros(best.Gain),
-            Formats.Euros(best.Level.Royalty)].Value,
-    };
-
-    private string RateText(RateWeighing rate) => L[SplitCardText.Rate(rate),
+    private string RateText(RateWeighing rate) => L[SplitCardText.Rate(rate, _view.Pay),
         rate.SmallestPay is { } smallest ? Formats.Euros(smallest) : "",
         rate.Other is { } other ? Formats.Euros(other.NetInPocket) : "",
         rate.Difference is { } difference ? Formats.Euros(difference) : ""].Value;
