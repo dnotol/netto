@@ -371,6 +371,20 @@ public class RiverTextTests
         Missing(ModuleCardResources, [ModuleCardText.ToYou, ModuleCardText.PassesOn]).ShouldBeEmpty();
     }
 
+    // The line of « Your shares and earlier profits »: profits kept or none, and each category.
+    [Fact]
+    public void DividendCardResx_everyPhraseOfItsSettingsLine_hasAText()
+    {
+        RiverInputs[] variations =
+        [
+            RiverInputs.Example,
+            .. Enum.GetValues<WithholdingCategory>().Select(category => RiverInputs.Example.WithEarlierProfits(80_000m).WithDividendCategory(category)),
+        ];
+        var phrases = variations.SelectMany(inputs => DividendSettingsView.From(inputs).Facts);
+
+        Missing(DividendCardResources, phrases.Select(phrase => phrase.Key).Append("SharesTitle")).ShouldBeEmpty();
+    }
+
     [Fact]
     public void DividendCardResx_whatTheRatesAreFor_marksVvprbis()
     {

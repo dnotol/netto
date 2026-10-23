@@ -2,6 +2,7 @@ using Microsoft.Extensions.Localization;
 using Netto.Core.CompanyCar;
 using Netto.Core.Copyright;
 using Netto.Core.DirectorPay;
+using Netto.Core.Dividends;
 using Netto.Core.Rent;
 using Netto.Core.Simulation;
 using Netto.Web.Client.DirectorPay;
@@ -226,4 +227,29 @@ internal sealed record CopyrightSettingsView(IReadOnlyList<SettingPhrase> Situat
 
     // The royalty's own refusal is on the field in sight.
     public static bool SituationHolds(string? error) => error == CopyrightCalculator.CreativeShareOutOfRange;
+}
+
+// The dividend's one disclosure, « Your shares and earlier profits »: the profits the company kept
+// from earlier years and can still pay out, and the withholding rate the user declares for their
+// shares, with the year's rate beside the category. What the company keeps this year, the slider,
+// stays in sight.
+internal sealed record DividendSettingsView(IReadOnlyList<SettingPhrase> Facts)
+{
+    public static DividendSettingsView From(RiverInputs inputs)
+    {
+        var earlier = inputs.EarlierProfits;
+        var category = inputs.DividendCategory;
+        var rate = DividendRules.For(inputs.IncomeYear)?.Rate(category.Value) is { } amount ? Formats.RuleAmount(amount) : "";
+
+        return new DividendSettingsView(
+            [
+                earlier.Value == 0m
+                    ? SettingPhrase.Of("Settings_Earlier_None", earlier.Origin)
+                    : SettingPhrase.Of("Settings_Earlier", earlier.Origin, Formats.Euros(earlier.Value)),
+                SettingPhrase.Of($"Settings_Category_{category.Value}", category.Origin, rate),
+            ]);
+    }
+
+    // What is kept this year is refused on a field in sight.
+    public static bool SharesHold(string? error) => error == YearSimulation.EarlierProfitsNegative;
 }

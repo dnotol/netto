@@ -1,6 +1,7 @@
 using Netto.Core.CompanyCar;
 using Netto.Core.Copyright;
 using Netto.Core.DirectorPay;
+using Netto.Core.Dividends;
 using Netto.Core.PersonalTax;
 using Netto.Core.Rent;
 using Netto.Core.Simulation;
@@ -423,6 +424,51 @@ public class SettingsViewsTests
     public void SituationHolds_refusal_opensTheDisclosureHoldingItsField(string? error, bool situation)
     {
         CopyrightSettingsView.SituationHolds(error).ShouldBe(situation);
+    }
+
+    // The dividend's disclosure, « Your shares and earlier profits »: what the company kept from earlier
+    // years, which it can still pay out, and the withholding rate the user declares for their shares.
+    // What is kept this year, the slider, stays in sight. On the example, the 2026 rate of VVPRbis
+    // shares from their third distribution is 18%.
+    [Fact]
+    public void Shares_example_statesNoEarlierProfitsAsTheExampleAndTheCategoryAsADefault()
+    {
+        Phrases(DividendSettingsView.From(RiverInputs.Example).Facts).ShouldBe(
+        [
+            ("Settings_Earlier_None", "", InputOrigin.Example),
+            ("Settings_Category_VvprbisThirdYearOnwards", "18%", InputOrigin.Default),
+        ]);
+    }
+
+    [Fact]
+    public void Shares_earlierProfitsAndCategoryGiven_stateThemWithNoOrigin()
+    {
+        var inputs = RiverInputs.Example.WithEarlierProfits(80_000m).WithDividendCategory(WithholdingCategory.Standard);
+
+        Phrases(DividendSettingsView.From(inputs).Facts).ShouldBe(
+        [
+            ("Settings_Earlier", "€80,000.00", null),
+            ("Settings_Category_Standard", "30%", null),
+        ]);
+    }
+
+    // A nothing the user typed is theirs: the line no longer calls it an example.
+    [Fact]
+    public void Shares_earlierProfitsSetToNothing_statesNoneAsYours()
+    {
+        var inputs = RiverInputs.Example.WithEarlierProfits(0m);
+
+        Phrases(DividendSettingsView.From(inputs).Facts)[0].ShouldBe(("Settings_Earlier_None", "", null));
+    }
+
+    // The kept amount's refusal is on the slider's field, in sight.
+    [Theory]
+    [InlineData(YearSimulation.EarlierProfitsNegative, true)]
+    [InlineData(YearSimulation.ReserveNegative, false)]
+    [InlineData(null, false)]
+    public void SharesHold_refusal_opensTheDisclosureHoldingItsField(string? error, bool shares)
+    {
+        DividendSettingsView.SharesHold(error).ShouldBe(shares);
     }
 
     private static DirectorPaySettingsView DirectorPaySettings(RiverInputs inputs) => DirectorPaySettingsView.From(inputs, inputs.Run());

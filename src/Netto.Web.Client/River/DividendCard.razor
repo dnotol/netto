@@ -7,9 +7,11 @@
    from earlier years: kept in the company at year end on one side, paid out as a dividend on the
    other, so the dividend can never exceed what is there. It is withheld at the rate the user
    declares, whatever year its profits come from, and the withholding on the exempt part comes back
-   through the tax return. The earlier profits are taken while typing, like revenue, since nothing
-   bounds them. What is kept can be typed exactly, taken when the field is left, so the field shows
-   what can be paid out (the split's field does the same). *@
+   through the tax return. What the user rarely changes, the earlier profits and the rate they
+   declare, sits behind one disclosure, folded to a line that states it; the earlier profits are taken
+   while typing, like revenue, since nothing bounds them. What is kept can be typed exactly, taken
+   when the field is left, so the field shows what can be paid out (the split's field does the
+   same). *@
 <ModuleCard Name="dividend" Title="@L["Title"]" Summary="@Summary" ToYou="@_view?.ToYou" Skipped="Inputs.Company is null" Details="@Details"
             DetailsLabel="@L["DetailsLabel"]">
     @if (Inputs.Company is null)
@@ -18,12 +20,27 @@
     }
     else
     {
-        <RiverField Label="@L["EarlierLabel"]" For="river-earlier-profits" Origin="Inputs.EarlierProfits.Origin" Help="@L["EarlierHint"]">
-            <RiverNumericField T="decimal" InputId="river-earlier-profits" Value="Inputs.EarlierProfits.Value" ValueChanged="OnEarlierProfitsChanged"
-                               Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
-                               Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
-                               Error="@(Refused == YearSimulation.EarlierProfitsNegative)" Refusal="@Refused" />
-        </RiverField>
+        <Disclosure Title="@L["SharesTitle"]" Values="@SettingWords.Of(L, _settings.Facts)" Refused="@DividendSettingsView.SharesHold(Refused)">
+            <RiverField Label="@L["EarlierLabel"]" For="river-earlier-profits" Origin="Inputs.EarlierProfits.Origin" Help="@L["EarlierHint"]">
+                <RiverNumericField T="decimal" InputId="river-earlier-profits" Value="Inputs.EarlierProfits.Value" ValueChanged="OnEarlierProfitsChanged"
+                                   Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
+                                   Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
+                                   Error="@(Refused == YearSimulation.EarlierProfitsNegative)" Refusal="@Refused" />
+            </RiverField>
+            <RiverField Label="@L["CategoryLabel"]" Origin="Inputs.DividendCategory.Origin">
+                <div class="dividend__categories">
+                    <MudChipSet T="WithholdingCategory" SelectedValue="Inputs.DividendCategory.Value" SelectedValueChanged="OnCategoryChanged"
+                                SelectionMode="SelectionMode.SingleSelection" CheckMark="false" Variant="Variant.Outlined" SelectedColor="Color.Primary"
+                                Size="Size.Small">
+                        @foreach (var category in Enum.GetValues<WithholdingCategory>().Reverse())
+                        {
+                            <MudChip T="WithholdingCategory" Value="category" Text="@CategoryText(category)" />
+                        }
+                    </MudChipSet>
+                </div>
+                <p class="dividend__hint"><TermSentence Text="@L["CategoryHint"]" Meaning="@L[DividendCardText.VvprbisTerm]" /></p>
+            </RiverField>
+        </Disclosure>
         <RiverField Label="@L["KeptLabel"]" For="river-reserve" Origin="Inputs.Reserve.Origin">
             @if (_view is not null)
             {
@@ -47,19 +64,6 @@
             }
         }
         <RefusedMessage Error="@Refused" />
-        <RiverField Label="@L["CategoryLabel"]" Origin="Inputs.DividendCategory.Origin">
-            <div class="dividend__categories">
-                <MudChipSet T="WithholdingCategory" SelectedValue="Inputs.DividendCategory.Value" SelectedValueChanged="OnCategoryChanged"
-                            SelectionMode="SelectionMode.SingleSelection" CheckMark="false" Variant="Variant.Outlined" SelectedColor="Color.Primary"
-                            Size="Size.Small">
-                    @foreach (var category in Enum.GetValues<WithholdingCategory>().Reverse())
-                    {
-                        <MudChip T="WithholdingCategory" Value="category" Text="@CategoryText(category)" />
-                    }
-                </MudChipSet>
-            </div>
-            <p class="dividend__hint"><TermSentence Text="@L["CategoryHint"]" Meaning="@L[DividendCardText.VvprbisTerm]" /></p>
-        </RiverField>
         @if (_view is not null)
         {
             <DrainList Drains="_view.Drains" />
@@ -82,8 +86,13 @@
     public string? Refused { get; set; }
 
     private DividendView? _view;
+    private DividendSettingsView _settings = default!;
 
-    protected override void OnParametersSet() => _view = Run.Year is { } year ? DividendView.From(year) : null;
+    protected override void OnParametersSet()
+    {
+        _view = Run.Year is { } year ? DividendView.From(year) : null;
+        _settings = DividendSettingsView.From(Inputs);
+    }
 
     // All that can be paid out comes in; once the company keeps some, the summary starts from what is
     // paid out, the base of the card's rate.

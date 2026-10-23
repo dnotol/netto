@@ -66,4 +66,22 @@
   <data name="SourcesTitle" xml:space="preserve">
     <value>The rules, with the income year {0} amounts</value>
   </data>
+  <data name="SharesTitle" xml:space="preserve">
+    <value>Your shares and earlier profits</value>
+  </data>
+  <data name="Settings_Earlier_None" xml:space="preserve">
+    <value>No profits kept from earlier years</value>
+  </data>
+  <data name="Settings_Earlier" xml:space="preserve">
+    <value>{0} kept from earlier years</value>
+  </data>
+  <data name="Settings_Category_Standard" xml:space="preserve">
+    <value>ordinary shares, {0} withheld</value>
+  </data>
+  <data name="Settings_Category_VvprbisSecondYear" xml:space="preserve">
+    <value>VVPRbis shares, second distribution, {0} withheld</value>
+  </data>
+  <data name="Settings_Category_VvprbisThirdYearOnwards" xml:space="preserve">
+    <value>VVPRbis shares, third distribution on, {0} withheld</value>
+  </data>
 </root>
