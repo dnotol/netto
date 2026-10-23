@@ -172,21 +172,6 @@ public class MovesSourceTests
         search.Asked.ShouldBe([(Edited, On23October)]);
     }
 
-    // The page draws the tab and its badge from the source at each change of the river, here the pay
-    // dragged across sixty values: nothing of the river reaches it, and the moves are found once.
-    [Fact]
-    public void Found_theRiverDraggedThroughSixtyPays_searchesOnce()
-    {
-        var search = new Search();
-        var source = new MovesSource(PlanFixtures.Saved(), Edited, search.Run);
-
-        var drawn = Enumerable.Range(1, 60).Select(step => Edited.WithDirectorPay(step * 1_000m))
-            .Select(_ => (source.Baseline, source.Found(On23October), source.View(On23October)))
-            .ToList();
-
-        (drawn.Count, search.Asked.Count).ShouldBe((60, 1));
-    }
-
     [Fact]
     public void Found_aPlanOpened_searchesAgainForIt()
     {

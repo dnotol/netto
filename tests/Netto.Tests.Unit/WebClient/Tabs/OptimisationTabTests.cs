@@ -334,6 +334,21 @@ public class OptimisationTabTests
         ]);
     }
 
+    // The tab draws the moves the page found for the plan they are from, whatever the river holds since: a
+    // change of the river, here its pay, changes none of them. The page finds them once per plan and date
+    // (MovesSourceTests); a drag of the pay on the page is the browser check's.
+    [Fact]
+    public async Task Optimisation_riverChangedSinceThePlanInIt_listsTheSameMoves()
+    {
+        var from = new MovesBaseline(RiverInputs.Example, IsToday: false);
+        var found = from.Plan.FindMoves(On22October);
+
+        var asOpened = Moves(await RenderFoundAsync(from, found, RiverInputs.Example));
+        var changed = Moves(await RenderFoundAsync(from, found, RiverInputs.Example.WithDirectorPay(40_000m)));
+
+        (asOpened.Count > 0, changed.SequenceEqual(asOpened)).ShouldBe((true, true));
+    }
+
     [Fact]
     public async Task Optimisation_riverAsThePlanInIt_saysNothingOfAChange()
     {
@@ -372,9 +387,19 @@ public class OptimisationTabTests
     // The tab with its moves from Today.
     private static Task<string> RenderTabAsync(RiverInputs today, RiverInputs river) => RenderFromAsync(MovesBaseline.Today(today), river);
 
-    private static async Task<string> RenderFromAsync(MovesBaseline from, RiverInputs river) =>
+    private static Task<string> RenderFromAsync(MovesBaseline from, RiverInputs river) => RenderFoundAsync(from, from.Plan.FindMoves(On22October), river);
+
+    // The tab with what the page found for the plan the moves are from.
+    private static async Task<string> RenderFoundAsync(MovesBaseline from, (MovePlan? Value, string? Error)? found, RiverInputs river) =>
         WebUtility.HtmlDecode(await RenderAsync<OptimisationTab>(new Folds(new BrowserStorage()), new()
         {
-            ["From"] = from, ["Found"] = from.Plan.FindMoves(On22October), ["Inputs"] = river,
+            ["From"] = from, ["Found"] = found, ["Inputs"] = river,
         }));
+
+    // Each move's words and what it adds, in the tab's order.
+    private static List<(string What, string Gain)> Moves(string html) =>
+    [
+        .. Regex.Matches(html, "<p class=\"moves__what\"[^>]*>(.*?)</p>.*?<span class=\"moves__gain\"[^>]*>(.*?)</span>", RegexOptions.Singleline)
+            .Select(match => (match.Groups[1].Value, match.Groups[2].Value)),
+    ];
 }
