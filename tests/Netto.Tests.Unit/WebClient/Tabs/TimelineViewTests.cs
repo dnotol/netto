@@ -1,3 +1,4 @@
+using Netto.Core.SocialContributions;
 using Netto.Web.Client.River;
 using Netto.Web.Client.Tabs;
 using Shouldly;
@@ -227,6 +228,133 @@ public class TimelineViewTests
         var company = Of(RiverInputs.Example, On23October).Timeline.Company.ShouldNotBeNull();
 
         company.Marks.Select(mark => mark.LabelEnd).ShouldBe([false, false, true, true]);
+    }
+
+    // The pay's twelve months tile the year, each with the net the pay statement pays in it.
+    [Fact]
+    public void Of_example_givesTheTwelveMonthsOfThePayEachWithItsNet()
+    {
+        var (view, timeline) = Of(RiverInputs.Example, On23October);
+
+        var months = timeline.Pay.Blocks;
+        months.Select(month => month.Index).ShouldBe(Enumerable.Range(1, 12));
+        months.Select(month => month.From).ShouldBe(Enumerable.Range(1, 12).Select(month => new DateOnly(2026, month, 1)));
+        months.ShouldAllBe(month => Math.Abs(month.Left - EdgeOf(month.From)) < Tolerance);
+        months.Select(month => month.Width).Sum().ShouldBe(1m, Tolerance);
+        months.ShouldAllBe(month => month.Amount == view.Pay.NetPaid);
+    }
+
+    // A month is past once it has ended: October is still under way on the 23rd, so it is the first to
+    // come, and the one the lane's label stands by.
+    [Fact]
+    public void Of_exampleOn23October_marksJanuaryToSeptemberPastAndOctoberNext()
+    {
+        var pay = Of(RiverInputs.Example, On23October).Timeline.Pay;
+
+        pay.Blocks.Select(month => month.Past).ShouldBe([.. Enumerable.Repeat(true, 9), false, false, false]);
+        pay.Next.ShouldNotBeNull().Index.ShouldBe(10);
+    }
+
+    // The months from the date the rules Netto does not model start are the pay statement's flagged ones.
+    [Fact]
+    public void Of_example_flagsTheMonthsFromTheUnmodelledRules()
+    {
+        var (view, timeline) = Of(RiverInputs.Example, On23October);
+
+        timeline.Pay.Blocks.Where(month => month.Unmodelled).Select(month => month.From).ShouldBe([new DateOnly(2026, 11, 1), new DateOnly(2026, 12, 1)]);
+        timeline.Pay.Blocks.First(month => month.Unmodelled).From.ShouldBe(view.Pay.UnmodelledFrom!.Value);
+    }
+
+    [Fact]
+    public void Of_afterTheYear_hasNoMonthAndNoQuarterLeft()
+    {
+        var timeline = Of(RiverInputs.Example, new DateOnly(2027, 2, 3)).Timeline;
+
+        (timeline.Pay.Next, timeline.Contributions.Next).ShouldBe((null, null));
+    }
+
+    [Fact]
+    public void Of_beforeTheYear_hasNoMonthAndNoQuarterPast()
+    {
+        var timeline = Of(RiverInputs.Example, new DateOnly(2025, 12, 15)).Timeline;
+
+        (timeline.Pay.Blocks.Any(month => month.Past), timeline.Contributions.Blocks.Any(quarter => quarter.Past)).ShouldBe((false, false));
+        timeline.Pay.Next.ShouldNotBeNull().Index.ShouldBe(1);
+    }
+
+    [Fact]
+    public void Of_nothingPaid_saysThePayLaneIsEmpty()
+    {
+        var (view, timeline) = Of(RiverInputs.Example.WithDirectorPay(0m), On23October);
+
+        (view.Pay.NetPaid, timeline.Pay.Empty, Of(RiverInputs.Example, On23October).Timeline.Pay.Empty).ShouldBe((0m, true, false));
+    }
+
+    // INASTI's four quarters tile the year, each a quarter of the year's contributions.
+    [Fact]
+    public void Of_example_givesTheFourQuartersEachWithAQuarterOfTheContributions()
+    {
+        var (view, timeline) = Of(RiverInputs.Example, On23October);
+
+        var quarters = timeline.Contributions.Blocks;
+        quarters.Select(quarter => quarter.Index).ShouldBe([1, 2, 3, 4]);
+        quarters.Select(quarter => quarter.From).ShouldBe([new DateOnly(2026, 1, 1), new DateOnly(2026, 4, 1), new DateOnly(2026, 7, 1), new DateOnly(2026, 10, 1)]);
+        quarters.ShouldAllBe(quarter => Math.Abs(quarter.Left - EdgeOf(quarter.From)) < Tolerance);
+        quarters[2].Left.ShouldBe(181m / 365m, Tolerance);
+        quarters.Select(quarter => quarter.Width).Sum().ShouldBe(1m, Tolerance);
+        quarters.ShouldAllBe(quarter => quarter.Amount == view.Contributions.EachQuarter);
+        quarters.Select(quarter => quarter.Past).ShouldBe([true, true, true, false]);
+        timeline.Contributions.Next.ShouldNotBeNull().Index.ShouldBe(4);
+        timeline.Contributions.Blocks.Count(quarter => !quarter.Past).ShouldBe(view.QuartersLeft);
+    }
+
+    [Fact]
+    public void Of_companyPaysTheContributions_saysSoOnTheirLaneOnly()
+    {
+        var timeline = Of(RiverInputs.Example.WithContributionsPaidBy(ContributionsPaidBy.Company), On23October).Timeline;
+
+        (timeline.Contributions.PaidByCompany, timeline.Pay.PaidByCompany).ShouldBe((true, false));
+    }
+
+    [Fact]
+    public void Of_example_saysNoQuarterIsPaidByTheCompany()
+    {
+        Of(RiverInputs.Example, On23October).Timeline.Contributions.PaidByCompany.ShouldBeFalse();
+    }
+
+    // The quarters carry Netto's own figure whatever the fund bills: what is billed, or refused, changes
+    // none of the lanes.
+    [Theory]
+    [InlineData(2_000)]
+    [InlineData(-1)]
+    public void Of_billedContributions_changeNothingOnTheLanes(int billed)
+    {
+        var without = Of(RiverInputs.Example, On23October).Timeline;
+        var with = Of(RiverInputs.Example.WithBilledContributions(billed), On23October).Timeline;
+
+        with.Contributions.Blocks.Select(quarter => (quarter.Amount, quarter.Past)).ShouldBe(without.Contributions.Blocks.Select(quarter => (quarter.Amount, quarter.Past)));
+        with.Pay.Blocks.Select(month => (month.Amount, month.Past)).ShouldBe(without.Pay.Blocks.Select(month => (month.Amount, month.Past)));
+        States(with.Director).ShouldBe(States(without.Director));
+    }
+
+    // A river that starts at the pay still has its pay and its contributions.
+    [Fact]
+    public void Of_riverStartingAtThePay_hasThePayAndTheContributionsLanes()
+    {
+        var (view, timeline) = Of(RiverInputs.Example.SkipCompany(), On23October);
+
+        (timeline.Pay.Blocks.Count, timeline.Contributions.Blocks.Count).ShouldBe((12, 4));
+        timeline.Pay.Blocks[0].Amount.ShouldBe(view.Pay.NetPaid);
+    }
+
+    // Late in the year a label stands by the block's far edge, early by its near one.
+    [Fact]
+    public void Of_example_labelsABlockByItsNearEdgeEarlyAndItsFarEdgeLate()
+    {
+        var months = Of(RiverInputs.Example, On23October).Timeline.Pay.Blocks;
+
+        (months[0].LabelEnd, months[0].LabelAt).ShouldBe((false, months[0].Left));
+        (months[9].LabelEnd, months[9].LabelAt).ShouldBe((true, months[9].Left + months[9].Width));
     }
 
     // What the timeline draws is what the table says: each deadline's amount is its row's, a deadline

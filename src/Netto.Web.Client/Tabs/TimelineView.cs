@@ -15,7 +15,9 @@ internal sealed record TimelineView(
     TimelineToday Today,
     IReadOnlyList<TimelineMonth> Axis,
     DeadlineLane? Company,
-    DeadlineLane Director)
+    DeadlineLane Director,
+    SpanLane Pay,
+    SpanLane Contributions)
 {
     // A label whose mark lies beyond this fraction of the year leans left of it, so it stays inside the
     // plot on the right.
@@ -30,7 +32,9 @@ internal sealed record TimelineView(
             TimelineToday.Of(calendar.Today, scale),
             [.. Enumerable.Range(1, 12).Select(month => TimelineMonth.Of(scale, month))],
             calendar.Company is { } company ? DeadlineLane.Of(company, scale, next) : null,
-            DeadlineLane.Of(calendar.Director, scale, next));
+            DeadlineLane.Of(calendar.Director, scale, next),
+            SpanLane.OfPay(calendar.Months, scale),
+            SpanLane.OfContributions(calendar.Contributions, scale));
     }
 }
 
@@ -134,4 +138,36 @@ internal sealed record DeadlineLane(IReadOnlyList<TimelineMark> Marks, bool Exem
 
         return new TimelineMark(date, scale.PointAt(date), state, amount);
     }
+}
+
+// One span of the year, a month of the pay or a quarter of INASTI's, numbered from 1: its first day, where
+// it starts and how much of the year it covers, whether it has ended, what it carries (the net paid in
+// the month, a quarter of the year's contributions) and, for a month, whether it falls in the rules Netto
+// does not model yet. Its label stands by its near edge early in the year and its far edge late.
+internal sealed record TimelineBlock(int Index, DateOnly From, decimal Left, decimal Width, bool Past, decimal Amount, bool Unmodelled)
+{
+    public bool LabelEnd => Left > TimelineView.LabelsLeanLeftAfter;
+
+    public decimal LabelAt => LabelEnd ? Left + Width : Left;
+}
+
+// The director's pay month by month, or INASTI's quarters, on the year. Next is the first span not ended,
+// the month under way or the quarter, which the lane's label stands by; none once the year is over.
+// Empty is a lane that carries nothing in any span; PaidByCompany, quarters the company pays on the
+// director's behalf.
+internal sealed record SpanLane(IReadOnlyList<TimelineBlock> Blocks, bool PaidByCompany)
+{
+    public TimelineBlock? Next => Blocks.FirstOrDefault(block => !block.Past);
+
+    public bool Empty => Blocks.All(block => block.Amount == 0m);
+
+    public static SpanLane OfPay(IReadOnlyList<CalendarMonth> months, YearScale scale) =>
+        new([.. months.Select(month => Block(month.Month.Month, month.Month, month.Month.AddMonths(1), month.Past, month.Pay.NetPaid, month.Pay.UnmodelledRules, scale))], false);
+
+    public static SpanLane OfContributions(ContributionQuarters contributions, YearScale scale) =>
+        new([.. contributions.Quarters.Select(quarter =>
+            Block((quarter.From.Month - 1) / 3 + 1, quarter.From, quarter.From.AddMonths(3), quarter.Past, contributions.EachQuarter, false, scale))], contributions.PaidByCompany);
+
+    private static TimelineBlock Block(int index, DateOnly from, DateOnly to, bool past, decimal amount, bool unmodelled, YearScale scale) =>
+        new(index, from, scale.EdgeAt(from), scale.Span(from, to), past, amount, unmodelled);
 }
