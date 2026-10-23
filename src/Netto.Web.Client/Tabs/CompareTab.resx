@@ -21,4 +21,175 @@
   <data name="Lede" xml:space="preserve">
     <value>Your saved plans side by side, layer by layer, each measured against the one starred Today.</value>
   </data>
+  <data name="Group_result" xml:space="preserve">
+    <value>The year's result</value>
+  </data>
+  <data name="Group_taxes" xml:space="preserve">
+    <value>Taxes, layer by layer</value>
+  </data>
+  <data name="Group_before_split" xml:space="preserve">
+    <value>Before the split</value>
+  </data>
+  <data name="Group_split" xml:space="preserve">
+    <value>The split</value>
+  </data>
+  <data name="Row_pocket" xml:space="preserve">
+    <value>Your pocket</value>
+  </data>
+  <data name="Row_reach" xml:space="preserve">
+    <value>Reaches you</value>
+  </data>
+  <data name="Row_muddy" xml:space="preserve">
+    <value>Muddy pocket</value>
+  </data>
+  <data name="Row_kept" xml:space="preserve">
+    <value>Kept in the company</value>
+  </data>
+  <data name="Row_taxes" xml:space="preserve">
+    <value>All taxes</value>
+  </data>
+  <data name="Row_corporate_tax" xml:space="preserve">
+    <value>Corporate tax</value>
+  </data>
+  <data name="Row_social_contributions" xml:space="preserve">
+    <value>Social contributions</value>
+  </data>
+  <data name="Row_personal_tax" xml:space="preserve">
+    <value>Personal tax</value>
+  </data>
+  <data name="Row_vouchers" xml:space="preserve">
+    <value>Vouchers</value>
+  </data>
+  <data name="Row_allowances" xml:space="preserve">
+    <value>Expense allowances</value>
+  </data>
+  <data name="Row_rent" xml:space="preserve">
+    <value>Home office rent</value>
+  </data>
+  <data name="Row_car_costs" xml:space="preserve">
+    <value>Company car costs</value>
+  </data>
+  <data name="Row_director_pay" xml:space="preserve">
+    <value>Director pay (gross)</value>
+  </data>
+  <data name="Row_royalty" xml:space="preserve">
+    <value>Copyright royalty</value>
+  </data>
+  <data name="Row_dividend" xml:space="preserve">
+    <value>Dividend paid out</value>
+  </data>
+  <data name="Row_reduced_rate" xml:space="preserve">
+    <value>Reduced corporate rate</value>
+  </data>
+  <data name="Rate_Kept" xml:space="preserve">
+    <value>Kept</value>
+  </data>
+  <data name="Rate_GivenUp" xml:space="preserve">
+    <value>Given up</value>
+  </data>
+  <data name="Rate_NotOpen" xml:space="preserve">
+    <value>Not open to the company</value>
+  </data>
+  <data name="NotInPlan" xml:space="preserve">
+    <value>Not in this plan</value>
+  </data>
+  <data name="NoFigure" xml:space="preserve">
+    <value>No figure</value>
+  </data>
+  <data name="NoDifference" xml:space="preserve">
+    <value>No difference to show</value>
+  </data>
+  <data name="Same" xml:space="preserve">
+    <value>Same</value>
+  </data>
+  <data name="Changed" xml:space="preserve">
+    <value>Changed</value>
+  </data>
+  <data name="Points_More" xml:space="preserve">
+    <value>+{0} points</value>
+  </data>
+  <data name="Points_Less" xml:space="preserve">
+    <value>−{0} points</value>
+  </data>
+  <data name="Spoken_More" xml:space="preserve">
+    <value>{0} more</value>
+  </data>
+  <data name="Spoken_Less" xml:space="preserve">
+    <value>{0} less</value>
+  </data>
+  <data name="SpokenPoints_More" xml:space="preserve">
+    <value>{0} points more</value>
+  </data>
+  <data name="SpokenPoints_Less" xml:space="preserve">
+    <value>{0} points less</value>
+  </data>
+  <data name="PickersLabel" xml:space="preserve">
+    <value>Plans to compare</value>
+  </data>
+  <data name="PlanLabel" xml:space="preserve">
+    <value>Plan</value>
+  </data>
+  <data name="AgainstLabel" xml:space="preserve">
+    <value>Against</value>
+  </data>
+  <data name="ChoiceToday" xml:space="preserve">
+    <value>{0} (Today)</value>
+  </data>
+  <data name="TodayTag" xml:space="preserve">
+    <value>Today</value>
+  </data>
+  <data name="PocketTitle" xml:space="preserve">
+    <value>Your pocket</value>
+  </data>
+  <data name="Headline_More" xml:space="preserve">
+    <value>« {0} » leaves {1} more in your pocket than « {2} ».</value>
+  </data>
+  <data name="Headline_Less" xml:space="preserve">
+    <value>« {0} » leaves {1} less in your pocket than « {2} ».</value>
+  </data>
+  <data name="Headline_Same" xml:space="preserve">
+    <value>« {0} » leaves the same in your pocket as « {1} ».</value>
+  </data>
+  <data name="Muddy_More" xml:space="preserve">
+    <value>Its muddy pocket holds {0} more.</value>
+  </data>
+  <data name="Muddy_Less" xml:space="preserve">
+    <value>Its muddy pocket holds {0} less.</value>
+  </data>
+  <data name="TableTitle" xml:space="preserve">
+    <value>Figure by figure</value>
+  </data>
+  <data name="ColumnFigure" xml:space="preserve">
+    <value>Figure</value>
+  </data>
+  <data name="ColumnDifference" xml:space="preserve">
+    <value>Difference</value>
+  </data>
+  <data name="ColumnDifferenceFor" xml:space="preserve">
+    <value>, {0} compared with {1}</value>
+  </data>
+  <data name="NoPlan" xml:space="preserve">
+    <value>You have no saved plan yet. Change the river in Plan, or apply Netto's moves in Optimisation, then keep it with « Save this plan » in the bar above: the first plan you save is starred as Today.</value>
+  </data>
+  <data name="CouldNotRead" xml:space="preserve">
+    <value>Your saved plans could not be read by this version of Netto. They are kept aside in your browser, untouched.</value>
+  </data>
+  <data name="OnePlan" xml:space="preserve">
+    <value>You have one saved plan, « {0} ». Save a second one to compare them: change the river in Plan, or apply a move in Optimisation, then « Save this plan » in the bar above.</value>
+  </data>
+  <data name="NoToday" xml:space="preserve">
+    <value>No plan is starred as Today, so the two plans are compared with each other only. Star your current setup in the Plans panel to measure the others against it.</value>
+  </data>
+  <data name="Unreadable_One" xml:space="preserve">
+    <value>1 saved plan cannot be read by this version of Netto and is left out.</value>
+  </data>
+  <data name="Unreadable_Many" xml:space="preserve">
+    <value>{0} saved plans cannot be read by this version of Netto and are left out.</value>
+  </data>
+  <data name="NotComparable" xml:space="preserve">
+    <value>« {0} » and « {1} » cannot be compared: one starts from the director's pay and the other from the company's year, and the first leaves out the dividend.</value>
+  </data>
+  <data name="RefusedPlan" xml:space="preserve">
+    <value>An amount of « {0} » is refused, so it has no figures to compare.</value>
+  </data>
 </root>
