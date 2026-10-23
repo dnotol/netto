@@ -713,7 +713,7 @@ public enum DrainKind
     PaidOut,
 
     // Comes back out of a bucket of taxes: the withholding refunded on the exempt dividend, the tax
-    // credit for low earned income.
+    // credit for low earned income; or back from the pocket: the director's contribution to a company car.
     Back,
 
     // Passed on whole: to the pocket, to what is kept in the company, or to the next module.

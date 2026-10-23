@@ -251,9 +251,8 @@ public sealed record RiverInputs(
     // the pay, so the pay moving alone needs no new search (SameBesidesPay).
     public SplitSearchResult? SearchSplit() => Company is null ? null : SplitSearch.Run(Scenario(DirectorPay.Value)).Value;
 
-    // The moves Netto recommends from this river taken as Today, the user's current setup, at the pay
-    // Run runs, on that date (MoveSearch): none while the company is skipped, the split being where
-    // they start.
+    // The moves Netto recommends from the plan given, this river, at the pay Run runs, on that date
+    // (MoveSearch): none while the company is skipped, the split being where they start.
     public (MovePlan? Value, string? Error)? FindMoves(DateOnly date) => Company is null ? null : MoveSearch.Run(MoveScenario(), date);
 
     // The scenario Run runs, but with the home office's facts kept while Rent is out of the plan, its
