@@ -47,6 +47,9 @@ internal static class Formats
     // A month of the income year, 1 being January, by its English name.
     public static string Month(int year, int month) => new DateOnly(year, month, 1).ToString("MMMM", Culture);
 
+    // A month on the timeline's axis, short enough to sit over a month of a narrow screen: Oct.
+    public static string ShortMonth(int year, int month) => new DateOnly(year, month, 1).ToString("MMM", Culture);
+
     // The rule sets hold rates as fractions (20.50% is 0.205), under keys ending in _rate or _factor,
     // multiples of a rate under keys ending in _multiplier: 2.25 reads 2.25×, coefficients, bare
     // numbers published to four decimals, under keys ending in _coefficient, and emissions in grams of

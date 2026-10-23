@@ -133,6 +133,17 @@ public class FormatsTests
         Formats.ShortDay(new DateOnly(year, month, day)).ShouldBe(expected);
     }
 
+    // A month of the timeline's axis, short enough to sit over a month of a narrow screen.
+    [Theory]
+    [InlineData(1, "Jan")]
+    [InlineData(9, "Sep")]
+    [InlineData(10, "Oct")]
+    [InlineData(12, "Dec")]
+    public void ShortMonth_monthOfTheIncomeYear_isItsFirstThreeLetters(int month, string expected)
+    {
+        Formats.ShortMonth(2026, month).ShouldBe(expected);
+    }
+
     // A car's CO2 percentage or deduction rate, as exact as the rules make it: 9.75% is not 9.8%.
     [Theory]
     [InlineData("0.105", "10.5%")]
