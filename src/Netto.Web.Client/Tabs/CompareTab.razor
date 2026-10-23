@@ -15,7 +15,8 @@
    view, which runs the two plans, and builds it again only when the viewer picks or the saved plans change
    (SavedPlans.Changed), from the Plans panel in the bar. The picks are the viewer's only until the tab is
    left. The pickers are native selects: a plan's name is all they hold, and a native control is named,
-   operated and tested without a script. The head is drawn once, first, whatever the plans: it takes the
+   operated and tested without a script. Each lists every plan; choosing the one the other holds swaps the
+   two (CompareView.PickPlan), so two plans never leave a picker with nothing to pick. The head is drawn once, first, whatever the plans: it takes the
    focus when the viewer arrives (TabHead). *@
 <TabHead Eyebrow="@L["Eyebrow"]" Title="@L["Title"]" Lede="@L["Lede"]" />
 
