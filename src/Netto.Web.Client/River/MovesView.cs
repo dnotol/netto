@@ -2,49 +2,57 @@ using Netto.Core.Simulation;
 
 namespace Netto.Web.Client.River;
 
-// What the Optimisation tab draws: the engine's moves from the plan starred « Today » (MoveSearch), or why
-// there are none, with what Today leaves in the pocket and what the plan leaves with every move. Found
-// once per Today, since the search runs the split at every move; which moves the river already holds is
-// read from the river at each change.
+// What the Optimisation tab draws: the engine's moves (MoveSearch) from the plan they are measured from
+// (MovesBaseline), the plan starred « Today » or, while none is, the plan in the river as it was opened or
+// saved, or why there are none, with what that plan leaves in the pocket and what it leaves with every
+// move. Found once per plan and date, since the search runs the split at every move; which moves the
+// river already holds is read from the river at each change.
 internal sealed record MovesView(
     MovesState State,
     string? Error,
-    RiverInputs? Today,
-    decimal TodayPay,
+    MovesBaseline? From,
+    decimal FromPay,
     IReadOnlyList<PlannedMove> Moves,
     decimal Total,
-    decimal TodayInPocket,
+    decimal FromInPocket,
     decimal PlanInPocket)
 {
-    // On that date, which decides the deadline a payment is proposed by.
+    // From Today on that date, which decides the deadline a payment is proposed by.
     public static MovesView Of(RiverInputs? today, DateOnly date) => Of(today, today?.FindMoves(date));
 
     // From what the search found for Today (RiverInputs.FindMoves), none without a Today or for a Today
-    // that starts at the pay: the page searches once per Today, and the tab draws the view of it.
-    public static MovesView Of(RiverInputs? today, (MovePlan? Value, string? Error)? found)
-    {
-        if (today is null)
-            return new MovesView(MovesState.NoToday, null, null, 0m, [], 0m, 0m, 0m);
-        if (found is not { } result)
-            return new MovesView(MovesState.StartsAtPay, null, today, 0m, [], 0m, 0m, 0m);
-        if (result.Value is not { } plan)
-            return new MovesView(MovesState.Refused, result.Error, today, 0m, [], 0m, 0m, 0m);
+    // that starts at the pay.
+    public static MovesView Of(RiverInputs? today, (MovePlan? Value, string? Error)? found) => today is null
+        ? new MovesView(MovesState.NoToday, null, null, 0m, [], 0m, 0m, 0m)
+        : Of(MovesBaseline.Today(today), found);
 
-        var pay = Math.Min(today.DirectorPay.Value, today.PayCeiling ?? 0m);
+    // From the plan they are measured from, on that date.
+    public static MovesView Of(MovesBaseline from, DateOnly date) => Of(from, from.Plan.FindMoves(date));
+
+    // From what the search found for that plan, none for one that starts at the pay: the page searches
+    // once per plan and date (MovesSource), and the tab draws the view of what it found.
+    public static MovesView Of(MovesBaseline from, (MovePlan? Value, string? Error)? found)
+    {
+        if (found is not { } result)
+            return new MovesView(MovesState.StartsAtPay, null, from, 0m, [], 0m, 0m, 0m);
+        if (result.Value is not { } plan)
+            return new MovesView(MovesState.Refused, result.Error, from, 0m, [], 0m, 0m, 0m);
+
+        var pay = Math.Min(from.Plan.DirectorPay.Value, from.Plan.PayCeiling ?? 0m);
         return plan.Moves.Count == 0
-            ? new MovesView(MovesState.AlreadyBest, null, today, pay, [], 0m, plan.TodayInPocket, plan.TodayInPocket)
-            : new MovesView(MovesState.Moves, null, today, pay, plan.Moves, plan.Gain, plan.TodayInPocket, plan.PlanInPocket);
+            ? new MovesView(MovesState.AlreadyBest, null, from, pay, [], 0m, plan.TodayInPocket, plan.TodayInPocket)
+            : new MovesView(MovesState.Moves, null, from, pay, plan.Moves, plan.Gain, plan.TodayInPocket, plan.PlanInPocket);
     }
 
-    // What the pocket holds once the move at that place in the list is taken: Today's, with the gains of
-    // the moves up to it and its own, so the last move's is the plan's. It is the plan's running account,
-    // not a run of the moves above alone: a line a later round topped up (Move.After) holds that round's
-    // gain too, measured on top of the moves between.
-    public decimal InPocketAfter(int index) => TodayInPocket + Moves.Take(index + 1).Sum(move => move.Gain);
+    // What the pocket holds once the move at that place in the list is taken: what the plan the moves are
+    // from leaves, with the gains of the moves up to it and its own, so the last move's is what every move
+    // leaves. It is the moves' running account, not a run of the moves above alone: a line a later round
+    // topped up (Move.After) holds that round's gain too, measured on top of the moves between.
+    public decimal InPocketAfter(int index) => FromInPocket + Moves.Take(index + 1).Sum(move => move.Gain);
 
-    // Whether the river holds the move's values already: its pay, Today's payment by the deadline with
-    // the move's amount on top, a lever's amount with its module in the plan, or a royalty in the plan
-    // that follows the pay.
+    // Whether the river holds the move's values already: its pay, the payment by the deadline of the plan
+    // the moves are from with the move's amount on top, a lever's amount with its module in the plan, or a
+    // royalty in the plan that follows the pay.
     public bool Applied(PlannedMove move, RiverInputs river) => move.Move switch
     {
         PayMove pay => river.DirectorPay.Value == pay.Pay,
@@ -67,31 +75,31 @@ internal sealed record MovesView(
         DirectorAdvancePaymentMove payment => river.WithTaxAdvancePayment(payment.Deadline, Planned(payment)),
         EcoVouchersMove eco => river.WithEcoVouchers(eco.Amount).AddToPlan(OptionalModule.Vouchers),
         SportCultureVouchersMove sport => river.WithSportCultureVouchers(sport.Amount).AddToPlan(OptionalModule.Vouchers),
-        RentMove rent => WithTodaysHome(river).WithRent(rent.Rent).AddToPlan(OptionalModule.Rent),
-        CopyrightFollowsPayMove => WithTodaysCreativeShare(river).WithRoyaltyFollowingPay().AddToPlan(OptionalModule.Copyright),
+        RentMove rent => WithPlansHome(river).WithRent(rent.Rent).AddToPlan(OptionalModule.Rent),
+        CopyrightFollowsPayMove => WithPlansCreativeShare(river).WithRoyaltyFollowingPay().AddToPlan(OptionalModule.Copyright),
         _ => throw new ArgumentOutOfRangeException(nameof(move), move, "A move the river cannot apply."),
     };
 
-    // The rent is Today's home's: its cadastral income and share let come with it.
-    private RiverInputs WithTodaysHome(RiverInputs river) => Today is { } today
-        ? river.WithCadastralIncome(today.Rent.CadastralIncome.Value).WithShareLet(today.Rent.ShareLet.Value)
+    // The rent is the home's of the plan the moves are from: its cadastral income and share let come with it.
+    private RiverInputs WithPlansHome(RiverInputs river) => From?.Plan is { } plan
+        ? river.WithCadastralIncome(plan.Rent.CadastralIncome.Value).WithShareLet(plan.Rent.ShareLet.Value)
         : river;
 
-    // The royalty follows the pay at what a ruling accepts for Today's creative share, under Today's
-    // statuses: they come with it as Today holds them, origins and all.
-    private RiverInputs WithTodaysCreativeShare(RiverInputs river) => Today is { } today
+    // The royalty follows the pay at what a ruling accepts for the creative share of the plan the moves
+    // are from, under its statuses: they come with it as that plan holds them, origins and all.
+    private RiverInputs WithPlansCreativeShare(RiverInputs river) => From?.Plan is { } plan
         ? river with
         {
             Copyright = river.Copyright with
             {
-                CreativeShare = today.Copyright.CreativeShare, AverageWithinCap = today.Copyright.AverageWithinCap, HoldsAttestation = today.Copyright.HoldsAttestation,
+                CreativeShare = plan.Copyright.CreativeShare, AverageWithinCap = plan.Copyright.AverageWithinCap, HoldsAttestation = plan.Copyright.HoldsAttestation,
             },
         }
         : river;
 
-    private decimal Planned(CompanyAdvancePaymentMove payment) => (Today?.AdvancePayments.ByDeadline[payment.Deadline].Value ?? 0m) + payment.Amount;
+    private decimal Planned(CompanyAdvancePaymentMove payment) => (From?.Plan.AdvancePayments.ByDeadline[payment.Deadline].Value ?? 0m) + payment.Amount;
 
-    private decimal Planned(DirectorAdvancePaymentMove payment) => (Today?.TaxPrepayments.Paid.ByDeadline[payment.Deadline].Value ?? 0m) + payment.Amount;
+    private decimal Planned(DirectorAdvancePaymentMove payment) => (From?.Plan.TaxPrepayments.Paid.ByDeadline[payment.Deadline].Value ?? 0m) + payment.Amount;
 }
 
 internal enum MovesState
@@ -99,13 +107,13 @@ internal enum MovesState
     // No plan is starred « Today », the setup moves are measured from.
     NoToday,
 
-    // Today skips the company's year: the split, and so every move, starts from it.
+    // The plan the moves are from skips the company's year: the split, and so every move, starts from it.
     StartsAtPay,
 
-    // The engine refuses an amount of Today (Error).
+    // The engine refuses an amount of the plan the moves are from (Error).
     Refused,
 
-    // No move adds a euro to Today.
+    // No move adds a euro to the plan the moves are from.
     AlreadyBest,
 
     Moves,

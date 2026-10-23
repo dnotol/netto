@@ -25,7 +25,7 @@
             <div class="moves__pair">
                 @* The star the Plans panel marks Today with, drawn for the eye: the words say it. *@
                 <dt class="moves__term"><MudIcon Icon="@Icons.Material.Rounded.Star" Size="Size.Small" Class="moves__star" aria-hidden="true" /> @L[OptimisationTabText.TodayInPocket]</dt>
-                <dd class="moves__figure">@Formats.Euros(_view.TodayInPocket)</dd>
+                <dd class="moves__figure">@Formats.Euros(_view.FromInPocket)</dd>
             </div>
             @if (_view.State == MovesState.Moves)
             {
@@ -98,7 +98,7 @@
     [Parameter]
     public EventCallback<RiverInputs> InputsChanged { get; set; }
 
-    private MovesView _view = MovesView.Of(null, found: null);
+    private MovesView _view = default!;
     private readonly Dictionary<int, ElementReference> _applied = [];
     private int? _focusApplied;
 
@@ -107,13 +107,13 @@
 
     private string What(PlannedMove move) => move.Move switch
     {
-        PayMove pay => L[OptimisationTabText.Move(pay), Formats.Euros(pay.Pay), Formats.Euros(_view.TodayPay)],
+        PayMove pay => L[OptimisationTabText.Move(pay), Formats.Euros(pay.Pay), Formats.Euros(_view.FromPay)],
         CompanyAdvancePaymentMove payment => L[OptimisationTabText.Move(payment), Formats.Euros(payment.Amount), Formats.Day(payment.Date)],
         DirectorAdvancePaymentMove payment => L[OptimisationTabText.Move(payment), Formats.Euros(payment.Amount), Formats.Day(payment.Date)],
         EcoVouchersMove eco => L[OptimisationTabText.Move(eco), Formats.Euros(eco.Amount)],
         SportCultureVouchersMove sport => L[OptimisationTabText.Move(sport), Formats.Euros(sport.Amount)],
         RentMove rent => L[OptimisationTabText.Move(rent), Formats.Euros(rent.Rent)],
-        CopyrightFollowsPayMove following => L[OptimisationTabText.Move(following), Formats.Percentage(_view.Today?.Copyright.CreativeShare.Value ?? 0m)],
+        CopyrightFollowsPayMove following => L[OptimisationTabText.Move(following), Formats.Percentage(_view.From?.Plan.Copyright.CreativeShare.Value ?? 0m)],
         _ => "",
     };
 

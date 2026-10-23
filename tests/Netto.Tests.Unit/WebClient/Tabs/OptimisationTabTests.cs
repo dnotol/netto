@@ -96,7 +96,7 @@ public class OptimisationTabTests
         var figures = Figures(await RenderTabAsync(RiverInputs.Example, RiverInputs.Example));
 
         figures.ShouldBe([
-            ("Today, in your pocket", Formats.Euros(view.TodayInPocket)),
+            ("Today, in your pocket", Formats.Euros(view.FromInPocket)),
             ("With every move below", Formats.Euros(view.PlanInPocket)),
             ("More than Today", Formats.Addition(view.Total)),
         ]);
@@ -212,7 +212,7 @@ public class OptimisationTabTests
         var html = await RenderTabAsync(planned, planned);
 
         (Figures(html).Single(), html.Contains("<ol"))
-            .ShouldBe((("Today, in your pocket", Formats.Euros(MovesView.Of(planned, On22October).TodayInPocket)), false));
+            .ShouldBe((("Today, in your pocket", Formats.Euros(MovesView.Of(planned, On22October).FromInPocket)), false));
     }
 
     // The tab announces nothing: no live region, no status, no alert.

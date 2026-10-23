@@ -25,7 +25,7 @@ public class MovesViewTests
     [Fact]
     public void Of_noToday_asksForOne()
     {
-        MovesView.Of(null, On22October).State.ShouldBe(MovesState.NoToday);
+        MovesView.Of((RiverInputs?)null, On22October).State.ShouldBe(MovesState.NoToday);
     }
 
     // The page searches once per Today, and the tab draws the view of what was found, searching nothing.
@@ -37,14 +37,14 @@ public class MovesViewTests
         var view = MovesView.Of(RiverInputs.Example, found);
 
         var searched = MovesView.Of(RiverInputs.Example, On22October);
-        (view.State, view.TodayPay, view.Total, Lines(view).SequenceEqual(Lines(searched))).ShouldBe((searched.State, searched.TodayPay, searched.Total, true));
+        (view.State, view.FromPay, view.Total, Lines(view).SequenceEqual(Lines(searched))).ShouldBe((searched.State, searched.FromPay, searched.Total, true));
     }
 
     // Nothing found, from no Today or from one that starts at the pay: two answers, told apart by Today.
     [Fact]
     public void Of_nothingFound_isNoTodayOrStartsAtThePay()
     {
-        (MovesView.Of(null, found: null).State, MovesView.Of(RiverInputs.Example.SkipCompany(), found: null).State)
+        (MovesView.Of((RiverInputs?)null, found: null).State, MovesView.Of(RiverInputs.Example.SkipCompany(), found: null).State)
             .ShouldBe((MovesState.NoToday, MovesState.StartsAtPay));
     }
 
@@ -54,7 +54,7 @@ public class MovesViewTests
     {
         var view = MovesView.Of(RiverInputs.Example, AfterTheYear);
 
-        (view.State, view.TodayPay, view.Moves[0].Move, view.Moves[0].Gain).ShouldBe((MovesState.Moves, 50_000m, BestPay.Move, BestPay.Gain));
+        (view.State, view.FromPay, view.Moves[0].Move, view.Moves[0].Gain).ShouldBe((MovesState.Moves, 50_000m, BestPay.Move, BestPay.Gain));
         view.Moves.Skip(1).Select(move => move.Move).ShouldBe([new EcoVouchersMove(250m), new SportCultureVouchersMove(100m)], ignoreOrder: true);
     }
 
@@ -112,7 +112,7 @@ public class MovesViewTests
     [MemberData(nameof(Todays))]
     public void Of_today_startsFromTheRiversPocketForToday(string _, RiverInputs today)
     {
-        MovesView.Of(today, On22October).TodayInPocket.ShouldBe(today.Run().Year.ShouldNotBeNull().NetInPocket);
+        MovesView.Of(today, On22October).FromInPocket.ShouldBe(today.Run().Year.ShouldNotBeNull().NetInPocket);
     }
 
     // The plan's pocket is what the river leaves once every move is applied to Today.
@@ -127,6 +127,90 @@ public class MovesViewTests
         view.PlanInPocket.ShouldBe(planned.Run().Year.ShouldNotBeNull().NetInPocket);
     }
 
+    [Fact]
+    public void Of_today_isMeasuredFromToday()
+    {
+        MovesView.Of(RiverInputs.Example, On22October).From.ShouldBe(new MovesBaseline(RiverInputs.Example, IsToday: true));
+    }
+
+    // While no plan is starred Today, the moves are measured from the plan in the river as it was opened
+    // or saved: the same moves Today would have, were that plan starred.
+    [Theory]
+    [MemberData(nameof(Todays))]
+    public void Of_planInTheRiver_hasTheMovesTodayWouldHaveForTheSamePlan(string _, RiverInputs plan)
+    {
+        var fromPlan = MovesView.Of(new MovesBaseline(plan, IsToday: false), On22October);
+
+        var fromToday = MovesView.Of(plan, On22October);
+        (fromPlan.State, fromPlan.FromPay, Lines(fromPlan).SequenceEqual(Lines(fromToday)), fromPlan.Total, fromPlan.FromInPocket, fromPlan.PlanInPocket)
+            .ShouldBe((fromToday.State, fromToday.FromPay, true, fromToday.Total, fromToday.FromInPocket, fromToday.PlanInPocket));
+    }
+
+    // The view says which plan its moves are from, for the tab to word them.
+    [Fact]
+    public void Of_planInTheRiver_isNotToday()
+    {
+        var view = MovesView.Of(new MovesBaseline(RiverInputs.Example, IsToday: false, "Plan 2"), On22October);
+
+        (view.From.ShouldNotBeNull().IsToday, view.From.Name).ShouldBe((false, "Plan 2"));
+    }
+
+    [Fact]
+    public void Of_planInTheRiverWithoutTheCompany_startsAtThePay()
+    {
+        MovesView.Of(new MovesBaseline(RiverInputs.Example.SkipCompany(), IsToday: false), On22October).State.ShouldBe(MovesState.StartsAtPay);
+    }
+
+    [Fact]
+    public void Of_planInTheRiverRefused_givesTheEnginesError()
+    {
+        var plan = RiverInputs.Example.WithReserve(-1m);
+
+        var view = MovesView.Of(new MovesBaseline(plan, IsToday: false), On22October);
+
+        (view.State, view.Error).ShouldBe((MovesState.Refused, plan.Run().Error));
+    }
+
+    [Fact]
+    public void Of_planInTheRiverWithEveryMoveApplied_isAlreadyBest()
+    {
+        var view = MovesView.Of(new MovesBaseline(RiverInputs.Example, IsToday: false), On22October);
+        var planned = view.Moves.Aggregate(RiverInputs.Example, (river, move) => view.Apply(move, river));
+
+        MovesView.Of(new MovesBaseline(planned, IsToday: false), On22October).State.ShouldBe(MovesState.AlreadyBest);
+    }
+
+    // Each move of the plan in the river sets the river as the same move from Today would: the plan's
+    // payment by December with the move's amount on top, its home's facts with the rent, its creative share
+    // and statuses with the royalty. Applied to the example, which holds none of them, so they can only
+    // come from the plan; five kinds of move at least, so the list cannot be empty.
+    [Fact]
+    public void Apply_fromThePlanInTheRiver_setsTheRiverAsFromToday()
+    {
+        var fromPlan = MovesView.Of(new MovesBaseline(Furnished, IsToday: false), On22October);
+        var fromToday = MovesView.Of(Furnished, On22October);
+
+        var applied = fromPlan.Moves.Select(move => fromPlan.Apply(move, RiverInputs.Example)).ToList();
+
+        (Kinds(fromPlan) >= 5, applied.SequenceEqual(fromToday.Moves.Select(move => fromToday.Apply(move, RiverInputs.Example))))
+            .ShouldBe((true, true));
+    }
+
+    // Whether the river holds a move reads it against the plan in the river as against Today: the river
+    // before the move, and after Today's.
+    [Fact]
+    public void Applied_fromThePlanInTheRiver_readsTheRiverAsFromToday()
+    {
+        var fromPlan = MovesView.Of(new MovesBaseline(Furnished, IsToday: false), On22October);
+        var fromToday = MovesView.Of(Furnished, On22October);
+        List<RiverInputs> rivers = [RiverInputs.Example, .. fromToday.Moves.Select(move => fromToday.Apply(move, RiverInputs.Example))];
+
+        var applied = fromPlan.Moves.SelectMany(move => rivers.Select(river => fromPlan.Applied(move, river))).ToList();
+
+        (Kinds(fromPlan) >= 5, applied.Count(held => held), applied.SequenceEqual(fromToday.Moves.SelectMany(move => rivers.Select(river => fromToday.Applied(move, river)))))
+            .ShouldBe((true, fromPlan.Moves.Count, true));
+    }
+
     // What the pocket holds after each move is Today's with the gains up to it: the last is the plan's.
     [Fact]
     public void InPocketAfter_eachMove_addsTheGainsUpToItToTodaysPocket()
@@ -134,7 +218,7 @@ public class MovesViewTests
         var view = MovesView.Of(RiverInputs.Example, On22October);
 
         view.Moves.Select((_, index) => view.InPocketAfter(index))
-            .ShouldBe(view.Moves.Select((_, index) => view.TodayInPocket + view.Moves.Take(index + 1).Sum(move => move.Gain)));
+            .ShouldBe(view.Moves.Select((_, index) => view.FromInPocket + view.Moves.Take(index + 1).Sum(move => move.Gain)));
     }
 
     [Fact]
@@ -154,14 +238,14 @@ public class MovesViewTests
 
         var best = MovesView.Of(planned, On22October);
 
-        (best.State, best.TodayInPocket, best.PlanInPocket).ShouldBe((MovesState.AlreadyBest, planned.Run().Year.ShouldNotBeNull().NetInPocket, best.TodayInPocket));
+        (best.State, best.FromInPocket, best.PlanInPocket).ShouldBe((MovesState.AlreadyBest, planned.Run().Year.ShouldNotBeNull().NetInPocket, best.FromInPocket));
     }
 
     // Today's pay is the one the river runs: a pay above the profit before pay is that profit.
     [Fact]
     public void Of_todayPayAboveTheProfit_startsFromTheProfit()
     {
-        MovesView.Of(RiverInputs.Example.WithDirectorPay(150_000m), AfterTheYear).TodayPay.ShouldBe(100_000m);
+        MovesView.Of(RiverInputs.Example.WithDirectorPay(150_000m), AfterTheYear).FromPay.ShouldBe(100_000m);
     }
 
     [Fact]
@@ -321,6 +405,13 @@ public class MovesViewTests
 
         View().Applied(move, RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithRoyalty(5_000m)).ShouldBeFalse();
     }
+
+    // A plan with a payment by December, its home's facts and its creative share given, Rent and
+    // Copyright royalty out of its plan: its moves read each of them.
+    private static readonly RiverInputs Furnished = RiverInputs.Example.WithAdvancePayment(3, 1_000m)
+        .WithCadastralIncome(1_200m).WithShareLet(0.12m).WithCreativeShare(0.75m).WithAttestation(true);
+
+    private static int Kinds(MovesView view) => view.Moves.Select(move => move.Move.GetType()).Distinct().Count();
 
     private static MovesView View(RiverInputs? today = null) => MovesView.Of(today ?? RiverInputs.Example, AfterTheYear);
 
