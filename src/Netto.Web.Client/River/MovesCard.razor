@@ -1,5 +1,6 @@
 @using Netto.Core.Simulation
 @inject IStringLocalizer<MovesCard> L
+@inject Folds Folds
 
 @* What Netto would change in the plan starred « Today », the user's current setup, to leave more in
    the pocket: the engine's moves (MoveSearch, through MovesView), each adding what it says on top of
@@ -90,11 +91,16 @@
         _ => "",
     };
 
-    // Apply goes with the move applied, so the focus goes to what replaces it, « In the river ».
+    // Apply goes with the move applied, so the focus goes to what replaces it, « In the river ». A lever
+    // the move adds to the plan opens its card, for the session, so the user sees what the move put
+    // there.
     private async Task Apply(PlannedMove move, int index)
     {
         _focusApplied = index;
-        await InputsChanged.InvokeAsync(_view.Apply(move, Inputs));
+        var applied = _view.Apply(move, Inputs);
+        ModuleFolds.RevealAdded(Folds, Inputs.Composition, applied.Composition);
+
+        await InputsChanged.InvokeAsync(applied);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
