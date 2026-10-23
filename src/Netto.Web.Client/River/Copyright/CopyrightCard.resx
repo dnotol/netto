@@ -70,10 +70,10 @@
     <value>With the royalty and without it</value>
   </data>
   <data name="WithRoyalty" xml:space="preserve">
-    <value>With the royalty, {0} reaches your pocket, {1} goes to taxes on pay and {2} to taxes on profit.</value>
+    <value>With the royalty, {0} reaches your pocket, {1} goes to contributions and tax on pay, {2} to taxes on profit.</value>
   </data>
   <data name="WithoutRoyalty" xml:space="preserve">
-    <value>Without it, the same plan at the same pay leaves {0} in your pocket, {1} to taxes on pay and {2} to taxes on profit: the company keeps the royalty as profit, taxed and paid out with the dividend.</value>
+    <value>Without it, the same plan at the same pay leaves {0} in your pocket, {1} to contributions and tax on pay, {2} to taxes on profit: the company keeps the royalty as profit, taxed and paid out with the dividend.</value>
   </data>
   <data name="Gain_More" xml:space="preserve">
     <value>The royalty leaves {0} more in your pocket.</value>

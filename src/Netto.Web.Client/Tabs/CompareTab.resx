@@ -43,7 +43,7 @@
     <value>Kept in the company</value>
   </data>
   <data name="Row_taxes" xml:space="preserve">
-    <value>All taxes</value>
+    <value>All contributions and taxes</value>
   </data>
   <data name="Row_corporate_tax" xml:space="preserve">
     <value>Corporate tax</value>

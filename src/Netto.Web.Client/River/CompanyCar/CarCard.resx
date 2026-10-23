@@ -106,7 +106,7 @@
     <value>The car leaves {0} more cash in your pocket.</value>
   </data>
   <data name="TaxesOnPay" xml:space="preserve">
-    <value>Its benefit adds {0} to your taxes on pay, on Director pay.</value>
+    <value>Its benefit adds {0} to your contributions and tax on pay, on Director pay.</value>
   </data>
   <data name="PrivateCostLabel" xml:space="preserve">
     <value>What the same car would cost you privately, a year</value>

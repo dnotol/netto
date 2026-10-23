@@ -29,6 +29,16 @@ public class BucketBarTextTests
         (BucketBarText.Bucket("taxes_on_pay", true), BucketBarText.Bucket("pocket", true)).ShouldBe(("Bucket_taxes_on_pay_and_rent", "Bucket_pocket"));
     }
 
+    // The bucket of what leaves the pay names the social contributions with the tax, so the bar reads
+    // without its bubbles; with a rent it names the rent too.
+    [Theory]
+    [InlineData(false, "Contributions and tax on pay")]
+    [InlineData(true, "Contributions and tax on pay and rent")]
+    public void BucketBarResx_taxesOnPay_namesTheContributionsWithTheTax(bool taxesOnPayIncludeRent, string name)
+    {
+        Resources.GetString(BucketBarText.Bucket("taxes_on_pay", taxesOnPayIncludeRent), CultureInfo.InvariantCulture).ShouldBe(name);
+    }
+
     // What each bucket holds, with a copyright royalty's tax apart among the taxes on pay, with or
     // without a rent.
     [Theory]
@@ -41,7 +51,7 @@ public class BucketBarTextTests
             .ShouldBeEmpty();
     }
 
-    // The royalty's tax is said in what the taxes on pay hold; their name keeps « pay », to fit the bar.
+    // The royalty's tax is said in what the bucket of what leaves the pay holds, never in its name.
     [Theory]
     [InlineData(false, "Holds_taxes_on_pay_and_royalty")]
     [InlineData(true, "Holds_taxes_on_pay_rent_and_royalty")]
@@ -80,15 +90,16 @@ public class BucketBarTextTests
     }
 
     // Under the bar, what reaches the pocket out of the example's 100,000, nothing being kept
-    // (BucketsViewTests), the share being the term its bubble explains.
+    // (BucketsViewTests), the share being the term its bubble explains; the rest went to the social
+    // contributions and the taxes, as the buckets name them.
     [Fact]
-    public void Reach_example_saysWhatReachesThePocketAndWhatGoesToTaxes()
+    public void Reach_example_saysWhatReachesThePocketAndWhatGoesToContributionsAndTaxes()
     {
         var view = BucketsView.From(RiverInputs.Example.Run()).ShouldNotBeNull();
 
         var text = string.Format(CultureInfo.InvariantCulture, Resources.GetString(BucketBarText.Reach(view), CultureInfo.InvariantCulture) ?? "", "62%", "38%");
 
-        text.ShouldBe("[62% reaches you], 38% goes to taxes.");
+        text.ShouldBe("[62% reaches you], 38% goes to contributions and taxes.");
     }
 
     // What the company keeps is still the director's: the sentence says the share is of the rest.
@@ -98,7 +109,7 @@ public class BucketBarTextTests
         var view = BucketsView.From(RiverInputs.Example.WithReserve(15_000m).Run()).ShouldNotBeNull();
 
         TermText.Split(Resources.GetString(BucketBarText.Reach(view), CultureInfo.InvariantCulture) ?? "")
-            .ShouldBe(("Of what the company does not keep, ", "{0} reaches you", ", {1} goes to taxes."));
+            .ShouldBe(("Of what the company does not keep, ", "{0} reaches you", ", {1} goes to contributions and taxes."));
     }
 
     [Fact]

@@ -16,10 +16,10 @@
     <value>Your pocket</value>
   </data>
   <data name="Bucket_taxes_on_pay" xml:space="preserve">
-    <value>Taxes on pay</value>
+    <value>Contributions and tax on pay</value>
   </data>
   <data name="Bucket_taxes_on_pay_and_rent" xml:space="preserve">
-    <value>Taxes on pay and rent</value>
+    <value>Contributions and tax on pay and rent</value>
   </data>
   <data name="Bucket_taxes_on_profit" xml:space="preserve">
     <value>Taxes on profit</value>
@@ -52,10 +52,10 @@
     <value>Enter your company's year to see the rest of the river.</value>
   </data>
   <data name="Reach" xml:space="preserve">
-    <value>[{0} reaches you], {1} goes to taxes.</value>
+    <value>[{0} reaches you], {1} goes to contributions and taxes.</value>
   </data>
   <data name="Reach_Kept" xml:space="preserve">
-    <value>Of what the company does not keep, [{0} reaches you], {1} goes to taxes.</value>
+    <value>Of what the company does not keep, [{0} reaches you], {1} goes to contributions and taxes.</value>
   </data>
   <data name="ReachMeaning" xml:space="preserve">
     <value>Your pocket, out of what the river starts from less what the company keeps at year end, which is still yours. Running costs and a company car's costs are left out: the company spends them, they are not taxes.</value>

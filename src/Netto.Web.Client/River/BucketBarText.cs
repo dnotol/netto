@@ -17,8 +17,8 @@ internal static class BucketBarText
     // With the company skipped, after the reach: where the rest of the river is.
     public const string EnterCompany = "EnterCompany";
 
-    // Under the bar, what reaches the pocket and what went to taxes: of what the company does not keep,
-    // once it keeps some.
+    // Under the bar, what reaches the pocket and what went to contributions and taxes: of what the
+    // company does not keep, once it keeps some.
     public static string Reach(BucketsView view) =>
         "Reach" + (view.Buckets.Single(bucket => bucket.Key == "kept_in_company").Amount > 0m ? "_Kept" : "");
 
@@ -38,9 +38,9 @@ internal static class BucketBarText
     // the two cannot be compared (BaselineGain); the live region says it after the pocket.
     public static string Gain(GainKind kind) => $"Gain_{kind}";
 
-    // The taxes on pay say they hold the rent's tax too once there is one. A copyright royalty's tax is
-    // said in what the bucket holds alone: the name keeps « pay » (decided unattended), short enough for
-    // the bar.
+    // The bucket of what leaves the pay names the social contributions with the tax, and the rent too
+    // once its tax is there; its key keeps its first name, taxes_on_pay. A copyright royalty's tax is
+    // said in what the bucket holds alone (decided unattended).
     public static string Bucket(string key, bool taxesOnPayIncludeRent) =>
         $"Bucket_{key}{TaxesOnPayWith(key, taxesOnPayIncludeRent, false)}";
 

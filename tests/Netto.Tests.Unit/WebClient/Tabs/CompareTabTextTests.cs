@@ -47,6 +47,13 @@ public class CompareTabTextTests
         keys.Where(key => Text(key) is null).ShouldBeEmpty();
     }
 
+    // The row that sums the layers counts the social contributions with the taxes, as the bar's names do.
+    [Fact]
+    public void CompareTabResx_allTaxes_namesTheContributionsToo()
+    {
+        Text(CompareTabText.Row("taxes")).ShouldBe("All contributions and taxes");
+    }
+
     // A comparison has no note: the tab says nothing before the figures.
     [Fact]
     public void Note_compared_hasNone()
