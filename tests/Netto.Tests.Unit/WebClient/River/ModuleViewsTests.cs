@@ -326,15 +326,16 @@ public class ModuleViewsTests
                 "income_tax_advance_payment_surcharge", "income_tax_advance_payment_bonus"]);
     }
 
-    // Nothing withheld: 486.57 on the pay's tax, and 14,317.50 by 21 December brings it under the
-    // 100 minimum.
+    // Nothing withheld: 486.57 on the pay's tax, a drain of its own, and 14,317.50 by 21 December
+    // brings it under the 100 minimum.
     [Fact]
     public void DirectorPay_nothingWithheld_saysTheSurchargeIsDueAndWhatByTheLastDeadlineLeavesNoneDue()
     {
         var view = DirectorPay(RiverInputs.Example.WithTaxWithheld(0m));
 
-        (view.Surcharge, view.SurchargeAmount, view.TopUp, view.LastDeadline)
-            .ShouldBe((TaxSurchargeState.Due, 486.57m, 14_317.50m, new DateOnly(2026, 12, 21)));
+        (view.Surcharge, Line(view.Drains.Single(drain => drain.Key == "income_tax_advance_payment_surcharge")), view.TopUp, view.LastDeadline)
+            .ShouldBe((TaxSurchargeState.Due, new Drain("income_tax_advance_payment_surcharge", DrainKind.PaidOut, 486.57m, "taxes_on_pay"), 14_317.50m,
+                new DateOnly(2026, 12, 21)));
     }
 
     // The 10,691.28 the key formula withholds leaves 59.52 of surcharge before the 90%, under the minimum.
@@ -370,13 +371,15 @@ public class ModuleViewsTests
     }
 
     // With nothing withheld, 12,014 by 10 April is the whole base and earns 90.11
-    // (IncomeTaxAdvancePaymentCalculatorTests); on the example most of it is beyond the base.
+    // (IncomeTaxAdvancePaymentCalculatorTests), which comes back among the drains; on the example most
+    // of it is beyond the base.
     [Fact]
     public void DirectorPay_theWholeBaseBy10April_namesTheBonus()
     {
         var view = DirectorPay(RiverInputs.Example.WithTaxWithheld(0m).WithTaxAdvancePayment(0, 12_014m));
 
-        (view.Surcharge, view.Bonus).ShouldBe((TaxSurchargeState.Covered, 90.11m));
+        (view.Surcharge, Line(view.Drains.Single(drain => drain.Key == "income_tax_advance_payment_bonus")))
+            .ShouldBe((TaxSurchargeState.Covered, new Drain("income_tax_advance_payment_bonus", DrainKind.Back, 90.11m, "taxes_on_pay")));
     }
 
     // The field shows the year's withholding the pay slip gives, twelve times the month's, as derived.

@@ -369,21 +369,20 @@ internal enum RateChoice
 // view is the pay slip, drawn from the same result, and its steps' sources. When the company pays
 // the contributions on the director's behalf they are pay too, so the card shows what the pay costs
 // the company, the gross plus them, and the contributions drain says the company pays them. The
-// engine says what the withholding and the advance payments leave on its tax, the bonus they earn,
-// and what more by the last deadline leaves no surcharge due. Each line says its share of what the pay
-// costs the company, and the card what reaches the pocket of it (ToYou). A copyright royalty's part
-// beyond its limits is taxed as pay and paid besides the payslip (RequalifiedPay): what flows in is
-// then the pay's cost and that part (Inflow), which the shares are out of.
+// engine says what the withholding and the advance payments leave on its tax, and what more by the
+// last deadline leaves no surcharge due; the surcharge and the bonus they earn are drains, from the
+// pay's steps. Each line says its share of what the pay costs the company, and the card what reaches
+// the pocket of it (ToYou). A copyright royalty's part beyond its limits is taxed as pay and paid
+// besides the payslip (RequalifiedPay): what flows in is then the pay's cost and that part (Inflow),
+// which the shares are out of.
 internal sealed record DirectorPayView(
     InputOrigin PayOrigin,
     bool CompanyPaysContributions,
     decimal CompanyCost,
     decimal? ToYou,
     TaxSurchargeState Surcharge,
-    decimal SurchargeAmount,
     decimal TopUp,
     DateOnly LastDeadline,
-    decimal Bonus,
     IReadOnlyList<Drain> Drains,
     IReadOnlyList<StepDetail> Details)
 {
@@ -411,10 +410,8 @@ internal sealed record DirectorPayView(
             pay.CompanyCost,
             Shares.Of(pay.NetInPocket, inflow),
             SurchargeStates.Of(payments),
-            payments.Surcharge,
             payments.LastDeadlineTopUp,
             TaxAdvancePaymentFields.Deadlines(pay.IncomeYear)[^1].Date.Value,
-            payments.Bonus,
             [
                 .. pay.Steps.Where(step => step.Track == Track.PaidOut)
                     .Select(step => Payer(Drain.PaidOutTo(step, "taxes_on_pay"), companyPays).Of(inflow)),
