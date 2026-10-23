@@ -209,14 +209,18 @@ internal sealed record CarSettingsView(IReadOnlyList<SettingPhrase> Car, bool Ne
 // cap, whether they hold an attestation du travail des arts, and the share of their working time
 // spent creating protected works. The royalty itself is the split's. The share has no default: it
 // says it is not given, and names no origin, until the user gives it, and that it is needed while the
-// royalty follows the pay. NeedsFacts: a royalty that follows the pay is none without the share, so
-// the disclosure opens by itself (decided with the operator, 2026-10-23).
+// engine says the royalty that follows the pay is none for want of it (CopyrightFollowing), never while
+// it is none for another reason a share would not change. NeedsFacts: then the disclosure opens by
+// itself (decided with the operator, 2026-10-23). While the river is refused there is no year to say
+// why, and a royalty that follows the pay without a share is taken as needing it, which tests no rule.
 internal sealed record CopyrightSettingsView(IReadOnlyList<SettingPhrase> Situation, bool NeedsFacts)
 {
-    public static CopyrightSettingsView From(RiverInputs inputs)
+    public static CopyrightSettingsView From(RiverInputs inputs, RiverRun run)
     {
         var copyright = inputs.Copyright;
-        var needsShare = copyright.FollowsPay.Value && copyright.CreativeShare.Value is null;
+        var needsShare = run.Year is { } year
+            ? year.Copyright.Following == CopyrightFollowing.NoCreativeShare
+            : copyright.FollowsPay.Value && copyright.CreativeShare.Value is null;
 
         return new CopyrightSettingsView(
             [

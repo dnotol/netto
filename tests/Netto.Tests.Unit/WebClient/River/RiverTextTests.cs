@@ -487,11 +487,9 @@ public class RiverTextTests
     [Fact]
     public void CopyrightCardResx_everyPhraseOfItsSettingsLine_hasAText()
     {
-        RiverInputs[] variations =
-        [
-            RiverInputs.Example, RiverInputs.Example.WithRoyalty(10_000m), RiverInputs.Example.WithAverageWithinCap(false).WithAttestation(true).WithCreativeShare(0.4m),
-        ];
-        var phrases = variations.SelectMany(inputs => CopyrightSettingsView.From(inputs).Situation);
+        var royalty = RiverInputs.Example.AddToPlan(OptionalModule.Copyright);
+        RiverInputs[] variations = [royalty, royalty.WithRoyalty(10_000m), royalty.WithAverageWithinCap(false).WithAttestation(true).WithCreativeShare(0.4m)];
+        var phrases = variations.SelectMany(inputs => CopyrightSettingsView.From(inputs, inputs.Run()).Situation);
 
         Missing(CopyrightCardResources, phrases.Select(phrase => phrase.Key).Append("SituationTitle")).ShouldBeEmpty();
     }

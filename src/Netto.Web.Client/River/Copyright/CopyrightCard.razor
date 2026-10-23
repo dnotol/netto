@@ -119,7 +119,7 @@
         _view = Run.Year is { } year ? CopyrightView.From(year) : null;
         _comparison = CopyrightComparison.From(Inputs, Run);
         _rules = CopyrightRules.For(Inputs.IncomeYear);
-        _settings = CopyrightSettingsView.From(Inputs);
+        _settings = CopyrightSettingsView.From(Inputs, Run);
     }
 
     private string? Summary => _view is { } view
