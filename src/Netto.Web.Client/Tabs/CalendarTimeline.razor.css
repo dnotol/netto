@@ -203,12 +203,15 @@
 }
 
 /* A label's text wraps within a few words, its edge set by the view: left early in the year, right
-   late. */
+   late. It sits on the card's colour, so Today's line passes behind it rather than through it. */
 .timeline__label {
     position: absolute;
     top: 1.6rem;
     max-width: 7rem;
-    margin-left: -0.35rem;
+    margin-left: -0.55rem;
+    padding: 0 0.2rem;
+    border-radius: 2px;
+    background: var(--netto-surface);
     color: var(--netto-text);
     font-size: 0.72rem;
     line-height: 1.25;
@@ -217,7 +220,7 @@
 
 .timeline__label--end {
     margin-left: 0;
-    margin-right: -0.35rem;
+    margin-right: -0.55rem;
     text-align: right;
 }
 
@@ -275,6 +278,9 @@
 .timeline__caption {
     position: absolute;
     top: 1.9rem;
+    padding: 0 0.2rem;
+    border-radius: 2px;
+    background: var(--netto-surface);
     color: var(--netto-text);
     font-size: 0.72rem;
     font-weight: 600;
