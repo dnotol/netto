@@ -6,7 +6,9 @@ namespace Netto.Core.Simulation;
 // allowances and the rent leave of what the company earns, with everything else the scenario holds kept
 // as it is: the vouchers, the allowances, the rent, whose tax each pay's year counts on the total it is
 // taxed with, the reserve, the statuses, the municipal rate, the dividend's withholding rate and who
-// pays the social contributions.
+// pays the social contributions. A copyright royalty that follows the pay follows each pay: the year at
+// each is the year with what a ruling accepts there, and the pays run up to the largest the profit pays
+// together with it (YearSimulation.PayCeiling).
 // The pay is the gross on the payslip, whoever pays them; the scenario's own pay is not used. It finds
 // the pay that leaves the most in the pocket while the profit after tax still covers the reserve and,
 // when a pay out of that profit can keep the reduced corporate rate, the best pay on each side of the
@@ -38,9 +40,10 @@ public static class SplitSearch
         var (noPay, error) = YearSimulation.Run(scenario with { DirectorPay = 0m });
         if (noPay is null)
             return (null, error);
+        if (YearSimulation.PayCeiling(scenario) is not { } ceiling)
+            return (null, YearSimulation.IncomeYearNotSupported);
 
         var levels = new Levels(scenario);
-        var ceiling = Math.Max(0m, noPay.ProfitBeforePay);
         var step = GridStep(ceiling);
         var grid = Grid(ceiling, step).Select(levels.At).ToList();
         var threshold = YearSimulation.SmallestPayKeepingReducedRate(scenario);

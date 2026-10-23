@@ -17,11 +17,15 @@ public sealed record SplitSearchResult(
 
 // The year at one director pay: what reaches the pocket, the dividend paid out of the profit after tax,
 // what stays in the company, the condition of art. 215 that decided the corporate rate, and whether
-// the profit after tax covers the reserve the user keeps.
+// the profit after tax covers the reserve the user keeps. Royalty is the copyright royalty paid beside
+// that pay, what a ruling accepts there when it follows the pay, nothing without one.
 public sealed record PayLevel(
     decimal Pay,
     decimal NetInPocket,
     decimal Dividend,
     decimal KeptInCompany,
     ReducedRateCondition Condition,
-    bool KeepsReserve);
+    bool KeepsReserve)
+{
+    public decimal Royalty { get; init; }
+}

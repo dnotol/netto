@@ -189,7 +189,7 @@ public static class YearSimulation
 
         var company = Company(scenario, corporateRules, dividendRules, besidesPay, pay.YearNetInPocket, pay.TaxablePayWithoutRequalified, pay.CompanyCost);
         return new PayLevel(scenario.DirectorPay, company.NetInPocket, company.Dividend.Dividend, company.KeptInCompany, company.Tax.Condition,
-            company.MaximumDividend >= scenario.Reserve);
+            company.MaximumDividend >= scenario.Reserve) { Royalty = besidesPay.Copyright.Royalty };
     }
 
     // The smallest director pay, as the split moves it, that keeps the reduced corporate rate out of the
@@ -201,8 +201,41 @@ public static class YearSimulation
     // profit before pay keeps it (more of the vouchers the company cannot deduct than that profit, or a
     // benefit beyond its share of any pay), or for a year without rules. When the company pays the
     // contributions and no benefit is capped, some gross always keeps it: their minimum alone is more
-    // than half of what it can add back.
+    // than half of what it can add back. A royalty that follows the pay rises with it and lowers the
+    // taxable income art. 215 compares the pay with, so the smallest pay is found by halving to the cent
+    // between no pay and the pay ceiling: a pay keeps the rate when the smallest pay with the royalty
+    // held at what it comes to there is at most that pay, which, once true, stays true at every higher
+    // pay. Null when not even the pay ceiling keeps it.
     internal static decimal? SmallestPayKeepingReducedRate(Scenario scenario)
+    {
+        if (!scenario.Copyright.FollowsPay)
+            return SmallestPayWithRoyaltyHeld(scenario);
+        if (CopyrightRules.For(scenario.IncomeYear) is not { } copyright || PayCeiling(scenario) is not { } ceiling)
+            return null;
+
+        bool Keeps(decimal pay) =>
+            SmallestPayWithRoyaltyHeld(WithRoyaltyAtPay(scenario with { DirectorPay = pay }, copyright)) is { } smallest && smallest <= pay;
+
+        if (!Keeps(ceiling))
+            return null;
+        if (Keeps(0m))
+            return 0m;
+
+        var (low, high) = (0m, ceiling);
+        while (high - low > Cent)
+        {
+            var middle = Math.Floor((low + high) * 50m) / 100m;
+            if (Keeps(middle))
+                high = middle;
+            else
+                low = middle;
+        }
+
+        return high;
+    }
+
+    // The smallest pay keeping the reduced rate with the royalty as the scenario holds it.
+    private static decimal? SmallestPayWithRoyaltyHeld(Scenario scenario)
     {
         if (CorporateTaxRules.For(scenario.IncomeYear) is not { } corporateRules || LeverRules.For(scenario.IncomeYear) is not { } levers
             || BesidesPayOf(scenario, levers).Value is not { } besidesPay)

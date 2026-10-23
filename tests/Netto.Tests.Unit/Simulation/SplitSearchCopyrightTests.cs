@@ -21,6 +21,9 @@ public class SplitSearchCopyrightTests
 
     private static readonly CopyrightRoyalty Royalty = new(20_000m);
 
+    // A royalty that follows the pay, for 75% of the working time spent creating.
+    private static readonly CopyrightRoyalty Following = new(0m) { CreativeShare = 0.75m, FollowsPay = true };
+
     [Fact]
     public void Run_2026Royalty_drawsEveryPayFromNoneToTheProfitItLeaves()
     {
@@ -89,6 +92,106 @@ public class SplitSearchCopyrightTests
         SplitSearch.Run(Scenario() with { Copyright = new CopyrightRoyalty(-0.01m) }).ShouldBe((null, CopyrightCalculator.RoyaltyNegative));
     }
 
+    [Fact]
+    public void Run_2026Royalty_eachLevelCarriesIt()
+    {
+        Search(Scenario()).Curve.ShouldAllBe(level => level.Royalty == 20_000m);
+    }
+
+    // A royalty that follows the pay: each pay the search draws is the year at that pay with what a ruling
+    // accepts there, 75% of the time creating.
+    [Theory]
+    [MemberData(nameof(Payers))]
+    public void Run_2026RoyaltyFollowingThePay_eachLevelIsTheYearAtThatPay(ContributionsPaidBy paidBy, bool asWithheld, bool averageWithinCap)
+    {
+        var scenario = Scenario(paidBy: paidBy, taxPrepayments: asWithheld ? TaxPrepayments.AsWithheld : Withheld) with
+        {
+            Copyright = Following with { AverageWithinCap = averageWithinCap },
+        };
+
+        Search(scenario).Curve.ShouldAllBe(level => level == LevelOf(scenario, level.Pay));
+    }
+
+    [Fact]
+    public void Run_2026RoyaltyFollowingThePay_eachLevelCarriesWhatARulingAcceptsAtItsPay()
+    {
+        Search(FollowingScenario()).Curve.ShouldAllBe(level => level.Royalty == CopyrightCalculator.Ceiling(CopyrightRules.IncomeYear2026, Following, level.Pay));
+    }
+
+    // Up to the largest pay the 100,000 pays together with what a ruling accepts beside it.
+    [Fact]
+    public void Run_2026RoyaltyFollowingThePay_drawsEveryPayFromNoneToThePayCeiling()
+    {
+        var pays = Search(FollowingScenario()).Curve.Select(level => level.Pay).ToList();
+
+        (pays[0], pays[^1]).ShouldBe((0m, 81_250m));
+    }
+
+    [Theory]
+    [MemberData(nameof(FollowingPayers))]
+    public void Run_2026RoyaltyFollowingThePay_noPayWithinAThousandEurosLeavesMore(ContributionsPaidBy paidBy)
+    {
+        var scenario = FollowingScenario(paidBy);
+        var best = Search(scenario).Best.ShouldNotBeNull();
+
+        var around = Enumerable.Range(-1_000, 2_001).Select(euros => best.Pay + euros).Where(pay => pay is >= 0m and <= 81_250m)
+            .Select(pay => Year(scenario with { DirectorPay = pay }).NetInPocket);
+
+        around.ShouldAllBe(net => net <= best.NetInPocket);
+    }
+
+    public static TheoryData<ContributionsPaidBy> FollowingPayers => [ContributionsPaidBy.Director, ContributionsPaidBy.Company];
+
+    [Theory]
+    [MemberData(nameof(FollowingPayers))]
+    public void Run_2026RoyaltyFollowingThePay_theYearKeepsTheRateFromTheSmallestPayAndLosesItACentLower(ContributionsPaidBy paidBy)
+    {
+        var scenario = FollowingScenario(paidBy);
+        var smallest = Search(scenario).SmallestPayKeepingReducedRate.ShouldNotBeNull();
+
+        (Year(scenario with { DirectorPay = smallest }).Company.Condition.AppliesReducedRate(),
+                Year(scenario with { DirectorPay = smallest - 0.01m }).Company.Condition.AppliesReducedRate())
+            .ShouldBe((true, false));
+    }
+
+    // The royalty lowers the taxable income art. 215 compares the pay with, and rises with the pay: the
+    // rate is kept from P ≥ (100,000 − R(P)) / 2, 44,827.59 with its 10,344.82, where a company paying no
+    // royalty keeps it from half its 100,000.
+    [Fact]
+    public void Run_2026RoyaltyFollowingThePay_keepsTheRateFromLessPayThanWithoutARoyalty()
+    {
+        var following = Search(FollowingScenario()).SmallestPayKeepingReducedRate;
+        var without = Search(Scenario() with { Copyright = CopyrightRoyalty.None }).SmallestPayKeepingReducedRate;
+
+        (following, without).ShouldBe((44_827.59m, 50_000m));
+    }
+
+    // 400,000 shared and all of the time creating: what a ruling accepts reaches the cap at a pay of
+    // 231,660, and the pay runs on to 400,000 less the cap.
+    [Fact]
+    public void Run_2026RoyaltyFollowingPastTheCap_eachLevelIsTheYearAtThatPayUpToThePayCeiling()
+    {
+        var scenario = FollowingScenario(share: 1m, revenue: 420_000m);
+
+        var curve = Search(scenario).Curve;
+
+        curve.ShouldSatisfyAllConditions(
+            () => curve[^1].Pay.ShouldBe(322_780m),
+            () => curve.ShouldAllBe(level => level == LevelOf(scenario, level.Pay)));
+    }
+
+    // While a ruling accepts nothing, the search is the search without a royalty.
+    [Fact]
+    public void Run_2026RoyaltyFollowingWithoutAShare_isTheSearchWithoutARoyalty()
+    {
+        var withoutShare = Search(Scenario() with { Copyright = Following with { CreativeShare = null } });
+
+        withoutShare.Curve.ShouldBe(Search(Scenario() with { Copyright = CopyrightRoyalty.None }).Curve);
+    }
+
+    private static Scenario FollowingScenario(ContributionsPaidBy paidBy = ContributionsPaidBy.Director, decimal share = 0.75m, decimal revenue = 120_000m) =>
+        Scenario(revenue: revenue, paidBy: paidBy) with { Copyright = Following with { CreativeShare = share } };
+
     private static Scenario Scenario(
         decimal revenue = 120_000m,
         TaxPrepayments? taxPrepayments = null,
@@ -121,6 +224,9 @@ public class SplitSearchCopyrightTests
     {
         var year = Year(scenario with { DirectorPay = pay });
 
-        return new PayLevel(pay, year.NetInPocket, year.Dividend.Dividend, year.KeptInCompany, year.Company.Condition, year.MaximumDividend >= scenario.Reserve);
+        return new PayLevel(pay, year.NetInPocket, year.Dividend.Dividend, year.KeptInCompany, year.Company.Condition, year.MaximumDividend >= scenario.Reserve)
+        {
+            Royalty = year.Copyright.Royalty,
+        };
     }
 }
