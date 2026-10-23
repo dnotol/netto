@@ -50,6 +50,7 @@
     {
         TabBadgeKind.MoreThanToday => Formats.Addition(badge.Amount),
         TabBadgeKind.NextBy => Formats.ShortDay(badge.Date),
+        TabBadgeKind.SavedPlans => badge.Count.ToString(Formats.Culture),
         _ => "",
     };
 
@@ -57,6 +58,7 @@
     {
         TabBadgeKind.MoreThanToday => L[PlanTabBarText.Spoken(badge.Kind), Formats.Euros(badge.Amount)],
         TabBadgeKind.NextBy => L[PlanTabBarText.Spoken(badge.Kind), Formats.Day(badge.Date)],
+        TabBadgeKind.SavedPlans => L[PlanTabBarText.Spoken(badge.Kind), badge.Count],
         _ => L[PlanTabBarText.Spoken(badge.Kind)],
     };
 }

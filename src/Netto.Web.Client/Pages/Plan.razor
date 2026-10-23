@@ -311,7 +311,7 @@ else
 
     // What each tab says after its name, from what its content draws.
     private IReadOnlyDictionary<PlanTab, TabBadge> Badges() =>
-        TabBadges.Of(_run, MovesView.Of(Plans.TodayPlan?.Inputs, FoundMoves()), CalendarView.From(_inputs, _run, Today));
+        TabBadges.Of(_run, MovesView.Of(Plans.TodayPlan?.Inputs, FoundMoves()), CalendarView.From(_inputs, _run, Today), Plans.Plans.Count(plan => plan.Readable));
 
     // The browser's date, which decides which deadlines are past and which one a payment is proposed by.
     private DateOnly Today => DateOnly.FromDateTime(Clock.GetLocalNow().DateTime);

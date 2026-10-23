@@ -194,6 +194,27 @@ public class PlanPageTests
         (whenToPay.Refused, whenToPay.Spoken).ShouldBe((true, "an amount here is refused"));
     }
 
+    // Compare plans says how many saved plans can be compared, short after its name and in full for a
+    // screen reader, from two.
+    [Theory]
+    [InlineData(null)]
+    [InlineData("compare")]
+    public async Task Plan_twoSavedPlans_badgesCompareWithTheirCount(string? tab)
+    {
+        var html = await RenderPlanAsync(new Folds(new BrowserStorage()), tab, saved: [RiverInputs.Example, RiverInputs.Example.WithDirectorPay(40_000m), RiverInputs.Example]);
+
+        var compare = Links(html).Single(link => link.Name == "Compare plans");
+        (compare.Badge, compare.Spoken).ShouldBe(("3", "3 saved plans to compare"));
+    }
+
+    [Fact]
+    public async Task Plan_onlyOneSavedPlan_badgesNoCompare()
+    {
+        var html = await RenderPlanAsync(new Folds(new BrowserStorage()), saved: [RiverInputs.Example]);
+
+        Links(html).Single(link => link.Name == "Compare plans").Badge.ShouldBeNull();
+    }
+
     private static List<string> Toggles(string html) => [.. Regex.Matches(html, "<button[^>]*class=\"fold__toggle\"[^>]*>").Select(match => match.Value)];
 
     // The bar of buckets, its figures, its buttons and its row of tabs.
@@ -225,13 +246,15 @@ public class PlanPageTests
         return found.Success ? WebUtility.HtmlDecode(Regex.Replace(found.Groups[1].Value, "<[^>]*>", "")).Trim() : null;
     }
 
-    private static Task<string> RenderPlanAsync(Folds folds, string? tab = null, RiverInputs? river = null, RiverInputs? today = null) =>
+    private static Task<string> RenderPlanAsync(Folds folds, string? tab = null, RiverInputs? river = null, RiverInputs? today = null, RiverInputs[]? saved = null) =>
         RenderAsync(typeof(Plan), folds, tab is null ? [] : new() { ["Tab"] = tab }, services =>
         {
             var storage = new BrowserStorage();
             var plans = new SavedPlans(storage);
             if (today is not null)
                 plans.Star(plans.Save(today, number => $"Plan {number}").Id);
+            foreach (var plan in saved ?? [])
+                plans.Save(plan, number => $"Plan {number}");
             services.AddSingleton<IBrowserStorage>(storage);
             services.AddSingleton(plans);
             services.AddSingleton(new RiverState(plans) { Inputs = river ?? RiverInputs.Example });

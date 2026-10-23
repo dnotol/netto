@@ -31,6 +31,7 @@ public class PlanTabBarTextTests
     [InlineData(TabBadgeKind.MoreThanToday, "€3,054.18", "€3,054.18 more than Today")]
     [InlineData(TabBadgeKind.NextBy, "21 December 2026", "next advance payment by 21 December 2026")]
     [InlineData(TabBadgeKind.Refused, "", "an amount here is refused")]
+    [InlineData(TabBadgeKind.SavedPlans, "3", "3 saved plans to compare")]
     public void PlanTabBarResx_everyBadge_isSpokenInFull(TabBadgeKind kind, string figure, string expected)
     {
         string.Format(CultureInfo.InvariantCulture, Text(PlanTabBarText.Spoken(kind)) ?? "", figure).ShouldBe(expected);

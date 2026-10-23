@@ -36,4 +36,7 @@
   <data name="Spoken_NextBy" xml:space="preserve">
     <value>next advance payment by {0}</value>
   </data>
+  <data name="Spoken_SavedPlans" xml:space="preserve">
+    <value>{0} saved plans to compare</value>
+  </data>
 </root>

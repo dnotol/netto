@@ -6,7 +6,7 @@ namespace Netto.Tests.WebClient.Tabs;
 
 // What each tab says after its name, from the views its content draws: the moves' total on Optimisation
 // once a plan is starred Today, the next advance payment's date on When to pay, and on a tab holding an
-// amount the engine refuses, that refusal, which wins over a date.
+// amount the engine refuses, that refusal, which wins over a date, and the number of plans to compare on Compare plans.
 public class TabBadgesTests
 {
     // The deadline still open on this date is December's.
@@ -91,15 +91,35 @@ public class TabBadgesTests
         Badges(RiverInputs.Example.WithReserve(-1m), today: null, On23October).ContainsKey(PlanTab.WhenToPay).ShouldBeFalse();
     }
 
-    [Fact]
-    public void Of_compare_hasNoBadgeYet()
+    // Compare plans says how many saved plans the viewer can compare, once there are two.
+    [Theory]
+    [InlineData(2)]
+    [InlineData(5)]
+    public void Of_twoPlansOrMoreToCompare_badgesCompareWithTheirCount(int plans)
     {
-        Badges(RiverInputs.Example, RiverInputs.Example, On23October).ContainsKey(PlanTab.Compare).ShouldBeFalse();
+        Badges(RiverInputs.Example, today: null, On23October, plans).GetValueOrDefault(PlanTab.Compare).ShouldBe(new TabBadge(TabBadgeKind.SavedPlans, Count: plans));
     }
 
-    private static IReadOnlyDictionary<PlanTab, TabBadge> Badges(RiverInputs river, RiverInputs? today, DateOnly date)
+    // Nothing to compare yet: with none, or one plan, the tab has no badge.
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    public void Of_lessThanTwoPlansToCompare_badgesNoCompare(int plans)
+    {
+        Badges(RiverInputs.Example, RiverInputs.Example, On23October, plans).ContainsKey(PlanTab.Compare).ShouldBeFalse();
+    }
+
+    // The plans are the tab's own, whatever the river does: a refused river leaves the count.
+    [Fact]
+    public void Of_riverRefused_stillBadgesCompare()
+    {
+        Badges(RiverInputs.Example.WithReserve(-1m), today: null, On23October, plans: 3).GetValueOrDefault(PlanTab.Compare)
+            .ShouldBe(new TabBadge(TabBadgeKind.SavedPlans, Count: 3));
+    }
+
+    private static IReadOnlyDictionary<PlanTab, TabBadge> Badges(RiverInputs river, RiverInputs? today, DateOnly date, int plans = 0)
     {
         var run = river.Run();
-        return TabBadges.Of(run, MovesView.Of(today, date), CalendarView.From(river, run, date));
+        return TabBadges.Of(run, MovesView.Of(today, date), CalendarView.From(river, run, date), plans);
     }
 }
