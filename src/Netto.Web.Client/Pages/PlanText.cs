@@ -1,10 +1,22 @@
+using Netto.Web.Client.Tabs;
+
 namespace Netto.Web.Client.Pages;
 
 // The resource keys of Plan.razor that PlanTextTests holds to Plan.resx.
 internal static class PlanText
 {
-    // The skip link, the keyboard's first stop on the page.
-    public const string SkipToRiver = "SkipToRiver";
+    // The window's title on each tab, as a page of its own would have.
+    public static string PageTitle(PlanTab tab) => tab == PlanTab.Plan ? "PageTitle" : $"PageTitle_{tab}";
+
+    // The skip link, the keyboard's first stop on the page, worded for where it goes on each tab.
+    public static string SkipTo(PlanTab tab) => tab switch
+    {
+        PlanTab.Plan => "SkipToRiver",
+        PlanTab.Optimisation => "SkipToMoves",
+        PlanTab.WhenToPay => "SkipToPayments",
+        PlanTab.Compare => "SkipToComparison",
+        _ => throw new ArgumentOutOfRangeException(nameof(tab), tab, null),
+    };
 
     // Under the split: the pay, and the royalty once it is in the plan, on the director's side.
     public static string Fork(bool royalty) => royalty ? "Fork_Royalty" : "Fork";

@@ -1,4 +1,12 @@
 /* ::deep reaches the MudButtons, which carry no scope attribute of their own. */
+
+/* The tab's body under its head: what Today leaves to move, the moves, and their total. */
+.moves {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+}
+
 .moves__state,
 .moves__total {
     margin: 0;
@@ -9,12 +17,12 @@
 .moves__list {
     display: grid;
     gap: 0.5rem;
-    margin: 0.75rem 0;
+    margin: 0;
     padding: 0;
     list-style: none;
 }
 
-/* One row per move: what changes, what it adds, and Apply. */
+/* One row per move, raised off the page: what changes, what it adds, and Apply. */
 .moves__move {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto auto;
@@ -23,7 +31,7 @@
     padding: 0.6rem 0.9rem;
     border: 1px solid var(--netto-line);
     border-radius: 10px;
-    background: var(--netto-page);
+    background: var(--netto-surface);
 }
 
 

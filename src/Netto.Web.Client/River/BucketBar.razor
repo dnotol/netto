@@ -15,8 +15,9 @@
    amount, that there is no figure until it is corrected; the other buckets are read in the bar
    itself. The region is one of its own, out of sight, since a bubble opening inside the figures
    would be read out as a change of the bar, and a menu inside it at every change. It is empty as the
-   page opens. *@
-<div class="bucket-bar">
+   page opens. Its last row, across its width, is what the page puts there (TabRow): the plan page's
+   tabs, which stick with it. *@
+<div class="bucket-bar @(TabRow is null ? null : "bucket-bar--tabs")">
     <MudContainer MaxWidth="MaxWidth.Large">
         <div class="bucket-bar__figures">
             <dl class="bucket-bar__buckets @(View is { HasMuddyPocket: true } ? "bucket-bar__buckets--five" : "")">
@@ -83,6 +84,10 @@
         {
             <div class="bucket-bar__actions">@ChildContent</div>
         }
+        @if (TabRow is not null)
+        {
+            <div class="bucket-bar__tabs">@TabRow</div>
+        }
     </MudContainer>
 </div>
 
@@ -101,6 +106,10 @@
     // What sits right of the figures.
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
+
+    // The bar's last row, under the figures and what sits right of them: the plan page's tabs.
+    [Parameter]
+    public RenderFragment? TabRow { get; set; }
 
     private BucketsView? View { get; set; }
 

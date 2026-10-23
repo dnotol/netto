@@ -78,11 +78,4 @@ public class OptimisationTabTextTests
 
         text.ShouldBe("Let your copyright royalty follow your pay, at what a ruling accepts for 75% of your time spent creating, your pay kept within what the company can pay beside it");
     }
-
-    // Folded without a Today, the summary says what the card waits for.
-    [Fact]
-    public void OptimisationTabResx_noToday_hasASummary()
-    {
-        Resources.GetString("SummaryNoToday", CultureInfo.InvariantCulture).ShouldBe("save and star your current setup to see them");
-    }
 }

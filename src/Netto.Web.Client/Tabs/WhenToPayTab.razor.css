@@ -1,13 +1,24 @@
-.calendar__heading {
+/* The tab's body under its head: who pays what next, then each part of the calendar under its own
+   heading. */
+.calendar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+}
+
+.calendar__next {
     margin: 0;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+/* Each heading starts a new part of the tab: the advance payments, the pay, the contributions, then
+   what follows the year. */
+.calendar__heading {
+    margin: 0.75rem 0 0;
     font-family: "Fraunces", Georgia, serif;
     font-size: 1.1rem;
     font-weight: 600;
-}
-
-/* A heading after the first starts a new part of the card: the pay, then what follows the year. */
-.calendar__heading:not(:first-child) {
-    margin-top: 0.75rem;
 }
 
 .calendar__line {

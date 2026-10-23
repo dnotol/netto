@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Resources;
 using Netto.Web.Client.Pages;
+using Netto.Web.Client.Tabs;
 using Shouldly;
 
 namespace Netto.Tests.WebClient.Pages;
@@ -12,13 +13,36 @@ public class PlanTextTests
     // The name IStringLocalizer<Plan> reads Pages/Plan.resx under.
     private static readonly ResourceManager Resources = new("Netto.Web.Client.Pages.Plan", typeof(Plan).Assembly);
 
-    // The keyboard's first stop on the page.
-    [Fact]
-    public void PlanResx_skipLink_saysWhereItGoes()
+    // The keyboard's first stop on the page, past the bar and its tabs to the tab's own content.
+    [Theory]
+    [InlineData(PlanTab.Plan, "Skip to the river")]
+    [InlineData(PlanTab.Optimisation, "Skip to your moves")]
+    [InlineData(PlanTab.WhenToPay, "Skip to the payments")]
+    [InlineData(PlanTab.Compare, "Skip to the comparison")]
+    public void PlanResx_skipLink_saysWhereItGoesOnEachTab(PlanTab tab, string expected)
     {
-        var text = Resources.GetString(PlanText.SkipToRiver, CultureInfo.InvariantCulture);
+        Resources.GetString(PlanText.SkipTo(tab), CultureInfo.InvariantCulture).ShouldBe(expected);
+    }
 
-        text.ShouldBe("Skip to the river");
+    // The window's title names the tab, as a new page would.
+    [Theory]
+    [InlineData(PlanTab.Plan, "Your year: Netto")]
+    [InlineData(PlanTab.Optimisation, "Optimisation: Netto")]
+    [InlineData(PlanTab.WhenToPay, "When to pay: Netto")]
+    [InlineData(PlanTab.Compare, "Compare plans: Netto")]
+    public void PlanResx_pageTitle_namesEachTab(PlanTab tab, string expected)
+    {
+        Resources.GetString(PlanText.PageTitle(tab), CultureInfo.InvariantCulture).ShouldBe(expected);
+    }
+
+    // A tab added later fails here until it has both.
+    [Fact]
+    public void PlanResx_everyTab_hasATitleAndASkipLink()
+    {
+        Enum.GetValues<PlanTab>()
+            .SelectMany(tab => new[] { PlanText.PageTitle(tab), PlanText.SkipTo(tab) })
+            .Where(key => string.IsNullOrWhiteSpace(Resources.GetString(key, CultureInfo.InvariantCulture)))
+            .ShouldBeEmpty();
     }
 
     // The two notes under the river fold to one line that counts what they hold, from the lists the

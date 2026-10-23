@@ -287,3 +287,15 @@
         display: none;
     }
 }
+
+/* The last row, across the bar's width under everything else: the plan page's tabs (Tabs/PlanTabBar).
+   The bar then has no padding under them, so the current tab's gold line sits on its border. After the
+   narrower widths' rules, which set that padding again. */
+.bucket-bar__tabs {
+    grid-column: 1 / -1;
+    min-width: 0;
+}
+
+.bucket-bar--tabs ::deep .mud-container {
+    padding-bottom: 0;
+}

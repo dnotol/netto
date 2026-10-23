@@ -1,0 +1,53 @@
+/* The tabs, a row of links along the bar's bottom edge: muted names, the current one in the text colour,
+   heavier, over a gold line, an active state. The line sits on the link's own bottom, which the bar
+   brings down to its border (BucketBar.razor.css), so the tab reads as part of the bar. Each link is as
+   tall as a comfortable target; the site's focus ring is drawn around it (app.css). */
+.plan-tab-bar__tabs {
+    display: flex;
+    gap: 1.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.plan-tab-bar__tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 2.75rem;
+    padding: 0 0.15rem;
+    color: var(--netto-text-muted);
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-decoration: none;
+    white-space: nowrap;
+    box-shadow: inset 0 -2px 0 transparent;
+}
+
+    .plan-tab-bar__tab:hover {
+        color: var(--netto-text);
+    }
+
+    .plan-tab-bar__tab[aria-current="page"] {
+        color: var(--netto-text);
+        font-weight: 600;
+        box-shadow: inset 0 -2px 0 var(--netto-gold);
+    }
+
+/* On a phone the names sit closer and smaller, and the row scrolls sideways rather than wrap, so the
+   bar keeps one height; room is left above and below for the focus ring, which the scrolling would
+   otherwise cut. */
+@media (max-width: 640px) {
+    .plan-tab-bar__tabs {
+        gap: 1rem;
+        margin: -0.25rem -0.25rem 0;
+        padding: 0.25rem 0.25rem 0;
+        overflow-x: auto;
+        scrollbar-width: thin;
+    }
+
+    .plan-tab-bar__tab {
+        min-height: 2.5rem;
+        font-size: 0.85rem;
+    }
+}

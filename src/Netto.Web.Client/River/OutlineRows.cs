@@ -13,10 +13,9 @@ internal sealed class OutlineRows(Folds folds)
 {
     // The cards in the order a reader meets them, the page's: the levers before the split, then the
     // director's stream, the royalty first, before the company's. A new card takes its place here, or
-    // drawing it fails.
+    // drawing it fails. Your moves and When to pay are tabs of their own (Tabs/), not cards of the river.
     public static IReadOnlyList<string> Order { get; } =
     [
-        "moves",
         "company-year",
         ModuleFolds.Name(OptionalModule.Vouchers),
         ModuleFolds.Name(OptionalModule.Allowances),
@@ -27,7 +26,6 @@ internal sealed class OutlineRows(Folds folds)
         "director-pay",
         "corporate-tax",
         "dividend",
-        "calendar",
     ];
 
     // How far past the line a card's top may sit and still count as on it: a card scrolled to the line

@@ -3,15 +3,17 @@
 @inject IStringLocalizer<OptimisationTab> L
 @inject Folds Folds
 
-@* What Netto would change in the plan starred « Today », the user's current setup, to leave more in
-   the pocket: the engine's moves (MoveSearch, through MovesView), each adding what it says on top of
-   the ones above it, and their total. « Apply » sets the river's values to the move's; Today stays as
-   it was saved, and the moves are applied from here only: the split's curve shows the best pay, but
-   moves no pay by itself. Without a Today the card folds to its title and what it waits for. The
-   moves are found once per Today, the search running the split at every move; which
-   ones the river holds is read at each change. Without a Today, or while Netto cannot run it, the
-   card says why. *@
-<ModuleCard Name="moves" Title="@L["Title"]" Summary="@Summary" Glance="@Glance" Help="@L["Help"]" OpenByDefault="@_view.OpenByDefault">
+@* The Optimisation tab: what Netto would change in the plan starred « Today », the user's current setup,
+   to leave more in the pocket, a tab of its own beside the river rather than a card in it, since it is
+   no module of the river. The engine's moves (MoveSearch, through MovesView), each adding what it says
+   on top of the ones above it, and their total. « Apply » sets the river's values to the move's; Today
+   stays as it was saved, and the moves are applied from here only: the split's curve shows the best pay,
+   but moves no pay by itself. A lever a move adds to the plan opens its card in the river (ModuleFolds),
+   for when the viewer goes back to it. The moves are found once per Today, the search running the split
+   at every move; which ones the river holds is read at each change. Without a Today, or while Netto
+   cannot run it, the tab says why. *@
+<TabHead Eyebrow="@L["Eyebrow"]" Title="@L["Title"]" Lede="@L["Lede"]" />
+<div class="moves">
     <p class="moves__state">@L[OptimisationTabText.State(_view.State)]</p>
     @if (_view.State == MovesState.Moves)
     {
@@ -35,7 +37,7 @@
         </ol>
         <p class="moves__total">@L["Total", Formats.Euros(_view.Total)]</p>
     }
-</ModuleCard>
+</div>
 
 @code {
     // The plan starred « Today », or null while none is.
@@ -72,17 +74,6 @@
         _found = true;
     }
 
-    // Folded without a Today, the summary says what the card waits for.
-    private string? Summary => _view.State switch
-    {
-        MovesState.Moves => L["Summary", Formats.Euros(_view.Total)].Value,
-        MovesState.NoToday => L["SummaryNoToday"].Value,
-        _ => null,
-    };
-
-    // The moves' total, for the card's row in the river's outline.
-    private CardGlance? Glance => _view.State == MovesState.Moves ? new(GlanceKind.MoreThanToday, Formats.Euros(_view.Total)) : null;
-
     private string What(PlannedMove move) => move.Move switch
     {
         PayMove pay => L[OptimisationTabText.Move(pay), Formats.Euros(pay.Pay), Formats.Euros(_view.TodayPay)],
@@ -96,7 +87,8 @@
     };
 
     // Apply goes with the move applied, so the focus goes to what replaces it, « In the river ». A lever
-    // the move adds to the plan opens its card (ModuleFolds), so the user sees what the move put there.
+    // the move adds to the plan opens its card in the river (ModuleFolds), so the viewer sees what the
+    // move put there once back on the Plan tab.
     private async Task Apply(PlannedMove move, int index)
     {
         _focusApplied = index;

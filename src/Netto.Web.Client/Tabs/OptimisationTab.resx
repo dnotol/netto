@@ -12,14 +12,14 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="Eyebrow" xml:space="preserve">
+    <value>Against Today, your current setup</value>
+  </data>
   <data name="Title" xml:space="preserve">
-    <value>Your moves</value>
+    <value>Optimisation</value>
   </data>
-  <data name="Help" xml:space="preserve">
+  <data name="Lede" xml:space="preserve">
     <value>What Netto would change in Today, your current setup, to leave more in your pocket. Each move adds what it says on top of the moves above it, so together they add up to the whole plan's gain.</value>
-  </data>
-  <data name="Summary" xml:space="preserve">
-    <value>{0} more than Today</value>
   </data>
   <data name="State_NoToday" xml:space="preserve">
     <value>Save your current setup with « Save this plan » and star it as Today: the moves are measured from it.</value>
@@ -53,9 +53,6 @@
   </data>
   <data name="Move_Rent" xml:space="preserve">
     <value>Rent the office in your home to the company for {0} a year</value>
-  </data>
-  <data name="SummaryNoToday" xml:space="preserve">
-    <value>save and star your current setup to see them</value>
   </data>
   <data name="Gain" xml:space="preserve">
     <value>{0} more</value>

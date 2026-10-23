@@ -1,21 +1,25 @@
 @using Netto.Web.Client.River
 @inject IStringLocalizer<WhenToPayTab> L
 
-@* When the plan's payments fall: a lens over the whole river, not a module in it, so it has no rate and
-   no « Remove ». It reads the river's one run and the date (CalendarView over the engine's
-   PaymentCalendar): the company's and the director's advance payments by each deadline as the plan
-   holds them, the past ones marked, and at the first deadline still open what more cancels each
-   surcharge, then one sentence per tax, as its card says it; the pay each month, as the pay slip
-   gives it; and after the year, what each assessment leaves. It applies nothing: the moves card is
-   where a payment is applied. Folded, it says the next advance payment and its date. *@
-<ModuleCard Name="calendar" Title="@L["Title"]" Summary="@Summary" Glance="@Glance" Help="@L["Help"]" OpenByDefault="false" Refused="@_view?.BilledRefused">
+@* The When to pay tab: when the plan's payments fall, a lens over the whole river, not a module in it, so
+   a tab of its own beside it rather than a card in it, with no rate and no « Remove ». It reads the
+   river's one run and the date (CalendarView over the engine's PaymentCalendar): first who pays what
+   next, then the company's and the director's advance payments by each deadline as the plan holds them,
+   the past ones marked, and at the first deadline still open what more cancels each surcharge, then one
+   sentence per tax, as its card says it; the pay each month, as the pay slip gives it; and after the
+   year, what each assessment leaves. It applies nothing: the Optimisation tab is where a payment is
+   applied. Its one input, what the fund bills, shows the engine's refusal beside its field. *@
+<TabHead Eyebrow="@L["Eyebrow"]" Title="@L["Title"]" Lede="@L["Lede"]" />
+<div class="calendar">
     @if (_view is null)
     {
         <p class="calendar__note">@L["Refused"]</p>
     }
     else
     {
-        <h3 id="calendar-advance-payments" class="calendar__heading">@L["AdvancePayments"]</h3>
+        <p class="calendar__next">@Summary</p>
+
+        <h2 id="calendar-advance-payments" class="calendar__heading">@L["AdvancePayments"]</h2>
         @if (_view.Rows.Count == 0)
         {
             <p class="calendar__note">@L["NoRows", _view.IncomeYear]</p>
@@ -60,7 +64,7 @@
         }
         <p class="calendar__tax">@L[WhenToPayTabText.Director(_view.Director), Formats.Euros(_view.Director.Surcharge), Formats.Euros(_view.Director.More), Day(_view.Director.OpenDeadline), _view.IncomeYear]</p>
 
-        <h3 class="calendar__heading">@L["PayHeading"]</h3>
+        <h2 class="calendar__heading">@L["PayHeading"]</h2>
         <p class="calendar__line">@L["PayLine", Formats.Euros(_view.Pay.GrossPay), Formats.Euros(_view.Pay.Withholding), Formats.Euros(_view.Pay.NetPaid)]</p>
         @if (_view.Pay.Left is { } left)
         {
@@ -75,7 +79,7 @@
             <p class="calendar__note">@L["PayWithheldGiven", Formats.Euros(given)]</p>
         }
 
-        <h3 class="calendar__heading">@L["ContributionsHeading"]</h3>
+        <h2 class="calendar__heading">@L["ContributionsHeading"]</h2>
         <p class="calendar__line">@L[_view.Contributions.PaidByCompany ? "ContributionsLine_Company" : "ContributionsLine", Formats.Euros(_view.Contributions.EachQuarter)]</p>
         @if (_view.QuartersLeft > 0)
         {
@@ -94,14 +98,14 @@
             <p class="calendar__line">@L[WhenToPayTabText.Regularisation(regularisation), Formats.Euros(Math.Abs(regularisation))]</p>
         }
 
-        <h3 class="calendar__heading">@L["AfterHeading"]</h3>
+        <h2 class="calendar__heading">@L["AfterHeading"]</h2>
         @if (_view.CompanyBalance is { } companyBalance)
         {
             <p class="calendar__line">@L[WhenToPayTabText.CompanyBalance(companyBalance.Balance), companyBalance.TaxYear, Formats.Euros(Math.Abs(companyBalance.Balance))]</p>
         }
         <p class="calendar__line">@L[WhenToPayTabText.DirectorBalance(_view.DirectorBalance.Balance), _view.DirectorBalance.TaxYear, Formats.Euros(Math.Abs(_view.DirectorBalance.Balance))]</p>
     }
-</ModuleCard>
+</div>
 
 @code {
     [Parameter, EditorRequired]
@@ -124,12 +128,10 @@
 
     protected override void OnParametersSet() => _view = CalendarView.From(Inputs, Run, Date);
 
+    // Who pays what by the next deadline still open, or that nothing is left to pay in advance.
     private string? Summary => _view is null
         ? null
         : L[WhenToPayTabText.Summary(_view.Next), Day(_view.Next?.Date), Formats.Euros(_view.Next?.Company ?? 0m), Formats.Euros(_view.Next?.Director ?? 0m), _view.IncomeYear].Value;
-
-    // The next advance payment's date, for the card's row in the river's outline; nothing once none is left.
-    private CardGlance? Glance => _view?.Next is { } next ? new(GlanceKind.NextBy, Formats.Day(next.Date)) : null;
 
     private static string Day(DateOnly? date) => date is { } day ? Formats.Day(day) : "";
 

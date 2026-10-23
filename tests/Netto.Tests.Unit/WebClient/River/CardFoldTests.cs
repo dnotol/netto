@@ -2,7 +2,6 @@ using Netto.Core.Vouchers;
 using Netto.Web.Client.River;
 using Netto.Web.Client.River.CompanyCar;
 using Netto.Web.Client.River.Copyright;
-using Netto.Web.Client.Tabs;
 using Shouldly;
 using static Netto.Tests.WebClient.River.RiverRendering;
 
@@ -94,63 +93,6 @@ public class CardFoldTests
 
         IsOpen(html).ShouldBeTrue();
     }
-
-    // The calendar is a lens, folded to the next advance payment.
-    [Fact]
-    public async Task Calendar_neverTouched_isFolded()
-    {
-        var parameters = new Dictionary<string, object?> { ["Inputs"] = Everything, ["Run"] = Everything.Run(), ["Date"] = new DateOnly(2026, 10, 23) };
-
-        var html = await RenderAsync<WhenToPayTab>(new Folds(new BrowserStorage()), parameters);
-
-        IsOpen(html).ShouldBeFalse();
-    }
-
-    // What the user says the fund bills is refused when it is not an amount: the calendar holds that
-    // field, so it opens.
-    [Fact]
-    public async Task Calendar_billedAmountRefused_isOpenAndCannotBeFolded()
-    {
-        var refused = Everything.WithBilledContributions(-1m);
-        var parameters = new Dictionary<string, object?> { ["Inputs"] = refused, ["Run"] = refused.Run(), ["Date"] = new DateOnly(2026, 10, 23) };
-
-        var html = await RenderAsync<WhenToPayTab>(new Folds(new BrowserStorage()), parameters);
-
-        (IsOpen(html), IsDisabled(html)).ShouldBe((true, true));
-    }
-
-    // Your moves is the one card that opens by itself, once a plan is starred Today.
-    [Fact]
-    public async Task Moves_withoutAToday_isFolded()
-    {
-        var html = await RenderAsync<OptimisationTab>(new Folds(new BrowserStorage()), MovesParameters(today: null));
-
-        IsOpen(html).ShouldBeFalse();
-    }
-
-    [Fact]
-    public async Task Moves_withAToday_isOpen()
-    {
-        var html = await RenderAsync<OptimisationTab>(new Folds(new BrowserStorage()), MovesParameters(today: RiverInputs.Example));
-
-        IsOpen(html).ShouldBeTrue();
-    }
-
-    [Fact]
-    public async Task Moves_withATodayFoldedByTheViewer_isFolded()
-    {
-        var folds = new Folds(new BrowserStorage());
-        folds.Set("moves", false);
-
-        var html = await RenderAsync<OptimisationTab>(folds, MovesParameters(today: RiverInputs.Example));
-
-        IsOpen(html).ShouldBeFalse();
-    }
-
-    private static Dictionary<string, object?> MovesParameters(RiverInputs? today) => new()
-    {
-        ["Today"] = today, ["Date"] = new DateOnly(2026, 10, 22), ["Inputs"] = RiverInputs.Example,
-    };
 
     private static Dictionary<string, object?> Parameters(Type card, string? refused)
     {

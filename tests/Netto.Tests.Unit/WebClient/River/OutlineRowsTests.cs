@@ -17,10 +17,10 @@ public class OutlineRowsTests
     {
         var rows = new OutlineRows(new Folds(new Storage()));
 
-        foreach (var name in new[] { "dividend", "corporate-tax", "director-pay", "copyright", "split", "moves" })
+        foreach (var name in new[] { "dividend", "corporate-tax", "director-pay", "copyright", "split", "company-year" })
             rows.Report(Row(name), Nothing);
 
-        rows.Rows.Select(row => row.Name).ShouldBe(["moves", "split", "copyright", "director-pay", "corporate-tax", "dividend"]);
+        rows.Rows.Select(row => row.Name).ShouldBe(["company-year", "split", "copyright", "director-pay", "corporate-tax", "dividend"]);
     }
 
     // A lever taken out of the plan takes its card off the page, and its row out of the outline.
@@ -109,12 +109,12 @@ public class OutlineRowsTests
         var storage = new Storage();
         var folds = new Folds(storage);
         if (revealed)
-            folds.Reveal("moves");
+            folds.Reveal("split");
         var rows = new OutlineRows(folds);
         var redrawn = 0;
-        rows.Report(Row("moves", openByDefault: openByDefault), () => redrawn++);
+        rows.Report(Row("split", openByDefault: openByDefault), () => redrawn++);
 
-        rows.Open("moves");
+        rows.Open("split");
 
         (storage.Writes, redrawn).ShouldBe((0, 0));
     }
@@ -152,7 +152,7 @@ public class OutlineRowsTests
         var rows = new OutlineRows(folds);
         rows.Report(Row("split"), Nothing);
         rows.Report(Row("vouchers"), Nothing);
-        rows.Report(Row("moves", openByDefault: true), Nothing);
+        rows.Report(Row("company-year", openByDefault: true), Nothing);
 
         rows.AllOpen.ShouldBeTrue();
     }
@@ -165,13 +165,13 @@ public class OutlineRowsTests
         var storage = new Storage();
         var rows = new OutlineRows(new Folds(storage));
         var redrawn = new List<string>();
-        foreach (var name in new[] { "moves", "split", "dividend" })
-            rows.Report(Row(name, openByDefault: name == "moves"), () => redrawn.Add(name));
+        foreach (var name in new[] { "company-year", "split", "dividend" })
+            rows.Report(Row(name, openByDefault: name == "company-year"), () => redrawn.Add(name));
 
         rows.SetAll(true);
 
         var reloaded = new Folds(storage);
-        (reloaded.IsOpen("moves", false), reloaded.IsOpen("split", false), reloaded.IsOpen("dividend", false), redrawn.Count).ShouldBe((true, true, true, 3));
+        (reloaded.IsOpen("company-year", false), reloaded.IsOpen("split", false), reloaded.IsOpen("dividend", false), redrawn.Count).ShouldBe((true, true, true, 3));
     }
 
     // « Fold all » folds a card open for the visit too: the viewer's word replaces the page's.
@@ -195,14 +195,14 @@ public class OutlineRowsTests
     [Fact]
     public void InView_noCardPassedTheLineYet_isTheFirstCard()
     {
-        OutlineRows.InView([Box("moves", 500, 578), Box("company-year", 598, 676)], Line, atEnd: false).ShouldBe("moves");
+        OutlineRows.InView([Box("company-year", 500, 578), Box("split", 598, 676)], Line, atEnd: false).ShouldBe("company-year");
     }
 
     [Fact]
     public void InView_cardAcrossTheLine_isIt()
     {
-        OutlineRows.InView([Box("moves", -300, -100), Box("company-year", -80, 400), Box("split", 420, 900)], Line, atEnd: false)
-            .ShouldBe("company-year");
+        OutlineRows.InView([Box("company-year", -300, -100), Box("split", -80, 400), Box("director-pay", 420, 900)], Line, atEnd: false)
+            .ShouldBe("split");
     }
 
     // A card jumped to sits with its top on the line, give or take a pixel's rounding.
@@ -233,15 +233,15 @@ public class OutlineRowsTests
     [Fact]
     public void InView_lineBetweenTwoCards_isTheCardAbove()
     {
-        OutlineRows.InView([Box("moves", -300, -100), Box("company-year", -80, 230), Box("split", 250, 900)], Line, atEnd: false)
-            .ShouldBe("company-year");
+        OutlineRows.InView([Box("company-year", -300, -100), Box("split", -80, 230), Box("director-pay", 250, 900)], Line, atEnd: false)
+            .ShouldBe("split");
     }
 
     // The last cards may never reach the bar: at the page's end, the last card is in view.
     [Fact]
     public void InView_pageAtItsEnd_isTheLastCard()
     {
-        OutlineRows.InView([Box("dividend", -100, 300), Box("calendar", 320, 398)], Line, atEnd: true).ShouldBe("calendar");
+        OutlineRows.InView([Box("corporate-tax", -100, 300), Box("dividend", 320, 398)], Line, atEnd: true).ShouldBe("dividend");
     }
 
     [Fact]

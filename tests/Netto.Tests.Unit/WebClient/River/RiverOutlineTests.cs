@@ -27,7 +27,7 @@ public class RiverOutlineTests
         .WithCatalogueValue(50_000m).WithFirstRegistration(new DateOnly(2026, 1, 10)).WithCarCosts(8_000m)
         .WithCreativeShare(0.5m);
 
-    // The deadline still open on this date is December's.
+    // A fixed date for the page, so no figure of the river moves with the day the tests run.
     private static readonly DateTimeOffset On23October = new(2026, 10, 23, 12, 0, 0, TimeSpan.Zero);
 
     // A landmark of its own, named by its visible title, before the cards in the page's order, so the
@@ -47,7 +47,7 @@ public class RiverOutlineTests
     {
         var html = await RenderPlanAsync(RiverInputs.Example);
 
-        Titles(html).ShouldBe(["Your moves", "Company year", "The split", "Director pay", "Corporate tax", "Dividend", "When to pay"]);
+        Titles(html).ShouldBe(["Company year", "The split", "Director pay", "Corporate tax", "Dividend"]);
     }
 
     // The two streams read as the page reads them: the director's, the royalty first, then the company's.
@@ -58,8 +58,8 @@ public class RiverOutlineTests
 
         Titles(html).ShouldBe(
         [
-            "Your moves", "Company year", "Vouchers", "Expense allowances", "Home office rent", "Company car", "The split", "Copyright royalty",
-            "Director pay", "Corporate tax", "Dividend", "When to pay",
+            "Company year", "Vouchers", "Expense allowances", "Home office rent", "Company car", "The split", "Copyright royalty",
+            "Director pay", "Corporate tax", "Dividend",
         ]);
     }
 
@@ -69,7 +69,7 @@ public class RiverOutlineTests
     {
         var html = await RenderPlanAsync(RiverInputs.Example.SkipCompany());
 
-        Titles(html).ShouldBe(["Your moves", "Company year", "Director pay", "Corporate tax", "Dividend", "When to pay"]);
+        Titles(html).ShouldBe(["Company year", "Director pay", "Corporate tax", "Dividend"]);
     }
 
     // At the top of the page no card has reached the bar: the first one is marked as the one in view.
@@ -78,7 +78,7 @@ public class RiverOutlineTests
     {
         var html = await RenderPlanAsync(RiverInputs.Example);
 
-        Rows(html).Where(row => row.Contains("aria-current=\"location\"")).Select(Title).ShouldBe(["Your moves"]);
+        Rows(html).Where(row => row.Contains("aria-current=\"location\"")).Select(Title).ShouldBe(["Company year"]);
     }
 
     [Fact]
@@ -106,40 +106,39 @@ public class RiverOutlineTests
     [Fact]
     public async Task Outline_everyGlance_isAFigureOfItsCardsSummary()
     {
-        var html = await RenderPlanAsync(EveryFigure, today: EveryFigure);
+        var html = await RenderPlanAsync(EveryFigure);
 
         var glances = Rows(html).Where(row => Glance(row) is not null).Select(row => (Title: Title(row), Figure: Figure(Glance(row)!))).ToList();
 
         glances.ShouldSatisfyAllConditions(
-            () => glances.Count.ShouldBe(12),
+            () => glances.Count.ShouldBe(10),
             () => glances.Where(glance => !Summary(html, glance.Title).Contains(glance.Figure)).Select(glance => $"{glance.Title}: {glance.Figure}").ShouldBeEmpty());
     }
 
     // What each card is about: what reaches the pocket for a lever, the pay and the dividend, where the
-    // river starts, what the split gives the pay, what the company keeps after its tax, what the moves
-    // add, and when the next payment falls.
+    // river starts, what the split gives the pay, and what the company keeps after its tax.
     [Fact]
     public async Task Outline_everyCard_glancesAtWhatItIsAbout()
     {
-        var html = await RenderPlanAsync(EveryFigure, today: EveryFigure);
+        var html = await RenderPlanAsync(EveryFigure);
 
         Rows(html).Select(row => (Title(row), Glance(row) is { } glance ? Kind(glance) : (GlanceKind?)null)).ShouldBe(
         [
-            ("Your moves", GlanceKind.MoreThanToday), ("Company year", GlanceKind.In), ("Vouchers", GlanceKind.ToYou),
+            ("Company year", GlanceKind.In), ("Vouchers", GlanceKind.ToYou),
             ("Expense allowances", GlanceKind.ToYou), ("Home office rent", GlanceKind.ToYou), ("Company car", GlanceKind.MuddyPocket),
             ("The split", GlanceKind.ToYourPay), ("Copyright royalty", GlanceKind.ToYou), ("Director pay", GlanceKind.ToYou),
-            ("Corporate tax", GlanceKind.LeftAfterTax), ("Dividend", GlanceKind.ToYou), ("When to pay", GlanceKind.NextBy),
+            ("Corporate tax", GlanceKind.LeftAfterTax), ("Dividend", GlanceKind.ToYou),
         ]);
     }
 
-    // A card whose summary has no figure has no glance: no plan starred Today yet, no car without its
-    // papers, no royalty without the director's creative share.
+    // A card whose summary has no figure has no glance: no car without its papers, no royalty without the
+    // director's creative share.
     [Fact]
     public async Task Outline_cardWithoutAFigure_hasNoGlance()
     {
         var html = await RenderPlanAsync(Everything);
 
-        Rows(html).Where(row => Glance(row) is null).Select(Title).ShouldBe(["Your moves", "Company car", "Copyright royalty"]);
+        Rows(html).Where(row => Glance(row) is null).Select(Title).ShouldBe(["Company car", "Copyright royalty"]);
     }
 
     // The icon of the bucket the figure lands in, which a screen reader skips: the pocket's for what
@@ -147,14 +146,14 @@ public class RiverOutlineTests
     [Fact]
     public async Task Outline_glanceLandingInABucket_carriesItsIcon()
     {
-        var html = await RenderPlanAsync(EveryFigure, today: EveryFigure);
+        var html = await RenderPlanAsync(EveryFigure);
         var pocket = BucketIcons.For("pocket");
 
         Rows(html).Select(row => (Title(row), Icon(row))).ShouldBe(
         [
-            ("Your moves", null), ("Company year", null), ("Vouchers", pocket), ("Expense allowances", pocket), ("Home office rent", pocket),
+            ("Company year", null), ("Vouchers", pocket), ("Expense allowances", pocket), ("Home office rent", pocket),
             ("Company car", BucketIcons.For(BucketsView.Muddy)), ("The split", null), ("Copyright royalty", pocket), ("Director pay", pocket),
-            ("Corporate tax", null), ("Dividend", pocket), ("When to pay", null),
+            ("Corporate tax", null), ("Dividend", pocket),
         ]);
     }
 
@@ -217,12 +216,10 @@ public class RiverOutlineTests
         return (toggle.Groups[1].Value, Regex.Match(toggle.Value, "aria-label=\"([^\"]*)\"").Groups[1].Value);
     }
 
-    private static async Task<string> RenderPlanAsync(RiverInputs inputs, Folds? folds = null, RiverInputs? today = null)
+    private static async Task<string> RenderPlanAsync(RiverInputs inputs, Folds? folds = null)
     {
         var storage = new BrowserStorage();
         var plans = new SavedPlans(storage);
-        if (today is not null)
-            plans.Star(plans.Save(today, number => $"Plan {number}").Id);
 
         return WebUtility.HtmlDecode(await RenderAsync(typeof(Plan), folds ?? new Folds(new BrowserStorage()), [], services =>
         {

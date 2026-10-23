@@ -1,0 +1,24 @@
+@inject IStringLocalizer<PlanTabBar> L
+
+@* The plan page's tabs, the bar of buckets' last row (BucketBar.TabRow), so they stick under the site
+   header with it on every tab. Each tab has its own URL (PlanTabRoutes), so a tab is a link, not a
+   role=tab: it opens directly, in a new browser tab too, and back and forward move between tabs. The
+   current one says so (aria-current="page") and is underlined in gold, an active state, and set
+   heavier, so colour is not its only sign. The page they lead to is the same one, so the river's inputs
+   stay as they are from one tab to the next. *@
+<nav class="plan-tab-bar" aria-label="@L[PlanTabBarText.Label]">
+    <ul class="plan-tab-bar__tabs">
+        @foreach (var tab in PlanTabRoutes.Order)
+        {
+            <li>
+                <a href="@PlanTabRoutes.Href(tab)" class="plan-tab-bar__tab" aria-current="@(tab == Current ? "page" : null)"><span class="plan-tab-bar__name">@L[PlanTabBarText.Name(tab)]</span></a>
+            </li>
+        }
+    </ul>
+</nav>
+
+@code {
+    // The tab the page shows.
+    [Parameter, EditorRequired]
+    public PlanTab Current { get; set; }
+}
