@@ -52,7 +52,7 @@ internal sealed record CompareView(
         if (BaselineGain.From(right.Run, left.Run)?.Kind == GainKind.NotComparable)
             return view with { State = CompareState.NotComparable };
 
-        return view with { Groups = CompareRows.Of(left, right) };
+        return view with { Groups = CompareRows.Of(left, right), Pocket = PocketPanel.Of(left, right) };
     }
 
     private static ComparedPlan Compared(SavedPlan plan, string? today)
@@ -90,8 +90,24 @@ internal sealed record ComparedPlan(string Id, string Name, bool IsToday, RiverI
 // The figures of one layer of the year, or the year's result, in the order the table draws them.
 internal sealed record CompareGroup(string Key, IReadOnlyList<CompareRow> Rows);
 
-// The panel drawing both pockets on one scale.
-internal sealed record PocketPanel(PocketBar Plan, PocketBar Against, BaselineGain Gain);
+// The panel drawing both pockets on one scale from nothing, and what the second leaves more or less than
+// the first, as the bar and the Plans panel say it (BaselineGain).
+internal sealed record PocketPanel(PocketBar Plan, PocketBar Against, BaselineGain Gain)
+{
+    public static PocketPanel Of(ComparedPlan plan, ComparedPlan against)
+    {
+        var pocket = Pocket(plan);
+        var againstPocket = Pocket(against);
+        var larger = Math.Max(pocket, againstPocket);
+
+        PocketBar Bar(ComparedPlan column, decimal amount, decimal other) =>
+            new(column.Name, column.IsToday, amount, larger > 0m ? Math.Max(0m, amount) / larger : null, amount > other);
+
+        return new PocketPanel(Bar(plan, pocket, againstPocket), Bar(against, againstPocket, pocket), BaselineGain.From(against.Run, plan.Run)!);
+    }
+
+    private static decimal Pocket(ComparedPlan column) => column.Buckets!.Buckets.Single(bucket => bucket.Key == "pocket").Amount;
+}
 
 // One plan's pocket in the panel: its width as a fraction of the larger pocket, none when neither pocket
 // is above nothing, and whether it is the larger.
