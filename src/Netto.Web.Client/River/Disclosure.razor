@@ -7,11 +7,12 @@
    and closes them. A field inside that the engine refuses opens it, and keeps it open until the
    refusal ends, so a refusal is never hidden. Whether it is open is plain state of the page, not
    remembered. It starts open when the card says so (OpenByDefault), for settings its lever cannot
-   count without: read once when it is first drawn, so that it stays open while they are given, until
-   « Done ». The button is named by its word and the title, and described by the values; what is
-   closed is not rendered, but its frame stays in the page, hidden, for aria-controls to point to.
-   What helps to set them (Help) is an info bubble after the title, outside it so that it is no part
-   of the button's name. *@
+   count without: it opens each time it is drawn while they are missing, which includes each time its
+   card is folded and opened again, since a fold draws its body only while open. Once drawn it stays
+   open while they are given, until « Done ». The button is named by its word and the title, and
+   described by the values; what is closed is not rendered, but its frame stays in the page, hidden,
+   for aria-controls to point to. What helps to set them (Help) is an info bubble after the title,
+   outside it so that it is no part of the button's name. *@
 <div class="disclosure">
     <div class="disclosure__line">
         <div class="disclosure__text">
@@ -54,8 +55,9 @@
     [Parameter]
     public string? Help { get; set; }
 
-    // Open when first drawn: the settings its lever cannot count without. Only the first draw reads
-    // it; the user closes it with « Done », and it does not open again while the card stays.
+    // Open each time it is drawn: the card says whether the settings its lever cannot count without
+    // are still missing. Only the draw reads it, so it stays open while they are typed, until « Done »;
+    // folding its card and opening it again draws it again, and it opens again while they are missing.
     [Parameter]
     public bool OpenByDefault { get; set; }
 
