@@ -134,7 +134,7 @@ internal sealed record PocketPanel(PocketBar Plan, PocketBar Against, BaselineGa
         return new PocketPanel(Bar(plan, pocket, againstPocket), Bar(against, againstPocket, pocket), BaselineGain.From(against.Run, plan.Run)!);
     }
 
-    private static decimal Pocket(ComparedPlan column) => column.Buckets!.Buckets.Single(bucket => bucket.Key == "pocket").Amount;
+    private static decimal Pocket(ComparedPlan column) => column.Buckets!.AmountOf("pocket");
 }
 
 // One plan's pocket in the panel: its width as a fraction of the larger pocket, none when neither pocket

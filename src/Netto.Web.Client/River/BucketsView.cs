@@ -77,7 +77,8 @@ internal sealed record BucketsView(
 
     private decimal Leaves => Start - AmountOf("kept_in_company");
 
-    private decimal AmountOf(string key) => Buckets.Single(bucket => bucket.Key == key).Amount;
+    // What a bucket holds, by its key; the Compare plans tab reads its columns through it.
+    internal decimal AmountOf(string key) => Buckets.Single(bucket => bucket.Key == key).Amount;
 
     private static decimal Rounded(decimal share) => Math.Round(share, 2, MidpointRounding.AwayFromZero);
 

@@ -36,7 +36,8 @@ internal static class CompareRows
             new CompareGroup("before_split", Drawn(
             [
                 Row("vouchers", Lever(plan, OptionalModule.Vouchers, year => year.Vouchers.Total), Lever(against, OptionalModule.Vouchers, year => year.Vouchers.Total)),
-                Row("allowances", Lever(plan, OptionalModule.Allowances, Allowances), Lever(against, OptionalModule.Allowances, Allowances)),
+                Row("allowances", Lever(plan, OptionalModule.Allowances, year => AllowanceView.From(year, plan.Inputs.Composition).Total),
+                    Lever(against, OptionalModule.Allowances, year => AllowanceView.From(year, against.Inputs.Composition).Total)),
                 Row("rent", Lever(plan, OptionalModule.Rent, year => year.Rent.Rent), Lever(against, OptionalModule.Rent, year => year.Rent.Rent)),
                 Row("car_costs", Lever(plan, OptionalModule.Car, year => year.Car.Costs), Lever(against, OptionalModule.Car, year => year.Car.Costs)),
             ])),
@@ -112,13 +113,11 @@ internal static class CompareRows
 
     private static bool HasMuddy(ComparedPlan column) => column.Buckets is { HasMuddyPocket: true };
 
-    private static decimal MuddyOf(ComparedPlan column) => HasMuddy(column) ? Bucket(column, BucketsView.Muddy) : 0m;
+    private static decimal MuddyOf(ComparedPlan column) => HasMuddy(column) ? column.Buckets!.AmountOf(BucketsView.Muddy) : 0m;
 
-    private static CompareFigure PocketOf(ComparedPlan column) => Money(Bucket(column, "pocket"));
+    private static CompareFigure PocketOf(ComparedPlan column) => Money(column.Buckets!.AmountOf("pocket"));
 
-    private static decimal KeptOf(ComparedPlan column) => Bucket(column, "kept_in_company");
-
-    private static decimal Bucket(ComparedPlan column, string key) => column.Buckets!.Buckets.Single(bucket => bucket.Key == key).Amount;
+    private static decimal KeptOf(ComparedPlan column) => column.Buckets!.AmountOf("kept_in_company");
 
     private static CompareFigure Share(ComparedPlan column) => CompareFigure.Share(column.Buckets!.Reach);
 
@@ -132,10 +131,6 @@ internal static class CompareRows
     // a module out of the plan as none, and a river that starts at the pay has none of them.
     private static CompareFigure Lever(ComparedPlan column, OptionalModule module, Func<YearResult, decimal> figure) =>
         column.Run.Year is { } year && column.Inputs.InPlan(module) ? Money(figure(year)) : CompareFigure.Absent;
-
-    // What the expense allowances bring to the pocket, from the year's steps as the allowances card sums them.
-    private static decimal Allowances(YearResult year) =>
-        year.Steps.Where(step => step.Event == TaxableEvent.ExpenseAllowances && step.Track == Track.InPocket).Sum(step => step.Amount);
 
     private static decimal PayOf(ComparedPlan column) => column.Run.Pay!.GrossPay;
 
