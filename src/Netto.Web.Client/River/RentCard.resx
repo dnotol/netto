@@ -69,4 +69,13 @@
   <data name="Remove" xml:space="preserve">
     <value>Remove home office rent from your plan</value>
   </data>
+  <data name="HomeTitle" xml:space="preserve">
+    <value>Your home</value>
+  </data>
+  <data name="Home_CadastralIncome" xml:space="preserve">
+    <value>Cadastral income {0}</value>
+  </data>
+  <data name="Home_Share" xml:space="preserve">
+    <value>{0} of your home let to the company</value>
+  </data>
 </root>

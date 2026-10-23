@@ -6,7 +6,9 @@
    chevron, since it opens fields to edit rather than content to read. Open, the word reads « Done »
    and closes them. A field inside that the engine refuses opens it, and keeps it open until the
    refusal ends, so a refusal is never hidden. Whether it is open is plain state of the page, not
-   remembered. The button is named by its word and the title, and described by the values; what is
+   remembered. It starts open when the card says so (OpenByDefault), for settings its lever cannot
+   count without: read once when it is first drawn, so that it stays open while they are given, until
+   « Done ». The button is named by its word and the title, and described by the values; what is
    closed is not rendered, but its frame stays in the page, hidden, for aria-controls to point to.
    What helps to set them (Help) is an info bubble after the title, outside it so that it is no part
    of the button's name. *@
@@ -52,6 +54,11 @@
     [Parameter]
     public string? Help { get; set; }
 
+    // Open when first drawn: the settings its lever cannot count without. Only the first draw reads
+    // it; the user closes it with « Done », and it does not open again while the card stays.
+    [Parameter]
+    public bool OpenByDefault { get; set; }
+
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
@@ -59,6 +66,8 @@
     private bool _open;
 
     private bool Open => _open || Refused;
+
+    protected override void OnInitialized() => _open = OpenByDefault;
 
     private string Line => string.Join(L["Separator"], Values.Select(value => value.Origin is { } origin
         ? L["WithOrigin", value.Text, Origins[OriginChipText.Origin(origin)]].Value

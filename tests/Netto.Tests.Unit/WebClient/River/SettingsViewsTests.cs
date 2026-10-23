@@ -1,5 +1,6 @@
 using Netto.Core.DirectorPay;
 using Netto.Core.PersonalTax;
+using Netto.Core.Rent;
 using Netto.Core.Simulation;
 using Netto.Core.SocialContributions;
 using Netto.Web.Client.River;
@@ -188,6 +189,58 @@ public class SettingsViewsTests
     public void PaymentsHold_refusal_opensTheDisclosureHoldingItsField(string? error, bool payments)
     {
         CorporateTaxSettingsView.PaymentsHold(error).ShouldBe(payments);
+    }
+
+    // Home office rent's disclosure, « Your home »: the facts the rent is capped by, the cadastral
+    // income of the home and the share of it let. On the example both are the example's nothing.
+    [Fact]
+    public void Home_example_statesTheCadastralIncomeAndTheShareAsTheExamples()
+    {
+        Phrases(RentSettingsView.From(RiverInputs.Example).Home).ShouldBe(
+        [
+            ("Home_CadastralIncome", "€0.00", InputOrigin.Example),
+            ("Home_Share", "0%", InputOrigin.Example),
+        ]);
+    }
+
+    [Fact]
+    public void Home_factsGiven_stateThemWithNoOrigin()
+    {
+        var inputs = RiverInputs.Example.WithCadastralIncome(1_200m).WithShareLet(0.125m);
+
+        Phrases(RentSettingsView.From(inputs).Home).ShouldBe(
+        [
+            ("Home_CadastralIncome", "€1,200.00", null),
+            ("Home_Share", "12.5%", null),
+        ]);
+    }
+
+    // The rent has no cap, so cannot be given, until a part of the home is let: the facts open by
+    // themselves when the card is first drawn.
+    [Theory]
+    [InlineData(0, 0, true)]
+    [InlineData(1_200, 0, true)]
+    [InlineData(0, 0.12, true)]
+    [InlineData(1_200, 0.12, false)]
+    public void NeedsFacts_cadastralIncomeAndShare_isTrueUntilBothAreGiven(decimal cadastralIncome, decimal share, bool needed)
+    {
+        var inputs = RiverInputs.Example.WithCadastralIncome(cadastralIncome).WithShareLet(share);
+
+        RentSettingsView.From(inputs).NeedsFacts.ShouldBe(needed);
+    }
+
+    // The rent's own refusals are on a field in sight: only the two facts open their disclosure.
+    [Theory]
+    [InlineData(RentCalculator.CadastralIncomeNegative, true)]
+    [InlineData(RentCalculator.ShareLetOutOfRange, true)]
+    [InlineData(RentCalculator.RentNegative, false)]
+    [InlineData(RentCalculator.RentAboveCap, false)]
+    [InlineData(RentCalculator.RentWithOfficeAllowance, false)]
+    [InlineData(GrossToNet.GrossPayNegative, false)]
+    [InlineData(null, false)]
+    public void HomeHolds_refusal_opensTheDisclosureHoldingItsField(string? error, bool home)
+    {
+        RentSettingsView.HomeHolds(error).ShouldBe(home);
     }
 
     private static DirectorPaySettingsView DirectorPaySettings(RiverInputs inputs) => DirectorPaySettingsView.From(inputs, inputs.Run());

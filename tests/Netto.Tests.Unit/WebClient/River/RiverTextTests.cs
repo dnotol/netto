@@ -391,6 +391,16 @@ public class RiverTextTests
         Missing(RentCardResources, [RentCardText.CadastralIncomeTerm, RentCardText.FlatChargesTerm]).ShouldBeEmpty();
     }
 
+    // The lines of « Your home »: the example's facts and facts given.
+    [Fact]
+    public void RentCardResx_everyPhraseOfItsSettingsLine_hasAText()
+    {
+        RiverInputs[] variations = [RiverInputs.Example, RiverInputs.Example.WithCadastralIncome(1_200m).WithShareLet(0.12m)];
+        var phrases = variations.SelectMany(inputs => RentSettingsView.From(inputs).Home);
+
+        Missing(RentCardResources, phrases.Select(phrase => phrase.Key).Append("HomeTitle")).ShouldBeEmpty();
+    }
+
     [Fact]
     public void DirectorPayCardResx_withholdingDerivedFromThePaySlip_marksTheKeyFormula()
     {

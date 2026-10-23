@@ -1,4 +1,6 @@
+using Microsoft.Extensions.Localization;
 using Netto.Core.DirectorPay;
+using Netto.Core.Rent;
 using Netto.Core.Simulation;
 using Netto.Web.Client.DirectorPay;
 
@@ -6,7 +8,10 @@ namespace Netto.Web.Client.River;
 
 // The settings a user rarely changes sit behind a disclosure, folded to one line that states their
 // values (Disclosure). These are those lines: what each says, a phrase per value, worded by the card's
-// texts; and which refusals open each, since a refused field is never hidden.
+// texts; and which refusals open each, since a refused field is never hidden. A lever's facts about
+// itself, what Netto cannot see of it and the user sets once, sit behind one too, while the amounts
+// the plan decides stay in sight; a lever that cannot count without them says so (NeedsFacts), and
+// its disclosure opens by itself the first time the card is drawn.
 
 // One value a disclosure's line states: a key of the card's texts with its arguments, and the origin
 // it names beside the value, only for what Netto assumed, the example's or a default. What the user
@@ -30,6 +35,13 @@ internal sealed record SettingPhrase(string Key, IReadOnlyList<string> Args, Inp
 // A value of a disclosure's line once worded, with the origin it names beside it. Public because
 // Disclosure, a component, takes it.
 public sealed record SettingValue(string Text, InputOrigin? Origin);
+
+// The phrases of a disclosure's line worded by the texts of the card that shows it.
+internal static class SettingWords
+{
+    public static IReadOnlyList<SettingValue> Of(IStringLocalizer texts, IEnumerable<SettingPhrase> phrases) =>
+        [.. phrases.Select(phrase => new SettingValue(texts[phrase.Key, [.. phrase.Args]].Value, phrase.Origin))];
+}
 
 // Director pay's two disclosures: « Your situation », who pays the contributions, the municipal rate
 // and whether the director is in the first years of a first self-employed activity; and « Tax paid
@@ -104,4 +116,26 @@ internal sealed record CorporateTaxSettingsView(IReadOnlyList<SettingPhrase> Com
     }
 
     public static bool PaymentsHold(string? error) => error == YearSimulation.AdvancePaymentNegative;
+}
+
+// Home office rent's one disclosure, « Your home »: the cadastral income of the home and the share of
+// it let to the company, which cap the rent. The rent itself stays in sight. NeedsFacts: no rent can
+// be given until a part of the home is let (the cap is none), so the disclosure opens by itself.
+internal sealed record RentSettingsView(IReadOnlyList<SettingPhrase> Home, bool NeedsFacts)
+{
+    public static RentSettingsView From(RiverInputs inputs)
+    {
+        var rent = inputs.Rent;
+
+        return new RentSettingsView(
+            [
+                SettingPhrase.Of("Home_CadastralIncome", rent.CadastralIncome.Origin, Formats.Euros(rent.CadastralIncome.Value)),
+                SettingPhrase.Of("Home_Share", rent.ShareLet.Origin, Formats.Percentage(rent.ShareLet.Value)),
+            ],
+            rent.CadastralIncome.Value <= 0m || rent.ShareLet.Value <= 0m);
+    }
+
+    // The rent's own refusals (negative, above the cap, beside an office allowance) are on a field in
+    // sight.
+    public static bool HomeHolds(string? error) => error is RentCalculator.CadastralIncomeNegative or RentCalculator.ShareLetOutOfRange;
 }
