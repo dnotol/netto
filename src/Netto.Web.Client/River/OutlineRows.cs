@@ -70,6 +70,18 @@ internal sealed class OutlineRows(Folds folds)
         card.Redraw();
     }
 
+    // A link from another tab arriving at a card (Tabs/CardLinks): opens it as choosing its row does, and
+    // says whether the page lists it, to be brought into view; a card the page does not show, a lever out
+    // of the plan, is left alone, and no fold is written for it.
+    public bool Arrive(string name)
+    {
+        if (!_cards.ContainsKey(name))
+            return false;
+
+        Open(name);
+        return true;
+    }
+
     // « Open all » or « Fold all »: the viewer's word on every card listed.
     public void SetAll(bool open)
     {

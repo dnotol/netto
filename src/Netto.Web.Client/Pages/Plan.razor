@@ -11,6 +11,7 @@
 @inject TimeProvider Clock
 @inject Folds Folds
 @inject NavigationManager Navigation
+@inject IJSRuntime JS
 
 <PageTitle>@L[PlanText.PageTitle(_tab)]</PageTitle>
 
@@ -37,7 +38,9 @@
    with Undo, on any tab. The levers run before the split, but the copyright royalty, which the split
    pays beside the pay: its card heads the director's stream. On a wide screen the river's outline
    stands left of the cards (RiverOutline), before them in the page: the cards tell it what they are as
-   they are drawn, through the page's OutlineRows handed down to them. *@
+   they are drawn, through the page's OutlineRows handed down to them. A link from another tab may name a
+   card (CardLinks, plan?card=<name>, from the Optimisation tab's moves): the river opens it as choosing
+   its row in the outline does, and brings it under the bar with its heading focused. *@
 <BucketBar Run="_run" Setup="_today?.Run" Unsaved="Plans.HasUnsavedChanges(_inputs)">
     <ChildContent>
         <PlansPanel Inputs="_inputs" CanSave="BaselineGain.CanMark(_run)" OnOpen="OnInputsChanged" OnChanged="OnPlansChanged" />
@@ -162,6 +165,11 @@ else
     [Parameter]
     public string? Tab { get; set; }
 
+    // The card a link from another tab names for the river to open on arrival, by its fold's name
+    // (CardLinks); none for the river alone.
+    [SupplyParameterFromQuery(Name = CardLinks.Query)]
+    public string? Card { get; set; }
+
     private PlanTab _tab;
     private RiverInputs _inputs = default!;
     private OutlineRows _outline = default!;
@@ -180,6 +188,8 @@ else
     private RiverInputs? _movesFor;
     private DateOnly _movesOn;
     private bool _movesFound;
+    private readonly CardArrival _arrival = new();
+    private string? _arriving;
 
     protected override void OnInitialized()
     {
@@ -189,17 +199,32 @@ else
     }
 
     // The tab the URL names, on arriving and at each switch of tab, the page staying the same; a segment
-    // Netto has no tab for is a page it does not have.
+    // Netto has no tab for is a page it does not have. On the river, the card the URL names, once per
+    // arrival (CardArrival).
     protected override void OnParametersSet()
     {
         if (PlanTabRoutes.From(Tab) is { } tab)
             _tab = tab;
         else
             Navigation.NotFound();
+
+        _arriving = _arrival.Take(_tab, Card);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        // The river is drawn, and its cards listed in the outline: the card arrived at opens as the
+        // viewer's fold, as choosing its row does, and the script brings it under the bar and focuses its
+        // heading once Blazor has reset the scroll after the link and the tab's head has taken the focus
+        // (river-outline.js, arrive). A card the river does not show, a lever out of the plan, is left
+        // alone.
+        if (_arriving is { } card)
+        {
+            _arriving = null;
+            if (_outline.Arrive(card))
+                await JS.InvokeVoidAsync("nettoOutline.arrive", card);
+        }
+
         if (_focusUndo)
         {
             _focusUndo = false;

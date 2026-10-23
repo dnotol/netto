@@ -126,6 +126,34 @@ public class OutlineRowsTests
         storage.Writes.ShouldBe(0);
     }
 
+    // A link from another tab arriving at a folded card opens it as choosing its row does, remembered,
+    // and says it is there to be brought into view.
+    [Fact]
+    public void Arrive_listedFoldedCard_opensItRememberedAndSaysItIsThere()
+    {
+        var storage = new Storage();
+        var rows = new OutlineRows(new Folds(storage));
+        var redrawn = 0;
+        rows.Report(Row("split"), () => redrawn++);
+
+        var there = rows.Arrive("split");
+
+        (there, new Folds(storage).IsOpen("split", false), redrawn).ShouldBe((true, true, 1));
+    }
+
+    // A card the page does not show, a lever out of the plan, is left alone: no fold is written for it.
+    [Fact]
+    public void Arrive_cardNotListed_writesNothingAndSaysItIsNotThere()
+    {
+        var storage = new Storage();
+        var rows = new OutlineRows(new Folds(storage));
+        rows.Report(Row("split"), Nothing);
+
+        var there = rows.Arrive("vouchers");
+
+        (there, storage.Writes).ShouldBe((false, 0));
+    }
+
     [Fact]
     public void AllOpen_oneCardFolded_isFalse()
     {

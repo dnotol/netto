@@ -31,14 +31,3 @@ internal sealed record MoveLink(PlanTab Tab, string? Card)
 {
     public string Href => Card is { } card ? CardLinks.Href(card) : PlanTabRoutes.Href(Tab);
 }
-
-// The Plan tab's address with a card to open on arrival, plan?card=<its fold's name>: the page opens that
-// card as the viewer's fold and brings it under the bar of buckets, as the river's outline does (Plan). A
-// real link, so Back and a new browser tab work.
-internal static class CardLinks
-{
-    // The query parameter that names the card.
-    public const string Query = "card";
-
-    public static string Href(string card) => $"{PlanTabRoutes.Href(PlanTab.Plan)}?{Query}={Uri.EscapeDataString(card)}";
-}

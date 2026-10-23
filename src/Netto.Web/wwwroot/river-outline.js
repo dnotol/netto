@@ -11,6 +11,13 @@
 // and puts the focus on its heading's button, or on the card itself while a refusal keeps that button
 // disabled. While the jump scrolls, nothing is measured, so the card jumped to stays marked until the
 // viewer scrolls again.
+//
+// An arrival is a jump asked by the page (Plan) when a link from another tab names a card: it runs at the
+// next frame, after what the render that drew the river set off. That render is the one after which
+// Blazor resets the scroll to the top, a link to another path having been followed, and the tab's head
+// puts the focus on its title once drawn: both happen before the frame, so the card is scrolled to and
+// focused after them. It works whether or not the outline shows, and once the page is still the outline
+// is told which card is in view, so it marks the one arrived at.
 (() => {
     const settleDelay = 150;
     const tolerance = 1;
@@ -66,13 +73,41 @@
     }
 
     // After a jump, once the page has been still for a moment: what stands under the line now is where
-    // the next measure starts from, without telling .NET, so the card jumped to stays marked.
+    // the next measure starts from, without telling .NET, so the card jumped to stays marked; after an
+    // arrival, .NET is told, since the outline did not mark the card itself.
     function settle() {
         clearTimeout(watched.settling);
         watched.settling = setTimeout(() => {
             watched.settling = 0;
             watched.crossings = measure().crossings;
+            if (watched.tell) {
+                watched.tell = false;
+                report(true);
+            }
         }, settleDelay);
+    }
+
+    // Scrolls a card under the line and focuses its heading; once still, tells .NET what is in view if
+    // asked to.
+    function bringIntoView(name, tell) {
+        const card = document.getElementById(`card-${name}`);
+        if (card === null) {
+            return;
+        }
+
+        if (watched !== null) {
+            watched.tell = tell;
+            settle();
+        }
+
+        card.scrollIntoView({ block: "start" });
+        const heading = card.querySelector("h2 > button");
+        if (heading !== null && !heading.disabled) {
+            heading.focus({ preventScroll: true });
+        } else {
+            card.tabIndex = -1;
+            card.focus({ preventScroll: true });
+        }
     }
 
     function onScroll() {
@@ -95,7 +130,7 @@
             if (watched === null) {
                 window.addEventListener("scroll", onScroll, { passive: true });
                 window.addEventListener("resize", onResize, { passive: true });
-                watched = { dotnet, nav, names, frame: 0, settling: 0, crossings: null, always: false, resized: new ResizeObserver(onResize) };
+                watched = { dotnet, nav, names, frame: 0, settling: 0, crossings: null, always: false, tell: false, resized: new ResizeObserver(onResize) };
             }
 
             Object.assign(watched, { dotnet, nav, names });
@@ -108,20 +143,11 @@
             schedule(true);
         },
         jump(name) {
-            const card = document.getElementById(`card-${name}`);
-            if (watched === null || card === null) {
-                return;
-            }
-
-            settle();
-            card.scrollIntoView({ block: "start" });
-            const heading = card.querySelector("h2 > button");
-            if (heading !== null && !heading.disabled) {
-                heading.focus({ preventScroll: true });
-            } else {
-                card.tabIndex = -1;
-                card.focus({ preventScroll: true });
-            }
+            bringIntoView(name, false);
+        },
+        // The card a link from another tab named, which the page has just drawn open.
+        arrive(name) {
+            requestAnimationFrame(() => bringIntoView(name, true));
         },
         stop() {
             if (watched === null) {
