@@ -86,40 +86,37 @@ public class YearSimulationCarTests
         without.Car.Contribution.ShouldBe(0m);
     }
 
-    // The car's costs land in the muddy pocket, at what the company spends on them.
-    [Fact]
-    public void Run_2026Car_putsItsCostsInTheMuddyPocket()
-    {
-        Run(Scenario(car: ElectricCar)).MuddyPocket.ShouldBe(8_000m);
-    }
-
+    // The car's 8,000 of costs are a cost of the company, like its running costs (operator, 2026-10-23):
+    // the layers, the pocket and the company add up to the profit before the director less them, the
+    // director's contribution leaving the pocket for the company inside that whole.
     [Theory]
     [MemberData(nameof(Setups))]
-    public void Run_2026Car_layersPocketCompanyAndMuddyPocketAddUpToTheProfitBeforeTheDirector(
+    public void Run_2026Car_layersPocketAndCompanyAddUpToTheProfitBeforeTheDirectorLessTheCarsCosts(
         decimal directorPay, decimal profitBeforeDirector, decimal reserve, decimal contribution)
     {
         var result = Run(Scenario(directorPay: directorPay, reserve: reserve, revenue: profitBeforeDirector + 20_000m,
             car: ElectricCar with { PersonalContribution = contribution }));
 
-        (result.CorporateTax + result.SocialContributions + result.PersonalTax + result.NetInPocket + result.KeptInCompany + result.MuddyPocket)
-            .ShouldBe(profitBeforeDirector);
+        (result.CorporateTax + result.SocialContributions + result.PersonalTax + result.NetInPocket + result.KeptInCompany)
+            .ShouldBe(profitBeforeDirector - 8_000m);
     }
 
     [Theory]
     [MemberData(nameof(Setups))]
-    public void Run_2026CarCompanyPaysAndNothingPrepaid_layersPocketCompanyAndMuddyPocketAddUp(
+    public void Run_2026CarCompanyPaysAndNothingPrepaid_layersPocketAndCompanyAddUpToTheProfitLessTheCarsCosts(
         decimal directorPay, decimal profitBeforeDirector, decimal reserve, decimal contribution)
     {
         var result = Run(Scenario(directorPay: directorPay, reserve: reserve, revenue: profitBeforeDirector + 20_000m,
             advancePayments: AdvancePayments.None, taxPrepayments: TaxPrepayments.AsWithheld, paidBy: ContributionsPaidBy.Company,
             car: ElectricCar with { PersonalContribution = contribution, CompanyPaysPrivateEnergy = true }));
 
-        (result.CorporateTax + result.SocialContributions + result.PersonalTax + result.NetInPocket + result.KeptInCompany + result.MuddyPocket)
-            .ShouldBe(profitBeforeDirector);
+        (result.CorporateTax + result.SocialContributions + result.PersonalTax + result.NetInPocket + result.KeptInCompany)
+            .ShouldBe(profitBeforeDirector - 8_000m);
     }
 
-    // What the car brings the ledger, in order: what it costs the company, the benefit with its
-    // minimum, the contribution leaving the pocket, the benefit taxed as pay, and the add-back.
+    // What the car brings the ledger, in order: what it costs the company, which only sets its profit
+    // and so its tax base, like the royalty it pays, the benefit with its minimum, the contribution
+    // leaving the pocket, the benefit taxed as pay, and the add-back.
     [Fact]
     public void Run_2026Car_listsItsSteps()
     {
@@ -127,7 +124,7 @@ public class YearSimulationCarTests
 
         result.Steps.Where(step => step.Event == TaxableEvent.CompanyCar).Select(step => (step.RuleKey, step.Layer, step.Track, step.Amount)).ShouldBe(new[]
         {
-            ("car_costs", Layer.Corporate, Track.Muddy, 8_000m),
+            ("car_costs", Layer.Corporate, Track.TaxBaseOnly, 8_000m),
             ("car_benefit", Layer.Personal, Track.TaxBaseOnly, 1_714.29m),
             ("car_contribution", Layer.Personal, Track.InPocket, -600m),
             ("car_benefit_taxed", Layer.Personal, Track.TaxBaseOnly, 1_114.29m),
@@ -155,7 +152,7 @@ public class YearSimulationCarTests
 
         result.Steps.Where(step => step.Event == TaxableEvent.CompanyCar).Select(step => (step.RuleKey, step.Layer, step.Track, step.Amount)).ShouldBe(new[]
         {
-            ("car_costs", Layer.Corporate, Track.Muddy, 9_000m),
+            ("car_costs", Layer.Corporate, Track.TaxBaseOnly, 9_000m),
             ("car_benefit", Layer.Personal, Track.TaxBaseOnly, 4_050m),
             ("car_contribution", Layer.Personal, Track.InPocket, 0m),
             ("car_benefit_taxed", Layer.Personal, Track.TaxBaseOnly, 4_050m),
@@ -256,7 +253,7 @@ public class YearSimulationCarTests
 
         var result = Run(Scenario(car: ElectricCar with { CatalogueValue = 0m, PersonalContribution = 600m }));
 
-        (result.NetInPocket, result.ProfitBeforePay, result.MuddyPocket, result.Steps.Count(step => step.Event == TaxableEvent.CompanyCar))
+        (result.NetInPocket, result.ProfitBeforePay, result.Car.Costs, result.Steps.Count(step => step.Event == TaxableEvent.CompanyCar))
             .ShouldBe((without.NetInPocket, without.ProfitBeforePay, 0m, 0));
     }
 

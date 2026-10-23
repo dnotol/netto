@@ -25,13 +25,14 @@ namespace Netto.Core.Simulation;
 // what it adds back of the car's benefit join it, corporate tax takes its share, with the surcharge
 // the advance payments did not cover, and the dividend is the profit after tax and the profits kept
 // from earlier years, less the reserve the user keeps in the company, never below zero. The car's
-// costs land in the muddy pocket. A copyright royalty comes off what it earns too, deducted in full: its
-// part within the limits reaches the pocket taxed apart (GrossToNet's TaxedApartTax), its part beyond
-// them is taxed as the director's pay, and art. 215's minimum pay counts neither. A royalty that follows
-// the pay is set first, at what an advance ruling accepts at the scenario's own pay, so the year, the
-// split's search and the moves each read one fixed amount at each pay. In steady state the year pays
-// out its own profit (decided 2026-10-19). No other disallowed expenses, no losses carried forward, and
-// INASTI's company contribution sits in the running costs.
+// costs are a cost of the company, like its running costs (operator, 2026-10-23). A copyright royalty
+// comes off what it earns too, deducted in full: its part within the limits reaches the pocket taxed
+// apart (GrossToNet's TaxedApartTax), its part beyond them is taxed as the director's pay, and art.
+// 215's minimum pay counts neither. A royalty that follows the pay is set first, at what an advance
+// ruling accepts at the scenario's own pay, so the year, the split's search and the moves each read one
+// fixed amount at each pay. In steady state the year pays out its own profit (decided 2026-10-19). No
+// other disallowed expenses, no losses carried forward, and INASTI's company contribution sits in the
+// running costs.
 public static class YearSimulation
 {
     public const string IncomeYearNotSupported = GrossToNet.IncomeYearNotSupported;
@@ -114,7 +115,6 @@ public static class YearSimulation
             PaidOut(steps, Layer.Corporate),
             PaidOut(steps, Layer.Social),
             PaidOut(steps, Layer.Personal),
-            besidesPay.Benefits.MuddyPocket,
             company.NetInPocket,
             company.KeptInCompany,
             company.ProfitAfterTax,
@@ -379,16 +379,17 @@ public static class YearSimulation
             rules.RentAsIncome, [rules.FloorUplift, rules.IndexationCoefficient]),
     ];
 
-    // The car's costs land in the muddy pocket, at what the company spends on them, with the rate it
-    // deducts them at; its benefit on the scale, at least the minimum, with its CO2 percentage's
-    // amounts and each age coefficient it used; the director's contribution leaving the pocket, a
-    // plain zero without one; the benefit it leaves taxed as pay, in Director pay's figures; for a car
+    // The car's costs, at what the company spends on them, a cost of the company that only sets its
+    // profit and so its tax base, as the royalty it pays does, with the rate it deducts them at; its
+    // benefit on the scale, at least the minimum, with its CO2 percentage's amounts and each age
+    // coefficient it used; the director's contribution leaving the pocket, a plain zero without one;
+    // the benefit it leaves taxed as pay, in Director pay's figures; for a car
     // the company does not deduct in full, the part of its costs it cannot deduct, which joins its
     // taxable income; and the share of the benefit before the contribution the company adds back. Only
     // once there is a car, so a year without one keeps its steps.
     private static IEnumerable<Step> CarSteps(CarRules rules, CarResult car) =>
     [
-        new Step("car_costs", Layer.Corporate, TaxableEvent.CompanyCar, Track.Muddy, car.Costs,
+        new Step("car_costs", Layer.Corporate, TaxableEvent.CompanyCar, Track.TaxBaseOnly, car.Costs,
             rules.Deduction, car.DeductionAmounts) { AlsoCites = car.DeductionSources },
         new Step("car_benefit", Layer.Personal, TaxableEvent.CompanyCar, Track.TaxBaseOnly, car.BenefitBeforeContribution,
             rules.Benefit, [rules.CatalogueShare, .. car.Co2Amounts, .. car.Periods.Select(period => period.Period.AgeCoefficient).Distinct(), rules.MinimumBenefit])

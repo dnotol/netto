@@ -168,14 +168,14 @@ public class CarCalculatorTests
     }
 
     // What the year takes of the car, as plain figures: the benefit taxed as pay after the
-    // contribution, the contribution, the costs, what the company cannot deduct with the add-back
-    // (an electric car's costs in full, so only the add-back), and the muddy pocket at the costs.
+    // contribution, the contribution, the costs, and what the company cannot deduct with the add-back
+    // (an electric car's costs in full, so only the add-back).
     [Fact]
     public void Compute_electricCar_handsTheYearItsBenefitInKind()
     {
         var result = Compute(Car(50_000m, new DateOnly(2026, 1, 10), yearlyCosts: 8_000m, contribution: 600m));
 
-        result.BenefitInKind.ShouldBe(new BenefitInKind(TaxedAsPay: 1_114.29m, Contribution: 600m, Costs: 8_000m, NotDeductible: 291.43m, MuddyPocket: 8_000m));
+        result.BenefitInKind.ShouldBe(new BenefitInKind(TaxedAsPay: 1_114.29m, Contribution: 600m, Costs: 8_000m, NotDeductible: 291.43m));
     }
 
     [Fact]

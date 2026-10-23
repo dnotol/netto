@@ -52,9 +52,9 @@ public sealed record CarResult(
     public bool AtTheMinimum => BenefitBeforeContribution > BenefitOnTheScale;
 
     // What the car does to the year, as YearSimulation composes it beside the other levers: the benefit
-    // taxed as pay, the contribution, the costs, what the company cannot deduct of them with the share
-    // of the benefit it adds back, and the muddy pocket, which holds the car at its costs.
-    public BenefitInKind BenefitInKind => new(Benefit, Contribution, Costs, NotDeductibleCosts + AddBack, Costs);
+    // taxed as pay, the contribution, the costs, and what the company cannot deduct of them with the
+    // share of the benefit it adds back.
+    public BenefitInKind BenefitInKind => new(Benefit, Contribution, Costs, NotDeductibleCosts + AddBack);
 
     // A plain zero when the company deducts them all, never a negative one.
     private decimal NotDeductibleCosts => Costs == Deductible ? 0m : Costs - Deductible;

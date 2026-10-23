@@ -1025,7 +1025,7 @@ public class RiverInputsTests
 
         var back = inputs.TakeOutOfPlan(OptionalModule.Car).AddToPlan(OptionalModule.Car).Run().Year.ShouldNotBeNull();
 
-        (back.NetInPocket, back.MuddyPocket).ShouldBe((inputs.Run().Year.ShouldNotBeNull().NetInPocket, 8_000m));
+        (back.NetInPocket, back.Car.Costs).ShouldBe((inputs.Run().Year.ShouldNotBeNull().NetInPocket, 8_000m));
     }
 
     // The example holds no car: its money and its CO2 are nothing, its first registration and its
