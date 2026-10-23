@@ -73,7 +73,7 @@
     <value>stays in the company</value>
   </data>
   <data name="To_dividend" xml:space="preserve">
-    <value>on to the dividend</value>
+    <value>to the dividend</value>
   </data>
   <data name="Drain_advance_payment_surcharge" xml:space="preserve">
     <value>Advance-payment surcharge</value>
@@ -97,13 +97,13 @@
     <value>Profit before your pay</value>
   </data>
   <data name="To_split" xml:space="preserve">
-    <value>on to the split</value>
+    <value>to the split</value>
   </data>
   <data name="Drain_left_after_vouchers" xml:space="preserve">
     <value>Left after the vouchers</value>
   </data>
   <data name="To_allowances" xml:space="preserve">
-    <value>on to the expense allowances</value>
+    <value>to the allowances</value>
   </data>
   <data name="Drain_office_allowance" xml:space="preserve">
     <value>Office allowance</value>
@@ -121,10 +121,10 @@
     <value>Left after the allowances</value>
   </data>
   <data name="To_rent" xml:space="preserve">
-    <value>on to the home office rent</value>
+    <value>to the rent</value>
   </data>
   <data name="To_car" xml:space="preserve">
-    <value>on to the company car</value>
+    <value>to the car</value>
   </data>
   <data name="Drain_rent_income_tax" xml:space="preserve">
     <value>Income tax on the rent</value>
@@ -175,6 +175,6 @@
     <value>Profit before your pay and royalty</value>
   </data>
   <data name="To_director_pay" xml:space="preserve">
-    <value>on to Director pay, taxed as your pay</value>
+    <value>to Director pay, taxed as your pay</value>
   </data>
 </root>
