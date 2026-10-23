@@ -325,6 +325,96 @@ public class CopyrightCalculatorTests
 
     private static CopyrightRoyalty Share(decimal share) => new(0m) { CreativeShare = share };
 
+    // A royalty that follows the pay, for that share of the working time spent creating.
+    private static CopyrightRoyalty Following(decimal? share) => new(0m) { CreativeShare = share, FollowsPay = true };
+
+    [Fact]
+    public void AtPay_fixedRoyalty_isTheRoyaltyGiven()
+    {
+        var royalty = new CopyrightRoyalty(10_000m) { CreativeShare = 0.75m };
+
+        CopyrightCalculator.AtPay(Rules2026, royalty, 50_000m).ShouldBe(royalty);
+    }
+
+    // What an advance ruling accepts at that pay, the cap above it, nothing without pay or time creating.
+    [Theory]
+    [InlineData(0.75, 50_000, 11_538.46)]
+    [InlineData(1, 300_000, 77_220)]
+    [InlineData(0.75, 0, 0)]
+    [InlineData(0, 50_000, 0)]
+    public void AtPay_followingThePay_isWhatARulingAcceptsAtThatPay(double share, double pay, double expected)
+    {
+        var royalty = Following((decimal)share);
+
+        CopyrightCalculator.AtPay(Rules2026, royalty, (decimal)pay).ShouldBe(royalty with { Royalty = (decimal)expected });
+    }
+
+    // No amount a ruling accepts: no share given, the four previous years above the cap, or a year
+    // without an envelope rate.
+    [Theory]
+    [InlineData(2026, null, true)]
+    [InlineData(2026, 0.75, false)]
+    [InlineData(2025, 0.75, true)]
+    public void AtPay_followingWithNothingARulingAccepts_isNone(int year, double? share, bool averageWithinCap)
+    {
+        var royalty = Following((decimal?)share) with { AverageWithinCap = averageWithinCap, Royalty = 5_000m };
+
+        CopyrightCalculator.AtPay(CopyrightRules.For(year).ShouldNotBeNull(), royalty, 50_000m).Royalty.ShouldBe(0m);
+    }
+
+    // The royalty a ruling accepts stays within the limits: all of it is taxed apart.
+    [Fact]
+    public void Compute_followingThePay_paysWhatARulingAcceptsAllWithinTheLimits()
+    {
+        var result = CopyrightCalculator.Compute(Rules2026, Following(0.75m), 50_000m).Value.ShouldNotBeNull();
+
+        (result.Royalty, result.WithinLimits, result.TaxedAsPay, result.Bound, result.Following)
+            .ShouldBe((11_538.46m, 11_538.46m, 0m, CopyrightBound.None, (FollowingRoyalty?)FollowingRoyalty.AtCeiling));
+    }
+
+    // While it follows the pay, the amount given is not read, not even to refuse it.
+    [Theory]
+    [InlineData(-5)]
+    [InlineData(99_999)]
+    public void Compute_followingThePay_readsNotTheRoyaltyGiven(int given)
+    {
+        CopyrightCalculator.Compute(Rules2026, Following(0.75m) with { Royalty = given }, 50_000m).Value.ShouldNotBeNull().Royalty.ShouldBe(11_538.46m);
+    }
+
+    // None, and why: the share is not given yet, which is never refused, the four previous years averaged
+    // above the cap, which a share would not cure, or the year has no envelope rate.
+    [Theory]
+    [InlineData(2026, null, true, FollowingRoyalty.NoCreativeShare)]
+    [InlineData(2026, 0.75, false, FollowingRoyalty.AverageAboveCap)]
+    [InlineData(2026, null, false, FollowingRoyalty.AverageAboveCap)]
+    [InlineData(2025, 0.75, true, FollowingRoyalty.NoEnvelopeRate)]
+    [InlineData(2025, null, true, FollowingRoyalty.NoEnvelopeRate)]
+    public void Compute_followingWithNothingARulingAccepts_paysNoneAndSaysWhy(int year, double? share, bool averageWithinCap, FollowingRoyalty why)
+    {
+        var royalty = Following((decimal?)share) with { AverageWithinCap = averageWithinCap };
+
+        CopyrightCalculator.Compute(CopyrightRules.For(year).ShouldNotBeNull(), royalty, 50_000m).ShouldBe((CopyrightResult.None with { Following = why }, null));
+    }
+
+    // No time spent creating: a ruling accepts nothing, and nothing is paid.
+    [Fact]
+    public void Compute_followingWithNoTimeCreating_paysNone()
+    {
+        CopyrightCalculator.Compute(Rules2026, Following(0m), 50_000m).ShouldBe((CopyrightResult.None with { Following = FollowingRoyalty.AtCeiling }, null));
+    }
+
+    [Fact]
+    public void Compute_followingWithAShareOutsideNothingToAll_isRefused()
+    {
+        CopyrightCalculator.Compute(Rules2026, Following(1.01m), 50_000m).ShouldBe((null, CopyrightCalculator.CreativeShareOutOfRange));
+    }
+
+    [Fact]
+    public void Compute_fixedRoyalty_followsNothing()
+    {
+        Compute(10_000m, 50_000m).Following.ShouldBeNull();
+    }
+
     // The year reads the royalty with its costs as plain figures: the company pays and the pocket gets
     // the whole royalty, the tax and the withholding are on its net.
     [Fact]

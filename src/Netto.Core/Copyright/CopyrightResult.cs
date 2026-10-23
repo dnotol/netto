@@ -28,6 +28,10 @@ public sealed record CopyrightResult(
 
     public decimal Withheld => WithheldWithinLimits + WithheldBeyondLimits;
 
+    // How a royalty that follows the pay was set: at what an advance ruling accepts at the pay, or none,
+    // and why. Null for a royalty the user fixed.
+    public FollowingRoyalty? Following { get; init; }
+
     // What the royalty does to the year, as YearSimulation composes it beside the other levers: what the
     // company pays and deducts, the part taxed apart, net of its costs, the part taxed as pay, and what
     // it withheld.
@@ -48,4 +52,23 @@ public enum CopyrightBound
 
     // The four previous years averaged more than the cap: nothing is within them.
     Average,
+}
+
+// How a royalty that follows the pay is set: what an advance ruling accepts for the creative share at
+// the pay, or none, and why, so that a card can say it without testing the rules itself.
+public enum FollowingRoyalty
+{
+    // What an advance ruling accepts at the pay, all of it within the limits: nothing without pay or
+    // without time spent creating.
+    AtCeiling,
+
+    // The share of the working time spent creating is not given yet.
+    NoCreativeShare,
+
+    // The four previous years averaged more than the cap, so every royalty would be taxed as pay: a
+    // share would not change it.
+    AverageAboveCap,
+
+    // The income year has no envelope rate to measure what a ruling accepts.
+    NoEnvelopeRate,
 }

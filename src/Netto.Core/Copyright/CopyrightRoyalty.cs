@@ -6,9 +6,13 @@ namespace Netto.Core.Copyright;
 // year's cap, which Netto cannot see (art. 37 al. 2): met unless the user says otherwise; and whether
 // the director holds an attestation du travail des arts covering these works when the royalty is paid,
 // which from 2026 the flat-rate costs need (AR/CIR 92, art. 3 al. 2): none unless the user says so;
-// and the share of their working time spent creating protected works, a rate the royalty move alone
-// reads, none until the user gives it. None unless given; there is a royalty only once it is more than
-// nothing.
+// and the share of their working time spent creating protected works, a rate the royalty reads when it
+// follows the pay, and the moves, none until the user gives it. None unless given; there is a royalty
+// only once it is more than nothing.
+//
+// A royalty may follow the pay (FollowsPay): at each pay it is what an advance ruling accepts for the
+// creative share there (CopyrightCalculator.Ceiling), none while there is no such amount. Its Royalty is
+// then not read: the year sets it to what the royalty comes to at its own pay (CopyrightCalculator.AtPay).
 public sealed record CopyrightRoyalty(decimal Royalty)
 {
     public static CopyrightRoyalty None { get; } = new(0m);
@@ -20,4 +24,6 @@ public sealed record CopyrightRoyalty(decimal Royalty)
     public bool HoldsAttestation { get; init; }
 
     public decimal? CreativeShare { get; init; }
+
+    public bool FollowsPay { get; init; }
 }

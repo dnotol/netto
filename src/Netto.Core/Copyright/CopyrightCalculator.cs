@@ -19,15 +19,21 @@ public static class CopyrightCalculator
     // they leave; each band is rounded to the cent, and the 15% withheld on the part within is on its
     // net (art. 269 takes the net income). The programme law of 30.05.2026 holds the withholding of a
     // royalty paid before 11.06.2026 to the old rule, on the net for every author: Netto takes the year's
-    // royalty as paid at once under the new one.
+    // royalty as paid at once under the new one. A royalty that follows the pay is taken at what it comes
+    // to at that pay (AtPay), the amount given unread, and says how it was set (Following): none while
+    // there is nothing a ruling accepts, which is never refused, so the river runs on until the share is
+    // given.
     public static (CopyrightResult? Value, string? Error) Compute(CopyrightRules rules, CopyrightRoyalty royalty, decimal grossPay)
     {
-        if (royalty.Royalty < 0m)
+        if (!royalty.FollowsPay && royalty.Royalty < 0m)
             return (null, RoyaltyNegative);
         if (royalty.CreativeShare is < 0m or > 1m)
             return (null, CreativeShareOutOfRange);
+
+        var following = royalty.FollowsPay ? Following(rules, royalty) : (FollowingRoyalty?)null;
+        royalty = AtPay(rules, royalty, grossPay);
         if (!royalty.Any)
-            return (CopyrightResult.None, null);
+            return (CopyrightResult.None with { Following = following }, null);
 
         var relativeLimit = Math.Floor(rules.RelativeLimit.Value * (royalty.Royalty + Math.Max(0m, grossPay)) * 100m) / 100m;
         var cap = rules.Cap.Value;
@@ -53,16 +59,17 @@ public static class CopyrightCalculator
             Money.RoundToCent(net * rules.WithholdingRate.Value),
             Money.RoundToCent(asPay * rules.BeyondLimitsWithholdingRate.Value),
             bound,
-            within > 0m ? new IncomeTaxedApart(net, rules.TaxedApartRate) : null), null);
+            within > 0m ? new IncomeTaxedApart(net, rules.TaxedApartRate) : null) { Following = following }, null);
     }
 
-    // The largest royalty Netto proposes as a move beside the gross pay on the payslip: what a ruling
-    // accepts, the envelope rate times the creative share of the envelope, pay plus royalty, and what
+    // What an advance ruling accepts as a royalty beside the gross pay on the payslip, which Netto
+    // proposes as a move and a royalty that follows the pay comes to: the envelope rate times the creative
+    // share of the envelope, pay plus royalty, as ruling 2026.0484 measured it for one director, and what
     // keeps the whole royalty within the limits, the relative limit's share of that envelope and the cap.
     // A share r of the envelope is r / (1 − r) of the pay, taken down to the cent so that the royalty is
     // never above it. The pay is the payslip's gross alone, as the relative limit's is (decided unattended,
     // the smaller envelope). None until the share is given, when the four previous years averaged above
-    // the cap, which taxes every royalty as pay, or for a year without an envelope rate.
+    // the cap, which taxes every royalty as pay, or for a year without an envelope rate (Following).
     public static decimal? Ceiling(CopyrightRules rules, CopyrightRoyalty royalty, decimal grossPay)
     {
         if (royalty.CreativeShare is not { } share || !royalty.AverageWithinCap || rules.EnvelopeRate is not { } envelope)
@@ -72,6 +79,21 @@ public static class CopyrightCalculator
         var largest = Math.Floor(rate * Math.Max(0m, grossPay) / (1m - rate) * 100m) / 100m;
         return Math.Min(largest, rules.Cap.Value);
     }
+
+    // The royalty as the company pays it beside that gross pay: the one given, or, when it follows the
+    // pay, what a ruling accepts there (Ceiling), none where a ruling accepts nothing.
+    public static CopyrightRoyalty AtPay(CopyrightRules rules, CopyrightRoyalty royalty, decimal grossPay) =>
+        royalty.FollowsPay ? royalty with { Royalty = Ceiling(rules, royalty, grossPay) ?? 0m } : royalty;
+
+    // How a royalty that follows the pay is set, whatever the pay: at what a ruling accepts, or none, and
+    // why. The four previous years first, since no share would change them, then the year's rules.
+    public static FollowingRoyalty Following(CopyrightRules rules, CopyrightRoyalty royalty) => royalty switch
+    {
+        { AverageWithinCap: false } => FollowingRoyalty.AverageAboveCap,
+        _ when rules.EnvelopeRate is null => FollowingRoyalty.NoEnvelopeRate,
+        { CreativeShare: null } => FollowingRoyalty.NoCreativeShare,
+        _ => FollowingRoyalty.AtCeiling,
+    };
 
     // The first band's rate on the income up to its ceiling, the second's on the part from there up to
     // its own, nothing beyond.
