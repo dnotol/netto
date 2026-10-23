@@ -382,11 +382,12 @@ public class YearSimulationCopyrightTests
     }
 
     // A royalty that follows the pay is bounded by the pay ceiling, which the river holds the pay to: a
-    // pay beyond it is not the royalty's to refuse.
+    // pay beyond it is not the royalty's to refuse, even where what a ruling accepts there, 31,666.66
+    // beside 95,000, is more than the 10,000 the company has before pay and royalty.
     [Fact]
     public void Run_2026RoyaltyFollowingBesideAPayBeyondThePayCeiling_isNotRefused()
     {
-        YearSimulation.Run(Scenario(directorPay: 95_000m, royalty: Following(0.75m))).Error.ShouldBeNull();
+        YearSimulation.Run(Scenario(directorPay: 95_000m, revenue: 30_000m, royalty: Following(1m))).Error.ShouldBeNull();
     }
 
     // The most the split gives as pay beside a fixed royalty is the profit before pay, never below zero.
