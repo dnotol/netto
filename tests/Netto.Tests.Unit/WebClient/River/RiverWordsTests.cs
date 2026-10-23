@@ -13,10 +13,11 @@ namespace Netto.Tests.WebClient.River;
 // at most two thirds of their count on main at 4c62e26, before the story. Counted in the browser on
 // 2026-10-23 at the story's tip 3076ea8, the filled plan, with a plan starred Today, drew 1,303 words in
 // the page's main against a ceiling of 1,363 (2,044 before): met. The example drew 572 against a ceiling
-// of 452 (678 before): not met, its five cards being mostly drain lines now, and whether it has to be is a
-// question parked for the operator. A render without a browser counts otherwise, running no script and
-// starring no plan Today, so the ceilings held here are this render's own counts at 3076ea8: a guard
-// against a regression, not the criterion itself.
+// of 452 (678 before), its five cards being mostly drain lines now; the operator accepted it at 572 on
+// 2026-10-23, so that count is the example's criterion. A render without a browser counts otherwise,
+// running no script and starring no plan Today, so the ceilings held here are this render's own counts at
+// 3076ea8, the example's 551 standing for the browser's 572: a guard against a regression, each row
+// held at the count the operator accepted the plan at.
 public class RiverWordsTests
 {
     // The plan the hivemind fills in the browser to count the words: the example with every lever in the
