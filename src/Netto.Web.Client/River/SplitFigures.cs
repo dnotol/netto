@@ -10,14 +10,15 @@ namespace Netto.Web.Client.River;
 internal static class SplitFigures
 {
     // The pay, the royalty while it is in the plan, and the company's profit before tax, each out of
-    // what the split receives, the profit before pay and royalty the levers above it leave. None while
-    // an amount is refused: the refusal stands in their place.
+    // what the split receives, the profit before pay and royalty the levers above it leave: what the
+    // pay, the royalty and the company share (SplitRoyaltyView.Shared), or the profit before pay alone
+    // without a royalty. None while an amount is refused: the refusal stands in their place.
     public static IReadOnlyList<FigureLine> Sides(SplitView view, YearResult? year)
     {
         if (year is null || view.CompanyProfit is not { } company)
             return [];
 
-        var received = year.ProfitBeforePay + year.Copyright.Royalty;
+        var received = view.Royalty?.Shared ?? year.ProfitBeforePay;
         return Shown(
             new FigureLine("Figure_Pay", view.Pay) { Share = Shares.Of(view.Pay, received) },
             view.Royalty?.Amount is { } royalty ? new FigureLine("Figure_Royalty", royalty) { Share = Shares.Of(royalty, received) } : null,
