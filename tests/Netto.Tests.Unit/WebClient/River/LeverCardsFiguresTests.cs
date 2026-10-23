@@ -1,12 +1,15 @@
 using System.Globalization;
 using System.Resources;
+using System.Text.RegularExpressions;
 using Netto.Web.Client.River;
 using Shouldly;
 
 namespace Netto.Tests.WebClient.River;
 
-// The lever cards before the split, Company year and Dividend read in figures, and what they share with
-// the other cards said in as few words: where a drain line passes its money on, and the line their
+// The lever cards before the split, Company year and Dividend read in figures, each drawn open on the
+// Plan page as the viewer meets it (CardHtml): a summary that is figures with their labels, no sentence,
+// and words in sight held under the cut the story makes, two thirds of the page's; and what they share
+// with the other cards said in as few words: where a drain line passes its money on, and the line their
 // conditions fold to.
 public class LeverCardsFiguresTests
 {
@@ -14,6 +17,77 @@ public class LeverCardsFiguresTests
     private static readonly ResourceManager DrainListResources = new("Netto.Web.Client.River.DrainList", typeof(DrainList).Assembly);
 
     private static readonly ResourceManager ConditionListResources = new("Netto.Web.Client.River.ConditionList", typeof(ConditionList).Assembly);
+
+    // An amount as Formats writes it, a share among them, signed or not.
+    private static readonly Regex Amounts = new("[−+]?€[0-9,]+(?:[.][0-9]+)?|[0-9]+(?:[.][0-9]+)?%");
+
+    // Every lever in the plan with an amount of each kind given, each under its maximum so that a bound
+    // under its field never reads as one of the card's lines, a rent above its floor, profits kept from
+    // earlier years and part of the year's kept in the company: the plan the story counts the cards on.
+    private static readonly RiverInputs Filled = PlanComposition.Modules.Aggregate(RiverInputs.Example, (inputs, module) => inputs.AddToPlan(module))
+        .WithMealVoucherDays(200).WithEcoVouchers(200m).WithSportCultureVouchers(80m)
+        .WithInternetAllowance(200m).WithComputerAllowance(200m).WithPhoneCosts(600m)
+        .WithCadastralIncome(1_200m).WithShareLet(0.12m).WithRent(1_000m)
+        .WithCatalogueValue(50_000m).WithCarCosts(8_000m).WithCarContribution(600m)
+        .WithEarlierProfits(20_000m).WithReserve(5_000m);
+
+    // Each card's summary, by its fold's name, on the river it is drawn on.
+    public static TheoryData<string, RiverInputs, string> Summaries => new()
+    {
+        { "company-year", Filled, "€120,000.00 in · €100,000.00 before your pay" },
+    };
+
+    [Theory]
+    [MemberData(nameof(Summaries))]
+    public async Task Summary_card_isItsFiguresWithTheirLabels(string card, RiverInputs river, string expected)
+    {
+        CardHtml.Summary(await OpenCardAsync(river, card)).ShouldBe(expected);
+    }
+
+    public static TheoryData<string, RiverInputs> Cards => new()
+    {
+        { "company-year", Filled },
+        { "vouchers", Filled },
+        { "allowances", Filled },
+        { "dividend", Filled },
+        { "dividend", Filled.WithReserve(0m) },
+    };
+
+    // Between its middle dots, a summary holds a figure and a few words naming it: no sentence, so no
+    // punctuation once its amounts are left out.
+    [Theory]
+    [MemberData(nameof(Cards))]
+    public async Task Summary_card_holdsNoSentence(string card, RiverInputs river)
+    {
+        var summary = CardHtml.Summary(await OpenCardAsync(river, card)).ShouldNotBeNull();
+
+        var labels = Amounts.Replace(summary, "").Split('·').Select(label => label.Trim()).ToList();
+        labels.ShouldSatisfyAllConditions(
+            () => labels.Where(label => label.IndexOfAny(['.', ',', ':', ';', '?']) >= 0).ShouldBeEmpty(),
+            () => labels.Where(label => label.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length > 5).ShouldBeEmpty());
+    }
+
+    // The words in sight on each card of the filled plan, open, held under its cut: before the story it
+    // drew 26 on Company year.
+    public static TheoryData<string, int> Cuts => new()
+    {
+        { "company-year", 24 },
+    };
+
+    [Theory]
+    [MemberData(nameof(Cuts))]
+    public async Task VisibleWords_cardOfTheFilledPlan_areAtMostItsCut(string card, int cut)
+    {
+        CardHtml.VisibleWords(await OpenCardAsync(Filled, card)).Count.ShouldBeLessThanOrEqualTo(cut);
+    }
+
+    // Skipped, Company year says where the river starts; that the cards which need the company's figures
+    // wait for them, each of them says.
+    [Fact]
+    public async Task CompanyYear_skipped_saysWhereTheRiverStarts()
+    {
+        CardHtml.Prose(await OpenCardAsync(Filled.SkipCompany(), "company-year")).ShouldBe(["Skipped: no company figures, so the river starts at your pay."]);
+    }
 
     // What a module passes on goes to the card under it, named in a few words; what a royalty leaves
     // beyond its limits says it is taxed there as pay. Where a line goes into a bucket says the bucket's
@@ -47,4 +121,7 @@ public class LeverCardsFiguresTests
 
         string.Format(CultureInfo.InvariantCulture, heading, count).ShouldBe(expected);
     }
+
+    // The card of that fold's name on the Plan page, every card open.
+    private static async Task<string> OpenCardAsync(RiverInputs river, string card) => CardHtml.Card(await CardHtml.RenderPlanOpenAsync(river), card);
 }

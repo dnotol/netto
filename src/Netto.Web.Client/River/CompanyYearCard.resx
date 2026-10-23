@@ -16,7 +16,7 @@
     <value>Company year</value>
   </data>
   <data name="Summary" xml:space="preserve">
-    <value>{0} in · {1} before what it pays you</value>
+    <value>{0} in · {1} before your pay</value>
   </data>
   <data name="RevenueLabel" xml:space="preserve">
     <value>Revenue, excluding VAT</value>
@@ -28,7 +28,7 @@
     <value>Clear the company's figures</value>
   </data>
   <data name="Skipped" xml:space="preserve">
-    <value>Skipped: no company figures, so the river starts at your pay. Corporate tax and the dividend wait for them.</value>
+    <value>Skipped: no company figures, so the river starts at your pay.</value>
   </data>
   <data name="Enter" xml:space="preserve">
     <value>Enter your company's year</value>
