@@ -190,7 +190,7 @@ public class CompareViewTests
         var picks = view.PickPlan(plans.Plans[1].Id).ShouldNotBeNull();
         var swapped = CompareView.Of(plans, picks.Plan, picks.Against);
 
-        (swapped.Plan!.Name, swapped.Against!.Name).ShouldBe(("Plan 2", "Plan 1"));
+        (picks.Plan, picks.Against, swapped.Plan!.Name, swapped.Against!.Name).ShouldBe((plans.Plans[1].Id, plans.Plans[0].Id, "Plan 2", "Plan 1"));
     }
 
     [Fact]
@@ -202,7 +202,7 @@ public class CompareViewTests
         var picks = view.PickAgainst(plans.Plans[0].Id).ShouldNotBeNull();
         var swapped = CompareView.Of(plans, picks.Plan, picks.Against);
 
-        (swapped.Plan!.Name, swapped.Against!.Name).ShouldBe(("Plan 2", "Plan 1"));
+        (picks.Plan, picks.Against, swapped.Plan!.Name, swapped.Against!.Name).ShouldBe((plans.Plans[1].Id, plans.Plans[0].Id, "Plan 2", "Plan 1"));
     }
 
     // Another plan changes that column only; the other stays as shown, even where the default would move
