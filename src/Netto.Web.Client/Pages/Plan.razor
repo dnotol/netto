@@ -7,6 +7,7 @@
 @inject RiverState State
 @inject SavedPlans Plans
 @inject TimeProvider Clock
+@inject Folds Folds
 
 <PageTitle>@L["PageTitle"]</PageTitle>
 
@@ -24,7 +25,10 @@
    it up. Every figure comes from Netto.Core; the page only holds the inputs and runs them. The
    optional modules show only while in the plan, which the Composition menu in the bar sets; taking
    one out, there or from its card, shows a notice with Undo. The levers run before the split, but the
-   copyright royalty, which the split pays beside the pay: its card heads the director's stream. *@
+   copyright royalty, which the split pays beside the pay: its card heads the director's stream. On a
+   wide screen the river's outline stands left of the cards (RiverOutline), before them in the page:
+   the cards tell it what they are as they are drawn, through the page's OutlineRows handed down to
+   them. *@
 <BucketBar Run="_run" Setup="_today?.Run" Unsaved="Plans.HasUnsavedChanges(_inputs)">
     <PlansPanel Inputs="_inputs" CanSave="BaselineGain.CanMark(_run)" OnOpen="OnInputsChanged" OnChanged="OnPlansChanged" />
     <CompositionMenu @ref="_composition" Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" />
@@ -44,52 +48,57 @@
 
         <RefusedMessage Error="@Refused(RiverModule.River)" />
 
-        <div id="river" class="river__flow" tabindex="-1" @ref="_river">
-            <MovesCard Today="Plans.TodayPlan?.Inputs" Date="Today" Inputs="_inputs" InputsChanged="OnInputsChanged" />
-            <CompanyYearCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Refused="@Refused(RiverModule.CompanyYear)" />
-            @if (_inputs.Composition.Count == 0)
-            {
-                <p class="river__add">
-                    @L["AddHint"]
-                    <MudButton Variant="Variant.Text" Size="Size.Small" Color="Color.Primary" OnClick="OpenComposition">@L["AddHintButton"]</MudButton>
-                </p>
-            }
-            @if (_inputs.InPlan(OptionalModule.Vouchers))
-            {
-                <VoucherCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Refused="@Refused(RiverModule.Vouchers)" />
-            }
-            @if (_inputs.InPlan(OptionalModule.Allowances))
-            {
-                <AllowanceCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Refused="@Refused(RiverModule.Allowances)" />
-            }
-            @if (_inputs.InPlan(OptionalModule.Rent))
-            {
-                <RentCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Refused="@Refused(RiverModule.Rent)" />
-            }
-            @if (_inputs.InPlan(OptionalModule.Car))
-            {
-                <CarCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Refused="@Refused(RiverModule.Car)" />
-            }
-            @if (_inputs.Company is not null)
-            {
-                <SplitCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Search="_search" Refused="@Refused(RiverModule.Split)" />
-                <p class="river__fork" aria-hidden="true">@L[PlanText.Fork(_inputs.InPlan(OptionalModule.Copyright))]</p>
-            }
-            <div class="river__streams">
-                <div class="river__stream">
-                    @if (_inputs.InPlan(OptionalModule.Copyright))
+        <CascadingValue Value="_outline" IsFixed="true">
+            <div class="river__body">
+                <RiverOutline />
+                <div id="river" class="river__flow" tabindex="-1" @ref="_river">
+                    <MovesCard Today="Plans.TodayPlan?.Inputs" Date="Today" Inputs="_inputs" InputsChanged="OnInputsChanged" />
+                    <CompanyYearCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Refused="@Refused(RiverModule.CompanyYear)" />
+                    @if (_inputs.Composition.Count == 0)
                     {
-                        <CopyrightCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Refused="@Refused(RiverModule.Copyright)" />
+                        <p class="river__add">
+                            @L["AddHint"]
+                            <MudButton Variant="Variant.Text" Size="Size.Small" Color="Color.Primary" OnClick="OpenComposition">@L["AddHintButton"]</MudButton>
+                        </p>
                     }
-                    <DirectorPayCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Refused="@Refused(RiverModule.DirectorPay)" />
-                </div>
-                <div class="river__stream">
-                    <CorporateTaxCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Refused="@Refused(RiverModule.CorporateTax)" />
-                    <DividendCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Refused="@Refused(RiverModule.Dividend)" />
+                    @if (_inputs.InPlan(OptionalModule.Vouchers))
+                    {
+                        <VoucherCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Refused="@Refused(RiverModule.Vouchers)" />
+                    }
+                    @if (_inputs.InPlan(OptionalModule.Allowances))
+                    {
+                        <AllowanceCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Refused="@Refused(RiverModule.Allowances)" />
+                    }
+                    @if (_inputs.InPlan(OptionalModule.Rent))
+                    {
+                        <RentCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Refused="@Refused(RiverModule.Rent)" />
+                    }
+                    @if (_inputs.InPlan(OptionalModule.Car))
+                    {
+                        <CarCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Refused="@Refused(RiverModule.Car)" />
+                    }
+                    @if (_inputs.Company is not null)
+                    {
+                        <SplitCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Search="_search" Refused="@Refused(RiverModule.Split)" />
+                        <p class="river__fork" aria-hidden="true">@L[PlanText.Fork(_inputs.InPlan(OptionalModule.Copyright))]</p>
+                    }
+                    <div class="river__streams">
+                        <div class="river__stream">
+                            @if (_inputs.InPlan(OptionalModule.Copyright))
+                            {
+                                <CopyrightCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Refused="@Refused(RiverModule.Copyright)" />
+                            }
+                            <DirectorPayCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Refused="@Refused(RiverModule.DirectorPay)" />
+                        </div>
+                        <div class="river__stream">
+                            <CorporateTaxCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Refused="@Refused(RiverModule.CorporateTax)" />
+                            <DividendCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Refused="@Refused(RiverModule.Dividend)" />
+                        </div>
+                    </div>
+                    <CalendarCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Date="Today" />
                 </div>
             </div>
-            <CalendarCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Date="Today" />
-        </div>
+        </CascadingValue>
 
         <aside class="assumed" aria-labelledby="assumed-title">
             <Fold Name="@PlanText.AssumedFold" Title="@L[PlanText.AssumedTitle]" TitleId="assumed-title"
@@ -120,6 +129,7 @@
 
 @code {
     private RiverInputs _inputs = default!;
+    private OutlineRows _outline = default!;
     private RiverRun _run = default!;
     private SplitSearchResult? _search;
     private (string Id, RiverRun Run)? _today;
@@ -133,6 +143,7 @@
 
     protected override void OnInitialized()
     {
+        _outline = new OutlineRows(Folds);
         OnPlansChanged();
         Show(State.Inputs);
     }

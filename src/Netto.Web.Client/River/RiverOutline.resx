@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Label" xml:space="preserve">
+    <value>River outline</value>
+  </data>
+  <data name="OpenAll" xml:space="preserve">
+    <value>Open all</value>
+  </data>
+  <data name="OpenAllName" xml:space="preserve">
+    <value>Open all cards</value>
+  </data>
+  <data name="FoldAll" xml:space="preserve">
+    <value>Fold all</value>
+  </data>
+  <data name="FoldAllName" xml:space="preserve">
+    <value>Fold all cards</value>
+  </data>
+  <data name="Glance_In" xml:space="preserve">
+    <value>{0} in</value>
+  </data>
+  <data name="Glance_ToYou" xml:space="preserve">
+    <value>{0} to you</value>
+  </data>
+  <data name="Glance_ToYourPay" xml:space="preserve">
+    <value>{0} to your pay</value>
+  </data>
+  <data name="Glance_MuddyPocket" xml:space="preserve">
+    <value>{0} to the muddy pocket</value>
+  </data>
+  <data name="Glance_TaxedAsPay" xml:space="preserve">
+    <value>{0} taxed as your pay</value>
+  </data>
+  <data name="Glance_LeftAfterTax" xml:space="preserve">
+    <value>{0} left after tax</value>
+  </data>
+  <data name="Glance_MoreThanToday" xml:space="preserve">
+    <value>{0} more than Today</value>
+  </data>
+  <data name="Glance_NextBy" xml:space="preserve">
+    <value>Next by {0}</value>
+  </data>
+</root>

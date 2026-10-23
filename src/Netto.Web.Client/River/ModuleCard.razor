@@ -1,3 +1,4 @@
+@implements IDisposable
 @inject IStringLocalizer<ModuleCard> L
 
 @* The frame every module of the river shares: its title and what flows through it, on the one line it
@@ -6,8 +7,10 @@
    (Fold, level 3) and opened on demand, and last, for an optional module, the word that takes it out
    of the plan. A skipped module is drawn dashed, waiting for the amounts it needs. The summary ends
    on one share, worded here for every card: what reaches the pocket of what the module receives
-   (ToYou), or, for Corporate tax, what it passes on (PassesOn); none while no money flows through it. *@
-<section class="module-card @(Skipped ? "module-card--skipped" : null)" aria-labelledby="@_titleId">
+   (ToYou), or, for Corporate tax, what it passes on (PassesOn); none while no money flows through it.
+   Every time it is drawn, it tells the river's outline (OutlineRows) its title, one figure of its
+   summary (Glance) and its fold, and leaves the outline as it goes; the outline finds it by its id. *@
+<section id="@($"card-{Name}")" class="module-card @(Skipped ? "module-card--skipped" : null)" aria-labelledby="@_titleId">
     <Fold Name="@Name" Title="@Title" TitleId="@_titleId" Summary="@Summary" Rate="@Rate" Help="@Help" OpenByDefault="@OpenByDefault"
           Refused="@(Refused is not null)">
         <div class="module-card__body">
@@ -39,6 +42,11 @@
     // What flows in and out, in a few words beside the title.
     [Parameter]
     public string? Summary { get; set; }
+
+    // One figure of the summary, as the summary formats it, for the card's row in the river's outline;
+    // none while the summary has no figure.
+    [Parameter]
+    public CardGlance? Glance { get; set; }
 
     // What reaches the pocket of what the module receives.
     [Parameter]
@@ -84,7 +92,16 @@
     [Parameter]
     public EventCallback OnRemove { get; set; }
 
+    // The page's outline, where there is one (Plan).
+    [CascadingParameter]
+    private OutlineRows? Outline { get; set; }
+
     private readonly string _titleId = $"module-{Guid.NewGuid():N}";
+
+    // The outline draws the card again once it opens it, since a fold reads its state when drawn.
+    protected override void OnParametersSet() => Outline?.Report(new OutlineRow(Name, Title, Glance, OpenByDefault), StateHasChanged);
+
+    public void Dispose() => Outline?.Leave(Name);
 
     private string? Rate => (ToYou, PassesOn) switch
     {

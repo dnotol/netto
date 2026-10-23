@@ -80,6 +80,27 @@
 
 /* The river */
 
+/* The cards and their outline (River/RiverOutline). From 1,201 px, where the bar of buckets holds one
+   row, the outline takes a column of its own left of the cards, which keep at least the width of the
+   narrowest screen their two streams stand side by side on. Once the window leaves room beside the
+   container (MudBlazor's Large, 1,280 px), the outline moves out into the left margin, a little more
+   at each pixel and always short of the window's edge, until the cards have the container's whole
+   width again, as they
+   do without an outline: on a 1,920 px screen the river is as wide as before and only the margin
+   holds the outline. Below 1,201 px the outline is not drawn and the cards take the width alone. */
+.river__body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 1201px) {
+    .river__body {
+        grid-template-columns: 15rem minmax(0, 1fr);
+        gap: 1.5rem;
+        margin-left: calc(-1 * clamp(0px, (100vw - 1280px) / 2 - 2rem, 16.5rem));
+    }
+}
+
 .river__flow {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
