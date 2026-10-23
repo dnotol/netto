@@ -12,6 +12,7 @@ Netto tells a Belgian SRL owner-director how to pay themselves for the year so t
 | Notion, « Netto Development » | Every unit of work (Work Items, User Stories), the product contract (the « Goal & scope » page: what v1 is and is not) and the Lever catalogue (one page per fiscal lever, with its official sources). There is no backlog file, and what shipped is the git history. |
 | `official-docs/` | The official documents the rules are taken from, as they were when read, each with the income years it applies to and its status (`INDEX.md`). Its `README.md` says how to file one. |
 | The River Map, an Artifact ([link](https://claude.ai/artifact/C2gkexviNGUUMzDbpaqaEX)) | The river as decided: a diagram of the whole river and one of each mechanism that reaches across modules or layers, each module with what it asks and where its money goes, the buckets, the dated rules the river follows and what is still open. |
+| The design system, an Artifact ([link](https://claude.ai/artifact/4L3FQYC6eQNrHtwuS5frpf)) | A reference for the look: role-named `netto-*` tokens for the dark theme as built and a light theme designed beside it, the type, spacing and radii, and each shared component of the river with its rules (read its `project/README.md` first). The code wins where the two differ; its light theme is not built. |
 
 **Always current: the River Map and the official documents.**
 
