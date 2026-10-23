@@ -52,21 +52,21 @@ public sealed record RiverInputs(
     private static Input<decimal> ExampleNothing { get; } = new(0m, InputOrigin.None);
 
     // The example year the river opens on, every amount it gives labelled as such, so the whole river
-    // runs at once, and every amount it holds none of naming no origin (2026-10-23); the statuses and
-    // rates are the defaults a typical owner-director starts from. Nothing is prepaid by the company
-    // nor on the pay, so the example shows the company's surcharge and what cancels it; the pay is
-    // withheld on as the key formula says, what a real payslip shows (decided 2026-10-20), so the
-    // withheld amount is derived and the example's year balance is what is left to pay on the
-    // assessment. It holds none of the optional modules in its plan, and grants no vouchers, pays no
-    // expense allowances and no rent and holds no car, so its figures are a year without them and
-    // adding a module starts it from nothing (decided 2026-10-21). A car's first registration and its
-    // order are dates, not money: the example's are the year's first day, a new car, until the user
-    // gives theirs, and its CO2 is nothing until given. It is assumed electric, the company paying no
-    // private charging, until the user says otherwise; what the same car would cost privately is none
-    // until given, with no example (operator, 2026-10-23). It pays no copyright royalty; one added to
-    // the plan follows the pay, a status, none until a creative share is given (operator, 2026-10-23),
-    // and assumes the four previous years' copyright income averaged within the cap, a status, until
-    // the user says otherwise.
+    // runs at once, and every amount it holds none of naming no origin (decided unattended,
+    // 2026-10-23); the statuses and rates are the defaults a typical owner-director starts from.
+    // Nothing is prepaid by the company nor on the pay, so the example shows the company's surcharge
+    // and what cancels it; the pay is withheld on as the key formula says, what a real payslip shows
+    // (decided 2026-10-20), so the withheld amount is derived and the example's year balance is what is
+    // left to pay on the assessment. It holds none of the optional modules in its plan, and grants no
+    // vouchers, pays no expense allowances and no rent and holds no car, so its figures are a year
+    // without them and adding a module starts it from nothing (decided 2026-10-21). A car's first
+    // registration and its order are dates, not money: the example's are the year's first day, a new
+    // car, until the user gives theirs, and its CO2 is nothing until given. It is assumed electric, the
+    // company paying no private charging, until the user says otherwise; what the same car would cost
+    // privately is none until given, with no example (operator, 2026-10-23). It pays no copyright
+    // royalty; one added to the plan follows the pay, a status, none until a creative share is given
+    // (operator, 2026-10-23), and assumes the four previous years' copyright income averaged within the
+    // cap, a status, until the user says otherwise.
     public static RiverInputs Example { get; } = new(
         ExampleYear,
         new CompanyFigures(new Input<decimal>(120_000m, InputOrigin.Example), new Input<decimal>(20_000m, InputOrigin.Example)),

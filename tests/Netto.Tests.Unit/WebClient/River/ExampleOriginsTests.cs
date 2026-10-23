@@ -1,3 +1,4 @@
+using System.Reflection;
 using Netto.Web.Client.River;
 using Shouldly;
 
@@ -28,26 +29,50 @@ public class ExampleOriginsTests
             .ShouldBe(["Company.Revenue", "Company.RunningCosts", "Car.FirstRegistration", "Car.Acquired", "DirectorPay"]);
     }
 
-    // Every input of a record of the river, by its path: the records it is made of are walked the same
-    // way, and what is neither, a year or a municipality's rate, holds no input.
+    // The municipal rate is an input with an origin of its own, though no Input: a rate, the default the
+    // example starts from.
+    [Fact]
+    public void Example_municipalRate_isAnInputWithItsDefaultOrigin()
+    {
+        Inputs(RiverInputs.Example, "").Where(input => input.Path == "Municipality").ShouldBe([("Municipality", (object?)0.07m, InputOrigin.Default)]);
+    }
+
+    // Every input of a record of the river, by its path. A record that takes an origin is one input, the
+    // value it takes beside that origin: an Input<T>'s value, or MunicipalityChoice's rate. A record of
+    // the river that takes none is made of inputs and walked the same way; anything else it takes, a
+    // year, a composition's flags, the engine's own records, is no input.
     private static IEnumerable<(string Path, object? Value, InputOrigin Origin)> Inputs(object record, string path)
     {
-        var type = record.GetType();
-        foreach (var parameter in RiverInputsShapeTests.Parameters(type))
+        var parameters = RiverInputsShapeTests.Parameters(record.GetType());
+        if (parameters.Any(parameter => parameter.ParameterType == typeof(InputOrigin)))
         {
-            var name = $"{path}{parameter.Name}";
-            switch (type.GetProperty(parameter.Name!)!.GetValue(record))
+            var value = parameters.Single(parameter => parameter.ParameterType.IsValueType && parameter.ParameterType != typeof(InputOrigin));
+            var origin = parameters.Single(parameter => parameter.ParameterType == typeof(InputOrigin));
+            yield return (path, Read(record, value), Read(record, origin) is InputOrigin given
+                ? given
+                : throw new InvalidOperationException($"{record.GetType().Name} holds no {Name(origin)}."));
+            yield break;
+        }
+
+        foreach (var parameter in parameters)
+        {
+            if (Read(record, parameter) is { } part && part.GetType() is { IsClass: true } partType && partType.Assembly == typeof(RiverInputs).Assembly)
             {
-                case { } input when input.GetType() is { IsGenericType: true } generic && generic.GetGenericTypeDefinition() == typeof(Input<>):
-                    yield return (name, Read(input, nameof(Input<int>.Value)), (InputOrigin)Read(input, nameof(Input<int>.Origin))!);
-                    break;
-                case { } part when part.GetType() is { IsClass: true } partType && partType.Assembly == typeof(RiverInputs).Assembly:
-                    foreach (var inner in Inputs(part, $"{name}."))
-                        yield return inner;
-                    break;
+                foreach (var input in Inputs(part, path.Length == 0 ? Name(parameter) : $"{path}.{Name(parameter)}"))
+                    yield return input;
             }
         }
     }
 
-    private static object? Read(object input, string property) => input.GetType().GetProperty(property)!.GetValue(input);
+    // What a record holds for a parameter of its constructor: its property of the same name.
+    private static object? Read(object record, ParameterInfo parameter)
+    {
+        var name = Name(parameter);
+        var property = record.GetType().GetProperty(name)
+            ?? throw new InvalidOperationException($"{record.GetType().Name} has no property {name} for its constructor's parameter.");
+        return property.GetValue(record);
+    }
+
+    private static string Name(ParameterInfo parameter) => parameter.Name
+        ?? throw new InvalidOperationException($"Parameter {parameter.Position} of {parameter.Member.DeclaringType?.Name}'s constructor has no name.");
 }
