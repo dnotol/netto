@@ -19,12 +19,17 @@
         vertical-align: baseline;
     }
 
-/* The inputs side by side when the card is wide enough, stacked otherwise; the rent, alone in sight,
-   keeps the width of one of them. */
+/* The inputs side by side when the card is wide enough, stacked otherwise: the home's two share the
+   row between them. */
 .rent__fields {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 13rem), 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
     gap: 1rem;
+}
+
+/* The rent, alone in sight, keeps the width of one of them rather than the whole row. */
+.rent__fields--single {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 13rem), 1fr));
 }
 
 /* What the rent is taxed on and what the company deducts, consequences shown where they start: a
