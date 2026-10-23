@@ -50,6 +50,12 @@ internal sealed record MovesView(
     // topped up (Move.After) holds that round's gain too, measured on top of the moves between.
     public decimal InPocketAfter(int index) => FromInPocket + Moves.Take(index + 1).Sum(move => move.Gain);
 
+    // Whether the river has changed since the plan in it, which the moves are from while no plan is
+    // starred Today, was opened or saved: said beside the moves, or beside its being the best already.
+    // Today is the setup the river is measured against, and moves away from by design.
+    public bool RiverChanged(RiverInputs river) =>
+        From is { IsToday: false } from && State is MovesState.Moves or MovesState.AlreadyBest && river != from.Plan;
+
     // Whether the river holds the move's values already: its pay, the payment by the deadline of the plan
     // the moves are from with the move's amount on top, a lever's amount with its module in the plan, or a
     // royalty in the plan that follows the pay.

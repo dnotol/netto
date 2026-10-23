@@ -226,6 +226,134 @@ public class OptimisationTabTests
         Regex.IsMatch(html, "aria-live|role=\"(status|alert)\"").ShouldBeFalse();
     }
 
+    // While no plan is starred Today, the moves are from the plan in the river as it was opened or saved:
+    // the head and the first line say so, and the moves add up over that plan.
+    [Fact]
+    public async Task Optimisation_noToday_measuresFromThePlanInTheRiver()
+    {
+        var from = new MovesBaseline(RiverInputs.Example, IsToday: false);
+        var view = MovesView.Of(from, On22October);
+
+        var html = await RenderFromAsync(from, RiverInputs.Example);
+
+        (Paragraph(html, "tab-head__eyebrow"), Paragraph(html, "tab-head__lede").StartsWith("What Netto would change in the plan in your river, as you opened or saved it,", StringComparison.Ordinal),
+                Paragraph(html, "moves__state"), Paragraph(html, "moves__total"))
+            .ShouldBe(("Against the plan in your river", true, "From the plan in your river, as you opened or saved it:", $"Together: {Formats.Euros(view.Total)} more than this plan."));
+    }
+
+    // Three figures first: the plan's pocket, the pocket with every move, and the gain over the plan.
+    [Fact]
+    public async Task Optimisation_noToday_opensOnThePlansPocketThePocketWithEveryMoveAndTheGain()
+    {
+        var from = new MovesBaseline(RiverInputs.Example, IsToday: false);
+        var view = MovesView.Of(from, On22October);
+
+        var figures = Figures(await RenderFromAsync(from, RiverInputs.Example));
+
+        figures.ShouldBe([
+            ("This plan, in your pocket", Formats.Euros(view.FromInPocket)),
+            ("With every move below", Formats.Euros(view.PlanInPocket)),
+            ("More than this plan", Formats.Addition(view.Total)),
+        ]);
+    }
+
+    // The river shows a saved plan as it was saved: the tab names it.
+    [Fact]
+    public async Task Optimisation_noTodayOnASavedPlan_namesItInTheHeadAndTheFirstLine()
+    {
+        var html = await RenderFromAsync(new MovesBaseline(RiverInputs.Example, IsToday: false, "Plan 2"), RiverInputs.Example);
+
+        (Paragraph(html, "tab-head__eyebrow"), Paragraph(html, "moves__state"))
+            .ShouldBe(("Against « Plan 2 », the plan in your river", "From « Plan 2 », as you opened or saved it:"));
+    }
+
+    // Without moves to show from the plan in the river, the tab says why, of that plan.
+    public static TheoryData<string, string> SilentPlans => new()
+    {
+        { "already the best", "The plan in your river is already the best Netto finds." },
+        { "starting at the pay", "The plan in your river starts at your pay: enter its company's year in the river and save it to see the moves." },
+        { "refused", "An amount of the plan in your river is refused: correct it in the river and save it to see the moves." },
+    };
+
+    [Theory]
+    [MemberData(nameof(SilentPlans))]
+    public async Task Optimisation_noMovesFromThePlanInTheRiver_saysWhyOfThatPlan(string plan, string said)
+    {
+        var inputs = plan switch
+        {
+            "already the best" => EveryMoveApplied(),
+            "starting at the pay" => RiverInputs.Example.SkipCompany(),
+            "refused" => RiverInputs.Example.WithReserve(-1m),
+            _ => throw new ArgumentOutOfRangeException(nameof(plan), plan, null),
+        };
+
+        var html = await RenderFromAsync(new MovesBaseline(inputs, IsToday: false), inputs);
+
+        (Paragraph(html, "moves__state"), html.Contains("<ol")).ShouldBe((said, false));
+    }
+
+    // The star marks the plan starred Today alone.
+    [Fact]
+    public async Task Optimisation_noToday_drawsNoStar()
+    {
+        var html = await RenderFromAsync(new MovesBaseline(RiverInputs.Example, IsToday: false), RiverInputs.Example);
+
+        (html.Contains("moves__star"), Figures(html)[0].Term).ShouldBe((false, "This plan, in your pocket"));
+    }
+
+    // Every move from the plan in the river is applied as from Today (MovesViewTests).
+    [Fact]
+    public async Task Optimisation_noToday_offersApplyOnEveryMove()
+    {
+        var from = new MovesBaseline(RiverInputs.Example, IsToday: false);
+        var view = MovesView.Of(from, On22October);
+
+        var html = await RenderFromAsync(from, RiverInputs.Example);
+
+        (view.Moves.Count > 0, Regex.Matches(html, "<li class=\"moves__move\"").Count, Applies(html)).ShouldBe((true, view.Moves.Count, view.Moves.Count));
+    }
+
+    // Once a plan is starred Today, the moves are from it, and the head and the first line say so.
+    [Fact]
+    public async Task Optimisation_fromToday_saysTodayInTheHeadAndTheFirstLine()
+    {
+        var html = await RenderTabAsync(RiverInputs.Example, RiverInputs.Example);
+
+        (Paragraph(html, "tab-head__eyebrow"), Paragraph(html, "moves__state")).ShouldBe(("Against Today, your current setup", "From Today, your current setup:"));
+    }
+
+    // The river changed since its plan was opened or saved: the moves are still from that plan, and the tab
+    // says how to measure them from the river, under the first line.
+    [Fact]
+    public async Task Optimisation_riverChangedSinceThePlanInIt_saysToSaveIt()
+    {
+        var html = await RenderFromAsync(new MovesBaseline(RiverInputs.Example, IsToday: false), RiverInputs.Example.WithDirectorPay(40_000m));
+
+        Regex.Matches(html, "<p class=\"moves__state\"[^>]*>(.*?)</p>").Select(match => match.Groups[1].Value).ShouldBe([
+            "From the plan in your river, as you opened or saved it:",
+            "The river has changed since you opened or saved this plan: save it to measure the moves from it.",
+        ]);
+    }
+
+    [Fact]
+    public async Task Optimisation_riverAsThePlanInIt_saysNothingOfAChange()
+    {
+        var html = await RenderFromAsync(new MovesBaseline(RiverInputs.Example, IsToday: false), RiverInputs.Example);
+
+        html.Contains("The river has changed").ShouldBeFalse();
+    }
+
+    // Every move from Today applied to it.
+    private static RiverInputs EveryMoveApplied()
+    {
+        var view = MovesView.Of(RiverInputs.Example, On22October);
+        return view.Moves.Aggregate(RiverInputs.Example, (river, move) => view.Apply(move, river));
+    }
+
+    // The text of the first paragraph of that class.
+    private static string Paragraph(string html, string paragraph) =>
+        Regex.Match(html, $"<p class=\"{paragraph}\"[^>]*>(.*?)</p>", RegexOptions.Singleline).Groups[1].Value;
+
     private static RiverInputs? SilentToday(string today) => today switch
     {
         "no Today" => null,
@@ -243,9 +371,13 @@ public class OptimisationTabTests
 
     private static int Applies(string html) => Regex.Matches(html, "aria-label=\"Apply: ").Count;
 
-    private static async Task<string> RenderTabAsync(RiverInputs? today, RiverInputs river) =>
+    // The tab with its moves from Today, none while no plan is starred.
+    private static Task<string> RenderTabAsync(RiverInputs? today, RiverInputs river) =>
+        RenderFromAsync(today is null ? null : MovesBaseline.Today(today), river);
+
+    private static async Task<string> RenderFromAsync(MovesBaseline? from, RiverInputs river) =>
         WebUtility.HtmlDecode(await RenderAsync<OptimisationTab>(new Folds(new BrowserStorage()), new()
         {
-            ["Today"] = today, ["Found"] = today?.FindMoves(On22October), ["Inputs"] = river,
+            ["From"] = from, ["Found"] = from?.Plan.FindMoves(On22October), ["Inputs"] = river,
         }));
 }

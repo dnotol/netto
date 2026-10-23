@@ -12,6 +12,9 @@ public enum TabBadgeKind
     // What the moves from the plan starred « Today » add to it (Amount).
     MoreThanToday,
 
+    // What the moves from the plan in the river, while none is starred Today, add to it (Amount).
+    MoreThanPlan,
+
     // The next advance payment's deadline (Date).
     NextBy,
 
@@ -23,11 +26,12 @@ public enum TabBadgeKind
 public sealed record TabBadge(TabBadgeKind Kind, decimal Amount = 0m, DateOnly Date = default, int Count = 0);
 
 // The tabs' badges, from the views their contents draw, so a badge says only what its tab shows: the
-// moves' total on Optimisation once they add something to Today (MovesView), the next advance payment's
-// date on When to pay while one is left (CalendarView.Next), and on the tab holding an amount the engine
-// refuses, that refusal, which wins over a date: the river's on Plan, what the fund bills on When to
-// pay, and on Compare plans how many saved plans can be compared once there are two, the plans being
-// the tab's own whatever the river does. A tab with nothing to say has none.
+// moves' total on Optimisation once they add something to the plan they are from, Today or the plan in
+// the river (MovesView), the next advance payment's date on When to pay while one is left
+// (CalendarView.Next), and on the tab holding an amount the engine refuses, that refusal, which wins over
+// a date: the river's on Plan, what the fund bills on When to pay, and on Compare plans how many saved
+// plans can be compared once there are two, the plans being the tab's own whatever the river does. A tab
+// with nothing to say has none.
 internal static class TabBadges
 {
     public static IReadOnlyDictionary<PlanTab, TabBadge> Of(RiverRun run, MovesView moves, CalendarView? calendar, int comparablePlans)
@@ -36,7 +40,7 @@ internal static class TabBadges
         if (run.Error is not null)
             badges[PlanTab.Plan] = new TabBadge(TabBadgeKind.Refused);
         if (moves.State == MovesState.Moves)
-            badges[PlanTab.Optimisation] = new TabBadge(TabBadgeKind.MoreThanToday, Amount: moves.Total);
+            badges[PlanTab.Optimisation] = new TabBadge(moves.From is { IsToday: false } ? TabBadgeKind.MoreThanPlan : TabBadgeKind.MoreThanToday, Amount: moves.Total);
         if (calendar is { BilledRefused: not null })
             badges[PlanTab.WhenToPay] = new TabBadge(TabBadgeKind.Refused);
         else if (calendar?.Next is { } next)

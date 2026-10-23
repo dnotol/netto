@@ -211,6 +211,51 @@ public class MovesViewTests
             .ShouldBe((true, fromPlan.Moves.Count, true));
     }
 
+    // The river moved away from the plan in it as it was opened or saved, which the moves are still from:
+    // the tab says so, while it shows the moves or that the plan is already the best.
+    [Fact]
+    public void RiverChanged_riverMovedFromThePlanInTheRiver_isTrue()
+    {
+        var view = MovesView.Of(new MovesBaseline(RiverInputs.Example, IsToday: false), On22October);
+
+        (view.State, view.RiverChanged(RiverInputs.Example.WithDirectorPay(40_000m))).ShouldBe((MovesState.Moves, true));
+    }
+
+    [Fact]
+    public void RiverChanged_riverAsThePlanInTheRiver_isFalse()
+    {
+        MovesView.Of(new MovesBaseline(RiverInputs.Example, IsToday: false), On22October).RiverChanged(RiverInputs.Example).ShouldBeFalse();
+    }
+
+    [Fact]
+    public void RiverChanged_planInTheRiverAlreadyBest_isTrueOnceTheRiverMoves()
+    {
+        var view = MovesView.Of(RiverInputs.Example, On22October);
+        var planned = view.Moves.Aggregate(RiverInputs.Example, (river, move) => view.Apply(move, river));
+
+        var best = MovesView.Of(new MovesBaseline(planned, IsToday: false), On22October);
+
+        (best.State, best.RiverChanged(RiverInputs.Example)).ShouldBe((MovesState.AlreadyBest, true));
+    }
+
+    // Today is the user's current setup, which the river moves away from to be measured against it.
+    [Fact]
+    public void RiverChanged_fromToday_isFalse()
+    {
+        MovesView.Of(RiverInputs.Example, On22October).RiverChanged(RiverInputs.Example.WithDirectorPay(40_000m)).ShouldBeFalse();
+    }
+
+    // A plan starting at the pay or refused already says to save the river to see the moves.
+    [Theory]
+    [InlineData("starting at the pay")]
+    [InlineData("refused")]
+    public void RiverChanged_noMovesFromThePlanInTheRiver_isFalse(string plan)
+    {
+        var inputs = plan == "refused" ? RiverInputs.Example.WithReserve(-1m) : RiverInputs.Example.SkipCompany();
+
+        MovesView.Of(new MovesBaseline(inputs, IsToday: false), On22October).RiverChanged(RiverInputs.Example).ShouldBeFalse();
+    }
+
     // What the pocket holds after each move is Today's with the gains up to it: the last is the plan's.
     [Fact]
     public void InPocketAfter_eachMove_addsTheGainsUpToItToTodaysPocket()

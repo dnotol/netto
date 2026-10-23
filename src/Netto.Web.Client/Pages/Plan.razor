@@ -59,7 +59,7 @@
             @switch (_tab)
             {
                 case PlanTab.Optimisation:
-                    <OptimisationTab Today="Plans.TodayPlan?.Inputs" Found="FoundMoves()" Inputs="_inputs" InputsChanged="OnInputsChanged" />
+                    <OptimisationTab From="@(Plans.TodayPlan?.Inputs is { } today ? MovesBaseline.Today(today) : null)" Found="FoundMoves()" Inputs="_inputs" InputsChanged="OnInputsChanged" />
                     break;
                 case PlanTab.WhenToPay:
                     <WhenToPayTab Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Date="Today" />

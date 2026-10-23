@@ -38,6 +38,18 @@ public class TabBadgesTests
             .ShouldBe(new TabBadge(TabBadgeKind.MoreThanToday, Amount: total));
     }
 
+    // While no plan is starred Today, the moves are from the plan in the river: what they add, they add to
+    // that plan.
+    [Fact]
+    public void Of_movesFromThePlanInTheRiver_badgesOptimisationWithTheirTotalOverThePlan()
+    {
+        var moves = MovesView.Of(new MovesBaseline(RiverInputs.Example, IsToday: false), On23October);
+        var run = RiverInputs.Example.Run();
+
+        TabBadges.Of(run, moves, CalendarView.From(RiverInputs.Example, run, On23October), 0).GetValueOrDefault(PlanTab.Optimisation)
+            .ShouldBe(new TabBadge(TabBadgeKind.MoreThanPlan, Amount: moves.Total));
+    }
+
     [Fact]
     public void Of_noToday_badgesNoOptimisation()
     {

@@ -138,4 +138,40 @@
   <data name="After" xml:space="preserve">
     <value>{0} in your pocket after it</value>
   </data>
+  <data name="Eyebrow_Plan" xml:space="preserve">
+    <value>Against the plan in your river</value>
+  </data>
+  <data name="Eyebrow_PlanNamed" xml:space="preserve">
+    <value>Against « {0} », the plan in your river</value>
+  </data>
+  <data name="Lede_Plan" xml:space="preserve">
+    <value>What Netto would change in the plan in your river, as you opened or saved it, to leave more in your pocket. Each move adds what it says on top of the moves above it, so together they add up to the gain of the whole list. What you change in the river afterwards is not counted: save it and star it as Today, your current setup, to measure the moves from it.</value>
+  </data>
+  <data name="State_Moves_Plan" xml:space="preserve">
+    <value>From the plan in your river, as you opened or saved it:</value>
+  </data>
+  <data name="State_Moves_PlanNamed" xml:space="preserve">
+    <value>From « {0} », as you opened or saved it:</value>
+  </data>
+  <data name="State_AlreadyBest_Plan" xml:space="preserve">
+    <value>The plan in your river is already the best Netto finds.</value>
+  </data>
+  <data name="State_StartsAtPay_Plan" xml:space="preserve">
+    <value>The plan in your river starts at your pay: enter its company's year in the river and save it to see the moves.</value>
+  </data>
+  <data name="State_Refused_Plan" xml:space="preserve">
+    <value>An amount of the plan in your river is refused: correct it in the river and save it to see the moves.</value>
+  </data>
+  <data name="Figure_Today_Plan" xml:space="preserve">
+    <value>This plan, in your pocket</value>
+  </data>
+  <data name="Figure_Gain_Plan" xml:space="preserve">
+    <value>More than this plan</value>
+  </data>
+  <data name="Total_Plan" xml:space="preserve">
+    <value>Together: {0} more than this plan.</value>
+  </data>
+  <data name="RiverChanged" xml:space="preserve">
+    <value>The river has changed since you opened or saved this plan: save it to measure the moves from it.</value>
+  </data>
 </root>
