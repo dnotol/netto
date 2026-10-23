@@ -13,10 +13,10 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Heading_One" xml:space="preserve">
-    <value>{0} condition to meet: Netto cannot check it</value>
+    <value>{0} condition Netto cannot check</value>
   </data>
   <data name="Heading_Many" xml:space="preserve">
-    <value>{0} conditions to meet: Netto cannot check them</value>
+    <value>{0} conditions Netto cannot check</value>
   </data>
   <data name="Condition_written_agreement" xml:space="preserve">
     <value>A written individual agreement with the company grants them.</value>
