@@ -77,15 +77,15 @@ public class CompareTabTextTests
     {
         (Format(CompareTabText.Spoken(DifferenceKind.More, FigureKind.Money), Formats.Euros(2_551.13m)),
             Format(CompareTabText.Spoken(DifferenceKind.Less, FigureKind.Money), Formats.Euros(4_731.68m)),
-            Format(CompareTabText.Spoken(DifferenceKind.More, FigureKind.Share), CompareTabText.PointsAmount(2.5m)),
-            Format(CompareTabText.Spoken(DifferenceKind.Less, FigureKind.Share), CompareTabText.PointsAmount(2.5m)))
+            Format(CompareTabText.Spoken(DifferenceKind.More, FigureKind.Share), Formats.Points(2.5m)),
+            Format(CompareTabText.Spoken(DifferenceKind.Less, FigureKind.Share), Formats.Points(2.5m)))
             .ShouldBe(("€2,551.13 more", "€4,731.68 less", "2.5 points more", "2.5 points less"));
     }
 
     [Fact]
     public void Points_difference_isSignedAndToATenth()
     {
-        (Format(CompareTabText.Points(DifferenceKind.More), CompareTabText.PointsAmount(2.5m)), Format(CompareTabText.Points(DifferenceKind.Less), CompareTabText.PointsAmount(0.1m)))
+        (Format(CompareTabText.Points(DifferenceKind.More), Formats.Points(2.5m)), Format(CompareTabText.Points(DifferenceKind.Less), Formats.Points(0.1m)))
             .ShouldBe(("+2.5 points", "\u22120.1 points"));
     }
 

@@ -163,6 +163,18 @@ public class FormatsTests
         Formats.Grams(decimal.Parse(grams, System.Globalization.CultureInfo.InvariantCulture)).ShouldBe(expected);
     }
 
+    // Percentage points between two shares, to a tenth: the Compare plans tab's 2.5 points.
+    [Theory]
+    [InlineData("2.5", "2.5")]
+    [InlineData("0", "0.0")]
+    [InlineData("12", "12.0")]
+    [InlineData("0.1", "0.1")]
+    [InlineData("-2.5", "−2.5")]
+    public void Points_difference_readsToATenth(string points, string expected)
+    {
+        Formats.Points(decimal.Parse(points, System.Globalization.CultureInfo.InvariantCulture)).ShouldBe(expected);
+    }
+
     // Rates are fractions in the rule sets (20.50% is 0.205), and their keys end in _rate or _factor;
     // a multiple of a rate ends in _multiplier; a coefficient, a bare number to four decimals, in
     // _coefficient: art. 518's 2.2446 must not read 2.24; an emission in grams of CO2 per km, in _grams.

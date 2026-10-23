@@ -72,6 +72,9 @@ internal static class Formats
     // An emission in grams of CO2 per kilometre: 120 g/km, a fake hybrid's 112.5 g/km.
     public static string Grams(decimal grams) => $"{grams.ToString("0.#", Culture)} g/km";
 
+    // Percentage points between two shares, to a tenth: 2.5, as the Compare plans tab says them.
+    public static string Points(decimal points) => points.ToString("0.0", Culture);
+
     private static CultureInfo EnglishWithEuro()
     {
         var culture = (CultureInfo)CultureInfo.InvariantCulture.Clone();

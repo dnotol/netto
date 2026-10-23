@@ -276,7 +276,7 @@
     {
         var difference = row.Difference;
         if (row.Plan.Kind == FigureKind.Share)
-            return L[CompareTabText.Points(difference.Kind), CompareTabText.PointsAmount(difference.Amount)];
+            return L[CompareTabText.Points(difference.Kind), Formats.Points(difference.Amount)];
 
         return difference.Kind == DifferenceKind.More ? Formats.Addition(difference.Amount) : Formats.Deduction(difference.Amount);
     }
@@ -284,6 +284,6 @@
     private string Spoken(CompareRow row)
     {
         var shares = row.Plan.Kind == FigureKind.Share;
-        return L[CompareTabText.Spoken(row.Difference.Kind, row.Plan.Kind), shares ? CompareTabText.PointsAmount(row.Difference.Amount) : Formats.Euros(row.Difference.Amount)];
+        return L[CompareTabText.Spoken(row.Difference.Kind, row.Plan.Kind), shares ? Formats.Points(row.Difference.Amount) : Formats.Euros(row.Difference.Amount)];
     }
 }

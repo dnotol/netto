@@ -48,7 +48,4 @@ internal static class CompareTabText
         (DifferenceKind.More, _) => "Spoken_More",
         _ => "Spoken_Less",
     };
-
-    // A number of points to a tenth.
-    public static string PointsAmount(decimal points) => points.ToString("0.0", Formats.Culture);
 }
