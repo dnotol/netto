@@ -651,6 +651,9 @@
   <data name="Amount_copyright_cap" xml:space="preserve">
     <value>Cap on the royalty within the limits</value>
   </data>
+  <data name="Amount_copyright_envelope_rate" xml:space="preserve">
+    <value>Share of your pay and royalty an advance ruling accepts as royalty, for all of your time spent creating</value>
+  </data>
   <data name="Amount_copyright_taxed_apart_rate" xml:space="preserve">
     <value>Rate of the tax apart</value>
   </data>

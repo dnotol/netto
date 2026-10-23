@@ -166,6 +166,21 @@ public class StepTextTests
         MissingTexts(value.ShouldNotBeNull().Steps).ShouldBeEmpty();
     }
 
+    // A royalty that follows the pay, whose step cites the amounts that measured what a ruling accepts.
+    [Fact]
+    public void StepDetailsResx_everyKeyOfAFollowingRoyaltysSteps_hasAText()
+    {
+        var scenario = new Scenario(2026, 120_000m, 20_000m, new CompanyStatus(SmallCompany: true, FirstFourTaxPeriods: false),
+            50_000m, MunicipalRates.Entered(0.07m), 0m, WithholdingCategory.Standard)
+        {
+            Copyright = new Netto.Core.Copyright.CopyrightRoyalty(0m) { CreativeShare = 0.75m, FollowsPay = true },
+        };
+
+        var (value, _) = YearSimulation.Run(scenario);
+
+        MissingTexts(value.ShouldNotBeNull().Steps).ShouldBeEmpty();
+    }
+
     // The pay slip lists two steps of its own beside the engine's: the month's withholding, with the
     // key formula's lines and the annex's amounts, and the balance on the assessment.
     [Theory]
