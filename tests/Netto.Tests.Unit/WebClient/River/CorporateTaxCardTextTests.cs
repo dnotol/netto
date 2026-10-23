@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Globalization;
 using System.Resources;
 using Netto.Core.CompanyCar;
@@ -77,6 +78,29 @@ public class CorporateTaxCardTextTests
         Missing(Enum.GetValues<FinancialYear>().Select(CorporateTaxCardText.FinancialYear)).ShouldBeEmpty();
     }
 
+    // What a figure cannot say stays a sentence of fifteen words at most: which condition decided the
+    // rate, that there is no taxable profit, and what the advance payments leave.
+    [Fact]
+    public void CorporateTaxCardResx_everySentenceItKeeps_isAtMostFifteenWords()
+    {
+        var kept = Texts().Where(text => text.Key.StartsWith("Condition_", StringComparison.Ordinal) || text.Key.StartsWith("Surcharge_", StringComparison.Ordinal)
+            || text.Key == "NoTaxableProfit").ToList();
+
+        kept.ShouldSatisfyAllConditions(
+            () => kept.ShouldNotBeEmpty(),
+            () => kept.Where(text => WordCount(text.Value) > 15).Select(text => text.Key).ShouldBeEmpty());
+    }
+
     private static IEnumerable<string> Missing(IEnumerable<string> keys) =>
         keys.Distinct().Where(key => Resources.GetString(key, CultureInfo.InvariantCulture) is null);
+
+    // Each text of the card's .resx with its key.
+    private static List<(string Key, string Value)> Texts() =>
+    [
+        .. Resources.GetResourceSet(CultureInfo.InvariantCulture, true, true).ShouldNotBeNull().Cast<DictionaryEntry>()
+            .Select(entry => ((string)entry.Key, entry.Value as string ?? "")),
+    ];
+
+    // A word holds a letter or a digit, an amount or a placeholder counting as one.
+    private static int WordCount(string text) => text.Split(' ', StringSplitOptions.RemoveEmptyEntries).Count(word => word.Any(char.IsLetterOrDigit));
 }
