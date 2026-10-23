@@ -52,7 +52,7 @@ internal sealed record CompareView(
         if (BaselineGain.From(right.Run, left.Run)?.Kind == GainKind.NotComparable)
             return view with { State = CompareState.NotComparable };
 
-        return view;
+        return view with { Groups = CompareRows.Of(left, right) };
     }
 
     private static ComparedPlan Compared(SavedPlan plan, string? today)
