@@ -52,7 +52,7 @@ public class RiverInputsTests
     {
         var prepayments = RiverInputs.Example.TaxPrepayments;
 
-        (prepayments.Withheld, prepayments.Paid.ByDeadline.All(payment => payment == new Input<decimal>(0m, InputOrigin.Example)), prepayments.Starter)
+        (prepayments.Withheld, prepayments.Paid.ByDeadline.All(payment => payment == new Input<decimal>(0m, InputOrigin.None)), prepayments.Starter)
             .ShouldBe((new Input<decimal?>(null, InputOrigin.Derived), true, new Input<bool>(false, InputOrigin.Default)));
     }
 
@@ -149,7 +149,7 @@ public class RiverInputsTests
     {
         var paid = RiverInputs.Example.WithTaxAdvancePayment(3, 1_000m).TaxPrepayments.Paid;
 
-        (paid.First, paid.Fourth).ShouldBe((new Input<decimal>(0m, InputOrigin.Example), new Input<decimal>(1_000m, InputOrigin.Yours)));
+        (paid.First, paid.Fourth).ShouldBe((new Input<decimal>(0m, InputOrigin.None), new Input<decimal>(1_000m, InputOrigin.Yours)));
     }
 
     // With nothing withheld, 12,014 by 10 April avoids the surcharge and earns a bonus of 90.11; on
@@ -196,7 +196,7 @@ public class RiverInputsTests
     [Fact]
     public void Example_prepaysNothing()
     {
-        RiverInputs.Example.AdvancePayments.ByDeadline.ShouldAllBe(payment => payment == new Input<decimal>(0m, InputOrigin.Example));
+        RiverInputs.Example.AdvancePayments.ByDeadline.ShouldAllBe(payment => payment == new Input<decimal>(0m, InputOrigin.None));
     }
 
     // 675 ÷ 4.5% = 15,000.
@@ -213,7 +213,7 @@ public class RiverInputsTests
     {
         var payments = RiverInputs.Example.WithAdvancePayment(3, 15_000m).AdvancePayments;
 
-        (payments.First, payments.Fourth).ShouldBe((new Input<decimal>(0m, InputOrigin.Example), new Input<decimal>(15_000m, InputOrigin.Yours)));
+        (payments.First, payments.Fourth).ShouldBe((new Input<decimal>(0m, InputOrigin.None), new Input<decimal>(15_000m, InputOrigin.Yours)));
     }
 
     // 7,500 by 10 April earns 9%, the whole 675: the 62,529.24 of a company that prepaid and a pay
@@ -262,12 +262,22 @@ public class RiverInputsTests
     }
 
     [Fact]
-    public void Example_amountsOfMoneyAreTheExamples()
+    public void Example_amountsOfMoneyItGives_areTheExamples()
     {
         var inputs = RiverInputs.Example;
 
-        new[] { inputs.Company!.Revenue.Origin, inputs.Company.RunningCosts.Origin, inputs.DirectorPay.Origin, inputs.Reserve.Origin, inputs.EarlierProfits.Origin }
+        new[] { inputs.Company!.Revenue.Origin, inputs.Company.RunningCosts.Origin, inputs.DirectorPay.Origin }
             .ShouldAllBe(origin => origin == InputOrigin.Example);
+    }
+
+    // Nothing is kept this year nor from earlier years: amounts the example holds none of, which name no
+    // origin.
+    [Fact]
+    public void Example_amountsOfMoneyItHoldsNoneOf_nameNoOrigin()
+    {
+        var inputs = RiverInputs.Example;
+
+        new[] { inputs.Reserve, inputs.EarlierProfits }.ShouldAllBe(amount => amount == new Input<decimal>(0m, InputOrigin.None));
     }
 
     [Fact]
@@ -578,7 +588,7 @@ public class RiverInputsTests
     public void Example_grantsNoVouchers()
     {
         RiverInputs.Example.Vouchers.ShouldBe(new VoucherInputs(
-            new Input<int>(0, InputOrigin.Example), new Input<decimal>(0m, InputOrigin.Example), new Input<decimal>(0m, InputOrigin.Example)));
+            new Input<int>(0, InputOrigin.None), new Input<decimal>(0m, InputOrigin.None), new Input<decimal>(0m, InputOrigin.None)));
     }
 
     [Fact]
@@ -588,6 +598,16 @@ public class RiverInputsTests
 
         vouchers.ShouldBe(new VoucherInputs(
             new Input<int>(220, InputOrigin.Yours), new Input<decimal>(250m, InputOrigin.Yours), new Input<decimal>(100m, InputOrigin.Yours)));
+    }
+
+    // Typed and then cleared, an amount is a nothing the user gave: only the example's own nothing names
+    // no origin.
+    [Fact]
+    public void WithVouchers_typedThenCleared_areNothingOfYours()
+    {
+        var vouchers = RiverInputs.Example.WithMealVoucherDays(20).WithMealVoucherDays(0).WithEcoVouchers(100m).WithEcoVouchers(0m).Vouchers;
+
+        (vouchers.MealVoucherDays, vouchers.EcoVouchers).ShouldBe((new Input<int>(0, InputOrigin.Yours), new Input<decimal>(0m, InputOrigin.Yours)));
     }
 
     [Fact]
@@ -646,7 +666,7 @@ public class RiverInputsTests
     [Fact]
     public void Example_paysNoAllowances()
     {
-        var nothing = new Input<decimal>(0m, InputOrigin.Example);
+        var nothing = new Input<decimal>(0m, InputOrigin.None);
 
         RiverInputs.Example.Allowances.ShouldBe(new AllowanceInputs(nothing, nothing, nothing, nothing));
     }
@@ -710,7 +730,7 @@ public class RiverInputsTests
     [Fact]
     public void Example_paysNoRent()
     {
-        var nothing = new Input<decimal>(0m, InputOrigin.Example);
+        var nothing = new Input<decimal>(0m, InputOrigin.None);
 
         RiverInputs.Example.Rent.ShouldBe(new RentInputs(nothing, nothing, nothing));
     }
@@ -872,7 +892,7 @@ public class RiverInputsTests
     public void Example_followsThePayAssumesTheAverageMetAndNoAttestationAndHasNoCreativeShare()
     {
         RiverInputs.Example.Copyright.ShouldBe(new CopyrightInputs(
-            new Input<decimal>(0m, InputOrigin.Example), new Input<bool>(true, InputOrigin.Default), new Input<bool>(true, InputOrigin.Default),
+            new Input<decimal>(0m, InputOrigin.None), new Input<bool>(true, InputOrigin.Default), new Input<bool>(true, InputOrigin.Default),
             new Input<bool>(false, InputOrigin.Default), new Input<decimal?>(null, InputOrigin.Yours)));
     }
 
@@ -914,13 +934,13 @@ public class RiverInputsTests
     }
 
     // While the river is refused there is no royalty it came to: the amount stays as it was, with its own
-    // origin, the example's nothing still the example's.
+    // origin, the example's nothing still naming none.
     [Fact]
     public void WithRoyaltyFixed_riverRefused_keepsTheAmountWithItsOrigin()
     {
         var copyright = Following(RiverInputs.Example).WithReserve(-1m).WithRoyaltyFixed().Copyright;
 
-        (copyright.FollowsPay, copyright.Royalty).ShouldBe((new Input<bool>(false, InputOrigin.Yours), new Input<decimal>(0m, InputOrigin.Example)));
+        (copyright.FollowsPay, copyright.Royalty).ShouldBe((new Input<bool>(false, InputOrigin.Yours), new Input<decimal>(0m, InputOrigin.None)));
     }
 
     // At 40,000 of pay, 18.75% of the envelope is 9,230.76.
@@ -1028,18 +1048,18 @@ public class RiverInputsTests
         (back.NetInPocket, back.Car.Costs).ShouldBe((inputs.Run().Year.ShouldNotBeNull().NetInPocket, 8_000m));
     }
 
-    // The example holds no car: its money and its CO2 are nothing, its first registration and its
-    // order the first day of the year, a new car, as an example; an electric car, which the company
-    // deducts in full and whose private charging it does not pay, with no fake hybrid's or natural
-    // gas's status, are assumed. What the same car would cost privately is none.
+    // The example holds no car: its money and its CO2 are nothing, naming no origin, its first
+    // registration and its order the first day of the year, a new car, as an example; an electric car,
+    // which the company deducts in full and whose private charging it does not pay, with no fake
+    // hybrid's or natural gas's status, are assumed. What the same car would cost privately is none.
     [Fact]
     public void Example_hasNoCarAndAssumesItsDatesAndStatuses()
     {
         RiverInputs.Example.Car.ShouldBe(new CarInputs(
-            new Input<decimal>(0m, InputOrigin.Example), new Input<DateOnly>(new DateOnly(2026, 1, 1), InputOrigin.Example),
-            new Input<decimal>(0m, InputOrigin.Example), new Input<bool>(false, InputOrigin.Default), new Input<decimal>(0m, InputOrigin.Example),
-            new Input<CarEngine>(CarEngine.Electric, InputOrigin.Default), new Input<int>(0, InputOrigin.Example), new Input<bool>(false, InputOrigin.Default),
-            new Input<DateOnly>(new DateOnly(2026, 1, 1), InputOrigin.Example), new Input<bool>(false, InputOrigin.Default), new Input<int>(0, InputOrigin.Example),
+            new Input<decimal>(0m, InputOrigin.None), new Input<DateOnly>(new DateOnly(2026, 1, 1), InputOrigin.Example),
+            new Input<decimal>(0m, InputOrigin.None), new Input<bool>(false, InputOrigin.Default), new Input<decimal>(0m, InputOrigin.None),
+            new Input<CarEngine>(CarEngine.Electric, InputOrigin.Default), new Input<int>(0, InputOrigin.None), new Input<bool>(false, InputOrigin.Default),
+            new Input<DateOnly>(new DateOnly(2026, 1, 1), InputOrigin.Example), new Input<bool>(false, InputOrigin.Default), new Input<int>(0, InputOrigin.None),
             new Input<bool>(false, InputOrigin.Default), new Input<bool>(false, InputOrigin.Default), new Input<decimal?>(null, InputOrigin.Yours)));
     }
 

@@ -16,8 +16,8 @@ namespace Netto.Tests.WebClient.River;
 // default 7.0%, the director set up before 2024, the key formula withholds 10,691.28 on the pay, no
 // advance payment is made on either tax, and the company, small and in its fifth financial year or
 // later, is left a surcharge of 675.00 on its corporate tax. Namur's rate is 8.5% (MunicipalityChoiceTests).
-// What the user gave says no origin; what Netto assumed says « example » or « default »; what comes
-// from elsewhere says where in its words.
+// What the user gave says no origin, nor does what the example holds none of; what Netto assumed says
+// « example » or « default »; what comes from elsewhere says where in its words.
 public class SettingsViewsTests
 {
     private static readonly Municipality Namur = MunicipalRates.IncomeYear2026.Municipalities.Single(municipality => municipality.Name == "Namur");
@@ -74,12 +74,12 @@ public class SettingsViewsTests
     }
 
     [Fact]
-    public void Prepaid_example_statesThePaySlipsWithholdingAndNoAdvancePaymentAsTheExamples()
+    public void Prepaid_example_statesThePaySlipsWithholdingAndNoAdvancePaymentWithNoOrigin()
     {
         Phrases(DirectorPaySettings(RiverInputs.Example).Prepaid).ShouldBe(
         [
             ("Prepaid_Withheld_PaySlip", "€10,691.28", null),
-            ("Prepaid_None", "", InputOrigin.Example),
+            ("Prepaid_None", "", null),
         ]);
     }
 
@@ -155,11 +155,11 @@ public class SettingsViewsTests
     }
 
     [Fact]
-    public void Payments_example_statesNoPaymentAsTheExampleAndTheSurchargeLeft()
+    public void Payments_example_statesNoPaymentWithNoOriginAndTheSurchargeLeft()
     {
         Phrases(CorporateTaxSettings(RiverInputs.Example).Payments).ShouldBe(
         [
-            ("Payments_None", "", InputOrigin.Example),
+            ("Payments_None", "", null),
             ("Payments_Surcharge", "€675.00", null),
         ]);
     }
@@ -182,7 +182,7 @@ public class SettingsViewsTests
     {
         var inputs = RiverInputs.Example.WithReserve(-1m);
 
-        Phrases(CorporateTaxSettings(inputs).Payments).ShouldBe([("Payments_None", "", InputOrigin.Example)]);
+        Phrases(CorporateTaxSettings(inputs).Payments).ShouldBe([("Payments_None", "", null)]);
     }
 
     [Theory]
@@ -195,14 +195,15 @@ public class SettingsViewsTests
     }
 
     // Home office rent's disclosure, « Your home »: the facts the rent is capped by, the cadastral
-    // income of the home and the share of it let. On the example both are the example's nothing.
+    // income of the home and the share of it let. The example holds none of either, which names no
+    // origin.
     [Fact]
-    public void Home_example_statesTheCadastralIncomeAndTheShareAsTheExamples()
+    public void Home_example_statesTheCadastralIncomeAndTheShareWithNoOrigin()
     {
         Phrases(RentSettingsView.From(RiverInputs.Example).Home).ShouldBe(
         [
-            ("Home_CadastralIncome", "€0.00", InputOrigin.Example),
-            ("Home_Share", "0%", InputOrigin.Example),
+            ("Home_CadastralIncome", "€0.00", null),
+            ("Home_Share", "0%", null),
         ]);
     }
 
@@ -248,14 +249,14 @@ public class SettingsViewsTests
 
     // The company car's disclosure, « Your car »: what the car is, as its papers say. The yearly costs,
     // the contribution and the private energy the company pays stay in sight. On the example the car
-    // is assumed new and electric, with no catalogue value yet.
+    // is assumed new and electric, with no catalogue value yet, which names no origin.
     [Fact]
-    public void Car_example_statesTheEngineAsADefaultAndTheValueAndDatesAsExamples()
+    public void Car_example_statesTheEngineAsADefaultTheDatesAsExamplesAndTheValueWithNoOrigin()
     {
         Phrases(CarSettingsView.From(RiverInputs.Example).Car).ShouldBe(
         [
             ("Car_Engine_Electric", "", InputOrigin.Default),
-            ("Car_Catalogue", "€0.00", InputOrigin.Example),
+            ("Car_Catalogue", "€0.00", null),
             ("Car_Registered", "January|2026", InputOrigin.Example),
             ("Car_Acquired", "January|2026", InputOrigin.Example),
         ]);
@@ -474,11 +475,11 @@ public class SettingsViewsTests
     // What is kept this year, the slider, stays in sight. On the example, the 2026 rate of VVPRbis
     // shares from their third distribution is 18%.
     [Fact]
-    public void Shares_example_statesNoEarlierProfitsAsTheExampleAndTheCategoryAsADefault()
+    public void Shares_example_statesNoEarlierProfitsWithNoOriginAndTheCategoryAsADefault()
     {
         Phrases(DividendSettingsView.From(RiverInputs.Example).Facts).ShouldBe(
         [
-            ("Settings_Earlier_None", "", InputOrigin.Example),
+            ("Settings_Earlier_None", "", null),
             ("Settings_Category_VvprbisThirdYearOnwards", "18%", InputOrigin.Default),
         ]);
     }
@@ -495,7 +496,7 @@ public class SettingsViewsTests
         ]);
     }
 
-    // A nothing the user typed is theirs: the line no longer calls it an example.
+    // A nothing the user typed is theirs, and names no origin either.
     [Fact]
     public void Shares_earlierProfitsSetToNothing_statesNoneAsYours()
     {

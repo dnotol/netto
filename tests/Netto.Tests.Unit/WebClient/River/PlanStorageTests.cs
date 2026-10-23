@@ -70,6 +70,29 @@ public class PlanStorageTests
         read.Plans.Single().Inputs.ShouldBe(inputs);
     }
 
+    // What the example holds none of is stored as the example's, as the build before stored it, so a plan
+    // saved here still opens there: the example as version 5 wrote it, with version 6's private cost.
+    [Fact]
+    public void Store_example_writesWhatItHoldsNoneOfAsTheBuildBeforeDid()
+    {
+        var before = JsonNode.Parse(Version5Book)!["plans"]![0]!["inputs"]!;
+        before["car"]!["privateCost"] = JsonNode.Parse("""{"value":null,"origin":"Yours"}""");
+
+        PlanStorage.Store(RiverInputs.Example).GetRawText().ShouldBe(before.ToJsonString());
+    }
+
+    // A nothing the user typed is theirs, stored and read back as theirs: only an example's amount stored
+    // at nothing is read back as the example's nothing.
+    [Fact]
+    public void Read_written_givesBackANothingTypedAsYours()
+    {
+        var inputs = RiverInputs.Example.WithEcoVouchers(0m).WithCarCo2(0).WithReserve(0m);
+
+        var (read, _) = PlanStorage.Read(PlanStorage.Write(Book(("a", "Plan 1", inputs))));
+
+        read.Plans.Single().Inputs.ShouldBe(inputs);
+    }
+
     [Fact]
     public void Read_newerVersion_refusesTheWholeDocument()
     {

@@ -427,10 +427,10 @@ public class ModuleViewsTests
 
         fields.Select(field => (field.Deadline, field.Date, field.Paid)).ShouldBe(new[]
         {
-            (0, new DateOnly(2026, 4, 10), new Input<decimal>(0m, InputOrigin.Example)),
-            (1, new DateOnly(2026, 7, 10), new Input<decimal>(0m, InputOrigin.Example)),
-            (2, new DateOnly(2026, 10, 12), new Input<decimal>(0m, InputOrigin.Example)),
-            (3, new DateOnly(2026, 12, 21), new Input<decimal>(0m, InputOrigin.Example)),
+            (0, new DateOnly(2026, 4, 10), new Input<decimal>(0m, InputOrigin.None)),
+            (1, new DateOnly(2026, 7, 10), new Input<decimal>(0m, InputOrigin.None)),
+            (2, new DateOnly(2026, 10, 12), new Input<decimal>(0m, InputOrigin.None)),
+            (3, new DateOnly(2026, 12, 21), new Input<decimal>(0m, InputOrigin.None)),
         });
     }
 
@@ -573,10 +573,10 @@ public class ModuleViewsTests
 
         fields.Select(field => (field.Deadline, field.Date, field.Paid)).ShouldBe(new[]
         {
-            (0, new DateOnly(2026, 4, 10), new Input<decimal>(0m, InputOrigin.Example)),
-            (1, new DateOnly(2026, 7, 10), new Input<decimal>(0m, InputOrigin.Example)),
-            (2, new DateOnly(2026, 10, 12), new Input<decimal>(0m, InputOrigin.Example)),
-            (3, new DateOnly(2026, 12, 21), new Input<decimal>(0m, InputOrigin.Example)),
+            (0, new DateOnly(2026, 4, 10), new Input<decimal>(0m, InputOrigin.None)),
+            (1, new DateOnly(2026, 7, 10), new Input<decimal>(0m, InputOrigin.None)),
+            (2, new DateOnly(2026, 10, 12), new Input<decimal>(0m, InputOrigin.None)),
+            (3, new DateOnly(2026, 12, 21), new Input<decimal>(0m, InputOrigin.None)),
         });
     }
 

@@ -24,12 +24,12 @@ internal sealed record SettingPhrase(string Key, IReadOnlyList<string> Args, Inp
 {
     public static SettingPhrase Of(string key, InputOrigin origin, params string[] args) => new(key, args, Assumed(origin));
 
-    // The advance payments of a tax, by their total: the example's while all four are.
+    // The advance payments of a tax, by their total, naming no origin: the example holds none of them,
+    // and what is paid is the user's.
     public static SettingPhrase Payments(AdvancePaymentInputs payments, string noneKey, string paidKey)
     {
         var total = payments.ByDeadline.Sum(payment => payment.Value);
-        var origin = payments.ByDeadline.All(payment => payment.Origin == InputOrigin.Example) ? InputOrigin.Example : InputOrigin.Yours;
-        return total == 0m ? Of(noneKey, origin) : Of(paidKey, origin, Formats.Euros(total));
+        return total == 0m ? new(noneKey, [], null) : new(paidKey, [Formats.Euros(total)], null);
     }
 
     private static InputOrigin? Assumed(InputOrigin origin) => origin is InputOrigin.Example or InputOrigin.Default ? origin : null;

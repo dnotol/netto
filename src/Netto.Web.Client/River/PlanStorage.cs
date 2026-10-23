@@ -303,9 +303,15 @@ internal static class PlanStorage
             Input(stored.BilledContributions));
     }
 
-    private static StoredValue<T> Stored<T>(Input<T> input) => new(input.Value, input.Origin);
+    // What the example holds none of is stored as the example's, as the format held it before
+    // InputOrigin.None, so a plan saved here still opens in the build before; read back, an example's
+    // amount stored at nothing is the example's nothing again, in a plan of any version and in a file
+    // imported. A nothing the user typed is theirs, stored and read back as such.
+    private static StoredValue<T> Stored<T>(Input<T> input) =>
+        new(input.Value, input.Origin == InputOrigin.None ? InputOrigin.Example : input.Origin);
 
-    private static Input<T> Input<T>(StoredValue<T> stored) => new(stored.Value, stored.Origin);
+    private static Input<T> Input<T>(StoredValue<T> stored) =>
+        new(stored.Value, stored.Origin == InputOrigin.Example && stored.Value is 0m or 0 ? InputOrigin.None : stored.Origin);
 
     private static StoredCar Stored(CarInputs car) => new(
         Stored(car.CatalogueValue), Stored(car.FirstRegistration), Stored(car.YearlyCosts), Stored(car.CompanyPaysPrivateEnergy), Stored(car.PersonalContribution),

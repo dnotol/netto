@@ -2,12 +2,16 @@
 
 @* Where an input's value comes from, beside the input: the user's, a default rate or status, derived
    from the modules above, or the example's. The chip is the trigger of an info bubble that says what
-   that means, so every chip carries it. *@
-<span class="origin">
-    <InfoBubble Term="@L[OriginChipText.Origin(Origin)]" TriggerClass="@($"origin-chip origin-chip--{Origin.ToString().ToLowerInvariant()}")">
-        @L[OriginChipText.Hint(Origin)]
-    </InfoBubble>
-</span>
+   that means, so every chip carries it. An amount the example holds none of names no origin, and no
+   chip is drawn beside it. *@
+@if (Origin != InputOrigin.None)
+{
+    <span class="origin">
+        <InfoBubble Term="@L[OriginChipText.Origin(Origin)]" TriggerClass="@($"origin-chip origin-chip--{Origin.ToString().ToLowerInvariant()}")">
+            @L[OriginChipText.Hint(Origin)]
+        </InfoBubble>
+    </span>
+}
 
 @code {
     [Parameter, EditorRequired]

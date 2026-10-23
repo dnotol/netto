@@ -67,10 +67,12 @@ public class RiverTextTests
     // The vouchers in the plan with each next lever, and the split after them.
     private static readonly PlanComposition[] Compositions = [new(true, true, true, false, false), new(true, false, true, false, false), new(true, false, false, false, false), new(true, true, true, true, false), new(true, true, true, true, true)];
 
+    // What the example holds none of draws no chip, so it has no word.
     [Fact]
-    public void OriginChipResx_everyOrigin_hasAWordAndAHint()
+    public void OriginChipResx_everyOriginAChipNames_hasAWordAndAHint()
     {
-        var keys = Enum.GetValues<InputOrigin>().SelectMany(origin => new[] { OriginChipText.Origin(origin), OriginChipText.Hint(origin) });
+        var keys = Enum.GetValues<InputOrigin>().Where(origin => origin != InputOrigin.None)
+            .SelectMany(origin => new[] { OriginChipText.Origin(origin), OriginChipText.Hint(origin) });
 
         Missing(OriginChipResources, keys).ShouldBeEmpty();
     }

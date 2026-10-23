@@ -34,7 +34,8 @@
     [Parameter]
     public string? For { get; set; }
 
-    // None for an input with no value yet and no default to show, such as the creative share.
+    // Null for an input with no value yet and no default to show, such as the creative share. An amount
+    // the example holds none of (InputOrigin.None) draws no chip either.
     [Parameter, EditorRequired]
     public InputOrigin? Origin { get; set; }
 
