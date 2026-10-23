@@ -30,7 +30,7 @@ public sealed record CopyrightResult(
 
     // How a royalty that follows the pay was set: at what an advance ruling accepts at the pay, or none,
     // and why. Null for a royalty the user fixed.
-    public FollowingRoyalty? Following { get; init; }
+    public CopyrightFollowing? Following { get; init; }
 
     // What the royalty does to the year, as YearSimulation composes it beside the other levers: what the
     // company pays and deducts, the part taxed apart, net of its costs, the part taxed as pay, and what
@@ -56,7 +56,7 @@ public enum CopyrightBound
 
 // How a royalty that follows the pay is set: what an advance ruling accepts for the creative share at
 // the pay, or none, and why, so that a card can say it without testing the rules itself.
-public enum FollowingRoyalty
+public enum CopyrightFollowing
 {
     // What an advance ruling accepts at the pay, all of it within the limits: nothing without pay or
     // without time spent creating.

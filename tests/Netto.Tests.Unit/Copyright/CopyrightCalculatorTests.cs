@@ -369,7 +369,7 @@ public class CopyrightCalculatorTests
         var result = CopyrightCalculator.Compute(Rules2026, Following(0.75m), 50_000m).Value.ShouldNotBeNull();
 
         (result.Royalty, result.WithinLimits, result.TaxedAsPay, result.Bound, result.Following)
-            .ShouldBe((11_538.46m, 11_538.46m, 0m, CopyrightBound.None, (FollowingRoyalty?)FollowingRoyalty.AtCeiling));
+            .ShouldBe((11_538.46m, 11_538.46m, 0m, CopyrightBound.None, (CopyrightFollowing?)CopyrightFollowing.AtCeiling));
     }
 
     // While it follows the pay, the amount given is not read, not even to refuse it.
@@ -384,12 +384,12 @@ public class CopyrightCalculatorTests
     // None, and why: the share is not given yet, which is never refused, the four previous years averaged
     // above the cap, which a share would not cure, or the year has no envelope rate.
     [Theory]
-    [InlineData(2026, null, true, FollowingRoyalty.NoCreativeShare)]
-    [InlineData(2026, 0.75, false, FollowingRoyalty.AverageAboveCap)]
-    [InlineData(2026, null, false, FollowingRoyalty.AverageAboveCap)]
-    [InlineData(2025, 0.75, true, FollowingRoyalty.NoEnvelopeRate)]
-    [InlineData(2025, null, true, FollowingRoyalty.NoEnvelopeRate)]
-    public void Compute_followingWithNothingARulingAccepts_paysNoneAndSaysWhy(int year, double? share, bool averageWithinCap, FollowingRoyalty why)
+    [InlineData(2026, null, true, CopyrightFollowing.NoCreativeShare)]
+    [InlineData(2026, 0.75, false, CopyrightFollowing.AverageAboveCap)]
+    [InlineData(2026, null, false, CopyrightFollowing.AverageAboveCap)]
+    [InlineData(2025, 0.75, true, CopyrightFollowing.NoEnvelopeRate)]
+    [InlineData(2025, null, true, CopyrightFollowing.NoEnvelopeRate)]
+    public void Compute_followingWithNothingARulingAccepts_paysNoneAndSaysWhy(int year, double? share, bool averageWithinCap, CopyrightFollowing why)
     {
         var royalty = Following((decimal?)share) with { AverageWithinCap = averageWithinCap };
 
@@ -400,11 +400,11 @@ public class CopyrightCalculatorTests
     [Fact]
     public void Compute_followingWithNoTimeCreating_paysNone()
     {
-        CopyrightCalculator.Compute(Rules2026, Following(0m), 50_000m).ShouldBe((CopyrightResult.None with { Following = FollowingRoyalty.AtCeiling }, null));
+        CopyrightCalculator.Compute(Rules2026, Following(0m), 50_000m).ShouldBe((CopyrightResult.None with { Following = CopyrightFollowing.AtCeiling }, null));
     }
 
     [Fact]
-    public void Compute_followingWithAShareOutsideNothingToAll_isRefused()
+    public void Compute_followingWithAShareAboveOne_isRefused()
     {
         CopyrightCalculator.Compute(Rules2026, Following(1.01m), 50_000m).ShouldBe((null, CopyrightCalculator.CreativeShareOutOfRange));
     }

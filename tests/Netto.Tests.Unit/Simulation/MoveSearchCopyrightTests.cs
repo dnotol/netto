@@ -271,8 +271,8 @@ public class MoveSearchCopyrightTests
         plan.PlanInPocket.ShouldBeGreaterThanOrEqualTo(Pocket(WithRoyalty(today with { DirectorPay = raisedPay }, raisedRoyalty)));
     }
 
-    // On a grid of companies, pays and shares, following the pay leaves at least what the search it
-    // replaces left, the raise to the ceiling in the better of its two orders. Removed with that finder.
+    // On a grid of companies, pays and shares, following the pay leaves at least what the raise to the
+    // ceiling with its guard leaves in the better of its two orders.
     [Theory]
     [InlineData(70_000, 24_000, 0.5)]
     [InlineData(70_000, 50_000, 1)]

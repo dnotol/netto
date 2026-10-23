@@ -33,7 +33,7 @@ public static class CopyrightCalculator
         if (royalty.CreativeShare is < 0m or > 1m)
             return (null, CreativeShareOutOfRange);
 
-        var following = royalty.FollowsPay ? Following(rules, royalty) : (FollowingRoyalty?)null;
+        var following = royalty.FollowsPay ? Following(rules, royalty) : (CopyrightFollowing?)null;
         royalty = AtPay(rules, royalty, grossPay);
         if (!royalty.Any)
             return (CopyrightResult.None with { Following = following }, null);
@@ -85,17 +85,17 @@ public static class CopyrightCalculator
 
     // The royalty as the company pays it beside that gross pay: the one given, or, when it follows the
     // pay, what a ruling accepts there (Ceiling), none where a ruling accepts nothing.
-    public static CopyrightRoyalty AtPay(CopyrightRules rules, CopyrightRoyalty royalty, decimal grossPay) =>
+    internal static CopyrightRoyalty AtPay(CopyrightRules rules, CopyrightRoyalty royalty, decimal grossPay) =>
         royalty.FollowsPay ? royalty with { Royalty = Ceiling(rules, royalty, grossPay) ?? 0m } : royalty;
 
     // How a royalty that follows the pay is set, whatever the pay: at what a ruling accepts, or none, and
     // why. The four previous years first, since no share would change them, then the year's rules.
-    public static FollowingRoyalty Following(CopyrightRules rules, CopyrightRoyalty royalty) => royalty switch
+    internal static CopyrightFollowing Following(CopyrightRules rules, CopyrightRoyalty royalty) => royalty switch
     {
-        { AverageWithinCap: false } => FollowingRoyalty.AverageAboveCap,
-        _ when rules.EnvelopeRate is null => FollowingRoyalty.NoEnvelopeRate,
-        { CreativeShare: null } => FollowingRoyalty.NoCreativeShare,
-        _ => FollowingRoyalty.AtCeiling,
+        { AverageWithinCap: false } => CopyrightFollowing.AverageAboveCap,
+        _ when rules.EnvelopeRate is null => CopyrightFollowing.NoEnvelopeRate,
+        { CreativeShare: null } => CopyrightFollowing.NoCreativeShare,
+        _ => CopyrightFollowing.AtCeiling,
     };
 
     // The first band's rate on the income up to its ceiling, the second's on the part from there up to

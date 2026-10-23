@@ -306,7 +306,7 @@ public class YearSimulationCopyrightTests
     [Fact]
     public void Run_2026RoyaltyFollowingThePay_saysItIsWhatARulingAccepts()
     {
-        Run(Scenario(royalty: Following(0.75m))).Copyright.Following.ShouldBe(FollowingRoyalty.AtCeiling);
+        Run(Scenario(royalty: Following(0.75m))).Copyright.Following.ShouldBe(CopyrightFollowing.AtCeiling);
     }
 
     // The amount the royalty step deducts was set by what a ruling accepts: it cites the amounts that
@@ -331,10 +331,10 @@ public class YearSimulationCopyrightTests
     // None is never a refusal: without a share, with the four previous years above the cap, or with no
     // time creating, the year is the year without a royalty, and says why.
     [Theory]
-    [InlineData(null, true, FollowingRoyalty.NoCreativeShare)]
-    [InlineData(0.75, false, FollowingRoyalty.AverageAboveCap)]
-    [InlineData(0.0, true, FollowingRoyalty.AtCeiling)]
-    public void Run_2026RoyaltyFollowingWithNothingARulingAccepts_isTheYearWithoutARoyalty(double? share, bool averageWithinCap, FollowingRoyalty why)
+    [InlineData(null, true, CopyrightFollowing.NoCreativeShare)]
+    [InlineData(0.75, false, CopyrightFollowing.AverageAboveCap)]
+    [InlineData(0.0, true, CopyrightFollowing.AtCeiling)]
+    public void Run_2026RoyaltyFollowingWithNothingARulingAccepts_isTheYearWithoutARoyalty(double? share, bool averageWithinCap, CopyrightFollowing why)
     {
         var without = Run(Scenario());
 
