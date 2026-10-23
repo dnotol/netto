@@ -169,7 +169,7 @@
     <value>, {0} compared with {1}</value>
   </data>
   <data name="NoPlan" xml:space="preserve">
-    <value>You have no saved plan yet. Change the river in Plan, or apply Netto's moves in Optimisation, then keep it with « Save this plan » in the bar above: the first plan you save is starred as Today.</value>
+    <value>There is no plan to compare yet. Change the river in Plan, or apply Netto's moves in Optimisation, then keep it with « Save this plan » in the bar above.</value>
   </data>
   <data name="CouldNotRead" xml:space="preserve">
     <value>Your saved plans could not be read by this version of Netto. They are kept aside in your browser, untouched.</value>

@@ -1,1 +1,246 @@
-/* The comparison's own layout goes here; its head is the tab's (TabHead). */
+/* ::deep reaches nothing here but the refusal's alert, which RefusedMessage draws and styles itself. The
+   tab's head is TabHead's. Colours are the site's variables, so both themes follow; gold is the one
+   accent, the larger pocket and the gain it leaves. */
+
+.compare {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
+    min-width: 0;
+}
+
+.compare__note {
+    max-width: 46rem;
+    margin: 0;
+    color: var(--netto-text-muted);
+    font-size: 0.92rem;
+    line-height: 1.55;
+}
+
+/* The two plans to compare, side by side while there is room. */
+.compare__pickers {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem 1.5rem;
+}
+
+.compare__picker {
+    display: grid;
+    gap: 0.35rem;
+    flex: 1 1 16rem;
+    max-width: 24rem;
+}
+
+.compare__label {
+    color: var(--netto-text-muted);
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+/* The frame is the site's input line, at least 3:1 on the page in both themes. The focus ring is the
+   site's (app.css), on :focus-visible. */
+.compare__select {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    border: 1px solid var(--netto-line-input);
+    border-radius: 10px;
+    background: var(--netto-surface);
+    color: var(--netto-text);
+    font: inherit;
+    font-size: 0.95rem;
+}
+
+    .compare__select:hover {
+        border-color: var(--netto-gold);
+    }
+
+/* The pocket and the table sit raised off the page, like the river's cards. */
+.compare__panel {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.75rem;
+    min-width: 0;
+    padding: 1rem 1.5rem 1.25rem;
+    border: 1px solid var(--netto-line);
+    border-radius: 20px;
+    background: var(--netto-surface);
+}
+
+.compare__title {
+    margin: 0;
+}
+
+.compare__headline {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+/* One bar for each pocket, on one scale from nothing: the track is the scale's room, the fill the pocket,
+   the larger one gold. The numbers are the table's first row, so the bars are for the eye only. */
+.compare__bars {
+    display: grid;
+    gap: 0.6rem;
+    margin: 0.25rem 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.compare__bar {
+    display: grid;
+    grid-template-columns: minmax(6rem, 14rem) minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.compare__bar-name {
+    overflow: hidden;
+    font-size: 0.9rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.compare__track {
+    display: block;
+    height: 0.85rem;
+    border-radius: 999px;
+    background: var(--netto-data-low);
+}
+
+.compare__fill {
+    display: block;
+    height: 100%;
+    border-radius: 999px;
+    background: var(--netto-data-high);
+}
+
+.compare__fill--better {
+    background: var(--netto-gold);
+}
+
+.compare__bar-value {
+    font-size: 0.95rem;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+}
+
+/* A phone: the name and the amount share a line, the bar under them. */
+@media (max-width: 40rem) {
+    .compare__bar {
+        grid-template-columns: minmax(0, 1fr) auto;
+    }
+
+    .compare__track {
+        grid-column: 1 / -1;
+        grid-row: 2;
+    }
+}
+
+/* A table is read in two dimensions: narrower than its columns it scrolls, and the scroll region takes
+   the keyboard (tabindex). */
+.compare__scroll {
+    overflow-x: auto;
+}
+
+.compare__table {
+    width: 100%;
+    min-width: 34rem;
+    border-collapse: collapse;
+    font-size: 0.92rem;
+    font-variant-numeric: tabular-nums;
+}
+
+    .compare__table th,
+    .compare__table td {
+        padding: 0.5rem 0.75rem;
+        border-bottom: 1px solid var(--netto-line);
+        text-align: right;
+        vertical-align: baseline;
+    }
+
+    .compare__table thead th {
+        color: var(--netto-text-muted);
+        font-size: 0.8rem;
+        font-weight: 500;
+        vertical-align: bottom;
+    }
+
+        .compare__table thead th:first-child {
+            width: 38%;
+        }
+
+    /* The figure's name on the left, a group's heading across the table. */
+    .compare__table .compare__figure,
+    .compare__table .compare__group {
+        text-align: left;
+    }
+
+.compare__figure {
+    font-weight: 500;
+}
+
+.compare__group {
+    padding-top: 1.25rem;
+    border-bottom-color: var(--netto-line-input);
+    color: var(--netto-text-muted);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.compare__plan-name {
+    color: var(--netto-text);
+    font-weight: 600;
+}
+
+.compare__today {
+    color: var(--netto-text-muted);
+    font-size: 0.78rem;
+    white-space: nowrap;
+}
+
+/* A part of the row above it: the three tax layers under all taxes. */
+.compare__row--sub .compare__figure {
+    padding-left: 1.75rem;
+    font-weight: 400;
+}
+
+/* A row that differs is raised and its difference set heavier, beside the signs and the words that say
+   which way: colour is never the only sign. */
+.compare__row--differs {
+    background: var(--netto-wash);
+}
+
+    .compare__row--differs .compare__difference {
+        font-weight: 600;
+    }
+
+.compare__difference {
+    white-space: nowrap;
+}
+
+.compare__difference--gold {
+    color: var(--netto-gold);
+}
+
+.compare__absent {
+    color: var(--netto-text-muted);
+}
+
+.compare__refused {
+    display: grid;
+    gap: 0.5rem;
+}
+
+/* Said to a screen reader, out of sight. */
+.compare__sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}

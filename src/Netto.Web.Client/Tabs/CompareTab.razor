@@ -1,10 +1,128 @@
+@using System.Globalization
 @using Netto.Web.Client.River
+@implements IDisposable
 @inject IStringLocalizer<CompareTab> L
+@inject SavedPlans Plans
 
-@* The Compare plans tab: the saved plans side by side, layer by layer, each measured against the one
-   starred « Today ». It holds only its head until the comparison is built; the page hands it what it
-   already holds about the river and Today, and the saved plans are SavedPlans'. *@
+@* The Compare plans tab: two of the saved plans side by side, layer by layer, the first the baseline (the
+   plan starred « Today » unless the viewer picks another) and the second measured against it, with their
+   difference, the second less the first, as a plan's gain is against Today (CompareView). Every figure is
+   the engine's own for that plan, the same the bar of buckets and the cards say (CompareRows); nothing
+   here decides a tax outcome. The plans are the saved ones only: the river as it is now is compared by
+   saving it, « Save this plan » in the bar, and an alternative is made in the river or by applying a move
+   in Optimisation. The tab only reads: it opens, deletes and stars nothing, and says nothing aloud: the
+   bar is the river's one live region, so the table changes silently when the viewer picks. It keeps the
+   view, which runs the two plans, and builds it again only when the viewer picks or the saved plans change
+   (SavedPlans.Changed), from the Plans panel in the bar. The picks are the viewer's only until the tab is
+   left. The pickers are native selects: a plan's name is all they hold, and a native control is named,
+   operated and tested without a script. The head is drawn once, first, whatever the plans: it takes the
+   focus when the viewer arrives (TabHead). *@
 <TabHead Eyebrow="@L["Eyebrow"]" Title="@L["Title"]" Lede="@L["Lede"]" />
+
+<div class="compare">
+    @foreach (var note in Notes())
+    {
+        <p class="compare__note">@note</p>
+    }
+
+    @if (_view.Plan is { } plan && _view.Against is { } against)
+    {
+        <div class="compare__pickers" role="group" aria-label="@L["PickersLabel"]">
+            <div class="compare__picker">
+                <label for="compare-plan" class="compare__label">@L["PlanLabel"]</label>
+                <select id="compare-plan" class="compare__select" @onchange="PlanPicked">
+                    @foreach (var choice in _view.Choices)
+                    {
+                        <option value="@choice.Id" selected="@(choice.Id == plan.Id)" disabled="@(choice.Id == against.Id)">@ChoiceName(choice)</option>
+                    }
+                </select>
+            </div>
+            <div class="compare__picker">
+                <label for="compare-against" class="compare__label">@L["AgainstLabel"]</label>
+                <select id="compare-against" class="compare__select" @onchange="AgainstPicked">
+                    @foreach (var choice in _view.Choices)
+                    {
+                        <option value="@choice.Id" selected="@(choice.Id == against.Id)" disabled="@(choice.Id == plan.Id)">@ChoiceName(choice)</option>
+                    }
+                </select>
+            </div>
+        </div>
+
+        @switch (_view.State)
+        {
+            case CompareState.Refused:
+                foreach (var refused in new[] { plan, against }.Where(column => column.Run.Error is not null))
+                {
+                    <div class="compare__refused">
+                        <p class="compare__note">@L[CompareTabText.Note(CompareState.Refused), refused.Name]</p>
+                        <RefusedMessage Error="@refused.Run.Error" />
+                    </div>
+                }
+                break;
+            case CompareState.NotComparable:
+                <p class="compare__note">@L[CompareTabText.Note(CompareState.NotComparable), plan.Name, against.Name]</p>
+                break;
+            case CompareState.Compared when _view.Pocket is { } pocket:
+                <section class="compare__panel" aria-labelledby="compare-pocket-title">
+                    <h2 id="compare-pocket-title" class="mud-typography mud-typography-h6 compare__title">@L["PocketTitle"]</h2>
+                    <p class="compare__headline">@Headline(pocket)</p>
+                    <ul class="compare__bars" aria-hidden="true">
+                        @foreach (var bar in new[] { pocket.Plan, pocket.Against })
+                        {
+                            <li class="compare__bar">
+                                <span class="compare__bar-name">@bar.Name</span>
+                                <span class="compare__track">
+                                    @if (bar.Width is { } width)
+                                    {
+                                        <span class="@FillClass(bar)" style="@($"width: {(width * 100m).ToString("0.##", CultureInfo.InvariantCulture)}%")"></span>
+                                    }
+                                </span>
+                                <span class="compare__bar-value">@Formats.Euros(bar.Pocket)</span>
+                            </li>
+                        }
+                    </ul>
+                </section>
+                <section class="compare__panel" aria-labelledby="compare-table-title">
+                    <h2 id="compare-table-title" class="mud-typography mud-typography-h6 compare__title">@L["TableTitle"]</h2>
+                    <div class="compare__scroll" role="region" tabindex="0" aria-labelledby="compare-table-title">
+                        <table class="compare__table" aria-labelledby="compare-table-title">
+                            <thead>
+                                <tr>
+                                    <th scope="col"><span class="compare__sr">@L["ColumnFigure"]</span></th>
+                                    @foreach (var column in new[] { plan, against })
+                                    {
+                                        <th scope="col"><span class="compare__plan-name">@column.Name</span>@if (column.IsToday)
+                                        {
+                                            <text>@(" ")</text><span class="compare__today"><span aria-hidden="true">★ </span>@L["TodayTag"]</span>
+                                        }</th>
+                                    }
+                                    <th scope="col">@L["ColumnDifference"]<span class="compare__sr">@L["ColumnDifferenceFor", against.Name, plan.Name]</span></th>
+                                </tr>
+                            </thead>
+                            @foreach (var group in _view.Groups)
+                            {
+                                <tbody>
+                                    <tr>
+                                        <th scope="rowgroup" colspan="4" class="compare__group">@L[CompareTabText.Group(group.Key)]</th>
+                                    </tr>
+                                    @foreach (var row in group.Rows)
+                                    {
+                                        <tr class="@RowClass(row)">
+                                            <th scope="row" class="compare__figure">@L[CompareTabText.Row(row.Key)]</th>
+                                            <td>@Figure(row.Plan)</td>
+                                            <td>@Figure(row.Against)</td>
+                                            <td class="@DifferenceClass(row)">@Difference(row)</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            }
+                        </table>
+                    </div>
+                </section>
+                break;
+        }
+    }
+</div>
 
 @code {
     // The river as it is.
@@ -26,4 +144,142 @@
     // A saved plan changed from here, its star moved or the plan removed: the page reads the plans again.
     [Parameter]
     public EventCallback PlansChanged { get; set; }
+
+    private CompareView _view = default!;
+
+    // What the viewer picked, none until they do: the plans then follow the defaults as the saved plans
+    // change.
+    private string? _planPick;
+    private string? _againstPick;
+
+    protected override void OnInitialized()
+    {
+        Build();
+        Plans.Changed += OnPlansChanged;
+    }
+
+    public void Dispose() => Plans.Changed -= OnPlansChanged;
+
+    private void Build() => _view = CompareView.Of(Plans, _planPick, _againstPick);
+
+    // The Plans panel in the bar saved, starred, renamed, deleted or imported a plan.
+    private void OnPlansChanged() => _ = InvokeAsync(() =>
+    {
+        Build();
+        StateHasChanged();
+    });
+
+    private void PlanPicked(ChangeEventArgs change)
+    {
+        _planPick = change.Value as string;
+        Build();
+    }
+
+    private void AgainstPicked(ChangeEventArgs change)
+    {
+        _againstPick = change.Value as string;
+        Build();
+    }
+
+    // What the tab says before or besides the comparison: that there is no plan or one, why a plan is
+    // left out, that nothing is starred.
+    private IEnumerable<string> Notes()
+    {
+        if (_view.State == CompareState.NoPlan)
+        {
+            yield return L[CompareTabText.Note(CompareState.NoPlan)];
+            if (_view.CouldNotRead)
+                yield return L["CouldNotRead"];
+        }
+
+        if (_view.State == CompareState.OnePlan)
+            yield return L[CompareTabText.Note(CompareState.OnePlan), _view.Choices[0].Name];
+
+        if (_view.Unreadable > 0)
+            yield return L[CompareTabText.Unreadable(_view.Unreadable), _view.Unreadable];
+
+        if (_view.Choices.Count > 1 && !_view.HasToday)
+            yield return L["NoToday"];
+    }
+
+    private string ChoiceName(PlanChoice choice) => choice.IsToday ? L["ChoiceToday", choice.Name] : choice.Name;
+
+    // What the second plan leaves in the pocket against the first, the bar's gain in words, and what its
+    // muddy pocket holds more or less.
+    private string Headline(PocketPanel pocket)
+    {
+        var gain = pocket.Gain;
+        var sentence = gain.Kind is GainKind.More or GainKind.Less
+            ? L[CompareTabText.Headline(gain.Kind), pocket.Against.Name, Formats.Euros(gain.Amount), pocket.Plan.Name].Value
+            : L[CompareTabText.Headline(gain.Kind), pocket.Against.Name, pocket.Plan.Name].Value;
+
+        return gain.MuddyDifference == 0m
+            ? sentence
+            : $"{sentence} {L[CompareTabText.Muddy(gain.MuddyDifference), Formats.Euros(Math.Abs(gain.MuddyDifference))]}";
+    }
+
+    private static string FillClass(PocketBar bar) => bar.IsBetter ? "compare__fill compare__fill--better" : "compare__fill";
+
+    private static string RowClass(CompareRow row) =>
+        $"compare__row{(row.Differs ? " compare__row--differs" : "")}{(row.Sub ? " compare__row--sub" : "")}";
+
+    // The pocket's gain is the one figure drawn in gold: the money the plan leaves, an accent and not a
+    // judgement of any other row.
+    private static string DifferenceClass(CompareRow row) =>
+        row is { Key: "pocket", Difference.Kind: DifferenceKind.More } ? "compare__difference compare__difference--gold" : "compare__difference";
+
+    // A plan's figure, or why there is none: its module is not in the plan, or its river does not reach it.
+    private RenderFragment Figure(CompareFigure figure) =>
+        @<text>@switch (figure.Kind)
+        {
+            case FigureKind.Absent:
+                <span class="compare__absent">@L["NotInPlan"]</span>
+                break;
+            case FigureKind.None:
+                <span aria-hidden="true">—</span><span class="compare__sr">@L["NoFigure"]</span>
+                break;
+            case FigureKind.Share:
+                <text>@Formats.Share(figure.Amount)</text>
+                break;
+            case FigureKind.Rate:
+                <text>@L[CompareTabText.Rate(figure.Stance)]</text>
+                break;
+            default:
+                <text>@Formats.Euros(figure.Amount)</text>
+                break;
+        }</text>;
+
+    // What separates the two, signed as drawn and in words for a screen reader, which would read a sign as
+    // a dash; the same, changed, or none to show.
+    private RenderFragment Difference(CompareRow row) =>
+        @<text>@switch (row.Difference.Kind)
+        {
+            case DifferenceKind.Same:
+                <text>@L["Same"]</text>
+                break;
+            case DifferenceKind.Changed:
+                <text>@L["Changed"]</text>
+                break;
+            case DifferenceKind.None:
+                <span aria-hidden="true">—</span><span class="compare__sr">@L["NoDifference"]</span>
+                break;
+            default:
+                <span aria-hidden="true">@Signed(row)</span><span class="compare__sr">@Spoken(row)</span>
+                break;
+        }</text>;
+
+    private string Signed(CompareRow row)
+    {
+        var difference = row.Difference;
+        if (row.Plan.Kind == FigureKind.Share)
+            return L[CompareTabText.Points(difference.Kind), CompareTabText.PointsAmount(difference.Amount)];
+
+        return difference.Kind == DifferenceKind.More ? Formats.Addition(difference.Amount) : Formats.Deduction(difference.Amount);
+    }
+
+    private string Spoken(CompareRow row)
+    {
+        var shares = row.Plan.Kind == FigureKind.Share;
+        return L[CompareTabText.Spoken(row.Difference.Kind, row.Plan.Kind), shares ? CompareTabText.PointsAmount(row.Difference.Amount) : Formats.Euros(row.Difference.Amount)];
+    }
 }
