@@ -41,7 +41,7 @@ public class MoveSearchTests
     {
         var plan = MoveSearch.Run(Today, SplitOnly).Value.ShouldNotBeNull();
 
-        plan.Moves.ShouldBe([new PlannedMove(new PayMove(20_799m), 2_551.13m)]);
+        Lines(plan).ShouldBe([(new PayMove(20_799m), 2_551.13m)]);
     }
 
     [Fact]
@@ -103,7 +103,7 @@ public class MoveSearchTests
 
         var plan = MoveSearch.Run(noPay, [finder]).Value.ShouldNotBeNull();
 
-        plan.Moves.ShouldBe([new PlannedMove(new PayMove(20_799m), Pocket(noPay with { DirectorPay = 20_799m }) - Pocket(noPay))]);
+        Lines(plan).ShouldBe([(new PayMove(20_799m), Pocket(noPay with { DirectorPay = 20_799m }) - Pocket(noPay))]);
     }
 
     // A payment adds to what is paid by its deadline: a second one by the same deadline joins the
@@ -115,7 +115,7 @@ public class MoveSearchTests
 
         var plan = MoveSearch.Run(Today, [finder]).Value.ShouldNotBeNull();
 
-        plan.Moves.ShouldBe([new PlannedMove(new CompanyAdvancePaymentMove(3, new DateOnly(2026, 12, 21), 15_000m),
+        Lines(plan).ShouldBe([(new CompanyAdvancePaymentMove(3, new DateOnly(2026, 12, 21), 15_000m),
             Pocket(Today with { AdvancePayments = new AdvancePayments(0m, 0m, 0m, 15_000m) }) - Pocket(Today))]);
     }
 
@@ -128,6 +128,42 @@ public class MoveSearchTests
         var plan = MoveSearch.Run(nothingWithheld, [finder]).Value.ShouldNotBeNull();
 
         plan.Moves.Single().Move.ShouldBe(new DirectorAdvancePaymentMove(3, new DateOnly(2026, 12, 21), 14_317.50m));
+    }
+
+    // Each line stands between two years of the plan, the year before it was taken and the year after:
+    // the first starts on Today's year, the next starts where it ends, and the last ends on the plan's.
+    [Fact]
+    public void Run_exampleOn22October_eachLineStandsBetweenTheYearsBeforeAndAfterIt()
+    {
+        var plan = MoveSearch.Run(Today, PayAndPayments(On22October)).Value.ShouldNotBeNull();
+
+        var atTheBestPay = Pocket(Today with { DirectorPay = 20_799m });
+        plan.Moves.Select(move => (move.Before.NetInPocket, move.After.NetInPocket))
+            .ShouldBe([(plan.TodayInPocket, atTheBestPay), (atTheBestPay, plan.PlanInPocket)]);
+    }
+
+    // The years are the ones the line's move changes: the pay, then the surcharge the payment cancels.
+    [Fact]
+    public void Run_exampleOn22October_eachLinesYearsHoldWhatItsMoveChanges()
+    {
+        var plan = MoveSearch.Run(Today, PayAndPayments(On22October)).Value.ShouldNotBeNull();
+
+        (plan.Moves[0].Before.Scenario.DirectorPay, plan.Moves[0].After.Scenario.DirectorPay,
+                plan.Moves[1].Before.AdvancePayments.Surcharge > 0m, plan.Moves[1].After.AdvancePayments.Surcharge)
+            .ShouldBe((50_000m, 20_799m, true, 0m));
+    }
+
+    // A line taken in several rounds stands between the year before its first round and the year after
+    // its last.
+    [Fact]
+    public void Run_finderProposingAgain_spansItsLineFromBeforeItsFirstRoundToAfterItsLast()
+    {
+        var noPay = Today with { DirectorPay = 0m };
+
+        var line = MoveSearch.Run(noPay, [new Steps(new PayMove(10_000m), new PayMove(20_799m))]).Value.ShouldNotBeNull().Moves.Single();
+
+        (line.Before.Scenario.DirectorPay, line.After.Scenario.DirectorPay, line.Before.NetInPocket, line.After.NetInPocket)
+            .ShouldBe((0m, 20_799m, Pocket(noPay), Pocket(noPay with { DirectorPay = 20_799m })));
     }
 
     // A payment by another deadline is another line.
@@ -169,9 +205,9 @@ public class MoveSearchTests
         var plan = MoveSearch.Run(Today, PayAndPayments(On22October)).Value.ShouldNotBeNull();
 
         var atTheBestPay = Today with { DirectorPay = 20_799m };
-        plan.Moves.ShouldBe([
-            new PlannedMove(new PayMove(20_799m), 2_551.13m),
-            new PlannedMove(new CompanyAdvancePaymentMove(3, new DateOnly(2026, 12, 21), 29_700.45m),
+        Lines(plan).ShouldBe([
+            (new PayMove(20_799m), 2_551.13m),
+            (new CompanyAdvancePaymentMove(3, new DateOnly(2026, 12, 21), 29_700.45m),
                 Pocket(atTheBestPay with { AdvancePayments = new AdvancePayments(0m, 0m, 0m, 29_700.45m) }) - Pocket(atTheBestPay)),
         ]);
     }
@@ -230,7 +266,7 @@ public class MoveSearchTests
 
         var plan = MoveSearch.Run(nothingWithheld, [new DirectorAdvancePaymentFinder(On22October)]).Value.ShouldNotBeNull();
 
-        plan.Moves.ShouldBe([new PlannedMove(new DirectorAdvancePaymentMove(3, new DateOnly(2026, 12, 21), 14_317.50m), 486.57m)]);
+        Lines(plan).ShouldBe([(new DirectorAdvancePaymentMove(3, new DateOnly(2026, 12, 21), 14_317.50m), 486.57m)]);
     }
 
     // With a company car, its benefit is taxed with the pay: the payment proposed leaves no surcharge
@@ -300,7 +336,7 @@ public class MoveSearchTests
     {
         var plan = MoveSearch.Run(Today with { Rent = new HomeOfficeRent(1_200m, 0.12m, 0m) }, [new RentFinder()]).Value.ShouldNotBeNull();
 
-        plan.Moves.ShouldBe([new PlannedMove(new RentMove(1_380.00m),
+        Lines(plan).ShouldBe([(new RentMove(1_380.00m),
             Pocket(Today with { Rent = new HomeOfficeRent(1_200m, 0.12m, 1_380.00m) }) - Pocket(Today))]);
     }
 
@@ -339,6 +375,9 @@ public class MoveSearchTests
     }
 
     private static decimal Pocket(Scenario scenario) => YearSimulation.Run(scenario).Value!.NetInPocket;
+
+    // Each line's move and what it adds, without the years it stands between.
+    private static IReadOnlyList<(Move Move, decimal Gain)> Lines(MovePlan plan) => [.. plan.Moves.Select(move => (move.Move, move.Gain))];
 
     private sealed record ReserveMove(decimal Reserve) : Move
     {

@@ -190,9 +190,10 @@ public class ModuleFoldsTests
     {
         var folds = new Folds(new BrowserStorage());
         var today = RiverInputs.Example.WithCreativeShare(0.75m).WithAttestation(true);
-        var royalty = new PlannedMove(new CopyrightFollowsPayMove(), 1m);
+        var view = MovesView.Of(today, On22October);
+        var royalty = view.Moves.First(move => move.Move is CopyrightFollowsPayMove);
 
-        ModuleFolds.Applied(folds, MovesView.Of(today, On22October), royalty, RiverInputs.Example);
+        ModuleFolds.Applied(folds, view, royalty, RiverInputs.Example);
 
         OpenCards(folds).ShouldBe([OptionalModule.Copyright]);
     }

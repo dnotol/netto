@@ -80,8 +80,11 @@ public sealed record CopyrightFollowsPayMove : Move
     }
 }
 
-// A move in the plan with what it adds to the pocket on top of the moves before it.
-public sealed record PlannedMove(Move Move, decimal Gain);
+// A move in the plan with what it adds to the pocket on top of the moves before it, and the two years it
+// stands between: Before, the year before its line's first round, and After, the year after its last, so
+// that what the move changes can be told from the engine's own figures. A line taken in several rounds
+// spans the moves taken between them too.
+public sealed record PlannedMove(Move Move, decimal Gain, YearResult Before, YearResult After);
 
 // The moves from the user's current setup, Today, in the order they were taken, each adding what it
 // adds after the ones before it, so the gains sum to what the whole plan leaves in the pocket less
@@ -128,37 +131,39 @@ public static class MoveSearch
             return (null, error);
 
         var current = today;
-        var inPocket = year.NetInPocket;
+        var currentYear = year;
         var moves = new List<PlannedMove>();
         for (var round = 0; round < MaximumRounds; round++)
         {
-            if (Best(finders, current, inPocket) is not { } move)
+            if (Best(finders, current, currentYear.NetInPocket) is not { } move)
                 break;
 
             var taken = moves.FindIndex(planned => Equals(planned.Move.Kind, move.Move.Kind));
             if (taken < 0)
-                moves.Add(new PlannedMove(move.Move, move.Gain));
+                moves.Add(new PlannedMove(move.Move, move.Gain, currentYear, move.Year));
             else
-                moves[taken] = new PlannedMove(move.Move.After(moves[taken].Move), moves[taken].Gain + move.Gain);
+                moves[taken] = new PlannedMove(move.Move.After(moves[taken].Move), moves[taken].Gain + move.Gain, moves[taken].Before, move.Year);
             current = move.After;
-            inPocket += move.Gain;
+            currentYear = move.Year;
         }
 
-        return (new MovePlan(year.NetInPocket, moves, inPocket), null);
+        return (new MovePlan(year.NetInPocket, moves, currentYear.NetInPocket), null);
     }
 
     // The move that adds the most from where the plan stands, of those the engine takes, that keep the
-    // reserve and add a euro or more; none otherwise.
-    private static (Move Move, Scenario After, decimal Gain)? Best(IReadOnlyList<IMoveFinder> finders, Scenario current, decimal inPocket) =>
+    // reserve and add a euro or more, with the year it leaves; none otherwise.
+    private static (Move Move, Scenario After, YearResult Year, decimal Gain)? Best(IReadOnlyList<IMoveFinder> finders, Scenario current, decimal inPocket) =>
         finders
             .Select(finder => finder.Find(current))
             .OfType<Move>()
             .Select(move => (Move: move, After: move.Apply(current)))
             .Select(candidate => (candidate.Move, candidate.After, Year: YearSimulation.Run(candidate.After).Value))
             .Where(candidate => candidate.Year is { } after && after.MaximumDividend >= candidate.After.Reserve)
-            .Select(candidate => (candidate.Move, candidate.After, Gain: candidate.Year!.NetInPocket - inPocket))
+            .Select(candidate => (candidate.Move, candidate.After, Year: candidate.Year!))
+            .Select(candidate => (candidate.Move, candidate.After, candidate.Year, Gain: candidate.Year.NetInPocket - inPocket))
             .Where(candidate => candidate.Gain >= SmallestGain)
-            .Aggregate(((Move Move, Scenario After, decimal Gain)?)null, (taken, candidate) => taken is { } kept && kept.Gain >= candidate.Gain ? kept : candidate);
+            .Aggregate(((Move Move, Scenario After, YearResult Year, decimal Gain)?)null,
+                (taken, candidate) => taken is { } kept && kept.Gain >= candidate.Gain ? kept : candidate);
 }
 
 // The split's best pay, when it is not the pay already set.

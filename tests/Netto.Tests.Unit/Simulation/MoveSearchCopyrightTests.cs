@@ -74,7 +74,7 @@ public class MoveSearchCopyrightTests
     {
         var plan = MoveSearch.Run(Today, FollowOnly).Value.ShouldNotBeNull();
 
-        plan.Moves.ShouldBe([new PlannedMove(new CopyrightFollowsPayMove(), Pocket(Following(Today)) - Pocket(Today))]);
+        plan.Moves.Select(move => (move.Move, move.Gain)).ShouldBe([(new CopyrightFollowsPayMove(), Pocket(Following(Today)) - Pocket(Today))]);
     }
 
     // The move lets the royalty follow the pay alone: the pay, the share, the statuses and the amount

@@ -13,11 +13,14 @@ public class MovesViewTests
 
     private static readonly DateOnly On22October = new(2026, 10, 22);
 
-    private static readonly PlannedMove BestPay = new(new PayMove(20_799m), 2_551.13m);
+    // The example's year, which a move made here stands between: what Apply and Applied read is the move.
+    private static readonly YearResult ExampleYear = RiverInputs.Example.Run().Year.ShouldNotBeNull();
 
-    private static readonly PlannedMove CompanyPays = new(new CompanyAdvancePaymentMove(3, new DateOnly(2026, 12, 21), 29_700.45m), 1m);
+    private static readonly PlannedMove BestPay = Planned(new PayMove(20_799m), 2_551.13m);
 
-    private static readonly PlannedMove DirectorPays = new(new DirectorAdvancePaymentMove(3, new DateOnly(2026, 12, 21), 14_317.50m), 1m);
+    private static readonly PlannedMove CompanyPays = Planned(new CompanyAdvancePaymentMove(3, new DateOnly(2026, 12, 21), 29_700.45m));
+
+    private static readonly PlannedMove DirectorPays = Planned(new DirectorAdvancePaymentMove(3, new DateOnly(2026, 12, 21), 14_317.50m));
 
     [Fact]
     public void Of_noToday_asksForOne()
@@ -34,7 +37,7 @@ public class MovesViewTests
         var view = MovesView.Of(RiverInputs.Example, found);
 
         var searched = MovesView.Of(RiverInputs.Example, On22October);
-        (view.State, view.TodayPay, view.Total, view.Moves.SequenceEqual(searched.Moves)).ShouldBe((searched.State, searched.TodayPay, searched.Total, true));
+        (view.State, view.TodayPay, view.Total, Lines(view).SequenceEqual(Lines(searched))).ShouldBe((searched.State, searched.TodayPay, searched.Total, true));
     }
 
     // Nothing found, from no Today or from one that starts at the pay: two answers, told apart by Today.
@@ -51,7 +54,7 @@ public class MovesViewTests
     {
         var view = MovesView.Of(RiverInputs.Example, AfterTheYear);
 
-        (view.State, view.TodayPay, view.Moves[0]).ShouldBe((MovesState.Moves, 50_000m, BestPay));
+        (view.State, view.TodayPay, view.Moves[0].Move, view.Moves[0].Gain).ShouldBe((MovesState.Moves, 50_000m, BestPay.Move, BestPay.Gain));
         view.Moves.Skip(1).Select(move => move.Move).ShouldBe([new EcoVouchersMove(250m), new SportCultureVouchersMove(100m)], ignoreOrder: true);
     }
 
@@ -157,7 +160,7 @@ public class MovesViewTests
     [Fact]
     public void Apply_ecoVouchers_addsVouchersToThePlan()
     {
-        var river = View().Apply(new PlannedMove(new EcoVouchersMove(250m), 1m), RiverInputs.Example);
+        var river = View().Apply(Planned(new EcoVouchersMove(250m)), RiverInputs.Example);
 
         (river.InPlan(OptionalModule.Vouchers), river.Vouchers.EcoVouchers.Value).ShouldBe((true, 250m));
     }
@@ -167,13 +170,13 @@ public class MovesViewTests
     {
         var river = RiverInputs.Example.WithEcoVouchers(250m);
 
-        View().Applied(new PlannedMove(new EcoVouchersMove(250m), 1m), river).ShouldBeFalse();
+        View().Applied(Planned(new EcoVouchersMove(250m)), river).ShouldBeFalse();
     }
 
     [Fact]
     public void Apply_sportCultureVouchers_isApplied()
     {
-        var move = new PlannedMove(new SportCultureVouchersMove(100m), 1m);
+        var move = Planned(new SportCultureVouchersMove(100m));
 
         View().Applied(move, View().Apply(move, RiverInputs.Example)).ShouldBeTrue();
     }
@@ -192,7 +195,7 @@ public class MovesViewTests
     public void Apply_rent_bringsTodaysHomeAndAddsRentToThePlan()
     {
         var today = RiverInputs.Example.WithCadastralIncome(1_200m).WithShareLet(0.12m);
-        var move = new PlannedMove(new RentMove(1_380.00m), 1m);
+        var move = Planned(new RentMove(1_380.00m));
 
         var river = View(today).Apply(move, RiverInputs.Example);
 
@@ -223,7 +226,7 @@ public class MovesViewTests
     public void Apply_royaltyFollowingThePay_bringsTodaysShareAndStatusesAndAddsTheRoyaltyToThePlan()
     {
         var today = RiverInputs.Example.WithCreativeShare(0.75m).WithAttestation(true);
-        var move = new PlannedMove(new CopyrightFollowsPayMove(), 1m);
+        var move = Planned(new CopyrightFollowsPayMove());
 
         var river = View(today).Apply(move, RiverInputs.Example.WithRoyalty(2_000m));
 
@@ -237,7 +240,7 @@ public class MovesViewTests
     public void Apply_royaltyFollowingFromAPayAboveWhatTheCompanyPays_runsThePayTheMovePlanned()
     {
         var today = RiverInputs.Example.WithCreativeShare(0.75m);
-        var move = new PlannedMove(new CopyrightFollowsPayMove(), 1m);
+        var move = Planned(new CopyrightFollowsPayMove());
 
         var year = View(today).Apply(move, RiverInputs.Example.WithDirectorPay(90_000m)).Run().Year.ShouldNotBeNull();
 
@@ -247,7 +250,7 @@ public class MovesViewTests
     [Fact]
     public void Applied_royaltyOutOfThePlan_isNot()
     {
-        var move = new PlannedMove(new CopyrightFollowsPayMove(), 1m);
+        var move = Planned(new CopyrightFollowsPayMove());
 
         View().Applied(move, RiverInputs.Example.WithCreativeShare(0.75m)).ShouldBeFalse();
     }
@@ -255,10 +258,15 @@ public class MovesViewTests
     [Fact]
     public void Applied_fixedRoyaltyInThePlan_isNot()
     {
-        var move = new PlannedMove(new CopyrightFollowsPayMove(), 1m);
+        var move = Planned(new CopyrightFollowsPayMove());
 
         View().Applied(move, RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithRoyalty(5_000m)).ShouldBeFalse();
     }
 
     private static MovesView View(RiverInputs? today = null) => MovesView.Of(today ?? RiverInputs.Example, AfterTheYear);
+
+    private static PlannedMove Planned(Move move, decimal gain = 1m) => new(move, gain, ExampleYear, ExampleYear);
+
+    // Each move and what it adds: two searches run two years, equal in their figures but not the same lists.
+    private static IEnumerable<(Move Move, decimal Gain)> Lines(MovesView view) => view.Moves.Select(move => (move.Move, move.Gain));
 }
