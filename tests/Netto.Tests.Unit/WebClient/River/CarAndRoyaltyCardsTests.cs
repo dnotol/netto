@@ -150,8 +150,9 @@ public class CarAndRoyaltyCardsTests
         new[] { "car", "copyright" }.SelectMany(card => CardHtml.LeakedKeys(CardHtml.Card(html, card))).ShouldBeEmpty();
     }
 
-    // The royalty and how its limits split it, the note of which limit set it, then the plan with it and
-    // without it, then where its money goes, the drains' own lines.
+    // The royalty and how its limits split it, the note of which limit set it, here the 30% limit with the
+    // engine's 18,000 (30% of 60,000), then the plan with it and without it, then where its money goes, the
+    // drains' own lines.
     [Fact]
     public async Task RoyaltyCard_withinItsLimits_drawsItsFiguresThenThePlanWithAndWithoutItThenWhereItGoes()
     {
@@ -174,7 +175,7 @@ public class CarAndRoyaltyCardsTests
                 (Royalty("Figure_Gain_More"), Formats.Euros(comparison.Gain), null),
             ]),
             () => CardHtml.Lines(html).Skip(10).Select(line => line.Label).ShouldBe(drains.Select(drain => Drain(DrainListText.Drain(drain.Key)))),
-            () => CardHtml.Prose(html).ShouldContain(Royalty("Limits_None")));
+            () => CardHtml.Prose(html).ShouldContain("Within 30% of it and your gross pay, €18,000.00, and the cap."));
     }
 
     // Where no text settles a point, the reading Netto takes is in the royalty's details, word for word,

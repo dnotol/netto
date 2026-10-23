@@ -40,7 +40,7 @@
     <value>The split above pays it beside your pay.</value>
   </data>
   <data name="Limits_None" xml:space="preserve">
-    <value>Within 30% of the royalty and your gross pay, and the cap.</value>
+    <value>Within 30% of it and your gross pay, {2}, and the cap.</value>
   </data>
   <data name="Limits_Relative" xml:space="preserve">
     <value>Held to 30% of the royalty and your gross pay.</value>

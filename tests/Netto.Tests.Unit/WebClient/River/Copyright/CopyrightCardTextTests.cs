@@ -127,6 +127,16 @@ public class CopyrightCardTextTests
         Missing(keys).ShouldBeEmpty();
     }
 
+    // A royalty all within its limits says the 30% limit with its amount, a bound of the royalty that stays
+    // in sight; the bubble of « Within the limits » explains it whole.
+    [Fact]
+    public void Limits_allWithin_saysThe30PercentLimitWithItsAmount()
+    {
+        string.Format(CultureInfo.InvariantCulture, Resources.GetString("Limits_None", CultureInfo.InvariantCulture) ?? "",
+                "€10,000.00", "€10,000.00", "€18,000.00", "€77,220.00", "€0.00", 2026)
+            .ShouldBe("Within 30% of it and your gross pay, €18,000.00, and the cap.");
+    }
+
     // What a figure cannot say, kept as a sentence in sight, says it in few words: which limit set the
     // part within them in twelve at most, the rest in fifteen.
     [Theory]
