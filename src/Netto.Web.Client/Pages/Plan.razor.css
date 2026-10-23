@@ -141,12 +141,15 @@
     margin: 2.5rem 0 0;
 }
 
-.assumed__title {
-    margin: 0 0 0.6rem;
+/* The note folds to one line (Fold), the count in its summary; its title stays the small eyebrow it
+   always was. ::deep reaches the elements of the Fold, which carry no scope attribute of this page. */
+.assumed ::deep .fold__heading--card .fold__title {
     color: var(--netto-text-muted);
+    font-family: inherit;
     font-size: 0.75rem;
     font-weight: 600;
     letter-spacing: 0.14em;
+    line-height: 1.25;
     text-transform: uppercase;
 }
 
@@ -155,7 +158,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
-    margin: 0;
+    margin: 0.6rem 0 0;
     padding: 0;
     list-style: none;
 }
@@ -172,26 +175,26 @@
 
 .limits {
     margin-top: 2rem;
-    padding: 1.5rem 1.75rem;
+    padding: 0.5rem 1.75rem;
     border: 1px dashed var(--netto-line);
     border-radius: 20px;
 }
 
-.limits__title {
-    margin: 0 0 0.75rem;
+.limits ::deep .fold__heading--card .fold__title {
+    font-family: inherit;
     font-size: 1rem;
     font-weight: 600;
 }
 
 .limits__list {
-    margin: 0 0 1rem;
+    margin: 0.75rem 0 1rem;
     padding-left: 1.25rem;
     color: var(--netto-text-muted);
     line-height: 1.7;
 }
 
 .limits__note {
-    margin: 0;
+    margin: 0 0 0.75rem;
     color: var(--netto-text-muted);
     font-size: 0.88rem;
     line-height: 1.6;

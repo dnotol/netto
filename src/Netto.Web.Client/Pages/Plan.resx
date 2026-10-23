@@ -28,7 +28,7 @@
     <value>From what your company earns to what reaches you</value>
   </data>
   <data name="Lede" xml:space="preserve">
-    <value>Each card takes a part of the money and passes the rest on, and the bar above follows every change. It opens on an example year: replace its amounts with yours, or clear the company's figures to start at your pay. Every figure shows the official text it comes from.</value>
+    <value>Each card takes a part of the money and passes the rest on, and the bar above follows every change. The cards open folded to what flows through them: open one to change its amounts. The river starts on an example year: replace its amounts with yours, or clear the company's figures to start at your pay. Every figure shows the official text it comes from.</value>
   </data>
   <data name="Fork" xml:space="preserve">
     <value>↓ Your pay on one side, the company's profit on the other ↓</value>
@@ -38,6 +38,9 @@
   </data>
   <data name="AssumedTitle" xml:space="preserve">
     <value>Assumed</value>
+  </data>
+  <data name="AssumedSummary" xml:space="preserve">
+    <value>{0} assumptions Netto makes</value>
   </data>
   <data name="AssumedSingle" xml:space="preserve">
     <value>Single, with no dependants</value>
@@ -65,6 +68,9 @@
   </data>
   <data name="LimitsTitle" xml:space="preserve">
     <value>Not counted yet</value>
+  </data>
+  <data name="LimitsSummary" xml:space="preserve">
+    <value>{0} things the figures leave out</value>
   </data>
   <data name="LimitReserves" xml:space="preserve">
     <value>The company-law tests on what can be paid out, and the liquidation reserve: profits kept from earlier years are taken as ordinary retained earnings.</value>

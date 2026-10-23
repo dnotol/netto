@@ -92,28 +92,28 @@
         </div>
 
         <aside class="assumed" aria-labelledby="assumed-title">
-            <h2 id="assumed-title" class="assumed__title">@L["AssumedTitle"]</h2>
-            <ul class="assumed__list">
-                <li>@L["AssumedSingle"]</li>
-                <li>@L["AssumedWallonia"]</li>
-                <li>@L["AssumedMainOccupation"]</li>
-                <li>@L["AssumedNoSpecialContribution"]</li>
-                <li>@L["AssumedLowIncomeCredit"]</li>
-                <li>@L["AssumedCalendarYear"]</li>
-                <li>@L["AssumedSteadyState"]</li>
-                <li>@L["AssumedFinalContributions"]</li>
-            </ul>
+            <Fold Name="@PlanText.AssumedFold" Title="@L[PlanText.AssumedTitle]" TitleId="assumed-title"
+                  Summary="@L[PlanText.AssumedSummary, PlanText.Assumptions.Count]">
+                <ul class="assumed__list">
+                    @foreach (var key in PlanText.Assumptions)
+                    {
+                        <li>@L[key]</li>
+                    }
+                </ul>
+            </Fold>
         </aside>
 
         <aside class="limits" aria-labelledby="limits-title">
-            <h2 id="limits-title" class="limits__title">@L["LimitsTitle"]</h2>
-            <ul class="limits__list">
-                <li>@L["LimitReserves"]</li>
-                <li>@L["LimitCompanyContribution"]</li>
-                <li>@L["LimitDisallowed"]</li>
-                <li>@L["LimitManagementFee"]</li>
-            </ul>
-            <p class="limits__note">@L["LimitTaxCalc"]</p>
+            <Fold Name="@PlanText.LimitsFold" Title="@L[PlanText.LimitsTitle]" TitleId="limits-title"
+                  Summary="@L[PlanText.LimitsSummary, PlanText.Limits.Count]">
+                <ul class="limits__list">
+                    @foreach (var key in PlanText.Limits)
+                    {
+                        <li>@L[key]</li>
+                    }
+                </ul>
+                <p class="limits__note">@L[PlanText.LimitTaxCalcNote]</p>
+            </Fold>
         </aside>
     </MudContainer>
 </section>
