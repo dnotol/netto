@@ -61,8 +61,9 @@ public sealed record RiverInputs(
     // registration and its order are dates, not money: the example's are the year's first day, a new
     // car, until the user gives theirs, and its CO2 is nothing until given. It is assumed electric,
     // the company paying no private charging, until the user says otherwise. It pays no copyright
-    // royalty, and assumes the four previous years' copyright income averaged within the cap, a
-    // status, until the user says otherwise.
+    // royalty; one added to the plan follows the pay, a status, none until a creative share is given
+    // (operator, 2026-10-23), and assumes the four previous years' copyright income averaged within the
+    // cap, a status, until the user says otherwise.
     public static RiverInputs Example { get; } = new(
         ExampleYear,
         new CompanyFigures(new Input<decimal>(120_000m, InputOrigin.Example), new Input<decimal>(20_000m, InputOrigin.Example)),
@@ -76,7 +77,9 @@ public sealed record RiverInputs(
             new Input<CarEngine>(CarEngine.Electric, InputOrigin.Default), new Input<int>(0, InputOrigin.Example), new Input<bool>(false, InputOrigin.Default),
             new Input<DateOnly>(new DateOnly(ExampleYear, 1, 1), InputOrigin.Example), new Input<bool>(false, InputOrigin.Default),
             new Input<int>(0, InputOrigin.Example), new Input<bool>(false, InputOrigin.Default), new Input<bool>(false, InputOrigin.Default)),
-        new CopyrightInputs(ExampleNothing, new Input<bool>(true, InputOrigin.Default), new Input<bool>(false, InputOrigin.Default), CopyrightInputs.NoCreativeShare),
+        new CopyrightInputs(
+            ExampleNothing, new Input<bool>(true, InputOrigin.Default), new Input<bool>(true, InputOrigin.Default), new Input<bool>(false, InputOrigin.Default),
+            CopyrightInputs.NoCreativeShare),
         new Input<bool>(true, InputOrigin.Default),
         new Input<FinancialYear>(River.FinancialYear.FifthOrLater, InputOrigin.Default),
         new AdvancePaymentInputs(ExampleNothing, ExampleNothing, ExampleNothing, ExampleNothing),
@@ -92,10 +95,12 @@ public sealed record RiverInputs(
         new Input<ContributionsPaidBy>(Core.SocialContributions.ContributionsPaidBy.Director, InputOrigin.Default),
         NoBilledContributions);
 
-    // The most the split can give as pay: the profit before pay, what the vouchers, the expense
-    // allowances, the rent and the car in the plan leave of what the company earns, never below zero.
-    // None while the company is skipped, when the pay has a slider of its own.
-    public decimal? PayCeiling => Company is null ? null : Math.Max(0m, YearSimulation.ProfitBeforePay(Scenario(DirectorPay.Value)) ?? 0m);
+    // The most the split can give as pay (YearSimulation.PayCeiling): the profit before pay, what the
+    // vouchers, the expense allowances, the rent, the car and a fixed royalty in the plan leave of what
+    // the company earns, never below zero; beside a royalty that follows the pay, the largest pay the
+    // company pays together with it. None while the company is skipped, when the pay has a slider of its
+    // own.
+    public decimal? PayCeiling => Company is null ? null : YearSimulation.PayCeiling(Scenario(DirectorPay.Value)) ?? 0m;
 
     public RiverInputs WithRevenue(decimal revenue) =>
         this with { Company = (Company ?? Nothing) with { Revenue = Yours(revenue) } };
@@ -150,7 +155,22 @@ public sealed record RiverInputs(
 
     public RiverInputs WithSmallNaturalGas(bool small) => this with { Car = Car with { SmallNaturalGas = Yours(small) } };
 
-    public RiverInputs WithRoyalty(decimal amount) => this with { Copyright = Copyright with { Royalty = Yours(amount) } };
+    // A royalty typed is a fixed one.
+    public RiverInputs WithRoyalty(decimal amount) => this with { Copyright = Copyright with { Royalty = Yours(amount), FollowsPay = Yours(false) } };
+
+    // The amount fixed before stays, for when the royalty is fixed again.
+    public RiverInputs WithRoyaltyFollowingPay() => this with { Copyright = Copyright with { FollowsPay = Yours(true) } };
+
+    // A royalty that followed the pay is fixed at what it came to there, the user's; while the river is
+    // refused, at the amount given before. A fixed royalty stays as it is.
+    public RiverInputs WithRoyaltyFixed()
+    {
+        if (!Copyright.FollowsPay.Value)
+            return this;
+
+        var came = InPlan(OptionalModule.Copyright) && Run().Year is { } year ? year.Copyright.Royalty : Copyright.Royalty.Value;
+        return WithRoyalty(came);
+    }
 
     public RiverInputs WithAverageWithinCap(bool within) => this with { Copyright = Copyright with { AverageWithinCap = Yours(within) } };
 
@@ -231,13 +251,14 @@ public sealed record RiverInputs(
 
     // The scenario Run runs, but with the home office's facts kept while Rent is out of the plan, its
     // rent at nothing, which the engine counts as no rent, and the royalty's creative share and statuses
-    // kept the same way while Copyright royalty is out, its royalty at nothing: the year is the same, and
-    // the search can propose the rent at the cap and the royalty at its ceiling.
+    // kept the same way while Copyright royalty is out, its royalty fixed at nothing, never following:
+    // the year is the same, and the search can propose the rent at the cap and letting the royalty
+    // follow the pay.
     internal Scenario MoveScenario()
     {
         var scenario = Scenario(Math.Min(DirectorPay.Value, PayCeiling ?? 0m));
         var withHome = InPlan(OptionalModule.Rent) ? scenario : scenario with { Rent = Rent.Values with { Rent = 0m } };
-        return InPlan(OptionalModule.Copyright) ? withHome : withHome with { Copyright = Copyright.Values with { Royalty = 0m } };
+        return InPlan(OptionalModule.Copyright) ? withHome : withHome with { Copyright = Copyright.Values with { Royalty = 0m, FollowsPay = false } };
     }
 
     public bool SameBesidesPay(RiverInputs other) => this with { DirectorPay = other.DirectorPay } == other;
@@ -361,10 +382,13 @@ public sealed record CarInputs(
 }
 
 // The copyright royalty the company pays the director as the user enters it: the gross royalty for
-// the year, whether their copyright income of the four previous years averaged at most the year's
-// cap, whether they hold an attestation du travail des arts for these works, and the share of their
-// working time spent creating protected works, which only the royalty move reads.
-public sealed record CopyrightInputs(Input<decimal> Royalty, Input<bool> AverageWithinCap, Input<bool> HoldsAttestation, Input<decimal?> CreativeShare)
+// the year, or that it follows the pay, at what an advance ruling accepts at each pay, the amount given
+// then kept unread for when it is fixed again; whether their copyright income of the four previous
+// years averaged at most the year's cap, whether they hold an attestation du travail des arts for these
+// works, and the share of their working time spent creating protected works, which a royalty that
+// follows the pay reads, and the moves.
+public sealed record CopyrightInputs(
+    Input<decimal> Royalty, Input<bool> FollowsPay, Input<bool> AverageWithinCap, Input<bool> HoldsAttestation, Input<decimal?> CreativeShare)
 {
     // The share has no default: none until the user gives it, and its origin, the user's, shows only
     // once it is given.
@@ -372,7 +396,7 @@ public sealed record CopyrightInputs(Input<decimal> Royalty, Input<bool> Average
 
     public CopyrightRoyalty Values => new(Royalty.Value)
     {
-        AverageWithinCap = AverageWithinCap.Value, HoldsAttestation = HoldsAttestation.Value, CreativeShare = CreativeShare.Value,
+        FollowsPay = FollowsPay.Value, AverageWithinCap = AverageWithinCap.Value, HoldsAttestation = HoldsAttestation.Value, CreativeShare = CreativeShare.Value,
     };
 }
 

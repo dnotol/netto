@@ -207,7 +207,7 @@ public class MovesViewTests
         var river = View(today).Apply(move, RiverInputs.Example);
 
         (river.InPlan(OptionalModule.Copyright), river.Copyright, View(today).Applied(move, river))
-            .ShouldBe((true, today.Copyright with { Royalty = new Input<decimal>(4_799.76m, InputOrigin.Yours) }, true));
+            .ShouldBe((true, today.Copyright with { Royalty = new Input<decimal>(4_799.76m, InputOrigin.Yours), FollowsPay = new Input<bool>(false, InputOrigin.Yours) }, true));
     }
 
     [Fact]

@@ -862,24 +862,98 @@ public class RiverInputsTests
     // YearSimulationCopyrightTests' royalty within its limits: 10,000 beside the example's 50,000 of pay.
     private static RiverInputs Royalty(RiverInputs inputs) => inputs.AddToPlan(OptionalModule.Copyright).WithRoyalty(10_000m);
 
-    // The average met and no attestation are Netto's assumptions until the user says otherwise; the
-    // creative share has no default, none until given.
+    // At 75% of the time spent creating, a ruling accepts 18.75% of pay and royalty together: beside the
+    // example's 50,000 of pay, 11,538.46 (YearSimulationCopyrightTests).
+    private static RiverInputs Following(RiverInputs inputs) => inputs.AddToPlan(OptionalModule.Copyright).WithCreativeShare(0.75m);
+
+    // A royalty follows the pay by default, a status; the average met and no attestation are Netto's
+    // assumptions until the user says otherwise; the creative share has no default, none until given.
     [Fact]
-    public void Example_hasNoRoyaltyAssumesTheAverageMetAndNoAttestationAndHasNoCreativeShare()
+    public void Example_followsThePayAssumesTheAverageMetAndNoAttestationAndHasNoCreativeShare()
     {
         RiverInputs.Example.Copyright.ShouldBe(new CopyrightInputs(
-            new Input<decimal>(0m, InputOrigin.Example), new Input<bool>(true, InputOrigin.Default), new Input<bool>(false, InputOrigin.Default),
-            new Input<decimal?>(null, InputOrigin.Yours)));
+            new Input<decimal>(0m, InputOrigin.Example), new Input<bool>(true, InputOrigin.Default), new Input<bool>(true, InputOrigin.Default),
+            new Input<bool>(false, InputOrigin.Default), new Input<decimal?>(null, InputOrigin.Yours)));
     }
 
+    // A royalty typed is a fixed one.
     [Fact]
-    public void WithRoyalty_makesEachTheUsers()
+    public void WithRoyalty_makesEachTheUsersAndTheRoyaltyFixed()
     {
         var inputs = RiverInputs.Example.WithRoyalty(12_500.50m).WithAverageWithinCap(false).WithAttestation(true).WithCreativeShare(0.75m);
 
         inputs.Copyright.ShouldBe(new CopyrightInputs(
-            new Input<decimal>(12_500.50m, InputOrigin.Yours), new Input<bool>(false, InputOrigin.Yours), new Input<bool>(true, InputOrigin.Yours),
-            new Input<decimal?>(0.75m, InputOrigin.Yours)));
+            new Input<decimal>(12_500.50m, InputOrigin.Yours), new Input<bool>(false, InputOrigin.Yours), new Input<bool>(false, InputOrigin.Yours),
+            new Input<bool>(true, InputOrigin.Yours), new Input<decimal?>(0.75m, InputOrigin.Yours)));
+    }
+
+    // The amount fixed before stays, for when the royalty is fixed again.
+    [Fact]
+    public void WithRoyaltyFollowingPay_makesItFollowAsTheUsers()
+    {
+        var copyright = Royalty(RiverInputs.Example).WithRoyaltyFollowingPay().Copyright;
+
+        (copyright.FollowsPay, copyright.Royalty).ShouldBe((new Input<bool>(true, InputOrigin.Yours), new Input<decimal>(10_000m, InputOrigin.Yours)));
+    }
+
+    // Fixed from following, the royalty stays what it came to at the pay, the user's.
+    [Fact]
+    public void WithRoyaltyFixed_followingRoyalty_keepsTheRoyaltyTheRunHadAsTheUsers()
+    {
+        var copyright = Following(RiverInputs.Example).WithRoyaltyFixed().Copyright;
+
+        (copyright.FollowsPay, copyright.Royalty).ShouldBe((new Input<bool>(false, InputOrigin.Yours), new Input<decimal>(11_538.46m, InputOrigin.Yours)));
+    }
+
+    [Fact]
+    public void WithRoyaltyFixed_fixedRoyalty_changesNothing()
+    {
+        var inputs = Royalty(RiverInputs.Example);
+
+        inputs.WithRoyaltyFixed().ShouldBe(inputs);
+    }
+
+    // While the river is refused there is no royalty it came to: the amount given stays, the user's.
+    [Fact]
+    public void WithRoyaltyFixed_riverRefused_keepsTheAmountGivenAsTheUsers()
+    {
+        var copyright = Following(RiverInputs.Example).WithReserve(-1m).WithRoyaltyFixed().Copyright;
+
+        (copyright.FollowsPay, copyright.Royalty).ShouldBe((new Input<bool>(false, InputOrigin.Yours), new Input<decimal>(0m, InputOrigin.Yours)));
+    }
+
+    // At 40,000 of pay, 18.75% of the envelope is 9,230.76.
+    [Fact]
+    public void Run_royaltyFollowingThePay_isWhatARulingAcceptsAtEachPay()
+    {
+        var inputs = Following(RiverInputs.Example);
+
+        (inputs.Run().Year?.Copyright.Royalty, inputs.WithDirectorPay(40_000m).Run().Year?.Copyright.Royalty).ShouldBe((11_538.46m, 9_230.76m));
+    }
+
+    // Added to the plan, the royalty follows the pay and is none until the share is given: the engine
+    // says why.
+    [Fact]
+    public void Run_royaltyAddedWithoutAShare_followsThePayAndPaysNone()
+    {
+        var royalty = RiverInputs.Example.AddToPlan(OptionalModule.Copyright).Run().Year.ShouldNotBeNull().Copyright;
+
+        (royalty.Royalty, royalty.Following).ShouldBe((0m, Netto.Core.Copyright.CopyrightFollowing.NoCreativeShare));
+    }
+
+    // The pay and the royalty that follows it share the 100,000: at most 81,250 of pay beside 18,750.
+    [Fact]
+    public void PayCeiling_royaltyFollowingThePay_isTheLargestPayTheCompanyPaysBesideIt()
+    {
+        Following(RiverInputs.Example).PayCeiling.ShouldBe(81_250m);
+    }
+
+    [Fact]
+    public void Run_payAboveTheCeilingBesideAFollowingRoyalty_isHeldThere()
+    {
+        var year = Following(RiverInputs.Example).WithDirectorPay(90_000m).Run().Year.ShouldNotBeNull();
+
+        (year.DirectorPay.GrossPay, year.Copyright.Royalty).ShouldBe((81_250m, 18_750m));
     }
 
     // A share cleared is none again.
@@ -1067,5 +1141,14 @@ public class RiverInputsTests
 
         (scenario.Copyright, YearSimulation.Run(scenario).Value?.NetInPocket)
             .ShouldBe((new Netto.Core.Copyright.CopyrightRoyalty(0m) { CreativeShare = 0.75m, HoldsAttestation = true }, inputs.Run().Year?.NetInPocket));
+    }
+
+    // A royalty that follows the pay, out of the plan, is fixed at nothing there, never following, so
+    // the search can propose letting it follow.
+    [Fact]
+    public void MoveScenario_followingRoyaltyOutOfThePlan_isFixedAtNothing()
+    {
+        RiverInputs.Example.WithCreativeShare(0.75m).MoveScenario().Copyright
+            .ShouldBe(new Netto.Core.Copyright.CopyrightRoyalty(0m) { CreativeShare = 0.75m });
     }
 }

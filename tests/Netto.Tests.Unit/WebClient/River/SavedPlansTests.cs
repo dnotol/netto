@@ -319,6 +319,18 @@ public class SavedPlansTests
         (imported.Added, plans.Plans.Select(plan => plan.Id).Distinct().Count(), plans.TodayPlan?.Name).ShouldBe((2, 2, "First"));
     }
 
+    // A file exported before a royalty could follow the pay reads as storage does: the royalty given
+    // fixed at it, any other following the pay.
+    [Fact]
+    public void Import_version4File_readsItsRoyaltiesAsStorageDoes()
+    {
+        var plans = new SavedPlans(new MemoryStorage());
+
+        plans.Import(PlanStorageTests.Version4Book);
+
+        plans.Plans.Select(plan => plan.Inputs).ShouldBe([RiverInputs.Example, PlanStorageTests.Version4Plan2]);
+    }
+
     [Theory]
     [InlineData("{ broken")]
     [InlineData("")]

@@ -146,11 +146,81 @@ public class PlanStorageTests
         JsonNode.Parse(PlanStorage.Write(PlanBook.Empty))!["version"]!.GetValue<int>().ShouldBe(PlanStorage.Version);
     }
 
-    // Version 4 holds what the fund bills each quarter, the payment calendar's one input.
+    // Version 5 holds whether the copyright royalty follows the pay.
     [Fact]
-    public void Version_isFour()
+    public void Version_isFive()
     {
-        PlanStorage.Version.ShouldBe(4);
+        PlanStorage.Version.ShouldBe(5);
+    }
+
+    // A royalty that follows the pay keeps the amount fixed before it, for when it is fixed again.
+    [Fact]
+    public void Read_written_givesBackARoyaltyThatFollowsThePay()
+    {
+        var inputs = RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithRoyalty(5_000m).WithRoyaltyFollowingPay().WithCreativeShare(0.4m);
+
+        PlanStorage.Read(PlanStorage.Write(Book(("a", "Plan 1", inputs)))).Book.Plans.Single().Inputs.ShouldBe(inputs);
+    }
+
+    // A plan of this version that does not say whether its royalty follows the pay is not read as one
+    // that does.
+    [Fact]
+    public void Read_planMissingWhetherItsRoyaltyFollowsThePay_makesThatPlanUnreadable()
+    {
+        var json = Edit(PlanStorage.Write(Book(("a", "Plan 1", RiverInputs.Example))),
+            document => document["plans"]![0]!["inputs"]!["copyright"]!.AsObject().Remove("followsPay"));
+
+        PlanStorage.Read(json).Book.Plans.Single().Readable.ShouldBeFalse();
+    }
+
+    // A document version 4 of the format wrote (captured from it, 2026-10-23): the example as « Today »,
+    // and a plan holding a royalty of 10,000 given, with an attestation, a creative share and what the
+    // fund bills, opened.
+    internal const string Version4Book =
+        """{"version":4,"today":"a1","opened":"b2","plans":[{"id":"a1","name":"Today","inputs":{"incomeYear":2026,"company":{"revenue":{"value":120000,"origin":"Example"},"runningCosts":{"value":20000,"origin":"Example"}},"composition":{"vouchers":false,"allowances":false,"rent":false,"car":false,"copyright":false},"vouchers":{"mealVoucherDays":{"value":0,"origin":"Example"},"ecoVouchers":{"value":0,"origin":"Example"},"sportCultureVouchers":{"value":0,"origin":"Example"}},"allowances":{"office":{"value":0,"origin":"Example"},"internet":{"value":0,"origin":"Example"},"computer":{"value":0,"origin":"Example"},"phone":{"value":0,"origin":"Example"}},"rent":{"cadastralIncome":{"value":0,"origin":"Example"},"shareLet":{"value":0,"origin":"Example"},"rent":{"value":0,"origin":"Example"}},"car":{"catalogueValue":{"value":0,"origin":"Example"},"firstRegistration":{"value":"2026-01-01","origin":"Example"},"yearlyCosts":{"value":0,"origin":"Example"},"companyPaysPrivateEnergy":{"value":false,"origin":"Default"},"personalContribution":{"value":0,"origin":"Example"},"engine":{"value":"Electric","origin":"Default"},"co2":{"value":0,"origin":"Example"},"noCo2Data":{"value":false,"origin":"Default"},"acquired":{"value":"2026-01-01","origin":"Example"},"fakeHybrid":{"value":false,"origin":"Default"},"matchingCarCo2":{"value":0,"origin":"Example"},"noMatchingCar":{"value":false,"origin":"Default"},"smallNaturalGas":{"value":false,"origin":"Default"}},"copyright":{"royalty":{"value":0,"origin":"Example"},"averageWithinCap":{"value":true,"origin":"Default"},"holdsAttestation":{"value":false,"origin":"Default"},"creativeShare":{"value":null,"origin":"Yours"}},"smallCompany":{"value":true,"origin":"Default"},"financialYear":{"value":"FifthOrLater","origin":"Default"},"advancePayments":{"first":{"value":0,"origin":"Example"},"second":{"value":0,"origin":"Example"},"third":{"value":0,"origin":"Example"},"fourth":{"value":0,"origin":"Example"}},"directorPay":{"value":50000,"origin":"Example"},"municipality":{"insCode":null,"rate":0.07,"origin":"Default"},"taxPrepayments":{"withheld":{"value":null,"origin":"Derived"},"paid":{"first":{"value":0,"origin":"Example"},"second":{"value":0,"origin":"Example"},"third":{"value":0,"origin":"Example"},"fourth":{"value":0,"origin":"Example"}},"starter":{"value":false,"origin":"Default"}},"reserve":{"value":0,"origin":"Example"},"dividendCategory":{"value":"VvprbisThirdYearOnwards","origin":"Default"},"earlierProfits":{"value":0,"origin":"Example"},"contributionsPaidBy":{"value":"Director","origin":"Default"},"billedContributions":{"value":null,"origin":"Yours"}}},{"id":"b2","name":"Plan 2","inputs":{"incomeYear":2026,"company":{"revenue":{"value":120000,"origin":"Example"},"runningCosts":{"value":20000,"origin":"Example"}},"composition":{"vouchers":false,"allowances":false,"rent":false,"car":false,"copyright":true},"vouchers":{"mealVoucherDays":{"value":0,"origin":"Example"},"ecoVouchers":{"value":0,"origin":"Example"},"sportCultureVouchers":{"value":0,"origin":"Example"}},"allowances":{"office":{"value":0,"origin":"Example"},"internet":{"value":0,"origin":"Example"},"computer":{"value":0,"origin":"Example"},"phone":{"value":0,"origin":"Example"}},"rent":{"cadastralIncome":{"value":0,"origin":"Example"},"shareLet":{"value":0,"origin":"Example"},"rent":{"value":0,"origin":"Example"}},"car":{"catalogueValue":{"value":0,"origin":"Example"},"firstRegistration":{"value":"2026-01-01","origin":"Example"},"yearlyCosts":{"value":0,"origin":"Example"},"companyPaysPrivateEnergy":{"value":false,"origin":"Default"},"personalContribution":{"value":0,"origin":"Example"},"engine":{"value":"Electric","origin":"Default"},"co2":{"value":0,"origin":"Example"},"noCo2Data":{"value":false,"origin":"Default"},"acquired":{"value":"2026-01-01","origin":"Example"},"fakeHybrid":{"value":false,"origin":"Default"},"matchingCarCo2":{"value":0,"origin":"Example"},"noMatchingCar":{"value":false,"origin":"Default"},"smallNaturalGas":{"value":false,"origin":"Default"}},"copyright":{"royalty":{"value":10000,"origin":"Yours"},"averageWithinCap":{"value":true,"origin":"Default"},"holdsAttestation":{"value":true,"origin":"Yours"},"creativeShare":{"value":0.6,"origin":"Yours"}},"smallCompany":{"value":true,"origin":"Default"},"financialYear":{"value":"FifthOrLater","origin":"Default"},"advancePayments":{"first":{"value":0,"origin":"Example"},"second":{"value":0,"origin":"Example"},"third":{"value":0,"origin":"Example"},"fourth":{"value":0,"origin":"Example"}},"directorPay":{"value":42000,"origin":"Yours"},"municipality":{"insCode":null,"rate":0.07,"origin":"Default"},"taxPrepayments":{"withheld":{"value":null,"origin":"Derived"},"paid":{"first":{"value":0,"origin":"Example"},"second":{"value":0,"origin":"Example"},"third":{"value":0,"origin":"Example"},"fourth":{"value":0,"origin":"Example"}},"starter":{"value":false,"origin":"Default"}},"reserve":{"value":0,"origin":"Example"},"dividendCategory":{"value":"VvprbisThirdYearOnwards","origin":"Default"},"earlierProfits":{"value":0,"origin":"Example"},"contributionsPaidBy":{"value":"Director","origin":"Default"},"billedContributions":{"value":900,"origin":"Yours"}}}]}""";
+
+    // What the second plan of the version 4 document held, as the river builds it: a royalty typed is
+    // a fixed one.
+    internal static readonly RiverInputs Version4Plan2 = RiverInputs.Example
+        .AddToPlan(OptionalModule.Copyright).WithRoyalty(10_000m).WithAttestation(true).WithCreativeShare(0.6m).WithDirectorPay(42_000m)
+        .WithBilledContributions(900m);
+
+    // Saved before a royalty could follow the pay, a royalty the user gave opens fixed at it, as it was
+    // saved; one never given follows the pay, as a royalty added now does (2026-10-23).
+    [Fact]
+    public void Read_version4_opensARoyaltyGivenFixedAtItAndAnyOtherFollowingThePay()
+    {
+        var (read, unreadable) = PlanStorage.Read(Version4Book);
+
+        read.ShouldSatisfyAllConditions(
+            () => (unreadable, read.Today, read.Opened).ShouldBe((false, "a1", "b2")),
+            () => read.Plans.Select(plan => (plan.Id, plan.Name, plan.Inputs)).ShouldBe([("a1", "Today", RiverInputs.Example), ("b2", "Plan 2", Version4Plan2)]),
+            () => read.Plans.Select(plan => plan.Inputs!.Copyright.FollowsPay)
+                .ShouldBe([new Input<bool>(true, InputOrigin.Default), new Input<bool>(false, InputOrigin.Yours)]));
+    }
+
+    // Written again, the book is version 5, each plan in its shape, and reads back the same.
+    [Fact]
+    public void Write_afterReadingVersion4_writesEachPlanInVersion5()
+    {
+        var rewritten = PlanStorage.Write(PlanStorage.Read(Version4Book).Book);
+
+        var (read, unreadable) = PlanStorage.Read(rewritten);
+
+        read.ShouldSatisfyAllConditions(
+            () => (JsonNode.Parse(rewritten)!["version"]!.GetValue<int>(), unreadable).ShouldBe((5, false)),
+            () => read.Plans.Select(plan => plan.Inputs).ShouldBe([RiverInputs.Example, Version4Plan2]));
+    }
+
+    // Version 4 never said whether the royalty follows the pay: a version 4 plan saying it is not a plan
+    // it wrote.
+    [Fact]
+    public void Read_version4PlanSayingWhetherTheRoyaltyFollowsThePay_makesThatPlanUnreadable()
+    {
+        var json = Edit(Version4Book, document => document["plans"]![0]!["inputs"]!["copyright"]!["followsPay"] =
+            JsonNode.Parse("""{"value":true,"origin":"Default"}"""));
+
+        PlanStorage.Read(json).Book.Plans.Select(plan => plan.Readable).ShouldBe([false, true]);
     }
 
     // A document version 3 of the format wrote (captured from it, 2026-10-22): the example as
@@ -174,16 +244,16 @@ public class PlanStorageTests
             () => read.Plans.ShouldAllBe(plan => plan.Inputs!.BilledContributions == RiverInputs.NoBilledContributions));
     }
 
-    // Written again, the book is version 4, each plan in its shape, and reads back the same.
+    // Written again, the book is version 5, each plan in its shape, and reads back the same.
     [Fact]
-    public void Write_afterReadingVersion3_writesEachPlanInVersion4()
+    public void Write_afterReadingVersion3_writesEachPlanInVersion5()
     {
         var rewritten = PlanStorage.Write(PlanStorage.Read(Version3Book).Book);
 
         var (read, unreadable) = PlanStorage.Read(rewritten);
 
         read.ShouldSatisfyAllConditions(
-            () => (JsonNode.Parse(rewritten)!["version"]!.GetValue<int>(), unreadable).ShouldBe((4, false)),
+            () => (JsonNode.Parse(rewritten)!["version"]!.GetValue<int>(), unreadable).ShouldBe((5, false)),
             () => read.Plans.Select(plan => plan.Inputs).ShouldBe([RiverInputs.Example, Version3Plan2]));
     }
 
@@ -288,16 +358,16 @@ public class PlanStorageTests
             .ShouldAllBe(plan => !plan.Inputs!.InPlan(OptionalModule.Copyright) && plan.Inputs.Copyright == RiverInputs.Example.Copyright);
     }
 
-    // Written again, the book is version 4, each plan in its shape, and reads back the same.
+    // Written again, the book is version 5, each plan in its shape, and reads back the same.
     [Fact]
-    public void Write_afterReadingVersion2_writesEachPlanInVersion4()
+    public void Write_afterReadingVersion2_writesEachPlanInVersion5()
     {
         var rewritten = PlanStorage.Write(PlanStorage.Read(Version2Book).Book);
 
         var (read, unreadable) = PlanStorage.Read(rewritten);
 
         read.ShouldSatisfyAllConditions(
-            () => (JsonNode.Parse(rewritten)!["version"]!.GetValue<int>(), unreadable).ShouldBe((4, false)),
+            () => (JsonNode.Parse(rewritten)!["version"]!.GetValue<int>(), unreadable).ShouldBe((5, false)),
             () => read.Plans.Select(plan => plan.Inputs).ShouldBe([RiverInputs.Example, Version2Plan2]));
     }
 
@@ -353,16 +423,16 @@ public class PlanStorageTests
             .ShouldAllBe(plan => !plan.Inputs!.InPlan(OptionalModule.Copyright) && plan.Inputs.Copyright == RiverInputs.Example.Copyright);
     }
 
-    // Written again, the book is version 4, each plan in its shape, and reads back the same.
+    // Written again, the book is version 5, each plan in its shape, and reads back the same.
     [Fact]
-    public void Write_afterReadingVersion1_writesEachPlanInVersion4()
+    public void Write_afterReadingVersion1_writesEachPlanInVersion5()
     {
         var rewritten = PlanStorage.Write(PlanStorage.Read(Version1Book).Book);
 
         var (read, unreadable) = PlanStorage.Read(rewritten);
 
         read.ShouldSatisfyAllConditions(
-            () => (JsonNode.Parse(rewritten)!["version"]!.GetValue<int>(), unreadable).ShouldBe((4, false)),
+            () => (JsonNode.Parse(rewritten)!["version"]!.GetValue<int>(), unreadable).ShouldBe((5, false)),
             () => read.Plans.Select(plan => plan.Inputs).ShouldBe([RiverInputs.Example, Version1Plan2]));
     }
 

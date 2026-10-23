@@ -33,8 +33,10 @@ internal sealed record PlanBook(IReadOnlyList<SavedPlan> Plans, string? Today, s
 // from a newer version, is refused whole. A document of an older version is read in its own format,
 // each plan as it was saved, and is written back in this one: version 1 held no company car, so its
 // plans are read as plans without one (decided 2026-10-22), versions 1 and 2 no copyright royalty,
-// so theirs are read without one, and versions 1 to 3 no provisional contributions billed by the fund,
-// so theirs are read with none given. The car's engine, CO2, order date and statuses joined version 2
+// so theirs are read without one, versions 1 to 3 no provisional contributions billed by the fund,
+// so theirs are read with none given, and versions 3 and 4 a royalty that is always fixed: a royalty
+// the user gave opens fixed at it, as it was saved, and one never given follows the pay, as a royalty
+// added now does (2026-10-23). The car's engine, CO2, order date and statuses joined version 2
 // without raising it, since version 2 had not left the car's story branch; a plan saved by the car's
 // first build does not open (operator, 2026-10-22). The rest of the royalty's story joins version 3
 // the same way (decided unattended, 2026-10-22).
@@ -45,8 +47,11 @@ internal static class PlanStorage
     // Where a document that cannot be read is kept aside before anything is written over it.
     public const string UnreadableKey = "netto.plans.unreadable";
 
-    // 2: the company car. 3: the copyright royalty. 4: what the fund bills each quarter.
-    public const int Version = 4;
+    // 2: the company car. 3: the copyright royalty. 4: what the fund bills each quarter. 5: whether the
+    // royalty follows the pay.
+    public const int Version = 5;
+
+    private const int Version4 = 4;
 
     private const int Version3 = 3;
 
@@ -70,12 +75,13 @@ internal static class PlanStorage
             return (PlanBook.Empty, true);
         }
 
-        if (stored is null || stored.Version is not (Version or Version3 or Version2 or Version1))
+        if (stored is null || stored.Version is not (Version or Version4 or Version3 or Version2 or Version1))
             return (PlanBook.Empty, true);
 
         var plans = stored.Plans.Select(plan => stored.Version switch
         {
             Version => Plan(plan),
+            Version4 => PlanOfOlderVersion(plan, PlanJson.Default.StoredInputsVersion4, FromVersion4),
             Version3 => PlanOfOlderVersion(plan, PlanJson.Default.StoredInputsVersion3, FromVersion3),
             Version2 => PlanOfOlderVersion(plan, PlanJson.Default.StoredInputsVersion2, FromVersion2),
             _ => PlanOfOlderVersion(plan, PlanJson.Default.StoredInputsVersion1, FromVersion1),
@@ -157,7 +163,7 @@ internal static class PlanStorage
         stored.ContributionsPaidBy,
         Stored(RiverInputs.Example.BilledContributions));
 
-    // A plan of version 3, which held no billed contributions: none given.
+    // A plan of version 3, which held no billed contributions, none given, and a royalty always fixed.
     private static StoredInputs FromVersion3(StoredInputsVersion3 stored) => new(
         stored.IncomeYear,
         stored.Company,
@@ -166,7 +172,7 @@ internal static class PlanStorage
         stored.Allowances,
         stored.Rent,
         stored.Car,
-        stored.Copyright,
+        FromVersion4(stored.Copyright),
         stored.SmallCompany,
         stored.FinancialYear,
         stored.AdvancePayments,
@@ -178,6 +184,37 @@ internal static class PlanStorage
         stored.EarlierProfits,
         stored.ContributionsPaidBy,
         Stored(RiverInputs.Example.BilledContributions));
+
+    // A plan of version 4, whose royalty was always fixed.
+    private static StoredInputs FromVersion4(StoredInputsVersion4 stored) => new(
+        stored.IncomeYear,
+        stored.Company,
+        stored.Composition,
+        stored.Vouchers,
+        stored.Allowances,
+        stored.Rent,
+        stored.Car,
+        FromVersion4(stored.Copyright),
+        stored.SmallCompany,
+        stored.FinancialYear,
+        stored.AdvancePayments,
+        stored.DirectorPay,
+        stored.Municipality,
+        stored.TaxPrepayments,
+        stored.Reserve,
+        stored.DividendCategory,
+        stored.EarlierProfits,
+        stored.ContributionsPaidBy,
+        stored.BilledContributions);
+
+    // A royalty of versions 3 and 4, always fixed: the user's opens fixed at it, the user's choice; one
+    // never given follows the pay, as the example's does.
+    private static StoredCopyright FromVersion4(StoredCopyrightVersion4 stored) => new(
+        stored.Royalty,
+        stored.Royalty.Origin == InputOrigin.Yours ? new StoredValue<bool>(false, InputOrigin.Yours) : Stored(RiverInputs.Example.Copyright.FollowsPay),
+        stored.AverageWithinCap,
+        stored.HoldsAttestation,
+        stored.CreativeShare);
 
     private static StoredInputs Stored(RiverInputs inputs) => new(
         inputs.IncomeYear,
@@ -220,7 +257,7 @@ internal static class PlanStorage
             new RentInputs(Input(stored.Rent.CadastralIncome), Input(stored.Rent.ShareLet), Input(stored.Rent.Rent)),
             Input(stored.Car),
             new CopyrightInputs(
-                Input(stored.Copyright.Royalty), Input(stored.Copyright.AverageWithinCap), Input(stored.Copyright.HoldsAttestation), Input(stored.Copyright.CreativeShare)),
+                Input(stored.Copyright.Royalty), Input(stored.Copyright.FollowsPay), Input(stored.Copyright.AverageWithinCap), Input(stored.Copyright.HoldsAttestation), Input(stored.Copyright.CreativeShare)),
             Input(stored.SmallCompany),
             Input(stored.FinancialYear),
             Input(stored.AdvancePayments),
@@ -248,8 +285,9 @@ internal static class PlanStorage
         Input(stored.Engine), Input(stored.Co2), Input(stored.NoCo2Data), Input(stored.Acquired), Input(stored.FakeHybrid), Input(stored.MatchingCarCo2),
         Input(stored.NoMatchingCar), Input(stored.SmallNaturalGas));
 
-    private static StoredCopyright Stored(CopyrightInputs copyright) =>
-        new(Stored(copyright.Royalty), Stored(copyright.AverageWithinCap), Stored(copyright.HoldsAttestation), Stored(copyright.CreativeShare));
+    private static StoredCopyright Stored(CopyrightInputs copyright) => new(
+        Stored(copyright.Royalty), Stored(copyright.FollowsPay), Stored(copyright.AverageWithinCap), Stored(copyright.HoldsAttestation),
+        Stored(copyright.CreativeShare));
 
     private static StoredPayments Stored(AdvancePaymentInputs payments) =>
         new(Stored(payments.First), Stored(payments.Second), Stored(payments.Third), Stored(payments.Fourth));
@@ -258,7 +296,7 @@ internal static class PlanStorage
         new(Input(stored.First), Input(stored.Second), Input(stored.Third), Input(stored.Fourth));
 }
 
-// The stored document and plan, version 4. Renaming or removing a member changes the format.
+// The stored document and plan, version 5. Renaming or removing a member changes the format.
 internal sealed record StoredBook(int Version, string? Today, string? Opened, IReadOnlyList<StoredPlan> Plans);
 
 internal sealed record StoredPlan(string Id, string Name, JsonElement Inputs);
@@ -284,7 +322,29 @@ internal sealed record StoredInputs(
     StoredValue<ContributionsPaidBy> ContributionsPaidBy,
     StoredValue<decimal?> BilledContributions);
 
-// A plan as version 3 stored it: no billed contributions.
+// A plan as version 4 stored it: a royalty always fixed.
+internal sealed record StoredInputsVersion4(
+    int IncomeYear,
+    StoredCompany? Company,
+    StoredComposition Composition,
+    StoredVouchers Vouchers,
+    StoredAllowances Allowances,
+    StoredRent Rent,
+    StoredCar Car,
+    StoredCopyrightVersion4 Copyright,
+    StoredValue<bool> SmallCompany,
+    StoredValue<FinancialYear> FinancialYear,
+    StoredPayments AdvancePayments,
+    StoredValue<decimal> DirectorPay,
+    StoredMunicipality Municipality,
+    StoredTaxPrepayments TaxPrepayments,
+    StoredValue<decimal> Reserve,
+    StoredValue<WithholdingCategory> DividendCategory,
+    StoredValue<decimal> EarlierProfits,
+    StoredValue<ContributionsPaidBy> ContributionsPaidBy,
+    StoredValue<decimal?> BilledContributions);
+
+// A plan as version 3 stored it: no billed contributions, and a royalty always fixed.
 internal sealed record StoredInputsVersion3(
     int IncomeYear,
     StoredCompany? Company,
@@ -293,7 +353,7 @@ internal sealed record StoredInputsVersion3(
     StoredAllowances Allowances,
     StoredRent Rent,
     StoredCar Car,
-    StoredCopyright Copyright,
+    StoredCopyrightVersion4 Copyright,
     StoredValue<bool> SmallCompany,
     StoredValue<FinancialYear> FinancialYear,
     StoredPayments AdvancePayments,
@@ -355,6 +415,14 @@ internal sealed record StoredCompositionVersion2(bool Vouchers, bool Allowances,
 internal sealed record StoredCompositionVersion1(bool Vouchers, bool Allowances, bool Rent);
 
 internal sealed record StoredCopyright(
+    StoredValue<decimal> Royalty,
+    StoredValue<bool> FollowsPay,
+    StoredValue<bool> AverageWithinCap,
+    StoredValue<bool> HoldsAttestation,
+    StoredValue<decimal?> CreativeShare);
+
+// A royalty as versions 3 and 4 stored it: always fixed.
+internal sealed record StoredCopyrightVersion4(
     StoredValue<decimal> Royalty, StoredValue<bool> AverageWithinCap, StoredValue<bool> HoldsAttestation, StoredValue<decimal?> CreativeShare);
 
 internal sealed record StoredVouchers(StoredValue<int> MealVoucherDays, StoredValue<decimal> EcoVouchers, StoredValue<decimal> SportCultureVouchers);
@@ -396,6 +464,7 @@ internal sealed record StoredTaxPrepayments(StoredValue<decimal?> Withheld, Stor
     UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow)]
 [JsonSerializable(typeof(StoredBook))]
 [JsonSerializable(typeof(StoredInputs))]
+[JsonSerializable(typeof(StoredInputsVersion4))]
 [JsonSerializable(typeof(StoredInputsVersion3))]
 [JsonSerializable(typeof(StoredInputsVersion2))]
 [JsonSerializable(typeof(StoredInputsVersion1))]
