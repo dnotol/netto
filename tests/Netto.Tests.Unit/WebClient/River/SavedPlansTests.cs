@@ -345,6 +345,57 @@ public class SavedPlansTests
         (imported, plans.Plans.Count).ShouldBe((new PlanImport(0, 0, true), 1));
     }
 
+    // What reads the plans from outside them (the Compare plans tab) hears of each change, once.
+    [Fact]
+    public void Changed_eachChangeOfThePlans_isRaisedOnce()
+    {
+        var plans = new SavedPlans(new MemoryStorage());
+        var raised = 0;
+        plans.Changed += () => raised++;
+
+        var first = plans.Save(RiverInputs.Example, Name);
+        var second = plans.Save(BestPay, Name);
+        plans.Rename(second.Id, "Best pay");
+        plans.Star(second.Id);
+        plans.Open(first.Id);
+        plans.Import(FileOf(("Other", BestPay)));
+        plans.Delete(second.Id);
+
+        raised.ShouldBe(7);
+    }
+
+    // Nothing changed, nothing to hear: an empty name, a star on a plan that is not there, a file that
+    // adds nothing, a plan that cannot be opened.
+    [Fact]
+    public void Changed_nothingChanges_isNotRaised()
+    {
+        var plans = new SavedPlans(new MemoryStorage());
+        var first = plans.Save(RiverInputs.Example, Name);
+        var raised = 0;
+        plans.Changed += () => raised++;
+
+        plans.Rename(first.Id, "  ");
+        plans.Star("nobody");
+        plans.Open("nobody");
+        plans.Import("not a file");
+
+        raised.ShouldBe(0);
+    }
+
+    // The event is raised once the plans are kept, so a listener reads the plans as they now are.
+    [Fact]
+    public void Changed_listener_readsThePlansAsTheyNowAre()
+    {
+        var plans = new SavedPlans(new MemoryStorage());
+        var seen = new List<int>();
+        plans.Changed += () => seen.Add(plans.Plans.Count);
+
+        plans.Save(RiverInputs.Example, Name);
+        plans.Save(BestPay, Name);
+
+        seen.ShouldBe([1, 2]);
+    }
+
     // A file of every plan, as another browser would export it.
     private static string FileOf(params (string Name, RiverInputs Inputs)[] saved)
     {

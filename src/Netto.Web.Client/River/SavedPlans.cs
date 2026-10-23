@@ -18,6 +18,11 @@ internal sealed class SavedPlans
             storage.Set(PlanStorage.UnreadableKey, stored);
     }
 
+    // The plans were kept: saved, renamed, starred, deleted, opened or imported. What reads them from
+    // outside them, the Compare plans tab, hears of it once they are kept; a change that keeps nothing
+    // (an empty name, a plan that is not there, a file that adds nothing) raises nothing.
+    public event Action? Changed;
+
     public IReadOnlyList<SavedPlan> Plans => _book.Plans;
 
     public string? Today => _book.Today;
@@ -111,6 +116,7 @@ internal sealed class SavedPlans
     {
         _book = book;
         _storage.Set(PlanStorage.Key, PlanStorage.Write(book));
+        Changed?.Invoke();
     }
 }
 
