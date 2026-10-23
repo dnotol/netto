@@ -1,0 +1,41 @@
+@* How a card's figure is built, line by line: each line's label and its amount and, when it has one,
+   its share of what its card receives, in the columns of a drain list (DrainList), which says where
+   money goes, so the two read as one list beside each other. A line whose label needs explaining opens
+   an info bubble from an (i) after it, named « More about » the label. It draws every line it is
+   given, in their order: the card's view model chooses them and gives their keys (FigureLine), and the
+   card words them from its own texts (FigureWords), so the list has no text of its own. None, and
+   there is no list. *@
+@if (Figures.Count > 0)
+{
+    <ul class="figure-list">
+        @foreach (var figure in Figures)
+        {
+            <li class="figure">
+                <span class="figure__label">
+                    @figure.Label
+                    @if (figure.Help is { } help)
+                    {
+                        <InfoBubble Label="@figure.Label">@help</InfoBubble>
+                    }
+                </span>
+                <span class="figure__amount">@Amount(figure)</span>
+                @if (figure.Share is { } share)
+                {
+                    @(" ")<span class="figure__share">@Formats.Share(share)</span>
+                }
+            </li>
+        }
+    </ul>
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public IReadOnlyList<Figure> Figures { get; set; } = [];
+
+    private static string Amount(Figure figure) => figure.Format switch
+    {
+        FigureFormat.Euros => Formats.Euros(figure.Amount),
+        FigureFormat.Percentage => Formats.Percentage(figure.Amount),
+        _ => throw new ArgumentOutOfRangeException(nameof(figure), figure.Format, null),
+    };
+}

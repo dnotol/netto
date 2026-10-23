@@ -1,0 +1,35 @@
+/* A drain list's columns (DrainList.razor.css), so a figure list beside one reads as one list: each
+   line a small grid, the label and the amount on one line, a share under the amount. Nothing is gold:
+   what a figure is built of has not reached the pocket. */
+.figure-list {
+    display: grid;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--netto-line);
+    list-style: none;
+}
+
+.figure {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.1rem 1rem;
+    padding: 0.45rem 0;
+    border-bottom: 1px solid var(--netto-line);
+    font-size: 0.92rem;
+}
+
+.figure__amount {
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    white-space: nowrap;
+}
+
+/* A line's share of what its card receives, under its amount, as small and muted as a drain's. */
+.figure__share {
+    grid-column: 2;
+    color: var(--netto-text-muted);
+    font-size: 0.75rem;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    white-space: nowrap;
+}
