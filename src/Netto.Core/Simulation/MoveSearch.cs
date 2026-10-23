@@ -75,10 +75,16 @@ public sealed record CopyrightRoyaltyMove(decimal Royalty) : Move
 }
 
 // The copyright royalty set to follow the pay: at each pay, what an advance ruling accepts for the
-// director's creative share there, so that a later move of the pay carries it along.
+// director's creative share there, so that a later move of the pay carries it along. A pay above the
+// largest the company pays together with that royalty (YearSimulation.PayCeiling) is held there, as the
+// river holds it, so the year the move leaves is one the company pays.
 public sealed record CopyrightFollowsPayMove : Move
 {
-    public override Scenario Apply(Scenario scenario) => scenario with { Copyright = scenario.Copyright with { FollowsPay = true } };
+    public override Scenario Apply(Scenario scenario)
+    {
+        var following = scenario with { Copyright = scenario.Copyright with { FollowsPay = true } };
+        return YearSimulation.PayCeiling(following) is { } ceiling && following.DirectorPay > ceiling ? following with { DirectorPay = ceiling } : following;
+    }
 }
 
 // A move in the plan with what it adds to the pocket on top of the moves before it.
@@ -277,7 +283,9 @@ internal sealed class CopyrightRoyaltyFinder : IMoveFinder, IMoveGuard
 // Letting the royalty follow the pay, once a ruling accepts some royalty at the pay (the share given, the
 // four previous years within the cap, a year with an envelope rate), when the royalty is fixed below what
 // it accepts there (CopyrightCalculator.Ceiling): never from a royalty at or above it, which is the
-// user's. Once it follows, the split's search weighs pay and royalty together, so no guard is needed.
+// user's. No guard is needed: the move holds the pay within what the company pays with its royalty, and
+// once the royalty follows, every pay a later move sets is one of the split's, within that same ceiling,
+// and carries the royalty with it.
 internal sealed class CopyrightFollowsPayFinder : IMoveFinder
 {
     public Move? Find(Scenario scenario) =>

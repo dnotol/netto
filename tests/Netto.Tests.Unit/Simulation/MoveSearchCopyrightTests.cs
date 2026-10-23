@@ -190,14 +190,36 @@ public class MoveSearchCopyrightTests
         plan.Moves.ShouldBe([new PlannedMove(new CopyrightFollowsPayMove(), Pocket(Following(Today)) - Pocket(Today))]);
     }
 
-    // The move lets the royalty follow the pay alone: the share, the statuses and the amount given stay
-    // the scenario's.
+    // The move lets the royalty follow the pay alone: the pay, the share, the statuses and the amount
+    // given stay the scenario's.
     [Fact]
     public void Apply_followMove_letsTheRoyaltyFollowThePayAndKeepsTheRest()
     {
         var holder = Today with { Copyright = Today.Copyright with { Royalty = 5_000m, HoldsAttestation = true } };
 
-        new CopyrightFollowsPayMove().Apply(holder).Copyright.ShouldBe(holder.Copyright with { FollowsPay = true });
+        new CopyrightFollowsPayMove().Apply(holder).ShouldBe(holder with { Copyright = holder.Copyright with { FollowsPay = true } });
+    }
+
+    // Above the largest pay the company pays together with what a ruling accepts beside it, 81,250 beside
+    // 18,750 of the 100,000, the move holds the pay there, as the river holds it.
+    [Fact]
+    public void Apply_followMoveAtAPayAboveThePayCeilingWithItsRoyalty_holdsThePayThere()
+    {
+        new CopyrightFollowsPayMove().Apply(Today with { DirectorPay = 90_000m }).DirectorPay.ShouldBe(81_250m);
+    }
+
+    // From 90,000 of pay, where what a ruling accepts would pay 110,769.23 out of 100,000, the plan's year
+    // is one the company pays, and the move's gain the difference of two such years.
+    [Fact]
+    public void Run_followFinderPayAboveThePayCeilingWithItsRoyalty_plansAYearTheCompanyPays()
+    {
+        var today = Today with { DirectorPay = 90_000m };
+
+        var plan = MoveSearch.Run(today, FollowOnly).Value.ShouldNotBeNull();
+        var final = Final(today, plan);
+
+        (final.DirectorPay, YearSimulation.Run(final).Value.ShouldNotBeNull().KeptInCompany >= 0m, plan.Moves.Sum(move => move.Gain), plan.Gain)
+            .ShouldBe((81_250m, true, plan.Gain, Pocket(final) - Pocket(today)));
     }
 
     [Fact]
@@ -271,11 +293,12 @@ public class MoveSearchCopyrightTests
         plan.PlanInPocket.ShouldBeGreaterThanOrEqualTo(Pocket(WithRoyalty(today with { DirectorPay = raisedPay }, raisedRoyalty)));
     }
 
-    // On a grid of companies, pays and shares, following the pay leaves at least what the raise to the
-    // ceiling with its guard leaves in the better of its two orders.
+    // On a grid of companies, pays and shares where the raise to the ceiling with its guard plans a year
+    // the company pays, following the pay leaves at least what that raise leaves in the better of its two
+    // orders.
     [Theory]
     [InlineData(70_000, 24_000, 0.5)]
-    [InlineData(70_000, 50_000, 1)]
+    [InlineData(70_000, 24_000, 1)]
     [InlineData(100_000, 24_000, 1)]
     [InlineData(100_000, 50_000, 0.5)]
     [InlineData(140_000, 24_000, 0.75)]
