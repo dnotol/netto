@@ -115,13 +115,16 @@ public class MovesViewTests
         MovesView.Of(today, On22October).TodayInPocket.ShouldBe(today.Run().Year.ShouldNotBeNull().NetInPocket);
     }
 
+    // The plan's pocket is what the river leaves once every move is applied to Today.
     [Theory]
     [MemberData(nameof(Todays))]
-    public void Of_today_endsOnTodaysPocketWithEveryMove(string _, RiverInputs today)
+    public void Of_today_endsOnThePocketOfTodayWithEveryMoveApplied(string _, RiverInputs today)
     {
         var view = MovesView.Of(today, On22October);
 
-        view.PlanInPocket.ShouldBe(view.TodayInPocket + view.Total);
+        var planned = view.Moves.Aggregate(today, (river, move) => view.Apply(move, river));
+
+        view.PlanInPocket.ShouldBe(planned.Run().Year.ShouldNotBeNull().NetInPocket);
     }
 
     // What the pocket holds after each move is Today's with the gains up to it: the last is the plan's.
