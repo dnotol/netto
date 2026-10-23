@@ -8,6 +8,21 @@ namespace Netto.Web.Client.Tabs;
 // OptimisationTab.resx fails a test instead of showing on screen.
 internal static class OptimisationTabText
 {
+    // The three figures the tab opens on: what Today leaves in the pocket, what it leaves with every move,
+    // and the difference.
+    public const string TodayInPocket = "Figure_Today";
+
+    public const string PlanInPocket = "Figure_Plan";
+
+    public const string MoreThanToday = "Figure_Gain";
+
+    // The star that marks Today's plan, inside TodayInPocket's text, drawn for the eye only: whoever
+    // translates the text keeps it.
+    public const string Star = "★";
+
+    // What the pocket holds once a move is taken, with the moves above it: « {0} in your pocket after it ».
+    public const string After = "After";
+
     // What the move changes, in words: « Pay yourself {0} instead of {1} ».
     public static string Move(Move move) => move switch
     {
