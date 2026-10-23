@@ -12,9 +12,10 @@ namespace Netto.Tests.WebClient.River.Copyright;
 // the royalty beside the pay: it receives the royalty and drains it.
 public class CopyrightViewTests
 {
-    private static readonly RiverInputs Within = RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithRoyalty(10_000m);
+    // The royalty fixtures CarAndRoyaltyCardsTests holds the card to as well.
+    internal static readonly RiverInputs Within = RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithRoyalty(10_000m);
 
-    private static readonly RiverInputs Beyond = RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithRoyalty(30_000m);
+    internal static readonly RiverInputs Beyond = RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithRoyalty(30_000m);
 
     // Added without a share, the royalty follows the pay and is none: nothing to drain, and no steps to
     // list.

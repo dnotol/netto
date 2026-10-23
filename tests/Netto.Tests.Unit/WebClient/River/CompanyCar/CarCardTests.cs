@@ -21,17 +21,19 @@ public class CarCardTests
 {
     private static readonly ResourceManager Resources = new("Netto.Web.Client.River.CompanyCar.CarCard", typeof(CarCard).Assembly);
 
-    private static readonly ResourceManager Refusals = new("Netto.Web.Client.River.RefusedMessage", typeof(RefusedMessage).Assembly);
+    // What the engine's refusals say, which CarAndRoyaltyCardsTests reads too.
+    internal static readonly ResourceManager Refusals = new("Netto.Web.Client.River.RefusedMessage", typeof(RefusedMessage).Assembly);
 
     // The field of what the same car would cost privately.
     private const string PrivateCost = "river-car-private-cost";
 
-    private static readonly RiverInputs ElectricCar = RiverInputs.Example.AddToPlan(OptionalModule.Car)
+    // The car fixtures CarAndRoyaltyCardsTests holds the card to as well.
+    internal static readonly RiverInputs ElectricCar = RiverInputs.Example.AddToPlan(OptionalModule.Car)
         .WithCatalogueValue(50_000m).WithFirstRegistration(new DateOnly(2026, 1, 10)).WithCarCosts(8_000m);
 
     // CarViewTests' petrol car leased in January 2026: 45,000 at 120 g/km, against the 2026 reference of
-    // 70 g/km for its fuel, 10.5%.
-    private static readonly RiverInputs PetrolCar = ElectricCar.WithCatalogueValue(45_000m).WithCarCosts(9_000m)
+    // 70 g/km for its fuel, 10.5%; its costs are not all deducted.
+    internal static readonly RiverInputs PetrolCar = ElectricCar.WithCatalogueValue(45_000m).WithCarCosts(9_000m)
         .WithCarEngine(CarEngine.Petrol).WithCarCo2(120).WithCarAcquired(new DateOnly(2026, 1, 5));
 
     // The benefit and what the company does with the costs, then the plan with the car against the same
@@ -83,7 +85,7 @@ public class CarCardTests
     [MemberData(nameof(Rules))]
     public async Task Card_detailsOpen_stateTheRuleWordForWordAboveTheSources(string _, RiverInputs inputs, string rule)
     {
-        var details = Details(await RenderDetailsOpenAsync(inputs));
+        var details = Details(await RenderDetailsOpenAsync(typeof(CarCard), OptionalModule.Car, inputs));
         var folded = await RenderOpenAsync<CarCard>(OptionalModule.Car, inputs);
 
         (CardHtml.Prose(details).Contains(rule), details.IndexOf(rule, StringComparison.Ordinal) < details.IndexOf("car__sources", StringComparison.Ordinal),
@@ -173,7 +175,8 @@ public class CarCardTests
 
     private static readonly ResourceManager DrainTexts = new("Netto.Web.Client.River.DrainList", typeof(DrainList).Assembly);
 
-    private static string Drains(string key) => DrainTexts.GetString(key, CultureInfo.InvariantCulture) ?? key;
+    // A drain list's text, which CarAndRoyaltyCardsTests reads too.
+    internal static string Drains(string key) => DrainTexts.GetString(key, CultureInfo.InvariantCulture) ?? key;
 
     // What the bubble after that label says, as a screen reader hears it.
     private static string Bubble(string html, string label) =>
@@ -183,14 +186,4 @@ public class CarCardTests
     // The card's details, from their fold's body on.
     private static string Details(string html) =>
         html[html.IndexOf("module-card__detail", StringComparison.Ordinal)..];
-
-    // The card opened by the viewer with its details, « Where these figures come from ».
-    private static async Task<string> RenderDetailsOpenAsync(RiverInputs inputs)
-    {
-        var folds = new Folds(new BrowserStorage());
-        folds.Set(ModuleFolds.Name(OptionalModule.Car), true);
-        folds.Set($"{ModuleFolds.Name(OptionalModule.Car)}-details", true);
-
-        return WebUtility.HtmlDecode(await RenderAsync<CarCard>(folds, new() { ["Inputs"] = inputs, ["Run"] = inputs.Run(), ["Refused"] = null }));
-    }
 }

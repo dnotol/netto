@@ -50,13 +50,27 @@ internal static class RiverRendering
 
     // A lever's card opened by the viewer, drawn on its inputs' own run, its HTML decoded to the text a
     // viewer reads.
-    public static async Task<string> RenderOpenAsync<TCard>(OptionalModule module, RiverInputs inputs)
-        where TCard : IComponent
+    public static Task<string> RenderOpenAsync<TCard>(OptionalModule module, RiverInputs inputs)
+        where TCard : IComponent =>
+        RenderOpenAsync(typeof(TCard), module, inputs);
+
+    // The same, for a card a theory gives by its type.
+    public static async Task<string> RenderOpenAsync(Type card, OptionalModule module, RiverInputs inputs)
     {
         var folds = new Folds(new BrowserStorage());
         folds.Set(ModuleFolds.Name(module), true);
 
-        return WebUtility.HtmlDecode(await RenderAsync<TCard>(folds, new() { ["Inputs"] = inputs, ["Run"] = inputs.Run(), ["Refused"] = null }));
+        return WebUtility.HtmlDecode(await RenderAsync(card, folds, new() { ["Inputs"] = inputs, ["Run"] = inputs.Run(), ["Refused"] = null }));
+    }
+
+    // A lever's card opened by the viewer with its details, « Where these figures come from », open too.
+    public static async Task<string> RenderDetailsOpenAsync(Type card, OptionalModule module, RiverInputs inputs)
+    {
+        var folds = new Folds(new BrowserStorage());
+        folds.Set(ModuleFolds.Name(module), true);
+        folds.Set($"{ModuleFolds.Name(module)}-details", true);
+
+        return WebUtility.HtmlDecode(await RenderAsync(card, folds, new() { ["Inputs"] = inputs, ["Run"] = inputs.Run(), ["Refused"] = null }));
     }
 
     // From a field's label to its input: its name, its help and the origin beside them, if any.

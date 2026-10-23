@@ -3,6 +3,8 @@ using System.Net;
 using System.Resources;
 using System.Text.RegularExpressions;
 using Netto.Core.CompanyCar;
+using Netto.Tests.WebClient.River.CompanyCar;
+using Netto.Tests.WebClient.River.Copyright;
 using Netto.Web.Client;
 using Netto.Web.Client.River;
 using Netto.Web.Client.River.CompanyCar;
@@ -27,24 +29,7 @@ public class CarAndRoyaltyCardsTests
         .WithCatalogueValue(50_000m).WithFirstRegistration(new DateOnly(2026, 1, 10)).WithCarCosts(8_000m)
         .WithCreativeShare(0.5m);
 
-    private static readonly RiverInputs ElectricCar = RiverInputs.Example.AddToPlan(OptionalModule.Car)
-        .WithCatalogueValue(50_000m).WithFirstRegistration(new DateOnly(2026, 1, 10)).WithCarCosts(8_000m);
-
-    // CarViewTests' petrol car leased in January 2026, whose costs the company cannot deduct in full.
-    private static readonly RiverInputs PetrolCar = ElectricCar.WithCatalogueValue(45_000m).WithCarCosts(9_000m)
-        .WithCarEngine(CarEngine.Petrol).WithCarCo2(120).WithCarAcquired(new DateOnly(2026, 1, 5));
-
-    // CopyrightViewTests' royalties beside the example's 50,000 of pay: 10,000 stays within 30% of 60,000,
-    // 30,000 passes 30% of 80,000 by 6,000.
-    private static readonly RiverInputs Within = RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithRoyalty(10_000m);
-
-    private static readonly RiverInputs Beyond = RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithRoyalty(30_000m);
-
     private static readonly ResourceManager RoyaltyTexts = new("Netto.Web.Client.River.Copyright.CopyrightCard", typeof(CopyrightCard).Assembly);
-
-    private static readonly ResourceManager DrainTexts = new("Netto.Web.Client.River.DrainList", typeof(DrainList).Assembly);
-
-    private static readonly ResourceManager RefusalTexts = new("Netto.Web.Client.River.RefusedMessage", typeof(RefusedMessage).Assembly);
 
     // Each card's words in sight on the filled plan, every card open, before the story's cut, as the static
     // render counts them (the browser counted 294 on the car's and 420 on the royalty's).
@@ -60,16 +45,18 @@ public class CarAndRoyaltyCardsTests
     }
 
     // Every way each card's summary reads: a car not given yet, a car, a car with the royalty in the plan;
-    // no royalty yet, a royalty within its limits, one beyond them, and one all taxed as pay.
+    // no royalty yet, a royalty within its limits, one beyond them, and one all taxed as pay. The cars are
+    // CarCardTests', the royalties CopyrightViewTests' beside the example's 50,000 of pay: 10,000 within 30%
+    // of 60,000, and 30,000 beyond 30% of 80,000 by 6,000.
     public static TheoryData<string, Type, OptionalModule, RiverInputs> Summaries => new()
     {
         { "no car yet", typeof(CarCard), OptionalModule.Car, RiverInputs.Example.AddToPlan(OptionalModule.Car) },
-        { "a car", typeof(CarCard), OptionalModule.Car, ElectricCar },
-        { "a car and a royalty", typeof(CarCard), OptionalModule.Car, ElectricCar.AddToPlan(OptionalModule.Copyright).WithRoyalty(10_000m) },
+        { "a car", typeof(CarCard), OptionalModule.Car, CarCardTests.ElectricCar },
+        { "a car and a royalty", typeof(CarCard), OptionalModule.Car, CarCardTests.ElectricCar.AddToPlan(OptionalModule.Copyright).WithRoyalty(10_000m) },
         { "no royalty yet", typeof(CopyrightCard), OptionalModule.Copyright, RiverInputs.Example.AddToPlan(OptionalModule.Copyright) },
-        { "a royalty within its limits", typeof(CopyrightCard), OptionalModule.Copyright, Within },
-        { "a royalty beyond its limits", typeof(CopyrightCard), OptionalModule.Copyright, Beyond },
-        { "a royalty all taxed as pay", typeof(CopyrightCard), OptionalModule.Copyright, Within.WithAverageWithinCap(false) },
+        { "a royalty within its limits", typeof(CopyrightCard), OptionalModule.Copyright, CopyrightViewTests.Within },
+        { "a royalty beyond its limits", typeof(CopyrightCard), OptionalModule.Copyright, CopyrightViewTests.Beyond },
+        { "a royalty all taxed as pay", typeof(CopyrightCard), OptionalModule.Copyright, CopyrightViewTests.Within.WithAverageWithinCap(false) },
     };
 
     // Figures with their labels: once its amounts are taken out, no punctuation a sentence would hold, and
@@ -83,7 +70,7 @@ public class CarAndRoyaltyCardsTests
 
         labels.ShouldSatisfyAllConditions(
             () => labels.ShouldNotMatch("[.,:;?]"),
-            () => labels.Split('·').Select(Words).ShouldAllBe(words => words <= 5));
+            () => labels.Split('·').Select(segment => CardHtml.VisibleWords(segment).Count).ShouldAllBe(words => words <= 5));
     }
 
     // The plans each card is held to: the electric car, a petrol car whose costs are not all deducted, with a
@@ -92,14 +79,14 @@ public class CarAndRoyaltyCardsTests
     // attestation, one all taxed as pay, and one following the pay.
     public static TheoryData<string, Type, OptionalModule, RiverInputs> Plans => new()
     {
-        { "an electric car", typeof(CarCard), OptionalModule.Car, ElectricCar },
-        { "a petrol car with a contribution and a private cost", typeof(CarCard), OptionalModule.Car, PetrolCar.WithCarContribution(600m).WithCarPrivateCost(10_000m) },
-        { "a car at the minimum", typeof(CarCard), OptionalModule.Car, ElectricCar.WithCatalogueValue(30_000m).WithCarPrivateCost(1_000m) },
-        { "a diesel at the highest percentage", typeof(CarCard), OptionalModule.Car, PetrolCar.WithCarEngine(CarEngine.Diesel).WithCarCo2(250).WithPrivateEnergyPaid(true) },
-        { "a royalty within its limits", typeof(CopyrightCard), OptionalModule.Copyright, Within },
-        { "a royalty beyond its limits", typeof(CopyrightCard), OptionalModule.Copyright, Beyond },
-        { "a royalty with an attestation", typeof(CopyrightCard), OptionalModule.Copyright, Within.WithAttestation(true) },
-        { "a royalty all taxed as pay", typeof(CopyrightCard), OptionalModule.Copyright, Within.WithAverageWithinCap(false) },
+        { "an electric car", typeof(CarCard), OptionalModule.Car, CarCardTests.ElectricCar },
+        { "a petrol car with a contribution and a private cost", typeof(CarCard), OptionalModule.Car, CarCardTests.PetrolCar.WithCarContribution(600m).WithCarPrivateCost(10_000m) },
+        { "a car at the minimum", typeof(CarCard), OptionalModule.Car, CarCardTests.ElectricCar.WithCatalogueValue(30_000m).WithCarPrivateCost(1_000m) },
+        { "a diesel at the highest percentage", typeof(CarCard), OptionalModule.Car, CarCardTests.PetrolCar.WithCarEngine(CarEngine.Diesel).WithCarCo2(250).WithPrivateEnergyPaid(true) },
+        { "a royalty within its limits", typeof(CopyrightCard), OptionalModule.Copyright, CopyrightViewTests.Within },
+        { "a royalty beyond its limits", typeof(CopyrightCard), OptionalModule.Copyright, CopyrightViewTests.Beyond },
+        { "a royalty with an attestation", typeof(CopyrightCard), OptionalModule.Copyright, CopyrightViewTests.Within.WithAttestation(true) },
+        { "a royalty all taxed as pay", typeof(CopyrightCard), OptionalModule.Copyright, CopyrightViewTests.Within.WithAverageWithinCap(false) },
         { "a royalty following the pay", typeof(CopyrightCard), OptionalModule.Copyright, RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithCreativeShare(0.5m) },
     };
 
@@ -126,7 +113,7 @@ public class CarAndRoyaltyCardsTests
     // card's alert (RefusedMessage), the field keeping its own copy out of sight for a screen reader.
     public static TheoryData<string, Type, RiverInputs> Refusals => new()
     {
-        { "a negative catalogue value", typeof(CarCard), ElectricCar.WithCatalogueValue(-1m) },
+        { "a negative catalogue value", typeof(CarCard), CarCardTests.ElectricCar.WithCatalogueValue(-1m) },
         { "a creative share above all of the time", typeof(CopyrightCard), RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithCreativeShare(1.5m) },
     };
 
@@ -139,7 +126,7 @@ public class CarAndRoyaltyCardsTests
 
         var html = await RenderAsync(card, new Folds(new BrowserStorage()), new() { ["Inputs"] = inputs, ["Run"] = run, ["Refused"] = error });
 
-        Alerts(html).ShouldBe([RefusalTexts.GetString($"Error_{error}", CultureInfo.InvariantCulture) ?? error]);
+        Alerts(html).ShouldBe([CarCardTests.Refusals.GetString($"Error_{error}", CultureInfo.InvariantCulture) ?? error]);
     }
 
     [Fact]
@@ -156,9 +143,9 @@ public class CarAndRoyaltyCardsTests
     [Fact]
     public async Task RoyaltyCard_withinItsLimits_drawsItsFiguresThenThePlanWithAndWithoutItThenWhereItGoes()
     {
-        var html = await RenderOpenAsync(typeof(CopyrightCard), OptionalModule.Copyright, Within);
-        var comparison = CopyrightComparison.From(Within, Within.Run()).ShouldNotBeNull();
-        var drains = DrainLines.Shown(CopyrightView.From(Within.Run().Year.ShouldNotBeNull()).Drains);
+        var html = await RenderOpenAsync(typeof(CopyrightCard), OptionalModule.Copyright, CopyrightViewTests.Within);
+        var comparison = CopyrightComparison.From(CopyrightViewTests.Within, CopyrightViewTests.Within.Run()).ShouldNotBeNull();
+        var drains = DrainLines.Shown(CopyrightView.From(CopyrightViewTests.Within.Run().Year.ShouldNotBeNull()).Drains);
 
         html.ShouldSatisfyAllConditions(
             () => CardHtml.Lines(html).Take(10).ShouldBe(
@@ -174,7 +161,7 @@ public class CarAndRoyaltyCardsTests
                 (Royalty("Figure_TaxesOnProfit"), Formats.Euros(comparison.TaxesOnProfitWithout), null),
                 (Royalty("Figure_Gain_More"), Formats.Euros(comparison.Gain), null),
             ]),
-            () => CardHtml.Lines(html).Skip(10).Select(line => line.Label).ShouldBe(drains.Select(drain => Drain(DrainListText.Drain(drain.Key)))),
+            () => CardHtml.Lines(html).Skip(10).Select(line => line.Label).ShouldBe(drains.Select(drain => CarCardTests.Drains(DrainListText.Drain(drain.Key)))),
             () => CardHtml.Prose(html).ShouldContain("Within 30% of it and your gross pay, €18,000.00, and the cap."));
     }
 
@@ -186,8 +173,8 @@ public class CarAndRoyaltyCardsTests
         // The 2026 minimum director pay that keeps the reduced corporate rate.
         var readings = Royalty("Readings", "€51,000.00");
 
-        var details = await RenderDetailsOpenAsync(typeof(CopyrightCard), OptionalModule.Copyright, Within);
-        var folded = await RenderOpenAsync(typeof(CopyrightCard), OptionalModule.Copyright, Within);
+        var details = await RenderDetailsOpenAsync(typeof(CopyrightCard), OptionalModule.Copyright, CopyrightViewTests.Within);
+        var folded = await RenderOpenAsync(typeof(CopyrightCard), OptionalModule.Copyright, CopyrightViewTests.Within);
 
         (CardHtml.Prose(details).Contains(readings), details.IndexOf(readings, StringComparison.Ordinal) < details.IndexOf("copyright__sources", StringComparison.Ordinal),
                 CardHtml.Prose(folded).Contains(readings))
@@ -199,12 +186,8 @@ public class CarAndRoyaltyCardsTests
 
     private static string Unsigned(string amount) => amount.TrimStart('−', '+', '-');
 
-    private static int Words(string text) => Regex.Split(text, "\\s+").Count(word => word.Any(char.IsLetterOrDigit));
-
     private static string Royalty(string key, params object[] figures) =>
         string.Format(CultureInfo.InvariantCulture, RoyaltyTexts.GetString(key, CultureInfo.InvariantCulture) ?? key, figures);
-
-    private static string Drain(string key) => DrainTexts.GetString(key, CultureInfo.InvariantCulture) ?? key;
 
     // What each refusal alert of the card says.
     private static List<string> Alerts(string html) =>
@@ -212,24 +195,4 @@ public class CarAndRoyaltyCardsTests
         .. Regex.Matches(html, "class=\"[^\"]*\\brefused-message\\b[^\"]*\">.*?<div class=\"mud-alert-message\">(.*?)</div>", RegexOptions.Singleline)
             .Select(alert => WebUtility.HtmlDecode(alert.Groups[1].Value)),
     ];
-
-    // A lever's card opened by the viewer, on its inputs' own run.
-    private static Task<string> RenderOpenAsync(Type card, OptionalModule module, RiverInputs inputs)
-    {
-        var folds = new Folds(new BrowserStorage());
-        folds.Set(ModuleFolds.Name(module), true);
-
-        return RenderAsync(card, folds, new() { ["Inputs"] = inputs, ["Run"] = inputs.Run(), ["Refused"] = null });
-    }
-
-    // A lever's card opened by the viewer with its details, « Where these figures come from », its text
-    // decoded.
-    private static async Task<string> RenderDetailsOpenAsync(Type card, OptionalModule module, RiverInputs inputs)
-    {
-        var folds = new Folds(new BrowserStorage());
-        folds.Set(ModuleFolds.Name(module), true);
-        folds.Set($"{ModuleFolds.Name(module)}-details", true);
-
-        return WebUtility.HtmlDecode(await RenderAsync(card, folds, new() { ["Inputs"] = inputs, ["Run"] = inputs.Run(), ["Refused"] = null }));
-    }
 }
