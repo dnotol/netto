@@ -2,14 +2,15 @@
 @using Netto.Web.Client.Steps
 @inject IStringLocalizer<CorporateTaxCard> L
 
-@* Corporate tax on the company's profit after pay, with what it cannot deduct of the vouchers added
-   back, at 25% or 20% on its first slice, and the surcharge the advance payments leave on it. The
-   user declares what Netto cannot see, the company's financial year among it; the engine tests the
-   minimum pay, set on the split, and the card says which condition decided the rate. What the user
-   rarely changes sits behind two disclosures, each folded to a line that states it: the company,
-   and its advance payments with the surcharge they leave. The payments are taken while typing,
-   like revenue, since nothing bounds them, and the card says what more by the last deadline
-   cancels the surcharge. *@
+@* Corporate tax on the company's profit after pay, at 25% or 20% on its first slice, and the
+   surcharge the advance payments leave on it. Its figures come first, as one list: what its taxable
+   income adds back to that profit (CorporateTaxFigures), then where the profit goes (DrainList).
+   The user declares what Netto cannot see, the company's financial year among it; the engine tests
+   the minimum pay, set on the split, and a sentence after the lines says which condition decided
+   the rate, with the figures of that test no line shows. What the user rarely changes sits behind
+   two disclosures after it, each folded to a line that states it: the company, and its advance
+   payments with the surcharge they leave. The payments are taken while typing, like revenue, since
+   nothing bounds them, and the card says what more by the last deadline cancels the surcharge. *@
 <ModuleCard Name="corporate-tax" Title="@L["Title"]" Summary="@Summary" Glance="@Glance" PassesOn="@_view?.PassesOn" Skipped="Inputs.Company is null" Refused="@Refused" Details="@Details"
             DetailsLabel="@L["DetailsLabel"]">
     @if (Inputs.Company is null)
@@ -18,14 +19,28 @@
     }
     else
     {
+        <RefusedMessage Error="@Refused" />
+        @if (_view is not null)
+        {
+            <div class="corporate-tax__lines">
+                <FigureList Figures="@FigureWords.Of(L, CorporateTaxFigures.Of(_view))" />
+                <DrainList Drains="_view.Drains" />
+            </div>
+            <p class="corporate-tax__condition">
+                @(_view.NoTaxableProfit
+                    ? L["NoTaxableProfit"]
+                    : L[CorporateTaxCardText.Condition(_view.Condition, _view.FlatRateBenefits > 0m), Formats.Euros(_view.MinimumDirectorPay), Formats.Euros(_view.FlatRateBenefits),
+                        Formats.WholeShare(_view.ExcessBenefitsShare), Formats.Euros(_view.DirectorPay)])
+            </p>
+        }
         <Disclosure Title="@L["CompanyTitle"]" Values="@Values(_settings.Company)">
-            <div class="corporate-tax__statuses">
-                <div class="corporate-tax__status">
+            <div class="corporate-tax__status">
+                <span class="corporate-tax__choice">
                     <MudCheckBox T="bool" Value="Inputs.SmallCompany.Value" ValueChanged="OnSmallCompanyChanged" Color="Color.Primary"
                                  Label="@L["SmallCompanyLabel"]" />
-                    <OriginChip Origin="Inputs.SmallCompany.Origin" />
-                </div>
-                <p class="corporate-tax__hint">@L["SmallCompanyHint"]</p>
+                    <InfoBubble Label="@L["SmallCompanyLabel"]">@L["SmallCompanyHint"]</InfoBubble>
+                </span>
+                <OriginChip Origin="Inputs.SmallCompany.Origin" />
             </div>
             <RiverField Label="@L["FinancialYearLabel", Inputs.IncomeYear]" Origin="Inputs.FinancialYear.Origin" Help="@L["FinancialYearHint"]">
                 <div class="corporate-tax__years">
@@ -40,20 +55,6 @@
                 </div>
             </RiverField>
         </Disclosure>
-        @if (_view is { DisallowedExpenses: > 0m } addedBack)
-        {
-            <p class="corporate-tax__condition">@L[CorporateTaxCardText.Disallowed(addedBack), Formats.Euros(addedBack.TaxableIncome), Formats.Euros(addedBack.DisallowedVouchers),
-                Formats.Euros(addedBack.CarAddBack), Formats.Euros(addedBack.CarCostsNotDeductible)]</p>
-        }
-        @if (_view is not null)
-        {
-            <p class="corporate-tax__condition">
-                @(_view.NoTaxableProfit
-                    ? L["NoTaxableProfit"]
-                    : L[CorporateTaxCardText.Condition(_view.Condition, _view.FlatRateBenefits > 0m), Formats.Euros(_view.MinimumDirectorPay), Formats.Euros(_view.FlatRateBenefits),
-                        Formats.WholeShare(_view.ExcessBenefitsShare), Formats.Euros(_view.DirectorPay)])
-            </p>
-        }
         <Disclosure Title="@L["PaymentsTitle"]" Values="@Values(_settings.Payments)" Refused="@CorporateTaxSettingsView.PaymentsHold(Refused)"
                     Help="@L["PaymentsHint"]">
             <div class="corporate-tax__deadlines">
@@ -75,11 +76,6 @@
                 </p>
             }
         </Disclosure>
-        <RefusedMessage Error="@Refused" />
-        @if (_view is not null)
-        {
-            <DrainList Drains="_view.Drains" />
-        }
     }
 </ModuleCard>
 

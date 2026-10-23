@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Resources;
+using Netto.Core.CompanyCar;
 using Netto.Core.CorporateTax;
 using Netto.Web.Client.River;
 using Shouldly;
@@ -21,11 +22,17 @@ public class CorporateTaxCardTextTests
         Missing(keys).ShouldBeEmpty();
     }
 
+    // Every label and bubble of what the taxable income adds back: the vouchers, a fuel car's costs the
+    // company cannot deduct and the share of its benefit, beside the taxable income.
     [Fact]
-    public void CorporateTaxCardResx_everyAddBackSentence_hasAText()
+    public void CorporateTaxCardResx_everyLabelAndBubbleOfItsLines_hasAText()
     {
-        Missing(["Disallowed", "Disallowed_Car", "Disallowed_VouchersAndCar", "Disallowed_CarCosts", "Disallowed_VouchersAndCarCosts"])
-            .ShouldBeEmpty();
+        var inputs = RiverInputs.Example.AddToPlan(OptionalModule.Vouchers).WithEcoVouchers(250m)
+            .AddToPlan(OptionalModule.Car).WithCatalogueValue(45_000m).WithFirstRegistration(new DateOnly(2026, 1, 10)).WithCarCosts(9_000m)
+            .WithCarEngine(CarEngine.Petrol).WithCarCo2(120).WithCarAcquired(new DateOnly(2026, 1, 5));
+        var lines = CorporateTaxFigures.Of(CorporateTaxView.From(inputs.Run().Year.ShouldNotBeNull()));
+
+        Missing(lines.SelectMany(line => new[] { line.Key, line.Help }).OfType<string>()).ShouldBeEmpty();
     }
 
     // With benefits in kind, the conditions the pay decides say the benefits are counted in it; the

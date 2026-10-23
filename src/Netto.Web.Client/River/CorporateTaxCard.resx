@@ -18,6 +18,27 @@
   <data name="Summary" xml:space="preserve">
     <value>{0} of profit · {1} left after tax</value>
   </data>
+  <data name="Figure_TaxableIncome" xml:space="preserve">
+    <value>Taxable income</value>
+  </data>
+  <data name="Figure_AddedBackVouchers" xml:space="preserve">
+    <value>Added back: vouchers</value>
+  </data>
+  <data name="Help_AddedBackVouchers" xml:space="preserve">
+    <value>The vouchers the company cannot deduct are added back to its profit.</value>
+  </data>
+  <data name="Figure_AddedBackCarCosts" xml:space="preserve">
+    <value>Added back: car costs</value>
+  </data>
+  <data name="Help_AddedBackCarCosts" xml:space="preserve">
+    <value>Your company car's costs the company cannot deduct are added back to its profit.</value>
+  </data>
+  <data name="Figure_AddedBackCarBenefit" xml:space="preserve">
+    <value>Added back: car benefit</value>
+  </data>
+  <data name="Help_AddedBackCarBenefit" xml:space="preserve">
+    <value>A share of your company car's benefit is added back to its profit.</value>
+  </data>
   <data name="Waiting" xml:space="preserve">
     <value>Waiting for the company's year.</value>
   </data>
@@ -28,34 +49,34 @@
     <value>Small under the Companies Code, holding no shares worth more than half its capital, and not owned half or more by other companies.</value>
   </data>
   <data name="Condition_NotSmallCompany" xml:space="preserve">
-    <value>Standard rate on all of it: the reduced rate is only for a small company that its shareholdings and shareholders do not exclude.</value>
+    <value>Standard rate: the reduced rate is only for a small company.</value>
   </data>
   <data name="Condition_FirstFourTaxPeriods" xml:space="preserve">
-    <value>Reduced rate kept: in its first four tax periods, the company needs no minimum director pay.</value>
+    <value>Reduced rate kept: in its first four tax periods, no minimum pay is needed.</value>
   </data>
   <data name="Condition_FirstFourTaxPeriods_WithBenefits" xml:space="preserve">
-    <value>Reduced rate kept: in its first four tax periods, the company needs no minimum director pay, and your benefits in kind, {1}, stay within {2} of your total pay of {3}.</value>
+    <value>Reduced rate kept: no minimum pay in its first four tax periods; benefits within {2}.</value>
   </data>
   <data name="Condition_MinimumPayMet" xml:space="preserve">
-    <value>Reduced rate kept by your pay: it reaches the minimum of {0}.</value>
+    <value>Reduced rate kept: your pay reaches the {0} minimum.</value>
   </data>
   <data name="Condition_MinimumPayMet_WithBenefits" xml:space="preserve">
-    <value>Reduced rate kept by your pay: with your benefits in kind, {3}, it reaches the minimum of {0}, and the benefits, {1}, stay within {2} of it.</value>
+    <value>Reduced rate kept: your pay with benefits reaches the {0} minimum; benefits within {2}.</value>
   </data>
   <data name="Condition_TaxableIncomeNotAbovePay" xml:space="preserve">
-    <value>Reduced rate kept by your pay: it is under the minimum of {0}, but the company's taxable income does not exceed it.</value>
+    <value>Reduced rate kept: your pay, under the {0} minimum, covers the taxable income.</value>
   </data>
   <data name="Condition_TaxableIncomeNotAbovePay_WithBenefits" xml:space="preserve">
-    <value>Reduced rate kept by your pay: with your benefits in kind, {3}, it is under the minimum of {0}, but the company's taxable income does not exceed it, and the benefits, {1}, stay within {2} of it.</value>
+    <value>Reduced rate kept: your pay, under the {0} minimum, covers taxable income; benefits within {2}.</value>
   </data>
   <data name="Condition_MinimumPayNotMet" xml:space="preserve">
-    <value>Standard rate on all of it, set by your pay: it is under the minimum of {0} and the company's taxable income exceeds it.</value>
+    <value>Standard rate: your pay is under the {0} minimum and the taxable income.</value>
   </data>
   <data name="Condition_MinimumPayNotMet_WithBenefits" xml:space="preserve">
-    <value>Standard rate on all of it, set by your pay: with your benefits in kind, {3}, it is under the minimum of {0} and the company's taxable income exceeds it.</value>
+    <value>Standard rate: your pay with benefits is under the {0} minimum and the taxable income.</value>
   </data>
   <data name="Condition_ExcessBenefits" xml:space="preserve">
-    <value>Standard rate on all of it, set by your benefits in kind: at {1}, they are more than {2} of your total pay of {3}, the benefits counted.</value>
+    <value>Standard rate: your benefits in kind, {1}, exceed {2} of your pay with them.</value>
   </data>
   <data name="NoTaxableProfit" xml:space="preserve">
     <value>No taxable profit: no corporate tax, and no dividend this year.</value>
@@ -97,7 +118,7 @@
     <value>By {0}</value>
   </data>
   <data name="Surcharge_Exempt" xml:space="preserve">
-    <value>No surcharge: a small company owes none on the tax of its first three financial years.</value>
+    <value>No surcharge in a small company's first three financial years.</value>
   </data>
   <data name="Surcharge_NoTax" xml:space="preserve">
     <value>No corporate tax, so no surcharge.</value>
@@ -106,22 +127,7 @@
     <value>No surcharge: the advance payments cover it.</value>
   </data>
   <data name="Surcharge_Due" xml:space="preserve">
-    <value>A surcharge of {0} is left: {1} more by {2} cancels it.</value>
-  </data>
-  <data name="Disallowed" xml:space="preserve">
-    <value>Taxable income {0}: the {1} of vouchers the company cannot deduct are added back to its profit.</value>
-  </data>
-  <data name="Disallowed_Car" xml:space="preserve">
-    <value>Taxable income {0}: {2} of your company car's benefit is added back to its profit.</value>
-  </data>
-  <data name="Disallowed_VouchersAndCar" xml:space="preserve">
-    <value>Taxable income {0}: the {1} of vouchers the company cannot deduct and {2} of your company car's benefit are added back to its profit.</value>
-  </data>
-  <data name="Disallowed_CarCosts" xml:space="preserve">
-    <value>Taxable income {0}: the {3} of your company car's costs the company cannot deduct and {2} of its benefit are added back to its profit.</value>
-  </data>
-  <data name="Disallowed_VouchersAndCarCosts" xml:space="preserve">
-    <value>Taxable income {0}: the {1} of vouchers the company cannot deduct, the {3} of your company car's costs it cannot deduct and {2} of the car's benefit are added back to its profit.</value>
+    <value>{1} more by {2} cancels the surcharge.</value>
   </data>
   <data name="CompanyTitle" xml:space="preserve">
     <value>Your company</value>
@@ -154,7 +160,7 @@
     <value>{0} paid in advance</value>
   </data>
   <data name="Payments_Surcharge" xml:space="preserve">
-    <value>a surcharge of {0} is left</value>
+    <value>a surcharge is left</value>
   </data>
   <data name="Payments_NoSurcharge" xml:space="preserve">
     <value>no surcharge</value>

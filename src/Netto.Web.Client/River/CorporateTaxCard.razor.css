@@ -1,28 +1,45 @@
-/* ::deep reaches the MudCheckBox and the MudChipSet's chips, which carry no scope attribute of their own. */
-.corporate-tax__waiting,
-.corporate-tax__hint {
+/* ::deep reaches the MudCheckBox and the MudChipSet's chips, which carry no scope attribute of their
+   own, and the lists of the card's figures (FigureList, DrainList). */
+.corporate-tax__waiting {
     margin: 0;
     color: var(--netto-text-muted);
     line-height: 1.55;
 }
 
-.corporate-tax__hint {
-    margin: -0.4rem 0 0 2.1rem;
-    font-size: 0.82rem;
-}
-
-.corporate-tax__statuses {
+/* What the taxable income adds back and where the profit goes read as one list: the block draws the
+   rule over its first line, and the lists inside draw none of their own. */
+.corporate-tax__lines {
     display: grid;
-    gap: 0.6rem;
+    border-top: 1px solid var(--netto-line);
 }
 
-/* The checkbox takes the row, its origin sits at the end of the first line. */
+    .corporate-tax__lines ::deep .figure-list,
+    .corporate-tax__lines ::deep .drain-list {
+        border-top: 0;
+    }
+
+/* The checkbox and the bubble saying what a small company is take the row, its origin sits at the
+   end of the first line. */
 .corporate-tax__status {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: start;
     gap: 0.5rem;
 }
+
+/* The bubble's (i) sits after the checkbox's label, on its first line, outside the label so that it
+   is no part of what a click on the label does. */
+.corporate-tax__choice {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.25rem;
+    min-width: 0;
+}
+
+    .corporate-tax__choice ::deep .info-bubble {
+        flex: none;
+        margin-top: 0.6rem;
+    }
 
     .corporate-tax__status ::deep .mud-checkbox {
         align-items: flex-start;
@@ -38,7 +55,8 @@
         margin-top: 0.7rem;
     }
 
-/* A condition set elsewhere, shown where it acts: a quiet rule on the left, not a colour. */
+/* Which condition decided the rate, under the card's lines, and what the advance payments leave: a
+   quiet rule on the left, not a colour. */
 .corporate-tax__condition {
     margin: 0;
     padding-left: 0.75rem;

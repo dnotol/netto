@@ -36,7 +36,7 @@ public class StreamCardsFiguresTests
     // An amount as the page draws it, in euros, signed or not, or as a share.
     private static readonly Regex Amount = new(@"[−+]?€[0-9][0-9,]*(?:\.[0-9]+)?|[0-9]+(?:\.[0-9]+)?%");
 
-    public static TheoryData<string> Cards => new() { "split", "director-pay" };
+    public static TheoryData<string> Cards => new() { "split", "director-pay", "corporate-tax" };
 
     // A card's summary is its figures, each with the few words that label it, and no sentence.
     [Theory]
@@ -56,6 +56,7 @@ public class StreamCardsFiguresTests
     {
         { "filled", "split" }, { "example", "split" },
         { "filled", "director-pay" }, { "example", "director-pay" }, { "nothing withheld", "director-pay" }, { "bonus", "director-pay" },
+        { "filled", "corporate-tax" }, { "example", "corporate-tax" },
     };
 
     [Theory]
@@ -69,10 +70,10 @@ public class StreamCardsFiguresTests
     }
 
     // The words in sight the static render counted on the filled plan before the story, and the most a
-    // card now draws: 60% of them for the split; Director pay keeps its drain lines, its summary and the
-    // lines of its settings, which hold more than half of what it drew, and is held to what it draws
-    // once its sentences are lines.
-    public static TheoryData<string, int, int> Words => new() { { "split", 197, 118 }, { "director-pay", 131, 110 } };
+    // card now draws: 60% of them for the split; Director pay and Corporate tax keep their drain lines,
+    // their summaries and the lines of their settings, which hold most of what they drew, and are held
+    // to what they draw once their sentences are lines.
+    public static TheoryData<string, int, int> Words => new() { { "split", 197, 118 }, { "director-pay", 131, 110 }, { "corporate-tax", 125, 98 } };
 
     [Theory]
     [MemberData(nameof(Words))]
@@ -197,6 +198,30 @@ public class StreamCardsFiguresTests
 
         (html.Contains("Use the pay slip's amount", StringComparison.Ordinal), CardHtml.Prose(html).Any(paragraph => paragraph.Contains("replaces the pay slip", StringComparison.Ordinal)))
             .ShouldBe((true, false));
+    }
+
+    // What the taxable income adds back to the profit the split leaves the company, then where that
+    // profit goes, each drain out of it.
+    [Fact]
+    public async Task CorporateTax_filledPlan_drawsWhatItAddsBackThenWhereTheProfitGoes()
+    {
+        CardHtml.Lines(await CardAsync("corporate-tax")).ShouldBe(
+        [
+            ("Taxable income", "€31,808.58", null),
+            ("Added back: vouchers", "€1,430.20", null),
+            ("Added back: car benefit", "€291.43", null),
+            ("Corporate tax", "−€6,361.72", "21.1%"),
+            ("Advance-payment surcharge", "−€429.42", "1.4%"),
+            ("Profit after tax", "€23,295.81", "77.4%"),
+        ]);
+    }
+
+    // Which condition decided the rate stays in sight, with the minimum pay and the share of it the
+    // benefits may reach, figures no line shows.
+    [Fact]
+    public async Task CorporateTax_filledPlan_keepsTheConditionOfTheRateInSight()
+    {
+        CardHtml.Prose(await CardAsync("corporate-tax")).ShouldContain("Reduced rate kept: your pay with benefits reaches the €51,000.00 minimum; benefits within 20%.");
     }
 
     private static async Task<string> CardAsync(string card, string plan = "filled") => CardHtml.Card(await Pages[plan].Value, card);

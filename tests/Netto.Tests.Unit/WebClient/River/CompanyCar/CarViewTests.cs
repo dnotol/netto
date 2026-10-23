@@ -242,42 +242,10 @@ public class CarViewTests
             .ShouldBe((0m, (decimal?)0m));
     }
 
-    // Corporate tax says what it adds back and why: the vouchers it cannot deduct, the car's share of
-    // its benefit, or both.
-    [Fact]
-    public void CorporateTax_carAndVouchers_sayEachAddBackAndWhichSentenceSaysThem()
-    {
-        var both = CorporateTaxView.From(ElectricCar.AddToPlan(OptionalModule.Vouchers).WithEcoVouchers(250m).Run().Year.ShouldNotBeNull());
-        var car = CorporateTaxView.From(ElectricCar.Run().Year.ShouldNotBeNull());
-
-        (both.DisallowedVouchers, both.CarAddBack, CorporateTaxCardText.Disallowed(both), CorporateTaxCardText.Disallowed(car))
-            .ShouldBe((250m, 291.43m, "Disallowed_VouchersAndCar", "Disallowed_Car"));
-    }
-
-    [Fact]
-    public void CorporateTax_vouchersAlone_keepTheirSentence()
-    {
-        var view = CorporateTaxView.From(RiverInputs.Example.AddToPlan(OptionalModule.Vouchers).WithEcoVouchers(250m).Run().Year.ShouldNotBeNull());
-
-        (view.CarAddBack, CorporateTaxCardText.Disallowed(view)).ShouldBe((0m, "Disallowed"));
-    }
-
     // A fuel car on the same plan: CarCalculatorTests' petrol car leased in January 2026, 45,000 at
     // 120 g/km, a benefit of 4,050.00 and 9,000 of costs, of which the company cannot deduct 4,950.00.
     private static readonly RiverInputs PetrolCar = ElectricCar.WithCatalogueValue(45_000m).WithCarCosts(9_000m)
         .WithCarEngine(CarEngine.Petrol).WithCarCo2(120).WithCarAcquired(new DateOnly(2026, 1, 5));
-
-    // Corporate tax says what it adds back of a car it cannot deduct in full: the costs beyond the
-    // benefit, and the share of the benefit, alone or beside the vouchers.
-    [Fact]
-    public void CorporateTax_fuelCar_saysTheCostsItCannotDeductBesideItsAddBack()
-    {
-        var car = CorporateTaxView.From(PetrolCar.Run().Year.ShouldNotBeNull());
-        var both = CorporateTaxView.From(PetrolCar.AddToPlan(OptionalModule.Vouchers).WithEcoVouchers(250m).Run().Year.ShouldNotBeNull());
-
-        (car.CarCostsNotDeductible, car.CarAddBack, CorporateTaxCardText.Disallowed(car), CorporateTaxCardText.Disallowed(both))
-            .ShouldBe((4_950m, 688.50m, "Disallowed_CarCosts", "Disallowed_VouchersAndCarCosts"));
-    }
 
     [Fact]
     public void CorporateTax_electricCar_hasNoCostsItCannotDeduct()
