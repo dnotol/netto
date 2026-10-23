@@ -9,18 +9,22 @@ namespace Netto.Web.Client.River;
 // of nothing is left out, but for the one heading the lines, the pay or the best pay, which may be none.
 internal static class SplitFigures
 {
-    // The pay, the royalty while it is in the plan, and the company's profit before tax, each out of
-    // what the split receives, the profit before pay and royalty the levers above it leave: what the
-    // pay, the royalty and the company share (SplitRoyaltyView.Shared), or the profit before pay alone
-    // without a royalty. None while an amount is refused: the refusal stands in their place.
+    // The pay, the contributions the company pays on the director's behalf, which its profit before
+    // tax has borne with the pay, the royalty while it is in the plan, and that profit, each out of what
+    // the split receives, the profit before pay and royalty the levers above it leave: what the pay,
+    // the royalty and the company share (SplitRoyaltyView.Shared), or the profit before pay alone
+    // without a royalty, all of which the sides add up to. None while an amount is refused: the refusal
+    // stands in their place.
     public static IReadOnlyList<FigureLine> Sides(SplitView view, YearResult? year)
     {
         if (year is null || view.CompanyProfit is not { } company)
             return [];
 
         var received = view.Royalty?.Shared ?? year.ProfitBeforePay;
+        var contributions = year.DirectorPay.ContributionsPaidByCompany;
         return Shown(
             new FigureLine("Figure_Pay", view.Pay) { Share = Shares.Of(view.Pay, received) },
+            new FigureLine("Figure_CompanyContributions", contributions) { Share = Shares.Of(contributions, received) },
             view.Royalty?.Amount is { } royalty ? new FigureLine("Figure_Royalty", royalty) { Share = Shares.Of(royalty, received) } : null,
             new FigureLine("Figure_Company", company) { Share = Shares.Of(company, received) });
     }

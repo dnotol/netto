@@ -4,6 +4,7 @@ using System.Resources;
 using Netto.Core.Copyright;
 using Netto.Core.CorporateTax;
 using Netto.Core.Simulation;
+using Netto.Core.SocialContributions;
 using Netto.Web.Client.River;
 using Shouldly;
 
@@ -61,16 +62,16 @@ public class SplitCardTextTests
         Missing([SplitCardText.ReducedRateTerm]).ShouldBeEmpty();
     }
 
-    // Every label the split's lines can carry: its sides with and without a royalty, and the best pay
-    // as the search finds it, the pay set's own, beyond the pay set's reserve, and beside a royalty that
-    // follows the pay.
+    // Every label the split's lines can carry: its sides with and without a royalty, and with the
+    // contributions the company pays, and the best pay as the search finds it, the pay set's own,
+    // beyond the pay set's reserve, and beside a royalty that follows the pay.
     [Fact]
     public void SplitCardResx_everyLabelOfItsLines_hasAText()
     {
         var example = RiverInputs.Example.WithAdvancePayment(0, 25_000m).WithTaxWithheld(1_000_000m);
         RiverInputs[] rivers =
         [
-            example, example.WithDirectorPay(20_799m), example.WithReserve(60_000m),
+            example, example.WithDirectorPay(20_799m), example.WithReserve(60_000m), example.WithContributionsPaidBy(ContributionsPaidBy.Company),
             RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithCreativeShare(0.75m),
         ];
         var keys = rivers.SelectMany(inputs =>

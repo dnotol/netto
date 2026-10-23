@@ -1,5 +1,6 @@
 using Netto.Core.CorporateTax;
 using Netto.Core.Simulation;
+using Netto.Core.SocialContributions;
 using Netto.Web.Client.River;
 using Shouldly;
 
@@ -30,6 +31,43 @@ public class SplitFiguresTests
     {
         Lines(Sides(FollowingRoyalty))
             .ShouldBe([("Figure_Pay", 50_000m, (decimal?)0.5m), ("Figure_Royalty", 11_538.46m, (decimal?)0.1153846m), ("Figure_Company", 38_461.54m, (decimal?)0.3846154m)]);
+    }
+
+    // When the company pays the director's 9,942.52 of contributions, its cost of the 50,000 is
+    // 59,942.52 (ModuleViewsTests): the contributions are a side of their own beside the pay, and the
+    // company keeps 40,057.48 of the 100,000.
+    [Fact]
+    public void Sides_companyPaysTheContributions_namesThemBesideThePay()
+    {
+        Lines(Sides(RiverInputs.Example.WithContributionsPaidBy(ContributionsPaidBy.Company))).ShouldBe(
+        [
+            ("Figure_Pay", 50_000m, (decimal?)0.5m),
+            ("Figure_CompanyContributions", 9_942.52m, (decimal?)0.0994252m),
+            ("Figure_Company", 40_057.48m, (decimal?)0.4005748m),
+        ]);
+    }
+
+    // Whoever pays the contributions and whatever the royalty, the sides are all of what the split
+    // receives.
+    public static TheoryData<string, RiverInputs> Received => new()
+    {
+        { "the example", RiverInputs.Example },
+        { "the company paying the contributions", RiverInputs.Example.WithContributionsPaidBy(ContributionsPaidBy.Company) },
+        { "beside a royalty that follows the pay", FollowingRoyalty.WithContributionsPaidBy(ContributionsPaidBy.Company) },
+        { "beside a fixed royalty", RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithRoyalty(10_000m).WithContributionsPaidBy(ContributionsPaidBy.Company) },
+    };
+
+    [Theory]
+    [MemberData(nameof(Received))]
+    public void Sides_anySplit_addUpToWhatTheSplitReceives(string _, RiverInputs inputs)
+    {
+        var run = inputs.Run();
+        var view = SplitView.From(inputs, run);
+        var year = run.Year.ShouldNotBeNull();
+
+        var lines = SplitFigures.Sides(view, year);
+
+        (lines.Sum(line => line.Amount), lines.Sum(line => line.Share ?? 0m)).ShouldBe((view.Royalty?.Shared ?? year.ProfitBeforePay, 1m));
     }
 
     // A royalty that is none, waiting for the creative share, says why in its own field: the split

@@ -60,6 +60,9 @@
   <data name="Figure_Pay" xml:space="preserve">
     <value>Your pay</value>
   </data>
+  <data name="Figure_CompanyContributions" xml:space="preserve">
+    <value>Contributions the company pays</value>
+  </data>
   <data name="Figure_Royalty" xml:space="preserve">
     <value>Royalty</value>
   </data>
