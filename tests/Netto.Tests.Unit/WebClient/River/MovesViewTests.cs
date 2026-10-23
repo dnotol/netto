@@ -241,14 +241,17 @@ public class MovesViewTests
     }
 
     // A plan starting at the pay or refused already says to save the river to see the moves.
-    [Theory]
-    [InlineData("starting at the pay")]
-    [InlineData("refused")]
-    public void RiverChanged_noMovesFromThePlanInTheRiver_isFalse(string plan)
+    public static TheoryData<string, RiverInputs> PlansWithoutMoves => new()
     {
-        var inputs = plan == "refused" ? RiverInputs.Example.WithReserve(-1m) : RiverInputs.Example.SkipCompany();
+        { "starting at the pay", RiverInputs.Example.SkipCompany() },
+        { "refused", RiverInputs.Example.WithReserve(-1m) },
+    };
 
-        MovesView.Of(new MovesBaseline(inputs, IsToday: false), On22October).RiverChanged(RiverInputs.Example).ShouldBeFalse();
+    [Theory]
+    [MemberData(nameof(PlansWithoutMoves))]
+    public void RiverChanged_noMovesFromThePlanInTheRiver_isFalse(string _, RiverInputs plan)
+    {
+        MovesView.Of(new MovesBaseline(plan, IsToday: false), On22October).RiverChanged(RiverInputs.Example).ShouldBeFalse();
     }
 
     // What the pocket holds after each move is Today's with the gains up to it: the last is the plan's.

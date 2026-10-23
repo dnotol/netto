@@ -184,13 +184,17 @@ public class OptimisationTabTests
     }
 
     // Without moves to show, the tab says why, and shows no figure and no list.
-    public static TheoryData<string> Silent => new() { "Today starting at the pay", "Today refused" };
+    public static TheoryData<string, RiverInputs> Silent => new()
+    {
+        { "Today starting at the pay", RiverInputs.Example.SkipCompany() },
+        { "Today refused", RiverInputs.Example.WithReserve(-1m) },
+    };
 
     [Theory]
     [MemberData(nameof(Silent))]
-    public async Task Optimisation_noMovesToShow_saysWhyAlone(string today)
+    public async Task Optimisation_noMovesToShow_saysWhyAlone(string _, RiverInputs today)
     {
-        var html = await RenderTabAsync(SilentToday(today), RiverInputs.Example);
+        var html = await RenderTabAsync(today, RiverInputs.Example);
 
         (html.Contains("<dl"), html.Contains("<ol"), html.Contains("moves__state")).ShouldBe((false, false, true));
     }
@@ -208,19 +212,22 @@ public class OptimisationTabTests
             .ShouldBe((("Today, in your pocket", Formats.Euros(MovesView.Of(planned, On22October).FromInPocket)), false));
     }
 
+    // What the tab draws from: Today with moves, starting at the pay or refused, and the plan in the river
+    // with the river changed since, which shows the note under the first line.
+    public static TheoryData<string, MovesBaseline, RiverInputs> States => new()
+    {
+        { "the example from Today", MovesBaseline.Today(RiverInputs.Example), RiverInputs.Example },
+        { "Today starting at the pay", MovesBaseline.Today(RiverInputs.Example.SkipCompany()), RiverInputs.Example },
+        { "Today refused", MovesBaseline.Today(RiverInputs.Example.WithReserve(-1m)), RiverInputs.Example },
+        { "the plan in the river, changed since", new MovesBaseline(RiverInputs.Example, IsToday: false), RiverInputs.Example.WithDirectorPay(40_000m) },
+    };
+
     // The tab announces nothing: no live region, no status, no alert.
     [Theory]
-    [MemberData(nameof(Silent))]
-    [InlineData("the example")]
-    [InlineData("the plan in the river, changed since")]
-    public async Task Optimisation_anyState_isNoLiveRegion(string today)
+    [MemberData(nameof(States))]
+    public async Task Optimisation_anyState_isNoLiveRegion(string _, MovesBaseline from, RiverInputs river)
     {
-        var html = today switch
-        {
-            "the example" => await RenderTabAsync(RiverInputs.Example, RiverInputs.Example),
-            "the plan in the river, changed since" => await RenderFromAsync(new MovesBaseline(RiverInputs.Example, IsToday: false), RiverInputs.Example.WithDirectorPay(40_000m)),
-            _ => await RenderTabAsync(SilentToday(today), RiverInputs.Example),
-        };
+        var html = await RenderFromAsync(from, river);
 
         (html.Contains("moves__state"), Regex.IsMatch(html, "aria-live|role=\"(status|alert)\"")).ShouldBe((true, false));
     }
@@ -266,27 +273,20 @@ public class OptimisationTabTests
             .ShouldBe(("Against « Plan 2 », the plan in your river", "From « Plan 2 », as you opened or saved it:"));
     }
 
-    // Without moves to show from the plan in the river, the tab says why, of that plan.
-    public static TheoryData<string, string> SilentPlans => new()
+    // Without moves to show from the plan in the river, the tab says why, of that plan: what it says, for a
+    // plan already the best, one starting at the pay and one refused.
+    public static TheoryData<string, RiverInputs> SilentPlans => new()
     {
-        { "already the best", "The plan in your river is already the best Netto finds." },
-        { "starting at the pay", "The plan in your river starts at your pay: enter its company's year in the river and save it to see the moves." },
-        { "refused", "An amount of the plan in your river is refused: correct it in the river and save it to see the moves." },
+        { "The plan in your river is already the best Netto finds.", EveryMoveApplied() },
+        { "The plan in your river starts at your pay: enter its company's year in the river and save it to see the moves.", RiverInputs.Example.SkipCompany() },
+        { "An amount of the plan in your river is refused: correct it in the river and save it to see the moves.", RiverInputs.Example.WithReserve(-1m) },
     };
 
     [Theory]
     [MemberData(nameof(SilentPlans))]
-    public async Task Optimisation_noMovesFromThePlanInTheRiver_saysWhyOfThatPlan(string plan, string said)
+    public async Task Optimisation_noMovesFromThePlanInTheRiver_saysWhyOfThatPlan(string said, RiverInputs plan)
     {
-        var inputs = plan switch
-        {
-            "already the best" => EveryMoveApplied(),
-            "starting at the pay" => RiverInputs.Example.SkipCompany(),
-            "refused" => RiverInputs.Example.WithReserve(-1m),
-            _ => throw new ArgumentOutOfRangeException(nameof(plan), plan, null),
-        };
-
-        var html = await RenderFromAsync(new MovesBaseline(inputs, IsToday: false), inputs);
+        var html = await RenderFromAsync(new MovesBaseline(plan, IsToday: false), plan);
 
         (Paragraph(html, "moves__state"), html.Contains("<ol")).ShouldBe((said, false));
     }
@@ -367,13 +367,6 @@ public class OptimisationTabTests
     // The text of the first paragraph of that class.
     private static string Paragraph(string html, string paragraph) =>
         Regex.Match(html, $"<p class=\"{paragraph}\"[^>]*>(.*?)</p>", RegexOptions.Singleline).Groups[1].Value;
-
-    private static RiverInputs SilentToday(string today) => today switch
-    {
-        "Today starting at the pay" => RiverInputs.Example.SkipCompany(),
-        "Today refused" => RiverInputs.Example.WithReserve(-1m),
-        _ => throw new ArgumentOutOfRangeException(nameof(today), today, null),
-    };
 
     // Each term of the description list with its figure, the star's icon left out.
     private static IReadOnlyList<(string Term, string Figure)> Figures(string html) =>

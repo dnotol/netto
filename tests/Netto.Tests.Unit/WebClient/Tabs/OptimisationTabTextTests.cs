@@ -24,25 +24,34 @@ public class OptimisationTabTextTests
 
     // The plan the moves are measured from, which the tab's words follow: Today, the plan in the river,
     // and the plan in the river under its name.
-    public static TheoryData<string> Baselines => new() { "Today", "the plan in the river", "a named plan" };
+    private static readonly MovesBaseline FromToday = MovesBaseline.Today(RiverInputs.Example);
+
+    private static readonly MovesBaseline FromThePlanInTheRiver = new(RiverInputs.Example, IsToday: false);
+
+    private static readonly MovesBaseline FromANamedPlan = new(RiverInputs.Example, IsToday: false, "Plan 2");
+
+    public static TheoryData<string, MovesBaseline> Baselines => new()
+    {
+        { "Today", FromToday },
+        { "the plan in the river", FromThePlanInTheRiver },
+        { "a named plan", FromANamedPlan },
+    };
 
     // Its head, the figures it opens on and the total, for each plan the moves are from.
     [Theory]
     [MemberData(nameof(Baselines))]
-    public void OptimisationTabResx_everyKeyFromEachPlan_hasAText(string from)
+    public void OptimisationTabResx_everyKeyFromEachPlan_hasAText(string _, MovesBaseline from)
     {
-        var baseline = Baseline(from);
-
-        new[] { OptimisationTabText.Eyebrow(baseline), OptimisationTabText.Lede(baseline), OptimisationTabText.FromInPocket(baseline), OptimisationTabText.MoreThanFrom(baseline), OptimisationTabText.Total(baseline) }
+        new[] { OptimisationTabText.Eyebrow(from), OptimisationTabText.Lede(from), OptimisationTabText.FromInPocket(from), OptimisationTabText.MoreThanFrom(from), OptimisationTabText.Total(from) }
             .Where(key => Resources.GetString(key, CultureInfo.InvariantCulture) is null)
             .ShouldBeEmpty();
     }
 
     [Theory]
     [MemberData(nameof(Baselines))]
-    public void OptimisationTabResx_everyStateFromEachPlan_hasAText(string from)
+    public void OptimisationTabResx_everyStateFromEachPlan_hasAText(string _, MovesBaseline from)
     {
-        Enum.GetValues<MovesState>().Select(state => OptimisationTabText.State(state, Baseline(from)))
+        Enum.GetValues<MovesState>().Select(state => OptimisationTabText.State(state, from))
             .Where(key => Resources.GetString(key, CultureInfo.InvariantCulture) is null)
             .ShouldBeEmpty();
     }
@@ -51,62 +60,40 @@ public class OptimisationTabTextTests
     [Fact]
     public void FromInPocket_today_readsTodayInYourPocket()
     {
-        Resources.GetString(OptimisationTabText.FromInPocket(Baseline("Today")), CultureInfo.InvariantCulture).ShouldBe("Today, in your pocket");
+        Resources.GetString(OptimisationTabText.FromInPocket(FromToday), CultureInfo.InvariantCulture).ShouldBe("Today, in your pocket");
     }
 
     // While no plan is starred Today, the tab says its moves are from the plan in the river as it was opened
-    // or saved, under its name where it has one: « Plan 2 » here, and €1.00 for the moves' total.
+    // or saved, under its name where it has one: each text's key, what the tab fills its {0} with (the
+    // plan's name, « Plan 2 » here, or the moves' total), and the text.
     public static TheoryData<string, string, string> FromThePlan => new()
     {
-        { "eyebrow", "the plan in the river", "Against the plan in your river" },
-        { "eyebrow", "a named plan", "Against « Plan 2 », the plan in your river" },
-        { "lede", "a named plan", "What Netto would change in the plan in your river, as you opened or saved it, to leave more in your pocket. "
+        { OptimisationTabText.Eyebrow(FromThePlanInTheRiver), "", "Against the plan in your river" },
+        { OptimisationTabText.Eyebrow(FromANamedPlan), "Plan 2", "Against « Plan 2 », the plan in your river" },
+        { OptimisationTabText.Lede(FromANamedPlan), "", "What Netto would change in the plan in your river, as you opened or saved it, to leave more in your pocket. "
             + "Each move adds what it says on top of the moves above it, so together they add up to the gain of the whole list. "
             + "What you change in the river afterwards is not counted: save it and star it as Today, your current setup, to measure the moves from it." },
-        { "moves", "the plan in the river", "From the plan in your river, as you opened or saved it:" },
-        { "moves", "a named plan", "From « Plan 2 », as you opened or saved it:" },
-        { "already the best", "a named plan", "The plan in your river is already the best Netto finds." },
-        { "starts at the pay", "the plan in the river",
+        { OptimisationTabText.State(MovesState.Moves, FromThePlanInTheRiver), "", "From the plan in your river, as you opened or saved it:" },
+        { OptimisationTabText.State(MovesState.Moves, FromANamedPlan), "Plan 2", "From « Plan 2 », as you opened or saved it:" },
+        { OptimisationTabText.State(MovesState.AlreadyBest, FromANamedPlan), "Plan 2", "The plan in your river is already the best Netto finds." },
+        { OptimisationTabText.State(MovesState.StartsAtPay, FromThePlanInTheRiver), "",
             "The plan in your river starts at your pay: enter its company's year in the river and save it to see the moves." },
-        { "refused", "the plan in the river", "An amount of the plan in your river is refused: correct it in the river and save it to see the moves." },
-        { "pocket", "a named plan", "This plan, in your pocket" },
-        { "gain", "a named plan", "More than this plan" },
-        { "total", "the plan in the river", "Together: €1.00 more than this plan." },
-        { "river changed", "the plan in the river", "The river has changed since you opened or saved this plan: save it to measure the moves from it." },
+        { OptimisationTabText.State(MovesState.Refused, FromThePlanInTheRiver), "",
+            "An amount of the plan in your river is refused: correct it in the river and save it to see the moves." },
+        { OptimisationTabText.FromInPocket(FromANamedPlan), "", "This plan, in your pocket" },
+        { OptimisationTabText.MoreThanFrom(FromANamedPlan), "", "More than this plan" },
+        { OptimisationTabText.Total(FromThePlanInTheRiver), "€1.00", "Together: €1.00 more than this plan." },
+        { OptimisationTabText.RiverChanged, "", "The river has changed since you opened or saved this plan: save it to measure the moves from it." },
     };
 
     [Theory]
     [MemberData(nameof(FromThePlan))]
-    public void Text_fromThePlanInTheRiver_saysItIsThatPlan(string what, string from, string expected)
+    public void Text_fromThePlanInTheRiver_saysItIsThatPlan(string key, string argument, string expected)
     {
-        var baseline = Baseline(from);
-        var key = what switch
-        {
-            "eyebrow" => OptimisationTabText.Eyebrow(baseline),
-            "lede" => OptimisationTabText.Lede(baseline),
-            "moves" => OptimisationTabText.State(MovesState.Moves, baseline),
-            "already the best" => OptimisationTabText.State(MovesState.AlreadyBest, baseline),
-            "starts at the pay" => OptimisationTabText.State(MovesState.StartsAtPay, baseline),
-            "refused" => OptimisationTabText.State(MovesState.Refused, baseline),
-            "pocket" => OptimisationTabText.FromInPocket(baseline),
-            "gain" => OptimisationTabText.MoreThanFrom(baseline),
-            "total" => OptimisationTabText.Total(baseline),
-            "river changed" => OptimisationTabText.RiverChanged,
-            _ => throw new ArgumentOutOfRangeException(nameof(what), what, null),
-        };
-
-        var text = string.Format(CultureInfo.InvariantCulture, Resources.GetString(key, CultureInfo.InvariantCulture) ?? "", what == "total" ? "€1.00" : baseline.Name);
+        var text = string.Format(CultureInfo.InvariantCulture, Resources.GetString(key, CultureInfo.InvariantCulture) ?? "", argument);
 
         text.ShouldBe(expected);
     }
-
-    private static MovesBaseline Baseline(string from) => from switch
-    {
-        "Today" => MovesBaseline.Today(RiverInputs.Example),
-        "the plan in the river" => new MovesBaseline(RiverInputs.Example, IsToday: false),
-        "a named plan" => new MovesBaseline(RiverInputs.Example, IsToday: false, "Plan 2"),
-        _ => throw new ArgumentOutOfRangeException(nameof(from), from, null),
-    };
 
     [Fact]
     public void OptimisationTabResx_everyReason_hasAText()

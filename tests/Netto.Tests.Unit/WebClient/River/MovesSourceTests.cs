@@ -121,17 +121,42 @@ public class MovesSourceTests
     }
 
     // A star, a rename or an import opens no plan: the moves stay measured from the river as the page
-    // opened, once a plan starred meanwhile is gone.
-    [Theory]
-    [InlineData("star")]
-    [InlineData("rename")]
-    [InlineData("import")]
-    public void Kept_starRenameOrImport_keepsTheBaseline(string change)
+    // opened, once a plan starred meanwhile is gone. Each change is told to the page (PlansPanel.OnChanged).
+    [Fact]
+    public void Kept_aPlanStarredThenDeleted_keepsTheBaseline()
     {
         var plans = WithoutToday(Other, Opened);
         var source = new MovesSource(plans, Edited);
 
-        Change(plans, source, change);
+        plans.Star(plans.Plans[0].Id);
+        source.Kept();
+        plans.Delete(plans.Plans[0].Id);
+        source.Kept();
+
+        source.Baseline.ShouldBe(new MovesBaseline(Edited, IsToday: false));
+    }
+
+    [Fact]
+    public void Kept_aRename_keepsTheBaseline()
+    {
+        var plans = WithoutToday(Other, Opened);
+        var source = new MovesSource(plans, Edited);
+
+        plans.Rename(plans.Plans[1].Id, "Mine");
+        source.Kept();
+
+        source.Baseline.ShouldBe(new MovesBaseline(Edited, IsToday: false));
+    }
+
+    // A file without a Today, which stars none here.
+    [Fact]
+    public void Kept_anImport_keepsTheBaseline()
+    {
+        var plans = WithoutToday(Other, Opened);
+        var source = new MovesSource(plans, Edited);
+
+        plans.Import(WithoutToday(Starred).Export());
+        source.Kept();
 
         source.Baseline.ShouldBe(new MovesBaseline(Edited, IsToday: false));
     }
@@ -233,30 +258,6 @@ public class MovesSourceTests
         source.Found(On23October);
 
         (source.Baseline, search.Asked.Count).ShouldBe((MovesBaseline.Today(Edited), 1));
-    }
-
-    // What the Plans panel did, then told the page (PlansPanel.OnChanged): starring a plan, which is then
-    // deleted, renaming the plan opened, or importing a file without a Today.
-    private static void Change(SavedPlans plans, MovesSource source, string change)
-    {
-        switch (change)
-        {
-            case "star":
-                plans.Star(plans.Plans[0].Id);
-                source.Kept();
-                plans.Delete(plans.Plans[0].Id);
-                break;
-            case "rename":
-                plans.Rename(plans.Plans[1].Id, "Mine");
-                break;
-            case "import":
-                plans.Import(WithoutToday(Starred).Export());
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(change), change, null);
-        }
-
-        source.Kept();
     }
 
     // These plans saved in this order, named from Plan 2, the river opened from the last, and none starred
