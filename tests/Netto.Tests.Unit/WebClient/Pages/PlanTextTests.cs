@@ -20,4 +20,13 @@ public class PlanTextTests
 
         text.ShouldBe("Skip to the river");
     }
+
+    // Under the split, the royalty runs down the director's side with the pay once it is in the plan.
+    [Theory]
+    [InlineData(false, "↓ Your pay on one side, the company's profit on the other ↓")]
+    [InlineData(true, "↓ Your pay and royalty on one side, the company's profit on the other ↓")]
+    public void PlanResx_fork_saysWhatRunsDownEachSide(bool royalty, string expected)
+    {
+        Resources.GetString(PlanText.Fork(royalty), CultureInfo.InvariantCulture).ShouldBe(expected);
+    }
 }
