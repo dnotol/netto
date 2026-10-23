@@ -33,10 +33,11 @@ internal static class SplitFigures
     // beside it (a fixed one is the same at every pay, and the split's sides say it); what reaches the
     // pocket there, with its share of what leaves the company (Reach); what it gains over the pay set;
     // and what reaches the pocket at the pay set, with its own. A pay set within a euro of the best is
-    // the best, with what it leaves. A pay set whose profit cannot keep the reserve is weighed apart:
-    // the best pay that keeps it, against what the pay set leaves in the pocket and in the company,
-    // with no gain and no reach, the two not leaving the same company behind. None when no pay keeps
-    // the reserve.
+    // the best: the lines are then the pay set's own figures, its pay, its dividend and what reaches the
+    // pocket at it, and no royalty, which the sides above show at that same pay. A pay set whose profit
+    // cannot keep the reserve is weighed apart: the best pay that keeps it, against what the pay set
+    // leaves in the pocket and in the company, with no gain and no reach, the two not leaving the same
+    // company behind. None when no pay keeps the reserve.
     public static IReadOnlyList<FigureLine> Best(SplitSearchView search, YearResult year, SplitRoyaltyView? royalty, decimal reserve)
     {
         if (search.Best is not { } best)
@@ -49,8 +50,8 @@ internal static class SplitFigures
         return best switch
         {
             { IsYours: true } => Shown(
-                new FigureLine("Figure_BestIsYours", level.Pay), dividend, null,
-                new FigureLine("Figure_InPocket", level.NetInPocket) { Share = best.Reach }),
+                new FigureLine("Figure_BestIsYours", year.DirectorPay.GrossPay), new FigureLine("Figure_Dividend", year.Dividend.Dividend),
+                new FigureLine("Figure_InPocket", year.NetInPocket) { Share = search.Reach }),
             { YoursKeepsReserve: false } => Shown(
                 new FigureLine("Figure_BestKeepingReserve", level.Pay) { Args = [Formats.Euros(reserve)] }, dividend, royaltyThere,
                 new FigureLine("Figure_InPocketThere", level.NetInPocket),

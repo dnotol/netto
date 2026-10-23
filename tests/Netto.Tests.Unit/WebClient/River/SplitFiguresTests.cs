@@ -106,6 +106,21 @@ public class SplitFiguresTests
             .ShouldBe([("Figure_BestIsYours", 20_799m, null), ("Figure_Dividend", 59_400.75m, null), ("Figure_InPocket", 65_622.81m, (decimal?)0.6562281m)]);
     }
 
+    // A pay set within a euro of the best is the best (SplitSearchViewTests): its lines are the pay set's
+    // own, the pay the sides above show, its dividend and what reaches the pocket at it, never the
+    // search's best pay a euro away.
+    [Fact]
+    public void Best_paySetAEuroFromTheBest_saysThePaySetsOwnFigures()
+    {
+        var inputs = Example.WithDirectorPay(20_800m);
+        var run = inputs.Run();
+        var year = run.Year.ShouldNotBeNull();
+        var search = SplitSearchView.From(inputs, run, inputs.SearchSplit()).ShouldNotBeNull();
+
+        Lines(Best(inputs))
+            .ShouldBe([("Figure_BestIsYours", 20_800m, null), ("Figure_Dividend", year.Dividend.Dividend, null), ("Figure_InPocket", year.NetInPocket, search.Reach)]);
+    }
+
     // At 50,000 the profit after tax, 40,000, cannot keep 60,000: the best pay that keeps it, 18,890,
     // leaves 16,183.13 with a dividend of 832.50 (SplitSearchTests), against what the pay set leaves in
     // the pocket and in the company, with no gain and no reach, the two not leaving the same company
