@@ -1,0 +1,332 @@
+/* The year as a timeline. Every colour is one of the site's tokens, so both themes draw it: the inks for
+   what is read and for the marks (all 3:1 at least on the card, 4.5:1 for text), gold only on the next
+   payment's mark, and the lines in the frame colour. State is never colour alone: a diamond differs in
+   size and fill, a block in outline or fill, and the key names them. */
+.timeline {
+    --timeline-title: 11rem;
+    --timeline-today-row: 1.6rem;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.75rem;
+    min-width: 0;
+    padding: 1rem 1.5rem 1.25rem;
+    border: 1px solid var(--netto-line);
+    border-radius: 20px;
+    background: var(--netto-surface);
+}
+
+.timeline__title {
+    margin: 0;
+    font-family: "Fraunces", Georgia, serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+/* Below the plot's minimum width the plot scrolls in this box, which the keyboard can focus and scroll
+   (the site's ring shows on a focused tabindex). */
+.timeline__scroll {
+    overflow-x: auto;
+}
+
+.timeline__chart {
+    position: relative;
+    min-width: 48rem;
+}
+
+@media (max-width: 960px) {
+    .timeline {
+        --timeline-title: 8.5rem;
+        padding-inline: 1rem;
+    }
+}
+
+/* The lines over the lanes' tracks, from the months' row down: they stretch with the plot, so they keep
+   their width and dash whatever it is. */
+.timeline__overlay {
+    position: absolute;
+    top: var(--timeline-today-row);
+    bottom: 0;
+    left: var(--timeline-title);
+    right: 0;
+    pointer-events: none;
+}
+
+.timeline__overlay-svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+
+.timeline__grid,
+.timeline__today-line {
+    vector-effect: non-scaling-stroke;
+}
+
+.timeline__grid {
+    stroke: var(--netto-line);
+    stroke-width: 1;
+}
+
+.timeline__today-line {
+    stroke: var(--netto-text);
+    stroke-width: 1.5;
+    stroke-dasharray: 4 3;
+}
+
+/* A row: its title, stuck at the left while the plot scrolls, and its track across the year. */
+.timeline__row {
+    display: grid;
+    grid-template-columns: var(--timeline-title) minmax(0, 1fr);
+}
+
+.timeline__row:not(.timeline__row--today):not(.timeline__row--months) {
+    border-top: 1px solid var(--netto-line);
+}
+
+.timeline__row-title {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    display: grid;
+    align-content: start;
+    gap: 0.1rem;
+    padding: 0.6rem 0.75rem 0.5rem 0;
+    background: var(--netto-surface);
+    font-size: 0.85rem;
+    line-height: 1.3;
+}
+
+.timeline__row--today .timeline__row-title,
+.timeline__row--months .timeline__row-title {
+    padding: 0;
+}
+
+.timeline__lane {
+    font-weight: 500;
+}
+
+.timeline__note {
+    color: var(--netto-text-muted);
+    font-size: 0.78rem;
+}
+
+.timeline__track {
+    position: relative;
+    height: 3.6rem;
+}
+
+.timeline__track--today {
+    height: var(--timeline-today-row);
+}
+
+.timeline__track--months {
+    height: 1.4rem;
+}
+
+.timeline__track--spans {
+    height: 3.2rem;
+}
+
+/* Today's label stands at the top, where its dashed line starts, on the side of it that has room. */
+.timeline__today {
+    position: absolute;
+    bottom: 0.15rem;
+    padding: 0 0.35rem;
+    color: var(--netto-text);
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+.timeline__today--end {
+    transform: translateX(-100%);
+}
+
+.timeline__month {
+    position: absolute;
+    top: 0;
+    color: var(--netto-text-muted);
+    font-size: 0.75rem;
+    line-height: 1.4rem;
+    text-align: center;
+}
+
+/* A deadline lane: the rule the diamonds sit on, then each diamond and its label. */
+.timeline__track--deadlines::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 1rem;
+    border-top: 1px solid var(--netto-line);
+}
+
+.timeline__mark {
+    position: absolute;
+    top: 1rem;
+    transform: translate(-50%, -50%) rotate(45deg);
+}
+
+/* The four diamonds: hollow and muted (past), larger and gold (the next payment), small and filled (a
+   payment planned for a later deadline), small and hollow (nothing to pay). */
+.timeline__diamond {
+    display: inline-block;
+    box-sizing: border-box;
+    width: 0.7rem;
+    height: 0.7rem;
+    border: 2px solid var(--netto-text);
+    background: var(--netto-surface);
+}
+
+.timeline__diamond--past {
+    border-color: var(--netto-text-muted);
+}
+
+.timeline__diamond--next {
+    width: 1rem;
+    height: 1rem;
+    border-color: var(--netto-gold);
+    background: var(--netto-gold);
+}
+
+.timeline__diamond--later {
+    width: 0.6rem;
+    height: 0.6rem;
+    background: var(--netto-text);
+}
+
+.timeline__diamond--nothing {
+    width: 0.55rem;
+    height: 0.55rem;
+}
+
+/* A label's text wraps within a few words, its edge set by the view: left early in the year, right
+   late. */
+.timeline__label {
+    position: absolute;
+    top: 1.6rem;
+    max-width: 7rem;
+    margin-left: -0.35rem;
+    color: var(--netto-text);
+    font-size: 0.72rem;
+    line-height: 1.25;
+    font-variant-numeric: tabular-nums;
+}
+
+.timeline__label--end {
+    margin-left: 0;
+    margin-right: -0.35rem;
+    text-align: right;
+}
+
+.timeline__label--past {
+    color: var(--netto-text-muted);
+}
+
+.timeline__label--next {
+    font-weight: 600;
+}
+
+/* A block lane: a month or a quarter is a block, an outline once ended, filled while to come, drawn
+   with a hair of room between neighbours. The text on a filled block is the page's colour, the inverse
+   of the fill in both themes. */
+.timeline__block {
+    position: absolute;
+    top: 0.4rem;
+    height: 1.3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    isolation: isolate;
+    font-size: 0.72rem;
+    font-weight: 600;
+    line-height: 1;
+}
+
+.timeline__block::before,
+.timeline__key-block::before {
+    content: "";
+    position: absolute;
+    inset: 0 1px;
+    z-index: -1;
+    border: 1px solid transparent;
+    border-radius: 3px;
+}
+
+.timeline__block--past {
+    color: var(--netto-text-muted);
+}
+
+.timeline__block--past::before {
+    border-color: var(--netto-line-input);
+}
+
+.timeline__block--coming {
+    color: var(--netto-page);
+}
+
+.timeline__block--coming::before {
+    border-color: var(--netto-data-strong);
+    background: var(--netto-data-strong);
+}
+
+.timeline__caption {
+    position: absolute;
+    top: 1.9rem;
+    color: var(--netto-text);
+    font-size: 0.72rem;
+    font-weight: 600;
+    line-height: 1.25;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+.timeline__caption--end {
+    text-align: right;
+}
+
+/* The key and the notes under the picture, as text. */
+.timeline__key {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 1.25rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    color: var(--netto-text-muted);
+    font-size: 0.8rem;
+}
+
+    .timeline__key li {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+.timeline__key-mark.timeline__diamond {
+    margin: 0 0.15rem;
+    transform: rotate(45deg);
+}
+
+.timeline__key-block {
+    position: relative;
+    display: inline-block;
+    isolation: isolate;
+    width: 1.3rem;
+    height: 0.8rem;
+}
+
+.timeline__key-today {
+    display: inline-block;
+    height: 0.9rem;
+    border-left: 2px dashed var(--netto-text);
+}
+
+.timeline__footnote {
+    margin: 0;
+    color: var(--netto-text-muted);
+    font-size: 0.85rem;
+    line-height: 1.55;
+}

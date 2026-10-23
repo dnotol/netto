@@ -1,0 +1,242 @@
+@using System.Globalization
+@using Netto.Core.Calendar
+@inject IStringLocalizer<CalendarTimeline> L
+
+@* The income year as a timeline, so the viewer sees at a glance what falls when and what is still to
+   come: a lane for each kind of payment, the company's and the director's advance payments (a diamond at
+   each deadline), the director's pay (a block for each month) and INASTI's quarters (a block for each),
+   across the months of the year, with a dashed line for Today. It takes the engine's calendar and the
+   date of the next payment as CalendarView gives it, and builds its view (TimelineView) itself, as a
+   component takes the engine's result and not an internal view model: it only places what the tables
+   under it say, so the two never differ.
+
+   What is past, next and to come is told by shape and by words, never by colour alone: a deadline
+   passed is a hollow muted diamond, the next payment a larger gold one with its amount and day beside
+   it, a payment planned for a later deadline a small filled one, a deadline with nothing to pay a small
+   hollow one; a month or quarter that has ended is an outline, one to come is filled; and the key names
+   each mark drawn. The picture is one image with a name that says what it shows, and the tables under it
+   are the text equivalent, so what is inside it is hidden from a screen reader. Nothing in it is a live
+   region. Beside the picture, outside it, are the key and the notes (Today outside the year, the
+   asterisk, the quarters).
+
+   It stretches with its card: the plot is as wide as the card, its lines (the months', Today's) an
+   overlay SVG with preserveAspectRatio="none" kept to their width by vector-effect, and what must keep
+   its shape (a diamond, a label) HTML placed in percentages of the year. Below a minimum width the plot
+   scrolls inside its own box, which a keyboard can focus and scroll, and the lanes' titles stay in
+   sight. *@
+<section class="timeline" aria-labelledby="timeline-title">
+    <h2 id="timeline-title" class="timeline__title">@L["Title"]</h2>
+    <div class="timeline__scroll" role="group" aria-labelledby="timeline-title" tabindex="0">
+        <div class="timeline__chart" role="img" aria-label="@Label">
+            <div class="timeline__overlay" aria-hidden="true">
+                <svg viewBox="0 0 1000 100" preserveAspectRatio="none" aria-hidden="true" focusable="false" class="timeline__overlay-svg">
+                    @foreach (var month in _view.Axis.Skip(1))
+                    {
+                        <line class="timeline__grid" x1="@X(month.Left)" x2="@X(month.Left)" y1="0" y2="100" />
+                    }
+                    @if (_view.Today.At is { } todayAt)
+                    {
+                        <line class="timeline__today-line" x1="@X(todayAt)" x2="@X(todayAt)" y1="0" y2="100" />
+                    }
+                </svg>
+            </div>
+            <div class="timeline__row timeline__row--today">
+                <div class="timeline__row-title"></div>
+                <div class="timeline__track timeline__track--today">
+                    @if (_view.Today is { At: { } at } today)
+                    {
+                        <span class="@(today.LabelEnd ? "timeline__today timeline__today--end" : "timeline__today")" style="left: @Percent(at)">@L["Today", Formats.ShortDay(today.Date)]</span>
+                    }
+                </div>
+            </div>
+            <div class="timeline__row timeline__row--months">
+                <div class="timeline__row-title"></div>
+                <div class="timeline__track timeline__track--months">
+                    @foreach (var month in _view.Axis)
+                    {
+                        <span class="timeline__month" style="left: @Percent(month.Left); width: @Percent(month.Width)">@Formats.ShortMonth(_view.IncomeYear, month.Month)</span>
+                    }
+                </div>
+            </div>
+            @if (_view.Company is { } company)
+            {
+                @DeadlineRow(L["Lane_Company"], company)
+            }
+            @DeadlineRow(L["Lane_Director"], _view.Director)
+            @SpanRow(L["Lane_Pay"], _view.Pay, false, PayCaption)
+            @SpanRow(L[TimelineText.ContributionsLane(_view.Contributions.PaidByCompany)], _view.Contributions, true, ContributionsCaption)
+        </div>
+    </div>
+    <ul class="timeline__key" aria-label="@L["Key"]">
+        @foreach (var item in _view.Key)
+        {
+            <li><span class="@KeyMarkClass(item)" aria-hidden="true"></span><span class="timeline__key-item">@L[TimelineText.Key(item)]</span></li>
+        }
+    </ul>
+    @if (TimelineText.TodayNote(_view.Today.Place) is { } todayNote)
+    {
+        <p class="timeline__footnote">@L[todayNote, Formats.Day(_view.Today.Date), _view.IncomeYear]</p>
+    }
+    @if (_view.UnmodelledFrom is { } unmodelled)
+    {
+        <p class="timeline__footnote">@L["Legend_Unmodelled", Formats.Day(unmodelled)]</p>
+    }
+    @if (!_view.Contributions.Empty)
+    {
+        <p class="timeline__footnote">@L["Legend_Quarters"]</p>
+    }
+</section>
+
+@code {
+    // The engine's calendar, with what the fund bills given, as CalendarView holds it.
+    [Parameter, EditorRequired]
+    public PaymentCalendar Calendar { get; set; } = default!;
+
+    // The date of the next payment, as CalendarView.Next gives it, none once nothing is left to pay in
+    // advance: the mark of that date, in the lanes of whoever pays by it, is the next payment.
+    [Parameter]
+    public DateOnly? NextDate { get; set; }
+
+    private TimelineView _view = default!;
+
+    protected override void OnParametersSet() => _view = TimelineView.Of(Calendar, NextDate);
+
+    // One payer's deadlines: a diamond for each, and beside it its day, with its amount when the plan pays
+    // something by it or needs to. The lane says of itself, under its title, that nothing is due or that
+    // the payer is exempt, when none of its marks is the next payment.
+    private RenderFragment DeadlineRow(string title, DeadlineLane lane) =>
+        @<div class="timeline__row">
+            <div class="timeline__row-title">
+                <span class="timeline__lane">@title</span>
+                @if (lane.Note != LaneNote.None)
+                {
+                    <span class="timeline__note">@L[TimelineText.Note(lane.Note)]</span>
+                }
+            </div>
+            <div class="timeline__track timeline__track--deadlines">
+                @foreach (var mark in lane.Marks)
+                {
+                    <span class="@MarkClass(mark)" style="left: @Percent(mark.At)"></span>
+                    <span class="@LabelClass(mark)" style="@Anchor(mark.At, mark.LabelEnd)">@MarkLabel(mark)</span>
+                }
+            </div>
+        </div>;
+
+    // The pay's months or INASTI's quarters: a block for each, and under the first one still to come the
+    // lane's caption. A lane that carries nothing says so under its title and has none.
+    private RenderFragment SpanRow(string title, SpanLane lane, bool quarters, string? caption) =>
+        @<div class="timeline__row">
+            <div class="timeline__row-title">
+                <span class="timeline__lane">@title</span>
+                @if (lane.Empty)
+                {
+                    <span class="timeline__note">@L["Note_Nothing"]</span>
+                }
+            </div>
+            <div class="timeline__track timeline__track--spans">
+                @foreach (var block in lane.Blocks)
+                {
+                    <span class="@BlockClass(block)" style="left: @Percent(block.Left); width: @Percent(block.Width)">@BlockText(block, quarters)</span>
+                }
+                @if (caption is not null && lane.Next is { } next)
+                {
+                    <span class="@(next.LabelEnd ? "timeline__caption timeline__caption--end" : "timeline__caption")" style="@Anchor(next.LabelAt, next.LabelEnd)">@caption</span>
+                }
+            </div>
+        </div>;
+
+    private string? PayCaption => _view.Pay is { Empty: false, Next: { } next } ? L["Pay_Caption", Formats.Euros(next.Amount)].Value : null;
+
+    private string? ContributionsCaption =>
+        _view.Contributions is { Empty: false, Next: { } next } ? L["Contributions_Caption", Formats.Euros(next.Amount), next.Index].Value : null;
+
+    private string MarkLabel(TimelineMark mark) =>
+        mark.Amount > 0m ? L["Mark_Amount", Formats.Euros(mark.Amount), Formats.ShortDay(mark.Date)].Value : Formats.ShortDay(mark.Date);
+
+    private string BlockText(TimelineBlock block, bool quarters) =>
+        quarters ? L["Quarter", block.Index].Value : block.Unmodelled ? "*" : "";
+
+    // The shape of a deadline's diamond: hollow and muted once past, the larger gold one for the next
+    // payment, a small filled one for a payment planned beyond it, a small hollow one for nothing to pay.
+    private static string MarkClass(TimelineMark mark) => $"timeline__mark timeline__diamond timeline__diamond--{DiamondKind(mark)}";
+
+    private static string DiamondKind(TimelineMark mark) => mark.State switch
+    {
+        MarkState.Past => "past",
+        MarkState.Next => "next",
+        _ => mark.Amount > 0m ? "later" : "nothing",
+    };
+
+    private static string LabelClass(TimelineMark mark) => "timeline__label"
+        + mark.State switch { MarkState.Past => " timeline__label--past", MarkState.Next => " timeline__label--next", _ => "" }
+        + (mark.LabelEnd ? " timeline__label--end" : "");
+
+    private static string BlockClass(TimelineBlock block) => $"timeline__block timeline__block--{(block.Past ? "past" : "coming")}";
+
+    private static string KeyMarkClass(KeyItem item) => item switch
+    {
+        KeyItem.PastDeadline => "timeline__key-mark timeline__diamond timeline__diamond--past",
+        KeyItem.NextPayment => "timeline__key-mark timeline__diamond timeline__diamond--next",
+        KeyItem.LaterPayment => "timeline__key-mark timeline__diamond timeline__diamond--later",
+        KeyItem.NothingToPay => "timeline__key-mark timeline__diamond timeline__diamond--nothing",
+        KeyItem.EndedSpan => "timeline__key-block timeline__block--past",
+        KeyItem.ComingSpan => "timeline__key-block timeline__block--coming",
+        _ => "timeline__key-today",
+    };
+
+    // The picture's label: the year, where Today stands, who pays next, the pay and the contributions,
+    // each as the lanes draw it, and where the rest is.
+    private string Label
+    {
+        get
+        {
+            var pay = _view.Pay.Blocks.Where(month => !month.Past).ToList();
+            var quarters = _view.Contributions.Blocks.Count(quarter => !quarter.Past);
+            var parts = new List<string>
+            {
+                L["Label_Year", _view.IncomeYear].Value,
+                L[TimelineText.TodayLabel(_view.Today.Place), Formats.Day(_view.Today.Date)].Value,
+                NextSentence,
+                _view.Pay.Empty ? L["Label_PayNothing"].Value : L["Label_Pay", Formats.Euros(_view.Pay.Blocks[0].Amount)].Value,
+            };
+            if (!_view.Pay.Empty && pay.Count > 0)
+                parts.Add(pay.Count == 1
+                    ? L["Label_PayLeftOne", Month(pay[0].From)].Value
+                    : L["Label_PayLeft", Month(pay[0].From), Month(pay[^1].From)].Value);
+
+            parts.Add(_view.Contributions.Empty
+                ? L["Label_ContributionsNothing"].Value
+                : L[TimelineText.ContributionsLabel(_view.Contributions.PaidByCompany), Formats.Euros(_view.Contributions.Blocks[0].Amount)].Value);
+            if (!_view.Contributions.Empty && quarters > 0)
+                parts.Add(L["Label_QuartersLeft", quarters].Value);
+
+            parts.Add(L["Label_Tables"].Value);
+            return string.Join(' ', parts);
+        }
+    }
+
+    private string NextSentence
+    {
+        get
+        {
+            var (company, director) = (_view.NextCompany, _view.NextDirector);
+            var date = (company ?? director)?.Date;
+
+            return L[TimelineText.Next(company, director), date is { } day ? Formats.Day(day) : "", Formats.Euros(company?.Amount ?? 0m), Formats.Euros(director?.Amount ?? 0m)].Value;
+        }
+    }
+
+    private static string Month(DateOnly month) => Formats.Month(month.Year, month.Month);
+
+    // A label stands by a mark's side that has room: its left edge early in the year, its right edge
+    // late, so it never leaves the plot.
+    private static string Anchor(decimal at, bool end) => end ? $"right: {Percent(1m - at)}" : $"left: {Percent(at)}";
+
+    // The plot's positions are fractions of the year: percentages for the HTML over it, and 0 to 1,000
+    // across for the overlay's lines.
+    private static string X(decimal at) => Coordinate(at * 1_000m);
+
+    private static string Percent(decimal at) => $"{Coordinate(at * 100m)}%";
+
+    private static string Coordinate(decimal value) => Math.Round(value, 2).ToString("0.##", CultureInfo.InvariantCulture);
+}

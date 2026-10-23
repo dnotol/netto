@@ -357,6 +357,66 @@ public class TimelineViewTests
         (months[9].LabelEnd, months[9].LabelAt).ShouldBe((true, months[9].Left + months[9].Width));
     }
 
+    // The next payment of each payer, the company's and the director's, for the sentence that names them.
+    [Fact]
+    public void Of_example_hasTheCompanysNextPaymentAndNoneOfTheDirectors()
+    {
+        var timeline = Of(RiverInputs.Example, On23October).Timeline;
+
+        timeline.NextCompany.ShouldNotBeNull().Date.ShouldBe(On21December);
+        timeline.NextDirector.ShouldBeNull();
+    }
+
+    [Fact]
+    public void Of_nothingWithheld_hasBothNextPayments()
+    {
+        var timeline = Of(RiverInputs.Example.WithTaxWithheld(0m), On23October).Timeline;
+
+        (timeline.NextCompany?.Amount, timeline.NextDirector?.Amount).ShouldBe((15_000.00m, 14_317.50m));
+    }
+
+    // The key names the marks the picture draws, and no others.
+    [Fact]
+    public void Of_example_keyNamesWhatIsDrawn()
+    {
+        var timeline = Of(RiverInputs.Example, On23October).Timeline;
+
+        timeline.Key.ShouldBe([KeyItem.PastDeadline, KeyItem.NextPayment, KeyItem.NothingToPay, KeyItem.EndedSpan, KeyItem.ComingSpan, KeyItem.Today]);
+    }
+
+    [Fact]
+    public void Of_paymentPlannedAfterTheOpenDeadline_keyNamesIt()
+    {
+        var timeline = Of(RiverInputs.Example.WithAdvancePayment(3, 3_000m), new DateOnly(2026, 9, 1)).Timeline;
+
+        timeline.Key.ShouldContain(KeyItem.LaterPayment);
+    }
+
+    [Fact]
+    public void Of_afterTheYear_keyHasOnlyWhatIsPast()
+    {
+        Of(RiverInputs.Example, new DateOnly(2027, 2, 3)).Timeline.Key.ShouldBe([KeyItem.PastDeadline, KeyItem.EndedSpan]);
+    }
+
+    [Fact]
+    public void Of_beforeTheYear_keyHasOnlyWhatIsToCome()
+    {
+        Of(RiverInputs.Example, new DateOnly(2025, 12, 15)).Timeline.Key.ShouldBe([KeyItem.NextPayment, KeyItem.NothingToPay, KeyItem.ComingSpan]);
+    }
+
+    // Today's label leans left of its line late in the year, as a mark's does.
+    [Fact]
+    public void Of_lateInTheYear_todaysLabelLeansLeft()
+    {
+        (Of(RiverInputs.Example, On23October).Timeline.Today.LabelEnd, Of(RiverInputs.Example, new DateOnly(2026, 3, 1)).Timeline.Today.LabelEnd).ShouldBe((true, false));
+    }
+
+    [Fact]
+    public void Of_example_givesTheFirstMonthTheRulesNettoDoesNotModelStartAt()
+    {
+        Of(RiverInputs.Example, On23October).Timeline.UnmodelledFrom.ShouldBe(new DateOnly(2026, 11, 1));
+    }
+
     // What the timeline draws is what the table says: each deadline's amount is its row's, a deadline
     // with no row has nothing, and the next one is the next row.
     [Theory]

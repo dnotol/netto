@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve">
+    <value>The year at a glance</value>
+  </data>
+  <data name="Lane_Company" xml:space="preserve">
+    <value>The company · advance payments</value>
+  </data>
+  <data name="Lane_Director" xml:space="preserve">
+    <value>You · advance payments</value>
+  </data>
+  <data name="Lane_Pay" xml:space="preserve">
+    <value>Your pay</value>
+  </data>
+  <data name="Lane_Contributions" xml:space="preserve">
+    <value>Social contributions</value>
+  </data>
+  <data name="Lane_Contributions_Company" xml:space="preserve">
+    <value>Social contributions · paid by the company</value>
+  </data>
+  <data name="Note_NoneDue" xml:space="preserve">
+    <value>none due</value>
+  </data>
+  <data name="Note_Exempt" xml:space="preserve">
+    <value>exempt from the surcharge</value>
+  </data>
+  <data name="Note_Nothing" xml:space="preserve">
+    <value>nothing this year</value>
+  </data>
+  <data name="Mark_Amount" xml:space="preserve">
+    <value>{0} by {1}</value>
+  </data>
+  <data name="Pay_Caption" xml:space="preserve">
+    <value>{0} net a month</value>
+  </data>
+  <data name="Contributions_Caption" xml:space="preserve">
+    <value>{0} in Q{1}</value>
+  </data>
+  <data name="Quarter" xml:space="preserve">
+    <value>Q{0}</value>
+  </data>
+  <data name="Today" xml:space="preserve">
+    <value>Today, {0}</value>
+  </data>
+  <data name="Note_Today_BeforeYear" xml:space="preserve">
+    <value>Today, {0}, is before {1}: the whole year is still to come.</value>
+  </data>
+  <data name="Note_Today_AfterYear" xml:space="preserve">
+    <value>Today, {0}, is after {1}: the whole year is past.</value>
+  </data>
+  <data name="Legend_Unmodelled" xml:space="preserve">
+    <value>* From {0}, rules exist that Netto does not model yet: those months use the rules of 1 January.</value>
+  </data>
+  <data name="Legend_Quarters" xml:space="preserve">
+    <value>The quarters are drawn whole: Netto does not model the day each is paid.</value>
+  </data>
+  <data name="Key" xml:space="preserve">
+    <value>Key to the timeline</value>
+  </data>
+  <data name="Key_PastDeadline" xml:space="preserve">
+    <value>Deadline passed</value>
+  </data>
+  <data name="Key_NextPayment" xml:space="preserve">
+    <value>Next payment</value>
+  </data>
+  <data name="Key_LaterPayment" xml:space="preserve">
+    <value>Payment planned for a later deadline</value>
+  </data>
+  <data name="Key_NothingToPay" xml:space="preserve">
+    <value>Deadline to come, nothing to pay</value>
+  </data>
+  <data name="Key_EndedSpan" xml:space="preserve">
+    <value>Month or quarter ended</value>
+  </data>
+  <data name="Key_ComingSpan" xml:space="preserve">
+    <value>Month or quarter to come</value>
+  </data>
+  <data name="Key_Today" xml:space="preserve">
+    <value>Today</value>
+  </data>
+  <data name="Label_Year" xml:space="preserve">
+    <value>Timeline of {0}.</value>
+  </data>
+  <data name="Label_Today_InYear" xml:space="preserve">
+    <value>Today is {0}.</value>
+  </data>
+  <data name="Label_Today_BeforeYear" xml:space="preserve">
+    <value>Today, {0}, is before the year.</value>
+  </data>
+  <data name="Label_Today_AfterYear" xml:space="preserve">
+    <value>Today, {0}, is after the year.</value>
+  </data>
+  <data name="Label_Next_Company" xml:space="preserve">
+    <value>Next payment by {0}: {1} from the company.</value>
+  </data>
+  <data name="Label_Next_Director" xml:space="preserve">
+    <value>Next payment by {0}: {2} from you.</value>
+  </data>
+  <data name="Label_Next_Both" xml:space="preserve">
+    <value>Next payment by {0}: {1} from the company, {2} from you.</value>
+  </data>
+  <data name="Label_Next_None" xml:space="preserve">
+    <value>No advance payment left to make.</value>
+  </data>
+  <data name="Label_Pay" xml:space="preserve">
+    <value>Your pay: {0} net a month.</value>
+  </data>
+  <data name="Label_PayLeft" xml:space="preserve">
+    <value>{0} to {1} still to come.</value>
+  </data>
+  <data name="Label_PayLeftOne" xml:space="preserve">
+    <value>{0} still to come.</value>
+  </data>
+  <data name="Label_PayNothing" xml:space="preserve">
+    <value>No pay this year.</value>
+  </data>
+  <data name="Label_Contributions" xml:space="preserve">
+    <value>Social contributions: {0} a quarter.</value>
+  </data>
+  <data name="Label_Contributions_Company" xml:space="preserve">
+    <value>Social contributions, paid by the company: {0} a quarter.</value>
+  </data>
+  <data name="Label_ContributionsNothing" xml:space="preserve">
+    <value>No social contributions this year.</value>
+  </data>
+  <data name="Label_QuartersLeft" xml:space="preserve">
+    <value>{0} of 4 quarters still to come.</value>
+  </data>
+  <data name="Label_Tables" xml:space="preserve">
+    <value>The tables below give every figure.</value>
+  </data>
+</root>

@@ -23,6 +23,36 @@ internal sealed record TimelineView(
     // plot on the right.
     public const decimal LabelsLeanLeftAfter = 0.6m;
 
+    // Each payer's next payment, if the next deadline carries one of theirs.
+    public TimelineMark? NextCompany => Company?.Marks.FirstOrDefault(mark => mark.State == MarkState.Next);
+
+    public TimelineMark? NextDirector => Director.Marks.FirstOrDefault(mark => mark.State == MarkState.Next);
+
+    // The first month of the pay that falls in rules Netto does not model yet, none when no month does.
+    public DateOnly? UnmodelledFrom => Pay.Blocks.FirstOrDefault(block => block.Unmodelled)?.From;
+
+    // What the picture draws, in the order its key names it: only what is drawn.
+    public IReadOnlyList<KeyItem> Key
+    {
+        get
+        {
+            var marks = (Company?.Marks ?? []).Concat(Director.Marks).ToList();
+            var blocks = Pay.Blocks.Concat(Contributions.Blocks).ToList();
+            var drawn = new Dictionary<KeyItem, bool>
+            {
+                [KeyItem.PastDeadline] = marks.Any(mark => mark.State == MarkState.Past),
+                [KeyItem.NextPayment] = marks.Any(mark => mark.State == MarkState.Next),
+                [KeyItem.LaterPayment] = marks.Any(mark => mark.State == MarkState.ToCome && mark.Amount > 0m),
+                [KeyItem.NothingToPay] = marks.Any(mark => mark.State == MarkState.ToCome && mark.Amount == 0m),
+                [KeyItem.EndedSpan] = blocks.Any(block => block.Past),
+                [KeyItem.ComingSpan] = blocks.Any(block => !block.Past),
+                [KeyItem.Today] = Today.Place == TodayPlace.InYear,
+            };
+
+            return [.. drawn.Where(item => item.Value).Select(item => item.Key)];
+        }
+    }
+
     public static TimelineView Of(PaymentCalendar calendar, DateOnly? next)
     {
         var scale = new YearScale(calendar.IncomeYear);
@@ -66,9 +96,24 @@ internal enum TodayPlace
     AfterYear,
 }
 
+// What the key of the picture can name, in its order.
+internal enum KeyItem
+{
+    PastDeadline,
+    NextPayment,
+    LaterPayment,
+    NothingToPay,
+    EndedSpan,
+    ComingSpan,
+    Today,
+}
+
 // Today on the year: its date, whether it falls in the income year and, only then, where.
 internal sealed record TimelineToday(DateOnly Date, TodayPlace Place, decimal? At)
 {
+    // Its label leans left of the line late in the year, as a mark's does.
+    public bool LabelEnd => At > TimelineView.LabelsLeanLeftAfter;
+
     public static TimelineToday Of(DateOnly today, YearScale scale) => today.Year.CompareTo(scale.Year) switch
     {
         < 0 => new TimelineToday(today, TodayPlace.BeforeYear, null),
