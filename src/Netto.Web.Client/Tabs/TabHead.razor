@@ -1,4 +1,6 @@
+@implements IAsyncDisposable
 @inject IStringLocalizer<TabHead> L
+@inject IJSRuntime JS
 
 @* The head every tab of the plan page opens on: an eyebrow with the planner's « In development » chip,
    the tab's title, the page's one h1, and a lede. The title takes the focus when the head is first
@@ -7,9 +9,12 @@
    are one page, and FocusOnNavigate moves the focus only when the page changes. So a tab draws its head
    once, at its top, never inside a branch its own state can draw again, or the focus would leave what
    the viewer is on. The title is focused letting the browser scroll it into view, which keeps it below
-   the sticky bar and its tabs (app.css's scroll-padding-top, --netto-under-bar): back and forward put
-   the scroll back where it was, which can leave the title under the bar (WCAG 2.4.11), while a link to
-   a tab already lands at the top, where the title shows below the bar and nothing scrolls. *@
+   the sticky bar and its tabs (app.css's scroll-padding-top, --netto-under-bar), so it is never focused
+   out of sight (WCAG 2.4.11); a link to a tab lands at the top, where the title already shows below the
+   bar and nothing scrolls. Back and forward would have the browser restore the scroll the tab had,
+   later than the focus and again as the river grows, carrying the page away from the title: while a tab
+   is shown the plan's history entries keep no scroll of their own (plan-scroll.js), and leaving the plan
+   page gives the browser its restoration back. *@
 <header class="tab-head">
     <div class="tab-head__eyebrow-row">
         <p class="tab-head__eyebrow">@Eyebrow</p>
@@ -34,9 +39,24 @@
 
     private ElementReference _title;
 
+    // Whether this head took the scroll restoration from the browser, to give it back as it goes.
+    private bool _holdsScroll;
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
-            await _title.FocusAsync();
+        if (!firstRender)
+            return;
+
+        await JS.InvokeVoidAsync("nettoPlanScroll.hold");
+        _holdsScroll = true;
+        await _title.FocusAsync();
+    }
+
+    // Gone with its tab: to another tab, which holds the scroll again, or off the plan page, whose entry
+    // the browser restores again.
+    public async ValueTask DisposeAsync()
+    {
+        if (_holdsScroll)
+            await JS.InvokeVoidAsync("nettoPlanScroll.release");
     }
 }
