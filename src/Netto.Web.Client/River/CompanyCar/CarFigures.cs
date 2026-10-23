@@ -71,9 +71,9 @@ internal static class CarFigures
             HelpArgs = [rate],
         };
 
-        return car.Costs == car.Deductible
+        return car.NotDeductibleCosts == 0m
             ? [deducted]
-            : [deducted, new FigureLine("Figure_NotDeductible", car.Costs - car.Deductible) { Help = "Help_NotDeductible" }];
+            : [deducted, new FigureLine("Figure_NotDeductible", car.NotDeductibleCosts) { Help = "Help_NotDeductible" }];
     }
 
     private static string Month(DateOnly date) => Formats.Month(date.Year, date.Month);
