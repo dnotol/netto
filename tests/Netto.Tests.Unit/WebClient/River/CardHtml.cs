@@ -101,6 +101,21 @@ internal static class CardHtml
     public static IReadOnlyList<string> LeakedKeys(string html) =>
         [.. AllTexts(Parse(html)).SelectMany(text => KeyLike.Matches(text).Select(match => match.Value)).Where(key => !NamesLikeKeys.Contains(key))];
 
+    // What the bubble after that label says, as a screen reader is given it: the text its (i), named
+    // « More about » the label, is described by, read as one line. A label with no bubble after it fails
+    // the test that asks.
+    public static string BubbleAfter(string html, string label)
+    {
+        var elements = Descendants(Parse(html)).ToList();
+        var trigger = elements.FirstOrDefault(element => element.Attributes.GetValueOrDefault("aria-label") == $"More about {label}");
+        trigger.ShouldNotBeNull($"No bubble follows « {label} ».");
+        var describedBy = trigger.Attributes.GetValueOrDefault("aria-describedby");
+        var text = elements.FirstOrDefault(element => describedBy is not null && element.Attributes.GetValueOrDefault("id") == describedBy);
+        text.ShouldNotBeNull($"The bubble after « {label} » holds no text.");
+
+        return Regex.Replace(string.Concat(text.Children.SelectMany(child => TextsInSight(child))), "\\s+", " ").Trim();
+    }
+
     // The element of that id with all it holds, as written; a test asking for one the page does not draw
     // fails.
     private static string ById(string html, string id)

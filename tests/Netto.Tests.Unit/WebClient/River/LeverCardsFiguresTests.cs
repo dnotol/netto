@@ -1,5 +1,4 @@
 using System.Globalization;
-using System.Net;
 using System.Resources;
 using System.Text.RegularExpressions;
 using Netto.Web.Client.River;
@@ -150,7 +149,7 @@ public class LeverCardsFiguresTests
     {
         var html = await OpenCardAsync(Filled, "allowances");
 
-        BubbleAfter(html, "Office allowance for the year")
+        CardHtml.BubbleAfter(html, "Office allowance for the year")
             .ShouldBe("At most €157.83 a month from January, €160.99 a month from March, €164.21 a month from September.");
     }
 
@@ -161,7 +160,7 @@ public class LeverCardsFiguresTests
     {
         var html = await OpenCardAsync(Filled.With("earlier profits refused", inputs => inputs.WithEarlierProfits(-1m)), "dividend");
 
-        BubbleAfter(html, "Withholding rate you declare").ShouldBe(
+        CardHtml.BubbleAfter(html, "Withholding rate you declare").ShouldBe(
             "VVPRbis shares are shares a small company issued in return for a new contribution in cash, under the regime's conditions: " +
             "their dividends can be withheld at a reduced rate from a later distribution on. They pay the ordinary rate on their first " +
             "distributions; the second-distribution rate is for a contribution made by 2025.");
@@ -184,7 +183,7 @@ public class LeverCardsFiguresTests
     {
         var html = await OpenCardAsync(Filled, "company-year");
 
-        BubbleAfter(html, "Company year")
+        CardHtml.BubbleAfter(html, "Company year")
             .ShouldBe("The river starts on an example year: replace its amounts with yours, or clear the company's figures to start at your pay.");
     }
 
@@ -223,17 +222,6 @@ public class LeverCardsFiguresTests
 
     // The card of that fold's name on the Plan page, every card open.
     private static async Task<string> OpenCardAsync(NamedRiver river, string card) => CardHtml.Card(await CardHtml.RenderPlanOpenAsync(river.Inputs), card);
-
-    // What the bubble after that label says, as a screen reader is given it: the text its (i), named
-    // « More about » the label, is described by.
-    private static string BubbleAfter(string html, string label)
-    {
-        var decoded = WebUtility.HtmlDecode(html);
-        var trigger = decoded.IndexOf($"aria-label=\"More about {label}\"", StringComparison.Ordinal);
-        trigger.ShouldBeGreaterThan(-1, $"No bubble follows « {label} ».");
-
-        return Regex.Match(decoded[trigger..], "class=\"info-bubble__text\"[^>]*>(.*?)</span>", RegexOptions.Singleline).Groups[1].Value;
-    }
 
     // An amount without the sign a line gives what it takes or what comes back: −€400.00 is €400.00.
     private static string Unsigned(string amount) => amount.TrimStart('−', '+');
