@@ -21,6 +21,19 @@ public class InterfaceTextTests
             () => texts.Where(text => text.Value.Contains("muddy", StringComparison.OrdinalIgnoreCase)).Select(text => $"{text.Resource}: {text.Key}").ShouldBeEmpty());
     }
 
+    // The bucket of what leaves the pay is named for the social contributions it holds with the tax,
+    // « Contributions and tax on pay » (BucketNamesTests): no text of the interface calls it by its first
+    // name, « taxes on pay », any more.
+    [Fact]
+    public void Resources_everyText_namesNoTaxesOnPay()
+    {
+        var texts = Texts().ToList();
+
+        texts.ShouldSatisfyAllConditions(
+            () => texts.ShouldContain(text => text.Key == "Bucket_taxes_on_pay"),
+            () => texts.Where(text => text.Value.Contains("taxes on pay", StringComparison.OrdinalIgnoreCase)).Select(text => $"{text.Resource}: {text.Key}").ShouldBeEmpty());
+    }
+
     // Each text of every resource the client embeds, with the resource and the key it is under.
     private static IEnumerable<(string Resource, string Key, string Value)> Texts()
     {

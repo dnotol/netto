@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Globalization;
 using System.Net;
 using System.Resources;
@@ -10,7 +9,8 @@ namespace Netto.Tests.WebClient.River;
 
 // The bucket of what leaves the director's pay holds their social contributions with the tax on it,
 // and its name says so, so the bar reads without its bubbles: « Contributions and tax on pay », its key
-// keeping its first name, taxes_on_pay. A text that names a bucket names it as the bar does.
+// keeping its first name, taxes_on_pay. A text that names a bucket names it as the bar does; that no
+// text says its first name is InterfaceTextTests'.
 public class BucketNamesTests
 {
     // The names IStringLocalizer<TComponent> reads River/<Component>.resx under.
@@ -21,17 +21,6 @@ public class BucketNamesTests
     // The rent at the 2026 cap, whose tax joins what leaves the pay (BucketsViewTests).
     private static readonly RiverInputs RentAtTheCap = RiverInputs.Example
         .AddToPlan(OptionalModule.Rent).WithCadastralIncome(1_200m).WithShareLet(0.12m).WithRent(1_380m);
-
-    // No text of the page calls that bucket by its first name any more.
-    [Fact]
-    public void Resources_everyText_namesNoTaxesOnPay()
-    {
-        var texts = Texts().ToList();
-
-        texts.ShouldSatisfyAllConditions(
-            () => texts.ShouldContain(text => text.Key == "Bucket_taxes_on_pay"),
-            () => texts.Where(text => text.Value.Contains("taxes on pay", StringComparison.OrdinalIgnoreCase)).Select(text => $"{text.Resource}: {text.Key}").ShouldBeEmpty());
-    }
 
     public static TheoryData<RiverInputs, string> Rivers => new()
     {
@@ -84,21 +73,5 @@ public class BucketNamesTests
         start.ShouldBeGreaterThan(-1);
         var next = html.IndexOf("class=\"bucket bucket--", start + 1, StringComparison.Ordinal);
         return next < 0 ? html[start..] : html[start..next];
-    }
-
-    // Each text of every resource the client embeds, with the resource and the key it is under.
-    private static IEnumerable<(string Resource, string Key, string Value)> Texts()
-    {
-        var assembly = typeof(BucketBar).Assembly;
-        foreach (var resource in assembly.GetManifestResourceNames().Where(name => name.EndsWith(".resources", StringComparison.Ordinal)))
-        {
-            using var stream = assembly.GetManifestResourceStream(resource) ?? throw new InvalidOperationException($"No stream for {resource}.");
-            using var reader = new ResourceReader(stream);
-            foreach (DictionaryEntry entry in reader)
-            {
-                if (entry.Value is string value)
-                    yield return (resource, (string)entry.Key, value);
-            }
-        }
     }
 }

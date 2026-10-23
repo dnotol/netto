@@ -1,5 +1,4 @@
 using System.Globalization;
-using System.Net;
 using System.Resources;
 using Netto.Web.Client;
 using Netto.Web.Client.River;
@@ -11,13 +10,17 @@ namespace Netto.Tests.WebClient.River.CompanyCar;
 
 // The Company car card opened on the river's example with YearSimulationCarTests' electric car, which
 // takes 6,162.66 of cash from the pocket (CarViewTests), drawn as a viewer meets it (RiverRendering):
-// what it asks of the same car bought privately, and what it says against it. Its sentences are read
-// from its .resx, so rewording one leaves these tests standing.
+// what it asks of the same car bought privately, and what it says against it; and, on the example's own
+// car, the origins it names. Its sentences are read from its .resx, so rewording one leaves these tests
+// standing.
 public class CarCardTests
 {
     private static readonly ResourceManager Resources = new("Netto.Web.Client.River.CompanyCar.CarCard", typeof(CarCard).Assembly);
 
     private static readonly ResourceManager Refusals = new("Netto.Web.Client.River.RefusedMessage", typeof(RefusedMessage).Assembly);
+
+    // The field of what the same car would cost privately.
+    private const string PrivateCost = "river-car-private-cost";
 
     private static readonly RiverInputs ElectricCar = RiverInputs.Example.AddToPlan(OptionalModule.Car)
         .WithCatalogueValue(50_000m).WithFirstRegistration(new DateOnly(2026, 1, 10)).WithCarCosts(8_000m);
@@ -27,11 +30,11 @@ public class CarCardTests
     [Fact]
     public async Task Card_noPrivateCost_asksItStatesTheCashAndWaits()
     {
-        var html = await RenderOpenAsync(ElectricCar);
+        var html = await RenderOpenAsync<CarCard>(OptionalModule.Car, ElectricCar);
 
         html.ShouldSatisfyAllConditions(
             () => html.ShouldContain(Text("PrivateCostLabel")),
-            () => PrivateCostHead(html).ShouldNotContain("origin-chip"),
+            () => FieldHead(html, PrivateCost).ShouldNotContain("origin-chip"),
             () => html.ShouldContain(Text("Cash_Takes", "€6,162.66")),
             () => html.ShouldContain(Text("Private_Waiting")));
     }
@@ -41,17 +44,17 @@ public class CarCardTests
     [Fact]
     public async Task Card_privateCostGiven_saysItIsYoursAndWhatTheCarGains()
     {
-        var html = await RenderOpenAsync(ElectricCar.WithCarPrivateCost(10_000m));
+        var html = await RenderOpenAsync<CarCard>(OptionalModule.Car, ElectricCar.WithCarPrivateCost(10_000m));
 
         html.ShouldSatisfyAllConditions(
-            () => PrivateCostHead(html).ShouldContain("origin-chip--yours"),
+            () => FieldHead(html, PrivateCost).ShouldContain("origin-chip--yours"),
             () => html.ShouldContain(Text("Private_Gain", "€3,837.34", "€10,000.00")));
     }
 
     [Fact]
     public async Task Card_negativePrivateCost_saysWhyItIsRefused()
     {
-        var html = await RenderOpenAsync(ElectricCar.WithCarPrivateCost(-1m));
+        var html = await RenderOpenAsync<CarCard>(OptionalModule.Car, ElectricCar.WithCarPrivateCost(-1m));
 
         (html.Contains(Refusals.GetString($"Error_{CarComparison.PrivateCostNegative}", CultureInfo.InvariantCulture) ?? "-"), html.Contains(Text("Private_Waiting")))
             .ShouldBe((true, true));
@@ -61,26 +64,23 @@ public class CarCardTests
     [Fact]
     public async Task Card_withACar_namesNoMuddyPocket()
     {
-        var html = await RenderOpenAsync(ElectricCar.WithCarContribution(600m).WithCarPrivateCost(10_000m));
+        var html = await RenderOpenAsync<CarCard>(OptionalModule.Car, ElectricCar.WithCarContribution(600m).WithCarPrivateCost(10_000m));
 
         html.ShouldNotContain("muddy", Case.Insensitive);
     }
 
-    // The card opened by the viewer, its HTML decoded to the text a viewer reads.
-    private static async Task<string> RenderOpenAsync(RiverInputs inputs)
+    // The example's car, whose papers open by themselves while its catalogue value is missing: that value,
+    // its yearly costs and the contribution are nothing the example holds, beside no origin; its first
+    // registration and its order are the example's dates, the card's only « example » chips
+    // (ExampleOriginsTests).
+    [Fact]
+    public async Task Card_exampleCar_drawsTheExamplesChipsOnItsDatesAlone()
     {
-        var folds = new Folds(new BrowserStorage());
-        folds.Set(ModuleFolds.Name(OptionalModule.Car), true);
+        var html = await RenderOpenAsync<CarCard>(OptionalModule.Car, RiverInputs.Example.AddToPlan(OptionalModule.Car));
 
-        return WebUtility.HtmlDecode(await RenderAsync<CarCard>(folds, new() { ["Inputs"] = inputs, ["Run"] = inputs.Run(), ["Refused"] = null }));
-    }
-
-    // From the private cost's label to its input: its name, its help and the origin beside them, if any.
-    private static string PrivateCostHead(string html)
-    {
-        var label = html.IndexOf("id=\"river-car-private-cost-label\"", StringComparison.Ordinal);
-        label.ShouldBeGreaterThan(-1);
-        return html[label..html.IndexOf("id=\"river-car-private-cost\"", label, StringComparison.Ordinal)];
+        html.ShouldSatisfyAllConditions(
+            () => new[] { "river-car-catalogue", "river-car-costs", "river-car-contribution" }.Where(field => FieldHead(html, field).Contains("origin-chip")).ShouldBeEmpty(),
+            () => OriginChips(html).Count(chip => chip == "example").ShouldBe(2));
     }
 
     private static string Text(string key, params object[] figures) =>

@@ -1,4 +1,3 @@
-using System.Reflection;
 using Netto.Web.Client.River;
 using Shouldly;
 
@@ -34,8 +33,7 @@ public class ExampleOriginsTests
     private static IEnumerable<(string Path, object? Value, InputOrigin Origin)> Inputs(object record, string path)
     {
         var type = record.GetType();
-        var constructor = type.GetConstructors().Single(candidate => candidate.GetParameters().Length > 0 && !IsCopyConstructor(type, candidate));
-        foreach (var parameter in constructor.GetParameters())
+        foreach (var parameter in RiverInputsShapeTests.Parameters(type))
         {
             var name = $"{path}{parameter.Name}";
             switch (type.GetProperty(parameter.Name!)!.GetValue(record))
@@ -52,7 +50,4 @@ public class ExampleOriginsTests
     }
 
     private static object? Read(object input, string property) => input.GetType().GetProperty(property)!.GetValue(input);
-
-    private static bool IsCopyConstructor(Type type, ConstructorInfo constructor) =>
-        constructor.GetParameters() is [var only] && only.ParameterType == type;
 }

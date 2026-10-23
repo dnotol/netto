@@ -1,3 +1,4 @@
+using System.Net;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -7,6 +8,7 @@ using Microsoft.JSInterop;
 using MudBlazor.Services;
 using Netto.Web.Client;
 using Netto.Web.Client.River;
+using Shouldly;
 
 namespace Netto.Tests.WebClient.River;
 
@@ -45,6 +47,29 @@ internal static class RiverRendering
     public static bool IsOpen(string html) => Toggle(html).Contains("aria-expanded=\"true\"");
 
     public static bool IsDisabled(string html) => Toggle(html).Contains("disabled");
+
+    // A lever's card opened by the viewer, drawn on its inputs' own run, its HTML decoded to the text a
+    // viewer reads.
+    public static async Task<string> RenderOpenAsync<TCard>(OptionalModule module, RiverInputs inputs)
+        where TCard : IComponent
+    {
+        var folds = new Folds(new BrowserStorage());
+        folds.Set(ModuleFolds.Name(module), true);
+
+        return WebUtility.HtmlDecode(await RenderAsync<TCard>(folds, new() { ["Inputs"] = inputs, ["Run"] = inputs.Run(), ["Refused"] = null }));
+    }
+
+    // From a field's label to its input: its name, its help and the origin beside them, if any.
+    public static string FieldHead(string html, string field)
+    {
+        var label = html.IndexOf($"id=\"{field}-label\"", StringComparison.Ordinal);
+        label.ShouldBeGreaterThan(-1);
+        return html[label..html.IndexOf($"id=\"{field}\"", label, StringComparison.Ordinal)];
+    }
+
+    // The origin each chip drawn names, in the order of the page.
+    public static IReadOnlyList<string> OriginChips(string html) =>
+        [.. Regex.Matches(html, "origin-chip--(\\w+)").Select(match => match.Groups[1].Value)];
 
     public static RenderFragment Text(string text) => builder => builder.AddContent(0, text);
 

@@ -28,13 +28,14 @@ public class RiverInputsShapeTests
     [InlineData(typeof(MunicipalityChoice), "Rates:MunicipalRates Municipality:Municipality Rate:Decimal Origin:InputOrigin")]
     public void Constructor_savedPlansKnowIt_isTheShapePlanStorageStores(Type type, string shape)
     {
-        var parameters = type.GetConstructors().Single(constructor => constructor.GetParameters().Length > 0 && !IsCopyConstructor(type, constructor)).GetParameters();
+        var parameters = Parameters(type);
 
         string.Join(' ', parameters.Select(parameter => $"{parameter.Name}:{Name(parameter.ParameterType)}")).ShouldBe(shape);
     }
 
-    private static bool IsCopyConstructor(Type type, System.Reflection.ConstructorInfo constructor) =>
-        constructor.GetParameters() is [var only] && only.ParameterType == type;
+    // A record's positional members in their order: the parameters of its one public constructor, since a
+    // record's copy constructor is never public. ExampleOriginsTests walks the river's inputs by them.
+    internal static IReadOnlyList<System.Reflection.ParameterInfo> Parameters(Type type) => type.GetConstructors().Single().GetParameters();
 
     private static string Name(Type type) => type.IsGenericType
         ? $"{type.Name}[{string.Join(',', type.GetGenericArguments().Select(Name))}]"
