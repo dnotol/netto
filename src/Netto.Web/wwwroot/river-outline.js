@@ -5,7 +5,8 @@
 // html's scroll-padding-top, which app.css keeps below the bar. It measures once per frame while the
 // page scrolls, and calls .NET only when a card's top or its end crosses that line or the page reaches
 // its end or leaves it, so scrolling costs the river nothing; it calls at once when the river changes
-// size (a card opened or folded) or the window does. Nothing is measured while the outline is hidden.
+// size (a card opened or folded) or the window does, and once after an arrival (below), when the page
+// is still. Nothing is measured while the outline is hidden.
 //
 // A jump scrolls the card's top to the line, smoothly unless the viewer asks for less motion (app.css),
 // and puts the focus on its heading's button, or on the card itself while a refusal keeps that button
