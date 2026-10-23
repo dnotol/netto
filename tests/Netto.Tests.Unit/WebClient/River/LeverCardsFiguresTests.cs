@@ -209,6 +209,17 @@ public class LeverCardsFiguresTests
             .ShouldBe("At most €157.83 a month from January, €160.99 a month from March, €164.21 a month from September.");
     }
 
+    // What the allowances' deducted sentence said is the card's bubble's to say: the company deducts them in
+    // full, like its own running costs.
+    [Fact]
+    public async Task Allowances_bubble_saysTheCompanyDeductsThemInFull()
+    {
+        CardHtml.BubbleAfter(await OpenCardAsync(Filled, "allowances"), "Expense allowances").ShouldBe(
+            "What the company can pay you back for working from home with your own office, internet, computer and phone: costs that are its own, " +
+            "so neither pay nor income for your social contributions. It pays them out of its profit, before your pay, and deducts them in full, " +
+            "like its own running costs: nothing is added back to its taxable income.");
+    }
+
     // The rate a dividend is withheld at is declared: what VVPRbis shares are, and which of their rates is
     // for which distribution, are in the bubble after its label, inside the disclosure a refusal opens.
     [Fact]
