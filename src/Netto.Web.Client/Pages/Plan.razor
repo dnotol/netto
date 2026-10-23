@@ -65,7 +65,7 @@
                     <WhenToPayTab Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Date="Today" />
                     break;
                 case PlanTab.Compare:
-                    <CompareTab Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" TodayRun="_today?.Run" PlansChanged="OnPlansChanged" />
+                    <CompareTab PlansChanged="OnPlansChanged" />
                     break;
             }
         </MudContainer>

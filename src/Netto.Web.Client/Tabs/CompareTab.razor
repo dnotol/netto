@@ -127,23 +127,8 @@
 </div>
 
 @code {
-    // The river as it is.
-    [Parameter, EditorRequired]
-    public RiverInputs Inputs { get; set; } = default!;
-
-    // The river with a plan opened from the comparison.
-    [Parameter]
-    public EventCallback<RiverInputs> InputsChanged { get; set; }
-
-    // The river's one run.
-    [Parameter, EditorRequired]
-    public RiverRun Run { get; set; } = default!;
-
-    // The run of the plan starred « Today », which every plan is measured against, or null while none is.
-    [Parameter]
-    public RiverRun? TodayRun { get; set; }
-
     // A saved plan changed from here, its star moved or the plan removed: the page reads the plans again.
+    // The tab only reads them today, and the Plans panel in the bar tells the page itself.
     [Parameter]
     public EventCallback PlansChanged { get; set; }
 

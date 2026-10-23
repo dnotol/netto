@@ -94,7 +94,7 @@ public class CompareTabFollowsPlansTests
         return await renderer.Dispatcher.InvokeAsync(async () =>
         {
             var output = await renderer.RenderComponentAsync<CompareTab>(
-                ParameterView.FromDictionary(new Dictionary<string, object?> { ["Inputs"] = RiverInputs.Example, ["Run"] = RiverInputs.Example.Run() }));
+                ParameterView.FromDictionary(new Dictionary<string, object?>()));
             var before = WebUtility.HtmlDecode(output.ToHtmlString());
             change();
             await output.QuiescenceTask;

@@ -272,7 +272,7 @@ public class CompareTabTests
 
     private static async Task<string> RenderTabAsync(SavedPlans plans) =>
         WebUtility.HtmlDecode(await RenderAsync(typeof(CompareTab), new Folds(new BrowserStorage()),
-            new() { ["Inputs"] = RiverInputs.Example, ["Run"] = RiverInputs.Example.Run() },
+            [],
             services => services.AddSingleton(plans)));
 
     // Each select as its id, its label and its options with their state.
