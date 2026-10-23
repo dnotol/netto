@@ -16,13 +16,13 @@
     <value>Copyright royalty</value>
   </data>
   <data name="Summary" xml:space="preserve">
-    <value>{0} to your pocket after its tax · {2} before your pay</value>
+    <value>{0} to your pocket after its tax</value>
   </data>
   <data name="Summary_AsPay" xml:space="preserve">
-    <value>{0} to your pocket after its tax, {1} taxed as your pay · {2} before your pay</value>
+    <value>{0} to your pocket after its tax, {1} taxed as your pay</value>
   </data>
   <data name="SummaryNoRoyalty" xml:space="preserve">
-    <value>No royalty yet · {2} before your pay</value>
+    <value>No royalty yet</value>
   </data>
   <data name="Waiting" xml:space="preserve">
     <value>Waiting for the company's year.</value>
@@ -100,7 +100,7 @@
     <value>Remove the copyright royalty from your plan</value>
   </data>
   <data name="Summary_AllAsPay" xml:space="preserve">
-    <value>All {1} taxed as your pay · {2} before your pay</value>
+    <value>All {1} taxed as your pay</value>
   </data>
   <data name="AttestationLabel" xml:space="preserve">
     <value>I hold an attestation du travail des arts covering these works</value>

@@ -6,8 +6,8 @@ using Netto.Web.Client.Steps;
 namespace Netto.Web.Client.River.CompanyCar;
 
 // What the company car costs the company, out to the muddy pocket, and the director's contribution
-// coming back from their pocket, then what it leaves, passed on to the copyright royalty when it is in
-// the plan, or as the profit before pay to the split, from the year's car steps; what it receives is
+// coming back from their pocket, then what it leaves, passed on to the split, the last lever before it,
+// as what the pay, the company and a royalty share there, from the year's car steps; what it receives is
 // what the levers above leave of what the company earns. The card reads the car as the engine took it (Result): its benefit, period by period,
 // at its CO2 percentage, at least the minimum, less the contribution, taxed as pay, what the company
 // deducts of its costs, and what it adds back of the benefit, 40% when it pays the private energy,
@@ -49,9 +49,7 @@ internal sealed record CarView(
             steps.Count > 0 ? Shares.Of(left, received) : null,
             [
                 .. drains,
-                NextModule.After(OptionalModule.Car, composition) is "split"
-                    ? new Drain("profit_before_pay", DrainKind.PassedOn, year.ProfitBeforePay, "split")
-                    : new Drain("left_after_car", DrainKind.PassedOn, left, NextModule.After(OptionalModule.Car, composition)),
+                NextModule.IntoTheSplit(year, composition),
             ],
             ledger.Select(StepDetail.From).ToList());
     }

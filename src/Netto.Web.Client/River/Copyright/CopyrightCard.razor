@@ -4,8 +4,9 @@
 @using Netto.Web.Client.Steps
 @inject IStringLocalizer<CopyrightCard> L
 
-@* The last lever before the split: a copyright royalty the company pays the director for the rights on
-   works they created. The user gives the royalty for the year and says whether their copyright income
+@* At the top of the director's stream, after the split, which pays it beside the pay: a copyright
+   royalty the company pays the director for the rights on works they created, which the card receives
+   and drains. The user gives the royalty for the year and says whether their copyright income
    of the four previous years averaged at most the year's cap, met unless they say otherwise, and
    whether they hold an attestation du travail des arts for these works, none unless they say so, and
    the share of their working time spent creating, which only the moves read, none until given; the
@@ -129,8 +130,8 @@
         _settings = CopyrightSettingsView.From(Inputs);
     }
 
-    private string? Summary => _view is { } view && Run.Year is { } year
-        ? L[CopyrightCardText.Summary(view), Formats.Euros(view.AfterTax), Formats.Euros(view.Result.TaxedAsPay), Formats.Euros(year.ProfitBeforePay)].Value
+    private string? Summary => _view is { } view
+        ? L[CopyrightCardText.Summary(view), Formats.Euros(view.AfterTax), Formats.Euros(view.Result.TaxedAsPay)].Value
         : null;
 
     private RenderFragment? Details => _view is { Details.Count: > 0 } view && Run.Year is { } year

@@ -4,15 +4,14 @@ using Netto.Web.Client.Steps;
 
 namespace Netto.Web.Client.River.Copyright;
 
-// What the copyright royalty does from the year's royalty steps, the last lever before the split:
-// what its part within the limits costs in tax apart, each line of it into the taxes on pay, what of
-// that part reaches the pocket once it is paid, its part beyond the limits going on to Director pay,
-// taxed as pay, and the profit before pay it leaves for the split; what it receives is what the levers
-// above leave of what the company earns. The card reads the royalty as the engine took it (Result):
-// the limits, which one set the part within, and what the company withheld. Its lines say their share
-// of the royalty, and the card what reaches the pocket of it from here (ToYou); the part taxed as pay
-// reaches it through Director pay, net of its own taxes there. Without a royalty, nothing but the
-// profit passed on.
+// What the copyright royalty does from the year's royalty steps, at the top of the director's stream:
+// it receives the royalty the split pays beside the pay, and drains what its part within the limits
+// costs in tax apart, each line of it into the taxes on pay, what of that part reaches the pocket once
+// it is paid, and its part beyond the limits, going on to Director pay, taxed as pay. The card reads the
+// royalty as the engine took it (Result): the limits, which one set the part within, what the company
+// withheld, and for a royalty that follows the pay, how it was set. Its lines say their share of the
+// royalty, and the card what reaches the pocket of it from here (ToYou); the part taxed as pay reaches
+// it through Director pay, net of its own taxes there. Without a royalty, nothing.
 internal sealed record CopyrightView(
     decimal Received,
     CopyrightResult Result,
@@ -44,12 +43,12 @@ internal sealed record CopyrightView(
             : [];
 
         return new CopyrightView(
-            year.ProfitBeforePay + royalty.Royalty,
+            royalty.Royalty,
             royalty,
             tax,
             afterTax,
             ledger.Count > 0 ? Shares.Of(afterTax, royalty.Royalty) : null,
-            [.. drains, new Drain("profit_before_pay", DrainKind.PassedOn, year.ProfitBeforePay, "split")],
+            [.. drains],
             ledger.Select(StepDetail.From).ToList());
     }
 }

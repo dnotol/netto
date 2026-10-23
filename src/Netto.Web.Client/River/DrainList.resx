@@ -171,11 +171,8 @@
   <data name="Drain_copyright_taxed_as_pay" xml:space="preserve">
     <value>Royalty beyond the limits</value>
   </data>
-  <data name="Drain_left_after_car" xml:space="preserve">
-    <value>Left after the car</value>
-  </data>
-  <data name="To_copyright" xml:space="preserve">
-    <value>on to the copyright royalty</value>
+  <data name="Drain_profit_before_pay_and_royalty" xml:space="preserve">
+    <value>Profit before your pay and royalty</value>
   </data>
   <data name="To_director_pay" xml:space="preserve">
     <value>on to Director pay, taxed as your pay</value>

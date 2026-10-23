@@ -8,26 +8,26 @@ namespace Netto.Tests.WebClient.River.Copyright;
 
 // The Copyright royalty card on the river's example (RiverInputsTests), 100,000 of profit before the
 // director and 50,000 of pay: a royalty of 10,000 stays within 30% of 60,000, one of 30,000 passes 30%
-// of 80,000, 24,000, by 6,000 (CopyrightCalculatorTests).
+// of 80,000, 24,000, by 6,000 (CopyrightCalculatorTests). The card comes after the split, which pays
+// the royalty beside the pay: it receives the royalty and drains it.
 public class CopyrightViewTests
 {
     private static readonly RiverInputs Within = RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithRoyalty(10_000m);
 
     private static readonly RiverInputs Beyond = RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithRoyalty(30_000m);
 
-    // Added with nothing: no royalty yet, so the profit goes on whole to the split, and there are no
-    // steps to list.
+    // Added without a share, the royalty follows the pay and is none: nothing to drain, and no steps to
+    // list.
     [Fact]
-    public void Royalty_addedWithNothing_passesTheProfitOnToTheSplit()
+    public void Royalty_addedWithoutAShare_hasNothingToDrain()
     {
         var view = Royalty(RiverInputs.Example.AddToPlan(OptionalModule.Copyright));
 
-        (view.HasRoyalty, view.Details.Count, view.ToYou, view.Drains.Single())
-            .ShouldBe((false, 0, (decimal?)null, new Drain("profit_before_pay", DrainKind.PassedOn, 100_000m, "split")));
+        (view.HasRoyalty, view.Details.Count, view.ToYou, view.Drains.Count).ShouldBe((false, 0, (decimal?)null, 0));
     }
 
     // Its tax apart and the municipal surcharge go to the taxes on pay, the rest of the part within the
-    // limits to the pocket, nothing to Director pay, and the profit before pay, 90,000, on to the split.
+    // limits to the pocket, and nothing to Director pay.
     [Fact]
     public void Royalty_withinTheLimits_drainsItsTaxAndPassesTheRestToThePocket()
     {
@@ -42,7 +42,6 @@ public class CopyrightViewTests
             new Drain("copyright_income_tax_advance_payments", DrainKind.PaidOut, 0m, "taxes_on_pay"),
             new Drain("copyright_after_tax", DrainKind.PassedOn, 10_000m - tax.Total, "pocket"),
             new Drain("copyright_taxed_as_pay", DrainKind.PassedOn, 0m, "director_pay"),
-            new Drain("profit_before_pay", DrainKind.PassedOn, 90_000m, "split"),
         });
     }
 
@@ -76,22 +75,22 @@ public class CopyrightViewTests
             .ShouldBe((24_000m, new Drain("copyright_taxed_as_pay", DrainKind.PassedOn, 6_000m, "director_pay")));
     }
 
-    // What it receives is what the levers above leave of what the company earns; each line says its
-    // share of the royalty, and the card what reaches the pocket of it from here.
+    // What it receives is the royalty the split pays; each line says its share of it, and the card what
+    // reaches the pocket of it from here.
     [Fact]
     public void Royalty_saysItsSharesOfTheRoyalty()
     {
         var view = Royalty(Beyond);
 
         (view.Received, view.Drains.Single(drain => drain.Key == "copyright_taxed_as_pay").Share, view.ToYou)
-            .ShouldBe((100_000m, (decimal?)0.2m, Netto.Web.Client.Shares.Of(view.AfterTax, 30_000m)));
+            .ShouldBe((30_000m, (decimal?)0.2m, Netto.Web.Client.Shares.Of(view.AfterTax, 30_000m)));
     }
 
-    // The remainder passed on to the split says no share.
+    // Every line takes part of the royalty: none is a remainder passed on.
     [Fact]
-    public void Royalty_profitPassedOn_saysNoShare()
+    public void Royalty_everyLine_saysItsShare()
     {
-        Royalty(Within).Drains[^1].Share.ShouldBeNull();
+        Royalty(Within).Drains.ShouldAllBe(drain => drain.Share != null);
     }
 
     [Fact]
@@ -103,14 +102,13 @@ public class CopyrightViewTests
         ]);
     }
 
-    // The tax lines and the part taxed as pay carry their steps; what reaches the pocket and the profit
-    // passed on have none.
+    // The tax lines and the part taxed as pay carry their steps; what reaches the pocket has none.
     [Fact]
     public void Royalty_eachLineOfAStepCarriesThatStep()
     {
         Royalty(Within).Drains.Select(drain => drain.Details.SingleOrDefault()?.RuleKey ?? "").ShouldBe([
             "copyright_tax", "copyright_municipal_surcharge", "copyright_low_earned_income_credit_lost", "copyright_income_tax_advance_payments", "",
-            "copyright_taxed_as_pay", "",
+            "copyright_taxed_as_pay",
         ]);
     }
 
@@ -162,14 +160,15 @@ public class CopyrightViewTests
         CopyrightComparison.From(inputs, inputs.Run()).ShouldBeNull();
     }
 
-    // The rent passes what it leaves on to the royalty once it is in the plan, the royalty still in it.
+    // With the royalty in the plan, the rent passes on to the split what the pay and the royalty share
+    // there, the royalty still in it.
     [Fact]
-    public void Rent_withTheRoyalty_passesWhatItLeavesOnToTheRoyalty()
+    public void Rent_withTheRoyalty_passesWhatThePayAndTheRoyaltyShareOnToTheSplit()
     {
         var inputs = Within.AddToPlan(OptionalModule.Rent).WithCadastralIncome(1_200m).WithShareLet(0.12m).WithRent(1_380m);
 
         RentView.From(inputs.Run().Year.ShouldNotBeNull(), inputs.Composition).Drains[^1]
-            .ShouldBe(new Drain("left_after_rent", DrainKind.PassedOn, 98_620m, "copyright"));
+            .ShouldBe(new Drain("profit_before_pay_and_royalty", DrainKind.PassedOn, 98_620m, "split"));
     }
 
     private static CopyrightView Royalty(RiverInputs inputs) => CopyrightView.From(inputs.Run().Year.ShouldNotBeNull());

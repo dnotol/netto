@@ -69,12 +69,13 @@ public class PlanCompositionTests
         new PlanComposition(vouchers, allowances, rent, car, false).NextAfter(module).ShouldBe(next);
     }
 
-    // The royalty is the last lever before the split.
+    // The royalty comes after the split, which decides it beside the pay (operator, 2026-10-23): what the
+    // levers leave goes on to the split, never to the royalty, and nothing goes on from the royalty.
     [Theory]
-    [InlineData(true, false, OptionalModule.Car, OptionalModule.Copyright)]
-    [InlineData(false, true, OptionalModule.Rent, OptionalModule.Copyright)]
+    [InlineData(true, false, OptionalModule.Car, null)]
+    [InlineData(false, true, OptionalModule.Rent, null)]
     [InlineData(true, true, OptionalModule.Copyright, null)]
-    public void NextAfter_withTheRoyalty_isTheRoyaltyAfterTheOthers(bool car, bool rent, OptionalModule module, OptionalModule? next)
+    public void NextAfter_withTheRoyalty_isNeverTheRoyalty(bool car, bool rent, OptionalModule module, OptionalModule? next)
     {
         new PlanComposition(false, false, rent, car, true).NextAfter(module).ShouldBe(next);
     }

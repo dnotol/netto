@@ -55,7 +55,7 @@ internal sealed record VoucherView(
 // What the expense allowances bring to the pocket, one drain for each once the company pays any, and
 // what the vouchers and they leave of what the company earns, passed on to the next module in the
 // plan, or the split: the profit before pay with the rent the company pays, what the car costs it and
-// the copyright royalty it pays still in it. The maxima and the conditions are the year's rules, which the card reads beside it, so
+// the copyright royalty the split pays still in it. The maxima and the conditions are the year's rules, which the card reads beside it, so
 // they stay while an amount is refused. The company deducts them in full: nothing of them reaches
 // Corporate tax, and all of them reach the pocket (ToYou) once it pays any.
 internal sealed record AllowanceView(decimal Total, decimal Left, decimal? ToYou, IReadOnlyList<Drain> Drains, IReadOnlyList<StepDetail> Details)
@@ -79,8 +79,8 @@ internal sealed record AllowanceView(decimal Total, decimal Left, decimal? ToYou
 }
 
 // What the rent costs in personal tax, each line of it into the taxes on pay, what reaches the pocket
-// once that is paid, and what it leaves of what the company earns, passed on to the car or the
-// copyright royalty when one is in the plan, or as the profit before pay to the split, from the year's
+// once that is paid, and what it leaves of what the company earns, passed on to the car when it is in
+// the plan, or to the split as what the pay, the company and a royalty share there, from the year's
 // rent steps; and what the rules
 // tax it on: the rent, or the floor when it is less (TaxedOnTheFloor), less its flat charges. The cap
 // and the conditions are the year's rules, which the card reads beside it (RentCapView), so they stay
@@ -120,7 +120,7 @@ internal sealed record RentView(
                 .. paidOut.Select(step => Drain.PaidOutTo(step, "taxes_on_pay").Of(rent.Rent)),
                 .. afterTax,
                 NextModule.After(OptionalModule.Rent, composition) is "split"
-                    ? new Drain("profit_before_pay", DrainKind.PassedOn, year.ProfitBeforePay, "split")
+                    ? NextModule.IntoTheSplit(year, composition)
                     : new Drain("left_after_rent", DrainKind.PassedOn, year.ProfitBeforePay + CarView.FromProfit(year.Car) + year.Copyright.Royalty,
                         NextModule.After(OptionalModule.Rent, composition)),
             ],
@@ -128,8 +128,8 @@ internal sealed record RentView(
     }
 }
 
-// Where a lever passes on what it leaves: the next module in the plan down the river, or the split
-// once none is left, as a drain's destination.
+// Where a lever before the split passes on what it leaves: the next one in the plan down the river, or
+// the split once none is left, as a drain's destination.
 internal static class NextModule
 {
     public static string After(OptionalModule module, PlanComposition composition) => composition.NextAfter(module) switch
@@ -137,9 +137,13 @@ internal static class NextModule
         OptionalModule.Allowances => "allowances",
         OptionalModule.Rent => "rent",
         OptionalModule.Car => "car",
-        OptionalModule.Copyright => "copyright",
         _ => "split",
     };
+
+    // What the last lever before the split passes on to it: what the pay and the company share, and the
+    // royalty too once Copyright royalty is in the plan, the split paying it beside the pay.
+    public static Drain IntoTheSplit(YearResult year, PlanComposition composition) => new(
+        composition.Copyright ? "profit_before_pay_and_royalty" : "profit_before_pay", DrainKind.PassedOn, year.ProfitBeforePay + year.Copyright.Royalty, "split");
 }
 
 // The cap the rent card shows under the rent and offers, the year's rules on what the user entered,

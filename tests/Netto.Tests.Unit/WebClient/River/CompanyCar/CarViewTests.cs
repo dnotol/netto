@@ -39,13 +39,15 @@ public class CarViewTests
         });
     }
 
-    // With the royalty in the plan, what the car leaves goes on to it: the royalty is still in it.
+    // With the royalty in the plan, what the car leaves goes on to the split, which shares it between the
+    // pay, the royalty and the company: the royalty is still in it.
     [Fact]
-    public void Car_withTheRoyaltyInThePlan_passesWhatItLeavesOnToTheRoyalty()
+    public void Car_withTheRoyaltyInThePlan_passesWhatThePayAndTheRoyaltyShareOnToTheSplit()
     {
         var view = Car(ElectricCar.AddToPlan(OptionalModule.Copyright).WithRoyalty(10_000m));
 
-        (view.Received, view.Drains[^1], view.PassesOn).ShouldBe((100_000m, new Drain("left_after_car", DrainKind.PassedOn, 92_000m, "copyright"), (decimal?)0.92m));
+        (view.Received, view.Drains[^1], view.PassesOn)
+            .ShouldBe((100_000m, new Drain("profit_before_pay_and_royalty", DrainKind.PassedOn, 92_000m, "split"), (decimal?)0.92m));
     }
 
     // The costs and the contribution are steps of the ledger: their lines carry them.

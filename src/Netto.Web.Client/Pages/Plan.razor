@@ -23,7 +23,8 @@
    edit their part of one scenario and draw their view of one run, under the bar of buckets that sums
    it up. Every figure comes from Netto.Core; the page only holds the inputs and runs them. The
    optional modules show only while in the plan, which the Composition menu in the bar sets; taking
-   one out, there or from its card, shows a notice with Undo. *@
+   one out, there or from its card, shows a notice with Undo. The levers run before the split, but the
+   copyright royalty, which the split pays beside the pay: its card heads the director's stream. *@
 <BucketBar Run="_run" Setup="_today?.Run" Unsaved="Plans.HasUnsavedChanges(_inputs)">
     <PlansPanel Inputs="_inputs" CanSave="BaselineGain.CanMark(_run)" OnOpen="OnInputsChanged" OnChanged="OnPlansChanged" />
     <CompositionMenu @ref="_composition" Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" />
@@ -69,10 +70,6 @@
             {
                 <CarCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Refused="@Refused(RiverModule.Car)" />
             }
-            @if (_inputs.InPlan(OptionalModule.Copyright))
-            {
-                <CopyrightCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Refused="@Refused(RiverModule.Copyright)" />
-            }
             @if (_inputs.Company is not null)
             {
                 <SplitCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Search="_search" Refused="@Refused(RiverModule.Split)" />
@@ -80,6 +77,10 @@
             }
             <div class="river__streams">
                 <div class="river__stream">
+                    @if (_inputs.InPlan(OptionalModule.Copyright))
+                    {
+                        <CopyrightCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Refused="@Refused(RiverModule.Copyright)" />
+                    }
                     <DirectorPayCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Refused="@Refused(RiverModule.DirectorPay)" />
                 </div>
                 <div class="river__stream">

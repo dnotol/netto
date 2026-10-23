@@ -1,8 +1,10 @@
 namespace Netto.Web.Client.River;
 
-// The optional modules of the river, in its order down to the split: levers a plan holds only once
-// the user adds them. The core modules, Company year, the split, Director pay, Corporate tax and
-// Dividend, are always in it. Public because RiverInputs, a parameter of the cards, holds them.
+// The optional modules of the river, in its order: levers a plan holds only once the user adds them,
+// all before the split but the copyright royalty, which the split pays beside the pay and which runs at
+// the top of the director's stream after it. The core modules, Company year, the split, Director pay,
+// Corporate tax and Dividend, are always in it. Public because RiverInputs, a parameter of the cards,
+// holds them.
 public enum OptionalModule
 {
     Vouchers,
@@ -44,10 +46,10 @@ public sealed record PlanComposition(bool Vouchers, bool Allowances, bool Rent, 
         _ => throw new ArgumentOutOfRangeException(nameof(module), module, null),
     };
 
-    // Where what a module leaves goes on to: the next module in the plan down the river, or none when
-    // the split comes next.
+    // Where what a lever before the split leaves goes on to: the next one in the plan down the river, or
+    // none when the split comes next. Never the royalty, after the split, and nothing goes on from it.
     public OptionalModule? NextAfter(OptionalModule module) =>
-        Modules.Where(next => next > module && Holds(next)).Select(next => (OptionalModule?)next).FirstOrDefault();
+        Modules.Where(next => next > module && next != OptionalModule.Copyright && Holds(next)).Select(next => (OptionalModule?)next).FirstOrDefault();
 
     // The module this composition no longer holds since the one before, if one was taken out.
     public OptionalModule? TakenOutSince(PlanComposition before) =>
