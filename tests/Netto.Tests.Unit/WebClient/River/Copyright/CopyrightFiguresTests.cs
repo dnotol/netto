@@ -1,4 +1,5 @@
 using Netto.Core.Copyright;
+using Netto.Core.Rules;
 using Netto.Web.Client.River;
 using Netto.Web.Client.River.Copyright;
 using Shouldly;
@@ -65,14 +66,23 @@ public class CopyrightFiguresTests
         ]);
     }
 
+    // A rate reads as its rule set states it, decimals kept: a withholding of 15.5% is no 16%.
+    [Fact]
+    public void Royalty_withholdingRate_readsAsItsRuleStatesIt()
+    {
+        var rules = Rules with { WithholdingRate = new RuleAmount("copyright_withholding_rate", 0.155m, Rules.WithholdingRate.Source) };
+
+        CopyrightFigures.Royalty(Compute(10_000m, 50_000m), rules).Single(line => line.Key == "Figure_Withheld").Args.ShouldBe(["15.5%"]);
+    }
+
     [Fact]
     public void Royalty_none_isNone()
     {
         CopyrightFigures.Royalty(CopyrightResult.None, Rules).ShouldBeEmpty();
     }
 
-    // What a label cannot say is in its bubble: the limits with their amounts, how the flat-rate costs
-    // are counted, and that the assessment credits what is withheld.
+    // What a label cannot say is in its bubble: the limits with their rate and their amounts, how the
+    // flat-rate costs are counted, at the rules' rates, and that the assessment credits what is withheld.
     [Fact]
     public void Royalty_linesNeedingExplaining_carryTheirBubbles()
     {
@@ -81,9 +91,9 @@ public class CopyrightFiguresTests
         lines.Select(line => (line.Key, line.Help, string.Join("|", line.HelpArgs))).ShouldBe(
         [
             ("Figure_Royalty", null, ""),
-            ("Figure_WithinLimits", "Help_WithinLimits", "€15,000.00|€77,220.00|2026"),
+            ("Figure_WithinLimits", "Help_WithinLimits", "30%|€15,000.00|€77,220.00|2026"),
             ("Figure_TaxedAsPay", null, ""),
-            ("Figure_FlatRateCosts", "Help_FlatRateCosts", "€20,590.00|€41,180.00"),
+            ("Figure_FlatRateCosts", "Help_FlatRateCosts", "50%|€20,590.00|25%|€41,180.00|15%"),
             ("Figure_Withheld", "Help_Withheld", ""),
             ("Figure_Withheld", "Help_Withheld", ""),
         ]);

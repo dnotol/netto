@@ -133,8 +133,20 @@ public class CopyrightCardTextTests
     public void Limits_allWithin_saysThe30PercentLimitWithItsAmount()
     {
         string.Format(CultureInfo.InvariantCulture, Resources.GetString("Limits_None", CultureInfo.InvariantCulture) ?? "",
-                "€10,000.00", "€10,000.00", "€18,000.00", "€77,220.00", "€0.00", 2026)
+                "€10,000.00", "€10,000.00", "€18,000.00", "€77,220.00", "€0.00", 2026, "30%")
             .ShouldBe("Within 30% of it and your gross pay, €18,000.00, and the cap.");
+    }
+
+    // A rate the rules set is never typed in a text that states it: the rule's own is passed in.
+    [Theory]
+    [InlineData("Limits_None")]
+    [InlineData("Limits_Relative")]
+    [InlineData("Help_WithinLimits")]
+    [InlineData("Help_FlatRateCosts")]
+    [InlineData("Figure_Withheld")]
+    public void CopyrightCardResx_textStatingARulesRate_typesNone(string key)
+    {
+        (Resources.GetString(key, CultureInfo.InvariantCulture) ?? "").ShouldNotMatch("[0-9]%");
     }
 
     // What a figure cannot say, kept as a sentence in sight, says it in few words: which limit set the
@@ -149,7 +161,7 @@ public class CopyrightCardTextTests
     public void CopyrightCardResx_sentenceKeptInSight_isShort(string key, int words)
     {
         var sentence = string.Format(CultureInfo.InvariantCulture, Resources.GetString(key, CultureInfo.InvariantCulture) ?? "",
-            "€30,000.00", "€24,000.00", "€24,000.00", "€77,220.00", "€6,000.00", 2026);
+            "€30,000.00", "€24,000.00", "€24,000.00", "€77,220.00", "€6,000.00", 2026, "30%");
 
         sentence.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length.ShouldBeInRange(1, words);
     }

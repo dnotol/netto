@@ -40,10 +40,10 @@
     <value>The split above pays it beside your pay.</value>
   </data>
   <data name="Limits_None" xml:space="preserve">
-    <value>Within 30% of it and your gross pay, {2}, and the cap.</value>
+    <value>Within {6} of it and your gross pay, {2}, and the cap.</value>
   </data>
   <data name="Limits_Relative" xml:space="preserve">
-    <value>Held to 30% of the royalty and your gross pay.</value>
+    <value>Held to {6} of the royalty and your gross pay.</value>
   </data>
   <data name="Limits_Cap" xml:space="preserve">
     <value>Held to the cap for {5}.</value>
@@ -109,7 +109,7 @@
     <value>Within the limits</value>
   </data>
   <data name="Help_WithinLimits" xml:space="preserve">
-    <value>At most 30% of the royalty and your gross pay, {0}, and at most {1} for {2}. A royalty stays within 30% while it is at most 3/7 of your gross pay.</value>
+    <value>At most {0} of the royalty and your gross pay, {1}, and at most {2} for {3}. A royalty stays within {0} while it is at most 3/7 of your gross pay.</value>
   </data>
   <data name="Figure_TaxedAsPay" xml:space="preserve">
     <value>Beyond the limits, taxed as your pay</value>
@@ -118,7 +118,7 @@
     <value>Flat-rate costs</value>
   </data>
   <data name="Help_FlatRateCosts" xml:space="preserve">
-    <value>With your attestation: 50% of the first {0} and 25% of the next part up to {1}. The 15% and the withholding are on what is left, though all of it reaches your pocket.</value>
+    <value>With your attestation: {0} of the first {1} and {2} of the next part up to {3}. The {4} and the withholding are on what is left, though all of it reaches your pocket.</value>
   </data>
   <data name="Figure_Withheld" xml:space="preserve">
     <value>Withheld by the company at {0}</value>

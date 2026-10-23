@@ -1,4 +1,5 @@
 using Netto.Core.Copyright;
+using Netto.Core.Rules;
 
 namespace Netto.Web.Client.River.Copyright;
 
@@ -12,8 +13,8 @@ internal static class CopyrightFigures
 {
     // The royalty as the engine took it: the part within its limits, with the limits in its bubble, the
     // part beyond them taxed as pay, the flat-rate costs that come off the part within before it is taxed,
-    // and what the company withholds on each part at its rate, which the assessment credits. A line of
-    // nothing is left out. None without a royalty.
+    // and what the company withholds on each part at its rate, which the assessment credits. Each rate is
+    // the rule set's own, as it states it. A line of nothing is left out. None without a royalty.
     public static IReadOnlyList<FigureLine> Royalty(CopyrightResult royalty, CopyrightRules rules) => royalty.Royalty == 0m
         ? []
         :
@@ -22,16 +23,25 @@ internal static class CopyrightFigures
             .. Some(new FigureLine("Figure_WithinLimits", royalty.WithinLimits)
             {
                 Help = "Help_WithinLimits",
-                HelpArgs = [Formats.Euros(royalty.RelativeLimit), Formats.Euros(royalty.Cap), rules.IncomeYear.ToString(Formats.Culture)],
+                HelpArgs =
+                [
+                    Formats.RuleAmount(rules.RelativeLimit), Formats.Euros(royalty.RelativeLimit), Formats.Euros(royalty.Cap),
+                    rules.IncomeYear.ToString(Formats.Culture),
+                ],
             }),
             .. Some(new FigureLine("Figure_TaxedAsPay", royalty.TaxedAsPay)),
             .. Some(new FigureLine("Figure_FlatRateCosts", royalty.FlatRateCosts == 0m ? 0m : -royalty.FlatRateCosts)
             {
                 Help = "Help_FlatRateCosts",
-                HelpArgs = [Formats.Euros(rules.FlatRateCosts.FirstBandCeiling.Value), Formats.Euros(rules.FlatRateCosts.SecondBandCeiling.Value)],
+                HelpArgs =
+                [
+                    Formats.RuleAmount(rules.FlatRateCosts.FirstBandRate), Formats.RuleAmount(rules.FlatRateCosts.FirstBandCeiling),
+                    Formats.RuleAmount(rules.FlatRateCosts.SecondBandRate), Formats.RuleAmount(rules.FlatRateCosts.SecondBandCeiling),
+                    Formats.RuleAmount(rules.TaxedApartRate),
+                ],
             }),
-            .. Some(Withheld(royalty.WithheldWithinLimits, rules.WithholdingRate.Value)),
-            .. Some(Withheld(royalty.WithheldBeyondLimits, rules.BeyondLimitsWithholdingRate.Value)),
+            .. Some(Withheld(royalty.WithheldWithinLimits, rules.WithholdingRate)),
+            .. Some(Withheld(royalty.WithheldBeyondLimits, rules.BeyondLimitsWithholdingRate)),
         ];
 
     // The plan with its royalty, at the pay set: what reaches the pocket and what goes to the taxes on pay
@@ -56,8 +66,8 @@ internal static class CopyrightFigures
     public static IReadOnlyList<FigureLine> Difference(CopyrightComparison comparison) =>
         [new(CopyrightCardText.Gain(comparison), Math.Abs(comparison.Gain))];
 
-    private static FigureLine Withheld(decimal amount, decimal rate) =>
-        new("Figure_Withheld", amount) { Args = [Formats.WholeShare(rate)], Help = "Help_Withheld" };
+    private static FigureLine Withheld(decimal amount, RuleAmount rate) =>
+        new("Figure_Withheld", amount) { Args = [Formats.RuleAmount(rate)], Help = "Help_Withheld" };
 
     private static IEnumerable<FigureLine> Some(FigureLine line) => line.Amount == 0m ? [] : [line];
 }

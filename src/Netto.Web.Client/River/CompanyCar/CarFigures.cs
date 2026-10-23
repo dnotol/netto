@@ -15,7 +15,8 @@ internal static class CarFigures
     // off it, and the benefit taxed as pay. Then what the company deducts of the car's costs, what it cannot
     // deduct and the share of the benefit it adds back to its taxable income. A line of nothing is left
     // out (no contribution, no costs, every cost deducted), but not the benefit taxed, which is the benefit's
-    // result even when a contribution leaves none. None without a car.
+    // result even when a contribution leaves none. Each rate the rules set is theirs, as they state it. None
+    // without a car.
     public static IReadOnlyList<FigureLine> Benefit(CarResult car) => car.Periods.Count == 0
         ? []
         :
@@ -26,7 +27,7 @@ internal static class CarFigures
             .. car.Contribution > 0m ? [new FigureLine("Figure_Contribution", -car.Contribution)] : Array.Empty<FigureLine>(),
             new("Figure_BenefitTaxed", car.Benefit) { Help = "Help_BenefitTaxed" },
             .. Deduction(car),
-            new("Figure_AddBack", car.AddBack) { Args = [Formats.WholeShare(car.AddBackRate?.Value ?? 0m)], Help = "Help_AddBack" },
+            new("Figure_AddBack", car.AddBack) { Args = car.AddBackRate is { } rate ? [Formats.RuleAmount(rate)] : [], Help = "Help_AddBack" },
         ];
 
     // The plan with its car against the same plan without it, at the pay set: the pocket in each, the cash
@@ -45,7 +46,7 @@ internal static class CarFigures
     private static FigureLine Period(CarBenefitPeriod period)
     {
         var (from, to) = (period.Period.From, period.Period.To);
-        var coefficient = Formats.WholeShare(period.Period.AgeCoefficient.Value);
+        var coefficient = Formats.RuleAmount(period.Period.AgeCoefficient);
         var (key, args) = (from.Month, to.Month) switch
         {
             (1, 12) => ("Figure_Period_Year", new[] { coefficient }),

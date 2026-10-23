@@ -57,7 +57,8 @@
             var result = shown.Result;
             <FigureList Figures="@FigureWords.Of(L, CopyrightFigures.Royalty(result, _rules))" />
             <p class="copyright__note">@L[CopyrightCardText.Limits(result), Formats.Euros(result.Royalty), Formats.Euros(result.WithinLimits),
-                                          Formats.Euros(result.RelativeLimit), Formats.Euros(result.Cap), Formats.Euros(result.TaxedAsPay), Inputs.IncomeYear]</p>
+                                          Formats.Euros(result.RelativeLimit), Formats.Euros(result.Cap), Formats.Euros(result.TaxedAsPay), Inputs.IncomeYear,
+                                          Formats.RuleAmount(_rules.RelativeLimit)]</p>
             @if (_comparison is { } comparison)
             {
                 <div class="copyright__comparison">

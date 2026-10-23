@@ -1,4 +1,5 @@
 using Netto.Core.CompanyCar;
+using Netto.Core.Rules;
 using Netto.Web.Client.River;
 using Netto.Web.Client.River.CompanyCar;
 using Shouldly;
@@ -155,6 +156,23 @@ public class CarFiguresTests
     {
         CarFigures.Benefit(Compute(Electric with { YearlyCosts = 0m })).Select(line => line.Key)
             .ShouldBe(["Figure_Benefit", "Figure_Co2", "Figure_Period_Year", "Figure_BenefitTaxed", "Figure_AddBack"]);
+    }
+
+    // A rate reads as its rule set states it, decimals kept: an add-back of 17.5% is no 18%, and an age
+    // coefficient of 94.5% no 95%.
+    [Fact]
+    public void Benefit_ratesOfItsRules_readAsTheRulesStateThem()
+    {
+        var car = Compute(Electric);
+        var period = car.Periods.Single();
+        var stated = car with
+        {
+            AddBackRate = new RuleAmount("car_add_back_rate", 0.175m, Rules.AddBackRate.Source),
+            Periods = [period with { Period = period.Period with { AgeCoefficient = period.Period.AgeCoefficient with { Value = 0.945m } } }],
+        };
+
+        Lines(CarFigures.Benefit(stated)).Where(line => line.Key is "Figure_AddBack" or "Figure_Period_Year").Select(line => line.Args)
+            .ShouldBe(["94.5%", "17.5%"]);
     }
 
     [Fact]
