@@ -70,7 +70,7 @@
     <value>{0} to your pocket after its tax</value>
   </data>
   <data name="Brings_Car" xml:space="preserve">
-    <value>{0} in the muddy pocket</value>
+    <value>{0} of car costs a year, paid by the company</value>
   </data>
   <data name="InPlan" xml:space="preserve">
     <value>In your plan</value>

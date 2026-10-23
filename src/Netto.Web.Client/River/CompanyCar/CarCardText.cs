@@ -5,13 +5,13 @@ namespace Netto.Web.Client.River.CompanyCar;
 // The resource keys the car card builds from values, gone through by the card and its tests alike.
 internal static class CarCardText
 {
-    // What the car takes in cash against what it puts in the muddy pocket: the muddy pocket holds more
-    // than it costs, or less, or it costs no cash at all.
-    public static string Gap(CarComparison comparison) => comparison switch
+    // What the car takes in cash from the pocket, against the same plan without it: some, none, or it
+    // leaves more cash there, which a benefit that keeps the reduced corporate rate can do.
+    public static string Cash(CarComparison comparison) => comparison.CashCost switch
     {
-        { CashCost: <= 0m } => "Gap_NoCash",
-        { Gap: >= 0m } => "Gap_More",
-        _ => "Gap_Less",
+        > 0m => "Cash_Takes",
+        < 0m => "Cash_Adds",
+        _ => "Cash_None",
     };
 
     // The summary ends on what the split shares: « before your pay and royalty » while the royalty is in

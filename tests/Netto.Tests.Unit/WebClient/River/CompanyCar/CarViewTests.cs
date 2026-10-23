@@ -116,19 +116,19 @@ public class CarViewTests
         var comparison = CarComparison.From(ElectricCar, ElectricCar.Run()).ShouldNotBeNull();
 
         comparison.ShouldSatisfyAllConditions(
-            () => (comparison.PocketWith, comparison.PocketWithout, comparison.Muddy).ShouldBe((with.NetInPocket, without.NetInPocket, 8_000m)),
+            () => (comparison.PocketWith, comparison.PocketWithout).ShouldBe((with.NetInPocket, without.NetInPocket)),
             () => comparison.CashCost.ShouldBe(without.NetInPocket - with.NetInPocket),
-            () => comparison.Gap.ShouldBe(8_000m - (without.NetInPocket - with.NetInPocket)),
             () => comparison.TaxesOnPayAdded.ShouldBe(TaxesOnPay(with) - TaxesOnPay(without)));
     }
 
-    // The benefit raises the taxes on pay; the car costs cash, less than it puts in the muddy pocket.
+    // The benefit raises the taxes on pay, and the car takes cash from the pocket: 6,162.66 of its
+    // 8,000 of costs, the cash the card states.
     [Fact]
-    public void Comparison_car_costsLessCashThanItsCosts()
+    public void Comparison_car_takesCashFromThePocket()
     {
         var comparison = CarComparison.From(ElectricCar, ElectricCar.Run()).ShouldNotBeNull();
 
-        (comparison.TaxesOnPayAdded > 0m, comparison.CashCost > 0m, comparison.Gap > 0m).ShouldBe((true, true, true));
+        (comparison.TaxesOnPayAdded > 0m, comparison.CashCost, CarCardText.Cash(comparison)).ShouldBe((true, 6_162.66m, "Cash_Takes"));
     }
 
     [Fact]

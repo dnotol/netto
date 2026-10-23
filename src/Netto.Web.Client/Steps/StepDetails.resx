@@ -430,7 +430,7 @@
     <value>The car's costs</value>
   </data>
   <data name="Rule_car_costs" xml:space="preserve">
-    <value>What the car costs the company over the year, as it bears them. They lower the company's profit, and land in the muddy pocket. An electric car ordered or leased before 2027 stays deductible in full; another car at the rate its order or lease date, its engine and its CO2 give, beyond the part equal to your benefit taxed and your contribution, which stays deductible up to the costs.</value>
+    <value>What the car costs the company over the year, as it bears them: a cost of the company, like its running costs, which lowers its profit. An electric car ordered or leased before 2027 stays deductible in full; another car at the rate its order or lease date, its engine and its CO2 give, beyond the part equal to your benefit taxed and your contribution, which stays deductible up to the costs.</value>
   </data>
   <data name="Title_car_costs_not_deductible" xml:space="preserve">
     <value>Costs the company cannot deduct</value>

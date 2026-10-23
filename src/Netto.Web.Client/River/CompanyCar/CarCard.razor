@@ -15,10 +15,11 @@
    contribution and the private energy the company pays stay in sight. The card says the benefit in
    kind taxed as pay, its CO2 percentage,
    period by period, what the company deducts of the costs and adds back of the benefit, the costs
-   going to the muddy pocket and the contribution coming back from the pocket, then the plan with the
-   car against the same plan without it. An optional module: it shows only while in the plan, and the
-   word at its bottom takes it out, its values kept. The amounts are taken while typing and carry no
-   Min or Max: the engine refuses what the rules do not allow. Skipped with the company. *@
+   paid out of the river, a cost of the company like its running costs, and the contribution coming
+   back from the pocket, then the plan with the car against the same plan without it, in cash. An
+   optional module: it shows only while in the plan, and the word at its bottom takes it out, its
+   values kept. The amounts are taken while typing and carry no Min or Max: the engine refuses what
+   the rules do not allow. Skipped with the company. *@
 <ModuleCard Name="@ModuleFolds.Name(OptionalModule.Car)" Title="@L["Title"]" Summary="@Summary" Glance="@Glance" PassesOn="@_view?.PassesOn" Help="@L["Hint"]" Skipped="Inputs.Company is null"
             Refused="@Refused" Details="@Details"
             DetailsLabel="@L["DetailsLabel"]" RemoveLabel="@L["Remove"]" OnRemove="Remove">
@@ -185,9 +186,9 @@
             {
                 <section class="car__comparison" aria-labelledby="car-comparison-title">
                     <h3 id="car-comparison-title" class="car__comparison-title">@L["ComparisonTitle"]</h3>
-                    <p>@L["WithCar", Formats.Euros(comparison.PocketWith), Formats.Euros(comparison.Muddy)]</p>
+                    <p>@L["WithCar", Formats.Euros(comparison.PocketWith)]</p>
                     <p>@L["WithoutCar", Formats.Euros(comparison.PocketWithout)]</p>
-                    <p class="car__gap">@L[CarCardText.Gap(comparison), Formats.Euros(comparison.CashCost), Formats.Euros(comparison.Muddy), Formats.Euros(Math.Abs(comparison.Gap))]</p>
+                    <p class="car__gap">@L[CarCardText.Cash(comparison), Formats.Euros(Math.Abs(comparison.CashCost))]</p>
                     <p>@L["TaxesOnPay", Formats.Euros(comparison.TaxesOnPayAdded)]</p>
                 </section>
             }

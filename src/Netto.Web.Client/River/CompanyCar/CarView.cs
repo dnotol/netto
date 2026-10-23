@@ -69,15 +69,13 @@ internal sealed record CarView(
 }
 
 // The plan with its car against the same plan without it, at the pay set: what reaches the pocket in
-// each, what the car puts in the muddy pocket, and what its benefit adds to the taxes on pay. CashCost
-// is what the car takes from the pocket, Gap what the muddy pocket holds more than that. Two runs of
+// each, and what its benefit adds to the taxes on pay. CashCost is what the car takes from the pocket,
+// in cash (operator, 2026-10-23), below zero when the plan with the car leaves more there. Two runs of
 // the year, the second the river with the car out of the plan; none until a car counts, or while the
 // engine refuses an amount.
-internal sealed record CarComparison(decimal PocketWith, decimal PocketWithout, decimal Muddy, decimal TaxesOnPayAdded)
+internal sealed record CarComparison(decimal PocketWith, decimal PocketWithout, decimal TaxesOnPayAdded)
 {
     public decimal CashCost => Difference(PocketWithout, PocketWith);
-
-    public decimal Gap => Difference(Muddy, CashCost);
 
     public static CarComparison? From(RiverInputs inputs, RiverRun run)
     {
@@ -86,7 +84,7 @@ internal sealed record CarComparison(decimal PocketWith, decimal PocketWithout, 
         if (inputs.TakeOutOfPlan(OptionalModule.Car).Run().Year is not { } without)
             return null;
 
-        return new CarComparison(with.NetInPocket, without.NetInPocket, with.MuddyPocket, Difference(TaxesOnPay(with), TaxesOnPay(without)));
+        return new CarComparison(with.NetInPocket, without.NetInPocket, Difference(TaxesOnPay(with), TaxesOnPay(without)));
     }
 
     private static decimal TaxesOnPay(YearResult year) =>

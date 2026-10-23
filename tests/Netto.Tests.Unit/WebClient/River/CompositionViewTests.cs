@@ -6,8 +6,8 @@ namespace Netto.Tests.WebClient.River;
 // The Composition menu on the river's example (RiverInputsTests), which holds no lever in its plan.
 // Each lever's values are those of its own tests: 220 days of meal vouchers bring 1,960.20 to the
 // pocket, the most the circular allows for the office, internet and a computer 2,418.44, the rent
-// at the 2026 cap 981.32 once its tax is paid, and the electric car puts its 8,000 of costs in the
-// muddy pocket, which is what the menu says it brings.
+// at the 2026 cap 981.32 once its tax is paid, and the electric car costs the company 8,000 a year,
+// which is what the menu says it brings.
 public class CompositionViewTests
 {
     [Fact]

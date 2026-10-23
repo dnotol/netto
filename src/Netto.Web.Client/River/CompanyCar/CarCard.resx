@@ -16,13 +16,13 @@
     <value>Company car</value>
   </data>
   <data name="Summary" xml:space="preserve">
-    <value>{0} a year to the muddy pocket · {1} before your pay</value>
+    <value>{0} a year of car costs · {1} before your pay</value>
   </data>
   <data name="SummaryNoCar" xml:space="preserve">
     <value>No car yet · {0} before your pay</value>
   </data>
   <data name="Summary_Royalty" xml:space="preserve">
-    <value>{0} a year to the muddy pocket · {1} before your pay and royalty</value>
+    <value>{0} a year of car costs · {1} before your pay and royalty</value>
   </data>
   <data name="SummaryNoCar_Royalty" xml:space="preserve">
     <value>No car yet · {0} before your pay and royalty</value>
@@ -91,19 +91,19 @@
     <value>With the car and without it</value>
   </data>
   <data name="WithCar" xml:space="preserve">
-    <value>With the car, {0} reaches your pocket and {1} goes to the muddy pocket.</value>
+    <value>With the car, {0} reaches your pocket.</value>
   </data>
   <data name="WithoutCar" xml:space="preserve">
     <value>Without it, the same plan at the same pay leaves {0} in your pocket.</value>
   </data>
-  <data name="Gap_More" xml:space="preserve">
-    <value>The car takes {0} of cash from your pocket for {1} of car: the muddy pocket holds {2} more than it costs you.</value>
+  <data name="Cash_Takes" xml:space="preserve">
+    <value>The car takes {0} of cash from your pocket.</value>
   </data>
-  <data name="Gap_Less" xml:space="preserve">
-    <value>The car takes {0} of cash from your pocket for {1} of car: it costs you {2} more than the muddy pocket holds.</value>
+  <data name="Cash_None" xml:space="preserve">
+    <value>The car takes no cash from your pocket.</value>
   </data>
-  <data name="Gap_NoCash" xml:space="preserve">
-    <value>The car takes no cash from your pocket for {1} of car.</value>
+  <data name="Cash_Adds" xml:space="preserve">
+    <value>The car leaves {0} more cash in your pocket.</value>
   </data>
   <data name="TaxesOnPay" xml:space="preserve">
     <value>Its benefit adds {0} to your taxes on pay, on Director pay.</value>

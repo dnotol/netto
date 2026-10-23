@@ -12,14 +12,24 @@ public class CarCardTextTests
 {
     private static readonly ResourceManager Resources = new("Netto.Web.Client.River.CompanyCar.CarCard", typeof(CarCard).Assembly);
 
-    // What the car takes in cash against the muddy pocket, each way it can fall.
+    // What the car takes in cash from the pocket, each way it can fall: some, none, or more cash left in
+    // the pocket than without it, which a benefit that keeps the reduced corporate rate can do.
     [Fact]
-    public void CarCardResx_everyGap_hasAText()
+    public void CarCardResx_everyCashSentence_hasAText()
     {
-        var comparisons = new[] { new CarComparison(40_000m, 43_000m, 8_000m, 1_000m), new CarComparison(30_000m, 40_000m, 8_000m, 1_000m), new CarComparison(40_000m, 40_000m, 8_000m, 0m) };
+        var comparisons = new[] { new CarComparison(40_000m, 43_000m, 1_000m), new CarComparison(40_000m, 40_000m, 0m), new CarComparison(41_000m, 40_000m, 1_000m) };
 
-        comparisons.Select(CarCardText.Gap).ShouldBe(["Gap_More", "Gap_Less", "Gap_NoCash"]);
-        comparisons.Select(CarCardText.Gap).Where(key => Resources.GetString(key, CultureInfo.InvariantCulture) is null).ShouldBeEmpty();
+        comparisons.Select(CarCardText.Cash).ShouldBe(["Cash_Takes", "Cash_None", "Cash_Adds"]);
+        Missing(comparisons.Select(CarCardText.Cash)).ShouldBeEmpty();
+    }
+
+    [Theory]
+    [InlineData("Cash_Takes", "The car takes €3,000.00 of cash from your pocket.")]
+    [InlineData("Cash_None", "The car takes no cash from your pocket.")]
+    [InlineData("Cash_Adds", "The car leaves €3,000.00 more cash in your pocket.")]
+    public void Cash_eachWay_saysTheCashInTheSentence(string key, string expected)
+    {
+        string.Format(CultureInfo.InvariantCulture, Resources.GetString(key, CultureInfo.InvariantCulture) ?? "", "€3,000.00").ShouldBe(expected);
     }
 
     // Every engine's name, the private energy it is worded with, its hint and its reading.
