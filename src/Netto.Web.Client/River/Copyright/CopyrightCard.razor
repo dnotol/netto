@@ -27,7 +27,8 @@
     else
     {
         <p class="copyright__scope">@L["Scope"]</p>
-        <Disclosure Title="@L["SituationTitle"]" Values="@SettingWords.Of(L, _settings.Situation)" Refused="@CopyrightSettingsView.SituationHolds(Refused)">
+        <Disclosure Title="@L["SituationTitle"]" Values="@SettingWords.Of(L, _settings.Situation)" Refused="@CopyrightSettingsView.SituationHolds(Refused)"
+                    OpenByDefault="@_settings.NeedsFacts">
             <RiverField Label="@L["CreativeShareLabel"]" For="river-copyright-creative-share"
                         Origin="@(Inputs.Copyright.CreativeShare.Value is null ? null : Inputs.Copyright.CreativeShare.Origin)" Help="@L["CreativeShareHint"]">
                 <RiverNumericField T="decimal?" InputId="river-copyright-creative-share" Value="CreativeSharePercent" ValueChanged="OnCreativeSharePercentChanged"

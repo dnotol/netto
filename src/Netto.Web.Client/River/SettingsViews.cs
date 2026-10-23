@@ -207,13 +207,16 @@ internal sealed record CarSettingsView(IReadOnlyList<SettingPhrase> Car, bool Ne
 // The copyright royalty's one disclosure, « Your copyright situation »: what Netto cannot see of the
 // director's copyright income and works, whether the four previous years' income averaged within the
 // cap, whether they hold an attestation du travail des arts, and the share of their working time
-// spent creating protected works. The royalty itself stays in sight. The share has no default: it
-// says it is not given, and names no origin, until the user gives it.
-internal sealed record CopyrightSettingsView(IReadOnlyList<SettingPhrase> Situation)
+// spent creating protected works. The royalty itself is the split's. The share has no default: it
+// says it is not given, and names no origin, until the user gives it, and that it is needed while the
+// royalty follows the pay. NeedsFacts: a royalty that follows the pay is none without the share, so
+// the disclosure opens by itself (decided with the operator, 2026-10-23).
+internal sealed record CopyrightSettingsView(IReadOnlyList<SettingPhrase> Situation, bool NeedsFacts)
 {
     public static CopyrightSettingsView From(RiverInputs inputs)
     {
         var copyright = inputs.Copyright;
+        var needsShare = copyright.FollowsPay.Value && copyright.CreativeShare.Value is null;
 
         return new CopyrightSettingsView(
             [
@@ -221,11 +224,12 @@ internal sealed record CopyrightSettingsView(IReadOnlyList<SettingPhrase> Situat
                 SettingPhrase.Of(copyright.HoldsAttestation.Value ? "Settings_Attestation_Holds" : "Settings_Attestation_None", copyright.HoldsAttestation.Origin),
                 copyright.CreativeShare.Value is { } share
                     ? SettingPhrase.Of("Settings_CreativeShare", copyright.CreativeShare.Origin, Formats.Percentage(share))
-                    : SettingPhrase.Of("Settings_CreativeShare_None", InputOrigin.Yours),
-            ]);
+                    : SettingPhrase.Of(needsShare ? "Settings_CreativeShare_Needed" : "Settings_CreativeShare_None", InputOrigin.Yours),
+            ],
+            needsShare);
     }
 
-    // The royalty's own refusal is on the field in sight.
+    // The royalty's own refusals are on the split.
     public static bool SituationHolds(string? error) => error == CopyrightCalculator.CreativeShareOutOfRange;
 }
 

@@ -132,4 +132,7 @@
   <data name="Settings_CreativeShare_None" xml:space="preserve">
     <value>creative share not given</value>
   </data>
+  <data name="Settings_CreativeShare_Needed" xml:space="preserve">
+    <value>creative share not given, which a royalty that follows your pay needs</value>
+  </data>
 </root>

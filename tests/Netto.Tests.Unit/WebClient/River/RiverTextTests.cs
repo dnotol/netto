@@ -483,11 +483,14 @@ public class RiverTextTests
     }
 
     // The line of « Your copyright situation »: the statuses as assumed and as said, and the share
-    // given or not.
+    // given, needed by a royalty that follows the pay, or not given beside a fixed one.
     [Fact]
     public void CopyrightCardResx_everyPhraseOfItsSettingsLine_hasAText()
     {
-        RiverInputs[] variations = [RiverInputs.Example, RiverInputs.Example.WithAverageWithinCap(false).WithAttestation(true).WithCreativeShare(0.4m)];
+        RiverInputs[] variations =
+        [
+            RiverInputs.Example, RiverInputs.Example.WithRoyalty(10_000m), RiverInputs.Example.WithAverageWithinCap(false).WithAttestation(true).WithCreativeShare(0.4m),
+        ];
         var phrases = variations.SelectMany(inputs => CopyrightSettingsView.From(inputs).Situation);
 
         Missing(CopyrightCardResources, phrases.Select(phrase => phrase.Key).Append("SituationTitle")).ShouldBeEmpty();

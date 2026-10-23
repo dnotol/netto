@@ -381,17 +381,37 @@ public class SettingsViewsTests
     }
 
     // The copyright royalty's disclosure, « Your copyright situation »: what Netto cannot see of the
-    // director's copyright income and works. The royalty itself stays in sight. The share of working
-    // time spent creating has no default: it is none until given, and names no origin.
+    // director's copyright income and works. The royalty itself is the split's. The share of working
+    // time spent creating has no default: it is none until given, and names no origin; while the
+    // royalty follows the pay, as the example's does, the line says it is needed.
     [Fact]
-    public void Situation_royaltyExample_statesTheStatusesAsDefaultsAndNoCreativeShare()
+    public void Situation_royaltyExample_statesTheStatusesAsDefaultsAndThatTheShareIsNeeded()
     {
         Phrases(CopyrightSettingsView.From(RiverInputs.Example).Situation).ShouldBe(
         [
             ("Settings_AverageWithin", "", InputOrigin.Default),
             ("Settings_Attestation_None", "", InputOrigin.Default),
-            ("Settings_CreativeShare_None", "", null),
+            ("Settings_CreativeShare_Needed", "", null),
         ]);
+    }
+
+    // A fixed royalty does not read the share: none given is only none.
+    [Fact]
+    public void Situation_fixedRoyaltyWithoutAShare_saysNoneIsGiven()
+    {
+        Phrases(CopyrightSettingsView.From(RiverInputs.Example.WithRoyalty(10_000m)).Situation)[2].ShouldBe(("Settings_CreativeShare_None", "", null));
+    }
+
+    // A royalty that follows the pay is none without the share: the facts open by themselves.
+    [Theory]
+    [InlineData(true, null, true)]
+    [InlineData(true, 0.4, false)]
+    [InlineData(false, null, false)]
+    public void NeedsFacts_creativeShare_isTrueWhileTheRoyaltyFollowsThePayWithoutOne(bool followsPay, double? share, bool needed)
+    {
+        var inputs = RiverInputs.Example.WithRoyalty(10_000m).WithCreativeShare((decimal?)share);
+
+        CopyrightSettingsView.From(followsPay ? inputs.WithRoyaltyFollowingPay() : inputs).NeedsFacts.ShouldBe(needed);
     }
 
     [Fact]
@@ -408,14 +428,14 @@ public class SettingsViewsTests
     }
 
     [Fact]
-    public void Situation_creativeShareCleared_isNoneAgain()
+    public void Situation_creativeShareCleared_isNeededAgain()
     {
         var inputs = RiverInputs.Example.WithCreativeShare(0.4m).WithCreativeShare(null);
 
-        Phrases(CopyrightSettingsView.From(inputs).Situation)[2].ShouldBe(("Settings_CreativeShare_None", "", null));
+        Phrases(CopyrightSettingsView.From(inputs).Situation)[2].ShouldBe(("Settings_CreativeShare_Needed", "", null));
     }
 
-    // Only the share's refusal is on a field inside; the royalty's is on the field in sight.
+    // Only the share's refusal is on a field inside; the royalty's is on the split.
     [Theory]
     [InlineData(CopyrightCalculator.CreativeShareOutOfRange, true)]
     [InlineData(CopyrightCalculator.RoyaltyNegative, false)]
