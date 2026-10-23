@@ -1,13 +1,14 @@
 namespace Netto.Web.Client.River;
 
-// The resource keys the rent card builds from values, gone through by the card and its tests alike.
+// The resource keys the rent card builds from values, gone through by the card and its tests alike; its
+// figure lines' keys are RentFigures'.
 internal static class RentCardText
 {
-    // What the cadastral income is, in the bubble the term opens in the cap's sentence.
-    public const string CadastralIncomeTerm = "Term_CadastralIncome";
+    // What the cadastral income is, in the bubble after its field's label.
+    public const string CadastralIncomeHelp = "Help_CadastralIncome";
 
-    // What the flat charges are, in the bubble the term opens where the rent's tax is said.
-    public const string FlatChargesTerm = "Term_FlatCharges";
+    // How the cap under the rent is set, in the bubble after the rent's label.
+    public const string CapHelp = "Help_Cap";
 
     // The summary ends on what the split shares: « before your pay and royalty » while the royalty is
     // in the plan.

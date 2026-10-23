@@ -33,12 +33,20 @@ public class LeverCardsFiguresTests
         .WithCatalogueValue(50_000m).WithCarCosts(8_000m).WithCarContribution(600m)
         .WithEarlierProfits(20_000m).WithReserve(5_000m));
 
+    // The split shares the profit before pay alone, without a royalty to pay beside the pay.
+    private static readonly NamedRiver NoRoyalty = Filled.With("the royalty out of the plan", inputs => inputs.TakeOutOfPlan(OptionalModule.Copyright));
+
+    // Under the floor of 463.68 the 12% let of the home sets (RentFiguresTests).
+    private static readonly NamedRiver UnderTheFloor = Filled.With("a rent under its floor", inputs => inputs.WithRent(300m));
+
     // Each card's summary, by its fold's name, on the river it is drawn on.
     public static TheoryData<string, NamedRiver, string> Summaries => new()
     {
         { "company-year", Filled, "€120,000.00 in · €100,000.00 before your pay" },
         { "vouchers", Filled, "€2,062.00 to your pocket · €97,938.00 left" },
         { "allowances", Filled, "€1,000.00 to your pocket · €96,938.00 left" },
+        { "rent", Filled, "€711.11 to your pocket · €88,538.00 before your pay and royalty" },
+        { "rent", NoRoyalty, "€711.11 to your pocket · €88,538.00 before your pay" },
     };
 
     [Theory]
@@ -53,6 +61,8 @@ public class LeverCardsFiguresTests
         { "company-year", Filled },
         { "vouchers", Filled },
         { "allowances", Filled },
+        { "rent", Filled },
+        { "rent", NoRoyalty },
         { "dividend", Filled },
         { "dividend", Filled.With("nothing kept", inputs => inputs.WithReserve(0m)) },
     };
@@ -77,6 +87,8 @@ public class LeverCardsFiguresTests
     {
         { "vouchers", Filled },
         { "allowances", Filled },
+        { "rent", Filled },
+        { "rent", UnderTheFloor },
     };
 
     [Theory]
@@ -90,12 +102,13 @@ public class LeverCardsFiguresTests
     }
 
     // The words in sight on each card of the filled plan, open, held under its cut: before the story it
-    // drew 26 on Company year, 131 on Vouchers and 161 on Expense allowances.
+    // drew 26 on Company year, 131 on Vouchers, 161 on Expense allowances and 192 on Home office rent.
     public static TheoryData<string, int> Cuts => new()
     {
         { "company-year", 24 },
         { "vouchers", 100 },
         { "allowances", 101 },
+        { "rent", 115 },
     };
 
     [Theory]
@@ -105,12 +118,14 @@ public class LeverCardsFiguresTests
         CardHtml.VisibleWords(await OpenCardAsync(Filled, card)).Count.ShouldBeLessThanOrEqualTo(cut);
     }
 
-    // What an open card keeps in sentences is what its figures cannot say: the bounds under its fields.
+    // What an open card keeps in sentences is what its figures cannot say: the bounds under its fields,
+    // with the button that takes the rent's cap, and the line a folded disclosure states its facts on.
     // The adornments of its fields, a € alone, say no words.
     public static TheoryData<string, NamedRiver, string[]> Sentences => new()
     {
         { "vouchers", Filled, ["€8.91 each from the company at most, €1.09 from you.", "At most €250.00 a year.", "At most €100.00 a year."] },
         { "allowances", Filled, ["At most €1,938.44 for the year.", "At most €20.00 a month, €240.00 for the year.", "At most €20.00 a month, €240.00 for the year."] },
+        { "rent", Filled, ["Cadastral income €1,200.00 · 12% let to the company", "At most €1,380.00 for the year.Use €1,380.00"] },
     };
 
     [Theory]

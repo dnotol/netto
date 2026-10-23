@@ -28,16 +28,20 @@ public class RentCardTextTests
         RentCardText.Summary(royalty).ShouldBe(key);
     }
 
+    // What the cadastral income is and how the cap is set, each in the bubble after its field's label.
     [Fact]
-    public void RentCardResx_theCapAndWhatTheRentIsTaxedOn_markTheirTerms()
+    public void RentCardResx_bubblesOfTheFields_haveTheirTexts()
     {
-        Terms(["Cap", "TaxedOnTheRent", "TaxedOnTheFloor"]).ShouldBe(["cadastral income", "flat charges", "flat charges"]);
+        Missing([RentCardText.CadastralIncomeHelp, RentCardText.CapHelp]).ShouldBeEmpty();
     }
 
+    // A bubble draws its text as it is: a term marked in it would show its brackets.
     [Fact]
-    public void RentCardResx_cadastralIncomeAndFlatCharges_sayWhatTheyMean()
+    public void RentCardResx_bubbles_markNoTerm()
     {
-        Missing([RentCardText.CadastralIncomeTerm, RentCardText.FlatChargesTerm]).ShouldBeEmpty();
+        new[] { RentCardText.CadastralIncomeHelp, RentCardText.CapHelp, RentFigures.FloorHelp, RentFigures.FlatChargesHelp }
+            .Where(key => Resources.GetString(key, CultureInfo.InvariantCulture) is { } text && TermText.Split(text).Term is not null)
+            .ShouldBeEmpty();
     }
 
     // The lines of « Your home »: the example's facts and facts given.
@@ -49,10 +53,6 @@ public class RentCardTextTests
 
         Missing(phrases.Select(phrase => phrase.Key).Append("HomeTitle")).ShouldBeEmpty();
     }
-
-    // The term each sentence marks, null where its text marks none or is missing.
-    private static List<string?> Terms(IEnumerable<string> keys) =>
-        [.. keys.Select(key => Resources.GetString(key, CultureInfo.InvariantCulture) is { } text ? TermText.Split(text).Term : null)];
 
     private static IEnumerable<string> Missing(IEnumerable<string> keys) =>
         keys.Distinct().Where(key => Resources.GetString(key, CultureInfo.InvariantCulture) is null);

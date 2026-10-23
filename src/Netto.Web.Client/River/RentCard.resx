@@ -16,16 +16,16 @@
     <value>Home office rent</value>
   </data>
   <data name="Summary" xml:space="preserve">
-    <value>{0} to your pocket after its tax · {1} before your pay</value>
+    <value>{0} to your pocket · {1} before your pay</value>
   </data>
   <data name="Summary_Royalty" xml:space="preserve">
-    <value>{0} to your pocket after its tax · {1} before your pay and royalty</value>
+    <value>{0} to your pocket · {1} before your pay and royalty</value>
   </data>
   <data name="Waiting" xml:space="preserve">
     <value>Waiting for the company's year.</value>
   </data>
   <data name="Hint" xml:space="preserve">
-    <value>If the company uses part of your home as its office, it can rent that part from you, unfurnished, under a lease. It pays the rent out of its profit, before your pay, and deducts it; you are taxed on it with your pay, on less than the rent and without social contributions.</value>
+    <value>If the company uses part of your home as its office, it can rent that part from you, unfurnished, under a lease. It pays the rent out of its profit, before your pay, and deducts it. The rent is never pay: you are taxed on it with your pay, on less than the rent and without social contributions.</value>
   </data>
   <data name="CadastralIncomeLabel" xml:space="preserve">
     <value>Cadastral income of your home</value>
@@ -43,25 +43,34 @@
     <value>Rent for the year</value>
   </data>
   <data name="Cap" xml:space="preserve">
-    <value>At most {0} for the year: 5/3 of {1}, the [cadastral income] of the part let, revalued by {2}. Above it, the excess would be taxed as director pay.</value>
+    <value>At most {0} for the year.</value>
   </data>
-  <data name="Term_CadastralIncome" xml:space="preserve">
+  <data name="Help_Cap" xml:space="preserve">
+    <value>At most {0} for the year: 5/3 of {1}, the cadastral income of the part let, revalued by {2}. Above it, the excess would be taxed as director pay.</value>
+  </data>
+  <data name="Help_CadastralIncome" xml:space="preserve">
     <value>The notional yearly rental income the administration sets for a property, on which its property tax is computed.</value>
-  </data>
-  <data name="Term_FlatCharges" xml:space="preserve">
-    <value>A flat deduction for maintenance and repairs in place of real costs: a share of the rent, capped by the revalued cadastral income of the part let.</value>
   </data>
   <data name="UseTheCap" xml:space="preserve">
     <value>Use {0}</value>
   </data>
-  <data name="TaxedOnTheRent" xml:space="preserve">
-    <value>You are taxed on the rent, {0}, less {1} of [flat charges]: {2} joins the taxable income of your pay and adds {3} to your personal tax, line by line below.</value>
+  <data name="Figure_TaxedOnTheRent" xml:space="preserve">
+    <value>Taxed on the rent</value>
   </data>
-  <data name="TaxedOnTheFloor" xml:space="preserve">
-    <value>The rent is under the floor, so you are taxed on the floor, {0}: the cadastral income of the part let, indexed, plus 40%. Less {1} of [flat charges], {2} joins the taxable income of your pay and adds {3} to your personal tax, line by line below.</value>
+  <data name="Figure_TaxedOnTheFloor" xml:space="preserve">
+    <value>Taxed on the floor</value>
   </data>
-  <data name="Deducted" xml:space="preserve">
-    <value>The company deducts all {0} of it, like its own running costs: nothing is added back to its taxable income, and it is never pay.</value>
+  <data name="Help_Floor" xml:space="preserve">
+    <value>The rent is under the floor, so you are taxed on the floor: the cadastral income of the part let, indexed, plus 40%.</value>
+  </data>
+  <data name="Figure_FlatCharges" xml:space="preserve">
+    <value>Flat charges</value>
+  </data>
+  <data name="Help_FlatCharges" xml:space="preserve">
+    <value>A flat deduction for maintenance and repairs in place of real costs: a share of the rent, capped by the revalued cadastral income of the part let.</value>
+  </data>
+  <data name="Figure_JoinsTaxableIncome" xml:space="preserve">
+    <value>Joins your taxable income</value>
   </data>
   <data name="DetailsLabel" xml:space="preserve">
     <value>Where these figures come from</value>
@@ -79,6 +88,6 @@
     <value>Cadastral income {0}</value>
   </data>
   <data name="Home_Share" xml:space="preserve">
-    <value>{0} of your home let to the company</value>
+    <value>{0} let to the company</value>
   </data>
 </root>
