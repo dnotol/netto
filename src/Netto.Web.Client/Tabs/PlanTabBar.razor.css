@@ -62,13 +62,11 @@
 }
 
 /* On a phone the names sit closer and smaller, and the row scrolls sideways rather than wrap, so the
-   bar keeps one height; room is left above and below for the focus ring, which the scrolling would
-   otherwise cut. */
+   bar keeps one height. A scrolling row clips what it holds on every side and the links fill its
+   height, so the site's focus ring, drawn outside a link, would be cut: here it is drawn inside. */
 @media (max-width: 640px) {
     .plan-tab-bar__tabs {
         gap: 1rem;
-        margin: -0.25rem -0.25rem 0;
-        padding: 0.25rem 0.25rem 0;
         overflow-x: auto;
         scrollbar-width: thin;
     }
@@ -77,6 +75,10 @@
         min-height: 2.5rem;
         font-size: 0.85rem;
     }
+
+        .plan-tab-bar__tab:focus-visible {
+            outline-offset: -3px;
+        }
 
     /* The names alone, but for a refusal: a screen reader still hears every badge. */
     .plan-tab-bar__badge {
