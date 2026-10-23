@@ -25,6 +25,10 @@ internal sealed record CalendarView(
     // calendar then shows no regularisation.
     public string? BilledRefused { get; init; }
 
+    // The engine's calendar this view was made from, with what the fund bills given, for what draws the
+    // year in time (the timeline), so it and the tables read one calendar.
+    public required PaymentCalendar Calendar { get; init; }
+
     // The quarters of the year not ended yet.
     public int QuartersLeft => Contributions.Quarters.Count(quarter => !quarter.Past);
 
@@ -60,7 +64,7 @@ internal sealed record CalendarView(
             CalendarPay.Of(calendar.Months, directorPay.Assessment),
             calendar.Contributions,
             calendar.CompanyBalance,
-            calendar.DirectorBalance) { BilledRefused = billedRefused };
+            calendar.DirectorBalance) { BilledRefused = billedRefused, Calendar = calendar };
     }
 
     private static CalendarTax<TState> Tax<TState>(TState state, AdvancePaymentSchedule schedule) where TState : struct, Enum =>
