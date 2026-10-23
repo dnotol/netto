@@ -1,7 +1,5 @@
-using System.Collections;
 using System.Globalization;
 using System.Resources;
-using System.Text.RegularExpressions;
 using Netto.Core.CompanyCar;
 using Netto.Core.CorporateTax;
 using Netto.Web.Client.River;
@@ -84,12 +82,12 @@ public class CorporateTaxCardTextTests
     [Fact]
     public void CorporateTaxCardResx_everySentenceItKeeps_isAtMostFifteenWords()
     {
-        var kept = Texts().Where(text => text.Key.StartsWith("Condition_", StringComparison.Ordinal) || text.Key.StartsWith("Surcharge_", StringComparison.Ordinal)
+        var kept = InterfaceTexts.Of(typeof(CorporateTaxCard)).Where(text => text.Key.StartsWith("Condition_", StringComparison.Ordinal) || text.Key.StartsWith("Surcharge_", StringComparison.Ordinal)
             || text.Key == "NoTaxableProfit").ToList();
 
         kept.ShouldSatisfyAllConditions(
             () => kept.ShouldNotBeEmpty(),
-            () => kept.Where(text => WordCount(text.Value) > 15).Select(text => text.Key).ShouldBeEmpty());
+            () => kept.Where(text => InterfaceTexts.WordCount(text.Value) > 15).Select(text => text.Key).ShouldBeEmpty());
     }
 
     // Each sentence reads only the arguments the card passes it, its placeholders counted from 0:
@@ -100,24 +98,10 @@ public class CorporateTaxCardTextTests
     [InlineData("Surcharge_", 2)]
     public void CorporateTaxCardResx_sentence_readsOnlyTheArgumentsTheCardPasses(string prefix, int arguments)
     {
-        Texts().Where(text => text.Key.StartsWith(prefix, StringComparison.Ordinal) && Placeholders(text.Value).Any(index => index >= arguments))
+        InterfaceTexts.Of(typeof(CorporateTaxCard)).Where(text => text.Key.StartsWith(prefix, StringComparison.Ordinal) && InterfaceTexts.Placeholders(text.Value).Any(index => index >= arguments))
             .Select(text => text.Key).ShouldBeEmpty();
     }
 
     private static IEnumerable<string> Missing(IEnumerable<string> keys) =>
         keys.Distinct().Where(key => Resources.GetString(key, CultureInfo.InvariantCulture) is null);
-
-    // Each text of the card's .resx with its key.
-    private static List<(string Key, string Value)> Texts() =>
-    [
-        .. Resources.GetResourceSet(CultureInfo.InvariantCulture, true, true).ShouldNotBeNull().Cast<DictionaryEntry>()
-            .Select(entry => ((string)entry.Key, entry.Value as string ?? "")),
-    ];
-
-    // A word holds a letter or a digit, an amount or a placeholder counting as one.
-    private static int WordCount(string text) => text.Split(' ', StringSplitOptions.RemoveEmptyEntries).Count(word => word.Any(char.IsLetterOrDigit));
-
-    // The index of each placeholder a text holds.
-    private static IEnumerable<int> Placeholders(string text) =>
-        Regex.Matches(text, @"\{(\d+)").Select(match => int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture));
 }

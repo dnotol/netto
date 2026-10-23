@@ -1,6 +1,3 @@
-using System.Collections;
-using System.Resources;
-using Netto.Web.Client.River;
 using Shouldly;
 
 namespace Netto.Tests.WebClient;
@@ -14,7 +11,7 @@ public class InterfaceTextTests
     [Fact]
     public void Resources_everyText_namesNoMuddyPocket()
     {
-        var texts = Texts().ToList();
+        var texts = InterfaceTexts.All().ToList();
 
         texts.ShouldSatisfyAllConditions(
             () => texts.ShouldContain(text => text.Key == "Bucket_pocket"),
@@ -27,26 +24,10 @@ public class InterfaceTextTests
     [Fact]
     public void Resources_everyText_namesNoTaxesOnPay()
     {
-        var texts = Texts().ToList();
+        var texts = InterfaceTexts.All().ToList();
 
         texts.ShouldSatisfyAllConditions(
             () => texts.ShouldContain(text => text.Key == "Bucket_taxes_on_pay"),
             () => texts.Where(text => text.Value.Contains("taxes on pay", StringComparison.OrdinalIgnoreCase)).Select(text => $"{text.Resource}: {text.Key}").ShouldBeEmpty());
-    }
-
-    // Each text of every resource the client embeds, with the resource and the key it is under.
-    private static IEnumerable<(string Resource, string Key, string Value)> Texts()
-    {
-        var assembly = typeof(BucketBar).Assembly;
-        foreach (var resource in assembly.GetManifestResourceNames().Where(name => name.EndsWith(".resources", StringComparison.Ordinal)))
-        {
-            using var stream = assembly.GetManifestResourceStream(resource) ?? throw new InvalidOperationException($"No stream for {resource}.");
-            using var reader = new ResourceReader(stream);
-            foreach (DictionaryEntry entry in reader)
-            {
-                if (entry.Value is string value)
-                    yield return (resource, (string)entry.Key, value);
-            }
-        }
     }
 }

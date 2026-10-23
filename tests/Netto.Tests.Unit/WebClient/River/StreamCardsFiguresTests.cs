@@ -42,7 +42,7 @@ public class StreamCardsFiguresTests
 
         labels.ShouldSatisfyAllConditions(
             () => labels.ShouldNotMatch("[.,:;?]"),
-            () => labels.Split('·').Select(WordCount).ShouldAllBe(count => count >= 1 && count <= 5));
+            () => labels.Split('·').Select(InterfaceTexts.WordCount).ShouldAllBe(count => count >= 1 && count <= 5));
     }
 
     // A sentence that restates a figure its lines show is gone: no paragraph in sight holds an amount
@@ -240,6 +240,4 @@ public class StreamCardsFiguresTests
     private static async Task<string> CardAsync(string card) => CardHtml.Card(await Page.Value, card);
 
     private static string Unsigned(string amount) => amount.TrimStart('−', '+');
-
-    private static int WordCount(string text) => text.Split(' ', StringSplitOptions.RemoveEmptyEntries).Count(word => word.Any(char.IsLetter));
 }
