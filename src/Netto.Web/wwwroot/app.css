@@ -111,20 +111,23 @@ html {
    border (Layout/MainLayout.razor.css), the bar's 9rem with its line on the setup starred Today, and
    room for its last line to wrap; below a wide screen, its buttons in a row under the figures; on a
    phone, its two rows of buckets and the row of its menu under them. A notice of a removal at the
-   bottom of the screen (River/TakenOutNotice) hides nothing either. */
+   bottom of the screen (River/TakenOutNotice) hides nothing either. The line is one value for each
+   width, --netto-under-bar, which the river's outline sticks at too (River/RiverOutline), and where a
+   card it jumps to lands. */
 html:has(.bucket-bar) {
-    scroll-padding-top: calc(4.25rem + 1px + 9rem + 1.5rem);
+    --netto-under-bar: calc(4.25rem + 1px + 9rem + 1.5rem);
+    scroll-padding-top: var(--netto-under-bar);
 }
 
 @media (max-width: 1200px) {
     html:has(.bucket-bar) {
-        scroll-padding-top: calc(4.25rem + 1px + 11.5rem + 1.5rem);
+        --netto-under-bar: calc(4.25rem + 1px + 11.5rem + 1.5rem);
     }
 }
 
 @media (max-width: 640px) {
     html:has(.bucket-bar) {
-        scroll-padding-top: calc(4.25rem + 1px + 12rem + 1rem);
+        --netto-under-bar: calc(4.25rem + 1px + 12rem + 1rem);
     }
 }
 
@@ -133,13 +136,13 @@ html:has(.bucket-bar) {
    difference (the bar measured 331 px at 375 px wide). */
 @media (max-width: 960px) {
     html:has(.bucket-bar__buckets--five) {
-        scroll-padding-top: calc(4.25rem + 1px + 11.5rem + 2.8rem + 1.5rem);
+        --netto-under-bar: calc(4.25rem + 1px + 11.5rem + 2.8rem + 1.5rem);
     }
 }
 
 @media (max-width: 640px) {
     html:has(.bucket-bar__buckets--five) {
-        scroll-padding-top: calc(4.25rem + 1px + 20.75rem + 1rem);
+        --netto-under-bar: calc(4.25rem + 1px + 20.75rem + 1rem);
     }
 }
 
