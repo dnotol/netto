@@ -124,6 +124,15 @@ public class FormatsTests
         text.ShouldBe("1 January 2027");
     }
 
+    // A tab's badge, short enough to sit after its name: the day and the month's first three letters.
+    [Theory]
+    [InlineData(2026, 12, 21, "21 Dec")]
+    [InlineData(2026, 4, 1, "1 Apr")]
+    public void ShortDay_date_isTheDayAndTheMonthShort(int year, int month, int day, string expected)
+    {
+        Formats.ShortDay(new DateOnly(year, month, day)).ShouldBe(expected);
+    }
+
     // A car's CO2 percentage or deduction rate, as exact as the rules make it: 9.75% is not 9.8%.
     [Theory]
     [InlineData("0.105", "10.5%")]

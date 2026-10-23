@@ -13,14 +13,18 @@ internal sealed record MovesView(MovesState State, string? Error, RiverInputs? T
     public bool OpenByDefault => State != MovesState.NoToday;
 
     // On that date, which decides the deadline a payment is proposed by.
-    public static MovesView Of(RiverInputs? today, DateOnly date)
+    public static MovesView Of(RiverInputs? today, DateOnly date) => Of(today, today?.FindMoves(date));
+
+    // From what the search found for Today (RiverInputs.FindMoves), none without a Today or for a Today
+    // that starts at the pay: the page searches once per Today, and the tab draws the view of it.
+    public static MovesView Of(RiverInputs? today, (MovePlan? Value, string? Error)? found)
     {
         if (today is null)
             return new MovesView(MovesState.NoToday, null, null, 0m, [], 0m);
-        if (today.FindMoves(date) is not { } found)
+        if (found is not { } result)
             return new MovesView(MovesState.StartsAtPay, null, today, 0m, [], 0m);
-        if (found.Value is not { } plan)
-            return new MovesView(MovesState.Refused, found.Error, today, 0m, [], 0m);
+        if (result.Value is not { } plan)
+            return new MovesView(MovesState.Refused, result.Error, today, 0m, [], 0m);
 
         var pay = Math.Min(today.DirectorPay.Value, today.PayCeiling ?? 0m);
         return plan.Moves.Count == 0

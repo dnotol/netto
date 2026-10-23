@@ -27,4 +27,13 @@
   <data name="Tab_Compare" xml:space="preserve">
     <value>Compare plans</value>
   </data>
+  <data name="Spoken_Refused" xml:space="preserve">
+    <value>an amount here is refused</value>
+  </data>
+  <data name="Spoken_MoreThanToday" xml:space="preserve">
+    <value>{0} more than Today</value>
+  </data>
+  <data name="Spoken_NextBy" xml:space="preserve">
+    <value>next advance payment by {0}</value>
+  </data>
 </root>

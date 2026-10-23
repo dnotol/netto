@@ -5,13 +5,33 @@
    role=tab: it opens directly, in a new browser tab too, and back and forward move between tabs. The
    current one says so (aria-current="page") and is underlined in gold, an active state, and set
    heavier, so colour is not its only sign. The page they lead to is the same one, so the river's inputs
-   stay as they are from one tab to the next. *@
+   stay as they are from one tab to the next. After a tab's name, its badge (TabBadges): shown short,
+   +€3,054.18 or 21 Dec or a warning, which a screen reader skips, and said in full out of sight, so the
+   link's name is the tab's name followed by what its badge means. *@
 <nav class="plan-tab-bar" aria-label="@L[PlanTabBarText.Label]">
     <ul class="plan-tab-bar__tabs">
         @foreach (var tab in PlanTabRoutes.Order)
         {
             <li>
-                <a href="@PlanTabRoutes.Href(tab)" class="plan-tab-bar__tab" aria-current="@(tab == Current ? "page" : null)"><span class="plan-tab-bar__name">@L[PlanTabBarText.Name(tab)]</span></a>
+                <a href="@PlanTabRoutes.Href(tab)" class="plan-tab-bar__tab" aria-current="@(tab == Current ? "page" : null)">
+                    <span class="plan-tab-bar__name">@L[PlanTabBarText.Name(tab)]</span>
+                    @if (Badges.GetValueOrDefault(tab) is { } badge)
+                    {
+                        <span class="plan-tab-bar__badge plan-tab-bar__badge--@badge.Kind.ToString().ToLowerInvariant()" aria-hidden="true">
+                            @if (badge.Kind == TabBadgeKind.Refused)
+                            {
+                                <MudIcon Icon="@Icons.Material.Rounded.WarningAmber" Size="Size.Small" Color="Color.Warning" />
+                            }
+                            else
+                            {
+                                @Shown(badge)
+                            }
+                        </span>
+                        @* Razor drops the whitespace next to a code block: without it, a screen reader reads
+                           the name run into the badge. *@
+                        @(" ")<span class="plan-tab-bar__spoken">@Spoken(badge)</span>
+                    }
+                </a>
             </li>
         }
     </ul>
@@ -21,4 +41,22 @@
     // The tab the page shows.
     [Parameter, EditorRequired]
     public PlanTab Current { get; set; }
+
+    // Each tab's badge, none for a tab with nothing to say.
+    [Parameter]
+    public IReadOnlyDictionary<PlanTab, TabBadge> Badges { get; set; } = new Dictionary<PlanTab, TabBadge>();
+
+    private static string Shown(TabBadge badge) => badge.Kind switch
+    {
+        TabBadgeKind.MoreThanToday => Formats.Addition(badge.Amount),
+        TabBadgeKind.NextBy => Formats.ShortDay(badge.Date),
+        _ => "",
+    };
+
+    private string Spoken(TabBadge badge) => badge.Kind switch
+    {
+        TabBadgeKind.MoreThanToday => L[PlanTabBarText.Spoken(badge.Kind), Formats.Euros(badge.Amount)],
+        TabBadgeKind.NextBy => L[PlanTabBarText.Spoken(badge.Kind), Formats.Day(badge.Date)],
+        _ => L[PlanTabBarText.Spoken(badge.Kind)],
+    };
 }

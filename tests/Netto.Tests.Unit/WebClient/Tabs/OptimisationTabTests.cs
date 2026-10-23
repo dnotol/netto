@@ -89,6 +89,6 @@ public class OptimisationTabTests
     private static async Task<string> RenderTabAsync(RiverInputs? today, RiverInputs river) =>
         WebUtility.HtmlDecode(await RenderAsync<OptimisationTab>(new Folds(new BrowserStorage()), new()
         {
-            ["Today"] = today, ["Date"] = On22October, ["Inputs"] = river,
+            ["Today"] = today, ["Found"] = today?.FindMoves(On22October), ["Inputs"] = river,
         }));
 }

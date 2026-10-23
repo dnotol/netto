@@ -41,6 +41,9 @@ internal static class Formats
     // The invariant culture's month names are English: 1 January 2027.
     public static string Day(DateOnly date) => date.ToString("d MMMM yyyy", Culture);
 
+    // A day short enough to sit after a tab's name: 21 Dec.
+    public static string ShortDay(DateOnly date) => date.ToString("d MMM", Culture);
+
     // A month of the income year, 1 being January, by its English name.
     public static string Month(int year, int month) => new DateOnly(year, month, 1).ToString("MMMM", Culture);
 

@@ -34,6 +34,33 @@
         box-shadow: inset 0 -2px 0 var(--netto-gold);
     }
 
+/* A badge after the name, short and muted; what the moves add in the pocket's gold, as money reaching
+   the director is; a refusal as the warning its tab's field shows. */
+.plan-tab-bar__badge {
+    display: inline-flex;
+    align-items: center;
+    color: var(--netto-text-muted);
+    font-size: 0.78rem;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+}
+
+.plan-tab-bar__badge--morethantoday {
+    color: var(--netto-gold);
+}
+
+/* What the badge means, for a screen reader: out of sight. */
+.plan-tab-bar__spoken {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
 /* On a phone the names sit closer and smaller, and the row scrolls sideways rather than wrap, so the
    bar keeps one height; room is left above and below for the focus ring, which the scrolling would
    otherwise cut. */
@@ -49,5 +76,14 @@
     .plan-tab-bar__tab {
         min-height: 2.5rem;
         font-size: 0.85rem;
+    }
+
+    /* The names alone, but for a refusal: a screen reader still hears every badge. */
+    .plan-tab-bar__badge {
+        display: none;
+    }
+
+    .plan-tab-bar__badge--refused {
+        display: inline-flex;
     }
 }

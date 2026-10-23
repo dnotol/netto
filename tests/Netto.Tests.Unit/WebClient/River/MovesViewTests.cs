@@ -25,6 +25,26 @@ public class MovesViewTests
         MovesView.Of(null, On22October).State.ShouldBe(MovesState.NoToday);
     }
 
+    // The page searches once per Today, and the tab draws the view of what was found, searching nothing.
+    [Fact]
+    public void Of_whatTheSearchFound_isTheViewOfSearchingAgain()
+    {
+        var found = RiverInputs.Example.FindMoves(On22October);
+
+        var view = MovesView.Of(RiverInputs.Example, found);
+
+        var searched = MovesView.Of(RiverInputs.Example, On22October);
+        (view.State, view.TodayPay, view.Total, view.Moves.SequenceEqual(searched.Moves)).ShouldBe((searched.State, searched.TodayPay, searched.Total, true));
+    }
+
+    // Nothing found, from no Today or from one that starts at the pay: two answers, told apart by Today.
+    [Fact]
+    public void Of_nothingFound_isNoTodayOrStartsAtThePay()
+    {
+        (MovesView.Of(null, found: null).State, MovesView.Of(RiverInputs.Example.SkipCompany(), found: null).State)
+            .ShouldBe((MovesState.NoToday, MovesState.StartsAtPay));
+    }
+
     // The one card of the river that opens by itself: what it says is the answer, and every state
     // of a Today it says something the user has to read (its moves, a refusal, where to start).
     // Without a Today it is folded to what it waits for, like the other cards.

@@ -24,4 +24,21 @@ public class PlanTabBarTextTests
     {
         PlanTabRoutes.Order.Select(tab => Text(PlanTabBarText.Name(tab))).ShouldBe(["Plan", "Optimisation", "When to pay", "Compare plans"]);
     }
+
+    // A badge shows short (+€3,054.18, 21 Dec, an icon) and a screen reader hears it in full, after the
+    // tab's name.
+    [Theory]
+    [InlineData(TabBadgeKind.MoreThanToday, "€3,054.18", "€3,054.18 more than Today")]
+    [InlineData(TabBadgeKind.NextBy, "21 December 2026", "next advance payment by 21 December 2026")]
+    [InlineData(TabBadgeKind.Refused, "", "an amount here is refused")]
+    public void PlanTabBarResx_everyBadge_isSpokenInFull(TabBadgeKind kind, string figure, string expected)
+    {
+        string.Format(CultureInfo.InvariantCulture, Text(PlanTabBarText.Spoken(kind)) ?? "", figure).ShouldBe(expected);
+    }
+
+    [Fact]
+    public void PlanTabBarResx_everyBadgeKind_hasItsSpokenText()
+    {
+        Enum.GetValues<TabBadgeKind>().Where(kind => Text(PlanTabBarText.Spoken(kind)) is null).ShouldBeEmpty();
+    }
 }

@@ -8,4 +8,7 @@ internal static class PlanTabBarText
     public const string Label = "Label";
 
     public static string Name(PlanTab tab) => $"Tab_{tab}";
+
+    // A badge as a screen reader hears it after the tab's name, in full where the bar shows it short.
+    public static string Spoken(TabBadgeKind kind) => $"Spoken_{kind}";
 }

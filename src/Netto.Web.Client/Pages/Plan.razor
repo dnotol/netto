@@ -44,7 +44,7 @@
         <CompositionMenu @ref="_composition" Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" />
     </ChildContent>
     <TabRow>
-        <PlanTabBar Current="_tab" />
+        <PlanTabBar Current="_tab" Badges="Badges()" />
     </TabRow>
 </BucketBar>
 <TakenOutNotice @ref="_notice" Module="_takenOut" OnUndo="Undo" OnDismiss="Dismiss" />
@@ -56,7 +56,7 @@
             @switch (_tab)
             {
                 case PlanTab.Optimisation:
-                    <OptimisationTab Today="Plans.TodayPlan?.Inputs" Date="Today" Inputs="_inputs" InputsChanged="OnInputsChanged" />
+                    <OptimisationTab Today="Plans.TodayPlan?.Inputs" Found="FoundMoves()" Inputs="_inputs" InputsChanged="OnInputsChanged" />
                     break;
                 case PlanTab.WhenToPay:
                     <WhenToPayTab Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Date="Today" />
@@ -176,6 +176,10 @@ else
     private OptionalModule? _takenOut;
     private bool _focusUndo;
     private bool _focusComposition;
+    private (MovePlan? Value, string? Error)? _moves;
+    private RiverInputs? _movesFor;
+    private DateOnly _movesOn;
+    private bool _movesFound;
 
     protected override void OnInitialized()
     {
@@ -263,6 +267,26 @@ else
             _searched = inputs;
         }
     }
+
+    // The moves from the plan starred « Today », found once per Today and date, since the search runs the
+    // split at every move: the Optimisation tab draws them, and its badge needs them on every tab.
+    private (MovePlan? Value, string? Error)? FoundMoves()
+    {
+        var today = Plans.TodayPlan?.Inputs;
+        var date = Today;
+        if (_movesFound && today == _movesFor && date == _movesOn)
+            return _moves;
+
+        _moves = today?.FindMoves(date);
+        _movesFor = today;
+        _movesOn = date;
+        _movesFound = true;
+        return _moves;
+    }
+
+    // What each tab says after its name, from what its content draws.
+    private IReadOnlyDictionary<PlanTab, TabBadge> Badges() =>
+        TabBadges.Of(_run, MovesView.Of(Plans.TodayPlan?.Inputs, FoundMoves()), CalendarView.From(_inputs, _run, Today));
 
     // The browser's date, which decides which deadlines are past and which one a payment is proposed by.
     private DateOnly Today => DateOnly.FromDateTime(Clock.GetLocalNow().DateTime);

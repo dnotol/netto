@@ -14,6 +14,9 @@ namespace Netto.Tests.WebClient.Pages;
 // summary and the notes under it folded to one line each, or another tab in its place.
 public class PlanPageTests
 {
+    // The deadline still open on this date is December's.
+    private static readonly DateTimeOffset On23October = new(2026, 10, 23, 12, 0, 0, TimeSpan.Zero);
+
     // The example opens with Company year, the split, Director pay, Corporate tax and Dividend: five
     // cards, and the two notes under them.
     [Fact]
@@ -148,6 +151,49 @@ public class PlanPageTests
         (buckets.Distinct().Count(), buckets[0].Contains(Formats.Euros(pocket))).ShouldBe((1, true));
     }
 
+    // Once a plan is starred Today, Optimisation says what its moves add, short after its name and in
+    // full for a screen reader.
+    [Fact]
+    public async Task Plan_withToday_badgesOptimisationWithWhatTheMovesAdd()
+    {
+        var total = MovesView.Of(RiverInputs.Example, DateOnly.FromDateTime(On23October.DateTime)).Total;
+
+        var html = await RenderPlanAsync(new Folds(new BrowserStorage()), today: RiverInputs.Example);
+
+        var optimisation = Links(html).Single(link => link.Name == "Optimisation");
+        (optimisation.Badge, optimisation.Spoken).ShouldBe((Formats.Addition(total), $"{Formats.Euros(total)} more than Today"));
+    }
+
+    [Fact]
+    public async Task Plan_withoutToday_badgesNoOptimisation()
+    {
+        var html = await RenderPlanAsync(new Folds(new BrowserStorage()));
+
+        Links(html).Single(link => link.Name == "Optimisation").Badge.ShouldBeNull();
+    }
+
+    // When to pay says the next advance payment's day, on every tab.
+    [Theory]
+    [InlineData(null)]
+    [InlineData("optimisation")]
+    public async Task Plan_paymentStillToMake_badgesWhenToPayWithItsDay(string? tab)
+    {
+        var html = await RenderPlanAsync(new Folds(new BrowserStorage()), tab);
+
+        var whenToPay = Links(html).Single(link => link.Name == "When to pay");
+        (whenToPay.Badge, whenToPay.Spoken).ShouldBe(("21 Dec", "next advance payment by 21 December 2026"));
+    }
+
+    // A refusal on When to pay shows on its tab while the viewer is on another.
+    [Fact]
+    public async Task Plan_billedAmountRefused_marksWhenToPayOnThePlanTab()
+    {
+        var html = await RenderPlanAsync(new Folds(new BrowserStorage()), river: RiverInputs.Example.WithBilledContributions(-1m));
+
+        var whenToPay = Links(html).Single(link => link.Name == "When to pay");
+        (whenToPay.Refused, whenToPay.Spoken).ShouldBe((true, "an amount here is refused"));
+    }
+
     private static List<string> Toggles(string html) => [.. Regex.Matches(html, "<button[^>]*class=\"fold__toggle\"[^>]*>").Select(match => match.Value)];
 
     // The bar of buckets, its figures, its buttons and its row of tabs.
@@ -158,22 +204,44 @@ public class PlanPageTests
     private static string Buckets(string html) => WebUtility.HtmlDecode(Regex.Replace(
         Regex.Match(html, "<dl class=\"bucket-bar__buckets.*?</dl>", RegexOptions.Singleline).Value, "\\s(id|aria-[a-z]+)=\"[^\"]*\"", ""));
 
-    private static List<(string Href, string Name, bool Current)> Links(string html) =>
+    // Each tab's link: where it goes, its name, whether it is current, and its badge as shown, as spoken,
+    // and whether it marks a refusal.
+    private static List<(string Href, string Name, bool Current, string? Badge, string? Spoken, bool Refused)> Links(string html) =>
     [
         .. Regex.Matches(html, "<a [^>]*class=\"plan-tab-bar__tab\"[^>]*>.*?</a>", RegexOptions.Singleline).Select(match => (
             Regex.Match(match.Value, "href=\"([^\"]*)\"").Groups[1].Value,
-            WebUtility.HtmlDecode(Regex.Match(match.Value, "<span [^>]*class=\"plan-tab-bar__name\"[^>]*>([^<]*)</span>").Groups[1].Value),
-            match.Value.Contains("aria-current=\"page\""))),
+            Text(match.Value, "plan-tab-bar__name")!,
+            match.Value.Contains("aria-current=\"page\""),
+            Text(match.Value, "plan-tab-bar__badge"),
+            Text(match.Value, "plan-tab-bar__spoken"),
+            match.Value.Contains("plan-tab-bar__badge--refused"))),
     ];
 
-    private static Task<string> RenderPlanAsync(Folds folds, string? tab = null, RiverInputs? river = null) =>
+    // The text of the link's span of that class, the visible badge's text without the icon a refusal
+    // draws; none without such a span.
+    private static string? Text(string link, string span)
+    {
+        var found = Regex.Match(link, $"<span [^>]*class=\"{span}[ \"][^>]*>(.*?)</span>", RegexOptions.Singleline);
+        return found.Success ? WebUtility.HtmlDecode(Regex.Replace(found.Groups[1].Value, "<[^>]*>", "")).Trim() : null;
+    }
+
+    private static Task<string> RenderPlanAsync(Folds folds, string? tab = null, RiverInputs? river = null, RiverInputs? today = null) =>
         RenderAsync(typeof(Plan), folds, tab is null ? [] : new() { ["Tab"] = tab }, services =>
         {
             var storage = new BrowserStorage();
             var plans = new SavedPlans(storage);
+            if (today is not null)
+                plans.Star(plans.Save(today, number => $"Plan {number}").Id);
             services.AddSingleton<IBrowserStorage>(storage);
             services.AddSingleton(plans);
             services.AddSingleton(new RiverState(plans) { Inputs = river ?? RiverInputs.Example });
-            services.AddSingleton(TimeProvider.System);
+            services.AddSingleton<TimeProvider>(new Clock(On23October));
         });
+
+    private sealed class Clock(DateTimeOffset now) : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() => now;
+
+        public override TimeZoneInfo LocalTimeZone => TimeZoneInfo.Utc;
+    }
 }
