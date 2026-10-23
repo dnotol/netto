@@ -72,10 +72,10 @@ public class StreamCardsFiguresTests
     }
 
     // The words in sight the static render counted on the filled plan before the story, and the most a
-    // card now draws: 60% of them for the split; Director pay and Corporate tax keep their drain lines,
-    // their summaries and the lines of their settings, which hold most of what they drew, and are held
-    // to what they draw once their sentences are lines.
-    public static TheoryData<string, int, int> Words => new() { { "split", 197, 118 }, { "director-pay", 131, 110 }, { "corporate-tax", 125, 98 } };
+    // card now draws, what it draws once its sentences are lines: the split under 60% of them; Director
+    // pay and Corporate tax keep their drain lines, their summaries and the lines of their settings,
+    // which hold most of what they drew.
+    public static TheoryData<string, int, int> Words => new() { { "split", 197, 107 }, { "director-pay", 131, 110 }, { "corporate-tax", 125, 98 } };
 
     [Theory]
     [MemberData(nameof(Words))]
