@@ -68,6 +68,15 @@ internal static class CarCardText
         _ => "Figure_Deduction_Rate",
     };
 
+    // The line of a part of the benefit's year by its months, a month begun counting whole: the whole year,
+    // one month, or from one month to another.
+    public static string Period(DateOnly from, DateOnly to) => (from.Month, to.Month) switch
+    {
+        (1, 12) => "Figure_Period_Year",
+        _ when from.Month == to.Month => "Figure_Period_Month",
+        _ => "Figure_Period",
+    };
+
     // The rate the costs are deducted at is in the line's label when it applies to them: all of them, or
     // the rest beyond the part equal to the benefit taxed and the contribution.
     public static bool DeductionTakesItsRate(CarResult car) => Deduction(car) is "Figure_Deduction_Full" or "Figure_Deduction_Rate";

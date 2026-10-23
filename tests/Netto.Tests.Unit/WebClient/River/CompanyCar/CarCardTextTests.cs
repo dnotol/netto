@@ -86,6 +86,23 @@ public class CarCardTextTests
         Missing(keys).ShouldBeEmpty();
     }
 
+    // A part of the benefit's year by its months, a month begun counting whole: the whole year, one month, or
+    // from one month to another.
+    [Fact]
+    public void CarCardResx_everyPeriodLine_hasALabel()
+    {
+        var keys = new[]
+        {
+            CarCardText.Period(new DateOnly(2026, 1, 1), new DateOnly(2026, 12, 31)),
+            CarCardText.Period(new DateOnly(2026, 1, 1), new DateOnly(2026, 1, 31)),
+            CarCardText.Period(new DateOnly(2026, 6, 1), new DateOnly(2026, 12, 31)),
+        };
+
+        keys.ShouldSatisfyAllConditions(
+            () => keys.ShouldBe(["Figure_Period_Year", "Figure_Period_Month", "Figure_Period"]),
+            () => Missing(keys).ShouldBeEmpty());
+    }
+
     // Every line the car's figures draw, and what its bubble says, on cars that take each of them: new or
     // turning a year older during the year, at the minimum, with a contribution, deducted each way, its
     // private charging paid; and the cash each way it falls.

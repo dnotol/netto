@@ -49,7 +49,7 @@ public class CarCardTests
         [
             (Text("Figure_Benefit"), "€1,714.29", null),
             (Text("Figure_Co2"), "4%", null),
-            (Text("Figure_Period_Year", "100%"), "€1,714.29", null),
+            (Text("Figure_Period_Year", "January", "December", "100%"), "€1,714.29", null),
             (Text("Figure_BenefitTaxed"), "€1,714.29", null),
             (Text("Figure_Deduction_Full", "100%"), "€8,000.00", null),
             (Text("Figure_AddBack", "17%"), "€291.43", null),

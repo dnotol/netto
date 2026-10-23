@@ -31,7 +31,7 @@ public class CarFiguresTests
         [
             ("Figure_Benefit", 1_714.29m, ""),
             ("Figure_Co2", 0.04m, ""),
-            ("Figure_Period_Year", 1_714.29m, "100%"),
+            ("Figure_Period_Year", 1_714.29m, "January|December|100%"),
             ("Figure_BenefitTaxed", 1_714.29m, ""),
             ("Figure_Deduction_Full", 8_000m, "100%"),
             ("Figure_AddBack", 291.43m, "17%"),
@@ -55,7 +55,7 @@ public class CarFiguresTests
         [
             ("Figure_Benefit", 1_714.29m, ""),
             ("Figure_Co2", 0.04m, ""),
-            ("Figure_Period_Year", 1_714.29m, "100%"),
+            ("Figure_Period_Year", 1_714.29m, "January|December|100%"),
             ("Figure_Contribution", -600m, ""),
             ("Figure_BenefitTaxed", 1_114.29m, ""),
         ]);
@@ -76,7 +76,7 @@ public class CarFiguresTests
     {
         Lines(CarFigures.Benefit(Compute(Electric with { CatalogueValue = 80_000m, FirstRegistration = new DateOnly(2019, 3, 5) })))
             .Where(line => line.Key.StartsWith("Figure_Period", StringComparison.Ordinal))
-            .ShouldBe([("Figure_Period_Year", 1_920m, "70%")]);
+            .ShouldBe([("Figure_Period_Year", 1_920m, "January|December|70%")]);
     }
 
     // First registered on 21.6.2025: January to May at 100% and June to December at 94%, each period a
@@ -95,7 +95,7 @@ public class CarFiguresTests
     {
         Lines(CarFigures.Benefit(Compute(Electric with { CatalogueValue = 70_000m, FirstRegistration = new DateOnly(2022, 2, 10) })))
             .Where(line => line.Key.StartsWith("Figure_Period", StringComparison.Ordinal))
-            .ShouldBe([("Figure_Period_Month", 167.15m, "January|82%"), ("Figure_Period", 1_669.08m, "February|December|76%")]);
+            .ShouldBe([("Figure_Period_Month", 167.15m, "January|January|82%"), ("Figure_Period", 1_669.08m, "February|December|76%")]);
     }
 
     // 30,000 × 6/7 × 4% = 1,028.57 is below the minimum: the benefit is the minimum, 1,690, above its
@@ -107,7 +107,7 @@ public class CarFiguresTests
         [
             ("Figure_Benefit", 1_690m, ""),
             ("Figure_Co2", 0.04m, ""),
-            ("Figure_Period_Year", 1_028.57m, "100%"),
+            ("Figure_Period_Year", 1_028.57m, "January|December|100%"),
         ]);
     }
 
@@ -172,7 +172,7 @@ public class CarFiguresTests
         };
 
         Lines(CarFigures.Benefit(stated)).Where(line => line.Key is "Figure_AddBack" or "Figure_Period_Year").Select(line => line.Args)
-            .ShouldBe(["94.5%", "17.5%"]);
+            .ShouldBe(["January|December|94.5%", "17.5%"]);
     }
 
     [Fact]

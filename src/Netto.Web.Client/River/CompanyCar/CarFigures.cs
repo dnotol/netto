@@ -41,20 +41,18 @@ internal static class CarFigures
         new("Figure_TaxesOnPay", comparison.TaxesOnPayAdded) { Help = "Help_TaxesOnPay" },
     ];
 
-    // A part of the year at one age coefficient, by its months, since a month begun counts whole: the
-    // whole year, one month, or from one month to another.
+    // A part of the year at one age coefficient, by its first and last months, since a month begun counts
+    // whole, and its coefficient; its label, the whole year, one month or from one to another, says those
+    // it needs.
     private static FigureLine Period(CarBenefitPeriod period)
     {
         var (from, to) = (period.Period.From, period.Period.To);
-        var coefficient = Formats.RuleAmount(period.Period.AgeCoefficient);
-        var (key, args) = (from.Month, to.Month) switch
-        {
-            (1, 12) => ("Figure_Period_Year", new[] { coefficient }),
-            _ when from.Month == to.Month => ("Figure_Period_Month", [Month(from), coefficient]),
-            _ => ("Figure_Period", [Month(from), Month(to), coefficient]),
-        };
 
-        return new FigureLine(key, period.Benefit) { Args = args, Help = "Help_Period" };
+        return new FigureLine(CarCardText.Period(from, to), period.Benefit)
+        {
+            Args = [Month(from), Month(to), Formats.RuleAmount(period.Period.AgeCoefficient)],
+            Help = "Help_Period",
+        };
     }
 
     // What the company deducts of the costs, at the rate the label says, how it deducts them when not in
