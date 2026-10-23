@@ -1,4 +1,5 @@
 using Netto.Core.PersonalTax;
+using Netto.Core.Rules;
 
 namespace Netto.Core.Copyright;
 
@@ -23,9 +24,9 @@ public static class CopyrightCalculator
     // net (art. 269 takes the net income). The programme law of 30.05.2026 holds the withholding of a
     // royalty paid before 11.06.2026 to the old rule, on the net for every author: Netto takes the year's
     // royalty as paid at once under the new one. A royalty that follows the pay is taken at what it comes
-    // to at that pay (AtPay), the amount given unread, and says how it was set (Following): none while
-    // there is nothing a ruling accepts, which is never refused, so the river runs on until the share is
-    // given.
+    // to at that pay (AtPay), the amount given unread, and says how it was set (Following), with the
+    // amounts that measured it (CeilingAmounts): none while there is nothing a ruling accepts, which is
+    // never refused, so the river runs on until the share is given.
     public static (CopyrightResult? Value, string? Error) Compute(CopyrightRules rules, CopyrightRoyalty royalty, decimal grossPay)
     {
         if (!royalty.FollowsPay && royalty.Royalty < 0m)
@@ -34,6 +35,7 @@ public static class CopyrightCalculator
             return (null, CreativeShareOutOfRange);
 
         var following = royalty.FollowsPay ? Following(rules, royalty) : (CopyrightFollowing?)null;
+        var ceilingAmounts = royalty.FollowsPay ? Measured(rules, royalty, grossPay)?.Amounts : null;
         royalty = AtPay(rules, royalty, grossPay);
         if (!royalty.Any)
             return (CopyrightResult.None with { Following = following }, null);
@@ -62,7 +64,11 @@ public static class CopyrightCalculator
             Money.RoundToCent(net * rules.WithholdingRate.Value),
             Money.RoundToCent(asPay * rules.BeyondLimitsWithholdingRate.Value),
             bound,
-            within > 0m ? new IncomeTaxedApart(net, rules.TaxedApartRate) : null) { Following = following }, null);
+            within > 0m ? new IncomeTaxedApart(net, rules.TaxedApartRate) : null)
+        {
+            Following = following,
+            CeilingAmounts = ceilingAmounts ?? [],
+        }, null);
     }
 
     // What an advance ruling accepts as a royalty beside the gross pay on the payslip, which Netto
@@ -73,14 +79,17 @@ public static class CopyrightCalculator
     // never above it. The pay is the payslip's gross alone, as the relative limit's is (decided unattended,
     // the smaller envelope). None until the share is given, when the four previous years averaged above
     // the cap, which taxes every royalty as pay, or for a year without an envelope rate (Following).
-    public static decimal? Ceiling(CopyrightRules rules, CopyrightRoyalty royalty, decimal grossPay)
+    public static decimal? Ceiling(CopyrightRules rules, CopyrightRoyalty royalty, decimal grossPay) => Measured(rules, royalty, grossPay)?.Value;
+
+    // What a ruling accepts at the pay (Ceiling), with the amounts that measured it, or none.
+    private static (decimal Value, IReadOnlyList<RuleAmount> Amounts)? Measured(CopyrightRules rules, CopyrightRoyalty royalty, decimal grossPay)
     {
         if (royalty.CreativeShare is not { } share || !royalty.AverageWithinCap || rules.EnvelopeRate is not { } envelope)
             return null;
 
         var rate = Math.Min(envelope.Value * share, rules.RelativeLimit.Value);
         var largest = Math.Floor(rate * Math.Max(0m, grossPay) / (1m - rate) * 100m) / 100m;
-        return Math.Min(largest, rules.Cap.Value);
+        return (Math.Min(largest, rules.Cap.Value), [envelope, rules.RelativeLimit, rules.Cap]);
     }
 
     // The royalty as the company pays it beside that gross pay: the one given, or, when it follows the

@@ -1,5 +1,6 @@
 using Netto.Core.MovableIncome;
 using Netto.Core.PersonalTax;
+using Netto.Core.Rules;
 
 namespace Netto.Core.Copyright;
 
@@ -31,6 +32,10 @@ public sealed record CopyrightResult(
     // How a royalty that follows the pay was set: at what an advance ruling accepts at the pay, or none,
     // and why. Null for a royalty the user fixed.
     public CopyrightFollowing? Following { get; init; }
+
+    // The amounts that measured what a ruling accepts, for a royalty that follows the pay and is paid:
+    // the envelope rate, the relative limit and the cap. None for a royalty the user fixed.
+    public IReadOnlyList<RuleAmount> CeilingAmounts { get; init; } = [];
 
     // What the royalty does to the year, as YearSimulation composes it beside the other levers: what the
     // company pays and deducts, the part taxed apart, net of its costs, the part taxed as pay, and what

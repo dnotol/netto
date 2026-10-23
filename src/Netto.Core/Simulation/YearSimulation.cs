@@ -419,7 +419,7 @@ public static class YearSimulation
     private static IEnumerable<Step> CopyrightSteps(CopyrightRules rules, CopyrightResult royalty) =>
     [
         new Step("copyright_royalty", Layer.Corporate, TaxableEvent.CopyrightRoyalty, Track.TaxBaseOnly, royalty.Royalty,
-            rules.Deduction, royalty.Following is CopyrightFollowing.AtCeiling && rules.EnvelopeRate is { } envelope ? [envelope, rules.RelativeLimit, rules.Cap] : []),
+            rules.Deduction, royalty.CeilingAmounts),
         new Step("copyright_within_limits", Layer.Personal, TaxableEvent.CopyrightRoyalty, Track.InPocket, royalty.WithinLimits,
             rules.Limits, [rules.RelativeLimit, rules.Cap]) { AlsoCites = [rules.PhaseIn, rules.OutsideContributions, rules.OutsideAdvancePaymentSurcharge] },
         new Step("copyright_flat_rate_costs", Layer.Personal, TaxableEvent.CopyrightRoyalty, Track.TaxBaseOnly, royalty.FlatRateCosts,

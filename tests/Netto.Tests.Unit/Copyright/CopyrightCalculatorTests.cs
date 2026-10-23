@@ -415,6 +415,20 @@ public class CopyrightCalculatorTests
         Compute(10_000m, 50_000m).Following.ShouldBeNull();
     }
 
+    // The amounts that measured what a ruling accepts, handed back for the royalty's step to cite.
+    [Fact]
+    public void Compute_followingThePay_handsBackTheAmountsThatMeasuredIt()
+    {
+        CopyrightCalculator.Compute(Rules2026, Following(0.75m), 50_000m).Value.ShouldNotBeNull().CeilingAmounts
+            .ShouldBe([Rules2026.EnvelopeRate.ShouldNotBeNull(), Rules2026.RelativeLimit, Rules2026.Cap]);
+    }
+
+    [Fact]
+    public void Compute_fixedRoyalty_handsBackNoAmountOfARuling()
+    {
+        Compute(10_000m, 50_000m).CeilingAmounts.ShouldBeEmpty();
+    }
+
     // The year reads the royalty with its costs as plain figures: the company pays and the pocket gets
     // the whole royalty, the tax and the withholding are on its net.
     [Fact]

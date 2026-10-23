@@ -314,11 +314,11 @@ public class YearSimulationCopyrightTests
     [Fact]
     public void Run_2026RoyaltyFollowingThePay_itsStepCitesTheAmountsARulingAcceptsItBy()
     {
-        var rules = CopyrightRules.IncomeYear2026;
+        var measured = CopyrightCalculator.Compute(CopyrightRules.IncomeYear2026, Following(0.75m), 50_000m).Value.ShouldNotBeNull();
 
         var step = Run(Scenario(royalty: Following(0.75m))).Steps.Single(step => step.RuleKey == "copyright_royalty");
 
-        step.AmountsUsed.ShouldBe([rules.EnvelopeRate.ShouldNotBeNull(), rules.RelativeLimit, rules.Cap]);
+        step.AmountsUsed.ShouldBe(measured.CeilingAmounts);
     }
 
     [Fact]
@@ -454,7 +454,7 @@ public class YearSimulationCopyrightTests
     // its key and amount.
     private static YearFigures FiguresOf(YearResult year) => new(
         year.ProfitBeforePay, year.DisallowedExpenses, year.CorporateTax, year.SocialContributions, year.PersonalTax, year.NetInPocket, year.KeptInCompany,
-        year.MaximumDividend, year.Copyright with { Following = null }, year.DirectorPay.TaxablePay, year.DirectorPay.NetInPocket,
+        year.MaximumDividend, year.Copyright with { Following = null, CeilingAmounts = [] }, year.DirectorPay.TaxablePay, year.DirectorPay.NetInPocket,
         year.DirectorPay.TaxedApartTax, year.DirectorPay.Assessment.Balance, string.Join("; ", year.Steps.Select(step => $"{step.RuleKey} {step.Amount}")));
 
     private sealed record YearFigures(
