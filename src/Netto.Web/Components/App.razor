@@ -6,6 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0B0A08" />
     <base href="/" />
+    @* Before anything paints: sets the page's theme, the viewer's pick or their system's, so the splash
+       is drawn in it too. After <base>, so its path resolves from the root on any page. *@
+    <script src="@Assets["theme.js"]"></script>
     <ResourcePreloader />
     @* Preload paths must match the url() paths inside app.css, and fonts are CORS-fetched even
        same-origin: without crossorigin the browser downloads each font twice. *@

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor.Services;
 using Netto.Web.Client;
+using Netto.Web.Client.Layout;
 using Netto.Web.Client.River;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
@@ -10,9 +11,11 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.Services.AddLocalization();
 builder.Services.AddMudServices();
 
-// What is kept in the browser, never on a server: the viewer's preferences, which folds of the river
-// are open, and the plans they save.
+// What is kept in the browser, never on a server: the viewer's preferences, their theme and which
+// folds of the river are open, and the plans they save.
 builder.Services.AddScoped<IBrowserStorage, LocalStorage>();
+builder.Services.AddScoped<IThemePage, BrowserThemePage>();
+builder.Services.AddScoped<ThemePreference>();
 builder.Services.AddScoped<Folds>();
 builder.Services.AddScoped<SavedPlans>();
 

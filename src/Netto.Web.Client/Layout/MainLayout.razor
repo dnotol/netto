@@ -1,8 +1,11 @@
 ﻿@inherits LayoutComponentBase
 @inject IStringLocalizer<MainLayout> L
 @inject NavigationManager Navigation
+@inject ThemePreference ThemePreference
 
-<MudThemeProvider Theme="NettoTheme.Theme" IsDarkMode="true" />
+@* The theme is the viewer's (ThemePreference): MudBlazor must not follow the system on its own, or it
+   would undo a pick; the system's changes come through WatchSystemDarkModeAsync instead. *@
+<MudThemeProvider @ref="_themeProvider" Theme="NettoTheme.Theme" IsDarkMode="ThemePreference.IsDark" ObserveSystemDarkModeChange="false" />
 <MudPopoverProvider />
 
 @* .netto-app is also the signal app.css uses to hide the boot splash. *@
@@ -27,6 +30,10 @@
                 <MudButton Href="/plan" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small">
                     @L["NavStart"]
                 </MudButton>
+                @* Named by what it does, so its name changes with the theme rather than a pressed state. *@
+                <MudIconButton Icon="@(ThemePreference.IsDark ? Icons.Material.Rounded.LightMode : Icons.Material.Rounded.DarkMode)"
+                               Size="Size.Small" Class="site-header__theme" OnClick="ThemePreference.Switch"
+                               aria-label="@L[ThemePreference.IsDark ? "ThemeToLight" : "ThemeToDark"]" />
             </div>
         </MudContainer>
     </header>
@@ -54,4 +61,19 @@
     public const string SkipLinkSection = "skip-link";
 
     private bool OnFrontPage => Navigation.ToBaseRelativePath(Navigation.Uri).Split('?', '#')[0].Length == 0;
+
+    private MudThemeProvider _themeProvider = default!;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+            await _themeProvider.WatchSystemDarkModeAsync(SystemChangedAsync);
+    }
+
+    // Followed only while the viewer has picked no theme (ThemePreference).
+    private Task SystemChangedAsync(bool systemIsDark) => InvokeAsync(() =>
+    {
+        ThemePreference.SystemChanged(prefersLight: !systemIsDark);
+        StateHasChanged();
+    });
 }
