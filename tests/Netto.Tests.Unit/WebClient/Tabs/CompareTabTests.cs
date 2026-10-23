@@ -217,12 +217,23 @@ public class CompareTabTests
         (html.Contains("An amount of « Plan 2 » is refused"), html.Contains("<table"), html.Contains("<select")).ShouldBe((true, false, true));
     }
 
+    // The plan that starts at the pay is the one that leaves out the dividend, whichever column it is in.
     [Fact]
-    public async Task Compare_onePlanStartsAtThePay_saysTheyCannotBeComparedAndDrawsNoTable()
+    public async Task Compare_secondStartsAtThePay_namesItAsTheOneThatLeavesOutTheDividend()
     {
         var html = await RenderTabAsync(Saved(RiverInputs.Example, RiverInputs.Example.SkipCompany()));
 
-        (html.Contains("« Plan 1 » and « Plan 2 » cannot be compared"), html.Contains("<table")).ShouldBe((true, false));
+        (html.Contains("« Plan 2 » starts from the director's pay, so it leaves out the dividend, and cannot be compared with « Plan 1 », which starts from the company's year."),
+            html.Contains("<table")).ShouldBe((true, false));
+    }
+
+    [Fact]
+    public async Task Compare_firstStartsAtThePay_namesItAsTheOneThatLeavesOutTheDividend()
+    {
+        var html = await RenderTabAsync(Saved(RiverInputs.Example.SkipCompany(), RiverInputs.Example));
+
+        (html.Contains("« Plan 1 » starts from the director's pay, so it leaves out the dividend, and cannot be compared with « Plan 2 », which starts from the company's year."),
+            html.Contains("<table")).ShouldBe((true, false));
     }
 
     [Fact]

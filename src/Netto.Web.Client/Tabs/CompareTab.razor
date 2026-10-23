@@ -60,7 +60,9 @@
                 }
                 break;
             case CompareState.NotComparable:
-                <p class="compare__note">@L[CompareTabText.Note(CompareState.NotComparable), plan.Name, against.Name]</p>
+                @* The plan that starts at the pay is the one that leaves out the dividend, in whichever column. *@
+                var (atPay, atYear) = plan.StartsAtPay ? (plan, against) : (against, plan);
+                <p class="compare__note">@L[CompareTabText.Note(CompareState.NotComparable), atPay.Name, atYear.Name]</p>
                 break;
             case CompareState.Compared when _view.Pocket is { } pocket:
                 <section class="compare__panel" aria-labelledby="compare-pocket-title">

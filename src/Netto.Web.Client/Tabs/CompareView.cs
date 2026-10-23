@@ -109,7 +109,11 @@ internal sealed record ComparePicks(string Plan, string Against);
 internal sealed record PlanChoice(string Id, string Name, bool IsToday);
 
 // One of the two columns: the plan, its inputs, its one run and what the bar of buckets draws from it.
-internal sealed record ComparedPlan(string Id, string Name, bool IsToday, RiverInputs Inputs, RiverRun Run, BucketsView? Buckets);
+internal sealed record ComparedPlan(string Id, string Name, bool IsToday, RiverInputs Inputs, RiverRun Run, BucketsView? Buckets)
+{
+    // Its river starts at the director's pay, the company's year skipped: it leaves out the dividend.
+    public bool StartsAtPay => Run.Year is null;
+}
 
 // The figures of one layer of the year, or the year's result, in the order the table draws them.
 internal sealed record CompareGroup(string Key, IReadOnlyList<CompareRow> Rows);

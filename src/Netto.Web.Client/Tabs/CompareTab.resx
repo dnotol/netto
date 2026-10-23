@@ -187,7 +187,7 @@
     <value>{0} saved plans cannot be read by this version of Netto and are left out.</value>
   </data>
   <data name="NotComparable" xml:space="preserve">
-    <value>« {0} » and « {1} » cannot be compared: one starts from the director's pay and the other from the company's year, and the first leaves out the dividend.</value>
+    <value>« {0} » starts from the director's pay, so it leaves out the dividend, and cannot be compared with « {1} », which starts from the company's year.</value>
   </data>
   <data name="RefusedPlan" xml:space="preserve">
     <value>An amount of « {0} » is refused, so it has no figures to compare.</value>
