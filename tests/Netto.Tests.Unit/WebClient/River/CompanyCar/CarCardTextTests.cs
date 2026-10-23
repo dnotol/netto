@@ -7,30 +7,33 @@ using Shouldly;
 
 namespace Netto.Tests.WebClient.River.CompanyCar;
 
-// The car card builds resource keys from what it compares. A key without a text in its .resx would
-// show on screen as the key itself.
+// The car card builds resource keys from what it compares and the lines it draws. A key without a text in
+// its .resx would show on screen as the key itself.
 public class CarCardTextTests
 {
     private static readonly ResourceManager Resources = new("Netto.Web.Client.River.CompanyCar.CarCard", typeof(CarCard).Assembly);
 
+    private static readonly CarRules Rules = CarRules.IncomeYear2026;
+
     // What the car takes in cash from the pocket, each way it can fall: some, none, or more cash left in
     // the pocket than without it, which a benefit that keeps the reduced corporate rate can do.
     [Fact]
-    public void CarCardResx_everyCashSentence_hasAText()
+    public void CarCardResx_everyCashLine_hasALabel()
     {
         var comparisons = new[] { new CarComparison(40_000m, 43_000m, 1_000m), new CarComparison(40_000m, 40_000m, 0m), new CarComparison(41_000m, 40_000m, 1_000m) };
 
-        comparisons.Select(CarCardText.Cash).ShouldBe(["Cash_Takes", "Cash_None", "Cash_Adds"]);
+        comparisons.Select(CarCardText.Cash).ShouldBe(["Figure_Cash_Takes", "Figure_Cash_None", "Figure_Cash_Adds"]);
         Missing(comparisons.Select(CarCardText.Cash)).ShouldBeEmpty();
     }
 
+    // The line's amount is the cash; its label says which way it goes.
     [Theory]
-    [InlineData("Cash_Takes", "The car takes €3,000.00 of cash from your pocket.")]
-    [InlineData("Cash_None", "The car takes no cash from your pocket.")]
-    [InlineData("Cash_Adds", "The car leaves €3,000.00 more cash in your pocket.")]
-    public void Cash_eachWay_saysTheCashInTheSentence(string key, string expected)
+    [InlineData("Figure_Cash_Takes", "Cash the car takes")]
+    [InlineData("Figure_Cash_None", "Cash the car takes")]
+    [InlineData("Figure_Cash_Adds", "Cash the car adds")]
+    public void Cash_eachWay_isLabelledByWhichWayTheCashGoes(string key, string expected)
     {
-        string.Format(CultureInfo.InvariantCulture, Resources.GetString(key, CultureInfo.InvariantCulture) ?? "", "€3,000.00").ShouldBe(expected);
+        Resources.GetString(key, CultureInfo.InvariantCulture).ShouldBe(expected);
     }
 
     // The company car against the same car bought privately, each way it can fall, and the field that
@@ -50,12 +53,13 @@ public class CarCardTextTests
         Missing(comparisons.Select(CarCardText.Private).Concat(["PrivateCostLabel", "PrivateCostHint"])).ShouldBeEmpty();
     }
 
-    // The gain or loss first, then the private cost it is weighed against.
+    // The gain or the loss against the same car bought privately; the private cost it is weighed against
+    // is in its field, just above, so the sentence does not say it again.
     [Theory]
-    [InlineData("Private_Gain", "Against the same car bought privately for €9,000.00, the company car leaves you €2,000.00 more.")]
-    [InlineData("Private_Loss", "Against the same car bought privately for €9,000.00, the company car costs you €2,000.00 more.")]
-    [InlineData("Private_Tie", "The company car costs you what the same car bought privately would, €9,000.00.")]
-    public void Private_eachWay_saysTheGainOrLossAgainstThePrivateCost(string key, string expected)
+    [InlineData("Private_Gain", "The company car leaves you €2,000.00 more than a private one.")]
+    [InlineData("Private_Loss", "The company car costs you €2,000.00 more than a private one.")]
+    [InlineData("Private_Tie", "The company car costs you what a private one would.")]
+    public void Private_eachWay_saysTheGainOrLossAgainstThePrivateCar(string key, string expected)
     {
         string.Format(CultureInfo.InvariantCulture, Resources.GetString(key, CultureInfo.InvariantCulture) ?? "", "€2,000.00", "€9,000.00").ShouldBe(expected);
     }
@@ -70,14 +74,55 @@ public class CarCardTextTests
         Missing(keys).ShouldBeEmpty();
     }
 
-    // Every way the CO2 percentage is taken, and every way the company deducts the costs.
+    // Every way the CO2 percentage is taken, and every way the company deducts the costs, with the bubble of
+    // each that does not deduct them at one rate.
     [Fact]
-    public void CarCardResx_everyCo2AndDeductionSentence_hasAText()
+    public void CarCardResx_everyCo2SentenceAndDeductionLine_hasAText()
     {
         var keys = Enum.GetValues<CarCo2Basis>().Select(basis => CarCardText.Co2(CarResult.None with { Co2Basis = basis }))
-            .Concat(["Co2_HeldToMinimum", "Co2_HeldToMaximum", "Deduction_Full", "Deduction_Rate", "Deduction_None", "Deduction_AllCarvedOut"]);
+            .Concat(["Co2_HeldToMinimum", "Co2_HeldToMaximum", "Figure_Deduction_Full", "Figure_Deduction_Rate", "Figure_Deduction_None", "Figure_Deduction_AllCarvedOut",
+                "Help_Deduction_Rate", "Help_Deduction_None", "Help_Deduction_AllCarvedOut"]);
 
         Missing(keys).ShouldBeEmpty();
+    }
+
+    // Every line the car's figures draw, and what its bubble says, on cars that take each of them: new or
+    // turning a year older during the year, at the minimum, with a contribution, deducted each way, its
+    // private charging paid; and the cash each way it falls.
+    [Fact]
+    public void CarCardResx_everyLineOfTheFiguresAndItsBubble_hasAText()
+    {
+        var electric = new CarFacts(50_000m, new DateOnly(2026, 1, 10), 8_000m, false, 600m);
+        var petrol = electric with { CatalogueValue = 45_000m, YearlyCosts = 9_000m, Engine = CarEngine.Petrol, Co2 = 120, Acquired = new DateOnly(2026, 1, 5) };
+        CarFacts[] cars =
+        [
+            electric, electric with { FirstRegistration = new DateOnly(2022, 2, 10), CompanyPaysPrivateEnergy = true }, electric with { CatalogueValue = 30_000m },
+            petrol, petrol with { Acquired = new DateOnly(2025, 11, 1), Co2 = 100 }, petrol with { YearlyCosts = 1_000m },
+        ];
+        var lines = cars.SelectMany(car => CarFigures.Benefit(CarCalculator.Compute(Rules, car).Value.ShouldNotBeNull()))
+            .Concat(new[] { new CarComparison(40_000m, 43_000m, 1_000m), new CarComparison(40_000m, 40_000m, 0m), new CarComparison(41_000m, 40_000m, 1_000m) }
+                .SelectMany(CarFigures.Cash))
+            .ToList();
+
+        Missing(lines.Select(line => line.Key).Concat(lines.Select(line => line.Help).OfType<string>()).Distinct()).ShouldBeEmpty();
+    }
+
+    // What a figure cannot say, kept as a sentence in sight, says it in fifteen words at most.
+    [Theory]
+    [InlineData("Waiting")]
+    [InlineData("NoCarYet")]
+    [InlineData("AtTheMinimum")]
+    [InlineData("Co2_HeldToMinimum")]
+    [InlineData("Co2_HeldToMaximum")]
+    [InlineData("Private_Waiting")]
+    [InlineData("Private_Gain")]
+    [InlineData("Private_Loss")]
+    [InlineData("Private_Tie")]
+    public void CarCardResx_sentenceKeptInSight_isAtMostFifteenWords(string key)
+    {
+        var sentence = string.Format(CultureInfo.InvariantCulture, Resources.GetString(key, CultureInfo.InvariantCulture) ?? "", "€2,000.00", "€9,000.00");
+
+        sentence.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length.ShouldBeInRange(1, 15);
     }
 
     // The car's summary ends on what the split shares: « before your pay », and « before your pay and

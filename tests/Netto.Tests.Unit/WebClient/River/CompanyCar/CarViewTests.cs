@@ -128,7 +128,7 @@ public class CarViewTests
     {
         var comparison = CarComparison.From(ElectricCar, ElectricCar.Run()).ShouldNotBeNull();
 
-        (comparison.TaxesOnPayAdded > 0m, comparison.CashCost, CarCardText.Cash(comparison)).ShouldBe((true, 6_162.66m, "Cash_Takes"));
+        (comparison.TaxesOnPayAdded > 0m, comparison.CashCost, CarCardText.Cash(comparison)).ShouldBe((true, 6_162.66m, "Figure_Cash_Takes"));
     }
 
     // Until the user gives what the same car would cost privately, the comparison with a private car
@@ -326,7 +326,7 @@ public class CarViewTests
 
         new[] { ElectricCar, orderedIn2025, PetrolCar, cheapDiesel }
             .Select(inputs => CarCardText.Deduction(Car(inputs).Result))
-            .ShouldBe(["Deduction_Full", "Deduction_Rate", "Deduction_None", "Deduction_AllCarvedOut"]);
+            .ShouldBe(["Figure_Deduction_Full", "Figure_Deduction_Rate", "Figure_Deduction_None", "Figure_Deduction_AllCarvedOut"]);
     }
 
     [Fact]

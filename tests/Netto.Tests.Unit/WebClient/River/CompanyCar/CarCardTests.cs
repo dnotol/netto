@@ -1,5 +1,8 @@
 using System.Globalization;
+using System.Net;
 using System.Resources;
+using System.Text.RegularExpressions;
+using Netto.Core.CompanyCar;
 using Netto.Web.Client;
 using Netto.Web.Client.River;
 using Netto.Web.Client.River.CompanyCar;
@@ -9,10 +12,11 @@ using static Netto.Tests.WebClient.River.RiverRendering;
 namespace Netto.Tests.WebClient.River.CompanyCar;
 
 // The Company car card opened on the river's example with YearSimulationCarTests' electric car, which
-// takes 6,162.66 of cash from the pocket (CarViewTests), drawn as a viewer meets it (RiverRendering):
-// what it asks of the same car bought privately, and what it says against it; and, on the example's own
-// car, the origins it names. Its sentences are read from its .resx, so rewording one leaves these tests
-// standing.
+// takes 6,162.66 of cash from the pocket (CarViewTests), drawn as a viewer meets it (RiverRendering): its
+// figures as lines before where its money goes, what it asks of the same car bought privately and what it
+// says against it, the sentences it keeps in sight and the rules it moved into its bubbles and its
+// details; and, on the example's own car, the origins it names. Its texts are read from its .resx, so
+// rewording one leaves these tests standing.
 public class CarCardTests
 {
     private static readonly ResourceManager Resources = new("Netto.Web.Client.River.CompanyCar.CarCard", typeof(CarCard).Assembly);
@@ -25,6 +29,87 @@ public class CarCardTests
     private static readonly RiverInputs ElectricCar = RiverInputs.Example.AddToPlan(OptionalModule.Car)
         .WithCatalogueValue(50_000m).WithFirstRegistration(new DateOnly(2026, 1, 10)).WithCarCosts(8_000m);
 
+    // CarViewTests' petrol car leased in January 2026: 45,000 at 120 g/km, against the 2026 reference of
+    // 70 g/km for its fuel, 10.5%.
+    private static readonly RiverInputs PetrolCar = ElectricCar.WithCatalogueValue(45_000m).WithCarCosts(9_000m)
+        .WithCarEngine(CarEngine.Petrol).WithCarCo2(120).WithCarAcquired(new DateOnly(2026, 1, 5));
+
+    // The benefit and what the company does with the costs, then the plan with the car against the same
+    // plan without it, in cash, then where its money goes: its costs out of the river, 8% of the 100,000
+    // it receives, and the 92,000 the split shares.
+    [Fact]
+    public async Task Card_withACar_drawsItsFiguresThenTheCashThenWhereItsMoneyGoes()
+    {
+        var html = await RenderOpenAsync<CarCard>(OptionalModule.Car, ElectricCar);
+        var comparison = CarComparison.From(ElectricCar, ElectricCar.Run()).ShouldNotBeNull();
+
+        CardHtml.Lines(html).ShouldBe(
+        [
+            (Text("Figure_Benefit"), "€1,714.29", null),
+            (Text("Figure_Co2"), "4%", null),
+            (Text("Figure_Period_Year", "100%"), "€1,714.29", null),
+            (Text("Figure_BenefitTaxed"), "€1,714.29", null),
+            (Text("Figure_Deduction_Full", "100%"), "€8,000.00", null),
+            (Text("Figure_AddBack", "17%"), "€291.43", null),
+            (Text("Figure_WithCar"), Formats.Euros(comparison.PocketWith), null),
+            (Text("Figure_WithoutCar"), Formats.Euros(comparison.PocketWithout), null),
+            (Text("Figure_Cash_Takes"), "€6,162.66", null),
+            (Text("Figure_TaxesOnPay"), Formats.Euros(comparison.TaxesOnPayAdded), null),
+            (Drains("Drain_car_costs"), "−€8,000.00", "8.0%"),
+            (Drains("Drain_profit_before_pay"), "€92,000.00", null),
+        ]);
+    }
+
+    // Which cars the card counts is no sentence of its own: it is said in the bubble of « Ordered or
+    // leased », after what that date is.
+    [Fact]
+    public async Task Card_open_saysWhichCarsItCountsInTheBubbleOfTheOrderDate()
+    {
+        var html = await RenderOpenAsync<CarCard>(OptionalModule.Car, RiverInputs.Example.AddToPlan(OptionalModule.Car));
+
+        (Bubble(html, Text("AcquiredLabel")), CardHtml.Prose(html).Contains(Text("Scope"))).ShouldBe(($"{Text("AcquiredHint")} {Text("Scope")}", false));
+    }
+
+    // What the CO2 percentage counts and why 40% is added back of a car the company charges are rules the
+    // card states in its details, word for word, above their sources: out of sight while they are folded.
+    public static TheoryData<string, RiverInputs, string> Rules => new()
+    {
+        { "a car that emits CO2", PetrolCar, Text("Co2_Registered", "120 g/km", "70 g/km", "10.5%", 2026) },
+        { "an electric car", ElectricCar, Text("Co2_Electric", "0 g/km", "0 g/km", "4%", 2026) },
+        { "an electric car whose charging the company pays", ElectricCar.WithPrivateEnergyPaid(true), Text("AddBackReading") },
+    };
+
+    [Theory]
+    [MemberData(nameof(Rules))]
+    public async Task Card_detailsOpen_stateTheRuleWordForWordAboveTheSources(string _, RiverInputs inputs, string rule)
+    {
+        var details = Details(await RenderDetailsOpenAsync(inputs));
+        var folded = await RenderOpenAsync<CarCard>(OptionalModule.Car, inputs);
+
+        (CardHtml.Prose(details).Contains(rule), details.IndexOf(rule, StringComparison.Ordinal) < details.IndexOf("car__sources", StringComparison.Ordinal),
+                CardHtml.Prose(folded).Contains(rule))
+            .ShouldBe((true, true, false));
+    }
+
+    // What a figure cannot say stays in sight: a benefit held to the year's minimum, a CO2 percentage held
+    // to the lowest or the highest, and a car not counted until its catalogue value is given.
+    public static TheoryData<string, RiverInputs, string> Notes => new()
+    {
+        { "a benefit below the minimum", ElectricCar.WithCatalogueValue(30_000m), Text("AtTheMinimum") },
+        { "a diesel at 250 g/km", PetrolCar.WithCarEngine(CarEngine.Diesel).WithCarCo2(250), Text("Co2_HeldToMaximum") },
+        { "a plug-in hybrid at 20 g/km", PetrolCar.WithCarEngine(CarEngine.PetrolPlugInHybrid).WithCarCo2(20), Text("Co2_HeldToMinimum") },
+        { "no catalogue value", RiverInputs.Example.AddToPlan(OptionalModule.Car), Text("NoCarYet") },
+    };
+
+    [Theory]
+    [MemberData(nameof(Notes))]
+    public async Task Card_figureCannotSayIt_keepsItsSentenceInSight(string _, RiverInputs inputs, string sentence)
+    {
+        var html = await RenderOpenAsync<CarCard>(OptionalModule.Car, inputs);
+
+        CardHtml.Prose(html).ShouldContain(sentence);
+    }
+
     // Until the user gives it, the card asks what the same car would cost privately, with no origin
     // beside the field, states the cash the car takes, and says the comparison with a private car waits.
     [Fact]
@@ -35,8 +120,8 @@ public class CarCardTests
         html.ShouldSatisfyAllConditions(
             () => html.ShouldContain(Text("PrivateCostLabel")),
             () => FieldHead(html, PrivateCost).ShouldNotContain("origin-chip"),
-            () => html.ShouldContain(Text("Cash_Takes", "€6,162.66")),
-            () => html.ShouldContain(Text("Private_Waiting")));
+            () => CardHtml.Lines(html).ShouldContain((Text("Figure_Cash_Takes"), "€6,162.66", (string?)null)),
+            () => CardHtml.Prose(html).ShouldContain(Text("Private_Waiting")));
     }
 
     // Once given, the cost is the user's, and the card states what the company car gains against it:
@@ -85,4 +170,27 @@ public class CarCardTests
 
     private static string Text(string key, params object[] figures) =>
         string.Format(CultureInfo.InvariantCulture, Resources.GetString(key, CultureInfo.InvariantCulture) ?? key, figures);
+
+    private static readonly ResourceManager DrainTexts = new("Netto.Web.Client.River.DrainList", typeof(DrainList).Assembly);
+
+    private static string Drains(string key) => DrainTexts.GetString(key, CultureInfo.InvariantCulture) ?? key;
+
+    // What the bubble after that label says, as a screen reader hears it.
+    private static string Bubble(string html, string label) =>
+        WebUtility.HtmlDecode(Regex.Match(html, $"aria-label=\"More about {Regex.Escape(label)}\".*?class=\"info-bubble__text\"[^>]*>(.*?)</span>", RegexOptions.Singleline)
+            .Groups[1].Value);
+
+    // The card's details, from their fold's body on.
+    private static string Details(string html) =>
+        html[html.IndexOf("module-card__detail", StringComparison.Ordinal)..];
+
+    // The card opened by the viewer with its details, « Where these figures come from ».
+    private static async Task<string> RenderDetailsOpenAsync(RiverInputs inputs)
+    {
+        var folds = new Folds(new BrowserStorage());
+        folds.Set(ModuleFolds.Name(OptionalModule.Car), true);
+        folds.Set($"{ModuleFolds.Name(OptionalModule.Car)}-details", true);
+
+        return WebUtility.HtmlDecode(await RenderAsync<CarCard>(folds, new() { ["Inputs"] = inputs, ["Run"] = inputs.Run(), ["Refused"] = null }));
+    }
 }

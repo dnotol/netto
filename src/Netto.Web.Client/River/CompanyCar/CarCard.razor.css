@@ -1,5 +1,4 @@
-.car__waiting,
-.car__scope {
+.car__waiting {
     margin: 0;
     color: var(--netto-text-muted);
     line-height: 1.55;
@@ -29,36 +28,21 @@
     gap: 0.25rem 0.5rem;
 }
 
-/* What the car is taxed on and what the company deducts and adds back, consequences shown where they
-   start: a quiet rule on the left, as the rent's. */
-.car__benefit {
-    display: grid;
-    gap: 0.4rem;
-    padding-left: 0.75rem;
-    border-left: 2px solid var(--netto-rule);
-}
-
-.car__taxed {
+/* What a figure cannot say, under the lines it is about: a benefit held to the minimum, a CO2 percentage
+   held to a bound, or the catalogue value still to give. */
+.car__note {
     margin: 0;
     color: var(--netto-text-muted);
     font-size: 0.9rem;
     line-height: 1.55;
 }
 
-.car__periods {
-    margin: 0;
-    padding-left: 1.1rem;
-    color: var(--netto-text-muted);
-    font-size: 0.85rem;
-    line-height: 1.55;
-    font-variant-numeric: tabular-nums;
-}
-
-/* The administration's reading, a caveat that changes a figure: in sight, in the text's own colour. */
-.car__reading {
+/* A rule the figures rest on, in the details above the sources: what the CO2 percentage counts, the
+   administration's reading of « fuel ». */
+.car__rule {
     margin: 0;
     color: var(--netto-text);
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     line-height: 1.55;
 }
 
@@ -76,12 +60,6 @@
         line-height: 1.55;
     }
 
-.car__comparison-title {
-    margin: 0;
-    font-family: "Fraunces", Georgia, serif;
-    font-size: 1.05rem;
-    font-weight: 600;
-}
 
 .car__gap {
     color: var(--netto-text);

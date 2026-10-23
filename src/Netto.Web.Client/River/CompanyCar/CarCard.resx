@@ -16,13 +16,13 @@
     <value>Company car</value>
   </data>
   <data name="Summary" xml:space="preserve">
-    <value>{0} a year of car costs · {1} before your pay</value>
+    <value>{0} of car costs · {1} before your pay</value>
   </data>
   <data name="SummaryNoCar" xml:space="preserve">
     <value>No car yet · {0} before your pay</value>
   </data>
   <data name="Summary_Royalty" xml:space="preserve">
-    <value>{0} a year of car costs · {1} before your pay and royalty</value>
+    <value>{0} of car costs · {1} before your pay and royalty</value>
   </data>
   <data name="SummaryNoCar_Royalty" xml:space="preserve">
     <value>No car yet · {0} before your pay and royalty</value>
@@ -34,7 +34,7 @@
     <value>A car the company puts at your disposal, which you also use privately. The company pays its costs out of its profit, before your pay, and deducts them as its order date, its engine and its CO2 allow; you are taxed on a flat benefit in kind as part of your pay, though it is never paid in cash.</value>
   </data>
   <data name="Scope" xml:space="preserve">
-    <value>For an electric, fuel, hybrid or plug-in hybrid car ordered or leased by the end of the year.</value>
+    <value>Netto counts an electric, fuel, hybrid or plug-in hybrid car ordered or leased by the end of the year.</value>
   </data>
   <data name="CatalogueLabel" xml:space="preserve">
     <value>Catalogue value</value>
@@ -55,76 +55,43 @@
     <value>Year</value>
   </data>
   <data name="CostsLabel" xml:space="preserve">
-    <value>Its yearly costs to the company</value>
+    <value>Its yearly costs</value>
   </data>
   <data name="CostsHint" xml:space="preserve">
     <value>Everything the car costs the company over the year, lease or depreciation, fuel or charging, insurance, upkeep and taxes, as the company bears them, the VAT it cannot recover included.</value>
   </data>
   <data name="ContributionLabel" xml:space="preserve">
-    <value>Your contribution for the year</value>
+    <value>Your yearly contribution</value>
   </data>
   <data name="ContributionHint" xml:space="preserve">
     <value>What you pay the company for the car's private use, if anything.</value>
   </data>
   <data name="NoCarYet" xml:space="preserve">
-    <value>Enter the car's catalogue value to see its benefit and what it costs you.</value>
-  </data>
-  <data name="Benefit" xml:space="preserve">
-    <value>Your benefit in kind is {0} for the year: 6/7 of {1} times {2}, at the share of its catalogue value the car's age leaves, period by period. It is taxed as your pay, though never paid in cash.</value>
-  </data>
-  <data name="Period" xml:space="preserve">
-    <value>{0} to {1}, {2} days at {3}: {4}</value>
+    <value>Enter its catalogue value to see its figures.</value>
   </data>
   <data name="AtTheMinimum" xml:space="preserve">
-    <value>That makes {0}, below the year's minimum, so the benefit is the minimum, {1}.</value>
-  </data>
-  <data name="Contribution" xml:space="preserve">
-    <value>Your contribution of {0} comes off it: you are taxed on {1}.</value>
-  </data>
-  <data name="AddBack" xml:space="preserve">
-    <value>It adds {0} of the benefit before your contribution, {1}, back to its taxable income.</value>
+    <value>Benefit held to the year's minimum.</value>
   </data>
   <data name="AddBackReading" xml:space="preserve">
     <value>It adds back 40% because it pays your private charging: the law says « fuel », and the administration reads it as the charging of an electric car.</value>
   </data>
-  <data name="ComparisonTitle" xml:space="preserve">
-    <value>With the car and without it</value>
-  </data>
-  <data name="WithCar" xml:space="preserve">
-    <value>With the car, {0} reaches your pocket.</value>
-  </data>
-  <data name="WithoutCar" xml:space="preserve">
-    <value>Without it, the same plan at the same pay leaves {0} in your pocket.</value>
-  </data>
-  <data name="Cash_Takes" xml:space="preserve">
-    <value>The car takes {0} of cash from your pocket.</value>
-  </data>
-  <data name="Cash_None" xml:space="preserve">
-    <value>The car takes no cash from your pocket.</value>
-  </data>
-  <data name="Cash_Adds" xml:space="preserve">
-    <value>The car leaves {0} more cash in your pocket.</value>
-  </data>
-  <data name="TaxesOnPay" xml:space="preserve">
-    <value>Its benefit adds {0} to your contributions and tax on pay, on Director pay.</value>
-  </data>
   <data name="PrivateCostLabel" xml:space="preserve">
-    <value>What the same car would cost you privately, a year</value>
+    <value>Same car privately, a year</value>
   </data>
   <data name="PrivateCostHint" xml:space="preserve">
     <value>A private lease of the same car, or what owning and running it would cost you over the year: its depreciation, fuel or charging, insurance, upkeep and taxes, VAT included.</value>
   </data>
   <data name="Private_Waiting" xml:space="preserve">
-    <value>To weigh it against a private car, enter what the same car would cost you privately.</value>
+    <value>Enter it to weigh both cars.</value>
   </data>
   <data name="Private_Gain" xml:space="preserve">
-    <value>Against the same car bought privately for {1}, the company car leaves you {0} more.</value>
+    <value>The company car leaves you {0} more than a private one.</value>
   </data>
   <data name="Private_Loss" xml:space="preserve">
-    <value>Against the same car bought privately for {1}, the company car costs you {0} more.</value>
+    <value>The company car costs you {0} more than a private one.</value>
   </data>
   <data name="Private_Tie" xml:space="preserve">
-    <value>The company car costs you what the same car bought privately would, {1}.</value>
+    <value>The company car costs you what a private one would.</value>
   </data>
   <data name="DetailsLabel" xml:space="preserve">
     <value>Where these figures come from</value>
@@ -238,52 +205,40 @@
     <value>As a fake hybrid without a matching car, it counts at its own CO2 times 2.5, {0}, measured against the {3} reference for its fuel, {1}: {2}.</value>
   </data>
   <data name="Co2_HeldToMinimum" xml:space="preserve">
-    <value>That is the lowest percentage: its CO2 would give less.</value>
+    <value>CO2 percentage held to the lowest: its CO2 would give less.</value>
   </data>
   <data name="Co2_HeldToMaximum" xml:space="preserve">
-    <value>That is the highest percentage: its CO2 would give more.</value>
-  </data>
-  <data name="Deduction_Full" xml:space="preserve">
-    <value>The company deducts all {0} of its costs.</value>
-  </data>
-  <data name="Deduction_AllCarvedOut" xml:space="preserve">
-    <value>The company deducts all {0} of its costs: they are no more than your benefit taxed and your contribution, which stay deductible.</value>
-  </data>
-  <data name="Deduction_None" xml:space="preserve">
-    <value>Of its {0} of costs, the company deducts only the {1} equal to your benefit taxed and your contribution: its order date, its engine and its CO2 leave nothing more deductible. The other {4} are added back to its taxable income.</value>
-  </data>
-  <data name="Deduction_Rate" xml:space="preserve">
-    <value>Of its {0} of costs, the company deducts the {1} equal to your benefit taxed and your contribution in full, and the rest at {2}, the rate its order date, its engine and its CO2 give: {3} in all. The {4} it cannot deduct are added back to its taxable income.</value>
+    <value>CO2 percentage held to the highest: its CO2 would give more.</value>
   </data>
   <data name="CarTitle" xml:space="preserve">
     <value>Your car</value>
   </data>
   <data name="Car_Engine_Electric" xml:space="preserve">
-    <value>An electric car</value>
+    <value>Electric</value>
   </data>
   <data name="Car_Engine_Petrol" xml:space="preserve">
-    <value>A petrol car</value>
+    <value>Petrol</value>
   </data>
   <data name="Car_Engine_Diesel" xml:space="preserve">
-    <value>A diesel car</value>
+    <value>Diesel</value>
   </data>
   <data name="Car_Engine_Lpg" xml:space="preserve">
-    <value>An LPG car</value>
+    <value>LPG</value>
   </data>
   <data name="Car_Engine_NaturalGas" xml:space="preserve">
-    <value>A natural gas car</value>
+    <value>Natural gas</value>
   </data>
   <data name="Car_Engine_PetrolHybrid" xml:space="preserve">
-    <value>A petrol hybrid</value>
+    <value>Petrol hybrid</value>
   </data>
   <data name="Car_Engine_DieselHybrid" xml:space="preserve">
-    <value>A diesel hybrid</value>
+    <value>Diesel hybrid</value>
   </data>
   <data name="Car_Engine_PetrolPlugInHybrid" xml:space="preserve">
-    <value>A petrol plug-in hybrid</value>
+    <value>Petrol plug-in hybrid</value>
   </data>
   <data name="Car_Engine_DieselPlugInHybrid" xml:space="preserve">
-    <value>A diesel plug-in hybrid</value>
+    <value>Diesel plug-in hybrid</value>
   </data>
   <data name="Car_Catalogue" xml:space="preserve">
     <value>catalogue value {0}</value>
@@ -298,7 +253,7 @@
     <value>CO2 not given</value>
   </data>
   <data name="Car_Registered" xml:space="preserve">
-    <value>first registered {0} {1}</value>
+    <value>registered {0} {1}</value>
   </data>
   <data name="Car_Acquired" xml:space="preserve">
     <value>ordered or leased {0} {1}</value>
@@ -320,5 +275,86 @@
   </data>
   <data name="Car_NotSmallGas" xml:space="preserve">
     <value>12 fiscal horsepower or more</value>
+  </data>
+  <data name="Figure_Benefit" xml:space="preserve">
+    <value>Benefit in kind</value>
+  </data>
+  <data name="Figure_Co2" xml:space="preserve">
+    <value>CO2 percentage</value>
+  </data>
+  <data name="Figure_Period" xml:space="preserve">
+    <value>{0} to {1}, at {2}</value>
+  </data>
+  <data name="Figure_Period_Month" xml:space="preserve">
+    <value>{0}, at {1}</value>
+  </data>
+  <data name="Help_Period" xml:space="preserve">
+    <value>At the share of its catalogue value the car's age leaves, weighed by the days of the period.</value>
+  </data>
+  <data name="Figure_Contribution" xml:space="preserve">
+    <value>Your contribution</value>
+  </data>
+  <data name="Figure_BenefitTaxed" xml:space="preserve">
+    <value>Taxed as your pay</value>
+  </data>
+  <data name="Help_BenefitTaxed" xml:space="preserve">
+    <value>It is taxed as your pay, though never paid in cash.</value>
+  </data>
+  <data name="Figure_Deduction_Full" xml:space="preserve">
+    <value>Costs deducted, at {0}</value>
+  </data>
+  <data name="Figure_Deduction_AllCarvedOut" xml:space="preserve">
+    <value>Costs deducted, all of them</value>
+  </data>
+  <data name="Help_Deduction_AllCarvedOut" xml:space="preserve">
+    <value>They are no more than your benefit taxed and your contribution, which stay deductible.</value>
+  </data>
+  <data name="Figure_Deduction_None" xml:space="preserve">
+    <value>Costs deducted</value>
+  </data>
+  <data name="Help_Deduction_None" xml:space="preserve">
+    <value>Only the part equal to your benefit taxed and your contribution: its order date, its engine and its CO2 leave nothing more deductible.</value>
+  </data>
+  <data name="Figure_Deduction_Rate" xml:space="preserve">
+    <value>Costs deducted, the rest at {0}</value>
+  </data>
+  <data name="Help_Deduction_Rate" xml:space="preserve">
+    <value>The part equal to your benefit taxed and your contribution in full, and the rest at {0}, the rate its order date, its engine and its CO2 give.</value>
+  </data>
+  <data name="Figure_NotDeductible" xml:space="preserve">
+    <value>Costs the company cannot deduct</value>
+  </data>
+  <data name="Help_NotDeductible" xml:space="preserve">
+    <value>They are added back to its taxable income.</value>
+  </data>
+  <data name="Figure_AddBack" xml:space="preserve">
+    <value>Benefit added back, at {0}</value>
+  </data>
+  <data name="Help_AddBack" xml:space="preserve">
+    <value>The company adds this share of the benefit before your contribution back to its taxable income.</value>
+  </data>
+  <data name="Figure_WithCar" xml:space="preserve">
+    <value>Your pocket with the car</value>
+  </data>
+  <data name="Figure_WithoutCar" xml:space="preserve">
+    <value>Without it</value>
+  </data>
+  <data name="Figure_Cash_Takes" xml:space="preserve">
+    <value>Cash the car takes</value>
+  </data>
+  <data name="Figure_Cash_None" xml:space="preserve">
+    <value>Cash the car takes</value>
+  </data>
+  <data name="Figure_Cash_Adds" xml:space="preserve">
+    <value>Cash the car adds</value>
+  </data>
+  <data name="Figure_TaxesOnPay" xml:space="preserve">
+    <value>Contributions and tax it adds</value>
+  </data>
+  <data name="Help_TaxesOnPay" xml:space="preserve">
+    <value>On Director pay, where its benefit is taxed with your pay.</value>
+  </data>
+  <data name="Figure_Period_Year" xml:space="preserve">
+    <value>All year, at {0}</value>
   </data>
 </root>
