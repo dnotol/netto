@@ -9,7 +9,7 @@
    moves are found once per Today, the search running the split at every move; which
    ones the river holds is read at each change. Without a Today, or while Netto cannot run it, the
    card says why. *@
-<ModuleCard Name="moves" Title="@L["Title"]" Summary="@Summary" Help="@L["Help"]" OpenByDefault="@(_view.State != MovesState.NoToday)">
+<ModuleCard Name="moves" Title="@L["Title"]" Summary="@Summary" Help="@L["Help"]" OpenByDefault="@_view.OpenByDefault">
     <p class="moves__state">@L[MovesCardText.State(_view.State)]</p>
     @if (_view.State == MovesState.Moves)
     {
