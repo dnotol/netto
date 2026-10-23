@@ -53,6 +53,34 @@ public class WhenToPayTabTextTests
         text.ShouldBe(expected);
     }
 
+    // The one classifier of who pays by the next deadline: the Next panel and the timeline's label both
+    // call it, so they cannot name different payers.
+    [Theory]
+    [InlineData(true, true, "Both")]
+    [InlineData(true, false, "Company")]
+    [InlineData(false, true, "Director")]
+    [InlineData(false, false, "Nothing")]
+    public void Payers_whoPaysByTheNextDeadline_isOneOfFour(bool company, bool director, string expected)
+    {
+        WhenToPayTabText.Payers(company, director).ToString().ShouldBe(expected);
+    }
+
+    // A row with an amount on a side has that payer, whatever the other pays.
+    [Theory]
+    [InlineData(15_000, 0, "Next_Company")]
+    [InlineData(0, 14_317.50, "Next_Director")]
+    [InlineData(15_000, 14_317.50, "Next_Both")]
+    public void Next_row_isNamedByTheSidesThatPay(double company, double director, string expected)
+    {
+        WhenToPayTabText.Next(new CalendarRow(On21December, false, 0m, (decimal)company, 0m, (decimal)director)).ShouldBe(expected);
+    }
+
+    [Fact]
+    public void Next_noRow_isNothing()
+    {
+        WhenToPayTabText.Next(null).ShouldBe("Next_Nothing");
+    }
+
     [Theory]
     [InlineData(1)]
     [InlineData(-1)]

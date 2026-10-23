@@ -111,7 +111,7 @@
   <data name="Label_Next_Both" xml:space="preserve">
     <value>Next payment by {0}: {1} from the company, {2} from you.</value>
   </data>
-  <data name="Label_Next_None" xml:space="preserve">
+  <data name="Label_Next_Nothing" xml:space="preserve">
     <value>No advance payment left to make.</value>
   </data>
   <data name="Label_Pay" xml:space="preserve">

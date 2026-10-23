@@ -44,12 +44,12 @@ public class TimelineTextTests
         Enum.GetValues<KeyItem>().Select(TimelineText.Key).Where(key => Text(key) is null).ShouldBeEmpty();
     }
 
-    // Whoever pays next, and nobody, each has a sentence.
+    // Whoever pays next, and nobody, each has a sentence, chosen by the Next panel's classifier.
     [Theory]
     [InlineData(true, true, "Label_Next_Both")]
     [InlineData(true, false, "Label_Next_Company")]
     [InlineData(false, true, "Label_Next_Director")]
-    [InlineData(false, false, "Label_Next_None")]
+    [InlineData(false, false, "Label_Next_Nothing")]
     public void Next_whoPaysNext_isTheSentenceThatNamesThem(bool company, bool director, string expected)
     {
         var key = TimelineText.Next(company ? Mark(15_000m) : null, director ? Mark(14_317.50m) : null);

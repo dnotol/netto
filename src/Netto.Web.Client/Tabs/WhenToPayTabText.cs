@@ -28,13 +28,27 @@ internal static class WhenToPayTabText
         _ => "Nothing",
     };
 
+    // Who pays by the next deadline: the one classifier, for the Next panel's line here and for the
+    // timeline's label (TimelineText.Next), each wording it by keys of its own, so the two cannot name
+    // different payers.
+    public static NextPayers Payers(bool company, bool director) => (company, director) switch
+    {
+        (true, true) => NextPayers.Both,
+        (true, false) => NextPayers.Company,
+        (false, true) => NextPayers.Director,
+        _ => NextPayers.Nothing,
+    };
+
     // The Next panel's line: the date of the first row still open and who pays what by it, or that
     // nothing is left to pay in advance.
-    public static string Next(CalendarRow? next) => next switch
-    {
-        null => "Next_Nothing",
-        { Company: > 0m, Director: > 0m } => "Next_Both",
-        { Company: > 0m } => "Next_Company",
-        _ => "Next_Director",
-    };
+    public static string Next(CalendarRow? next) => $"Next_{Payers(next is { Company: > 0m }, next is { Director: > 0m })}";
+}
+
+// Whoever pays something by the next deadline, or nobody once nothing is left to pay in advance.
+internal enum NextPayers
+{
+    Nothing,
+    Company,
+    Director,
+    Both,
 }

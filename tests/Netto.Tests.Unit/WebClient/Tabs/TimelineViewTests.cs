@@ -417,6 +417,31 @@ public class TimelineViewTests
         Of(RiverInputs.Example, On23October).Timeline.UnmodelledFrom.ShouldBe(new DateOnly(2026, 11, 1));
     }
 
+    // The picture's label and the Next panel name the same payers: both are chosen by one classifier
+    // (WhenToPayTabText.Payers), from the same next deadline.
+    [Theory]
+    [InlineData(false, false, false, 10, 23)]
+    [InlineData(true, false, false, 10, 23)]
+    [InlineData(false, true, false, 10, 23)]
+    [InlineData(false, false, false, 12, 22)]
+    [InlineData(false, false, true, 10, 23)]
+    public void Of_next_isNamedByTheSamePayersAsThePanel(bool nothingWithheld, bool riverAtThePay, bool youngCompany, int month, int day)
+    {
+        var inputs = RiverInputs.Example;
+        if (nothingWithheld || riverAtThePay)
+            inputs = inputs.WithTaxWithheld(0m);
+        if (riverAtThePay)
+            inputs = inputs.SkipCompany();
+        if (youngCompany)
+            inputs = inputs.WithFinancialYear(FinancialYear.Second);
+
+        var (view, timeline) = Of(inputs, new DateOnly(2026, month, day));
+
+        var panel = WhenToPayTabText.Next(view.Next);
+        var label = TimelineText.Next(timeline.NextCompany, timeline.NextDirector);
+        label["Label_Next_".Length..].ShouldBe(panel["Next_".Length..]);
+    }
+
     // What the timeline draws is what the table says: each deadline's amount is its row's, a deadline
     // with no row has nothing, and the next one is the next row.
     [Theory]

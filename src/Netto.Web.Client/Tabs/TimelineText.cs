@@ -16,14 +16,10 @@ internal static class TimelineText
 
     public static string Key(KeyItem item) => $"Key_{item}";
 
-    // The sentence naming whoever pays at the next deadline: the company, the director, both or nobody.
-    public static string Next(TimelineMark? company, TimelineMark? director) => (company, director) switch
-    {
-        (not null, not null) => "Label_Next_Both",
-        (not null, null) => "Label_Next_Company",
-        (null, not null) => "Label_Next_Director",
-        _ => "Label_Next_None",
-    };
+    // The sentence naming whoever pays at the next deadline: the company, the director, both or nobody,
+    // chosen by the classifier the Next panel uses (WhenToPayTabText.Payers), so the two agree.
+    public static string Next(TimelineMark? company, TimelineMark? director) =>
+        $"Label_Next_{WhenToPayTabText.Payers(company is not null, director is not null)}";
 
     // The contributions' lane, and their sentence in the picture's label, name the company when it pays
     // them on the director's behalf.
