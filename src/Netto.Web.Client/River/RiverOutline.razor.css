@@ -67,9 +67,15 @@
     list-style: none;
 }
 
-/* A row is a button as wide as the column: the card's title, its glance under it. */
+/* A row is a button as wide as the column: the card's title, its glance under it, both on the row's
+   left edge. MudBlazor centres every button's content (its global button rule), so the row fills its
+   one column and starts its content at the left on purpose. */
 .river-outline__row {
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-content: center;
+    justify-content: stretch;
+    justify-items: start;
     gap: 0.1rem;
     width: 100%;
     min-height: 2.75rem;
