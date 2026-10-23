@@ -16,7 +16,7 @@
     <value>Expense allowances</value>
   </data>
   <data name="Summary" xml:space="preserve">
-    <value>{0} to your pocket · {1} left after them</value>
+    <value>{0} to your pocket · {1} left</value>
   </data>
   <data name="Waiting" xml:space="preserve">
     <value>Waiting for the company's year.</value>
@@ -28,7 +28,10 @@
     <value>Office allowance for the year</value>
   </data>
   <data name="OfficeMaximum" xml:space="preserve">
-    <value>At most {0} for the year: {1}.</value>
+    <value>At most {0} for the year.</value>
+  </data>
+  <data name="OfficeHelp" xml:space="preserve">
+    <value>At most {0}.</value>
   </data>
   <data name="MonthlyFrom" xml:space="preserve">
     <value>{0} a month from {1}</value>
@@ -47,12 +50,6 @@
   </data>
   <data name="PhoneLabel" xml:space="preserve">
     <value>Phone costs reimbursed for the year</value>
-  </data>
-  <data name="PhoneHint" xml:space="preserve">
-    <value>The professional share of your own phone bills, on invoices: no flat amount exists for a phone.</value>
-  </data>
-  <data name="Deducted" xml:space="preserve">
-    <value>The company deducts all {0} of them, like its own running costs: nothing is added back to its taxable income.</value>
   </data>
   <data name="DetailsLabel" xml:space="preserve">
     <value>Where these figures come from</value>

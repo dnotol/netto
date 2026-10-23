@@ -1,8 +1,10 @@
 using System.Globalization;
+using System.Net;
 using System.Resources;
 using System.Text.RegularExpressions;
 using Netto.Web.Client.River;
 using Shouldly;
+using static Netto.Tests.WebClient.River.RiverRendering;
 
 namespace Netto.Tests.WebClient.River;
 
@@ -36,6 +38,7 @@ public class LeverCardsFiguresTests
     {
         { "company-year", Filled, "€120,000.00 in · €100,000.00 before your pay" },
         { "vouchers", Filled, "€2,062.00 to your pocket · €97,938.00 left" },
+        { "allowances", Filled, "€1,000.00 to your pocket · €96,938.00 left" },
     };
 
     [Theory]
@@ -73,6 +76,7 @@ public class LeverCardsFiguresTests
     public static TheoryData<string, NamedRiver> CardsWithLines => new()
     {
         { "vouchers", Filled },
+        { "allowances", Filled },
     };
 
     [Theory]
@@ -86,11 +90,12 @@ public class LeverCardsFiguresTests
     }
 
     // The words in sight on each card of the filled plan, open, held under its cut: before the story it
-    // drew 26 on Company year and 131 on Vouchers.
+    // drew 26 on Company year, 131 on Vouchers and 161 on Expense allowances.
     public static TheoryData<string, int> Cuts => new()
     {
         { "company-year", 24 },
         { "vouchers", 100 },
+        { "allowances", 101 },
     };
 
     [Theory]
@@ -98,6 +103,32 @@ public class LeverCardsFiguresTests
     public async Task VisibleWords_cardOfTheFilledPlan_areAtMostItsCut(string card, int cut)
     {
         CardHtml.VisibleWords(await OpenCardAsync(Filled, card)).Count.ShouldBeLessThanOrEqualTo(cut);
+    }
+
+    // What an open card keeps in sentences is what its figures cannot say: the bounds under its fields.
+    // The adornments of its fields, a € alone, say no words.
+    public static TheoryData<string, NamedRiver, string[]> Sentences => new()
+    {
+        { "vouchers", Filled, ["€8.91 each from the company at most, €1.09 from you.", "At most €250.00 a year.", "At most €100.00 a year."] },
+        { "allowances", Filled, ["At most €1,938.44 for the year.", "At most €20.00 a month, €240.00 for the year.", "At most €20.00 a month, €240.00 for the year."] },
+    };
+
+    [Theory]
+    [MemberData(nameof(Sentences))]
+    public async Task Card_open_keepsInSentencesOnlyWhatItsFiguresCannotSay(string card, NamedRiver river, string[] sentences)
+    {
+        CardHtml.Prose(await OpenCardAsync(river, card)).Where(paragraph => paragraph.Any(char.IsLetter)).ShouldBe(sentences);
+    }
+
+    // The office allowance's yearly maximum stays under its field; the monthly maxima it adds up, which
+    // change during the year, are in the bubble after its label.
+    [Fact]
+    public async Task Allowances_officeField_saysItsMonthlyMaximaInItsBubble()
+    {
+        var html = WebUtility.HtmlDecode(await OpenCardAsync(Filled, "allowances"));
+
+        Bubbles(FieldHead(html, "river-office-allowance"))
+            .ShouldBe(["At most €157.83 a month from January, €160.99 a month from March, €164.21 a month from September."]);
     }
 
     // Skipped, Company year says where the river starts; that the cards which need the company's figures
@@ -145,6 +176,10 @@ public class LeverCardsFiguresTests
 
     // The card of that fold's name on the Plan page, every card open.
     private static async Task<string> OpenCardAsync(NamedRiver river, string card) => CardHtml.Card(await CardHtml.RenderPlanOpenAsync(river.Inputs), card);
+
+    // The text of each bubble in that HTML, as a screen reader is given it.
+    private static List<string> Bubbles(string html) =>
+        [.. Regex.Matches(html, "class=\"info-bubble__text\"[^>]*>(.*?)</span>", RegexOptions.Singleline).Select(match => match.Groups[1].Value)];
 
     // An amount without the sign a line gives what it takes or what comes back: −€400.00 is €400.00.
     private static string Unsigned(string amount) => amount.TrimStart('−', '+');
