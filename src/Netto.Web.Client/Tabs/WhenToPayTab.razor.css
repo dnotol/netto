@@ -1,15 +1,30 @@
-/* The tab's body under its head: who pays what next, then each part of the calendar under its own
-   heading. */
+/* The tab's body under its head: who pays what next, the year on a timeline, then each part of the
+   calendar under its own heading. */
 .calendar {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: 1rem;
 }
 
+/* What is paid next, with what each surcharge leaves, raised off the page like the timeline under it. */
+.calendar__panel {
+    display: grid;
+    gap: 0.5rem;
+    padding: 1rem 1.5rem 1.25rem;
+    border: 1px solid var(--netto-line);
+    border-radius: 20px;
+    background: var(--netto-surface);
+}
+
+    .calendar__panel .calendar__heading {
+        margin: 0;
+    }
+
 .calendar__next {
     margin: 0;
-    font-size: 1rem;
-    font-weight: 500;
+    font-size: 1.1rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
 }
 
 /* Each heading starts a new part of the tab: the advance payments, the pay, the contributions, then

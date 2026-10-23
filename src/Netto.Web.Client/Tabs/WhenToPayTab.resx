@@ -21,16 +21,19 @@
   <data name="Lede" xml:space="preserve">
     <value>The payments your plan implies, and when each falls due. Every amount is the river's own; the calendar only says when. Today is your device's date, and a deadline stays open until the end of its day.</value>
   </data>
-  <data name="Summary_Company" xml:space="preserve">
-    <value>Next by {0}: {1} from the company</value>
+  <data name="NextHeading" xml:space="preserve">
+    <value>Next</value>
   </data>
-  <data name="Summary_Director" xml:space="preserve">
-    <value>Next by {0}: {2} from you</value>
+  <data name="Next_Company" xml:space="preserve">
+    <value>{0} · {1} from the company</value>
   </data>
-  <data name="Summary_Both" xml:space="preserve">
-    <value>Next by {0}: {1} from the company, {2} from you</value>
+  <data name="Next_Director" xml:space="preserve">
+    <value>{0} · {2} from you</value>
   </data>
-  <data name="Summary_Nothing" xml:space="preserve">
+  <data name="Next_Both" xml:space="preserve">
+    <value>{0} · {1} from the company, {2} from you</value>
+  </data>
+  <data name="Next_Nothing" xml:space="preserve">
     <value>Nothing left to pay in advance in {3}</value>
   </data>
   <data name="Refused" xml:space="preserve">

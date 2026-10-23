@@ -35,18 +35,18 @@ public class WhenToPayTabTextTests
             .ShouldBeEmpty();
     }
 
-    // The card passes the date, the company's amount, the director's and the income year, in that
+    // The tab passes the date, the company's amount, the director's and the income year, in that
     // order; no amount on either side is no row still open.
     [Theory]
     [InlineData(0, 0, "Nothing left to pay in advance in 2026")]
-    [InlineData(15_000, 0, "Next by 21 December 2026: €15,000.00 from the company")]
-    [InlineData(0, 14_317.50, "Next by 21 December 2026: €14,317.50 from you")]
-    [InlineData(15_000, 14_317.50, "Next by 21 December 2026: €15,000.00 from the company, €14,317.50 from you")]
-    public void Summary_nextRow_saysWhoPaysWhatByWhen(double company, double director, string expected)
+    [InlineData(15_000, 0, "21 December 2026 · €15,000.00 from the company")]
+    [InlineData(0, 14_317.50, "21 December 2026 · €14,317.50 from you")]
+    [InlineData(15_000, 14_317.50, "21 December 2026 · €15,000.00 from the company, €14,317.50 from you")]
+    public void Next_nextRow_saysWhenAndWhoPaysWhat(double company, double director, string expected)
     {
         var next = company == 0 && director == 0 ? null : new CalendarRow(On21December, false, 0m, (decimal)company, 0m, (decimal)director);
 
-        var text = string.Format(CultureInfo.InvariantCulture, Text(WhenToPayTabText.Summary(next)) ?? "",
+        var text = string.Format(CultureInfo.InvariantCulture, Text(WhenToPayTabText.Next(next)) ?? "",
             next is null ? "" : Netto.Web.Client.Formats.Day(next.Date), Netto.Web.Client.Formats.Euros(next?.Company ?? 0m),
             Netto.Web.Client.Formats.Euros(next?.Director ?? 0m), 2026);
 

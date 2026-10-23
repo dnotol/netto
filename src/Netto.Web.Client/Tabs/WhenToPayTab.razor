@@ -4,11 +4,14 @@
 @* The When to pay tab: when the plan's payments fall, a lens over the whole river, not a module in it, so
    a tab of its own beside it rather than a card in it, with no rate and no « Remove ». It reads the
    river's one run and the date (CalendarView over the engine's PaymentCalendar): first who pays what
-   next, then the company's and the director's advance payments by each deadline as the plan holds them,
-   the past ones marked, and at the first deadline still open what more cancels each surcharge, then one
-   sentence per tax, as its card says it; the pay each month, as the pay slip gives it; and after the
-   year, what each assessment leaves. It applies nothing: the Optimisation tab is where a payment is
-   applied. Its one input, what the fund bills, shows the engine's refusal beside its field. *@
+   next, by which day, with one sentence per tax saying what its payments leave and what more cancels
+   the surcharge, as its card says it (the Next panel); then the year on a timeline (CalendarTimeline),
+   drawn from the same calendar; then the company's and the director's advance payments by each
+   deadline as the plan holds them, the past ones marked, and at the first deadline still open what more
+   cancels each surcharge; the pay each month, as the pay slip gives it; and after the year, what each
+   assessment leaves. The timeline is a picture and the tables are its text equivalent. It applies
+   nothing: the Optimisation tab is where a payment is applied. Its one input, what the fund bills, shows
+   the engine's refusal beside its field. *@
 <TabHead Eyebrow="@L["Eyebrow"]" Title="@L["Title"]" Lede="@L["Lede"]" />
 <div class="calendar">
     @if (_view is null)
@@ -17,7 +20,17 @@
     }
     else
     {
-        <p class="calendar__next">@Summary</p>
+        <section class="calendar__panel" aria-labelledby="calendar-next">
+            <h2 id="calendar-next" class="calendar__heading">@L["NextHeading"]</h2>
+            <p class="calendar__next">@NextLine</p>
+            @if (_view.Company is { } company)
+            {
+                <p class="calendar__tax">@L[WhenToPayTabText.Company(company), Formats.Euros(company.Surcharge), Formats.Euros(company.More), Day(company.OpenDeadline), _view.IncomeYear]</p>
+            }
+            <p class="calendar__tax">@L[WhenToPayTabText.Director(_view.Director), Formats.Euros(_view.Director.Surcharge), Formats.Euros(_view.Director.More), Day(_view.Director.OpenDeadline), _view.IncomeYear]</p>
+        </section>
+
+        <CalendarTimeline Calendar="_view.Calendar" NextDate="_view.Next?.Date" />
 
         <h2 id="calendar-advance-payments" class="calendar__heading">@L["AdvancePayments"]</h2>
         @if (_view.Rows.Count == 0)
@@ -58,11 +71,6 @@
                 </tbody>
             </table>
         }
-        @if (_view.Company is { } company)
-        {
-            <p class="calendar__tax">@L[WhenToPayTabText.Company(company), Formats.Euros(company.Surcharge), Formats.Euros(company.More), Day(company.OpenDeadline), _view.IncomeYear]</p>
-        }
-        <p class="calendar__tax">@L[WhenToPayTabText.Director(_view.Director), Formats.Euros(_view.Director.Surcharge), Formats.Euros(_view.Director.More), Day(_view.Director.OpenDeadline), _view.IncomeYear]</p>
 
         <h2 class="calendar__heading">@L["PayHeading"]</h2>
         <p class="calendar__line">@L["PayLine", Formats.Euros(_view.Pay.GrossPay), Formats.Euros(_view.Pay.Withholding), Formats.Euros(_view.Pay.NetPaid)]</p>
@@ -128,10 +136,11 @@
 
     protected override void OnParametersSet() => _view = CalendarView.From(Inputs, Run, Date);
 
-    // Who pays what by the next deadline still open, or that nothing is left to pay in advance.
-    private string? Summary => _view is null
+    // The day of the next deadline still open with something to pay, and who pays what by it; or that
+    // nothing is left to pay in advance.
+    private string? NextLine => _view is null
         ? null
-        : L[WhenToPayTabText.Summary(_view.Next), Day(_view.Next?.Date), Formats.Euros(_view.Next?.Company ?? 0m), Formats.Euros(_view.Next?.Director ?? 0m), _view.IncomeYear].Value;
+        : L[WhenToPayTabText.Next(_view.Next), Day(_view.Next?.Date), Formats.Euros(_view.Next?.Company ?? 0m), Formats.Euros(_view.Next?.Director ?? 0m), _view.IncomeYear].Value;
 
     private static string Day(DateOnly? date) => date is { } day ? Formats.Day(day) : "";
 

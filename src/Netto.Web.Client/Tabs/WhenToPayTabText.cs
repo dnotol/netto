@@ -28,12 +28,13 @@ internal static class WhenToPayTabText
         _ => "Nothing",
     };
 
-    // The folded card's line: who pays next, by the date of the first row still open.
-    public static string Summary(CalendarRow? next) => next switch
+    // The Next panel's line: the date of the first row still open and who pays what by it, or that
+    // nothing is left to pay in advance.
+    public static string Next(CalendarRow? next) => next switch
     {
-        null => "Summary_Nothing",
-        { Company: > 0m, Director: > 0m } => "Summary_Both",
-        { Company: > 0m } => "Summary_Company",
-        _ => "Summary_Director",
+        null => "Next_Nothing",
+        { Company: > 0m, Director: > 0m } => "Next_Both",
+        { Company: > 0m } => "Next_Company",
+        _ => "Next_Director",
     };
 }
