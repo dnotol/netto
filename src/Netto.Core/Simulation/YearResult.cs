@@ -22,7 +22,8 @@ namespace Netto.Core.Simulation;
 // tax and those earlier profits leave once the reserve is kept; the largest the year allows is both
 // together, less a loss, never below zero. Copyright is the royalty as the rules took it, all nothing
 // without one: its part taxed as pay is in the pay's figures, and what its part taxed apart adds to the
-// personal tax is DirectorPay's TaxedApartTax.
+// personal tax is DirectorPay's TaxedApartTax. Scenario is the scenario as the year ran it: a royalty
+// that follows the pay holds what it came to at the pay, still following it.
 public sealed record YearResult(
     Scenario Scenario,
     decimal ProfitBeforePay,

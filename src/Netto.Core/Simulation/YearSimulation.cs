@@ -27,9 +27,11 @@ namespace Netto.Core.Simulation;
 // from earlier years, less the reserve the user keeps in the company, never below zero. The car's
 // costs land in the muddy pocket. A copyright royalty comes off what it earns too, deducted in full: its
 // part within the limits reaches the pocket taxed apart (GrossToNet's TaxedApartTax), its part beyond
-// them is taxed as the director's pay, and art. 215's minimum pay counts neither. In steady state the
-// year pays out its own profit (decided 2026-10-19). No other disallowed expenses, no losses carried
-// forward, and INASTI's company contribution sits in the running costs.
+// them is taxed as the director's pay, and art. 215's minimum pay counts neither. A royalty that follows
+// the pay is set first, at what an advance ruling accepts at the scenario's own pay, so the year, the
+// split's search and the moves each read one fixed amount at each pay. In steady state the year pays
+// out its own profit (decided 2026-10-19). No other disallowed expenses, no losses carried forward, and
+// INASTI's company contribution sits in the running costs.
 public static class YearSimulation
 {
     public const string IncomeYearNotSupported = GrossToNet.IncomeYearNotSupported;
@@ -46,6 +48,8 @@ public static class YearSimulation
         var levers = LeverRules.For(scenario.IncomeYear);
         if (corporateRules is null || dividendRules is null || levers is null)
             return (null, IncomeYearNotSupported);
+
+        scenario = WithRoyaltyAtPay(scenario, levers.Copyright);
         if (scenario.Revenue < 0m)
             return (null, RevenueNegative);
         if (scenario.RunningCosts < 0m)
@@ -119,12 +123,12 @@ public static class YearSimulation
     // What the director pay and the company's profit share between them: what the company earns less
     // what it pays the director in vouchers, expense allowances, rent and a copyright royalty and what its
     // car costs it, plus what the director pays it for the car, taken as given even while the rules
-    // refuse them, so the split keeps its place. A car counts once its catalogue value is given. Null
-    // for a year without voucher rules.
+    // refuse them, so the split keeps its place. A car counts once its catalogue value is given, and a
+    // royalty that follows the pay at what it comes to at the scenario's pay. Null for a year without
+    // voucher rules.
     public static decimal? ProfitBeforePay(Scenario scenario) =>
-        VoucherRules.For(scenario.IncomeYear) is { } rules
-            ? scenario.ProfitBeforeDirector - VoucherCalculator.Cost(rules, scenario.Vouchers) - scenario.Allowances.Total - scenario.Rent.Rent
-              - (scenario.Car.Any ? scenario.Car.YearlyCosts - scenario.Car.PersonalContribution : 0m) - scenario.Copyright.Royalty
+        VoucherRules.For(scenario.IncomeYear) is { } rules && CopyrightRules.For(scenario.IncomeYear) is { } copyright
+            ? BeforeRoyalty(scenario, rules) - CopyrightCalculator.AtPay(copyright, scenario.Copyright, scenario.DirectorPay).Royalty
             : null;
 
     // The year at the scenario's pay as the split's search reads it: Run's figures for the pocket, the
@@ -136,6 +140,8 @@ public static class YearSimulation
         if (CorporateTaxRules.For(scenario.IncomeYear) is not { } corporateRules || DividendRules.For(scenario.IncomeYear) is not { } dividendRules
             || LeverRules.For(scenario.IncomeYear) is not { } levers)
             return null;
+
+        scenario = WithRoyaltyAtPay(scenario, levers.Copyright);
         if (BesidesPayOf(scenario, levers).Value is not { } besidesPay)
             return null;
         if (GrossToNet.Level(
@@ -175,6 +181,17 @@ public static class YearSimulation
             ? GrossToNet.SmallestGrossPayWithTaxablePay(scenario.IncomeYear, taxablePay, ceiling, benefit)
             : taxablePay <= ceiling ? taxablePay : null;
     }
+
+    // A royalty that follows the pay at what it comes to at the scenario's own pay, still following it,
+    // so that the year reads one amount and a year run again at another pay follows it there.
+    private static Scenario WithRoyaltyAtPay(Scenario scenario, CopyrightRules rules) =>
+        scenario.Copyright.FollowsPay ? scenario with { Copyright = CopyrightCalculator.AtPay(rules, scenario.Copyright, scenario.DirectorPay) } : scenario;
+
+    // What the company earns less what it pays the director besides pay and its car costs, the royalty
+    // aside, as given: what the pay and the royalty share.
+    private static decimal BeforeRoyalty(Scenario scenario, VoucherRules rules) =>
+        scenario.ProfitBeforeDirector - VoucherCalculator.Cost(rules, scenario.Vouchers) - scenario.Allowances.Total - scenario.Rent.Rent
+        - (scenario.Car.Any ? scenario.Car.YearlyCosts - scenario.Car.PersonalContribution : 0m);
 
     // What the company pays the director besides pay as the rules accept it, the vouchers, the expense
     // allowances then the rent, which the office allowance excludes, the car and the copyright royalty,
@@ -316,14 +333,15 @@ public static class YearSimulation
     // municipal surcharge on the total less the pay's own, the credit for low earned income it takes
     // away, and what that lost credit adds to the surcharge on the pay's tax, less the bonus. Each is
     // paid out of the pocket, the credit's as a positive amount since it is lost, not refunded.
-    // The royalty the company pays and deducts in full; its part within the limits, reaching the pocket,
-    // with the limits it used, outside INASTI's base and the advance-payment surcharge's; and its part
-    // beyond them, taxed as pay with the pay, a plain zero without one. Only once there is a royalty, so
-    // a year without one keeps its steps.
+    // The royalty the company pays and deducts in full, with the amounts that measured what a ruling
+    // accepts when it follows the pay; its part within the limits, reaching the pocket, with the limits
+    // it used, outside INASTI's base and the advance-payment surcharge's; and its part beyond them, taxed
+    // as pay with the pay, a plain zero without one. Only once there is a royalty, so a year without one
+    // keeps its steps.
     private static IEnumerable<Step> CopyrightSteps(CopyrightRules rules, CopyrightResult royalty) =>
     [
         new Step("copyright_royalty", Layer.Corporate, TaxableEvent.CopyrightRoyalty, Track.TaxBaseOnly, royalty.Royalty,
-            rules.Deduction, []),
+            rules.Deduction, royalty.Following is FollowingRoyalty.AtCeiling && rules.EnvelopeRate is { } envelope ? [envelope, rules.RelativeLimit, rules.Cap] : []),
         new Step("copyright_within_limits", Layer.Personal, TaxableEvent.CopyrightRoyalty, Track.InPocket, royalty.WithinLimits,
             rules.Limits, [rules.RelativeLimit, rules.Cap]) { AlsoCites = [rules.PhaseIn, rules.OutsideContributions, rules.OutsideAdvancePaymentSurcharge] },
         new Step("copyright_flat_rate_costs", Layer.Personal, TaxableEvent.CopyrightRoyalty, Track.TaxBaseOnly, royalty.FlatRateCosts,

@@ -246,6 +246,124 @@ public class YearSimulationCopyrightTests
         YearSimulation.ProfitBeforePay(Scenario(royalty: new CopyrightRoyalty((decimal)royalty))).ShouldBe((decimal)expected);
     }
 
+    // A royalty that follows the pay is what an advance ruling accepts at the scenario's own pay
+    // (CopyrightCalculatorTests): 11,538.46 for 75% of the time creating beside 50,000, a third of 30,000
+    // for all of it.
+    [Theory]
+    [InlineData(50_000, 0.75, 11_538.46)]
+    [InlineData(30_000, 1, 10_000)]
+    [InlineData(0, 0.75, 0)]
+    public void Run_2026RoyaltyFollowingThePay_paysWhatARulingAcceptsAtThePay(int pay, double share, double expected)
+    {
+        Run(Scenario(directorPay: pay, royalty: Following((decimal)share))).Copyright.Royalty.ShouldBe((decimal)expected);
+    }
+
+    public static TheoryData<decimal, decimal, decimal, bool, ContributionsPaidBy, bool> FollowingSetups => new()
+    {
+        { 50_000m, 100_000m, 0.75m, false, ContributionsPaidBy.Director, false },
+        { 30_000m, 100_000m, 1m, true, ContributionsPaidBy.Director, false },
+        { 0m, 100_000m, 0.75m, false, ContributionsPaidBy.Director, false },
+        { 160_000m, 300_000m, 1m, false, ContributionsPaidBy.Company, false },
+        { 300_000m, 400_000m, 1m, true, ContributionsPaidBy.Director, true },
+        { 40_000m, 100_000m, 0.6m, false, ContributionsPaidBy.Company, true },
+    };
+
+    // Every figure of the year, and every step's amount, is the year's with that royalty fixed.
+    [Theory]
+    [MemberData(nameof(FollowingSetups))]
+    public void Run_2026RoyaltyFollowingThePay_isTheYearWithWhatItCameToFixed(
+        decimal directorPay, decimal profitBeforeDirector, decimal share, bool attestation, ContributionsPaidBy paidBy, bool asWithheld)
+    {
+        Scenario With(CopyrightRoyalty royalty) => Scenario(directorPay: directorPay, revenue: profitBeforeDirector + 20_000m,
+            taxPrepayments: asWithheld ? TaxPrepayments.AsWithheld : null, paidBy: paidBy, royalty: royalty);
+        var following = Run(With(Following(share) with { HoldsAttestation = attestation }));
+
+        var fixedYear = Run(With(new CopyrightRoyalty(following.Copyright.Royalty) { CreativeShare = share, HoldsAttestation = attestation }));
+
+        FiguresOf(following).ShouldBe(FiguresOf(fixedYear));
+    }
+
+    [Theory]
+    [MemberData(nameof(FollowingSetups))]
+    public void Run_2026RoyaltyFollowingThePay_layersPocketAndCompanyAddUpToTheProfitBeforeTheDirector(
+        decimal directorPay, decimal profitBeforeDirector, decimal share, bool attestation, ContributionsPaidBy paidBy, bool asWithheld)
+    {
+        var result = Run(Scenario(directorPay: directorPay, revenue: profitBeforeDirector + 20_000m,
+            taxPrepayments: asWithheld ? TaxPrepayments.AsWithheld : null, paidBy: paidBy, royalty: Following(share) with { HoldsAttestation = attestation }));
+
+        (result.CorporateTax + result.SocialContributions + result.PersonalTax + result.NetInPocket + result.KeptInCompany).ShouldBe(profitBeforeDirector);
+    }
+
+    // The year's scenario holds what the royalty came to, still following the pay, so a year run again at
+    // another pay follows it there.
+    [Fact]
+    public void Run_2026RoyaltyFollowingThePay_holdsWhatItCameToInItsScenario()
+    {
+        Run(Scenario(royalty: Following(0.75m))).Scenario.Copyright.ShouldBe(Following(0.75m) with { Royalty = 11_538.46m });
+    }
+
+    [Fact]
+    public void Run_2026RoyaltyFollowingThePay_saysItIsWhatARulingAccepts()
+    {
+        Run(Scenario(royalty: Following(0.75m))).Copyright.Following.ShouldBe(FollowingRoyalty.AtCeiling);
+    }
+
+    // The amount the royalty step deducts was set by what a ruling accepts: it cites the amounts that
+    // measured it. A royalty the user fixed cites none.
+    [Fact]
+    public void Run_2026RoyaltyFollowingThePay_itsStepCitesTheAmountsARulingAcceptsItBy()
+    {
+        var rules = CopyrightRules.IncomeYear2026;
+
+        var step = Run(Scenario(royalty: Following(0.75m))).Steps.Single(step => step.RuleKey == "copyright_royalty");
+
+        step.AmountsUsed.ShouldBe([rules.EnvelopeRate.ShouldNotBeNull(), rules.RelativeLimit, rules.Cap]);
+    }
+
+    [Fact]
+    public void Run_2026FixedRoyalty_itsStepCitesNoAmount()
+    {
+        Run(Scenario(royalty: new CopyrightRoyalty(10_000m) { CreativeShare = 0.75m })).Steps.Single(step => step.RuleKey == "copyright_royalty")
+            .AmountsUsed.ShouldBeEmpty();
+    }
+
+    // None is never a refusal: without a share, with the four previous years above the cap, or with no
+    // time creating, the year is the year without a royalty, and says why.
+    [Theory]
+    [InlineData(null, true, FollowingRoyalty.NoCreativeShare)]
+    [InlineData(0.75, false, FollowingRoyalty.AverageAboveCap)]
+    [InlineData(0.0, true, FollowingRoyalty.AtCeiling)]
+    public void Run_2026RoyaltyFollowingWithNothingARulingAccepts_isTheYearWithoutARoyalty(double? share, bool averageWithinCap, FollowingRoyalty why)
+    {
+        var without = Run(Scenario());
+
+        var result = Run(Scenario(royalty: Following((decimal?)share) with { AverageWithinCap = averageWithinCap }));
+
+        (result.Steps.Any(step => step.Event == TaxableEvent.CopyrightRoyalty), result.NetInPocket, result.Copyright)
+            .ShouldBe((false, without.NetInPocket, CopyrightResult.None with { Following = why }));
+    }
+
+    // What the split shares is what the company has once it paid what a ruling accepts at the pay.
+    [Fact]
+    public void ProfitBeforePay_royaltyFollowingThePay_isWhatTheCompanyHasLeftOnceItPaidWhatARulingAccepts()
+    {
+        YearSimulation.ProfitBeforePay(Scenario(royalty: Following(0.75m))).ShouldBe(88_461.54m);
+    }
+
+    private static CopyrightRoyalty Following(decimal? share) => new(0m) { CreativeShare = share, FollowsPay = true };
+
+    // The year's figures, with the royalty as the rules took it but not how it was set, and each step by
+    // its key and amount.
+    private static YearFigures FiguresOf(YearResult year) => new(
+        year.ProfitBeforePay, year.DisallowedExpenses, year.CorporateTax, year.SocialContributions, year.PersonalTax, year.NetInPocket, year.KeptInCompany,
+        year.MaximumDividend, year.Copyright with { Following = null }, year.DirectorPay.TaxablePay, year.DirectorPay.NetInPocket,
+        year.DirectorPay.TaxedApartTax, year.DirectorPay.Assessment.Balance, string.Join("; ", year.Steps.Select(step => $"{step.RuleKey} {step.Amount}")));
+
+    private sealed record YearFigures(
+        decimal ProfitBeforePay, decimal DisallowedExpenses, decimal CorporateTax, decimal SocialContributions, decimal PersonalTax, decimal NetInPocket,
+        decimal KeptInCompany, decimal MaximumDividend, CopyrightResult Copyright, decimal TaxablePay, decimal PayNetInPocket, OtherIncomeTax TaxedApartTax,
+        decimal Balance, string Steps);
+
     private static Scenario Scenario(
         decimal directorPay = 50_000m,
         decimal revenue = 120_000m,
