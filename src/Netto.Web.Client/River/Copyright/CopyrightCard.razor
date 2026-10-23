@@ -127,14 +127,8 @@
         ? L[CopyrightCardText.Summary(view), Formats.Euros(view.AfterTax), Formats.Euros(view.Result.TaxedAsPay)].Value
         : null;
 
-    // The summary's first figure, for the card's row in the river's outline: what reaches the pocket after
-    // the tax apart, or, with nothing within the limits, what is taxed as pay; nothing without a royalty.
-    private CardGlance? Glance => _view switch
-    {
-        null or { HasRoyalty: false } => null,
-        { Result.WithinLimits: 0m } view => new(GlanceKind.TaxedAsPay, Formats.Euros(view.Result.TaxedAsPay)),
-        { } view => new(GlanceKind.ToYou, Formats.Euros(view.AfterTax)),
-    };
+    // The summary's first figure, for the card's row in the river's outline.
+    private CardGlance? Glance => _view is { } view ? CopyrightCardText.Glance(view) : null;
 
     private RenderFragment? Details => _view is { Details.Count: > 0 } view && Run.Year is { } year
         ? @<text>

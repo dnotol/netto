@@ -158,6 +158,19 @@ public class RiverOutlineTests
         ]);
     }
 
+    // A royalty with nothing within its limits reaches the pocket only through the pay: its row says it
+    // is all taxed as pay, the summary's figure, with no pocket's icon.
+    [Fact]
+    public async Task Outline_royaltyAllTaxedAsPay_saysSoWithoutAnIcon()
+    {
+        var html = await RenderPlanAsync(EveryFigure.WithRoyalty(10_000m).WithAverageWithinCap(false));
+
+        var royalty = Rows(html).Single(row => Title(row) == "Copyright royalty");
+
+        (Kind(Glance(royalty)!), Summary(html, "Copyright royalty").Contains(Figure(Glance(royalty)!)), Icon(royalty))
+            .ShouldBe((GlanceKind.TaxedAsPay, true, (string?)null));
+    }
+
     private static List<string> Rows(string html) =>
         [.. Regex.Matches(html, "<button[^>]*class=\"river-outline__row\"[^>]*>.*?</button>", RegexOptions.Singleline).Select(match => match.Value)];
 
