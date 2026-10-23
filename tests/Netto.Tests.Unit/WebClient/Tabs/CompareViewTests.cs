@@ -179,6 +179,89 @@ public class CompareViewTests
         (view.Plan!.Name, view.Against!.Name).ShouldBe(("Plan 2", "Plan 1"));
     }
 
+    // Picking the plan the other picker holds swaps the two: with two plans, each picker would otherwise
+    // have nothing to pick.
+    [Fact]
+    public void PickPlan_planTheAgainstHolds_swapsTheTwo()
+    {
+        var plans = Saved(RiverInputs.Example, BestPay);
+        var view = CompareView.Of(plans);
+
+        var picks = view.PickPlan(plans.Plans[1].Id).ShouldNotBeNull();
+        var swapped = CompareView.Of(plans, picks.Plan, picks.Against);
+
+        (swapped.Plan!.Name, swapped.Against!.Name).ShouldBe(("Plan 2", "Plan 1"));
+    }
+
+    [Fact]
+    public void PickAgainst_planThePlanHolds_swapsTheTwo()
+    {
+        var plans = Saved(RiverInputs.Example, BestPay);
+        var view = CompareView.Of(plans);
+
+        var picks = view.PickAgainst(plans.Plans[0].Id).ShouldNotBeNull();
+        var swapped = CompareView.Of(plans, picks.Plan, picks.Against);
+
+        (swapped.Plan!.Name, swapped.Against!.Name).ShouldBe(("Plan 2", "Plan 1"));
+    }
+
+    // Another plan changes that column only; the other stays as shown, even where the default would move
+    // it (the river was opened from Plan 1, so Plan 3 is the default second plan only while Plan 1 is the
+    // first).
+    [Fact]
+    public void PickPlan_anotherPlan_keepsTheAgainstAsShown()
+    {
+        var plans = Saved(RiverInputs.Example, BestPay, RiverInputs.Example.WithDirectorPay(30_000m));
+        plans.Open(plans.Plans[0].Id);
+        var view = CompareView.Of(plans);
+
+        var picks = view.PickPlan(plans.Plans[1].Id).ShouldNotBeNull();
+        var picked = CompareView.Of(plans, picks.Plan, picks.Against);
+
+        (view.Against!.Name, picked.Plan!.Name, picked.Against!.Name).ShouldBe(("Plan 3", "Plan 2", "Plan 3"));
+    }
+
+    [Fact]
+    public void PickAgainst_anotherPlan_keepsThePlanAsShown()
+    {
+        var plans = Saved(RiverInputs.Example, BestPay, RiverInputs.Example.WithDirectorPay(30_000m));
+        var view = CompareView.Of(plans);
+
+        var picks = view.PickAgainst(plans.Plans[1].Id).ShouldNotBeNull();
+        var picked = CompareView.Of(plans, picks.Plan, picks.Against);
+
+        (view.Plan!.Name, picked.Plan!.Name, picked.Against!.Name).ShouldBe(("Plan 1", "Plan 1", "Plan 2"));
+    }
+
+    // Swapping the two keeps the third out of it.
+    [Fact]
+    public void PickPlan_withThreePlans_swapsOnlyTheTwoShown()
+    {
+        var plans = Saved(RiverInputs.Example, BestPay, RiverInputs.Example.WithDirectorPay(30_000m));
+        var view = CompareView.Of(plans);
+
+        var picks = view.PickPlan(view.Against!.Id).ShouldNotBeNull();
+
+        (picks.Plan, picks.Against).ShouldBe((plans.Plans[2].Id, plans.Plans[0].Id));
+    }
+
+    [Fact]
+    public void Pick_planNotAmongTheChoices_isNoPick()
+    {
+        var view = CompareView.Of(Saved(RiverInputs.Example, BestPay));
+
+        (view.PickPlan("nobody"), view.PickAgainst("nobody")).ShouldBe((null, null));
+    }
+
+    // Without two plans there are no pickers, so nothing to pick.
+    [Fact]
+    public void Pick_onePlan_isNoPick()
+    {
+        var view = CompareView.Of(Saved(RiverInputs.Example));
+
+        view.PickPlan(view.Choices[0].Id).ShouldBeNull();
+    }
+
     // A pick of a plan that cannot be read is no pick.
     [Fact]
     public void Of_unreadablePlanPicked_fallsBackToTheDefault()

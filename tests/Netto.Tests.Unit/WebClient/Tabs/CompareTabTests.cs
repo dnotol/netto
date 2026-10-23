@@ -55,7 +55,7 @@ public class CompareTabTests
         (html.Contains("You have one saved plan, « Plan 1 »"), html.Contains("<select")).ShouldBe((true, false));
     }
 
-    // Today first, the plan the river was opened from second, each plan the other picker holds out of reach.
+    // Today first, the plan the river was opened from second; each picker lists both plans, so choosing the other's swaps them.
     [Fact]
     public async Task Compare_twoPlans_picksTodayAgainstTheOpenedPlan()
     {
@@ -63,8 +63,8 @@ public class CompareTabTests
 
         Selects(html).ShouldBe(
         [
-            "compare-plan | Plan | Plan 1 (Today) selected; Plan 2 disabled",
-            "compare-against | Against | Plan 1 (Today) disabled; Plan 2 selected",
+            "compare-plan | Plan | Plan 1 (Today) selected; Plan 2",
+            "compare-against | Against | Plan 1 (Today); Plan 2 selected",
         ]);
     }
 

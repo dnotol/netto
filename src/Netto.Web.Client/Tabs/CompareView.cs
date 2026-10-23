@@ -55,6 +55,27 @@ internal sealed record CompareView(
         return view with { Groups = CompareRows.Of(left, right), Pocket = PocketPanel.Of(left, right) };
     }
 
+    // The two picks once the viewer chooses a plan in the first picker, both explicit from then on so the
+    // other column stays as shown: choosing the plan the second picker holds swaps the two, since with
+    // two plans each picker would otherwise have nothing left to pick. None where there is nothing to pick
+    // from.
+    public ComparePicks? PickPlan(string id)
+    {
+        if (Plan is null || Against is null || Choices.All(choice => choice.Id != id))
+            return null;
+
+        return id == Against.Id ? new ComparePicks(id, Plan.Id) : new ComparePicks(id, Against.Id);
+    }
+
+    // The same for the second picker: the plan the first holds swaps the two.
+    public ComparePicks? PickAgainst(string id)
+    {
+        if (Plan is null || Against is null || Choices.All(choice => choice.Id != id))
+            return null;
+
+        return id == Plan.Id ? new ComparePicks(Against.Id, id) : new ComparePicks(Plan.Id, id);
+    }
+
     private static ComparedPlan Compared(SavedPlan plan, string? today)
     {
         var inputs = plan.Inputs!;
@@ -80,6 +101,9 @@ internal enum CompareState
 
     Compared,
 }
+
+// The plans the viewer picked for the first and the second column.
+internal sealed record ComparePicks(string Plan, string Against);
 
 // A plan the viewer can pick: one that can be read.
 internal sealed record PlanChoice(string Id, string Name, bool IsToday);

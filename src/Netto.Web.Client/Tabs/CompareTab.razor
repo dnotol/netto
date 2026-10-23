@@ -33,7 +33,7 @@
                 <select id="compare-plan" class="compare__select" @onchange="PlanPicked">
                     @foreach (var choice in _view.Choices)
                     {
-                        <option value="@choice.Id" selected="@(choice.Id == plan.Id)" disabled="@(choice.Id == against.Id)">@ChoiceName(choice)</option>
+                        <option value="@choice.Id" selected="@(choice.Id == plan.Id)">@ChoiceName(choice)</option>
                     }
                 </select>
             </div>
@@ -42,7 +42,7 @@
                 <select id="compare-against" class="compare__select" @onchange="AgainstPicked">
                     @foreach (var choice in _view.Choices)
                     {
-                        <option value="@choice.Id" selected="@(choice.Id == against.Id)" disabled="@(choice.Id == plan.Id)">@ChoiceName(choice)</option>
+                        <option value="@choice.Id" selected="@(choice.Id == against.Id)">@ChoiceName(choice)</option>
                     }
                 </select>
             </div>
@@ -169,15 +169,17 @@
         StateHasChanged();
     });
 
-    private void PlanPicked(ChangeEventArgs change)
-    {
-        _planPick = change.Value as string;
-        Build();
-    }
+    // Choosing the plan the other picker holds swaps the two (CompareView.PickPlan).
+    private void PlanPicked(ChangeEventArgs change) => Pick(change.Value is string id ? _view.PickPlan(id) : null);
 
-    private void AgainstPicked(ChangeEventArgs change)
+    private void AgainstPicked(ChangeEventArgs change) => Pick(change.Value is string id ? _view.PickAgainst(id) : null);
+
+    private void Pick(ComparePicks? picks)
     {
-        _againstPick = change.Value as string;
+        if (picks is null)
+            return;
+
+        (_planPick, _againstPick) = (picks.Plan, picks.Against);
         Build();
     }
 
