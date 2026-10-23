@@ -22,6 +22,8 @@ public class MoveSearchCopyrightTests
 
     private static readonly IReadOnlyList<IMoveFinder> RoyaltyOnly = [new CopyrightRoyaltyFinder()];
 
+    private static readonly IReadOnlyList<IMoveFinder> FollowOnly = [new CopyrightFollowsPayFinder()];
+
     [Fact]
     public void Run_creativeShareGiven_proposesTheRoyaltyAtItsCeiling()
     {
@@ -177,6 +179,122 @@ public class MoveSearchCopyrightTests
 
         (final.DirectorPay, final.Copyright.Royalty).ShouldBe((51_000m, 17_000m));
     }
+
+    // Letting the royalty follow the pay sets it, at Today's 50,000, at what a ruling accepts there: the
+    // move adds the difference of the two years.
+    [Fact]
+    public void Run_followFinderCreativeShareGiven_proposesLettingTheRoyaltyFollowThePay()
+    {
+        var plan = MoveSearch.Run(Today, FollowOnly).Value.ShouldNotBeNull();
+
+        plan.Moves.ShouldBe([new PlannedMove(new CopyrightFollowsPayMove(), Pocket(Following(Today)) - Pocket(Today))]);
+    }
+
+    // The move lets the royalty follow the pay alone: the share, the statuses and the amount given stay
+    // the scenario's.
+    [Fact]
+    public void Apply_followMove_letsTheRoyaltyFollowThePayAndKeepsTheRest()
+    {
+        var holder = Today with { Copyright = Today.Copyright with { Royalty = 5_000m, HoldsAttestation = true } };
+
+        new CopyrightFollowsPayMove().Apply(holder).Copyright.ShouldBe(holder.Copyright with { FollowsPay = true });
+    }
+
+    [Fact]
+    public void Find_followFinderRoyaltyFixedBelowWhatARulingAccepts_proposesIt()
+    {
+        new CopyrightFollowsPayFinder().Find(WithRoyalty(Today, 5_000m)).ShouldBe(new CopyrightFollowsPayMove());
+    }
+
+    // A royalty at or above what a ruling accepts at the pay is the user's: the move never lowers it.
+    [Theory]
+    [InlineData(11_538.46)]
+    [InlineData(15_000)]
+    public void Find_followFinderRoyaltyAtOrAboveWhatARulingAccepts_proposesNone(decimal royalty)
+    {
+        new CopyrightFollowsPayFinder().Find(WithRoyalty(Today, royalty)).ShouldBeNull();
+    }
+
+    [Fact]
+    public void Find_followFinderNoCreativeShare_proposesNone()
+    {
+        new CopyrightFollowsPayFinder().Find(Today with { Copyright = new CopyrightRoyalty(0m) }).ShouldBeNull();
+    }
+
+    [Fact]
+    public void Find_followFinderAverageAboveTheCap_proposesNone()
+    {
+        new CopyrightFollowsPayFinder().Find(Today with { Copyright = Today.Copyright with { AverageWithinCap = false } }).ShouldBeNull();
+    }
+
+    [Fact]
+    public void Find_followFinderRoyaltyAlreadyFollowing_proposesNone()
+    {
+        new CopyrightFollowsPayFinder().Find(Following(Today)).ShouldBeNull();
+    }
+
+    public static TheoryData<decimal, decimal, decimal> Setups => new()
+    {
+        { 120_000m, 50_000m, 0.75m },
+        { 120_000m, 50_000m, 1m },
+        { 100_000m, 24_000m, 0.75m },
+        { 220_000m, 40_000m, 1m },
+    };
+
+    // With the split, the plan ends with the royalty following the pay, at what a ruling accepts at the
+    // plan's own pay; every gain is the difference of two years, and they sum to the plan less Today.
+    [Theory]
+    [MemberData(nameof(Setups))]
+    public void Run_followAndSplit_endsWithTheRoyaltyAtWhatARulingAcceptsAtThePlansPay(decimal revenue, decimal pay, decimal share)
+    {
+        var today = Today with { Revenue = revenue, DirectorPay = pay, Copyright = new CopyrightRoyalty(0m) { CreativeShare = share } };
+
+        var plan = MoveSearch.Run(today, [new SplitMoveFinder(), new CopyrightFollowsPayFinder()]).Value.ShouldNotBeNull();
+        var final = Final(today, plan);
+
+        (final.Copyright.FollowsPay, YearSimulation.Run(final).Value.ShouldNotBeNull().Copyright.Royalty, plan.Moves.Sum(move => move.Gain), plan.Gain)
+            .ShouldBe((true, CopyrightCalculator.Ceiling(CopyrightRules.IncomeYear2026, final.Copyright, final.DirectorPay).ShouldNotBeNull(),
+                plan.PlanInPocket - plan.TodayInPocket, Pocket(final) - Pocket(today)));
+    }
+
+    // The two documented plans of the raise to the ceiling: taken last, the pay at 20,799 with 6,933;
+    // taken first, the pay at 51,000 with 17,000. Following the pay leaves at least as much as each.
+    [Theory]
+    [InlineData(120_000, 50_000, 20_799, 6_933)]
+    [InlineData(220_000, 40_000, 51_000, 17_000)]
+    public void Run_followAndSplit_leavesAtLeastWhatTheRaiseInEitherOrderLeft(int revenue, int pay, int raisedPay, int raisedRoyalty)
+    {
+        var today = Today with { Revenue = revenue, DirectorPay = pay, Copyright = new CopyrightRoyalty(0m) { CreativeShare = 1m } };
+
+        var plan = MoveSearch.Run(today, [new SplitMoveFinder(), new CopyrightFollowsPayFinder()]).Value.ShouldNotBeNull();
+
+        plan.PlanInPocket.ShouldBeGreaterThanOrEqualTo(Pocket(WithRoyalty(today with { DirectorPay = raisedPay }, raisedRoyalty)));
+    }
+
+    // On a grid of companies, pays and shares, following the pay leaves at least what the search it
+    // replaces left, the raise to the ceiling in the better of its two orders. Removed with that finder.
+    [Theory]
+    [InlineData(70_000, 24_000, 0.5)]
+    [InlineData(70_000, 50_000, 1)]
+    [InlineData(100_000, 24_000, 1)]
+    [InlineData(100_000, 50_000, 0.5)]
+    [InlineData(140_000, 24_000, 0.75)]
+    [InlineData(140_000, 50_000, 1)]
+    [InlineData(220_000, 24_000, 0.5)]
+    [InlineData(220_000, 40_000, 1)]
+    [InlineData(220_000, 60_000, 0.75)]
+    [InlineData(320_000, 50_000, 1)]
+    public void Run_followAndSplit_leavesAtLeastWhatTheRaiseAndItsGuardLeave(int revenue, int pay, double share)
+    {
+        var today = Today with { Revenue = revenue, DirectorPay = pay, Copyright = new CopyrightRoyalty(0m) { CreativeShare = (decimal)share } };
+
+        var following = MoveSearch.Run(today, [new SplitMoveFinder(), new CopyrightFollowsPayFinder()]).Value.ShouldNotBeNull();
+        var raised = MoveSearch.Run(today, [new SplitMoveFinder(), new CopyrightRoyaltyFinder()]).Value.ShouldNotBeNull();
+
+        following.PlanInPocket.ShouldBeGreaterThanOrEqualTo(raised.PlanInPocket);
+    }
+
+    private static Scenario Following(Scenario scenario) => scenario with { Copyright = scenario.Copyright with { FollowsPay = true } };
 
     private static Scenario WithRoyalty(Scenario scenario, decimal royalty) => scenario with { Copyright = scenario.Copyright with { Royalty = royalty } };
 

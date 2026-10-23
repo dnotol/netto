@@ -74,6 +74,13 @@ public sealed record CopyrightRoyaltyMove(decimal Royalty) : Move
     public override Scenario Apply(Scenario scenario) => scenario with { Copyright = scenario.Copyright with { Royalty = Royalty } };
 }
 
+// The copyright royalty set to follow the pay: at each pay, what an advance ruling accepts for the
+// director's creative share there, so that a later move of the pay carries it along.
+public sealed record CopyrightFollowsPayMove : Move
+{
+    public override Scenario Apply(Scenario scenario) => scenario with { Copyright = scenario.Copyright with { FollowsPay = true } };
+}
+
 // A move in the plan with what it adds to the pocket on top of the moves before it.
 public sealed record PlannedMove(Move Move, decimal Gain);
 
@@ -265,4 +272,17 @@ internal sealed class CopyrightRoyaltyFinder : IMoveFinder, IMoveGuard
 
     private static decimal? Ceiling(Scenario scenario) =>
         CopyrightRules.For(scenario.IncomeYear) is { } rules ? CopyrightCalculator.Ceiling(rules, scenario.Copyright, scenario.DirectorPay) : null;
+}
+
+// Letting the royalty follow the pay, once a ruling accepts some royalty at the pay (the share given, the
+// four previous years within the cap, a year with an envelope rate), when the royalty is fixed below what
+// it accepts there (CopyrightCalculator.Ceiling): never from a royalty at or above it, which is the
+// user's. Once it follows, the split's search weighs pay and royalty together, so no guard is needed.
+internal sealed class CopyrightFollowsPayFinder : IMoveFinder
+{
+    public Move? Find(Scenario scenario) =>
+        !scenario.Copyright.FollowsPay && CopyrightRules.For(scenario.IncomeYear) is { } rules
+        && CopyrightCalculator.Ceiling(rules, scenario.Copyright, scenario.DirectorPay) is { } ceiling && ceiling > scenario.Copyright.Royalty
+            ? new CopyrightFollowsPayMove()
+            : null;
 }
