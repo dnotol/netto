@@ -12,12 +12,14 @@
 // disabled. While the jump scrolls, nothing is measured, so the card jumped to stays marked until the
 // viewer scrolls again.
 //
-// An arrival is a jump asked by the page (Plan) when a link from another tab names a card: it runs at the
-// next frame, after what the render that drew the river set off. That render is the one after which
-// Blazor resets the scroll to the top, a link to another path having been followed, and the tab's head
-// puts the focus on its title once drawn: both happen before the frame, so the card is scrolled to and
-// focused after them. It works whether or not the outline shows, and once the page is still the outline
-// is told which card is in view, so it marks the one arrived at.
+// An arrival is a jump asked by the page (Plan) when the address names a card, from a link of another
+// tab or loaded as it is (a reload, a new browser tab). It waits for the page to have loaded, then for
+// the end of the task that drew the river: in that task Blazor resets the scroll to the top after a link
+// to another path, and the tab's head puts the focus on its title, so the card is scrolled to and focused
+// after both. It waits on a timer rather than a frame, which a window out of sight does not draw, and it
+// scrolls at once rather than smoothly, there being nothing on the page to move from. It works whether or
+// not the outline shows, and once the page is still the outline is told which card is in view, so it
+// marks the one arrived at.
 (() => {
     const settleDelay = 150;
     const tolerance = 1;
@@ -87,9 +89,9 @@
         }, settleDelay);
     }
 
-    // Scrolls a card under the line and focuses its heading; once still, tells .NET what is in view if
-    // asked to.
-    function bringIntoView(name, tell) {
+    // Scrolls a card under the line, as the page's scrolling does or at once, and focuses its heading;
+    // once still, tells .NET what is in view if asked to.
+    function bringIntoView(name, tell, behavior) {
         const card = document.getElementById(`card-${name}`);
         if (card === null) {
             return;
@@ -100,7 +102,7 @@
             settle();
         }
 
-        card.scrollIntoView({ block: "start" });
+        card.scrollIntoView({ block: "start", behavior });
         const heading = card.querySelector("h2 > button");
         if (heading !== null && !heading.disabled) {
             heading.focus({ preventScroll: true });
@@ -143,11 +145,16 @@
             schedule(true);
         },
         jump(name) {
-            bringIntoView(name, false);
+            bringIntoView(name, false, "auto");
         },
-        // The card a link from another tab named, which the page has just drawn open.
+        // The card the address names, which the page has just drawn open.
         arrive(name) {
-            requestAnimationFrame(() => bringIntoView(name, true));
+            const bring = () => setTimeout(() => bringIntoView(name, true, "instant"), 0);
+            if (document.readyState === "complete") {
+                bring();
+            } else {
+                window.addEventListener("load", bring, { once: true });
+            }
         },
         stop() {
             if (watched === null) {
