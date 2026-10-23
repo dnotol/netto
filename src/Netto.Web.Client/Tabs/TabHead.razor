@@ -6,7 +6,10 @@
    page's first draw Blazor does the same (Routes, FocusOnNavigate), but not on a switch of tab: the tabs
    are one page, and FocusOnNavigate moves the focus only when the page changes. So a tab draws its head
    once, at its top, never inside a branch its own state can draw again, or the focus would leave what
-   the viewer is on. The title is focused without scrolling: the page is already at its top. *@
+   the viewer is on. The title is focused letting the browser scroll it into view, which keeps it below
+   the sticky bar and its tabs (app.css's scroll-padding-top, --netto-under-bar): back and forward put
+   the scroll back where it was, which can leave the title under the bar (WCAG 2.4.11), while a link to
+   a tab already lands at the top, where the title shows below the bar and nothing scrolls. *@
 <header class="tab-head">
     <div class="tab-head__eyebrow-row">
         <p class="tab-head__eyebrow">@Eyebrow</p>
@@ -34,6 +37,6 @@
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
-            await _title.FocusAsync(preventScroll: true);
+            await _title.FocusAsync();
     }
 }
