@@ -9,7 +9,10 @@
    leased, for a plug-in hybrid whether it is a fake one with its matching car's CO2, for natural gas
    whether it is under 12 fiscal horsepower, its yearly costs to the company, whether the company pays
    the private energy, and their own contribution; a field that does not apply to what drives the car
-   is not shown, its value kept. The card says the benefit in kind taxed as pay, its CO2 percentage,
+   is not shown, its value kept. What the car is, as its papers say, sits behind one disclosure,
+   « Your car », folded to a line that states it and open by itself while no catalogue value is given,
+   since no car counts without it; its yearly costs, the contribution and the private energy the
+   company pays stay in sight. The card says the benefit in kind taxed as pay, its CO2 percentage,
    period by period, what the company deducts of the costs and adds back of the benefit, the costs
    going to the muddy pocket and the contribution coming back from the pocket, then the plan with the
    car against the same plan without it. An optional module: it shows only while in the plan, and the
@@ -24,70 +27,104 @@
     else
     {
         <p class="car__scope">@L["Scope"]</p>
-        <div class="car__fields">
-            <RiverField Label="@L["CatalogueLabel"]" For="river-car-catalogue" Origin="Inputs.Car.CatalogueValue.Origin" Help="@L["CatalogueHint"]">
-                <RiverNumericField T="decimal" InputId="river-car-catalogue" Value="Inputs.Car.CatalogueValue.Value" ValueChanged="OnCatalogueValueChanged"
-                                   Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
-                                   Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
-                                   Error="@(Refused == CarCalculator.CatalogueValueNegative)" Refusal="@Refused" />
-            </RiverField>
-            <RiverField Label="@L["RegistrationLabel"]" Origin="Inputs.Car.FirstRegistration.Origin" Help="@L["RegistrationHint"]">
-                <div class="car__month-year">
-                    <MudSelect T="int" Value="Inputs.Car.FirstRegistration.Value.Month" ValueChanged="OnRegistrationMonthChanged" Label="@L["MonthLabel"]"
-                               ToStringFunc="@MonthName" Variant="Variant.Outlined" Margin="Margin.Dense" Dense="true" Class="car__month">
-                        @foreach (var month in Enumerable.Range(1, 12))
+        <Disclosure Title="@L["CarTitle"]" Values="@SettingWords.Of(L, _settings.Car)" Refused="@CarSettingsView.CarHolds(Refused)"
+                    OpenByDefault="@_settings.NeedsFacts">
+            <div class="car__fields">
+                <RiverField Label="@L["CatalogueLabel"]" For="river-car-catalogue" Origin="Inputs.Car.CatalogueValue.Origin" Help="@L["CatalogueHint"]">
+                    <RiverNumericField T="decimal" InputId="river-car-catalogue" Value="Inputs.Car.CatalogueValue.Value" ValueChanged="OnCatalogueValueChanged"
+                                       Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
+                                       Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
+                                       Error="@(Refused == CarCalculator.CatalogueValueNegative)" Refusal="@Refused" />
+                </RiverField>
+                <RiverField Label="@L["RegistrationLabel"]" Origin="Inputs.Car.FirstRegistration.Origin" Help="@L["RegistrationHint"]">
+                    <div class="car__month-year">
+                        <MudSelect T="int" Value="Inputs.Car.FirstRegistration.Value.Month" ValueChanged="OnRegistrationMonthChanged" Label="@L["MonthLabel"]"
+                                   ToStringFunc="@MonthName" Variant="Variant.Outlined" Margin="Margin.Dense" Dense="true" Class="car__month">
+                            @foreach (var month in Enumerable.Range(1, 12))
+                            {
+                                <MudSelectItem T="int" Value="month">@MonthName(month)</MudSelectItem>
+                            }
+                        </MudSelect>
+                        <MudNumericField T="int" Value="Inputs.Car.FirstRegistration.Value.Year" ValueChanged="OnRegistrationYearChanged" Label="@L["YearLabel"]"
+                                         Min="FirstYear" Max="LastYear" HideSpinButtons="true" Culture="Formats.Culture" Format="0"
+                                         Variant="Variant.Outlined" Margin="Margin.Dense" Class="car__year" />
+                    </div>
+                </RiverField>
+                <RiverField Label="@L["EngineLabel"]" For="river-car-engine" Origin="Inputs.Car.Engine.Origin" Help="@L["EngineHint"]">
+                    <MudSelect T="CarEngine" InputId="river-car-engine" Value="Inputs.Car.Engine.Value" ValueChanged="OnEngineChanged"
+                               ToStringFunc="@EngineName" Variant="Variant.Outlined" Margin="Margin.Dense" Dense="true">
+                        @foreach (var engine in Enum.GetValues<CarEngine>())
                         {
-                            <MudSelectItem T="int" Value="month">@MonthName(month)</MudSelectItem>
+                            <MudSelectItem T="CarEngine" Value="engine">@EngineName(engine)</MudSelectItem>
                         }
                     </MudSelect>
-                    <MudNumericField T="int" Value="Inputs.Car.FirstRegistration.Value.Year" ValueChanged="OnRegistrationYearChanged" Label="@L["YearLabel"]"
-                                     Min="FirstYear" Max="LastYear" HideSpinButtons="true" Culture="Formats.Culture" Format="0"
-                                     Variant="Variant.Outlined" Margin="Margin.Dense" Class="car__year" />
-                </div>
-            </RiverField>
-            <RiverField Label="@L["EngineLabel"]" For="river-car-engine" Origin="Inputs.Car.Engine.Origin" Help="@L["EngineHint"]">
-                <MudSelect T="CarEngine" InputId="river-car-engine" Value="Inputs.Car.Engine.Value" ValueChanged="OnEngineChanged"
-                           ToStringFunc="@EngineName" Variant="Variant.Outlined" Margin="Margin.Dense" Dense="true">
-                    @foreach (var engine in Enum.GetValues<CarEngine>())
-                    {
-                        <MudSelectItem T="CarEngine" Value="engine">@EngineName(engine)</MudSelectItem>
-                    }
-                </MudSelect>
-            </RiverField>
+                </RiverField>
+                @if (Inputs.Car.Engine.Value.EmitsCo2())
+                {
+                    <RiverField Label="@L["Co2Label"]" For="river-car-co2" Origin="Inputs.Car.Co2.Origin" Help="@L["Co2Hint"]">
+                        <RiverNumericField T="int" InputId="river-car-co2" Value="Inputs.Car.Co2.Value" ValueChanged="OnCo2Changed"
+                                           Format="0" Culture="Formats.Culture" Adornment="Adornment.End" AdornmentText="g/km" HideSpinButtons="true"
+                                           Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400" Disabled="Inputs.Car.NoCo2Data.Value"
+                                           Error="@(Refused is CarCalculator.Co2Negative or CarCalculator.Co2Missing)" Refusal="@Refused" />
+                    </RiverField>
+                }
+                <RiverField Label="@L["AcquiredLabel"]" Origin="Inputs.Car.Acquired.Origin" Help="@L["AcquiredHint"]">
+                    <div class="car__month-year">
+                        <MudSelect T="int" Value="Inputs.Car.Acquired.Value.Month" ValueChanged="OnAcquiredMonthChanged" Label="@L["MonthLabel"]"
+                                   ToStringFunc="@MonthName" Variant="Variant.Outlined" Margin="Margin.Dense" Dense="true" Class="car__month"
+                                   Error="@(Refused is CarCalculator.AcquiredAfterYear or CarCalculator.PlugInFuelCapped)">
+                            @foreach (var month in Enumerable.Range(1, 12))
+                            {
+                                <MudSelectItem T="int" Value="month">@MonthName(month)</MudSelectItem>
+                            }
+                        </MudSelect>
+                        <MudNumericField T="int" Value="Inputs.Car.Acquired.Value.Year" ValueChanged="OnAcquiredYearChanged" Label="@L["YearLabel"]"
+                                         Min="FirstYear" Max="LastYear" HideSpinButtons="true" Culture="Formats.Culture" Format="0"
+                                         Variant="Variant.Outlined" Margin="Margin.Dense" Class="car__year"
+                                         Error="@(Refused is CarCalculator.AcquiredAfterYear or CarCalculator.PlugInFuelCapped)" />
+                    </div>
+                </RiverField>
+                @if (Inputs.Car.Engine.Value.IsPlugInHybrid() && Inputs.Car.FakeHybrid.Value)
+                {
+                    <RiverField Label="@L["MatchingCo2Label"]" For="river-car-matching-co2" Origin="Inputs.Car.MatchingCarCo2.Origin" Help="@L["MatchingCo2Hint"]">
+                        <RiverNumericField T="int" InputId="river-car-matching-co2" Value="Inputs.Car.MatchingCarCo2.Value" ValueChanged="OnMatchingCo2Changed"
+                                           Format="0" Culture="Formats.Culture" Adornment="Adornment.End" AdornmentText="g/km" HideSpinButtons="true"
+                                           Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400" Disabled="Inputs.Car.NoMatchingCar.Value"
+                                           Error="@(Refused is CarCalculator.MatchingCarCo2Negative or CarCalculator.MatchingCarCo2Missing)" Refusal="@Refused" />
+                    </RiverField>
+                }
+            </div>
             @if (Inputs.Car.Engine.Value.EmitsCo2())
             {
-                <RiverField Label="@L["Co2Label"]" For="river-car-co2" Origin="Inputs.Car.Co2.Origin" Help="@L["Co2Hint"]">
-                    <RiverNumericField T="int" InputId="river-car-co2" Value="Inputs.Car.Co2.Value" ValueChanged="OnCo2Changed"
-                                       Format="0" Culture="Formats.Culture" Adornment="Adornment.End" AdornmentText="g/km" HideSpinButtons="true"
-                                       Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400" Disabled="Inputs.Car.NoCo2Data.Value"
-                                       Error="@(Refused is CarCalculator.Co2Negative or CarCalculator.Co2Missing)" Refusal="@Refused" />
-                </RiverField>
-            }
-            <RiverField Label="@L["AcquiredLabel"]" Origin="Inputs.Car.Acquired.Origin" Help="@L["AcquiredHint"]">
-                <div class="car__month-year">
-                    <MudSelect T="int" Value="Inputs.Car.Acquired.Value.Month" ValueChanged="OnAcquiredMonthChanged" Label="@L["MonthLabel"]"
-                               ToStringFunc="@MonthName" Variant="Variant.Outlined" Margin="Margin.Dense" Dense="true" Class="car__month"
-                               Error="@(Refused is CarCalculator.AcquiredAfterYear or CarCalculator.PlugInFuelCapped)">
-                        @foreach (var month in Enumerable.Range(1, 12))
-                        {
-                            <MudSelectItem T="int" Value="month">@MonthName(month)</MudSelectItem>
-                        }
-                    </MudSelect>
-                    <MudNumericField T="int" Value="Inputs.Car.Acquired.Value.Year" ValueChanged="OnAcquiredYearChanged" Label="@L["YearLabel"]"
-                                     Min="FirstYear" Max="LastYear" HideSpinButtons="true" Culture="Formats.Culture" Format="0"
-                                     Variant="Variant.Outlined" Margin="Margin.Dense" Class="car__year"
-                                     Error="@(Refused is CarCalculator.AcquiredAfterYear or CarCalculator.PlugInFuelCapped)" />
+                <div class="car__tick">
+                    <MudCheckBox T="bool" Value="Inputs.Car.NoCo2Data.Value" ValueChanged="OnNoCo2DataChanged" Color="Color.Primary" Label="@L["NoCo2Label"]" />
+                    <OriginChip Origin="Inputs.Car.NoCo2Data.Origin" />
                 </div>
-            </RiverField>
-            @if (Inputs.Car.Engine.Value.IsPlugInHybrid() && Inputs.Car.FakeHybrid.Value)
-            {
-                <RiverField Label="@L["MatchingCo2Label"]" For="river-car-matching-co2" Origin="Inputs.Car.MatchingCarCo2.Origin" Help="@L["MatchingCo2Hint"]">
-                    <RiverNumericField T="int" InputId="river-car-matching-co2" Value="Inputs.Car.MatchingCarCo2.Value" ValueChanged="OnMatchingCo2Changed"
-                                       Format="0" Culture="Formats.Culture" Adornment="Adornment.End" AdornmentText="g/km" HideSpinButtons="true"
-                                       Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400" Disabled="Inputs.Car.NoMatchingCar.Value"
-                                       Error="@(Refused is CarCalculator.MatchingCarCo2Negative or CarCalculator.MatchingCarCo2Missing)" Refusal="@Refused" />
-                </RiverField>
             }
+            @if (Inputs.Car.Engine.Value.IsPlugInHybrid())
+            {
+                <div class="car__tick">
+                    <MudCheckBox T="bool" Value="Inputs.Car.FakeHybrid.Value" ValueChanged="OnFakeHybridChanged" Color="Color.Primary" Label="@L["FakeHybridLabel"]" />
+                    <OriginChip Origin="Inputs.Car.FakeHybrid.Origin" />
+                    <InfoBubble Label="@L["FakeHybridLabel"]">@L["FakeHybridHint"]</InfoBubble>
+                </div>
+                @if (Inputs.Car.FakeHybrid.Value)
+                {
+                    <div class="car__tick">
+                        <MudCheckBox T="bool" Value="Inputs.Car.NoMatchingCar.Value" ValueChanged="OnNoMatchingCarChanged" Color="Color.Primary" Label="@L["NoMatchingLabel"]" />
+                        <OriginChip Origin="Inputs.Car.NoMatchingCar.Origin" />
+                    </div>
+                }
+            }
+            @if (Inputs.Car.Engine.Value == CarEngine.NaturalGas)
+            {
+                <div class="car__tick">
+                    <MudCheckBox T="bool" Value="Inputs.Car.SmallNaturalGas.Value" ValueChanged="OnSmallNaturalGasChanged" Color="Color.Primary" Label="@L["SmallGasLabel"]" />
+                    <OriginChip Origin="Inputs.Car.SmallNaturalGas.Origin" />
+                </div>
+            }
+        </Disclosure>
+        <div class="car__fields">
             <RiverField Label="@L["CostsLabel"]" For="river-car-costs" Origin="Inputs.Car.YearlyCosts.Origin" Help="@L["CostsHint"]">
                 <RiverNumericField T="decimal" InputId="river-car-costs" Value="Inputs.Car.YearlyCosts.Value" ValueChanged="OnCostsChanged"
                                    Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
@@ -101,35 +138,6 @@
                                    Error="@(Refused == CarCalculator.ContributionNegative)" Refusal="@Refused" />
             </RiverField>
         </div>
-        @if (Inputs.Car.Engine.Value.EmitsCo2())
-        {
-            <div class="car__tick">
-                <MudCheckBox T="bool" Value="Inputs.Car.NoCo2Data.Value" ValueChanged="OnNoCo2DataChanged" Color="Color.Primary" Label="@L["NoCo2Label"]" />
-                <OriginChip Origin="Inputs.Car.NoCo2Data.Origin" />
-            </div>
-        }
-        @if (Inputs.Car.Engine.Value.IsPlugInHybrid())
-        {
-            <div class="car__tick">
-                <MudCheckBox T="bool" Value="Inputs.Car.FakeHybrid.Value" ValueChanged="OnFakeHybridChanged" Color="Color.Primary" Label="@L["FakeHybridLabel"]" />
-                <OriginChip Origin="Inputs.Car.FakeHybrid.Origin" />
-                <InfoBubble Label="@L["FakeHybridLabel"]">@L["FakeHybridHint"]</InfoBubble>
-            </div>
-            @if (Inputs.Car.FakeHybrid.Value)
-            {
-                <div class="car__tick">
-                    <MudCheckBox T="bool" Value="Inputs.Car.NoMatchingCar.Value" ValueChanged="OnNoMatchingCarChanged" Color="Color.Primary" Label="@L["NoMatchingLabel"]" />
-                    <OriginChip Origin="Inputs.Car.NoMatchingCar.Origin" />
-                </div>
-            }
-        }
-        @if (Inputs.Car.Engine.Value == CarEngine.NaturalGas)
-        {
-            <div class="car__tick">
-                <MudCheckBox T="bool" Value="Inputs.Car.SmallNaturalGas.Value" ValueChanged="OnSmallNaturalGasChanged" Color="Color.Primary" Label="@L["SmallGasLabel"]" />
-                <OriginChip Origin="Inputs.Car.SmallNaturalGas.Origin" />
-            </div>
-        }
         <div class="car__tick">
             <MudCheckBox T="bool" Value="Inputs.Car.CompanyPaysPrivateEnergy.Value" ValueChanged="OnPrivateEnergyChanged" Color="Color.Primary"
                          Label="@L[CarCardText.PrivateEnergy(Inputs.Car.Engine.Value)]" />
@@ -219,12 +227,14 @@
     private CarView? _view;
     private CarComparison? _comparison;
     private CarRules? _rules;
+    private CarSettingsView _settings = default!;
 
     protected override void OnParametersSet()
     {
         _view = Run.Year is { } year ? CarView.From(year, Inputs.Composition) : null;
         _comparison = CarComparison.From(Inputs, Run);
         _rules = CarRules.For(Inputs.IncomeYear);
+        _settings = CarSettingsView.From(Inputs);
     }
 
     private string MonthName(int month) => Formats.Month(Inputs.IncomeYear, month);

@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Localization;
+using Netto.Core.CompanyCar;
 using Netto.Core.DirectorPay;
 using Netto.Core.Rent;
 using Netto.Core.Simulation;
@@ -138,4 +139,65 @@ internal sealed record RentSettingsView(IReadOnlyList<SettingPhrase> Home, bool 
     // The rent's own refusals (negative, above the cap, beside an office allowance) are on a field in
     // sight.
     public static bool HomeHolds(string? error) => error is RentCalculator.CadastralIncomeNegative or RentCalculator.ShareLetOutOfRange;
+}
+
+// The company car's one disclosure, « Your car »: what the car is, as its papers say, its engine, its
+// catalogue value, its CO2, when it was first registered and when it was ordered or leased, what makes
+// a plug-in hybrid a fake one and whether a natural gas car is a small one. What the company pays for
+// it each year, the director's contribution and the private energy the company pays stay in sight.
+// NeedsFacts: no car counts without a catalogue value, so the disclosure opens by itself.
+internal sealed record CarSettingsView(IReadOnlyList<SettingPhrase> Car, bool NeedsFacts)
+{
+    public static CarSettingsView From(RiverInputs inputs)
+    {
+        var car = inputs.Car;
+        var engine = car.Engine.Value;
+
+        return new CarSettingsView(
+            [
+                SettingPhrase.Of($"Car_Engine_{engine}", car.Engine.Origin),
+                SettingPhrase.Of("Car_Catalogue", car.CatalogueValue.Origin, Formats.Euros(car.CatalogueValue.Value)),
+                .. Co2(car, engine),
+                SettingPhrase.Of("Car_Registered", car.FirstRegistration.Origin, MonthAndYear(car.FirstRegistration.Value)),
+                SettingPhrase.Of("Car_Acquired", car.Acquired.Origin, MonthAndYear(car.Acquired.Value)),
+                .. Hybrid(car, engine),
+                .. NaturalGas(car, engine),
+            ],
+            car.CatalogueValue.Value <= 0m);
+    }
+
+    // Every refusal of a field inside; the yearly costs and the contribution are in sight.
+    public static bool CarHolds(string? error) => error is CarCalculator.CatalogueValueNegative or CarCalculator.Co2Negative
+        or CarCalculator.Co2Missing or CarCalculator.MatchingCarCo2Negative or CarCalculator.MatchingCarCo2Missing
+        or CarCalculator.AcquiredAfterYear or CarCalculator.PlugInFuelCapped;
+
+    // Only an engine that burns a fuel has a CO2. A CO2 not given names no origin: the example's
+    // nothing is not a value to call an example.
+    private static IEnumerable<SettingPhrase> Co2(CarInputs car, CarEngine engine) => engine.EmitsCo2()
+        ? [car switch
+        {
+            { NoCo2Data.Value: true } => SettingPhrase.Of("Car_Co2_NoData", car.NoCo2Data.Origin),
+            { Co2.Value: > 0 } => SettingPhrase.Of("Car_Co2", car.Co2.Origin, Formats.Grams(car.Co2.Value)),
+            _ => SettingPhrase.Of("Car_Co2_NotGiven", InputOrigin.Yours),
+        }]
+        : [];
+
+    // A plug-in hybrid is a real one until the user says it is a fake one, which has its matching car's
+    // CO2, or none.
+    private static IEnumerable<SettingPhrase> Hybrid(CarInputs car, CarEngine engine) => engine.IsPlugInHybrid()
+        ? [car switch
+        {
+            { FakeHybrid.Value: false } => SettingPhrase.Of("Car_NotFakeHybrid", car.FakeHybrid.Origin),
+            { NoMatchingCar.Value: true } => SettingPhrase.Of("Car_FakeHybrid_NoMatching", car.FakeHybrid.Origin),
+            { MatchingCarCo2.Value: > 0 } => SettingPhrase.Of("Car_FakeHybrid", car.FakeHybrid.Origin, Formats.Grams(car.MatchingCarCo2.Value)),
+            _ => SettingPhrase.Of("Car_FakeHybrid_NotGiven", car.FakeHybrid.Origin),
+        }]
+        : [];
+
+    private static IEnumerable<SettingPhrase> NaturalGas(CarInputs car, CarEngine engine) => engine == CarEngine.NaturalGas
+        ? [SettingPhrase.Of(car.SmallNaturalGas.Value ? "Car_SmallGas" : "Car_NotSmallGas", car.SmallNaturalGas.Origin)]
+        : [];
+
+    // January 2026: a month begun counts whole, so the day does not matter.
+    private static string[] MonthAndYear(DateOnly date) => [Formats.Month(date.Year, date.Month), date.Year.ToString(Formats.Culture)];
 }

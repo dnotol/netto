@@ -50,6 +50,8 @@ public class RiverTextTests
 
     private static readonly ResourceManager RentCardResources = new("Netto.Web.Client.River.RentCard", typeof(RentCard).Assembly);
 
+    private static readonly ResourceManager CarCardResources = new("Netto.Web.Client.River.CompanyCar.CarCard", typeof(CarCard).Assembly);
+
     // The conditions of every lever the river shows, which the shared list words through one .resx.
     private static readonly IReadOnlyList<LeverCondition> LeverConditions =
     [
@@ -399,6 +401,32 @@ public class RiverTextTests
         var phrases = variations.SelectMany(inputs => RentSettingsView.From(inputs).Home);
 
         Missing(RentCardResources, phrases.Select(phrase => phrase.Key).Append("HomeTitle")).ShouldBeEmpty();
+    }
+
+    // Every way the line of « Your car » reads: each engine, its CO2 given, not given or none
+    // registered, a plug-in hybrid real or fake with or without a matching car, a natural gas car small
+    // or not, and the dates.
+    [Fact]
+    public void CarCardResx_everyPhraseOfItsSettingsLine_hasAText()
+    {
+        var example = RiverInputs.Example.WithCatalogueValue(45_000m).WithFirstRegistration(new DateOnly(2021, 3, 1));
+        RiverInputs[] variations =
+        [
+            example,
+            .. Enum.GetValues<CarEngine>().SelectMany(engine => new[]
+            {
+                example.WithCarEngine(engine),
+                example.WithCarEngine(engine).WithCarCo2(118),
+                example.WithCarEngine(engine).WithCarCo2(118).WithNoCo2Data(true),
+                example.WithCarEngine(engine).WithCarCo2(118).WithFakeHybrid(true).WithMatchingCarCo2(112),
+                example.WithCarEngine(engine).WithCarCo2(118).WithFakeHybrid(true).WithNoMatchingCar(true),
+                example.WithCarEngine(engine).WithCarCo2(118).WithFakeHybrid(true),
+                example.WithCarEngine(engine).WithCarCo2(118).WithSmallNaturalGas(true),
+            }),
+        ];
+        var phrases = variations.SelectMany(inputs => CarSettingsView.From(inputs).Car);
+
+        Missing(CarCardResources, phrases.Select(phrase => phrase.Key).Append("CarTitle")).ShouldBeEmpty();
     }
 
     [Fact]

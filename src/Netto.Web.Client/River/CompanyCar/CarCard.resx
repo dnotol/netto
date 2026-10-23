@@ -231,4 +231,70 @@
   <data name="Deduction_Rate" xml:space="preserve">
     <value>Of its {0} of costs, the company deducts the {1} equal to your benefit taxed and your contribution in full, and the rest at {2}, the rate its order date, its engine and its CO2 give: {3} in all. The {4} it cannot deduct are added back to its taxable income.</value>
   </data>
+  <data name="CarTitle" xml:space="preserve">
+    <value>Your car</value>
+  </data>
+  <data name="Car_Engine_Electric" xml:space="preserve">
+    <value>An electric car</value>
+  </data>
+  <data name="Car_Engine_Petrol" xml:space="preserve">
+    <value>A petrol car</value>
+  </data>
+  <data name="Car_Engine_Diesel" xml:space="preserve">
+    <value>A diesel car</value>
+  </data>
+  <data name="Car_Engine_Lpg" xml:space="preserve">
+    <value>An LPG car</value>
+  </data>
+  <data name="Car_Engine_NaturalGas" xml:space="preserve">
+    <value>A natural gas car</value>
+  </data>
+  <data name="Car_Engine_PetrolHybrid" xml:space="preserve">
+    <value>A petrol hybrid</value>
+  </data>
+  <data name="Car_Engine_DieselHybrid" xml:space="preserve">
+    <value>A diesel hybrid</value>
+  </data>
+  <data name="Car_Engine_PetrolPlugInHybrid" xml:space="preserve">
+    <value>A petrol plug-in hybrid</value>
+  </data>
+  <data name="Car_Engine_DieselPlugInHybrid" xml:space="preserve">
+    <value>A diesel plug-in hybrid</value>
+  </data>
+  <data name="Car_Catalogue" xml:space="preserve">
+    <value>catalogue value {0}</value>
+  </data>
+  <data name="Car_Co2" xml:space="preserve">
+    <value>CO2 {0}</value>
+  </data>
+  <data name="Car_Co2_NoData" xml:space="preserve">
+    <value>no CO2 registered</value>
+  </data>
+  <data name="Car_Co2_NotGiven" xml:space="preserve">
+    <value>CO2 not given</value>
+  </data>
+  <data name="Car_Registered" xml:space="preserve">
+    <value>first registered {0} {1}</value>
+  </data>
+  <data name="Car_Acquired" xml:space="preserve">
+    <value>ordered or leased {0} {1}</value>
+  </data>
+  <data name="Car_NotFakeHybrid" xml:space="preserve">
+    <value>not a fake hybrid</value>
+  </data>
+  <data name="Car_FakeHybrid" xml:space="preserve">
+    <value>a fake hybrid, its matching car's CO2 {0}</value>
+  </data>
+  <data name="Car_FakeHybrid_NoMatching" xml:space="preserve">
+    <value>a fake hybrid with no matching car</value>
+  </data>
+  <data name="Car_FakeHybrid_NotGiven" xml:space="preserve">
+    <value>a fake hybrid, its matching car's CO2 not given</value>
+  </data>
+  <data name="Car_SmallGas" xml:space="preserve">
+    <value>under 12 fiscal horsepower</value>
+  </data>
+  <data name="Car_NotSmallGas" xml:space="preserve">
+    <value>12 fiscal horsepower or more</value>
+  </data>
 </root>

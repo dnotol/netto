@@ -1,3 +1,4 @@
+using Netto.Core.CompanyCar;
 using Netto.Core.DirectorPay;
 using Netto.Core.PersonalTax;
 using Netto.Core.Rent;
@@ -241,6 +242,140 @@ public class SettingsViewsTests
     public void HomeHolds_refusal_opensTheDisclosureHoldingItsField(string? error, bool home)
     {
         RentSettingsView.HomeHolds(error).ShouldBe(home);
+    }
+
+    // The company car's disclosure, « Your car »: what the car is, as its papers say. The yearly costs,
+    // the contribution and the private energy the company pays stay in sight. On the example the car
+    // is assumed new and electric, with no catalogue value yet.
+    [Fact]
+    public void Car_example_statesTheEngineAsADefaultAndTheValueAndDatesAsExamples()
+    {
+        Phrases(CarSettingsView.From(RiverInputs.Example).Car).ShouldBe(
+        [
+            ("Car_Engine_Electric", "", InputOrigin.Default),
+            ("Car_Catalogue", "€0.00", InputOrigin.Example),
+            ("Car_Registered", "January|2026", InputOrigin.Example),
+            ("Car_Acquired", "January|2026", InputOrigin.Example),
+        ]);
+    }
+
+    [Fact]
+    public void Car_factsGiven_stateThemWithNoOriginAndTheCo2AfterTheValue()
+    {
+        var inputs = RiverInputs.Example.WithCarEngine(CarEngine.Petrol).WithCatalogueValue(45_000m).WithCarCo2(118)
+            .WithFirstRegistration(new DateOnly(2021, 3, 1)).WithCarAcquired(new DateOnly(2020, 9, 1));
+
+        Phrases(CarSettingsView.From(inputs).Car).ShouldBe(
+        [
+            ("Car_Engine_Petrol", "", null),
+            ("Car_Catalogue", "€45,000.00", null),
+            ("Car_Co2", "118 g/km", null),
+            ("Car_Registered", "March|2021", null),
+            ("Car_Acquired", "September|2020", null),
+        ]);
+    }
+
+    // An electric car emits none: a CO2 kept from another engine is not stated.
+    [Fact]
+    public void Car_electricWithACo2Kept_statesNoCo2()
+    {
+        var inputs = RiverInputs.Example.WithCarCo2(118);
+
+        Phrases(CarSettingsView.From(inputs).Car).Select(phrase => phrase.Key).ShouldNotContain("Car_Co2");
+    }
+
+    [Fact]
+    public void Car_combustionWithoutACo2_saysItIsNotGiven()
+    {
+        var inputs = RiverInputs.Example.WithCarEngine(CarEngine.Diesel);
+
+        Phrases(CarSettingsView.From(inputs).Car)[2].ShouldBe(("Car_Co2_NotGiven", "", null));
+    }
+
+    [Fact]
+    public void Car_combustionWithNoCo2Registered_saysSo()
+    {
+        var inputs = RiverInputs.Example.WithCarEngine(CarEngine.Petrol).WithCarCo2(118).WithNoCo2Data(true);
+
+        Phrases(CarSettingsView.From(inputs).Car)[2].ShouldBe(("Car_Co2_NoData", "", null));
+    }
+
+    [Fact]
+    public void Car_plugInHybridNotSaidToBeFake_statesItAsADefault()
+    {
+        var inputs = RiverInputs.Example.WithCarEngine(CarEngine.PetrolPlugInHybrid).WithCarCo2(30);
+
+        Phrases(CarSettingsView.From(inputs).Car)[^1].ShouldBe(("Car_NotFakeHybrid", "", InputOrigin.Default));
+    }
+
+    [Fact]
+    public void Car_fakeHybridWithAMatchingCar_statesItsCo2()
+    {
+        var inputs = RiverInputs.Example.WithCarEngine(CarEngine.DieselPlugInHybrid).WithCarCo2(30).WithFakeHybrid(true).WithMatchingCarCo2(112);
+
+        Phrases(CarSettingsView.From(inputs).Car)[^1].ShouldBe(("Car_FakeHybrid", "112 g/km", null));
+    }
+
+    [Fact]
+    public void Car_fakeHybridWithNoMatchingCar_saysSo()
+    {
+        var inputs = RiverInputs.Example.WithCarEngine(CarEngine.PetrolPlugInHybrid).WithCarCo2(30).WithFakeHybrid(true).WithNoMatchingCar(true);
+
+        Phrases(CarSettingsView.From(inputs).Car)[^1].ShouldBe(("Car_FakeHybrid_NoMatching", "", null));
+    }
+
+    [Fact]
+    public void Car_fakeHybridWithoutItsMatchingCarsCo2_saysItIsNotGiven()
+    {
+        var inputs = RiverInputs.Example.WithCarEngine(CarEngine.PetrolPlugInHybrid).WithCarCo2(30).WithFakeHybrid(true);
+
+        Phrases(CarSettingsView.From(inputs).Car)[^1].ShouldBe(("Car_FakeHybrid_NotGiven", "", null));
+    }
+
+    [Fact]
+    public void Car_hybridWhichIsNotPlugIn_statesNothingAboutFakeHybrids()
+    {
+        var inputs = RiverInputs.Example.WithCarEngine(CarEngine.PetrolHybrid).WithCarCo2(100);
+
+        Phrases(CarSettingsView.From(inputs).Car).Select(phrase => phrase.Key).ShouldNotContain(key => key.Contains("FakeHybrid"));
+    }
+
+    [Fact]
+    public void Car_naturalGas_statesTheHorsepowerAsADefaultUntilSaid()
+    {
+        var inputs = RiverInputs.Example.WithCarEngine(CarEngine.NaturalGas).WithCarCo2(100);
+
+        (Phrases(CarSettingsView.From(inputs).Car)[^1], Phrases(CarSettingsView.From(inputs.WithSmallNaturalGas(true)).Car)[^1]).ShouldBe(
+            (("Car_NotSmallGas", "", InputOrigin.Default), ("Car_SmallGas", "", null)));
+    }
+
+    // No car counts until it has a catalogue value: the facts open by themselves when the card is
+    // first drawn.
+    [Theory]
+    [InlineData(0, true)]
+    [InlineData(45_000, false)]
+    public void NeedsFacts_catalogueValue_isTrueWhileNoneIsGiven(decimal catalogueValue, bool needed)
+    {
+        CarSettingsView.From(RiverInputs.Example.WithCatalogueValue(catalogueValue)).NeedsFacts.ShouldBe(needed);
+    }
+
+    // The car's facts hold the refusals of their fields; its yearly costs and its contribution are in
+    // sight.
+    [Theory]
+    [InlineData(CarCalculator.CatalogueValueNegative, true)]
+    [InlineData(CarCalculator.Co2Negative, true)]
+    [InlineData(CarCalculator.Co2Missing, true)]
+    [InlineData(CarCalculator.MatchingCarCo2Negative, true)]
+    [InlineData(CarCalculator.MatchingCarCo2Missing, true)]
+    [InlineData(CarCalculator.AcquiredAfterYear, true)]
+    [InlineData(CarCalculator.PlugInFuelCapped, true)]
+    [InlineData(CarCalculator.YearlyCostsNegative, false)]
+    [InlineData(CarCalculator.ContributionNegative, false)]
+    [InlineData(GrossToNet.GrossPayNegative, false)]
+    [InlineData(null, false)]
+    public void CarHolds_refusal_opensTheDisclosureHoldingItsField(string? error, bool car)
+    {
+        CarSettingsView.CarHolds(error).ShouldBe(car);
     }
 
     private static DirectorPaySettingsView DirectorPaySettings(RiverInputs inputs) => DirectorPaySettingsView.From(inputs, inputs.Run());
