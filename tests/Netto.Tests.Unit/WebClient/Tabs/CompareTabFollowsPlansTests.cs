@@ -11,6 +11,7 @@ using Netto.Web.Client.River;
 using Netto.Web.Client.Tabs;
 using Shouldly;
 using static Netto.Tests.WebClient.River.RiverRendering;
+using static Netto.Tests.WebClient.River.PlanFixtures;
 
 namespace Netto.Tests.WebClient.Tabs;
 
@@ -72,14 +73,6 @@ public class CompareTabFollowsPlansTests
         (listening, Listeners(plans)).ShouldBe((1, 0));
     }
 
-    private static SavedPlans Saved(params RiverInputs[] inputs)
-    {
-        var plans = new SavedPlans(new BrowserStorage());
-        foreach (var plan in inputs)
-            plans.Save(plan, number => $"Plan {number}");
-        return plans;
-    }
-
     private static int Listeners(SavedPlans plans) =>
         ((Delegate?)typeof(SavedPlans).GetField("Changed", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(plans))?.GetInvocationList().Length ?? 0;
 
@@ -107,22 +100,5 @@ public class CompareTabFollowsPlansTests
             await output.QuiescenceTask;
             return (before, WebUtility.HtmlDecode(output.ToHtmlString()), Listeners(plans));
         });
-    }
-
-    private sealed class NoJavaScript : IJSRuntime
-    {
-        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args) =>
-            throw new InvalidOperationException($"A static render called JavaScript: {identifier}.");
-
-        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object?[]? args) =>
-            throw new InvalidOperationException($"A static render called JavaScript: {identifier}.");
-    }
-
-    private sealed class NoNavigation : NavigationManager
-    {
-        public NoNavigation() => Initialize("http://localhost/", "http://localhost/plan/compare");
-
-        protected override void NavigateToCore(string uri, NavigationOptions options) =>
-            throw new InvalidOperationException($"A static render navigated to {uri}.");
     }
 }

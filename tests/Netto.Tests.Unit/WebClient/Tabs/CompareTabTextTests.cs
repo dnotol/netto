@@ -4,6 +4,8 @@ using Netto.Web.Client;
 using Netto.Web.Client.River;
 using Netto.Web.Client.Tabs;
 using Shouldly;
+using static Netto.Tests.WebClient.River.RiverRendering;
+using static Netto.Tests.WebClient.River.PlanFixtures;
 
 namespace Netto.Tests.WebClient.Tabs;
 
@@ -23,10 +25,7 @@ public class CompareTabTextTests
     [Fact]
     public void CompareTabResx_everyGroupAndRowOfTheTable_hasAText()
     {
-        var plans = new SavedPlans(new MemoryStorage());
-        plans.Save(RiverInputs.Example, number => $"Plan {number}");
-        plans.Save(EveryRow, number => $"Plan {number}");
-        var groups = CompareView.Of(plans).Groups;
+        var groups = CompareView.Of(Saved(RiverInputs.Example, EveryRow)).Groups;
 
         var keys = groups.Select(group => CompareTabText.Group(group.Key)).Concat(groups.SelectMany(group => group.Rows).Select(row => CompareTabText.Row(row.Key)));
 
@@ -100,13 +99,4 @@ public class CompareTabTextTests
 
     private static string Format(string key, params object[] arguments) =>
         string.Format(CultureInfo.InvariantCulture, Text(key) ?? "", arguments);
-
-    private sealed class MemoryStorage : IBrowserStorage
-    {
-        private readonly Dictionary<string, string> _stored = [];
-
-        public string? Get(string key) => _stored.GetValueOrDefault(key);
-
-        public void Set(string key, string value) => _stored[key] = value;
-    }
 }

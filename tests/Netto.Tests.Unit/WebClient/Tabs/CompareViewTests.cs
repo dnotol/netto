@@ -3,6 +3,8 @@ using Netto.Web.Client;
 using Netto.Web.Client.River;
 using Netto.Web.Client.Tabs;
 using Shouldly;
+using static Netto.Tests.WebClient.River.RiverRendering;
+using static Netto.Tests.WebClient.River.PlanFixtures;
 
 namespace Netto.Tests.WebClient.Tabs;
 
@@ -18,7 +20,7 @@ public class CompareViewTests
     [Fact]
     public void Of_noPlanSaved_isNoPlan()
     {
-        var view = CompareView.Of(new SavedPlans(new MemoryStorage()));
+        var view = CompareView.Of(new SavedPlans(new BrowserStorage()));
 
         view.ShouldSatisfyAllConditions(
             () => (view.State, view.Plan, view.Against, view.CouldNotRead).ShouldBe((CompareState.NoPlan, null, null, false)),
@@ -29,7 +31,7 @@ public class CompareViewTests
     [Fact]
     public void Of_storageCouldNotBeRead_isNoPlanAndSaysSo()
     {
-        var storage = new MemoryStorage();
+        var storage = new BrowserStorage();
         storage.Set(PlanStorage.Key, "{ broken");
 
         var view = CompareView.Of(new SavedPlans(storage));
@@ -307,31 +309,14 @@ public class CompareViewTests
         view.State.ShouldBe(CompareState.Compared);
     }
 
-    private static SavedPlans Saved(params RiverInputs[] inputs)
-    {
-        var plans = new SavedPlans(new MemoryStorage());
-        foreach (var plan in inputs)
-            plans.Save(plan, number => $"Plan {number}");
-        return plans;
-    }
-
     // The plan at that place, as a later version of Netto would find it: stored with a field this version
     // does not know, so it is kept as it was and cannot be read. The plans are read again from the storage.
     private static SavedPlans Break(SavedPlans plans, int index)
     {
-        var storage = new MemoryStorage();
+        var storage = new BrowserStorage();
         var book = JsonNode.Parse(plans.Export())!;
         book["plans"]![index]!["inputs"]!["carLease"] = 850;
         storage.Set(PlanStorage.Key, book.ToJsonString());
         return new SavedPlans(storage);
-    }
-
-    private sealed class MemoryStorage : IBrowserStorage
-    {
-        private readonly Dictionary<string, string> _stored = [];
-
-        public string? Get(string key) => _stored.GetValueOrDefault(key);
-
-        public void Set(string key, string value) => _stored[key] = value;
     }
 }

@@ -2,6 +2,8 @@ using Netto.Web.Client;
 using Netto.Web.Client.River;
 using Netto.Web.Client.Tabs;
 using Shouldly;
+using static Netto.Tests.WebClient.River.RiverRendering;
+using static Netto.Tests.WebClient.River.PlanFixtures;
 
 namespace Netto.Tests.WebClient.Tabs;
 
@@ -73,29 +75,6 @@ public class PocketPanelTests
     [Fact]
     public void Pocket_planTheEngineRefuses_isNone()
     {
-        var plans = new SavedPlans(new MemoryStorage());
-        plans.Save(RiverInputs.Example, number => $"Plan {number}");
-        plans.Save(RiverInputs.Example.WithReserve(-1m), number => $"Plan {number}");
-
-        CompareView.Of(plans).Pocket.ShouldBeNull();
-    }
-
-    private static CompareView Compare(RiverInputs plan, RiverInputs against)
-    {
-        var plans = new SavedPlans(new MemoryStorage());
-        plans.Save(plan, number => $"Plan {number}");
-        plans.Save(against, number => $"Plan {number}");
-        var view = CompareView.Of(plans);
-        view.State.ShouldBe(CompareState.Compared);
-        return view;
-    }
-
-    private sealed class MemoryStorage : IBrowserStorage
-    {
-        private readonly Dictionary<string, string> _stored = [];
-
-        public string? Get(string key) => _stored.GetValueOrDefault(key);
-
-        public void Set(string key, string value) => _stored[key] = value;
+        CompareView.Of(Saved(RiverInputs.Example, RiverInputs.Example.WithReserve(-1m))).Pocket.ShouldBeNull();
     }
 }

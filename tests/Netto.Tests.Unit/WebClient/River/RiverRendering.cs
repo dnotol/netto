@@ -50,7 +50,7 @@ internal static class RiverRendering
 
     // A static render runs no JavaScript: a component that asks for the runtime gets this, and one that
     // calls it during the render fails the test.
-    private sealed class NoJavaScript : IJSRuntime
+    internal sealed class NoJavaScript : IJSRuntime
     {
         public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args) =>
             throw new InvalidOperationException($"A static render called JavaScript: {identifier}.");
@@ -60,7 +60,7 @@ internal static class RiverRendering
     }
 
     // MudBlazor's chips ask for the navigation manager; a static render goes nowhere.
-    private sealed class NoNavigation : NavigationManager
+    internal sealed class NoNavigation : NavigationManager
     {
         public NoNavigation() => Initialize("http://localhost/", "http://localhost/plan");
 

@@ -4,6 +4,8 @@ using Netto.Web.Client;
 using Netto.Web.Client.River;
 using Netto.Web.Client.Tabs;
 using Shouldly;
+using static Netto.Tests.WebClient.River.RiverRendering;
+using static Netto.Tests.WebClient.River.PlanFixtures;
 
 namespace Netto.Tests.WebClient.Tabs;
 
@@ -211,8 +213,6 @@ public class CompareRowsTests
         Rows(view).Select(row => row.Key).ShouldNotContain("reach");
     }
 
-
-
     // The levers the company pays besides the pay come off its profit before the split: a plan without one
     // has none of it, which the engine counts as nothing.
     [Fact]
@@ -374,23 +374,4 @@ public class CompareRowsTests
     private static CompareRow Row(CompareView view, string key) => Rows(view).Single(row => row.Key == key);
 
     private static IEnumerable<CompareRow> Rows(CompareView view) => view.Groups.SelectMany(group => group.Rows);
-
-    private static CompareView Compare(RiverInputs plan, RiverInputs against)
-    {
-        var plans = new SavedPlans(new MemoryStorage());
-        plans.Save(plan, number => $"Plan {number}");
-        plans.Save(against, number => $"Plan {number}");
-        var view = CompareView.Of(plans);
-        view.State.ShouldBe(CompareState.Compared);
-        return view;
-    }
-
-    private sealed class MemoryStorage : IBrowserStorage
-    {
-        private readonly Dictionary<string, string> _stored = [];
-
-        public string? Get(string key) => _stored.GetValueOrDefault(key);
-
-        public void Set(string key, string value) => _stored[key] = value;
-    }
 }

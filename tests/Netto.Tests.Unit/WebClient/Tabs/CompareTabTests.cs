@@ -7,6 +7,7 @@ using Netto.Web.Client.River;
 using Netto.Web.Client.Tabs;
 using Shouldly;
 using static Netto.Tests.WebClient.River.RiverRendering;
+using static Netto.Tests.WebClient.River.PlanFixtures;
 
 namespace Netto.Tests.WebClient.Tabs;
 
@@ -267,14 +268,6 @@ public class CompareTabTests
         var html = await RenderTabAsync(new SavedPlans(storage));
 
         (html.Contains("1 saved plan cannot be read by this version of Netto and is left out."), html.Contains("<option value=\"" + plans.Plans[2].Id)).ShouldBe((true, false));
-    }
-
-    private static SavedPlans Saved(params RiverInputs[] inputs)
-    {
-        var plans = new SavedPlans(new BrowserStorage());
-        foreach (var plan in inputs)
-            plans.Save(plan, number => $"Plan {number}");
-        return plans;
     }
 
     private static async Task<string> RenderTabAsync(SavedPlans plans) =>
