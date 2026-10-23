@@ -77,6 +77,94 @@ public class FoldsTests
             .ShouldBe((false, true, true, true));
     }
 
+    // A card opened by the page, not by the viewer: a lever just added, a refusal that must be seen.
+    // It is open over the card's default, for the session.
+    [Fact]
+    public void Reveal_foldFoldedByDefault_isOpen()
+    {
+        var folds = new Folds(new BrowserStorage());
+
+        folds.Reveal("rent");
+
+        folds.IsOpen("rent", false).ShouldBeTrue();
+    }
+
+    [Fact]
+    public void Reveal_foldTheViewerFolded_isOpen()
+    {
+        var folds = new Folds(new BrowserStorage());
+        folds.Set("split", false);
+
+        folds.Reveal("split");
+
+        folds.IsOpen("split", true).ShouldBeTrue();
+    }
+
+    // A reveal is not the viewer's preference: a reload, a new Folds over the same storage, forgets it.
+    [Fact]
+    public void Reveal_isNotRememberedAfterAReload()
+    {
+        var storage = new BrowserStorage();
+        var folds = new Folds(storage);
+        folds.Reveal("rent");
+        folds.Set("split", false);
+
+        var reloaded = new Folds(storage);
+
+        (reloaded.IsOpen("rent", false), reloaded.IsOpen("split", true)).ShouldBe((false, false));
+        storage.Get(Folds.StorageKey).ShouldBe("split=0");
+    }
+
+    [Fact]
+    public void Reveal_oneFold_leavesTheOthersAtTheirState()
+    {
+        var folds = new Folds(new BrowserStorage());
+        folds.Set("split", false);
+
+        folds.Reveal("rent");
+
+        (folds.IsOpen("split", true), folds.IsOpen("car", false), folds.IsOpen("dividend", true)).ShouldBe((false, false, true));
+    }
+
+    // The viewer folds a revealed card: their word wins, and is remembered.
+    [Fact]
+    public void Set_foldedAfterAReveal_isFolded()
+    {
+        var storage = new BrowserStorage();
+        var folds = new Folds(storage);
+        folds.Reveal("rent");
+
+        folds.Set("rent", false);
+
+        (folds.IsOpen("rent", true), new Folds(storage).IsOpen("rent", true)).ShouldBe((false, false));
+    }
+
+    // The viewer's open replaces the reveal and is remembered, as any open of theirs.
+    [Fact]
+    public void Set_openedAfterAReveal_staysOpenAfterAReload()
+    {
+        var storage = new BrowserStorage();
+        var folds = new Folds(storage);
+        folds.Reveal("rent");
+
+        folds.Set("rent", true);
+
+        new Folds(storage).IsOpen("rent", false).ShouldBeTrue();
+    }
+
+    // Folded by the viewer, then revealed again (a refusal back, a lever added again): open again.
+    [Fact]
+    public void Reveal_afterTheViewerFoldedARevealedFold_opensItAgain()
+    {
+        var folds = new Folds(new BrowserStorage());
+        folds.Reveal("rent");
+        folds.Set("rent", false);
+
+        folds.Reveal("rent");
+
+        folds.IsOpen("rent", false).ShouldBeTrue();
+    }
+
     private sealed class BrowserStorage : IBrowserStorage
     {
         private readonly Dictionary<string, string> _stored = [];
