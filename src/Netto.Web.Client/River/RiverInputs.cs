@@ -162,14 +162,16 @@ public sealed record RiverInputs(
     public RiverInputs WithRoyaltyFollowingPay() => this with { Copyright = Copyright with { FollowsPay = Yours(true) } };
 
     // A royalty that followed the pay is fixed at what it came to there, the user's; while the river is
-    // refused, at the amount given before. A fixed royalty stays as it is.
+    // refused there is none it came to, and the amount stays as it was, with its own origin, the
+    // example's nothing still the example's. A fixed royalty stays as it is.
     public RiverInputs WithRoyaltyFixed()
     {
         if (!Copyright.FollowsPay.Value)
             return this;
 
-        var came = InPlan(OptionalModule.Copyright) && Run().Year is { } year ? year.Copyright.Royalty : Copyright.Royalty.Value;
-        return WithRoyalty(came);
+        return InPlan(OptionalModule.Copyright) && Run().Year is { } year
+            ? WithRoyalty(year.Copyright.Royalty)
+            : this with { Copyright = Copyright with { FollowsPay = Yours(false) } };
     }
 
     public RiverInputs WithAverageWithinCap(bool within) => this with { Copyright = Copyright with { AverageWithinCap = Yours(within) } };

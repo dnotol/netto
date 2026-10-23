@@ -913,13 +913,14 @@ public class RiverInputsTests
         inputs.WithRoyaltyFixed().ShouldBe(inputs);
     }
 
-    // While the river is refused there is no royalty it came to: the amount given stays, the user's.
+    // While the river is refused there is no royalty it came to: the amount stays as it was, with its own
+    // origin, the example's nothing still the example's.
     [Fact]
-    public void WithRoyaltyFixed_riverRefused_keepsTheAmountGivenAsTheUsers()
+    public void WithRoyaltyFixed_riverRefused_keepsTheAmountWithItsOrigin()
     {
         var copyright = Following(RiverInputs.Example).WithReserve(-1m).WithRoyaltyFixed().Copyright;
 
-        (copyright.FollowsPay, copyright.Royalty).ShouldBe((new Input<bool>(false, InputOrigin.Yours), new Input<decimal>(0m, InputOrigin.Yours)));
+        (copyright.FollowsPay, copyright.Royalty).ShouldBe((new Input<bool>(false, InputOrigin.Yours), new Input<decimal>(0m, InputOrigin.Example)));
     }
 
     // At 40,000 of pay, 18.75% of the envelope is 9,230.76.
