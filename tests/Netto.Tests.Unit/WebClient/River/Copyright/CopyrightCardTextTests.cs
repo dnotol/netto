@@ -7,11 +7,13 @@ using Shouldly;
 
 namespace Netto.Tests.WebClient.River.Copyright;
 
-// The copyright card builds resource keys from the royalty and what it compares. A key without a text
-// in its .resx would show on screen as the key itself.
+// The copyright card builds resource keys from the royalty, what it compares and the lines it draws. A key
+// without a text in its .resx would show on screen as the key itself.
 public class CopyrightCardTextTests
 {
     private static readonly ResourceManager Resources = new("Netto.Web.Client.River.Copyright.CopyrightCard", typeof(CopyrightCard).Assembly);
+
+    private static readonly CopyrightRules Rules = CopyrightRules.IncomeYear2026;
 
     [Fact]
     public void CopyrightCardResx_everyLimitThatSetsThePartWithin_hasAText()
@@ -68,23 +70,21 @@ public class CopyrightCardTextTests
         Missing(["SummaryNoRoyalty", "Summary", "Summary_AsPay", "Summary_AllAsPay"]).ShouldBeEmpty();
     }
 
-    // With an attestation the card says the flat-rate costs it takes; without one, that the 15% is on the
-    // whole royalty.
+    // Figures with their labels: what reaches the pocket after the tax apart, then what is taxed as pay
+    // once there is some, or all of it taxed as pay.
     [Theory]
-    [InlineData(true, "FlatRateCosts")]
-    [InlineData(false, "OnTheGross")]
-    public void Costs_royaltyWithinTheLimits_saysWhetherTheFlatRateCostsCameOff(bool attestation, string key)
+    [InlineData("SummaryNoRoyalty", "No royalty yet")]
+    [InlineData("Summary", "€8,000.00 to your pocket")]
+    [InlineData("Summary_AsPay", "€8,000.00 to your pocket · €2,000.00 taxed as your pay")]
+    [InlineData("Summary_AllAsPay", "€2,000.00 taxed as your pay")]
+    public void Summary_eachWay_isItsFiguresWithTheirLabels(string key, string expected)
     {
-        var inputs = RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithRoyalty(10_000m).WithAttestation(attestation);
-
-        var text = CopyrightCardText.Costs(CopyrightView.From(inputs.Run().Year!).Result);
-
-        (text, Missing([text]).Any()).ShouldBe((key, false));
+        string.Format(CultureInfo.InvariantCulture, Resources.GetString(key, CultureInfo.InvariantCulture) ?? "", "€8,000.00", "€2,000.00").ShouldBe(expected);
     }
 
     // What the royalty leaves against the plan without it, each way it can fall.
     [Fact]
-    public void CopyrightCardResx_everyGain_hasAText()
+    public void CopyrightCardResx_everyDifferenceLine_hasALabel()
     {
         var comparisons = new[]
         {
@@ -92,8 +92,26 @@ public class CopyrightCardTextTests
             new CopyrightComparison(40_000m, 40_000m, 0m, 0m, 0m, 0m),
         };
 
-        comparisons.Select(CopyrightCardText.Gain).ShouldBe(["Gain_More", "Gain_Less", "Gain_None"]);
+        comparisons.Select(CopyrightCardText.Gain).ShouldBe(["Figure_Gain_More", "Figure_Gain_Less", "Figure_Gain_None"]);
         Missing(comparisons.Select(CopyrightCardText.Gain)).ShouldBeEmpty();
+    }
+
+    // Every line the royalty's figures draw, and what its bubble says, on royalties that take each of them:
+    // within its limits, beyond them, with an attestation, all taxed as pay; and the plan with it and
+    // without it.
+    [Fact]
+    public void CopyrightCardResx_everyLineOfTheFiguresAndItsBubble_hasAText()
+    {
+        CopyrightRoyalty[] royalties =
+        [
+            new(10_000m), new(20_000m), new(10_000m) { HoldsAttestation = true }, new(10_000m) { AverageWithinCap = false },
+        ];
+        var comparison = new CopyrightComparison(40_000m, 38_000m, 20_000m, 18_000m, 10_000m, 14_000m);
+        var lines = royalties.SelectMany(royalty => CopyrightFigures.Royalty(CopyrightCalculator.Compute(Rules, royalty, 30_000m).Value.ShouldNotBeNull(), Rules))
+            .Concat(CopyrightFigures.With(comparison)).Concat(CopyrightFigures.Without(comparison)).Concat(CopyrightFigures.Difference(comparison))
+            .ToList();
+
+        Missing(lines.Select(line => line.Key).Concat(lines.Select(line => line.Help).OfType<string>()).Distinct()).ShouldBeEmpty();
     }
 
     // The words the card says whatever the royalty.
@@ -102,11 +120,28 @@ public class CopyrightCardTextTests
     {
         string[] keys =
         [
-            "Title", "Hint", "Waiting", "Scope", "AverageLabel", "AverageHint", "AttestationLabel", "AttestationHint", "CreativeShareLabel", "CreativeShareHint", "NoRoyaltyYet",
-            "TaxedApart", "TaxedAsPay", "Readings", "ComparisonTitle", "WithRoyalty", "WithoutRoyalty", "DetailsLabel", "SourcesTitle", "Remove",
+            "Title", "Hint", "Waiting", "AverageLabel", "AverageHint", "AttestationLabel", "AttestationHint", "CreativeShareLabel", "CreativeShareHint", "NoRoyaltyYet",
+            "Readings", "WithTitle", "WithoutTitle", "DetailsLabel", "SourcesTitle", "Remove",
         ];
 
         Missing(keys).ShouldBeEmpty();
+    }
+
+    // What a figure cannot say, kept as a sentence in sight, says it in few words: which limit set the
+    // part within them in twelve at most, the rest in fifteen.
+    [Theory]
+    [InlineData("Waiting", 15)]
+    [InlineData("NoRoyaltyYet", 15)]
+    [InlineData("Limits_None", 12)]
+    [InlineData("Limits_Relative", 12)]
+    [InlineData("Limits_Cap", 12)]
+    [InlineData("Limits_Average", 12)]
+    public void CopyrightCardResx_sentenceKeptInSight_isShort(string key, int words)
+    {
+        var sentence = string.Format(CultureInfo.InvariantCulture, Resources.GetString(key, CultureInfo.InvariantCulture) ?? "",
+            "€30,000.00", "€24,000.00", "€24,000.00", "€77,220.00", "€6,000.00", 2026);
+
+        sentence.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length.ShouldBeInRange(1, words);
     }
 
     // The line of « Your copyright situation »: the statuses as assumed and as said, and the share

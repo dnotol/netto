@@ -1,5 +1,4 @@
-.copyright__waiting,
-.copyright__scope {
+.copyright__waiting {
     margin: 0;
     color: var(--netto-text-muted);
     line-height: 1.55;
@@ -13,23 +12,17 @@
     gap: 0.25rem 0.5rem;
 }
 
-/* How the royalty is taxed, consequences shown where they start: a quiet rule on the left, as the
-   car's. */
-.copyright__taxed {
-    display: grid;
-    gap: 0.4rem;
-    padding-left: 0.75rem;
-    border-left: 2px solid var(--netto-rule);
-}
-
-.copyright__line {
+/* What a figure cannot say, under the lines it is about: which limit set the part within, or the royalty
+   still to come from the split. */
+.copyright__note {
     margin: 0;
     color: var(--netto-text-muted);
     font-size: 0.9rem;
     line-height: 1.55;
 }
 
-/* Netto's readings, a caveat that changes figures: in sight, in the text's own colour. */
+/* Netto's readings, a caveat that changes figures, in the details above the sources, in the text's own
+   colour. */
 .copyright__reading {
     margin: 0;
     color: var(--netto-text);
@@ -58,8 +51,9 @@
     font-weight: 600;
 }
 
-.copyright__gain {
-    color: var(--netto-text);
+/* What the royalty leaves in the pocket more or less, apart from the plan without it above. */
+.copyright__difference {
+    margin-top: 0.5rem;
     font-weight: 500;
 }
 

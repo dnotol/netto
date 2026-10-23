@@ -11,13 +11,15 @@
    unless they say otherwise, whether they hold an attestation du travail des arts for these works, none
    unless they say so, and the share of their working time spent creating, which a royalty that
    follows the pay and the moves read, none until given; the three sit behind one disclosure, « Your
-   copyright situation », folded to a line that states them. The card says how much of the royalty
-   stays within the limits and how much passes them, which limit set it, the flat-rate costs the
-   attestation takes off the first part, its tax apart and what the company withholds, the part beyond
-   them going on to Director pay, taxed as pay, then the plan with the royalty against the same plan
-   without it, and where no text settles a point, the reading Netto takes. An optional module: it shows
-   only while in the plan, and the word at its bottom takes it out, its values kept. Skipped with the
-   company. *@
+   copyright situation », folded to a line that states them. Its figures come first, as lines
+   (CopyrightFigures): the royalty, the part within the limits and the part beyond them, taxed as pay,
+   the flat-rate costs the attestation takes off the first part and what the company withholds on each,
+   with a sentence for which limit set the part within; then the plan with the royalty and the same plan
+   without it, each by what reaches the pocket and what goes to the taxes on pay and on profit, and the
+   difference; then where its money goes: its tax apart, what of the part within reaches the pocket and
+   the part beyond going on to Director pay. Where no text settles a point, the reading Netto takes is in
+   its details, above the sources. An optional module: it shows only while in the plan, and the word at
+   its bottom takes it out, its values kept. Skipped with the company. *@
 <ModuleCard Name="@ModuleFolds.Name(OptionalModule.Copyright)" Title="@L["Title"]" Summary="@Summary" Glance="@Glance" ToYou="@_view?.ToYou" Help="@L["Hint"]" Skipped="Inputs.Company is null"
             Refused="@Refused" Details="@Details"
             DetailsLabel="@L["DetailsLabel"]" RemoveLabel="@L["Remove"]" OnRemove="Remove">
@@ -27,7 +29,6 @@
     }
     else
     {
-        <p class="copyright__scope">@L["Scope"]</p>
         <Disclosure Title="@L["SituationTitle"]" Values="@SettingWords.Of(L, _settings.Situation)" Refused="@CopyrightSettingsView.SituationHolds(Refused)"
                     OpenByDefault="@_settings.NeedsFacts">
             <RiverField Label="@L["CreativeShareLabel"]" For="river-copyright-creative-share"
@@ -51,39 +52,28 @@
             </div>
         </Disclosure>
         <RefusedMessage Error="@Refused" />
-        @if (_view is { HasRoyalty: true } shown)
+        @if (_view is { HasRoyalty: true } shown && _rules is not null)
         {
             var result = shown.Result;
-            <div class="copyright__taxed">
-                <p class="copyright__line">@L[CopyrightCardText.Limits(result), Formats.Euros(result.Royalty), Formats.Euros(result.WithinLimits),
-                                              Formats.Euros(result.RelativeLimit), Formats.Euros(result.Cap), Formats.Euros(result.TaxedAsPay), Inputs.IncomeYear]</p>
-                @if (result.WithinLimits > 0m)
-                {
-                    <p class="copyright__line">@L["TaxedApart", Formats.Euros(result.WithinLimits), Formats.Euros(shown.Tax), Formats.Euros(result.WithheldWithinLimits),
-                                                  Formats.Euros(shown.AfterTax)]</p>
-                    <p class="copyright__line">@L[CopyrightCardText.Costs(result), Formats.Euros(result.FlatRateCosts), Formats.Euros(result.TaxedApart?.Income ?? 0m),
-                                                  Formats.Euros(_rules?.FlatRateCosts.FirstBandCeiling.Value ?? 0m),
-                                                  Formats.Euros(_rules?.FlatRateCosts.SecondBandCeiling.Value ?? 0m), Inputs.IncomeYear]</p>
-                }
-                @if (result.TaxedAsPay > 0m)
-                {
-                    <p class="copyright__line">@L["TaxedAsPay", Formats.Euros(result.TaxedAsPay), Formats.Euros(result.WithheldBeyondLimits)]</p>
-                }
-                <p class="copyright__reading">@L["Readings", Formats.Euros(CorporateTaxRules.For(Inputs.IncomeYear)?.MinimumDirectorPay.Value ?? 0m)]</p>
-            </div>
+            <FigureList Figures="@FigureWords.Of(L, CopyrightFigures.Royalty(result, _rules))" />
+            <p class="copyright__note">@L[CopyrightCardText.Limits(result), Formats.Euros(result.Royalty), Formats.Euros(result.WithinLimits),
+                                          Formats.Euros(result.RelativeLimit), Formats.Euros(result.Cap), Formats.Euros(result.TaxedAsPay), Inputs.IncomeYear]</p>
             @if (_comparison is { } comparison)
             {
-                <section class="copyright__comparison" aria-labelledby="copyright-comparison-title">
-                    <h3 id="copyright-comparison-title" class="copyright__comparison-title">@L["ComparisonTitle"]</h3>
-                    <p>@L["WithRoyalty", Formats.Euros(comparison.PocketWith), Formats.Euros(comparison.TaxesOnPayWith), Formats.Euros(comparison.TaxesOnProfitWith)]</p>
-                    <p>@L["WithoutRoyalty", Formats.Euros(comparison.PocketWithout), Formats.Euros(comparison.TaxesOnPayWithout), Formats.Euros(comparison.TaxesOnProfitWithout)]</p>
-                    <p class="copyright__gain">@L[CopyrightCardText.Gain(comparison), Formats.Euros(Math.Abs(comparison.Gain))]</p>
-                </section>
+                <div class="copyright__comparison">
+                    <h3 class="copyright__comparison-title">@L["WithTitle"]</h3>
+                    <FigureList Figures="@FigureWords.Of(L, CopyrightFigures.With(comparison))" />
+                    <h3 class="copyright__comparison-title">@L["WithoutTitle"]</h3>
+                    <FigureList Figures="@FigureWords.Of(L, CopyrightFigures.Without(comparison))" />
+                    <div class="copyright__difference">
+                        <FigureList Figures="@FigureWords.Of(L, CopyrightFigures.Difference(comparison))" />
+                    </div>
+                </div>
             }
         }
         else if (Refused is null)
         {
-            <p class="copyright__line">@L["NoRoyaltyYet"]</p>
+            <p class="copyright__note">@L["NoRoyaltyYet"]</p>
         }
         @if (_view is not null)
         {
@@ -130,8 +120,10 @@
     // The summary's first figure, for the card's row in the river's outline.
     private CardGlance? Glance => _view is { } view ? CopyrightCardText.Glance(view) : null;
 
+    // Where no text settles a point, the reading Netto takes, word for word above the sources.
     private RenderFragment? Details => _view is { Details.Count: > 0 } view && Run.Year is { } year
         ? @<text>
+              <p class="copyright__reading">@L["Readings", Formats.Euros(CorporateTaxRules.For(Inputs.IncomeYear)?.MinimumDirectorPay.Value ?? 0m)]</p>
               <h4 class="copyright__sources">@L["SourcesTitle", year.Scenario.IncomeYear]</h4>
               <StepDetails Details="view.Details" />
           </text>

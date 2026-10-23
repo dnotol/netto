@@ -1,7 +1,12 @@
+using System.Globalization;
+using System.Net;
+using System.Resources;
 using System.Text.RegularExpressions;
 using Netto.Core.CompanyCar;
+using Netto.Web.Client;
 using Netto.Web.Client.River;
 using Netto.Web.Client.River.CompanyCar;
+using Netto.Web.Client.River.Copyright;
 using Shouldly;
 using static Netto.Tests.WebClient.River.RiverRendering;
 
@@ -29,9 +34,21 @@ public class CarAndRoyaltyCardsTests
     private static readonly RiverInputs PetrolCar = ElectricCar.WithCatalogueValue(45_000m).WithCarCosts(9_000m)
         .WithCarEngine(CarEngine.Petrol).WithCarCo2(120).WithCarAcquired(new DateOnly(2026, 1, 5));
 
+    // CopyrightViewTests' royalties beside the example's 50,000 of pay: 10,000 stays within 30% of 60,000,
+    // 30,000 passes 30% of 80,000 by 6,000.
+    private static readonly RiverInputs Within = RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithRoyalty(10_000m);
+
+    private static readonly RiverInputs Beyond = RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithRoyalty(30_000m);
+
+    private static readonly ResourceManager RoyaltyTexts = new("Netto.Web.Client.River.Copyright.CopyrightCard", typeof(CopyrightCard).Assembly);
+
+    private static readonly ResourceManager DrainTexts = new("Netto.Web.Client.River.DrainList", typeof(DrainList).Assembly);
+
+    private static readonly ResourceManager RefusalTexts = new("Netto.Web.Client.River.RefusedMessage", typeof(RefusedMessage).Assembly);
+
     // Each card's words in sight on the filled plan, every card open, before the story's cut, as the static
-    // render counts them (the browser counted 294 on the car's).
-    public static TheoryData<string, int> WordsBefore => new() { { "car", 288 } };
+    // render counts them (the browser counted 294 on the car's and 420 on the royalty's).
+    public static TheoryData<string, int> WordsBefore => new() { { "car", 288 }, { "copyright", 424 } };
 
     [Theory]
     [MemberData(nameof(WordsBefore))]
@@ -48,6 +65,10 @@ public class CarAndRoyaltyCardsTests
         { "no car yet", typeof(CarCard), OptionalModule.Car, RiverInputs.Example.AddToPlan(OptionalModule.Car) },
         { "a car", typeof(CarCard), OptionalModule.Car, ElectricCar },
         { "a car and a royalty", typeof(CarCard), OptionalModule.Car, ElectricCar.AddToPlan(OptionalModule.Copyright).WithRoyalty(10_000m) },
+        { "no royalty yet", typeof(CopyrightCard), OptionalModule.Copyright, RiverInputs.Example.AddToPlan(OptionalModule.Copyright) },
+        { "a royalty within its limits", typeof(CopyrightCard), OptionalModule.Copyright, Within },
+        { "a royalty beyond its limits", typeof(CopyrightCard), OptionalModule.Copyright, Beyond },
+        { "a royalty all taxed as pay", typeof(CopyrightCard), OptionalModule.Copyright, Within.WithAverageWithinCap(false) },
     };
 
     // Figures with their labels: once its amounts are taken out, no punctuation a sentence would hold, and
@@ -73,6 +94,11 @@ public class CarAndRoyaltyCardsTests
         { "a petrol car with a contribution and a private cost", typeof(CarCard), OptionalModule.Car, PetrolCar.WithCarContribution(600m).WithCarPrivateCost(10_000m) },
         { "a car at the minimum", typeof(CarCard), OptionalModule.Car, ElectricCar.WithCatalogueValue(30_000m).WithCarPrivateCost(1_000m) },
         { "a diesel at the highest percentage", typeof(CarCard), OptionalModule.Car, PetrolCar.WithCarEngine(CarEngine.Diesel).WithCarCo2(250).WithPrivateEnergyPaid(true) },
+        { "a royalty within its limits", typeof(CopyrightCard), OptionalModule.Copyright, Within },
+        { "a royalty beyond its limits", typeof(CopyrightCard), OptionalModule.Copyright, Beyond },
+        { "a royalty with an attestation", typeof(CopyrightCard), OptionalModule.Copyright, Within.WithAttestation(true) },
+        { "a royalty all taxed as pay", typeof(CopyrightCard), OptionalModule.Copyright, Within.WithAverageWithinCap(false) },
+        { "a royalty following the pay", typeof(CopyrightCard), OptionalModule.Copyright, RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithCreativeShare(0.5m) },
     };
 
     // A sentence the card keeps says what a figure cannot: none states an amount one of its lines shows.
@@ -94,12 +120,82 @@ public class CarAndRoyaltyCardsTests
         CardHtml.LeakedKeys(await RenderOpenAsync(card, module, inputs)).ShouldBeEmpty();
     }
 
+    // A refusal stays in sight, never in a bubble: the engine's words for the field it refuses, in the
+    // card's alert (RefusedMessage), the field keeping its own copy out of sight for a screen reader.
+    public static TheoryData<string, Type, RiverInputs> Refusals => new()
+    {
+        { "a negative catalogue value", typeof(CarCard), ElectricCar.WithCatalogueValue(-1m) },
+        { "a creative share above all of the time", typeof(CopyrightCard), RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithCreativeShare(1.5m) },
+    };
+
+    [Theory]
+    [MemberData(nameof(Refusals))]
+    public async Task Card_refused_saysWhyInSight(string _, Type card, RiverInputs inputs)
+    {
+        var run = inputs.Run();
+        var error = run.Error.ShouldNotBeNull();
+
+        var html = await RenderAsync(card, new Folds(new BrowserStorage()), new() { ["Inputs"] = inputs, ["Run"] = run, ["Refused"] = error });
+
+        Alerts(html).ShouldBe([RefusalTexts.GetString($"Error_{error}", CultureInfo.InvariantCulture) ?? error]);
+    }
+
+    // What each refusal alert of the card says.
+    private static List<string> Alerts(string html) =>
+    [
+        .. Regex.Matches(html, "class=\"[^\"]*\\brefused-message\\b[^\"]*\">.*?<div class=\"mud-alert-message\">(.*?)</div>", RegexOptions.Singleline)
+            .Select(alert => WebUtility.HtmlDecode(alert.Groups[1].Value)),
+    ];
+
     [Fact]
     public async Task Cards_filledPlan_leaveNoKey()
     {
         var html = await CardHtml.RenderPlanOpenAsync(Filled);
 
-        CardHtml.LeakedKeys(CardHtml.Card(html, "car")).ShouldBeEmpty();
+        new[] { "car", "copyright" }.SelectMany(card => CardHtml.LeakedKeys(CardHtml.Card(html, card))).ShouldBeEmpty();
+    }
+
+    // The royalty and how its limits split it, the note of which limit set it, then the plan with it and
+    // without it, then where its money goes, the drains' own lines.
+    [Fact]
+    public async Task RoyaltyCard_withinItsLimits_drawsItsFiguresThenThePlanWithAndWithoutItThenWhereItGoes()
+    {
+        var html = await RenderOpenAsync(typeof(CopyrightCard), OptionalModule.Copyright, Within);
+        var comparison = CopyrightComparison.From(Within, Within.Run()).ShouldNotBeNull();
+        var drains = DrainLines.Shown(CopyrightView.From(Within.Run().Year.ShouldNotBeNull()).Drains);
+
+        html.ShouldSatisfyAllConditions(
+            () => CardHtml.Lines(html).Take(10).ShouldBe(
+            [
+                (Royalty("Figure_Royalty"), "€10,000.00", null),
+                (Royalty("Figure_WithinLimits"), "€10,000.00", null),
+                (Royalty("Figure_Withheld", "15%"), "€1,500.00", null),
+                (Royalty("Figure_Pocket"), Formats.Euros(comparison.PocketWith), null),
+                (Royalty("Figure_TaxesOnPay"), Formats.Euros(comparison.TaxesOnPayWith), null),
+                (Royalty("Figure_TaxesOnProfit"), Formats.Euros(comparison.TaxesOnProfitWith), null),
+                (Royalty("Figure_Pocket"), Formats.Euros(comparison.PocketWithout), null),
+                (Royalty("Figure_TaxesOnPay"), Formats.Euros(comparison.TaxesOnPayWithout), null),
+                (Royalty("Figure_TaxesOnProfit"), Formats.Euros(comparison.TaxesOnProfitWithout), null),
+                (Royalty("Figure_Gain_More"), Formats.Euros(comparison.Gain), null),
+            ]),
+            () => CardHtml.Lines(html).Skip(10).Select(line => line.Label).ShouldBe(drains.Select(drain => Drain(DrainListText.Drain(drain.Key)))),
+            () => CardHtml.Prose(html).ShouldContain(Royalty("Limits_None")));
+    }
+
+    // Where no text settles a point, the reading Netto takes is in the royalty's details, word for word,
+    // above the sources: out of sight while they are folded.
+    [Fact]
+    public async Task RoyaltyCard_detailsOpen_statesItsReadingsWordForWordAboveTheSources()
+    {
+        // The 2026 minimum director pay that keeps the reduced corporate rate.
+        var readings = Royalty("Readings", "€51,000.00");
+
+        var details = await RenderDetailsOpenAsync(typeof(CopyrightCard), OptionalModule.Copyright, Within);
+        var folded = await RenderOpenAsync(typeof(CopyrightCard), OptionalModule.Copyright, Within);
+
+        (CardHtml.Prose(details).Contains(readings), details.IndexOf("Where no text settles", StringComparison.Ordinal) < details.IndexOf("copyright__sources", StringComparison.Ordinal),
+                CardHtml.Prose(folded).Contains(readings))
+            .ShouldBe((true, true, false));
     }
 
     // An amount as Formats writes it, in euros or as a percentage, with its sign.
@@ -109,6 +205,11 @@ public class CarAndRoyaltyCardsTests
 
     private static int Words(string text) => Regex.Split(text, "\\s+").Count(word => word.Any(char.IsLetterOrDigit));
 
+    private static string Royalty(string key, params object[] figures) =>
+        string.Format(CultureInfo.InvariantCulture, RoyaltyTexts.GetString(key, CultureInfo.InvariantCulture) ?? key, figures);
+
+    private static string Drain(string key) => DrainTexts.GetString(key, CultureInfo.InvariantCulture) ?? key;
+
     // A lever's card opened by the viewer, on its inputs' own run.
     private static Task<string> RenderOpenAsync(Type card, OptionalModule module, RiverInputs inputs)
     {
@@ -116,5 +217,16 @@ public class CarAndRoyaltyCardsTests
         folds.Set(ModuleFolds.Name(module), true);
 
         return RenderAsync(card, folds, new() { ["Inputs"] = inputs, ["Run"] = inputs.Run(), ["Refused"] = null });
+    }
+
+    // A lever's card opened by the viewer with its details, « Where these figures come from », its text
+    // decoded.
+    private static async Task<string> RenderDetailsOpenAsync(Type card, OptionalModule module, RiverInputs inputs)
+    {
+        var folds = new Folds(new BrowserStorage());
+        folds.Set(ModuleFolds.Name(module), true);
+        folds.Set($"{ModuleFolds.Name(module)}-details", true);
+
+        return WebUtility.HtmlDecode(await RenderAsync(card, folds, new() { ["Inputs"] = inputs, ["Run"] = inputs.Run(), ["Refused"] = null }));
     }
 }

@@ -6,7 +6,7 @@ namespace Netto.Web.Client.River.Copyright;
 // alike.
 internal static class CopyrightCardText
 {
-    // Which limit set the part within them, as the engine says it was.
+    // Which limit set the part within them, as the engine says it was, in the note under its lines.
     public static string Limits(CopyrightResult result) => $"Limits_{result.Bound}";
 
     // The summary names the part taxed as pay once there is one, and says when all of it is.
@@ -28,14 +28,12 @@ internal static class CopyrightCardText
         _ => new CardGlance(GlanceKind.ToYou, Formats.Euros(view.AfterTax)),
     };
 
-    // Whether the flat-rate costs came off the part within the limits, as the engine took them.
-    public static string Costs(CopyrightResult result) => result.FlatRateCosts > 0m ? "FlatRateCosts" : "OnTheGross";
-
-    // What the royalty leaves in the pocket against the same plan without it: more, less, or the same.
+    // The line of what the royalty leaves in the pocket against the same plan without it: more, less, or
+    // the same.
     public static string Gain(CopyrightComparison comparison) => comparison.Gain switch
     {
-        > 0m => "Gain_More",
-        < 0m => "Gain_Less",
-        _ => "Gain_None",
+        > 0m => "Figure_Gain_More",
+        < 0m => "Figure_Gain_Less",
+        _ => "Figure_Gain_None",
     };
 }
