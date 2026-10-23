@@ -59,7 +59,8 @@ public class CarAndRoyaltyCardsTests
         CardHtml.VisibleWords(html).Count.ShouldBeLessThanOrEqualTo(before * 55 / 100);
     }
 
-    // Every way each card's summary reads: a car not given yet, a car, a car with the royalty in the plan.
+    // Every way each card's summary reads: a car not given yet, a car, a car with the royalty in the plan;
+    // no royalty yet, a royalty within its limits, one beyond them, and one all taxed as pay.
     public static TheoryData<string, Type, OptionalModule, RiverInputs> Summaries => new()
     {
         { "no car yet", typeof(CarCard), OptionalModule.Car, RiverInputs.Example.AddToPlan(OptionalModule.Car) },
@@ -87,7 +88,8 @@ public class CarAndRoyaltyCardsTests
 
     // The plans each card is held to: the electric car, a petrol car whose costs are not all deducted, with a
     // contribution and a private cost, a car at the year's minimum, and one held to the highest CO2
-    // percentage, its private charging paid.
+    // percentage, its private charging paid; a royalty within its limits, one beyond them, one with an
+    // attestation, one all taxed as pay, and one following the pay.
     public static TheoryData<string, Type, OptionalModule, RiverInputs> Plans => new()
     {
         { "an electric car", typeof(CarCard), OptionalModule.Car, ElectricCar },
@@ -140,13 +142,6 @@ public class CarAndRoyaltyCardsTests
         Alerts(html).ShouldBe([RefusalTexts.GetString($"Error_{error}", CultureInfo.InvariantCulture) ?? error]);
     }
 
-    // What each refusal alert of the card says.
-    private static List<string> Alerts(string html) =>
-    [
-        .. Regex.Matches(html, "class=\"[^\"]*\\brefused-message\\b[^\"]*\">.*?<div class=\"mud-alert-message\">(.*?)</div>", RegexOptions.Singleline)
-            .Select(alert => WebUtility.HtmlDecode(alert.Groups[1].Value)),
-    ];
-
     [Fact]
     public async Task Cards_filledPlan_leaveNoKey()
     {
@@ -193,7 +188,7 @@ public class CarAndRoyaltyCardsTests
         var details = await RenderDetailsOpenAsync(typeof(CopyrightCard), OptionalModule.Copyright, Within);
         var folded = await RenderOpenAsync(typeof(CopyrightCard), OptionalModule.Copyright, Within);
 
-        (CardHtml.Prose(details).Contains(readings), details.IndexOf("Where no text settles", StringComparison.Ordinal) < details.IndexOf("copyright__sources", StringComparison.Ordinal),
+        (CardHtml.Prose(details).Contains(readings), details.IndexOf(readings, StringComparison.Ordinal) < details.IndexOf("copyright__sources", StringComparison.Ordinal),
                 CardHtml.Prose(folded).Contains(readings))
             .ShouldBe((true, true, false));
     }
@@ -209,6 +204,13 @@ public class CarAndRoyaltyCardsTests
         string.Format(CultureInfo.InvariantCulture, RoyaltyTexts.GetString(key, CultureInfo.InvariantCulture) ?? key, figures);
 
     private static string Drain(string key) => DrainTexts.GetString(key, CultureInfo.InvariantCulture) ?? key;
+
+    // What each refusal alert of the card says.
+    private static List<string> Alerts(string html) =>
+    [
+        .. Regex.Matches(html, "class=\"[^\"]*\\brefused-message\\b[^\"]*\">.*?<div class=\"mud-alert-message\">(.*?)</div>", RegexOptions.Singleline)
+            .Select(alert => WebUtility.HtmlDecode(alert.Groups[1].Value)),
+    ];
 
     // A lever's card opened by the viewer, on its inputs' own run.
     private static Task<string> RenderOpenAsync(Type card, OptionalModule module, RiverInputs inputs)
