@@ -22,13 +22,7 @@ public class MovesViewTests
 
     private static readonly PlannedMove DirectorPays = Planned(new DirectorAdvancePaymentMove(3, new DateOnly(2026, 12, 21), 14_317.50m));
 
-    [Fact]
-    public void Of_noToday_asksForOne()
-    {
-        MovesView.Of((RiverInputs?)null, On22October).State.ShouldBe(MovesState.NoToday);
-    }
-
-    // The page searches once per Today, and the tab draws the view of what was found, searching nothing.
+    // The page searches once per plan and date, and the tab draws the view of what was found, searching nothing.
     [Fact]
     public void Of_whatTheSearchFound_isTheViewOfSearchingAgain()
     {
@@ -40,12 +34,13 @@ public class MovesViewTests
         (view.State, view.FromPay, view.Total, Lines(view).SequenceEqual(Lines(searched))).ShouldBe((searched.State, searched.FromPay, searched.Total, true));
     }
 
-    // Nothing found, from no Today or from one that starts at the pay: two answers, told apart by Today.
+    // Nothing found is a plan that starts at the pay, Today or the plan in the river: there is always a plan
+    // the moves are from, the plan in the river while none is starred Today (MovesSource).
     [Fact]
-    public void Of_nothingFound_isNoTodayOrStartsAtThePay()
+    public void Of_nothingFound_startsAtThePay()
     {
-        (MovesView.Of((RiverInputs?)null, found: null).State, MovesView.Of(RiverInputs.Example.SkipCompany(), found: null).State)
-            .ShouldBe((MovesState.NoToday, MovesState.StartsAtPay));
+        (MovesView.Of(RiverInputs.Example.SkipCompany(), found: null).State, MovesView.Of(new MovesBaseline(RiverInputs.Example.SkipCompany(), IsToday: false), found: null).State)
+            .ShouldBe((MovesState.StartsAtPay, MovesState.StartsAtPay));
     }
 
     // After the year: the pay first, then the vouchers the example does not grant.
@@ -152,7 +147,7 @@ public class MovesViewTests
     {
         var view = MovesView.Of(new MovesBaseline(RiverInputs.Example, IsToday: false, "Plan 2"), On22October);
 
-        (view.From.ShouldNotBeNull().IsToday, view.From.Name).ShouldBe((false, "Plan 2"));
+        (view.From.IsToday, view.From.Name).ShouldBe((false, "Plan 2"));
     }
 
     [Fact]

@@ -40,7 +40,7 @@ internal static class TabBadges
         if (run.Error is not null)
             badges[PlanTab.Plan] = new TabBadge(TabBadgeKind.Refused);
         if (moves.State == MovesState.Moves)
-            badges[PlanTab.Optimisation] = new TabBadge(moves.From is { IsToday: false } ? TabBadgeKind.MoreThanPlan : TabBadgeKind.MoreThanToday, Amount: moves.Total);
+            badges[PlanTab.Optimisation] = new TabBadge(moves.From.IsToday ? TabBadgeKind.MoreThanToday : TabBadgeKind.MoreThanPlan, Amount: moves.Total);
         if (calendar is { BilledRefused: not null })
             badges[PlanTab.WhenToPay] = new TabBadge(TabBadgeKind.Refused);
         else if (calendar?.Next is { } next)

@@ -4,9 +4,10 @@ using Shouldly;
 
 namespace Netto.Tests.WebClient.Tabs;
 
-// What each tab says after its name, from the views its content draws: the moves' total on Optimisation
-// once a plan is starred Today, the next advance payment's date on When to pay, and on a tab holding an
-// amount the engine refuses, that refusal, which wins over a date, and the number of plans to compare on Compare plans.
+// What each tab says after its name, from the views its content draws: the moves' total on Optimisation,
+// over the plan starred Today or the plan in the river, the next advance payment's date on When to pay,
+// and on a tab holding an amount the engine refuses, that refusal, which wins over a date, and the number
+// of plans to compare on Compare plans.
 public class TabBadgesTests
 {
     // The deadline still open on this date is December's.
@@ -48,12 +49,6 @@ public class TabBadgesTests
 
         TabBadges.Of(run, moves, CalendarView.From(RiverInputs.Example, run, On23October), 0).GetValueOrDefault(PlanTab.Optimisation)
             .ShouldBe(new TabBadge(TabBadgeKind.MoreThanPlan, Amount: moves.Total));
-    }
-
-    [Fact]
-    public void Of_noToday_badgesNoOptimisation()
-    {
-        Badges(RiverInputs.Example, today: null, On23October).ContainsKey(PlanTab.Optimisation).ShouldBeFalse();
     }
 
     // No move adds a euro: nothing to say beside the tab's name.
@@ -129,9 +124,11 @@ public class TabBadgesTests
             .ShouldBe(new TabBadge(TabBadgeKind.SavedPlans, Count: 3));
     }
 
+    // Without a plan starred Today, the moves are from the river as a plan, as the page opens on it.
     private static IReadOnlyDictionary<PlanTab, TabBadge> Badges(RiverInputs river, RiverInputs? today, DateOnly date, int plans = 0)
     {
         var run = river.Run();
-        return TabBadges.Of(run, MovesView.Of(today, date), CalendarView.From(river, run, date), plans);
+        var moves = MovesView.Of(today is null ? new MovesBaseline(river, IsToday: false) : MovesBaseline.Today(today), date);
+        return TabBadges.Of(run, moves, CalendarView.From(river, run, date), plans);
     }
 }

@@ -26,7 +26,7 @@
     {
         <dl class="moves__figures">
             <div class="moves__pair">
-                @if (_view.From is { IsToday: true })
+                @if (_view.From.IsToday)
                 {
                     @* The star the Plans panel marks Today with, drawn for the eye: the words say it. *@
                     <dt class="moves__term"><MudIcon Icon="@Icons.Material.Rounded.Star" Size="Size.Small" Class="moves__star" aria-hidden="true" /> @L[OptimisationTabText.FromInPocket(_view.From)]</dt>
@@ -95,9 +95,9 @@
 </div>
 
 @code {
-    // The plan the moves are measured from, or null while none is starred Today.
-    [Parameter]
-    public MovesBaseline? From { get; set; }
+    // The plan the moves are measured from (MovesSource).
+    [Parameter, EditorRequired]
+    public MovesBaseline From { get; set; } = default!;
 
     // What the page's search found for that plan on its date (MovesSource), none for a plan that starts at
     // the pay.
@@ -117,10 +117,10 @@
     private int? _focusApplied;
 
     // The view of what was found, which searches nothing.
-    protected override void OnParametersSet() => _view = From is null ? MovesView.Of((RiverInputs?)null, Found) : MovesView.Of(From, Found);
+    protected override void OnParametersSet() => _view = MovesView.Of(From, Found);
 
     // The saved plan the moves are from, named in the texts that name it.
-    private string Name => _view.From?.Name ?? "";
+    private string Name => _view.From.Name ?? "";
 
     private string What(PlannedMove move) => move.Move switch
     {
@@ -130,7 +130,7 @@
         EcoVouchersMove eco => L[OptimisationTabText.Move(eco), Formats.Euros(eco.Amount)],
         SportCultureVouchersMove sport => L[OptimisationTabText.Move(sport), Formats.Euros(sport.Amount)],
         RentMove rent => L[OptimisationTabText.Move(rent), Formats.Euros(rent.Rent)],
-        CopyrightFollowsPayMove following => L[OptimisationTabText.Move(following), Formats.Percentage(_view.From?.Plan.Copyright.CreativeShare.Value ?? 0m)],
+        CopyrightFollowsPayMove following => L[OptimisationTabText.Move(following), Formats.Percentage(_view.From.Plan.Copyright.CreativeShare.Value ?? 0m)],
         _ => "",
     };
 

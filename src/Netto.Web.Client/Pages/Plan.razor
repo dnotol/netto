@@ -25,11 +25,12 @@
 </SectionContent>
 
 @* The plan page, split by purpose into tabs under the bar of buckets, which sums up the river on every
-   one of them: the river itself (Plan), the moves Netto proposes from the plan starred « Today »
-   (Optimisation), when the plan's payments fall (When to pay) and the saved plans side by side (Compare
-   plans). Each tab has its own URL (PlanTabRoutes) but they are this one page, so the river's inputs,
-   its run and what the page found stay as they are from one tab to the next, and Blazor keeps the page
-   when the tab changes: the tab is a parameter of the route.
+   one of them: the river itself (Plan), the moves Netto proposes from the plan starred « Today », or
+   while none is from the plan in the river as it was opened or saved (Optimisation), when the plan's
+   payments fall (When to pay) and the saved plans side by side (Compare plans). Each tab has its own URL
+   (PlanTabRoutes) but they are this one page, so the river's inputs, its run and what the page found stay
+   as they are from one tab to the next, and Blazor keeps the page when the tab changes: the tab is a
+   parameter of the route.
 
    The river: the year from the company's revenue to the director's pocket, as module cards that each
    edit their part of one scenario and draw their view of one run. Every figure comes from Netto.Core;
@@ -43,7 +44,7 @@
    opens it as choosing its row in the outline does, and brings it under the bar with its heading focused. *@
 <BucketBar Run="_run" Setup="_today?.Run" Unsaved="Plans.HasUnsavedChanges(_inputs)">
     <ChildContent>
-        <PlansPanel Inputs="_inputs" CanSave="BaselineGain.CanMark(_run)" OnOpen="OnInputsChanged" OnChanged="OnPlansChanged" />
+        <PlansPanel Inputs="_inputs" CanSave="BaselineGain.CanMark(_run)" OnOpen="OnPlanOpened" OnChanged="OnPlansChanged" />
         <CompositionMenu @ref="_composition" Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" />
     </ChildContent>
     <TabRow>
@@ -59,7 +60,7 @@
             @switch (_tab)
             {
                 case PlanTab.Optimisation:
-                    <OptimisationTab From="@(Plans.TodayPlan?.Inputs is { } today ? MovesBaseline.Today(today) : null)" Found="FoundMoves()" Inputs="_inputs" InputsChanged="OnInputsChanged" />
+                    <OptimisationTab From="_moves.Baseline" Found="_moves.Found(Today)" Inputs="_inputs" InputsChanged="OnInputsChanged" />
                     break;
                 case PlanTab.WhenToPay:
                     <WhenToPayTab Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Date="Today" />
@@ -184,16 +185,14 @@ else
     private OptionalModule? _takenOut;
     private bool _focusUndo;
     private bool _focusComposition;
-    private (MovePlan? Value, string? Error)? _moves;
-    private RiverInputs? _movesFor;
-    private DateOnly _movesOn;
-    private bool _movesFound;
+    private MovesSource _moves = default!;
     private readonly CardArrival _arrival = new();
     private string? _arriving;
 
     protected override void OnInitialized()
     {
         _outline = new OutlineRows(Folds);
+        _moves = new MovesSource(Plans, State.Inputs);
         OnPlansChanged();
         Show(State.Inputs);
     }
@@ -249,11 +248,21 @@ else
         Show(inputs);
     }
 
+    // A plan opened from Plans: the river shows it, and while no plan is starred « Today » the moves are
+    // measured from it.
+    private void OnPlanOpened(RiverInputs plan)
+    {
+        _moves.Opened(plan);
+        OnInputsChanged(plan);
+    }
+
     private void OpenComposition() => _composition.Open();
 
-    // The plan starred « Today » runs once, again only when the star moves to another plan.
+    // The plan starred « Today » runs once, again only when the star moves to another plan. A save opens
+    // the river on the plan saved, which the moves are then measured from while no plan is starred.
     private void OnPlansChanged()
     {
+        _moves.Kept();
         if (_today?.Id != Plans.Today)
             _today = Plans.TodayPlan is { Inputs: { } inputs } today ? (today.Id, inputs.Run()) : null;
     }
@@ -293,25 +302,11 @@ else
         }
     }
 
-    // The moves from the plan starred « Today », found once per Today and date, since the search runs the
-    // split at every move: the Optimisation tab draws them, and its badge needs them on every tab.
-    private (MovePlan? Value, string? Error)? FoundMoves()
-    {
-        var today = Plans.TodayPlan?.Inputs;
-        var date = Today;
-        if (_movesFound && today == _movesFor && date == _movesOn)
-            return _moves;
-
-        _moves = today?.FindMoves(date);
-        _movesFor = today;
-        _movesOn = date;
-        _movesFound = true;
-        return _moves;
-    }
-
-    // What each tab says after its name, from what its content draws.
+    // What each tab says after its name, from what its content draws: the Optimisation tab's moves, which
+    // its badge needs on every tab, found once per plan they are from and date (MovesSource), since the
+    // search runs the split at every move.
     private IReadOnlyDictionary<PlanTab, TabBadge> Badges() =>
-        TabBadges.Of(_run, MovesView.Of(Plans.TodayPlan?.Inputs, FoundMoves()), CalendarView.From(_inputs, _run, Today), Plans.Plans.Count(plan => plan.Readable));
+        TabBadges.Of(_run, _moves.View(Today), CalendarView.From(_inputs, _run, Today), Plans.Plans.Count(plan => plan.Readable));
 
     // The browser's date, which decides which deadlines are past and which one a payment is proposed by.
     private DateOnly Today => DateOnly.FromDateTime(Clock.GetLocalNow().DateTime);

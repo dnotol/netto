@@ -21,9 +21,6 @@
   <data name="Lede" xml:space="preserve">
     <value>What Netto would change in Today, your current setup, to leave more in your pocket. Each move adds what it says on top of the moves above it, so together they add up to the whole plan's gain.</value>
   </data>
-  <data name="State_NoToday" xml:space="preserve">
-    <value>Save your current setup with « Save this plan » and star it as Today: the moves are measured from it.</value>
-  </data>
   <data name="State_StartsAtPay" xml:space="preserve">
     <value>Today starts at your pay: open it from Plans and enter its company's year to see the moves.</value>
   </data>

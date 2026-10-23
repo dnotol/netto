@@ -12,14 +12,6 @@ public class OptimisationTabTextTests
     // The name IStringLocalizer<OptimisationTab> reads Tabs/OptimisationTab.resx under.
     private static readonly ResourceManager Resources = new("Netto.Web.Client.Tabs.OptimisationTab", typeof(OptimisationTab).Assembly);
 
-    [Fact]
-    public void OptimisationTabResx_everyState_hasAText()
-    {
-        Enum.GetValues<MovesState>().Select(state => OptimisationTabText.State(state, Baseline("Today")))
-            .Where(key => Resources.GetString(key, CultureInfo.InvariantCulture) is null)
-            .ShouldBeEmpty();
-    }
-
     // The pocket with every move, the pocket after each move, a link's name and the note on a river
     // changed since its plan.
     [Fact]
@@ -50,8 +42,7 @@ public class OptimisationTabTextTests
     [MemberData(nameof(Baselines))]
     public void OptimisationTabResx_everyStateFromEachPlan_hasAText(string from)
     {
-        new[] { MovesState.StartsAtPay, MovesState.Refused, MovesState.AlreadyBest, MovesState.Moves }
-            .Select(state => OptimisationTabText.State(state, Baseline(from)))
+        Enum.GetValues<MovesState>().Select(state => OptimisationTabText.State(state, Baseline(from)))
             .Where(key => Resources.GetString(key, CultureInfo.InvariantCulture) is null)
             .ShouldBeEmpty();
     }

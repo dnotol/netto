@@ -10,7 +10,7 @@ namespace Netto.Web.Client.River;
 internal sealed record MovesView(
     MovesState State,
     string? Error,
-    MovesBaseline? From,
+    MovesBaseline From,
     decimal FromPay,
     IReadOnlyList<PlannedMove> Moves,
     decimal Total,
@@ -18,13 +18,10 @@ internal sealed record MovesView(
     decimal PlanInPocket)
 {
     // From Today on that date, which decides the deadline a payment is proposed by.
-    public static MovesView Of(RiverInputs? today, DateOnly date) => Of(today, today?.FindMoves(date));
+    public static MovesView Of(RiverInputs today, DateOnly date) => Of(MovesBaseline.Today(today), date);
 
-    // From what the search found for Today (RiverInputs.FindMoves), none without a Today or for a Today
-    // that starts at the pay.
-    public static MovesView Of(RiverInputs? today, (MovePlan? Value, string? Error)? found) => today is null
-        ? new MovesView(MovesState.NoToday, null, null, 0m, [], 0m, 0m, 0m)
-        : Of(MovesBaseline.Today(today), found);
+    // From what the search found for Today (RiverInputs.FindMoves), none for a Today that starts at the pay.
+    public static MovesView Of(RiverInputs today, (MovePlan? Value, string? Error)? found) => Of(MovesBaseline.Today(today), found);
 
     // From the plan they are measured from, on that date.
     public static MovesView Of(MovesBaseline from, DateOnly date) => Of(from, from.Plan.FindMoves(date));
@@ -54,7 +51,7 @@ internal sealed record MovesView(
     // starred Today, was opened or saved: said beside the moves, or beside its being the best already.
     // Today is the setup the river is measured against, and moves away from by design.
     public bool RiverChanged(RiverInputs river) =>
-        From is { IsToday: false } from && State is MovesState.Moves or MovesState.AlreadyBest && river != from.Plan;
+        !From.IsToday && State is MovesState.Moves or MovesState.AlreadyBest && river != From.Plan;
 
     // Whether the river holds the move's values already: its pay, the payment by the deadline of the plan
     // the moves are from with the move's amount on top, a lever's amount with its module in the plan, or a
@@ -87,32 +84,26 @@ internal sealed record MovesView(
     };
 
     // The rent is the home's of the plan the moves are from: its cadastral income and share let come with it.
-    private RiverInputs WithPlansHome(RiverInputs river) => From?.Plan is { } plan
-        ? river.WithCadastralIncome(plan.Rent.CadastralIncome.Value).WithShareLet(plan.Rent.ShareLet.Value)
-        : river;
+    private RiverInputs WithPlansHome(RiverInputs river) =>
+        river.WithCadastralIncome(From.Plan.Rent.CadastralIncome.Value).WithShareLet(From.Plan.Rent.ShareLet.Value);
 
     // The royalty follows the pay at what a ruling accepts for the creative share of the plan the moves
     // are from, under its statuses: they come with it as that plan holds them, origins and all.
-    private RiverInputs WithPlansCreativeShare(RiverInputs river) => From?.Plan is { } plan
-        ? river with
+    private RiverInputs WithPlansCreativeShare(RiverInputs river) => river with
+    {
+        Copyright = river.Copyright with
         {
-            Copyright = river.Copyright with
-            {
-                CreativeShare = plan.Copyright.CreativeShare, AverageWithinCap = plan.Copyright.AverageWithinCap, HoldsAttestation = plan.Copyright.HoldsAttestation,
-            },
-        }
-        : river;
+            CreativeShare = From.Plan.Copyright.CreativeShare, AverageWithinCap = From.Plan.Copyright.AverageWithinCap, HoldsAttestation = From.Plan.Copyright.HoldsAttestation,
+        },
+    };
 
-    private decimal Planned(CompanyAdvancePaymentMove payment) => (From?.Plan.AdvancePayments.ByDeadline[payment.Deadline].Value ?? 0m) + payment.Amount;
+    private decimal Planned(CompanyAdvancePaymentMove payment) => From.Plan.AdvancePayments.ByDeadline[payment.Deadline].Value + payment.Amount;
 
-    private decimal Planned(DirectorAdvancePaymentMove payment) => (From?.Plan.TaxPrepayments.Paid.ByDeadline[payment.Deadline].Value ?? 0m) + payment.Amount;
+    private decimal Planned(DirectorAdvancePaymentMove payment) => From.Plan.TaxPrepayments.Paid.ByDeadline[payment.Deadline].Value + payment.Amount;
 }
 
 internal enum MovesState
 {
-    // No plan is starred « Today », the setup moves are measured from.
-    NoToday,
-
     // The plan the moves are from skips the company's year: the split, and so every move, starts from it.
     StartsAtPay,
 

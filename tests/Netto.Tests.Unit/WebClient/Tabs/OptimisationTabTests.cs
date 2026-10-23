@@ -10,21 +10,14 @@ using static Netto.Tests.WebClient.River.RiverRendering;
 namespace Netto.Tests.WebClient.Tabs;
 
 // The Optimisation tab as a viewer meets it, drawn without a browser (RiverRendering): one page of moves
-// from Today, under its own head: what Today leaves in the pocket, what every move leaves and the gain,
-// then each move, numbered, with why it helps, what it adds, the pocket after it, a link to where it acts
-// and « Apply ». What « Apply » does is MovesViewTests' and ModuleFoldsTests'; the figures and sentences
-// are MovesViewTests', MoveReasonsTests' and MoveLinksTests'.
+// from Today, or while no plan is starred from the plan in the river as it was opened or saved, under its
+// own head: what that plan leaves in the pocket, what every move leaves and the gain, then each move,
+// numbered, with why it helps, what it adds, the pocket after it, a link to where it acts and « Apply ».
+// What « Apply » does is MovesViewTests' and ModuleFoldsTests'; the figures and sentences are
+// MovesViewTests', MoveReasonsTests' and MoveLinksTests'; which plan the moves are from, MovesSourceTests'.
 public class OptimisationTabTests
 {
     private static readonly DateOnly On22October = new(2026, 10, 22);
-
-    [Fact]
-    public async Task Optimisation_noToday_saysHowToStarOne()
-    {
-        var html = await RenderTabAsync(today: null, RiverInputs.Example);
-
-        (html.Contains("star it as Today"), html.Contains("moves__move")).ShouldBe((true, false));
-    }
 
     [Fact]
     public async Task Optimisation_todayStartingAtThePay_saysWhereTheMovesStart()
@@ -191,7 +184,7 @@ public class OptimisationTabTests
     }
 
     // Without moves to show, the tab says why, and shows no figure and no list.
-    public static TheoryData<string> Silent => new() { "no Today", "Today starting at the pay", "Today refused" };
+    public static TheoryData<string> Silent => new() { "Today starting at the pay", "Today refused" };
 
     [Theory]
     [MemberData(nameof(Silent))]
@@ -219,11 +212,17 @@ public class OptimisationTabTests
     [Theory]
     [MemberData(nameof(Silent))]
     [InlineData("the example")]
+    [InlineData("the plan in the river, changed since")]
     public async Task Optimisation_anyState_isNoLiveRegion(string today)
     {
-        var html = await RenderTabAsync(today == "the example" ? RiverInputs.Example : SilentToday(today), RiverInputs.Example);
+        var html = today switch
+        {
+            "the example" => await RenderTabAsync(RiverInputs.Example, RiverInputs.Example),
+            "the plan in the river, changed since" => await RenderFromAsync(new MovesBaseline(RiverInputs.Example, IsToday: false), RiverInputs.Example.WithDirectorPay(40_000m)),
+            _ => await RenderTabAsync(SilentToday(today), RiverInputs.Example),
+        };
 
-        Regex.IsMatch(html, "aria-live|role=\"(status|alert)\"").ShouldBeFalse();
+        (html.Contains("moves__state"), Regex.IsMatch(html, "aria-live|role=\"(status|alert)\"")).ShouldBe((true, false));
     }
 
     // While no plan is starred Today, the moves are from the plan in the river as it was opened or saved:
@@ -354,9 +353,8 @@ public class OptimisationTabTests
     private static string Paragraph(string html, string paragraph) =>
         Regex.Match(html, $"<p class=\"{paragraph}\"[^>]*>(.*?)</p>", RegexOptions.Singleline).Groups[1].Value;
 
-    private static RiverInputs? SilentToday(string today) => today switch
+    private static RiverInputs SilentToday(string today) => today switch
     {
-        "no Today" => null,
         "Today starting at the pay" => RiverInputs.Example.SkipCompany(),
         "Today refused" => RiverInputs.Example.WithReserve(-1m),
         _ => throw new ArgumentOutOfRangeException(nameof(today), today, null),
@@ -371,13 +369,12 @@ public class OptimisationTabTests
 
     private static int Applies(string html) => Regex.Matches(html, "aria-label=\"Apply: ").Count;
 
-    // The tab with its moves from Today, none while no plan is starred.
-    private static Task<string> RenderTabAsync(RiverInputs? today, RiverInputs river) =>
-        RenderFromAsync(today is null ? null : MovesBaseline.Today(today), river);
+    // The tab with its moves from Today.
+    private static Task<string> RenderTabAsync(RiverInputs today, RiverInputs river) => RenderFromAsync(MovesBaseline.Today(today), river);
 
-    private static async Task<string> RenderFromAsync(MovesBaseline? from, RiverInputs river) =>
+    private static async Task<string> RenderFromAsync(MovesBaseline from, RiverInputs river) =>
         WebUtility.HtmlDecode(await RenderAsync<OptimisationTab>(new Folds(new BrowserStorage()), new()
         {
-            ["From"] = from, ["Found"] = from?.Plan.FindMoves(On22October), ["Inputs"] = river,
+            ["From"] = from, ["Found"] = from.Plan.FindMoves(On22October), ["Inputs"] = river,
         }));
 }

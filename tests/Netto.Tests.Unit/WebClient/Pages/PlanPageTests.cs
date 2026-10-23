@@ -164,12 +164,51 @@ public class PlanPageTests
         (optimisation.Badge, optimisation.Spoken).ShouldBe((Formats.Addition(total), $"{Formats.Euros(total)} more than Today"));
     }
 
+    // While no plan is starred Today, the moves are from the plan in the river, here the example the page
+    // opens on: Optimisation says what they add to it.
     [Fact]
-    public async Task Plan_withoutToday_badgesNoOptimisation()
+    public async Task Plan_withoutToday_badgesOptimisationWithWhatTheMovesFromThePlanAdd()
     {
+        var total = MovesView.Of(new MovesBaseline(RiverInputs.Example, IsToday: false), DateOnly.FromDateTime(On23October.DateTime)).Total;
+
         var html = await RenderPlanAsync(new Folds(new BrowserStorage()));
 
-        Links(html).Single(link => link.Name == "Optimisation").Badge.ShouldBeNull();
+        var optimisation = Links(html).Single(link => link.Name == "Optimisation");
+        (optimisation.Badge, optimisation.Spoken).ShouldBe((Formats.Addition(total), $"{Formats.Euros(total)} more than the plan in your river"));
+    }
+
+    [Fact]
+    public async Task Plan_optimisationTabWithoutToday_showsTheMovesFromThePlanInTheRiver()
+    {
+        var moves = MovesView.Of(new MovesBaseline(RiverInputs.Example, IsToday: false), DateOnly.FromDateTime(On23October.DateTime)).Moves;
+
+        var html = WebUtility.HtmlDecode(await RenderPlanAsync(new Folds(new BrowserStorage()), "optimisation"));
+
+        (Paragraph(html, "tab-head__eyebrow"), Paragraph(html, "moves__state"), moves.Count > 0, Regex.Matches(html, "<li class=\"moves__move\"").Count)
+            .ShouldBe(("Against the plan in your river", "From the plan in your river, as you opened or saved it:", true, moves.Count));
+    }
+
+    // Today deleted, the river on the plan it was opened from: the moves are from that plan, by its name.
+    [Fact]
+    public async Task Plan_optimisationTabWithAnOpenedPlanAndNoToday_namesIt()
+    {
+        var opened = RiverInputs.Example.WithDirectorPay(40_000m);
+
+        var html = WebUtility.HtmlDecode(await RenderPlanAsync(new Folds(new BrowserStorage()), "optimisation", opened,
+            saved: [RiverInputs.Example, opened], withoutToday: true));
+
+        (Paragraph(html, "tab-head__eyebrow"), Paragraph(html, "moves__state"))
+            .ShouldBe(("Against « Plan 2 », the plan in your river", "From « Plan 2 », as you opened or saved it:"));
+    }
+
+    // Once a plan is starred Today, the moves are from it, as the tab says.
+    [Fact]
+    public async Task Plan_optimisationTabWithToday_saysToday()
+    {
+        var html = WebUtility.HtmlDecode(await RenderPlanAsync(new Folds(new BrowserStorage()), "optimisation", RiverInputs.Example.WithDirectorPay(40_000m),
+            today: RiverInputs.Example));
+
+        (Paragraph(html, "tab-head__eyebrow"), Paragraph(html, "moves__state")).ShouldBe(("Against Today, your current setup", "From Today, your current setup:"));
     }
 
     // When to pay says the next advance payment's day, on every tab.
@@ -246,7 +285,14 @@ public class PlanPageTests
         return found.Success ? WebUtility.HtmlDecode(Regex.Replace(found.Groups[1].Value, "<[^>]*>", "")).Trim() : null;
     }
 
-    private static Task<string> RenderPlanAsync(Folds folds, string? tab = null, RiverInputs? river = null, RiverInputs? today = null, RiverInputs[]? saved = null) =>
+    // The text of the first paragraph of that class.
+    private static string Paragraph(string html, string paragraph) =>
+        Regex.Match(html, $"<p class=\"{paragraph}\"[^>]*>(.*?)</p>", RegexOptions.Singleline).Groups[1].Value;
+
+    // The river, the plan starred Today and the plans saved, the first starred unless one is; without Today,
+    // the plan starred is deleted once they are all saved.
+    private static Task<string> RenderPlanAsync(Folds folds, string? tab = null, RiverInputs? river = null, RiverInputs? today = null, RiverInputs[]? saved = null,
+        bool withoutToday = false) =>
         RenderAsync(typeof(Plan), folds, tab is null ? [] : new() { ["Tab"] = tab }, services =>
         {
             var storage = new BrowserStorage();
@@ -255,6 +301,8 @@ public class PlanPageTests
                 plans.Star(plans.Save(today, number => $"Plan {number}").Id);
             foreach (var plan in saved ?? [])
                 plans.Save(plan, number => $"Plan {number}");
+            if (withoutToday && plans.Today is { } starred)
+                plans.Delete(starred);
             services.AddSingleton<IBrowserStorage>(storage);
             services.AddSingleton(plans);
             services.AddSingleton(new RiverState(plans) { Inputs = river ?? RiverInputs.Example });
