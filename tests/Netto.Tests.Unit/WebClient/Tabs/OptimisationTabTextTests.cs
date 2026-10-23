@@ -2,19 +2,20 @@ using System.Globalization;
 using System.Resources;
 using Netto.Core.Simulation;
 using Netto.Web.Client.River;
+using Netto.Web.Client.Tabs;
 using Shouldly;
 
-namespace Netto.Tests.WebClient.River;
+namespace Netto.Tests.WebClient.Tabs;
 
-public class MovesCardTextTests
+public class OptimisationTabTextTests
 {
-    // The name IStringLocalizer<MovesCard> reads River/MovesCard.resx under.
-    private static readonly ResourceManager Resources = new("Netto.Web.Client.River.MovesCard", typeof(MovesCard).Assembly);
+    // The name IStringLocalizer<OptimisationTab> reads Tabs/OptimisationTab.resx under.
+    private static readonly ResourceManager Resources = new("Netto.Web.Client.Tabs.OptimisationTab", typeof(OptimisationTab).Assembly);
 
     [Fact]
-    public void MovesCardResx_everyState_hasAText()
+    public void OptimisationTabResx_everyState_hasAText()
     {
-        Enum.GetValues<MovesState>().Select(MovesCardText.State)
+        Enum.GetValues<MovesState>().Select(OptimisationTabText.State)
             .Where(key => Resources.GetString(key, CultureInfo.InvariantCulture) is null)
             .ShouldBeEmpty();
     }
@@ -23,7 +24,7 @@ public class MovesCardTextTests
     [Fact]
     public void Move_pay_saysThePayFromAndTo()
     {
-        var text = string.Format(CultureInfo.InvariantCulture, Resources.GetString(MovesCardText.Move(new PayMove(20_799m)), CultureInfo.InvariantCulture) ?? "", "€20,799.00", "€50,000.00");
+        var text = string.Format(CultureInfo.InvariantCulture, Resources.GetString(OptimisationTabText.Move(new PayMove(20_799m)), CultureInfo.InvariantCulture) ?? "", "€20,799.00", "€50,000.00");
 
         text.ShouldBe("Pay yourself €20,799.00 instead of €50,000.00");
     }
@@ -45,7 +46,7 @@ public class MovesCardTextTests
             _ => throw new ArgumentOutOfRangeException(nameof(move)),
         };
 
-        var text = string.Format(CultureInfo.InvariantCulture, Resources.GetString(MovesCardText.Move(move), CultureInfo.InvariantCulture) ?? "",
+        var text = string.Format(CultureInfo.InvariantCulture, Resources.GetString(OptimisationTabText.Move(move), CultureInfo.InvariantCulture) ?? "",
             Netto.Web.Client.Formats.Euros(amount), Netto.Web.Client.Formats.Day(date));
 
         text.ShouldBe(expected);
@@ -62,7 +63,7 @@ public class MovesCardTextTests
     [MemberData(nameof(Levers))]
     public void Move_lever_saysWhatTheCompanyPays(Move move, string amount, string expected)
     {
-        var text = string.Format(CultureInfo.InvariantCulture, Resources.GetString(MovesCardText.Move(move), CultureInfo.InvariantCulture) ?? "", amount);
+        var text = string.Format(CultureInfo.InvariantCulture, Resources.GetString(OptimisationTabText.Move(move), CultureInfo.InvariantCulture) ?? "", amount);
 
         text.ShouldBe(expected);
     }
@@ -72,7 +73,7 @@ public class MovesCardTextTests
     [Fact]
     public void Move_royaltyFollowingThePay_saysTheShareAndThatThePayStaysWithinWhatTheCompanyPays()
     {
-        var text = string.Format(CultureInfo.InvariantCulture, Resources.GetString(MovesCardText.Move(new CopyrightFollowsPayMove()), CultureInfo.InvariantCulture) ?? "",
+        var text = string.Format(CultureInfo.InvariantCulture, Resources.GetString(OptimisationTabText.Move(new CopyrightFollowsPayMove()), CultureInfo.InvariantCulture) ?? "",
             "75%");
 
         text.ShouldBe("Let your copyright royalty follow your pay, at what a ruling accepts for 75% of your time spent creating, your pay kept within what the company can pay beside it");
@@ -80,7 +81,7 @@ public class MovesCardTextTests
 
     // Folded without a Today, the summary says what the card waits for.
     [Fact]
-    public void MovesCardResx_noToday_hasASummary()
+    public void OptimisationTabResx_noToday_hasASummary()
     {
         Resources.GetString("SummaryNoToday", CultureInfo.InvariantCulture).ShouldBe("save and star your current setup to see them");
     }

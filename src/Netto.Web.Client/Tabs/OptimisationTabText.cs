@@ -1,11 +1,12 @@
 using Netto.Core.Simulation;
+using Netto.Web.Client.River;
 
-namespace Netto.Web.Client.River;
+namespace Netto.Web.Client.Tabs;
 
-// The resource keys MovesCard.razor builds from the engine's moves and the card's states. The
-// component and MovesCardTextTests both go through these, so a move or a state without a text in
-// MovesCard.resx fails a test instead of showing on screen.
-internal static class MovesCardText
+// The resource keys OptimisationTab.razor builds from the engine's moves and its states. The component
+// and OptimisationTabTextTests both go through these, so a move or a state without a text in
+// OptimisationTab.resx fails a test instead of showing on screen.
+internal static class OptimisationTabText
 {
     // What the move changes, in words: « Pay yourself {0} instead of {1} ».
     public static string Move(Move move) => move switch

@@ -1,35 +1,36 @@
 using System.Globalization;
 using System.Resources;
 using Netto.Web.Client.River;
+using Netto.Web.Client.Tabs;
 using Shouldly;
 
-namespace Netto.Tests.WebClient.River;
+namespace Netto.Tests.WebClient.Tabs;
 
-public class CalendarCardTextTests
+public class WhenToPayTabTextTests
 {
-    // The name IStringLocalizer<CalendarCard> reads River/CalendarCard.resx under.
-    private static readonly ResourceManager Resources = new("Netto.Web.Client.River.CalendarCard", typeof(CalendarCard).Assembly);
+    // The name IStringLocalizer<WhenToPayTab> reads Tabs/WhenToPayTab.resx under.
+    private static readonly ResourceManager Resources = new("Netto.Web.Client.Tabs.WhenToPayTab", typeof(WhenToPayTab).Assembly);
 
     private static readonly DateOnly On21December = new(2026, 12, 21);
 
     private static string? Text(string key) => Resources.GetString(key, CultureInfo.InvariantCulture);
 
     [Fact]
-    public void CalendarCardResx_everyCompanyState_hasAText()
+    public void WhenToPayTabResx_everyCompanyState_hasAText()
     {
         Enum.GetValues<SurchargeState>()
             .SelectMany(state => new[] { new CalendarTax<SurchargeState>(state, 1m, 1m, On21December), new CalendarTax<SurchargeState>(state, 1m, 0m, null) })
-            .Select(CalendarCardText.Company)
+            .Select(WhenToPayTabText.Company)
             .Where(key => Text(key) is null)
             .ShouldBeEmpty();
     }
 
     [Fact]
-    public void CalendarCardResx_everyDirectorState_hasAText()
+    public void WhenToPayTabResx_everyDirectorState_hasAText()
     {
         Enum.GetValues<TaxSurchargeState>()
             .SelectMany(state => new[] { new CalendarTax<TaxSurchargeState>(state, 1m, 1m, On21December), new CalendarTax<TaxSurchargeState>(state, 1m, 0m, null) })
-            .Select(CalendarCardText.Director)
+            .Select(WhenToPayTabText.Director)
             .Where(key => Text(key) is null)
             .ShouldBeEmpty();
     }
@@ -45,7 +46,7 @@ public class CalendarCardTextTests
     {
         var next = company == 0 && director == 0 ? null : new CalendarRow(On21December, false, 0m, (decimal)company, 0m, (decimal)director);
 
-        var text = string.Format(CultureInfo.InvariantCulture, Text(CalendarCardText.Summary(next)) ?? "",
+        var text = string.Format(CultureInfo.InvariantCulture, Text(WhenToPayTabText.Summary(next)) ?? "",
             next is null ? "" : Netto.Web.Client.Formats.Day(next.Date), Netto.Web.Client.Formats.Euros(next?.Company ?? 0m),
             Netto.Web.Client.Formats.Euros(next?.Director ?? 0m), 2026);
 
@@ -56,17 +57,17 @@ public class CalendarCardTextTests
     [InlineData(1)]
     [InlineData(-1)]
     [InlineData(0)]
-    public void CalendarCardResx_everyBalance_hasAText(int balance)
+    public void WhenToPayTabResx_everyBalance_hasAText(int balance)
     {
-        Text(CalendarCardText.CompanyBalance(balance)).ShouldNotBeNull();
-        Text(CalendarCardText.DirectorBalance(balance)).ShouldNotBeNull();
-        Text(CalendarCardText.Regularisation(balance)).ShouldNotBeNull();
+        Text(WhenToPayTabText.CompanyBalance(balance)).ShouldNotBeNull();
+        Text(WhenToPayTabText.DirectorBalance(balance)).ShouldNotBeNull();
+        Text(WhenToPayTabText.Regularisation(balance)).ShouldNotBeNull();
     }
 
     [Fact]
     public void DirectorBalance_toPay_saysTheTaxYearAndTheAmount()
     {
-        var text = string.Format(CultureInfo.InvariantCulture, Text(CalendarCardText.DirectorBalance(1_436.06m)) ?? "", 2027, "€1,436.06");
+        var text = string.Format(CultureInfo.InvariantCulture, Text(WhenToPayTabText.DirectorBalance(1_436.06m)) ?? "", 2027, "€1,436.06");
 
         text.ShouldBe("On your assessment for tax year 2027: €1,436.06 to pay, on the day the administration sets.");
     }
@@ -74,7 +75,7 @@ public class CalendarCardTextTests
     [Fact]
     public void Company_dueWithADeadlineOpen_saysWhatMoreCancelsItByWhen()
     {
-        var text = string.Format(CultureInfo.InvariantCulture, Text(CalendarCardText.Company(new CalendarTax<SurchargeState>(SurchargeState.Due, 675m, 15_000m, On21December))) ?? "",
+        var text = string.Format(CultureInfo.InvariantCulture, Text(WhenToPayTabText.Company(new CalendarTax<SurchargeState>(SurchargeState.Due, 675m, 15_000m, On21December))) ?? "",
             "€675.00", "€15,000.00", "21 December 2026", 2026);
 
         text.ShouldBe("The company's payments leave a surcharge of €675.00 on its corporate tax: €15,000.00 more by 21 December 2026 cancels it.");

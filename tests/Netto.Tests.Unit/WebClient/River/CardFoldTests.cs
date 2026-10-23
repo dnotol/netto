@@ -2,6 +2,7 @@ using Netto.Core.Vouchers;
 using Netto.Web.Client.River;
 using Netto.Web.Client.River.CompanyCar;
 using Netto.Web.Client.River.Copyright;
+using Netto.Web.Client.Tabs;
 using Shouldly;
 using static Netto.Tests.WebClient.River.RiverRendering;
 
@@ -100,7 +101,7 @@ public class CardFoldTests
     {
         var parameters = new Dictionary<string, object?> { ["Inputs"] = Everything, ["Run"] = Everything.Run(), ["Date"] = new DateOnly(2026, 10, 23) };
 
-        var html = await RenderAsync<CalendarCard>(new Folds(new BrowserStorage()), parameters);
+        var html = await RenderAsync<WhenToPayTab>(new Folds(new BrowserStorage()), parameters);
 
         IsOpen(html).ShouldBeFalse();
     }
@@ -113,7 +114,7 @@ public class CardFoldTests
         var refused = Everything.WithBilledContributions(-1m);
         var parameters = new Dictionary<string, object?> { ["Inputs"] = refused, ["Run"] = refused.Run(), ["Date"] = new DateOnly(2026, 10, 23) };
 
-        var html = await RenderAsync<CalendarCard>(new Folds(new BrowserStorage()), parameters);
+        var html = await RenderAsync<WhenToPayTab>(new Folds(new BrowserStorage()), parameters);
 
         (IsOpen(html), IsDisabled(html)).ShouldBe((true, true));
     }
@@ -122,7 +123,7 @@ public class CardFoldTests
     [Fact]
     public async Task Moves_withoutAToday_isFolded()
     {
-        var html = await RenderAsync<MovesCard>(new Folds(new BrowserStorage()), MovesParameters(today: null));
+        var html = await RenderAsync<OptimisationTab>(new Folds(new BrowserStorage()), MovesParameters(today: null));
 
         IsOpen(html).ShouldBeFalse();
     }
@@ -130,7 +131,7 @@ public class CardFoldTests
     [Fact]
     public async Task Moves_withAToday_isOpen()
     {
-        var html = await RenderAsync<MovesCard>(new Folds(new BrowserStorage()), MovesParameters(today: RiverInputs.Example));
+        var html = await RenderAsync<OptimisationTab>(new Folds(new BrowserStorage()), MovesParameters(today: RiverInputs.Example));
 
         IsOpen(html).ShouldBeTrue();
     }
@@ -141,7 +142,7 @@ public class CardFoldTests
         var folds = new Folds(new BrowserStorage());
         folds.Set("moves", false);
 
-        var html = await RenderAsync<MovesCard>(folds, MovesParameters(today: RiverInputs.Example));
+        var html = await RenderAsync<OptimisationTab>(folds, MovesParameters(today: RiverInputs.Example));
 
         IsOpen(html).ShouldBeFalse();
     }

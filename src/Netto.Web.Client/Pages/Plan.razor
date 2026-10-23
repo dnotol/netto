@@ -46,7 +46,7 @@
             <div class="river__body">
                 <RiverOutline />
                 <div id="river" class="river__flow" tabindex="-1" @ref="_river">
-                    <MovesCard Today="Plans.TodayPlan?.Inputs" Date="Today" Inputs="_inputs" InputsChanged="OnInputsChanged" />
+                    <OptimisationTab Today="Plans.TodayPlan?.Inputs" Date="Today" Inputs="_inputs" InputsChanged="OnInputsChanged" />
                     <CompanyYearCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Refused="@Refused(RiverModule.CompanyYear)" />
                     @if (_inputs.Composition.Count == 0)
                     {
@@ -89,7 +89,7 @@
                             <DividendCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Refused="@Refused(RiverModule.Dividend)" />
                         </div>
                     </div>
-                    <CalendarCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Date="Today" />
+                    <WhenToPayTab Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Date="Today" />
                 </div>
             </div>
         </CascadingValue>

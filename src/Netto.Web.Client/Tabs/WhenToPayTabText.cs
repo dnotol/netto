@@ -1,9 +1,11 @@
-namespace Netto.Web.Client.River;
+using Netto.Web.Client.River;
 
-// The resource keys CalendarCard.razor builds from the calendar's view. The component and
-// CalendarCardTextTests both go through these, so a state without a text in CalendarCard.resx fails a
+namespace Netto.Web.Client.Tabs;
+
+// The resource keys WhenToPayTab.razor builds from the calendar's view. The component and
+// WhenToPayTabTextTests both go through these, so a state without a text in WhenToPayTab.resx fails a
 // test instead of showing on screen.
-internal static class CalendarCardText
+internal static class WhenToPayTabText
 {
     // What the company's payments leave on its corporate tax.
     public static string Company(CalendarTax<SurchargeState> tax) => tax.TooLate ? "Company_TooLate" : $"Company_{tax.State}";

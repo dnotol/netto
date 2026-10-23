@@ -1,5 +1,6 @@
 @using Netto.Core.Simulation
-@inject IStringLocalizer<MovesCard> L
+@using Netto.Web.Client.River
+@inject IStringLocalizer<OptimisationTab> L
 @inject Folds Folds
 
 @* What Netto would change in the plan starred « Today », the user's current setup, to leave more in
@@ -11,7 +12,7 @@
    ones the river holds is read at each change. Without a Today, or while Netto cannot run it, the
    card says why. *@
 <ModuleCard Name="moves" Title="@L["Title"]" Summary="@Summary" Glance="@Glance" Help="@L["Help"]" OpenByDefault="@_view.OpenByDefault">
-    <p class="moves__state">@L[MovesCardText.State(_view.State)]</p>
+    <p class="moves__state">@L[OptimisationTabText.State(_view.State)]</p>
     @if (_view.State == MovesState.Moves)
     {
         <ol class="moves__list">
@@ -84,13 +85,13 @@
 
     private string What(PlannedMove move) => move.Move switch
     {
-        PayMove pay => L[MovesCardText.Move(pay), Formats.Euros(pay.Pay), Formats.Euros(_view.TodayPay)],
-        CompanyAdvancePaymentMove payment => L[MovesCardText.Move(payment), Formats.Euros(payment.Amount), Formats.Day(payment.Date)],
-        DirectorAdvancePaymentMove payment => L[MovesCardText.Move(payment), Formats.Euros(payment.Amount), Formats.Day(payment.Date)],
-        EcoVouchersMove eco => L[MovesCardText.Move(eco), Formats.Euros(eco.Amount)],
-        SportCultureVouchersMove sport => L[MovesCardText.Move(sport), Formats.Euros(sport.Amount)],
-        RentMove rent => L[MovesCardText.Move(rent), Formats.Euros(rent.Rent)],
-        CopyrightFollowsPayMove following => L[MovesCardText.Move(following), Formats.Percentage(_view.Today?.Copyright.CreativeShare.Value ?? 0m)],
+        PayMove pay => L[OptimisationTabText.Move(pay), Formats.Euros(pay.Pay), Formats.Euros(_view.TodayPay)],
+        CompanyAdvancePaymentMove payment => L[OptimisationTabText.Move(payment), Formats.Euros(payment.Amount), Formats.Day(payment.Date)],
+        DirectorAdvancePaymentMove payment => L[OptimisationTabText.Move(payment), Formats.Euros(payment.Amount), Formats.Day(payment.Date)],
+        EcoVouchersMove eco => L[OptimisationTabText.Move(eco), Formats.Euros(eco.Amount)],
+        SportCultureVouchersMove sport => L[OptimisationTabText.Move(sport), Formats.Euros(sport.Amount)],
+        RentMove rent => L[OptimisationTabText.Move(rent), Formats.Euros(rent.Rent)],
+        CopyrightFollowsPayMove following => L[OptimisationTabText.Move(following), Formats.Percentage(_view.Today?.Copyright.CreativeShare.Value ?? 0m)],
         _ => "",
     };
 
