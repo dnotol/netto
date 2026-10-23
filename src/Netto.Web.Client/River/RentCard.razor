@@ -53,7 +53,7 @@
                 @if (_cap is { } cap)
                 {
                     <p class="rent__note">
-                        @L["Cap", Formats.Euros(cap.Cap)]
+                        @L["Cap", Formats.Euros(cap.Cap)]@(" ")
                         @if (!cap.IsTheRent)
                         {
                             <MudButton Variant="Variant.Text" Size="Size.Small" Color="Color.Primary" OnClick="UseTheCap"

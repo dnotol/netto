@@ -187,7 +187,7 @@ public class LeverCardsFiguresTests
     {
         { "vouchers", Filled, ["€8.91 each from the company at most, €1.09 from you.", "At most €250.00 a year.", "At most €100.00 a year."] },
         { "allowances", Filled, ["At most €1,938.44 for the year.", "At most €20.00 a month, €240.00 for the year.", "At most €20.00 a month, €240.00 for the year."] },
-        { "rent", Filled, ["Cadastral income €1,200.00 · 12% let to the company", "At most €1,380.00 for the year.Use €1,380.00"] },
+        { "rent", Filled, ["Cadastral income €1,200.00 · 12% let to the company", "At most €1,380.00 for the year. Use €1,380.00"] },
         { "dividend", Filled, ["€20,000.00 kept from earlier years · VVPRbis shares, third distribution on, 18% withheld (default)"] },
     };
 
