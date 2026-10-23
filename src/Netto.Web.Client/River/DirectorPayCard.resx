@@ -24,6 +24,9 @@
   <data name="PayFromSplit" xml:space="preserve">
     <value>Gross pay from the split</value>
   </data>
+  <data name="Figure_CompanyContributions" xml:space="preserve">
+    <value>Contributions the company pays</value>
+  </data>
   <data name="Figure_BenefitInKind" xml:space="preserve">
     <value>Benefit in kind</value>
   </data>

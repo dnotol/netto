@@ -8,14 +8,16 @@ namespace Netto.Web.Client.River;
 // pay goes is the card's drain list.
 internal static class DirectorPayFigures
 {
-    // A company car's benefit in kind, never paid in cash, and a copyright royalty's part beyond its
-    // limits, paid besides the payslip, each above nothing and explained in its bubble, then the taxable
-    // pay they make with the gross. None while the pay is taxed on its gross alone, or with the
-    // contributions the company pays, which what flows in says.
+    // What the pay is taxed on besides its gross, each part above nothing and explained in its bubble:
+    // the contributions the company pays on the director's behalf, which count as pay, beside the gross
+    // they are paid with; a company car's benefit in kind, never paid in cash; and a copyright royalty's
+    // part beyond its limits, paid besides the payslip. Then the taxable pay the gross and they make,
+    // which they add up to. None while the pay is taxed on its gross alone.
     public static IReadOnlyList<FigureLine> Taxed(GrossToNetResult pay)
     {
         FigureLine[] parts =
         [
+            new("Figure_CompanyContributions", pay.ContributionsPaidByCompany) { Help = "PaidByHint" },
             new("Figure_BenefitInKind", pay.BenefitInKind) { Help = "Help_BenefitInKind" },
             new("Figure_RequalifiedPay", pay.RequalifiedPay) { Help = "Help_RequalifiedPay" },
         ];

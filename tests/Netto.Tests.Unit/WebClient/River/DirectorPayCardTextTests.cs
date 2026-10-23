@@ -15,13 +15,14 @@ public class DirectorPayCardTextTests
     // The name IStringLocalizer<DirectorPayCard> reads River/DirectorPayCard.resx under.
     private static readonly ResourceManager Resources = new("Netto.Web.Client.River.DirectorPayCard", typeof(DirectorPayCard).Assembly);
 
-    // Every label and bubble of Director pay's lines: a car's benefit and a royalty's part beyond its
-    // limits with the taxable pay they make, and what more by the last deadline leaves no surcharge due.
+    // Every label and bubble of Director pay's lines: the contributions the company pays, a car's
+    // benefit and a royalty's part beyond its limits with the taxable pay they make, and what more by the
+    // last deadline leaves no surcharge due.
     [Fact]
     public void DirectorPayCardResx_everyLabelAndBubbleOfItsLines_hasAText()
     {
         var taxed = RiverInputs.Example.AddToPlan(OptionalModule.Car).WithCatalogueValue(50_000m).WithFirstRegistration(new DateOnly(2026, 1, 10)).WithCarCosts(8_000m)
-            .AddToPlan(OptionalModule.Copyright).WithRoyalty(30_000m);
+            .AddToPlan(OptionalModule.Copyright).WithRoyalty(30_000m).WithContributionsPaidBy(ContributionsPaidBy.Company);
         var due = RiverInputs.Example.WithTaxWithheld(0m);
         var lines = DirectorPayFigures.Taxed(taxed.Run().Pay.ShouldNotBeNull())
             .Concat(DirectorPayFigures.Surcharge(DirectorPayView.From(due, due.Run().Pay.ShouldNotBeNull())));
