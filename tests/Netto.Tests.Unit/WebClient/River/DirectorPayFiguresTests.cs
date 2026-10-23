@@ -109,23 +109,20 @@ public class DirectorPayFiguresTests
             () => lines[0].Args.ShouldBe(["21 December 2026"]));
     }
 
-    private static readonly Dictionary<string, RiverInputs> NoneDue = new()
+    // With no surcharge due, the card says why in a sentence: no line.
+    public static TheoryData<string, RiverInputs> NoneDue => new()
     {
-        ["under the minimum"] = RiverInputs.Example,
-        ["covered"] = RiverInputs.Example.WithTaxWithheld(20_000m),
-        ["exempt"] = RiverInputs.Example.WithStarter(true),
-        ["no tax"] = RiverInputs.Example.WithDirectorPay(0m),
+        { "under the minimum", RiverInputs.Example },
+        { "covered", RiverInputs.Example.WithTaxWithheld(20_000m) },
+        { "exempt", RiverInputs.Example.WithStarter(true) },
+        { "no tax", RiverInputs.Example.WithDirectorPay(0m) },
     };
 
-    // With no surcharge due, the card says why in a sentence: no line.
     [Theory]
-    [InlineData("under the minimum")]
-    [InlineData("covered")]
-    [InlineData("exempt")]
-    [InlineData("no tax")]
-    public void Surcharge_noneDue_drawsNoLine(string state)
+    [MemberData(nameof(NoneDue))]
+    public void Surcharge_noneDue_drawsNoLine(string _, RiverInputs inputs)
     {
-        Surcharge(NoneDue[state]).ShouldBeEmpty();
+        Surcharge(inputs).ShouldBeEmpty();
     }
 
     private static IReadOnlyList<FigureLine> Taxed(RiverInputs inputs) => DirectorPayFigures.Taxed(inputs.Run().Pay.ShouldNotBeNull());

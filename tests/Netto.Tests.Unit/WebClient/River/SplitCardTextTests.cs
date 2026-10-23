@@ -109,27 +109,21 @@ public class SplitCardTextTests
         Missing(keys).ShouldBeEmpty();
     }
 
-    private static readonly Dictionary<string, RiverInputs> Royalties = new()
-    {
-        ["none"] = RiverInputs.Example,
-        ["following without a share"] = RiverInputs.Example.AddToPlan(OptionalModule.Copyright),
-        ["following above the cap"] = RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithAverageWithinCap(false).WithCreativeShare(0.75m),
-        ["following at 75%"] = RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithCreativeShare(0.75m),
-        ["fixed"] = RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithRoyalty(10_000m),
-    };
-
     // Why the pay goes no further: beside a royalty that follows the pay only while the engine set it at
     // what a ruling accepts; one that is none leaves the whole profit before pay, as no royalty does.
-    [Theory]
-    [InlineData("none", "CeilingHint")]
-    [InlineData("following without a share", "CeilingHint")]
-    [InlineData("following above the cap", "CeilingHint")]
-    [InlineData("following at 75%", "CeilingHint_Follows")]
-    [InlineData("fixed", "CeilingHint_Fixed")]
-    public void CeilingHint_namesTheFollowingRoyaltyOnlyWhileARulingAcceptsOne(string royalty, string key)
+    public static TheoryData<string, RiverInputs, string> CeilingHints => new()
     {
-        var inputs = Royalties[royalty];
+        { "no royalty", RiverInputs.Example, "CeilingHint" },
+        { "following without a share", RiverInputs.Example.AddToPlan(OptionalModule.Copyright), "CeilingHint" },
+        { "following above the cap", RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithAverageWithinCap(false).WithCreativeShare(0.75m), "CeilingHint" },
+        { "following at 75%", RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithCreativeShare(0.75m), "CeilingHint_Follows" },
+        { "fixed", RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithRoyalty(10_000m), "CeilingHint_Fixed" },
+    };
 
+    [Theory]
+    [MemberData(nameof(CeilingHints))]
+    public void CeilingHint_namesTheFollowingRoyaltyOnlyWhileARulingAcceptsOne(string _, RiverInputs inputs, string key)
+    {
         SplitCardText.CeilingHint(SplitView.From(inputs, inputs.Run()).Royalty).ShouldBe(key);
     }
 
@@ -147,14 +141,17 @@ public class SplitCardTextTests
 
     // The curve's sentences name the royalty only while it follows the pay: a fixed one is the same at
     // every pay.
-    [Theory]
-    [InlineData("none", "PointerAt")]
-    [InlineData("fixed", "PointerAt")]
-    [InlineData("following at 75%", "PointerAt_Royalty")]
-    public void AlongTheCurve_namesTheRoyaltyOnlyWhileItFollowsThePay(string royalty, string key)
+    public static TheoryData<string, RiverInputs, string> Curves => new()
     {
-        var inputs = Royalties[royalty];
+        { "no royalty", RiverInputs.Example, "PointerAt" },
+        { "fixed", RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithRoyalty(10_000m), "PointerAt" },
+        { "following at 75%", RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithCreativeShare(0.75m), "PointerAt_Royalty" },
+    };
 
+    [Theory]
+    [MemberData(nameof(Curves))]
+    public void AlongTheCurve_namesTheRoyaltyOnlyWhileItFollowsThePay(string _, RiverInputs inputs, string key)
+    {
         SplitCardText.AlongTheCurve("PointerAt", SplitView.From(inputs, inputs.Run()).Royalty).ShouldBe(key);
     }
 

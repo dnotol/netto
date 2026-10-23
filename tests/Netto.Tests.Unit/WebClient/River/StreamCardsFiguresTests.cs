@@ -22,16 +22,11 @@ public class StreamCardsFiguresTests
         .AddToPlan(OptionalModule.Car).WithCatalogueValue(50_000m).WithFirstRegistration(new DateOnly(2026, 1, 10)).WithCarCosts(8_000m)
         .AddToPlan(OptionalModule.Copyright).WithCreativeShare(0.5m);
 
-    // The Plan page with every card open, each drawn once for the tests that read it: on the filled plan,
-    // on the river's example, on the example with nothing withheld on the pay, which leaves a surcharge
-    // due on its tax, and with the whole base of that tax paid by 10 April, which earns a bonus.
-    private static readonly Dictionary<string, Lazy<Task<string>>> Pages = new()
-    {
-        ["filled"] = new(() => CardHtml.RenderPlanOpenAsync(Filled)),
-        ["example"] = new(() => CardHtml.RenderPlanOpenAsync(RiverInputs.Example)),
-        ["nothing withheld"] = new(() => CardHtml.RenderPlanOpenAsync(RiverInputs.Example.WithTaxWithheld(0m))),
-        ["bonus"] = new(() => CardHtml.RenderPlanOpenAsync(RiverInputs.Example.WithTaxWithheld(0m).WithTaxAdvancePayment(0, 12_014m))),
-    };
+    // The Plan page on the filled plan with every card open, drawn once for the tests that read it.
+    private static readonly Lazy<Task<string>> Page = new(() => CardHtml.RenderPlanOpenAsync(Filled));
+
+    // The example with nothing withheld on the pay, which leaves a surcharge due on its tax.
+    private static readonly RiverInputs NothingWithheld = RiverInputs.Example.WithTaxWithheld(0m);
 
     // An amount as the page draws it, in euros, signed or not, or as a share.
     private static readonly Regex Amount = new(@"[−+]?€[0-9][0-9,]*(?:\.[0-9]+)?|[0-9]+(?:\.[0-9]+)?%");
@@ -51,19 +46,26 @@ public class StreamCardsFiguresTests
     }
 
     // A sentence that restates a figure its lines show is gone: no paragraph in sight holds an amount
-    // one of the card's figure or drain lines draws, on the filled plan or on the example.
-    public static TheoryData<string, string> CardsOfEachPlan => new()
+    // one of the card's figure or drain lines draws, on the filled plan, on the example, with a
+    // surcharge due on the pay's tax, and with the whole base of that tax paid by 10 April, which earns
+    // a bonus.
+    public static TheoryData<string, RiverInputs, string> CardsOfEachPlan => new()
     {
-        { "filled", "split" }, { "example", "split" },
-        { "filled", "director-pay" }, { "example", "director-pay" }, { "nothing withheld", "director-pay" }, { "bonus", "director-pay" },
-        { "filled", "corporate-tax" }, { "example", "corporate-tax" },
+        { "the filled plan", Filled, "split" },
+        { "the example", RiverInputs.Example, "split" },
+        { "the filled plan", Filled, "director-pay" },
+        { "the example", RiverInputs.Example, "director-pay" },
+        { "nothing withheld", NothingWithheld, "director-pay" },
+        { "a bonus", NothingWithheld.WithTaxAdvancePayment(0, 12_014m), "director-pay" },
+        { "the filled plan", Filled, "corporate-tax" },
+        { "the example", RiverInputs.Example, "corporate-tax" },
     };
 
     [Theory]
     [MemberData(nameof(CardsOfEachPlan))]
-    public async Task Card_open_proseRestatesNoAmountOfItsLines(string plan, string card)
+    public async Task Card_open_proseRestatesNoAmountOfItsLines(string _, RiverInputs plan, string card)
     {
-        var html = await CardAsync(card, plan);
+        var html = CardHtml.Card(await CardHtml.RenderPlanOpenAsync(plan), card);
         var lines = CardHtml.LineAmounts(html).Select(Unsigned).ToHashSet();
 
         CardHtml.Prose(html).Where(paragraph => Amount.Matches(paragraph).Any(amount => lines.Contains(Unsigned(amount.Value)))).ShouldBeEmpty();
@@ -180,7 +182,9 @@ public class StreamCardsFiguresTests
     [Fact]
     public async Task DirectorPay_nothingWithheld_drawsWhatMoreByTheLastDeadlineLeavesNoneDue()
     {
-        CardHtml.Lines(await CardAsync("director-pay", "nothing withheld")).ShouldContain(("More by 21 December 2026 leaves none due", "€14,317.50", null));
+        var html = CardHtml.Card(await CardHtml.RenderPlanOpenAsync(NothingWithheld), "director-pay");
+
+        CardHtml.Lines(html).ShouldContain(("More by 21 December 2026 leaves none due", "€14,317.50", null));
     }
 
     // How the withholding is derived from the pay slip, and what the key formula is, are rules: the
@@ -233,7 +237,7 @@ public class StreamCardsFiguresTests
         CardHtml.Prose(await CardAsync("corporate-tax")).ShouldContain("Reduced rate kept: your pay with benefits reaches the €51,000.00 minimum; benefits within 20%.");
     }
 
-    private static async Task<string> CardAsync(string card, string plan = "filled") => CardHtml.Card(await Pages[plan].Value, card);
+    private static async Task<string> CardAsync(string card) => CardHtml.Card(await Page.Value, card);
 
     private static string Unsigned(string amount) => amount.TrimStart('−', '+');
 
