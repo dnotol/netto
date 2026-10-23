@@ -242,10 +242,11 @@
 
     private string EngineName(CarEngine engine) => L[CarCardText.Engine(engine)];
 
-    private string? Summary => _view is { } view && Run.Year is { } year
+    // It ends on what the split shares, the royalty in it while it is in the plan.
+    private string? Summary => _view is { } view
         ? view.HasCar
-            ? L["Summary", Formats.Euros(view.Result.Costs), Formats.Euros(year.ProfitBeforePay)].Value
-            : L["SummaryNoCar", Formats.Euros(year.ProfitBeforePay)].Value
+            ? L[CarCardText.Summary(true, Inputs.InPlan(OptionalModule.Copyright)), Formats.Euros(view.Result.Costs), Formats.Euros(view.SplitShares)].Value
+            : L[CarCardText.Summary(false, Inputs.InPlan(OptionalModule.Copyright)), Formats.Euros(view.SplitShares)].Value
         : null;
 
     private RenderFragment? Details => _view is { Details.Count: > 0 } view && Run.Year is { } year

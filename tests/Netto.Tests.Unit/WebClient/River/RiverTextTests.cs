@@ -367,6 +367,58 @@ public class RiverTextTests
         Missing(SplitCardResources, keys).ShouldBeEmpty();
     }
 
+    // How far the pay goes: beside a royalty that follows the pay only while the engine set it at what a
+    // ruling accepts; one that is none leaves the whole profit before pay, as no royalty does.
+    // The rent's and the car's summaries end on what the split shares: « before your pay », and « before
+    // your pay and royalty » once the royalty is in the plan.
+    [Fact]
+    public void RentAndCarCardResx_everySummary_hasAText()
+    {
+        Missing(RentCardResources, [RentCardText.Summary(false), RentCardText.Summary(true)])
+            .Concat(Missing(CarCardResources, [CarCardText.Summary(true, false), CarCardText.Summary(true, true), CarCardText.Summary(false, false), CarCardText.Summary(false, true)]))
+            .ShouldBeEmpty();
+    }
+
+    [Theory]
+    [InlineData(false, "Summary")]
+    [InlineData(true, "Summary_Royalty")]
+    public void RentSummary_royaltyInThePlan_saysBeforeYourPayAndRoyalty(bool royalty, string key)
+    {
+        RentCardText.Summary(royalty).ShouldBe(key);
+    }
+
+    [Theory]
+    [InlineData(true, false, "Summary")]
+    [InlineData(true, true, "Summary_Royalty")]
+    [InlineData(false, false, "SummaryNoCar")]
+    [InlineData(false, true, "SummaryNoCar_Royalty")]
+    public void CarSummary_royaltyInThePlan_saysBeforeYourPayAndRoyalty(bool hasCar, bool royalty, string key)
+    {
+        CarCardText.Summary(hasCar, royalty).ShouldBe(key);
+    }
+
+    private static readonly Dictionary<string, RiverInputs> Royalties = new()
+    {
+        ["none"] = RiverInputs.Example,
+        ["following without a share"] = RiverInputs.Example.AddToPlan(OptionalModule.Copyright),
+        ["following above the cap"] = RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithAverageWithinCap(false).WithCreativeShare(0.75m),
+        ["following at 75%"] = RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithCreativeShare(0.75m),
+        ["fixed"] = RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithRoyalty(10_000m),
+    };
+
+    [Theory]
+    [InlineData("none", "Ceiling")]
+    [InlineData("following without a share", "Ceiling")]
+    [InlineData("following above the cap", "Ceiling")]
+    [InlineData("following at 75%", "Ceiling_Follows")]
+    [InlineData("fixed", "Ceiling_Fixed")]
+    public void Ceiling_namesTheFollowingRoyaltyOnlyWhileARulingAcceptsOne(string royalty, string key)
+    {
+        var inputs = Royalties[royalty];
+
+        SplitCardText.Ceiling(SplitView.From(inputs, inputs.Run()).Royalty).ShouldBe(key);
+    }
+
     // The curve's sentences name the royalty only while it follows the pay: a fixed one is the same at
     // every pay.
     [Theory]

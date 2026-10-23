@@ -21,6 +21,12 @@
   <data name="SummaryNoCar" xml:space="preserve">
     <value>No car yet · {0} before your pay</value>
   </data>
+  <data name="Summary_Royalty" xml:space="preserve">
+    <value>{0} a year to the muddy pocket · {1} before your pay and royalty</value>
+  </data>
+  <data name="SummaryNoCar_Royalty" xml:space="preserve">
+    <value>No car yet · {0} before your pay and royalty</value>
+  </data>
   <data name="Waiting" xml:space="preserve">
     <value>Waiting for the company's year.</value>
   </data>

@@ -14,6 +14,10 @@ internal static class CarCardText
         _ => "Gap_Less",
     };
 
+    // The summary ends on what the split shares: « before your pay and royalty » while the royalty is in
+    // the plan.
+    public static string Summary(bool hasCar, bool royalty) => (hasCar ? "Summary" : "SummaryNoCar") + (royalty ? "_Royalty" : "");
+
     // What drives the car, as the engine select names it.
     public static string Engine(CarEngine engine) => $"Engine_{engine}";
 

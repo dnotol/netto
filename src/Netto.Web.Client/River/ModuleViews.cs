@@ -99,6 +99,10 @@ internal sealed record RentView(
     IReadOnlyList<Drain> Drains,
     IReadOnlyList<StepDetail> Details)
 {
+    // What the split shares once the levers are paid, the royalty in it, which the summary states: the
+    // same at every pay, while the profit before pay alone moves with a royalty that follows the pay.
+    public decimal SplitShares { get; init; }
+
     public static RentView From(YearResult year, PlanComposition composition)
     {
         var steps = year.Steps.Where(step => step.Event == TaxableEvent.Rent).ToList();
@@ -124,7 +128,7 @@ internal sealed record RentView(
                     : new Drain("left_after_rent", DrainKind.PassedOn, year.ProfitBeforePay + CarView.FromProfit(year.Car) + year.Copyright.Royalty,
                         NextModule.After(OptionalModule.Rent, composition)),
             ],
-            steps.Select(StepDetail.From).ToList());
+            steps.Select(StepDetail.From).ToList()) { SplitShares = year.ProfitBeforePay + year.Copyright.Royalty };
     }
 }
 

@@ -91,6 +91,10 @@ internal static class RentCardText
 
     // What the flat charges are, in the bubble the term opens where the rent's tax is said.
     public const string FlatChargesTerm = "Term_FlatCharges";
+
+    // The summary ends on what the split shares: « before your pay and royalty » while the royalty is
+    // in the plan.
+    public static string Summary(bool royalty) => royalty ? "Summary_Royalty" : "Summary";
 }
 
 internal static class ConditionListText
@@ -136,11 +140,13 @@ internal static class SplitCardText
     public static string Hint(SplitRoyaltyView? royalty) => royalty is null ? "Hint" : "Hint_Royalty";
 
     // How far the pay goes: the profit before pay, what a fixed royalty leaves of it, or where the pay
-    // and the royalty that follows it take all of it.
+    // and the royalty that follows it take all of it, while the engine set that royalty at what a
+    // ruling accepts; one that is none leaves the whole profit before pay.
     public static string Ceiling(SplitRoyaltyView? royalty) => royalty switch
     {
         null => "Ceiling",
-        { FollowsPay.Value: true } => "Ceiling_Follows",
+        { FollowsPay.Value: true, Following: CopyrightFollowing.AtCeiling } => "Ceiling_Follows",
+        { FollowsPay.Value: true } => "Ceiling",
         _ => "Ceiling_Fixed",
     };
 

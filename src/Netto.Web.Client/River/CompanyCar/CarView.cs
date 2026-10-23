@@ -24,6 +24,10 @@ internal sealed record CarView(
 {
     public bool HasCar => Details.Count > 0;
 
+    // What the split shares once the car is paid, the royalty in it, which the summary states: the same
+    // at every pay, while the profit before pay alone moves with a royalty that follows the pay.
+    public decimal SplitShares { get; init; }
+
     // What the car takes off what the company earns: its costs, less what the director pays for it.
     public static decimal FromProfit(CarResult car) => car.Costs - car.Contribution;
 
@@ -51,7 +55,7 @@ internal sealed record CarView(
                 .. drains,
                 NextModule.IntoTheSplit(year, composition),
             ],
-            ledger.Select(StepDetail.From).ToList());
+            ledger.Select(StepDetail.From).ToList()) { SplitShares = left };
     }
 
     // The conditions the card lists for what drives the car: what makes a plug-in hybrid a fake one

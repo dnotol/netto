@@ -111,8 +111,9 @@
     // The share is a fraction in the river; the field shows it as a percentage.
     private decimal SharePercent => Inputs.Rent.ShareLet.Value * 100m;
 
-    private string? Summary => _view is { } view && Run.Year is { } year
-        ? L["Summary", Formats.Euros(view.AfterTax), Formats.Euros(year.ProfitBeforePay)].Value
+    // It ends on what the split shares, the royalty in it while it is in the plan.
+    private string? Summary => _view is { } view
+        ? L[RentCardText.Summary(Inputs.InPlan(OptionalModule.Copyright)), Formats.Euros(view.AfterTax), Formats.Euros(view.SplitShares)].Value
         : null;
 
     private RenderFragment? Details => _view is { Details.Count: > 0 } view && Run.Year is { } year

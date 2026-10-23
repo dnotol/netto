@@ -39,6 +39,17 @@ public class CarViewTests
         });
     }
 
+    // What the split shares once the car is paid, 92,000, stays the same at every pay with a royalty that
+    // follows it, which the card's summary states; the profit before pay alone falls as the royalty
+    // rises with the pay.
+    [Theory]
+    [InlineData(50_000)]
+    [InlineData(60_000)]
+    public void Car_withAFollowingRoyalty_saysWhatTheSplitSharesAtEveryPay(int pay)
+    {
+        Car(ElectricCar.AddToPlan(OptionalModule.Copyright).WithCreativeShare(0.75m).WithDirectorPay(pay)).SplitShares.ShouldBe(92_000m);
+    }
+
     // With the royalty in the plan, what the car leaves goes on to the split, which shares it between the
     // pay, the royalty and the company: the royalty is still in it.
     [Fact]

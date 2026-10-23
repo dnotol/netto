@@ -913,6 +913,25 @@ public class ModuleViewsTests
         (view.TaxableRent, view.TaxedOnTheFloor, view.NetRent).ShouldBe((463.68m, true, 278.21m));
     }
 
+    // What the split shares once the rent is paid, 98,620, stays the same at every pay with a royalty that
+    // follows it, which the card's summary states; the profit before pay alone falls as the royalty
+    // rises with the pay.
+    [Theory]
+    [InlineData(50_000)]
+    [InlineData(60_000)]
+    public void Rent_withAFollowingRoyalty_saysWhatTheSplitSharesAtEveryPay(int pay)
+    {
+        Rent(RentAtTheCap(FollowingRoyalty).WithDirectorPay(pay)).SplitShares.ShouldBe(98_620m);
+    }
+
+    [Fact]
+    public void Rent_withoutARoyalty_saysWhatTheSplitSharesAsTheProfitBeforePay()
+    {
+        var inputs = RentAtTheCap(RiverInputs.Example);
+
+        Rent(inputs).SplitShares.ShouldBe(inputs.Run().Year.ShouldNotBeNull().ProfitBeforePay);
+    }
+
     [Fact]
     public void Rent_atTheCap_listsItsStepsAndNoneOfTheOtherLevers()
     {
