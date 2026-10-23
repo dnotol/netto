@@ -1,3 +1,4 @@
+using Netto.Core.Allowances;
 using Netto.Core.Copyright;
 using Netto.Core.CorporateTax;
 using Netto.Core.DirectorPay;
@@ -348,6 +349,44 @@ public class YearSimulationCopyrightTests
     public void ProfitBeforePay_royaltyFollowingThePay_isWhatTheCompanyHasLeftOnceItPaidWhatARulingAccepts()
     {
         YearSimulation.ProfitBeforePay(Scenario(royalty: Following(0.75m))).ShouldBe(88_461.54m);
+    }
+
+    // A royalty the user fixes is at most what the company has before pay and royalty, the 100,000 it
+    // earns here: one cent more would be paid at a loss.
+    [Theory]
+    [InlineData(100_000.00, null)]
+    [InlineData(100_000.01, CopyrightCalculator.RoyaltyAboveProfit)]
+    public void Run_2026FixedRoyaltyAgainstWhatTheCompanyHasBeforePay_isRefusedOnlyAboveIt(decimal royalty, string? error)
+    {
+        YearSimulation.Run(Scenario(directorPay: 0m, royalty: new CopyrightRoyalty(royalty))).Error.ShouldBe(error);
+    }
+
+    // What the levers above leave: 600 of phone costs leave 99,400.
+    [Theory]
+    [InlineData(99_400.00, null)]
+    [InlineData(99_400.01, CopyrightCalculator.RoyaltyAboveProfit)]
+    public void Run_2026FixedRoyaltyAgainstWhatTheLeversAboveLeave_isRefusedOnlyAboveIt(decimal royalty, string? error)
+    {
+        var scenario = Scenario(directorPay: 0m, royalty: new CopyrightRoyalty(royalty)) with { Allowances = new ExpenseAllowances(0m, 0m, 0m, 600m) };
+
+        YearSimulation.Run(scenario).Error.ShouldBe(error);
+    }
+
+    // A company earning nothing before pay has nothing to pay a royalty with; without one, its year runs.
+    [Theory]
+    [InlineData(0, null)]
+    [InlineData(1, CopyrightCalculator.RoyaltyAboveProfit)]
+    public void Run_2026FixedRoyaltyWhileTheCompanyLosesMoney_isRefusedFromTheFirstEuro(int royalty, string? error)
+    {
+        YearSimulation.Run(Scenario(revenue: 10_000m, royalty: new CopyrightRoyalty(royalty))).Error.ShouldBe(error);
+    }
+
+    // A royalty that follows the pay is bounded by the pay ceiling, which the river holds the pay to: a
+    // pay beyond it is not the royalty's to refuse.
+    [Fact]
+    public void Run_2026RoyaltyFollowingBesideAPayBeyondThePayCeiling_isNotRefused()
+    {
+        YearSimulation.Run(Scenario(directorPay: 95_000m, royalty: Following(0.75m))).Error.ShouldBeNull();
     }
 
     // The most the split gives as pay beside a fixed royalty is the profit before pay, never below zero.

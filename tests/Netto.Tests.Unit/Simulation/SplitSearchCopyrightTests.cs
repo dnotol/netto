@@ -93,6 +93,12 @@ public class SplitSearchCopyrightTests
     }
 
     [Fact]
+    public void Run_royaltyAboveWhatTheCompanyHasBeforePay_isRefusedWithTheCalculatorsKey()
+    {
+        SplitSearch.Run(Scenario() with { Copyright = new CopyrightRoyalty(100_000.01m) }).ShouldBe((null, CopyrightCalculator.RoyaltyAboveProfit));
+    }
+
+    [Fact]
     public void Run_2026Royalty_eachLevelCarriesIt()
     {
         Search(Scenario()).Curve.ShouldAllBe(level => level.Royalty == 20_000m);

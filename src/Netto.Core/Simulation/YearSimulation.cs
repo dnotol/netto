@@ -265,7 +265,10 @@ public static class YearSimulation
 
     // What the company pays the director besides pay as the rules accept it, the vouchers, the expense
     // allowances then the rent, which the office allowance excludes, the car and the copyright royalty,
-    // whose limits are on the pay set, or the key of the first the rules refuse.
+    // whose limits are on the pay set, or the key of the first the rules refuse. A royalty the user fixes
+    // is refused above what the company has before pay and royalty, what it earns less what the levers
+    // above take, earlier profits aside as the pay's ceiling leaves them (operator, 2026-10-23): it would
+    // be paid at a loss. One that follows the pay is held to the pay ceiling instead, as the pay is.
     private static (BesidesPay? Value, string? Error) BesidesPayOf(Scenario scenario, LeverRules levers)
     {
         var (vouchers, voucherError) = VoucherCalculator.Compute(levers.Vouchers, scenario.Vouchers);
@@ -288,7 +291,12 @@ public static class YearSimulation
         if (copyright is null)
             return (null, copyrightError);
 
-        return (new BesidesPay(vouchers, allowances, rent, car, copyright), null);
+        var besidesPay = new BesidesPay(vouchers, allowances, rent, car, copyright);
+        var beforeRoyalty = scenario.ProfitBeforeDirector - besidesPay.FromProfit + copyright.Royalty;
+        if (!scenario.Copyright.FollowsPay && copyright.Royalty > Math.Max(0m, beforeRoyalty))
+            return (null, CopyrightCalculator.RoyaltyAboveProfit);
+
+        return (besidesPay, null);
     }
 
     // What follows the director pay: its cost to the company comes off the profit before pay, and art. 215

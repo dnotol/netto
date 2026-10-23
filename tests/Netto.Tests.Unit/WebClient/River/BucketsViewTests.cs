@@ -410,12 +410,14 @@ public class BucketsViewTests
             .ShouldBe((true, false));
     }
 
+    // A royalty of 15,000 fits every year's 18,620 and more before pay and royalty: one above what the
+    // company has there is refused.
     [Theory]
     [MemberData(nameof(Years))]
     public void From_anyYearWithARoyalty_bucketsAddUpToWhatTheCompanyEarnsBeforePayingTheDirector(decimal revenue, decimal pay, decimal reserve)
     {
         var inputs = RentAtTheCap(EveryLever.WithRevenue(revenue).WithDirectorPay(pay).WithReserve(reserve)).AddToPlan(OptionalModule.Copyright)
-            .WithRoyalty(25_000m).WithContributionsPaidBy(ContributionsPaidBy.Company);
+            .WithRoyalty(15_000m).WithContributionsPaidBy(ContributionsPaidBy.Company);
 
         var view = BucketsView.From(inputs.Run()).ShouldNotBeNull();
 
