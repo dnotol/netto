@@ -14,11 +14,18 @@ public class DirectorPayCardTextTests
     // The name IStringLocalizer<DirectorPayCard> reads River/DirectorPayCard.resx under.
     private static readonly ResourceManager Resources = new("Netto.Web.Client.River.DirectorPayCard", typeof(DirectorPayCard).Assembly);
 
-    // Director pay says how a car's benefit counts in the pay.
+    // Every label and bubble of Director pay's lines: a car's benefit and a royalty's part beyond its
+    // limits with the taxable pay they make, and what more by the last deadline leaves no surcharge due.
     [Fact]
-    public void DirectorPayCardResx_benefitInThePay_hasItsText()
+    public void DirectorPayCardResx_everyLabelAndBubbleOfItsLines_hasAText()
     {
-        Missing(["Benefit"]).ShouldBeEmpty();
+        var taxed = RiverInputs.Example.AddToPlan(OptionalModule.Car).WithCatalogueValue(50_000m).WithFirstRegistration(new DateOnly(2026, 1, 10)).WithCarCosts(8_000m)
+            .AddToPlan(OptionalModule.Copyright).WithRoyalty(30_000m);
+        var due = RiverInputs.Example.WithTaxWithheld(0m);
+        var lines = DirectorPayFigures.Taxed(taxed.Run().Pay.ShouldNotBeNull())
+            .Concat(DirectorPayFigures.Surcharge(DirectorPayView.From(due, due.Run().Pay.ShouldNotBeNull())));
+
+        Missing(lines.SelectMany(line => new[] { line.Key, line.Help }).OfType<string>()).ShouldBeEmpty();
     }
 
     [Fact]
@@ -54,21 +61,15 @@ public class DirectorPayCardTextTests
         Missing(phrases.Select(phrase => phrase.Key)).ShouldBeEmpty();
     }
 
+    // How the withholding is derived and what the key formula is are said in the withheld field's
+    // bubble, which no term can open inside: its text marks none.
     [Fact]
-    public void DirectorPayCardResx_withholdingDerivedFromThePaySlip_marksTheKeyFormula()
+    public void DirectorPayCardResx_withheldFieldsBubble_marksNoTerm()
     {
-        Terms(["WithheldDerived"]).ShouldBe(["key formula"]);
-    }
+        var text = Resources.GetString("WithheldHint", CultureInfo.InvariantCulture).ShouldNotBeNull();
 
-    [Fact]
-    public void DirectorPayCardResx_keyFormula_saysWhatItMeans()
-    {
-        Missing([DirectorPayCardText.KeyFormulaTerm]).ShouldBeEmpty();
+        TermText.Split(text).Term.ShouldBeNull();
     }
-
-    // The term each sentence marks, null where its text marks none or is missing.
-    private static List<string?> Terms(IEnumerable<string> keys) =>
-        [.. keys.Select(key => Resources.GetString(key, CultureInfo.InvariantCulture) is { } text ? TermText.Split(text).Term : null)];
 
     private static IEnumerable<string> Missing(IEnumerable<string> keys) =>
         keys.Distinct().Where(key => Resources.GetString(key, CultureInfo.InvariantCulture) is null);

@@ -24,8 +24,20 @@
   <data name="PayFromSplit" xml:space="preserve">
     <value>Gross pay from the split</value>
   </data>
-  <data name="Benefit" xml:space="preserve">
-    <value>Taxed with your company car's benefit in kind, {0}: your taxable pay is {1}, though the benefit is never paid in cash.</value>
+  <data name="Figure_BenefitInKind" xml:space="preserve">
+    <value>Benefit in kind</value>
+  </data>
+  <data name="Help_BenefitInKind" xml:space="preserve">
+    <value>Your pay is taxed with your company car's benefit in kind, though the benefit is never paid in cash.</value>
+  </data>
+  <data name="Figure_RequalifiedPay" xml:space="preserve">
+    <value>Copyright beyond its limits</value>
+  </data>
+  <data name="Help_RequalifiedPay" xml:space="preserve">
+    <value>Your pay is taxed with your copyright royalty's part beyond its limits, paid besides your payslip.</value>
+  </data>
+  <data name="Figure_TaxablePay" xml:space="preserve">
+    <value>Taxable pay</value>
   </data>
   <data name="PaidByLabel" xml:space="preserve">
     <value>Who pays your social contributions</value>
@@ -38,9 +50,6 @@
   </data>
   <data name="PaidByHint" xml:space="preserve">
     <value>Contributions the company pays on your behalf count as pay: you are taxed on your gross plus them, and they cost the company that much on top of your gross.</value>
-  </data>
-  <data name="CompanyCost" xml:space="preserve">
-    <value>Costs the company {0}, your gross plus the contributions it pays for you</value>
   </data>
   <data name="MunicipalityHead" xml:space="preserve">
     <value>Where you live, for the municipal surcharge</value>
@@ -60,6 +69,9 @@
   <data name="WithheldLabel" xml:space="preserve">
     <value>Withheld on your pay in {0}</value>
   </data>
+  <data name="WithheldHint" xml:space="preserve">
+    <value>Derived from the pay slip: twelve times the month's withholding by the key formula, the administration's formula for the tax a company withholds on each month's pay, set in annex III of the royal decree implementing the income tax code. Enter the amount actually withheld if it differs.</value>
+  </data>
   <data name="PaymentLabel" xml:space="preserve">
     <value>By {0}</value>
   </data>
@@ -67,31 +79,19 @@
     <value>I first set up as self-employed in {0} or later</value>
   </data>
   <data name="Surcharge_Exempt" xml:space="preserve">
-    <value>No surcharge: none is due in the first three years of a first self-employed activity.</value>
+    <value>No surcharge in your first three years as self-employed.</value>
   </data>
   <data name="Surcharge_NoTax" xml:space="preserve">
     <value>No income tax on this pay, so no surcharge.</value>
   </data>
   <data name="Surcharge_Covered" xml:space="preserve">
-    <value>No surcharge: what was withheld and paid in advance covers it.</value>
+    <value>No surcharge: the withholding and advance payments cover it.</value>
   </data>
   <data name="Surcharge_BelowMinimum" xml:space="preserve">
-    <value>No surcharge: what is left of it is under the minimum, so none is due.</value>
+    <value>No surcharge: what is left is under the minimum.</value>
   </data>
   <data name="Surcharge_Due" xml:space="preserve">
-    <value>A surcharge of {0} on your tax is due: {1} more by {2} leaves none due.</value>
-  </data>
-  <data name="Bonus" xml:space="preserve">
-    <value>Your advance payments beyond that earn a bonus of {0}.</value>
-  </data>
-  <data name="WithheldDerived" xml:space="preserve">
-    <value>Derived from the pay slip: twelve times the month's withholding by the [key formula]. Enter the amount actually withheld if it differs.</value>
-  </data>
-  <data name="Term_KeyFormula" xml:space="preserve">
-    <value>The administration's formula for the tax a company withholds on each month's pay, set in annex III of the royal decree implementing the income tax code.</value>
-  </data>
-  <data name="WithheldYours" xml:space="preserve">
-    <value>Your amount replaces the pay slip's in the year.</value>
+    <value>More by {0} leaves none due</value>
   </data>
   <data name="WithheldAsPaySlip" xml:space="preserve">
     <value>Use the pay slip's amount</value>
@@ -134,8 +134,5 @@
   </data>
   <data name="Prepaid_Paid" xml:space="preserve">
     <value>{0} paid in advance</value>
-  </data>
-  <data name="RequalifiedPay" xml:space="preserve">
-    <value>Taxed with your copyright royalty's {0} beyond its limits, paid besides your payslip: your taxable pay is {1}.</value>
   </data>
 </root>

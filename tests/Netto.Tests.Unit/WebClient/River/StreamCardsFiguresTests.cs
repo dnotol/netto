@@ -22,18 +22,21 @@ public class StreamCardsFiguresTests
         .AddToPlan(OptionalModule.Car).WithCatalogueValue(50_000m).WithFirstRegistration(new DateOnly(2026, 1, 10)).WithCarCosts(8_000m)
         .AddToPlan(OptionalModule.Copyright).WithCreativeShare(0.5m);
 
-    // The Plan page with every card open, on the filled plan and on the river's example, each drawn once
-    // for the tests that read it.
+    // The Plan page with every card open, each drawn once for the tests that read it: on the filled plan,
+    // on the river's example, on the example with nothing withheld on the pay, which leaves a surcharge
+    // due on its tax, and with the whole base of that tax paid by 10 April, which earns a bonus.
     private static readonly Dictionary<string, Lazy<Task<string>>> Pages = new()
     {
         ["filled"] = new(() => CardHtml.RenderPlanOpenAsync(Filled)),
         ["example"] = new(() => CardHtml.RenderPlanOpenAsync(RiverInputs.Example)),
+        ["nothing withheld"] = new(() => CardHtml.RenderPlanOpenAsync(RiverInputs.Example.WithTaxWithheld(0m))),
+        ["bonus"] = new(() => CardHtml.RenderPlanOpenAsync(RiverInputs.Example.WithTaxWithheld(0m).WithTaxAdvancePayment(0, 12_014m))),
     };
 
     // An amount as the page draws it, in euros, signed or not, or as a share.
     private static readonly Regex Amount = new(@"[−+]?€[0-9][0-9,]*(?:\.[0-9]+)?|[0-9]+(?:\.[0-9]+)?%");
 
-    public static TheoryData<string> Cards => new() { "split" };
+    public static TheoryData<string> Cards => new() { "split", "director-pay" };
 
     // A card's summary is its figures, each with the few words that label it, and no sentence.
     [Theory]
@@ -49,7 +52,11 @@ public class StreamCardsFiguresTests
 
     // A sentence that restates a figure its lines show is gone: no paragraph in sight holds an amount
     // one of the card's figure or drain lines draws, on the filled plan or on the example.
-    public static TheoryData<string, string> CardsOfEachPlan => new() { { "filled", "split" }, { "example", "split" } };
+    public static TheoryData<string, string> CardsOfEachPlan => new()
+    {
+        { "filled", "split" }, { "example", "split" },
+        { "filled", "director-pay" }, { "example", "director-pay" }, { "nothing withheld", "director-pay" }, { "bonus", "director-pay" },
+    };
 
     [Theory]
     [MemberData(nameof(CardsOfEachPlan))]
@@ -61,15 +68,17 @@ public class StreamCardsFiguresTests
         CardHtml.Prose(html).Where(paragraph => Amount.Matches(paragraph).Any(amount => lines.Contains(Unsigned(amount.Value)))).ShouldBeEmpty();
     }
 
-    // The words in sight the static render counted on the filled plan before the story: each card now
-    // draws at most 60% of them.
-    public static TheoryData<string, int> WordsBefore => new() { { "split", 197 } };
+    // The words in sight the static render counted on the filled plan before the story, and the most a
+    // card now draws: 60% of them for the split; Director pay keeps its drain lines, its summary and the
+    // lines of its settings, which hold more than half of what it drew, and is held to what it draws
+    // once its sentences are lines.
+    public static TheoryData<string, int, int> Words => new() { { "split", 197, 118 }, { "director-pay", 131, 110 } };
 
     [Theory]
-    [MemberData(nameof(WordsBefore))]
-    public async Task VisibleWords_filledPlan_areAtMostSixtyPercentOfThoseBefore(string card, int before)
+    [MemberData(nameof(Words))]
+    public async Task VisibleWords_filledPlan_fallFromThoseBefore(string card, int before, int atMost)
     {
-        CardHtml.VisibleWords(await CardAsync(card)).Count.ShouldBeLessThanOrEqualTo(before * 3 / 5);
+        CardHtml.VisibleWords(await CardAsync(card)).Count.ShouldBeLessThanOrEqualTo(atMost, $"{card} drew {before} words in sight before the story.");
     }
 
     // Every text a card draws, in sight or not, is in its .resx.
@@ -127,6 +136,67 @@ public class StreamCardsFiguresTests
     public async Task Split_firstDraw_keepsThePointersLineEmpty()
     {
         Regex.IsMatch(await CardAsync("split"), @"<p class=""split__pointer""[^>]*>\s*</p>").ShouldBeTrue();
+    }
+
+    // The gross the split gives, from which the lines go on: what the car's benefit adds to what the pay
+    // is taxed on, then where the pay goes.
+    [Fact]
+    public async Task DirectorPay_filledPlan_drawsWhatThePayIsTaxedOnThenWhereItGoes()
+    {
+        var html = await CardAsync("director-pay");
+
+        html.ShouldSatisfyAllConditions(
+            () => CardHtml.Prose(html)[0].ShouldBe("Gross pay from the split derived €50,000.00"),
+            () => CardHtml.Lines(html).ShouldBe(
+            [
+                ("Benefit in kind", "€1,714.29", null),
+                ("Taxable pay", "€51,714.29", null),
+                ("Social contributions", "−€8,577.72", "17.2%"),
+                ("Income tax", "−€11,958.11", "23.9%"),
+                ("Municipal surcharge", "−€837.07", "1.7%"),
+                ("Net pay", "€28,627.10", "57.3%"),
+            ]));
+    }
+
+    // With no surcharge due, the card says why in a few words, in sight.
+    [Fact]
+    public async Task DirectorPay_surchargeUnderTheMinimum_saysWhyNoneIsDue()
+    {
+        CardHtml.Prose(await CardAsync("director-pay")).ShouldContain("No surcharge: what is left is under the minimum.");
+    }
+
+    // Due, the surcharge is a drain line, and what more by the last deadline leaves none due a line of
+    // its own.
+    [Fact]
+    public async Task DirectorPay_nothingWithheld_drawsWhatMoreByTheLastDeadlineLeavesNoneDue()
+    {
+        CardHtml.Lines(await CardAsync("director-pay", "nothing withheld")).ShouldContain(("More by 21 December 2026 leaves none due", "€14,317.50", null));
+    }
+
+    // How the withholding is derived from the pay slip, and what the key formula is, are rules: the
+    // withheld field's bubble says them, in the words the card said them in, and no note under the field
+    // says them again. A refused advance payment opens the field's disclosure here.
+    [Fact]
+    public async Task DirectorPay_withheldAsThePaySlip_explainsTheWithholdingInTheFieldsBubble()
+    {
+        var html = WebUtility.HtmlDecode(CardHtml.Card(await CardHtml.RenderPlanOpenAsync(RiverInputs.Example.WithTaxAdvancePayment(0, -1m)), "director-pay"));
+
+        html.ShouldSatisfyAllConditions(
+            () => FieldHead(html, "river-tax-withheld").ShouldContain(
+                "Derived from the pay slip: twelve times the month's withholding by the key formula, the administration's formula for the tax a company "
+                + "withholds on each month's pay, set in annex III of the royal decree implementing the income tax code. Enter the amount actually withheld if it differs."),
+            () => CardHtml.Prose(html).ShouldNotContain(paragraph => paragraph.Contains("Derived from the pay slip", StringComparison.Ordinal)));
+    }
+
+    // An amount typed replaces the pay slip's, as its origin says: only the way back to the pay slip's
+    // amount stays under the field.
+    [Fact]
+    public async Task DirectorPay_amountWithheldTyped_keepsOnlyTheWayBackToThePaySlipsAmount()
+    {
+        var html = WebUtility.HtmlDecode(CardHtml.Card(await CardHtml.RenderPlanOpenAsync(RiverInputs.Example.WithTaxWithheld(-1m)), "director-pay"));
+
+        (html.Contains("Use the pay slip's amount", StringComparison.Ordinal), CardHtml.Prose(html).Any(paragraph => paragraph.Contains("replaces the pay slip", StringComparison.Ordinal)))
+            .ShouldBe((true, false));
     }
 
     private static async Task<string> CardAsync(string card, string plan = "filled") => CardHtml.Card(await Pages[plan].Value, card);

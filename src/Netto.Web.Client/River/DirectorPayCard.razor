@@ -7,14 +7,16 @@
 
 @* The director's gross pay through INASTI's contributions, the income tax and the municipal
    surcharge to the net. The pay comes from the split, or has a slider of its own once the company
-   is skipped. What the user rarely changes sits behind two disclosures, each folded to a line that
-   states it: their situation, and the tax paid during the year. The user says who pays the
-   contributions; when the company does, they are pay too and the card says what the pay costs it.
-   What was withheld on the pay is the pay slip's amount, derived, until the user types the amount
-   actually withheld, with a way back; it and what the director paid in advance are taken while
-   typing, since nothing bounds them, and the card says what they leave on the tax, the bonus they
-   earn and what more by the last deadline leaves no surcharge due. The pay slip and the rules
-   behind each figure are its detail view. *@
+   is skipped. Its figures come first, as one list: the gross from the split, what the pay is taxed
+   on besides it (DirectorPayFigures), then where the pay goes (DrainList); then what the withholding
+   and the advance payments leave on the tax, a line of what more by the last deadline leaves no
+   surcharge due, or a sentence saying why none is. What the user rarely changes sits behind two
+   disclosures after them, each folded to a line that states it: their situation, and the tax paid
+   during the year. The user says who pays the contributions; when the company does, they are pay
+   too, and what flows in says what the pay costs it. What was withheld on the pay is the pay slip's
+   amount, derived, until the user types the amount actually withheld, with a way back; how it is
+   derived is the field's bubble. It and what the director paid in advance are taken while typing,
+   since nothing bounds them. The pay slip and the rules behind each figure are its detail view. *@
 <ModuleCard Name="director-pay" Title="@L["Title"]" Summary="@Summary" Glance="@Glance" ToYou="@_view?.ToYou" Refused="@Refused" Details="@Details" DetailsLabel="@L["DetailsLabel"]">
     @if (Inputs.Company is null)
     {
@@ -28,19 +30,27 @@
                                Error="@(Refused == GrossToNet.GrossPayNegative)" Refusal="@Refused" />
         </RiverField>
     }
-    else if (Run.Pay is { } pay)
+    <RefusedMessage Error="@Refused" />
+    @if (_view is not null && Run.Pay is { } pay)
     {
-        <p class="director-pay__pay">
-            @L["PayFromSplit"] <b>@Formats.Euros(pay.GrossPay)</b>
-            <OriginChip Origin="InputOrigin.Derived" />
-        </p>
-        @if (pay.BenefitInKind > 0m)
+        <div class="director-pay__lines">
+            @if (Inputs.Company is not null)
+            {
+                <p class="director-pay__pay">
+                    <span class="director-pay__pay-label">@L["PayFromSplit"] <OriginChip Origin="InputOrigin.Derived" /></span>
+                    <span class="director-pay__pay-amount">@Formats.Euros(pay.GrossPay)</span>
+                </p>
+            }
+            <FigureList Figures="@FigureWords.Of(L, DirectorPayFigures.Taxed(pay))" />
+            <DrainList Drains="_view.Drains" />
+        </div>
+        @if (DirectorPayFigures.Surcharge(_view) is { Count: > 0 } topUp)
         {
-            <p class="director-pay__benefit">@L["Benefit", Formats.Euros(pay.BenefitInKind), Formats.Euros(pay.TaxablePay)]</p>
+            <FigureList Figures="@FigureWords.Of(L, topUp)" />
         }
-        @if (pay.RequalifiedPay > 0m)
+        else
         {
-            <p class="director-pay__benefit">@L["RequalifiedPay", Formats.Euros(pay.RequalifiedPay), Formats.Euros(pay.TaxablePay)]</p>
+            <p class="director-pay__condition">@L[DirectorPayCardText.Surcharge(_view.Surcharge)]</p>
         }
     }
     <Disclosure Title="@L["SituationTitle"]" Values="@Values(_settings.Situation)" Refused="@DirectorPaySettingsView.SituationHolds(Refused)">
@@ -55,10 +65,6 @@
                     }
                 </MudChipSet>
             </div>
-            @if (_view is { CompanyPaysContributions: true } costing)
-            {
-                <p class="director-pay__cost">@L["CompanyCost", Formats.Euros(costing.CompanyCost)]</p>
-            }
         </RiverField>
         <RiverField Label="@L["MunicipalityHead"]" Origin="Inputs.Municipality.Origin">
             <MunicipalityField Choice="Inputs.Municipality" ChoiceChanged="OnMunicipalityChanged"
@@ -72,19 +78,18 @@
     </Disclosure>
     <Disclosure Title="@L["PrepaymentsTitle"]" Values="@Values(_settings.Prepaid)" Refused="@DirectorPaySettingsView.PrepaidHolds(Refused)"
                 Help="@L["PrepaymentsHint"]">
-        <RiverField Label="@L["WithheldLabel", Inputs.IncomeYear]" For="river-tax-withheld" Origin="_withheld.Origin">
+        <RiverField Label="@L["WithheldLabel", Inputs.IncomeYear]" For="river-tax-withheld" Origin="_withheld.Origin" Help="@L["WithheldHint"]">
             <RiverNumericField T="decimal" InputId="river-tax-withheld" Value="_withheld.Amount" ValueChanged="OnWithheldChanged"
                                Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
                                Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
                                Error="@(Refused == GrossToNet.TaxWithheldNegative)" Refusal="@Refused" />
-            <p class="director-pay__note">
-                <TermSentence Text="@(_withheld.IsYours ? L["WithheldYours"] : L["WithheldDerived"])" Meaning="@L[DirectorPayCardText.KeyFormulaTerm]" />
-                @if (_withheld.IsYours)
-                {
+            @if (_withheld.IsYours)
+            {
+                <div class="director-pay__note">
                     <MudButton Variant="Variant.Text" Size="Size.Small" Color="Color.Primary" OnClick="OnWithheldAsPaySlip"
                                Class="director-pay__pay-slip-amount">@L["WithheldAsPaySlip"]</MudButton>
-                }
-            </p>
+                </div>
+            }
         </RiverField>
         <div class="director-pay__deadlines">
             @foreach (var field in TaxAdvancePaymentFields.From(Inputs))
@@ -99,21 +104,6 @@
             }
         </div>
     </Disclosure>
-    @if (_view is not null)
-    {
-        <p class="director-pay__condition">
-            @L[DirectorPayCardText.Surcharge(_view.Surcharge), Formats.Euros(_view.SurchargeAmount), Formats.Euros(_view.TopUp), Formats.Day(_view.LastDeadline)]
-            @if (_view.Bonus > 0m)
-            {
-                @(" ")@L["Bonus", Formats.Euros(_view.Bonus)]
-            }
-        </p>
-    }
-    <RefusedMessage Error="@Refused" />
-    @if (_view is not null)
-    {
-        <DrainList Drains="_view.Drains" />
-    }
 </ModuleCard>
 
 @code {

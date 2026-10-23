@@ -1,33 +1,42 @@
 /* ::deep reaches the MudCheckBox, the MudChipSet's chips and the MudButton, which carry no scope
-   attribute of their own. */
-.director-pay__benefit {
-    margin: 0;
-    color: var(--netto-text-muted);
-    font-size: 0.9rem;
-    line-height: 1.55;
+   attribute of their own, and the lists of the card's figures (FigureList, DrainList). */
+
+/* The gross from the split, what the pay is taxed on and where it goes read as one list: the block
+   draws the rule over its first line, and the lists inside draw none of their own. */
+.director-pay__lines {
+    display: grid;
+    border-top: 1px solid var(--netto-line);
 }
 
+    .director-pay__lines ::deep .figure-list,
+    .director-pay__lines ::deep .drain-list {
+        border-top: 0;
+    }
+
+/* The gross from the split, drawn as a figure list's line, with where it comes from beside its label. */
 .director-pay__pay {
-    display: flex;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: baseline;
+    gap: 0.1rem 1rem;
+    margin: 0;
+    padding: 0.45rem 0;
+    border-bottom: 1px solid var(--netto-line);
+    font-size: 0.92rem;
+}
+
+.director-pay__pay-label {
+    display: inline-flex;
     flex-wrap: wrap;
     align-items: baseline;
     gap: 0.25rem 0.5rem;
-    margin: 0;
-    color: var(--netto-text-muted);
+    min-width: 0;
 }
 
-    .director-pay__pay b {
-        color: var(--netto-text);
-        font-weight: 600;
-        font-variant-numeric: tabular-nums;
-    }
-
-/* What the pay costs the company when it pays the contributions: a figure beside the pay, not a
-   warning. */
-.director-pay__cost {
-    margin: 0;
-    font-size: 0.88rem;
+.director-pay__pay-amount {
     font-variant-numeric: tabular-nums;
+    text-align: right;
+    white-space: nowrap;
 }
 
 /* A chip's text wraps rather than widening the card on a phone. */
@@ -91,7 +100,7 @@
         margin-top: 0.7rem;
     }
 
-/* What the payments leave, shown where they are entered: a quiet rule on the left, not a colour. */
+/* Why no surcharge is due, under the pay's lines: a quiet rule on the left, not a colour. */
 .director-pay__condition {
     margin: 0;
     padding-left: 0.75rem;
