@@ -391,6 +391,10 @@ internal sealed record DirectorPayView(
 
     public decimal Inflow => CompanyCost + RequalifiedPay;
 
+    // The pay slip's next 1,000 holds a royalty that follows the pay as it is, though the royalty rises
+    // with it: its note says so while the engine set one at what a ruling accepts.
+    public static bool NextHoldsAFollowingRoyalty(RiverRun run) => run.Year?.Copyright.Following == CopyrightFollowing.AtCeiling;
+
     public static DirectorPayView From(RiverInputs inputs, GrossToNetResult pay)
     {
         var payments = pay.AdvancePayments;

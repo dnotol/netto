@@ -168,6 +168,25 @@ public class ModuleViewsTests
         Split(FollowingRoyalty.SkipCompany()).Royalty.ShouldBeNull();
     }
 
+    // The pay slip's next 1,000 holds the royalty as it is: it says so while a royalty follows the pay,
+    // and rises with it, never for a fixed one, none, or one out of the plan.
+    [Fact]
+    public void NextHoldsAFollowingRoyalty_royaltyFollowingThePay_isTrue()
+    {
+        DirectorPayView.NextHoldsAFollowingRoyalty(FollowingRoyalty.Run()).ShouldBeTrue();
+    }
+
+    [Fact]
+    public void NextHoldsAFollowingRoyalty_noRoyaltyThatFollows_isFalse()
+    {
+        RiverInputs[] rivers =
+        [
+            RiverInputs.Example, FollowingRoyalty.WithRoyalty(10_000m), RiverInputs.Example.AddToPlan(OptionalModule.Copyright), FollowingRoyalty.WithReserve(-1m),
+        ];
+
+        rivers.Select(river => DirectorPayView.NextHoldsAFollowingRoyalty(river.Run())).ShouldAllBe(holds => !holds);
+    }
+
     [Fact]
     public void DirectorPay_example_drainsToTaxesOnPayAndThePocket()
     {

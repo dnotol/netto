@@ -82,6 +82,13 @@ public class PaySlipTextTests
             .Distinct().Where(key => Resources.GetString(key, CultureInfo.InvariantCulture) is null).ShouldBeEmpty();
     }
 
+    // A royalty that follows the pay rises with the next 1,000, which holds it as it is: the note says so.
+    [Fact]
+    public void PaySlipResx_noteOnARoyaltyThatFollowsThePay_hasAText()
+    {
+        Resources.GetString("NextFollowingRoyaltyNote", CultureInfo.InvariantCulture).ShouldNotBeNull();
+    }
+
     [Theory]
     [InlineData(false, false, "FinalTax")]
     [InlineData(true, false, "FinalTax_WithRent")]

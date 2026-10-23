@@ -184,6 +184,10 @@
         {
             <p class="next__note">@L["NextRoyaltyNote"]</p>
         }
+        @if (RoyaltyFollowsPay)
+        {
+            <p class="next__note">@L["NextFollowingRoyaltyNote"]</p>
+        }
     </section>
 </div>
 
@@ -192,6 +196,10 @@
     // GrossToNetView is internal.
     [Parameter, EditorRequired]
     public GrossToNetResult Pay { get; set; } = default!;
+
+    // A copyright royalty follows the pay, which the next 1,000 holds as it is.
+    [Parameter]
+    public bool RoyaltyFollowsPay { get; set; }
 
     private GrossToNetView _view = default!;
     private IReadOnlyList<StepDetail> _withholding = [];
