@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Globalization;
 using System.Resources;
+using System.Text.RegularExpressions;
 using Netto.Core.Copyright;
 using Netto.Core.CorporateTax;
 using Netto.Core.Simulation;
@@ -171,6 +172,18 @@ public class SplitCardTextTests
             () => kept.Where(text => WordCount(text.Value) > 15).Select(text => text.Key).ShouldBeEmpty());
     }
 
+    // Each sentence reads only the arguments the card passes it, its placeholders counted from 0:
+    // why a royalty that follows the pay is none takes the income year alone, how the rate is weighed
+    // the difference alone.
+    [Theory]
+    [InlineData("Following_", 1)]
+    [InlineData("Rate_", 1)]
+    public void SplitCardResx_sentence_readsOnlyTheArgumentsTheCardPasses(string prefix, int arguments)
+    {
+        Texts().Where(text => text.Key.StartsWith(prefix, StringComparison.Ordinal) && Placeholders(text.Value).Any(index => index >= arguments))
+            .Select(text => text.Key).ShouldBeEmpty();
+    }
+
     // The term each sentence marks, null where its text marks none or is missing.
     private static List<string?> Terms(IEnumerable<string> keys) =>
         [.. keys.Select(key => Resources.GetString(key, CultureInfo.InvariantCulture) is { } text ? TermText.Split(text).Term : null)];
@@ -187,4 +200,8 @@ public class SplitCardTextTests
 
     // A word holds a letter or a digit, an amount or a placeholder counting as one.
     private static int WordCount(string text) => text.Split(' ', StringSplitOptions.RemoveEmptyEntries).Count(word => word.Any(char.IsLetterOrDigit));
+
+    // The index of each placeholder a text holds.
+    private static IEnumerable<int> Placeholders(string text) =>
+        Regex.Matches(text, @"\{(\d+)").Select(match => int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture));
 }

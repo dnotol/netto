@@ -120,7 +120,7 @@
             </div>
             @if (royalty is { FollowsPay.Value: true, Following: { } following } && SplitCardText.Following(following) is { } none)
             {
-                <p class="split__following">@L[none, Formats.Euros(royalty.Amount ?? 0m), Formats.Percentage(Inputs.Copyright.CreativeShare.Value ?? 0m), Inputs.IncomeYear]</p>
+                <p class="split__following">@L[none, Inputs.IncomeYear]</p>
             }
         </RiverField>
         @if (!royalty.FollowsPay.Value)
@@ -214,10 +214,8 @@
 
     private bool RoyaltyRefused => Refused is CopyrightCalculator.RoyaltyNegative or CopyrightCalculator.RoyaltyAboveProfit;
 
-    private string RateText(RateWeighing rate) => L[SplitCardText.Rate(rate, _view.Pay),
-        rate.SmallestPay is { } smallest ? Formats.Euros(smallest) : "",
-        rate.Other is { } other ? Formats.Euros(other.NetInPocket) : "",
-        rate.Difference is { } difference ? Formats.Euros(difference) : ""].Value;
+    // What giving the rate up, or keeping it, leaves less, where the sentence weighs it.
+    private string RateText(RateWeighing rate) => L[SplitCardText.Rate(rate, _view.Pay), rate.Difference is { } difference ? Formats.Euros(difference) : ""].Value;
 
     private void Point(PayLevel level) => _pointer = level;
 

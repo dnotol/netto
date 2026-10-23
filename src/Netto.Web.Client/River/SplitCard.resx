@@ -109,7 +109,7 @@
     <value>Your pay does not change the corporate rate here; Corporate tax says why.</value>
   </data>
   <data name="Rate_KeepsIt" xml:space="preserve">
-    <value>It keeps the [reduced corporate rate]: giving it up leaves {2} less.</value>
+    <value>It keeps the [reduced corporate rate]: giving it up leaves {0} less.</value>
   </data>
   <data name="Rate_KeepsItOnly" xml:space="preserve">
     <value>It keeps the [reduced corporate rate].</value>
@@ -118,7 +118,7 @@
     <value>It keeps the [reduced corporate rate]: your pay is the best giving it up.</value>
   </data>
   <data name="Rate_GivesItUp" xml:space="preserve">
-    <value>It gives up the [reduced corporate rate] on purpose: keeping it leaves {2} less.</value>
+    <value>It gives up the [reduced corporate rate] on purpose: keeping it leaves {0} less.</value>
   </data>
   <data name="Rate_GivesItUpOnly" xml:space="preserve">
     <value>It gives up the [reduced corporate rate]: every pay keeping it misses your reserve.</value>
@@ -160,7 +160,7 @@
     <value>None: your copyright income of the four previous years averaged above the cap.</value>
   </data>
   <data name="Following_NoEnvelopeRate" xml:space="preserve">
-    <value>None: Netto has no rate yet for what a ruling accepts in {2}.</value>
+    <value>None: Netto has no rate yet for what a ruling accepts in {0}.</value>
   </data>
   <data name="SliderValue_Royalty" xml:space="preserve">
     <value>{0}, with a royalty of {1}</value>

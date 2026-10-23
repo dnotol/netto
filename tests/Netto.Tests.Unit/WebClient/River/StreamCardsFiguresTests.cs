@@ -124,6 +124,14 @@ public class StreamCardsFiguresTests
             () => bubble.ShouldNotContain("€76,326.08"));
     }
 
+    // How the best pay stands against the reduced rate is a sentence, with what keeping the rate would
+    // leave less, no line saying it.
+    [Fact]
+    public async Task Split_filledPlan_weighsTheReducedRateInASentence()
+    {
+        CardHtml.Prose(await CardAsync("split")).ShouldContain("It gives up the reduced corporate rate on purpose: keeping it leaves €1,016.20 less.");
+    }
+
     // A refused pay leaves no figure to draw: the refusal stands in sight where the lines were.
     [Fact]
     public async Task Split_payRefused_showsTheRefusalInSightAndNoLines()

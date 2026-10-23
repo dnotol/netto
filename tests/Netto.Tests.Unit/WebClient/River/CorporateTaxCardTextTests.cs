@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Globalization;
 using System.Resources;
+using System.Text.RegularExpressions;
 using Netto.Core.CompanyCar;
 using Netto.Core.CorporateTax;
 using Netto.Web.Client.River;
@@ -91,6 +92,18 @@ public class CorporateTaxCardTextTests
             () => kept.Where(text => WordCount(text.Value) > 15).Select(text => text.Key).ShouldBeEmpty());
     }
 
+    // Each sentence reads only the arguments the card passes it, its placeholders counted from 0:
+    // a condition the minimum pay, the benefits and their share of it, the surcharge what more by the
+    // last deadline cancels it and that deadline.
+    [Theory]
+    [InlineData("Condition_", 3)]
+    [InlineData("Surcharge_", 2)]
+    public void CorporateTaxCardResx_sentence_readsOnlyTheArgumentsTheCardPasses(string prefix, int arguments)
+    {
+        Texts().Where(text => text.Key.StartsWith(prefix, StringComparison.Ordinal) && Placeholders(text.Value).Any(index => index >= arguments))
+            .Select(text => text.Key).ShouldBeEmpty();
+    }
+
     private static IEnumerable<string> Missing(IEnumerable<string> keys) =>
         keys.Distinct().Where(key => Resources.GetString(key, CultureInfo.InvariantCulture) is null);
 
@@ -103,4 +116,8 @@ public class CorporateTaxCardTextTests
 
     // A word holds a letter or a digit, an amount or a placeholder counting as one.
     private static int WordCount(string text) => text.Split(' ', StringSplitOptions.RemoveEmptyEntries).Count(word => word.Any(char.IsLetterOrDigit));
+
+    // The index of each placeholder a text holds.
+    private static IEnumerable<int> Placeholders(string text) =>
+        Regex.Matches(text, @"\{(\d+)").Select(match => int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture));
 }

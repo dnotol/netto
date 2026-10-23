@@ -127,7 +127,7 @@
     <value>No surcharge: the advance payments cover it.</value>
   </data>
   <data name="Surcharge_Due" xml:space="preserve">
-    <value>{1} more by {2} cancels the surcharge.</value>
+    <value>{0} more by {1} cancels the surcharge.</value>
   </data>
   <data name="CompanyTitle" xml:space="preserve">
     <value>Your company</value>
