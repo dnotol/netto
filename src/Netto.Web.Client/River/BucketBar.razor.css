@@ -97,14 +97,35 @@
     border-radius: 2px;
 }
 
-/* The bucket's icon (BucketIcons), between the swatch and the name: small, and no taller than the
-   name's line, so the bar keeps its height. */
+/* The bucket's icon (BucketIcons), after the name: whole while the column has room for it beside the
+   name, gone once it has not, so it never takes room the name needs. Its box is the one thing on the
+   line that shrinks (the name cannot), and once it is narrower than the icon, the icon wraps onto a
+   second line the box's height hides; the zero-wide first item (::before) keeps the first line. The
+   gap before it lives inside it, the box's margin taking the label's gap back, so a box shrunk to
+   nothing leaves the name the room it had without an icon. Its margins take back above and below
+   more than it is taller than the name's line, so the line, and the bar, keep their height, the
+   icon drawn whole in the label's padding. */
 .bucket__icon {
-    flex: none;
-    font-size: 0.8rem;
+    display: flex;
+    flex: 0 1 auto;
+    flex-wrap: wrap;
+    min-width: 0;
+    height: 1.5em;
+    margin: -0.25rem 0 -0.25rem -0.4rem;
+    overflow: hidden;
+    font-size: 0.75rem;
     letter-spacing: 0;
-    line-height: 1;
+    line-height: 1.5;
 }
+
+    .bucket__icon::before {
+        content: "";
+        height: 1.5em;
+    }
+
+    .bucket__icon > span {
+        margin-left: 0.4rem;
+    }
 
 .bucket-bar__stack {
     display: flex;
