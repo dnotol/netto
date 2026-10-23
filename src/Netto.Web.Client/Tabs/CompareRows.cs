@@ -1,3 +1,4 @@
+using Netto.Core.CorporateTax;
 using Netto.Core.Simulation;
 using Netto.Web.Client.River;
 
@@ -8,13 +9,15 @@ namespace Netto.Web.Client.Tabs;
 // says for that plan. Every row is the engine's own figure for each plan and what separates them, the
 // second plan's less the first's; none is a rule of its own. The year's result first (what the bar
 // draws), then the taxes layer by layer in the law's order, read from the ledger's steps so a river that
-// starts at the pay has them too. A row neither plan has a figure for is not drawn.
+// starts at the pay has them too, then what the company pays besides the pay, which comes off its profit
+// before the split, and the split itself. A row neither plan has a figure for is not drawn, and a group
+// without a row is not a group.
 internal static class CompareRows
 {
     public static IReadOnlyList<CompareGroup> Of(ComparedPlan plan, ComparedPlan against)
     {
         var gain = BaselineGain.From(against.Run, plan.Run)!;
-        return
+        CompareGroup[] groups =
         [
             new CompareGroup("result", Drawn(
             [
@@ -30,8 +33,32 @@ internal static class CompareRows
                 Row("social_contributions", Money(PaidOut(plan, Layer.Social)), Money(PaidOut(against, Layer.Social)), sub: true),
                 Row("personal_tax", Money(PaidOut(plan, Layer.Personal)), Money(PaidOut(against, Layer.Personal)), sub: true),
             ])),
+            new CompareGroup("before_split", Drawn(
+            [
+                Row("vouchers", Lever(plan, OptionalModule.Vouchers, year => year.Vouchers.Total), Lever(against, OptionalModule.Vouchers, year => year.Vouchers.Total)),
+                Row("allowances", Lever(plan, OptionalModule.Allowances, Allowances), Lever(against, OptionalModule.Allowances, Allowances)),
+                Row("rent", Lever(plan, OptionalModule.Rent, year => year.Rent.Rent), Lever(against, OptionalModule.Rent, year => year.Rent.Rent)),
+                Row("car_costs", Lever(plan, OptionalModule.Car, year => year.Car.Costs), Lever(against, OptionalModule.Car, year => year.Car.Costs)),
+            ])),
+            new CompareGroup("split", Drawn(
+            [
+                Row("director_pay", Money(PayOf(plan)), Money(PayOf(against))),
+                Row("royalty", Lever(plan, OptionalModule.Copyright, year => year.Copyright.Royalty), Lever(against, OptionalModule.Copyright, year => year.Copyright.Royalty)),
+                Row("dividend", Year(plan, year => Money(year.Dividend.Dividend)), Year(against, year => Money(year.Dividend.Dividend))),
+                Row("reduced_rate", Year(plan, year => CompareFigure.Rate(StanceOf(year.Company.Condition))), Year(against, year => CompareFigure.Rate(StanceOf(year.Company.Condition)))),
+            ])),
         ];
+        return [.. groups.Where(group => group.Rows.Count > 0)];
     }
+
+    // How the reduced corporate rate stands from the engine's condition: open to the company and kept,
+    // open and given up (the pay or the benefits are against it), or not open to it at all.
+    public static RateStance StanceOf(ReducedRateCondition condition) => condition switch
+    {
+        ReducedRateCondition.NotSmallCompany => RateStance.NotOpen,
+        _ when condition.AppliesReducedRate() => RateStance.Kept,
+        _ => RateStance.GivenUp,
+    };
 
     // The percentage points between two shares as the table shows them, a tenth of a percent each, so
     // the column reads as a subtraction of the figures drawn, never of the hundredths beneath them.
@@ -96,6 +123,21 @@ internal static class CompareRows
     private static CompareFigure Share(ComparedPlan column) => CompareFigure.Share(column.Buckets!.Reach);
 
     private static CompareFigure Money(decimal amount) => CompareFigure.Money(amount);
+
+    // A figure the year gives, none for a river that starts at the pay.
+    private static CompareFigure Year(ComparedPlan column, Func<YearResult, CompareFigure> figure) =>
+        column.Run.Year is { } year ? figure(year) : CompareFigure.None;
+
+    // What the company pays for a module in the plan, or that the module is not in it: the engine counts
+    // a module out of the plan as none, and a river that starts at the pay has none of them.
+    private static CompareFigure Lever(ComparedPlan column, OptionalModule module, Func<YearResult, decimal> figure) =>
+        column.Run.Year is { } year && column.Inputs.InPlan(module) ? Money(figure(year)) : CompareFigure.Absent;
+
+    // What the expense allowances bring to the pocket, from the year's steps as the allowances card sums them.
+    private static decimal Allowances(YearResult year) =>
+        year.Steps.Where(step => step.Event == TaxableEvent.ExpenseAllowances && step.Track == Track.InPocket).Sum(step => step.Amount);
+
+    private static decimal PayOf(ComparedPlan column) => column.Run.Pay!.GrossPay;
 
     // A figure the company's year gives, none for a river that starts at the pay.
     private static CompareFigure Company(ComparedPlan column, Func<ComparedPlan, decimal> figure) =>

@@ -1,3 +1,4 @@
+using Netto.Core.CorporateTax;
 using Netto.Core.Simulation;
 using Netto.Web.Client;
 using Netto.Web.Client.River;
@@ -185,7 +186,7 @@ public class CompareRowsTests
         var rows = Rows(view).ToDictionary(row => row.Key);
 
         view.ShouldSatisfyAllConditions(
-            () => rows.Keys.Order().ShouldBe(["personal_tax", "pocket", "reach", "social_contributions", "taxes"]),
+            () => rows.Keys.Order().ShouldBe(["director_pay", "personal_tax", "pocket", "reach", "social_contributions", "taxes"]),
             () => (rows["pocket"].Plan.Amount, rows["pocket"].Against.Amount, rows["pocket"].Difference.Kind)
                 .ShouldBe((plan.Run().Pay!.NetInPocket, plan.WithDirectorPay(40_000m).Run().Pay!.NetInPocket, DifferenceKind.Less)));
     }
@@ -211,6 +212,157 @@ public class CompareRowsTests
     }
 
 
+
+    // The levers the company pays besides the pay come off its profit before the split: a plan without one
+    // has none of it, which the engine counts as nothing.
+    [Fact]
+    public void Rows_voucherOnOneSide_isNotInThePlanOfTheOtherAndCountsAsNothing()
+    {
+        var row = Row(Compare(RiverInputs.Example, RiverInputs.Example.AddToPlan(OptionalModule.Vouchers).WithEcoVouchers(250m)), "vouchers");
+
+        (row.Plan, row.Against, row.Difference).ShouldBe((CompareFigure.Absent, CompareFigure.Money(250m), new CompareDifference(DifferenceKind.More, 250m)));
+    }
+
+    [Fact]
+    public void Rows_allowanceOnTheFirstSide_isLessAgainst()
+    {
+        var row = Row(Compare(RiverInputs.Example.AddToPlan(OptionalModule.Allowances).WithInternetAllowance(240m), RiverInputs.Example), "allowances");
+
+        (row.Plan, row.Against, row.Difference).ShouldBe((CompareFigure.Money(240m), CompareFigure.Absent, new CompareDifference(DifferenceKind.Less, 240m)));
+    }
+
+    [Fact]
+    public void Rows_rent_isWhatTheCompanyPays()
+    {
+        var home = RiverInputs.Example.AddToPlan(OptionalModule.Rent).WithCadastralIncome(1_200m).WithShareLet(0.12m).WithRent(1_380m);
+
+        var row = Row(Compare(RiverInputs.Example, home), "rent");
+
+        (row.Plan, row.Against.Amount, row.Difference.Kind).ShouldBe((CompareFigure.Absent, home.Run().Year!.Rent.Rent, DifferenceKind.More));
+    }
+
+    [Fact]
+    public void Rows_carCosts_areWhatTheCompanySpendsOnTheCar()
+    {
+        var row = Row(Compare(RiverInputs.Example, ElectricCar), "car_costs");
+
+        (row.Plan, row.Against, row.Difference).ShouldBe((CompareFigure.Absent, CompareFigure.Money(8_000m), new CompareDifference(DifferenceKind.More, 8_000m)));
+    }
+
+    // In the plan with nothing granted is not out of it: €0.00 against « Not in this plan », the same.
+    [Fact]
+    public void Rows_leversInThePlanWithNothing_areZeroAndTheSame()
+    {
+        var everyLever = RiverInputs.Example with { Composition = new PlanComposition(true, true, true, false, false) };
+
+        var rows = Rows(Compare(RiverInputs.Example, everyLever)).Where(row => row.Key is "vouchers" or "allowances" or "rent").ToList();
+
+        rows.Select(row => (row.Key, row.Plan.Kind, row.Against, row.Difference)).ShouldBe(
+        [
+            ("vouchers", FigureKind.Absent, CompareFigure.Money(0m), CompareDifference.Same),
+            ("allowances", FigureKind.Absent, CompareFigure.Money(0m), CompareDifference.Same),
+            ("rent", FigureKind.Absent, CompareFigure.Money(0m), CompareDifference.Same),
+        ]);
+    }
+
+    // A lever neither plan has is no row, and a group without a row is no group.
+    [Fact]
+    public void Groups_noLeverInEitherPlan_havenoBeforeTheSplitGroup()
+    {
+        var view = Compare(RiverInputs.Example, BestPay);
+
+        view.Groups.Select(group => group.Key).ShouldBe(["result", "taxes", "split"]);
+    }
+
+    [Fact]
+    public void Groups_aLeverInOnePlan_hasTheBeforeTheSplitGroupBetweenTheTaxesAndTheSplit()
+    {
+        var view = Compare(RiverInputs.Example, ElectricCar);
+
+        view.Groups.Select(group => group.Key).ShouldBe(["result", "taxes", "before_split", "split"]);
+    }
+
+    [Fact]
+    public void Rows_directorPay_isTheGrossPayTheSplitGave()
+    {
+        var row = Row(Compare(RiverInputs.Example, BestPay), "director_pay");
+
+        (row.Plan, row.Against, row.Difference).ShouldBe((CompareFigure.Money(50_000m), CompareFigure.Money(20_799m), new CompareDifference(DifferenceKind.Less, 29_201m)));
+    }
+
+    [Fact]
+    public void Rows_directorPayOfAPayOnlyRiver_isThePaySet()
+    {
+        var plan = RiverInputs.Example.SkipCompany();
+
+        var row = Row(Compare(plan, plan.WithDirectorPay(40_000m)), "director_pay");
+
+        (row.Plan, row.Against).ShouldBe((CompareFigure.Money(50_000m), CompareFigure.Money(40_000m)));
+    }
+
+    [Fact]
+    public void Rows_dividend_isTheDividendPaidOut()
+    {
+        var row = Row(Compare(RiverInputs.Example, BestPay), "dividend");
+
+        (row.Plan, row.Against, row.Difference).ShouldBe((CompareFigure.Money(39_325m), CompareFigure.Money(58_064.23m), new CompareDifference(DifferenceKind.More, 18_739.23m)));
+    }
+
+    [Fact]
+    public void Rows_royalty_isNotInThePlanOfThePlanWithoutOne()
+    {
+        var row = Row(Compare(RiverInputs.Example, RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithRoyalty(10_000m)), "royalty");
+
+        (row.Plan, row.Against, row.Difference).ShouldBe((CompareFigure.Absent, CompareFigure.Money(10_000m), new CompareDifference(DifferenceKind.More, 10_000m)));
+    }
+
+    // The example pays enough to keep the reduced corporate rate; at the best pay it is given up.
+    [Fact]
+    public void Rows_reducedRate_isKeptOrGivenUpAndChangedBetweenThem()
+    {
+        var row = Row(Compare(RiverInputs.Example, BestPay), "reduced_rate");
+
+        (row.Plan, row.Against, row.Difference, row.Differs).ShouldBe(
+            (CompareFigure.Rate(RateStance.Kept), CompareFigure.Rate(RateStance.GivenUp), CompareDifference.Changed, true));
+    }
+
+    [Fact]
+    public void Rows_reducedRateOfACompanyThatIsNotSmall_isNotOpen()
+    {
+        var row = Row(Compare(RiverInputs.Example, RiverInputs.Example.WithSmallCompany(false)), "reduced_rate");
+
+        (row.Plan, row.Against).ShouldBe((CompareFigure.Rate(RateStance.Kept), CompareFigure.Rate(RateStance.NotOpen)));
+    }
+
+    [Fact]
+    public void Rows_reducedRateTheSameOnBothSides_isTheSame()
+    {
+        var row = Row(Compare(RiverInputs.Example, RiverInputs.Example.WithDirectorPay(55_000m)), "reduced_rate");
+
+        (row.Difference, row.Differs).ShouldBe((CompareDifference.Same, false));
+    }
+
+    [Theory]
+    [InlineData(ReducedRateCondition.NotSmallCompany, "NotOpen")]
+    [InlineData(ReducedRateCondition.FirstFourTaxPeriods, "Kept")]
+    [InlineData(ReducedRateCondition.MinimumPayMet, "Kept")]
+    [InlineData(ReducedRateCondition.TaxableIncomeNotAbovePay, "Kept")]
+    [InlineData(ReducedRateCondition.MinimumPayNotMet, "GivenUp")]
+    [InlineData(ReducedRateCondition.ExcessBenefits, "GivenUp")]
+    public void StanceOf_condition_isWhatTheRateDoes(ReducedRateCondition condition, string expected)
+    {
+        CompareRows.StanceOf(condition).ToString().ShouldBe(expected);
+    }
+
+    // A river that starts at the pay has no dividend, no company, no rate: its rows are not drawn.
+    [Fact]
+    public void Rows_payOnly_haveNoDividendNorRate()
+    {
+        var plan = RiverInputs.Example.SkipCompany();
+
+        Rows(Compare(plan, plan.WithDirectorPay(40_000m))).Select(row => row.Key).ShouldBe(
+            ["pocket", "reach", "taxes", "social_contributions", "personal_tax", "director_pay"]);
+    }
 
     private static decimal AmountOf(CompareView view, ComparedPlan column, string key)
     {
