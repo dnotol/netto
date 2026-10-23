@@ -20,6 +20,22 @@ public class OptimisationTabTextTests
             .ShouldBeEmpty();
     }
 
+    // The figures the tab opens on, the pocket after each move and a link's name.
+    [Fact]
+    public void OptimisationTabResx_everyFixedKey_hasAText()
+    {
+        new[] { OptimisationTabText.TodayInPocket, OptimisationTabText.PlanInPocket, OptimisationTabText.MoreThanToday, OptimisationTabText.After, OptimisationTabText.LinkLabel }
+            .Where(key => Resources.GetString(key, CultureInfo.InvariantCulture) is null)
+            .ShouldBeEmpty();
+    }
+
+    // Today's star is drawn for the eye alone, which the tab finds in the text by the star itself.
+    [Fact]
+    public void TodayInPocket_holdsTodaysStar()
+    {
+        Resources.GetString(OptimisationTabText.TodayInPocket, CultureInfo.InvariantCulture).ShouldBe($"Today {OptimisationTabText.Star}, in your pocket");
+    }
+
     [Fact]
     public void OptimisationTabResx_everyReason_hasAText()
     {
