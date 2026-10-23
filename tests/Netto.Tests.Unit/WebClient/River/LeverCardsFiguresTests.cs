@@ -265,6 +265,17 @@ public class LeverCardsFiguresTests
         DrainListResources.GetString(DrainListText.Destination(drain), CultureInfo.InvariantCulture).ShouldBe(expected);
     }
 
+    // A figure list draws only the lines that move its figure, as a drain list draws only those that move
+    // money (DrainLines): a line of nothing, the negative zero the engine gives for nothing among them, is
+    // left out, and the rest kept in their order.
+    [Fact]
+    public void FigureLinesShown_linesOfNothing_areLeftOutAndTheRestKeptInOrder()
+    {
+        FigureLine[] lines = [new("Figure_A", 1_000m), new("Figure_B", 0m), new("Figure_C", decimal.Negate(0.00m)), new("Figure_D", -400m)];
+
+        FigureLines.Shown(lines).Select(line => line.Key).ShouldBe(["Figure_A", "Figure_D"]);
+    }
+
     // A lever's conditions fold to one line that counts them and says why they are listed.
     [Theory]
     [InlineData(1, "1 condition Netto cannot check")]

@@ -10,8 +10,5 @@ internal static class VoucherFigures
     public const string AddedBack = "Figure_AddedBack";
 
     public static IReadOnlyList<FigureLine> From(VoucherView view) =>
-    [
-        .. new[] { new FigureLine(CompanyPays, view.Total), new FigureLine(AddedBack, view.Disallowed) }
-            .Where(line => Math.Round(line.Amount, 2, MidpointRounding.AwayFromZero) != 0m),
-    ];
+        FigureLines.Shown([new FigureLine(CompanyPays, view.Total), new FigureLine(AddedBack, view.Disallowed)]);
 }

@@ -9,12 +9,7 @@ internal static class DividendFigures
 
     public const string Dividend = "Figure_Dividend";
 
-    public static IReadOnlyList<FigureLine> From(DividendView view)
-    {
-        IEnumerable<FigureLine> lines = view.EarlierProfits > 0m
-            ? [new FigureLine(ProfitAfterTax, view.ProfitAfterTax), new FigureLine(Dividend, view.Dividend)]
-            : [new FigureLine(Dividend, view.Dividend)];
-
-        return [.. lines.Where(line => Math.Round(line.Amount, 2, MidpointRounding.AwayFromZero) != 0m)];
-    }
+    public static IReadOnlyList<FigureLine> From(DividendView view) => FigureLines.Shown(view.EarlierProfits > 0m
+        ? [new FigureLine(ProfitAfterTax, view.ProfitAfterTax), new FigureLine(Dividend, view.Dividend)]
+        : [new FigureLine(Dividend, view.Dividend)]);
 }

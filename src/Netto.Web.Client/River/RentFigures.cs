@@ -20,13 +20,10 @@ internal static class RentFigures
     // What the flat charges are, in the bubble after their line's label.
     public const string FlatChargesHelp = "Help_FlatCharges";
 
-    public static IReadOnlyList<FigureLine> From(RentView view) =>
+    public static IReadOnlyList<FigureLine> From(RentView view) => FigureLines.Shown(
     [
-        .. new[]
-        {
-            view.TaxedOnTheFloor ? new FigureLine(TaxedOnTheFloor, view.TaxableRent) { Help = FloorHelp } : new FigureLine(TaxedOnTheRent, view.TaxableRent),
-            new FigureLine(FlatCharges, -view.Charges) { Help = FlatChargesHelp },
-            new FigureLine(JoinsTaxableIncome, view.NetRent),
-        }.Where(line => Math.Round(line.Amount, 2, MidpointRounding.AwayFromZero) != 0m),
-    ];
+        view.TaxedOnTheFloor ? new FigureLine(TaxedOnTheFloor, view.TaxableRent) { Help = FloorHelp } : new FigureLine(TaxedOnTheRent, view.TaxableRent),
+        new FigureLine(FlatCharges, -view.Charges) { Help = FlatChargesHelp },
+        new FigureLine(JoinsTaxableIncome, view.NetRent),
+    ]);
 }
