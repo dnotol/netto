@@ -198,10 +198,11 @@
 
     private string ChartLabel => L["ChartLabel", Formats.Euros(0m), Formats.Euros(_top)].Value;
 
-    // Why the pay goes no further, and, with the curve drawn, how to read it.
+    // Why the pay goes no further, its bound staying in sight under the field, and, with the curve
+    // drawn, how to read it.
     private string PayHelp => _search is null ? Ceiling : $"{Ceiling} {L["CurveHint"]}";
 
-    private string Ceiling => L[SplitCardText.CeilingHint(_view.Royalty), Formats.Euros(_view.Ceiling)].Value;
+    private string Ceiling => L[SplitCardText.CeilingHint(_view.Royalty)].Value;
 
     // The pay, and the royalty beside it while it follows the pay, so the slider says both as it moves.
     private string SliderValue => _view.Royalty is { FollowsPay.Value: true, Amount: { } royalty }

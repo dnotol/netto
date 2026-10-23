@@ -31,13 +31,13 @@
     <value>At most {0}</value>
   </data>
   <data name="CeilingHint" xml:space="preserve">
-    <value>Up to {0}, the profit before your pay.</value>
+    <value>Up to the profit before your pay.</value>
   </data>
   <data name="CeilingHint_Follows" xml:space="preserve">
-    <value>Up to {0}, where the royalty that follows your pay takes the rest of what your pay and royalty share.</value>
+    <value>Up to where the royalty that follows your pay takes the rest of what your pay and royalty share.</value>
   </data>
   <data name="CeilingHint_Fixed" xml:space="preserve">
-    <value>Up to {0}, the profit before your pay once your fixed royalty is paid.</value>
+    <value>Up to the profit before your pay once your fixed royalty is paid.</value>
   </data>
   <data name="CurveHint" xml:space="preserve">
     <value>The gold line is what reaches your pocket at each pay, with everything else as you set it. Point at it to read a pay; click to move yours there.</value>

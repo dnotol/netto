@@ -110,17 +110,18 @@ public class StreamCardsFiguresTests
         ]);
     }
 
-    // How far the pay goes is a bound, in sight under its field; why, the field's bubble says, in the
-    // words the card said it in.
+    // How far the pay goes is a bound, in sight under its field and never in a bubble; why, the field's
+    // bubble says, in the words the card said it in.
     [Fact]
     public async Task Split_filledPlan_keepsThePaysBoundInSightAndWhyInItsBubble()
     {
         var html = await CardAsync("split");
+        var bubble = WebUtility.HtmlDecode(Regex.Match(FieldHead(html, "river-split-pay"), "class=\"info-bubble__text\"[^>]*>([^<]*)<").Groups[1].Value);
 
         html.ShouldSatisfyAllConditions(
             () => CardHtml.Prose(html).ShouldContain("At most €76,326.08"),
-            () => WebUtility.HtmlDecode(FieldHead(html, "river-split-pay"))
-                .ShouldContain("Up to €76,326.08, where the royalty that follows your pay takes the rest of what your pay and royalty share."));
+            () => bubble.ShouldStartWith("Up to where the royalty that follows your pay takes the rest of what your pay and royalty share."),
+            () => bubble.ShouldNotContain("€76,326.08"));
     }
 
     // A refused pay leaves no figure to draw: the refusal stands in sight where the lines were.

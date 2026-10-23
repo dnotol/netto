@@ -20,10 +20,10 @@ internal static class SplitCardText
 
     public static string Hint(SplitRoyaltyView? royalty) => royalty is null ? "Hint" : "Hint_Royalty";
 
-    // Why the pay goes no further, in the pay field's bubble, its bound staying in sight under it: the
-    // profit before pay, what a fixed royalty leaves of it, or where the pay and the royalty that
-    // follows it take all of it, while the engine set that royalty at what a ruling accepts; one that
-    // is none leaves the whole profit before pay.
+    // Why the pay goes no further, in the pay field's bubble, its bound staying in sight under it and
+    // out of the bubble: the profit before pay, what a fixed royalty leaves of it, or where the pay and
+    // the royalty that follows it take all of it, while the engine set that royalty at what a ruling
+    // accepts; one that is none leaves the whole profit before pay.
     public static string CeilingHint(SplitRoyaltyView? royalty) => royalty switch
     {
         null => "CeilingHint",
