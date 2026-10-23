@@ -98,6 +98,62 @@ public class MovesViewTests
         (view.State, view.Error).ShouldBe((MovesState.Refused, RiverInputs.Example.WithReserve(-1m).Run().Error));
     }
 
+    // Today's pocket is the one the river shows for Today: the search's scenario keeps the home's facts
+    // while Rent is out of the plan, and the royalty's share and statuses while Copyright royalty is, and
+    // counts neither.
+    public static TheoryData<string, RiverInputs> Todays => new()
+    {
+        { "the example", RiverInputs.Example },
+        { "the home's facts kept, Rent out of the plan", RiverInputs.Example.WithCadastralIncome(1_200m).WithShareLet(0.12m) },
+        { "the royalty's share and attestation kept, Copyright royalty out of the plan", RiverInputs.Example.WithCreativeShare(0.75m).WithAttestation(true) },
+    };
+
+    [Theory]
+    [MemberData(nameof(Todays))]
+    public void Of_today_startsFromTheRiversPocketForToday(string _, RiverInputs today)
+    {
+        MovesView.Of(today, On22October).TodayInPocket.ShouldBe(today.Run().Year.ShouldNotBeNull().NetInPocket);
+    }
+
+    [Theory]
+    [MemberData(nameof(Todays))]
+    public void Of_today_endsOnTodaysPocketWithEveryMove(string _, RiverInputs today)
+    {
+        var view = MovesView.Of(today, On22October);
+
+        view.PlanInPocket.ShouldBe(view.TodayInPocket + view.Total);
+    }
+
+    // What the pocket holds after each move is Today's with the gains up to it: the last is the plan's.
+    [Fact]
+    public void InPocketAfter_eachMove_addsTheGainsUpToItToTodaysPocket()
+    {
+        var view = MovesView.Of(RiverInputs.Example, On22October);
+
+        view.Moves.Select((_, index) => view.InPocketAfter(index))
+            .ShouldBe(view.Moves.Select((_, index) => view.TodayInPocket + view.Moves.Take(index + 1).Sum(move => move.Gain)));
+    }
+
+    [Fact]
+    public void InPocketAfter_lastMove_isThePlansPocket()
+    {
+        var view = MovesView.Of(RiverInputs.Example, On22October);
+
+        (view.Moves.Count > 1, view.InPocketAfter(view.Moves.Count - 1)).ShouldBe((true, view.PlanInPocket));
+    }
+
+    // Nothing to move: Today's pocket is the plan's.
+    [Fact]
+    public void Of_todayAlreadyBest_holdsTodaysPocketAlone()
+    {
+        var view = MovesView.Of(RiverInputs.Example, On22October);
+        var planned = view.Moves.Aggregate(RiverInputs.Example, (river, move) => view.Apply(move, river));
+
+        var best = MovesView.Of(planned, On22October);
+
+        (best.State, best.TodayInPocket, best.PlanInPocket).ShouldBe((MovesState.AlreadyBest, planned.Run().Year.ShouldNotBeNull().NetInPocket, best.TodayInPocket));
+    }
+
     // Today's pay is the one the river runs: a pay above the profit before pay is that profit.
     [Fact]
     public void Of_todayPayAboveTheProfit_startsFromTheProfit()
