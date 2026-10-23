@@ -81,12 +81,6 @@
   <data name="Gain_NotComparable" xml:space="preserve">
     <value>Not comparable with Today: one starts from the company's year, the other at the pay.</value>
   </data>
-  <data name="Muddy_More" xml:space="preserve">
-    <value>{0} more in the muddy pocket</value>
-  </data>
-  <data name="Muddy_Less" xml:space="preserve">
-    <value>{0} less in the muddy pocket</value>
-  </data>
   <data name="InRiver" xml:space="preserve">
     <value>In the river now</value>
   </data>

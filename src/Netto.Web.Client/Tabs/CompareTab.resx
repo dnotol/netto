@@ -147,12 +147,6 @@
   <data name="Headline_Same" xml:space="preserve">
     <value>« {0} » leaves the same in your pocket as « {1} ».</value>
   </data>
-  <data name="Muddy_More" xml:space="preserve">
-    <value>Its muddy pocket holds {0} more.</value>
-  </data>
-  <data name="Muddy_Less" xml:space="preserve">
-    <value>Its muddy pocket holds {0} less.</value>
-  </data>
   <data name="TableTitle" xml:space="preserve">
     <value>Figure by figure</value>
   </data>

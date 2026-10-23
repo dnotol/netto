@@ -194,18 +194,13 @@
 
     private string ChoiceName(PlanChoice choice) => choice.IsToday ? L["ChoiceToday", choice.Name] : choice.Name;
 
-    // What the second plan leaves in the pocket against the first, the bar's gain in words, and what its
-    // muddy pocket holds more or less.
+    // What the second plan leaves in the pocket against the first, the bar's gain in words.
     private string Headline(PocketPanel pocket)
     {
         var gain = pocket.Gain;
-        var sentence = gain.Kind is GainKind.More or GainKind.Less
+        return gain.Kind is GainKind.More or GainKind.Less
             ? L[CompareTabText.Headline(gain.Kind), pocket.Against.Name, Formats.Euros(gain.Amount), pocket.Plan.Name].Value
             : L[CompareTabText.Headline(gain.Kind), pocket.Against.Name, pocket.Plan.Name].Value;
-
-        return gain.MuddyDifference == 0m
-            ? sentence
-            : $"{sentence} {L[CompareTabText.Muddy(gain.MuddyDifference), Formats.Euros(Math.Abs(gain.MuddyDifference))]}";
     }
 
     private static string FillClass(PocketBar bar) => bar.IsBetter ? "compare__fill compare__fill--better" : "compare__fill";

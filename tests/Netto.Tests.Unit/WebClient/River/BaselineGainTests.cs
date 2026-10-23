@@ -94,28 +94,22 @@ public class BaselineGainTests
         BaselineGain.CanMark(RiverInputs.Example.WithReserve(-1m).Run()).ShouldBeFalse();
     }
 
-    // The gain stays in cash; beside it, what the muddy pocket holds more or less than Today's: the
-    // car's 8,000 of costs.
+    // A plan with a car is weighed against Today in cash, as any other (operator, 2026-10-23): the gain
+    // is the difference of the two pockets and nothing else, the cash the car takes from the pocket.
     [Fact]
-    public void From_riverWithACarTodayWithout_saysTheMuddyPocketHoldsItsCostsMore()
+    public void From_riverWithACarTodayWithout_isTheDifferenceOfThePocketsAlone()
     {
-        var gain = BaselineGain.From(WithCar, Example).ShouldNotBeNull();
+        var gain = BaselineGain.From(WithCar, Example);
 
-        (gain.Amount, gain.MuddyDifference).ShouldBe((Math.Abs(WithCar.Year!.NetInPocket - Example.Year!.NetInPocket), 8_000m));
+        gain.ShouldBe(new BaselineGain(GainKind.Less, Example.Year!.NetInPocket - WithCar.Year!.NetInPocket));
     }
 
     [Fact]
-    public void From_todayWithACarRiverWithout_saysTheMuddyPocketHoldsItsCostsLess()
+    public void From_todayWithACarRiverWithout_isTheDifferenceOfThePocketsAlone()
     {
-        BaselineGain.From(Example, WithCar).ShouldNotBeNull().MuddyDifference.ShouldBe(-8_000m);
-    }
+        var gain = BaselineGain.From(Example, WithCar);
 
-    [Fact]
-    public void From_sameMuddyPocket_isAPlainZero()
-    {
-        var difference = BaselineGain.From(WithCar, WithCar).ShouldNotBeNull().MuddyDifference;
-
-        (difference, decimal.IsNegative(difference)).ShouldBe((0m, false));
+        gain.ShouldBe(new BaselineGain(GainKind.More, Example.Year!.NetInPocket - WithCar.Year!.NetInPocket));
     }
 
     // YearSimulationCarTests' electric car on the example: 8,000 of yearly costs.

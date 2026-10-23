@@ -22,9 +22,6 @@ internal static class CompareTabText
         _ => "Headline_Same",
     };
 
-    // After it, what the second plan's muddy pocket holds more or less than the first's.
-    public static string Muddy(decimal difference) => difference > 0m ? "Muddy_More" : "Muddy_Less";
-
     // The note the tab opens on when there is nothing to put side by side or nothing to compare.
     public static string Note(CompareState state) => state switch
     {

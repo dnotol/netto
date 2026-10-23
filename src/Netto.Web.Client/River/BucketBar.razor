@@ -66,10 +66,6 @@
                     @if (Gain is { } gain)
                     {
                         <span class="bucket-bar__gain--@gain.Kind.ToString().ToLowerInvariant()">@GainText(gain)</span>
-                        @if (gain.MuddyDifference != 0m)
-                        {
-                            @(" ")<span class="bucket-bar__muddy">@L[BucketBarText.Muddy(gain.MuddyDifference), Formats.Euros(Math.Abs(gain.MuddyDifference))]</span>
-                        }
                     }
                     @if (Unsaved)
                     {

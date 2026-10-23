@@ -200,18 +200,6 @@ public class BucketBarTextTests
         text.ShouldBe(expected);
     }
 
-    // When the muddy pocket differs from Today's, the bar says so beside the gain in cash.
-    [Theory]
-    [InlineData(8_000, "€8,000.00 more in the muddy pocket.")]
-    [InlineData(-8_000, "€8,000.00 less in the muddy pocket.")]
-    public void Muddy_difference_saysHowMuchMoreOrLessThanToday(int difference, string expected)
-    {
-        var text = string.Format(CultureInfo.InvariantCulture, Resources.GetString(BucketBarText.Muddy(difference), CultureInfo.InvariantCulture) ?? "",
-            Formats.Euros(Math.Abs(difference)));
-
-        text.ShouldBe(expected);
-    }
-
     // While the engine refuses an amount there is no figure to announce.
     [Fact]
     public void Pocket_noFigure_isNothing()

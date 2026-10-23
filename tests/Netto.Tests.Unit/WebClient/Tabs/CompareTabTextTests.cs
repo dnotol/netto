@@ -41,7 +41,6 @@ public class CompareTabTextTests
             .Concat(new[] { GainKind.More, GainKind.Less, GainKind.Same }.Select(CompareTabText.Headline))
             .Concat(new[] { CompareState.NoPlan, CompareState.OnePlan, CompareState.NotComparable, CompareState.Refused }.Select(CompareTabText.Note))
             .Concat(new[] { 1, 2 }.Select(CompareTabText.Unreadable))
-            .Concat(new[] { CompareTabText.Muddy(1m), CompareTabText.Muddy(-1m) })
             .Concat(kinds.Select(CompareTabText.Points))
             .Concat(kinds.SelectMany(kind => new[] { FigureKind.Money, FigureKind.Share }.Select(figure => CompareTabText.Spoken(kind, figure))));
 
@@ -61,13 +60,6 @@ public class CompareTabTextTests
         Format(CompareTabText.Headline(GainKind.More), "Best pay", Formats.Euros(2_551.13m), "Today").ShouldBe("« Best pay » leaves €2,551.13 more in your pocket than « Today ».");
         Format(CompareTabText.Headline(GainKind.Less), "Best pay", Formats.Euros(2_551.13m), "Today").ShouldBe("« Best pay » leaves €2,551.13 less in your pocket than « Today ».");
         Format(CompareTabText.Headline(GainKind.Same), "Best pay", "Today").ShouldBe("« Best pay » leaves the same in your pocket as « Today ».");
-    }
-
-    [Fact]
-    public void Muddy_difference_saysMoreOrLess()
-    {
-        (Format(CompareTabText.Muddy(8_000m), Formats.Euros(8_000m)), Format(CompareTabText.Muddy(-8_000m), Formats.Euros(8_000m)))
-            .ShouldBe(("Its muddy pocket holds €8,000.00 more.", "Its muddy pocket holds €8,000.00 less."));
     }
 
     // A screen reader says a sign as a dash, or not at all: the words say the direction.

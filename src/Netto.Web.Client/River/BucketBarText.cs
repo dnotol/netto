@@ -38,9 +38,6 @@ internal static class BucketBarText
     // the two cannot be compared (BaselineGain); the live region says it after the pocket.
     public static string Gain(GainKind kind) => $"Gain_{kind}";
 
-    // Beside the gain, what the muddy pocket holds more or less than Today's, when it differs.
-    public static string Muddy(decimal difference) => difference > 0m ? "Muddy_More" : "Muddy_Less";
-
     // The taxes on pay say they hold the rent's tax too once there is one. A copyright royalty's tax is
     // said in what the bucket holds alone: the name keeps « pay » (decided unattended), short enough for
     // the bar.

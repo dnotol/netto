@@ -187,12 +187,6 @@
     color: var(--netto-gold);
 }
 
-/* Beside the gain in cash, what the muddy pocket holds more or less than Today's: muted, not money
-   in the pocket. */
-.bucket-bar__muddy {
-    color: var(--netto-text-muted);
-}
-
 /* What the live region reads, out of sight: the figures in sight hold the bubbles of the buckets'
    names, which a live region would read out as a change of the bar. */
 .bucket-bar__live {

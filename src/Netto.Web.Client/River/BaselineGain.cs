@@ -4,12 +4,9 @@ namespace Netto.Web.Client.River;
 // the difference of the two runs' net in pocket, to the cent. Nothing without a setup, or while the
 // engine refuses either, the bar then having no figure. A river that starts at the pay and one that
 // starts at the company's year are not compared, since the first leaves out the dividend. The gain is
-// in cash; MuddyDifference says what the muddy pocket, a company car at its cost, holds more (above
-// zero) or less than the setup's, a plain zero when the two hold the same.
+// in cash and nothing else, a plan with a company car's as any other's (operator, 2026-10-23).
 internal sealed record BaselineGain(GainKind Kind, decimal Amount)
 {
-    public decimal MuddyDifference { get; init; }
-
     public static BaselineGain? From(RiverRun river, RiverRun? setup)
     {
         if (setup is null || Pocket(river) is not { } pocket || Pocket(setup) is not { } setupPocket)
@@ -18,15 +15,12 @@ internal sealed record BaselineGain(GainKind Kind, decimal Amount)
             return new BaselineGain(GainKind.NotComparable, 0m);
 
         // A plain zero when the two leave the same, never a negative one (0m - 0.00m).
-        var muddy = river.Year?.MuddyPocket ?? 0m;
-        var setupMuddy = setup.Year?.MuddyPocket ?? 0m;
-        var gain = pocket.CompareTo(setupPocket) switch
+        return pocket.CompareTo(setupPocket) switch
         {
             > 0 => new BaselineGain(GainKind.More, pocket - setupPocket),
             < 0 => new BaselineGain(GainKind.Less, setupPocket - pocket),
             _ => new BaselineGain(GainKind.Same, 0m),
         };
-        return gain with { MuddyDifference = muddy == setupMuddy ? 0m : muddy - setupMuddy };
     }
 
     // A setup is the river with its figures: none to keep while the engine refuses an amount.
