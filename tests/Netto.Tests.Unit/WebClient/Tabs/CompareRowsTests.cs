@@ -105,8 +105,8 @@ public class CompareRowsTests
     }
 
     // Taxes are what the engine's layers took: the year's own figures, and the bar's two tax buckets
-    // together; with the pocket, the muddy pocket and what the company keeps they are what the river
-    // started from.
+    // together; with the pocket and what the company keeps they are what the river started from, after
+    // the car's costs.
     [Theory]
     [MemberData(nameof(Years))]
     public void Rows_everyColumn_addsUpToWhatTheRiverStartsFromAndToTheBar(decimal revenue, decimal pay, decimal reserve)
@@ -125,7 +125,7 @@ public class CompareRowsTests
             figure("personal_tax").ShouldBe(year.PersonalTax);
             (figure("corporate_tax") + figure("social_contributions") + figure("personal_tax")).ShouldBe(figure("taxes"));
             figure("taxes").ShouldBe(buckets.Buckets.Single(bucket => bucket.Key == "taxes_on_pay").Amount + buckets.Buckets.Single(bucket => bucket.Key == "taxes_on_profit").Amount);
-            (figure("pocket") + figure("muddy") + figure("taxes") + figure("kept")).ShouldBe(buckets.Start);
+            (figure("pocket") + figure("taxes") + figure("kept")).ShouldBe(buckets.Start);
         }
     }
 
@@ -154,28 +154,16 @@ public class CompareRowsTests
         Row(Compare(RiverInputs.Example, BestPay), "pocket").Differs.ShouldBeTrue();
     }
 
-    // A car on one side: the muddy pocket holds its costs there, nothing on the other, and the difference is
-    // the one BaselineGain says beside the gain in cash.
-    [Fact]
-    public void Rows_carOnOneSide_hasTheMuddyPocketRow()
+    // A car on one side: the result is the pocket, its share and what the company keeps, as for any plan,
+    // the car's costs being the company's, left out of the bar like its running costs.
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Rows_carOnOneSide_haveTheResultOfAnyPlan(bool carFirst)
     {
-        var row = Row(Compare(RiverInputs.Example, ElectricCar), "muddy");
+        var view = carFirst ? Compare(ElectricCar, RiverInputs.Example) : Compare(RiverInputs.Example, ElectricCar);
 
-        (row.Plan, row.Against, row.Difference).ShouldBe((CompareFigure.Money(0m), CompareFigure.Money(8_000m), new CompareDifference(DifferenceKind.More, 8_000m)));
-    }
-
-    [Fact]
-    public void Rows_carOnTheFirstSide_isLessInTheMuddyPocketAgainst()
-    {
-        var row = Row(Compare(ElectricCar, RiverInputs.Example), "muddy");
-
-        row.Difference.ShouldBe(new CompareDifference(DifferenceKind.Less, 8_000m));
-    }
-
-    [Fact]
-    public void Rows_noCarOnEitherSide_hasNoMuddyPocketRow()
-    {
-        Rows(Compare(RiverInputs.Example, BestPay)).Select(row => row.Key).ShouldNotContain("muddy");
+        view.Groups.Single(group => group.Key == "result").Rows.Select(row => row.Key).ShouldBe(["pocket", "reach", "kept"]);
     }
 
     // A river without a year of the company has no corporate tax, no kept profits: the rows of its pay.

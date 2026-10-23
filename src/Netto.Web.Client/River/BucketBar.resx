@@ -15,9 +15,6 @@
   <data name="Bucket_pocket" xml:space="preserve">
     <value>Your pocket</value>
   </data>
-  <data name="Bucket_muddy" xml:space="preserve">
-    <value>Muddy pocket</value>
-  </data>
   <data name="Bucket_taxes_on_pay" xml:space="preserve">
     <value>Taxes on pay</value>
   </data>
@@ -39,6 +36,12 @@
   <data name="FromProfitAndEarlier" xml:space="preserve">
     <value>Out of {0} of profit before what the company pays you and {1} kept from earlier years.</value>
   </data>
+  <data name="FromProfitAfterCar" xml:space="preserve">
+    <value>Out of {0} of profit before what the company pays you, after its car's {2} of costs.</value>
+  </data>
+  <data name="FromProfitAfterCarAndEarlier" xml:space="preserve">
+    <value>Out of {0} of profit before what the company pays you, after its car's {2} of costs, and {1} kept from earlier years.</value>
+  </data>
   <data name="FromPay" xml:space="preserve">
     <value>Out of {0} of gross pay.</value>
   </data>
@@ -54,23 +57,14 @@
   <data name="Reach_Kept" xml:space="preserve">
     <value>Of what the company does not keep, [{0} reaches you], {1} goes to taxes.</value>
   </data>
-  <data name="Reach_Muddy" xml:space="preserve">
-    <value>[{0} reaches you], {2} goes to the muddy pocket, {1} goes to taxes.</value>
-  </data>
-  <data name="Reach_Muddy_Kept" xml:space="preserve">
-    <value>Of what the company does not keep, [{0} reaches you], {2} goes to the muddy pocket, {1} goes to taxes.</value>
-  </data>
   <data name="ReachMeaning" xml:space="preserve">
-    <value>Your pocket, out of what the river starts from less what the company keeps at year end, which is still yours. Running costs are left out: they are not taxes, and no lever moves them.</value>
+    <value>Your pocket, out of what the river starts from less what the company keeps at year end, which is still yours. Running costs and a company car's costs are left out: the company spends them, they are not taxes.</value>
   </data>
   <data name="Refused" xml:space="preserve">
     <value>No figures until the amount marked below is corrected.</value>
   </data>
   <data name="Holds_pocket" xml:space="preserve">
     <value>What reaches you over the year: your net pay and net dividend, and what the company pays you besides pay, less any tax on it.</value>
-  </data>
-  <data name="Holds_muddy" xml:space="preserve">
-    <value>What the company spends on what you also use privately, your company car, at what it costs it over the year. Neither cash in your pocket nor lost: you are taxed on its flat-rate benefit instead.</value>
   </data>
   <data name="Holds_taxes_on_pay" xml:space="preserve">
     <value>What leaves your pay: your social contributions, the income tax and the municipal surcharge, less the tax credit for low earned income, and any advance-payment surcharge less its bonus.</value>

@@ -14,8 +14,8 @@ public enum GlanceKind
     // What the split gives the pay.
     ToYourPay,
 
-    // What the company spends on a car, in the muddy pocket.
-    MuddyPocket,
+    // What a car costs the company over the year.
+    CarCosts,
 
     // A copyright royalty taxed as pay in full.
     TaxedAsPay,
@@ -30,11 +30,10 @@ public sealed record CardGlance(GlanceKind Kind, string Figure)
 {
     // The bucket of the bar the figure lands in, whose icon the glance carries (BucketIcons): only money
     // that ends up there. Money still on its way (the revenue, the pay, what the company has left after
-    // its tax) lands in none.
+    // its tax) lands in none, nor does a car's costs, a cost of the company the bar leaves out.
     internal string? Bucket => Kind switch
     {
         GlanceKind.ToYou => "pocket",
-        GlanceKind.MuddyPocket => BucketsView.Muddy,
         _ => null,
     };
 }

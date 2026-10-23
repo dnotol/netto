@@ -36,8 +36,8 @@
   <data name="Glance_ToYourPay" xml:space="preserve">
     <value>{0} to your pay</value>
   </data>
-  <data name="Glance_MuddyPocket" xml:space="preserve">
-    <value>{0} to the muddy pocket</value>
+  <data name="Glance_CarCosts" xml:space="preserve">
+    <value>{0} of car costs</value>
   </data>
   <data name="Glance_TaxedAsPay" xml:space="preserve">
     <value>{0} taxed as your pay</value>

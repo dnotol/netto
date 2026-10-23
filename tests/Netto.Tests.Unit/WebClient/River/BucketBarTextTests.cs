@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Resources;
+using Netto.Core.SocialContributions;
 using Netto.Web.Client;
 using Netto.Web.Client.River;
 using Shouldly;
@@ -141,30 +142,62 @@ public class BucketBarTextTests
         Resources.GetString(BucketBarText.Unsaved, CultureInfo.InvariantCulture).ShouldBe("Unsaved changes.");
     }
 
-    // The muddy pocket's name and what it holds, beside the four others.
-    [Fact]
-    public void BucketBarResx_muddyPocket_hasItsNameAndWhatItHolds()
+    // With a car, the reach says the pocket and the taxes alone, of what the company does not keep once
+    // it keeps some: the car's costs are left out of the bar, as the running costs are.
+    [Theory]
+    [InlineData(0, "Reach")]
+    [InlineData(10_000, "Reach_Kept")]
+    public void Reach_car_saysThePocketAndTheTaxesAlone(int reserve, string key)
     {
-        (Resources.GetString(BucketBarText.Bucket("muddy", false), CultureInfo.InvariantCulture),
-                Resources.GetString(BucketBarText.Holds("muddy", false), CultureInfo.InvariantCulture))
-            .ShouldSatisfyAllConditions(
-                texts => texts.Item1.ShouldBe("Muddy pocket"),
-                texts => texts.Item2.ShouldNotBeNull());
+        var view = BucketsView.From(WithCar.WithReserve(reserve).Run()).ShouldNotBeNull();
+
+        BucketBarText.Reach(view).ShouldBe(key);
     }
 
-    // With a car, the reach says the muddy pocket's share between what reaches the pocket and the
-    // taxes, of what the company does not keep once it keeps some.
-    [Theory]
-    [InlineData(0, "Reach_Muddy", "[62% reaches you], 8% goes to the muddy pocket, 30% goes to taxes.")]
-    [InlineData(10_000, "Reach_Muddy_Kept", "Of what the company does not keep, [62% reaches you], 8% goes to the muddy pocket, 30% goes to taxes.")]
-    public void Reach_car_saysTheMuddyShareBetweenThePocketAndTheTaxes(int reserve, string key, string expected)
+    // The reach's bubble says what it is out of: the running costs and a car's costs are left out.
+    [Fact]
+    public void BucketBarResx_reachMeaning_saysACarsCostsAreLeftOutLikeTheRunningCosts()
     {
-        var view = BucketsView.From(RiverInputs.Example.AddToPlan(OptionalModule.Car).WithCatalogueValue(50_000m).WithCarCosts(8_000m).WithReserve(reserve).Run())
-            .ShouldNotBeNull();
+        Resources.GetString(BucketBarText.ReachMeaning, CultureInfo.InvariantCulture).ShouldBe(
+            "Your pocket, out of what the river starts from less what the company keeps at year end, which is still yours. "
+            + "Running costs and a company car's costs are left out: the company spends them, they are not taxes.");
+    }
 
-        var text = string.Format(CultureInfo.InvariantCulture, Resources.GetString(BucketBarText.Reach(view), CultureInfo.InvariantCulture) ?? "", "62%", "30%", "8%");
+    // What the river starts from, each way it can: the profit before what the company pays the director,
+    // after a car's costs once one counts, with the profits kept from earlier years; or, with the company
+    // skipped, the pay and the contributions the company pays on it.
+    public static TheoryData<string, RiverInputs> Starts => new()
+    {
+        { "FromProfit", RiverInputs.Example },
+        { "FromProfitAndEarlier", RiverInputs.Example.WithEarlierProfits(10_000m) },
+        { "FromProfitAfterCar", WithCar },
+        { "FromProfitAfterCarAndEarlier", WithCar.WithEarlierProfits(10_000m) },
+        { "FromPay", RiverInputs.Example.SkipCompany() },
+        { "FromPayCost", RiverInputs.Example.SkipCompany().WithContributionsPaidBy(ContributionsPaidBy.Company) },
+    };
 
-        (BucketBarText.Reach(view), text).ShouldBe((key, expected));
+    [Theory]
+    [MemberData(nameof(Starts))]
+    public void From_eachStart_hasItsSentence(string key, RiverInputs inputs)
+    {
+        var view = BucketsView.From(inputs.Run()).ShouldNotBeNull();
+
+        (BucketBarText.From(view), Resources.GetString(key, CultureInfo.InvariantCulture) is not null).ShouldBe((key, true));
+    }
+
+    // With a car the bar says the river starts after its costs: the example's 100,000 less its 8,000
+    // (BucketsViewTests), and beside them what the company kept from earlier years.
+    [Theory]
+    [InlineData(0, "Out of €92,000.00 of profit before what the company pays you, after its car's €8,000.00 of costs.")]
+    [InlineData(10_000, "Out of €92,000.00 of profit before what the company pays you, after its car's €8,000.00 of costs, and €10,000.00 kept from earlier years.")]
+    public void From_car_saysTheRiverStartsAfterItsCosts(int earlierProfits, string expected)
+    {
+        var view = BucketsView.From(WithCar.WithEarlierProfits(earlierProfits).Run()).ShouldNotBeNull();
+
+        var text = string.Format(CultureInfo.InvariantCulture, Resources.GetString(BucketBarText.From(view), CultureInfo.InvariantCulture) ?? "",
+            Formats.Euros(view.Start - view.EarlierProfits), Formats.Euros(view.EarlierProfits), Formats.Euros(view.CarCosts));
+
+        text.ShouldBe(expected);
     }
 
     // When the muddy pocket differs from Today's, the bar says so beside the gain in cash.
@@ -197,4 +230,8 @@ public class BucketBarTextTests
 
         text.ShouldBe("No figures until the amount marked below is corrected.");
     }
+
+    // YearSimulationCarTests' electric car on the example: 8,000 of yearly costs.
+    private static readonly RiverInputs WithCar =
+        RiverInputs.Example.AddToPlan(OptionalModule.Car).WithCatalogueValue(50_000m).WithFirstRegistration(new DateOnly(2026, 1, 10)).WithCarCosts(8_000m);
 }

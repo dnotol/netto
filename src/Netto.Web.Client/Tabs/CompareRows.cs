@@ -23,7 +23,6 @@ internal static class CompareRows
             [
                 Row("pocket", PocketOf(plan), PocketOf(against), OfGain(gain)),
                 Row("reach", Share(plan), Share(against)),
-                MuddyRow(plan, against, gain),
                 Row("kept", Company(plan, KeptOf), Company(against, KeptOf)),
             ])),
             new CompareGroup("taxes", Drawn(
@@ -101,19 +100,6 @@ internal static class CompareRows
         GainKind.Less => -gain.Amount,
         _ => 0m,
     });
-
-    // The muddy pocket, once a car counts in either plan, a plan without one holding nothing.
-    private static CompareRow? MuddyRow(ComparedPlan plan, ComparedPlan against, BaselineGain gain)
-    {
-        if (!HasMuddy(plan) && !HasMuddy(against))
-            return null;
-
-        return Row("muddy", Money(MuddyOf(plan)), Money(MuddyOf(against)), Direction(gain.MuddyDifference));
-    }
-
-    private static bool HasMuddy(ComparedPlan column) => column.Buckets is { HasMuddyPocket: true };
-
-    private static decimal MuddyOf(ComparedPlan column) => HasMuddy(column) ? column.Buckets!.AmountOf(BucketsView.Muddy) : 0m;
 
     private static CompareFigure PocketOf(ComparedPlan column) => Money(column.Buckets!.AmountOf("pocket"));
 

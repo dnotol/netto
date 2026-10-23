@@ -26,14 +26,15 @@ public class CarViewTests
             .ShouldBe((false, 0, (decimal?)null, new Drain("profit_before_pay", DrainKind.PassedOn, 100_000m, "split")));
     }
 
-    // Its costs go to the muddy pocket, the director's contribution comes back from the pocket, and the
-    // profit before pay, 100,000 less 8,000 plus 600, goes on to the split.
+    // Its costs leave the river, a cost of the company like its running costs, the director's
+    // contribution comes back from the pocket, and the profit before pay, 100,000 less 8,000 plus 600,
+    // goes on to the split.
     [Fact]
-    public void Car_withAContribution_drainsItsCostsToTheMuddyPocketAndPassesTheRestOn()
+    public void Car_withAContribution_paysItsCostsOutAsACompanyCostAndPassesTheRestOn()
     {
         Lines(Car(ElectricCar.WithCarContribution(600m)).Drains).ShouldBe(new[]
         {
-            new Drain("car_costs", DrainKind.PassedOn, 8_000m, "muddy"),
+            new Drain("car_costs", DrainKind.PaidOut, 8_000m, "company_costs"),
             new Drain("car_contribution", DrainKind.Back, 600m, "pocket"),
             new Drain("profit_before_pay", DrainKind.PassedOn, 92_600m, "split"),
         });

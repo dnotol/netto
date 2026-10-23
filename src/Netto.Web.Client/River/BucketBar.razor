@@ -20,7 +20,7 @@
 <div class="bucket-bar @(TabRow is null ? null : "bucket-bar--tabs")">
     <MudContainer MaxWidth="MaxWidth.Large">
         <div class="bucket-bar__figures">
-            <dl class="bucket-bar__buckets @(View is { HasMuddyPocket: true } ? "bucket-bar__buckets--five" : "")">
+            <dl class="bucket-bar__buckets">
                 @foreach (var key in View?.Buckets.Select(bucket => bucket.Key) ?? BucketsView.Keys)
                 {
                     <div class="bucket bucket--@key">
@@ -52,8 +52,7 @@
                 @From
                 @if (View is { Reach: { } reach } reached)
                 {
-                    @(" ")<TermSentence Text="@L[BucketBarText.Reach(reached), Formats.WholeShare(reach), Formats.WholeShare(reached.TaxesShare ?? 0m),
-                                                Formats.WholeShare(reached.MuddyShare ?? 0m)]"
+                    @(" ")<TermSentence Text="@L[BucketBarText.Reach(reached), Formats.WholeShare(reach), Formats.WholeShare(reached.TaxesShare ?? 0m)]"
                                         Meaning="@L[BucketBarText.ReachMeaning]" />
                 }
                 @if (View is { StartsAtPay: true })
@@ -161,14 +160,10 @@
 
     public void Dispose() => _disposed = true;
 
-    // Out of what the river starts from, or why there is no figure.
-    private string From => View switch
-    {
-        null => L[BucketBarText.Refused].Value,
-        { StartsAtPay: true } view => L[view.CompanyPaysContributions ? "FromPayCost" : "FromPay", Formats.Euros(view.Start)].Value,
-        { EarlierProfits: > 0m } view => L["FromProfitAndEarlier", Formats.Euros(view.Start - view.EarlierProfits), Formats.Euros(view.EarlierProfits)].Value,
-        { } view => L["FromProfit", Formats.Euros(view.Start)].Value,
-    };
+    // Out of what the river starts from, after a car's costs, or why there is no figure.
+    private string From => View is { } view
+        ? L[BucketBarText.From(view), Formats.Euros(view.Start - view.EarlierProfits), Formats.Euros(view.EarlierProfits), Formats.Euros(view.CarCosts)].Value
+        : L[BucketBarText.Refused].Value;
 
     // What the river leaves in the pocket against the setup, or that the two cannot be compared.
     private string GainText(BaselineGain gain) => gain.Kind is GainKind.More or GainKind.Less

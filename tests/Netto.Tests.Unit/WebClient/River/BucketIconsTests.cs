@@ -10,9 +10,7 @@ namespace Netto.Tests.WebClient.River;
 // and on a glance of the outline that lands in it. An icon is decoration: the name stays the text.
 public class BucketIconsTests
 {
-    private static readonly string[] AllBuckets = [.. BucketsView.Keys, BucketsView.Muddy];
-
-    public static TheoryData<string> Buckets => [.. AllBuckets];
+    public static TheoryData<string> Buckets => [.. BucketsView.Keys];
 
     [Theory]
     [MemberData(nameof(Buckets))]
@@ -24,12 +22,12 @@ public class BucketIconsTests
     [Fact]
     public void For_twoBuckets_neverShareAnIcon()
     {
-        AllBuckets.Select(BucketIcons.For).Distinct().Count().ShouldBe(5);
+        BucketsView.Keys.Select(BucketIcons.For).Distinct().Count().ShouldBe(4);
     }
 
-    // With a car the bar shows its five buckets, each icon after its bucket's name, the last thing on the
-    // name's line, so that where the column has no room for both it is the icon that goes (the bar's
-    // CSS), never a part of the name. A screen reader skips it.
+    // With a car the bar still shows its four buckets, each icon after its bucket's name, the last thing
+    // on the name's line, so that where the column has no room for both it is the icon that goes (the
+    // bar's CSS), never a part of the name. A screen reader skips it.
     [Fact]
     public async Task BucketBar_everyBucket_showsItsIconAfterItsName()
     {
@@ -42,6 +40,6 @@ public class BucketIconsTests
             .Select(label => Regex.Match(label.Groups[1].Value,
                 "class=\"info-bubble\".*<span[^>]*class=\"bucket__icon\"[^>]*aria-hidden=\"true\"[^>]*><span[^>]*>([^<]+)</span></span>\\s*$",
                 RegexOptions.Singleline).Groups[1].Value)
-            .ShouldBe(new[] { "pocket", BucketsView.Muddy, "taxes_on_pay", "taxes_on_profit", "kept_in_company" }.Select(BucketIcons.For));
+            .ShouldBe(BucketsView.Keys.Select(BucketIcons.For));
     }
 }

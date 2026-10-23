@@ -250,9 +250,9 @@
             : L[CarCardText.Summary(false, Inputs.InPlan(OptionalModule.Copyright)), Formats.Euros(view.SplitShares)].Value
         : null;
 
-    // What the car costs the company in the muddy pocket, for the card's row in the river's outline;
-    // nothing before there is a car.
-    private CardGlance? Glance => _view is { HasCar: true } view ? new(GlanceKind.MuddyPocket, Formats.Euros(view.Result.Costs)) : null;
+    // What the car costs the company over the year, for the card's row in the river's outline; nothing
+    // before there is a car.
+    private CardGlance? Glance => _view is { HasCar: true } view ? new(GlanceKind.CarCosts, Formats.Euros(view.Result.Costs)) : null;
 
     private RenderFragment? Details => _view is { Details.Count: > 0 } view && Run.Year is { } year
         ? @<text>

@@ -39,9 +39,6 @@
   <data name="Row_reach" xml:space="preserve">
     <value>Reaches you</value>
   </data>
-  <data name="Row_muddy" xml:space="preserve">
-    <value>Muddy pocket</value>
-  </data>
   <data name="Row_kept" xml:space="preserve">
     <value>Kept in the company</value>
   </data>

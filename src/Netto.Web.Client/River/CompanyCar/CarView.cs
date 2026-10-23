@@ -5,10 +5,11 @@ using Netto.Web.Client.Steps;
 
 namespace Netto.Web.Client.River.CompanyCar;
 
-// What the company car costs the company, out to the muddy pocket, and the director's contribution
-// coming back from their pocket, then what it leaves, passed on to the split, the last lever before it,
-// as what the pay, the company and a royalty share there, from the year's car steps; what it receives is
-// what the levers above leave of what the company earns. The card reads the car as the engine took it (Result): its benefit, period by period,
+// What the company car costs the company, paid out of the river as a cost of the company like its
+// running costs (CompanyCosts, operator, 2026-10-23), and the director's contribution coming back from
+// their pocket, then what it leaves, passed on to the split, the last lever before it, as what the pay,
+// the company and a royalty share there, from the year's car steps; what it receives is what the levers
+// above leave of what the company earns. The card reads the car as the engine took it (Result): its benefit, period by period,
 // at its CO2 percentage, at least the minimum, less the contribution, taxed as pay, what the company
 // deducts of its costs, and what it adds back of the benefit, 40% when it pays the private energy,
 // which for a car it charges, electric or plug-in hybrid, is the administration's reading of « fuel »
@@ -22,6 +23,9 @@ internal sealed record CarView(
     IReadOnlyList<Drain> Drains,
     IReadOnlyList<StepDetail> Details)
 {
+    // Where the car's costs go: out of the river, a cost of the company the bar of buckets leaves out.
+    public const string CompanyCosts = "company_costs";
+
     public bool HasCar => Details.Count > 0;
 
     // What the split shares once the car is paid, the royalty in it, which the summary states: the same
@@ -41,7 +45,7 @@ internal sealed record CarView(
         IEnumerable<Drain> drains = steps.Count > 0
             ?
             [
-                new Drain("car_costs", DrainKind.PassedOn, car.Costs, BucketsView.Muddy) { Details = [StepDetail.From(steps["car_costs"])] }.Of(received),
+                new Drain("car_costs", DrainKind.PaidOut, car.Costs, CompanyCosts) { Details = [StepDetail.From(steps["car_costs"])] }.Of(received),
                 new Drain("car_contribution", DrainKind.Back, car.Contribution, "pocket") { Details = [StepDetail.From(steps["car_contribution"])] },
             ]
             : [];

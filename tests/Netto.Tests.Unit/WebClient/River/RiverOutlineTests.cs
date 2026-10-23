@@ -116,7 +116,8 @@ public class RiverOutlineTests
     }
 
     // What each card is about: what reaches the pocket for a lever, the pay and the dividend, where the
-    // river starts, what the split gives the pay, and what the company keeps after its tax.
+    // river starts, what a car costs the company, what the split gives the pay, and what the company
+    // keeps after its tax.
     [Fact]
     public async Task Outline_everyCard_glancesAtWhatItIsAbout()
     {
@@ -125,7 +126,7 @@ public class RiverOutlineTests
         Rows(html).Select(row => (Title(row), Glance(row) is { } glance ? Kind(glance) : (GlanceKind?)null)).ShouldBe(
         [
             ("Company year", GlanceKind.In), ("Vouchers", GlanceKind.ToYou),
-            ("Expense allowances", GlanceKind.ToYou), ("Home office rent", GlanceKind.ToYou), ("Company car", GlanceKind.MuddyPocket),
+            ("Expense allowances", GlanceKind.ToYou), ("Home office rent", GlanceKind.ToYou), ("Company car", GlanceKind.CarCosts),
             ("The split", GlanceKind.ToYourPay), ("Copyright royalty", GlanceKind.ToYou), ("Director pay", GlanceKind.ToYou),
             ("Corporate tax", GlanceKind.LeftAfterTax), ("Dividend", GlanceKind.ToYou),
         ]);
@@ -142,7 +143,7 @@ public class RiverOutlineTests
     }
 
     // The icon of the bucket the figure lands in, which a screen reader skips: the pocket's for what
-    // reaches it, the muddy pocket's for a car's costs, none for money still on its way.
+    // reaches it, none for money still on its way or for a car's costs, which the bar leaves out.
     [Fact]
     public async Task Outline_glanceLandingInABucket_carriesItsIcon()
     {
@@ -152,7 +153,7 @@ public class RiverOutlineTests
         Rows(html).Select(row => (Title(row), Icon(row))).ShouldBe(
         [
             ("Company year", null), ("Vouchers", pocket), ("Expense allowances", pocket), ("Home office rent", pocket),
-            ("Company car", BucketIcons.For(BucketsView.Muddy)), ("The split", null), ("Copyright royalty", pocket), ("Director pay", pocket),
+            ("Company car", null), ("The split", null), ("Copyright royalty", pocket), ("Director pay", pocket),
             ("Corporate tax", null), ("Dividend", pocket),
         ]);
     }

@@ -24,7 +24,7 @@ public class RiverOutlineTextTests
     [InlineData(GlanceKind.In, "€120,000.00 in")]
     [InlineData(GlanceKind.ToYou, "€120,000.00 to you")]
     [InlineData(GlanceKind.ToYourPay, "€120,000.00 to your pay")]
-    [InlineData(GlanceKind.MuddyPocket, "€120,000.00 to the muddy pocket")]
+    [InlineData(GlanceKind.CarCosts, "€120,000.00 of car costs")]
     [InlineData(GlanceKind.TaxedAsPay, "€120,000.00 taxed as your pay")]
     [InlineData(GlanceKind.LeftAfterTax, "€120,000.00 left after tax")]
     public void RiverOutlineResx_everyGlance_saysItsFigureInTheSummarysWords(GlanceKind kind, string expected)

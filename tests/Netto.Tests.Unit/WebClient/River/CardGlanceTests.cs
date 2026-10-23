@@ -4,13 +4,14 @@ using Shouldly;
 namespace Netto.Tests.WebClient.River;
 
 // A card's glance in the outline carries the icon of the bucket its money lands in, where it lands in
-// one: what reaches the pocket, a car's costs in the muddy pocket. The rest is money still on its way
-// (the revenue, the pay, what the company has left after its tax), and lands in no bucket.
+// one: what reaches the pocket. The rest is money still on its way (the revenue, the pay, what the
+// company has left after its tax) or a car's costs, a cost of the company left out of the bar like its
+// running costs, and lands in no bucket.
 public class CardGlanceTests
 {
     [Theory]
     [InlineData(GlanceKind.ToYou, "pocket")]
-    [InlineData(GlanceKind.MuddyPocket, "muddy")]
+    [InlineData(GlanceKind.CarCosts, null)]
     [InlineData(GlanceKind.In, null)]
     [InlineData(GlanceKind.ToYourPay, null)]
     [InlineData(GlanceKind.TaxedAsPay, null)]
@@ -27,6 +28,6 @@ public class CardGlanceTests
         Enum.GetValues<GlanceKind>()
             .Select(kind => new CardGlance(kind, "").Bucket)
             .OfType<string>()
-            .ShouldAllBe(bucket => BucketsView.Keys.Contains(bucket) || bucket == BucketsView.Muddy);
+            .ShouldAllBe(bucket => BucketsView.Keys.Contains(bucket));
     }
 }
