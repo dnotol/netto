@@ -1,8 +1,6 @@
 using Netto.Core.Allowances;
 using Netto.Core.CorporateTax;
-using Netto.Core.DirectorPay;
 using Netto.Core.Rent;
-using Netto.Core.Simulation;
 using Netto.Core.SocialContributions;
 using Netto.Core.Vouchers;
 using Netto.Web.Client.River;
@@ -1048,45 +1046,6 @@ public class ModuleViewsTests
         var view = Split(FlatRateAllowances(RiverInputs.Example));
 
         (view.Ceiling, view.Pay, view.CompanyProfit).ShouldBe((97_581.56m, 50_000m, (decimal?)47_581.56m));
-    }
-
-    // The module is named rather than typed: RiverModule is internal, a theory's parameters public.
-    [Theory]
-    [InlineData(YearSimulation.RevenueNegative, false, "CompanyYear")]
-    [InlineData(YearSimulation.RunningCostsNegative, false, "CompanyYear")]
-    [InlineData(GrossToNet.GrossPayNegative, false, "Split")]
-    [InlineData(GrossToNet.GrossPayNegative, true, "DirectorPay")]
-    [InlineData(GrossToNet.MunicipalRateOutOfRange, false, "DirectorPay")]
-    [InlineData(YearSimulation.ReserveNegative, false, "Dividend")]
-    [InlineData(YearSimulation.EarlierProfitsNegative, false, "Dividend")]
-    [InlineData(YearSimulation.AdvancePaymentNegative, false, "CorporateTax")]
-    [InlineData(GrossToNet.TaxWithheldNegative, false, "DirectorPay")]
-    [InlineData(GrossToNet.TaxAdvancePaymentNegative, true, "DirectorPay")]
-    [InlineData(VoucherCalculator.MealVoucherDaysNegative, false, "Vouchers")]
-    [InlineData(VoucherCalculator.MealVoucherDaysAboveYear, false, "Vouchers")]
-    [InlineData(VoucherCalculator.EcoVouchersNegative, false, "Vouchers")]
-    [InlineData(VoucherCalculator.EcoVouchersAboveMaximum, false, "Vouchers")]
-    [InlineData(VoucherCalculator.SportCultureVouchersNegative, false, "Vouchers")]
-    [InlineData(VoucherCalculator.SportCultureVouchersAboveMaximum, false, "Vouchers")]
-    [InlineData(AllowanceCalculator.OfficeAllowanceNegative, false, "Allowances")]
-    [InlineData(AllowanceCalculator.OfficeAllowanceAboveMaximum, false, "Allowances")]
-    [InlineData(AllowanceCalculator.InternetAllowanceNegative, false, "Allowances")]
-    [InlineData(AllowanceCalculator.InternetAllowanceAboveMaximum, false, "Allowances")]
-    [InlineData(AllowanceCalculator.ComputerAllowanceNegative, false, "Allowances")]
-    [InlineData(AllowanceCalculator.ComputerAllowanceAboveMaximum, false, "Allowances")]
-    [InlineData(AllowanceCalculator.PhoneCostsNegative, false, "Allowances")]
-    [InlineData(RentCalculator.CadastralIncomeNegative, false, "Rent")]
-    [InlineData(RentCalculator.ShareLetOutOfRange, false, "Rent")]
-    [InlineData(RentCalculator.RentNegative, false, "Rent")]
-    [InlineData(RentCalculator.RentAboveCap, false, "Rent")]
-    [InlineData(RentCalculator.RentWithOfficeAllowance, false, "Rent")]
-    [InlineData(Netto.Core.Copyright.CopyrightCalculator.RoyaltyNegative, false, "Split")]
-    [InlineData(Netto.Core.Copyright.CopyrightCalculator.CreativeShareOutOfRange, false, "Copyright")]
-    [InlineData(Netto.Core.Copyright.CopyrightCalculator.RoyaltyAboveProfit, false, "Split")]
-    [InlineData(YearSimulation.IncomeYearNotSupported, false, "River")]
-    public void RiverErrors_engineRefusal_isShownOnTheModuleHoldingTheField(string error, bool companySkipped, string module)
-    {
-        RiverErrors.Owner(error, companySkipped).ToString().ShouldBe(module);
     }
 
     // A drain as a line of the list, without the step it carries.

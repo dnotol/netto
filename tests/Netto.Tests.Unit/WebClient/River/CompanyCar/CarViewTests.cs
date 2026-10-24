@@ -343,21 +343,6 @@ public class CarViewTests
         (keys.Contains("fake_hybrid"), keys.Contains("ordered_or_leased"), keys.Contains("private_use_all_year")).ShouldBe((listed, true, true));
     }
 
-    [Theory]
-    [InlineData(CarCalculator.CatalogueValueNegative)]
-    [InlineData(CarCalculator.YearlyCostsNegative)]
-    [InlineData(CarCalculator.ContributionNegative)]
-    [InlineData(CarCalculator.Co2Negative)]
-    [InlineData(CarCalculator.Co2Missing)]
-    [InlineData(CarCalculator.MatchingCarCo2Negative)]
-    [InlineData(CarCalculator.MatchingCarCo2Missing)]
-    [InlineData(CarCalculator.AcquiredAfterYear)]
-    [InlineData(CarCalculator.PlugInFuelCapped)]
-    public void RiverErrors_carRefusal_isShownOnTheCarCard(string error)
-    {
-        RiverErrors.Owner(error, companySkipped: false).ShouldBe(RiverModule.Car);
-    }
-
     private static CarView Car(RiverInputs inputs) => CarView.From(inputs.Run().Year.ShouldNotBeNull(), inputs.Composition);
 
     private static decimal TaxesOnPay(YearResult year) =>

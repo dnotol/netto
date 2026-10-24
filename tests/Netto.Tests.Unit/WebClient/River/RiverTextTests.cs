@@ -1,10 +1,8 @@
 using Netto.Core.Allowances;
 using Netto.Core.CompanyCar;
 using Netto.Core.Copyright;
-using Netto.Core.DirectorPay;
 using Netto.Core.Rent;
 using Netto.Core.Rules;
-using Netto.Core.Simulation;
 using Netto.Core.SocialContributions;
 using Netto.Core.Vouchers;
 using Netto.Web.Client.River;
@@ -107,27 +105,11 @@ public class RiverTextTests
         DrainListResources.Missing([DrainListText.Source]).ShouldBeEmpty();
     }
 
+    // Every refusal the engine returns, read off it (EngineRefusals), and the one the car card mints itself.
     [Fact]
     public void RefusedMessageResx_everyErrorTheRiverCanReturn_hasAText()
     {
-        var errors = new[]
-        {
-            YearSimulation.IncomeYearNotSupported, YearSimulation.RevenueNegative, YearSimulation.RunningCostsNegative,
-            YearSimulation.ReserveNegative, YearSimulation.EarlierProfitsNegative, YearSimulation.AdvancePaymentNegative,
-            GrossToNet.GrossPayNegative, GrossToNet.MunicipalRateOutOfRange, GrossToNet.TaxWithheldNegative, GrossToNet.TaxAdvancePaymentNegative,
-            VoucherCalculator.MealVoucherDaysNegative, VoucherCalculator.MealVoucherDaysAboveYear, VoucherCalculator.EcoVouchersNegative,
-            VoucherCalculator.EcoVouchersAboveMaximum, VoucherCalculator.SportCultureVouchersNegative, VoucherCalculator.SportCultureVouchersAboveMaximum,
-            AllowanceCalculator.OfficeAllowanceNegative, AllowanceCalculator.OfficeAllowanceAboveMaximum, AllowanceCalculator.InternetAllowanceNegative,
-            AllowanceCalculator.InternetAllowanceAboveMaximum, AllowanceCalculator.ComputerAllowanceNegative, AllowanceCalculator.ComputerAllowanceAboveMaximum,
-            AllowanceCalculator.PhoneCostsNegative,
-            RentCalculator.CadastralIncomeNegative, RentCalculator.ShareLetOutOfRange, RentCalculator.RentNegative, RentCalculator.RentAboveCap,
-            RentCalculator.RentWithOfficeAllowance,
-            CarCalculator.CatalogueValueNegative, CarCalculator.YearlyCostsNegative, CarCalculator.ContributionNegative,
-            CarCalculator.Co2Negative, CarCalculator.Co2Missing, CarCalculator.MatchingCarCo2Negative, CarCalculator.MatchingCarCo2Missing,
-            CarCalculator.AcquiredAfterYear, CarCalculator.PlugInFuelCapped, CarComparison.PrivateCostNegative,
-            CopyrightCalculator.RoyaltyNegative, CopyrightCalculator.CreativeShareOutOfRange, CopyrightCalculator.RoyaltyAboveProfit,
-            Netto.Core.Calendar.PaymentCalendar.BilledContributionsNegative,
-        };
+        string[] errors = [.. EngineRefusals.Keys, CarComparison.PrivateCostNegative];
 
         RefusedMessageResources.Missing(errors.Select(RefusedMessageText.Error)).ShouldBeEmpty();
     }
