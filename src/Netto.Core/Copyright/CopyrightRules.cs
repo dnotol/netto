@@ -85,6 +85,7 @@ public sealed record CopyrightRules(
     private static readonly Source RoyalDecree38 = SharedSources.RoyalDecree38 with
     {
         Reference = "Art. 11 §1 and §2: the contributions are a percentage of the professional income as the income tax law sets it, which copyright income within art. 37's limits is not",
+        Label = "Royal decree n° 38, art. 11",
     };
 
     private static readonly Source Article157Income2025 = SharedSources.Article157Income2025 with

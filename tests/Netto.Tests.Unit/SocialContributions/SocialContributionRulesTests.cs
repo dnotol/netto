@@ -36,10 +36,13 @@ public class SocialContributionRulesTests
         ]);
     }
 
-    // The decree is cited by its name where it rests on art. 11, and the fee by its own article.
+    // A file's citations share one name, which one of them carries bare: the fee's, whose reference says
+    // its article, while the car's and the royalty's keep the article 11 they rest on.
     [Fact]
-    public void FundFee_citesArticle20OfRoyalDecree38ByItsArticle()
+    public void RoyalDecree38_isCitedByItsNameForTheFeeAndByArticle11ForTheCarAndTheRoyalty()
     {
-        SocialContributionRules.IncomeYear2026.FundFee.Label.ShouldBe("Royal decree n° 38, art. 20");
+        (SocialContributionRules.IncomeYear2026.FundFee.Label, Netto.Core.CompanyCar.CarRules.IncomeYear2026.BenefitInContributions.Label,
+                Netto.Core.Copyright.CopyrightRules.IncomeYear2026.OutsideContributions.Label)
+            .ShouldBe(("Royal decree n° 38", "Royal decree n° 38, art. 11", "Royal decree n° 38, art. 11"));
     }
 }

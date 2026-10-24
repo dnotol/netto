@@ -26,11 +26,11 @@ public sealed record SocialContributionRules(
         new Uri("https://www.inasti.be/sites/rsvz/files/2024-01/folder_cotisations_sociales.pdf"),
         "social-contributions/inasti_cotisations-sociales-2026_2026-01-05.pdf");
 
+    // Cited by the decree's name alone, which a file's citations share; its reference says the article.
     private static readonly Source RoyalDecree38FundFee = SharedSources.RoyalDecree38 with
     {
         Reference = "Art. 20 §4: the funds' management costs are borne by their members, whose share is a contribution set for each fund every year by the minister, "
             + "after hearing the fund, and perceived and recovered as the contributions are",
-        Label = "Royal decree n° 38, art. 20",
     };
 
     // The record the forager read, the text in force from 01.01.2021, until the coordinated article for
