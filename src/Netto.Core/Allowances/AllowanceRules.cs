@@ -15,7 +15,6 @@ namespace Netto.Core.Allowances;
 public sealed record AllowanceRules(
     int IncomeYear,
     Source Reimbursement,
-    Source TeleworkCircular,
     IReadOnlyList<MonthlyMaximum> OfficeAllowanceMaxima,
     RuleAmount InternetAllowanceMonthlyMaximum,
     RuleAmount ComputerAllowanceMonthlyMaximum,
@@ -43,7 +42,6 @@ public sealed record AllowanceRules(
     public static AllowanceRules IncomeYear2026 { get; } = new(
         2026,
         Article32Income2026,
-        Circular2021C20,
         [
             new MonthlyMaximum(1, new RuleAmount("office_allowance_maximum_from_january", 157.83m, Circular2026C84Annex)),
             new MonthlyMaximum(3, new RuleAmount("office_allowance_maximum_from_march", 160.99m, Circular2026C84Annex)),

@@ -9,6 +9,14 @@ namespace Netto.Tests.CompanyCar;
 // questions 819 and 96 and the SPF course's Module 5.3, as they stand for income year 2026.
 public class CarRulesTests
 {
+    private const string Article36 = "personal-tax/spf-finances_cir92-art-36-revenus-2026_2026-06-15.html";
+    private const string Article18 = "personal-tax/spf-finances_arcir92-art-18-revenus-2026_2026-08-10.html";
+    private const string Article66 = "corporate-tax/spf-finances_cir92-art-66-revenus-2026_2026-06-15.html";
+    private const string Article198 = "corporate-tax/spf-finances_cir92-art-198-revenus-2026_2026-02-10.html";
+    private const string Article550 = "corporate-tax/spf-finances_cir92-art-550-revenus-2026_2026-03-02.html";
+    private const string Module53 = "corporate-tax/spf-finances_cours-isoc-module-5-3-depenses-non-admises_2023-03-17.pdf";
+    private const string Question96 = "corporate-tax/spf-finances_question-parlementaire-96_2022-02-10.html";
+
     // Art. 36 §2: 6/7 of the catalogue value, a CO2 percentage never below 4%, which a car that emits
     // no CO2 takes, and a benefit of at least 1,690 a year (the indexed amount of revenus 2026).
     [Fact]
@@ -69,8 +77,8 @@ public class CarRulesTests
         var rules = CarRules.IncomeYear2026;
 
         new[] { rules.CatalogueShare, rules.MinimumCo2Percentage, rules.MinimumBenefit, rules.AddBackRate, rules.AddBackRateWithPrivateEnergy, rules.ZeroEmissionDeduction }
-            .Select(amount => amount.Source)
-            .ShouldBe([rules.Benefit, rules.Benefit, rules.Benefit, rules.AddBack, rules.ChargingReading, rules.Deduction]);
+            .Select(amount => amount.Source.Document)
+            .ShouldBe([Article36, Article36, Article36, Article198, Module53, Article66]);
     }
 
     [Fact]
@@ -157,13 +165,13 @@ public class CarRulesTests
                 periods[0].Floor!, periods[0].Ceiling!, periods[0].WithoutCo2Data!, periods[0].HighEmissionFrom!, periods[1].Ceiling!, periods[1].WithoutCo2Data!,
                 periods[2].Fixed!,
             }
-            .Select(amount => amount.Source)
+            .Select(amount => amount.Source.Document)
             .ShouldBe([
-                rules.Benefit, rules.Benefit, rules.Benefit, rules.Benefit, rules.Benefit,
-                rules.Benefit, rules.ReferenceEmission, rules.ReferenceEmission, rules.FormulaDeduction, rules.FormulaDeduction,
-                rules.FormulaDeduction, rules.FormulaDeduction, rules.FormulaDeduction, rules.DieselHybrid,
-                rules.FormulaDeduction, rules.FormulaDeduction, rules.FormulaDeduction, rules.FormulaDeduction, rules.FormulaDeduction, rules.FormulaDeduction,
-                rules.Deduction,
+                Article36, Article36, Article36, Article36, Article36,
+                Article36, Article18, Article18, Article550, Article550,
+                Article550, Article550, Article550, Question96,
+                Article550, Article550, Article550, Article550, Article550, Article550,
+                Article66,
             ]);
     }
 
@@ -175,17 +183,21 @@ public class CarRulesTests
     {
         var rules = CarRules.IncomeYear2026;
 
-        new[] { rules.ReferenceEmission, rules.ReferenceDecree, rules.FormulaDeduction, rules.CompanyExclusions, rules.PlugInDeduction, rules.FakeHybrid, rules.PlugInTransition, rules.DieselHybrid }
+        new[]
+            {
+                rules.PetrolReferenceEmission.Source, rules.ReferenceDecree, rules.FormulaDeduction, rules.CompanyExclusions, rules.PlugInDeduction, rules.FakeHybrid,
+                rules.DeductionPeriods[1].PlugInReading.ShouldNotBeNull(), rules.DieselHybridCoefficient.Source,
+            }
             .Select(source => (source.Label, source.Document))
             .ShouldBe([
-                ("AR/CIR 92, art. 18", "personal-tax/spf-finances_arcir92-art-18-revenus-2026_2026-08-10.html"),
+                ("AR/CIR 92, art. 18", Article18),
                 ("Royal decree of 17.12.2025", "personal-tax/ejustice_arrete-royal-emission-reference-co2-2026_2025-12-24.html"),
-                ("CIR 92, art. 550", "corporate-tax/spf-finances_cir92-art-550-revenus-2026_2026-03-02.html"),
+                ("CIR 92, art. 550", Article550),
                 ("CIR 92, art. 198bis", "corporate-tax/spf-finances_cir92-art-198bis-revenus-2026_2026-03-02.html"),
                 ("Circular 2026/C/11", "corporate-tax/spf-finances_circulaire-2026-c-11-hybrides-rechargeables_2026-01-09.html"),
                 ("Circular 2026/C/10", "personal-tax/spf-finances_circulaire-2026-c-10-faux-hybride_2026-01-07.html"),
                 ("Question 819", "corporate-tax/spf-finances_question-parlementaire-819_2026-08-05.html"),
-                ("Question 96", "corporate-tax/spf-finances_question-parlementaire-96_2022-02-10.html"),
+                ("Question 96", Question96),
             ]);
     }
 

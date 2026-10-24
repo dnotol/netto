@@ -532,7 +532,7 @@ public class CarCalculatorTests
         Compute(Car(40_000m, new DateOnly(2026, 1, 10))).DeductionSources.ShouldBe([rules.Acquisition]);
         Compute(plugIn with { Acquired = new DateOnly(2026, 2, 1) }).DeductionSources.ShouldBe([rules.Acquisition, rules.CompanyExclusions, rules.PlugInDeduction]);
         Compute(plugIn with { Acquired = new DateOnly(2024, 2, 1) }).DeductionSources
-            .ShouldBe([rules.Acquisition, rules.FormulaDeduction, rules.CompanyExclusions, rules.PlugInTransition]);
+            .ShouldBe([rules.Acquisition, rules.FormulaDeduction, rules.CompanyExclusions, rules.DeductionPeriods[1].PlugInReading.ShouldNotBeNull()]);
         Compute(plugIn with { Acquired = new DateOnly(2022, 2, 1), FakeHybrid = true, MatchingCarCo2 = 100 }).DeductionSources
             .ShouldBe([rules.Acquisition, rules.FormulaDeduction, rules.CompanyExclusions, rules.PlugInDeduction]);
     }

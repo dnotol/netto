@@ -47,15 +47,16 @@ public class AllowanceRulesTests
     [Fact]
     public void Conditions_2026_eachCitesItsTextTheDirectorsCaseFirst()
     {
+        const string circular = "personal-tax/spf-finances_circulaire-2021-c-20-teletravail_2026-09-09.html";
         var rules = AllowanceRules.IncomeYear2026;
 
-        rules.Conditions.SelectMany(condition => condition.Sources, (condition, source) => (condition.Key, source)).ShouldBe(new[]
+        rules.Conditions.SelectMany(condition => condition.Sources, (condition, source) => (condition.Key, source.Document)).ShouldBe(new[]
         {
-            ("directors_case_by_case", rules.TeleworkCircular),
-            ("no_other_company_share", rules.TeleworkCircular),
-            ("office_covers_rent", rules.TeleworkCircular),
-            ("phone_on_invoices", rules.Reimbursement),
-            ("phone_on_invoices", rules.TeleworkCircular),
+            ("directors_case_by_case", circular),
+            ("no_other_company_share", circular),
+            ("office_covers_rent", circular),
+            ("phone_on_invoices", rules.Reimbursement.Document),
+            ("phone_on_invoices", circular),
         });
     }
 
@@ -63,8 +64,7 @@ public class AllowanceRulesTests
     [Fact]
     public void Conditions_2026_citeEachTextByAShortLabel()
     {
-        var rules = AllowanceRules.IncomeYear2026;
-
-        (rules.Reimbursement.Label, rules.TeleworkCircular.Label).ShouldBe(("CIR 92, art. 32", "Circular 2021/C/20"));
+        AllowanceRules.IncomeYear2026.Conditions.SelectMany(condition => condition.Sources, (condition, source) => source.Label).Distinct()
+            .ShouldBe(["Circular 2021/C/20", "CIR 92, art. 32"]);
     }
 }

@@ -21,8 +21,6 @@ public sealed record CopyrightRules(
     Source Limits,
     Source PhaseIn,
     Source TaxedApart,
-    Source Withholding,
-    Source Credited,
     Source Deduction,
     Source TaxedAsPay,
     Source OutsideContributions,
@@ -66,9 +64,6 @@ public sealed record CopyrightRules(
     {
         Reference = "§1, 4°: 15% on the first tranche of copyright income, up to 30% or 77,220; §1, 1°: 30% on movable income §1 sets no other rate for",
     };
-
-    private static readonly Source Article279 = Source.Fisconet("personal-tax", 279, 2026, new DateOnly(2026, 2, 12), "0eb762e6-faab-405a-8ff9-b76bdf3db2e3",
-        "The withholding on movable income art. 269 sets is credited against the tax; art. 304 §2 refunds what it leaves over");
 
     private static readonly Source Article49 = new(
         "CIR 92, art. 49 (revenus 2026), coordinated text on Fisconetplus, last modified 04.02.2026",
@@ -196,8 +191,6 @@ public sealed record CopyrightRules(
         article37,
         Article551,
         article171,
-        article269,
-        Article279,
         Article49,
         article32,
         RoyalDecree38,

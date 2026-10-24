@@ -48,9 +48,12 @@ public class CopyrightRulesTests
     {
         var rules = CopyrightRules.IncomeYear2026;
 
+        const string article37 = "personal-tax/spf-finances_cir92-art-37-revenus-2026_2026-02-18.html";
+        const string article269 = "personal-tax/spf-finances_cir92-art-269-revenus-2026_2026-06-02.html";
+
         new[] { rules.RelativeLimit, rules.Cap, rules.TaxedApartRate, rules.WithholdingRate, rules.BeyondLimitsWithholdingRate }
-            .Select(amount => amount.Source)
-            .ShouldBe([rules.Limits, rules.Limits, rules.TaxedApart, rules.Withholding, rules.Withholding]);
+            .Select(amount => amount.Source.Document)
+            .ShouldBe([article37, article37, "personal-tax/spf-finances_cir92-art-171-revenus-2026_2026-07-31.html", article269, article269]);
     }
 
     // AR/CIR 92 art. 4 with the indexation notices for tax years 2027 and 2026: 50% of the first band and

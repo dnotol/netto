@@ -63,11 +63,11 @@ public class RentRulesTests
     {
         var rules = RentRules.IncomeYear2026;
 
-        rules.Conditions.SelectMany(condition => condition.Sources, (condition, source) => (condition.Key, source)).ShouldBe(new[]
+        rules.Conditions.SelectMany(condition => condition.Sources, (condition, source) => (condition.Key, source.Document)).ShouldBe(new[]
         {
-            ("share_yours_to_justify", rules.RentAsIncome),
-            ("share_yours_to_justify", rules.Cap),
-            ("not_with_office_allowance", rules.TeleworkCircular),
+            ("share_yours_to_justify", rules.RentAsIncome.Document),
+            ("share_yours_to_justify", rules.Cap.Document),
+            ("not_with_office_allowance", "personal-tax/spf-finances_circulaire-2021-c-20-teletravail_2026-09-09.html"),
         });
     }
 
