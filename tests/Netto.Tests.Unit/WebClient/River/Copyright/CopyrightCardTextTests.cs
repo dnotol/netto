@@ -116,6 +116,20 @@ public class CopyrightCardTextTests
         Resources.Missing(lines.Select(line => line.Key).Concat(lines.Select(line => line.Help).OfType<string>()).Distinct()).ShouldBeEmpty();
     }
 
+    // The note under which the comparison runs, said only while the pay set is held below: it names the
+    // one pay both plans run at, and no rate the rules set.
+    [Fact]
+    public void PayHeld_note_namesTheOnePayBothPlansRunAt()
+    {
+        Resources.Missing(["PayHeld"]).ShouldBeEmpty();
+
+        var note = Resources.Format("PayHeld", "€81,250.00");
+
+        note.ShouldSatisfyAllConditions(
+            () => CardHtml.Amounts(note).ShouldBe(["€81,250.00"]),
+            () => note.ShouldNotMatch("[0-9]%"));
+    }
+
     // The words the card says whatever the royalty.
     [Fact]
     public void CopyrightCardResx_everyFixedText_hasAText()

@@ -68,6 +68,7 @@ public class CarAndRoyaltyCardsTests
         { "a royalty with an attestation", typeof(CopyrightCard), OptionalModule.Copyright, CopyrightViewTests.Within.WithAttestation(true) },
         { "a royalty all taxed as pay", typeof(CopyrightCard), OptionalModule.Copyright, CopyrightViewTests.Within.WithAverageWithinCap(false) },
         { "a royalty following the pay", typeof(CopyrightCard), OptionalModule.Copyright, RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithCreativeShare(0.5m) },
+        { "a royalty following the pay, the pay held", typeof(CopyrightCard), OptionalModule.Copyright, CopyrightViewTests.FollowingHeld },
     };
 
     // A sentence the card keeps says what a figure cannot: none states an amount one of its lines shows.
@@ -145,6 +146,21 @@ public class CarAndRoyaltyCardsTests
             () => CardHtml.Lines(html).Skip(10).Select(line => line.Label).ShouldBe(drains.Select(drain => CarCardTests.Drains(DrainListText.Drain(drain.Key)))),
             () => CardHtml.Prose(html).ShouldContain(note => note.Contains("€18,000.00", StringComparison.Ordinal)),
             () => CardHtml.LineRuns(html).Select(run => run.List).ShouldBe(["figure", "drain"]));
+    }
+
+    // A pay set above what the company can pay beside the royalty is held there, and both plans of the
+    // comparison run at it: the card says so above them, once, with that pay, and says nothing of the
+    // kind while the pay set is the pay both plans run at.
+    [Fact]
+    public async Task RoyaltyCard_payHeld_namesThePayBothPlansRunAtAboveTheComparisonOnly()
+    {
+        var held = await RenderOpenAsync<CopyrightCard>(OptionalModule.Copyright, CopyrightViewTests.FollowingHeld);
+        var notHeld = await RenderOpenAsync<CopyrightCard>(OptionalModule.Copyright, CopyrightViewTests.Within);
+        var note = Royalty("PayHeld", "€81,250.00");
+
+        (CardHtml.Prose(held).Count(sentence => sentence == note), held.IndexOf(note, StringComparison.Ordinal) < held.IndexOf(Royalty("WithTitle"), StringComparison.Ordinal),
+                CardHtml.Prose(notHeld).Contains(Royalty("PayHeld", "€50,000.00")))
+            .ShouldBe((1, true, false));
     }
 
     // Where no text settles a point, the reading Netto takes is in the royalty's details, word for word,

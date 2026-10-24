@@ -16,7 +16,8 @@
    the flat-rate costs the attestation takes off the first part and what the company withholds on each,
    with a sentence for which limit set the part within; then the plan with the royalty and the same plan
    without it, each by what reaches the pocket and what goes to the taxes on pay and on profit, and the
-   difference; then where its money goes: its tax apart, what of the part within reaches the pocket and
+   difference, both at the pay the plan with the royalty runs at, which a note names once the pay set is
+   held below (CopyrightComparison.PayHeld); then where its money goes: its tax apart, what of the part within reaches the pocket and
    the part beyond going on to Director pay. Where no text settles a point, the reading Netto takes is in
    its details, above the sources. An optional module: it shows only while in the plan, and the word at
    its bottom takes it out, its values kept. Skipped with the company. *@
@@ -54,6 +55,10 @@
         @if (_comparison is { } comparison)
         {
             <div class="copyright__comparison">
+                @if (comparison.PayHeld is { } pay)
+                {
+                    <p class="copyright__note">@L["PayHeld", Formats.Euros(pay)]</p>
+                }
                 <h3 class="copyright__comparison-title">@L["WithTitle"]</h3>
                 <FigureList Figures="@FigureWords.Of(L, CopyrightFigures.With(comparison))" />
                 <h3 class="copyright__comparison-title">@L["WithoutTitle"]</h3>

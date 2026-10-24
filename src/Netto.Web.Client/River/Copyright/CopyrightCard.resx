@@ -123,6 +123,9 @@
   <data name="WithoutTitle" xml:space="preserve">
     <value>Without it</value>
   </data>
+  <data name="PayHeld" xml:space="preserve">
+    <value>Both plans run at {0} of pay, the most the company can pay beside the royalty, so the difference is the royalty's alone.</value>
+  </data>
   <data name="Figure_Pocket" xml:space="preserve">
     <value>In your pocket</value>
   </data>
