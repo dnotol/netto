@@ -135,6 +135,12 @@
   <data name="Label_Contributions_Company" xml:space="preserve">
     <value>Social contributions, paid by the company: {0} a quarter.</value>
   </data>
+  <data name="Label_Contributions_WithFee" xml:space="preserve">
+    <value>Social contributions with your fund's fee: {0} a quarter.</value>
+  </data>
+  <data name="Label_Contributions_Company_WithFee" xml:space="preserve">
+    <value>Social contributions with your fund's fee, paid by the company: {0} a quarter.</value>
+  </data>
   <data name="Label_ContributionsNothing" xml:space="preserve">
     <value>No social contributions this year.</value>
   </data>

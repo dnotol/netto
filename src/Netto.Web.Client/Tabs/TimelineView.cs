@@ -218,9 +218,11 @@ internal sealed record TimelineBlock(int Index, DateOnly From, decimal Left, dec
 // The director's pay month by month, or INASTI's quarters, on the year. Next is the first span not ended,
 // the month under way or the quarter, which the lane's label stands by; none once the year is over.
 // Empty is a lane that carries nothing in any span; PaidByCompany, quarters the company pays on the
-// director's behalf.
+// director's behalf; WithFundFee, quarters that hold the fund's fee, once its rate is given.
 internal sealed record SpanLane(IReadOnlyList<TimelineBlock> Blocks, bool PaidByCompany)
 {
+    public bool WithFundFee { get; init; }
+
     public TimelineBlock? Next => Blocks.FirstOrDefault(block => !block.Past);
 
     public bool Empty => Blocks.All(block => block.Amount == 0m);
@@ -230,7 +232,10 @@ internal sealed record SpanLane(IReadOnlyList<TimelineBlock> Blocks, bool PaidBy
 
     public static SpanLane OfContributions(ContributionQuarters contributions, YearScale scale) =>
         new([.. contributions.Quarters.Select(quarter =>
-            Block((quarter.From.Month - 1) / 3 + 1, quarter.From, quarter.From.AddMonths(3), quarter.Past, contributions.EachQuarter, scale))], contributions.PaidByCompany);
+            Block((quarter.From.Month - 1) / 3 + 1, quarter.From, quarter.From.AddMonths(3), quarter.Past, contributions.EachQuarter, scale))], contributions.PaidByCompany)
+        {
+            WithFundFee = contributions.FundFeeEachQuarter > 0m,
+        };
 
     private static TimelineBlock Block(int index, DateOnly from, DateOnly to, bool past, decimal amount, YearScale scale) =>
         new(index, from, scale.EdgeAt(from), scale.Span(from, to), past, amount);

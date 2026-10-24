@@ -352,6 +352,17 @@ public class TimelineViewTests
         Of(RiverInputs.Example, On23October).Timeline.Contributions.PaidByCompany.ShouldBeFalse();
     }
 
+    // The quarters hold the fund's fee once its rate is given, and the lane says so for its label to name it.
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Of_fundFeeOrNone_saysWhetherTheQuartersHoldIt(bool feeGiven)
+    {
+        var river = feeGiven ? RiverInputs.Example.WithFundFeeRate(0.0305m) : RiverInputs.Example;
+
+        Of(river, On23October).Timeline.Contributions.WithFundFee.ShouldBe(feeGiven);
+    }
+
     // The quarters carry Netto's own figure whatever the fund bills: what is billed, or refused, changes
     // none of the lanes.
     [Theory]

@@ -203,7 +203,7 @@
 
             parts.Add(_view.Contributions.Empty
                 ? L["Label_ContributionsNothing"].Value
-                : L[TimelineText.ContributionsLabel(_view.Contributions.PaidByCompany), Formats.Euros(_view.Contributions.Blocks[0].Amount)].Value);
+                : L[TimelineText.ContributionsLabel(_view.Contributions.PaidByCompany, _view.Contributions.WithFundFee), Formats.Euros(_view.Contributions.Blocks[0].Amount)].Value);
             if (!_view.Contributions.Empty && quarters > 0)
                 parts.Add(L["Label_QuartersLeft", quarters].Value);
 

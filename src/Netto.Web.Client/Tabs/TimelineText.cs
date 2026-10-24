@@ -24,10 +24,16 @@ internal static class TimelineText
         $"Label_Next_{WhenToPayTabText.Payers(company is not null, director is not null)}";
 
     // The contributions' lane, and their sentence in the picture's label, name the company when it pays
-    // them on the director's behalf.
+    // them on the director's behalf; the sentence names the fund's fee too once the quarters hold it.
     public static string ContributionsLane(bool paidByCompany) => paidByCompany ? "Lane_Contributions_Company" : "Lane_Contributions";
 
-    public static string ContributionsLabel(bool paidByCompany) => paidByCompany ? "Label_Contributions_Company" : "Label_Contributions";
+    public static string ContributionsLabel(bool paidByCompany, bool withFundFee) => (paidByCompany, withFundFee) switch
+    {
+        (false, false) => "Label_Contributions",
+        (true, false) => "Label_Contributions_Company",
+        (false, true) => "Label_Contributions_WithFee",
+        (true, true) => "Label_Contributions_Company_WithFee",
+    };
 
     // The pay's sentence in the picture's label for a run of its months, as the table beside it runs
     // them (WhenToPayTabText.PayLine): every month while the year pays alike, else the run's months, or

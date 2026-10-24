@@ -80,13 +80,16 @@ public class TimelineTextTests
         text.ShouldBe(expected);
     }
 
-    // A label that names its payer: "Social contributions: €x a quarter" or, paid by the company, so.
+    // A label that names its payer: "Social contributions: €x a quarter" or, paid by the company, so; and,
+    // once a fund fee is given, that the quarter holds it.
     [Theory]
-    [InlineData(false, "Label_Contributions")]
-    [InlineData(true, "Label_Contributions_Company")]
-    public void ContributionsLabel_paidByWhom_isTheSentenceThatSaysSo(bool paidByCompany, string expected)
+    [InlineData(false, false, "Label_Contributions")]
+    [InlineData(true, false, "Label_Contributions_Company")]
+    [InlineData(false, true, "Label_Contributions_WithFee")]
+    [InlineData(true, true, "Label_Contributions_Company_WithFee")]
+    public void ContributionsLabel_paidByWhomWithOrWithoutTheFee_isTheSentenceThatSaysSo(bool paidByCompany, bool withFundFee, string expected)
     {
-        var key = TimelineText.ContributionsLabel(paidByCompany);
+        var key = TimelineText.ContributionsLabel(paidByCompany, withFundFee);
 
         (key, Resources.Get(key) is not null).ShouldBe((expected, true));
     }
