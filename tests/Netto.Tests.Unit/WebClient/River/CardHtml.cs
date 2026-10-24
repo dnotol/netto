@@ -53,7 +53,10 @@ internal static class CardHtml
     // The Plan page on the river given, every card in it open as the outline's « Open all » leaves them:
     // the folds inside the cards, their sources and their conditions, and the notes under the river stay
     // folded. No plan is saved, so none is starred Today.
-    public static Task<string> RenderPlanOpenAsync(RiverInputs river)
+    public static Task<string> RenderPlanOpenAsync(RiverInputs river) => RenderPlanOpenAsync(river, On23October);
+
+    // The same on the browser's clock at that instant, for a card that reads the date.
+    public static Task<string> RenderPlanOpenAsync(RiverInputs river, DateTimeOffset on)
     {
         var folds = new Folds(new BrowserStorage());
         foreach (var card in OutlineRows.Order)
@@ -66,7 +69,7 @@ internal static class CardHtml
             services.AddSingleton<IBrowserStorage>(storage);
             services.AddSingleton(plans);
             services.AddSingleton(new RiverState(plans) { Inputs = river });
-            services.AddSingleton<TimeProvider>(new Clock(On23October));
+            services.AddSingleton<TimeProvider>(new Clock(on));
         });
     }
 
