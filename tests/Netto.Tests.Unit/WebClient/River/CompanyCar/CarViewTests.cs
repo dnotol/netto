@@ -84,6 +84,65 @@ public class CarViewTests
             .ShouldBe((100_000m, (decimal?)0.08m, (decimal?)0.92m));
     }
 
+    // What the card passes on of what it receives is what its costs leave of it, net of the director's
+    // contribution, and never more than all of it: the costs take nothing once the contribution covers
+    // them, and what it brings beyond them comes from the director's pocket, not from what the card
+    // received, so it is no share above 100%.
+    public static TheoryData<decimal, decimal, decimal> PassesOnShares => new()
+    {
+        { 8_000m, 0m, 0.92m },
+        { 8_000m, 600m, 0.926m },
+        { 600m, 600m, 1m },
+        { 500m, 600m, 1m },
+        { 0m, 600m, 1m },
+    };
+
+    [Theory]
+    [MemberData(nameof(PassesOnShares))]
+    public void Car_passesOn_isWhatItsCostsLeaveOfWhatItReceivesAndNeverMore(decimal costs, decimal contribution, decimal share)
+    {
+        Car(ElectricCar.WithCarCosts(costs).WithCarContribution(contribution)).PassesOn.ShouldBe(share);
+    }
+
+    // What the contribution brings beyond the costs is a figure of its own, none while the costs are at
+    // least the contribution or it is under a cent beyond them, the line a drain list leaves out at €0.00.
+    public static TheoryData<decimal, decimal, decimal?> ContributionsBeyondTheCosts => new()
+    {
+        { 0m, 600m, 600m },
+        { 500m, 600m, 100m },
+        { 0m, 0.01m, 0.01m },
+        { 600m, 600m, null },
+        { 8_000m, 600m, null },
+        { 0m, 0m, null },
+        { 599.996m, 600m, null },
+    };
+
+    [Theory]
+    [MemberData(nameof(ContributionsBeyondTheCosts))]
+    public void Car_contributionBeyondTheCosts_isTheFigureTheSummaryStates(decimal costs, decimal contribution, decimal? beyond)
+    {
+        Car(ElectricCar.WithCarCosts(costs).WithCarContribution(contribution)).ContributionBeyondCosts.ShouldBe(beyond);
+    }
+
+    // The hand-off stays what it is when the contribution exceeds the costs: the car takes less than
+    // nothing off what the company earns, so it receives less than it passes on, by the 600 the director
+    // pays, and its lines still say the contribution coming back from the pocket and the profit before pay.
+    [Fact]
+    public void Car_contributionAboveItsCosts_stillHandsOnWhatThePocketAdds()
+    {
+        var inputs = ElectricCar.WithCarCosts(0m).WithCarContribution(600m);
+        var year = inputs.Run().Year.ShouldNotBeNull();
+
+        year.ShouldSatisfyAllConditions(
+            () => (HandOff.Cost(year, OptionalModule.Car), HandOff.After(year, OptionalModule.Car) - HandOff.Before(year, OptionalModule.Car)).ShouldBe((-600m, 600m)),
+            () => Lines(Car(inputs).Drains).ShouldBe(new[]
+            {
+                new Drain("car_costs", DrainKind.PaidOut, 0m, "company_costs"),
+                new Drain("car_contribution", DrainKind.Back, 600m, "pocket"),
+                new Drain("profit_before_pay", DrainKind.PassedOn, year.ProfitBeforePay, "split"),
+            }));
+    }
+
     [Fact]
     public void Car_listsItsStepsAndNoneOfTheOtherLevers()
     {

@@ -14,7 +14,10 @@ namespace Netto.Web.Client.River.CompanyCar;
 // deducts of its costs, and what it adds back of the benefit, 40% when it pays the private energy,
 // which for a car it charges, electric or plug-in hybrid, is the administration's reading of « fuel »
 // (ChargingReading). Each line says its share of what the card receives, and the card what it passes
-// on of it (PassesOn). Without a car, nothing but the profit passed on.
+// on of it (PassesOn), never more than all of it: the costs take nothing once the director's contribution
+// covers them, and what the contribution brings beyond them comes from the director's pocket, not from
+// what the card received, so it is a figure of its own (ContributionBeyondCosts), never a share above
+// 100%. Without a car, nothing but the profit passed on.
 internal sealed record CarView(
     CarResult Result,
     bool ChargingReading,
@@ -30,6 +33,12 @@ internal sealed record CarView(
     // What the split shares once the car is paid, the royalty in it, which the summary states: the same
     // at every pay, while the profit before pay alone moves with a royalty that follows the pay.
     public decimal SplitShares { get; init; }
+
+    // What the director's contribution brings beyond the car's costs, from their pocket: the part of what
+    // the card passes on that it did not receive, which the summary states as a figure, since it is no
+    // share of what the card receives. None while the costs are at least the contribution, or it is under
+    // a cent beyond them: a figure of €0.00 is left out on every card (DrainLines).
+    public decimal? ContributionBeyondCosts { get; init; }
 
     // What the car takes off what the company earns: its costs, less what the director pays for it.
     public static decimal FromProfit(CarResult car) => car.Costs - car.Contribution;
@@ -52,13 +61,16 @@ internal sealed record CarView(
         return new CarView(
             car,
             steps.Count > 0 && year.Scenario.Car.CompanyPaysPrivateEnergy && CarCardText.Reading(year.Scenario.Car.Engine) is not null,
-            steps.Count > 0 ? Shares.Of(left, received) : null,
+            steps.Count > 0 ? Shares.Of(Math.Min(left, received), received) : null,
             [
                 .. drains,
                 HandOff.Drain(year, OptionalModule.Car, composition),
             ],
-            ledger.Select(StepDetail.From).ToList()) { SplitShares = left };
+            ledger.Select(StepDetail.From).ToList()) { SplitShares = left, ContributionBeyondCosts = BeyondCosts(car) };
     }
+
+    private static decimal? BeyondCosts(CarResult car) =>
+        Math.Round(car.Contribution - car.Costs, 2, MidpointRounding.AwayFromZero) > 0m ? car.Contribution - car.Costs : null;
 
     // The conditions the card lists for what drives the car: what makes a plug-in hybrid a fake one
     // only for a plug-in hybrid.
