@@ -114,12 +114,11 @@ public sealed record PersonalTaxRules(
     // The balance on the assessment: what was withheld and paid in advance comes off the tax, and
     // what they leave over is refunded. §2, al. 1 is unchanged since tax year 2018, so the text holds
     // for income year 2025 as well (official-docs/INDEX.md).
-    public static Source AssessmentBalance { get; } = new(
-        "CIR 92, art. 304 (revenus 2026), coordinated text on Fisconetplus, last modified 19.02.2026",
-        "§2, al. 1: the excess of the advance payments of art. 157 and 175, the withholding tax of art. 270 to 272 and the tax credit of art. 289ter "
-        + "over the tax is set against the municipal surcharge, and the rest is refunded once it reaches 2.50",
-        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/bda433e6-7da6-4dc9-882c-0c9d92591877"),
-        "personal-tax/spf-finances_cir92-art-304-revenus-2026_2026-02-19.html");
+    public static Source AssessmentBalance { get; } = SharedSources.Article304Income2026 with
+    {
+        Reference = "§2, al. 1: the excess of the advance payments of art. 157 and 175, the withholding tax of art. 270 to 272 and the tax credit of art. 289ter "
+            + "over the tax is set against the municipal surcharge, and the rest is refunded once it reaches 2.50",
+    };
 
     public static PersonalTaxRules IncomeYear2025 { get; } = new(
         2025,

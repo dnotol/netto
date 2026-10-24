@@ -21,20 +21,18 @@ public sealed record AllowanceRules(
     RuleAmount ComputerAllowanceMonthlyMaximum,
     IReadOnlyList<LeverCondition> Conditions)
 {
-    private static readonly Source Article32Income2026 = new(
-        "CIR 92, art. 32 (revenus 2026), coordinated text on Fisconetplus, last modified 29.01.2026",
-        "Al. 2, 1°: a director's pay comprises every sum the company allocates, other than dividends and reimbursements of the company's own costs",
-        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/7628aa2c-168a-4bd8-aec4-288108a91757"),
-        "personal-tax/spf-finances_cir92-art-32-revenus-2026_2026-01-29.html") { Label = "CIR 92, art. 32" };
+    private static readonly Source Article32Income2026 = SharedSources.Article32Income2026 with
+    {
+        Reference = "Al. 2, 1°: a director's pay comprises every sum the company allocates, other than dividends and reimbursements of the company's own costs",
+    };
 
-    private static readonly Source Circular2021C20 = new(
-        "Circulaire 2021/C/20 du 26.02.2021 relative aux interventions de l'employeur pour le télétravail, on Fisconetplus, last modified 09.09.2026",
-        "§7–8: not for company directors, who are reimbursed on documents or on serious and concordant flat norms, case by case, for which an advance ruling (SDA) can be asked. "
-        + "§15–18 and §30–31: the office allowance covers every office cost, the use of a room of the home and its rent included, if the employer bears none of them otherwise; "
-        + "its maximum is the one ONSS accepts, not indexed for tax. §47–48: private internet up to 20 a month, not indexed, if the employer bears no other part of its cost. "
-        + "§51–52: a private computer with its peripherals up to 20 a month, not indexed, if the employer bears no other part of its cost nor provides a laptop or a tablet",
-        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/c4b263eb-091c-4a11-8ad0-24e2b11bb7db"),
-        "personal-tax/spf-finances_circulaire-2021-c-20-teletravail_2026-09-09.html") { Label = "Circular 2021/C/20" };
+    private static readonly Source Circular2021C20 = SharedSources.Circular2021C20 with
+    {
+        Reference = "§7–8: not for company directors, who are reimbursed on documents or on serious and concordant flat norms, case by case, for which an advance ruling (SDA) can be asked. "
+            + "§15–18 and §30–31: the office allowance covers every office cost, the use of a room of the home and its rent included, if the employer bears none of them otherwise; "
+            + "its maximum is the one ONSS accepts, not indexed for tax. §47–48: private internet up to 20 a month, not indexed, if the employer bears no other part of its cost. "
+            + "§51–52: a private computer with its peripherals up to 20 a month, not indexed, if the employer bears no other part of its cost nor provides a laptop or a tablet",
+    };
 
     private static readonly Source Circular2026C84Annex = new(
         "Circulaire 2026/C/84 du 09.09.2026, eleventh addendum to 2021/C/20, annex: maximum amounts of the office allowance since January 2020, on Fisconetplus",

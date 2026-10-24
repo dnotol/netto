@@ -47,11 +47,10 @@ public sealed record CorporateTaxRules(
         new Uri("https://www.lachambre.be/FLWB/PDF/56/1243/56K1243001.pdf"),
         "corporate-tax/lachambre_doc-56-1243-001-projet-loi-reforme-ipp_2025-12-17.pdf") { Label = "DOC 56 1243/001" };
 
-    private static readonly Source IndexationNotice2027 = new(
-        "Indexation notice for assessment year 2027, version 03.08.2026, adapted to the law of 15.07.2026",
-        "CIR 92 art. 215, al. 3, 4°: minimum director pay, base 25,000, indexed 51,000",
-        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/042cb526-403e-4f40-9a45-dbccd0a12583"),
-        "personal-tax/spf-finances_avis-indexation-exercice-2027_2026-08-03.html");
+    private static readonly Source IndexationNotice2027 = SharedSources.IndexationNotice2027 with
+    {
+        Reference = "CIR 92 art. 215, al. 3, 4°: minimum director pay, base 25,000, indexed 51,000",
+    };
 
     private static readonly Source Article218Income2026 = new(
         "CIR 92, art. 218 (revenus 2026), coordinated text on Fisconetplus, last modified 03.08.2026",
@@ -59,11 +58,7 @@ public sealed record CorporateTaxRules(
         new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/604a81d6-b1ac-4cb8-84bd-13cf088ca1b0"),
         "corporate-tax/spf-finances_cir92-art-218-revenus-2026_2026-08-03.html");
 
-    private static readonly Source Article159Income2026 = new(
-        "CIR 92, art. 159 (revenus 2026), coordinated text on Fisconetplus, last modified 09.02.2026",
-        "The surcharge: the tax times 2.25 times the reference rate, less the advance payments times 3, 2.5, 2 and 1.5 times it, by the deadline each was paid by",
-        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/ed182474-e88a-4931-91a3-51286d1dc47a"),
-        "corporate-tax/spf-finances_cir92-art-159-revenus-2026_2026-02-09.html");
+    private static readonly Source Article159Income2026 = SharedSources.Article159Income2026;
 
     // The statutory 10 October and 20 December 2026 fall on a weekend; the page gives the dates they
     // move to.
@@ -77,12 +72,11 @@ public sealed record CorporateTaxRules(
 
     // The balance on the company's assessment: its tax less what it paid in advance, the excess
     // refunded. The article is common to every income tax; its second paragraph speaks of companies.
-    public static Source AssessmentBalance { get; } = new(
-        "CIR 92, art. 304 (revenus 2026), coordinated text on Fisconetplus, last modified 19.02.2026",
-        "§2, al. 2: for a resident company, the excess of the advance payments of art. 157 to 168 and 218 over the tax is set against the separate assessments, "
-        + "and the rest is refunded once it reaches 2.50",
-        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/bda433e6-7da6-4dc9-882c-0c9d92591877"),
-        "personal-tax/spf-finances_cir92-art-304-revenus-2026_2026-02-19.html");
+    public static Source AssessmentBalance { get; } = SharedSources.Article304Income2026 with
+    {
+        Reference = "§2, al. 2: for a resident company, the excess of the advance payments of art. 157 to 168 and 218 over the tax is set against the separate assessments, "
+            + "and the rest is refunded once it reaches 2.50",
+    };
 
     public static CorporateTaxRules IncomeYear2026 { get; } = new(
         2026,

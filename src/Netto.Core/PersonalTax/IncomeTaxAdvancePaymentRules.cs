@@ -35,20 +35,20 @@ public sealed record IncomeTaxAdvancePaymentRules(
         new Uri("https://www.ecb.europa.eu/stats/policy_and_exchange_rates/key_ecb_interest_rates/html/index.en.html"),
         "personal-tax/ecb_key-interest-rates_2026-10-20.html");
 
-    private static readonly Source Article157Income2025 = Source.Fisconet("personal-tax", 157, 2025, new DateOnly(2025, 1, 16), "cdf69919-b665-491b-9a02-059fd68dd24f",
-        "The total tax on profits, benefits and directors' pay not withheld or paid in advance during the year is surcharged; art. 158: on that tax, less the withholding and the tax credits on it");
+    private static readonly Source Article157Income2025 = SharedSources.Article157Income2025 with
+    {
+        Reference = "The total tax on profits, benefits and directors' pay not withheld or paid in advance during the year is surcharged; art. 158: on that tax, less the withholding and the tax credits on it",
+    };
 
-    private static readonly Source Article157Income2026 = Source.Fisconet("personal-tax", 157, 2026, new DateOnly(2026, 7, 30), "c6e47940-53f0-4608-b567-ae774014a621",
-        "The total tax on directors' pay (art. 30, 2°) not withheld or paid in advance during the year is surcharged, as the law of 15.07.2026 leaves it; art. 158: on that tax, less the withholding and the tax credits on it");
+    private static readonly Source Article157Income2026 = SharedSources.Article157Income2026 with
+    {
+        Reference = "The total tax on directors' pay (art. 30, 2°) not withheld or paid in advance during the year is surcharged, as the law of 15.07.2026 leaves it; art. 158: on that tax, less the withholding and the tax credits on it",
+    };
 
     private static readonly Source Article159Income2025 = Source.Fisconet("personal-tax", 159, 2025, new DateOnly(2025, 1, 16), "36817772-e503-470b-a6f1-e63fc8f93ffa",
         "The surcharge: the tax times 2.25 times the reference rate, less the advance payments times 3, 2.5, 2 and 1.5 times it, by 10 April, 10 July, 10 October and 20 December");
 
-    private static readonly Source Article159Income2026 = new(
-        "CIR 92, art. 159 (revenus 2026), coordinated text on Fisconetplus, last modified 09.02.2026",
-        "The surcharge: the tax times 2.25 times the reference rate, less the advance payments times 3, 2.5, 2 and 1.5 times it, by the deadline each was paid by",
-        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/ed182474-e88a-4931-91a3-51286d1dc47a"),
-        "corporate-tax/spf-finances_cir92-art-159-revenus-2026_2026-02-09.html");
+    private static readonly Source Article159Income2026 = SharedSources.Article159Income2026;
 
     private static readonly Source Article160Income2025 = Source.Fisconet("personal-tax", 160, 2025, new DateOnly(2025, 1, 16), "2dc99977-5705-4843-a89f-f64845844e9f",
         "The surcharge is kept at 90% of its amount");
@@ -80,17 +80,15 @@ public sealed record IncomeTaxAdvancePaymentRules(
     private static readonly Source Article177Income2026 = Source.Fisconet("personal-tax", 177, 2026, new DateOnly(2026, 7, 31), "2b763b79-95cd-4103-8617-1f669e4ed673",
         "The bonus: the payments beyond those needed times 1.5, 1.25, 1 and 0.75 times the reference rate, by the deadline each was paid by");
 
-    private static readonly Source IndexationNotice2026 = new(
-        "Indexation notice for assessment year 2026, version 19.01.2026",
-        "CIR 92 art. 163: minimum of the advance-payment surcharge, base 50, indexed 100",
-        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/934106e5-36bd-4f61-8928-ba9ca100727f"),
-        "personal-tax/spf-finances_avis-indexation-exercice-2026_2026-01-19.html");
+    private static readonly Source IndexationNotice2026 = SharedSources.IndexationNotice2026 with
+    {
+        Reference = "CIR 92 art. 163: minimum of the advance-payment surcharge, base 50, indexed 100",
+    };
 
-    private static readonly Source IndexationNotice2027 = new(
-        "Indexation notice for assessment year 2027, version 03.08.2026, adapted to the law of 15.07.2026",
-        "CIR 92 art. 163: minimum of the advance-payment surcharge, base 50, indexed 100",
-        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/042cb526-403e-4f40-9a45-dbccd0a12583"),
-        "personal-tax/spf-finances_avis-indexation-exercice-2027_2026-08-03.html");
+    private static readonly Source IndexationNotice2027 = SharedSources.IndexationNotice2027 with
+    {
+        Reference = "CIR 92 art. 163: minimum of the advance-payment surcharge, base 50, indexed 100",
+    };
 
     // The statutory 10 October and 20 December 2026 fall on a weekend; the page gives the dates they
     // move to.

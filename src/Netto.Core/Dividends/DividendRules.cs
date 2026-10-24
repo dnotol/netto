@@ -14,17 +14,15 @@ public sealed record DividendRules(
     RuleAmount VvprbisThirdYearOnwardsRate,
     RuleAmount ExemptAmount)
 {
-    private static readonly Source Article269Income2025 = new(
-        "CIR 92, art. 269 (revenus 2025), coordinated text on Fisconetplus, last modified 01.08.2025",
-        "§1, 1°: 30%. §2, al. 2: VVPRbis shares, 1° 20% for the second accounting year's distribution after a contribution made by 31.12.2025, 2° 15% from the third",
-        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/580606b1-7faa-4683-8861-8da64ff59d25"),
-        "personal-tax/spf-finances_cir92-art-269-revenus-2025_2025-08-01.html");
+    private static readonly Source Article269Income2025 = SharedSources.Article269Income2025 with
+    {
+        Reference = "§1, 1°: 30%. §2, al. 2: VVPRbis shares, 1° 20% for the second accounting year's distribution after a contribution made by 31.12.2025, 2° 15% from the third",
+    };
 
-    private static readonly Source Article269Income2026 = new(
-        "CIR 92, art. 269 (revenus 2026), coordinated text on Fisconetplus, last modified 02.06.2026",
-        "§1, 1°: 30%. §2, al. 2: VVPRbis shares, 1° 20% for the second accounting year's distribution after a contribution made by 31.12.2025, 2° 18% from the third for dividends paid or attributed from 01.07.2026 (programme law of 30.05.2026, art. 15, 4°, and 18)",
-        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/fb744b8d-7ddb-4067-903a-f84eae927052"),
-        "personal-tax/spf-finances_cir92-art-269-revenus-2026_2026-06-02.html");
+    private static readonly Source Article269Income2026 = SharedSources.Article269Income2026 with
+    {
+        Reference = "§1, 1°: 30%. §2, al. 2: VVPRbis shares, 1° 20% for the second accounting year's distribution after a contribution made by 31.12.2025, 2° 18% from the third for dividends paid or attributed from 01.07.2026 (programme law of 30.05.2026, art. 15, 4°, and 18)",
+    };
 
     private static readonly Source Article21Income2025 = new(
         "CIR 92, art. 21 (revenus 2025), coordinated text on Fisconetplus, last modified 27.01.2026",

@@ -57,17 +57,15 @@ public sealed record CopyrightRules(
     private static readonly Source Article171Income2026 = Source.Fisconet("personal-tax", 171, 2026, new DateOnly(2026, 7, 31), "d9683eeb-c029-4bc0-bb2c-b17f7990f2d4",
         "2°bis, b): the first tranche of copyright income, up to 30% or 77,220, is taxed apart at 15%, unless taxing it with the other income gives less");
 
-    private static readonly Source Article269Income2025 = new(
-        "CIR 92, art. 269 (revenus 2025), coordinated text on Fisconetplus, last modified 01.08.2025",
-        "§1, 4°: 15% on the first tranche of copyright income, up to 30% or 75,360; §1, 1°: 30% on movable income §1 sets no other rate for",
-        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/580606b1-7faa-4683-8861-8da64ff59d25"),
-        "personal-tax/spf-finances_cir92-art-269-revenus-2025_2025-08-01.html") { Label = "CIR 92, art. 269" };
+    private static readonly Source Article269Income2025 = SharedSources.Article269Income2025 with
+    {
+        Reference = "§1, 4°: 15% on the first tranche of copyright income, up to 30% or 75,360; §1, 1°: 30% on movable income §1 sets no other rate for",
+    };
 
-    private static readonly Source Article269Income2026 = new(
-        "CIR 92, art. 269 (revenus 2026), coordinated text on Fisconetplus, last modified 02.06.2026",
-        "§1, 4°: 15% on the first tranche of copyright income, up to 30% or 77,220; §1, 1°: 30% on movable income §1 sets no other rate for",
-        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/fb744b8d-7ddb-4067-903a-f84eae927052"),
-        "personal-tax/spf-finances_cir92-art-269-revenus-2026_2026-06-02.html") { Label = "CIR 92, art. 269" };
+    private static readonly Source Article269Income2026 = SharedSources.Article269Income2026 with
+    {
+        Reference = "§1, 4°: 15% on the first tranche of copyright income, up to 30% or 77,220; §1, 1°: 30% on movable income §1 sets no other rate for",
+    };
 
     private static readonly Source Article279 = Source.Fisconet("personal-tax", 279, 2026, new DateOnly(2026, 2, 12), "0eb762e6-faab-405a-8ff9-b76bdf3db2e3",
         "The withholding on movable income art. 269 sets is credited against the tax; art. 304 §2 refunds what it leaves over");
@@ -84,32 +82,32 @@ public sealed record CopyrightRules(
         new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/c4a55933-7d39-42c3-9403-fd2ed7c860e3"),
         "corporate-tax/spf-finances_cir92-art-57-revenus-2026_2026-02-05.html") { Label = "CIR 92, art. 57" };
 
-    private static readonly Source Article53Income2026 = new(
-        "CIR 92, art. 53 (revenus 2026), coordinated text on Fisconetplus, last modified 18.02.2026",
-        "10°: costs are not professional costs to the extent that they exceed professional needs unreasonably",
-        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/796aa044-5b54-4569-88a4-abe7be55e077"),
-        "corporate-tax/spf-finances_cir92-art-53-revenus-2026_2026-02-18.html") { Label = "CIR 92, art. 53" };
+    private static readonly Source Article53Income2026 = SharedSources.Article53Income2026 with
+    {
+        Reference = "10°: costs are not professional costs to the extent that they exceed professional needs unreasonably",
+    };
 
     private static readonly Source Article313Income2026 = Source.Fisconet("personal-tax", 313, 2026, new DateOnly(2026, 6, 2), "7dbc7a05-c597-479b-b18e-6e3b3cb852af",
         "Al. 1, 4°: copyright income must be declared even though it bore withholding");
 
-    private static readonly Source Article32Income2025 = Source.Fisconet("personal-tax", 32, 2025, new DateOnly(2024, 12, 2), "adf7c228-083c-4468-b8d1-151c1e03a067",
-        "A director's pay is what they obtain for their office or their functions in the company, whatever its name");
+    private static readonly Source Article32Income2025 = SharedSources.Article32Income2025;
 
-    private static readonly Source Article32Income2026 = Source.Fisconet("personal-tax", 32, 2026, new DateOnly(2026, 1, 29), "7628aa2c-168a-4bd8-aec4-288108a91757",
-        "A director's pay is what they obtain for their office or their functions in the company, whatever its name");
+    private static readonly Source Article32Income2026 = SharedSources.Article32Income2026;
 
-    private static readonly Source RoyalDecree38 = new(
-        "Arrêté royal n° 38 du 27.07.1967 organisant le statut social des travailleurs indépendants, consolidated on Justel, updated to 01.06.2026",
-        "Art. 11 §1 and §2: the contributions are a percentage of the professional income as the income tax law sets it, which copyright income within art. 37's limits is not",
-        new Uri("https://www.ejustice.just.fgov.be/eli/arrete/1967/07/27/1967072702/justel"),
-        "social-contributions/ejustice_arrete-royal-38-statut-social-independants_2026-06-01.html") { Label = "Royal decree n° 38, art. 11" };
+    private static readonly Source RoyalDecree38 = SharedSources.RoyalDecree38 with
+    {
+        Reference = "Art. 11 §1 and §2: the contributions are a percentage of the professional income as the income tax law sets it, which copyright income within art. 37's limits is not",
+    };
 
-    private static readonly Source Article157Income2025 = Source.Fisconet("personal-tax", 157, 2025, new DateOnly(2025, 1, 16), "cdf69919-b665-491b-9a02-059fd68dd24f",
-        "The surcharge is on the tax on profits, benefits and directors' pay, not on movable income");
+    private static readonly Source Article157Income2025 = SharedSources.Article157Income2025 with
+    {
+        Reference = "The surcharge is on the tax on profits, benefits and directors' pay, not on movable income",
+    };
 
-    private static readonly Source Article157Income2026 = Source.Fisconet("personal-tax", 157, 2026, new DateOnly(2026, 7, 30), "c6e47940-53f0-4608-b567-ae774014a621",
-        "The surcharge is on the tax on directors' pay (art. 30, 2°) alone, as the law of 15.07.2026 leaves it");
+    private static readonly Source Article157Income2026 = SharedSources.Article157Income2026 with
+    {
+        Reference = "The surcharge is on the tax on directors' pay (art. 30, 2°) alone, as the law of 15.07.2026 leaves it",
+    };
 
     private static readonly Source Article22 = Source.Fisconet("personal-tax", 22, 2026, new DateOnly(2026, 2, 2), "81a07df1-57c0-46c0-8871-fd08bdee178a",
         "§3: the net income of copyright is its gross less the costs of acquiring or keeping it; without proof of them, the King sets them at a flat rate");
@@ -141,17 +139,15 @@ public sealed record CopyrightRules(
 
     // The text of art. 4 for income 2026 still reads a second tranche « de 20.100 euros »: the ceilings
     // are the notice's.
-    private static readonly Source IndexationNotice2026 = new(
-        "Indexation notice for assessment year 2026, version 19.01.2026",
-        "VIII: the ceilings of the flat-rate costs on copyright income (AR/CIR 92, art. 4, al. 1, 1°) are 20,100 for the first tranche and 40,190 for the second",
-        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/934106e5-36bd-4f61-8928-ba9ca100727f"),
-        "personal-tax/spf-finances_avis-indexation-exercice-2026_2026-01-19.html");
+    private static readonly Source IndexationNotice2026 = SharedSources.IndexationNotice2026 with
+    {
+        Reference = "VIII: the ceilings of the flat-rate costs on copyright income (AR/CIR 92, art. 4, al. 1, 1°) are 20,100 for the first tranche and 40,190 for the second",
+    };
 
-    private static readonly Source IndexationNotice2027 = new(
-        "Indexation notice for assessment year 2027, version 03.08.2026, adapted to the law of 15.07.2026",
-        "VIII: the ceilings of the flat-rate costs on copyright income (AR/CIR 92, art. 4, al. 1, 1°) are 20,590 for the first tranche and 41,180 for the second",
-        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/042cb526-403e-4f40-9a45-dbccd0a12583"),
-        "personal-tax/spf-finances_avis-indexation-exercice-2027_2026-08-03.html");
+    private static readonly Source IndexationNotice2027 = SharedSources.IndexationNotice2027 with
+    {
+        Reference = "VIII: the ceilings of the flat-rate costs on copyright income (AR/CIR 92, art. 4, al. 1, 1°) are 20,590 for the first tranche and 41,180 for the second",
+    };
 
     private static readonly Source ProgrammeLaw = new(
         "Loi-programme du 30.05.2026, Moniteur belge of 01.06.2026, erratum of 19.06.2026, consolidated on Justel",

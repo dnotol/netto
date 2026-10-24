@@ -103,11 +103,7 @@ public sealed record CarRules(
         new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/72ee79ba-3c3f-47a6-83a5-f0a1ec0e5209"),
         "personal-tax/spf-finances_cir92-art-31-revenus-2026_2026-07-30.html") { Label = "CIR 92, art. 31" };
 
-    private static readonly Source RoyalDecree38 = new(
-        "Arrêté royal n° 38 du 27.07.1967 organisant le statut social des travailleurs indépendants, consolidated on Justel, updated to 01.06.2026",
-        "Art. 11 §1 and §2: the contributions are a percentage of the professional income as the income tax law sets it, gross less the professional costs",
-        new Uri("https://www.ejustice.just.fgov.be/eli/arrete/1967/07/27/1967072702/justel"),
-        "social-contributions/ejustice_arrete-royal-38-statut-social-independants_2026-06-01.html") { Label = "Royal decree n° 38, art. 11" };
+    private static readonly Source RoyalDecree38 = SharedSources.RoyalDecree38;
 
     private static readonly Source Article66Income2026 = new(
         "CIR 92, art. 66 (revenus 2026), coordinated text on Fisconetplus, last modified 15.06.2026",

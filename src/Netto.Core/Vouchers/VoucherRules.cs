@@ -32,11 +32,10 @@ public sealed record VoucherRules(
         new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/6a028d41-f93b-43f0-85ce-ec749722675a"),
         "personal-tax/spf-finances_cir92-art-38-1-revenus-2026_2026-01-14.html") { Label = "CIR 92, art. 38/1" };
 
-    private static readonly Source Article53Income2026 = new(
-        "CIR 92, art. 53 (revenus 2026), coordinated text on Fisconetplus, last modified 18.02.2026",
-        "14°: the benefits of art. 38, §1, al. 1, 25° are not professional expenses, except the company's share of an electronic meal voucher, up to 2 a voucher, raised to 4 when that share reaches the 8.91 of art. 38/1, §2, al. 1, 5° (vouchers granted from 01.01.2026)",
-        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/796aa044-5b54-4569-88a4-abe7be55e077"),
-        "corporate-tax/spf-finances_cir92-art-53-revenus-2026_2026-02-18.html");
+    private static readonly Source Article53Income2026 = SharedSources.Article53Income2026 with
+    {
+        Reference = "14°: the benefits of art. 38, §1, al. 1, 25° are not professional expenses, except the company's share of an electronic meal voucher, up to 2 a voucher, raised to 4 when that share reaches the 8.91 of art. 38/1, §2, al. 1, 5° (vouchers granted from 01.01.2026)",
+    };
 
     private static readonly Source ParliamentaryQuestion15220 = new(
         "Parliamentary question n° 15220 of 01.02.2017 (CRIV 54 COM 582), on Fisconetplus, last modified 04.10.2019",

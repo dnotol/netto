@@ -48,35 +48,31 @@ public sealed record RentRules(
         new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/649627a2-38e4-424a-8421-bbae6332266f"),
         "personal-tax/spf-finances_cir92-art-13-revenus-2026_2026-03-02.html");
 
-    private static readonly Source Article32Income2025 = new(
-        "CIR 92, art. 32 (revenus 2025), coordinated text on Fisconetplus, last modified 02.12.2024",
-        "Al. 2, 3°: the rent a director receives from their company for a built property is director pay where it exceeds 5/3 of the cadastral income revalued by art. 13's coefficient, with no costs deducted from that part",
-        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/adf7c228-083c-4468-b8d1-151c1e03a067"),
-        "personal-tax/spf-finances_cir92-art-32-revenus-2025_2024-12-02.html") { Label = "CIR 92, art. 32" };
+    private static readonly Source Article32Income2025 = SharedSources.Article32Income2025 with
+    {
+        Reference = "Al. 2, 3°: the rent a director receives from their company for a built property is director pay where it exceeds 5/3 of the cadastral income revalued by art. 13's coefficient, with no costs deducted from that part",
+    };
 
-    private static readonly Source Article32Income2026 = new(
-        "CIR 92, art. 32 (revenus 2026), coordinated text on Fisconetplus, last modified 29.01.2026",
-        "Al. 2, 3°: the rent a director receives from their company for a built property is director pay where it exceeds 5/3 of the cadastral income revalued by art. 13's coefficient, with no costs deducted from that part",
-        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/7628aa2c-168a-4bd8-aec4-288108a91757"),
-        "personal-tax/spf-finances_cir92-art-32-revenus-2026_2026-01-29.html") { Label = "CIR 92, art. 32" };
+    private static readonly Source Article32Income2026 = SharedSources.Article32Income2026 with
+    {
+        Reference = "Al. 2, 3°: the rent a director receives from their company for a built property is director pay where it exceeds 5/3 of the cadastral income revalued by art. 13's coefficient, with no costs deducted from that part",
+    };
 
-    private static readonly Source IndexationNotice2026 = new(
-        "Indexation notice for assessment year 2026, version 19.01.2026",
-        "H: the coefficient of art. 518 CIR 92, which indexes the cadastral income, is 2.2446 for income 2025",
-        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/934106e5-36bd-4f61-8928-ba9ca100727f"),
-        "personal-tax/spf-finances_avis-indexation-exercice-2026_2026-01-19.html");
+    private static readonly Source IndexationNotice2026 = SharedSources.IndexationNotice2026 with
+    {
+        Reference = "H: the coefficient of art. 518 CIR 92, which indexes the cadastral income, is 2.2446 for income 2025",
+    };
 
-    private static readonly Source IndexationNotice2027 = new(
-        "Indexation notice for assessment year 2027, version 03.08.2026, adapted to the law of 15.07.2026",
-        "J: the coefficient of art. 518 CIR 92, which indexes the cadastral income, is 2.3000 for income 2026",
-        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/042cb526-403e-4f40-9a45-dbccd0a12583"),
-        "personal-tax/spf-finances_avis-indexation-exercice-2027_2026-08-03.html");
+    private static readonly Source IndexationNotice2027 = SharedSources.IndexationNotice2027 with
+    {
+        Reference = "J: the coefficient of art. 518 CIR 92, which indexes the cadastral income, is 2.3000 for income 2026",
+    };
 
-    private static readonly Source Circular2021C20 = new(
-        "Circulaire 2021/C/20 du 26.02.2021 relative aux interventions de l'employeur pour le télétravail, on Fisconetplus, last modified 09.09.2026",
-        "§31: the flat-rate office allowance covers, among others, the use of an office space in the home, its rent included",
-        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/c4b263eb-091c-4a11-8ad0-24e2b11bb7db"),
-        "personal-tax/spf-finances_circulaire-2021-c-20-teletravail_2026-09-09.html") { Label = "Circular 2021/C/20, §31" };
+    private static readonly Source Circular2021C20 = SharedSources.Circular2021C20 with
+    {
+        Reference = "§31: the flat-rate office allowance covers, among others, the use of an office space in the home, its rent included",
+        Label = "Circular 2021/C/20, §31",
+    };
 
     public static RentRules IncomeYear2025 { get; } = Of(2025, Article7Income2025, Article13Income2025, Article32Income2025, 5.63m,
         new RuleAmount("cadastral_income_indexation_coefficient", 2.2446m, IndexationNotice2026));
