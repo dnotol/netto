@@ -9,9 +9,10 @@ namespace Netto.Core.DirectorPay;
 // company on the director's behalf, in steady state: the contributions paid in the year equal the
 // final contributions owed on its income. The income tax on it is surcharged where too little of it
 // was withheld or paid in advance during the year, and the advance payments beyond what avoids that
-// earn a bonus. The pay is paid in twelve equal months, each withheld on by the key formula: the
-// statement shows them, the year's withholding is twelve times the month's unless the user gave the
-// amount, and the assessment is what the year's tax return leaves to pay or refunds.
+// earn a bonus. The pay is paid in twelve equal months, each withheld on by the key formula with the
+// rules in force when it is paid: the statement shows them, the year's withholding is the sum of its
+// twelve months unless the user gave the amount, and the assessment is what the year's tax return
+// leaves to pay or refunds.
 //
 // Another income can be taxed with the pay, a home office's net rent, globalised with it (Tax-Calc
 // T13 and T14). The pay's own figures, its steps, its net and its statement, stay those of the pay
@@ -110,7 +111,7 @@ public static class GrossToNet
                 figures.YearTax.LowEarnedIncomeCredit - next.YearTax.LowEarnedIncomeCredit,
                 next.YearAdvancePayments.Surcharge - next.YearAdvancePayments.Bonus - figures.YearAdvancePayments.Surcharge + figures.YearAdvancePayments.Bonus,
                 next.YearNetInPocket - figures.YearNetInPocket),
-            Statement(withholdingRules, figures),
+            Statement(figures),
             AssessmentCalculator.Compute(taxRules, figures.YearTax, advancePayments, figures.Withheld, figures.WithheldGiven, prepayments.Paid, movable.Withheld),
             figures.OtherIncomeTax,
             figures.RequalifiedPay,
@@ -213,32 +214,49 @@ public static class GrossToNet
 
     // The twelve months of the income year, each line its own twelfth of the year's figure rounded to
     // the cent, so the twelve can differ from the year by a few cents: the cents are not spread over
-    // the months. The withholding is the key formula's on the taxable pay over twelve, the same every
-    // month; a month from UnmodelledRulesFrom is flagged.
-    private static PayStatement Statement(WithholdingRules rules, Figures figures)
+    // the months. The withholding is the key formula's on the taxable pay over twelve by the rules of
+    // the month's period.
+    private static PayStatement Statement(Figures figures)
     {
         var grossPay = Money.RoundToCent(figures.GrossPay / YearParts.Months);
         var paidByCompany = Money.RoundToCent(figures.ContributionsPaidByCompany / YearParts.Months);
         var benefit = Money.RoundToCent(figures.BenefitInKind / YearParts.Months);
-        var withholding = figures.Withholding.MonthlyWithholding;
-        var months = Enumerable.Range(1, YearParts.Months)
-            .Select(month => new PayStatementMonth(
-                month, grossPay, paidByCompany, benefit, figures.Withholding.MonthlyTaxablePay, withholding, grossPay - withholding,
-                new DateOnly(rules.IncomeYear, month, 1) >= rules.UnmodelledRulesFrom.Value))
+        var months = figures.Withholding
+            .SelectMany(period => Enumerable.Range(period.FirstMonth, period.MonthCount).Select(month => new PayStatementMonth(
+                month, grossPay, paidByCompany, benefit, period.Withholding.MonthlyTaxablePay, period.Withholding.MonthlyWithholding,
+                grossPay - period.Withholding.MonthlyWithholding)))
             .ToList();
 
-        return new PayStatement(months, figures.Withholding, rules.UnmodelledRulesFrom, rules.Source, rules.Amounts);
+        return new PayStatement(months, figures.Withholding);
+    }
+
+    // Each of the year's withholding rules with the months it covers, from the month its rules date
+    // falls in to the month before the next one's, the last to December, and the key formula's lines
+    // on a month's taxable pay by them.
+    private static IReadOnlyList<PayStatementPeriod> PeriodsOf(WithholdingRules rules, decimal monthlyTaxablePay)
+    {
+        var periods = rules.Periods();
+
+        return
+        [
+            .. periods.Select((period, i) => new PayStatementPeriod(
+                period,
+                period.RulesFrom.Value.Month,
+                i + 1 < periods.Count ? periods[i + 1].RulesFrom.Value.Month - 1 : YearParts.Months,
+                WithholdingCalculator.Figures(period, monthlyTaxablePay))),
+        ];
     }
 
     // One pay's figures. GrossPay is the pay on the payslip; ContributionsPaidByCompany is the
     // contributions when the company pays them, nothing when the director does; BenefitInKind is the
     // benefit taxed as pay and never paid; RequalifiedPay is movable income taxed as pay, paid besides
-    // the payslip; Withholding is the key formula's lines on a month of the payslip's taxable pay, over
-    // twelve rounded to the cent; Withheld is the year's withholding, the amount given (WithheldGiven)
-    // or twelve times the month's. Tax, AdvancePayments and NetInPocket are the pay's taken alone, the
-    // requalified pay in it; YearTax and YearAdvancePayments are on the whole income, the same as the
-    // pay's when nothing else is taxed with it; OtherIncomeTax is what the rent adds to the pay, and
-    // TaxedApartTax what an income taxed apart adds on top of both.
+    // the payslip; Withholding is, for each period of the year's withholding rules, the key formula's
+    // lines on a month of the payslip's taxable pay, over twelve rounded to the cent; Withheld is the
+    // year's withholding, the amount given (WithheldGiven) or the sum of the twelve months' by those
+    // periods. Tax, AdvancePayments and NetInPocket are the pay's taken alone, the requalified pay in
+    // it; YearTax and YearAdvancePayments are on the whole income, the same as the pay's when nothing
+    // else is taxed with it; OtherIncomeTax is what the rent adds to the pay, and TaxedApartTax what an
+    // income taxed apart adds on top of both.
     internal sealed record Figures(
         decimal GrossPay,
         decimal SocialContributions,
@@ -246,7 +264,7 @@ public static class GrossToNet
         decimal BenefitInKind,
         decimal RequalifiedPay,
         decimal TaxablePayWithoutRequalified,
-        WithholdingResult Withholding,
+        IReadOnlyList<PayStatementPeriod> Withholding,
         decimal Withheld,
         bool WithheldGiven,
         PersonalTaxResult Tax,
@@ -284,8 +302,8 @@ public static class GrossToNet
                 : SolveContributions(socialRules, taxRules, grossPay + benefitInKind + asPay);
             var paidByCompany = companyPays ? contributions : 0m;
             var taxablePay = grossPay + paidByCompany + benefitInKind + asPay;
-            var withholding = WithholdingCalculator.Figures(withholdingRules, Money.RoundToCent((taxablePay - asPay) / YearParts.Months));
-            var withheld = prepayments.Withheld ?? withholding.MonthlyWithholding * YearParts.Months;
+            var withholding = PeriodsOf(withholdingRules, Money.RoundToCent((taxablePay - asPay) / YearParts.Months));
+            var withheld = prepayments.Withheld ?? withholding.Sum(period => period.Withholding.MonthlyWithholding * period.MonthCount);
             var withWithheld = prepayments with { Withheld = withheld };
             var tax = PersonalTaxCalculator.Compute(taxRules, taxablePay, contributions, municipalRate);
             var advancePayments = IncomeTaxAdvancePaymentCalculator.Figures(taxRules.AdvancePayments, tax.IncomeTax, tax.LowEarnedIncomeCredit, withWithheld);

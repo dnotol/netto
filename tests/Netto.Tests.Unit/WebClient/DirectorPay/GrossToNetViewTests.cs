@@ -18,8 +18,8 @@ namespace Netto.Tests.WebClient.DirectorPay;
 // on the 50,000, 9,942.52, they are pay: the pay costs the company 59,942.52, which is also the
 // taxable pay, the flat-rate costs are 1,500, the taxable income 48,500, the tax 14,954.01, the
 // surcharge 1,046.78 and the net 33,999.21. The statement and the assessment are PayStatementTests'
-// and GrossToNetTests': 4,166.67 a month withheld on by 890.94, twelve times that, 10,691.28, set
-// against a final tax of 12,127.34, leaving 1,436.06 to pay.
+// and GrossToNetTests': 4,166.67 a month withheld on by 890.94 to October and 882.47 from November,
+// 10,674.34 in the year, set against a final tax of 12,127.34, leaving 1,453.00 to pay.
 public class GrossToNetViewTests
 {
     [Fact]
@@ -98,12 +98,11 @@ public class GrossToNetViewTests
     }
 
     [Fact]
-    public void From_gross50000_statementSaysWhichMonthsRulesAreNotModelled()
+    public void From_gross50000_statementShowsNovemberAndDecemberByTheRulesFrom1November()
     {
         var statement = View(50_000m).Statement;
 
-        (statement.SomeUnmodelled, statement.UnmodelledRulesFrom, statement.Months.Count(month => month.UnmodelledRules))
-            .ShouldBe((true, new DateOnly(2026, 11, 1), 2));
+        statement.Months.Skip(10).Select(month => (month.Month, month.Withholding, month.NetPaid)).ShouldBe([(11, 882.47m, 3_284.20m), (12, 882.47m, 3_284.20m)]);
     }
 
     [Fact]
@@ -121,37 +120,53 @@ public class GrossToNetViewTests
             .ShouldBe((true, 828.54m, 4_995.21m));
     }
 
-    // PayStatementTests: the formula's lines on 4,166.67.
+    // One withholding detail for each period of the year's rules, with the months it covers.
     [Fact]
-    public void From_gross50000_withholdingDetailCarriesTheFormulasLinesForAMonth()
+    public void From_gross50000_withholdingHasADetailForEachPeriodWithItsMonths()
     {
-        var detail = View(50_000m).WithholdingDetail;
+        var withholding = View(50_000m).Withholding;
 
-        (detail.RuleKey, detail.Amount, detail.Lines).ShouldSatisfyAllConditions(
-            withholding => withholding.RuleKey.ShouldBe("withholding"),
-            withholding => withholding.Amount.ShouldBe(890.94m),
-            withholding => withholding.Lines.ShouldBe(new[]
-            {
-                new StepLine("monthly_taxable_pay", 4_166.67m),
-                new StepLine("reduction", 965.86m),
-                new StepLine("annual_gross", 38_409.72m),
-                new StepLine("flat_rate_costs", 1_152.29m),
-                new StepLine("annual_net_taxable", 37_257.43m),
-                new StepLine("basic_tax", 13_679.25m),
-                new StepLine("tax_free_amount_reduction", 2_987.98m),
-                new StepLine("annual_tax", 10_691.27m),
-                new StepLine("monthly_withholding", 890.94m),
-            }));
+        withholding.Select(period => (period.FirstMonth, period.LastMonth, period.Detail.RuleKey, period.Detail.Amount))
+            .ShouldBe([(1, 10, "withholding", 890.94m), (11, 12, "withholding", 882.47m)]);
     }
 
-    // The key formula first, with no amount of its own, then the annex's amounts under the number
-    // of the annex each comes from.
-    [Fact]
-    public void From_gross50000_withholdingDetailCitesTheKeyFormulaThenTheAnnexsAmounts()
+    // PayStatementTests: the formula's lines on 4,166.67, to October and from November.
+    public static TheoryData<int, decimal, decimal, decimal> WithholdingByPeriod => new()
     {
-        var rules = WithholdingRules.IncomeYear2026;
+        { 0, 2_987.98m, 10_691.27m, 890.94m },
+        { 1, 3_089.63m, 10_589.62m, 882.47m },
+    };
 
-        var detail = View(50_000m).WithholdingDetail;
+    [Theory]
+    [MemberData(nameof(WithholdingByPeriod))]
+    public void From_gross50000_withholdingDetailCarriesTheFormulasLinesForAMonthOfItsPeriod(int period, decimal taxFreeAmountReduction, decimal annualTax, decimal monthly)
+    {
+        var detail = View(50_000m).Withholding[period].Detail;
+
+        detail.Lines.ShouldBe(
+        [
+            new StepLine("monthly_taxable_pay", 4_166.67m),
+            new StepLine("reduction", 965.86m),
+            new StepLine("annual_gross", 38_409.72m),
+            new StepLine("flat_rate_costs", 1_152.29m),
+            new StepLine("annual_net_taxable", 37_257.43m),
+            new StepLine("basic_tax", 13_679.25m),
+            new StepLine("tax_free_amount_reduction", taxFreeAmountReduction),
+            new StepLine("annual_tax", annualTax),
+            new StepLine("monthly_withholding", monthly),
+        ]);
+    }
+
+    // The key formula first, with no amount of its own, then the annex's amounts under the number of
+    // the annex each comes from; from November n° 32 under the coordinated annex.
+    [Theory]
+    [InlineData(0, 1)]
+    [InlineData(1, 11)]
+    public void From_gross50000_withholdingDetailCitesTheKeyFormulaThenTheAnnexsAmounts(int period, int month)
+    {
+        var rules = WithholdingRules.IncomeYear2026.InMonth(month);
+
+        var detail = View(50_000m).Withholding[period].Detail;
 
         detail.Sources.Select(group => (group.Source, Keys(group))).ShouldBe(new[]
         {
@@ -172,7 +187,7 @@ public class GrossToNetViewTests
         var balance = View(50_000m, TaxPrepayments.AsWithheld).Balance;
 
         (balance.FinalTax, balance.Withheld, balance.WithheldGiven, balance.AdvancePayments, balance.Balance, balance.Kind)
-            .ShouldBe((12_127.34m, 10_691.28m, false, 0m, 1_436.06m, BalanceKind.ToPay));
+            .ShouldBe((12_127.34m, 10_674.34m, false, 0m, 1_453.00m, BalanceKind.ToPay));
     }
 
     // GrossToNetTests: 20,000 withheld is 7,872.66 beyond the tax.
@@ -209,7 +224,7 @@ public class GrossToNetViewTests
     {
         var balance = View(50_000m, TaxPrepayments.AsWithheld, otherIncome: 828m).Balance;
 
-        (balance.FinalTax, balance.OnOtherIncome, balance.Balance).ShouldBe((12_526.02m, 398.68m, 1_834.74m));
+        (balance.FinalTax, balance.OnOtherIncome, balance.Balance).ShouldBe((12_526.02m, 398.68m, 1_851.68m));
     }
 
     [Fact]
@@ -233,7 +248,7 @@ public class GrossToNetViewTests
         var detail = View(50_000m, TaxPrepayments.AsWithheld).Balance.Detail;
 
         detail.ShouldSatisfyAllConditions(
-            balance => (balance.RuleKey, balance.Amount, balance.Lines.Count).ShouldBe(("assessment_balance", 1_436.06m, 0)),
+            balance => (balance.RuleKey, balance.Amount, balance.Lines.Count).ShouldBe(("assessment_balance", 1_453.00m, 0)),
             balance => balance.Sources.Select(group => (group.Source, Keys(group))).ShouldBe([(PersonalTaxRules.IncomeYear2026.AssessmentBalance, "")]));
     }
 

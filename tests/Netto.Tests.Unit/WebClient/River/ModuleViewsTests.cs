@@ -324,7 +324,7 @@ public class ModuleViewsTests
             .ShouldBe((TaxSurchargeState.Due, new Drain("income_tax_advance_payment_surcharge", DrainKind.PaidOut, 486.57m, "taxes_on_pay")));
     }
 
-    // The 10,691.28 the key formula withholds leaves 59.52 of surcharge before the 90%, under the minimum.
+    // The 10,674.34 the key formula withholds leaves 60.28 of surcharge before the 90%, under the minimum.
     [Fact]
     public void DirectorPay_example_saysTheSurchargeIsUnderTheMinimum()
     {
@@ -368,13 +368,14 @@ public class ModuleViewsTests
             .ShouldBe((TaxSurchargeState.Covered, new Drain("income_tax_advance_payment_bonus", DrainKind.Back, 90.11m, "taxes_on_pay")));
     }
 
-    // The field shows the year's withholding the pay slip gives, twelve times the month's, as derived.
+    // The field shows the year's withholding the pay slip gives, the sum of its twelve months, as
+    // derived: ten of 890.94 and two of 882.47 by the rules from 1 November.
     [Fact]
     public void WithheldField_example_showsThePaySlipsAmountAsDerived()
     {
         var field = WithheldField(RiverInputs.Example);
 
-        (field.Amount, field.Origin, field.IsYours).ShouldBe((10_691.28m, InputOrigin.Derived, false));
+        (field.Amount, field.Origin, field.IsYours).ShouldBe((10_674.34m, InputOrigin.Derived, false));
     }
 
     [Fact]
@@ -390,7 +391,7 @@ public class ModuleViewsTests
     {
         var field = WithheldField(RiverInputs.Example.WithTaxWithheld(10_000m).WithTaxWithheldAsThePaySlip());
 
-        (field.Amount, field.Origin).ShouldBe((10_691.28m, InputOrigin.Derived));
+        (field.Amount, field.Origin).ShouldBe((10_674.34m, InputOrigin.Derived));
     }
 
     // While another card's amount is refused there is no pay slip to derive from; the field keeps

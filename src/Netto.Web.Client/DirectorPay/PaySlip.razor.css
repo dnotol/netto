@@ -230,17 +230,10 @@
     font-weight: 600;
 }
 
-/* A month whose rules Netto does not model yet: marked, not greyed, since its figures still hold
-   by the formula shown. */
-.statement__mark {
-    margin-left: 0.2rem;
-    color: var(--netto-text-muted);
-    text-decoration: none;
-    cursor: help;
-}
-
-.statement__note {
-    margin: 0;
+/* The months a period of the year's withholding rules covers, above its withholding when the year has
+   more than one: closer to the step it names than the section's gap. */
+.statement__period {
+    margin: 0 0 -0.6rem;
     color: var(--netto-text-muted);
     font-size: 0.82rem;
     line-height: 1.5;

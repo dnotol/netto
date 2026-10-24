@@ -167,8 +167,9 @@ public class StepTextTests
         MissingTexts(value.ShouldNotBeNull().Steps).ShouldBeEmpty();
     }
 
-    // The pay slip lists two steps of its own beside the engine's: the month's withholding, with the
-    // key formula's lines and the annex's amounts, and the balance on the assessment.
+    // The pay slip lists steps of its own beside the engine's: a month's withholding for each period of
+    // the year's rules, with the key formula's lines and the annex's amounts, and the balance on the
+    // assessment.
     [Theory]
     [InlineData(ContributionsPaidBy.Director)]
     [InlineData(ContributionsPaidBy.Company)]
@@ -177,7 +178,7 @@ public class StepTextTests
         var (value, _) = GrossToNet.Compute(2026, 50_000m, MunicipalRates.IncomeYear2026.Entered(0.07m), TaxPrepayments.AsWithheld, paidBy);
         var view = GrossToNetView.From(value.ShouldNotBeNull());
 
-        MissingTexts([view.WithholdingDetail, view.Balance.Detail]).ShouldBeEmpty();
+        MissingTexts([.. view.Withholding.Select(period => period.Detail), view.Balance.Detail]).ShouldBeEmpty();
     }
 
     // The company of the river's example with nothing prepaid and nothing withheld, so the surcharges are among its steps.

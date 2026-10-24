@@ -78,10 +78,6 @@
         {
             <p class="calendar__note">@(left.First == left.Last ? L["PayLeftOne", Month(left.First), _view.IncomeYear] : L["PayLeft", Month(left.First), Month(left.Last), _view.IncomeYear])</p>
         }
-        @if (_view.Pay.UnmodelledFrom is { } unmodelled)
-        {
-            <p class="calendar__note">@L["PayUnmodelled", Formats.Day(unmodelled)]</p>
-        }
         @if (_view.Pay.WithheldGiven is { } given)
         {
             <p class="calendar__note">@L["PayWithheldGiven", Formats.Euros(given)]</p>

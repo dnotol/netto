@@ -83,13 +83,12 @@ internal sealed record CalendarRow(DateOnly Date, bool Past, decimal CompanyPlan
     public decimal Total => Company + Director;
 }
 
-// The director's pay each month, the statement's month, the same for all twelve: the gross on the
-// payslip, what the key formula withholds and the net paid. Left is the months not ended yet, the
-// first and the last, none once the year is over; UnmodelledFrom the first month whose rules Netto
-// does not model yet, none when no month is flagged. WithheldGiven is the year's withholding the user
-// gave, which the months do not split: they show the key formula's.
+// The director's pay each month, the statement's first month: the gross on the payslip, what the key
+// formula withholds and the net paid. Left is the months not ended yet, the first and the last, none
+// once the year is over. WithheldGiven is the year's withholding the user gave, which the months do
+// not split: they show the key formula's.
 internal sealed record CalendarPay(
-    decimal GrossPay, decimal Withholding, decimal NetPaid, (DateOnly First, DateOnly Last)? Left, DateOnly? UnmodelledFrom, decimal? WithheldGiven)
+    decimal GrossPay, decimal Withholding, decimal NetPaid, (DateOnly First, DateOnly Last)? Left, decimal? WithheldGiven)
 {
     public static CalendarPay Of(IReadOnlyList<CalendarMonth> months, Netto.Core.PersonalTax.Assessment assessment)
     {
@@ -101,7 +100,6 @@ internal sealed record CalendarPay(
             month.Withholding,
             month.NetPaid,
             left.Count == 0 ? null : (left[0], left[^1]),
-            months.FirstOrDefault(each => each.Pay.UnmodelledRules)?.Month,
             assessment.WithheldGiven ? assessment.Withheld : null);
     }
 }

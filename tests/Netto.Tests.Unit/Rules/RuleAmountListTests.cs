@@ -30,12 +30,13 @@ public class RuleAmountListTests
     }
 
     // The rules records each walk reaches, pinned: a rules record nested in one of these later is walked too,
-    // and this says so.
+    // and this says so. The withholding's are the rules from 1 January and those that replace them from
+    // 1 November (WithholdingRules.Later).
     [Theory]
     [InlineData(typeof(SocialContributionRules), new[] { "SocialContributionRules" })]
     [InlineData(typeof(PersonalTaxRules), new[] { "PersonalTaxRules", "LowEarnedIncomeCreditRules", "IncomeTaxAdvancePaymentRules" })]
     [InlineData(typeof(CorporateTaxRules), new[] { "CorporateTaxRules", "AdvancePaymentRules" })]
-    [InlineData(typeof(WithholdingRules), new[] { "WithholdingRules" })]
+    [InlineData(typeof(WithholdingRules), new[] { "WithholdingRules", "WithholdingRules" })]
     public void Records_ruleSet_areItAndItsNestedRulesRecords(Type ruleType, string[] expected)
     {
         var (_, rules) = RuleSets.Of(ruleType).First();

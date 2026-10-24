@@ -108,9 +108,6 @@
   <data name="PayLeftOne" xml:space="preserve">
     <value>Still to come in {1}: {0}.</value>
   </data>
-  <data name="PayUnmodelled" xml:space="preserve">
-    <value>From {0}, rules exist that Netto does not model yet: those months use the rules of 1 January.</value>
-  </data>
   <data name="PayWithheldGiven" xml:space="preserve">
     <value>You gave {0} as withheld over the year; the months show what the key formula withholds.</value>
   </data>

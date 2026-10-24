@@ -211,23 +211,22 @@ public class CalendarTimelineTests
     }
 
     // A month or a quarter that has ended is an outline, one to come is filled; the quarters carry their
-    // number, and the months from the rules Netto does not model yet an asterisk.
+    // number, the months nothing: every month's rules are modelled.
     [Fact]
     public async Task Timeline_example_drawsEndedBlocksAsOutlinesAndComingOnesFilled()
     {
         var html = await RenderAsync(RiverInputs.Example, On23October);
 
         (Count(html, "timeline__block timeline__block--past"), Count(html, "timeline__block timeline__block--coming")).ShouldBe((12, 4));
-        Texts(html, "timeline__block").Where(text => text.StartsWith('Q')).ShouldBe(["Q1", "Q2", "Q3", "Q4"]);
-        Texts(html, "timeline__block").Count(text => text == "*").ShouldBe(2);
+        Texts(html, "timeline__block").Where(text => text.Length > 0).ShouldBe(["Q1", "Q2", "Q3", "Q4"]);
     }
 
     [Fact]
-    public async Task Timeline_example_explainsTheAsteriskOutsideThePicture()
+    public async Task Timeline_example_hasNoFootnoteOnRulesNotModelled()
     {
         var html = await RenderAsync(RiverInputs.Example, On23October);
 
-        html.ShouldContain("* From 1 November 2026, rules exist that Netto does not model yet: those months use the rules of 1 January.");
+        (html.Contains("not model yet", StringComparison.Ordinal), html.Contains("rules of 1 January", StringComparison.Ordinal)).ShouldBe((false, false));
     }
 
     [Fact]

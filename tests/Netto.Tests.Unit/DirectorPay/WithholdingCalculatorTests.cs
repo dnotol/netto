@@ -11,9 +11,37 @@ namespace Netto.Tests.DirectorPay;
 // G = min(round(F × 3%), 3,200); H = F − G; I = round(scale(H) − 2,987.98); N = max(0, I);
 // O = round(N ÷ 12). Expected values are derived from the formula and cross-checked against that
 // chain: no Tax-Calc run covers the withholding, which Tax-Calc takes as an input (code 1407).
+//
+// From 1 November 2026 the same chain takes 3,089.63 off the basic tax in place of 2,987.98 (n° 32
+// as the royal decree of 27.09.2026 changes it), so wherever the basic tax reaches 3,089.63 the month
+// withholds 101.65 ÷ 12, about 8.47, less. Those expected values are derived from the official
+// amounts by the same chain; the check against the SPF's November simulator waits for landing.
 public class WithholdingCalculatorTests
 {
     private static readonly WithholdingRules Rules2026 = WithholdingRules.IncomeYear2026;
+
+    private static readonly WithholdingRules November2026 = WithholdingRules.IncomeYear2026.InMonth(11);
+
+    // 1,365 gives a basic tax of 3,051.43: 5.29 a month to October, nothing from November. 2,500's
+    // reduction, 607.525, rounds up to 607.53. At 6,310 the year's 20,329.38 over twelve is 1,694.115,
+    // which rounds up to 1,694.12.
+    public static TheoryData<decimal, decimal> NovemberWithholdingByPay => new()
+    {
+        { 1_000m, 0m },
+        { 1_365m, 0m },
+        { 1_465m, 22.76m },
+        { 1_465.01m, 22.77m },
+        { 2_000m, 141.76m },
+        { 2_500m, 304.71m },
+        { 3_475m, 628.88m },
+        { 4_166.67m, 882.47m },
+        { 6_310m, 1_694.12m },
+        { 8_000m, 2_443.97m },
+        { 9_290m, 3_016.35m },
+        { 9_290.01m, 3_016.35m },
+        { 10_000m, 3_384.80m },
+        { 12_000m, 4_442.80m },
+    };
 
     // 1,465 gives 374.82 of annual tax, whose twelfth, 31.235, rounds up to 31.24.
     public static TheoryData<decimal, decimal> WithholdingByPay => new()
@@ -135,6 +163,34 @@ public class WithholdingCalculatorTests
         Compute2026(4_166.67m).MonthlyTaxablePay.ShouldBe(4_166.67m);
     }
 
+    [Theory]
+    [MemberData(nameof(NovemberWithholdingByPay))]
+    public void Compute_2026FromNovemberMonthlyPay_withholdsTheKeyFormulasAmount(decimal monthlyPay, decimal expected)
+    {
+        var result = Compute(November2026, monthlyPay);
+
+        result.MonthlyWithholding.ShouldBe(expected);
+    }
+
+    // The reference case from 1 November: the same lines to the basic tax, 3,089.63 taken off it,
+    // 10,589.62 of annual tax, 882.468 a month.
+    [Fact]
+    public void Compute_2026FromNovemberPay4166Point67_listsEveryLine()
+    {
+        var result = Compute(November2026, 4_166.67m);
+
+        (result.Reduction, result.AnnualGross, result.FlatRateCosts, result.AnnualNetTaxable, result.BasicTax, result.TaxFreeAmountReduction, result.AnnualTax, result.MonthlyWithholding)
+            .ShouldBe((965.86m, 38_409.72m, 1_152.29m, 37_257.43m, 13_679.25m, 3_089.63m, 10_589.62m, 882.47m));
+    }
+
+    // A basic tax between the two amounts: withheld on to October, not from November.
+    [Fact]
+    public void Compute_2026Pay1365_withholdsToOctoberAndNothingFromNovember()
+    {
+        (Compute2026(1_365m).BasicTax, Compute2026(1_365m).MonthlyWithholding, Compute(November2026, 1_365m).MonthlyWithholding)
+            .ShouldBe((3_051.43m, 5.29m, 0m));
+    }
+
     [Fact]
     public void Compute_negativePay_isRefused()
     {
@@ -143,9 +199,11 @@ public class WithholdingCalculatorTests
         (value, error).ShouldBe((null, WithholdingCalculator.MonthlyPayNegative));
     }
 
-    private static WithholdingResult Compute2026(decimal monthlyPay)
+    private static WithholdingResult Compute2026(decimal monthlyPay) => Compute(Rules2026, monthlyPay);
+
+    private static WithholdingResult Compute(WithholdingRules rules, decimal monthlyPay)
     {
-        var (value, error) = WithholdingCalculator.Compute(Rules2026, monthlyPay);
+        var (value, error) = WithholdingCalculator.Compute(rules, monthlyPay);
 
         error.ShouldBeNull();
         return value.ShouldNotBeNull();

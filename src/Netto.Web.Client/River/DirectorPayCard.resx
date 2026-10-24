@@ -73,7 +73,7 @@
     <value>Withheld on your pay in {0}</value>
   </data>
   <data name="WithheldHint" xml:space="preserve">
-    <value>Derived from the pay slip: twelve times the month's withholding by the key formula, the administration's formula for the tax a company withholds on each month's pay, set in annex III of the royal decree implementing the income tax code. Enter the amount actually withheld if it differs.</value>
+    <value>Derived from the pay slip: the twelve months' withholding by the key formula, the administration's formula for the tax a company withholds on each month's pay, with the rules of annex III of the royal decree implementing the income tax code in force when it is paid. Enter the amount actually withheld if it differs.</value>
   </data>
   <data name="PaymentLabel" xml:space="preserve">
     <value>By {0}</value>

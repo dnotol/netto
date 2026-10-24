@@ -16,6 +16,10 @@ internal static class PaySlipText
 
     public static string Balance(BalanceKind kind) => $"Balance_{kind}";
 
+    // The months a period of the year's withholding rules covers, named above its withholding when the
+    // year has more than one: a run of months, or a month alone.
+    public static string WithholdingMonths(int firstMonth, int lastMonth) => firstMonth == lastMonth ? "WithholdingMonth" : "WithholdingMonths";
+
     // The final tax says it is on the rent too once a rent is taxed with the pay, and on a copyright
     // royalty once one is taxed apart.
     public static string FinalTax(bool withOtherIncome, bool withRoyalty = false) => (withOtherIncome, withRoyalty) switch

@@ -76,14 +76,8 @@
                 <tbody>
                     @foreach (var month in _view.Statement.Months)
                     {
-                        <tr class="@(month.UnmodelledRules ? "statement__row--unmodelled" : null)">
-                            <th scope="row" class="statement__month">
-                                @Formats.Month(Pay.IncomeYear, month.Month)
-                                @if (month.UnmodelledRules)
-                                {
-                                    <abbr class="statement__mark" title="@L["UnmodelledMark", Formats.Day(_view.Statement.UnmodelledRulesFrom)]">*</abbr>
-                                }
-                            </th>
+                        <tr>
+                            <th scope="row" class="statement__month">@Formats.Month(Pay.IncomeYear, month.Month)</th>
                             <td data-label="@L["ColumnGross"]">@Formats.Euros(month.GrossPay)</td>
                             @if (_view.Statement.CompanyPaysContributions)
                             {
@@ -101,11 +95,14 @@
                 </tbody>
             </table>
         </div>
-        @if (_view.Statement.SomeUnmodelled)
+        @foreach (var period in _view.Withholding)
         {
-            <p class="statement__note">* @L["UnmodelledNote", Formats.Day(_view.Statement.UnmodelledRulesFrom)]</p>
+            @if (_view.Withholding.Count > 1)
+            {
+                <p class="statement__period">@L[PaySlipText.WithholdingMonths(period.FirstMonth, period.LastMonth), Formats.Month(Pay.IncomeYear, period.FirstMonth), Formats.Month(Pay.IncomeYear, period.LastMonth)]</p>
+            }
+            <StepDetails Details="period.Details" />
         }
-        <StepDetails Details="_withholding" />
     </section>
 
     <section class="balance" aria-labelledby="balance-title">
@@ -202,13 +199,11 @@
     public bool RoyaltyFollowsPay { get; set; }
 
     private GrossToNetView _view = default!;
-    private IReadOnlyList<StepDetail> _withholding = [];
     private IReadOnlyList<StepDetail> _balance = [];
 
     protected override void OnParametersSet()
     {
         _view = GrossToNetView.From(Pay);
-        _withholding = [_view.WithholdingDetail];
         _balance = [_view.Balance.Detail];
     }
 

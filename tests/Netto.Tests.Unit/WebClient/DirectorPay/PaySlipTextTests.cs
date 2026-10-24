@@ -3,6 +3,7 @@ using Netto.Core.PersonalTax;
 using Netto.Core.Rules;
 using Netto.Core.Simulation;
 using Netto.Core.SocialContributions;
+using Netto.Web.Client;
 using Netto.Web.Client.DirectorPay;
 using Shouldly;
 
@@ -48,6 +49,7 @@ public class PaySlipTextTests
             .Concat(view.Tracks.Select(track => PaySlipText.TrackHint(track.Key)))
             .Concat(view.Tracks.SelectMany(track => track.Rows).Select(row => PaySlipText.Row(row.Key)))
             .Concat(view.NextThousand.Select(part => PaySlipText.Row(part.Key)))
+            .Concat(view.Withholding.Select(period => PaySlipText.WithholdingMonths(period.FirstMonth, period.LastMonth)))
             .Append(PaySlipText.Withheld(view.Balance.WithheldGiven))
             .Append(PaySlipText.Balance(view.Balance.Kind));
 
@@ -106,6 +108,17 @@ public class PaySlipTextTests
         string[] keys = [PaySlipText.FinalTax(false), PaySlipText.FinalTax(true), "FinalTaxOnRent", "NextRentNote"];
 
         keys.Where(key => Resources.Get(key) is null).ShouldBeEmpty();
+    }
+
+    // Above each period's withholding, the months it covers: in 2026 January to October, then November
+    // and December by the rules from 1 November.
+    [Theory]
+    [InlineData(1, 10, "Withheld from January to October")]
+    [InlineData(11, 12, "Withheld from November to December")]
+    [InlineData(12, 12, "Withheld in December")]
+    public void WithholdingMonths_aPeriodsMonths_nameThem(int firstMonth, int lastMonth, string expected)
+    {
+        Resources.Format(PaySlipText.WithholdingMonths(firstMonth, lastMonth), Formats.Month(2026, firstMonth), Formats.Month(2026, lastMonth)).ShouldBe(expected);
     }
 
     [Fact]

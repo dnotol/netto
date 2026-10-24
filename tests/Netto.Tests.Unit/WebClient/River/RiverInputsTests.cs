@@ -16,7 +16,7 @@ namespace Netto.Tests.WebClient.River;
 // The river opens on the example year of YearSimulationTests: 120,000 revenue, 20,000 running costs,
 // 50,000 pay at 7%, nothing kept, VVPRbis from the third distribution, the contributions paid by the
 // director, nothing prepaid by the company nor on the pay, and the pay withheld on as the key formula
-// says (decided 2026-10-20): 10,691.28, which leaves a surcharge under the minimum, so the pocket is
+// says (decided 2026-10-20): 10,674.34, which leaves a surcharge under the minimum, so the pocket is
 // the 61,975.74 of a pay whose tax was withheld, and the 675.00 surcharge on the 10,000 of corporate
 // tax takes 553.50 of the 62,529.24 a company that prepaid would leave, its dividend withholding
 // the rest. With nothing withheld the 486.57 surcharge on the pay's tax takes all of itself:
@@ -56,15 +56,16 @@ public class RiverInputsTests
             .ShouldBe((new Input<decimal?>(null, InputOrigin.Derived), true, new Input<bool>(false, InputOrigin.Default)));
     }
 
-    // GrossToNetTests: twelve times the 890.94 on 4,166.67; 11,333.96 and 793.38 of tax less that
-    // leaves 1,436.06 to pay, and the 59.52 of surcharge before the 90% is under the minimum.
+    // GrossToNetTests: ten times the 890.94 on 4,166.67 and twice the 882.47 from November; 11,333.96
+    // and 793.38 of tax less that leaves 1,453.00 to pay, and the 60.28 of surcharge before the 90% is
+    // under the minimum.
     [Fact]
     public void Run_example_withholdsWhatTheKeyFormulaSaysAndLeavesNoSurcharge()
     {
         var pay = RiverInputs.Example.Run().Pay.ShouldNotBeNull();
 
         (pay.Assessment.Withheld, pay.Assessment.WithheldGiven, pay.AdvancePayments.Surcharge, pay.Assessment.Balance)
-            .ShouldBe((10_691.28m, false, 0m, 1_436.06m));
+            .ShouldBe((10_674.34m, false, 0m, 1_453.00m));
     }
 
     // IncomeTaxAdvancePaymentCalculatorTests: 486.57 on the 11,333.96 of tax, and 14,317.50 by
@@ -746,14 +747,14 @@ public class RiverInputsTests
     // and, nothing prepaid, a surcharge of 656.37, which leaves 38,239.63 to pay out, 31,506.44 net. The
     // pocket gets the pay's 29,579.30 less the rent's 398.68 of tax (GrossToNetTests), the rent's
     // 1,380.00 and that dividend: 91.32 more than the example's 61,975.74. The balance on the
-    // assessment adds the rent's tax to the example's 1,436.06.
+    // assessment adds the rent's tax to the example's 1,453.00.
     [Fact]
     public void Run_rentReachesTheEngine()
     {
         var run = RentAtTheCap(RiverInputs.Example).Run();
         var year = run.Year.ShouldNotBeNull();
 
-        (year.ProfitBeforePay, year.ProfitAfterTax, year.NetInPocket, run.Pay?.Assessment.Balance).ShouldBe((98_620m, 38_239.63m, 62_067.06m, (decimal?)1_834.74m));
+        (year.ProfitBeforePay, year.ProfitAfterTax, year.NetInPocket, run.Pay?.Assessment.Balance).ShouldBe((98_620m, 38_239.63m, 62_067.06m, (decimal?)1_851.68m));
     }
 
     [Fact]

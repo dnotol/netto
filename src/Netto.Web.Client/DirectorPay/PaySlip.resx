@@ -82,7 +82,7 @@
     <value>Your pay, month by month</value>
   </data>
   <data name="StatementHint" xml:space="preserve">
-    <value>Twelve equal months, each withheld on by the administration's key formula; the net paid is the gross less the withholding. A real payslip may differ by a cent where its software rounds.</value>
+    <value>Twelve equal months of pay, each withheld on by the administration's key formula with the rules in force when it is paid; the net paid is the gross less the withholding. A real payslip may differ by a cent where its software rounds.</value>
   </data>
   <data name="ColumnMonth" xml:space="preserve">
     <value>Month</value>
@@ -105,11 +105,11 @@
   <data name="ColumnNetPaid" xml:space="preserve">
     <value>Net paid</value>
   </data>
-  <data name="UnmodelledMark" xml:space="preserve">
-    <value>Rules from {0} not modelled</value>
+  <data name="WithholdingMonths" xml:space="preserve">
+    <value>Withheld from {0} to {1}</value>
   </data>
-  <data name="UnmodelledNote" xml:space="preserve">
-    <value>From {0}, rules are published that Netto does not model yet: the marked months are shown with the formula of 1 January.</value>
+  <data name="WithholdingMonth" xml:space="preserve">
+    <value>Withheld in {0}</value>
   </data>
   <data name="BalanceTitle" xml:space="preserve">
     <value>Your year's balance on the assessment</value>

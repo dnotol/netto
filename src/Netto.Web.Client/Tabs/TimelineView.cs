@@ -32,9 +32,6 @@ internal sealed record TimelineView(
 
     public TimelineMark? NextDirector => Director.Marks.FirstOrDefault(mark => mark.State == MarkState.Next);
 
-    // The first month of the pay that falls in rules Netto does not model yet, none when no month does.
-    public DateOnly? UnmodelledFrom => Pay.Blocks.FirstOrDefault(block => block.Unmodelled)?.From;
-
     // What the picture draws, in the order its key names it: only what is drawn.
     public IReadOnlyList<KeyItem> Key
     {
@@ -204,10 +201,10 @@ internal sealed record DeadlineLane(IReadOnlyList<TimelineMark> Marks, bool Exem
 }
 
 // One span of the year, a month of the pay or a quarter of INASTI's, numbered from 1: its first day, where
-// it starts and how much of the year it covers, whether it has ended, what it carries (the net paid in
-// the month, a quarter of the year's contributions) and, for a month, whether it falls in the rules Netto
-// does not model yet. Its label stands by its near edge early in the year and its far edge late.
-internal sealed record TimelineBlock(int Index, DateOnly From, decimal Left, decimal Width, bool Past, decimal Amount, bool Unmodelled)
+// it starts and how much of the year it covers, whether it has ended and what it carries (the net paid in
+// the month, a quarter of the year's contributions). Its label stands by its near edge early in the year
+// and its far edge late.
+internal sealed record TimelineBlock(int Index, DateOnly From, decimal Left, decimal Width, bool Past, decimal Amount)
 {
     public bool LabelEnd => Left > TimelineView.LabelsLeanLeftAfter;
 
@@ -225,12 +222,12 @@ internal sealed record SpanLane(IReadOnlyList<TimelineBlock> Blocks, bool PaidBy
     public bool Empty => Blocks.All(block => block.Amount == 0m);
 
     public static SpanLane OfPay(IReadOnlyList<CalendarMonth> months, YearScale scale) =>
-        new([.. months.Select(month => Block(month.Month.Month, month.Month, month.Month.AddMonths(1), month.Past, month.Pay.NetPaid, month.Pay.UnmodelledRules, scale))], false);
+        new([.. months.Select(month => Block(month.Month.Month, month.Month, month.Month.AddMonths(1), month.Past, month.Pay.NetPaid, scale))], false);
 
     public static SpanLane OfContributions(ContributionQuarters contributions, YearScale scale) =>
         new([.. contributions.Quarters.Select(quarter =>
-            Block((quarter.From.Month - 1) / 3 + 1, quarter.From, quarter.From.AddMonths(3), quarter.Past, contributions.EachQuarter, false, scale))], contributions.PaidByCompany);
+            Block((quarter.From.Month - 1) / 3 + 1, quarter.From, quarter.From.AddMonths(3), quarter.Past, contributions.EachQuarter, scale))], contributions.PaidByCompany);
 
-    private static TimelineBlock Block(int index, DateOnly from, DateOnly to, bool past, decimal amount, bool unmodelled, YearScale scale) =>
-        new(index, from, scale.EdgeAt(from), scale.Span(from, to), past, amount, unmodelled);
+    private static TimelineBlock Block(int index, DateOnly from, DateOnly to, bool past, decimal amount, YearScale scale) =>
+        new(index, from, scale.EdgeAt(from), scale.Span(from, to), past, amount);
 }

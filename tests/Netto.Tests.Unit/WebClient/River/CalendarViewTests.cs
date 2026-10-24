@@ -85,8 +85,8 @@ public class CalendarViewTests
     {
         var pay = View(RiverInputs.Example, On22October).Pay;
 
-        (pay.GrossPay, pay.Withholding, pay.NetPaid, pay.Left, pay.UnmodelledFrom, pay.WithheldGiven).ShouldBe(
-            (4_166.67m, 890.94m, 3_275.73m, (new DateOnly(2026, 10, 1), new DateOnly(2026, 12, 1)), new DateOnly(2026, 11, 1), null));
+        (pay.GrossPay, pay.Withholding, pay.NetPaid, pay.Left, pay.WithheldGiven).ShouldBe(
+            (4_166.67m, 890.94m, 3_275.73m, (new DateOnly(2026, 10, 1), new DateOnly(2026, 12, 1)), null));
     }
 
     [Fact]
@@ -106,7 +106,7 @@ public class CalendarViewTests
     {
         var view = View(RiverInputs.Example, On22October);
 
-        (view.CompanyBalance?.Balance, view.DirectorBalance.Balance, view.DirectorBalance.TaxYear).ShouldBe((10_675.00m, 1_436.06m, 2027));
+        (view.CompanyBalance?.Balance, view.DirectorBalance.Balance, view.DirectorBalance.TaxYear).ShouldBe((10_675.00m, 1_453.00m, 2027));
     }
 
     [Fact]

@@ -60,9 +60,6 @@
   <data name="Note_Today_AfterYear" xml:space="preserve">
     <value>Today, {0}, is after {1}: the whole year is past.</value>
   </data>
-  <data name="Legend_Unmodelled" xml:space="preserve">
-    <value>* From {0}, rules exist that Netto does not model yet: those months use the rules of 1 January.</value>
-  </data>
   <data name="Legend_Quarters" xml:space="preserve">
     <value>The quarters are drawn whole: Netto does not model the day each is paid.</value>
   </data>

@@ -14,7 +14,7 @@ namespace Netto.Tests.WebClient.River;
 
 // The line each disclosure of Director pay and Corporate tax folds its settings to, on the river's
 // example (ModuleViewsTests): the director pays the contributions, the municipal rate is the
-// default 7.0%, the director set up before 2024, the key formula withholds 10,691.28 on the pay, no
+// default 7.0%, the director set up before 2024, the key formula withholds 10,674.34 on the pay, no
 // advance payment is made on either tax, and the company, small and in its fifth financial year or
 // later, is left a surcharge of 675.00 on its corporate tax. Namur's rate is 8.5% (MunicipalityChoiceTests).
 // What the user gave says no origin, nor does what the example holds none of; what Netto assumed says
@@ -79,7 +79,7 @@ public class SettingsViewsTests
     {
         Phrases(DirectorPaySettings(RiverInputs.Example).Prepaid).ShouldBe(
         [
-            ("Prepaid_Withheld_PaySlip", "€10,691.28", null),
+            ("Prepaid_Withheld_PaySlip", "€10,674.34", null),
             ("Prepaid_None", "", null),
         ]);
     }

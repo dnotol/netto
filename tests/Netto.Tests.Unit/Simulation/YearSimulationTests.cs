@@ -207,16 +207,16 @@ public class YearSimulationTests
         (result.DirectorPay.AdvancePayments.Surcharge, result.PersonalTax, result.NetInPocket).ShouldBe((486.57m, 19_663.97m, 62_042.67m));
     }
 
-    // Nothing given as withheld: the company withholds the key formula's 10,691.28 on the 50,000
-    // (GrossToNetTests), which leaves no surcharge and 1,436.06 to pay on the assessment; the pocket is
-    // that of a pay whose tax was withheld.
+    // Nothing given as withheld: the company withholds the key formula's 10,674.34 on the 50,000, its
+    // November and December months by the rules from 1 November (GrossToNetTests), which leaves no
+    // surcharge and 1,453.00 to pay on the assessment; the pocket is that of a pay whose tax was withheld.
     [Fact]
     public void Run_2026WithholdingAsTheKeyFormula_withholdsOnThePayAndLeavesItsBalance()
     {
         var result = Run(Scenario(directorPay: 50_000m, reserve: 0m, taxPrepayments: TaxPrepayments.AsWithheld));
 
         (result.DirectorPay.Assessment.Withheld, result.DirectorPay.Assessment.WithheldGiven, result.DirectorPay.Assessment.Balance, result.NetInPocket)
-            .ShouldBe((10_691.28m, false, 1_436.06m, 62_529.24m));
+            .ShouldBe((10_674.34m, false, 1_453.00m, 62_529.24m));
     }
 
     [Theory]

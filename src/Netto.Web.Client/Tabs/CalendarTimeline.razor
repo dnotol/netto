@@ -77,10 +77,6 @@
     {
         <p class="timeline__footnote">@L[todayNote, Formats.Day(_view.Today.Date), _view.IncomeYear]</p>
     }
-    @if (_view.UnmodelledFrom is { } unmodelled)
-    {
-        <p class="timeline__footnote">@L["Legend_Unmodelled", Formats.Day(unmodelled)]</p>
-    }
     @if (!_view.Contributions.Empty)
     {
         <p class="timeline__footnote">@L["Legend_Quarters"]</p>
@@ -153,8 +149,7 @@
     private string MarkLabel(TimelineMark mark) =>
         mark.Amount > 0m ? L["Mark_Amount", Formats.Euros(mark.Amount), Formats.ShortDay(mark.Date)].Value : Formats.ShortDay(mark.Date);
 
-    private string BlockText(TimelineBlock block, bool quarters) =>
-        quarters ? L["Quarter", block.Index].Value : block.Unmodelled ? "*" : "";
+    private string BlockText(TimelineBlock block, bool quarters) => quarters ? L["Quarter", block.Index].Value : "";
 
     // The shape of a deadline's diamond: hollow and muted once past, the larger gold one for the next
     // payment, a small filled one for a payment planned beyond it, a small hollow one for nothing to pay.

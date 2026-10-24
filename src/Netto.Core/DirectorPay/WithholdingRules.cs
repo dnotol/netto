@@ -5,24 +5,25 @@ namespace Netto.Core.DirectorPay;
 // The monthly withholding tax (précompte professionnel) on the periodic pay of a director subject to
 // the self-employed social status, single and resident in Belgium, for one income year: the rules of
 // annex III to the AR/CIR 92 that the administration's key formula applies in five steps. Source is
-// the key formula, the method the withholding step cites as its rule. The rules hold for pay from
-// RulesFrom. From UnmodelledRulesFrom, rules exist that Netto does not model (for 2026, the royal
-// decree of 27.09.2026 changes the tax on the tax-free amount for pay from 1 November): a month
-// from that date still uses these rules, and the caller says so (decided 2026-10-18).
+// the key formula, the method the withholding step cites as its rule. The rules hold for pay paid or
+// attributed from RulesFrom, the first of a month, until Later's: the rules a decree puts in their
+// place from a later month of the same income year, none when these hold to December. For(year)
+// gives the year's first rules, those of 1 January, whose Later holds the ones after them.
 public sealed record WithholdingRules(
     int IncomeYear,
     Source Source,
     RuleDate RulesFrom,
-    RuleDate UnmodelledRulesFrom,
     IReadOnlyList<WithholdingBand> Reduction,
     RuleAmount FlatRateCostsRate,
     RuleAmount FlatRateCostsMaximum,
     IReadOnlyList<WithholdingBand> Scale,
     RuleAmount TaxFreeAmountReduction)
 {
+    public WithholdingRules? Later { get; init; }
+
     // The key formula is the method; the amounts it applies are annex III as the royal decree of
     // 11.12.2025 replaced it (filed as « Règles 1er janvier 2026 »); the coordinated annex III dates
-    // each decree, the one of 27.09.2026 among them.
+    // each decree, the one of 27.09.2026 among them, and holds n° 32 as that decree changes it.
     private static readonly Source KeyFormula2026 = new(
         "Key formula for the withholding tax on pay paid from 1 January 2026 (ESS-SR/2025-0928), Fisconetplus, version 17.12.2025",
         "N° 6 to 16, the monthly pay in five steps: the gross less the director's reduction (n° 7, 1°), times 12 (n° 7, 2°); "
@@ -54,27 +55,60 @@ public sealed record WithholdingRules(
     private static readonly Source AnnexTaxFreeAmount2026 = DecreedAnnex2026(
         "N° 32, a single person: the tax on the scale less 2,987.98, the tax on the tax-free amount of 11,170");
 
-    public static WithholdingRules IncomeYear2026 { get; } = new(
-        2026,
-        KeyFormula2026,
-        new RuleDate("rules_from", new DateOnly(2026, 1, 1), CoordinatedAnnex2026),
-        new RuleDate("unmodelled_rules_from", new DateOnly(2026, 11, 1), CoordinatedAnnex2026),
-        Reduction2026(),
-        new RuleAmount("flat_rate_costs_rate", 0.03m, AnnexFlatRateCosts2026),
-        new RuleAmount("flat_rate_costs_maximum", 3_200m, AnnexFlatRateCosts2026),
+    private static readonly Source CoordinatedTaxFreeAmountFromNovember2026 = CoordinatedAnnex2026 with
+    {
+        Reference = "N° 32, a single person, as the royal decree of 27.09.2026 (MB 02.10.2026) changes it for pay paid or attributed from 01.11.2026: "
+            + "the tax on the scale less 3,089.63, the tax on the tax-free amount of 11,550",
+    };
+
+    private static readonly WithholdingRules From1January2026 = new(
+        IncomeYear: 2026,
+        Source: KeyFormula2026,
+        RulesFrom: new RuleDate("rules_from", new DateOnly(2026, 1, 1), CoordinatedAnnex2026),
+        Reduction: Reduction2026(),
+        FlatRateCostsRate: new RuleAmount("flat_rate_costs_rate", 0.03m, AnnexFlatRateCosts2026),
+        FlatRateCostsMaximum: new RuleAmount("flat_rate_costs_maximum", 3_200m, AnnexFlatRateCosts2026),
+        Scale:
         [
             new WithholdingBand(null, Scale2026("withholding_bracket_1_rate", 0.2675m), Scale2026("withholding_bracket_1_upper_limit", 16_710m)),
             new WithholdingBand(Scale2026("withholding_bracket_2_base", 4_469.93m), Scale2026("withholding_bracket_2_rate", 0.428m), Scale2026("withholding_bracket_2_upper_limit", 29_500m)),
             new WithholdingBand(Scale2026("withholding_bracket_3_base", 9_944.05m), Scale2026("withholding_bracket_3_rate", 0.4815m), Scale2026("withholding_bracket_3_upper_limit", 51_050m)),
             new WithholdingBand(Scale2026("withholding_bracket_4_base", 20_320.38m), Scale2026("withholding_bracket_4_rate", 0.535m), null),
         ],
-        new RuleAmount("tax_free_amount_reduction", 2_987.98m, AnnexTaxFreeAmount2026));
+        TaxFreeAmountReduction: new RuleAmount("tax_free_amount_reduction", 2_987.98m, AnnexTaxFreeAmount2026));
+
+    // From 1 November 2026, the royal decree of 27.09.2026 changes n° 32 alone of what reaches a single
+    // director's monthly pay; no key formula of that date is published, so the January one's method
+    // applies.
+    public static WithholdingRules IncomeYear2026 { get; } = From1January2026 with
+    {
+        Later = From1January2026 with
+        {
+            RulesFrom = new RuleDate("rules_from", new DateOnly(2026, 11, 1), CoordinatedAnnex2026),
+            TaxFreeAmountReduction = new RuleAmount("tax_free_amount_reduction", 3_089.63m, CoordinatedTaxFreeAmountFromNovember2026),
+        },
+    };
 
     public static WithholdingRules? For(int incomeYear) => incomeYear switch
     {
         2026 => IncomeYear2026,
         _ => null,
     };
+
+    // The rules for pay paid or attributed in a month of the income year, 1 being January: those in
+    // force on its first day.
+    public WithholdingRules InMonth(int month)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(month, 1);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(month, YearParts.Months);
+
+        return Later is { } later && later.RulesFrom.Value <= new DateOnly(IncomeYear, month, 1) ? later.InMonth(month) : this;
+    }
+
+    // These rules, then each that replaces them later in the year, in order. A method, not a property:
+    // the rules tests walk a rules record's properties, and one holding these rules again would never
+    // end.
+    public IReadOnlyList<WithholdingRules> Periods() => [this, .. Later?.Periods() ?? []];
 
     // Each figure of the annex once, in the annex's order: the 385 the first two bands of the
     // reduction share is listed once.

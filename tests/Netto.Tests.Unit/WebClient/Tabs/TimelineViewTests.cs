@@ -262,7 +262,17 @@ public class TimelineViewTests
         months.Select(month => month.From).ShouldBe(Enumerable.Range(1, 12).Select(month => new DateOnly(2026, month, 1)));
         months.ShouldAllBe(month => Math.Abs(month.Left - EdgeOf(month.From)) < Tolerance);
         months.Select(month => month.Width).Sum().ShouldBe(1m, Tolerance);
-        months.ShouldAllBe(month => month.Amount == view.Pay.NetPaid);
+        months.Select(month => month.Amount).ShouldBe(view.Calendar.Months.Select(month => month.Pay.NetPaid));
+    }
+
+    // November and December pay the net of the rules from 1 November: 3,284.20 where the months before
+    // pay 3,275.73.
+    [Fact]
+    public void Of_example_paysNovemberAndDecemberTheirOwnNet()
+    {
+        var timeline = Of(RiverInputs.Example, On23October).Timeline;
+
+        timeline.Pay.Blocks.Select(month => month.Amount).ShouldBe([.. Enumerable.Repeat(3_275.73m, 10), 3_284.20m, 3_284.20m]);
     }
 
     // A month is past once it has ended: October is still under way on the 23rd, so it is the first to
@@ -274,16 +284,6 @@ public class TimelineViewTests
 
         pay.Blocks.Select(month => month.Past).ShouldBe([.. Enumerable.Repeat(true, 9), false, false, false]);
         pay.Next.ShouldNotBeNull().Index.ShouldBe(10);
-    }
-
-    // The months from the date the rules Netto does not model start are the pay statement's flagged ones.
-    [Fact]
-    public void Of_example_flagsTheMonthsFromTheUnmodelledRules()
-    {
-        var (view, timeline) = Of(RiverInputs.Example, On23October);
-
-        timeline.Pay.Blocks.Where(month => month.Unmodelled).Select(month => month.From).ShouldBe([new DateOnly(2026, 11, 1), new DateOnly(2026, 12, 1)]);
-        timeline.Pay.Blocks.First(month => month.Unmodelled).From.ShouldBe(view.Pay.UnmodelledFrom!.Value);
     }
 
     [Fact]
@@ -430,12 +430,6 @@ public class TimelineViewTests
     public void Of_lateInTheYear_todaysLabelLeansLeft()
     {
         (Of(RiverInputs.Example, On23October).Timeline.Today.LabelEnd, Of(RiverInputs.Example, new DateOnly(2026, 3, 1)).Timeline.Today.LabelEnd).ShouldBe((true, false));
-    }
-
-    [Fact]
-    public void Of_example_givesTheFirstMonthTheRulesNettoDoesNotModelStartAt()
-    {
-        Of(RiverInputs.Example, On23October).Timeline.UnmodelledFrom.ShouldBe(new DateOnly(2026, 11, 1));
     }
 
     // The picture's label and the Next panel name the same payers: both are chosen by one classifier

@@ -169,12 +169,22 @@ public class PaymentCalendarTests
         calendar.Months.Select(month => month.Past).ShouldBe([.. Enumerable.Repeat(true, 9), false, false, false]);
     }
 
+    // The example's 12,127.34 of final tax less the 10,674.34 its twelve months withhold (GrossToNetTests).
     [Fact]
     public void Of_example_givesTheDirectorsBalanceForTaxYear2027()
     {
         var director = Of(RiverExample, On22October).DirectorBalance;
 
-        (director.TaxYear, director.Balance, director.Source).ShouldBe((2027, 1_436.06m, PersonalTaxRules.IncomeYear2026.AssessmentBalance));
+        (director.TaxYear, director.Balance, director.Source).ShouldBe((2027, 1_453.00m, PersonalTaxRules.IncomeYear2026.AssessmentBalance));
+    }
+
+    // November and December withhold by the rules from 1 November: 882.47 on the example's 4,166.67.
+    [Fact]
+    public void Of_example_paysNovemberAndDecemberByTheRulesFrom1November()
+    {
+        var calendar = Of(RiverExample, On22October);
+
+        calendar.Months.Select(month => month.Pay.Withholding).ShouldBe([.. Enumerable.Repeat(890.94m, 10), 882.47m, 882.47m]);
     }
 
     // 10,000 of corporate tax and its 675 surcharge, nothing paid in advance.

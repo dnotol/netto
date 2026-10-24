@@ -7,9 +7,10 @@ namespace Netto.Web.Client.DirectorPay;
 
 // What the pay slip draws from one gross-to-net result: each track as rows of bars on one scale
 // shared by every track, so equal amounts are equally long, the next 1,000 as shares, the monthly
-// statement, the key formula's withholding as a step with its lines and sources, the balance on
-// the assessment, and each step's amounts grouped under their sources. It only selects, orders and
-// scales the engine's figures; every amount is the engine's. When the company pays the contributions
+// statement, the key formula's withholding as a step with its lines and sources for each period of
+// the year's withholding rules, with the months it covers, the balance on the assessment, and each
+// step's amounts grouped under their sources. It only selects, orders and scales the engine's
+// figures; every amount is the engine's. When the company pays the contributions
 // on the director's behalf (CompanyPaysContributions) they are pay that goes straight back out, so
 // both tracks start from what the pay costs the company, the gross plus them, which is also the pay
 // the director declares, and the contributions stay paid out. With a rent taxed with the pay
@@ -25,7 +26,7 @@ internal sealed record GrossToNetView(
     IReadOnlyList<FunnelTrack> Tracks,
     IReadOnlyList<NextThousandPart> NextThousand,
     StatementView Statement,
-    StepDetail WithholdingDetail,
+    IReadOnlyList<WithholdingPeriodView> Withholding,
     AssessmentView Balance,
     IReadOnlyList<StepDetail> Details)
 {
@@ -93,17 +94,17 @@ internal sealed record GrossToNetView(
                 ("net_in_pocket", result.NextThousand.NetInPocket),
             ]),
             StatementView.From(result.Statement, companyPays),
-            Withholding(result.Statement),
+            [.. result.Statement.Periods.Select(period => new WithholdingPeriodView(period.FirstMonth, period.LastMonth, WithholdingOf(period)))],
             AssessmentView.From(result.Assessment, result.OtherIncomeTax, result.TaxedApartTax),
             result.Steps.Select(StepDetail.From).ToList()) { WithRequalifiedPay = result.RequalifiedPay > 0m };
     }
 
-    // The month's withholding as a step: the formula's lines in its order, the key formula as the
-    // rule, and the annex's amounts under the number each comes from.
-    private static StepDetail Withholding(PayStatement statement)
+    // A month's withholding in a period as a step: the formula's lines in its order, the key formula
+    // as the rule, and the annex's amounts under the number each comes from.
+    private static StepDetail WithholdingOf(PayStatementPeriod period)
     {
-        var formula = statement.Withholding;
-        return StepDetail.From("withholding", formula.MonthlyWithholding, statement.Source, statement.AmountsUsed) with
+        var formula = period.Withholding;
+        return StepDetail.From("withholding", formula.MonthlyWithholding, period.Source, period.AmountsUsed) with
         {
             Lines =
             [
@@ -215,19 +216,23 @@ internal static class RowKindExtensions
 // fraction of the bar it takes, the same as its share unless a part is negative.
 internal sealed record NextThousandPart(string Key, decimal Amount, decimal Share, decimal Width);
 
-// The monthly statement as the slip draws it: the engine's twelve months, whether the column of
-// contributions the company pays is shown, and whether some month's rules are not modelled, from
-// which date. The column of a benefit in kind shows once the pay holds one (HasBenefit).
+// The monthly statement as the slip draws it: the engine's twelve months and whether the column of
+// contributions the company pays is shown. The column of a benefit in kind shows once the pay holds
+// one (HasBenefit).
 internal sealed record StatementView(
     IReadOnlyList<PayStatementMonth> Months,
-    bool CompanyPaysContributions,
-    bool SomeUnmodelled,
-    DateOnly UnmodelledRulesFrom)
+    bool CompanyPaysContributions)
 {
     public bool HasBenefit => Months.Any(month => month.BenefitInKind > 0m);
 
-    public static StatementView From(PayStatement statement, bool companyPays) =>
-        new(statement.Months, companyPays, statement.Months.Any(month => month.UnmodelledRules), statement.UnmodelledRulesFrom.Value);
+    public static StatementView From(PayStatement statement, bool companyPays) => new(statement.Months, companyPays);
+}
+
+// The withholding of the months FirstMonth to LastMonth (1 is January), withheld on by one period of
+// the year's rules, as a step; Details is that step alone, as the slip's list of steps takes it.
+internal sealed record WithholdingPeriodView(int FirstMonth, int LastMonth, StepDetail Detail)
+{
+    public IReadOnlyList<StepDetail> Details => [Detail];
 }
 
 // The balance on the assessment as the slip draws it: the engine's lines, how much of the final tax is
