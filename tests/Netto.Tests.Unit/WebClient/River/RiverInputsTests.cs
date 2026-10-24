@@ -13,8 +13,8 @@ using Shouldly;
 
 namespace Netto.Tests.WebClient.River;
 
-// The river opens on the example year of YearSimulationTests: 120,000 revenue, 20,000 running costs,
-// 50,000 pay at 7%, nothing kept, VVPRbis from the third distribution, the contributions paid by the
+// The river opens on the example year of YearSimulationTests: 120,000 revenue, 19,590.70 running costs
+// and INASTI's company contribution in the lower band, 409.30, 50,000 pay at 7%, nothing kept, VVPRbis from the third distribution, the contributions paid by the
 // director, nothing prepaid by the company nor on the pay, and the pay withheld on as the key formula
 // says (decided 2026-10-20): 10,674.34, which leaves a surcharge under the minimum, so the pocket is
 // the 61,975.74 of a pay whose tax was withheld, and the 675.00 surcharge on the 10,000 of corporate

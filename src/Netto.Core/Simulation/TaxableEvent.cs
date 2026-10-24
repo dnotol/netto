@@ -7,6 +7,10 @@ public enum TaxableEvent
     // The company's profit after director pay, which corporate tax takes its share of.
     CompanyProfit,
 
+    // INASTI's yearly flat contribution every company owes, whatever it pays its director: a cost of the
+    // company it deducts, by the band of its balance-sheet total.
+    CompanyContribution,
+
     DirectorPay,
 
     Dividend,

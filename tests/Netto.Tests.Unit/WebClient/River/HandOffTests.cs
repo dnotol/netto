@@ -57,15 +57,16 @@ public class HandOffTests
             () => HandOff.Shared(year).ShouldBe(88_429.80m));
     }
 
-    // The first lever receives all the company earns before it pays its director anything, and the split
-    // shares the profit before pay with the royalty it pays beside the pay.
+    // The first lever receives all the company earns before it pays its director anything, once INASTI's
+    // company contribution is paid, and the split shares the profit before pay with the royalty it pays
+    // beside the pay.
     [Fact]
     public void BeforeAndShared_everyLever_areTheEnginesFigures()
     {
         var year = Year(Filled);
 
         (HandOff.Before(year, OptionalModule.Vouchers), HandOff.Shared(year))
-            .ShouldBe((year.Scenario.ProfitBeforeDirector, year.ProfitBeforePay + year.Copyright.Royalty));
+            .ShouldBe((year.Scenario.ProfitBeforeDirector - year.CompanyContribution, year.ProfitBeforePay + year.Copyright.Royalty));
     }
 
     // A module out of the plan takes nothing: the scenario hands the engine none of it.

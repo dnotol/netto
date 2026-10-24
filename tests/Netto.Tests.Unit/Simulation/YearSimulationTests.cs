@@ -13,8 +13,9 @@ using static Netto.Tests.Support.Fixtures;
 
 namespace Netto.Tests.Simulation;
 
-// Income year 2026 at a 7% municipal rate, for a made-up company with 100,000 of profit before pay
-// unless a test says otherwise. Director pay figures are GrossToNetTests' (50,000: contributions
+// Income year 2026 at a 7% municipal rate, for a made-up company with 100,000 of profit before pay,
+// once its running costs and INASTI's company contribution are paid (Fixtures), unless a test says
+// otherwise. Director pay figures are GrossToNetTests' (50,000: contributions
 // 8,293.36, income tax 11,333.96, surcharge 793.38, net 29,579.30); the company and dividend
 // figures follow CorporateTaxCalculatorTests and DividendCalculatorTests. The dividend is what the
 // profit after tax leaves once the reserve is kept in the company. The company prepays enough by
@@ -94,6 +95,7 @@ public class YearSimulationTests
 
         result.Steps.Select(step => (step.RuleKey, step.Layer, step.Event, step.Track, step.Amount)).ShouldBe(new[]
         {
+            ("company_contribution", Layer.Corporate, TaxableEvent.CompanyContribution, Track.TaxBaseOnly, 409.30m),
             ("corporate_tax", Layer.Corporate, TaxableEvent.CompanyProfit, Track.PaidOut, 10_000.00m),
             ("advance_payment_surcharge", Layer.Corporate, TaxableEvent.CompanyProfit, Track.PaidOut, 0m),
             ("social_contributions", Layer.Social, TaxableEvent.DirectorPay, Track.PaidOut, 8_293.36m),
@@ -326,7 +328,7 @@ public class YearSimulationTests
     public void Run_2026MealVouchersOn220Days_raiseTheTaxableIncomeByTheirDisallowedPartOverADeductibleCost()
     {
         var vouchers = Run(Scenario(directorPay: 50_000m, reserve: 0m, vouchers: MealVouchersOn220Days));
-        var deductibleCost = Run(Scenario(directorPay: 50_000m, reserve: 0m) with { RunningCosts = 21_960.20m });
+        var deductibleCost = Run(Scenario(directorPay: 50_000m, reserve: 0m) with { RunningCosts = RunningCosts + 1_960.20m });
 
         (vouchers.ProfitBeforePay - deductibleCost.ProfitBeforePay, vouchers.Company.TaxableIncome - deductibleCost.Company.TaxableIncome)
             .ShouldBe((0m, 1_080.20m));
@@ -379,15 +381,17 @@ public class YearSimulationTests
             .ShouldBe((50_120.00m, ReducedRateCondition.MinimumPayNotMet, 12_530.00m));
     }
 
-    // What reaches the pocket comes first, as the vouchers come before the pay, then what the company
-    // cannot deduct of them, the vouchers as the corporate layer taxes them.
+    // After what the company owes INASTI whatever it pays its director, what reaches the pocket comes
+    // first, as the vouchers come before the pay, then what the company cannot deduct of them, the
+    // vouchers as the corporate layer taxes them.
     [Fact]
     public void Run_2026Vouchers_putTheirStepsBeforeTheCorporateTaxWithTheirTags()
     {
         var result = Run(Scenario(directorPay: 50_000m, reserve: 0m, vouchers: AllVouchers));
 
-        result.Steps.Take(5).Select(step => (step.RuleKey, step.Layer, step.Event, step.Track, step.Amount)).ShouldBe(new[]
+        result.Steps.Take(6).Select(step => (step.RuleKey, step.Layer, step.Event, step.Track, step.Amount)).ShouldBe(new[]
         {
+            ("company_contribution", Layer.Corporate, TaxableEvent.CompanyContribution, Track.TaxBaseOnly, 409.30m),
             ("meal_vouchers", Layer.Personal, TaxableEvent.Vouchers, Track.InPocket, 1_960.20m),
             ("eco_vouchers", Layer.Personal, TaxableEvent.Vouchers, Track.InPocket, 250m),
             ("sport_culture_vouchers", Layer.Personal, TaxableEvent.Vouchers, Track.InPocket, 100m),
@@ -482,7 +486,7 @@ public class YearSimulationTests
     public void Run_2026Allowances_leaveTheCompanyAsADeductibleCostWould()
     {
         var allowances = Run(Scenario(directorPay: 50_000m, reserve: 0m, allowances: AllAllowances));
-        var deductibleCost = Run(Scenario(directorPay: 50_000m, reserve: 0m) with { RunningCosts = 23_018.44m });
+        var deductibleCost = Run(Scenario(directorPay: 50_000m, reserve: 0m) with { RunningCosts = RunningCosts + 3_018.44m });
 
         (allowances.ProfitBeforePay, allowances.Company.TaxableIncome, allowances.CorporateTax, allowances.ProfitAfterTax)
             .ShouldBe((deductibleCost.ProfitBeforePay, deductibleCost.Company.TaxableIncome, deductibleCost.CorporateTax, deductibleCost.ProfitAfterTax));
@@ -544,7 +548,7 @@ public class YearSimulationTests
     {
         var result = Run(Scenario(directorPay: 50_000m, reserve: 0m, vouchers: AllVouchers, allowances: AllAllowances));
 
-        result.Steps.Skip(4).Take(5).Select(step => (step.RuleKey, step.Layer, step.Event, step.Track, step.Amount)).ShouldBe(new[]
+        result.Steps.Skip(5).Take(5).Select(step => (step.RuleKey, step.Layer, step.Event, step.Track, step.Amount)).ShouldBe(new[]
         {
             ("office_allowance", Layer.Personal, TaxableEvent.ExpenseAllowances, Track.InPocket, 1_938.44m),
             ("internet_allowance", Layer.Personal, TaxableEvent.ExpenseAllowances, Track.InPocket, 240m),
@@ -694,6 +698,7 @@ public class YearSimulationTests
 
         result.Steps.Select(step => (step.RuleKey, step.Layer, step.Event, step.Track, step.Amount)).ShouldBe(new[]
         {
+            ("company_contribution", Layer.Corporate, TaxableEvent.CompanyContribution, Track.TaxBaseOnly, 409.30m),
             ("rent", Layer.Personal, TaxableEvent.Rent, Track.InPocket, 1_380.00m),
             ("rent_charges", Layer.Personal, TaxableEvent.Rent, Track.TaxBaseOnly, 552.00m),
             ("rent_taxable_income", Layer.Personal, TaxableEvent.Rent, Track.TaxBaseOnly, 828.00m),
@@ -1000,16 +1005,18 @@ public class YearSimulationTests
         (value, error).ShouldBe((null, YearSimulation.ReserveNegative));
     }
 
+    // 15,000 less the made-up company's 19,590.70 of running costs.
     [Fact]
     public void ProfitBeforeDirector_isTheRevenueLessTheRunningCosts()
     {
         var scenario = Scenario(directorPay: 50_000m, reserve: 0m, revenue: 15_000m);
 
-        scenario.ProfitBeforeDirector.ShouldBe(-5_000m);
+        scenario.ProfitBeforeDirector.ShouldBe(-4_590.70m);
     }
 
+    // And less the lower band's 409.30 of INASTI's company contribution.
     [Fact]
-    public void ProfitBeforePay_noVouchers_isTheRevenueLessTheRunningCosts()
+    public void ProfitBeforePay_noVouchers_isTheRevenueLessTheRunningCostsAndTheContribution()
     {
         YearSimulation.ProfitBeforePay(Scenario(directorPay: 50_000m, reserve: 0m, revenue: 15_000m)).ShouldBe(-5_000m);
     }

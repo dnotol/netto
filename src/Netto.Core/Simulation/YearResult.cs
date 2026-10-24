@@ -8,13 +8,15 @@ using Netto.Core.Vouchers;
 
 namespace Netto.Core.Simulation;
 
-// The year from the company's profit before pay, what the vouchers, the expense allowances, the rent
-// of a home office and a company car leave of what it earns, to the director's pocket. Corporate tax,
-// social contributions, personal tax, the rent's included, net in pocket, the vouchers, the allowances
-// and the rent in it and the car's contribution out of it, and what stays in the company add up to what
-// the company earns before it pays its director anything (Scenario.ProfitBeforeDirector), less what its
-// car costs it (Car.Costs), a cost of the company like its running costs, plus the profits kept from
-// earlier years; the corporate tax among them includes the surcharge the advance payments left. Rent
+// The year from the company's profit before pay, what INASTI's yearly company contribution, the
+// vouchers, the expense allowances, the rent of a home office and a company car leave of what it earns,
+// to the director's pocket. Corporate tax, social contributions, personal tax, the rent's included, net
+// in pocket, the vouchers, the allowances and the rent in it and the car's contribution out of it, and
+// what stays in the company add up to what the company earns before it pays its director anything
+// (Scenario.ProfitBeforeDirector), less the contribution it owes INASTI whatever it pays them
+// (CompanyContribution) and what its car costs it (Car.Costs), costs of the company like its running
+// costs, plus the profits kept from earlier years; the corporate tax among them includes the surcharge
+// the advance payments left. Rent
 // is the rent as the rules take it, Car the car, all zero without one; the pay's own figures are
 // DirectorPay's, the car's benefit taxed in them, and what the rent adds to the personal tax its
 // OtherIncomeTax. The disallowed expenses are what the company cannot deduct of what it pays the
@@ -27,6 +29,7 @@ namespace Netto.Core.Simulation;
 // following it.
 public sealed record YearResult(
     Scenario Scenario,
+    decimal CompanyContribution,
     decimal ProfitBeforePay,
     VoucherResult Vouchers,
     RentResult Rent,
@@ -46,6 +49,11 @@ public sealed record YearResult(
     decimal MaximumDividend,
     IReadOnlyList<Step> Steps)
 {
+    // What the company earns before it pays its director anything, once it has paid INASTI its yearly
+    // contribution: what the first lever receives, and what the river starts from before a car's costs
+    // and the profits kept from earlier years.
+    public decimal ProfitBeforeLevers => Money.Minus(Scenario.ProfitBeforeDirector, CompanyContribution);
+
     // What the split leaves the company once it bears the pay's cost, before its tax. Its taxable
     // income adds back the disallowed expenses.
     public decimal ProfitAfterPay => ProfitBeforePay - DirectorPay.CompanyCost;

@@ -50,8 +50,10 @@
     [Parameter]
     public Refusal? Refused { get; set; }
 
+    // What the company takes in, and what it earns once its running costs and INASTI's contribution
+    // are paid, before it pays its director anything.
     private string? Summary => Run.Year is { } year
-        ? L["Summary", Formats.Euros(year.Scenario.Revenue), Formats.Euros(year.Scenario.ProfitBeforeDirector)].Value
+        ? L["Summary", Formats.Euros(year.Scenario.Revenue), Formats.Euros(year.ProfitBeforeLevers)].Value
         : null;
 
     // Where the river starts, for the card's row in the river's outline.

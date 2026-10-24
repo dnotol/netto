@@ -22,7 +22,8 @@ namespace Netto.Core.Simulation;
 // allowances it pays them, the rent it pays for the part of their home it uses as an office, the car
 // it puts at their disposal and the copyright royalty it pays them, none unless given: an amount the
 // user fixes, or one that follows the pay, what an advance ruling accepts at each pay. The director
-// lives in Wallonia unless given another region, which has no rules yet.
+// lives in Wallonia unless given another region, which has no rules yet. The company's balance sheet is
+// in the lower band of INASTI's yearly company contribution unless given the upper one.
 public sealed record Scenario(
     int IncomeYear,
     decimal Revenue,
@@ -52,8 +53,11 @@ public sealed record Scenario(
 
     public CopyrightRoyalty Copyright { get; init; } = CopyrightRoyalty.None;
 
+    public CompanyContributionBand CompanyContributionBand { get; init; } = CompanyContributionBand.Lower;
+
     // What the company earns before it pays its director anything, pay, vouchers, expense allowances,
-    // rent, a car or a royalty. What the director pay and the company's profit share is what those
-    // levers leave of it (YearSimulation.ProfitBeforePay).
+    // rent, a car or a royalty, and before INASTI's yearly company contribution. What the director pay
+    // and the company's profit share is what the contribution and those levers leave of it
+    // (YearSimulation.ProfitBeforePay).
     public decimal ProfitBeforeDirector => Revenue - RunningCosts;
 }

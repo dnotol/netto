@@ -84,9 +84,6 @@
   <data name="LimitReserves" xml:space="preserve">
     <value>The company-law tests on what can be paid out, and the liquidation reserve: profits kept from earlier years are taken as ordinary retained earnings.</value>
   </data>
-  <data name="LimitCompanyContribution" xml:space="preserve">
-    <value>The company's yearly contribution to INASTI: count it in the running costs.</value>
-  </data>
   <data name="LimitDisallowed" xml:space="preserve">
     <value>Disallowed expenses other than the vouchers', and losses carried forward from earlier years.</value>
   </data>

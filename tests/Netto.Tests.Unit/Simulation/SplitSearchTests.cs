@@ -11,8 +11,9 @@ using static Netto.Tests.Support.Fixtures;
 namespace Netto.Tests.Simulation;
 
 // Income year 2026 at a 7% municipal rate, for YearSimulationTests' made-up company: 120,000 of
-// revenue and 20,000 of running costs, a small company past its first four tax periods, a VVPRbis
-// dividend from the third distribution, nothing kept unless a test says otherwise. Every level is
+// revenue, 19,590.70 of running costs and 409.30 of INASTI's company contribution, the lower band's,
+// a small company past its first four tax periods, a VVPRbis dividend from the third distribution,
+// nothing kept unless a test says otherwise. Every level is
 // YearSimulation's figure at that pay; the best pays were found by running the year at every euro
 // from 0 to the profit before pay (2026-10-19). On this company the net in pocket climbs to 20,799,
 // where it peaks, and jumps at 50,000, half the profit, where the reduced corporate rate is kept.
@@ -602,6 +603,24 @@ public class SplitSearchTests
         (value, error).ShouldBe((null, YearSimulation.RevenueNegative));
     }
 
+    // The upper band's 1,022.38 of INASTI's company contribution comes off before the split, 613.08 more
+    // than the lower band's: the split shares the 99,386.92 it leaves.
+    [Fact]
+    public void Run_2026UpperBand_drawsEveryPayFromNoneToTheProfitItLeaves()
+    {
+        var pays = Search(Scenario(band: CompanyContributionBand.Upper)).Curve.Select(level => level.Pay).ToList();
+
+        (pays[0], pays[^1]).ShouldBe((0m, 99_386.92m));
+    }
+
+    [Fact]
+    public void Run_2026UpperBand_eachLevelIsTheYearAtThatPayInThatBand()
+    {
+        var curve = Search(Scenario(band: CompanyContributionBand.Upper)).Curve;
+
+        curve.ShouldAllBe(level => level == LevelOf(level.Pay, 0m, null, null, ContributionsPaidBy.Director, null, null, null, CompanyContributionBand.Upper));
+    }
+
     [Fact]
     public void Run_unsupportedIncomeYear_isRefused()
     {
@@ -613,10 +632,10 @@ public class SplitSearchTests
     private static PayLevel LevelOf(
         decimal pay, decimal reserve, AdvancePayments? advancePayments = null, TaxPrepayments? taxPrepayments = null,
         ContributionsPaidBy paidBy = ContributionsPaidBy.Director, VoucherGrants? vouchers = null, ExpenseAllowances? allowances = null,
-        HomeOfficeRent? rent = null)
+        HomeOfficeRent? rent = null, CompanyContributionBand band = CompanyContributionBand.Lower)
     {
         var year = Run(Scenario(directorPay: pay, reserve: reserve, advancePayments: advancePayments, taxPrepayments: taxPrepayments, paidBy: paidBy,
-            vouchers: vouchers, allowances: allowances, rent: rent));
+            vouchers: vouchers, allowances: allowances, rent: rent, band: band));
 
         return new PayLevel(pay, year.NetInPocket, year.Dividend.Dividend, year.KeptInCompany, year.Company.Condition,
             year.MaximumDividend >= reserve);

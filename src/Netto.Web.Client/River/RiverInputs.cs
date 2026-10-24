@@ -54,7 +54,9 @@ public sealed record RiverInputs(
 
     // The example year the river opens on, every amount it gives labelled as such, so the whole river
     // runs at once, and every amount it holds none of naming no origin (decided unattended,
-    // 2026-10-23); the statuses and rates are the defaults a typical owner-director starts from.
+    // 2026-10-23); the statuses and rates are the defaults a typical owner-director starts from. Its
+    // running costs and INASTI's company contribution in the lower band make the 20,000 of costs it had
+    // when the contribution was counted in the running costs, so its figures stayed (2026-10-25).
     // Nothing is prepaid by the company nor on the pay, so the example shows the company's surcharge
     // and what cancels it; the pay is withheld on as the key formula says, what a real payslip shows
     // (decided 2026-10-20), so the withheld amount is derived and the example's year balance is what is
@@ -70,7 +72,7 @@ public sealed record RiverInputs(
     // cap, a status, until the user says otherwise.
     public static RiverInputs Example { get; } = new(
         ExampleYear,
-        new CompanyFigures(new Input<decimal>(120_000m, InputOrigin.Example), new Input<decimal>(20_000m, InputOrigin.Example)),
+        new CompanyFigures(new Input<decimal>(120_000m, InputOrigin.Example), new Input<decimal>(19_590.70m, InputOrigin.Example)),
         PlanComposition.None,
         new VoucherInputs(new Input<int>(0, InputOrigin.None), ExampleNothing, ExampleNothing),
         new AllowanceInputs(ExampleNothing, ExampleNothing, ExampleNothing, ExampleNothing),

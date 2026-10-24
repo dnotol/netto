@@ -54,7 +54,6 @@ internal static class PlanText
     public static IReadOnlyList<string> Limits { get; } =
     [
         "LimitReserves",
-        "LimitCompanyContribution",
         "LimitDisallowed",
         "LimitManagementFee",
     ];

@@ -4,8 +4,9 @@ namespace Netto.Web.Client.River;
 
 // What the bar of buckets draws from one run of the river: where the money ends up, out of what the
 // river starts from, what the company earns before it pays its director anything, pay, vouchers,
-// expense allowances, rent or a car, less what a car costs it (CarCosts), a cost of the company like its
-// running costs (operator, 2026-10-23), with the profits kept from earlier years or, with the company
+// expense allowances, rent or a car, less INASTI's yearly company contribution and what a car costs it
+// (CarCosts), costs of the company like its running costs (operator, 2026-10-23; decided 2026-10-25 for
+// the contribution), in no bucket, with the profits kept from earlier years or, with the company
 // skipped, what the pay costs the company, the gross plus the contributions it pays on the director's
 // behalf when it does (CompanyPaysContributions). The vouchers, the allowances and the rent are in the
 // pocket, the director's contribution to a car out of it, back in the company's profit. Taxes on pay
@@ -39,8 +40,9 @@ internal sealed record BucketsView(
 
     // What the river starts from once there is a year of the company, the one start every reach is out
     // of, the split's included (SplitSearchView): what the company earns before it pays its director
-    // anything, less what its car costs it, plus the profits kept from earlier years.
-    public static decimal StartOf(YearResult year) => year.Scenario.ProfitBeforeDirector - year.Car.Costs + year.Scenario.EarlierProfits;
+    // anything, less INASTI's company contribution and what its car costs it, plus the profits kept
+    // from earlier years.
+    public static decimal StartOf(YearResult year) => year.ProfitBeforeLevers - year.Car.Costs + year.Scenario.EarlierProfits;
 
     // What reaches the pocket out of what leaves the company, the start less what it keeps: the bar's
     // reach, and the split's at each pay. None where nothing leaves it.

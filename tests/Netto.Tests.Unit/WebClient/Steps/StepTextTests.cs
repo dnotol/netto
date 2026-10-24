@@ -167,6 +167,23 @@ public class StepTextTests
         MissingTexts(value.ShouldNotBeNull().Steps).ShouldBeEmpty();
     }
 
+    // INASTI's company contribution in each band, with the band's amount and the balance-sheet total
+    // between the two.
+    [Theory]
+    [InlineData(CompanyContributionBand.Lower)]
+    [InlineData(CompanyContributionBand.Upper)]
+    public void StepDetailsResx_everyKeyOfTheCompanyContributionsStep_hasAText(CompanyContributionBand band)
+    {
+        var scenario = Unprepaid(50_000m, WithholdingCategory.Standard) with { CompanyContributionBand = band };
+
+        var (value, _) = YearSimulation.Run(scenario);
+
+        var steps = value.ShouldNotBeNull().Steps.Where(step => step.Event == TaxableEvent.CompanyContribution).ToList();
+        steps.ShouldSatisfyAllConditions(
+            () => steps.ShouldNotBeEmpty(),
+            () => MissingTexts(steps).ShouldBeEmpty());
+    }
+
     // The pay slip lists steps of its own beside the engine's: a month's withholding for each period of
     // the year's rules, with the key formula's lines and the annex's amounts, and the balance on the
     // assessment.

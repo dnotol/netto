@@ -476,7 +476,7 @@ public class ModuleViewsTests
     public void CorporateTax_vouchers_listsWhatTheCompanyCannotDeductAmongItsSteps()
     {
         CorporateTax(AllVouchers).Details.Select(detail => detail.RuleKey)
-            .ShouldBe(["disallowed_vouchers", "corporate_tax", "advance_payment_surcharge"]);
+            .ShouldBe(["company_contribution", "disallowed_vouchers", "corporate_tax", "advance_payment_surcharge"]);
     }
 
     [Fact]
@@ -523,7 +523,7 @@ public class ModuleViewsTests
     [Fact]
     public void CorporateTax_example_listsOnlyTheCompanysSteps()
     {
-        CorporateTax(RiverInputs.Example).Details.Select(detail => detail.RuleKey).ShouldBe(["corporate_tax", "advance_payment_surcharge"]);
+        CorporateTax(RiverInputs.Example).Details.Select(detail => detail.RuleKey).ShouldBe(["company_contribution", "corporate_tax", "advance_payment_surcharge"]);
     }
 
     // 4.5% of 14,999.89 by 21 December, 674.99505, rounds to the 675 (what more by a deadline cancels it

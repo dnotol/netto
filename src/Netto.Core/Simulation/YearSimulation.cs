@@ -9,20 +9,21 @@ using Netto.Core.SocialContributions;
 namespace Netto.Core.Simulation;
 
 // One income year in the order the law computes it, folded over the levers in their order (LeverOrder):
-// what the company pays the director besides pay, or puts at their disposal, comes off what it earns,
-// each lever taking what the scenario gives it, which leaves the profit before pay the split shares;
-// each lever brings the pocket what its rules say, the company cannot deduct some of it, and it hands
-// the pay what is taxed with it, a rent's net, a car's benefit in kind, a royalty's movable income, whose
-// tax the year counts on the whole income (GrossToNet). The company's cost of the director pay, the gross
-// and the social contributions it pays on the director's behalf, lowers the company's taxable income,
-// what it cannot deduct of the levers joins it, corporate tax takes its share, with the surcharge the
-// advance payments did not cover, and the dividend is the profit after tax and the profits kept from
-// earlier years, less the reserve the user keeps in the company, never below zero. In steady state the
-// year pays out its own profit (decided 2026-10-19). No other disallowed expenses, no losses carried
-// forward, and INASTI's company contribution sits in the running costs. Each lever says what it does
-// through one contract (Lever, LeverYear), and the year reads a lever's result by its type only where
-// YearResult or PayLevel hands a card a typed result: the vouchers', the rent's, the car's and the
-// royalty's.
+// what the company earns, once it has paid INASTI the yearly contribution every company owes whatever it
+// pays its director (CompanyContributionRules, a cost it deducts like its running costs), is what the
+// levers start from; what the company pays the director besides pay, or puts at their disposal, comes
+// off it, each lever taking what the scenario gives it, which leaves the profit before pay the split
+// shares; each lever brings the pocket what its rules say, the company cannot deduct some of it, and it
+// hands the pay what is taxed with it, a rent's net, a car's benefit in kind, a royalty's movable
+// income, whose tax the year counts on the whole income (GrossToNet). The company's cost of the director
+// pay, the gross and the social contributions it pays on the director's behalf, lowers the company's
+// taxable income, what it cannot deduct of the levers joins it, corporate tax takes its share, with the
+// surcharge the advance payments did not cover, and the dividend is the profit after tax and the profits
+// kept from earlier years, less the reserve the user keeps in the company, never below zero. In steady
+// state the year pays out its own profit (decided 2026-10-19). No other disallowed expenses and no
+// losses carried forward. Each lever says what it does through one contract (Lever, LeverYear), and the
+// year reads a lever's result by its type only where YearResult or PayLevel hands a card a typed result:
+// the vouchers', the rent's, the car's and the royalty's.
 public static class YearSimulation
 {
     public static readonly Refusal IncomeYearNotSupported = GrossToNet.IncomeYearNotSupported;
@@ -35,7 +36,7 @@ public static class YearSimulation
     private const decimal Cent = 0.01m;
 
     public static (YearResult? Value, Refusal? Error) Run(Scenario scenario) =>
-        LeverOrder.For(scenario.IncomeYear) is { } levers ? Run(scenario, levers) : (null, IncomeYearNotSupported);
+        LeversFor(scenario.IncomeYear) is { } levers ? Run(scenario, levers) : (null, IncomeYearNotSupported);
 
     // The year over the levers given, in their order: the year's own (LeverOrder), or a test's.
     internal static (YearResult? Value, Refusal? Error) Run(Scenario scenario, IReadOnlyList<Lever> levers)
@@ -44,7 +45,8 @@ public static class YearSimulation
         var dividendRules = DividendRules.For(scenario.IncomeYear);
         var taxRules = PersonalTaxRules.For(scenario.IncomeYear, scenario.Region);
         var municipalRates = MunicipalRates.For(scenario.IncomeYear, scenario.Region);
-        if (corporateRules is null || dividendRules is null || taxRules is null || municipalRates is null)
+        var contributionRules = CompanyContributionRules.For(scenario.IncomeYear);
+        if (corporateRules is null || dividendRules is null || taxRules is null || municipalRates is null || contributionRules is null)
             return (null, IncomeYearNotSupported);
 
         scenario = AtPay(scenario, levers);
@@ -72,9 +74,12 @@ public static class YearSimulation
         var company = Company(scenario, corporateRules, dividendRules, besidesPay, pay.YearNetInPocket, pay.TaxablePayWithoutRequalified, pay.CompanyCost);
         var dividend = company.Dividend;
         var rate = dividendRules.Rate(scenario.DividendCategory);
+        var contribution = contributionRules.Contribution(scenario.CompanyContributionBand);
 
         IReadOnlyList<Step> steps =
         [
+            new Step("company_contribution", Layer.Corporate, TaxableEvent.CompanyContribution, Track.TaxBaseOnly, contribution.Value,
+                contributionRules.Source, [contribution, contributionRules.BalanceSheetThreshold]) { AlsoCites = [contributionRules.Law, contributionRules.Deduction] },
             .. besidesPay.Years.SelectMany(year => year.Steps()),
             new Step("corporate_tax", Layer.Corporate, TaxableEvent.CompanyProfit, Track.PaidOut, company.Tax.CorporateTax,
                 corporateRules.Source, corporateRules.Amounts) { AlsoCites = [corporateRules.PayTested, corporateRules.ExcessBenefitsMemorandum] },
@@ -90,6 +95,7 @@ public static class YearSimulation
 
         return (new YearResult(
             scenario,
+            contribution.Value,
             besidesPay.ProfitBeforePay,
             besidesPay.Of<VoucherYear>().Vouchers,
             besidesPay.Of<RentYear>().Rent,
@@ -111,12 +117,12 @@ public static class YearSimulation
     }
 
     // What the director pay and the company's profit share between them: what the company earns less
-    // what each lever takes off it, taken as given even while the rules refuse it, so the split keeps
-    // its place: a car once its catalogue value is given, and a royalty that follows the pay at what it
-    // comes to at the scenario's pay. The year runs with this very figure. Null for a year without the
-    // levers' rules.
+    // INASTI's company contribution and what each lever takes off it, taken as given even while the
+    // rules refuse it, so the split keeps its place: a car once its catalogue value is given, and a
+    // royalty that follows the pay at what it comes to at the scenario's pay. The year runs with this
+    // very figure. Null for a year without the levers' or the contribution's rules.
     public static decimal? ProfitBeforePay(Scenario scenario) =>
-        LeverOrder.For(scenario.IncomeYear) is { } levers ? ProfitBeforePay(scenario, levers) : null;
+        LeversFor(scenario.IncomeYear) is { } levers ? ProfitBeforePay(scenario, levers) : null;
 
     internal static decimal ProfitBeforePay(Scenario scenario, IReadOnlyList<Lever> levers) => Left(scenario, levers)[^1];
 
@@ -127,7 +133,7 @@ public static class YearSimulation
     // between no pay and all of it, which holds where the cap stops the royalty too. Taken as given even
     // while the rules refuse an amount, so the split keeps its place. Null for a year without rules.
     public static decimal? PayCeiling(Scenario scenario) =>
-        LeverOrder.For(scenario.IncomeYear) is { } levers ? PayCeiling(scenario, levers) : null;
+        LeversFor(scenario.IncomeYear) is { } levers ? PayCeiling(scenario, levers) : null;
 
     internal static decimal PayCeiling(Scenario scenario, IReadOnlyList<Lever> levers)
     {
@@ -167,7 +173,7 @@ public static class YearSimulation
     internal static PayLevel? Level(Scenario scenario)
     {
         if (CorporateTaxRules.For(scenario.IncomeYear) is not { } corporateRules || DividendRules.For(scenario.IncomeYear) is not { } dividendRules
-            || LeverOrder.For(scenario.IncomeYear) is not { } levers)
+            || LeversFor(scenario.IncomeYear) is not { } levers)
             return null;
 
         scenario = AtPay(scenario, levers);
@@ -200,7 +206,7 @@ public static class YearSimulation
     // pay. Null when not even the pay ceiling keeps it.
     internal static decimal? SmallestPayKeepingReducedRate(Scenario scenario)
     {
-        if (LeverOrder.For(scenario.IncomeYear) is not { } levers)
+        if (LeversFor(scenario.IncomeYear) is not { } levers)
             return null;
         if (!levers.Any(lever => lever.FollowsPay(scenario)))
             return SmallestPayWithLeversHeld(scenario, levers);
@@ -247,13 +253,25 @@ public static class YearSimulation
     // The scenario with what follows the pay set at the scenario's own pay, lever by lever.
     private static Scenario AtPay(Scenario scenario, IReadOnlyList<Lever> levers) => levers.Aggregate(scenario, (atPay, lever) => lever.AtPay(atPay));
 
-    // What the company earns, less what each lever takes off it as given, in their order: what is left
-    // before each lever, then, after the last, the profit before pay. The one walk the year, the profit
-    // before pay and the pay ceiling subtract the levers by.
+    // The year's levers in the law's order, or none for a year without their rules or without those of
+    // INASTI's company contribution, which comes off what the company earns before them.
+    private static IReadOnlyList<Lever>? LeversFor(int incomeYear) =>
+        CompanyContributionRules.For(incomeYear) is null ? null : LeverOrder.For(incomeYear);
+
+    // What the company owes INASTI for the year in the band the scenario declares, whatever it pays its
+    // director. Every entry point answers a year without its rules before anything asks for it.
+    private static RuleAmount ContributionOf(Scenario scenario) =>
+        CompanyContributionRules.For(scenario.IncomeYear)?.Contribution(scenario.CompanyContributionBand)
+        ?? throw new InvalidOperationException($"Income year {scenario.IncomeYear} has no company contribution rules: its entry point answers it first.");
+
+    // What the company earns once it has paid INASTI its yearly contribution, less what each lever takes
+    // off it as given, in their order: what is left before each lever, then, after the last, the profit
+    // before pay. The one walk the year, the profit before pay and the pay ceiling subtract the
+    // contribution and the levers by.
     private static decimal[] Left(Scenario scenario, IReadOnlyList<Lever> levers)
     {
         var left = new decimal[levers.Count + 1];
-        left[0] = scenario.ProfitBeforeDirector;
+        left[0] = Money.Minus(scenario.ProfitBeforeDirector, ContributionOf(scenario).Value);
         for (var i = 0; i < levers.Count; i++)
             left[i + 1] = left[i] - levers[i].FromProfit(scenario);
 

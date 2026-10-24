@@ -5,15 +5,16 @@ using Netto.Core.Vouchers;
 using Netto.Core.CorporateTax;
 using Netto.Core.PersonalTax;
 using Netto.Core.Simulation;
+using Netto.Core.SocialContributions;
 using Shouldly;
 using static Netto.Tests.Support.Fixtures;
 
 namespace Netto.Tests.Simulation;
 
-// The river's example year as its scenario (RiverInputsTests): 120,000 of revenue and 20,000 of
-// running costs, a small company past its first four tax periods, 50,000 of pay withheld on as the key
-// formula says, a 7% municipal rate, VVPRbis from the third distribution, nothing prepaid by the
-// company and nothing kept. It leaves 61,975.74 in the pocket; the split's best pay, 20,799, leaves
+// The river's example year as its scenario (RiverInputsTests): 120,000 of revenue, 19,590.70 of
+// running costs and 409.30 of INASTI's company contribution, a small company past its first four tax
+// periods, 50,000 of pay withheld on as the key formula says, a 7% municipal rate, VVPRbis from the
+// third distribution, nothing prepaid by the company and nothing kept. It leaves 61,975.74 in the pocket; the split's best pay, 20,799, leaves
 // 64,526.87 (SplitSearchViewTests, BucketsViewTests), 2,551.13 more.
 public class MoveSearchTests
 {
@@ -53,6 +54,22 @@ public class MoveSearchTests
         var plan = MoveSearch.Run(Today with { DirectorPay = 20_799m }, SplitOnly).Value.ShouldNotBeNull();
 
         (plan.Moves.Count, plan.Gain).ShouldBe((0, 0m));
+    }
+
+    // In the upper band the company owes INASTI 613.08 more before the split: the moves are measured from
+    // that year, each line between two runs of it, so they still sum to the plan's pocket less Today's.
+    [Fact]
+    public void Run_upperBand_measuresTheMovesFromThatBandsYear()
+    {
+        var today = Today with { CompanyContributionBand = CompanyContributionBand.Upper };
+
+        var plan = MoveSearch.Run(today, PayAndPayments(On22October)).Value.ShouldNotBeNull();
+
+        plan.ShouldSatisfyAllConditions(
+            () => plan.TodayInPocket.ShouldBe(Run(today).NetInPocket),
+            () => plan.Moves.ShouldNotBeEmpty(),
+            () => plan.Moves.ShouldAllBe(move => move.Before.CompanyContribution == 1_022.38m && move.After.CompanyContribution == 1_022.38m),
+            () => plan.Moves.Sum(move => move.Gain).ShouldBe(plan.Gain));
     }
 
     // One euro of pay from the best is worth less than a euro: not a move.

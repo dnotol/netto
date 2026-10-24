@@ -675,4 +675,19 @@
   <data name="Amount_copyright_flat_rate_costs_second_band" xml:space="preserve">
     <value>Ceiling of the second band</value>
   </data>
+  <data name="Title_company_contribution" xml:space="preserve">
+    <value>INASTI's company contribution</value>
+  </data>
+  <data name="Rule_company_contribution" xml:space="preserve">
+    <value>The flat contribution every company pays INASTI each year, whatever it pays you: the lower amount while the balance-sheet total of its penultimate closed financial year, as it stood on 1 January, is at most the threshold, the higher one above it. A cost of the company, like its running costs, which lowers its profit: the company deducts it as a professional cost.</value>
+  </data>
+  <data name="Amount_company_contribution_lower_band" xml:space="preserve">
+    <value>Contribution, balance-sheet total at most the threshold</value>
+  </data>
+  <data name="Amount_company_contribution_upper_band" xml:space="preserve">
+    <value>Contribution, balance-sheet total above the threshold</value>
+  </data>
+  <data name="Amount_balance_sheet_threshold" xml:space="preserve">
+    <value>Balance-sheet total between the two amounts</value>
+  </data>
 </root>

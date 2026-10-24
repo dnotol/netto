@@ -14,9 +14,10 @@ using static Netto.Tests.Support.Fixtures;
 
 namespace Netto.Tests.Support;
 
-// The made-up company the engine's tests share: 120,000 of revenue and 20,000 of running costs, a small
-// company past its first four tax periods, 50,000 of pay at a 7% municipal rate, a VVPRbis dividend from the
-// third distribution, nothing kept, enough prepaid and withheld to leave no surcharge, and no lever.
+// The made-up company the engine's tests share: 120,000 of revenue and 19,590.70 of running costs, its balance
+// sheet in INASTI's lower band, a small company past its first four tax periods, 50,000 of pay at a 7% municipal
+// rate, a VVPRbis dividend from the third distribution, nothing kept, enough prepaid and withheld to leave no
+// surcharge, and no lever.
 public class FixturesTests
 {
     [Fact]
@@ -26,7 +27,17 @@ public class FixturesTests
 
         (scenario.IncomeYear, scenario.Revenue, scenario.RunningCosts, scenario.Company, scenario.DirectorPay, scenario.MunicipalRate.Value, scenario.Reserve,
             scenario.DividendCategory, scenario.EarlierProfits, scenario.ContributionsPaidBy)
-            .ShouldBe((2026, 120_000m, 20_000m, SmallPastStartUp, 50_000m, 0.07m, 0m, WithholdingCategory.VvprbisThirdYearOnwards, 0m, ContributionsPaidBy.Director));
+            .ShouldBe((2026, 120_000m, 19_590.70m, SmallPastStartUp, 50_000m, 0.07m, 0m, WithholdingCategory.VvprbisThirdYearOnwards, 0m, ContributionsPaidBy.Director));
+    }
+
+    // Its running costs and the lower band's 409.30 of INASTI's company contribution are the 20,000 of costs
+    // that leave the 100,000 every engine test's figures start from.
+    [Fact]
+    public void Scenario_noArguments_isInTheLowerBandAndLeaves100000BeforeTheDirector()
+    {
+        var scenario = Scenario();
+
+        (scenario.CompanyContributionBand, YearSimulation.ProfitBeforePay(scenario)).ShouldBe((CompanyContributionBand.Lower, (decimal?)100_000m));
     }
 
     [Fact]
@@ -55,12 +66,13 @@ public class FixturesTests
         var scenario = Scenario(
             directorPay: 30_000m, reserve: 4_000m, revenue: 90_000m, company: company, category: WithholdingCategory.Standard, earlierProfits: 7_000m,
             advancePayments: AdvancePayments.None, taxPrepayments: TaxPrepayments.AsWithheld, paidBy: ContributionsPaidBy.Company,
-            vouchers: AllVouchers, allowances: FlatRateAllowances, rent: RentAtTheCap, car: ElectricCar, royalty: royalty);
+            vouchers: AllVouchers, allowances: FlatRateAllowances, rent: RentAtTheCap, car: ElectricCar, royalty: royalty, band: CompanyContributionBand.Upper);
 
         (scenario.DirectorPay, scenario.Reserve, scenario.Revenue, scenario.Company, scenario.DividendCategory, scenario.EarlierProfits, scenario.AdvancePayments,
-            scenario.TaxPrepayments, scenario.ContributionsPaidBy, scenario.Vouchers, scenario.Allowances, scenario.Rent, scenario.Car, scenario.Copyright)
+            scenario.TaxPrepayments, scenario.ContributionsPaidBy, scenario.Vouchers, scenario.Allowances, scenario.Rent, scenario.Car, scenario.Copyright,
+            scenario.CompanyContributionBand)
             .ShouldBe((30_000m, 4_000m, 90_000m, company, WithholdingCategory.Standard, 7_000m, AdvancePayments.None, TaxPrepayments.AsWithheld,
-                ContributionsPaidBy.Company, AllVouchers, FlatRateAllowances, RentAtTheCap, ElectricCar, royalty));
+                ContributionsPaidBy.Company, AllVouchers, FlatRateAllowances, RentAtTheCap, ElectricCar, royalty, CompanyContributionBand.Upper));
     }
 
     // The engine tests take the river's example as its scenario rather than through the client, so this is
