@@ -163,13 +163,14 @@ public class BucketBarTextTests
         BucketBarText.Reach(view).ShouldBe(key);
     }
 
-    // The reach's bubble says what it is out of: the running costs and a car's costs are left out.
+    // The reach's bubble says what it is out of: the running costs, INASTI's company contribution and a
+    // car's costs are left out.
     [Fact]
-    public void BucketBarResx_reachMeaning_saysACarsCostsAreLeftOutLikeTheRunningCosts()
+    public void BucketBarResx_reachMeaning_saysTheContributionAndACarsCostsAreLeftOutLikeTheRunningCosts()
     {
         Resources.Get(BucketBarText.ReachMeaning).ShouldBe(
             "Your pocket, out of what the river starts from less what the company keeps at year end, which is still yours. "
-            + "Running costs and a company car's costs are left out: the company spends them, they are not taxes.");
+            + "Running costs, INASTI's yearly company contribution and a company car's costs are left out: they are costs of the company, whatever it pays you.");
     }
 
     // What the river starts from, each way it can: the profit before what the company pays the director,

@@ -58,7 +58,7 @@
     <value>Of what the company does not keep, [{0} reaches you], {1} goes to contributions and taxes.</value>
   </data>
   <data name="ReachMeaning" xml:space="preserve">
-    <value>Your pocket, out of what the river starts from less what the company keeps at year end, which is still yours. Running costs and a company car's costs are left out: the company spends them, they are not taxes.</value>
+    <value>Your pocket, out of what the river starts from less what the company keeps at year end, which is still yours. Running costs, INASTI's yearly company contribution and a company car's costs are left out: they are costs of the company, whatever it pays you.</value>
   </data>
   <data name="Refused" xml:space="preserve">
     <value>No figures until the amount marked below is corrected.</value>
