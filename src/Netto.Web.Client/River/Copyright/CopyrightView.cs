@@ -51,12 +51,16 @@ internal sealed record CopyrightView(
     }
 }
 
-// The plan with its royalty against the same plan without it, at the pay set: what reaches the pocket
-// in each, and what goes to taxes on pay and on profit, as the bar of buckets draws each plan
-// (BucketsView). Without the royalty the company keeps it, its tax and the dividend's take their share,
-// and what is left reaches the pocket as the dividend. Gain is what the royalty leaves in the pocket
-// more. Two runs of the year, the second the river with the royalty out of the plan; none until a
-// royalty counts, or while the engine refuses an amount.
+// The plan with its royalty against the same plan without it, at the pay the plan with it runs at: what
+// reaches the pocket in each, and what goes to taxes on pay and on profit, as the bar of buckets draws
+// each plan (BucketsView). Without the royalty the company keeps it, its tax and the dividend's take
+// their share, and what is left reaches the pocket as the dividend. Gain is what the royalty leaves in
+// the pocket more. Two runs of the year, the second the river with the royalty out of the plan. That
+// pay is the pay set unless the company cannot pay so much beside the royalty (YearSimulation.PayCeiling,
+// a fixed royalty's as well as one that follows the pay): the river with the royalty holds it there,
+// but the river without it would pay all of it, so the second run is given the first's pay, or the gain
+// would be the pay's as well as the royalty's. PayHeld says so, the pay both plans run at, only then.
+// None until a royalty counts, or while the engine refuses an amount.
 internal sealed record CopyrightComparison(
     decimal PocketWith,
     decimal PocketWithout,
@@ -65,18 +69,26 @@ internal sealed record CopyrightComparison(
     decimal TaxesOnProfitWith,
     decimal TaxesOnProfitWithout)
 {
+    // The pay both plans run at when the pay set is held below, none otherwise.
+    public decimal? PayHeld { get; init; }
+
     public decimal Gain => Difference(PocketWith, PocketWithout);
 
     public static CopyrightComparison? From(RiverInputs inputs, RiverRun run)
     {
-        if (run.Error is not null || run.Year is not { Scenario.Copyright.Any: true })
+        if (run.Error is not null || run.Year is not { Scenario.Copyright.Any: true } year)
             return null;
-        if (BucketsView.From(run) is not { } with || BucketsView.From(inputs.TakeOutOfPlan(OptionalModule.Copyright).Run()) is not { } without)
+
+        // The river without the royalty is the river's own run, so a car or a rent in the plan is in it
+        // as in the other, at the pay the run with the royalty took.
+        var pay = year.Scenario.DirectorPay;
+        if (BucketsView.From(run) is not { } with
+            || BucketsView.From(inputs.TakeOutOfPlan(OptionalModule.Copyright).WithDirectorPay(pay).Run()) is not { } without)
             return null;
 
         return new CopyrightComparison(
             with.AmountOf("pocket"), without.AmountOf("pocket"), with.AmountOf("taxes_on_pay"), without.AmountOf("taxes_on_pay"),
-            with.AmountOf("taxes_on_profit"), without.AmountOf("taxes_on_profit"));
+            with.AmountOf("taxes_on_profit"), without.AmountOf("taxes_on_profit")) { PayHeld = pay < inputs.DirectorPay.Value ? pay : null };
     }
 
     // A plain zero when the two are the same, never a negative one.

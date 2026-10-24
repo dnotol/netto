@@ -17,6 +17,15 @@ public class CopyrightViewTests
 
     internal static readonly RiverInputs Beyond = RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithRoyalty(30_000m);
 
+    // 100,000 before pay and royalty, a royalty that follows the pay at 75% of the working time creating
+    // and a pay set at 90,000: a ruling accepts 18.75% of the 100,000 the two share, so the company pays
+    // 81,250 beside a royalty of 18,750, and the pay set is held there (YearSimulation.PayCeiling).
+    internal static readonly RiverInputs FollowingHeld = RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithCreativeShare(0.75m).WithDirectorPay(90_000m);
+
+    // The same case with the royalty fixed at what the other one comes to: the pay is held at the 81,250
+    // the company has left beside it.
+    internal static readonly RiverInputs FixedHeld = RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithRoyalty(18_750m).WithDirectorPay(90_000m);
+
     // Added without a share, the royalty follows the pay and is none: nothing to drain, and no steps to
     // list.
     [Fact]
@@ -176,6 +185,80 @@ public class CopyrightViewTests
         comparison.ShouldBe(new CopyrightComparison(
             with.AmountOf("pocket"), without.AmountOf("pocket"), with.AmountOf("taxes_on_pay"), without.AmountOf("taxes_on_pay"),
             with.AmountOf("taxes_on_profit"), without.AmountOf("taxes_on_profit")));
+    }
+
+    // A pay set above what the company can pay beside the royalty is held there in the plan with it, but
+    // the river without it would pay all of it (RiverInputs.PayUsed): the comparison sets the plan without
+    // the royalty at the pay the plan with it runs at, so that what differs is the royalty alone. The
+    // royalty follows the pay or is fixed, the pay held either way.
+    public static TheoryData<string, RiverInputs> PayHeld => new()
+    {
+        { "a royalty that follows the pay", FollowingHeld },
+        { "a fixed royalty", FixedHeld },
+    };
+
+    [Theory]
+    [MemberData(nameof(PayHeld))]
+    public void Comparison_payAboveWhatTheCompanyCanPayBesideTheRoyalty_comparesTwoYearsAtThePayWithTheRoyaltyRuns(string _, RiverInputs inputs)
+    {
+        var with = inputs.Run().Year.ShouldNotBeNull();
+        var withoutAtThePaySet = inputs.TakeOutOfPlan(OptionalModule.Copyright).Run().Year.ShouldNotBeNull();
+        var without = inputs.TakeOutOfPlan(OptionalModule.Copyright).WithDirectorPay(with.Scenario.DirectorPay).Run().Year.ShouldNotBeNull();
+
+        var comparison = CopyrightComparison.From(inputs, inputs.Run()).ShouldNotBeNull();
+
+        comparison.ShouldSatisfyAllConditions(
+            () => (with.Scenario.DirectorPay, with.Copyright.Royalty, withoutAtThePaySet.Scenario.DirectorPay).ShouldBe((81_250m, 18_750m, 90_000m)),
+            () => without.Scenario.DirectorPay.ShouldBe(with.Scenario.DirectorPay),
+            () => (comparison.PocketWith, comparison.PocketWithout).ShouldBe((with.NetInPocket, without.NetInPocket)),
+            () => comparison.Gain.ShouldBe(with.NetInPocket - without.NetInPocket),
+            () => comparison.PocketWithout.ShouldNotBe(withoutAtThePaySet.NetInPocket),
+            () => comparison.PayHeld.ShouldBe(81_250m));
+    }
+
+    // The pay set within what the company can pay beside the royalty, or exactly at it, is the pay of
+    // both plans, as it was: the comparison is the river with and without the royalty, no pay held.
+    public static TheoryData<string, RiverInputs> PayNotHeld => new()
+    {
+        { "a fixed royalty at the example's pay", Within },
+        { "a royalty that follows the pay at the example's pay", RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithCreativeShare(0.75m) },
+        { "a royalty that follows the pay at exactly the pay it allows", FollowingHeld.WithDirectorPay(81_250m) },
+        { "a fixed royalty at exactly the pay it allows", FixedHeld.WithDirectorPay(81_250m) },
+    };
+
+    [Theory]
+    [MemberData(nameof(PayNotHeld))]
+    public void Comparison_payWithinWhatTheCompanyCanPayBesideTheRoyalty_isTheRiverWithAndWithoutItAndHoldsNoPay(string _, RiverInputs inputs)
+    {
+        var with = BucketsView.From(inputs.Run()).ShouldNotBeNull();
+        var without = BucketsView.From(inputs.TakeOutOfPlan(OptionalModule.Copyright).Run()).ShouldNotBeNull();
+
+        var comparison = CopyrightComparison.From(inputs, inputs.Run()).ShouldNotBeNull();
+
+        comparison.ShouldBe(new CopyrightComparison(
+            with.AmountOf("pocket"), without.AmountOf("pocket"), with.AmountOf("taxes_on_pay"), without.AmountOf("taxes_on_pay"),
+            with.AmountOf("taxes_on_profit"), without.AmountOf("taxes_on_profit")));
+    }
+
+    // The plan without the royalty is the river's own, at the pay held: a car and a rent in the plan are in
+    // both runs, and both sides are the bar's buckets for each plan.
+    [Fact]
+    public void Comparison_payHeldWithACarAndARent_keepsThemInBothPlans()
+    {
+        var inputs = FollowingHeld.AddToPlan(OptionalModule.Rent).WithCadastralIncome(1_200m).WithShareLet(0.12m).WithRent(1_380m)
+            .AddToPlan(OptionalModule.Car).WithCatalogueValue(50_000m).WithFirstRegistration(new DateOnly(2026, 1, 10)).WithCarCosts(8_000m);
+        var year = inputs.Run().Year.ShouldNotBeNull();
+        var without = inputs.TakeOutOfPlan(OptionalModule.Copyright).WithDirectorPay(year.Scenario.DirectorPay).Run();
+        var bars = (With: BucketsView.From(inputs.Run()).ShouldNotBeNull(), Without: BucketsView.From(without).ShouldNotBeNull());
+
+        var comparison = CopyrightComparison.From(inputs, inputs.Run()).ShouldNotBeNull();
+
+        comparison.ShouldSatisfyAllConditions(
+            () => year.Scenario.DirectorPay.ShouldBeLessThan(90_000m),
+            () => (without.Year.ShouldNotBeNull().Car.Costs > 0m, without.Year.Rent.Rent > 0m).ShouldBe((true, true)),
+            () => comparison.ShouldBe(new CopyrightComparison(
+                bars.With.AmountOf("pocket"), bars.Without.AmountOf("pocket"), bars.With.AmountOf("taxes_on_pay"), bars.Without.AmountOf("taxes_on_pay"),
+                bars.With.AmountOf("taxes_on_profit"), bars.Without.AmountOf("taxes_on_profit")) { PayHeld = year.Scenario.DirectorPay }));
     }
 
     // With the royalty in the plan, the rent passes on to the split what the pay and the royalty share
