@@ -255,11 +255,16 @@ else
     }
 
     // A plan opened from Plans: the river shows it, and while no plan is starred « Today » the moves are
-    // measured from it.
+    // measured from it. It replaces the river and is no edit of it, so no module was taken out: a notice
+    // would speak of a river that is gone, its Undo would add the module to the plan just opened and leave
+    // it with unsaved changes, and one already showing goes with the river it was about. Nothing takes the
+    // focus to Undo, so it stays where Plans left it.
     private void OnPlanOpened(RiverInputs plan)
     {
         _moves.Opened(plan);
-        OnInputsChanged(plan);
+        _takenOut = null;
+        State.Inputs = plan;
+        Show(plan);
     }
 
     private void OpenComposition() => _composition.Open();
