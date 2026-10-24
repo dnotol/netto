@@ -49,4 +49,11 @@ public sealed record YearResult(
     // What the split leaves the company once it bears the pay's cost, before its tax. Its taxable
     // income adds back the disallowed expenses.
     public decimal ProfitAfterPay => ProfitBeforePay - DirectorPay.CompanyCost;
+
+    // Whether the most the year can pay out covers the reserve the user keeps in the company.
+    public bool KeepsReserve => ReserveKept(MaximumDividend, Scenario.Reserve);
+
+    // The one rule the year, the split's search at each pay (PayLevel) and the moves read: the reserve
+    // is kept while the most the company can pay out reaches it.
+    internal static bool ReserveKept(decimal maximumDividend, decimal reserve) => maximumDividend >= reserve;
 }

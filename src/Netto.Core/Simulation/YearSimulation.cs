@@ -192,7 +192,7 @@ public static class YearSimulation
 
         var company = Company(scenario, corporateRules, dividendRules, besidesPay, pay.YearNetInPocket, pay.TaxablePayWithoutRequalified, pay.CompanyCost);
         return new PayLevel(scenario.DirectorPay, company.NetInPocket, company.Dividend.Dividend, company.KeptInCompany, company.Tax.Condition,
-            company.MaximumDividend >= scenario.Reserve) { Royalty = besidesPay.Copyright.Royalty };
+            YearResult.ReserveKept(company.MaximumDividend, scenario.Reserve)) { Royalty = besidesPay.Copyright.Royalty };
     }
 
     // The smallest director pay, as the split moves it, that keeps the reduced corporate rate out of the

@@ -226,7 +226,7 @@ internal sealed record SplitSearchView(PayCurveView Curve, BestPayView? Best, Ra
             ? new BestPayView(
                 level,
                 level.NetInPocket - year.NetInPocket,
-                year.MaximumDividend >= inputs.Reserve.Value,
+                year.KeepsReserve,
                 Shares.Of(level.NetInPocket, start - level.KeptInCompany))
             : null;
 

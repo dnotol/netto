@@ -158,7 +158,7 @@ public static class MoveSearch
             .OfType<Move>()
             .Select(move => (Move: move, After: move.Apply(current)))
             .Select(candidate => (candidate.Move, candidate.After, Year: YearSimulation.Run(candidate.After).Value))
-            .Where(candidate => candidate.Year is { } after && after.MaximumDividend >= candidate.After.Reserve)
+            .Where(candidate => candidate.Year is { KeepsReserve: true })
             .Select(candidate => (candidate.Move, candidate.After, Year: candidate.Year!))
             .Select(candidate => (candidate.Move, candidate.After, candidate.Year, Gain: candidate.Year.NetInPocket - inPocket))
             .Where(candidate => candidate.Gain >= SmallestGain)
