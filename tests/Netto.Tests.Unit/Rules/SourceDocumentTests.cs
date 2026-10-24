@@ -20,13 +20,11 @@ public class SourceDocumentTests
         .Where(type => type.GetMethod("For", BindingFlags.Public | BindingFlags.Static, [typeof(int)])?.ReturnType == type)
         .ToList();
 
-    private static readonly IReadOnlyList<int> Years = Enumerable.Range(2000, 101).ToList();
-
     // The income years a year's steps can run for: those every layer has rules for. A step cites a
     // source that is not a year's own (PersonalTaxRules.IncomeTaxScale, DividendRules.ExemptionRefund),
     // so that source must hold for each of these years: today 2026 alone.
-    private static readonly IReadOnlyList<int> StepYears = Years
-        .Where(year => RuleTypes.All(type => RuleSet(type, year) is not null))
+    private static readonly IReadOnlyList<int> StepYears = RuleSets.Years
+        .Where(year => RuleTypes.All(type => RuleSets.For(type, year) is not null))
         .ToList();
 
     [Fact]
@@ -48,11 +46,9 @@ public class SourceDocumentTests
     {
         var citations =
             from type in RuleTypes
-            from year in Years
-            let rules = RuleSet(type, year)
-            where rules is not null
-            from citation in Citations(rules, $"{type.Name} {year}")
-            select (citation.Path, Problem: Documents.Problem(citation.Source, year));
+            from set in RuleSets.Of(type)
+            from citation in Citations(set.Rules, $"{type.Name} {set.Year}")
+            select (citation.Path, Problem: Documents.Problem(citation.Source, set.Year));
 
         Problems(citations).ShouldBeEmpty();
     }
@@ -90,9 +86,6 @@ public class SourceDocumentTests
                 : $"{group.First().Path} and {group.Count() - 1} more: {group.Key}")
             .ToList();
 
-    private static object? RuleSet(Type type, int year) =>
-        type.GetMethod("For", BindingFlags.Public | BindingFlags.Static, [typeof(int)])!.Invoke(null, [year]);
-
     // Every source a rule set holds, through its amounts, its lists (the scale, the municipalities)
     // and the records of Netto.Core inside it (LowEarnedIncomeCreditRules), with the path to it.
     private static IEnumerable<(string Path, Source Source)> Citations(object? value, string path) => value switch
@@ -101,9 +94,7 @@ public class SourceDocumentTests
         Source source => [(path, source)],
         RuleAmount amount => [($"{path} ({amount.Key})", amount.Source)],
         IEnumerable items => items.Cast<object?>().SelectMany((item, index) => Citations(item, $"{path}[{index}]")),
-        _ when value.GetType().Assembly == Core => value.GetType()
-            .GetProperties(BindingFlags.Public | BindingFlags.Instance)
-            .Where(property => property.GetIndexParameters().Length == 0)
+        _ when value.GetType().Assembly == Core => RuleSets.Properties(value.GetType())
             .SelectMany(property => Citations(property.GetValue(value), $"{path}.{property.Name}")),
         _ => [],
     };

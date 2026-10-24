@@ -1,4 +1,3 @@
-using System.Reflection;
 using Netto.Core.CorporateTax;
 using Netto.Core.DirectorPay;
 using Netto.Core.PersonalTax;
@@ -16,15 +15,13 @@ namespace Netto.Tests.Rules;
 // and deadlines are records of their own, listed through their rule set (Scale, Deadlines), and not walked.
 public class RuleAmountListTests
 {
-    private static readonly IReadOnlyList<int> Years = Enumerable.Range(2000, 101).ToList();
-
     public static TheoryData<Type> RuleTypes => new() { typeof(SocialContributionRules), typeof(PersonalTaxRules), typeof(CorporateTaxRules), typeof(WithholdingRules) };
 
     [Theory]
     [MemberData(nameof(RuleTypes))]
     public void Amounts_everyAmountOfEveryYearsRules_isInOneOfItsLists(Type ruleType)
     {
-        var sets = RuleSets(ruleType).ToList();
+        var sets = RuleSets.Of(ruleType).ToList();
 
         var unlisted = sets.SelectMany(set => Unlisted(set.Rules).Select(amount => $"{ruleType.Name} {set.Year}: {amount}")).ToList();
 
@@ -41,23 +38,11 @@ public class RuleAmountListTests
     [InlineData(typeof(WithholdingRules), new[] { "WithholdingRules" })]
     public void Records_ruleSet_areItAndItsNestedRulesRecords(Type ruleType, string[] expected)
     {
-        var (_, rules) = RuleSets(ruleType).First();
+        var (_, rules) = RuleSets.Of(ruleType).First();
 
         var records = Records(rules).Select(record => record.GetType().Name);
 
         records.ShouldBe(expected);
-    }
-
-    // Each income year's rules the type has: For(year) for the years SourceDocumentTests reads.
-    private static IEnumerable<(int Year, object Rules)> RuleSets(Type ruleType)
-    {
-        var forYear = ruleType.GetMethod("For", BindingFlags.Public | BindingFlags.Static, [typeof(int)])
-            ?? throw new InvalidOperationException($"{ruleType.Name} has no For(int).");
-        foreach (var year in Years)
-        {
-            if (forYear.Invoke(null, [year]) is { } rules)
-                yield return (year, rules);
-        }
     }
 
     // The amounts the rule set and its nested rules records hold that none of their lists holds.
@@ -73,7 +58,7 @@ public class RuleAmountListTests
     private static IEnumerable<object> Records(object record) =>
     [
         record,
-        .. Properties(record)
+        .. RuleSets.Properties(record.GetType())
             .Where(property => property.PropertyType.Name.EndsWith("Rules", StringComparison.Ordinal) && property.PropertyType.Assembly == typeof(RuleAmount).Assembly)
             .Select(property => property.GetValue(record))
             .OfType<object>()
@@ -83,7 +68,7 @@ public class RuleAmountListTests
     // The amounts the record holds itself.
     private static IEnumerable<(string Name, RuleAmount Amount)> Held(object record)
     {
-        foreach (var property in Properties(record))
+        foreach (var property in RuleSets.Properties(record.GetType()))
         {
             if (property.PropertyType == typeof(RuleAmount) && property.GetValue(record) is RuleAmount amount)
                 yield return (property.Name, amount);
@@ -92,10 +77,7 @@ public class RuleAmountListTests
 
     // The amounts its lists name: Amounts, and every list whose name ends in Amounts.
     private static IEnumerable<RuleAmount> Lists(object record) =>
-        Properties(record)
+        RuleSets.Properties(record.GetType())
             .Where(property => property.Name.EndsWith("Amounts", StringComparison.Ordinal) && typeof(IEnumerable<RuleAmount>).IsAssignableFrom(property.PropertyType))
             .SelectMany(property => property.GetValue(record) as IEnumerable<RuleAmount> ?? []);
-
-    private static IEnumerable<PropertyInfo> Properties(object record) =>
-        record.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(property => property.GetIndexParameters().Length == 0);
 }

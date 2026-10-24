@@ -1,17 +1,21 @@
-using System.Xml.Linq;
+using Netto.Web.Client.River;
 using Shouldly;
 
 namespace Netto.Tests.WebClient;
 
 // A key a .razor file reads its text by, misspelt or left without its text, shows on the page as the key
 // itself, and a static render only meets the branches it draws. So every literal key of every .razor file
-// under src (RazorKeys) is held to the .resx of the component its localizer is injected for, read as the
-// XML it is: a text in a refusal's branch or a dialog the tests never open is held too.
+// under src (RazorKeys) is held to the .resx of the component its localizer is injected for, as the client
+// embeds it (ResxText): a text in a refusal's branch or a dialog the tests never open is held too.
 public class RazorLocalizationTests
 {
     private static readonly string Sources =
         Path.GetDirectoryName(Path.GetDirectoryName(RepositoryFile.FindUp("src", "Netto.Web.Client", "Netto.Web.Client.csproj")))
         ?? throw new InvalidOperationException("The client's csproj has no src folder above it.");
+
+    // Every .resx the client embeds, by the component it is named after: the last part of its base name.
+    private static readonly ILookup<string, ResxText> Resources =
+        ResxText.InAssembly(typeof(BucketBar).Assembly).ToLookup(texts => texts.BaseName.Split('.')[^1]);
 
     public static TheoryData<string, string[]> Readings => new()
     {
@@ -42,7 +46,7 @@ public class RazorLocalizationTests
     {
         var components = RazorFiles().SelectMany(file => RazorKeys.Localizers(file.Text)).Select(localizer => localizer.Component).Distinct().ToList();
 
-        var withoutOne = components.Where(component => ResxFiles(component).Count != 1).ToList();
+        var withoutOne = components.Where(component => Resources[component].Count() != 1).ToList();
 
         components.Count.ShouldBeGreaterThan(30);
         withoutOne.ShouldBeEmpty();
@@ -52,7 +56,7 @@ public class RazorLocalizationTests
     public void RazorFiles_everyLiteralKey_hasATextInItsComponentsResx()
     {
         var keys = RazorFiles().SelectMany(file => RazorKeys.Keys(file.Text).Select(key => (file.Name, key.Component, key.Key))).ToList();
-        var texts = keys.Select(key => key.Component).Distinct().ToDictionary(component => component, TextKeys);
+        var texts = keys.Select(key => key.Component).Distinct().ToDictionary(component => component, KeysOf);
 
         var missing = keys.Where(key => !texts[key.Component].Contains(key.Key)).Select(key => $"{key.Name}: {key.Component}[\"{key.Key}\"]").ToList();
 
@@ -63,14 +67,10 @@ public class RazorLocalizationTests
     private static IEnumerable<(string Name, string Text)> RazorFiles() =>
         SourceFiles("*.razor").Select(file => (Path.GetRelativePath(Sources, file), File.ReadAllText(file)));
 
-    private static List<string> ResxFiles(string component) => [.. SourceFiles($"{component}.resx")];
-
-    // The keys the component's .resx holds a text under, read as XML: an empty set where it has none, so
-    // every key of it reads as missing.
-    private static HashSet<string> TextKeys(string component) =>
-        ResxFiles(component) is [var resx]
-            ? [.. XDocument.Load(resx).Root?.Elements("data").Select(data => (string?)data.Attribute("name")).OfType<string>() ?? []]
-            : [];
+    // The keys the component's one .resx holds a text under: none where it has no .resx or more than one,
+    // so every key of it reads as missing.
+    private static HashSet<string> KeysOf(string component) =>
+        Resources[component].ToList() is [var texts] ? [.. texts.Keys] : [];
 
     private static IEnumerable<string> SourceFiles(string pattern) =>
         Directory.EnumerateFiles(Sources, pattern, SearchOption.AllDirectories)
