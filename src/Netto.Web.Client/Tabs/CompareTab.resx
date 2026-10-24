@@ -54,6 +54,9 @@
   <data name="Row_personal_tax" xml:space="preserve">
     <value>Personal tax</value>
   </data>
+  <data name="Row_company_contribution" xml:space="preserve">
+    <value>INASTI company contribution</value>
+  </data>
   <data name="Row_vouchers" xml:space="preserve">
     <value>Vouchers</value>
   </data>

@@ -9,8 +9,9 @@ namespace Netto.Web.Client.Tabs;
 // says for that plan. Every row is the engine's own figure for each plan and what separates them, the
 // second plan's less the first's; none is a rule of its own. The year's result first (what the bar
 // draws), then the taxes layer by layer in the law's order, read from the ledger's steps so a river that
-// starts at the pay has them too, then what the company pays besides the pay, which comes off its profit
-// before the split, and the split itself. A row neither plan has a figure for is not drawn, and a group
+// starts at the pay has them too, then what comes off the company's profit before the split, INASTI's
+// company contribution, a cost of the company in no layer's taxes, and what it pays besides the pay, and
+// the split itself. A row neither plan has a figure for is not drawn, and a group
 // without a row is not a group.
 internal static class CompareRows
 {
@@ -34,6 +35,7 @@ internal static class CompareRows
             ])),
             new CompareGroup("before_split", Drawn(
             [
+                Row("company_contribution", Company(plan, ContributionOf), Company(against, ContributionOf)),
                 Row("vouchers", Lever(plan, OptionalModule.Vouchers, year => year.Vouchers.Total), Lever(against, OptionalModule.Vouchers, year => year.Vouchers.Total)),
                 Row("allowances", Lever(plan, OptionalModule.Allowances, year => AllowanceView.From(year, plan.Inputs.Composition).Total),
                     Lever(against, OptionalModule.Allowances, year => AllowanceView.From(year, against.Inputs.Composition).Total)),
@@ -104,6 +106,9 @@ internal static class CompareRows
     private static CompareFigure PocketOf(ComparedPlan column) => Money(column.Buckets!.AmountOf("pocket"));
 
     private static decimal KeptOf(ComparedPlan column) => column.Buckets!.AmountOf("kept_in_company");
+
+    // What the company owes INASTI whatever it pays its director, read only of a plan with a year of the company.
+    private static decimal ContributionOf(ComparedPlan column) => column.Run.Year!.CompanyContribution;
 
     private static CompareFigure Share(ComparedPlan column) => CompareFigure.Share(column.Buckets!.Reach);
 

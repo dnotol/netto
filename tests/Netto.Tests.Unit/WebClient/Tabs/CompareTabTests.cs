@@ -76,7 +76,7 @@ public class CompareTabTests
 
         var table = Between(html, "<table", "</table>");
         (Regex.Count(table, "<th scope=\"col\""), Regex.Count(table, "<th scope=\"rowgroup\""), Regex.Count(table, "<th scope=\"row\""))
-            .ShouldBe((4, 3, 10));
+            .ShouldBe((4, 4, 11));
     }
 
     [Fact]
@@ -164,13 +164,15 @@ public class CompareTabTests
         (row.Contains("Not in this plan"), row.Contains("€8,000.00"), row.Contains("€8,000.00 more")).ShouldBe((true, true, true));
     }
 
-    // The rows and groups the plans do not have are not drawn.
+    // The rows the plans do not have are not drawn: before the split, two plans without a lever hold only
+    // what the company owes INASTI.
     [Fact]
-    public async Task Compare_noLever_drawsNoGroupForThem()
+    public async Task Compare_noLever_drawsNoRowForThem()
     {
         var html = await RenderTabAsync(Saved(RiverInputs.Example, BestPay));
 
-        (html.Contains("Before the split"), html.Contains("Company car costs"), html.Contains("The split")).ShouldBe((false, false, true));
+        (html.Contains("Before the split"), html.Contains("INASTI company contribution"), html.Contains("Company car costs"), html.Contains("The split"))
+            .ShouldBe((true, true, false, true));
     }
 
     // The bar is the river's only announcement: the comparison changes when the viewer picks, silently.

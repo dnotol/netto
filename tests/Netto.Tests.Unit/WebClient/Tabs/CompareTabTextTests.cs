@@ -28,7 +28,7 @@ public class CompareTabTextTests
         var keys = groups.Select(group => CompareTabText.Group(group.Key)).Concat(groups.SelectMany(group => group.Rows).Select(row => CompareTabText.Row(row.Key)));
 
         keys.Where(key => Resources.Get(key) is null).ShouldBeEmpty();
-        (groups.Count, groups.SelectMany(group => group.Rows).Count()).ShouldBe((4, 15));
+        (groups.Count, groups.SelectMany(group => group.Rows).Count()).ShouldBe((4, 16));
     }
 
     [Fact]

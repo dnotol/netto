@@ -271,13 +271,38 @@ public class CompareRowsTests
         ]);
     }
 
-    // A lever neither plan has is no row, and a group without a row is no group.
+    // A lever neither plan has is no row, and a group without a row is no group: before the split, two
+    // plans without a lever have only what the company owes INASTI whatever it pays its director.
     [Fact]
-    public void Groups_noLeverInEitherPlan_havenoBeforeTheSplitGroup()
+    public void Groups_noLeverInEitherPlan_haveOnlyTheContributionBeforeTheSplit()
     {
         var view = Compare(RiverInputs.Example, BestPay);
 
-        view.Groups.Select(group => group.Key).ShouldBe(["result", "taxes", "split"]);
+        view.ShouldSatisfyAllConditions(
+            () => view.Groups.Select(group => group.Key).ShouldBe(["result", "taxes", "before_split", "split"]),
+            () => view.Groups.Single(group => group.Key == "before_split").Rows.Select(row => row.Key).ShouldBe(["company_contribution"]));
+    }
+
+    // INASTI's company contribution comes off what the company earns before the split: the lower band's
+    // 409.30 against the upper band's 1,022.38, 613.08 more.
+    [Fact]
+    public void Rows_companyContribution_isWhatEachPlansBandOwes()
+    {
+        var row = Row(Compare(RiverInputs.Example, RiverInputs.Example.WithCompanyContributionBand(Netto.Core.SocialContributions.CompanyContributionBand.Upper)),
+            "company_contribution");
+
+        (row.Plan, row.Against, row.Difference).ShouldBe((CompareFigure.Money(409.30m), CompareFigure.Money(1_022.38m), new CompareDifference(DifferenceKind.More, 613.08m)));
+    }
+
+    // It is a cost of the company, in no layer's taxes: the taxes of the two bands differ only by the
+    // corporate tax the larger contribution saves.
+    [Fact]
+    public void Rows_companyContribution_isInNoLayersTaxes()
+    {
+        var upper = RiverInputs.Example.WithCompanyContributionBand(Netto.Core.SocialContributions.CompanyContributionBand.Upper);
+        var view = Compare(RiverInputs.Example, upper);
+
+        AmountOf(view, view.Against!, "taxes").ShouldBe(upper.Run().Year!.Steps.Where(step => step.Track == Track.PaidOut).Sum(step => step.Amount));
     }
 
     [Fact]
