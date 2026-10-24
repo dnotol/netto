@@ -5,8 +5,9 @@ using Shouldly;
 namespace Netto.Tests.WebClient.River;
 
 // Saved plans outlive the code (PlanStorage). When this test fails, the river's inputs changed
-// shape: give PlanStorage the new input, raise PlanStorage.Version, decide how a plan saved by the
-// version before reads (refused, or read with the new input's own origin), then update the shape here.
+// shape: give PlanStorage the new input, raise PlanStorage.Version, write the patch that brings a plan
+// saved by the version before to it (the new member as frozen JSON with its own origin, or the plan
+// refused), add the new version's document to StoredPlanDocuments, then update the shape here.
 // The exceptions so far: the car's engine, CO2, order date and statuses joined version 2 without
 // raising it, since version 2 had not left the car's story branch (operator, 2026-10-22); the rest of
 // the copyright royalty's story, its attestation du travail des arts and its creative share, joins
