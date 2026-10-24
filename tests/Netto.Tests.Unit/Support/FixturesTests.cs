@@ -30,12 +30,20 @@ public class FixturesTests
     }
 
     [Fact]
-    public void Scenario_noArguments_prepaysAndWithholdsEnoughToLeaveNoSurchargeAndHasNoLever()
+    public void Scenario_noArguments_prepaysAndWithholdsEnoughToLeaveNoSurcharge()
     {
         var scenario = Scenario();
 
-        (scenario.AdvancePayments, scenario.TaxPrepayments, scenario.Vouchers, scenario.Allowances, scenario.Rent, scenario.Car, scenario.Copyright)
-            .ShouldBe((Prepaid, Withheld, VoucherGrants.None, ExpenseAllowances.None, HomeOfficeRent.None, CarFacts.None, CopyrightRoyalty.None));
+        (scenario.AdvancePayments, scenario.TaxPrepayments).ShouldBe((Prepaid, Withheld));
+    }
+
+    [Fact]
+    public void Scenario_noArguments_hasNoLever()
+    {
+        var scenario = Scenario();
+
+        (scenario.Vouchers, scenario.Allowances, scenario.Rent, scenario.Car, scenario.Copyright)
+            .ShouldBe((VoucherGrants.None, ExpenseAllowances.None, HomeOfficeRent.None, CarFacts.None, CopyrightRoyalty.None));
     }
 
     [Fact]
@@ -58,7 +66,7 @@ public class FixturesTests
     // The engine tests take the river's example as its scenario rather than through the client, so this is
     // where they would drift from it: the example moves, this fails, and the numbers they hold are decided again.
     [Fact]
-    public void RiverExample_isTheScenarioTheRiversExampleRuns()
+    public void Scenario_riverExample_matchesWhatTheRiverRuns()
     {
         RiverExample.ShouldBe(RiverInputs.Example.MoveScenario());
     }
@@ -66,7 +74,7 @@ public class FixturesTests
     // The year no rule set has rules for. When one is published, this fails and the constant moves on, with the
     // tests that hold every rule set to it.
     [Fact]
-    public void UnsupportedIncomeYear_isRefusedByTheYearSimulation()
+    public void Run_unsupportedIncomeYear_isRefusedByTheYearSimulation()
     {
         YearSimulation.Run(Scenario() with { IncomeYear = UnsupportedIncomeYear }).Error.ShouldBe(YearSimulation.IncomeYearNotSupported);
     }
