@@ -55,6 +55,13 @@ public class TestSupportTests
         Declaring(@"InlineData\(\s*2027\s*\)|IncomeYear\s*=\s*2027\b").ShouldBeEmpty();
     }
 
+    // A clock standing in for the browser's: a TimeProvider that answers the instant it was given.
+    [Fact]
+    public void TestSources_clocks_areDefinedOnlyInSupport()
+    {
+        Declaring(@"\bclass\s+\w+[^{;]*:\s*[^{;]*\bTimeProvider\b").ShouldBeEmpty();
+    }
+
     // The test sources outside Support, and this file, whose patterns would match themselves.
     private static IEnumerable<(string Name, string Text)> Sources() =>
         Directory.EnumerateFiles(Folder, "*.cs", SearchOption.AllDirectories)

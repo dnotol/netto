@@ -244,11 +244,4 @@ internal static class CardHtml
         public bool Has(string cssClass) =>
             Attributes.GetValueOrDefault("class") is { } classes && classes.Split(' ', StringSplitOptions.RemoveEmptyEntries).Contains(cssClass);
     }
-
-    private sealed class Clock(DateTimeOffset now) : TimeProvider
-    {
-        public override DateTimeOffset GetUtcNow() => now;
-
-        public override TimeZoneInfo LocalTimeZone => TimeZoneInfo.Utc;
-    }
 }

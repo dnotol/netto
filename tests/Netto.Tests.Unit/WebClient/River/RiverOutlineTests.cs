@@ -228,11 +228,4 @@ public class RiverOutlineTests
             services.AddSingleton<TimeProvider>(new Clock(On23October));
         }));
     }
-
-    private sealed class Clock(DateTimeOffset now) : TimeProvider
-    {
-        public override DateTimeOffset GetUtcNow() => now;
-
-        public override TimeZoneInfo LocalTimeZone => TimeZoneInfo.Utc;
-    }
 }

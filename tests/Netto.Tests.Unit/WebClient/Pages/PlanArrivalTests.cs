@@ -124,11 +124,4 @@ public class PlanArrivalTests
         protected override void NavigateToCore(string uri, NavigationOptions options) =>
             throw new InvalidOperationException($"The page navigated to {uri}.");
     }
-
-    private sealed class Clock(DateTimeOffset now) : TimeProvider
-    {
-        public override DateTimeOffset GetUtcNow() => now;
-
-        public override TimeZoneInfo LocalTimeZone => TimeZoneInfo.Utc;
-    }
 }
