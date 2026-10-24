@@ -9,15 +9,16 @@ namespace Netto.Core.DirectorPay;
 // the director declares, is the gross plus them, and so is CompanyCost, what the pay takes out of the
 // company. Both are the gross itself when the director pays. BenefitInKind is a benefit taxed as pay
 // and never paid, a company car's, nothing without one: it is in TaxablePay, never in CompanyCost nor
-// in NetInPocket. Steps is the ledger of the year's rules on the pay; Statement, the pay as the director sees it month by month, and Assessment, the balance
-// the year's tax return leaves, are records beside the ledger, not steps. The pay's figures, its
-// taxes, its credit, its net and its steps, are the pay's taken alone; OtherIncomeTax is what the
-// income taxed with it adds to the year's tax, and the year's figures, AdvancePayments with its
-// suggested payment, NextThousand and Assessment, are on the whole income. RequalifiedPay is movable
-// income taxed as pay, paid besides the payslip: in TaxablePay, the pay's taxes and its net, never in
-// CompanyCost nor in the statement's withholding; TaxablePayWithoutRequalified is the taxable pay as it
-// would be without it, what art. 215's minimum pay reads. TaxedApartTax is what an income taxed apart
-// adds to the year's tax on top of the pay and the rent.
+// in NetInPocket. Steps is the ledger of the year's rules on the pay; Statement, the pay as the
+// director sees it month by month, and Assessment, the balance the year's tax return leaves, are
+// records beside the ledger, not steps. The pay's figures, its taxes, its credit, its net and its
+// steps, are the pay's taken alone; OtherIncomeTax is what the income taxed with it adds to the year's
+// tax, and the year's figures, AdvancePayments with its suggested payment, NextThousand and Assessment,
+// are on the whole income. RequalifiedPay is movable income taxed as pay, paid besides the payslip: in
+// TaxablePay, the pay's taxes and its net, never in CompanyCost nor in the statement's withholding;
+// TaxablePayWithoutRequalified is the taxable pay as it would be without it, what art. 215's minimum
+// pay reads. TaxedApartTax is what an income taxed apart adds to the year's tax on top of the pay and
+// the rent.
 public sealed record GrossToNetResult(
     int IncomeYear,
     decimal GrossPay,
@@ -38,13 +39,14 @@ public sealed record GrossToNetResult(
     NextThousand NextThousand,
     PayStatement Statement,
     Assessment Assessment,
-    OtherIncomeTax OtherIncomeTax)
+    OtherIncomeTax OtherIncomeTax,
+    decimal RequalifiedPay,
+    decimal TaxablePayWithoutRequalified,
+    OtherIncomeTax TaxedApartTax)
 {
-    public decimal RequalifiedPay { get; init; }
-
-    public decimal TaxablePayWithoutRequalified { get; init; }
-
-    public OtherIncomeTax TaxedApartTax { get; init; } = OtherIncomeTax.None;
+    // What the pay leaves once the tax the other income adds and the tax apart are paid too, those
+    // incomes themselves aside: the year's net the pocket starts from.
+    public decimal YearNetInPocket => NetInPocket - OtherIncomeTax.Total - TaxedApartTax.Total;
 }
 
 // What another income taxed with the pay, a home office's net rent (Income), adds to the year's

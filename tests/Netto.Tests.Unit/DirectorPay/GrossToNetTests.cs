@@ -647,6 +647,16 @@ public class GrossToNetTests
         (result.OtherIncomeTax, result.OtherIncomeTax.Total).ShouldBe((new OtherIncomeTax(828.00m, 372.60m, 26.08m, 0m, 0m), 398.68m));
     }
 
+    // The pay's own 29,579.30 less the rent's 398.68 of tax, the rent itself aside: what the year's
+    // pocket starts from.
+    [Fact]
+    public void Compute_2026Gross50000AndOtherIncome828_leavesThePayItsNetLessTheRentsTax()
+    {
+        var result = Compute2026(50_000m, Withheld, 828.00m);
+
+        (result.NetInPocket, result.YearNetInPocket).ShouldBe((29_579.30m, 29_180.62m));
+    }
+
     // What the other income moves not at all is a plain zero: a negative one would read as money
     // coming back. The river's example withholds as the key formula says, where the surcharge falls
     // under the minimum with or without the rent.
@@ -679,6 +689,20 @@ public class GrossToNetTests
 
         (result.OtherIncomeTax, result.AdvancePayments.Base, result.AdvancePayments.Surcharge)
             .ShouldBe((new OtherIncomeTax(2_000.00m, 799.99m, 56.00m, 195.81m, 7.93m), 2_829.27m, 114.59m));
+    }
+
+    // What cancels that surcharge by each deadline is measured on the same year: the pay's 3,342.89 of
+    // tax less the 714.19 of credit the total leaves, not the pay's own 910.
+    [Fact]
+    public void Compute_2026Gross27000AndOtherIncome2000NothingWithheld_givesThePaymentsThatCancelTheYearsSurcharge()
+    {
+        var result = Compute2026(27_000m, TaxPrepayments.None, 2_000.00m);
+
+        var onTheYear = IncomeTaxAdvancePaymentCalculator.Compute(
+            PersonalTaxRules.IncomeYear2026.AdvancePayments, 3_342.89m, 910m - 195.81m, new TaxPrepayments(0m, AdvancePayments.None));
+
+        result.IncomeTax.ShouldBe(3_342.89m);
+        result.AdvancePayments.TopUps.ShouldBe(onTheYear.TopUps);
     }
 
     // The pay's own surcharge step stays what the pay alone leaves; the rest is the other income's.
@@ -732,7 +756,8 @@ public class GrossToNetTests
     [Fact]
     public void Compute_negativeZeroOtherIncome_isNoOtherIncome()
     {
-        var (value, error) = GrossToNet.Compute(2026, 50_000m, MunicipalRates.IncomeYear2026.Entered(0.07m), Withheld, ContributionsPaidBy.Director, decimal.Negate(0m));
+        var (value, error) = GrossToNet.Compute(
+            2026, 50_000m, MunicipalRates.IncomeYear2026.Entered(0.07m), Withheld, ContributionsPaidBy.Director, new TaxedWithPay { OtherIncome = decimal.Negate(0m) });
 
         (error, value?.OtherIncomeTax).ShouldBe((null, OtherIncomeTax.None));
     }
@@ -741,7 +766,8 @@ public class GrossToNetTests
     [Fact]
     public void Compute_negativeOtherIncome_isACallersBug()
     {
-        Should.Throw<ArgumentOutOfRangeException>(() => GrossToNet.Compute(2026, 50_000m, MunicipalRates.IncomeYear2026.Entered(0.07m), Withheld, ContributionsPaidBy.Director, -0.01m));
+        Should.Throw<ArgumentOutOfRangeException>(() => GrossToNet.Compute(
+            2026, 50_000m, MunicipalRates.IncomeYear2026.Entered(0.07m), Withheld, ContributionsPaidBy.Director, new TaxedWithPay { OtherIncome = -0.01m }));
     }
 
     [Fact]
@@ -794,7 +820,8 @@ public class GrossToNetTests
 
     private static GrossToNetResult Compute2026(decimal grossPay, TaxPrepayments prepayments, decimal otherIncome = 0m)
     {
-        var (value, error) = GrossToNet.Compute(2026, grossPay, MunicipalRates.IncomeYear2026.Entered(0.07m), prepayments, ContributionsPaidBy.Director, otherIncome);
+        var (value, error) = GrossToNet.Compute(
+            2026, grossPay, MunicipalRates.IncomeYear2026.Entered(0.07m), prepayments, ContributionsPaidBy.Director, new TaxedWithPay { OtherIncome = otherIncome });
 
         error.ShouldBeNull();
         return value.ShouldNotBeNull();

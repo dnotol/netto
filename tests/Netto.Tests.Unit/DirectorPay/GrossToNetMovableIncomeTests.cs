@@ -170,6 +170,16 @@ public class GrossToNetMovableIncomeTests
         (both.OtherIncomeTax, both.TaxedApartTax.Income).ShouldBe((rentAlone.OtherIncomeTax, 10_000m));
     }
 
+    // What the pay leaves once the rent's tax and the tax apart are paid too: the year's figure the
+    // pocket starts from, the two incomes themselves aside.
+    [Fact]
+    public void Compute_rentAndPartTaxedApart_leaveThePayItsNetLessWhatEachAdds()
+    {
+        var both = Compute(50_000m, ContributionsPaidBy.Director, Withheld, Movable(apart: 10_000m), otherIncome: 828m);
+
+        both.YearNetInPocket.ShouldBe(both.NetInPocket - both.OtherIncomeTax.Total - both.TaxedApartTax.Total);
+    }
+
     [Fact]
     public void Compute_withoutMovableIncome_recordsNone()
     {
@@ -184,7 +194,8 @@ public class GrossToNetMovableIncomeTests
     public void Compute_negativePartTaxedAsPay_isABug()
     {
         Should.Throw<ArgumentOutOfRangeException>(() =>
-            GrossToNet.Compute(2026, 50_000m, MunicipalRates.IncomeYear2026.Entered(0.07m), Withheld, ContributionsPaidBy.Director, 0m, 0m, Movable(asPay: -0.01m)));
+            GrossToNet.Compute(
+                2026, 50_000m, MunicipalRates.IncomeYear2026.Entered(0.07m), Withheld, ContributionsPaidBy.Director, new TaxedWithPay { Movable = Movable(asPay: -0.01m) }));
     }
 
     private static MovableIncomePaid Movable(decimal asPay = 0m, decimal apart = 0m, decimal withheld = 0m) =>
@@ -193,7 +204,9 @@ public class GrossToNetMovableIncomeTests
     private static GrossToNetResult Compute(
         decimal grossPay, ContributionsPaidBy paidBy, TaxPrepayments prepayments, MovableIncomePaid? movable = null, decimal otherIncome = 0m)
     {
-        var (value, error) = GrossToNet.Compute(2026, grossPay, MunicipalRates.IncomeYear2026.Entered(0.07m), prepayments, paidBy, otherIncome, 0m, movable);
+        var (value, error) = GrossToNet.Compute(
+            2026, grossPay, MunicipalRates.IncomeYear2026.Entered(0.07m), prepayments, paidBy,
+            new TaxedWithPay { OtherIncome = otherIncome, Movable = movable ?? MovableIncomePaid.None });
 
         error.ShouldBeNull();
         return value.ShouldNotBeNull();

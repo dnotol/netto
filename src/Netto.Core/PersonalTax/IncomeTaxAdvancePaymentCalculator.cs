@@ -8,9 +8,14 @@ namespace Netto.Core.PersonalTax;
 // is GrossToNet's to derive from the pay before it comes here.
 public static class IncomeTaxAdvancePaymentCalculator
 {
-    public static IncomeTaxAdvancePaymentResult Compute(IncomeTaxAdvancePaymentRules rules, decimal totalTax, decimal taxCredits, TaxPrepayments prepayments)
+    public static IncomeTaxAdvancePaymentResult Compute(IncomeTaxAdvancePaymentRules rules, decimal totalTax, decimal taxCredits, TaxPrepayments prepayments) =>
+        WithTopUps(rules, Figures(rules, totalTax, taxCredits, prepayments), totalTax, taxCredits, prepayments);
+
+    // The figures of that tax (Figures) with, by each deadline, the smallest payment more that leaves no
+    // surcharge due: for a caller that has the figures already, as GrossToNet has the year's.
+    internal static IncomeTaxAdvancePaymentResult WithTopUps(
+        IncomeTaxAdvancePaymentRules rules, IncomeTaxAdvancePaymentResult figures, decimal totalTax, decimal taxCredits, TaxPrepayments prepayments)
     {
-        var figures = Figures(rules, totalTax, taxCredits, prepayments);
         var topUps = prepayments.Paid.ByDeadline
             .Select((_, deadline) => figures.Surcharge == 0m ? 0m : TopUp(rules, totalTax, taxCredits, prepayments, figures.SurchargeBeforeCredits, deadline))
             .ToList();

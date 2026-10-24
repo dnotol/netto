@@ -70,14 +70,11 @@ public static class YearSimulation
             return (null, besidesPayError);
 
         var (pay, payError) = GrossToNet.Compute(
-            scenario.IncomeYear, scenario.DirectorPay, scenario.MunicipalRate, scenario.TaxPrepayments, scenario.ContributionsPaidBy, besidesPay.Rent.NetRent,
-            besidesPay.Benefits.TaxedAsPay, besidesPay.Movable);
+            scenario.IncomeYear, scenario.DirectorPay, scenario.MunicipalRate, scenario.TaxPrepayments, scenario.ContributionsPaidBy, besidesPay.TaxedWithPay);
         if (pay is null)
             return (null, payError);
 
-        var company = Company(
-            scenario, corporateRules, dividendRules, besidesPay, pay.NetInPocket - pay.OtherIncomeTax.Total - pay.TaxedApartTax.Total, pay.TaxablePayWithoutRequalified,
-            pay.CompanyCost);
+        var company = Company(scenario, corporateRules, dividendRules, besidesPay, pay.YearNetInPocket, pay.TaxablePayWithoutRequalified, pay.CompanyCost);
         var dividend = company.Dividend;
         var rate = dividendRules.Rate(scenario.DividendCategory);
 
@@ -185,8 +182,7 @@ public static class YearSimulation
         if (BesidesPayOf(scenario, levers).Value is not { } besidesPay)
             return null;
         if (GrossToNet.Level(
-                scenario.IncomeYear, scenario.DirectorPay, scenario.MunicipalRate.Value, scenario.TaxPrepayments, scenario.ContributionsPaidBy, besidesPay.Rent.NetRent,
-                besidesPay.Benefits.TaxedAsPay, besidesPay.Movable)
+                scenario.IncomeYear, scenario.DirectorPay, scenario.MunicipalRate.Value, scenario.TaxPrepayments, scenario.ContributionsPaidBy, besidesPay.TaxedWithPay)
             is not { } pay)
             return null;
 
@@ -484,6 +480,8 @@ public static class YearSimulation
         public BenefitInKind Benefits => Car.BenefitInKind;
 
         public MovableIncomePaid Movable => Copyright.MovableIncome;
+
+        public TaxedWithPay TaxedWithPay => new() { OtherIncome = Rent.NetRent, BenefitInKind = Benefits.TaxedAsPay, Movable = Movable };
 
         public decimal Total => Vouchers.Total + Allowances.Total + Rent.Rent + Movable.PaidApart;
 

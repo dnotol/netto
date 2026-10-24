@@ -620,7 +620,8 @@ public class GrossToNetViewTests
     [Fact]
     public void From_gross50000WithARoyaltyWithinItsLimits_balanceSaysTheRoyaltysTaxAndWithholding()
     {
-        var (pay, _) = GrossToNet.Compute(2026, 50_000m, MunicipalRates.IncomeYear2026.Entered(0.07m), Withheld, ContributionsPaidBy.Director, 0m, 0m, Royalty10000());
+        var (pay, _) = GrossToNet.Compute(
+            2026, 50_000m, MunicipalRates.IncomeYear2026.Entered(0.07m), Withheld, ContributionsPaidBy.Director, new TaxedWithPay { Movable = Royalty10000() });
         var balance = GrossToNetView.From(pay!).Balance;
 
         (balance.OnTaxedApart, balance.WithheldBesidesPay).ShouldBe((pay!.TaxedApartTax.Total, 1_500m));
@@ -647,7 +648,9 @@ public class GrossToNetViewTests
         decimal grossPay, TaxPrepayments prepayments, ContributionsPaidBy paidBy = ContributionsPaidBy.Director, decimal otherIncome = 0m, decimal benefit = 0m,
         MovableIncomePaid? movable = null)
     {
-        var (value, error) = GrossToNet.Compute(2026, grossPay, MunicipalRates.IncomeYear2026.Entered(0.07m), prepayments, paidBy, otherIncome, benefit, movable);
+        var (value, error) = GrossToNet.Compute(
+            2026, grossPay, MunicipalRates.IncomeYear2026.Entered(0.07m), prepayments, paidBy,
+            new TaxedWithPay { OtherIncome = otherIncome, BenefitInKind = benefit, Movable = movable ?? MovableIncomePaid.None });
 
         error.ShouldBeNull();
         return GrossToNetView.From(value.ShouldNotBeNull());
