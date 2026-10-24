@@ -58,4 +58,40 @@ public class SocialContributionCalculatorTests
 
         contributions.ShouldBe(4 * 5_103.05m);
     }
+
+    // The fund's fee rides on each quarter it bills (AR n° 38, art. 20 §4, perceived as the contributions
+    // are): at the minimum, 3.05% of 890.42 is 27.15781, billed 27.16, so 108.64 a year, where 3.05% of the
+    // year's 3,561.68 rounded once would give 108.63.
+    [Fact]
+    public void Fee_rateOnTheMinimum_isTheRateOnEachBilledQuarterRoundedToTheCent()
+    {
+        var fee = SocialContributionCalculator.Fee(4 * 890.42m, 0.0305m);
+
+        fee.ShouldBe(4 * 27.16m);
+    }
+
+    // 3.05% of a quarter of 2,050.00 is 62.525, billed 62.53: 250.12 a year, not the 250.10 of 8,200.00.
+    [Fact]
+    public void Fee_rateInTheFirstBand_roundsEachQuarterHalfAwayFromZero()
+    {
+        var fee = SocialContributionCalculator.Fee(8_200.00m, 0.0305m);
+
+        fee.ShouldBe(4 * 62.53m);
+    }
+
+    [Fact]
+    public void Fee_noRate_isNothing()
+    {
+        var fee = SocialContributionCalculator.Fee(8_200.00m, null);
+
+        (fee, decimal.IsNegative(fee)).ShouldBe((0m, false));
+    }
+
+    [Fact]
+    public void Fee_rateOfNothing_isNothing()
+    {
+        var fee = SocialContributionCalculator.Fee(8_200.00m, 0m);
+
+        (fee, decimal.IsNegative(fee)).ShouldBe((0m, false));
+    }
 }

@@ -10,6 +10,12 @@ public static class SocialContributionCalculator
 
     internal static decimal Billed(decimal unroundedAnnual) => YearParts.Quarters * Money.RoundToCent(unroundedAnnual / YearParts.Quarters);
 
+    // The social insurance fund's management fee on the year's billed contributions: its rate, as the
+    // user gives it, on each of the four quarters it bills with them, rounded to the cent (AR n° 38,
+    // art. 20 §4: perceived and recovered as the contributions are). Nothing without a rate.
+    public static decimal Fee(decimal annualContributions, decimal? rate) =>
+        rate is { } fundRate and not 0m ? YearParts.Quarters * Money.RoundToCent(fundRate * annualContributions / YearParts.Quarters) : 0m;
+
     // The exact yearly amount before billing, for the gross-to-net fixed point, which has to be
     // solved without rounding (see GrossToNet).
     internal static decimal Unrounded(SocialContributionRules rules, decimal incomeBase)
