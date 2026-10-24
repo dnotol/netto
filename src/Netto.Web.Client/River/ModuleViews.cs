@@ -133,15 +133,17 @@ internal sealed record RentView(
 }
 
 // Where a lever before the split passes on what it leaves: the next one in the plan down the river, or
-// the split once none is left, as a drain's destination.
+// the split once none is left, as a drain's destination. A module that is neither the split nor named
+// here, a lever added without its destination, is refused rather than passed on to the split.
 internal static class NextModule
 {
     public static string After(OptionalModule module, PlanComposition composition) => composition.NextAfter(module) switch
     {
+        null => "split",
         OptionalModule.Allowances => "allowances",
         OptionalModule.Rent => "rent",
         OptionalModule.Car => "car",
-        _ => "split",
+        var next => throw new ArgumentOutOfRangeException(nameof(composition), next, "A module no lever passes on to."),
     };
 
     // What the last lever before the split passes on to it: what the pay and the company share, and the
