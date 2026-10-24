@@ -106,6 +106,11 @@ public sealed record RiverInputs(
     // own.
     public decimal? PayCeiling => Company is null ? null : YearSimulation.PayCeiling(Scenario(DirectorPay.Value)) ?? 0m;
 
+    // The pay the river runs: the pay set, never above what the split can give, the pay set staying as
+    // it is and coming back once the profit rises again; the pay set with the company skipped. A negative
+    // pay goes through, for the engine to refuse.
+    internal decimal PayUsed => Company is null ? DirectorPay.Value : Math.Min(DirectorPay.Value, PayCeiling ?? 0m);
+
     public RiverInputs WithRevenue(decimal revenue) =>
         this with { Company = (Company ?? Nothing) with { Revenue = Yours(revenue) } };
 
@@ -243,7 +248,7 @@ public sealed record RiverInputs(
             return new RiverRun(pay, null, payError);
         }
 
-        var (year, error) = YearSimulation.Run(Scenario(Math.Min(DirectorPay.Value, PayCeiling ?? 0m)));
+        var (year, error) = YearSimulation.Run(Scenario(PayUsed));
         return new RiverRun(year?.DirectorPay, year, error);
     }
 
@@ -264,7 +269,7 @@ public sealed record RiverInputs(
     // follow the pay.
     internal Scenario MoveScenario()
     {
-        var scenario = Scenario(Math.Min(DirectorPay.Value, PayCeiling ?? 0m));
+        var scenario = Scenario(PayUsed);
         var withHome = InPlan(OptionalModule.Rent) ? scenario : scenario with { Rent = Rent.Values with { Rent = 0m } };
         return InPlan(OptionalModule.Copyright) ? withHome : withHome with { Copyright = Copyright.Values with { Royalty = 0m, FollowsPay = false } };
     }

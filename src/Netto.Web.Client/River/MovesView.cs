@@ -39,7 +39,7 @@ internal sealed record MovesView(
         if (result.Value is not { } plan)
             return new MovesView(MovesState.Refused, result.Error, from, 0m, [], 0m, 0m, 0m);
 
-        var pay = Math.Min(from.Plan.DirectorPay.Value, from.Plan.PayCeiling ?? 0m);
+        var pay = from.Plan.PayUsed;
         return plan.Moves.Count == 0
             ? new MovesView(MovesState.AlreadyBest, null, from, pay, [], 0m, plan.TodayInPocket, plan.TodayInPocket)
             : new MovesView(MovesState.Moves, null, from, pay, plan.Moves, plan.Gain, plan.TodayInPocket, plan.PlanInPocket);
