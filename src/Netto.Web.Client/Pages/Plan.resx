@@ -88,7 +88,7 @@
     <value>Disallowed expenses other than the vouchers', and losses carried forward from earlier years.</value>
   </data>
   <data name="LimitManagementFee" xml:space="preserve">
-    <value>Your social insurance fund's management fee, charged on top of the contributions.</value>
+    <value>Your social insurance fund's management fee, charged on top of the contributions, until you give its rate on Director pay.</value>
   </data>
   <data name="LimitTaxCalc" xml:space="preserve">
     <value>The 2026 figures are computed from the official 2026 amounts. Tax-Calc does not cover 2026 yet; on 2025, the same method matches it to the cent on the income tax, the tax credit for low earned income, the dividend refund, and the surcharge and bonus on your advance payments.</value>
