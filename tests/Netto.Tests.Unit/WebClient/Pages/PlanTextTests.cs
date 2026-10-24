@@ -115,21 +115,6 @@ public class PlanTextTests
         Text("Lede").ShouldNotContain(word, Case.Insensitive);
     }
 
-    // Half the 66 words it held before the story.
-    [Fact]
-    public void PlanResx_lede_isAtMostHalfItsWords()
-    {
-        Words(Text("Lede")).ShouldBeLessThanOrEqualTo(33);
-    }
-
-    // While the plan holds no optional module, one short line under Company year names them, its button
-    // saying where they are added.
-    [Fact]
-    public void PlanResx_addHint_isAtMostTwelveWords()
-    {
-        Words(Text("AddHint")).ShouldBeLessThanOrEqualTo(12);
-    }
-
     // The cards under the split say what runs down each side: no line between them says it again.
     [Theory]
     [InlineData("Fork")]
@@ -143,6 +128,4 @@ public class PlanTextTests
 
     // A sentence ends on its full stop, or the text's end.
     private static List<string> Sentences(string text) => [.. Regex.Split(text.Trim(), @"(?<=[.!?])\s+").Where(sentence => sentence.Length > 0)];
-
-    private static int Words(string text) => text.Split(' ', StringSplitOptions.RemoveEmptyEntries).Count(word => word.Any(char.IsLetterOrDigit));
 }

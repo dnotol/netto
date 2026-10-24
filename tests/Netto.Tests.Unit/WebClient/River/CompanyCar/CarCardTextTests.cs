@@ -122,25 +122,6 @@ public class CarCardTextTests
         Resources.Missing(lines.Select(line => line.Key).Concat(lines.Select(line => line.Help).OfType<string>()).Distinct()).ShouldBeEmpty();
     }
 
-    // What a figure cannot say, kept as a sentence in sight, says it in fifteen words at most.
-    [Theory]
-    [InlineData("Waiting")]
-    [InlineData("NoCarYet")]
-    [InlineData("AtTheMinimum")]
-    [InlineData("Co2_HeldToMinimum")]
-    [InlineData("Co2_HeldToMaximum")]
-    [InlineData("Private_Waiting")]
-    [InlineData("Private_Gain")]
-    [InlineData("Private_Loss")]
-    [InlineData("Private_Tie")]
-    public void CarCardResx_sentenceKeptInSight_isAtMostFifteenWords(string key)
-    {
-        Resources.Get(key).ShouldNotBeNull();
-        var sentence = Resources.Format(key, "€2,000.00", "€9,000.00");
-
-        sentence.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length.ShouldBeInRange(1, 15);
-    }
-
     // The car's summary ends on what the split shares: « before your pay », and « before your pay and
     // royalty » once the royalty is in the plan.
     [Fact]

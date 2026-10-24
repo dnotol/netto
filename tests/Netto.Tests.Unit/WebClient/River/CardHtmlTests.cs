@@ -5,18 +5,18 @@ using static Netto.Tests.WebClient.River.RiverRendering;
 
 namespace Netto.Tests.WebClient.River;
 
-// A card's HTML read as a viewer reads it (CardHtml): the words in sight, a key a misspelt text leaves,
-// the summary and its rate, the paragraphs, the lines, one card or the river cut out of the Plan page,
-// and that page with every card open.
+// A card's HTML read as a viewer reads it (CardHtml): a key a misspelt text leaves, the summary and its
+// rate and its shape, the paragraphs, the lines and the order of their lists, the bubbles, one card cut
+// out of the Plan page, and that page with every card open.
 public class CardHtmlTests
 {
-    // A river with a card holding a section of its own, as the car's comparison is, and what the page
-    // holds around the river.
+    // A river with a card holding a section of its own, as the car's comparison is, another card after
+    // it, and what the page holds around them.
     private const string Page =
         "<h1>From what your company earns</h1>" +
         "<div id=\"river\" class=\"river__flow\">" +
         "<section id=\"card-car\" class=\"module-card\"><h2>Company car</h2><section class=\"car__comparison\"><p>With the car</p></section><p>After it</p></section>" +
-        "<section id=\"card-split\" class=\"module-card\"><h2>The split</h2></section>" +
+        "<section id=\"card-split\" class=\"module-card\"><h2>The split</h2><p>Its note</p></section>" +
         "</div>" +
         "<aside class=\"assumed\"><h2>Assumed</h2></aside>";
 
@@ -29,58 +29,18 @@ public class CardHtmlTests
     // The example with every lever in the plan, at the example's values.
     private static readonly RiverInputs EveryLever = PlanComposition.Modules.Aggregate(RiverInputs.Example, (inputs, module) => inputs.AddToPlan(module));
 
-    [Fact]
-    public void VisibleWords_text_isItsWordsInTheirOrder()
-    {
-        CardHtml.VisibleWords("<section><h2>Home office rent</h2><p>Joins your taxable income</p></section>")
-            .ShouldBe(["Home", "office", "rent", "Joins", "your", "taxable", "income"]);
-    }
-
-    // What a bubble says is in the page for a screen reader, out of sight.
-    [Fact]
-    public void VisibleWords_bubblesText_isLeftOut()
-    {
-        const string html = "<p>Flat charges<span class=\"info-bubble\"><button type=\"button\" class=\"info-bubble__trigger info-bubble__icon\" " +
-            "aria-label=\"More about Flat charges\"></button><span id=\"info-bubble-1\" class=\"info-bubble__text\" aria-hidden=\"true\">" +
-            "What the administration <em>takes</em> as costs.</span></span></p>";
-
-        CardHtml.VisibleWords(html).ShouldBe(["Flat", "charges"]);
-    }
-
-    // A folded body or a closed disclosure is hidden, with all it holds.
-    [Fact]
-    public void VisibleWords_hiddenElement_isLeftOutWithAllItHolds()
-    {
-        CardHtml.VisibleWords("<div class=\"fold__body\" hidden><p>Your pay <span>slip</span></p></div><p>Shown</p>").ShouldBe(["Shown"]);
-    }
-
-    // A word holds a letter or a digit: a separator alone is none.
-    [Fact]
-    public void VisibleWords_separatorsAlone_areNoWords()
-    {
-        CardHtml.VisibleWords("<p>€3,333.33 · 62% to you — « Today »</p>").ShouldBe(["€3,333.33", "62%", "to", "you", "Today"]);
-    }
-
-    // Each text is read on its own, as the page draws a title and its summary apart.
-    [Fact]
-    public void VisibleWords_textsOfTwoElements_areWordsApart()
-    {
-        CardHtml.VisibleWords("<button><span>Rent</span><span>€3,333.33</span></button>").ShouldBe(["Rent", "€3,333.33"]);
-    }
-
     // As the renderer writes it, its characters encoded.
     [Fact]
-    public void VisibleWords_encodedText_isReadDecoded()
+    public void Prose_encodedText_isReadDecoded()
     {
-        CardHtml.VisibleWords("<p>&#xAB;&#xA0;Today&#xA0;&#xBB; isn&#x27;t &#x2212;&#x20AC;600.00</p>").ShouldBe(["Today", "isn't", "−€600.00"]);
+        CardHtml.Prose("<p>&#xAB;&#xA0;Today&#xA0;&#xBB; isn&#x27;t &#x2212;&#x20AC;600.00</p>").ShouldBe(["« Today » isn't −€600.00"]);
     }
 
     // An element that holds nothing, void or closed by its own tag, leaves the text after it in its parent.
     [Fact]
-    public void VisibleWords_voidAndSelfClosedElements_holdNoText()
+    public void Prose_voidAndSelfClosedElements_holdNoTextAndSwallowNone()
     {
-        CardHtml.VisibleWords("<p>One<br>two<input value=\"typed\"><svg><path d=\"M0 0\" /></svg>three</p><p>four</p>")
-            .ShouldBe(["One", "two", "three", "four"]);
+        CardHtml.Prose("<p>One<br>two<input value=\"typed\"><svg><path d=\"M0 0\" /></svg>three</p><p>four</p>").ShouldBe(["Onetwothree", "four"]);
     }
 
     // A misspelt key draws the key itself: words joined by an underscore, or run together each with its
@@ -253,17 +213,17 @@ public class CardHtmlTests
         CardHtml.Bubbles(html).ShouldBe([("Flat charges", "What the administration takes as costs."), ("Rent", "")]);
     }
 
-    // A card holding a section of its own is cut whole.
+    // A card holding a section of its own is cut whole, and no further than its own end.
     [Fact]
     public void Card_page_isTheCardsSectionWithAllItHolds()
     {
-        CardHtml.VisibleWords(CardHtml.Card(Page, "car")).ShouldBe(["Company", "car", "With", "the", "car", "After", "it"]);
+        CardHtml.Prose(CardHtml.Card(Page, "car")).ShouldBe(["With the car", "After it"]);
     }
 
     [Fact]
-    public void River_page_isTheCardsWithoutWhatThePageHoldsAroundThem()
+    public void Card_nextCardOnThePage_isCutAtItsOwnEnd()
     {
-        CardHtml.VisibleWords(CardHtml.River(Page)).ShouldBe(["Company", "car", "With", "the", "car", "After", "it", "The", "split"]);
+        CardHtml.Prose(CardHtml.Card(Page, "split")).ShouldBe(["Its note"]);
     }
 
     // A card the page does not draw fails the test that asks for it.

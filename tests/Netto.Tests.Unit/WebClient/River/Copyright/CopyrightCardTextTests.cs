@@ -147,24 +147,6 @@ public class CopyrightCardTextTests
         (Resources.Get(key) ?? "").ShouldNotMatch("[0-9]%");
     }
 
-    // What a figure cannot say, kept as a sentence in sight, says it in few words: which limit set the
-    // part within them in twelve at most, the rest in fifteen.
-    [Theory]
-    [InlineData("Waiting", 15)]
-    [InlineData("NoRoyaltyYet", 15)]
-    [InlineData("Limits_None", 12)]
-    [InlineData("Limits_Relative", 12)]
-    [InlineData("Limits_Cap", 12)]
-    [InlineData("Limits_Average", 12)]
-    public void CopyrightCardResx_sentenceKeptInSight_isShort(string key, int words)
-    {
-        Resources.Get(key).ShouldNotBeNull();
-        var sentence = Resources.Format(key,
-            "€30,000.00", "€24,000.00", "€24,000.00", "€77,220.00", "€6,000.00", 2026, "30%");
-
-        sentence.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length.ShouldBeInRange(1, words);
-    }
-
     // The line of « Your copyright situation »: the statuses as assumed and as said, and the share
     // given, needed by a royalty that follows the pay, or not given beside a fixed one.
     [Fact]

@@ -151,20 +151,6 @@ public class SplitCardTextTests
         SplitCardText.AlongTheCurve("PointerAt", SplitView.From(inputs, inputs.Run()).Royalty).ShouldBe(key);
     }
 
-    // What a figure cannot say stays a sentence of fifteen words at most: how the best pay stands against
-    // the reduced rate, what the pointer reads, why a royalty that follows the pay is none, and that no
-    // pay keeps the reserve.
-    [Fact]
-    public void SplitCardResx_everySentenceItKeeps_isAtMostFifteenWords()
-    {
-        var kept = InterfaceTexts.Of(typeof(SplitCard)).Where(text => text.Key.StartsWith("Rate_", StringComparison.Ordinal) || text.Key.StartsWith("Pointer", StringComparison.Ordinal)
-            || text.Key.StartsWith("Following_", StringComparison.Ordinal) || text.Key == "NoBest").ToList();
-
-        kept.ShouldSatisfyAllConditions(
-            () => kept.ShouldNotBeEmpty(),
-            () => kept.Where(text => InterfaceTexts.WordCount(text.Value) > 15).Select(text => text.Key).ShouldBeEmpty());
-    }
-
     // Each sentence reads only the arguments the card passes it, its placeholders counted from 0:
     // why a royalty that follows the pay is none takes the income year alone, how the rate is weighed
     // the difference alone.

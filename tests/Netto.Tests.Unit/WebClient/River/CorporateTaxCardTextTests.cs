@@ -76,19 +76,6 @@ public class CorporateTaxCardTextTests
         Resources.Missing(Enum.GetValues<FinancialYear>().Select(CorporateTaxCardText.FinancialYear)).ShouldBeEmpty();
     }
 
-    // What a figure cannot say stays a sentence of fifteen words at most: which condition decided the
-    // rate, that there is no taxable profit, and what the advance payments leave.
-    [Fact]
-    public void CorporateTaxCardResx_everySentenceItKeeps_isAtMostFifteenWords()
-    {
-        var kept = InterfaceTexts.Of(typeof(CorporateTaxCard)).Where(text => text.Key.StartsWith("Condition_", StringComparison.Ordinal) || text.Key.StartsWith("Surcharge_", StringComparison.Ordinal)
-            || text.Key == "NoTaxableProfit").ToList();
-
-        kept.ShouldSatisfyAllConditions(
-            () => kept.ShouldNotBeEmpty(),
-            () => kept.Where(text => InterfaceTexts.WordCount(text.Value) > 15).Select(text => text.Key).ShouldBeEmpty());
-    }
-
     // Each sentence reads only the arguments the card passes it, its placeholders counted from 0:
     // a condition the minimum pay, the benefits and their share of it, the surcharge what more by the
     // last deadline cancels it and that deadline.

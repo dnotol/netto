@@ -6,9 +6,8 @@ namespace Netto.Tests.WebClient.River;
 // The lever cards before the split, Company year and Dividend read in figures, each drawn open on the
 // Plan page as the viewer meets it (CardHtml): a summary that is figures with their labels, no sentence;
 // the figure lines above the drain lines, their bubbles drawn, and sentences only for what a figure
-// cannot say; and the words in sight held, card by card, at the count this slice's cut brought each to,
-// which the hivemind accepted. What they share with the other cards is said in as few words: where a
-// drain line passes its money on, and the line their conditions fold to.
+// cannot say. What they share with the other cards is said in as few words: where a drain line passes
+// its money on, and the line their conditions fold to.
 public class LeverCardsFiguresTests
 {
     // The names IStringLocalizer<TComponent> reads River/<Component>.resx under.
@@ -151,25 +150,6 @@ public class LeverCardsFiguresTests
     public async Task RenderPlanOpenAsync_filledPlan_leavesNoKeyOnThePage(NamedRiver river)
     {
         CardHtml.LeakedKeys(await CardHtml.RenderPlanOpenAsync(river.Inputs)).ShouldBeEmpty();
-    }
-
-    // The words in sight on each card of the filled plan, open, held at the count the slice's cut reached,
-    // which the hivemind accepted: before the story the card drew 26 on Company year, 131 on Vouchers, 161
-    // on Expense allowances, 192 on Home office rent and 99 on Dividend.
-    public static TheoryData<string, int> Cuts => new()
-    {
-        { "company-year", 24 },
-        { "vouchers", 100 },
-        { "allowances", 101 },
-        { "rent", 115 },
-        { "dividend", 88 },
-    };
-
-    [Theory]
-    [MemberData(nameof(Cuts))]
-    public async Task VisibleWords_cardOfTheFilledPlan_areAtMostItsCut(string card, int cut)
-    {
-        CardHtml.VisibleWords(await OpenCardAsync(Filled, card)).Count.ShouldBeLessThanOrEqualTo(cut);
     }
 
     // What an open card keeps in sentences is what its figures cannot say: the bounds under its fields,

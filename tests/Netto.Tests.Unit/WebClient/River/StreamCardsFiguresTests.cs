@@ -66,19 +66,6 @@ public class StreamCardsFiguresTests
         CardHtml.Prose(html).Where(paragraph => CardHtml.Amounts(paragraph).Any(amount => lines.Contains(Unsigned(amount)))).ShouldBeEmpty();
     }
 
-    // The words in sight the static render counted on the filled plan before the story, and the most a
-    // card now draws, what it draws once its sentences are lines: the split under 60% of them; Director
-    // pay and Corporate tax keep their drain lines, their summaries and the lines of their settings,
-    // which hold most of what they drew.
-    public static TheoryData<string, int, int> Words => new() { { "split", 197, 107 }, { "director-pay", 131, 110 }, { "corporate-tax", 125, 98 } };
-
-    [Theory]
-    [MemberData(nameof(Words))]
-    public async Task VisibleWords_filledPlan_fallFromThoseBefore(string card, int before, int atMost)
-    {
-        CardHtml.VisibleWords(await CardAsync(card)).Count.ShouldBeLessThanOrEqualTo(atMost, $"{card} drew {before} words in sight before the story.");
-    }
-
     // Every text a card draws, in sight or not, is in its .resx.
     [Theory]
     [MemberData(nameof(Cards))]

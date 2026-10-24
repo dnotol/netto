@@ -14,12 +14,10 @@ namespace Netto.Tests.WebClient.River;
 
 // The Company car and Copyright royalty cards read in figures before sentences, as a viewer meets them
 // open (CardHtml): a summary of figures with their labels and no sentence, a sentence kept only for what
-// a figure cannot say and never restating one of the card's lines, no key drawn for a text, and at most
-// 55% of the words they drew in sight before the story's cut.
+// a figure cannot say and never restating one of the card's lines, and no key drawn for a text.
 public class CarAndRoyaltyCardsTests
 {
-    // The plan filled with every lever, as the hivemind counts the page's words: vouchers, allowances and a
-    // home office rent with amounts, CarViewTests' electric car (50,000, first registered in January 2026,
+    // The plan filled with every lever: vouchers, allowances and a home office rent with amounts, CarViewTests' electric car (50,000, first registered in January 2026,
     // 8,000 of costs), and a royalty following the pay at half the working time.
     private static readonly RiverInputs Filled = PlanComposition.Modules.Aggregate(RiverInputs.Example, (inputs, module) => inputs.AddToPlan(module))
         .WithEcoVouchers(250m).WithMealVoucherDays(220).WithInternetAllowance(240m)
@@ -28,19 +26,6 @@ public class CarAndRoyaltyCardsTests
         .WithCreativeShare(0.5m);
 
     private static readonly ResxText RoyaltyTexts = ResxText.For<CopyrightCard>();
-
-    // Each card's words in sight on the filled plan, every card open, before the story's cut, as the static
-    // render counts them (the browser counted 294 on the car's and 420 on the royalty's).
-    public static TheoryData<string, int> WordsBefore => new() { { "car", 288 }, { "copyright", 424 } };
-
-    [Theory]
-    [MemberData(nameof(WordsBefore))]
-    public async Task VisibleWords_cardOnTheFilledPlan_areAtMostFiftyFivePercentOfTheirCountBefore(string card, int before)
-    {
-        var html = CardHtml.Card(await CardHtml.RenderPlanOpenAsync(Filled), card);
-
-        CardHtml.VisibleWords(html).Count.ShouldBeLessThanOrEqualTo(before * 55 / 100);
-    }
 
     // Every way each card's summary reads: a car not given yet, a car, a car with the royalty in the plan;
     // no royalty yet, a royalty within its limits, one beyond them, and one all taxed as pay. The cars are

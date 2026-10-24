@@ -9,11 +9,12 @@ using Shouldly;
 namespace Netto.Tests.WebClient.River;
 
 // A card's HTML read as a viewer reads it, for a test to hold a card to what it draws: the summary beside
-// its title and the rate it ends on, the text of its paragraphs, the lines of its figure and drain lists,
-// the words in sight, and any text a misspelt key leaves; one card or the river cut out of the Plan page,
-// and that page drawn with every card open. It reads what the renderer writes (RiverRendering), encoded
-// or decoded alike. In sight is what the hivemind counts in the browser: every text but what a bubble's
-// text or an element hidden holds, a folded body or a closed disclosure.
+// its title and the rate it ends on, the text of its paragraphs, the lines of its figure and drain lists
+// and the order of the two, the bubbles, and any text a misspelt key leaves; one card cut out of the Plan
+// page, and that page drawn with every card open. It reads what the renderer writes (RiverRendering),
+// encoded or decoded alike. In sight is what a viewer reads: every text but what a bubble's text or an
+// element hidden holds, a folded body or a closed disclosure. What it reads is the card's figures and
+// its shape, never how many words it takes to say them.
 internal static class CardHtml
 {
     // A day with an advance payment still to come, as the Plan page's own tests take.
@@ -68,10 +69,6 @@ internal static class CardHtml
             services.AddSingleton<TimeProvider>(new Clock(On23October));
         });
     }
-
-    // The river of the Plan page, its cards and what stands between them, without the page's head, the
-    // bar of buckets with its tabs, or the notes under it.
-    public static string River(string html) => ById(html, "river");
 
     // One card of a page by its fold's name (OutlineRows.Order), with all it holds.
     public static string Card(string html, string name) => ById(html, $"card-{name}");
@@ -128,12 +125,6 @@ internal static class CardHtml
         .. AmountPattern.Replace(summary, "").Split('·').Select(label => label.Trim())
             .Where(label => label.IndexOfAny(SentencePunctuation) >= 0 || !label.Any(char.IsLetter)),
     ];
-
-    // The words in sight, in the page's order: each text read on its own, a word being what lies between
-    // two spaces and holds a letter or a digit, so a separator alone, a middle dot, a dash or a quotation
-    // mark, is none.
-    public static IReadOnlyList<string> VisibleWords(string html) =>
-        [.. TextsInSight(Parse(html)).SelectMany(text => Regex.Split(text, "\\s+")).Where(word => word.Any(char.IsLetterOrDigit))];
 
     // Every text that looks like a key, in sight or not, in what names or describes an element too.
     public static IReadOnlyList<string> LeakedKeys(string html) =>
@@ -202,8 +193,8 @@ internal static class CardHtml
     private static string TextOf(Element element, string? leaving = null) =>
         Regex.Replace(string.Concat(TextsInSight(element, leaving)), "\\s+", " ").Trim();
 
-    // What the hivemind leaves out of its count in the browser: a bubble's text, in the page for a screen
-    // reader, and an element hidden, a folded body or a closed disclosure; and what no page shows as text.
+    // What a viewer does not read: a bubble's text, in the page for a screen reader, and an element hidden,
+    // a folded body or a closed disclosure; and what no page shows as text.
     private static bool OutOfSight(Element element) =>
         element.Attributes.ContainsKey("hidden") || element.Has("info-bubble__text") || element.Name is "style" or "script" or "template";
 

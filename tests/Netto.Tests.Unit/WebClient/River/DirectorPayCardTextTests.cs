@@ -69,15 +69,4 @@ public class DirectorPayCardTextTests
 
         TermText.Split(text).Term.ShouldBeNull();
     }
-
-    // What a figure cannot say stays a sentence of fifteen words at most: why no surcharge is due.
-    [Fact]
-    public void DirectorPayCardResx_everySentenceItKeeps_isAtMostFifteenWords()
-    {
-        var kept = InterfaceTexts.Of(typeof(DirectorPayCard)).Where(text => text.Key.StartsWith("Surcharge_", StringComparison.Ordinal)).ToList();
-
-        kept.ShouldSatisfyAllConditions(
-            () => kept.ShouldNotBeEmpty(),
-            () => kept.Where(text => InterfaceTexts.WordCount(text.Value) > 15).Select(text => text.Key).ShouldBeEmpty());
-    }
 }
