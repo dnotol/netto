@@ -92,19 +92,66 @@ public class HandOffTests
         return data;
     }
 
+    // Without the royalty, the last lever in the plan hands the split the profit before pay, each other
+    // what is left after it, to the next lever in the plan: each line its key and where it goes.
     [Theory]
-    [MemberData(nameof(Compositions))]
-    public void Drain_anyComposition_lastLeverHandsTheProfitBeforePayToTheSplit(bool vouchers, bool allowances, bool rent, bool car, bool royalty)
+    [InlineData("", "")]
+    [InlineData("vouchers", "profit_before_pay>split")]
+    [InlineData("allowances", "profit_before_pay>split")]
+    [InlineData("rent", "profit_before_pay>split")]
+    [InlineData("car", "profit_before_pay>split")]
+    [InlineData("vouchers allowances", "left_after_vouchers>allowances profit_before_pay>split")]
+    [InlineData("vouchers rent", "left_after_vouchers>rent profit_before_pay>split")]
+    [InlineData("vouchers car", "left_after_vouchers>car profit_before_pay>split")]
+    [InlineData("allowances rent", "left_after_allowances>rent profit_before_pay>split")]
+    [InlineData("allowances car", "left_after_allowances>car profit_before_pay>split")]
+    [InlineData("rent car", "left_after_rent>car profit_before_pay>split")]
+    [InlineData("vouchers allowances rent", "left_after_vouchers>allowances left_after_allowances>rent profit_before_pay>split")]
+    [InlineData("vouchers allowances car", "left_after_vouchers>allowances left_after_allowances>car profit_before_pay>split")]
+    [InlineData("vouchers rent car", "left_after_vouchers>rent left_after_rent>car profit_before_pay>split")]
+    [InlineData("allowances rent car", "left_after_allowances>rent left_after_rent>car profit_before_pay>split")]
+    [InlineData("vouchers allowances rent car", "left_after_vouchers>allowances left_after_allowances>rent left_after_rent>car profit_before_pay>split")]
+    public void Drain_compositionWithoutTheRoyalty_lastLeverHandsTheProfitBeforePayToTheSplit(string levers, string handedOn)
     {
-        var composition = new PlanComposition(vouchers, allowances, rent, car, royalty);
-        var year = Year(Filled with { Composition = composition });
-        var inPlan = Levers.Where(composition.Holds).ToList();
+        HandedOn(levers, royalty: false).ShouldBe(handedOn);
+    }
 
-        var drains = inPlan.Select(lever => HandOff.Drain(year, lever, composition)).ToList();
+    // With the royalty in the plan, the last lever hands the split the profit before pay and royalty.
+    [Theory]
+    [InlineData("", "")]
+    [InlineData("vouchers", "profit_before_pay_and_royalty>split")]
+    [InlineData("allowances", "profit_before_pay_and_royalty>split")]
+    [InlineData("rent", "profit_before_pay_and_royalty>split")]
+    [InlineData("car", "profit_before_pay_and_royalty>split")]
+    [InlineData("vouchers allowances", "left_after_vouchers>allowances profit_before_pay_and_royalty>split")]
+    [InlineData("vouchers rent", "left_after_vouchers>rent profit_before_pay_and_royalty>split")]
+    [InlineData("vouchers car", "left_after_vouchers>car profit_before_pay_and_royalty>split")]
+    [InlineData("allowances rent", "left_after_allowances>rent profit_before_pay_and_royalty>split")]
+    [InlineData("allowances car", "left_after_allowances>car profit_before_pay_and_royalty>split")]
+    [InlineData("rent car", "left_after_rent>car profit_before_pay_and_royalty>split")]
+    [InlineData("vouchers allowances rent", "left_after_vouchers>allowances left_after_allowances>rent profit_before_pay_and_royalty>split")]
+    [InlineData("vouchers allowances car", "left_after_vouchers>allowances left_after_allowances>car profit_before_pay_and_royalty>split")]
+    [InlineData("vouchers rent car", "left_after_vouchers>rent left_after_rent>car profit_before_pay_and_royalty>split")]
+    [InlineData("allowances rent car", "left_after_allowances>rent left_after_rent>car profit_before_pay_and_royalty>split")]
+    [InlineData("vouchers allowances rent car", "left_after_vouchers>allowances left_after_allowances>rent left_after_rent>car profit_before_pay_and_royalty>split")]
+    public void Drain_compositionWithTheRoyalty_lastLeverHandsTheProfitBeforePayAndRoyaltyToTheSplit(string levers, string handedOn)
+    {
+        HandedOn(levers, royalty: true).ShouldBe(handedOn);
+    }
 
-        drains.ShouldBe(inPlan.Select((lever, i) => i == inPlan.Count - 1
-            ? new Drain(royalty ? "profit_before_pay_and_royalty" : "profit_before_pay", DrainKind.PassedOn, HandOff.Shared(year), "split")
-            : new Drain($"left_after_{ModuleFolds.Name(lever)}", DrainKind.PassedOn, HandOff.After(year, lever), ModuleFolds.Name(inPlan[i + 1]))));
+    // Each lever passes on what it leaves of the 100,000, the car what the split shares, all passed on.
+    [Fact]
+    public void Drain_everyLever_passesOnWhatItLeaves()
+    {
+        var year = Year(Filled);
+
+        Levers.Select(lever => HandOff.Drain(year, lever, Filled.Composition)).Select(drain => (drain.Kind, drain.Amount)).ShouldBe(new[]
+        {
+            (DrainKind.PassedOn, 97_689.80m),
+            (DrainKind.PassedOn, 97_209.80m),
+            (DrainKind.PassedOn, 95_829.80m),
+            (DrainKind.PassedOn, 88_429.80m),
+        });
     }
 
     // Each lever's card ends on what it hands on.
@@ -128,4 +175,16 @@ public class HandOffTests
     }
 
     private static YearResult Year(RiverInputs inputs) => inputs.Run().Year.ShouldNotBeNull();
+
+    // The line each lever in the plan ends on, by their folds' names (« vouchers rent »), with the royalty
+    // in the plan or not: its key and where it goes, « key>destination », one after the other.
+    private static string HandedOn(string levers, bool royalty)
+    {
+        var composition = levers.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+            .Select(name => Levers.Single(lever => ModuleFolds.Name(lever) == name))
+            .Aggregate(PlanComposition.None.With(OptionalModule.Copyright, royalty), (plan, lever) => plan.With(lever, true));
+        var year = Year(Filled with { Composition = composition });
+
+        return string.Join(" ", Levers.Where(composition.Holds).Select(lever => HandOff.Drain(year, lever, composition)).Select(drain => $"{drain.Key}>{drain.To}"));
+    }
 }
