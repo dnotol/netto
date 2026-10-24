@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Netto.Core.CompanyCar;
 using Netto.Web.Client;
 using Netto.Web.Client.River;
@@ -108,22 +109,24 @@ public class CarCardTests
         CardHtml.Prose(html).ShouldContain(sentence);
     }
 
-    // Until the user gives it, the card asks what the same car would cost privately, with no origin
-    // beside the field, states the cash the car takes, and says the comparison with a private car waits.
+    // Until the user gives it, the card asks what the same car would cost privately, in a field with a
+    // bubble and no origin beside it, states the cash the car takes, and draws its note on the comparison
+    // with a private car without an amount: it waits.
     [Fact]
     public async Task Card_noPrivateCost_asksItStatesTheCashAndWaits()
     {
         var html = await RenderOpenAsync<CarCard>(OptionalModule.Car, ElectricCar);
+        var field = FieldHead(html, PrivateCost);
 
         html.ShouldSatisfyAllConditions(
-            () => html.ShouldContain(Text("PrivateCostLabel")),
-            () => FieldHead(html, PrivateCost).ShouldNotContain("origin-chip"),
-            () => CardHtml.Lines(html).ShouldContain((Text("Figure_Cash_Takes"), "€6,162.66", (string?)null)),
-            () => CardHtml.Prose(html).ShouldContain(Text("Private_Waiting")));
+            () => CardHtml.Bubbles(field).ShouldHaveSingleItem().Text.ShouldNotBeNullOrWhiteSpace(),
+            () => field.ShouldNotContain("origin-chip"),
+            () => CardHtml.LineAmounts(html).ShouldContain("€6,162.66"),
+            () => CardHtml.Amounts(Gap(html)).ShouldBeEmpty());
     }
 
     // Once given, the cost is the user's, and the card states what the company car gains against it:
-    // 10,000 less the 6,162.66 of cash it takes.
+    // 10,000 less the 6,162.66 of cash it takes, and never the cost it was weighed against.
     [Fact]
     public async Task Card_privateCostGiven_saysItIsYoursAndWhatTheCarGains()
     {
@@ -131,7 +134,7 @@ public class CarCardTests
 
         html.ShouldSatisfyAllConditions(
             () => FieldHead(html, PrivateCost).ShouldContain("origin-chip--yours"),
-            () => html.ShouldContain(Text("Private_Gain", "€3,837.34", "€10,000.00")));
+            () => CardHtml.Amounts(Gap(html)).ShouldBe(["€3,837.34"]));
     }
 
     [Fact]
@@ -139,8 +142,8 @@ public class CarCardTests
     {
         var html = await RenderOpenAsync<CarCard>(OptionalModule.Car, ElectricCar.WithCarPrivateCost(-1m));
 
-        (html.Contains(Refusals.Get($"Error_{CarComparison.PrivateCostNegative}") ?? "-"), html.Contains(Text("Private_Waiting")))
-            .ShouldBe((true, true));
+        (html.Contains(Refusals.Get($"Error_{CarComparison.PrivateCostNegative}") ?? "-"), CardHtml.Amounts(Gap(html)).Count)
+            .ShouldBe((true, 0));
     }
 
     // Nothing the card says names a muddy pocket.
@@ -169,6 +172,16 @@ public class CarCardTests
 
     private static string Text(string key, params object[] figures) =>
         Resources.Format(key, figures);
+
+    // The sentence that weighs the company car against a private one, as a viewer reads it; a card that
+    // draws none fails the test that asks for it.
+    private static string Gap(string html)
+    {
+        var gap = Regex.Match(html, "<p class=\"car__gap\"[^>]*>(?<text>.*?)</p>", RegexOptions.Singleline);
+        gap.Success.ShouldBeTrue("The card draws no sentence weighing the company car against a private one.");
+
+        return gap.Groups["text"].Value.Trim();
+    }
 
     private static readonly ResxText DrainTexts = ResxText.For<DrainList>();
 

@@ -164,7 +164,7 @@ public class StreamCardsFiguresTests
 
     // With no surcharge due, the card says why in a note, in sight, and draws no line for it.
     [Fact]
-    public async Task DirectorPay_surchargeUnderTheMinimum_saysWhyNoneIsDue()
+    public async Task DirectorPay_surchargeUnderTheMinimum_drawsItsNoteAndNoTopUp()
     {
         var html = await CardAsync("director-pay");
 

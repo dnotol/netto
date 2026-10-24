@@ -139,7 +139,7 @@ public class LeverCardsFiguresTests
     [Theory]
     [InlineData("Taxed on the floor")]
     [InlineData("Flat charges")]
-    public async Task Rent_underTheFloor_explainsItsLinesInTheirBubbles(string line)
+    public async Task Rent_underTheFloor_hasABubblePerLine(string line)
     {
         CardHtml.BubbleAfter(await OpenCardAsync(UnderTheFloor, "rent"), line).ShouldNotBeNullOrWhiteSpace();
     }
@@ -157,23 +157,25 @@ public class LeverCardsFiguresTests
 
     // What an open card keeps in sentences is what its figures cannot say: the bounds under its fields,
     // with the button that takes the rent's cap, and the line a folded disclosure states its facts on.
-    // The adornments of its fields, a € alone, say no words. The amounts they state, in order, are the
-    // rules' and the facts' own.
+    // The adornments of its fields, a € alone, say no words. One entry per sentence in sight, in the
+    // page's order: the amounts it states, separated by a space, which are the rules' and the facts' own.
+    // A sentence that states none would be an empty entry, so a card cannot regrow an explanation of its
+    // own or merge two sentences unnoticed.
     public static TheoryData<string, NamedRiver, string[]> Bounds => new()
     {
-        { "vouchers", Filled, ["€8.91", "€1.09", "€250.00", "€100.00"] },
-        { "allowances", Filled, ["€1,938.44", "€20.00", "€240.00", "€20.00", "€240.00"] },
-        { "rent", Filled, ["€1,200.00", "12%", "€1,380.00", "€1,380.00"] },
-        { "dividend", Filled, ["€20,000.00", "18%"] },
+        { "vouchers", Filled, ["€8.91 €1.09", "€250.00", "€100.00"] },
+        { "allowances", Filled, ["€1,938.44", "€20.00 €240.00", "€20.00 €240.00"] },
+        { "rent", Filled, ["€1,200.00 12%", "€1,380.00 €1,380.00"] },
+        { "dividend", Filled, ["€20,000.00 18%"] },
     };
 
     [Theory]
     [MemberData(nameof(Bounds))]
-    public async Task Card_open_statesInSentencesTheBoundsAndFactsItsFiguresCannotSay(string card, NamedRiver river, string[] amounts)
+    public async Task Card_open_statesInSentencesTheBoundsAndFactsItsFiguresCannotSay(string card, NamedRiver river, string[] amountsOfEachSentence)
     {
         var sentences = CardHtml.Prose(await OpenCardAsync(river, card)).Where(paragraph => paragraph.Any(char.IsLetter));
 
-        sentences.SelectMany(sentence => CardHtml.Amounts(sentence)).ShouldBe(amounts);
+        sentences.Select(sentence => string.Join(' ', CardHtml.Amounts(sentence))).ShouldBe(amountsOfEachSentence);
     }
 
     // The office allowance's yearly maximum stays under its field; the monthly maxima it adds up, which
@@ -207,7 +209,7 @@ public class LeverCardsFiguresTests
     // Skipped, Company year says where the river starts, in a note and no line; that the cards which need
     // the company's figures wait for them, each of them says.
     [Fact]
-    public async Task CompanyYear_skipped_saysWhereTheRiverStartsInOneNote()
+    public async Task CompanyYear_skipped_hasOneNoteAndNoLine()
     {
         var html = await OpenCardAsync(Filled.With("no company figures", inputs => inputs.SkipCompany()), "company-year");
 

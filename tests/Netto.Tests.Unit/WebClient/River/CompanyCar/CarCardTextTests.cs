@@ -25,15 +25,18 @@ public class CarCardTextTests
     }
 
     // The line's amount is the cash; its label says which way it goes: a car that takes none is worded as
-    // one that takes, and one that adds is worded otherwise.
+    // one that takes.
     [Fact]
-    public void Cash_eachWay_isLabelledByWhichWayTheCashGoes()
+    public void Cash_none_readsAsTakes()
     {
-        var takes = Resources.Get("Figure_Cash_Takes").ShouldNotBeNull();
+        Resources.Get("Figure_Cash_None").ShouldBe(Resources.Get("Figure_Cash_Takes").ShouldNotBeNull());
+    }
 
-        takes.ShouldSatisfyAllConditions(
-            () => Resources.Get("Figure_Cash_None").ShouldBe(takes),
-            () => Resources.Get("Figure_Cash_Adds").ShouldNotBeNull().ShouldNotBe(takes));
+    // A car that adds cash is worded otherwise than one that takes it.
+    [Fact]
+    public void Cash_adds_differsFromTakes()
+    {
+        Resources.Get("Figure_Cash_Adds").ShouldNotBeNull().ShouldNotBe(Resources.Get("Figure_Cash_Takes").ShouldNotBeNull());
     }
 
     // The company car against the same car bought privately, each way it can fall, and the field that
@@ -60,7 +63,7 @@ public class CarCardTextTests
     [InlineData("Private_Gain", "€2,000.00")]
     [InlineData("Private_Loss", "€2,000.00")]
     [InlineData("Private_Tie", "")]
-    public void Private_eachWay_saysTheGainOrLossAgainstThePrivateCar(string key, string amount)
+    public void Private_eachWay_drawsTheGapAndNeverThePrivateCost(string key, string amount)
     {
         string.Join(' ', CardHtml.Amounts(Resources.Format(key, "€2,000.00", "€9,000.00"))).ShouldBe(amount);
     }
