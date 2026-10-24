@@ -15,7 +15,8 @@ internal sealed partial class OfficialDocumentIndex
     private OfficialDocumentIndex(IReadOnlyDictionary<string, Row> rows) => this.rows = rows;
 
     // The official-docs folder of the checkout the tests were built from.
-    public static DirectoryInfo Folder { get; } = new FileInfo(RepositoryFile.FindUp("official-docs", "INDEX.md")).Directory!;
+    public static DirectoryInfo Folder { get; } = new FileInfo(RepositoryFile.FindUp("official-docs", "INDEX.md")).Directory
+        ?? throw new InvalidOperationException("official-docs/INDEX.md has no folder.");
 
     public IReadOnlyCollection<string> Files => rows.Keys.ToList();
 

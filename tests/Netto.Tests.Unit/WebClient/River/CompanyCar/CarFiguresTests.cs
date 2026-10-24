@@ -3,6 +3,7 @@ using Netto.Core.Rules;
 using Netto.Web.Client.River;
 using Netto.Web.Client.River.CompanyCar;
 using Shouldly;
+using static Netto.Tests.Support.Fixtures;
 
 namespace Netto.Tests.WebClient.River.CompanyCar;
 
@@ -13,13 +14,9 @@ public class CarFiguresTests
 {
     private static readonly CarRules Rules = CarRules.IncomeYear2026;
 
-    // 50,000 first registered in January 2026: a benefit of 1,714.29 at 4%, all year at 100%, and 8,000
-    // of yearly costs, which an electric car deducts in full; 17% of the benefit is added back.
-    private static readonly CarFacts Electric = new(50_000m, new DateOnly(2026, 1, 10), 8_000m, false, 0m);
-
     // CarViewTests' petrol car leased in January 2026: 45,000 at 120 g/km, a benefit of 4,050.00 at
     // 10.5%, and 9,000 of costs, of which the company deducts only the 4,050.00 equal to the benefit.
-    private static readonly CarFacts Petrol = Electric with
+    private static readonly CarFacts Petrol = ElectricCar with
     {
         CatalogueValue = 45_000m, YearlyCosts = 9_000m, Engine = CarEngine.Petrol, Co2 = 120, Acquired = new DateOnly(2026, 1, 5),
     };
@@ -27,7 +24,7 @@ public class CarFiguresTests
     [Fact]
     public void Benefit_electricCar_isItsBenefitItsCo2PercentageItsPeriodTheBenefitTaxedTheDeductionAndTheAddBack()
     {
-        Lines(CarFigures.Benefit(Compute(Electric))).ShouldBe(
+        Lines(CarFigures.Benefit(Compute(ElectricCar))).ShouldBe(
         [
             ("Figure_Benefit", 1_714.29m, ""),
             ("Figure_Co2", 0.04m, ""),
@@ -51,7 +48,7 @@ public class CarFiguresTests
     [Fact]
     public void Benefit_withAContribution_takesItOffBeforeTheBenefitTaxed()
     {
-        Lines(CarFigures.Benefit(Compute(Electric with { PersonalContribution = 600m }))).Take(5).ShouldBe(
+        Lines(CarFigures.Benefit(Compute(ElectricCar with { PersonalContribution = 600m }))).Take(5).ShouldBe(
         [
             ("Figure_Benefit", 1_714.29m, ""),
             ("Figure_Co2", 0.04m, ""),
@@ -65,7 +62,7 @@ public class CarFiguresTests
     [Fact]
     public void Benefit_contributionAboveTheBenefit_saysNothingIsTaxed()
     {
-        var taxed = CarFigures.Benefit(Compute(Electric with { PersonalContribution = 2_000m })).Single(line => line.Key == "Figure_BenefitTaxed");
+        var taxed = CarFigures.Benefit(Compute(ElectricCar with { PersonalContribution = 2_000m })).Single(line => line.Key == "Figure_BenefitTaxed");
 
         (taxed.Amount, decimal.IsNegative(taxed.Amount)).ShouldBe((0m, false));
     }
@@ -74,7 +71,7 @@ public class CarFiguresTests
     [Fact]
     public void Benefit_oneCoefficientAllYear_isOnePeriodForTheYear()
     {
-        Lines(CarFigures.Benefit(Compute(Electric with { CatalogueValue = 80_000m, FirstRegistration = new DateOnly(2019, 3, 5) })))
+        Lines(CarFigures.Benefit(Compute(ElectricCar with { CatalogueValue = 80_000m, FirstRegistration = new DateOnly(2019, 3, 5) })))
             .Where(line => line.Key.StartsWith("Figure_Period", StringComparison.Ordinal))
             .ShouldBe([("Figure_Period_Year", 1_920m, "January|December|70%")]);
     }
@@ -84,7 +81,7 @@ public class CarFiguresTests
     [Fact]
     public void Benefit_carTurningOneDuringTheYear_isALinePerPeriod()
     {
-        Lines(CarFigures.Benefit(Compute(Electric with { CatalogueValue = 60_000m, FirstRegistration = new DateOnly(2025, 6, 21) })))
+        Lines(CarFigures.Benefit(Compute(ElectricCar with { CatalogueValue = 60_000m, FirstRegistration = new DateOnly(2025, 6, 21) })))
             .Where(line => line.Key.StartsWith("Figure_Period", StringComparison.Ordinal))
             .ShouldBe([("Figure_Period", 851.04m, "January|May|100%"), ("Figure_Period", 1_133.74m, "June|December|94%")]);
     }
@@ -93,7 +90,7 @@ public class CarFiguresTests
     [Fact]
     public void Benefit_periodOfOneMonth_namesThatMonth()
     {
-        Lines(CarFigures.Benefit(Compute(Electric with { CatalogueValue = 70_000m, FirstRegistration = new DateOnly(2022, 2, 10) })))
+        Lines(CarFigures.Benefit(Compute(ElectricCar with { CatalogueValue = 70_000m, FirstRegistration = new DateOnly(2022, 2, 10) })))
             .Where(line => line.Key.StartsWith("Figure_Period", StringComparison.Ordinal))
             .ShouldBe([("Figure_Period_Month", 167.15m, "January|January|82%"), ("Figure_Period", 1_669.08m, "February|December|76%")]);
     }
@@ -103,7 +100,7 @@ public class CarFiguresTests
     [Fact]
     public void Benefit_belowTheMinimum_isTheMinimumAboveItsPeriod()
     {
-        Lines(CarFigures.Benefit(Compute(Electric with { CatalogueValue = 30_000m }))).Take(3).ShouldBe(
+        Lines(CarFigures.Benefit(Compute(ElectricCar with { CatalogueValue = 30_000m }))).Take(3).ShouldBe(
         [
             ("Figure_Benefit", 1_690m, ""),
             ("Figure_Co2", 0.04m, ""),
@@ -154,7 +151,7 @@ public class CarFiguresTests
     [Fact]
     public void Benefit_noCosts_hasNoDeductionLine()
     {
-        CarFigures.Benefit(Compute(Electric with { YearlyCosts = 0m })).Select(line => line.Key)
+        CarFigures.Benefit(Compute(ElectricCar with { YearlyCosts = 0m })).Select(line => line.Key)
             .ShouldBe(["Figure_Benefit", "Figure_Co2", "Figure_Period_Year", "Figure_BenefitTaxed", "Figure_AddBack"]);
     }
 
@@ -163,7 +160,7 @@ public class CarFiguresTests
     [Fact]
     public void Benefit_ratesOfItsRules_readAsTheRulesStateThem()
     {
-        var car = Compute(Electric);
+        var car = Compute(ElectricCar);
         var period = car.Periods.Single();
         var stated = car with
         {
@@ -207,7 +204,7 @@ public class CarFiguresTests
     {
         var car = Compute(Petrol with { CatalogueValue = 30_000m, YearlyCosts = 10_000m, Co2 = 100, Acquired = new DateOnly(2025, 11, 1) });
         var deduction = CarFigures.Benefit(car).Single(line => line.Key == "Figure_Deduction_Rate");
-        var full = CarFigures.Benefit(Compute(Electric)).Single(line => line.Key == "Figure_Deduction_Full");
+        var full = CarFigures.Benefit(Compute(ElectricCar)).Single(line => line.Key == "Figure_Deduction_Full");
 
         (deduction.Help, string.Join("|", deduction.HelpArgs), full.Help).ShouldBe(("Help_Deduction_Rate", "50%", (string?)null));
     }

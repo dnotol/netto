@@ -47,8 +47,9 @@ internal static class Fixtures
     public static readonly HomeOfficeRent RentAtTheCap = new(1_200m, 0.12m, 1_380m);
 
     // An electric car the company puts at the director's disposal all year: a catalogue value of 50,000,
-    // first registered in January 2026, so a benefit of 1,714.29 (CarCalculatorTests), and 8,000 of
-    // yearly costs.
+    // first registered in January 2026, so a benefit of 1,714.29 at 4% (CarCalculatorTests), all year at
+    // 100%, and 8,000 of yearly costs, which an electric car deducts in full; 17% of the benefit is added
+    // back.
     public static readonly CarFacts ElectricCar = new(50_000m, new DateOnly(2026, 1, 10), 8_000m, false, 0m);
 
     // The river's example year as its scenario (RiverInputs.Example, held to it by FixturesTests): nothing

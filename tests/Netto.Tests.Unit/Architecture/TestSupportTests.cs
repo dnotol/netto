@@ -9,7 +9,8 @@ namespace Netto.Tests.Architecture;
 public class TestSupportTests
 {
     private static readonly string Folder =
-        new FileInfo(RepositoryFile.FindUp("tests", "Netto.Tests.Unit", "Netto.Tests.Unit.csproj")).DirectoryName!;
+        new FileInfo(RepositoryFile.FindUp("tests", "Netto.Tests.Unit", "Netto.Tests.Unit.csproj")).DirectoryName
+        ?? throw new InvalidOperationException("The test project's csproj has no folder.");
 
     // A class that implements IBrowserStorage: a fake of the browser's storage.
     [Fact]
@@ -18,11 +19,12 @@ public class TestSupportTests
         Declaring(@"\bclass\s+\w+[^{;]*:\s*[^{;]*\bIBrowserStorage\b").ShouldBeEmpty();
     }
 
-    // A resource manager reading a .resx: ResxText is the one place that does.
+    // A reader of a .resx, a resource manager or a resource reader over the assembly's stream: ResxText is the
+    // one place that is, InterfaceTexts included, which reads every text through it.
     [Fact]
     public void TestSources_resxTexts_areReadOnlyThroughResxText()
     {
-        Declaring(@"\bResourceManager\b").ShouldBeEmpty();
+        Declaring(@"\bResourceManager\b|\bResourceReader\b|GetManifestResourceStream").ShouldBeEmpty();
     }
 
     // The made-up company the engine tests share, and the levers they put in its year.

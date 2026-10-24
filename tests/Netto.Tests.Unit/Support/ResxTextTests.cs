@@ -48,6 +48,23 @@ public class ResxTextTests
         Texts.Keys.ShouldContain(PlanTabBarText.Label);
     }
 
+    [Fact]
+    public void Entries_ofTheComponent_pairEachKeyWithItsText()
+    {
+        Texts.Entries.ShouldContain((PlanTabBarText.Label, "Your plan"));
+    }
+
+    // Every component of the client, found as the build embedded it: what a test that holds all the interface's
+    // texts to a rule reads.
+    [Fact]
+    public void InAssembly_theClient_listsTheResxOfEachComponent()
+    {
+        var components = ResxText.InAssembly(typeof(PlanTabBar).Assembly).Select(texts => texts.BaseName).ToList();
+
+        components.ShouldContain(typeof(PlanTabBar).FullName);
+        components.ShouldContain(typeof(InfoBubble).FullName);
+    }
+
     // The other component's texts are not this one's.
     [Fact]
     public void For_otherComponent_readsItsOwnResx()
