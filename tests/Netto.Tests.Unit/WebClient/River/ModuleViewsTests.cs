@@ -680,14 +680,14 @@ public class ModuleViewsTests
     }
 
     // No vouchers yet: what the company earns goes on whole, to the split while the plan holds no
-    // other lever, and there are no steps to list.
+    // other lever, as the profit before pay, and there are no steps to list.
     [Fact]
     public void Vouchers_addedWithNothing_passWhatTheCompanyEarnsOnToTheSplit()
     {
         var view = Vouchers(RiverInputs.Example.AddToPlan(OptionalModule.Vouchers));
 
         (view.Total, view.Deductible, view.Disallowed, view.Left, view.Details.Count, view.Drains.Single())
-            .ShouldBe((0m, 0m, 0m, 100_000m, 0, new Drain("left_after_vouchers", DrainKind.PassedOn, 100_000m, "split")));
+            .ShouldBe((0m, 0m, 0m, 100_000m, 0, new Drain("profit_before_pay", DrainKind.PassedOn, 100_000m, "split")));
     }
 
     [Fact]
@@ -698,7 +698,7 @@ public class ModuleViewsTests
             new Drain("meal_vouchers", DrainKind.PassedOn, 1_960.20m, "pocket"),
             new Drain("eco_vouchers", DrainKind.PassedOn, 250m, "pocket"),
             new Drain("sport_culture_vouchers", DrainKind.PassedOn, 100m, "pocket"),
-            new Drain("left_after_vouchers", DrainKind.PassedOn, 97_689.80m, "split"),
+            new Drain("profit_before_pay", DrainKind.PassedOn, 97_689.80m, "split"),
         });
     }
 
@@ -719,17 +719,18 @@ public class ModuleViewsTests
             .ShouldBe([("meal_voucher_company_share", 8.91m), ("meal_voucher_holder_share", 1.09m)]);
     }
 
-    // What the vouchers leave goes on to the next module in the plan, the split after the last.
+    // What the vouchers leave goes on to the next module in the plan, or to the split as the profit
+    // before pay when they are the last lever.
     [Theory]
-    [InlineData(true, true, "allowances")]
-    [InlineData(true, false, "allowances")]
-    [InlineData(false, true, "rent")]
-    [InlineData(false, false, "split")]
-    public void Vouchers_leftAfterThem_goOnToTheNextModuleInThePlan(bool allowances, bool rent, string next)
+    [InlineData(true, true, "left_after_vouchers", "allowances")]
+    [InlineData(true, false, "left_after_vouchers", "allowances")]
+    [InlineData(false, true, "left_after_vouchers", "rent")]
+    [InlineData(false, false, "profit_before_pay", "split")]
+    public void Vouchers_leftAfterThem_goOnToTheNextModuleInThePlan(bool allowances, bool rent, string key, string next)
     {
         var inputs = AllVouchers with { Composition = new PlanComposition(true, allowances, rent, false, false) };
 
-        Vouchers(inputs).Drains[^1].ShouldBe(new Drain("left_after_vouchers", DrainKind.PassedOn, 97_689.80m, next));
+        Vouchers(inputs).Drains[^1].ShouldBe(new Drain(key, DrainKind.PassedOn, 97_689.80m, next));
     }
 
     // The river runs on: what the vouchers leave is what they leave, whatever the allowances take next.
@@ -768,25 +769,26 @@ public class ModuleViewsTests
     }
 
     // No allowances yet: what the company earns goes on whole, to the split while the plan holds no
-    // rent, and there are no steps to list.
+    // rent, as the profit before pay, and there are no steps to list.
     [Fact]
     public void Allowances_addedWithNothing_passWhatTheCompanyEarnsOnToTheSplit()
     {
         var view = Allowances(RiverInputs.Example.AddToPlan(OptionalModule.Allowances));
 
         (view.Total, view.Left, view.Details.Count, view.Drains.Single())
-            .ShouldBe((0m, 100_000m, 0, new Drain("left_after_allowances", DrainKind.PassedOn, 100_000m, "split")));
+            .ShouldBe((0m, 100_000m, 0, new Drain("profit_before_pay", DrainKind.PassedOn, 100_000m, "split")));
     }
 
-    // What the allowances leave goes on to the rent while it is in the plan, to the split otherwise.
+    // What the allowances leave goes on to the rent while it is in the plan, to the split as the profit
+    // before pay otherwise.
     [Theory]
-    [InlineData(true, "rent")]
-    [InlineData(false, "split")]
-    public void Allowances_leftAfterThem_goOnToTheNextModuleInThePlan(bool rent, string next)
+    [InlineData(true, "left_after_allowances", "rent")]
+    [InlineData(false, "profit_before_pay", "split")]
+    public void Allowances_leftAfterThem_goOnToTheNextModuleInThePlan(bool rent, string key, string next)
     {
         var inputs = FlatRateAllowances(RiverInputs.Example) with { Composition = new PlanComposition(false, true, rent, false, false) };
 
-        Allowances(inputs).Drains[^1].ShouldBe(new Drain("left_after_allowances", DrainKind.PassedOn, 97_581.56m, next));
+        Allowances(inputs).Drains[^1].ShouldBe(new Drain(key, DrainKind.PassedOn, 97_581.56m, next));
     }
 
     [Fact]
@@ -798,7 +800,7 @@ public class ModuleViewsTests
             new Drain("internet_allowance", DrainKind.PassedOn, 240m, "pocket"),
             new Drain("computer_allowance", DrainKind.PassedOn, 240m, "pocket"),
             new Drain("phone_costs", DrainKind.PassedOn, 600m, "pocket"),
-            new Drain("left_after_allowances", DrainKind.PassedOn, 96_981.56m, "split"),
+            new Drain("profit_before_pay", DrainKind.PassedOn, 96_981.56m, "split"),
         });
     }
 
@@ -850,7 +852,7 @@ public class ModuleViewsTests
     [Fact]
     public void Allowances_afterVouchers_passOnWhatBothLeave()
     {
-        Allowances(FlatRateAllowances(AllVouchers)).Drains[^1].ShouldBe(new Drain("left_after_allowances", DrainKind.PassedOn, 95_271.36m, "split"));
+        Allowances(FlatRateAllowances(AllVouchers)).Drains[^1].ShouldBe(new Drain("profit_before_pay", DrainKind.PassedOn, 95_271.36m, "split"));
     }
 
     // The river runs on: what the allowances leave is what they leave, whatever the rent takes next.

@@ -18,10 +18,9 @@ namespace Netto.Web.Client.River;
 // the engine's figures and steps; no card calculates on its own.
 
 // What the vouchers bring to the pocket, one drain for each kind once the company grants any, what the
-// company deducts of them and what it cannot, and what they leave of what the company earns, passed
-// on to the next module in the plan, or the split: what it earns less what reaches the pocket through
-// them, from the year's voucher steps, and the share of what the company pays in them that reaches the
-// pocket (ToYou). The shares, the yearly maximums and the conditions are the year's rules, which the
+// company deducts of them and what it cannot, and what they leave of what the company earns, handed on
+// to the next module in the plan, or the split (HandOff), from the year's voucher steps, and the share
+// of what the company pays in them that reaches the pocket (ToYou). The shares, the yearly maximums and the conditions are the year's rules, which the
 // card reads beside it, so they stay while an amount is refused.
 internal sealed record VoucherView(
     decimal Total,
@@ -36,7 +35,7 @@ internal sealed record VoucherView(
     {
         var steps = year.Steps.Where(step => step.Event == TaxableEvent.Vouchers).ToList();
         var inPocket = steps.Where(step => step.Track == Track.InPocket).ToList();
-        var left = year.Scenario.ProfitBeforeDirector - inPocket.Sum(step => step.Amount);
+        var left = HandOff.After(year, OptionalModule.Vouchers);
 
         return new VoucherView(
             year.Vouchers.Total,
@@ -46,24 +45,23 @@ internal sealed record VoucherView(
             Shares.Of(inPocket.Sum(step => step.Amount), year.Vouchers.Total),
             [
                 .. inPocket.Select(Drain.ToPocket),
-                new Drain("left_after_vouchers", DrainKind.PassedOn, left, NextModule.After(OptionalModule.Vouchers, composition)),
+                HandOff.Drain(year, OptionalModule.Vouchers, composition),
             ],
             steps.Select(StepDetail.From).ToList());
     }
 }
 
 // What the expense allowances bring to the pocket, one drain for each once the company pays any, and
-// what the vouchers and they leave of what the company earns, passed on to the next module in the
-// plan, or the split: the profit before pay with the rent the company pays, what the car costs it and
-// the copyright royalty the split pays still in it. The maxima and the conditions are the year's rules, which the card reads beside it, so
-// they stay while an amount is refused. The company deducts them in full: nothing of them reaches
+// what the vouchers and they leave of what the company earns, handed on to the next module in the
+// plan, or the split (HandOff). The maxima and the conditions are the year's rules, which the card
+// reads beside it, so they stay while an amount is refused. The company deducts them in full: nothing of them reaches
 // Corporate tax, and all of them reach the pocket (ToYou) once it pays any.
 internal sealed record AllowanceView(decimal Total, decimal Left, decimal? ToYou, IReadOnlyList<Drain> Drains, IReadOnlyList<StepDetail> Details)
 {
     public static AllowanceView From(YearResult year, PlanComposition composition)
     {
         var steps = year.Steps.Where(step => step.Event == TaxableEvent.ExpenseAllowances).ToList();
-        var left = year.ProfitBeforePay + year.Rent.Rent + CarView.FromProfit(year.Car) + year.Copyright.Royalty;
+        var left = HandOff.After(year, OptionalModule.Allowances);
         var total = steps.Where(step => step.Track == Track.InPocket).Sum(step => step.Amount);
 
         return new AllowanceView(
@@ -72,16 +70,15 @@ internal sealed record AllowanceView(decimal Total, decimal Left, decimal? ToYou
             Shares.Of(total, total),
             [
                 .. steps.Where(step => step.Track == Track.InPocket).Select(Drain.ToPocket),
-                new Drain("left_after_allowances", DrainKind.PassedOn, left, NextModule.After(OptionalModule.Allowances, composition)),
+                HandOff.Drain(year, OptionalModule.Allowances, composition),
             ],
             steps.Select(StepDetail.From).ToList());
     }
 }
 
 // What the rent costs in personal tax, each line of it into the taxes on pay, what reaches the pocket
-// once that is paid, and what it leaves of what the company earns, passed on to the car when it is in
-// the plan, or to the split as what the pay, the company and a royalty share there, from the year's
-// rent steps; and what the rules
+// once that is paid, and what it leaves of what the company earns, handed on to the car when it is in
+// the plan, or to the split (HandOff), from the year's rent steps; and what the rules
 // tax it on: the rent, or the floor when it is less (TaxedOnTheFloor), less its flat charges. The cap
 // and the conditions are the year's rules, which the card reads beside it (RentCapView), so they stay
 // while the rent is refused. The company deducts it in full: nothing of it reaches Corporate tax. Its
@@ -123,12 +120,9 @@ internal sealed record RentView(
             [
                 .. paidOut.Select(step => Drain.PaidOutTo(step, "taxes_on_pay").Of(rent.Rent)),
                 .. afterTax,
-                NextModule.After(OptionalModule.Rent, composition) is "split"
-                    ? NextModule.IntoTheSplit(year, composition)
-                    : new Drain("left_after_rent", DrainKind.PassedOn, year.ProfitBeforePay + CarView.FromProfit(year.Car) + year.Copyright.Royalty,
-                        NextModule.After(OptionalModule.Rent, composition)),
+                HandOff.Drain(year, OptionalModule.Rent, composition),
             ],
-            steps.Select(StepDetail.From).ToList()) { SplitShares = year.ProfitBeforePay + year.Copyright.Royalty };
+            steps.Select(StepDetail.From).ToList()) { SplitShares = HandOff.Shared(year) };
     }
 }
 
@@ -145,11 +139,6 @@ internal static class NextModule
         OptionalModule.Car => "car",
         var next => throw new ArgumentOutOfRangeException(nameof(composition), next, "A module no lever passes on to."),
     };
-
-    // What the last lever before the split passes on to it: what the pay and the company share, and the
-    // royalty too once Copyright royalty is in the plan, the split paying it beside the pay.
-    public static Drain IntoTheSplit(YearResult year, PlanComposition composition) => new(
-        composition.Copyright ? "profit_before_pay_and_royalty" : "profit_before_pay", DrainKind.PassedOn, year.ProfitBeforePay + year.Copyright.Royalty, "split");
 }
 
 // The cap the rent card shows under the rent and offers, the year's rules on what the user entered,
@@ -203,7 +192,7 @@ internal sealed record SplitRoyaltyView(decimal? Amount, Input<bool> FollowsPay,
             inputs.Copyright.FollowsPay,
             inputs.Copyright.Royalty,
             run.Year?.Copyright.Following,
-            run.Year is { } year ? year.ProfitBeforePay + year.Copyright.Royalty : null);
+            run.Year is { } year ? HandOff.Shared(year) : null);
 }
 
 // What the split draws from the engine's search: the net in pocket at every pay, the best pay and

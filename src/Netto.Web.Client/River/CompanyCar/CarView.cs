@@ -40,8 +40,8 @@ internal sealed record CarView(
         var ledger = year.Steps.Where(step => step.Event == TaxableEvent.CompanyCar).ToList();
         var steps = ledger.ToDictionary(step => step.RuleKey);
         var car = year.Car;
-        var left = year.ProfitBeforePay + year.Copyright.Royalty;
-        var received = left + FromProfit(car);
+        var left = HandOff.After(year, OptionalModule.Car);
+        var received = HandOff.Before(year, OptionalModule.Car);
         IEnumerable<Drain> drains = steps.Count > 0
             ?
             [
@@ -57,7 +57,7 @@ internal sealed record CarView(
             steps.Count > 0 ? Shares.Of(left, received) : null,
             [
                 .. drains,
-                NextModule.IntoTheSplit(year, composition),
+                HandOff.Drain(year, OptionalModule.Car, composition),
             ],
             ledger.Select(StepDetail.From).ToList()) { SplitShares = left };
     }
