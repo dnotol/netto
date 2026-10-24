@@ -140,6 +140,16 @@ public class CompareRowsTests
         differences.ShouldAllBe(difference => difference.Kind == DifferenceKind.Same && difference.Amount == 0m && !decimal.IsNegative(difference.Amount));
     }
 
+    // The fund's fee is a social contribution of the layer's: a plan that gives one, 3.05% on the example's
+    // 50,000, has the fee among its social contributions, 251.68 on 8,251.60 (GrossToNetFundFeeTests).
+    [Fact]
+    public void Rows_fundFeeInOnePlan_isAmongItsSocialContributions()
+    {
+        var view = Compare(RiverInputs.Example, RiverInputs.Example.WithFundFeeRate(0.0305m));
+
+        (AmountOf(view, view.Plan!, "social_contributions"), AmountOf(view, view.Against!, "social_contributions")).ShouldBe((8_293.36m, 8_251.60m + 251.68m));
+    }
+
     // The same cents are the same, and a row that does not differ is not one that differs.
     [Fact]
     public void Rows_equalFigures_doNotDiffer()

@@ -39,6 +39,21 @@ public class BucketsViewTests
         });
     }
 
+    // The fund's fee leaves the pay with the contributions, into « Contributions and tax on pay », and the
+    // buckets still add up to what the river starts from.
+    [Fact]
+    public void From_fundFee_isInTheTaxesOnPay()
+    {
+        var run = RiverInputs.Example.WithFundFeeRate(0.0305m).Run();
+        var view = BucketsView.From(run).ShouldNotBeNull();
+        var pay = run.Pay.ShouldNotBeNull();
+
+        view.ShouldSatisfyAllConditions(
+            () => view.AmountOf("taxes_on_pay").ShouldBe(pay.Steps.Where(step => step.Track == Netto.Core.Simulation.Track.PaidOut).Sum(step => step.Amount)),
+            () => pay.Steps.Single(step => step.RuleKey == "fund_fee").Amount.ShouldBe(251.68m),
+            () => view.Buckets.Sum(bucket => bucket.Amount).ShouldBe(view.Start));
+    }
+
     // What reaches the pocket out of what leaves the company, the start less what it keeps there; none
     // where nothing leaves it.
     [Fact]
