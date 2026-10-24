@@ -96,6 +96,9 @@
   <data name="Surcharge_Due" xml:space="preserve">
     <value>More by {0} leaves none due</value>
   </data>
+  <data name="Surcharge_TooLate" xml:space="preserve">
+    <value>Every deadline of the year is past, so no payment can still leave none due.</value>
+  </data>
   <data name="WithheldAsPaySlip" xml:space="preserve">
     <value>Use the pay slip's amount</value>
   </data>

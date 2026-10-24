@@ -1,5 +1,6 @@
 @using Netto.Core.Rules
 @inject IStringLocalizer<CorporateTaxCard> L
+@inject TimeProvider Clock
 
 @* Corporate tax on the company's profit after pay, at 25% or 20% on its first slice, and the
    surcharge the advance payments leave on it. Its figures come first, as one list: what its taxable
@@ -10,8 +11,8 @@
    and the benefits only when they are what gives up the rate. What the user rarely changes sits
    behind two disclosures after it, each folded to a line that states it: the company, and its
    advance payments with the surcharge they leave. The payments are taken while typing, like
-   revenue, since nothing bounds them, and the card says what more by the last deadline cancels the
-   surcharge. *@
+   revenue, since nothing bounds them, and the card says what more by the first deadline still open,
+   on the browser's date, cancels the surcharge (MoreBy), or that none is open any more. *@
 <ModuleCard Name="corporate-tax" Title="@L["Title"]" Summary="@Summary" Glance="@Glance" PassesOn="@_view?.PassesOn" Waiting="Inputs.Company is null" Refused="@Refused"
             Sources="@(_view?.Details ?? [])" IncomeYear="Inputs.IncomeYear" DetailsLabel="@L["DetailsLabel"]" SourcesTitle="@L["SourcesTitle", Inputs.IncomeYear]">
     <RefusedMessage Error="@Refused" />
@@ -66,7 +67,7 @@
         @if (_view is not null)
         {
             <p class="corporate-tax__condition">
-                @L[CorporateTaxCardText.Surcharge(_view.Surcharge), Formats.Euros(_view.TopUp), Formats.Day(_view.LastDeadline)]
+                @L[CorporateTaxCardText.SurchargeSentence(_view.Surcharge, _moreBy), CorporateTaxCardText.SurchargeArguments(_moreBy)]
             </p>
         }
     </Disclosure>
@@ -87,11 +88,17 @@
     public Refusal? Refused { get; set; }
 
     private CorporateTaxView? _view;
+    private MoreBy? _moreBy;
     private CorporateTaxSettingsView _settings = default!;
+
+    // The browser's date, which decides the first deadline not yet past: the one the sentence of what more
+    // by it cancels the surcharge names, as the Optimisation tab's payment move and When to pay do.
+    private DateOnly Today => DateOnly.FromDateTime(Clock.GetLocalNow().DateTime);
 
     protected override void OnParametersSet()
     {
         _view = Run.Year is { } year ? CorporateTaxView.From(year) : null;
+        _moreBy = Run.Year is { } yearToday ? MoreBy.Company(yearToday, Today) : null;
         _settings = CorporateTaxSettingsView.From(Inputs, Run);
     }
 

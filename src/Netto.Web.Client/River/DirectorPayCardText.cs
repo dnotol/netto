@@ -6,9 +6,14 @@ namespace Netto.Web.Client.River;
 // its settings (SettingsViews) and its tests alike.
 internal static class DirectorPayCardText
 {
-    // Why no surcharge is due, or, while one is, the line of what more by the last deadline leaves
-    // none due.
+    // Why no surcharge is due, or, while one is, the line of what more by the first deadline still open
+    // leaves none due.
     public static string Surcharge(TaxSurchargeState state) => $"Surcharge_{state}";
+
+    // The note the card draws where it draws no such line: why no surcharge is due, or, while one is and
+    // no deadline is open any more, that no payment can still leave none due.
+    public static string Note(TaxSurchargeState state, MoreBy? more) =>
+        state == TaxSurchargeState.Due && more is null ? "Surcharge_TooLate" : Surcharge(state);
 
     public static string PaidBy(ContributionsPaidBy paidBy) => $"PaidBy_{paidBy}";
 

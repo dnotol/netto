@@ -2,6 +2,7 @@ using System.Net;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
+using Netto.Core.Simulation;
 using Netto.Web.Client;
 using Netto.Web.Client.River;
 using Shouldly;
@@ -35,6 +36,9 @@ public class StreamCardsFiguresTests
 
     // The split's, for the words of its button.
     private static readonly ResxText SplitTexts = ResxText.For<SplitCard>();
+
+    // Corporate tax's, for the sentence its disclosure states about the surcharge.
+    private static readonly ResxText CorporateTexts = ResxText.For<CorporateTaxCard>();
 
     // The example with nothing withheld on the pay, which leaves a surcharge due on its tax.
     private static readonly RiverInputs NothingWithheld = RiverInputs.Example.WithTaxWithheld(0m);
@@ -210,11 +214,12 @@ public class StreamCardsFiguresTests
             () => CardHtml.LineRuns(html).Select(run => run.List).ShouldBe(["figure", "drain"]));
     }
 
-    // Due, the surcharge is a drain line, and what more by the last deadline leaves none due a line of
-    // its own, a figure line drawn after the drains. The example's pay has no benefit in kind, so no
-    // figure line stands before them.
+    // Due, the surcharge is a drain line, and what more by the first deadline still open leaves none due a
+    // line of its own, a figure line drawn after the drains. The example's pay has no benefit in kind, so no
+    // figure line stands before them. The page's clock is 23 October, when 21 December, the last, is the
+    // one deadline left.
     [Fact]
-    public async Task DirectorPay_nothingWithheld_drawsWhatMoreByTheLastDeadlineLeavesNoneDue()
+    public async Task DirectorPay_nothingWithheld_drawsWhatMoreByTheFirstOpenDeadlineLeavesNoneDue()
     {
         var html = CardHtml.Card(await CardHtml.RenderPlanOpenAsync(NothingWithheld), "director-pay");
 
@@ -222,6 +227,63 @@ public class StreamCardsFiguresTests
             () => CardHtml.LineRuns(html).Select(run => run.List).ShouldBe(["drain", "figure"]),
             () => CardHtml.Lines(html).Select(line => (line.Amount, line.Share)).Last().ShouldBe(("€14,317.50", null)),
             () => html.ShouldNotContain("class=\"director-pay__condition\""));
+    }
+
+    // The line follows the browser's date: it names the first deadline not yet past on it, before the
+    // first, on a deadline and between two, with the amount the Optimisation tab's payment move proposes
+    // for that date. 2026's deadlines are 10 April, 10 July, 12 October and 21 December.
+    public static TheoryData<DateOnly, string> OpenDeadlineDays => new()
+    {
+        { new(2026, 3, 1), "10 April 2026" },
+        { new(2026, 4, 10), "10 April 2026" },
+        { new(2026, 7, 15), "12 October 2026" },
+        { new(2026, 10, 13), "21 December 2026" },
+    };
+
+    [Theory]
+    [MemberData(nameof(OpenDeadlineDays))]
+    public async Task DirectorPay_nothingWithheldOnAnotherDay_drawsTheFirstDeadlineStillOpenAndThePaymentMovesFigure(DateOnly today, string day)
+    {
+        var html = CardHtml.Card(await CardHtml.RenderPlanOpenAsync(NothingWithheld, At(today)), "director-pay");
+
+        var move = new DirectorAdvancePaymentFinder(today).Find(NothingWithheld.MoveScenario()).ShouldBeOfType<DirectorAdvancePaymentMove>();
+        html.ShouldSatisfyAllConditions(
+            () => CardHtml.LineRuns(html).Select(run => run.List).ShouldBe(["drain", "figure"]),
+            () => CardHtml.Lines(html).Select(line => (line.Label, line.Amount)).Last().ShouldBe((Texts.Format("Surcharge_Due", day), Formats.Euros(move.Amount))),
+            () => html.ShouldNotContain("class=\"director-pay__condition\""));
+    }
+
+    // Once every deadline is past no payment can still leave none due: the line gives way to a note that
+    // says so, the surcharge staying among the drains.
+    [Fact]
+    public async Task DirectorPay_everyDeadlinePast_drawsItsNoteInPlaceOfTheLine()
+    {
+        var html = CardHtml.Card(await CardHtml.RenderPlanOpenAsync(NothingWithheld, At(new DateOnly(2026, 12, 22))), "director-pay");
+
+        html.ShouldSatisfyAllConditions(
+            () => CardHtml.LineRuns(html).Select(run => run.List).ShouldBe(["drain"]),
+            () => CardHtml.Prose(html).ShouldContain(Texts.Get("Surcharge_TooLate").ShouldNotBeNull()),
+            () => CardHtml.Lines(html).Select(line => line.Label).ShouldNotContain(label => label.StartsWith("More by", StringComparison.Ordinal)));
+    }
+
+    // In its Advance payments disclosure, Corporate tax says what more by the first deadline still open
+    // cancels its surcharge, as the company's payment move proposes for that date.
+    [Theory]
+    [MemberData(nameof(OpenDeadlineDays))]
+    public async Task CorporateTax_onAnotherDay_saysWhatMoreByTheFirstDeadlineStillOpenCancelsTheSurcharge(DateOnly today, string day)
+    {
+        var html = await CorporateTaxAsync(At(today));
+
+        var move = new CompanyAdvancePaymentFinder(today).Find(RiverInputs.Example.MoveScenario()).ShouldBeOfType<CompanyAdvancePaymentMove>();
+        CardHtml.Prose(html).ShouldContain(CorporateTexts.Format("Surcharge_Due", Formats.Euros(move.Amount), day));
+    }
+
+    [Fact]
+    public async Task CorporateTax_everyDeadlinePast_saysNoPaymentCanStillCancelTheSurcharge()
+    {
+        var html = await CorporateTaxAsync(At(new DateOnly(2026, 12, 22)));
+
+        CardHtml.Prose(html).ShouldContain(CorporateTexts.Get("Surcharge_TooLate").ShouldNotBeNull());
     }
 
     // How the withholding is derived from the pay slip, and what the key formula is, are rules: the
@@ -299,6 +361,20 @@ public class StreamCardsFiguresTests
     }
 
     private static async Task<string> CardAsync(string card) => CardHtml.Card(await Page.Value, card);
+
+    // Noon on that day on the browser's clock.
+    private static DateTimeOffset At(DateOnly day) => new(day.ToDateTime(new TimeOnly(12, 0)), TimeSpan.Zero);
+
+    // The Corporate tax card on the example, open with its disclosures, on the browser's clock at that
+    // instant, its HTML decoded to the text a viewer reads.
+    private static async Task<string> CorporateTaxAsync(DateTimeOffset on) =>
+        WebUtility.HtmlDecode(await RenderAsync(typeof(CorporateTaxCard), OpenCard("corporate-tax"),
+            new() { ["Inputs"] = RiverInputs.Example, ["Run"] = RiverInputs.Example.Run(), ["Refused"] = null },
+            services =>
+            {
+                services.AddSingleton<IComponentActivator>(new OpenDisclosures());
+                services.AddSingleton<TimeProvider>(new Clock(on));
+            }));
 
     // The best pay the split's search finds for the river as it stands.
     private static decimal BestPay(RiverInputs river) => river.SearchSplit().ShouldNotBeNull().Best.ShouldNotBeNull().Pay;

@@ -15,6 +15,14 @@ internal static class CorporateTaxCardText
 
     public static string Surcharge(SurchargeState state) => $"Surcharge_{state}";
 
+    // What the advance payments leave, as the card says it: why no surcharge is due, or, while one is,
+    // what more by the first deadline still open cancels it, or that no payment can, once none is open.
+    public static string SurchargeSentence(SurchargeState state, MoreBy? more) =>
+        state == SurchargeState.Due && more is null ? "Surcharge_TooLate" : Surcharge(state);
+
+    // The sentence's arguments: that amount and that deadline, as the card words them.
+    public static object[] SurchargeArguments(MoreBy? more) => more is null ? [] : [Formats.Euros(more.Amount), Formats.Day(more.Deadline)];
+
     public static string FinancialYear(FinancialYear year) => $"FinancialYear_{year}";
 
     // The financial year as the line of « Your company » states it.

@@ -126,6 +126,9 @@
   <data name="Surcharge_Due" xml:space="preserve">
     <value>{0} more by {1} cancels the surcharge.</value>
   </data>
+  <data name="Surcharge_TooLate" xml:space="preserve">
+    <value>Every deadline of the year is past, so no payment can still cancel the surcharge.</value>
+  </data>
   <data name="CompanyTitle" xml:space="preserve">
     <value>Your company</value>
   </data>

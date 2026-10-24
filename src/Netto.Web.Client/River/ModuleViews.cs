@@ -362,19 +362,18 @@ internal enum RateChoice
 // view is the pay slip, drawn from the same result, and its steps' sources. When the company pays
 // the contributions on the director's behalf they are pay too, so the card shows what the pay costs
 // the company, the gross plus them, and the contributions drain says the company pays them. The
-// engine says what the withholding and the advance payments leave on its tax, and what more by the
-// last deadline leaves no surcharge due; the surcharge and the bonus they earn are drains, from the
-// pay's steps. Each line says its share of what the pay costs the company, and the card what reaches
-// the pocket of it (ToYou). A copyright royalty's part beyond its limits is taxed as pay and paid
-// besides the payslip (GrossToNetResult.RequalifiedPay): what flows in is then the pay's cost and that
-// part, which the shares are out of.
+// engine says what the withholding and the advance payments leave on its tax; the surcharge and the
+// bonus they earn are drains, from the pay's steps, and what more by the first deadline still open
+// leaves no surcharge due depends on the date the card is seen on (MoreBy). Each line says its share
+// of what the pay costs the company, and the card what reaches the pocket of it (ToYou). A copyright
+// royalty's part beyond its limits is taxed as pay and paid besides the payslip
+// (GrossToNetResult.RequalifiedPay): what flows in is then the pay's cost and that part, which the
+// shares are out of.
 internal sealed record DirectorPayView(
     bool CompanyPaysContributions,
     decimal CompanyCost,
     decimal? ToYou,
     TaxSurchargeState Surcharge,
-    decimal TopUp,
-    DateOnly LastDeadline,
     IReadOnlyList<Drain> Drains,
     IReadOnlyList<StepDetail> Details)
 {
@@ -393,8 +392,6 @@ internal sealed record DirectorPayView(
             pay.CompanyCost,
             Shares.Of(pay.NetInPocket, inflow),
             SurchargeStates.Of(payments),
-            payments.LastDeadlineTopUp,
-            TaxAdvancePaymentFields.Deadlines(pay.IncomeYear)[^1].Date.Value,
             [
                 .. pay.Steps.Where(step => step.Track == Track.PaidOut)
                     .Select(step => Payer(Drain.PaidOutTo(step, "taxes_on_pay"), companyPays).Of(inflow)),
@@ -435,7 +432,7 @@ internal enum TaxSurchargeState
     // Some is left, but under the minimum, so none is due.
     BelowMinimum,
 
-    // Some is due, which a payment by the last deadline can bring under the minimum.
+    // Some is due, which a payment by a deadline still open can bring under the minimum.
     Due,
 }
 
@@ -452,7 +449,7 @@ internal static class TaxAdvancePaymentFields
 }
 
 // The condition is the engine's: which part of art. 215 decided the rate, against which minimum pay,
-// and against which share of the total pay its flat-rate benefits may reach. So is the surcharge the advance payments leave, and what more by the last deadline cancels it. What
+// and against which share of the total pay its flat-rate benefits may reach. So is the surcharge the advance payments leave; what more by the first deadline still open cancels it depends on the date the card is seen on (MoreBy). What
 // comes in is the profit the split leaves the company; its taxable income adds back the disallowed
 // expenses the engine counts, what it cannot deduct of the vouchers. The card lists the corporate
 // layer's steps, that one among them. Each line says its share of what comes in, and the card what
@@ -470,8 +467,6 @@ internal sealed record CorporateTaxView(
     bool NoTaxableProfit,
     SurchargeState Surcharge,
     decimal SurchargeAmount,
-    decimal TopUp,
-    DateOnly LastDeadline,
     IReadOnlyList<Drain> Drains,
     IReadOnlyList<StepDetail> Details)
 {
@@ -501,8 +496,6 @@ internal sealed record CorporateTaxView(
             year.Company.TaxableIncome <= 0m,
             SurchargeStates.Of(payments),
             payments.Surcharge,
-            payments.LastDeadlineTopUp,
-            AdvancePaymentFields.Deadlines(year.Scenario.IncomeYear)[^1].Date.Value,
             [
                 .. steps.Where(step => step.Track == Track.PaidOut).Select(step => Drain.PaidOutTo(step, "taxes_on_profit").Of(year.ProfitAfterPay)),
                 new Drain("profit_after_tax", DrainKind.PassedOn, year.ProfitAfterTax, "dividend").Of(year.ProfitAfterPay),
@@ -550,7 +543,7 @@ internal enum SurchargeState
     // The payments' credits cover it.
     Covered,
 
-    // Some is left, which a payment by the last deadline can cancel.
+    // Some is left, which a payment by a deadline still open can cancel.
     Due,
 }
 

@@ -313,16 +313,15 @@ public class ModuleViewsTests
                 "income_tax_advance_payment_surcharge", "income_tax_advance_payment_bonus"]);
     }
 
-    // Nothing withheld: 486.57 on the pay's tax, a drain of its own, and 14,317.50 by 21 December
-    // brings it under the 100 minimum.
+    // Nothing withheld: 486.57 on the pay's tax, a drain of its own (what more by a deadline leaves none
+    // due is MoreBy's, on the date the card is seen).
     [Fact]
-    public void DirectorPay_nothingWithheld_saysTheSurchargeIsDueAndWhatByTheLastDeadlineLeavesNoneDue()
+    public void DirectorPay_nothingWithheld_saysTheSurchargeIsDue()
     {
         var view = DirectorPay(RiverInputs.Example.WithTaxWithheld(0m));
 
-        (view.Surcharge, Line(view.Drains.Single(drain => drain.Key == "income_tax_advance_payment_surcharge")), view.TopUp, view.LastDeadline)
-            .ShouldBe((TaxSurchargeState.Due, new Drain("income_tax_advance_payment_surcharge", DrainKind.PaidOut, 486.57m, "taxes_on_pay"), 14_317.50m,
-                new DateOnly(2026, 12, 21)));
+        (view.Surcharge, Line(view.Drains.Single(drain => drain.Key == "income_tax_advance_payment_surcharge")))
+            .ShouldBe((TaxSurchargeState.Due, new Drain("income_tax_advance_payment_surcharge", DrainKind.PaidOut, 486.57m, "taxes_on_pay")));
     }
 
     // The 10,691.28 the key formula withholds leaves 59.52 of surcharge before the 90%, under the minimum.
@@ -526,14 +525,14 @@ public class ModuleViewsTests
         CorporateTax(RiverInputs.Example).Details.Select(detail => detail.RuleKey).ShouldBe(["corporate_tax", "advance_payment_surcharge"]);
     }
 
-    // 4.5% of 14,999.89 by 21 December, 674.99505, rounds to the 675.
+    // 4.5% of 14,999.89 by 21 December, 674.99505, rounds to the 675 (what more by a deadline cancels it
+    // is MoreBy's, on the date the card is seen).
     [Fact]
-    public void CorporateTax_example_saysTheSurchargeIsDueAndWhatByTheLastDeadlineCancelsIt()
+    public void CorporateTax_example_saysTheSurchargeIsDue()
     {
         var view = CorporateTax(RiverInputs.Example);
 
-        (view.Surcharge, view.SurchargeAmount, view.TopUp, view.LastDeadline)
-            .ShouldBe((SurchargeState.Due, 675.00m, 14_999.89m, new DateOnly(2026, 12, 21)));
+        (view.Surcharge, view.SurchargeAmount).ShouldBe((SurchargeState.Due, 675.00m));
     }
 
     [Fact]
@@ -541,7 +540,7 @@ public class ModuleViewsTests
     {
         var view = CorporateTax(Prepaid);
 
-        (view.Surcharge, view.SurchargeAmount, view.TopUp).ShouldBe((SurchargeState.Covered, 0m, 0m));
+        (view.Surcharge, view.SurchargeAmount).ShouldBe((SurchargeState.Covered, 0m));
     }
 
     [Fact]

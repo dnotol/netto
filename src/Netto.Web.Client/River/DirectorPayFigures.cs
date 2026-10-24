@@ -3,9 +3,9 @@ using Netto.Core.DirectorPay;
 namespace Netto.Web.Client.River;
 
 // Director pay's figures as lines (FigureLine), which its card words from its own texts: what the pay is
-// taxed on besides its gross, with the taxable pay they make (Taxed), and what more by the last
-// deadline leaves no surcharge due while one is (Surcharge). They select the engine's figures; where the
-// pay goes is the card's drain list.
+// taxed on besides its gross, with the taxable pay they make (Taxed), and what more by the first
+// deadline still open leaves no surcharge due while one is (Surcharge). They select the engine's
+// figures; where the pay goes is the card's drain list.
 internal static class DirectorPayFigures
 {
     // What the pay is taxed on besides its gross, each part above nothing and explained in its bubble:
@@ -26,9 +26,10 @@ internal static class DirectorPayFigures
         return taxed.Count == 0 ? [] : [.. taxed, new FigureLine("Figure_TaxablePay", pay.TaxablePay)];
     }
 
-    // What more by the last deadline leaves no surcharge due, while one is: its amount is among the
-    // pay's drains. None while none is due, the card saying why.
-    public static IReadOnlyList<FigureLine> Surcharge(DirectorPayView view) => view.Surcharge == TaxSurchargeState.Due
-        ? [new FigureLine(DirectorPayCardText.Surcharge(TaxSurchargeState.Due), view.TopUp) { Args = [Formats.Day(view.LastDeadline)] }]
-        : [];
+    // What more by the first deadline still open leaves no surcharge due, while one is and a deadline is
+    // open: the surcharge's amount is among the pay's drains. None otherwise, the card saying why
+    // (DirectorPayCardText.Note).
+    public static IReadOnlyList<FigureLine> Surcharge(MoreBy? more) => more is null
+        ? []
+        : [new FigureLine(DirectorPayCardText.Surcharge(TaxSurchargeState.Due), more.Amount) { Args = [Formats.Day(more.Deadline)] }];
 }

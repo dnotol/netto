@@ -2,13 +2,15 @@
 @using Netto.Core.SocialContributions
 @using Netto.Web.Client.DirectorPay
 @inject IStringLocalizer<DirectorPayCard> L
+@inject TimeProvider Clock
 
 @* The director's gross pay through INASTI's contributions, the income tax and the municipal
    surcharge to the net. The pay comes from the split, or has a slider of its own once the company
    is skipped. Its figures come first, as one list: the gross from the split, what the pay is taxed
    on besides it (DirectorPayFigures), then where the pay goes (DrainList); then what the withholding
-   and the advance payments leave on the tax, a line of what more by the last deadline leaves no
-   surcharge due, or a sentence saying why none is. What the user rarely changes sits behind two
+   and the advance payments leave on the tax, a line of what more by the first deadline still open, on
+   the browser's date, leaves no surcharge due (MoreBy), or a sentence saying why none is, or that no
+   deadline is open any more. What the user rarely changes sits behind two
    disclosures after them, each folded to a line that states it: their situation, and the tax paid
    during the year. The user says who pays the contributions; when the company does, they are pay
    too, and what flows in says what the pay costs it. What was withheld on the pay is the pay slip's
@@ -42,13 +44,13 @@
             <FigureList Figures="@FigureWords.Of(L, DirectorPayFigures.Taxed(pay))" />
             <DrainList Drains="_view.Drains" />
         </div>
-        @if (DirectorPayFigures.Surcharge(_view) is { Count: > 0 } topUp)
+        @if (DirectorPayFigures.Surcharge(_moreBy) is { Count: > 0 } topUp)
         {
             <FigureList Figures="@FigureWords.Of(L, topUp)" />
         }
         else
         {
-            <p class="director-pay__condition">@L[DirectorPayCardText.Surcharge(_view.Surcharge)]</p>
+            <p class="director-pay__condition">@L[DirectorPayCardText.Note(_view.Surcharge, _moreBy)]</p>
         }
     }
     <Disclosure Title="@L["SituationTitle"]" Values="@SettingWords.Of(L, _settings.Situation)" Refused="@DirectorPaySettingsView.SituationHolds(Refused)">
@@ -121,15 +123,21 @@
     public Refusal? Refused { get; set; }
 
     private DirectorPayView? _view;
+    private MoreBy? _moreBy;
     private WithheldFieldView _withheld = default!;
     private DirectorPaySettingsView _settings = default!;
 
     protected override void OnParametersSet()
     {
         _view = Run.Pay is { } pay ? DirectorPayView.From(Inputs, pay) : null;
+        _moreBy = Run.Pay is { } payToday ? MoreBy.Director(Inputs, payToday, Today) : null;
         _withheld = WithheldFieldView.From(Inputs, Run);
         _settings = DirectorPaySettingsView.From(Inputs, Run);
     }
+
+    // The browser's date, which decides the first deadline not yet past: the one the line of what more by
+    // it leaves none due names, as the Optimisation tab's payment move and When to pay do.
+    private DateOnly Today => DateOnly.FromDateTime(Clock.GetLocalNow().DateTime);
 
     // Where the slider of a pay of its own stands: the pay, within the slider's ends.
     private decimal OwnPay => Math.Clamp(Inputs.DirectorPay.Value, 0m, OwnPayMaximum);
