@@ -57,7 +57,7 @@ public sealed record CarResult(
     public BenefitInKind BenefitInKind => new(Benefit, Contribution, Costs, NotDeductibleCosts + AddBack);
 
     // A plain zero when the company deducts them all, never a negative one.
-    public decimal NotDeductibleCosts => Costs == Deductible ? 0m : Costs - Deductible;
+    public decimal NotDeductibleCosts => Money.Minus(Costs, Deductible);
 }
 
 // A part of the income year at one age coefficient, from its first day to its last, its calendar days.

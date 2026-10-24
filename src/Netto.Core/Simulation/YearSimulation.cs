@@ -158,7 +158,7 @@ public static class YearSimulation
         var (low, high) = (0m, shared);
         while (high - low > Cent)
         {
-            var middle = Math.Floor((low + high) * 50m) / 100m;
+            var middle = Money.DownToCent((low + high) / 2m);
             if (Fits(middle))
                 low = middle;
             else
@@ -224,7 +224,7 @@ public static class YearSimulation
         var (low, high) = (0m, ceiling);
         while (high - low > Cent)
         {
-            var middle = Math.Floor((low + high) * 50m) / 100m;
+            var middle = Money.DownToCent((low + high) / 2m);
             if (Keeps(middle))
                 high = middle;
             else
@@ -396,13 +396,13 @@ public static class YearSimulation
         {
             AlsoCites = [rules.BenefitMethod, .. car.Co2Sources],
         },
-        new Step("car_contribution", Layer.Personal, TaxableEvent.CompanyCar, Track.InPocket, car.Contribution == 0m ? 0m : -car.Contribution,
+        new Step("car_contribution", Layer.Personal, TaxableEvent.CompanyCar, Track.InPocket, Money.Minus(0m, car.Contribution),
             rules.Benefit, []),
         new Step("car_benefit_taxed", Layer.Personal, TaxableEvent.CompanyCar, Track.TaxBaseOnly, car.Benefit,
             rules.BenefitAsPay, []) { AlsoCites = [rules.BenefitInContributions] },
         .. car.DeductionRate < 1m
             ? [new Step("car_costs_not_deductible", Layer.Corporate, TaxableEvent.CompanyCar, Track.TaxBaseOnly,
-                car.Costs == car.Deductible ? 0m : car.Costs - car.Deductible, rules.Deduction, [])]
+                car.NotDeductibleCosts, rules.Deduction, [])]
             : Array.Empty<Step>(),
         new Step("car_add_back", Layer.Corporate, TaxableEvent.CompanyCar, Track.TaxBaseOnly, car.AddBack,
             rules.AddBack, [car.AddBackRate ?? rules.AddBackRate]),

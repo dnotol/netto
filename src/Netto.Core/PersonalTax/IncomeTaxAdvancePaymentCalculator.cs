@@ -78,7 +78,7 @@ public static class IncomeTaxAdvancePaymentCalculator
         var high = SmallestCovering(beforeCredits, rules.Deadlines[deadline].CreditRate(rules));
         while (high - low > 0.01m)
         {
-            var middle = Math.Floor((low + high) * 50m) / 100m;
+            var middle = Money.DownToCent((low + high) / 2m);
             if (Figures(rules, totalTax, taxCredits, WithMoreBy(prepayments, deadline, middle)).Surcharge == 0m)
                 high = middle;
             else

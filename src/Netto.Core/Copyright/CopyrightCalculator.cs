@@ -40,7 +40,7 @@ public static class CopyrightCalculator
         if (!royalty.Any)
             return (CopyrightResult.None with { Following = following }, null);
 
-        var relativeLimit = Math.Floor(rules.RelativeLimit.Value * (royalty.Royalty + Math.Max(0m, grossPay)) * 100m) / 100m;
+        var relativeLimit = Money.DownToCent(rules.RelativeLimit.Value * (royalty.Royalty + Math.Max(0m, grossPay)));
         var cap = rules.Cap.Value;
         var (within, bound) = royalty switch
         {
@@ -49,7 +49,7 @@ public static class CopyrightCalculator
             _ when relativeLimit <= cap => (relativeLimit, CopyrightBound.Relative),
             _ => (cap, CopyrightBound.Cap),
         };
-        var asPay = royalty.Royalty - within;
+        var asPay = Money.Minus(royalty.Royalty, within);
         var costs = royalty.HoldsAttestation || !rules.FlatRateCosts.NeedsAttestation ? FlatRateCosts(rules.FlatRateCosts, within) : 0m;
         var net = within - costs;
 
@@ -60,7 +60,7 @@ public static class CopyrightCalculator
             cap,
             within,
             costs,
-            asPay == 0m ? 0m : asPay,
+            asPay,
             Money.RoundToCent(net * rules.WithholdingRate.Value),
             Money.RoundToCent(asPay * rules.BeyondLimitsWithholdingRate.Value),
             bound,
@@ -88,7 +88,7 @@ public static class CopyrightCalculator
             return null;
 
         var rate = Math.Min(envelope.Value * share, rules.RelativeLimit.Value);
-        var largest = Math.Floor(rate * Math.Max(0m, grossPay) / (1m - rate) * 100m) / 100m;
+        var largest = Money.DownToCent(rate * Math.Max(0m, grossPay) / (1m - rate));
         return (Math.Min(largest, rules.Cap.Value), [envelope, rules.RelativeLimit, rules.Cap]);
     }
 

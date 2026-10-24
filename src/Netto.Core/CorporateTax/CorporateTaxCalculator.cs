@@ -37,16 +37,14 @@ public static class CorporateTaxCalculator
             return null;
 
         var share = rules.ExcessBenefitsShare.Value;
-        var withinTheCap = UpToTheCent(flatRateBenefits * (1m - share) / share);
+        var withinTheCap = Money.UpToCent(flatRateBenefits * (1m - share) / share);
         if (status.FirstFourTaxPeriods)
             return flatRateBenefits > 0m ? withinTheCap : null;
 
-        var halfTheExcess = UpToTheCent((taxableIncomeAtNoPay - flatRateBenefits) / 2m);
+        var halfTheExcess = Money.UpToCent((taxableIncomeAtNoPay - flatRateBenefits) / 2m);
         var meetingThePayTest = Math.Clamp(halfTheExcess, 0m, Math.Max(0m, rules.MinimumDirectorPay.Value - flatRateBenefits));
         return Math.Max(meetingThePayTest, withinTheCap);
     }
-
-    private static decimal UpToTheCent(decimal amount) => Math.Ceiling(amount * 100m) / 100m;
 
     private static ReducedRateCondition Condition(
         CorporateTaxRules rules, decimal taxableIncome, decimal directorPay, CompanyStatus status, decimal flatRateBenefits)

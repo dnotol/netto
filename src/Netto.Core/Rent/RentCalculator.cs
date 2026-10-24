@@ -45,7 +45,7 @@ public static class RentCalculator
     // exceeds the law's (decided in this slice: no text rounds it). The multiplier is held a hair above
     // 5/3, so the product is never below the exact cap and a whole cent stays whole.
     public static decimal Cap(RentRules rules, HomeOfficeRent rent) =>
-        Math.Floor(CadastralIncomeLet(rent) * rules.RevaluationCoefficient.Value * rules.CapMultiplier.Value * 100m) / 100m;
+        Money.DownToCent(CadastralIncomeLet(rent) * rules.RevaluationCoefficient.Value * rules.CapMultiplier.Value);
 
     // The dwelling's cadastral income times the share let, to the cent.
     public static decimal CadastralIncomeLet(HomeOfficeRent rent) => Money.RoundToCent(rent.CadastralIncome * rent.ShareLet);

@@ -154,7 +154,7 @@ public static class GrossToNet
         var (low, high) = (0m, ceiling);
         while (high - low > 0.01m)
         {
-            var middle = Math.Floor((low + high) * 50m) / 100m;
+            var middle = Money.DownToCent((low + high) / 2m);
             if (TaxablePayOf(middle) >= taxablePay)
                 high = middle;
             else
@@ -317,20 +317,16 @@ public static class GrossToNet
 
         // What an income moves from the figures without it to those with it: the income tax and the
         // municipal surcharge it adds, the credit it takes away, and the surcharge less the bonus that
-        // lost credit adds.
+        // lost credit adds; a plain zero for what it moves nothing of.
         private static OtherIncomeTax Added(
             decimal income, PersonalTaxResult with, IncomeTaxAdvancePaymentResult withAdvancePayments, PersonalTaxResult without,
             IncomeTaxAdvancePaymentResult withoutAdvancePayments) =>
             new(
                 income,
-                Difference(with.IncomeTax, without.IncomeTax),
-                Difference(with.MunicipalSurcharge, without.MunicipalSurcharge),
-                Difference(without.LowEarnedIncomeCredit, with.LowEarnedIncomeCredit),
-                Difference(withAdvancePayments.Surcharge - withAdvancePayments.Bonus, withoutAdvancePayments.Surcharge - withoutAdvancePayments.Bonus));
-
-        // What the other income moves, a plain zero when it moves nothing: decimal subtraction can
-        // return a negative zero, which the steps would read as money coming back.
-        private static decimal Difference(decimal withOther, decimal alone) => withOther == alone ? 0m : withOther - alone;
+                Money.Minus(with.IncomeTax, without.IncomeTax),
+                Money.Minus(with.MunicipalSurcharge, without.MunicipalSurcharge),
+                Money.Minus(without.LowEarnedIncomeCredit, with.LowEarnedIncomeCredit),
+                Money.Minus(withAdvancePayments.Surcharge - withAdvancePayments.Bonus, withoutAdvancePayments.Surcharge - withoutAdvancePayments.Bonus));
 
         // The tax on the pay, the other income and an income taxed apart together, and the surcharge on
         // the pay's own tax, as art. 158 takes it separately, less the credit the total leaves.
