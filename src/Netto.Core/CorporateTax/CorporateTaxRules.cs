@@ -10,7 +10,8 @@ namespace Netto.Core.CorporateTax;
 // only while its directors' flat-rate benefits are worth at most ExcessBenefitsShare of their total
 // pay (art. 215 al. 3, 5°). The pay art. 215 tests is the gross with what the company bears for the
 // director and the benefits in kind (PayTested), and the total pay the benefits are held to counts
-// them too (ExcessBenefitsMemorandum).
+// them too (ExcessBenefitsMemorandum). Source is art. 215 itself, which the tax's step cites as its
+// rule; AssessmentBalance the text the balance on the company's assessment rests on.
 public sealed record CorporateTaxRules(
     int IncomeYear,
     RuleAmount StandardRate,
@@ -20,7 +21,9 @@ public sealed record CorporateTaxRules(
     RuleAmount ExcessBenefitsShare,
     Source PayTested,
     Source ExcessBenefitsMemorandum,
-    AdvancePaymentRules AdvancePayments)
+    AdvancePaymentRules AdvancePayments,
+    Source Source,
+    Source AssessmentBalance)
 {
     private static readonly Source Article215Income2026 = new(
         "CIR 92, art. 215 (revenus 2026), coordinated text on Fisconetplus, last modified 03.08.2026",
@@ -68,11 +71,9 @@ public sealed record CorporateTaxRules(
         new Uri("https://finances.belgium.be/fr/entreprises/impot_des_societes/versements_anticipes"),
         "corporate-tax/spf-finances_versements-anticipes-societes_2026-10-20.html");
 
-    public static Source Source => Article215Income2026;
-
     // The balance on the company's assessment: its tax less what it paid in advance, the excess
     // refunded. The article is common to every income tax; its second paragraph speaks of companies.
-    public static Source AssessmentBalance { get; } = SharedSources.Article304Income2026 with
+    private static readonly Source Article304Income2026 = SharedSources.Article304Income2026 with
     {
         Reference = "§2, al. 2: for a resident company, the excess of the advance payments of art. 157 to 168 and 218 over the tax is set against the separate assessments, "
             + "and the rest is refunded once it reaches 2.50",
@@ -98,7 +99,9 @@ public sealed record CorporateTaxRules(
                 Deadline(new DateOnly(2026, 7, 10), AdvancePaymentsPage2027, Article159Income2026, "second", 2.5m),
                 Deadline(new DateOnly(2026, 10, 12), AdvancePaymentsPage2027, Article159Income2026, "third", 2m),
                 Deadline(new DateOnly(2026, 12, 21), AdvancePaymentsPage2027, Article159Income2026, "fourth", 1.5m),
-            ]));
+            ]),
+        Source: Article215Income2026,
+        AssessmentBalance: Article304Income2026);
 
     public static CorporateTaxRules? For(int incomeYear) => incomeYear switch
     {

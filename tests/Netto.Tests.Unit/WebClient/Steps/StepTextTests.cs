@@ -27,7 +27,7 @@ public class StepTextTests
     private static readonly Dictionary<string, RuleAmount> RatesByOrigin = new()
     {
         ["municipality"] = MunicipalRates.IncomeYear2026.Municipalities[0].Rate,
-        ["entered"] = MunicipalRates.Entered(0.07m),
+        ["entered"] = MunicipalRates.IncomeYear2026.Entered(0.07m),
     };
 
     public static TheoryData<string> RateOrigins => [.. RatesByOrigin.Keys];
@@ -174,7 +174,7 @@ public class StepTextTests
     [InlineData(ContributionsPaidBy.Company)]
     public void StepDetailsResx_everyKeyOfTheWithholdingAndTheBalance_hasAText(ContributionsPaidBy paidBy)
     {
-        var (value, _) = GrossToNet.Compute(2026, 50_000m, MunicipalRates.Entered(0.07m), TaxPrepayments.AsWithheld, paidBy);
+        var (value, _) = GrossToNet.Compute(2026, 50_000m, MunicipalRates.IncomeYear2026.Entered(0.07m), TaxPrepayments.AsWithheld, paidBy);
         var view = GrossToNetView.From(value.ShouldNotBeNull());
 
         MissingTexts([view.WithholdingDetail, view.Balance.Detail]).ShouldBeEmpty();

@@ -47,7 +47,7 @@ public class YearSimulationCopyrightTests
     public void Run_2026RoyaltyBeyondTheLimits_taxesThePartBeyondThemWithThePay()
     {
         var royalty = CopyrightCalculator.Compute(CopyrightRules.IncomeYear2026, new CopyrightRoyalty(20_000m), 30_000m).Value!;
-        var (pay, _) = GrossToNet.Compute(2026, 30_000m, MunicipalRates.Entered(0.07m), Withheld, ContributionsPaidBy.Director, 0m, 0m, royalty.MovableIncome);
+        var (pay, _) = GrossToNet.Compute(2026, 30_000m, MunicipalRates.IncomeYear2026.Entered(0.07m), Withheld, ContributionsPaidBy.Director, 0m, 0m, royalty.MovableIncome);
 
         var result = Run(Scenario(directorPay: 30_000m, royalty: new CopyrightRoyalty(20_000m)));
 
@@ -183,7 +183,7 @@ public class YearSimulationCopyrightTests
             () => steps["copyright_flat_rate_costs"].Source.ShouldBe(rules.FlatRateCosts.Bands),
             () => steps["copyright_flat_rate_costs"].AmountsUsed.ShouldBe(rules.FlatRateCosts.Amounts),
             () => steps["copyright_flat_rate_costs"].AlsoCites.ShouldBe([rules.FlatRateCosts.NetIncome, rules.FlatRateCosts.Who, rules.FlatRateCosts.Attestation!]),
-            () => steps["copyright_municipal_surcharge"].Source.ShouldBe(PersonalTaxRules.MunicipalSurcharge));
+            () => steps["copyright_municipal_surcharge"].Source.ShouldBe(MunicipalRates.IncomeYear2026.Surcharge));
     }
 
     [Fact]

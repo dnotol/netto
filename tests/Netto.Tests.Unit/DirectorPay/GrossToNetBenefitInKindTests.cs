@@ -120,12 +120,12 @@ public class GrossToNetBenefitInKindTests
     public void Compute_negativeBenefit_isABug()
     {
         Should.Throw<ArgumentOutOfRangeException>(() =>
-            GrossToNet.Compute(2026, 50_000m, MunicipalRates.Entered(0.07m), Withheld, ContributionsPaidBy.Director, 0m, -0.01m));
+            GrossToNet.Compute(2026, 50_000m, MunicipalRates.IncomeYear2026.Entered(0.07m), Withheld, ContributionsPaidBy.Director, 0m, -0.01m));
     }
 
     private static GrossToNetResult Compute(decimal grossPay, decimal benefit, ContributionsPaidBy paidBy, TaxPrepayments prepayments)
     {
-        var (value, error) = GrossToNet.Compute(2026, grossPay, MunicipalRates.Entered(0.07m), prepayments, paidBy, 0m, benefit);
+        var (value, error) = GrossToNet.Compute(2026, grossPay, MunicipalRates.IncomeYear2026.Entered(0.07m), prepayments, paidBy, 0m, benefit);
 
         error.ShouldBeNull();
         return value.ShouldNotBeNull();

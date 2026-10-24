@@ -72,7 +72,7 @@ internal static class Fixtures
         HomeOfficeRent? rent = null,
         CarFacts? car = null,
         CopyrightRoyalty? royalty = null) =>
-        new(2026, revenue, 20_000m, company ?? SmallPastStartUp, directorPay, MunicipalRates.Entered(0.07m), reserve, category, earlierProfits)
+        new(2026, revenue, 20_000m, company ?? SmallPastStartUp, directorPay, MunicipalRates.IncomeYear2026.Entered(0.07m), reserve, category, earlierProfits)
         {
             AdvancePayments = advancePayments ?? Prepaid,
             TaxPrepayments = taxPrepayments ?? Withheld,

@@ -137,7 +137,7 @@ public class AssessmentCalculatorTests
     [Fact]
     public void Compute_2026_citesArticle304()
     {
-        Assessment2026(50_000m, 8_293.36m, TaxPrepayments.None).Source.ShouldBe(PersonalTaxRules.AssessmentBalance);
+        Assessment2026(50_000m, 8_293.36m, TaxPrepayments.None).Source.ShouldBe(PersonalTaxRules.IncomeYear2026.AssessmentBalance);
     }
 
     // Whether the amount withheld was given or taken from the key formula is the caller's to say: the
@@ -172,6 +172,6 @@ public class AssessmentCalculatorTests
         var tax = PersonalTaxCalculator.Compute(rules, directorPay, ownContributions, 0.07m, otherIncome, apart);
         var advancePayments = IncomeTaxAdvancePaymentCalculator.Compute(rules.AdvancePayments, pay.IncomeTax, tax.LowEarnedIncomeCredit, prepayments);
 
-        return AssessmentCalculator.Compute(tax, advancePayments, withheld, withheldGiven, prepayments.Paid, withheldBesidesPay);
+        return AssessmentCalculator.Compute(rules, tax, advancePayments, withheld, withheldGiven, prepayments.Paid, withheldBesidesPay);
     }
 }

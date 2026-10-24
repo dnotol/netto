@@ -20,7 +20,7 @@ public class PaySlipTextTests
     private static readonly Dictionary<string, RuleAmount> RatesByOrigin = new()
     {
         ["municipality"] = MunicipalRates.IncomeYear2026.Municipalities[0].Rate,
-        ["entered"] = MunicipalRates.Entered(0.07m),
+        ["entered"] = MunicipalRates.IncomeYear2026.Entered(0.07m),
     };
 
     private static readonly Dictionary<string, TaxPrepayments> WithholdingsByOrigin = new()
@@ -58,7 +58,7 @@ public class PaySlipTextTests
     [Fact]
     public void PaySlipResx_everyKeyOfAPayWithABenefit_hasAText()
     {
-        var (value, _) = GrossToNet.Compute(2026, 50_000m, MunicipalRates.Entered(0.07m), TaxPrepayments.AsWithheld, ContributionsPaidBy.Director, 0m, 2_400m);
+        var (value, _) = GrossToNet.Compute(2026, 50_000m, MunicipalRates.IncomeYear2026.Entered(0.07m), TaxPrepayments.AsWithheld, ContributionsPaidBy.Director, 0m, 2_400m);
         var view = GrossToNetView.From(value.ShouldNotBeNull());
 
         view.Tracks.SelectMany(track => track.Rows).Select(row => PaySlipText.Row(row.Key)).Append("ColumnBenefit").Append("AddedNote")
@@ -72,7 +72,7 @@ public class PaySlipTextTests
     {
         var movable = new Netto.Core.MovableIncome.MovableIncomePaid(
             30_000m, new IncomeTaxedApart(24_000m, Netto.Core.Copyright.CopyrightRules.IncomeYear2026.TaxedApartRate), 6_000m, 5_400m);
-        var (value, _) = GrossToNet.Compute(2026, 50_000m, MunicipalRates.Entered(0.07m), TaxPrepayments.AsWithheld, ContributionsPaidBy.Director, 0m, 0m, movable);
+        var (value, _) = GrossToNet.Compute(2026, 50_000m, MunicipalRates.IncomeYear2026.Entered(0.07m), TaxPrepayments.AsWithheld, ContributionsPaidBy.Director, 0m, 0m, movable);
         var view = GrossToNetView.From(value.ShouldNotBeNull());
 
         view.Tracks.SelectMany(track => track.Rows).Select(row => PaySlipText.Row(row.Key))

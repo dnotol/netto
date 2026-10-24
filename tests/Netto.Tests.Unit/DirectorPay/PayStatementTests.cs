@@ -114,7 +114,7 @@ public class PayStatementTests
 
     private static PayStatement Statement2026(decimal grossPay)
     {
-        var (value, error) = GrossToNet.Compute(2026, grossPay, MunicipalRates.Entered(0.07m), Withheld);
+        var (value, error) = GrossToNet.Compute(2026, grossPay, MunicipalRates.IncomeYear2026.Entered(0.07m), Withheld);
 
         error.ShouldBeNull();
         return value.ShouldNotBeNull().Statement;
@@ -122,7 +122,7 @@ public class PayStatementTests
 
     private static PayStatement CompanyPaysStatement2026(decimal grossPay)
     {
-        var (value, error) = GrossToNet.Compute(2026, grossPay, MunicipalRates.Entered(0.07m), Withheld, ContributionsPaidBy.Company);
+        var (value, error) = GrossToNet.Compute(2026, grossPay, MunicipalRates.IncomeYear2026.Entered(0.07m), Withheld, ContributionsPaidBy.Company);
 
         error.ShouldBeNull();
         return value.ShouldNotBeNull().Statement;

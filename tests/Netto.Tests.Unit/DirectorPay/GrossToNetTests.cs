@@ -159,7 +159,7 @@ public class GrossToNetTests
     [MemberData(nameof(GrossPays))]
     public void Compute_2026NothingWithheld_nextThousandPartsAddUpToOneThousand(decimal grossPay)
     {
-        var next = Compute2026(grossPay, MunicipalRates.Entered(0.07m), TaxPrepayments.None).NextThousand;
+        var next = Compute2026(grossPay, MunicipalRates.IncomeYear2026.Entered(0.07m), TaxPrepayments.None).NextThousand;
 
         (next.SocialContributions + next.IncomeTax + next.MunicipalSurcharge + next.LowEarnedIncomeCredit + next.AdvancePayments + next.NetInPocket)
             .ShouldBe(1_000m);
@@ -169,7 +169,7 @@ public class GrossToNetTests
     [Fact]
     public void Compute_2026Gross50000NothingWithheldOrPrepaid_surchargesTheTaxOutOfThePocket()
     {
-        var result = Compute2026(50_000m, MunicipalRates.Entered(0.07m), TaxPrepayments.None);
+        var result = Compute2026(50_000m, MunicipalRates.IncomeYear2026.Entered(0.07m), TaxPrepayments.None);
 
         (result.AdvancePayments.Surcharge, result.NetInPocket).ShouldBe((486.57m, 29_092.73m));
     }
@@ -177,14 +177,14 @@ public class GrossToNetTests
     [Fact]
     public void Compute_2026Gross50000NothingWithheldOrPrepaid_saysWhatBy21DecemberLeavesNoneDue()
     {
-        Compute2026(50_000m, MunicipalRates.Entered(0.07m), TaxPrepayments.None).AdvancePayments.LastDeadlineTopUp.ShouldBe(14_317.50m);
+        Compute2026(50_000m, MunicipalRates.IncomeYear2026.Entered(0.07m), TaxPrepayments.None).AdvancePayments.LastDeadlineTopUp.ShouldBe(14_317.50m);
     }
 
     // 12,014 by 10 April avoids the surcharge and earns 90.11 of bonus.
     [Fact]
     public void Compute_2026Gross50000TheWholeBaseBy10April_addsTheBonusToThePocket()
     {
-        var result = Compute2026(50_000m, MunicipalRates.Entered(0.07m), new TaxPrepayments(0m, new AdvancePayments(12_014m, 0m, 0m, 0m)));
+        var result = Compute2026(50_000m, MunicipalRates.IncomeYear2026.Entered(0.07m), new TaxPrepayments(0m, new AdvancePayments(12_014m, 0m, 0m, 0m)));
 
         (result.AdvancePayments.Surcharge, result.AdvancePayments.Bonus, result.NetInPocket).ShouldBe((0m, 90.11m, 29_669.41m));
     }
@@ -192,7 +192,7 @@ public class GrossToNetTests
     [Fact]
     public void Compute_2026NothingWithheldOrPrepaid_surchargeAndBonusAreStepsOnTheDirectorPay()
     {
-        var result = Compute2026(50_000m, MunicipalRates.Entered(0.07m), TaxPrepayments.None);
+        var result = Compute2026(50_000m, MunicipalRates.IncomeYear2026.Entered(0.07m), TaxPrepayments.None);
 
         result.Steps.Where(step => step.RuleKey.StartsWith("income_tax_advance_payment", StringComparison.Ordinal))
             .Select(step => (step.RuleKey, step.Layer, step.Event, step.Track, step.Amount))
@@ -208,7 +208,7 @@ public class GrossToNetTests
     [Fact]
     public void Compute_2026Gross50000Withheld10000_balanceIsTheFinalTaxLessTheWithholding()
     {
-        var assessment = Compute2026(50_000m, MunicipalRates.Entered(0.07m), new TaxPrepayments(10_000m, AdvancePayments.None)).Assessment;
+        var assessment = Compute2026(50_000m, MunicipalRates.IncomeYear2026.Entered(0.07m), new TaxPrepayments(10_000m, AdvancePayments.None)).Assessment;
 
         (assessment.FinalTax, assessment.Withheld, assessment.AdvancePayments, assessment.Balance).ShouldBe((12_127.34m, 10_000m, 0m, 2_127.34m));
     }
@@ -217,7 +217,7 @@ public class GrossToNetTests
     [MemberData(nameof(GrossPays))]
     public void Compute_2026NothingWithheldOrPrepaid_finalTaxIsTheTaxLessTheCreditPlusTheSurchargeAndAllOfItIsToPay(decimal grossPay)
     {
-        var result = Compute2026(grossPay, MunicipalRates.Entered(0.07m), TaxPrepayments.None);
+        var result = Compute2026(grossPay, MunicipalRates.IncomeYear2026.Entered(0.07m), TaxPrepayments.None);
 
         (result.Assessment.FinalTax, result.Assessment.Balance).ShouldBe((
             result.IncomeTax + result.MunicipalSurcharge - result.LowEarnedIncomeCredit + result.AdvancePayments.Surcharge - result.AdvancePayments.Bonus,
@@ -228,7 +228,7 @@ public class GrossToNetTests
     [Fact]
     public void Compute_2026Gross50000TheWholeBaseBy10April_setsThePaymentsAgainstTheTaxLessTheBonus()
     {
-        var assessment = Compute2026(50_000m, MunicipalRates.Entered(0.07m), new TaxPrepayments(0m, new AdvancePayments(12_014m, 0m, 0m, 0m))).Assessment;
+        var assessment = Compute2026(50_000m, MunicipalRates.IncomeYear2026.Entered(0.07m), new TaxPrepayments(0m, new AdvancePayments(12_014m, 0m, 0m, 0m))).Assessment;
 
         (assessment.FinalTax, assessment.AdvancePayments, assessment.Balance).ShouldBe((12_037.23m, 12_014m, 23.23m));
     }
@@ -236,7 +236,7 @@ public class GrossToNetTests
     [Fact]
     public void Compute_2026WithholdingBeyondTheTax_balanceIsNegativeToBeRefunded()
     {
-        var assessment = Compute2026(50_000m, MunicipalRates.Entered(0.07m), new TaxPrepayments(20_000m, AdvancePayments.None)).Assessment;
+        var assessment = Compute2026(50_000m, MunicipalRates.IncomeYear2026.Entered(0.07m), new TaxPrepayments(20_000m, AdvancePayments.None)).Assessment;
 
         assessment.Balance.ShouldBe(-7_872.66m);
     }
@@ -246,7 +246,7 @@ public class GrossToNetTests
     [Fact]
     public void Compute_2026Gross50000WithholdingAsTheKeyFormula_withholdsTwelveTimesTheMonthlyAmount()
     {
-        var assessment = Compute2026(50_000m, MunicipalRates.Entered(0.07m), TaxPrepayments.AsWithheld).Assessment;
+        var assessment = Compute2026(50_000m, MunicipalRates.IncomeYear2026.Entered(0.07m), TaxPrepayments.AsWithheld).Assessment;
 
         (assessment.Withheld, assessment.WithheldGiven).ShouldBe((10_691.28m, false));
     }
@@ -256,7 +256,7 @@ public class GrossToNetTests
     [Fact]
     public void Compute_2026Gross50000WithholdingAsTheKeyFormula_feedsTheSurchargeWhichFallsUnderTheMinimum()
     {
-        var payments = Compute2026(50_000m, MunicipalRates.Entered(0.07m), TaxPrepayments.AsWithheld).AdvancePayments;
+        var payments = Compute2026(50_000m, MunicipalRates.IncomeYear2026.Entered(0.07m), TaxPrepayments.AsWithheld).AdvancePayments;
 
         (payments.Base, payments.SurchargeBeforeKeptRate, payments.BelowMinimum, payments.Surcharge).ShouldBe((1_322.72m, 59.52m, true, 0m));
     }
@@ -266,7 +266,7 @@ public class GrossToNetTests
     [Fact]
     public void Compute_2026Gross50000WithholdingAsTheKeyFormula_leaves1436Point06ToPay()
     {
-        var result = Compute2026(50_000m, MunicipalRates.Entered(0.07m), TaxPrepayments.AsWithheld);
+        var result = Compute2026(50_000m, MunicipalRates.IncomeYear2026.Entered(0.07m), TaxPrepayments.AsWithheld);
 
         (result.Assessment.FinalTax, result.Assessment.Balance, result.NetInPocket).ShouldBe((12_127.34m, 1_436.06m, 29_579.30m));
     }
@@ -275,7 +275,7 @@ public class GrossToNetTests
     [MemberData(nameof(GrossPays))]
     public void Compute_2026WithholdingAsTheKeyFormula_withheldIsTwelveTimesTheStatementsMonth(decimal grossPay)
     {
-        var result = Compute2026(grossPay, MunicipalRates.Entered(0.07m), TaxPrepayments.AsWithheld);
+        var result = Compute2026(grossPay, MunicipalRates.IncomeYear2026.Entered(0.07m), TaxPrepayments.AsWithheld);
 
         (result.Assessment.Withheld, result.Assessment.WithheldGiven).ShouldBe((12 * result.Statement.Months[0].Withholding, false));
     }
@@ -284,7 +284,7 @@ public class GrossToNetTests
     [MemberData(nameof(GrossPays))]
     public void Compute_2026WithholdingAsTheKeyFormula_nextThousandPartsAddUpToOneThousand(decimal grossPay)
     {
-        var next = Compute2026(grossPay, MunicipalRates.Entered(0.07m), TaxPrepayments.AsWithheld).NextThousand;
+        var next = Compute2026(grossPay, MunicipalRates.IncomeYear2026.Entered(0.07m), TaxPrepayments.AsWithheld).NextThousand;
 
         (next.SocialContributions + next.IncomeTax + next.MunicipalSurcharge + next.LowEarnedIncomeCredit + next.AdvancePayments + next.NetInPocket)
             .ShouldBe(1_000m);
@@ -295,7 +295,7 @@ public class GrossToNetTests
     [Fact]
     public void Compute_2026Withheld10000_replacesTheFormulasAmountAndSaysItWasGiven()
     {
-        var result = Compute2026(50_000m, MunicipalRates.Entered(0.07m), new TaxPrepayments(10_000m, AdvancePayments.None));
+        var result = Compute2026(50_000m, MunicipalRates.IncomeYear2026.Entered(0.07m), new TaxPrepayments(10_000m, AdvancePayments.None));
 
         (result.Assessment.Withheld, result.Assessment.WithheldGiven, result.Assessment.Balance, result.Statement.Months[0].Withholding)
             .ShouldBe((10_000m, true, 2_127.34m, 890.94m));
@@ -315,7 +315,7 @@ public class GrossToNetTests
     [Fact]
     public void Compute_negativeWithholding_isRefused()
     {
-        var (value, error) = GrossToNet.Compute(2026, 50_000m, MunicipalRates.Entered(0.07m), new TaxPrepayments(-0.01m, AdvancePayments.None));
+        var (value, error) = GrossToNet.Compute(2026, 50_000m, MunicipalRates.IncomeYear2026.Entered(0.07m), new TaxPrepayments(-0.01m, AdvancePayments.None));
 
         (value, error).ShouldBe((null, GrossToNet.TaxWithheldNegative));
     }
@@ -323,7 +323,7 @@ public class GrossToNetTests
     [Fact]
     public void Compute_negativeAdvancePayment_isRefused()
     {
-        var (value, error) = GrossToNet.Compute(2026, 50_000m, MunicipalRates.Entered(0.07m), new TaxPrepayments(0m, new AdvancePayments(0m, -0.01m, 0m, 0m)));
+        var (value, error) = GrossToNet.Compute(2026, 50_000m, MunicipalRates.IncomeYear2026.Entered(0.07m), new TaxPrepayments(0m, new AdvancePayments(0m, -0.01m, 0m, 0m)));
 
         (value, error).ShouldBe((null, GrossToNet.TaxAdvancePaymentNegative));
     }
@@ -403,17 +403,17 @@ public class GrossToNetTests
 
         var surcharge = Compute2026(50_000m, namur.Rate).Steps.Single(step => step.RuleKey == "municipal_surcharge");
 
-        (surcharge.Source, surcharge.AmountsUsed.Single()).ShouldBe((PersonalTaxRules.MunicipalSurcharge, namur.Rate));
+        (surcharge.Source, surcharge.AmountsUsed.Single()).ShouldBe((MunicipalRates.IncomeYear2026.Surcharge, namur.Rate));
     }
 
     [Fact]
     public void Compute_2026EnteredRate_surchargeStepUsesItWithTheArticlesAsSource()
     {
-        var entered = MunicipalRates.Entered(0.07m);
+        var entered = MunicipalRates.IncomeYear2026.Entered(0.07m);
 
         var surcharge = Compute2026(50_000m, entered).Steps.Single(step => step.RuleKey == "municipal_surcharge");
 
-        surcharge.AmountsUsed.Single().ShouldBe(new RuleAmount("entered_municipal_rate", 0.07m, PersonalTaxRules.MunicipalSurcharge));
+        surcharge.AmountsUsed.Single().ShouldBe(new RuleAmount("entered_municipal_rate", 0.07m, MunicipalRates.IncomeYear2026.Surcharge));
     }
 
     // Namur's 8.5%: where the rate comes from changes its source, never the figures.
@@ -423,7 +423,7 @@ public class GrossToNetTests
         var namur = MunicipalRates.IncomeYear2026.Municipalities.Single(municipality => municipality.Name == "Namur");
 
         var official = Compute2026(50_000m, namur.Rate);
-        var entered = Compute2026(50_000m, MunicipalRates.Entered(0.085m));
+        var entered = Compute2026(50_000m, MunicipalRates.IncomeYear2026.Entered(0.085m));
 
         (official.MunicipalRate, official.MunicipalSurcharge, official.NetInPocket)
             .ShouldBe((0.085m, entered.MunicipalSurcharge, entered.NetInPocket));
@@ -732,7 +732,7 @@ public class GrossToNetTests
     [Fact]
     public void Compute_negativeZeroOtherIncome_isNoOtherIncome()
     {
-        var (value, error) = GrossToNet.Compute(2026, 50_000m, MunicipalRates.Entered(0.07m), Withheld, ContributionsPaidBy.Director, decimal.Negate(0m));
+        var (value, error) = GrossToNet.Compute(2026, 50_000m, MunicipalRates.IncomeYear2026.Entered(0.07m), Withheld, ContributionsPaidBy.Director, decimal.Negate(0m));
 
         (error, value?.OtherIncomeTax).ShouldBe((null, OtherIncomeTax.None));
     }
@@ -741,13 +741,13 @@ public class GrossToNetTests
     [Fact]
     public void Compute_negativeOtherIncome_isACallersBug()
     {
-        Should.Throw<ArgumentOutOfRangeException>(() => GrossToNet.Compute(2026, 50_000m, MunicipalRates.Entered(0.07m), Withheld, ContributionsPaidBy.Director, -0.01m));
+        Should.Throw<ArgumentOutOfRangeException>(() => GrossToNet.Compute(2026, 50_000m, MunicipalRates.IncomeYear2026.Entered(0.07m), Withheld, ContributionsPaidBy.Director, -0.01m));
     }
 
     [Fact]
     public void Compute_negativeGrossPay_isRefused()
     {
-        var (value, error) = GrossToNet.Compute(2026, -0.01m, MunicipalRates.Entered(0.07m), TaxPrepayments.None);
+        var (value, error) = GrossToNet.Compute(2026, -0.01m, MunicipalRates.IncomeYear2026.Entered(0.07m), TaxPrepayments.None);
 
         (value, error).ShouldBe((null, GrossToNet.GrossPayNegative));
     }
@@ -756,7 +756,7 @@ public class GrossToNetTests
     [MemberData(nameof(MunicipalRatesOutOfRange))]
     public void Compute_municipalRateOutsideZeroToTenPercent_isRefused(decimal municipalRate)
     {
-        var (value, error) = GrossToNet.Compute(2026, 50_000m, MunicipalRates.Entered(municipalRate), TaxPrepayments.None);
+        var (value, error) = GrossToNet.Compute(2026, 50_000m, MunicipalRates.IncomeYear2026.Entered(municipalRate), TaxPrepayments.None);
 
         (value, error).ShouldBe((null, GrossToNet.MunicipalRateOutOfRange));
     }
@@ -765,7 +765,7 @@ public class GrossToNetTests
     [MemberData(nameof(MunicipalRatesAtTheLimits))]
     public void Compute_municipalRateAtZeroOrTenPercent_isAccepted(decimal municipalRate)
     {
-        var (_, error) = GrossToNet.Compute(2026, 50_000m, MunicipalRates.Entered(municipalRate), TaxPrepayments.None);
+        var (_, error) = GrossToNet.Compute(2026, 50_000m, MunicipalRates.IncomeYear2026.Entered(municipalRate), TaxPrepayments.None);
 
         error.ShouldBeNull();
     }
@@ -777,12 +777,12 @@ public class GrossToNetTests
     [InlineData(Fixtures.UnsupportedIncomeYear)]
     public void Compute_incomeYearOtherThan2026_isRefused(int incomeYear)
     {
-        var (value, error) = GrossToNet.Compute(incomeYear, 50_000m, MunicipalRates.Entered(0.07m), TaxPrepayments.None);
+        var (value, error) = GrossToNet.Compute(incomeYear, 50_000m, MunicipalRates.IncomeYear2026.Entered(0.07m), TaxPrepayments.None);
 
         (value, error).ShouldBe((null, GrossToNet.IncomeYearNotSupported));
     }
 
-    private static GrossToNetResult Compute2026(decimal grossPay) => Compute2026(grossPay, MunicipalRates.Entered(0.07m));
+    private static GrossToNetResult Compute2026(decimal grossPay) => Compute2026(grossPay, MunicipalRates.IncomeYear2026.Entered(0.07m));
 
     private static GrossToNetResult Compute2026(decimal grossPay, RuleAmount municipalRate, TaxPrepayments? prepayments = null)
     {
@@ -794,7 +794,7 @@ public class GrossToNetTests
 
     private static GrossToNetResult Compute2026(decimal grossPay, TaxPrepayments prepayments, decimal otherIncome = 0m)
     {
-        var (value, error) = GrossToNet.Compute(2026, grossPay, MunicipalRates.Entered(0.07m), prepayments, ContributionsPaidBy.Director, otherIncome);
+        var (value, error) = GrossToNet.Compute(2026, grossPay, MunicipalRates.IncomeYear2026.Entered(0.07m), prepayments, ContributionsPaidBy.Director, otherIncome);
 
         error.ShouldBeNull();
         return value.ShouldNotBeNull();
@@ -802,7 +802,7 @@ public class GrossToNetTests
 
     private static GrossToNetResult CompanyPays2026(decimal grossPay, TaxPrepayments? prepayments = null)
     {
-        var (value, error) = GrossToNet.Compute(2026, grossPay, MunicipalRates.Entered(0.07m), prepayments ?? Withheld, ContributionsPaidBy.Company);
+        var (value, error) = GrossToNet.Compute(2026, grossPay, MunicipalRates.IncomeYear2026.Entered(0.07m), prepayments ?? Withheld, ContributionsPaidBy.Company);
 
         error.ShouldBeNull();
         return value.ShouldNotBeNull();

@@ -107,14 +107,21 @@ public class MunicipalRatesTests
             .ShouldBe([("municipal_rate", "interieur.wallonie.be")]);
     }
 
-    // A rate the user types has no published source of its own: it cites the articles that set up
-    // the surcharge, under a key that says it was entered.
+    // Art. 466 and 468 of the year's coordinated text set up the surcharge, which the steps cite.
     [Fact]
-    public void Entered_rate_citesTheMunicipalSurchargeArticles()
+    public void For_2026_citesTheArticlesThatSetUpTheSurcharge()
     {
-        var rate = MunicipalRates.Entered(0.073m);
+        Rates2026().Surcharge.Url.ShouldBe(new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/aa4241fb-2007-4bf8-aaf7-a5cb46dcb853"));
+    }
 
-        rate.ShouldBe(new RuleAmount("entered_municipal_rate", 0.073m, PersonalTaxRules.MunicipalSurcharge));
+    // A rate the user types has no published source of its own: it cites the year's articles that set
+    // up the surcharge, under a key that says it was entered.
+    [Fact]
+    public void Entered_rate_citesTheYearsMunicipalSurchargeArticles()
+    {
+        var rate = Rates2026().Entered(0.073m);
+
+        rate.ShouldBe(new RuleAmount("entered_municipal_rate", 0.073m, Rates2026().Surcharge));
     }
 
     private static MunicipalRates Rates2026() => MunicipalRates.For(2026).ShouldNotBeNull();

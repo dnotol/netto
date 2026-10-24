@@ -10,6 +10,8 @@ namespace Netto.Core.PersonalTax;
 // still so after the law of 15.07.2026 makes it per person from income year 2028). The tax credit
 // for low earned income is, as a self-employed director's pay is activity income (art. 289ter, §1,
 // al. 2, which leaves out only directors under an employment contract and side activities).
+// IncomeTaxScale, DirectorPayDeductions and AssessmentBalance are the year's texts the pay's steps
+// and its assessment cite as their rule.
 public sealed record PersonalTaxRules(
     int IncomeYear,
     IReadOnlyList<TaxBracket> Scale,
@@ -20,7 +22,10 @@ public sealed record PersonalTaxRules(
     RuleAmount AutonomyFactor,
     RuleAmount RegionalAdditionalRate,
     LowEarnedIncomeCreditRules LowEarnedIncomeCredit,
-    IncomeTaxAdvancePaymentRules AdvancePayments)
+    IncomeTaxAdvancePaymentRules AdvancePayments,
+    Source IncomeTaxScale,
+    Source DirectorPayDeductions,
+    Source AssessmentBalance)
 {
     // Each amount cites the administration's coordinated article of its own income year, which carries
     // that year's indexed amounts (filed in official-docs/personal-tax/).
@@ -99,22 +104,10 @@ public sealed record PersonalTaxRules(
         new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/af20504b-71e6-4daa-89d6-4d3c000c8718"),
         "personal-tax/spf-finances_cir92-art-289ter-revenus-2026_2026-02-19.html");
 
-    // The rules the steps cite. Only income year 2026 runs produce steps (GrossToNet has no other
-    // year's contributions), so these are the 2026 articles; they become per year with the next one.
-    public static Source DirectorPayDeductions => Article51Income2026;
-
-    public static Source IncomeTaxScale => Article130Income2026;
-
-    public static Source MunicipalSurcharge { get; } = new(
-        "CIR 92, art. 466 and 468 (revenus 2026), coordinated text on Fisconetplus, art. 466 last modified 23.04.2026",
-        "Art. 466: the municipal additional tax is computed on the total tax, the federal share and the regional tax together. Art. 468: at one uniform rate per municipality, with at most one decimal",
-        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/aa4241fb-2007-4bf8-aaf7-a5cb46dcb853"),
-        "municipal-surcharge/spf-finances_cir92-art-466-revenus-2026_2026-04-23.html");
-
     // The balance on the assessment: what was withheld and paid in advance comes off the tax, and
     // what they leave over is refunded. §2, al. 1 is unchanged since tax year 2018, so the text holds
     // for income year 2025 as well (official-docs/INDEX.md).
-    public static Source AssessmentBalance { get; } = SharedSources.Article304Income2026 with
+    private static readonly Source Article304Income2026 = SharedSources.Article304Income2026 with
     {
         Reference = "§2, al. 1: the excess of the advance payments of art. 157 and 175, the withholding tax of art. 270 to 272 and the tax credit of art. 289ter "
             + "over the tax is set against the municipal surcharge, and the rest is refunded once it reaches 2.50",
@@ -141,7 +134,10 @@ public sealed record PersonalTaxRules(
             new RuleAmount("low_earned_income_full_from", 8_740m, Article289terIncome2025),
             new RuleAmount("low_earned_income_full_up_to", 21_860m, Article289terIncome2025),
             new RuleAmount("low_earned_income_ceiling", 28_420m, Article289terIncome2025)),
-        IncomeTaxAdvancePaymentRules.IncomeYear2025);
+        IncomeTaxAdvancePaymentRules.IncomeYear2025,
+        IncomeTaxScale: Article130Income2025,
+        DirectorPayDeductions: Article51Income2025,
+        AssessmentBalance: Article304Income2026);
 
     public static PersonalTaxRules IncomeYear2026 { get; } = new(
         2026,
@@ -164,7 +160,10 @@ public sealed record PersonalTaxRules(
             new RuleAmount("low_earned_income_full_from", 8_960m, Article289terIncome2026),
             new RuleAmount("low_earned_income_full_up_to", 22_400m, Article289terIncome2026),
             new RuleAmount("low_earned_income_ceiling", 29_120m, Article289terIncome2026)),
-        IncomeTaxAdvancePaymentRules.IncomeYear2026);
+        IncomeTaxAdvancePaymentRules.IncomeYear2026,
+        IncomeTaxScale: Article130Income2026,
+        DirectorPayDeductions: Article51Income2026,
+        AssessmentBalance: Article304Income2026);
 
     public static PersonalTaxRules? For(int incomeYear) => incomeYear switch
     {

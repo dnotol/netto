@@ -41,24 +41,29 @@ public class PersonalTaxRulesTests
         amount.Source.Url.ShouldBe(new Uri(Fisconetplus + document));
     }
 
-    // Only income year 2026 runs produce steps, so the rules the steps cite are the 2026 articles:
-    // art. 130 for the scale, art. 51 for the deductions from the pay, art. 466 for the surcharge.
-    public static TheoryData<string, string> SourceOfEachStepRule => new()
+    // The rules the steps cite are each year's own: art. 130 for the scale, art. 51 for the deductions
+    // from the pay, and art. 304 for the balance on the assessment, whose §2, al. 1 holds for 2025 too.
+    public static TheoryData<int, string, string> SourceOfEachStepRule => new()
     {
-        { nameof(PersonalTaxRules.IncomeTaxScale), "aff72054-004a-4858-8747-1d70964c8e3d" },
-        { nameof(PersonalTaxRules.DirectorPayDeductions), "21dd9b61-2989-4125-a2e0-6142c607eec8" },
-        { nameof(PersonalTaxRules.MunicipalSurcharge), "aa4241fb-2007-4bf8-aaf7-a5cb46dcb853" },
+        { 2025, nameof(PersonalTaxRules.IncomeTaxScale), "68216320-026d-4a35-a81d-1221bfe21b53" },
+        { 2025, nameof(PersonalTaxRules.DirectorPayDeductions), "1c87b91e-3a27-418d-9743-bfa0fecdc5e2" },
+        { 2025, nameof(PersonalTaxRules.AssessmentBalance), "bda433e6-7da6-4dc9-882c-0c9d92591877" },
+        { 2026, nameof(PersonalTaxRules.IncomeTaxScale), "aff72054-004a-4858-8747-1d70964c8e3d" },
+        { 2026, nameof(PersonalTaxRules.DirectorPayDeductions), "21dd9b61-2989-4125-a2e0-6142c607eec8" },
+        { 2026, nameof(PersonalTaxRules.AssessmentBalance), "bda433e6-7da6-4dc9-882c-0c9d92591877" },
     };
 
     [Theory]
     [MemberData(nameof(SourceOfEachStepRule))]
-    public void StepRule_citesTheIncome2026Article(string rule, string document)
+    public void For_eachStepRule_citesTheArticleOfItsIncomeYear(int incomeYear, string rule, string document)
     {
+        var rules = PersonalTaxRules.For(incomeYear).ShouldNotBeNull();
+
         var source = rule switch
         {
-            nameof(PersonalTaxRules.IncomeTaxScale) => PersonalTaxRules.IncomeTaxScale,
-            nameof(PersonalTaxRules.DirectorPayDeductions) => PersonalTaxRules.DirectorPayDeductions,
-            _ => PersonalTaxRules.MunicipalSurcharge,
+            nameof(PersonalTaxRules.IncomeTaxScale) => rules.IncomeTaxScale,
+            nameof(PersonalTaxRules.DirectorPayDeductions) => rules.DirectorPayDeductions,
+            _ => rules.AssessmentBalance,
         };
 
         source.Url.ShouldBe(new Uri(Fisconetplus + document));

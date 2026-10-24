@@ -19,7 +19,7 @@ public sealed record MunicipalityChoice(MunicipalRates Rates, Municipality? Muni
     public bool IsOverridden => Municipality is not null && Origin == InputOrigin.Yours;
 
     public RuleAmount MunicipalRate =>
-        Origin == InputOrigin.Derived && Municipality is { } municipality ? municipality.Rate : MunicipalRates.Entered(Rate);
+        Origin == InputOrigin.Derived && Municipality is { } municipality ? municipality.Rate : Rates.Entered(Rate);
 
     public RateNote Note => (Origin, Municipality) switch
     {

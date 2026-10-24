@@ -49,7 +49,8 @@ public static class YearSimulation
         var corporateRules = CorporateTaxRules.For(scenario.IncomeYear);
         var dividendRules = DividendRules.For(scenario.IncomeYear);
         var levers = LeverRules.For(scenario.IncomeYear);
-        if (corporateRules is null || dividendRules is null || levers is null)
+        var municipalRates = MunicipalRates.For(scenario.IncomeYear);
+        if (corporateRules is null || dividendRules is null || levers is null || municipalRates is null)
             return (null, IncomeYearNotSupported);
 
         scenario = WithRoyaltyAtPay(scenario, levers.Copyright);
@@ -88,16 +89,18 @@ public static class YearSimulation
             .. scenario.Car.Any ? CarSteps(levers.Car, besidesPay.Car) : [],
             .. scenario.Copyright.Any ? CopyrightSteps(levers.Copyright, besidesPay.Copyright) : [],
             new Step("corporate_tax", Layer.Corporate, TaxableEvent.CompanyProfit, Track.PaidOut, company.Tax.CorporateTax,
-                CorporateTaxRules.Source, corporateRules.Amounts) { AlsoCites = [corporateRules.PayTested, corporateRules.ExcessBenefitsMemorandum] },
+                corporateRules.Source, corporateRules.Amounts) { AlsoCites = [corporateRules.PayTested, corporateRules.ExcessBenefitsMemorandum] },
             new Step("advance_payment_surcharge", Layer.Corporate, TaxableEvent.CompanyProfit, Track.PaidOut, company.AdvancePayments.Surcharge,
                 corporateRules.AdvancePayments.Source, corporateRules.AdvancePayments.Amounts),
             .. pay.Steps,
-            .. scenario.Rent.Any ? RentTaxSteps(PersonalTaxRules.For(scenario.IncomeYear)!, pay.OtherIncomeTax, scenario.MunicipalRate) : [],
-            .. scenario.Copyright.Any ? CopyrightTaxSteps(levers.Copyright, PersonalTaxRules.For(scenario.IncomeYear)!, pay.TaxedApartTax, scenario.MunicipalRate) : [],
+            .. scenario.Rent.Any ? RentTaxSteps(PersonalTaxRules.For(scenario.IncomeYear)!, municipalRates.Surcharge, pay.OtherIncomeTax, scenario.MunicipalRate) : [],
+            .. scenario.Copyright.Any
+                ? CopyrightTaxSteps(levers.Copyright, PersonalTaxRules.For(scenario.IncomeYear)!, municipalRates.Surcharge, pay.TaxedApartTax, scenario.MunicipalRate)
+                : [],
             new Step("dividend_withholding", Layer.Personal, TaxableEvent.Dividend, Track.PaidOut, dividend.Withholding,
                 rate.Source, [rate]),
             new Step("dividend_exemption_refund", Layer.Personal, TaxableEvent.Dividend, Track.PaidOut, -dividend.ExemptionRefund,
-                DividendRules.ExemptionRefund, [dividendRules.ExemptAmount, rate]),
+                dividendRules.ExemptionRefund, [dividendRules.ExemptAmount, rate]),
         ];
 
         return (new YearResult(
@@ -437,24 +440,25 @@ public static class YearSimulation
     // income it takes away, and what that lost credit adds to the surcharge on the pay's tax. Each is
     // paid out of the pocket, the credit's as a positive amount since it is lost, not refunded. The 15%
     // is on that part less its flat-rate costs, which an attestation holder alone takes from 2026.
-    private static IEnumerable<Step> CopyrightTaxSteps(CopyrightRules copyright, PersonalTaxRules rules, OtherIncomeTax tax, RuleAmount municipalRate) =>
+    private static IEnumerable<Step> CopyrightTaxSteps(
+        CopyrightRules copyright, PersonalTaxRules rules, Source municipalSurcharge, OtherIncomeTax tax, RuleAmount municipalRate) =>
     [
         new Step("copyright_tax", Layer.Personal, TaxableEvent.CopyrightRoyalty, Track.PaidOut, tax.IncomeTax,
             copyright.TaxedApart, [copyright.TaxedApartRate, rules.AutonomyFactor, rules.RegionalAdditionalRate]),
         new Step("copyright_municipal_surcharge", Layer.Personal, TaxableEvent.CopyrightRoyalty, Track.PaidOut, tax.MunicipalSurcharge,
-            PersonalTaxRules.MunicipalSurcharge, [municipalRate]),
+            municipalSurcharge, [municipalRate]),
         new Step("copyright_low_earned_income_credit_lost", Layer.Personal, TaxableEvent.CopyrightRoyalty, Track.PaidOut, tax.LowEarnedIncomeCreditLost,
             rules.LowEarnedIncomeCredit.Source, rules.LowEarnedIncomeCredit.Amounts),
         new Step("copyright_income_tax_advance_payments", Layer.Personal, TaxableEvent.CopyrightRoyalty, Track.PaidOut, tax.AdvancePayments,
             rules.AdvancePayments.Source, rules.AdvancePayments.SurchargeAmounts),
     ];
 
-    private static IEnumerable<Step> RentTaxSteps(PersonalTaxRules rules, OtherIncomeTax tax, RuleAmount municipalRate) =>
+    private static IEnumerable<Step> RentTaxSteps(PersonalTaxRules rules, Source municipalSurcharge, OtherIncomeTax tax, RuleAmount municipalRate) =>
     [
         new Step("rent_income_tax", Layer.Personal, TaxableEvent.Rent, Track.PaidOut, tax.IncomeTax,
-            PersonalTaxRules.IncomeTaxScale, rules.IncomeTaxAmounts),
+            rules.IncomeTaxScale, rules.IncomeTaxAmounts),
         new Step("rent_municipal_surcharge", Layer.Personal, TaxableEvent.Rent, Track.PaidOut, tax.MunicipalSurcharge,
-            PersonalTaxRules.MunicipalSurcharge, [municipalRate]),
+            municipalSurcharge, [municipalRate]),
         new Step("rent_low_earned_income_credit_lost", Layer.Personal, TaxableEvent.Rent, Track.PaidOut, tax.LowEarnedIncomeCreditLost,
             rules.LowEarnedIncomeCredit.Source, rules.LowEarnedIncomeCredit.Amounts),
         new Step("rent_income_tax_advance_payments", Layer.Personal, TaxableEvent.Rent, Track.PaidOut, tax.AdvancePayments,

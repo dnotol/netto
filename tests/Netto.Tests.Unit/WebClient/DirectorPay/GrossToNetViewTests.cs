@@ -234,7 +234,7 @@ public class GrossToNetViewTests
 
         detail.ShouldSatisfyAllConditions(
             balance => (balance.RuleKey, balance.Amount, balance.Lines.Count).ShouldBe(("assessment_balance", 1_436.06m, 0)),
-            balance => balance.Sources.Select(group => (group.Source, Keys(group))).ShouldBe([(PersonalTaxRules.AssessmentBalance, "")]));
+            balance => balance.Sources.Select(group => (group.Source, Keys(group))).ShouldBe([(PersonalTaxRules.IncomeYear2026.AssessmentBalance, "")]));
     }
 
     [Fact]
@@ -498,7 +498,7 @@ public class GrossToNetViewTests
 
         incomeTax.Sources.Select(group => (group.Source, Keys(group))).ShouldBe(new[]
         {
-            (PersonalTaxRules.IncomeTaxScale, "bracket_1_rate bracket_1_upper_limit bracket_2_rate bracket_2_upper_limit "
+            (PersonalTaxRules.IncomeYear2026.IncomeTaxScale, "bracket_1_rate bracket_1_upper_limit bracket_2_rate bracket_2_upper_limit "
                 + "bracket_3_rate bracket_3_upper_limit bracket_4_rate"),
             (rules.TaxFreeAmount.Source, "tax_free_amount"),
             (rules.TaxFreeAmountRate.Source, "tax_free_amount_rate"),
@@ -514,7 +514,7 @@ public class GrossToNetViewTests
 
         flatRateCosts.Sources.Select(group => (group.Source, Keys(group))).ShouldBe(new[]
         {
-            (PersonalTaxRules.DirectorPayDeductions, "flat_rate_costs_rate flat_rate_costs_maximum"),
+            (PersonalTaxRules.IncomeYear2026.DirectorPayDeductions, "flat_rate_costs_rate flat_rate_costs_maximum"),
         });
     }
 
@@ -525,7 +525,7 @@ public class GrossToNetViewTests
 
         taxableIncome.Sources.Select(group => (group.Source, Keys(group))).ShouldBe(new[]
         {
-            (PersonalTaxRules.DirectorPayDeductions, ""),
+            (PersonalTaxRules.IncomeYear2026.DirectorPayDeductions, ""),
         });
     }
 
@@ -620,7 +620,7 @@ public class GrossToNetViewTests
     [Fact]
     public void From_gross50000WithARoyaltyWithinItsLimits_balanceSaysTheRoyaltysTaxAndWithholding()
     {
-        var (pay, _) = GrossToNet.Compute(2026, 50_000m, MunicipalRates.Entered(0.07m), Withheld, ContributionsPaidBy.Director, 0m, 0m, Royalty10000());
+        var (pay, _) = GrossToNet.Compute(2026, 50_000m, MunicipalRates.IncomeYear2026.Entered(0.07m), Withheld, ContributionsPaidBy.Director, 0m, 0m, Royalty10000());
         var balance = GrossToNetView.From(pay!).Balance;
 
         (balance.OnTaxedApart, balance.WithheldBesidesPay).ShouldBe((pay!.TaxedApartTax.Total, 1_500m));
@@ -647,7 +647,7 @@ public class GrossToNetViewTests
         decimal grossPay, TaxPrepayments prepayments, ContributionsPaidBy paidBy = ContributionsPaidBy.Director, decimal otherIncome = 0m, decimal benefit = 0m,
         MovableIncomePaid? movable = null)
     {
-        var (value, error) = GrossToNet.Compute(2026, grossPay, MunicipalRates.Entered(0.07m), prepayments, paidBy, otherIncome, benefit, movable);
+        var (value, error) = GrossToNet.Compute(2026, grossPay, MunicipalRates.IncomeYear2026.Entered(0.07m), prepayments, paidBy, otherIncome, benefit, movable);
 
         error.ShouldBeNull();
         return GrossToNetView.From(value.ShouldNotBeNull());

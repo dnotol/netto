@@ -80,7 +80,7 @@ public class YearSimulationTests
     public void Run_2026_directorPayIsWhatGrossToNetGives()
     {
         var result = Run(Scenario(directorPay: 50_000m, reserve: 0m));
-        var (pay, _) = GrossToNet.Compute(2026, 50_000m, MunicipalRates.Entered(0.07m), Withheld);
+        var (pay, _) = GrossToNet.Compute(2026, 50_000m, MunicipalRates.IncomeYear2026.Entered(0.07m), Withheld);
 
         (result.DirectorPay.SocialContributions, result.DirectorPay.IncomeTax, result.DirectorPay.MunicipalSurcharge, result.DirectorPay.NetInPocket)
             .ShouldBe((pay!.SocialContributions, pay.IncomeTax, pay.MunicipalSurcharge, pay.NetInPocket));

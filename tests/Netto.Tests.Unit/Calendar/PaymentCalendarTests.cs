@@ -143,7 +143,7 @@ public class PaymentCalendarTests
     [Fact]
     public void Of_payAlone_hasNoCompanyAndTheDirectorsPayments()
     {
-        var pay = GrossToNet.Compute(2026, 50_000m, MunicipalRates.Entered(0.07m), TaxPrepayments.None).Value.ShouldNotBeNull();
+        var pay = GrossToNet.Compute(2026, 50_000m, MunicipalRates.IncomeYear2026.Entered(0.07m), TaxPrepayments.None).Value.ShouldNotBeNull();
 
         var calendar = PaymentCalendar.Of(pay, AdvancePayments.None, On22October);
 
@@ -174,7 +174,7 @@ public class PaymentCalendarTests
     {
         var director = Of(RiverExample, On22October).DirectorBalance;
 
-        (director.TaxYear, director.Balance, director.Source).ShouldBe((2027, 1_436.06m, PersonalTaxRules.AssessmentBalance));
+        (director.TaxYear, director.Balance, director.Source).ShouldBe((2027, 1_436.06m, PersonalTaxRules.IncomeYear2026.AssessmentBalance));
     }
 
     // 10,000 of corporate tax and its 675 surcharge, nothing paid in advance.
@@ -183,7 +183,7 @@ public class PaymentCalendarTests
     {
         var company = Of(RiverExample, On22October).CompanyBalance.ShouldNotBeNull();
 
-        (company.TaxYear, company.Balance, company.Source).ShouldBe((2027, 10_675.00m, CorporateTaxRules.AssessmentBalance));
+        (company.TaxYear, company.Balance, company.Source).ShouldBe((2027, 10_675.00m, CorporateTaxRules.IncomeYear2026.AssessmentBalance));
     }
 
     // 15,000 by 10 April leaves no surcharge, and 5,000 more than the 10,000 of tax comes back.
@@ -257,7 +257,7 @@ public class PaymentCalendarTests
     [Fact]
     public void Of_payAlone_hasTheDirectorsBalanceAlone()
     {
-        var pay = GrossToNet.Compute(2026, 50_000m, MunicipalRates.Entered(0.07m), TaxPrepayments.AsWithheld).Value.ShouldNotBeNull();
+        var pay = GrossToNet.Compute(2026, 50_000m, MunicipalRates.IncomeYear2026.Entered(0.07m), TaxPrepayments.AsWithheld).Value.ShouldNotBeNull();
 
         var calendar = PaymentCalendar.Of(pay, AdvancePayments.None, On22October);
 

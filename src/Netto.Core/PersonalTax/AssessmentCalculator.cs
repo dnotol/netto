@@ -11,7 +11,7 @@ namespace Netto.Core.PersonalTax;
 public static class AssessmentCalculator
 {
     public static Assessment Compute(
-        PersonalTaxResult tax, IncomeTaxAdvancePaymentResult advancePayments, decimal withheld, bool withheldGiven, AdvancePayments paid,
+        PersonalTaxRules rules, PersonalTaxResult tax, IncomeTaxAdvancePaymentResult advancePayments, decimal withheld, bool withheldGiven, AdvancePayments paid,
         decimal withheldBesidesPay = 0m)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(withheldBesidesPay, 0m);
@@ -19,7 +19,7 @@ public static class AssessmentCalculator
         var finalTax = tax.IncomeTax + tax.MunicipalSurcharge - tax.LowEarnedIncomeCredit + advancePayments.Surcharge - advancePayments.Bonus;
         var paidInAdvance = paid.ByDeadline.Sum();
 
-        return new Assessment(finalTax, withheld, withheldGiven, paidInAdvance, finalTax - withheld - withheldBesidesPay - paidInAdvance, PersonalTaxRules.AssessmentBalance)
+        return new Assessment(finalTax, withheld, withheldGiven, paidInAdvance, finalTax - withheld - withheldBesidesPay - paidInAdvance, rules.AssessmentBalance)
         {
             WithheldBesidesPay = withheldBesidesPay,
         };

@@ -20,9 +20,7 @@ public class SourceDocumentTests
         .Where(type => type.GetMethod("For", BindingFlags.Public | BindingFlags.Static, [typeof(int)])?.ReturnType == type)
         .ToList();
 
-    // The income years a year's steps can run for: those every layer has rules for. A step cites a
-    // source that is not a year's own (PersonalTaxRules.IncomeTaxScale, DividendRules.ExemptionRefund),
-    // so that source must hold for each of these years: today 2026 alone.
+    // The income years a year's steps can run for: those every layer has rules for, today 2026 alone.
     private static readonly IReadOnlyList<int> StepYears = RuleSets.Years
         .Where(year => RuleTypes.All(type => RuleSets.For(type, year) is not null))
         .ToList();
@@ -72,18 +70,21 @@ public class SourceDocumentTests
         mismatched.ShouldBeEmpty();
     }
 
+    // A source a step cites is its income year's rule set's, held above to that year's documents, so a
+    // new income year is a data drop: Netto.Core keeps no source in a public static member of a public
+    // type, which every year would share.
     [Fact]
-    public void StepSource_citesADocumentCurrentForEveryYearStepsRunFor()
+    public void StaticSources_core_noneIsPublic()
     {
-        var citations =
+        var statics =
             from type in Core.GetTypes()
-            from property in type.GetProperties(BindingFlags.Public | BindingFlags.Static)
-            where property.PropertyType == typeof(Source)
-            let source = (Source)property.GetValue(null)!
-            from year in StepYears
-            select ($"{type.Name}.{property.Name} for {year}", Documents.Problem(source, year));
+            where type.IsVisible
+            from member in type.GetMembers(BindingFlags.Public | BindingFlags.Static)
+            where (member is PropertyInfo property && property.PropertyType == typeof(Source))
+                || (member is FieldInfo field && field.FieldType == typeof(Source))
+            select $"{type.Name}.{member.Name}";
 
-        Problems(citations).ShouldBeEmpty();
+        statics.ShouldBeEmpty();
     }
 
     [Fact]

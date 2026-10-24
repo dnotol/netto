@@ -67,7 +67,8 @@ public static class GrossToNet
         var socialRules = SocialContributionRules.For(incomeYear);
         var taxRules = PersonalTaxRules.For(incomeYear);
         var withholdingRules = WithholdingRules.For(incomeYear);
-        if (socialRules is null || taxRules is null || withholdingRules is null)
+        var municipalRates = MunicipalRates.For(incomeYear);
+        if (socialRules is null || taxRules is null || withholdingRules is null || municipalRates is null)
             return (null, IncomeYearNotSupported);
         if (grossPay < 0m)
             return (null, GrossPayNegative);
@@ -100,7 +101,7 @@ public static class GrossToNet
             figures.Tax.LowEarnedIncomeCredit,
             advancePayments,
             figures.NetInPocket,
-            Steps(socialRules, taxRules, figures, municipalRate),
+            Steps(socialRules, taxRules, municipalRates.Surcharge, figures, municipalRate),
             new NextThousand(
                 next.SocialContributions - figures.SocialContributions,
                 next.YearTax.IncomeTax - figures.YearTax.IncomeTax,
@@ -109,7 +110,7 @@ public static class GrossToNet
                 next.YearAdvancePayments.Surcharge - next.YearAdvancePayments.Bonus - figures.YearAdvancePayments.Surcharge + figures.YearAdvancePayments.Bonus,
                 next.YearNetInPocket - figures.YearNetInPocket),
             Statement(withholdingRules, figures),
-            AssessmentCalculator.Compute(figures.YearTax, advancePayments, figures.Withheld, figures.WithheldGiven, prepayments.Paid, movable.Withheld),
+            AssessmentCalculator.Compute(taxRules, figures.YearTax, advancePayments, figures.Withheld, figures.WithheldGiven, prepayments.Paid, movable.Withheld),
             figures.OtherIncomeTax)
         {
             RequalifiedPay = figures.RequalifiedPay,
@@ -196,14 +197,14 @@ public static class GrossToNet
         SocialContributionCalculator.Annual(socialRules, grossPay - PersonalTaxCalculator.FlatRateCosts(taxRules, grossPay));
 
     private static IReadOnlyList<Step> Steps(
-        SocialContributionRules socialRules, PersonalTaxRules taxRules, Figures figures, RuleAmount municipalRate) =>
+        SocialContributionRules socialRules, PersonalTaxRules taxRules, Source municipalSurcharge, Figures figures, RuleAmount municipalRate) =>
     [
         new Step("social_contributions", Layer.Social, TaxableEvent.DirectorPay, Track.PaidOut, figures.SocialContributions, socialRules.Source, socialRules.Amounts),
         new Step("flat_rate_costs", Layer.Personal, TaxableEvent.DirectorPay, Track.TaxBaseOnly, figures.Tax.FlatRateCosts,
-            PersonalTaxRules.DirectorPayDeductions, taxRules.FlatRateCostsAmounts),
-        new Step("taxable_income", Layer.Personal, TaxableEvent.DirectorPay, Track.TaxBaseOnly, figures.Tax.TaxableIncome, PersonalTaxRules.DirectorPayDeductions, []),
-        new Step("income_tax", Layer.Personal, TaxableEvent.DirectorPay, Track.PaidOut, figures.Tax.IncomeTax, PersonalTaxRules.IncomeTaxScale, taxRules.IncomeTaxAmounts),
-        new Step("municipal_surcharge", Layer.Personal, TaxableEvent.DirectorPay, Track.PaidOut, figures.Tax.MunicipalSurcharge, PersonalTaxRules.MunicipalSurcharge, [municipalRate]),
+            taxRules.DirectorPayDeductions, taxRules.FlatRateCostsAmounts),
+        new Step("taxable_income", Layer.Personal, TaxableEvent.DirectorPay, Track.TaxBaseOnly, figures.Tax.TaxableIncome, taxRules.DirectorPayDeductions, []),
+        new Step("income_tax", Layer.Personal, TaxableEvent.DirectorPay, Track.PaidOut, figures.Tax.IncomeTax, taxRules.IncomeTaxScale, taxRules.IncomeTaxAmounts),
+        new Step("municipal_surcharge", Layer.Personal, TaxableEvent.DirectorPay, Track.PaidOut, figures.Tax.MunicipalSurcharge, municipalSurcharge, [municipalRate]),
         new Step("low_earned_income_credit", Layer.Personal, TaxableEvent.DirectorPay, Track.PaidOut, -figures.Tax.LowEarnedIncomeCredit,
             taxRules.LowEarnedIncomeCredit.Source, taxRules.LowEarnedIncomeCredit.Amounts),
         new Step("income_tax_advance_payment_surcharge", Layer.Personal, TaxableEvent.DirectorPay, Track.PaidOut, figures.AdvancePayments.Surcharge,

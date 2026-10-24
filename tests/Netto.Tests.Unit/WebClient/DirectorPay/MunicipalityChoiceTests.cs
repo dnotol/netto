@@ -22,7 +22,7 @@ public class MunicipalityChoiceTests
     {
         var choice = Start();
 
-        (choice.Municipality, choice.MunicipalRate).ShouldBe((null, MunicipalRates.Entered(0.07m)));
+        (choice.Municipality, choice.MunicipalRate).ShouldBe((null, MunicipalRates.IncomeYear2026.Entered(0.07m)));
     }
 
     [Fact]
@@ -53,7 +53,7 @@ public class MunicipalityChoiceTests
     public void Pick_municipalityOfAYearWhoseRatesArePublished_saysItIsItsOfficialRate()
     {
         var alpha = new Municipality(10_001, "Alpha", new RuleAmount("municipal_rate", 0.08m, AnySource));
-        var rates = new MunicipalRates(2026, 2026, new DateOnly(2027, 1, 1), [alpha]);
+        var rates = new MunicipalRates(2026, 2026, new DateOnly(2027, 1, 1), [alpha], AnySource);
 
         var note = MunicipalityChoice.Start(rates, 0.07m).Pick(alpha).Note;
 
@@ -65,7 +65,7 @@ public class MunicipalityChoiceTests
     {
         var choice = Start().Pick(Namur).Enter(0.09m);
 
-        (choice.Municipality, choice.IsOverridden, choice.MunicipalRate).ShouldBe((Namur, true, MunicipalRates.Entered(0.09m)));
+        (choice.Municipality, choice.IsOverridden, choice.MunicipalRate).ShouldBe((Namur, true, MunicipalRates.IncomeYear2026.Entered(0.09m)));
     }
 
     [Fact]
@@ -105,7 +105,7 @@ public class MunicipalityChoiceTests
     {
         var choice = Start().Pick(Namur).Pick(null);
 
-        (choice.Municipality, choice.MunicipalRate).ShouldBe((null, MunicipalRates.Entered(0.085m)));
+        (choice.Municipality, choice.MunicipalRate).ShouldBe((null, MunicipalRates.IncomeYear2026.Entered(0.085m)));
     }
 
     [Fact]
@@ -198,5 +198,5 @@ public class MunicipalityChoiceTests
 
     private static MunicipalRates MadeUpRates(params string[] names) =>
         new(2026, 2025, new DateOnly(2027, 1, 1),
-            names.Select((name, index) => new Municipality(10_000 + index, name, new RuleAmount("municipal_rate", 0.08m, AnySource))).ToList());
+            names.Select((name, index) => new Municipality(10_000 + index, name, new RuleAmount("municipal_rate", 0.08m, AnySource))).ToList(), AnySource);
 }

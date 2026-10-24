@@ -36,7 +36,7 @@ public class YearSimulationCarTests
     [Fact]
     public void Run_2026Car_taxesItsBenefitAsPay()
     {
-        var (pay, _) = GrossToNet.Compute(2026, 50_000m, MunicipalRates.Entered(0.07m), Withheld, ContributionsPaidBy.Director, 0m, 1_714.29m);
+        var (pay, _) = GrossToNet.Compute(2026, 50_000m, MunicipalRates.IncomeYear2026.Entered(0.07m), Withheld, ContributionsPaidBy.Director, 0m, 1_714.29m);
 
         var result = Run(Scenario(car: ElectricCar));
 

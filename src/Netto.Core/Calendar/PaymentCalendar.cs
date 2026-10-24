@@ -43,7 +43,7 @@ public sealed record PaymentCalendar(
     public static PaymentCalendar Of(YearResult year, DateOnly today)
     {
         var incomeYear = year.Scenario.IncomeYear;
-        var companyRules = CorporateTaxRules.For(incomeYear)?.AdvancePayments
+        var corporateRules = CorporateTaxRules.For(incomeYear)
             ?? throw new ArgumentException($"Income year {incomeYear} has no rules for the company's advance payments.", nameof(year));
         var payments = year.AdvancePayments;
         var paid = year.Scenario.AdvancePayments;
@@ -51,9 +51,9 @@ public sealed record PaymentCalendar(
         return Of(year.DirectorPay, year.Scenario.TaxPrepayments.Paid, today) with
         {
             Company = AdvancePaymentSchedule.Of(
-                companyRules.Deadlines.Select(deadline => deadline.Date).ToList(), paid, payments.TopUps, payments.Surcharge, payments.Exempt, today),
+                corporateRules.AdvancePayments.Deadlines.Select(deadline => deadline.Date).ToList(), paid, payments.TopUps, payments.Surcharge, payments.Exempt, today),
             // The year's corporate tax holds the surcharge already (its corporate steps paid out).
-            CompanyBalance = new AssessmentDue(incomeYear + 1, year.CorporateTax - paid.ByDeadline.Sum(), CorporateTaxRules.AssessmentBalance),
+            CompanyBalance = new AssessmentDue(incomeYear + 1, year.CorporateTax - paid.ByDeadline.Sum(), corporateRules.AssessmentBalance),
         };
     }
 

@@ -7,12 +7,15 @@ namespace Netto.Core.Dividends;
 // return, for one income year. Income year 2025 is here for the Tax-Calc tests only.
 // In steady state the year's dividend comes out of the year's own profit and is paid the next year,
 // so a 2026 profit's VVPRbis dividend takes the rate for payments from 01.07.2026 (decided 2026-10-19).
+// ExemptionRefund is the text that says how the return gives the exempt part's withholding back,
+// which the refund's step cites as its rule.
 public sealed record DividendRules(
     int IncomeYear,
     RuleAmount StandardRate,
     RuleAmount VvprbisSecondYearRate,
     RuleAmount VvprbisThirdYearOnwardsRate,
-    RuleAmount ExemptAmount)
+    RuleAmount ExemptAmount,
+    Source ExemptionRefund)
 {
     private static readonly Source Article269Income2025 = SharedSources.Article269Income2025 with
     {
@@ -43,21 +46,21 @@ public sealed record DividendRules(
         new Uri("https://fin.belgium.be/sites/default/files/media/documents/explications-partie-1-rw-2026.pdf"),
         "personal-tax/spf-finances_explications-partie-1-rw-2026_2026-04-13.pdf");
 
-    public static Source ExemptionRefund => ReturnExplanations2026Part1;
-
     public static DividendRules IncomeYear2025 { get; } = new(
         2025,
         new RuleAmount("dividend_standard_rate", 0.30m, Article269Income2025),
         new RuleAmount("vvprbis_second_year_rate", 0.20m, Article269Income2025),
         new RuleAmount("vvprbis_third_year_onwards_rate", 0.15m, Article269Income2025),
-        new RuleAmount("exempt_dividends", 833m, Article21Income2025));
+        new RuleAmount("exempt_dividends", 833m, Article21Income2025),
+        ExemptionRefund: ReturnExplanations2026Part1);
 
     public static DividendRules IncomeYear2026 { get; } = new(
         2026,
         new RuleAmount("dividend_standard_rate", 0.30m, Article269Income2026),
         new RuleAmount("vvprbis_second_year_rate", 0.20m, Article269Income2026),
         new RuleAmount("vvprbis_third_year_onwards_rate", 0.18m, Article269Income2026),
-        new RuleAmount("exempt_dividends", 833m, Article21Income2026));
+        new RuleAmount("exempt_dividends", 833m, Article21Income2026),
+        ExemptionRefund: ReturnExplanations2026Part1);
 
     public static DividendRules? For(int incomeYear) => incomeYear switch
     {
