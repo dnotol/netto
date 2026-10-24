@@ -73,11 +73,21 @@ public sealed record RentRules(
         Label = "Circular 2021/C/20, §31",
     };
 
-    public static RentRules IncomeYear2025 { get; } = Of(2025, Article7Income2025, Article13Income2025, Article32Income2025, 5.63m,
-        new RuleAmount("cadastral_income_indexation_coefficient", 2.2446m, IndexationNotice2026));
+    public static RentRules IncomeYear2025 { get; } = Of(
+        incomeYear: 2025,
+        article7: Article7Income2025,
+        article13: Article13Income2025,
+        article32: Article32Income2025,
+        revaluation: 5.63m,
+        indexation: new RuleAmount("cadastral_income_indexation_coefficient", 2.2446m, IndexationNotice2026));
 
-    public static RentRules IncomeYear2026 { get; } = Of(2026, Article7Income2026, Article13Income2026, Article32Income2026, 5.75m,
-        new RuleAmount("cadastral_income_indexation_coefficient", 2.3000m, IndexationNotice2027));
+    public static RentRules IncomeYear2026 { get; } = Of(
+        incomeYear: 2026,
+        article7: Article7Income2026,
+        article13: Article13Income2026,
+        article32: Article32Income2026,
+        revaluation: 5.75m,
+        indexation: new RuleAmount("cadastral_income_indexation_coefficient", 2.3000m, IndexationNotice2027));
 
     public static RentRules? For(int incomeYear) => incomeYear switch
     {

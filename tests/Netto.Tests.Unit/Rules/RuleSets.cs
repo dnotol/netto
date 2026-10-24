@@ -27,4 +27,10 @@ internal static class RuleSets
     // The public instance properties of the type, indexers aside.
     public static IEnumerable<PropertyInfo> Properties(Type type) =>
         type.GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(property => property.GetIndexParameters().Length == 0);
+
+    // What each property of a rules record that holds a T holds, by the property's name, in the order the
+    // record declares them: its amounts or its sources, so a test can hold each slot to its key or its
+    // document and a swap of two neighbours fails.
+    public static IEnumerable<(string Slot, T? Value)> Slots<T>(object record) where T : class =>
+        Properties(record.GetType()).Where(property => property.PropertyType == typeof(T)).Select(property => (property.Name, property.GetValue(record) as T));
 }

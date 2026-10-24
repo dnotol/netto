@@ -1,4 +1,6 @@
 using Netto.Core.Rent;
+using Netto.Core.Rules;
+using Netto.Tests.Rules;
 using Shouldly;
 
 namespace Netto.Tests.Rent;
@@ -53,6 +55,30 @@ public class RentRulesTests
         new[] { rules.CapMultiplier, rules.RevaluationCoefficient, rules.FloorUplift, rules.ChargesRate, rules.ChargesLimitMultiplier }
             .Select(amount => amount.Source)
             .ShouldBe([rules.Cap, rules.NetRent, rules.RentAsIncome, rules.NetRent, rules.NetRent]);
+    }
+
+    // Each text slot holds its year's article: the amounts cite the slots' own texts, so a swap of two
+    // of the articles Of takes for a year would pass every test that compares an amount to them.
+    public static TheoryData<int, string, string, string> ArticlesByYear => new()
+    {
+        {
+            2025, "personal-tax/spf-finances_cir92-art-7-revenus-2025_2024-11-25.html", "personal-tax/spf-finances_cir92-art-13-revenus-2025_2025-01-23.html",
+            "personal-tax/spf-finances_cir92-art-32-revenus-2025_2024-12-02.html"
+        },
+        {
+            2026, "personal-tax/spf-finances_cir92-art-7-revenus-2026_2026-03-02.html", "personal-tax/spf-finances_cir92-art-13-revenus-2026_2026-03-02.html",
+            "personal-tax/spf-finances_cir92-art-32-revenus-2026_2026-01-29.html"
+        },
+    };
+
+    [Theory]
+    [MemberData(nameof(ArticlesByYear))]
+    public void For_year_eachTextSlotHoldsItsArticle(int incomeYear, string article7, string article13, string article32)
+    {
+        var rules = RentRules.For(incomeYear).ShouldNotBeNull();
+
+        RuleSets.Slots<Source>(rules).Select(slot => (slot.Slot, slot.Value?.Document))
+            .ShouldBe([("RentAsIncome", article7), ("NetRent", article13), ("Cap", article32)]);
     }
 
     // The conditions the card lists, each with the texts it comes from: the share let is the user's

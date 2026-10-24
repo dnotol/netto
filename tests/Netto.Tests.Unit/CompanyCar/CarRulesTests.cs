@@ -1,5 +1,7 @@
 using Netto.Core.CompanyCar;
 using Netto.Core.CorporateTax;
+using Netto.Core.Rules;
+using Netto.Tests.Rules;
 using Shouldly;
 
 namespace Netto.Tests.CompanyCar;
@@ -79,6 +81,58 @@ public class CarRulesTests
         new[] { rules.CatalogueShare, rules.MinimumCo2Percentage, rules.MinimumBenefit, rules.AddBackRate, rules.AddBackRateWithPrivateEnergy, rules.ZeroEmissionDeduction }
             .Select(amount => amount.Source.Document)
             .ShouldBe([Article36, Article36, Article36, Article198, Module53, Article66]);
+    }
+
+    // Each slot holds the amount named for it: two neighbours of one value (0.95 for other fuels and a
+    // diesel hybrid) swapped would pass every test of values.
+    [Fact]
+    public void IncomeYear2026_eachAmountSlotHoldsItsKey()
+    {
+        RuleSets.Slots<RuleAmount>(CarRules.IncomeYear2026).Select(slot => (slot.Slot, slot.Value?.Key)).ShouldBe(
+        [
+            ("CatalogueShare", "catalogue_share_rate"),
+            ("BaseCo2Percentage", "base_co2_rate"),
+            ("Co2PercentagePerGram", "co2_per_gram_rate"),
+            ("MinimumCo2Percentage", "minimum_co2_rate"),
+            ("MaximumCo2Percentage", "maximum_co2_rate"),
+            ("PetrolReferenceEmission", "petrol_reference_grams"),
+            ("DieselReferenceEmission", "diesel_reference_grams"),
+            ("PetrolEmissionWithoutData", "petrol_without_data_grams"),
+            ("DieselEmissionWithoutData", "diesel_without_data_grams"),
+            ("FakeHybridWithoutMatch", "fake_hybrid_without_match_multiplier"),
+            ("MinimumBenefit", "minimum_car_benefit"),
+            ("AddBackRate", "car_add_back_rate"),
+            ("AddBackRateWithPrivateEnergy", "car_add_back_with_private_energy_rate"),
+            ("ZeroEmissionDeduction", "zero_emission_deduction_rate"),
+            ("FormulaBase", "deduction_formula_base_rate"),
+            ("FormulaPerGram", "deduction_formula_per_gram_rate"),
+            ("DieselCoefficient", "diesel_coefficient"),
+            ("OtherFuelCoefficient", "other_fuel_coefficient"),
+            ("DieselHybridCoefficient", "diesel_hybrid_coefficient"),
+            ("SmallNaturalGasCoefficient", "small_natural_gas_coefficient"),
+        ]);
+    }
+
+    // Each text slot holds its document: the steps cite the slots themselves, so a swap of two would
+    // pass every test that compares a step to them.
+    [Fact]
+    public void IncomeYear2026_eachTextSlotHoldsItsDocument()
+    {
+        RuleSets.Slots<Source>(CarRules.IncomeYear2026).Select(slot => (slot.Slot, slot.Value?.Document)).ShouldBe(
+        [
+            ("Benefit", Article36),
+            ("BenefitMethod", "personal-tax/spf-finances_faq-avantage-vehicule-mis-a-disposition_2022-03-15.html"),
+            ("BenefitAsPay", "personal-tax/spf-finances_cir92-art-31-revenus-2026_2026-07-30.html"),
+            ("BenefitInContributions", "social-contributions/ejustice_arrete-royal-38-statut-social-independants_2026-06-01.html"),
+            ("ReferenceDecree", "personal-tax/ejustice_arrete-royal-emission-reference-co2-2026_2025-12-24.html"),
+            ("FakeHybrid", "personal-tax/spf-finances_circulaire-2026-c-10-faux-hybride_2026-01-07.html"),
+            ("Deduction", Article66),
+            ("Acquisition", "corporate-tax/spf-finances_circulaire-2024-c-50-verdissement-mobilite_2024-07-23.html"),
+            ("FormulaDeduction", Article550),
+            ("CompanyExclusions", "corporate-tax/spf-finances_cir92-art-198bis-revenus-2026_2026-03-02.html"),
+            ("PlugInDeduction", "corporate-tax/spf-finances_circulaire-2026-c-11-hybrides-rechargeables_2026-01-09.html"),
+            ("AddBack", Article198),
+        ]);
     }
 
     [Fact]

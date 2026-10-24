@@ -159,13 +159,30 @@ public sealed record CopyrightRules(
         "personal-tax/spf-finances_decision-anticipee-2026-0484_2026-09-17.html") { Label = "Advance ruling 2026.0484" };
 
     public static CopyrightRules IncomeYear2025 { get; } = Of(
-        2025, Article37Income2025, Article171Income2025, Article269Income2025, Article32Income2025, Article157Income2025,
-        FlatRateCostsOf(ArCir3Income2025, ArCir4Income2025, null, IndexationNotice2026, 20_100m, 40_190m), 75_360m, null, []);
+        incomeYear: 2025,
+        article37: Article37Income2025,
+        article171: Article171Income2025,
+        article269: Article269Income2025,
+        article32: Article32Income2025,
+        article157: Article157Income2025,
+        flatRateCosts: FlatRateCostsOf(
+            article3: ArCir3Income2025, article4: ArCir4Income2025, attestation: null, notice: IndexationNotice2026, firstCeiling: 20_100m, secondCeiling: 40_190m),
+        cap: 75_360m,
+        envelopeRate: null,
+        conditions: []);
 
     public static CopyrightRules IncomeYear2026 { get; } = Of(
-        2026, Article37Income2026, Article171Income2026, Article269Income2026, Article32Income2026, Article157Income2026,
-        FlatRateCostsOf(ArCir3Income2026, ArCir4Income2026, ProgrammeLaw, IndexationNotice2027, 20_590m, 41_180m), 77_220m,
-        new RuleAmount("copyright_envelope_rate", 0.25m, Ruling2026_0484),
+        incomeYear: 2026,
+        article37: Article37Income2026,
+        article171: Article171Income2026,
+        article269: Article269Income2026,
+        article32: Article32Income2026,
+        article157: Article157Income2026,
+        flatRateCosts: FlatRateCostsOf(
+            article3: ArCir3Income2026, article4: ArCir4Income2026, attestation: ProgrammeLaw, notice: IndexationNotice2027, firstCeiling: 20_590m, secondCeiling: 41_180m),
+        cap: 77_220m,
+        envelopeRate: new RuleAmount("copyright_envelope_rate", 0.25m, Ruling2026_0484),
+        conditions:
         [
             new LeverCondition("works_you_created", [Article17Income2026]),
             new LeverCondition("for_the_public", [Article17Income2026]),
@@ -187,32 +204,32 @@ public sealed record CopyrightRules(
     private static CopyrightRules Of(
         int incomeYear, Source article37, Source article171, Source article269, Source article32, Source article157, CopyrightFlatRateCosts flatRateCosts,
         decimal cap, RuleAmount? envelopeRate, IReadOnlyList<LeverCondition> conditions) => new(
-        incomeYear,
-        article37,
-        Article551,
-        article171,
-        Article49,
-        article32,
-        RoyalDecree38,
-        article157,
-        flatRateCosts,
-        new RuleAmount("copyright_relative_limit_rate", 0.30m, article37),
-        new RuleAmount("copyright_cap", cap, article37),
-        new RuleAmount("copyright_taxed_apart_rate", 0.15m, article171),
-        new RuleAmount("copyright_withholding_rate", 0.15m, article269),
-        new RuleAmount("copyright_beyond_limits_withholding_rate", 0.30m, article269),
-        envelopeRate,
-        conditions);
+        IncomeYear: incomeYear,
+        Limits: article37,
+        PhaseIn: Article551,
+        TaxedApart: article171,
+        Deduction: Article49,
+        TaxedAsPay: article32,
+        OutsideContributions: RoyalDecree38,
+        OutsideAdvancePaymentSurcharge: article157,
+        FlatRateCosts: flatRateCosts,
+        RelativeLimit: new RuleAmount("copyright_relative_limit_rate", 0.30m, article37),
+        Cap: new RuleAmount("copyright_cap", cap, article37),
+        TaxedApartRate: new RuleAmount("copyright_taxed_apart_rate", 0.15m, article171),
+        WithholdingRate: new RuleAmount("copyright_withholding_rate", 0.15m, article269),
+        BeyondLimitsWithholdingRate: new RuleAmount("copyright_beyond_limits_withholding_rate", 0.30m, article269),
+        EnvelopeRate: envelopeRate,
+        Conditions: conditions);
 
     // The rates are art. 4's both years, the ceilings the year's indexation notice's.
     private static CopyrightFlatRateCosts FlatRateCostsOf(
         Source article3, Source article4, Source? attestation, Source notice, decimal firstCeiling, decimal secondCeiling) => new(
-        Article22,
-        article3,
-        article4,
-        attestation,
-        new RuleAmount("copyright_flat_rate_costs_first_band_rate", 0.50m, article4),
-        new RuleAmount("copyright_flat_rate_costs_first_band", firstCeiling, notice),
-        new RuleAmount("copyright_flat_rate_costs_second_band_rate", 0.25m, article4),
-        new RuleAmount("copyright_flat_rate_costs_second_band", secondCeiling, notice));
+        NetIncome: Article22,
+        Who: article3,
+        Bands: article4,
+        Attestation: attestation,
+        FirstBandRate: new RuleAmount("copyright_flat_rate_costs_first_band_rate", 0.50m, article4),
+        FirstBandCeiling: new RuleAmount("copyright_flat_rate_costs_first_band", firstCeiling, notice),
+        SecondBandRate: new RuleAmount("copyright_flat_rate_costs_second_band_rate", 0.25m, article4),
+        SecondBandCeiling: new RuleAmount("copyright_flat_rate_costs_second_band", secondCeiling, notice));
 }
