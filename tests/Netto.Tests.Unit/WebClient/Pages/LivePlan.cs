@@ -44,8 +44,8 @@ internal sealed class LivePlan : IAsyncDisposable
     public IReadOnlyList<Exception> Errors => _renderer.Errors;
 
     // The page at that address, over the plans the storage holds, not loaded yet; the browser's paint held
-    // until PaintAsync, when asked.
-    public static LivePlan At(string uri, BrowserStorage storage, bool holdPaint = false)
+    // until PaintAsync, when asked. The river opens on the example unless given another.
+    public static LivePlan At(string uri, BrowserStorage storage, bool holdPaint = false, RiverInputs? river = null)
     {
         var services = new ServiceCollection();
         services.AddLogging();
@@ -56,7 +56,7 @@ internal sealed class LivePlan : IAsyncDisposable
         services.AddSingleton<IBrowserStorage>(storage);
         services.AddSingleton(new Folds(storage));
         services.AddSingleton(plans);
-        services.AddSingleton(new RiverState(plans) { Inputs = RiverInputs.Example });
+        services.AddSingleton(new RiverState(plans) { Inputs = river ?? RiverInputs.Example });
         services.AddSingleton<TimeProvider>(new Clock(On23October));
         var script = new RecordingScript(holdPaint);
         services.AddSingleton<IJSRuntime>(script);
@@ -95,6 +95,18 @@ internal sealed class LivePlan : IAsyncDisposable
     // The first component of that type the page draws, as it now stands.
     public Task<TComponent> FindAsync<TComponent>() where TComponent : IComponent =>
         _renderer.Dispatcher.InvokeAsync(() => _renderer.Components().OfType<TComponent>().First());
+
+    // Every component of that type the page draws, as it now stands, each before those it draws in turn.
+    public Task<IReadOnlyList<TComponent>> FindAllAsync<TComponent>() where TComponent : IComponent =>
+        _renderer.Dispatcher.InvokeAsync<IReadOnlyList<TComponent>>(() => [.. _renderer.Components().OfType<TComponent>()]);
+
+    // What a viewer's click or change does: the component's callback, invoked on the page's dispatcher as the
+    // browser's event would, and done once the page has drawn what it did and run its work after that draw.
+    public async Task InvokeAsync(Func<Task> callback)
+    {
+        await _renderer.Dispatcher.InvokeAsync(callback);
+        await _renderer.Dispatcher.InvokeAsync(() => { });
+    }
 
     // The renderer first, as its components go, then the services they used.
     public async ValueTask DisposeAsync()
