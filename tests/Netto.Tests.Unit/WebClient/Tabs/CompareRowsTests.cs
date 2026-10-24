@@ -83,7 +83,8 @@ public class CompareRowsTests
     {
         var view = Compare(RiverInputs.Example, BestPay);
 
-        var rows = new[] { "taxes", "corporate_tax", "social_contributions", "personal_tax" }.Select(key => Row(view, key)).ToList();
+        string[] keys = ["taxes", "corporate_tax", "social_contributions", "personal_tax"];
+        var rows = keys.Select(key => Row(view, key)).ToList();
 
         rows.Select(row => (row.Plan.Amount, row.Against.Amount, row.Difference.Kind, row.Difference.Amount)).ShouldBe(
         [

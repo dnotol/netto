@@ -25,7 +25,7 @@ public class FigureListTests
     {
         var html = await RenderAsync(Rent);
 
-        (Regex.Matches(html, "<ul class=\"figure-list\"").Count, Regex.Matches(html, "<li class=\"figure\"").Count).ShouldBe((1, 3));
+        (Regex.Count(html, "<ul class=\"figure-list\""), Regex.Count(html, "<li class=\"figure\"")).ShouldBe((1, 3));
     }
 
     // In their order; a line that takes from the figure carries its sign in its amount.

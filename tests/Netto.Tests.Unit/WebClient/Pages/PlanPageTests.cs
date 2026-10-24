@@ -63,8 +63,8 @@ public class PlanPageTests
     {
         var html = await RenderPlanAsync(new Folds(new BrowserStorage()));
 
-        Regex.Matches(html, "<aside class=\"(assumed|limits)\" aria-labelledby=\"(assumed|limits)-title\"[^>]*><h2 [^>]*><button [^>]*><span id=\"(assumed|limits)-title\"")
-            .Count.ShouldBe(2);
+        Regex.Count(html, "<aside class=\"(assumed|limits)\" aria-labelledby=\"(assumed|limits)-title\"[^>]*><h2 [^>]*><button [^>]*><span id=\"(assumed|limits)-title\"")
+            .ShouldBe(2);
     }
 
     // The tabs are the bar's last row, after its figures and its buttons, so they stick under the site
@@ -184,7 +184,7 @@ public class PlanPageTests
 
         var html = WebUtility.HtmlDecode(await RenderPlanAsync(new Folds(new BrowserStorage()), "optimisation"));
 
-        (Paragraph(html, "tab-head__eyebrow"), Paragraph(html, "moves__state"), moves.Count > 0, Regex.Matches(html, "<li class=\"moves__move\"").Count)
+        (Paragraph(html, "tab-head__eyebrow"), Paragraph(html, "moves__state"), moves.Count > 0, Regex.Count(html, "<li class=\"moves__move\""))
             .ShouldBe(("Against the plan in your river", "From the plan in your river, as you opened or saved it:", true, moves.Count));
     }
 

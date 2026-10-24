@@ -30,14 +30,15 @@ public sealed class RiverNumericField<T> : MudNumericField<T>
     [Parameter]
     public string? Refusal { get; set; }
 
-    protected override void BuildRenderTree(RenderTreeBuilder builder)
+    // The parameter keeps the name the Razor compiler gives it in the base component (CA1725).
+    protected override void BuildRenderTree(RenderTreeBuilder __builder)
     {
-        builder.OpenElement(0, "div");
-        builder.AddAttribute(1, "class", ErrorState.RenderValue ? "river-number river-number--refused" : "river-number");
-        builder.OpenRegion(2);
-        base.BuildRenderTree(builder);
-        builder.CloseRegion();
-        builder.CloseElement();
+        __builder.OpenElement(0, "div");
+        __builder.AddAttribute(1, "class", ErrorState.RenderValue ? "river-number river-number--refused" : "river-number");
+        __builder.OpenRegion(2);
+        base.BuildRenderTree(__builder);
+        __builder.CloseRegion();
+        __builder.CloseElement();
     }
 
     protected override async Task OnParametersSetAsync()

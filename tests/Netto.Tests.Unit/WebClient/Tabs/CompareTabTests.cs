@@ -32,7 +32,7 @@ public class CompareTabTests
     {
         var heads = new List<int>();
         foreach (var plans in new[] { Saved(), Saved(RiverInputs.Example), Saved(RiverInputs.Example, BestPay) })
-            heads.Add(Regex.Matches(await RenderTabAsync(plans), "<h1[^>]*>Compare plans</h1>").Count);
+            heads.Add(Regex.Count(await RenderTabAsync(plans), "<h1[^>]*>Compare plans</h1>"));
 
         heads.ShouldBe([1, 1, 1]);
     }
@@ -75,7 +75,7 @@ public class CompareTabTests
         var html = await RenderTabAsync(Saved(RiverInputs.Example, BestPay));
 
         var table = Between(html, "<table", "</table>");
-        (Regex.Matches(table, "<th scope=\"col\"").Count, Regex.Matches(table, "<th scope=\"rowgroup\"").Count, Regex.Matches(table, "<th scope=\"row\"").Count)
+        (Regex.Count(table, "<th scope=\"col\""), Regex.Count(table, "<th scope=\"rowgroup\""), Regex.Count(table, "<th scope=\"row\""))
             .ShouldBe((4, 3, 10));
     }
 

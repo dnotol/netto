@@ -390,7 +390,7 @@ public class MoveSearchTests
     {
         private int _next;
 
-        public IReadOnlyList<Move> Moves => moves;
+        public Move[] Moves => moves;
 
         public Move? Find(Scenario scenario) => _next < moves.Length ? moves[_next++] : null;
     }

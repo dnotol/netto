@@ -27,7 +27,7 @@ public class TabHeadTests
     {
         var html = await RenderHeadAsync();
 
-        (Regex.Matches(html, "<h1[ >]").Count, Regex.IsMatch(html, "<h1 [^>]*tabindex=\"-1\"[^>]*>Optimisation</h1>")).ShouldBe((1, true));
+        (Regex.Count(html, "<h1[ >]"), Regex.IsMatch(html, "<h1 [^>]*tabindex=\"-1\"[^>]*>Optimisation</h1>")).ShouldBe((1, true));
     }
 
     private static Task<string> RenderHeadAsync() =>

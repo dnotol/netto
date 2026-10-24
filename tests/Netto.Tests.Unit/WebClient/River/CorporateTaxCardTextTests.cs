@@ -15,7 +15,8 @@ public class CorporateTaxCardTextTests
     [Fact]
     public void CorporateTaxCardResx_everyReducedRateCondition_hasAText()
     {
-        var keys = Enum.GetValues<ReducedRateCondition>().SelectMany(condition => new[] { false, true }.Select(benefits => CorporateTaxCardText.Condition(condition, benefits)));
+        bool[] withoutAndWithBenefits = [false, true];
+        var keys = Enum.GetValues<ReducedRateCondition>().SelectMany(condition => withoutAndWithBenefits.Select(benefits => CorporateTaxCardText.Condition(condition, benefits)));
 
         Resources.Missing(keys).ShouldBeEmpty();
     }

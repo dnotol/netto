@@ -131,8 +131,9 @@ public class CarAndRoyaltyCardsTests
     public async Task Cards_filledPlan_leaveNoKey()
     {
         var html = await CardHtml.RenderPlanOpenAsync(Filled);
+        string[] cards = ["car", "copyright"];
 
-        new[] { "car", "copyright" }.SelectMany(card => CardHtml.LeakedKeys(CardHtml.Card(html, card))).ShouldBeEmpty();
+        cards.SelectMany(card => CardHtml.LeakedKeys(CardHtml.Card(html, card))).ShouldBeEmpty();
     }
 
     // The royalty and how its limits split it, the note of which limit set it, here the 30% limit with the
@@ -141,7 +142,7 @@ public class CarAndRoyaltyCardsTests
     [Fact]
     public async Task RoyaltyCard_withinItsLimits_drawsItsFiguresThenThePlanWithAndWithoutItThenWhereItGoes()
     {
-        var html = await RenderOpenAsync(typeof(CopyrightCard), OptionalModule.Copyright, CopyrightViewTests.Within);
+        var html = await RenderOpenAsync<CopyrightCard>(OptionalModule.Copyright, CopyrightViewTests.Within);
         var comparison = CopyrightComparison.From(CopyrightViewTests.Within, CopyrightViewTests.Within.Run()).ShouldNotBeNull();
         var drains = DrainLines.Shown(CopyrightView.From(CopyrightViewTests.Within.Run().Year.ShouldNotBeNull()).Drains);
 
@@ -172,7 +173,7 @@ public class CarAndRoyaltyCardsTests
         var readings = Royalty("Readings", "€51,000.00");
 
         var details = await RenderDetailsOpenAsync(typeof(CopyrightCard), OptionalModule.Copyright, CopyrightViewTests.Within);
-        var folded = await RenderOpenAsync(typeof(CopyrightCard), OptionalModule.Copyright, CopyrightViewTests.Within);
+        var folded = await RenderOpenAsync<CopyrightCard>(OptionalModule.Copyright, CopyrightViewTests.Within);
 
         (CardHtml.Prose(details).Contains(readings), details.IndexOf(readings, StringComparison.Ordinal) < details.IndexOf("copyright__sources", StringComparison.Ordinal),
                 CardHtml.Prose(folded).Contains(readings))

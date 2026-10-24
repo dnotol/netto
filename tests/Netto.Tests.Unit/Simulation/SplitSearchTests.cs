@@ -97,7 +97,7 @@ public class SplitSearchTests
         var curve = Search(Scenario()).Curve;
 
         curve.Where(level => level.Pay is 49_999.99m or 50_000m).Select(level => level.Condition.AppliesReducedRate())
-            .ShouldBe(new[] { false, true });
+            .ShouldBe([false, true]);
     }
 
     [Fact]
@@ -223,7 +223,7 @@ public class SplitSearchTests
         var curve = Search(Scenario(paidBy: ContributionsPaidBy.Company)).Curve;
 
         curve.Where(level => level.Pay is 41_706.63m or 41_706.64m).Select(level => level.Condition.AppliesReducedRate())
-            .ShouldBe(new[] { false, true });
+            .ShouldBe([false, true]);
     }
 
     // Found by running the year at every euro from 0 to 100,000 with the company paying (2026-10-20): the
@@ -315,7 +315,7 @@ public class SplitSearchTests
         result.ShouldSatisfyAllConditions(
             () => smallest.ShouldBeInRange(41_339.01m, 41_340m),
             () => result.Curve.Where(level => level.Pay == smallest - 0.01m || level.Pay == smallest).Select(level => level.Condition.AppliesReducedRate())
-                .ShouldBe(new[] { false, true }));
+                .ShouldBe([false, true]));
     }
 
     // 3,000 before the director, 1,039.80 once the vouchers are paid for, and 1,080.20 of them the

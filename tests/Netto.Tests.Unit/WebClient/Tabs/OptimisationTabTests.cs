@@ -54,7 +54,7 @@ public class OptimisationTabTests
 
         var html = await RenderTabAsync(RiverInputs.Example, RiverInputs.Example);
 
-        (Regex.Matches(html, "<li class=\"moves__move\"").Count, Applies(html), html.Contains($"Together: {Formats.Euros(view.Total)} more than Today."))
+        (Regex.Count(html, "<li class=\"moves__move\""), Applies(html), html.Contains($"Together: {Formats.Euros(view.Total)} more than Today."))
             .ShouldBe((view.Moves.Count, view.Moves.Count, true));
     }
 
@@ -67,7 +67,7 @@ public class OptimisationTabTests
 
         var html = await RenderTabAsync(RiverInputs.Example, river);
 
-        (Applies(html), Regex.Matches(html, ">In the river<").Count).ShouldBe((view.Moves.Count - 1, 1));
+        (Applies(html), Regex.Count(html, ">In the river<")).ShouldBe((view.Moves.Count - 1, 1));
     }
 
     // A tab, not a card: no fold to open, its title the page's h1.
@@ -180,7 +180,7 @@ public class OptimisationTabTests
 
         var html = await RenderTabAsync(RiverInputs.Example, river);
 
-        (Regex.Matches(html, ">In the river<").Count, html.Contains("href=\"plan?card=vouchers\"")).ShouldBe((1, true));
+        (Regex.Count(html, ">In the river<"), html.Contains("href=\"plan?card=vouchers\"")).ShouldBe((1, true));
     }
 
     // Without moves to show, the tab says why, and shows no figure and no list.
@@ -309,7 +309,7 @@ public class OptimisationTabTests
 
         var html = await RenderFromAsync(from, RiverInputs.Example);
 
-        (view.Moves.Count > 0, Regex.Matches(html, "<li class=\"moves__move\"").Count, Applies(html)).ShouldBe((true, view.Moves.Count, view.Moves.Count));
+        (view.Moves.Count > 0, Regex.Count(html, "<li class=\"moves__move\""), Applies(html)).ShouldBe((true, view.Moves.Count, view.Moves.Count));
     }
 
     // Once a plan is starred Today, the moves are from it, and the head and the first line say so.
@@ -375,7 +375,7 @@ public class OptimisationTabTests
             .Select(match => (Regex.Replace(match.Groups[1].Value, "<svg.*?</svg>|<[^>]+>", "", RegexOptions.Singleline).Trim(), match.Groups[2].Value)),
     ];
 
-    private static int Applies(string html) => Regex.Matches(html, "aria-label=\"Apply: ").Count;
+    private static int Applies(string html) => Regex.Count(html, "aria-label=\"Apply: ");
 
     // The tab with its moves from Today.
     private static Task<string> RenderTabAsync(RiverInputs today, RiverInputs river) => RenderFromAsync(MovesBaseline.Today(today), river);

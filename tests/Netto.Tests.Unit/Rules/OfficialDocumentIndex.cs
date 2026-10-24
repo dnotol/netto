@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.RegularExpressions;
 using Netto.Core.Rules;
 
@@ -99,9 +100,9 @@ internal sealed partial class OfficialDocumentIndex
         if (!years.Success)
             throw new FormatException($"INDEX.md, row {file}: « Applies to » must be a year, « Y to Y » or « Y onwards », not « {cell} ».");
 
-        var first = int.Parse(years.Groups["first"].Value);
+        var first = int.Parse(years.Groups["first"].Value, CultureInfo.InvariantCulture);
         int? last = years.Groups["onwards"].Success ? null
-            : years.Groups["last"].Success ? int.Parse(years.Groups["last"].Value)
+            : years.Groups["last"].Success ? int.Parse(years.Groups["last"].Value, CultureInfo.InvariantCulture)
             : first;
         if (last < first)
             throw new FormatException($"INDEX.md, row {file}: « Applies to » ends before it starts: « {cell} ».");

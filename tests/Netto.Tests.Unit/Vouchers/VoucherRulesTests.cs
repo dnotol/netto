@@ -54,9 +54,9 @@ public class VoucherRulesTests
     [Fact]
     public void Conditions_2026_citeEachTextByAShortLabel()
     {
-        VoucherRules.IncomeYear2026.Conditions.Select(condition => condition.Sources.Select(source => source.Label)).ShouldBe(new[]
+        VoucherRules.IncomeYear2026.Conditions.Select(condition => condition.Sources.Select(source => source.Label)).ShouldBe(new string[][]
         {
-            new[] { "CIR 92, art. 38/1" },
+            ["CIR 92, art. 38/1"],
             ["CIR 92, art. 38/1"],
             ["CIR 92, art. 38/1", "Question 15220"],
             ["CIR 92, art. 38/1"],

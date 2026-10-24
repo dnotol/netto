@@ -479,8 +479,8 @@ public class TimelineViewTests
         foreach (var (mark, i) in company.Marks.Select((mark, i) => (mark, i)))
         {
             var row = view.Rows.SingleOrDefault(row => row.Date == mark.Date);
-            mark.Amount.ShouldBe(row?.Company ?? 0m, mark.Date.ToString());
-            timeline.Director.Marks[i].Amount.ShouldBe(row?.Director ?? 0m, mark.Date.ToString());
+            mark.Amount.ShouldBe(row?.Company ?? 0m, mark.Date.ToString(CultureInfo.InvariantCulture));
+            timeline.Director.Marks[i].Amount.ShouldBe(row?.Director ?? 0m, mark.Date.ToString(CultureInfo.InvariantCulture));
         }
 
         var nextDates = company.Marks.Concat(timeline.Director.Marks).Where(mark => mark.State == MarkState.Next).Select(mark => mark.Date).Distinct();

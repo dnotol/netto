@@ -38,7 +38,7 @@ public class CompareTabTextTests
         var keys = Enum.GetValues<RateStance>().Select(CompareTabText.Rate)
             .Concat(new[] { GainKind.More, GainKind.Less, GainKind.Same }.Select(CompareTabText.Headline))
             .Concat(new[] { CompareState.NoPlan, CompareState.OnePlan, CompareState.NotComparable, CompareState.Refused }.Select(CompareTabText.Note))
-            .Concat(new[] { 1, 2 }.Select(CompareTabText.Unreadable))
+            .Concat(Enumerable.Range(1, 2).Select(CompareTabText.Unreadable))
             .Concat(kinds.Select(CompareTabText.Points))
             .Concat(kinds.SelectMany(kind => new[] { FigureKind.Money, FigureKind.Share }.Select(figure => CompareTabText.Spoken(kind, figure))));
 

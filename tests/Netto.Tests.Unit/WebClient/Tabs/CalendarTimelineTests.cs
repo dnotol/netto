@@ -28,7 +28,7 @@ public class CalendarTimelineTests
         }));
     }
 
-    private static int Count(string html, string pattern) => Regex.Matches(html, pattern).Count;
+    private static int Count(string html, string pattern) => Regex.Count(html, pattern);
 
     private static List<string> Lanes(string html) =>
         [.. Regex.Matches(html, "<span class=\"timeline__lane\"[^>]*>([^<]*)</span>").Select(match => match.Groups[1].Value)];

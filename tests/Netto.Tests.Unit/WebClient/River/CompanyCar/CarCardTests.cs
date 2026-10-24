@@ -160,9 +160,10 @@ public class CarCardTests
     public async Task Card_exampleCar_drawsTheExamplesChipsOnItsDatesAlone()
     {
         var html = await RenderOpenAsync<CarCard>(OptionalModule.Car, RiverInputs.Example.AddToPlan(OptionalModule.Car));
+        string[] amounts = ["river-car-catalogue", "river-car-costs", "river-car-contribution"];
 
         html.ShouldSatisfyAllConditions(
-            () => new[] { "river-car-catalogue", "river-car-costs", "river-car-contribution" }.Where(field => FieldHead(html, field).Contains("origin-chip")).ShouldBeEmpty(),
+            () => amounts.Where(field => FieldHead(html, field).Contains("origin-chip")).ShouldBeEmpty(),
             () => OriginChips(html).Count(chip => chip == "example").ShouldBe(2));
     }
 
