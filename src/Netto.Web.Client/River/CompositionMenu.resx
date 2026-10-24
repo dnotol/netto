@@ -58,7 +58,7 @@
     <value>Rent for the part of your home the company uses</value>
   </data>
   <data name="Description_Car" xml:space="preserve">
-    <value>An electric car the company puts at your disposal</value>
+    <value>A car the company puts at your disposal</value>
   </data>
   <data name="Brings_Vouchers" xml:space="preserve">
     <value>{0} to your pocket</value>
