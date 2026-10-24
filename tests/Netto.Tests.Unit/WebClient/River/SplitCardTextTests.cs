@@ -153,10 +153,11 @@ public class SplitCardTextTests
 
     // Each sentence reads only the arguments the card passes it, its placeholders counted from 0:
     // why a royalty that follows the pay is none takes the income year alone, how the rate is weighed
-    // the difference alone.
+    // the difference alone, and the button that moves the pay to the best the best pay alone.
     [Theory]
     [InlineData("Following_", 1)]
     [InlineData("Rate_", 1)]
+    [InlineData("MoveToBest", 1)]
     public void SplitCardResx_sentence_readsOnlyTheArgumentsTheCardPasses(string prefix, int arguments)
     {
         InterfaceTexts.Of(typeof(SplitCard)).Where(text => text.Key.StartsWith(prefix, StringComparison.Ordinal) && InterfaceTexts.Placeholders(text.Value).Any(index => index >= arguments))

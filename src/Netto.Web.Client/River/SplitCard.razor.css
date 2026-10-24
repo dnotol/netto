@@ -44,6 +44,23 @@
     color: var(--netto-text-muted);
 }
 
+/* The button that moves the pay to the best pay, drawn as the Optimisation tab's Apply is: a neutral
+   outline, gold only where the keyboard or the pointer is on it. */
+.split__actions {
+    display: flex;
+}
+
+    .split__actions ::deep .split__move-to-best {
+        border-color: var(--netto-edge);
+        border-radius: 999px;
+        color: var(--netto-text);
+    }
+
+        .split__actions ::deep .split__move-to-best:hover,
+        .split__actions ::deep .split__move-to-best:focus-visible {
+            border-color: var(--netto-gold);
+        }
+
 /* The net in pocket at every pay: the amounts up the left, the plot, the pays under it and the
    slider under them, the plot and the pays inset by the slider thumb's radius so that a pay sits
    right above the thumb that sets it. A small MudSlider's thumb is 2px wide, scaled up only to draw. */

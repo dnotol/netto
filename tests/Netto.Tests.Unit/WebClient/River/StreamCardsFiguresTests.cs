@@ -2,6 +2,7 @@ using System.Net;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
+using Netto.Web.Client;
 using Netto.Web.Client.River;
 using Shouldly;
 using static Netto.Tests.WebClient.River.RiverRendering;
@@ -31,6 +32,9 @@ public class StreamCardsFiguresTests
 
     // The texts of Director pay's .resx, for the rules its bubbles say, read where a test needs one.
     private static readonly ResxText Texts = ResxText.For<DirectorPayCard>();
+
+    // The split's, for the words of its button.
+    private static readonly ResxText SplitTexts = ResxText.For<SplitCard>();
 
     // The example with nothing withheld on the pay, which leaves a surcharge due on its tax.
     private static readonly RiverInputs NothingWithheld = RiverInputs.Example.WithTaxWithheld(0m);
@@ -132,6 +136,39 @@ public class StreamCardsFiguresTests
         var html = CardHtml.Card(await CardHtml.RenderPlanOpenAsync(RiverInputs.Example.WithDirectorPay(-1m)), "split");
 
         (CardHtml.Lines(html).Count, Regex.IsMatch(html, "class=\"[^\"]*refused-message")).ShouldBe((0, true));
+    }
+
+    // The river's best pay, whatever the facts the river holds now, is offered by a button of its own
+    // while the pay set is not it: not at the best, where no pay keeps the reserve, or while the pay is
+    // refused and there is no search to read it from. The Optimisation tab's pay line is another
+    // baseline's, and is not this button.
+    public static TheoryData<string, RiverInputs, int> BestPayButtons => new()
+    {
+        { "the pay set away from the best", RiverInputs.Example, 1 },
+        { "the pay set at the best", RiverInputs.Example.WithDirectorPay(BestPay(RiverInputs.Example)), 0 },
+        { "no pay keeping the reserve", RiverInputs.Example.WithReserve(80_000m), 0 },
+        { "the pay refused", RiverInputs.Example.WithDirectorPay(-1m), 0 },
+    };
+
+    [Theory]
+    [MemberData(nameof(BestPayButtons))]
+    public async Task Split_open_offersTheBestPayOnlyWhileThePaySetIsNotIt(string _, RiverInputs plan, int buttons)
+    {
+        var html = WebUtility.HtmlDecode(CardHtml.Card(await CardHtml.RenderPlanOpenAsync(plan), "split"));
+
+        ButtonsSaying(html, SplitTexts.Get("MoveToBest").ShouldNotBeNull()).ShouldBe(buttons);
+    }
+
+    // The button says which pay it moves to for a screen reader, its visible words a part of its name.
+    [Fact]
+    public async Task Split_open_namesTheBestPayInTheButtonsLabel()
+    {
+        var plan = RiverInputs.Example;
+        var html = WebUtility.HtmlDecode(CardHtml.Card(await CardHtml.RenderPlanOpenAsync(plan), "split"));
+        var label = SplitTexts.Format("MoveToBestLabel", Formats.Euros(BestPay(plan)));
+
+        html.ShouldContain($"aria-label=\"{label}\"");
+        label.ShouldStartWith(SplitTexts.Get("MoveToBest").ShouldNotBeNull());
     }
 
     // Until the pointer is on the curve, its line keeps its room in the card, empty.
@@ -262,6 +299,13 @@ public class StreamCardsFiguresTests
     }
 
     private static async Task<string> CardAsync(string card) => CardHtml.Card(await Page.Value, card);
+
+    // The best pay the split's search finds for the river as it stands.
+    private static decimal BestPay(RiverInputs river) => river.SearchSplit().ShouldNotBeNull().Best.ShouldNotBeNull().Pay;
+
+    // The buttons of a card that say that, whole.
+    private static int ButtonsSaying(string html, string text) =>
+        Regex.Count(html, $"<button\\b[^>]*>(?:(?!</button>).)*?{Regex.Escape(text)}", RegexOptions.Singleline);
 
     // A card opened by the viewer, as a fold of its own.
     private static Folds OpenCard(string name)

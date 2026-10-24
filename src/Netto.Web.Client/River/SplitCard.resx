@@ -96,6 +96,12 @@
   <data name="Figure_KeptAtYours" xml:space="preserve">
     <value>Kept in the company at your pay</value>
   </data>
+  <data name="MoveToBest" xml:space="preserve">
+    <value>Move to the best pay</value>
+  </data>
+  <data name="MoveToBestLabel" xml:space="preserve">
+    <value>Move to the best pay: {0}</value>
+  </data>
   <data name="PointerAt" xml:space="preserve">
     <value>At a pay of {0}: {1} in your pocket.</value>
   </data>
