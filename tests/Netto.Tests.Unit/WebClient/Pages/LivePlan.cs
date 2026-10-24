@@ -7,6 +7,7 @@ using Microsoft.JSInterop;
 using MudBlazor.Services;
 using Netto.Web.Client;
 using Netto.Web.Client.Pages;
+using Netto.Tests.WebClient.River;
 using Netto.Web.Client.River;
 
 namespace Netto.Tests.WebClient.Pages;
@@ -59,7 +60,7 @@ internal sealed class LivePlan : IAsyncDisposable
         services.AddSingleton<TimeProvider>(new Clock(On23October));
         var script = new RecordingScript(holdPaint);
         services.AddSingleton<IJSRuntime>(script);
-        services.AddSingleton<NavigationManager>(new Address(uri));
+        services.AddSingleton<NavigationManager>(new RiverRendering.NoNavigation(uri));
 
         return new LivePlan(services.BuildServiceProvider(), script);
     }
@@ -76,7 +77,8 @@ internal sealed class LivePlan : IAsyncDisposable
     }
 
     // The browser paints what the page drew, and the page draws again what it did then: done once that is
-    // drawn. A page that draws nothing more fails, rather than waiting for ever.
+    // drawn. A page whose work then fails rethrows its error, and one that draws nothing more fails rather
+    // than waiting for ever.
     public async Task PaintAsync()
     {
         var drawn = await _renderer.Dispatcher.InvokeAsync<Task>(() =>
@@ -143,7 +145,13 @@ internal sealed class LivePlan : IAsyncDisposable
             return _drawn.Task;
         }
 
-        protected override void HandleException(Exception exception) => Errors.Add(exception);
+        // Kept for the test to read, and handed to a wait for the next draw, which the error may have
+        // prevented: PaintAsync then fails with the page's own error.
+        protected override void HandleException(Exception exception)
+        {
+            Errors.Add(exception);
+            _drawn?.TrySetException(exception);
+        }
 
         protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
         {
@@ -202,13 +210,5 @@ internal sealed class LivePlan : IAsyncDisposable
             await _paint.Task.ConfigureAwait(false);
             return default!;
         }
-    }
-
-    private sealed class Address : NavigationManager
-    {
-        public Address(string uri) => Initialize("http://localhost/", uri);
-
-        protected override void NavigateToCore(string uri, NavigationOptions options) =>
-            throw new InvalidOperationException($"The page navigated to {uri}.");
     }
 }

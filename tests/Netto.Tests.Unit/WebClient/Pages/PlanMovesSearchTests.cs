@@ -59,7 +59,8 @@ public class PlanMovesSearchTests
         var drawn = MovesView.Of(tab.From, tab.Found);
         page.ShouldSatisfyAllConditions(
             () => (searchingBeforeThePaint, tab.Searching, drawn.State, drawn.Total).ShouldBe((true, false, MovesState.Moves, expected.Total)),
-            () => drawn.Moves.Select(move => (move.Move, move.Gain)).ShouldBe(expected.Moves.Select(move => (move.Move, move.Gain))));
+            () => drawn.Moves.Select(move => (move.Move, move.Gain)).ShouldBe(expected.Moves.Select(move => (move.Move, move.Gain))),
+            () => page.Errors.ShouldBeEmpty());
     }
 
     // The search changes no figure of the river: the bar is handed the same run, so its live region, which
@@ -73,6 +74,9 @@ public class PlanMovesSearchTests
 
         await page.PaintAsync();
 
-        (await page.FindAsync<BucketBar>()).Run.ShouldBeSameAs(before);
+        var after = (await page.FindAsync<BucketBar>()).Run;
+        page.ShouldSatisfyAllConditions(
+            () => after.ShouldBeSameAs(before),
+            () => page.Errors.ShouldBeEmpty());
     }
 }

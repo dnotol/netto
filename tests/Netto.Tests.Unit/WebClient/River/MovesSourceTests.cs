@@ -257,6 +257,20 @@ public class MovesSourceTests
         (await first, again, paint.Asked, search.Asked.Count).ShouldBe((true, false, 1, 1));
     }
 
+    // A wait for the paint that fails is the page's error to show, and leaves no wait behind: the next render
+    // waits again and searches.
+    [Fact]
+    public async Task SearchOncePainted_paintFails_releasesTheWaitForTheNextRender()
+    {
+        var search = new Search();
+        var source = new MovesSource(PlanFixtures.Saved(), Edited, search.Run);
+
+        await Should.ThrowAsync<InvalidOperationException>(() => source.SearchOncePaintedAsync(On23October, () => throw new InvalidOperationException("No paint.")));
+        var searched = await source.SearchOncePaintedAsync(On23October, Painted);
+
+        (searched, search.Asked.Count).ShouldBe((true, 1));
+    }
+
     // Once found, the moves are drawn as found, without waiting for another paint.
     [Fact]
     public async Task SearchOncePainted_theSamePlanAndDate_searchesOnce()

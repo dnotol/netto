@@ -98,12 +98,13 @@ internal static class RiverRendering
             throw new InvalidOperationException($"A static render called JavaScript: {identifier}.");
     }
 
-    // MudBlazor's chips ask for the navigation manager; a static render goes nowhere.
+    // MudBlazor's chips ask for the navigation manager; a render without a browser stays at the address it
+    // was loaded at, the plan page unless a test gives another (LivePlan), and goes nowhere.
     internal sealed class NoNavigation : NavigationManager
     {
-        public NoNavigation() => Initialize("http://localhost/", "http://localhost/plan");
+        public NoNavigation(string uri = "http://localhost/plan") => Initialize("http://localhost/", uri);
 
         protected override void NavigateToCore(string uri, NavigationOptions options) =>
-            throw new InvalidOperationException($"A static render navigated to {uri}.");
+            throw new InvalidOperationException($"A render without a browser navigated to {uri}.");
     }
 }
