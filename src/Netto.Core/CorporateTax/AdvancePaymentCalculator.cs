@@ -21,11 +21,6 @@ public static class AdvancePaymentCalculator
         return new AdvancePaymentResult(beforeCredits, credits, surcharge, topUps, false);
     }
 
-    // What more paid by that deadline, the first being 0, cancels the surcharge the payments leave:
-    // nothing when they leave none or the company is exempt.
-    public static decimal TopUpBy(AdvancePaymentRules rules, decimal corporateTax, AdvancePayments payments, CompanyStatus status, int deadline) =>
-        Compute(rules, corporateTax, payments, status).TopUps[deadline];
-
     // What the payment by the deadline must reach for its credit, rounded half away from zero, to cover
     // what the others leave, the smallest such amount in cents, as the director's is; less what it
     // already is.

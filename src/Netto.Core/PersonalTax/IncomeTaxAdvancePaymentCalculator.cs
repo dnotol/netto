@@ -18,11 +18,6 @@ public static class IncomeTaxAdvancePaymentCalculator
         return figures with { TopUps = topUps };
     }
 
-    // The smallest payment more by that deadline, the first being 0, after which no surcharge is due:
-    // nothing when none is.
-    public static decimal TopUpBy(IncomeTaxAdvancePaymentRules rules, decimal totalTax, decimal taxCredits, TaxPrepayments prepayments, int deadline) =>
-        Compute(rules, totalTax, taxCredits, prepayments).TopUps[deadline];
-
     // The surcharge and the bonus without the suggested payments, which the split's search does not
     // read.
     internal static IncomeTaxAdvancePaymentResult Figures(IncomeTaxAdvancePaymentRules rules, decimal totalTax, decimal taxCredits, TaxPrepayments prepayments)

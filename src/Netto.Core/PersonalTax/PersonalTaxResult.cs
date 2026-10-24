@@ -22,7 +22,4 @@ public sealed record PersonalTaxResult(
     decimal LowEarnedIncomeCredit,
     decimal OtherIncome = 0m,
     decimal IncomeTaxedApart = 0m,
-    decimal TaxedApart = 0m)
-{
-    public decimal TotalNetIncome => TaxableIncome + OtherIncome + IncomeTaxedApart;
-}
+    decimal TaxedApart = 0m);

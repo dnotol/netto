@@ -59,10 +59,6 @@ public static class PersonalTaxCalculator
             taxApart);
     }
 
-    // Art. 289ter, §2 on the activity income alone, as when it is the whole income.
-    public static decimal LowEarnedIncomeCredit(PersonalTaxRules rules, decimal activityIncome) =>
-        LowEarnedIncomeCredit(rules, activityIncome, activityIncome);
-
     // Art. 289ter, §2 on the activity income: a straight line up from the floor to the full amount,
     // then down from the end of the full amount to nothing at the ceiling, rounded to the cent as the
     // administration's examples and Tax-Calc round it. The total net income, the activity income and

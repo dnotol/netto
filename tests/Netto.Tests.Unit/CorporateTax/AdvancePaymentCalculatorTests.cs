@@ -163,36 +163,26 @@ public class AdvancePaymentCalculatorTests
     [InlineData(1, 17_999.94)]
     [InlineData(2, 22_499.92)]
     [InlineData(3, 29_999.89)]
-    public void TopUpBy_2026NothingPaid_isWhatCancelsTheSurchargeByThatDeadline(int deadline, double expected)
+    public void Compute_2026NothingPaid_givesWhatCancelsTheSurchargeByThatDeadline(int deadline, double expected)
     {
-        var topUp = AdvancePaymentCalculator.TopUpBy(Rules2026, 20_000m, AdvancePayments.None, SmallPastStartUp, deadline);
+        var result = AdvancePaymentCalculator.Compute(Rules2026, 20_000m, AdvancePayments.None, SmallPastStartUp);
 
-        topUp.ShouldBe((decimal)expected);
-    }
-
-    // The payments made earn their credits: by 10 April what the 5,000 of 10 July leave, 975 of
-    // 1,350, which 9% of 10,833.28 covers, 974.9952 rounding to 975.00.
-    [Fact]
-    public void TopUpBy_2026SomePaid_isWhatCancelsWhatTheOthersLeave()
-    {
-        var topUp = AdvancePaymentCalculator.TopUpBy(Rules2026, 20_000m, new AdvancePayments(0m, 5_000m, 0m, 0m), SmallPastStartUp, 0);
-
-        topUp.ShouldBe(10_833.28m);
+        result.TopUps[deadline].ShouldBe((decimal)expected);
     }
 
     // The last deadline's is the one the card shows (LastDeadlineTopUp).
     [Fact]
-    public void TopUpBy_lastDeadline_isTheLastDeadlinesTopUp()
+    public void Compute_2026SomePaid_lastDeadlineTopUpIsTheLastDeadlinesTopUp()
     {
-        var payments = new AdvancePayments(3_000m, 0m, 0m, 0m);
+        var result = AdvancePaymentCalculator.Compute(Rules2026, 20_000m, new AdvancePayments(3_000m, 0m, 0m, 0m), SmallPastStartUp);
 
-        AdvancePaymentCalculator.TopUpBy(Rules2026, 20_000m, payments, SmallPastStartUp, 3)
-            .ShouldBe(AdvancePaymentCalculator.Compute(Rules2026, 20_000m, payments, SmallPastStartUp).LastDeadlineTopUp);
+        result.LastDeadlineTopUp.ShouldBe(result.TopUps[3]);
     }
 
-    // The result gives each deadline's, so the calendar and the moves read the same figure: the 5,000
-    // of 10 July leave 975 of the 1,350 at 9, 6 and 4.5%; by 10 July itself, the whole 1,350 at 7.5%
-    // less the 5,000 already paid.
+    // The result gives each deadline's, so the calendar and the moves read the same figure. The payments
+    // made earn their credits: the 5,000 of 10 July leave 975 of the 1,350 at 9, 6 and 4.5%, which 9% of
+    // 10,833.28 covers by 10 April, 974.9952 rounding to 975.00; by 10 July itself, the whole 1,350 at
+    // 7.5% less the 5,000 already paid.
     [Fact]
     public void Compute_surchargeLeft_givesWhatCancelsItByEachDeadline()
     {
@@ -207,12 +197,6 @@ public class AdvancePaymentCalculatorTests
         var result = AdvancePaymentCalculator.Compute(Rules2026, 20_000m, new AdvancePayments(15_000m, 0m, 0m, 0m), SmallPastStartUp);
 
         result.TopUps.ShouldBe([0m, 0m, 0m, 0m]);
-    }
-
-    [Fact]
-    public void TopUpBy_noSurcharge_isNothing()
-    {
-        AdvancePaymentCalculator.TopUpBy(Rules2026, 20_000m, new AdvancePayments(15_000m, 0m, 0m, 0m), SmallPastStartUp, 2).ShouldBe(0m);
     }
 
     // Over taxes from 123.45 to 49,380.00 and payments already made by none, one or two deadlines: paying a
@@ -240,9 +224,11 @@ public class AdvancePaymentCalculatorTests
     }
 
     [Fact]
-    public void TopUpBy_exemptCompany_isNothing()
+    public void Compute_exemptCompany_givesNothingByEveryDeadline()
     {
-        AdvancePaymentCalculator.TopUpBy(Rules2026, 20_000m, AdvancePayments.None, new CompanyStatus(true, true, true), 0).ShouldBe(0m);
+        var result = AdvancePaymentCalculator.Compute(Rules2026, 20_000m, AdvancePayments.None, new CompanyStatus(true, true, true));
+
+        result.TopUps.ShouldBe([0m, 0m, 0m, 0m]);
     }
 
     private static decimal SurchargeAfter(decimal tax, AdvancePayments payments) =>

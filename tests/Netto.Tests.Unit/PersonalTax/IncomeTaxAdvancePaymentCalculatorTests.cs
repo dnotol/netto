@@ -246,19 +246,19 @@ public class IncomeTaxAdvancePaymentCalculatorTests
     // By 10 April, at 6%: 7,158.75 earns 429.53 (429.525 rounded half away from zero), the credit that
     // leaves 99.99 due at 90%, under the 100 minimum; a cent less earns 429.52.
     [Fact]
-    public void TopUpBy_2026NothingPrepaidFirstDeadline_isTheSmallestPaymentAfterWhichNoneIsDue()
+    public void Compute_2026NothingPrepaid_givesByTheFirstDeadlineTheSmallestPaymentAfterWhichNoneIsDue()
     {
-        var topUp = IncomeTaxAdvancePaymentCalculator.TopUpBy(Rules2026, TaxOn50000, 0m, new TaxPrepayments(0m, AdvancePayments.None), 0);
+        var result = Compute2026(TaxOn50000, new TaxPrepayments(0m, AdvancePayments.None));
 
-        topUp.ShouldBe(7_158.75m);
+        result.TopUps[0].ShouldBe(7_158.75m);
     }
 
     [Fact]
-    public void TopUpBy_lastDeadline_isTheLastDeadlinesTopUp()
+    public void Compute_2026NothingPrepaid_lastDeadlineTopUpIsTheLastDeadlinesTopUp()
     {
-        var topUp = IncomeTaxAdvancePaymentCalculator.TopUpBy(Rules2026, TaxOn50000, 0m, new TaxPrepayments(0m, AdvancePayments.None), 3);
+        var result = Compute2026(TaxOn50000, new TaxPrepayments(0m, AdvancePayments.None));
 
-        topUp.ShouldBe(14_317.50m);
+        result.LastDeadlineTopUp.ShouldBe(14_317.50m);
     }
 
     // The result gives each deadline's, so the calendar and the moves read the same figure.
@@ -279,14 +279,10 @@ public class IncomeTaxAdvancePaymentCalculatorTests
     }
 
     [Fact]
-    public void TopUpBy_noSurchargeDue_isNothing()
+    public void Compute_starter_givesNothingByEveryDeadline()
     {
-        IncomeTaxAdvancePaymentCalculator.TopUpBy(Rules2026, TaxOn50000, 0m, new TaxPrepayments(0m, new AdvancePayments(0m, 0m, 0m, 14_317.50m)), 0).ShouldBe(0m);
-    }
+        var result = Compute2026(TaxOn50000, new TaxPrepayments(0m, AdvancePayments.None, Starter: true));
 
-    [Fact]
-    public void TopUpBy_starter_isNothing()
-    {
-        IncomeTaxAdvancePaymentCalculator.TopUpBy(Rules2026, TaxOn50000, 0m, new TaxPrepayments(0m, AdvancePayments.None, Starter: true), 0).ShouldBe(0m);
+        result.TopUps.ShouldBe([0m, 0m, 0m, 0m]);
     }
 }

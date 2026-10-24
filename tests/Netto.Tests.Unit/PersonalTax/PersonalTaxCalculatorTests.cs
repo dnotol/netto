@@ -254,7 +254,7 @@ public class PersonalTaxCalculatorTests
     [MemberData(nameof(CreditAtTheLimits2026))]
     public void LowEarnedIncomeCredit_2026_followsTheLimitsOfTheLaw(decimal activityIncome, decimal credit)
     {
-        PersonalTaxCalculator.LowEarnedIncomeCredit(Rules2026, activityIncome).ShouldBe(credit);
+        PersonalTaxCalculator.LowEarnedIncomeCredit(Rules2026, activityIncome, activityIncome).ShouldBe(credit);
     }
 
     // Pay chosen, with 4,000 of contributions, so that the taxable income lands exactly on the
@@ -299,7 +299,7 @@ public class PersonalTaxCalculatorTests
     {
         var result = PersonalTaxCalculator.Compute(Rules2025, 50_000.00m, 8_300.00m, 0.07m, 810.72m);
 
-        result.TotalNetIncome.ShouldBe(41_259.72m);
+        TotalNetIncome(result).ShouldBe(41_259.72m);
     }
 
     // Tax-Calc T14 of 2026-10-20: 28,033.00 of pay and the same 810.72 of rent, 28,843.72 of total net
@@ -369,7 +369,7 @@ public class PersonalTaxCalculatorTests
     {
         var result = PersonalTaxCalculator.Compute(Rules2025, 20_000.00m, 3_600.00m, 0.07m, taxedApart: Royalty2025(8_000.00m));
 
-        result.TotalNetIncome.ShouldBe(23_908.00m);
+        TotalNetIncome(result).ShouldBe(23_908.00m);
     }
 
     // Tax-Calc T18 of 2026-10-22: a royalty of 20,000 beside 30,000 of pay, of which 15,000 within the
@@ -398,7 +398,7 @@ public class PersonalTaxCalculatorTests
 
         var result = PersonalTaxCalculator.Compute(Rules2025, 20_000.00m, 3_600.00m, 0.07m, taxedApart: royalty.TaxedApart);
 
-        (royalty.FlatRateCosts, result.TotalNetIncome, result).ShouldBe((4_000.00m, 19_908.00m, new PersonalTaxResult(
+        (royalty.FlatRateCosts, TotalNetIncome(result), result).ShouldBe((4_000.00m, 19_908.00m, new PersonalTaxResult(
             FlatRateCosts: 492.00m, TaxableIncome: 15_908.00m,
             BasicTax: 3_977.00m, TaxFreeAmountReduction: 2_727.50m, StateTax: 1_249.50m,
             ReducedStateTax: 1_387.92m, RegionalAdditionalTax: 461.58m, IncomeTax: 1_849.50m, MunicipalSurcharge: 129.47m,
@@ -459,7 +459,7 @@ public class PersonalTaxCalculatorTests
     {
         var result = PersonalTaxCalculator.Compute(Rules2026, 26_680.41m, 4_000.00m, 0.07m, 828.00m);
 
-        (result.TaxableIncome, result.TotalNetIncome, result.LowEarnedIncomeCredit).ShouldBe((22_000.00m, 22_828.00m, 852.04m));
+        (result.TaxableIncome, TotalNetIncome(result), result.LowEarnedIncomeCredit).ShouldBe((22_000.00m, 22_828.00m, 852.04m));
     }
 
     [Fact]
@@ -467,7 +467,7 @@ public class PersonalTaxCalculatorTests
     {
         var result = PersonalTaxCalculator.Compute(Rules2026, 50_000.00m, 8_300.00m, 0.07m);
 
-        (result.OtherIncome, result.TotalNetIncome).ShouldBe((0m, 40_449.00m));
+        (result.OtherIncome, TotalNetIncome(result)).ShouldBe((0m, 40_449.00m));
     }
 
     [Fact]
@@ -477,4 +477,8 @@ public class PersonalTaxCalculatorTests
 
         result.MunicipalSurcharge.ShouldBe(0.00m);
     }
+
+    // The total net income art. 289ter limits the credit by, as Tax-Calc's « Ensemble des revenus nets »
+    // counts it: the pay's taxable income, the income taxed with it and the income taxed apart.
+    private static decimal TotalNetIncome(PersonalTaxResult result) => result.TaxableIncome + result.OtherIncome + result.IncomeTaxedApart;
 }
