@@ -26,15 +26,15 @@ public static class AdvancePaymentCalculator
     public static decimal TopUpBy(AdvancePaymentRules rules, decimal corporateTax, AdvancePayments payments, CompanyStatus status, int deadline) =>
         Compute(rules, corporateTax, payments, status).TopUps[deadline];
 
-    // What the payment by the deadline must reach for its credit to cover what the others leave,
-    // rounded up to the cent so that its credit, rounded, still covers it; less what it already is.
+    // What the payment by the deadline must reach for its credit, rounded half away from zero, to cover
+    // what the others leave, the smallest such amount in cents, as the director's is; less what it
+    // already is.
     private static decimal TopUp(AdvancePaymentRules rules, decimal beforeCredits, IReadOnlyList<decimal> credits, IReadOnlyList<decimal> paid, decimal surcharge, int deadline)
     {
         if (surcharge == 0m)
             return 0m;
 
         var leftForIt = beforeCredits - credits.Where((_, i) => i != deadline).Sum();
-        var needed = Math.Ceiling(leftForIt / rules.Deadlines[deadline].CreditRate(rules) * 100m) / 100m;
-        return needed - paid[deadline];
+        return Money.SmallestCovering(leftForIt, rules.Deadlines[deadline].CreditRate(rules)) - paid[deadline];
     }
 }

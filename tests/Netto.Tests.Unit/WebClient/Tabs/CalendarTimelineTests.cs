@@ -46,7 +46,7 @@ public class CalendarTimelineTests
 
         var label = Regex.Match(html, "<div class=\"timeline__chart\" role=\"img\" aria-label=\"([^\"]*)\"").Groups[1].Value;
         label.ShouldBe(
-            "Timeline of 2026. Today is 23 October 2026. Next payment by 21 December 2026: €15,000.00 from the company. "
+            "Timeline of 2026. Today is 23 October 2026. Next payment by 21 December 2026: €14,999.89 from the company. "
             + $"Your pay: {Formats.Euros(view.Pay.NetPaid)} net a month. October to December still to come. "
             + $"Social contributions: {Formats.Euros(view.Contributions.EachQuarter)} a quarter. 1 of 4 quarters still to come. "
             + "The tables below give every figure.");
@@ -68,7 +68,7 @@ public class CalendarTimelineTests
     {
         var html = await RenderAsync(RiverInputs.Example.WithTaxWithheld(0m), On23October);
 
-        html.ShouldContain("Next payment by 21 December 2026: €15,000.00 from the company, €14,317.50 from you.");
+        html.ShouldContain("Next payment by 21 December 2026: €14,999.89 from the company, €14,317.50 from you.");
     }
 
     // The one picture is a named group a keyboard can scroll, headed by an h2 one level under the tab's h1.
@@ -133,8 +133,8 @@ public class CalendarTimelineTests
     {
         var html = await RenderAsync(RiverInputs.Example, On23October);
 
-        Texts(html, "timeline__label").Take(5).ShouldBe(["10 Apr", "10 Jul", "12 Oct", "€15,000.00 by 21 Dec", "10 Apr"]);
-        Regex.IsMatch(html, "timeline__label timeline__label--next[^>]*>€15,000.00 by 21 Dec<").ShouldBeTrue();
+        Texts(html, "timeline__label").Take(5).ShouldBe(["10 Apr", "10 Jul", "12 Oct", "€14,999.89 by 21 Dec", "10 Apr"]);
+        Regex.IsMatch(html, "timeline__label timeline__label--next[^>]*>€14,999.89 by 21 Dec<").ShouldBeTrue();
     }
 
     [Fact]

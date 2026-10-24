@@ -15,7 +15,7 @@ public class WhenToPayTabTests
     // The deadline still open on this date is December's.
     private static readonly DateOnly On23October = new(2026, 10, 23);
 
-    private const string CompanySurcharge = "The company's payments leave a surcharge of €675.00 on its corporate tax: €15,000.00 more by 21 December 2026 cancels it.";
+    private const string CompanySurcharge = "The company's payments leave a surcharge of €675.00 on its corporate tax: €14,999.89 more by 21 December 2026 cancels it.";
 
     private const string DirectorUnderMinimum = "What is withheld on your pay leaves the surcharge on its income tax under the minimum: none is due.";
 
@@ -25,7 +25,7 @@ public class WhenToPayTabTests
     {
         var html = await RenderTabAsync(RiverInputs.Example);
 
-        Regex.IsMatch(html, "</header>\\s*<div class=\"calendar\"[^>]*>\\s*<section class=\"calendar__panel\"[^>]*>\\s*<h2[^>]*>Next</h2>\\s*<p class=\"calendar__next\"[^>]*>21 December 2026 · €15,000.00 from the company</p>").ShouldBeTrue();
+        Regex.IsMatch(html, "</header>\\s*<div class=\"calendar\"[^>]*>\\s*<section class=\"calendar__panel\"[^>]*>\\s*<h2[^>]*>Next</h2>\\s*<p class=\"calendar__next\"[^>]*>21 December 2026 · €14,999.89 from the company</p>").ShouldBeTrue();
     }
 
     [Fact]
@@ -33,7 +33,7 @@ public class WhenToPayTabTests
     {
         var html = await RenderTabAsync(RiverInputs.Example.WithTaxWithheld(0m));
 
-        html.ShouldContain("21 December 2026 · €15,000.00 from the company, €14,317.50 from you");
+        html.ShouldContain("21 December 2026 · €14,999.89 from the company, €14,317.50 from you");
     }
 
     [Fact]
@@ -75,7 +75,7 @@ public class WhenToPayTabTests
     {
         var html = await RenderTabAsync(RiverInputs.Example);
 
-        html.ShouldContain("Next payment by 21 December 2026: €15,000.00 from the company.");
+        html.ShouldContain("Next payment by 21 December 2026: €14,999.89 from the company.");
     }
 
     // Each part of the calendar under a heading of its own, one level under the tab's title.

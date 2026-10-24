@@ -153,7 +153,7 @@ public class YearSimulationTests
     {
         var result = Run(Scenario(directorPay: 50_000m, reserve: 0m, advancePayments: new AdvancePayments(2_000m, 2_000m, 0m, 0m)));
 
-        (result.AdvancePayments.Surcharge, result.AdvancePayments.LastDeadlineTopUp).ShouldBe((345.00m, 7_666.67m));
+        (result.AdvancePayments.Surcharge, result.AdvancePayments.LastDeadlineTopUp).ShouldBe((345.00m, 7_666.56m));
     }
 
     [Fact]

@@ -10,8 +10,8 @@ namespace Netto.Tests.Calendar;
 
 // The river's example year as its scenario (MoveSearchTests): 50,000 of pay withheld on as the key
 // formula says, which leaves the director's surcharge under its minimum, and nothing prepaid by the
-// company, whose 10,000 of corporate tax leaves a 675.00 surcharge: 4.5% of 15,000 by 21 December, or
-// 9% of 7,500 by 10 April, cancels it. With nothing withheld the director's surcharge is 486.57, and
+// company, whose 10,000 of corporate tax leaves a 675.00 surcharge: 4.5% of 14,999.89 by 21 December, or
+// 9% of 7,499.95 by 10 April, cancels it, each credit rounding up to 675.00. With nothing withheld the director's surcharge is 486.57, and
 // 14,317.50 by 21 December leaves none due (GrossToNetTests). Income year 2026's deadlines are 10
 // April, 10 July, 12 October and 21 December.
 public class PaymentCalendarTests
@@ -35,7 +35,7 @@ public class PaymentCalendarTests
     {
         var company = Of(RiverExample, On22October).Company.ShouldNotBeNull();
 
-        (company.Surcharge, company.Open, company.More).ShouldBe((675.00m, 3, 15_000.00m));
+        (company.Surcharge, company.Open, company.More).ShouldBe((675.00m, 3, 14_999.89m));
     }
 
     [Fact]
@@ -46,13 +46,14 @@ public class PaymentCalendarTests
         company.Payments.Select(payment => payment.Past).ShouldBe([true, true, true, false]);
     }
 
-    // 9% of 5,000 leaves 225 of the 675, which 4.5% of 5,000 more by 21 December cancels.
+    // 9% of 5,000 leaves 225 of the 675, which 4.5% of 4,999.89 more by 21 December cancels: 224.99505,
+    // rounded to 225.00.
     [Fact]
     public void Of_companyPaidBy10April_showsItAndWhatIsLeftBy21December()
     {
         var company = Of(RiverExample with { AdvancePayments = new AdvancePayments(5_000m, 0m, 0m, 0m) }, On22October).Company.ShouldNotBeNull();
 
-        (company.Payments[0].Planned, company.Payments[0].More, company.Payments[3].More).ShouldBe((5_000m, 0m, 5_000.00m));
+        (company.Payments[0].Planned, company.Payments[0].More, company.Payments[3].More).ShouldBe((5_000m, 0m, 4_999.89m));
     }
 
     // Only the first deadline still open says what more cancels it.
@@ -61,7 +62,7 @@ public class PaymentCalendarTests
     {
         var company = Of(RiverExample, new DateOnly(2026, 3, 1)).Company.ShouldNotBeNull();
 
-        company.Payments.Select(payment => payment.More).ShouldBe([7_500.00m, 0m, 0m, 0m]);
+        company.Payments.Select(payment => payment.More).ShouldBe([7_499.95m, 0m, 0m, 0m]);
     }
 
     // A deadline is open until the end of its day.
@@ -70,7 +71,7 @@ public class PaymentCalendarTests
     {
         var company = Of(RiverExample, new DateOnly(2026, 12, 21)).Company.ShouldNotBeNull();
 
-        (company.Open, company.More).ShouldBe((3, 15_000.00m));
+        (company.Open, company.More).ShouldBe((3, 14_999.89m));
     }
 
     [Fact]

@@ -10,7 +10,7 @@ namespace Netto.Tests.WebClient.Tabs;
 // month and quarter falls on the year, and what is past, next or to come. Its figures are the ones the
 // tables below it show (CalendarView), which is what these tests hold it to. The example prepays nothing
 // and withholds on its pay as the key formula says: on 23 October 2026 the company's 675.00 surcharge is
-// cancelled by 15,000.00 more by 21 December and the director's falls under its minimum
+// cancelled by 14,999.89 more by 21 December and the director's falls under its minimum
 // (CalendarViewTests).
 public class TimelineViewTests
 {
@@ -51,7 +51,7 @@ public class TimelineViewTests
         var company = Of(RiverInputs.Example, On23October).Timeline.Company.ShouldNotBeNull();
 
         States(company).ShouldBe("Past Past Past Next");
-        Amounts(company).ShouldBe([0m, 0m, 0m, 15_000.00m]);
+        Amounts(company).ShouldBe([0m, 0m, 0m, 14_999.89m]);
     }
 
     // Under its minimum, the director's surcharge needs nothing: the last deadline is still to come, with
@@ -83,7 +83,7 @@ public class TimelineViewTests
         var company = Of(RiverInputs.Example.WithAdvancePayment(0, 5_000m), On23October).Timeline.Company.ShouldNotBeNull();
 
         States(company).ShouldBe("Past Past Past Next");
-        Amounts(company).ShouldBe([5_000m, 0m, 0m, 5_000.00m]);
+        Amounts(company).ShouldBe([5_000m, 0m, 0m, 4_999.89m]);
     }
 
     // A payment planned beyond the deadline still open is to come, with its amount, and is not the next
@@ -129,7 +129,7 @@ public class TimelineViewTests
         var company = Of(RiverInputs.Example, new DateOnly(2026, 3, 1)).Timeline.Company.ShouldNotBeNull();
 
         States(company).ShouldBe("Next ToCome ToCome ToCome");
-        Amounts(company).ShouldBe([7_500.00m, 0m, 0m, 0m]);
+        Amounts(company).ShouldBe([7_499.95m, 0m, 0m, 0m]);
     }
 
     // A river that starts at the pay has the director's lane alone.
@@ -393,7 +393,7 @@ public class TimelineViewTests
     {
         var timeline = Of(RiverInputs.Example.WithTaxWithheld(0m), On23October).Timeline;
 
-        (timeline.NextCompany?.Amount, timeline.NextDirector?.Amount).ShouldBe((15_000.00m, 14_317.50m));
+        (timeline.NextCompany?.Amount, timeline.NextDirector?.Amount).ShouldBe((14_999.89m, 14_317.50m));
     }
 
     // The key names the marks the picture draws, and no others.

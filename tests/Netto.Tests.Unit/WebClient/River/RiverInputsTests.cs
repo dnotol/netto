@@ -199,13 +199,13 @@ public class RiverInputsTests
         RiverInputs.Example.AdvancePayments.ByDeadline.ShouldAllBe(payment => payment == new Input<decimal>(0m, InputOrigin.None));
     }
 
-    // 675 ÷ 4.5% = 15,000.
+    // 4.5% of 14,999.89, 674.99505, rounds to the 675.
     [Fact]
     public void Run_example_surchargesTheCorporateTaxAndSaysWhatBy21DecemberCancelsIt()
     {
         var payments = RiverInputs.Example.Run().Year.ShouldNotBeNull().AdvancePayments;
 
-        (payments.Surcharge, payments.LastDeadlineTopUp).ShouldBe((675.00m, 15_000.00m));
+        (payments.Surcharge, payments.LastDeadlineTopUp).ShouldBe((675.00m, 14_999.89m));
     }
 
     [Fact]

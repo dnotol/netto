@@ -4,7 +4,7 @@ using Shouldly;
 namespace Netto.Tests.WebClient.River;
 
 // The example prepays nothing and withholds on its pay as the key formula says: on 22 October 2026 the
-// company's 675.00 surcharge is cancelled by 15,000.00 more by 21 December, and the director's falls
+// company's 675.00 surcharge is cancelled by 14,999.89 more by 21 December, and the director's falls
 // under its minimum. With nothing withheld the director's 486.57 needs 14,317.50 by 21 December
 // (PaymentCalendarTests).
 public class CalendarViewTests
@@ -20,7 +20,7 @@ public class CalendarViewTests
     {
         var view = View(RiverInputs.Example, On22October);
 
-        view.Rows.ShouldBe([new CalendarRow(On21December, false, 0m, 15_000.00m, 0m, 0m)]);
+        view.Rows.ShouldBe([new CalendarRow(On21December, false, 0m, 14_999.89m, 0m, 0m)]);
     }
 
     [Fact]
@@ -28,7 +28,7 @@ public class CalendarViewTests
     {
         var view = View(RiverInputs.Example.WithAdvancePayment(0, 5_000m), On22October);
 
-        view.Rows.ShouldBe([new CalendarRow(new DateOnly(2026, 4, 10), true, 5_000m, 0m, 0m, 0m), new CalendarRow(On21December, false, 0m, 5_000.00m, 0m, 0m)]);
+        view.Rows.ShouldBe([new CalendarRow(new DateOnly(2026, 4, 10), true, 5_000m, 0m, 0m, 0m), new CalendarRow(On21December, false, 0m, 4_999.89m, 0m, 0m)]);
     }
 
     [Fact]
@@ -36,7 +36,7 @@ public class CalendarViewTests
     {
         var view = View(RiverInputs.Example.WithTaxWithheld(0m), On22October);
 
-        view.Rows.ShouldBe([new CalendarRow(On21December, false, 0m, 15_000.00m, 0m, 14_317.50m)]);
+        view.Rows.ShouldBe([new CalendarRow(On21December, false, 0m, 14_999.89m, 0m, 14_317.50m)]);
     }
 
     [Fact]
@@ -45,14 +45,14 @@ public class CalendarViewTests
         var view = View(RiverInputs.Example, On22October);
 
         (view.Company, view.Director).ShouldBe((
-            new CalendarTax<SurchargeState>(SurchargeState.Due, 675.00m, 15_000.00m, On21December),
+            new CalendarTax<SurchargeState>(SurchargeState.Due, 675.00m, 14_999.89m, On21December),
             new CalendarTax<TaxSurchargeState>(TaxSurchargeState.BelowMinimum, 0m, 0m, On21December)));
     }
 
     [Fact]
     public void From_example_nextIs21December()
     {
-        View(RiverInputs.Example, On22October).Next.ShouldBe(new CalendarRow(On21December, false, 0m, 15_000.00m, 0m, 0m));
+        View(RiverInputs.Example, On22October).Next.ShouldBe(new CalendarRow(On21December, false, 0m, 14_999.89m, 0m, 0m));
     }
 
     [Fact]

@@ -5,7 +5,7 @@ using Shouldly;
 namespace Netto.Tests.WebClient.River;
 
 // The example leaves 61,975.74 in the pocket; its best pay, 20,799, 2,551.13 more, and on 22 October
-// 2026 the company then pays 29,700.45 by 21 December to cancel the surcharge on its corporate tax
+// 2026 the company then pays 29,700.34 by 21 December to cancel the surcharge on its corporate tax
 // (MoveSearchTests). After the year only the split moves.
 public class MovesViewTests
 {
@@ -18,7 +18,7 @@ public class MovesViewTests
 
     private static readonly PlannedMove BestPay = Planned(new PayMove(20_799m), 2_551.13m);
 
-    private static readonly PlannedMove CompanyPays = Planned(new CompanyAdvancePaymentMove(3, new DateOnly(2026, 12, 21), 29_700.45m));
+    private static readonly PlannedMove CompanyPays = Planned(new CompanyAdvancePaymentMove(3, new DateOnly(2026, 12, 21), 29_700.34m));
 
     private static readonly PlannedMove DirectorPays = Planned(new DirectorAdvancePaymentMove(3, new DateOnly(2026, 12, 21), 14_317.50m));
 
@@ -317,7 +317,7 @@ public class MovesViewTests
 
         var river = View(today).Apply(CompanyPays, today.WithDirectorPay(20_799m));
 
-        river.AdvancePayments.Fourth.Value.ShouldBe(30_700.45m);
+        river.AdvancePayments.Fourth.Value.ShouldBe(30_700.34m);
     }
 
     [Fact]
@@ -325,7 +325,7 @@ public class MovesViewTests
     {
         var today = RiverInputs.Example.WithAdvancePayment(3, 1_000m);
 
-        View(today).Applied(CompanyPays, today.WithAdvancePayment(3, 30_700.45m)).ShouldBeTrue();
+        View(today).Applied(CompanyPays, today.WithAdvancePayment(3, 30_700.34m)).ShouldBeTrue();
     }
 
     [Fact]

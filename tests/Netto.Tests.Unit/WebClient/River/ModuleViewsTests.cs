@@ -539,14 +539,14 @@ public class ModuleViewsTests
         CorporateTax(RiverInputs.Example).Details.Select(detail => detail.RuleKey).ShouldBe(["corporate_tax", "advance_payment_surcharge"]);
     }
 
-    // 675 ÷ 4.5% = 15,000 by 21 December.
+    // 4.5% of 14,999.89 by 21 December, 674.99505, rounds to the 675.
     [Fact]
     public void CorporateTax_example_saysTheSurchargeIsDueAndWhatByTheLastDeadlineCancelsIt()
     {
         var view = CorporateTax(RiverInputs.Example);
 
         (view.Surcharge, view.SurchargeAmount, view.TopUp, view.LastDeadline)
-            .ShouldBe((SurchargeState.Due, 675.00m, 15_000.00m, new DateOnly(2026, 12, 21)));
+            .ShouldBe((SurchargeState.Due, 675.00m, 14_999.89m, new DateOnly(2026, 12, 21)));
     }
 
     [Fact]

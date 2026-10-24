@@ -193,7 +193,7 @@ public class MoveSearchTests
 
     // On 22 October the split moves first, then the company pays by 21 December what cancels the
     // surcharge on the corporate tax at the new pay, 19,800.25 (BucketsViewTests): 1,336.52 at 6.75%,
-    // covered by 4.5% of 29,700.45, rounded up to the cent.
+    // covered by 4.5% of 29,700.34, 1,336.5153, which rounds to it.
     [Fact]
     public void Run_exampleOn22October_movesThePayThenPaysTheCompanysSurchargeBy21December()
     {
@@ -202,8 +202,8 @@ public class MoveSearchTests
         var atTheBestPay = Today with { DirectorPay = 20_799m };
         Lines(plan).ShouldBe([
             (new PayMove(20_799m), 2_551.13m),
-            (new CompanyAdvancePaymentMove(3, new DateOnly(2026, 12, 21), 29_700.45m),
-                Pocket(atTheBestPay with { AdvancePayments = new AdvancePayments(0m, 0m, 0m, 29_700.45m) }) - Pocket(atTheBestPay)),
+            (new CompanyAdvancePaymentMove(3, new DateOnly(2026, 12, 21), 29_700.34m),
+                Pocket(atTheBestPay with { AdvancePayments = new AdvancePayments(0m, 0m, 0m, 29_700.34m) }) - Pocket(atTheBestPay)),
         ]);
     }
 
@@ -213,16 +213,16 @@ public class MoveSearchTests
         var plan = MoveSearch.Run(Today, PayAndPayments(On22October)).Value.ShouldNotBeNull();
 
         (plan.Moves.Sum(move => move.Gain), plan.PlanInPocket).ShouldBe(
-            (plan.Gain, Pocket(Today with { DirectorPay = 20_799m, AdvancePayments = new AdvancePayments(0m, 0m, 0m, 29_700.45m) })));
+            (plan.Gain, Pocket(Today with { DirectorPay = 20_799m, AdvancePayments = new AdvancePayments(0m, 0m, 0m, 29_700.34m) })));
     }
 
-    // Before 10 April the first deadline is open, where 9% covers the 1,336.52: 14,850.23.
+    // Before 10 April the first deadline is open, where 9% covers the 1,336.52: 14,850.17.
     [Fact]
     public void Run_exampleOnNewYearsDay_paysBy10April()
     {
         var plan = MoveSearch.Run(Today, PayAndPayments(new DateOnly(2026, 1, 1))).Value.ShouldNotBeNull();
 
-        plan.Moves[1].Move.ShouldBe(new CompanyAdvancePaymentMove(0, new DateOnly(2026, 4, 10), 14_850.23m));
+        plan.Moves[1].Move.ShouldBe(new CompanyAdvancePaymentMove(0, new DateOnly(2026, 4, 10), 14_850.17m));
     }
 
     // A deadline is open until the end of its day.

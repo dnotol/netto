@@ -42,7 +42,7 @@ public static class IncomeTaxAdvancePaymentCalculator
         {
             var rate = rules.Deadlines[i].CreditRate(rules);
             var fullCredit = Money.RoundToCent(paid[i] * rate);
-            needed[i] = fullCredit <= left ? paid[i] : SmallestCovering(left, rate);
+            needed[i] = fullCredit <= left ? paid[i] : Money.SmallestCovering(left, rate);
             credits[i] = Money.RoundToCent(needed[i] * rate);
             left -= credits[i];
         }
@@ -65,17 +65,13 @@ public static class IncomeTaxAdvancePaymentCalculator
             bonuses, bonuses.Sum(), [.. paid.Select(_ => 0m)], prepayments.Starter);
     }
 
-    // The smallest amount in cents whose credit, rounded half away from zero, still covers what is
-    // left: Tax-Calc's « VA nécessaires pour éviter la majoration ».
-    private static decimal SmallestCovering(decimal left, decimal rate) => Math.Ceiling((left - 0.005m) / rate * 100m) / 100m;
-
     // The smallest payment more by the deadline after which no surcharge is due, to the cent: the
     // surcharge only falls as that payment rises, and paying what covers the whole surcharge before
     // credits there leaves none.
     private static decimal TopUp(IncomeTaxAdvancePaymentRules rules, decimal totalTax, decimal taxCredits, TaxPrepayments prepayments, decimal beforeCredits, int deadline)
     {
         var low = 0m;
-        var high = SmallestCovering(beforeCredits, rules.Deadlines[deadline].CreditRate(rules));
+        var high = Money.SmallestCovering(beforeCredits, rules.Deadlines[deadline].CreditRate(rules));
         while (high - low > 0.01m)
         {
             var middle = Money.DownToCent((low + high) / 2m);

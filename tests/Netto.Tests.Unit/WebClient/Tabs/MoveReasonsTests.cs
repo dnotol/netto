@@ -8,7 +8,7 @@ namespace Netto.Tests.WebClient.Tabs;
 
 // Why each move helps, in the engine's figures that differ between the year before its line and the year
 // after it, each held to a run of the river. On 22 October the example moves its pay from 50,000 to 20,799,
-// then the company pays 29,700.45 by 21 December, then grants both vouchers (MovesViewTests); a director
+// then the company pays 29,700.34 by 21 December, then grants both vouchers (MovesViewTests); a director
 // who spends 75% of their time creating first lets the royalty follow the pay (MoveSearchCopyrightTests).
 public class MoveReasonsTests
 {
