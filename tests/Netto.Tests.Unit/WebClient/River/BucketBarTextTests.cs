@@ -1,5 +1,3 @@
-using System.Globalization;
-using System.Resources;
 using Netto.Core.SocialContributions;
 using Netto.Web.Client;
 using Netto.Web.Client.River;
@@ -10,7 +8,7 @@ namespace Netto.Tests.WebClient.River;
 public class BucketBarTextTests
 {
     // The name IStringLocalizer<BucketBar> reads River/BucketBar.resx under.
-    private static readonly ResourceManager Resources = new("Netto.Web.Client.River.BucketBar", typeof(BucketBar).Assembly);
+    private static readonly ResxText Resources = ResxText.For<BucketBar>();
 
     // Each bucket, with and without a rent among the taxes on pay.
     [Theory]
@@ -19,7 +17,7 @@ public class BucketBarTextTests
     public void BucketBarResx_everyBucket_hasAText(bool taxesOnPayIncludeRent)
     {
         BucketsView.Keys.Select(key => BucketBarText.Bucket(key, taxesOnPayIncludeRent))
-            .Where(key => Resources.GetString(key, CultureInfo.InvariantCulture) is null)
+            .Where(key => Resources.Get(key) is null)
             .ShouldBeEmpty();
     }
 
@@ -36,7 +34,7 @@ public class BucketBarTextTests
     [InlineData(true, "Contributions and tax on pay and rent")]
     public void BucketBarResx_taxesOnPay_namesTheContributionsWithTheTax(bool taxesOnPayIncludeRent, string name)
     {
-        Resources.GetString(BucketBarText.Bucket("taxes_on_pay", taxesOnPayIncludeRent), CultureInfo.InvariantCulture).ShouldBe(name);
+        Resources.Get(BucketBarText.Bucket("taxes_on_pay", taxesOnPayIncludeRent)).ShouldBe(name);
     }
 
     // What each bucket holds, with a copyright royalty's tax apart among the taxes on pay, with or
@@ -47,7 +45,7 @@ public class BucketBarTextTests
     public void BucketBarResx_everyBucketWithARoyalty_saysWhatItHolds(bool taxesOnPayIncludeRent)
     {
         BucketsView.Keys.Select(key => BucketBarText.Holds(key, taxesOnPayIncludeRent, true))
-            .Where(key => Resources.GetString(key, CultureInfo.InvariantCulture) is null)
+            .Where(key => Resources.Get(key) is null)
             .ShouldBeEmpty();
     }
 
@@ -67,7 +65,7 @@ public class BucketBarTextTests
     public void BucketBarResx_everyBucket_saysWhatItHolds(bool taxesOnPayIncludeRent)
     {
         BucketsView.Keys.Select(key => BucketBarText.Holds(key, taxesOnPayIncludeRent))
-            .Where(key => Resources.GetString(key, CultureInfo.InvariantCulture) is null)
+            .Where(key => Resources.Get(key) is null)
             .ShouldBeEmpty();
     }
 
@@ -84,7 +82,7 @@ public class BucketBarTextTests
     {
         var pocket = BucketBarAnnouncement.Pocket(BucketsView.From(RiverInputs.Example.Run()));
 
-        var text = string.Format(CultureInfo.InvariantCulture, Resources.GetString(BucketBarText.PocketAnnounced, CultureInfo.InvariantCulture) ?? "", pocket);
+        var text = Resources.Format(BucketBarText.PocketAnnounced, pocket);
 
         text.ShouldBe("In your pocket: €61,975.74.");
     }
@@ -97,7 +95,7 @@ public class BucketBarTextTests
     {
         var view = BucketsView.From(RiverInputs.Example.Run()).ShouldNotBeNull();
 
-        var text = string.Format(CultureInfo.InvariantCulture, Resources.GetString(BucketBarText.Reach(view), CultureInfo.InvariantCulture) ?? "", "62%", "38%");
+        var text = Resources.Format(BucketBarText.Reach(view), "62%", "38%");
 
         text.ShouldBe("[62% reaches you], 38% goes to contributions and taxes.");
     }
@@ -108,7 +106,7 @@ public class BucketBarTextTests
     {
         var view = BucketsView.From(RiverInputs.Example.WithReserve(15_000m).Run()).ShouldNotBeNull();
 
-        TermText.Split(Resources.GetString(BucketBarText.Reach(view), CultureInfo.InvariantCulture) ?? "")
+        TermText.Split(Resources.Get(BucketBarText.Reach(view)) ?? "")
             .ShouldBe(("Of what the company does not keep, ", "{0} reaches you", ", {1} goes to contributions and taxes."));
     }
 
@@ -116,7 +114,7 @@ public class BucketBarTextTests
     public void BucketBarResx_reach_saysWhatItMeansAndWhereTheRestOfTheRiverIs()
     {
         new[] { BucketBarText.ReachMeaning, BucketBarText.EnterCompany }
-            .Where(key => Resources.GetString(key, CultureInfo.InvariantCulture) is null)
+            .Where(key => Resources.Get(key) is null)
             .ShouldBeEmpty();
     }
 
@@ -127,14 +125,14 @@ public class BucketBarTextTests
     [InlineData(GainKind.NotComparable)]
     public void BucketBarResx_everyGain_hasAText(GainKind kind)
     {
-        Resources.GetString(BucketBarText.Gain(kind), CultureInfo.InvariantCulture).ShouldNotBeNull();
+        Resources.Get(BucketBarText.Gain(kind)).ShouldNotBeNull();
     }
 
     // The best pay against the example marked as the setup (BaselineGainTests).
     [Fact]
     public void Gain_more_saysHowMuchMoreThanTheSetup()
     {
-        var text = string.Format(CultureInfo.InvariantCulture, Resources.GetString(BucketBarText.Gain(GainKind.More), CultureInfo.InvariantCulture) ?? "", Formats.Euros(2_551.13m));
+        var text = Resources.Format(BucketBarText.Gain(GainKind.More), Formats.Euros(2_551.13m));
 
         text.ShouldBe("€2,551.13 more than Today, your current setup.");
     }
@@ -142,7 +140,7 @@ public class BucketBarTextTests
     [Fact]
     public void Gain_less_saysHowMuchLessThanTheSetup()
     {
-        var text = string.Format(CultureInfo.InvariantCulture, Resources.GetString(BucketBarText.Gain(GainKind.Less), CultureInfo.InvariantCulture) ?? "", Formats.Euros(2_551.13m));
+        var text = Resources.Format(BucketBarText.Gain(GainKind.Less), Formats.Euros(2_551.13m));
 
         text.ShouldBe("€2,551.13 less than Today, your current setup.");
     }
@@ -150,7 +148,7 @@ public class BucketBarTextTests
     [Fact]
     public void BucketBarResx_unsaved_saysTheRiverHasChangesNoPlanHolds()
     {
-        Resources.GetString(BucketBarText.Unsaved, CultureInfo.InvariantCulture).ShouldBe("Unsaved changes.");
+        Resources.Get(BucketBarText.Unsaved).ShouldBe("Unsaved changes.");
     }
 
     // With a car, the reach says the pocket and the taxes alone, of what the company does not keep once
@@ -169,7 +167,7 @@ public class BucketBarTextTests
     [Fact]
     public void BucketBarResx_reachMeaning_saysACarsCostsAreLeftOutLikeTheRunningCosts()
     {
-        Resources.GetString(BucketBarText.ReachMeaning, CultureInfo.InvariantCulture).ShouldBe(
+        Resources.Get(BucketBarText.ReachMeaning).ShouldBe(
             "Your pocket, out of what the river starts from less what the company keeps at year end, which is still yours. "
             + "Running costs and a company car's costs are left out: the company spends them, they are not taxes.");
     }
@@ -193,7 +191,7 @@ public class BucketBarTextTests
     {
         var view = BucketsView.From(inputs.Run()).ShouldNotBeNull();
 
-        (BucketBarText.From(view), Resources.GetString(key, CultureInfo.InvariantCulture) is not null).ShouldBe((key, true));
+        (BucketBarText.From(view), Resources.Get(key) is not null).ShouldBe((key, true));
     }
 
     // With a car the bar says the river starts after its costs: the example's 100,000 less its 8,000
@@ -205,7 +203,7 @@ public class BucketBarTextTests
     {
         var view = BucketsView.From(WithCar.WithEarlierProfits(earlierProfits).Run()).ShouldNotBeNull();
 
-        var text = string.Format(CultureInfo.InvariantCulture, Resources.GetString(BucketBarText.From(view), CultureInfo.InvariantCulture) ?? "",
+        var text = Resources.Format(BucketBarText.From(view),
             Formats.Euros(view.Start - view.EarlierProfits), Formats.Euros(view.EarlierProfits), Formats.Euros(view.CarCosts));
 
         text.ShouldBe(expected);
@@ -225,7 +223,7 @@ public class BucketBarTextTests
     [Fact]
     public void BucketBarResx_noFigure_saysWhy()
     {
-        var text = Resources.GetString(BucketBarText.Refused, CultureInfo.InvariantCulture);
+        var text = Resources.Get(BucketBarText.Refused);
 
         text.ShouldBe("No figures until the amount marked below is corrected.");
     }

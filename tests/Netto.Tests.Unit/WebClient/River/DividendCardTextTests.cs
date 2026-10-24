@@ -1,5 +1,3 @@
-using System.Globalization;
-using System.Resources;
 using Netto.Core.Dividends;
 using Netto.Web.Client.River;
 using Shouldly;
@@ -11,12 +9,12 @@ namespace Netto.Tests.WebClient.River;
 public class DividendCardTextTests
 {
     // The name IStringLocalizer<DividendCard> reads River/DividendCard.resx under.
-    private static readonly ResourceManager Resources = new("Netto.Web.Client.River.DividendCard", typeof(DividendCard).Assembly);
+    private static readonly ResxText Resources = ResxText.For<DividendCard>();
 
     [Fact]
     public void DividendCardResx_everyWithholdingCategory_hasAText()
     {
-        Missing(Enum.GetValues<WithholdingCategory>().Select(DividendCardText.Category)).ShouldBeEmpty();
+        Resources.Missing(Enum.GetValues<WithholdingCategory>().Select(DividendCardText.Category)).ShouldBeEmpty();
     }
 
     // Once the company keeps some, the dividend's summary starts from what it pays out, the base of its
@@ -26,7 +24,7 @@ public class DividendCardTextTests
     {
         var view = DividendView.From(RiverInputs.Example.WithAdvancePayment(0, 7_500m).WithTaxWithheld(11_334m).WithReserve(15_000m).Run().Year.ShouldNotBeNull());
 
-        var text = string.Format(CultureInfo.InvariantCulture, Resources.GetString(DividendCardText.Summary(view), CultureInfo.InvariantCulture) ?? "",
+        var text = Resources.Format(DividendCardText.Summary(view),
             "€25,000.00", "€20,649.94");
 
         text.ShouldBe("€25,000.00 paid out · €20,649.94 to your pocket");
@@ -51,7 +49,7 @@ public class DividendCardTextTests
         ];
         var phrases = variations.SelectMany(inputs => DividendSettingsView.From(inputs).Facts);
 
-        Missing(phrases.Select(phrase => phrase.Key).Append("SharesTitle")).ShouldBeEmpty();
+        Resources.Missing(phrases.Select(phrase => phrase.Key).Append("SharesTitle")).ShouldBeEmpty();
     }
 
     // What VVPRbis shares are, in the bubble after the rate's label, which draws its text as it is: a term
@@ -59,9 +57,6 @@ public class DividendCardTextTests
     [Fact]
     public void DividendCardResx_rateBubble_hasATextMarkingNoTerm()
     {
-        (Resources.GetString(DividendCardText.CategoryHelp, CultureInfo.InvariantCulture) is { } text ? TermText.Split(text).Term : "missing").ShouldBeNull();
+        (Resources.Get(DividendCardText.CategoryHelp) is { } text ? TermText.Split(text).Term : "missing").ShouldBeNull();
     }
-
-    private static IEnumerable<string> Missing(IEnumerable<string> keys) =>
-        keys.Distinct().Where(key => Resources.GetString(key, CultureInfo.InvariantCulture) is null);
 }

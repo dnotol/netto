@@ -1,5 +1,3 @@
-using System.Globalization;
-using System.Resources;
 using Netto.Core.PersonalTax;
 using Netto.Core.SocialContributions;
 using Netto.Web.Client.River;
@@ -12,7 +10,7 @@ namespace Netto.Tests.WebClient.River;
 public class DirectorPayCardTextTests
 {
     // The name IStringLocalizer<DirectorPayCard> reads River/DirectorPayCard.resx under.
-    private static readonly ResourceManager Resources = new("Netto.Web.Client.River.DirectorPayCard", typeof(DirectorPayCard).Assembly);
+    private static readonly ResxText Resources = ResxText.For<DirectorPayCard>();
 
     // Every label and bubble of Director pay's lines: the contributions the company pays, a car's
     // benefit and a royalty's part beyond its limits with the taxable pay they make, and what more by the
@@ -26,19 +24,19 @@ public class DirectorPayCardTextTests
         var lines = DirectorPayFigures.Taxed(taxed.Run().Pay.ShouldNotBeNull())
             .Concat(DirectorPayFigures.Surcharge(DirectorPayView.From(due, due.Run().Pay.ShouldNotBeNull())));
 
-        Missing(lines.SelectMany(line => new[] { line.Key, line.Help }).OfType<string>()).ShouldBeEmpty();
+        Resources.Missing(lines.SelectMany(line => new[] { line.Key, line.Help }).OfType<string>()).ShouldBeEmpty();
     }
 
     [Fact]
     public void DirectorPayCardResx_everyTaxSurchargeState_hasAText()
     {
-        Missing(Enum.GetValues<TaxSurchargeState>().Select(DirectorPayCardText.Surcharge)).ShouldBeEmpty();
+        Resources.Missing(Enum.GetValues<TaxSurchargeState>().Select(DirectorPayCardText.Surcharge)).ShouldBeEmpty();
     }
 
     [Fact]
     public void DirectorPayCardResx_everyPayerOfTheContributions_hasAText()
     {
-        Missing(Enum.GetValues<ContributionsPaidBy>().Select(DirectorPayCardText.PaidBy)).ShouldBeEmpty();
+        Resources.Missing(Enum.GetValues<ContributionsPaidBy>().Select(DirectorPayCardText.PaidBy)).ShouldBeEmpty();
     }
 
     // Every way the lines of Director pay's disclosures read: either payer, the default rate, a
@@ -59,7 +57,7 @@ public class DirectorPayCardTextTests
         var phrases = variations.Select(inputs => DirectorPaySettingsView.From(inputs, inputs.Run()))
             .SelectMany(view => view.Situation.Concat(view.Prepaid));
 
-        Missing(phrases.Select(phrase => phrase.Key)).ShouldBeEmpty();
+        Resources.Missing(phrases.Select(phrase => phrase.Key)).ShouldBeEmpty();
     }
 
     // How the withholding is derived and what the key formula is are said in the withheld field's
@@ -67,7 +65,7 @@ public class DirectorPayCardTextTests
     [Fact]
     public void DirectorPayCardResx_withheldFieldsBubble_marksNoTerm()
     {
-        var text = Resources.GetString("WithheldHint", CultureInfo.InvariantCulture).ShouldNotBeNull();
+        var text = Resources.Get("WithheldHint").ShouldNotBeNull();
 
         TermText.Split(text).Term.ShouldBeNull();
     }
@@ -82,7 +80,4 @@ public class DirectorPayCardTextTests
             () => kept.ShouldNotBeEmpty(),
             () => kept.Where(text => InterfaceTexts.WordCount(text.Value) > 15).Select(text => text.Key).ShouldBeEmpty());
     }
-
-    private static IEnumerable<string> Missing(IEnumerable<string> keys) =>
-        keys.Distinct().Where(key => Resources.GetString(key, CultureInfo.InvariantCulture) is null);
 }

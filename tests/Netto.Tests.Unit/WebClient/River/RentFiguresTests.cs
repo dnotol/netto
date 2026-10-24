@@ -1,5 +1,3 @@
-using System.Globalization;
-using System.Resources;
 using Netto.Web.Client.River;
 using Shouldly;
 
@@ -12,7 +10,7 @@ namespace Netto.Tests.WebClient.River;
 public class RentFiguresTests
 {
     // The name IStringLocalizer<RentCard> reads River/RentCard.resx under.
-    private static readonly ResourceManager Resources = new("Netto.Web.Client.River.RentCard", typeof(RentCard).Assembly);
+    private static readonly ResxText Resources = ResxText.For<RentCard>();
 
     private static readonly RiverInputs RentInPlan = RiverInputs.Example.AddToPlan(OptionalModule.Rent);
 
@@ -56,7 +54,7 @@ public class RentFiguresTests
     public void RentCardResx_everyLineAndItsBubble_haveTheirTexts()
     {
         new[] { RentFigures.TaxedOnTheRent, RentFigures.TaxedOnTheFloor, RentFigures.FlatCharges, RentFigures.JoinsTaxableIncome, RentFigures.FloorHelp, RentFigures.FlatChargesHelp }
-            .Where(key => Resources.GetString(key, CultureInfo.InvariantCulture) is null)
+            .Where(key => Resources.Get(key) is null)
             .ShouldBeEmpty();
     }
 

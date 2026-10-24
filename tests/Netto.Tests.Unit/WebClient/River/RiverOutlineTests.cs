@@ -1,6 +1,4 @@
-using System.Globalization;
 using System.Net;
-using System.Resources;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.DependencyInjection;
 using Netto.Web.Client;
@@ -200,11 +198,11 @@ public class RiverOutlineTests
 
     private static Regex Words(GlanceKind kind)
     {
-        var format = OutlineTexts.GetString(RiverOutlineText.Glance(kind), CultureInfo.InvariantCulture) ?? "";
+        var format = OutlineTexts.Get(RiverOutlineText.Glance(kind)) ?? "";
         return new Regex("^" + Regex.Escape(format).Replace("\\{0}", "(?<figure>.+)") + "$");
     }
 
-    private static readonly ResourceManager OutlineTexts = new("Netto.Web.Client.River.RiverOutline", typeof(RiverOutline).Assembly);
+    private static readonly ResxText OutlineTexts = ResxText.For<RiverOutline>();
 
     // The summary on the button of the card titled so.
     private static string Summary(string html, string title) =>

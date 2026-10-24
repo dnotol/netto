@@ -1,5 +1,3 @@
-using System.Globalization;
-using System.Resources;
 using Netto.Core.Copyright;
 using Netto.Web.Client.River;
 using Netto.Web.Client.River.Copyright;
@@ -11,14 +9,14 @@ namespace Netto.Tests.WebClient.River.Copyright;
 // without a text in its .resx would show on screen as the key itself.
 public class CopyrightCardTextTests
 {
-    private static readonly ResourceManager Resources = new("Netto.Web.Client.River.Copyright.CopyrightCard", typeof(CopyrightCard).Assembly);
+    private static readonly ResxText Resources = ResxText.For<CopyrightCard>();
 
     private static readonly CopyrightRules Rules = CopyrightRules.IncomeYear2026;
 
     [Fact]
     public void CopyrightCardResx_everyLimitThatSetsThePartWithin_hasAText()
     {
-        Missing(Enum.GetValues<CopyrightBound>().Select(bound => CopyrightCardText.Limits(CopyrightResult.None with { Bound = bound }))).ShouldBeEmpty();
+        Resources.Missing(Enum.GetValues<CopyrightBound>().Select(bound => CopyrightCardText.Limits(CopyrightResult.None with { Bound = bound }))).ShouldBeEmpty();
     }
 
     // No royalty yet, a royalty within its limits, one beyond them, and one whose four previous years
@@ -56,7 +54,7 @@ public class CopyrightCardTextTests
     public void Glance_nothingWithinTheLimits_isAllOfItTaxedAsPay()
     {
         var view = CopyrightView.From(RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithRoyalty(10_000m).WithAverageWithinCap(false).Run().Year!);
-        var summary = string.Format(CultureInfo.InvariantCulture, Resources.GetString(CopyrightCardText.Summary(view), CultureInfo.InvariantCulture)!,
+        var summary = Resources.Format(CopyrightCardText.Summary(view),
             Netto.Web.Client.Formats.Euros(view.AfterTax), Netto.Web.Client.Formats.Euros(view.Result.TaxedAsPay));
 
         var glance = CopyrightCardText.Glance(view).ShouldNotBeNull();
@@ -67,7 +65,7 @@ public class CopyrightCardTextTests
     [Fact]
     public void CopyrightCardResx_everySummaryKey_hasAText()
     {
-        Missing(["SummaryNoRoyalty", "Summary", "Summary_AsPay", "Summary_AllAsPay"]).ShouldBeEmpty();
+        Resources.Missing(["SummaryNoRoyalty", "Summary", "Summary_AsPay", "Summary_AllAsPay"]).ShouldBeEmpty();
     }
 
     // Figures with their labels: what reaches the pocket after the tax apart, then what is taxed as pay
@@ -79,7 +77,7 @@ public class CopyrightCardTextTests
     [InlineData("Summary_AllAsPay", "€2,000.00 taxed as your pay")]
     public void Summary_eachWay_isItsFiguresWithTheirLabels(string key, string expected)
     {
-        string.Format(CultureInfo.InvariantCulture, Resources.GetString(key, CultureInfo.InvariantCulture) ?? "", "€8,000.00", "€2,000.00").ShouldBe(expected);
+        Resources.Format(key, "€8,000.00", "€2,000.00").ShouldBe(expected);
     }
 
     // What the royalty leaves against the plan without it, each way it can fall.
@@ -93,7 +91,7 @@ public class CopyrightCardTextTests
         };
 
         comparisons.Select(CopyrightCardText.Gain).ShouldBe(["Figure_Gain_More", "Figure_Gain_Less", "Figure_Gain_None"]);
-        Missing(comparisons.Select(CopyrightCardText.Gain)).ShouldBeEmpty();
+        Resources.Missing(comparisons.Select(CopyrightCardText.Gain)).ShouldBeEmpty();
     }
 
     // Every line the royalty's figures draw, and what its bubble says, on royalties that take each of them:
@@ -111,7 +109,7 @@ public class CopyrightCardTextTests
             .Concat(CopyrightFigures.With(comparison)).Concat(CopyrightFigures.Without(comparison)).Concat(CopyrightFigures.Difference(comparison))
             .ToList();
 
-        Missing(lines.Select(line => line.Key).Concat(lines.Select(line => line.Help).OfType<string>()).Distinct()).ShouldBeEmpty();
+        Resources.Missing(lines.Select(line => line.Key).Concat(lines.Select(line => line.Help).OfType<string>()).Distinct()).ShouldBeEmpty();
     }
 
     // The words the card says whatever the royalty.
@@ -124,7 +122,7 @@ public class CopyrightCardTextTests
             "Readings", "WithTitle", "WithoutTitle", "DetailsLabel", "SourcesTitle", "Remove",
         ];
 
-        Missing(keys).ShouldBeEmpty();
+        Resources.Missing(keys).ShouldBeEmpty();
     }
 
     // A royalty all within its limits says the 30% limit with its amount, a bound of the royalty that stays
@@ -132,7 +130,7 @@ public class CopyrightCardTextTests
     [Fact]
     public void Limits_allWithin_saysThe30PercentLimitWithItsAmount()
     {
-        string.Format(CultureInfo.InvariantCulture, Resources.GetString("Limits_None", CultureInfo.InvariantCulture) ?? "",
+        Resources.Format("Limits_None",
                 "€10,000.00", "€10,000.00", "€18,000.00", "€77,220.00", "€0.00", 2026, "30%")
             .ShouldBe("Within 30% of it and your gross pay, €18,000.00, and the cap.");
     }
@@ -146,7 +144,7 @@ public class CopyrightCardTextTests
     [InlineData("Figure_Withheld")]
     public void CopyrightCardResx_textStatingARulesRate_typesNone(string key)
     {
-        (Resources.GetString(key, CultureInfo.InvariantCulture) ?? "").ShouldNotMatch("[0-9]%");
+        (Resources.Get(key) ?? "").ShouldNotMatch("[0-9]%");
     }
 
     // What a figure cannot say, kept as a sentence in sight, says it in few words: which limit set the
@@ -160,7 +158,7 @@ public class CopyrightCardTextTests
     [InlineData("Limits_Average", 12)]
     public void CopyrightCardResx_sentenceKeptInSight_isShort(string key, int words)
     {
-        var sentence = string.Format(CultureInfo.InvariantCulture, Resources.GetString(key, CultureInfo.InvariantCulture) ?? "",
+        var sentence = Resources.Format(key,
             "€30,000.00", "€24,000.00", "€24,000.00", "€77,220.00", "€6,000.00", 2026, "30%");
 
         sentence.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length.ShouldBeInRange(1, words);
@@ -175,8 +173,6 @@ public class CopyrightCardTextTests
         RiverInputs[] variations = [royalty, royalty.WithRoyalty(10_000m), royalty.WithAverageWithinCap(false).WithAttestation(true).WithCreativeShare(0.4m)];
         var phrases = variations.SelectMany(inputs => CopyrightSettingsView.From(inputs, inputs.Run()).Situation);
 
-        Missing(phrases.Select(phrase => phrase.Key).Append("SituationTitle")).ShouldBeEmpty();
+        Resources.Missing(phrases.Select(phrase => phrase.Key).Append("SituationTitle")).ShouldBeEmpty();
     }
-
-    private static IEnumerable<string> Missing(IEnumerable<string> keys) => keys.Where(key => Resources.GetString(key, CultureInfo.InvariantCulture) is null);
 }

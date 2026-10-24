@@ -1,5 +1,3 @@
-using System.Globalization;
-using System.Resources;
 using Netto.Web.Client.River;
 using Shouldly;
 
@@ -11,7 +9,7 @@ namespace Netto.Tests.WebClient.River;
 public class VoucherFiguresTests
 {
     // The name IStringLocalizer<VoucherCard> reads River/VoucherCard.resx under.
-    private static readonly ResourceManager Resources = new("Netto.Web.Client.River.VoucherCard", typeof(VoucherCard).Assembly);
+    private static readonly ResxText Resources = ResxText.For<VoucherCard>();
 
     private static readonly RiverInputs VouchersInPlan = RiverInputs.Example.AddToPlan(OptionalModule.Vouchers);
 
@@ -34,7 +32,7 @@ public class VoucherFiguresTests
     public void VoucherCardResx_everyLine_hasALabel()
     {
         new[] { VoucherFigures.CompanyPays, VoucherFigures.AddedBack }
-            .Where(key => Resources.GetString(key, CultureInfo.InvariantCulture) is null)
+            .Where(key => Resources.Get(key) is null)
             .ShouldBeEmpty();
     }
 

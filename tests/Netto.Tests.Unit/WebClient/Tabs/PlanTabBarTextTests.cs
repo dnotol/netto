@@ -1,5 +1,3 @@
-using System.Globalization;
-using System.Resources;
 using Netto.Web.Client.Tabs;
 using Shouldly;
 
@@ -9,20 +7,18 @@ namespace Netto.Tests.WebClient.Tabs;
 public class PlanTabBarTextTests
 {
     // The name IStringLocalizer<PlanTabBar> reads Tabs/PlanTabBar.resx under.
-    private static readonly ResourceManager Resources = new("Netto.Web.Client.Tabs.PlanTabBar", typeof(PlanTabBar).Assembly);
-
-    private static string? Text(string key) => Resources.GetString(key, CultureInfo.InvariantCulture);
+    private static readonly ResxText Resources = ResxText.For<PlanTabBar>();
 
     [Fact]
     public void PlanTabBarResx_label_namesTheNav()
     {
-        Text(PlanTabBarText.Label).ShouldBe("Your plan");
+        Resources.Get(PlanTabBarText.Label).ShouldBe("Your plan");
     }
 
     [Fact]
     public void PlanTabBarResx_everyTab_hasItsName()
     {
-        PlanTabRoutes.Order.Select(tab => Text(PlanTabBarText.Name(tab))).ShouldBe(["Plan", "Optimisation", "When to pay", "Compare plans"]);
+        PlanTabRoutes.Order.Select(tab => Resources.Get(PlanTabBarText.Name(tab))).ShouldBe(["Plan", "Optimisation", "When to pay", "Compare plans"]);
     }
 
     // A badge shows short (+€3,054.18, 21 Dec, an icon) and a screen reader hears it in full, after the
@@ -35,12 +31,12 @@ public class PlanTabBarTextTests
     [InlineData(TabBadgeKind.SavedPlans, "3", "3 saved plans to compare")]
     public void PlanTabBarResx_everyBadge_isSpokenInFull(TabBadgeKind kind, string figure, string expected)
     {
-        string.Format(CultureInfo.InvariantCulture, Text(PlanTabBarText.Spoken(kind)) ?? "", figure).ShouldBe(expected);
+        Resources.Format(PlanTabBarText.Spoken(kind), figure).ShouldBe(expected);
     }
 
     [Fact]
     public void PlanTabBarResx_everyBadgeKind_hasItsSpokenText()
     {
-        Enum.GetValues<TabBadgeKind>().Where(kind => Text(PlanTabBarText.Spoken(kind)) is null).ShouldBeEmpty();
+        Enum.GetValues<TabBadgeKind>().Where(kind => Resources.Get(PlanTabBarText.Spoken(kind)) is null).ShouldBeEmpty();
     }
 }

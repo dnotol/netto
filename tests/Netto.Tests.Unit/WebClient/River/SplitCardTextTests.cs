@@ -1,5 +1,3 @@
-using System.Globalization;
-using System.Resources;
 using Netto.Core.Copyright;
 using Netto.Core.CorporateTax;
 using Netto.Core.Simulation;
@@ -14,7 +12,7 @@ namespace Netto.Tests.WebClient.River;
 public class SplitCardTextTests
 {
     // The name IStringLocalizer<SplitCard> reads River/SplitCard.resx under.
-    private static readonly ResourceManager Resources = new("Netto.Web.Client.River.SplitCard", typeof(SplitCard).Assembly);
+    private static readonly ResxText Resources = ResxText.For<SplitCard>();
 
     // Each way the best pay can stand against the reduced rate, with or without a pay on the other
     // side that keeps the reserve, that pay being the pay set or another.
@@ -25,7 +23,7 @@ public class SplitCardTextTests
         var weighings = Enum.GetValues<RateChoice>()
             .SelectMany(choice => new[] { new RateWeighing(choice, 50_000m, other, 2_183.57m), new RateWeighing(choice, 50_000m, null, null) });
 
-        Missing(weighings.SelectMany(rate => new[] { SplitCardText.Rate(rate, 50_000m), SplitCardText.Rate(rate, 40_000m) })).ShouldBeEmpty();
+        Resources.Missing(weighings.SelectMany(rate => new[] { SplitCardText.Rate(rate, 50_000m), SplitCardText.Rate(rate, 40_000m) })).ShouldBeEmpty();
     }
 
     // The best pay on the other side of the threshold is the pay set: what keeping the rate costs is
@@ -58,7 +56,7 @@ public class SplitCardTextTests
     [Fact]
     public void SplitCardResx_reducedRate_saysWhatItMeans()
     {
-        Missing([SplitCardText.ReducedRateTerm]).ShouldBeEmpty();
+        Resources.Missing([SplitCardText.ReducedRateTerm]).ShouldBeEmpty();
     }
 
     // Every label the split's lines can carry: its sides with and without a royalty, and with the
@@ -81,7 +79,7 @@ public class SplitCardTextTests
             return SplitFigures.Sides(view, run.Year).Concat(SplitFigures.Best(search, run.Year.ShouldNotBeNull(), view.Royalty, inputs.Reserve.Value));
         }).Select(line => line.Key);
 
-        Missing(["Ceiling", .. keys]).ShouldBeEmpty();
+        Resources.Missing(["Ceiling", .. keys]).ShouldBeEmpty();
     }
 
     // Every text the split says about the royalty it pays beside the pay: its two ways, the summary,
@@ -104,7 +102,7 @@ public class SplitCardTextTests
             .. Enum.GetValues<CopyrightFollowing>().Select(SplitCardText.Following).OfType<string>(),
         ];
 
-        Missing(keys).ShouldBeEmpty();
+        Resources.Missing(keys).ShouldBeEmpty();
     }
 
     // Why the pay goes no further: beside a royalty that follows the pay only while the engine set it at
@@ -181,8 +179,5 @@ public class SplitCardTextTests
 
     // The term each sentence marks, null where its text marks none or is missing.
     private static List<string?> Terms(IEnumerable<string> keys) =>
-        [.. keys.Select(key => Resources.GetString(key, CultureInfo.InvariantCulture) is { } text ? TermText.Split(text).Term : null)];
-
-    private static IEnumerable<string> Missing(IEnumerable<string> keys) =>
-        keys.Distinct().Where(key => Resources.GetString(key, CultureInfo.InvariantCulture) is null);
+        [.. keys.Select(key => Resources.Get(key) is { } text ? TermText.Split(text).Term : null)];
 }

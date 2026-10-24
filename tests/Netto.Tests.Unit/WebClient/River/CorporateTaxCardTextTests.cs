@@ -1,5 +1,3 @@
-using System.Globalization;
-using System.Resources;
 using Netto.Core.CompanyCar;
 using Netto.Core.CorporateTax;
 using Netto.Web.Client.River;
@@ -12,14 +10,14 @@ namespace Netto.Tests.WebClient.River;
 public class CorporateTaxCardTextTests
 {
     // The name IStringLocalizer<CorporateTaxCard> reads River/CorporateTaxCard.resx under.
-    private static readonly ResourceManager Resources = new("Netto.Web.Client.River.CorporateTaxCard", typeof(CorporateTaxCard).Assembly);
+    private static readonly ResxText Resources = ResxText.For<CorporateTaxCard>();
 
     [Fact]
     public void CorporateTaxCardResx_everyReducedRateCondition_hasAText()
     {
         var keys = Enum.GetValues<ReducedRateCondition>().SelectMany(condition => new[] { false, true }.Select(benefits => CorporateTaxCardText.Condition(condition, benefits)));
 
-        Missing(keys).ShouldBeEmpty();
+        Resources.Missing(keys).ShouldBeEmpty();
     }
 
     // Every label and bubble of what the taxable income adds back: the vouchers, a fuel car's costs the
@@ -32,7 +30,7 @@ public class CorporateTaxCardTextTests
             .WithCarEngine(CarEngine.Petrol).WithCarCo2(120).WithCarAcquired(new DateOnly(2026, 1, 5));
         var lines = CorporateTaxFigures.Of(CorporateTaxView.From(inputs.Run().Year.ShouldNotBeNull()));
 
-        Missing(lines.SelectMany(line => new[] { line.Key, line.Help }).OfType<string>()).ShouldBeEmpty();
+        Resources.Missing(lines.SelectMany(line => new[] { line.Key, line.Help }).OfType<string>()).ShouldBeEmpty();
     }
 
     // With benefits in kind, the conditions the pay decides say the benefits are counted in it; the
@@ -52,7 +50,7 @@ public class CorporateTaxCardTextTests
     [Fact]
     public void CorporateTaxCardResx_everySurchargeState_hasAText()
     {
-        Missing(Enum.GetValues<SurchargeState>().Select(CorporateTaxCardText.Surcharge)).ShouldBeEmpty();
+        Resources.Missing(Enum.GetValues<SurchargeState>().Select(CorporateTaxCardText.Surcharge)).ShouldBeEmpty();
     }
 
     // Every way the lines of Corporate tax's disclosures read: a small company or not, in each of its
@@ -68,13 +66,13 @@ public class CorporateTaxCardTextTests
         var phrases = variations.Select(inputs => CorporateTaxSettingsView.From(inputs, inputs.Run()))
             .SelectMany(view => view.Company.Concat(view.Payments));
 
-        Missing(phrases.Select(phrase => phrase.Key)).ShouldBeEmpty();
+        Resources.Missing(phrases.Select(phrase => phrase.Key)).ShouldBeEmpty();
     }
 
     [Fact]
     public void CorporateTaxCardResx_everyFinancialYear_hasAText()
     {
-        Missing(Enum.GetValues<FinancialYear>().Select(CorporateTaxCardText.FinancialYear)).ShouldBeEmpty();
+        Resources.Missing(Enum.GetValues<FinancialYear>().Select(CorporateTaxCardText.FinancialYear)).ShouldBeEmpty();
     }
 
     // What a figure cannot say stays a sentence of fifteen words at most: which condition decided the
@@ -101,7 +99,4 @@ public class CorporateTaxCardTextTests
         InterfaceTexts.Of(typeof(CorporateTaxCard)).Where(text => text.Key.StartsWith(prefix, StringComparison.Ordinal) && InterfaceTexts.Placeholders(text.Value).Any(index => index >= arguments))
             .Select(text => text.Key).ShouldBeEmpty();
     }
-
-    private static IEnumerable<string> Missing(IEnumerable<string> keys) =>
-        keys.Distinct().Where(key => Resources.GetString(key, CultureInfo.InvariantCulture) is null);
 }

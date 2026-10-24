@@ -1,5 +1,3 @@
-using System.Globalization;
-using System.Resources;
 using Netto.Web.Client.River;
 using Shouldly;
 
@@ -8,7 +6,7 @@ namespace Netto.Tests.WebClient.River;
 public class PlansPanelTextTests
 {
     // The name IStringLocalizer<PlansPanel> reads River/PlansPanel.resx under.
-    private static readonly ResourceManager Resources = new("Netto.Web.Client.River.PlansPanel", typeof(PlansPanel).Assembly);
+    private static readonly ResxText Resources = ResxText.For<PlansPanel>();
 
     [Theory]
     [InlineData(0, "Plans: none saved yet")]
@@ -16,7 +14,7 @@ public class PlansPanelTextTests
     [InlineData(3, "Plans: 3 saved")]
     public void ButtonLabel_count_saysHowManyPlansAreSaved(int count, string expected)
     {
-        var text = string.Format(CultureInfo.InvariantCulture, Resources.GetString(PlansPanelText.ButtonLabel(count), CultureInfo.InvariantCulture) ?? "", count);
+        var text = Resources.Format(PlansPanelText.ButtonLabel(count), count);
 
         text.ShouldBe(expected);
     }
@@ -29,8 +27,7 @@ public class PlansPanelTextTests
     [InlineData(2, 1, false, "2 imported; 1 this version of Netto cannot read, left out.")]
     public void Imported_import_saysWhatItAdded(int added, int skipped, bool refused, string expected)
     {
-        var text = string.Format(CultureInfo.InvariantCulture,
-            Resources.GetString(PlansPanelText.Imported(new PlanImport(added, skipped, refused)), CultureInfo.InvariantCulture) ?? "", added, skipped);
+        var text = Resources.Format(PlansPanelText.Imported(new PlanImport(added, skipped, refused)), added, skipped);
 
         text.ShouldBe(expected);
     }
@@ -42,13 +39,13 @@ public class PlansPanelTextTests
     [InlineData(GainKind.NotComparable)]
     public void PlansPanelResx_everyGain_hasAText(GainKind kind)
     {
-        Resources.GetString(PlansPanelText.Gain(kind), CultureInfo.InvariantCulture).ShouldNotBeNull();
+        Resources.Get(PlansPanelText.Gain(kind)).ShouldNotBeNull();
     }
 
     // Saved plans are named Plan 1, Plan 2… until renamed.
     [Fact]
     public void DefaultName_number_isPlanAndTheNumber()
     {
-        string.Format(CultureInfo.InvariantCulture, Resources.GetString("DefaultName", CultureInfo.InvariantCulture) ?? "", 2).ShouldBe("Plan 2");
+        Resources.Format("DefaultName", 2).ShouldBe("Plan 2");
     }
 }

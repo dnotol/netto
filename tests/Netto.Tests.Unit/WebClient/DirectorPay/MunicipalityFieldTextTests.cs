@@ -1,5 +1,3 @@
-using System.Globalization;
-using System.Resources;
 using Netto.Core.PersonalTax;
 using Netto.Web.Client.DirectorPay;
 using Shouldly;
@@ -9,7 +7,7 @@ namespace Netto.Tests.WebClient.DirectorPay;
 public class MunicipalityFieldTextTests
 {
     // The name IStringLocalizer<MunicipalityField> reads DirectorPay/MunicipalityField.resx under.
-    private static readonly ResourceManager Resources = new("Netto.Web.Client.DirectorPay.MunicipalityField", typeof(MunicipalityField).Assembly);
+    private static readonly ResxText Resources = ResxText.For<MunicipalityField>();
 
     // The note under the municipality and rate fields, in each state MunicipalityChoice can be in,
     // including a year whose own rates are published.
@@ -23,6 +21,6 @@ public class MunicipalityFieldTextTests
 
         var keys = choices.Select(choice => choice.Note.Key);
 
-        keys.Distinct().Where(key => Resources.GetString(key, CultureInfo.InvariantCulture) is null).ShouldBeEmpty();
+        keys.Distinct().Where(key => Resources.Get(key) is null).ShouldBeEmpty();
     }
 }

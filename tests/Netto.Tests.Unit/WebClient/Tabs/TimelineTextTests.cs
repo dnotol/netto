@@ -1,5 +1,3 @@
-using System.Globalization;
-using System.Resources;
 using System.Text.RegularExpressions;
 using Netto.Web.Client.Tabs;
 using Shouldly;
@@ -11,25 +9,23 @@ namespace Netto.Tests.WebClient.Tabs;
 public class TimelineTextTests
 {
     // The name IStringLocalizer<CalendarTimeline> reads Tabs/CalendarTimeline.resx under.
-    private static readonly ResourceManager Resources = new("Netto.Web.Client.Tabs.CalendarTimeline", typeof(CalendarTimeline).Assembly);
+    private static readonly ResxText Resources = ResxText.For<CalendarTimeline>();
 
     private static readonly DateOnly On21December = new(2026, 12, 21);
-
-    private static string? Text(string key) => Resources.GetString(key, CultureInfo.InvariantCulture);
 
     private static TimelineMark Mark(decimal amount) => new(On21December, 0.97m, MarkState.Next, amount);
 
     [Fact]
     public void CalendarTimelineResx_everyNoteOfALane_hasAText()
     {
-        Enum.GetValues<LaneNote>().Where(note => note != LaneNote.None).Select(TimelineText.Note).Where(key => Text(key) is null).ShouldBeEmpty();
+        Enum.GetValues<LaneNote>().Where(note => note != LaneNote.None).Select(TimelineText.Note).Where(key => Resources.Get(key) is null).ShouldBeEmpty();
     }
 
     [Fact]
     public void CalendarTimelineResx_everyPlaceOfToday_hasALabelAndOutsideTheYearANote()
     {
-        Enum.GetValues<TodayPlace>().Select(TimelineText.TodayLabel).Where(key => Text(key) is null).ShouldBeEmpty();
-        Enum.GetValues<TodayPlace>().Select(TimelineText.TodayNote).OfType<string>().Where(key => Text(key) is null).ShouldBeEmpty();
+        Enum.GetValues<TodayPlace>().Select(TimelineText.TodayLabel).Where(key => Resources.Get(key) is null).ShouldBeEmpty();
+        Enum.GetValues<TodayPlace>().Select(TimelineText.TodayNote).OfType<string>().Where(key => Resources.Get(key) is null).ShouldBeEmpty();
     }
 
     [Fact]
@@ -41,7 +37,7 @@ public class TimelineTextTests
     [Fact]
     public void CalendarTimelineResx_everyItemOfTheKey_hasAText()
     {
-        Enum.GetValues<KeyItem>().Select(TimelineText.Key).Where(key => Text(key) is null).ShouldBeEmpty();
+        Enum.GetValues<KeyItem>().Select(TimelineText.Key).Where(key => Resources.Get(key) is null).ShouldBeEmpty();
     }
 
     // Whoever pays next, and nobody, each has a sentence, chosen by the Next panel's classifier.
@@ -54,7 +50,7 @@ public class TimelineTextTests
     {
         var key = TimelineText.Next(company ? Mark(15_000m) : null, director ? Mark(14_317.50m) : null);
 
-        (key, Text(key) is not null).ShouldBe((expected, true));
+        (key, Resources.Get(key) is not null).ShouldBe((expected, true));
     }
 
     [Theory]
@@ -64,7 +60,7 @@ public class TimelineTextTests
     {
         var key = TimelineText.ContributionsLane(paidByCompany);
 
-        (key, Text(key) is not null).ShouldBe((expected, true));
+        (key, Resources.Get(key) is not null).ShouldBe((expected, true));
     }
 
     // A label that names its payer: "Social contributions: €x a quarter" or, paid by the company, so.
@@ -75,7 +71,7 @@ public class TimelineTextTests
     {
         var key = TimelineText.ContributionsLabel(paidByCompany);
 
-        (key, Text(key) is not null).ShouldBe((expected, true));
+        (key, Resources.Get(key) is not null).ShouldBe((expected, true));
     }
 
     // The timeline's styles name no colour of their own: a theme redefines the tokens and the timeline

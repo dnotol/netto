@@ -1,6 +1,4 @@
-using System.Globalization;
 using System.Net;
-using System.Resources;
 using System.Text.RegularExpressions;
 using Netto.Core.CompanyCar;
 using Netto.Tests.WebClient.River.CompanyCar;
@@ -29,7 +27,7 @@ public class CarAndRoyaltyCardsTests
         .WithCatalogueValue(50_000m).WithFirstRegistration(new DateOnly(2026, 1, 10)).WithCarCosts(8_000m)
         .WithCreativeShare(0.5m);
 
-    private static readonly ResourceManager RoyaltyTexts = new("Netto.Web.Client.River.Copyright.CopyrightCard", typeof(CopyrightCard).Assembly);
+    private static readonly ResxText RoyaltyTexts = ResxText.For<CopyrightCard>();
 
     // Each card's words in sight on the filled plan, every card open, before the story's cut, as the static
     // render counts them (the browser counted 294 on the car's and 420 on the royalty's).
@@ -126,7 +124,7 @@ public class CarAndRoyaltyCardsTests
 
         var html = await RenderAsync(card, new Folds(new BrowserStorage()), new() { ["Inputs"] = inputs, ["Run"] = run, ["Refused"] = error });
 
-        Alerts(html).ShouldBe([CarCardTests.Refusals.GetString($"Error_{error}", CultureInfo.InvariantCulture) ?? error]);
+        Alerts(html).ShouldBe([CarCardTests.Refusals.Get($"Error_{error}") ?? error]);
     }
 
     [Fact]
@@ -187,7 +185,7 @@ public class CarAndRoyaltyCardsTests
     private static string Unsigned(string amount) => amount.TrimStart('−', '+', '-');
 
     private static string Royalty(string key, params object[] figures) =>
-        string.Format(CultureInfo.InvariantCulture, RoyaltyTexts.GetString(key, CultureInfo.InvariantCulture) ?? key, figures);
+        RoyaltyTexts.Format(key, figures);
 
     // What each refusal alert of the card says.
     private static List<string> Alerts(string html) =>

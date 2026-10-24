@@ -1,5 +1,3 @@
-using System.Globalization;
-using System.Resources;
 using Netto.Web.Client.River;
 using Shouldly;
 
@@ -10,14 +8,14 @@ namespace Netto.Tests.WebClient.River;
 public class RentCardTextTests
 {
     // The name IStringLocalizer<RentCard> reads River/RentCard.resx under.
-    private static readonly ResourceManager Resources = new("Netto.Web.Client.River.RentCard", typeof(RentCard).Assembly);
+    private static readonly ResxText Resources = ResxText.For<RentCard>();
 
     // The rent's summary ends on what the split shares: « before your pay », and « before your pay and
     // royalty » once the royalty is in the plan.
     [Fact]
     public void RentCardResx_everySummary_hasAText()
     {
-        Missing([RentCardText.Summary(false), RentCardText.Summary(true)]).ShouldBeEmpty();
+        Resources.Missing([RentCardText.Summary(false), RentCardText.Summary(true)]).ShouldBeEmpty();
     }
 
     [Theory]
@@ -32,7 +30,7 @@ public class RentCardTextTests
     [Fact]
     public void RentCardResx_bubblesOfTheFields_haveTheirTexts()
     {
-        Missing([RentCardText.CadastralIncomeHelp, RentCardText.CapHelp]).ShouldBeEmpty();
+        Resources.Missing([RentCardText.CadastralIncomeHelp, RentCardText.CapHelp]).ShouldBeEmpty();
     }
 
     // A bubble draws its text as it is: a term marked in it would show its brackets.
@@ -40,7 +38,7 @@ public class RentCardTextTests
     public void RentCardResx_bubbles_markNoTerm()
     {
         new[] { RentCardText.CadastralIncomeHelp, RentCardText.CapHelp, RentFigures.FloorHelp, RentFigures.FlatChargesHelp }
-            .Where(key => Resources.GetString(key, CultureInfo.InvariantCulture) is { } text && TermText.Split(text).Term is not null)
+            .Where(key => Resources.Get(key) is { } text && TermText.Split(text).Term is not null)
             .ShouldBeEmpty();
     }
 
@@ -51,9 +49,6 @@ public class RentCardTextTests
         RiverInputs[] variations = [RiverInputs.Example, RiverInputs.Example.WithCadastralIncome(1_200m).WithShareLet(0.12m)];
         var phrases = variations.SelectMany(inputs => RentSettingsView.From(inputs).Home);
 
-        Missing(phrases.Select(phrase => phrase.Key).Append("HomeTitle")).ShouldBeEmpty();
+        Resources.Missing(phrases.Select(phrase => phrase.Key).Append("HomeTitle")).ShouldBeEmpty();
     }
-
-    private static IEnumerable<string> Missing(IEnumerable<string> keys) =>
-        keys.Distinct().Where(key => Resources.GetString(key, CultureInfo.InvariantCulture) is null);
 }

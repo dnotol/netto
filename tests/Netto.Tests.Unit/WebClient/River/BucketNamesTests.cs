@@ -1,6 +1,4 @@
-using System.Globalization;
 using System.Net;
-using System.Resources;
 using Netto.Web.Client.River;
 using Shouldly;
 using static Netto.Tests.WebClient.River.RiverRendering;
@@ -14,9 +12,9 @@ namespace Netto.Tests.WebClient.River;
 public class BucketNamesTests
 {
     // The names IStringLocalizer<TComponent> reads River/<Component>.resx under.
-    private static readonly ResourceManager BucketBarResources = new("Netto.Web.Client.River.BucketBar", typeof(BucketBar).Assembly);
+    private static readonly ResxText BucketBarResources = ResxText.For<BucketBar>();
 
-    private static readonly ResourceManager DrainListResources = new("Netto.Web.Client.River.DrainList", typeof(DrainList).Assembly);
+    private static readonly ResxText DrainListResources = ResxText.For<DrainList>();
 
     // The rent at the 2026 cap, whose tax joins what leaves the pay (BucketsViewTests).
     private static readonly RiverInputs RentAtTheCap = RiverInputs.Example
@@ -58,11 +56,11 @@ public class BucketNamesTests
     }
 
     private static string Destination(Drain drain) =>
-        DrainListResources.GetString(DrainListText.Destination(drain), CultureInfo.InvariantCulture) ?? DrainListText.Destination(drain);
+        DrainListResources.Get(DrainListText.Destination(drain)) ?? DrainListText.Destination(drain);
 
     // A bucket's name in the bar as a sentence says it: « Your pocket » is « your pocket ».
     private static string NameInASentence(string bucket) =>
-        BucketBarResources.GetString(BucketBarText.Bucket(bucket, false), CultureInfo.InvariantCulture) is [var first, .. var rest]
+        BucketBarResources.Get(BucketBarText.Bucket(bucket, false)) is [var first, .. var rest]
             ? $"{char.ToLowerInvariant(first)}{rest}"
             : bucket;
 

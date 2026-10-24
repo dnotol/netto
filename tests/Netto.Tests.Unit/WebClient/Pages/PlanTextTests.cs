@@ -1,5 +1,4 @@
 using System.Globalization;
-using System.Resources;
 using System.Text.RegularExpressions;
 using Netto.Web.Client.Pages;
 using Netto.Web.Client.Tabs;
@@ -12,7 +11,7 @@ namespace Netto.Tests.WebClient.Pages;
 public class PlanTextTests
 {
     // The name IStringLocalizer<Plan> reads Pages/Plan.resx under.
-    private static readonly ResourceManager Resources = new("Netto.Web.Client.Pages.Plan", typeof(Plan).Assembly);
+    private static readonly ResxText Resources = ResxText.For<Plan>();
 
     // The keyboard's first stop on the page, past the bar and its tabs to the tab's own content.
     [Theory]
@@ -22,7 +21,7 @@ public class PlanTextTests
     [InlineData(PlanTab.Compare, "Skip to the comparison")]
     public void PlanResx_skipLink_saysWhereItGoesOnEachTab(PlanTab tab, string expected)
     {
-        Resources.GetString(PlanText.SkipTo(tab), CultureInfo.InvariantCulture).ShouldBe(expected);
+        Resources.Get(PlanText.SkipTo(tab)).ShouldBe(expected);
     }
 
     // The window's title names the tab, as a new page would.
@@ -33,7 +32,7 @@ public class PlanTextTests
     [InlineData(PlanTab.Compare, "Compare plans: Netto")]
     public void PlanResx_pageTitle_namesEachTab(PlanTab tab, string expected)
     {
-        Resources.GetString(PlanText.PageTitle(tab), CultureInfo.InvariantCulture).ShouldBe(expected);
+        Resources.Get(PlanText.PageTitle(tab)).ShouldBe(expected);
     }
 
     // A tab added later fails here until it has both.
@@ -42,7 +41,7 @@ public class PlanTextTests
     {
         Enum.GetValues<PlanTab>()
             .SelectMany(tab => new[] { PlanText.PageTitle(tab), PlanText.SkipTo(tab) })
-            .Where(key => string.IsNullOrWhiteSpace(Resources.GetString(key, CultureInfo.InvariantCulture)))
+            .Where(key => string.IsNullOrWhiteSpace(Resources.Get(key)))
             .ShouldBeEmpty();
     }
 
@@ -68,7 +67,7 @@ public class PlanTextTests
     public void PlanResx_everyLineOfTheNotes_hasItsText()
     {
         PlanText.Assumptions.Concat(PlanText.Limits).Concat([PlanText.LimitTaxCalcNote])
-            .Where(key => string.IsNullOrWhiteSpace(Resources.GetString(key, CultureInfo.InvariantCulture)))
+            .Where(key => string.IsNullOrWhiteSpace(Resources.Get(key)))
             .ShouldBeEmpty();
     }
 
@@ -83,7 +82,7 @@ public class PlanTextTests
     [Fact]
     public void PlanResx_assumedSummary_countsTheAssumptions()
     {
-        var summary = string.Format(CultureInfo.InvariantCulture, Resources.GetString(PlanText.AssumedSummary, CultureInfo.InvariantCulture)!, PlanText.Assumptions.Count);
+        var summary = Resources.Format(PlanText.AssumedSummary, PlanText.Assumptions.Count);
 
         summary.ShouldBe($"{PlanText.Assumptions.Count} assumptions Netto makes");
     }
@@ -91,16 +90,13 @@ public class PlanTextTests
     [Fact]
     public void PlanResx_limitsSummary_countsWhatIsNotCounted()
     {
-        var summary = string.Format(CultureInfo.InvariantCulture, Resources.GetString(PlanText.LimitsSummary, CultureInfo.InvariantCulture)!, PlanText.Limits.Count);
+        var summary = Resources.Format(PlanText.LimitsSummary, PlanText.Limits.Count);
 
         summary.ShouldBe($"{PlanText.Limits.Count} things the figures leave out");
     }
 
     private static IEnumerable<string> ResxKeys(string prefix) =>
-        Resources.GetResourceSet(CultureInfo.InvariantCulture, createIfNotExists: true, tryParents: false)!
-            .Cast<System.Collections.DictionaryEntry>()
-            .Select(entry => (string)entry.Key)
-            .Where(key => key.StartsWith(prefix, StringComparison.Ordinal));
+        Resources.Keys.Where(key => key.StartsWith(prefix, StringComparison.Ordinal));
 
     // The river's lede says what the cards and the bar do, in two sentences at most: how a card opens is
     // its chevron's to say, and where the example comes from is Company year's, in its bubble.
@@ -140,10 +136,10 @@ public class PlanTextTests
     [InlineData("Fork_Royalty")]
     public void PlanResx_forkUnderTheSplit_isGone(string key)
     {
-        Resources.GetString(key, CultureInfo.InvariantCulture).ShouldBeNull();
+        Resources.Get(key).ShouldBeNull();
     }
 
-    private static string Text(string key) => Resources.GetString(key, CultureInfo.InvariantCulture) ?? "";
+    private static string Text(string key) => Resources.Get(key) ?? "";
 
     // A sentence ends on its full stop, or the text's end.
     private static List<string> Sentences(string text) => [.. Regex.Split(text.Trim(), @"(?<=[.!?])\s+").Where(sentence => sentence.Length > 0)];

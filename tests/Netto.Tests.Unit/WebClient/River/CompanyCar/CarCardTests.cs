@@ -1,5 +1,3 @@
-using System.Globalization;
-using System.Resources;
 using Netto.Core.CompanyCar;
 using Netto.Web.Client;
 using Netto.Web.Client.River;
@@ -17,10 +15,10 @@ namespace Netto.Tests.WebClient.River.CompanyCar;
 // rewording one leaves these tests standing.
 public class CarCardTests
 {
-    private static readonly ResourceManager Resources = new("Netto.Web.Client.River.CompanyCar.CarCard", typeof(CarCard).Assembly);
+    private static readonly ResxText Resources = ResxText.For<CarCard>();
 
     // What the engine's refusals say, which CarAndRoyaltyCardsTests reads too.
-    internal static readonly ResourceManager Refusals = new("Netto.Web.Client.River.RefusedMessage", typeof(RefusedMessage).Assembly);
+    internal static readonly ResxText Refusals = ResxText.For<RefusedMessage>();
 
     // The field of what the same car would cost privately.
     private const string PrivateCost = "river-car-private-cost";
@@ -141,7 +139,7 @@ public class CarCardTests
     {
         var html = await RenderOpenAsync<CarCard>(OptionalModule.Car, ElectricCar.WithCarPrivateCost(-1m));
 
-        (html.Contains(Refusals.GetString($"Error_{CarComparison.PrivateCostNegative}", CultureInfo.InvariantCulture) ?? "-"), html.Contains(Text("Private_Waiting")))
+        (html.Contains(Refusals.Get($"Error_{CarComparison.PrivateCostNegative}") ?? "-"), html.Contains(Text("Private_Waiting")))
             .ShouldBe((true, true));
     }
 
@@ -169,12 +167,12 @@ public class CarCardTests
     }
 
     private static string Text(string key, params object[] figures) =>
-        string.Format(CultureInfo.InvariantCulture, Resources.GetString(key, CultureInfo.InvariantCulture) ?? key, figures);
+        Resources.Format(key, figures);
 
-    private static readonly ResourceManager DrainTexts = new("Netto.Web.Client.River.DrainList", typeof(DrainList).Assembly);
+    private static readonly ResxText DrainTexts = ResxText.For<DrainList>();
 
     // A drain list's text, which CarAndRoyaltyCardsTests reads too.
-    internal static string Drains(string key) => DrainTexts.GetString(key, CultureInfo.InvariantCulture) ?? key;
+    internal static string Drains(string key) => DrainTexts.Get(key) ?? key;
 
     // The card's details, from their fold's body on.
     private static string Details(string html) =>

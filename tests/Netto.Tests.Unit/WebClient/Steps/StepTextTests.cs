@@ -1,5 +1,3 @@
-using System.Globalization;
-using System.Resources;
 using Netto.Core.Allowances;
 using Netto.Core.CompanyCar;
 using Netto.Core.CorporateTax;
@@ -24,7 +22,7 @@ namespace Netto.Tests.WebClient.Steps;
 public class StepTextTests
 {
     // The name IStringLocalizer<StepDetails> reads Steps/StepDetails.resx under.
-    private static readonly ResourceManager Resources = new("Netto.Web.Client.Steps.StepDetails", typeof(StepDetails).Assembly);
+    private static readonly ResxText Resources = ResxText.For<StepDetails>();
 
     private static readonly Dictionary<string, RuleAmount> RatesByOrigin = new()
     {
@@ -197,9 +195,7 @@ public class StepTextTests
     private static IEnumerable<string> MissingTexts(IEnumerable<Step> steps) => MissingTexts(steps.Select(StepDetail.From));
 
     private static IEnumerable<string> MissingTexts(IEnumerable<StepDetail> details) =>
-        details.SelectMany(detail => new[] { StepText.Title(detail.RuleKey), StepText.Rule(detail.RuleKey) }
-                .Concat(detail.Lines.Select(line => StepText.Line(line.Key)))
-                .Concat(detail.Sources.SelectMany(group => group.Amounts).Select(amount => StepText.Amount(amount.Key))))
-            .Distinct()
-            .Where(key => Resources.GetString(key, CultureInfo.InvariantCulture) is null);
+        Resources.Missing(details.SelectMany(detail => new[] { StepText.Title(detail.RuleKey), StepText.Rule(detail.RuleKey) }
+            .Concat(detail.Lines.Select(line => StepText.Line(line.Key)))
+            .Concat(detail.Sources.SelectMany(group => group.Amounts).Select(amount => StepText.Amount(amount.Key)))));
 }

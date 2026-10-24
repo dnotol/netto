@@ -1,5 +1,3 @@
-using System.Globalization;
-using System.Resources;
 using Netto.Core.DirectorPay;
 using Netto.Core.PersonalTax;
 using Netto.Core.Rules;
@@ -17,7 +15,7 @@ namespace Netto.Tests.WebClient.DirectorPay;
 public class PaySlipTextTests
 {
     // The name IStringLocalizer<PaySlip> reads DirectorPay/PaySlip.resx under.
-    private static readonly ResourceManager Resources = new("Netto.Web.Client.DirectorPay.PaySlip", typeof(PaySlip).Assembly);
+    private static readonly ResxText Resources = ResxText.For<PaySlip>();
 
     private static readonly Dictionary<string, RuleAmount> RatesByOrigin = new()
     {
@@ -53,7 +51,7 @@ public class PaySlipTextTests
             .Append(PaySlipText.Withheld(view.Balance.WithheldGiven))
             .Append(PaySlipText.Balance(view.Balance.Kind));
 
-        keys.Distinct().Where(key => Resources.GetString(key, CultureInfo.InvariantCulture) is null).ShouldBeEmpty();
+        keys.Distinct().Where(key => Resources.Get(key) is null).ShouldBeEmpty();
     }
 
     // A pay with a car's benefit adds its row to the tax base and its column to the statement.
@@ -64,7 +62,7 @@ public class PaySlipTextTests
         var view = GrossToNetView.From(value.ShouldNotBeNull());
 
         view.Tracks.SelectMany(track => track.Rows).Select(row => PaySlipText.Row(row.Key)).Append("ColumnBenefit").Append("AddedNote")
-            .Distinct().Where(key => Resources.GetString(key, CultureInfo.InvariantCulture) is null).ShouldBeEmpty();
+            .Distinct().Where(key => Resources.Get(key) is null).ShouldBeEmpty();
     }
 
     // A royalty beyond its limits adds its row to both tracks and says what the next 1,000 holds; one
@@ -79,14 +77,14 @@ public class PaySlipTextTests
 
         view.Tracks.SelectMany(track => track.Rows).Select(row => PaySlipText.Row(row.Key))
             .Concat([PaySlipText.FinalTax(false, true), PaySlipText.FinalTax(true, true), "FinalTaxOnRoyalty", "WithheldOnRoyalty", "NextRoyaltyNote"])
-            .Distinct().Where(key => Resources.GetString(key, CultureInfo.InvariantCulture) is null).ShouldBeEmpty();
+            .Distinct().Where(key => Resources.Get(key) is null).ShouldBeEmpty();
     }
 
     // A royalty that follows the pay rises with the next 1,000, which holds it as it is: the note says so.
     [Fact]
     public void PaySlipResx_noteOnARoyaltyThatFollowsThePay_hasAText()
     {
-        Resources.GetString("NextFollowingRoyaltyNote", CultureInfo.InvariantCulture).ShouldNotBeNull();
+        Resources.Get("NextFollowingRoyaltyNote").ShouldNotBeNull();
     }
 
     [Theory]
@@ -105,13 +103,13 @@ public class PaySlipTextTests
     {
         string[] keys = [PaySlipText.FinalTax(false), PaySlipText.FinalTax(true), "FinalTaxOnRent", "NextRentNote"];
 
-        keys.Where(key => Resources.GetString(key, CultureInfo.InvariantCulture) is null).ShouldBeEmpty();
+        keys.Where(key => Resources.Get(key) is null).ShouldBeEmpty();
     }
 
     [Fact]
     public void PaySlipResx_everyWayTheBalanceCanGo_hasAText()
     {
         Enum.GetValues<BalanceKind>().Select(PaySlipText.Balance)
-            .Where(key => Resources.GetString(key, CultureInfo.InvariantCulture) is null).ShouldBeEmpty();
+            .Where(key => Resources.Get(key) is null).ShouldBeEmpty();
     }
 }

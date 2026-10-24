@@ -1,5 +1,3 @@
-using System.Globalization;
-using System.Resources;
 using Netto.Core.Simulation;
 using Netto.Web.Client.River;
 using Netto.Web.Client.Tabs;
@@ -10,7 +8,7 @@ namespace Netto.Tests.WebClient.Tabs;
 public class OptimisationTabTextTests
 {
     // The name IStringLocalizer<OptimisationTab> reads Tabs/OptimisationTab.resx under.
-    private static readonly ResourceManager Resources = new("Netto.Web.Client.Tabs.OptimisationTab", typeof(OptimisationTab).Assembly);
+    private static readonly ResxText Resources = ResxText.For<OptimisationTab>();
 
     // The pocket with every move, the pocket after each move, a link's name and the note on a river
     // changed since its plan.
@@ -18,7 +16,7 @@ public class OptimisationTabTextTests
     public void OptimisationTabResx_everyFixedKey_hasAText()
     {
         new[] { OptimisationTabText.PlanInPocket, OptimisationTabText.After, OptimisationTabText.LinkLabel, OptimisationTabText.RiverChanged }
-            .Where(key => Resources.GetString(key, CultureInfo.InvariantCulture) is null)
+            .Where(key => Resources.Get(key) is null)
             .ShouldBeEmpty();
     }
 
@@ -43,7 +41,7 @@ public class OptimisationTabTextTests
     public void OptimisationTabResx_everyKeyFromEachPlan_hasAText(string _, MovesBaseline from)
     {
         new[] { OptimisationTabText.Eyebrow(from), OptimisationTabText.Lede(from), OptimisationTabText.FromInPocket(from), OptimisationTabText.MoreThanFrom(from), OptimisationTabText.Total(from) }
-            .Where(key => Resources.GetString(key, CultureInfo.InvariantCulture) is null)
+            .Where(key => Resources.Get(key) is null)
             .ShouldBeEmpty();
     }
 
@@ -52,7 +50,7 @@ public class OptimisationTabTextTests
     public void OptimisationTabResx_everyStateFromEachPlan_hasAText(string _, MovesBaseline from)
     {
         Enum.GetValues<MovesState>().Select(state => OptimisationTabText.State(state, from))
-            .Where(key => Resources.GetString(key, CultureInfo.InvariantCulture) is null)
+            .Where(key => Resources.Get(key) is null)
             .ShouldBeEmpty();
     }
 
@@ -60,7 +58,7 @@ public class OptimisationTabTextTests
     [Fact]
     public void FromInPocket_today_readsTodayInYourPocket()
     {
-        Resources.GetString(OptimisationTabText.FromInPocket(FromToday), CultureInfo.InvariantCulture).ShouldBe("Today, in your pocket");
+        Resources.Get(OptimisationTabText.FromInPocket(FromToday)).ShouldBe("Today, in your pocket");
     }
 
     // While no plan is starred Today, the tab says its moves are from the plan in the river as it was opened
@@ -90,7 +88,7 @@ public class OptimisationTabTextTests
     [MemberData(nameof(FromThePlan))]
     public void Text_fromThePlanInTheRiver_saysItIsThatPlan(string key, string argument, string expected)
     {
-        var text = string.Format(CultureInfo.InvariantCulture, Resources.GetString(key, CultureInfo.InvariantCulture) ?? "", argument);
+        var text = Resources.Format(key, argument);
 
         text.ShouldBe(expected);
     }
@@ -99,7 +97,7 @@ public class OptimisationTabTextTests
     public void OptimisationTabResx_everyReason_hasAText()
     {
         Enum.GetValues<MoveReasonKind>().Select(OptimisationTabText.Why)
-            .Where(key => Resources.GetString(key, CultureInfo.InvariantCulture) is null)
+            .Where(key => Resources.Get(key) is null)
             .ShouldBeEmpty();
     }
 
@@ -128,7 +126,7 @@ public class OptimisationTabTextTests
     [MemberData(nameof(Reasons))]
     public void Why_reason_saysWhatChangesWithTheMove(string kind, string[] amounts, string expected)
     {
-        var text = string.Format(CultureInfo.InvariantCulture, Resources.GetString(OptimisationTabText.Why(Enum.Parse<MoveReasonKind>(kind)), CultureInfo.InvariantCulture) ?? "", amounts);
+        var text = Resources.Format(OptimisationTabText.Why(Enum.Parse<MoveReasonKind>(kind)), amounts);
 
         text.ShouldBe(expected);
     }
@@ -137,7 +135,7 @@ public class OptimisationTabTextTests
     [Fact]
     public void LinkLabel_startsWithTheLinksTextThenNamesTheMove()
     {
-        var text = string.Format(CultureInfo.InvariantCulture, Resources.GetString(OptimisationTabText.LinkLabel, CultureInfo.InvariantCulture) ?? "",
+        var text = Resources.Format(OptimisationTabText.LinkLabel,
             "See it on The split", "Pay yourself €20,799.00 instead of €50,000.00");
 
         text.ShouldBe("See it on The split: Pay yourself €20,799.00 instead of €50,000.00");
@@ -147,7 +145,7 @@ public class OptimisationTabTextTests
     [Fact]
     public void Move_pay_saysThePayFromAndTo()
     {
-        var text = string.Format(CultureInfo.InvariantCulture, Resources.GetString(OptimisationTabText.Move(new PayMove(20_799m)), CultureInfo.InvariantCulture) ?? "", "€20,799.00", "€50,000.00");
+        var text = Resources.Format(OptimisationTabText.Move(new PayMove(20_799m)), "€20,799.00", "€50,000.00");
 
         text.ShouldBe("Pay yourself €20,799.00 instead of €50,000.00");
     }
@@ -169,7 +167,7 @@ public class OptimisationTabTextTests
             _ => throw new ArgumentOutOfRangeException(nameof(move)),
         };
 
-        var text = string.Format(CultureInfo.InvariantCulture, Resources.GetString(OptimisationTabText.Move(move), CultureInfo.InvariantCulture) ?? "",
+        var text = Resources.Format(OptimisationTabText.Move(move),
             Netto.Web.Client.Formats.Euros(amount), Netto.Web.Client.Formats.Day(date));
 
         text.ShouldBe(expected);
@@ -186,7 +184,7 @@ public class OptimisationTabTextTests
     [MemberData(nameof(Levers))]
     public void Move_lever_saysWhatTheCompanyPays(Move move, string amount, string expected)
     {
-        var text = string.Format(CultureInfo.InvariantCulture, Resources.GetString(OptimisationTabText.Move(move), CultureInfo.InvariantCulture) ?? "", amount);
+        var text = Resources.Format(OptimisationTabText.Move(move), amount);
 
         text.ShouldBe(expected);
     }
@@ -196,7 +194,7 @@ public class OptimisationTabTextTests
     [Fact]
     public void Move_royaltyFollowingThePay_saysTheShareAndThatThePayStaysWithinWhatTheCompanyPays()
     {
-        var text = string.Format(CultureInfo.InvariantCulture, Resources.GetString(OptimisationTabText.Move(new CopyrightFollowsPayMove()), CultureInfo.InvariantCulture) ?? "",
+        var text = Resources.Format(OptimisationTabText.Move(new CopyrightFollowsPayMove()),
             "75%");
 
         text.ShouldBe("Let your copyright royalty follow your pay, at what a ruling accepts for 75% of your time spent creating, your pay kept within what the company can pay beside it");

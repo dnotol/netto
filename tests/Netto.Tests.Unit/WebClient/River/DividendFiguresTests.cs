@@ -1,5 +1,3 @@
-using System.Globalization;
-using System.Resources;
 using Netto.Web.Client.River;
 using Shouldly;
 
@@ -11,7 +9,7 @@ namespace Netto.Tests.WebClient.River;
 public class DividendFiguresTests
 {
     // The name IStringLocalizer<DividendCard> reads River/DividendCard.resx under.
-    private static readonly ResourceManager Resources = new("Netto.Web.Client.River.DividendCard", typeof(DividendCard).Assembly);
+    private static readonly ResxText Resources = ResxText.For<DividendCard>();
 
     private static readonly RiverInputs Prepaid = RiverInputs.Example.WithAdvancePayment(0, 7_500m).WithTaxWithheld(11_334m);
 
@@ -41,7 +39,7 @@ public class DividendFiguresTests
     public void DividendCardResx_everyLine_hasALabel()
     {
         new[] { DividendFigures.ProfitAfterTax, DividendFigures.Dividend }
-            .Where(key => Resources.GetString(key, CultureInfo.InvariantCulture) is null)
+            .Where(key => Resources.Get(key) is null)
             .ShouldBeEmpty();
     }
 

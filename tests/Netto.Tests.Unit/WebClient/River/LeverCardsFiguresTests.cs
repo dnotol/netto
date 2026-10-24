@@ -1,5 +1,3 @@
-using System.Globalization;
-using System.Resources;
 using System.Text.RegularExpressions;
 using Netto.Web.Client.River;
 using Shouldly;
@@ -15,9 +13,9 @@ namespace Netto.Tests.WebClient.River;
 public class LeverCardsFiguresTests
 {
     // The names IStringLocalizer<TComponent> reads River/<Component>.resx under.
-    private static readonly ResourceManager DrainListResources = new("Netto.Web.Client.River.DrainList", typeof(DrainList).Assembly);
+    private static readonly ResxText DrainListResources = ResxText.For<DrainList>();
 
-    private static readonly ResourceManager ConditionListResources = new("Netto.Web.Client.River.ConditionList", typeof(ConditionList).Assembly);
+    private static readonly ResxText ConditionListResources = ResxText.For<ConditionList>();
 
     // An amount as Formats writes it, a share among them, signed or not.
     private static readonly Regex Amounts = new("[−+]?€[0-9,]+(?:[.][0-9]+)?|[0-9]+(?:[.][0-9]+)?%");
@@ -274,7 +272,7 @@ public class LeverCardsFiguresTests
     {
         var drain = new Drain("left", DrainKind.PassedOn, 1m, module);
 
-        DrainListResources.GetString(DrainListText.Destination(drain), CultureInfo.InvariantCulture).ShouldBe(expected);
+        DrainListResources.Get(DrainListText.Destination(drain)).ShouldBe(expected);
     }
 
     // A figure list draws only the lines that move its figure, as a drain list draws only those that move
@@ -294,9 +292,7 @@ public class LeverCardsFiguresTests
     [InlineData(5, "5 conditions Netto cannot check")]
     public void ConditionsHeading_count_isTheConditionsNettoCannotCheck(int count, string expected)
     {
-        var heading = ConditionListResources.GetString(ConditionListText.Heading(count), CultureInfo.InvariantCulture) ?? "";
-
-        string.Format(CultureInfo.InvariantCulture, heading, count).ShouldBe(expected);
+        ConditionListResources.Format(ConditionListText.Heading(count), count).ShouldBe(expected);
     }
 
     // The card of that fold's name on the Plan page, every card open.

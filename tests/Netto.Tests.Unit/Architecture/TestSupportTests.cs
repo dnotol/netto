@@ -18,6 +18,13 @@ public class TestSupportTests
         Declaring(@"\bclass\s+\w+[^{;]*:\s*[^{;]*\bIBrowserStorage\b").ShouldBeEmpty();
     }
 
+    // A resource manager reading a .resx: ResxText is the one place that does.
+    [Fact]
+    public void TestSources_resxTexts_areReadOnlyThroughResxText()
+    {
+        Declaring(@"\bResourceManager\b").ShouldBeEmpty();
+    }
+
     // The test sources outside Support, and this file, whose patterns would match themselves.
     private static IEnumerable<(string Name, string Text)> Sources() =>
         Directory.EnumerateFiles(Folder, "*.cs", SearchOption.AllDirectories)

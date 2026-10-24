@@ -1,5 +1,3 @@
-using System.Globalization;
-using System.Resources;
 using Netto.Core.CompanyCar;
 using Netto.Web.Client.River;
 using Netto.Web.Client.River.CompanyCar;
@@ -11,7 +9,7 @@ namespace Netto.Tests.WebClient.River.CompanyCar;
 // its .resx would show on screen as the key itself.
 public class CarCardTextTests
 {
-    private static readonly ResourceManager Resources = new("Netto.Web.Client.River.CompanyCar.CarCard", typeof(CarCard).Assembly);
+    private static readonly ResxText Resources = ResxText.For<CarCard>();
 
     private static readonly CarRules Rules = CarRules.IncomeYear2026;
 
@@ -23,7 +21,7 @@ public class CarCardTextTests
         var comparisons = new[] { new CarComparison(40_000m, 43_000m, 1_000m), new CarComparison(40_000m, 40_000m, 0m), new CarComparison(41_000m, 40_000m, 1_000m) };
 
         comparisons.Select(CarCardText.Cash).ShouldBe(["Figure_Cash_Takes", "Figure_Cash_None", "Figure_Cash_Adds"]);
-        Missing(comparisons.Select(CarCardText.Cash)).ShouldBeEmpty();
+        Resources.Missing(comparisons.Select(CarCardText.Cash)).ShouldBeEmpty();
     }
 
     // The line's amount is the cash; its label says which way it goes.
@@ -33,7 +31,7 @@ public class CarCardTextTests
     [InlineData("Figure_Cash_Adds", "Cash the car adds")]
     public void Cash_eachWay_isLabelledByWhichWayTheCashGoes(string key, string expected)
     {
-        Resources.GetString(key, CultureInfo.InvariantCulture).ShouldBe(expected);
+        Resources.Get(key).ShouldBe(expected);
     }
 
     // The company car against the same car bought privately, each way it can fall, and the field that
@@ -50,7 +48,7 @@ public class CarCardTextTests
         };
 
         comparisons.Select(CarCardText.Private).ShouldBe(["Private_Waiting", "Private_Gain", "Private_Loss", "Private_Tie"]);
-        Missing(comparisons.Select(CarCardText.Private).Concat(["PrivateCostLabel", "PrivateCostHint"])).ShouldBeEmpty();
+        Resources.Missing(comparisons.Select(CarCardText.Private).Concat(["PrivateCostLabel", "PrivateCostHint"])).ShouldBeEmpty();
     }
 
     // The gain or the loss against the same car bought privately; the private cost it is weighed against
@@ -61,7 +59,7 @@ public class CarCardTextTests
     [InlineData("Private_Tie", "The company car costs you what a private one would.")]
     public void Private_eachWay_saysTheGainOrLossAgainstThePrivateCar(string key, string expected)
     {
-        string.Format(CultureInfo.InvariantCulture, Resources.GetString(key, CultureInfo.InvariantCulture) ?? "", "€2,000.00", "€9,000.00").ShouldBe(expected);
+        Resources.Format(key, "€2,000.00", "€9,000.00").ShouldBe(expected);
     }
 
     // Every engine's name, the private energy it is worded with, its hint and its reading.
@@ -71,7 +69,7 @@ public class CarCardTextTests
         var keys = Enum.GetValues<CarEngine>().SelectMany(engine => new[] { CarCardText.Engine(engine), CarCardText.PrivateEnergy(engine), CarCardText.PrivateEnergyHint(engine) }
             .Concat(CarCardText.Reading(engine) is { } reading ? [reading] : []));
 
-        Missing(keys).ShouldBeEmpty();
+        Resources.Missing(keys).ShouldBeEmpty();
     }
 
     // Every way the CO2 percentage is taken, and every way the company deducts the costs, with the bubble of
@@ -83,7 +81,7 @@ public class CarCardTextTests
             .Concat(["Co2_HeldToMinimum", "Co2_HeldToMaximum", "Figure_Deduction_Full", "Figure_Deduction_Rate", "Figure_Deduction_None", "Figure_Deduction_AllCarvedOut",
                 "Help_Deduction_Rate", "Help_Deduction_None", "Help_Deduction_AllCarvedOut"]);
 
-        Missing(keys).ShouldBeEmpty();
+        Resources.Missing(keys).ShouldBeEmpty();
     }
 
     // A part of the benefit's year by its months, a month begun counting whole: the whole year, one month, or
@@ -100,7 +98,7 @@ public class CarCardTextTests
 
         keys.ShouldSatisfyAllConditions(
             () => keys.ShouldBe(["Figure_Period_Year", "Figure_Period_Month", "Figure_Period"]),
-            () => Missing(keys).ShouldBeEmpty());
+            () => Resources.Missing(keys).ShouldBeEmpty());
     }
 
     // Every line the car's figures draw, and what its bubble says, on cars that take each of them: new or
@@ -121,7 +119,7 @@ public class CarCardTextTests
                 .SelectMany(CarFigures.Cash))
             .ToList();
 
-        Missing(lines.Select(line => line.Key).Concat(lines.Select(line => line.Help).OfType<string>()).Distinct()).ShouldBeEmpty();
+        Resources.Missing(lines.Select(line => line.Key).Concat(lines.Select(line => line.Help).OfType<string>()).Distinct()).ShouldBeEmpty();
     }
 
     // What a figure cannot say, kept as a sentence in sight, says it in fifteen words at most.
@@ -137,7 +135,7 @@ public class CarCardTextTests
     [InlineData("Private_Tie")]
     public void CarCardResx_sentenceKeptInSight_isAtMostFifteenWords(string key)
     {
-        var sentence = string.Format(CultureInfo.InvariantCulture, Resources.GetString(key, CultureInfo.InvariantCulture) ?? "", "€2,000.00", "€9,000.00");
+        var sentence = Resources.Format(key, "€2,000.00", "€9,000.00");
 
         sentence.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length.ShouldBeInRange(1, 15);
     }
@@ -147,7 +145,7 @@ public class CarCardTextTests
     [Fact]
     public void CarCardResx_everySummary_hasAText()
     {
-        Missing([CarCardText.Summary(true, false), CarCardText.Summary(true, true), CarCardText.Summary(false, false), CarCardText.Summary(false, true)])
+        Resources.Missing([CarCardText.Summary(true, false), CarCardText.Summary(true, true), CarCardText.Summary(false, false), CarCardText.Summary(false, true)])
             .ShouldBeEmpty();
     }
 
@@ -184,8 +182,6 @@ public class CarCardTextTests
         ];
         var phrases = variations.SelectMany(inputs => CarSettingsView.From(inputs).Car);
 
-        Missing(phrases.Select(phrase => phrase.Key).Append("CarTitle")).ShouldBeEmpty();
+        Resources.Missing(phrases.Select(phrase => phrase.Key).Append("CarTitle")).ShouldBeEmpty();
     }
-
-    private static IEnumerable<string> Missing(IEnumerable<string> keys) => keys.Where(key => Resources.GetString(key, CultureInfo.InvariantCulture) is null);
 }

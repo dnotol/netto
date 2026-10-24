@@ -1,5 +1,3 @@
-using System.Globalization;
-using System.Resources;
 using Netto.Web.Client.River;
 using Shouldly;
 
@@ -9,14 +7,12 @@ namespace Netto.Tests.WebClient.River;
 public class RiverOutlineTextTests
 {
     // The name IStringLocalizer<RiverOutline> reads River/RiverOutline.resx under.
-    private static readonly ResourceManager Resources = new("Netto.Web.Client.River.RiverOutline", typeof(RiverOutline).Assembly);
-
-    private static string? Text(string key) => Resources.GetString(key, CultureInfo.InvariantCulture);
+    private static readonly ResxText Resources = ResxText.For<RiverOutline>();
 
     [Fact]
     public void RiverOutlineResx_label_namesTheOutline()
     {
-        Text(RiverOutlineText.Label).ShouldBe("River outline");
+        Resources.Get(RiverOutlineText.Label).ShouldBe("River outline");
     }
 
     // One figure of the card's summary, in the summary's own words.
@@ -29,7 +25,7 @@ public class RiverOutlineTextTests
     [InlineData(GlanceKind.LeftAfterTax, "€120,000.00 left after tax")]
     public void RiverOutlineResx_everyGlance_saysItsFigureInTheSummarysWords(GlanceKind kind, string expected)
     {
-        string.Format(CultureInfo.InvariantCulture, Text(RiverOutlineText.Glance(kind)) ?? "", "€120,000.00").ShouldBe(expected);
+        Resources.Format(RiverOutlineText.Glance(kind), "€120,000.00").ShouldBe(expected);
     }
 
     // The toggle in the outline's head says what it will do, and a screen reader hears which cards.
@@ -38,6 +34,6 @@ public class RiverOutlineTextTests
     [InlineData(true, "Fold all", "Fold all cards")]
     public void RiverOutlineResx_toggle_saysWhatItWillDo(bool allOpen, string label, string name)
     {
-        (Text(RiverOutlineText.All(allOpen)), Text(RiverOutlineText.AllName(allOpen))).ShouldBe((label, name));
+        (Resources.Get(RiverOutlineText.All(allOpen)), Resources.Get(RiverOutlineText.AllName(allOpen))).ShouldBe((label, name));
     }
 }

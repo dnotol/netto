@@ -1,5 +1,3 @@
-using System.Globalization;
-using System.Resources;
 using Netto.Core.Allowances;
 using Netto.Core.CompanyCar;
 using Netto.Core.Copyright;
@@ -21,21 +19,21 @@ namespace Netto.Tests.WebClient.River;
 public class RiverTextTests
 {
     // The names IStringLocalizer<TComponent> reads River/<Component>.resx under.
-    private static readonly ResourceManager OriginChipResources = new("Netto.Web.Client.River.OriginChip", typeof(OriginChip).Assembly);
+    private static readonly ResxText OriginChipResources = ResxText.For<OriginChip>();
 
-    private static readonly ResourceManager DrainListResources = new("Netto.Web.Client.River.DrainList", typeof(DrainList).Assembly);
+    private static readonly ResxText DrainListResources = ResxText.For<DrainList>();
 
-    private static readonly ResourceManager RefusedMessageResources = new("Netto.Web.Client.River.RefusedMessage", typeof(RefusedMessage).Assembly);
+    private static readonly ResxText RefusedMessageResources = ResxText.For<RefusedMessage>();
 
-    private static readonly ResourceManager ModuleCardResources = new("Netto.Web.Client.River.ModuleCard", typeof(ModuleCard).Assembly);
+    private static readonly ResxText ModuleCardResources = ResxText.For<ModuleCard>();
 
-    private static readonly ResourceManager ConditionListResources = new("Netto.Web.Client.River.ConditionList", typeof(ConditionList).Assembly);
+    private static readonly ResxText ConditionListResources = ResxText.For<ConditionList>();
 
-    private static readonly ResourceManager CompositionMenuResources = new("Netto.Web.Client.River.CompositionMenu", typeof(CompositionMenu).Assembly);
+    private static readonly ResxText CompositionMenuResources = ResxText.For<CompositionMenu>();
 
-    private static readonly ResourceManager TakenOutNoticeResources = new("Netto.Web.Client.River.TakenOutNotice", typeof(TakenOutNotice).Assembly);
+    private static readonly ResxText TakenOutNoticeResources = ResxText.For<TakenOutNotice>();
 
-    private static readonly ResourceManager InfoBubbleResources = new("Netto.Web.Client.River.InfoBubble", typeof(InfoBubble).Assembly);
+    private static readonly ResxText InfoBubbleResources = ResxText.For<InfoBubble>();
 
     // The conditions of every lever the river shows, which the shared list words through one .resx.
     private static readonly IReadOnlyList<LeverCondition> LeverConditions =
@@ -57,7 +55,7 @@ public class RiverTextTests
         var keys = Enum.GetValues<InputOrigin>().Where(origin => origin != InputOrigin.None)
             .SelectMany(origin => new[] { OriginChipText.Origin(origin), OriginChipText.Hint(origin) });
 
-        Missing(OriginChipResources, keys).ShouldBeEmpty();
+        OriginChipResources.Missing(keys).ShouldBeEmpty();
     }
 
     // The example, with a reserve so every drain has an amount, every kind of voucher and every
@@ -97,7 +95,7 @@ public class RiverTextTests
             .Concat(DividendView.From(year).Drains)
             .ToList();
 
-        Missing(DrainListResources, drains.Select(drain => DrainListText.Drain(drain.Key)).Concat(drains.Select(DrainListText.Destination)))
+        DrainListResources.Missing(drains.Select(drain => DrainListText.Drain(drain.Key)).Concat(drains.Select(DrainListText.Destination)))
             .ShouldBeEmpty();
     }
 
@@ -106,7 +104,7 @@ public class RiverTextTests
     [Fact]
     public void DrainListResx_textADrainsBubbleCites_hasAText()
     {
-        Missing(DrainListResources, [DrainListText.Source]).ShouldBeEmpty();
+        DrainListResources.Missing([DrainListText.Source]).ShouldBeEmpty();
     }
 
     [Fact]
@@ -131,13 +129,13 @@ public class RiverTextTests
             Netto.Core.Calendar.PaymentCalendar.BilledContributionsNegative,
         };
 
-        Missing(RefusedMessageResources, errors.Select(RefusedMessageText.Error)).ShouldBeEmpty();
+        RefusedMessageResources.Missing(errors.Select(RefusedMessageText.Error)).ShouldBeEmpty();
     }
 
     [Fact]
     public void ConditionListResx_everyConditionOfEveryLever_hasAText()
     {
-        Missing(ConditionListResources, LeverConditions.Select(condition => ConditionListText.Condition(condition.Key))).ShouldBeEmpty();
+        ConditionListResources.Missing(LeverConditions.Select(condition => ConditionListText.Condition(condition.Key))).ShouldBeEmpty();
     }
 
     // One text per key: a lever reusing another's key would show the other lever's words.
@@ -152,7 +150,7 @@ public class RiverTextTests
     [InlineData(5)]
     public void ConditionListResx_headingForAnyCount_hasAText(int count)
     {
-        Missing(ConditionListResources, [ConditionListText.Heading(count)]).ShouldBeEmpty();
+        ConditionListResources.Missing([ConditionListText.Heading(count)]).ShouldBeEmpty();
     }
 
     [Fact]
@@ -161,7 +159,7 @@ public class RiverTextTests
         var keys = PlanComposition.Modules.SelectMany(module =>
             new[] { CompositionMenuText.Title(module), CompositionMenuText.Description(module), CompositionMenuText.Brings(module) });
 
-        Missing(CompositionMenuResources, keys).ShouldBeEmpty();
+        CompositionMenuResources.Missing(keys).ShouldBeEmpty();
     }
 
     [Theory]
@@ -170,29 +168,26 @@ public class RiverTextTests
     [InlineData(3)]
     public void CompositionMenuResx_buttonLabelForAnyCount_hasAText(int count)
     {
-        Missing(CompositionMenuResources, [CompositionMenuText.ButtonLabel(count)]).ShouldBeEmpty();
+        CompositionMenuResources.Missing([CompositionMenuText.ButtonLabel(count)]).ShouldBeEmpty();
     }
 
     [Fact]
     public void TakenOutNoticeResx_everyOptionalModule_hasAText()
     {
-        Missing(TakenOutNoticeResources, PlanComposition.Modules.Select(TakenOutNoticeText.TakenOut)).ShouldBeEmpty();
+        TakenOutNoticeResources.Missing(PlanComposition.Modules.Select(TakenOutNoticeText.TakenOut)).ShouldBeEmpty();
     }
 
     // An info bubble's (i) is named by what it says more about.
     [Fact]
     public void InfoBubbleResx_nameOfItsIcon_hasAText()
     {
-        Missing(InfoBubbleResources, [InfoBubbleText.MoreAbout]).ShouldBeEmpty();
+        InfoBubbleResources.Missing([InfoBubbleText.MoreAbout]).ShouldBeEmpty();
     }
 
     // The rate in a card's summary says what it measures, worded once for every card.
     [Fact]
     public void ModuleCardResx_rates_haveTheirTexts()
     {
-        Missing(ModuleCardResources, [ModuleCardText.ToYou, ModuleCardText.PassesOn]).ShouldBeEmpty();
+        ModuleCardResources.Missing([ModuleCardText.ToYou, ModuleCardText.PassesOn]).ShouldBeEmpty();
     }
-
-    private static IEnumerable<string> Missing(ResourceManager resources, IEnumerable<string> keys) =>
-        keys.Distinct().Where(key => resources.GetString(key, CultureInfo.InvariantCulture) is null);
 }

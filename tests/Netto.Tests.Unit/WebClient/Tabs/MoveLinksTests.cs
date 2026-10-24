@@ -1,7 +1,6 @@
-using System.Globalization;
-using System.Resources;
 using Netto.Core.Simulation;
 using Netto.Web.Client.River;
+using Netto.Web.Client.River.Copyright;
 using Netto.Web.Client.Tabs;
 using Shouldly;
 
@@ -18,18 +17,18 @@ public class MoveLinksTests
         .AddToPlan(OptionalModule.Vouchers).AddToPlan(OptionalModule.Rent).AddToPlan(OptionalModule.Copyright);
 
     // Each move with the card it acts on, and the card component whose .resx holds its title.
-    public static TheoryData<Move, string, string> Cards => new()
+    public static TheoryData<Move, string, Type> Cards => new()
     {
-        { new PayMove(20_799m), "split", "Netto.Web.Client.River.SplitCard" },
-        { new EcoVouchersMove(250m), "vouchers", "Netto.Web.Client.River.VoucherCard" },
-        { new SportCultureVouchersMove(100m), "vouchers", "Netto.Web.Client.River.VoucherCard" },
-        { new RentMove(1_380m), "rent", "Netto.Web.Client.River.RentCard" },
-        { new CopyrightFollowsPayMove(), "copyright", "Netto.Web.Client.River.Copyright.CopyrightCard" },
+        { new PayMove(20_799m), "split", typeof(SplitCard) },
+        { new EcoVouchersMove(250m), "vouchers", typeof(VoucherCard) },
+        { new SportCultureVouchersMove(100m), "vouchers", typeof(VoucherCard) },
+        { new RentMove(1_380m), "rent", typeof(RentCard) },
+        { new CopyrightFollowsPayMove(), "copyright", typeof(CopyrightCard) },
     };
 
     [Theory]
     [MemberData(nameof(Cards))]
-    public void To_moveWithItsCardOnThePlanTab_linksTheCard(Move move, string card, string _)
+    public void To_moveWithItsCardOnThePlanTab_linksTheCard(Move move, string card, Type _)
     {
         MoveLinks.To(move, EveryLever).ShouldBe(new MoveLink(PlanTab.Plan, card));
     }
@@ -37,7 +36,7 @@ public class MoveLinksTests
     // The card a link opens is one the river's outline knows, by the name its fold is remembered under.
     [Theory]
     [MemberData(nameof(Cards))]
-    public void To_moveWithItsCardOnThePlanTab_linksACardOfTheRiversOrder(Move move, string card, string _)
+    public void To_moveWithItsCardOnThePlanTab_linksACardOfTheRiversOrder(Move move, string card, Type _)
     {
         (MoveLinks.To(move, EveryLever)?.Card, OutlineRows.Order.Contains(card)).ShouldBe((card, true));
     }
@@ -45,7 +44,7 @@ public class MoveLinksTests
     // The Plan tab, with the card to open on arrival.
     [Theory]
     [MemberData(nameof(Cards))]
-    public void Href_card_isThePlanTabWithTheCard(Move move, string card, string _)
+    public void Href_card_isThePlanTabWithTheCard(Move move, string card, Type _)
     {
         MoveLinks.To(move, EveryLever).ShouldNotBeNull().Href.ShouldBe($"plan?card={card}");
     }
@@ -53,9 +52,9 @@ public class MoveLinksTests
     // « See it on » the card's own title, as its heading reads.
     [Theory]
     [MemberData(nameof(Cards))]
-    public void Text_card_namesTheCardsTitle(Move move, string _, string cardResources)
+    public void Text_card_namesTheCardsTitle(Move move, string _, Type card)
     {
-        var title = new ResourceManager(cardResources, typeof(OptimisationTab).Assembly).GetString("Title", CultureInfo.InvariantCulture);
+        var title = ResxText.For(card).Get("Title");
 
         Text(MoveLinks.To(move, EveryLever).ShouldNotBeNull()).ShouldBe($"See it on {title.ShouldNotBeNull()}");
     }
@@ -111,14 +110,13 @@ public class MoveLinksTests
     [MemberData(nameof(Payments))]
     public void Text_payment_namesTheTab(Move move)
     {
-        var tab = new ResourceManager("Netto.Web.Client.Tabs.PlanTabBar", typeof(OptimisationTab).Assembly)
-            .GetString(PlanTabBarText.Name(PlanTab.WhenToPay), CultureInfo.InvariantCulture);
+        var tab = ResxText.For<PlanTabBar>().Get(PlanTabBarText.Name(PlanTab.WhenToPay));
 
         Text(MoveLinks.To(move, RiverInputs.Example).ShouldNotBeNull()).ShouldBe($"See it in {tab.ShouldNotBeNull()}");
     }
 
     private static string? Text(MoveLink link) =>
-        new ResourceManager("Netto.Web.Client.Tabs.OptimisationTab", typeof(OptimisationTab).Assembly).GetString(OptimisationTabText.Link(link), CultureInfo.InvariantCulture);
+        ResxText.For<OptimisationTab>().Get(OptimisationTabText.Link(link));
 
     private static YearResult Year(RiverInputs river) => river.Run().Year.ShouldNotBeNull();
 }
