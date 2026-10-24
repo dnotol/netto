@@ -158,6 +158,7 @@ public class CopyrightCardTextTests
     [InlineData("Limits_Average", 12)]
     public void CopyrightCardResx_sentenceKeptInSight_isShort(string key, int words)
     {
+        Resources.Get(key).ShouldNotBeNull();
         var sentence = Resources.Format(key,
             "€30,000.00", "€24,000.00", "€24,000.00", "€77,220.00", "€6,000.00", 2026, "30%");
 

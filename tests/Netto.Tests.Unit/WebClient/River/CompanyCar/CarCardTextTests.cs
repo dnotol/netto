@@ -135,6 +135,7 @@ public class CarCardTextTests
     [InlineData("Private_Tie")]
     public void CarCardResx_sentenceKeptInSight_isAtMostFifteenWords(string key)
     {
+        Resources.Get(key).ShouldNotBeNull();
         var sentence = Resources.Format(key, "€2,000.00", "€9,000.00");
 
         sentence.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length.ShouldBeInRange(1, 15);
