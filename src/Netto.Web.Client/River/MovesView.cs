@@ -65,7 +65,7 @@ internal sealed record MovesView(
         SportCultureVouchersMove sport => river.InPlan(OptionalModule.Vouchers) && river.Vouchers.SportCultureVouchers.Value == sport.Amount,
         RentMove rent => river.InPlan(OptionalModule.Rent) && river.Rent.Rent.Value == rent.Rent,
         CopyrightFollowsPayMove => river.InPlan(OptionalModule.Copyright) && river.Copyright.FollowsPay.Value,
-        _ => false,
+        _ => throw new ArgumentOutOfRangeException(nameof(move), move, "A move the river cannot tell is applied."),
     };
 
     // The river with the move's values, everything else as it is. Applying a lever's move is the one

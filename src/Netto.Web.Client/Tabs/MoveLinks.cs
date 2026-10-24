@@ -19,7 +19,7 @@ internal static class MoveLinks
         EcoVouchersMove or SportCultureVouchersMove => Lever(OptionalModule.Vouchers, inputs),
         RentMove => Lever(OptionalModule.Rent, inputs),
         CopyrightFollowsPayMove => Lever(OptionalModule.Copyright, inputs),
-        _ => null,
+        _ => throw new ArgumentOutOfRangeException(nameof(move), move, "A move the tab has no place to link to."),
     };
 
     private static MoveLink? Lever(OptionalModule module, RiverInputs inputs) =>

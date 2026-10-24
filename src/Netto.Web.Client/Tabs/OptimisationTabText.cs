@@ -46,6 +46,21 @@ internal static class OptimisationTabText
         _ => throw new ArgumentOutOfRangeException(nameof(move), move, "A move the card has no words for."),
     };
 
+    // What fills the {0} and {1} of the move's sentence (Move), formatted as the page reads them: the pay
+    // and the pay it is from, a payment's amount and day, a voucher's or the rent's amount, the creative
+    // share the royalty follows the pay at.
+    public static object[] MoveArguments(Move move, decimal fromPay, decimal creativeShare) => move switch
+    {
+        PayMove pay => [Formats.Euros(pay.Pay), Formats.Euros(fromPay)],
+        CompanyAdvancePaymentMove payment => [Formats.Euros(payment.Amount), Formats.Day(payment.Date)],
+        DirectorAdvancePaymentMove payment => [Formats.Euros(payment.Amount), Formats.Day(payment.Date)],
+        EcoVouchersMove eco => [Formats.Euros(eco.Amount)],
+        SportCultureVouchersMove sport => [Formats.Euros(sport.Amount)],
+        RentMove rent => [Formats.Euros(rent.Rent)],
+        CopyrightFollowsPayMove => [Formats.Percentage(creativeShare)],
+        _ => throw new ArgumentOutOfRangeException(nameof(move), move, "A move the card has no words for."),
+    };
+
     // Why there are no moves, or that there are, from the plan they are measured from; the line opening the
     // moves names it: « From « {0} », as you opened or saved it: ».
     public static string State(MovesState state, MovesBaseline from) => $"State_{state}{(state == MovesState.Moves ? Named(from) : Plan(from))}";

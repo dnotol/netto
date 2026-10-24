@@ -122,17 +122,10 @@
     // The saved plan the moves are from, named in the texts that name it.
     private string Name => _view.From.Name ?? "";
 
-    private string What(PlannedMove move) => move.Move switch
-    {
-        PayMove pay => L[OptimisationTabText.Move(pay), Formats.Euros(pay.Pay), Formats.Euros(_view.FromPay)],
-        CompanyAdvancePaymentMove payment => L[OptimisationTabText.Move(payment), Formats.Euros(payment.Amount), Formats.Day(payment.Date)],
-        DirectorAdvancePaymentMove payment => L[OptimisationTabText.Move(payment), Formats.Euros(payment.Amount), Formats.Day(payment.Date)],
-        EcoVouchersMove eco => L[OptimisationTabText.Move(eco), Formats.Euros(eco.Amount)],
-        SportCultureVouchersMove sport => L[OptimisationTabText.Move(sport), Formats.Euros(sport.Amount)],
-        RentMove rent => L[OptimisationTabText.Move(rent), Formats.Euros(rent.Rent)],
-        CopyrightFollowsPayMove following => L[OptimisationTabText.Move(following), Formats.Percentage(_view.From.Plan.Copyright.CreativeShare.Value ?? 0m)],
-        _ => "",
-    };
+    // What the move changes, in words (OptimisationTabText); a move it has none for is refused.
+    private string What(PlannedMove move) =>
+        L[OptimisationTabText.Move(move.Move),
+            OptimisationTabText.MoveArguments(move.Move, _view.FromPay, _view.From.Plan.Copyright.CreativeShare.Value ?? 0m)];
 
     // Why the move helps, its sentences one after the other, every amount in euros.
     private string Why(PlannedMove move) =>
