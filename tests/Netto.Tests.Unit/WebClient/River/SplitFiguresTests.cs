@@ -53,6 +53,7 @@ public class SplitFiguresTests
     {
         { "the example", RiverInputs.Example },
         { "the company paying the contributions", RiverInputs.Example.WithContributionsPaidBy(ContributionsPaidBy.Company) },
+        { "the company paying the contributions and the fund's fee", RiverInputs.Example.WithContributionsPaidBy(ContributionsPaidBy.Company).WithFundFeeRate(0.0305m) },
         { "beside a royalty that follows the pay", FollowingRoyalty.WithContributionsPaidBy(ContributionsPaidBy.Company) },
         { "beside a fixed royalty", RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithRoyalty(10_000m).WithContributionsPaidBy(ContributionsPaidBy.Company) },
     };
