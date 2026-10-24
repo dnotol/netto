@@ -40,12 +40,18 @@ public sealed record RiverInputs(
     Input<WithholdingCategory> DividendCategory,
     Input<decimal> EarlierProfits,
     Input<ContributionsPaidBy> ContributionsPaidBy,
-    Input<decimal?> BilledContributions)
+    Input<decimal?> BilledContributions,
+    Input<decimal?> FundFeeRate)
 {
     // What the social insurance fund bills each quarter as provisional contributions, from its notice:
     // none until the user gives it, with no example, since it rests on the income of three years
     // before. Only the calendar reads it; the river's figures use the final contribution.
     public static Input<decimal?> NoBilledContributions { get; } = new(null, InputOrigin.Yours);
+
+    // The rate of the fund's management fee, a fraction: each fund's own, set every year by the minister
+    // and stated on its notice, so it has no default and no example. None until the user gives it, and
+    // its origin, the user's, shows only once it is given.
+    public static Input<decimal?> NoFundFeeRate { get; } = new(null, InputOrigin.Yours);
 
     // The only year with every layer's amounts; choosing the year is a later item.
     private const int ExampleYear = 2026;
@@ -103,7 +109,8 @@ public sealed record RiverInputs(
         new Input<WithholdingCategory>(WithholdingCategory.VvprbisThirdYearOnwards, InputOrigin.Default),
         ExampleNothing,
         new Input<ContributionsPaidBy>(Core.SocialContributions.ContributionsPaidBy.Director, InputOrigin.Default),
-        NoBilledContributions);
+        NoBilledContributions,
+        NoFundFeeRate);
 
     // The most the split can give as pay (YearSimulation.PayCeiling): the profit before pay, what the
     // vouchers, the expense allowances, the rent, the car and a fixed royalty in the plan leave of what
@@ -234,6 +241,9 @@ public sealed record RiverInputs(
 
     public RiverInputs WithBilledContributions(decimal? billed) => this with { BilledContributions = Yours(billed) };
 
+    // A fraction: 3.05% is 0.0305. Cleared, the rate is none again.
+    public RiverInputs WithFundFeeRate(decimal? rate) => this with { FundFeeRate = Yours(rate) };
+
     public bool InPlan(OptionalModule module) => Composition.Holds(module);
 
     public RiverInputs AddToPlan(OptionalModule module) => this with { Composition = Composition.With(module, true) };
@@ -252,7 +262,8 @@ public sealed record RiverInputs(
     {
         if (Company is null)
         {
-            var (pay, payError) = GrossToNet.Compute(IncomeYear, DirectorPay.Value, Municipality.MunicipalRate, TaxPrepayments.Values, ContributionsPaidBy.Value);
+            var (pay, payError) = GrossToNet.Compute(
+                IncomeYear, DirectorPay.Value, Municipality.MunicipalRate, TaxPrepayments.Values, ContributionsPaidBy.Value, fundFeeRate: FundFeeRate.Value);
             return new RiverRun(pay, null, payError);
         }
 
@@ -305,6 +316,7 @@ public sealed record RiverInputs(
         AdvancePayments = AdvancePayments.Values,
         TaxPrepayments = TaxPrepayments.Values,
         ContributionsPaidBy = ContributionsPaidBy.Value,
+        FundFeeRate = FundFeeRate.Value,
         Vouchers = InPlan(OptionalModule.Vouchers) ? Vouchers.Values : VoucherGrants.None,
         Allowances = InPlan(OptionalModule.Allowances) ? Allowances.Values : ExpenseAllowances.None,
         Rent = InPlan(OptionalModule.Rent) ? Rent.Values : HomeOfficeRent.None,

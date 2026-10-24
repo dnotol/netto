@@ -145,6 +145,50 @@ public class RiverInputsTests
         RiverInputs.Example.SameBesidesPay(RiverInputs.Example.WithContributionsPaidBy(ContributionsPaidBy.Company)).ShouldBeFalse();
     }
 
+    // The fund's fee is a rate of each fund's own, with no default and no example: none until the user
+    // gives it, as the creative share.
+    [Fact]
+    public void Example_givesNoFundFeeRate()
+    {
+        (RiverInputs.Example.FundFeeRate, RiverInputs.Example.Run().Pay?.FundFee).ShouldBe((RiverInputs.NoFundFeeRate, (decimal?)0m));
+    }
+
+    [Fact]
+    public void WithFundFeeRate_rate_isYours()
+    {
+        RiverInputs.Example.WithFundFeeRate(0.0305m).FundFeeRate.ShouldBe(new Input<decimal?>(0.0305m, InputOrigin.Yours));
+    }
+
+    [Fact]
+    public void WithFundFeeRate_cleared_isNoneAgain()
+    {
+        RiverInputs.Example.WithFundFeeRate(0.0305m).WithFundFeeRate(null).FundFeeRate.ShouldBe(RiverInputs.NoFundFeeRate);
+    }
+
+    // 3.05% on the example's 50,000: 251.68 of fee (GrossToNetFundFeeTests), in the year and in the pay alone.
+    [Fact]
+    public void Run_fundFeeRate_reachesTheEngine()
+    {
+        var inputs = RiverInputs.Example.WithFundFeeRate(0.0305m);
+
+        (inputs.Run().Year?.DirectorPay.FundFee, inputs.SkipCompany().Run().Pay?.FundFee, inputs.MoveScenario().FundFeeRate)
+            .ShouldBe(((decimal?)251.68m, (decimal?)251.68m, (decimal?)0.0305m));
+    }
+
+    [Fact]
+    public void Run_fundFeeRateOutOfRange_isRefusedWithTheCompanyOrWithout()
+    {
+        var inputs = RiverInputs.Example.WithFundFeeRate(-0.01m);
+
+        (inputs.Run().Error, inputs.SkipCompany().Run().Error).ShouldBe((GrossToNet.FundFeeRateOutOfRange, GrossToNet.FundFeeRateOutOfRange));
+    }
+
+    [Fact]
+    public void SameBesidesPay_fundFeeRateChanged_isNot()
+    {
+        RiverInputs.Example.SameBesidesPay(RiverInputs.Example.WithFundFeeRate(0.0305m)).ShouldBeFalse();
+    }
+
     [Fact]
     public void WithTaxAdvancePayment_makesThatPaymentTheUsers()
     {

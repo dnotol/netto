@@ -72,12 +72,13 @@ public class PlanStorageTests
 
     // What the example holds none of is stored as the example's, as the builds before stored it: the
     // example as version 6 wrote it, with version 7's band of INASTI's company contribution, the default
-    // lower one, after the financial year.
+    // lower one, after the financial year, and its fund fee, none given, last.
     [Fact]
     public void Store_example_writesWhatItHoldsNoneOfAsTheBuildBeforeDid()
     {
         var before = PlanInputs(StoredPlanDocuments.Version6, 0).AsObject();
         before.Insert(before.IndexOf("financialYear") + 1, "companyContributionBand", JsonNode.Parse("""{"value":"Lower","origin":"Default"}"""));
+        before.Add("fundFeeRate", JsonNode.Parse("""{"value":null,"origin":"Yours"}"""));
 
         PlanStorage.Store(StoredPlanDocuments.SavedExample).GetRawText().ShouldBe(before.ToJsonString());
     }
@@ -194,11 +195,39 @@ public class PlanStorageTests
         JsonNode.Parse(PlanStorage.Write(PlanBook.Empty))!["version"]!.GetValue<int>().ShouldBe(PlanStorage.Version);
     }
 
-    // Version 7 holds the band of INASTI's company contribution the company's balance sheet is in.
+    // Version 7 holds the band of INASTI's company contribution the company's balance sheet is in, and the
+    // rate of the fund's management fee.
     [Fact]
     public void Version_isSeven()
     {
         PlanStorage.Version.ShouldBe(7);
+    }
+
+    [Fact]
+    public void Read_written_givesBackAFundFeeRate()
+    {
+        var inputs = RiverInputs.Example.WithFundFeeRate(0.0305m);
+
+        PlanStorage.Read(PlanStorage.Write(Book(("a", "Plan 1", inputs)))).Book.Plans.Single().Inputs.ShouldBe(inputs);
+    }
+
+    // The fee's rate has no default: none stored is none read back, never a rate.
+    [Fact]
+    public void Read_written_givesBackNoFundFeeRateAsNone()
+    {
+        var (read, _) = PlanStorage.Read(PlanStorage.Write(Book(("a", "Plan 1", RiverInputs.Example))));
+
+        read.Plans.Single().Inputs.ShouldNotBeNull().FundFeeRate.ShouldBe(RiverInputs.NoFundFeeRate);
+    }
+
+    // A plan of this version that does not say its fund's fee is not read as one that gave none.
+    [Fact]
+    public void Read_planMissingItsFundFeeRate_makesThatPlanUnreadable()
+    {
+        var json = Edit(PlanStorage.Write(Book(("a", "Plan 1", RiverInputs.Example))),
+            document => document["plans"]![0]!["inputs"]!.AsObject().Remove("fundFeeRate"));
+
+        PlanStorage.Read(json).Book.Plans.Single().Readable.ShouldBeFalse();
     }
 
     // The band read back is the one written, with its origin.
@@ -385,6 +414,9 @@ public class PlanStorageTests
     [InlineData(3, "companyContributionBand", 7)]
     [InlineData(5, "companyContributionBand", 7)]
     [InlineData(6, "companyContributionBand", 7)]
+    [InlineData(1, "fundFeeRate", 7)]
+    [InlineData(4, "fundFeeRate", 7)]
+    [InlineData(6, "fundFeeRate", 7)]
     public void Read_documentOfAVersionWithAMemberALaterVersionBrought_makesThatPlanUnreadable(int version, string member, int broughtBy)
     {
         var brought = Member(PlanInputs(StoredPlanDocuments.Of(broughtBy), 1), member).DeepClone();
@@ -405,6 +437,7 @@ public class PlanStorageTests
     [InlineData(6, "reserve")]
     [InlineData(7, "reserve")]
     [InlineData(7, "companyContributionBand")]
+    [InlineData(7, "fundFeeRate")]
     [InlineData(1, "composition")]
     [InlineData(2, "composition")]
     [InlineData(2, "car")]
@@ -561,6 +594,21 @@ public class PlanStorageTests
     {
         PlanStorage.Read(StoredPlanDocuments.Of(version)).Book.Plans.Select(plan => plan.Inputs?.CompanyContributionBand)
             .ShouldAllBe(band => band == new Input<CompanyContributionBand>(CompanyContributionBand.Lower, InputOrigin.Default));
+    }
+
+    // Saved before the fund's fee was asked, the plans of versions 1 to 6 have none given, so their
+    // contributions are as they were saved.
+    [Theory]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(3)]
+    [InlineData(4)]
+    [InlineData(5)]
+    [InlineData(6)]
+    public void Read_documentBeforeTheFee_givesNoFundFeeRateInAnyPlan(int version)
+    {
+        PlanStorage.Read(StoredPlanDocuments.Of(version)).Book.Plans.Select(plan => plan.Inputs?.FundFeeRate)
+            .ShouldAllBe(rate => rate == StoredPlanDocuments.NoneGiven);
     }
 
     private static PlanBook Book(params (string Id, string Name, RiverInputs Inputs)[] plans) =>

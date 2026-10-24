@@ -46,10 +46,11 @@ internal sealed record PlanBook(IReadOnlyList<SavedPlan> Plans, string? Today, s
 // cost of the car, so theirs are read with none given (2026-10-23), and versions 1 to 6 no band of
 // INASTI's company contribution, so theirs open in the lower band, the default a plan starts from, a
 // plan whose running costs held the contribution then counting it twice until they are lowered
-// (decided unattended, 2026-10-25). The car's engine, CO2, order date and statuses joined version 2
-// without raising it, since version 2 had not left the car's story branch; a plan saved by the car's
-// first build does not open (operator, 2026-10-22). The rest of the royalty's story joins version 3 the
-// same way (decided unattended, 2026-10-22).
+// (decided unattended, 2026-10-25), nor the rate of the fund's management fee, so theirs are read
+// with none given. The car's engine, CO2, order date and statuses joined version 2 without raising it,
+// since version 2 had not left the car's story branch; a plan saved by the car's first build does not
+// open (operator, 2026-10-22). The rest of the royalty's story joins version 3 the same way, and the
+// fund's fee version 7 (decided unattended, 2026-10-22 and 2026-10-25).
 internal static class PlanStorage
 {
     public const string Key = "netto.plans";
@@ -59,7 +60,7 @@ internal static class PlanStorage
 
     // 2: the company car. 3: the copyright royalty. 4: what the fund bills each quarter. 5: whether the
     // royalty follows the pay. 6: what the same car would cost privately. 7: the band of INASTI's company
-    // contribution.
+    // contribution and the rate of the fund's management fee.
     public const int Version = 7;
 
     private const int FirstVersion = 1;
@@ -183,8 +184,10 @@ internal static class PlanStorage
     // Version 6 brought what the same car would cost privately: none given.
     private static bool ToVersion6(JsonObject plan) => Add(plan["car"], "privateCost", NoneGiven);
 
-    // Version 7 brought the band of INASTI's company contribution: the lower one, the default.
-    private static bool ToVersion7(JsonObject plan) => Add(plan, "companyContributionBand", """{"value": "Lower", "origin": "Default"}""");
+    // Version 7 brought the band of INASTI's company contribution, the lower one, the default, and the
+    // rate of the fund's management fee, none given.
+    private static bool ToVersion7(JsonObject plan) =>
+        Add(plan, "companyContributionBand", """{"value": "Lower", "origin": "Default"}""") && Add(plan, "fundFeeRate", NoneGiven);
 
     // Adds a member the version before never held, or refuses a plan that already holds it: that version
     // never wrote one.
@@ -234,7 +237,8 @@ internal static class PlanStorage
         Stored(inputs.DividendCategory),
         Stored(inputs.EarlierProfits),
         Stored(inputs.ContributionsPaidBy),
-        Stored(inputs.BilledContributions));
+        Stored(inputs.BilledContributions),
+        Stored(inputs.FundFeeRate));
 
     // Null when the year has no municipal rates or no longer lists the municipality saved: a plan is
     // never opened with another rate than the one it was saved with. A plan is a Walloon resident's, the
@@ -269,7 +273,8 @@ internal static class PlanStorage
             Input(stored.DividendCategory),
             Input(stored.EarlierProfits),
             Input(stored.ContributionsPaidBy),
-            Input(stored.BilledContributions));
+            Input(stored.BilledContributions),
+            Input(stored.FundFeeRate));
     }
 
     // What the example holds none of is stored as the example's, as the format held it before
@@ -328,7 +333,8 @@ internal sealed record StoredInputs(
     StoredValue<WithholdingCategory> DividendCategory,
     StoredValue<decimal> EarlierProfits,
     StoredValue<ContributionsPaidBy> ContributionsPaidBy,
-    StoredValue<decimal?> BilledContributions);
+    StoredValue<decimal?> BilledContributions,
+    StoredValue<decimal?> FundFeeRate);
 
 internal sealed record StoredValue<T>(T Value, InputOrigin Origin);
 
