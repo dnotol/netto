@@ -440,6 +440,15 @@ public class RiverInputsTests
         (inputs.Run().Year?.CompanyContribution, inputs.PayCeiling).ShouldBe(((decimal?)1_022.38m, (decimal?)99_386.92m));
     }
 
+    // A company the law exempts owes nothing: the split shares all it earns.
+    [Fact]
+    public void Run_exempt_takesNothingOff()
+    {
+        var inputs = RiverInputs.Example.WithCompanyContributionBand(CompanyContributionBand.Exempt);
+
+        (inputs.Run().Year?.CompanyContribution, inputs.PayCeiling).ShouldBe(((decimal?)0m, (decimal?)100_409.30m));
+    }
+
     // A river that starts at the pay has no company, so no contribution to INASTI: the band stays for when
     // the company's year comes back.
     [Fact]

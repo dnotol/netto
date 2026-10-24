@@ -294,6 +294,16 @@ public class CompareRowsTests
         (row.Plan, row.Against, row.Difference).ShouldBe((CompareFigure.Money(409.30m), CompareFigure.Money(1_022.38m), new CompareDifference(DifferenceKind.More, 613.08m)));
     }
 
+    // A company the law exempts owes nothing: €0.00 against the lower band's 409.30.
+    [Fact]
+    public void Rows_companyContribution_exemptIsNothing()
+    {
+        var row = Row(Compare(RiverInputs.Example, RiverInputs.Example.WithCompanyContributionBand(Netto.Core.SocialContributions.CompanyContributionBand.Exempt)),
+            "company_contribution");
+
+        (row.Plan, row.Against, row.Difference).ShouldBe((CompareFigure.Money(409.30m), CompareFigure.Money(0m), new CompareDifference(DifferenceKind.Less, 409.30m)));
+    }
+
     // It is a cost of the company, in no layer's taxes: the taxes of the two bands differ only by the
     // corporate tax the larger contribution saves.
     [Fact]

@@ -24,6 +24,13 @@ public class CompanyYearFiguresTests
         Lines(RiverInputs.Example.WithCompanyContributionBand(CompanyContributionBand.Upper)).ShouldBe([(CompanyYearFigures.Contribution, -1_022.38m)]);
     }
 
+    // A company the law exempts owes nothing: no line of nothing.
+    [Fact]
+    public void Of_exempt_isNoLine()
+    {
+        Lines(RiverInputs.Example.WithCompanyContributionBand(CompanyContributionBand.Exempt)).ShouldBeEmpty();
+    }
+
     // Its bubble says what each band owes and the balance-sheet total between them, as the year's rules hold them.
     [Fact]
     public void Of_example_bubbleNamesEachBandsAmountAndTheThreshold()

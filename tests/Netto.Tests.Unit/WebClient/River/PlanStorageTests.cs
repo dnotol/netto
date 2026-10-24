@@ -205,6 +205,7 @@ public class PlanStorageTests
     [Theory]
     [InlineData(CompanyContributionBand.Lower)]
     [InlineData(CompanyContributionBand.Upper)]
+    [InlineData(CompanyContributionBand.Exempt)]
     public void Read_written_givesBackTheBand(CompanyContributionBand band)
     {
         var inputs = RiverInputs.Example.WithCompanyContributionBand(band);

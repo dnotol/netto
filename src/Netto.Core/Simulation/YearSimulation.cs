@@ -79,7 +79,7 @@ public static class YearSimulation
         IReadOnlyList<Step> steps =
         [
             new Step("company_contribution", Layer.Corporate, TaxableEvent.CompanyContribution, Track.TaxBaseOnly, contribution.Value,
-                contributionRules.Source, [contribution, contributionRules.BalanceSheetThreshold]) { AlsoCites = [contributionRules.Law, contributionRules.Deduction] },
+                contributionRules.Source, contributionRules.Used(scenario.CompanyContributionBand)) { AlsoCites = [contributionRules.Law, contributionRules.Deduction] },
             .. besidesPay.Years.SelectMany(year => year.Steps()),
             new Step("corporate_tax", Layer.Corporate, TaxableEvent.CompanyProfit, Track.PaidOut, company.Tax.CorporateTax,
                 corporateRules.Source, corporateRules.Amounts) { AlsoCites = [corporateRules.PayTested, corporateRules.ExcessBenefitsMemorandum] },

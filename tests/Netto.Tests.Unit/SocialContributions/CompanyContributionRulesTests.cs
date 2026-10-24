@@ -19,6 +19,7 @@ public class CompanyContributionRulesTests
     {
         { CompanyContributionBand.Lower, 409.30m },
         { CompanyContributionBand.Upper, 1_022.38m },
+        { CompanyContributionBand.Exempt, 0m },
     };
 
     [Fact]
@@ -39,6 +40,37 @@ public class CompanyContributionRulesTests
     public void Contribution_band_isThatBandsAmount(CompanyContributionBand band, decimal amount)
     {
         CompanyContributionRules.IncomeYear2026.Contribution(band).Value.ShouldBe(amount);
+    }
+
+    // A company the law exempts, a société de personnes in its first three years (art. 94, 9°) or one with
+    // no activity in a whole calendar year (art. 92bis), owes nothing, as the law says.
+    [Fact]
+    public void IncomeYear2026_exemptCompanyOwesNothingUnderTheLawsTwoExemptions()
+    {
+        var exemption = CompanyContributionRules.IncomeYear2026.Exemption;
+
+        (exemption.Key, exemption.Value, exemption.Source.Document, exemption.Source.Label)
+            .ShouldBe(("company_contribution_exempt", 0m, Law, "Law of 30.12.1992, art. 94 and 92bis"));
+    }
+
+    // A step cites the band's amount and the balance-sheet total that sets it; an exempt company's, the
+    // exemption alone, which no balance sheet sets.
+    [Theory]
+    [InlineData(CompanyContributionBand.Lower)]
+    [InlineData(CompanyContributionBand.Upper)]
+    public void Used_band_isItsAmountAndTheThreshold(CompanyContributionBand band)
+    {
+        var rules = CompanyContributionRules.IncomeYear2026;
+
+        rules.Used(band).ShouldBe([rules.Contribution(band), rules.BalanceSheetThreshold]);
+    }
+
+    [Fact]
+    public void Used_exempt_isTheExemptionAlone()
+    {
+        var rules = CompanyContributionRules.IncomeYear2026;
+
+        rules.Used(CompanyContributionBand.Exempt).ShouldBe([rules.Exemption]);
     }
 
     // The band is set by the balance-sheet total of the penultimate closed financial year as it stood on
@@ -72,6 +104,7 @@ public class CompanyContributionRulesTests
             ("BalanceSheetThreshold", "balance_sheet_threshold"),
             ("LowerBand", "company_contribution_lower_band"),
             ("UpperBand", "company_contribution_upper_band"),
+            ("Exemption", "company_contribution_exempt"),
         ]);
     }
 
@@ -94,8 +127,8 @@ public class CompanyContributionRulesTests
         var rules = CompanyContributionRules.IncomeYear2026;
 
         rules.ShouldSatisfyAllConditions(
-            () => rules.Amounts.ShouldBe([rules.BalanceSheetThreshold, rules.LowerBand, rules.UpperBand]),
-            () => rules.Amounts.Select(amount => amount.Source.Document).ShouldAllBe(document => document == Faq));
+            () => rules.Amounts.ShouldBe([rules.BalanceSheetThreshold, rules.LowerBand, rules.UpperBand, rules.Exemption]),
+            () => rules.Amounts.Select(amount => amount.Source.Document).ShouldBe([Faq, Faq, Faq, Law]));
     }
 
     // Netto counts the contribution for every company: the two cases the law exempts, which it cannot see,

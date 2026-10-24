@@ -562,6 +562,14 @@ public class SettingsViewsTests
         Phrases(CompanyYearSettingsView.From(inputs).BalanceSheet).ShouldBe([("BandLine_Upper", "2024|€879,163.44", null)]);
     }
 
+    [Fact]
+    public void BalanceSheet_exemptGiven_statesItAsYours()
+    {
+        var inputs = RiverInputs.Example.WithCompanyContributionBand(CompanyContributionBand.Exempt);
+
+        Phrases(CompanyYearSettingsView.From(inputs).BalanceSheet).ShouldBe([("BandLine_Exempt", "2024|€879,163.44", null)]);
+    }
+
     // A year without the contribution's rules has no band to state.
     [Fact]
     public void BalanceSheet_yearWithoutRules_statesNothing()

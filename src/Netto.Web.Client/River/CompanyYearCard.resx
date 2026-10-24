@@ -60,10 +60,19 @@
   <data name="Band_Upper" xml:space="preserve">
     <value>Above {0}</value>
   </data>
+  <data name="Band_Exempt" xml:space="preserve">
+    <value>Exempt</value>
+  </data>
+  <data name="BandHint" xml:space="preserve">
+    <value>Exempt: a société de personnes in its first three years whose managers and most active partners were self-employed for at most 12 of the 40 quarters before it was formed, or a company with no activity for a whole calendar year, on an attestation of the SPF Finances, owes no contribution.</value>
+  </data>
   <data name="BandLine_Lower" xml:space="preserve">
     <value>Balance-sheet total of {0} at most {1}</value>
   </data>
   <data name="BandLine_Upper" xml:space="preserve">
     <value>Balance-sheet total of {0} above {1}</value>
+  </data>
+  <data name="BandLine_Exempt" xml:space="preserve">
+    <value>Exempt from INASTI's company contribution</value>
   </data>
 </root>

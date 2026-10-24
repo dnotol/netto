@@ -30,6 +30,7 @@ public class YearSimulationCompanyContributionTests
         { 50_000m, 100_409.30m, 0m, CompanyContributionBand.Upper },
         { 21_000m, 140_000m, 20_000m, CompanyContributionBand.Upper },
         { 0m, 1_000m, 0m, CompanyContributionBand.Upper },
+        { 50_000m, 100_409.30m, 0m, CompanyContributionBand.Exempt },
     };
 
     [Fact]
@@ -48,6 +49,26 @@ public class YearSimulationCompanyContributionTests
         var result = Run(Scenario(band: band));
 
         (result.CompanyContribution, result.ProfitBeforePay).ShouldBe((contribution, 100_409.30m - contribution));
+    }
+
+    // A company the law exempts owes nothing: what it earns is what the levers and the split start from.
+    [Fact]
+    public void Run_2026Exempt_leavesWhatTheCompanyEarnsWhole()
+    {
+        var result = Run(Scenario(band: CompanyContributionBand.Exempt));
+
+        (result.CompanyContribution, result.ProfitBeforeLevers, result.ProfitBeforePay).ShouldBe((0m, 100_409.30m, 100_409.30m));
+    }
+
+    // Its step stays, at nothing, citing the exemption.
+    [Fact]
+    public void Run_2026Exempt_listsTheContributionAtNothingCitingTheExemption()
+    {
+        var step = Run(Scenario(band: CompanyContributionBand.Exempt)).Steps[0];
+
+        step.ShouldSatisfyAllConditions(
+            () => (step.RuleKey, step.Track, step.Amount, decimal.IsNegative(step.Amount)).ShouldBe(("company_contribution", Track.TaxBaseOnly, 0m, false)),
+            () => step.AmountsUsed.ShouldBe([Rules.Exemption]));
     }
 
     // The upper band costs 613.08 more and the company deducts it all: its taxable income at 50,000 of pay is

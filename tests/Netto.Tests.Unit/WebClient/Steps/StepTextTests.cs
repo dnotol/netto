@@ -172,6 +172,7 @@ public class StepTextTests
     [Theory]
     [InlineData(CompanyContributionBand.Lower)]
     [InlineData(CompanyContributionBand.Upper)]
+    [InlineData(CompanyContributionBand.Exempt)]
     public void StepDetailsResx_everyKeyOfTheCompanyContributionsStep_hasAText(CompanyContributionBand band)
     {
         var scenario = Unprepaid(50_000m, WithholdingCategory.Standard) with { CompanyContributionBand = band };

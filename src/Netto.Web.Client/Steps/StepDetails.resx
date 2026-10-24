@@ -687,6 +687,9 @@
   <data name="Amount_company_contribution_upper_band" xml:space="preserve">
     <value>Contribution, balance-sheet total above the threshold</value>
   </data>
+  <data name="Amount_company_contribution_exempt" xml:space="preserve">
+    <value>Contribution, a company the law exempts</value>
+  </data>
   <data name="Amount_balance_sheet_threshold" xml:space="preserve">
     <value>Balance-sheet total between the two amounts</value>
   </data>

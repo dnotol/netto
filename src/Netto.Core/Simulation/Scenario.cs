@@ -23,7 +23,8 @@ namespace Netto.Core.Simulation;
 // it puts at their disposal and the copyright royalty it pays them, none unless given: an amount the
 // user fixes, or one that follows the pay, what an advance ruling accepts at each pay. The director
 // lives in Wallonia unless given another region, which has no rules yet. The company's balance sheet is
-// in the lower band of INASTI's yearly company contribution unless given the upper one.
+// in the lower band of INASTI's yearly company contribution unless given the upper one or the law's
+// exemption.
 public sealed record Scenario(
     int IncomeYear,
     decimal Revenue,

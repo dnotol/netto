@@ -6,17 +6,19 @@ namespace Netto.Core.SocialContributions;
 // 30.12.1992, title III, chapter II), for one income year, the company's accounting year being the calendar
 // year: the lower amount while the balance-sheet total of its penultimate closed financial year is at most
 // the threshold, the upper one above it (art. 91), both indexed each year by the law's own formula and
-// published by INASTI (Source). For the income taxes it is of the same nature as the contributions due under
-// social legislation (art. 100), so the company deducts it as a professional cost (Deduction). Its due date
-// and the increase for paying late (art. 92 and 93) are not modelled, nor its two exemptions, which the user
-// confirms (Conditions). A bill pending in the Chamber would change the 2026 amounts retroactively; the
-// rules are the law in force.
+// published by INASTI (Source), and nothing for a company one of its two exemptions covers (art. 94, 9°
+// and 92bis; Exemption), which the user declares as its band and whose conditions they confirm
+// (Conditions). For the income taxes it is of the same nature as the contributions due under social
+// legislation (art. 100), so the company deducts it as a professional cost (Deduction). Its due date and
+// the increase for paying late (art. 92 and 93) are not modelled. A bill pending in the Chamber would
+// change the 2026 amounts retroactively; the rules are the law in force.
 public sealed record CompanyContributionRules(
     int IncomeYear,
     Source Source,
     RuleAmount BalanceSheetThreshold,
     RuleAmount LowerBand,
     RuleAmount UpperBand,
+    RuleAmount Exemption,
     Source Law,
     Source Deduction,
     IReadOnlyList<LeverCondition> Conditions)
@@ -39,6 +41,11 @@ public sealed record CompanyContributionRules(
         BalanceSheetThreshold: new RuleAmount("balance_sheet_threshold", 879_163.44m, Faq2026),
         LowerBand: new RuleAmount("company_contribution_lower_band", 409.30m, Faq2026),
         UpperBand: new RuleAmount("company_contribution_upper_band", 1_022.38m, Faq2026),
+        Exemption: new RuleAmount("company_contribution_exempt", 0m, Law1992 with
+        {
+            Reference = "Art. 94, 9°: a société de personnes in its first three years whose managers and most active partners were self-employed for at most 12 of the 40 quarters before it was formed owes none; art. 92bis: nor a company with no activity for a whole calendar year, on an attestation of the SPF Finances",
+            Label = "Law of 30.12.1992, art. 94 and 92bis",
+        }),
         Law: Law1992,
         Deduction: SharedSources.Article49Income2026 with
         {
@@ -70,18 +77,25 @@ public sealed record CompanyContributionRules(
         _ => null,
     };
 
-    public IReadOnlyList<RuleAmount> Amounts => [BalanceSheetThreshold, LowerBand, UpperBand];
+    public IReadOnlyList<RuleAmount> Amounts => [BalanceSheetThreshold, LowerBand, UpperBand, Exemption];
 
     // The year whose balance-sheet total sets the band: the penultimate financial year closed as it
     // stood on 1 January of the contribution year (Law, art. 91), two years before it for a company
     // whose accounting year is the calendar year, as Netto assumes.
     public int BalanceSheetYear => IncomeYear - 2;
 
-    // What the company owes for the year in the band its balance-sheet total sets.
+    // What the company owes for the year in the band its balance-sheet total sets, or nothing when the
+    // law exempts it.
     public RuleAmount Contribution(CompanyContributionBand band) => band switch
     {
         CompanyContributionBand.Lower => LowerBand,
         CompanyContributionBand.Upper => UpperBand,
-        _ => throw new ArgumentOutOfRangeException(nameof(band), band, "INASTI's company contribution has two bands."),
+        CompanyContributionBand.Exempt => Exemption,
+        _ => throw new ArgumentOutOfRangeException(nameof(band), band, "INASTI's company contribution has two bands and an exemption."),
     };
+
+    // The amounts the contribution's step cites: the band's and the balance-sheet total that sets it, or
+    // the exemption alone, which no balance sheet sets.
+    public IReadOnlyList<RuleAmount> Used(CompanyContributionBand band) =>
+        band == CompanyContributionBand.Exempt ? [Exemption] : [Contribution(band), BalanceSheetThreshold];
 }
