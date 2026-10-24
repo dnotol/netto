@@ -83,7 +83,7 @@ public class CopyrightViewTests
     {
         var view = Royalty(Beyond);
 
-        (view.Received, view.Drains.Single(drain => drain.Key == "copyright_taxed_as_pay").Share, view.ToYou)
+        (view.Result.Royalty, view.Drains.Single(drain => drain.Key == "copyright_taxed_as_pay").Share, view.ToYou)
             .ShouldBe((30_000m, (decimal?)0.2m, Netto.Web.Client.Shares.Of(view.AfterTax, 30_000m)));
     }
 

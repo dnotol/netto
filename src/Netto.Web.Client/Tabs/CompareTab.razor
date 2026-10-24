@@ -128,11 +128,6 @@
 </div>
 
 @code {
-    // A saved plan changed from here, its star moved or the plan removed: the page reads the plans again.
-    // The tab only reads them today, and the Plans panel in the bar tells the page itself.
-    [Parameter]
-    public EventCallback PlansChanged { get; set; }
-
     private CompareView _view = default!;
 
     // What the viewer picked, none until they do: the plans then follow the defaults as the saved plans

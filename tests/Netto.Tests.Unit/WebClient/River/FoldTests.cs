@@ -20,12 +20,6 @@ public class FoldTests
     }
 
     [Fact]
-    public void Fold_defaultState_isFolded()
-    {
-        new Fold().OpenByDefault.ShouldBeFalse();
-    }
-
-    [Fact]
     public async Task Fold_openedByTheViewer_isOpen()
     {
         var folds = new Folds(new BrowserStorage());
@@ -34,18 +28,6 @@ public class FoldTests
         var html = await RenderAsync<Fold>(folds, Parameters("split"));
 
         (IsOpen(html), html.Contains(Body)).ShouldBe((true, true));
-    }
-
-    // The viewer's word wins over what the card asks for by default.
-    [Fact]
-    public async Task Fold_foldedByTheViewerOverADefaultOpen_isFolded()
-    {
-        var folds = new Folds(new BrowserStorage());
-        folds.Set("split", false);
-
-        var html = await RenderAsync<Fold>(folds, Parameters("split", ("OpenByDefault", true)));
-
-        (IsOpen(html), html.Contains(Body)).ShouldBe((false, false));
     }
 
     [Fact]

@@ -27,7 +27,7 @@
                 @ChildContent
                 @if (Details is not null || Sources.Count > 0)
                 {
-                    <Fold Name="@($"{Name}-details")" Title="@(DetailsLabel ?? L[ModuleCardText.DetailsLabel].Value)" Level="3" OpenByDefault="false">
+                    <Fold Name="@($"{Name}-details")" Title="@(DetailsLabel ?? L[ModuleCardText.DetailsLabel].Value)" Level="3">
                         <div class="module-card__detail">
                             @Details
                             @if (Sources.Count > 0)

@@ -64,12 +64,6 @@ else
     [Parameter]
     public string? Help { get; set; }
 
-    // Folded until the viewer opens it: a card shows its title and its summary, and what a card holds
-    // besides its figures, such as its conditions, opens on demand. A fold that must be read first says
-    // so.
-    [Parameter]
-    public bool OpenByDefault { get; set; }
-
     // The engine refuses a field inside: the fold opens now, and its button cannot fold it until the
     // refusal ends.
     [Parameter]
@@ -80,7 +74,9 @@ else
 
     private readonly string _bodyId = $"fold-{Guid.NewGuid():N}";
 
-    private bool Open => Folds.IsOpen(Name, OpenByDefault);
+    // Folded until the viewer opens it: a card shows its title and its summary, and what a card holds
+    // besides its figures, such as its conditions, opens on demand.
+    private bool Open => Folds.IsOpen(Name, openByDefault: false);
 
     // A refusal reveals the fold, so it stays open once the amount is accepted.
     protected override void OnParametersSet()

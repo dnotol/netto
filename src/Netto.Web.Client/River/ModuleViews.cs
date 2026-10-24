@@ -364,10 +364,9 @@ internal enum RateChoice
 // last deadline leaves no surcharge due; the surcharge and the bonus they earn are drains, from the
 // pay's steps. Each line says its share of what the pay costs the company, and the card what reaches
 // the pocket of it (ToYou). A copyright royalty's part beyond its limits is taxed as pay and paid
-// besides the payslip (RequalifiedPay): what flows in is then the pay's cost and that part (Inflow),
-// which the shares are out of.
+// besides the payslip (GrossToNetResult.RequalifiedPay): what flows in is then the pay's cost and that
+// part, which the shares are out of.
 internal sealed record DirectorPayView(
-    InputOrigin PayOrigin,
     bool CompanyPaysContributions,
     decimal CompanyCost,
     decimal? ToYou,
@@ -377,14 +376,6 @@ internal sealed record DirectorPayView(
     IReadOnlyList<Drain> Drains,
     IReadOnlyList<StepDetail> Details)
 {
-    // A car's benefit taxed with the pay, never paid: none without.
-    public decimal BenefitInKind { get; init; }
-
-    // A royalty's part taxed as pay, paid besides the payslip: none without.
-    public decimal RequalifiedPay { get; init; }
-
-    public decimal Inflow => CompanyCost + RequalifiedPay;
-
     // The pay slip's next 1,000 holds a royalty that follows the pay as it is, though the royalty rises
     // with it: its note says so while the engine set one at what a ruling accepts.
     public static bool NextHoldsAFollowingRoyalty(RiverRun run) => run.Year?.Copyright.Following == CopyrightFollowing.AtCeiling;
@@ -396,7 +387,6 @@ internal sealed record DirectorPayView(
         var inflow = pay.CompanyCost + pay.RequalifiedPay;
 
         return new DirectorPayView(
-            inputs.Company is null ? inputs.DirectorPay.Origin : InputOrigin.Derived,
             companyPays,
             pay.CompanyCost,
             Shares.Of(pay.NetInPocket, inflow),
@@ -408,7 +398,7 @@ internal sealed record DirectorPayView(
                     .Select(step => Payer(Drain.PaidOutTo(step, "taxes_on_pay"), companyPays).Of(inflow)),
                 new Drain("net_pay", DrainKind.PassedOn, pay.NetInPocket, "pocket").Of(inflow),
             ],
-            pay.Steps.Select(StepDetail.From).ToList()) { BenefitInKind = pay.BenefitInKind, RequalifiedPay = pay.RequalifiedPay };
+            pay.Steps.Select(StepDetail.From).ToList());
     }
 
     // The contributions drain is the same step of the engine whoever pays; its label says when the
@@ -584,7 +574,6 @@ internal sealed record DividendView(
     decimal EarlierProfits,
     decimal Kept,
     decimal Dividend,
-    decimal Rate,
     decimal? ToYou,
     IReadOnlyList<Drain> Drains,
     IReadOnlyList<StepDetail> Details)
@@ -599,7 +588,6 @@ internal sealed record DividendView(
             year.Scenario.EarlierProfits,
             year.MaximumDividend - year.Dividend.Dividend,
             year.Dividend.Dividend,
-            year.Dividend.Rate,
             Shares.Of(year.Dividend.NetDividend, year.Dividend.Dividend),
             [
                 .. steps.Where(step => step.Track == Track.PaidOut).Select(step => Drain.PaidOutTo(step, "taxes_on_profit").Of(year.Dividend.Dividend)),

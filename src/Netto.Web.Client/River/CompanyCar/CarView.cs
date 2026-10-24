@@ -16,7 +16,6 @@ namespace Netto.Web.Client.River.CompanyCar;
 // (ChargingReading). Each line says its share of what the card receives, and the card what it passes
 // on of it (PassesOn). Without a car, nothing but the profit passed on.
 internal sealed record CarView(
-    decimal Received,
     CarResult Result,
     bool ChargingReading,
     decimal? PassesOn,
@@ -51,7 +50,6 @@ internal sealed record CarView(
             : [];
 
         return new CarView(
-            received,
             car,
             steps.Count > 0 && year.Scenario.Car.CompanyPaysPrivateEnergy && CarCardText.Reading(year.Scenario.Car.Engine) is not null,
             steps.Count > 0 ? Shares.Of(left, received) : null,

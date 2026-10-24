@@ -13,7 +13,6 @@ namespace Netto.Web.Client.River.Copyright;
 // royalty, and the card what reaches the pocket of it from here (ToYou); the part taxed as pay reaches
 // it through Director pay, net of its own taxes there. Without a royalty, nothing.
 internal sealed record CopyrightView(
-    decimal Received,
     CopyrightResult Result,
     decimal Tax,
     decimal AfterTax,
@@ -43,7 +42,6 @@ internal sealed record CopyrightView(
             : [];
 
         return new CopyrightView(
-            royalty.Royalty,
             royalty,
             tax,
             afterTax,

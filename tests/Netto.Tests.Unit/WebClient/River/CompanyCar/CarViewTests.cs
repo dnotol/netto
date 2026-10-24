@@ -56,9 +56,11 @@ public class CarViewTests
     [Fact]
     public void Car_withTheRoyaltyInThePlan_passesWhatThePayAndTheRoyaltyShareOnToTheSplit()
     {
-        var view = Car(ElectricCar.AddToPlan(OptionalModule.Copyright).WithRoyalty(10_000m));
+        var inputs = ElectricCar.AddToPlan(OptionalModule.Copyright).WithRoyalty(10_000m);
 
-        (view.Received, view.Drains[^1], view.PassesOn)
+        var view = Car(inputs);
+
+        (HandOff.Before(inputs.Run().Year.ShouldNotBeNull(), OptionalModule.Car), view.Drains[^1], view.PassesOn)
             .ShouldBe((100_000m, new Drain("profit_before_pay_and_royalty", DrainKind.PassedOn, 92_000m, "split"), (decimal?)0.92m));
     }
 
@@ -77,7 +79,8 @@ public class CarViewTests
     {
         var view = Car(ElectricCar);
 
-        (view.Received, view.Drains[0].Share, view.PassesOn).ShouldBe((100_000m, (decimal?)0.08m, (decimal?)0.92m));
+        (HandOff.Before(ElectricCar.Run().Year.ShouldNotBeNull(), OptionalModule.Car), view.Drains[0].Share, view.PassesOn)
+            .ShouldBe((100_000m, (decimal?)0.08m, (decimal?)0.92m));
     }
 
     [Fact]
@@ -229,7 +232,7 @@ public class CarViewTests
     {
         var run = ElectricCar.Run();
 
-        (DirectorPayView.From(ElectricCar, run.Pay.ShouldNotBeNull()).BenefitInKind, SplitSearchView.From(ElectricCar, run, ElectricCar.SearchSplit())?.Benefits)
+        (run.Pay.ShouldNotBeNull().BenefitInKind, SplitSearchView.From(ElectricCar, run, ElectricCar.SearchSplit())?.Benefits)
             .ShouldBe((1_714.29m, (decimal?)1_714.29m));
     }
 
@@ -238,7 +241,7 @@ public class CarViewTests
     {
         var run = RiverInputs.Example.Run();
 
-        (DirectorPayView.From(RiverInputs.Example, run.Pay.ShouldNotBeNull()).BenefitInKind, SplitSearchView.From(RiverInputs.Example, run, RiverInputs.Example.SearchSplit())?.Benefits)
+        (run.Pay.ShouldNotBeNull().BenefitInKind, SplitSearchView.From(RiverInputs.Example, run, RiverInputs.Example.SearchSplit())?.Benefits)
             .ShouldBe((0m, (decimal?)0m));
     }
 

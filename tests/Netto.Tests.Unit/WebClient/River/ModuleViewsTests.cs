@@ -202,12 +202,15 @@ public class ModuleViewsTests
         });
     }
 
+    // Without a royalty, what flows in is what the pay costs the company alone.
     [Fact]
     public void DirectorPay_example_hasNoRoyaltyTaxedAsPay()
     {
+        var pay = RiverInputs.Example.Run().Pay.ShouldNotBeNull();
+
         var view = DirectorPay(RiverInputs.Example);
 
-        (view.RequalifiedPay, view.Inflow).ShouldBe((0m, view.CompanyCost));
+        (pay.RequalifiedPay, view.ToYou).ShouldBe((0m, Netto.Web.Client.Shares.Of(pay.NetInPocket, view.CompanyCost)));
     }
 
     // A royalty of 30,000 beside the example's 50,000 passes 30% of 80,000 by 6,000, taxed here as pay:
@@ -220,7 +223,7 @@ public class ModuleViewsTests
 
         var view = DirectorPay(inputs);
 
-        (view.RequalifiedPay, view.Inflow, view.ToYou, view.Drains[^1].Share)
+        (pay.RequalifiedPay, pay.CompanyCost + pay.RequalifiedPay, view.ToYou, view.Drains[^1].Share)
             .ShouldBe((6_000m, 56_000m, Netto.Web.Client.Shares.Of(pay.NetInPocket, 56_000m), Netto.Web.Client.Shares.Of(pay.NetInPocket, 56_000m)));
     }
 
@@ -300,20 +303,6 @@ public class ModuleViewsTests
         var view = DirectorPay(RiverInputs.Example.WithDirectorPay(0m));
 
         (view.ToYou, view.Drains.All(drain => drain.Share == null)).ShouldBe(((decimal?)null, true));
-    }
-
-    [Fact]
-    public void DirectorPay_example_payIsDerivedFromTheSplit()
-    {
-        DirectorPay(RiverInputs.Example).PayOrigin.ShouldBe(InputOrigin.Derived);
-    }
-
-    [Fact]
-    public void DirectorPay_companySkipped_payKeepsItsOwnOrigin()
-    {
-        var inputs = RiverInputs.Example.SkipCompany();
-
-        (DirectorPay(inputs).PayOrigin, DirectorPay(inputs.WithDirectorPay(40_000m)).PayOrigin).ShouldBe((InputOrigin.Example, InputOrigin.Yours));
     }
 
     [Fact]
@@ -592,7 +581,7 @@ public class ModuleViewsTests
     {
         var view = Dividend(Prepaid);
 
-        (view.Maximum, view.Kept, view.Dividend, view.Rate).ShouldBe((40_000.00m, 0m, 40_000.00m, 0.18m));
+        (view.Maximum, view.Kept, view.Dividend, Prepaid.Run().Year.ShouldNotBeNull().Dividend.Rate).ShouldBe((40_000.00m, 0m, 40_000.00m, 0.18m));
     }
 
     [Fact]
