@@ -407,7 +407,7 @@ internal sealed record DirectorPayView(
 }
 
 // The card's field for what was withheld on the pay: the amount the user gave, or, while it is left
-// to the pay slip, the year's withholding the engine derives from it, twelve times the month's. While
+// to the pay slip, the year's withholding the engine derives from it, the sum of its twelve months'. While
 // another input is refused there is no pay slip to derive from, and the field shows nothing.
 internal sealed record WithheldFieldView(decimal Amount, InputOrigin Origin)
 {
