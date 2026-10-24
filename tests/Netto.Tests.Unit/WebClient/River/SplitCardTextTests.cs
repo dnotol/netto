@@ -69,6 +69,7 @@ public class SplitCardTextTests
         RiverInputs[] rivers =
         [
             example, example.WithDirectorPay(20_799m), example.WithReserve(60_000m), example.WithContributionsPaidBy(ContributionsPaidBy.Company),
+            example.WithContributionsPaidBy(ContributionsPaidBy.Company).WithFundFeeRate(0.0305m),
             RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithCreativeShare(0.75m),
         ];
         var keys = rivers.SelectMany(inputs =>

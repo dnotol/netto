@@ -47,6 +47,21 @@ public class SplitFiguresTests
         ]);
     }
 
+    // With the fund's fee at 3.05% the company pays 303.24 of it with the 9,942.52 of contributions
+    // (GrossToNetFundFeeTests): a side of its own after them, as Director pay draws it, and the company
+    // keeps 39,754.24.
+    [Fact]
+    public void Sides_companyPaysTheContributionsAndTheFee_namesTheFeeAfterThem()
+    {
+        Lines(Sides(RiverInputs.Example.WithContributionsPaidBy(ContributionsPaidBy.Company).WithFundFeeRate(0.0305m))).ShouldBe(
+        [
+            ("Figure_Pay", 50_000m, (decimal?)0.5m),
+            ("Figure_CompanyContributions", 9_942.52m, (decimal?)0.0994252m),
+            ("Figure_CompanyFundFee", 303.24m, (decimal?)0.0030324m),
+            ("Figure_Company", 39_754.24m, (decimal?)0.3975424m),
+        ]);
+    }
+
     // Whoever pays the contributions and whatever the royalty, the sides are all of what the split
     // receives.
     public static TheoryData<string, RiverInputs> Received => new()

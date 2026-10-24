@@ -63,6 +63,9 @@
   <data name="Figure_CompanyContributions" xml:space="preserve">
     <value>Contributions the company pays</value>
   </data>
+  <data name="Figure_CompanyFundFee" xml:space="preserve">
+    <value>Fund fee the company pays</value>
+  </data>
   <data name="Figure_Royalty" xml:space="preserve">
     <value>Royalty</value>
   </data>
