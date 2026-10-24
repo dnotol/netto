@@ -166,10 +166,12 @@ public class RiverTextTests
         InfoBubbleResources.Missing([InfoBubbleText.MoreAbout]).ShouldBeEmpty();
     }
 
-    // The rate in a card's summary says what it measures, worded once for every card.
+    // The rate in a card's summary says what it measures, worded once for every card, as are the line a
+    // card waits on and its details' fold.
     [Fact]
-    public void ModuleCardResx_rates_haveTheirTexts()
+    public void ModuleCardResx_sharedTexts_haveTheirTexts()
     {
-        ModuleCardResources.Missing([ModuleCardText.ToYou, ModuleCardText.PassesOn]).ShouldBeEmpty();
+        ModuleCardResources.Missing([ModuleCardText.ToYou, ModuleCardText.PassesOn, ModuleCardText.Waiting, ModuleCardText.DetailsLabel, ModuleCardText.SourcesTitle])
+            .ShouldBeEmpty();
     }
 }

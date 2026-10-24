@@ -21,9 +21,6 @@
   <data name="Summary_PaidOut" xml:space="preserve">
     <value>{0} paid out · {1} to your pocket</value>
   </data>
-  <data name="Waiting" xml:space="preserve">
-    <value>Waiting for the company's year.</value>
-  </data>
   <data name="KeptLabel" xml:space="preserve">
     <value>Kept in the company at year end</value>
   </data>
@@ -53,12 +50,6 @@
   </data>
   <data name="Figure_Dividend" xml:space="preserve">
     <value>Dividend</value>
-  </data>
-  <data name="DetailsLabel" xml:space="preserve">
-    <value>Where these figures come from</value>
-  </data>
-  <data name="SourcesTitle" xml:space="preserve">
-    <value>The rules, with the income year {0} amounts</value>
   </data>
   <data name="SharesTitle" xml:space="preserve">
     <value>Your shares and earlier profits</value>

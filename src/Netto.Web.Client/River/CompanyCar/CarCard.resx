@@ -27,9 +27,6 @@
   <data name="SummaryNoCar_Royalty" xml:space="preserve">
     <value>No car yet · {0} before your pay and royalty</value>
   </data>
-  <data name="Waiting" xml:space="preserve">
-    <value>Waiting for the company's year.</value>
-  </data>
   <data name="Hint" xml:space="preserve">
     <value>A car the company puts at your disposal, which you also use privately. The company pays its costs out of its profit, before your pay, and deducts them as its order date, its engine and its CO2 allow; you are taxed on a flat benefit in kind as part of your pay, though it is never paid in cash.</value>
   </data>
@@ -92,12 +89,6 @@
   </data>
   <data name="Private_Tie" xml:space="preserve">
     <value>The company car costs you what a private one would.</value>
-  </data>
-  <data name="DetailsLabel" xml:space="preserve">
-    <value>Where these figures come from</value>
-  </data>
-  <data name="SourcesTitle" xml:space="preserve">
-    <value>The rules, with the income year {0} amounts</value>
   </data>
   <data name="Remove" xml:space="preserve">
     <value>Remove the company car from your plan</value>

@@ -24,9 +24,6 @@
   <data name="SummaryNoRoyalty" xml:space="preserve">
     <value>No royalty yet</value>
   </data>
-  <data name="Waiting" xml:space="preserve">
-    <value>Waiting for the company's year.</value>
-  </data>
   <data name="Hint" xml:space="preserve">
     <value>What the company pays you for the rights on works you create, code, a game or content, which you transfer or license to it. Within the limits it stays movable income: the company deducts it in full and withholds 15%, and you are taxed on it apart at 15% plus your municipal surcharge, with no social contributions, on less its flat-rate costs if you hold an attestation du travail des arts. What passes the limits is taxed as your pay.</value>
   </data>
@@ -53,12 +50,6 @@
   </data>
   <data name="Readings" xml:space="preserve">
     <value>Where no text settles a point, Netto takes the reading that never overstates the gain: the 30% is measured on your gross pay on the payslip alone, without benefits in kind or the contributions the company pays for you; neither the royalty nor its part taxed as pay counts in the {0} minimum pay that keeps the reduced corporate rate; the royalty is always taxed apart, never with your other income; the flat-rate costs come off the part within the limits alone, the limits staying on the whole royalty; the royalty is taken as paid on or after 11 June 2026, so the 15% withheld is on its net only with an attestation; and the royalty that follows your pay is measured, like the 30%, on your gross pay on the payslip alone.</value>
-  </data>
-  <data name="DetailsLabel" xml:space="preserve">
-    <value>Where these figures come from</value>
-  </data>
-  <data name="SourcesTitle" xml:space="preserve">
-    <value>The rules, with the income year {0} amounts</value>
   </data>
   <data name="Remove" xml:space="preserve">
     <value>Remove the copyright royalty from your plan</value>

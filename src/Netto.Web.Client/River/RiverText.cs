@@ -42,6 +42,14 @@ internal static class ModuleCardText
     public const string ToYou = "ToYou";
 
     public const string PassesOn = "PassesOn";
+
+    // The line a card says while it waits for the company's year.
+    public const string Waiting = "Waiting";
+
+    // Its detail view's line, and the title over its rules with the income year.
+    public const string DetailsLabel = "DetailsLabel";
+
+    public const string SourcesTitle = "SourcesTitle";
 }
 
 internal static class CompositionMenuText

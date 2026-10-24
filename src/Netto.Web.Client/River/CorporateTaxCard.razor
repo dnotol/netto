@@ -1,5 +1,4 @@
 @using Netto.Core.Simulation
-@using Netto.Web.Client.Steps
 @inject IStringLocalizer<CorporateTaxCard> L
 
 @* Corporate tax on the company's profit after pay, at 25% or 20% on its first slice, and the
@@ -13,72 +12,65 @@
    advance payments with the surcharge they leave. The payments are taken while typing, like
    revenue, since nothing bounds them, and the card says what more by the last deadline cancels the
    surcharge. *@
-<ModuleCard Name="corporate-tax" Title="@L["Title"]" Summary="@Summary" Glance="@Glance" PassesOn="@_view?.PassesOn" Skipped="Inputs.Company is null" Refused="@Refused" Details="@Details"
-            DetailsLabel="@L["DetailsLabel"]">
-    @if (Inputs.Company is null)
+<ModuleCard Name="corporate-tax" Title="@L["Title"]" Summary="@Summary" Glance="@Glance" PassesOn="@_view?.PassesOn" Waiting="Inputs.Company is null" Refused="@Refused"
+            Sources="@(_view?.Details ?? [])" IncomeYear="Inputs.IncomeYear" DetailsLabel="@L["DetailsLabel"]" SourcesTitle="@L["SourcesTitle", Inputs.IncomeYear]">
+    <RefusedMessage Error="@Refused" />
+    @if (_view is not null)
     {
-        <p class="corporate-tax__waiting">@L["Waiting"]</p>
+        <div class="corporate-tax__lines">
+            <FigureList Figures="@FigureWords.Of(L, CorporateTaxFigures.Of(_view))" />
+            <DrainList Drains="_view.Drains" />
+        </div>
+        <p class="corporate-tax__condition">
+            @(_view.NoTaxableProfit
+                ? L["NoTaxableProfit"]
+                : L[CorporateTaxCardText.Condition(_view.Condition, _view.FlatRateBenefits > 0m), Formats.Euros(_view.MinimumDirectorPay), Formats.Euros(_view.FlatRateBenefits),
+                    Formats.WholeShare(_view.ExcessBenefitsShare)])
+        </p>
     }
-    else
-    {
-        <RefusedMessage Error="@Refused" />
+    <Disclosure Title="@L["CompanyTitle"]" Values="@SettingWords.Of(L, _settings.Company)">
+        <div class="corporate-tax__status">
+            <span class="corporate-tax__choice">
+                <MudCheckBox T="bool" Value="Inputs.SmallCompany.Value" ValueChanged="OnSmallCompanyChanged" Color="Color.Primary"
+                             Label="@L["SmallCompanyLabel"]" />
+                <InfoBubble Label="@L["SmallCompanyLabel"]">@L["SmallCompanyHint"]</InfoBubble>
+            </span>
+            <OriginChip Origin="Inputs.SmallCompany.Origin" />
+        </div>
+        <RiverField Label="@L["FinancialYearLabel", Inputs.IncomeYear]" Origin="Inputs.FinancialYear.Origin" Help="@L["FinancialYearHint"]">
+            <div class="corporate-tax__years">
+                <MudChipSet T="FinancialYear" SelectedValue="Inputs.FinancialYear.Value" SelectedValueChanged="OnFinancialYearChanged"
+                            SelectionMode="SelectionMode.SingleSelection" CheckMark="false" Variant="Variant.Outlined" SelectedColor="Color.Primary"
+                            Size="Size.Small" Disabled="!Inputs.SmallCompany.Value">
+                    @foreach (var year in Enum.GetValues<FinancialYear>())
+                    {
+                        <MudChip T="FinancialYear" Value="year" Text="@L[CorporateTaxCardText.FinancialYear(year)]" />
+                    }
+                </MudChipSet>
+            </div>
+        </RiverField>
+    </Disclosure>
+    <Disclosure Title="@L["PaymentsTitle"]" Values="@SettingWords.Of(L, _settings.Payments)" Refused="@CorporateTaxSettingsView.PaymentsHold(Refused)"
+                Help="@L["PaymentsHint"]">
+        <div class="corporate-tax__deadlines">
+            @foreach (var field in AdvancePaymentFields.From(Inputs))
+            {
+                <RiverField Label="@L["PaymentLabel", Formats.Day(field.Date)]" For="@($"river-advance-payment-{field.Deadline}")" Origin="field.Paid.Origin">
+                    <RiverNumericField T="decimal" InputId="@($"river-advance-payment-{field.Deadline}")" Value="field.Paid.Value"
+                                       ValueChanged="@(amount => OnAdvancePaymentChanged(field.Deadline, amount))"
+                                       Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
+                                       Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
+                                       Error="@(Refused == YearSimulation.AdvancePaymentNegative && field.Paid.Value < 0m)" Refusal="@Refused" />
+                </RiverField>
+            }
+        </div>
         @if (_view is not null)
         {
-            <div class="corporate-tax__lines">
-                <FigureList Figures="@FigureWords.Of(L, CorporateTaxFigures.Of(_view))" />
-                <DrainList Drains="_view.Drains" />
-            </div>
             <p class="corporate-tax__condition">
-                @(_view.NoTaxableProfit
-                    ? L["NoTaxableProfit"]
-                    : L[CorporateTaxCardText.Condition(_view.Condition, _view.FlatRateBenefits > 0m), Formats.Euros(_view.MinimumDirectorPay), Formats.Euros(_view.FlatRateBenefits),
-                        Formats.WholeShare(_view.ExcessBenefitsShare)])
+                @L[CorporateTaxCardText.Surcharge(_view.Surcharge), Formats.Euros(_view.TopUp), Formats.Day(_view.LastDeadline)]
             </p>
         }
-        <Disclosure Title="@L["CompanyTitle"]" Values="@Values(_settings.Company)">
-            <div class="corporate-tax__status">
-                <span class="corporate-tax__choice">
-                    <MudCheckBox T="bool" Value="Inputs.SmallCompany.Value" ValueChanged="OnSmallCompanyChanged" Color="Color.Primary"
-                                 Label="@L["SmallCompanyLabel"]" />
-                    <InfoBubble Label="@L["SmallCompanyLabel"]">@L["SmallCompanyHint"]</InfoBubble>
-                </span>
-                <OriginChip Origin="Inputs.SmallCompany.Origin" />
-            </div>
-            <RiverField Label="@L["FinancialYearLabel", Inputs.IncomeYear]" Origin="Inputs.FinancialYear.Origin" Help="@L["FinancialYearHint"]">
-                <div class="corporate-tax__years">
-                    <MudChipSet T="FinancialYear" SelectedValue="Inputs.FinancialYear.Value" SelectedValueChanged="OnFinancialYearChanged"
-                                SelectionMode="SelectionMode.SingleSelection" CheckMark="false" Variant="Variant.Outlined" SelectedColor="Color.Primary"
-                                Size="Size.Small" Disabled="!Inputs.SmallCompany.Value">
-                        @foreach (var year in Enum.GetValues<FinancialYear>())
-                        {
-                            <MudChip T="FinancialYear" Value="year" Text="@L[CorporateTaxCardText.FinancialYear(year)]" />
-                        }
-                    </MudChipSet>
-                </div>
-            </RiverField>
-        </Disclosure>
-        <Disclosure Title="@L["PaymentsTitle"]" Values="@Values(_settings.Payments)" Refused="@CorporateTaxSettingsView.PaymentsHold(Refused)"
-                    Help="@L["PaymentsHint"]">
-            <div class="corporate-tax__deadlines">
-                @foreach (var field in AdvancePaymentFields.From(Inputs))
-                {
-                    <RiverField Label="@L["PaymentLabel", Formats.Day(field.Date)]" For="@($"river-advance-payment-{field.Deadline}")" Origin="field.Paid.Origin">
-                        <RiverNumericField T="decimal" InputId="@($"river-advance-payment-{field.Deadline}")" Value="field.Paid.Value"
-                                           ValueChanged="@(amount => OnAdvancePaymentChanged(field.Deadline, amount))"
-                                           Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
-                                           Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
-                                           Error="@(Refused == YearSimulation.AdvancePaymentNegative && field.Paid.Value < 0m)" Refusal="@Refused" />
-                    </RiverField>
-                }
-            </div>
-            @if (_view is not null)
-            {
-                <p class="corporate-tax__condition">
-                    @L[CorporateTaxCardText.Surcharge(_view.Surcharge), Formats.Euros(_view.TopUp), Formats.Day(_view.LastDeadline)]
-                </p>
-            }
-        </Disclosure>
-    }
+    </Disclosure>
 </ModuleCard>
 
 @code {
@@ -104,9 +96,6 @@
         _settings = CorporateTaxSettingsView.From(Inputs, Run);
     }
 
-    private IReadOnlyList<SettingValue> Values(IReadOnlyList<SettingPhrase> phrases) =>
-        [.. phrases.Select(phrase => new SettingValue(L[phrase.Key, [.. phrase.Args]].Value, phrase.Origin))];
-
     // The profit the split leaves the company, before its tax, and what the tax and its surcharge
     // leave of it for the dividend.
     private string? Summary => Run.Year is { } year
@@ -115,13 +104,6 @@
 
     // What the company has left after its tax, for the card's row in the river's outline.
     private CardGlance? Glance => Run.Year is { } year ? new(GlanceKind.LeftAfterTax, Formats.Euros(year.ProfitAfterTax)) : null;
-
-    private RenderFragment? Details => _view is { } view && Run.Year is { } year
-        ? @<text>
-              <h4 class="corporate-tax__sources">@L["SourcesTitle", year.Scenario.IncomeYear]</h4>
-              <StepDetails Details="view.Details" />
-          </text>
-        : null;
 
     private Task OnSmallCompanyChanged(bool smallCompany) => InputsChanged.InvokeAsync(Inputs.WithSmallCompany(smallCompany));
 

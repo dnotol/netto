@@ -39,9 +39,6 @@
   <data name="Help_AddedBackCarBenefit" xml:space="preserve">
     <value>A share of your company car's benefit is added back to its profit.</value>
   </data>
-  <data name="Waiting" xml:space="preserve">
-    <value>Waiting for the company's year.</value>
-  </data>
   <data name="SmallCompanyLabel" xml:space="preserve">
     <value>A small company the reduced corporate rate is open to</value>
   </data>

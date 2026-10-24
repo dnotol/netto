@@ -1,9 +1,4 @@
 /* ::deep reaches the MudButton under the rent, which carries no scope attribute of its own. */
-.rent__waiting {
-    margin: 0;
-    color: var(--netto-text-muted);
-    line-height: 1.55;
-}
 
 .rent__note {
     margin: 0.35rem 0 0;
@@ -30,11 +25,4 @@
 /* The rent, alone in sight, keeps the width of one of them rather than the whole row. */
 .rent__fields--single {
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 13rem), 1fr));
-}
-
-.rent__sources {
-    margin: 0;
-    font-family: "Fraunces", Georgia, serif;
-    font-size: 1.1rem;
-    font-weight: 600;
 }

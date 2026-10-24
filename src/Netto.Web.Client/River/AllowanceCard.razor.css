@@ -1,9 +1,3 @@
-.allowances__waiting {
-    margin: 0;
-    color: var(--netto-text-muted);
-    line-height: 1.55;
-}
-
 .allowances__note {
     margin: 0.35rem 0 0;
     color: var(--netto-text-muted);
@@ -16,11 +10,4 @@
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
     gap: 1rem;
-}
-
-.allowances__sources {
-    margin: 0;
-    font-family: "Fraunces", Georgia, serif;
-    font-size: 1.1rem;
-    font-weight: 600;
 }

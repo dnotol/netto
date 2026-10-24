@@ -1,5 +1,4 @@
 @using Netto.Core.Rent
-@using Netto.Web.Client.Steps
 @inject IStringLocalizer<RentCard> L
 
 @* What the company pays the director besides pay after the expense allowances, before the split: the
@@ -16,63 +15,55 @@
    values kept. The amounts are taken while typing, like revenue, and carry no Min or Max: the engine
    refuses what the rules do not allow, and its message is what the user has to see. Skipped with the
    company. *@
-<ModuleCard Name="@ModuleFolds.Name(OptionalModule.Rent)" Title="@L["Title"]" Summary="@Summary" Glance="@Glance" ToYou="@_view?.ToYou" Help="@L["Hint"]" Skipped="Inputs.Company is null"
-            Refused="@Refused" Details="@Details"
-            DetailsLabel="@L["DetailsLabel"]" RemoveLabel="@L["Remove"]" OnRemove="Remove">
-    @if (Inputs.Company is null)
-    {
-        <p class="rent__waiting">@L["Waiting"]</p>
-    }
-    else
-    {
-        <Disclosure Title="@L["HomeTitle"]" Values="@SettingWords.Of(L, _settings.Home)" Refused="@RentSettingsView.HomeHolds(Refused)"
-                    OpenByDefault="@_settings.NeedsFacts">
-            <div class="rent__fields">
-                <RiverField Label="@L["CadastralIncomeLabel"]" For="river-cadastral-income" Origin="Inputs.Rent.CadastralIncome.Origin"
-                            Help="@L[RentCardText.CadastralIncomeHelp]">
-                    <RiverNumericField T="decimal" InputId="river-cadastral-income" Value="Inputs.Rent.CadastralIncome.Value" ValueChanged="OnCadastralIncomeChanged"
-                                       Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
-                                       Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
-                                       Error="@(Refused == RentCalculator.CadastralIncomeNegative)" Refusal="@Refused" />
-                    <p class="rent__note">@L["CadastralIncomeHint"]</p>
-                </RiverField>
-                <RiverField Label="@L["ShareLabel"]" For="river-share-let" Origin="Inputs.Rent.ShareLet.Origin" Help="@L["ShareHint"]">
-                    <RiverNumericField T="decimal" InputId="river-share-let" Value="SharePercent" ValueChanged="OnSharePercentChanged"
-                                       Format="0.##" Culture="Formats.Culture" Adornment="Adornment.End" AdornmentText="%" HideSpinButtons="true"
-                                       Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
-                                       Error="@(Refused == RentCalculator.ShareLetOutOfRange)" Refusal="@Refused" />
-                </RiverField>
-            </div>
-        </Disclosure>
-        <div class="rent__fields rent__fields--single">
-            <RiverField Label="@L["RentLabel"]" For="river-rent" Origin="Inputs.Rent.Rent.Origin" Help="@CapHelp">
-                <RiverNumericField T="decimal" InputId="river-rent" Value="Inputs.Rent.Rent.Value" ValueChanged="OnRentChanged"
+<ModuleCard Name="@ModuleFolds.Name(OptionalModule.Rent)" Title="@L["Title"]" Summary="@Summary" Glance="@Glance" ToYou="@_view?.ToYou" Help="@L["Hint"]" Waiting="Inputs.Company is null"
+            Refused="@Refused" Sources="@(_view?.Details ?? [])" IncomeYear="Inputs.IncomeYear" RemoveLabel="@L["Remove"]" OnRemove="Remove">
+    <Disclosure Title="@L["HomeTitle"]" Values="@SettingWords.Of(L, _settings.Home)" Refused="@RentSettingsView.HomeHolds(Refused)"
+                OpenByDefault="@_settings.NeedsFacts">
+        <div class="rent__fields">
+            <RiverField Label="@L["CadastralIncomeLabel"]" For="river-cadastral-income" Origin="Inputs.Rent.CadastralIncome.Origin"
+                        Help="@L[RentCardText.CadastralIncomeHelp]">
+                <RiverNumericField T="decimal" InputId="river-cadastral-income" Value="Inputs.Rent.CadastralIncome.Value" ValueChanged="OnCadastralIncomeChanged"
                                    Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
                                    Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
-                                   Error="@(Refused is RentCalculator.RentNegative or RentCalculator.RentAboveCap or RentCalculator.RentWithOfficeAllowance)" Refusal="@Refused" />
-                @if (_cap is { } cap)
-                {
-                    <p class="rent__note">
-                        @L["Cap", Formats.Euros(cap.Cap)]@(" ")
-                        @if (!cap.IsTheRent)
-                        {
-                            <MudButton Variant="Variant.Text" Size="Size.Small" Color="Color.Primary" OnClick="UseTheCap"
-                                       Class="rent__use-cap">@L["UseTheCap", Formats.Euros(cap.Cap)]</MudButton>
-                        }
-                    </p>
-                }
+                                   Error="@(Refused == RentCalculator.CadastralIncomeNegative)" Refusal="@Refused" />
+                <p class="rent__note">@L["CadastralIncomeHint"]</p>
+            </RiverField>
+            <RiverField Label="@L["ShareLabel"]" For="river-share-let" Origin="Inputs.Rent.ShareLet.Origin" Help="@L["ShareHint"]">
+                <RiverNumericField T="decimal" InputId="river-share-let" Value="SharePercent" ValueChanged="OnSharePercentChanged"
+                                   Format="0.##" Culture="Formats.Culture" Adornment="Adornment.End" AdornmentText="%" HideSpinButtons="true"
+                                   Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
+                                   Error="@(Refused == RentCalculator.ShareLetOutOfRange)" Refusal="@Refused" />
             </RiverField>
         </div>
-        <RefusedMessage Error="@Refused" />
-        @if (_view is not null)
-        {
-            <FigureList Figures="@FigureWords.Of(L, RentFigures.From(_view))" />
-            <DrainList Drains="_view.Drains" />
-        }
-        @if (_rules is not null)
-        {
-            <ConditionList Name="rent-conditions" Conditions="_rules.Conditions" />
-        }
+    </Disclosure>
+    <div class="rent__fields rent__fields--single">
+        <RiverField Label="@L["RentLabel"]" For="river-rent" Origin="Inputs.Rent.Rent.Origin" Help="@CapHelp">
+            <RiverNumericField T="decimal" InputId="river-rent" Value="Inputs.Rent.Rent.Value" ValueChanged="OnRentChanged"
+                               Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
+                               Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
+                               Error="@(Refused is RentCalculator.RentNegative or RentCalculator.RentAboveCap or RentCalculator.RentWithOfficeAllowance)" Refusal="@Refused" />
+            @if (_cap is { } cap)
+            {
+                <p class="rent__note">
+                    @L["Cap", Formats.Euros(cap.Cap)]@(" ")
+                    @if (!cap.IsTheRent)
+                    {
+                        <MudButton Variant="Variant.Text" Size="Size.Small" Color="Color.Primary" OnClick="UseTheCap"
+                                   Class="rent__use-cap">@L["UseTheCap", Formats.Euros(cap.Cap)]</MudButton>
+                    }
+                </p>
+            }
+        </RiverField>
+    </div>
+    <RefusedMessage Error="@Refused" />
+    @if (_view is not null)
+    {
+        <FigureList Figures="@FigureWords.Of(L, RentFigures.From(_view))" />
+        <DrainList Drains="_view.Drains" />
+    }
+    @if (_rules is not null)
+    {
+        <ConditionList Name="rent-conditions" Conditions="_rules.Conditions" />
     }
 </ModuleCard>
 
@@ -118,13 +109,6 @@
     // give one.
     private string? CapHelp => _cap is { } cap
         ? L[RentCardText.CapHelp, Formats.Euros(cap.Cap), Formats.Euros(cap.CadastralIncomeLet), Formats.RuleAmount(cap.RevaluationCoefficient)].Value
-        : null;
-
-    private RenderFragment? Details => _view is { Details.Count: > 0 } view && Run.Year is { } year
-        ? @<text>
-              <h4 class="rent__sources">@L["SourcesTitle", year.Scenario.IncomeYear]</h4>
-              <StepDetails Details="view.Details" />
-          </text>
         : null;
 
     private Task OnCadastralIncomeChanged(decimal amount) => InputsChanged.InvokeAsync(Inputs.WithCadastralIncome(amount));

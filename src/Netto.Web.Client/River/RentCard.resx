@@ -21,9 +21,6 @@
   <data name="Summary_Royalty" xml:space="preserve">
     <value>{0} to your pocket · {1} before your pay and royalty</value>
   </data>
-  <data name="Waiting" xml:space="preserve">
-    <value>Waiting for the company's year.</value>
-  </data>
   <data name="Hint" xml:space="preserve">
     <value>If the company uses part of your home as its office, it can rent that part from you, unfurnished, under a lease. It pays the rent out of its profit, before your pay, and deducts it. The rent is never pay: you are taxed on it with your pay, on less than the rent and without social contributions.</value>
   </data>
@@ -71,12 +68,6 @@
   </data>
   <data name="Figure_JoinsTaxableIncome" xml:space="preserve">
     <value>Joins your taxable income</value>
-  </data>
-  <data name="DetailsLabel" xml:space="preserve">
-    <value>Where these figures come from</value>
-  </data>
-  <data name="SourcesTitle" xml:space="preserve">
-    <value>The rules, with the income year {0} amounts</value>
   </data>
   <data name="Remove" xml:space="preserve">
     <value>Remove home office rent from your plan</value>

@@ -158,7 +158,7 @@ public class CarAndRoyaltyCardsTests
         var details = await RenderDetailsOpenAsync(typeof(CopyrightCard), OptionalModule.Copyright, CopyrightViewTests.Within);
         var folded = await RenderOpenAsync<CopyrightCard>(OptionalModule.Copyright, CopyrightViewTests.Within);
 
-        (CardHtml.Prose(details).Contains(readings), details.IndexOf(readings, StringComparison.Ordinal) < details.IndexOf("copyright__sources", StringComparison.Ordinal),
+        (CardHtml.Prose(details).Contains(readings), details.IndexOf(readings, StringComparison.Ordinal) < details.IndexOf("module-card__sources", StringComparison.Ordinal),
                 CardHtml.Prose(folded).Contains(readings))
             .ShouldBe((true, true, false));
     }

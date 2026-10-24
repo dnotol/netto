@@ -18,9 +18,6 @@
   <data name="Summary" xml:space="preserve">
     <value>{0} to your pocket · {1} left</value>
   </data>
-  <data name="Waiting" xml:space="preserve">
-    <value>Waiting for the company's year.</value>
-  </data>
   <data name="Hint" xml:space="preserve">
     <value>What the company can give you beside your pay, free of income tax and social contributions. It pays for them out of its profit, before your pay.</value>
   </data>
@@ -44,12 +41,6 @@
   </data>
   <data name="Figure_AddedBack" xml:space="preserve">
     <value>Added back to its taxable income</value>
-  </data>
-  <data name="DetailsLabel" xml:space="preserve">
-    <value>Where these figures come from</value>
-  </data>
-  <data name="SourcesTitle" xml:space="preserve">
-    <value>The rules, with the income year {0} amounts</value>
   </data>
   <data name="Remove" xml:space="preserve">
     <value>Remove vouchers from your plan</value>

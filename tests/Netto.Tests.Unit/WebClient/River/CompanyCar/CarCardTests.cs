@@ -85,7 +85,7 @@ public class CarCardTests
         var details = Details(await RenderDetailsOpenAsync(typeof(CarCard), OptionalModule.Car, inputs));
         var folded = await RenderOpenAsync<CarCard>(OptionalModule.Car, inputs);
 
-        (CardHtml.Prose(details).Contains(rule), details.IndexOf(rule, StringComparison.Ordinal) < details.IndexOf("car__sources", StringComparison.Ordinal),
+        (CardHtml.Prose(details).Contains(rule), details.IndexOf(rule, StringComparison.Ordinal) < details.IndexOf("module-card__sources", StringComparison.Ordinal),
                 CardHtml.Prose(folded).Contains(rule))
             .ShouldBe((true, true, false));
     }

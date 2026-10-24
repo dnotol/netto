@@ -18,9 +18,6 @@
   <data name="Summary" xml:space="preserve">
     <value>{0} to your pocket · {1} left</value>
   </data>
-  <data name="Waiting" xml:space="preserve">
-    <value>Waiting for the company's year.</value>
-  </data>
   <data name="Hint" xml:space="preserve">
     <value>What the company can pay you back for working from home with your own office, internet, computer and phone: costs that are its own, so neither pay nor income for your social contributions. It pays them out of its profit, before your pay, and deducts them in full, like its own running costs: nothing is added back to its taxable income.</value>
   </data>
@@ -50,12 +47,6 @@
   </data>
   <data name="PhoneLabel" xml:space="preserve">
     <value>Phone costs reimbursed for the year</value>
-  </data>
-  <data name="DetailsLabel" xml:space="preserve">
-    <value>Where these figures come from</value>
-  </data>
-  <data name="SourcesTitle" xml:space="preserve">
-    <value>The rules, with the income year {0} amounts</value>
   </data>
   <data name="Remove" xml:space="preserve">
     <value>Remove expense allowances from your plan</value>

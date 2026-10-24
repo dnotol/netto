@@ -1,5 +1,4 @@
 @using Netto.Core.Vouchers
-@using Netto.Web.Client.Steps
 @inject IStringLocalizer<VoucherCard> L
 
 @* What the company pays the director besides pay, before the split: meal vouchers, one per day
@@ -13,58 +12,50 @@
    the conditions with their texts. The amounts are taken while typing, like revenue, and carry no Min
    or Max: the engine refuses what the rules do not allow, and its message is what the user has to
    see. Skipped with the company. *@
-<ModuleCard Name="@ModuleFolds.Name(OptionalModule.Vouchers)" Title="@L["Title"]" Summary="@Summary" Glance="@Glance" ToYou="@_view?.ToYou" Help="@L["Hint"]" Skipped="Inputs.Company is null" Refused="@Refused"
-            Details="@Details"
-            DetailsLabel="@L["DetailsLabel"]" RemoveLabel="@L["Remove"]" OnRemove="Remove">
-    @if (Inputs.Company is null)
+<ModuleCard Name="@ModuleFolds.Name(OptionalModule.Vouchers)" Title="@L["Title"]" Summary="@Summary" Glance="@Glance" ToYou="@_view?.ToYou" Help="@L["Hint"]" Waiting="Inputs.Company is null" Refused="@Refused"
+            Sources="@(_view?.Details ?? [])" IncomeYear="Inputs.IncomeYear" RemoveLabel="@L["Remove"]" OnRemove="Remove">
+    <div class="vouchers__fields">
+        <RiverField Label="@L["MealDaysLabel"]" For="river-meal-voucher-days" Origin="Inputs.Vouchers.MealVoucherDays.Origin">
+            <RiverNumericField T="int" InputId="river-meal-voucher-days" Value="Inputs.Vouchers.MealVoucherDays.Value" ValueChanged="OnMealVoucherDaysChanged"
+                               Culture="Formats.Culture" HideSpinButtons="true" Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true"
+                               DebounceInterval="400"
+                               Error="@(Refused is VoucherCalculator.MealVoucherDaysNegative or VoucherCalculator.MealVoucherDaysAboveYear)" Refusal="@Refused" />
+            @if (_rules is not null)
+            {
+                <p class="vouchers__note">@L["MealDaysHint", Formats.RuleAmount(_rules.MealVoucherCompanyShare), Formats.RuleAmount(_rules.MealVoucherHolderShare)]</p>
+            }
+        </RiverField>
+        <RiverField Label="@L["EcoLabel"]" For="river-eco-vouchers" Origin="Inputs.Vouchers.EcoVouchers.Origin">
+            <RiverNumericField T="decimal" InputId="river-eco-vouchers" Value="Inputs.Vouchers.EcoVouchers.Value" ValueChanged="OnEcoVouchersChanged"
+                               Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
+                               Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
+                               Error="@(Refused is VoucherCalculator.EcoVouchersNegative or VoucherCalculator.EcoVouchersAboveMaximum)" Refusal="@Refused" />
+            @if (_rules is not null)
+            {
+                <p class="vouchers__note">@L["YearlyMaximum", Formats.RuleAmount(_rules.EcoVouchersMaximum)]</p>
+            }
+        </RiverField>
+        <RiverField Label="@L["SportCultureLabel"]" For="river-sport-culture-vouchers" Origin="Inputs.Vouchers.SportCultureVouchers.Origin">
+            <RiverNumericField T="decimal" InputId="river-sport-culture-vouchers" Value="Inputs.Vouchers.SportCultureVouchers.Value"
+                               ValueChanged="OnSportCultureVouchersChanged"
+                               Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
+                               Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
+                               Error="@(Refused is VoucherCalculator.SportCultureVouchersNegative or VoucherCalculator.SportCultureVouchersAboveMaximum)" Refusal="@Refused" />
+            @if (_rules is not null)
+            {
+                <p class="vouchers__note">@L["YearlyMaximum", Formats.RuleAmount(_rules.SportCultureVouchersMaximum)]</p>
+            }
+        </RiverField>
+    </div>
+    <RefusedMessage Error="@Refused" />
+    @if (_view is not null)
     {
-        <p class="vouchers__waiting">@L["Waiting"]</p>
+        <FigureList Figures="@FigureWords.Of(L, VoucherFigures.From(_view))" />
+        <DrainList Drains="_view.Drains" />
     }
-    else
+    @if (_rules is not null)
     {
-        <div class="vouchers__fields">
-            <RiverField Label="@L["MealDaysLabel"]" For="river-meal-voucher-days" Origin="Inputs.Vouchers.MealVoucherDays.Origin">
-                <RiverNumericField T="int" InputId="river-meal-voucher-days" Value="Inputs.Vouchers.MealVoucherDays.Value" ValueChanged="OnMealVoucherDaysChanged"
-                                   Culture="Formats.Culture" HideSpinButtons="true" Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true"
-                                   DebounceInterval="400"
-                                   Error="@(Refused is VoucherCalculator.MealVoucherDaysNegative or VoucherCalculator.MealVoucherDaysAboveYear)" Refusal="@Refused" />
-                @if (_rules is not null)
-                {
-                    <p class="vouchers__note">@L["MealDaysHint", Formats.RuleAmount(_rules.MealVoucherCompanyShare), Formats.RuleAmount(_rules.MealVoucherHolderShare)]</p>
-                }
-            </RiverField>
-            <RiverField Label="@L["EcoLabel"]" For="river-eco-vouchers" Origin="Inputs.Vouchers.EcoVouchers.Origin">
-                <RiverNumericField T="decimal" InputId="river-eco-vouchers" Value="Inputs.Vouchers.EcoVouchers.Value" ValueChanged="OnEcoVouchersChanged"
-                                   Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
-                                   Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
-                                   Error="@(Refused is VoucherCalculator.EcoVouchersNegative or VoucherCalculator.EcoVouchersAboveMaximum)" Refusal="@Refused" />
-                @if (_rules is not null)
-                {
-                    <p class="vouchers__note">@L["YearlyMaximum", Formats.RuleAmount(_rules.EcoVouchersMaximum)]</p>
-                }
-            </RiverField>
-            <RiverField Label="@L["SportCultureLabel"]" For="river-sport-culture-vouchers" Origin="Inputs.Vouchers.SportCultureVouchers.Origin">
-                <RiverNumericField T="decimal" InputId="river-sport-culture-vouchers" Value="Inputs.Vouchers.SportCultureVouchers.Value"
-                                   ValueChanged="OnSportCultureVouchersChanged"
-                                   Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
-                                   Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
-                                   Error="@(Refused is VoucherCalculator.SportCultureVouchersNegative or VoucherCalculator.SportCultureVouchersAboveMaximum)" Refusal="@Refused" />
-                @if (_rules is not null)
-                {
-                    <p class="vouchers__note">@L["YearlyMaximum", Formats.RuleAmount(_rules.SportCultureVouchersMaximum)]</p>
-                }
-            </RiverField>
-        </div>
-        <RefusedMessage Error="@Refused" />
-        @if (_view is not null)
-        {
-            <FigureList Figures="@FigureWords.Of(L, VoucherFigures.From(_view))" />
-            <DrainList Drains="_view.Drains" />
-        }
-        @if (_rules is not null)
-        {
-            <ConditionList Name="vouchers-conditions" Conditions="_rules.Conditions" />
-        }
+        <ConditionList Name="vouchers-conditions" Conditions="_rules.Conditions" />
     }
 </ModuleCard>
 
@@ -97,13 +88,6 @@
 
     // What reaches the pocket, for the card's row in the river's outline.
     private CardGlance? Glance => _view is { } view ? new(GlanceKind.ToYou, Formats.Euros(view.Total)) : null;
-
-    private RenderFragment? Details => _view is { Details.Count: > 0 } view && Run.Year is { } year
-        ? @<text>
-              <h4 class="vouchers__sources">@L["SourcesTitle", year.Scenario.IncomeYear]</h4>
-              <StepDetails Details="view.Details" />
-          </text>
-        : null;
 
     private Task OnMealVoucherDaysChanged(int days) => InputsChanged.InvokeAsync(Inputs.WithMealVoucherDays(days));
 

@@ -1,5 +1,4 @@
 @using Netto.Core.Allowances
-@using Netto.Web.Client.Steps
 @inject IStringLocalizer<AllowanceCard> L
 
 @* What the company pays the director besides pay after the vouchers, before the split: flat-rate
@@ -16,62 +15,54 @@
    their texts, the director's own case first. The amounts are taken while typing, like revenue, and
    carry no Min or Max: the engine refuses what the rules do not allow, and its message is what the
    user has to see. Skipped with the company. *@
-<ModuleCard Name="@ModuleFolds.Name(OptionalModule.Allowances)" Title="@L["Title"]" Summary="@Summary" Glance="@Glance" ToYou="@_view?.ToYou" Help="@L["Hint"]" Skipped="Inputs.Company is null"
-            Refused="@Refused" Details="@Details"
-            DetailsLabel="@L["DetailsLabel"]" RemoveLabel="@L["Remove"]" OnRemove="Remove">
-    @if (Inputs.Company is null)
+<ModuleCard Name="@ModuleFolds.Name(OptionalModule.Allowances)" Title="@L["Title"]" Summary="@Summary" Glance="@Glance" ToYou="@_view?.ToYou" Help="@L["Hint"]" Waiting="Inputs.Company is null"
+            Refused="@Refused" Sources="@(_view?.Details ?? [])" IncomeYear="Inputs.IncomeYear" RemoveLabel="@L["Remove"]" OnRemove="Remove">
+    <div class="allowances__fields">
+        <RiverField Label="@L["OfficeLabel"]" For="river-office-allowance" Origin="Inputs.Allowances.Office.Origin" Help="@OfficeHelp">
+            <RiverNumericField T="decimal" InputId="river-office-allowance" Value="Inputs.Allowances.Office.Value" ValueChanged="OnOfficeChanged"
+                               Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
+                               Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
+                               Error="@(Refused is AllowanceCalculator.OfficeAllowanceNegative or AllowanceCalculator.OfficeAllowanceAboveMaximum)" Refusal="@Refused" />
+            @if (_rules is not null)
+            {
+                <p class="allowances__note">@L["OfficeMaximum", Formats.Euros(AllowanceCalculator.OfficeAllowanceMaximum(_rules))]</p>
+            }
+        </RiverField>
+        <RiverField Label="@L["InternetLabel"]" For="river-internet-allowance" Origin="Inputs.Allowances.Internet.Origin">
+            <RiverNumericField T="decimal" InputId="river-internet-allowance" Value="Inputs.Allowances.Internet.Value" ValueChanged="OnInternetChanged"
+                               Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
+                               Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
+                               Error="@(Refused is AllowanceCalculator.InternetAllowanceNegative or AllowanceCalculator.InternetAllowanceAboveMaximum)" Refusal="@Refused" />
+            @if (_rules is not null)
+            {
+                <p class="allowances__note">@L["MonthlyMaximum", Formats.RuleAmount(_rules.InternetAllowanceMonthlyMaximum), Formats.Euros(AllowanceCalculator.InternetAllowanceMaximum(_rules))]</p>
+            }
+        </RiverField>
+        <RiverField Label="@L["ComputerLabel"]" For="river-computer-allowance" Origin="Inputs.Allowances.Computer.Origin">
+            <RiverNumericField T="decimal" InputId="river-computer-allowance" Value="Inputs.Allowances.Computer.Value" ValueChanged="OnComputerChanged"
+                               Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
+                               Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
+                               Error="@(Refused is AllowanceCalculator.ComputerAllowanceNegative or AllowanceCalculator.ComputerAllowanceAboveMaximum)" Refusal="@Refused" />
+            @if (_rules is not null)
+            {
+                <p class="allowances__note">@L["MonthlyMaximum", Formats.RuleAmount(_rules.ComputerAllowanceMonthlyMaximum), Formats.Euros(AllowanceCalculator.ComputerAllowanceMaximum(_rules))]</p>
+            }
+        </RiverField>
+        <RiverField Label="@L["PhoneLabel"]" For="river-phone-costs" Origin="Inputs.Allowances.Phone.Origin">
+            <RiverNumericField T="decimal" InputId="river-phone-costs" Value="Inputs.Allowances.Phone.Value" ValueChanged="OnPhoneChanged"
+                               Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
+                               Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
+                               Error="@(Refused is AllowanceCalculator.PhoneCostsNegative)" Refusal="@Refused" />
+        </RiverField>
+    </div>
+    <RefusedMessage Error="@Refused" />
+    @if (_view is not null)
     {
-        <p class="allowances__waiting">@L["Waiting"]</p>
+        <DrainList Drains="_view.Drains" />
     }
-    else
+    @if (_rules is not null)
     {
-        <div class="allowances__fields">
-            <RiverField Label="@L["OfficeLabel"]" For="river-office-allowance" Origin="Inputs.Allowances.Office.Origin" Help="@OfficeHelp">
-                <RiverNumericField T="decimal" InputId="river-office-allowance" Value="Inputs.Allowances.Office.Value" ValueChanged="OnOfficeChanged"
-                                   Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
-                                   Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
-                                   Error="@(Refused is AllowanceCalculator.OfficeAllowanceNegative or AllowanceCalculator.OfficeAllowanceAboveMaximum)" Refusal="@Refused" />
-                @if (_rules is not null)
-                {
-                    <p class="allowances__note">@L["OfficeMaximum", Formats.Euros(AllowanceCalculator.OfficeAllowanceMaximum(_rules))]</p>
-                }
-            </RiverField>
-            <RiverField Label="@L["InternetLabel"]" For="river-internet-allowance" Origin="Inputs.Allowances.Internet.Origin">
-                <RiverNumericField T="decimal" InputId="river-internet-allowance" Value="Inputs.Allowances.Internet.Value" ValueChanged="OnInternetChanged"
-                                   Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
-                                   Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
-                                   Error="@(Refused is AllowanceCalculator.InternetAllowanceNegative or AllowanceCalculator.InternetAllowanceAboveMaximum)" Refusal="@Refused" />
-                @if (_rules is not null)
-                {
-                    <p class="allowances__note">@L["MonthlyMaximum", Formats.RuleAmount(_rules.InternetAllowanceMonthlyMaximum), Formats.Euros(AllowanceCalculator.InternetAllowanceMaximum(_rules))]</p>
-                }
-            </RiverField>
-            <RiverField Label="@L["ComputerLabel"]" For="river-computer-allowance" Origin="Inputs.Allowances.Computer.Origin">
-                <RiverNumericField T="decimal" InputId="river-computer-allowance" Value="Inputs.Allowances.Computer.Value" ValueChanged="OnComputerChanged"
-                                   Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
-                                   Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
-                                   Error="@(Refused is AllowanceCalculator.ComputerAllowanceNegative or AllowanceCalculator.ComputerAllowanceAboveMaximum)" Refusal="@Refused" />
-                @if (_rules is not null)
-                {
-                    <p class="allowances__note">@L["MonthlyMaximum", Formats.RuleAmount(_rules.ComputerAllowanceMonthlyMaximum), Formats.Euros(AllowanceCalculator.ComputerAllowanceMaximum(_rules))]</p>
-                }
-            </RiverField>
-            <RiverField Label="@L["PhoneLabel"]" For="river-phone-costs" Origin="Inputs.Allowances.Phone.Origin">
-                <RiverNumericField T="decimal" InputId="river-phone-costs" Value="Inputs.Allowances.Phone.Value" ValueChanged="OnPhoneChanged"
-                                   Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
-                                   Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
-                                   Error="@(Refused is AllowanceCalculator.PhoneCostsNegative)" Refusal="@Refused" />
-            </RiverField>
-        </div>
-        <RefusedMessage Error="@Refused" />
-        @if (_view is not null)
-        {
-            <DrainList Drains="_view.Drains" />
-        }
-        @if (_rules is not null)
-        {
-            <ConditionList Name="allowances-conditions" Conditions="_rules.Conditions" />
-        }
+        <ConditionList Name="allowances-conditions" Conditions="_rules.Conditions" />
     }
 </ModuleCard>
 
@@ -104,13 +95,6 @@
 
     // What reaches the pocket, for the card's row in the river's outline.
     private CardGlance? Glance => _view is { } view ? new(GlanceKind.ToYou, Formats.Euros(view.Total)) : null;
-
-    private RenderFragment? Details => _view is { Details.Count: > 0 } view && Run.Year is { } year
-        ? @<text>
-              <h4 class="allowances__sources">@L["SourcesTitle", year.Scenario.IncomeYear]</h4>
-              <StepDetails Details="view.Details" />
-          </text>
-        : null;
 
     // The monthly maxima the office allowance's yearly one adds up, in the bubble after its label.
     private string? OfficeHelp => _rules is { } rules ? L["OfficeHelp", OfficeMonths(rules)].Value : null;

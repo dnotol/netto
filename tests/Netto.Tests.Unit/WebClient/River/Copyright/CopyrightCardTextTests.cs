@@ -122,8 +122,8 @@ public class CopyrightCardTextTests
     {
         string[] keys =
         [
-            "Title", "Hint", "Waiting", "AverageLabel", "AverageHint", "AttestationLabel", "AttestationHint", "CreativeShareLabel", "CreativeShareHint", "NoRoyaltyYet",
-            "Readings", "WithTitle", "WithoutTitle", "DetailsLabel", "SourcesTitle", "Remove",
+            "Title", "Hint", "AverageLabel", "AverageHint", "AttestationLabel", "AttestationHint", "CreativeShareLabel", "CreativeShareHint", "NoRoyaltyYet",
+            "Readings", "WithTitle", "WithoutTitle", "Remove",
         ];
 
         Resources.Missing(keys).ShouldBeEmpty();

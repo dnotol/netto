@@ -1,7 +1,6 @@
 @using Netto.Core.Copyright
 @using Netto.Core.CorporateTax
 @using Netto.Web.Client.River
-@using Netto.Web.Client.Steps
 @inject IStringLocalizer<CopyrightCard> L
 
 @* At the top of the director's stream, after the split, which pays it beside the pay: a copyright
@@ -20,70 +19,62 @@
    the part beyond going on to Director pay. Where no text settles a point, the reading Netto takes is in
    its details, above the sources. An optional module: it shows only while in the plan, and the word at
    its bottom takes it out, its values kept. Skipped with the company. *@
-<ModuleCard Name="@ModuleFolds.Name(OptionalModule.Copyright)" Title="@L["Title"]" Summary="@Summary" Glance="@Glance" ToYou="@_view?.ToYou" Help="@L["Hint"]" Skipped="Inputs.Company is null"
-            Refused="@Refused" Details="@Details"
-            DetailsLabel="@L["DetailsLabel"]" RemoveLabel="@L["Remove"]" OnRemove="Remove">
-    @if (Inputs.Company is null)
+<ModuleCard Name="@ModuleFolds.Name(OptionalModule.Copyright)" Title="@L["Title"]" Summary="@Summary" Glance="@Glance" ToYou="@_view?.ToYou" Help="@L["Hint"]" Waiting="Inputs.Company is null"
+            Refused="@Refused" Details="@Details" Sources="@(_view?.Details ?? [])" IncomeYear="Inputs.IncomeYear" RemoveLabel="@L["Remove"]" OnRemove="Remove">
+    <Disclosure Title="@L["SituationTitle"]" Values="@SettingWords.Of(L, _settings.Situation)" Refused="@CopyrightSettingsView.SituationHolds(Refused)"
+                OpenByDefault="@_settings.NeedsFacts">
+        <RiverField Label="@L["CreativeShareLabel"]" For="river-copyright-creative-share"
+                    Origin="@(Inputs.Copyright.CreativeShare.Value is null ? null : Inputs.Copyright.CreativeShare.Origin)" Help="@L["CreativeShareHint"]">
+            <RiverNumericField T="decimal?" InputId="river-copyright-creative-share" Value="CreativeSharePercent" ValueChanged="OnCreativeSharePercentChanged"
+                               Format="0.##" Culture="Formats.Culture" Adornment="Adornment.End" AdornmentText="%" HideSpinButtons="true"
+                               Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
+                               Error="@(Refused == CopyrightCalculator.CreativeShareOutOfRange)" Refusal="@Refused" />
+        </RiverField>
+        <div class="copyright__tick">
+            <MudCheckBox T="bool" Value="Inputs.Copyright.AverageWithinCap.Value" ValueChanged="OnAverageChanged" Color="Color.Primary"
+                         Label="@L["AverageLabel", Formats.Euros(_rules?.Cap.Value ?? 0m)]" />
+            <OriginChip Origin="Inputs.Copyright.AverageWithinCap.Origin" />
+            <InfoBubble Label="@L["AverageLabel", Formats.Euros(_rules?.Cap.Value ?? 0m)]">@L["AverageHint"]</InfoBubble>
+        </div>
+        <div class="copyright__tick">
+            <MudCheckBox T="bool" Value="Inputs.Copyright.HoldsAttestation.Value" ValueChanged="OnAttestationChanged" Color="Color.Primary"
+                         Label="@L["AttestationLabel"]" />
+            <OriginChip Origin="Inputs.Copyright.HoldsAttestation.Origin" />
+            <InfoBubble Label="@L["AttestationLabel"]">@L["AttestationHint"]</InfoBubble>
+        </div>
+    </Disclosure>
+    <RefusedMessage Error="@Refused" />
+    @if (_view is { HasRoyalty: true } shown && _rules is not null)
     {
-        <p class="copyright__waiting">@L["Waiting"]</p>
-    }
-    else
-    {
-        <Disclosure Title="@L["SituationTitle"]" Values="@SettingWords.Of(L, _settings.Situation)" Refused="@CopyrightSettingsView.SituationHolds(Refused)"
-                    OpenByDefault="@_settings.NeedsFacts">
-            <RiverField Label="@L["CreativeShareLabel"]" For="river-copyright-creative-share"
-                        Origin="@(Inputs.Copyright.CreativeShare.Value is null ? null : Inputs.Copyright.CreativeShare.Origin)" Help="@L["CreativeShareHint"]">
-                <RiverNumericField T="decimal?" InputId="river-copyright-creative-share" Value="CreativeSharePercent" ValueChanged="OnCreativeSharePercentChanged"
-                                   Format="0.##" Culture="Formats.Culture" Adornment="Adornment.End" AdornmentText="%" HideSpinButtons="true"
-                                   Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
-                                   Error="@(Refused == CopyrightCalculator.CreativeShareOutOfRange)" Refusal="@Refused" />
-            </RiverField>
-            <div class="copyright__tick">
-                <MudCheckBox T="bool" Value="Inputs.Copyright.AverageWithinCap.Value" ValueChanged="OnAverageChanged" Color="Color.Primary"
-                             Label="@L["AverageLabel", Formats.Euros(_rules?.Cap.Value ?? 0m)]" />
-                <OriginChip Origin="Inputs.Copyright.AverageWithinCap.Origin" />
-                <InfoBubble Label="@L["AverageLabel", Formats.Euros(_rules?.Cap.Value ?? 0m)]">@L["AverageHint"]</InfoBubble>
-            </div>
-            <div class="copyright__tick">
-                <MudCheckBox T="bool" Value="Inputs.Copyright.HoldsAttestation.Value" ValueChanged="OnAttestationChanged" Color="Color.Primary"
-                             Label="@L["AttestationLabel"]" />
-                <OriginChip Origin="Inputs.Copyright.HoldsAttestation.Origin" />
-                <InfoBubble Label="@L["AttestationLabel"]">@L["AttestationHint"]</InfoBubble>
-            </div>
-        </Disclosure>
-        <RefusedMessage Error="@Refused" />
-        @if (_view is { HasRoyalty: true } shown && _rules is not null)
+        var result = shown.Result;
+        <FigureList Figures="@FigureWords.Of(L, CopyrightFigures.Royalty(result, _rules))" />
+        <p class="copyright__note">@L[CopyrightCardText.Limits(result), Formats.Euros(result.Royalty), Formats.Euros(result.WithinLimits),
+                                      Formats.Euros(result.RelativeLimit), Formats.Euros(result.Cap), Formats.Euros(result.TaxedAsPay), Inputs.IncomeYear,
+                                      Formats.RuleAmount(_rules.RelativeLimit)]</p>
+        @if (_comparison is { } comparison)
         {
-            var result = shown.Result;
-            <FigureList Figures="@FigureWords.Of(L, CopyrightFigures.Royalty(result, _rules))" />
-            <p class="copyright__note">@L[CopyrightCardText.Limits(result), Formats.Euros(result.Royalty), Formats.Euros(result.WithinLimits),
-                                          Formats.Euros(result.RelativeLimit), Formats.Euros(result.Cap), Formats.Euros(result.TaxedAsPay), Inputs.IncomeYear,
-                                          Formats.RuleAmount(_rules.RelativeLimit)]</p>
-            @if (_comparison is { } comparison)
-            {
-                <div class="copyright__comparison">
-                    <h3 class="copyright__comparison-title">@L["WithTitle"]</h3>
-                    <FigureList Figures="@FigureWords.Of(L, CopyrightFigures.With(comparison))" />
-                    <h3 class="copyright__comparison-title">@L["WithoutTitle"]</h3>
-                    <FigureList Figures="@FigureWords.Of(L, CopyrightFigures.Without(comparison))" />
-                    <div class="copyright__difference">
-                        <FigureList Figures="@FigureWords.Of(L, CopyrightFigures.Difference(comparison))" />
-                    </div>
+            <div class="copyright__comparison">
+                <h3 class="copyright__comparison-title">@L["WithTitle"]</h3>
+                <FigureList Figures="@FigureWords.Of(L, CopyrightFigures.With(comparison))" />
+                <h3 class="copyright__comparison-title">@L["WithoutTitle"]</h3>
+                <FigureList Figures="@FigureWords.Of(L, CopyrightFigures.Without(comparison))" />
+                <div class="copyright__difference">
+                    <FigureList Figures="@FigureWords.Of(L, CopyrightFigures.Difference(comparison))" />
                 </div>
-            }
+            </div>
         }
-        else if (Refused is null)
-        {
-            <p class="copyright__note">@L["NoRoyaltyYet"]</p>
-        }
-        @if (_view is not null)
-        {
-            <DrainList Drains="_view.Drains" />
-        }
-        @if (_rules is not null)
-        {
-            <ConditionList Name="copyright-conditions" Conditions="_rules.Conditions" />
-        }
+    }
+    else if (Refused is null)
+    {
+        <p class="copyright__note">@L["NoRoyaltyYet"]</p>
+    }
+    @if (_view is not null)
+    {
+        <DrainList Drains="_view.Drains" />
+    }
+    @if (_rules is not null)
+    {
+        <ConditionList Name="copyright-conditions" Conditions="_rules.Conditions" />
     }
 </ModuleCard>
 
@@ -122,11 +113,9 @@
     private CardGlance? Glance => _view is { } view ? CopyrightCardText.Glance(view) : null;
 
     // Where no text settles a point, the reading Netto takes, word for word above the sources.
-    private RenderFragment? Details => _view is { Details.Count: > 0 } view && Run.Year is { } year
+    private RenderFragment? Details => _view is { Details.Count: > 0 }
         ? @<text>
               <p class="copyright__reading">@L["Readings", Formats.Euros(CorporateTaxRules.For(Inputs.IncomeYear)?.MinimumDirectorPay.Value ?? 0m)]</p>
-              <h4 class="copyright__sources">@L["SourcesTitle", year.Scenario.IncomeYear]</h4>
-              <StepDetails Details="view.Details" />
           </text>
         : null;
 

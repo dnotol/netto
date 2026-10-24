@@ -1,24 +1,43 @@
 @implements IDisposable
+@using Netto.Web.Client.Steps
 @inject IStringLocalizer<ModuleCard> L
 
 @* The frame every module of the river shares: its title and what flows through it, on the one line it
    folds to (Fold), where it starts until opened, and which a refusal inside opens (Refused), with what
-   the module is in a bubble at its end (Help), then its controls and its detail view, folded under them to one line of its own
-   (Fold, level 3) and opened on demand, and last, for an optional module, the word that takes it out
-   of the plan. A skipped module is drawn dashed, waiting for the amounts it needs. The summary ends
-   on one share, worded here for every card: what reaches the pocket of what the module receives
-   (ToYou), or, for Corporate tax, what it passes on (PassesOn); none while no money flows through it.
+   the module is in a bubble at its end (Help), then its controls and its detail view, folded under them
+   to one line of its own (Fold, level 3) and opened on demand: what the card gives there (Details),
+   then the rules its steps cite (Sources) with the income year's amounts, worded here for every card
+   unless the card words its own (DetailsLabel, SourcesTitle); and last, for an optional module, the
+   word that takes it out of the plan. A skipped module is drawn dashed: Company year with its own
+   word, any other waiting for the company's year (Waiting), which it says instead of its content. The
+   summary ends on one share, worded here for every card: what reaches the pocket of what the module
+   receives (ToYou), or, for Corporate tax, what it passes on (PassesOn); none while no money flows
+   through it.
    Every time it is drawn, it tells the river's outline (OutlineRows) its title, one figure of its
    summary (Glance) and its fold, and leaves the outline as it goes; the outline finds it by its id. *@
-<section id="@($"card-{Name}")" class="module-card @(Skipped ? "module-card--skipped" : null)" aria-labelledby="@_titleId">
+<section id="@($"card-{Name}")" class="module-card @(Skipped || Waiting ? "module-card--skipped" : null)" aria-labelledby="@_titleId">
     <Fold Name="@Name" Title="@Title" TitleId="@_titleId" Summary="@Summary" Rate="@Rate" Help="@Help" Refused="@(Refused is not null)">
         <div class="module-card__body">
-            @ChildContent
-            @if (Details is not null)
+            @if (Waiting)
             {
-                <Fold Name="@($"{Name}-details")" Title="@DetailsLabel" Level="3" OpenByDefault="false">
-                    <div class="module-card__detail">@Details</div>
-                </Fold>
+                <p class="module-card__waiting">@L[ModuleCardText.Waiting]</p>
+            }
+            else
+            {
+                @ChildContent
+                @if (Details is not null || Sources.Count > 0)
+                {
+                    <Fold Name="@($"{Name}-details")" Title="@(DetailsLabel ?? L[ModuleCardText.DetailsLabel].Value)" Level="3" OpenByDefault="false">
+                        <div class="module-card__detail">
+                            @Details
+                            @if (Sources.Count > 0)
+                            {
+                                <h4 class="module-card__sources">@(SourcesTitle ?? L[ModuleCardText.SourcesTitle, IncomeYear].Value)</h4>
+                                <StepDetails Details="Sources" />
+                            }
+                        </div>
+                    </Fold>
+                }
             }
             @if (RemoveLabel is not null)
             {
@@ -59,24 +78,42 @@
     [Parameter]
     public string? Help { get; set; }
 
+    // Company year once its figures are cleared: drawn dashed, its content saying so.
     [Parameter]
     public bool Skipped { get; set; }
+
+    // A module waiting for the company's year: drawn dashed, saying so instead of its content.
+    [Parameter]
+    public bool Waiting { get; set; }
 
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
-    // The depth behind the module's figures: the pay slip, the rules and their sources.
+    // What the card gives in its detail view before the rules: the pay slip, a rule its figures rest on
+    // beyond their steps' own.
     [Parameter]
     public RenderFragment? Details { get; set; }
+
+    // The engine's steps the card's figures come from, each with the texts and amounts it cites, under
+    // the rules of the income year: none for a card with no figures yet.
+    [Parameter]
+    public IReadOnlyList<StepDetail> Sources { get; set; } = [];
+
+    [Parameter]
+    public int IncomeYear { get; set; }
 
     // The engine's error key when it refuses a field of this card: the card opens, and stays open, so a
     // refusal is never hidden.
     [Parameter]
     public string? Refused { get; set; }
 
-    // The detail view's line, folded or open.
+    // The detail view's line, folded or open, and the title over its rules, for a card that words its
+    // own; « Where these figures come from » and « The rules, with the income year … amounts » otherwise.
     [Parameter]
-    public string DetailsLabel { get; set; } = "";
+    public string? DetailsLabel { get; set; }
+
+    [Parameter]
+    public string? SourcesTitle { get; set; }
 
     // An optional module's « Remove … from your plan », a word at the bottom of the open card; none
     // for a core module.

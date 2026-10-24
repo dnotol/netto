@@ -1,9 +1,3 @@
-.car__waiting {
-    margin: 0;
-    color: var(--netto-text-muted);
-    line-height: 1.55;
-}
-
 /* The inputs side by side when the card is wide enough, stacked otherwise; a row lines its inputs up
    along their bottoms, whichever labels wrap. */
 .car__fields {
@@ -60,15 +54,7 @@
         line-height: 1.55;
     }
 
-
 .car__gap {
     color: var(--netto-text);
     font-weight: 500;
-}
-
-.car__sources {
-    margin: 0;
-    font-family: "Fraunces", Georgia, serif;
-    font-size: 1.1rem;
-    font-weight: 600;
 }
