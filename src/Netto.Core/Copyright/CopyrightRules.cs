@@ -65,17 +65,10 @@ public sealed record CopyrightRules(
         Reference = "§1, 4°: 15% on the first tranche of copyright income, up to 30% or 77,220; §1, 1°: 30% on movable income §1 sets no other rate for",
     };
 
-    private static readonly Source Article49 = new(
-        "CIR 92, art. 49 (revenus 2026), coordinated text on Fisconetplus, last modified 04.02.2026",
-        "The costs made or borne in the period to acquire or keep taxable income are deductible professional costs",
-        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/34fb9ab5-38a2-4f93-b73d-0727e67e54d3"),
-        "corporate-tax/spf-finances_cir92-art-49-revenus-2026_2026-02-04.html") { Label = "CIR 92, art. 49" };
+    private static readonly Source Article49 = SharedSources.Article49Income2026;
 
-    private static readonly Source Article57 = new(
-        "CIR 92, art. 57 (revenus 2026), coordinated text on Fisconetplus, last modified 05.02.2026",
-        "Al. 1, 4°: copyright income of art. 17 §1, 5° is a professional cost only when justified by individual fiches, the 281.45",
-        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/c4a55933-7d39-42c3-9403-fd2ed7c860e3"),
-        "corporate-tax/spf-finances_cir92-art-57-revenus-2026_2026-02-05.html") { Label = "CIR 92, art. 57" };
+    private static readonly Source Article57 = Source.Fisconet("corporate-tax", 57, 2026, new DateOnly(2026, 2, 5), "c4a55933-7d39-42c3-9403-fd2ed7c860e3",
+        "Al. 1, 4°: copyright income of art. 17 §1, 5° is a professional cost only when justified by individual fiches, the 281.45");
 
     private static readonly Source Article53Income2026 = SharedSources.Article53Income2026 with
     {

@@ -36,7 +36,10 @@ internal static class SharedSources
     internal static readonly Source Article32Income2026 = Source.Fisconet("personal-tax", 32, 2026, new DateOnly(2026, 1, 29), "7628aa2c-168a-4bd8-aec4-288108a91757",
         "A director's pay is what they obtain for their office or their functions in the company, whatever its name");
 
-    internal static readonly Source Article53Income2026 = Source.Fisconet("corporate-tax", 53, 2026, new DateOnly(2026, 2, 18), "796aa044-5b54-4569-88a4-abe7be55e077",
+    internal static readonly Source Article49Income2026 = Source.Fisconet("corporate-tax", 49, 2026, new DateOnly(2026, 2, 4), "34fb9ab5-38a2-4f93-b73d-0727e67e54d3",
+        "The costs made or borne in the period to acquire or keep taxable income are deductible professional costs");
+
+    internal static readonly Source Article53Income2026 =Source.Fisconet("corporate-tax", 53, 2026, new DateOnly(2026, 2, 18), "796aa044-5b54-4569-88a4-abe7be55e077",
         "The costs that are not professional costs");
 
     internal static readonly Source Article157Income2025 = Source.Fisconet("personal-tax", 157, 2025, new DateOnly(2025, 1, 16), "cdf69919-b665-491b-9a02-059fd68dd24f",

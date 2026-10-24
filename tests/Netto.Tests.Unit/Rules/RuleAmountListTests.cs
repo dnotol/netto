@@ -7,15 +7,18 @@ using Shouldly;
 
 namespace Netto.Tests.Rules;
 
-// The steps of the pay, the personal tax, the corporate tax and the withholding cite the amounts they used
-// through their rule set's lists (Amounts, IncomeTaxAmounts, SurchargeAmounts and the like), which is also
-// how SourceDocumentTests reaches them. An amount added to one of these rule records and to none of its
+// The steps of the pay, the company's INASTI contribution, the personal tax, the corporate tax and the
+// withholding cite the amounts they used through their rule set's lists (Amounts, IncomeTaxAmounts,
+// SurchargeAmounts and the like), which is also how SourceDocumentTests reaches them. An amount added to one of these rule records and to none of its
 // lists would be computed with, yet cited by no step and held to no document. So every amount such a record
 // holds, its nested rules records' included, is in a list of the record or of those nested records. Bands
 // and deadlines are records of their own, listed through their rule set (Scale, Deadlines), and not walked.
 public class RuleAmountListTests
 {
-    public static TheoryData<Type> RuleTypes => new() { typeof(SocialContributionRules), typeof(PersonalTaxRules), typeof(CorporateTaxRules), typeof(WithholdingRules) };
+    public static TheoryData<Type> RuleTypes => new()
+    {
+        typeof(SocialContributionRules), typeof(CompanyContributionRules), typeof(PersonalTaxRules), typeof(CorporateTaxRules), typeof(WithholdingRules),
+    };
 
     [Theory]
     [MemberData(nameof(RuleTypes))]
@@ -34,6 +37,7 @@ public class RuleAmountListTests
     // 1 November (WithholdingRules.Later).
     [Theory]
     [InlineData(typeof(SocialContributionRules), new[] { "SocialContributionRules" })]
+    [InlineData(typeof(CompanyContributionRules), new[] { "CompanyContributionRules" })]
     [InlineData(typeof(PersonalTaxRules), new[] { "PersonalTaxRules", "LowEarnedIncomeCreditRules", "IncomeTaxAdvancePaymentRules" })]
     [InlineData(typeof(CorporateTaxRules), new[] { "CorporateTaxRules", "AdvancePaymentRules" })]
     [InlineData(typeof(WithholdingRules), new[] { "WithholdingRules", "WithholdingRules" })]
