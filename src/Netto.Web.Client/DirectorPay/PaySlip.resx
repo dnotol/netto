@@ -81,6 +81,9 @@
   <data name="NextCompanyPaysNote" xml:space="preserve">
     <value>The contributions are what the next €1,000 adds to those the company pays for you, on top of it: the other parts add up to €1,000, and all of them to what it costs the company, so the shares go over 100% together.</value>
   </data>
+  <data name="NextCompanyPaysNote_WithFee" xml:space="preserve">
+    <value>The contributions and your fund's fee are what the next €1,000 adds to those the company pays for you, on top of it: the other parts add up to €1,000, and all of them to what it costs the company, so the shares go over 100% together.</value>
+  </data>
   <data name="StatementTitle" xml:space="preserve">
     <value>Your pay, month by month</value>
   </data>

@@ -86,6 +86,18 @@ public class PaySlipTextTests
             () => keys.Distinct().Where(key => Resources.Get(key) is null).ShouldBeEmpty());
     }
 
+    // When the company pays, the note under the next 1,000 names what it adds on top of the 1,000: the
+    // contributions, and the fund's fee once its part is drawn.
+    [Theory]
+    [InlineData(false, "NextCompanyPaysNote")]
+    [InlineData(true, "NextCompanyPaysNote_WithFee")]
+    public void NextCompanyPaysNote_withOrWithoutTheFee_isTheNoteThatNamesWhatIsOnTop(bool withFee, string expected)
+    {
+        var key = PaySlipText.NextCompanyPaysNote(withFee);
+
+        (key, Resources.Get(key) is not null).ShouldBe((expected, true));
+    }
+
     // The fee's part of the next 1,000 rides on the contributions: its bar segment and its legend's swatch
     // take their colour, through the site's token, or both would be drawn empty.
     [Fact]

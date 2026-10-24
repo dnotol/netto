@@ -438,6 +438,15 @@ public class GrossToNetViewTests
             () => view.Tracks[0].Rows.Select(row => row.Key).Take(3).ShouldBe(["gross_pay", "social_contributions", "fund_fee"]));
     }
 
+    // Whether the pay holds the fund's fee, for the next 1,000's note to name it.
+    [Theory]
+    [InlineData(null, false)]
+    [InlineData(0.0305, true)]
+    public void From_gross50000_saysWhetherThePayHoldsTheFundsFee(double? rate, bool withFee)
+    {
+        View(50_000m, Withheld, ContributionsPaidBy.Company, fundFeeRate: (decimal?)rate).WithFundFee.ShouldBe(withFee);
+    }
+
     // The next 1,000 adds to the fee too, a part of its own after the contributions', and the parts still
     // make the 1,000; without a fee there is no such part (above).
     [Fact]

@@ -43,6 +43,9 @@ internal sealed record GrossToNetView(
     // A royalty's part taxed as pay, whose 30% limit moves with the pay: the next 1,000 holds it as it is.
     public bool WithRequalifiedPay { get; init; }
 
+    // The fund's fee on the contributions, whose part the next 1,000 draws.
+    public bool WithFundFee { get; init; }
+
     public static GrossToNetView From(GrossToNetResult result)
     {
         // The company's contributions are never nothing when it pays them: the minimum applies.
@@ -99,7 +102,7 @@ internal sealed record GrossToNetView(
             StatementView.From(result.Statement, companyPays),
             [.. result.Statement.Periods.Select(period => new WithholdingPeriodView(period.FirstMonth, period.LastMonth, WithholdingOf(period)))],
             AssessmentView.From(result.Assessment, result.OtherIncomeTax, result.TaxedApartTax),
-            result.Steps.Select(StepDetail.From).ToList()) { WithRequalifiedPay = result.RequalifiedPay > 0m };
+            result.Steps.Select(StepDetail.From).ToList()) { WithRequalifiedPay = result.RequalifiedPay > 0m, WithFundFee = result.FundFee > 0m };
     }
 
     // A month's withholding in a period as a step: the formula's lines in its order, the key formula
