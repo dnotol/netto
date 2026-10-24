@@ -22,7 +22,7 @@ internal static class SharedSources
         "Arrêté royal n° 38 du 27.07.1967 organisant le statut social des travailleurs indépendants, consolidated on Justel, updated to 01.06.2026",
         "Art. 11 §1 and §2: the contributions are a percentage of the professional income as the income tax law sets it, gross less the professional costs",
         new Uri("https://www.ejustice.just.fgov.be/eli/arrete/1967/07/27/1967072702/justel"),
-        "social-contributions/ejustice_arrete-royal-38-statut-social-independants_2026-06-01.html") { Label = "Royal decree n° 38, art. 11" };
+        "social-contributions/ejustice_arrete-royal-38-statut-social-independants_2026-06-01.html") { Label = "Royal decree n° 38" };
 
     internal static readonly Source Circular2021C20 = new(
         "Circulaire 2021/C/20 du 26.02.2021 relative aux interventions de l'employeur pour le télétravail, on Fisconetplus, last modified 09.09.2026",
