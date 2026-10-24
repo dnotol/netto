@@ -13,6 +13,11 @@ public class ModuleCardTests
 {
     private static readonly ResxText Chrome = ResxText.For<ModuleCard>();
 
+    // The chrome's own texts, read once each and never a fallback: a missing text fails here, not in a Contains.
+    private static string Waiting => Chrome.Get("Waiting").ShouldNotBeNull();
+
+    private static string DetailsLabel => Chrome.Get("DetailsLabel").ShouldNotBeNull();
+
     // The example's corporate tax and its surcharge, two steps with their sources.
     private static readonly IReadOnlyList<StepDetail> Sources = CorporateTaxView.From(RiverInputs.Example.Run().Year.ShouldNotBeNull()).Details;
 
@@ -21,7 +26,7 @@ public class ModuleCardTests
     {
         var html = await RenderOpenAsync(new() { ["Waiting"] = true, ["ChildContent"] = Text("Fields"), ["Sources"] = Sources, ["IncomeYear"] = 2026 });
 
-        (html.Contains(Chrome.Get("Waiting") ?? "-"), html.Contains("Fields"), html.Contains("module-card--skipped"), html.Contains("module-card__detail"))
+        (html.Contains(Waiting), html.Contains("Fields"), html.Contains("module-card--skipped"), html.Contains("module-card__detail"))
             .ShouldBe((true, false, true, false));
     }
 

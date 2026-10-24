@@ -4,10 +4,10 @@ using Netto.Core.Rules;
 namespace Netto.Web.Client;
 
 // How amounts read on an English page, whatever the browser's language: €50,000.00. The culture is
-// the invariant one with the euro sign rather than a named one such as en-IE: Blazor loads only the
-// browser language's ICU data and refuses a change of the app's culture, and the invariant culture
-// needs no ICU data, so the browser and the tests format alike. MudBlazor inputs take it through
-// their Culture parameter.
+// the invariant one with the euro sign rather than a named one such as en-IE: the client is published
+// with InvariantGlobalization, so no ICU data is downloaded and a culture created by name throws,
+// while the invariant one needs none, so the browser and the tests format alike. MudBlazor inputs
+// take it through their Culture parameter (a RiverNumericField sets it itself).
 internal static class Formats
 {
     public static CultureInfo Culture { get; } = EnglishWithEuro();

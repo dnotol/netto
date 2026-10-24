@@ -64,7 +64,7 @@ public sealed record MunicipalityChoice(MunicipalRates Rates, Municipality? Muni
     private static string Year(int year) => year.ToString(Formats.Culture);
 
     // Folded by hand rather than through string.Normalize or a culture's compare options, which rely
-    // on ICU data the browser may not have loaded (see Formats). Walloon names use only these
+    // on ICU data the client does not ship (InvariantGlobalization; see Formats). Walloon names use only these
     // accented letters; a separator becomes one space, and spaces at the ends go.
     private static string Fold(string text)
     {

@@ -20,11 +20,6 @@ public class SourceDocumentTests
         .Where(type => RuleSets.Lookup(type) is not null)
         .ToList();
 
-    // The income years a year's steps can run for: those every layer has rules for, today 2026 alone.
-    private static readonly IReadOnlyList<int> StepYears = RuleSets.Years
-        .Where(year => RuleTypes.All(type => RuleSets.For(type, year).Any()))
-        .ToList();
-
     [Fact]
     public void RuleTypes_core_includeEveryLayer()
     {
@@ -33,10 +28,13 @@ public class SourceDocumentTests
         layers.ShouldBeSubsetOf(RuleTypes.Select(type => type.Name));
     }
 
+    // Every layer's lookup yields a rule set for some year, or the citation tests below would hold nothing.
     [Fact]
-    public void StepYears_rules_includeAtLeastOneYear()
+    public void RuleSets_everyRuleType_yieldsAtLeastOneSet()
     {
-        StepYears.ShouldNotBeEmpty();
+        var empty = RuleTypes.Where(type => !RuleSets.Of(type).Any()).Select(type => type.Name);
+
+        empty.ShouldBeEmpty();
     }
 
     [Fact]

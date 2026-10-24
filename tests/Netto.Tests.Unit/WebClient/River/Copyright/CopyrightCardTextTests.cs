@@ -149,7 +149,7 @@ public class CopyrightCardTextTests
     [InlineData("Figure_Withheld")]
     public void CopyrightCardResx_textStatingARulesRate_typesNone(string key)
     {
-        (Resources.Get(key) ?? "").ShouldNotMatch("[0-9]%");
+        Resources.Get(key).ShouldNotBeNull().ShouldNotMatch("[0-9]%");
     }
 
     // The line of « Your copyright situation »: the statuses as assumed and as said, and the share

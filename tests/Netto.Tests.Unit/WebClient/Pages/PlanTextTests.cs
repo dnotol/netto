@@ -124,7 +124,7 @@ public class PlanTextTests
         Resources.Get(key).ShouldBeNull();
     }
 
-    private static string Text(string key) => Resources.Get(key) ?? "";
+    private static string Text(string key) => Resources.Get(key).ShouldNotBeNull();
 
     // A sentence ends on its full stop, or the text's end.
     private static List<string> Sentences(string text) => [.. Regex.Split(text.Trim(), @"(?<=[.!?])\s+").Where(sentence => sentence.Length > 0)];

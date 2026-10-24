@@ -9,10 +9,10 @@ using static Netto.Tests.Support.Fixtures;
 
 namespace Netto.Tests.Simulation;
 
-// What the split shares is written twice: YearSimulation.ProfitBeforePay and PayCeiling take it off the
-// scenario as given, lever by lever, and Run takes it off what the company earns through what the rules
-// accepted. A lever added to one sum and not the other makes the split's ceiling disagree with the year,
-// so each case is one combination of the levers paid besides pay (the vouchers, the expense allowances
+// What the split shares has one derivation, the walk over the levers that YearSimulation.Run,
+// ProfitBeforePay and PayCeiling share (Lever.FromProfit, as given), and these cases hold its three
+// entry points together: a lever taken off one and not another would make the split's ceiling
+// disagree with the year. Each case is one combination of the levers paid besides pay (the vouchers, the expense allowances
 // without the office allowance, which a rent excludes, the rent, a car the director pays a contribution
 // for), with no royalty, a fixed one or one following the pay, whoever pays the contributions, at a few
 // pays; the made-up company prepays enough to leave no surcharge.

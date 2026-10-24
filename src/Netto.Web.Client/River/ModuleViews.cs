@@ -1,5 +1,3 @@
-using Netto.Core.Allowances;
-using Netto.Core.CompanyCar;
 using Netto.Core.Copyright;
 using Netto.Core.CorporateTax;
 using Netto.Core.DirectorPay;
@@ -8,7 +6,6 @@ using Netto.Core.Rent;
 using Netto.Core.Rules;
 using Netto.Core.Simulation;
 using Netto.Core.SocialContributions;
-using Netto.Core.Vouchers;
 using Netto.Web.Client.River.CompanyCar;
 using Netto.Web.Client.Steps;
 

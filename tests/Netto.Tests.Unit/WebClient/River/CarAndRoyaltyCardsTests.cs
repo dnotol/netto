@@ -106,7 +106,7 @@ public class CarAndRoyaltyCardsTests
 
         var html = await RenderAsync(card, new Folds(new BrowserStorage()), new() { ["Inputs"] = inputs, ["Run"] = run, ["Refused"] = error });
 
-        Alerts(html).ShouldBe([CarCardTests.Refusals.Get($"Error_{error.Key}") ?? error.Key]);
+        Alerts(html).ShouldBe([CarCardTests.Refusals.Get($"Error_{error.Key}").ShouldNotBeNull()]);
     }
 
     [Fact]

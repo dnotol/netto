@@ -1,11 +1,8 @@
 using Microsoft.Extensions.Localization;
 using Netto.Core.CompanyCar;
 using Netto.Core.Copyright;
-using Netto.Core.DirectorPay;
 using Netto.Core.Dividends;
-using Netto.Core.Rent;
 using Netto.Core.Rules;
-using Netto.Core.Simulation;
 using Netto.Web.Client.DirectorPay;
 
 namespace Netto.Web.Client.River;
