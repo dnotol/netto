@@ -51,6 +51,20 @@ public class TabBadgesTests
             .ShouldBe(new TabBadge(TabBadgeKind.MoreThanPlan, Amount: moves.Total));
     }
 
+    // While the page looks for the moves, once painted, the tab says so, from Today or from the plan in the
+    // river alike.
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Of_movesStillLookedFor_badgesOptimisationAsSearching(bool fromToday)
+    {
+        var run = RiverInputs.Example.Run();
+        var moves = MovesView.Searching(new MovesBaseline(RiverInputs.Example, fromToday));
+
+        TabBadges.Of(run, moves, CalendarView.From(RiverInputs.Example, run, On23October), 0).GetValueOrDefault(PlanTab.Optimisation)
+            .ShouldBe(new TabBadge(TabBadgeKind.Searching));
+    }
+
     // No move adds a euro: nothing to say beside the tab's name.
     [Fact]
     public void Of_todayAlreadyTheBest_badgesNoOptimisation()

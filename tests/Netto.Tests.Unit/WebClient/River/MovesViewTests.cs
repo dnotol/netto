@@ -43,6 +43,17 @@ public class MovesViewTests
             .ShouldBe((MovesState.StartsAtPay, MovesState.StartsAtPay));
     }
 
+    // Until the page has searched, once painted (MovesSource), the moves are being looked for: no figure,
+    // no move, and no word of the river changed since that plan, whose moves are not known yet.
+    [Fact]
+    public void Searching_planInTheRiverChangedSince_drawsNoFigureNoMoveAndNoChange()
+    {
+        var view = MovesView.Searching(new MovesBaseline(RiverInputs.Example, IsToday: false));
+
+        (view.State, view.Moves.Count, view.Total, view.FromInPocket, view.RiverChanged(RiverInputs.Example.WithDirectorPay(40_000m)))
+            .ShouldBe((MovesState.Searching, 0, 0m, 0m, false));
+    }
+
     // After the year: the pay first, then the vouchers the example does not grant.
     [Fact]
     public void Of_exampleAfterTheYear_movesThePayThenGrantsTheVouchers()

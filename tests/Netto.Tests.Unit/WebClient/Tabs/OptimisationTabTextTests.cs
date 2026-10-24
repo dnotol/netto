@@ -93,6 +93,24 @@ public class OptimisationTabTextTests
         text.ShouldBe(expected);
     }
 
+    // While the page looks for the moves, the line that opens them once found says from which plan, named as
+    // that line names it: the plan, what the tab fills its {0} with, and the text.
+    public static TheoryData<string, MovesBaseline, string, string> LookedFor => new()
+    {
+        { "Today", FromToday, "", "Looking for the moves from Today, your current setup…" },
+        { "the plan in the river", FromThePlanInTheRiver, "", "Looking for the moves from the plan in your river, as you opened or saved it…" },
+        { "a named plan", FromANamedPlan, "Plan 2", "Looking for the moves from « Plan 2 », as you opened or saved it…" },
+    };
+
+    [Theory]
+    [MemberData(nameof(LookedFor))]
+    public void State_searching_namesThePlanItLooksForMovesFrom(string _, MovesBaseline from, string name, string expected)
+    {
+        var text = Resources.Format(OptimisationTabText.State(MovesState.Searching, from), name);
+
+        text.ShouldBe(expected);
+    }
+
     [Fact]
     public void OptimisationTabResx_everyReason_hasAText()
     {

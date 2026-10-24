@@ -171,4 +171,13 @@
   <data name="RiverChanged" xml:space="preserve">
     <value>The river has changed since you opened or saved this plan: save it to measure the moves from it.</value>
   </data>
+  <data name="State_Searching" xml:space="preserve">
+    <value>Looking for the moves from Today, your current setup…</value>
+  </data>
+  <data name="State_Searching_Plan" xml:space="preserve">
+    <value>Looking for the moves from the plan in your river, as you opened or saved it…</value>
+  </data>
+  <data name="State_Searching_PlanNamed" xml:space="preserve">
+    <value>Looking for the moves from « {0} », as you opened or saved it…</value>
+  </data>
 </root>

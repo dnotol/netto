@@ -26,6 +26,10 @@ internal sealed record MovesView(
     // From the plan they are measured from, on that date.
     public static MovesView Of(MovesBaseline from, DateOnly date) => Of(from, from.Plan.FindMoves(date));
 
+    // While the page has not searched the moves from that plan yet, which it does once it has painted
+    // (MovesSource): no figure and no move, only the plan they will be from.
+    public static MovesView Searching(MovesBaseline from) => new(MovesState.Searching, null, from, 0m, [], 0m, 0m, 0m);
+
     // From what the search found for that plan, none for one that starts at the pay: the page searches
     // once per plan and date (MovesSource), and the tab draws the view of what it found.
     public static MovesView Of(MovesBaseline from, (MovePlan? Value, string? Error)? found)
@@ -104,6 +108,9 @@ internal sealed record MovesView(
 
 internal enum MovesState
 {
+    // The page has not searched the moves from that plan yet: it does once it has painted (MovesSource).
+    Searching,
+
     // The plan the moves are from skips the company's year: the split, and so every move, starts from it.
     StartsAtPay,
 

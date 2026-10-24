@@ -62,8 +62,10 @@ internal static class OptimisationTabText
     };
 
     // Why there are no moves, or that there are, from the plan they are measured from; the line opening the
-    // moves names it: « From « {0} », as you opened or saved it: ».
-    public static string State(MovesState state, MovesBaseline from) => $"State_{state}{(state == MovesState.Moves ? Named(from) : Plan(from))}";
+    // moves names it, « From « {0} », as you opened or saved it: », and so does the line it replaces while
+    // the page looks for them: « Looking for the moves from « {0} », as you opened or saved it… ».
+    public static string State(MovesState state, MovesBaseline from) =>
+        $"State_{state}{(state is MovesState.Moves or MovesState.Searching ? Named(from) : Plan(from))}";
 
     // One sentence of why a move helps (MoveReasons): « It cancels the surcharge of {0} on your income tax. »
     public static string Why(MoveReasonKind kind) => $"Why_{kind}";

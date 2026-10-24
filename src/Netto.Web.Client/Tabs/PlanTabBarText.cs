@@ -11,4 +11,7 @@ internal static class PlanTabBarText
 
     // A badge as a screen reader hears it after the tab's name, in full where the bar shows it short.
     public static string Spoken(TabBadgeKind kind) => $"Spoken_{kind}";
+
+    // What the badge shows while the moves are being looked for: « … ».
+    public const string Searching = "Shown_Searching";
 }

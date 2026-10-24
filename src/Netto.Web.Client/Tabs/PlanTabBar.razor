@@ -6,8 +6,9 @@
    current one says so (aria-current="page") and is underlined in gold, an active state, and set
    heavier, so colour is not its only sign. The page they lead to is the same one, so the river's inputs
    stay as they are from one tab to the next. After a tab's name, its badge (TabBadges): shown short,
-   +€3,054.18 or 21 Dec or a warning, which a screen reader skips, and said in full out of sight, so the
-   link's name is the tab's name followed by what its badge means. *@
+   +€3,054.18 or 21 Dec or a warning, or « … » while the moves are being looked for, which a screen
+   reader skips, and said in full out of sight, so the link's name is the tab's name followed by what
+   its badge means. *@
 <nav class="plan-tab-bar" aria-label="@L[PlanTabBarText.Label]">
     <ul class="plan-tab-bar__tabs">
         @foreach (var tab in PlanTabRoutes.Order)
@@ -46,11 +47,12 @@
     [Parameter]
     public IReadOnlyDictionary<PlanTab, TabBadge> Badges { get; set; } = new Dictionary<PlanTab, TabBadge>();
 
-    private static string Shown(TabBadge badge) => badge.Kind switch
+    private string Shown(TabBadge badge) => badge.Kind switch
     {
         TabBadgeKind.MoreThanToday or TabBadgeKind.MoreThanPlan => Formats.Addition(badge.Amount),
         TabBadgeKind.NextBy => Formats.ShortDay(badge.Date),
         TabBadgeKind.SavedPlans => badge.Count.ToString(Formats.Culture),
+        TabBadgeKind.Searching => L[PlanTabBarText.Searching],
         _ => "",
     };
 

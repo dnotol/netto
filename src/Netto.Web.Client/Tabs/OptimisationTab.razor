@@ -18,8 +18,10 @@
    split's curve shows the best pay, but moves no pay by itself. A lever a move adds to the plan opens its
    card in the river (ModuleFolds), for when the viewer goes back to it, and its link appears. The page
    finds the moves, once per plan and date (MovesSource), the search running the split at every move, and
-   the tab draws what it found; which ones the river holds is read at each change. While Netto cannot run
-   that plan, the tab says why, and nothing else. *@
+   the tab draws what it found; which ones the river holds is read at each change. The page searches only
+   once it has painted, so until then the tab says from which plan it is looking for them, and nothing
+   else; no live region says it, nor that they are found. While Netto cannot run that plan, the tab says
+   why, and nothing else. *@
 <TabHead Eyebrow="@L[OptimisationTabText.Eyebrow(_view.From), Name]" Title="@L["Title"]" Lede="@L[OptimisationTabText.Lede(_view.From)]" />
 <div class="moves">
     @if (_view.State is MovesState.Moves or MovesState.AlreadyBest)
@@ -99,6 +101,11 @@
     [Parameter, EditorRequired]
     public MovesBaseline From { get; set; } = default!;
 
+    // Whether the page is still to search the moves from that plan, which it does once it has painted
+    // (MovesSource): Found is then nothing yet.
+    [Parameter]
+    public bool Searching { get; set; }
+
     // What the page's search found for that plan on its date (MovesSource), none for a plan that starts at
     // the pay.
     [Parameter]
@@ -116,8 +123,8 @@
     private readonly Dictionary<int, ElementReference> _applied = [];
     private int? _focusApplied;
 
-    // The view of what was found, which searches nothing.
-    protected override void OnParametersSet() => _view = MovesView.Of(From, Found);
+    // The view of what was found, or that the moves are being looked for, which searches nothing.
+    protected override void OnParametersSet() => _view = Searching ? MovesView.Searching(From) : MovesView.Of(From, Found);
 
     // The saved plan the moves are from, named in the texts that name it.
     private string Name => _view.From.Name ?? "";

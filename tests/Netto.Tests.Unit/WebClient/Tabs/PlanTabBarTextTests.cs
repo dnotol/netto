@@ -29,9 +29,18 @@ public class PlanTabBarTextTests
     [InlineData(TabBadgeKind.NextBy, "21 December 2026", "next advance payment by 21 December 2026")]
     [InlineData(TabBadgeKind.Refused, "", "an amount here is refused")]
     [InlineData(TabBadgeKind.SavedPlans, "3", "3 saved plans to compare")]
+    [InlineData(TabBadgeKind.Searching, "", "looking for moves")]
     public void PlanTabBarResx_everyBadge_isSpokenInFull(TabBadgeKind kind, string figure, string expected)
     {
         Resources.Format(PlanTabBarText.Spoken(kind), figure).ShouldBe(expected);
+    }
+
+    // While the page looks for the moves, the badge shows an ellipsis, which a screen reader skips for the
+    // words above.
+    [Fact]
+    public void PlanTabBarResx_searching_showsAnEllipsis()
+    {
+        Resources.Get(PlanTabBarText.Searching).ShouldBe("…");
     }
 
     [Fact]

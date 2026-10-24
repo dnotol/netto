@@ -232,6 +232,35 @@ public class OptimisationTabTests
         (html.Contains("moves__state"), Regex.IsMatch(html, "aria-live|role=\"(status|alert)\"")).ShouldBe((true, false));
     }
 
+    // While the page looks for the moves, once painted, the tab says from which plan, under its head, and
+    // nothing else: no figure, no move, and no word of the river changed since, that plan's moves not known
+    // yet.
+    public static TheoryData<string, MovesBaseline, string> LookedFor => new()
+    {
+        { "Today", MovesBaseline.Today(RiverInputs.Example), "Looking for the moves from Today, your current setup…" },
+        { "the plan in the river", new MovesBaseline(RiverInputs.Example, IsToday: false), "Looking for the moves from the plan in your river, as you opened or saved it…" },
+        { "a saved plan", new MovesBaseline(RiverInputs.Example, IsToday: false, "Plan 2"), "Looking for the moves from « Plan 2 », as you opened or saved it…" },
+    };
+
+    [Theory]
+    [MemberData(nameof(LookedFor))]
+    public async Task Optimisation_searching_saysWhichPlansMovesItLooksForAlone(string _, MovesBaseline from, string said)
+    {
+        var html = await RenderSearchingAsync(from, RiverInputs.Example.WithDirectorPay(40_000m));
+
+        (Regex.Count(html, "<p class=\"moves__state\""), Paragraph(html, "moves__state"), html.Contains("<dl"), html.Contains("<ol"))
+            .ShouldBe((1, said, false, false));
+    }
+
+    // Nor does it announce that it looks: what the moves add is the badge's to say once found.
+    [Fact]
+    public async Task Optimisation_searching_isNoLiveRegion()
+    {
+        var html = await RenderSearchingAsync(MovesBaseline.Today(RiverInputs.Example), RiverInputs.Example);
+
+        (html.Contains("moves__state"), Regex.IsMatch(html, "aria-live|role=\"(status|alert)\"")).ShouldBe((true, false));
+    }
+
     // While no plan is starred Today, the moves are from the plan in the river as it was opened or saved:
     // the head and the first line say so, and the moves add up over that plan.
     [Fact]
@@ -383,10 +412,16 @@ public class OptimisationTabTests
     private static Task<string> RenderFromAsync(MovesBaseline from, RiverInputs river) => RenderFoundAsync(from, from.Plan.FindMoves(On22October), river);
 
     // The tab with what the page found for the plan the moves are from.
-    private static async Task<string> RenderFoundAsync(MovesBaseline from, (MovePlan? Value, string? Error)? found, RiverInputs river) =>
+    private static Task<string> RenderFoundAsync(MovesBaseline from, (MovePlan? Value, string? Error)? found, RiverInputs river) =>
+        RenderStateAsync(from, found, river, searching: false);
+
+    // The tab while the page looks for the moves from that plan, having found none yet.
+    private static Task<string> RenderSearchingAsync(MovesBaseline from, RiverInputs river) => RenderStateAsync(from, found: null, river, searching: true);
+
+    private static async Task<string> RenderStateAsync(MovesBaseline from, (MovePlan? Value, string? Error)? found, RiverInputs river, bool searching) =>
         WebUtility.HtmlDecode(await RenderAsync<OptimisationTab>(new Folds(new BrowserStorage()), new()
         {
-            ["From"] = from, ["Found"] = found, ["Inputs"] = river,
+            ["From"] = from, ["Searching"] = searching, ["Found"] = found, ["Inputs"] = river,
         }));
 
     // Each move's words and what it adds, in the tab's order.
