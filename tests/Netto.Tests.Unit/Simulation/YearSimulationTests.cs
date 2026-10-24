@@ -8,6 +8,7 @@ using Netto.Core.Simulation;
 using Netto.Core.SocialContributions;
 using Netto.Core.Vouchers;
 using Shouldly;
+using static Netto.Tests.Support.Fixtures;
 
 namespace Netto.Tests.Simulation;
 
@@ -26,28 +27,8 @@ namespace Netto.Tests.Simulation;
 // GrossToNetTests.
 public class YearSimulationTests
 {
-    private static readonly CompanyStatus SmallPastStartUp = new(SmallCompany: true, FirstFourTaxPeriods: false);
-
-    // Its credit, 9,000, covers the surcharge on any tax these tests reach.
-    private static readonly AdvancePayments Prepaid = new(100_000m, 0m, 0m, 0m);
-
-    private static readonly TaxPrepayments Withheld = new(1_000_000m, AdvancePayments.None);
-
-    private static readonly VoucherGrants MealVouchersOn220Days = new(220, 0m, 0m);
-
-    // 1,960.20 of meal vouchers, 880.00 of it deductible, and the most eco and sport/culture vouchers:
-    // 2,310.20 to the pocket and 1,430.20 the company cannot deduct.
-    private static readonly VoucherGrants AllVouchers = new(220, 250m, 100m);
-
-    // The most the circular allows for the office, 1,938.44, and for internet and a computer, 240
-    // each: 2,418.44, all of it deducted by the company.
-    private static readonly ExpenseAllowances FlatRateAllowances = new(1_938.44m, 240m, 240m, 0m);
-
     // With 600 of phone costs reimbursed on invoices: 3,018.44.
     private static readonly ExpenseAllowances AllAllowances = new(1_938.44m, 240m, 240m, 600m);
-
-    // 12% of a cadastral income of 1,200 let for the 2026 cap, 1,380.00: 828.00 of net rent.
-    private static readonly HomeOfficeRent RentAtTheCap = new(1_200m, 0.12m, 1_380m);
 
     public static TheoryData<decimal, decimal, decimal, WithholdingCategory> Setups => new()
     {
@@ -1075,35 +1056,5 @@ public class YearSimulationTests
         var (value, error) = YearSimulation.Run(Scenario(directorPay: 50_000m, reserve: 0m) with { IncomeYear = incomeYear });
 
         (value, error).ShouldBe((null, YearSimulation.IncomeYearNotSupported));
-    }
-
-    private static Scenario Scenario(
-        decimal directorPay,
-        decimal reserve,
-        WithholdingCategory category = WithholdingCategory.VvprbisThirdYearOnwards,
-        decimal revenue = 120_000m,
-        decimal earlierProfits = 0m,
-        AdvancePayments? advancePayments = null,
-        TaxPrepayments? taxPrepayments = null,
-        ContributionsPaidBy paidBy = ContributionsPaidBy.Director,
-        VoucherGrants? vouchers = null,
-        ExpenseAllowances? allowances = null,
-        HomeOfficeRent? rent = null) =>
-        new(2026, revenue, 20_000m, SmallPastStartUp, directorPay, MunicipalRates.Entered(0.07m), reserve, category, earlierProfits)
-        {
-            AdvancePayments = advancePayments ?? Prepaid,
-            TaxPrepayments = taxPrepayments ?? Withheld,
-            ContributionsPaidBy = paidBy,
-            Vouchers = vouchers ?? VoucherGrants.None,
-            Allowances = allowances ?? ExpenseAllowances.None,
-            Rent = rent ?? HomeOfficeRent.None,
-        };
-
-    private static YearResult Run(Scenario scenario)
-    {
-        var (value, error) = YearSimulation.Run(scenario);
-
-        error.ShouldBeNull();
-        return value.ShouldNotBeNull();
     }
 }

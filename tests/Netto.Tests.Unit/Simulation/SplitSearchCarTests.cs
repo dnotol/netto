@@ -1,10 +1,10 @@
 using Netto.Core.CompanyCar;
 using Netto.Core.CorporateTax;
-using Netto.Core.Dividends;
 using Netto.Core.PersonalTax;
 using Netto.Core.Simulation;
 using Netto.Core.SocialContributions;
 using Shouldly;
+using static Netto.Tests.Support.Fixtures;
 
 namespace Netto.Tests.Simulation;
 
@@ -14,15 +14,7 @@ namespace Netto.Tests.Simulation;
 // car held, the benefit counted in the pay art. 215 tests and held within 20% of it.
 public class SplitSearchCarTests
 {
-    private static readonly CompanyStatus SmallPastStartUp = new(SmallCompany: true, FirstFourTaxPeriods: false);
-
     private static readonly CompanyStatus FirstFourTaxPeriods = new(SmallCompany: true, FirstFourTaxPeriods: true);
-
-    private static readonly AdvancePayments Prepaid = new(100_000m, 0m, 0m, 0m);
-
-    private static readonly TaxPrepayments Withheld = new(1_000_000m, AdvancePayments.None);
-
-    private static readonly CarFacts ElectricCar = new(50_000m, new DateOnly(2026, 1, 10), 8_000m, false, 0m);
 
     [Fact]
     public void Run_2026Car_drawsEveryPayFromNoneToTheProfitItLeaves()
@@ -81,8 +73,8 @@ public class SplitSearchCarTests
         var scenario = Scenario(company: company, paidBy: paidBy, car: ElectricCar);
         var smallest = Search(scenario).SmallestPayKeepingReducedRate.ShouldNotBeNull();
 
-        (Year(scenario with { DirectorPay = smallest }).Company.Condition.AppliesReducedRate(),
-                Year(scenario with { DirectorPay = smallest - 0.01m }).Company.Condition.AppliesReducedRate())
+        (Run(scenario with { DirectorPay = smallest }).Company.Condition.AppliesReducedRate(),
+                Run(scenario with { DirectorPay = smallest - 0.01m }).Company.Condition.AppliesReducedRate())
             .ShouldBe((true, false));
     }
 
@@ -110,39 +102,9 @@ public class SplitSearchCarTests
         SplitSearch.Run(Scenario(car: ElectricCar with { YearlyCosts = -0.01m })).ShouldBe((null, CarCalculator.YearlyCostsNegative));
     }
 
-    private static Scenario Scenario(
-        decimal revenue = 120_000m,
-        CompanyStatus? company = null,
-        TaxPrepayments? taxPrepayments = null,
-        ContributionsPaidBy paidBy = ContributionsPaidBy.Director,
-        CarFacts? car = null) =>
-        new(2026, revenue, 20_000m, company ?? SmallPastStartUp, 50_000m, MunicipalRates.Entered(0.07m), 0m, WithholdingCategory.VvprbisThirdYearOnwards)
-        {
-            AdvancePayments = Prepaid,
-            TaxPrepayments = taxPrepayments ?? Withheld,
-            ContributionsPaidBy = paidBy,
-            Car = car ?? CarFacts.None,
-        };
-
-    private static SplitSearchResult Search(Scenario scenario)
-    {
-        var (value, error) = SplitSearch.Run(scenario);
-
-        error.ShouldBeNull();
-        return value.ShouldNotBeNull();
-    }
-
-    private static YearResult Year(Scenario scenario)
-    {
-        var (value, error) = YearSimulation.Run(scenario);
-
-        error.ShouldBeNull();
-        return value.ShouldNotBeNull();
-    }
-
     private static PayLevel LevelOf(Scenario scenario, decimal pay)
     {
-        var year = Year(scenario with { DirectorPay = pay });
+        var year = Run(scenario with { DirectorPay = pay });
 
         return new PayLevel(pay, year.NetInPocket, year.Dividend.Dividend, year.KeptInCompany, year.Company.Condition, year.MaximumDividend >= scenario.Reserve);
     }

@@ -1,9 +1,7 @@
 using Netto.Core.Copyright;
-using Netto.Core.CorporateTax;
-using Netto.Core.Dividends;
-using Netto.Core.PersonalTax;
 using Netto.Core.Simulation;
 using Shouldly;
+using static Netto.Tests.Support.Fixtures;
 
 namespace Netto.Tests.Simulation;
 
@@ -12,13 +10,7 @@ namespace Netto.Tests.Simulation;
 // at that pay, at what ruling 2026.0484 accepts, 11,538.46 (CopyrightCalculatorTests).
 public class MoveSearchCopyrightTests
 {
-    private static readonly Scenario Today = new(
-        2026, 120_000m, 20_000m, new CompanyStatus(SmallCompany: true, FirstFourTaxPeriods: false), 50_000m, MunicipalRates.Entered(0.07m), 0m,
-        WithholdingCategory.VvprbisThirdYearOnwards)
-    {
-        TaxPrepayments = TaxPrepayments.AsWithheld,
-        Copyright = new CopyrightRoyalty(0m) { CreativeShare = 0.75m },
-    };
+    private static readonly Scenario Today = RiverExample with { Copyright = new CopyrightRoyalty(0m) { CreativeShare = 0.75m } };
 
     private static readonly IReadOnlyList<IMoveFinder> FollowOnly = [new CopyrightFollowsPayFinder()];
 

@@ -1,6 +1,5 @@
 using Netto.Core.Allowances;
 using Netto.Core.CompanyCar;
-using Netto.Core.CorporateTax;
 using Netto.Core.DirectorPay;
 using Netto.Core.Dividends;
 using Netto.Core.PersonalTax;
@@ -12,6 +11,7 @@ using Netto.Core.Vouchers;
 using Netto.Web.Client.DirectorPay;
 using Netto.Web.Client.Steps;
 using Shouldly;
+using static Netto.Tests.Support.Fixtures;
 
 namespace Netto.Tests.WebClient.Steps;
 
@@ -49,8 +49,7 @@ public class StepTextTests
     [InlineData(WithholdingCategory.VvprbisThirdYearOnwards)]
     public void StepDetailsResx_everyKeyOfTheYearsSteps_hasAText(WithholdingCategory category)
     {
-        var scenario = new Scenario(2026, 120_000m, 20_000m, new CompanyStatus(SmallCompany: true, FirstFourTaxPeriods: false),
-            50_000m, MunicipalRates.Entered(0.07m), 0m, category);
+        var scenario = Unprepaid(50_000m, category);
 
         var (value, _) = YearSimulation.Run(scenario);
 
@@ -61,8 +60,7 @@ public class StepTextTests
     [Fact]
     public void StepDetailsResx_everyKeyOfTheVouchersSteps_hasAText()
     {
-        var scenario = new Scenario(2026, 120_000m, 20_000m, new CompanyStatus(SmallCompany: true, FirstFourTaxPeriods: false),
-            50_000m, MunicipalRates.Entered(0.07m), 0m, WithholdingCategory.Standard) { Vouchers = new VoucherGrants(220, 250m, 100m) };
+        var scenario = Unprepaid(50_000m, WithholdingCategory.Standard) with { Vouchers = new VoucherGrants(220, 250m, 100m) };
 
         var (value, _) = YearSimulation.Run(scenario);
 
@@ -73,8 +71,7 @@ public class StepTextTests
     [Fact]
     public void StepDetailsResx_everyKeyOfTheAllowancesSteps_hasAText()
     {
-        var scenario = new Scenario(2026, 120_000m, 20_000m, new CompanyStatus(SmallCompany: true, FirstFourTaxPeriods: false),
-            50_000m, MunicipalRates.Entered(0.07m), 0m, WithholdingCategory.Standard) { Allowances = new ExpenseAllowances(1_938.44m, 240m, 240m, 600m) };
+        var scenario = Unprepaid(50_000m, WithholdingCategory.Standard) with { Allowances = new ExpenseAllowances(1_938.44m, 240m, 240m, 600m) };
 
         var (value, _) = YearSimulation.Run(scenario);
 
@@ -85,8 +82,7 @@ public class StepTextTests
     [Fact]
     public void StepDetailsResx_everyKeyOfTheRentsSteps_hasAText()
     {
-        var scenario = new Scenario(2026, 120_000m, 20_000m, new CompanyStatus(SmallCompany: true, FirstFourTaxPeriods: false),
-            50_000m, MunicipalRates.Entered(0.07m), 0m, WithholdingCategory.Standard) { Rent = new HomeOfficeRent(1_200m, 0.12m, 1_380m) };
+        var scenario = Unprepaid(50_000m, WithholdingCategory.Standard) with { Rent = new HomeOfficeRent(1_200m, 0.12m, 1_380m) };
 
         var (value, _) = YearSimulation.Run(scenario);
 
@@ -103,8 +99,7 @@ public class StepTextTests
     [InlineData(2018, true)]
     public void StepDetailsResx_everyKeyOfTheCarsSteps_hasAText(int registeredIn, bool privateEnergy)
     {
-        var scenario = new Scenario(2026, 120_000m, 20_000m, new CompanyStatus(SmallCompany: true, FirstFourTaxPeriods: false),
-            50_000m, MunicipalRates.Entered(0.07m), 0m, WithholdingCategory.Standard)
+        var scenario = Unprepaid(50_000m, WithholdingCategory.Standard) with
         {
             Car = new CarFacts(50_000m, new DateOnly(registeredIn, 6, 1), 8_000m, privateEnergy, 600m),
         };
@@ -137,8 +132,7 @@ public class StepTextTests
     [MemberData(nameof(FuelCars))]
     public void StepDetailsResx_everyKeyOfAFuelCarsSteps_hasAText(CarFacts car)
     {
-        var scenario = new Scenario(2026, 120_000m, 20_000m, new CompanyStatus(SmallCompany: true, FirstFourTaxPeriods: false),
-            50_000m, MunicipalRates.Entered(0.07m), 0m, WithholdingCategory.Standard) { Car = car };
+        var scenario = Unprepaid(50_000m, WithholdingCategory.Standard) with { Car = car };
 
         var (value, _) = YearSimulation.Run(scenario);
 
@@ -152,12 +146,7 @@ public class StepTextTests
     [InlineData(30_000, 20_000)]
     public void StepDetailsResx_everyKeyOfTheRoyaltysSteps_hasAText(int pay, int royalty)
     {
-        var scenario = new Scenario(2026, 120_000m, 20_000m, new CompanyStatus(SmallCompany: true, FirstFourTaxPeriods: false),
-            pay, MunicipalRates.Entered(0.07m), 0m, WithholdingCategory.Standard)
-        {
-            TaxPrepayments = TaxPrepayments.None,
-            Copyright = new Netto.Core.Copyright.CopyrightRoyalty(royalty),
-        };
+        var scenario = Unprepaid(pay, WithholdingCategory.Standard) with { Copyright = new Netto.Core.Copyright.CopyrightRoyalty(royalty) };
 
         var (value, _) = YearSimulation.Run(scenario);
 
@@ -168,8 +157,7 @@ public class StepTextTests
     [Fact]
     public void StepDetailsResx_everyKeyOfAFollowingRoyaltysSteps_hasAText()
     {
-        var scenario = new Scenario(2026, 120_000m, 20_000m, new CompanyStatus(SmallCompany: true, FirstFourTaxPeriods: false),
-            50_000m, MunicipalRates.Entered(0.07m), 0m, WithholdingCategory.Standard)
+        var scenario = Unprepaid(50_000m, WithholdingCategory.Standard) with
         {
             Copyright = new Netto.Core.Copyright.CopyrightRoyalty(0m) { CreativeShare = 0.75m, FollowsPay = true },
         };
@@ -191,6 +179,10 @@ public class StepTextTests
 
         MissingTexts([view.WithholdingDetail, view.Balance.Detail]).ShouldBeEmpty();
     }
+
+    // The company of the river's example with nothing prepaid and nothing withheld, so the surcharges are among its steps.
+    private static Scenario Unprepaid(decimal directorPay, WithholdingCategory category) =>
+        Scenario(directorPay: directorPay, category: category, advancePayments: AdvancePayments.None, taxPrepayments: TaxPrepayments.None);
 
     private static IEnumerable<string> MissingTexts(IEnumerable<Step> steps) => MissingTexts(steps.Select(StepDetail.From));
 

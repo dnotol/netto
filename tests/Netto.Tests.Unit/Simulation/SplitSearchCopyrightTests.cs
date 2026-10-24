@@ -1,10 +1,10 @@
 using Netto.Core.Copyright;
 using Netto.Core.CorporateTax;
-using Netto.Core.Dividends;
 using Netto.Core.PersonalTax;
 using Netto.Core.Simulation;
 using Netto.Core.SocialContributions;
 using Shouldly;
+using static Netto.Tests.Support.Fixtures;
 
 namespace Netto.Tests.Simulation;
 
@@ -13,12 +13,6 @@ namespace Netto.Tests.Simulation;
 // royalty held, its limits moving with the pay, since 30% is measured on the royalty and the pay.
 public class SplitSearchCopyrightTests
 {
-    private static readonly CompanyStatus SmallPastStartUp = new(SmallCompany: true, FirstFourTaxPeriods: false);
-
-    private static readonly AdvancePayments Prepaid = new(100_000m, 0m, 0m, 0m);
-
-    private static readonly TaxPrepayments Withheld = new(1_000_000m, AdvancePayments.None);
-
     private static readonly CopyrightRoyalty Royalty = new(20_000m);
 
     // A royalty that follows the pay, for 75% of the working time spent creating.
@@ -27,7 +21,7 @@ public class SplitSearchCopyrightTests
     [Fact]
     public void Run_2026Royalty_drawsEveryPayFromNoneToTheProfitItLeaves()
     {
-        var pays = Search(Scenario()).Curve.Select(level => level.Pay).ToList();
+        var pays = Search(Scenario(royalty: Royalty)).Curve.Select(level => level.Pay).ToList();
 
         (pays[0], pays[^1]).ShouldBe((0m, 80_000m));
     }
@@ -57,8 +51,8 @@ public class SplitSearchCopyrightTests
     [Fact]
     public void Run_2026Royalty_keepsTheRateFromThePayTestWithoutTheRoyalty()
     {
-        var withRoyalty = Search(Scenario()).SmallestPayKeepingReducedRate;
-        var without = Search(Scenario(revenue: 100_000m) with { Copyright = CopyrightRoyalty.None }).SmallestPayKeepingReducedRate;
+        var withRoyalty = Search(Scenario(royalty: Royalty)).SmallestPayKeepingReducedRate;
+        var without = Search(Scenario(revenue: 100_000m)).SmallestPayKeepingReducedRate;
 
         (withRoyalty, without).ShouldBe((40_000m, 40_000m));
     }
@@ -66,11 +60,11 @@ public class SplitSearchCopyrightTests
     [Fact]
     public void Run_2026Royalty_theYearKeepsTheRateFromTheSmallestPayAndLosesItACentLower()
     {
-        var scenario = Scenario();
+        var scenario = Scenario(royalty: Royalty);
         var smallest = Search(scenario).SmallestPayKeepingReducedRate.ShouldNotBeNull();
 
-        (Year(scenario with { DirectorPay = smallest }).Company.Condition.AppliesReducedRate(),
-                Year(scenario with { DirectorPay = smallest - 0.01m }).Company.Condition.AppliesReducedRate())
+        (Run(scenario with { DirectorPay = smallest }).Company.Condition.AppliesReducedRate(),
+                Run(scenario with { DirectorPay = smallest - 0.01m }).Company.Condition.AppliesReducedRate())
             .ShouldBe((true, false));
     }
 
@@ -80,10 +74,10 @@ public class SplitSearchCopyrightTests
     [Fact]
     public void Run_2026RoyaltyCompanyPays_theYearKeepsTheRateFromTheSmallestPay()
     {
-        var scenario = Scenario(paidBy: ContributionsPaidBy.Company);
+        var scenario = Scenario(royalty: Royalty, paidBy: ContributionsPaidBy.Company);
         var smallest = Search(scenario).SmallestPayKeepingReducedRate.ShouldNotBeNull();
 
-        Year(scenario with { DirectorPay = smallest }).Company.Condition.AppliesReducedRate().ShouldBeTrue();
+        Run(scenario with { DirectorPay = smallest }).Company.Condition.AppliesReducedRate().ShouldBeTrue();
     }
 
     [Fact]
@@ -101,7 +95,7 @@ public class SplitSearchCopyrightTests
     [Fact]
     public void Run_2026Royalty_eachLevelCarriesIt()
     {
-        Search(Scenario()).Curve.ShouldAllBe(level => level.Royalty == 20_000m);
+        Search(Scenario(royalty: Royalty)).Curve.ShouldAllBe(level => level.Royalty == 20_000m);
     }
 
     // A royalty that follows the pay: each pay the search draws is the year at that pay with what a ruling
@@ -141,7 +135,7 @@ public class SplitSearchCopyrightTests
         var best = Search(scenario).Best.ShouldNotBeNull();
 
         var around = Enumerable.Range(-1_000, 2_001).Select(euros => best.Pay + euros).Where(pay => pay is >= 0m and <= 81_250m)
-            .Select(pay => Year(scenario with { DirectorPay = pay }).NetInPocket);
+            .Select(pay => Run(scenario with { DirectorPay = pay }).NetInPocket);
 
         around.ShouldAllBe(net => net <= best.NetInPocket);
     }
@@ -155,8 +149,8 @@ public class SplitSearchCopyrightTests
         var scenario = FollowingScenario(paidBy);
         var smallest = Search(scenario).SmallestPayKeepingReducedRate.ShouldNotBeNull();
 
-        (Year(scenario with { DirectorPay = smallest }).Company.Condition.AppliesReducedRate(),
-                Year(scenario with { DirectorPay = smallest - 0.01m }).Company.Condition.AppliesReducedRate())
+        (Run(scenario with { DirectorPay = smallest }).Company.Condition.AppliesReducedRate(),
+                Run(scenario with { DirectorPay = smallest - 0.01m }).Company.Condition.AppliesReducedRate())
             .ShouldBe((true, false));
     }
 
@@ -167,7 +161,7 @@ public class SplitSearchCopyrightTests
     public void Run_2026RoyaltyFollowingThePay_keepsTheRateFromLessPayThanWithoutARoyalty()
     {
         var following = Search(FollowingScenario()).SmallestPayKeepingReducedRate;
-        var without = Search(Scenario() with { Copyright = CopyrightRoyalty.None }).SmallestPayKeepingReducedRate;
+        var without = Search(Scenario()).SmallestPayKeepingReducedRate;
 
         (following, without).ShouldBe((44_827.59m, 50_000m));
     }
@@ -192,43 +186,15 @@ public class SplitSearchCopyrightTests
     {
         var withoutShare = Search(Scenario() with { Copyright = Following with { CreativeShare = null } });
 
-        withoutShare.Curve.ShouldBe(Search(Scenario() with { Copyright = CopyrightRoyalty.None }).Curve);
+        withoutShare.Curve.ShouldBe(Search(Scenario()).Curve);
     }
 
     private static Scenario FollowingScenario(ContributionsPaidBy paidBy = ContributionsPaidBy.Director, decimal share = 0.75m, decimal revenue = 120_000m) =>
         Scenario(revenue: revenue, paidBy: paidBy) with { Copyright = Following with { CreativeShare = share } };
 
-    private static Scenario Scenario(
-        decimal revenue = 120_000m,
-        TaxPrepayments? taxPrepayments = null,
-        ContributionsPaidBy paidBy = ContributionsPaidBy.Director) =>
-        new(2026, revenue, 20_000m, SmallPastStartUp, 50_000m, MunicipalRates.Entered(0.07m), 0m, WithholdingCategory.VvprbisThirdYearOnwards)
-        {
-            AdvancePayments = Prepaid,
-            TaxPrepayments = taxPrepayments ?? Withheld,
-            ContributionsPaidBy = paidBy,
-            Copyright = Royalty,
-        };
-
-    private static SplitSearchResult Search(Scenario scenario)
-    {
-        var (value, error) = SplitSearch.Run(scenario);
-
-        error.ShouldBeNull();
-        return value.ShouldNotBeNull();
-    }
-
-    private static YearResult Year(Scenario scenario)
-    {
-        var (value, error) = YearSimulation.Run(scenario);
-
-        error.ShouldBeNull();
-        return value.ShouldNotBeNull();
-    }
-
     private static PayLevel LevelOf(Scenario scenario, decimal pay)
     {
-        var year = Year(scenario with { DirectorPay = pay });
+        var year = Run(scenario with { DirectorPay = pay });
 
         return new PayLevel(pay, year.NetInPocket, year.Dividend.Dividend, year.KeptInCompany, year.Company.Condition, year.MaximumDividend >= scenario.Reserve)
         {

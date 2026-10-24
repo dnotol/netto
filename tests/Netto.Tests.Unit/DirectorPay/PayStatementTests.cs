@@ -1,8 +1,8 @@
 using Netto.Core.DirectorPay;
 using Netto.Core.PersonalTax;
-using Netto.Core.Simulation;
 using Netto.Core.SocialContributions;
 using Shouldly;
+using static Netto.Tests.Support.Fixtures;
 
 namespace Netto.Tests.DirectorPay;
 
@@ -14,8 +14,6 @@ namespace Netto.Tests.DirectorPay;
 public class PayStatementTests
 {
     private static readonly WithholdingRules Rules2026 = WithholdingRules.IncomeYear2026;
-
-    private static readonly TaxPrepayments Withheld = new(1_000_000m, AdvancePayments.None);
 
     public static TheoryData<decimal> GrossPays => [0m, 3_600m, 10_000m, 20_000m, 50_000m, 160_000m];
 

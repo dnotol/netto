@@ -1,5 +1,6 @@
 using Netto.Core.CorporateTax;
 using Shouldly;
+using static Netto.Tests.Support.Fixtures;
 
 namespace Netto.Tests.CorporateTax;
 
@@ -8,8 +9,6 @@ namespace Netto.Tests.CorporateTax;
 public class CorporateTaxCalculatorTests
 {
     private static readonly CorporateTaxRules Rules2026 = CorporateTaxRules.IncomeYear2026;
-
-    private static readonly CompanyStatus SmallPastStartUp = new(SmallCompany: true, FirstFourTaxPeriods: false);
 
     [Fact]
     public void Compute_2026NotSmallCompany_pays25PercentOnEverything()

@@ -2,11 +2,11 @@ using Netto.Core.Allowances;
 using Netto.Core.Copyright;
 using Netto.Core.CorporateTax;
 using Netto.Core.DirectorPay;
-using Netto.Core.Dividends;
 using Netto.Core.PersonalTax;
 using Netto.Core.Simulation;
 using Netto.Core.SocialContributions;
 using Shouldly;
+using static Netto.Tests.Support.Fixtures;
 
 namespace Netto.Tests.Simulation;
 
@@ -18,12 +18,6 @@ namespace Netto.Tests.Simulation;
 // otherwise.
 public class YearSimulationCopyrightTests
 {
-    private static readonly CompanyStatus SmallPastStartUp = new(SmallCompany: true, FirstFourTaxPeriods: false);
-
-    private static readonly AdvancePayments Prepaid = new(100_000m, 0m, 0m, 0m);
-
-    private static readonly TaxPrepayments Withheld = new(1_000_000m, AdvancePayments.None);
-
     public static TheoryData<decimal, decimal, decimal, bool, bool> Setups => new()
     {
         { 50_000m, 100_000m, 10_000m, true, false },
@@ -461,27 +455,4 @@ public class YearSimulationCopyrightTests
         decimal ProfitBeforePay, decimal DisallowedExpenses, decimal CorporateTax, decimal SocialContributions, decimal PersonalTax, decimal NetInPocket,
         decimal KeptInCompany, decimal MaximumDividend, CopyrightResult Copyright, decimal TaxablePay, decimal PayNetInPocket, OtherIncomeTax TaxedApartTax,
         decimal Balance, string Steps);
-
-    private static Scenario Scenario(
-        decimal directorPay = 50_000m,
-        decimal revenue = 120_000m,
-        AdvancePayments? advancePayments = null,
-        TaxPrepayments? taxPrepayments = null,
-        ContributionsPaidBy paidBy = ContributionsPaidBy.Director,
-        CopyrightRoyalty? royalty = null) =>
-        new(2026, revenue, 20_000m, SmallPastStartUp, directorPay, MunicipalRates.Entered(0.07m), 0m, WithholdingCategory.VvprbisThirdYearOnwards)
-        {
-            AdvancePayments = advancePayments ?? Prepaid,
-            TaxPrepayments = taxPrepayments ?? Withheld,
-            ContributionsPaidBy = paidBy,
-            Copyright = royalty ?? CopyrightRoyalty.None,
-        };
-
-    private static YearResult Run(Scenario scenario)
-    {
-        var (value, error) = YearSimulation.Run(scenario);
-
-        error.ShouldBeNull();
-        return value.ShouldNotBeNull();
-    }
 }

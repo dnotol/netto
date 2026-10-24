@@ -1,6 +1,7 @@
 using Netto.Core.CorporateTax;
 using Netto.Core.Simulation;
 using Shouldly;
+using static Netto.Tests.Support.Fixtures;
 
 namespace Netto.Tests.CorporateTax;
 
@@ -11,8 +12,6 @@ namespace Netto.Tests.CorporateTax;
 public class AdvancePaymentCalculatorTests
 {
     private static readonly AdvancePaymentRules Rules2026 = CorporateTaxRules.IncomeYear2026.AdvancePayments;
-
-    private static readonly CompanyStatus SmallPastStartUp = new(SmallCompany: true, FirstFourTaxPeriods: false);
 
     [Fact]
     public void Compute_2026NothingPaid_surchargesTheTaxAt6Point75Percent()

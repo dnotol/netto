@@ -1,11 +1,11 @@
 using Netto.Core.CompanyCar;
 using Netto.Core.CorporateTax;
 using Netto.Core.DirectorPay;
-using Netto.Core.Dividends;
 using Netto.Core.PersonalTax;
 using Netto.Core.Simulation;
 using Netto.Core.SocialContributions;
 using Shouldly;
+using static Netto.Tests.Support.Fixtures;
 
 namespace Netto.Tests.Simulation;
 
@@ -17,14 +17,6 @@ namespace Netto.Tests.Simulation;
 // otherwise.
 public class YearSimulationCarTests
 {
-    private static readonly CompanyStatus SmallPastStartUp = new(SmallCompany: true, FirstFourTaxPeriods: false);
-
-    private static readonly AdvancePayments Prepaid = new(100_000m, 0m, 0m, 0m);
-
-    private static readonly TaxPrepayments Withheld = new(1_000_000m, AdvancePayments.None);
-
-    private static readonly CarFacts ElectricCar = new(50_000m, new DateOnly(2026, 1, 10), 8_000m, false, 0m);
-
     // 45,000 at 120 g/km of petrol, leased in January 2026: a benefit of 4,050.00, 9,000 of costs.
     private static readonly CarFacts PetrolCarLeasedIn2026 = new(45_000m, new DateOnly(2026, 1, 10), 9_000m, false, 0m)
     {
@@ -294,30 +286,5 @@ public class YearSimulationCarTests
     public void ProfitBeforePay_carWithoutCatalogueValue_countsNothingOfIt()
     {
         YearSimulation.ProfitBeforePay(Scenario(car: ElectricCar with { CatalogueValue = 0m })).ShouldBe(100_000m);
-    }
-
-    private static Scenario Scenario(
-        decimal directorPay = 50_000m,
-        decimal reserve = 0m,
-        decimal revenue = 120_000m,
-        CompanyStatus? company = null,
-        AdvancePayments? advancePayments = null,
-        TaxPrepayments? taxPrepayments = null,
-        ContributionsPaidBy paidBy = ContributionsPaidBy.Director,
-        CarFacts? car = null) =>
-        new(2026, revenue, 20_000m, company ?? SmallPastStartUp, directorPay, MunicipalRates.Entered(0.07m), reserve, WithholdingCategory.VvprbisThirdYearOnwards)
-        {
-            AdvancePayments = advancePayments ?? Prepaid,
-            TaxPrepayments = taxPrepayments ?? Withheld,
-            ContributionsPaidBy = paidBy,
-            Car = car ?? CarFacts.None,
-        };
-
-    private static YearResult Run(Scenario scenario)
-    {
-        var (value, error) = YearSimulation.Run(scenario);
-
-        error.ShouldBeNull();
-        return value.ShouldNotBeNull();
     }
 }

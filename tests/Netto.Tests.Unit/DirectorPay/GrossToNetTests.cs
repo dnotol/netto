@@ -4,6 +4,7 @@ using Netto.Core.Rules;
 using Netto.Core.Simulation;
 using Netto.Core.SocialContributions;
 using Shouldly;
+using static Netto.Tests.Support.Fixtures;
 
 namespace Netto.Tests.DirectorPay;
 
@@ -17,8 +18,6 @@ namespace Netto.Tests.DirectorPay;
 // can pay the director's social contributions on their behalf »).
 public class GrossToNetTests
 {
-    private static readonly TaxPrepayments Withheld = new(1_000_000m, AdvancePayments.None);
-
     public static TheoryData<decimal> GrossPays => [0m, 10_000m, 30_000m, 50_000m, 160_000m];
 
     public static TheoryData<decimal> CompanyPaidGrossPays => [0m, 10_000m, 20_000m, 41_700m, 50_000m, 100_000m, 160_000m];

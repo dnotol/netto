@@ -6,6 +6,7 @@ using Netto.Core.SocialContributions;
 using Netto.Web.Client.DirectorPay;
 using Netto.Web.Client.Steps;
 using Shouldly;
+using static Netto.Tests.Support.Fixtures;
 
 namespace Netto.Tests.WebClient.DirectorPay;
 
@@ -637,10 +638,6 @@ public class GrossToNetViewTests
         new(10_000m, new IncomeTaxedApart(10_000m, Netto.Core.Copyright.CopyrightRules.IncomeYear2026.TaxedApartRate), 0m, 1_500m);
 
     private static string Keys(SourceGroup group) => string.Join(' ', group.Amounts.Select(amount => amount.Key));
-
-    // The company withholds more than any tax these tests reach, so the pay slip shows no
-    // advance-payment surcharge.
-    private static readonly TaxPrepayments Withheld = new(1_000_000m, AdvancePayments.None);
 
     private static GrossToNetView View(decimal grossPay) => View(grossPay, Withheld);
 

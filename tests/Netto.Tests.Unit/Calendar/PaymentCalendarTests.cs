@@ -1,10 +1,10 @@
 using Netto.Core.Calendar;
 using Netto.Core.CorporateTax;
 using Netto.Core.DirectorPay;
-using Netto.Core.Dividends;
 using Netto.Core.PersonalTax;
 using Netto.Core.Simulation;
 using Shouldly;
+using static Netto.Tests.Support.Fixtures;
 
 namespace Netto.Tests.Calendar;
 
@@ -16,13 +16,6 @@ namespace Netto.Tests.Calendar;
 // April, 10 July, 12 October and 21 December.
 public class PaymentCalendarTests
 {
-    private static readonly Scenario Example = new(
-        2026, 120_000m, 20_000m, new CompanyStatus(SmallCompany: true, FirstFourTaxPeriods: false), 50_000m, MunicipalRates.Entered(0.07m), 0m,
-        WithholdingCategory.VvprbisThirdYearOnwards)
-    {
-        TaxPrepayments = TaxPrepayments.AsWithheld,
-    };
-
     private static readonly DateOnly On22October = new(2026, 10, 22);
 
     private static PaymentCalendar Of(Scenario scenario, DateOnly today) =>
@@ -31,7 +24,7 @@ public class PaymentCalendarTests
     [Fact]
     public void Of_example_givesTheYearsFourDeadlinesInOrder()
     {
-        var calendar = Of(Example, On22October);
+        var calendar = Of(RiverExample, On22October);
 
         calendar.Company.ShouldNotBeNull().Payments.Select(payment => payment.Deadline.Value).ShouldBe(
             [new DateOnly(2026, 4, 10), new DateOnly(2026, 7, 10), new DateOnly(2026, 10, 12), new DateOnly(2026, 12, 21)]);
@@ -40,7 +33,7 @@ public class PaymentCalendarTests
     [Fact]
     public void Of_exampleOn22October_cancelsTheCompanysSurchargeBy21December()
     {
-        var company = Of(Example, On22October).Company.ShouldNotBeNull();
+        var company = Of(RiverExample, On22October).Company.ShouldNotBeNull();
 
         (company.Surcharge, company.Open, company.More).ShouldBe((675.00m, 3, 15_000.00m));
     }
@@ -48,7 +41,7 @@ public class PaymentCalendarTests
     [Fact]
     public void Of_exampleOn22October_marksTheFirstThreeDeadlinesPast()
     {
-        var company = Of(Example, On22October).Company.ShouldNotBeNull();
+        var company = Of(RiverExample, On22October).Company.ShouldNotBeNull();
 
         company.Payments.Select(payment => payment.Past).ShouldBe([true, true, true, false]);
     }
@@ -57,7 +50,7 @@ public class PaymentCalendarTests
     [Fact]
     public void Of_companyPaidBy10April_showsItAndWhatIsLeftBy21December()
     {
-        var company = Of(Example with { AdvancePayments = new AdvancePayments(5_000m, 0m, 0m, 0m) }, On22October).Company.ShouldNotBeNull();
+        var company = Of(RiverExample with { AdvancePayments = new AdvancePayments(5_000m, 0m, 0m, 0m) }, On22October).Company.ShouldNotBeNull();
 
         (company.Payments[0].Planned, company.Payments[0].More, company.Payments[3].More).ShouldBe((5_000m, 0m, 5_000.00m));
     }
@@ -66,7 +59,7 @@ public class PaymentCalendarTests
     [Fact]
     public void Of_on1March_cancelsTheSurchargeByTheFirstDeadline()
     {
-        var company = Of(Example, new DateOnly(2026, 3, 1)).Company.ShouldNotBeNull();
+        var company = Of(RiverExample, new DateOnly(2026, 3, 1)).Company.ShouldNotBeNull();
 
         company.Payments.Select(payment => payment.More).ShouldBe([7_500.00m, 0m, 0m, 0m]);
     }
@@ -75,7 +68,7 @@ public class PaymentCalendarTests
     [Fact]
     public void Of_onTheLastDeadline_stillCancelsTheSurchargeByIt()
     {
-        var company = Of(Example, new DateOnly(2026, 12, 21)).Company.ShouldNotBeNull();
+        var company = Of(RiverExample, new DateOnly(2026, 12, 21)).Company.ShouldNotBeNull();
 
         (company.Open, company.More).ShouldBe((3, 15_000.00m));
     }
@@ -83,7 +76,7 @@ public class PaymentCalendarTests
     [Fact]
     public void Of_afterTheLastDeadline_leavesTheSurchargeWithNothingMore()
     {
-        var company = Of(Example, new DateOnly(2026, 12, 22)).Company.ShouldNotBeNull();
+        var company = Of(RiverExample, new DateOnly(2026, 12, 22)).Company.ShouldNotBeNull();
 
         (company.Surcharge, company.Open, company.More, company.Payments.All(payment => payment.Past)).ShouldBe((675.00m, null, 0m, true));
     }
@@ -91,7 +84,7 @@ public class PaymentCalendarTests
     [Fact]
     public void Of_smallCompanyInItsThirdFinancialYear_isExemptWithNothingMore()
     {
-        var company = Of(Example with { Company = new CompanyStatus(true, true, true) }, On22October).Company.ShouldNotBeNull();
+        var company = Of(RiverExample with { Company = new CompanyStatus(true, true, true) }, On22October).Company.ShouldNotBeNull();
 
         (company.Exempt, company.Surcharge, company.More).ShouldBe((true, 0m, 0m));
     }
@@ -99,7 +92,7 @@ public class PaymentCalendarTests
     [Fact]
     public void Of_nothingWithheld_leavesNoDirectorsSurchargeDueWith14317Point50By21December()
     {
-        var director = Of(Example with { TaxPrepayments = TaxPrepayments.None }, On22October).Director;
+        var director = Of(RiverExample with { TaxPrepayments = TaxPrepayments.None }, On22October).Director;
 
         (director.Surcharge, director.Open, director.More).ShouldBe((486.57m, 3, 14_317.50m));
     }
@@ -107,7 +100,7 @@ public class PaymentCalendarTests
     [Fact]
     public void Of_exampleWithheldOnByTheKeyFormula_needsNothingMoreFromTheDirector()
     {
-        var director = Of(Example, On22October).Director;
+        var director = Of(RiverExample, On22October).Director;
 
         (director.Surcharge, director.More).ShouldBe((0m, 0m));
     }
@@ -115,7 +108,7 @@ public class PaymentCalendarTests
     [Fact]
     public void Of_starter_isExemptWithNothingMore()
     {
-        var director = Of(Example with { TaxPrepayments = TaxPrepayments.None with { Starter = true } }, On22October).Director;
+        var director = Of(RiverExample with { TaxPrepayments = TaxPrepayments.None with { Starter = true } }, On22October).Director;
 
         (director.Exempt, director.Surcharge, director.More).ShouldBe((true, 0m, 0m));
     }
@@ -125,7 +118,7 @@ public class PaymentCalendarTests
     {
         var paid = new AdvancePayments(1_000m, 0m, 2_000m, 0m);
 
-        var director = Of(Example with { TaxPrepayments = TaxPrepayments.None with { Paid = paid } }, On22October).Director;
+        var director = Of(RiverExample with { TaxPrepayments = TaxPrepayments.None with { Paid = paid } }, On22October).Director;
 
         director.Payments.Select(payment => payment.Planned).ShouldBe([1_000m, 0m, 2_000m, 0m]);
     }
@@ -134,7 +127,7 @@ public class PaymentCalendarTests
     [Fact]
     public void Of_example_givesWhatTheMovesProposeByTheOpenDeadline()
     {
-        var today = Example with { TaxPrepayments = TaxPrepayments.None };
+        var today = RiverExample with { TaxPrepayments = TaxPrepayments.None };
         var calendar = Of(today, On22October);
 
         var finders = new IMoveFinder[] { new CompanyAdvancePaymentFinder(On22October), new DirectorAdvancePaymentFinder(On22October) };
@@ -159,7 +152,7 @@ public class PaymentCalendarTests
     [Fact]
     public void Of_example_givesTheTwelveMonthsOfThePaySlip()
     {
-        var year = YearSimulation.Run(Example).Value.ShouldNotBeNull();
+        var year = YearSimulation.Run(RiverExample).Value.ShouldNotBeNull();
 
         var calendar = PaymentCalendar.Of(year, On22October);
 
@@ -170,7 +163,7 @@ public class PaymentCalendarTests
     [Fact]
     public void Of_exampleOn22October_marksJanuaryToSeptemberPast()
     {
-        var calendar = Of(Example, On22October);
+        var calendar = Of(RiverExample, On22October);
 
         calendar.Months.Select(month => month.Past).ShouldBe([.. Enumerable.Repeat(true, 9), false, false, false]);
     }
@@ -178,7 +171,7 @@ public class PaymentCalendarTests
     [Fact]
     public void Of_example_givesTheDirectorsBalanceForTaxYear2027()
     {
-        var director = Of(Example, On22October).DirectorBalance;
+        var director = Of(RiverExample, On22October).DirectorBalance;
 
         (director.TaxYear, director.Balance, director.Source).ShouldBe((2027, 1_436.06m, PersonalTaxRules.AssessmentBalance));
     }
@@ -187,7 +180,7 @@ public class PaymentCalendarTests
     [Fact]
     public void Of_example_givesTheCompanysBalanceItsTaxWithTheSurcharge()
     {
-        var company = Of(Example, On22October).CompanyBalance.ShouldNotBeNull();
+        var company = Of(RiverExample, On22October).CompanyBalance.ShouldNotBeNull();
 
         (company.TaxYear, company.Balance, company.Source).ShouldBe((2027, 10_675.00m, CorporateTaxRules.AssessmentBalance));
     }
@@ -196,7 +189,7 @@ public class PaymentCalendarTests
     [Fact]
     public void Of_companyPaidMoreThanItsTax_refundsTheExcess()
     {
-        var company = Of(Example with { AdvancePayments = new AdvancePayments(15_000m, 0m, 0m, 0m) }, On22October).CompanyBalance.ShouldNotBeNull();
+        var company = Of(RiverExample with { AdvancePayments = new AdvancePayments(15_000m, 0m, 0m, 0m) }, On22October).CompanyBalance.ShouldNotBeNull();
 
         company.Balance.ShouldBe(-5_000.00m);
     }
@@ -205,7 +198,7 @@ public class PaymentCalendarTests
     [Fact]
     public void Of_example_givesAQuarterOfTheYearsContributions()
     {
-        var year = YearSimulation.Run(Example).Value.ShouldNotBeNull();
+        var year = YearSimulation.Run(RiverExample).Value.ShouldNotBeNull();
 
         var contributions = PaymentCalendar.Of(year, On22October).Contributions;
 
@@ -217,13 +210,13 @@ public class PaymentCalendarTests
     [Fact]
     public void Of_exampleOn22October_marksTheFirstThreeQuartersPast()
     {
-        Of(Example, On22October).Contributions.Quarters.Select(quarter => quarter.Past).ShouldBe([true, true, true, false]);
+        Of(RiverExample, On22October).Contributions.Quarters.Select(quarter => quarter.Past).ShouldBe([true, true, true, false]);
     }
 
     [Fact]
     public void Of_companyPaysTheContributions_saysSo()
     {
-        Of(Example with { ContributionsPaidBy = Netto.Core.SocialContributions.ContributionsPaidBy.Company }, On22October).Contributions.PaidByCompany.ShouldBeTrue();
+        Of(RiverExample with { ContributionsPaidBy = Netto.Core.SocialContributions.ContributionsPaidBy.Company }, On22October).Contributions.PaidByCompany.ShouldBeTrue();
     }
 
     // What the fund bills each quarter, four times, against the final contribution: the rest is
@@ -231,7 +224,7 @@ public class PaymentCalendarTests
     [Fact]
     public void WithBilled_lessThanTheFinal_leavesTheRestToPay()
     {
-        var calendar = Of(Example, On22October);
+        var calendar = Of(RiverExample, On22October);
         var final = calendar.Contributions.EachQuarter * 4;
 
         var contributions = calendar.WithBilled(2_000m).Value.ShouldNotBeNull().Contributions;
@@ -242,7 +235,7 @@ public class PaymentCalendarTests
     [Fact]
     public void WithBilled_moreThanTheFinal_refundsTheExcess()
     {
-        var calendar = Of(Example, On22October);
+        var calendar = Of(RiverExample, On22October);
         var final = calendar.Contributions.EachQuarter * 4;
 
         calendar.WithBilled(5_000m).Value.ShouldNotBeNull().Contributions.Regularisation.ShouldBe(final - 20_000m);
@@ -251,13 +244,13 @@ public class PaymentCalendarTests
     [Fact]
     public void WithBilled_none_leavesNoRegularisation()
     {
-        Of(Example, On22October).WithBilled(null).Value.ShouldNotBeNull().Contributions.Regularisation.ShouldBeNull();
+        Of(RiverExample, On22October).WithBilled(null).Value.ShouldNotBeNull().Contributions.Regularisation.ShouldBeNull();
     }
 
     [Fact]
     public void WithBilled_negative_isRefused()
     {
-        Of(Example, On22October).WithBilled(-1m).ShouldBe((null, PaymentCalendar.BilledContributionsNegative));
+        Of(RiverExample, On22October).WithBilled(-1m).ShouldBe((null, PaymentCalendar.BilledContributionsNegative));
     }
 
     [Fact]

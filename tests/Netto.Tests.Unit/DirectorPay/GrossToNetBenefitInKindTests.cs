@@ -3,6 +3,7 @@ using Netto.Core.PersonalTax;
 using Netto.Core.Simulation;
 using Netto.Core.SocialContributions;
 using Shouldly;
+using static Netto.Tests.Support.Fixtures;
 
 namespace Netto.Tests.DirectorPay;
 
@@ -14,8 +15,6 @@ namespace Netto.Tests.DirectorPay;
 public class GrossToNetBenefitInKindTests
 {
     private const decimal Benefit = 2_400m;
-
-    private static readonly TaxPrepayments Withheld = new(1_000_000m, AdvancePayments.None);
 
     public static TheoryData<decimal, ContributionsPaidBy> Pays => new()
     {

@@ -5,6 +5,7 @@ using Netto.Core.PersonalTax;
 using Netto.Core.Simulation;
 using Netto.Core.SocialContributions;
 using Shouldly;
+using static Netto.Tests.Support.Fixtures;
 
 namespace Netto.Tests.DirectorPay;
 
@@ -17,8 +18,6 @@ namespace Netto.Tests.DirectorPay;
 public class GrossToNetMovableIncomeTests
 {
     private const decimal AsPay = 5_000m;
-
-    private static readonly TaxPrepayments Withheld = new(1_000_000m, AdvancePayments.None);
 
     private static readonly RuleAmountOf2026 Rate = new(CopyrightRules.IncomeYear2026.TaxedApartRate);
 

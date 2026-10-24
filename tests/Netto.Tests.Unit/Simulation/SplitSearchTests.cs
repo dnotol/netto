@@ -1,12 +1,12 @@
 using Netto.Core.Allowances;
 using Netto.Core.CorporateTax;
-using Netto.Core.Dividends;
 using Netto.Core.PersonalTax;
 using Netto.Core.Rent;
 using Netto.Core.Simulation;
 using Netto.Core.SocialContributions;
 using Netto.Core.Vouchers;
 using Shouldly;
+using static Netto.Tests.Support.Fixtures;
 
 namespace Netto.Tests.Simulation;
 
@@ -25,23 +25,6 @@ namespace Netto.Tests.Simulation;
 // the expense allowances and the rent it pays: none unless a test says otherwise.
 public class SplitSearchTests
 {
-    private static readonly CompanyStatus SmallPastStartUp = new(SmallCompany: true, FirstFourTaxPeriods: false);
-
-    // Its credit, 9,000, covers the surcharge on any tax these tests reach.
-    private static readonly AdvancePayments Prepaid = new(100_000m, 0m, 0m, 0m);
-
-    private static readonly TaxPrepayments Withheld = new(1_000_000m, AdvancePayments.None);
-
-    private static readonly VoucherGrants MealVouchersOn220Days = new(220, 0m, 0m);
-
-    private static readonly VoucherGrants AllVouchers = new(220, 250m, 100m);
-
-    // 2,418.44, all of it deducted by the company.
-    private static readonly ExpenseAllowances FlatRateAllowances = new(1_938.44m, 240m, 240m, 0m);
-
-    // 12% of a cadastral income of 1,200 let for the 2026 cap, 1,380.00: 828.00 of net rent.
-    private static readonly HomeOfficeRent RentAtTheCap = new(1_200m, 0.12m, 1_380m);
-
     [Fact]
     public void Run_2026Example_findsThePayThatLeavesTheMost()
     {
@@ -86,7 +69,7 @@ public class SplitSearchTests
     {
         var best = Search(Scenario()).Best.ShouldNotBeNull();
 
-        var around = Enumerable.Range(-1_000, 2_001).Select(euros => Year(Scenario(directorPay: best.Pay + euros)).NetInPocket);
+        var around = Enumerable.Range(-1_000, 2_001).Select(euros => Run(Scenario(directorPay: best.Pay + euros)).NetInPocket);
 
         around.ShouldAllBe(net => net <= best.NetInPocket);
     }
@@ -262,7 +245,7 @@ public class SplitSearchTests
     {
         var best = Search(Scenario(paidBy: ContributionsPaidBy.Company)).Best.ShouldNotBeNull();
 
-        var around = Enumerable.Range(-1_000, 2_001).Select(euros => Year(Scenario(directorPay: best.Pay + euros, paidBy: ContributionsPaidBy.Company)).NetInPocket);
+        var around = Enumerable.Range(-1_000, 2_001).Select(euros => Run(Scenario(directorPay: best.Pay + euros, paidBy: ContributionsPaidBy.Company)).NetInPocket);
 
         around.ShouldAllBe(net => net <= best.NetInPocket);
     }
@@ -627,51 +610,12 @@ public class SplitSearchTests
         (value, error).ShouldBe((null, YearSimulation.IncomeYearNotSupported));
     }
 
-    private static Scenario Scenario(
-        decimal directorPay = 50_000m,
-        decimal reserve = 0m,
-        decimal revenue = 120_000m,
-        CompanyStatus? company = null,
-        decimal earlierProfits = 0m,
-        AdvancePayments? advancePayments = null,
-        TaxPrepayments? taxPrepayments = null,
-        ContributionsPaidBy paidBy = ContributionsPaidBy.Director,
-        VoucherGrants? vouchers = null,
-        ExpenseAllowances? allowances = null,
-        HomeOfficeRent? rent = null) =>
-        new(2026, revenue, 20_000m, company ?? SmallPastStartUp, directorPay, MunicipalRates.Entered(0.07m), reserve,
-            WithholdingCategory.VvprbisThirdYearOnwards, earlierProfits)
-        {
-            AdvancePayments = advancePayments ?? Prepaid,
-            TaxPrepayments = taxPrepayments ?? Withheld,
-            ContributionsPaidBy = paidBy,
-            Vouchers = vouchers ?? VoucherGrants.None,
-            Allowances = allowances ?? ExpenseAllowances.None,
-            Rent = rent ?? HomeOfficeRent.None,
-        };
-
-    private static SplitSearchResult Search(Scenario scenario)
-    {
-        var (value, error) = SplitSearch.Run(scenario);
-
-        error.ShouldBeNull();
-        return value.ShouldNotBeNull();
-    }
-
-    private static YearResult Year(Scenario scenario)
-    {
-        var (value, error) = YearSimulation.Run(scenario);
-
-        error.ShouldBeNull();
-        return value.ShouldNotBeNull();
-    }
-
     private static PayLevel LevelOf(
         decimal pay, decimal reserve, AdvancePayments? advancePayments = null, TaxPrepayments? taxPrepayments = null,
         ContributionsPaidBy paidBy = ContributionsPaidBy.Director, VoucherGrants? vouchers = null, ExpenseAllowances? allowances = null,
         HomeOfficeRent? rent = null)
     {
-        var year = Year(Scenario(directorPay: pay, reserve: reserve, advancePayments: advancePayments, taxPrepayments: taxPrepayments, paidBy: paidBy,
+        var year = Run(Scenario(directorPay: pay, reserve: reserve, advancePayments: advancePayments, taxPrepayments: taxPrepayments, paidBy: paidBy,
             vouchers: vouchers, allowances: allowances, rent: rent));
 
         return new PayLevel(pay, year.NetInPocket, year.Dividend.Dividend, year.KeptInCompany, year.Company.Condition,
