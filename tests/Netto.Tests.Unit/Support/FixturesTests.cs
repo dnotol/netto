@@ -26,8 +26,9 @@ public class FixturesTests
         var scenario = Scenario();
 
         (scenario.IncomeYear, scenario.Revenue, scenario.RunningCosts, scenario.Company, scenario.DirectorPay, scenario.MunicipalRate.Value, scenario.Reserve,
-            scenario.DividendCategory, scenario.EarlierProfits, scenario.ContributionsPaidBy)
-            .ShouldBe((2026, 120_000m, 19_590.70m, SmallPastStartUp, 50_000m, 0.07m, 0m, WithholdingCategory.VvprbisThirdYearOnwards, 0m, ContributionsPaidBy.Director));
+            scenario.DividendCategory, scenario.EarlierProfits, scenario.ContributionsPaidBy, scenario.FundFeeRate)
+            .ShouldBe((2026, 120_000m, 19_590.70m, SmallPastStartUp, 50_000m, 0.07m, 0m, WithholdingCategory.VvprbisThirdYearOnwards, 0m, ContributionsPaidBy.Director,
+                (decimal?)null));
     }
 
     // Its running costs and the lower band's 409.30 of INASTI's company contribution are the 20,000 of costs
@@ -66,13 +67,14 @@ public class FixturesTests
         var scenario = Scenario(
             directorPay: 30_000m, reserve: 4_000m, revenue: 90_000m, company: company, category: WithholdingCategory.Standard, earlierProfits: 7_000m,
             advancePayments: AdvancePayments.None, taxPrepayments: TaxPrepayments.AsWithheld, paidBy: ContributionsPaidBy.Company,
-            vouchers: AllVouchers, allowances: FlatRateAllowances, rent: RentAtTheCap, car: ElectricCar, royalty: royalty, band: CompanyContributionBand.Upper);
+            vouchers: AllVouchers, allowances: FlatRateAllowances, rent: RentAtTheCap, car: ElectricCar, royalty: royalty, band: CompanyContributionBand.Upper,
+            fundFeeRate: 0.0305m);
 
         (scenario.DirectorPay, scenario.Reserve, scenario.Revenue, scenario.Company, scenario.DividendCategory, scenario.EarlierProfits, scenario.AdvancePayments,
             scenario.TaxPrepayments, scenario.ContributionsPaidBy, scenario.Vouchers, scenario.Allowances, scenario.Rent, scenario.Car, scenario.Copyright,
-            scenario.CompanyContributionBand)
+            scenario.CompanyContributionBand, scenario.FundFeeRate)
             .ShouldBe((30_000m, 4_000m, 90_000m, company, WithholdingCategory.Standard, 7_000m, AdvancePayments.None, TaxPrepayments.AsWithheld,
-                ContributionsPaidBy.Company, AllVouchers, FlatRateAllowances, RentAtTheCap, ElectricCar, royalty, CompanyContributionBand.Upper));
+                ContributionsPaidBy.Company, AllVouchers, FlatRateAllowances, RentAtTheCap, ElectricCar, royalty, CompanyContributionBand.Upper, (decimal?)0.0305m));
     }
 
     // The engine tests take the river's example as its scenario rather than through the client, so this is

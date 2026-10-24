@@ -16,8 +16,8 @@ namespace Netto.Tests.Support;
 // 120,000 of revenue and 19,590.70 of running costs, its balance sheet in INASTI's lower band, so its
 // 409.30 of company contribution with them make the 20,000 of costs that leave 100,000 of profit before
 // the director; a small company past its first four tax periods; 50,000 of pay; a VVPRbis dividend from
-// the third distribution; nothing kept; the director paying their contributions; and no lever, until a
-// test gives one. The company prepays enough by 10 April to leave no advance-payment surcharge, and
+// the third distribution; nothing kept; the director paying their contributions, with no fund fee given;
+// and no lever, until a test gives one. The company prepays enough by 10 April to leave no advance-payment surcharge, and
 // withholds more than any director pay's tax, unless a test says otherwise. A new lever is a new
 // argument of Scenario, in this one place.
 internal static class Fixtures
@@ -77,13 +77,15 @@ internal static class Fixtures
         HomeOfficeRent? rent = null,
         CarFacts? car = null,
         CopyrightRoyalty? royalty = null,
-        CompanyContributionBand band = CompanyContributionBand.Lower) =>
+        CompanyContributionBand band = CompanyContributionBand.Lower,
+        decimal? fundFeeRate = null) =>
         new(2026, revenue, RunningCosts, company ?? SmallPastStartUp, directorPay, MunicipalRates.IncomeYear2026.Entered(0.07m), reserve, category, earlierProfits)
         {
             CompanyContributionBand = band,
             AdvancePayments = advancePayments ?? Prepaid,
             TaxPrepayments = taxPrepayments ?? Withheld,
             ContributionsPaidBy = paidBy,
+            FundFeeRate = fundFeeRate,
             Vouchers = vouchers ?? VoucherGrants.None,
             Allowances = allowances ?? ExpenseAllowances.None,
             Rent = rent ?? HomeOfficeRent.None,
