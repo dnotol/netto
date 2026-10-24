@@ -28,4 +28,22 @@ public class AdvancePaymentRulesTests
         Rules2026.Deadlines.Select(deadline => deadline.Date.Value)
             .ShouldBe([new DateOnly(2026, 4, 10), new DateOnly(2026, 7, 10), new DateOnly(2026, 10, 12), new DateOnly(2026, 12, 21)]);
     }
+
+    // Each deadline's date and multiplier are named by its place in the year, the date read from the
+    // SPF's page for companies and the multiplier from art. 159.
+    [Fact]
+    public void Deadlines_2026_eachNamesItsPlaceAndCitesItsTexts()
+    {
+        const string page = "corporate-tax/spf-finances_versements-anticipes-societes_2026-10-20.html";
+        const string article159 = "corporate-tax/spf-finances_cir92-art-159-revenus-2026_2026-02-09.html";
+
+        Rules2026.Deadlines.Select(deadline => (deadline.Date.Key, deadline.Date.Source.Document, deadline.CreditMultiplier.Key, deadline.CreditMultiplier.Source.Document))
+            .ShouldBe(
+            [
+                ("first_deadline", page, "first_credit_multiplier", article159),
+                ("second_deadline", page, "second_credit_multiplier", article159),
+                ("third_deadline", page, "third_credit_multiplier", article159),
+                ("fourth_deadline", page, "fourth_credit_multiplier", article159),
+            ]);
+    }
 }

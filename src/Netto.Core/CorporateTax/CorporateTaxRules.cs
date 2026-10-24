@@ -94,14 +94,10 @@ public sealed record CorporateTaxRules(
             new RuleAmount("reference_rate", 0.03m, Article218Income2026),
             new RuleAmount("surcharge_multiplier", 2.25m, Article159Income2026),
             [
-                new AdvancePaymentDeadline(new RuleDate("first_deadline", new DateOnly(2026, 4, 10), AdvancePaymentsPage2027),
-                    new RuleAmount("first_credit_multiplier", 3m, Article159Income2026)),
-                new AdvancePaymentDeadline(new RuleDate("second_deadline", new DateOnly(2026, 7, 10), AdvancePaymentsPage2027),
-                    new RuleAmount("second_credit_multiplier", 2.5m, Article159Income2026)),
-                new AdvancePaymentDeadline(new RuleDate("third_deadline", new DateOnly(2026, 10, 12), AdvancePaymentsPage2027),
-                    new RuleAmount("third_credit_multiplier", 2m, Article159Income2026)),
-                new AdvancePaymentDeadline(new RuleDate("fourth_deadline", new DateOnly(2026, 12, 21), AdvancePaymentsPage2027),
-                    new RuleAmount("fourth_credit_multiplier", 1.5m, Article159Income2026)),
+                Deadline(new DateOnly(2026, 4, 10), AdvancePaymentsPage2027, Article159Income2026, "first", 3m),
+                Deadline(new DateOnly(2026, 7, 10), AdvancePaymentsPage2027, Article159Income2026, "second", 2.5m),
+                Deadline(new DateOnly(2026, 10, 12), AdvancePaymentsPage2027, Article159Income2026, "third", 2m),
+                Deadline(new DateOnly(2026, 12, 21), AdvancePaymentsPage2027, Article159Income2026, "fourth", 1.5m),
             ]));
 
     public static CorporateTaxRules? For(int incomeYear) => incomeYear switch
@@ -109,6 +105,11 @@ public sealed record CorporateTaxRules(
         2026 => IncomeYear2026,
         _ => null,
     };
+
+    // A deadline named by its place in the year, its date and its multiplier keyed alike, as the
+    // director's are (IncomeTaxAdvancePaymentRules).
+    private static AdvancePaymentDeadline Deadline(DateOnly date, Source dateSource, Source credits, string place, decimal creditMultiplier) =>
+        new(new RuleDate($"{place}_deadline", date, dateSource), new RuleAmount($"{place}_credit_multiplier", creditMultiplier, credits));
 
     public IReadOnlyList<RuleAmount> Amounts => [StandardRate, ReducedRate, ReducedRateCeiling, MinimumDirectorPay, ExcessBenefitsShare];
 }
