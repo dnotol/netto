@@ -18,8 +18,7 @@
     <Disclosure Title="@L["SharesTitle"]" Values="@SettingWords.Of(L, _settings.Facts)" Refused="@DividendSettingsView.SharesHold(Refused)">
         <RiverField Label="@L["EarlierLabel"]" For="river-earlier-profits" Origin="Inputs.EarlierProfits.Origin" Help="@L["EarlierHint"]">
             <RiverNumericField T="decimal" InputId="river-earlier-profits" Value="Inputs.EarlierProfits.Value" ValueChanged="OnEarlierProfitsChanged"
-                               Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
-                               Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
+                               Euros="true"
                                Error="@(Refused == YearSimulation.EarlierProfitsNegative)" Refusal="@Refused" />
         </RiverField>
         <RiverField Label="@L["CategoryLabel"]" Origin="Inputs.DividendCategory.Origin" Help="@L[DividendCardText.CategoryHelp]">
@@ -43,8 +42,8 @@
                        aria-labelledby="river-reserve-label" aria-valuetext="@Formats.Euros(_view.Kept)" />
         }
         <RiverNumericField T="decimal" InputId="river-reserve" Value="@(_view?.Kept ?? Inputs.Reserve.Value)" ValueChanged="OnReserveChanged"
-                           Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
-                           Variant="Variant.Outlined" Margin="Margin.Dense" Error="@(Refused == YearSimulation.ReserveNegative)" Refusal="@Refused" />
+                           Euros="true" TakenOnLeaving="true"
+                           Error="@(Refused == YearSimulation.ReserveNegative)" Refusal="@Refused" />
     </RiverField>
     <RefusedMessage Error="@Refused" />
     @if (_view is not null)

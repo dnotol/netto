@@ -25,8 +25,7 @@
                        Min="0m" Max="OwnPayMaximum" Step="100m" Immediate="true" Color="Color.Primary" Culture="Formats.Culture"
                        aria-labelledby="river-pay-label" aria-valuetext="@Formats.Euros(OwnPay)" />
             <RiverNumericField T="decimal" InputId="river-pay" Value="Inputs.DirectorPay.Value" ValueChanged="OnPayChanged"
-                               Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
-                               Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
+                               Euros="true"
                                Error="@(Refused == GrossToNet.GrossPayNegative)" Refusal="@Refused" />
         </RiverField>
     }
@@ -80,8 +79,7 @@
                 Help="@L["PrepaymentsHint"]">
         <RiverField Label="@L["WithheldLabel", Inputs.IncomeYear]" For="river-tax-withheld" Origin="_withheld.Origin" Help="@L["WithheldHint"]">
             <RiverNumericField T="decimal" InputId="river-tax-withheld" Value="_withheld.Amount" ValueChanged="OnWithheldChanged"
-                               Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
-                               Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
+                               Euros="true"
                                Error="@(Refused == GrossToNet.TaxWithheldNegative)" Refusal="@Refused" />
             @if (_withheld.IsYours)
             {
@@ -97,8 +95,7 @@
                 <RiverField Label="@L["PaymentLabel", Formats.Day(field.Date)]" For="@($"river-tax-advance-payment-{field.Deadline}")" Origin="field.Paid.Origin">
                     <RiverNumericField T="decimal" InputId="@($"river-tax-advance-payment-{field.Deadline}")" Value="field.Paid.Value"
                                        ValueChanged="@(amount => OnAdvancePaymentChanged(field.Deadline, amount))"
-                                       Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
-                                       Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
+                                       Euros="true"
                                        Error="@(Refused == GrossToNet.TaxAdvancePaymentNegative && field.Paid.Value < 0m)" Refusal="@Refused" />
                 </RiverField>
             }

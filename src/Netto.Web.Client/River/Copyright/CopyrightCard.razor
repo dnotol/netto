@@ -26,8 +26,7 @@
         <RiverField Label="@L["CreativeShareLabel"]" For="river-copyright-creative-share"
                     Origin="@(Inputs.Copyright.CreativeShare.Value is null ? null : Inputs.Copyright.CreativeShare.Origin)" Help="@L["CreativeShareHint"]">
             <RiverNumericField T="decimal?" InputId="river-copyright-creative-share" Value="CreativeSharePercent" ValueChanged="OnCreativeSharePercentChanged"
-                               Format="0.##" Culture="Formats.Culture" Adornment="Adornment.End" AdornmentText="%" HideSpinButtons="true"
-                               Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
+                               Format="0.##" Adornment="Adornment.End" AdornmentText="%"
                                Error="@(Refused == CopyrightCalculator.CreativeShareOutOfRange)" Refusal="@Refused" />
         </RiverField>
         <div class="copyright__tick">

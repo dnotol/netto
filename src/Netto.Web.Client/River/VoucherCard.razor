@@ -17,8 +17,7 @@
     <div class="vouchers__fields">
         <RiverField Label="@L["MealDaysLabel"]" For="river-meal-voucher-days" Origin="Inputs.Vouchers.MealVoucherDays.Origin">
             <RiverNumericField T="int" InputId="river-meal-voucher-days" Value="Inputs.Vouchers.MealVoucherDays.Value" ValueChanged="OnMealVoucherDaysChanged"
-                               Culture="Formats.Culture" HideSpinButtons="true" Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true"
-                               DebounceInterval="400"
+                               Format="0"
                                Error="@(Refused is VoucherCalculator.MealVoucherDaysNegative or VoucherCalculator.MealVoucherDaysAboveYear)" Refusal="@Refused" />
             @if (_rules is not null)
             {
@@ -27,8 +26,7 @@
         </RiverField>
         <RiverField Label="@L["EcoLabel"]" For="river-eco-vouchers" Origin="Inputs.Vouchers.EcoVouchers.Origin">
             <RiverNumericField T="decimal" InputId="river-eco-vouchers" Value="Inputs.Vouchers.EcoVouchers.Value" ValueChanged="OnEcoVouchersChanged"
-                               Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
-                               Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
+                               Euros="true"
                                Error="@(Refused is VoucherCalculator.EcoVouchersNegative or VoucherCalculator.EcoVouchersAboveMaximum)" Refusal="@Refused" />
             @if (_rules is not null)
             {
@@ -38,8 +36,7 @@
         <RiverField Label="@L["SportCultureLabel"]" For="river-sport-culture-vouchers" Origin="Inputs.Vouchers.SportCultureVouchers.Origin">
             <RiverNumericField T="decimal" InputId="river-sport-culture-vouchers" Value="Inputs.Vouchers.SportCultureVouchers.Value"
                                ValueChanged="OnSportCultureVouchersChanged"
-                               Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
-                               Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
+                               Euros="true"
                                Error="@(Refused is VoucherCalculator.SportCultureVouchersNegative or VoucherCalculator.SportCultureVouchersAboveMaximum)" Refusal="@Refused" />
             @if (_rules is not null)
             {

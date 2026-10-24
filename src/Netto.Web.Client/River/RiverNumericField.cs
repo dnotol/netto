@@ -14,9 +14,14 @@ namespace Netto.Web.Client.River;
 // MudBlazor ties to the input with aria-describedby, so a screen reader reads the message with the
 // field; the card shows it in sight (RefusedMessage), so RiverField keeps the field's copy out of sight
 // while it is refused (river-number--refused), and MudBlazor's own errors, a number it cannot read, in
-// sight.
+// sight. Every field of the river looks and behaves the same unless its card says otherwise: outlined and
+// dense, without spin buttons, in the site's culture, taking what is typed after 400 ms of quiet; an
+// amount in euros (Euros) with two decimals and a € before it; a field the river bounds taken once it is
+// left (TakenOnLeaving), so the bounded amount replaces the typed one.
 public sealed class RiverNumericField<T> : MudNumericField<T>
 {
+    // How long the field waits after a key before it takes what is typed.
+    private const double Quiet = 400;
     // The id of the error text, for aria-describedby; MudBlazor names it only from its own validation.
     private readonly string _errorId = $"river-refusal-{Guid.NewGuid():N}";
 
@@ -29,6 +34,36 @@ public sealed class RiverNumericField<T> : MudNumericField<T>
     // The engine's error key on the card, worded as the field's error text while Error is set.
     [Parameter]
     public string? Refusal { get; set; }
+
+    // An amount in euros: two decimals, and a € before it.
+    [Parameter]
+    public bool Euros { get; set; }
+
+    // Taken when the field is left, not while typing: a value the river bounds, which MudBlazor redraws
+    // only once the field has lost focus.
+    [Parameter]
+    public bool TakenOnLeaving { get; set; }
+
+    // The river's defaults go in before the card's parameters, so a parameter the card gives wins. They are
+    // set before MudBlazor first reads its parameters, which is when it takes the format and the culture.
+    public override Task SetParametersAsync(ParameterView parameters)
+    {
+        var takenOnLeaving = parameters.TryGetValue<bool>(nameof(TakenOnLeaving), out var leaving) && leaving;
+        Variant = Variant.Outlined;
+        Margin = Margin.Dense;
+        HideSpinButtons = true;
+        Culture = Formats.Culture;
+        Immediate = !takenOnLeaving;
+        DebounceInterval = takenOnLeaving ? 0 : Quiet;
+        if (parameters.TryGetValue<bool>(nameof(Euros), out var euros) && euros)
+        {
+            Format = "N2";
+            Adornment = Adornment.Start;
+            AdornmentText = "€";
+        }
+
+        return base.SetParametersAsync(parameters);
+    }
 
     // The parameter keeps the name the Razor compiler gives it in the base component (CA1725).
     protected override void BuildRenderTree(RenderTreeBuilder __builder)

@@ -96,8 +96,7 @@
         <RiverField Label="@L["BilledLabel", _view.IncomeYear]" For="river-billed-contributions"
                     Origin="@(Inputs.BilledContributions.Value is null ? null : Inputs.BilledContributions.Origin)" Help="@L["BilledHint"]">
             <RiverNumericField T="decimal?" InputId="river-billed-contributions" Value="Inputs.BilledContributions.Value" ValueChanged="OnBilledChanged"
-                               Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
-                               Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
+                               Euros="true"
                                Error="@(_view.BilledRefused is not null)" Refusal="@_view.BilledRefused" />
         </RiverField>
         <RefusedMessage Error="@_view.BilledRefused" />

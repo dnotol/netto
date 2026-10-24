@@ -31,8 +31,7 @@
         <div class="car__fields">
             <RiverField Label="@L["CatalogueLabel"]" For="river-car-catalogue" Origin="Inputs.Car.CatalogueValue.Origin" Help="@L["CatalogueHint"]">
                 <RiverNumericField T="decimal" InputId="river-car-catalogue" Value="Inputs.Car.CatalogueValue.Value" ValueChanged="OnCatalogueValueChanged"
-                                   Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
-                                   Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
+                                   Euros="true"
                                    Error="@(Refused == CarCalculator.CatalogueValueNegative)" Refusal="@Refused" />
             </RiverField>
             <RiverField Label="@L["RegistrationLabel"]" Origin="Inputs.Car.FirstRegistration.Origin" Help="@L["RegistrationHint"]">
@@ -62,8 +61,7 @@
             {
                 <RiverField Label="@L["Co2Label"]" For="river-car-co2" Origin="Inputs.Car.Co2.Origin" Help="@L["Co2Hint"]">
                     <RiverNumericField T="int" InputId="river-car-co2" Value="Inputs.Car.Co2.Value" ValueChanged="OnCo2Changed"
-                                       Format="0" Culture="Formats.Culture" Adornment="Adornment.End" AdornmentText="g/km" HideSpinButtons="true"
-                                       Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400" Disabled="Inputs.Car.NoCo2Data.Value"
+                                       Format="0" Adornment="Adornment.End" AdornmentText="g/km" Disabled="Inputs.Car.NoCo2Data.Value"
                                        Error="@(Refused is CarCalculator.Co2Negative or CarCalculator.Co2Missing)" Refusal="@Refused" />
                 </RiverField>
             }
@@ -87,8 +85,7 @@
             {
                 <RiverField Label="@L["MatchingCo2Label"]" For="river-car-matching-co2" Origin="Inputs.Car.MatchingCarCo2.Origin" Help="@L["MatchingCo2Hint"]">
                     <RiverNumericField T="int" InputId="river-car-matching-co2" Value="Inputs.Car.MatchingCarCo2.Value" ValueChanged="OnMatchingCo2Changed"
-                                       Format="0" Culture="Formats.Culture" Adornment="Adornment.End" AdornmentText="g/km" HideSpinButtons="true"
-                                       Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400" Disabled="Inputs.Car.NoMatchingCar.Value"
+                                       Format="0" Adornment="Adornment.End" AdornmentText="g/km" Disabled="Inputs.Car.NoMatchingCar.Value"
                                        Error="@(Refused is CarCalculator.MatchingCarCo2Negative or CarCalculator.MatchingCarCo2Missing)" Refusal="@Refused" />
                 </RiverField>
             }
@@ -126,14 +123,12 @@
     <div class="car__fields">
         <RiverField Label="@L["CostsLabel"]" For="river-car-costs" Origin="Inputs.Car.YearlyCosts.Origin" Help="@L["CostsHint"]">
             <RiverNumericField T="decimal" InputId="river-car-costs" Value="Inputs.Car.YearlyCosts.Value" ValueChanged="OnCostsChanged"
-                               Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
-                               Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
+                               Euros="true"
                                Error="@(Refused == CarCalculator.YearlyCostsNegative)" Refusal="@Refused" />
         </RiverField>
         <RiverField Label="@L["ContributionLabel"]" For="river-car-contribution" Origin="Inputs.Car.PersonalContribution.Origin" Help="@L["ContributionHint"]">
             <RiverNumericField T="decimal" InputId="river-car-contribution" Value="Inputs.Car.PersonalContribution.Value" ValueChanged="OnContributionChanged"
-                               Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
-                               Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
+                               Euros="true"
                                Error="@(Refused == CarCalculator.ContributionNegative)" Refusal="@Refused" />
         </RiverField>
     </div>
@@ -164,8 +159,7 @@
                     <RiverField Label="@L["PrivateCostLabel"]" For="river-car-private-cost"
                                 Origin="@(Inputs.Car.PrivateCost.Value is null ? null : Inputs.Car.PrivateCost.Origin)" Help="@L["PrivateCostHint"]">
                         <RiverNumericField T="decimal?" InputId="river-car-private-cost" Value="Inputs.Car.PrivateCost.Value" ValueChanged="OnPrivateCostChanged"
-                                           Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
-                                           Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
+                                           Euros="true"
                                            Error="@(comparison.Refused is not null)" Refusal="@comparison.Refused" />
                     </RiverField>
                 </div>

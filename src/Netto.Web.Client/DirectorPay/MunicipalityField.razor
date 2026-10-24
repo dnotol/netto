@@ -23,11 +23,12 @@
             </NoItemsTemplate>
         </MudAutocomplete>
         @* No Min or Max: MudBlazor would clamp a rate out of range silently, and the engine's
-           refusal, with its message, is what the user has to see. *@
+           refusal, with its message, is what the user has to see. The rate keeps its spin buttons, a
+           step of 0.1, no margin and takes each key at once, unlike the river's other fields. *@
         <RiverNumericField T="decimal" Value="RatePercent" ValueChanged="OnRateChanged" Label="@L["RateLabel"]"
                            Step="0.1m" Format="0.0" Adornment="Adornment.End" AdornmentText="%"
-                           Variant="Variant.Outlined" Immediate="true" Error="Refused" Refusal="@GrossToNet.MunicipalRateOutOfRange"
-                           Culture="Formats.Culture" />
+                           Margin="Margin.None" HideSpinButtons="false" DebounceInterval="0"
+                           Error="Refused" Refusal="@GrossToNet.MunicipalRateOutOfRange" />
     </div>
     <p class="municipality-field__note">
         @L[Choice.Note.Key, Choice.Note.Args.ToArray<object>()]

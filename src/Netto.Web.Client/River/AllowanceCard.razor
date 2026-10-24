@@ -20,8 +20,7 @@
     <div class="allowances__fields">
         <RiverField Label="@L["OfficeLabel"]" For="river-office-allowance" Origin="Inputs.Allowances.Office.Origin" Help="@OfficeHelp">
             <RiverNumericField T="decimal" InputId="river-office-allowance" Value="Inputs.Allowances.Office.Value" ValueChanged="OnOfficeChanged"
-                               Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
-                               Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
+                               Euros="true"
                                Error="@(Refused is AllowanceCalculator.OfficeAllowanceNegative or AllowanceCalculator.OfficeAllowanceAboveMaximum)" Refusal="@Refused" />
             @if (_rules is not null)
             {
@@ -30,8 +29,7 @@
         </RiverField>
         <RiverField Label="@L["InternetLabel"]" For="river-internet-allowance" Origin="Inputs.Allowances.Internet.Origin">
             <RiverNumericField T="decimal" InputId="river-internet-allowance" Value="Inputs.Allowances.Internet.Value" ValueChanged="OnInternetChanged"
-                               Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
-                               Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
+                               Euros="true"
                                Error="@(Refused is AllowanceCalculator.InternetAllowanceNegative or AllowanceCalculator.InternetAllowanceAboveMaximum)" Refusal="@Refused" />
             @if (_rules is not null)
             {
@@ -40,8 +38,7 @@
         </RiverField>
         <RiverField Label="@L["ComputerLabel"]" For="river-computer-allowance" Origin="Inputs.Allowances.Computer.Origin">
             <RiverNumericField T="decimal" InputId="river-computer-allowance" Value="Inputs.Allowances.Computer.Value" ValueChanged="OnComputerChanged"
-                               Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
-                               Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
+                               Euros="true"
                                Error="@(Refused is AllowanceCalculator.ComputerAllowanceNegative or AllowanceCalculator.ComputerAllowanceAboveMaximum)" Refusal="@Refused" />
             @if (_rules is not null)
             {
@@ -50,8 +47,7 @@
         </RiverField>
         <RiverField Label="@L["PhoneLabel"]" For="river-phone-costs" Origin="Inputs.Allowances.Phone.Origin">
             <RiverNumericField T="decimal" InputId="river-phone-costs" Value="Inputs.Allowances.Phone.Value" ValueChanged="OnPhoneChanged"
-                               Format="N2" Culture="Formats.Culture" Adornment="Adornment.Start" AdornmentText="€" HideSpinButtons="true"
-                               Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" DebounceInterval="400"
+                               Euros="true"
                                Error="@(Refused is AllowanceCalculator.PhoneCostsNegative)" Refusal="@Refused" />
         </RiverField>
     </div>
