@@ -86,6 +86,22 @@ public class PaySlipTextTests
             () => keys.Distinct().Where(key => Resources.Get(key) is null).ShouldBeEmpty());
     }
 
+    // The fee's part of the next 1,000 rides on the contributions: its bar segment and its legend's swatch
+    // take their colour, through the site's token, or both would be drawn empty.
+    [Fact]
+    public void PaySlipCss_fundFeesPartOfTheNextThousand_isColouredAsTheContributions()
+    {
+        var css = File.ReadAllText(RepositoryFile.FindUp("src", "Netto.Web.Client", "DirectorPay", "PaySlip.razor.css"));
+
+        var rule = System.Text.RegularExpressions.Regex.Matches(css, @"([^{}]+)\{([^{}]*)\}")
+            .Single(match => match.Groups[1].Value.Contains(".next__segment--social_contributions", StringComparison.Ordinal));
+
+        rule.ShouldSatisfyAllConditions(
+            () => rule.Groups[1].Value.ShouldContain(".next__segment--fund_fee"),
+            () => rule.Groups[1].Value.ShouldContain(".next__part--fund_fee .next__swatch"),
+            () => rule.Groups[2].Value.ShouldContain("var(--netto-data-high)"));
+    }
+
     // A royalty beyond its limits adds its row to both tracks and says what the next 1,000 holds; one
     // within them adds its lines to the balance.
     [Fact]

@@ -339,8 +339,11 @@
         border-left: 2px solid var(--netto-surface);
     }
 
+/* The fund's fee rides on the contributions and takes their colour. */
 .next__segment--social_contributions,
-.next__part--social_contributions .next__swatch {
+.next__part--social_contributions .next__swatch,
+.next__segment--fund_fee,
+.next__part--fund_fee .next__swatch {
     background: var(--netto-data-high);
 }
 
