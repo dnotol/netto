@@ -108,6 +108,25 @@ public class YearSimulationTests
         });
     }
 
+    // The corporate tax cites art. 215 of its year's rules.
+    [Fact]
+    public void Run_2026_corporateTaxCitesItsYearsArticle()
+    {
+        var step = Run(Scenario(directorPay: 50_000m, reserve: 0m)).Steps.Single(step => step.RuleKey == "corporate_tax");
+
+        step.Source.ShouldBe(CorporateTaxRules.IncomeYear2026.Source);
+    }
+
+    // The 149.94 the return gives back of the withholding on the dividend's exempt part cites the
+    // explanations that say how it is claimed, its year's rules' own.
+    [Fact]
+    public void Run_2026Dividend_exemptionRefundCitesTheReturnsExplanations()
+    {
+        var step = Run(Scenario(directorPay: 50_000m, reserve: 0m)).Steps.Single(step => step.RuleKey == "dividend_exemption_refund");
+
+        (step.Amount, step.Source).ShouldBe((-149.94m, DividendRules.IncomeYear2026.ExemptionRefund));
+    }
+
     // 6.75% of the 10,000 of corporate tax, which the year counts as a corporate tax of its own.
     [Fact]
     public void Run_2026NothingPrepaid_surchargesTheCorporateTax()
@@ -760,15 +779,17 @@ public class YearSimulationTests
     }
 
     // The rent cites the cap it is kept under, what it leaves taxable the floor of art. 7 and its
-    // charges art. 13's 40% and their limit.
+    // charges art. 13's 40% and their limit; the tax it adds the year's scale, and the surcharge on
+    // that tax the year's articles that set up the municipal surcharge.
     [Fact]
     public void Run_2026RentAtTheCap_citesItsArticles()
     {
         var rules = RentRules.IncomeYear2026;
 
-        var steps = Run(Scenario(directorPay: 50_000m, reserve: 0m, rent: RentAtTheCap)).Steps.Where(step => step.Event == TaxableEvent.Rent).Take(3);
+        var steps = Run(Scenario(directorPay: 50_000m, reserve: 0m, rent: RentAtTheCap)).Steps.Where(step => step.Event == TaxableEvent.Rent).Take(5);
 
-        steps.Select(step => step.Source).ShouldBe([rules.Cap, rules.NetRent, rules.RentAsIncome]);
+        steps.Select(step => step.Source)
+            .ShouldBe([rules.Cap, rules.NetRent, rules.RentAsIncome, PersonalTaxRules.IncomeYear2026.IncomeTaxScale, MunicipalRates.IncomeYear2026.Surcharge]);
     }
 
     [Theory]
