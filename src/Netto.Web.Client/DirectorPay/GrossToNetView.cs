@@ -13,7 +13,9 @@ namespace Netto.Web.Client.DirectorPay;
 // figures; every amount is the engine's. When the company pays the contributions
 // on the director's behalf (CompanyPaysContributions) they are pay that goes straight back out, so
 // both tracks start from what the pay costs the company, the gross plus them, which is also the pay
-// the director declares, and the contributions stay paid out. With a rent taxed with the pay
+// the director declares, and the contributions stay paid out. The fund's fee on the contributions is a
+// row of its own after them on both tracks, deducted with them, and a part of the next 1,000 while
+// there is one. With a rent taxed with the pay
 // (TaxedWithOtherIncome) the tracks stay the pay's own, while the next 1,000 and the balance are the
 // year's, the rent's tax in them. A benefit in kind, a company car's, joins the tax base track after
 // the gross, never the cash track: it is taxed as pay but never paid. A copyright royalty's part beyond
@@ -87,6 +89,7 @@ internal sealed record GrossToNetView(
             Parts(
             [
                 ("social_contributions", result.NextThousand.SocialContributions),
+                .. result.FundFee > 0m ? [("fund_fee", result.NextThousand.FundFee)] : Array.Empty<(string, decimal)>(),
                 ("income_tax", result.NextThousand.IncomeTax),
                 ("municipal_surcharge", result.NextThousand.MunicipalSurcharge),
                 ("low_earned_income_credit_lost", result.NextThousand.LowEarnedIncomeCredit),

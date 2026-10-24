@@ -419,6 +419,37 @@ public class GrossToNetViewTests
         taxBase.Rows[^1].ShouldBe(new FunnelRow("taxable_income", RowKind.TaxableIncome, 0m, 100m, 100m));
     }
 
+    // The fund's fee at 3.05% is deducted with the contributions (GrossToNetFundFeeTests): the tax base
+    // track takes it off right after them, and the cash track pays it out there too.
+    [Fact]
+    public void From_gross50000WithAFundFee_bothTracksTakeTheFeeOffAfterTheContributions()
+    {
+        var view = View(50_000m, Withheld, fundFeeRate: 0.0305m);
+
+        view.ShouldSatisfyAllConditions(
+            () => view.Tracks[1].Rows.Select(row => (row.Key, row.Kind, row.Amount)).ShouldBe(new[]
+            {
+                ("gross_pay", RowKind.Gross, 50_000m),
+                ("social_contributions", RowKind.PaidOut, 8_251.60m),
+                ("fund_fee", RowKind.PaidOut, 251.68m),
+                ("flat_rate_costs", RowKind.TaxBaseOnly, 1_244.90m),
+                ("taxable_income", RowKind.TaxableIncome, 40_251.82m),
+            }),
+            () => view.Tracks[0].Rows.Select(row => row.Key).Take(3).ShouldBe(["gross_pay", "social_contributions", "fund_fee"]));
+    }
+
+    // The next 1,000 adds to the fee too, a part of its own after the contributions', and the parts still
+    // make the 1,000; without a fee there is no such part (above).
+    [Fact]
+    public void From_gross50000WithAFundFee_nextThousandHasTheFeesPartAfterTheContributions()
+    {
+        var parts = View(50_000m, Withheld, fundFeeRate: 0.0305m).NextThousand;
+
+        parts.ShouldSatisfyAllConditions(
+            () => parts.Select(part => part.Key).Take(3).ShouldBe(["social_contributions", "fund_fee", "income_tax"]),
+            () => parts.Sum(part => part.Amount).ShouldBe(1_000m));
+    }
+
     [Fact]
     public void From_gross50000_splitsTheNextThousandIntoShares()
     {
@@ -661,11 +692,11 @@ public class GrossToNetViewTests
 
     private static GrossToNetView View(
         decimal grossPay, TaxPrepayments prepayments, ContributionsPaidBy paidBy = ContributionsPaidBy.Director, decimal otherIncome = 0m, decimal benefit = 0m,
-        MovableIncomePaid? movable = null)
+        MovableIncomePaid? movable = null, decimal? fundFeeRate = null)
     {
         var (value, error) = GrossToNet.Compute(
             2026, grossPay, MunicipalRates.IncomeYear2026.Entered(0.07m), prepayments, paidBy,
-            new TaxedWithPay { OtherIncome = otherIncome, BenefitInKind = benefit, Movable = movable ?? MovableIncomePaid.None });
+            new TaxedWithPay { OtherIncome = otherIncome, BenefitInKind = benefit, Movable = movable ?? MovableIncomePaid.None }, fundFeeRate: fundFeeRate);
 
         error.ShouldBeNull();
         return GrossToNetView.From(value.ShouldNotBeNull());

@@ -39,6 +39,9 @@
   <data name="Row_social_contributions" xml:space="preserve">
     <value>Social contributions</value>
   </data>
+  <data name="Row_fund_fee" xml:space="preserve">
+    <value>Fund's management fee</value>
+  </data>
   <data name="Row_flat_rate_costs" xml:space="preserve">
     <value>Flat-rate professional costs</value>
   </data>

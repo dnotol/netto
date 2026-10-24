@@ -68,6 +68,24 @@ public class PaySlipTextTests
             .Distinct().Where(key => Resources.Get(key) is null).ShouldBeEmpty();
     }
 
+    // The fund's fee adds its row to both tracks and its part to the next 1,000, whoever pays it.
+    [Theory]
+    [InlineData(ContributionsPaidBy.Director)]
+    [InlineData(ContributionsPaidBy.Company)]
+    public void PaySlipResx_everyKeyOfAPayWithTheFundsFee_hasAText(ContributionsPaidBy paidBy)
+    {
+        var (value, _) = GrossToNet.Compute(2026, 50_000m, MunicipalRates.IncomeYear2026.Entered(0.07m), TaxPrepayments.AsWithheld, paidBy, fundFeeRate: 0.0305m);
+        var view = GrossToNetView.From(value.ShouldNotBeNull());
+
+        var keys = view.Tracks.SelectMany(track => track.Rows).Select(row => PaySlipText.Row(row.Key))
+            .Concat(view.NextThousand.Select(part => PaySlipText.Row(part.Key)))
+            .ToList();
+
+        keys.ShouldSatisfyAllConditions(
+            () => keys.ShouldContain(PaySlipText.Row("fund_fee")),
+            () => keys.Distinct().Where(key => Resources.Get(key) is null).ShouldBeEmpty());
+    }
+
     // A royalty beyond its limits adds its row to both tracks and says what the next 1,000 holds; one
     // within them adds its lines to the balance.
     [Fact]
