@@ -2,9 +2,11 @@ using Netto.Core.Rules;
 
 namespace Netto.Core.PersonalTax;
 
-// Personal income tax of a single resident of Wallonia whose income is director pay and, when the
-// company rents part of their home as an office, that rent, taxed with the pay, for one income year. Income year 2025 is here for the tests only: it is the latest year Tax-Calc covers,
-// so it proves the method and the rounding against the administration's own simulator.
+// Personal income tax of a single resident of one region whose income is director pay and what the
+// levers hand it, for one income year: Wallonia alone, whose regional additional rate it holds, so the
+// rules of another region are none (For). Income year 2025 is here for the tests only: it is the latest
+// year Tax-Calc covers, so it proves the method and the rounding against the administration's own
+// simulator.
 // The special social security contribution collected with the tax is not here: a self-employed
 // person in main occupation does not owe it (law of 30.03.1994, art. 106 §4 and art. 125, 2°,
 // still so after the law of 15.07.2026 makes it per person from income year 2028). The tax credit
@@ -14,6 +16,7 @@ namespace Netto.Core.PersonalTax;
 // and its assessment cite as their rule.
 public sealed record PersonalTaxRules(
     int IncomeYear,
+    Region Region,
     IReadOnlyList<TaxBracket> Scale,
     RuleAmount TaxFreeAmount,
     RuleAmount TaxFreeAmountRate,
@@ -114,7 +117,9 @@ public sealed record PersonalTaxRules(
     };
 
     public static PersonalTaxRules IncomeYear2025 { get; } = new(
-        2025,
+        IncomeYear: 2025,
+        Region: Region.Wallonia,
+        Scale:
         [
             new TaxBracket(new RuleAmount("bracket_1_rate", 0.25m, Article130Income2025), new RuleAmount("bracket_1_upper_limit", 16_320m, Article130Income2025)),
             new TaxBracket(new RuleAmount("bracket_2_rate", 0.40m, Article130Income2025), new RuleAmount("bracket_2_upper_limit", 28_800m, Article130Income2025)),
@@ -140,7 +145,9 @@ public sealed record PersonalTaxRules(
         AssessmentBalance: Article304Income2026);
 
     public static PersonalTaxRules IncomeYear2026 { get; } = new(
-        2026,
+        IncomeYear: 2026,
+        Region: Region.Wallonia,
+        Scale:
         [
             new TaxBracket(new RuleAmount("bracket_1_rate", 0.25m, Article130Income2026), new RuleAmount("bracket_1_upper_limit", 16_720m, Article130Income2026)),
             new TaxBracket(new RuleAmount("bracket_2_rate", 0.40m, Article130Income2026), new RuleAmount("bracket_2_upper_limit", 29_510m, Article130Income2026)),
@@ -165,10 +172,10 @@ public sealed record PersonalTaxRules(
         DirectorPayDeductions: Article51Income2026,
         AssessmentBalance: Article304Income2026);
 
-    public static PersonalTaxRules? For(int incomeYear) => incomeYear switch
+    public static PersonalTaxRules? For(int incomeYear, Region region) => (incomeYear, region) switch
     {
-        2025 => IncomeYear2025,
-        2026 => IncomeYear2026,
+        (2025, Region.Wallonia) => IncomeYear2025,
+        (2026, Region.Wallonia) => IncomeYear2026,
         _ => null,
     };
 

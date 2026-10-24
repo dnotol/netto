@@ -49,10 +49,12 @@ public static class GrossToNet
 
     // The gross pay is the pay on the payslip, whoever pays the contributions; not saying who runs the
     // pay as the director's own. What is taxed with it is what the levers hand it besides the payslip,
-    // nothing unless given; the engine's own rules give it, never below zero.
+    // nothing unless given; the engine's own rules give it, never below zero. The director lives in
+    // Wallonia unless given another region, which has no rules yet and is refused as a year without
+    // them is.
     public static (GrossToNetResult? Value, string? Error) Compute(
         int incomeYear, decimal grossPay, RuleAmount municipalRate, TaxPrepayments prepayments, ContributionsPaidBy paidBy = ContributionsPaidBy.Director,
-        TaxedWithPay? withPay = null)
+        TaxedWithPay? withPay = null, Region region = Region.Wallonia)
     {
         withPay ??= TaxedWithPay.None;
         var movable = withPay.Movable;
@@ -63,9 +65,9 @@ public static class GrossToNet
         ArgumentOutOfRangeException.ThrowIfLessThan(movable.Withheld, 0m);
 
         var socialRules = SocialContributionRules.For(incomeYear);
-        var taxRules = PersonalTaxRules.For(incomeYear);
+        var taxRules = PersonalTaxRules.For(incomeYear, region);
         var withholdingRules = WithholdingRules.For(incomeYear);
-        var municipalRates = MunicipalRates.For(incomeYear);
+        var municipalRates = MunicipalRates.For(incomeYear, region);
         if (socialRules is null || taxRules is null || withholdingRules is null || municipalRates is null)
             return (null, IncomeYearNotSupported);
         if (grossPay < 0m)
@@ -85,6 +87,7 @@ public static class GrossToNet
 
         return (new GrossToNetResult(
             incomeYear,
+            region,
             grossPay,
             municipalRate.Value,
             figures.SocialContributions,
@@ -120,9 +123,9 @@ public static class GrossToNet
     // of them: no steps, no statement, and not the next 1,000, which costs as much again. Null for a
     // year without rules; the pay and the rate are Compute's to refuse.
     internal static Figures? Level(
-        int incomeYear, decimal grossPay, decimal municipalRate, TaxPrepayments prepayments, ContributionsPaidBy paidBy, TaxedWithPay withPay)
+        int incomeYear, decimal grossPay, decimal municipalRate, TaxPrepayments prepayments, ContributionsPaidBy paidBy, TaxedWithPay withPay, Region region)
     {
-        if (SocialContributionRules.For(incomeYear) is not { } socialRules || PersonalTaxRules.For(incomeYear) is not { } taxRules
+        if (SocialContributionRules.For(incomeYear) is not { } socialRules || PersonalTaxRules.For(incomeYear, region) is not { } taxRules
             || WithholdingRules.For(incomeYear) is not { } withholdingRules)
             return null;
 
@@ -134,9 +137,9 @@ public static class GrossToNet
     // gross and the benefit, and the taxable pay rises with the gross, so it is found by halving between
     // no pay and the ceiling. Null when no gross up to the ceiling reaches it, or for a year without
     // rules.
-    internal static decimal? SmallestGrossPayWithTaxablePay(int incomeYear, decimal taxablePay, decimal ceiling, decimal benefitInKind)
+    internal static decimal? SmallestGrossPayWithTaxablePay(int incomeYear, decimal taxablePay, decimal ceiling, decimal benefitInKind, Region region)
     {
-        if (SocialContributionRules.For(incomeYear) is not { } socialRules || PersonalTaxRules.For(incomeYear) is not { } taxRules)
+        if (SocialContributionRules.For(incomeYear) is not { } socialRules || PersonalTaxRules.For(incomeYear, region) is not { } taxRules)
             return null;
 
         decimal TaxablePayOf(decimal grossPay) => grossPay + CompanyPaidContributions(socialRules, taxRules, grossPay + benefitInKind);

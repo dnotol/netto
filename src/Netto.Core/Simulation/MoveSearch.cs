@@ -179,7 +179,7 @@ internal sealed class SplitMoveFinder : IMoveFinder
 internal sealed class CompanyAdvancePaymentFinder(DateOnly date) : IMoveFinder
 {
     public Move? Find(Scenario scenario) =>
-        YearSimulation.Run(scenario).Value is { } year && PaymentCalendar.Of(year, date).Company is { Open: { } open, More: > 0m } company
+        YearSimulation.Run(scenario).Value is { } year && PaymentCalendar.Of(year, date)?.Company is { Open: { } open, More: > 0m } company
             ? new CompanyAdvancePaymentMove(open, company.Payments[open].Deadline.Value, company.More)
             : null;
 }
@@ -190,7 +190,7 @@ internal sealed class CompanyAdvancePaymentFinder(DateOnly date) : IMoveFinder
 internal sealed class DirectorAdvancePaymentFinder(DateOnly date) : IMoveFinder
 {
     public Move? Find(Scenario scenario) =>
-        YearSimulation.Run(scenario).Value is { } year && PaymentCalendar.Of(year, date).Director is { Open: { } open, More: > 0m } director
+        YearSimulation.Run(scenario).Value is { } year && PaymentCalendar.Of(year, date)?.Director is { Open: { } open, More: > 0m } director
             ? new DirectorAdvancePaymentMove(open, director.Payments[open].Deadline.Value, director.More)
             : null;
 }

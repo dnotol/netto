@@ -53,7 +53,8 @@ public class MunicipalityChoiceTests
     public void Pick_municipalityOfAYearWhoseRatesArePublished_saysItIsItsOfficialRate()
     {
         var alpha = new Municipality(10_001, "Alpha", new RuleAmount("municipal_rate", 0.08m, AnySource));
-        var rates = new MunicipalRates(2026, 2026, new DateOnly(2027, 1, 1), [alpha], AnySource);
+        var rates = new MunicipalRates(
+            IncomeYear: 2026, Region: Region.Wallonia, RatesIncomeYear: 2026, ResidenceDate: new DateOnly(2027, 1, 1), Municipalities: [alpha], Surcharge: AnySource);
 
         var note = MunicipalityChoice.Start(rates, 0.07m).Pick(alpha).Note;
 
@@ -197,6 +198,7 @@ public class MunicipalityChoiceTests
         MunicipalRates.IncomeYear2026.Municipalities.Single(municipality => municipality.Name == name);
 
     private static MunicipalRates MadeUpRates(params string[] names) =>
-        new(2026, 2025, new DateOnly(2027, 1, 1),
-            names.Select((name, index) => new Municipality(10_000 + index, name, new RuleAmount("municipal_rate", 0.08m, AnySource))).ToList(), AnySource);
+        new(IncomeYear: 2026, Region: Region.Wallonia, RatesIncomeYear: 2025, ResidenceDate: new DateOnly(2027, 1, 1),
+            Municipalities: names.Select((name, index) => new Municipality(10_000 + index, name, new RuleAmount("municipal_rate", 0.08m, AnySource))).ToList(),
+            Surcharge: AnySource);
 }

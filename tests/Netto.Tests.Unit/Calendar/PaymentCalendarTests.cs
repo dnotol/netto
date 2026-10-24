@@ -19,7 +19,7 @@ public class PaymentCalendarTests
     private static readonly DateOnly On22October = new(2026, 10, 22);
 
     private static PaymentCalendar Of(Scenario scenario, DateOnly today) =>
-        PaymentCalendar.Of(YearSimulation.Run(scenario).Value.ShouldNotBeNull(), today);
+        PaymentCalendar.Of(YearSimulation.Run(scenario).Value.ShouldNotBeNull(), today).ShouldNotBeNull();
 
     [Fact]
     public void Of_example_givesTheYearsFourDeadlinesInOrder()
@@ -145,7 +145,7 @@ public class PaymentCalendarTests
     {
         var pay = GrossToNet.Compute(2026, 50_000m, MunicipalRates.IncomeYear2026.Entered(0.07m), TaxPrepayments.None).Value.ShouldNotBeNull();
 
-        var calendar = PaymentCalendar.Of(pay, AdvancePayments.None, On22October);
+        var calendar = PaymentCalendar.Of(pay, AdvancePayments.None, On22October).ShouldNotBeNull();
 
         (calendar.Company, calendar.Director.More).ShouldBe((null, 14_317.50m));
     }
@@ -155,7 +155,7 @@ public class PaymentCalendarTests
     {
         var year = YearSimulation.Run(RiverExample).Value.ShouldNotBeNull();
 
-        var calendar = PaymentCalendar.Of(year, On22October);
+        var calendar = PaymentCalendar.Of(year, On22October).ShouldNotBeNull();
 
         calendar.Months.Select(month => month.Pay).ShouldBe(year.DirectorPay.Statement.Months);
     }
@@ -201,7 +201,7 @@ public class PaymentCalendarTests
     {
         var year = YearSimulation.Run(RiverExample).Value.ShouldNotBeNull();
 
-        var contributions = PaymentCalendar.Of(year, On22October).Contributions;
+        var contributions = PaymentCalendar.Of(year, On22October).ShouldNotBeNull().Contributions;
 
         (contributions.EachQuarter * 4, contributions.PaidByCompany, contributions.Billed, contributions.Regularisation)
             .ShouldBe((year.DirectorPay.SocialContributions, false, null, null));
@@ -259,8 +259,34 @@ public class PaymentCalendarTests
     {
         var pay = GrossToNet.Compute(2026, 50_000m, MunicipalRates.IncomeYear2026.Entered(0.07m), TaxPrepayments.AsWithheld).Value.ShouldNotBeNull();
 
-        var calendar = PaymentCalendar.Of(pay, AdvancePayments.None, On22October);
+        var calendar = PaymentCalendar.Of(pay, AdvancePayments.None, On22October).ShouldNotBeNull();
 
         (calendar.CompanyBalance, calendar.DirectorBalance.Balance).ShouldBe((null, pay.Assessment.Balance));
+    }
+
+    // No rules for the year, no calendar: none, as every rule lookup gives, never an exception.
+    [Fact]
+    public void Of_yearWithoutRules_isNone()
+    {
+        var year = YearSimulation.Run(RiverExample).Value.ShouldNotBeNull();
+
+        PaymentCalendar.Of(year with { Scenario = year.Scenario with { IncomeYear = UnsupportedIncomeYear } }, On22October).ShouldBeNull();
+    }
+
+    [Fact]
+    public void Of_payOfAYearWithoutRules_isNone()
+    {
+        var pay = GrossToNet.Compute(2026, 50_000m, MunicipalRates.IncomeYear2026.Entered(0.07m), TaxPrepayments.AsWithheld).Value.ShouldNotBeNull();
+
+        PaymentCalendar.Of(pay with { IncomeYear = UnsupportedIncomeYear }, AdvancePayments.None, On22October).ShouldBeNull();
+    }
+
+    // The director's deadlines are their region's rules': none for a region Netto has no rules for.
+    [Fact]
+    public void Of_payOfARegionWithoutRules_isNone()
+    {
+        var pay = GrossToNet.Compute(2026, 50_000m, MunicipalRates.IncomeYear2026.Entered(0.07m), TaxPrepayments.AsWithheld).Value.ShouldNotBeNull();
+
+        PaymentCalendar.Of(pay with { Region = Region.Flanders }, AdvancePayments.None, On22October).ShouldBeNull();
     }
 }

@@ -444,8 +444,9 @@ internal static class TaxAdvancePaymentFields
     public static IReadOnlyList<PaymentField> From(RiverInputs inputs) =>
         [.. Deadlines(inputs.IncomeYear).Select((deadline, i) => new PaymentField(i, deadline.Date.Value, inputs.TaxPrepayments.Paid.ByDeadline[i]))];
 
+    // The river's director lives in Wallonia, the one region with rules.
     public static IReadOnlyList<IncomeTaxAdvancePaymentDeadline> Deadlines(int incomeYear) =>
-        PersonalTaxRules.For(incomeYear)?.AdvancePayments.Deadlines ?? [];
+        PersonalTaxRules.For(incomeYear, Region.Wallonia)?.AdvancePayments.Deadlines ?? [];
 }
 
 // The condition is the engine's: which part of art. 215 decided the rate, against which minimum pay,

@@ -15,7 +15,7 @@ public class IncomeTaxAdvancePaymentRulesTests
     [InlineData(2026, "0.045")]
     public void SurchargeRate_byIncomeYear_is2Point25TimesTheReferenceRate(int incomeYear, string expected)
     {
-        PersonalTaxRules.For(incomeYear)!.AdvancePayments.SurchargeRate.ShouldBe(decimal.Parse(expected, System.Globalization.CultureInfo.InvariantCulture));
+        PersonalTaxRules.For(incomeYear, Region.Wallonia)!.AdvancePayments.SurchargeRate.ShouldBe(decimal.Parse(expected, System.Globalization.CultureInfo.InvariantCulture));
     }
 
     [Fact]
@@ -49,7 +49,7 @@ public class IncomeTaxAdvancePaymentRulesTests
     [MemberData(nameof(DeadlineTextsByYear))]
     public void Deadlines_byIncomeYear_eachNamesItsPlaceAndCitesItsTexts(int incomeYear, string dates, string credits, string bonuses)
     {
-        var deadlines = PersonalTaxRules.For(incomeYear).ShouldNotBeNull().AdvancePayments.Deadlines;
+        var deadlines = PersonalTaxRules.For(incomeYear, Region.Wallonia).ShouldNotBeNull().AdvancePayments.Deadlines;
 
         deadlines.Select(deadline => (deadline.Date.Key, deadline.CreditMultiplier.Key, deadline.BonusMultiplier.Key, deadline.Date.Source.Document,
                 deadline.CreditMultiplier.Source.Document, deadline.BonusMultiplier.Source.Document))

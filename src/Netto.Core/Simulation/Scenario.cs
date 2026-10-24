@@ -21,7 +21,8 @@ namespace Netto.Core.Simulation;
 // social contributions, the director unless given, the vouchers it grants the director, the expense
 // allowances it pays them, the rent it pays for the part of their home it uses as an office, the car
 // it puts at their disposal and the copyright royalty it pays them, none unless given: an amount the
-// user fixes, or one that follows the pay, what an advance ruling accepts at each pay.
+// user fixes, or one that follows the pay, what an advance ruling accepts at each pay. The director
+// lives in Wallonia unless given another region, which has no rules yet.
 public sealed record Scenario(
     int IncomeYear,
     decimal Revenue,
@@ -33,6 +34,8 @@ public sealed record Scenario(
     WithholdingCategory DividendCategory,
     decimal EarlierProfits = 0m)
 {
+    public Region Region { get; init; } = Region.Wallonia;
+
     public AdvancePayments AdvancePayments { get; init; } = AdvancePayments.None;
 
     public TaxPrepayments TaxPrepayments { get; init; } = TaxPrepayments.None;

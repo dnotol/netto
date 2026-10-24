@@ -45,9 +45,25 @@ public class MunicipalRatesTests
     [InlineData(Fixtures.UnsupportedIncomeYear)]
     public void For_incomeYearOtherThan2026_isNull(int incomeYear)
     {
-        var rates = MunicipalRates.For(incomeYear);
+        var rates = MunicipalRates.For(incomeYear, Region.Wallonia);
 
         rates.ShouldBeNull();
+    }
+
+    // The list is Wallonia's, as the SPW publishes it: another region's municipalities are not listed,
+    // and none is guessed for them.
+    [Fact]
+    public void For_2026_isWalloniasList()
+    {
+        Rates2026().Region.ShouldBe(Region.Wallonia);
+    }
+
+    [Theory]
+    [InlineData(Region.Flanders)]
+    [InlineData(Region.Brussels)]
+    public void For_2026RegionWithoutRates_isNull(Region region)
+    {
+        MunicipalRates.For(2026, region).ShouldBeNull();
     }
 
     // 262 rows in the file, less Bertogne, merged with Bastogne on 1.12.2025.
@@ -124,5 +140,5 @@ public class MunicipalRatesTests
         rate.ShouldBe(new RuleAmount("entered_municipal_rate", 0.073m, Rates2026().Surcharge));
     }
 
-    private static MunicipalRates Rates2026() => MunicipalRates.For(2026).ShouldNotBeNull();
+    private static MunicipalRates Rates2026() => MunicipalRates.For(2026, Region.Wallonia).ShouldNotBeNull();
 }

@@ -14,15 +14,15 @@ public class SourceDocumentTests
 
     private static readonly OfficialDocumentIndex Documents = OfficialDocumentIndex.Load();
 
-    // The rule sets: each type of Netto.Core whose For(year) returns one of its own, one per layer
-    // and income year, so a new layer is guarded as soon as it has one.
+    // The rule sets: each type of Netto.Core whose For(year), or For(year, region), returns one of its
+    // own, one per layer, income year and region, so a new layer is guarded as soon as it has one.
     private static readonly IReadOnlyList<Type> RuleTypes = Core.GetTypes()
-        .Where(type => type.GetMethod("For", BindingFlags.Public | BindingFlags.Static, [typeof(int)])?.ReturnType == type)
+        .Where(type => RuleSets.Lookup(type) is not null)
         .ToList();
 
     // The income years a year's steps can run for: those every layer has rules for, today 2026 alone.
     private static readonly IReadOnlyList<int> StepYears = RuleSets.Years
-        .Where(year => RuleTypes.All(type => RuleSets.For(type, year) is not null))
+        .Where(year => RuleTypes.All(type => RuleSets.For(type, year).Any()))
         .ToList();
 
     [Fact]

@@ -1078,4 +1078,22 @@ public class YearSimulationTests
 
         (value, error).ShouldBe((null, YearSimulation.IncomeYearNotSupported));
     }
+
+    // Netto's director lives in Wallonia unless said otherwise; a region with no rules yet is refused
+    // as a year without them is.
+    [Fact]
+    public void Scenario_regionUnlessGiven_isWallonia()
+    {
+        Scenario().Region.ShouldBe(Region.Wallonia);
+    }
+
+    [Theory]
+    [InlineData(Region.Flanders)]
+    [InlineData(Region.Brussels)]
+    public void Run_regionWithoutRules_isRefused(Region region)
+    {
+        var (value, error) = YearSimulation.Run(Scenario() with { Region = region });
+
+        (value, error).ShouldBe((null, YearSimulation.IncomeYearNotSupported));
+    }
 }

@@ -41,8 +41,8 @@ public static class YearSimulation
     {
         var corporateRules = CorporateTaxRules.For(scenario.IncomeYear);
         var dividendRules = DividendRules.For(scenario.IncomeYear);
-        var taxRules = PersonalTaxRules.For(scenario.IncomeYear);
-        var municipalRates = MunicipalRates.For(scenario.IncomeYear);
+        var taxRules = PersonalTaxRules.For(scenario.IncomeYear, scenario.Region);
+        var municipalRates = MunicipalRates.For(scenario.IncomeYear, scenario.Region);
         if (corporateRules is null || dividendRules is null || taxRules is null || municipalRates is null)
             return (null, IncomeYearNotSupported);
 
@@ -63,7 +63,8 @@ public static class YearSimulation
             return (null, besidesPayError);
 
         var (pay, payError) = GrossToNet.Compute(
-            scenario.IncomeYear, scenario.DirectorPay, scenario.MunicipalRate, scenario.TaxPrepayments, scenario.ContributionsPaidBy, besidesPay.TaxedWithPay);
+            scenario.IncomeYear, scenario.DirectorPay, scenario.MunicipalRate, scenario.TaxPrepayments, scenario.ContributionsPaidBy, besidesPay.TaxedWithPay,
+            scenario.Region);
         if (pay is null)
             return (null, payError);
 
@@ -172,7 +173,8 @@ public static class YearSimulation
         if (BesidesPayOf(scenario, levers).Value is not { } besidesPay)
             return null;
         if (GrossToNet.Level(
-                scenario.IncomeYear, scenario.DirectorPay, scenario.MunicipalRate.Value, scenario.TaxPrepayments, scenario.ContributionsPaidBy, besidesPay.TaxedWithPay)
+                scenario.IncomeYear, scenario.DirectorPay, scenario.MunicipalRate.Value, scenario.TaxPrepayments, scenario.ContributionsPaidBy, besidesPay.TaxedWithPay,
+                scenario.Region)
             is not { } pay)
             return null;
 
@@ -237,7 +239,7 @@ public static class YearSimulation
             return null;
 
         return scenario.ContributionsPaidBy == ContributionsPaidBy.Company
-            ? GrossToNet.SmallestGrossPayWithTaxablePay(scenario.IncomeYear, taxablePay, ceiling, benefit)
+            ? GrossToNet.SmallestGrossPayWithTaxablePay(scenario.IncomeYear, taxablePay, ceiling, benefit, scenario.Region)
             : taxablePay <= ceiling ? taxablePay : null;
     }
 

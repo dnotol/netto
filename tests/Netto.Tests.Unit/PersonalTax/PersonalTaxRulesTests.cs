@@ -34,7 +34,7 @@ public class PersonalTaxRulesTests
     [MemberData(nameof(ArticleOfEachAmount))]
     public void For_eachAmount_citesTheArticleOfItsIncomeYear(int incomeYear, string key, string document)
     {
-        var rules = PersonalTaxRules.For(incomeYear).ShouldNotBeNull();
+        var rules = PersonalTaxRules.For(incomeYear, Region.Wallonia).ShouldNotBeNull();
 
         var amount = rules.IncomeTaxAmounts.Concat(rules.FlatRateCostsAmounts).Single(amount => amount.Key == key);
 
@@ -57,7 +57,7 @@ public class PersonalTaxRulesTests
     [MemberData(nameof(SourceOfEachStepRule))]
     public void For_eachStepRule_citesTheArticleOfItsIncomeYear(int incomeYear, string rule, string document)
     {
-        var rules = PersonalTaxRules.For(incomeYear).ShouldNotBeNull();
+        var rules = PersonalTaxRules.For(incomeYear, Region.Wallonia).ShouldNotBeNull();
 
         var source = rule switch
         {
@@ -67,5 +67,39 @@ public class PersonalTaxRulesTests
         };
 
         source.Url.ShouldBe(new Uri(Fisconetplus + document));
+    }
+
+    // The regional additional tax is the region's own: Wallonia's is the decree's 33.257%, on each
+    // year's rules for a resident of Wallonia.
+    [Theory]
+    [InlineData(2025)]
+    [InlineData(2026)]
+    public void For_wallonia_isTheRulesOfAResidentOfWallonia(int incomeYear)
+    {
+        var rules = PersonalTaxRules.For(incomeYear, Region.Wallonia).ShouldNotBeNull();
+
+        (rules.IncomeYear, rules.Region, rules.RegionalAdditionalRate.Value).ShouldBe((incomeYear, Region.Wallonia, 0.33257m));
+    }
+
+    // Netto's director lives in Wallonia: another region has no rules yet, and none is guessed for it.
+    public static TheoryData<int, Region> RegionsWithoutRules => new()
+    {
+        { 2025, Region.Flanders },
+        { 2025, Region.Brussels },
+        { 2026, Region.Flanders },
+        { 2026, Region.Brussels },
+    };
+
+    [Theory]
+    [MemberData(nameof(RegionsWithoutRules))]
+    public void For_regionWithoutRules_isNone(int incomeYear, Region region)
+    {
+        PersonalTaxRules.For(incomeYear, region).ShouldBeNull();
+    }
+
+    [Fact]
+    public void For_incomeYearWithoutRules_isNone()
+    {
+        PersonalTaxRules.For(Fixtures.UnsupportedIncomeYear, Region.Wallonia).ShouldBeNull();
     }
 }

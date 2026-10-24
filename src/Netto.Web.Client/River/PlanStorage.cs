@@ -229,10 +229,11 @@ internal static class PlanStorage
         Stored(inputs.BilledContributions));
 
     // Null when the year has no municipal rates or no longer lists the municipality saved: a plan is
-    // never opened with another rate than the one it was saved with.
+    // never opened with another rate than the one it was saved with. A plan is a Walloon resident's, the
+    // one region with rules, so its format holds no region.
     private static RiverInputs? Inputs(StoredInputs stored)
     {
-        if (MunicipalRates.For(stored.IncomeYear) is not { } rates)
+        if (MunicipalRates.For(stored.IncomeYear, Region.Wallonia) is not { } rates)
             return null;
 
         Municipality? municipality = null;

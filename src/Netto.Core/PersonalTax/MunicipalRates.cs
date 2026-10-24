@@ -2,14 +2,16 @@ using Netto.Core.Rules;
 
 namespace Netto.Core.PersonalTax;
 
-// The municipal surcharge rates for one income year: each Walloon municipality's own, and the day
-// that decides which one applies. A municipality sets its rate for a tax year by 31 January of that
-// year, and the SPW publishes the year's column a few weeks later, so an income year can be
-// modelled before its rates exist: until then it uses the latest published rates and says which
-// income year they were set for (RatesIncomeYear), never a guess. Surcharge is the year's articles
-// that set up the surcharge, which its steps cite as their rule.
+// The municipal surcharge rates for one income year and one region: each of its municipalities' own,
+// Wallonia's alone so far, so another region's are none (For), and the day that decides which one
+// applies. A municipality sets its rate for a tax year by 31 January of that year, and the SPW
+// publishes the year's column a few weeks later, so an income year can be modelled before its rates
+// exist: until then it uses the latest published rates and says which income year they were set for
+// (RatesIncomeYear), never a guess. Surcharge is the year's articles that set up the surcharge, which
+// its steps cite as their rule.
 public sealed record MunicipalRates(
     int IncomeYear,
+    Region Region,
     int RatesIncomeYear,
     DateOnly ResidenceDate,
     IReadOnlyList<Municipality> Municipalities,
@@ -24,11 +26,12 @@ public sealed record MunicipalRates(
     // Tax year 2027 is not published yet (SPW file of 03.09.2026): tax year 2026's rates stand in.
     // CIR 92 art. 469: the municipality is the one the taxpayer lives in on 1 January of the tax year.
     public static MunicipalRates IncomeYear2026 { get; } = new(
-        2026, 2025, new DateOnly(2027, 1, 1), WalloonMunicipalities.TaxYear2026, Surcharge: Articles466And468Income2026);
+        IncomeYear: 2026, Region: Region.Wallonia, RatesIncomeYear: 2025, ResidenceDate: new DateOnly(2027, 1, 1),
+        Municipalities: WalloonMunicipalities.TaxYear2026, Surcharge: Articles466And468Income2026);
 
-    public static MunicipalRates? For(int incomeYear) => incomeYear switch
+    public static MunicipalRates? For(int incomeYear, Region region) => (incomeYear, region) switch
     {
-        2026 => IncomeYear2026,
+        (2026, Region.Wallonia) => IncomeYear2026,
         _ => null,
     };
 

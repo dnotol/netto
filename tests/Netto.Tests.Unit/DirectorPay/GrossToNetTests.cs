@@ -808,6 +808,25 @@ public class GrossToNetTests
         (value, error).ShouldBe((null, GrossToNet.IncomeYearNotSupported));
     }
 
+    // Netto's director lives in Wallonia: the pay of a director living elsewhere has no rules yet, the
+    // same refusal as a year without them.
+    [Theory]
+    [InlineData(Region.Flanders)]
+    [InlineData(Region.Brussels)]
+    public void Compute_regionWithoutRules_isRefused(Region region)
+    {
+        var (value, error) = GrossToNet.Compute(2026, 50_000m, MunicipalRates.IncomeYear2026.Entered(0.07m), TaxPrepayments.None, region: region);
+
+        (value, error).ShouldBe((null, GrossToNet.IncomeYearNotSupported));
+    }
+
+    // Unless said otherwise, the director lives in Wallonia, and the pay says whose rules it was taxed by.
+    [Fact]
+    public void Compute_2026_isTheRegionsItWasTaxedBy()
+    {
+        Compute2026(50_000m).Region.ShouldBe(Region.Wallonia);
+    }
+
     private static GrossToNetResult Compute2026(decimal grossPay) => Compute2026(grossPay, MunicipalRates.IncomeYear2026.Entered(0.07m));
 
     private static GrossToNetResult Compute2026(decimal grossPay, RuleAmount municipalRate, TaxPrepayments? prepayments = null)

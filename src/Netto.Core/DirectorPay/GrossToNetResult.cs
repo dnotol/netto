@@ -3,8 +3,9 @@ using Netto.Core.Simulation;
 
 namespace Netto.Core.DirectorPay;
 
-// GrossPay is the pay on the payslip, the pay the split moves, and SocialContributions the
-// contributions on it whoever pays them. When the company pays them on the director's behalf they are
+// The pay of a director living in Region, taxed by that region's rules for IncomeYear. GrossPay is the
+// pay on the payslip, the pay the split moves, and SocialContributions the contributions on it whoever
+// pays them. When the company pays them on the director's behalf they are
 // ContributionsPaidByCompany, nothing when the director does, and they are pay too: TaxablePay, what
 // the director declares, is the gross plus them, and so is CompanyCost, what the pay takes out of the
 // company. Both are the gross itself when the director pays. BenefitInKind is a benefit taxed as pay
@@ -21,6 +22,7 @@ namespace Netto.Core.DirectorPay;
 // the rent.
 public sealed record GrossToNetResult(
     int IncomeYear,
+    Region Region,
     decimal GrossPay,
     decimal MunicipalRate,
     decimal SocialContributions,

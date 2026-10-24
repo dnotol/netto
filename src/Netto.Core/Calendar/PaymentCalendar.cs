@@ -40,15 +40,17 @@ public sealed record PaymentCalendar(
         null => (this with { Contributions = Contributions with { Billed = null, Regularisation = null } }, null),
     };
 
-    public static PaymentCalendar Of(YearResult year, DateOnly today)
+    // Null for a year without the rules of its deadlines, as every rule lookup gives none.
+    public static PaymentCalendar? Of(YearResult year, DateOnly today)
     {
         var incomeYear = year.Scenario.IncomeYear;
-        var corporateRules = CorporateTaxRules.For(incomeYear)
-            ?? throw new ArgumentException($"Income year {incomeYear} has no rules for the company's advance payments.", nameof(year));
+        if (CorporateTaxRules.For(incomeYear) is not { } corporateRules || Of(year.DirectorPay, year.Scenario.TaxPrepayments.Paid, today) is not { } director)
+            return null;
+
         var payments = year.AdvancePayments;
         var paid = year.Scenario.AdvancePayments;
 
-        return Of(year.DirectorPay, year.Scenario.TaxPrepayments.Paid, today) with
+        return director with
         {
             Company = AdvancePaymentSchedule.Of(
                 corporateRules.AdvancePayments.Deadlines.Select(deadline => deadline.Date).ToList(), paid, payments.TopUps, payments.Surcharge, payments.Exempt, today),
@@ -58,11 +60,13 @@ public sealed record PaymentCalendar(
     }
 
     // A river that starts at the pay: what the director paid in advance by each deadline is the
-    // scenario's, which the pay's result does not keep.
-    public static PaymentCalendar Of(GrossToNetResult pay, AdvancePayments paid, DateOnly today)
+    // scenario's, which the pay's result does not keep. The deadlines are the director's region's
+    // rules': null for a year or a region without them.
+    public static PaymentCalendar? Of(GrossToNetResult pay, AdvancePayments paid, DateOnly today)
     {
-        var rules = PersonalTaxRules.For(pay.IncomeYear)?.AdvancePayments
-            ?? throw new ArgumentException($"Income year {pay.IncomeYear} has no rules for the director's advance payments.", nameof(pay));
+        if (PersonalTaxRules.For(pay.IncomeYear, pay.Region)?.AdvancePayments is not { } rules || ContributionQuarters.Of(pay, today) is not { } contributions)
+            return null;
+
         var payments = pay.AdvancePayments;
 
         return new PaymentCalendar(
@@ -71,7 +75,7 @@ public sealed record PaymentCalendar(
             null,
             AdvancePaymentSchedule.Of(rules.Deadlines.Select(deadline => deadline.Date).ToList(), paid, payments.TopUps, payments.Surcharge, payments.Exempt, today),
             [.. pay.Statement.Months.Select(month => CalendarMonth.Of(pay.IncomeYear, month, today))],
-            ContributionQuarters.Of(pay, today),
+            contributions,
             null,
             new AssessmentDue(pay.IncomeYear + 1, pay.Assessment.Balance, pay.Assessment.Source));
     }
@@ -104,10 +108,12 @@ public sealed record CalendarMonth(DateOnly Month, PayStatementMonth Pay, bool P
 public sealed record ContributionQuarters(
     IReadOnlyList<CalendarQuarter> Quarters, decimal EachQuarter, bool PaidByCompany, decimal? Billed, decimal? Regularisation, Source Source)
 {
-    internal static ContributionQuarters Of(GrossToNetResult pay, DateOnly today)
+    // Null for a year without social contribution rules.
+    internal static ContributionQuarters? Of(GrossToNetResult pay, DateOnly today)
     {
-        var rules = SocialContributionRules.For(pay.IncomeYear)
-            ?? throw new ArgumentException($"Income year {pay.IncomeYear} has no social contribution rules.", nameof(pay));
+        if (SocialContributionRules.For(pay.IncomeYear) is not { } rules)
+            return null;
+
         var quarters = Enumerable.Range(0, YearParts.Quarters)
             .Select(i => new DateOnly(pay.IncomeYear, 1 + 3 * i, 1))
             .Select(from => new CalendarQuarter(from, from.AddMonths(3) <= today))
