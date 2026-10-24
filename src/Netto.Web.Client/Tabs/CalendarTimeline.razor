@@ -141,7 +141,7 @@
             </div>
         </div>;
 
-    private string? PayCaption => _view.Pay is { Empty: false, Next: { } next } ? L["Pay_Caption", Formats.Euros(next.Amount)].Value : null;
+    private string? PayCaption => _view.Pay is { Empty: false, Next: { } next } ? L["Pay_Caption", Formats.Euros(next.Amount), Month(next.From)].Value : null;
 
     private string? ContributionsCaption =>
         _view.Contributions is { Empty: false, Next: { } next } ? L["Contributions_Caption", Formats.Euros(next.Amount), next.Index].Value : null;
@@ -192,8 +192,11 @@
                 L["Label_Year", _view.IncomeYear].Value,
                 L[TimelineText.TodayLabel(_view.Today.Place), Formats.Day(_view.Today.Date)].Value,
                 NextSentence,
-                _view.Pay.Empty ? L["Label_PayNothing"].Value : L["Label_Pay", Formats.Euros(_view.Pay.Blocks[0].Amount)].Value,
             };
+            if (_view.Pay.Empty)
+                parts.Add(L["Label_PayNothing"].Value);
+            else
+                parts.AddRange(_view.PayRuns.Select(run => L[TimelineText.Pay(run, _view.PayRuns.Count), Formats.Euros(run.NetPaid), Month(run.First), Month(run.Last)].Value));
             if (!_view.Pay.Empty && pay.Count > 0)
                 parts.Add(pay.Count == 1
                     ? L["Label_PayLeftOne", Month(pay[0].From)].Value

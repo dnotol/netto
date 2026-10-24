@@ -8,9 +8,9 @@ namespace Netto.Web.Client.River;
 // something or needs to, in their order; a deadline with nothing paid and nothing needed is left out,
 // as a drain of nothing is. Company is null for a river that starts at the pay, and each tax says
 // what its payments leave, worded as its card words it (SurchargeStates). Next is the first row still
-// open with something to pay. Pay is the pay statement's month, the same every month, and Balances
-// what each assessment leaves after the year, the company's first. The view only selects and orders
-// the engine's figures.
+// open with something to pay. Pay is the pay statement's months in runs that pay the same, and
+// Balances what each assessment leaves after the year, the company's first. The view only selects and
+// orders the engine's figures.
 internal sealed record CalendarView(
     int IncomeYear,
     IReadOnlyList<CalendarRow> Rows,
@@ -83,24 +83,41 @@ internal sealed record CalendarRow(DateOnly Date, bool Past, decimal CompanyPlan
     public decimal Total => Company + Director;
 }
 
-// The director's pay each month, the statement's first month: the gross on the payslip, what the key
-// formula withholds and the net paid. Left is the months not ended yet, the first and the last, none
-// once the year is over. WithheldGiven is the year's withholding the user gave, which the months do
-// not split: they show the key formula's.
-internal sealed record CalendarPay(
-    decimal GrossPay, decimal Withholding, decimal NetPaid, (DateOnly First, DateOnly Last)? Left, decimal? WithheldGiven)
+// The director's pay through the year, the statement's months in runs that pay the same (PayRun), one
+// run while every month does. Left is the months not ended yet, the first and the last, none once the
+// year is over. WithheldGiven is the year's withholding the user gave, which the months do not split:
+// they show the key formula's.
+internal sealed record CalendarPay(IReadOnlyList<PayRun> Runs, (DateOnly First, DateOnly Last)? Left, decimal? WithheldGiven)
 {
     public static CalendarPay Of(IReadOnlyList<CalendarMonth> months, Netto.Core.PersonalTax.Assessment assessment)
     {
-        var month = months[0].Pay;
         var left = months.Where(each => !each.Past).Select(each => each.Month).ToList();
 
         return new CalendarPay(
-            month.GrossPay,
-            month.Withholding,
-            month.NetPaid,
+            PayRun.Of(months),
             left.Count == 0 ? null : (left[0], left[^1]),
             assessment.WithheldGiven ? assessment.Withheld : null);
+    }
+}
+
+// Months in a row, from First to Last (each its month's first day), whose statement pays the same: the
+// gross on the payslip, what the key formula withholds and the net paid. The months of one period of
+// the year's withholding rules are one run, and two periods that withhold alike, a pay the formula
+// withholds nothing on, one run too.
+internal sealed record PayRun(DateOnly First, DateOnly Last, decimal GrossPay, decimal Withholding, decimal NetPaid)
+{
+    public static IReadOnlyList<PayRun> Of(IReadOnlyList<CalendarMonth> months)
+    {
+        var runs = new List<PayRun>();
+        foreach (var month in months)
+        {
+            if (runs.Count > 0 && runs[^1] is var last && (last.GrossPay, last.Withholding, last.NetPaid) == (month.Pay.GrossPay, month.Pay.Withholding, month.Pay.NetPaid))
+                runs[^1] = last with { Last = month.Month };
+            else
+                runs.Add(new PayRun(month.Month, month.Month, month.Pay.GrossPay, month.Pay.Withholding, month.Pay.NetPaid));
+        }
+
+        return runs;
     }
 }
 

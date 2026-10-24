@@ -1,3 +1,5 @@
+using Netto.Web.Client.River;
+
 namespace Netto.Web.Client.Tabs;
 
 // The resource keys CalendarTimeline.razor builds from the timeline's view. The component and
@@ -26,4 +28,9 @@ internal static class TimelineText
     public static string ContributionsLane(bool paidByCompany) => paidByCompany ? "Lane_Contributions_Company" : "Lane_Contributions";
 
     public static string ContributionsLabel(bool paidByCompany) => paidByCompany ? "Label_Contributions_Company" : "Label_Contributions";
+
+    // The pay's sentence in the picture's label for a run of its months, as the table beside it runs
+    // them (WhenToPayTabText.PayLine): every month while the year pays alike, else the run's months, or
+    // its month alone.
+    public static string Pay(PayRun run, int runs) => runs == 1 ? "Label_Pay" : run.First == run.Last ? "Label_PayRunOne" : "Label_PayRun";
 }

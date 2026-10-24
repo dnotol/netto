@@ -36,6 +36,8 @@ public class CalendarTimelineTests
     private static List<string> Texts(string html, string cssClass) =>
         [.. Regex.Matches(html, $"<span class=\"{cssClass}[^\"]*\"[^>]*>([^<]*)</span>").Select(match => match.Groups[1].Value)];
 
+    // The pay runs as the table beside it runs it: 3,275.73 net a month to October, 3,284.20 from
+    // November by the rules from 1 November.
     [Fact]
     public async Task Timeline_example_isOneNamedImageWhoseLabelSaysWhatItShows()
     {
@@ -47,9 +49,20 @@ public class CalendarTimelineTests
         var label = Regex.Match(html, "<div class=\"timeline__chart\" role=\"img\" aria-label=\"([^\"]*)\"").Groups[1].Value;
         label.ShouldBe(
             "Timeline of 2026. Today is 23 October 2026. Next payment by 21 December 2026: €14,999.89 from the company. "
-            + $"Your pay: {Formats.Euros(view.Pay.NetPaid)} net a month. October to December still to come. "
+            + "Your pay from January to October: €3,275.73 net a month. Your pay from November to December: €3,284.20 net a month. "
+            + "October to December still to come. "
             + $"Social contributions: {Formats.Euros(view.Contributions.EachQuarter)} a quarter. 1 of 4 quarters still to come. "
             + "The tables below give every figure.");
+    }
+
+    // A pay both periods withhold nothing on pays alike all year: the label says it once.
+    [Fact]
+    public async Task Timeline_payPaidAlikeAllYear_saysItsNetOnce()
+    {
+        var html = await RenderAsync(RiverInputs.Example.WithDirectorPay(3_600m), On23October);
+
+        var label = Regex.Match(html, "<div class=\"timeline__chart\" role=\"img\" aria-label=\"([^\"]*)\"").Groups[1].Value;
+        label.ShouldContain("Your pay: €300.00 net a month. October to December still to come.");
     }
 
     // Past the year, the label says there is nothing to come.
@@ -59,7 +72,7 @@ public class CalendarTimelineTests
         var html = await RenderAsync(RiverInputs.Example, new DateOnly(2027, 2, 3));
 
         var label = Regex.Match(html, "aria-label=\"([^\"]*)\"").Groups[1].Value;
-        label.ShouldStartWith("Timeline of 2026. Today, 3 February 2027, is after the year. No advance payment left to make. Your pay: ");
+        label.ShouldStartWith("Timeline of 2026. Today, 3 February 2027, is after the year. No advance payment left to make. Your pay from January to October: ");
         label.ShouldNotContain("still to come");
     }
 
@@ -158,7 +171,7 @@ public class CalendarTimelineTests
     {
         var html = await RenderAsync(RiverInputs.Example.WithDirectorPay(0m), On23October);
 
-        (Texts(html, "timeline__note").Contains("nothing this year"), html.Contains("net a month</span>")).ShouldBe((true, false));
+        (Texts(html, "timeline__note").Contains("nothing this year"), html.Contains("net in October</span>")).ShouldBe((true, false));
     }
 
     // The positions are percentages of the year, the middle of Today's day.
@@ -229,6 +242,7 @@ public class CalendarTimelineTests
         (html.Contains("not model yet", StringComparison.Ordinal), html.Contains("rules of 1 January", StringComparison.Ordinal)).ShouldBe((false, false));
     }
 
+    // The month under way and its net, the quarter under way and its share.
     [Fact]
     public async Task Timeline_example_captionsTheNextMonthAndTheNextQuarter()
     {
@@ -237,7 +251,16 @@ public class CalendarTimelineTests
 
         var html = await RenderAsync(river, On23October);
 
-        Texts(html, "timeline__caption").ShouldBe([$"{Formats.Euros(view.Pay.NetPaid)} net a month", $"{Formats.Euros(view.Contributions.EachQuarter)} in Q4"]);
+        Texts(html, "timeline__caption").ShouldBe(["€3,275.73 net in October", $"{Formats.Euros(view.Contributions.EachQuarter)} in Q4"]);
+    }
+
+    // From November the caption gives November's own net.
+    [Fact]
+    public async Task Timeline_exampleInNovember_captionsNovembersNet()
+    {
+        var html = await RenderAsync(RiverInputs.Example, new DateOnly(2026, 11, 5));
+
+        Texts(html, "timeline__caption")[0].ShouldBe("€3,284.20 net in November");
     }
 
     [Fact]

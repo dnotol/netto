@@ -43,7 +43,7 @@
     <value>{0} by {1}</value>
   </data>
   <data name="Pay_Caption" xml:space="preserve">
-    <value>{0} net a month</value>
+    <value>{0} net in {1}</value>
   </data>
   <data name="Contributions_Caption" xml:space="preserve">
     <value>{0} in Q{1}</value>
@@ -113,6 +113,12 @@
   </data>
   <data name="Label_Pay" xml:space="preserve">
     <value>Your pay: {0} net a month.</value>
+  </data>
+  <data name="Label_PayRun" xml:space="preserve">
+    <value>Your pay from {1} to {2}: {0} net a month.</value>
+  </data>
+  <data name="Label_PayRunOne" xml:space="preserve">
+    <value>Your pay in {1}: {0} net.</value>
   </data>
   <data name="Label_PayLeft" xml:space="preserve">
     <value>{0} to {1} still to come.</value>

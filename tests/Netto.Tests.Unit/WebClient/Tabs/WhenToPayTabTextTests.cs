@@ -1,3 +1,4 @@
+using Netto.Web.Client;
 using Netto.Web.Client.River;
 using Netto.Web.Client.Tabs;
 using Shouldly;
@@ -103,5 +104,21 @@ public class WhenToPayTabTextTests
             "€675.00", "€15,000.00", "21 December 2026", 2026);
 
         text.ShouldBe("The company's payments leave a surcharge of €675.00 on its corporate tax: €15,000.00 more by 21 December 2026 cancels it.");
+    }
+
+    // The pay's line for a run of its months, here 4,166.67 gross and 882.47 withheld: every month while
+    // the year pays alike, else the run's months, or its month alone.
+    [Theory]
+    [InlineData(1, 12, 1, "Each month: €4,166.67 gross on your payslip, €882.47 withheld by the company, €3,284.20 net paid to you.")]
+    [InlineData(11, 12, 2, "Each month from November to December: €4,166.67 gross on your payslip, €882.47 withheld by the company, €3,284.20 net paid to you.")]
+    [InlineData(12, 12, 2, "In December: €4,166.67 gross on your payslip, €882.47 withheld by the company, €3,284.20 net paid to you.")]
+    public void PayLine_aRunOfThePaysMonths_saysWhatEachOfThemPays(int firstMonth, int lastMonth, int runs, string expected)
+    {
+        var run = new PayRun(new DateOnly(2026, firstMonth, 1), new DateOnly(2026, lastMonth, 1), 4_166.67m, 882.47m, 3_284.20m);
+
+        var text = Resources.Format(WhenToPayTabText.PayLine(run, runs), Formats.Euros(run.GrossPay), Formats.Euros(run.Withholding), Formats.Euros(run.NetPaid),
+            Formats.Month(2026, firstMonth), Formats.Month(2026, lastMonth));
+
+        text.ShouldBe(expected);
     }
 }

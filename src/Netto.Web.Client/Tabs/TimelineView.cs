@@ -1,4 +1,5 @@
 using Netto.Core.Calendar;
+using Netto.Web.Client.River;
 
 namespace Netto.Web.Client.Tabs;
 
@@ -9,7 +10,8 @@ namespace Netto.Web.Client.Tabs;
 // as a percentage of a plot that stretches (YearScale): a point is the middle of its day, so a deadline
 // and Today of the same date meet. The company's lane is null for a river that starts at the pay. Next is
 // the date of the next payment as CalendarView.Next gives it, so the timeline, the table and the panel
-// above it name the one deadline.
+// above it name the one deadline. PayRuns is the pay's months in runs that pay the same, as the table
+// beside it words them (PayRun), for the picture's label.
 internal sealed record TimelineView(
     int IncomeYear,
     TimelineToday Today,
@@ -17,6 +19,7 @@ internal sealed record TimelineView(
     DeadlineLane? Company,
     DeadlineLane Director,
     SpanLane Pay,
+    IReadOnlyList<PayRun> PayRuns,
     SpanLane Contributions)
 {
     // Today's label, and the caption of a lane of blocks, stand left of their line or block when it lies
@@ -65,6 +68,7 @@ internal sealed record TimelineView(
             calendar.Company is { } company ? DeadlineLane.Of(company, scale, next) : null,
             DeadlineLane.Of(calendar.Director, scale, next),
             SpanLane.OfPay(calendar.Months, scale),
+            PayRun.Of(calendar.Months),
             SpanLane.OfContributions(calendar.Contributions, scale));
     }
 }

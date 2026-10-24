@@ -79,14 +79,36 @@ public class CalendarViewTests
         (view.Company, view.Rows.Single()).ShouldBe((null, new CalendarRow(On21December, false, 0m, 0m, 0m, 14_317.50m)));
     }
 
-    // The pay slip's month (PaySlipViewTests): 4,166.67 gross, 890.94 withheld.
+    // The pay slip's months (GrossToNetViewTests): 4,166.67 gross, 890.94 withheld to October and 882.47
+    // from November, by the rules from 1 November.
     [Fact]
-    public void From_example_givesThePaySlipsMonthAndTheMonthsLeft()
+    public void From_example_givesThePaySlipsMonthsInRunsThatPayTheSame()
     {
         var pay = View(RiverInputs.Example, On22October).Pay;
 
-        (pay.GrossPay, pay.Withholding, pay.NetPaid, pay.Left, pay.WithheldGiven).ShouldBe(
-            (4_166.67m, 890.94m, 3_275.73m, (new DateOnly(2026, 10, 1), new DateOnly(2026, 12, 1)), null));
+        pay.Runs.ShouldBe(
+        [
+            new PayRun(new DateOnly(2026, 1, 1), new DateOnly(2026, 10, 1), 4_166.67m, 890.94m, 3_275.73m),
+            new PayRun(new DateOnly(2026, 11, 1), new DateOnly(2026, 12, 1), 4_166.67m, 882.47m, 3_284.20m),
+        ]);
+    }
+
+    [Fact]
+    public void From_example_givesTheMonthsLeft()
+    {
+        var pay = View(RiverInputs.Example, On22October).Pay;
+
+        (pay.Left, pay.WithheldGiven).ShouldBe(((new DateOnly(2026, 10, 1), new DateOnly(2026, 12, 1)), null));
+    }
+
+    // 300 a month is under the 385 the formula takes off any pay: both periods withhold nothing, so the
+    // year is one run.
+    [Fact]
+    public void From_payBothPeriodsWithholdNothingOn_isOneRun()
+    {
+        var pay = View(RiverInputs.Example.WithDirectorPay(3_600m), On22October).Pay;
+
+        pay.Runs.ShouldBe([new PayRun(new DateOnly(2026, 1, 1), new DateOnly(2026, 12, 1), 300m, 0m, 300m)]);
     }
 
     [Fact]

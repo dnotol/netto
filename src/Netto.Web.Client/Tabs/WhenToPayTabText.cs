@@ -42,6 +42,10 @@ internal static class WhenToPayTabText
     // The Next panel's line: the date of the first row still open and who pays what by it, or that
     // nothing is left to pay in advance.
     public static string Next(CalendarRow? next) => $"Next_{Payers(next is { Company: > 0m }, next is { Director: > 0m })}";
+
+    // A run of the pay's months: every month while the year pays alike, else the run's months, or its
+    // month alone.
+    public static string PayLine(PayRun run, int runs) => runs == 1 ? "PayLine" : run.First == run.Last ? "PayLineMonth" : "PayLineMonths";
 }
 
 // Whoever pays something by the next deadline, or nobody once nothing is left to pay in advance.

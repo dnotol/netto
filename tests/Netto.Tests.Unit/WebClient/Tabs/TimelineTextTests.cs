@@ -1,4 +1,6 @@
 using System.Text.RegularExpressions;
+using Netto.Web.Client;
+using Netto.Web.Client.River;
 using Netto.Web.Client.Tabs;
 using Shouldly;
 
@@ -61,6 +63,21 @@ public class TimelineTextTests
         var key = TimelineText.ContributionsLane(paidByCompany);
 
         (key, Resources.Get(key) is not null).ShouldBe((expected, true));
+    }
+
+    // The pay's sentence in the picture's label for a run of its months, here 3,284.20 net: every month
+    // while the year pays alike, else the run's months, or its month alone.
+    [Theory]
+    [InlineData(1, 12, 1, "Your pay: €3,284.20 net a month.")]
+    [InlineData(11, 12, 2, "Your pay from November to December: €3,284.20 net a month.")]
+    [InlineData(12, 12, 2, "Your pay in December: €3,284.20 net.")]
+    public void Pay_aRunOfThePaysMonths_saysItsNet(int firstMonth, int lastMonth, int runs, string expected)
+    {
+        var run = new PayRun(new DateOnly(2026, firstMonth, 1), new DateOnly(2026, lastMonth, 1), 4_166.67m, 882.47m, 3_284.20m);
+
+        var text = Resources.Format(TimelineText.Pay(run, runs), Formats.Euros(run.NetPaid), Formats.Month(2026, firstMonth), Formats.Month(2026, lastMonth));
+
+        text.ShouldBe(expected);
     }
 
     // A label that names its payer: "Social contributions: €x a quarter" or, paid by the company, so.

@@ -73,7 +73,10 @@
         }
 
         <h2 class="calendar__heading">@L["PayHeading"]</h2>
-        <p class="calendar__line">@L["PayLine", Formats.Euros(_view.Pay.GrossPay), Formats.Euros(_view.Pay.Withholding), Formats.Euros(_view.Pay.NetPaid)]</p>
+        @foreach (var run in _view.Pay.Runs)
+        {
+            <p class="calendar__line">@L[WhenToPayTabText.PayLine(run, _view.Pay.Runs.Count), Formats.Euros(run.GrossPay), Formats.Euros(run.Withholding), Formats.Euros(run.NetPaid), Month(run.First), Month(run.Last)]</p>
+        }
         @if (_view.Pay.Left is { } left)
         {
             <p class="calendar__note">@(left.First == left.Last ? L["PayLeftOne", Month(left.First), _view.IncomeYear] : L["PayLeft", Month(left.First), Month(left.Last), _view.IncomeYear])</p>

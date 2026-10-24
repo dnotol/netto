@@ -275,6 +275,15 @@ public class TimelineViewTests
         timeline.Pay.Blocks.Select(month => month.Amount).ShouldBe([.. Enumerable.Repeat(3_275.73m, 10), 3_284.20m, 3_284.20m]);
     }
 
+    // The picture's label runs the months as the table beside it does.
+    [Fact]
+    public void Of_example_runsThePayAsTheTableDoes()
+    {
+        var (view, timeline) = Of(RiverInputs.Example, On23October);
+
+        timeline.PayRuns.ShouldBe(view.Pay.Runs);
+    }
+
     // A month is past once it has ended: October is still under way on the 23rd, so it is the first to
     // come, and the one the lane's label stands by.
     [Fact]
@@ -308,7 +317,7 @@ public class TimelineViewTests
     {
         var (view, timeline) = Of(RiverInputs.Example.WithDirectorPay(0m), On23October);
 
-        (view.Pay.NetPaid, timeline.Pay.Empty, Of(RiverInputs.Example, On23October).Timeline.Pay.Empty).ShouldBe((0m, true, false));
+        (view.Pay.Runs.Single().NetPaid, timeline.Pay.Empty, Of(RiverInputs.Example, On23October).Timeline.Pay.Empty).ShouldBe((0m, true, false));
     }
 
     // INASTI's four quarters tile the year, each a quarter of the year's contributions.
@@ -365,7 +374,7 @@ public class TimelineViewTests
         var (view, timeline) = Of(RiverInputs.Example.SkipCompany(), On23October);
 
         (timeline.Pay.Blocks.Count, timeline.Contributions.Blocks.Count).ShouldBe((12, 4));
-        timeline.Pay.Blocks[0].Amount.ShouldBe(view.Pay.NetPaid);
+        timeline.Pay.Blocks[0].Amount.ShouldBe(view.Pay.Runs[0].NetPaid);
     }
 
     // Late in the year a label stands by the block's far edge, early by its near one.
