@@ -72,6 +72,11 @@ public sealed record CompanyContributionRules(
 
     public IReadOnlyList<RuleAmount> Amounts => [BalanceSheetThreshold, LowerBand, UpperBand];
 
+    // The year whose balance-sheet total sets the band: the penultimate financial year closed as it
+    // stood on 1 January of the contribution year (Law, art. 91), two years before it for a company
+    // whose accounting year is the calendar year, as Netto assumes.
+    public int BalanceSheetYear => IncomeYear - 2;
+
     // What the company owes for the year in the band its balance-sheet total sets.
     public RuleAmount Contribution(CompanyContributionBand band) => band switch
     {

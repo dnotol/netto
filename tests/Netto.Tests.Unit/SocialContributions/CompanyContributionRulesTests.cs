@@ -41,6 +41,14 @@ public class CompanyContributionRulesTests
         CompanyContributionRules.IncomeYear2026.Contribution(band).Value.ShouldBe(amount);
     }
 
+    // The band is set by the balance-sheet total of the penultimate closed financial year as it stood on
+    // 1 January of the contribution year (art. 91): 2024's for 2026, a calendar accounting year assumed.
+    [Fact]
+    public void IncomeYear2026_readsTheBalanceSheetOf2024()
+    {
+        CompanyContributionRules.IncomeYear2026.BalanceSheetYear.ShouldBe(2024);
+    }
+
     [Theory]
     [InlineData(2025)]
     [InlineData(Fixtures.UnsupportedIncomeYear)]

@@ -37,7 +37,7 @@
         @if (_rules is { } rules)
         {
             <Disclosure Title="@L["BalanceSheetTitle"]" Values="@SettingWords.Of(L, _settings.BalanceSheet)" Help="@L["BalanceSheetHint", Inputs.IncomeYear]">
-                <RiverField Label="@L["BalanceSheetLabel", CompanyYearSettingsView.BalanceSheetYear(Inputs.IncomeYear)]" Origin="Inputs.CompanyContributionBand.Origin">
+                <RiverField Label="@L["BalanceSheetLabel", CompanyYearSettingsView.Year(rules)]" Origin="Inputs.CompanyContributionBand.Origin">
                     <div class="company-year__bands">
                         <MudChipSet T="CompanyContributionBand" SelectedValue="Inputs.CompanyContributionBand.Value" SelectedValueChanged="OnBandChanged"
                                     SelectionMode="SelectionMode.SingleSelection" CheckMark="false" Variant="Variant.Outlined" SelectedColor="Color.Primary"
