@@ -5,8 +5,9 @@ namespace Netto.Tests.Architecture;
 
 // The build lets no warning through: a done slice builds with none (CLAUDE.md, « Definition of done »), so
 // the build fails on one instead of leaving it for review. The analyzers' rule set is pinned, so a newer
-// SDK, which global.json rolls forward to, adds no rule unannounced; a security advisory on a package
-// stays a warning, so a fresh one never breaks a build that did not change. Read from the props as XML.
+// SDK, which global.json rolls forward to, adds no rule unannounced; a security advisory on a package, and
+// the audit's failure to reach the advisories on an offline or flaky restore, stay warnings, so neither
+// breaks a build that did not change. Read from the props as XML.
 public class BuildPolicyTests
 {
     private static readonly string Root =
@@ -33,7 +34,7 @@ public class BuildPolicyTests
     {
         var notAsErrors = Codes("Directory.Build.props", "WarningsNotAsErrors");
 
-        notAsErrors.ShouldBe(["NU1901", "NU1902", "NU1903", "NU1904"], ignoreOrder: true);
+        notAsErrors.ShouldBe(["NU1900", "NU1901", "NU1902", "NU1903", "NU1904"], ignoreOrder: true);
     }
 
     // CA1716 asks that no type be named like a keyword of another .NET language (Step is one in VB); no

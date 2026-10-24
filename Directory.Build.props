@@ -9,12 +9,13 @@
   <!-- No warning gets through: a done slice builds with none, so the build fails on one instead of leaving
        it for review. The analyzers' rules are pinned to .NET 10's recommended set rather than « latest »,
        since global.json rolls the SDK forward and a newer one would add rules unannounced. A security
-       advisory on a package (NU1901 to NU1904) stays a warning, so a fresh one never breaks a build that
-       did not change. BuildPolicyTests holds these. -->
+       advisory on a package (NU1901 to NU1904), and the audit's failure to reach the advisories on an
+       offline or flaky restore (NU1900), stay warnings, so neither breaks a build that did not change.
+       BuildPolicyTests holds these. -->
   <PropertyGroup>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <AnalysisLevel>10.0-recommended</AnalysisLevel>
-    <WarningsNotAsErrors>NU1901;NU1902;NU1903;NU1904</WarningsNotAsErrors>
+    <WarningsNotAsErrors>NU1900;NU1901;NU1902;NU1903;NU1904</WarningsNotAsErrors>
     <!-- CA1716: a type named like a keyword of another .NET language (Step is one in VB). No such
          language consumes Netto. -->
     <NoWarn>$(NoWarn);CA1716</NoWarn>
