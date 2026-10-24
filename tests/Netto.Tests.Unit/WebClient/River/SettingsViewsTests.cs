@@ -546,6 +546,29 @@ public class SettingsViewsTests
         DividendSettingsView.SharesHold(error).ShouldBe(shares);
     }
 
+    // Company year's disclosure states the band of INASTI's company contribution, with the year of the
+    // balance sheet it reads, two years before the income year, and the threshold between the two bands.
+    [Fact]
+    public void BalanceSheet_example_statesTheLowerBandAsADefault()
+    {
+        Phrases(CompanyYearSettingsView.From(RiverInputs.Example).BalanceSheet).ShouldBe([("BandLine_Lower", "2024|€879,163.44", InputOrigin.Default)]);
+    }
+
+    [Fact]
+    public void BalanceSheet_upperBandGiven_statesItAsYours()
+    {
+        var inputs = RiverInputs.Example.WithCompanyContributionBand(CompanyContributionBand.Upper);
+
+        Phrases(CompanyYearSettingsView.From(inputs).BalanceSheet).ShouldBe([("BandLine_Upper", "2024|€879,163.44", null)]);
+    }
+
+    // A year without the contribution's rules has no band to state.
+    [Fact]
+    public void BalanceSheet_yearWithoutRules_statesNothing()
+    {
+        CompanyYearSettingsView.From(RiverInputs.Example with { IncomeYear = Fixtures.UnsupportedIncomeYear }).BalanceSheet.ShouldBeEmpty();
+    }
+
     private static DirectorPaySettingsView DirectorPaySettings(RiverInputs inputs) => DirectorPaySettingsView.From(inputs, inputs.Run());
 
     private static CorporateTaxSettingsView CorporateTaxSettings(RiverInputs inputs) => CorporateTaxSettingsView.From(inputs, inputs.Run());

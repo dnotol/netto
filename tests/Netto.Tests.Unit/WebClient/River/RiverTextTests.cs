@@ -41,6 +41,7 @@ public class RiverTextTests
         .. RentRules.IncomeYear2026.Conditions,
         .. CarRules.IncomeYear2026.Conditions,
         .. CopyrightRules.IncomeYear2026.Conditions,
+        .. CompanyContributionRules.IncomeYear2026.Conditions,
     ];
 
     // The vouchers in the plan with each next lever, and the split after them.

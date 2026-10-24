@@ -79,6 +79,7 @@ public class LeverCardsFiguresTests
     // whichever way the line's amount goes.
     public static TheoryData<string, NamedRiver> CardsWithLines => new()
     {
+        { "company-year", Filled },
         { "vouchers", Filled },
         { "allowances", Filled },
         { "rent", Filled },
@@ -163,6 +164,7 @@ public class LeverCardsFiguresTests
     // own or merge two sentences unnoticed.
     public static TheoryData<string, NamedRiver, string[]> Bounds => new()
     {
+        { "company-year", Filled, ["€879,163.44"] },
         { "vouchers", Filled, ["€8.91 €1.09", "€250.00", "€100.00"] },
         { "allowances", Filled, ["€1,938.44", "€20.00 €240.00", "€20.00 €240.00"] },
         { "rent", Filled, ["€1,200.00 12%", "€1,380.00 €1,380.00"] },
@@ -214,6 +216,39 @@ public class LeverCardsFiguresTests
         var html = await OpenCardAsync(Filled.With("no company figures", inputs => inputs.SkipCompany()), "company-year");
 
         (CardHtml.Prose(html).Count, CardHtml.Lines(html).Count).ShouldBe((1, 0));
+    }
+
+    // Open, Company year draws what the company owes INASTI whatever it pays its director as its one
+    // figure line, taken off what it earns: the lower band's 409.30.
+    [Fact]
+    public async Task CompanyYear_open_drawsTheContributionAsItsFigureLine()
+    {
+        var html = await OpenCardAsync(Filled, "company-year");
+
+        (CardHtml.LineRuns(html).Single(), CardHtml.LineAmounts(html).Single()).ShouldBe((("figure", 1), "−€409.30"));
+    }
+
+    // What the contribution is and what each band owes is in the bubble after its line's label; that the
+    // running costs leave it out, in the bubble after theirs; that a bill pending may change the year's
+    // amounts, in the bubble after the balance sheet's disclosure.
+    [Theory]
+    [InlineData("INASTI's company contribution")]
+    [InlineData("Running costs, excluding VAT and your pay")]
+    [InlineData("Your balance sheet")]
+    public async Task CompanyYear_contributionRunningCostsAndBalanceSheet_haveABubble(string label)
+    {
+        CardHtml.BubbleAfter(await OpenCardAsync(Filled, "company-year"), label).ShouldNotBeNullOrWhiteSpace();
+    }
+
+    // The upper band's 1,022.38 is the line, and what the summary says the company has before the pay
+    // follows it.
+    [Fact]
+    public async Task CompanyYear_upperBand_drawsItsContributionAndWhatItLeaves()
+    {
+        var html = await OpenCardAsync(Filled.With("the upper band", inputs => inputs.WithCompanyContributionBand(Netto.Core.SocialContributions.CompanyContributionBand.Upper)),
+            "company-year");
+
+        (CardHtml.LineAmounts(html).Single(), CardHtml.Amounts(CardHtml.Summary(html).ShouldNotBeNull())[1]).ShouldBe(("−€1,022.38", "€99,386.92"));
     }
 
     // Where the river's amounts come from is said where the river starts, in the bubble after Company

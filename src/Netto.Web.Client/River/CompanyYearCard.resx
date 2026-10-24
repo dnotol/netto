@@ -36,4 +36,34 @@
   <data name="Enter" xml:space="preserve">
     <value>Enter your company's year</value>
   </data>
+  <data name="RunningCostsHint" xml:space="preserve">
+    <value>Leave out your pay and INASTI's yearly company contribution, which the river counts below them. If your running costs still include the contribution, take it out, or it counts twice.</value>
+  </data>
+  <data name="Figure_Contribution" xml:space="preserve">
+    <value>INASTI's company contribution</value>
+  </data>
+  <data name="Help_Contribution" xml:space="preserve">
+    <value>What every company pays INASTI each year, whatever it pays you: {0} while the balance-sheet total of its penultimate closed financial year is at most {1}, {2} above it. The company deducts it, like its running costs.</value>
+  </data>
+  <data name="BalanceSheetTitle" xml:space="preserve">
+    <value>Your balance sheet</value>
+  </data>
+  <data name="BalanceSheetHint" xml:space="preserve">
+    <value>Your company's balance-sheet total of its penultimate closed financial year, as it stood on 1 January, sets which of INASTI's two company contributions it owes for {0}. A bill pending in the Chamber may change the {0} amounts retroactively; Netto applies the law in force.</value>
+  </data>
+  <data name="BalanceSheetLabel" xml:space="preserve">
+    <value>Balance-sheet total of {0}</value>
+  </data>
+  <data name="Band_Lower" xml:space="preserve">
+    <value>At most {0}</value>
+  </data>
+  <data name="Band_Upper" xml:space="preserve">
+    <value>Above {0}</value>
+  </data>
+  <data name="BandLine_Lower" xml:space="preserve">
+    <value>Balance-sheet total of {0} at most {1}</value>
+  </data>
+  <data name="BandLine_Upper" xml:space="preserve">
+    <value>Balance-sheet total of {0} above {1}</value>
+  </data>
 </root>

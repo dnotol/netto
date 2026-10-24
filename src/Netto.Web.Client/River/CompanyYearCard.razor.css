@@ -11,6 +11,14 @@
     line-height: 1.6;
 }
 
+/* A band's text wraps rather than widening the card on a phone. */
+.company-year__bands ::deep .mud-chip {
+    height: auto;
+    min-height: 1.75rem;
+    margin: 0 0.4rem 0.4rem 0;
+    white-space: normal;
+}
+
 .company-year__actions {
     display: flex;
     flex-wrap: wrap;

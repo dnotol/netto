@@ -3,6 +3,7 @@ using Netto.Core.CompanyCar;
 using Netto.Core.Copyright;
 using Netto.Core.Dividends;
 using Netto.Core.Rules;
+using Netto.Core.SocialContributions;
 using Netto.Web.Client.DirectorPay;
 
 namespace Netto.Web.Client.River;
@@ -42,6 +43,26 @@ internal static class SettingWords
 {
     public static IReadOnlyList<SettingValue> Of(IStringLocalizer texts, IEnumerable<SettingPhrase> phrases) =>
         [.. phrases.Select(phrase => new SettingValue(texts[phrase.Key, [.. phrase.Args]].Value, phrase.Origin))];
+}
+
+// Company year's one disclosure, « Your balance sheet »: the band of INASTI's company contribution its
+// balance-sheet total puts the company in, with the year of that balance sheet, the penultimate closed
+// financial year as on 1 January of the contribution year, two years before it for a company whose
+// accounting year is the calendar year (law of 30.12.1992, art. 91), and the threshold between the two
+// bands. None for a year without the contribution's rules.
+internal sealed record CompanyYearSettingsView(IReadOnlyList<SettingPhrase> BalanceSheet)
+{
+    public static CompanyYearSettingsView From(RiverInputs inputs)
+    {
+        var band = inputs.CompanyContributionBand;
+        return new CompanyYearSettingsView(CompanyContributionRules.For(inputs.IncomeYear) is { } rules
+            ? [SettingPhrase.Of(CompanyYearCardText.BandLine(band.Value), band.Origin, BalanceSheetYear(inputs.IncomeYear), Formats.RuleAmount(rules.BalanceSheetThreshold))]
+            : []);
+    }
+
+    // The year whose balance sheet sets the band: the penultimate closed financial year of a company whose
+    // accounting year is the calendar year.
+    public static string BalanceSheetYear(int incomeYear) => (incomeYear - 2).ToString(Formats.Culture);
 }
 
 // Director pay's two disclosures: « Your situation », who pays the contributions, the municipal rate
