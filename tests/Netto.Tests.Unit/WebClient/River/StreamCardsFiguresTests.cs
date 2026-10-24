@@ -203,6 +203,51 @@ public class StreamCardsFiguresTests
             () => CardHtml.LineRuns(html).ShouldBe([("figure", 2), ("drain", 4)]));
     }
 
+    // The fund's fee at 3.05% is a drain line of its own right after the contributions, with its share of
+    // the pay: 251.68 of the example's 50,000 (GrossToNetFundFeeTests).
+    [Fact]
+    public async Task DirectorPay_fundFeeGiven_drawsTheFeeLineAfterTheContributions()
+    {
+        var html = CardHtml.Card(await CardHtml.RenderPlanOpenAsync(RiverInputs.Example.WithFundFeeRate(0.0305m)), "director-pay");
+
+        html.ShouldSatisfyAllConditions(
+            () => CardHtml.Lines(html).Take(2).Select(line => (line.Amount, line.Share)).ShouldBe([("−€8,251.60", "16.5%"), ("−€251.68", "0.5%")]),
+            () => CardHtml.Lines(html)[1].Label.ShouldBe(ResxText.For<DrainList>().Get("Drain_fund_fee").ShouldNotBeNull()),
+            () => CardHtml.LeakedKeys(html).ShouldBeEmpty());
+    }
+
+    // The fee's field sits in « Your situation » and names no origin until a rate is given, then the
+    // user's, as the royalty's creative share.
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, true)]
+    public async Task DirectorPay_situationOpen_drawsTheFeesFieldWithItsOriginOnlyOnceGiven(bool feeGiven, bool yours)
+    {
+        var river = feeGiven ? RiverInputs.Example.WithFundFeeRate(0.0305m) : RiverInputs.Example;
+
+        var html = await RenderAsync(typeof(DirectorPayCard), OpenCard("director-pay"), new() { ["Inputs"] = river, ["Run"] = river.Run(), ["Refused"] = null },
+            services => services.AddSingleton<IComponentActivator>(new OpenDisclosures()));
+
+        var field = FieldHead(html, "river-fund-fee");
+        (field.Contains("origin-chip", StringComparison.Ordinal), field.Contains("origin-chip--yours", StringComparison.Ordinal)).ShouldBe((yours, yours));
+    }
+
+    // Once a fee is given, the card's details say how Netto reads it where no text names it, above the pay
+    // slip and the sources; without one they do not.
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task DirectorPay_detailsOpen_sayNettosReadingOfTheFeeOnlyOnceOneIsGiven(bool feeGiven)
+    {
+        var river = feeGiven ? RiverInputs.Example.WithFundFeeRate(0.0305m) : RiverInputs.Example;
+        var folds = OpenCard("director-pay");
+        folds.Set("director-pay-details", true);
+
+        var html = WebUtility.HtmlDecode(await RenderAsync(typeof(DirectorPayCard), folds, new() { ["Inputs"] = river, ["Run"] = river.Run(), ["Refused"] = null }));
+
+        CardHtml.Prose(html).Contains(Texts.Get("FundFeeReading").ShouldNotBeNull()).ShouldBe(feeGiven);
+    }
+
     // With no surcharge due, the card says why in a note, in sight, and draws no line for it.
     [Fact]
     public async Task DirectorPay_surchargeUnderTheMinimum_drawsItsNoteAndNoTopUp()

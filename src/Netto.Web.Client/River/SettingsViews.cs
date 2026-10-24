@@ -62,19 +62,24 @@ internal sealed record CompanyYearSettingsView(IReadOnlyList<SettingPhrase> Bala
     public static string Year(CompanyContributionRules rules) => rules.BalanceSheetYear.ToString(Formats.Culture);
 }
 
-// Director pay's two disclosures: « Your situation », who pays the contributions, the municipal rate
-// and whether the director is in the first years of a first self-employed activity; and « Tax paid
-// during the year », what was withheld on the pay and the director's own advance payments.
+// Director pay's two disclosures: « Your situation », who pays the contributions, their fund's fee once
+// given, the municipal rate and whether the director is in the first years of a first self-employed
+// activity; and « Tax paid during the year », what was withheld on the pay and the director's own
+// advance payments.
 internal sealed record DirectorPaySettingsView(IReadOnlyList<SettingPhrase> Situation, IReadOnlyList<SettingPhrase> Prepaid)
 {
     public static DirectorPaySettingsView From(RiverInputs inputs, RiverRun run)
     {
         var starter = inputs.TaxPrepayments.Starter;
         var firstYear = (inputs.IncomeYear - 2).ToString(Formats.Culture);
+        IEnumerable<SettingPhrase> fundFee = inputs.FundFeeRate.Value is { } rate
+            ? [SettingPhrase.Of("Situation_FundFee", inputs.FundFeeRate.Origin, Formats.Percentage(rate))]
+            : [];
 
         return new DirectorPaySettingsView(
             [
                 SettingPhrase.Of(DirectorPayCardText.SituationPaidBy(inputs.ContributionsPaidBy.Value), inputs.ContributionsPaidBy.Origin),
+                .. fundFee,
                 Rate(inputs.Municipality),
                 SettingPhrase.Of(starter.Value ? "Situation_Starter" : "Situation_NotStarter", starter.Origin, firstYear),
             ],
@@ -84,7 +89,7 @@ internal sealed record DirectorPaySettingsView(IReadOnlyList<SettingPhrase> Situ
             ]);
     }
 
-    public static bool SituationHolds(Refusal? refusal) => refusal?.Input == RefusedInput.MunicipalRate;
+    public static bool SituationHolds(Refusal? refusal) => refusal?.Input is RefusedInput.FundFeeRate or RefusedInput.MunicipalRate;
 
     public static bool PrepaidHolds(Refusal? refusal) => refusal?.Input is RefusedInput.TaxWithheld or RefusedInput.DirectorAdvancePayments;
 

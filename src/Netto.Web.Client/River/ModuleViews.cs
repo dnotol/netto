@@ -360,8 +360,9 @@ internal enum RateChoice
 
 // The pay is derived from the split, or the user's own while the company is skipped. Its detail
 // view is the pay slip, drawn from the same result, and its steps' sources. When the company pays
-// the contributions on the director's behalf they are pay too, so the card shows what the pay costs
-// the company, the gross plus them, and the contributions drain says the company pays them. The
+// the contributions on the director's behalf, with the fund's fee on them, they are pay too, so the
+// card shows what the pay costs the company, the gross plus them, and their drains say the company pays
+// them. The
 // engine says what the withholding and the advance payments leave on its tax; the surcharge and the
 // bonus they earn are drains, from the pay's steps, and what more by the first deadline still open
 // leaves no surcharge due depends on the date the card is seen on (MoreBy). Each line says its share
@@ -400,10 +401,10 @@ internal sealed record DirectorPayView(
             pay.Steps.Select(StepDetail.From).ToList());
     }
 
-    // The contributions drain is the same step of the engine whoever pays; its label says when the
-    // company does.
+    // The contributions and the fund's fee drains are the same steps of the engine whoever pays; their
+    // labels say when the company does.
     private static Drain Payer(Drain drain, bool companyPays) =>
-        companyPays && drain.Key == "social_contributions" ? drain with { Key = "social_contributions_paid_by_company" } : drain;
+        companyPays && drain.Key is "social_contributions" or "fund_fee" ? drain with { Key = $"{drain.Key}_paid_by_company" } : drain;
 }
 
 // The card's field for what was withheld on the pay: the amount the user gave, or, while it is left

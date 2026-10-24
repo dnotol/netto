@@ -13,7 +13,9 @@
    deadline is open any more. What the user rarely changes sits behind two
    disclosures after them, each folded to a line that states it: their situation, and the tax paid
    during the year. The user says who pays the contributions; when the company does, they are pay
-   too, and what flows in says what the pay costs it. What was withheld on the pay is the pay slip's
+   too, and what flows in says what the pay costs it. The rate of their fund's management fee is the
+   user's, none until given, a percentage typed while the fee is a fraction; once given, the card's
+   details say how Netto reads it, where no text names it. What was withheld on the pay is the pay slip's
    amount, derived, until the user types the amount actually withheld, with a way back; how it is
    derived is the field's bubble. It and what the director paid in advance are taken while typing,
    since nothing bounds them. The pay slip and the rules behind each figure are its detail view. *@
@@ -65,6 +67,12 @@
                     }
                 </MudChipSet>
             </div>
+        </RiverField>
+        <RiverField Label="@L["FundFeeLabel"]" For="river-fund-fee" Origin="@(Inputs.FundFeeRate.Value is null ? null : Inputs.FundFeeRate.Origin)"
+                    Help="@L["FundFeeHint"]">
+            <RiverNumericField T="decimal?" InputId="river-fund-fee" Value="FundFeePercent" ValueChanged="OnFundFeePercentChanged"
+                               Format="0.##" Adornment="Adornment.End" AdornmentText="%"
+                               Error="@(Refused?.Input == RefusedInput.FundFeeRate)" Refusal="@Refused" />
         </RiverField>
         <RiverField Label="@L["MunicipalityHead"]" Origin="Inputs.Municipality.Origin">
             <MunicipalityField Choice="Inputs.Municipality" ChoiceChanged="OnMunicipalityChanged"
@@ -151,18 +159,29 @@
     // What reaches the pocket, for the card's row in the river's outline.
     private CardGlance? Glance => Run.Pay is { } pay ? new(GlanceKind.ToYou, Formats.Euros(pay.NetInPocket)) : null;
 
-    // The pay slip, above where each of its figures comes from.
+    // The pay slip, above where each of its figures comes from, and, while a fund fee is given, the
+    // reading Netto takes of it where no text names it, word for word, first.
     private RenderFragment? Details => Run.Pay is { } pay && _view is not null
         ? @<text>
+              @if (Inputs.FundFeeRate.Value is not null)
+              {
+                  <p class="director-pay__reading">@L["FundFeeReading"]</p>
+              }
               <PaySlip Pay="pay" RoyaltyFollowsPay="@DirectorPayView.NextHoldsAFollowingRoyalty(Run)" />
           </text>
         : null;
+
+    // The fee's rate as the field shows it, a percentage: 3.05 for 0.0305; none until given.
+    private decimal? FundFeePercent => Inputs.FundFeeRate.Value * 100m;
 
     private Task OnPayChanged(decimal pay) => InputsChanged.InvokeAsync(Inputs.WithDirectorPay(pay));
 
     private Task OnMunicipalityChanged(MunicipalityChoice choice) => InputsChanged.InvokeAsync(Inputs.WithMunicipality(choice));
 
     private Task OnPaidByChanged(ContributionsPaidBy paidBy) => InputsChanged.InvokeAsync(Inputs.WithContributionsPaidBy(paidBy));
+
+    // Cleared, the rate is none again.
+    private Task OnFundFeePercentChanged(decimal? percent) => InputsChanged.InvokeAsync(Inputs.WithFundFeeRate(percent / 100m));
 
     private Task OnWithheldChanged(decimal withheld) => InputsChanged.InvokeAsync(Inputs.WithTaxWithheld(withheld));
 

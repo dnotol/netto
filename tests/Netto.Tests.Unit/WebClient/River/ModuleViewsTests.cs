@@ -262,6 +262,29 @@ public class ModuleViewsTests
             new Drain("net_pay", DrainKind.PassedOn, 33_999.21m, "pocket")));
     }
 
+    // The fund's fee is a drain of its own right after the contributions, into the same bucket, with its
+    // share of what flows in: 251.68 of the example's 50,000 at 3.05% (GrossToNetFundFeeTests), 0.5%.
+    [Fact]
+    public void DirectorPay_fundFeeRate_drainsTheFeeAfterTheContributionsWithItsShare()
+    {
+        var view = DirectorPay(RiverInputs.Example.WithFundFeeRate(0.0305m));
+
+        (Line(view.Drains[0]), Line(view.Drains[1]), view.Drains[1].Share, Explained(view.Drains)[1]).ShouldBe((
+            new Drain("social_contributions", DrainKind.PaidOut, 8_251.60m, "taxes_on_pay"),
+            new Drain("fund_fee", DrainKind.PaidOut, 251.68m, "taxes_on_pay"),
+            (decimal?)(251.68m / 50_000m),
+            "fund_fee"));
+    }
+
+    // When the company pays the contributions it pays the fee with them, and the fee's line says so.
+    [Fact]
+    public void DirectorPay_companyPaysWithAFee_drainsTheFeeAsPaidByIt()
+    {
+        var view = DirectorPay(RiverInputs.Example.WithContributionsPaidBy(ContributionsPaidBy.Company).WithFundFeeRate(0.0305m));
+
+        (view.CompanyCost, Line(view.Drains[1])).ShouldBe((60_245.76m, new Drain("fund_fee_paid_by_company", DrainKind.PaidOut, 303.24m, "taxes_on_pay")));
+    }
+
     // Whoever pays them, the contributions are the same step of the engine.
     [Fact]
     public void DirectorPay_companyPays_contributionsLineCarriesTheirStep()

@@ -27,6 +27,9 @@
   <data name="Figure_CompanyContributions" xml:space="preserve">
     <value>Contributions the company pays</value>
   </data>
+  <data name="Figure_CompanyFundFee" xml:space="preserve">
+    <value>Fund fee the company pays</value>
+  </data>
   <data name="Figure_BenefitInKind" xml:space="preserve">
     <value>Benefit in kind</value>
   </data>
@@ -53,6 +56,15 @@
   </data>
   <data name="PaidByHint" xml:space="preserve">
     <value>Contributions the company pays on your behalf count as pay: you are taxed on your gross plus them, and they cost the company that much on top of your gross.</value>
+  </data>
+  <data name="FundFeeLabel" xml:space="preserve">
+    <value>Your fund's management fee</value>
+  </data>
+  <data name="FundFeeHint" xml:space="preserve">
+    <value>What your social insurance fund charges on top of INASTI's contributions to run your file: a percentage of them, set for each fund every year, which its notice states. It is billed with each quarter of the contributions and deducted with them, and the company pays it with them when it pays them for you. Netto counts none until you give it.</value>
+  </data>
+  <data name="FundFeeReading" xml:space="preserve">
+    <value>No text names your fund's management fee. Netto reads it as one of the contributions the law makes you pay your fund, which you deduct as your own: it lowers your taxable income and the income your contributions are owed on, and when the company pays your contributions it pays the fee with them, as pay too.</value>
   </data>
   <data name="MunicipalityHead" xml:space="preserve">
     <value>Where you live, for the municipal surcharge</value>
@@ -110,6 +122,9 @@
   </data>
   <data name="Situation_PaidBy_Company" xml:space="preserve">
     <value>The company pays your contributions</value>
+  </data>
+  <data name="Situation_FundFee" xml:space="preserve">
+    <value>a fund fee of {0}</value>
   </data>
   <data name="Situation_Rate" xml:space="preserve">
     <value>a municipal rate of {0}</value>

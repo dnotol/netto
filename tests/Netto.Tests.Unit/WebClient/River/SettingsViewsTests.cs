@@ -74,6 +74,24 @@ public class SettingsViewsTests
         Phrases(DirectorPaySettings(inputs).Situation)[2].ShouldBe(("Situation_Starter", "2024", null));
     }
 
+    // The fund's fee is named once given, after who pays the contributions it rides on, as the user's.
+    [Fact]
+    public void Situation_fundFeeRateGiven_statesItAfterWhoPays()
+    {
+        var inputs = RiverInputs.Example.WithFundFeeRate(0.0305m);
+
+        Phrases(DirectorPaySettings(inputs).Situation).Select(phrase => phrase.Key).ShouldBe(["Situation_PaidBy_Director", "Situation_FundFee", "Situation_Rate", "Situation_NotStarter"]);
+        Phrases(DirectorPaySettings(inputs).Situation)[1].ShouldBe(("Situation_FundFee", "3.05%", null));
+    }
+
+    [Fact]
+    public void Situation_fundFeeRateCleared_namesNoFeeAgain()
+    {
+        var inputs = RiverInputs.Example.WithFundFeeRate(0.0305m).WithFundFeeRate(null);
+
+        Phrases(DirectorPaySettings(inputs).Situation).Select(phrase => phrase.Key).ShouldNotContain("Situation_FundFee");
+    }
+
     [Fact]
     public void Prepaid_example_statesThePaySlipsWithholdingAndNoAdvancePaymentWithNoOrigin()
     {
@@ -121,6 +139,7 @@ public class SettingsViewsTests
     public static TheoryData<Refusal?, bool, bool> HoldsRefusals => new()
     {
         { GrossToNet.MunicipalRateOutOfRange, true, false },
+        { GrossToNet.FundFeeRateOutOfRange, true, false },
         { GrossToNet.TaxWithheldNegative, false, true },
         { GrossToNet.TaxAdvancePaymentNegative, false, true },
         { GrossToNet.GrossPayNegative, false, false },

@@ -167,6 +167,20 @@ public class StepTextTests
         MissingTexts(value.ShouldNotBeNull().Steps).ShouldBeEmpty();
     }
 
+    // The fund's fee, whoever pays it, with the rate the user gave and the texts it is deducted under.
+    [Theory]
+    [InlineData(ContributionsPaidBy.Director)]
+    [InlineData(ContributionsPaidBy.Company)]
+    public void StepDetailsResx_everyKeyOfTheFundFeesStep_hasAText(ContributionsPaidBy paidBy)
+    {
+        var (value, _) = GrossToNet.Compute(2026, 50_000m, MunicipalRates.IncomeYear2026.Entered(0.07m), TaxPrepayments.None, paidBy, fundFeeRate: 0.0305m);
+
+        var steps = value.ShouldNotBeNull().Steps.Where(step => step.RuleKey == "fund_fee").ToList();
+        steps.ShouldSatisfyAllConditions(
+            () => steps.ShouldNotBeEmpty(),
+            () => MissingTexts(steps).ShouldBeEmpty());
+    }
+
     // INASTI's company contribution in each band, with the band's amount and the balance-sheet total
     // between the two.
     [Theory]

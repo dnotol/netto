@@ -19,7 +19,7 @@ public class DirectorPayCardTextTests
     public void DirectorPayCardResx_everyLabelAndBubbleOfItsLines_hasAText()
     {
         var taxed = RiverInputs.Example.AddToPlan(OptionalModule.Car).WithCatalogueValue(50_000m).WithFirstRegistration(new DateOnly(2026, 1, 10)).WithCarCosts(8_000m)
-            .AddToPlan(OptionalModule.Copyright).WithRoyalty(30_000m).WithContributionsPaidBy(ContributionsPaidBy.Company);
+            .AddToPlan(OptionalModule.Copyright).WithRoyalty(30_000m).WithContributionsPaidBy(ContributionsPaidBy.Company).WithFundFeeRate(0.0305m);
         var due = RiverInputs.Example.WithTaxWithheld(0m);
         var lines = DirectorPayFigures.Taxed(taxed.Run().Pay.ShouldNotBeNull())
             .Concat(DirectorPayFigures.Surcharge(MoreBy.Director(due, due.Run().Pay.ShouldNotBeNull(), new DateOnly(2026, 10, 23))));
@@ -78,6 +78,7 @@ public class DirectorPayCardTextTests
             example.WithContributionsPaidBy(ContributionsPaidBy.Company).WithStarter(true).WithTaxWithheld(1_000m).WithTaxAdvancePayment(0, 1_000m),
             example.WithMunicipality(example.Municipality.Pick(municipality)).WithReserve(-1m),
             example.WithMunicipality(example.Municipality.Pick(municipality).Enter(0.09m)),
+            example.WithFundFeeRate(0.0305m),
         ];
         var phrases = variations.Select(inputs => DirectorPaySettingsView.From(inputs, inputs.Run()))
             .SelectMany(view => view.Situation.Concat(view.Prepaid));

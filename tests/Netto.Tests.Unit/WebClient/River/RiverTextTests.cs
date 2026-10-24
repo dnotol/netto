@@ -58,7 +58,7 @@ public class RiverTextTests
     }
 
     // The example, with a reserve so every drain has an amount, every kind of voucher and every
-    // allowance, is every drain a card can list, the director's contributions paid by either; the
+    // allowance, is every drain a card can list, the director's contributions and their fund's fee paid by either; the
     // rent, which the office allowance excludes, on a year of its own, beside a low pay with nothing
     // withheld so it takes away part of the credit and moves the surcharge. What a lever leaves goes on
     // to the next lever in the plan or the split, so the levers' drains are listed for each.
@@ -68,7 +68,7 @@ public class RiverTextTests
     public void DrainListResx_everyDrainOfEveryCard_hasALabelAndADestination(ContributionsPaidBy paidBy)
     {
         var inputs = RiverInputs.Example.AddToPlan(OptionalModule.Vouchers).AddToPlan(OptionalModule.Allowances).WithReserve(15_000m).WithContributionsPaidBy(paidBy)
-            .WithMealVoucherDays(220).WithEcoVouchers(250m).WithSportCultureVouchers(100m)
+            .WithFundFeeRate(0.0305m).WithMealVoucherDays(220).WithEcoVouchers(250m).WithSportCultureVouchers(100m)
             .WithOfficeAllowance(1_938.44m).WithInternetAllowance(240m).WithComputerAllowance(240m).WithPhoneCosts(600m);
         var run = inputs.Run();
         var year = run.Year.ShouldNotBeNull();

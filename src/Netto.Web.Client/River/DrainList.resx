@@ -18,6 +18,12 @@
   <data name="Drain_social_contributions_paid_by_company" xml:space="preserve">
     <value>Social contributions, paid by the company for you</value>
   </data>
+  <data name="Drain_fund_fee" xml:space="preserve">
+    <value>Your fund's management fee</value>
+  </data>
+  <data name="Drain_fund_fee_paid_by_company" xml:space="preserve">
+    <value>Your fund's management fee, paid by the company for you</value>
+  </data>
   <data name="Drain_income_tax" xml:space="preserve">
     <value>Income tax</value>
   </data>

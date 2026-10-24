@@ -49,6 +49,22 @@ public class DirectorPayFiguresTests
             .ShouldBe([("Figure_CompanyContributions", 9_942.52m, null), ("Figure_TaxablePay", 59_942.52m, null)]);
     }
 
+    // With the fund's fee at 3.05%, the company pays it with the contributions, pay too: 303.24 on the
+    // 9,942.52 (GrossToNetFundFeeTests), a line of its own after them.
+    [Fact]
+    public void Taxed_companyPaysTheContributionsAndTheFee_isThemThenTheFeeThenTheTaxablePay()
+    {
+        Lines(Taxed(RiverInputs.Example.WithContributionsPaidBy(ContributionsPaidBy.Company).WithFundFeeRate(0.0305m)))
+            .ShouldBe([("Figure_CompanyContributions", 9_942.52m, null), ("Figure_CompanyFundFee", 303.24m, null), ("Figure_TaxablePay", 60_245.76m, null)]);
+    }
+
+    // The director paying the fee deducts it, but is not taxed on more than the gross.
+    [Fact]
+    public void Taxed_directorPaysTheFee_drawsNoLines()
+    {
+        Taxed(RiverInputs.Example.WithFundFeeRate(0.0305m)).ShouldBeEmpty();
+    }
+
     // The contributions the company pays come first, beside the gross they are paid with.
     public static TheoryData<string, RiverInputs, string[]> CompanyPays => new()
     {
@@ -73,6 +89,8 @@ public class DirectorPayFiguresTests
         { "the company paying beside a company car", ElectricCar.WithContributionsPaidBy(ContributionsPaidBy.Company) },
         { "the company paying beside a royalty beyond its limits", RoyaltyBeyondItsLimits.WithContributionsPaidBy(ContributionsPaidBy.Company) },
         { "all three", ElectricCar.AddToPlan(OptionalModule.Copyright).WithRoyalty(30_000m).WithContributionsPaidBy(ContributionsPaidBy.Company) },
+        { "all three with the fund's fee", ElectricCar.AddToPlan(OptionalModule.Copyright).WithRoyalty(30_000m).WithContributionsPaidBy(ContributionsPaidBy.Company)
+            .WithFundFeeRate(0.0305m) },
     };
 
     [Theory]
@@ -99,9 +117,9 @@ public class DirectorPayFiguresTests
     [Fact]
     public void Taxed_everyPart_explainsItselfInItsBubble()
     {
-        var inputs = ElectricCar.AddToPlan(OptionalModule.Copyright).WithRoyalty(30_000m).WithContributionsPaidBy(ContributionsPaidBy.Company);
+        var inputs = ElectricCar.AddToPlan(OptionalModule.Copyright).WithRoyalty(30_000m).WithContributionsPaidBy(ContributionsPaidBy.Company).WithFundFeeRate(0.0305m);
 
-        Taxed(inputs).Select(line => line.Help).ShouldBe(["PaidByHint", "Help_BenefitInKind", "Help_RequalifiedPay", null]);
+        Taxed(inputs).Select(line => line.Help).ShouldBe(["PaidByHint", "FundFeeHint", "Help_BenefitInKind", "Help_RequalifiedPay", null]);
     }
 
     // Nothing withheld: 486.57 on the pay's tax, among the pay's drains, and on 23 October, 14,317.50 by

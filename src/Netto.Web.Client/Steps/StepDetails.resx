@@ -15,6 +15,12 @@
   <data name="Title_social_contributions" xml:space="preserve">
     <value>Social contributions</value>
   </data>
+  <data name="Title_fund_fee" xml:space="preserve">
+    <value>Your fund's management fee</value>
+  </data>
+  <data name="Rule_fund_fee" xml:space="preserve">
+    <value>What your social insurance fund charges to run your file: your fund's rate on each quarter of the contributions it bills, rounded to the cent. Netto deducts it with the contributions as your own, so it lowers your taxable income and the income they are owed on.</value>
+  </data>
   <data name="Title_flat_rate_costs" xml:space="preserve">
     <value>Flat-rate professional costs</value>
   </data>
@@ -107,6 +113,9 @@
   </data>
   <data name="Amount_entered_municipal_rate" xml:space="preserve">
     <value>Municipal rate, as you entered it</value>
+  </data>
+  <data name="Amount_fund_fee_rate" xml:space="preserve">
+    <value>Your fund's fee rate, as you entered it</value>
   </data>
   <data name="Amount_low_earned_income_credit" xml:space="preserve">
     <value>Full credit</value>
