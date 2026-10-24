@@ -1,5 +1,6 @@
-@implements IDisposable
+@implements IAsyncDisposable
 @inject IStringLocalizer<BucketBar> L
+@inject IJSRuntime JS
 
 @* The river's summary, always in view under the site header: where the money ends up, out of what
    the river starts from, and, at its right, what the page gives it (the Composition menu). Every
@@ -16,8 +17,9 @@
    itself. The region is one of its own, out of sight, since a bubble opening inside the figures
    would be read out as a change of the bar, and a menu inside it at every change. It is empty as the
    page opens. Its last row, across its width, is what the page puts there (TabRow): the plan page's
-   tabs, which stick with it. *@
-<div class="bucket-bar @(TabRow is null ? null : "bucket-bar--tabs")">
+   tabs, which stick with it. Its height is measured once it is drawn and whenever it changes
+   (bucket-bar.js), for the line under it that cards are jumped to and controls scrolled to. *@
+<div class="bucket-bar @(TabRow is null ? null : "bucket-bar--tabs")" @ref="_bar">
     <MudContainer MaxWidth="MaxWidth.Large">
         <div class="bucket-bar__figures">
             <dl class="bucket-bar__buckets">
@@ -154,7 +156,26 @@
         StateHasChanged();
     }
 
-    public void Dispose() => _disposed = true;
+    private ElementReference _bar;
+
+    // Whether the script measures the bar, to stop it as the bar goes.
+    private bool _watching;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+            return;
+
+        _watching = true;
+        await JS.InvokeVoidAsync("nettoBucketBar.watch", _bar);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        _disposed = true;
+        if (_watching)
+            await JS.InvokeVoidAsync("nettoBucketBar.stop");
+    }
 
     // Out of what the river starts from, after a car's costs, or why there is no figure.
     private string From => View is { } view

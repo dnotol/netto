@@ -106,31 +106,24 @@ html {
     scroll-padding-top: 5.5rem;
 }
 
+/* The site header's height, its 1px border besides (Layout/MainLayout.razor.css), which the bar of
+   buckets sticks under (River/BucketBar.razor.css) and the line under both is counted from; and the
+   bar's own, at nothing until bucket-bar.js has measured it, which it sets on the root. */
+:root {
+    --netto-header-height: 4.25rem;
+    --netto-bar-height: 0px;
+}
+
 /* On the plan page, the bar of buckets sticks under the header too (River/BucketBar.razor.css), its
    row of tabs as its last row (Tabs/PlanTabBar), so a control reached with Tab stops below both, its
-   focus ring in sight: the header's 4.25rem and border (Layout/MainLayout.razor.css), the bar's
-   9.75rem, its buckets' names on two lines, with its line on the setup starred Today, and room for its
-   last line to wrap; below a wide screen, its buttons in a row under the figures; on a phone, its two
-   rows of buckets and the row of its menu under them; and last the tabs, 2.5rem more than the bar's
-   own bottom padding they take the place of (2.35rem on a phone). A notice of a removal at the bottom
-   of the screen (River/TakenOutNotice) hides nothing either. The line is one value for each width,
-   --netto-under-bar, which the river's outline sticks at too (River/RiverOutline), and where a card it
-   jumps to lands. */
+   focus ring in sight: the header and its border, the bar as it is drawn, whatever its width, its
+   names, its line on the setup starred Today or its tabs make of it (bucket-bar.js measures it, and
+   again whenever it changes size), and 1rem of room under it. A notice of a removal at the bottom of
+   the screen (River/TakenOutNotice) hides nothing either. The line is one value, --netto-under-bar,
+   which the river's outline sticks at too (River/RiverOutline), and where a card it jumps to lands. */
 html:has(.bucket-bar) {
-    --netto-under-bar: calc(4.25rem + 1px + 9.75rem + 1.5rem + 2.5rem);
+    --netto-under-bar: calc(var(--netto-header-height) + 1px + var(--netto-bar-height) + 1rem);
     scroll-padding-top: var(--netto-under-bar);
-}
-
-@media (max-width: 1200px) {
-    html:has(.bucket-bar) {
-        --netto-under-bar: calc(4.25rem + 1px + 12.25rem + 1.5rem + 2.5rem);
-    }
-}
-
-@media (max-width: 640px) {
-    html:has(.bucket-bar) {
-        --netto-under-bar: calc(4.25rem + 1px + 13.3rem + 1rem + 2.35rem);
-    }
 }
 
 html:has(.taken-out__notice) {

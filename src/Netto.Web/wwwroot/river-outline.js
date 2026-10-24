@@ -143,6 +143,13 @@
                 watched.resized.observe(river);
             }
 
+            // The line moves with the bar's height (bucket-bar.js), which changes without the river or the
+            // window changing size, a line more on the setup starred Today.
+            const bar = document.querySelector(".bucket-bar");
+            if (bar !== null) {
+                watched.resized.observe(bar);
+            }
+
             schedule(true);
         },
         jump(name) {

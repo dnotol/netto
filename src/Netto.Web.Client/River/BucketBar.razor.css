@@ -1,8 +1,9 @@
-/* Sticks right under the site header (MainLayout.razor.css: 4.25rem and its 1px border), opaque so
-   the cards scrolling under it never show through the figures. */
+/* Sticks right under the site header (--netto-header-height, app.css, and its 1px border), opaque so
+   the cards scrolling under it never show through the figures. Its height is measured by bucket-bar.js
+   (--netto-bar-height) for the line under it (--netto-under-bar). */
 .bucket-bar {
     position: sticky;
-    top: calc(4.25rem + 1px);
+    top: calc(var(--netto-header-height) + 1px);
     z-index: 9;
     background: var(--netto-page);
     border-bottom: 1px solid var(--netto-line);
