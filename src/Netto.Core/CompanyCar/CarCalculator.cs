@@ -216,9 +216,9 @@ public static class CarCalculator
     internal static IReadOnlyList<CarAgePeriod> AgePeriods(IReadOnlyList<CarAgeBand> bands, int incomeYear, DateOnly firstRegistration)
     {
         var periods = new List<CarAgePeriod>();
-        for (var month = 1; month <= 12; month++)
+        for (var month = 1; month <= YearParts.Months; month++)
         {
-            var age = Math.Max(1, (incomeYear - firstRegistration.Year) * 12 + month - firstRegistration.Month + 1);
+            var age = Math.Max(1, (incomeYear - firstRegistration.Year) * YearParts.Months + month - firstRegistration.Month + 1);
             var coefficient = bands.Last(band => band.FromMonth <= age).Coefficient;
             var from = new DateOnly(incomeYear, month, 1);
             var to = from.AddMonths(1).AddDays(-1);
