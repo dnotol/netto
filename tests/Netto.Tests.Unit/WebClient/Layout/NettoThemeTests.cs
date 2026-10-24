@@ -77,7 +77,7 @@ public class NettoThemeTests
     // for light, which overrides them.
     private static Dictionary<string, string> AppCssColours(string theme)
     {
-        var css = File.ReadAllText(FindAppCss());
+        var css = File.ReadAllText(RepositoryFile.FindUp("src", "Netto.Web", "wwwroot", "app.css"));
         var selector = theme == "dark" ? @":root\s*\{" : @":root\[data-theme=""light""\]\s*\{";
         var block = Regex.Matches(css, selector + @"([^}]*)\}")
             .Select(match => match.Groups[1].Value)
@@ -85,18 +85,6 @@ public class NettoThemeTests
 
         return Regex.Matches(block, @"(--netto-[a-z-]+):\s*(#[0-9A-Fa-f]{6});")
             .ToDictionary(match => match.Groups[1].Value, match => match.Groups[2].Value.ToLowerInvariant());
-    }
-
-    private static string FindAppCss()
-    {
-        for (var directory = new DirectoryInfo(AppContext.BaseDirectory); directory is not null; directory = directory.Parent)
-        {
-            var file = Path.Combine(directory.FullName, "src", "Netto.Web", "wwwroot", "app.css");
-            if (File.Exists(file))
-                return file;
-        }
-
-        throw new FileNotFoundException($"No src/Netto.Web/wwwroot/app.css above {AppContext.BaseDirectory}.");
     }
 
     private static string Hex(MudColor colour) => $"#{colour.R:x2}{colour.G:x2}{colour.B:x2}";

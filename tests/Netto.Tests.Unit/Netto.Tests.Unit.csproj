@@ -6,6 +6,12 @@
     <RootNamespace>Netto.Tests</RootNamespace>
   </PropertyGroup>
 
+  <!-- The test support (Support/): fakes, the .resx reader and the engine tests' fixtures, which every
+       test file may use without importing them. -->
+  <ItemGroup>
+    <Using Include="Netto.Tests.Support" />
+  </ItemGroup>
+
   <!-- Netto.Web.Client for the pages' view models: plain C# that turns the engine's result into what
        a page draws, tested here like the engine. The client's internals are visible to this project. -->
   <ItemGroup>

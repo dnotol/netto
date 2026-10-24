@@ -83,7 +83,7 @@ public class TimelineTextTests
     [Fact]
     public void CalendarTimelineCss_namesNoColourButTheSitesTokens()
     {
-        var css = File.ReadAllText(FindUp("src", "Netto.Web.Client", "Tabs", "CalendarTimeline.razor.css"));
+        var css = File.ReadAllText(RepositoryFile.FindUp("src", "Netto.Web.Client", "Tabs", "CalendarTimeline.razor.css"));
 
         Regex.Matches(css, @"#[0-9A-Fa-f]{3,8}\b|\b(?:rgb|rgba|hsl|hsla)\(").Select(match => match.Value).ShouldBeEmpty();
     }
@@ -93,7 +93,7 @@ public class TimelineTextTests
     [Fact]
     public void CalendarTimelineCss_aLabelAndACaptionNeverWrap()
     {
-        var css = File.ReadAllText(FindUp("src", "Netto.Web.Client", "Tabs", "CalendarTimeline.razor.css"));
+        var css = File.ReadAllText(RepositoryFile.FindUp("src", "Netto.Web.Client", "Tabs", "CalendarTimeline.razor.css"));
 
         foreach (var selector in new[] { "timeline__label", "timeline__caption" })
         {
@@ -105,25 +105,13 @@ public class TimelineTextTests
     [Fact]
     public void CalendarTimelineCss_everyTokenItUsesIsDeclaredInAppCss()
     {
-        var css = File.ReadAllText(FindUp("src", "Netto.Web.Client", "Tabs", "CalendarTimeline.razor.css"));
-        var appCss = File.ReadAllText(FindUp("src", "Netto.Web", "wwwroot", "app.css"));
+        var css = File.ReadAllText(RepositoryFile.FindUp("src", "Netto.Web.Client", "Tabs", "CalendarTimeline.razor.css"));
+        var appCss = File.ReadAllText(RepositoryFile.FindUp("src", "Netto.Web", "wwwroot", "app.css"));
 
         var declared = Regex.Matches(appCss, @"(--netto-[a-z-]+)\s*:").Select(match => match.Groups[1].Value).ToHashSet();
         var used = Regex.Matches(css, @"var\((--netto-[a-z-]+)").Select(match => match.Groups[1].Value).Distinct();
 
         used.Where(token => !declared.Contains(token)).ShouldBeEmpty();
         used.ShouldNotBeEmpty();
-    }
-
-    private static string FindUp(params string[] path)
-    {
-        for (var directory = new DirectoryInfo(AppContext.BaseDirectory); directory is not null; directory = directory.Parent)
-        {
-            var file = Path.Combine([directory.FullName, .. path]);
-            if (File.Exists(file))
-                return file;
-        }
-
-        throw new FileNotFoundException($"No {Path.Combine(path)} above {AppContext.BaseDirectory}.");
     }
 }

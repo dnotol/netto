@@ -15,7 +15,7 @@ internal sealed partial class OfficialDocumentIndex
     private OfficialDocumentIndex(IReadOnlyDictionary<string, Row> rows) => this.rows = rows;
 
     // The official-docs folder of the checkout the tests were built from.
-    public static DirectoryInfo Folder { get; } = FindFolder();
+    public static DirectoryInfo Folder { get; } = new FileInfo(RepositoryFile.FindUp("official-docs", "INDEX.md")).Directory!;
 
     public IReadOnlyCollection<string> Files => rows.Keys.ToList();
 
@@ -73,18 +73,6 @@ internal sealed partial class OfficialDocumentIndex
             return $"{row.File} applies to {row.Years.Text}, not to income year {incomeYear}";
 
         return null;
-    }
-
-    private static DirectoryInfo FindFolder()
-    {
-        for (var directory = new DirectoryInfo(AppContext.BaseDirectory); directory is not null; directory = directory.Parent)
-        {
-            var folder = new DirectoryInfo(Path.Combine(directory.FullName, "official-docs"));
-            if (File.Exists(Path.Combine(folder.FullName, "INDEX.md")))
-                return folder;
-        }
-
-        throw new DirectoryNotFoundException($"No official-docs/INDEX.md above {AppContext.BaseDirectory}.");
     }
 
     private static List<string> Cells(string line) =>
