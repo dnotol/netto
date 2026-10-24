@@ -319,16 +319,22 @@ public class SavedPlansTests
         (imported.Added, plans.Plans.Select(plan => plan.Id).Distinct().Count(), plans.TodayPlan?.Name).ShouldBe((2, 2, "First"));
     }
 
-    // A file exported before a royalty could follow the pay reads as storage does: the royalty given
-    // fixed at it, any other following the pay.
-    [Fact]
-    public void Import_version4File_readsItsRoyaltiesAsStorageDoes()
+    // A file any version exported reads as storage does (StoredPlanDocuments): each plan as it was saved, an
+    // example's nothing as none, a royalty given before one could follow the pay fixed at it.
+    [Theory]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(3)]
+    [InlineData(4)]
+    [InlineData(5)]
+    [InlineData(6)]
+    public void Import_fileOfEachVersion_readsItsPlansAsStorageDoes(int version)
     {
         var plans = new SavedPlans(new BrowserStorage());
 
-        plans.Import(PlanStorageTests.Version4Book);
+        plans.Import(StoredPlanDocuments.Of(version));
 
-        plans.Plans.Select(plan => plan.Inputs).ShouldBe([RiverInputs.Example, PlanStorageTests.Version4Plan2]);
+        plans.Plans.Select(plan => plan.Inputs).ShouldBe(StoredPlanDocuments.Plans(version));
     }
 
     [Theory]
