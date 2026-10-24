@@ -328,6 +328,7 @@ public class SavedPlansTests
     [InlineData(4)]
     [InlineData(5)]
     [InlineData(6)]
+    [InlineData(7)]
     public void Import_fileOfEachVersion_readsItsPlansAsStorageDoes(int version)
     {
         var plans = new SavedPlans(new BrowserStorage());

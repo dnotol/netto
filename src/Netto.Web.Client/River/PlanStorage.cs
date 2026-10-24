@@ -42,11 +42,14 @@ internal sealed record PlanBook(IReadOnlyList<SavedPlan> Plans, string? Today, s
 // versions 1 and 2 no copyright royalty, so theirs are read without one, versions 1 to 3 no
 // provisional contributions billed by the fund, so theirs are read with none given, versions 3 and 4 a
 // royalty that is always fixed: a royalty the user gave opens fixed at it, as it was saved, and one
-// never given follows the pay, as a royalty added now does (2026-10-23), and versions 2 to 5 no
-// private cost of the car, so theirs are read with none given (2026-10-23). The car's engine, CO2,
-// order date and statuses joined version 2 without raising it, since version 2 had not left the car's
-// story branch; a plan saved by the car's first build does not open (operator, 2026-10-22). The rest
-// of the royalty's story joins version 3 the same way (decided unattended, 2026-10-22).
+// never given follows the pay, as a royalty added now does (2026-10-23), versions 2 to 5 no private
+// cost of the car, so theirs are read with none given (2026-10-23), and versions 1 to 6 no band of
+// INASTI's company contribution, so theirs open in the lower band, the default a plan starts from, a
+// plan whose running costs held the contribution then counting it twice until they are lowered
+// (decided unattended, 2026-10-25). The car's engine, CO2, order date and statuses joined version 2
+// without raising it, since version 2 had not left the car's story branch; a plan saved by the car's
+// first build does not open (operator, 2026-10-22). The rest of the royalty's story joins version 3 the
+// same way (decided unattended, 2026-10-22).
 internal static class PlanStorage
 {
     public const string Key = "netto.plans";
@@ -55,14 +58,15 @@ internal static class PlanStorage
     public const string UnreadableKey = "netto.plans.unreadable";
 
     // 2: the company car. 3: the copyright royalty. 4: what the fund bills each quarter. 5: whether the
-    // royalty follows the pay. 6: what the same car would cost privately.
-    public const int Version = 6;
+    // royalty follows the pay. 6: what the same car would cost privately. 7: the band of INASTI's company
+    // contribution.
+    public const int Version = 7;
 
     private const int FirstVersion = 1;
 
     // The patch from each older version to the next: Patches[n - FirstVersion] brings a plan version n
     // stored to version n + 1's shape, or refuses it. A new version adds its own.
-    private static readonly Func<JsonObject, bool>[] Patches = [ToVersion2, ToVersion3, ToVersion4, ToVersion5, ToVersion6];
+    private static readonly Func<JsonObject, bool>[] Patches = [ToVersion2, ToVersion3, ToVersion4, ToVersion5, ToVersion6, ToVersion7];
 
     // A plan of an older version holding a member twice is refused as it is parsed.
     private static readonly JsonDocumentOptions OneOfEachMember = new() { AllowDuplicateProperties = false };
@@ -179,6 +183,9 @@ internal static class PlanStorage
     // Version 6 brought what the same car would cost privately: none given.
     private static bool ToVersion6(JsonObject plan) => Add(plan["car"], "privateCost", NoneGiven);
 
+    // Version 7 brought the band of INASTI's company contribution: the lower one, the default.
+    private static bool ToVersion7(JsonObject plan) => Add(plan, "companyContributionBand", """{"value": "Lower", "origin": "Default"}""");
+
     // Adds a member the version before never held, or refuses a plan that already holds it: that version
     // never wrote one.
     private static bool Add(JsonNode? parent, string member, string json)
@@ -218,6 +225,7 @@ internal static class PlanStorage
         Stored(inputs.Copyright),
         Stored(inputs.SmallCompany),
         Stored(inputs.FinancialYear),
+        Stored(inputs.CompanyContributionBand),
         Stored(inputs.AdvancePayments),
         Stored(inputs.DirectorPay),
         new StoredMunicipality(inputs.Municipality.Municipality?.InsCode, inputs.Municipality.Rate, inputs.Municipality.Origin),
@@ -252,6 +260,7 @@ internal static class PlanStorage
                 Input(stored.Copyright.Royalty), Input(stored.Copyright.FollowsPay), Input(stored.Copyright.AverageWithinCap), Input(stored.Copyright.HoldsAttestation), Input(stored.Copyright.CreativeShare)),
             Input(stored.SmallCompany),
             Input(stored.FinancialYear),
+            Input(stored.CompanyContributionBand),
             Input(stored.AdvancePayments),
             Input(stored.DirectorPay),
             new MunicipalityChoice(rates, municipality, stored.Municipality.Rate, stored.Municipality.Origin),
@@ -294,7 +303,7 @@ internal static class PlanStorage
         new(Input(stored.First), Input(stored.Second), Input(stored.Third), Input(stored.Fourth));
 }
 
-// The stored document and plan, version 6. Renaming or removing a member changes the format.
+// The stored document and plan, version 7. Renaming or removing a member changes the format.
 internal sealed record StoredBook(int Version, string? Today, string? Opened, IReadOnlyList<StoredPlan> Plans);
 
 internal sealed record StoredPlan(string Id, string Name, JsonElement Inputs);
@@ -310,6 +319,7 @@ internal sealed record StoredInputs(
     StoredCopyright Copyright,
     StoredValue<bool> SmallCompany,
     StoredValue<FinancialYear> FinancialYear,
+    StoredValue<CompanyContributionBand> CompanyContributionBand,
     StoredPayments AdvancePayments,
     StoredValue<decimal> DirectorPay,
     StoredMunicipality Municipality,

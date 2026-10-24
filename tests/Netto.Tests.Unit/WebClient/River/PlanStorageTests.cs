@@ -23,7 +23,7 @@ public class PlanStorageTests
         .WithCarEngine(CarEngine.DieselPlugInHybrid).WithCarCo2(45).WithNoCo2Data(true).WithCarAcquired(new DateOnly(2025, 3, 1))
         .WithFakeHybrid(true).WithMatchingCarCo2(150).WithNoMatchingCar(true).WithSmallNaturalGas(true).WithCarPrivateCost(7_200m)
         .WithRoyalty(12_500.50m).WithAverageWithinCap(false).WithAttestation(true).WithCreativeShare(0.75m)
-        .WithSmallCompany(false).WithFinancialYear(FinancialYear.Second)
+        .WithSmallCompany(false).WithFinancialYear(FinancialYear.Second).WithCompanyContributionBand(CompanyContributionBand.Upper)
         .WithAdvancePayment(0, 3_000m).WithAdvancePayment(3, 1_250.25m)
         .WithDirectorPay(42_000m)
         .WithMunicipality(Namur().Enter(0.075m))
@@ -70,13 +70,14 @@ public class PlanStorageTests
         read.Plans.Single().Inputs.ShouldBe(inputs);
     }
 
-    // What the example holds none of is stored as the example's, as the build before stored it, so a plan
-    // saved here still opens there: the example as version 5 wrote it, with version 6's private cost.
+    // What the example holds none of is stored as the example's, as the builds before stored it: the
+    // example as version 6 wrote it, with version 7's band of INASTI's company contribution, the default
+    // lower one, after the financial year.
     [Fact]
     public void Store_example_writesWhatItHoldsNoneOfAsTheBuildBeforeDid()
     {
-        var before = PlanInputs(StoredPlanDocuments.Version5, 0);
-        before["car"]!["privateCost"] = JsonNode.Parse("""{"value":null,"origin":"Yours"}""");
+        var before = PlanInputs(StoredPlanDocuments.Version6, 0).AsObject();
+        before.Insert(before.IndexOf("financialYear") + 1, "companyContributionBand", JsonNode.Parse("""{"value":"Lower","origin":"Default"}"""));
 
         PlanStorage.Store(StoredPlanDocuments.SavedExample).GetRawText().ShouldBe(before.ToJsonString());
     }
@@ -141,6 +142,7 @@ public class PlanStorageTests
     [Theory]
     [InlineData(1)]
     [InlineData(6)]
+    [InlineData(7)]
     public void Read_planOfAYearWithoutMunicipalRates_makesThatPlanUnreadable(int version)
     {
         var json = Edit(StoredPlanDocuments.Of(version), document => PlanInputs(document, 0)["incomeYear"] = Fixtures.UnsupportedIncomeYear);
@@ -192,11 +194,22 @@ public class PlanStorageTests
         JsonNode.Parse(PlanStorage.Write(PlanBook.Empty))!["version"]!.GetValue<int>().ShouldBe(PlanStorage.Version);
     }
 
-    // Version 6 holds what the same car would cost privately.
+    // Version 7 holds the band of INASTI's company contribution the company's balance sheet is in.
     [Fact]
-    public void Version_isSix()
+    public void Version_isSeven()
     {
-        PlanStorage.Version.ShouldBe(6);
+        PlanStorage.Version.ShouldBe(7);
+    }
+
+    // The band read back is the one written, with its origin.
+    [Theory]
+    [InlineData(CompanyContributionBand.Lower)]
+    [InlineData(CompanyContributionBand.Upper)]
+    public void Read_written_givesBackTheBand(CompanyContributionBand band)
+    {
+        var inputs = RiverInputs.Example.WithCompanyContributionBand(band);
+
+        PlanStorage.Read(PlanStorage.Write(Book(("a", "Plan 1", inputs)))).Book.Plans.Single().Inputs.ShouldBe(inputs);
     }
 
     // The private cost has no default: none stored is none read back, never an amount.
@@ -311,6 +324,7 @@ public class PlanStorageTests
     [InlineData(4)]
     [InlineData(5)]
     [InlineData(6)]
+    [InlineData(7)]
     public void Read_documentOfEachVersion_readsEachPlanAsItWasSaved(int version)
     {
         var (read, unreadable) = PlanStorage.Read(StoredPlanDocuments.Of(version));
@@ -329,6 +343,7 @@ public class PlanStorageTests
     [InlineData(4)]
     [InlineData(5)]
     [InlineData(6)]
+    [InlineData(7)]
     public void Write_afterReadingADocumentOfEachVersion_writesEachPlanInThisVersion(int version)
     {
         var rewritten = PlanStorage.Write(PlanStorage.Read(StoredPlanDocuments.Of(version)).Book);
@@ -344,7 +359,7 @@ public class PlanStorageTests
     [Fact]
     public void Write_afterReadingADocumentOfThisVersion_writesItBackAsRead()
     {
-        PlanStorage.Write(PlanStorage.Read(StoredPlanDocuments.Version6).Book).ShouldBe(StoredPlanDocuments.Version6);
+        PlanStorage.Write(PlanStorage.Read(StoredPlanDocuments.Version7).Book).ShouldBe(StoredPlanDocuments.Version7);
     }
 
     // A version's plan carrying a member a later version brought, as that version stored it, is not a plan it
@@ -365,6 +380,10 @@ public class PlanStorageTests
     [InlineData(4, "copyright.followsPay", 5)]
     [InlineData(4, "car.privateCost", 6)]
     [InlineData(5, "car.privateCost", 6)]
+    [InlineData(1, "companyContributionBand", 7)]
+    [InlineData(3, "companyContributionBand", 7)]
+    [InlineData(5, "companyContributionBand", 7)]
+    [InlineData(6, "companyContributionBand", 7)]
     public void Read_documentOfAVersionWithAMemberALaterVersionBrought_makesThatPlanUnreadable(int version, string member, int broughtBy)
     {
         var brought = Member(PlanInputs(StoredPlanDocuments.Of(broughtBy), 1), member).DeepClone();
@@ -383,6 +402,8 @@ public class PlanStorageTests
     [InlineData(4, "reserve")]
     [InlineData(5, "reserve")]
     [InlineData(6, "reserve")]
+    [InlineData(7, "reserve")]
+    [InlineData(7, "companyContributionBand")]
     [InlineData(1, "composition")]
     [InlineData(2, "composition")]
     [InlineData(2, "car")]
@@ -402,6 +423,7 @@ public class PlanStorageTests
     [InlineData(3, "5")]
     [InlineData(5, "[]")]
     [InlineData(6, "5")]
+    [InlineData(7, "[]")]
     public void Read_planWhoseInputsAreNotAnObject_makesThatPlanUnreadable(int version, string inputs)
     {
         var json = Edit(StoredPlanDocuments.Of(version), document => Child(Child(document, "plans"), 0)["inputs"] = JsonNode.Parse(inputs));
@@ -417,6 +439,7 @@ public class PlanStorageTests
     [InlineData(3)]
     [InlineData(4)]
     [InlineData(5)]
+    [InlineData(6)]
     public void Write_unreadablePlanOfAnOlderVersion_keepsItExactlyAsStored(int version)
     {
         var json = Edit(StoredPlanDocuments.Of(version), document => PlanInputs(document, 0)["carLease"] = 850);
@@ -434,6 +457,7 @@ public class PlanStorageTests
     [InlineData(3, "\"reserve\":{\"value\":0,\"origin\":\"Example\"}")]
     [InlineData(4, "\"runningCosts\":{\"value\":20000,\"origin\":\"Example\"}")]
     [InlineData(5, "\"engine\":{\"value\":\"Electric\",\"origin\":\"Default\"}")]
+    [InlineData(6, "\"financialYear\":{\"value\":\"FifthOrLater\",\"origin\":\"Default\"}")]
     public void Read_olderPlanHoldingAMemberTwice_makesThatPlanUnreadable(int version, string member)
     {
         var document = StoredPlanDocuments.Of(version);
@@ -453,6 +477,7 @@ public class PlanStorageTests
     [InlineData(4)]
     [InlineData(5)]
     [InlineData(6)]
+    [InlineData(7)]
     public void Read_documentOfEachVersion_readsAnExampleNothingAsNone(int version)
     {
         var today = PlanStorage.Read(StoredPlanDocuments.Of(version)).Book.Plans[0].Inputs.ShouldNotBeNull();
@@ -519,6 +544,22 @@ public class PlanStorageTests
     {
         PlanStorage.Read(StoredPlanDocuments.Of(version)).Book.Plans.Select(plan => plan.Inputs?.Car.PrivateCost)
             .ShouldAllBe(cost => cost == StoredPlanDocuments.NoneGiven);
+    }
+
+    // Saved before the band of INASTI's company contribution was asked, the plans of versions 1 to 6 open
+    // in the lower band, the default a plan starts from now: one whose running costs held the contribution
+    // counts it twice until they are lowered (decided unattended, 2026-10-25).
+    [Theory]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(3)]
+    [InlineData(4)]
+    [InlineData(5)]
+    [InlineData(6)]
+    public void Read_documentBeforeTheBand_opensEveryPlanInTheLowerBandAsDefault(int version)
+    {
+        PlanStorage.Read(StoredPlanDocuments.Of(version)).Book.Plans.Select(plan => plan.Inputs?.CompanyContributionBand)
+            .ShouldAllBe(band => band == new Input<CompanyContributionBand>(CompanyContributionBand.Lower, InputOrigin.Default));
     }
 
     private static PlanBook Book(params (string Id, string Name, RiverInputs Inputs)[] plans) =>

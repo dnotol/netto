@@ -415,6 +415,51 @@ public class RiverInputsTests
         RiverInputs.Example.PayCeiling.ShouldBe(100_000m);
     }
 
+    // The example's balance sheet is in the lower band of INASTI's company contribution, a status Netto
+    // assumes until the user says otherwise.
+    [Fact]
+    public void Example_companyContributionBand_isTheLowerBandByDefault()
+    {
+        RiverInputs.Example.CompanyContributionBand.ShouldBe(new Input<CompanyContributionBand>(CompanyContributionBand.Lower, InputOrigin.Default));
+    }
+
+    [Fact]
+    public void WithCompanyContributionBand_makesItTheUsers()
+    {
+        var inputs = RiverInputs.Example.WithCompanyContributionBand(CompanyContributionBand.Upper);
+
+        inputs.CompanyContributionBand.ShouldBe(new Input<CompanyContributionBand>(CompanyContributionBand.Upper, InputOrigin.Yours));
+    }
+
+    // The upper band's 1,022.38 comes off before the split, 613.08 more than the lower band's.
+    [Fact]
+    public void Run_upperBand_takesItsContributionOffBeforeTheSplit()
+    {
+        var inputs = RiverInputs.Example.WithCompanyContributionBand(CompanyContributionBand.Upper);
+
+        (inputs.Run().Year?.CompanyContribution, inputs.PayCeiling).ShouldBe(((decimal?)1_022.38m, (decimal?)99_386.92m));
+    }
+
+    // A river that starts at the pay has no company, so no contribution to INASTI: the band stays for when
+    // the company's year comes back.
+    [Fact]
+    public void Run_companySkipped_hasNoCompanyContribution()
+    {
+        var inputs = RiverInputs.Example.WithCompanyContributionBand(CompanyContributionBand.Upper).SkipCompany();
+
+        var run = inputs.Run();
+
+        (run.Year, run.Pay.ShouldNotBeNull().Steps.Any(step => step.Event == TaxableEvent.CompanyContribution), inputs.CompanyContributionBand.Value)
+            .ShouldBe((null, false, CompanyContributionBand.Upper));
+    }
+
+    // Another band is another year to search, the pay aside.
+    [Fact]
+    public void SameBesidesPay_anotherBand_isNotTheSame()
+    {
+        RiverInputs.Example.SameBesidesPay(RiverInputs.Example.WithCompanyContributionBand(CompanyContributionBand.Upper)).ShouldBeFalse();
+    }
+
     [Fact]
     public void PayCeiling_lossBeforePay_isZero()
     {

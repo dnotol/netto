@@ -31,6 +31,7 @@ public sealed record RiverInputs(
     CopyrightInputs Copyright,
     Input<bool> SmallCompany,
     Input<FinancialYear> FinancialYear,
+    Input<CompanyContributionBand> CompanyContributionBand,
     AdvancePaymentInputs AdvancePayments,
     Input<decimal> DirectorPay,
     MunicipalityChoice Municipality,
@@ -69,7 +70,8 @@ public sealed record RiverInputs(
     // privately is none until given, with no example (operator, 2026-10-23). It pays no copyright
     // royalty; one added to the plan follows the pay, a status, none until a creative share is given
     // (operator, 2026-10-23), and assumes the four previous years' copyright income averaged within the
-    // cap, a status, until the user says otherwise.
+    // cap, a status, until the user says otherwise. Its balance sheet is in the lower band of INASTI's
+    // company contribution, a status, until the user says otherwise.
     public static RiverInputs Example { get; } = new(
         ExampleYear,
         new CompanyFigures(new Input<decimal>(120_000m, InputOrigin.Example), new Input<decimal>(19_590.70m, InputOrigin.Example)),
@@ -89,6 +91,7 @@ public sealed record RiverInputs(
             CopyrightInputs.NoCreativeShare),
         new Input<bool>(true, InputOrigin.Default),
         new Input<FinancialYear>(River.FinancialYear.FifthOrLater, InputOrigin.Default),
+        new Input<CompanyContributionBand>(Core.SocialContributions.CompanyContributionBand.Lower, InputOrigin.Default),
         new AdvancePaymentInputs(ExampleNothing, ExampleNothing, ExampleNothing, ExampleNothing),
         new Input<decimal>(50_000m, InputOrigin.Example),
         MunicipalityChoice.Start(MunicipalRates.IncomeYear2026, 0.07m),
@@ -200,6 +203,8 @@ public sealed record RiverInputs(
 
     public RiverInputs WithFinancialYear(FinancialYear financialYear) => this with { FinancialYear = Yours(financialYear) };
 
+    public RiverInputs WithCompanyContributionBand(CompanyContributionBand band) => this with { CompanyContributionBand = Yours(band) };
+
     // The payment by the deadline at that place, the first being 0.
     public RiverInputs WithAdvancePayment(int deadline, decimal amount) => this with { AdvancePayments = AdvancePayments.With(deadline, Yours(amount)) };
 
@@ -296,6 +301,7 @@ public sealed record RiverInputs(
         DividendCategory.Value,
         EarlierProfits.Value)
     {
+        CompanyContributionBand = CompanyContributionBand.Value,
         AdvancePayments = AdvancePayments.Values,
         TaxPrepayments = TaxPrepayments.Values,
         ContributionsPaidBy = ContributionsPaidBy.Value,
