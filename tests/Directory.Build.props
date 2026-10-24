@@ -11,6 +11,11 @@
     <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
   </PropertyGroup>
 
+  <!-- CA1707: a test is named Method_scenario_expectedBehavior, underscores and all. -->
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);CA1707</NoWarn>
+  </PropertyGroup>
+
   <ItemGroup>
     <Using Include="Xunit" />
     <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
