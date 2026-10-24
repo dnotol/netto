@@ -154,22 +154,4 @@ public class ThemePreferenceTests
 
         public void Show(ThemeMode theme) => Shown.Add(theme);
     }
-
-    private sealed class BrowserStorage : IBrowserStorage
-    {
-        private readonly Dictionary<string, string> _stored = [];
-
-        public string? Get(string key) => _stored.GetValueOrDefault(key);
-
-        public void Set(string key, string value) => _stored[key] = value;
-    }
-
-    private sealed class RefusingStorage : IBrowserStorage
-    {
-        public string? Get(string key) => null;
-
-        public void Set(string key, string value)
-        {
-        }
-    }
 }

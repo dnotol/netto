@@ -106,13 +106,4 @@ internal static class RiverRendering
         protected override void NavigateToCore(string uri, NavigationOptions options) =>
             throw new InvalidOperationException($"A static render navigated to {uri}.");
     }
-
-    public sealed class BrowserStorage : IBrowserStorage
-    {
-        private readonly Dictionary<string, string> _stored = [];
-
-        public string? Get(string key) => _stored.GetValueOrDefault(key);
-
-        public void Set(string key, string value) => _stored[key] = value;
-    }
 }

@@ -273,7 +273,7 @@ public class MovesSourceTests
     // know in place of one it needs, so none can be read. They are read again from the storage.
     private static SavedPlans Unreadable(SavedPlans plans)
     {
-        var storage = new RiverRendering.BrowserStorage();
+        var storage = new BrowserStorage();
         storage.Set(PlanStorage.Key, plans.Export().Replace("\"reserve\"", "\"keptAside\"", StringComparison.Ordinal));
         return new SavedPlans(storage);
     }

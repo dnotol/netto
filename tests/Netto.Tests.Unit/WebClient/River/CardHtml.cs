@@ -45,13 +45,13 @@ internal static class CardHtml
     // folded. No plan is saved, so none is starred Today.
     public static Task<string> RenderPlanOpenAsync(RiverInputs river)
     {
-        var folds = new Folds(new RiverRendering.BrowserStorage());
+        var folds = new Folds(new BrowserStorage());
         foreach (var card in OutlineRows.Order)
             folds.Set(card, true);
 
         return RiverRendering.RenderAsync(typeof(Plan), folds, [], services =>
         {
-            var storage = new RiverRendering.BrowserStorage();
+            var storage = new BrowserStorage();
             var plans = new SavedPlans(storage);
             services.AddSingleton<IBrowserStorage>(storage);
             services.AddSingleton(plans);

@@ -13,7 +13,7 @@ public class PlanRowTests
     [Fact]
     public void From_noPlan_isNoRow()
     {
-        PlanRow.From(new SavedPlans(new MemoryStorage())).ShouldBeEmpty();
+        PlanRow.From(new SavedPlans(new BrowserStorage())).ShouldBeEmpty();
     }
 
     [Fact]
@@ -73,18 +73,9 @@ public class PlanRowTests
 
     private static SavedPlans Saved(params RiverInputs[] inputs)
     {
-        var plans = new SavedPlans(new MemoryStorage());
+        var plans = new SavedPlans(new BrowserStorage());
         foreach (var plan in inputs)
             plans.Save(plan, number => $"Plan {number}");
         return plans;
-    }
-
-    private sealed class MemoryStorage : IBrowserStorage
-    {
-        private readonly Dictionary<string, string> _stored = [];
-
-        public string? Get(string key) => _stored.GetValueOrDefault(key);
-
-        public void Set(string key, string value) => _stored[key] = value;
     }
 }

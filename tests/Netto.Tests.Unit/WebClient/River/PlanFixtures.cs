@@ -12,7 +12,7 @@ internal static class PlanFixtures
     // opened from.
     public static SavedPlans Saved(params RiverInputs[] inputs)
     {
-        var plans = new SavedPlans(new RiverRendering.BrowserStorage());
+        var plans = new SavedPlans(new BrowserStorage());
         foreach (var plan in inputs)
             plans.Save(plan, number => $"Plan {number}");
         return plans;

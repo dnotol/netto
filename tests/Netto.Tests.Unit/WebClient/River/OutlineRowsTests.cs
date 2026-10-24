@@ -15,7 +15,7 @@ public class OutlineRowsTests
     [Fact]
     public void Rows_cardsReportedOutOfOrder_comeInTheRiversOrder()
     {
-        var rows = new OutlineRows(new Folds(new Storage()));
+        var rows = new OutlineRows(new Folds(new BrowserStorage()));
 
         foreach (var name in new[] { "dividend", "corporate-tax", "director-pay", "copyright", "split", "company-year" })
             rows.Report(Row(name), Nothing);
@@ -27,7 +27,7 @@ public class OutlineRowsTests
     [Fact]
     public void Leave_cardGone_hasNoRow()
     {
-        var rows = new OutlineRows(new Folds(new Storage()));
+        var rows = new OutlineRows(new Folds(new BrowserStorage()));
         rows.Report(Row("vouchers"), Nothing);
         rows.Report(Row("split"), Nothing);
 
@@ -40,7 +40,7 @@ public class OutlineRowsTests
     [Fact]
     public void Report_cardNotInTheRiversOrder_isRefused()
     {
-        var rows = new OutlineRows(new Folds(new Storage()));
+        var rows = new OutlineRows(new Folds(new BrowserStorage()));
 
         Should.Throw<ArgumentOutOfRangeException>(() => rows.Report(Row("another-card"), Nothing));
     }
@@ -49,7 +49,7 @@ public class OutlineRowsTests
     [Fact]
     public void Report_sameRowAgain_raisesNoChange()
     {
-        var rows = new OutlineRows(new Folds(new Storage()));
+        var rows = new OutlineRows(new Folds(new BrowserStorage()));
         rows.Report(Row("split", "€60,000"), Nothing);
         var changes = 0;
         rows.Changed += () => changes++;
@@ -62,7 +62,7 @@ public class OutlineRowsTests
     [Fact]
     public void Report_newGlance_raisesAChange()
     {
-        var rows = new OutlineRows(new Folds(new Storage()));
+        var rows = new OutlineRows(new Folds(new BrowserStorage()));
         rows.Report(Row("split", "€60,000"), Nothing);
         var changes = 0;
         rows.Changed += () => changes++;
@@ -75,7 +75,7 @@ public class OutlineRowsTests
     [Fact]
     public void Leave_cardNotListed_raisesNoChange()
     {
-        var rows = new OutlineRows(new Folds(new Storage()));
+        var rows = new OutlineRows(new Folds(new BrowserStorage()));
         var changes = 0;
         rows.Changed += () => changes++;
 
@@ -89,7 +89,7 @@ public class OutlineRowsTests
     [Fact]
     public void Open_foldedCard_isRememberedOpenAndRedrawn()
     {
-        var storage = new Storage();
+        var storage = new BrowserStorage();
         var rows = new OutlineRows(new Folds(storage));
         var redrawn = 0;
         rows.Report(Row("vouchers"), () => redrawn++);
@@ -103,7 +103,7 @@ public class OutlineRowsTests
     [Fact]
     public void Open_cardOpenForTheVisit_writesNoFold()
     {
-        var storage = new Storage();
+        var storage = new BrowserStorage();
         var folds = new Folds(storage);
         folds.Reveal("split");
         var rows = new OutlineRows(folds);
@@ -118,7 +118,7 @@ public class OutlineRowsTests
     [Fact]
     public void Open_cardNotListed_doesNothing()
     {
-        var storage = new Storage();
+        var storage = new BrowserStorage();
         var rows = new OutlineRows(new Folds(storage));
 
         rows.Open("vouchers");
@@ -131,7 +131,7 @@ public class OutlineRowsTests
     [Fact]
     public void Arrive_listedFoldedCard_opensItRememberedAndSaysItIsThere()
     {
-        var storage = new Storage();
+        var storage = new BrowserStorage();
         var rows = new OutlineRows(new Folds(storage));
         var redrawn = 0;
         rows.Report(Row("split"), () => redrawn++);
@@ -145,7 +145,7 @@ public class OutlineRowsTests
     [Fact]
     public void Arrive_cardNotListed_writesNothingAndSaysItIsNotThere()
     {
-        var storage = new Storage();
+        var storage = new BrowserStorage();
         var rows = new OutlineRows(new Folds(storage));
         rows.Report(Row("split"), Nothing);
 
@@ -157,7 +157,7 @@ public class OutlineRowsTests
     [Fact]
     public void AllOpen_oneCardFolded_isFalse()
     {
-        var folds = new Folds(new Storage());
+        var folds = new Folds(new BrowserStorage());
         folds.Set("split", true);
         var rows = new OutlineRows(folds);
         rows.Report(Row("split"), Nothing);
@@ -170,7 +170,7 @@ public class OutlineRowsTests
     [Fact]
     public void AllOpen_everyCardOpen_isTrue()
     {
-        var folds = new Folds(new Storage());
+        var folds = new Folds(new BrowserStorage());
         folds.Set("split", true);
         folds.Reveal("vouchers");
         var rows = new OutlineRows(folds);
@@ -185,7 +185,7 @@ public class OutlineRowsTests
     [Fact]
     public void SetAll_open_remembersEveryListedCardOpenAndRedrawsThem()
     {
-        var storage = new Storage();
+        var storage = new BrowserStorage();
         var rows = new OutlineRows(new Folds(storage));
         var redrawn = new List<string>();
         foreach (var name in new[] { "company-year", "split", "dividend" })
@@ -201,7 +201,7 @@ public class OutlineRowsTests
     [Fact]
     public void SetAll_folded_foldsEveryListedCardEvenOneOpenForTheVisit()
     {
-        var storage = new Storage();
+        var storage = new BrowserStorage();
         var folds = new Folds(storage);
         folds.Reveal("vouchers");
         folds.Set("split", true);
@@ -280,21 +280,5 @@ public class OutlineRowsTests
 
     private static void Nothing()
     {
-    }
-
-    // The browser's storage, counting what is written to it.
-    private sealed class Storage : IBrowserStorage
-    {
-        private readonly Dictionary<string, string> _stored = [];
-
-        public int Writes { get; private set; }
-
-        public string? Get(string key) => _stored.GetValueOrDefault(key);
-
-        public void Set(string key, string value)
-        {
-            Writes++;
-            _stored[key] = value;
-        }
     }
 }
