@@ -34,19 +34,19 @@ internal sealed record PlanBook(IReadOnlyList<SavedPlan> Plans, string? Today, s
 //
 // A plan of an older version is brought to this one a version at a time, on a copy: each patch adds
 // what the version before never held, written out here as that version's successor stored it, and
-// refuses a plan that already holds it, or holds a member twice, since that version never wrote one.
-// It is then read as a plan of this version is, and written back in this version's format; a plan
-// that cannot be read is kept exactly as it was stored. What a patch adds is frozen here, never read
-// from the river's example, which may change: a plan saved before stays as it was saved. Version 1
-// held no company car, so its plans are read without one (decided 2026-10-22), versions 1 and 2 no
-// copyright royalty, so theirs are read without one, versions 1 to 3 no provisional contributions
-// billed by the fund, so theirs are read with none given, versions 3 and 4 a royalty that is always
-// fixed: a royalty the user gave opens fixed at it, as it was saved, and one never given follows the
-// pay, as a royalty added now does (2026-10-23), and versions 2 to 5 no private cost of the car, so
-// theirs are read with none given (2026-10-23). The car's engine, CO2, order date and statuses joined
-// version 2 without raising it, since version 2 had not left the car's story branch; a plan saved by
-// the car's first build does not open (operator, 2026-10-22). The rest of the royalty's story joins
-// version 3 the same way (decided unattended, 2026-10-22).
+// refuses a plan that already holds it, since that version never wrote one; parsing the copy refuses a
+// plan holding a member twice. It is then read as a plan of this version is, and written back in this
+// version's format; a plan that cannot be read is kept exactly as it was stored. What a patch adds is
+// frozen here, never read from the river's example, which may change: a plan saved before stays as it
+// was saved. Version 1 held no company car, so its plans are read without one (decided 2026-10-22),
+// versions 1 and 2 no copyright royalty, so theirs are read without one, versions 1 to 3 no
+// provisional contributions billed by the fund, so theirs are read with none given, versions 3 and 4 a
+// royalty that is always fixed: a royalty the user gave opens fixed at it, as it was saved, and one
+// never given follows the pay, as a royalty added now does (2026-10-23), and versions 2 to 5 no
+// private cost of the car, so theirs are read with none given (2026-10-23). The car's engine, CO2,
+// order date and statuses joined version 2 without raising it, since version 2 had not left the car's
+// story branch; a plan saved by the car's first build does not open (operator, 2026-10-22). The rest
+// of the royalty's story joins version 3 the same way (decided unattended, 2026-10-22).
 internal static class PlanStorage
 {
     public const string Key = "netto.plans";

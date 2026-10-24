@@ -143,7 +143,7 @@ public class PlanStorageTests
     [InlineData(6)]
     public void Read_planOfAYearWithoutMunicipalRates_makesThatPlanUnreadable(int version)
     {
-        var json = Edit(StoredPlanDocuments.Of(version), document => document["plans"]![0]!["inputs"]!["incomeYear"] = Fixtures.UnsupportedIncomeYear);
+        var json = Edit(StoredPlanDocuments.Of(version), document => PlanInputs(document, 0)["incomeYear"] = Fixtures.UnsupportedIncomeYear);
 
         PlanStorage.Read(json).Book.Plans.Select(plan => plan.Readable).ShouldBe([false, true]);
     }
@@ -336,7 +336,7 @@ public class PlanStorageTests
         var (read, unreadable) = PlanStorage.Read(rewritten);
 
         read.ShouldSatisfyAllConditions(
-            () => (JsonNode.Parse(rewritten)!["version"]!.GetValue<int>(), unreadable).ShouldBe((PlanStorage.Version, false)),
+            () => (Child(JsonNode.Parse(rewritten), "version").GetValue<int>(), unreadable).ShouldBe((PlanStorage.Version, false)),
             () => read.Plans.Select(plan => plan.Inputs).ShouldBe(StoredPlanDocuments.Plans(version)));
     }
 
@@ -369,7 +369,7 @@ public class PlanStorageTests
     {
         var brought = Member(PlanInputs(StoredPlanDocuments.Of(broughtBy), 1), member).DeepClone();
 
-        var json = Edit(StoredPlanDocuments.Of(version), document => Put(document["plans"]![0]!["inputs"]!, member, brought));
+        var json = Edit(StoredPlanDocuments.Of(version), document => Put(PlanInputs(document, 0), member, brought));
 
         PlanStorage.Read(json).Book.Plans.Select(plan => plan.Readable).ShouldBe([false, true]);
     }
@@ -391,7 +391,7 @@ public class PlanStorageTests
     [InlineData(5, "car")]
     public void Read_documentOfAVersionMissingAMember_makesThatPlanUnreadable(int version, string member)
     {
-        var json = Edit(StoredPlanDocuments.Of(version), document => Remove(document["plans"]![0]!["inputs"]!, member));
+        var json = Edit(StoredPlanDocuments.Of(version), document => Remove(PlanInputs(document, 0), member));
 
         PlanStorage.Read(json).Book.Plans.Select(plan => plan.Readable).ShouldBe([false, true]);
     }
@@ -404,7 +404,7 @@ public class PlanStorageTests
     [InlineData(6, "5")]
     public void Read_planWhoseInputsAreNotAnObject_makesThatPlanUnreadable(int version, string inputs)
     {
-        var json = Edit(StoredPlanDocuments.Of(version), document => document["plans"]![0]!["inputs"] = JsonNode.Parse(inputs));
+        var json = Edit(StoredPlanDocuments.Of(version), document => Child(Child(document, "plans"), 0)["inputs"] = JsonNode.Parse(inputs));
 
         PlanStorage.Read(json).Book.Plans.Select(plan => plan.Readable).ShouldBe([false, true]);
     }
@@ -419,7 +419,7 @@ public class PlanStorageTests
     [InlineData(5)]
     public void Write_unreadablePlanOfAnOlderVersion_keepsItExactlyAsStored(int version)
     {
-        var json = Edit(StoredPlanDocuments.Of(version), document => document["plans"]![0]!["inputs"]!["carLease"] = 850);
+        var json = Edit(StoredPlanDocuments.Of(version), document => PlanInputs(document, 0)["carLease"] = 850);
 
         var rewritten = PlanStorage.Write(PlanStorage.Read(json).Book);
 
@@ -465,8 +465,11 @@ public class PlanStorageTests
     [Fact]
     public void Read_documentBeforeTheCar_holdsNoCarInAnyPlan()
     {
-        PlanStorage.Read(StoredPlanDocuments.Version1).Book.Plans
-            .ShouldAllBe(plan => !plan.Inputs!.InPlan(OptionalModule.Car) && plan.Inputs.Car == StoredPlanDocuments.SavedExample.Car);
+        var plans = PlanStorage.Read(StoredPlanDocuments.Version1).Book.Plans;
+
+        plans.ShouldSatisfyAllConditions(
+            () => plans.Select(plan => plan.Inputs?.InPlan(OptionalModule.Car)).ShouldAllBe(inPlan => inPlan == false),
+            () => plans.Select(plan => plan.Inputs?.Car).ShouldAllBe(car => car == StoredPlanDocuments.SavedExample.Car));
     }
 
     // Saved before the royalty, the plans of versions 1 and 2 hold none: out of the plan, its values as
@@ -476,8 +479,11 @@ public class PlanStorageTests
     [InlineData(2)]
     public void Read_documentBeforeTheRoyalty_holdsNoRoyaltyInAnyPlan(int version)
     {
-        PlanStorage.Read(StoredPlanDocuments.Of(version)).Book.Plans
-            .ShouldAllBe(plan => !plan.Inputs!.InPlan(OptionalModule.Copyright) && plan.Inputs.Copyright == StoredPlanDocuments.SavedExample.Copyright);
+        var plans = PlanStorage.Read(StoredPlanDocuments.Of(version)).Book.Plans;
+
+        plans.ShouldSatisfyAllConditions(
+            () => plans.Select(plan => plan.Inputs?.InPlan(OptionalModule.Copyright)).ShouldAllBe(inPlan => inPlan == false),
+            () => plans.Select(plan => plan.Inputs?.Copyright).ShouldAllBe(copyright => copyright == StoredPlanDocuments.SavedExample.Copyright));
     }
 
     // Saved before the calendar's input, the plans of versions 1 to 3 have nothing billed given.
@@ -487,8 +493,8 @@ public class PlanStorageTests
     [InlineData(3)]
     public void Read_documentBeforeTheBill_givesNothingBilledInAnyPlan(int version)
     {
-        PlanStorage.Read(StoredPlanDocuments.Of(version)).Book.Plans
-            .ShouldAllBe(plan => plan.Inputs!.BilledContributions == StoredPlanDocuments.NoneGiven);
+        PlanStorage.Read(StoredPlanDocuments.Of(version)).Book.Plans.Select(plan => plan.Inputs?.BilledContributions)
+            .ShouldAllBe(billed => billed == StoredPlanDocuments.NoneGiven);
     }
 
     // Saved before a royalty could follow the pay, a royalty the user gave opens fixed at it, as it was
@@ -498,7 +504,7 @@ public class PlanStorageTests
     [InlineData(4)]
     public void Read_documentBeforeTheRoyaltyCouldFollowThePay_opensARoyaltyGivenFixedAtItAndAnyOtherFollowingThePay(int version)
     {
-        PlanStorage.Read(StoredPlanDocuments.Of(version)).Book.Plans.Select(plan => plan.Inputs!.Copyright.FollowsPay)
+        PlanStorage.Read(StoredPlanDocuments.Of(version)).Book.Plans.Select(plan => plan.Inputs?.Copyright.FollowsPay)
             .ShouldBe([new Input<bool>(true, InputOrigin.Default), new Input<bool>(false, InputOrigin.Yours)]);
     }
 
@@ -511,8 +517,8 @@ public class PlanStorageTests
     [InlineData(5)]
     public void Read_documentBeforeThePrivateCost_givesNoPrivateCostInAnyPlan(int version)
     {
-        PlanStorage.Read(StoredPlanDocuments.Of(version)).Book.Plans
-            .ShouldAllBe(plan => plan.Inputs!.Car.PrivateCost == StoredPlanDocuments.NoneGiven);
+        PlanStorage.Read(StoredPlanDocuments.Of(version)).Book.Plans.Select(plan => plan.Inputs?.Car.PrivateCost)
+            .ShouldAllBe(cost => cost == StoredPlanDocuments.NoneGiven);
     }
 
     private static PlanBook Book(params (string Id, string Name, RiverInputs Inputs)[] plans) =>
@@ -526,10 +532,19 @@ public class PlanStorageTests
     }
 
     // The inputs of the plan at that place in a document.
-    private static JsonNode PlanInputs(string json, int index) => JsonNode.Parse(json)!["plans"]![index]!["inputs"]!;
+    private static JsonNode PlanInputs(string json, int index) => PlanInputs(JsonNode.Parse(json), index);
+
+    private static JsonNode PlanInputs(JsonNode? document, int index) => Child(Child(Child(document, "plans"), index), "inputs");
+
+    // The member of that name, or the element at that place, which the document has to hold.
+    private static JsonNode Child(JsonNode? parent, string name) =>
+        parent?[name] ?? throw new InvalidOperationException($"No \"{name}\" in the document.");
+
+    private static JsonNode Child(JsonNode? parent, int index) =>
+        parent?[index] ?? throw new InvalidOperationException($"No element {index} in the document.");
 
     // The member at a dotted path of a plan's inputs: « car.privateCost ».
-    private static JsonNode Member(JsonNode inputs, string path) => path.Split('.').Aggregate(inputs, (node, name) => node[name]!);
+    private static JsonNode Member(JsonNode inputs, string path) => path.Split('.').Aggregate(inputs, Child);
 
     private static void Put(JsonNode inputs, string path, JsonNode value)
     {
@@ -546,7 +561,7 @@ public class PlanStorageTests
     private static (JsonNode Parent, string Name) Parent(JsonNode inputs, string path)
     {
         var names = path.Split('.');
-        return (names[..^1].Aggregate(inputs, (node, name) => node[name]!), names[^1]);
+        return (names[..^1].Aggregate(inputs, Child), names[^1]);
     }
 
     private static Netto.Web.Client.DirectorPay.MunicipalityChoice Namur() =>
