@@ -133,7 +133,7 @@
     <value>Billed by your fund each quarter in {0}</value>
   </data>
   <data name="BilledHint" xml:space="preserve">
-    <value>The provisional contribution on your social insurance fund's notice. It rests on your income of three years before, revalued, so it can differ from what this year's income costs; the difference is regularised once your fund knows this year's income. Netto's figures use this year's.</value>
+    <value>The provisional contribution on your social insurance fund's notice, with its fee once you give its rate on Director pay. It rests on your income of three years before, revalued, so it can differ from what this year's income costs; the difference is regularised once your fund knows this year's income. Netto's figures use this year's.</value>
   </data>
   <data name="Regularisation_Pay" xml:space="preserve">
     <value>Once your fund knows this year's income: {0} more to pay, the regularisation.</value>

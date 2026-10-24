@@ -217,6 +217,32 @@ public class PaymentCalendarTests
             .ShouldBe((year.DirectorPay.SocialContributions, false, null, null));
     }
 
+    // The fund bills its fee with each quarter of the contributions (AR n° 38, art. 20 §4), each rounded
+    // to the cent, so a quarter is a quarter of both to the cent: 2,062.90 and 62.92 on 50,000 at 3.05%
+    // (GrossToNetFundFeeTests).
+    [Fact]
+    public void Of_feeRate_givesAQuarterOfTheContributionsAndTheFeeToTheCent()
+    {
+        var year = YearSimulation.Run(RiverExample with { FundFeeRate = 0.0305m }).Value.ShouldNotBeNull();
+
+        var contributions = PaymentCalendar.Of(year, On22October).ShouldNotBeNull().Contributions;
+
+        (contributions.EachQuarter, contributions.EachQuarter * 4).ShouldBe((2_062.90m + 62.92m, year.DirectorPay.SocialContributions + year.DirectorPay.FundFee));
+    }
+
+    // What the fund bills each quarter carries its fee, so the regularisation is against the year's
+    // contributions with theirs.
+    [Fact]
+    public void WithBilled_feeRate_regularisesAgainstTheContributionsAndTheFee()
+    {
+        var year = YearSimulation.Run(RiverExample with { FundFeeRate = 0.0305m }).Value.ShouldNotBeNull();
+        var calendar = PaymentCalendar.Of(year, On22October).ShouldNotBeNull();
+
+        var contributions = calendar.WithBilled(2_000m).Value.ShouldNotBeNull().Contributions;
+
+        contributions.Regularisation.ShouldBe(year.DirectorPay.SocialContributions + year.DirectorPay.FundFee - 8_000m);
+    }
+
     // A quarter is past once it has ended: the fourth is under way on 22 October.
     [Fact]
     public void Of_exampleOn22October_marksTheFirstThreeQuartersPast()

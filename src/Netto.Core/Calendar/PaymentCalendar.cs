@@ -98,13 +98,14 @@ public sealed record CalendarMonth(DateOnly Month, PayStatementMonth Pay, bool P
 }
 
 // INASTI's quarters of the year, each from its first day and past once ended, and a quarter of the
-// final contribution on the year's income, which INASTI bills as four rounded quarters
-// (SocialContributionCalculator.Billed), so four of them are the year's: what pays the year as it
-// goes. PaidByCompany when the company pays them on the director's behalf. Billed is what the fund
-// bills each quarter as provisional contributions, once the user gives it, and Regularisation what
-// the year's contributions leave over four of those, to pay when positive, refunded when negative,
-// once the fund knows the year's income; the day of each quarter's payment is not modelled. Source is
-// INASTI's leaflet, which gives both kinds of contribution.
+// final contribution on the year's income with the fund's fee on it, which the fund bills with it,
+// both as four rounded quarters (SocialContributionCalculator.Billed and Fee), so four of them are the
+// year's: what pays the year as it goes. PaidByCompany when the company pays them on the director's
+// behalf. Billed is what the fund bills each quarter as provisional contributions with their fee, once
+// the user gives it, and Regularisation what the year's contributions and fee leave over four of
+// those, to pay when positive, refunded when negative, once the fund knows the year's income; the day
+// of each quarter's payment is not modelled. Source is INASTI's leaflet, which gives both kinds of
+// contribution.
 public sealed record ContributionQuarters(
     IReadOnlyList<CalendarQuarter> Quarters, decimal EachQuarter, bool PaidByCompany, decimal? Billed, decimal? Regularisation, Source Source)
 {
@@ -119,7 +120,8 @@ public sealed record ContributionQuarters(
             .Select(from => new CalendarQuarter(from, from.AddMonths(3) <= today))
             .ToList();
 
-        return new ContributionQuarters(quarters, pay.SocialContributions / YearParts.Quarters, pay.ContributionsPaidByCompany > 0m, null, null, rules.Source);
+        return new ContributionQuarters(
+            quarters, (pay.SocialContributions + pay.FundFee) / YearParts.Quarters, pay.ContributionsPaidByCompany > 0m, null, null, rules.Source);
     }
 }
 
