@@ -64,6 +64,14 @@ public class TestSupportTests
         Declaring(@"\bclass\s+\w+[^{;]*:\s*[^{;]*\bTimeProvider\b").ShouldBeEmpty();
     }
 
+    // A component activator, which a static render takes to draw a component as a click would leave it: the
+    // one that opens every disclosure is OpenDisclosures, which more than one card's tests use.
+    [Fact]
+    public void TestSources_componentActivators_areDefinedOnlyInSupport()
+    {
+        Declaring(@"\bclass\s+\w+[^{;]*:\s*[^{;]*\bIComponentActivator\b").ShouldBeEmpty();
+    }
+
     // The test sources outside Support, and this file, whose patterns would match themselves.
     private static IEnumerable<(string Name, string Text)> Sources() =>
         Directory.EnumerateFiles(Folder, "*.cs", SearchOption.AllDirectories)

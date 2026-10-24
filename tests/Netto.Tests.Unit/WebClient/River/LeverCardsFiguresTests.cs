@@ -1,3 +1,8 @@
+using System.Net;
+using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.DependencyInjection;
+using Netto.Core.SocialContributions;
 using Netto.Web.Client.River;
 using Shouldly;
 
@@ -245,10 +250,29 @@ public class LeverCardsFiguresTests
     [Fact]
     public async Task CompanyYear_upperBand_drawsItsContributionAndWhatItLeaves()
     {
-        var html = await OpenCardAsync(Filled.With("the upper band", inputs => inputs.WithCompanyContributionBand(Netto.Core.SocialContributions.CompanyContributionBand.Upper)),
+        var html = await OpenCardAsync(Filled.With("the upper band", inputs => inputs.WithCompanyContributionBand(CompanyContributionBand.Upper)),
             "company-year");
 
         (CardHtml.LineAmounts(html).Single(), CardHtml.Amounts(CardHtml.Summary(html).ShouldNotBeNull())[1]).ShouldBe(("−€1,022.38", "€99,386.92"));
+    }
+
+    // « Your balance sheet » open, as « Change » leaves it (OpenDisclosures): three bands to choose from,
+    // the river's own pressed, under the year whose balance sheet sets the band, with a bubble naming what
+    // the law exempts.
+    [Theory]
+    [InlineData(CompanyContributionBand.Lower, "At most €879,163.44")]
+    [InlineData(CompanyContributionBand.Upper, "Above €879,163.44")]
+    [InlineData(CompanyContributionBand.Exempt, "Exempt")]
+    public async Task CompanyYear_balanceSheetOpen_offersTheThreeBandsWithTheRiversPressed(CompanyContributionBand band, string pressed)
+    {
+        var html = await CompanyYearOpenAsync(RiverInputs.Example.WithCompanyContributionBand(band));
+
+        var chips = Chips.Matches(html).Select(chip => (Text: chip.Groups["text"].Value, Pressed: chip.Groups["pressed"].Value == "true")).ToList();
+        html.ShouldSatisfyAllConditions(
+            () => chips.Select(chip => chip.Text).ShouldBe(["At most €879,163.44", "Above €879,163.44", "Exempt"]),
+            () => chips.Where(chip => chip.Pressed).Select(chip => chip.Text).ShouldBe([pressed]),
+            () => html.ShouldContain("Balance-sheet total of 2024"),
+            () => CardHtml.BubbleAfter(html, "Balance-sheet total of 2024").ShouldNotBeNullOrWhiteSpace());
     }
 
     // Where the river's amounts come from is said where the river starts, in the bubble after Company
@@ -302,6 +326,22 @@ public class LeverCardsFiguresTests
     }
 
     // The card of that fold's name on the Plan page, every card open.
+    // A chip MudBlazor draws: a button saying whether it is pressed, its text inside.
+    private static readonly Regex Chips = new(
+        "<button class=\"mud-chip[^\"]*\"[^>]*aria-pressed=\"(?<pressed>true|false)\"[^>]*><span class=\"mud-chip-content\">(?<text>[^<]*)</span>");
+
+    // Company year opened by the viewer on the river given, its disclosures open, decoded to the text a
+    // viewer reads.
+    private static async Task<string> CompanyYearOpenAsync(RiverInputs inputs)
+    {
+        var folds = new Folds(new BrowserStorage());
+        folds.Set("company-year", true);
+
+        return WebUtility.HtmlDecode(await RiverRendering.RenderAsync(typeof(CompanyYearCard), folds,
+            new() { ["Inputs"] = inputs, ["Run"] = inputs.Run(), ["Refused"] = null },
+            services => services.AddSingleton<IComponentActivator>(new OpenDisclosures())));
+    }
+
     private static async Task<string> OpenCardAsync(NamedRiver river, string card) => CardHtml.Card(await CardHtml.RenderPlanOpenAsync(river.Inputs), card);
 
     // An amount without the sign a line gives what it takes or what comes back: −€400.00 is €400.00.

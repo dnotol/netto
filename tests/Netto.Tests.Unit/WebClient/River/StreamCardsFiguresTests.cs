@@ -391,19 +391,5 @@ public class StreamCardsFiguresTests
         return folds;
     }
 
-    // Draws every disclosure open, as « Change » leaves it, which no click can do in a render without a
-    // browser: Blazor builds each component through this activator, and a disclosure starts open.
-    private sealed class OpenDisclosures : IComponentActivator
-    {
-        public IComponent CreateInstance(Type componentType) => componentType == typeof(Disclosure)
-            ? new OpenDisclosure()
-            : Activator.CreateInstance(componentType) as IComponent ?? throw new InvalidOperationException($"{componentType.Name} is no component.");
-    }
-
-    private sealed class OpenDisclosure : Disclosure
-    {
-        public OpenDisclosure() => OpenByDefault = true;
-    }
-
     private static string Unsigned(string amount) => amount.TrimStart('−', '+');
 }
