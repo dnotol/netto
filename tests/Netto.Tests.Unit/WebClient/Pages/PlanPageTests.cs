@@ -151,41 +151,36 @@ public class PlanPageTests
         (buckets.Distinct().Count(), buckets[0].Contains(Formats.Euros(pocket))).ShouldBe((1, true));
     }
 
-    // Once a plan is starred Today, Optimisation says what its moves add, short after its name and in
-    // full for a screen reader.
+    // The page draws before it looks for the moves, which it does once the browser has painted what it
+    // drew (PlanMovesSearchTests): on first load Optimisation says it is looking for them, short after its
+    // name and in full for a screen reader, whether a plan is starred Today or not.
     [Fact]
-    public async Task Plan_withToday_badgesOptimisationWithWhatTheMovesAdd()
+    public async Task Plan_firstDrawWithToday_badgesOptimisationAsLookingForMoves()
     {
-        var total = MovesView.Of(RiverInputs.Example, DateOnly.FromDateTime(On23October.DateTime)).Total;
-
         var html = await RenderPlanAsync(new Folds(new BrowserStorage()), today: RiverInputs.Example);
 
         var optimisation = Links(html).Single(link => link.Name == "Optimisation");
-        (optimisation.Badge, optimisation.Spoken).ShouldBe((Formats.Addition(total), $"{Formats.Euros(total)} more than Today"));
+        (optimisation.Badge, optimisation.Spoken).ShouldBe(("…", "looking for moves"));
     }
 
-    // While no plan is starred Today, the moves are from the plan in the river, here the example the page
-    // opens on: Optimisation says what they add to it.
     [Fact]
-    public async Task Plan_withoutToday_badgesOptimisationWithWhatTheMovesFromThePlanAdd()
+    public async Task Plan_firstDrawWithoutToday_badgesOptimisationAsLookingForMoves()
     {
-        var total = MovesView.Of(new MovesBaseline(RiverInputs.Example, IsToday: false), DateOnly.FromDateTime(On23October.DateTime)).Total;
-
         var html = await RenderPlanAsync(new Folds(new BrowserStorage()));
 
         var optimisation = Links(html).Single(link => link.Name == "Optimisation");
-        (optimisation.Badge, optimisation.Spoken).ShouldBe((Formats.Addition(total), $"{Formats.Euros(total)} more than the plan in your river"));
+        (optimisation.Badge, optimisation.Spoken).ShouldBe(("…", "looking for moves"));
     }
 
+    // On the Optimisation tab, the head says which plan the moves are from, here the example the page opens
+    // on, and the line that opens them once found says the page is looking for them, with no move yet.
     [Fact]
-    public async Task Plan_optimisationTabWithoutToday_showsTheMovesFromThePlanInTheRiver()
+    public async Task Plan_optimisationTabWithoutTodayFirstDrawn_looksForTheMovesFromThePlanInTheRiver()
     {
-        var moves = MovesView.Of(new MovesBaseline(RiverInputs.Example, IsToday: false), DateOnly.FromDateTime(On23October.DateTime)).Moves;
-
         var html = WebUtility.HtmlDecode(await RenderPlanAsync(new Folds(new BrowserStorage()), "optimisation"));
 
-        (Paragraph(html, "tab-head__eyebrow"), Paragraph(html, "moves__state"), moves.Count > 0, Regex.Count(html, "<li class=\"moves__move\""))
-            .ShouldBe(("Against the plan in your river", "From the plan in your river, as you opened or saved it:", true, moves.Count));
+        (Paragraph(html, "tab-head__eyebrow"), Paragraph(html, "moves__state"), Regex.Count(html, "<li class=\"moves__move\""))
+            .ShouldBe(("Against the plan in your river", "Looking for the moves from the plan in your river, as you opened or saved it…", 0));
     }
 
     // Today deleted, the river on the plan it was opened from: the moves are from that plan, by its name.
@@ -198,7 +193,7 @@ public class PlanPageTests
             saved: [RiverInputs.Example, opened], withoutToday: true));
 
         (Paragraph(html, "tab-head__eyebrow"), Paragraph(html, "moves__state"))
-            .ShouldBe(("Against « Plan 2 », the plan in your river", "From « Plan 2 », as you opened or saved it:"));
+            .ShouldBe(("Against « Plan 2 », the plan in your river", "Looking for the moves from « Plan 2 », as you opened or saved it…"));
     }
 
     // Once a plan is starred Today, the moves are from it, as the tab says.
@@ -208,7 +203,23 @@ public class PlanPageTests
         var html = WebUtility.HtmlDecode(await RenderPlanAsync(new Folds(new BrowserStorage()), "optimisation", RiverInputs.Example.WithDirectorPay(40_000m),
             today: RiverInputs.Example));
 
-        (Paragraph(html, "tab-head__eyebrow"), Paragraph(html, "moves__state")).ShouldBe(("Against Today, your current setup", "From Today, your current setup:"));
+        (Paragraph(html, "tab-head__eyebrow"), Paragraph(html, "moves__state"))
+            .ShouldBe(("Against Today, your current setup", "Looking for the moves from Today, your current setup…"));
+    }
+
+    // That the page looks for the moves is said in no live region: the bar's says nothing yet, the notice of
+    // a module taken out nothing, and neither the tabs nor the tab's line are one.
+    [Fact]
+    public async Task Plan_firstDraw_saysTheSearchInNoLiveRegion()
+    {
+        var html = await RenderPlanAsync(new Folds(new BrowserStorage()), "optimisation");
+
+        var said = Regex.Match(html, "<nav [^>]*aria-label=\"Your plan\".*?</nav>", RegexOptions.Singleline).Value
+            + Regex.Match(html, "<section [^>]*class=\"plan-tab\".*?</section>", RegexOptions.Singleline).Value;
+        (Regex.IsMatch(html, "<p class=\"bucket-bar__live\"[^>]*>\\s*</p>"), Regex.IsMatch(html, "<div class=\"taken-out\" role=\"status\"[^>]*>\\s*</div>"),
+                said.Contains("looking for moves", StringComparison.Ordinal), said.Contains("Looking for the moves", StringComparison.Ordinal),
+                Regex.IsMatch(said, "aria-live|role=\"(status|alert)\""))
+            .ShouldBe((true, true, true, true, false));
     }
 
     // When to pay says the next advance payment's day, on every tab.

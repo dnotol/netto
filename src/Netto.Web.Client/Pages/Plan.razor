@@ -60,7 +60,7 @@
             @switch (_tab)
             {
                 case PlanTab.Optimisation:
-                    <OptimisationTab From="_moves.Baseline" Found="_moves.Found(Today)" Inputs="_inputs" InputsChanged="OnInputsChanged" />
+                    <OptimisationTab From="_moves.Baseline" Searching="_moves.Searching(Today)" Found="_moves.Found(Today)" Inputs="_inputs" InputsChanged="OnInputsChanged" />
                     break;
                 case PlanTab.WhenToPay:
                     <WhenToPayTab Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Date="Today" />
@@ -234,6 +234,12 @@ else
             _focusComposition = false;
             await _composition.FocusButtonAsync();
         }
+
+        // The moves' search runs the year a thousand times or more on the page's one thread, so it waits
+        // until the browser has painted what the page drew, the bar, the river and Optimisation saying it
+        // looks for them (plan-paint.js), then the page draws what it found (MovesSource).
+        if (await _moves.SearchOncePaintedAsync(Today, () => JS.InvokeVoidAsync("nettoPaint.after")))
+            StateHasChanged();
     }
 
     // A module taken out shows the notice. Taken out from its card, the word that did it is gone with
@@ -303,7 +309,8 @@ else
 
     // What each tab says after its name, from what its content draws: the Optimisation tab's moves, which
     // its badge needs on every tab, found once per plan they are from and date (MovesSource), since the
-    // search runs the split at every move.
+    // search runs the split at every move, and only after the page has painted: until then the badge says
+    // they are being looked for.
     private IReadOnlyDictionary<PlanTab, TabBadge> Badges() =>
         TabBadges.Of(_run, _moves.View(Today), CalendarView.From(_inputs, _run, Today), Plans.Plans.Count(plan => plan.Readable));
 
