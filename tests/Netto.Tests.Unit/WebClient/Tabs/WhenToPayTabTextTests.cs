@@ -32,6 +32,25 @@ public class WhenToPayTabTextTests
             .ShouldBeEmpty();
     }
 
+    // The quarter's line says who pays it and, once a fund fee is given, that the fee is in it, which
+    // Director pay draws apart from the contributions.
+    [Theory]
+    [InlineData(false, 0, "ContributionsLine")]
+    [InlineData(true, 0, "ContributionsLine_Company")]
+    [InlineData(false, 62.92, "ContributionsLine_WithFee")]
+    [InlineData(true, 75.81, "ContributionsLine_Company_WithFee")]
+    public void Contributions_payerAndFee_isTheLineThatSaysThem(bool paidByCompany, double fee, string expected)
+    {
+        var quarters = new Netto.Core.Calendar.ContributionQuarters([], 2_125.82m, paidByCompany, null, null, Netto.Core.SocialContributions.SocialContributionRules.IncomeYear2026.Source)
+        {
+            FundFeeEachQuarter = (decimal)fee,
+        };
+
+        var key = WhenToPayTabText.Contributions(quarters);
+
+        (key, Resources.Get(key) is not null).ShouldBe((expected, true));
+    }
+
     // The tab passes the date, the company's amount, the director's and the income year, in that
     // order; no amount on either side is no row still open.
     [Theory]

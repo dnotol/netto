@@ -1,3 +1,4 @@
+using Netto.Core.Calendar;
 using Netto.Web.Client.River;
 
 namespace Netto.Web.Client.Tabs;
@@ -17,6 +18,16 @@ internal static class WhenToPayTabText
     public static string CompanyBalance(decimal balance) => $"CompanyBalance_{Balance(balance)}";
 
     public static string DirectorBalance(decimal balance) => $"DirectorBalance_{Balance(balance)}";
+
+    // A quarter of the year's contributions: who pays it, and, once a fund fee is given, that the fee is
+    // in it.
+    public static string Contributions(ContributionQuarters contributions) => (contributions.PaidByCompany, contributions.FundFeeEachQuarter > 0m) switch
+    {
+        (false, false) => "ContributionsLine",
+        (true, false) => "ContributionsLine_Company",
+        (false, true) => "ContributionsLine_WithFee",
+        (true, true) => "ContributionsLine_Company_WithFee",
+    };
 
     // What the year's contributions leave over what the fund bills: more to pay, back, or nothing.
     public static string Regularisation(decimal regularisation) => $"Regularisation_{Balance(regularisation)}";

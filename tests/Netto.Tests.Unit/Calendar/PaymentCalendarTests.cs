@@ -230,6 +230,18 @@ public class PaymentCalendarTests
         (contributions.EachQuarter, contributions.EachQuarter * 4).ShouldBe((2_062.90m + 62.92m, year.DirectorPay.SocialContributions + year.DirectorPay.FundFee));
     }
 
+    // The quarter says how much of it is the fee, for When to pay to say the fee is in it; nothing without
+    // a rate.
+    [Theory]
+    [InlineData(null, 0)]
+    [InlineData(0.0305, 62.92)]
+    public void Of_feeRateOrNone_saysTheFeeInEachQuarter(double? rate, double fee)
+    {
+        var year = YearSimulation.Run(RiverExample with { FundFeeRate = (decimal?)rate }).Value.ShouldNotBeNull();
+
+        PaymentCalendar.Of(year, On22October).ShouldNotBeNull().Contributions.FundFeeEachQuarter.ShouldBe((decimal)fee);
+    }
+
     // What the fund bills each quarter carries its fee, so the regularisation is against the year's
     // contributions with theirs.
     [Fact]

@@ -109,6 +109,9 @@ public sealed record CalendarMonth(DateOnly Month, PayStatementMonth Pay, bool P
 public sealed record ContributionQuarters(
     IReadOnlyList<CalendarQuarter> Quarters, decimal EachQuarter, bool PaidByCompany, decimal? Billed, decimal? Regularisation, Source Source)
 {
+    // How much of each quarter is the fund's fee, nothing without its rate.
+    public decimal FundFeeEachQuarter { get; init; }
+
     // Null for a year without social contribution rules.
     internal static ContributionQuarters? Of(GrossToNetResult pay, DateOnly today)
     {
@@ -121,7 +124,10 @@ public sealed record ContributionQuarters(
             .ToList();
 
         return new ContributionQuarters(
-            quarters, (pay.SocialContributions + pay.FundFee) / YearParts.Quarters, pay.ContributionsPaidByCompany > 0m, null, null, rules.Source);
+            quarters, (pay.SocialContributions + pay.FundFee) / YearParts.Quarters, pay.ContributionsPaidByCompany > 0m, null, null, rules.Source)
+        {
+            FundFeeEachQuarter = pay.FundFee / YearParts.Quarters,
+        };
     }
 }
 

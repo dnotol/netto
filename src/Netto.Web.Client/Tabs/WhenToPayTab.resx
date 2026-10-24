@@ -126,6 +126,12 @@
   <data name="ContributionsLine_Company" xml:space="preserve">
     <value>Each quarter: {0} on this year's income, paid by the company on your behalf.</value>
   </data>
+  <data name="ContributionsLine_WithFee" xml:space="preserve">
+    <value>Each quarter: {0} on this year's income, your fund's fee in it, which pays the year's contributions as it goes.</value>
+  </data>
+  <data name="ContributionsLine_Company_WithFee" xml:space="preserve">
+    <value>Each quarter: {0} on this year's income, your fund's fee in it, paid by the company on your behalf.</value>
+  </data>
   <data name="QuartersLeft" xml:space="preserve">
     <value>Quarters still to come in {1}: {0} of 4.</value>
   </data>

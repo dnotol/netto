@@ -87,7 +87,7 @@
         }
 
         <h2 class="calendar__heading">@L["ContributionsHeading"]</h2>
-        <p class="calendar__line">@L[_view.Contributions.PaidByCompany ? "ContributionsLine_Company" : "ContributionsLine", Formats.Euros(_view.Contributions.EachQuarter)]</p>
+        <p class="calendar__line">@L[WhenToPayTabText.Contributions(_view.Contributions), Formats.Euros(_view.Contributions.EachQuarter)]</p>
         @if (_view.QuartersLeft > 0)
         {
             <p class="calendar__note">@L["QuartersLeft", _view.QuartersLeft, _view.IncomeYear]</p>
