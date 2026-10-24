@@ -161,6 +161,23 @@ public class CopyrightViewTests
         CopyrightComparison.From(inputs, inputs.Run()).ShouldBeNull();
     }
 
+    // Each plan's figures are the bar's buckets for it: with a car, a rent and the royalty, its tax apart
+    // and the rent's in the taxes on pay, and without the royalty, the same plan as the bar draws it.
+    [Fact]
+    public void Comparison_carRentAndRoyalty_holdsWhatTheBarSumsForEachPlan()
+    {
+        var inputs = Within.AddToPlan(OptionalModule.Rent).WithCadastralIncome(1_200m).WithShareLet(0.12m).WithRent(1_380m)
+            .AddToPlan(OptionalModule.Car).WithCatalogueValue(50_000m).WithFirstRegistration(new DateOnly(2026, 1, 10)).WithCarCosts(8_000m);
+        var with = BucketsView.From(inputs.Run()).ShouldNotBeNull();
+        var without = BucketsView.From(inputs.TakeOutOfPlan(OptionalModule.Copyright).Run()).ShouldNotBeNull();
+
+        var comparison = CopyrightComparison.From(inputs, inputs.Run()).ShouldNotBeNull();
+
+        comparison.ShouldBe(new CopyrightComparison(
+            with.AmountOf("pocket"), without.AmountOf("pocket"), with.AmountOf("taxes_on_pay"), without.AmountOf("taxes_on_pay"),
+            with.AmountOf("taxes_on_profit"), without.AmountOf("taxes_on_profit")));
+    }
+
     // With the royalty in the plan, the rent passes on to the split what the pay and the royalty share
     // there, the royalty still in it.
     [Fact]

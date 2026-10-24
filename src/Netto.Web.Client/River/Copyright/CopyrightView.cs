@@ -54,10 +54,11 @@ internal sealed record CopyrightView(
 }
 
 // The plan with its royalty against the same plan without it, at the pay set: what reaches the pocket
-// in each, and what goes to taxes on pay and on profit. Without the royalty the company keeps it, its
-// tax and the dividend's take their share, and what is left reaches the pocket as the dividend. Gain is
-// what the royalty leaves in the pocket more. Two runs of the year, the second the river with the
-// royalty out of the plan; none until a royalty counts, or while the engine refuses an amount.
+// in each, and what goes to taxes on pay and on profit, as the bar of buckets draws each plan
+// (BucketsView). Without the royalty the company keeps it, its tax and the dividend's take their share,
+// and what is left reaches the pocket as the dividend. Gain is what the royalty leaves in the pocket
+// more. Two runs of the year, the second the river with the royalty out of the plan; none until a
+// royalty counts, or while the engine refuses an amount.
 internal sealed record CopyrightComparison(
     decimal PocketWith,
     decimal PocketWithout,
@@ -70,23 +71,15 @@ internal sealed record CopyrightComparison(
 
     public static CopyrightComparison? From(RiverInputs inputs, RiverRun run)
     {
-        if (run.Error is not null || run.Year is not { Scenario.Copyright.Any: true } with)
+        if (run.Error is not null || run.Year is not { Scenario.Copyright.Any: true })
             return null;
-        if (inputs.TakeOutOfPlan(OptionalModule.Copyright).Run().Year is not { } without)
+        if (BucketsView.From(run) is not { } with || BucketsView.From(inputs.TakeOutOfPlan(OptionalModule.Copyright).Run()) is not { } without)
             return null;
 
         return new CopyrightComparison(
-            with.NetInPocket, without.NetInPocket, TaxesOnPay(with), TaxesOnPay(without), TaxesOnProfit(with), TaxesOnProfit(without));
+            with.AmountOf("pocket"), without.AmountOf("pocket"), with.AmountOf("taxes_on_pay"), without.AmountOf("taxes_on_pay"),
+            with.AmountOf("taxes_on_profit"), without.AmountOf("taxes_on_profit"));
     }
-
-    // As the bar of buckets sums them (BucketsView).
-    private static decimal TaxesOnPay(YearResult year) =>
-        PaidOut(year, TaxableEvent.DirectorPay) + PaidOut(year, TaxableEvent.Rent) + PaidOut(year, TaxableEvent.CopyrightRoyalty);
-
-    private static decimal TaxesOnProfit(YearResult year) => PaidOut(year, TaxableEvent.CompanyProfit) + PaidOut(year, TaxableEvent.Dividend);
-
-    private static decimal PaidOut(YearResult year, TaxableEvent taxableEvent) =>
-        year.Steps.Where(step => step.Event == taxableEvent && step.Track == Track.PaidOut).Sum(step => step.Amount);
 
     // A plain zero when the two are the same, never a negative one.
     private static decimal Difference(decimal more, decimal less) => more == less ? 0m : more - less;

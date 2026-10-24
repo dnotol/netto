@@ -106,8 +106,8 @@ internal sealed record CarComparison(decimal PocketWith, decimal PocketWithout, 
         };
     }
 
-    private static decimal TaxesOnPay(YearResult year) =>
-        year.Steps.Where(step => step.Event == TaxableEvent.DirectorPay && step.Track == Track.PaidOut).Sum(step => step.Amount);
+    // The pay's own taxes, where the car's benefit is taxed with it.
+    private static decimal TaxesOnPay(YearResult year) => BucketsView.PaidOut(year.Steps, TaxableEvent.DirectorPay);
 
     // A plain zero when the two are the same, never a negative one.
     private static decimal Difference(decimal more, decimal less) => more == less ? 0m : more - less;

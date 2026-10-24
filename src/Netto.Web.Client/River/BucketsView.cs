@@ -31,7 +31,7 @@ internal sealed record BucketsView(
 
     // What reaches the pocket out of what leaves the company: what the river starts from less what the
     // company keeps at year end, which is still the director's. None where the bar draws no shares.
-    public decimal? Reach => Drawn ? Shares.Of(AmountOf("pocket"), Leaves) : null;
+    public decimal? Reach => Drawn ? ReachOf(Start, AmountOf("pocket"), AmountOf("kept_in_company")) : null;
 
     // The rest of it went to taxes: the whole less the reach as the bar rounds it, so the two read as
     // the whole.
@@ -41,6 +41,10 @@ internal sealed record BucketsView(
     // of, the split's included (SplitSearchView): what the company earns before it pays its director
     // anything, less what its car costs it, plus the profits kept from earlier years.
     public static decimal StartOf(YearResult year) => year.Scenario.ProfitBeforeDirector - year.Car.Costs + year.Scenario.EarlierProfits;
+
+    // What reaches the pocket out of what leaves the company, the start less what it keeps: the bar's
+    // reach, and the split's at each pay. None where nothing leaves it.
+    internal static decimal? ReachOf(decimal start, decimal pocket, decimal kept) => Shares.Of(pocket, start - kept);
 
     public static BucketsView? From(RiverRun run)
     {
@@ -77,14 +81,14 @@ internal sealed record BucketsView(
 
     private bool Drawn => Buckets.All(bucket => bucket.Share is not null);
 
-    private decimal Leaves => Start - AmountOf("kept_in_company");
-
     // What a bucket holds, by its key; the Compare plans tab reads its columns through it.
     internal decimal AmountOf(string key) => Buckets.Single(bucket => bucket.Key == key).Amount;
 
     private static decimal Rounded(decimal share) => Math.Round(share, 2, MidpointRounding.AwayFromZero);
 
-    private static decimal PaidOut(IReadOnlyList<Step> steps, TaxableEvent taxableEvent) =>
+    // What an event's steps pay out, a step coming back counting against it: the sum every bucket of
+    // taxes is made of, and a comparison of two plans reads.
+    internal static decimal PaidOut(IReadOnlyList<Step> steps, TaxableEvent taxableEvent) =>
         steps.Where(step => step.Event == taxableEvent && step.Track == Track.PaidOut).Sum(step => step.Amount);
 }
 

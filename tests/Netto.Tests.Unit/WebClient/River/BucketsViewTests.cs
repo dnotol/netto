@@ -39,6 +39,26 @@ public class BucketsViewTests
         });
     }
 
+    // What reaches the pocket out of what leaves the company, the start less what it keeps there; none
+    // where nothing leaves it.
+    [Fact]
+    public void ReachOf_whatLeavesTheCompany_isThePocketsShareOfIt()
+    {
+        (BucketsView.ReachOf(100_000m, 60_000m, 20_000m), BucketsView.ReachOf(100_000m, 0m, 100_000m)).ShouldBe(((decimal?)0.75m, (decimal?)null));
+    }
+
+    // The example's steps paid out on the pay are its taxes on pay, 20,420.70, and the company's its tax
+    // and surcharge, 10,675; the vouchers reach the pocket and pay nothing out, what the company cannot
+    // deduct of them only joining its taxable income.
+    [Fact]
+    public void PaidOut_steps_sumsWhatTheEventsStepsPayOut()
+    {
+        var steps = RiverInputs.Example.AddToPlan(OptionalModule.Vouchers).WithMealVoucherDays(220).Run().Year.ShouldNotBeNull().Steps;
+
+        (BucketsView.PaidOut(steps, TaxableEvent.DirectorPay), BucketsView.PaidOut(steps, TaxableEvent.CompanyProfit), BucketsView.PaidOut(steps, TaxableEvent.Vouchers))
+            .ShouldBe((20_420.70m, 9_824m + 663.12m, 0m));
+    }
+
     // At the best pay the tax credit for low earned income comes back out of the taxes on pay:
     // contributions 3,561.68, income tax 1,292.58 and surcharge 90.48, less 910. Taxes on profit are
     // corporate tax 19,800.25, its advance-payment surcharge 1,336.52 and withholding 10,451.56 on the

@@ -227,7 +227,7 @@ internal sealed record SplitSearchView(PayCurveView Curve, BestPayView? Best, Ra
                 level,
                 level.NetInPocket - year.NetInPocket,
                 year.KeepsReserve,
-                Shares.Of(level.NetInPocket, start - level.KeptInCompany))
+                BucketsView.ReachOf(start, level.NetInPocket, level.KeptInCompany))
             : null;
 
         return new SplitSearchView(
@@ -235,7 +235,7 @@ internal sealed record SplitSearchView(PayCurveView Curve, BestPayView? Best, Ra
             best,
             best is null ? null : RateWeighing.From(search, best.Level),
             search.Curve.Max(level => level.KeptInCompany),
-            Shares.Of(year.NetInPocket, start - year.KeptInCompany)) { Benefits = year.DirectorPay.BenefitInKind };
+            BucketsView.ReachOf(start, year.NetInPocket, year.KeptInCompany)) { Benefits = year.DirectorPay.BenefitInKind };
     }
 }
 

@@ -239,6 +239,20 @@ public class SplitSearchViewTests
         (best.Level.Pay, best.Level.NetInPocket, best.Gain).ShouldBe((20_799m, 64_526.87m, 2_551.13m));
     }
 
+    // What reaches the pocket at the pay set is the bar's reach, out of what leaves the company once its
+    // car is paid, what it keeps left out: here with a car, a rent, a royalty and a reserve.
+    [Fact]
+    public void CarRentRoyaltyAndReserve_reachAtThePaySetIsTheBars()
+    {
+        var inputs = Example.WithReserve(5_000m)
+            .AddToPlan(OptionalModule.Rent).WithCadastralIncome(1_200m).WithShareLet(0.12m).WithRent(1_380m)
+            .AddToPlan(OptionalModule.Car).WithCatalogueValue(50_000m).WithFirstRegistration(new DateOnly(2026, 1, 10)).WithCarCosts(8_000m)
+            .AddToPlan(OptionalModule.Copyright).WithRoyalty(10_000m);
+        var bar = BucketsView.From(inputs.Run()).ShouldNotBeNull();
+
+        (View(inputs).Reach, bar.AmountOf("kept_in_company") > 0m).ShouldBe((bar.Reach, true));
+    }
+
     private static SplitSearchView? From(RiverInputs inputs) => SplitSearchView.From(inputs, inputs.Run(), inputs.SearchSplit());
 
     private static SplitSearchView View(RiverInputs inputs) => From(inputs).ShouldNotBeNull();
