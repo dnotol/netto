@@ -5,27 +5,29 @@ namespace Netto.Core.DirectorPay;
 
 // The pay of a director living in Region, taxed by that region's rules for IncomeYear. GrossPay is the
 // pay on the payslip, the pay the split moves, and SocialContributions the contributions on it whoever
-// pays them. When the company pays them on the director's behalf they are
-// ContributionsPaidByCompany, nothing when the director does, and they are pay too: TaxablePay, what
-// the director declares, is the gross plus them, and so is CompanyCost, what the pay takes out of the
-// company. Both are the gross itself when the director pays. BenefitInKind is a benefit taxed as pay
-// and never paid, a company car's, nothing without one: it is in TaxablePay, never in CompanyCost nor
-// in NetInPocket. Steps is the ledger of the year's rules on the pay; Statement, the pay as the
-// director sees it month by month, and Assessment, the balance the year's tax return leaves, are
-// records beside the ledger, not steps. The pay's figures, its taxes, its credit, its net and its
-// steps, are the pay's taken alone; OtherIncomeTax is what the income taxed with it adds to the year's
-// tax, and the year's figures, AdvancePayments with its suggested payment, NextThousand and Assessment,
-// are on the whole income. RequalifiedPay is movable income taxed as pay, paid besides the payslip: in
-// TaxablePay, the pay's taxes and its net, never in CompanyCost nor in the statement's withholding;
-// TaxablePayWithoutRequalified is the taxable pay as it would be without it, what art. 215's minimum
-// pay reads. TaxedApartTax is what an income taxed apart adds to the year's tax on top of the pay and
-// the rent.
+// pays them; FundFee is the social insurance fund's management fee on them, nothing without its rate,
+// deducted with them as the director's own. When the company pays them on the director's behalf, the
+// contributions and the fee are ContributionsPaidByCompany, nothing when the director does, and they are
+// pay too: TaxablePay, what the director declares, is the gross plus them, and so is CompanyCost, what
+// the pay takes out of the company. Both are the gross itself when the director pays. BenefitInKind is
+// a benefit taxed as pay and never paid, a company car's, nothing without one: it is in TaxablePay,
+// never in CompanyCost nor in NetInPocket. Steps is the ledger of the year's rules on the pay;
+// Statement, the pay as the director sees it month by month, and Assessment, the balance the year's tax
+// return leaves, are records beside the ledger, not steps. The pay's figures, its taxes, its credit,
+// its net and its steps, are the pay's taken alone; OtherIncomeTax is what the income taxed with it
+// adds to the year's tax, and the year's figures, AdvancePayments with its suggested payment,
+// NextThousand and Assessment, are on the whole income. RequalifiedPay is movable income taxed as pay,
+// paid besides the payslip: in TaxablePay, the pay's taxes and its net, never in CompanyCost nor in the
+// statement's withholding; TaxablePayWithoutRequalified is the taxable pay as it would be without it,
+// what art. 215's minimum pay reads. TaxedApartTax is what an income taxed apart adds to the year's tax
+// on top of the pay and the rent.
 public sealed record GrossToNetResult(
     int IncomeYear,
     Region Region,
     decimal GrossPay,
     decimal MunicipalRate,
     decimal SocialContributions,
+    decimal FundFee,
     decimal ContributionsPaidByCompany,
     decimal BenefitInKind,
     decimal TaxablePay,
@@ -69,10 +71,11 @@ public sealed record OtherIncomeTax(
 
 // Where the next 1,000 of gross pay goes in the year: with an income taxed with the pay, the taxes
 // and the credit are the whole income's, so what the next 1,000 does to that income's tax is in them,
-// and the pocket's part is net of it. The six parts add up to 1,000 when the director pays the
-// contributions. When the company pays them, SocialContributions is what the next 1,000 adds to them,
+// and the pocket's part is net of it. The parts add up to 1,000 when the director pays the
+// contributions, FundFee being what the next 1,000 adds to the fund's fee, nothing without its rate.
+// When the company pays them, SocialContributions and FundFee are what the next 1,000 adds to them,
 // which the company bears on top and the pocket never loses: the other five parts add up to 1,000,
-// and all six to what the next 1,000 costs the company. LowEarnedIncomeCredit is the credit the next
+// and all of them to what the next 1,000 costs the company. LowEarnedIncomeCredit is the credit the next
 // 1,000 loses where the credit falls, and a negative part where it rises: the pocket then gains more
 // than the 1,000. AdvancePayments is the surcharge it adds, less the bonus it adds, with the same
 // advance payments and the same amount withheld, or, when the key formula gives it, the formula's
@@ -83,4 +86,7 @@ public sealed record NextThousand(
     decimal MunicipalSurcharge,
     decimal LowEarnedIncomeCredit,
     decimal AdvancePayments,
-    decimal NetInPocket);
+    decimal NetInPocket)
+{
+    public decimal FundFee { get; init; }
+}

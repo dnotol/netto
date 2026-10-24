@@ -67,7 +67,7 @@ public static class YearSimulation
 
         var (pay, payError) = GrossToNet.Compute(
             scenario.IncomeYear, scenario.DirectorPay, scenario.MunicipalRate, scenario.TaxPrepayments, scenario.ContributionsPaidBy, besidesPay.TaxedWithPay,
-            scenario.Region);
+            scenario.Region, null);
         if (pay is null)
             return (null, payError);
 
@@ -181,7 +181,7 @@ public static class YearSimulation
             return null;
         if (GrossToNet.Level(
                 scenario.IncomeYear, scenario.DirectorPay, scenario.MunicipalRate.Value, scenario.TaxPrepayments, scenario.ContributionsPaidBy, besidesPay.TaxedWithPay,
-                scenario.Region)
+                scenario.Region, null)
             is not { } pay)
             return null;
 
@@ -246,7 +246,7 @@ public static class YearSimulation
             return null;
 
         return scenario.ContributionsPaidBy == ContributionsPaidBy.Company
-            ? GrossToNet.SmallestGrossPayWithTaxablePay(scenario.IncomeYear, taxablePay, ceiling, benefit, scenario.Region)
+            ? GrossToNet.SmallestGrossPayWithTaxablePay(scenario.IncomeYear, taxablePay, ceiling, benefit, scenario.Region, null)
             : taxablePay <= ceiling ? taxablePay : null;
     }
 

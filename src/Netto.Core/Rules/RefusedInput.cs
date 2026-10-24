@@ -58,6 +58,9 @@ public enum RefusedInput
     // The gross pay on the payslip, and the key formula's month of it.
     DirectorPay,
 
+    // The rate of the social insurance fund's management fee.
+    FundFeeRate,
+
     MunicipalRate,
 
     TaxWithheld,

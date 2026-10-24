@@ -613,7 +613,7 @@ internal static class RiverErrors
         RefusedInput.Royalty => RiverModule.Split,
         RefusedInput.CreativeShare => RiverModule.Copyright,
         RefusedInput.DirectorPay => companySkipped ? RiverModule.DirectorPay : RiverModule.Split,
-        RefusedInput.MunicipalRate or RefusedInput.TaxWithheld or RefusedInput.DirectorAdvancePayments => RiverModule.DirectorPay,
+        RefusedInput.FundFeeRate or RefusedInput.MunicipalRate or RefusedInput.TaxWithheld or RefusedInput.DirectorAdvancePayments => RiverModule.DirectorPay,
         RefusedInput.CompanyAdvancePayments => RiverModule.CorporateTax,
         RefusedInput.Reserve or RefusedInput.EarlierProfits => RiverModule.Dividend,
         RefusedInput.BilledContributions => RiverModule.River,

@@ -41,6 +41,8 @@ public class RiverErrorsTests
         (WithholdingCalculator.MonthlyPayNegative, true, "DirectorPay"),
         (GrossToNet.MunicipalRateOutOfRange, false, "DirectorPay"),
         (GrossToNet.MunicipalRateOutOfRange, true, "DirectorPay"),
+        (GrossToNet.FundFeeRateOutOfRange, false, "DirectorPay"),
+        (GrossToNet.FundFeeRateOutOfRange, true, "DirectorPay"),
         (GrossToNet.TaxWithheldNegative, false, "DirectorPay"),
         (GrossToNet.TaxWithheldNegative, true, "DirectorPay"),
         (GrossToNet.TaxAdvancePaymentNegative, false, "DirectorPay"),
