@@ -27,7 +27,8 @@ public class CarAndRoyaltyCardsTests
 
     private static readonly ResxText RoyaltyTexts = ResxText.For<CopyrightCard>();
 
-    // Every way each card's summary reads: a car not given yet, a car, a car with the royalty in the plan;
+    // Every way each card's summary reads: a car not given yet, a car, a car with the royalty in the plan,
+    // a car whose costs the contribution more than covers, with and without the royalty;
     // no royalty yet, a royalty within its limits, one beyond them, and one all taxed as pay. The cars are
     // CarCardTests', the royalties CopyrightViewTests' beside the example's 50,000 of pay: 10,000 within 30%
     // of 60,000, and 30,000 beyond 30% of 80,000 by 6,000.
@@ -36,6 +37,8 @@ public class CarAndRoyaltyCardsTests
         { "no car yet", typeof(CarCard), OptionalModule.Car, RiverInputs.Example.AddToPlan(OptionalModule.Car) },
         { "a car", typeof(CarCard), OptionalModule.Car, CarCardTests.ElectricCar },
         { "a car and a royalty", typeof(CarCard), OptionalModule.Car, CarCardTests.ElectricCar.AddToPlan(OptionalModule.Copyright).WithRoyalty(10_000m) },
+        { "a contribution beyond the car's costs", typeof(CarCard), OptionalModule.Car, CarCardTests.ElectricCar.WithCarCosts(0m).WithCarContribution(600m) },
+        { "a contribution beyond the car's costs and a royalty", typeof(CarCard), OptionalModule.Car, CarCardTests.ElectricCar.WithCarCosts(0m).WithCarContribution(600m).AddToPlan(OptionalModule.Copyright).WithRoyalty(10_000m) },
         { "no royalty yet", typeof(CopyrightCard), OptionalModule.Copyright, RiverInputs.Example.AddToPlan(OptionalModule.Copyright) },
         { "a royalty within its limits", typeof(CopyrightCard), OptionalModule.Copyright, CopyrightViewTests.Within },
         { "a royalty beyond its limits", typeof(CopyrightCard), OptionalModule.Copyright, CopyrightViewTests.Beyond },

@@ -27,6 +27,12 @@
   <data name="SummaryNoCar_Royalty" xml:space="preserve">
     <value>No car yet · {0} before your pay and royalty</value>
   </data>
+  <data name="SummaryBeyond" xml:space="preserve">
+    <value>{0} of car costs · {1} of your contribution beyond the costs · {2} before your pay</value>
+  </data>
+  <data name="SummaryBeyond_Royalty" xml:space="preserve">
+    <value>{0} of car costs · {1} of your contribution beyond the costs · {2} before your pay and royalty</value>
+  </data>
   <data name="Hint" xml:space="preserve">
     <value>A car the company puts at your disposal, which you also use privately. The company pays its costs out of its profit, before your pay, and deducts them as its order date, its engine and its CO2 allow; you are taxed on a flat benefit in kind as part of your pay, though it is never paid in cash.</value>
   </data>

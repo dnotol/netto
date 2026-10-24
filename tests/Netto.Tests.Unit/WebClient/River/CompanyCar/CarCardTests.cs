@@ -59,6 +59,75 @@ public class CarCardTests
         ]);
     }
 
+    // The words ModuleCard gives the share a card's summary ends on.
+    private static readonly ResxText ModuleTexts = ResxText.For<ModuleCard>();
+
+    // A contribution above the car's costs is no share above 100%: the summary ends on all of what the card
+    // receives, and states the contribution beyond the costs as a figure, between the costs and what the
+    // split shares, so the extra shows where it comes from; the card's lines say the same as ever (the
+    // costs line, €0.00, is left out). No sentence, and no key drawn.
+    [Fact]
+    public async Task Card_contributionAboveTheCosts_endsOnAllItReceivesAndStatesWhatTheContributionAdds()
+    {
+        var inputs = ElectricCar.WithCarCosts(0m).WithCarContribution(600m);
+        var shared = Formats.Euros(HandOff.Shared(inputs.Run().Year.ShouldNotBeNull()));
+
+        var html = await RenderOpenAsync<CarCard>(OptionalModule.Car, inputs);
+        var summary = CardHtml.Summary(html).ShouldNotBeNull();
+
+        html.ShouldSatisfyAllConditions(
+            () => summary.ShouldBe(Text("SummaryBeyond", "€0.00", "€600.00", shared)),
+            () => CardHtml.Amounts(summary).ShouldBe(["€0.00", "€600.00", shared]),
+            () => CardHtml.Rate(html).ShouldBe(ModuleTexts.Format(ModuleCardText.PassesOn, "100%")),
+            () => CardHtml.SummaryFaults(summary).ShouldBeEmpty(),
+            () => CardHtml.LeakedKeys(html).ShouldBeEmpty(),
+            () => CardHtml.Lines(html).TakeLast(2).ShouldBe(
+            [
+                (Drains("Drain_car_contribution"), "+€600.00", null),
+                (Drains("Drain_profit_before_pay"), shared, null),
+            ]));
+    }
+
+    // The same with the royalty in the plan: the split shares the royalty too, and the summary ends on it.
+    [Fact]
+    public async Task Card_contributionAboveTheCostsWithTheRoyaltyInThePlan_endsOnBeforeYourPayAndRoyalty()
+    {
+        var inputs = ElectricCar.WithCarCosts(500m).WithCarContribution(600m).AddToPlan(OptionalModule.Copyright).WithRoyalty(10_000m);
+        var shared = Formats.Euros(HandOff.Shared(inputs.Run().Year.ShouldNotBeNull()));
+
+        var html = await RenderOpenAsync<CarCard>(OptionalModule.Car, inputs);
+        var summary = CardHtml.Summary(html).ShouldNotBeNull();
+
+        html.ShouldSatisfyAllConditions(
+            () => summary.ShouldBe(Text("SummaryBeyond_Royalty", "€500.00", "€100.00", shared)),
+            () => CardHtml.Rate(html).ShouldBe(ModuleTexts.Format(ModuleCardText.PassesOn, "100%")),
+            () => CardHtml.SummaryFaults(summary).ShouldBeEmpty());
+    }
+
+    // Where the costs are at least the contribution the summary is what it always was: the costs and what
+    // the split shares, ending on what the costs leave of what the card receives, net of the contribution;
+    // equal to the contribution they leave all of it, and no figure is stated for a contribution that
+    // brings nothing beyond them.
+    public static TheoryData<string, decimal, decimal, string> SummariesWhereTheCostsCoverTheContribution => new()
+    {
+        { "costs above the contribution", 8_000m, 600m, "93%" },
+        { "costs and no contribution", 8_000m, 0m, "92%" },
+        { "costs equal to the contribution", 600m, 600m, "100%" },
+    };
+
+    [Theory]
+    [MemberData(nameof(SummariesWhereTheCostsCoverTheContribution))]
+    public async Task Card_costsCoverTheContribution_summaryIsTheCostsAndWhatTheSplitSharesAndTheShareTheyLeave(string _, decimal costs, decimal contribution, string share)
+    {
+        var inputs = ElectricCar.WithCarCosts(costs).WithCarContribution(contribution);
+        var shared = Formats.Euros(HandOff.Shared(inputs.Run().Year.ShouldNotBeNull()));
+
+        var html = await RenderOpenAsync<CarCard>(OptionalModule.Car, inputs);
+
+        (CardHtml.Summary(html), CardHtml.Rate(html))
+            .ShouldBe((Text("Summary", Formats.Euros(costs), shared), ModuleTexts.Format(ModuleCardText.PassesOn, share)));
+    }
+
     // Which cars the card counts is no sentence of its own: it is said in the bubble of « Ordered or
     // leased », after what that date is.
     [Fact]

@@ -217,12 +217,19 @@
 
     private string EngineName(CarEngine engine) => L[CarCardText.Engine(engine)];
 
-    // It ends on what the split shares, the royalty in it while it is in the plan.
-    private string? Summary => _view is { } view
-        ? view.HasCar
-            ? L[CarCardText.Summary(true, Inputs.InPlan(OptionalModule.Copyright)), Formats.Euros(view.Result.Costs), Formats.Euros(view.SplitShares)].Value
-            : L[CarCardText.Summary(false, Inputs.InPlan(OptionalModule.Copyright)), Formats.Euros(view.SplitShares)].Value
-        : null;
+    // It ends on what the split shares, the royalty in it while it is in the plan. A contribution that
+    // more than covers the costs states what it brings beyond them between the two: the card passes on
+    // that much more than it received, which no share of what it received can say (CarView.PassesOn).
+    private string? Summary => _view switch
+    {
+        null => null,
+        { HasCar: false } view => L[CarCardText.Summary(false, Royalty, false), Formats.Euros(view.SplitShares)].Value,
+        { ContributionBeyondCosts: { } beyond } view =>
+            L[CarCardText.Summary(true, Royalty, true), Formats.Euros(view.Result.Costs), Formats.Euros(beyond), Formats.Euros(view.SplitShares)].Value,
+        var view => L[CarCardText.Summary(true, Royalty, false), Formats.Euros(view.Result.Costs), Formats.Euros(view.SplitShares)].Value,
+    };
+
+    private bool Royalty => Inputs.InPlan(OptionalModule.Copyright);
 
     // What the car costs the company over the year, for the card's row in the river's outline; nothing
     // before there is a car.

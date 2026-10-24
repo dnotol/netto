@@ -129,22 +129,36 @@ public class CarCardTextTests
     }
 
     // The car's summary ends on what the split shares: « before your pay », and « before your pay and
-    // royalty » once the royalty is in the plan.
+    // royalty » once the royalty is in the plan; with a car whose costs the contribution more than
+    // covers, it states that excess between the costs and what the split shares.
     [Fact]
     public void CarCardResx_everySummary_hasAText()
     {
-        Resources.Missing([CarCardText.Summary(true, false), CarCardText.Summary(true, true), CarCardText.Summary(false, false), CarCardText.Summary(false, true)])
+        Resources.Missing(
+            [
+                CarCardText.Summary(true, false, false), CarCardText.Summary(true, true, false), CarCardText.Summary(true, false, true), CarCardText.Summary(true, true, true),
+                CarCardText.Summary(false, false, false), CarCardText.Summary(false, true, false),
+            ])
             .ShouldBeEmpty();
     }
 
     [Theory]
-    [InlineData(true, false, "Summary")]
-    [InlineData(true, true, "Summary_Royalty")]
-    [InlineData(false, false, "SummaryNoCar")]
-    [InlineData(false, true, "SummaryNoCar_Royalty")]
-    public void CarSummary_royaltyInThePlan_saysBeforeYourPayAndRoyalty(bool hasCar, bool royalty, string key)
+    [InlineData(true, false, false, "Summary")]
+    [InlineData(true, true, false, "Summary_Royalty")]
+    [InlineData(true, false, true, "SummaryBeyond")]
+    [InlineData(true, true, true, "SummaryBeyond_Royalty")]
+    [InlineData(false, false, false, "SummaryNoCar")]
+    [InlineData(false, true, false, "SummaryNoCar_Royalty")]
+    public void CarSummary_royaltyInThePlanContributionBeyondTheCosts_saysSoBeforeYourPay(bool hasCar, bool royalty, bool beyondCosts, string key)
     {
-        CarCardText.Summary(hasCar, royalty).ShouldBe(key);
+        CarCardText.Summary(hasCar, royalty, beyondCosts).ShouldBe(key);
+    }
+
+    // A summary with no car has no costs for a contribution to exceed: it names none.
+    [Fact]
+    public void CarSummary_noCar_namesNoContributionBeyondTheCosts()
+    {
+        CarCardText.Summary(false, false, true).ShouldBe("SummaryNoCar");
     }
 
     // Every way the line of « Your car » reads: each engine, its CO2 given, not given or none
