@@ -1,6 +1,6 @@
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
-using System.Text.Json.Serialization.Metadata;
 using Netto.Core.CompanyCar;
 using Netto.Core.Dividends;
 using Netto.Core.PersonalTax;
@@ -26,21 +26,27 @@ internal sealed record PlanBook(IReadOnlyList<SavedPlan> Plans, string? Today, s
 
 // How saved plans are kept in the browser: one JSON document under Key, carrying the version of its
 // format. A plan is stored as plain values with their origins, never as RiverInputs itself, so the
-// format changes only when this file does: a new input of the river is a new field here and a new
-// Version (RiverInputsShapeTests fails until it is). Reading is strict: a missing field, a field
-// this version does not know, an unknown option or municipality makes that plan unreadable, never
-// a plan with a default in place of what was saved. A document that cannot be read at all, or comes
-// from a newer version, is refused whole. A document of an older version is read in its own format,
-// each plan as it was saved, and is written back in this one: version 1 held no company car, so its
-// plans are read as plans without one (decided 2026-10-22), versions 1 and 2 no copyright royalty,
-// so theirs are read without one, versions 1 to 3 no provisional contributions billed by the fund,
-// so theirs are read with none given, versions 3 and 4 a royalty that is always fixed: a royalty the
-// user gave opens fixed at it, as it was saved, and one never given follows the pay, as a royalty
-// added now does (2026-10-23), and versions 2 to 5 no private cost of the car, so theirs are read with
-// none given (2026-10-23). The car's engine, CO2, order date and statuses joined version 2
-// without raising it, since version 2 had not left the car's story branch; a plan saved by the car's
-// first build does not open (operator, 2026-10-22). The rest of the royalty's story joins version 3
-// the same way (decided unattended, 2026-10-22).
+// format changes only when this file does: a new input of the river is a new field here, a new Version
+// (RiverInputsShapeTests fails until it is) and a patch that brings a plan of the version before to it.
+// Reading is strict: a missing field, a field this version does not know, an unknown option or
+// municipality makes that plan unreadable, never a plan with a default in place of what was saved. A
+// document that cannot be read at all, or comes from a newer version, is refused whole.
+//
+// A plan of an older version is brought to this one a version at a time, on a copy: each patch adds
+// what the version before never held, written out here as that version's successor stored it, and
+// refuses a plan that already holds it, or holds a member twice, since that version never wrote one.
+// It is then read as a plan of this version is, and written back in this version's format; a plan
+// that cannot be read is kept exactly as it was stored. What a patch adds is frozen here, never read
+// from the river's example, which may change: a plan saved before stays as it was saved. Version 1
+// held no company car, so its plans are read without one (decided 2026-10-22), versions 1 and 2 no
+// copyright royalty, so theirs are read without one, versions 1 to 3 no provisional contributions
+// billed by the fund, so theirs are read with none given, versions 3 and 4 a royalty that is always
+// fixed: a royalty the user gave opens fixed at it, as it was saved, and one never given follows the
+// pay, as a royalty added now does (2026-10-23), and versions 2 to 5 no private cost of the car, so
+// theirs are read with none given (2026-10-23). The car's engine, CO2, order date and statuses joined
+// version 2 without raising it, since version 2 had not left the car's story branch; a plan saved by
+// the car's first build does not open (operator, 2026-10-22). The rest of the royalty's story joins
+// version 3 the same way (decided unattended, 2026-10-22).
 internal static class PlanStorage
 {
     public const string Key = "netto.plans";
@@ -52,15 +58,48 @@ internal static class PlanStorage
     // royalty follows the pay. 6: what the same car would cost privately.
     public const int Version = 6;
 
-    private const int Version5 = 5;
+    private const int FirstVersion = 1;
 
-    private const int Version4 = 4;
+    // The patch from each older version to the next: Patches[n - FirstVersion] brings a plan version n
+    // stored to version n + 1's shape, or refuses it. A new version adds its own.
+    private static readonly Func<JsonObject, bool>[] Patches = [ToVersion2, ToVersion3, ToVersion4, ToVersion5, ToVersion6];
 
-    private const int Version3 = 3;
+    // A plan of an older version holding a member twice is refused as it is parsed.
+    private static readonly JsonDocumentOptions OneOfEachMember = new() { AllowDuplicateProperties = false };
 
-    private const int Version1 = 1;
+    // The car a plan of version 1 never held, as version 2 stored the example's: a new electric car
+    // first registered and ordered on 1 January 2026, with nothing paid.
+    private const string CarOfVersion2 = """
+        {
+            "catalogueValue": {"value": 0, "origin": "Example"},
+            "firstRegistration": {"value": "2026-01-01", "origin": "Example"},
+            "yearlyCosts": {"value": 0, "origin": "Example"},
+            "companyPaysPrivateEnergy": {"value": false, "origin": "Default"},
+            "personalContribution": {"value": 0, "origin": "Example"},
+            "engine": {"value": "Electric", "origin": "Default"},
+            "co2": {"value": 0, "origin": "Example"},
+            "noCo2Data": {"value": false, "origin": "Default"},
+            "acquired": {"value": "2026-01-01", "origin": "Example"},
+            "fakeHybrid": {"value": false, "origin": "Default"},
+            "matchingCarCo2": {"value": 0, "origin": "Example"},
+            "noMatchingCar": {"value": false, "origin": "Default"},
+            "smallNaturalGas": {"value": false, "origin": "Default"}
+        }
+        """;
 
-    private const int Version2 = 2;
+    // The royalty a plan of version 2 never held, as version 3 stored the example's: none paid, the four
+    // previous years assumed within the cap, no attestation and no creative share given.
+    private const string RoyaltyOfVersion3 = """
+        {
+            "royalty": {"value": 0, "origin": "Example"},
+            "averageWithinCap": {"value": true, "origin": "Default"},
+            "holdsAttestation": {"value": false, "origin": "Default"},
+            "creativeShare": {"value": null, "origin": "Yours"}
+        }
+        """;
+
+    // An amount with no default, until the user gives it.
+    private const string NoneGiven = """{"value": null, "origin": "Yours"}""";
 
     // The plans stored, or Unreadable when the document is there but cannot be read.
     public static (PlanBook Book, bool Unreadable) Read(string? json)
@@ -78,18 +117,10 @@ internal static class PlanStorage
             return (PlanBook.Empty, true);
         }
 
-        if (stored is null || stored.Version is not (Version or Version5 or Version4 or Version3 or Version2 or Version1))
+        if (stored is null || stored.Version is < FirstVersion or > Version)
             return (PlanBook.Empty, true);
 
-        var plans = stored.Plans.Select(plan => stored.Version switch
-        {
-            Version => Plan(plan),
-            Version5 => PlanOfOlderVersion(plan, PlanJson.Default.StoredInputsVersion5, FromVersion5),
-            Version4 => PlanOfOlderVersion(plan, PlanJson.Default.StoredInputsVersion4, FromVersion4),
-            Version3 => PlanOfOlderVersion(plan, PlanJson.Default.StoredInputsVersion3, FromVersion3),
-            Version2 => PlanOfOlderVersion(plan, PlanJson.Default.StoredInputsVersion2, FromVersion2),
-            _ => PlanOfOlderVersion(plan, PlanJson.Default.StoredInputsVersion1, FromVersion1),
-        }).ToList();
+        var plans = stored.Plans.Select(plan => stored.Version == Version ? Plan(plan) : PlanOfOlderVersion(plan, stored.Version)).ToList();
         return (new PlanBook(plans, stored.Today, stored.Opened), false);
     }
 
@@ -100,153 +131,81 @@ internal static class PlanStorage
     // A plan as it is stored, for a new plan.
     public static JsonElement Store(RiverInputs inputs) => JsonSerializer.SerializeToElement(Stored(inputs), PlanJson.Default.StoredInputs);
 
-    private static SavedPlan Plan(StoredPlan plan) => new(plan.Id, plan.Name, Inputs(plan.Inputs, PlanJson.Default.StoredInputs, stored => stored), plan.Inputs.Clone());
+    // A plan of this version, kept as it was stored.
+    private static SavedPlan Plan(StoredPlan plan) =>
+        new(plan.Id, plan.Name, Inputs(() => JsonSerializer.Deserialize(plan.Inputs, PlanJson.Default.StoredInputs)), plan.Inputs.Clone());
 
-    // Read as an older version wrote it and kept in this version's format, so the book is written
-    // back in one version; a plan it cannot read is kept as it was stored.
-    private static SavedPlan PlanOfOlderVersion<T>(StoredPlan plan, JsonTypeInfo<T> format, Func<T, StoredInputs> current) =>
-        Inputs(plan.Inputs, format, current) is { } inputs
+    // Brought to this version and kept in its format, so the book is written back in one version; a plan
+    // it cannot read is kept as it was stored, never as patched.
+    private static SavedPlan PlanOfOlderVersion(StoredPlan plan, int version) =>
+        Inputs(() => Upgraded(plan.Inputs, version)?.Deserialize(PlanJson.Default.StoredInputs)) is { } inputs
             ? new SavedPlan(plan.Id, plan.Name, inputs, Store(inputs))
             : new SavedPlan(plan.Id, plan.Name, null, plan.Inputs.Clone());
 
-    private static RiverInputs? Inputs<T>(JsonElement stored, JsonTypeInfo<T> format, Func<T, StoredInputs> current)
+    // A copy of a plan of an older version in this version's shape, patched one version at a time, or
+    // null when it is not an object or a patch refuses it.
+    private static JsonObject? Upgraded(JsonElement stored, int version)
+    {
+        if (JsonNode.Parse(stored.GetRawText(), documentOptions: OneOfEachMember) is not JsonObject plan)
+            return null;
+
+        for (var from = version; from < Version; from++)
+        {
+            if (!Patches[from - FirstVersion](plan))
+                return null;
+        }
+
+        return plan;
+    }
+
+    // Version 2 brought the company car: a plan of version 1 holds none, out of the plan.
+    private static bool ToVersion2(JsonObject plan) => Add(plan["composition"], "car", "false") && Add(plan, "car", CarOfVersion2);
+
+    // Version 3 brought the copyright royalty: a plan of version 2 holds none, out of the plan.
+    private static bool ToVersion3(JsonObject plan) => Add(plan["composition"], "copyright", "false") && Add(plan, "copyright", RoyaltyOfVersion3);
+
+    // Version 4 brought what the fund bills each quarter: none given.
+    private static bool ToVersion4(JsonObject plan) => Add(plan, "billedContributions", NoneGiven);
+
+    // Version 5 brought whether the royalty follows the pay. Before, a royalty was always fixed: the one the
+    // user gave opens fixed at it, the user's choice; one never given follows the pay, as a royalty added
+    // now does (2026-10-23).
+    private static bool ToVersion5(JsonObject plan) =>
+        plan["copyright"] is JsonObject copyright
+        && Add(copyright, "followsPay", Origin(copyright["royalty"]) == InputOrigin.Yours
+            ? """{"value": false, "origin": "Yours"}"""
+            : """{"value": true, "origin": "Default"}""");
+
+    // Version 6 brought what the same car would cost privately: none given.
+    private static bool ToVersion6(JsonObject plan) => Add(plan["car"], "privateCost", NoneGiven);
+
+    // Adds a member the version before never held, or refuses a plan that already holds it: that version
+    // never wrote one.
+    private static bool Add(JsonNode? parent, string member, string json)
+    {
+        if (parent is not JsonObject members || members.ContainsKey(member))
+            return false;
+
+        members.Add(member, JsonNode.Parse(json));
+        return true;
+    }
+
+    // The origin a stored value names, read as a plan's are, or none when it names none.
+    private static InputOrigin? Origin(JsonNode? stored) =>
+        stored is JsonObject value && value["origin"] is { } origin ? origin.Deserialize(PlanJson.Default.InputOrigin) : null;
+
+    // The river's inputs a plan stores, or null when they cannot be read as this version reads a plan.
+    private static RiverInputs? Inputs(Func<StoredInputs?> read)
     {
         try
         {
-            return JsonSerializer.Deserialize(stored, format) is { } inputs ? Inputs(current(inputs)) : null;
+            return read() is { } stored ? Inputs(stored) : null;
         }
         catch (JsonException)
         {
             return null;
         }
     }
-
-    // A plan of version 1, which held no car and no royalty: out of the plan, with the example's values,
-    // and no billed contributions: none given.
-    private static StoredInputs FromVersion1(StoredInputsVersion1 stored) => new(
-        stored.IncomeYear,
-        stored.Company,
-        new StoredComposition(stored.Composition.Vouchers, stored.Composition.Allowances, stored.Composition.Rent, false, false),
-        stored.Vouchers,
-        stored.Allowances,
-        stored.Rent,
-        Stored(RiverInputs.Example.Car),
-        Stored(RiverInputs.Example.Copyright),
-        stored.SmallCompany,
-        stored.FinancialYear,
-        stored.AdvancePayments,
-        stored.DirectorPay,
-        stored.Municipality,
-        stored.TaxPrepayments,
-        stored.Reserve,
-        stored.DividendCategory,
-        stored.EarlierProfits,
-        stored.ContributionsPaidBy,
-        Stored(RiverInputs.Example.BilledContributions));
-
-    // A plan of version 2, which held no royalty: out of the plan, with the example's values, and no
-    // billed contributions: none given.
-    private static StoredInputs FromVersion2(StoredInputsVersion2 stored) => new(
-        stored.IncomeYear,
-        stored.Company,
-        new StoredComposition(stored.Composition.Vouchers, stored.Composition.Allowances, stored.Composition.Rent, stored.Composition.Car, false),
-        stored.Vouchers,
-        stored.Allowances,
-        stored.Rent,
-        FromVersion5(stored.Car),
-        Stored(RiverInputs.Example.Copyright),
-        stored.SmallCompany,
-        stored.FinancialYear,
-        stored.AdvancePayments,
-        stored.DirectorPay,
-        stored.Municipality,
-        stored.TaxPrepayments,
-        stored.Reserve,
-        stored.DividendCategory,
-        stored.EarlierProfits,
-        stored.ContributionsPaidBy,
-        Stored(RiverInputs.Example.BilledContributions));
-
-    // A plan of version 3, which held no billed contributions, none given, and a royalty always fixed.
-    private static StoredInputs FromVersion3(StoredInputsVersion3 stored) => new(
-        stored.IncomeYear,
-        stored.Company,
-        stored.Composition,
-        stored.Vouchers,
-        stored.Allowances,
-        stored.Rent,
-        FromVersion5(stored.Car),
-        FromVersion4(stored.Copyright),
-        stored.SmallCompany,
-        stored.FinancialYear,
-        stored.AdvancePayments,
-        stored.DirectorPay,
-        stored.Municipality,
-        stored.TaxPrepayments,
-        stored.Reserve,
-        stored.DividendCategory,
-        stored.EarlierProfits,
-        stored.ContributionsPaidBy,
-        Stored(RiverInputs.Example.BilledContributions));
-
-    // A plan of version 4, whose royalty was always fixed.
-    private static StoredInputs FromVersion4(StoredInputsVersion4 stored) => new(
-        stored.IncomeYear,
-        stored.Company,
-        stored.Composition,
-        stored.Vouchers,
-        stored.Allowances,
-        stored.Rent,
-        FromVersion5(stored.Car),
-        FromVersion4(stored.Copyright),
-        stored.SmallCompany,
-        stored.FinancialYear,
-        stored.AdvancePayments,
-        stored.DirectorPay,
-        stored.Municipality,
-        stored.TaxPrepayments,
-        stored.Reserve,
-        stored.DividendCategory,
-        stored.EarlierProfits,
-        stored.ContributionsPaidBy,
-        stored.BilledContributions);
-
-    // A royalty of versions 3 and 4, always fixed: the user's opens fixed at it, the user's choice; one
-    // never given follows the pay, as the example's does.
-    private static StoredCopyright FromVersion4(StoredCopyrightVersion4 stored) => new(
-        stored.Royalty,
-        stored.Royalty.Origin == InputOrigin.Yours ? new StoredValue<bool>(false, InputOrigin.Yours) : Stored(RiverInputs.Example.Copyright.FollowsPay),
-        stored.AverageWithinCap,
-        stored.HoldsAttestation,
-        stored.CreativeShare);
-
-    // A plan of version 5, whose car held no private cost: none given.
-    private static StoredInputs FromVersion5(StoredInputsVersion5 stored) => new(
-        stored.IncomeYear,
-        stored.Company,
-        stored.Composition,
-        stored.Vouchers,
-        stored.Allowances,
-        stored.Rent,
-        FromVersion5(stored.Car),
-        stored.Copyright,
-        stored.SmallCompany,
-        stored.FinancialYear,
-        stored.AdvancePayments,
-        stored.DirectorPay,
-        stored.Municipality,
-        stored.TaxPrepayments,
-        stored.Reserve,
-        stored.DividendCategory,
-        stored.EarlierProfits,
-        stored.ContributionsPaidBy,
-        stored.BilledContributions);
-
-    // A car of versions 2 to 5, which held no private cost: none given, as the example's.
-    private static StoredCar FromVersion5(StoredCarVersion5 stored) => new(
-        stored.CatalogueValue, stored.FirstRegistration, stored.YearlyCosts, stored.CompanyPaysPrivateEnergy, stored.PersonalContribution,
-        stored.Engine, stored.Co2, stored.NoCo2Data, stored.Acquired, stored.FakeHybrid, stored.MatchingCarCo2,
-        stored.NoMatchingCar, stored.SmallNaturalGas, Stored(RiverInputs.Example.Car.PrivateCost));
 
     private static StoredInputs Stored(RiverInputs inputs) => new(
         inputs.IncomeYear,
@@ -360,121 +319,11 @@ internal sealed record StoredInputs(
     StoredValue<ContributionsPaidBy> ContributionsPaidBy,
     StoredValue<decimal?> BilledContributions);
 
-// A plan as version 5 stored it: a car without its private cost.
-internal sealed record StoredInputsVersion5(
-    int IncomeYear,
-    StoredCompany? Company,
-    StoredComposition Composition,
-    StoredVouchers Vouchers,
-    StoredAllowances Allowances,
-    StoredRent Rent,
-    StoredCarVersion5 Car,
-    StoredCopyright Copyright,
-    StoredValue<bool> SmallCompany,
-    StoredValue<FinancialYear> FinancialYear,
-    StoredPayments AdvancePayments,
-    StoredValue<decimal> DirectorPay,
-    StoredMunicipality Municipality,
-    StoredTaxPrepayments TaxPrepayments,
-    StoredValue<decimal> Reserve,
-    StoredValue<WithholdingCategory> DividendCategory,
-    StoredValue<decimal> EarlierProfits,
-    StoredValue<ContributionsPaidBy> ContributionsPaidBy,
-    StoredValue<decimal?> BilledContributions);
-
-// A plan as version 4 stored it: a royalty always fixed, and a car without its private cost.
-internal sealed record StoredInputsVersion4(
-    int IncomeYear,
-    StoredCompany? Company,
-    StoredComposition Composition,
-    StoredVouchers Vouchers,
-    StoredAllowances Allowances,
-    StoredRent Rent,
-    StoredCarVersion5 Car,
-    StoredCopyrightVersion4 Copyright,
-    StoredValue<bool> SmallCompany,
-    StoredValue<FinancialYear> FinancialYear,
-    StoredPayments AdvancePayments,
-    StoredValue<decimal> DirectorPay,
-    StoredMunicipality Municipality,
-    StoredTaxPrepayments TaxPrepayments,
-    StoredValue<decimal> Reserve,
-    StoredValue<WithholdingCategory> DividendCategory,
-    StoredValue<decimal> EarlierProfits,
-    StoredValue<ContributionsPaidBy> ContributionsPaidBy,
-    StoredValue<decimal?> BilledContributions);
-
-// A plan as version 3 stored it: no billed contributions, a royalty always fixed, and a car without
-// its private cost.
-internal sealed record StoredInputsVersion3(
-    int IncomeYear,
-    StoredCompany? Company,
-    StoredComposition Composition,
-    StoredVouchers Vouchers,
-    StoredAllowances Allowances,
-    StoredRent Rent,
-    StoredCarVersion5 Car,
-    StoredCopyrightVersion4 Copyright,
-    StoredValue<bool> SmallCompany,
-    StoredValue<FinancialYear> FinancialYear,
-    StoredPayments AdvancePayments,
-    StoredValue<decimal> DirectorPay,
-    StoredMunicipality Municipality,
-    StoredTaxPrepayments TaxPrepayments,
-    StoredValue<decimal> Reserve,
-    StoredValue<WithholdingCategory> DividendCategory,
-    StoredValue<decimal> EarlierProfits,
-    StoredValue<ContributionsPaidBy> ContributionsPaidBy);
-
-// A plan as version 2 stored it: no royalty, a composition of four optional modules, and a car without
-// its private cost.
-internal sealed record StoredInputsVersion2(
-    int IncomeYear,
-    StoredCompany? Company,
-    StoredCompositionVersion2 Composition,
-    StoredVouchers Vouchers,
-    StoredAllowances Allowances,
-    StoredRent Rent,
-    StoredCarVersion5 Car,
-    StoredValue<bool> SmallCompany,
-    StoredValue<FinancialYear> FinancialYear,
-    StoredPayments AdvancePayments,
-    StoredValue<decimal> DirectorPay,
-    StoredMunicipality Municipality,
-    StoredTaxPrepayments TaxPrepayments,
-    StoredValue<decimal> Reserve,
-    StoredValue<WithholdingCategory> DividendCategory,
-    StoredValue<decimal> EarlierProfits,
-    StoredValue<ContributionsPaidBy> ContributionsPaidBy);
-
-// A plan as version 1 stored it: no car, and a composition of three optional modules.
-internal sealed record StoredInputsVersion1(
-    int IncomeYear,
-    StoredCompany? Company,
-    StoredCompositionVersion1 Composition,
-    StoredVouchers Vouchers,
-    StoredAllowances Allowances,
-    StoredRent Rent,
-    StoredValue<bool> SmallCompany,
-    StoredValue<FinancialYear> FinancialYear,
-    StoredPayments AdvancePayments,
-    StoredValue<decimal> DirectorPay,
-    StoredMunicipality Municipality,
-    StoredTaxPrepayments TaxPrepayments,
-    StoredValue<decimal> Reserve,
-    StoredValue<WithholdingCategory> DividendCategory,
-    StoredValue<decimal> EarlierProfits,
-    StoredValue<ContributionsPaidBy> ContributionsPaidBy);
-
 internal sealed record StoredValue<T>(T Value, InputOrigin Origin);
 
 internal sealed record StoredCompany(StoredValue<decimal> Revenue, StoredValue<decimal> RunningCosts);
 
 internal sealed record StoredComposition(bool Vouchers, bool Allowances, bool Rent, bool Car, bool Copyright);
-
-internal sealed record StoredCompositionVersion2(bool Vouchers, bool Allowances, bool Rent, bool Car);
-
-internal sealed record StoredCompositionVersion1(bool Vouchers, bool Allowances, bool Rent);
 
 internal sealed record StoredCopyright(
     StoredValue<decimal> Royalty,
@@ -482,10 +331,6 @@ internal sealed record StoredCopyright(
     StoredValue<bool> AverageWithinCap,
     StoredValue<bool> HoldsAttestation,
     StoredValue<decimal?> CreativeShare);
-
-// A royalty as versions 3 and 4 stored it: always fixed.
-internal sealed record StoredCopyrightVersion4(
-    StoredValue<decimal> Royalty, StoredValue<bool> AverageWithinCap, StoredValue<bool> HoldsAttestation, StoredValue<decimal?> CreativeShare);
 
 internal sealed record StoredVouchers(StoredValue<int> MealVoucherDays, StoredValue<decimal> EcoVouchers, StoredValue<decimal> SportCultureVouchers);
 
@@ -509,22 +354,6 @@ internal sealed record StoredCar(
     StoredValue<bool> SmallNaturalGas,
     StoredValue<decimal?> PrivateCost);
 
-// A car as versions 2 to 5 stored it: without what the same car would cost privately.
-internal sealed record StoredCarVersion5(
-    StoredValue<decimal> CatalogueValue,
-    StoredValue<DateOnly> FirstRegistration,
-    StoredValue<decimal> YearlyCosts,
-    StoredValue<bool> CompanyPaysPrivateEnergy,
-    StoredValue<decimal> PersonalContribution,
-    StoredValue<CarEngine> Engine,
-    StoredValue<int> Co2,
-    StoredValue<bool> NoCo2Data,
-    StoredValue<DateOnly> Acquired,
-    StoredValue<bool> FakeHybrid,
-    StoredValue<int> MatchingCarCo2,
-    StoredValue<bool> NoMatchingCar,
-    StoredValue<bool> SmallNaturalGas);
-
 internal sealed record StoredPayments(StoredValue<decimal> First, StoredValue<decimal> Second, StoredValue<decimal> Third, StoredValue<decimal> Fourth);
 
 // The municipality by its INS code, or none, with the rate on screen and where it comes from.
@@ -543,9 +372,4 @@ internal sealed record StoredTaxPrepayments(StoredValue<decimal?> Withheld, Stor
     UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow)]
 [JsonSerializable(typeof(StoredBook))]
 [JsonSerializable(typeof(StoredInputs))]
-[JsonSerializable(typeof(StoredInputsVersion5))]
-[JsonSerializable(typeof(StoredInputsVersion4))]
-[JsonSerializable(typeof(StoredInputsVersion3))]
-[JsonSerializable(typeof(StoredInputsVersion2))]
-[JsonSerializable(typeof(StoredInputsVersion1))]
 internal sealed partial class PlanJson : JsonSerializerContext;

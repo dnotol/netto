@@ -426,6 +426,24 @@ public class PlanStorageTests
         PlanInputs(rewritten, 0).ToJsonString().ShouldBe(PlanInputs(json, 0).ToJsonString());
     }
 
+    // A member stored twice in a plan of an older version, at its top or inside, is not a plan that version
+    // wrote: it is read with neither value, and the other plans are.
+    [Theory]
+    [InlineData(1, "\"reserve\":{\"value\":0,\"origin\":\"Example\"}")]
+    [InlineData(2, "\"runningCosts\":{\"value\":20000,\"origin\":\"Example\"}")]
+    [InlineData(3, "\"reserve\":{\"value\":0,\"origin\":\"Example\"}")]
+    [InlineData(4, "\"runningCosts\":{\"value\":20000,\"origin\":\"Example\"}")]
+    [InlineData(5, "\"engine\":{\"value\":\"Electric\",\"origin\":\"Default\"}")]
+    public void Read_olderPlanHoldingAMemberTwice_makesThatPlanUnreadable(int version, string member)
+    {
+        var document = StoredPlanDocuments.Of(version);
+        var first = document.IndexOf(member, StringComparison.Ordinal);
+
+        var json = document.Insert(first + member.Length, "," + member);
+
+        PlanStorage.Read(json).Book.Plans.Select(plan => plan.Readable).ShouldBe([false, true]);
+    }
+
     // An example's amount stored at nothing reads back as the example's nothing in a plan of any version,
     // money and a count alike; a nothing the user typed stays theirs (Read_written_givesBackANothingTypedAsYours).
     [Theory]
