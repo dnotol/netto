@@ -177,17 +177,19 @@ public class CarRulesTests
     // 01.07.2023 the formula between 50% and 100%, 40% from 200 g/km or without CO2 data (art. 550
     // al. 2, its minimum for a car acquired before 2018 being personal tax only, art. 198bis); from
     // 01.07.2023 to 31.12.2025 the formula at most 50%, 0% without CO2 data (al. 4); from 01.01.2026
-    // nothing (art. 66 §1).
+    // nothing (art. 66 §1). No period sets a rate of its own for a car that emits no CO2: one ordered or
+    // leased before 2027 is deducted in full whatever its date (circular 2024/C/50).
     [Fact]
     public void IncomeYear2026_holdsTheDeductionPeriods()
     {
         CarRules.IncomeYear2026.DeductionPeriods
-            .Select(period => (period.AcquiredFrom, period.Fixed?.Value, period.Floor?.Value, period.Ceiling?.Value, period.WithoutCo2Data?.Value, period.HighEmissionFrom?.Value))
-            .ShouldBe(new (DateOnly, decimal?, decimal?, decimal?, decimal?, decimal?)[]
+            .Select(period => (period.AcquiredFrom, period.ZeroEmission?.Value, period.Fixed?.Value, period.Floor?.Value, period.Ceiling?.Value,
+                period.WithoutCo2Data?.Value, period.HighEmissionFrom?.Value))
+            .ShouldBe(new (DateOnly, decimal?, decimal?, decimal?, decimal?, decimal?, decimal?)[]
             {
-                (DateOnly.MinValue, null, 0.50m, 1.00m, 0.40m, 200m),
-                (new DateOnly(2023, 7, 1), null, null, 0.50m, 0m, null),
-                (new DateOnly(2026, 1, 1), 0m, null, null, null, null),
+                (DateOnly.MinValue, null, null, 0.50m, 1.00m, 0.40m, 200m),
+                (new DateOnly(2023, 7, 1), null, null, null, 0.50m, 0m, null),
+                (new DateOnly(2026, 1, 1), null, 0m, null, null, null, null),
             });
     }
 

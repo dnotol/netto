@@ -12,10 +12,11 @@ namespace Netto.Core.CompanyCar;
 // its order date, fuel and CO2 give (art. 66 and 550, as art. 198bis leaves them to companies), and
 // adds back to its taxable income a share of the benefit before the contribution, 17%, or 40% when it
 // pays the fuel for private use (art. 198 §1, 9° and 9°bis), which for an electric car is its
-// charging (the SPF course's Module 5.3). An electric car ordered or leased before 2027 stays
-// deductible in full for its whole life (circular 2024/C/50); a car that emits CO2 is deducted by its
-// DeductionPeriods. The benefit taxed is pay (BenefitAsPay), so it is in the income INASTI's
-// contributions are owed on (BenefitInContributions).
+// charging (the SPF course's Module 5.3). Every car is deducted by the one of its DeductionPeriods its
+// order or lease date falls in; one that emits no CO2 at ZeroEmissionDeduction unless the period sets
+// a rate of its own, which no 2026 period does: an electric car ordered or leased before 2027 stays
+// deductible in full for its whole life (circular 2024/C/50). The benefit taxed is pay (BenefitAsPay),
+// so it is in the income INASTI's contributions are owed on (BenefitInContributions).
 public sealed record CarRules(
     int IncomeYear,
     Source Benefit,
@@ -243,13 +244,16 @@ public sealed record CarRules(
 // the month of its first registration being the first.
 public sealed record CarAgeBand(int FromMonth, RuleAmount Coefficient);
 
-// How a company deducts the costs of a car that emits CO2 ordered or leased from AcquiredFrom on, up
-// to the next period: a Fixed rate, or the deduction formula between its Floor (none: nothing) and
-// its Ceiling; WithoutCo2Data when the vehicle registration holds no CO2 for the car, which a car
-// emitting HighEmissionFrom g/km or more takes too. PlugInReading is the text that says how a plug-in
-// hybrid of the period is deducted, when one does.
+// How a company deducts the costs of a car ordered or leased from AcquiredFrom on, up to the next
+// period. A car that emits no CO2 at ZeroEmission, when the period sets a rate of its own, or else at
+// the year's CarRules.ZeroEmissionDeduction. A car that emits CO2 at a Fixed rate, or by the deduction
+// formula between its Floor (none: nothing) and its Ceiling; WithoutCo2Data when the vehicle
+// registration holds no CO2 for the car, which a car emitting HighEmissionFrom g/km or more takes too.
+// PlugInReading is the text that says how a plug-in hybrid of the period is deducted, when one does.
 public sealed record CarDeductionPeriod(DateOnly AcquiredFrom)
 {
+    public RuleAmount? ZeroEmission { get; init; }
+
     public Source? PlugInReading { get; init; }
 
     public RuleAmount? Fixed { get; init; }

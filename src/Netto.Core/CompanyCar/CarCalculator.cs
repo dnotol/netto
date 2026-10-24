@@ -85,19 +85,22 @@ public static class CarCalculator
         }, null);
     }
 
-    // The rate a company deducts the car's costs at beyond the carve-out. An electric car in full. A
-    // car that emits CO2 by the period its order or lease date falls in: its fixed rate, or the
-    // texts' rate without CO2 data or from the high emission, or the formula 120% − 0.5% × coefficient
-    // × the CO2 counted, rounded to a tenth of a percent, held between the period's floor (nothing
-    // without one) and its ceiling. With the amounts it used and the texts it rests on, for the costs'
-    // step.
+    // The rate a company deducts the car's costs at beyond the carve-out, by the period its order or
+    // lease date falls in. An electric car at the period's own rate, or else the year's, in full in
+    // 2026. A car that emits CO2 at the period's fixed rate, or the texts' rate without CO2 data or
+    // from the high emission, or the formula 120% − 0.5% × coefficient × the CO2 counted, rounded to a
+    // tenth of a percent, held between the period's floor (nothing without one) and its ceiling. With
+    // the amounts it used and the texts it rests on, for the costs' step.
     private static DeductionTaken Deduction(CarRules rules, CarFacts car, Co2Taken co2)
     {
+        var period = rules.DeductionPeriods.Last(period => period.AcquiredFrom <= car.Acquired);
         if (!car.Engine.EmitsCo2())
-            return new DeductionTaken(rules.ZeroEmissionDeduction.Value, [rules.ZeroEmissionDeduction], [rules.Acquisition]);
+        {
+            var zeroEmission = period.ZeroEmission ?? rules.ZeroEmissionDeduction;
+            return new DeductionTaken(zeroEmission.Value, [zeroEmission], [rules.Acquisition]);
+        }
 
         var plugIn = car.Engine.IsPlugInHybrid();
-        var period = rules.DeductionPeriods.Last(period => period.AcquiredFrom <= car.Acquired);
         if (period.Fixed is { } fixedRate)
             return new DeductionTaken(fixedRate.Value, [fixedRate], plugIn ? [rules.Acquisition, rules.CompanyExclusions, rules.PlugInDeduction] : [rules.Acquisition]);
 

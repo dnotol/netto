@@ -1,5 +1,6 @@
 using Netto.Core.BenefitsInKind;
 using Netto.Core.CompanyCar;
+using Netto.Core.Rules;
 using Shouldly;
 
 namespace Netto.Tests.CompanyCar;
@@ -149,6 +150,34 @@ public class CarCalculatorTests
         var result = Compute(Car(50_000m, new DateOnly(2026, 1, 10), yearlyCosts: 9_250.50m));
 
         (result.Costs, result.Deductible).ShouldBe((9_250.50m, 9_250.50m));
+    }
+
+    // A later year may deduct a car that emits no CO2 by the date it was ordered or leased, as it does a
+    // car that emits CO2: the period that date falls in gives its rate when it sets one. Made-up rules,
+    // the 2026 ones with their last period deducting such a car at 95%.
+    private static readonly RuleAmount ReducedZeroEmission = new("zero_emission_from_2026_deduction_rate", 0.95m, Rules.Deduction);
+
+    private static readonly CarRules RulesWithAReducedZeroEmissionPeriod =
+        Rules with { DeductionPeriods = [Rules.DeductionPeriods[0], Rules.DeductionPeriods[1], Rules.DeductionPeriods[2] with { ZeroEmission = ReducedZeroEmission }] };
+
+    [Fact]
+    public void Compute_electricCarOrderedInAPeriodWithItsOwnRate_isDeductedAtThatRate()
+    {
+        var car = Car(40_000m, new DateOnly(2026, 1, 10)) with { Acquired = new DateOnly(2026, 3, 1) };
+
+        var result = CarCalculator.Compute(RulesWithAReducedZeroEmissionPeriod, car).Value.ShouldNotBeNull();
+
+        (result.DeductionRate, result.DeductionAmounts.Single()).ShouldBe((0.95m, ReducedZeroEmission));
+    }
+
+    [Fact]
+    public void Compute_electricCarOrderedInAPeriodWithoutARate_isDeductedAtTheYearsRate()
+    {
+        var car = Car(40_000m, new DateOnly(2026, 1, 10)) with { Acquired = new DateOnly(2025, 3, 1) };
+
+        var result = CarCalculator.Compute(RulesWithAReducedZeroEmissionPeriod, car).Value.ShouldNotBeNull();
+
+        (result.DeductionRate, result.DeductionAmounts.Single()).ShouldBe((1.00m, Rules.ZeroEmissionDeduction));
     }
 
     // Until its catalogue value is given there is no car: no benefit, and its costs and contribution
