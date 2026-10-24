@@ -1,3 +1,4 @@
+using Netto.Core.SocialContributions;
 using Netto.Web.Client;
 using Netto.Web.Client.River;
 using Shouldly;
@@ -89,6 +90,80 @@ public class SplitSearchViewTests
         var best = View(Example.WithReserve(60_000m)).Best.ShouldNotBeNull();
 
         (best.Level.Pay, best.YoursKeepsReserve, best.IsYours).ShouldBe((18_890m, false, false));
+    }
+
+    // The split's button moves the pay to the best pay as a typed pay is set, yours, and changes nothing
+    // else of the river.
+    [Fact]
+    public void MoveTo_setsThePayToTheBestPayAsYours()
+    {
+        var best = View(Example).Best.ShouldNotBeNull();
+
+        var moved = best.MoveTo(Example);
+
+        (moved.DirectorPay, moved.SameBesidesPay(Example)).ShouldBe((new Input<decimal>(20_799m, InputOrigin.Yours), true));
+    }
+
+    // The river runs at that pay, leaving what the search said there, and the pay is then the best:
+    // the button has nothing more to offer.
+    [Fact]
+    public void MoveTo_theRiverRunsAtTheBestPayAndTheOfferEnds()
+    {
+        var best = View(Example).Best.ShouldNotBeNull();
+
+        var moved = best.MoveTo(Example);
+
+        (moved.Run().Year.ShouldNotBeNull().NetInPocket, View(moved).Best.ShouldNotBeNull().IsYours).ShouldBe((best.Level.NetInPocket, true));
+    }
+
+    // A pay whose profit cannot keep the reserve moves to the best pay that does.
+    [Fact]
+    public void MoveTo_paySetCannotKeepTheReserve_movesToTheBestPayThatDoes()
+    {
+        var reserve60000 = Example.WithReserve(60_000m);
+        var best = View(reserve60000).Best.ShouldNotBeNull();
+
+        var moved = View(best.MoveTo(reserve60000)).Best.ShouldNotBeNull();
+
+        (moved.Level.Pay, moved.YoursKeepsReserve, moved.IsYours).ShouldBe((18_890m, true, true));
+    }
+
+    // A royalty that follows the pay is the one a ruling accepts at the new pay, as when the pay is typed.
+    [Fact]
+    public void MoveTo_royaltyFollowingThePay_movesWithIt()
+    {
+        var following = RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithCreativeShare(0.75m);
+        var best = View(following).Best.ShouldNotBeNull();
+        var royaltyBefore = following.Run().Year.ShouldNotBeNull().Copyright.Royalty;
+
+        var royalty = best.MoveTo(following).Run().Year.ShouldNotBeNull().Copyright.Royalty;
+
+        (royalty, royalty == royaltyBefore).ShouldBe((best.Level.Royalty, false));
+    }
+
+    // Who pays the contributions moves the best pay: the pay that was the best is not any more, and the
+    // button offers the new one (SplitSearchTests: 17,237 on the payslip with the company paying).
+    [Fact]
+    public void ContributionsPayerChanged_theBestPayMovesAndThePaySetIsNotTheBest()
+    {
+        var atTheBest = Example.WithDirectorPay(20_799m);
+        var changed = atTheBest.WithContributionsPaidBy(ContributionsPaidBy.Company);
+
+        var before = View(atTheBest).Best.ShouldNotBeNull();
+        var after = View(changed).Best.ShouldNotBeNull();
+
+        (before.IsYours, after.IsYours, after.Level.Pay).ShouldBe((true, false, 17_237m));
+    }
+
+    [Fact]
+    public void ContributionsPayerChanged_movingToTheNewBestPayEndsTheOfferAgain()
+    {
+        var changed = Example.WithDirectorPay(20_799m).WithContributionsPaidBy(ContributionsPaidBy.Company);
+        var best = View(changed).Best.ShouldNotBeNull();
+
+        var moved = View(best.MoveTo(changed)).Best.ShouldNotBeNull();
+
+        (moved.IsYours, moved.Level.Pay).ShouldBe((true, 17_237m));
     }
 
     // On 10,000 of profit all of it as pay leaves 6,438.32 and keeps the rate; the best pay under the

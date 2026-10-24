@@ -325,6 +325,11 @@ internal sealed record AxisTick(decimal At, decimal Amount);
 internal sealed record BestPayView(PayLevel Level, decimal Gain, bool YoursKeepsReserve, decimal? Reach)
 {
     public bool IsYours => YoursKeepsReserve && Gain < 1m;
+
+    // The river with its pay set to the best pay, as a typed pay is (RiverInputs.WithDirectorPay): the
+    // split's button offers it while the pay set is not the best. The best pay is the search's for the
+    // river's own facts, which the pay moving alone leaves as they are, so the pay set there is the best.
+    public RiverInputs MoveTo(RiverInputs river) => river.WithDirectorPay(Level.Pay);
 }
 
 // How the best pay stands against the reduced corporate rate: whether it keeps the rate or gives it
