@@ -10,8 +10,6 @@ public static class AllowanceCalculator
     public const string ComputerAllowanceAboveMaximum = "computer_allowance_above_maximum";
     public const string PhoneCostsNegative = "phone_costs_negative";
 
-    private const int MonthsInAYear = 12;
-
     // The allowances as the rules accept them: each a yearly amount, at most the year's sum of its
     // monthly maxima; a director who works from home only part of the year enters less. Above it the
     // allowance would no longer be a reimbursement the administration accepts without documents, which
@@ -43,11 +41,11 @@ public static class AllowanceCalculator
             .Select((maximum, i) => (NextFromMonth(rules, i) - maximum.FromMonth) * maximum.Amount.Value)
             .Sum();
 
-    public static decimal InternetAllowanceMaximum(AllowanceRules rules) => MonthsInAYear * rules.InternetAllowanceMonthlyMaximum.Value;
+    public static decimal InternetAllowanceMaximum(AllowanceRules rules) => YearParts.Months * rules.InternetAllowanceMonthlyMaximum.Value;
 
-    public static decimal ComputerAllowanceMaximum(AllowanceRules rules) => MonthsInAYear * rules.ComputerAllowanceMonthlyMaximum.Value;
+    public static decimal ComputerAllowanceMaximum(AllowanceRules rules) => YearParts.Months * rules.ComputerAllowanceMonthlyMaximum.Value;
 
     // The month the next maximum starts in, or the month after December.
     private static int NextFromMonth(AllowanceRules rules, int i) =>
-        i + 1 < rules.OfficeAllowanceMaxima.Count ? rules.OfficeAllowanceMaxima[i + 1].FromMonth : MonthsInAYear + 1;
+        i + 1 < rules.OfficeAllowanceMaxima.Count ? rules.OfficeAllowanceMaxima[i + 1].FromMonth : YearParts.Months + 1;
 }

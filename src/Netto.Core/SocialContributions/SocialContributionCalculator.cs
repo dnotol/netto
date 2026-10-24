@@ -8,7 +8,7 @@ public static class SocialContributionCalculator
     public static decimal Annual(SocialContributionRules rules, decimal incomeBase) =>
         Billed(Unrounded(rules, incomeBase));
 
-    internal static decimal Billed(decimal unroundedAnnual) => 4 * Money.RoundToCent(unroundedAnnual / 4);
+    internal static decimal Billed(decimal unroundedAnnual) => YearParts.Quarters * Money.RoundToCent(unroundedAnnual / YearParts.Quarters);
 
     // The exact yearly amount before billing, for the gross-to-net fixed point, which has to be
     // solved without rounding (see GrossToNet).

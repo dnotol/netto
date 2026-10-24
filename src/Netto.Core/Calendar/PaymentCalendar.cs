@@ -36,7 +36,7 @@ public sealed record PaymentCalendar(
     public (PaymentCalendar? Value, string? Error) WithBilled(decimal? billedEachQuarter) => billedEachQuarter switch
     {
         < 0m => (null, BilledContributionsNegative),
-        { } billed => (this with { Contributions = Contributions with { Billed = billed, Regularisation = Contributions.EachQuarter * 4 - billed * 4 } }, null),
+        { } billed => (this with { Contributions = Contributions with { Billed = billed, Regularisation = Contributions.EachQuarter * YearParts.Quarters - billed * YearParts.Quarters } }, null),
         null => (this with { Contributions = Contributions with { Billed = null, Regularisation = null } }, null),
     };
 
@@ -104,18 +104,16 @@ public sealed record CalendarMonth(DateOnly Month, PayStatementMonth Pay, bool P
 public sealed record ContributionQuarters(
     IReadOnlyList<CalendarQuarter> Quarters, decimal EachQuarter, bool PaidByCompany, decimal? Billed, decimal? Regularisation, Source Source)
 {
-    private const int QuartersInYear = 4;
-
     internal static ContributionQuarters Of(GrossToNetResult pay, DateOnly today)
     {
         var rules = SocialContributionRules.For(pay.IncomeYear)
             ?? throw new ArgumentException($"Income year {pay.IncomeYear} has no social contribution rules.", nameof(pay));
-        var quarters = Enumerable.Range(0, QuartersInYear)
+        var quarters = Enumerable.Range(0, YearParts.Quarters)
             .Select(i => new DateOnly(pay.IncomeYear, 1 + 3 * i, 1))
             .Select(from => new CalendarQuarter(from, from.AddMonths(3) <= today))
             .ToList();
 
-        return new ContributionQuarters(quarters, pay.SocialContributions / QuartersInYear, pay.ContributionsPaidByCompany > 0m, null, null, rules.Source);
+        return new ContributionQuarters(quarters, pay.SocialContributions / YearParts.Quarters, pay.ContributionsPaidByCompany > 0m, null, null, rules.Source);
     }
 }
 

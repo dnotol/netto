@@ -47,7 +47,6 @@ public static class GrossToNet
     private const decimal NextSlice = 1_000m;
     private const decimal Convergence = 0.000001m;
     private const int MaximumPasses = 100;
-    private const int MonthsInYear = 12;
 
     // The gross pay is the pay on the payslip, whoever pays the contributions; not saying who runs the
     // pay as the director's own. The other income is the net income taxed with the pay, none unless
@@ -219,11 +218,11 @@ public static class GrossToNet
     // month; a month from UnmodelledRulesFrom is flagged.
     private static PayStatement Statement(WithholdingRules rules, Figures figures)
     {
-        var grossPay = Money.RoundToCent(figures.GrossPay / MonthsInYear);
-        var paidByCompany = Money.RoundToCent(figures.ContributionsPaidByCompany / MonthsInYear);
-        var benefit = Money.RoundToCent(figures.BenefitInKind / MonthsInYear);
+        var grossPay = Money.RoundToCent(figures.GrossPay / YearParts.Months);
+        var paidByCompany = Money.RoundToCent(figures.ContributionsPaidByCompany / YearParts.Months);
+        var benefit = Money.RoundToCent(figures.BenefitInKind / YearParts.Months);
         var withholding = figures.Withholding.MonthlyWithholding;
-        var months = Enumerable.Range(1, MonthsInYear)
+        var months = Enumerable.Range(1, YearParts.Months)
             .Select(month => new PayStatementMonth(
                 month, grossPay, paidByCompany, benefit, figures.Withholding.MonthlyTaxablePay, withholding, grossPay - withholding,
                 new DateOnly(rules.IncomeYear, month, 1) >= rules.UnmodelledRulesFrom.Value))
@@ -284,8 +283,8 @@ public static class GrossToNet
                 : SolveContributions(socialRules, taxRules, grossPay + benefitInKind + asPay);
             var paidByCompany = companyPays ? contributions : 0m;
             var taxablePay = grossPay + paidByCompany + benefitInKind + asPay;
-            var withholding = WithholdingCalculator.Figures(withholdingRules, Money.RoundToCent((taxablePay - asPay) / MonthsInYear));
-            var withheld = prepayments.Withheld ?? withholding.MonthlyWithholding * MonthsInYear;
+            var withholding = WithholdingCalculator.Figures(withholdingRules, Money.RoundToCent((taxablePay - asPay) / YearParts.Months));
+            var withheld = prepayments.Withheld ?? withholding.MonthlyWithholding * YearParts.Months;
             var withWithheld = prepayments with { Withheld = withheld };
             var tax = PersonalTaxCalculator.Compute(taxRules, taxablePay, contributions, municipalRate);
             var advancePayments = IncomeTaxAdvancePaymentCalculator.Figures(taxRules.AdvancePayments, tax.IncomeTax, tax.LowEarnedIncomeCredit, withWithheld);

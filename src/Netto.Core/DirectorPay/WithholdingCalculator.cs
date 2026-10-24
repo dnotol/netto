@@ -10,8 +10,6 @@ public static class WithholdingCalculator
 {
     public const string MonthlyPayNegative = "monthly_pay_negative";
 
-    private const int MonthsInYear = 12;
-
     public static (WithholdingResult? Value, string? Error) Compute(WithholdingRules rules, decimal monthlyTaxablePay)
     {
         if (monthlyTaxablePay < 0m)
@@ -24,7 +22,7 @@ public static class WithholdingCalculator
     internal static WithholdingResult Figures(WithholdingRules rules, decimal monthlyTaxablePay)
     {
         var reduction = Money.RoundToCent(OnTable(rules.Reduction, monthlyTaxablePay));
-        var annualGross = Money.RoundToCent(monthlyTaxablePay - reduction) * MonthsInYear;
+        var annualGross = Money.RoundToCent(monthlyTaxablePay - reduction) * YearParts.Months;
         var flatRateCosts = Math.Min(Money.RoundToCent(annualGross * rules.FlatRateCostsRate.Value), rules.FlatRateCostsMaximum.Value);
         var annualNetTaxable = annualGross - flatRateCosts;
         var basicTax = Money.RoundToCent(OnTable(rules.Scale, annualNetTaxable));
@@ -39,7 +37,7 @@ public static class WithholdingCalculator
             basicTax,
             rules.TaxFreeAmountReduction.Value,
             annualTax,
-            Money.RoundToCent(annualTax / MonthsInYear));
+            Money.RoundToCent(annualTax / YearParts.Months));
     }
 
     // What the table gives for the amount: the first band whose upper limit the amount does not
