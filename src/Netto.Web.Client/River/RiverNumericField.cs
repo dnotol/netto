@@ -46,6 +46,9 @@ public sealed class RiverNumericField<T> : MudNumericField<T>
 
     // The river's defaults go in before the card's parameters, so a parameter the card gives wins. They are
     // set before MudBlazor first reads its parameters, which is when it takes the format and the culture.
+    // They are set again on every call, which holds because each call carries every parameter the card
+    // gives: a call carrying only cascading parameters would reset what the card gave to the defaults.
+    // Nothing the field takes cascades today; one that does needs the defaults set on the first call only.
     public override Task SetParametersAsync(ParameterView parameters)
     {
         var takenOnLeaving = parameters.TryGetValue<bool>(nameof(TakenOnLeaving), out var leaving) && leaving;

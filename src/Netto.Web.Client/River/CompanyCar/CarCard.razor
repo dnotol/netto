@@ -43,9 +43,8 @@
                             <MudSelectItem T="int" Value="month">@MonthName(month)</MudSelectItem>
                         }
                     </MudSelect>
-                    <MudNumericField T="int" Value="Inputs.Car.FirstRegistration.Value.Year" ValueChanged="OnRegistrationYearChanged" Label="@L["YearLabel"]"
-                                     Min="FirstYear" Max="LastYear" HideSpinButtons="true" Culture="Formats.Culture" Format="0"
-                                     Variant="Variant.Outlined" Margin="Margin.Dense" Class="car__year" />
+                    <RiverNumericField T="int" Value="Inputs.Car.FirstRegistration.Value.Year" ValueChanged="OnRegistrationYearChanged" Label="@L["YearLabel"]"
+                                       Min="FirstYear" Max="LastYear" Format="0" TakenOnLeaving="true" Class="car__year" />
                 </div>
             </RiverField>
             <RiverField Label="@L["EngineLabel"]" For="river-car-engine" Origin="Inputs.Car.Engine.Origin" Help="@L["EngineHint"]">
@@ -75,10 +74,9 @@
                             <MudSelectItem T="int" Value="month">@MonthName(month)</MudSelectItem>
                         }
                     </MudSelect>
-                    <MudNumericField T="int" Value="Inputs.Car.Acquired.Value.Year" ValueChanged="OnAcquiredYearChanged" Label="@L["YearLabel"]"
-                                     Min="FirstYear" Max="LastYear" HideSpinButtons="true" Culture="Formats.Culture" Format="0"
-                                     Variant="Variant.Outlined" Margin="Margin.Dense" Class="car__year"
-                                     Error="@(Refused is CarCalculator.AcquiredAfterYear or CarCalculator.PlugInFuelCapped)" />
+                    <RiverNumericField T="int" Value="Inputs.Car.Acquired.Value.Year" ValueChanged="OnAcquiredYearChanged" Label="@L["YearLabel"]"
+                                       Min="FirstYear" Max="LastYear" Format="0" TakenOnLeaving="true" Class="car__year"
+                                       Error="@(Refused is CarCalculator.AcquiredAfterYear or CarCalculator.PlugInFuelCapped)" Refusal="@Refused" />
                 </div>
             </RiverField>
             @if (Inputs.Car.Engine.Value.IsPlugInHybrid() && Inputs.Car.FakeHybrid.Value)

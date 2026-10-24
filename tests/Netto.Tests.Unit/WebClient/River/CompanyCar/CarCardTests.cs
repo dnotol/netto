@@ -170,6 +170,25 @@ public class CarCardTests
             () => OriginChips(html).Count(chip => chip == "example").ShouldBe(2));
     }
 
+    // A car ordered after the end of the year is refused, in « Your car », which opens on it: its year
+    // field is marked as every number field of the river is, the engine's message tied to it beside the
+    // card's own, so MudBlazor's validation cannot clear the mark after the next edit (RiverNumericField);
+    // the first registration's year, accepted, is not marked.
+    [Fact]
+    public async Task Card_orderedAfterTheYear_marksTheOrdersYearWithTheEnginesMessage()
+    {
+        var inputs = ElectricCar.WithCarAcquired(new DateOnly(2027, 3, 1));
+        var run = inputs.Run();
+        var message = Refusals.Get($"Error_{CarCalculator.AcquiredAfterYear}").ShouldNotBeNull();
+
+        var html = System.Net.WebUtility.HtmlDecode(
+            await RenderAsync(typeof(CarCard), new Folds(new BrowserStorage()), new() { ["Inputs"] = inputs, ["Run"] = run, ["Refused"] = run.Error }));
+        var marked = Regex.Matches(html, "river-number--refused\"[^>]*>.*?<input[^>]*value=\"(?<year>[^\"]*)\"", RegexOptions.Singleline);
+
+        (run.Error, string.Join(" ", marked.Select(field => field.Groups["year"].Value)), Regex.Count(html, Regex.Escape(message)))
+            .ShouldBe((CarCalculator.AcquiredAfterYear, "2027", 2));
+    }
+
     private static string Text(string key, params object[] figures) =>
         Resources.Format(key, figures);
 
