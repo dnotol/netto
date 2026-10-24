@@ -2,7 +2,11 @@
 
   <!-- TargetFramework, ImplicitUsings, Nullable, LangVersion come from ..\..\Directory.Build.props -->
 
+  <!-- The site is English only and Formats is built on the invariant culture, so the browser downloads no
+       ICU data (about 0.2 MB compressed for each visitor, 0.6 MB for the three files together). A
+       translation turns this off (ClientGlobalizationTests). -->
   <PropertyGroup>
+    <InvariantGlobalization>true</InvariantGlobalization>
     <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
     <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
     <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
