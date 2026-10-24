@@ -1,9 +1,9 @@
 using Netto.Core.Allowances;
-using Netto.Core.Calendar;
 using Netto.Core.CompanyCar;
 using Netto.Core.Copyright;
 using Netto.Core.DirectorPay;
 using Netto.Core.Rent;
+using Netto.Core.Rules;
 using Netto.Core.Simulation;
 using Netto.Core.Vouchers;
 using Netto.Web.Client.River;
@@ -11,24 +11,24 @@ using Shouldly;
 
 namespace Netto.Tests.WebClient.River;
 
-// RiverErrors.Owner names the card that shows a refusal of the engine, the one holding the refused field.
-// The keys are the engine's own (EngineRefusals), so a refusal the engine adds and no card owns fails here
-// rather than reaching the river with no field marked. A lever's calculator refuses only its card's fields;
-// the year's, the pay's and the royalty's keys are spread over cards, which the table below names.
+// RiverErrors.Owner names the card that shows a refusal of the engine, the one holding the refused input,
+// over every input there is, so an input the engine adds and no card holds fails here rather than reaching
+// the river with no field marked. The refusals are the engine's own (EngineRefusals). A lever's calculator
+// refuses only its card's inputs; the year's, the pay's and the royalty's are spread over cards, which the
+// table below names.
 public class RiverErrorsTests
 {
-    // The refusals no card of the river shows, each with where it shows instead.
-    private static readonly Dictionary<string, string> NotOnACard = new()
+    // The inputs no card of the river holds, each with where its refusal shows instead.
+    private static readonly Dictionary<RefusedInput, string> NotOnACard = new()
     {
-        [GrossToNet.IncomeYearNotSupported] = "the river's alert, above every card: an income year with no rules has no field to mark",
-        [PaymentCalendar.BilledContributionsNegative] = "When to pay, which holds what the fund bills each quarter",
-        [WithholdingCalculator.MonthlyPayNegative] = "nowhere yet: the river reaches the key formula through GrossToNet, which refuses a negative pay first",
+        [RefusedInput.IncomeYear] = "the river's alert, above every card: an income year with no rules has no field to mark",
+        [RefusedInput.BilledContributions] = "When to pay, which holds what the fund bills each quarter and shows its refusal itself",
     };
 
     // The cards the year's, the pay's and the royalty's refusals show on, the module named rather than typed
     // (RiverModule is internal, a theory's parameters public): the pay is the split's while the company is
-    // there, Director pay's own once it is skipped.
-    private static readonly (string Error, bool CompanySkipped, string Module)[] SpreadOverCards =
+    // there, Director pay's own once it is skipped, and so is the key formula's month of it.
+    private static readonly (Refusal Refusal, bool CompanySkipped, string Module)[] SpreadOverCards =
     [
         (YearSimulation.RevenueNegative, false, "CompanyYear"),
         (YearSimulation.RunningCostsNegative, false, "CompanyYear"),
@@ -37,6 +37,8 @@ public class RiverErrorsTests
         (YearSimulation.AdvancePaymentNegative, false, "CorporateTax"),
         (GrossToNet.GrossPayNegative, false, "Split"),
         (GrossToNet.GrossPayNegative, true, "DirectorPay"),
+        (WithholdingCalculator.MonthlyPayNegative, false, "Split"),
+        (WithholdingCalculator.MonthlyPayNegative, true, "DirectorPay"),
         (GrossToNet.MunicipalRateOutOfRange, false, "DirectorPay"),
         (GrossToNet.MunicipalRateOutOfRange, true, "DirectorPay"),
         (GrossToNet.TaxWithheldNegative, false, "DirectorPay"),
@@ -48,27 +50,28 @@ public class RiverErrorsTests
         (CopyrightCalculator.CreativeShareOutOfRange, false, "Copyright"),
     ];
 
-    public static TheoryData<string, bool, string> SpreadOverCardsData => new(SpreadOverCards);
+    public static TheoryData<Refusal, bool, string> SpreadOverCardsData => new(SpreadOverCards);
 
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void Owner_everyEngineRefusal_isACardsUnlessNotOnACard(bool companySkipped)
+    public void Owner_everyEngineRefusal_isACardsUnlessItsInputIsNotOnACard(bool companySkipped)
     {
-        var refusals = EngineRefusals.Keys.Except(NotOnACard.Keys).ToList();
+        var refusals = EngineRefusals.All.Where(refusal => !NotOnACard.ContainsKey(refusal.Input)).ToList();
 
-        var unowned = refusals.Where(error => RiverErrors.Owner(error, companySkipped) == RiverModule.River).ToList();
+        var unowned = refusals.Where(refusal => RiverErrors.Owner(refusal, companySkipped) == RiverModule.River).ToList();
 
         refusals.Count.ShouldBeGreaterThan(30);
         unowned.ShouldBeEmpty();
     }
 
-    // A refusal listed here is the engine's, and no card claims it, or the list would hide a card's.
+    // An input listed here is one the engine refuses, and no card claims it, or the list would hide a card's.
     [Fact]
-    public void Owner_refusalNotOnACard_isTheEnginesAndNoCards()
+    public void Owner_inputNotOnACard_isTheEnginesAndNoCards()
     {
         var wrong = NotOnACard.Keys
-            .Where(error => !EngineRefusals.Keys.Contains(error) || RiverErrors.Owner(error, false) != RiverModule.River || RiverErrors.Owner(error, true) != RiverModule.River)
+            .Where(input => EngineRefusals.All.FirstOrDefault(refusal => refusal.Input == input) is not { } refusal
+                || RiverErrors.Owner(refusal, false) != RiverModule.River || RiverErrors.Owner(refusal, true) != RiverModule.River)
             .ToList();
 
         wrong.ShouldBeEmpty();
@@ -83,7 +86,7 @@ public class RiverErrorsTests
     {
         var refusals = EngineRefusals.DeclaredBy(calculator).ToList();
 
-        var elsewhere = refusals.Where(error => RiverErrors.Owner(error, false).ToString() != module).ToList();
+        var elsewhere = refusals.Where(refusal => RiverErrors.Owner(refusal, false).ToString() != module).ToList();
 
         refusals.ShouldNotBeEmpty();
         elsewhere.ShouldBeEmpty();
@@ -91,9 +94,9 @@ public class RiverErrorsTests
 
     [Theory]
     [MemberData(nameof(SpreadOverCardsData))]
-    public void Owner_yearPayOrRoyaltyRefusal_isTheCardHoldingTheField(string error, bool companySkipped, string module)
+    public void Owner_yearPayOrRoyaltyRefusal_isTheCardHoldingTheField(Refusal refusal, bool companySkipped, string module)
     {
-        var owner = RiverErrors.Owner(error, companySkipped);
+        var owner = RiverErrors.Owner(refusal, companySkipped);
 
         owner.ToString().ShouldBe(module);
     }
@@ -102,10 +105,48 @@ public class RiverErrorsTests
     [Fact]
     public void SpreadOverCards_everyRefusalOfTheYearThePayAndTheRoyalty_isNamed()
     {
-        var declared = new[] { typeof(YearSimulation), typeof(GrossToNet), typeof(CopyrightCalculator) }.SelectMany(EngineRefusals.DeclaredBy);
+        var declared = new[] { typeof(YearSimulation), typeof(GrossToNet), typeof(WithholdingCalculator), typeof(CopyrightCalculator) }
+            .SelectMany(EngineRefusals.DeclaredBy)
+            .ToList();
 
-        var unnamed = declared.Except(NotOnACard.Keys).Except(SpreadOverCards.Select(row => row.Error)).ToList();
+        var unnamed = declared.Where(refusal => !NotOnACard.ContainsKey(refusal.Input)).Except(SpreadOverCards.Select(row => row.Refusal)).ToList();
 
+        declared.ShouldNotBeEmpty();
         unnamed.ShouldBeEmpty();
+    }
+
+    // Every input has its case, whether or not a refusal refuses it yet: the switch is exhaustive.
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Owner_everyInput_hasACase(bool companySkipped)
+    {
+        var inputs = Enum.GetValues<RefusedInput>();
+
+        var unmapped = inputs.Where(input => !Maps(new Refusal("any_refusal", input), companySkipped)).ToList();
+
+        unmapped.ShouldBeEmpty();
+    }
+
+    // An input no case names is a bug, never a refusal shown nowhere.
+    [Fact]
+    public void Owner_inputNoCaseNames_throws()
+    {
+        var refusal = new Refusal("made_up", (RefusedInput)int.MaxValue);
+
+        Should.Throw<ArgumentOutOfRangeException>(() => RiverErrors.Owner(refusal, false));
+    }
+
+    private static bool Maps(Refusal refusal, bool companySkipped)
+    {
+        try
+        {
+            RiverErrors.Owner(refusal, companySkipped);
+            return true;
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            return false;
+        }
     }
 }

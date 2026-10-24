@@ -76,10 +76,6 @@ internal sealed record CarView(
 // refuses an amount.
 internal sealed record CarComparison(decimal PocketWith, decimal PocketWithout, decimal TaxesOnPayAdded)
 {
-    // What the same car would cost privately cannot be below nothing; the card refuses it, the engine
-    // never seeing it.
-    public const string PrivateCostNegative = "car_private_cost_negative";
-
     // As the user gives it, or none until given.
     public decimal? PrivateCost { get; init; }
 
@@ -88,8 +84,9 @@ internal sealed record CarComparison(decimal PocketWith, decimal PocketWithout, 
     // None until the private cost is given, or while it is refused; a plain zero for a tie.
     public decimal? AgainstPrivate => PrivateCost is { } cost && cost >= 0m ? Difference(cost, CashCost) : null;
 
-    // The private cost's refusal, or none.
-    public string? Refused => PrivateCost < 0m ? PrivateCostNegative : null;
+    // The private cost's refusal, or none: it cannot be below nothing. The card refuses it, the engine never
+    // seeing it, with the refusal Core declares for it.
+    public Refusal? Refused => PrivateCost < 0m ? CarCalculator.PrivateCostNegative : null;
 
     public static CarComparison? From(RiverInputs inputs, RiverRun run)
     {

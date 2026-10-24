@@ -1,3 +1,4 @@
+using Netto.Core.Rules;
 using Netto.Core.Vouchers;
 
 namespace Netto.Core.Simulation.Levers;
@@ -8,7 +9,7 @@ internal sealed record VoucherLever(VoucherRules Rules) : Lever
 {
     public override decimal FromProfit(Scenario scenario) => VoucherCalculator.Cost(Rules, scenario.Vouchers);
 
-    public override (LeverYear? Value, string? Error) Compute(Scenario scenario, decimal left)
+    public override (LeverYear? Value, Refusal? Error) Compute(Scenario scenario, decimal left)
     {
         var (vouchers, error) = VoucherCalculator.Compute(Rules, scenario.Vouchers);
         return vouchers is null ? (null, error) : (new VoucherYear(Rules, vouchers, scenario.Vouchers.Any), null);

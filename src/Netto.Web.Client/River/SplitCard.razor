@@ -1,6 +1,7 @@
 @using System.Globalization
 @using Netto.Core.Copyright
 @using Netto.Core.DirectorPay
+@using Netto.Core.Rules
 @using Netto.Core.Simulation
 @inject IStringLocalizer<SplitCard> L
 
@@ -86,7 +87,7 @@
         </div>
         <RiverNumericField T="decimal" InputId="river-split-pay" Value="_view.FieldPay" ValueChanged="OnPayChanged"
                            Euros="true" TakenOnLeaving="true"
-                           Error="@(Refused == GrossToNet.GrossPayNegative)" Refusal="@Refused" />
+                           Error="@(Refused?.Input == RefusedInput.DirectorPay)" Refusal="@Refused" />
         <p class="split__ceiling">@L["Ceiling", Formats.Euros(_view.Ceiling)]</p>
     </RiverField>
     @if (_search is { } shown)
@@ -167,9 +168,9 @@
     [Parameter]
     public SplitSearchResult? Search { get; set; }
 
-    // The engine's error key when it refuses the pay or the royalty.
+    // The engine's refusal of the pay or the royalty.
     [Parameter]
-    public string? Refused { get; set; }
+    public Refusal? Refused { get; set; }
 
     private SplitView _view = default!;
     private SplitSearchView? _search;
@@ -211,7 +212,7 @@
     // What the pointer reads of the pay it is on; nothing while it is away from the curve.
     private string PointerText => SplitFigures.Pointer(_pointer, _view.Royalty) is { } reading ? L[reading.Key, [.. reading.Args]].Value : "";
 
-    private bool RoyaltyRefused => Refused is CopyrightCalculator.RoyaltyNegative or CopyrightCalculator.RoyaltyAboveProfit;
+    private bool RoyaltyRefused => Refused?.Input == RefusedInput.Royalty;
 
     // What giving the rate up, or keeping it, leaves less, where the sentence weighs it.
     private string RateText(RateWeighing rate) => L[SplitCardText.Rate(rate, _view.Pay), rate.Difference is { } difference ? Formats.Euros(difference) : ""].Value;

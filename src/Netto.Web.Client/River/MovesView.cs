@@ -1,3 +1,4 @@
+using Netto.Core.Rules;
 using Netto.Core.Simulation;
 
 namespace Netto.Web.Client.River;
@@ -9,7 +10,7 @@ namespace Netto.Web.Client.River;
 // river already holds is read from the river at each change.
 internal sealed record MovesView(
     MovesState State,
-    string? Error,
+    Refusal? Error,
     MovesBaseline From,
     decimal FromPay,
     IReadOnlyList<PlannedMove> Moves,
@@ -21,7 +22,7 @@ internal sealed record MovesView(
     public static MovesView Of(RiverInputs today, DateOnly date) => Of(MovesBaseline.Today(today), date);
 
     // From what the search found for Today (RiverInputs.FindMoves), none for a Today that starts at the pay.
-    public static MovesView Of(RiverInputs today, (MovePlan? Value, string? Error)? found) => Of(MovesBaseline.Today(today), found);
+    public static MovesView Of(RiverInputs today, (MovePlan? Value, Refusal? Error)? found) => Of(MovesBaseline.Today(today), found);
 
     // From the plan they are measured from, on that date.
     public static MovesView Of(MovesBaseline from, DateOnly date) => Of(from, from.Plan.FindMoves(date));
@@ -32,7 +33,7 @@ internal sealed record MovesView(
 
     // From what the search found for that plan, none for one that starts at the pay: the page searches
     // once per plan and date (MovesSource), and the tab draws the view of what it found.
-    public static MovesView Of(MovesBaseline from, (MovePlan? Value, string? Error)? found)
+    public static MovesView Of(MovesBaseline from, (MovePlan? Value, Refusal? Error)? found)
     {
         if (found is not { } result)
             return new MovesView(MovesState.StartsAtPay, null, from, 0m, [], 0m, 0m, 0m);

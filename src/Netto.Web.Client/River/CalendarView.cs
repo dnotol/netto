@@ -1,4 +1,5 @@
 using Netto.Core.Calendar;
+using Netto.Core.Rules;
 
 namespace Netto.Web.Client.River;
 
@@ -23,7 +24,7 @@ internal sealed record CalendarView(
 {
     // The engine's refusal of what the user says the fund bills, shown on the card's field; the
     // calendar then shows no regularisation.
-    public string? BilledRefused { get; init; }
+    public Refusal? BilledRefused { get; init; }
 
     // The engine's calendar this view was made from, with what the fund bills given, for what draws the
     // year in time (the timeline), so it and the tables read one calendar.

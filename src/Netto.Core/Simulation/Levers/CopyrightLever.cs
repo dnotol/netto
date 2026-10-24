@@ -28,7 +28,7 @@ internal sealed record CopyrightLever(CopyrightRules Rules) : Lever
     public override Scenario AtPay(Scenario scenario) =>
         scenario.Copyright.FollowsPay ? scenario with { Copyright = CopyrightCalculator.AtPay(Rules, scenario.Copyright, scenario.DirectorPay) } : scenario;
 
-    public override (LeverYear? Value, string? Error) Compute(Scenario scenario, decimal left)
+    public override (LeverYear? Value, Refusal? Error) Compute(Scenario scenario, decimal left)
     {
         var (royalty, error) = CopyrightCalculator.Compute(Rules, scenario.Copyright, scenario.DirectorPay);
         if (royalty is null)

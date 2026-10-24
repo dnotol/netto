@@ -5,14 +5,14 @@ namespace Netto.Core.Copyright;
 
 public static class CopyrightCalculator
 {
-    public const string RoyaltyNegative = "copyright_royalty_negative";
+    public static readonly Refusal RoyaltyNegative = new("copyright_royalty_negative", RefusedInput.Royalty);
 
-    public const string CreativeShareOutOfRange = "copyright_creative_share_out_of_range";
+    public static readonly Refusal CreativeShareOutOfRange = new("copyright_creative_share_out_of_range", RefusedInput.CreativeShare);
 
     // A royalty the user fixes above what the company has before pay and royalty (YearSimulation).
-    public const string RoyaltyAboveProfit = "copyright_royalty_above_profit";
+    public static readonly Refusal RoyaltyAboveProfit = new("copyright_royalty_above_profit", RefusedInput.Royalty);
 
-    // The royalty as the rules take it beside the gross pay on the payslip, or the key of what they
+    // The royalty as the rules take it beside the gross pay on the payslip, or what they
     // refuse. The limits are on the gross royalty, as the 281.45 fiche reports the gross within and
     // beyond them, and 30% is measured on the royalty and the gross pay alone, without the benefits in
     // kind or the contributions the company pays on the director's behalf (decided unattended, the
@@ -27,7 +27,7 @@ public static class CopyrightCalculator
     // to at that pay (AtPay), the amount given unread, and says how it was set (Following), with the
     // amounts that measured it (CeilingAmounts): none while there is nothing a ruling accepts, which is
     // never refused, so the river runs on until the share is given.
-    public static (CopyrightResult? Value, string? Error) Compute(CopyrightRules rules, CopyrightRoyalty royalty, decimal grossPay)
+    public static (CopyrightResult? Value, Refusal? Error) Compute(CopyrightRules rules, CopyrightRoyalty royalty, decimal grossPay)
     {
         if (!royalty.FollowsPay && royalty.Royalty < 0m)
             return (null, RoyaltyNegative);

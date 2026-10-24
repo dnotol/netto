@@ -1,3 +1,4 @@
+using Netto.Core.Rules;
 using Netto.Core.Simulation;
 
 namespace Netto.Web.Client.River;
@@ -15,20 +16,20 @@ namespace Netto.Web.Client.River;
 internal sealed class MovesSource
 {
     private readonly SavedPlans _plans;
-    private readonly Func<RiverInputs, DateOnly, (MovePlan? Value, string? Error)?> _search;
+    private readonly Func<RiverInputs, DateOnly, (MovePlan? Value, Refusal? Error)?> _search;
 
     // The plan in the river as it stood at the last of those moments, and the plan Plans had then opened.
     private RiverInputs _plan;
     private string? _opened;
 
     // What the search last found, for which plan and on which date.
-    private (RiverInputs Plan, DateOnly Date, (MovePlan? Value, string? Error)? Moves)? _found;
+    private (RiverInputs Plan, DateOnly Date, (MovePlan? Value, Refusal? Error)? Moves)? _found;
 
     // Whether a search waits for the browser to paint.
     private bool _waiting;
 
     // The river as the page opens; the search is the engine's (RiverInputs.FindMoves) but in a test.
-    public MovesSource(SavedPlans plans, RiverInputs river, Func<RiverInputs, DateOnly, (MovePlan? Value, string? Error)?>? search = null)
+    public MovesSource(SavedPlans plans, RiverInputs river, Func<RiverInputs, DateOnly, (MovePlan? Value, Refusal? Error)?>? search = null)
     {
         _plans = plans;
         _plan = river;
@@ -46,7 +47,7 @@ internal sealed class MovesSource
 
     // What the search found for the baseline on that date: none while it is still to be searched, and none
     // for a plan that starts at the pay. What was found for another plan or date is never given for this one.
-    public (MovePlan? Value, string? Error)? Found(DateOnly date) =>
+    public (MovePlan? Value, Refusal? Error)? Found(DateOnly date) =>
         _found is { } found && Holds(Baseline.Plan, date) ? found.Moves : null;
 
     public MovesView View(DateOnly date) => Searching(date) ? MovesView.Searching(Baseline) : MovesView.Of(Baseline, Found(date));

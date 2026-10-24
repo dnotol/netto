@@ -1,5 +1,6 @@
 @using Netto.Core.Copyright
 @using Netto.Core.CorporateTax
+@using Netto.Core.Rules
 @using Netto.Web.Client.River
 @inject IStringLocalizer<CopyrightCard> L
 
@@ -27,7 +28,7 @@
                     Origin="@(Inputs.Copyright.CreativeShare.Value is null ? null : Inputs.Copyright.CreativeShare.Origin)" Help="@L["CreativeShareHint"]">
             <RiverNumericField T="decimal?" InputId="river-copyright-creative-share" Value="CreativeSharePercent" ValueChanged="OnCreativeSharePercentChanged"
                                Format="0.##" Adornment="Adornment.End" AdornmentText="%"
-                               Error="@(Refused == CopyrightCalculator.CreativeShareOutOfRange)" Refusal="@Refused" />
+                               Error="@(Refused?.Input == RefusedInput.CreativeShare)" Refusal="@Refused" />
         </RiverField>
         <div class="copyright__tick">
             <MudCheckBox T="bool" Value="Inputs.Copyright.AverageWithinCap.Value" ValueChanged="OnAverageChanged" Color="Color.Primary"
@@ -87,9 +88,9 @@
     [Parameter, EditorRequired]
     public RiverRun Run { get; set; } = default!;
 
-    // The engine's error key when it refuses the royalty's creative share.
+    // The engine's refusal of the royalty's creative share.
     [Parameter]
-    public string? Refused { get; set; }
+    public Refusal? Refused { get; set; }
 
     private CopyrightView? _view;
     private CopyrightComparison? _comparison;

@@ -1,4 +1,5 @@
 @using Netto.Core.DirectorPay
+@using Netto.Core.Rules
 @using Netto.Core.Simulation
 @using Netto.Core.SocialContributions
 @using Netto.Web.Client.DirectorPay
@@ -26,7 +27,7 @@
                        aria-labelledby="river-pay-label" aria-valuetext="@Formats.Euros(OwnPay)" />
             <RiverNumericField T="decimal" InputId="river-pay" Value="Inputs.DirectorPay.Value" ValueChanged="OnPayChanged"
                                Euros="true"
-                               Error="@(Refused == GrossToNet.GrossPayNegative)" Refusal="@Refused" />
+                               Error="@(Refused?.Input == RefusedInput.DirectorPay)" Refusal="@Refused" />
         </RiverField>
     }
     <RefusedMessage Error="@Refused" />
@@ -67,7 +68,7 @@
         </RiverField>
         <RiverField Label="@L["MunicipalityHead"]" Origin="Inputs.Municipality.Origin">
             <MunicipalityField Choice="Inputs.Municipality" ChoiceChanged="OnMunicipalityChanged"
-                               Refused="@(Refused == GrossToNet.MunicipalRateOutOfRange)" />
+                               Refused="@(Refused?.Input == RefusedInput.MunicipalRate)" />
         </RiverField>
         <div class="director-pay__status">
             <MudCheckBox T="bool" Value="Inputs.TaxPrepayments.Starter.Value" ValueChanged="OnStarterChanged" Color="Color.Primary"
@@ -80,7 +81,7 @@
         <RiverField Label="@L["WithheldLabel", Inputs.IncomeYear]" For="river-tax-withheld" Origin="_withheld.Origin" Help="@L["WithheldHint"]">
             <RiverNumericField T="decimal" InputId="river-tax-withheld" Value="_withheld.Amount" ValueChanged="OnWithheldChanged"
                                Euros="true"
-                               Error="@(Refused == GrossToNet.TaxWithheldNegative)" Refusal="@Refused" />
+                               Error="@(Refused?.Input == RefusedInput.TaxWithheld)" Refusal="@Refused" />
             @if (_withheld.IsYours)
             {
                 <div class="director-pay__note">
@@ -96,7 +97,7 @@
                     <RiverNumericField T="decimal" InputId="@($"river-tax-advance-payment-{field.Deadline}")" Value="field.Paid.Value"
                                        ValueChanged="@(amount => OnAdvancePaymentChanged(field.Deadline, amount))"
                                        Euros="true"
-                                       Error="@(Refused == GrossToNet.TaxAdvancePaymentNegative && field.Paid.Value < 0m)" Refusal="@Refused" />
+                                       Error="@(Refused?.Input == RefusedInput.DirectorAdvancePayments && field.Paid.Value < 0m)" Refusal="@Refused" />
                 </RiverField>
             }
         </div>
@@ -116,10 +117,10 @@
     [Parameter, EditorRequired]
     public RiverRun Run { get; set; } = default!;
 
-    // The engine's error key when it refuses the rate, what was withheld or paid in advance on the
+    // The engine's refusal of the rate, what was withheld or paid in advance on the
     // pay, or the pay once the company is skipped.
     [Parameter]
-    public string? Refused { get; set; }
+    public Refusal? Refused { get; set; }
 
     private DirectorPayView? _view;
     private WithheldFieldView _withheld = default!;

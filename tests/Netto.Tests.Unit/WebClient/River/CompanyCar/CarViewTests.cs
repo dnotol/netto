@@ -1,4 +1,5 @@
 using Netto.Core.CompanyCar;
+using Netto.Core.Rules;
 using Netto.Core.Simulation;
 using Netto.Web.Client.River;
 using Netto.Web.Client.River.CompanyCar;
@@ -142,7 +143,7 @@ public class CarViewTests
         var comparison = CarComparison.From(ElectricCar, ElectricCar.Run()).ShouldNotBeNull();
 
         (comparison.PrivateCost, comparison.AgainstPrivate, comparison.Refused, CarCardText.Private(comparison))
-            .ShouldBe(((decimal?)null, (decimal?)null, (string?)null, "Private_Waiting"));
+            .ShouldBe(((decimal?)null, (decimal?)null, (Refusal?)null, "Private_Waiting"));
     }
 
     // Against the same car bought privately, the company car gains what that car would cost less the
@@ -186,7 +187,7 @@ public class CarViewTests
         var comparison = CarComparison.From(inputs, inputs.Run()).ShouldNotBeNull();
 
         (comparison.Refused, comparison.AgainstPrivate, CarCardText.Private(comparison))
-            .ShouldBe((CarComparison.PrivateCostNegative, (decimal?)null, "Private_Waiting"));
+            .ShouldBe((CarCalculator.PrivateCostNegative, (decimal?)null, "Private_Waiting"));
     }
 
     [Fact]

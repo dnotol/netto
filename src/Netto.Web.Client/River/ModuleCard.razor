@@ -1,4 +1,5 @@
 @implements IDisposable
+@using Netto.Core.Rules
 @using Netto.Web.Client.Steps
 @inject IStringLocalizer<ModuleCard> L
 
@@ -102,10 +103,10 @@
     [Parameter]
     public int IncomeYear { get; set; }
 
-    // The engine's error key when it refuses a field of this card: the card opens, and stays open, so a
-    // refusal is never hidden.
+    // The engine's refusal of a field of this card: the card opens, and stays open, so a refusal is never
+    // hidden.
     [Parameter]
-    public string? Refused { get; set; }
+    public Refusal? Refused { get; set; }
 
     // The detail view's line, folded or open, and the title over its rules, for a card that words its
     // own; « Where these figures come from » and « The rules, with the income year … amounts » otherwise.

@@ -1,4 +1,5 @@
 using Netto.Core.Rent;
+using Netto.Core.Rules;
 using Shouldly;
 
 namespace Netto.Tests.Rent;
@@ -114,7 +115,7 @@ public class RentCalculatorTests
         RentCalculator.Compute(Rules2026, TwelvePercentOf1200(0m), 1_938.44m).Error.ShouldBeNull();
     }
 
-    public static TheoryData<decimal, decimal, decimal, string> OutsideTheRules => new()
+    public static TheoryData<decimal, decimal, decimal, Refusal> OutsideTheRules => new()
     {
         { -1m, 0.12m, 100m, RentCalculator.CadastralIncomeNegative },
         { 1_200m, -0.01m, 100m, RentCalculator.ShareLetOutOfRange },
@@ -125,7 +126,7 @@ public class RentCalculatorTests
 
     [Theory]
     [MemberData(nameof(OutsideTheRules))]
-    public void Compute_2026OutsideTheRules_isRefusedWithItsKey(decimal cadastralIncome, decimal shareLet, decimal rent, string expected)
+    public void Compute_2026OutsideTheRules_isRefusedWithItsKey(decimal cadastralIncome, decimal shareLet, decimal rent, Refusal expected)
     {
         RentCalculator.Compute(Rules2026, new HomeOfficeRent(cadastralIncome, shareLet, rent), 0m).ShouldBe((null, expected));
     }

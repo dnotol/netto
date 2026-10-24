@@ -1,4 +1,5 @@
 using System.Text.Json.Nodes;
+using Netto.Core.Simulation;
 using Netto.Web.Client;
 using Netto.Web.Client.River;
 using Netto.Web.Client.Tabs;
@@ -284,7 +285,7 @@ public class CompareViewTests
         var view = CompareView.Of(plans);
 
         view.ShouldSatisfyAllConditions(
-            () => (view.State, view.Plan!.Run.Error, view.Against!.Run.Error).ShouldBe((CompareState.Refused, null, "reserve_negative")),
+            () => (view.State, view.Plan!.Run.Error, view.Against!.Run.Error).ShouldBe((CompareState.Refused, null, YearSimulation.ReserveNegative)),
             () => view.Groups.ShouldBeEmpty());
     }
 

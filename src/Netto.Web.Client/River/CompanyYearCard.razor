@@ -1,3 +1,4 @@
+@using Netto.Core.Rules
 @using Netto.Core.Simulation
 @inject IStringLocalizer<CompanyYearCard> L
 
@@ -14,12 +15,12 @@
             <RiverField Label="@L["RevenueLabel"]" For="river-revenue" Origin="company.Revenue.Origin">
                 <RiverNumericField T="decimal" InputId="river-revenue" Value="company.Revenue.Value" ValueChanged="OnRevenueChanged"
                                    Euros="true"
-                                   Error="@(Refused == YearSimulation.RevenueNegative)" Refusal="@Refused" />
+                                   Error="@(Refused?.Input == RefusedInput.Revenue)" Refusal="@Refused" />
             </RiverField>
             <RiverField Label="@L["RunningCostsLabel"]" For="river-running-costs" Origin="company.RunningCosts.Origin">
                 <RiverNumericField T="decimal" InputId="river-running-costs" Value="company.RunningCosts.Value" ValueChanged="OnRunningCostsChanged"
                                    Euros="true"
-                                   Error="@(Refused == YearSimulation.RunningCostsNegative)" Refusal="@Refused" />
+                                   Error="@(Refused?.Input == RefusedInput.RunningCosts)" Refusal="@Refused" />
             </RiverField>
         </div>
         <RefusedMessage Error="@Refused" />
@@ -46,9 +47,9 @@
     [Parameter, EditorRequired]
     public RiverRun Run { get; set; } = default!;
 
-    // The engine's error key when it refuses a field of this card.
+    // The engine's refusal of a field of this card.
     [Parameter]
-    public string? Refused { get; set; }
+    public Refusal? Refused { get; set; }
 
     private string? Summary => Run.Year is { } year
         ? L["Summary", Formats.Euros(year.Scenario.Revenue), Formats.Euros(year.Scenario.ProfitBeforeDirector)].Value

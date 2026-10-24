@@ -15,7 +15,7 @@ namespace Netto.Core.Simulation.Levers;
 // and the pay ceiling all subtract, the one derivation of the profit before pay. When that amount moves
 // with the pay (FollowsPay), AtPay sets it at the scenario's own pay before anything reads it, and the
 // pay ceiling reads it again at each pay it tries. Compute takes it as the rules take it, beside what the
-// levers before it leave of what the company earns (left), or gives the key of what they refuse.
+// levers before it leave of what the company earns (left), or gives what they refuse.
 internal abstract record Lever
 {
     public abstract decimal FromProfit(Scenario scenario);
@@ -24,7 +24,7 @@ internal abstract record Lever
 
     public virtual Scenario AtPay(Scenario scenario) => scenario;
 
-    public abstract (LeverYear? Value, string? Error) Compute(Scenario scenario, decimal left);
+    public abstract (LeverYear? Value, Refusal? Error) Compute(Scenario scenario, decimal left);
 }
 
 // What one lever did to the year, as its rules took it. ToPocket is what reaches the pocket besides the

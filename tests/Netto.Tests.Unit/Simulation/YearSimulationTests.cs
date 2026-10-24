@@ -4,6 +4,7 @@ using Netto.Core.DirectorPay;
 using Netto.Core.Dividends;
 using Netto.Core.PersonalTax;
 using Netto.Core.Rent;
+using Netto.Core.Rules;
 using Netto.Core.Simulation;
 using Netto.Core.SocialContributions;
 using Netto.Core.Vouchers;
@@ -438,7 +439,7 @@ public class YearSimulationTests
         (result.CorporateTax + result.SocialContributions + result.PersonalTax + result.NetInPocket + result.KeptInCompany).ShouldBe(160_000m);
     }
 
-    public static TheoryData<int, decimal, string> VouchersOutsideTheRules => new()
+    public static TheoryData<int, decimal, Refusal> VouchersOutsideTheRules => new()
     {
         { -1, 0m, VoucherCalculator.MealVoucherDaysNegative },
         { 0, 250.01m, VoucherCalculator.EcoVouchersAboveMaximum },
@@ -446,7 +447,7 @@ public class YearSimulationTests
 
     [Theory]
     [MemberData(nameof(VouchersOutsideTheRules))]
-    public void Run_vouchersOutsideTheRules_isRefusedWithTheCalculatorsKey(int days, decimal eco, string expected)
+    public void Run_vouchersOutsideTheRules_isRefusedWithTheCalculatorsKey(int days, decimal eco, Refusal expected)
     {
         var (value, error) = YearSimulation.Run(Scenario(directorPay: 50_000m, reserve: 0m, vouchers: new VoucherGrants(days, eco, 0m)));
 
@@ -632,7 +633,7 @@ public class YearSimulationTests
         (result.CorporateTax + result.SocialContributions + result.PersonalTax + result.NetInPocket + result.KeptInCompany).ShouldBe(160_000m);
     }
 
-    public static TheoryData<decimal, decimal, string> AllowancesOutsideTheRules => new()
+    public static TheoryData<decimal, decimal, Refusal> AllowancesOutsideTheRules => new()
     {
         { 1_938.45m, 0m, AllowanceCalculator.OfficeAllowanceAboveMaximum },
         { 0m, -0.01m, AllowanceCalculator.PhoneCostsNegative },
@@ -640,7 +641,7 @@ public class YearSimulationTests
 
     [Theory]
     [MemberData(nameof(AllowancesOutsideTheRules))]
-    public void Run_allowancesOutsideTheRules_isRefusedWithTheCalculatorsKey(decimal office, decimal phone, string expected)
+    public void Run_allowancesOutsideTheRules_isRefusedWithTheCalculatorsKey(decimal office, decimal phone, Refusal expected)
     {
         var (value, error) = YearSimulation.Run(Scenario(directorPay: 50_000m, reserve: 0m, allowances: new ExpenseAllowances(office, 0m, 0m, phone)));
 
@@ -817,7 +818,7 @@ public class YearSimulationTests
             .ShouldBe(profitBeforeDirector);
     }
 
-    public static TheoryData<HomeOfficeRent, decimal, string> RentsOutsideTheRules => new()
+    public static TheoryData<HomeOfficeRent, decimal, Refusal> RentsOutsideTheRules => new()
     {
         { new HomeOfficeRent(1_200m, 0.12m, 1_380.01m), 0m, RentCalculator.RentAboveCap },
         { new HomeOfficeRent(1_200m, 0.12m, 1_000m), 1_938.44m, RentCalculator.RentWithOfficeAllowance },
@@ -826,7 +827,7 @@ public class YearSimulationTests
 
     [Theory]
     [MemberData(nameof(RentsOutsideTheRules))]
-    public void Run_rentOutsideTheRules_isRefusedWithTheCalculatorsKey(HomeOfficeRent rent, decimal officeAllowance, string expected)
+    public void Run_rentOutsideTheRules_isRefusedWithTheCalculatorsKey(HomeOfficeRent rent, decimal officeAllowance, Refusal expected)
     {
         var (value, error) = YearSimulation.Run(Scenario(directorPay: 50_000m, reserve: 0m, allowances: new ExpenseAllowances(officeAllowance, 0m, 0m, 0m), rent: rent));
 

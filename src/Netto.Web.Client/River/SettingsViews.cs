@@ -4,6 +4,7 @@ using Netto.Core.Copyright;
 using Netto.Core.DirectorPay;
 using Netto.Core.Dividends;
 using Netto.Core.Rent;
+using Netto.Core.Rules;
 using Netto.Core.Simulation;
 using Netto.Web.Client.DirectorPay;
 
@@ -68,9 +69,9 @@ internal sealed record DirectorPaySettingsView(IReadOnlyList<SettingPhrase> Situ
             ]);
     }
 
-    public static bool SituationHolds(string? error) => error == GrossToNet.MunicipalRateOutOfRange;
+    public static bool SituationHolds(Refusal? refusal) => refusal?.Input == RefusedInput.MunicipalRate;
 
-    public static bool PrepaidHolds(string? error) => error is GrossToNet.TaxWithheldNegative or GrossToNet.TaxAdvancePaymentNegative;
+    public static bool PrepaidHolds(Refusal? refusal) => refusal?.Input is RefusedInput.TaxWithheld or RefusedInput.DirectorAdvancePayments;
 
     // A municipality's rate says whose it is, and a rate of the user's over it whose it replaces.
     private static SettingPhrase Rate(MunicipalityChoice choice)
@@ -118,7 +119,7 @@ internal sealed record CorporateTaxSettingsView(IReadOnlyList<SettingPhrase> Com
             ]);
     }
 
-    public static bool PaymentsHold(string? error) => error == YearSimulation.AdvancePaymentNegative;
+    public static bool PaymentsHold(Refusal? refusal) => refusal?.Input == RefusedInput.CompanyAdvancePayments;
 }
 
 // Home office rent's one disclosure, « Your home »: the cadastral income of the home and the share of
@@ -140,7 +141,7 @@ internal sealed record RentSettingsView(IReadOnlyList<SettingPhrase> Home, bool 
 
     // The rent's own refusals (negative, above the cap, beside an office allowance) are on a field in
     // sight.
-    public static bool HomeHolds(string? error) => error is RentCalculator.CadastralIncomeNegative or RentCalculator.ShareLetOutOfRange;
+    public static bool HomeHolds(Refusal? refusal) => refusal?.Input is RefusedInput.CadastralIncome or RefusedInput.ShareLet;
 }
 
 // The company car's one disclosure, « Your car »: what the car is, as its papers say, its engine, its
@@ -169,9 +170,8 @@ internal sealed record CarSettingsView(IReadOnlyList<SettingPhrase> Car, bool Ne
     }
 
     // Every refusal of a field inside; the yearly costs and the contribution are in sight.
-    public static bool CarHolds(string? error) => error is CarCalculator.CatalogueValueNegative or CarCalculator.Co2Negative
-        or CarCalculator.Co2Missing or CarCalculator.MatchingCarCo2Negative or CarCalculator.MatchingCarCo2Missing
-        or CarCalculator.AcquiredAfterYear or CarCalculator.PlugInFuelCapped;
+    public static bool CarHolds(Refusal? refusal) =>
+        refusal?.Input is RefusedInput.CarCatalogueValue or RefusedInput.CarCo2 or RefusedInput.CarMatchingCo2 or RefusedInput.CarAcquired;
 
     // Only an engine that burns a fuel has a CO2. A CO2 not given names no origin: the example's
     // nothing is not a value to call an example.
@@ -234,7 +234,7 @@ internal sealed record CopyrightSettingsView(IReadOnlyList<SettingPhrase> Situat
     }
 
     // The royalty's own refusals are on the split.
-    public static bool SituationHolds(string? error) => error == CopyrightCalculator.CreativeShareOutOfRange;
+    public static bool SituationHolds(Refusal? refusal) => refusal?.Input == RefusedInput.CreativeShare;
 }
 
 // The dividend's one disclosure, « Your shares and earlier profits »: the profits the company kept
@@ -259,5 +259,5 @@ internal sealed record DividendSettingsView(IReadOnlyList<SettingPhrase> Facts)
     }
 
     // What is kept this year is refused on a field in sight.
-    public static bool SharesHold(string? error) => error == YearSimulation.EarlierProfitsNegative;
+    public static bool SharesHold(Refusal? refusal) => refusal?.Input == RefusedInput.EarlierProfits;
 }

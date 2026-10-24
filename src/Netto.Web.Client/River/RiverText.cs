@@ -1,3 +1,5 @@
+using Netto.Core.Rules;
+
 namespace Netto.Web.Client.River;
 
 // The resource keys the river's components other than its cards build from values and the engine's
@@ -25,7 +27,7 @@ internal static class DrainListText
 
 internal static class RefusedMessageText
 {
-    public static string Error(string errorKey) => $"Error_{errorKey}";
+    public static string Error(Refusal refusal) => $"Error_{refusal.Key}";
 }
 
 internal static class ConditionListText

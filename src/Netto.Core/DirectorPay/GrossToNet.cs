@@ -36,11 +36,11 @@ namespace Netto.Core.DirectorPay;
 // credited on the assessment, never in the surcharge's base (Tax-Calc T16 to T18).
 public static class GrossToNet
 {
-    public const string GrossPayNegative = "gross_pay_negative";
-    public const string MunicipalRateOutOfRange = "municipal_rate_out_of_range";
-    public const string IncomeYearNotSupported = "income_year_not_supported";
-    public const string TaxWithheldNegative = "tax_withheld_negative";
-    public const string TaxAdvancePaymentNegative = "tax_advance_payment_negative";
+    public static readonly Refusal GrossPayNegative = new("gross_pay_negative", RefusedInput.DirectorPay);
+    public static readonly Refusal MunicipalRateOutOfRange = new("municipal_rate_out_of_range", RefusedInput.MunicipalRate);
+    public static readonly Refusal IncomeYearNotSupported = new("income_year_not_supported", RefusedInput.IncomeYear);
+    public static readonly Refusal TaxWithheldNegative = new("tax_withheld_negative", RefusedInput.TaxWithheld);
+    public static readonly Refusal TaxAdvancePaymentNegative = new("tax_advance_payment_negative", RefusedInput.DirectorAdvancePayments);
 
     private const decimal MaximumMunicipalRate = 0.10m;
     private const decimal NextSlice = 1_000m;
@@ -52,7 +52,7 @@ public static class GrossToNet
     // nothing unless given; the engine's own rules give it, never below zero. The director lives in
     // Wallonia unless given another region, which has no rules yet and is refused as a year without
     // them is.
-    public static (GrossToNetResult? Value, string? Error) Compute(
+    public static (GrossToNetResult? Value, Refusal? Error) Compute(
         int incomeYear, decimal grossPay, RuleAmount municipalRate, TaxPrepayments prepayments, ContributionsPaidBy paidBy = ContributionsPaidBy.Director,
         TaxedWithPay? withPay = null, Region region = Region.Wallonia)
     {

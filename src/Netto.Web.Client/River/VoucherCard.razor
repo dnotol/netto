@@ -1,3 +1,4 @@
+@using Netto.Core.Rules
 @using Netto.Core.Vouchers
 @inject IStringLocalizer<VoucherCard> L
 
@@ -18,7 +19,7 @@
         <RiverField Label="@L["MealDaysLabel"]" For="river-meal-voucher-days" Origin="Inputs.Vouchers.MealVoucherDays.Origin">
             <RiverNumericField T="int" InputId="river-meal-voucher-days" Value="Inputs.Vouchers.MealVoucherDays.Value" ValueChanged="OnMealVoucherDaysChanged"
                                Format="0"
-                               Error="@(Refused is VoucherCalculator.MealVoucherDaysNegative or VoucherCalculator.MealVoucherDaysAboveYear)" Refusal="@Refused" />
+                               Error="@(Refused?.Input == RefusedInput.MealVoucherDays)" Refusal="@Refused" />
             @if (_rules is not null)
             {
                 <p class="vouchers__note">@L["MealDaysHint", Formats.RuleAmount(_rules.MealVoucherCompanyShare), Formats.RuleAmount(_rules.MealVoucherHolderShare)]</p>
@@ -27,7 +28,7 @@
         <RiverField Label="@L["EcoLabel"]" For="river-eco-vouchers" Origin="Inputs.Vouchers.EcoVouchers.Origin">
             <RiverNumericField T="decimal" InputId="river-eco-vouchers" Value="Inputs.Vouchers.EcoVouchers.Value" ValueChanged="OnEcoVouchersChanged"
                                Euros="true"
-                               Error="@(Refused is VoucherCalculator.EcoVouchersNegative or VoucherCalculator.EcoVouchersAboveMaximum)" Refusal="@Refused" />
+                               Error="@(Refused?.Input == RefusedInput.EcoVouchers)" Refusal="@Refused" />
             @if (_rules is not null)
             {
                 <p class="vouchers__note">@L["YearlyMaximum", Formats.RuleAmount(_rules.EcoVouchersMaximum)]</p>
@@ -37,7 +38,7 @@
             <RiverNumericField T="decimal" InputId="river-sport-culture-vouchers" Value="Inputs.Vouchers.SportCultureVouchers.Value"
                                ValueChanged="OnSportCultureVouchersChanged"
                                Euros="true"
-                               Error="@(Refused is VoucherCalculator.SportCultureVouchersNegative or VoucherCalculator.SportCultureVouchersAboveMaximum)" Refusal="@Refused" />
+                               Error="@(Refused?.Input == RefusedInput.SportCultureVouchers)" Refusal="@Refused" />
             @if (_rules is not null)
             {
                 <p class="vouchers__note">@L["YearlyMaximum", Formats.RuleAmount(_rules.SportCultureVouchersMaximum)]</p>
@@ -66,9 +67,9 @@
     [Parameter, EditorRequired]
     public RiverRun Run { get; set; } = default!;
 
-    // The engine's error key when it refuses a voucher.
+    // The engine's refusal of a voucher.
     [Parameter]
-    public string? Refused { get; set; }
+    public Refusal? Refused { get; set; }
 
     private VoucherView? _view;
     private VoucherRules? _rules;

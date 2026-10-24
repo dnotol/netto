@@ -2,6 +2,7 @@ using Netto.Core.CorporateTax;
 using Netto.Core.DirectorPay;
 using Netto.Core.Dividends;
 using Netto.Core.PersonalTax;
+using Netto.Core.Rules;
 using Netto.Core.Simulation.Levers;
 using Netto.Core.SocialContributions;
 
@@ -24,20 +25,20 @@ namespace Netto.Core.Simulation;
 // royalty's.
 public static class YearSimulation
 {
-    public const string IncomeYearNotSupported = GrossToNet.IncomeYearNotSupported;
-    public const string RevenueNegative = "revenue_negative";
-    public const string RunningCostsNegative = "running_costs_negative";
-    public const string ReserveNegative = "reserve_negative";
-    public const string EarlierProfitsNegative = "earlier_profits_negative";
-    public const string AdvancePaymentNegative = "advance_payment_negative";
+    public static readonly Refusal IncomeYearNotSupported = GrossToNet.IncomeYearNotSupported;
+    public static readonly Refusal RevenueNegative = new("revenue_negative", RefusedInput.Revenue);
+    public static readonly Refusal RunningCostsNegative = new("running_costs_negative", RefusedInput.RunningCosts);
+    public static readonly Refusal ReserveNegative = new("reserve_negative", RefusedInput.Reserve);
+    public static readonly Refusal EarlierProfitsNegative = new("earlier_profits_negative", RefusedInput.EarlierProfits);
+    public static readonly Refusal AdvancePaymentNegative = new("advance_payment_negative", RefusedInput.CompanyAdvancePayments);
 
     private const decimal Cent = 0.01m;
 
-    public static (YearResult? Value, string? Error) Run(Scenario scenario) =>
+    public static (YearResult? Value, Refusal? Error) Run(Scenario scenario) =>
         LeverOrder.For(scenario.IncomeYear) is { } levers ? Run(scenario, levers) : (null, IncomeYearNotSupported);
 
     // The year over the levers given, in their order: the year's own (LeverOrder), or a test's.
-    internal static (YearResult? Value, string? Error) Run(Scenario scenario, IReadOnlyList<Lever> levers)
+    internal static (YearResult? Value, Refusal? Error) Run(Scenario scenario, IReadOnlyList<Lever> levers)
     {
         var corporateRules = CorporateTaxRules.For(scenario.IncomeYear);
         var dividendRules = DividendRules.For(scenario.IncomeYear);
@@ -260,9 +261,9 @@ public static class YearSimulation
     }
 
     // What the company pays the director besides pay as the rules accept it, lever by lever in their
-    // order, each beside what the levers before it leave of what the company earns, or the key of the
-    // first the rules refuse; a lever after it is not asked.
-    private static (BesidesPay? Value, string? Error) BesidesPayOf(Scenario scenario, IReadOnlyList<Lever> levers)
+    // order, each beside what the levers before it leave of what the company earns, or the first
+    // refusal of the rules; a lever after it is not asked.
+    private static (BesidesPay? Value, Refusal? Error) BesidesPayOf(Scenario scenario, IReadOnlyList<Lever> levers)
     {
         var left = Left(scenario, levers);
         var years = new LeverYear[levers.Count];

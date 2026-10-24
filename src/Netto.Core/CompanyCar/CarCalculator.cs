@@ -4,17 +4,21 @@ namespace Netto.Core.CompanyCar;
 
 public static class CarCalculator
 {
-    public const string CatalogueValueNegative = "catalogue_value_negative";
-    public const string YearlyCostsNegative = "car_yearly_costs_negative";
-    public const string ContributionNegative = "car_contribution_negative";
-    public const string Co2Negative = "car_co2_negative";
-    public const string Co2Missing = "car_co2_missing";
-    public const string MatchingCarCo2Negative = "car_matching_co2_negative";
-    public const string MatchingCarCo2Missing = "car_matching_co2_missing";
-    public const string AcquiredAfterYear = "car_acquired_after_year";
-    public const string PlugInFuelCapped = "car_plug_in_first_half_2023";
+    public static readonly Refusal CatalogueValueNegative = new("catalogue_value_negative", RefusedInput.CarCatalogueValue);
+    public static readonly Refusal YearlyCostsNegative = new("car_yearly_costs_negative", RefusedInput.CarYearlyCosts);
+    public static readonly Refusal ContributionNegative = new("car_contribution_negative", RefusedInput.CarContribution);
+    public static readonly Refusal Co2Negative = new("car_co2_negative", RefusedInput.CarCo2);
+    public static readonly Refusal Co2Missing = new("car_co2_missing", RefusedInput.CarCo2);
+    public static readonly Refusal MatchingCarCo2Negative = new("car_matching_co2_negative", RefusedInput.CarMatchingCo2);
+    public static readonly Refusal MatchingCarCo2Missing = new("car_matching_co2_missing", RefusedInput.CarMatchingCo2);
+    public static readonly Refusal AcquiredAfterYear = new("car_acquired_after_year", RefusedInput.CarAcquired);
+    public static readonly Refusal PlugInFuelCapped = new("car_plug_in_first_half_2023", RefusedInput.CarAcquired);
 
-    // The car as the rules take it, or the key of what they refuse. The benefit is the FAQ's: each
+    // What the same car would cost privately cannot be below nothing. No rule reads it, so the engine never
+    // refuses it: the car card does, weighing the company car against it.
+    public static readonly Refusal PrivateCostNegative = new("car_private_cost_negative", RefusedInput.CarPrivateCost);
+
+    // The car as the rules take it, or what they refuse. The benefit is the FAQ's: each
     // part of the year at one age coefficient, catalogue value × coefficient × its days out of the
     // year's × 6/7 × the CO2 percentage, rounded to the cent, then their sum at least the minimum,
     // less the contribution, never below zero. The company adds back its share of the benefit before
@@ -25,7 +29,7 @@ public static class CarCalculator
     // car's; a car ordered or leased after the year is not the company's in it, and a plug-in hybrid
     // acquired in the first half of 2023, whose fuel is capped apart from its other costs, is not
     // taken yet.
-    public static (CarResult? Value, string? Error) Compute(CarRules rules, CarFacts car)
+    public static (CarResult? Value, Refusal? Error) Compute(CarRules rules, CarFacts car)
     {
         if (car.CatalogueValue < 0m)
             return (null, CatalogueValueNegative);

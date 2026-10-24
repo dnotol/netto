@@ -1,3 +1,4 @@
+using Netto.Core.Rules;
 using Netto.Core.Vouchers;
 using Netto.Web.Client.River;
 using Netto.Web.Client.River.CompanyCar;
@@ -94,7 +95,7 @@ public class CardFoldTests
         IsOpen(html).ShouldBeTrue();
     }
 
-    private static Dictionary<string, object?> Parameters(Type card, string? refused)
+    private static Dictionary<string, object?> Parameters(Type card, Refusal? refused)
     {
         var parameters = new Dictionary<string, object?> { ["Inputs"] = Everything, ["Run"] = Everything.Run(), ["Refused"] = refused };
         if (card == typeof(SplitCard))

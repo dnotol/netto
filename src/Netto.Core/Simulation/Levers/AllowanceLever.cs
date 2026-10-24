@@ -1,4 +1,5 @@
 using Netto.Core.Allowances;
+using Netto.Core.Rules;
 
 namespace Netto.Core.Simulation.Levers;
 
@@ -8,7 +9,7 @@ internal sealed record AllowanceLever(AllowanceRules Rules) : Lever
 {
     public override decimal FromProfit(Scenario scenario) => scenario.Allowances.Total;
 
-    public override (LeverYear? Value, string? Error) Compute(Scenario scenario, decimal left)
+    public override (LeverYear? Value, Refusal? Error) Compute(Scenario scenario, decimal left)
     {
         var (allowances, error) = AllowanceCalculator.Accept(Rules, scenario.Allowances);
         return allowances is null ? (null, error) : (new AllowanceYear(Rules, allowances, scenario.Allowances.Any), null);

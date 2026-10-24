@@ -1,5 +1,6 @@
 using Netto.Core.CompanyCar;
 using Netto.Core.DirectorPay;
+using Netto.Core.Rules;
 
 namespace Netto.Core.Simulation.Levers;
 
@@ -15,7 +16,7 @@ internal sealed record CarLever(CarRules Rules) : Lever
 {
     public override decimal FromProfit(Scenario scenario) => scenario.Car.Any ? scenario.Car.YearlyCosts - scenario.Car.PersonalContribution : 0m;
 
-    public override (LeverYear? Value, string? Error) Compute(Scenario scenario, decimal left)
+    public override (LeverYear? Value, Refusal? Error) Compute(Scenario scenario, decimal left)
     {
         var (car, error) = CarCalculator.Compute(Rules, scenario.Car);
         return car is null ? (null, error) : (new CarYear(Rules, car, scenario.Car.Any), null);

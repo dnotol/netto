@@ -3,6 +3,7 @@ using Netto.Core.Copyright;
 using Netto.Core.CorporateTax;
 using Netto.Core.DirectorPay;
 using Netto.Core.PersonalTax;
+using Netto.Core.Rules;
 using Netto.Core.Simulation;
 using Netto.Core.SocialContributions;
 using Shouldly;
@@ -348,19 +349,29 @@ public class YearSimulationCopyrightTests
 
     // A royalty the user fixes is at most what the company has before pay and royalty, the 100,000 it
     // earns here: one cent more would be paid at a loss.
+    public static TheoryData<decimal, Refusal?> AgainstWhatTheCompanyHasBeforePay => new()
+    {
+        { 100_000.00m, null },
+        { 100_000.01m, CopyrightCalculator.RoyaltyAboveProfit },
+    };
+
     [Theory]
-    [InlineData(100_000.00, null)]
-    [InlineData(100_000.01, CopyrightCalculator.RoyaltyAboveProfit)]
-    public void Run_2026FixedRoyaltyAgainstWhatTheCompanyHasBeforePay_isRefusedOnlyAboveIt(decimal royalty, string? error)
+    [MemberData(nameof(AgainstWhatTheCompanyHasBeforePay))]
+    public void Run_2026FixedRoyaltyAgainstWhatTheCompanyHasBeforePay_isRefusedOnlyAboveIt(decimal royalty, Refusal? error)
     {
         YearSimulation.Run(Scenario(directorPay: 0m, royalty: new CopyrightRoyalty(royalty))).Error.ShouldBe(error);
     }
 
     // What the levers above leave: 600 of phone costs leave 99,400.
+    public static TheoryData<decimal, Refusal?> AgainstWhatTheLeversAboveLeave => new()
+    {
+        { 99_400.00m, null },
+        { 99_400.01m, CopyrightCalculator.RoyaltyAboveProfit },
+    };
+
     [Theory]
-    [InlineData(99_400.00, null)]
-    [InlineData(99_400.01, CopyrightCalculator.RoyaltyAboveProfit)]
-    public void Run_2026FixedRoyaltyAgainstWhatTheLeversAboveLeave_isRefusedOnlyAboveIt(decimal royalty, string? error)
+    [MemberData(nameof(AgainstWhatTheLeversAboveLeave))]
+    public void Run_2026FixedRoyaltyAgainstWhatTheLeversAboveLeave_isRefusedOnlyAboveIt(decimal royalty, Refusal? error)
     {
         var scenario = Scenario(directorPay: 0m, royalty: new CopyrightRoyalty(royalty)) with { Allowances = new ExpenseAllowances(0m, 0m, 0m, 600m) };
 
@@ -368,10 +379,15 @@ public class YearSimulationCopyrightTests
     }
 
     // A company earning nothing before pay has nothing to pay a royalty with; without one, its year runs.
+    public static TheoryData<int, Refusal?> WhileTheCompanyLosesMoney => new()
+    {
+        { 0, null },
+        { 1, CopyrightCalculator.RoyaltyAboveProfit },
+    };
+
     [Theory]
-    [InlineData(0, null)]
-    [InlineData(1, CopyrightCalculator.RoyaltyAboveProfit)]
-    public void Run_2026FixedRoyaltyWhileTheCompanyLosesMoney_isRefusedFromTheFirstEuro(int royalty, string? error)
+    [MemberData(nameof(WhileTheCompanyLosesMoney))]
+    public void Run_2026FixedRoyaltyWhileTheCompanyLosesMoney_isRefusedFromTheFirstEuro(int royalty, Refusal? error)
     {
         YearSimulation.Run(Scenario(revenue: 10_000m, royalty: new CopyrightRoyalty(royalty))).Error.ShouldBe(error);
     }

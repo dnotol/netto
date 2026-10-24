@@ -1,20 +1,22 @@
+using Netto.Core.Rules;
+
 namespace Netto.Core.Allowances;
 
 public static class AllowanceCalculator
 {
-    public const string OfficeAllowanceNegative = "office_allowance_negative";
-    public const string OfficeAllowanceAboveMaximum = "office_allowance_above_maximum";
-    public const string InternetAllowanceNegative = "internet_allowance_negative";
-    public const string InternetAllowanceAboveMaximum = "internet_allowance_above_maximum";
-    public const string ComputerAllowanceNegative = "computer_allowance_negative";
-    public const string ComputerAllowanceAboveMaximum = "computer_allowance_above_maximum";
-    public const string PhoneCostsNegative = "phone_costs_negative";
+    public static readonly Refusal OfficeAllowanceNegative = new("office_allowance_negative", RefusedInput.OfficeAllowance);
+    public static readonly Refusal OfficeAllowanceAboveMaximum = new("office_allowance_above_maximum", RefusedInput.OfficeAllowance);
+    public static readonly Refusal InternetAllowanceNegative = new("internet_allowance_negative", RefusedInput.InternetAllowance);
+    public static readonly Refusal InternetAllowanceAboveMaximum = new("internet_allowance_above_maximum", RefusedInput.InternetAllowance);
+    public static readonly Refusal ComputerAllowanceNegative = new("computer_allowance_negative", RefusedInput.ComputerAllowance);
+    public static readonly Refusal ComputerAllowanceAboveMaximum = new("computer_allowance_above_maximum", RefusedInput.ComputerAllowance);
+    public static readonly Refusal PhoneCostsNegative = new("phone_costs_negative", RefusedInput.PhoneCosts);
 
     // The allowances as the rules accept them: each a yearly amount, at most the year's sum of its
     // monthly maxima; a director who works from home only part of the year enters less. Above it the
     // allowance would no longer be a reimbursement the administration accepts without documents, which
     // is refused rather than taxed. The phone costs, reimbursed on invoices, have no maximum.
-    public static (ExpenseAllowances? Value, string? Error) Accept(AllowanceRules rules, ExpenseAllowances allowances)
+    public static (ExpenseAllowances? Value, Refusal? Error) Accept(AllowanceRules rules, ExpenseAllowances allowances)
     {
         if (allowances.Office < 0m)
             return (null, OfficeAllowanceNegative);

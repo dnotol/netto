@@ -1,3 +1,4 @@
+@using Netto.Core.Rules
 @using Netto.Core.Simulation
 @using Netto.Web.Client.River
 @inject IStringLocalizer<OptimisationTab> L
@@ -109,7 +110,7 @@
     // What the page's search found for that plan on its date (MovesSource), none for a plan that starts at
     // the pay.
     [Parameter]
-    public (MovePlan? Value, string? Error)? Found { get; set; }
+    public (MovePlan? Value, Refusal? Error)? Found { get; set; }
 
     // The river as it is, to tell the moves it holds and the cards on its tab.
     [Parameter, EditorRequired]

@@ -1,4 +1,5 @@
 @using Netto.Core.Allowances
+@using Netto.Core.Rules
 @inject IStringLocalizer<AllowanceCard> L
 
 @* What the company pays the director besides pay after the vouchers, before the split: flat-rate
@@ -21,7 +22,7 @@
         <RiverField Label="@L["OfficeLabel"]" For="river-office-allowance" Origin="Inputs.Allowances.Office.Origin" Help="@OfficeHelp">
             <RiverNumericField T="decimal" InputId="river-office-allowance" Value="Inputs.Allowances.Office.Value" ValueChanged="OnOfficeChanged"
                                Euros="true"
-                               Error="@(Refused is AllowanceCalculator.OfficeAllowanceNegative or AllowanceCalculator.OfficeAllowanceAboveMaximum)" Refusal="@Refused" />
+                               Error="@(Refused?.Input == RefusedInput.OfficeAllowance)" Refusal="@Refused" />
             @if (_rules is not null)
             {
                 <p class="allowances__note">@L["OfficeMaximum", Formats.Euros(AllowanceCalculator.OfficeAllowanceMaximum(_rules))]</p>
@@ -30,7 +31,7 @@
         <RiverField Label="@L["InternetLabel"]" For="river-internet-allowance" Origin="Inputs.Allowances.Internet.Origin">
             <RiverNumericField T="decimal" InputId="river-internet-allowance" Value="Inputs.Allowances.Internet.Value" ValueChanged="OnInternetChanged"
                                Euros="true"
-                               Error="@(Refused is AllowanceCalculator.InternetAllowanceNegative or AllowanceCalculator.InternetAllowanceAboveMaximum)" Refusal="@Refused" />
+                               Error="@(Refused?.Input == RefusedInput.InternetAllowance)" Refusal="@Refused" />
             @if (_rules is not null)
             {
                 <p class="allowances__note">@L["MonthlyMaximum", Formats.RuleAmount(_rules.InternetAllowanceMonthlyMaximum), Formats.Euros(AllowanceCalculator.InternetAllowanceMaximum(_rules))]</p>
@@ -39,7 +40,7 @@
         <RiverField Label="@L["ComputerLabel"]" For="river-computer-allowance" Origin="Inputs.Allowances.Computer.Origin">
             <RiverNumericField T="decimal" InputId="river-computer-allowance" Value="Inputs.Allowances.Computer.Value" ValueChanged="OnComputerChanged"
                                Euros="true"
-                               Error="@(Refused is AllowanceCalculator.ComputerAllowanceNegative or AllowanceCalculator.ComputerAllowanceAboveMaximum)" Refusal="@Refused" />
+                               Error="@(Refused?.Input == RefusedInput.ComputerAllowance)" Refusal="@Refused" />
             @if (_rules is not null)
             {
                 <p class="allowances__note">@L["MonthlyMaximum", Formats.RuleAmount(_rules.ComputerAllowanceMonthlyMaximum), Formats.Euros(AllowanceCalculator.ComputerAllowanceMaximum(_rules))]</p>
@@ -48,7 +49,7 @@
         <RiverField Label="@L["PhoneLabel"]" For="river-phone-costs" Origin="Inputs.Allowances.Phone.Origin">
             <RiverNumericField T="decimal" InputId="river-phone-costs" Value="Inputs.Allowances.Phone.Value" ValueChanged="OnPhoneChanged"
                                Euros="true"
-                               Error="@(Refused is AllowanceCalculator.PhoneCostsNegative)" Refusal="@Refused" />
+                               Error="@(Refused?.Input == RefusedInput.PhoneCosts)" Refusal="@Refused" />
         </RiverField>
     </div>
     <RefusedMessage Error="@Refused" />
@@ -72,9 +73,9 @@
     [Parameter, EditorRequired]
     public RiverRun Run { get; set; } = default!;
 
-    // The engine's error key when it refuses an allowance.
+    // The engine's refusal of an allowance.
     [Parameter]
-    public string? Refused { get; set; }
+    public Refusal? Refused { get; set; }
 
     private AllowanceView? _view;
     private AllowanceRules? _rules;

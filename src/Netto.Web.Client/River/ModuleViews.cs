@@ -599,39 +599,36 @@ internal sealed record DividendView(
     }
 }
 
-// The module whose card shows an engine refusal: the one holding the refused field. The pay is
-// the split's while the company is there, Director pay's own once it is skipped; the royalty is the
-// split's, the royalty's creative share Copyright royalty's.
+// The module whose card shows an engine refusal: the one holding the refused input, case by case over
+// every input, so an input no case names is a bug rather than a refusal shown on no field. The pay is the
+// split's while the company is there, Director pay's own once it is skipped, and so is the key formula's
+// month of it; the royalty is the split's, the royalty's creative share Copyright royalty's; the income
+// year, which no card holds, and what the fund bills, which the When to pay tab shows itself, the river's.
 internal static class RiverErrors
 {
-    public static RiverModule Owner(string error, bool companySkipped) => error switch
+    public static RiverModule Owner(Refusal refusal, bool companySkipped) => refusal.Input switch
     {
-        YearSimulation.RevenueNegative or YearSimulation.RunningCostsNegative => RiverModule.CompanyYear,
-        VoucherCalculator.MealVoucherDaysNegative or VoucherCalculator.MealVoucherDaysAboveYear or VoucherCalculator.EcoVouchersNegative
-            or VoucherCalculator.EcoVouchersAboveMaximum or VoucherCalculator.SportCultureVouchersNegative
-            or VoucherCalculator.SportCultureVouchersAboveMaximum => RiverModule.Vouchers,
-        AllowanceCalculator.OfficeAllowanceNegative or AllowanceCalculator.OfficeAllowanceAboveMaximum or AllowanceCalculator.InternetAllowanceNegative
-            or AllowanceCalculator.InternetAllowanceAboveMaximum or AllowanceCalculator.ComputerAllowanceNegative
-            or AllowanceCalculator.ComputerAllowanceAboveMaximum or AllowanceCalculator.PhoneCostsNegative => RiverModule.Allowances,
-        RentCalculator.CadastralIncomeNegative or RentCalculator.ShareLetOutOfRange or RentCalculator.RentNegative or RentCalculator.RentAboveCap
-            or RentCalculator.RentWithOfficeAllowance => RiverModule.Rent,
-        CarCalculator.CatalogueValueNegative or CarCalculator.YearlyCostsNegative or CarCalculator.ContributionNegative or CarCalculator.Co2Negative
-            or CarCalculator.Co2Missing or CarCalculator.MatchingCarCo2Negative or CarCalculator.MatchingCarCo2Missing or CarCalculator.AcquiredAfterYear
-            or CarCalculator.PlugInFuelCapped => RiverModule.Car,
-        CopyrightCalculator.RoyaltyNegative or CopyrightCalculator.RoyaltyAboveProfit => RiverModule.Split,
-        CopyrightCalculator.CreativeShareOutOfRange => RiverModule.Copyright,
-        GrossToNet.GrossPayNegative => companySkipped ? RiverModule.DirectorPay : RiverModule.Split,
-        GrossToNet.MunicipalRateOutOfRange => RiverModule.DirectorPay,
-        YearSimulation.ReserveNegative or YearSimulation.EarlierProfitsNegative => RiverModule.Dividend,
-        YearSimulation.AdvancePaymentNegative => RiverModule.CorporateTax,
-        GrossToNet.TaxWithheldNegative or GrossToNet.TaxAdvancePaymentNegative => RiverModule.DirectorPay,
-        _ => RiverModule.River,
+        RefusedInput.IncomeYear => RiverModule.River,
+        RefusedInput.Revenue or RefusedInput.RunningCosts => RiverModule.CompanyYear,
+        RefusedInput.MealVoucherDays or RefusedInput.EcoVouchers or RefusedInput.SportCultureVouchers => RiverModule.Vouchers,
+        RefusedInput.OfficeAllowance or RefusedInput.InternetAllowance or RefusedInput.ComputerAllowance or RefusedInput.PhoneCosts => RiverModule.Allowances,
+        RefusedInput.CadastralIncome or RefusedInput.ShareLet or RefusedInput.Rent => RiverModule.Rent,
+        RefusedInput.CarCatalogueValue or RefusedInput.CarCo2 or RefusedInput.CarMatchingCo2 or RefusedInput.CarAcquired or RefusedInput.CarYearlyCosts
+            or RefusedInput.CarContribution or RefusedInput.CarPrivateCost => RiverModule.Car,
+        RefusedInput.Royalty => RiverModule.Split,
+        RefusedInput.CreativeShare => RiverModule.Copyright,
+        RefusedInput.DirectorPay => companySkipped ? RiverModule.DirectorPay : RiverModule.Split,
+        RefusedInput.MunicipalRate or RefusedInput.TaxWithheld or RefusedInput.DirectorAdvancePayments => RiverModule.DirectorPay,
+        RefusedInput.CompanyAdvancePayments => RiverModule.CorporateTax,
+        RefusedInput.Reserve or RefusedInput.EarlierProfits => RiverModule.Dividend,
+        RefusedInput.BilledContributions => RiverModule.River,
+        _ => throw new ArgumentOutOfRangeException(nameof(refusal), refusal.Input, "No card holds this input."),
     };
 }
 
 internal enum RiverModule
 {
-    // Nothing a card holds: the income year.
+    // Nothing a card holds: the income year, and what the fund bills, which the When to pay tab shows.
     River,
 
     CompanyYear,

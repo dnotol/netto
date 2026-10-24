@@ -1,4 +1,5 @@
 @using Netto.Core.Rent
+@using Netto.Core.Rules
 @inject IStringLocalizer<RentCard> L
 
 @* What the company pays the director besides pay after the expense allowances, before the split: the
@@ -24,13 +25,13 @@
                         Help="@L[RentCardText.CadastralIncomeHelp]">
                 <RiverNumericField T="decimal" InputId="river-cadastral-income" Value="Inputs.Rent.CadastralIncome.Value" ValueChanged="OnCadastralIncomeChanged"
                                    Euros="true"
-                                   Error="@(Refused == RentCalculator.CadastralIncomeNegative)" Refusal="@Refused" />
+                                   Error="@(Refused?.Input == RefusedInput.CadastralIncome)" Refusal="@Refused" />
                 <p class="rent__note">@L["CadastralIncomeHint"]</p>
             </RiverField>
             <RiverField Label="@L["ShareLabel"]" For="river-share-let" Origin="Inputs.Rent.ShareLet.Origin" Help="@L["ShareHint"]">
                 <RiverNumericField T="decimal" InputId="river-share-let" Value="SharePercent" ValueChanged="OnSharePercentChanged"
                                    Format="0.##" Adornment="Adornment.End" AdornmentText="%"
-                                   Error="@(Refused == RentCalculator.ShareLetOutOfRange)" Refusal="@Refused" />
+                                   Error="@(Refused?.Input == RefusedInput.ShareLet)" Refusal="@Refused" />
             </RiverField>
         </div>
     </Disclosure>
@@ -38,7 +39,7 @@
         <RiverField Label="@L["RentLabel"]" For="river-rent" Origin="Inputs.Rent.Rent.Origin" Help="@CapHelp">
             <RiverNumericField T="decimal" InputId="river-rent" Value="Inputs.Rent.Rent.Value" ValueChanged="OnRentChanged"
                                Euros="true"
-                               Error="@(Refused is RentCalculator.RentNegative or RentCalculator.RentAboveCap or RentCalculator.RentWithOfficeAllowance)" Refusal="@Refused" />
+                               Error="@(Refused?.Input == RefusedInput.Rent)" Refusal="@Refused" />
             @if (_cap is { } cap)
             {
                 <p class="rent__note">
@@ -74,9 +75,9 @@
     [Parameter, EditorRequired]
     public RiverRun Run { get; set; } = default!;
 
-    // The engine's error key when it refuses the rent, the cadastral income or the share.
+    // The engine's refusal of the rent, the cadastral income or the share.
     [Parameter]
-    public string? Refused { get; set; }
+    public Refusal? Refused { get; set; }
 
     private RentView? _view;
     private RentCapView? _cap;

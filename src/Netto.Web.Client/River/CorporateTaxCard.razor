@@ -1,3 +1,4 @@
+@using Netto.Core.Rules
 @using Netto.Core.Simulation
 @inject IStringLocalizer<CorporateTaxCard> L
 
@@ -59,7 +60,7 @@
                     <RiverNumericField T="decimal" InputId="@($"river-advance-payment-{field.Deadline}")" Value="field.Paid.Value"
                                        ValueChanged="@(amount => OnAdvancePaymentChanged(field.Deadline, amount))"
                                        Euros="true"
-                                       Error="@(Refused == YearSimulation.AdvancePaymentNegative && field.Paid.Value < 0m)" Refusal="@Refused" />
+                                       Error="@(Refused?.Input == RefusedInput.CompanyAdvancePayments && field.Paid.Value < 0m)" Refusal="@Refused" />
                 </RiverField>
             }
         </div>
@@ -82,9 +83,9 @@
     [Parameter, EditorRequired]
     public RiverRun Run { get; set; } = default!;
 
-    // The engine's error key when it refuses an advance payment.
+    // The engine's refusal of an advance payment.
     [Parameter]
-    public string? Refused { get; set; }
+    public Refusal? Refused { get; set; }
 
     private CorporateTaxView? _view;
     private CorporateTaxSettingsView _settings = default!;

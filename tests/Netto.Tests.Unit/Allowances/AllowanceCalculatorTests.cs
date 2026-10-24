@@ -1,4 +1,5 @@
 using Netto.Core.Allowances;
+using Netto.Core.Rules;
 using Shouldly;
 
 namespace Netto.Tests.Allowances;
@@ -47,7 +48,7 @@ public class AllowanceCalculatorTests
         AllowanceCalculator.Accept(Rules2026, ExpenseAllowances.None).ShouldBe((ExpenseAllowances.None, null));
     }
 
-    public static TheoryData<decimal, decimal, decimal, decimal, string> AllowancesOutsideTheRules => new()
+    public static TheoryData<decimal, decimal, decimal, decimal, Refusal> AllowancesOutsideTheRules => new()
     {
         { -0.01m, 0m, 0m, 0m, AllowanceCalculator.OfficeAllowanceNegative },
         { 1_938.45m, 0m, 0m, 0m, AllowanceCalculator.OfficeAllowanceAboveMaximum },
@@ -60,7 +61,7 @@ public class AllowanceCalculatorTests
 
     [Theory]
     [MemberData(nameof(AllowancesOutsideTheRules))]
-    public void Accept_2026AllowanceOutsideTheRules_isRefused(decimal office, decimal internet, decimal computer, decimal phone, string expected)
+    public void Accept_2026AllowanceOutsideTheRules_isRefused(decimal office, decimal internet, decimal computer, decimal phone, Refusal expected)
     {
         AllowanceCalculator.Accept(Rules2026, new ExpenseAllowances(office, internet, computer, phone)).ShouldBe((null, expected));
     }

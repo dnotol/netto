@@ -4,6 +4,7 @@ using Netto.Core.DirectorPay;
 using Netto.Core.Dividends;
 using Netto.Core.PersonalTax;
 using Netto.Core.Rent;
+using Netto.Core.Rules;
 using Netto.Core.Simulation;
 using Netto.Core.SocialContributions;
 using Netto.Web.Client.River;
@@ -117,13 +118,18 @@ public class SettingsViewsTests
         Phrases(DirectorPaySettings(inputs).Prepaid)[1].ShouldBe(("Prepaid_None", "", null));
     }
 
+    public static TheoryData<Refusal?, bool, bool> HoldsRefusals => new()
+    {
+        { GrossToNet.MunicipalRateOutOfRange, true, false },
+        { GrossToNet.TaxWithheldNegative, false, true },
+        { GrossToNet.TaxAdvancePaymentNegative, false, true },
+        { GrossToNet.GrossPayNegative, false, false },
+        { null, false, false },
+    };
+
     [Theory]
-    [InlineData(GrossToNet.MunicipalRateOutOfRange, true, false)]
-    [InlineData(GrossToNet.TaxWithheldNegative, false, true)]
-    [InlineData(GrossToNet.TaxAdvancePaymentNegative, false, true)]
-    [InlineData(GrossToNet.GrossPayNegative, false, false)]
-    [InlineData(null, false, false)]
-    public void Holds_refusal_opensTheDisclosureHoldingItsField(string? error, bool situation, bool prepaid)
+    [MemberData(nameof(HoldsRefusals))]
+    public void Holds_refusal_opensTheDisclosureHoldingItsField(Refusal? error, bool situation, bool prepaid)
     {
         (DirectorPaySettingsView.SituationHolds(error), DirectorPaySettingsView.PrepaidHolds(error)).ShouldBe((situation, prepaid));
     }
@@ -185,11 +191,16 @@ public class SettingsViewsTests
         Phrases(CorporateTaxSettings(inputs).Payments).ShouldBe([("Payments_None", "", null)]);
     }
 
+    public static TheoryData<Refusal?, bool> PaymentsHoldRefusals => new()
+    {
+        { YearSimulation.AdvancePaymentNegative, true },
+        { GrossToNet.TaxAdvancePaymentNegative, false },
+        { null, false },
+    };
+
     [Theory]
-    [InlineData(YearSimulation.AdvancePaymentNegative, true)]
-    [InlineData(GrossToNet.TaxAdvancePaymentNegative, false)]
-    [InlineData(null, false)]
-    public void PaymentsHold_refusal_opensTheDisclosureHoldingItsField(string? error, bool payments)
+    [MemberData(nameof(PaymentsHoldRefusals))]
+    public void PaymentsHold_refusal_opensTheDisclosureHoldingItsField(Refusal? error, bool payments)
     {
         CorporateTaxSettingsView.PaymentsHold(error).ShouldBe(payments);
     }
@@ -234,15 +245,20 @@ public class SettingsViewsTests
     }
 
     // The rent's own refusals are on a field in sight: only the two facts open their disclosure.
+    public static TheoryData<Refusal?, bool> HomeHoldsRefusals => new()
+    {
+        { RentCalculator.CadastralIncomeNegative, true },
+        { RentCalculator.ShareLetOutOfRange, true },
+        { RentCalculator.RentNegative, false },
+        { RentCalculator.RentAboveCap, false },
+        { RentCalculator.RentWithOfficeAllowance, false },
+        { GrossToNet.GrossPayNegative, false },
+        { null, false },
+    };
+
     [Theory]
-    [InlineData(RentCalculator.CadastralIncomeNegative, true)]
-    [InlineData(RentCalculator.ShareLetOutOfRange, true)]
-    [InlineData(RentCalculator.RentNegative, false)]
-    [InlineData(RentCalculator.RentAboveCap, false)]
-    [InlineData(RentCalculator.RentWithOfficeAllowance, false)]
-    [InlineData(GrossToNet.GrossPayNegative, false)]
-    [InlineData(null, false)]
-    public void HomeHolds_refusal_opensTheDisclosureHoldingItsField(string? error, bool home)
+    [MemberData(nameof(HomeHoldsRefusals))]
+    public void HomeHolds_refusal_opensTheDisclosureHoldingItsField(Refusal? error, bool home)
     {
         RentSettingsView.HomeHolds(error).ShouldBe(home);
     }
@@ -364,19 +380,24 @@ public class SettingsViewsTests
 
     // The car's facts hold the refusals of their fields; its yearly costs and its contribution are in
     // sight.
+    public static TheoryData<Refusal?, bool> CarHoldsRefusals => new()
+    {
+        { CarCalculator.CatalogueValueNegative, true },
+        { CarCalculator.Co2Negative, true },
+        { CarCalculator.Co2Missing, true },
+        { CarCalculator.MatchingCarCo2Negative, true },
+        { CarCalculator.MatchingCarCo2Missing, true },
+        { CarCalculator.AcquiredAfterYear, true },
+        { CarCalculator.PlugInFuelCapped, true },
+        { CarCalculator.YearlyCostsNegative, false },
+        { CarCalculator.ContributionNegative, false },
+        { GrossToNet.GrossPayNegative, false },
+        { null, false },
+    };
+
     [Theory]
-    [InlineData(CarCalculator.CatalogueValueNegative, true)]
-    [InlineData(CarCalculator.Co2Negative, true)]
-    [InlineData(CarCalculator.Co2Missing, true)]
-    [InlineData(CarCalculator.MatchingCarCo2Negative, true)]
-    [InlineData(CarCalculator.MatchingCarCo2Missing, true)]
-    [InlineData(CarCalculator.AcquiredAfterYear, true)]
-    [InlineData(CarCalculator.PlugInFuelCapped, true)]
-    [InlineData(CarCalculator.YearlyCostsNegative, false)]
-    [InlineData(CarCalculator.ContributionNegative, false)]
-    [InlineData(GrossToNet.GrossPayNegative, false)]
-    [InlineData(null, false)]
-    public void CarHolds_refusal_opensTheDisclosureHoldingItsField(string? error, bool car)
+    [MemberData(nameof(CarHoldsRefusals))]
+    public void CarHolds_refusal_opensTheDisclosureHoldingItsField(Refusal? error, bool car)
     {
         CarSettingsView.CarHolds(error).ShouldBe(car);
     }
@@ -460,12 +481,17 @@ public class SettingsViewsTests
     private static CopyrightSettingsView CopyrightSettings(RiverInputs inputs) => CopyrightSettingsView.From(inputs, inputs.Run());
 
     // Only the share's refusal is on a field inside; the royalty's is on the split.
+    public static TheoryData<Refusal?, bool> SituationHoldsRefusals => new()
+    {
+        { CopyrightCalculator.CreativeShareOutOfRange, true },
+        { CopyrightCalculator.RoyaltyNegative, false },
+        { GrossToNet.GrossPayNegative, false },
+        { null, false },
+    };
+
     [Theory]
-    [InlineData(CopyrightCalculator.CreativeShareOutOfRange, true)]
-    [InlineData(CopyrightCalculator.RoyaltyNegative, false)]
-    [InlineData(GrossToNet.GrossPayNegative, false)]
-    [InlineData(null, false)]
-    public void SituationHolds_refusal_opensTheDisclosureHoldingItsField(string? error, bool situation)
+    [MemberData(nameof(SituationHoldsRefusals))]
+    public void SituationHolds_refusal_opensTheDisclosureHoldingItsField(Refusal? error, bool situation)
     {
         CopyrightSettingsView.SituationHolds(error).ShouldBe(situation);
     }
@@ -506,11 +532,16 @@ public class SettingsViewsTests
     }
 
     // The kept amount's refusal is on the slider's field, in sight.
+    public static TheoryData<Refusal?, bool> SharesHoldRefusals => new()
+    {
+        { YearSimulation.EarlierProfitsNegative, true },
+        { YearSimulation.ReserveNegative, false },
+        { null, false },
+    };
+
     [Theory]
-    [InlineData(YearSimulation.EarlierProfitsNegative, true)]
-    [InlineData(YearSimulation.ReserveNegative, false)]
-    [InlineData(null, false)]
-    public void SharesHold_refusal_opensTheDisclosureHoldingItsField(string? error, bool shares)
+    [MemberData(nameof(SharesHoldRefusals))]
+    public void SharesHold_refusal_opensTheDisclosureHoldingItsField(Refusal? error, bool shares)
     {
         DividendSettingsView.SharesHold(error).ShouldBe(shares);
     }

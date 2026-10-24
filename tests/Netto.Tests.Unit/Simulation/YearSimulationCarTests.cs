@@ -2,6 +2,7 @@ using Netto.Core.CompanyCar;
 using Netto.Core.CorporateTax;
 using Netto.Core.DirectorPay;
 using Netto.Core.PersonalTax;
+using Netto.Core.Rules;
 using Netto.Core.Simulation;
 using Netto.Core.SocialContributions;
 using Shouldly;
@@ -262,13 +263,18 @@ public class YearSimulationCarTests
         Run(Scenario(car: ElectricCar)).Steps.ShouldAllBe(step => step.Source.Reference.Length > 0 && step.Source.Url.IsAbsoluteUri);
     }
 
-    [Theory]
-    [InlineData(-0.01, 8_000, 0, CarCalculator.CatalogueValueNegative)]
-    [InlineData(50_000, -0.01, 0, CarCalculator.YearlyCostsNegative)]
-    [InlineData(50_000, 8_000, -0.01, CarCalculator.ContributionNegative)]
-    public void Run_carOutsideTheRules_isRefusedWithTheCalculatorsKey(double catalogueValue, double costs, double contribution, string expected)
+    public static TheoryData<decimal, decimal, decimal, Refusal> CarsOutsideTheRules => new()
     {
-        var car = ElectricCar with { CatalogueValue = (decimal)catalogueValue, YearlyCosts = (decimal)costs, PersonalContribution = (decimal)contribution };
+        { -0.01m, 8_000m, 0m, CarCalculator.CatalogueValueNegative },
+        { 50_000m, -0.01m, 0m, CarCalculator.YearlyCostsNegative },
+        { 50_000m, 8_000m, -0.01m, CarCalculator.ContributionNegative },
+    };
+
+    [Theory]
+    [MemberData(nameof(CarsOutsideTheRules))]
+    public void Run_carOutsideTheRules_isRefusedWithTheCalculatorsKey(decimal catalogueValue, decimal costs, decimal contribution, Refusal expected)
+    {
+        var car = ElectricCar with { CatalogueValue = catalogueValue, YearlyCosts = costs, PersonalContribution = contribution };
 
         YearSimulation.Run(Scenario(car: car)).ShouldBe((null, expected));
     }

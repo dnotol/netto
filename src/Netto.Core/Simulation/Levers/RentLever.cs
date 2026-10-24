@@ -13,7 +13,7 @@ internal sealed record RentLever(RentRules Rules) : Lever
 {
     public override decimal FromProfit(Scenario scenario) => scenario.Rent.Rent;
 
-    public override (LeverYear? Value, string? Error) Compute(Scenario scenario, decimal left)
+    public override (LeverYear? Value, Refusal? Error) Compute(Scenario scenario, decimal left)
     {
         var (rent, error) = RentCalculator.Compute(Rules, scenario.Rent, scenario.Allowances.Office);
         return rent is null ? (null, error) : (new RentYear(Rules, rent, scenario.Rent.Any), null);

@@ -2,12 +2,13 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.Extensions.Localization;
 using MudBlazor;
+using Netto.Core.Rules;
 
 namespace Netto.Web.Client.River;
 
 // A number field of the river: MudBlazor's own, marked in error while the engine refuses its value.
-// The card passes whether it does as Error, as it would to a MudNumericField, and the engine's key as
-// Refusal. MudNumericField validates its number itself after each edit and sets Error from that alone,
+// The card passes whether it does as Error, as it would to a MudNumericField, and the engine's refusal
+// as Refusal. MudNumericField validates its number itself after each edit and sets Error from that alone,
 // which clears the refusal; the card then passes the same Error again, and MudBlazor, which applies a
 // parameter only when it changes, would leave the field unmarked. So the refusal is set again once
 // MudBlazor has validated. The field also takes the engine's message as its error text, which
@@ -31,9 +32,9 @@ public sealed class RiverNumericField<T> : MudNumericField<T>
     [Inject]
     private IStringLocalizer<RefusedMessage> Messages { get; set; } = default!;
 
-    // The engine's error key on the card, worded as the field's error text while Error is set.
+    // The engine's refusal on the card, worded as the field's error text while Error is set.
     [Parameter]
-    public string? Refusal { get; set; }
+    public Refusal? Refusal { get; set; }
 
     // An amount in euros: two decimals, and a € before it.
     [Parameter]

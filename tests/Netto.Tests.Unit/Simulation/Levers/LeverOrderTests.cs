@@ -14,7 +14,8 @@ namespace Netto.Tests.Simulation.Levers;
 // The made-up company of the fixtures, 100,000 of profit before the director and 50,000 of pay.
 public class LeverOrderTests
 {
-    private const string Refused = "test_lever_refused";
+    // A refusal of the test lever's own, on any input.
+    private static readonly Refusal Refused = new("test_lever_refused", RefusedInput.Revenue);
 
     public static TheoryData<int> YearsWithoutEveryLeversRules => [2025, UnsupportedIncomeYear];
 
@@ -148,14 +149,14 @@ public class LeverOrderTests
     // NotDeducted of it, and Handed to the pay; it lists one step before the company's and one after the
     // pay's. It refuses with Refusal when given one, and throws when asked at all with Throws.
     private sealed record TestLever(
-        decimal Takes = 0m, decimal ShareOfPay = 0m, decimal Pocket = 0m, decimal NotDeducted = 0m, TaxedWithPay? Handed = null, string? Refusal = null,
+        decimal Takes = 0m, decimal ShareOfPay = 0m, decimal Pocket = 0m, decimal NotDeducted = 0m, TaxedWithPay? Handed = null, Refusal? Refusal = null,
         bool Throws = false) : Lever
     {
         public override decimal FromProfit(Scenario scenario) => Takes + ShareOfPay * scenario.DirectorPay;
 
         public override bool FollowsPay(Scenario scenario) => ShareOfPay > 0m;
 
-        public override (LeverYear? Value, string? Error) Compute(Scenario scenario, decimal left)
+        public override (LeverYear? Value, Refusal? Error) Compute(Scenario scenario, decimal left)
         {
             if (Throws)
                 throw new InvalidOperationException("A lever after a refused one is never asked.");

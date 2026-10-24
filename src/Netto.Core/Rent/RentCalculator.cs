@@ -1,18 +1,20 @@
+using Netto.Core.Rules;
+
 namespace Netto.Core.Rent;
 
 public static class RentCalculator
 {
-    public const string CadastralIncomeNegative = "cadastral_income_negative";
-    public const string ShareLetOutOfRange = "share_let_out_of_range";
-    public const string RentNegative = "rent_negative";
-    public const string RentWithOfficeAllowance = "rent_with_office_allowance";
-    public const string RentAboveCap = "rent_above_cap";
+    public static readonly Refusal CadastralIncomeNegative = new("cadastral_income_negative", RefusedInput.CadastralIncome);
+    public static readonly Refusal ShareLetOutOfRange = new("share_let_out_of_range", RefusedInput.ShareLet);
+    public static readonly Refusal RentNegative = new("rent_negative", RefusedInput.Rent);
+    public static readonly Refusal RentWithOfficeAllowance = new("rent_with_office_allowance", RefusedInput.Rent);
+    public static readonly Refusal RentAboveCap = new("rent_above_cap", RefusedInput.Rent);
 
-    // The rent as the rules take it, or the key of what they refuse. An office allowance paid beside a
+    // The rent as the rules take it, or what they refuse. An office allowance paid beside a
     // rent is refused: it already covers the room, its rent included (circular 2021/C/20, §31). A rent
     // above the cap is refused rather than taxed: the excess would be director pay, with its social
     // contributions and no charges (art. 32, al. 2, 3°), which Netto does not model.
-    public static (RentResult? Value, string? Error) Compute(RentRules rules, HomeOfficeRent rent, decimal officeAllowance)
+    public static (RentResult? Value, Refusal? Error) Compute(RentRules rules, HomeOfficeRent rent, decimal officeAllowance)
     {
         if (rent.CadastralIncome < 0m)
             return (null, CadastralIncomeNegative);

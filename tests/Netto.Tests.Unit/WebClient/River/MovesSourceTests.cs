@@ -1,3 +1,4 @@
+using Netto.Core.Rules;
 using Netto.Core.Simulation;
 using Netto.Web.Client.River;
 using Shouldly;
@@ -407,11 +408,11 @@ public class MovesSourceTests
     // own as what it found, for a test to tell its view from the others.
     private sealed class Search
     {
-        public const string Refusal = "searched_refusal";
+        public static readonly Refusal Refusal = new("searched_refusal", RefusedInput.Revenue);
 
         public List<(RiverInputs Plan, DateOnly Date)> Asked { get; } = [];
 
-        public (MovePlan? Value, string? Error)? Run(RiverInputs plan, DateOnly date)
+        public (MovePlan? Value, Refusal? Error)? Run(RiverInputs plan, DateOnly date)
         {
             Asked.Add((plan, date));
             return (null, Refusal);

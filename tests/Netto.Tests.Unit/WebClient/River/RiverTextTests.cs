@@ -105,13 +105,12 @@ public class RiverTextTests
         DrainListResources.Missing([DrainListText.Source]).ShouldBeEmpty();
     }
 
-    // Every refusal the engine returns, read off it (EngineRefusals), and the one the car card mints itself.
+    // Every refusal the engine declares, read off it (EngineRefusals), the car card's private cost among them.
     [Fact]
     public void RefusedMessageResx_everyErrorTheRiverCanReturn_hasAText()
     {
-        string[] errors = [.. EngineRefusals.Keys, CarComparison.PrivateCostNegative];
-
-        RefusedMessageResources.Missing(errors.Select(RefusedMessageText.Error)).ShouldBeEmpty();
+        EngineRefusals.All.ShouldNotBeEmpty();
+        RefusedMessageResources.Missing(EngineRefusals.All.Select(RefusedMessageText.Error)).ShouldBeEmpty();
     }
 
     [Fact]

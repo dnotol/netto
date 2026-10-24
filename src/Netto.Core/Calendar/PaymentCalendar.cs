@@ -27,13 +27,13 @@ public sealed record PaymentCalendar(
     AssessmentDue? CompanyBalance,
     AssessmentDue DirectorBalance)
 {
-    public const string BilledContributionsNegative = "billed_contributions_negative";
+    public static readonly Refusal BilledContributionsNegative = new("billed_contributions_negative", RefusedInput.BilledContributions);
 
     // The calendar with what the social insurance fund bills each quarter as provisional
     // contributions, from its notice, none until given: they rest on the income of three years
     // before, which Netto does not hold, and the decisions keep the final contribution on the year's
     // income. Their regularisation is what the year's contributions leave over four of them.
-    public (PaymentCalendar? Value, string? Error) WithBilled(decimal? billedEachQuarter) => billedEachQuarter switch
+    public (PaymentCalendar? Value, Refusal? Error) WithBilled(decimal? billedEachQuarter) => billedEachQuarter switch
     {
         < 0m => (null, BilledContributionsNegative),
         { } billed => (this with { Contributions = Contributions with { Billed = billed, Regularisation = Contributions.EachQuarter * YearParts.Quarters - billed * YearParts.Quarters } }, null),

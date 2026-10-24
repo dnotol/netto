@@ -1,3 +1,4 @@
+using Netto.Core.Rules;
 using Netto.Core.Vouchers;
 using Shouldly;
 
@@ -49,7 +50,7 @@ public class VoucherCalculatorTests
         Compute(new VoucherGrants(365, 0m, 0m)).MealVouchers.ShouldBe(3_252.15m);
     }
 
-    public static TheoryData<int, decimal, decimal, string> GrantsOutsideTheRules => new()
+    public static TheoryData<int, decimal, decimal, Refusal> GrantsOutsideTheRules => new()
     {
         { -1, 0m, 0m, VoucherCalculator.MealVoucherDaysNegative },
         { 366, 0m, 0m, VoucherCalculator.MealVoucherDaysAboveYear },
@@ -61,7 +62,7 @@ public class VoucherCalculatorTests
 
     [Theory]
     [MemberData(nameof(GrantsOutsideTheRules))]
-    public void Compute_2026GrantOutsideTheRules_isRefused(int days, decimal eco, decimal sportCulture, string expected)
+    public void Compute_2026GrantOutsideTheRules_isRefused(int days, decimal eco, decimal sportCulture, Refusal expected)
     {
         var (value, error) = VoucherCalculator.Compute(Rules2026, new VoucherGrants(days, eco, sportCulture));
 

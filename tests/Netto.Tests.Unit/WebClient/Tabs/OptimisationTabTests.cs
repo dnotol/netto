@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text.RegularExpressions;
+using Netto.Core.Rules;
 using Netto.Core.Simulation;
 using Netto.Web.Client;
 using Netto.Web.Client.River;
@@ -412,13 +413,13 @@ public class OptimisationTabTests
     private static Task<string> RenderFromAsync(MovesBaseline from, RiverInputs river) => RenderFoundAsync(from, from.Plan.FindMoves(On22October), river);
 
     // The tab with what the page found for the plan the moves are from.
-    private static Task<string> RenderFoundAsync(MovesBaseline from, (MovePlan? Value, string? Error)? found, RiverInputs river) =>
+    private static Task<string> RenderFoundAsync(MovesBaseline from, (MovePlan? Value, Refusal? Error)? found, RiverInputs river) =>
         RenderStateAsync(from, found, river, searching: false);
 
     // The tab while the page looks for the moves from that plan, having found none yet.
     private static Task<string> RenderSearchingAsync(MovesBaseline from, RiverInputs river) => RenderStateAsync(from, found: null, river, searching: true);
 
-    private static async Task<string> RenderStateAsync(MovesBaseline from, (MovePlan? Value, string? Error)? found, RiverInputs river, bool searching) =>
+    private static async Task<string> RenderStateAsync(MovesBaseline from, (MovePlan? Value, Refusal? Error)? found, RiverInputs river, bool searching) =>
         WebUtility.HtmlDecode(await RenderAsync<OptimisationTab>(new Folds(new BrowserStorage()), new()
         {
             ["From"] = from, ["Searching"] = searching, ["Found"] = found, ["Inputs"] = river,

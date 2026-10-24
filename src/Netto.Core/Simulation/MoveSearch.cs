@@ -1,6 +1,7 @@
 using Netto.Core.Calendar;
 using Netto.Core.Copyright;
 using Netto.Core.Rent;
+using Netto.Core.Rules;
 using Netto.Core.Vouchers;
 
 namespace Netto.Core.Simulation;
@@ -116,14 +117,14 @@ public static class MoveSearch
     private const int MaximumRounds = 10;
 
     // On that date: a payment is proposed by the first deadline not yet past, none once all are.
-    public static (MovePlan? Value, string? Error) Run(Scenario today, DateOnly date) =>
+    public static (MovePlan? Value, Refusal? Error) Run(Scenario today, DateOnly date) =>
         Run(today, [
             new SplitMoveFinder(), new CompanyAdvancePaymentFinder(date), new DirectorAdvancePaymentFinder(date),
             new EcoVouchersFinder(), new SportCultureVouchersFinder(), new RentFinder(), new CopyrightFollowsPayFinder(),
         ]);
 
     // Round after round from Today.
-    internal static (MovePlan? Value, string? Error) Run(Scenario today, IReadOnlyList<IMoveFinder> finders)
+    internal static (MovePlan? Value, Refusal? Error) Run(Scenario today, IReadOnlyList<IMoveFinder> finders)
     {
         // Today's inputs are refused, if at all, before any move.
         var (year, error) = YearSimulation.Run(today);

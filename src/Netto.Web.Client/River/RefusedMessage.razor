@@ -1,3 +1,4 @@
+@using Netto.Core.Rules
 @inject IStringLocalizer<RefusedMessage> L
 
 @* The engine's refusal, in words, on the card that holds the refused field. *@
@@ -7,7 +8,7 @@
 }
 
 @code {
-    // The engine's error key, or null when nothing on this card is refused.
+    // The engine's refusal, or null when nothing on this card is refused.
     [Parameter]
-    public string? Error { get; set; }
+    public Refusal? Error { get; set; }
 }

@@ -1,4 +1,5 @@
 using Netto.Core.CorporateTax;
+using Netto.Core.Rules;
 
 namespace Netto.Core.Simulation;
 
@@ -31,7 +32,7 @@ public static class SplitSearch
     // Below this width every euro is tried.
     private const decimal LastEuros = 20m;
 
-    public static (SplitSearchResult? Value, string? Error) Run(Scenario scenario)
+    public static (SplitSearchResult? Value, Refusal? Error) Run(Scenario scenario)
     {
         if (CorporateTaxRules.For(scenario.IncomeYear) is null)
             return (null, YearSimulation.IncomeYearNotSupported);

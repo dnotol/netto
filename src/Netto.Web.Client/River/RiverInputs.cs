@@ -6,6 +6,7 @@ using Netto.Core.DirectorPay;
 using Netto.Core.Dividends;
 using Netto.Core.PersonalTax;
 using Netto.Core.Rent;
+using Netto.Core.Rules;
 using Netto.Core.Simulation;
 using Netto.Core.SocialContributions;
 using Netto.Core.Vouchers;
@@ -260,7 +261,7 @@ public sealed record RiverInputs(
 
     // The moves Netto recommends from the plan given, this river, at the pay Run runs, on that date
     // (MoveSearch): none while the company is skipped, the split being where they start.
-    public (MovePlan? Value, string? Error)? FindMoves(DateOnly date) => Company is null ? null : MoveSearch.Run(MoveScenario(), date);
+    public (MovePlan? Value, Refusal? Error)? FindMoves(DateOnly date) => Company is null ? null : MoveSearch.Run(MoveScenario(), date);
 
     // The scenario Run runs, but with the home office's facts kept while Rent is out of the plan, its
     // rent at nothing, which the engine counts as no rent, and the royalty's creative share and statuses
@@ -423,8 +424,8 @@ public sealed record CopyrightInputs(
 public sealed record Input<T>(T Value, InputOrigin Origin);
 
 // One run of the river: the director pay every card reads, the whole year when the company's figures
-// are there, or the engine's error key when it refuses an input.
-public sealed record RiverRun(GrossToNetResult? Pay, YearResult? Year, string? Error);
+// are there, or the engine's refusal of an input.
+public sealed record RiverRun(GrossToNetResult? Pay, YearResult? Year, Refusal? Error);
 
 // What was withheld on the director pay and what the director paid in advance on its income tax, as
 // the user enters them, and whether the year falls in the first three years of their first

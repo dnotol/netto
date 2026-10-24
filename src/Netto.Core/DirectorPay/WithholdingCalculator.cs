@@ -1,3 +1,5 @@
+using Netto.Core.Rules;
+
 namespace Netto.Core.DirectorPay;
 
 // The key formula's five steps on a month's pay, each line rounded to the cent half away from zero
@@ -8,9 +10,9 @@ namespace Netto.Core.DirectorPay;
 // any pay, so a pay under it gives a year below zero, a tax floored at zero and nothing withheld.
 public static class WithholdingCalculator
 {
-    public const string MonthlyPayNegative = "monthly_pay_negative";
+    public static readonly Refusal MonthlyPayNegative = new("monthly_pay_negative", RefusedInput.DirectorPay);
 
-    public static (WithholdingResult? Value, string? Error) Compute(WithholdingRules rules, decimal monthlyTaxablePay)
+    public static (WithholdingResult? Value, Refusal? Error) Compute(WithholdingRules rules, decimal monthlyTaxablePay)
     {
         if (monthlyTaxablePay < 0m)
             return (null, MonthlyPayNegative);

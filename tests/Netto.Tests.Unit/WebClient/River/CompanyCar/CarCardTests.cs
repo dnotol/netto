@@ -140,10 +140,11 @@ public class CarCardTests
     [Fact]
     public async Task Card_negativePrivateCost_saysWhyItIsRefused()
     {
+        var message = Refusals.Get($"Error_{CarCalculator.PrivateCostNegative.Key}").ShouldNotBeNull();
+
         var html = await RenderOpenAsync<CarCard>(OptionalModule.Car, ElectricCar.WithCarPrivateCost(-1m));
 
-        (html.Contains(Refusals.Get($"Error_{CarComparison.PrivateCostNegative}") ?? "-"), CardHtml.Amounts(Gap(html)).Count)
-            .ShouldBe((true, 0));
+        (html.Contains(message), CardHtml.Amounts(Gap(html)).Count).ShouldBe((true, 0));
     }
 
     // Nothing the card says names a muddy pocket.
@@ -179,7 +180,7 @@ public class CarCardTests
     {
         var inputs = ElectricCar.WithCarAcquired(new DateOnly(2027, 3, 1));
         var run = inputs.Run();
-        var message = Refusals.Get($"Error_{CarCalculator.AcquiredAfterYear}").ShouldNotBeNull();
+        var message = Refusals.Get($"Error_{CarCalculator.AcquiredAfterYear.Key}").ShouldNotBeNull();
 
         var html = System.Net.WebUtility.HtmlDecode(
             await RenderAsync(typeof(CarCard), new Folds(new BrowserStorage()), new() { ["Inputs"] = inputs, ["Run"] = run, ["Refused"] = run.Error }));

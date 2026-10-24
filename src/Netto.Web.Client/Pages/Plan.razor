@@ -1,5 +1,6 @@
 @page "/plan"
 @page "/plan/{Tab}"
+@using Netto.Core.Rules
 @using Netto.Core.Simulation
 @using Netto.Web.Client.River
 @using Netto.Web.Client.River.CompanyCar
@@ -318,6 +319,6 @@ else
     private DateOnly Today => DateOnly.FromDateTime(Clock.GetLocalNow().DateTime);
 
     // The engine's refusal goes to the card holding the refused field, and only there.
-    private string? Refused(RiverModule module) =>
+    private Refusal? Refused(RiverModule module) =>
         _run.Error is { } error && RiverErrors.Owner(error, _inputs.Company is null) == module ? error : null;
 }
