@@ -103,8 +103,8 @@
     line-height: 1.55;
 }
 
-/* How Netto reads the fund's fee where no text names it, word for word above the pay slip, as the
-   royalty card states its readings. */
+/* How Netto reads the fund's fee where no text names it as deductible, word for word above the pay
+   slip, as the royalty card states its readings. */
 .director-pay__reading {
     margin: 0 0 1rem;
     color: var(--netto-text);

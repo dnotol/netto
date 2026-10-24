@@ -64,7 +64,7 @@
     <value>What your social insurance fund charges on top of INASTI's contributions to run your file: a percentage of them, set for each fund every year, which its notice states. It is billed with each quarter of the contributions and deducted with them, and the company pays it with them when it pays them for you. Netto counts none until you give it.</value>
   </data>
   <data name="FundFeeReading" xml:space="preserve">
-    <value>No text names your fund's management fee. Netto reads it as one of the contributions the law makes you pay your fund, which you deduct as your own: it lowers your taxable income and the income your contributions are owed on, and when the company pays your contributions it pays the fee with them, as pay too.</value>
+    <value>No text that makes it deductible names your fund's management fee. Netto reads it as one of the contributions the law makes you pay your fund, which you deduct as your own: it lowers your taxable income and the income your contributions are owed on, and when the company pays your contributions it pays the fee with them, as pay too.</value>
   </data>
   <data name="MunicipalityHead" xml:space="preserve">
     <value>Where you live, for the municipal surcharge</value>

@@ -9,7 +9,7 @@ namespace Netto.Tests.SocialContributions;
 // fee: a rate of each fund's own, which the minister sets every year after hearing the fund and the fund
 // states on its notice (AR n° 38, art. 20 §4), so the user gives it; the director deducts it with the
 // contributions as their own (CIR 92, art. 52, 7°, read with Com.IR 52/124: every contribution the law
-// makes them pay to their fund), Netto's reading where no text names the fee.
+// makes them pay to their fund), Netto's reading where no text names the fee as deductible.
 public class SocialContributionRulesTests
 {
     [Fact]

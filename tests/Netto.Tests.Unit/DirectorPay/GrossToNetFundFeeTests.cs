@@ -10,9 +10,9 @@ namespace Netto.Tests.DirectorPay;
 // The social insurance fund's management fee on the director's contributions, income year 2026 at a 7%
 // municipal rate, at the 3.05% one fund advertises. Its rate is the user's, on each quarter the fund bills
 // (AR n° 38, art. 20 §4), and the director deducts it with the contributions as their own (CIR 92, art. 52,
-// 7°, read with Com.IR 52/124), Netto's reading where no text names the fee: it lowers the very income the
-// contributions are owed on, so the two are solved together, and when the company pays them it is pay too,
-// then deducted. Expected values are derived from the official amounts by hand, not checked against
+// 7°, read with Com.IR 52/124), Netto's reading where no text names the fee as deductible: it lowers the
+// very income the contributions are owed on, so the two are solved together, and when the company pays
+// them it is pay too, then deducted. Expected values are derived from the official amounts by hand, not checked against
 // Tax-Calc: the personal tax sees a larger own contribution (code 1405), which PersonalTaxCalculatorTests
 // already hold to it. The company withholds more than any tax these tests reach, unless a test says
 // otherwise.

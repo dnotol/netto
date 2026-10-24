@@ -17,9 +17,9 @@ namespace Netto.Core.DirectorPay;
 // The social insurance fund charges a management fee on the contributions, at the rate the user gives
 // (none unless given), which it bills with each quarter of them (AR n° 38, art. 20 §4). The director
 // deducts it with the contributions as their own (CIR 92, art. 52, 7°, read with Com.IR 52/124), Netto's
-// reading where no text names the fee: it lowers the income the contributions are owed on, and when the
-// company pays the contributions on the director's behalf it pays the fee with them, pay too, then
-// deducted.
+// reading where no text names the fee as deductible: it lowers the income the contributions are owed on,
+// and when the company pays the contributions on the director's behalf it pays the fee with them, pay
+// too, then deducted.
 //
 // Another income can be taxed with the pay, a home office's net rent, globalised with it (Tax-Calc
 // T13 and T14). The pay's own figures, its steps, its net and its statement, stay those of the pay

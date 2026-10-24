@@ -58,6 +58,14 @@ public class DirectorPayCardTextTests
         Resources.Missing(notes).ShouldBeEmpty();
     }
 
+    // The card's own source names the fee (AR n° 38, art. 20 §4): what no text says is that it is
+    // deductible, which Netto's reading supplies.
+    [Fact]
+    public void FundFeeReading_saysNoTextMakesTheFeeDeductible()
+    {
+        Resources.Get("FundFeeReading").ShouldNotBeNull().ShouldStartWith("No text that makes it deductible names your fund's management fee. Netto reads it as");
+    }
+
     [Fact]
     public void DirectorPayCardResx_everyPayerOfTheContributions_hasAText()
     {

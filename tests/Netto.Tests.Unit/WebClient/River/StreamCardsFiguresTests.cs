@@ -232,8 +232,8 @@ public class StreamCardsFiguresTests
         (field.Contains("origin-chip", StringComparison.Ordinal), field.Contains("origin-chip--yours", StringComparison.Ordinal)).ShouldBe((yours, yours));
     }
 
-    // Once a fee is given, the card's details say how Netto reads it where no text names it, above the pay
-    // slip and the sources; without one they do not.
+    // Once a fee is given, the card's details say how Netto reads it where no text names it as deductible,
+    // above the pay slip and the sources; without one they do not.
     [Theory]
     [InlineData(true)]
     [InlineData(false)]

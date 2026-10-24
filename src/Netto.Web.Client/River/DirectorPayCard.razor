@@ -15,10 +15,10 @@
    during the year. The user says who pays the contributions; when the company does, they are pay
    too, and what flows in says what the pay costs it. The rate of their fund's management fee is the
    user's, none until given, a percentage typed while the fee is a fraction; once given, the card's
-   details say how Netto reads it, where no text names it. What was withheld on the pay is the pay slip's
-   amount, derived, until the user types the amount actually withheld, with a way back; how it is
-   derived is the field's bubble. It and what the director paid in advance are taken while typing,
-   since nothing bounds them. The pay slip and the rules behind each figure are its detail view. *@
+   details say how Netto reads it, where no text names it as deductible. What was withheld on the pay
+   is the pay slip's amount, derived, until the user types the amount actually withheld, with a way
+   back; how it is derived is the field's bubble. It and what the director paid in advance are taken
+   while typing, since nothing bounds them. The pay slip and the rules behind each figure are its detail view. *@
 <ModuleCard Name="director-pay" Title="@L["Title"]" Summary="@Summary" Glance="@Glance" ToYou="@_view?.ToYou" Refused="@Refused" Details="@Details"
             Sources="@(_view?.Details ?? [])" IncomeYear="Inputs.IncomeYear" DetailsLabel="@L["DetailsLabel"]" SourcesTitle="@L["SourcesTitle", Inputs.IncomeYear]">
     @if (Inputs.Company is null)
@@ -160,7 +160,7 @@
     private CardGlance? Glance => Run.Pay is { } pay ? new(GlanceKind.ToYou, Formats.Euros(pay.NetInPocket)) : null;
 
     // The pay slip, above where each of its figures comes from, and, while a fund fee is given, the
-    // reading Netto takes of it where no text names it, word for word, first.
+    // reading Netto takes of it where no text names it as deductible, word for word, first.
     private RenderFragment? Details => Run.Pay is { } pay && _view is not null
         ? @<text>
               @if (Inputs.FundFeeRate.Value is not null)

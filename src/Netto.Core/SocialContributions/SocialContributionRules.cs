@@ -7,7 +7,8 @@ namespace Netto.Core.SocialContributions;
 // each fund's own, set every year by the minister after hearing the fund (FundFee), so the user gives it
 // and the rule set holds none: FundFeeRate cites that text for the rate given. The director deducts the
 // fee with the contributions as their own (FundFeeDeduction, read with FundFeeCommentary: every
-// contribution the law makes them pay to their fund), Netto's reading where no text names the fee.
+// contribution the law makes them pay to their fund), Netto's reading where no text names the fee as
+// deductible.
 public sealed record SocialContributionRules(
     int IncomeYear,
     Source Source,
