@@ -27,7 +27,7 @@ public class WithholdingRulesTests
     // 2025 has no withholding rules filed, and 2027's are not published.
     [Theory]
     [InlineData(2025)]
-    [InlineData(2027)]
+    [InlineData(Fixtures.UnsupportedIncomeYear)]
     public void For_yearWithoutWithholdingRules_isNull(int incomeYear)
     {
         WithholdingRules.For(incomeYear).ShouldBeNull();

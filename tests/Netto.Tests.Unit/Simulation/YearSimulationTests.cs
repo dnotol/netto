@@ -1033,9 +1033,9 @@ public class YearSimulationTests
     }
 
     [Fact]
-    public void ProfitBeforePay_incomeYear2027_isUnknown()
+    public void ProfitBeforePay_unsupportedIncomeYear_isUnknown()
     {
-        YearSimulation.ProfitBeforePay(Scenario(directorPay: 50_000m, reserve: 0m) with { IncomeYear = 2027 }).ShouldBeNull();
+        YearSimulation.ProfitBeforePay(Scenario(directorPay: 50_000m, reserve: 0m) with { IncomeYear = Fixtures.UnsupportedIncomeYear }).ShouldBeNull();
     }
 
     [Fact]
@@ -1050,7 +1050,7 @@ public class YearSimulationTests
     // amounts are not published.
     [Theory]
     [InlineData(2025)]
-    [InlineData(2027)]
+    [InlineData(Fixtures.UnsupportedIncomeYear)]
     public void Run_incomeYearOtherThan2026_isRefused(int incomeYear)
     {
         var (value, error) = YearSimulation.Run(Scenario(directorPay: 50_000m, reserve: 0m) with { IncomeYear = incomeYear });

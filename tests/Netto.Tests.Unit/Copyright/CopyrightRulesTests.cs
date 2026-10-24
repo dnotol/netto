@@ -37,7 +37,7 @@ public class CopyrightRulesTests
 
     [Theory]
     [InlineData(2024)]
-    [InlineData(2027)]
+    [InlineData(Fixtures.UnsupportedIncomeYear)]
     public void For_incomeYearWithoutPublishedAmounts_hasNoRules(int incomeYear)
     {
         CopyrightRules.For(incomeYear).ShouldBeNull();

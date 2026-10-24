@@ -774,7 +774,7 @@ public class GrossToNetTests
     // amounts are not published.
     [Theory]
     [InlineData(2025)]
-    [InlineData(2027)]
+    [InlineData(Fixtures.UnsupportedIncomeYear)]
     public void Compute_incomeYearOtherThan2026_isRefused(int incomeYear)
     {
         var (value, error) = GrossToNet.Compute(incomeYear, 50_000m, MunicipalRates.Entered(0.07m), TaxPrepayments.None);

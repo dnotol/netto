@@ -148,7 +148,7 @@ public class CorporateTaxCalculatorTests
 
     [Theory]
     [InlineData(2025)]
-    [InlineData(2027)]
+    [InlineData(Fixtures.UnsupportedIncomeYear)]
     public void For_yearWithoutRules_isNull(int incomeYear)
     {
         CorporateTaxRules.For(incomeYear).ShouldBeNull();

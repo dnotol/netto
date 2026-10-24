@@ -49,7 +49,7 @@ public class CarRulesTests
 
     [Theory]
     [InlineData(2025)]
-    [InlineData(2027)]
+    [InlineData(Fixtures.UnsupportedIncomeYear)]
     public void For_incomeYearWithoutPublishedAmounts_hasNoRules(int incomeYear)
     {
         CarRules.For(incomeYear).ShouldBeNull();

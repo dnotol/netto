@@ -21,6 +21,10 @@ namespace Netto.Tests.Support;
 // argument of Scenario, in this one place.
 internal static class Fixtures
 {
+    // An income year no rule set has rules for: 2027's amounts are not published. The tests that hold each
+    // rule set to refusing a year outside the ones it has, and the engine's, take this one.
+    public const int UnsupportedIncomeYear = 2027;
+
     public static readonly CompanyStatus SmallPastStartUp = new(SmallCompany: true, FirstFourTaxPeriods: false);
 
     // Its credit, 9,000, covers the surcharge on any tax these tests reach.

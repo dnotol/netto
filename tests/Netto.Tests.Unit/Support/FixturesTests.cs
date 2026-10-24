@@ -63,6 +63,14 @@ public class FixturesTests
         RiverExample.ShouldBe(RiverInputs.Example.MoveScenario());
     }
 
+    // The year no rule set has rules for. When one is published, this fails and the constant moves on, with the
+    // tests that hold every rule set to it.
+    [Fact]
+    public void UnsupportedIncomeYear_isRefusedByTheYearSimulation()
+    {
+        YearSimulation.Run(Scenario() with { IncomeYear = UnsupportedIncomeYear }).Error.ShouldBe(YearSimulation.IncomeYearNotSupported);
+    }
+
     [Fact]
     public void Run_madeUpCompany_givesItsYear()
     {

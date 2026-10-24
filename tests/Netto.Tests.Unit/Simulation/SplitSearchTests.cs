@@ -603,9 +603,9 @@ public class SplitSearchTests
     }
 
     [Fact]
-    public void Run_incomeYear2027_isRefused()
+    public void Run_unsupportedIncomeYear_isRefused()
     {
-        var (value, error) = SplitSearch.Run(Scenario() with { IncomeYear = 2027 });
+        var (value, error) = SplitSearch.Run(Scenario() with { IncomeYear = Fixtures.UnsupportedIncomeYear });
 
         (value, error).ShouldBe((null, YearSimulation.IncomeYearNotSupported));
     }

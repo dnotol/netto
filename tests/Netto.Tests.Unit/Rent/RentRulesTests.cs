@@ -38,7 +38,7 @@ public class RentRulesTests
 
     [Theory]
     [InlineData(2024)]
-    [InlineData(2027)]
+    [InlineData(Fixtures.UnsupportedIncomeYear)]
     public void For_incomeYearWithoutPublishedAmounts_hasNoRules(int incomeYear)
     {
         RentRules.For(incomeYear).ShouldBeNull();

@@ -48,6 +48,13 @@ public class TestSupportTests
         Declaring(@"\bnew\s+Scenario\s*\(|\bScenario\s+\w+\s*=\s*new\s*\(").ShouldBeEmpty();
     }
 
+    // The income year the rule sets have no rules for is Fixtures.UnsupportedIncomeYear, not a literal 2027 here and there.
+    [Fact]
+    public void TestSources_unsupportedIncomeYear_isNamedOnce()
+    {
+        Declaring(@"InlineData\(\s*2027\s*\)|IncomeYear\s*=\s*2027\b").ShouldBeEmpty();
+    }
+
     // The test sources outside Support, and this file, whose patterns would match themselves.
     private static IEnumerable<(string Name, string Text)> Sources() =>
         Directory.EnumerateFiles(Folder, "*.cs", SearchOption.AllDirectories)

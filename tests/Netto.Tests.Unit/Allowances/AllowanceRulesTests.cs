@@ -34,7 +34,7 @@ public class AllowanceRulesTests
 
     [Theory]
     [InlineData(2025)]
-    [InlineData(2027)]
+    [InlineData(Fixtures.UnsupportedIncomeYear)]
     public void For_incomeYearOtherThan2026_hasNoRules(int incomeYear)
     {
         AllowanceRules.For(incomeYear).ShouldBeNull();

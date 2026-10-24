@@ -70,7 +70,7 @@ public class DividendCalculatorTests
 
     [Theory]
     [InlineData(2024)]
-    [InlineData(2027)]
+    [InlineData(Fixtures.UnsupportedIncomeYear)]
     public void For_yearWithoutRules_isNull(int incomeYear)
     {
         DividendRules.For(incomeYear).ShouldBeNull();

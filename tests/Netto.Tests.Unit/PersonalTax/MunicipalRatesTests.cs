@@ -42,7 +42,7 @@ public class MunicipalRatesTests
     // 2025 has no use yet (GrossToNet covers 2026 only), and 2027's rates are not published.
     [Theory]
     [InlineData(2025)]
-    [InlineData(2027)]
+    [InlineData(Fixtures.UnsupportedIncomeYear)]
     public void For_incomeYearOtherThan2026_isNull(int incomeYear)
     {
         var rates = MunicipalRates.For(incomeYear);
