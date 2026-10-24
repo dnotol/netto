@@ -58,17 +58,14 @@ public class CarAndRoyaltyCardsTests
     };
 
     // Figures with their labels: once its amounts are taken out, no punctuation a sentence would hold, and
-    // no more than five words around each figure.
+    // a label around each figure.
     [Theory]
     [MemberData(nameof(Summaries))]
     public async Task Summary_card_isFiguresWithTheirLabelsAndNoSentence(string _, Type card, OptionalModule module, RiverInputs inputs)
     {
         var summary = CardHtml.Summary(await RenderOpenAsync(card, module, inputs)).ShouldNotBeNull();
-        var labels = Amount.Replace(summary, "");
 
-        labels.ShouldSatisfyAllConditions(
-            () => labels.ShouldNotMatch("[.,:;?]"),
-            () => labels.Split('·').Select(segment => CardHtml.VisibleWords(segment).Count).ShouldAllBe(words => words <= 5));
+        CardHtml.SummaryFaults(summary).ShouldBeEmpty();
     }
 
     // The plans each card is held to: the electric car, a petrol car whose costs are not all deducted, with a
@@ -96,7 +93,7 @@ public class CarAndRoyaltyCardsTests
         var html = await RenderOpenAsync(card, module, inputs);
         var lines = CardHtml.LineAmounts(html).Select(Unsigned).ToHashSet();
 
-        CardHtml.Prose(html).Where(sentence => Amount.Matches(sentence).Any(amount => lines.Contains(Unsigned(amount.Value)))).ShouldBeEmpty();
+        CardHtml.Prose(html).Where(sentence => CardHtml.Amounts(sentence).Any(amount => lines.Contains(Unsigned(amount)))).ShouldBeEmpty();
     }
 
     // Every text the card draws open, in sight or not, is in its .resx.
@@ -179,9 +176,6 @@ public class CarAndRoyaltyCardsTests
                 CardHtml.Prose(folded).Contains(readings))
             .ShouldBe((true, true, false));
     }
-
-    // An amount as Formats writes it, in euros or as a percentage, with its sign.
-    private static readonly Regex Amount = new("[−+-]?€[0-9][0-9,]*(?:\\.[0-9]+)?|[0-9]+(?:\\.[0-9]+)?%");
 
     private static string Unsigned(string amount) => amount.TrimStart('−', '+', '-');
 

@@ -37,6 +37,15 @@ internal static class CardHtml
     // The site's own words run together as a key's are: the tax administration's portal.
     private static readonly HashSet<string> NamesLikeKeys = ["MyMinfin"];
 
+    // An amount as Formats writes it: euros with their sign, or a share.
+    private static readonly Regex AmountPattern = new("[−+-]?€[0-9][0-9,]*(?:\\.[0-9]+)?|[0-9]+(?:\\.[0-9]+)?%");
+
+    // What a sentence holds and a figure's label does not.
+    private static readonly char[] SentencePunctuation = ['.', ',', ':', ';', '?'];
+
+    // The start of the name an (i) carries, followed by the label it hangs on.
+    private const string BubbleTrigger = "More about ";
+
     // What names or describes an element, where a key can leak as well as into a text.
     private static readonly string[] Naming = ["aria-label", "aria-valuetext", "title", "placeholder", "alt"];
 
@@ -81,15 +90,44 @@ internal static class CardHtml
     // and its share as drawn, none for a line without one. Where a drain goes is not read.
     public static IReadOnlyList<(string Label, string Amount, string? Share)> Lines(string html) =>
     [
-        .. InSight(Parse(html)).Where(element => element.Name == "li" && (element.Has("figure") || element.Has("drain"))).Select(line =>
+        .. LineElements(html).Select(line =>
         {
-            var list = line.Has("figure") ? "figure" : "drain";
+            var list = ListOf(line);
             var parts = InSight(line).ToList();
             return (Part(parts, $"{list}__label") ?? "", Part(parts, $"{list}__amount") ?? "", Part(parts, $"{list}__share"));
         }),
     ];
 
     public static IReadOnlyList<string> LineAmounts(string html) => [.. Lines(html).Select(line => line.Amount)];
+
+    // The lists the lines in sight come from, run by run in the page's order: « figure » for a figure
+    // list, « drain » for a drain list, each with the number of its lines before the other list's follow.
+    // A card that draws its figure lines before its drain lines has the two runs in that order.
+    public static IReadOnlyList<(string List, int Lines)> LineRuns(string html)
+    {
+        var runs = new List<(string List, int Lines)>();
+        foreach (var list in LineElements(html).Select(ListOf))
+        {
+            if (runs.Count > 0 && runs[^1].List == list)
+                runs[^1] = (list, runs[^1].Lines + 1);
+            else
+                runs.Add((list, 1));
+        }
+
+        return runs;
+    }
+
+    // The amounts a text draws, in its order, as Formats writes them: euros with their sign, or a share.
+    public static IReadOnlyList<string> Amounts(string text) => [.. AmountPattern.Matches(text).Select(match => match.Value)];
+
+    // The labels of a summary that are not a figure's name. A summary is figures with their labels joined
+    // by « · »: once its amounts are taken out, each label holds a letter, a bare figure having none, and
+    // none of the punctuation a sentence would. None for a summary of that shape.
+    public static IReadOnlyList<string> SummaryFaults(string summary) =>
+    [
+        .. AmountPattern.Replace(summary, "").Split('·').Select(label => label.Trim())
+            .Where(label => label.IndexOfAny(SentencePunctuation) >= 0 || !label.Any(char.IsLetter)),
+    ];
 
     // The words in sight, in the page's order: each text read on its own, a word being what lies between
     // two spaces and holds a letter or a digit, so a separator alone, a middle dot, a dash or a quotation
@@ -107,13 +145,26 @@ internal static class CardHtml
     public static string BubbleAfter(string html, string label)
     {
         var elements = Descendants(Parse(html)).ToList();
-        var trigger = elements.FirstOrDefault(element => element.Attributes.GetValueOrDefault("aria-label") == $"More about {label}");
+        var trigger = elements.FirstOrDefault(element => element.Attributes.GetValueOrDefault("aria-label") == $"{BubbleTrigger}{label}");
         trigger.ShouldNotBeNull($"No bubble follows « {label} ».");
-        var describedBy = trigger.Attributes.GetValueOrDefault("aria-describedby");
-        var text = elements.FirstOrDefault(element => describedBy is not null && element.Attributes.GetValueOrDefault("id") == describedBy);
+        var text = DescribedBy(elements, trigger);
         text.ShouldNotBeNull($"The bubble after « {label} » holds no text.");
 
-        return Regex.Replace(string.Concat(text.Children.SelectMany(child => TextsInSight(child))), "\\s+", " ").Trim();
+        return BubbleText(text);
+    }
+
+    // Every bubble of the page in its order, each (i) named « More about » a label: the label and the text
+    // it is described by, as a screen reader is given it; none where the page holds no such text, for a
+    // test to find a bubble that says nothing.
+    public static IReadOnlyList<(string Label, string Text)> Bubbles(string html)
+    {
+        var elements = Descendants(Parse(html)).ToList();
+
+        return
+        [
+            .. elements.Where(element => element.Attributes.GetValueOrDefault("aria-label") is { } name && name.StartsWith(BubbleTrigger, StringComparison.Ordinal))
+                .Select(trigger => (trigger.Attributes["aria-label"][BubbleTrigger.Length..], DescribedBy(elements, trigger) is { } text ? BubbleText(text) : "")),
+        ];
     }
 
     // The element of that id with all it holds, as written; a test asking for one the page does not draw
@@ -125,6 +176,23 @@ internal static class CardHtml
 
         return html[element.Start..element.End];
     }
+
+    // The lines in sight of the figure lists and the drain lists, in the page's order.
+    private static IEnumerable<Element> LineElements(string html) =>
+        InSight(Parse(html)).Where(element => element.Name == "li" && (element.Has("figure") || element.Has("drain")));
+
+    private static string ListOf(Element line) => line.Has("figure") ? "figure" : "drain";
+
+    // The element a bubble's (i) is described by, the text of the bubble.
+    private static Element? DescribedBy(List<Element> elements, Element trigger)
+    {
+        var describedBy = trigger.Attributes.GetValueOrDefault("aria-describedby");
+
+        return elements.FirstOrDefault(element => describedBy is not null && element.Attributes.GetValueOrDefault("id") == describedBy);
+    }
+
+    private static string BubbleText(Element text) =>
+        Regex.Replace(string.Concat(text.Children.SelectMany(child => TextsInSight(child))), "\\s+", " ").Trim();
 
     private static Element? FirstInSight(string html, string cssClass) => InSight(Parse(html)).FirstOrDefault(element => element.Has(cssClass));
 

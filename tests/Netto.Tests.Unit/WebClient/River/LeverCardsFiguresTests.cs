@@ -1,4 +1,3 @@
-using System.Text.RegularExpressions;
 using Netto.Web.Client.River;
 using Shouldly;
 
@@ -16,9 +15,6 @@ public class LeverCardsFiguresTests
     private static readonly ResxText DrainListResources = ResxText.For<DrainList>();
 
     private static readonly ResxText ConditionListResources = ResxText.For<ConditionList>();
-
-    // An amount as Formats writes it, a share among them, signed or not.
-    private static readonly Regex Amounts = new("[−+]?€[0-9,]+(?:[.][0-9]+)?|[0-9]+(?:[.][0-9]+)?%");
 
     // Every lever in the plan with an amount of each kind given, each under its maximum so that a bound
     // under its field never reads as one of the card's lines, a rent above its floor, profits kept from
@@ -68,18 +64,15 @@ public class LeverCardsFiguresTests
         { "dividend", NothingKept },
     };
 
-    // Between its middle dots, a summary holds a figure and a few words naming it: no sentence, so no
-    // punctuation once its amounts are left out.
+    // Between its middle dots, a summary holds a figure and the label naming it: no sentence, so no
+    // punctuation once its amounts are left out, and no figure without its label.
     [Theory]
     [MemberData(nameof(Cards))]
     public async Task Summary_card_holdsNoSentence(string card, NamedRiver river)
     {
         var summary = CardHtml.Summary(await OpenCardAsync(river, card)).ShouldNotBeNull();
 
-        var labels = Amounts.Replace(summary, "").Split('·').Select(label => label.Trim()).ToList();
-        labels.ShouldSatisfyAllConditions(
-            () => labels.Where(label => label.IndexOfAny(['.', ',', ':', ';', '?']) >= 0).ShouldBeEmpty(),
-            () => labels.Where(label => label.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length > 5).ShouldBeEmpty());
+        CardHtml.SummaryFaults(summary).ShouldBeEmpty();
     }
 
     // An open card's paragraphs say what its lines cannot: none restates an amount one of its lines shows,
@@ -101,7 +94,7 @@ public class LeverCardsFiguresTests
         var html = await OpenCardAsync(river, card);
 
         var amounts = CardHtml.LineAmounts(html).Select(Unsigned).ToHashSet();
-        CardHtml.Prose(html).Where(paragraph => Amounts.Matches(paragraph).Any(amount => amounts.Contains(Unsigned(amount.Value)))).ShouldBeEmpty();
+        CardHtml.Prose(html).Where(paragraph => CardHtml.Amounts(paragraph).Any(amount => amounts.Contains(Unsigned(amount)))).ShouldBeEmpty();
     }
 
     // An open card draws its figure line by line, each label with its amount, above where its money goes:

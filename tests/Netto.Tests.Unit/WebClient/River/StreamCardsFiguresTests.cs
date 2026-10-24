@@ -30,21 +30,14 @@ public class StreamCardsFiguresTests
     // The example with nothing withheld on the pay, which leaves a surcharge due on its tax.
     private static readonly RiverInputs NothingWithheld = RiverInputs.Example.WithTaxWithheld(0m);
 
-    // An amount as the page draws it, in euros, signed or not, or as a share.
-    private static readonly Regex Amount = new(@"[−+]?€[0-9][0-9,]*(?:\.[0-9]+)?|[0-9]+(?:\.[0-9]+)?%");
-
     public static TheoryData<string> Cards => new() { "split", "director-pay", "corporate-tax" };
 
-    // A card's summary is its figures, each with the few words that label it, and no sentence.
+    // A card's summary is its figures, each with the label that names it, and no sentence.
     [Theory]
     [MemberData(nameof(Cards))]
     public async Task Summary_filledPlan_isItsFiguresWithTheirLabels(string card)
     {
-        var labels = Amount.Replace(CardHtml.Summary(await CardAsync(card)).ShouldNotBeNull(), "");
-
-        labels.ShouldSatisfyAllConditions(
-            () => labels.ShouldNotMatch("[.,:;?]"),
-            () => labels.Split('·').Select(InterfaceTexts.WordCount).ShouldAllBe(count => count >= 1 && count <= 5));
+        CardHtml.SummaryFaults(CardHtml.Summary(await CardAsync(card)).ShouldNotBeNull()).ShouldBeEmpty();
     }
 
     // A sentence that restates a figure its lines show is gone: no paragraph in sight holds an amount
@@ -70,7 +63,7 @@ public class StreamCardsFiguresTests
         var html = CardHtml.Card(await CardHtml.RenderPlanOpenAsync(plan), card);
         var lines = CardHtml.LineAmounts(html).Select(Unsigned).ToHashSet();
 
-        CardHtml.Prose(html).Where(paragraph => Amount.Matches(paragraph).Any(amount => lines.Contains(Unsigned(amount.Value)))).ShouldBeEmpty();
+        CardHtml.Prose(html).Where(paragraph => CardHtml.Amounts(paragraph).Any(amount => lines.Contains(Unsigned(amount)))).ShouldBeEmpty();
     }
 
     // The words in sight the static render counted on the filled plan before the story, and the most a
