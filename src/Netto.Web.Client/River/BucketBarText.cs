@@ -24,9 +24,9 @@ internal static class BucketBarText
 
     // What the river starts from, worded with three figures in this order: what the year starts from
     // before the profits kept from earlier years, those profits, and a car's costs. The profit before
-    // what the company pays the director, after a car's costs once there are any (the river starts
-    // after them), with the earlier profits once there are any; or, with the company skipped, the pay,
-    // with the contributions the company pays on it when it does.
+    // what the company pays the director, after INASTI's company contribution, always, and a car's costs
+    // once there are any (the river starts after them), with the earlier profits once there are any; or,
+    // with the company skipped, the pay, with the contributions the company pays on it when it does.
     public static string From(BucketsView view) => view.StartsAtPay
         ? view.CompanyPaysContributions ? "FromPayCost" : "FromPay"
         : (view.CarCosts > 0m ? "FromProfitAfterCar" : "FromProfit") + (view.EarlierProfits > 0m ? "AndEarlier" : "");

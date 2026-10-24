@@ -177,7 +177,8 @@
             await JS.InvokeVoidAsync("nettoBucketBar.stop");
     }
 
-    // Out of what the river starts from, after a car's costs, or why there is no figure.
+    // Out of what the river starts from, after INASTI's company contribution and a car's costs, or why
+    // there is no figure.
     private string From => View is { } view
         ? L[BucketBarText.From(view), Formats.Euros(view.Start - view.EarlierProfits), Formats.Euros(view.EarlierProfits), Formats.Euros(view.CarCosts)].Value
         : L[BucketBarText.Refused].Value;
