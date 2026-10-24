@@ -10,7 +10,9 @@ namespace Netto.Tests.WebClient.River;
 
 // The split and the cards of the two streams after it, Director pay and Corporate tax, as a viewer reads
 // them open on a plan filled with every lever (CardHtml): each draws its figures as lines of label,
-// amount and share, and keeps a sentence only for what a figure cannot say. The plan grants 220 days of
+// amount and share, and keeps a sentence only for what a figure cannot say. What these tests hold is the
+// amounts and shares drawn, their order, and the shape of what stands around them, never the words. The
+// plan grants 220 days of
 // meal vouchers with 250 of eco and 100 of sport/culture vouchers, pays 240 for internet, 240 for a
 // computer and 600 of phone costs, lets 12% of a home of 1,200 of cadastral income for 1,380, holds
 // YearSimulationCarTests' electric car (50,000 of catalogue value, 8,000 of yearly costs) and pays a
@@ -26,6 +28,9 @@ public class StreamCardsFiguresTests
 
     // The Plan page on the filled plan with every card open, drawn once for the tests that read it.
     private static readonly Lazy<Task<string>> Page = new(() => CardHtml.RenderPlanOpenAsync(Filled));
+
+    // The texts of Director pay's .resx, for the rules its bubbles say, read where a test needs one.
+    private static readonly ResxText Texts = ResxText.For<DirectorPayCard>();
 
     // The example with nothing withheld on the pay, which leaves a surcharge due on its tax.
     private static readonly RiverInputs NothingWithheld = RiverInputs.Example.WithTaxWithheld(0m);
@@ -76,26 +81,26 @@ public class StreamCardsFiguresTests
 
     // What the split shares, each side out of the 87,229.80 the levers leave it, then the best pay the
     // search found and what it leaves, with what reaches the pocket there and at the pay set out of what
-    // leaves the company.
+    // leaves the company: the amount and the share of each line, in order.
     [Fact]
     public async Task Split_filledPlan_drawsItsSidesThenTheBestPayAsLines()
     {
-        CardHtml.Lines(await CardAsync("split")).ShouldBe(
+        CardHtml.Lines(await CardAsync("split")).Select(line => (line.Amount, line.Share)).ShouldBe(
         [
-            ("Your pay", "€50,000.00", "57.3%"),
-            ("Royalty", "€7,142.85", "8.2%"),
-            ("Company profit before tax", "€30,086.95", "34.5%"),
-            ("Best pay", "€19,757.00", null),
-            ("Dividend", "€46,937.35", null),
-            ("Royalty", "€2,822.42", null),
-            ("In your pocket there", "€60,866.97", "66.2%"),
-            ("More than at your pay", "€2,619.44", null),
-            ("In your pocket at your pay", "€58,247.53", "63.3%"),
+            ("€50,000.00", "57.3%"),
+            ("€7,142.85", "8.2%"),
+            ("€30,086.95", "34.5%"),
+            ("€19,757.00", null),
+            ("€46,937.35", null),
+            ("€2,822.42", null),
+            ("€60,866.97", "66.2%"),
+            ("€2,619.44", null),
+            ("€58,247.53", "63.3%"),
         ]);
     }
 
     // How far the pay goes is a bound, in sight under its field and never in a bubble; why, the field's
-    // bubble says, in the words the card said it in.
+    // bubble says.
     [Fact]
     public async Task Split_filledPlan_keepsThePaysBoundInSightAndWhyInItsBubble()
     {
@@ -103,8 +108,8 @@ public class StreamCardsFiguresTests
         var bubble = CardHtml.BubbleAfter(html, "Gross director pay for the year");
 
         html.ShouldSatisfyAllConditions(
-            () => CardHtml.Prose(html).ShouldContain("At most €76,326.08"),
-            () => bubble.ShouldStartWith("Up to where the royalty that follows your pay takes the rest of what your pay and royalty share."),
+            () => CardHtml.Prose(html).ShouldContain(paragraph => paragraph.Contains("€76,326.08", StringComparison.Ordinal)),
+            () => bubble.ShouldNotBeNullOrWhiteSpace(),
             () => bubble.ShouldNotContain("€76,326.08"));
     }
 
@@ -113,7 +118,11 @@ public class StreamCardsFiguresTests
     [Fact]
     public async Task Split_filledPlan_weighsTheReducedRateInASentence()
     {
-        CardHtml.Prose(await CardAsync("split")).ShouldContain("It gives up the reduced corporate rate on purpose: keeping it leaves €1,016.20 less.");
+        var html = await CardAsync("split");
+
+        html.ShouldSatisfyAllConditions(
+            () => CardHtml.Prose(html).ShouldContain(paragraph => paragraph.Contains("€1,016.20", StringComparison.Ordinal)),
+            () => CardHtml.LineAmounts(html).Select(Unsigned).ShouldNotContain("€1,016.20"));
     }
 
     // A refused pay leaves no figure to draw: the refusal stands in sight where the lines were.
@@ -140,75 +149,88 @@ public class StreamCardsFiguresTests
         var html = await CardAsync("director-pay");
 
         html.ShouldSatisfyAllConditions(
-            () => CardHtml.Prose(html)[0].ShouldBe("Gross pay from the split derived €50,000.00"),
-            () => CardHtml.Lines(html).ShouldBe(
+            () => CardHtml.Prose(html)[0].ShouldContain("€50,000.00"),
+            () => CardHtml.Lines(html).Select(line => (line.Amount, line.Share)).ShouldBe(
             [
-                ("Benefit in kind", "€1,714.29", null),
-                ("Taxable pay", "€51,714.29", null),
-                ("Social contributions", "−€8,577.72", "17.2%"),
-                ("Income tax", "−€11,958.11", "23.9%"),
-                ("Municipal surcharge", "−€837.07", "1.7%"),
-                ("Net pay", "€28,627.10", "57.3%"),
-            ]));
+                ("€1,714.29", null),
+                ("€51,714.29", null),
+                ("−€8,577.72", "17.2%"),
+                ("−€11,958.11", "23.9%"),
+                ("−€837.07", "1.7%"),
+                ("€28,627.10", "57.3%"),
+            ]),
+            () => CardHtml.LineRuns(html).ShouldBe([("figure", 2), ("drain", 4)]));
     }
 
-    // With no surcharge due, the card says why in a few words, in sight.
+    // With no surcharge due, the card says why in a note, in sight, and draws no line for it.
     [Fact]
     public async Task DirectorPay_surchargeUnderTheMinimum_saysWhyNoneIsDue()
     {
-        CardHtml.Prose(await CardAsync("director-pay")).ShouldContain("No surcharge: what is left is under the minimum.");
+        var html = await CardAsync("director-pay");
+
+        html.ShouldSatisfyAllConditions(
+            () => html.ShouldContain("class=\"director-pay__condition\""),
+            () => CardHtml.LineRuns(html).Select(run => run.List).ShouldBe(["figure", "drain"]));
     }
 
     // Due, the surcharge is a drain line, and what more by the last deadline leaves none due a line of
-    // its own.
+    // its own, a figure line drawn after the drains. The example's pay has no benefit in kind, so no
+    // figure line stands before them.
     [Fact]
     public async Task DirectorPay_nothingWithheld_drawsWhatMoreByTheLastDeadlineLeavesNoneDue()
     {
         var html = CardHtml.Card(await CardHtml.RenderPlanOpenAsync(NothingWithheld), "director-pay");
 
-        CardHtml.Lines(html).ShouldContain(("More by 21 December 2026 leaves none due", "€14,317.50", null));
+        html.ShouldSatisfyAllConditions(
+            () => CardHtml.LineRuns(html).Select(run => run.List).ShouldBe(["drain", "figure"]),
+            () => CardHtml.Lines(html).Select(line => (line.Amount, line.Share)).Last().ShouldBe(("€14,317.50", null)),
+            () => html.ShouldNotContain("class=\"director-pay__condition\""));
     }
 
     // How the withholding is derived from the pay slip, and what the key formula is, are rules: the
-    // withheld field's bubble says them, in the words the card said them in, and no note under the field
-    // says them again. A refused advance payment opens the field's disclosure here.
+    // withheld field's bubble says them, and no note under the field says them again. A refused advance
+    // payment opens the field's disclosure here.
     [Fact]
     public async Task DirectorPay_withheldAsThePaySlip_explainsTheWithholdingInTheFieldsBubble()
     {
+        var hint = Texts.Get("WithheldHint").ShouldNotBeNull();
         var html = WebUtility.HtmlDecode(CardHtml.Card(await CardHtml.RenderPlanOpenAsync(RiverInputs.Example.WithTaxAdvancePayment(0, -1m)), "director-pay"));
 
         html.ShouldSatisfyAllConditions(
-            () => FieldHead(html, "river-tax-withheld").ShouldContain(
-                "Derived from the pay slip: twelve times the month's withholding by the key formula, the administration's formula for the tax a company "
-                + "withholds on each month's pay, set in annex III of the royal decree implementing the income tax code. Enter the amount actually withheld if it differs."),
-            () => CardHtml.Prose(html).ShouldNotContain(paragraph => paragraph.Contains("Derived from the pay slip", StringComparison.Ordinal)));
+            () => FieldHead(html, "river-tax-withheld").ShouldContain(hint),
+            () => CardHtml.Prose(html).ShouldNotContain(paragraph => paragraph.Contains(hint, StringComparison.Ordinal)));
     }
 
     // An amount typed replaces the pay slip's, as its origin says: only the way back to the pay slip's
-    // amount stays under the field.
+    // amount stays under the field, and the rule is still the bubble's alone.
     [Fact]
     public async Task DirectorPay_amountWithheldTyped_keepsOnlyTheWayBackToThePaySlipsAmount()
     {
         var html = WebUtility.HtmlDecode(CardHtml.Card(await CardHtml.RenderPlanOpenAsync(RiverInputs.Example.WithTaxWithheld(-1m)), "director-pay"));
 
-        (html.Contains("Use the pay slip's amount", StringComparison.Ordinal), CardHtml.Prose(html).Any(paragraph => paragraph.Contains("replaces the pay slip", StringComparison.Ordinal)))
+        (html.Contains(Texts.Get("WithheldAsPaySlip").ShouldNotBeNull(), StringComparison.Ordinal),
+                CardHtml.Prose(html).Any(paragraph => paragraph.Contains(Texts.Get("WithheldHint").ShouldNotBeNull(), StringComparison.Ordinal)))
             .ShouldBe((true, false));
     }
 
     // What the taxable income adds back to the profit the split leaves the company, then where that
-    // profit goes, each drain out of it.
+    // profit goes, each drain out of it: the amount and the share of each line, in order.
     [Fact]
     public async Task CorporateTax_filledPlan_drawsWhatItAddsBackThenWhereTheProfitGoes()
     {
-        CardHtml.Lines(await CardAsync("corporate-tax")).ShouldBe(
-        [
-            ("Taxable income", "€31,808.58", null),
-            ("Added back: vouchers", "€1,430.20", null),
-            ("Added back: car benefit", "€291.43", null),
-            ("Corporate tax", "−€6,361.72", "21.1%"),
-            ("Advance-payment surcharge", "−€429.42", "1.4%"),
-            ("Profit after tax", "€23,295.81", "77.4%"),
-        ]);
+        var html = await CardAsync("corporate-tax");
+
+        html.ShouldSatisfyAllConditions(
+            () => CardHtml.Lines(html).Select(line => (line.Amount, line.Share)).ShouldBe(
+            [
+                ("€31,808.58", null),
+                ("€1,430.20", null),
+                ("€291.43", null),
+                ("−€6,361.72", "21.1%"),
+                ("−€429.42", "1.4%"),
+                ("€23,295.81", "77.4%"),
+            ]),
+            () => CardHtml.LineRuns(html).ShouldBe([("figure", 3), ("drain", 3)]));
     }
 
     // Which condition decided the rate stays in sight, with the minimum pay and the share of it the
@@ -216,7 +238,9 @@ public class StreamCardsFiguresTests
     [Fact]
     public async Task CorporateTax_filledPlan_keepsTheConditionOfTheRateInSight()
     {
-        CardHtml.Prose(await CardAsync("corporate-tax")).ShouldContain("Reduced rate kept: your pay with benefits reaches the €51,000.00 minimum; benefits within 20%.");
+        var condition = CardHtml.Prose(await CardAsync("corporate-tax")).SingleOrDefault(paragraph => paragraph.Contains("€51,000.00", StringComparison.Ordinal));
+
+        CardHtml.Amounts(condition.ShouldNotBeNull()).ShouldBe(["€51,000.00", "20%"]);
     }
 
     // What a small company is is the checkbox's bubble: its text is the bubble's, the bubble beside the

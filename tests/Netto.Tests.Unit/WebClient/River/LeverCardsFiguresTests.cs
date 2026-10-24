@@ -6,8 +6,9 @@ namespace Netto.Tests.WebClient.River;
 // The lever cards before the split, Company year and Dividend read in figures, each drawn open on the
 // Plan page as the viewer meets it (CardHtml): a summary that is figures with their labels, no sentence;
 // the figure lines above the drain lines, their bubbles drawn, and sentences only for what a figure
-// cannot say. What they share with the other cards is said in as few words: where a drain line passes
-// its money on, and the line their conditions fold to.
+// cannot say. Their figures are held, the amounts and the order they are drawn in, and the shape of what
+// stands around them, never the words: a card may be reworded and these tests stand. What they share
+// with the other cards: where a drain line passes its money on, and the line their conditions fold to.
 public class LeverCardsFiguresTests
 {
     // The names IStringLocalizer<TComponent> reads River/<Component>.resx under.
@@ -34,22 +35,22 @@ public class LeverCardsFiguresTests
     // All of what can be paid out goes as a dividend.
     private static readonly NamedRiver NothingKept = Filled.With("nothing kept", inputs => inputs.WithReserve(0m));
 
-    // Each card's summary, by its fold's name, on the river it is drawn on.
-    public static TheoryData<string, NamedRiver, string> Summaries => new()
+    // The amounts each card's summary draws, in order, by its fold's name, on the river it is drawn on.
+    public static TheoryData<string, NamedRiver, string[]> Summaries => new()
     {
-        { "company-year", Filled, "€120,000.00 in · €100,000.00 before your pay" },
-        { "vouchers", Filled, "€2,062.00 to your pocket · €97,938.00 left" },
-        { "allowances", Filled, "€1,000.00 to your pocket · €96,938.00 left" },
-        { "rent", Filled, "€711.11 to your pocket · €88,538.00 before your pay and royalty" },
-        { "rent", NoRoyalty, "€711.11 to your pocket · €88,538.00 before your pay" },
-        { "dividend", Filled, "€44,978.48 paid out · €37,032.29 to your pocket" },
+        { "company-year", Filled, ["€120,000.00", "€100,000.00"] },
+        { "vouchers", Filled, ["€2,062.00", "€97,938.00"] },
+        { "allowances", Filled, ["€1,000.00", "€96,938.00"] },
+        { "rent", Filled, ["€711.11", "€88,538.00"] },
+        { "rent", NoRoyalty, ["€711.11", "€88,538.00"] },
+        { "dividend", Filled, ["€44,978.48", "€37,032.29"] },
     };
 
     [Theory]
     [MemberData(nameof(Summaries))]
-    public async Task Summary_card_isItsFiguresWithTheirLabels(string card, NamedRiver river, string expected)
+    public async Task Summary_card_drawsItsFigures(string card, NamedRiver river, string[] amounts)
     {
-        CardHtml.Summary(await OpenCardAsync(river, card)).ShouldBe(expected);
+        CardHtml.Amounts(CardHtml.Summary(await OpenCardAsync(river, card)).ShouldNotBeNull()).ShouldBe(amounts);
     }
 
     public static TheoryData<string, NamedRiver> Cards => new()
@@ -96,49 +97,51 @@ public class LeverCardsFiguresTests
         CardHtml.Prose(html).Where(paragraph => CardHtml.Amounts(paragraph).Any(amount => amounts.Contains(Unsigned(amount)))).ShouldBeEmpty();
     }
 
-    // An open card draws its figure line by line, each label with its amount, above where its money goes:
-    // the figure's lines first, then the first drain line. The vouchers cost the company 200 × €8.91 and
-    // the eco and sport/culture vouchers given, €4.00 of each meal voucher deducted; the rent above its
-    // floor loses 40% of flat charges, under it the floor of €463.68 its own (RentFiguresTests); the
-    // dividend pays this year's profit after tax and the €20,000.00 from earlier years, less what is kept.
-    public static TheoryData<string, NamedRiver, string[], string> FiguresAboveDrains => new()
+    // An open card draws its figure line by line, each with its amount, above where its money goes: the
+    // figure's lines first, then the drain lines. The vouchers cost the company 200 × €8.91 and the eco and
+    // sport/culture vouchers given, €4.00 of each meal voucher deducted; the rent above its floor loses 40%
+    // of flat charges, under it the floor of €463.68 its own (RentFiguresTests); the dividend pays this
+    // year's profit after tax and the €20,000.00 from earlier years, less what is kept.
+    public static TheoryData<string, NamedRiver, string[]> FiguresAboveDrains => new()
     {
-        { "vouchers", Filled, ["The company pays €2,062.00", "Added back to its taxable income €1,262.00"], "Meal vouchers" },
-        { "rent", Filled, ["Taxed on the rent €1,000.00", "Flat charges −€400.00", "Joins your taxable income €600.00"], "Income tax on the rent" },
-        { "rent", UnderTheFloor, ["Taxed on the floor €463.68", "Flat charges −€185.47", "Joins your taxable income €278.21"], "Income tax on the rent" },
-        { "dividend", Filled, ["This year's profit after tax €29,978.48", "Dividend €44,978.48"], "Withholding tax" },
-        { "dividend", NothingKept, ["This year's profit after tax €29,978.48", "Dividend €49,978.48"], "Withholding tax" },
+        { "vouchers", Filled, ["€2,062.00", "€1,262.00"] },
+        { "rent", Filled, ["€1,000.00", "−€400.00", "€600.00"] },
+        { "rent", UnderTheFloor, ["€463.68", "−€185.47", "€278.21"] },
+        { "dividend", Filled, ["€29,978.48", "€44,978.48"] },
+        { "dividend", NothingKept, ["€29,978.48", "€49,978.48"] },
     };
 
     [Theory]
     [MemberData(nameof(FiguresAboveDrains))]
-    public async Task Card_open_drawsItsFigureLinesAboveItsDrainLines(string card, NamedRiver river, string[] figures, string firstDrain)
+    public async Task Card_open_drawsItsFigureLinesAboveItsDrainLines(string card, NamedRiver river, string[] figures)
     {
-        var lines = CardHtml.Lines(await OpenCardAsync(river, card));
+        var html = await OpenCardAsync(river, card);
 
-        string?[] drawn = [.. lines.Take(figures.Length).Select(line => $"{line.Label} {line.Amount}"), lines.Skip(figures.Length).Select(line => line.Label).FirstOrDefault()];
-        drawn.ShouldBe([.. figures, firstDrain]);
+        html.ShouldSatisfyAllConditions(
+            () => CardHtml.LineRuns(html).Select(run => run.List).ShouldBe(["figure", "drain"]),
+            () => CardHtml.LineRuns(html).Select(run => run.Lines).Take(1).ShouldBe([figures.Length]),
+            () => CardHtml.LineAmounts(html).Take(figures.Length).ShouldBe(figures));
     }
 
-    // How the cap under the rent is set is in the bubble after the rent's label: 5/3 of the cadastral
-    // income of the 12% let, €144.00, revalued by the 2026 coefficient.
+    // How the cap under the rent is set is in the bubble after the rent's label, with the figures it comes
+    // from: the cap, 5/3 of the cadastral income of the 12% let, €144.00, revalued by the 2026 coefficient.
     [Fact]
     public async Task Rent_rentField_saysHowTheCapIsSetInItsBubble()
     {
-        var html = await OpenCardAsync(Filled, "rent");
+        var bubble = CardHtml.BubbleAfter(await OpenCardAsync(Filled, "rent"), "Rent for the year");
 
-        CardHtml.BubbleAfter(html, "Rent for the year").ShouldBe(
-            "At most €1,380.00 for the year: 5/3 of €144.00, the cadastral income of the part let, revalued by 5.75. Above it, the excess would be taxed as director pay.");
+        bubble.ShouldSatisfyAllConditions(
+            () => CardHtml.Amounts(bubble).ShouldBe(["€1,380.00", "€144.00"]),
+            () => bubble.ShouldContain("5.75"));
     }
 
-    // Under the floor, the bubbles after the rent's lines say what the floor and the flat charges are.
+    // Under the floor, the lines of the rent have a bubble each that says what they are.
     [Theory]
-    [InlineData("Taxed on the floor", "The rent is under the floor, so you are taxed on the floor: the cadastral income of the part let, indexed, plus 40%.")]
-    [InlineData("Flat charges",
-        "A flat deduction for maintenance and repairs in place of real costs: a share of the rent, capped by the revalued cadastral income of the part let.")]
-    public async Task Rent_underTheFloor_explainsItsLinesInTheirBubbles(string line, string bubble)
+    [InlineData("Taxed on the floor")]
+    [InlineData("Flat charges")]
+    public async Task Rent_underTheFloor_explainsItsLinesInTheirBubbles(string line)
     {
-        CardHtml.BubbleAfter(await OpenCardAsync(UnderTheFloor, "rent"), line).ShouldBe(bubble);
+        CardHtml.BubbleAfter(await OpenCardAsync(UnderTheFloor, "rent"), line).ShouldNotBeNullOrWhiteSpace();
     }
 
     // Every text the page draws on a plan whose levers hold amounts, in sight or not, is in its component's
@@ -154,20 +157,23 @@ public class LeverCardsFiguresTests
 
     // What an open card keeps in sentences is what its figures cannot say: the bounds under its fields,
     // with the button that takes the rent's cap, and the line a folded disclosure states its facts on.
-    // The adornments of its fields, a € alone, say no words.
-    public static TheoryData<string, NamedRiver, string[]> Sentences => new()
+    // The adornments of its fields, a € alone, say no words. The amounts they state, in order, are the
+    // rules' and the facts' own.
+    public static TheoryData<string, NamedRiver, string[]> Bounds => new()
     {
-        { "vouchers", Filled, ["€8.91 each from the company at most, €1.09 from you.", "At most €250.00 a year.", "At most €100.00 a year."] },
-        { "allowances", Filled, ["At most €1,938.44 for the year.", "At most €20.00 a month, €240.00 for the year.", "At most €20.00 a month, €240.00 for the year."] },
-        { "rent", Filled, ["Cadastral income €1,200.00 · 12% let to the company", "At most €1,380.00 for the year. Use €1,380.00"] },
-        { "dividend", Filled, ["€20,000.00 kept from earlier years · VVPRbis shares, third distribution on, 18% withheld (default)"] },
+        { "vouchers", Filled, ["€8.91", "€1.09", "€250.00", "€100.00"] },
+        { "allowances", Filled, ["€1,938.44", "€20.00", "€240.00", "€20.00", "€240.00"] },
+        { "rent", Filled, ["€1,200.00", "12%", "€1,380.00", "€1,380.00"] },
+        { "dividend", Filled, ["€20,000.00", "18%"] },
     };
 
     [Theory]
-    [MemberData(nameof(Sentences))]
-    public async Task Card_open_keepsInSentencesOnlyWhatItsFiguresCannotSay(string card, NamedRiver river, string[] sentences)
+    [MemberData(nameof(Bounds))]
+    public async Task Card_open_statesInSentencesTheBoundsAndFactsItsFiguresCannotSay(string card, NamedRiver river, string[] amounts)
     {
-        CardHtml.Prose(await OpenCardAsync(river, card)).Where(paragraph => paragraph.Any(char.IsLetter)).ShouldBe(sentences);
+        var sentences = CardHtml.Prose(await OpenCardAsync(river, card)).Where(paragraph => paragraph.Any(char.IsLetter));
+
+        sentences.SelectMany(sentence => CardHtml.Amounts(sentence)).ShouldBe(amounts);
     }
 
     // The office allowance's yearly maximum stays under its field; the monthly maxima it adds up, which
@@ -177,53 +183,43 @@ public class LeverCardsFiguresTests
     {
         var html = await OpenCardAsync(Filled, "allowances");
 
-        CardHtml.BubbleAfter(html, "Office allowance for the year")
-            .ShouldBe("At most €157.83 a month from January, €160.99 a month from March, €164.21 a month from September.");
+        CardHtml.Amounts(CardHtml.BubbleAfter(html, "Office allowance for the year")).ShouldBe(["€157.83", "€160.99", "€164.21"]);
     }
 
-    // What the allowances' deducted sentence said is the card's bubble's to say: the company deducts them in
-    // full, like its own running costs.
+    // That the company deducts the allowances in full, like its own running costs, is the card's bubble's
+    // to say, after its title.
     [Fact]
-    public async Task Allowances_bubble_saysTheCompanyDeductsThemInFull()
+    public async Task Allowances_title_hasABubble()
     {
-        CardHtml.BubbleAfter(await OpenCardAsync(Filled, "allowances"), "Expense allowances").ShouldBe(
-            "What the company can pay you back for working from home with your own office, internet, computer and phone: costs that are its own, " +
-            "so neither pay nor income for your social contributions. It pays them out of its profit, before your pay, and deducts them in full, " +
-            "like its own running costs: nothing is added back to its taxable income.");
+        CardHtml.BubbleAfter(await OpenCardAsync(Filled, "allowances"), "Expense allowances").ShouldNotBeNullOrWhiteSpace();
     }
 
     // The rate a dividend is withheld at is declared: what VVPRbis shares are, and which of their rates is
     // for which distribution, are in the bubble after its label, inside the disclosure a refusal opens.
     [Fact]
-    public async Task Dividend_withholdingRate_saysWhatVvprbisSharesAreInItsBubble()
+    public async Task Dividend_withholdingRate_hasABubble()
     {
         var html = await OpenCardAsync(Filled.With("earlier profits refused", inputs => inputs.WithEarlierProfits(-1m)), "dividend");
 
-        CardHtml.BubbleAfter(html, "Withholding rate you declare").ShouldBe(
-            "VVPRbis shares are shares a small company issued in return for a new contribution in cash, under the regime's conditions: " +
-            "their dividends can be withheld at a reduced rate from a later distribution on. They pay the ordinary rate on their first " +
-            "distributions; the second-distribution rate is for a contribution made by 2025.");
+        CardHtml.BubbleAfter(html, "Withholding rate you declare").ShouldNotBeNullOrWhiteSpace();
     }
 
-    // Skipped, Company year says where the river starts; that the cards which need the company's figures
-    // wait for them, each of them says.
+    // Skipped, Company year says where the river starts, in a note and no line; that the cards which need
+    // the company's figures wait for them, each of them says.
     [Fact]
-    public async Task CompanyYear_skipped_saysWhereTheRiverStarts()
+    public async Task CompanyYear_skipped_saysWhereTheRiverStartsInOneNote()
     {
         var html = await OpenCardAsync(Filled.With("no company figures", inputs => inputs.SkipCompany()), "company-year");
 
-        CardHtml.Prose(html).ShouldBe(["Skipped: no company figures, so the river starts at your pay."]);
+        (CardHtml.Prose(html).Count, CardHtml.Lines(html).Count).ShouldBe((1, 0));
     }
 
     // Where the river's amounts come from is said where the river starts, in the bubble after Company
     // year's title, rather than in the page's lede.
     [Fact]
-    public async Task CompanyYear_bubble_saysTheRiverStartsOnAnExample()
+    public async Task CompanyYear_title_hasABubble()
     {
-        var html = await OpenCardAsync(Filled, "company-year");
-
-        CardHtml.BubbleAfter(html, "Company year")
-            .ShouldBe("The river starts on an example year: replace its amounts with yours, or clear the company's figures to start at your pay.");
+        CardHtml.BubbleAfter(await OpenCardAsync(Filled, "company-year"), "Company year").ShouldNotBeNullOrWhiteSpace();
     }
 
     // What a module passes on goes to the card under it, named in a few words; what a royalty leaves

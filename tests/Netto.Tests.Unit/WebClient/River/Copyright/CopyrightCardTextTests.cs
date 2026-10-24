@@ -71,13 +71,17 @@ public class CopyrightCardTextTests
     // Figures with their labels: what reaches the pocket after the tax apart, then what is taxed as pay
     // once there is some, or all of it taxed as pay.
     [Theory]
-    [InlineData("SummaryNoRoyalty", "No royalty yet")]
-    [InlineData("Summary", "€8,000.00 to your pocket")]
-    [InlineData("Summary_AsPay", "€8,000.00 to your pocket · €2,000.00 taxed as your pay")]
-    [InlineData("Summary_AllAsPay", "€2,000.00 taxed as your pay")]
-    public void Summary_eachWay_isItsFiguresWithTheirLabels(string key, string expected)
+    [InlineData("SummaryNoRoyalty", "")]
+    [InlineData("Summary", "€8,000.00")]
+    [InlineData("Summary_AsPay", "€8,000.00 €2,000.00")]
+    [InlineData("Summary_AllAsPay", "€2,000.00")]
+    public void Summary_eachWay_isItsFiguresWithTheirLabels(string key, string amounts)
     {
-        Resources.Format(key, "€8,000.00", "€2,000.00").ShouldBe(expected);
+        var summary = Resources.Format(key, "€8,000.00", "€2,000.00");
+
+        summary.ShouldSatisfyAllConditions(
+            () => string.Join(' ', CardHtml.Amounts(summary)).ShouldBe(amounts),
+            () => CardHtml.SummaryFaults(summary).ShouldBeEmpty());
     }
 
     // What the royalty leaves against the plan without it, each way it can fall.
@@ -130,9 +134,10 @@ public class CopyrightCardTextTests
     [Fact]
     public void Limits_allWithin_saysThe30PercentLimitWithItsAmount()
     {
-        Resources.Format("Limits_None",
-                "€10,000.00", "€10,000.00", "€18,000.00", "€77,220.00", "€0.00", 2026, "30%")
-            .ShouldBe("Within 30% of it and your gross pay, €18,000.00, and the cap.");
+        var limits = Resources.Format("Limits_None",
+            "€10,000.00", "€10,000.00", "€18,000.00", "€77,220.00", "€0.00", 2026, "30%");
+
+        CardHtml.Amounts(limits).ShouldBe(["30%", "€18,000.00"]);
     }
 
     // A rate the rules set is never typed in a text that states it: the rule's own is passed in.

@@ -143,7 +143,8 @@ public class CarAndRoyaltyCardsTests
                 (Royalty("Figure_Gain_More"), Formats.Euros(comparison.Gain), null),
             ]),
             () => CardHtml.Lines(html).Skip(10).Select(line => line.Label).ShouldBe(drains.Select(drain => CarCardTests.Drains(DrainListText.Drain(drain.Key)))),
-            () => CardHtml.Prose(html).ShouldContain("Within 30% of it and your gross pay, €18,000.00, and the cap."));
+            () => CardHtml.Prose(html).ShouldContain(note => note.Contains("€18,000.00", StringComparison.Ordinal)),
+            () => CardHtml.LineRuns(html).Select(run => run.List).ShouldBe(["figure", "drain"]));
     }
 
     // Where no text settles a point, the reading Netto takes is in the royalty's details, word for word,

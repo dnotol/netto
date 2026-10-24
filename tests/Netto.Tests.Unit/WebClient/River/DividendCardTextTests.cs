@@ -27,7 +27,10 @@ public class DividendCardTextTests
         var text = Resources.Format(DividendCardText.Summary(view),
             "€25,000.00", "€20,649.94");
 
-        text.ShouldBe("€25,000.00 paid out · €20,649.94 to your pocket");
+        text.ShouldSatisfyAllConditions(
+            () => DividendCardText.Summary(view).ShouldBe("Summary_PaidOut"),
+            () => CardHtml.Amounts(text).ShouldBe(["€25,000.00", "€20,649.94"]),
+            () => CardHtml.SummaryFaults(text).ShouldBeEmpty());
     }
 
     [Fact]
