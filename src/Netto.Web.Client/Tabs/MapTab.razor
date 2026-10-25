@@ -171,6 +171,14 @@
     private IReadOnlyList<MapLabelBlock> _blocks = [];
     private readonly Dictionary<MapText, IStringLocalizer> _texts = [];
 
+    // What the tab draws, for the page's tests to read as they read Chosen (a render of the page writes no
+    // HTML): the map without the links of the kinds hidden, its lines and the words beside them.
+    internal MapView ShownMap => _view;
+
+    internal IReadOnlyList<(MapBundle Bundle, bool Faded)> DrawnLines => _drawn;
+
+    internal IReadOnlyList<MapLabelBlock> DrawnWords => _blocks;
+
     protected override void OnParametersSet()
     {
         _full = MapView.From(Inputs, Run);

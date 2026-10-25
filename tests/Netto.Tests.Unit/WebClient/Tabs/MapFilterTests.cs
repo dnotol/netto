@@ -11,8 +11,8 @@ namespace Netto.Tests.WebClient.Tabs;
 // The legend of the kinds of link as a viewer meets it on the Map tab, drawn without a browser: a group
 // named by its legend, a box for every kind in the order of the kinds, ticked while the kind is shown, each
 // with a sample of the map's own line for it, its name, how many links the plan has of it and what it is.
-// Ticking a box is an event, which MapLinkFilterTests holds the effect of; the tab drawing its map again is
-// the tab's (MapTabTests).
+// Ticking a box is an event: MapLinkFilterTests holds its effect on the filter, MapTabFilterTests what the
+// tab draws of a filter, and PlanMapFilterTests that the tab draws again at a tick.
 public class MapFilterTests
 {
     private static readonly Dictionary<MapLinkKind, int> Counts = new()
