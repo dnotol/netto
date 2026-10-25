@@ -1,4 +1,5 @@
 using Netto.Web.Client.River;
+using Netto.Web.Client.River.CompanyCar;
 
 namespace Netto.Web.Client.Tabs;
 
@@ -26,4 +27,16 @@ internal static class MapTabText
 
     // A module on the map, named as its card is.
     public static string Module(RiverModule module) => $"Module_{module}";
+
+    // The component whose texts word a link (MapLabel.Text): the map's own, a drain list's, or the card
+    // whose figure line it is, so the map and the card say the line in the same words.
+    public static Type Texts(MapText text) => text switch
+    {
+        MapText.Map => typeof(MapTab),
+        MapText.DrainList => typeof(DrainList),
+        MapText.SplitCard => typeof(SplitCard),
+        MapText.CarCard => typeof(CarCard),
+        MapText.VoucherCard => typeof(VoucherCard),
+        _ => throw new ArgumentOutOfRangeException(nameof(text), text, "Texts the map does not word a link from."),
+    };
 }

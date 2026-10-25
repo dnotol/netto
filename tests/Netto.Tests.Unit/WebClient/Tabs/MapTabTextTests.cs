@@ -75,24 +75,27 @@ public class MapTabTextTests
         var river = companyPays ? MapLinksTests.Full.WithContributionsPaidBy(ContributionsPaidBy.Company).WithFundFeeRate(0.035m) : MapLinksTests.Full;
 
         MapLinks.Of(river, river.Run()).Select(link => link.Carries)
-            .Where(label => Texts(label.Text).Get(label.Key) is not { } text || (label.Args.Count > 0 && !text.Contains("{0}", StringComparison.Ordinal)))
+            .Where(label => ResxText.For(MapTabText.Texts(label.Text)).Get(label.Key) is not { } text
+                || (label.Args.Count > 0 && !text.Contains("{0}", StringComparison.Ordinal)))
             .Select(label => $"{label.Text} {label.Key}").ShouldBeEmpty();
     }
 
-    // Each kind of text a link is worded by, the component whose .resx holds it.
+    // Each kind of text a link is worded by is a component's own, its .resx holding texts.
     [Fact]
     public void Texts_everyKind_isAComponentsTexts()
     {
-        Enum.GetValues<MapText>().Select(text => Texts(text).Keys.Count > 0).ShouldAllBe(any => any);
+        Enum.GetValues<MapText>().Where(text => ResxText.For(MapTabText.Texts(text)).Keys.Count == 0).ShouldBeEmpty();
     }
 
-    private static ResxText Texts(MapText text) => text switch
+    [Fact]
+    public void Texts_theMapsOwn_areTheMapTabs()
     {
-        MapText.Map => Resources,
-        MapText.DrainList => ResxText.For<DrainList>(),
-        MapText.SplitCard => ResxText.For<SplitCard>(),
-        MapText.CarCard => ResxText.For<CarCard>(),
-        MapText.VoucherCard => ResxText.For<VoucherCard>(),
-        _ => throw new ArgumentOutOfRangeException(nameof(text), text, null),
-    };
+        (MapTabText.Texts(MapText.Map), MapTabText.Texts(MapText.DrainList)).ShouldBe((typeof(MapTab), typeof(DrainList)));
+    }
+
+    [Fact]
+    public void Texts_textsItHasNoArmFor_areRefused()
+    {
+        Should.Throw<ArgumentOutOfRangeException>(() => MapTabText.Texts((MapText)99));
+    }
 }

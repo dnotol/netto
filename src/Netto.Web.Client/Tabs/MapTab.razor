@@ -2,13 +2,9 @@
 @using Netto.Core.Rules
 @using Netto.Core.Simulation
 @using Netto.Web.Client.River
-@using Netto.Web.Client.River.CompanyCar
 @inject IStringLocalizer<MapTab> L
 @inject IStringLocalizer<BucketBar> BucketTexts
-@inject IStringLocalizer<DrainList> DrainTexts
-@inject IStringLocalizer<SplitCard> SplitTexts
-@inject IStringLocalizer<CarCard> CarTexts
-@inject IStringLocalizer<VoucherCard> VoucherTexts
+@inject IStringLocalizerFactory Localizers
 
 @* The Map tab: the plan's modules from above, as the river shows them, and the money between them, every
    line a link of the river's one run whose amount is a line its card already draws (MapView, MapLinks):
@@ -148,6 +144,7 @@
     private RiverModule? _chosen;
     private IReadOnlyList<(MapBundle Bundle, bool Faded)> _drawn = [];
     private IReadOnlyList<MapLabelBlock> _blocks = [];
+    private readonly Dictionary<MapText, IStringLocalizer> _texts = [];
 
     protected override void OnParametersSet()
     {
@@ -185,16 +182,14 @@
 
     private static string Side(MapLabelSide side) => side.ToString().ToLowerInvariant();
 
-    // What a link carries, in the words of the texts that word its line on its card.
-    private string Carries(MapLabel label) => (label.Text switch
+    // What a link carries, in the words of the texts that word its line on its card (MapTabText.Texts).
+    private string Carries(MapLabel label)
     {
-        MapText.Map => L,
-        MapText.DrainList => DrainTexts,
-        MapText.SplitCard => SplitTexts,
-        MapText.CarCard => CarTexts,
-        MapText.VoucherCard => (IStringLocalizer)VoucherTexts,
-        _ => throw new ArgumentOutOfRangeException(nameof(label), label.Text, null),
-    })[label.Key, [.. label.Args]].Value;
+        if (!_texts.TryGetValue(label.Text, out var texts))
+            _texts[label.Text] = texts = Localizers.Create(MapTabText.Texts(label.Text));
+
+        return texts[label.Key, [.. label.Args]].Value;
+    }
 
     // A module by its card's title, a bucket by the bar's name for it, the river's edge as such.
     private string EndName(MapEnd end) => end switch
