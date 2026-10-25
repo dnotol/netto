@@ -24,4 +24,61 @@
   <data name="Carries_ProfitBeforeLevers" xml:space="preserve">
     <value>Before your pay</value>
   </data>
+  <data name="Module_CompanyYear" xml:space="preserve">
+    <value>Company year</value>
+  </data>
+  <data name="Module_Vouchers" xml:space="preserve">
+    <value>Vouchers</value>
+  </data>
+  <data name="Module_Allowances" xml:space="preserve">
+    <value>Expense allowances</value>
+  </data>
+  <data name="Module_Rent" xml:space="preserve">
+    <value>Home office rent</value>
+  </data>
+  <data name="Module_Car" xml:space="preserve">
+    <value>Company car</value>
+  </data>
+  <data name="Module_Split" xml:space="preserve">
+    <value>The split</value>
+  </data>
+  <data name="Module_Copyright" xml:space="preserve">
+    <value>Copyright royalty</value>
+  </data>
+  <data name="Module_DirectorPay" xml:space="preserve">
+    <value>Director pay</value>
+  </data>
+  <data name="Module_CorporateTax" xml:space="preserve">
+    <value>Corporate tax</value>
+  </data>
+  <data name="Module_Dividend" xml:space="preserve">
+    <value>Dividend</value>
+  </data>
+  <data name="MapLabel" xml:space="preserve">
+    <value>The map of your plan</value>
+  </data>
+  <data name="Refused" xml:space="preserve">
+    <value>refused</value>
+  </data>
+  <data name="Link" xml:space="preserve">
+    <value>{0}: {1}, from {2} to {3}</value>
+  </data>
+  <data name="LinkWithoutAmount" xml:space="preserve">
+    <value>{0}, from {1} to {2}</value>
+  </data>
+  <data name="End_out" xml:space="preserve">
+    <value>out of the river</value>
+  </data>
+  <data name="LinksOf" xml:space="preserve">
+    <value>Links of {0}</value>
+  </data>
+  <data name="LinksOfNone" xml:space="preserve">
+    <value>A module's links</value>
+  </data>
+  <data name="ChooseHint" xml:space="preserve">
+    <value>Choose a module on the map to list what it receives and passes on, each with its amount in this plan.</value>
+  </data>
+  <data name="NoLinks" xml:space="preserve">
+    <value>No money moves through it in this plan.</value>
+  </data>
 </root>

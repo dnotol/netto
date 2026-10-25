@@ -1,7 +1,219 @@
+@using System.Globalization
+@using Netto.Core.Rules
+@using Netto.Core.Simulation
+@using Netto.Web.Client.River
+@using Netto.Web.Client.River.CompanyCar
 @inject IStringLocalizer<MapTab> L
+@inject IStringLocalizer<BucketBar> BucketTexts
+@inject IStringLocalizer<DrainList> DrainTexts
+@inject IStringLocalizer<SplitCard> SplitTexts
+@inject IStringLocalizer<CarCard> CarTexts
+@inject IStringLocalizer<VoucherCard> VoucherTexts
 
-@* The Map tab: the plan's modules from above, as the river shows them, and the money between them. The
-   head is drawn once, first: it takes the focus when the viewer arrives (TabHead). *@
+@* The Map tab: the plan's modules from above, as the river shows them, and the money between them, every
+   line a link of the river's one run whose amount is a line its card already draws (MapView, MapLinks):
+   nothing here is computed. The modules sit in fixed slots in the river's shape (MapLayout), Company year,
+   the levers in the plan and the split down the middle, the director's stream left and the company's
+   right, over the bar's four buckets; a lever out of the plan is not on it, and with the company skipped
+   the map starts at Director pay. Each link is a line of its kind (MapLinkStyle: passed on, into a bucket,
+   a tax base, a condition), with an arrowhead where it goes and its words and amounts beside its card's
+   box; a line to the pocket is gold, the one gold of the map, since that is what reaches the director.
+
+   A module is a button: chosen, by a click or Enter or Space, it is marked (aria-pressed) and its own
+   lines stay while the others fade, and its links are listed in words with their amounts beside the map,
+   the drawing's equivalent for a screen reader, which hears the buttons and the list and nothing of the
+   drawing itself. Choosing it again lets it go. The choice is the page's (Chosen, ChosenChanged), so it
+   stays from one tab to the next, and takes no focus. Nothing here is a live region: the bar's is the
+   river's only announcement. While the engine refuses an amount the map draws no line and no amount, as
+   the bar draws no figure, the module holding the refused field is marked, in words too, and the refusal
+   is said above the map.
+
+   The map is as tall as the window leaves under the bar, and stays there while the column beside it
+   scrolls: the column holds the list of the chosen module's links, then the room for its card. Under the
+   head is the room for the filter of the kinds of link. The lines are an SVG stretched to the map's box
+   (preserveAspectRatio="none"), kept to their width by vector-effect; what must keep its shape, the
+   boxes, the words and the arrowheads, is HTML placed over it in percentages. *@
 <TabHead Eyebrow="@L["Eyebrow"]" Title="@L["Title"]" Lede="@L["Lede"]" />
 
-<div class="map-tab"></div>
+<div class="map-tab__filter"></div>
+
+<RefusedMessage Error="@_view.Refusal" />
+
+<div class="map-tab">
+    <div class="map-tab__map">
+        <div class="map" style="--map-units: @Number(_view.Units)" role="group" aria-label="@L["MapLabel"]">
+            <svg class="map__lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+                @foreach (var (bundle, faded) in _drawn)
+                {
+                    <polyline class="@LineClass(bundle, faded)" points="@Points(bundle.Route)" stroke-dasharray="@MapLinkStyle.Dash(bundle.Kind)"
+                              stroke-width="@MapLinkStyle.Width(bundle.Kind)" data-link-kind="@bundle.Kind" />
+                }
+            </svg>
+            @foreach (var (bundle, faded) in _drawn)
+            {
+                <span class="@ArrowClass(bundle, faded)" style="left: @Percent(bundle.Route.End.X); top: @Percent(bundle.Route.End.Y)" aria-hidden="true"></span>
+            }
+            @foreach (var block in _blocks)
+            {
+                <div class="map-words map-words--@Side(block.Side)" style="left: @Percent(block.At.X); top: @Percent(block.At.Y)" aria-hidden="true">
+                    @foreach (var bundle in block.Bundles)
+                    {
+                        <div class="@WordsClass(bundle)" data-link-kind="@bundle.Kind">
+                            @foreach (var link in bundle.Links)
+                            {
+                                <span class="map-words__line">@Carries(link.Carries)@if (link.Amount is { } amount)
+                                    {
+                                        @(" ")<span class="map-words__amount">@Formats.Euros(amount)</span>
+                                    }</span>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+            @foreach (var bucket in _view.Buckets)
+            {
+                <div class="map-bucket map-bucket--@bucket.End.Id" data-bucket="@bucket.End.Id" style="@Box(bucket.Slot)">@EndName(bucket.End)</div>
+            }
+            @foreach (var node in _view.Modules)
+            {
+                var module = node.End.Module!.Value;
+                <button type="button" class="@ModuleClass(node, module)" style="@Box(node.Slot)" aria-pressed="@(_chosen == module ? "true" : "false")"
+                        data-module="@node.End.Id" @onclick="() => ChooseAsync(module)">
+                    <span class="map-module__title">@L[MapTabText.Module(module)]</span>
+                    @if (node.Refused)
+                    {
+                        <span class="map-module__refused">@L["Refused"]</span>
+                    }
+                </button>
+            }
+        </div>
+    </div>
+    <div class="map-tab__side">
+        <section class="map-links" aria-labelledby="map-links-title">
+            @if (_chosen is { } chosen)
+            {
+                <h2 id="map-links-title" class="map-links__title">@L[MapTabText.LinksOf, L[MapTabText.Module(chosen)]]</h2>
+                @if (_view.LinksOf(chosen).Any())
+                {
+                    <ul class="map-links__list">
+                        @foreach (var link in _view.LinksOf(chosen))
+                        {
+                            <li class="map-links__link" data-link-kind="@link.Kind">@Words(link)</li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p class="map-links__note">@L["NoLinks"]</p>
+                }
+            }
+            else
+            {
+                <h2 id="map-links-title" class="map-links__title">@L[MapTabText.LinksOfNone]</h2>
+                <p class="map-links__note">@L["ChooseHint"]</p>
+            }
+        </section>
+        <div class="map-tab__panel"></div>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public RiverInputs Inputs { get; set; } = default!;
+
+    // The river with an edit made on the chosen module's card beside the map.
+    [Parameter]
+    public EventCallback<RiverInputs> InputsChanged { get; set; }
+
+    [Parameter, EditorRequired]
+    public RiverRun Run { get; set; } = default!;
+
+    // The split's search, which the split's card beside the map draws.
+    [Parameter]
+    public SplitSearchResult? Search { get; set; }
+
+    // The engine's refusal a module's card holds, as the Plan page hands it to that card.
+    [Parameter]
+    public Func<RiverModule, Refusal?> RefusedBy { get; set; } = _ => null;
+
+    // The module chosen on the map, the page's, so it stays from one tab to the next; none once it has
+    // left the map.
+    [Parameter]
+    public RiverModule? Chosen { get; set; }
+
+    [Parameter]
+    public EventCallback<RiverModule?> ChosenChanged { get; set; }
+
+    private MapView _view = default!;
+    private RiverModule? _chosen;
+    private IReadOnlyList<(MapBundle Bundle, bool Faded)> _drawn = [];
+    private IReadOnlyList<MapLabelBlock> _blocks = [];
+
+    protected override void OnParametersSet()
+    {
+        _view = MapView.From(Inputs, Run);
+        _chosen = _view.Choice(Chosen);
+        _drawn = _view.Drawn(_chosen);
+        _blocks = _view.Blocks();
+    }
+
+    // A module chosen again lets it go.
+    private Task ChooseAsync(RiverModule module) => ChosenChanged.InvokeAsync(_chosen == module ? null : module);
+
+    private string LineClass(MapBundle bundle, bool faded) =>
+        $"map-line map-line--{Kind(bundle.Kind)}{(ToPocket(bundle) ? " map-line--pocket" : "")}{(faded ? " map-line--faded" : "")}";
+
+    private string ArrowClass(MapBundle bundle, bool faded) =>
+        $"map-arrow map-arrow--{bundle.Route.Arrow.ToString().ToLowerInvariant()} map-arrow--{Kind(bundle.Kind)}{(ToPocket(bundle) ? " map-arrow--pocket" : "")}{(faded ? " map-arrow--faded" : "")}";
+
+    private string WordsClass(MapBundle bundle) =>
+        $"map-words__bundle{(_chosen is { } chosen && !bundle.Touches(chosen) ? " map-words__bundle--faded" : "")}";
+
+    private string ModuleClass(MapNode node, RiverModule module) =>
+        $"map-module{(_chosen == module ? " map-module--chosen" : "")}{(node.Refused ? " map-module--refused" : "")}";
+
+    private static bool ToPocket(MapBundle bundle) => bundle.To.Bucket == "pocket";
+
+    private static string Kind(MapLinkKind kind) => kind switch
+    {
+        MapLinkKind.PassedOn => "passed-on",
+        MapLinkKind.IntoBucket => "into-bucket",
+        MapLinkKind.TaxBase => "tax-base",
+        MapLinkKind.Condition => "condition",
+        _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, null),
+    };
+
+    private static string Side(MapLabelSide side) => side.ToString().ToLowerInvariant();
+
+    // What a link carries, in the words of the texts that word its line on its card.
+    private string Carries(MapLabel label) => (label.Text switch
+    {
+        MapText.Map => L,
+        MapText.DrainList => DrainTexts,
+        MapText.SplitCard => SplitTexts,
+        MapText.CarCard => CarTexts,
+        MapText.VoucherCard => (IStringLocalizer)VoucherTexts,
+        _ => throw new ArgumentOutOfRangeException(nameof(label), label.Text, null),
+    })[label.Key, [.. label.Args]].Value;
+
+    // A module by its card's title, a bucket by the bar's name for it, the river's edge as such.
+    private string EndName(MapEnd end) => end switch
+    {
+        { Module: { } module } => L[MapTabText.Module(module)],
+        { Bucket: { } bucket } => BucketTexts[BucketBarText.Bucket(bucket, _view.TaxesOnPayIncludeRent)],
+        _ => L[MapTabText.OutOfRiver],
+    };
+
+    private string Words(MapLink link) => link.Amount is { } amount
+        ? L[MapTabText.Link, Carries(link.Carries), Formats.Euros(amount), EndName(link.From), EndName(link.To)]
+        : L[MapTabText.LinkWithoutAmount, Carries(link.Carries), EndName(link.From), EndName(link.To)];
+
+    private static string Points(MapRoute route) => string.Join(' ', route.Points.Select(point => $"{Number(point.X)},{Number(point.Y)}"));
+
+    private static string Box(MapSlot slot) =>
+        $"left: {Percent(slot.Left)}; top: {Percent(slot.Top)}; width: {Percent(slot.Width)}; height: {Percent(slot.Height)}";
+
+    private static string Percent(decimal value) => $"{Number(value)}%";
+
+    private static string Number(decimal value) => Math.Round(value, 3).ToString("0.###", CultureInfo.InvariantCulture);
+}

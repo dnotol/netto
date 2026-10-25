@@ -1,0 +1,272 @@
+/* The Map tab: the map and, beside it from 1,201 px, the column of the chosen module's links and the room
+   for its card; below that width the column goes under the map. Once the window leaves room beside the
+   container (MudBlazor's Large, 1,280 px), the two take some of the margins on both sides, as the river's
+   outline takes the left one (Pages/Plan.razor.css), so on a 1,920 px screen the map is about 1,180 px
+   wide beside a column of 34rem. The map stays under the bar while the column scrolls with the page. */
+
+/* The room under the head for the filter of the kinds of link, taking no room while it is empty. */
+.map-tab__filter:empty {
+    display: none;
+}
+
+.map-tab {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2rem;
+}
+
+@media (min-width: 1201px) {
+    .map-tab {
+        grid-template-columns: minmax(0, 1fr) 34rem;
+        align-items: start;
+        margin-inline: calc(-1 * clamp(0px, (100vw - 1280px) / 2 - 2rem, 16.5rem));
+    }
+
+    .map-tab__map {
+        position: sticky;
+        top: var(--netto-under-bar);
+    }
+}
+
+/* Below that width the map keeps a width it can be read at, and scrolls sideways inside its column. */
+@media (max-width: 1200px) {
+    .map-tab__map {
+        overflow-x: auto;
+    }
+
+    .map {
+        min-width: 60rem;
+    }
+}
+
+/* The map: as tall as its rows ask, never taller than the window leaves under the bar. Everything in it
+   is placed in percentages of its box. */
+.map {
+    position: relative;
+    height: min(calc(var(--map-units) * 4.6rem), calc(100dvh - var(--netto-under-bar, 0px) - 1rem));
+    min-height: calc(var(--map-units) * 3.25rem);
+}
+
+.map__lines {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+
+/* A line keeps its width however the map stretches; its dash and width are its kind's (MapLinkStyle). */
+.map-line {
+    fill: none;
+    stroke: var(--netto-data-high);
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    vector-effect: non-scaling-stroke;
+    transition: opacity 120ms ease;
+}
+
+.map-line--passed-on {
+    stroke: var(--netto-data-strong);
+}
+
+.map-line--condition {
+    stroke: var(--netto-text-muted);
+}
+
+/* What reaches the pocket, the one gold of the map. */
+.map-line--pocket {
+    stroke: var(--netto-gold);
+}
+
+.map-line--faded {
+    opacity: 0.18;
+}
+
+/* An arrowhead where a line arrives, its point on the box's edge. */
+.map-arrow {
+    position: absolute;
+    width: 0;
+    height: 0;
+    border: 0.3rem solid transparent;
+    pointer-events: none;
+    --map-arrow: var(--netto-data-high);
+}
+
+.map-arrow--passed-on {
+    --map-arrow: var(--netto-data-strong);
+}
+
+.map-arrow--condition {
+    --map-arrow: var(--netto-text-muted);
+}
+
+.map-arrow--pocket {
+    --map-arrow: var(--netto-gold);
+}
+
+.map-arrow--faded {
+    opacity: 0.18;
+}
+
+.map-arrow--down {
+    border-top: 0.45rem solid var(--map-arrow);
+    border-bottom-width: 0;
+    transform: translate(-50%, -100%);
+}
+
+.map-arrow--up {
+    border-bottom: 0.45rem solid var(--map-arrow);
+    border-top-width: 0;
+    transform: translate(-50%, 0);
+}
+
+.map-arrow--right {
+    border-left: 0.45rem solid var(--map-arrow);
+    border-right-width: 0;
+    transform: translate(-100%, -50%);
+}
+
+.map-arrow--left {
+    border-right: 0.45rem solid var(--map-arrow);
+    border-left-width: 0;
+    transform: translate(0, -50%);
+}
+
+/* The words of a card's lines beside its box, or of one line beside itself in a gap: each line what it
+   carries and its amount, kept on one line, read over the lines under them through a halo of the page. */
+.map-words {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    color: var(--netto-text-muted);
+    font-size: 0.72rem;
+    line-height: 1.25;
+    pointer-events: none;
+    text-shadow: 0 0 3px var(--netto-page), 0 0 3px var(--netto-page), 0 0 2px var(--netto-page);
+}
+
+.map-words--left {
+    align-items: flex-end;
+    text-align: right;
+    transform: translate(-100%, -50%);
+}
+
+.map-words--right,
+.map-words--gap {
+    transform: translate(0, -50%);
+}
+
+/* Each line's words sit on the line they word, which runs under them. */
+.map-words__bundle {
+    display: flex;
+    flex-direction: column;
+    padding: 0.05rem 0.3rem;
+    border-radius: 4px;
+    background: var(--netto-page);
+    transition: opacity 120ms ease;
+}
+
+.map-words__bundle--faded {
+    opacity: 0.25;
+}
+
+.map-words__line {
+    white-space: nowrap;
+}
+
+.map-words__amount {
+    color: var(--netto-text);
+    font-variant-numeric: tabular-nums;
+}
+
+/* A bucket of the bar: where the money ends, nothing to choose. */
+.map-bucket {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 0.5rem;
+    border: 1px solid var(--netto-line-input);
+    border-radius: 12px;
+    background: var(--netto-wash);
+    color: var(--netto-text-muted);
+    font-size: 0.8rem;
+    font-weight: 600;
+    line-height: 1.25;
+    text-align: center;
+}
+
+.map-bucket--pocket {
+    color: var(--netto-text);
+}
+
+/* A module: a button, its title in its box, gold where the pointer or the choice is on it. MudBlazor's
+   global rule centres a button's content, which the box keeps. */
+.map-module {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0 0.5rem;
+    border: 1px solid var(--netto-line-input);
+    border-radius: 12px;
+    background: var(--netto-surface);
+    color: var(--netto-text);
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    line-height: 1.2;
+    text-align: center;
+    cursor: pointer;
+}
+
+    .map-module:hover {
+        border-color: var(--netto-gold);
+    }
+
+.map-module--chosen {
+    border-color: var(--netto-gold);
+    box-shadow: inset 0 0 0 1px var(--netto-gold);
+}
+
+/* The module holding a refused field: dashed, and said in words. */
+.map-module--refused {
+    border-style: dashed;
+    border-color: var(--netto-text);
+}
+
+.map-module__refused {
+    color: var(--netto-text-muted);
+    font-size: 0.72rem;
+    font-weight: 500;
+}
+
+/* The chosen module's links in words, the drawing's equivalent. */
+.map-links__title {
+    margin: 0 0 0.75rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.map-links__list {
+    margin: 0;
+    padding-left: 1.1rem;
+    color: var(--netto-text);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    font-variant-numeric: tabular-nums;
+}
+
+.map-links__note {
+    margin: 0;
+    color: var(--netto-text-muted);
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
+/* The room for the chosen module's card, which the column holds after its links. */
+.map-tab__panel:empty {
+    display: none;
+}

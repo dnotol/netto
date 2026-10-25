@@ -61,7 +61,7 @@
             @switch (_tab)
             {
                 case PlanTab.Map:
-                    <MapTab />
+                    <MapTab Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Search="_search" RefusedBy="Refused" Chosen="_mapChosen" ChosenChanged="OnMapChosen" />
                     break;
                 case PlanTab.Optimisation:
                     <OptimisationTab From="_moves.Baseline" Searching="_moves.Searching(Today)" Found="_moves.Found(Today)" Inputs="_inputs" InputsChanged="OnInputsChanged" Search="_search" />
@@ -191,6 +191,7 @@ else
     private MovesSource _moves = default!;
     private readonly CardArrival _arrival = new();
     private string? _arriving;
+    private RiverModule? _mapChosen;
 
     protected override void OnInitialized()
     {
@@ -303,12 +304,18 @@ else
         _focusComposition = true;
     }
 
+    // The module chosen on the Map tab, kept from one tab to the next, let go once it has left the map.
+    private void OnMapChosen(RiverModule? module) => _mapChosen = module;
+
     // The split's search runs the year at every pay, so it runs again only when an input other than
-    // the pay changes: dragging the pay moves its marker along the same curve.
+    // the pay changes: dragging the pay moves its marker along the same curve. A module chosen on the map
+    // that the river no longer draws, a lever taken out of the plan, is chosen no more.
     private void Show(RiverInputs inputs)
     {
         _inputs = inputs;
         _run = inputs.Run();
+        if (_mapChosen is { } chosen && !MapView.ModulesOf(inputs).Contains(chosen))
+            _mapChosen = null;
         if (_searched is null || !inputs.SameBesidesPay(_searched))
         {
             _search = inputs.SearchSplit();
