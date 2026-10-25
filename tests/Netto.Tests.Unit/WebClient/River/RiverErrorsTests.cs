@@ -25,9 +25,9 @@ public class RiverErrorsTests
         [RefusedInput.BilledContributions] = "When to pay, which holds what the fund bills each quarter and shows its refusal itself",
     };
 
-    // The cards the year's, the pay's and the royalty's refusals show on, the module named rather than typed
-    // (RiverModule is internal, a theory's parameters public): the pay is the split's while the company is
-    // there, Director pay's own once it is skipped, and so is the key formula's month of it.
+    // The cards the year's, the pay's and the royalty's refusals show on, each module by its name: the pay is
+    // the split's while the company is there, Director pay's own once it is skipped, and so is the key
+    // formula's month of it.
     private static readonly (Refusal Refusal, bool CompanySkipped, string Module)[] SpreadOverCards =
     [
         (YearSimulation.RevenueNegative, false, "CompanyYear"),
