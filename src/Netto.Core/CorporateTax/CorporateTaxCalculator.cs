@@ -11,14 +11,20 @@ public static class CorporateTaxCalculator
     public static CorporateTaxResult Compute(
         CorporateTaxRules rules, decimal taxableIncome, decimal directorPay, CompanyStatus status, decimal flatRateBenefits = 0m)
     {
-        var condition = Condition(rules, taxableIncome, directorPay, status, flatRateBenefits);
+        var payTest = PayTest(rules, taxableIncome, directorPay, status);
+        var benefitsWithinShare = BenefitsWithinShare(rules, directorPay, status, flatRateBenefits);
+        var condition = Condition(status, payTest, benefitsWithinShare);
         var taxed = Math.Max(0m, taxableIncome);
 
         var reducedSlice = condition.AppliesReducedRate() ? Math.Min(taxed, rules.ReducedRateCeiling.Value) : 0m;
         var tax = rules.ReducedRate.Value * reducedSlice + rules.StandardRate.Value * (taxed - reducedSlice);
 
         return new CorporateTaxResult(
-            taxableIncome, condition, rules.MinimumDirectorPay.Value, Money.RoundToCent(tax), directorPay, flatRateBenefits, rules.ExcessBenefitsShare.Value);
+            taxableIncome, condition, rules.MinimumDirectorPay.Value, Money.RoundToCent(tax), directorPay, flatRateBenefits, rules.ExcessBenefitsShare.Value)
+        {
+            PayTest = payTest,
+            BenefitsWithinShare = benefitsWithinShare,
+        };
     }
 
     // The smallest director pay that keeps the reduced rate out of the taxable income the company would
@@ -46,18 +52,32 @@ public static class CorporateTaxCalculator
         return Math.Max(meetingThePayTest, withinTheCap);
     }
 
-    private static ReducedRateCondition Condition(
-        CorporateTaxRules rules, decimal taxableIncome, decimal directorPay, CompanyStatus status, decimal flatRateBenefits)
+    // The rate's condition out of the two tests: not open to the company, then the benefits beyond their
+    // share, whatever the pay and the tax period, then the first four tax periods, then the pay test.
+    private static ReducedRateCondition Condition(CompanyStatus status, ReducedRateCondition? payTest, bool? benefitsWithinShare)
     {
         if (!status.SmallCompany)
             return ReducedRateCondition.NotSmallCompany;
-        if (flatRateBenefits > rules.ExcessBenefitsShare.Value * directorPay)
+        if (benefitsWithinShare == false)
             return ReducedRateCondition.ExcessBenefits;
-        if (status.FirstFourTaxPeriods)
-            return ReducedRateCondition.FirstFourTaxPeriods;
+
+        return payTest ?? ReducedRateCondition.FirstFourTaxPeriods;
+    }
+
+    // Al. 3, 4°: the pay reaches the minimum, or the taxable income does not exceed it. Not tested for a
+    // company the rate is not open to, nor in its first four tax periods.
+    private static ReducedRateCondition? PayTest(CorporateTaxRules rules, decimal taxableIncome, decimal directorPay, CompanyStatus status)
+    {
+        if (!status.SmallCompany || status.FirstFourTaxPeriods)
+            return null;
         if (directorPay >= rules.MinimumDirectorPay.Value)
             return ReducedRateCondition.MinimumPayMet;
 
         return taxableIncome <= directorPay ? ReducedRateCondition.TaxableIncomeNotAbovePay : ReducedRateCondition.MinimumPayNotMet;
     }
+
+    // Al. 3, 5°: the flat-rate benefits are worth no more than their share of the total pay. Not tested
+    // without such benefits, nor for a company the rate is not open to.
+    private static bool? BenefitsWithinShare(CorporateTaxRules rules, decimal directorPay, CompanyStatus status, decimal flatRateBenefits) =>
+        status.SmallCompany && flatRateBenefits > 0m ? flatRateBenefits <= rules.ExcessBenefitsShare.Value * directorPay : null;
 }

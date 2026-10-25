@@ -205,6 +205,68 @@ public class CorporateTaxCalculatorTests
         (result.DirectorPay, result.FlatRateBenefits, result.ExcessBenefitsShare).ShouldBe((56_000m, 26_000m, 0.20m));
     }
 
+    // Each test of art. 215 is reported on its own, beside the condition that decided the rate: the pay
+    // test (al. 3, 4°) as it found the pay, whatever the benefits did.
+    public static TheoryData<decimal, decimal, ReducedRateCondition> PayTests => new()
+    {
+        { 80_000m, 51_000m, ReducedRateCondition.MinimumPayMet },
+        { 80_000m, 50_999.99m, ReducedRateCondition.MinimumPayNotMet },
+        { 30_000m, 30_000m, ReducedRateCondition.TaxableIncomeNotAbovePay },
+        { 30_000.01m, 30_000m, ReducedRateCondition.MinimumPayNotMet },
+    };
+
+    [Theory]
+    [MemberData(nameof(PayTests))]
+    public void Compute_2026SmallPastStartUp_reportsWhatThePayTestFound(decimal taxableIncome, decimal pay, ReducedRateCondition expected)
+    {
+        var result = CorporateTaxCalculator.Compute(Rules2026, taxableIncome, pay, SmallPastStartUp);
+
+        (result.PayTest, result.Condition).ShouldBe((expected, expected));
+    }
+
+    // 60,000 reaches the minimum, while 12,000.01 of benefits is more than 20% of it: the benefits decide
+    // the rate, and the pay still met its own test.
+    [Fact]
+    public void Compute_2026ExcessBenefitsBesideAPayAtTheMinimum_reportsThePayTestMet()
+    {
+        var result = CorporateTaxCalculator.Compute(Rules2026, 80_000m, 60_000m, SmallPastStartUp, 12_000.01m);
+
+        (result.Condition, result.PayTest, result.BenefitsWithinShare).ShouldBe((ReducedRateCondition.ExcessBenefits, ReducedRateCondition.MinimumPayMet, false));
+    }
+
+    // 20% of 60,000 is 12,000, which is within it; a cent more is not.
+    [Theory]
+    [InlineData(12_000, true)]
+    [InlineData(12_000.01, false)]
+    public void Compute_2026Benefits_reportsWhetherTheyAreWithinTheirShare(decimal benefits, bool within)
+    {
+        CorporateTaxCalculator.Compute(Rules2026, 80_000m, 60_000m, SmallPastStartUp, benefits).BenefitsWithinShare.ShouldBe(within);
+    }
+
+    [Fact]
+    public void Compute_2026NoBenefits_testsNoShare()
+    {
+        CorporateTaxCalculator.Compute(Rules2026, 80_000m, 60_000m, SmallPastStartUp).BenefitsWithinShare.ShouldBeNull();
+    }
+
+    // The first four tax periods test the benefits and not the pay; a company the rate is not open to is
+    // tested on neither.
+    [Fact]
+    public void Compute_2026FirstFourTaxPeriods_testsTheBenefitsAndNotThePay()
+    {
+        var result = CorporateTaxCalculator.Compute(Rules2026, 80_000m, 10_000m, new CompanyStatus(SmallCompany: true, FirstFourTaxPeriods: true), 2_400m);
+
+        (result.PayTest, result.BenefitsWithinShare).ShouldBe((null, false));
+    }
+
+    [Fact]
+    public void Compute_2026NotSmallCompany_testsNeitherThePayNorTheBenefits()
+    {
+        var result = CorporateTaxCalculator.Compute(Rules2026, 80_000m, 10_000m, new CompanyStatus(SmallCompany: false, FirstFourTaxPeriods: false), 2_400m);
+
+        (result.PayTest, result.BenefitsWithinShare).ShouldBe((null, null));
+    }
+
     // In the pay the split moves, the gross and the contributions the company pays for the director,
     // without the benefit B: the minimum less B, or half of what the taxable income at no pay exceeds
     // B by, and at least 4 B, so that B stays within 20% of the total.
