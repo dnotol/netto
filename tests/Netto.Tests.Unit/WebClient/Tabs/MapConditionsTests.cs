@@ -63,13 +63,14 @@ public class MapConditionsTests
     }
 
     // Each kind in words, with a variant for where it holds and one where it does not, its figures as the
-    // cards format them.
+    // cards format them. A test of the rate that holds says its own condition is met, never that the rate
+    // is kept, which the other test may still lose; one that fails loses the rate whatever the other does.
     public static TheoryData<YearCondition, string> Words => new()
     {
-        { new PayKeepsReducedRate(ReducedRateCondition.MinimumPayMet, 51_000m, 60_000m, 40_000m), "Pay €60,000.00 reaches the €51,000.00 minimum: reduced rate kept" },
-        { new PayKeepsReducedRate(ReducedRateCondition.TaxableIncomeNotAbovePay, 51_000m, 50_000m, 50_000m), "Pay €50,000.00 not below the €50,000.00 taxable profit: reduced rate kept" },
+        { new PayKeepsReducedRate(ReducedRateCondition.MinimumPayMet, 51_000m, 60_000m, 40_000m), "Pay €60,000.00 reaches the €51,000.00 minimum: pay condition met" },
+        { new PayKeepsReducedRate(ReducedRateCondition.TaxableIncomeNotAbovePay, 51_000m, 50_000m, 50_000m), "Pay €50,000.00 not below the €50,000.00 taxable profit: pay condition met" },
         { new PayKeepsReducedRate(ReducedRateCondition.MinimumPayNotMet, 51_000m, 40_000m, 60_000m), "Pay €40,000.00 below the €51,000.00 minimum and the €60,000.00 taxable profit: reduced rate lost" },
-        { new BenefitsWithinShareOfPay(true, 1_714.29m, 51_714.29m, 0.20m), "Benefits in kind €1,714.29 within 20% of the €51,714.29 pay: reduced rate kept" },
+        { new BenefitsWithinShareOfPay(true, 1_714.29m, 51_714.29m, 0.20m), "Benefits in kind €1,714.29 within 20% of the €51,714.29 pay: benefits condition met" },
         { new BenefitsWithinShareOfPay(false, 1_714.29m, 6_714.29m, 0.20m), "Benefits in kind €1,714.29 over 20% of the €6,714.29 pay: reduced rate lost" },
         { new NoOfficeAllowanceBesideRent(1_380m, 0m), "No office allowance beside the rent: kept" },
         { new NoOfficeAllowanceBesideRent(0m, 1_938.44m), "No rent beside the office allowance: kept" },
@@ -77,8 +78,8 @@ public class MapConditionsTests
         { new RoyaltyLowersPayKeepingReducedRate(40_000m, null, true), "Lets a pay of €40,000.00 keep the reduced rate (none without)" },
         { new RoyaltyLowersPayKeepingReducedRate(51_000m, 51_000m, false), "Does not lower the pay keeping the reduced rate, €51,000.00" },
         { new RoyaltyLowersPayKeepingReducedRate(null, null, true), "No pay keeps the reduced rate beside it" },
-        { new PayOutCoversReserve(40_000m, 40_000m), "Reserve €40,000.00 kept: up to €40,000.00 to pay out" },
-        { new PayOutCoversReserve(40_000.01m, 40_000m), "Reserve €40,000.01 lost: only €40,000.00 to pay out" },
+        { new PayOutCoversReserve(40_000m, 40_000m), "Reserve €40,000.00 covered: up to €40,000.00 to pay out" },
+        { new PayOutCoversReserve(40_000.01m, 40_000m), "Reserve €40,000.01 not covered: only €40,000.00 to pay out" },
     };
 
     [Theory]

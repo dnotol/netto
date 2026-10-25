@@ -34,11 +34,13 @@ internal static class MapTabText
     public static string Module(RiverModule module) => $"Module_{module}";
 
     // The words of a condition one module sets on another (MapConditions), by its kind and whether it
-    // holds: « kept » or « lost » for the corporate rate and the reserve, what a royalty does to the pay
-    // that keeps the rate. The pay's by what art. 215 found of it.
+    // holds: a test of the corporate rate that holds says its condition is met, never that the rate is
+    // kept, which the other test may still lose, and one that fails that the rate is lost; the reserve
+    // covered or not; what a royalty does to the pay that keeps the rate. The pay's by what art. 215 found
+    // of it.
     public static string PayCondition(ReducedRateCondition test) => $"Condition_Pay_{test}";
 
-    public static string BenefitsCondition(bool holds) => holds ? "Condition_Benefits_Kept" : "Condition_Benefits_Lost";
+    public static string BenefitsCondition(bool holds) => holds ? "Condition_Benefits_Met" : "Condition_Benefits_Lost";
 
     // Said of the one of the two the plan pays; a year never runs with both.
     public static string OfficeCondition(bool rentPaid) => rentPaid ? "Condition_Office_Rent" : "Condition_Office_Allowance";
@@ -53,7 +55,7 @@ internal static class MapTabText
         _ => "Condition_Royalty_DoesNotLower",
     };
 
-    public static string ReserveCondition(bool holds) => holds ? "Condition_Reserve_Kept" : "Condition_Reserve_Lost";
+    public static string ReserveCondition(bool holds) => holds ? "Condition_Reserve_Covered" : "Condition_Reserve_NotCovered";
 
     // The component whose texts word a link (MapLabel.Text): the map's own, a drain list's, or the card
     // whose figure line it is, so the map and the card say the line in the same words.
