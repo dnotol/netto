@@ -91,6 +91,23 @@ public class PlanMapPanelTests
         (holding?.Input, other).ShouldBe((Netto.Core.Rules.RefusedInput.Reserve, null));
     }
 
+    // The refusal is said once, where its field is: on the card that holds it when that module is chosen, and
+    // above the map otherwise. A screen reader hears each refusal drawn (role="alert"), so the card's and the
+    // map's must not both be there.
+    [Theory]
+    [InlineData(null)]
+    [InlineData(RiverModule.DirectorPay)]
+    [InlineData(RiverModule.Dividend)]
+    public async Task Plan_aRefusedAmount_isSaidOnceWhateverModuleIsChosen(RiverModule? chosen)
+    {
+        await using var page = await MapAsync(RiverInputs.Example.WithReserve(-1m));
+        await ChooseAsync(page, chosen);
+
+        var said = (await page.FindAllAsync<RefusedMessage>()).Count(message => message.Error is not null);
+
+        said.ShouldBe(1);
+    }
+
     // Taken out from the card, the notice and Undo of any tab say so and the focus goes to Undo, as on the
     // Plan tab; the module is off the map, so it is chosen no more and the card goes.
     [Fact]
