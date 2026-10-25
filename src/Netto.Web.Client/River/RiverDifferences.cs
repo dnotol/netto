@@ -77,14 +77,7 @@ internal static class RiverDifferences
     }
 
     // The optional module a card is, none for a core card; a card no difference names, the split, is refused.
-    private static OptionalModule? Lever(RiverModule module) => module switch
-    {
-        RiverModule.Vouchers => OptionalModule.Vouchers,
-        RiverModule.Allowances => OptionalModule.Allowances,
-        RiverModule.Rent => OptionalModule.Rent,
-        RiverModule.Car => OptionalModule.Car,
-        RiverModule.Copyright => OptionalModule.Copyright,
-        RiverModule.River or RiverModule.CompanyYear or RiverModule.DirectorPay or RiverModule.CorporateTax or RiverModule.Dividend => null,
-        _ => throw new ArgumentOutOfRangeException(nameof(module), module, "A card no difference names has no lever."),
-    };
+    private static OptionalModule? Lever(RiverModule module) => module == RiverModule.Split
+        ? throw new ArgumentOutOfRangeException(nameof(module), module, "A card no difference names has no lever.")
+        : RiverModules.Lever(module);
 }

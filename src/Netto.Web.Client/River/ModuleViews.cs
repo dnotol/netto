@@ -650,6 +650,23 @@ public enum RiverModule
     Dividend,
 }
 
+internal static class RiverModules
+{
+    // The optional module a card is, none for a core card or the income year; a module no case names is
+    // refused rather than taken for a core card.
+    public static OptionalModule? Lever(RiverModule module) => module switch
+    {
+        RiverModule.Vouchers => OptionalModule.Vouchers,
+        RiverModule.Allowances => OptionalModule.Allowances,
+        RiverModule.Rent => OptionalModule.Rent,
+        RiverModule.Car => OptionalModule.Car,
+        RiverModule.Copyright => OptionalModule.Copyright,
+        RiverModule.River or RiverModule.CompanyYear or RiverModule.Split or RiverModule.DirectorPay or RiverModule.CorporateTax
+            or RiverModule.Dividend => null,
+        _ => throw new ArgumentOutOfRangeException(nameof(module), module, "A module of the river no case names."),
+    };
+}
+
 // One line of what a module passes on: the step or amount, and where it goes, a bucket or the next
 // module. Amounts are positive; the kind says which way they go, except what is kept in a loss year.
 // A line of the engine's steps carries them, worded as the card's sources word them (Details), for

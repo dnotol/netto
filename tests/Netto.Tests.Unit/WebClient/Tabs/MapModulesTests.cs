@@ -53,7 +53,7 @@ public class MapModulesTests
     {
         var river = RiverInputs.Example with { Composition = Composition(bits) };
 
-        MapView.ModulesOf(river).ShouldBe(MapModules.Order.Where(module => Lever(module) is not { } lever || river.InPlan(lever)));
+        MapView.ModulesOf(river).ShouldBe(MapModules.Order.Where(module => RiverModules.Lever(module) is not { } lever || river.InPlan(lever)));
     }
 
     [Theory]
@@ -85,14 +85,4 @@ public class MapModulesTests
 
     internal static PlanComposition Composition(int bits) =>
         new((bits & 1) != 0, (bits & 2) != 0, (bits & 4) != 0, (bits & 8) != 0, (bits & 16) != 0);
-
-    private static OptionalModule? Lever(RiverModule module) => module switch
-    {
-        RiverModule.Vouchers => OptionalModule.Vouchers,
-        RiverModule.Allowances => OptionalModule.Allowances,
-        RiverModule.Rent => OptionalModule.Rent,
-        RiverModule.Car => OptionalModule.Car,
-        RiverModule.Copyright => OptionalModule.Copyright,
-        _ => null,
-    };
 }

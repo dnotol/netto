@@ -54,7 +54,7 @@ internal sealed record MapView(IReadOnlyList<MapNode> Modules, IReadOnlyList<Map
     // module that left the map without running anything.
     public static IReadOnlyList<RiverModule> ModulesOf(RiverInputs inputs) => inputs.Company is null
         ? [RiverModule.DirectorPay]
-        : [.. MapModules.Order.Where(module => MapModules.Lever(module) is not { } lever || inputs.InPlan(lever))];
+        : [.. MapModules.Order.Where(module => RiverModules.Lever(module) is not { } lever || inputs.InPlan(lever))];
 
     // A module's links the map shows: what comes into it and what goes out.
     public IEnumerable<MapLink> LinksOf(RiverModule module) => Links.Where(link => link.Touches(module));
@@ -244,7 +244,7 @@ internal static class MapModules
         RiverModule.DirectorPay => "director-pay",
         RiverModule.CorporateTax => "corporate-tax",
         RiverModule.Dividend => "dividend",
-        _ when Lever(module) is { } lever => ModuleFolds.Name(lever),
+        _ when RiverModules.Lever(module) is { } lever => ModuleFolds.Name(lever),
         _ => throw new ArgumentOutOfRangeException(nameof(module), module, "A module the map has no place for."),
     };
 
@@ -259,14 +259,4 @@ internal static class MapModules
         _ => throw new ArgumentOutOfRangeException(nameof(lever), lever, "A lever the map has no place for."),
     };
 
-    // The optional module a card is, none for a core card.
-    public static OptionalModule? Lever(RiverModule module) => module switch
-    {
-        RiverModule.Vouchers => OptionalModule.Vouchers,
-        RiverModule.Allowances => OptionalModule.Allowances,
-        RiverModule.Rent => OptionalModule.Rent,
-        RiverModule.Car => OptionalModule.Car,
-        RiverModule.Copyright => OptionalModule.Copyright,
-        _ => null,
-    };
 }
