@@ -1,4 +1,5 @@
 using Netto.Core.Rules;
+using Netto.Core.Simulation;
 using Netto.Web.Client.River;
 
 namespace Netto.Web.Client.Tabs;
@@ -33,8 +34,11 @@ internal sealed record MapView(IReadOnlyList<MapNode> Modules, IReadOnlyList<Map
         var grid = MapLayout.Grid(modules);
         var refused = run.Error is { } error ? RiverErrors.Owner(error, inputs.Company is null) : (RiverModule?)null;
 
-        // The run's links, each a line of a card; the conditions one module sets on another join them here.
-        IReadOnlyList<MapLink> links = MapLinks.Of(inputs, run);
+        // The run's links, each a line of a card, then the conditions one module sets on another, as the
+        // engine names them for the year, between modules on the map; a run without a year, refused or
+        // with the company skipped, has none.
+        IReadOnlyList<MapLink> links =
+            [.. MapLinks.Of(inputs, run), .. run.Year is { } year ? MapConditions.From(YearConditions.Of(year), modules) : []];
 
         return new MapView(
             [.. modules.Select(module => new MapNode(MapEnd.Of(module), grid.Slot(MapEnd.Of(module))) { Refused = module == refused })],

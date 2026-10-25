@@ -1,3 +1,4 @@
+using Netto.Core.Simulation;
 using Netto.Web.Client.River;
 using Netto.Web.Client.Tabs;
 using Shouldly;
@@ -40,7 +41,8 @@ public class MapViewTests
     {
         var view = MapView.From(Full, Full.Run());
 
-        (view.Links.Count, view.Links.All(link => link.Route is not null)).ShouldBe((MapLinks.Of(Full, Full.Run()).Count, true));
+        (view.Links.Count, view.Links.All(link => link.Route is not null)).ShouldBe(
+            (MapLinks.Of(Full, Full.Run()).Count + MapConditions.From(YearConditions.Of(Full.Run().Year!), MapView.ModulesOf(Full)).Count, true));
     }
 
     // A refused amount leaves the map without a figure, as it leaves the bar: its modules and buckets
