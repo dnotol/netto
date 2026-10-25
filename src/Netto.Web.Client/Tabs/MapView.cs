@@ -1,12 +1,51 @@
+using Netto.Core.Rules;
 using Netto.Web.Client.River;
 
 namespace Netto.Web.Client.Tabs;
 
-// What the Map tab draws of the one run of the river: the modules the river shows with figures, the four
-// buckets of the bar, and the links between them, each a line a card already shows. It only selects and
-// regroups the cards' own figures; nothing here decides a tax outcome.
-internal sealed record MapView
+// What the Map tab draws of the one run of the river: the modules the river shows with figures, each in
+// its slot (MapLayout), the four buckets of the bar whatever the plan holds, and the links between them,
+// each a line a card already shows (MapLinks), with its route. It only selects and regroups the cards' own
+// figures; nothing here decides a tax outcome. While the engine refuses an amount the map has no link, as
+// the bar has no figure, and the module holding the refused field is marked (RiverErrors.Owner). A filter
+// shows some links and hides the others as `view with { Links = shown, Hidden = hidden }`: the modules
+// and the routes are the run's, so nothing moves.
+internal sealed record MapView(IReadOnlyList<MapNode> Modules, IReadOnlyList<MapNode> Buckets, int Rows)
 {
+    // How far a card's words stand from its box.
+    private const decimal BlockGap = 1m;
+
+    public IReadOnlyList<MapLink> Links { get; init; } = [];
+
+    // The links a filter hides, still each module's.
+    public IReadOnlyList<MapLink> Hidden { get; init; } = [];
+
+    // The engine's refusal, which leaves the map without a link.
+    public Refusal? Refusal { get; init; }
+
+    // The bucket of what leaves the pay names the rent too once its tax is there, as the bar names it.
+    public bool TaxesOnPayIncludeRent { get; init; }
+
+    public static MapView From(RiverInputs inputs, RiverRun run)
+    {
+        var modules = ModulesOf(inputs);
+        var grid = MapLayout.Grid(modules);
+        var refused = run.Error is { } error ? RiverErrors.Owner(error, inputs.Company is null) : (RiverModule?)null;
+
+        // The run's links, each a line of a card; the conditions one module sets on another join them here.
+        IReadOnlyList<MapLink> links = MapLinks.Of(inputs, run);
+
+        return new MapView(
+            [.. modules.Select(module => new MapNode(MapEnd.Of(module), grid.Slot(MapEnd.Of(module))) { Refused = module == refused })],
+            [.. BucketsView.Keys.Select(key => new MapNode(MapEnd.InBucket(key), grid.Slot(MapEnd.InBucket(key))))],
+            grid.Rows.Count)
+        {
+            Links = MapLayout.Routed(grid, links),
+            Refusal = run.Error,
+            TaxesOnPayIncludeRent = BucketsView.From(run)?.TaxesOnPayIncludeRent ?? false,
+        };
+    }
+
     // The modules the map draws, in the river's order: the cards the river draws with figures, an
     // optional module only while it is in the plan, as the Plan page draws them (Pages/Plan); with the
     // company skipped, the cards before the pay and the company's are drawn waiting for its year, and the
@@ -15,7 +54,70 @@ internal sealed record MapView
     public static IReadOnlyList<RiverModule> ModulesOf(RiverInputs inputs) => inputs.Company is null
         ? [RiverModule.DirectorPay]
         : [.. MapModules.Order.Where(module => MapModules.Lever(module) is not { } lever || inputs.InPlan(lever))];
+
+    // A module's links the map shows: what comes into it and what goes out.
+    public IEnumerable<MapLink> LinksOf(RiverModule module) => Links.Where(link => link.Touches(module));
+
+    public IEnumerable<MapLink> HiddenOf(RiverModule module) => Hidden.Where(link => link.Touches(module));
+
+    // The module chosen, while the map draws it; none once it has left the map.
+    public RiverModule? Choice(RiverModule? chosen) => chosen is { } module && Modules.Any(node => node.End.Module == module) ? module : null;
+
+    // The lines drawn, links of one route as one, in the order of the links.
+    public IReadOnlyList<MapBundle> Bundles() =>
+        [.. Links.Where(link => link.Route is not null).GroupBy(link => link.Route!).Select(bundle => new MapBundle(bundle.Key, [.. bundle]))];
+
+    // The lines in the order they are drawn, each faded while another module is chosen: the chosen one's
+    // last, over the others.
+    public IReadOnlyList<(MapBundle Bundle, bool Faded)> Drawn(RiverModule? chosen) =>
+        [.. Bundles().Select(bundle => (Bundle: bundle, Faded: chosen is { } module && !bundle.Touches(module))).OrderByDescending(line => line.Faded)];
+
+    // Where each line's words are drawn: a card's lines leaving one side of its box together, beside that
+    // side, in the middle of its height; a line between two boxes one over the other beside itself, halfway
+    // down the gap.
+    public IReadOnlyList<MapLabelBlock> Blocks()
+    {
+        var bundles = Bundles();
+        var gaps = bundles.Where(bundle => bundle.Route.Side == MapLabelSide.Gap)
+            .Select(bundle => new MapLabelBlock(bundle.Card, MapLabelSide.Gap, bundle.Route.Beside, [bundle]));
+        var sides = bundles.Where(bundle => bundle.Route.Side != MapLabelSide.Gap)
+            .GroupBy(bundle => (bundle.Card, bundle.Route.Side))
+            .Select(block => new MapLabelBlock(block.Key.Card, block.Key.Side, BesideBox(block.Key.Card, block.Key.Side), [.. block]));
+
+        return [.. sides, .. gaps];
+    }
+
+    private MapPoint BesideBox(RiverModule card, MapLabelSide side)
+    {
+        var slot = Modules.Single(node => node.End.Module == card).Slot;
+        return new MapPoint(side == MapLabelSide.Left ? slot.Left - BlockGap : slot.Right + BlockGap, slot.CenterY);
+    }
 }
+
+// A module or a bucket of the map in its box; the module holding a refused field is marked.
+internal sealed record MapNode(MapEnd End, MapSlot Slot)
+{
+    public bool Refused { get; init; }
+}
+
+// One line of the map: the links of one route, one after the other in its words.
+internal sealed record MapBundle(MapRoute Route, IReadOnlyList<MapLink> Links)
+{
+    public MapLinkKind Kind => Links[0].Kind;
+
+    public MapEnd From => Links[0].From;
+
+    public MapEnd To => Links[0].To;
+
+    public RiverModule Card => Links[0].Card;
+
+    public bool Touches(RiverModule module) => Links[0].Touches(module);
+}
+
+// The words of a card's lines drawn together beside one side of its box (At, the side's middle, the
+// words ending there on the left, starting there on the right), or of one line beside itself in a gap
+// (At, where the words start).
+internal sealed record MapLabelBlock(RiverModule Card, MapLabelSide Side, MapPoint At, IReadOnlyList<MapBundle> Bundles);
 
 // What a link of the map carries, told apart at a glance: money passed on to the next module (a lever's
 // hand-off, the split's shares, a royalty's part beyond its limits, taxed as pay), money ending in a
@@ -78,10 +180,16 @@ internal sealed record MapLabel(MapText Text, string Key, IReadOnlyList<string> 
 
 // One link of the map: its kind, where it runs from and to, the module whose card shows the line it is
 // (Card), what it carries and its amount in this plan, the card's own figure; none for a condition, which
-// names its figures in its words. A condition says whether it holds (Holds), none for any other link.
+// names its figures in its words. A condition says whether it holds (Holds), none for any other link. Its
+// line is its route (MapLayout), shared with the links of the same ends and kind, worked out from every
+// link of the run, none until the layout has routed it.
 internal sealed record MapLink(MapLinkKind Kind, MapEnd From, MapEnd To, RiverModule Card, MapLabel Carries, decimal? Amount)
 {
     public bool? Holds { get; init; }
+
+    public MapRoute? Route { get; init; }
+
+    public bool Touches(RiverModule module) => From.Module == module || To.Module == module;
 }
 
 // The river's modules as the map places them, in the river's order, the outline's (OutlineRows.Order),
