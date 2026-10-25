@@ -18,7 +18,10 @@
    (MoveLinks), while that card is on the Plan tab; and their total. « Apply » sets the river's values to
    the move's; the plan the moves are from stays as it was, and the moves are applied from here only: the
    split's curve shows the best pay, but moves no pay by itself. A lever a move adds to the plan opens its
-   card in the river (ModuleFolds), for when the viewer goes back to it, and its link appears. The page
+   card in the river (ModuleFolds), for when the viewer goes back to it, and its link appears. « In the
+   river » is by value, so under the pay's move a note names the river's own best pay, the split card's,
+   whenever the river at that pay is not at its best (PayNote), from the search the page hands the tab,
+   which it runs for the river anyway. The page
    finds the moves, once per plan and date (MovesSource), the search running the split at every move, and
    the tab draws what it found; which ones the river holds is read at each change. The page searches only
    once it has painted, so until then the tab says from which plan it is looking for them, and nothing
@@ -70,11 +73,16 @@
             @foreach (var (move, index) in _view.Moves.Select((move, index) => (move, index)))
             {
                 var link = MoveLinks.To(move.Move, Inputs);
+                var bestPay = PayNote.RiversBestPay(move.Move, Inputs, Search);
                 <li class="moves__move">
                     <span class="moves__number" aria-hidden="true">@(index + 1)</span>
                     <div class="moves__body">
                         <p class="moves__what">@What(move)</p>
                         <p class="moves__why">@Why(move)</p>
+                        @if (bestPay is { } best)
+                        {
+                            <p class="moves__note" id="moves-pay-note">@L["BestPay", Formats.Euros(best)]</p>
+                        }
                         @if (link is not null)
                         {
                             <a class="moves__link" href="@link.Href" aria-label="@L[OptimisationTabText.LinkLabel, L[OptimisationTabText.Link(link)], What(move)]">@L[OptimisationTabText.Link(link)]</a>
@@ -87,7 +95,8 @@
                     <div class="moves__action">
                         @if (_view.Applied(move, Inputs))
                         {
-                            <span class="moves__applied" tabindex="-1" @ref="_applied[index]">@L["Applied"]</span>
+                            @* The focus goes here once applied, so the note, which a screen reader would not meet, describes it. *@
+                            <span class="moves__applied" tabindex="-1" @ref="_applied[index]" aria-describedby="@(bestPay is null ? null : "moves-pay-note")">@L["Applied"]</span>
                         }
                         else
                         {
@@ -124,6 +133,13 @@
     // The river with a move applied.
     [Parameter]
     public EventCallback<RiverInputs> InputsChanged { get; set; }
+
+    // The engine's search across every pay for the river as it is, which the page runs again only when an
+    // input other than the pay changes (Plan, RiverInputs.SearchSplit): the tab names the best pay it
+    // finds under the pay's move (PayNote), running none of its own. None while the company's year is
+    // skipped or an amount is refused.
+    [Parameter]
+    public SplitSearchResult? Search { get; set; }
 
     private MovesView _view = default!;
     private readonly Dictionary<int, ElementReference> _applied = [];

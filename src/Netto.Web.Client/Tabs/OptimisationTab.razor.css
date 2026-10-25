@@ -129,6 +129,14 @@
     line-height: 1.5;
 }
 
+/* What the river's own best pay is, under the pay's move, when it is not the move's: read in the page's
+   ink, since the move above it is not the river's best. */
+.moves__note {
+    margin: 0;
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
 .moves__link {
     justify-self: start;
     color: var(--netto-text);
