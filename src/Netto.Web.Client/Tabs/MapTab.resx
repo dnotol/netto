@@ -21,4 +21,7 @@
   <data name="Lede" xml:space="preserve">
     <value>Every module of your plan and the money between them, each amount a line its card shows. Choose a module to bring out its links.</value>
   </data>
+  <data name="Carries_ProfitBeforeLevers" xml:space="preserve">
+    <value>Before your pay</value>
+  </data>
 </root>

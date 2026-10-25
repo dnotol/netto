@@ -10,6 +10,13 @@ namespace Netto.Web.Client.River.CompanyCar;
 // computes none.
 internal static class CarFigures
 {
+    // The lines the Map tab draws as what the car changes of a tax base (Tabs/MapLinks).
+    public const string BenefitTaxed = "Figure_BenefitTaxed";
+
+    public const string NotDeductible = "Figure_NotDeductible";
+
+    public const string AddBack = "Figure_AddBack";
+
     // The benefit as the engine took the car: before the contribution, at least the year's minimum, at
     // its CO2 percentage, period by period at the share of its value the car's age leaves; the contribution
     // off it, and the benefit taxed as pay. Then what the company deducts of the car's costs, what it cannot
@@ -25,9 +32,9 @@ internal static class CarFigures
             new("Figure_Co2", car.Co2Percentage) { Format = FigureFormat.Percentage },
             .. car.Periods.Select(Period),
             .. car.Contribution > 0m ? [new FigureLine("Figure_Contribution", -car.Contribution)] : Array.Empty<FigureLine>(),
-            new("Figure_BenefitTaxed", car.Benefit) { Help = "Help_BenefitTaxed" },
+            new(BenefitTaxed, car.Benefit) { Help = "Help_BenefitTaxed" },
             .. Deduction(car),
-            new("Figure_AddBack", car.AddBack) { Args = car.AddBackRate is { } rate ? [Formats.RuleAmount(rate)] : [], Help = "Help_AddBack" },
+            new(AddBack, car.AddBack) { Args = car.AddBackRate is { } rate ? [Formats.RuleAmount(rate)] : [], Help = "Help_AddBack" },
         ];
 
     // The plan with its car against the same plan without it, at the pay set: the pocket in each, the cash
@@ -72,7 +79,7 @@ internal static class CarFigures
 
         return car.NotDeductibleCosts == 0m
             ? [deducted]
-            : [deducted, new FigureLine("Figure_NotDeductible", car.NotDeductibleCosts) { Help = "Help_NotDeductible" }];
+            : [deducted, new FigureLine(NotDeductible, car.NotDeductibleCosts) { Help = "Help_NotDeductible" }];
     }
 
     private static string Month(DateOnly date) => Formats.Month(date.Year, date.Month);

@@ -622,7 +622,9 @@ internal static class RiverErrors
     };
 }
 
-internal enum RiverModule
+// A module of the river, its card. Public because the Map tab, a component, takes the module chosen on
+// it as a parameter.
+public enum RiverModule
 {
     // Nothing a card holds: the income year, and what the fund bills, which the When to pay tab shows.
     River,

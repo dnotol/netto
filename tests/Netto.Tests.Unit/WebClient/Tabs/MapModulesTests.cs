@@ -83,7 +83,7 @@ public class MapModulesTests
         withFigures.ShouldBe(MapView.ModulesOf(river).Select(MapModules.Name));
     }
 
-    private static PlanComposition Composition(int bits) =>
+    internal static PlanComposition Composition(int bits) =>
         new((bits & 1) != 0, (bits & 2) != 0, (bits & 4) != 0, (bits & 8) != 0, (bits & 16) != 0);
 
     private static OptionalModule? Lever(RiverModule module) => module switch
