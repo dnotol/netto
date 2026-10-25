@@ -76,7 +76,7 @@ internal static class RiverDifferences
         return river.InPlan(lever) ? RiverDifferenceKind.Added : RiverDifferenceKind.LeftOut;
     }
 
-    // The optional module a card is, none for a core card.
+    // The optional module a card is, none for a core card; a card no difference names, the split, is refused.
     private static OptionalModule? Lever(RiverModule module) => module switch
     {
         RiverModule.Vouchers => OptionalModule.Vouchers,
@@ -84,6 +84,7 @@ internal static class RiverDifferences
         RiverModule.Rent => OptionalModule.Rent,
         RiverModule.Car => OptionalModule.Car,
         RiverModule.Copyright => OptionalModule.Copyright,
-        _ => null,
+        RiverModule.River or RiverModule.CompanyYear or RiverModule.DirectorPay or RiverModule.CorporateTax or RiverModule.Dividend => null,
+        _ => throw new ArgumentOutOfRangeException(nameof(module), module, "A card no difference names has no lever."),
     };
 }
