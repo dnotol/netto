@@ -11,7 +11,7 @@ namespace Netto.Tests.SocialContributions;
 // 191.59, over 162.66, to the cent.
 public class CompanyContributionRulesTests
 {
-    private const string Faq = "social-contributions/inasti_faq-cotisation-a-charge-des-societes_2026-10-24.html";
+    private const string Faq = "social-contributions/inasti_faq-cotisation-a-charge-des-societes_2026-10-25.html";
 
     private const string Law = "social-contributions/ejustice_loi-dispositions-sociales-diverses-1992_2022-12-30.html";
 

@@ -31,7 +31,7 @@ public class SocialContributionRulesTests
         [
             ("Source", "social-contributions/inasti_cotisations-sociales-2026_2026-01-05.pdf"),
             ("FundFee", "social-contributions/ejustice_arrete-royal-38-statut-social-independants_2026-06-01.html"),
-            ("FundFeeDeduction", "personal-tax/spf-finances_cir92-art-52-revenus-2026_2025-11-17.html"),
+            ("FundFeeDeduction", "personal-tax/spf-finances_cir92-art-52-revenus-2026_2026-02-04.html"),
             ("FundFeeCommentary", "personal-tax/spf-finances_commentaire-cir92-art-52_2020-11-09.html"),
         ]);
     }

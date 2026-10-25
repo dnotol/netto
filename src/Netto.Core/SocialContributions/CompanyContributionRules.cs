@@ -24,10 +24,10 @@ public sealed record CompanyContributionRules(
     IReadOnlyList<LeverCondition> Conditions)
 {
     private static readonly Source Faq2026 = new(
-        "INASTI, « Quelle cotisation à charge des sociétés dois-je payer ? » (FAQ, as read on 24.10.2026)",
+        "INASTI, « Quelle cotisation à charge des sociétés dois-je payer ? » (FAQ, as read on 25.10.2026)",
         "« Pour la cotisation 2026, c'est le total du bilan de votre société en 2024 »: under 879,163.44, 409.30; above it, 1,022.38",
         new Uri("https://www.inasti.be/fr/faq/quelle-cotisation-charge-des-societes-dois-je-payer"),
-        "social-contributions/inasti_faq-cotisation-a-charge-des-societes_2026-10-24.html");
+        "social-contributions/inasti_faq-cotisation-a-charge-des-societes_2026-10-25.html");
 
     private static readonly Source Law1992 = new(
         "Loi du 30.12.1992 portant des dispositions sociales et diverses, consolidated on Justel, updated to 30.12.2022",

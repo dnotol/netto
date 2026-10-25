@@ -36,7 +36,7 @@ public sealed record SocialContributionRules(
 
     // The record the forager read, the text in force from 01.01.2021, until the coordinated article for
     // income year 2026 is filed.
-    private static readonly Source Article52Income2026 = Source.Fisconet("personal-tax", 52, 2026, new DateOnly(2025, 11, 17), "265ddbb6-3664-4499-944d-8d5177e98d98",
+    private static readonly Source Article52Income2026 = Source.Fisconet("personal-tax", 52, 2026, new DateOnly(2026, 2, 4), "60edb410-72a2-4f9e-b5a4-e42f49c9127c",
         "7°: the personal contributions due under social legislation are deductible professional costs");
 
     private static readonly Source Commentary52 = new(
