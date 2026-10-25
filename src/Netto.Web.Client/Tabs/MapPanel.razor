@@ -1,0 +1,104 @@
+@using Netto.Core.Rules
+@using Netto.Core.Simulation
+@using Netto.Web.Client.River
+@using Netto.Web.Client.River.CompanyCar
+@using Netto.Web.Client.River.Copyright
+@inject IStringLocalizer<MapPanel> L
+
+@* The room beside the Map tab's map for the card of the module chosen on it: the same component as on the
+   Plan tab, editable, and every edit goes back to the page's one river, so the bar, the map and the card
+   say the same figures at once. While no module is chosen it says whose card goes there. A card is the
+   module's own; the links stay in the tab's list. The card is pinned open (PinnedCard): it has no toggle,
+   it does not read the fold the viewer made on the Plan tab nor write one, and a refusal on it reveals
+   nothing there; the folds inside it are the viewer's, as on the Plan tab. A card that is refused shows the
+   engine's refusal on its field, as the river does (Refused). When the viewer chooses a module the card
+   takes the focus on its heading; on arriving at the tab with a module already chosen, the tab's own title
+   keeps it. Nothing here is a live region: the bar's is the river's only announcement. *@
+<div class="map-panel">
+    @if (_seat is null)
+    {
+        <p class="map-panel__hint">@L["Hint"]</p>
+    }
+    else
+    {
+        <CascadingValue Value="_seat" IsFixed="true" @key="Module">
+            @switch (Module)
+            {
+                case RiverModule.CompanyYear:
+                    <CompanyYearCard Inputs="Inputs" InputsChanged="InputsChanged" Run="Run" Refused="Refused" />
+                    break;
+                case RiverModule.Vouchers:
+                    <VoucherCard Inputs="Inputs" InputsChanged="InputsChanged" Run="Run" Refused="Refused" />
+                    break;
+                case RiverModule.Allowances:
+                    <AllowanceCard Inputs="Inputs" InputsChanged="InputsChanged" Run="Run" Refused="Refused" />
+                    break;
+                case RiverModule.Rent:
+                    <RentCard Inputs="Inputs" InputsChanged="InputsChanged" Run="Run" Refused="Refused" />
+                    break;
+                case RiverModule.Car:
+                    <CarCard Inputs="Inputs" InputsChanged="InputsChanged" Run="Run" Refused="Refused" />
+                    break;
+                case RiverModule.Split:
+                    <SplitCard Inputs="Inputs" InputsChanged="InputsChanged" Run="Run" Search="Search" Refused="Refused" />
+                    break;
+                case RiverModule.Copyright:
+                    <CopyrightCard Inputs="Inputs" InputsChanged="InputsChanged" Run="Run" Refused="Refused" />
+                    break;
+                case RiverModule.DirectorPay:
+                    <DirectorPayCard Inputs="Inputs" InputsChanged="InputsChanged" Run="Run" Refused="Refused" />
+                    break;
+                case RiverModule.CorporateTax:
+                    <CorporateTaxCard Inputs="Inputs" InputsChanged="InputsChanged" Run="Run" Refused="Refused" />
+                    break;
+                case RiverModule.Dividend:
+                    <DividendCard Inputs="Inputs" InputsChanged="InputsChanged" Run="Run" Refused="Refused" />
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(Module), Module, "A module the panel has no card for.");
+            }
+        </CascadingValue>
+    }
+</div>
+
+@code {
+    // The module chosen on the map, none while none is: one the map holds, which the tab resolves.
+    [Parameter]
+    public RiverModule? Module { get; set; }
+
+    [Parameter, EditorRequired]
+    public RiverInputs Inputs { get; set; } = default!;
+
+    // The river with an edit made on the card.
+    [Parameter]
+    public EventCallback<RiverInputs> InputsChanged { get; set; }
+
+    [Parameter, EditorRequired]
+    public RiverRun Run { get; set; } = default!;
+
+    // The split's search, which the split's card draws.
+    [Parameter]
+    public SplitSearchResult? Search { get; set; }
+
+    // The engine's refusal of a field of this module's card, as the Plan page hands it to that card.
+    [Parameter]
+    public Refusal? Refused { get; set; }
+
+    // The seat of the card shown, new for each module chosen, and whether the panel has drawn before: a
+    // module chosen after that is the viewer's choice and its card takes the focus; the one chosen when the
+    // tab opens is not, the tab's title has the focus then.
+    private PinnedCard? _seat;
+    private RiverModule? _shown;
+    private bool _drawn;
+
+    protected override void OnParametersSet()
+    {
+        if (Module != _shown)
+        {
+            _seat = Module is null ? null : new PinnedCard(TakesFocus: _drawn);
+            _shown = Module;
+        }
+
+        _drawn = true;
+    }
+}
