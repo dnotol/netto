@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Legend" xml:space="preserve">
+    <value>Kinds of link shown</value>
+  </data>
+  <data name="Name_PassedOn" xml:space="preserve">
+    <value>Money passed on</value>
+  </data>
+  <data name="Gloss_PassedOn" xml:space="preserve">
+    <value>Money handed from one module to the next.</value>
+  </data>
+  <data name="Name_IntoBucket" xml:space="preserve">
+    <value>Money into a bucket</value>
+  </data>
+  <data name="Gloss_IntoBucket" xml:space="preserve">
+    <value>Money that ends in one of the bar's buckets, leaves the river, or comes back out of a bucket.</value>
+  </data>
+  <data name="Name_TaxBase" xml:space="preserve">
+    <value>Tax base</value>
+  </data>
+  <data name="Gloss_TaxBase" xml:space="preserve">
+    <value>What changes the amount a tax is worked out on without moving money: a benefit taxed with the pay, what Corporate tax adds back.</value>
+  </data>
+  <data name="Name_Condition" xml:space="preserve">
+    <value>Conditions</value>
+  </data>
+  <data name="Gloss_Condition" xml:space="preserve">
+    <value>A condition one module sets on another.</value>
+  </data>
+  <data name="Count_None" xml:space="preserve">
+    <value>(none in this plan)</value>
+  </data>
+  <data name="Count_One" xml:space="preserve">
+    <value>(1 link)</value>
+  </data>
+  <data name="Count_Many" xml:space="preserve">
+    <value>({0} links)</value>
+  </data>
+  <data name="Summary_One" xml:space="preserve">
+    <value>Showing {0} of 1 link</value>
+  </data>
+  <data name="Summary_Many" xml:space="preserve">
+    <value>Showing {0} of {1} links</value>
+  </data>
+  <data name="AllHidden" xml:space="preserve">
+    <value>Every kind of link is hidden: tick one to see its links.</value>
+  </data>
+  <data name="Hidden_One" xml:space="preserve">
+    <value>1 link hidden by the kinds you turned off</value>
+  </data>
+  <data name="Hidden_Many" xml:space="preserve">
+    <value>{0} links hidden by the kinds you turned off</value>
+  </data>
+</root>

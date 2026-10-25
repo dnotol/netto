@@ -1,0 +1,61 @@
+@inject IStringLocalizer<MapFilter> L
+@inject MapLinkFilter Filter
+
+@* The Map tab's legend, which is also its filter: one checkbox for every kind of link, each with a sample
+   of its line (MapLinkStyle, the very dash and width the map draws it with, so the legend tells the lines
+   apart without colour), its name, how many links the plan has of it and what it is. A kind ticked is
+   drawn, a kind unticked is left out of the lines and of the words that list a chosen module's links, and
+   the choice is the viewer's, remembered in the browser (MapLinkFilter). The group is a fieldset named by
+   its legend, so a screen reader hears the kind, its count and its state; the counts are the plan's
+   whatever is hidden, so a box does not change its name as it is ticked. Every kind is always there, even
+   one the plan has no link of, or an unticked kind would be out of sight with nothing to show it again.
+   Nothing here is a live region: the checkbox says its own state, and the line under the group is for
+   the eye (the bar is the river's only announcement). The tab draws its map again when a kind is ticked
+   or unticked (OnChanged). *@
+<fieldset class="map-filter">
+    <legend class="map-filter__legend">@L[MapFilterText.Legend]</legend>
+    <ul class="map-filter__kinds">
+        @foreach (var row in _view.Rows)
+        {
+            <li @key="row.Kind" class="map-filter__kind">
+                <MudCheckBox T="bool" Value="row.Shown" ValueChanged="@(shown => OnKindChangedAsync(row.Kind, shown))" Color="Color.Primary">
+                    <span class="map-filter__choice">
+                        <span class="map-filter__head">
+                            <svg class="map-filter__swatch" data-link-kind="@row.Kind" width="40" height="8" viewBox="0 0 40 8" aria-hidden="true" focusable="false">
+                                <line x1="2" y1="4" x2="38" y2="4" stroke-width="@MapLinkStyle.Width(row.Kind)" stroke-dasharray="@MapLinkStyle.Dash(row.Kind)" />
+                            </svg>
+                            <span class="map-filter__name">@L[MapFilterText.Name(row.Kind)]</span>
+                            <span class="map-filter__count">@L[MapFilterText.Count(row.Count), row.Count]</span>
+                        </span>
+                        <span class="map-filter__gloss">@L[MapFilterText.Gloss(row.Kind)]</span>
+                    </span>
+                </MudCheckBox>
+            </li>
+        }
+    </ul>
+    @if (MapFilterText.Summary(_view) is { } summary)
+    {
+        <p class="map-filter__summary">@L[summary, _view.Shown, _view.Total]</p>
+    }
+</fieldset>
+
+@code {
+    // The plan's links of each kind, whatever is hidden (MapLinkFilter.Counts).
+    [Parameter, EditorRequired]
+    public IReadOnlyDictionary<MapLinkKind, int> Counts { get; set; } = default!;
+
+    // A kind ticked or unticked, after the choice is kept: the tab draws its map again.
+    [Parameter]
+    public EventCallback OnChanged { get; set; }
+
+    private MapFilterView _view = default!;
+
+    protected override void OnParametersSet() => _view = MapFilterView.Of(Filter, Counts);
+
+    private async Task OnKindChangedAsync(MapLinkKind kind, bool shown)
+    {
+        Filter.Set(kind, shown);
+        _view = MapFilterView.Of(Filter, Counts);
+        await OnChanged.InvokeAsync();
+    }
+}
