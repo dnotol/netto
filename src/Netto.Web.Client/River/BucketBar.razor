@@ -10,7 +10,10 @@
    what it holds, and its amount says its share of the start; under them, what reaches the pocket out
    of what leaves the company (BucketsView.Reach), its bubble saying so, and, once the user has marked
    their current setup, the plan starred « Today », what the river leaves in the pocket against it
-   (BaselineGain), and whether the river has changes no plan holds. A polite live
+   (BaselineGain), with an (i) bubble beside a gain that is a figure, saying what it is measured by and
+   what it leaves out (ObjectiveNote, the sentence the Optimisation tab says under its figures): a bubble
+   and not a line in sight, since a sentence that long would grow a bar that sticks on every tab; and
+   whether the river has changes no plan holds. A polite live
    region says what reaches the pocket, and that gain, once the river has settled
    (BucketBarAnnouncement), not at every step of a slider dragged, or, while the engine refuses an
    amount, that there is no figure until it is corrected; the other buckets are read in the bar
@@ -68,6 +71,10 @@
                     @if (Gain is { } gain)
                     {
                         <span class="bucket-bar__gain--@gain.Kind.ToString().ToLowerInvariant()">@GainText(gain)</span>
+                        @if (gain.Kind != GainKind.NotComparable)
+                        {
+                            <InfoBubble Label="@L["GainLabel"]"><ObjectiveNote /></InfoBubble>
+                        }
                     }
                     @if (Unsaved)
                     {
