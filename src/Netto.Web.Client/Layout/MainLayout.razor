@@ -1,4 +1,5 @@
 ﻿@inherits LayoutComponentBase
+@using Netto.Web.Client.Pages
 @inject IStringLocalizer<MainLayout> L
 @inject NavigationManager Navigation
 @inject ThemePreference ThemePreference
@@ -14,17 +15,19 @@
     <SectionOutlet SectionName="@SkipLinkSection" />
     <header class="site-header">
         <MudContainer MaxWidth="MaxWidth.Large" Class="site-header__inner">
-            <a href="/" class="wordmark site-header__wordmark">Netto</a>
+            @* To the plan, never to /: a link to / leaves the plan page, which is rebuilt and forgets what
+               it had found (PlanEntry), where /plan from one of its tabs keeps the page. *@
+            <a href="/plan" class="wordmark site-header__wordmark">Netto</a>
             <div class="site-header__end">
-                @* The section links exist only on the front page, where they are same-page links Blazor
-                   scrolls to. Arriving from another page, Blazor resets the scroll to the top once the
-                   new page has rendered (blazor.web.js), undoing any scroll towards the section. *@
+                @* The section links exist only on the front page (/about), where they are same-page links
+                   Blazor scrolls to. Arriving from another page, Blazor resets the scroll to the top once
+                   the new page has rendered (blazor.web.js), undoing any scroll towards the section. *@
                 @if (OnFrontPage)
                 {
                     <nav class="site-nav" aria-label="@L["NavLabel"]">
-                        <a href="/#levers">@L["NavLevers"]</a>
-                        <a href="/#how-it-works">@L["NavHowItWorks"]</a>
-                        <a href="/#principles">@L["NavPrinciples"]</a>
+                        <a href="@FrontPage.Href("levers")">@L["NavLevers"]</a>
+                        <a href="@FrontPage.Href("how-it-works")">@L["NavHowItWorks"]</a>
+                        <a href="@FrontPage.Href("principles")">@L["NavPrinciples"]</a>
                     </nav>
                 }
                 <MudButton Href="/plan" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small">
@@ -60,7 +63,7 @@
     // Where a page puts its skip link (SectionContent).
     public const string SkipLinkSection = "skip-link";
 
-    private bool OnFrontPage => Navigation.ToBaseRelativePath(Navigation.Uri).Split('?', '#')[0].Length == 0;
+    private bool OnFrontPage => FrontPage.IsAt(Navigation.ToBaseRelativePath(Navigation.Uri));
 
     private MudThemeProvider _themeProvider = default!;
 

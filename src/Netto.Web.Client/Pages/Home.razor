@@ -1,4 +1,4 @@
-﻿@page "/"
+﻿@page "/about"
 @inject IStringLocalizer<Home> L
 @inject NavigationManager Navigation
 @inject IScrollManager ScrollManager
@@ -23,7 +23,7 @@
                            EndIcon="@Icons.Material.Rounded.ArrowForward" Class="hero__cta">
                     @L["CtaStart"]
                 </MudButton>
-                <MudButton Href="/#how-it-works" Variant="Variant.Text" Color="Color.Secondary" Size="Size.Large">
+                <MudButton Href="@FrontPage.Href("how-it-works")" Variant="Variant.Text" Color="Color.Secondary" Size="Size.Large">
                     @L["CtaHow"]
                 </MudButton>
             </div>
@@ -169,13 +169,10 @@
 </section>
 
 @code {
-    // Only this page's own sections: the fragment becomes a CSS selector, and a typed one such as
-    // "#1abc" would make the browser throw.
-    private static readonly HashSet<string> Sections = ["levers", "how-it-works", "principles"];
-
     // Blazor scrolls to a #section on a same-page link, but not when the link comes from another
-    // page (/plan to /#levers) or the address is opened directly: the section only exists once
-    // this page has rendered, so the scroll happens here.
+    // page (/plan to /about#levers) or the address is opened directly: the section only exists once
+    // this page has rendered, so the scroll happens here, to this page's own sections only (the
+    // fragment becomes a CSS selector, and a typed one such as "#1abc" would make the browser throw).
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender)
@@ -184,7 +181,7 @@
         }
 
         var fragment = new Uri(Navigation.Uri).Fragment.TrimStart('#');
-        if (Sections.Contains(fragment))
+        if (FrontPage.Sections.Contains(fragment))
         {
             await ScrollManager.ScrollIntoViewAsync($"#{fragment}", ScrollBehavior.Auto);
         }

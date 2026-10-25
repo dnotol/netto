@@ -1,0 +1,15 @@
+@page "/"
+@using Netto.Web.Client.Tabs
+@inject NavigationManager Navigation
+
+@* The app opens on the plan: this address draws no page, it replaces itself with /plan as it is first
+   drawn, so Back from the plan goes to what the viewer came from and not round to / again. The front page
+   is at /about (FrontPage). The app's own links go to /plan, never here: a link to this address leaves
+   the plan page, whose component is rebuilt and forgets what it had found, where /plan from one of its
+   tabs keeps it. It runs in the browser only, as every page does (Routes), so the server never
+   navigates. *@
+
+@code {
+    protected override void OnInitialized() =>
+        Navigation.NavigateTo(PlanTabRoutes.Href(PlanTab.Plan), replace: true);
+}
