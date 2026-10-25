@@ -71,9 +71,9 @@ public class MapLayoutTests
     }
 
     [Fact]
-    public void Grid_companySkipped_isDirectorPayOverTheBuckets()
+    public void Grid_companySkipped_isCompanyYearAndDirectorPayOverTheBuckets()
     {
-        MapLayout.Grid(MapView.ModulesOf(MapLinksTests.Full.SkipCompany())).Rows.ShouldBe([MapRow.StreamBottom, MapRow.Buckets]);
+        MapLayout.Grid(MapView.ModulesOf(MapLinksTests.Full.SkipCompany())).Rows.ShouldBe([MapRow.CompanyYear, MapRow.StreamBottom, MapRow.Buckets]);
     }
 
     [Theory]

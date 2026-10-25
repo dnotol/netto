@@ -36,6 +36,29 @@ public class MapViewTests
         MapView.From(river, river.Run()).Buckets.Select(node => node.End.Id).ShouldBe(BucketsView.Keys);
     }
 
+    // The company skipped: Company year stays, marked skipped, with no link to or from it; Director pay keeps
+    // its lines into the buckets, the river starting at the pay.
+    [Fact]
+    public void From_companySkipped_drawsCompanyYearSkippedWithNoLinkAndDirectorPayWithItsLines()
+    {
+        var river = Full.SkipCompany();
+
+        var view = MapView.From(river, river.Run());
+
+        view.ShouldSatisfyAllConditions(
+            () => view.Modules.Select(node => (node.End.Id, node.Skipped)).ShouldBe([("company-year", true), ("director-pay", false)]),
+            () => view.Links.ShouldNotBeEmpty(),
+            () => view.Links.Where(link => link.Touches(RiverModule.CompanyYear)).ShouldBeEmpty(),
+            () => view.Links.ShouldAllBe(link => link.Touches(RiverModule.DirectorPay)),
+            () => view.Links.ShouldAllBe(link => link.Route != null));
+    }
+
+    [Fact]
+    public void From_companyEntered_marksNoModuleSkipped()
+    {
+        MapView.From(Full, Full.Run()).Modules.Any(node => node.Skipped).ShouldBeFalse();
+    }
+
     [Fact]
     public void From_everyLever_routesEveryLinkOfTheRun()
     {

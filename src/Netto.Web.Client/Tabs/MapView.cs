@@ -8,7 +8,8 @@ namespace Netto.Web.Client.Tabs;
 // its slot (MapLayout), the four buckets of the bar whatever the plan holds, and the links between them,
 // each a line a card already shows (MapLinks), with its route. It only selects and regroups the cards' own
 // figures; nothing here decides a tax outcome. While the engine refuses an amount the map has no link, as
-// the bar has no figure, and the module holding the refused field is marked (RiverErrors.Owner). A filter
+// the bar has no figure, and the module holding the refused field is marked (RiverErrors.Owner); a Company
+// year the viewer skipped stays on the map, marked skipped, with no link. A filter
 // shows some links and hides the others as `view with { Links = shown, Hidden = hidden }`: the modules
 // and the routes are the run's, so nothing moves. Units is the map's height in chain rows, which the
 // stylesheet makes its height of.
@@ -41,7 +42,11 @@ internal sealed record MapView(IReadOnlyList<MapNode> Modules, IReadOnlyList<Map
             [.. MapLinks.Of(inputs, run), .. run.Year is { } year ? MapConditions.From(YearConditions.Of(year), modules) : []];
 
         return new MapView(
-            [.. modules.Select(module => new MapNode(MapEnd.Of(module), grid.Slot(MapEnd.Of(module))) { Refused = module == refused })],
+            [.. modules.Select(module => new MapNode(MapEnd.Of(module), grid.Slot(MapEnd.Of(module)))
+            {
+                Refused = module == refused,
+                Skipped = module == RiverModule.CompanyYear && inputs.Company is null,
+            })],
             [.. BucketsView.Keys.Select(key => new MapNode(MapEnd.InBucket(key), grid.Slot(MapEnd.InBucket(key))))],
             grid.Units)
         {
@@ -53,11 +58,12 @@ internal sealed record MapView(IReadOnlyList<MapNode> Modules, IReadOnlyList<Map
 
     // The modules the map draws, in the river's order: the cards the river draws with figures, an
     // optional module only while it is in the plan, as the Plan page draws them (Pages/Plan); with the
-    // company skipped, the cards before the pay and the company's are drawn waiting for its year, and the
-    // map starts at Director pay. Cheap: it reads the inputs alone, so the page can clear a choice of a
-    // module that left the map without running anything.
+    // company skipped, the cards before the pay and the company's are drawn waiting for its year and the map
+    // leaves them out, but Company year stays, drawn skipped, so that it can be chosen to enter its year
+    // again, and the map starts at Director pay. Cheap: it reads the inputs alone, so the page can clear a
+    // choice of a module that left the map without running anything.
     public static IReadOnlyList<RiverModule> ModulesOf(RiverInputs inputs) => inputs.Company is null
-        ? [RiverModule.DirectorPay]
+        ? [RiverModule.CompanyYear, RiverModule.DirectorPay]
         : [.. MapModules.Order.Where(module => RiverModules.Lever(module) is not { } lever || inputs.InPlan(lever))];
 
     // A module's links the map shows: what comes into it and what goes out.
@@ -99,10 +105,13 @@ internal sealed record MapView(IReadOnlyList<MapNode> Modules, IReadOnlyList<Map
     }
 }
 
-// A module or a bucket of the map in its box; the module holding a refused field is marked.
+// A module or a bucket of the map in its box; the module holding a refused field is marked, and so is a
+// Company year the viewer skipped.
 internal sealed record MapNode(MapEnd End, MapSlot Slot)
 {
     public bool Refused { get; init; }
+
+    public bool Skipped { get; init; }
 }
 
 // One line of the map: the links of one route, one after the other in its words.

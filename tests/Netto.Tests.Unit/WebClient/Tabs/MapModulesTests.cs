@@ -7,9 +7,10 @@ using Shouldly;
 namespace Netto.Tests.WebClient.Tabs;
 
 // The modules the map draws: the cards the river draws with figures, in the river's order, an optional
-// module only while it is in the plan, and with the company skipped Director pay alone, the river
-// starting at the pay. A card the river gains without a place on the map fails here, as one without a
-// place in the outline does (OutlineRows.Order).
+// module only while it is in the plan, and with the company skipped Company year, drawn skipped, and Director
+// pay, the river starting at the pay: the cards that only wait for the company's year are left out. A card
+// the river gains without a place on the map fails here, as one without a place in the outline does
+// (OutlineRows.Order).
 public class MapModulesTests
 {
     // Every one of the 32 compositions of the plan's optional modules, by the bits of a number.
@@ -58,15 +59,16 @@ public class MapModulesTests
 
     [Theory]
     [MemberData(nameof(Compositions))]
-    public void ModulesOf_companySkipped_isDirectorPayAlone(int bits)
+    public void ModulesOf_companySkipped_isCompanyYearAndDirectorPay(int bits)
     {
         var river = (RiverInputs.Example with { Composition = Composition(bits) }).SkipCompany();
 
-        MapView.ModulesOf(river).ShouldBe([RiverModule.DirectorPay]);
+        MapView.ModulesOf(river).ShouldBe([RiverModule.CompanyYear, RiverModule.DirectorPay]);
     }
 
     // The river's cards as the Plan page draws them, all open, against the map's: a card drawn dashed,
-    // skipped or waiting for the company's year, holds no figure, and the map leaves it out.
+    // skipped or waiting for the company's year, holds no figure, and the map leaves it out, but for the
+    // skipped Company year, which stays on the map, drawn skipped, so that it can be entered again.
     [Theory]
     [InlineData(false, false)]
     [InlineData(true, false)]
@@ -80,7 +82,7 @@ public class MapModulesTests
 
         var withFigures = Regex.Matches(html, @"<section id=""card-([a-z-]+)"" class=""module-card\s*(module-card--skipped)?\s*""")
             .Where(card => !card.Groups[2].Success).Select(card => card.Groups[1].Value);
-        withFigures.ShouldBe(MapView.ModulesOf(river).Select(MapModules.Name));
+        withFigures.ShouldBe(MapView.ModulesOf(river).Where(module => !(companySkipped && module == RiverModule.CompanyYear)).Select(MapModules.Name));
     }
 
     internal static PlanComposition Composition(int bits) =>

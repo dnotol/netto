@@ -239,6 +239,13 @@
     box-shadow: inset 0 0 0 1px var(--netto-gold);
 }
 
+/* A Company year the viewer skipped: an outline, not a filled box, as the river draws its skipped card
+   (River/ModuleCard), and said in words. */
+.map-module--skipped {
+    border-style: dashed;
+    background: transparent;
+}
+
 /* The module holding a refused field: dashed, and said in words. */
 .map-module--refused {
     border-style: dashed;

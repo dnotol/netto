@@ -162,22 +162,44 @@ public class MapTabTests
         (head < filter, filter < map, map < words, words < panel).ShouldBe((true, true, true, true));
     }
 
-    // Company year skipped: the map starts at Director pay, over the buckets.
+    // Company year skipped: it stays on the map, drawn dashed and said skipped in words, so that it can be
+    // chosen to enter its year again; the cards that only wait for it are not there, and Director pay is.
     [Fact]
-    public async Task Tab_companySkipped_drawsDirectorPayAlone()
+    public async Task Tab_companySkipped_drawsCompanyYearSkippedAndDirectorPay()
     {
         var html = await RenderTabAsync(Full.SkipCompany());
 
-        Buttons(html).Select(button => button.Module).ShouldBe(["director-pay"]);
+        Buttons(html).Select(button => (button.Module, button.Name, button.Skipped)).ShouldBe(
+            [("company-year", "Company year skipped", true), ("director-pay", "Director pay", false)]);
+    }
+
+    // A skipped Company year chosen: its card goes beside the map, its box is marked chosen, and the list of
+    // its links says no money moves through it.
+    [Fact]
+    public async Task Tab_companySkippedAndCompanyYearChosen_listsNoLinkAndHasItsSkippedCard()
+    {
+        var html = await RenderTabAsync(Full.SkipCompany(), RiverModule.CompanyYear);
+
+        (Heading(html), Note(html), Words(html).Count, html.Contains("module-card--skipped"), Buttons(html).Single(button => button.Pressed == "true").Module)
+            .ShouldBe(("Links of Company year", "No money moves through it in this plan.", 0, true, "company-year"));
+    }
+
+    // Entered, Company year is a box like the others.
+    [Fact]
+    public async Task Tab_companyEntered_drawsNoModuleSkipped()
+    {
+        var html = await RenderTabAsync(Full);
+
+        Buttons(html).Any(button => button.Skipped).ShouldBeFalse();
     }
 
     // Each button: the module it is, its name as a screen reader hears it, its pressed state, and whether
     // it is marked refused.
-    private static List<(string Module, string Name, string Pressed, bool Refused)> Buttons(string html) =>
+    private static List<(string Module, string Name, string Pressed, bool Refused, bool Skipped)> Buttons(string html) =>
     [
         .. Regex.Matches(html, "<button type=\"button\" class=\"(map-module[^\"]*)\"[^>]*aria-pressed=\"(\\w+)\"[^>]*data-module=\"([a-z-]+)\"[^>]*>(.*?)</button>", RegexOptions.Singleline)
             .Select(match => (match.Groups[3].Value, Regex.Replace(Regex.Replace(match.Groups[4].Value, "<[^>]*>", " "), "\\s+", " ").Trim(), match.Groups[2].Value,
-                match.Groups[1].Value.Contains("map-module--refused", StringComparison.Ordinal))),
+                match.Groups[1].Value.Contains("map-module--refused", StringComparison.Ordinal), match.Groups[1].Value.Contains("map-module--skipped", StringComparison.Ordinal))),
     ];
 
     // Each line: its kind, its dash and its width.

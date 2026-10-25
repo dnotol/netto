@@ -6,8 +6,8 @@ namespace Netto.Web.Client.Tabs;
 // levers in the plan and the split one under the other down the middle, then the director's stream on the
 // left (Copyright royalty over Director pay) and the company's on the right (Corporate tax over Dividend),
 // and the bar's four buckets along the bottom. A row holds what is in it and closes up when it holds
-// nothing, so a lever out of the plan leaves no gap, and with the company skipped the map is Director pay
-// over the buckets. The shape is fixed, so every link has its own route, worked out once from the slots
+// nothing, so a lever out of the plan leaves no gap, and with the company skipped the map is Company year,
+// which no link joins, over Director pay and the buckets. The shape is fixed, so every link has its own route, worked out once from the slots
 // and every link of the run, never from the links a filter shows, so hiding a kind of link moves nothing.
 //
 // A route is orthogonal and runs only through room no box holds: the gap between two rows, a lane down

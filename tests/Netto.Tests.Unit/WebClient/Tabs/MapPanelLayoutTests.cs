@@ -3,10 +3,10 @@ using Shouldly;
 
 namespace Netto.Tests.WebClient.Tabs;
 
-// The layout that keeps the Map tab's map in view beside the card of the module chosen. How it looks in a
-// window is the browser's check; these hold what it rests on: from 1,201 px the column of links and card is
-// sticky under the bar and never taller than the window leaves, so a long card scrolls inside it, and below
-// it the column goes under the map as tall as its card.
+// The layout that keeps the Map tab's map in view beside the card of the module chosen, and the look of a
+// skipped Company year's box. How it looks in a window is the browser's check; these hold what it rests on:
+// from 1,201 px the column of links and card is sticky under the bar and never taller than the window leaves,
+// so a long card scrolls inside it, and below it the column goes under the map as tall as its card.
 public class MapPanelLayoutTests
 {
     // From 1,201 px the column is sticky under the bar and never taller than the window leaves, so a long card
@@ -39,9 +39,25 @@ public class MapPanelLayoutTests
             () => narrow.ShouldNotContain("overflow-y"));
     }
 
+    // A Company year the viewer skipped is drawn as the river draws its skipped card: the same outline, not a
+    // filled box.
+    [Fact]
+    public void Module_skipped_isDrawnAsTheRiverDrawsItsSkippedCard()
+    {
+        var card = Rule(Without(File.ReadAllText(RepositoryFile.FindUp("src", "Netto.Web.Client", "River", "ModuleCard.razor.css"))), ".module-card--skipped");
+
+        Rule(Stylesheet(), ".map-module--skipped").ShouldSatisfyAllConditions(
+            () => card.ShouldContain("border-style: dashed"),
+            () => card.ShouldContain("background: transparent"),
+            () => Rule(Stylesheet(), ".map-module--skipped").ShouldContain("border-style: dashed"),
+            () => Rule(Stylesheet(), ".map-module--skipped").ShouldContain("background: transparent"));
+    }
+
     // The stylesheet with its comments left out.
     private static string Stylesheet() =>
-        Regex.Replace(File.ReadAllText(RepositoryFile.FindUp("src", "Netto.Web.Client", "Tabs", "MapTab.razor.css")), @"/\*.*?\*/", "", RegexOptions.Singleline);
+        Without(File.ReadAllText(RepositoryFile.FindUp("src", "Netto.Web.Client", "Tabs", "MapTab.razor.css")));
+
+    private static string Without(string css) => Regex.Replace(css, @"/\*.*?\*/", "", RegexOptions.Singleline);
 
     // A media query's whole block, from its opening brace to the one that closes it.
     private static string MediaBlock(string css, string query)
