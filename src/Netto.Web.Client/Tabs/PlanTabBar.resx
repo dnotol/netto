@@ -18,6 +18,9 @@
   <data name="Tab_Plan" xml:space="preserve">
     <value>Plan</value>
   </data>
+  <data name="Tab_Map" xml:space="preserve">
+    <value>Map</value>
+  </data>
   <data name="Tab_Optimisation" xml:space="preserve">
     <value>Optimisation</value>
   </data>

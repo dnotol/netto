@@ -18,6 +18,12 @@
   <data name="SkipToRiver" xml:space="preserve">
     <value>Skip to the river</value>
   </data>
+  <data name="PageTitle_Map" xml:space="preserve">
+    <value>Map: Netto</value>
+  </data>
+  <data name="SkipToMap" xml:space="preserve">
+    <value>Skip to the map</value>
+  </data>
   <data name="PageTitle_Optimisation" xml:space="preserve">
     <value>Optimisation: Netto</value>
   </data>

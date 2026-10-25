@@ -84,12 +84,13 @@ public class PlanPageTests
         var html = await RenderPlanAsync(new Folds(new BrowserStorage()));
 
         Links(html).Select(link => (link.Href, link.Name)).ShouldBe(
-            [("plan", "Plan"), ("plan/optimisation", "Optimisation"), ("plan/when-to-pay", "When to pay"), ("plan/compare", "Compare plans")]);
+            [("plan", "Plan"), ("plan/map", "Map"), ("plan/optimisation", "Optimisation"), ("plan/when-to-pay", "When to pay"), ("plan/compare", "Compare plans")]);
     }
 
     // The tab the URL names is the one current, whatever the case it is typed in.
     [Theory]
     [InlineData(null, "Plan")]
+    [InlineData("map", "Map")]
     [InlineData("optimisation", "Optimisation")]
     [InlineData("when-to-pay", "When to pay")]
     [InlineData("compare", "Compare plans")]
@@ -104,6 +105,7 @@ public class PlanPageTests
     // Each tab opens on its own head: the page's one h1 is the tab's title.
     [Theory]
     [InlineData(null, "From what your company earns to what reaches you")]
+    [InlineData("map", "How your modules act on each other")]
     [InlineData("optimisation", "Optimisation")]
     [InlineData("when-to-pay", "When to pay")]
     [InlineData("compare", "Compare plans")]
@@ -126,6 +128,7 @@ public class PlanPageTests
     }
 
     [Theory]
+    [InlineData("map", "class=\"map-tab\"")]
     [InlineData("optimisation", "moves__state")]
     [InlineData("when-to-pay", "calendar__table")]
     [InlineData("compare", "Two of your saved plans side by side, layer by layer: the second measured against the first, the plan starred Today unless you pick another.")]
@@ -144,7 +147,7 @@ public class PlanPageTests
         var folds = new Folds(new BrowserStorage());
 
         var buckets = new List<string>();
-        foreach (var tab in new[] { null, "optimisation", "when-to-pay", "compare" })
+        foreach (var tab in new[] { null, "map", "optimisation", "when-to-pay", "compare" })
             buckets.Add(Buckets(await RenderPlanAsync(folds, tab, river)));
 
         var pocket = BucketsView.From(river.Run())!.Buckets.Single(bucket => bucket.Key == "pocket").Amount;

@@ -16,6 +16,7 @@ public class PlanTextTests
     // The keyboard's first stop on the page, past the bar and its tabs to the tab's own content.
     [Theory]
     [InlineData(PlanTab.Plan, "Skip to the river")]
+    [InlineData(PlanTab.Map, "Skip to the map")]
     [InlineData(PlanTab.Optimisation, "Skip to your moves")]
     [InlineData(PlanTab.WhenToPay, "Skip to the payments")]
     [InlineData(PlanTab.Compare, "Skip to the comparison")]
@@ -27,6 +28,7 @@ public class PlanTextTests
     // The window's title names the tab, as a new page would.
     [Theory]
     [InlineData(PlanTab.Plan, "Your year: Netto")]
+    [InlineData(PlanTab.Map, "Map: Netto")]
     [InlineData(PlanTab.Optimisation, "Optimisation: Netto")]
     [InlineData(PlanTab.WhenToPay, "When to pay: Netto")]
     [InlineData(PlanTab.Compare, "Compare plans: Netto")]

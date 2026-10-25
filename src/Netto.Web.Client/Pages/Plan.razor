@@ -60,6 +60,9 @@
         <MudContainer MaxWidth="MaxWidth.Large">
             @switch (_tab)
             {
+                case PlanTab.Map:
+                    <MapTab />
+                    break;
                 case PlanTab.Optimisation:
                     <OptimisationTab From="_moves.Baseline" Searching="_moves.Searching(Today)" Found="_moves.Found(Today)" Inputs="_inputs" InputsChanged="OnInputsChanged" Search="_search" />
                     break;

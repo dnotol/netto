@@ -18,7 +18,7 @@ public class PlanTabBarTextTests
     [Fact]
     public void PlanTabBarResx_everyTab_hasItsName()
     {
-        PlanTabRoutes.Order.Select(tab => Resources.Get(PlanTabBarText.Name(tab))).ShouldBe(["Plan", "Optimisation", "When to pay", "Compare plans"]);
+        PlanTabRoutes.Order.Select(tab => Resources.Get(PlanTabBarText.Name(tab))).ShouldBe(["Plan", "Map", "Optimisation", "When to pay", "Compare plans"]);
     }
 
     // A badge shows short (+€3,054.18, 21 Dec, an icon) and a screen reader hears it in full, after the

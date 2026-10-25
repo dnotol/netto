@@ -12,6 +12,7 @@ internal static class PlanText
     public static string SkipTo(PlanTab tab) => tab switch
     {
         PlanTab.Plan => "SkipToRiver",
+        PlanTab.Map => "SkipToMap",
         PlanTab.Optimisation => "SkipToMoves",
         PlanTab.WhenToPay => "SkipToPayments",
         PlanTab.Compare => "SkipToComparison",

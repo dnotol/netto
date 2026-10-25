@@ -1,11 +1,13 @@
 namespace Netto.Web.Client.Tabs;
 
-// The plan page's tabs, by purpose, under the bar of buckets: the river, the moves Netto proposes from
-// the plan starred « Today » or from the plan in the river while none is, when the plan's payments fall,
-// and the saved plans side by side. Public because the tab bar, a component, takes one as a parameter.
+// The plan page's tabs, by purpose, under the bar of buckets: the river, the map of its modules and the
+// money between them, the moves Netto proposes from the plan starred « Today » or from the plan in the
+// river while none is, when the plan's payments fall, and the saved plans side by side. Public because
+// the tab bar, a component, takes one as a parameter.
 public enum PlanTab
 {
     Plan,
+    Map,
     Optimisation,
     WhenToPay,
     Compare,
@@ -17,7 +19,7 @@ public enum PlanTab
 internal static class PlanTabRoutes
 {
     // The order the tab bar shows them in.
-    public static IReadOnlyList<PlanTab> Order { get; } = [PlanTab.Plan, PlanTab.Optimisation, PlanTab.WhenToPay, PlanTab.Compare];
+    public static IReadOnlyList<PlanTab> Order { get; } = [PlanTab.Plan, PlanTab.Map, PlanTab.Optimisation, PlanTab.WhenToPay, PlanTab.Compare];
 
     // The tab's address from the page's base (<base href="/">), as a link writes it.
     public static string Href(PlanTab tab) => Segment(tab) is { } segment ? $"plan/{segment}" : "plan";
@@ -31,6 +33,7 @@ internal static class PlanTabRoutes
     private static string? Segment(PlanTab tab) => tab switch
     {
         PlanTab.Plan => null,
+        PlanTab.Map => "map",
         PlanTab.Optimisation => "optimisation",
         PlanTab.WhenToPay => "when-to-pay",
         PlanTab.Compare => "compare",
