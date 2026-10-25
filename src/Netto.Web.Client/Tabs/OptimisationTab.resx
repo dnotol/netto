@@ -63,6 +63,9 @@
   <data name="Applied" xml:space="preserve">
     <value>In the river</value>
   </data>
+  <data name="BestPay" xml:space="preserve">
+    <value>For your river as it stands, the best pay is {0}, not this one.</value>
+  </data>
   <data name="Total" xml:space="preserve">
     <value>Together: {0} more than Today.</value>
   </data>
