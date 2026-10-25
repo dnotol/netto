@@ -8,7 +8,7 @@ namespace Netto.Tests.WebClient.Pages;
 // river no longer draws it, a lever taken out of the plan.
 public class PlanMapChoiceTests
 {
-    private static readonly RiverInputs WithACar = RiverInputs.Example.AddToPlan(OptionalModule.Car)
+    internal static readonly RiverInputs WithACar = RiverInputs.Example.AddToPlan(OptionalModule.Car)
         .WithCatalogueValue(50_000m).WithFirstRegistration(new DateOnly(2026, 1, 10)).WithCarCosts(8_000m);
 
     [Fact]

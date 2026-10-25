@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
+using MudBlazor;
 using MudBlazor.Services;
 using Netto.Web.Client;
 using Netto.Web.Client.Pages;
@@ -40,6 +41,10 @@ internal sealed class LivePlan : IAsyncDisposable
 
     // What the page asked the script, each call by its name and its text arguments, in order.
     public IReadOnlyList<string> Calls => _script.Calls;
+
+    // How many times the page has asked the script to put the focus somewhere, any element: a test reads the
+    // difference a click makes, since the script's own landing is the browser check's.
+    public int Focuses => _script.Calls.Count(call => call.Contains("focus", StringComparison.OrdinalIgnoreCase));
 
     // What failed in the page's work, during a render or after it.
     public IReadOnlyList<Exception> Errors => _renderer.Errors;
@@ -98,6 +103,13 @@ internal sealed class LivePlan : IAsyncDisposable
         await drawn.WaitAsync(TimeSpan.FromSeconds(30));
         await _renderer.Dispatcher.InvokeAsync(() => { });
         await _loading;
+    }
+
+    // The viewer presses the one button the page draws that the test picks out, as the browser's click does.
+    public async Task ClickAsync(Func<MudButton, bool> which)
+    {
+        var button = (await FindAllAsync<MudButton>()).Single(which);
+        await InvokeAsync(() => button.OnClick.InvokeAsync(new MouseEventArgs()));
     }
 
     // The first component of that type the page draws, as it now stands.

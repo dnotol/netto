@@ -15,8 +15,8 @@ namespace Netto.Tests.WebClient.Pages;
 // page's components hand each other; where the focus lands and how the layout looks is the browser check's.
 public class PlanMapPanelTests
 {
-    private static readonly RiverInputs WithACar = RiverInputs.Example.AddToPlan(OptionalModule.Car)
-        .WithCatalogueValue(50_000m).WithFirstRegistration(new DateOnly(2026, 1, 10)).WithCarCosts(8_000m);
+    // The plan the Map tab's other page tests take, with a company car.
+    private static RiverInputs WithACar => PlanMapChoiceTests.WithACar;
 
     [Fact]
     public async Task Plan_aModuleChosenOnTheMap_opensItsCardBesideIt()
@@ -99,14 +99,14 @@ public class PlanMapPanelTests
         await using var page = await MapAsync(WithACar);
         await ChooseAsync(page, RiverModule.Car);
         var card = (await page.FindAllAsync<ModuleCard>()).Single(card => card.RemoveLabel is not null);
-        var before = Focuses(page);
+        var before = page.Focuses;
 
         await page.InvokeAsync(() => card.OnRemove.InvokeAsync());
 
         var (notice, map, panel, cards) = (await page.FindAsync<TakenOutNotice>(), await page.FindAsync<MapTab>(), await page.FindAsync<MapPanel>(), await page.FindAllAsync<ModuleCard>());
         page.ShouldSatisfyAllConditions(
             () => notice.Module.ShouldBe(OptionalModule.Car),
-            () => Focuses(page).ShouldBe(before + 1),
+            () => page.Focuses.ShouldBe(before + 1),
             () => map.Chosen.ShouldBeNull(),
             () => panel.Module.ShouldBeNull(),
             () => map.Inputs.InPlan(OptionalModule.Car).ShouldBeFalse(),
@@ -123,7 +123,7 @@ public class PlanMapPanelTests
         var card = (await page.FindAllAsync<ModuleCard>()).Single(card => card.RemoveLabel is not null);
         await page.InvokeAsync(() => card.OnRemove.InvokeAsync());
 
-        await ClickAsync(page, button => button.Class == "taken-out__undo");
+        await page.ClickAsync(button => button.Class == "taken-out__undo");
 
         var map = await page.FindAsync<MapTab>();
         (map.Inputs.InPlan(OptionalModule.Car), map.Chosen, (await page.FindAllAsync<ModuleCard>()).Count, page.Errors.Count).ShouldBe((true, (RiverModule?)null, 0, 0));
@@ -135,14 +135,14 @@ public class PlanMapPanelTests
     public async Task Plan_eachModuleChosen_takesTheFocusToItsCardOnce()
     {
         await using var page = await MapAsync(WithACar);
-        var opened = Focuses(page);
+        var opened = page.Focuses;
 
         await ChooseAsync(page, RiverModule.Car);
-        var first = Focuses(page);
+        var first = page.Focuses;
         await ChooseAsync(page, RiverModule.Dividend);
-        var second = Focuses(page);
+        var second = page.Focuses;
         await ChooseAsync(page, null);
-        var letGo = Focuses(page);
+        var letGo = page.Focuses;
 
         (first - opened, second - first, letGo - second, page.Errors.Count).ShouldBe((1, 1, 0, 0));
     }
@@ -153,12 +153,12 @@ public class PlanMapPanelTests
     {
         await using var page = await MapAsync(WithACar);
         await ChooseAsync(page, RiverModule.CompanyYear);
-        var before = Focuses(page);
+        var before = page.Focuses;
         var card = await page.FindAsync<CompanyYearCard>();
 
         await page.InvokeAsync(() => card.InputsChanged.InvokeAsync(card.Inputs.WithRevenue(card.Inputs.Company!.Revenue.Value + 1_000m)));
 
-        Focuses(page).ShouldBe(before);
+        page.Focuses.ShouldBe(before);
     }
 
     // Arriving at the tab with a module already chosen (the page keeps the choice from one tab to the next)
@@ -169,12 +169,12 @@ public class PlanMapPanelTests
         await using var page = await MapAsync(WithACar);
         await ChooseAsync(page, RiverModule.Car);
         await page.SwitchTabAsync("compare");
-        var before = Focuses(page);
+        var before = page.Focuses;
 
         await page.SwitchTabAsync("map");
 
         var (card, panel) = ((await page.FindAllAsync<ModuleCard>()).Count, await page.FindAsync<MapPanel>());
-        (card, panel.Module, Focuses(page) - before, page.Errors.Count).ShouldBe((1, RiverModule.Car, 1, 0));
+        (card, panel.Module, page.Focuses - before, page.Errors.Count).ShouldBe((1, RiverModule.Car, 1, 0));
     }
 
     // Nothing the card does touches the folds the viewer made: nothing is stored by choosing, editing or
@@ -213,9 +213,4 @@ public class PlanMapPanelTests
 
     private static int Focuses(LivePlan page) => page.Calls.Count(call => call.Contains("focus", StringComparison.OrdinalIgnoreCase));
 
-    private static async Task ClickAsync(LivePlan page, Func<MudButton, bool> which)
-    {
-        var button = (await page.FindAllAsync<MudButton>()).Single(which);
-        await page.InvokeAsync(() => button.OnClick.InvokeAsync(new MouseEventArgs()));
-    }
 }

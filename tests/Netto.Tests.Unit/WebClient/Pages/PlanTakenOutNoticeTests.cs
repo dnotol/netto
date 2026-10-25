@@ -42,11 +42,11 @@ public class PlanTakenOutNoticeTests
         await using var page = At(storage);
         await page.LoadAsync();
         await OpenPanelAsync(page);
-        var before = Focuses(page);
+        var before = page.Focuses;
 
         await OpenAsync(page, storage, "Plan 1");
 
-        (Focuses(page) - before, page.Errors.Count).ShouldBe((1, 0));
+        (page.Focuses - before, page.Errors.Count).ShouldBe((1, 0));
     }
 
     // The river shows the plan as saved and has nothing unsaved, and the split's search runs again on it.
@@ -81,9 +81,9 @@ public class PlanTakenOutNoticeTests
         var storage = Saved(RiverInputs.Example, WithAllowances);
         await using var page = At(storage);
         await page.LoadAsync();
-        await ClickAsync(page, Styled("composition__button"));
+        await page.ClickAsync(Styled("composition__button"));
         await TakeOutOfTheMenuAsync(page, OptionalModule.Allowances);
-        await ClickAsync(page, Styled("composition__done"));
+        await page.ClickAsync(Styled("composition__done"));
         (await page.FindAsync<TakenOutNotice>()).Module.ShouldBe(OptionalModule.Allowances);
         await OpenPanelAsync(page);
 
@@ -116,13 +116,13 @@ public class PlanTakenOutNoticeTests
     {
         await using var page = At(Saved(WithVouchers));
         await page.LoadAsync();
-        await ClickAsync(page, Styled("composition__button"));
-        var before = Focuses(page);
+        await page.ClickAsync(Styled("composition__button"));
+        var before = page.Focuses;
 
         await TakeOutOfTheMenuAsync(page, OptionalModule.Vouchers);
 
         var notice = await page.FindAsync<TakenOutNotice>();
-        (notice.Module, Focuses(page) - before, page.Errors.Count).ShouldBe((OptionalModule.Vouchers, 0, 0));
+        (notice.Module, page.Focuses - before, page.Errors.Count).ShouldBe((OptionalModule.Vouchers, 0, 0));
     }
 
     // Undo puts the module back, the notice goes, and the focus goes to the Composition button, just before it.
@@ -131,15 +131,15 @@ public class PlanTakenOutNoticeTests
     {
         await using var page = At(Saved(WithVouchers));
         await page.LoadAsync();
-        await ClickAsync(page, Styled("composition__button"));
+        await page.ClickAsync(Styled("composition__button"));
         await TakeOutOfTheMenuAsync(page, OptionalModule.Vouchers);
-        var before = Focuses(page);
+        var before = page.Focuses;
 
-        await ClickAsync(page, Styled("taken-out__undo"));
+        await page.ClickAsync(Styled("taken-out__undo"));
 
         var notice = await page.FindAsync<TakenOutNotice>();
         var menu = await page.FindAsync<CompositionMenu>();
-        (notice.Module, menu.Inputs.InPlan(OptionalModule.Vouchers), Focuses(page) - before, page.Errors.Count).ShouldBe((null, true, 1, 0));
+        (notice.Module, menu.Inputs.InPlan(OptionalModule.Vouchers), page.Focuses - before, page.Errors.Count).ShouldBe((null, true, 1, 0));
     }
 
     // Taken out from its card, the word that did it is gone with the card, so the focus goes to Undo.
@@ -149,12 +149,12 @@ public class PlanTakenOutNoticeTests
         await using var page = At(Saved(WithVouchers));
         await page.LoadAsync();
         var card = (await page.FindAllAsync<ModuleCard>()).First(card => card.RemoveLabel is not null);
-        var before = Focuses(page);
+        var before = page.Focuses;
 
         await page.InvokeAsync(() => card.OnRemove.InvokeAsync());
 
         var notice = await page.FindAsync<TakenOutNotice>();
-        (notice.Module, Focuses(page) - before, page.Errors.Count).ShouldBe((OptionalModule.Vouchers, 1, 0));
+        (notice.Module, page.Focuses - before, page.Errors.Count).ShouldBe((OptionalModule.Vouchers, 1, 0));
     }
 
     // These plans saved in this order into the browser's storage, named Plan 1, Plan 2…: the first is starred
@@ -193,17 +193,15 @@ public class PlanTakenOutNoticeTests
         return plan?.Inputs ?? throw new InvalidOperationException($"The storage holds no readable plan {name ?? "the river was opened from"}.");
     }
 
-    private static int Focuses(LivePlan page) => page.Calls.Count(call => call.Contains("focus", StringComparison.OrdinalIgnoreCase));
-
-    private static Task OpenPanelAsync(LivePlan page) => ClickAsync(page, Styled("plans__button"));
+    private static Task OpenPanelAsync(LivePlan page) => page.ClickAsync(Styled("plans__button"));
 
     // The viewer opens that plan from the panel, asked first when the river has changes no plan holds, and the
     // river is then on it.
     private static async Task OpenAsync(LivePlan page, BrowserStorage storage, string name, bool confirm = false)
     {
-        await ClickAsync(page, Labelled(ResxText.For<PlansPanel>().Format("OpenLabel", name)));
+        await page.ClickAsync(Labelled(ResxText.For<PlansPanel>().Format("OpenLabel", name)));
         if (confirm)
-            await ClickAsync(page, Styled("plan__yes"));
+            await page.ClickAsync(Styled("plan__yes"));
 
         (await page.FindAsync<PlansPanel>()).Inputs.ShouldBe(Inputs(storage, name), $"{name} should be in the river.");
     }
@@ -212,12 +210,6 @@ public class PlanTakenOutNoticeTests
     {
         var box = (await page.FindAllAsync<MudCheckBox<bool>>())[(int)module];
         await page.InvokeAsync(() => box.ValueChanged.InvokeAsync(false));
-    }
-
-    private static async Task ClickAsync(LivePlan page, Func<MudButton, bool> which)
-    {
-        var button = (await page.FindAllAsync<MudButton>()).Single(which);
-        await page.InvokeAsync(() => button.OnClick.InvokeAsync(new MouseEventArgs()));
     }
 
     private static Func<MudButton, bool> Styled(string @class) => button => button.Class == @class;
