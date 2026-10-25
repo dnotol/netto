@@ -12,19 +12,21 @@
    amount is accepted it stays open, for the field not to vanish under the cursor, until the viewer
    folds it. It has no text of its own: the card gives its title and its summary, and what its module
    is (Help), in an info bubble at the row's end, outside the heading and its button, inside which no
-   other control may sit. *@
+   other control may sit. A pinned fold (Pinned), the card of the module chosen on the Map tab, is always
+   open and is no button: its title and summary are the heading's plain text, the heading takes the focus
+   when the page asks (FocusAsync), and it neither reads nor writes the viewer's fold, nor reveals one. *@
 @if (Level == 3)
 {
     <h3 class="fold__heading fold__heading--line">@Toggle</h3>
 }
 else if (Help is null)
 {
-    <h2 class="fold__heading fold__heading--card">@Toggle</h2>
+    <h2 class="fold__heading fold__heading--card" tabindex="@HeadingTabIndex" @ref="_heading">@Toggle</h2>
 }
 else
 {
     <div class="fold__head">
-        <h2 class="fold__heading fold__heading--card">@Toggle</h2>
+        <h2 class="fold__heading fold__heading--card" tabindex="@HeadingTabIndex" @ref="_heading">@Toggle</h2>
         <InfoBubble Label="@Title">@Help</InfoBubble>
     </div>
 }
@@ -69,28 +71,40 @@ else
     [Parameter]
     public bool Refused { get; set; }
 
+    // Always open and no button, the viewer's folds left alone: the card of the module chosen on the Map
+    // tab, beside its map (PinnedCard).
+    [Parameter]
+    public bool Pinned { get; set; }
+
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
     private readonly string _bodyId = $"fold-{Guid.NewGuid():N}";
+    private ElementReference _heading;
 
     // Folded until the viewer opens it: a card shows its title and its summary, and what a card holds
     // besides its figures, such as its conditions, opens on demand.
-    private bool Open => Folds.IsOpen(Name, openByDefault: false);
+    private bool Open => Pinned || Folds.IsOpen(Name, openByDefault: false);
 
-    // A refusal reveals the fold, so it stays open once the amount is accepted.
+    // A pinned heading is no tab stop and takes the focus when the page puts it there.
+    private string? HeadingTabIndex => Pinned ? "-1" : null;
+
+    // A refusal reveals the fold, so it stays open once the amount is accepted. A pinned fold is open
+    // anyway, and revealing it would open the same card on the Plan tab.
     protected override void OnParametersSet()
     {
-        if (Refused)
+        if (Refused && !Pinned)
             Folds.Reveal(Name);
     }
+
+    // Puts the focus on the heading of a pinned fold, scrolling it into view where the page needs it.
+    public ValueTask FocusAsync() => _heading.FocusAsync();
 
     // The button is disabled while the fold is refused, so it is never pressed then.
     private void Flip() => Folds.Set(Name, !Open);
 
-    private RenderFragment Toggle =>
-        @<button type="button" class="fold__toggle" aria-expanded="@(Open ? "true" : "false")" aria-controls="@_bodyId" disabled="@Refused" @onclick="Flip">
-            <span id="@TitleId" class="fold__title">@Title</span>
+    private RenderFragment Words =>
+        @<text><span id="@TitleId" class="fold__title">@Title</span>
             @if (Summary is not null)
             {
                 @* Razor drops the whitespace between elements: without this space, a screen reader
@@ -104,6 +118,9 @@ else
                     }
                 </span>
             }
-            <MudIcon Icon="@Icons.Material.Rounded.ExpandMore" Class="@(Open ? "fold__chevron fold__chevron--open" : "fold__chevron")" aria-hidden="true" />
-        </button>;
+        </text>;
+
+    private RenderFragment Toggle => Pinned
+        ? @<div class="fold__toggle fold__toggle--pinned">@Words</div>
+        : @<button type="button" class="fold__toggle" aria-expanded="@(Open ? "true" : "false")" aria-controls="@_bodyId" disabled="@Refused" @onclick="Flip">@Words<MudIcon Icon="@Icons.Material.Rounded.ExpandMore" Class="@(Open ? "fold__chevron fold__chevron--open" : "fold__chevron")" aria-hidden="true" /></button>;
 }
