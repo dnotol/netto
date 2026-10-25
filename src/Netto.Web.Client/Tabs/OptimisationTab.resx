@@ -171,8 +171,56 @@
   <data name="Total_Plan" xml:space="preserve">
     <value>Together: {0} more than this plan.</value>
   </data>
-  <data name="RiverChanged" xml:space="preserve">
-    <value>Your river holds changes Today does not, beyond what the moves set: the moves are still found for Today. Save the river and star it as Today to find them for it.</value>
+  <data name="RiverChanged_One" xml:space="preserve">
+    <value>Your river differs from Today in {0}, beyond what the moves set: the moves are still found for Today. Save the river and star it as Today to find them for it.</value>
+  </data>
+  <data name="RiverChanged_Two" xml:space="preserve">
+    <value>Your river differs from Today in {0} and {1}, beyond what the moves set: the moves are still found for Today. Save the river and star it as Today to find them for it.</value>
+  </data>
+  <data name="RiverChanged_Three" xml:space="preserve">
+    <value>Your river differs from Today in {0}, {1} and {2}, beyond what the moves set: the moves are still found for Today. Save the river and star it as Today to find them for it.</value>
+  </data>
+  <data name="RiverChanged_More" xml:space="preserve">
+    <value>Your river differs from Today in {0}, {1} and {2} more, beyond what the moves set: the moves are still found for Today. Save the river and star it as Today to find them for it.</value>
+  </data>
+  <data name="Difference_Changed" xml:space="preserve">
+    <value>{0}</value>
+  </data>
+  <data name="Difference_Added" xml:space="preserve">
+    <value>{0} (not in Today)</value>
+  </data>
+  <data name="Difference_LeftOut" xml:space="preserve">
+    <value>{0} (not in your river)</value>
+  </data>
+  <data name="Module_River" xml:space="preserve">
+    <value>Income year</value>
+  </data>
+  <data name="Module_CompanyYear" xml:space="preserve">
+    <value>Company year</value>
+  </data>
+  <data name="Module_Vouchers" xml:space="preserve">
+    <value>Vouchers</value>
+  </data>
+  <data name="Module_Allowances" xml:space="preserve">
+    <value>Expense allowances</value>
+  </data>
+  <data name="Module_Rent" xml:space="preserve">
+    <value>Home office rent</value>
+  </data>
+  <data name="Module_Car" xml:space="preserve">
+    <value>Company car</value>
+  </data>
+  <data name="Module_Copyright" xml:space="preserve">
+    <value>Copyright royalty</value>
+  </data>
+  <data name="Module_DirectorPay" xml:space="preserve">
+    <value>Director pay</value>
+  </data>
+  <data name="Module_CorporateTax" xml:space="preserve">
+    <value>Corporate tax</value>
+  </data>
+  <data name="Module_Dividend" xml:space="preserve">
+    <value>Dividend</value>
   </data>
   <data name="RiverChanged_Plan" xml:space="preserve">
     <value>The river has changed since you opened or saved this plan: save it to measure the moves from it.</value>

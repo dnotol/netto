@@ -221,6 +221,7 @@ public class OptimisationTabTests
         { "Today starting at the pay", MovesBaseline.Today(RiverInputs.Example.SkipCompany()), RiverInputs.Example },
         { "Today refused", MovesBaseline.Today(RiverInputs.Example.WithReserve(-1m)), RiverInputs.Example },
         { "the plan in the river, changed since", new MovesBaseline(RiverInputs.Example, IsToday: false), RiverInputs.Example.WithDirectorPay(40_000m) },
+        { "Today, the river holding other facts", MovesBaseline.Today(RiverInputs.Example), RiverInputs.Example.WithRevenue(168_000m) },
     };
 
     // The tab announces nothing: no live region, no status, no alert.
@@ -362,6 +363,74 @@ public class OptimisationTabTests
             "From the plan in your river, as you opened or saved it:",
             "The river has changed since you opened or saved this plan: save it to measure the moves from it.",
         ]);
+    }
+
+    // The note under the first line, the paragraphs that say which plan the moves are from and how the river
+    // differs, in the order the tab draws them.
+    private static IReadOnlyList<string> StateParagraphs(string html) =>
+        [.. Regex.Matches(html, "<p class=\"moves__state\"[^>]*>(.*?)</p>").Select(match => match.Groups[1].Value)];
+
+    // Found in the browser on 2026-10-25: Today saved with no lever, then a royalty that follows the pay at
+    // 80% added to the river. The split searched the river and the tab Today, and nothing said why; the tab
+    // now names the card, and that Today holds no such lever.
+    [Fact]
+    public async Task Optimisation_fromTodayWithARoyaltyAddedToTheRiver_namesTheRoyaltyAsNotInToday()
+    {
+        var today = RiverInputs.Example.WithRevenue(168_000m).WithRunningCosts(20_000m);
+
+        var html = await RenderTabAsync(today, today.WithCreativeShare(0.8m).AddToPlan(OptionalModule.Copyright));
+
+        StateParagraphs(html).ShouldBe([
+            "From Today, your current setup:",
+            "Your river differs from Today in Copyright royalty (not in Today), beyond what the moves set: "
+            + "the moves are still found for Today. Save the river and star it as Today to find them for it.",
+        ]);
+    }
+
+    // Each card whose facts differ is named, in the river's order, three names at most and then how many are
+    // left; a lever Today holds that the river does not says so too.
+    [Fact]
+    public async Task Optimisation_fromTodayWithFourCardsDifferent_namesTwoAndCountsTheRest()
+    {
+        var river = RiverInputs.Example.WithRevenue(168_000m).WithMealVoucherDays(200).AddToPlan(OptionalModule.Vouchers)
+            .WithCadastralIncome(1_200m).WithReserve(1_000m);
+
+        var html = await RenderTabAsync(RiverInputs.Example, river);
+
+        StateParagraphs(html)[1].ShouldBe("Your river differs from Today in Company year, Vouchers (not in Today) and 2 more, beyond what the moves set: "
+            + "the moves are still found for Today. Save the river and star it as Today to find them for it.");
+    }
+
+    [Fact]
+    public async Task Optimisation_fromTodayWithALeverTheRiverTookOut_namesItAsNotInTheRiver()
+    {
+        var today = RiverInputs.Example.WithMealVoucherDays(200).AddToPlan(OptionalModule.Vouchers);
+
+        var html = await RenderTabAsync(today, today.TakeOutOfPlan(OptionalModule.Vouchers));
+
+        StateParagraphs(html)[1].ShouldStartWith("Your river differs from Today in Vouchers (not in your river), beyond what the moves set: ");
+    }
+
+    // What the moves set is the river's to move: it says nothing, the pay, a payment and a lever's amount
+    // among them, nor does the river as Today; and no resource key reaches the page for want of a text.
+    [Fact]
+    public async Task Optimisation_fromTodayRiverMovedByWhatTheMovesSet_saysNothingOfADifference()
+    {
+        var river = RiverInputs.Example.WithDirectorPay(40_000m).WithAdvancePayment(3, 5_000m).WithEcoVouchers(250m).AddToPlan(OptionalModule.Vouchers);
+
+        var html = await RenderTabAsync(RiverInputs.Example, river);
+
+        StateParagraphs(html).ShouldBe(["From Today, your current setup:"]);
+        Regex.IsMatch(html, "RiverChanged_|Module_|Difference_").ShouldBeFalse();
+    }
+
+    // A river that names a card leaks no key, whichever the number of cards.
+    [Fact]
+    public async Task Optimisation_fromTodayWithCardsDifferent_leaksNoResourceKey()
+    {
+        var html = await RenderTabAsync(RiverInputs.Example, RiverInputs.Example.WithRevenue(168_000m).WithReserve(1_000m));
+
+        (Regex.IsMatch(html, "RiverChanged_|Module_|Difference_"), StateParagraphs(html)[1].Contains("Company year and Dividend", StringComparison.Ordinal)).ShouldBe((false, true));
     }
 
     // The tab draws the moves the page found for the plan they are from, whatever the river holds since: a

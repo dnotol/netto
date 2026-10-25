@@ -31,8 +31,38 @@ internal static class OptimisationTabText
     public static string Total(MovesBaseline from) => $"Total{Plan(from)}";
 
     // That the river holds what the plan the moves are still from does not (MovesView.RiverChanged): from
-    // Today, what no move sets; from the plan in the river, any change since it was opened or saved.
-    public static string RiverChanged(MovesBaseline from) => $"RiverChanged{Plan(from)}";
+    // the plan in the river, any change since it was opened or saved, one text; from Today, the cards whose
+    // facts differ, a text for each number of names it holds (« in {0} », « in {0} and {1} », « in {0}, {1}
+    // and {2} », « in {0}, {1} and {2} more »), since no word joining them is typed here. At least one
+    // difference, or there is no note to word.
+    public static string RiverChanged(MovesBaseline from, int differences) => from.IsToday ? $"RiverChanged_{Names(differences)}" : "RiverChanged_Plan";
+
+    private static string Names(int differences) => differences switch
+    {
+        < 1 => throw new ArgumentOutOfRangeException(nameof(differences), differences, "A note on a river that holds what Today does not names a card."),
+        1 => "One",
+        2 => "Two",
+        3 => "Three",
+        _ => "More",
+    };
+
+    // The differences the note names: all of them up to three, else the first two, the text counting the rest.
+    public static IReadOnlyList<RiverDifference> Shown(IReadOnlyList<RiverDifference> differences) =>
+        differences.Count <= MostNamed ? differences : [.. differences.Take(MostNamed - 1)];
+
+    private const int MostNamed = 3;
+
+    // What fills the note: the names it shows, each worded (Module, Difference), and with « and {2} more »
+    // how many differences it leaves unnamed.
+    public static object[] RiverChangedArguments(IReadOnlyList<string> names, int differences) =>
+        differences <= MostNamed ? [.. names] : [.. names, differences - names.Count];
+
+    // A card's name in the note, the title it draws: « Company year », « Copyright royalty ».
+    public static string Module(RiverModule module) => $"Module_{module}";
+
+    // A card's name with whether the river or Today holds the lever the other does not: « {0} »,
+    // « {0} (not in Today) », « {0} (not in your river) ».
+    public static string Difference(RiverDifferenceKind kind) => $"Difference_{kind}";
 
     // What the move changes, in words: « Pay yourself {0} instead of {1} ».
     public static string Move(Move move) => move switch

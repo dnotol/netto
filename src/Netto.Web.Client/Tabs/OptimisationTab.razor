@@ -9,8 +9,10 @@
    plan starred « Today », the user's current setup, or while none is, from the plan in the river as it
    was opened or saved (MovesBaseline), which the head and the first line say, naming it when it is a
    saved plan; a change of the river since then is not counted, which a note under the first line says
-   while the river differs from that plan, or from Today while it holds what no move sets (MovesView.RiverChanged),
-   since the river moves away from Today by the moves by design. One page of moves from that plan: first what it leaves in the
+   while the river differs from that plan, or from Today while it holds what no move sets (MovesView.Differences),
+   since the river moves away from Today by the moves by design: it names the cards whose facts differ, three at
+   most and then how many more (RiverDifferences, worded by OptimisationTabText), and a lever one holds and the other
+   does not. One page of moves from that plan: first what it leaves in the
    pocket, what it leaves with every move and the difference; then the engine's moves (MoveSearch, through
    MovesView), in the order it took them, each numbered for the eye (the list says its place to a screen
    reader), with why it helps (MoveReasons, the engine's figures before and after it), what it adds on top
@@ -62,9 +64,9 @@
         <p class="moves__objective"><ObjectiveNote /></p>
     }
     <p class="moves__state">@L[OptimisationTabText.State(_view.State, _view.From), Name]</p>
-    @if (_view.RiverChanged(Inputs))
+    @if (_differences is not null)
     {
-        <p class="moves__state">@L[OptimisationTabText.RiverChanged(_view.From)]</p>
+        <p class="moves__state">@RiverNote(_differences)</p>
     }
     @if (_view.State == MovesState.Moves)
     {
@@ -142,11 +144,29 @@
     public SplitSearchResult? Search { get; set; }
 
     private MovesView _view = default!;
+    private IReadOnlyList<RiverDifference>? _differences;
     private readonly Dictionary<int, ElementReference> _applied = [];
     private int? _focusApplied;
 
-    // The view of what was found, or that the moves are being looked for, which searches nothing.
-    protected override void OnParametersSet() => _view = Searching ? MovesView.Searching(From) : MovesView.Of(From, Found);
+    // The view of what was found, or that the moves are being looked for, which searches nothing; and what
+    // the river holds that the plan the moves are from does not, read once here since it runs the search's
+    // scenario of both.
+    protected override void OnParametersSet()
+    {
+        _view = Searching ? MovesView.Searching(From) : MovesView.Of(From, Found);
+        _differences = _view.Differences(Inputs);
+    }
+
+    // The note on a river that holds what the plan the moves are from does not: the cards that differ, three
+    // at most, or the one text of the plan in the river, which names none (OptimisationTabText).
+    private string RiverNote(IReadOnlyList<RiverDifference> differences) =>
+        L[OptimisationTabText.RiverChanged(_view.From, differences.Count),
+            OptimisationTabText.RiverChangedArguments([.. OptimisationTabText.Shown(differences).Select(Named)], differences.Count)];
+
+    // A card whose facts differ, named as the note words it: its title, with whether the river or Today
+    // holds the lever the other does not (OptimisationTabText).
+    private string Named(RiverDifference difference) =>
+        L[OptimisationTabText.Difference(difference.Kind), L[OptimisationTabText.Module(difference.Module)].Value].Value;
 
     // The saved plan the moves are from, named in the texts that name it.
     private string Name => _view.From.Name ?? "";
