@@ -21,7 +21,9 @@
             <div class="site-header__end">
                 @* The section links exist only on the front page (/about), where they are same-page links
                    Blazor scrolls to. Arriving from another page, Blazor resets the scroll to the top once
-                   the new page has rendered (blazor.web.js), undoing any scroll towards the section. *@
+                   the new page has rendered (blazor.web.js), undoing any scroll towards the section. The
+                   way into the planner is there too: on the app's own pages it would link to where the
+                   viewer already is, and the front page is reached from the footer. *@
                 @if (OnFrontPage)
                 {
                     <nav class="site-nav" aria-label="@L["NavLabel"]">
@@ -29,10 +31,10 @@
                         <a href="@FrontPage.Href("how-it-works")">@L["NavHowItWorks"]</a>
                         <a href="@FrontPage.Href("principles")">@L["NavPrinciples"]</a>
                     </nav>
+                    <MudButton Href="/plan" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small">
+                        @L["NavStart"]
+                    </MudButton>
                 }
-                <MudButton Href="/plan" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small">
-                    @L["NavStart"]
-                </MudButton>
                 @* Named by what it does, so its name changes with the theme rather than a pressed state. *@
                 <MudIconButton Icon="@(ThemePreference.IsDark ? Icons.Material.Rounded.LightMode : Icons.Material.Rounded.DarkMode)"
                                Size="Size.Small" Class="site-header__theme" OnClick="ThemePreference.Switch"
@@ -49,6 +51,8 @@
         <MudContainer MaxWidth="MaxWidth.Large" Class="site-footer__inner">
             <span class="wordmark site-footer__wordmark">Netto</span>
             <p class="site-footer__note">@L["FooterDisclaimer"]</p>
+            @* The one link to the front page from the app, on every page and at every width. *@
+            <a href="/@FrontPage.Path" class="site-footer__about">@L["FooterAbout"]</a>
         </MudContainer>
     </footer>
 </div>

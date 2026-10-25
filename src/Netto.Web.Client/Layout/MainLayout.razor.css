@@ -28,8 +28,8 @@
     margin-left: auto;
 }
 
-/* The theme switch, close beside « Start your plan »: muted at rest, gold while hovered or focused,
-   an active state. */
+/* The theme switch, close beside « Start your plan » where the page has it, alone at the end of the header
+   elsewhere: muted at rest, gold while hovered or focused, an active state. */
 .site-header ::deep .site-header__theme {
     margin-left: -1.25rem;
     color: var(--netto-text-muted);
@@ -87,6 +87,20 @@
     color: var(--netto-text-muted);
     font-size: 0.88rem;
 }
+
+/* The link to the front page, muted like the note beside it, in the text colour while hovered or
+   focused, as the header's section links are. */
+.site-footer__about {
+    color: var(--netto-text-muted);
+    font-size: 0.88rem;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+    .site-footer__about:hover,
+    .site-footer__about:focus-visible {
+        color: var(--netto-text);
+    }
 
 #blazor-error-ui {
     background: var(--netto-surface);

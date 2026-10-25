@@ -30,6 +30,9 @@
   <data name="FooterDisclaimer" xml:space="preserve">
     <value>Netto is a simulator, not tax advice. Confirm your plan with your accountant before you act on it.</value>
   </data>
+  <data name="FooterAbout" xml:space="preserve">
+    <value>About Netto</value>
+  </data>
   <data name="ErrorUnhandled" xml:space="preserve">
     <value>Something went wrong.</value>
   </data>

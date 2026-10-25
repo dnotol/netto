@@ -41,6 +41,39 @@ public class MainLayoutTests
         html.ShouldNotContain("site-nav");
     }
 
+    // « Start your plan » is the way into the planner from the front page. On the plan, and on any page of
+    // the app, it would link to where the viewer already is, so it is drawn with the section links only.
+    [Theory]
+    [InlineData("about", true)]
+    [InlineData("About/", true)]
+    [InlineData("", false)]
+    [InlineData("plan", false)]
+    [InlineData("plan/when-to-pay", false)]
+    [InlineData("not-found", false)]
+    public async Task Header_startYourPlan_isOnlyOnTheFrontPage(string path, bool shown)
+    {
+        var html = await RenderLayoutAsync(path);
+
+        html.Contains("Start your plan", StringComparison.Ordinal).ShouldBe(shown);
+    }
+
+    // The front page has no link in the header on the app's pages, so the footer, on every page and at every
+    // width, is where it is reached from, beside the disclaimer.
+    [Theory]
+    [InlineData("about")]
+    [InlineData("")]
+    [InlineData("plan")]
+    [InlineData("plan/compare")]
+    [InlineData("not-found")]
+    public async Task Footer_everyPage_linksToTheFrontPageBesideTheDisclaimer(string path)
+    {
+        var html = await RenderLayoutAsync(path);
+
+        var footer = Regex.Match(html, "<footer [^>]*>.*?</footer>", RegexOptions.Singleline).Value;
+        (Regex.IsMatch(footer, "<a [^>]*href=\"/about\"[^>]*>About Netto</a>"), footer.Contains("Netto is a simulator, not tax advice.", StringComparison.Ordinal))
+            .ShouldBe((true, true));
+    }
+
     // The wordmark goes to the plan, never to /: a link to / leaves the plan page, which is rebuilt, and
     // forgets what it had found, where /plan from one of its tabs keeps the page.
     [Theory]
