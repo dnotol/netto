@@ -47,14 +47,6 @@
     }
 }
 
-.hero ::deep .hero__badge {
-    margin: 0 0 1.75rem;
-    font-size: 0.7rem;
-    font-weight: 600;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-}
-
 .hero ::deep .hero__title {
     margin-bottom: 1.5rem;
 }
