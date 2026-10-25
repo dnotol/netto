@@ -5,8 +5,11 @@ using Netto.Web.Client.River.CompanyCar;
 
 namespace Netto.Web.Client.Tabs;
 
-// The resource keys MapTab.razor builds, held to MapTab.resx by MapTabTextTests, so a module or a link
-// without its words fails a test instead of showing its key on screen.
+// The resource keys MapTab.razor and the map's links build, held to MapTab.resx by MapTabTextTests, so a
+// module or a link without its words fails a test instead of showing its key on screen. The map words the
+// conditions on the corporate rate apart from the Corporate tax card: the card states the rate's outcome
+// (CorporateTaxCardText.Condition), the map says each test apart, with its own figures, on the link from
+// the module that sets it.
 internal static class MapTabText
 {
     // What Company year hands on: what the company earns before it pays its director anything, as its
