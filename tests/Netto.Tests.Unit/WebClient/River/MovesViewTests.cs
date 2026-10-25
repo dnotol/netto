@@ -340,6 +340,82 @@ public class MovesViewTests
         MovesView.Of(new MovesBaseline(plan, IsToday: false), On22October).RiverChanged(RiverInputs.Example).ShouldBeFalse();
     }
 
+    // From Today, the note names the cards whose facts differ (RiverDifferences), in the river's order.
+    [Fact]
+    public void Differences_fromTodayRiverWithOtherFacts_namesTheCardsInTheRiversOrder()
+    {
+        var river = Furnished.WithReserve(1_000m).WithCreativeShare(0.8m).AddToPlan(OptionalModule.Copyright).WithRevenue(168_000m);
+
+        var differences = MovesView.Of(Furnished, On22October).Differences(river);
+
+        differences.ShouldBe([
+            new RiverDifference(RiverModule.CompanyYear, RiverDifferenceKind.Changed),
+            new RiverDifference(RiverModule.Copyright, RiverDifferenceKind.Added),
+            new RiverDifference(RiverModule.Dividend, RiverDifferenceKind.Changed),
+        ]);
+    }
+
+    // Nothing to name is nothing to say: the river as Today, and the values the moves set.
+    public static TheoryData<string, RiverInputs> RiversWithNothingToName => new()
+    {
+        { "the river as Today", Furnished },
+        { "a river moved by the pay and a payment", Furnished.WithDirectorPay(40_000m).WithAdvancePayment(3, 5_000m) },
+        { "a river with a royalty fixed, a lever a move adds", Furnished.AddToPlan(OptionalModule.Copyright).WithRoyalty(5_000m) },
+    };
+
+    [Theory]
+    [MemberData(nameof(RiversWithNothingToName))]
+    public void Differences_fromTodayRiverWithNothingToName_isNone(string _, RiverInputs river)
+    {
+        MovesView.Of(Furnished, On22October).Differences(river).ShouldBeNull();
+    }
+
+    // The example's revenue typed again is the same figure with another origin: the moves were found for it.
+    [Fact]
+    public void RiverChanged_fromTodayAValueTypedAgainAsTheExamples_isFalse()
+    {
+        var view = MovesView.Of(RiverInputs.Example, On22October);
+        var river = RiverInputs.Example.WithRevenue(120_000m);
+
+        (view.RiverChanged(river), view.Differences(river)).ShouldBe((false, null));
+    }
+
+    // With no moves to compare the river with, there is nothing to say: the page still looks for them, Today
+    // starts at the pay, or an amount of Today is refused.
+    [Fact]
+    public void Differences_noMovesFromToday_isNone()
+    {
+        var views = new[]
+        {
+            MovesView.Searching(MovesBaseline.Today(Furnished)),
+            MovesView.Of(RiverInputs.Example.SkipCompany(), On22October),
+            MovesView.Of(RiverInputs.Example.WithReserve(-1m), On22October),
+        };
+
+        views.Select(view => (view.State, view.Differences(Furnished.WithRevenue(168_000m)))).ShouldBe(
+            [(MovesState.Searching, null), (MovesState.StartsAtPay, null), (MovesState.Refused, null)]);
+    }
+
+    // The plan in the river has no card to name: the river changed since it was opened or saved, in anything,
+    // which the tab says in one text. An empty list says so; none says it did not.
+    [Fact]
+    public void Differences_planInTheRiver_isEmptyOnceTheRiverChangedAndNoneBefore()
+    {
+        var view = MovesView.Of(new MovesBaseline(Furnished, IsToday: false), On22October);
+
+        (view.Differences(Furnished), view.Differences(Furnished.WithDirectorPay(40_000m))?.Count).ShouldBe((null, 0));
+    }
+
+    // The bool is the list's being there, from Today and from the plan in the river alike.
+    [Fact]
+    public void RiverChanged_isTheDifferencesBeingThere()
+    {
+        var rivers = new[] { Furnished, Furnished.WithDirectorPay(40_000m), Furnished.WithRevenue(168_000m), Furnished.WithCreativeShare(0.8m) };
+        var views = new[] { MovesView.Of(Furnished, On22October), MovesView.Of(new MovesBaseline(Furnished, IsToday: false), On22October) };
+
+        views.SelectMany(view => rivers.Select(river => view.RiverChanged(river) == (view.Differences(river) is not null))).ShouldAllBe(same => same);
+    }
+
     // What the pocket holds after each move is Today's with the gains up to it: the last is the plan's.
     [Fact]
     public void InPocketAfter_eachMove_addsTheGainsUpToItToTodaysPocket()

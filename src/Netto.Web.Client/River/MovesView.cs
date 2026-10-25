@@ -53,33 +53,24 @@ internal sealed record MovesView(
     public decimal InPocketAfter(int index) => FromInPocket + Moves.Take(index + 1).Sum(move => move.Gain);
 
     // Whether the river holds what the plan the moves are from does not: said beside the moves, or beside
-    // that plan's being the best already. From the plan in the river, which the moves are from while no
-    // plan is starred Today, any change since it was opened or saved. From Today, the setup the river is
-    // measured against and moves away from by design, only what no move sets: the moves were found for
-    // Today's facts, and a river with other facts (a royalty Today holds no share for, another revenue)
-    // would have others.
-    public bool RiverChanged(RiverInputs river) =>
-        State is MovesState.Moves or MovesState.AlreadyBest
-        && (From.IsToday ? WithWhatTheMovesSet(river, From.Plan) != From.Plan : river != From.Plan);
+    // that plan's being the best already (Differences).
+    public bool RiverChanged(RiverInputs river) => Differences(river) is not null;
 
-    // The river with every value a move sets taken from the plan: the pay, with the royalty the split sets
-    // beside it, its mode and its fixed amount; the company's and the director's advance payments; the eco
-    // and sport/culture vouchers; the rent; and the levers a move adds to the plan, Vouchers, Rent and
-    // Copyright royalty, whose other facts a move takes from the plan as they are. A new kind of move adds
-    // what it sets here.
-    private static RiverInputs WithWhatTheMovesSet(RiverInputs river, RiverInputs plan) => river with
+    // What the river holds that the plan the moves are from does not, none while it holds nothing, or while
+    // there are no moves to compare it with. From the plan in the river, which the moves are from while no
+    // plan is starred Today, any change since it was opened or saved: an empty list, since the tab says it in
+    // one text. From Today, the setup the river is measured against and moves away from by design, only what
+    // no move sets, by the card that holds it (RiverDifferences): the moves were found for Today's facts,
+    // and a river with other facts (a royalty Today holds no share for, another revenue) would have others.
+    public IReadOnlyList<RiverDifference>? Differences(RiverInputs river)
     {
-        DirectorPay = plan.DirectorPay,
-        AdvancePayments = plan.AdvancePayments,
-        TaxPrepayments = river.TaxPrepayments with { Paid = plan.TaxPrepayments.Paid },
-        Vouchers = river.Vouchers with { EcoVouchers = plan.Vouchers.EcoVouchers, SportCultureVouchers = plan.Vouchers.SportCultureVouchers },
-        Rent = river.Rent with { Rent = plan.Rent.Rent },
-        Copyright = river.Copyright with { Royalty = plan.Copyright.Royalty, FollowsPay = plan.Copyright.FollowsPay },
-        Composition = river.Composition
-            .With(OptionalModule.Vouchers, plan.InPlan(OptionalModule.Vouchers))
-            .With(OptionalModule.Rent, plan.InPlan(OptionalModule.Rent))
-            .With(OptionalModule.Copyright, plan.InPlan(OptionalModule.Copyright)),
-    };
+        if (State is not (MovesState.Moves or MovesState.AlreadyBest))
+            return null;
+        if (!From.IsToday)
+            return river != From.Plan ? [] : null;
+
+        return RiverDifferences.Between(river, From.Plan) is { Count: > 0 } differences ? differences : null;
+    }
 
     // Whether the river holds the move's values already: its pay, the payment by the deadline of the plan
     // the moves are from with the move's amount on top, a lever's amount with its module in the plan, or a
