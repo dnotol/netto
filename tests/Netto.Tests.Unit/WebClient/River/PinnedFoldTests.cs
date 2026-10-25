@@ -70,6 +70,18 @@ public class PinnedFoldTests
         (html.Contains(Body), folds.IsOpen("split", openByDefault: false), storage.Get(Folds.StorageKey)).ShouldBe((true, false, null));
     }
 
+    // The pinned heading is a place the page puts the focus, not a control: like the tab's title (app.css), it
+    // draws none of the browser's own ring, which the site's focus ring is not (it is for what is pressed).
+    [Fact]
+    public void Heading_pinnedAndFocused_drawsNoRingOfItsOwn()
+    {
+        var css = Regex.Replace(File.ReadAllText(RepositoryFile.FindUp("src", "Netto.Web.Client", "River", "Fold.razor.css")), @"/\*.*?\*/", "", RegexOptions.Singleline);
+
+        var rule = Regex.Match(css, @"\.fold__heading\[tabindex=""-1""\]:focus\s*\{([^}]*)\}");
+
+        (rule.Success, rule.Groups[1].Value.Contains("outline: none")).ShouldBe((true, true));
+    }
+
     // Unpinned, a fold is what it always was: folded until opened, a toggle to open it.
     [Fact]
     public async Task Fold_notPinned_staysFoldedWithItsToggle()

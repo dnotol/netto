@@ -56,6 +56,12 @@
     cursor: default;
 }
 
+/* Its heading is a place the page puts the focus, as the tab's title is (app.css), not a control: no ring
+   of the browser's own. */
+.fold__heading[tabindex="-1"]:focus {
+    outline: none;
+}
+
 .fold__heading--card .fold__title {
     font-family: "Fraunces", Georgia, serif;
     font-size: 1.25rem;
