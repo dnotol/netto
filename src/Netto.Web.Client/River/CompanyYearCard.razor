@@ -13,7 +13,7 @@
    starts on an example year, which the user replaces or clears. Cleared, the module is skipped and the
    river starts at the pay. No Min or Max on the amounts: MudBlazor would clamp a value silently, and the
    engine's refusal, with its message, is what the user has to see. *@
-<ModuleCard Name="company-year" Title="@L["Title"]" Summary="@Summary" Glance="@Glance" Help="@L["Hint"]" Skipped="Inputs.Company is null" Refused="@Refused"
+<ModuleCard @ref="_card" Name="company-year" Title="@L["Title"]" Summary="@Summary" Glance="@Glance" Help="@L["Hint"]" Skipped="Inputs.Company is null" Refused="@Refused"
             Sources="@_sources" IncomeYear="Inputs.IncomeYear">
     @if (Inputs.Company is { } company)
     {
@@ -53,14 +53,14 @@
             <ConditionList Name="company-year-conditions" Conditions="rules.Conditions" />
         }
         <div class="company-year__actions">
-            <MudButton Variant="Variant.Outlined" Size="Size.Small" OnClick="SkipCompany">@L["Clear"]</MudButton>
+            <MudButton Variant="Variant.Outlined" Size="Size.Small" Class="company-year__clear" OnClick="SkipCompany">@L["Clear"]</MudButton>
         </div>
     }
     else
     {
         <p class="company-year__skipped">@L["Skipped"]</p>
         <div class="company-year__actions">
-            <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="EnterCompany">@L["Enter"]</MudButton>
+            <MudButton Variant="Variant.Outlined" Color="Color.Primary" Class="company-year__enter" OnClick="EnterCompany">@L["Enter"]</MudButton>
         </div>
     }
 </ModuleCard>
@@ -79,6 +79,8 @@
     [Parameter]
     public Refusal? Refused { get; set; }
 
+    private ModuleCard? _card;
+    private bool _focusHeading;
     private IReadOnlyList<FigureLine> _figures = [];
     private IReadOnlyList<StepDetail> _sources = [];
     private CompanyYearSettingsView _settings = default!;
@@ -107,7 +109,26 @@
 
     private Task OnBandChanged(CompanyContributionBand band) => InputsChanged.InvokeAsync(Inputs.WithCompanyContributionBand(band));
 
-    private Task SkipCompany() => InputsChanged.InvokeAsync(Inputs.SkipCompany());
+    // The word the viewer pressed goes with the content it was in, so a card beside the Map tab's map puts
+    // the focus on its heading once it is drawn again (ModuleCard.FocusHeadingAsync).
+    private Task SkipCompany()
+    {
+        _focusHeading = true;
+        return InputsChanged.InvokeAsync(Inputs.SkipCompany());
+    }
 
-    private Task EnterCompany() => InputsChanged.InvokeAsync(Inputs.EnterCompany());
+    private Task EnterCompany()
+    {
+        _focusHeading = true;
+        return InputsChanged.InvokeAsync(Inputs.EnterCompany());
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_focusHeading && _card is not null)
+        {
+            _focusHeading = false;
+            await _card.FocusHeadingAsync();
+        }
+    }
 }

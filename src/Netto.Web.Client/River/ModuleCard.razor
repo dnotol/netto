@@ -146,6 +146,15 @@
             await _fold.FocusAsync();
     }
 
+    // A card beside the map whose content has just changed under the control the viewer pressed (Company
+    // year, cleared or entered again) puts the focus on its heading, rather than let it fall to the
+    // document with the control. On the Plan tab, where the heading is a button, the card does nothing.
+    public async Task FocusHeadingAsync()
+    {
+        if (Seat is not null && _fold is not null)
+            await _fold.FocusAsync();
+    }
+
     public void Dispose() => Outline?.Leave(Name);
 
     private string? Rate => (ToYou, PassesOn) switch

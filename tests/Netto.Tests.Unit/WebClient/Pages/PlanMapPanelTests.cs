@@ -213,6 +213,85 @@ public class PlanMapPanelTests
         storage.Get(Folds.StorageKey).ShouldBeNull();
     }
 
+    // A skipped Company year stays on the map and can be chosen: its skipped card is beside the map, and its
+    // button to enter the company's year works there, the card staying chosen and taking the focus on its
+    // heading, since the button the viewer pressed is gone with the skipped card.
+    [Fact]
+    public async Task Plan_aSkippedCompanyYearChosenOnTheMap_hasItsSkippedCardWhoseEnterWorks()
+    {
+        await using var page = await MapAsync(WithACar.SkipCompany());
+        await ChooseAsync(page, RiverModule.CompanyYear);
+        var skipped = (await page.FindAsync<CompanyYearCard>()).Inputs.Company;
+        var before = page.Focuses;
+
+        await page.ClickAsync(button => button.Class == "company-year__enter");
+
+        var (map, card) = (await page.FindAsync<MapTab>(), await page.FindAsync<CompanyYearCard>());
+        page.ShouldSatisfyAllConditions(
+            () => skipped.ShouldBeNull(),
+            () => card.Inputs.Company.ShouldNotBeNull(),
+            () => map.Chosen.ShouldBe(RiverModule.CompanyYear),
+            () => map.ShownMap.Modules.Select(node => node.End.Module).ShouldContain(RiverModule.Split),
+            () => page.Focuses.ShouldBe(before + 1),
+            () => page.Errors.ShouldBeEmpty());
+    }
+
+    // Cleared from its card beside the map, Company year stays on the map and chosen, its card turns to the
+    // skipped one, and the focus goes to its heading rather than falling to the document with the button.
+    [Fact]
+    public async Task Plan_companyYearClearedFromItsCardBesideTheMap_staysChosenWithItsSkippedCardAndTheFocus()
+    {
+        await using var page = await MapAsync(WithACar);
+        await ChooseAsync(page, RiverModule.CompanyYear);
+        var before = page.Focuses;
+
+        await page.ClickAsync(button => button.Class == "company-year__clear");
+
+        var (map, card, panel) = (await page.FindAsync<MapTab>(), await page.FindAsync<CompanyYearCard>(), await page.FindAsync<MapPanel>());
+        page.ShouldSatisfyAllConditions(
+            () => card.Inputs.Company.ShouldBeNull(),
+            () => map.Chosen.ShouldBe(RiverModule.CompanyYear),
+            () => panel.Module.ShouldBe(RiverModule.CompanyYear),
+            () => map.ShownMap.Modules.Select(node => node.End.Module).ShouldBe([RiverModule.CompanyYear, RiverModule.DirectorPay]),
+            () => page.Focuses.ShouldBe(before + 1),
+            () => page.Errors.ShouldBeEmpty());
+    }
+
+    // Cleared and entered again from the panel, the viewer is where they were, the focus on the heading each time.
+    [Fact]
+    public async Task Plan_companyYearClearedThenEnteredFromItsCardBesideTheMap_isBackWithItsCompany()
+    {
+        await using var page = await MapAsync(WithACar);
+        await ChooseAsync(page, RiverModule.CompanyYear);
+        var before = page.Focuses;
+        await page.ClickAsync(button => button.Class == "company-year__clear");
+
+        await page.ClickAsync(button => button.Class == "company-year__enter");
+
+        var (map, card) = (await page.FindAsync<MapTab>(), await page.FindAsync<CompanyYearCard>());
+        page.ShouldSatisfyAllConditions(
+            () => card.Inputs.Company.ShouldNotBeNull(),
+            () => map.Chosen.ShouldBe(RiverModule.CompanyYear),
+            () => map.ShownMap.Modules.Select(node => node.End.Module).ShouldContain(RiverModule.Split),
+            () => page.Focuses.ShouldBe(before + 2),
+            () => page.Errors.ShouldBeEmpty());
+    }
+
+    // On the Plan tab the card is the river's, as it was: the page moves no focus for Clear.
+    [Fact]
+    public async Task Plan_companyYearClearedFromItsCardInTheRiver_movesNoFocus()
+    {
+        var storage = new BrowserStorage();
+        new Folds(storage).Set("company-year", true);
+        await using var page = LivePlan.At("http://localhost/plan", storage, river: WithACar);
+        await page.LoadAsync();
+        var before = page.Focuses;
+
+        await page.ClickAsync(button => button.Class == "company-year__clear");
+
+        ((await page.FindAsync<CompanyYearCard>()).Inputs.Company, page.Focuses - before, page.Errors.Count).ShouldBe((null, 0, 0));
+    }
+
     private static async Task<LivePlan> MapAsync(RiverInputs river)
     {
         var page = LivePlan.At("http://localhost/plan/map", new BrowserStorage(), river: river);
