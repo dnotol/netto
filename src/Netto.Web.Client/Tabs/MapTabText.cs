@@ -1,3 +1,5 @@
+using Netto.Core.CorporateTax;
+using Netto.Core.Simulation;
 using Netto.Web.Client.River;
 using Netto.Web.Client.River.CompanyCar;
 
@@ -30,6 +32,28 @@ internal static class MapTabText
 
     // A module on the map, named as its card is.
     public static string Module(RiverModule module) => $"Module_{module}";
+
+    // The words of a condition one module sets on another (MapConditions), by its kind and whether it
+    // holds: « kept » or « lost » for the corporate rate and the reserve, what a royalty does to the pay
+    // that keeps the rate. The pay's by what art. 215 found of it.
+    public static string PayCondition(ReducedRateCondition test) => $"Condition_Pay_{test}";
+
+    public static string BenefitsCondition(bool holds) => holds ? "Condition_Benefits_Kept" : "Condition_Benefits_Lost";
+
+    // Said of the one of the two the plan pays; a year never runs with both.
+    public static string OfficeCondition(bool rentPaid) => rentPaid ? "Condition_Office_Rent" : "Condition_Office_Allowance";
+
+    // Where it holds, the pay it lowers it to, beside the one without it, or none without it; where it does
+    // not, the pay keeping the rate either way, or none.
+    public static string RoyaltyCondition(RoyaltyLowersPayKeepingReducedRate royalty) => royalty switch
+    {
+        { Holds: true, Without: null } => "Condition_Royalty_LowersFromNone",
+        { Holds: true } => "Condition_Royalty_Lowers",
+        { With: null } => "Condition_Royalty_NoPayKeeps",
+        _ => "Condition_Royalty_DoesNotLower",
+    };
+
+    public static string ReserveCondition(bool holds) => holds ? "Condition_Reserve_Kept" : "Condition_Reserve_Lost";
 
     // The component whose texts word a link (MapLabel.Text): the map's own, a drain list's, or the card
     // whose figure line it is, so the map and the card say the line in the same words.
