@@ -13,7 +13,9 @@ namespace Netto.Web.Client.Tabs;
 // A route is orthogonal and runs only through room no box holds: the gap between two rows, a lane down
 // the left edge to the pocket, a gutter on each side of the middle column, a lane down the right edge, or
 // a row's side the river leaves empty (the chain's rows have nothing left or right of the middle, the
-// streams' rows nothing in the middle). Lines may cross lines; none crosses a box (MapLayoutTests).
+// streams' rows nothing in the middle). Lines may cross lines; none crosses a box (MapLayoutTests). A line
+// back out of a bucket, a refund, a credit, a contribution or a bonus beyond its surcharge, takes the route
+// money into it would take, the other way, beside it.
 internal static class MapLayout
 {
     // The three columns' boxes, left to right, the middle of the streams' rows left to the words of their
@@ -32,7 +34,7 @@ internal static class MapLayout
     // The lane down the left edge to the pocket, one track per link, the highest row's furthest out; the
     // gutter left of the middle column; the gutter right of it; the lane down the right edge.
     private const decimal PocketLane = 1.4m;
-    private const decimal PocketTrack = 0.7m;
+    private const decimal PocketTrack = 0.6m;
     private const decimal LeftGutter = 28m;
     private const decimal GutterTrack = 1.2m;
     private const decimal RightGutter = 68m;
@@ -153,14 +155,16 @@ internal static class MapLayout
         private readonly List<(MapEnd, MapEnd, MapLinkKind)> _pocketLane;
         private readonly List<(MapEnd, MapEnd, MapLinkKind)> _leftGutter;
         private readonly List<(MapEnd, MapEnd, MapLinkKind)> _drops;
+        private readonly List<(MapEnd, MapEnd, MapLinkKind)> _rightGutter;
 
         public Router(MapGrid grid, IReadOnlyList<(MapEnd From, MapEnd To, MapLinkKind Kind)> bundles)
         {
             _grid = grid;
-            _pocketLane = [.. bundles.Where(bundle => Family(bundle) is RouteFamily.ToPocketLane or RouteFamily.FromPocketLane).OrderBy(bundle => Row(Module(bundle)))];
+            _pocketLane = [.. bundles.Where(bundle => Family(bundle) == RouteFamily.ToPocketLane).OrderBy(bundle => Row(Module(bundle))).ThenBy(Back)];
             _leftGutter = [.. bundles.Where(bundle => Family(bundle) is RouteFamily.ChainToTaxesOnPay or RouteFamily.ChainToDirectorPay or RouteFamily.SplitToDirectorPay)
-                .OrderBy(bundle => Row(Module(bundle)))];
+                .OrderBy(bundle => Row(Module(bundle))).ThenBy(Back)];
             _drops = [.. bundles.Where(bundle => Family(bundle) == RouteFamily.ChainToCorporateTax).OrderBy(bundle => Row(Module(bundle))).ThenBy(bundle => bundle.Kind)];
+            _rightGutter = [.. bundles.Where(bundle => Family(bundle) == RouteFamily.CorporateTaxToBucket).OrderBy(Back)];
 
             foreach (var bundle in bundles)
             {
@@ -178,13 +182,21 @@ internal static class MapLayout
 
         public MapRoute Route((MapEnd From, MapEnd To, MapLinkKind Kind) bundle)
         {
-            var (from, to, _) = bundle;
+            if (Back(bundle))
+                return Reversed(Into(bundle, bundle.To, bundle.From));
+
+            return Into(bundle, bundle.From, bundle.To);
+        }
+
+        // The route from one end to the other: from its module into its bucket for a line between them,
+        // whichever way its money goes.
+        private MapRoute Into((MapEnd From, MapEnd To, MapLinkKind Kind) bundle, MapEnd from, MapEnd to)
+        {
             return Family(bundle) switch
             {
                 RouteFamily.Straight => Down(from, to, MapLabelSide.Gap),
                 RouteFamily.ToPocketLane => SideToBucket(bundle, from, MapSide.Left, to, PocketLaneX(bundle),
                     Place(Module(bundle)).Column == MapColumn.Left ? MapLabelSide.Right : MapLabelSide.Left),
-                RouteFamily.FromPocketLane => Reversed(SideToBucket(bundle, to, MapSide.Left, from, PocketLaneX(bundle), MapLabelSide.Left)),
                 RouteFamily.ChainToTaxesOnPay => SideToBucket(bundle, from, MapSide.Left, to, LeftGutterX(bundle), MapLabelSide.Left),
                 RouteFamily.ChainToDirectorPay => SideToSide(bundle, from, MapSide.Left, to, MapSide.Right, LeftGutterX(bundle), MapLabelSide.Left),
                 RouteFamily.ChainToCorporateTax => SideToTop(bundle, from, MapSide.Right, to, DropX(bundle), MapLabelSide.Right),
@@ -196,10 +208,10 @@ internal static class MapLayout
                 RouteFamily.SplitToCorporateTax => SideToTop(bundle, from, MapSide.Right, to,
                     bundle.Kind == MapLinkKind.Condition ? SplitConditionToCorporate : SplitToCorporate, MapLabelSide.Right),
                 RouteFamily.DividendToSplit => DividendToSplit(bundle, from, to),
-                RouteFamily.CopyrightToTaxesOnPay => CopyrightToTaxes(from, to),
-                RouteFamily.CorporateTaxToBucket => SideToBucket(bundle, from, MapSide.Left, to, RightGutter, MapLabelSide.Left),
+                RouteFamily.CopyrightToTaxesOnPay => CopyrightToTaxes(from, to, Back(bundle)),
+                RouteFamily.CorporateTaxToBucket => SideToBucket(bundle, from, MapSide.Left, to, RightGutterX(bundle), MapLabelSide.Left),
                 RouteFamily.StreamDown => StreamDown(bundle, from, to),
-                RouteFamily.DividendToPocket => DividendToPocket(from, to),
+                RouteFamily.DividendToPocket => DividendToPocket(from, to, Back(bundle)),
                 _ => throw new ArgumentOutOfRangeException(nameof(bundle), $"{from.Id} to {to.Id}", "A link the map has no route for."),
             };
         }
@@ -238,7 +250,7 @@ internal static class MapLayout
             var column = Place(stream).Column;
             return (column, bucket, stream) switch
             {
-                (MapColumn.Chain, "pocket", _) => from.Module is null ? RouteFamily.FromPocketLane : RouteFamily.ToPocketLane,
+                (MapColumn.Chain, "pocket", _) => RouteFamily.ToPocketLane,
                 (MapColumn.Chain, "taxes_on_pay", _) => RouteFamily.ChainToTaxesOnPay,
                 (_, "pocket", RiverModule.Copyright) => RouteFamily.ToPocketLane,
                 (_, "taxes_on_pay", RiverModule.Copyright) => RouteFamily.CopyrightToTaxesOnPay,
@@ -255,8 +267,7 @@ internal static class MapLayout
             var (from, to, _) = bundle;
             return Family(bundle) switch
             {
-                RouteFamily.ToPocketLane or RouteFamily.ChainToTaxesOnPay or RouteFamily.CorporateTaxToBucket => [(from, MapSide.Left)],
-                RouteFamily.FromPocketLane => [(to, MapSide.Left)],
+                RouteFamily.ToPocketLane or RouteFamily.ChainToTaxesOnPay or RouteFamily.CorporateTaxToBucket => [(Back(bundle) ? to : from, MapSide.Left)],
                 RouteFamily.ChainToDirectorPay => [(from, MapSide.Left), (to, MapSide.Right)],
                 RouteFamily.ChainToCorporateTax or RouteFamily.OutOfRiver or RouteFamily.SplitToCorporateTax => [(from, MapSide.Right)],
                 RouteFamily.Bracket => [(from, MapSide.Right), (to, MapSide.Right)],
@@ -268,9 +279,9 @@ internal static class MapLayout
 
         // The order of the links along one side, top to bottom: of those leaving by a side, the one
         // turning furthest away first, so none crosses another near the box.
-        private decimal PortOrder((MapEnd From, MapEnd To, MapLinkKind Kind) bundle) => Family(bundle) switch
+        private decimal PortOrder((MapEnd From, MapEnd To, MapLinkKind Kind) bundle) => (Back(bundle) ? 0.5m : 0m) + Family(bundle) switch
         {
-            RouteFamily.ToPocketLane or RouteFamily.FromPocketLane => 0m,
+            RouteFamily.ToPocketLane => 0m,
             RouteFamily.ChainToTaxesOnPay or RouteFamily.ChainToDirectorPay => 1m,
             RouteFamily.CorporateTaxToBucket => 0m,
             RouteFamily.DividendToSplit => -RightLane,
@@ -295,6 +306,8 @@ internal static class MapLayout
         private decimal LeftGutterX((MapEnd, MapEnd, MapLinkKind) bundle) => LeftGutter + _leftGutter.IndexOf(bundle) * GutterTrack;
 
         private decimal DropX((MapEnd, MapEnd, MapLinkKind) bundle) => FirstDrop - _drops.IndexOf(bundle) * DropTrack;
+
+        private decimal RightGutterX((MapEnd, MapEnd, MapLinkKind) bundle) => RightGutter + _rightGutter.IndexOf(bundle) * GutterTrack;
 
         // Down from one box's bottom into the next one's top, at an x both share.
         private MapRoute Down(MapEnd from, MapEnd to, MapLabelSide side)
@@ -387,13 +400,13 @@ internal static class MapLayout
         }
 
         // A royalty's tax apart: out of its bottom, across the gap under it past Director pay, and down into
-        // the taxes on pay.
-        private MapRoute CopyrightToTaxes(MapEnd from, MapEnd to)
+        // the taxes on pay; what comes back runs beside it.
+        private MapRoute CopyrightToTaxes(MapEnd from, MapEnd to, bool back)
         {
             var source = _grid.Slot(from);
-            var gap = _grid.GapBelow(MapRow.StreamTop, 0.5m);
-            const decimal x = 34m;
-            var start = source.Right - 4m;
+            var gap = _grid.GapBelow(MapRow.StreamTop, back ? 0.65m : 0.5m);
+            var x = back ? 35.2m : 34m;
+            var start = source.Right - (back ? 6m : 4m);
             return new MapRoute([new(start, source.Bottom), new(start, gap), new(x, gap), new(x, _grid.Slot(to).Top)], MapLabelSide.Right);
         }
 
@@ -401,35 +414,37 @@ internal static class MapLayout
         // back runs up the same way, beside it.
         private MapRoute StreamDown((MapEnd From, MapEnd To, MapLinkKind Kind) bundle, MapEnd from, MapEnd to)
         {
-            var module = from.Module ?? to.Module!.Value;
-            var bucket = from.Bucket ?? to.Bucket!;
-            var (box, tray) = (_grid.Slot(MapEnd.Of(module)), _grid.Slot(MapEnd.InBucket(bucket)));
-            var back = from.Bucket is not null;
-            var x = (module, bucket, back) switch
+            var (module, bucket) = (from.Module!.Value, to.Bucket!);
+            var (box, tray) = (_grid.Slot(from), _grid.Slot(to));
+            var x = (module, bucket, Back(bundle)) switch
             {
-                (RiverModule.DirectorPay, "pocket", _) => 12m,
+                (RiverModule.DirectorPay, "pocket", false) => 12m,
+                (RiverModule.DirectorPay, "pocket", true) => 13.2m,
                 (RiverModule.DirectorPay, "taxes_on_pay", false) => 24.6m,
                 (RiverModule.DirectorPay, "taxes_on_pay", true) => 25.4m,
                 (RiverModule.Dividend, "taxes_on_profit", false) => 74.6m,
                 (RiverModule.Dividend, "taxes_on_profit", true) => 75.4m,
-                (RiverModule.Dividend, "kept_in_company", _) => 88m,
+                (RiverModule.Dividend, "kept_in_company", false) => 88m,
+                (RiverModule.Dividend, "kept_in_company", true) => 89.2m,
                 _ => throw new ArgumentOutOfRangeException(nameof(bundle), $"{module} {bucket}", "A link the map has no route for."),
             };
-            var down = new MapRoute([new(x, box.Bottom), new(x, tray.Top)], module == RiverModule.Dividend ? MapLabelSide.Left : MapLabelSide.Right);
-            return back ? Reversed(down) : down;
+            return new MapRoute([new(x, box.Bottom), new(x, tray.Top)], module == RiverModule.Dividend ? MapLabelSide.Left : MapLabelSide.Right);
         }
 
         // What reaches the pocket of the dividend: out of its bottom, along the gap over the buckets, and
-        // down into the pocket.
-        private MapRoute DividendToPocket(MapEnd from, MapEnd to)
+        // down into the pocket; what comes back runs beside it.
+        private MapRoute DividendToPocket(MapEnd from, MapEnd to, bool back)
         {
-            var gap = _grid.GapBelow(MapRow.StreamBottom, 0.5m);
-            const decimal x = 84m;
-            const decimal into = 18m;
+            var gap = _grid.GapBelow(MapRow.StreamBottom, back ? 0.65m : 0.5m);
+            var x = back ? 85.2m : 84m;
+            var into = back ? 19.2m : 18m;
             return new MapRoute([new(x, _grid.Slot(from).Bottom), new(x, gap), new(into, gap), new(into, _grid.Slot(to).Top)], MapLabelSide.Left);
         }
 
         private static MapRoute Reversed(MapRoute route) => route with { Points = [.. route.Points.Reverse()] };
+
+        // A line back out of a bucket into its module.
+        private static bool Back((MapEnd From, MapEnd To, MapLinkKind Kind) bundle) => bundle.From.Bucket is not null;
 
         private static RiverModule Module((MapEnd From, MapEnd To, MapLinkKind Kind) bundle) =>
             bundle.From.Module ?? bundle.To.Module ?? throw new ArgumentOutOfRangeException(nameof(bundle), "A link with no module.");
@@ -442,7 +457,6 @@ internal static class MapLayout
         None,
         Straight,
         ToPocketLane,
-        FromPocketLane,
         ChainToTaxesOnPay,
         ChainToDirectorPay,
         ChainToCorporateTax,

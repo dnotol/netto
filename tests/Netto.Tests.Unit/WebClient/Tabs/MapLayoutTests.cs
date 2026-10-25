@@ -22,6 +22,27 @@ public class MapLayoutTests
         (RiverModule.Dividend, RiverModule.Split),
     ];
 
+    // Every module and bucket a card's line can join: a line runs either way between them, money into the
+    // bucket or, a refund, a credit, a contribution or a bonus beyond its surcharge, back out of it.
+    private static readonly (RiverModule Module, string Bucket)[] DrainEnds =
+    [
+        (RiverModule.Vouchers, "pocket"),
+        (RiverModule.Allowances, "pocket"),
+        (RiverModule.Rent, "taxes_on_pay"),
+        (RiverModule.Rent, "pocket"),
+        (RiverModule.Car, "pocket"),
+        (RiverModule.Copyright, "taxes_on_pay"),
+        (RiverModule.Copyright, "pocket"),
+        (RiverModule.DirectorPay, "taxes_on_pay"),
+        (RiverModule.DirectorPay, "pocket"),
+        (RiverModule.CorporateTax, "taxes_on_profit"),
+        (RiverModule.Dividend, "taxes_on_profit"),
+        (RiverModule.Dividend, "pocket"),
+        (RiverModule.Dividend, "kept_in_company"),
+    ];
+
+    public static TheoryData<int> EveryDrainEnds => new(Enumerable.Range(0, DrainEnds.Length));
+
     [Fact]
     public void Place_everyModuleOfTheMap_hasASlotOfItsOwn()
     {
@@ -115,6 +136,66 @@ public class MapLayoutTests
             .Select(route => route.Name).ShouldBeEmpty();
     }
 
+    // The ends a card's line joins in these plans are among those the routes are held to below.
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    public void DrainEnds_everyModuleAndBucketALineJoins_isHeldToItsRoutes(bool companyPays, bool companySkipped)
+    {
+        var river = companyPays ? MapLinksTests.Full.WithContributionsPaidBy(Netto.Core.SocialContributions.ContributionsPaidBy.Company) : MapLinksTests.Full;
+        river = companySkipped ? river.SkipCompany() : river;
+
+        MapLinks.Of(river, river.Run()).Where(link => link.From.Bucket is not null || link.To.Bucket is not null)
+            .Select(link => ((link.From.Module ?? link.To.Module)!.Value, link.From.Bucket ?? link.To.Bucket!))
+            .Where(ends => !DrainEnds.Contains(ends)).ShouldBeEmpty();
+    }
+
+    // A line between a module and a bucket, either way, beside every other line of the plan: it ends on
+    // its two boxes, crosses none, runs across or down only and shares no stretch with another.
+    [Theory]
+    [MemberData(nameof(EveryDrainEnds))]
+    public void Routed_aLineEitherWayBetweenAModuleAndABucket_endsOnBothAndCrossesNoBox(int ends)
+    {
+        var (module, bucket) = DrainEnds[ends];
+        var river = MapLinksTests.Full;
+        var grid = MapLayout.Grid(MapView.ModulesOf(river));
+        MapLink[] both =
+        [
+            new(MapLinkKind.IntoBucket, MapEnd.Of(module), MapEnd.InBucket(bucket), module, new MapLabel(MapText.Map, "Into", []), 1m),
+            new(MapLinkKind.IntoBucket, MapEnd.InBucket(bucket), MapEnd.Of(module), module, new MapLabel(MapText.Map, "Back", []), 1m),
+        ];
+
+        var routes = Routes(river, both);
+
+        var boxes = Boxes(river);
+        routes.ShouldSatisfyAllConditions(
+            () => routes.Where(route => !OnEdge(grid, route.From, route.Route.Points[0]) || !EndsOn(grid, route.From, route.To, route.Route.End))
+                .Select(route => route.Name).ShouldBeEmpty(),
+            () => routes.SelectMany(route => Segments(route.Route).SelectMany(segment =>
+                boxes.Where(box => Enters(segment, box.Slot)).Select(box => $"{route.Name} through {box.Id}"))).ShouldBeEmpty(),
+            () => routes.Where(route => Segments(route.Route).Any(segment => segment.A.X != segment.B.X && segment.A.Y != segment.B.Y))
+                .Select(route => route.Name).ShouldBeEmpty(),
+            () => routes.SelectMany((a, i) => routes.Skip(i + 1)
+                .Where(b => Segments(a.Route).Any(sa => Segments(b.Route).Any(sb => Shared(sa, sb))))
+                .Select(b => $"{a.Name} with {b.Name}")).ShouldBeEmpty());
+    }
+
+    // A line back out of a bucket ends on its module, its arrow pointing into it.
+    [Theory]
+    [MemberData(nameof(EveryDrainEnds))]
+    public void Routed_aLineBackOutOfABucket_endsOnItsModule(int ends)
+    {
+        var (module, bucket) = DrainEnds[ends];
+        var river = MapLinksTests.Full;
+        var grid = MapLayout.Grid(MapView.ModulesOf(river));
+        var back = new MapLink(MapLinkKind.IntoBucket, MapEnd.InBucket(bucket), MapEnd.Of(module), module, new MapLabel(MapText.Map, "Back", []), 1m);
+
+        var route = MapLayout.Routed(grid, [back]).Single().Route!;
+
+        (OnEdge(grid, MapEnd.InBucket(bucket), route.Points[0]), OnEdge(grid, MapEnd.Of(module), route.End)).ShouldBe((true, true));
+    }
+
     // Links of the same ends and kind are one line on the map, their words drawn together.
     [Fact]
     public void Routed_linksOfTheSameEndsAndKind_shareOneRoute()
@@ -165,14 +246,14 @@ public class MapLayoutTests
     }
 
     // Each line of the plan, the run's links and the conditions between the modules it draws, once.
-    private static IReadOnlyList<(string Name, MapEnd From, MapEnd To, MapRoute Route)> Routes(RiverInputs river)
+    private static IReadOnlyList<(string Name, MapEnd From, MapEnd To, MapRoute Route)> Routes(RiverInputs river, params MapLink[] more)
     {
         var modules = MapView.ModulesOf(river);
         var conditions = Conditions.Where(condition => modules.Contains(condition.From) && modules.Contains(condition.To))
             .Select(condition => new MapLink(MapLinkKind.Condition, MapEnd.Of(condition.From), MapEnd.Of(condition.To), condition.From,
                 new MapLabel(MapText.Map, "Condition", []), null));
 
-        var links = MapLayout.Routed(MapLayout.Grid(modules), [.. MapLinks.Of(river, river.Run()), .. conditions]);
+        var links = MapLayout.Routed(MapLayout.Grid(modules), [.. MapLinks.Of(river, river.Run()), .. conditions, .. more]);
 
         return [.. links.GroupBy(link => link.Route).Select(bundle => bundle.First())
             .Select(link => ($"{link.Kind} {link.From.Id} to {link.To.Id}", link.From, link.To, link.Route!))];
