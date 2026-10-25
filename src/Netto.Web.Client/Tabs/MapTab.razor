@@ -26,7 +26,8 @@
    said above the map, and the list of a module chosen says there is no figure.
 
    The map is as tall as the window leaves under the bar, and stays there while the column beside it
-   scrolls: the column holds the list of the chosen module's links, then the room for its card. Under the
+   scrolls: the column holds the list of the chosen module's links, then the card of that module (MapPanel,
+   the Plan tab's own, pinned open), whose edits go to the page's one river. Under the
    head is the filter of the kinds of link (MapFilter), the legend of the lines whose boxes the viewer
    ticks: a kind unticked is left out of the lines, their arrowheads and their words, and out of the list
    of the chosen module's links, which says how many of that module's links are hidden so that a short
@@ -130,7 +131,9 @@
                 <p class="map-links__note">@L["ChooseHint"]</p>
             }
         </section>
-        <div class="map-tab__panel"></div>
+        <div class="map-tab__panel">
+            <MapPanel Module="_chosen" Inputs="Inputs" InputsChanged="InputsChanged" Run="Run" Search="Search" Refused="ChosenRefusal" />
+        </div>
     </div>
 </div>
 
@@ -160,6 +163,9 @@
 
     [Parameter]
     public EventCallback<RiverModule?> ChosenChanged { get; set; }
+
+    // The engine's refusal the chosen module's card holds, as the Plan page hands it to that card.
+    private Refusal? ChosenRefusal => _chosen is { } module ? RefusedBy(module) : null;
 
     // The map of the run, and the same without the links of the kinds the viewer hid (MapLinkFilter): the
     // second is what is drawn and listed, the first what the legend counts.

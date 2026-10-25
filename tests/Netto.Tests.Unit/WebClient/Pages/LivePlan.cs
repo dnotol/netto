@@ -78,6 +78,12 @@ internal sealed class LivePlan : IAsyncDisposable
             await _loading;
     }
 
+    // The viewer follows a link to another tab of the page, which stays the same page: the router sets the
+    // page's Tab again, the segment after /plan/, none for the river, and the page draws what it now shows,
+    // its work after that draw included, with everything else it holds as it was.
+    public Task SwitchTabAsync(string? tab) =>
+        _renderer.SwitchAsync(tab is null ? ParameterView.Empty : ParameterView.FromDictionary(new Dictionary<string, object?> { ["Tab"] = tab }));
+
     // The browser paints what the page drew, and the page draws again what it did then: done once that is
     // drawn. A page whose work then fails rethrows its error, and one that draws nothing more fails rather
     // than waiting for ever.
@@ -140,6 +146,12 @@ internal sealed class LivePlan : IAsyncDisposable
         public Task LoadAsync(Type page, ParameterView parameters) => Dispatcher.InvokeAsync(async () =>
         {
             _page = AssignRootComponentId(InstantiateComponent(page));
+            await RenderRootComponentAsync(_page, parameters);
+            await Task.Yield();
+        });
+
+        public Task SwitchAsync(ParameterView parameters) => Dispatcher.InvokeAsync(async () =>
+        {
             await RenderRootComponentAsync(_page, parameters);
             await Task.Yield();
         });
