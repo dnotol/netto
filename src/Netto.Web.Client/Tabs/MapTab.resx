@@ -81,4 +81,7 @@
   <data name="NoLinks" xml:space="preserve">
     <value>No money moves through it in this plan.</value>
   </data>
+  <data name="NoFigures" xml:space="preserve">
+    <value>No figures while an amount is refused.</value>
+  </data>
 </root>

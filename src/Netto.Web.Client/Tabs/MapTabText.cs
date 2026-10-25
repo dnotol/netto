@@ -25,6 +25,9 @@ internal static class MapTabText
 
     public const string LinksOfNone = "LinksOfNone";
 
+    // What the list says of the chosen module while the engine refuses an amount: there is no figure.
+    public const string NoFigures = "NoFigures";
+
     // A module on the map, named as its card is.
     public static string Module(RiverModule module) => $"Module_{module}";
 

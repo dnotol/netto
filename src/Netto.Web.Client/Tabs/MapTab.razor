@@ -21,8 +21,8 @@
    drawing itself. Choosing it again lets it go. The choice is the page's (Chosen, ChosenChanged), so it
    stays from one tab to the next, and takes no focus. Nothing here is a live region: the bar's is the
    river's only announcement. While the engine refuses an amount the map draws no line and no amount, as
-   the bar draws no figure, the module holding the refused field is marked, in words too, and the refusal
-   is said above the map.
+   the bar draws no figure, the module holding the refused field is marked, in words too, the refusal is
+   said above the map, and the list of a module chosen says there is no figure.
 
    The map is as tall as the window leaves under the bar, and stays there while the column beside it
    scrolls: the column holds the list of the chosen module's links, then the room for its card. Under the
@@ -89,7 +89,11 @@
             @if (_chosen is { } chosen)
             {
                 <h2 id="map-links-title" class="map-links__title">@L[MapTabText.LinksOf, L[MapTabText.Module(chosen)]]</h2>
-                @if (_view.LinksOf(chosen).Any())
+                @if (_view.Refusal is not null)
+                {
+                    <p class="map-links__note">@L[MapTabText.NoFigures]</p>
+                }
+                else if (_view.LinksOf(chosen).Any())
                 {
                     <ul class="map-links__list">
                         @foreach (var link in _view.LinksOf(chosen))

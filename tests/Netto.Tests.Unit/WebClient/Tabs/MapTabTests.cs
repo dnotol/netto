@@ -131,6 +131,16 @@ public class MapTabTests
             () => html.ShouldContain("refused-message"));
     }
 
+    // While an amount is refused there is no figure to list: the list says so, never that no money moves
+    // through the module chosen.
+    [Fact]
+    public async Task Tab_aModuleChosenWhileAnAmountIsRefused_saysThereIsNoFigure()
+    {
+        var html = await RenderTabAsync(Full.WithReserve(-1m), RiverModule.Car);
+
+        (Heading(html), Note(html)).ShouldBe(("Links of Company car", "No figures while an amount is refused."));
+    }
+
     // Nothing on the map is a live region: the bar's is the river's only announcement.
     [Fact]
     public async Task Tab_aModuleChosen_isSaidInNoLiveRegion()
@@ -184,6 +194,9 @@ public class MapTabTests
         .. Regex.Matches(html, "<li class=\"map-links__link\" data-link-kind=\"(\\w+)\"[^>]*>(.*?)</li>", RegexOptions.Singleline)
             .Select(match => (match.Groups[1].Value, Regex.Replace(match.Groups[2].Value, "\\s+", " ").Trim())),
     ];
+
+    private static string Note(string html) =>
+        Regex.Match(html, "<p class=\"map-links__note\"[^>]*>(.*?)</p>", RegexOptions.Singleline).Groups[1].Value.Trim();
 
     private static string Heading(string html) =>
         Regex.Match(html, "<h2 [^>]*class=\"map-links__title\"[^>]*>(.*?)</h2>", RegexOptions.Singleline).Groups[1].Value.Trim();
