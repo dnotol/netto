@@ -9,6 +9,7 @@ using Netto.Web.Client;
 using Netto.Web.Client.Pages;
 using Netto.Tests.WebClient.River;
 using Netto.Web.Client.River;
+using Netto.Web.Client.Tabs;
 
 namespace Netto.Tests.WebClient.Pages;
 
@@ -55,6 +56,7 @@ internal sealed class LivePlan : IAsyncDisposable
         var plans = new SavedPlans(storage);
         services.AddSingleton<IBrowserStorage>(storage);
         services.AddSingleton(new Folds(storage));
+        services.AddSingleton(new MapLinkFilter(storage));
         services.AddSingleton(plans);
         services.AddSingleton(new RiverState(plans) { Inputs = river ?? RiverInputs.Example });
         services.AddSingleton<TimeProvider>(new Clock(On23October));

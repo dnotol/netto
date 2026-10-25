@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Netto.Web.Client;
 using Netto.Web.Client.Pages;
 using Netto.Web.Client.River;
+using Netto.Web.Client.Tabs;
 using Shouldly;
 using static Netto.Tests.WebClient.River.RiverRendering;
 
@@ -319,6 +320,7 @@ public class PlanPageTests
                 plans.Delete(starred);
             services.AddSingleton<IBrowserStorage>(storage);
             services.AddSingleton(plans);
+            services.AddSingleton(new MapLinkFilter(storage));
             services.AddSingleton(new RiverState(plans) { Inputs = river ?? RiverInputs.Example });
             services.AddSingleton<TimeProvider>(new Clock(On23October));
         });

@@ -5,6 +5,8 @@
 @inject IStringLocalizer<MapTab> L
 @inject IStringLocalizer<BucketBar> BucketTexts
 @inject IStringLocalizerFactory Localizers
+@inject IStringLocalizer<MapFilter> FilterTexts
+@inject MapLinkFilter Filter
 
 @* The Map tab: the plan's modules from above, as the river shows them, and the money between them, every
    line a link of the river's one run whose amount is a line its card already draws (MapView, MapLinks):
@@ -26,12 +28,19 @@
 
    The map is as tall as the window leaves under the bar, and stays there while the column beside it
    scrolls: the column holds the list of the chosen module's links, then the room for its card. Under the
-   head is the room for the filter of the kinds of link. The lines are an SVG stretched to the map's box
+   head is the filter of the kinds of link (MapFilter), the legend of the lines whose boxes the viewer
+   ticks: a kind unticked is left out of the lines, their arrowheads and their words, and out of the list
+   of the chosen module's links, which says how many of that module's links are hidden so that a short
+   list is never read as a module with little to say. The filter shows the map without those links
+   (MapLinkFilter.Showing) and leaves everything else where it is: the modules, the buckets and the route
+   of every line left are the run's, and the choice of a module is the page's. The lines are an SVG stretched to the map's box
    (preserveAspectRatio="none"), kept to their width by vector-effect; what must keep its shape, the
    boxes, the words and the arrowheads, is HTML placed over it in percentages. *@
 <TabHead Eyebrow="@L["Eyebrow"]" Title="@L["Title"]" Lede="@L["Lede"]" />
 
-<div class="map-tab__filter"></div>
+<div class="map-tab__filter">
+    <MapFilter Counts="_counts" OnChanged="Refilter" />
+</div>
 
 <RefusedMessage Error="@_view.Refusal" />
 
@@ -93,18 +102,27 @@
                 {
                     <p class="map-links__note">@L[MapTabText.NoFigures]</p>
                 }
-                else if (_view.LinksOf(chosen).Any())
-                {
-                    <ul class="map-links__list">
-                        @foreach (var link in _view.LinksOf(chosen))
-                        {
-                            <li class="map-links__link" data-link-kind="@link.Kind">@Words(link)</li>
-                        }
-                    </ul>
-                }
                 else
                 {
-                    <p class="map-links__note">@L["NoLinks"]</p>
+                    var hidden = _view.HiddenOf(chosen).Count();
+                    if (_view.LinksOf(chosen).Any())
+                    {
+                        <ul class="map-links__list">
+                            @foreach (var link in _view.LinksOf(chosen))
+                            {
+                                <li class="map-links__link" data-link-kind="@link.Kind">@Words(link)</li>
+                            }
+                        </ul>
+                    }
+                    else if (hidden == 0)
+                    {
+                        <p class="map-links__note">@L["NoLinks"]</p>
+                    }
+
+                    if (hidden > 0)
+                    {
+                        <p class="map-links__note" data-hidden-links="@hidden">@FilterTexts[MapFilterText.Hidden(hidden), hidden]</p>
+                    }
                 }
             }
             else
@@ -144,7 +162,11 @@
     [Parameter]
     public EventCallback<RiverModule?> ChosenChanged { get; set; }
 
+    // The map of the run, and the same without the links of the kinds the viewer hid (MapLinkFilter): the
+    // second is what is drawn and listed, the first what the legend counts.
+    private MapView _full = default!;
     private MapView _view = default!;
+    private IReadOnlyDictionary<MapLinkKind, int> _counts = default!;
     private RiverModule? _chosen;
     private IReadOnlyList<(MapBundle Bundle, bool Faded)> _drawn = [];
     private IReadOnlyList<MapLabelBlock> _blocks = [];
@@ -152,8 +174,17 @@
 
     protected override void OnParametersSet()
     {
-        _view = MapView.From(Inputs, Run);
-        _chosen = _view.Choice(Chosen);
+        _full = MapView.From(Inputs, Run);
+        _counts = MapLinkFilter.Counts(_full);
+        _chosen = _full.Choice(Chosen);
+        Refilter();
+    }
+
+    // The viewer ticked or unticked a kind: the lines, their words and the list of links are the shown
+    // kinds' again.
+    private void Refilter()
+    {
+        _view = Filter.Showing(_full);
         _drawn = _view.Drawn(_chosen);
         _blocks = _view.Blocks();
     }

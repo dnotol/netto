@@ -3,6 +3,7 @@ using MudBlazor.Services;
 using Netto.Web.Client;
 using Netto.Web.Client.Layout;
 using Netto.Web.Client.River;
+using Netto.Web.Client.Tabs;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
@@ -11,12 +12,13 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.Services.AddLocalization();
 builder.Services.AddMudServices();
 
-// What is kept in the browser, never on a server: the viewer's preferences, their theme and which
-// folds of the river are open, and the plans they save.
+// What is kept in the browser, never on a server: the viewer's preferences, their theme, which folds of
+// the river are open and which kinds of link the Map tab hides, and the plans they save.
 builder.Services.AddScoped<IBrowserStorage, LocalStorage>();
 builder.Services.AddScoped<IThemePage, BrowserThemePage>();
 builder.Services.AddScoped<ThemePreference>();
 builder.Services.AddScoped<Folds>();
+builder.Services.AddScoped<MapLinkFilter>();
 builder.Services.AddScoped<SavedPlans>();
 
 // The browser's clock: which advance-payment deadlines are still open.

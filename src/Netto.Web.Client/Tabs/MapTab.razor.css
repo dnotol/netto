@@ -4,11 +4,6 @@
    outline takes the left one (Pages/Plan.razor.css), so on a 1,920 px screen the map is about 1,180 px
    wide beside a column of 34rem. The map stays under the bar while the column scrolls with the page. */
 
-/* The room under the head for the filter of the kinds of link, taking no room while it is empty. */
-.map-tab__filter:empty {
-    display: none;
-}
-
 .map-tab {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
@@ -264,6 +259,11 @@
     color: var(--netto-text-muted);
     font-size: 0.9rem;
     line-height: 1.6;
+}
+
+/* The line under the list that counts the links the filter hides, set off from them. */
+.map-links__list + .map-links__note {
+    margin-top: 0.5rem;
 }
 
 /* The room for the chosen module's card, which the column holds after its links. */
