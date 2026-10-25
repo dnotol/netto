@@ -53,6 +53,10 @@
                 </div>
             }
         </dl>
+        @* What the figures are measured by and what they leave out, beside them and in sight: a visitor needs
+           it to read the first recommendation. It names no plan, so it is the same from Today and from the
+           plan in the river (ObjectiveNote, which the bar's gain says in a bubble). *@
+        <p class="moves__objective"><ObjectiveNote /></p>
     }
     <p class="moves__state">@L[OptimisationTabText.State(_view.State, _view.From), Name]</p>
     @if (_view.RiverChanged(Inputs))

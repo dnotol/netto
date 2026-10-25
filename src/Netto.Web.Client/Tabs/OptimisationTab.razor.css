@@ -56,6 +56,16 @@
     color: var(--netto-gold);
 }
 
+/* What the figures are measured by and leave out, one sentence under them: the muted text of the line that
+   opens the moves, no wider than a tab's lede, so the long sentence stays readable. */
+.moves__objective {
+    max-width: 46rem;
+    margin: 0;
+    color: var(--netto-text-muted);
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
 .moves__state,
 .moves__total {
     margin: 0;
