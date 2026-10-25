@@ -16,33 +16,36 @@ namespace Netto.Web.Client.Tabs;
 // streams' rows nothing in the middle). Lines may cross lines; none crosses a box (MapLayoutTests).
 internal static class MapLayout
 {
-    // The three columns' boxes, left to right, and the buckets' row, a quarter each.
-    private static readonly (decimal Left, decimal Right) LeftColumn = (6m, 30m);
-    private static readonly (decimal Left, decimal Right) ChainColumn = (37m, 63m);
-    private static readonly (decimal Left, decimal Right) RightColumn = (70m, 96m);
-    private const decimal BucketWidth = 23m;
-    private const decimal BucketPitch = 25m;
+    // The three columns' boxes, left to right, the middle of the streams' rows left to the words of their
+    // lines, and the buckets along the bottom, each under the stream that fills it most: the pocket and the
+    // taxes on pay under the director's, the taxes on profit and what the company keeps under the company's.
+    private static readonly (decimal Left, decimal Right) LeftColumn = (5m, 26m);
+    private static readonly (decimal Left, decimal Right) ChainColumn = (38m, 62m);
+    private static readonly (decimal Left, decimal Right) RightColumn = (74m, 95m);
+    private static readonly (decimal Left, decimal Right)[] BucketSpans = [(1m, 22m), (24m, 48m), (52m, 76m), (78m, 99m)];
 
-    // A box takes the middle of its row; the rest is the gap above and below it, where lines turn.
-    private const decimal BoxShare = 0.56m;
+    // A box is half a chain row high, in the middle of its row; the rest is the gap above and below it,
+    // where lines turn. The streams' rows are taller, for the words of their many lines, and the buckets'
+    // shorter.
+    private const decimal BoxUnits = 0.5m;
 
     // The lane down the left edge to the pocket, one track per link, the highest row's furthest out; the
     // gutter left of the middle column; the gutter right of it; the lane down the right edge.
-    private const decimal PocketLane = 1.6m;
-    private const decimal PocketTrack = 0.8m;
-    private const decimal LeftGutter = 31m;
+    private const decimal PocketLane = 1.4m;
+    private const decimal PocketTrack = 0.7m;
+    private const decimal LeftGutter = 28m;
     private const decimal GutterTrack = 1.2m;
-    private const decimal RightGutter = 66.5m;
-    private const decimal RightLane = 98.5m;
+    private const decimal RightGutter = 68m;
+    private const decimal RightLane = 98m;
 
     // A box's side shared by several links: each its own place along it, a fraction of the box apart.
     private const decimal PortStep = 0.22m;
 
     // Where on Corporate tax's top the split's links arrive, and the chain's drops, the highest row's
     // furthest right.
-    private const decimal SplitToCorporate = 76m;
-    private const decimal SplitConditionToCorporate = 73m;
-    private const decimal FirstDrop = 93m;
+    private const decimal SplitToCorporate = 80m;
+    private const decimal SplitConditionToCorporate = 77m;
+    private const decimal FirstDrop = 92m;
     private const decimal DropTrack = 2.5m;
 
     // How far past the car the stub of its costs runs, out of the river.
@@ -80,8 +83,8 @@ internal static class MapLayout
 
     private static (MapEnd From, MapEnd To, MapLinkKind Kind) Key(MapLink link) => (link.From, link.To, link.Kind);
 
-    // The slots of one map: rows of equal height in percent of the map's box, top to bottom, the buckets'
-    // last, a row the modules leave empty left out.
+    // The slots of one map, in percent of the map's box: its rows top to bottom, the buckets' last, a row
+    // the modules leave empty left out, each as high as its weight (Units, the map's height in chain rows).
     internal sealed class MapGrid(IReadOnlyList<RiverModule> modules)
     {
         public IReadOnlyList<RiverModule> Modules { get; } = modules;
@@ -89,7 +92,7 @@ internal static class MapLayout
         public IReadOnlyList<MapRow> Rows { get; } =
             [.. Enum.GetValues<MapRow>().Where(row => row == MapRow.Buckets || modules.Any(module => Place(module).Row == row))];
 
-        public decimal Pitch => 100m / Rows.Count;
+        public decimal Units => Rows.Sum(Weight);
 
         public bool Holds(RiverModule module) => Modules.Contains(module);
 
@@ -99,10 +102,7 @@ internal static class MapLayout
         public MapSlot Slot(MapEnd end)
         {
             if (end.Bucket is { } bucket)
-            {
-                var index = BucketsView.Keys.ToList().IndexOf(bucket);
-                return Box(MapRow.Buckets, (1m + index * BucketPitch, 1m + index * BucketPitch + BucketWidth));
-            }
+                return Box(MapRow.Buckets, BucketSpans[BucketsView.Keys.ToList().IndexOf(bucket)]);
 
             if (end.Module is not { } module)
                 throw new ArgumentOutOfRangeException(nameof(end), end.Id, "The river's edge has no box.");
@@ -116,17 +116,31 @@ internal static class MapLayout
             });
         }
 
-        // The y of a gap between the row given and the next, at a fraction of its height.
-        public decimal GapBelow(MapRow row, decimal fraction) => Top(row) + Pitch * (1m + BoxShare) / 2m + fraction * Pitch * (1m - BoxShare);
+        // The y of the gap between the boxes of the row given and of the next, at a fraction of its height.
+        public decimal GapBelow(MapRow row, decimal fraction)
+        {
+            var (bottom, top) = (BoxTop(row) + BoxHeight, BoxTop(Rows[Index(row) + 1]));
+            return bottom + fraction * (top - bottom);
+        }
 
-        private MapSlot Box(MapRow row, (decimal Left, decimal Right) span) =>
-            new(span.Left, Top(row) + Pitch * (1m - BoxShare) / 2m, span.Right - span.Left, Pitch * BoxShare);
+        private decimal BoxHeight => BoxUnits * 100m / Units;
 
-        private decimal Top(MapRow row) => Index(row) * Pitch;
+        private MapSlot Box(MapRow row, (decimal Left, decimal Right) span) => new(span.Left, BoxTop(row), span.Right - span.Left, BoxHeight);
+
+        private decimal BoxTop(MapRow row) => Top(row) + (Weight(row) * 100m / Units - BoxHeight) / 2m;
+
+        private decimal Top(MapRow row) => Rows.Take(Index(row)).Sum(Weight) * 100m / Units;
 
         private int Index(MapRow row) => Rows.ToList().IndexOf(row) is var index and >= 0
             ? index
             : throw new ArgumentOutOfRangeException(nameof(row), row, "A row the map does not draw.");
+
+        private static decimal Weight(MapRow row) => row switch
+        {
+            MapRow.StreamTop or MapRow.StreamBottom => 1.6m,
+            MapRow.Buckets => 0.9m,
+            _ => 1m,
+        };
     }
 
     // The routes of one map. Each link's family decides the sides it leaves and enters by and the room it
@@ -168,7 +182,8 @@ internal static class MapLayout
             return Family(bundle) switch
             {
                 RouteFamily.Straight => Down(from, to, MapLabelSide.Gap),
-                RouteFamily.ToPocketLane => SideToBucket(bundle, from, MapSide.Left, to, PocketLaneX(bundle), MapLabelSide.Left),
+                RouteFamily.ToPocketLane => SideToBucket(bundle, from, MapSide.Left, to, PocketLaneX(bundle),
+                    Place(Module(bundle)).Column == MapColumn.Left ? MapLabelSide.Right : MapLabelSide.Left),
                 RouteFamily.FromPocketLane => Reversed(SideToBucket(bundle, to, MapSide.Left, from, PocketLaneX(bundle), MapLabelSide.Left)),
                 RouteFamily.ChainToTaxesOnPay => SideToBucket(bundle, from, MapSide.Left, to, LeftGutterX(bundle), MapLabelSide.Left),
                 RouteFamily.ChainToDirectorPay => SideToSide(bundle, from, MapSide.Left, to, MapSide.Right, LeftGutterX(bundle), MapLabelSide.Left),
@@ -377,7 +392,7 @@ internal static class MapLayout
         {
             var source = _grid.Slot(from);
             var gap = _grid.GapBelow(MapRow.StreamTop, 0.5m);
-            const decimal x = 36m;
+            const decimal x = 34m;
             var start = source.Right - 4m;
             return new MapRoute([new(start, source.Bottom), new(start, gap), new(x, gap), new(x, _grid.Slot(to).Top)], MapLabelSide.Right);
         }
@@ -393,10 +408,10 @@ internal static class MapLayout
             var x = (module, bucket, back) switch
             {
                 (RiverModule.DirectorPay, "pocket", _) => 12m,
-                (RiverModule.DirectorPay, "taxes_on_pay", false) => 27m,
-                (RiverModule.DirectorPay, "taxes_on_pay", true) => 29m,
-                (RiverModule.Dividend, "taxes_on_profit", false) => 71.5m,
-                (RiverModule.Dividend, "taxes_on_profit", true) => 73m,
+                (RiverModule.DirectorPay, "taxes_on_pay", false) => 24.6m,
+                (RiverModule.DirectorPay, "taxes_on_pay", true) => 25.4m,
+                (RiverModule.Dividend, "taxes_on_profit", false) => 74.6m,
+                (RiverModule.Dividend, "taxes_on_profit", true) => 75.4m,
                 (RiverModule.Dividend, "kept_in_company", _) => 88m,
                 _ => throw new ArgumentOutOfRangeException(nameof(bundle), $"{module} {bucket}", "A link the map has no route for."),
             };
@@ -409,8 +424,8 @@ internal static class MapLayout
         private MapRoute DividendToPocket(MapEnd from, MapEnd to)
         {
             var gap = _grid.GapBelow(MapRow.StreamBottom, 0.5m);
-            const decimal x = 80m;
-            const decimal into = 16m;
+            const decimal x = 84m;
+            const decimal into = 18m;
             return new MapRoute([new(x, _grid.Slot(from).Bottom), new(x, gap), new(into, gap), new(into, _grid.Slot(to).Top)], MapLabelSide.Left);
         }
 

@@ -20,7 +20,7 @@ public class MapViewTests
         view.ShouldSatisfyAllConditions(
             () => view.Modules.Select(node => node.End.Id).ShouldBe(["company-year", "split", "director-pay", "corporate-tax", "dividend"]),
             () => view.Buckets.Select(node => node.End.Id).ShouldBe(BucketsView.Keys),
-            () => view.Rows.ShouldBe(5));
+            () => view.Units.ShouldBe(6.1m));
     }
 
     [Theory]

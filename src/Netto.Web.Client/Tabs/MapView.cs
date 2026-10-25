@@ -9,8 +9,9 @@ namespace Netto.Web.Client.Tabs;
 // figures; nothing here decides a tax outcome. While the engine refuses an amount the map has no link, as
 // the bar has no figure, and the module holding the refused field is marked (RiverErrors.Owner). A filter
 // shows some links and hides the others as `view with { Links = shown, Hidden = hidden }`: the modules
-// and the routes are the run's, so nothing moves.
-internal sealed record MapView(IReadOnlyList<MapNode> Modules, IReadOnlyList<MapNode> Buckets, int Rows)
+// and the routes are the run's, so nothing moves. Units is the map's height in chain rows, which the
+// stylesheet makes its height of.
+internal sealed record MapView(IReadOnlyList<MapNode> Modules, IReadOnlyList<MapNode> Buckets, decimal Units)
 {
     // How far a card's words stand from its box.
     private const decimal BlockGap = 1m;
@@ -38,7 +39,7 @@ internal sealed record MapView(IReadOnlyList<MapNode> Modules, IReadOnlyList<Map
         return new MapView(
             [.. modules.Select(module => new MapNode(MapEnd.Of(module), grid.Slot(MapEnd.Of(module))) { Refused = module == refused })],
             [.. BucketsView.Keys.Select(key => new MapNode(MapEnd.InBucket(key), grid.Slot(MapEnd.InBucket(key))))],
-            grid.Rows.Count)
+            grid.Units)
         {
             Links = MapLayout.Routed(grid, links),
             Refusal = run.Error,
@@ -134,6 +135,30 @@ public enum MapLinkKind
     TaxBase,
 
     Condition,
+}
+
+// How each kind of link is drawn, told apart at a glance with no colour needed: its dash, none for a solid
+// line, and its width in pixels, which a line keeps however the map stretches (vector-effect). Money
+// passed on is solid and heavy, money into a bucket solid and light, what only changes a tax base dotted,
+// a condition dashed; no two kinds share a style. The map's lines and the filter's swatches read it.
+internal static class MapLinkStyle
+{
+    public static string? Dash(MapLinkKind kind) => kind switch
+    {
+        MapLinkKind.PassedOn or MapLinkKind.IntoBucket => null,
+        MapLinkKind.TaxBase => "1 4",
+        MapLinkKind.Condition => "7 5",
+        _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, "A kind of link the map has no style for."),
+    };
+
+    public static string Width(MapLinkKind kind) => kind switch
+    {
+        MapLinkKind.PassedOn => "2.5",
+        MapLinkKind.IntoBucket => "1.25",
+        MapLinkKind.TaxBase => "2",
+        MapLinkKind.Condition => "1.75",
+        _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, "A kind of link the map has no style for."),
+    };
 }
 
 // One end of a link: a module of the map, a bucket of the bar (BucketsView.Keys), or the river's edge,
