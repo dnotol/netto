@@ -1,10 +1,14 @@
-/* The Map tab: the map and, beside it from 1,201 px, the column of the chosen module's links and the room
-   for its card; below that width the column goes under the map. Once the window leaves room beside the
+/* The Map tab: the map and, beside it from 1,201 px, the column of the chosen module's links and its
+   card (MapPanel); below that width the column goes under the map. Once the window leaves room beside the
    container (MudBlazor's Large, 1,280 px), the two take some of the margins on both sides, as the river's
    outline takes the left one (Pages/Plan.razor.css), so on a 1,920 px screen the map is about 1,180 px
-   wide beside a column of 34rem. The map stays under the bar while the column scrolls with the page. */
+   wide beside a column of 34rem. Both stay under the bar while the page scrolls past them, and the
+   column is never taller than the window leaves, so a long card scrolls inside it, the map staying where it
+   is; the grid is at least that tall, so the map has the room to stay. */
 
 .map-tab {
+    /* What the window leaves under the bar: the most the map or the column beside it takes. */
+    --map-room: calc(100dvh - var(--netto-under-bar, 0px) - 1rem);
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: 2rem;
@@ -15,11 +19,20 @@
         grid-template-columns: minmax(0, 1fr) 34rem;
         align-items: start;
         margin-inline: calc(-1 * clamp(0px, (100vw - 1280px) / 2 - 2rem, 16.5rem));
+        min-height: var(--map-room);
     }
 
     .map-tab__map {
         position: sticky;
         top: var(--netto-under-bar);
+    }
+
+    .map-tab__side {
+        position: sticky;
+        top: var(--netto-under-bar);
+        max-height: var(--map-room);
+        overflow-y: auto;
+        overscroll-behavior: contain;
     }
 }
 
@@ -38,7 +51,7 @@
    is placed in percentages of its box. */
 .map {
     position: relative;
-    height: min(calc(var(--map-units) * 4.6rem), calc(100dvh - var(--netto-under-bar, 0px) - 1rem));
+    height: min(calc(var(--map-units) * 4.6rem), var(--map-room));
     min-height: calc(var(--map-units) * 3.25rem);
 }
 
@@ -264,9 +277,4 @@
 /* The line under the list that counts the links the filter hides, set off from them. */
 .map-links__list + .map-links__note {
     margin-top: 0.5rem;
-}
-
-/* The room for the chosen module's card, which the column holds after its links. */
-.map-tab__panel:empty {
-    display: none;
 }
