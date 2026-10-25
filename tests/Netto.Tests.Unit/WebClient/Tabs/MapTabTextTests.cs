@@ -94,6 +94,22 @@ public class MapTabTextTests
         (Resources.Format(MapTabText.LinksOf, "Company car"), Resources.Get(MapTabText.LinksOfNone)).ShouldBe(("Links of Company car", "A module's links"));
     }
 
+    // The chosen module's list says how many of its links the kinds the viewer turned off hide, so a short
+    // list is never read as a module with little to say.
+    [Fact]
+    public void MapTabResx_theLinksTheFilterHides_areCountedInTheSingularAndThePlural()
+    {
+        Resources.Missing([MapTabText.Hidden(1), MapTabText.Hidden(2)]).ShouldBeEmpty();
+        (Resources.Format(MapTabText.Hidden(1)), Resources.Format(MapTabText.Hidden(3), 3))
+            .ShouldBe(("1 link hidden by the kinds you turned off", "3 links hidden by the kinds you turned off"));
+    }
+
+    [Fact]
+    public void Hidden_noLinkHidden_isRefused()
+    {
+        Should.Throw<ArgumentOutOfRangeException>(() => MapTabText.Hidden(0));
+    }
+
     // Every link of these plans is worded by the texts its label names, its arguments taken.
     [Theory]
     [InlineData(false)]

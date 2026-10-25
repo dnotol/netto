@@ -5,7 +5,6 @@
 @inject IStringLocalizer<MapTab> L
 @inject IStringLocalizer<BucketBar> BucketTexts
 @inject IStringLocalizerFactory Localizers
-@inject IStringLocalizer<MapFilter> FilterTexts
 @inject MapLinkFilter Filter
 
 @* The Map tab: the plan's modules from above, as the river shows them, and the money between them, every
@@ -121,7 +120,7 @@
 
                     if (hidden > 0)
                     {
-                        <p class="map-links__note" data-hidden-links="@hidden">@FilterTexts[MapFilterText.Hidden(hidden), hidden]</p>
+                        <p class="map-links__note" data-hidden-links="@hidden">@L[MapTabText.Hidden(hidden), hidden]</p>
                     }
                 }
             }

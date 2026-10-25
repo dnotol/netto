@@ -84,6 +84,12 @@
   <data name="NoFigures" xml:space="preserve">
     <value>No figures while an amount is refused.</value>
   </data>
+  <data name="Hidden_One" xml:space="preserve">
+    <value>1 link hidden by the kinds you turned off</value>
+  </data>
+  <data name="Hidden_Many" xml:space="preserve">
+    <value>{0} links hidden by the kinds you turned off</value>
+  </data>
   <data name="Condition_Pay_MinimumPayMet" xml:space="preserve">
     <value>Pay {0} reaches the {1} minimum: pay condition met</value>
   </data>

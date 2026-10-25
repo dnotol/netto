@@ -57,10 +57,4 @@
   <data name="AllHidden" xml:space="preserve">
     <value>Every kind of link is hidden: tick one to see its links.</value>
   </data>
-  <data name="Hidden_One" xml:space="preserve">
-    <value>1 link hidden by the kinds you turned off</value>
-  </data>
-  <data name="Hidden_Many" xml:space="preserve">
-    <value>{0} links hidden by the kinds you turned off</value>
-  </data>
 </root>

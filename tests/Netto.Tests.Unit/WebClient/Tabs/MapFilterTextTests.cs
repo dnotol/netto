@@ -3,16 +3,13 @@ using Shouldly;
 
 namespace Netto.Tests.WebClient.Tabs;
 
-// The words of the legend of the kinds of link, and of the line under a chosen module's links that counts
-// the ones the filter hides, in MapFilter.resx.
+// The words of the legend of the kinds of link in MapFilter.resx.
 public class MapFilterTextTests
 {
     // The name IStringLocalizer<MapFilter> reads Tabs/MapFilter.resx under.
     private static readonly ResxText Resources = ResxText.For<MapFilter>();
 
     private static readonly int[] Totals = [0, 1, 2];
-
-    private static readonly int[] HiddenCounts = [1, 2, 9];
 
     private static MapFilterView View(bool allHidden, int total)
     {
@@ -35,12 +32,11 @@ public class MapFilterTextTests
     }
 
     [Fact]
-    public void MapFilterResx_everyCountSummaryAndHiddenLine_hasAText()
+    public void MapFilterResx_everyCountAndSummary_hasAText()
     {
         var keys = Totals.Select(MapFilterText.Count)
             .Concat(Totals.Select(total => MapFilterText.Summary(View(allHidden: false, total))).OfType<string>())
-            .Append(MapFilterText.Summary(View(allHidden: true, 0))!)
-            .Concat(HiddenCounts.Select(MapFilterText.Hidden));
+            .Append(MapFilterText.Summary(View(allHidden: true, 0))!);
 
         Resources.Missing(keys).ShouldBeEmpty();
     }
@@ -84,21 +80,6 @@ public class MapFilterTextTests
     public void Summary_everyKindHidden_saysToTickOne()
     {
         Resources.Get(MapFilterText.Summary(View(allHidden: true, 12))!).ShouldBe("Every kind of link is hidden: tick one to see its links.");
-    }
-
-    // The chosen module's list says how many of its links the filter hides, so an empty list is never read
-    // as a module with no conditions.
-    [Fact]
-    public void Hidden_oneAndMany_saysHowManyLinksTheKindsTurnedOffHide()
-    {
-        (Resources.Format(MapFilterText.Hidden(1)), Resources.Format(MapFilterText.Hidden(3), 3))
-            .ShouldBe(("1 link hidden by the kinds you turned off", "3 links hidden by the kinds you turned off"));
-    }
-
-    [Fact]
-    public void Hidden_none_isRefused()
-    {
-        Should.Throw<ArgumentOutOfRangeException>(() => MapFilterText.Hidden(0));
     }
 
     [Fact]

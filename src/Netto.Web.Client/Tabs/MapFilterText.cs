@@ -1,8 +1,7 @@
 namespace Netto.Web.Client.Tabs;
 
-// The resource keys MapFilter.razor builds, and the Map tab builds from MapFilter.resx for the line that
-// counts a chosen module's hidden links, held to the .resx by MapFilterTextTests, so a kind or a count
-// without its words fails a test instead of showing its key on screen.
+// The resource keys MapFilter.razor builds from MapFilter.resx, held to it by MapFilterTextTests, so a kind
+// or a count without its words fails a test instead of showing its key on screen.
 internal static class MapFilterText
 {
     // The group's visible name: the legend of the lines, whose boxes say which are drawn.
@@ -33,14 +32,6 @@ internal static class MapFilterText
         { Total: 0 } => null,
         { Total: 1 } => "Summary_One",
         _ => "Summary_Many",
-    };
-
-    // In the chosen module's list, how many of its links the kinds turned off hide.
-    public static string Hidden(int count) => count switch
-    {
-        < 1 => throw new ArgumentOutOfRangeException(nameof(count), count, "A line of hidden links is for at least one."),
-        1 => "Hidden_One",
-        _ => "Hidden_Many",
     };
 
     private static ArgumentOutOfRangeException Unknown(MapLinkKind kind) =>
