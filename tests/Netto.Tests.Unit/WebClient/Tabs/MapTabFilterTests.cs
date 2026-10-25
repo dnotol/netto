@@ -21,14 +21,12 @@ public class MapTabFilterTests
 
     private const string BucketBox = "<div class=\"map-bucket";
 
-    private static readonly MapLinkKind[] Drawn = [MapLinkKind.PassedOn, MapLinkKind.IntoBucket, MapLinkKind.TaxBase];
-
     public static TheoryData<MapLinkKind> KindsTheFullPlanDraws
     {
         get
         {
             var kinds = new TheoryData<MapLinkKind>();
-            foreach (var kind in Drawn)
+            foreach (var kind in Enum.GetValues<MapLinkKind>())
                 kinds.Add(kind);
             return kinds;
         }
@@ -96,7 +94,7 @@ public class MapTabFilterTests
             () => Regex.Count(html, "<span class=\"map-arrow ").ShouldBe(kept.Count),
             () => Regex.Matches(html, "<div class=\"map-words__bundle[^\"]*\" data-link-kind=\"(\\w+)\"").Select(match => match.Groups[1].Value).ShouldBe(kept.Select(bundle => bundle.Kind.ToString()), ignoreOrder: true),
             () => Regex.Matches(html, "<span class=\"map-words__amount\"[^>]*>([^<]*)</span>").Select(match => match.Groups[1].Value)
-                .ShouldBe(kept.SelectMany(bundle => bundle.Links).Select(link => Formats.Euros(link.Amount!.Value)), ignoreOrder: true));
+                .ShouldBe(kept.SelectMany(bundle => bundle.Links).Where(link => link.Amount is not null).Select(link => Formats.Euros(link.Amount!.Value)), ignoreOrder: true));
     }
 
     // Hiding moves nothing: the modules and the buckets are all there, where the map puts them.
@@ -147,7 +145,7 @@ public class MapTabFilterTests
     public async Task Tab_aModuleChosenWithOneLinkHidden_saysSoInTheSingular()
     {
         var view = MapView.From(Full, Full.Run());
-        var (module, kind) = (from candidate in MapView.ModulesOf(Full) from drawn in Drawn where view.LinksOf(candidate).Count(link => link.Kind == drawn) == 1 select (candidate, drawn)).First();
+        var (module, kind) = (from candidate in MapView.ModulesOf(Full) from drawn in Enum.GetValues<MapLinkKind>() where view.LinksOf(candidate).Count(link => link.Kind == drawn) == 1 select (candidate, drawn)).First();
 
         var html = await RenderTabAsync(Full, module, Hiding(kind));
 
@@ -174,12 +172,13 @@ public class MapTabFilterTests
     public async Task Tab_aModuleChosenWhoseLinksAreAllShown_saysNothingOfHiddenLinks()
     {
         var view = MapView.From(Full, Full.Run());
-        var kinds = view.LinksOf(RiverModule.Car).Select(link => link.Kind).Distinct().ToList();
-        var other = Enum.GetValues<MapLinkKind>().First(kind => !kinds.Contains(kind));
+        var (module, other) = (from candidate in MapView.ModulesOf(Full) from kind in Enum.GetValues<MapLinkKind>()
+            where view.LinksOf(candidate).Any() && view.LinksOf(candidate).All(link => link.Kind != kind) && view.Links.Any(link => link.Kind == kind)
+            select (candidate, kind)).First();
 
-        var html = await RenderTabAsync(Full, RiverModule.Car, Hiding(other));
+        var html = await RenderTabAsync(Full, module, Hiding(other));
 
-        (html.Contains("data-hidden-links"), ListedKinds(html).Count).ShouldBe((false, view.LinksOf(RiverModule.Car).Count()));
+        (html.Contains("data-hidden-links"), ListedKinds(html).Count).ShouldBe((false, view.LinksOf(module).Count()));
     }
 
     // While the engine refuses an amount there is no link to hide: the list says there is no figure, and
