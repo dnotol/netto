@@ -1,3 +1,5 @@
+using Netto.Core.CompanyCar;
+
 namespace Netto.Web.Client.River;
 
 // Whether a lever is in the plan of the river, in the plan the moves are from, or in only one of them: what
@@ -42,8 +44,10 @@ internal static class RiverDifferences
     // the pay, which the split sets with the royalty beside it, its mode and its fixed amount; the company's
     // and the director's advance payments; the eco and sport/culture vouchers; and the rent. Those a move
     // takes from the plan as they are, with the levers a move adds to the plan, stay in the facts: the
-    // river and the plan hold the same of them unless the user changed them. A new kind of move adds what
-    // it sets here, which MovesViewTests holds to every move applied.
+    // river and the plan hold the same of them unless the user changed them. A car counts only once its
+    // catalogue value is given (CarFacts.Any), and the river's own carry the example's dates where
+    // CarFacts.None carries none, so a car that holds no catalogue value is no car in either. A new kind of
+    // move adds what it sets here, which MovesViewTests holds to every move applied.
     private static Dictionary<RiverModule, object> Facts(RiverInputs river)
     {
         var scenario = river.MoveScenario();
@@ -55,7 +59,7 @@ internal static class RiverDifferences
             [RiverModule.Vouchers] = scenario.Vouchers with { EcoVouchers = 0m, SportCultureVouchers = 0m },
             [RiverModule.Allowances] = scenario.Allowances,
             [RiverModule.Rent] = scenario.Rent with { Rent = 0m },
-            [RiverModule.Car] = scenario.Car,
+            [RiverModule.Car] = scenario.Car.Any ? scenario.Car : CarFacts.None,
             [RiverModule.Copyright] = scenario.Copyright with { Royalty = 0m, FollowsPay = false },
             [RiverModule.DirectorPay] =
                 (scenario.MunicipalRate.Value, scenario.ContributionsPaidBy, scenario.FundFeeRate, scenario.TaxPrepayments.Withheld, scenario.TaxPrepayments.Starter),

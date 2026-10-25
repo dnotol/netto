@@ -72,6 +72,35 @@ public class RiverDifferencesTests
         RiverDifferences.Between(TodayWithCarAndMeals, TodayWithCarAndMeals).ShouldBeEmpty();
     }
 
+    // A lever that holds nothing is the same in the plan or out of it, whichever holds it: the year is the
+    // same, so the note names no card. Each lever by hand, since each keeps its own facts while it is out
+    // (the car's carry the example's dates, which only a car with a catalogue value counts).
+    public static TheoryData<OptionalModule> Levers => new(Enum.GetValues<OptionalModule>());
+
+    [Theory]
+    [MemberData(nameof(Levers))]
+    public void Between_aLeverHoldingNothingJoiningThePlan_isEmpty(OptionalModule lever)
+    {
+        RiverDifferences.Between(Today.AddToPlan(lever), Today).ShouldBeEmpty();
+    }
+
+    [Theory]
+    [MemberData(nameof(Levers))]
+    public void Between_aLeverHoldingNothingLeavingThePlan_isEmpty(OptionalModule lever)
+    {
+        RiverDifferences.Between(Today, Today.AddToPlan(lever)).ShouldBeEmpty();
+    }
+
+    // The engine counts a car only once its catalogue value is given: its other facts typed, the river
+    // holds the year as Today does.
+    [Fact]
+    public void Between_aCarWithoutACatalogueValueJoiningThePlan_isEmpty()
+    {
+        var river = Today.WithCarCosts(5_000m).WithCarCo2(95).AddToPlan(OptionalModule.Car);
+
+        RiverDifferences.Between(river, Today).ShouldBeEmpty();
+    }
+
     // The cards in the order the river draws them, the income year before them: a reader finds the first
     // where the page starts.
     [Fact]
