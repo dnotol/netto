@@ -169,6 +169,9 @@
     <value>Together: {0} more than this plan.</value>
   </data>
   <data name="RiverChanged" xml:space="preserve">
+    <value>Your river holds changes Today does not, beyond what the moves set: the moves are still found for Today. Save the river and star it as Today to find them for it.</value>
+  </data>
+  <data name="RiverChanged_Plan" xml:space="preserve">
     <value>The river has changed since you opened or saved this plan: save it to measure the moves from it.</value>
   </data>
   <data name="State_Searching" xml:space="preserve">

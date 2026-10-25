@@ -10,12 +10,11 @@ public class OptimisationTabTextTests
     // The name IStringLocalizer<OptimisationTab> reads Tabs/OptimisationTab.resx under.
     private static readonly ResxText Resources = ResxText.For<OptimisationTab>();
 
-    // The pocket with every move, the pocket after each move, a link's name and the note on a river
-    // changed since its plan.
+    // The pocket with every move, the pocket after each move and a link's name.
     [Fact]
     public void OptimisationTabResx_everyFixedKey_hasAText()
     {
-        new[] { OptimisationTabText.PlanInPocket, OptimisationTabText.After, OptimisationTabText.LinkLabel, OptimisationTabText.RiverChanged }
+        new[] { OptimisationTabText.PlanInPocket, OptimisationTabText.After, OptimisationTabText.LinkLabel }
             .Where(key => Resources.Get(key) is null)
             .ShouldBeEmpty();
     }
@@ -35,12 +34,13 @@ public class OptimisationTabTextTests
         { "a named plan", FromANamedPlan },
     };
 
-    // Its head, the figures it opens on and the total, for each plan the moves are from.
+    // Its head, the figures it opens on, the total and the note on a river that holds what the plan does
+    // not, for each plan the moves are from.
     [Theory]
     [MemberData(nameof(Baselines))]
     public void OptimisationTabResx_everyKeyFromEachPlan_hasAText(string _, MovesBaseline from)
     {
-        new[] { OptimisationTabText.Eyebrow(from), OptimisationTabText.Lede(from), OptimisationTabText.FromInPocket(from), OptimisationTabText.MoreThanFrom(from), OptimisationTabText.Total(from) }
+        new[] { OptimisationTabText.Eyebrow(from), OptimisationTabText.Lede(from), OptimisationTabText.FromInPocket(from), OptimisationTabText.MoreThanFrom(from), OptimisationTabText.Total(from), OptimisationTabText.RiverChanged(from) }
             .Where(key => Resources.Get(key) is null)
             .ShouldBeEmpty();
     }
@@ -81,8 +81,17 @@ public class OptimisationTabTextTests
         { OptimisationTabText.FromInPocket(FromANamedPlan), "", "This plan, in your pocket" },
         { OptimisationTabText.MoreThanFrom(FromANamedPlan), "", "More than this plan" },
         { OptimisationTabText.Total(FromThePlanInTheRiver), "€1.00", "Together: €1.00 more than this plan." },
-        { OptimisationTabText.RiverChanged, "", "The river has changed since you opened or saved this plan: save it to measure the moves from it." },
+        { OptimisationTabText.RiverChanged(FromThePlanInTheRiver), "", "The river has changed since you opened or saved this plan: save it to measure the moves from it." },
     };
+
+    // From Today, the river moves away by the values the moves set, unsaid; what else it holds, the moves
+    // were not found for, and the note says how to find them for it.
+    [Fact]
+    public void RiverChanged_fromToday_saysTheMovesAreStillTodaysAndHowToFindThemForTheRiver()
+    {
+        Resources.Get(OptimisationTabText.RiverChanged(FromToday)).ShouldBe(
+            "Your river holds changes Today does not, beyond what the moves set: the moves are still found for Today. Save the river and star it as Today to find them for it.");
+    }
 
     [Theory]
     [MemberData(nameof(FromThePlan))]

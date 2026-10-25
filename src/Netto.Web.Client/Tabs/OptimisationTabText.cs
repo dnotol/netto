@@ -30,8 +30,9 @@ internal static class OptimisationTabText
     // What the moves add together: « Together: {0} more than this plan. »
     public static string Total(MovesBaseline from) => $"Total{Plan(from)}";
 
-    // That the river changed since the plan in it was opened or saved, which the moves are still from.
-    public const string RiverChanged = "RiverChanged";
+    // That the river holds what the plan the moves are still from does not (MovesView.RiverChanged): from
+    // Today, what no move sets; from the plan in the river, any change since it was opened or saved.
+    public static string RiverChanged(MovesBaseline from) => $"RiverChanged{Plan(from)}";
 
     // What the move changes, in words: « Pay yourself {0} instead of {1} ».
     public static string Move(Move move) => move switch

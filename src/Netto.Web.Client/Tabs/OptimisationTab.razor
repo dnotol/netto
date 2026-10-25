@@ -9,7 +9,8 @@
    plan starred « Today », the user's current setup, or while none is, from the plan in the river as it
    was opened or saved (MovesBaseline), which the head and the first line say, naming it when it is a
    saved plan; a change of the river since then is not counted, which a note under the first line says
-   while the river differs from that plan. One page of moves from that plan: first what it leaves in the
+   while the river differs from that plan, or from Today while it holds what no move sets (MovesView.RiverChanged),
+   since the river moves away from Today by the moves by design. One page of moves from that plan: first what it leaves in the
    pocket, what it leaves with every move and the difference; then the engine's moves (MoveSearch, through
    MovesView), in the order it took them, each numbered for the eye (the list says its place to a screen
    reader), with why it helps (MoveReasons, the engine's figures before and after it), what it adds on top
@@ -56,7 +57,7 @@
     <p class="moves__state">@L[OptimisationTabText.State(_view.State, _view.From), Name]</p>
     @if (_view.RiverChanged(Inputs))
     {
-        <p class="moves__state">@L[OptimisationTabText.RiverChanged]</p>
+        <p class="moves__state">@L[OptimisationTabText.RiverChanged(_view.From)]</p>
     }
     @if (_view.State == MovesState.Moves)
     {

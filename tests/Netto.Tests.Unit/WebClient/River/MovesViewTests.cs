@@ -251,6 +251,81 @@ public class MovesViewTests
         MovesView.Of(RiverInputs.Example, On22October).RiverChanged(RiverInputs.Example.WithDirectorPay(40_000m)).ShouldBeFalse();
     }
 
+    // From Today, the river moves away by the values the moves set, and by the split's royalty beside the
+    // pay, which the tab leaves unsaid: each by hand, from a plan whose moves read its payment, its home
+    // and its creative share.
+    public static TheoryData<string, RiverInputs> FurnishedWithWhatTheMovesSet => new()
+    {
+        { "the pay", Furnished.WithDirectorPay(40_000m) },
+        { "the company's payment by December", Furnished.WithAdvancePayment(3, 5_000m) },
+        { "the director's payment by December", Furnished.WithTaxAdvancePayment(3, 5_000m) },
+        { "the eco and sport/culture vouchers", Furnished.WithEcoVouchers(250m).WithSportCultureVouchers(100m).AddToPlan(OptionalModule.Vouchers) },
+        { "the rent", Furnished.WithRent(3_000m).AddToPlan(OptionalModule.Rent) },
+        { "the royalty following the pay", Furnished.AddToPlan(OptionalModule.Copyright) },
+        { "the royalty fixed", Furnished.AddToPlan(OptionalModule.Copyright).WithRoyalty(5_000m) },
+    };
+
+    [Theory]
+    [MemberData(nameof(FurnishedWithWhatTheMovesSet))]
+    public void RiverChanged_fromToday_riverMovedByWhatTheMovesSet_isFalse(string _, RiverInputs river)
+    {
+        MovesView.Of(Furnished, On22October).RiverChanged(river).ShouldBeFalse();
+    }
+
+    // Every move from Today applied, five kinds at least, leaves a river the moves were found for.
+    [Fact]
+    public void RiverChanged_fromToday_everyMoveApplied_isFalse()
+    {
+        var view = MovesView.Of(Furnished, On22October);
+        var planned = view.Moves.Aggregate(Furnished, (river, move) => view.Apply(move, river));
+
+        (Kinds(view) >= 5, view.RiverChanged(planned)).ShouldBe((true, false));
+    }
+
+    // From Today, a river holding what no move sets holds facts the moves were not found for: the tab says
+    // so. The company's figures, a module no move adds, a lever's facts, a status, the royalty's share.
+    public static TheoryData<string, RiverInputs> FurnishedWithOtherFacts => new()
+    {
+        { "the revenue", Furnished.WithRevenue(168_000m) },
+        { "the company's year skipped", Furnished.SkipCompany() },
+        { "the expense allowances", Furnished.WithOfficeAllowance(1_000m).AddToPlan(OptionalModule.Allowances) },
+        { "the meal vouchers' days", Furnished.WithMealVoucherDays(200).AddToPlan(OptionalModule.Vouchers) },
+        { "the home's cadastral income", Furnished.WithCadastralIncome(2_000m) },
+        { "the royalty's creative share", Furnished.WithCreativeShare(0.8m).AddToPlan(OptionalModule.Copyright) },
+        { "the small company's status", Furnished.WithSmallCompany(false) },
+    };
+
+    [Theory]
+    [MemberData(nameof(FurnishedWithOtherFacts))]
+    public void RiverChanged_fromToday_riverWithOtherFacts_isTrue(string _, RiverInputs river)
+    {
+        MovesView.Of(Furnished, On22October).RiverChanged(river).ShouldBeTrue();
+    }
+
+    // Found in the browser on 2026-10-25: Today saved with no lever, then a royalty that follows the pay at
+    // 80% added to the river. The split searched the river, the tab Today, and nothing said why they
+    // differed.
+    [Fact]
+    public void RiverChanged_fromTodayWithoutARoyalty_riverWithARoyaltyFollowingThePay_isTrue()
+    {
+        var today = RiverInputs.Example.WithRevenue(168_000m).WithRunningCosts(20_000m);
+        var view = MovesView.Of(today, On22October);
+
+        (view.State, view.RiverChanged(today.WithCreativeShare(0.8m).AddToPlan(OptionalModule.Copyright))).ShouldBe((MovesState.Moves, true));
+    }
+
+    // Today already the best Netto finds still says so beside a river holding other facts.
+    [Fact]
+    public void RiverChanged_todayAlreadyBest_isTrueOnceTheRiverHoldsOtherFacts()
+    {
+        var view = MovesView.Of(Furnished, On22October);
+        var planned = view.Moves.Aggregate(Furnished, (river, move) => view.Apply(move, river));
+
+        var best = MovesView.Of(planned, On22October);
+
+        (best.State, best.RiverChanged(planned), best.RiverChanged(planned.WithRevenue(168_000m))).ShouldBe((MovesState.AlreadyBest, false, true));
+    }
+
     // A plan starting at the pay or refused already says to save the river to see the moves.
     public static TheoryData<string, RiverInputs> PlansWithoutMoves => new()
     {
