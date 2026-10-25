@@ -32,7 +32,7 @@ public sealed record NoOfficeAllowanceBesideRent(decimal Rent, decimal OfficeAll
 // A copyright royalty, which the company deducts, lowers the taxable income art. 215 al. 3, 4° compares
 // the pay with, and so the smallest pay that keeps the reduced rate: With the royalty as the plan holds
 // it, fixed or following the pay (FollowsPay), Without for the same year without it, each null where no
-// pay the split gives keeps it. It holds where the royalty lowers that pay.
+// pay the split gives keeps it, never both. It holds where the royalty lowers that pay.
 public sealed record RoyaltyLowersPayKeepingReducedRate(decimal? With, decimal? Without, bool FollowsPay)
     : YearCondition(With is { } with && (Without is not { } without || with < without));
 

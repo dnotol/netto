@@ -212,6 +212,14 @@ public class YearConditionsTests
         Conditions(scenario).OfType<RoyaltyLowersPayKeepingReducedRate>().ShouldBeEmpty();
     }
 
+    // The costly car's benefit needs a pay of four times it to stay within 20%, more than the company
+    // pays with or without the royalty: no pay keeps the rate either way, so the royalty sets nothing on it.
+    [Fact]
+    public void Of_royaltyWhereNoPayKeepsTheRateEitherWay_setsNoConditionOnIt()
+    {
+        Conditions(Scenario(car: CostlyCar, royalty: FixedRoyalty)).OfType<RoyaltyLowersPayKeepingReducedRate>().ShouldBeEmpty();
+    }
+
     // It holds where the royalty leaves a pay that keeps the rate below the one without it, or one where
     // the year without it has none.
     public static TheoryData<decimal?, decimal?, bool> Lowerings => new()
