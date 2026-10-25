@@ -359,7 +359,7 @@ public class OptimisationTabTests
     {
         var html = await RenderFromAsync(new MovesBaseline(RiverInputs.Example, IsToday: false), RiverInputs.Example.WithDirectorPay(40_000m));
 
-        Regex.Matches(html, "<p class=\"moves__state\"[^>]*>(.*?)</p>").Select(match => match.Groups[1].Value).ShouldBe([
+        StateParagraphs(html).ShouldBe([
             "From the plan in your river, as you opened or saved it:",
             "The river has changed since you opened or saved this plan: save it to measure the moves from it.",
         ]);

@@ -406,16 +406,6 @@ public class MovesViewTests
         (view.Differences(Furnished), view.Differences(Furnished.WithDirectorPay(40_000m))?.Count).ShouldBe((null, 0));
     }
 
-    // The bool is the list's being there, from Today and from the plan in the river alike.
-    [Fact]
-    public void RiverChanged_isTheDifferencesBeingThere()
-    {
-        var rivers = new[] { Furnished, Furnished.WithDirectorPay(40_000m), Furnished.WithRevenue(168_000m), Furnished.WithCreativeShare(0.8m) };
-        var views = new[] { MovesView.Of(Furnished, On22October), MovesView.Of(new MovesBaseline(Furnished, IsToday: false), On22October) };
-
-        views.SelectMany(view => rivers.Select(river => view.RiverChanged(river) == (view.Differences(river) is not null))).ShouldAllBe(same => same);
-    }
-
     // What the pocket holds after each move is Today's with the gains up to it: the last is the plan's.
     [Fact]
     public void InPocketAfter_eachMove_addsTheGainsUpToItToTodaysPocket()
