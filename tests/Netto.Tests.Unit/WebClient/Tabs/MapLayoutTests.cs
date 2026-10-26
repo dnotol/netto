@@ -118,12 +118,22 @@ public class MapLayoutTests
             .ShouldBeEmpty();
     }
 
-    // The levers the routes here are worked out with as quiet are those the plan leaves empty.
+    // The levers the routes here are worked out with as quiet, which the map draws quiet, are those the plan
+    // leaves empty: every one of them, but for Expense allowances beside a rent paid (below).
     [Theory]
-    [MemberData(nameof(Rivers))]
+    [MemberData(nameof(RiversWithoutEmptyAllowancesBesideAPaidRent))]
     public void Quiet_anyPlan_isTheLeversItLeavesEmpty(int bits, int quiet, bool companySkipped)
     {
         Quiet(River(bits, quiet, companySkipped)).ShouldBe(Levers(quiet).Select(MapModules.Of), ignoreOrder: true);
+    }
+
+    // Empty Expense allowances beside a rent paid keep their box: the rule that leaves no office allowance
+    // beside a rent links them to it, a condition, which counts as any link does.
+    [Theory]
+    [MemberData(nameof(RiversWithEmptyAllowancesBesideAPaidRent))]
+    public void Quiet_emptyAllowancesBesideAPaidRent_isTheOtherLeversItLeavesEmpty(int bits, int quiet, bool companySkipped)
+    {
+        Quiet(River(bits, quiet, companySkipped)).ShouldBe(Levers(quiet).Where(lever => lever != OptionalModule.Allowances).Select(MapModules.Of), ignoreOrder: true);
     }
 
     [Theory]
@@ -232,16 +242,31 @@ public class MapLayoutTests
 
     // Every composition of the levers, with the company's year and without it, and, with it, every set of
     // the levers in the plan left empty (quiet, by the bits of a number as the composition's), which the
-    // map draws quiet.
-    public static TheoryData<int, int, bool> Rivers()
+    // map draws quiet but for Expense allowances beside a rent paid.
+    public static TheoryData<int, int, bool> Rivers() => Data(Plans());
+
+    public static TheoryData<int, int, bool> RiversWithoutEmptyAllowancesBesideAPaidRent() => Data(Plans().Where(plan => !EmptyAllowancesBesideAPaidRent(plan)));
+
+    public static TheoryData<int, int, bool> RiversWithEmptyAllowancesBesideAPaidRent() => Data(Plans().Where(EmptyAllowancesBesideAPaidRent));
+
+    private static IEnumerable<(int Bits, int Quiet, bool CompanySkipped)> Plans()
     {
-        var data = new TheoryData<int, int, bool>();
         foreach (var bits in Enumerable.Range(0, 32))
         {
             foreach (var quiet in Enumerable.Range(0, 32).Where(quiet => (quiet & ~bits) == 0))
-                data.Add(bits, quiet, false);
-            data.Add(bits, 0, true);
+                yield return (bits, quiet, false);
+            yield return (bits, 0, true);
         }
+    }
+
+    private static bool EmptyAllowancesBesideAPaidRent((int Bits, int Quiet, bool CompanySkipped) plan) =>
+        Levers(plan.Quiet).Contains(OptionalModule.Allowances) && Levers(plan.Bits).Contains(OptionalModule.Rent) && !Levers(plan.Quiet).Contains(OptionalModule.Rent);
+
+    private static TheoryData<int, int, bool> Data(IEnumerable<(int Bits, int Quiet, bool CompanySkipped)> plans)
+    {
+        var data = new TheoryData<int, int, bool>();
+        foreach (var (bits, quiet, companySkipped) in plans)
+            data.Add(bits, quiet, companySkipped);
 
         return data;
     }
@@ -254,12 +279,9 @@ public class MapLayoutTests
 
     private static OptionalModule[] Levers(int bits) => [.. PlanComposition.Modules.Where((_, index) => (bits & (1 << index)) != 0)];
 
-    // The levers the map draws quiet, read from the run's links as the map reads them.
-    private static IReadOnlySet<RiverModule> Quiet(RiverInputs river)
-    {
-        var run = river.Run();
-        return MapQuiet.Of(run, MapView.ModulesOf(river), MapLinks.Of(river, run));
-    }
+    // The levers the map draws quiet, read off the map itself, the conditions of its year among its links.
+    private static HashSet<RiverModule> Quiet(RiverInputs river) =>
+        MapView.From(river, river.Run()).Modules.Where(node => node.Quiet).Select(node => node.End.Module!.Value).ToHashSet();
 
     private static MapLayout.MapGrid Grid(RiverInputs river) => MapLayout.Grid(MapView.ModulesOf(river), Quiet(river));
 
@@ -279,12 +301,12 @@ public class MapLayoutTests
     private static bool RunsThrough(IReadOnlyList<RiverModule> through, IReadOnlyList<RiverModule> box) => box.Count > 0 && box.All(through.Contains);
 
     // Each line of the plan, the run's links and the conditions between the modules it draws with a box,
-    // folded past its quiet levers as the map folds them, once.
+    // folded past the levers the map draws quiet as the map folds them, once.
     private static IReadOnlyList<(string Name, MapEnd From, MapEnd To, MapRoute Route, IReadOnlyList<RiverModule> Through)> Routes(RiverInputs river, params MapLink[] more)
     {
         var run = river.Run();
         var modules = MapView.ModulesOf(river);
-        var quiet = MapQuiet.Of(run, modules, MapLinks.Of(river, run));
+        var quiet = Quiet(river);
         var conditions = Conditions
             .Where(condition => modules.Contains(condition.From) && modules.Contains(condition.To) && !quiet.Contains(condition.From) && !quiet.Contains(condition.To))
             .Select(condition => new MapLink(MapLinkKind.Condition, MapEnd.Of(condition.From), MapEnd.Of(condition.To), condition.From,
