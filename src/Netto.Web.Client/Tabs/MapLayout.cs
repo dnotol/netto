@@ -11,6 +11,12 @@ namespace Netto.Web.Client.Tabs;
 // route, worked out once from the slots and every link of the run, never from the links a filter shows,
 // so hiding a kind of link moves nothing.
 //
+// The levers that move no money of their own in this plan (MapQuiet) have no box. Those following one
+// another down the chain share one quiet row, in the row of the first of them, the rows of the others
+// closing up: lower than a lever's row, its pill lower than a box and wider than the chain's boxes, which
+// the chain's line runs straight through, from the box above to the box below. The royalty, quiet, is a
+// pill in the middle of its own slot, and its row stays, Corporate tax's too.
+//
 // A route is orthogonal and runs only through room no box holds: the gap between two rows, a lane down
 // the left edge to the pocket, a gutter on each side of the middle column, a lane down the right edge, or
 // a row's side the river leaves empty (the chain's rows have nothing left or right of the middle, the
@@ -31,6 +37,14 @@ internal static class MapLayout
     // where lines turn. The streams' rows are taller, for the words of their many lines, and the buckets'
     // shorter.
     private const decimal BoxUnits = 0.5m;
+
+    // A quiet row and its pill: the row lower than a lever's, the pill lower than a box, centred on the
+    // chain's middle, wider than its boxes for the names in it and clear of the lanes each side, the left
+    // gutter's tracks ending before it and the lane a condition between two levers takes round the chain's
+    // right lying past it.
+    private const decimal QuietRowUnits = 0.7m;
+    private const decimal QuietUnits = 0.34m;
+    private static readonly (decimal Left, decimal Right) QuietSpan = (36m, 64m);
 
     // The lane down the left edge to the pocket, one track per link, the highest row's furthest out; the
     // gutter left of the middle column; the gutter right of it; the lane down the right edge.
@@ -70,8 +84,8 @@ internal static class MapLayout
         _ => throw new ArgumentOutOfRangeException(nameof(module), module, "A module the map has no place for."),
     };
 
-    // The boxes of the modules and of the buckets.
-    public static MapGrid Grid(IReadOnlyList<RiverModule> modules) => new(modules);
+    // The boxes of the modules and of the buckets, the quiet levers given drawn in quiet rows.
+    public static MapGrid Grid(IReadOnlyList<RiverModule> modules, IReadOnlySet<RiverModule>? quiet = null) => new(modules, quiet ?? new HashSet<RiverModule>());
 
     // Every link of the run with its route: links with the same ends and kind share one, their words
     // drawn together.
@@ -88,27 +102,50 @@ internal static class MapLayout
 
     // The slots of one map, in percent of the map's box: its rows top to bottom, the buckets' last, a row
     // the modules leave empty left out, each as high as its weight (Units, the map's height in chain rows).
-    internal sealed class MapGrid(IReadOnlyList<RiverModule> modules)
+    // The quiet levers of the chain following one another share the row of the first of them, a quiet row.
+    internal sealed class MapGrid
     {
-        public IReadOnlyList<RiverModule> Modules { get; } = modules;
+        // Each quiet lever of the chain, with the first of the quiet levers it follows down the chain
+        // without a box between them, whose row they share.
+        private readonly Dictionary<RiverModule, RiverModule> _firstOf;
+        private readonly HashSet<MapRow> _quietRows;
+        private readonly IReadOnlySet<RiverModule> _quiet;
 
-        public IReadOnlyList<MapRow> Rows { get; } =
-            [.. Enum.GetValues<MapRow>().Where(row => row == MapRow.Buckets || modules.Any(module => Place(module).Row == row))];
+        public MapGrid(IReadOnlyList<RiverModule> modules, IReadOnlySet<RiverModule> quiet)
+        {
+            Modules = modules;
+            _quiet = quiet;
+            _firstOf = FirstOf(modules, quiet);
+            _quietRows = [.. _firstOf.Values.Select(first => Place(first).Row)];
+            Rows = [.. Enum.GetValues<MapRow>().Where(row => row == MapRow.Buckets || modules.Any(module => RowOf(module) == row))];
+        }
+
+        public IReadOnlyList<RiverModule> Modules { get; }
+
+        public IReadOnlyList<MapRow> Rows { get; }
 
         public decimal Units => Rows.Sum(Weight);
 
         public bool Holds(RiverModule module) => Modules.Contains(module);
 
-        // Whether the second row is drawn right under the first.
-        public bool Follows(MapRow row, MapRow next) => Index(next) == Index(row) + 1;
+        // Whether the second row is drawn right under the first, or under a quiet row between them, which a
+        // line from one to the other runs through.
+        public bool Follows(MapRow row, MapRow next) => Index(next) > Index(row) && Between(row, next).All(_quietRows.Contains);
+
+        // The pills of the quiet rows between two rows, top to bottom.
+        public IReadOnlyList<MapSlot> QuietBetween(MapRow row, MapRow next) =>
+            [.. Between(row, next).Where(_quietRows.Contains).Select(quietRow => Box(quietRow, QuietSpan, QuietUnits))];
 
         public MapSlot Slot(MapEnd end)
         {
             if (end.Bucket is { } bucket)
-                return Box(MapRow.Buckets, BucketSpans[BucketsView.Keys.ToList().IndexOf(bucket)]);
+                return Box(MapRow.Buckets, BucketSpans[BucketsView.Keys.ToList().IndexOf(bucket)], BoxUnits);
 
             if (end.Module is not { } module)
                 throw new ArgumentOutOfRangeException(nameof(end), end.Id, "The river's edge has no box.");
+
+            if (_firstOf.TryGetValue(module, out var first))
+                return Box(Place(first).Row, QuietSpan, QuietUnits);
 
             var (row, column) = Place(module);
             return Box(row, column switch
@@ -116,34 +153,63 @@ internal static class MapLayout
                 MapColumn.Left => LeftColumn,
                 MapColumn.Chain => ChainColumn,
                 _ => RightColumn,
-            });
+            }, _quiet.Contains(module) ? QuietUnits : BoxUnits);
         }
 
         // The y of the gap between the boxes of the row given and of the next, at a fraction of its height.
         public decimal GapBelow(MapRow row, decimal fraction)
         {
-            var (bottom, top) = (BoxTop(row) + BoxHeight, BoxTop(Rows[Index(row) + 1]));
+            var next = Rows[Index(row) + 1];
+            var (bottom, top) = (BoxTop(row, Height(row)) + Height(row), BoxTop(next, Height(next)));
             return bottom + fraction * (top - bottom);
         }
 
-        private decimal BoxHeight => BoxUnits * 100m / Units;
+        // The row a module is drawn in: its own, or, a quiet lever of the chain, the quiet row it shares.
+        private MapRow RowOf(RiverModule module) => Place(_firstOf.GetValueOrDefault(module, module)).Row;
 
-        private MapSlot Box(MapRow row, (decimal Left, decimal Right) span) => new(span.Left, BoxTop(row), span.Right - span.Left, BoxHeight);
+        // How high a row's boxes are drawn: a box's height, or a quiet row's pill's.
+        private decimal Height(MapRow row) => (_quietRows.Contains(row) ? QuietUnits : BoxUnits) * 100m / Units;
 
-        private decimal BoxTop(MapRow row) => Top(row) + (Weight(row) * 100m / Units - BoxHeight) / 2m;
+        private MapSlot Box(MapRow row, (decimal Left, decimal Right) span, decimal units)
+        {
+            var height = units * 100m / Units;
+            return new(span.Left, BoxTop(row, height), span.Right - span.Left, height);
+        }
+
+        private decimal BoxTop(MapRow row, decimal height) => Top(row) + (Weight(row) * 100m / Units - height) / 2m;
 
         private decimal Top(MapRow row) => Rows.Take(Index(row)).Sum(Weight) * 100m / Units;
+
+        private IEnumerable<MapRow> Between(MapRow row, MapRow next) => Rows.Skip(Index(row) + 1).Take(Index(next) - Index(row) - 1);
 
         private int Index(MapRow row) => Rows.ToList().IndexOf(row) is var index and >= 0
             ? index
             : throw new ArgumentOutOfRangeException(nameof(row), row, "A row the map does not draw.");
 
-        private static decimal Weight(MapRow row) => row switch
+        private decimal Weight(MapRow row) => _quietRows.Contains(row)
+            ? QuietRowUnits
+            : row switch
+            {
+                MapRow.StreamTop or MapRow.StreamBottom => 1.6m,
+                MapRow.Buckets => 0.9m,
+                _ => 1m,
+            };
+
+        // The quiet levers of the chain, in its order, each with the first of those it follows with no box
+        // between them.
+        private static Dictionary<RiverModule, RiverModule> FirstOf(IReadOnlyList<RiverModule> modules, IReadOnlySet<RiverModule> quiet)
         {
-            MapRow.StreamTop or MapRow.StreamBottom => 1.6m,
-            MapRow.Buckets => 0.9m,
-            _ => 1m,
-        };
+            var firstOf = new Dictionary<RiverModule, RiverModule>();
+            RiverModule? first = null;
+            foreach (var module in modules.Where(module => Place(module).Column == MapColumn.Chain))
+            {
+                first = quiet.Contains(module) ? first ?? module : null;
+                if (first is { } head)
+                    firstOf[module] = head;
+            }
+
+            return firstOf;
+        }
     }
 
     // The routes of one map. Each link's family decides the sides it leaves and enters by and the room it
@@ -310,12 +376,14 @@ internal static class MapLayout
 
         private decimal RightGutterX((MapEnd, MapEnd, MapLinkKind) bundle) => RightGutter + _rightGutter.IndexOf(bundle) * GutterTrack;
 
-        // Down from one box's bottom into the next one's top, at an x both share.
+        // Down from one box's bottom into the next one's top, at an x both share, into the pill of a quiet
+        // row between them and out of it.
         private MapRoute Down(MapEnd from, MapEnd to, MapLabelSide side)
         {
             var (top, bottom) = (_grid.Slot(from), _grid.Slot(to));
             var x = top.CenterX;
-            return new MapRoute([new(x, top.Bottom), new(x, bottom.Top)], side);
+            var through = _grid.QuietBetween(Row(from.Module!.Value), Row(to.Module!.Value)).SelectMany(pill => new MapPoint[] { new(x, pill.Top), new(x, pill.Bottom) });
+            return new MapRoute([new(x, top.Bottom), .. through, new(x, bottom.Top)], side);
         }
 
         // Out of a box's side to a lane, then down the lane into a bucket's top.
@@ -539,8 +607,9 @@ internal sealed record MapRoute(IReadOnlyList<MapPoint> Points, MapLabelSide Sid
 {
     public MapPoint End => Points[^1];
 
-    // Where a line between two boxes one over the other has its words: just right of it, halfway down.
-    public MapPoint Beside => new(Points[0].X + BesideGap, (Points[0].Y + Points[^1].Y) / 2m);
+    // Where a line between two boxes one over the other has its words: just right of it, halfway down its
+    // last stretch, under the quiet row it runs through, if any, never on it.
+    public MapPoint Beside => new(Points[^2].X + BesideGap, (Points[^2].Y + Points[^1].Y) / 2m);
 
     private const decimal BesideGap = 1m;
 

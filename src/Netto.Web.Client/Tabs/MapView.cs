@@ -33,25 +33,28 @@ internal sealed record MapView(IReadOnlyList<MapNode> Modules, IReadOnlyList<Map
     public static MapView From(RiverInputs inputs, RiverRun run)
     {
         var modules = ModulesOf(inputs);
-        var grid = MapLayout.Grid(modules);
         var refused = run.Error is { } error ? RiverErrors.Owner(error, inputs.Company is null) : (RiverModule?)null;
 
         // The run's links, each a line of a card, then the conditions one module sets on another, as the
         // engine names them for the year, between modules on the map; a run without a year, refused or
-        // with the company skipped, has none.
+        // with the company skipped, has none. The levers they leave moving no money of their own are quiet
+        // (MapQuiet), folded into a quiet row the chain's line runs through.
         IReadOnlyList<MapLink> links =
             [.. MapLinks.Of(inputs, run), .. run.Year is { } year ? MapConditions.From(YearConditions.Of(year), modules) : []];
+        var quiet = MapQuiet.Of(run, modules, links);
+        var grid = MapLayout.Grid(modules, quiet);
 
         return new MapView(
             [.. modules.Select(module => new MapNode(MapEnd.Of(module), grid.Slot(MapEnd.Of(module)))
             {
                 Refused = module == refused,
                 Skipped = module == RiverModule.CompanyYear && inputs.Company is null,
+                Quiet = quiet.Contains(module),
             })],
             [.. BucketsView.Keys.Select(key => new MapNode(MapEnd.InBucket(key), grid.Slot(MapEnd.InBucket(key))))],
             grid.Units)
         {
-            Links = MapLayout.Routed(grid, links),
+            Links = MapLayout.Routed(grid, MapQuiet.Fold(links, modules, quiet)),
             Refusal = run.Error,
             TaxesOnPayIncludeRent = BucketsView.From(run)?.TaxesOnPayIncludeRent ?? false,
         };
@@ -67,13 +70,31 @@ internal sealed record MapView(IReadOnlyList<MapNode> Modules, IReadOnlyList<Map
         ? [RiverModule.CompanyYear, RiverModule.DirectorPay]
         : [.. MapModules.Order.Where(module => RiverModules.Lever(module) is not { } lever || inputs.InPlan(lever))];
 
-    // A module's links the map shows: what comes into it and what goes out.
+    // A module's links the map shows: what comes into it, what goes out, and the line running past it while
+    // it is quiet.
     public IEnumerable<MapLink> LinksOf(RiverModule module) => Links.Where(link => link.Touches(module));
 
     public IEnumerable<MapLink> HiddenOf(RiverModule module) => Hidden.Where(link => link.Touches(module));
 
     // The module chosen, while the map draws it; none once it has left the map.
     public RiverModule? Choice(RiverModule? chosen) => chosen is { } module && Modules.Any(node => node.End.Module == module) ? module : null;
+
+    // The modules as the map draws them, in the river's order: a box each, but the quiet levers, which
+    // share one place where they follow one another down the chain (MapLayout gives them one slot), the
+    // royalty quiet in its own.
+    public IReadOnlyList<MapPlace> Places()
+    {
+        var places = new List<MapPlace>();
+        foreach (var node in Modules)
+        {
+            if (node.Quiet && places is [.., { Quiet: true } last] && last.Slot == node.Slot)
+                places[^1] = last with { Nodes = [.. last.Nodes, node] };
+            else
+                places.Add(new MapPlace(node.Slot, [node]));
+        }
+
+        return places;
+    }
 
     // The lines drawn, links of one route as one, in the order of the links.
     public IReadOnlyList<MapBundle> Bundles() =>
@@ -110,12 +131,21 @@ internal sealed record MapView(IReadOnlyList<MapNode> Modules, IReadOnlyList<Map
 }
 
 // A module or a bucket of the map in its box; the module holding a refused field is marked, and so is a
-// Company year the viewer skipped.
+// Company year the viewer skipped, and a lever that moves no money of its own in this plan (MapQuiet),
+// whose slot is its quiet row's.
 internal sealed record MapNode(MapEnd End, MapSlot Slot)
 {
     public bool Refused { get; init; }
 
     public bool Skipped { get; init; }
+
+    public bool Quiet { get; init; }
+}
+
+// Where the map draws modules: one box, or a quiet row of the quiet levers in it.
+internal sealed record MapPlace(MapSlot Slot, IReadOnlyList<MapNode> Nodes)
+{
+    public bool Quiet => Nodes[0].Quiet;
 }
 
 // One line of the map: the links of one route, one after the other in its words, all lines of one card
@@ -247,7 +277,9 @@ internal sealed record MapLabel(MapText Text, string Key, IReadOnlyList<string> 
 // (Card), what it carries and its amount in this plan, the card's own figure; none for a condition, which
 // names its figures in its words. A condition says whether it holds (Holds), and in a word or two (State),
 // none for any other link. Its line is its route (MapLayout), shared with the links of the same ends and
-// kind, worked out from every link of the run, none until the layout has routed it.
+// kind, worked out from every link of the run, none until the layout has routed it. The chain's line past
+// quiet levers names them (Through, in the river's order): it runs through their quiet row, and touches
+// each of them as it touches its two ends.
 internal sealed record MapLink(MapLinkKind Kind, MapEnd From, MapEnd To, RiverModule Card, MapLabel Carries, decimal? Amount)
 {
     public bool? Holds { get; init; }
@@ -256,7 +288,9 @@ internal sealed record MapLink(MapLinkKind Kind, MapEnd From, MapEnd To, RiverMo
 
     public MapRoute? Route { get; init; }
 
-    public bool Touches(RiverModule module) => From.Module == module || To.Module == module;
+    public IReadOnlyList<RiverModule> Through { get; init; } = [];
+
+    public bool Touches(RiverModule module) => From.Module == module || To.Module == module || Through.Contains(module);
 }
 
 // The river's modules as the map places them, in the river's order, the outline's (OutlineRows.Order),
