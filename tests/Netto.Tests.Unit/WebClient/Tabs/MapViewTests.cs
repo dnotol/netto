@@ -278,7 +278,8 @@ public class MapViewTests
 
         blocks.ShouldSatisfyAllConditions(
             () => blocks.ShouldNotBeEmpty(),
-            () => blocks.Where(block => !block.Bundles.Select(Meets).SequenceEqual(block.Bundles.Select(Meets).OrderBy(point => point.Y).ThenBy(point => point.X)))
+            () => blocks.Where(block => !block.Bundles.Select(bundle => bundle.Meets)
+                    .SequenceEqual(block.Bundles.Select(bundle => bundle.Meets).OrderBy(point => point.Y).ThenBy(point => point.X)))
                 .Select(block => $"{block.Card} {block.Side}").ShouldBeEmpty());
     }
 
@@ -329,9 +330,6 @@ public class MapViewTests
     // The one line of the map between two ends, of the kind money has between them.
     private static MapBundle Line(MapView view, MapEnd from, MapEnd to) =>
         view.Bundles().Single(bundle => bundle.From == from && bundle.To == to && bundle.Kind != MapLinkKind.Condition);
-
-    // Where a line meets its card's box: where it leaves it, or where it comes back into it.
-    private static MapPoint Meets(MapBundle bundle) => bundle.From.Module == bundle.Card ? bundle.Route.Points[0] : bundle.Route.End;
 
     private static MapLink Link(decimal amount) =>
         new(MapLinkKind.IntoBucket, MapEnd.Of(RiverModule.Vouchers), MapEnd.InBucket("pocket"), RiverModule.Vouchers, new MapLabel(MapText.Map, "Line", []), amount);
