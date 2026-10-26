@@ -255,6 +255,56 @@ public class MapViewTests
         (block.At.X > car.Right, block.At.Y).ShouldBe((true, car.CenterY));
     }
 
+    // A card's lines beside one side of its box are in the order they meet the box, top to bottom then
+    // left to right, so each amount beside the box is read with its line: the rent's into the pocket over
+    // its tax into the taxes on pay, as they leave its left side.
+    [Fact]
+    public void Blocks_aCardsLines_areInTheOrderTheyMeetItsBox()
+    {
+        var view = MapView.From(Full, Full.Run());
+
+        var rent = view.Blocks().Single(block => block.Card == RiverModule.Rent && block.Side == MapLabelSide.Left);
+
+        rent.Bundles.Select(bundle => bundle.To.Id).ShouldBe(["pocket", "taxes_on_pay"]);
+    }
+
+    [Fact]
+    public void Blocks_everyCardsLines_areInTheOrderTheyMeetItsBox()
+    {
+        var view = MapView.From(Full, Full.Run());
+
+        var blocks = view.Blocks().Where(block => block.Bundles.Count > 1).ToList();
+
+        blocks.ShouldSatisfyAllConditions(
+            () => blocks.ShouldNotBeEmpty(),
+            () => blocks.Where(block => !block.Bundles.Select(Meets).SequenceEqual(block.Bundles.Select(Meets).OrderBy(point => point.Y).ThenBy(point => point.X)))
+                .Select(block => $"{block.Card} {block.Side}").ShouldBeEmpty());
+    }
+
+    // Nothing chosen, every line is beside its card; a module chosen, only its own lines are, whichever card
+    // draws them, and a card with none of them has no words on the map.
+    [Fact]
+    public void Blocks_aModuleChosen_holdsOnlyItsOwnLines()
+    {
+        var view = MapView.From(Full, Full.Run());
+
+        var blocks = view.Blocks(RiverModule.CorporateTax);
+
+        blocks.ShouldSatisfyAllConditions(
+            () => blocks.SelectMany(block => block.Bundles).Select(bundle => bundle.Route)
+                .ShouldBe(view.Bundles().Where(bundle => bundle.Touches(RiverModule.CorporateTax)).Select(bundle => bundle.Route), ignoreOrder: true),
+            () => blocks.Select(block => block.Card).ShouldContain(RiverModule.Split),
+            () => blocks.ShouldAllBe(block => block.Bundles.Count > 0));
+    }
+
+    [Fact]
+    public void Blocks_nothingChosen_holdsEveryLine()
+    {
+        var view = MapView.From(Full, Full.Run());
+
+        view.Blocks(null).SelectMany(block => block.Bundles).Count().ShouldBe(view.Bundles().Count);
+    }
+
     // Choosing a module brings its own lines out, the others fading, and draws them last, over the rest.
     [Fact]
     public void Drawn_aModuleChosen_fadesTheOtherLinesAndDrawsItsOwnLast()
@@ -278,6 +328,9 @@ public class MapViewTests
     // The one line of the map between two ends, of the kind money has between them.
     private static MapBundle Line(MapView view, MapEnd from, MapEnd to) =>
         view.Bundles().Single(bundle => bundle.From == from && bundle.To == to && bundle.Kind != MapLinkKind.Condition);
+
+    // Where a line meets its card's box: where it leaves it, or where it comes back into it.
+    private static MapPoint Meets(MapBundle bundle) => bundle.From.Module == bundle.Card ? bundle.Route.Points[0] : bundle.Route.End;
 
     private static MapLink Link(decimal amount) =>
         new(MapLinkKind.IntoBucket, MapEnd.Of(RiverModule.Vouchers), MapEnd.InBucket("pocket"), RiverModule.Vouchers, new MapLabel(MapText.Map, "Line", []), amount);

@@ -84,16 +84,19 @@ internal sealed record MapView(IReadOnlyList<MapNode> Modules, IReadOnlyList<Map
         [.. Bundles().Select(bundle => (Bundle: bundle, Faded: chosen is { } module && !bundle.Touches(module))).OrderByDescending(line => line.Faded)];
 
     // Where each line's words are drawn: a card's lines leaving one side of its box together, beside that
-    // side, in the middle of its height; a line between two boxes one over the other beside itself, halfway
-    // down the gap.
-    public IReadOnlyList<MapLabelBlock> Blocks()
+    // side, in the middle of its height, in the order they meet the box, top to bottom then left to right,
+    // so each is read with its line; a line between two boxes one over the other beside itself, halfway
+    // down the gap. Nothing chosen, every line has its words; a module chosen, only its own lines do,
+    // whichever card draws them, the others' being left out rather than faded, so choosing quiets the map.
+    public IReadOnlyList<MapLabelBlock> Blocks(RiverModule? chosen = null)
     {
-        var bundles = Bundles();
+        var bundles = Bundles().Where(bundle => chosen is not { } module || bundle.Touches(module)).ToList();
         var gaps = bundles.Where(bundle => bundle.Route.Side == MapLabelSide.Gap)
             .Select(bundle => new MapLabelBlock(bundle.Card, MapLabelSide.Gap, bundle.Route.Beside, [bundle]));
         var sides = bundles.Where(bundle => bundle.Route.Side != MapLabelSide.Gap)
             .GroupBy(bundle => (bundle.Card, bundle.Route.Side))
-            .Select(block => new MapLabelBlock(block.Key.Card, block.Key.Side, BesideBox(block.Key.Card, block.Key.Side), [.. block]));
+            .Select(block => new MapLabelBlock(block.Key.Card, block.Key.Side, BesideBox(block.Key.Card, block.Key.Side),
+                [.. block.OrderBy(bundle => bundle.Meets.Y).ThenBy(bundle => bundle.Meets.X)]));
 
         return [.. sides, .. gaps];
     }
@@ -132,6 +135,9 @@ internal sealed record MapBundle(MapRoute Route, IReadOnlyList<MapLink> Links)
     public decimal? Amount => Kind == MapLinkKind.Condition
         ? null
         : Links.Sum(link => Math.Round(link.Amount ?? 0m, 2, MidpointRounding.AwayFromZero));
+
+    // Where the line meets its card's box: where it leaves it, or where it comes back into it.
+    public MapPoint Meets => From.Module == Card ? Route.Points[0] : Route.End;
 
     public bool Touches(RiverModule module) => Links[0].Touches(module);
 }
