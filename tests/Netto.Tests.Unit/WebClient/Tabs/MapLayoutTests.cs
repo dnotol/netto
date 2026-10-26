@@ -5,9 +5,11 @@ using Shouldly;
 namespace Netto.Tests.WebClient.Tabs;
 
 // Where the map draws its modules, its buckets and its lines: fixed slots in the river's shape, rows
-// closing up over a lever out of the plan, and an orthogonal route for every link, the conditions one
-// module sets on another among them, that crosses no box, ends on its two boxes and shares no stretch
-// with another link's, whatever the plan holds.
+// closing up over a lever out of the plan, the levers that move no money of their own in one quiet row,
+// and an orthogonal route for every link, the conditions one module sets on another among them, that
+// crosses no box and no quiet row but the one the chain's line runs through, ends on its two boxes and
+// shares no stretch with another link's, whatever the plan holds and whichever of its levers it leaves
+// empty.
 public class MapLayoutTests
 {
     // The conditions one module sets on another, as the engine will name them: the pay keeping the
@@ -78,27 +80,27 @@ public class MapLayoutTests
 
     [Theory]
     [MemberData(nameof(Rivers))]
-    public void Grid_anyPlan_drawsNoBoxOverAnother(int bits, bool companySkipped)
+    public void Grid_anyPlan_drawsNoBoxOverAnother(int bits, int quiet, bool companySkipped)
     {
-        var boxes = Boxes(River(bits, companySkipped));
+        var boxes = Boxes(River(bits, quiet, companySkipped));
 
         boxes.SelectMany((a, i) => boxes.Skip(i + 1).Where(b => Overlap(a.Slot, b.Slot)).Select(b => $"{a.Id} over {b.Id}")).ShouldBeEmpty();
     }
 
     [Theory]
     [MemberData(nameof(Rivers))]
-    public void Routed_anyPlan_runsEveryLineAcrossOrDownOnly(int bits, bool companySkipped)
+    public void Routed_anyPlan_runsEveryLineAcrossOrDownOnly(int bits, int quiet, bool companySkipped)
     {
-        Routes(River(bits, companySkipped)).Where(route => Segments(route.Route).Any(segment => segment.A.X != segment.B.X && segment.A.Y != segment.B.Y))
+        Routes(River(bits, quiet, companySkipped)).Where(route => Segments(route.Route).Any(segment => segment.A.X != segment.B.X && segment.A.Y != segment.B.Y))
             .Select(route => route.Name).ShouldBeEmpty();
     }
 
     [Theory]
     [MemberData(nameof(Rivers))]
-    public void Routed_anyPlan_endsEveryLineOnItsTwoBoxes(int bits, bool companySkipped)
+    public void Routed_anyPlan_endsEveryLineOnItsTwoBoxes(int bits, int quiet, bool companySkipped)
     {
-        var river = River(bits, companySkipped);
-        var grid = MapLayout.Grid(MapView.ModulesOf(river));
+        var river = River(bits, quiet, companySkipped);
+        var grid = Grid(river);
 
         Routes(river).Where(route => !OnEdge(grid, route.From, route.Route.Points[0]) || !EndsOn(grid, route.From, route.To, route.Route.End))
             .Select(route => route.Name).ShouldBeEmpty();
@@ -106,21 +108,29 @@ public class MapLayoutTests
 
     [Theory]
     [MemberData(nameof(Rivers))]
-    public void Routed_anyPlan_crossesNoBox(int bits, bool companySkipped)
+    public void Routed_anyPlan_crossesNoBox(int bits, int quiet, bool companySkipped)
     {
-        var river = River(bits, companySkipped);
+        var river = River(bits, quiet, companySkipped);
         var boxes = Boxes(river);
 
         Routes(river).SelectMany(route => Segments(route.Route).SelectMany(segment =>
-                boxes.Where(box => Enters(segment, box.Slot)).Select(box => $"{route.Name} through {box.Id}")))
+                boxes.Where(box => Enters(segment, box.Slot) && !RunsThrough(route.Through, box.Modules)).Select(box => $"{route.Name} through {box.Id}")))
             .ShouldBeEmpty();
+    }
+
+    // The levers the routes here are worked out with as quiet are those the plan leaves empty.
+    [Theory]
+    [MemberData(nameof(Rivers))]
+    public void Quiet_anyPlan_isTheLeversItLeavesEmpty(int bits, int quiet, bool companySkipped)
+    {
+        Quiet(River(bits, quiet, companySkipped)).ShouldBe(Levers(quiet).Select(MapModules.Of), ignoreOrder: true);
     }
 
     [Theory]
     [MemberData(nameof(Rivers))]
-    public void Routed_anyPlan_sharesNoStretchOfLineBetweenTwoLinks(int bits, bool companySkipped)
+    public void Routed_anyPlan_sharesNoStretchOfLineBetweenTwoLinks(int bits, int quiet, bool companySkipped)
     {
-        var routes = Routes(River(bits, companySkipped));
+        var routes = Routes(River(bits, quiet, companySkipped));
 
         routes.SelectMany((a, i) => routes.Skip(i + 1)
                 .Where(b => Segments(a.Route).Any(sa => Segments(b.Route).Any(sb => Shared(sa, sb))))
@@ -130,9 +140,9 @@ public class MapLayoutTests
 
     [Theory]
     [MemberData(nameof(Rivers))]
-    public void Routed_anyPlan_staysInsideTheMap(int bits, bool companySkipped)
+    public void Routed_anyPlan_staysInsideTheMap(int bits, int quiet, bool companySkipped)
     {
-        Routes(River(bits, companySkipped)).Where(route => route.Route.Points.Any(point => point.X is < 0m or > 100m || point.Y is < 0m or > 100m))
+        Routes(River(bits, quiet, companySkipped)).Where(route => route.Route.Points.Any(point => point.X is < 0m or > 100m || point.Y is < 0m or > 100m))
             .Select(route => route.Name).ShouldBeEmpty();
     }
 
@@ -220,43 +230,70 @@ public class MapLayoutTests
         (route.Points[0].X, route.End.X > grid.Slot(MapEnd.Of(RiverModule.Car)).Right, route.Arrow).ShouldBe((grid.Slot(MapEnd.Of(RiverModule.Car)).Right, true, MapDirection.Right));
     }
 
-    // Every composition of the levers, with the company's year and without it.
-    public static TheoryData<int, bool> Rivers()
+    // Every composition of the levers, with the company's year and without it, and, with it, every set of
+    // the levers in the plan left empty (quiet, by the bits of a number as the composition's), which the
+    // map draws quiet.
+    public static TheoryData<int, int, bool> Rivers()
     {
-        var data = new TheoryData<int, bool>();
+        var data = new TheoryData<int, int, bool>();
         foreach (var bits in Enumerable.Range(0, 32))
         {
-            data.Add(bits, false);
-            data.Add(bits, true);
+            foreach (var quiet in Enumerable.Range(0, 32).Where(quiet => (quiet & ~bits) == 0))
+                data.Add(bits, quiet, false);
+            data.Add(bits, 0, true);
         }
 
         return data;
     }
 
-    private static RiverInputs River(int bits, bool companySkipped)
+    private static RiverInputs River(int bits, int quiet, bool companySkipped)
     {
-        var river = MapLinksTests.Full with { Composition = MapModulesTests.Composition(bits) };
+        var river = MapQuietTests.Emptied(MapLinksTests.Full with { Composition = MapModulesTests.Composition(bits) }, Levers(quiet));
         return companySkipped ? river.SkipCompany() : river;
     }
 
-    private static IReadOnlyList<(string Id, MapSlot Slot)> Boxes(RiverInputs river)
+    private static OptionalModule[] Levers(int bits) => [.. PlanComposition.Modules.Where((_, index) => (bits & (1 << index)) != 0)];
+
+    // The levers the map draws quiet, read from the run's links as the map reads them.
+    private static IReadOnlySet<RiverModule> Quiet(RiverInputs river)
     {
-        var grid = MapLayout.Grid(MapView.ModulesOf(river));
-        return [.. MapView.ModulesOf(river).Select(MapEnd.Of).Concat(BucketsView.Keys.Select(MapEnd.InBucket)).Select(end => (end.Id, grid.Slot(end)))];
+        var run = river.Run();
+        return MapQuiet.Of(run, MapView.ModulesOf(river), MapLinks.Of(river, run));
     }
 
-    // Each line of the plan, the run's links and the conditions between the modules it draws, once.
-    private static IReadOnlyList<(string Name, MapEnd From, MapEnd To, MapRoute Route)> Routes(RiverInputs river, params MapLink[] more)
+    private static MapLayout.MapGrid Grid(RiverInputs river) => MapLayout.Grid(MapView.ModulesOf(river), Quiet(river));
+
+    // Each box of the map, a quiet row's pill once, with the levers in it.
+    private static IReadOnlyList<(string Id, MapSlot Slot, IReadOnlyList<RiverModule> Modules)> Boxes(RiverInputs river)
     {
+        var grid = Grid(river);
+        return
+        [
+            .. MapView.ModulesOf(river).GroupBy(module => grid.Slot(MapEnd.Of(module)))
+                .Select(place => (string.Join('+', place.Select(MapModules.Name)), place.Key, (IReadOnlyList<RiverModule>)[.. place])),
+            .. BucketsView.Keys.Select(key => (key, grid.Slot(MapEnd.InBucket(key)), (IReadOnlyList<RiverModule>)[])),
+        ];
+    }
+
+    // The chain's line past quiet levers runs through their pill, and through no other box.
+    private static bool RunsThrough(IReadOnlyList<RiverModule> through, IReadOnlyList<RiverModule> box) => box.Count > 0 && box.All(through.Contains);
+
+    // Each line of the plan, the run's links and the conditions between the modules it draws with a box,
+    // folded past its quiet levers as the map folds them, once.
+    private static IReadOnlyList<(string Name, MapEnd From, MapEnd To, MapRoute Route, IReadOnlyList<RiverModule> Through)> Routes(RiverInputs river, params MapLink[] more)
+    {
+        var run = river.Run();
         var modules = MapView.ModulesOf(river);
-        var conditions = Conditions.Where(condition => modules.Contains(condition.From) && modules.Contains(condition.To))
+        var quiet = MapQuiet.Of(run, modules, MapLinks.Of(river, run));
+        var conditions = Conditions
+            .Where(condition => modules.Contains(condition.From) && modules.Contains(condition.To) && !quiet.Contains(condition.From) && !quiet.Contains(condition.To))
             .Select(condition => new MapLink(MapLinkKind.Condition, MapEnd.Of(condition.From), MapEnd.Of(condition.To), condition.From,
                 new MapLabel(MapText.Map, "Condition", []), null));
 
-        var links = MapLayout.Routed(MapLayout.Grid(modules), [.. MapLinks.Of(river, river.Run()), .. conditions, .. more]);
+        var links = MapLayout.Routed(MapLayout.Grid(modules, quiet), MapQuiet.Fold([.. MapLinks.Of(river, run), .. conditions, .. more], modules, quiet));
 
         return [.. links.GroupBy(link => link.Route).Select(bundle => bundle.First())
-            .Select(link => ($"{link.Kind} {link.From.Id} to {link.To.Id}", link.From, link.To, link.Route!))];
+            .Select(link => ($"{link.Kind} {link.From.Id} to {link.To.Id}", link.From, link.To, link.Route!, link.Through))];
     }
 
     private static IEnumerable<(MapPoint A, MapPoint B)> Segments(MapRoute route) => route.Points.Zip(route.Points.Skip(1));
