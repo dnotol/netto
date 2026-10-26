@@ -93,8 +93,8 @@ public class MapTabFilterTests
             () => LineKinds(html).ShouldBe(kept.Select(bundle => bundle.Kind.ToString())),
             () => Regex.Count(html, "<span class=\"map-arrow ").ShouldBe(kept.Count),
             () => Regex.Matches(html, "<div class=\"map-words__bundle[^\"]*\" data-link-kind=\"(\\w+)\"").Select(match => match.Groups[1].Value).ShouldBe(kept.Select(bundle => bundle.Kind.ToString()), ignoreOrder: true),
-            () => Regex.Matches(html, "<span class=\"map-words__amount\"[^>]*>([^<]*)</span>").Select(match => match.Groups[1].Value)
-                .ShouldBe(kept.SelectMany(bundle => bundle.Links).Where(link => link.Amount is not null).Select(link => Formats.Euros(link.Amount!.Value)), ignoreOrder: true));
+            () => Regex.Matches(html, "<span class=\"map-words__amount[^\"]*\"[^>]*>([^<]*)</span>").Select(match => match.Groups[1].Value)
+                .ShouldBe(kept.Where(bundle => bundle.Amount is not null).Select(bundle => Formats.Euros(bundle.Amount!.Value)), ignoreOrder: true));
     }
 
     // Hiding moves nothing: the modules and the buckets are all there, where the map puts them.

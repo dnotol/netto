@@ -156,8 +156,9 @@
     transform: translate(0, -50%);
 }
 
-/* The words of a card's lines beside its box, or of one line beside itself in a gap: each line what it
-   carries and its amount, kept on one line, read over the lines under them through a halo of the page. */
+/* The words of a card's lines beside its box, or of one line beside itself in a gap: each line its amount
+   or, a condition, its word or two; the chosen module's, what each card line carries and its amount, kept
+   on one line, read over the lines under them through a halo of the page. */
 .map-words {
     position: absolute;
     display: flex;
@@ -188,11 +189,6 @@
     padding: 0.05rem 0.3rem;
     border-radius: 4px;
     background: var(--netto-page);
-    transition: opacity 120ms ease;
-}
-
-.map-words__bundle--faded {
-    opacity: 0.25;
 }
 
 .map-words__line {
@@ -202,6 +198,17 @@
 .map-words__amount {
     color: var(--netto-text);
     font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+/* What reaches the pocket, in the gold of its line. */
+.map-words__amount--pocket {
+    color: var(--netto-gold);
+}
+
+/* Whether a condition holds, in a word or two. */
+.map-words__state {
+    white-space: nowrap;
 }
 
 /* A bucket of the bar: where the money ends, nothing to choose. */

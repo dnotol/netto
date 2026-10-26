@@ -19,7 +19,7 @@
     <value>How your modules act on each other</value>
   </data>
   <data name="Lede" xml:space="preserve">
-    <value>Every module of your plan and the money between them, each amount a line its card shows. Choose a module to bring out its links.</value>
+    <value>Every module of your plan and the money between them: each amount is a line its card shows, or the sum of its card's lines between the same two ends. Choose a module to read what each line carries.</value>
   </data>
   <data name="Carries_ProfitBeforeLevers" xml:space="preserve">
     <value>Before your pay</value>

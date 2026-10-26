@@ -48,27 +48,64 @@ public class MapTabTests
         Lines(html).ShouldBe(view.Drawn(null).Select(line => (line.Bundle.Kind.ToString(), MapLinkStyle.Dash(line.Bundle.Kind), MapLinkStyle.Width(line.Bundle.Kind))));
     }
 
-    // The words beside the lines: every amount drawn is a link's, and every link's is drawn.
+    // Nothing chosen: one amount beside each line of money or of a tax base, the sum of the card's lines it
+    // holds, and no words; a condition's line says in a word or two whether it holds.
     [Fact]
-    public async Task Tab_wordsBesideTheLines_drawEveryLinksAmountAndNoOther()
-    {
-        var links = MapLinks.Of(Full, Full.Run());
-
-        var html = await RenderTabAsync(Full);
-
-        Regex.Matches(html, "<span class=\"map-words__amount\"[^>]*>([^<]*)</span>").Select(match => match.Groups[1].Value)
-            .ShouldBe(links.Select(link => Formats.Euros(link.Amount!.Value)), ignoreOrder: true);
-    }
-
-    [Fact]
-    public async Task Tab_wordsBesideTheLines_sayTheirKind()
+    public async Task Tab_nothingChosen_drawsOneAmountPerLineAndNoWords()
     {
         var view = MapView.From(Full, Full.Run());
 
-        var html = await RenderTabAsync(Full);
+        var map = Map(await RenderTabAsync(Full));
 
-        Regex.Matches(html, "<div class=\"map-words__bundle[^\"]*\" data-link-kind=\"(\\w+)\"").Select(match => match.Groups[1].Value)
-            .ShouldBe(view.Bundles().Select(bundle => bundle.Kind.ToString()), ignoreOrder: true);
+        map.ShouldSatisfyAllConditions(
+            () => view.Bundles().ShouldContain(bundle => bundle.Links.Count > 1),
+            () => Amounts(map).ShouldBe(view.Bundles().Where(bundle => bundle.Amount is not null).Select(bundle => Formats.Euros(bundle.Amount!.Value)), ignoreOrder: true),
+            () => map.ShouldNotContain("map-words__line"),
+            () => States(map).ShouldBe(view.Links.Where(link => link.Kind == MapLinkKind.Condition).Select(State), ignoreOrder: true));
+    }
+
+    // What the line to the pocket carries is drawn in its gold, the map's one; no other amount is.
+    [Fact]
+    public async Task Tab_nothingChosen_drawsTheAmountsIntoThePocketInGold()
+    {
+        var view = MapView.From(Full, Full.Run());
+
+        var map = Map(await RenderTabAsync(Full));
+
+        Regex.Matches(map, "<span class=\"map-words__amount map-words__amount--pocket\"[^>]*>([^<]*)</span>").Select(match => match.Groups[1].Value)
+            .ShouldBe(view.Bundles().Where(bundle => bundle.To == MapEnd.InBucket("pocket")).Select(bundle => Formats.Euros(bundle.Amount!.Value)), ignoreOrder: true);
+    }
+
+    // Nothing chosen, the map holds no sentence, only amounts and a condition's word or two, so nothing runs
+    // past its edge: a condition's sentence is said where the chosen module's links are listed.
+    [Fact]
+    public async Task Tab_nothingChosen_drawsNoSentenceOnTheMap()
+    {
+        var states = ResxText.For<MapTab>().Keys.Where(key => key.StartsWith("State_", StringComparison.Ordinal)).Select(key => ResxText.For<MapTab>().Get(key)).ToHashSet();
+
+        var map = Map(await RenderTabAsync(MapViewConditionsTests.CostlyCar));
+
+        Bundles(map).Where(text => !Regex.IsMatch(text, "^−?€[0-9,]+\\.[0-9]{2}$") && !states.Contains(text)).ShouldBeEmpty();
+    }
+
+    // A module chosen: only its own lines have words on the map, each of its card's lines what it carries
+    // and its amount, as its card says it, a condition still its word or two; no other line has a word or
+    // an amount.
+    [Fact]
+    public async Task Tab_aModuleChosen_wordsOnlyItsOwnLinesEachCardLineWithItsAmount()
+    {
+        var view = MapView.From(Full, Full.Run());
+        var own = view.Bundles().Where(bundle => bundle.Touches(RiverModule.Car)).ToList();
+
+        var map = Map(await RenderTabAsync(Full, RiverModule.Car));
+
+        map.ShouldSatisfyAllConditions(
+            () => Regex.Matches(map, "<div class=\"map-words__bundle\" data-link-kind=\"(\\w+)\"").Select(match => match.Groups[1].Value)
+                .ShouldBe(own.Select(bundle => bundle.Kind.ToString()), ignoreOrder: true),
+            () => Amounts(map).ShouldBe(own.Where(bundle => bundle.Amount is not null).SelectMany(bundle => bundle.Links).Select(link => Formats.Euros(link.Amount!.Value)), ignoreOrder: true),
+            () => WordLines(map).Count.ShouldBe(own.Where(bundle => bundle.Amount is not null).Sum(bundle => bundle.Links.Count)),
+            () => WordLines(map).ShouldContain($"The car's yearly costs {Formats.Euros(Full.Run().Year!.Car.Costs)}"),
+            () => States(map).ShouldBe(own.SelectMany(bundle => bundle.Links).Where(link => link.Kind == MapLinkKind.Condition).Select(State), ignoreOrder: true));
     }
 
     // Every line is drawn over a halo of the map's ground, right before it, on its points and wider by the
@@ -86,6 +123,17 @@ public class MapTabTests
                 Attribute(pair[0], "stroke-dasharray"), Attribute(pair[^1], "data-link-kind")))
             .ShouldBe(drawn.Select(line => ((string?)(line.Faded ? "map-halo map-halo--faded" : "map-halo"), true, (string?)MapLinkStyle.Halo(line.Bundle.Kind), (string?)null,
                 (string?)line.Bundle.Kind.ToString())));
+    }
+
+    [Fact]
+    public async Task Tab_wordsBesideTheLines_sayTheirKind()
+    {
+        var view = MapView.From(Full, Full.Run());
+
+        var html = await RenderTabAsync(Full);
+
+        Regex.Matches(html, "<div class=\"map-words__bundle[^\"]*\" data-link-kind=\"(\\w+)\"").Select(match => match.Groups[1].Value)
+            .ShouldBe(view.Bundles().Select(bundle => bundle.Kind.ToString()), ignoreOrder: true);
     }
 
     // Nothing chosen: no button pressed, no line faded, and the list says how to choose.
@@ -218,6 +266,29 @@ public class MapTabTests
             .Select(match => (match.Groups[3].Value, Regex.Replace(Regex.Replace(match.Groups[4].Value, "<[^>]*>", " "), "\\s+", " ").Trim(), match.Groups[2].Value,
                 match.Groups[1].Value.Contains("map-module--refused", StringComparison.Ordinal), match.Groups[1].Value.Contains("map-module--skipped", StringComparison.Ordinal))),
     ];
+
+    // What the map draws, the list beside it left out.
+    private static string Map(string html) => Regex.Match(html, "<div class=\"map\".*?<div class=\"map-tab__side\"", RegexOptions.Singleline).Value;
+
+    // The amounts drawn beside the lines, and the words of the conditions' lines.
+    private static List<string> Amounts(string map) =>
+        [.. Regex.Matches(map, "<span class=\"map-words__amount[^\"]*\"[^>]*>([^<]*)</span>").Select(match => match.Groups[1].Value)];
+
+    private static List<string> States(string map) =>
+        [.. Regex.Matches(map, "<span class=\"map-words__state\"[^>]*>([^<]*)</span>").Select(match => match.Groups[1].Value.Trim())];
+
+    // What each line of the map says beside it, as a viewer reads it.
+    private static List<string> Bundles(string map) =>
+        [.. Regex.Matches(map, "<div class=\"map-words__bundle\"[^>]*>(.*?)</div>", RegexOptions.Singleline).Select(match => Text(match.Groups[1].Value))];
+
+    // Each card line's words and amount beside a line of the module chosen.
+    private static List<string> WordLines(string map) =>
+        [.. Regex.Matches(map, "<span class=\"map-words__line\"[^>]*>(.*?)</span></span>", RegexOptions.Singleline).Select(match => Text(match.Groups[1].Value))];
+
+    private static string Text(string html) => Regex.Replace(Regex.Replace(html, "<[^>]*>", ""), "\\s+", " ").Trim();
+
+    // The word or two a condition says of whether it holds.
+    private static string State(MapLink link) => ResxText.For<MapTab>().Get(link.State!.Key)!;
 
     private static string? Attribute(string element, string name) =>
         Regex.Match(element, $" {name}=\"([^\"]*)\"") is { Success: true } match ? match.Groups[1].Value : null;

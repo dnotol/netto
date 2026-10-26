@@ -16,12 +16,15 @@
    skipped card and said skipped in words, with no link, so that it can be chosen and its year entered
    again beside the map; the cards that only wait for it are left out. Each link is a line of its kind
    (MapLinkStyle: passed on, into a bucket, a tax base, a condition), with an arrowhead where it goes, drawn
-   over a halo of the map's ground so that a line crossing another leaves a gap each side of it, and
-   its words and amounts beside its card's box; a line to the pocket is gold, the one gold of the map,
-   since that is what reaches the director.
+   over a halo of the map's ground so that a line crossing another leaves a gap each side of it. The links
+   of one card between the same two ends and of one kind are one line (MapBundle), which says, beside its
+   card's box, one amount and no words: the sum of the card's lines it holds, each a figure the card draws;
+   a condition says in a word or two whether it holds, its sentence left to the list. A line to the
+   pocket and its amount are gold, the one gold of the map, since that is what reaches the director.
 
    A module is a button: chosen, by a click or Enter or Space, it is marked (aria-pressed) and its own
-   lines stay while the others fade, and its links are listed in words with their amounts beside the map,
+   lines stay, worded beside its box with each card line's words and amount, while the others fade with no
+   word and no amount, and its links are listed in words with their amounts beside the map,
    the drawing's equivalent for a screen reader, which hears the buttons and the list and nothing of the
    drawing itself. Choosing it again lets it go. The choice is the page's (Chosen, ChosenChanged), so it
    stays from one tab to the next; the map takes no focus for it, the card it opens beside the map does
@@ -70,13 +73,27 @@
                 <div class="map-words map-words--@Side(block.Side)" style="left: @Percent(block.At.X); top: @Percent(block.At.Y)" aria-hidden="true">
                     @foreach (var bundle in block.Bundles)
                     {
-                        <div class="@WordsClass(bundle)" data-link-kind="@bundle.Kind">
-                            @foreach (var link in bundle.Links)
+                        <div class="map-words__bundle" data-link-kind="@bundle.Kind">
+                            @if (bundle.Kind == MapLinkKind.Condition)
                             {
-                                <span class="map-words__line">@Carries(link.Carries)@if (link.Amount is { } amount)
+                                foreach (var link in bundle.Links)
+                                {
+                                    if (link.State is { } state)
                                     {
-                                        @(" ")<span class="map-words__amount">@Formats.Euros(amount)</span>
-                                    }</span>
+                                        <span class="map-words__state">@Carries(state)</span>
+                                    }
+                                }
+                            }
+                            else if (_chosen is null)
+                            {
+                                <span class="@AmountClass(bundle)">@Formats.Euros(bundle.Amount ?? 0m)</span>
+                            }
+                            else
+                            {
+                                foreach (var link in bundle.Links)
+                                {
+                                    <span class="map-words__line">@Carries(link.Carries)@(" ")<span class="@AmountClass(bundle)">@Formats.Euros(link.Amount ?? 0m)</span></span>
+                                }
                             }
                         </div>
                     }
@@ -210,7 +227,7 @@
     {
         _view = Filter.Showing(_full);
         _drawn = _view.Drawn(_chosen);
-        _blocks = _view.Blocks();
+        _blocks = _view.Blocks(_chosen);
     }
 
     // A module chosen again lets it go.
@@ -222,10 +239,10 @@
     private string ArrowClass(MapBundle bundle, bool faded) =>
         $"map-arrow map-arrow--{bundle.Route.Arrow.ToString().ToLowerInvariant()} map-arrow--{Kind(bundle.Kind)}{(ToPocket(bundle) ? " map-arrow--pocket" : "")}{(faded ? " map-arrow--faded" : "")}";
 
-    private string WordsClass(MapBundle bundle) =>
-        $"map-words__bundle{(_chosen is { } chosen && !bundle.Touches(chosen) ? " map-words__bundle--faded" : "")}";
-
     private static string HaloClass(bool faded) => $"map-halo{(faded ? " map-halo--faded" : "")}";
+
+    // What reaches the pocket is said in the gold of its line.
+    private static string AmountClass(MapBundle bundle) => $"map-words__amount{(ToPocket(bundle) ? " map-words__amount--pocket" : "")}";
 
     private string ModuleClass(MapNode node, RiverModule module) =>
         $"map-module{(_chosen == module ? " map-module--chosen" : "")}{(node.Refused ? " map-module--refused" : "")}{(node.Skipped ? " map-module--skipped" : "")}";
@@ -243,7 +260,8 @@
 
     private static string Side(MapLabelSide side) => side.ToString().ToLowerInvariant();
 
-    // What a link carries, in the words of the texts that word its line on its card (MapTabText.Texts).
+    // What a link carries, in the words of the texts that word its line on its card (MapTabText.Texts), or a
+    // condition's word or two, in the map's.
     private string Carries(MapLabel label)
     {
         if (!_texts.TryGetValue(label.Text, out var texts))
