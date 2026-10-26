@@ -112,6 +112,15 @@ internal sealed class LivePlan : IAsyncDisposable
         await InvokeAsync(() => button.OnClick.InvokeAsync(new MouseEventArgs()));
     }
 
+    // The viewer clicks the one element the page draws with that attribute's value, as the browser sends the
+    // click: the event goes to the handler the element carries, and so to the component that drew it, which
+    // draws again after it as a click's component does. Done once the page has drawn what the click did.
+    public async Task PressAsync(string attribute, string value)
+    {
+        await _renderer.Dispatcher.InvokeAsync(() => _renderer.ClickAsync(attribute, value));
+        await _renderer.Dispatcher.InvokeAsync(() => { });
+    }
+
     // The first component of that type the page draws, as it now stands.
     public Task<TComponent> FindAsync<TComponent>() where TComponent : IComponent =>
         _renderer.Dispatcher.InvokeAsync(() => _renderer.Components().OfType<TComponent>().First());
@@ -208,6 +217,35 @@ internal sealed class LivePlan : IAsyncDisposable
 
                 components.Add(frame.Component);
                 Collect(frame.ComponentId, components);
+            }
+        }
+
+        // The click on the one element the page draws with that attribute's value, sent to its handler.
+        public Task ClickAsync(string attribute, string value)
+        {
+            List<ulong> handlers = [];
+            Clicks(_page, attribute, value, handlers);
+            return handlers.Count == 1
+                ? DispatchEventAsync(handlers[0], null, new MouseEventArgs())
+                : throw new InvalidOperationException($"{handlers.Count} elements with {attribute}=\"{value}\" and a click handler, not one.");
+        }
+
+        // The click handlers of the elements a component and those it draws in turn draw with that attribute's
+        // value: an element's attributes are the frames right after it.
+        private void Clicks(int component, string attribute, string value, List<ulong> handlers)
+        {
+            var frames = GetCurrentRenderTreeFrames(component);
+            for (var index = 0; index < frames.Count; index++)
+            {
+                var frame = frames.Array[index];
+                if (frame.FrameType == RenderTreeFrameType.Component)
+                    Clicks(frame.ComponentId, attribute, value, handlers);
+                if (frame.FrameType != RenderTreeFrameType.Element)
+                    continue;
+
+                var attributes = frames.Array.Skip(index + 1).Take(frames.Count - index - 1).TakeWhile(next => next.FrameType == RenderTreeFrameType.Attribute).ToList();
+                if (attributes.Any(next => next.AttributeName == attribute && Equals(next.AttributeValue, value)))
+                    handlers.AddRange(attributes.Where(next => next.AttributeName == "onclick" && next.AttributeEventHandlerId != 0).Select(next => next.AttributeEventHandlerId));
             }
         }
     }

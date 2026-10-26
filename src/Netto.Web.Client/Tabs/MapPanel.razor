@@ -15,14 +15,13 @@
    takes the focus on its heading; on arriving at the tab with a module already chosen, the tab's own title
    keeps it. Nothing here is a live region: the bar's is the river's only announcement. *@
 <div class="map-panel">
-    @if (_seat is null)
+    @* The card is the module's the panel took a seat for (_shown), as this render saw it: the cascading
+       value draws its content in a render of its own, which can come after the module chosen was let go
+       and before the panel draws again without the card, so its content never reads Module itself. *@
+    @if (_seat is { } seat && _shown is { } shown)
     {
-        <p class="map-panel__hint">@L["Hint"]</p>
-    }
-    else
-    {
-        <CascadingValue Value="_seat" IsFixed="true" @key="Module">
-            @switch (Module)
+        <CascadingValue Value="seat" IsFixed="true" @key="shown">
+            @switch (shown)
             {
                 case RiverModule.CompanyYear:
                     <CompanyYearCard Inputs="Inputs" InputsChanged="InputsChanged" Run="Run" Refused="Refused" />
@@ -55,9 +54,13 @@
                     <DividendCard Inputs="Inputs" InputsChanged="InputsChanged" Run="Run" Refused="Refused" />
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(Module), Module, "A module the panel has no card for.");
+                    throw new ArgumentOutOfRangeException(nameof(Module), shown, "A module the panel has no card for.");
             }
         </CascadingValue>
+    }
+    else
+    {
+        <p class="map-panel__hint">@L["Hint"]</p>
     }
 </div>
 

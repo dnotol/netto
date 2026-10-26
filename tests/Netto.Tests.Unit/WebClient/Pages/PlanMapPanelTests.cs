@@ -29,6 +29,22 @@ public class PlanMapPanelTests
         (panel.Module, card.Name, (await page.FindAllAsync<ModuleCard>()).Count, page.Errors.Count).ShouldBe((RiverModule.Car, "car", 1, 0));
     }
 
+    // The viewer clicks the module chosen on the map again, as the browser sends the click to its box: it is
+    // let go, its card leaving the room beside the map, and nothing fails in between.
+    [Fact]
+    public async Task Plan_theModuleChosenClickedAgainOnTheMap_isLetGoAndNothingFails()
+    {
+        await using var page = await MapAsync(WithACar);
+        await page.PressAsync("data-module", "director-pay");
+
+        await page.PressAsync("data-module", "director-pay");
+
+        var (module, cards) = ((await page.FindAsync<MapPanel>()).Module, (await page.FindAllAsync<ModuleCard>()).Count);
+        page.ShouldSatisfyAllConditions(
+            () => page.Errors.Select(error => error.Message).ShouldBeEmpty(),
+            () => (module, cards).ShouldBe(((RiverModule?)null, 0)));
+    }
+
     // Nothing chosen: no card, only its room.
     [Fact]
     public async Task Plan_nothingChosenOnTheMap_drawsNoCard()
