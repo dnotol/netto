@@ -8,10 +8,11 @@ using Shouldly;
 
 namespace Netto.Tests.WebClient.Tabs;
 
-// Every amount the map draws is a figure the card it belongs to already shows, from the same run: each
-// link's amount is read off the Plan page drawn with every card open, among the lines of that card, or
-// in its summary for what Company year hands on. The sign a drain list draws (−, +) says which way the
-// money goes, which the map's arrow says instead.
+// Every amount the map draws is a figure the card it belongs to already shows, from the same run, or the
+// sum of the card's figures between the same two ends and of one kind (MapBundle.Amount): each link's
+// amount is read off the Plan page drawn with every card open, among the lines of that card, or in its
+// summary for what Company year hands on. The sign a drain list draws (−, +) says which way the money
+// goes, which the map's arrow says instead.
 public class MapCardsTests
 {
     public static TheoryData<string> Rivers => new() { "every lever", "the company paying the contributions", "the example", "the company skipped" };

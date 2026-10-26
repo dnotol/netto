@@ -158,7 +158,8 @@ public class MapViewTests
             () => filtered.HiddenOf(RiverModule.DirectorPay).ShouldBe(view.LinksOf(RiverModule.DirectorPay).Where(link => link.Kind == MapLinkKind.IntoBucket)));
     }
 
-    // Links of the same ends and kind are one line, drawn once with all their words.
+    // Links of the same ends and kind are one line, drawn once, its amount beside it, its words while a
+    // module it joins is chosen.
     [Fact]
     public void Bundles_linksSharingARoute_areOneLine()
     {

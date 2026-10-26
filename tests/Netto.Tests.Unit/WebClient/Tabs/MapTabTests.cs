@@ -9,9 +9,11 @@ using static Netto.Tests.WebClient.Tabs.MapRendering;
 namespace Netto.Tests.WebClient.Tabs;
 
 // The Map tab as a viewer meets it: every module of the plan a button in the river's order, the bar's four
-// buckets, a line for each link of the run with its words and amounts beside it, each line and word saying
-// its kind; a module chosen marked, its links brought out and listed in words; a refused amount leaving no
-// line and no amount, the module holding it marked. What a click does is the browser's.
+// buckets, one line for each route of the run's links, drawn over a halo of the ground, with one amount
+// beside it, a condition's with its word or two, each line and amount saying its kind; a module chosen
+// marked, its lines brought out with each card line's words and amount, the others' words and amounts gone,
+// and its links listed in words; a refused amount leaving no line and no amount, the module holding it
+// marked. What a click does is the browser's.
 public class MapTabTests
 {
     private static readonly RiverInputs Full = MapLinksTests.Full;
