@@ -125,9 +125,10 @@ internal static class MapLayout
     private const decimal PortStep = 0.22m;
 
     // Where on Corporate tax's top the split's links arrive, and the chain's drops, the highest row's
-    // furthest right, all of them right of the split's.
+    // furthest right, all of them right of the split's. The condition the split sets on Corporate tax comes
+    // down right of its money, leaving the money's left side free of every line for its amount.
     private const decimal SplitToCorporate = 80m;
-    private const decimal SplitConditionToCorporate = 77m;
+    private const decimal SplitConditionToCorporate = 83m;
     private const decimal FirstDrop = 92m;
     private const decimal DropTrack = 2.5m;
     private const decimal DropsFrom = 82m;

@@ -80,20 +80,19 @@ public class MapAmountsTests
     }
 
     // A line under an amount crosses it square to the stretch it stands on, under its ground, never along it:
-    // every line, under every amount and every condition's word or two but one. The split's money into
-    // Corporate tax comes down beside the condition it sets on Corporate tax, which comes down left of it, and,
-    // with a company car, the car's rules into Corporate tax right of it, too close for its amount, which stands
-    // where the condition runs along it the least.
+    // every line, under every amount and every condition's word or two but one. The condition the split sets on
+    // Corporate tax comes down between the split's money into Corporate tax and, with a company car, the car's
+    // rules into it, too close to them for its word, which stands where they run along it the least.
     [Theory]
     [MemberData(nameof(Plans))]
-    public void Of_anyPlan_crossesAnotherLineOnlySquareButTheSplitsConditionBesideItsMoney(string plan)
+    public void Of_anyPlan_crossesAnotherLineOnlySquareButTheCarsRulesBesideTheSplitsCondition(string plan)
     {
         var (view, amounts) = Placed(plan);
 
         Sizes(view).SelectMany(scale => amounts.SelectMany(amount => view.Bundles().Where(other => !ReferenceEquals(other.Route, amount.Bundle.Route))
                 .Where(other => Strokes(other, scale).Any(stroke => stroke.Across == Across(amount) && stroke.Area.Overlaps(amount.Area(scale))))
-                .Where(other => !(amount.Bundle.Kind == MapLinkKind.PassedOn && amount.Bundle.From == MapEnd.Of(RiverModule.Split) && amount.Bundle.To == MapEnd.Of(RiverModule.CorporateTax)
-                    && other.Kind == MapLinkKind.Condition && other.From == MapEnd.Of(RiverModule.Split) && other.To == MapEnd.Of(RiverModule.CorporateTax)))
+                .Where(other => !(amount.Bundle.Kind == MapLinkKind.Condition && amount.Bundle.From == MapEnd.Of(RiverModule.Split) && amount.Bundle.To == MapEnd.Of(RiverModule.CorporateTax)
+                    && other.Kind is MapLinkKind.TaxBase or MapLinkKind.Condition && other.From == MapEnd.Of(RiverModule.Car) && other.To == MapEnd.Of(RiverModule.CorporateTax)))
                 .Select(other => $"{Name(amount)} along {Name(other)} at {scale}")))
             .ShouldBeEmpty();
     }
