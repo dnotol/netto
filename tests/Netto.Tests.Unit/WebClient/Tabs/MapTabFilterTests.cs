@@ -32,10 +32,11 @@ public class MapTabFilterTests
         }
     }
 
-    // Kinds hidden in an earlier visit: written by one filter, read by the one the tab is drawn with.
+    // Kinds hidden in an earlier visit by a viewer who had ticked every box: written by one filter, read by
+    // the one the tab is drawn with.
     private static Action<IServiceCollection> Hiding(params MapLinkKind[] kinds)
     {
-        var storage = new BrowserStorage();
+        var storage = EveryKindShown();
         var before = new MapLinkFilter(storage);
         foreach (var kind in kinds)
             before.Set(kind, shown: false);
@@ -43,6 +44,9 @@ public class MapTabFilterTests
         var filter = new MapLinkFilter(storage);
         return services => services.AddSingleton(filter);
     }
+
+    // A viewer who has never ticked a box: the filter over a storage with nothing in it.
+    private static void FirstVisit(IServiceCollection services) => services.AddSingleton(new MapLinkFilter(new BrowserStorage()));
 
     [Fact]
     public async Task Tab_underTheHead_holdsTheLegendOfTheKindsOfLink()
@@ -125,6 +129,66 @@ public class MapTabFilterTests
             () => Legend(html).Select(box => box.Ticked).ShouldBe([true, true, false, true]));
     }
 
+    // The first visit, nothing stored: the map is quiet. No line, arrowhead or word is drawn for a tax base
+    // or a condition, the boxes of the modules they reach say them in their badges, and the legend shows the
+    // two kinds unticked, with their counts, to bring them back.
+    [Fact]
+    public async Task Tab_firstVisit_drawsNoLineArrowheadOrWordOfTheRulesButEveryBadge()
+    {
+        var view = MapView.From(Full, Full.Run());
+        var kept = view.Bundles().Where(bundle => bundle.Kind is MapLinkKind.PassedOn or MapLinkKind.IntoBucket).ToList();
+
+        var html = await RenderTabAsync(Full, more: FirstVisit);
+        var everyKind = await RenderTabAsync(Full);
+
+        html.ShouldSatisfyAllConditions(
+            () => view.Bundles().Select(bundle => bundle.Kind).ShouldContain(MapLinkKind.TaxBase),
+            () => view.Bundles().Select(bundle => bundle.Kind).ShouldContain(MapLinkKind.Condition),
+            () => LineKinds(html).ShouldBe(kept.Select(bundle => bundle.Kind.ToString())),
+            () => Regex.Count(html, "<span class=\"map-arrow ").ShouldBe(kept.Count),
+            () => Regex.Matches(html, "<div class=\"map-words__bundle[^\"]*\" data-link-kind=\"(\\w+)\"").Select(match => match.Groups[1].Value).Distinct().Order()
+                .ShouldBe(kept.Select(bundle => bundle.Kind.ToString()).Distinct().Order()),
+            () => Regex.Count(html, "<span class=\"map-badge ").ShouldBe(view.Modules.Sum(node => node.Badges.Count)),
+            () => view.Modules.Sum(node => node.Badges.Count).ShouldBeGreaterThan(0),
+            () => Legend(html).Select(box => box.Ticked).ShouldBe([true, true, false, false]),
+            () => Legend(html).Select(box => box.Text).ShouldBe(Legend(everyKind).Select(box => box.Text)));
+    }
+
+    // Ticking a rule's kind draws its lines, its arrowheads and its words again, the other kind left out,
+    // and the badges are what they were.
+    [Theory]
+    [InlineData(MapLinkKind.TaxBase, MapLinkKind.Condition)]
+    [InlineData(MapLinkKind.Condition, MapLinkKind.TaxBase)]
+    public async Task Tab_aRuleKindTicked_drawsItsLinesAndNotTheOthers(MapLinkKind ticked, MapLinkKind stillHidden)
+    {
+        var storage = new BrowserStorage();
+        new MapLinkFilter(storage).Set(ticked, shown: true);
+        var view = MapView.From(Full, Full.Run());
+
+        var html = await RenderTabAsync(Full, more: services => services.AddSingleton(new MapLinkFilter(storage)));
+
+        html.ShouldSatisfyAllConditions(
+            () => LineKinds(html).ShouldContain(ticked.ToString()),
+            () => LineKinds(html).ShouldNotContain(stillHidden.ToString()),
+            () => Regex.Count(html, "<span class=\"map-badge ").ShouldBe(view.Modules.Sum(node => node.Badges.Count)));
+    }
+
+    // The first visit, a module chosen: its list is its money, and says its rules' links are hidden, the
+    // way to bring them back being the legend's.
+    [Fact]
+    public async Task Tab_firstVisitAModuleChosen_listsItsMoneyAndSaysItsRulesAreUntickedInTheLegend()
+    {
+        var view = MapView.From(Full, Full.Run());
+        var rules = view.LinksOf(RiverModule.Car).Where(link => link.Kind is MapLinkKind.TaxBase or MapLinkKind.Condition).ToList();
+
+        var html = await RenderTabAsync(Full, RiverModule.Car, FirstVisit);
+
+        html.ShouldSatisfyAllConditions(
+            () => rules.Count.ShouldBeGreaterThan(1),
+            () => ListedKinds(html).ShouldBe(view.LinksOf(RiverModule.Car).Where(link => link.Kind is MapLinkKind.PassedOn or MapLinkKind.IntoBucket).Select(link => link.Kind.ToString())),
+            () => HiddenNote(html).ShouldBe(($"{rules.Count} links hidden: their kinds are unticked in the legend", rules.Count)));
+    }
+
     // The module chosen: its links in words are the shown ones, and the line says how many the kinds turned
     // off hide, so a short list is not read as a module with little to say.
     [Fact]
@@ -138,7 +202,7 @@ public class MapTabFilterTests
         html.ShouldSatisfyAllConditions(
             () => hiddenOnes.Count.ShouldBeGreaterThan(1),
             () => ListedKinds(html).ShouldBe(all.Where(link => link.Kind != MapLinkKind.TaxBase).Select(link => link.Kind.ToString())),
-            () => HiddenNote(html).ShouldBe(($"{hiddenOnes.Count} links hidden by the kinds you turned off", hiddenOnes.Count)));
+            () => HiddenNote(html).ShouldBe(($"{hiddenOnes.Count} links hidden: their kinds are unticked in the legend", hiddenOnes.Count)));
     }
 
     [Fact]
@@ -149,7 +213,7 @@ public class MapTabFilterTests
 
         var html = await RenderTabAsync(Full, module, Hiding(kind));
 
-        HiddenNote(html).ShouldBe(("1 link hidden by the kinds you turned off", 1));
+        HiddenNote(html).ShouldBe(("1 link hidden: its kind is unticked in the legend", 1));
     }
 
     // Every kind hidden: the list is empty but for the line, which never says the module moves no money.
@@ -162,7 +226,7 @@ public class MapTabFilterTests
 
         html.ShouldSatisfyAllConditions(
             () => ListedKinds(html).ShouldBeEmpty(),
-            () => HiddenNote(html).ShouldBe(($"{view.LinksOf(RiverModule.Car).Count()} links hidden by the kinds you turned off", view.LinksOf(RiverModule.Car).Count())),
+            () => HiddenNote(html).ShouldBe(($"{view.LinksOf(RiverModule.Car).Count()} links hidden: their kinds are unticked in the legend", view.LinksOf(RiverModule.Car).Count())),
             () => html.ShouldNotContain("No money moves through it in this plan."),
             () => Regex.Count(html, "<polyline").ShouldBe(0));
     }

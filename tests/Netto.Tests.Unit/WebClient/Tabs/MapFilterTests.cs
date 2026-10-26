@@ -5,6 +5,7 @@ using Netto.Tests.WebClient.River;
 using Netto.Web.Client.River;
 using Netto.Web.Client.Tabs;
 using Shouldly;
+using static Netto.Tests.WebClient.Tabs.MapRendering;
 
 namespace Netto.Tests.WebClient.Tabs;
 
@@ -27,7 +28,7 @@ public class MapFilterTests
     [Fact]
     public async Task Filter_isAGroupNamedByItsLegend()
     {
-        var html = await RenderAsync(new MapLinkFilter(new BrowserStorage()), Counts);
+        var html = await RenderAsync(EveryKind(), Counts);
 
         (Regex.IsMatch(html, "^<fieldset class=\"map-filter\"[^>]*><legend[^>]*>Kinds of link shown</legend>"), Regex.Count(html, "<fieldset")).ShouldBe((true, 1));
     }
@@ -37,7 +38,7 @@ public class MapFilterTests
     [Fact]
     public async Task Filter_everyKind_isABoxWithItsNameAndItsCount()
     {
-        var html = await RenderAsync(new MapLinkFilter(new BrowserStorage()), Counts);
+        var html = await RenderAsync(EveryKind(), Counts);
 
         Boxes(html).Select(box => box.Text).ShouldBe(["Money passed on (10 links)", "Money into a bucket (1 link)", "Tax base (6 links)", "Conditions (none in this plan)"]);
     }
@@ -47,7 +48,7 @@ public class MapFilterTests
     [Fact]
     public async Task Filter_everyCount_isTheNumberForTheEyeAndTheWordsForTheScreenReader()
     {
-        var html = await RenderAsync(new MapLinkFilter(new BrowserStorage()), Counts);
+        var html = await RenderAsync(EveryKind(), Counts);
 
         html.ShouldSatisfyAllConditions(
             () => Regex.Matches(html, "<span class=\"map-filter__count\" aria-hidden=\"true\"[^>]*>([^<]*)</span>").Select(match => match.Groups[1].Value).ShouldBe(["10", "1", "6", "0"]),
@@ -61,7 +62,7 @@ public class MapFilterTests
     [Fact]
     public async Task Filter_everyKind_hasABubbleBesideItsBoxSayingWhatItIs()
     {
-        var html = await RenderAsync(new MapLinkFilter(new BrowserStorage()), Counts);
+        var html = await RenderAsync(EveryKind(), Counts);
 
         var bubbles = Kinds(html).Select(box => (
             Regex.Match(box, "<button [^>]*aria-label=\"([^\"]*)\"").Groups[1].Value,
@@ -94,15 +95,25 @@ public class MapFilterTests
     [Fact]
     public async Task Filter_everyBox_isACheckboxInsideItsLabel()
     {
-        var html = await RenderAsync(new MapLinkFilter(new BrowserStorage()), Counts);
+        var html = await RenderAsync(EveryKind(), Counts);
 
         Regex.Count(html, "<label class=\"mud-checkbox[^>]*>(?:(?!</label>).)*<input [^>]*type=\"checkbox\"[^>]*/>.*?</label>", RegexOptions.Singleline).ShouldBe(Enum.GetValues<MapLinkKind>().Length);
+    }
+
+    // A viewer who never ticked a box meets the map quiet: the kinds of money ticked, the two of rules not.
+    [Fact]
+    public async Task Filter_firstVisit_ticksTheMoneyAndLeavesTheRulesUnticked()
+    {
+        var html = await RenderAsync(new MapLinkFilter(new BrowserStorage()), Counts);
+
+        Boxes(html).Select(box => (box.Kind, box.Ticked)).ShouldBe(
+            [(MapLinkKind.PassedOn, true), (MapLinkKind.IntoBucket, true), (MapLinkKind.TaxBase, false), (MapLinkKind.Condition, false)]);
     }
 
     [Fact]
     public async Task Filter_nothingHidden_ticksEveryBox()
     {
-        var html = await RenderAsync(new MapLinkFilter(new BrowserStorage()), Counts);
+        var html = await RenderAsync(EveryKind(), Counts);
 
         Boxes(html).Select(box => box.Ticked).ShouldAllBe(ticked => ticked);
     }
@@ -127,8 +138,8 @@ public class MapFilterTests
     [Fact]
     public async Task Filter_aKindHidden_keepsItsCount()
     {
-        var shown = await RenderAsync(new MapLinkFilter(new BrowserStorage()), Counts);
-        var hidden = new MapLinkFilter(new BrowserStorage());
+        var shown = await RenderAsync(EveryKind(), Counts);
+        var hidden = EveryKind();
         hidden.Set(MapLinkKind.TaxBase, shown: false);
 
         Boxes(await RenderAsync(hidden, Counts)).Select(box => box.Text).ShouldBe(Boxes(shown).Select(box => box.Text));
@@ -139,7 +150,7 @@ public class MapFilterTests
     [Fact]
     public async Task Filter_everyBox_hasASampleOfItsKindsLine()
     {
-        var html = await RenderAsync(new MapLinkFilter(new BrowserStorage()), Counts);
+        var html = await RenderAsync(EveryKind(), Counts);
 
         var samples = Regex.Matches(html, "<svg class=\"map-filter__swatch\" data-link-kind=\"(\\w+)\"[^>]*aria-hidden=\"true\"[^>]*><line [^>]*stroke-width=\"([\\d.]+)\"(?: stroke-dasharray=\"([^\"]*)\")?[^>]*>")
             .Select(match => (match.Groups[1].Value, match.Groups[2].Value, match.Groups[3].Success ? match.Groups[3].Value : null)).ToList();
@@ -152,7 +163,7 @@ public class MapFilterTests
     [Fact]
     public async Task Filter_everySample_isInkedAsItsKindsLinesOnTheMap()
     {
-        var html = await RenderAsync(new MapLinkFilter(new BrowserStorage()), Counts);
+        var html = await RenderAsync(EveryKind(), Counts);
 
         Regex.Matches(html, "<svg class=\"map-filter__swatch\" data-link-kind=\"(\\w+)\"[^>]*><line [^>]*style=\"([^\"]*)\"")
             .Select(match => (match.Groups[1].Value, match.Groups[2].Value))
@@ -165,7 +176,7 @@ public class MapFilterTests
     [Fact]
     public async Task Filter_everyKindHidden_saysToTickOne()
     {
-        var filter = new MapLinkFilter(new BrowserStorage());
+        var filter = EveryKind();
         foreach (var kind in Enum.GetValues<MapLinkKind>())
             filter.Set(kind, shown: false);
 
@@ -177,11 +188,11 @@ public class MapFilterTests
     [Fact]
     public async Task Filter_aKindStillTicked_saysNothingBelowTheBoxes()
     {
-        var some = new MapLinkFilter(new BrowserStorage());
+        var some = EveryKind();
         some.Set(MapLinkKind.TaxBase, shown: false);
         some.Set(MapLinkKind.Condition, shown: false);
 
-        var (all, part) = (await RenderAsync(new MapLinkFilter(new BrowserStorage()), Counts), await RenderAsync(some, Counts));
+        var (all, part) = (await RenderAsync(EveryKind(), Counts), await RenderAsync(some, Counts));
 
         (Note(all), Note(part), all.Contains("map-filter__summary"), part.Contains("map-filter__summary")).ShouldBe(("", "", false, false));
     }
@@ -191,7 +202,7 @@ public class MapFilterTests
     [Fact]
     public async Task Filter_aPlanWithoutALink_drawsEveryBoxCountedAsNone()
     {
-        var html = await RenderAsync(new MapLinkFilter(new BrowserStorage()), new Dictionary<MapLinkKind, int>());
+        var html = await RenderAsync(EveryKind(), new Dictionary<MapLinkKind, int>());
 
         (Boxes(html).Count, Boxes(html).Select(box => box.Text).Distinct().Count()).ShouldBe((4, 4));
         Boxes(html).Select(box => box.Text).ShouldAllBe(text => text.Contains("(none in this plan)"));
@@ -201,11 +212,14 @@ public class MapFilterTests
     [Fact]
     public async Task Filter_isNoLiveRegionAndLeaksNoKey()
     {
-        var html = await RenderAsync(new MapLinkFilter(new BrowserStorage()), Counts);
+        var html = await RenderAsync(EveryKind(), Counts);
 
         (Regex.IsMatch(html, "aria-live|role=\"(status|alert)\""), Regex.IsMatch(html, "(Name|Gloss)_[A-Z]|Count_(None|One|Many)|AllHidden|Hidden_(One|Many)|>Legend<"))
             .ShouldBe((false, false));
     }
+
+    // The filter of a viewer who ticked every box.
+    private static MapLinkFilter EveryKind() => new(EveryKindShown());
 
     private static async Task<string> RenderAsync(MapLinkFilter filter, Dictionary<MapLinkKind, int> counts) =>
         WebUtility.HtmlDecode(await RiverRendering.RenderAsync(typeof(MapFilter), new Folds(new BrowserStorage()), new() { [nameof(MapFilter.Counts)] = counts }, services => services.AddSingleton(filter)));

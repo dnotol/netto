@@ -33,9 +33,9 @@ internal static class MapTabText
     // What the list says of the chosen module while the engine refuses an amount: there is no figure.
     public const string NoFigures = "NoFigures";
 
-    // What the list says of the chosen module when the kinds the viewer turned off (MapLinkFilter) hide some
-    // of its links: how many, so a short list is never read as a module with little to say. Said only for
-    // at least one.
+    // What the list says of the chosen module when the kinds unticked in the legend (MapLinkFilter, which
+    // opens with the rules' kinds unticked) hide some of its links: how many, so a short list is never read
+    // as a module with little to say. Said only for at least one.
     public static string Hidden(int count) => count switch
     {
         < 1 => throw new ArgumentOutOfRangeException(nameof(count), count, "A line of hidden links is for at least one."),

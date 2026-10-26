@@ -12,6 +12,42 @@ namespace Netto.Tests.WebClient.Pages;
 // Chosen is). A click is the browser's; here the box's own callback is invoked, as its event would.
 public class PlanMapFilterTests
 {
+    // The first visit: the two kinds of rule are unticked, and nothing is stored until the viewer ticks.
+    [Fact]
+    public async Task Plan_firstVisit_hasTheTwoKindsOfRuleUntickedAndStoresNothing()
+    {
+        var storage = new BrowserStorage();
+        await using var page = LivePlan.At("http://localhost/plan/map", storage, river: MapLinksTests.Full);
+
+        await page.LoadAsync("map");
+        var map = await page.FindAsync<MapTab>();
+
+        map.ShouldSatisfyAllConditions(
+            () => map.DrawnLines.Select(line => line.Bundle.Kind).Distinct().Order().ShouldBe([MapLinkKind.PassedOn, MapLinkKind.IntoBucket]),
+            () => map.ShownMap.Hidden.Select(link => link.Kind).Distinct().Order().ShouldBe([MapLinkKind.TaxBase, MapLinkKind.Condition]),
+            () => storage.Get(MapLinkFilter.StorageKey).ShouldBeNull(),
+            () => page.Errors.ShouldBeEmpty());
+    }
+
+    // A kind ticked is kept in the browser, whole with the one still unticked, and the tab draws its lines.
+    [Fact]
+    public async Task Plan_aRuleKindTickedOnTheMap_isKeptInTheBrowserAndDrawnByTheTab()
+    {
+        var storage = new BrowserStorage();
+        await using var page = LivePlan.At("http://localhost/plan/map", storage, river: MapLinksTests.Full);
+        await page.LoadAsync("map");
+        var map = await page.FindAsync<MapTab>();
+        var boxes = await page.FindAllAsync<MudCheckBox<bool>>();
+
+        await page.InvokeAsync(() => boxes[Index(MapLinkKind.TaxBase)].ValueChanged.InvokeAsync(true));
+
+        map.ShouldSatisfyAllConditions(
+            () => boxes.Count.ShouldBe(Enum.GetValues<MapLinkKind>().Length),
+            () => storage.Get(MapLinkFilter.StorageKey).ShouldBe("condition"),
+            () => map.DrawnLines.Select(line => line.Bundle.Kind).Distinct().Order().ShouldBe([MapLinkKind.PassedOn, MapLinkKind.IntoBucket, MapLinkKind.TaxBase]),
+            () => page.Errors.ShouldBeEmpty());
+    }
+
     [Fact]
     public async Task Plan_aKindUntickedOnTheMap_isKeptInTheBrowserAndNothingFails()
     {
@@ -20,9 +56,9 @@ public class PlanMapFilterTests
         await page.LoadAsync("map");
         var boxes = await page.FindAllAsync<MudCheckBox<bool>>();
 
-        await page.InvokeAsync(() => boxes[Index(MapLinkKind.TaxBase)].ValueChanged.InvokeAsync(false));
+        await page.InvokeAsync(() => boxes[Index(MapLinkKind.PassedOn)].ValueChanged.InvokeAsync(false));
 
-        (boxes.Count, storage.Get(MapLinkFilter.StorageKey), page.Errors.Count).ShouldBe((Enum.GetValues<MapLinkKind>().Length, "tax_base", 0));
+        (storage.Get(MapLinkFilter.StorageKey), page.Errors.Count).ShouldBe(("passed_on;tax_base;condition", 0));
     }
 
     // The box ticked again is shown again: what stays hidden is the kind left unticked, for the next visit.
@@ -34,11 +70,11 @@ public class PlanMapFilterTests
         await page.LoadAsync("map");
         var boxes = await page.FindAllAsync<MudCheckBox<bool>>();
 
-        await page.InvokeAsync(() => boxes[Index(MapLinkKind.TaxBase)].ValueChanged.InvokeAsync(false));
-        await page.InvokeAsync(() => boxes[Index(MapLinkKind.Condition)].ValueChanged.InvokeAsync(false));
         await page.InvokeAsync(() => boxes[Index(MapLinkKind.TaxBase)].ValueChanged.InvokeAsync(true));
+        await page.InvokeAsync(() => boxes[Index(MapLinkKind.Condition)].ValueChanged.InvokeAsync(true));
+        await page.InvokeAsync(() => boxes[Index(MapLinkKind.TaxBase)].ValueChanged.InvokeAsync(false));
 
-        (storage.Get(MapLinkFilter.StorageKey), page.Errors.Count).ShouldBe(("condition", 0));
+        (storage.Get(MapLinkFilter.StorageKey), page.Errors.Count).ShouldBe(("tax_base", 0));
     }
 
     // The tab draws again at a tick: the lines, the words beside them and the chosen module's list lose the
@@ -46,7 +82,7 @@ public class PlanMapFilterTests
     [Fact]
     public async Task Plan_aKindUntickedOnTheMap_isDrawnNoMoreByTheTab()
     {
-        await using var page = LivePlan.At("http://localhost/plan/map", new BrowserStorage(), river: MapLinksTests.Full);
+        await using var page = LivePlan.At("http://localhost/plan/map", MapRendering.EveryKindShown(), river: MapLinksTests.Full);
         await page.LoadAsync("map");
         var map = await page.FindAsync<MapTab>();
         await page.InvokeAsync(() => map.ChosenChanged.InvokeAsync(RiverModule.Car));
@@ -70,7 +106,7 @@ public class PlanMapFilterTests
     [Fact]
     public async Task Plan_aKindTickedAgainOnTheMap_isDrawnAgainByTheTab()
     {
-        await using var page = LivePlan.At("http://localhost/plan/map", new BrowserStorage(), river: MapLinksTests.Full);
+        await using var page = LivePlan.At("http://localhost/plan/map", MapRendering.EveryKindShown(), river: MapLinksTests.Full);
         await page.LoadAsync("map");
         var map = await page.FindAsync<MapTab>();
         await page.InvokeAsync(() => map.ChosenChanged.InvokeAsync(RiverModule.Car));

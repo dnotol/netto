@@ -1,5 +1,6 @@
 using Netto.Web.Client.Tabs;
 using Shouldly;
+using static Netto.Tests.WebClient.Tabs.MapRendering;
 
 namespace Netto.Tests.WebClient.Tabs;
 
@@ -20,7 +21,7 @@ public class MapFilterViewTests
     [Fact]
     public void Of_everyKind_isARowInTheOrderOfTheKindsWithItsLinksAndWhetherItIsShown()
     {
-        var filter = new MapLinkFilter(new BrowserStorage());
+        var filter = new MapLinkFilter(EveryKindShown());
         filter.Set(MapLinkKind.TaxBase, shown: false);
 
         var view = MapFilterView.Of(filter, Counts(10, 14, 6, 4));
@@ -30,10 +31,20 @@ public class MapFilterViewTests
     }
 
     // A kind the plan has no link of is still a row, counted as none.
+    // The first visit: the rules' kinds are rows unticked.
+    [Fact]
+    public void Of_nothingStored_isTheMoneyShownAndTheRulesNot()
+    {
+        var view = MapFilterView.Of(new MapLinkFilter(new BrowserStorage()), Counts(10, 14, 6, 4));
+
+        view.Rows.Select(row => (row.Kind, row.Shown)).ShouldBe(
+            [(MapLinkKind.PassedOn, true), (MapLinkKind.IntoBucket, true), (MapLinkKind.TaxBase, false), (MapLinkKind.Condition, false)]);
+    }
+
     [Fact]
     public void Of_aKindTheCountsDoNotName_isARowOfNone()
     {
-        var view = MapFilterView.Of(new MapLinkFilter(new BrowserStorage()), new Dictionary<MapLinkKind, int> { [MapLinkKind.PassedOn] = 3 });
+        var view = MapFilterView.Of(new MapLinkFilter(EveryKindShown()), new Dictionary<MapLinkKind, int> { [MapLinkKind.PassedOn] = 3 });
 
         view.Rows.Select(row => (row.Kind, row.Count)).ShouldBe(
             [(MapLinkKind.PassedOn, 3), (MapLinkKind.IntoBucket, 0), (MapLinkKind.TaxBase, 0), (MapLinkKind.Condition, 0)]);
@@ -43,7 +54,7 @@ public class MapFilterViewTests
     [Fact]
     public void Of_everyKindHidden_isAllHiddenWhateverThePlanHolds()
     {
-        var filter = new MapLinkFilter(new BrowserStorage());
+        var filter = new MapLinkFilter(EveryKindShown());
         foreach (var kind in Enum.GetValues<MapLinkKind>())
             filter.Set(kind, shown: false);
 
@@ -53,7 +64,7 @@ public class MapFilterViewTests
     [Fact]
     public void Of_aKindShown_isNotAllHidden()
     {
-        var filter = new MapLinkFilter(new BrowserStorage());
+        var filter = new MapLinkFilter(EveryKindShown());
         foreach (var kind in Enum.GetValues<MapLinkKind>().Where(kind => kind != MapLinkKind.IntoBucket))
             filter.Set(kind, shown: false);
 

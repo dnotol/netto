@@ -1,20 +1,28 @@
 namespace Netto.Web.Client.Tabs;
 
 // Which kinds of link the Map tab shows: a preference of the viewer's, kept in the browser so a reload
-// keeps it, and never part of a plan. Every kind shows until the viewer hides it, so what is stored is the
-// kinds they hid, and a kind the map gains later shows without being asked. The storage is read when the
-// filter is made, before the first draw of the tab, so the first draw already leaves the hidden kinds
-// out. Scoped, like the folds: the tab is built again each time the viewer comes back to it, and a browser
-// that refuses storage keeps the choice for as long as the page is open.
+// keeps it, and never part of a plan. The map opens quiet: its rules are marked on the modules they reach
+// (MapBadges), so the lines of a tax base and of a condition are left out until the viewer ticks them, and
+// what is stored is the choice, whole: the words of the kinds hidden, none when the viewer ticked every
+// box, and nothing stored at all is no choice. The key of the first version of the filter
+// (netto.map.links) is read by no one and left where it is. The storage is read when the filter is made,
+// before the first draw of the tab, so the first draw already leaves the hidden kinds out. Scoped, like the
+// folds: the tab is built again each time the viewer comes back to it, and a browser that refuses storage
+// keeps the choice for as long as the page is open.
 internal sealed class MapLinkFilter(IBrowserStorage storage)
 {
-    internal const string StorageKey = "netto.map.links";
+    internal const string StorageKey = "netto.map.lines";
+
+    // The kinds whose lines the map leaves out until the viewer ticks them: what only changes a tax base and
+    // what one module sets on another, each said by a badge on the module it reaches.
+    private static readonly MapLinkKind[] QuietByDefault = [MapLinkKind.TaxBase, MapLinkKind.Condition];
 
     private readonly HashSet<MapLinkKind> _hidden = Parse(storage.Get(StorageKey));
 
     public bool Shows(MapLinkKind kind) => !_hidden.Contains(kind);
 
-    // The viewer's word, remembered. A choice already made is not written again.
+    // The viewer's word, remembered with the whole of their choice, the kinds quiet by default among the
+    // hidden ones until they are ticked. A choice already made is not written again.
     public void Set(MapLinkKind kind, bool shown)
     {
         if (shown ? !_hidden.Remove(kind) : !_hidden.Add(kind))
@@ -49,17 +57,17 @@ internal sealed class MapLinkFilter(IBrowserStorage storage)
         _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, "A kind of link the filter has no word for."),
     };
 
-    // The words of the hidden kinds, joined by ';'. A word this version does not write is no kind, and
-    // anything else under Netto's key is no choice: every kind shows.
+    // The words of the hidden kinds, joined by ';': nothing stored is no choice, and neither is a value that
+    // names no kind, so the map opens quiet; a value of separators alone, as an empty one, is a viewer who
+    // ticked every box. A word this version does not write is no kind.
     private static HashSet<MapLinkKind> Parse(string? stored)
     {
-        var hidden = new HashSet<MapLinkKind>();
-        foreach (var word in (stored ?? "").Split(';', StringSplitOptions.RemoveEmptyEntries))
-        {
-            foreach (var kind in Enum.GetValues<MapLinkKind>().Where(kind => Word(kind) == word))
-                hidden.Add(kind);
-        }
+        var words = (stored ?? "").Split(';', StringSplitOptions.RemoveEmptyEntries);
+        if (stored is not null && words.Length == 0)
+            return [];
 
-        return hidden;
+        HashSet<MapLinkKind> hidden = [.. Enum.GetValues<MapLinkKind>().Where(kind => words.Contains(Word(kind)))];
+
+        return hidden.Count == 0 ? [.. QuietByDefault] : hidden;
     }
 }
