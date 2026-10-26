@@ -23,16 +23,30 @@ namespace Netto.Web.Client.Tabs;
 // its height, and a stream's row, taller for the words of its lines, grows only once its tallest box takes
 // that room.
 //
-// A route is orthogonal and runs only through room no box holds: the gap between two rows, a lane down
-// the left edge to the pocket, a gutter on each side of the middle column, a lane down the right edge, or
-// a row's side the river leaves empty (the chain's rows have nothing left or right of the middle, the
-// streams' rows nothing in the middle). Lines may cross lines; none crosses a box, nor a quiet row's pill
-// but the chain's line past its levers, which runs through it (MapLayoutTests). A line back out of a
-// bucket, a refund, a credit, a contribution or a bonus beyond its surcharge, takes the route money into
-// it would take, the other way, beside it. A line keeps its width in pixels (MapLineWidths): the lines
-// that share a lane, a side of a box or a gap take their places apart at their widths on the narrowest
-// map, a halo's gap between them, and where a room cannot hold them all they are squeezed into it, never
-// past it, so no line crosses a box whatever its amount.
+// Every line of money has a stretch of its own, where the amount it carries can stand on it or right beside
+// it with no other line of money along it, clear of every box and arrowhead, on the narrowest map
+// (MapLayoutTests, MapRoom). Where the streams meet the buckets their lines would come down side by side too
+// close for that, so a band over the buckets holds rows of its own there, each a fixed share of a chain row
+// under the one before: Director pay's and the dividend's ways into their taxes turn along its first row,
+// what comes back out of the taxes along the second, nested inside the way in so that the two never cross,
+// and the dividend's way to the pocket along the last, under the rest. The band's rows are set by the modules
+// the map holds, never by the lines a plan happens to have, so the map's height does not jump as an amount
+// changes, and the buckets' row grows only by what the streams' last row lacks under its boxes. Corporate
+// tax's way into its taxes comes down left of the dividend's lines into them and out of them, crossing
+// neither. The royalty's part paid apart leaves its bottom and turns along a row of its own under it to the
+// pocket's lane, its line on to Director pay coming down right of that, and the condition it sets on the
+// split leaves its right side and climbs past the gutter.
+//
+// A route is orthogonal and runs only through room no box holds: the gap between two rows, the band over
+// the buckets, a lane down the left edge to the pocket, the gutter left of the middle column, Corporate tax's
+// drop right of it, a lane down the right edge, or a row's side the river leaves empty (the chain's rows
+// have nothing left or right of the middle, the streams' rows nothing in the middle). Lines may cross lines;
+// none crosses a box, nor a quiet row's pill but the chain's line past its levers, which runs through it
+// (MapLayoutTests). A line back out of a bucket, a refund, a credit, a contribution or a bonus beyond its
+// surcharge, takes the route money into it would take, the other way, beside it. A line keeps its width in
+// pixels (MapLineWidths): the lines that share a lane, a side of a box or a gap take their places apart at
+// their widths on the narrowest map, a halo's gap between them, and where a room cannot hold them all they
+// are squeezed into it, never past it, so no line crosses a box whatever its amount.
 internal static class MapLayout
 {
     // The three columns' boxes, left to right, the middle of the streams' rows left to the words of their
