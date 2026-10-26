@@ -163,8 +163,7 @@ public class MapViewTests
 
         filtered.ShouldSatisfyAllConditions(
             () => filtered.Modules.ShouldBe(view.Modules),
-            () => filtered.Links.Select(link => link.Route).ShouldBe(view.Links.Where(link => link.Kind != MapLinkKind.IntoBucket).Select(link => link.Route)),
-            () => filtered.HiddenOf(RiverModule.DirectorPay).ShouldBe(view.LinksOf(RiverModule.DirectorPay).Where(link => link.Kind == MapLinkKind.IntoBucket)));
+            () => filtered.Links.Select(link => link.Route).ShouldBe(view.Links.Where(link => link.Kind != MapLinkKind.IntoBucket).Select(link => link.Route)));
     }
 
     // Links of the same ends and kind are one line, drawn once, its amount beside it, its words while a

@@ -79,8 +79,6 @@ internal sealed record MapView(IReadOnlyList<MapNode> Modules, IReadOnlyList<Map
     // it is quiet.
     public IEnumerable<MapLink> LinksOf(RiverModule module) => Links.Where(link => link.Touches(module));
 
-    public IEnumerable<MapLink> HiddenOf(RiverModule module) => Hidden.Where(link => link.Touches(module));
-
     // The module chosen, while the map draws it; none once it has left the map.
     public RiverModule? Choice(RiverModule? chosen) => chosen is { } module && Modules.Any(node => node.End.Module == module) ? module : null;
 

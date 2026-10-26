@@ -361,10 +361,9 @@ public class MapLinkFilterTests
             () => shown.Bundles().ShouldNotBeEmpty());
     }
 
-    // A module chosen keeps its links subject to the filter: what it lists is the shown ones, and what is
-    // hidden is still its own, to be counted.
+    // A module's links under the filter are the shown ones, and what is hidden is kept apart, still its own.
     [Fact]
-    public void Showing_aModuleChosen_listsItsShownLinksAndCountsItsHiddenOnes()
+    public void Showing_aKindHidden_leavesItOutOfAModulesLinksAndKeepsItApart()
     {
         var view = MapView.From(Full, Full.Run());
         var filter = new MapLinkFilter(EveryKindShown());
@@ -375,8 +374,8 @@ public class MapLinkFilterTests
         shown.ShouldSatisfyAllConditions(
             () => view.LinksOf(RiverModule.Car).Any(link => link.Kind == MapLinkKind.TaxBase).ShouldBeTrue(),
             () => shown.LinksOf(RiverModule.Car).ShouldBe(view.LinksOf(RiverModule.Car).Where(link => link.Kind != MapLinkKind.TaxBase)),
-            () => shown.HiddenOf(RiverModule.Car).ShouldBe(view.LinksOf(RiverModule.Car).Where(link => link.Kind == MapLinkKind.TaxBase)),
-            () => shown.HiddenOf(RiverModule.Car).Any().ShouldBeTrue());
+            () => shown.Hidden.ShouldBe(view.Links.Where(link => link.Kind == MapLinkKind.TaxBase)),
+            () => shown.Hidden.Any(link => link.Touches(RiverModule.Car)).ShouldBeTrue());
     }
 
     // An engine's refusal leaves the map without a link, so there is nothing to hide or show.
