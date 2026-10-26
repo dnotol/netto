@@ -1,3 +1,5 @@
+using System.Globalization;
+using System.Text.RegularExpressions;
 using Netto.Core.Simulation;
 using Netto.Web.Client.River;
 using Netto.Web.Client.Tabs;
@@ -59,7 +61,8 @@ public class MapQuietTests
         Quiet(MapView.From(river, river.Run())).ShouldBe([RiverModule.Copyright]);
     }
 
-    // The royalty is quiet in its own place, a slot inside its box's, and nothing runs to or from it.
+    // The royalty is quiet in its own place, a slot as wide as its box and centred on it, and nothing runs to
+    // or from it.
     [Fact]
     public void From_aRoyaltyComingToNothing_isQuietInItsOwnPlaceWithNoLink()
     {
@@ -71,7 +74,7 @@ public class MapQuietTests
         var slot = Node(view, RiverModule.Copyright).Slot;
         view.ShouldSatisfyAllConditions(
             () => view.LinksOf(RiverModule.Copyright).ShouldBeEmpty(),
-            () => (slot.Left >= box.Left, slot.Right <= box.Right, slot.Top >= box.Top, slot.Bottom <= box.Bottom, slot.CenterY).ShouldBe((true, true, true, true, box.CenterY)));
+            () => (slot.Left, slot.Right, Math.Round(slot.CenterY, 10)).ShouldBe((box.Left, box.Right, Math.Round(box.CenterY, 10))));
     }
 
     // The office allowance is a rule the rent sets on the allowances: while a rent is paid it is a link of
@@ -220,7 +223,7 @@ public class MapQuietTests
     }
 
     // The line past a quiet row runs straight down the chain's middle, into the row and out of it, from the
-    // box above to the box below, and the row is no wider than the room between the gutters each side.
+    // box above to the box below, the row centred on it.
     [Fact]
     public void Routed_theLinePastAQuietRow_runsStraightDownThroughIt()
     {
@@ -233,17 +236,64 @@ public class MapQuietTests
         route.ShouldSatisfyAllConditions(
             () => route.Points.ShouldAllBe(point => point.X == vouchers.CenterX),
             () => route.Points.Select(point => point.Y).ShouldBe([vouchers.Bottom, pill.Top, pill.Bottom, split.Top]),
-            () => (pill.CenterX, pill.Height < vouchers.Height).ShouldBe((vouchers.CenterX, true)));
+            () => pill.CenterX.ShouldBe(vouchers.CenterX));
     }
 
-    // A quiet row is lower than a lever's row: the map is shorter by what the rows it replaces took.
+    // A quiet row is lower than the lever rows it replaces: three levers take less than two rows.
     [Fact]
     public void From_quietLevers_drawALowerMap()
     {
         var river = Emptied(Full, OptionalModule.Allowances, OptionalModule.Rent, OptionalModule.Car);
 
-        (MapView.From(river, river.Run()).Units < MapLayout.Grid(MapView.ModulesOf(river)).Units - 2m).ShouldBeTrue();
+        (MapView.From(river, river.Run()).Units < MapLayout.Grid(MapView.ModulesOf(river)).Units - 1m).ShouldBeTrue();
     }
+
+    // The quiet levers ending the chain above the split, one to four of them.
+    public static TheoryData<int> QuietRuns => new(1, 2, 3, 4);
+
+    // The map is never less than its smallest scale, a chain row being 3.25rem (MapLayout.SmallestRowRem),
+    // whatever its width: there, a quiet row's names, each a 24 px target, take a line each on the narrowest
+    // map, a column 34rem wide where a quiet row is about 150 px; its pill is kept that tall, with its
+    // padding, in the middle of its row, below the box above, and the line's words, a line of about 1rem,
+    // fit between it and the box below.
+    [Theory]
+    [MemberData(nameof(QuietRuns))]
+    public void From_aQuietRowAtTheMapsSmallestScale_holdsItsNamesOnePerLineClearOfTheBoxesAndTheLinesWords(int count)
+    {
+        var river = Emptied(Full, [.. Chain.TakeLast(count).Select(module => RiverModules.Lever(module)!.Value)]);
+        var view = MapView.From(river, river.Run());
+        var rem = 100m / (view.Units * MapLayout.SmallestRowRem);
+        var (pill, split) = (Node(view, RiverModule.Car).Slot, Node(view, RiverModule.Split).Slot);
+        var above = view.Modules.Last(node => !node.Quiet && node.Slot.Bottom <= pill.Top).Slot;
+
+        var words = view.Blocks(RiverModule.Car).Single(block => block.Side == MapLabelSide.Gap).At.Y;
+
+        view.ShouldSatisfyAllConditions(
+            () => (pill.Height >= (count * MapLayout.QuietTargetRem + (count - 1) * MapLayout.QuietGapRem + 2 * MapLayout.QuietPadRem) * rem).ShouldBeTrue(),
+            () => (pill.Top > above.Bottom).ShouldBeTrue(),
+            () => (words - 0.5m * rem >= pill.Bottom, words + 0.5m * rem <= split.Top).ShouldBe((true, true)));
+    }
+
+    // What the stylesheet draws a quiet row with is what the layout keeps room for: the map's smallest
+    // scale, a quiet name's least height and the gap between two lines of them, the pill's padding.
+    [Fact]
+    public void MapTabCss_drawsAQuietRowWithTheRoomTheLayoutKeepsForIt()
+    {
+        var css = File.ReadAllText(RepositoryFile.FindUp("src", "Netto.Web.Client", "Tabs", "MapTab.razor.css"));
+
+        css.ShouldSatisfyAllConditions(
+            () => Block(css, ".map").ShouldContain($"min-height: calc(var(--map-units) * {Rem(MapLayout.SmallestRowRem)});"),
+            () => Block(css, ".map-module--quiet").ShouldContain($"min-height: {Rem(MapLayout.QuietTargetRem)};"),
+            () => Block(css, ".map-quiet").ShouldContain($"row-gap: {Rem(MapLayout.QuietGapRem)};"),
+            () => Block(css, ".map-quiet").ShouldContain($"padding: {Rem(MapLayout.QuietPadRem)} 0.6rem;"),
+            () => Block(css, ".map-quiet").ShouldContain("border: 1px dashed"));
+    }
+
+    // The declarations of a stylesheet's rules for a selector alone, in a media query or not.
+    private static string Block(string css, string selector) =>
+        string.Concat(Regex.Matches(css, $@"(?m)^\s*{Regex.Escape(selector)}\s*\{{([^}}]*)\}}").Select(match => match.Groups[1].Value));
+
+    private static string Rem(decimal value) => value.ToString(CultureInfo.InvariantCulture) + "rem";
 
     private static RiverModule[] Quiet(MapView view) => [.. view.Modules.Where(node => node.Quiet).Select(node => node.End.Module!.Value)];
 

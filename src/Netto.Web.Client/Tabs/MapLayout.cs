@@ -13,16 +13,18 @@ namespace Netto.Web.Client.Tabs;
 //
 // The levers that move no money of their own in this plan (MapQuiet) have no box. Those following one
 // another down the chain share one quiet row, in the row of the first of them, the rows of the others
-// closing up: lower than a lever's row, its pill lower than a box and wider than the chain's boxes, which
-// the chain's line runs straight through, from the box above to the box below. The royalty, quiet, is a
-// pill in the middle of its own slot, and its row stays, Corporate tax's too.
+// closing up: its pill wider than the chain's boxes and kept as tall as its names take one per line on the
+// narrowest map, so that it never reaches a box or the words of the line under it, which runs straight
+// through it, from the box above to the box below. The royalty, quiet, is a pill in the middle of its own
+// slot, as wide as its box, and its row stays, Corporate tax's too.
 //
 // A route is orthogonal and runs only through room no box holds: the gap between two rows, a lane down
 // the left edge to the pocket, a gutter on each side of the middle column, a lane down the right edge, or
 // a row's side the river leaves empty (the chain's rows have nothing left or right of the middle, the
-// streams' rows nothing in the middle). Lines may cross lines; none crosses a box (MapLayoutTests). A line
-// back out of a bucket, a refund, a credit, a contribution or a bonus beyond its surcharge, takes the route
-// money into it would take, the other way, beside it.
+// streams' rows nothing in the middle). Lines may cross lines; none crosses a box, nor a quiet row's pill
+// but the chain's line past its levers, which runs through it (MapLayoutTests). A line back out of a
+// bucket, a refund, a credit, a contribution or a bonus beyond its surcharge, takes the route money into
+// it would take, the other way, beside it.
 internal static class MapLayout
 {
     // The three columns' boxes, left to right, the middle of the streams' rows left to the words of their
@@ -38,13 +40,25 @@ internal static class MapLayout
     // shorter.
     private const decimal BoxUnits = 0.5m;
 
-    // A quiet row and its pill: the row lower than a lever's, the pill lower than a box, centred on the
-    // chain's middle, wider than its boxes for the names in it and clear of the lanes each side, the left
-    // gutter's tracks ending before it and the lane a condition between two levers takes round the chain's
-    // right lying past it.
-    private const decimal QuietRowUnits = 0.7m;
-    private const decimal QuietUnits = 0.34m;
+    // A quiet row's pill: centred on the chain's middle, wider than its boxes for the names in it and clear
+    // of the lanes each side, the left gutter's tracks ending before it and the lane a condition between two
+    // levers takes round the chain's right lying past it.
     private static readonly (decimal Left, decimal Right) QuietSpan = (36m, 64m);
+
+    // How tall a quiet row's pill is kept: its names wrap one to a line on the narrowest map, a column 34rem
+    // wide, where a pill is about 150 px, and the map is never drawn smaller than a chain row to 3.25rem
+    // (MapTab.razor.css), so the pill is kept the height of its names one per line there, each a target at
+    // least 24 px high (1.5rem) with a gap under it, and of its padding and border, and the row a margin
+    // taller each side, the line's words fitting between the pill and the box under it. The royalty's name
+    // wraps in its narrow column there: its pill is kept two lines high. The stylesheet draws the pill with
+    // these (MapQuietTests).
+    internal const decimal SmallestRowRem = 3.25m;
+    internal const decimal QuietTargetRem = 1.5m;
+    internal const decimal QuietGapRem = 0.15m;
+    internal const decimal QuietPadRem = 0.15m;
+    private const decimal QuietBorderRem = 0.125m;
+    private const decimal QuietMarginUnits = 0.1m;
+    private const int RoyaltyLines = 2;
 
     // The lane down the left edge to the pocket, one track per link, the highest row's furthest out; the
     // gutter left of the middle column; the gutter right of it; the lane down the right edge.
@@ -108,7 +122,9 @@ internal static class MapLayout
         // Each quiet lever of the chain, with the first of the quiet levers it follows down the chain
         // without a box between them, whose row they share.
         private readonly Dictionary<RiverModule, RiverModule> _firstOf;
-        private readonly HashSet<MapRow> _quietRows;
+
+        // Each quiet row, with how many names it holds.
+        private readonly Dictionary<MapRow, int> _quietRows;
         private readonly IReadOnlySet<RiverModule> _quiet;
 
         public MapGrid(IReadOnlyList<RiverModule> modules, IReadOnlySet<RiverModule> quiet)
@@ -116,7 +132,7 @@ internal static class MapLayout
             Modules = modules;
             _quiet = quiet;
             _firstOf = FirstOf(modules, quiet);
-            _quietRows = [.. _firstOf.Values.Select(first => Place(first).Row)];
+            _quietRows = _firstOf.Values.GroupBy(first => Place(first).Row).ToDictionary(run => run.Key, run => run.Count());
             Rows = [.. Enum.GetValues<MapRow>().Where(row => row == MapRow.Buckets || modules.Any(module => RowOf(module) == row))];
         }
 
@@ -130,11 +146,11 @@ internal static class MapLayout
 
         // Whether the second row is drawn right under the first, or under a quiet row between them, which a
         // line from one to the other runs through.
-        public bool Follows(MapRow row, MapRow next) => Index(next) > Index(row) && Between(row, next).All(_quietRows.Contains);
+        public bool Follows(MapRow row, MapRow next) => Index(next) > Index(row) && Between(row, next).All(_quietRows.ContainsKey);
 
         // The pills of the quiet rows between two rows, top to bottom.
         public IReadOnlyList<MapSlot> QuietBetween(MapRow row, MapRow next) =>
-            [.. Between(row, next).Where(_quietRows.Contains).Select(quietRow => Box(quietRow, QuietSpan, QuietUnits))];
+            [.. Between(row, next).Where(_quietRows.ContainsKey).Select(quietRow => Box(quietRow, QuietSpan, PillUnits(_quietRows[quietRow])))];
 
         public MapSlot Slot(MapEnd end)
         {
@@ -145,7 +161,7 @@ internal static class MapLayout
                 throw new ArgumentOutOfRangeException(nameof(end), end.Id, "The river's edge has no box.");
 
             if (_firstOf.TryGetValue(module, out var first))
-                return Box(Place(first).Row, QuietSpan, QuietUnits);
+                return Box(Place(first).Row, QuietSpan, PillUnits(_quietRows[Place(first).Row]));
 
             var (row, column) = Place(module);
             return Box(row, column switch
@@ -153,7 +169,7 @@ internal static class MapLayout
                 MapColumn.Left => LeftColumn,
                 MapColumn.Chain => ChainColumn,
                 _ => RightColumn,
-            }, _quiet.Contains(module) ? QuietUnits : BoxUnits);
+            }, _quiet.Contains(module) ? PillUnits(RoyaltyLines) : BoxUnits);
         }
 
         // The y of the gap between the boxes of the row given and of the next, at a fraction of its height.
@@ -168,7 +184,11 @@ internal static class MapLayout
         private MapRow RowOf(RiverModule module) => Place(_firstOf.GetValueOrDefault(module, module)).Row;
 
         // How high a row's boxes are drawn: a box's height, or a quiet row's pill's.
-        private decimal Height(MapRow row) => (_quietRows.Contains(row) ? QuietUnits : BoxUnits) * 100m / Units;
+        private decimal Height(MapRow row) => (_quietRows.TryGetValue(row, out var names) ? PillUnits(names) : BoxUnits) * 100m / Units;
+
+        // How tall a quiet pill is kept, in chain rows, for the lines of names it may take on the narrowest map.
+        private static decimal PillUnits(int lines) =>
+            (lines * QuietTargetRem + (lines - 1) * QuietGapRem + 2 * QuietPadRem + QuietBorderRem) / SmallestRowRem;
 
         private MapSlot Box(MapRow row, (decimal Left, decimal Right) span, decimal units)
         {
@@ -186,8 +206,8 @@ internal static class MapLayout
             ? index
             : throw new ArgumentOutOfRangeException(nameof(row), row, "A row the map does not draw.");
 
-        private decimal Weight(MapRow row) => _quietRows.Contains(row)
-            ? QuietRowUnits
+        private decimal Weight(MapRow row) => _quietRows.TryGetValue(row, out var names)
+            ? PillUnits(names) + 2 * QuietMarginUnits
             : row switch
             {
                 MapRow.StreamTop or MapRow.StreamBottom => 1.6m,

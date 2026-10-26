@@ -258,20 +258,23 @@
     }
 
 /* The levers that move no money of their own in this plan: their names in one dashed row on the chain,
-   the royalty's in its own place, over the chain's line, which runs on under the row's ground, and the
-   row's word after them, muted. The row is placed by its middle, as wide as its slot and at least as
-   tall, so that names wrapping onto a second line grow it about its middle, into the room around it. */
+   the royalty's in its own place, over the chain's line, which runs on under the row's ground. The row is
+   placed by its middle, as wide as its slot and as tall as its names: one line where they fit, one name to
+   a line on the narrowest map, which is the height the layout keeps for it (MapLayout: SmallestRowRem,
+   QuietTargetRem, QuietGapRem and QuietPadRem are the 3.25rem, 1.5rem, 0.15rem and 0.15rem here), so that
+   it never reaches the boxes around it or the words of the line under it. */
 .map-quiet {
     position: absolute;
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     justify-content: center;
-    gap: 0.1rem 0.4rem;
+    row-gap: 0.15rem;
+    column-gap: 0.4rem;
     box-sizing: border-box;
-    padding: 0.1rem 0.6rem;
+    padding: 0.15rem 0.6rem;
     border: 1px dashed var(--netto-line-input);
-    border-radius: 999px;
+    border-radius: 1rem;
     background: var(--netto-page);
     color: var(--netto-text-muted);
     font-size: 0.72rem;
@@ -279,31 +282,29 @@
     transform: translate(0, -50%);
 }
 
-/* A quiet name: a button in the row's flow rather than a box, its frame shown only where the pointer or
-   the choice is on it. */
+/* A quiet name: a button in the row's flow rather than a box, at least 24 px high, so each is a target
+   of its own size (WCAG 2.2, 2.5.8) however the names wrap, its frame shown only where the pointer or the
+   choice is on it. A name wraps within itself only where it is wider than its row, the royalty's in its
+   narrow column. */
 .map-module--quiet {
     position: static;
-    padding: 0.1rem 0.35rem;
+    min-height: 1.5rem;
+    padding: 0 0.35rem;
     border-color: transparent;
     border-radius: 6px;
     background: transparent;
     color: var(--netto-text-muted);
     font-size: inherit;
-    white-space: nowrap;
 }
 
-/* What a quiet name says of itself to a screen reader, out of sight: its row says it once, in sight. */
+/* What a quiet name says of itself, out of sight: that it holds nothing in this plan, which the row's
+   dashes and muted names show. */
 .map-module__quiet {
     position: absolute;
     width: 1px;
     height: 1px;
     overflow: hidden;
     clip-path: inset(50%);
-    white-space: nowrap;
-}
-
-.map-quiet__word {
-    font-weight: 500;
     white-space: nowrap;
 }
 

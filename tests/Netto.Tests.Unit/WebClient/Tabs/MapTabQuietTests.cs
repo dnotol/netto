@@ -33,17 +33,18 @@ public class MapTabQuietTests
             "false")));
     }
 
-    // Quiet levers following one another down the chain share one row, which says their word once, out of
-    // a screen reader's hearing, since each name says it.
+    // Quiet levers following one another down the chain share one row, which shows their names and nothing
+    // else: each name says out of sight that it holds nothing in this plan, so a row that wraps on a narrow
+    // map takes a line per name, never one more.
     [Fact]
-    public async Task Tab_quietLeversFollowingOneAnother_shareOneRowSayingTheirWordOnce()
+    public async Task Tab_quietLeversFollowingOneAnother_shareOneRowShowingTheirNamesAlone()
     {
         var rows = QuietRows(await RenderTabAsync(ChainQuiet));
 
         var row = rows.ShouldHaveSingleItem();
         row.ShouldSatisfyAllConditions(
             () => Modules(row).ShouldBe(["allowances", "rent", "car"]),
-            () => Regex.Matches(row, "<span class=\"map-quiet__word\" aria-hidden=\"true\"[^>]*>([^<]*)</span>").Select(match => match.Groups[1].Value.Trim()).ShouldBe([Word]));
+            () => Shown(row).ShouldBe("Expense allowances Home office rent Company car"));
     }
 
     // The row draws no amount: the chain's line through it says what the vouchers leave once, not once per
@@ -95,4 +96,8 @@ public class MapTabQuietTests
         [.. Regex.Matches(html, "<div class=\"map-quiet\"[^>]*>(.*?)</div>", RegexOptions.Singleline).Select(match => match.Groups[1].Value)];
 
     private static List<string> Modules(string row) => [.. Regex.Matches(row, "data-module=\"([a-z-]+)\"").Select(match => match.Groups[1].Value)];
+
+    // What a row shows in sight: its text, what its names say out of sight left out.
+    private static string Shown(string row) =>
+        Regex.Replace(Regex.Replace(Regex.Replace(row, "<span class=\"map-module__quiet\"[^>]*>.*?</span>", ""), "<[^>]*>", " "), "\\s+", " ").Trim();
 }

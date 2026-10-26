@@ -25,10 +25,11 @@
    pocket and its amount are gold, the one gold of the map, since that is what reaches the director.
 
    A lever that moves no money of its own in this plan, one added with nothing in it yet, is quiet
-   (MapQuiet): no box, its name in a dashed row it shares with the quiet levers it follows down the chain,
-   which says their word once, out of a screen reader's hearing, each name saying it in its button; the
-   royalty that comes to nothing is quiet in its own place. The chain's line runs on under the row, from
-   the box above to the box below, its amount said once, under it. A quiet name is a button like a box, so
+   (MapQuiet): no box, its name muted in a dashed row it shares with the quiet levers it follows down the
+   chain, each name saying in its button, out of sight, that it holds nothing in this plan; the royalty that
+   comes to nothing is quiet in its own place. The row is kept as tall as its names one per line on the
+   narrowest map. The chain's line runs on under the row, from the box above to the box below, its amount
+   said once, between the row and the box below. A quiet name is a button like a box, so
    that choosing it opens its card beside the map, where its amounts are entered; once it moves money it
    has its box back, in its place.
 
@@ -122,7 +123,6 @@
                         {
                             @ModuleButton(node)
                         }
-                        <span class="map-quiet__word" aria-hidden="true">@L["Quiet"]</span>
                     </div>
                 }
                 else
@@ -256,7 +256,8 @@
     private static string AmountClass(MapBundle bundle) => $"map-words__amount{(ToPocket(bundle) ? " map-words__amount--pocket" : "")}";
 
     // A module's button: a box in its slot, or a name in its quiet row, which places it, saying its state in
-    // a word: refused, skipped, or, out of sight, since its row shows it, what a quiet lever moves.
+    // a word: refused, skipped, or, out of sight, since its row's dashes show it, that a quiet lever holds
+    // nothing in this plan.
     private RenderFragment ModuleButton(MapNode node) =>
         @<button type="button" class="@ModuleClass(node)" style="@(node.Quiet ? null : Box(node.Slot))" aria-pressed="@(_chosen == node.End.Module ? "true" : "false")"
                  data-module="@node.End.Id" @onclick="() => ChooseAsync(node.End.Module!.Value)">
@@ -318,10 +319,10 @@
     private static string Box(MapSlot slot) =>
         $"left: {Percent(slot.Left)}; top: {Percent(slot.Top)}; width: {Percent(slot.Width)}; height: {Percent(slot.Height)}";
 
-    // A quiet row: as wide as its slot, at least as tall, placed by its middle, so that it grows about it
-    // when its names wrap.
+    // A quiet row: as wide as its slot and as tall as its names, placed by its slot's middle, its slot being
+    // the height its names take one per line on the narrowest map (MapLayout).
     private static string Pill(MapSlot slot) =>
-        $"left: {Percent(slot.Left)}; top: {Percent(slot.CenterY)}; width: {Percent(slot.Width)}; min-height: {Percent(slot.Height)}";
+        $"left: {Percent(slot.Left)}; top: {Percent(slot.CenterY)}; width: {Percent(slot.Width)}";
 
     private static string Percent(decimal value) => $"{Number(value)}%";
 
