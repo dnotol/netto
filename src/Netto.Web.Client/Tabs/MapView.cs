@@ -114,7 +114,11 @@ internal sealed record MapNode(MapEnd End, MapSlot Slot)
     public bool Skipped { get; init; }
 }
 
-// One line of the map: the links of one route, one after the other in its words.
+// One line of the map: the links of one route, one after the other in its words, all lines of one card
+// between the same two ends and of one kind. Its amount is their sum, each figure to the cent as its card
+// draws it, so it is the sum a viewer makes of the card's lines: arithmetic of display, no tax figure. A
+// line back out of a bucket is a route of its own, so what comes back is never taken off the way in. A
+// condition has none.
 internal sealed record MapBundle(MapRoute Route, IReadOnlyList<MapLink> Links)
 {
     public MapLinkKind Kind => Links[0].Kind;
@@ -124,6 +128,10 @@ internal sealed record MapBundle(MapRoute Route, IReadOnlyList<MapLink> Links)
     public MapEnd To => Links[0].To;
 
     public RiverModule Card => Links[0].Card;
+
+    public decimal? Amount => Kind == MapLinkKind.Condition
+        ? null
+        : Links.Sum(link => Math.Round(link.Amount ?? 0m, 2, MidpointRounding.AwayFromZero));
 
     public bool Touches(RiverModule module) => Links[0].Touches(module);
 }

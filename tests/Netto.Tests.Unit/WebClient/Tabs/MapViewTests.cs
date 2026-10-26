@@ -169,6 +169,55 @@ public class MapViewTests
         (bundles.Count, bundles.Sum(bundle => bundle.Links.Count)).ShouldBe((view.Links.Select(link => link.Route).Distinct().Count(), view.Links.Count));
     }
 
+    // A line holding several of its card's lines carries their sum: the vouchers into the pocket, each a
+    // line of the vouchers' card, one line of the map.
+    [Fact]
+    public void Bundles_aLineOfSeveral_carriesTheSumOfItsCardsFigures()
+    {
+        var run = Full.Run();
+        var card = VoucherView.From(run.Year!, Full.Composition).Drains.Where(drain => drain.To == "pocket").ToList();
+
+        var line = Line(MapView.From(Full, run), MapEnd.Of(RiverModule.Vouchers), MapEnd.InBucket("pocket"));
+
+        (card.Count > 1, line.Links.Count, line.Amount).ShouldBe((true, card.Count, card.Sum(drain => drain.Amount)));
+    }
+
+    // The sum is of the figures as their card draws them, each to the cent, so it is the sum a viewer makes
+    // of the card's lines.
+    [Fact]
+    public void Amount_ofLinesWithFractionsOfACent_isTheSumOfTheirFiguresToTheCent()
+    {
+        var line = new MapBundle(new MapRoute([new MapPoint(0m, 0m), new MapPoint(0m, 1m)], MapLabelSide.Gap),
+            [Link(1.005m), Link(2.005m)]);
+
+        line.Amount.ShouldBe(3.02m);
+    }
+
+    // A condition carries no amount: its words say whether it holds.
+    [Fact]
+    public void Bundles_aCondition_carriesNoAmount()
+    {
+        var river = MapViewConditionsTests.CostlyCar;
+
+        MapView.From(river, river.Run()).Bundles().Where(bundle => bundle.Kind == MapLinkKind.Condition).ShouldAllBe(bundle => bundle.Amount == null);
+    }
+
+    // What comes back out of a bucket is a line of its own with its own amount, never taken off the way in:
+    // the withholding refunded on the exempt dividend beside the withholding.
+    [Fact]
+    public void Bundles_aLineBackOutOfABucket_isItsOwnLineNeverNettedAgainstTheWayIn()
+    {
+        var run = Full.Run();
+        var drains = DividendView.From(run.Year!).Drains.Where(drain => drain.To == "taxes_on_profit").ToList();
+        var view = MapView.From(Full, run);
+
+        var (into, back) = (Line(view, MapEnd.Of(RiverModule.Dividend), MapEnd.InBucket("taxes_on_profit")),
+            Line(view, MapEnd.InBucket("taxes_on_profit"), MapEnd.Of(RiverModule.Dividend)));
+
+        (into.Amount, back.Amount).ShouldBe((drains.Where(drain => drain.Kind == DrainKind.PaidOut).Sum(drain => drain.Amount),
+            drains.Single(drain => drain.Kind == DrainKind.Back).Amount));
+    }
+
     // Each line's words are drawn once: with the other lines its card draws on that side of its box, or
     // beside it in the gap between two boxes.
     [Fact]
@@ -225,4 +274,11 @@ public class MapViewTests
     {
         MapView.From(Full, Full.Run()).Drawn(null).ShouldAllBe(line => !line.Faded);
     }
+
+    // The one line of the map between two ends, of the kind money has between them.
+    private static MapBundle Line(MapView view, MapEnd from, MapEnd to) =>
+        view.Bundles().Single(bundle => bundle.From == from && bundle.To == to && bundle.Kind != MapLinkKind.Condition);
+
+    private static MapLink Link(decimal amount) =>
+        new(MapLinkKind.IntoBucket, MapEnd.Of(RiverModule.Vouchers), MapEnd.InBucket("pocket"), RiverModule.Vouchers, new MapLabel(MapText.Map, "Line", []), amount);
 }
