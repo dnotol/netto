@@ -7,7 +7,7 @@ namespace Netto.Tests.WebClient.Tabs;
 
 // The conditions on the Map tab as a viewer meets them, drawn without a browser (MapRendering): every
 // lever with the costly car, whose benefit is beyond 20% of the pay. Each is a dashed line that says in a
-// word or two beside the map whether it holds, and in its sentence, its module chosen, in its
+// word or two on the map, on its line, whether it holds, and in its sentence, its module chosen, in its
 // neighbourhood, never by a colour.
 public class MapConditionsRenderingTests
 {
@@ -24,10 +24,10 @@ public class MapConditionsRenderingTests
         (conditions > 0, dashes.Count, string.Join('|', dashes.Distinct())).ShouldBe((true, conditions, MapLinkStyle.Dash(MapLinkKind.Condition)));
     }
 
-    // Beside the map the car's condition says in a word that the rate is lost; its sentence is not on the
-    // map, where it would run past the edge.
+    // On the map, on its line, the car's condition says in a word that the rate is lost; its sentence is
+    // not on the map, where it would run past the edge.
     [Fact]
-    public async Task MapTab_theCarsCondition_saysBesideTheMapThatTheRateIsLost()
+    public async Task MapTab_theCarsCondition_saysOnTheMapThatTheRateIsLost()
     {
         var words = Words(River, RiverModule.Car);
 

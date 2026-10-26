@@ -106,7 +106,7 @@ public class MapLayoutTests
                 .ShouldBe(modules.Where(module => module != RiverModule.Split).Select(module => Units(without, module))));
     }
 
-    // A stream's row is taller than its box needs, for the words of its many lines: badges grow it only
+    // A stream's row is taller than its box needs, for the amounts of its many lines: badges grow it only
     // once its tallest box takes more than the room the row has round it.
     [Theory]
     [InlineData(1, 0)]

@@ -166,8 +166,8 @@ public class MapViewTests
             () => filtered.Links.Select(link => link.Route).ShouldBe(view.Links.Where(link => link.Kind != MapLinkKind.IntoBucket).Select(link => link.Route)));
     }
 
-    // Links of the same ends and kind are one line, drawn once, its amount beside it, its words while a
-    // module it joins is chosen.
+    // Links of the same ends and kind are one line, drawn once, its amount on it; the map shows no words,
+    // the neighbourhood of a module it joins lists them.
     [Fact]
     public void Bundles_linksSharingARoute_areOneLine()
     {
