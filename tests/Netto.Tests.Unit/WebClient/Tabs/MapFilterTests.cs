@@ -91,6 +91,16 @@ public class MapFilterTests
         Stylesheet.Block(css, ".map-filter__kind").ShouldNotContain("width: 100%");
     }
 
+    // Each box is a dense checkbox, whose button is 32 px square and no more (MudBlazor's 48 px would make
+    // the four boxes 966 px with their gaps and wrap the last at 1,024 px); a target of at least 24 px.
+    [Fact]
+    public async Task Filter_everyBox_isADenseCheckbox()
+    {
+        var html = await RenderAsync(EveryKind(), Counts);
+
+        LegendItems(html).Select(item => Regex.IsMatch(item, "<span class=\"mud-button-root [^\"]*mud-checkbox-dense[^\"]*\"")).ShouldBe([true, true, true, true]);
+    }
+
     // The box is a native checkbox inside its label, so it is named by it and operated by the keyboard.
     [Fact]
     public async Task Filter_everyBox_isACheckboxInsideItsLabel()
