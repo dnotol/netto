@@ -278,22 +278,7 @@ public class MapLayoutTests
             () => Crowded(routes, Grid(river).Units).ShouldBeEmpty(),
             () => Crossings(routes, Boxes(river), Grid(river).Units).ShouldBeEmpty(),
             () => Overhangs(routes, Grid(river)).ShouldBeEmpty(),
-            () => Arrowheads(routes, Grid(river).Units).ShouldBeEmpty(),
-            () => MapRoom.Without(MapView.From(river, river.Run())).ShouldBeEmpty());
-    }
-
-    // Every line of money has a stretch of its own for its amount, on its line or right beside it, where no other
-    // line of money runs along it, clear of the boxes, the quiet rows, the buckets, the arrowheads and the map's
-    // edge, on the narrowest map and at 1,920 px (MapRoom): room for each amount on its own line.
-    [Theory]
-    [MemberData(nameof(Rivers))]
-    public void From_anyPlan_givesEachLineOfMoneyAStretchOfItsOwnForItsAmount(int bits, int quiet, bool companySkipped)
-    {
-        var river = River(bits, quiet, companySkipped);
-
-        var without = MapRoom.Without(MapView.From(river, river.Run()));
-
-        without.ShouldBeEmpty();
+            () => Arrowheads(routes, Grid(river).Units).ShouldBeEmpty());
     }
 
     // The way into the taxes and what comes back out of them turn along the band over the buckets, a row each,

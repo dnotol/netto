@@ -23,9 +23,9 @@ namespace Netto.Web.Client.Tabs;
 // its height, and a stream's row, taller for the words of its lines, grows only once its tallest box takes
 // that room.
 //
-// Every line of money has a stretch of its own, where the amount it carries can stand on it or right beside
-// it with no other line of money along it, clear of every box and arrowhead, on the narrowest map
-// (MapLayoutTests, MapRoom). Where the streams meet the buckets their lines would come down side by side too
+// Every line of money has a stretch of its own, where the amount it carries stands on it or right beside it
+// with no other line of money along it, clear of every box and arrowhead, on the narrowest map (MapAmounts,
+// MapAmountsTests). Where the streams meet the buckets their lines would come down side by side too
 // close for that, so a band over the buckets holds rows of its own there, each a fixed share of a chain row
 // under the one before: Director pay's and the dividend's ways into their taxes turn along its first row,
 // what comes back out of the taxes along the second, nested inside the way in so that the two never cross,

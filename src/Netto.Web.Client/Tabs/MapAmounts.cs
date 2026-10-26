@@ -1,0 +1,628 @@
+namespace Netto.Web.Client.Tabs;
+
+// Where the map says what each line carries: its amount, or a condition's word or two, on a stretch of its
+// own line or right beside it, so a reader matches it to its line by place. Every line has one, placed once
+// from every link of the run, so hiding a kind of line or choosing a module moves none.
+internal static class MapAmounts
+{
+    // An amount's size: its text at 0.72rem in Inter at weight 400 with tabular figures, its ground 0.3rem
+    // each side, 1rem high; the stylesheet draws it with these (MapAmountsTests).
+    internal const decimal FontRem = 0.72m;
+    internal const decimal GroundRem = 0.3m;
+    internal const decimal HeightRem = 1m;
+
+    public static decimal Height => HeightRem * MapLayout.PixelsPerRem;
+
+    // How wide an amount is drawn, in pixels, to the hundredth above: what its characters take at their
+    // advances in Inter, which a browser measured (2026-10-26) and which are rounded up here to the
+    // hundredth of an em, a figure, a minus and a hyphen 0.6485em, the euro sign 0.6665em, a comma and a
+    // point 0.2686em, a space 0.255em, a lower-case letter its own, any other character a whole em; and its
+    // ground each side.
+    public static decimal Width(string text) =>
+        Math.Ceiling((text.Sum(Em) * FontRem * MapLayout.PixelsPerRem + 2m * GroundRem * MapLayout.PixelsPerRem) * 100m) / 100m;
+
+    private static decimal Em(char character) => character switch
+    {
+        >= '0' and <= '9' or '−' or '-' or '+' => 0.65m,
+        '€' => 0.67m,
+        ',' or '.' => 0.27m,
+        ' ' => 0.26m,
+        >= 'a' and <= 'z' => Letters[character - 'a'],
+        _ => 1m,
+    };
+
+    // Inter's lower-case letters at weight 400, a to z, in em, rounded up to the hundredth.
+    private static readonly decimal[] Letters =
+        [0.57m, 0.62m, 0.58m, 0.62m, 0.59m, 0.34m, 0.62m, 0.6m, 0.25m, 0.25m, 0.55m, 0.25m, 0.88m, 0.6m, 0.6m, 0.62m, 0.62m, 0.4m, 0.53m, 0.33m, 0.6m, 0.57m, 0.82m, 0.55m, 0.57m, 0.56m];
+
+    // Every line's amount, or a condition's word or two (say gives its words), placed on the map given, which
+    // is the run's, every link of it.
+    public static IReadOnlyList<MapAmount> Of(MapView view, Func<MapLabel, string> say)
+    {
+        var lines = view.Bundles();
+        return lines.Count == 0 ? [] : new Search(view, lines, say).Place();
+    }
+
+    private static bool IsMoney(MapBundle line) => line.Kind is MapLinkKind.PassedOn or MapLinkKind.IntoBucket;
+
+    // What a line says: its amount, or a condition's word or two.
+    private static string Text(MapBundle line, Func<MapLabel, string> say) => line.Amount is { } amount
+        ? Formats.Euros(amount)
+        : string.Join(", ", line.Links.Select(link => link.State).OfType<MapLabel>().Select(say));
+
+    // The search, in pixels on the map where it is drawn smallest (MapScale.Smallest), as doubles: a drawing's
+    // geometry, no money. A place holds wherever the map is drawn larger, since there every box, line and point
+    // of a line is further apart while an amount, an arrowhead and a line's width keep their pixels.
+    //
+    // Each stretch of a line offers its amount a track: on it, or over and under it if it runs across, left and
+    // right of it if it runs down, and the end of a line out of the river places past it. Along a track the
+    // places an amount may take are worked out whole, not tried one by one: each box, quiet row, bucket and
+    // arrowhead (a pixel off), the map's edge and each other line of money running the same way as the stretch
+    // (at its width and halo) rules out a stretch of the track; a line running the other way only crosses it,
+    // square, under its ground, which costs a crossing; a rule's line running the same way costs ten, so that it
+    // runs along an amount only where no place is free of it. The places left fall in pieces each crossed by the
+    // same lines.
+    //
+    // The lines of money take their places first, then the tax bases, then the conditions, each kind the most
+    // constrained first: each its place costing the least, on its line rather than beside it, nearest the middle
+    // of the longest stretch, off the amounts already placed (two pixels off). A line left with no place free
+    // moves the amounts in the way of one of its places to places of their own, those in their way in turn,
+    // three deep, within a budget.
+    private sealed class Search
+    {
+        // How far from the ends of its stretch an amount on its line keeps, so that the line shows each side of
+        // it; how far beside its line, or its arrowhead, an amount beside it stands, and what standing there
+        // rather than on its line costs; what a line crossing it costs, and a rule's line along it; how far off a
+        // box or an arrowhead, and off another amount, it keeps; how far inside the bounds of its piece it is
+        // placed, so that it holds as it is rounded and drawn at any size; how finely a piece is tried for a
+        // place when the amounts in the way are moved, how many places of each, how deep and how often.
+        private const double ShowsEachSide = 4;
+        private const double BesideGap = 2;
+        private const double Beside = 3;
+        private const int Square = 1;
+        private const int RuleAlong = 10;
+        private const double BoxClearance = 1;
+        private const double AmountClearance = 2;
+        private const double Slack = 0.05;
+        private const double RepairStep = 4;
+        private const int RepairTries = 40;
+        private const int RepairDepth = 3;
+        private const int RepairBudget = 4_000;
+
+        private readonly IReadOnlyList<MapBundle> _lines;
+        private readonly string[] _texts;
+        private readonly decimal[] _widths;
+        private readonly double _width;
+        private readonly double _height;
+        private readonly double _across;
+        private readonly double _down;
+        private readonly Rect[] _obstacles;
+        private readonly Stroke[] _strokes;
+        private readonly List<Track>[] _tracks;
+        private readonly Spot?[] _placed;
+        private readonly List<Spot>?[] _spots;
+        private int _budget;
+
+        // What a track's pieces are worked out with, kept from one track to the next.
+        private readonly List<int> _nearObstacles = [];
+        private readonly List<int> _nearStrokes = [];
+        private readonly List<(double From, double To)> _blocked = [];
+        private readonly List<(double From, double To, int Cost)> _crossed = [];
+        private readonly List<(double From, double To)> _free = [];
+        private readonly List<double> _cuts = [];
+
+        public Search(MapView view, IReadOnlyList<MapBundle> lines, Func<MapLabel, string> say)
+        {
+            _lines = lines;
+            _texts = [.. lines.Select(line => Text(line, say))];
+            _widths = [.. _texts.Select(Width)];
+            var scale = MapScale.Smallest(view.Units);
+            (_across, _down) = ((double)scale.X, (double)scale.Y);
+            (_width, _height) = (100 * _across, 100 * _down);
+            _placed = new Spot?[lines.Count];
+            _spots = new List<Spot>?[lines.Count];
+
+            _obstacles =
+            [
+                .. view.Places().Select(place => place.Slot).Concat(view.Buckets.Select(bucket => bucket.Slot)).Select(slot => Rect.Of(MapArea.Of(slot, scale))),
+                .. lines.Where(line => line.Arrowhead).Select(line => Rect.Of(MapLineWidths.Head(line.Route, scale))),
+            ];
+            var strokes = new List<Stroke>();
+            for (var index = 0; index < lines.Count; index++)
+            {
+                var route = lines[index].Route;
+                for (var stretch = 0; stretch + 1 < route.Points.Count; stretch++)
+                {
+                    var (a, b) = (route.Points[stretch], route.Points[stretch + 1]);
+                    if (a != b)
+                        strokes.Add(new Stroke(Rect.Of(MapLineWidths.Stroke(a, b, route.Width, scale, MapLinkStyle.HaloGap)), index, a.Y == b.Y, IsMoney(lines[index])));
+                }
+            }
+
+            _strokes = [.. strokes];
+            _tracks = new List<Track>[lines.Count];
+            for (var index = 0; index < lines.Count; index++)
+                _tracks[index] = Tracks(index);
+        }
+
+        public List<MapAmount> Place()
+        {
+            var order = new int[_lines.Count];
+            var keys = new (int Kind, double Room)[_lines.Count];
+            for (var index = 0; index < order.Length; index++)
+            {
+                order[index] = index;
+                var room = 0.0;
+                foreach (var track in _tracks[index])
+                    room += track.Room;
+                keys[index] = (_lines[index].Kind switch
+                {
+                    MapLinkKind.PassedOn or MapLinkKind.IntoBucket => 0,
+                    MapLinkKind.TaxBase => 1,
+                    _ => 2,
+                }, room);
+            }
+
+            Array.Sort(order, (a, b) => keys[a].Kind != keys[b].Kind ? keys[a].Kind.CompareTo(keys[b].Kind)
+                : keys[a].Room != keys[b].Room ? keys[a].Room.CompareTo(keys[b].Room)
+                : a.CompareTo(b));
+            foreach (var index in order)
+                _placed[index] = Best(index) ?? Repair(index);
+
+            var amounts = new List<MapAmount>(_lines.Count);
+            for (var index = 0; index < _lines.Count; index++)
+            {
+                if (_placed[index] is { } spot)
+                    amounts.Add(Amount(index, spot));
+            }
+
+            return amounts;
+        }
+
+        // The tracks a line's stretches offer its amount, each with the pieces of it its amount may take.
+        private List<Track> Tracks(int index)
+        {
+            var line = _lines[index];
+            var (width, height) = ((double)_widths[index], (double)Height);
+            var points = line.Route.Points;
+            var tracks = new List<Track>();
+            for (var stretch = 0; stretch + 1 < points.Count; stretch++)
+            {
+                var (a, b) = (points[stretch], points[stretch + 1]);
+                if (a == b)
+                    continue;
+
+                var across = a.Y == b.Y;
+                var last = stretch + 2 == points.Count;
+                var past = last && line.To.IsOut && across;
+                var gap = (double)(Math.Max(line.Route.Width / 2m, last && line.Arrowhead ? MapLineWidths.ArrowHalf(line.Route.Width) : 0m) + (decimal)BesideGap);
+                var (at, low, high) = across
+                    ? ((double)a.Y * _down, (double)Math.Min(a.X, b.X) * _across, (double)Math.Max(a.X, b.X) * _across)
+                    : ((double)a.X * _across, (double)Math.Min(a.Y, b.Y) * _down, (double)Math.Max(a.Y, b.Y) * _down);
+                var (half, thick) = across ? (width / 2, height) : (height / 2, width);
+                var (middle, length) = ((low + high) / 2, high - low);
+                var fits = high - low >= 2 * half;
+                if (!fits && !past)
+                    continue;
+
+                // What lies near the stretch, within reach of any place on it or beside it, or past its end.
+                var reach = gap + thick + AmountClearance;
+                var end = past ? (double)b.X * _across + BesideGap + width : high;
+                Near(across ? new Rect(low, at - reach, end, at + reach) : new Rect(at - reach, low, at + reach, high), index);
+
+                if (fits)
+                {
+                    foreach (var side in across ? AcrossSides : DownSides)
+                    {
+                        // Its box across the stretch, from its line, and how far it keeps from the stretch's ends.
+                        var from = side switch
+                        {
+                            MapAmountSide.On => -thick / 2,
+                            MapAmountSide.Above or MapAmountSide.Left => -gap - thick,
+                            _ => gap,
+                        };
+                        var margin = side == MapAmountSide.On ? ShowsEachSide : 0;
+                        Add(new Track(stretch, side, across, at + from, at + from + thick, half, low + half + margin, high - half - margin, middle, length,
+                            across ? -half : from, across ? from : -half, side == MapAmountSide.On ? 0 : Beside));
+                    }
+                }
+
+                // Past the end of a line out of the river, right of it: level with it, or else over or under it, off
+                // its arrowhead.
+                if (past)
+                {
+                    var x = (double)b.X * _across + BesideGap + width / 2;
+                    Add(Past(-height / 2, Beside));
+                    Add(Past(-gap - height, Beside + 1));
+                    Add(Past(gap, Beside + 1));
+
+                    Track Past(double from, double cost) =>
+                        new(stretch, MapAmountSide.Past, true, at + from, at + from + height, width / 2, x, x, x, length, BesideGap, from, cost) { Past = true };
+                }
+            }
+
+            return tracks;
+
+            void Add(Track track)
+            {
+                track.Pieces = Pieces(track, index);
+                if (track.Pieces.Count > 0)
+                    tracks.Add(track);
+            }
+        }
+
+        private static readonly MapAmountSide[] AcrossSides = [MapAmountSide.On, MapAmountSide.Above, MapAmountSide.Below];
+        private static readonly MapAmountSide[] DownSides = [MapAmountSide.On, MapAmountSide.Left, MapAmountSide.Right];
+
+        // The obstacles and the other lines' stretches within an area, which the tracks of one stretch look at.
+        private void Near(Rect area, int index)
+        {
+            _nearObstacles.Clear();
+            _nearStrokes.Clear();
+            for (var obstacle = 0; obstacle < _obstacles.Length; obstacle++)
+            {
+                if (_obstacles[obstacle].Hits(area, BoxClearance))
+                    _nearObstacles.Add(obstacle);
+            }
+
+            for (var stroke = 0; stroke < _strokes.Length; stroke++)
+            {
+                if (_strokes[stroke].Line != index && _strokes[stroke].Area.Hits(area, 0))
+                    _nearStrokes.Add(stroke);
+            }
+        }
+
+        // The pieces of a track its amount may take: in the map, off every box, quiet row, bucket and arrowhead,
+        // off every other line of money running its way, each piece crossed by the same lines.
+        private List<Piece> Pieces(Track track, int index)
+        {
+            var limit = track.Across ? _width : _height;
+            var (min, max) = (Math.Max(track.Min, track.Half), Math.Min(track.Max, limit - track.Half));
+            if (track.Low < 0 || track.High > (track.Across ? _height : _width) || min > max)
+                return [];
+
+            _blocked.Clear();
+            _crossed.Clear();
+            foreach (var obstacle in _nearObstacles)
+            {
+                if (track.Beside(_obstacles[obstacle], BoxClearance))
+                    _blocked.Add(track.Along(_obstacles[obstacle], BoxClearance));
+            }
+
+            foreach (var near in _nearStrokes)
+            {
+                var stroke = _strokes[near];
+                if (stroke.Line == index || !track.Beside(stroke.Area, 0))
+                    continue;
+
+                var (from, to) = track.Along(stroke.Area, 0);
+                if (stroke.Across != track.Across)
+                    _crossed.Add((from, to, Square));
+                else if (stroke.Money)
+                    _blocked.Add((from, to));
+                else
+                    _crossed.Add((from, to, RuleAlong));
+            }
+
+            var pieces = new List<Piece>();
+            Free(min, max, _blocked, track.Past, _free);
+            foreach (var (from, to) in _free)
+            {
+                if (from == to)
+                {
+                    pieces.Add(new Piece(from, to, Cost(from)));
+                    continue;
+                }
+
+                _cuts.Clear();
+                _cuts.Add(from);
+                _cuts.Add(to);
+                foreach (var (start, end, _) in _crossed)
+                {
+                    if (start > from && start < to)
+                        _cuts.Add(start);
+                    if (end > from && end < to)
+                        _cuts.Add(end);
+                }
+
+                // Each piece kept Slack inside where a line crossing it begins or ends, as off a bound.
+                _cuts.Sort();
+                for (var cut = 0; cut + 1 < _cuts.Count; cut++)
+                {
+                    var start = cut == 0 ? _cuts[cut] : _cuts[cut] + Slack;
+                    var end = cut + 2 == _cuts.Count ? _cuts[cut + 1] : _cuts[cut + 1] - Slack;
+                    if (end >= start)
+                        pieces.Add(new Piece(start, end, Cost((start + end) / 2)));
+                }
+            }
+
+            return pieces;
+        }
+
+        // What the lines crossing a place on the track being worked out cost it.
+        private int Cost(double along)
+        {
+            var cost = 0;
+            foreach (var (from, to, each) in _crossed)
+            {
+                if (from < along && along < to)
+                    cost += each;
+            }
+
+            return cost;
+        }
+
+        // What is left of a stretch of a track once the stretches given are ruled out (each open: a place at its
+        // bound touches without overlapping), each bound kept Slack inside; a point stays where it is clear.
+        private static void Free(double min, double max, List<(double From, double To)> blocked, bool point, List<(double From, double To)> free)
+        {
+            free.Clear();
+            if (!point)
+                (min, max) = (min + Slack, max - Slack);
+            if (min > max)
+                return;
+
+            blocked.Sort(static (a, b) => a.From.CompareTo(b.From));
+            var cursor = min;
+            foreach (var (from, to) in blocked)
+            {
+                if (from - Slack > cursor)
+                {
+                    if (from - Slack >= max)
+                        break;
+                    if (!point)
+                        free.Add((cursor, from - Slack));
+                }
+
+                cursor = Math.Max(cursor, to + Slack);
+                if (cursor > max)
+                    return;
+            }
+
+            free.Add((cursor, max));
+        }
+
+        // The best place for a line's amount off the amounts placed: none where there is none.
+        private Spot? Best(int index)
+        {
+            Spot? best = null;
+            foreach (var track in _tracks[index])
+            {
+                _blocked.Clear();
+                foreach (var placed in _placed)
+                {
+                    if (placed is { } other && track.Beside(other.Area, AmountClearance))
+                        _blocked.Add(track.Along(other.Area, AmountClearance));
+                }
+
+                foreach (var piece in track.Pieces)
+                {
+                    if (_blocked.Count == 0)
+                        Consider(piece, piece.From, piece.To);
+                    else
+                    {
+                        if (track.Past)
+                            Free(piece.From, piece.To, _blocked, true, _free);
+                        else
+                            Free(piece.From - Slack, piece.To + Slack, _blocked, false, _free);
+                        foreach (var (from, to) in _free)
+                            Consider(piece, from, to);
+                    }
+                }
+
+                void Consider(Piece piece, double from, double to)
+                {
+                    var spot = SpotOn(track, piece, Math.Clamp(track.Middle, from, to));
+                    if (best is null || spot.Score < best.Value.Score)
+                        best = spot;
+                }
+            }
+
+            return best;
+        }
+
+        // A line left with no place free: one of its places, the best first, once the amounts in its way have
+        // places of their own.
+        private Spot? Repair(int index)
+        {
+            _budget = RepairBudget;
+            foreach (var spot in Spots(index))
+            {
+                if (Make(spot.Area, [index], [], RepairDepth) is not { } moves)
+                    continue;
+
+                foreach (var (line, place) in moves)
+                    _placed[line] = place;
+                return spot;
+            }
+
+            return null;
+        }
+
+        // The moves that leave a place clear: none where no amount is in its way; each amount in its way, at most
+        // two, to one of its own places clear of the pinned ones and those in its own way moved in turn, until
+        // the depth or the budget runs out.
+        private List<(int Line, Spot Place)>? Make(Rect at, HashSet<int> moving, List<Rect> pinned, int depth)
+        {
+            if (--_budget < 0)
+                return null;
+            foreach (var rect in pinned)
+            {
+                if (rect.Hits(at, AmountClearance))
+                    return null;
+            }
+
+            var blockers = new List<int>();
+            for (var line = 0; line < _placed.Length; line++)
+            {
+                if (!moving.Contains(line) && _placed[line] is { } spot && spot.Area.Hits(at, AmountClearance))
+                    blockers.Add(line);
+            }
+
+            if (blockers.Count == 0)
+                return [];
+            if (depth == 0 || blockers.Count > 2)
+                return null;
+
+            var nowMoving = new HashSet<int>(moving);
+            nowMoving.UnionWith(blockers);
+            var nowPinned = new List<Rect>(pinned) { at };
+            var moves = new List<(int Line, Spot Place)>();
+            foreach (var blocker in blockers)
+            {
+                var found = false;
+                foreach (var alternative in Spots(blocker).Take(RepairTries))
+                {
+                    if (Make(alternative.Area, nowMoving, nowPinned, depth - 1) is not { } further)
+                        continue;
+
+                    moves.Add((blocker, alternative));
+                    nowPinned.Add(alternative.Area);
+                    foreach (var move in further)
+                    {
+                        moves.Add(move);
+                        nowMoving.Add(move.Line);
+                        nowPinned.Add(move.Place.Area);
+                    }
+
+                    found = true;
+                    break;
+                }
+
+                if (!found)
+                    return null;
+            }
+
+            return moves;
+        }
+
+        // The places a line's amount may take whatever amounts are placed, every few pixels along each piece and
+        // its best, the best first.
+        private List<Spot> Spots(int index)
+        {
+            if (_spots[index] is { } known)
+                return known;
+
+            var spots = new List<Spot>();
+            foreach (var track in _tracks[index])
+            {
+                foreach (var piece in track.Pieces)
+                {
+                    for (var along = piece.From; along <= piece.To; along += RepairStep)
+                        spots.Add(SpotOn(track, piece, along));
+                    spots.Add(SpotOn(track, piece, Math.Clamp(track.Middle, piece.From, piece.To)));
+                }
+            }
+
+            spots.Sort(static (a, b) => a.Score.CompareTo(b.Score));
+            return _spots[index] = spots;
+        }
+
+        // A place on a track: what it covers and its score, what crosses it first, then on its line rather than
+        // beside it, then nearest its stretch's middle, then on the longest stretch.
+        private static Spot SpotOn(Track track, Piece piece, double along) =>
+            new(track, along, track.At(along),
+                piece.Cost * 100 + track.Cost + Math.Abs(along - track.Middle) / Math.Max(1, track.Length) * 4 - Math.Min(track.Length, 200) / 100);
+
+        // A place as the tab draws it: its point on its stretch, in percent to the thousandth, the side of it it
+        // stands, and its box's corner from it in pixels to the hundredth.
+        private MapAmount Amount(int index, Spot spot)
+        {
+            var (line, track) = (_lines[index], spot.Track);
+            var (a, b) = (line.Route.Points[track.Stretch], line.Route.Points[track.Stretch + 1]);
+            var at = track.Past ? b
+                : track.Across ? new MapPoint(Math.Round((decimal)(spot.Along / _across), 3), a.Y)
+                : new MapPoint(a.X, Math.Round((decimal)(spot.Along / _down), 3));
+            return new MapAmount(line, _texts[index], at, track.Stretch, track.Side, Math.Round((decimal)track.Left, 2), Math.Round((decimal)track.Top, 2), _widths[index]);
+        }
+    }
+
+    // A box in pixels, as doubles.
+    private readonly record struct Rect(double Left, double Top, double Right, double Bottom)
+    {
+        public static Rect Of(MapArea area) => new((double)area.Left, (double)area.Top, (double)area.Right, (double)area.Bottom);
+
+        public bool Hits(Rect other, double clearance) =>
+            Left < other.Right + clearance && other.Left < Right + clearance && Top < other.Bottom + clearance && other.Top < Bottom + clearance;
+    }
+
+    // A stretch of a line as drawn, its halo with it: its line, whether it runs across, and whether its line
+    // carries money.
+    private readonly record struct Stroke(Rect Area, int Line, bool Across, bool Money);
+
+    // Where an amount may stand along a stretch: on it or on one side, its box from Low to High across the
+    // stretch and Half each side of its middle along it, its middle from Min to Max; the stretch's middle and
+    // length, the corner of its box from its point on the line (Left, Top), what standing there rather than on
+    // its line costs, and the pieces of it the amount may take. A track past the end of a line out of the river
+    // is a point, the line's end its point.
+    private sealed record Track(int Stretch, MapAmountSide Side, bool Across, double Low, double High, double Half, double Min, double Max, double Middle, double Length,
+        double Left, double Top, double Cost)
+    {
+        public bool Past { get; init; }
+
+        public List<Piece> Pieces { get; set; } = [];
+
+        // How much room the track leaves its amount, which orders the lines most constrained first.
+        public double Room
+        {
+            get
+            {
+                var room = 0.0;
+                foreach (var piece in Pieces)
+                    room += piece.To - piece.From + (piece.From == piece.To ? 1 : 0);
+                return room;
+            }
+        }
+
+        // Whether a box lies across the track's way, within the clearance given; and the stretch of the track
+        // where an amount would overlap it.
+        public bool Beside(Rect area, double clearance) => Across
+            ? area.Top < High + clearance && Low < area.Bottom + clearance
+            : area.Left < High + clearance && Low < area.Right + clearance;
+
+        public (double From, double To) Along(Rect area, double clearance) => Across
+            ? (area.Left - clearance - Half, area.Right + clearance + Half)
+            : (area.Top - clearance - Half, area.Bottom + clearance + Half);
+
+        public Rect At(double along) => Across ? new Rect(along - Half, Low, along + Half, High) : new Rect(Low, along - Half, High, along + Half);
+    }
+
+    // A piece of a track crossed by the same lines, and what they cost it.
+    private readonly record struct Piece(double From, double To, int Cost);
+
+    // A place an amount takes: its track, its middle along it, what it covers, and its score, the lower the better.
+    private readonly record struct Spot(Track Track, double Along, Rect Area, double Score);
+}
+
+// One line's amount on the map, or a condition's word or two (Text): the point of its line it stands at (At,
+// in percent of the map, to the thousandth as the tab writes it), the stretch of its route that point is on,
+// the side of the point it stands, and, in pixels, its box's top left corner from that point (Left, Top) and
+// its width, MapAmounts.Height high. Its box is placed from that point in pixels, so it hugs its line however
+// large the map is drawn.
+internal sealed record MapAmount(MapBundle Bundle, string Text, MapPoint At, int Stretch, MapAmountSide Side, decimal Left, decimal Top, decimal Width)
+{
+    // What it covers on the map drawn at a scale, in pixels.
+    public MapArea Area(MapScale scale)
+    {
+        var (left, top) = (At.X * scale.X + Left, At.Y * scale.Y + Top);
+        return new MapArea(left, top, left + Width, top + MapAmounts.Height);
+    }
+}
+
+// Where an amount stands from its point: on its line, centred on it; over or under a stretch across the map;
+// left or right of a stretch down it; or past the end of a line out of the river, right of its arrowhead, level
+// with the line or over or under it.
+internal enum MapAmountSide
+{
+    On,
+
+    Above,
+
+    Below,
+
+    Left,
+
+    Right,
+
+    Past,
+}
