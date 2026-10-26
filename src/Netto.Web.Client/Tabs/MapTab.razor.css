@@ -113,9 +113,9 @@
     opacity: 0.18;
 }
 
-/* A line keeps its width however the map stretches; its dash, width and ink are its kind's, or the
-   pocket's gold, the one gold of the map (MapLinkStyle), set on the line itself, so this sheet keeps no
-   ink of its own for it. */
+/* A line keeps its width however the map stretches. Its dash and ink are its kind's, or the pocket's gold,
+   the one gold of the map (MapLinkStyle); its width is its amount's, or a tax base's or a condition's own
+   (MapLineWidths); all set on the line itself, so this sheet keeps no ink of its own for it. */
 .map-line {
     fill: none;
     stroke-linecap: round;
