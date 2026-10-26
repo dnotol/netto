@@ -356,7 +356,7 @@ public class MapLinkFilterTests
 
         shown.ShouldSatisfyAllConditions(
             () => shown.Bundles().Select(bundle => bundle.Kind).Distinct().ShouldNotContain(MapLinkKind.TaxBase),
-            () => shown.Blocks(RiverModule.Car).SelectMany(block => block.Bundles).Select(bundle => bundle.Kind).Distinct().ShouldNotContain(MapLinkKind.TaxBase),
+            () => shown.Blocks().SelectMany(block => block.Bundles).Select(bundle => bundle.Kind).Distinct().ShouldNotContain(MapLinkKind.TaxBase),
             () => shown.Drawn(RiverModule.Car).Select(line => line.Bundle.Kind).Distinct().ShouldNotContain(MapLinkKind.TaxBase),
             () => shown.Bundles().ShouldNotBeEmpty());
     }

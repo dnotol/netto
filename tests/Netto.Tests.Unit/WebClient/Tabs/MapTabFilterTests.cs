@@ -125,8 +125,8 @@ public class MapTabFilterTests
         var html = await RenderTabAsync(Full, more: Hiding(MapLinkKind.TaxBase));
 
         html.ShouldSatisfyAllConditions(
-            () => Legend(html).Select(box => box.Text).ShouldBe(Legend(shown).Select(box => box.Text)),
-            () => Legend(html).Select(box => box.Ticked).ShouldBe([true, true, false, true]));
+            () => LegendBoxes(html).Select(box => box.Text).ShouldBe(LegendBoxes(shown).Select(box => box.Text)),
+            () => LegendBoxes(html).Select(box => box.Ticked).ShouldBe([true, true, false, true]));
     }
 
     // The first visit, nothing stored: the map is quiet. No line, arrowhead or word is drawn for a tax base
@@ -150,8 +150,8 @@ public class MapTabFilterTests
                 .ShouldBe(kept.Select(bundle => bundle.Kind.ToString()).Distinct().Order()),
             () => Regex.Count(html, "<span class=\"map-badge ").ShouldBe(view.Modules.Sum(node => node.Badges.Count)),
             () => view.Modules.Sum(node => node.Badges.Count).ShouldBeGreaterThan(0),
-            () => Legend(html).Select(box => box.Ticked).ShouldBe([true, true, false, false]),
-            () => Legend(html).Select(box => box.Text).ShouldBe(Legend(everyKind).Select(box => box.Text)));
+            () => LegendBoxes(html).Select(box => box.Ticked).ShouldBe([true, true, false, false]),
+            () => LegendBoxes(html).Select(box => box.Text).ShouldBe(LegendBoxes(everyKind).Select(box => box.Text)));
     }
 
     // Ticking a rule's kind draws its lines, its arrowheads and its words again, the other kind left out,
@@ -280,11 +280,4 @@ public class MapTabFilterTests
     // The boxes drawn of a kind of element, as their opening tags: where the map puts them.
     private static List<string> Boxes(string html, string opening) =>
         [.. Regex.Matches(html, Regex.Escape(opening) + "[^>]*style=\"([^\"]*)\"").Select(match => match.Groups[1].Value)];
-
-    private static List<(string Text, bool Ticked)> Legend(string html) =>
-    [
-        .. Regex.Matches(html, "<li class=\"map-filter__kind\"[^>]*>(.*?)</li>", RegexOptions.Singleline).Select(match => match.Groups[1].Value)
-            .Select(box => (Regex.Replace(Regex.Replace(Regex.Replace(Regex.Match(box, "<label.*?</label>", RegexOptions.Singleline).Value, "<span [^>]*aria-hidden=\"true\"[^>]*>[^<]*</span>", ""), "<[^>]*>", " "), "\\s+", " ").Trim(),
-                Regex.IsMatch(box, "<input [^>]*type=\"checkbox\"[^>]*\\schecked"))),
-    ];
 }

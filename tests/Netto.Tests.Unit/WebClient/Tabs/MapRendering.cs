@@ -1,4 +1,5 @@
 using System.Net;
+using System.Text.RegularExpressions;
 using Microsoft.Extensions.DependencyInjection;
 using Netto.Tests.WebClient.River;
 using Netto.Web.Client.River;
@@ -33,4 +34,20 @@ internal static class MapRendering
             services.AddSingleton(new MapLinkFilter(EveryKindShown()));
             more?.Invoke(services);
         }));
+
+    // The inner HTML of each kind's item of the legend in a rendered page, in the order drawn: its box and the
+    // bubble beside it.
+    public static List<string> LegendItems(string html) =>
+        [.. Regex.Matches(html, "<li class=\"map-filter__kind\"[^>]*>(.*?)</li>", RegexOptions.Singleline).Select(match => match.Groups[1].Value)];
+
+    // Each box of the legend: the kind it is, whether it is ticked, and its label as a screen reader reads
+    // it, what the eye alone reads of it (the count's number) left out.
+    public static List<(MapLinkKind Kind, bool Ticked, string Text)> LegendBoxes(string html) =>
+    [
+        .. LegendItems(html).Select(item => (
+            Enum.Parse<MapLinkKind>(Regex.Match(item, "data-link-kind=\"(\\w+)\"").Groups[1].Value),
+            Regex.IsMatch(item, "<input [^>]*type=\"checkbox\"[^>]*\\schecked"),
+            Regex.Replace(Regex.Replace(Regex.Replace(Regex.Match(item, "<label.*?</label>", RegexOptions.Singleline).Value,
+                "<span [^>]*aria-hidden=\"true\"[^>]*>[^<]*</span>", ""), "<[^>]*>", " "), "\\s+", " ").Trim())),
+    ];
 }
