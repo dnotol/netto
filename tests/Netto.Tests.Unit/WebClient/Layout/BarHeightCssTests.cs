@@ -84,6 +84,21 @@ public class BarHeightCssTests
             () => bar.ShouldContain("nettoBucketBar.stop"));
     }
 
+    // Each time Blazor loads a page over the one in the browser (after every hot reload in development) it sets
+    // the root's attributes to the server's, whose <html> has no style: the height goes with it, so the script
+    // watches the root's style while it watches the bar, and stops with it.
+    [Fact]
+    public void BarScript_setsTheHeightAgain_whenTheRootsStyleIsReplaced()
+    {
+        var script = Read("src/Netto.Web/wwwroot/bucket-bar.js");
+
+        script.ShouldSatisfyAllConditions(
+            () => script.ShouldContain("new MutationObserver("),
+            () => Regex.IsMatch(script, @"\.observe\(\s*document\.documentElement\s*,\s*\{[^}]*attributeFilter\s*:\s*\[\s*""style""\s*\]")
+                .ShouldBeTrue(),
+            () => Regex.Count(script, @"\.disconnect\(\)").ShouldBe(2));
+    }
+
     [Fact]
     public void RiverOutline_script_measuresAgainWhenTheBarChangesSize()
     {

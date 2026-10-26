@@ -14,14 +14,23 @@
         document.documentElement.style.setProperty(property, `${watched.bar.getBoundingClientRect().height}px`);
     }
 
+    // Each time Blazor loads a page over the one in the browser, as it does after every hot reload in
+    // development, it sets the root's attributes to the server's, whose style is none: the height goes with it.
+    function restore() {
+        if (document.documentElement.style.getPropertyValue(property) === "") {
+            publish();
+        }
+    }
+
     window.nettoBucketBar = {
         // The bar's element. Measured at once, since the first arrival at a card scrolls by it, then on
-        // every change of its size.
+        // every change of its size, and again whenever the root's style loses it.
         watch(bar) {
             window.nettoBucketBar.stop();
-            watched = { bar, resized: new ResizeObserver(publish) };
+            watched = { bar, resized: new ResizeObserver(publish), restyled: new MutationObserver(restore) };
             publish();
             watched.resized.observe(bar);
+            watched.restyled.observe(document.documentElement, { attributes: true, attributeFilter: ["style"] });
         },
         stop() {
             if (watched === null) {
@@ -29,6 +38,7 @@
             }
 
             watched.resized.disconnect();
+            watched.restyled.disconnect();
             document.documentElement.style.removeProperty(property);
             watched = null;
         },
