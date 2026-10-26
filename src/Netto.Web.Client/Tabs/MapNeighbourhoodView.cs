@@ -33,7 +33,7 @@ public sealed record MapNeighbourhoodView(
     internal static MapNeighbourhoodView Of(MapView view, RiverModule module, Func<MapLabel, string> carries, Func<MapEnd, string> endName)
     {
         var links = view.LinksOf(module).ToList();
-        var money = links.Where(link => link.Kind is MapLinkKind.PassedOn or MapLinkKind.IntoBucket).ToList();
+        var money = links.Where(link => MapLinkStyle.IsMoney(link.Kind)).ToList();
         var largest = money.Count == 0 ? 0m : money.Max(link => Math.Abs(link.Amount ?? 0m));
 
         MapNeighbourhoodEnd End(MapEnd end) => new(endName(end), end.Module is { } onMap && view.Modules.Any(node => node.End.Module == onMap) ? onMap : null);
@@ -54,7 +54,7 @@ public sealed record MapNeighbourhoodView(
             [.. money.Where(link => !link.Through.Contains(module) && link.To.Module == module).Select(link => Row(link, pastNamed: true))],
             [.. money.Where(link => link.Through.Contains(module)).Select(link => Row(link, pastNamed: false))],
             [.. money.Where(link => !link.Through.Contains(module) && link.From.Module == module).Select(link => Row(link, pastNamed: true))],
-            [.. links.Where(link => link.Kind is MapLinkKind.TaxBase or MapLinkKind.Condition).Select(link => Rule(link, module, carries, End))]);
+            [.. links.Where(link => !MapLinkStyle.IsMoney(link.Kind)).Select(link => Rule(link, module, carries, End))]);
     }
 
     // A rule from the side of the module chosen: the one it sets on the other end, or the one the other end

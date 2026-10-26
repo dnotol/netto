@@ -226,7 +226,7 @@ internal static class MapLayout
     public static IReadOnlyList<MapLink> Routed(MapGrid grid, IReadOnlyList<MapLink> links)
     {
         var amounts = links.GroupBy(Key).ToDictionary(bundle => bundle.Key, bundle => MapBundle.Sum(bundle));
-        var largest = amounts.Where(bundle => MapLinkStyle.Fixed(bundle.Key.Kind) is null).Select(bundle => Math.Abs(bundle.Value)).DefaultIfEmpty(0m).Max();
+        var largest = amounts.Where(bundle => MapLinkStyle.IsMoney(bundle.Key.Kind)).Select(bundle => Math.Abs(bundle.Value)).DefaultIfEmpty(0m).Max();
         var widths = amounts.ToDictionary(bundle => bundle.Key, bundle => MapLineWidths.Of(bundle.Key.Kind, bundle.Value, largest));
         var bundles = links.Select(Key).Distinct().ToList();
         var router = new Router(grid, bundles, widths);

@@ -85,6 +85,27 @@ public class MapLinkStyleTests
         Enum.GetValues<MapLinkKind>().Select(MapLinkStyle.Fixed).ShouldBe([null, null, 2m, 1.75m]);
     }
 
+    // A line of money is the one whose kind has no width of its own, as thick as its amount; every other
+    // kind is a rule, a line that carries none. The widths, the placing of the amounts and the
+    // neighbourhood's lines and rules all ask this one question.
+    [Fact]
+    public void IsMoney_aKindWithNoFixedWidth_isMoneyAndEveryOtherKindIsARule()
+    {
+        var kinds = Enum.GetValues<MapLinkKind>();
+
+        kinds.ShouldSatisfyAllConditions(
+            () => kinds.Where(MapLinkStyle.IsMoney).ShouldBe(kinds.Where(kind => MapLinkStyle.Fixed(kind) is null)),
+            () => kinds.Where(kind => !MapLinkStyle.IsMoney(kind)).ShouldBe(kinds.Where(kind => MapLinkStyle.Fixed(kind) is not null)),
+            () => kinds.Where(MapLinkStyle.IsMoney).ShouldBe([MapLinkKind.PassedOn, MapLinkKind.IntoBucket]),
+            () => kinds.Where(kind => !MapLinkStyle.IsMoney(kind)).ShouldBe([MapLinkKind.TaxBase, MapLinkKind.Condition]));
+    }
+
+    [Fact]
+    public void IsMoney_aKindItHasNoStyleFor_isRefused()
+    {
+        Should.Throw<ArgumentOutOfRangeException>(() => MapLinkStyle.IsMoney((MapLinkKind)99));
+    }
+
     // The legend's sample of a kind that carries no money is as wide as its lines on the map.
     [Theory]
     [InlineData(MapLinkKind.TaxBase)]

@@ -18,7 +18,7 @@ internal static class MapNeighbourhoodHtml
         MapQuietTests.Emptied(MapLinksTests.Full, OptionalModule.Allowances, OptionalModule.Rent, OptionalModule.Car);
 
     // A link that moves money: the others change a tax base or are a condition.
-    public static bool IsMoney(MapLink link) => link.Kind is MapLinkKind.PassedOn or MapLinkKind.IntoBucket;
+    public static bool IsMoney(MapLink link) => MapLinkStyle.IsMoney(link.Kind);
 
     // A link's amount, which every link but a condition has.
     public static decimal Money(MapLink link) => link.Amount.ShouldNotBeNull();

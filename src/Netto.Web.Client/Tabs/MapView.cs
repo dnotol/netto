@@ -239,6 +239,11 @@ internal static class MapLinkStyle
         _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, "A kind of link the map has no style for."),
     };
 
+    // Whether a kind carries money, a line as thick as its amount, which is a kind with no width of its own;
+    // every other kind is a rule. The one place that tells them apart: the lines' widths, the placing of the
+    // amounts and the neighbourhood's lines and rules all ask it here.
+    public static bool IsMoney(MapLinkKind kind) => Fixed(kind) is null;
+
     // The width of the legend's sample of a kind: its lines' own, or, a kind of money, a sample's, one width
     // for both, saying the kind rather than an amount; their ends tell them apart (SampleEnd).
     public static string Sample(MapLinkKind kind) => Pixels(Fixed(kind) ?? MoneySample);

@@ -65,8 +65,6 @@ internal static class MapAmounts
         return search.Work;
     }
 
-    private static bool IsMoney(MapBundle line) => line.Kind is MapLinkKind.PassedOn or MapLinkKind.IntoBucket;
-
     // What a line says: its amount, or a condition's word or two.
     private static string Text(MapBundle line, Func<MapLabel, string> say) => line.Amount is { } amount
         ? Formats.Euros(amount)
@@ -161,7 +159,7 @@ internal static class MapAmounts
             for (var index = 0; index < lines.Count; index++)
             {
                 foreach (var (across, area) in MapLineWidths.Strokes(lines[index].Route, scale, MapLinkStyle.HaloGap))
-                    strokes.Add(new Stroke(Rect.Of(area), index, across, IsMoney(lines[index])));
+                    strokes.Add(new Stroke(Rect.Of(area), index, across, MapLinkStyle.IsMoney(lines[index].Kind)));
             }
 
             _strokes = [.. strokes];
