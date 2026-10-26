@@ -325,7 +325,8 @@ internal static class MapLayout
                 .OrderBy(bundle => Row(Module(bundle))).ThenBy(Back)];
             _drops = [.. bundles.Where(bundle => Family(bundle) == RouteFamily.ChainToCorporateTax).OrderBy(bundle => Row(Module(bundle))).ThenBy(bundle => bundle.Kind)];
             _rightGutter = [.. bundles.Where(bundle => Family(bundle) == RouteFamily.CorporateTaxToBucket).OrderBy(Back)];
-            _belowSplit = [.. bundles.Where(bundle => BelowSplit(bundle) is not null).OrderBy(BelowSplit)];
+            _belowSplit = [.. bundles.Where(bundle => Family(bundle) is RouteFamily.SplitToCopyright or RouteFamily.CopyrightToSplit or RouteFamily.SplitToDirectorPay)
+                .OrderBy(BelowSplit)];
 
             foreach (var bundle in bundles)
             {
@@ -473,7 +474,7 @@ internal static class MapLayout
             var slot = _grid.Slot(end);
             var list = _ports[(end, side)];
             return Spread([.. list.Select((line, index) => (slot.CenterY + (index - (list.Count - 1) / 2m) * PortStep * slot.Height, line))],
-                _grid.DownPixel, (slot.Top, slot.Bottom), round: true, line => line.Item2 == end)[list.IndexOf(bundle)];
+                _grid.DownPixel, (slot.Top, slot.Bottom), round: true, line => line.To == end)[list.IndexOf(bundle)];
         }
 
         private decimal PocketLaneX((MapEnd, MapEnd, MapLinkKind) bundle) =>
@@ -492,22 +493,22 @@ internal static class MapLayout
         // where their widths ask it, and their arrowheads where they end on the lane's tracks, the drops'
         // into Corporate tax, all of them in the lane's room.
         private decimal Lane(List<(MapEnd, MapEnd, MapLinkKind)> lane, (MapEnd, MapEnd, MapLinkKind) bundle, Func<int, decimal> track, (decimal Low, decimal High) room,
-            Func<(MapEnd, MapEnd, MapLinkKind), bool>? arrowHere = null) =>
+            Func<(MapEnd From, MapEnd To, MapLinkKind Kind), bool>? arrowHere = null) =>
             Spread([.. lane.Select((line, index) => (track(index), line))], MapGrid.AcrossPixel, room, round: false, arrowHere ?? (_ => false))[lane.IndexOf(bundle)];
 
         // The y at which one of the split's lines crosses the gap under it: the royalty's a quarter of the way
         // down, the condition a royalty sets on the split halfway and the pay three quarters, or further
         // apart round the gap's middle where their widths ask it.
         private decimal BelowSplitY((MapEnd, MapEnd, MapLinkKind) bundle) =>
-            Spread([.. _belowSplit.Select(line => (_grid.GapBelow(MapRow.Split, BelowSplit(line)!.Value), line))], _grid.DownPixel,
+            Spread([.. _belowSplit.Select(line => (_grid.GapBelow(MapRow.Split, BelowSplit(line)), line))], _grid.DownPixel,
                 (_grid.GapBelow(MapRow.Split, 0m), _grid.GapBelow(MapRow.Split, 1m)), round: true, _ => false)[_belowSplit.IndexOf(bundle)];
 
-        private decimal? BelowSplit((MapEnd From, MapEnd To, MapLinkKind Kind) bundle) => Family(bundle) switch
+        private decimal BelowSplit((MapEnd From, MapEnd To, MapLinkKind Kind) bundle) => Family(bundle) switch
         {
             RouteFamily.SplitToCopyright => 0.25m,
             RouteFamily.CopyrightToSplit => 0.5m,
             RouteFamily.SplitToDirectorPay => 0.75m,
-            _ => null,
+            _ => throw new ArgumentOutOfRangeException(nameof(bundle), $"{bundle.From.Id} to {bundle.To.Id}", "A link that does not cross the gap under the split."),
         };
 
         // Where a line between a module and a bucket, or what comes back out of the bucket beside it, takes
@@ -527,7 +528,7 @@ internal static class MapLayout
         // they would leave it, or squeezed into it where they cannot all fit, so that none ever runs past it.
         // Places and room are in percent of the map, a pixel `pixel` of it there.
         private decimal[] Spread(IReadOnlyList<(decimal Place, (MapEnd, MapEnd, MapLinkKind) Line)> lines, decimal pixel, (decimal Low, decimal High) room, bool round,
-            Func<(MapEnd, MapEnd, MapLinkKind), bool> arrowHere)
+            Func<(MapEnd From, MapEnd To, MapLinkKind Kind), bool> arrowHere)
         {
             // How far a line reaches each side of its place: half its width, or half its arrowhead's base.
             decimal Reach((MapEnd, MapEnd, MapLinkKind) line) => arrowHere(line) ? MapLineWidths.ArrowHalf(_widths[line]) : _widths[line] / 2m;

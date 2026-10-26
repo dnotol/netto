@@ -236,9 +236,9 @@ public class MapViewTests
 
         var money = Money(view);
 
-        var largest = money.Max(bundle => bundle.Amount!.Value);
+        var largest = money.Max(Amount);
         money.ShouldSatisfyAllConditions(
-            () => money.Select(bundle => bundle.Route.Width).ShouldBe(money.Select(bundle => MapLineWidths.Money(bundle.Amount!.Value, largest))),
+            () => money.Select(bundle => bundle.Route.Width).ShouldBe(money.Select(bundle => MapLineWidths.Money(Amount(bundle), largest))),
             () => money.Where(bundle => bundle.Route.Width == MapLineWidths.Thickest).Select(bundle => (bundle.From.Id, bundle.To.Id)).ShouldBe([("company-year", "vouchers")]));
     }
 
@@ -248,12 +248,12 @@ public class MapViewTests
     public void From_aLineOfSeveral_isAsThickAsTheirSum()
     {
         var view = MapView.From(Full, Full.Run());
-        var largest = Money(view).Max(bundle => bundle.Amount!.Value);
+        var largest = Money(view).Max(Amount);
 
         var line = Line(view, MapEnd.Of(RiverModule.DirectorPay), MapEnd.InBucket("taxes_on_pay"));
 
-        (line.Links.Count > 1, line.Route.Width, line.Links.All(link => MapLineWidths.Money(link.Amount!.Value, largest) < line.Route.Width))
-            .ShouldBe((true, MapLineWidths.Money(line.Amount!.Value, largest), true));
+        (line.Links.Count > 1, line.Route.Width, line.Links.All(link => MapLineWidths.Money(link.Amount ?? throw new InvalidOperationException("A line of money with no amount."), largest) < line.Route.Width))
+            .ShouldBe((true, MapLineWidths.Money(Amount(line), largest), true));
     }
 
     // A tax base and a condition carry no money: their lines keep their kind's width, the costly car's among
@@ -438,8 +438,10 @@ public class MapViewTests
         MapView.From(Full, Full.Run()).Drawn(null).ShouldAllBe(line => !line.Faded);
     }
 
-    // The lines of money of a map.
+    // The lines of money of a map, and what one carries.
     private static List<MapBundle> Money(MapView view) => [.. view.Bundles().Where(bundle => bundle.Kind is MapLinkKind.PassedOn or MapLinkKind.IntoBucket)];
+
+    private static decimal Amount(MapBundle line) => line.Amount ?? throw new InvalidOperationException("A line of money with no amount.");
 
     // The one line of the map between two ends, of the kind money has between them.
     private static MapBundle Line(MapView view, MapEnd from, MapEnd to) =>

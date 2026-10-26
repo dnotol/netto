@@ -71,7 +71,7 @@ public class MapLinkStyleTests
     [InlineData(MapLinkKind.Condition)]
     public void Sample_aKindThatCarriesNoMoney_isAsWideAsItsLines(MapLinkKind kind)
     {
-        Pixels(MapLinkStyle.Sample(kind)).ShouldBe(MapLinkStyle.Fixed(kind)!.Value);
+        ((decimal?)Pixels(MapLinkStyle.Sample(kind))).ShouldBe(MapLinkStyle.Fixed(kind));
     }
 
     // Every line is drawn over a halo of the map's ground, its own width and two pixels each side, so a line
