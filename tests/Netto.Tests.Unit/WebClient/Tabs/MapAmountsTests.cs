@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text.RegularExpressions;
 using Netto.Web.Client.River;
 using Netto.Web.Client.Tabs;
@@ -134,6 +135,28 @@ public class MapAmountsTests
             () => amounts.Count.ShouldBe(2),
             () => amounts.Where(amount => view.Bundles().Where(other => !ReferenceEquals(other.Route, amount.Bundle.Route))
                 .Any(other => Strokes(other, scale).Any(stroke => stroke.Area.Overlaps(amount.Area(scale))))).Select(Name).ShouldBeEmpty());
+    }
+
+    // The amounts are placed on each run of the river, in the browser, on the WebAssembly interpreter, many
+    // times slower than here: on the JIT the plan with every lever, 31 lines, takes about half a millisecond
+    // (2026-10-26). Held under 5 ms, the median of 21 placements, so a search grown tenfold fails here before
+    // it is felt there; the browser check measures it in the page.
+    [Fact]
+    public void Of_thePlanWithEveryLever_placesItsAmountsInUnderFiveMillisecondsOnTheJit()
+    {
+        var view = MapView.From(MapLinksTests.Full, MapLinksTests.Full.Run());
+        static string Key(MapLabel label) => label.Key;
+        MapAmounts.Of(view, Key);
+
+        var times = Enumerable.Range(0, 21).Select(_ =>
+        {
+            var watch = Stopwatch.StartNew();
+            MapAmounts.Of(view, Key);
+            return watch.Elapsed.TotalMilliseconds;
+        }).Order().ToList();
+
+        TestContext.Current.TestOutputHelper?.WriteLine($"Placing every lever's amounts: {times[10]:0.000} ms, the median of 21.");
+        times[10].ShouldBeLessThan(5);
     }
 
     // A refused amount leaves the map no line, and so no amount.
