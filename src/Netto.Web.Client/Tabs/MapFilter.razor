@@ -26,7 +26,7 @@
                 <MudCheckBox T="bool" Value="row.Shown" ValueChanged="@(shown => OnKindChangedAsync(row.Kind, shown))" Color="Color.Primary" Dense="true">
                     <span class="map-filter__choice">
                         <svg class="map-filter__swatch" data-link-kind="@row.Kind" width="28" height="8" viewBox="0 0 28 8" aria-hidden="true" focusable="false">
-                            <line x1="2" y1="4" x2="26" y2="4" stroke-width="@MapLinkStyle.Width(row.Kind)" stroke-dasharray="@MapLinkStyle.Dash(row.Kind)" style="stroke: @MapLinkStyle.Ink(row.Kind)" />
+                            <line x1="2" y1="4" x2="26" y2="4" stroke-width="@MapLinkStyle.Sample(row.Kind)" stroke-dasharray="@MapLinkStyle.Dash(row.Kind)" style="stroke: @MapLinkStyle.Ink(row.Kind)" />
                         </svg>
                         <span class="map-filter__name">@L[MapFilterText.Name(row.Kind)]</span>
                         <span class="map-filter__count" aria-hidden="true">@row.Count</span>

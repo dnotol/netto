@@ -204,12 +204,13 @@ public enum MapLinkKind
 }
 
 // How each kind of link is drawn, told apart at a glance with no colour needed: its dash, none for a solid
-// line, and its width in pixels, which a line keeps however the map stretches (vector-effect), and its
-// ink. Money passed on is solid and heavy, money into a bucket solid and light, what only changes a tax
-// base dotted, a condition dashed; no two kinds share a style. The map's lines and arrowheads and the
-// filter's swatches read it, no stylesheet keeping an ink of its own for them. Every
-// line is drawn over a halo of the map's ground, its width and a gap each side (HaloGap), so a line drawn
-// over another leaves a gap on each side of it and the crossing reads as over and under.
+// line, and its ink. Money passed on is solid and strong, money into a bucket solid and light, what only
+// changes a tax base dotted, a condition dashed; no two kinds share a style. A line's width is in pixels,
+// which it keeps however the map stretches (vector-effect): a line of money as thick as its amount
+// (MapLineWidths), a line carrying none its kind's (Fixed). The map's lines and arrowheads and the
+// filter's samples read it, no stylesheet keeping an ink of its own for them. Every line is drawn over a
+// halo of the map's ground, its width and a gap each side (HaloGap), so a line drawn over another leaves a
+// gap on each side of it and the crossing reads as over and under.
 internal static class MapLinkStyle
 {
     // The gap, in pixels, the colour of the map's ground on each side of every line.
@@ -236,19 +237,29 @@ internal static class MapLinkStyle
 
     public const string PocketInk = "var(--netto-gold)";
 
-    public static string Width(MapLinkKind kind) => Pixels(Stroke(kind));
-
-    // The halo a line is drawn over: the line's width and the gap each side, the one rule for every line.
-    public static string Halo(MapLinkKind kind) => Pixels(Stroke(kind) + 2 * HaloGap);
-
-    private static decimal Stroke(MapLinkKind kind) => kind switch
+    // The width of a line that carries no money, which it keeps whatever the plan: a tax base's, a
+    // condition's; none for a line of money, as thick as its amount.
+    public static decimal? Fixed(MapLinkKind kind) => kind switch
     {
-        MapLinkKind.PassedOn => 2.5m,
-        MapLinkKind.IntoBucket => 1.25m,
+        MapLinkKind.PassedOn or MapLinkKind.IntoBucket => null,
         MapLinkKind.TaxBase => 2m,
         MapLinkKind.Condition => 1.75m,
         _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, "A kind of link the map has no style for."),
     };
+
+    // The width of the legend's sample of a kind: its lines' own, or, a kind of money, a sample's, saying the
+    // kind rather than an amount.
+    public static string Sample(MapLinkKind kind) => Pixels(Fixed(kind) ?? kind switch
+    {
+        MapLinkKind.PassedOn => 2.5m,
+        _ => 1.25m,
+    });
+
+    // A line's width as the map draws it, its route's (MapLineWidths).
+    public static string Width(decimal width) => Pixels(width);
+
+    // The halo a line is drawn over: the line's width and the gap each side, the one rule for every line.
+    public static string Halo(decimal width) => Pixels(width + 2 * HaloGap);
 
     private static string Pixels(decimal pixels) => pixels.ToString("0.##", CultureInfo.InvariantCulture);
 }

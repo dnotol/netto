@@ -18,7 +18,8 @@
    skipped card and said skipped in words, with no link, so that it can be chosen and its year entered
    again beside the map; the cards that only wait for it are left out. Each link is a line of its kind
    (MapLinkStyle: passed on, into a bucket, a tax base, a condition), its dash, width and ink set on the line
-   itself, with an arrowhead in the same ink where it goes, drawn
+   itself, a line of money as thick as its amount beside the run's largest (MapLineWidths), with an
+   arrowhead in the same ink where it goes, drawn
    over a halo of the map's ground so that a line crossing another leaves a gap each side of it. The links
    of one card between the same two ends and of one kind are one line (MapBundle), which says, beside its
    card's box, one amount and no words: the sum of the card's lines it holds, each a figure the card draws;
@@ -82,9 +83,9 @@
             <svg class="map__lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false">
                 @foreach (var (bundle, faded) in _drawn)
                 {
-                    <polyline class="@HaloClass(faded)" points="@Points(bundle.Route)" stroke-width="@MapLinkStyle.Halo(bundle.Kind)" />
+                    <polyline class="@HaloClass(faded)" points="@Points(bundle.Route)" stroke-width="@MapLinkStyle.Halo(bundle.Route.Width)" />
                     <polyline class="@LineClass(faded)" points="@Points(bundle.Route)" stroke-dasharray="@MapLinkStyle.Dash(bundle.Kind)"
-                              stroke-width="@MapLinkStyle.Width(bundle.Kind)" data-link-kind="@bundle.Kind" style="stroke: @Ink(bundle)" />
+                              stroke-width="@MapLinkStyle.Width(bundle.Route.Width)" data-link-kind="@bundle.Kind" style="stroke: @Ink(bundle)" />
                 }
             </svg>
             @foreach (var (bundle, faded) in _drawn)

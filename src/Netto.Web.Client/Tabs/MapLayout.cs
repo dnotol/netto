@@ -119,12 +119,16 @@ internal static class MapLayout
         new(modules, quiet ?? new HashSet<RiverModule>(), badgeLines ?? new Dictionary<RiverModule, int>());
 
     // Every link of the run with its route: links with the same ends and kind share one, their words
-    // drawn together.
+    // drawn together, as thick as what they carry together beside the run's largest line of money
+    // (MapLineWidths), measured here from every link of the run, so a filter thickens no line.
     public static IReadOnlyList<MapLink> Routed(MapGrid grid, IReadOnlyList<MapLink> links)
     {
+        var amounts = links.GroupBy(Key).ToDictionary(bundle => bundle.Key, bundle => MapBundle.Sum(bundle));
+        var largest = amounts.Where(bundle => MapLinkStyle.Fixed(bundle.Key.Kind) is null).Select(bundle => Math.Abs(bundle.Value)).DefaultIfEmpty(0m).Max();
+        var widths = amounts.ToDictionary(bundle => bundle.Key, bundle => MapLineWidths.Of(bundle.Key.Kind, bundle.Value, largest));
         var bundles = links.Select(Key).Distinct().ToList();
         var router = new Router(grid, bundles);
-        var routes = bundles.ToDictionary(bundle => bundle, router.Route);
+        var routes = bundles.ToDictionary(bundle => bundle, bundle => router.Route(bundle) with { Width = widths[bundle] });
 
         return [.. links.Select(link => link with { Route = routes[Key(link)] })];
     }
@@ -654,9 +658,13 @@ internal enum MapDirection
     Right,
 }
 
-// A link's line: its points, the arrow at its end, and where its words are drawn.
+// A link's line: its points, the arrow at its end, where its words are drawn and how thick it is.
 internal sealed record MapRoute(IReadOnlyList<MapPoint> Points, MapLabelSide Side)
 {
+    // How thick the line is drawn, in pixels (MapLineWidths), worked out with its route; the thinnest until
+    // it is.
+    public decimal Width { get; init; } = MapLineWidths.Thinnest;
+
     public MapPoint End => Points[^1];
 
     // Where a line between two boxes one over the other has its words: just right of it, halfway down its

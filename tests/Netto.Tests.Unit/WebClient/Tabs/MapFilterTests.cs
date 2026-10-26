@@ -164,7 +164,7 @@ public class MapFilterTests
 
         var samples = Regex.Matches(html, "<svg class=\"map-filter__swatch\" data-link-kind=\"(\\w+)\"[^>]*aria-hidden=\"true\"[^>]*><line [^>]*stroke-width=\"([\\d.]+)\"(?: stroke-dasharray=\"([^\"]*)\")?[^>]*>")
             .Select(match => (match.Groups[1].Value, match.Groups[2].Value, match.Groups[3].Success ? match.Groups[3].Value : null)).ToList();
-        samples.ShouldBe(Enum.GetValues<MapLinkKind>().Select(kind => (kind.ToString(), MapLinkStyle.Width(kind), MapLinkStyle.Dash(kind))));
+        samples.ShouldBe(Enum.GetValues<MapLinkKind>().Select(kind => (kind.ToString(), MapLinkStyle.Sample(kind), MapLinkStyle.Dash(kind))));
         samples.Distinct().Count().ShouldBe(samples.Count);
     }
 

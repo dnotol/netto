@@ -227,6 +227,75 @@ public class MapViewTests
             drains.Single(drain => drain.Kind == DrainKind.Back).Amount));
     }
 
+    // Every line of money is as thick as its amount beside the run's largest line of money, which is drawn
+    // the thickest: with every lever, what Company year hands the first of them.
+    [Fact]
+    public void From_everyLever_drawsEachLineOfMoneyAsThickAsItsAmountTheLargestTheThickest()
+    {
+        var view = MapView.From(Full, Full.Run());
+
+        var money = Money(view);
+
+        var largest = money.Max(bundle => bundle.Amount!.Value);
+        money.ShouldSatisfyAllConditions(
+            () => money.Select(bundle => bundle.Route.Width).ShouldBe(money.Select(bundle => MapLineWidths.Money(bundle.Amount!.Value, largest))),
+            () => money.Where(bundle => bundle.Route.Width == MapLineWidths.Thickest).Select(bundle => (bundle.From.Id, bundle.To.Id)).ShouldBe([("company-year", "vouchers")]));
+    }
+
+    // A line holding several of its card's lines is as thick as their sum, thicker than any of them alone:
+    // what Director pay pays into the contributions and tax on pay.
+    [Fact]
+    public void From_aLineOfSeveral_isAsThickAsTheirSum()
+    {
+        var view = MapView.From(Full, Full.Run());
+        var largest = Money(view).Max(bundle => bundle.Amount!.Value);
+
+        var line = Line(view, MapEnd.Of(RiverModule.DirectorPay), MapEnd.InBucket("taxes_on_pay"));
+
+        (line.Links.Count > 1, line.Route.Width, line.Links.All(link => MapLineWidths.Money(link.Amount!.Value, largest) < line.Route.Width))
+            .ShouldBe((true, MapLineWidths.Money(line.Amount!.Value, largest), true));
+    }
+
+    // A tax base and a condition carry no money: their lines keep their kind's width, the costly car's among
+    // them.
+    [Fact]
+    public void From_aTaxBaseOrACondition_drawsItsLineAtItsKindsWidth()
+    {
+        var river = MapViewConditionsTests.CostlyCar;
+
+        var rules = MapView.From(river, river.Run()).Bundles().Where(bundle => bundle.Kind is MapLinkKind.TaxBase or MapLinkKind.Condition).ToList();
+
+        rules.ShouldSatisfyAllConditions(
+            () => rules.Select(bundle => bundle.Kind).Distinct().Count().ShouldBe(2),
+            () => rules.Where(bundle => bundle.Route.Width != MapLinkStyle.Fixed(bundle.Kind)).Select(bundle => $"{bundle.From.Id} to {bundle.To.Id}").ShouldBeEmpty());
+    }
+
+    // The company skipped, the river starts at the pay: Director pay's largest line is the thickest.
+    [Fact]
+    public void From_companySkipped_drawsDirectorPaysLargestLineTheThickest()
+    {
+        var river = Full.SkipCompany();
+
+        var money = Money(MapView.From(river, river.Run()));
+
+        money.Single(bundle => bundle.Amount == money.Max(line => line.Amount)).Route.Width.ShouldBe(MapLineWidths.Thickest);
+    }
+
+    // The largest line is the run's, whatever the viewer hides: hiding the money passed on, the largest
+    // line's kind, thickens no line into a bucket.
+    [Fact]
+    public void Showing_theLargestLinesKindHidden_thickensNoOtherLine()
+    {
+        var view = MapView.From(Full, Full.Run());
+        var filter = new MapLinkFilter(new BrowserStorage());
+        filter.Set(MapLinkKind.PassedOn, shown: false);
+
+        var shown = filter.Showing(view);
+
+        shown.Bundles().Select(bundle => (bundle.Kind, bundle.Route.Width))
+            .ShouldBe(view.Bundles().Where(bundle => filter.Shows(bundle.Kind)).Select(bundle => (bundle.Kind, bundle.Route.Width)));
+    }
+
     // Each line's words are drawn once: with the other lines its card draws on that side of its box, or
     // beside it in the gap between two boxes.
     [Fact]
@@ -334,6 +403,9 @@ public class MapViewTests
     {
         MapView.From(Full, Full.Run()).Drawn(null).ShouldAllBe(line => !line.Faded);
     }
+
+    // The lines of money of a map.
+    private static List<MapBundle> Money(MapView view) => [.. view.Bundles().Where(bundle => bundle.Kind is MapLinkKind.PassedOn or MapLinkKind.IntoBucket)];
 
     // The one line of the map between two ends, of the kind money has between them.
     private static MapBundle Line(MapView view, MapEnd from, MapEnd to) =>

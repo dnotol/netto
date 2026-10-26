@@ -81,7 +81,8 @@ public class MapTabTests
                 ("kept_in_company", "Kept in company")]);
     }
 
-    // One line for each route, each saying its kind, the kinds told apart by their stroke.
+    // One line for each route, each saying its kind, the kinds told apart by their dash, each as thick as its
+    // route: a line of money as its amount, a line carrying none as its kind.
     [Fact]
     public async Task Tab_everyLine_saysItsKindAndTakesItsStroke()
     {
@@ -89,7 +90,9 @@ public class MapTabTests
 
         var html = await RenderTabAsync(Full);
 
-        Lines(html).ShouldBe(view.Drawn(null).Select(line => (line.Bundle.Kind.ToString(), MapLinkStyle.Dash(line.Bundle.Kind), MapLinkStyle.Width(line.Bundle.Kind))));
+        html.ShouldSatisfyAllConditions(
+            () => view.Drawn(null).Select(line => line.Bundle.Route.Width).Distinct().Count().ShouldBeGreaterThan(Enum.GetValues<MapLinkKind>().Length),
+            () => Lines(html).ShouldBe(view.Drawn(null).Select(line => (line.Bundle.Kind.ToString(), MapLinkStyle.Dash(line.Bundle.Kind), MapLinkStyle.Width(line.Bundle.Route.Width)))));
     }
 
     // Each line and its arrowhead are drawn in their kind's ink, the style's own (MapLinkStyle.Ink), or in
@@ -183,7 +186,7 @@ public class MapTabTests
         Regex.Matches(html, "<polyline [^>]*>").Select(match => match.Value).Chunk(2)
             .Select(pair => (Attribute(pair[0], "class"), Attribute(pair[0], "points") == Attribute(pair[^1], "points"), Attribute(pair[0], "stroke-width"),
                 Attribute(pair[0], "stroke-dasharray"), Attribute(pair[^1], "data-link-kind")))
-            .ShouldBe(drawn.Select(line => ((string?)(line.Faded ? "map-halo map-halo--faded" : "map-halo"), true, (string?)MapLinkStyle.Halo(line.Bundle.Kind), (string?)null,
+            .ShouldBe(drawn.Select(line => ((string?)(line.Faded ? "map-halo map-halo--faded" : "map-halo"), true, (string?)MapLinkStyle.Halo(line.Bundle.Route.Width), (string?)null,
                 (string?)line.Bundle.Kind.ToString())));
     }
 

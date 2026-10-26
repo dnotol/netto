@@ -6,13 +6,14 @@ namespace Netto.Tests.WebClient.Tabs;
 
 // How each kind of link is drawn, told apart at a glance and with no colour needed: money passed on solid
 // and heavy, money into a bucket solid and light, what only changes a tax base dotted, a condition dashed.
-// The map's lines and the filter's swatches read the one style.
+// The map's lines and the filter's swatches read the one style; a line of money is as thick as its amount
+// (MapLineWidths), a line carrying none its kind's width.
 public class MapLinkStyleTests
 {
     [Fact]
     public void Style_noTwoKinds_shareOne()
     {
-        Enum.GetValues<MapLinkKind>().Select(kind => (MapLinkStyle.Dash(kind), MapLinkStyle.Width(kind))).Distinct().Count()
+        Enum.GetValues<MapLinkKind>().Select(kind => (MapLinkStyle.Dash(kind), MapLinkStyle.Sample(kind))).Distinct().Count()
             .ShouldBe(Enum.GetValues<MapLinkKind>().Length);
     }
 
@@ -20,8 +21,7 @@ public class MapLinkStyleTests
     public void Style_money_isSolidAndHeavierPassedOnThanIntoABucket()
     {
         (MapLinkStyle.Dash(MapLinkKind.PassedOn), MapLinkStyle.Dash(MapLinkKind.IntoBucket),
-                decimal.Parse(MapLinkStyle.Width(MapLinkKind.PassedOn), System.Globalization.CultureInfo.InvariantCulture)
-                > decimal.Parse(MapLinkStyle.Width(MapLinkKind.IntoBucket), System.Globalization.CultureInfo.InvariantCulture))
+                Pixels(MapLinkStyle.Sample(MapLinkKind.PassedOn)) > Pixels(MapLinkStyle.Sample(MapLinkKind.IntoBucket)))
             .ShouldBe((null, null, true));
     }
 
@@ -31,16 +31,33 @@ public class MapLinkStyleTests
         (MapLinkStyle.Dash(MapLinkKind.TaxBase), MapLinkStyle.Dash(MapLinkKind.Condition)).ShouldBe(("1 4", "7 5"));
     }
 
-    // Every line is drawn over a halo of the map's ground, its own width and two pixels each side, so a line
-    // drawn over another leaves a gap on each side of it: the crossing reads as over and under.
+    // A line that carries no money keeps its kind's width whatever the plan: a tax base 2 px, a condition
+    // 1.75 px; a line of money has none of its kind's, being as thick as its amount.
+    [Fact]
+    public void Fixed_aTaxBaseAndAConditionKeepTheirWidth_moneyNone()
+    {
+        Enum.GetValues<MapLinkKind>().Select(MapLinkStyle.Fixed).ShouldBe([null, null, 2m, 1.75m]);
+    }
+
+    // The legend's sample of a kind that carries no money is as wide as its lines on the map.
     [Theory]
-    [InlineData(MapLinkKind.PassedOn)]
-    [InlineData(MapLinkKind.IntoBucket)]
     [InlineData(MapLinkKind.TaxBase)]
     [InlineData(MapLinkKind.Condition)]
-    public void Halo_everyKind_isItsLinesWidthWithTwoPixelsEachSide(MapLinkKind kind)
+    public void Sample_aKindThatCarriesNoMoney_isAsWideAsItsLines(MapLinkKind kind)
     {
-        (Pixels(MapLinkStyle.Halo(kind)) - Pixels(MapLinkStyle.Width(kind))).ShouldBe(2 * 2m);
+        Pixels(MapLinkStyle.Sample(kind)).ShouldBe(MapLinkStyle.Fixed(kind)!.Value);
+    }
+
+    // Every line is drawn over a halo of the map's ground, its own width and two pixels each side, so a line
+    // drawn over another leaves a gap on each side of it: the crossing reads as over and under, the thinnest
+    // line's as the thickest's.
+    [Theory]
+    [InlineData(1.5)]
+    [InlineData(4.75)]
+    [InlineData(8)]
+    public void Halo_everyLine_isItsWidthWithTwoPixelsEachSide(double width)
+    {
+        (Pixels(MapLinkStyle.Halo((decimal)width)) - Pixels(MapLinkStyle.Width((decimal)width))).ShouldBe(2 * 2m);
     }
 
     [Fact]
