@@ -62,6 +62,7 @@ public class NettoThemeTests
             ["--netto-line"] = palette.LinesDefault,
             ["--netto-line-input"] = palette.LinesInputs,
             ["--netto-gold"] = palette.Primary,
+            ["--netto-error"] = palette.Error,
         };
 
         var css = AppCssColours(theme);

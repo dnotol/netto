@@ -30,6 +30,7 @@
     --netto-gold-fill: #D4AF37;
     --netto-gold-fill-hover: #B99727;
     --netto-on-gold: #0B0A08;
+    --netto-error: #F64E62;
     --netto-focus-inverse: var(--netto-page);
     --netto-selection: rgba(212, 175, 55, 0.35);
     --netto-wash: rgba(243, 238, 226, 0.04);
@@ -68,6 +69,7 @@
     --netto-line-input: #8A806C;
     --netto-gold: #7E5F0B;
     --netto-on-gold: #1B1812;
+    --netto-error: #B42335;
     --netto-selection: rgba(212, 175, 55, 0.5);
     --netto-wash: rgba(27, 24, 18, 0.06);
     --netto-tint: rgba(27, 24, 18, 0.07);

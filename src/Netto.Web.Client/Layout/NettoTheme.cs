@@ -35,6 +35,9 @@ internal static class NettoTheme
             LinesInputs = "#726A56",
             Divider = "#2B2619",
             DividerLight = "#1E1B13",
+            // What does not hold, a rule the plan loses: MudBlazor's own dark red, pinned here so app.css
+            // can mirror it.
+            Error = "#F64E62",
         },
         // The inks swap: the page is the dark theme's text colour. Gold deepens for what is read, as
         // #D4AF37 reads 1.8:1 on this page, so MudBlazor's own gold fills take the card's colour as
