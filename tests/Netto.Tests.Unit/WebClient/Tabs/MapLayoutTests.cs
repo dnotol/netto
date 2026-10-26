@@ -248,9 +248,9 @@ public class MapLayoutTests
         Overhangs(Routes(river), Grid(river)).ShouldBeEmpty();
     }
 
-    // Each arrowhead, sized by its line (MapLineWidths), is clear of every other and no longer than the
-    // stretch of line it ends, so it reads as an arrowhead and never runs past a turn: on the narrowest map,
-    // where it takes the largest share of it.
+    // Each arrowhead, sized by its line (MapLineWidths), is clear of every other arrowhead and of every other
+    // line, and no longer than the stretch of line it ends, so it reads as an arrowhead and never runs past a
+    // turn: on the narrowest map, where it takes the largest share of it.
     [Theory]
     [MemberData(nameof(Rivers))]
     public void Routed_anyPlan_drawsEachArrowheadClearOfTheOthersAndWithinItsLastStretch(int bits, int quiet, bool companySkipped)
@@ -262,8 +262,9 @@ public class MapLayoutTests
 
     // Plans at the edges of what a plan holds keep their lines apart and off the boxes too, and their
     // arrowheads clear: the pay at its ceiling, a pay low enough for the tax credit on low earned income to
-    // come back beside its taxes, a royalty past its limits, the costly car, and the company skipped with a
-    // high pay or a low one.
+    // come back beside its taxes, a royalty past its limits, the costly car, a car costly to run, whose stub
+    // out of the river ends in a large arrowhead beside the drops into Corporate tax, and the company skipped
+    // with a high pay or a low one.
     [Theory]
     [MemberData(nameof(ExtremeRivers))]
     public void Routed_aPlanAtTheEdges_keepsItsLinesApartAndOffTheBoxesAtTheirWidths(string plan)
@@ -580,9 +581,9 @@ public class MapLayoutTests
             : (at.X - box.Left) * scale.X < half || (box.Right - at.X) * scale.X < half;
     }
 
-    // Every two arrowheads that overlap, and every arrowhead longer than the stretch of line it ends, on the
-    // narrowest map: an arrowhead is drawn where a line ends on a module or out of the river, none into a
-    // bucket.
+    // Every two arrowheads that overlap, every arrowhead over another line, and every arrowhead longer than
+    // the stretch of line it ends, on the narrowest map: an arrowhead is drawn where a line ends on a module
+    // or out of the river, none into a bucket.
     private static List<string> Arrowheads(IReadOnlyList<RoutedLine> routes, decimal units)
     {
         var scale = (X: Sizes[0].Width / 100m, Y: RowPixels * units / 100m);
@@ -592,6 +593,9 @@ public class MapLayoutTests
         [
             .. heads.Where(head => head.Long).Select(head => $"{head.Name}'s arrowhead past its last stretch"),
             .. heads.SelectMany((a, i) => heads.Skip(i + 1).Where(b => Overlaps(a.Area, b.Area)).Select(b => $"{a.Name}'s arrowhead over {b.Name}'s")),
+            .. heads.SelectMany(head => routes.Where(route => route.Name != head.Name)
+                .Where(route => Segments(route.Route).Any(segment => Overlaps(head.Area, Stroke(segment, route.Route.Width, scale))))
+                .Select(route => $"{head.Name}'s arrowhead over {route.Name}")),
         ];
     }
 
@@ -618,7 +622,7 @@ public class MapLayoutTests
 
     // The plans at the edges of what a plan holds, by name.
     public static TheoryData<string> ExtremeRivers() =>
-        new("the pay at its ceiling", "a low pay", "a royalty past its limits", "the costly car", "the company skipped, a high pay", "the company skipped, a low pay");
+        new("the pay at its ceiling", "a low pay", "a royalty past its limits", "the costly car", "a car costly to run", "the company skipped, a high pay", "the company skipped, a low pay");
 
     private static RiverInputs Extreme(string plan) => plan switch
     {
@@ -626,6 +630,7 @@ public class MapLayoutTests
         "a low pay" => MapLinksTests.Full.WithDirectorPay(12_000m),
         "a royalty past its limits" => MapLinksTests.Full.WithRoyalty(60_000m),
         "the costly car" => MapViewConditionsTests.CostlyCar,
+        "a car costly to run" => MapLinksTests.Full.WithCarCosts(40_000m),
         "the company skipped, a high pay" => MapLinksTests.Full.SkipCompany().WithDirectorPay(200_000m),
         "the company skipped, a low pay" => MapLinksTests.Full.SkipCompany().WithDirectorPay(12_000m),
         _ => throw new ArgumentOutOfRangeException(nameof(plan), plan, "A plan the tests have no inputs for."),

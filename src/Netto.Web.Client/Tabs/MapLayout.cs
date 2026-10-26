@@ -467,14 +467,14 @@ internal static class MapLayout
         };
 
         // Where a link meets a side it shares: round the side's middle, each its step along it from the one
-        // before, or further where their widths ask it, and the arrowheads of those ending there, all of
-        // them on the side.
+        // before, or further where their widths ask it, and the arrowheads of those ending there or on the
+        // short stub out of the river beside it, all of them on the side.
         private decimal PortY((MapEnd From, MapEnd To, MapLinkKind Kind) bundle, MapEnd end, MapSide side)
         {
             var slot = _grid.Slot(end);
             var list = _ports[(end, side)];
             return Spread([.. list.Select((line, index) => (slot.CenterY + (index - (list.Count - 1) / 2m) * PortStep * slot.Height, line))],
-                _grid.DownPixel, (slot.Top, slot.Bottom), round: true, line => line.To == end)[list.IndexOf(bundle)];
+                _grid.DownPixel, (slot.Top, slot.Bottom), round: true, line => line.To == end || line.To.IsOut)[list.IndexOf(bundle)];
         }
 
         private decimal PocketLaneX((MapEnd, MapEnd, MapLinkKind) bundle) =>
