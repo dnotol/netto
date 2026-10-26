@@ -20,13 +20,25 @@
         }
     }
 
+    let shown = null;
+
     function show(theme) {
+        shown = theme;
         document.documentElement.dataset.theme = theme;
         const bar = document.querySelector('meta[name="theme-color"]');
         if (bar) {
             bar.content = pageColours[theme];
         }
     }
+
+    // Each time Blazor loads a page over the one in the browser, as it does after every hot reload in
+    // development, it sets the root's attributes to the server's, which carry no theme: the page would fall
+    // back to dark while MudBlazor keeps the palette ThemePreference gave it. The theme shown goes back at once.
+    new MutationObserver(() => {
+        if (document.documentElement.dataset.theme !== shown) {
+            show(shown);
+        }
+    }).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
 
     window.nettoTheme = { systemPrefersLight, show };
     show(picked() ?? (systemPrefersLight() ? "light" : "dark"));
