@@ -14,14 +14,14 @@ public class MapLinkStyleTests
     [Fact]
     public void Style_noTwoKinds_shareOne()
     {
-        Enum.GetValues<MapLinkKind>().Select(kind => (MapLinkStyle.Dash(kind), MapLinkStyle.End(kind))).Distinct().Count()
+        Enum.GetValues<MapLinkKind>().Select(kind => (MapLinkStyle.Dash(kind), MapLinkStyle.SampleEnd(kind))).Distinct().Count()
             .ShouldBe(Enum.GetValues<MapLinkKind>().Length);
     }
 
     [Fact]
     public void Style_money_isSolidPassedOnEndingInAnArrowheadIntoABucketInABar()
     {
-        (MapLinkStyle.Dash(MapLinkKind.PassedOn), MapLinkStyle.Dash(MapLinkKind.IntoBucket), MapLinkStyle.End(MapLinkKind.PassedOn), MapLinkStyle.End(MapLinkKind.IntoBucket))
+        (MapLinkStyle.Dash(MapLinkKind.PassedOn), MapLinkStyle.Dash(MapLinkKind.IntoBucket), MapLinkStyle.SampleEnd(MapLinkKind.PassedOn), MapLinkStyle.SampleEnd(MapLinkKind.IntoBucket))
             .ShouldBe((null, null, MapLineEnd.Arrowhead, MapLineEnd.Bucket));
     }
 
@@ -29,9 +29,29 @@ public class MapLinkStyleTests
     [Theory]
     [InlineData(MapLinkKind.TaxBase)]
     [InlineData(MapLinkKind.Condition)]
-    public void End_aRulesLine_isAnArrowhead(MapLinkKind kind)
+    public void SampleEnd_aRulesLine_isAnArrowhead(MapLinkKind kind)
     {
-        MapLinkStyle.End(kind).ShouldBe(MapLineEnd.Arrowhead);
+        MapLinkStyle.SampleEnd(kind).ShouldBe(MapLineEnd.Arrowhead);
+    }
+
+    // A sample's end is the end the map draws for the lines it stands for: every line passed on, every tax
+    // base and every condition ends in an arrowhead; of the money into a bucket, the lines ending in a
+    // bucket run on under it, as the sample's bar shows, and the others, leaving the river or coming back
+    // out of a bucket, end in an arrowhead, as the kind's bubble says.
+    [Fact]
+    public void SampleEnd_ofEachKind_isTheEndTheMapDrawsForTheLinesItStandsFor()
+    {
+        var river = MapViewConditionsTests.CostlyCar;
+
+        var bundles = MapView.From(river, river.Run()).Bundles();
+
+        var (intoABucket, besides) = (bundles.Where(bundle => bundle.Kind == MapLinkKind.IntoBucket && bundle.To.Bucket is not null).ToList(),
+            bundles.Where(bundle => bundle.Kind == MapLinkKind.IntoBucket && bundle.To.Bucket is null).ToList());
+        bundles.ShouldSatisfyAllConditions(
+            () => bundles.Where(bundle => MapLinkStyle.SampleEnd(bundle.Kind) == MapLineEnd.Arrowhead).ShouldAllBe(bundle => bundle.Arrowhead),
+            () => (MapLinkStyle.SampleEnd(MapLinkKind.IntoBucket), intoABucket.Count > 0, intoABucket.All(bundle => !bundle.Arrowhead)).ShouldBe((MapLineEnd.Bucket, true, true)),
+            () => besides.Select(bundle => bundle.To.IsOut ? "out of the river" : "back out of a bucket").Distinct().Order().ShouldBe(["back out of a bucket", "out of the river"]),
+            () => besides.ShouldAllBe(bundle => bundle.Arrowhead));
     }
 
     // The legend's samples of money are of one width, saying the kind, not an amount: what tells them

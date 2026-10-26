@@ -243,9 +243,12 @@ internal static class MapLinkStyle
 
     public const string PocketInk = "var(--netto-gold)";
 
-    // How a kind's lines end, which its sample in the legend shows: an arrowhead on the module a line
-    // reaches, or, money into a bucket, under the bucket, a bar its sample runs into.
-    public static MapLineEnd End(MapLinkKind kind) => kind switch
+    // How the legend's sample of a kind ends, as the lines it stands for end on the map (MapBundle.Arrowhead):
+    // money passed on, a tax base and a condition in an arrowhead on the module a line reaches; money into a
+    // bucket in a bar its sample runs into, the bucket's edge, as a line of that kind ending in a bucket runs
+    // on under it. A line of that kind that leaves the river or comes back out of a bucket ends in an
+    // arrowhead instead, which the kind's words in the legend say (MapFilter.resx).
+    public static MapLineEnd SampleEnd(MapLinkKind kind) => kind switch
     {
         MapLinkKind.IntoBucket => MapLineEnd.Bucket,
         MapLinkKind.PassedOn or MapLinkKind.TaxBase or MapLinkKind.Condition => MapLineEnd.Arrowhead,
@@ -266,7 +269,7 @@ internal static class MapLinkStyle
     };
 
     // The width of the legend's sample of a kind: its lines' own, or, a kind of money, a sample's, one width
-    // for both, saying the kind rather than an amount; their ends tell them apart (End).
+    // for both, saying the kind rather than an amount; their ends tell them apart (SampleEnd).
     public static string Sample(MapLinkKind kind) => Pixels(Fixed(kind) ?? MoneySample);
 
     private const decimal MoneySample = 3m;

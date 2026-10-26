@@ -25,7 +25,7 @@
     <value>Money into a bucket</value>
   </data>
   <data name="Gloss_IntoBucket" xml:space="preserve">
-    <value>Money that ends in one of the bar's buckets, leaves the river, or comes back out of a bucket. The thicker the line, the more money.</value>
+    <value>Money that ends in one of the bar's buckets, its line running into it, or that leaves the river or comes back out of a bucket, its line then ending in an arrowhead. The thicker the line, the more money.</value>
   </data>
   <data name="Name_TaxBase" xml:space="preserve">
     <value>Tax base</value>

@@ -73,7 +73,7 @@ public class MapFilterTests
         bubbles.ShouldBe(
         [
             ("More about Money passed on", "Money handed from one module to the next. The thicker the line, the more money.", false, true),
-            ("More about Money into a bucket", "Money that ends in one of the bar's buckets, leaves the river, or comes back out of a bucket. The thicker the line, the more money.", false, true),
+            ("More about Money into a bucket", "Money that ends in one of the bar's buckets, its line running into it, or that leaves the river or comes back out of a bucket, its line then ending in an arrowhead. The thicker the line, the more money.", false, true),
             ("More about Tax base", "What changes the amount a tax is worked out on without moving money: a benefit taxed with the pay, what Corporate tax adds back.", false, true),
             ("More about Conditions", "A condition one module sets on another.", false, true),
         ]);
@@ -180,20 +180,22 @@ public class MapFilterTests
                 .Select(match => (match.Groups[1].Value, match.Groups[2].Value))
                 .ShouldBe(Enum.GetValues<MapLinkKind>().Select(kind => (kind.ToString(), $"stroke: {MapLinkStyle.Ink(kind)}"))),
             () => Samples(html).Where(sample => sample.Arrowhead is not null).Select(sample => (sample.Kind, sample.Arrowhead))
-                .ShouldBe(Enum.GetValues<MapLinkKind>().Where(kind => MapLinkStyle.End(kind) == MapLineEnd.Arrowhead).Select(kind => (kind.ToString(), (string?)$"fill: {MapLinkStyle.Ink(kind)}"))));
+                .ShouldBe(Enum.GetValues<MapLinkKind>().Where(kind => MapLinkStyle.SampleEnd(kind) == MapLineEnd.Arrowhead).Select(kind => (kind.ToString(), (string?)$"fill: {MapLinkStyle.Ink(kind)}"))));
     }
 
-    // Each sample ends as its kind's lines end on the map, so the legend tells money passed on from money into
-    // a bucket by their ends, not by a width that is an amount's: an arrowhead, or a bar its line runs into,
-    // the edge of a bucket, drawn in a bucket's frame.
+    // Each sample ends as the lines it stands for end on the map (MapLinkStyle.SampleEnd), so the legend tells
+    // money passed on from money into a bucket by their ends, not by a width that is an amount's: money
+    // passed on, a tax base and a condition in an arrowhead, money into a bucket in a bar its line runs into,
+    // the edge of a bucket, drawn in a bucket's frame; that the kind's lines leaving the river or coming back
+    // out of a bucket end in an arrowhead is its bubble's to say.
     [Fact]
-    public async Task Filter_everySample_endsAsItsKindsLinesEnd()
+    public async Task Filter_everySample_endsAsTheLinesItStandsForEnd()
     {
         var html = await RenderAsync(EveryKind(), Counts);
 
         Samples(html).Select(sample => (sample.Kind, sample.Arrowhead is not null, sample.Bucket))
-            .ShouldBe(Enum.GetValues<MapLinkKind>().Select(kind => (kind.ToString(), MapLinkStyle.End(kind) == MapLineEnd.Arrowhead,
-                MapLinkStyle.End(kind) == MapLineEnd.Bucket ? $"stroke: {MapLinkStyle.BucketEdge}" : null)));
+            .ShouldBe(Enum.GetValues<MapLinkKind>().Select(kind => (kind.ToString(), MapLinkStyle.SampleEnd(kind) == MapLineEnd.Arrowhead,
+                MapLinkStyle.SampleEnd(kind) == MapLineEnd.Bucket ? $"stroke: {MapLinkStyle.BucketEdge}" : null)));
     }
 
     // Each sample of the legend: its kind, its arrowhead's ink if it has one, and its bar's if it has one.
