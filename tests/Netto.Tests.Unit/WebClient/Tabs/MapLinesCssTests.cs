@@ -43,6 +43,15 @@ public class MapLinesCssTests
                 .ShouldBeEmpty());
     }
 
+    // An arrowhead is drawn on the map's ground, its box the size of its base by its length, over the end
+    // of its line, so the line, however thick, stops at the arrowhead's base and the arrowhead reads as a
+    // point at any size of the map, its line's width never showing beside its front.
+    [Fact]
+    public void MapTabCss_drawsAnArrowheadOnTheGroundOverTheEndOfItsLine()
+    {
+        Stylesheet.Block(Css, ".map-arrow").ShouldContain("background: var(--netto-page);");
+    }
+
     // The ways an arrowhead points.
     private static readonly string[] Ways = ["down", "up", "right", "left"];
 }

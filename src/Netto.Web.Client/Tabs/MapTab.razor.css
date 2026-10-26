@@ -130,13 +130,16 @@
 
 /* An arrowhead where a line arrives on a module or leaves the river, its point on the box's edge, in its
    line's ink and as large as its line asks (--map-arrow, --map-arrow-half and --map-arrow-length, set on
-   the arrowhead itself from MapLinkStyle and MapLineWidths). A line into a bucket has none: it runs on
-   under the bucket. */
+   the arrowhead itself from MapLinkStyle and MapLineWidths). Its box, its base by its length, is the map's
+   ground under the borders that draw it, over the end of its line, so the line stops at the arrowhead's
+   base and the arrowhead reads as a point however thick the line and however large the map. A line into a
+   bucket has none: it runs on under the bucket. */
 .map-arrow {
     position: absolute;
     width: 0;
     height: 0;
     border: var(--map-arrow-half) solid transparent;
+    background: var(--netto-page);
     pointer-events: none;
 }
 
