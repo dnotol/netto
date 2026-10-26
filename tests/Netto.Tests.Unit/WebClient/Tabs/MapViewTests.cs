@@ -196,7 +196,7 @@ public class MapViewTests
     [Fact]
     public void Amount_ofLinesWithFractionsOfACent_isTheSumOfTheirFiguresToTheCent()
     {
-        var line = new MapBundle(new MapRoute([new MapPoint(0m, 0m), new MapPoint(0m, 1m)], MapLabelSide.Gap),
+        var line = new MapBundle(new MapRoute([new MapPoint(0m, 0m), new MapPoint(0m, 1m)]),
             [Link(1.005m), Link(2.005m)]);
 
         line.Amount.ShouldBe(3.02m);

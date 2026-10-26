@@ -386,7 +386,7 @@ public class MapLayoutTests
     public void Head_aLinesArrowhead_coversItsBaseAndLengthBackFromItsEnd()
     {
         var scale = MapScale.Of(100m, 100m);
-        MapRoute Into(MapPoint from) => new([from, new MapPoint(50m, 50m)], MapLabelSide.Gap) { Width = 2m };
+        MapRoute Into(MapPoint from) => new([from, new MapPoint(50m, 50m)]) { Width = 2m };
 
         new[] { new MapPoint(50m, 10m), new MapPoint(50m, 90m), new MapPoint(10m, 50m), new MapPoint(90m, 50m) }.Select(from => MapLineWidths.Head(Into(from), scale))
             .ShouldBe([new MapArea(45.2m, 42.8m, 54.8m, 50m), new MapArea(45.2m, 50m, 54.8m, 57.2m), new MapArea(42.8m, 45.2m, 50m, 54.8m), new MapArea(50m, 45.2m, 57.2m, 54.8m)]);

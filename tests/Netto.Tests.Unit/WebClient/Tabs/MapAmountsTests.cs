@@ -122,8 +122,8 @@ public class MapAmountsTests
     {
         MapLink[] links =
         [
-            Money(RiverModule.Vouchers, new MapRoute([new MapPoint(10m, 50m), new MapPoint(90m, 50m)], MapLabelSide.Gap)),
-            Money(RiverModule.Allowances, new MapRoute([new MapPoint(50m, 5m), new MapPoint(50m, 95m)], MapLabelSide.Gap)),
+            Money(RiverModule.Vouchers, new MapRoute([new MapPoint(10m, 50m), new MapPoint(90m, 50m)])),
+            Money(RiverModule.Allowances, new MapRoute([new MapPoint(50m, 5m), new MapPoint(50m, 95m)])),
         ];
         var view = new MapView([], [], 10m) { Links = links };
         var scale = MapScale.Smallest(view.Units);
