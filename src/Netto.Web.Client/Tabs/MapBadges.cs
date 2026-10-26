@@ -16,14 +16,17 @@ internal static class MapBadges
     public static IReadOnlyDictionary<RiverModule, IReadOnlyList<MapBadge>> Of(IReadOnlyList<MapLink> links)
     {
         var badges = new Dictionary<RiverModule, List<MapBadge>>();
-        foreach (var link in links.Where(link => link is { Kind: MapLinkKind.Condition, Badge: not null, To.Module: not null }))
-            Add(badges, link.To.Module!.Value, link.Badge!);
+        foreach (var link in links)
+        {
+            if (link is { Kind: MapLinkKind.Condition, Badge: { } badge, To.Module: { } actedOn })
+                Add(badges, actedOn, badge);
+        }
 
-        foreach (var reached in links.Where(link => link is { Kind: MapLinkKind.TaxBase, To.Module: not null }).GroupBy(link => link.To.Module!.Value))
+        foreach (var reached in links.Where(link => link.Kind == MapLinkKind.TaxBase).GroupBy(link => link.To.Module))
         {
             var gains = MapBundle.Sum(reached);
-            if (gains != 0m)
-                Add(badges, reached.Key, new MapBadge(MapLinkKind.TaxBase, new MapLabel(MapText.Map, MapTabText.TaxBaseBadge, [Formats.Euros(gains)]), MapBadgeTone.Amount));
+            if (reached.Key is { } taxed && gains != 0m)
+                Add(badges, taxed, new MapBadge(MapLinkKind.TaxBase, new MapLabel(MapText.Map, MapTabText.TaxBaseBadge, [Formats.Euros(gains)]), MapBadgeTone.Amount));
         }
 
         return badges.ToDictionary(module => module.Key, module => (IReadOnlyList<MapBadge>)module.Value);
