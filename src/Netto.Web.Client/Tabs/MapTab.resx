@@ -132,4 +132,28 @@
   <data name="Condition_Reserve_NotCovered" xml:space="preserve">
     <value>Reserve {0} not covered: only {1} to pay out</value>
   </data>
+  <data name="State_Met" xml:space="preserve">
+    <value>met</value>
+  </data>
+  <data name="State_Lost" xml:space="preserve">
+    <value>lost</value>
+  </data>
+  <data name="State_Kept" xml:space="preserve">
+    <value>kept</value>
+  </data>
+  <data name="State_Lowers" xml:space="preserve">
+    <value>lowers</value>
+  </data>
+  <data name="State_NoEffect" xml:space="preserve">
+    <value>no effect</value>
+  </data>
+  <data name="State_NoPayKeeps" xml:space="preserve">
+    <value>no pay keeps</value>
+  </data>
+  <data name="State_Covered" xml:space="preserve">
+    <value>covered</value>
+  </data>
+  <data name="State_NotCovered" xml:space="preserve">
+    <value>not covered</value>
+  </data>
 </root>

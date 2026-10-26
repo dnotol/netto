@@ -15,21 +15,28 @@ internal static class MapConditions
         [.. conditions.Select(Link).Where(link => onMap.Contains(link.From.Module!.Value) && onMap.Contains(link.To.Module!.Value))];
 
     // The office allowance acts on the rent, the pay and the benefits on corporate tax's rate, and a
-    // royalty and the reserve on the split's pay.
+    // royalty and the reserve on the split's pay. Each says whether it holds in a word or two (State), what
+    // its line says on the map, and in a sentence with its figures (Carries), said where the chosen
+    // module's links are listed.
     public static MapLink Link(YearCondition condition) => condition switch
     {
-        NoOfficeAllowanceBesideRent office => Of(condition, RiverModule.Allowances, RiverModule.Rent, MapTabText.OfficeCondition(office.Rent != 0m)),
-        PayKeepsReducedRate pay => Of(condition, RiverModule.Split, RiverModule.CorporateTax, MapTabText.PayCondition(pay.Test),
-            Formats.Euros(pay.Pay), Formats.Euros(pay.MinimumPay), Formats.Euros(pay.TaxableIncome)),
-        BenefitsWithinShareOfPay benefits => Of(condition, RiverModule.Car, RiverModule.CorporateTax, MapTabText.BenefitsCondition(benefits.Holds),
-            Formats.Euros(benefits.Benefits), Formats.Percentage(benefits.Share), Formats.Euros(benefits.Pay)),
-        RoyaltyLowersPayKeepingReducedRate royalty => Of(condition, RiverModule.Copyright, RiverModule.Split, MapTabText.RoyaltyCondition(royalty),
-            [.. new[] { royalty.With, royalty.Without }.OfType<decimal>().Select(Formats.Euros)]),
-        PayOutCoversReserve reserve => Of(condition, RiverModule.Dividend, RiverModule.Split, MapTabText.ReserveCondition(reserve.Holds),
-            Formats.Euros(reserve.Reserve), Formats.Euros(reserve.MaximumDividend)),
+        NoOfficeAllowanceBesideRent office => Of(condition, RiverModule.Allowances, RiverModule.Rent, MapTabText.OfficeState,
+            MapTabText.OfficeCondition(office.Rent != 0m)),
+        PayKeepsReducedRate pay => Of(condition, RiverModule.Split, RiverModule.CorporateTax, MapTabText.RateState(pay.Holds),
+            MapTabText.PayCondition(pay.Test), Formats.Euros(pay.Pay), Formats.Euros(pay.MinimumPay), Formats.Euros(pay.TaxableIncome)),
+        BenefitsWithinShareOfPay benefits => Of(condition, RiverModule.Car, RiverModule.CorporateTax, MapTabText.RateState(benefits.Holds),
+            MapTabText.BenefitsCondition(benefits.Holds), Formats.Euros(benefits.Benefits), Formats.Percentage(benefits.Share), Formats.Euros(benefits.Pay)),
+        RoyaltyLowersPayKeepingReducedRate royalty => Of(condition, RiverModule.Copyright, RiverModule.Split, MapTabText.RoyaltyState(royalty),
+            MapTabText.RoyaltyCondition(royalty), [.. new[] { royalty.With, royalty.Without }.OfType<decimal>().Select(Formats.Euros)]),
+        PayOutCoversReserve reserve => Of(condition, RiverModule.Dividend, RiverModule.Split, MapTabText.ReserveState(reserve.Holds),
+            MapTabText.ReserveCondition(reserve.Holds), Formats.Euros(reserve.Reserve), Formats.Euros(reserve.MaximumDividend)),
         _ => throw new ArgumentOutOfRangeException(nameof(condition), condition, "A condition the map has no link for."),
     };
 
-    private static MapLink Of(YearCondition condition, RiverModule from, RiverModule to, string key, params IReadOnlyList<string> args) =>
-        new(MapLinkKind.Condition, MapEnd.Of(from), MapEnd.Of(to), from, new MapLabel(MapText.Map, key, args), null) { Holds = condition.Holds };
+    private static MapLink Of(YearCondition condition, RiverModule from, RiverModule to, string state, string key, params IReadOnlyList<string> args) =>
+        new(MapLinkKind.Condition, MapEnd.Of(from), MapEnd.Of(to), from, new MapLabel(MapText.Map, key, args), null)
+        {
+            Holds = condition.Holds,
+            State = new MapLabel(MapText.Map, state, []),
+        };
 }

@@ -82,6 +82,28 @@ public class MapTabTextTests
         Resources.Format(key, args).ShouldBe(words);
     }
 
+    // Whether a condition holds in a word or two, by the key its helper builds, each kind with each
+    // variant: the word its line says on the map.
+    public static TheoryData<string, string> StateWords => new()
+    {
+        { MapTabText.RateState(holds: true), "met" },
+        { MapTabText.RateState(holds: false), "lost" },
+        { MapTabText.OfficeState, "kept" },
+        { MapTabText.RoyaltyState(new RoyaltyLowersPayKeepingReducedRate(40_000m, 50_000m, false)), "lowers" },
+        { MapTabText.RoyaltyState(new RoyaltyLowersPayKeepingReducedRate(40_000m, null, false)), "lowers" },
+        { MapTabText.RoyaltyState(new RoyaltyLowersPayKeepingReducedRate(51_000m, 51_000m, false)), "no effect" },
+        { MapTabText.RoyaltyState(new RoyaltyLowersPayKeepingReducedRate(null, 50_000m, false)), "no pay keeps" },
+        { MapTabText.ReserveState(holds: true), "covered" },
+        { MapTabText.ReserveState(holds: false), "not covered" },
+    };
+
+    [Theory]
+    [MemberData(nameof(StateWords))]
+    public void MapTabResx_aConditionsState_isAWordOrTwo(string key, string words)
+    {
+        Resources.Get(key).ShouldBe(words);
+    }
+
     [Fact]
     public void MapTabResx_theRiversEdge_isOutOfTheRiver()
     {

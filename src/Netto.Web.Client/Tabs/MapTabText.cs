@@ -70,6 +70,23 @@ internal static class MapTabText
 
     public static string ReserveCondition(bool holds) => holds ? "Condition_Reserve_Covered" : "Condition_Reserve_NotCovered";
 
+    // Whether a condition holds in a word or two, which its line says on the map (MapLink.State), its
+    // sentence above being said where the chosen module's links are listed: a test of the corporate rate
+    // met or lost, the office kept, what a royalty does to the pay keeping the rate (lowers it, has no
+    // effect on it, or leaves no pay keeping it), the reserve covered or not.
+    public static string RateState(bool holds) => holds ? "State_Met" : "State_Lost";
+
+    public const string OfficeState = "State_Kept";
+
+    public static string RoyaltyState(RoyaltyLowersPayKeepingReducedRate royalty) => royalty switch
+    {
+        { Holds: true } => "State_Lowers",
+        { With: null } => "State_NoPayKeeps",
+        _ => "State_NoEffect",
+    };
+
+    public static string ReserveState(bool holds) => holds ? "State_Covered" : "State_NotCovered";
+
     // The component whose texts word a link (MapLabel.Text): the map's own, a drain list's, or the card
     // whose figure line it is, so the map and the card say the line in the same words.
     public static Type Texts(MapText text) => text switch

@@ -226,12 +226,14 @@ internal sealed record MapLabel(MapText Text, string Key, IReadOnlyList<string> 
 
 // One link of the map: its kind, where it runs from and to, the module whose card shows the line it is
 // (Card), what it carries and its amount in this plan, the card's own figure; none for a condition, which
-// names its figures in its words. A condition says whether it holds (Holds), none for any other link. Its
-// line is its route (MapLayout), shared with the links of the same ends and kind, worked out from every
-// link of the run, none until the layout has routed it.
+// names its figures in its words. A condition says whether it holds (Holds), and in a word or two (State),
+// none for any other link. Its line is its route (MapLayout), shared with the links of the same ends and
+// kind, worked out from every link of the run, none until the layout has routed it.
 internal sealed record MapLink(MapLinkKind Kind, MapEnd From, MapEnd To, RiverModule Card, MapLabel Carries, decimal? Amount)
 {
     public bool? Holds { get; init; }
+
+    public MapLabel? State { get; init; }
 
     public MapRoute? Route { get; init; }
 

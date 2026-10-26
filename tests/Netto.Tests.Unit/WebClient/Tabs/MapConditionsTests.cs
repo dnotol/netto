@@ -89,6 +89,35 @@ public class MapConditionsTests
         Text(MapConditions.Link(condition)).ShouldBe(words);
     }
 
+    // Whether it holds in a word or two, what the map draws on its line, its sentence left to the list of
+    // the chosen module's links: a test of the rate met or lost, the office kept, what a royalty does to the
+    // pay keeping the rate, the reserve covered or not.
+    public static TheoryData<YearCondition, string> States => new()
+    {
+        { new PayKeepsReducedRate(ReducedRateCondition.MinimumPayMet, 51_000m, 60_000m, 40_000m), "met" },
+        { new PayKeepsReducedRate(ReducedRateCondition.TaxableIncomeNotAbovePay, 51_000m, 50_000m, 50_000m), "met" },
+        { new PayKeepsReducedRate(ReducedRateCondition.MinimumPayNotMet, 51_000m, 40_000m, 60_000m), "lost" },
+        { new BenefitsWithinShareOfPay(true, 1_714.29m, 51_714.29m, 0.20m), "met" },
+        { new BenefitsWithinShareOfPay(false, 1_714.29m, 6_714.29m, 0.20m), "lost" },
+        { new NoOfficeAllowanceBesideRent(1_380m, 0m), "kept" },
+        { new NoOfficeAllowanceBesideRent(0m, 1_938.44m), "kept" },
+        { new RoyaltyLowersPayKeepingReducedRate(40_000m, 50_000m, false), "lowers" },
+        { new RoyaltyLowersPayKeepingReducedRate(40_000m, null, true), "lowers" },
+        { new RoyaltyLowersPayKeepingReducedRate(51_000m, 51_000m, false), "no effect" },
+        { new RoyaltyLowersPayKeepingReducedRate(null, null, true), "no pay keeps" },
+        { new PayOutCoversReserve(40_000m, 40_000m), "covered" },
+        { new PayOutCoversReserve(40_000.01m, 40_000m), "not covered" },
+    };
+
+    [Theory]
+    [MemberData(nameof(States))]
+    public void Link_aCondition_saysWhetherItHoldsInAWordOrTwo(YearCondition condition, string state)
+    {
+        var label = MapConditions.Link(condition).State.ShouldNotBeNull();
+
+        (label.Text, Resources.Format(label.Key, [.. label.Args])).ShouldBe((MapText.Map, state));
+    }
+
     // A condition shows only while both its modules are on the map: no office allowance beside a rent
     // while the allowances are out of the plan.
     [Fact]
