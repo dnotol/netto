@@ -129,9 +129,10 @@ public class MapTabTextTests
         Resources.Get(MapTabText.OutOfRiver).ShouldBe("out of the river");
     }
 
-    // The column beside the map has a component and a .resx of its own: none of its texts stays here.
+    // The column beside the map has a component and a .resx of its own: none of the texts of the list it
+    // replaced is in this one any more.
     [Fact]
-    public void MapTabResx_theNeighbourhoodsTexts_areTheNeighbourhoodsAlone()
+    public void MapTabResx_theTextsOfTheListTheNeighbourhoodReplaced_areGone()
     {
         Resources.Keys.Intersect(["Link", "LinkWithoutAmount", "LinksOf", "LinksOfNone", "ChooseHint", "NoLinks", "NoFigures", "Hidden_One", "Hidden_Many"]).ShouldBeEmpty();
     }

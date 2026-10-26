@@ -7,8 +7,8 @@ namespace Netto.Tests.WebClient.Tabs;
 
 // The conditions on the Map tab as a viewer meets them, drawn without a browser (MapRendering): every
 // lever with the costly car, whose benefit is beyond 20% of the pay. Each is a dashed line that says in a
-// word or two beside the map whether it holds, and in its sentence, its module chosen, in the list of its
-// links, never by a colour.
+// word or two beside the map whether it holds, and in its sentence, its module chosen, in its
+// neighbourhood, never by a colour.
 public class MapConditionsRenderingTests
 {
     private static readonly RiverInputs River = MapViewConditionsTests.CostlyCar;

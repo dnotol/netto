@@ -22,7 +22,7 @@
    over a halo of the map's ground so that a line crossing another leaves a gap each side of it. The links
    of one card between the same two ends and of one kind are one line (MapBundle), which says, beside its
    card's box, one amount and no words: the sum of the card's lines it holds, each a figure the card draws;
-   a condition says in a word or two whether it holds, its sentence left to the list. A line to the
+   a condition says in a word or two whether it holds, its sentence left to the neighbourhood. A line to the
    pocket and its amount are gold, the one gold of the map, since that is what reaches the director.
 
    The rules are marks on the module they act on: each condition another module sets on it, but the
@@ -185,7 +185,7 @@
     private Refusal? ChosenRefusal => _chosen is { } module ? RefusedBy(module) : null;
 
     // The map of the run, and the same without the links of the kinds the viewer hid (MapLinkFilter): the
-    // second is what is drawn and listed, the first what the legend counts.
+    // second is what is drawn, the first what the legend counts and the neighbourhood lists.
     private MapView _full = default!;
     private MapView _view = default!;
     private IReadOnlyDictionary<MapLinkKind, int> _counts = default!;

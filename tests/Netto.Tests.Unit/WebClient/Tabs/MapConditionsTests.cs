@@ -89,8 +89,8 @@ public class MapConditionsTests
         Text(MapConditions.Link(condition)).ShouldBe(words);
     }
 
-    // Whether it holds in a word or two, what the map draws on its line, its sentence left to the list of
-    // the chosen module's links: a test of the rate met or lost, the office kept, what a royalty does to the
+    // Whether it holds in a word or two, what the map draws on its line, its sentence left to the
+    // neighbourhood of the chosen module: a test of the rate met or lost, the office kept, what a royalty does to the
     // pay keeping the rate, the reserve covered or not.
     public static TheoryData<YearCondition, string> States => new()
     {
