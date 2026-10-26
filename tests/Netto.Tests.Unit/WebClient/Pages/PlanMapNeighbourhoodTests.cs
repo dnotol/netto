@@ -27,7 +27,7 @@ public class PlanMapNeighbourhoodTests
         await page.InvokeAsync(() => hood.OnChoose.InvokeAsync(RiverModule.CorporateTax));
 
         var (map, panel) = (await page.FindAsync<MapTab>(), await page.FindAsync<MapPanel>());
-        (map.Chosen, panel.Module, map.Neighbourhood!.Module, page.Focuses - before, page.Errors.Count)
+        (map.Chosen, panel.Module, map.Neighbourhood.ShouldNotBeNull().Module, page.Focuses - before, page.Errors.Count)
             .ShouldBe((RiverModule.CorporateTax, RiverModule.CorporateTax, RiverModule.CorporateTax, 1, 0));
     }
 
@@ -45,7 +45,7 @@ public class PlanMapNeighbourhoodTests
 
         var (shownFromTheNeighbourhood, shownFromTheMap) = (await fromTheNeighbourhood.FindAsync<MapTab>(), await fromTheMap.FindAsync<MapTab>());
         (shownFromTheNeighbourhood.Chosen, fromTheNeighbourhood.Focuses - beforeNeighbourhood).ShouldBe((shownFromTheMap.Chosen, fromTheMap.Focuses - beforeMap));
-        Listed(shownFromTheNeighbourhood).ShouldBe(Listed(shownFromTheMap));
+        MapNeighbourhoodHtml.Listed(shownFromTheNeighbourhood).ShouldBe(MapNeighbourhoodHtml.Listed(shownFromTheMap));
     }
 
     // Walking the money by its ends: from the split to Corporate tax, to the dividend; each step is a choice
@@ -59,7 +59,7 @@ public class PlanMapNeighbourhoodTests
         foreach (var next in new[] { RiverModule.CorporateTax, RiverModule.Dividend })
         {
             var (map, hood) = (await page.FindAsync<MapTab>(), await page.FindAsync<MapNeighbourhood>());
-            map.Neighbourhood!.GoesOut.Select(row => row.To.Module).ShouldContain(next);
+            map.Neighbourhood.ShouldNotBeNull().GoesOut.Select(row => row.To.Module).ShouldContain(next);
             await page.InvokeAsync(() => hood.OnChoose.InvokeAsync(next));
             visited.Add((await page.FindAsync<MapTab>()).Chosen);
         }
@@ -74,7 +74,7 @@ public class PlanMapNeighbourhoodTests
     public async Task Plan_aKindTickedOrUntickedInTheLegend_leavesTheNeighbourhoodAsItWas()
     {
         await using var page = await MapAsync(Full, RiverModule.Car);
-        var before = Listed(await page.FindAsync<MapTab>());
+        var before = MapNeighbourhoodHtml.Listed(await page.FindAsync<MapTab>());
         var boxes = await page.FindAllAsync<MudCheckBox<bool>>();
 
         foreach (var kind in Enum.GetValues<MapLinkKind>())
@@ -83,7 +83,7 @@ public class PlanMapNeighbourhoodTests
             await page.InvokeAsync(() => boxes[Array.IndexOf(Enum.GetValues<MapLinkKind>(), kind)].ValueChanged.InvokeAsync(true));
         }
 
-        Listed(await page.FindAsync<MapTab>()).ShouldBe(before);
+        MapNeighbourhoodHtml.Listed(await page.FindAsync<MapTab>()).ShouldBe(before);
         before.ShouldContain(line => line.StartsWith("rule:", StringComparison.Ordinal));
         page.Errors.ShouldBeEmpty();
     }
@@ -109,16 +109,5 @@ public class PlanMapNeighbourhoodTests
         var map = await page.FindAsync<MapTab>();
         await page.InvokeAsync(() => map.ChosenChanged.InvokeAsync(chosen));
         return page;
-    }
-
-    // Each line and rule the neighbourhood lists, as a viewer tells them apart.
-    private static List<string> Listed(MapTab map)
-    {
-        var hood = map.Neighbourhood!;
-        return
-        [
-            .. hood.ComesIn.Concat(hood.PassesThrough).Concat(hood.GoesOut).Select(row => $"{row.Words} {row.Amount} {row.From.Name} {row.To.Name}"),
-            .. hood.Rules.Select(rule => $"rule: {rule.Words} {rule.Amount} {rule.Other.Name}"),
-        ];
     }
 }

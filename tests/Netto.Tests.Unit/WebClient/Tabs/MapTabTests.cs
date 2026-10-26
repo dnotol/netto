@@ -13,8 +13,8 @@ namespace Netto.Tests.WebClient.Tabs;
 // buckets, one line for each route of the run's links, drawn over a halo of the ground, with one amount
 // beside it, a condition's with its word or two, each line and amount saying its kind; a module chosen
 // marked, its lines brought out with each card line's words and amount, the others' words and amounts gone,
-// and its links listed in words; a refused amount leaving no line and no amount, the module holding it
-// marked. What a click does is the browser's.
+// and its neighbourhood beside the map (MapNeighbourhoodRenderingTests'); a refused amount leaving no line
+// and no amount, the module holding it marked. What a click does is the browser's.
 public class MapTabTests
 {
     private static readonly RiverInputs Full = MapLinksTests.Full;
@@ -139,7 +139,7 @@ public class MapTabTests
     }
 
     // Nothing chosen, the map holds no sentence, only amounts and a condition's word or two, so nothing runs
-    // past its edge: a condition's sentence is said where the chosen module's links are listed.
+    // past its edge: a condition's sentence is said in the neighbourhood of the chosen module.
     [Fact]
     public async Task Tab_nothingChosen_drawsNoSentenceOnTheMap()
     {
@@ -331,7 +331,7 @@ public class MapTabTests
     // A badge's words, as the map's texts say them.
     internal static string BadgeWords(MapBadge badge) => ResxText.For<MapTab>().Format(badge.Words.Key, [.. badge.Words.Args]);
 
-    // What the map draws, the list beside it left out.
+    // What the map draws, the column beside it left out.
     internal static string Map(string html) => Regex.Match(html, "<div class=\"map\".*?<div class=\"map-tab__side\"", RegexOptions.Singleline).Value;
 
     // The amounts drawn beside the lines, and the words of the conditions' lines.
@@ -348,8 +348,6 @@ public class MapTabTests
     // Each card line's words and amount beside a line of the module chosen.
     internal static List<string> WordLines(string map) =>
         [.. Regex.Matches(map, "<span class=\"map-words__line\"[^>]*>(.*?)</span></span>", RegexOptions.Singleline).Select(match => Text(match.Groups[1].Value))];
-
-    private static string Text(string html) => Regex.Replace(Regex.Replace(html, "<[^>]*>", ""), "\\s+", " ").Trim();
 
     // The word or two a condition says of whether it holds.
     private static string State(MapLink link) => ResxText.For<MapTab>().Get(link.State!.Key)!;

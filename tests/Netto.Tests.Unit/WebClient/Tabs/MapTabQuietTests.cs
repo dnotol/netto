@@ -13,13 +13,10 @@ namespace Netto.Tests.WebClient.Tabs;
 // dashed row where they follow one another down the chain, each its own button in the river's order, named
 // with the row's word, which the row shows once; no amount on the row, the chain's line through it saying
 // its amount once; a quiet lever chosen pressed, with its card beside the map and the line running past it
-// listed. The royalty that comes to nothing is quiet in its own place.
+// in its neighbourhood. The royalty that comes to nothing is quiet in its own place.
 public class MapTabQuietTests
 {
     private static readonly RiverInputs Full = MapLinksTests.Full;
-
-    // The expense allowances, the rent and the car left empty, the vouchers kept.
-    private static readonly RiverInputs ChainQuiet = MapQuietTests.Emptied(Full, OptionalModule.Allowances, OptionalModule.Rent, OptionalModule.Car);
 
     private static readonly string Word = ResxText.For<MapTab>().Get("Quiet")!;
 

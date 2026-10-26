@@ -87,7 +87,7 @@ public class PlanMapFilterTests
         await page.LoadAsync("map");
         var map = await page.FindAsync<MapTab>();
         await page.InvokeAsync(() => map.ChosenChanged.InvokeAsync(RiverModule.Car));
-        var (lines, words, listed, modules) = (Lines(map), Words(map), Listed(map), map.ShownMap.Modules);
+        var (lines, words, listed, modules) = (Lines(map), Words(map), MapNeighbourhoodHtml.Listed(map), map.ShownMap.Modules);
         var boxes = await page.FindAllAsync<MudCheckBox<bool>>();
 
         await page.InvokeAsync(() => boxes[Index(MapLinkKind.TaxBase)].ValueChanged.InvokeAsync(false));
@@ -98,7 +98,7 @@ public class PlanMapFilterTests
             () => listed.ShouldContain(line => line.StartsWith("rule:", StringComparison.Ordinal)),
             () => Lines(map).ShouldBe(lines.Where(line => line.Kind != MapLinkKind.TaxBase)),
             () => Words(map).ShouldBe(words.Where(word => word.Kind != MapLinkKind.TaxBase)),
-            () => Listed(map).ShouldBe(listed),
+            () => MapNeighbourhoodHtml.Listed(map).ShouldBe(listed),
             () => map.ShownMap.Hidden.Select(link => link.Kind).Distinct().ShouldBe([MapLinkKind.TaxBase]),
             () => map.ShownMap.Modules.ShouldBe(modules),
             () => page.Errors.ShouldBeEmpty());
@@ -111,7 +111,7 @@ public class PlanMapFilterTests
         await page.LoadAsync("map");
         var map = await page.FindAsync<MapTab>();
         await page.InvokeAsync(() => map.ChosenChanged.InvokeAsync(RiverModule.Car));
-        var (lines, words, listed) = (Lines(map), Words(map), Listed(map));
+        var (lines, words, listed) = (Lines(map), Words(map), MapNeighbourhoodHtml.Listed(map));
         var boxes = await page.FindAllAsync<MudCheckBox<bool>>();
         await page.InvokeAsync(() => boxes[Index(MapLinkKind.TaxBase)].ValueChanged.InvokeAsync(false));
         Lines(map).Count.ShouldBeLessThan(lines.Count);
@@ -121,7 +121,7 @@ public class PlanMapFilterTests
         map.ShouldSatisfyAllConditions(
             () => Lines(map).ShouldBe(lines),
             () => Words(map).ShouldBe(words),
-            () => Listed(map).ShouldBe(listed),
+            () => MapNeighbourhoodHtml.Listed(map).ShouldBe(listed),
             () => map.ShownMap.Hidden.ShouldBeEmpty());
     }
 
@@ -132,16 +132,6 @@ public class PlanMapFilterTests
 
     private static List<(MapLinkKind Kind, MapRoute Route)> Words(MapTab map) =>
         [.. map.DrawnWords.SelectMany(block => block.Bundles).Select(bundle => (bundle.Kind, bundle.Route))];
-
-    private static List<string> Listed(MapTab map)
-    {
-        var hood = map.Neighbourhood!;
-        return
-        [
-            .. hood.ComesIn.Concat(hood.PassesThrough).Concat(hood.GoesOut).Select(row => $"{row.Words} {row.Amount} {row.From.Name} {row.To.Name}"),
-            .. hood.Rules.Select(rule => $"rule: {rule.Words} {rule.Amount} {rule.Other.Name}"),
-        ];
-    }
 
     // The box a kind is, in the order of the kinds.
     private static int Index(MapLinkKind kind) => Array.IndexOf(Enum.GetValues<MapLinkKind>(), kind);
