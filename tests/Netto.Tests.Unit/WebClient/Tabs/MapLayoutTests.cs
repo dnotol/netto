@@ -318,19 +318,22 @@ public class MapLayoutTests
     }
 
     // Corporate tax's way into its taxes comes down clear of the dividend's ways into them and back, crossing none
-    // of the band's rows they turn along.
+    // of the band's rows they turn along: on plans where the company pays its tax and withholds on a dividend,
+    // with the refund on its exempt part.
     [Theory]
-    [MemberData(nameof(ExtremeRivers))]
+    [MemberData(nameof(DividendTaxedRivers))]
     public void Routed_corporateTaxsWayIntoItsTaxes_crossesNoneOfTheDividendsWaysIntoThemAndBack(string plan)
     {
-        var river = Extreme(plan);
+        var river = Plan(plan);
         var view = MapView.From(river, river.Run());
 
         var corporate = view.Bundles().Where(line => line.From == MapEnd.Of(RiverModule.CorporateTax) && line.To == MapEnd.InBucket("taxes_on_profit")).ToList();
         var dividend = view.Bundles().Where(line => line.Touches(RiverModule.Dividend) && (line.From == MapEnd.InBucket("taxes_on_profit") || line.To == MapEnd.InBucket("taxes_on_profit"))).ToList();
 
-        corporate.SelectMany(a => dividend.Where(b => Segments(a).Any(sa => Segments(b).Any(sb => Cross(sa, sb)))).Select(b => $"{b.From.Id} to {b.To.Id}"))
-            .ShouldBeEmpty();
+        corporate.ShouldSatisfyAllConditions(
+            () => (corporate.Count, dividend.Count).ShouldBe((1, 2)),
+            () => corporate.SelectMany(a => dividend.Where(b => Segments(a).Any(sa => Segments(b).Any(sb => Cross(sa, sb)))).Select(b => $"{b.From.Id} to {b.To.Id}"))
+                .ShouldBeEmpty());
     }
 
     // The royalty's part paid apart leaves its bottom and turns along a row of its own under it to the pocket's
@@ -759,6 +762,19 @@ public class MapLayoutTests
     // The plans at the edges of what a plan holds, by name.
     public static TheoryData<string> ExtremeRivers() =>
         new("the pay at its ceiling", "a low pay", "a royalty past its limits", "the costly car", "a car costly to run", "the company skipped, a high pay", "the company skipped, a low pay");
+
+    // Plans where the company pays its corporate tax and the dividend its withholding, with the refund on its
+    // exempt part, by name.
+    public static TheoryData<string> DividendTaxedRivers() => new("every lever", "the example", "a low pay");
+
+    // A plan by name: every lever, the example, every lever with the company skipped, or one at the edges.
+    private static RiverInputs Plan(string plan) => plan switch
+    {
+        "every lever" => MapLinksTests.Full,
+        "the example" => RiverInputs.Example,
+        "the company skipped" => MapLinksTests.Full.SkipCompany(),
+        _ => Extreme(plan),
+    };
 
     private static RiverInputs Extreme(string plan) => plan switch
     {
