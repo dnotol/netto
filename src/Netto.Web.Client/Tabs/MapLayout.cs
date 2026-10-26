@@ -18,6 +18,11 @@ namespace Netto.Web.Client.Tabs;
 // through it, from the box above to the box below. The royalty, quiet, is a pill in the middle of its own
 // slot, as wide as its box, and its row stays, Corporate tax's too.
 //
+// A module's badges (MapBadges) are lines of its box: the box grows a line for each, and its row keeps
+// round its tallest box the room a chain row keeps round its own, so a row whose boxes hold no badge keeps
+// its height, and a stream's row, taller for the words of its lines, grows only once its tallest box takes
+// that room.
+//
 // A route is orthogonal and runs only through room no box holds: the gap between two rows, a lane down
 // the left edge to the pocket, a gutter on each side of the middle column, a lane down the right edge, or
 // a row's side the river leaves empty (the chain's rows have nothing left or right of the middle, the
@@ -39,6 +44,16 @@ internal static class MapLayout
     // where lines turn. The streams' rows are taller, for the words of their many lines, and the buckets'
     // shorter.
     private const decimal BoxUnits = 0.5m;
+
+    // The room a chain row keeps round its box, where lines turn, half of it above the box and half below.
+    private const decimal RowRoom = 1m - BoxUnits;
+
+    // A badge's line of a box at the map's smallest scale, a chain row to 3.25rem (SmallestRowRem): the
+    // badge 0.875rem high, its border in, under 0.1rem of room, so a line is 0.3 of a chain row. The
+    // stylesheet draws a badge with these (MapBadgesTests).
+    internal const decimal BadgeRem = 0.875m;
+    internal const decimal BadgeGapRem = 0.1m;
+    private const decimal BadgeUnits = (BadgeRem + BadgeGapRem) / SmallestRowRem;
 
     // A quiet row's pill: centred on the chain's middle, wider than its boxes for the names in it and clear
     // of the lanes each side, the left gutter's tracks ending before it and the lane a condition between two
@@ -98,8 +113,10 @@ internal static class MapLayout
         _ => throw new ArgumentOutOfRangeException(nameof(module), module, "A module the map has no place for."),
     };
 
-    // The boxes of the modules and of the buckets, the quiet levers given drawn in quiet rows.
-    public static MapGrid Grid(IReadOnlyList<RiverModule> modules, IReadOnlySet<RiverModule>? quiet = null) => new(modules, quiet ?? new HashSet<RiverModule>());
+    // The boxes of the modules and of the buckets, the quiet levers given drawn in quiet rows, each module's
+    // box holding the lines of badges given.
+    public static MapGrid Grid(IReadOnlyList<RiverModule> modules, IReadOnlySet<RiverModule>? quiet = null, IReadOnlyDictionary<RiverModule, int>? badgeLines = null) =>
+        new(modules, quiet ?? new HashSet<RiverModule>(), badgeLines ?? new Dictionary<RiverModule, int>());
 
     // Every link of the run with its route: links with the same ends and kind share one, their words
     // drawn together.
@@ -127,10 +144,14 @@ internal static class MapLayout
         private readonly Dictionary<MapRow, int> _quietRows;
         private readonly IReadOnlySet<RiverModule> _quiet;
 
-        public MapGrid(IReadOnlyList<RiverModule> modules, IReadOnlySet<RiverModule> quiet)
+        // How many lines of badges each module's box holds.
+        private readonly IReadOnlyDictionary<RiverModule, int> _badgeLines;
+
+        public MapGrid(IReadOnlyList<RiverModule> modules, IReadOnlySet<RiverModule> quiet, IReadOnlyDictionary<RiverModule, int> badgeLines)
         {
             Modules = modules;
             _quiet = quiet;
+            _badgeLines = badgeLines;
             _firstOf = FirstOf(modules, quiet);
             _quietRows = _firstOf.Values.GroupBy(first => Place(first).Row).ToDictionary(run => run.Key, run => run.Count());
             Rows = [.. Enum.GetValues<MapRow>().Where(row => row == MapRow.Buckets || modules.Any(module => RowOf(module) == row))];
@@ -169,7 +190,7 @@ internal static class MapLayout
                 MapColumn.Left => LeftColumn,
                 MapColumn.Chain => ChainColumn,
                 _ => RightColumn,
-            }, _quiet.Contains(module) ? PillUnits(RoyaltyLines) : BoxUnits);
+            }, _quiet.Contains(module) ? PillUnits(RoyaltyLines) : BoxOf(module));
         }
 
         // The y of the gap between the boxes of the row given and of the next, at a fraction of its height.
@@ -183,8 +204,16 @@ internal static class MapLayout
         // The row a module is drawn in: its own, or, a quiet lever of the chain, the quiet row it shares.
         private MapRow RowOf(RiverModule module) => Place(_firstOf.GetValueOrDefault(module, module)).Row;
 
-        // How high a row's boxes are drawn: a box's height, or a quiet row's pill's.
-        private decimal Height(MapRow row) => (_quietRows.TryGetValue(row, out var names) ? PillUnits(names) : BoxUnits) * 100m / Units;
+        // How high a row's boxes are drawn: its tallest box's height, or a quiet row's pill's.
+        private decimal Height(MapRow row) => (_quietRows.TryGetValue(row, out var names) ? PillUnits(names) : Tallest(row)) * 100m / Units;
+
+        // A module's box, in chain rows: half a row, and a line for each of its badges.
+        private decimal BoxOf(RiverModule module) => BoxUnits + _badgeLines.GetValueOrDefault(module) * BadgeUnits;
+
+        // The tallest box of a row, a royalty's quiet pill left out, as tall as a box with no badge when it
+        // holds none, the buckets'.
+        private decimal Tallest(MapRow row) =>
+            Modules.Where(module => !_quiet.Contains(module) && Place(module).Row == row).Select(BoxOf).DefaultIfEmpty(BoxUnits).Max();
 
         // How tall a quiet pill is kept, in chain rows, for the lines of names it may take on the narrowest map.
         private static decimal PillUnits(int lines) =>
@@ -206,13 +235,16 @@ internal static class MapLayout
             ? index
             : throw new ArgumentOutOfRangeException(nameof(row), row, "A row the map does not draw.");
 
+        // How high a row is: a quiet row its pill and a margin each side; the buckets' shorter; a row of
+        // modules its own height, or its tallest box and the room a chain row keeps round its box, whichever
+        // is taller, so a row whose boxes hold no badge keeps its own.
         private decimal Weight(MapRow row) => _quietRows.TryGetValue(row, out var names)
             ? PillUnits(names) + 2 * QuietMarginUnits
             : row switch
             {
-                MapRow.StreamTop or MapRow.StreamBottom => 1.6m,
                 MapRow.Buckets => 0.9m,
-                _ => 1m,
+                MapRow.StreamTop or MapRow.StreamBottom => Math.Max(1.6m, Tallest(row) + RowRoom),
+                _ => Math.Max(1m, Tallest(row) + RowRoom),
             };
 
         // The quiet levers of the chain, in its order, each with the first of those it follows with no box

@@ -25,6 +25,13 @@
    a condition says in a word or two whether it holds, its sentence left to the list. A line to the
    pocket and its amount are gold, the one gold of the map, since that is what reaches the director.
 
+   The rules are marks on the module they act on: each condition another module sets on it, but the
+   office rule, which always holds, is a badge in its box saying which rule and whether it holds, and what
+   its tax base gains is one badge with its amount (MapBadges), read before the filter, so hiding a kind of
+   line hides no badge, and the box is a line taller for each (MapLayout). A rule lost is said in its
+   words, an icon and an outline in the error colour, never the colour alone; the royalty lowering no pay is
+   quiet. The badges are the button's content, so a screen reader hears them with the module's name.
+
    A lever that moves no money of its own in this plan, one added with nothing in it yet, is quiet
    (MapQuiet): no box, its name muted in a dashed row it shares with the quiet levers it follows down the
    chain, each name saying in its button, out of sight, that it holds nothing in this plan; the royalty that
@@ -260,7 +267,9 @@
 
     // A module's button: a box in its slot, or a name in its quiet row, which places it, saying its state in
     // a word: refused, skipped, or, out of sight, since its row's dashes show it, that a quiet lever holds
-    // nothing in this plan.
+    // nothing in this plan. A box holds its badges under its title, a line each (MapLayout keeps them the
+    // room), each its tone's icon, out of a screen reader's hearing, and its words, which are part of the
+    // button's name.
     private RenderFragment ModuleButton(MapNode node) =>
         @<button type="button" class="@ModuleClass(node)" style="@(node.Quiet ? null : Box(node.Slot))" aria-pressed="@(_chosen == node.End.Module ? "true" : "false")"
                  data-module="@node.End.Id" @onclick="() => ChooseAsync(node.End.Module!.Value)">
@@ -276,6 +285,21 @@
             @if (node.Quiet)
             {
                 <span class="map-module__quiet">@(" ")@L["Quiet"]</span>
+            }
+            @if (node.Badges.Count > 0)
+            {
+                <span class="map-module__badges">
+                    @foreach (var badge in node.Badges)
+                    {
+                        <span class="map-badge map-badge--@MapBadgeStyle.Class(badge.Tone)" data-badge-kind="@badge.Kind">
+                            @if (MapBadgeStyle.Icon(badge.Tone) is { } icon)
+                            {
+                                <MudIcon Icon="@icon" Size="Size.Small" aria-hidden="true" />
+                            }
+                            <span class="map-badge__words">@Carries(badge.Words)</span>
+                        </span>
+                    }
+                </span>
             }
         </button>;
 

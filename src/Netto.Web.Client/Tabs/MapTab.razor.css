@@ -309,6 +309,65 @@
     font-weight: 500;
 }
 
+/* The badges of a box under its title, a line each: the conditions other modules set on it and what its
+   tax base gains (MapBadges). A line is as tall as the layout keeps for it at the map's smallest scale
+   (MapLayout: BadgeRem and BadgeGapRem are the 0.875rem and 0.1rem here), its words on one line, cut short
+   by an ellipsis only where the box is narrower than them, the button's name keeping them whole. */
+.map-module__badges {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    align-self: stretch;
+    gap: 0.1rem;
+    min-width: 0;
+    margin-top: 0.1rem;
+}
+
+/* A rule that holds, or the royalty lowering no pay: muted, with its icon. */
+.map-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    box-sizing: border-box;
+    max-width: 100%;
+    height: 0.875rem;
+    padding: 0 0.35rem;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    color: var(--netto-text-muted);
+    font-size: 0.68rem;
+    font-weight: 500;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.map-badge__words {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* A rule lost: its words, its icon and its outline in the error colour, never the colour alone. */
+.map-badge--lost {
+    border-color: var(--netto-error);
+    color: var(--netto-error);
+}
+
+/* What a tax base gains: an amount, outlined dotted as its line is. */
+.map-badge--amount {
+    border-style: dotted;
+    border-color: var(--netto-line-input);
+    color: var(--netto-text);
+    font-variant-numeric: tabular-nums;
+}
+
+    .map-badge ::deep .mud-icon-root {
+        flex: none;
+        width: 0.75rem;
+        height: 0.75rem;
+        font-size: 0.75rem;
+    }
+
 /* The chosen module's links in words, the drawing's equivalent. */
 .map-links__title {
     margin: 0 0 0.75rem;

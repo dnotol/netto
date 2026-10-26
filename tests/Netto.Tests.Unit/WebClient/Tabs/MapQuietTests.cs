@@ -67,10 +67,10 @@ public class MapQuietTests
     public void From_aRoyaltyComingToNothing_isQuietInItsOwnPlaceWithNoLink()
     {
         var river = Emptied(Full, OptionalModule.Copyright);
-        var box = MapLayout.Grid(MapView.ModulesOf(river)).Slot(MapEnd.Of(RiverModule.Copyright));
 
         var view = MapView.From(river, river.Run());
 
+        var box = MapLayout.Grid(MapView.ModulesOf(river), badgeLines: BadgeLines(view)).Slot(MapEnd.Of(RiverModule.Copyright));
         var slot = Node(view, RiverModule.Copyright).Slot;
         view.ShouldSatisfyAllConditions(
             () => view.LinksOf(RiverModule.Copyright).ShouldBeEmpty(),
@@ -122,7 +122,8 @@ public class MapQuietTests
     }
 
     // Every lever moving money, in every composition: nothing is quiet, and the map is the one drawn without
-    // a quiet lever, the same slots, the same height and the same links on the same routes.
+    // a quiet lever, its boxes holding the same badges, the same slots, the same height and the same links
+    // on the same routes.
     [Theory]
     [MemberData(nameof(MapModulesTests.Compositions), MemberType = typeof(MapModulesTests))]
     public void From_everyLeverMovingMoney_foldsNothing(int bits)
@@ -130,8 +131,9 @@ public class MapQuietTests
         var river = Full with { Composition = MapModulesTests.Composition(bits) };
         var run = river.Run();
         var modules = MapView.ModulesOf(river);
-        var grid = MapLayout.Grid(modules);
-        var unfolded = MapLayout.Routed(grid, [.. MapLinks.Of(river, run), .. MapConditions.From(YearConditions.Of(run.Year!), modules)]);
+        IReadOnlyList<MapLink> links = [.. MapLinks.Of(river, run), .. MapConditions.From(YearConditions.Of(run.Year!), modules)];
+        var grid = MapLayout.Grid(modules, badgeLines: MapBadges.Lines(MapBadges.Of(links)));
+        var unfolded = MapLayout.Routed(grid, links);
 
         var view = MapView.From(river, run);
 
@@ -239,13 +241,16 @@ public class MapQuietTests
             () => pill.CenterX.ShouldBe(vouchers.CenterX));
     }
 
-    // A quiet row is lower than the lever rows it replaces: three levers take less than two rows.
+    // A quiet row is lower than the lever rows it replaces, the boxes holding the same badges: three levers
+    // take less than two rows.
     [Fact]
     public void From_quietLevers_drawALowerMap()
     {
         var river = Emptied(Full, OptionalModule.Allowances, OptionalModule.Rent, OptionalModule.Car);
 
-        (MapView.From(river, river.Run()).Units < MapLayout.Grid(MapView.ModulesOf(river)).Units - 1m).ShouldBeTrue();
+        var view = MapView.From(river, river.Run());
+
+        (view.Units < MapLayout.Grid(MapView.ModulesOf(river), badgeLines: BadgeLines(view)).Units - 1m).ShouldBeTrue();
     }
 
     // The quiet levers ending the chain above the split, one to four of them.
@@ -298,6 +303,9 @@ public class MapQuietTests
     private static RiverModule[] Quiet(MapView view) => [.. view.Modules.Where(node => node.Quiet).Select(node => node.End.Module!.Value)];
 
     private static MapNode Node(MapView view, RiverModule module) => view.Modules.Single(node => node.End.Module == module);
+
+    // How many lines of badges each module's box holds on a map.
+    private static Dictionary<RiverModule, int> BadgeLines(MapView view) => view.Modules.ToDictionary(node => node.End.Module!.Value, node => node.Badges.Count);
 
     private static string[] Places(RiverInputs river) =>
         [.. MapView.From(river, river.Run()).Places().Select(place => string.Join('+', place.Nodes.Select(node => node.End.Id)) + (place.Quiet ? " quiet" : ""))];

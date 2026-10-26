@@ -118,6 +118,64 @@ public class MapConditionsTests
         (label.Text, Resources.Format(label.Key, [.. label.Args])).ShouldBe((MapText.Map, state));
     }
 
+    // The mark a condition leaves on the module it acts on, a badge in its box: which rule and whether it
+    // holds, in a few words with the state its line says (State), and its tone. One that does not hold and
+    // costs the plan something is lost; the royalty that lowers no pay is quiet, nothing being lost by it.
+    public static TheoryData<YearCondition, string, string> Badges => new()
+    {
+        { new PayKeepsReducedRate(ReducedRateCondition.MinimumPayMet, 51_000m, 60_000m, 40_000m), "pay met", nameof(MapBadgeTone.Holds) },
+        { new PayKeepsReducedRate(ReducedRateCondition.TaxableIncomeNotAbovePay, 51_000m, 50_000m, 50_000m), "pay met", nameof(MapBadgeTone.Holds) },
+        { new PayKeepsReducedRate(ReducedRateCondition.MinimumPayNotMet, 51_000m, 40_000m, 60_000m), "rate lost: pay", nameof(MapBadgeTone.Lost) },
+        { new BenefitsWithinShareOfPay(true, 1_714.29m, 51_714.29m, 0.20m), "benefits met", nameof(MapBadgeTone.Holds) },
+        { new BenefitsWithinShareOfPay(false, 1_714.29m, 6_714.29m, 0.20m), "rate lost: benefits", nameof(MapBadgeTone.Lost) },
+        { new RoyaltyLowersPayKeepingReducedRate(40_000m, 50_000m, false), "royalty lowers pay", nameof(MapBadgeTone.Holds) },
+        { new RoyaltyLowersPayKeepingReducedRate(40_000m, null, true), "royalty lowers pay", nameof(MapBadgeTone.Holds) },
+        { new RoyaltyLowersPayKeepingReducedRate(51_000m, 51_000m, false), "royalty: no effect", nameof(MapBadgeTone.Quiet) },
+        { new RoyaltyLowersPayKeepingReducedRate(null, null, true), "no pay keeps rate", nameof(MapBadgeTone.Lost) },
+        { new PayOutCoversReserve(40_000m, 40_000m), "reserve covered", nameof(MapBadgeTone.Holds) },
+        { new PayOutCoversReserve(40_000.01m, 40_000m), "reserve not covered", nameof(MapBadgeTone.Lost) },
+    };
+
+    [Theory]
+    [MemberData(nameof(Badges))]
+    public void Link_aCondition_marksTheModuleItActsOnWithWhichRuleAndWhetherItHolds(YearCondition condition, string words, string tone)
+    {
+        var badge = MapConditions.Link(condition).Badge.ShouldNotBeNull();
+
+        (badge.Kind, badge.Words.Text, Resources.Format(badge.Words.Key, [.. badge.Words.Args]), badge.Tone.ToString()).ShouldBe((MapLinkKind.Condition, MapText.Map, words, tone));
+    }
+
+    public static TheoryData<YearCondition> Badged => new(Badges.Select(row => row.Data.Item1));
+
+    // A badge says, beside the rule it names, the very state its condition's line says on the map.
+    [Theory]
+    [MemberData(nameof(Badged))]
+    public void Link_aConditionsBadge_saysTheStateItsLineSays(YearCondition condition)
+    {
+        var link = MapConditions.Link(condition);
+
+        Resources.Format(link.Badge!.Words.Key, [.. link.Badge.Words.Args]).ShouldContain(Resources.Get(link.State!.Key)!, Case.Sensitive);
+    }
+
+    public static TheoryData<YearCondition> OfficeRules => new(new YearCondition[] { new NoOfficeAllowanceBesideRent(1_380m, 0m), new NoOfficeAllowanceBesideRent(0m, 1_938.44m) });
+
+    // The office rule always holds: it leaves no badge, its line saying it is kept.
+    [Theory]
+    [MemberData(nameof(OfficeRules))]
+    public void Link_theOfficeRule_leavesNoBadge(YearCondition condition)
+    {
+        MapConditions.Link(condition).Badge.ShouldBeNull();
+    }
+
+    // Every kind the engine declares (Kinds, held to it by reflection) has its badge or, the office rule,
+    // none; a badge marks the module the condition acts on, so it needs no module of its own.
+    [Fact]
+    public void Badges_everyKindButTheOffice_isAmongThem()
+    {
+        Kinds.Select(row => row.Data.Item1.GetType()).Where(kind => kind != typeof(NoOfficeAllowanceBesideRent))
+            .ShouldBe(Badges.Select(row => row.Data.Item1.GetType()).Distinct(), ignoreOrder: true);
+    }
+
     // A condition shows only while both its modules are on the map: no office allowance beside a rent
     // while the allowances are out of the plan.
     [Fact]

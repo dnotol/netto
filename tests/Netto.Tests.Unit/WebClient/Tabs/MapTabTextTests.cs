@@ -104,6 +104,33 @@ public class MapTabTextTests
         Resources.Get(key).ShouldBe(words);
     }
 
+    // A badge in a module's box, by the key its helper builds, each kind with each variant: which rule and
+    // whether it holds, with the state its line says; what a tax base gains, its amount first. Each fits a
+    // box on one line, 30 characters at most, a tax base's at an amount of millions.
+    public static TheoryData<string, string[], string> BadgeWords => new()
+    {
+        { MapTabText.PayBadge(holds: true), [], "pay met" },
+        { MapTabText.PayBadge(holds: false), [], "rate lost: pay" },
+        { MapTabText.BenefitsBadge(holds: true), [], "benefits met" },
+        { MapTabText.BenefitsBadge(holds: false), [], "rate lost: benefits" },
+        { MapTabText.RoyaltyBadge(new RoyaltyLowersPayKeepingReducedRate(40_000m, 50_000m, false)), [], "royalty lowers pay" },
+        { MapTabText.RoyaltyBadge(new RoyaltyLowersPayKeepingReducedRate(40_000m, null, false)), [], "royalty lowers pay" },
+        { MapTabText.RoyaltyBadge(new RoyaltyLowersPayKeepingReducedRate(51_000m, 51_000m, false)), [], "royalty: no effect" },
+        { MapTabText.RoyaltyBadge(new RoyaltyLowersPayKeepingReducedRate(null, 50_000m, false)), [], "no pay keeps rate" },
+        { MapTabText.ReserveBadge(holds: true), [], "reserve covered" },
+        { MapTabText.ReserveBadge(holds: false), [], "reserve not covered" },
+        { MapTabText.TaxBaseBadge, ["€9,999,999.99"], "+€9,999,999.99 to tax base" },
+    };
+
+    [Theory]
+    [MemberData(nameof(BadgeWords))]
+    public void MapTabResx_aBadge_isWordedByTheKeyItsHelperBuildsInThirtyCharactersAtMost(string key, string[] args, string words)
+    {
+        var text = Resources.Format(key, args);
+
+        (text, text.Length <= 30).ShouldBe((words, true));
+    }
+
     [Fact]
     public void MapTabResx_theRiversEdge_isOutOfTheRiver()
     {

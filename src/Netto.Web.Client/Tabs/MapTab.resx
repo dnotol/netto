@@ -159,4 +159,34 @@
   <data name="State_NotCovered" xml:space="preserve">
     <value>not covered</value>
   </data>
+  <data name="Badge_Pay_Met" xml:space="preserve">
+    <value>pay met</value>
+  </data>
+  <data name="Badge_Pay_Lost" xml:space="preserve">
+    <value>rate lost: pay</value>
+  </data>
+  <data name="Badge_Benefits_Met" xml:space="preserve">
+    <value>benefits met</value>
+  </data>
+  <data name="Badge_Benefits_Lost" xml:space="preserve">
+    <value>rate lost: benefits</value>
+  </data>
+  <data name="Badge_Royalty_Lowers" xml:space="preserve">
+    <value>royalty lowers pay</value>
+  </data>
+  <data name="Badge_Royalty_NoEffect" xml:space="preserve">
+    <value>royalty: no effect</value>
+  </data>
+  <data name="Badge_Royalty_NoPayKeeps" xml:space="preserve">
+    <value>no pay keeps rate</value>
+  </data>
+  <data name="Badge_Reserve_Covered" xml:space="preserve">
+    <value>reserve covered</value>
+  </data>
+  <data name="Badge_Reserve_NotCovered" xml:space="preserve">
+    <value>reserve not covered</value>
+  </data>
+  <data name="Badge_TaxBase" xml:space="preserve">
+    <value>+{0} to tax base</value>
+  </data>
 </root>

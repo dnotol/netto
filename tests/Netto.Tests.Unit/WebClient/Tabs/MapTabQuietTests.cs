@@ -25,11 +25,15 @@ public class MapTabQuietTests
     [Fact]
     public async Task Tab_quietLevers_areButtonsInTheRiversOrderNamedWithTheirWord()
     {
+        var view = MapView.From(ChainQuiet, ChainQuiet.Run());
+
         var html = await RenderTabAsync(ChainQuiet);
 
-        Buttons(html).Select(button => (button.Module, button.Name, button.Pressed)).ShouldBe(MapView.ModulesOf(ChainQuiet).Select(module => (
-            MapModules.Name(module),
-            module is RiverModule.Allowances or RiverModule.Rent or RiverModule.Car ? $"{CardTitle(module)} {Word}" : CardTitle(module),
+        Buttons(html).Select(button => (button.Module, button.Name, button.Pressed)).ShouldBe(view.Modules.Select(node => (
+            node.End.Id,
+            node.End.Module is RiverModule.Allowances or RiverModule.Rent or RiverModule.Car
+                ? $"{CardTitle(node.End.Module!.Value)} {Word}"
+                : string.Join(' ', [CardTitle(node.End.Module!.Value), .. node.Badges.Select(BadgeWords)]),
             "false")));
     }
 

@@ -11,10 +11,11 @@ namespace Netto.Web.Client.Tabs;
 // figures; nothing here decides a tax outcome. While the engine refuses an amount the map has no link, as
 // the bar has no figure, and the module holding the refused field is marked (RiverErrors.Owner); a Company
 // year the viewer skipped stays on the map, marked skipped, with no link; a lever that moves no money of
-// its own is quiet, in a quiet row with no link of its own, the chain's line running past it. A filter
-// shows some links and hides the others as `view with { Links = shown, Hidden = hidden }`: the modules
-// and the routes are the run's, so nothing moves. Units is the map's height in chain rows, which the
-// stylesheet makes its height of.
+// its own is quiet, in a quiet row with no link of its own, the chain's line running past it. A module's
+// box holds the badges of the conditions and the tax bases reaching it (MapBadges), read before any filter.
+// A filter shows some links and hides the others as `view with { Links = shown, Hidden = hidden }`: the
+// modules, their badges and the routes are the run's, so nothing moves. Units is the map's height in chain
+// rows, which the stylesheet makes its height of.
 internal sealed record MapView(IReadOnlyList<MapNode> Modules, IReadOnlyList<MapNode> Buckets, decimal Units)
 {
     // How far a card's words stand from its box.
@@ -39,11 +40,13 @@ internal sealed record MapView(IReadOnlyList<MapNode> Modules, IReadOnlyList<Map
         // The run's links, each a line of a card, then the conditions one module sets on another, as the
         // engine names them for the year, between modules on the map; a run without a year, refused or
         // with the company skipped, has none. The levers they leave moving no money of their own are quiet
-        // (MapQuiet), folded into a quiet row the chain's line runs through.
+        // (MapQuiet), folded into a quiet row the chain's line runs through. The conditions and the tax bases
+        // mark the modules they reach with badges (MapBadges), lines of their boxes.
         IReadOnlyList<MapLink> links =
             [.. MapLinks.Of(inputs, run), .. run.Year is { } year ? MapConditions.From(YearConditions.Of(year), modules) : []];
         var quiet = MapQuiet.Of(run, modules, links);
-        var grid = MapLayout.Grid(modules, quiet);
+        var badges = MapBadges.Of(links);
+        var grid = MapLayout.Grid(modules, quiet, MapBadges.Lines(badges));
 
         return new MapView(
             [.. modules.Select(module => new MapNode(MapEnd.Of(module), grid.Slot(MapEnd.Of(module)))
@@ -51,6 +54,7 @@ internal sealed record MapView(IReadOnlyList<MapNode> Modules, IReadOnlyList<Map
                 Refused = module == refused,
                 Skipped = module == RiverModule.CompanyYear && inputs.Company is null,
                 Quiet = quiet.Contains(module),
+                Badges = badges.GetValueOrDefault(module, []),
             })],
             [.. BucketsView.Keys.Select(key => new MapNode(MapEnd.InBucket(key), grid.Slot(MapEnd.InBucket(key))))],
             grid.Units)
@@ -133,7 +137,8 @@ internal sealed record MapView(IReadOnlyList<MapNode> Modules, IReadOnlyList<Map
 
 // A module or a bucket of the map in its box; the module holding a refused field is marked, and so is a
 // Company year the viewer skipped, and a lever that moves no money of its own in this plan (MapQuiet),
-// whose slot is its quiet row's.
+// whose slot is its quiet row's. A module's box holds the badges of the conditions and the tax bases
+// reaching it (MapBadges), none on a bucket.
 internal sealed record MapNode(MapEnd End, MapSlot Slot)
 {
     public bool Refused { get; init; }
@@ -141,6 +146,8 @@ internal sealed record MapNode(MapEnd End, MapSlot Slot)
     public bool Skipped { get; init; }
 
     public bool Quiet { get; init; }
+
+    public IReadOnlyList<MapBadge> Badges { get; init; } = [];
 }
 
 // Where the map draws modules: one box, or a quiet row of the quiet levers in it.
@@ -291,7 +298,8 @@ internal sealed record MapLabel(MapText Text, string Key, IReadOnlyList<string> 
 // One link of the map: its kind, where it runs from and to, the module whose card shows the line it is
 // (Card), what it carries and its amount in this plan, the card's own figure; none for a condition, which
 // names its figures in its words. A condition says whether it holds (Holds), and in a word or two (State),
-// none for any other link. Its line is its route (MapLayout), shared with the links of the same ends and
+// none for any other link, and the badge it leaves on the module it acts on (Badge), none for the office
+// rule, which always holds. Its line is its route (MapLayout), shared with the links of the same ends and
 // kind, worked out from every link of the run, none until the layout has routed it. The chain's line past
 // quiet levers names them (Through, in the river's order): it runs through their quiet row, and touches
 // each of them as it touches its two ends.
@@ -300,6 +308,8 @@ internal sealed record MapLink(MapLinkKind Kind, MapEnd From, MapEnd To, RiverMo
     public bool? Holds { get; init; }
 
     public MapLabel? State { get; init; }
+
+    public MapBadge? Badge { get; init; }
 
     public MapRoute? Route { get; init; }
 

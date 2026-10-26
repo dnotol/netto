@@ -18,13 +18,53 @@ public class MapTabTests
 {
     private static readonly RiverInputs Full = MapLinksTests.Full;
 
+    // Each module is a button named by its card's title and the words of the badges in its box, which a
+    // screen reader hears with it.
     [Fact]
-    public async Task Tab_everyModule_isAButtonNamedByItsCardsTitleInTheRiversOrder()
+    public async Task Tab_everyModule_isAButtonNamedByItsCardsTitleAndItsBadgesInTheRiversOrder()
     {
+        var view = MapView.From(Full, Full.Run());
+
         var html = await RenderTabAsync(Full);
 
-        Buttons(html).Select(button => (button.Module, button.Name, button.Pressed)).ShouldBe(
-            MapView.ModulesOf(Full).Select(module => (MapModules.Name(module), CardTitle(module), "false")));
+        html.ShouldSatisfyAllConditions(
+            () => view.Modules.ShouldContain(node => node.Badges.Count > 0),
+            () => Buttons(html).Select(button => (button.Module, button.Name, button.Pressed)).ShouldBe(
+                view.Modules.Select(node => (node.End.Id, string.Join(' ', [CardTitle(node.End.Module!.Value), .. node.Badges.Select(BadgeWords)]), "false"))));
+    }
+
+    // Each module a condition or a tax base reaches holds its badges in its box, inside its button, in the
+    // view's order, each drawn in its tone: with the costly car the benefits lose Corporate tax its rate.
+    [Fact]
+    public async Task Tab_aModuleAConditionOrATaxBaseReaches_drawsItsBadgesInItsButton()
+    {
+        var river = MapViewConditionsTests.CostlyCar;
+        var view = MapView.From(river, river.Run());
+
+        var html = await RenderTabAsync(river);
+
+        html.ShouldSatisfyAllConditions(
+            () => view.Modules.SelectMany(node => node.Badges).Select(badge => badge.Tone).ShouldContain(MapBadgeTone.Lost),
+            () => ButtonBadges(html).Select(badge => (badge.Module, badge.Tone, badge.Words)).ShouldBe(view.Modules.Where(node => node.Badges.Count > 0)
+                .SelectMany(node => node.Badges.Select(badge => (node.End.Id, MapBadgeStyle.Class(badge.Tone), BadgeWords(badge))))));
+    }
+
+    // A rule lost is said in its words, an icon and an outline, never the colour alone: each badge draws
+    // its tone's icon (MapBadgeStyle), out of a screen reader's hearing, before its words; what a tax base
+    // gains, an amount, none.
+    [Fact]
+    public async Task Tab_aBadge_drawsItsTonesIconBeforeItsWords()
+    {
+        var html = await RenderTabAsync(MapViewConditionsTests.CostlyCar);
+
+        var badges = ButtonBadges(html);
+        badges.ShouldSatisfyAllConditions(
+            () => badges.Select(badge => badge.Tone).ShouldContain("lost"),
+            () => badges.Select(badge => badge.Tone).ShouldContain("amount"),
+            () => badges.Where(badge => MapBadgeStyle.Icon(Enum.Parse<MapBadgeTone>(badge.Tone, ignoreCase: true)) is { } icon
+                    ? !Regex.IsMatch(badge.Icon, "^<svg [^>]*aria-hidden=\"true\"") || !badge.Icon.Contains(icon, StringComparison.Ordinal)
+                    : badge.Icon.Length > 0)
+                .Select(badge => $"{badge.Module} {badge.Words}").ShouldBeEmpty());
     }
 
     // The buckets are not modules: nothing to choose, named as the bar names them.
@@ -211,7 +251,10 @@ public class MapTabTests
 
         var map = Regex.Match(html, "<div class=\"map\".*?<div class=\"map-tab__side\"", RegexOptions.Singleline).Value;
         html.ShouldSatisfyAllConditions(
-            () => (Regex.Count(map, "<polyline"), map.Contains('€'), Buttons(html).Count).ShouldBe((0, false, MapView.ModulesOf(Full).Count)),
+            () => (Regex.Count(map, "<polyline"), map.Contains('€'), map.Contains("map-badge", StringComparison.Ordinal), Buttons(html).Count)
+                .ShouldBe((0, false, false, MapView.ModulesOf(Full).Count)),
+            () => Buttons(html).Where(button => !button.Refused).Select(button => button.Name).ShouldBe(
+                MapView.ModulesOf(Full).Where(module => module != RiverModule.Dividend).Select(CardTitle)),
             () => Buttons(html).Where(button => button.Refused).Select(button => (button.Module, button.Name)).ShouldBe([("dividend", "Dividend refused")]),
             () => html.ShouldContain("refused-message"));
     }
@@ -286,6 +329,17 @@ public class MapTabTests
             .Select(match => (match.Groups[3].Value, Regex.Replace(Regex.Replace(match.Groups[4].Value, "<[^>]*>", " "), "\\s+", " ").Trim(), match.Groups[2].Value,
                 match.Groups[1].Value.Contains("map-module--refused", StringComparison.Ordinal), match.Groups[1].Value.Contains("map-module--skipped", StringComparison.Ordinal))),
     ];
+
+    // Each badge drawn in a module's button: the module, its tone, the icon before its words, and its words.
+    private static List<(string Module, string Tone, string Icon, string Words)> ButtonBadges(string html) =>
+    [
+        .. Regex.Matches(html, "<button type=\"button\" class=\"map-module[^\"]*\"[^>]*data-module=\"([a-z-]+)\"[^>]*>(.*?)</button>", RegexOptions.Singleline)
+            .SelectMany(button => Regex.Matches(button.Groups[2].Value, "<span class=\"map-badge map-badge--([a-z]+)\"[^>]*>(.*?)<span class=\"map-badge__words\"[^>]*>([^<]*)</span>\\s*</span>", RegexOptions.Singleline)
+                .Select(badge => (button.Groups[1].Value, badge.Groups[1].Value, badge.Groups[2].Value.Trim(), badge.Groups[3].Value.Trim()))),
+    ];
+
+    // A badge's words, as the map's texts say them.
+    internal static string BadgeWords(MapBadge badge) => ResxText.For<MapTab>().Format(badge.Words.Key, [.. badge.Words.Args]);
 
     // What the map draws, the list beside it left out.
     internal static string Map(string html) => Regex.Match(html, "<div class=\"map\".*?<div class=\"map-tab__side\"", RegexOptions.Singleline).Value;

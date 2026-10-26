@@ -45,6 +45,17 @@ public class MapLayoutTests
 
     public static TheoryData<int> EveryDrainEnds => new(Enumerable.Range(0, DrainEnds.Length));
 
+    // The most badges a module's box can hold, which the routes here are worked out with, so its box is the
+    // tallest the map draws: a badge for each condition acting on it (Conditions, the office rule's
+    // leaving none) and one for what its tax base gains, Corporate tax's from the vouchers and the car,
+    // Director pay's from the car's benefit. MapBadgesTests holds every plan within it.
+    internal static readonly IReadOnlyDictionary<RiverModule, int> MostBadges = new Dictionary<RiverModule, int>
+    {
+        [RiverModule.Split] = 2,
+        [RiverModule.CorporateTax] = 3,
+        [RiverModule.DirectorPay] = 1,
+    };
+
     [Fact]
     public void Place_everyModuleOfTheMap_hasASlotOfItsOwn()
     {
@@ -76,6 +87,37 @@ public class MapLayoutTests
     public void Grid_companySkipped_isCompanyYearAndDirectorPayOverTheBuckets()
     {
         MapLayout.Grid(MapView.ModulesOf(MapLinksTests.Full.SkipCompany())).Rows.ShouldBe([MapRow.CompanyYear, MapRow.StreamBottom, MapRow.Buckets]);
+    }
+
+    // A module's badges grow its box a line each, 0.3 of a chain row (MapLayout.BadgeRem and BadgeGapRem
+    // at the smallest scale), and its row keeps round its tallest box the room a chain row keeps round its
+    // box: the split's two badges add their lines to its row, every other row keeping its height.
+    [Fact]
+    public void Grid_aBoxsBadges_growItALineEachAndItsRowWithIt()
+    {
+        var modules = MapView.ModulesOf(MapLinksTests.Full);
+        var (without, with) = (MapLayout.Grid(modules), MapLayout.Grid(modules, badgeLines: new Dictionary<RiverModule, int> { [RiverModule.Split] = 2 }));
+
+        with.ShouldSatisfyAllConditions(
+            () => Units(with, RiverModule.Split).ShouldBe(0.5m + 2 * 0.3m),
+            () => (with.Units - without.Units).ShouldBe(0.6m),
+            () => modules.Where(module => module != RiverModule.Split).Select(module => Units(with, module))
+                .ShouldBe(modules.Where(module => module != RiverModule.Split).Select(module => Units(without, module))));
+    }
+
+    // A stream's row is taller than its box needs, for the words of its many lines: badges grow it only
+    // once its tallest box takes more than the room the row has round it.
+    [Theory]
+    [InlineData(1, 0)]
+    [InlineData(2, 0)]
+    [InlineData(3, 0.3)]
+    public void Grid_badgesInAStreamsBox_growItsRowOnlyPastItsRoom(int lines, double growth)
+    {
+        var modules = MapView.ModulesOf(MapLinksTests.Full);
+
+        var with = MapLayout.Grid(modules, badgeLines: new Dictionary<RiverModule, int> { [RiverModule.CorporateTax] = lines });
+
+        (Units(with, RiverModule.CorporateTax), with.Units - MapLayout.Grid(modules).Units).ShouldBe((0.5m + lines * 0.3m, (decimal)growth));
     }
 
     [Theory]
@@ -115,6 +157,22 @@ public class MapLayoutTests
 
         Routes(river).SelectMany(route => Segments(route.Route).SelectMany(segment =>
                 boxes.Where(box => Enters(segment, box.Slot) && !RunsThrough(route.Through, box.Modules)).Select(box => $"{route.Name} through {box.Id}")))
+            .ShouldBeEmpty();
+    }
+
+    // What the map itself draws, its boxes holding this plan's badges: no line through a box, but the
+    // chain's through its own quiet row.
+    [Theory]
+    [MemberData(nameof(Rivers))]
+    public void From_anyPlan_drawsNoLineThroughABox(int bits, int quiet, bool companySkipped)
+    {
+        var river = River(bits, quiet, companySkipped);
+        var view = MapView.From(river, river.Run());
+        var boxes = view.Places().Select(place => (Id: string.Join('+', place.Nodes.Select(node => node.End.Id)), place.Slot, Modules: place.Nodes.Select(node => node.End.Module!.Value).ToList()))
+            .Concat(view.Buckets.Select(bucket => (Id: bucket.End.Id, bucket.Slot, Modules: new List<RiverModule>()))).ToList();
+
+        view.Links.SelectMany(link => Segments(link.Route!).SelectMany(segment =>
+                boxes.Where(box => Enters(segment, box.Slot) && !RunsThrough(link.Through, box.Modules)).Select(box => $"{link.Kind} {link.From.Id} to {link.To.Id} through {box.Id}")))
             .ShouldBeEmpty();
     }
 
@@ -179,7 +237,7 @@ public class MapLayoutTests
     {
         var (module, bucket) = DrainEnds[ends];
         var river = MapLinksTests.Full;
-        var grid = MapLayout.Grid(MapView.ModulesOf(river));
+        var grid = Grid(river);
         MapLink[] both =
         [
             new(MapLinkKind.IntoBucket, MapEnd.Of(module), MapEnd.InBucket(bucket), module, new MapLabel(MapText.Map, "Into", []), 1m),
@@ -208,7 +266,7 @@ public class MapLayoutTests
     {
         var (module, bucket) = DrainEnds[ends];
         var river = MapLinksTests.Full;
-        var grid = MapLayout.Grid(MapView.ModulesOf(river));
+        var grid = Grid(river);
         var back = new MapLink(MapLinkKind.IntoBucket, MapEnd.InBucket(bucket), MapEnd.Of(module), module, new MapLabel(MapText.Map, "Back", []), 1m);
 
         var route = MapLayout.Routed(grid, [back]).Single().Route!;
@@ -233,7 +291,7 @@ public class MapLayoutTests
     public void Routed_theCarsCosts_runOutOfItsRightSide()
     {
         var river = MapLinksTests.Full;
-        var grid = MapLayout.Grid(MapView.ModulesOf(river));
+        var grid = Grid(river);
 
         var route = MapLayout.Routed(grid, MapLinks.Of(river, river.Run())).Single(link => link.To.IsOut).Route!;
 
@@ -271,7 +329,7 @@ public class MapLayoutTests
         return data;
     }
 
-    private static RiverInputs River(int bits, int quiet, bool companySkipped)
+    internal static RiverInputs River(int bits, int quiet, bool companySkipped)
     {
         var river = MapQuietTests.Emptied(MapLinksTests.Full with { Composition = MapModulesTests.Composition(bits) }, Levers(quiet));
         return companySkipped ? river.SkipCompany() : river;
@@ -283,7 +341,11 @@ public class MapLayoutTests
     private static HashSet<RiverModule> Quiet(RiverInputs river) =>
         MapView.From(river, river.Run()).Modules.Where(node => node.Quiet).Select(node => node.End.Module!.Value).ToHashSet();
 
-    private static MapLayout.MapGrid Grid(RiverInputs river) => MapLayout.Grid(MapView.ModulesOf(river), Quiet(river));
+    // The plan's grid with the levers the map draws quiet and every box holding the most badges it can.
+    private static MapLayout.MapGrid Grid(RiverInputs river) => MapLayout.Grid(MapView.ModulesOf(river), Quiet(river), MostBadges);
+
+    // How tall a module's box is, in chain rows.
+    private static decimal Units(MapLayout.MapGrid grid, RiverModule module) => Math.Round(grid.Slot(MapEnd.Of(module)).Height * grid.Units / 100m, 12);
 
     // Each box of the map, a quiet row's pill once, with the levers in it.
     private static IReadOnlyList<(string Id, MapSlot Slot, IReadOnlyList<RiverModule> Modules)> Boxes(RiverInputs river)
@@ -312,7 +374,7 @@ public class MapLayoutTests
             .Select(condition => new MapLink(MapLinkKind.Condition, MapEnd.Of(condition.From), MapEnd.Of(condition.To), condition.From,
                 new MapLabel(MapText.Map, "Condition", []), null));
 
-        var links = MapLayout.Routed(MapLayout.Grid(modules, quiet), MapQuiet.Fold([.. MapLinks.Of(river, run), .. conditions, .. more], modules, quiet));
+        var links = MapLayout.Routed(MapLayout.Grid(modules, quiet, MostBadges), MapQuiet.Fold([.. MapLinks.Of(river, run), .. conditions, .. more], modules, quiet));
 
         return [.. links.GroupBy(link => link.Route).Select(bundle => bundle.First())
             .Select(link => ($"{link.Kind} {link.From.Id} to {link.To.Id}", link.From, link.To, link.Route!, link.Through))];
