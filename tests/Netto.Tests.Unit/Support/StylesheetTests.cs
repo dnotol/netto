@@ -3,8 +3,8 @@ using Shouldly;
 namespace Netto.Tests.Support;
 
 // The checkout's stylesheets read as data, for a test that holds a stylesheet to the figures or the tokens
-// it must draw with: a selector's own declarations, a length as a stylesheet writes it, and the tokens
-// app.css declares for each theme.
+// it must draw with: a selector's own declarations, a media query's block, a length as a stylesheet writes
+// it, and the tokens app.css declares for each theme.
 public class StylesheetTests
 {
     private const string Css = """
@@ -41,6 +41,23 @@ public class StylesheetTests
         var rules = Stylesheet.Rules("/* .gone { color: red; } */\n.map { height: 1rem; }\n@media (max-width: 1200px) {\n    .map-badge { color: blue; }\n}");
 
         rules.Select(rule => (rule.Selector, rule.Declarations.Trim())).ShouldBe([(".map", "height: 1rem;"), (".map-badge", "color: blue;")]);
+    }
+
+    // A media query's whole block, from its query to the brace that closes it, its rules and nothing after it.
+    [Fact]
+    public void MediaBlock_aQuery_givesItsWholeBlock()
+    {
+        var block = Stylesheet.MediaBlock(Css + "\n.after { color: red; }", "(max-width: 1200px)");
+
+        (block.StartsWith("@media (max-width: 1200px) {", StringComparison.Ordinal), block.EndsWith('}'), block.Contains("min-width: 60rem;", StringComparison.Ordinal),
+                block.Contains(".map-badge", StringComparison.Ordinal), block.Contains(".after", StringComparison.Ordinal))
+            .ShouldBe((true, true, true, false, false));
+    }
+
+    [Fact]
+    public void MediaBlock_aQueryTheStylesheetHasNot_isRefused()
+    {
+        Should.Throw<ArgumentOutOfRangeException>(() => Stylesheet.MediaBlock(Css, "(min-width: 1201px)"));
     }
 
     [Fact]

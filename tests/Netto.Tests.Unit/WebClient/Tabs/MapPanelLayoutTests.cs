@@ -16,8 +16,8 @@ public class MapPanelLayoutTests
     [Fact]
     public void Layout_fromTheBreakpoint_keepsTheColumnWithinWhatTheWindowLeavesUnderTheBar()
     {
-        var css = Stylesheet();
-        var wide = MediaBlock(css, "(min-width: 1201px)");
+        var css = MapTabCss();
+        var wide = Stylesheet.MediaBlock(css, "(min-width: 1201px)");
 
         css.ShouldSatisfyAllConditions(
             () => Regex.Matches(css, @"--map-room\s*:\s*([^;]+);").Select(match => match.Groups[1].Value).ShouldHaveSingleItem().ShouldContain("var(--netto-under-bar"),
@@ -36,7 +36,7 @@ public class MapPanelLayoutTests
     [Fact]
     public void Layout_fromTheBreakpoint_keepsTheNeighbourhoodInSightWhateverTheLengthOfTheCard()
     {
-        var wide = MediaBlock(Stylesheet(), "(min-width: 1201px)");
+        var wide = Stylesheet.MediaBlock(MapTabCss(), "(min-width: 1201px)");
 
         wide.ShouldSatisfyAllConditions(
             () => Rule(wide, ".map-tab__side").ShouldContain("display: flex"),
@@ -54,7 +54,7 @@ public class MapPanelLayoutTests
     [Fact]
     public void Layout_belowTheBreakpoint_leavesTheColumnUnderTheMapAsTallAsItsCard()
     {
-        var narrow = Stylesheet().Replace(MediaBlock(Stylesheet(), "(min-width: 1201px)"), "");
+        var narrow = MapTabCss().Replace(Stylesheet.MediaBlock(MapTabCss(), "(min-width: 1201px)"), "");
 
         narrow.ShouldSatisfyAllConditions(
             () => narrow.ShouldNotContain(".map-tab__side"),
@@ -71,35 +71,18 @@ public class MapPanelLayoutTests
     {
         var card = Rule(Without(File.ReadAllText(RepositoryFile.FindUp("src", "Netto.Web.Client", "River", "ModuleCard.razor.css"))), ".module-card--skipped");
 
-        Rule(Stylesheet(), ".map-module--skipped").ShouldSatisfyAllConditions(
+        Rule(MapTabCss(), ".map-module--skipped").ShouldSatisfyAllConditions(
             () => card.ShouldContain("border-style: dashed"),
             () => card.ShouldContain("background: transparent"),
-            () => Rule(Stylesheet(), ".map-module--skipped").ShouldContain("border-style: dashed"),
-            () => Rule(Stylesheet(), ".map-module--skipped").ShouldContain("background: transparent"));
+            () => Rule(MapTabCss(), ".map-module--skipped").ShouldContain("border-style: dashed"),
+            () => Rule(MapTabCss(), ".map-module--skipped").ShouldContain("background: transparent"));
     }
 
     // The stylesheet with its comments left out.
-    private static string Stylesheet() =>
+    private static string MapTabCss() =>
         Without(File.ReadAllText(RepositoryFile.FindUp("src", "Netto.Web.Client", "Tabs", "MapTab.razor.css")));
 
     private static string Without(string css) => Regex.Replace(css, @"/\*.*?\*/", "", RegexOptions.Singleline);
-
-    // A media query's whole block, from its opening brace to the one that closes it.
-    private static string MediaBlock(string css, string query)
-    {
-        var start = css.IndexOf($"@media {query}", StringComparison.Ordinal);
-        start.ShouldBeGreaterThan(-1, query);
-        var open = css.IndexOf('{', start);
-        var depth = 0;
-        for (var index = open; index < css.Length; index++)
-        {
-            depth += css[index] switch { '{' => 1, '}' => -1, _ => 0 };
-            if (depth == 0)
-                return css[start..(index + 1)];
-        }
-
-        throw new InvalidOperationException($"The block of {query} is never closed.");
-    }
 
     // The declarations of every rule for exactly that selector in the css given.
     private static string Rule(string css, string selector)

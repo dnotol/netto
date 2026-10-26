@@ -1,4 +1,3 @@
-using System.Text.RegularExpressions;
 using Netto.Web.Client.Tabs;
 using Shouldly;
 
@@ -16,14 +15,13 @@ public class MapLinesCssTests
     [Fact]
     public void MapTabCss_fromTheBreakpoint_drawsTheMapNoNarrowerThanTheLayoutKeepsItsLinesApartFor()
     {
-        Regex.IsMatch(Css, $@"@media \(min-width: 1201px\) \{{(?:(?!@media).)*?\n\s*\.map \{{[^}}]*min-width: {Regex.Escape(Stylesheet.Rem(MapLayout.NarrowestRem))};", RegexOptions.Singleline)
-            .ShouldBeTrue();
+        Stylesheet.Block(Stylesheet.MediaBlock(Css, "(min-width: 1201px)"), ".map").ShouldContain($"min-width: {Stylesheet.Rem(MapLayout.NarrowestRem)};");
     }
 
     [Fact]
     public void MapTabCss_belowTheBreakpoint_drawsTheMapWiderThanThat()
     {
-        Regex.IsMatch(Css, @"@media \(max-width: 1200px\) \{(?:(?!@media).)*?\n\s*\.map \{[^}]*min-width: 60rem;", RegexOptions.Singleline).ShouldBeTrue();
+        Stylesheet.Block(Stylesheet.MediaBlock(Css, "(max-width: 1200px)"), ".map").ShouldContain("min-width: 60rem;");
     }
 
     // A bucket is drawn over the lines that run on under it, on the map's ground under its wash, so a line
