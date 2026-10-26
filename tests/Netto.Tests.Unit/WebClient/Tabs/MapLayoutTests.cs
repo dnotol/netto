@@ -369,9 +369,10 @@ public class MapLayoutTests
     // The band over the buckets grows the map only by what the streams' last row lacks under its boxes: its three
     // rows with a dividend, its first 0.1 of a chain row under the lowest box, each 0.35 under the one before, the
     // buckets 0.2 under the last, a whole chain row; two with Director pay alone, 0.65. Every lever: Director pay
-    // holds a badge, its row keeps 0.4 under it, the buckets' row grows from 0.9 to 0.7 and the 0.6 the band lacks,
-    // 10.7 chain rows to 11.1; the example: 0.55 under its boxes, 6.1 to 6.35; the company skipped: 0.55 under its
-    // box covers the band, 3.5 as before.
+    // holds a badge, its row keeps 0.4 under it, and the buckets' row grows from 0.9 to 1.3, 0.7 for its box and
+    // the margin under it and the 0.6 the band lacks past those 0.4, 10.7 chain rows to 11.1; the example: 0.55
+    // under its boxes, the buckets' row 0.7 and 0.45, 6.1 to 6.35; the company skipped: 0.55 under its box leaves
+    // the band's 0.65 short by less than the buckets' 0.2 margin over their box, 3.5 as before.
     [Theory]
     [MemberData(nameof(BandHeights))]
     public void From_aPlan_growsByTheBandItsStreamsLackRoomFor(string plan, decimal units)
