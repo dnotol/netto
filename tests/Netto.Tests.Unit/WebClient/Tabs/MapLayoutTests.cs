@@ -373,21 +373,14 @@ public class MapLayoutTests
     // 10.7 chain rows to 11.1; the example: 0.55 under its boxes, 6.1 to 6.35; the company skipped: 0.55 under its
     // box covers the band, 3.5 as before.
     [Theory]
-    [InlineData("every lever", 11.1)]
-    [InlineData("the example", 6.35)]
-    [InlineData("the company skipped", 3.5)]
-    public void From_aPlan_growsByTheBandItsStreamsLackRoomFor(string plan, double units)
+    [MemberData(nameof(BandHeights))]
+    public void From_aPlan_growsByTheBandItsStreamsLackRoomFor(string plan, decimal units)
     {
-        var river = plan switch
-        {
-            "every lever" => MapLinksTests.Full,
-            "the example" => RiverInputs.Example,
-            _ => MapLinksTests.Full.SkipCompany(),
-        };
+        var river = Plan(plan);
 
         var view = MapView.From(river, river.Run());
 
-        view.Units.ShouldBe((decimal)units);
+        view.Units.ShouldBe(units);
     }
 
     // Whether a line turns once along a row: down, across, down.
@@ -762,6 +755,14 @@ public class MapLayoutTests
     // Plans where the company pays its corporate tax and the dividend its withholding, with the refund on its
     // exempt part, by name.
     public static TheoryData<string> DividendTaxedRivers() => new("every lever", "the example", "a low pay");
+
+    // Plans by name, each with the map's height in chain rows the band leaves it.
+    public static TheoryData<string, decimal> BandHeights() => new()
+    {
+        { "every lever", 11.1m },
+        { "the example", 6.35m },
+        { "the company skipped", 3.5m },
+    };
 
     // A plan by name: every lever, the example, every lever with the company skipped, or one at the edges.
     private static RiverInputs Plan(string plan) => plan switch
