@@ -367,31 +367,3 @@
         height: 0.75rem;
         font-size: 0.75rem;
     }
-
-/* The chosen module's links in words, the drawing's equivalent. */
-.map-links__title {
-    margin: 0 0 0.75rem;
-    font-size: 1.1rem;
-    font-weight: 600;
-}
-
-.map-links__list {
-    margin: 0;
-    padding-left: 1.1rem;
-    color: var(--netto-text);
-    font-size: 0.9rem;
-    line-height: 1.6;
-    font-variant-numeric: tabular-nums;
-}
-
-.map-links__note {
-    margin: 0;
-    color: var(--netto-text-muted);
-    font-size: 0.9rem;
-    line-height: 1.6;
-}
-
-/* The line under the list that counts the links the filter hides, set off from them. */
-.map-links__list + .map-links__note {
-    margin-top: 0.5rem;
-}

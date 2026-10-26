@@ -1,0 +1,131 @@
+@using Netto.Web.Client.River
+@inject IStringLocalizer<MapNeighbourhood> L
+
+@* The Map tab's column of words beside the map, above the card of the module chosen: that module's
+   neighbourhood (MapNeighbourhoodView), the words of the lines the map draws quietly. What comes into it
+   and what goes out of it, each line on its own row with what it carries, its amount, the other end of it
+   and a bar of its share of the largest amount listed; the line of the chain running past it while it is a
+   quiet lever, and the lines that run past quiet levers named on the rows of their two ends; the module
+   itself between what comes in and what goes out, and last the rules it sets on another or is under, a
+   tax base with its amount, a condition in its whole sentence, the one that does not hold marked in words.
+   A group with nothing in it is left out. Every figure is a line its card draws, and nothing is added up
+   here.
+
+   An end that is a module on the map is a button that chooses it as its box does (OnChoose is the tab's
+   own choice, whose card then takes the focus on its heading, once); a bucket and the river's edge are
+   named only. The bars are for the eye, out of a screen reader's hearing, which has each amount; the
+   section is a heading with a list under a smaller heading for each group, and nothing in it is a live
+   region: the bar's is the river's only announcement. The column lists every link of the module whatever
+   the legend ticks: the legend says which lines the map draws, this is where their words are read. *@
+<section class="map-hood" aria-labelledby="map-hood-title">
+    @if (Hood is not { } hood)
+    {
+        <h2 id="map-hood-title" class="map-hood__title">@L["TitleNone"]</h2>
+        <p class="map-hood__note">@L["Hint"]</p>
+    }
+    else
+    {
+        <h2 id="map-hood-title" class="map-hood__title">@L["Title", hood.Name]</h2>
+        @if (hood.Refused)
+        {
+            <p class="map-hood__note">@L["NoFigures"]</p>
+        }
+        else if (hood.IsEmpty)
+        {
+            <p class="map-hood__note">@L["NoLinks"]</p>
+        }
+        else
+        {
+            @Lines("comes-in", L["ComesIn"], hood.ComesIn)
+            <p class="map-hood__centre" aria-hidden="true">@hood.Name</p>
+            @Lines("goes-out", L["GoesOut"], hood.GoesOut)
+            @Lines("passes-through", L["PassesThrough"], hood.PassesThrough)
+            @if (hood.Rules.Count > 0)
+            {
+                <div class="map-hood__group" data-group="rules">
+                    <h3 class="map-hood__heading">@L["Rules"]</h3>
+                    <ul class="map-hood__list">
+                        @foreach (var rule in hood.Rules)
+                        {
+                            <li class="@RuleClass(rule)">
+                                <span class="map-hood__ends">
+                                    <span class="map-hood__way">@(rule.SetsOn ? L["SetsOn"] : L["SetBy"])</span>
+                                    @End(rule.Other)
+                                </span>
+                                <span class="map-hood__words">@rule.Words</span>
+                                @if (rule.Amount is { } amount)
+                                {
+                                    <span class="map-hood__amount">@amount</span>
+                                }
+                                @if (rule.NotHolding)
+                                {
+                                    <span class="map-hood__lost">@L["NotHolding"]</span>
+                                }
+                            </li>
+                        }
+                    </ul>
+                </div>
+            }
+        }
+    }
+</section>
+
+@code {
+    // The neighbourhood of the module chosen on the map, none while none is.
+    [Parameter]
+    public MapNeighbourhoodView? Hood { get; set; }
+
+    // An end that is a module on the map was chosen: the tab chooses it, as a choice on the map does.
+    [Parameter]
+    public EventCallback<RiverModule> OnChoose { get; set; }
+
+    // A group of lines of money: its heading and a row each. Where a line comes from is said on the rows of
+    // what comes in, where it goes on those of what goes out, both ends on the line passing through.
+    private RenderFragment Lines(string group, string heading, IReadOnlyList<MapNeighbourhoodRow> rows) =>
+        rows.Count == 0
+            ? @<text></text>
+            : @<div class="map-hood__group" data-group="@group">
+                  <h3 class="map-hood__heading">@heading</h3>
+                  <ul class="map-hood__list">
+                      @foreach (var row in rows)
+                      {
+                          <li class="@RowClass(row)">
+                              <span class="map-hood__words">@row.Words</span>
+                              <span class="map-hood__amount">@row.Amount</span>
+                              <span class="map-hood__ends">
+                                  @if (group != "goes-out")
+                                  {
+                                      <span class="map-hood__way">@L["From"]</span>
+                                      @End(row.From)
+                                  }
+                                  @if (group != "comes-in")
+                                  {
+                                      <span class="map-hood__way">@L["To"]</span>
+                                      @End(row.To)
+                                  }
+                              </span>
+                              @if (row.Past.Count > 0)
+                              {
+                                  <span class="map-hood__past">@L["Past", string.Join(", ", row.Past)]</span>
+                              }
+                              @if (row.Share is { } share)
+                              {
+                                  <span class="@BarClass(row)" aria-hidden="true"><i style="width: @Formats.Percentage(share)"></i></span>
+                              }
+                          </li>
+                      }
+                  </ul>
+              </div>;
+
+    // An end the viewer can go to is a button, which chooses that module; any other is named.
+    private RenderFragment End(MapNeighbourhoodEnd end) =>
+        end.Module is { } module
+            ? @<button type="button" class="map-hood__go" data-module="@MapModules.Name(module)" @onclick="() => OnChoose.InvokeAsync(module)">@end.Name</button>
+            : @<span class="map-hood__place">@end.Name</span>;
+
+    private static string RowClass(MapNeighbourhoodRow row) => $"map-hood__row{(row.ToPocket ? " map-hood__row--pocket" : "")}";
+
+    private static string BarClass(MapNeighbourhoodRow row) => $"map-hood__bar{(row.ToPocket ? " map-hood__bar--pocket" : "")}";
+
+    private static string RuleClass(MapNeighbourhoodRule rule) => $"map-hood__row map-hood__row--rule{(rule.NotHolding ? " map-hood__row--lost" : "")}";
+}

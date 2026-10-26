@@ -66,35 +66,8 @@
   <data name="Quiet" xml:space="preserve">
     <value>nothing in this plan</value>
   </data>
-  <data name="Link" xml:space="preserve">
-    <value>{0}: {1}, from {2} to {3}</value>
-  </data>
-  <data name="LinkWithoutAmount" xml:space="preserve">
-    <value>{0}, from {1} to {2}</value>
-  </data>
   <data name="End_out" xml:space="preserve">
     <value>out of the river</value>
-  </data>
-  <data name="LinksOf" xml:space="preserve">
-    <value>Links of {0}</value>
-  </data>
-  <data name="LinksOfNone" xml:space="preserve">
-    <value>A module's links</value>
-  </data>
-  <data name="ChooseHint" xml:space="preserve">
-    <value>Choose a module on the map to list what it receives and passes on, each with its amount in this plan.</value>
-  </data>
-  <data name="NoLinks" xml:space="preserve">
-    <value>No money moves through it in this plan.</value>
-  </data>
-  <data name="NoFigures" xml:space="preserve">
-    <value>No figures while an amount is refused.</value>
-  </data>
-  <data name="Hidden_One" xml:space="preserve">
-    <value>1 link hidden: its kind is unticked in the legend</value>
-  </data>
-  <data name="Hidden_Many" xml:space="preserve">
-    <value>{0} links hidden: their kinds are unticked in the legend</value>
   </data>
   <data name="Condition_Pay_MinimumPayMet" xml:space="preserve">
     <value>Pay {0} reaches the {1} minimum: pay condition met</value>

@@ -6,7 +6,8 @@ using Netto.Web.Client.River.CompanyCar;
 namespace Netto.Web.Client.Tabs;
 
 // The resource keys MapTab.razor and the map's links build, held to MapTab.resx by MapTabTextTests, so a
-// module or a link without its words fails a test instead of showing its key on screen. The map words the
+// module or a link without its words fails a test instead of showing its key on screen. The column beside
+// the map has its own (MapNeighbourhood.resx). The map words the
 // conditions on the corporate rate apart from the Corporate tax card: the card states the rate's outcome
 // (CorporateTaxCardText.Condition), the map says each test apart, with its own figures, on the link from
 // the module that sets it.
@@ -16,32 +17,8 @@ internal static class MapTabText
     // summary says it.
     public const string ProfitBeforeLevers = "Carries_ProfitBeforeLevers";
 
-    // A link in words, in the list of the chosen module's: what it carries, its amount, where from and to;
-    // a condition, which names its figures in its words, without an amount.
-    public const string Link = "Link";
-
-    public const string LinkWithoutAmount = "LinkWithoutAmount";
-
     // Where a cost of the company leaves the river, as a link's end.
     public const string OutOfRiver = "End_out";
-
-    // The list's heading: the chosen module's links, or what the list is while none is chosen.
-    public const string LinksOf = "LinksOf";
-
-    public const string LinksOfNone = "LinksOfNone";
-
-    // What the list says of the chosen module while the engine refuses an amount: there is no figure.
-    public const string NoFigures = "NoFigures";
-
-    // What the list says of the chosen module when the kinds unticked in the legend (MapLinkFilter, which
-    // opens with the rules' kinds unticked) hide some of its links: how many, so a short list is never read
-    // as a module with little to say. Said only for at least one.
-    public static string Hidden(int count) => count switch
-    {
-        < 1 => throw new ArgumentOutOfRangeException(nameof(count), count, "A line of hidden links is for at least one."),
-        1 => "Hidden_One",
-        _ => "Hidden_Many",
-    };
 
     // A module on the map, named as its card is.
     public static string Module(RiverModule module) => $"Module_{module}";

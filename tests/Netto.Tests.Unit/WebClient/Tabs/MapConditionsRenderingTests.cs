@@ -37,10 +37,10 @@ public class MapConditionsRenderingTests
             .ShouldBe((true, true, false));
     }
 
-    // Its module chosen, the line still says its word or two on the map, and the list beside it its
-    // sentence.
+    // Its module chosen, the line still says its word or two on the map, and its neighbourhood beside it
+    // its sentence.
     [Fact]
-    public async Task MapTab_theCarChosen_saysItsConditionInAWordOnTheMapAndItsSentenceInTheList()
+    public async Task MapTab_theCarChosen_saysItsConditionInAWordOnTheMapAndItsSentenceInItsNeighbourhood()
     {
         var html = await MapRendering.RenderTabAsync(River, RiverModule.Car);
 
@@ -58,12 +58,11 @@ public class MapConditionsRenderingTests
     ];
 
     [Fact]
-    public async Task MapTab_theCarChosen_listsItsConditionInWordsWithItsModules()
+    public async Task MapTab_theCarChosen_listsItsConditionInWordsWithItsModuleAndThatItDoesNotHold()
     {
         var html = await MapRendering.RenderTabAsync(River, RiverModule.Car);
 
-        Regex.Matches(html, "<li class=\"map-links__link\" data-link-kind=\"Condition\"[^>]*>(.*?)</li>").Select(item => item.Groups[1].Value)
-            .ShouldContain($"{Words(River, RiverModule.Car)}, from Company car to Corporate tax");
+        MapNeighbourhoodHtml.Rows(html, "rules").ShouldContain($"Sets on Corporate tax {Words(River, RiverModule.Car)} Does not hold");
     }
 
     // The words of the condition the module sets, as the map's texts say them.

@@ -9,10 +9,10 @@ using static Netto.Tests.WebClient.Tabs.MapRendering;
 namespace Netto.Tests.WebClient.Tabs;
 
 // The Map tab under the viewer's filter of the kinds of link: the legend in its place under the head, and a
-// kind hidden left out of the lines, of the arrowheads and the words beside them, and of the chosen module's
-// list in words, which says how many of its links are hidden; the modules, the buckets and what the lines
-// left are where they were. The choice is read from the browser's storage before the first draw, so a kind
-// hidden in an earlier visit is hidden at once.
+// kind hidden left out of the lines, of the arrowheads and the words beside them; the modules, the buckets
+// and what the lines left are where they were, and the neighbourhood of the module chosen, which lists the
+// module's every link, is as it was (MapNeighbourhoodRenderingTests). The choice is read from the browser's
+// storage before the first draw, so a kind hidden in an earlier visit is hidden at once.
 public class MapTabFilterTests
 {
     private static readonly RiverInputs Full = MapLinksTests.Full;
@@ -71,16 +71,13 @@ public class MapTabFilterTests
     }
 
     [Fact]
-    public async Task Tab_nothingHidden_drawsEveryLineAndSaysNothingOfHiddenLinks()
+    public async Task Tab_nothingHidden_drawsEveryLine()
     {
         var view = MapView.From(Full, Full.Run());
 
         var html = await RenderTabAsync(Full, RiverModule.Car);
 
-        html.ShouldSatisfyAllConditions(
-            () => LineKinds(html).ShouldBe(view.Drawn(RiverModule.Car).Select(line => line.Bundle.Kind.ToString())),
-            () => html.ShouldNotContain("data-hidden-links"),
-            () => html.ShouldNotContain("hidden by the kinds"));
+        LineKinds(html).ShouldBe(view.Drawn(RiverModule.Car).Select(line => line.Bundle.Kind.ToString()));
     }
 
     [Theory]
@@ -173,86 +170,28 @@ public class MapTabFilterTests
             () => Regex.Count(html, "<span class=\"map-badge ").ShouldBe(view.Modules.Sum(node => node.Badges.Count)));
     }
 
-    // The first visit, a module chosen: its list is its money, and says its rules' links are hidden, the
-    // way to bring them back being the legend's.
+    // Every kind hidden, a module chosen: no line is drawn and its neighbourhood lists all it did.
     [Fact]
-    public async Task Tab_firstVisitAModuleChosen_listsItsMoneyAndSaysItsRulesAreUntickedInTheLegend()
+    public async Task Tab_aModuleChosenEveryKindHidden_drawsNoLineAndStillListsItsNeighbourhood()
     {
-        var view = MapView.From(Full, Full.Run());
-        var rules = view.LinksOf(RiverModule.Car).Where(link => link.Kind is MapLinkKind.TaxBase or MapLinkKind.Condition).ToList();
-
-        var html = await RenderTabAsync(Full, RiverModule.Car, FirstVisit);
-
-        html.ShouldSatisfyAllConditions(
-            () => rules.Count.ShouldBeGreaterThan(1),
-            () => ListedKinds(html).ShouldBe(view.LinksOf(RiverModule.Car).Where(link => link.Kind is MapLinkKind.PassedOn or MapLinkKind.IntoBucket).Select(link => link.Kind.ToString())),
-            () => HiddenNote(html).ShouldBe(($"{rules.Count} links hidden: their kinds are unticked in the legend", rules.Count)));
-    }
-
-    // The module chosen: its links in words are the shown ones, and the line says how many the kinds turned
-    // off hide, so a short list is not read as a module with little to say.
-    [Fact]
-    public async Task Tab_aModuleChosenAKindHidden_listsOnlyTheShownLinksAndSaysHowManyAreHidden()
-    {
-        var view = MapView.From(Full, Full.Run());
-        var (all, hiddenOnes) = (view.LinksOf(RiverModule.Car).ToList(), view.LinksOf(RiverModule.Car).Where(link => link.Kind == MapLinkKind.TaxBase).ToList());
-
-        var html = await RenderTabAsync(Full, RiverModule.Car, Hiding(MapLinkKind.TaxBase));
-
-        html.ShouldSatisfyAllConditions(
-            () => hiddenOnes.Count.ShouldBeGreaterThan(1),
-            () => ListedKinds(html).ShouldBe(all.Where(link => link.Kind != MapLinkKind.TaxBase).Select(link => link.Kind.ToString())),
-            () => HiddenNote(html).ShouldBe(($"{hiddenOnes.Count} links hidden: their kinds are unticked in the legend", hiddenOnes.Count)));
-    }
-
-    [Fact]
-    public async Task Tab_aModuleChosenWithOneLinkHidden_saysSoInTheSingular()
-    {
-        var view = MapView.From(Full, Full.Run());
-        var (module, kind) = (from candidate in MapView.ModulesOf(Full) from drawn in Enum.GetValues<MapLinkKind>() where view.LinksOf(candidate).Count(link => link.Kind == drawn) == 1 select (candidate, drawn)).First();
-
-        var html = await RenderTabAsync(Full, module, Hiding(kind));
-
-        HiddenNote(html).ShouldBe(("1 link hidden: its kind is unticked in the legend", 1));
-    }
-
-    // Every kind hidden: the list is empty but for the line, which never says the module moves no money.
-    [Fact]
-    public async Task Tab_aModuleChosenEveryKindHidden_saysHowManyAreHiddenAndNotThatNoMoneyMoves()
-    {
-        var view = MapView.From(Full, Full.Run());
+        var all = await RenderTabAsync(Full, RiverModule.Car);
 
         var html = await RenderTabAsync(Full, RiverModule.Car, Hiding([.. Enum.GetValues<MapLinkKind>()]));
 
         html.ShouldSatisfyAllConditions(
-            () => ListedKinds(html).ShouldBeEmpty(),
-            () => HiddenNote(html).ShouldBe(($"{view.LinksOf(RiverModule.Car).Count()} links hidden: their kinds are unticked in the legend", view.LinksOf(RiverModule.Car).Count())),
-            () => html.ShouldNotContain("No money moves through it in this plan."),
-            () => Regex.Count(html, "<polyline").ShouldBe(0));
+            () => Regex.Count(html, "<polyline").ShouldBe(0),
+            () => MapNeighbourhoodHtml.Rows(html).ShouldNotBeEmpty(),
+            () => MapNeighbourhoodHtml.Rows(html).ShouldBe(MapNeighbourhoodHtml.Rows(all)),
+            () => html.ShouldNotContain("No money moves through it in this plan."));
     }
 
-    // A module none of whose links the filter hides says nothing of hidden links, whatever else is hidden.
+    // While the engine refuses an amount there is no link: the column says there is no figure.
     [Fact]
-    public async Task Tab_aModuleChosenWhoseLinksAreAllShown_saysNothingOfHiddenLinks()
-    {
-        var view = MapView.From(Full, Full.Run());
-        var (module, other) = (from candidate in MapView.ModulesOf(Full) from kind in Enum.GetValues<MapLinkKind>()
-            where view.LinksOf(candidate).Any() && view.LinksOf(candidate).All(link => link.Kind != kind) && view.Links.Any(link => link.Kind == kind)
-            select (candidate, kind)).First();
-
-        var html = await RenderTabAsync(Full, module, Hiding(other));
-
-        (html.Contains("data-hidden-links"), ListedKinds(html).Count).ShouldBe((false, view.LinksOf(module).Count()));
-    }
-
-    // While the engine refuses an amount there is no link to hide: the list says there is no figure, and
-    // nothing of hidden links.
-    [Fact]
-    public async Task Tab_aRefusedAmountAKindHidden_saysNoFigureAndNothingOfHiddenLinks()
+    public async Task Tab_aRefusedAmountAKindHidden_saysNoFigure()
     {
         var html = await RenderTabAsync(Full.WithReserve(-1m), RiverModule.Car, Hiding(MapLinkKind.TaxBase));
 
-        (html.Contains("No figures while an amount is refused."), html.Contains("data-hidden-links")).ShouldBe((true, false));
+        MapNeighbourhoodHtml.Note(html).ShouldBe("No figures while an amount is refused.");
     }
 
     // The filter changes no live region: the tab has none.
@@ -266,16 +205,6 @@ public class MapTabFilterTests
 
     private static List<string> LineKinds(string html) =>
         [.. Regex.Matches(html, "<polyline [^>]*data-link-kind=\"(\\w+)\"[^>]*>").Select(match => match.Groups[1].Value)];
-
-    // The kind of each link listed in words, in the order listed.
-    private static List<string> ListedKinds(string html) =>
-        [.. Regex.Matches(html, "<li class=\"map-links__link\" data-link-kind=\"(\\w+)\"").Select(match => match.Groups[1].Value)];
-
-    // The line under the list of the links hidden: its words and the number it counts.
-    private static (string Text, int Count)? HiddenNote(string html) =>
-        Regex.Match(html, "<p class=\"map-links__note\" data-hidden-links=\"(\\d+)\"[^>]*>(.*?)</p>", RegexOptions.Singleline) is { Success: true } note
-            ? (note.Groups[2].Value.Trim(), int.Parse(note.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture))
-            : null;
 
     // The boxes drawn of a kind of element, as their opening tags: where the map puts them.
     private static List<string> Boxes(string html, string opening) =>

@@ -77,8 +77,9 @@ public class PlanMapFilterTests
         (storage.Get(MapLinkFilter.StorageKey), page.Errors.Count).ShouldBe(("tax_base", 0));
     }
 
-    // The tab draws again at a tick: the lines, the words beside them and the chosen module's list lose the
-    // links of the kind unticked, the others stay as they were, and nothing else of the map changes.
+    // The tab draws again at a tick: the lines and the words beside them lose the links of the kind unticked,
+    // the others stay as they were, and nothing else of the map changes, the chosen module's neighbourhood
+    // included, which lists all its links whatever the legend ticks.
     [Fact]
     public async Task Plan_aKindUntickedOnTheMap_isDrawnNoMoreByTheTab()
     {
@@ -94,10 +95,10 @@ public class PlanMapFilterTests
         map.ShouldSatisfyAllConditions(
             () => lines.Select(line => line.Kind).ShouldContain(MapLinkKind.TaxBase),
             () => words.Select(word => word.Kind).ShouldContain(MapLinkKind.TaxBase),
-            () => listed.Select(link => link.Kind).ShouldContain(MapLinkKind.TaxBase),
+            () => listed.ShouldContain(line => line.StartsWith("rule:", StringComparison.Ordinal)),
             () => Lines(map).ShouldBe(lines.Where(line => line.Kind != MapLinkKind.TaxBase)),
             () => Words(map).ShouldBe(words.Where(word => word.Kind != MapLinkKind.TaxBase)),
-            () => Listed(map).ShouldBe(listed.Where(link => link.Kind != MapLinkKind.TaxBase)),
+            () => Listed(map).ShouldBe(listed),
             () => map.ShownMap.Hidden.Select(link => link.Kind).Distinct().ShouldBe([MapLinkKind.TaxBase]),
             () => map.ShownMap.Modules.ShouldBe(modules),
             () => page.Errors.ShouldBeEmpty());
@@ -125,14 +126,22 @@ public class PlanMapFilterTests
     }
 
     // Each line the tab draws, by its kind and its route, and whether it is faded; each bundle of words
-    // beside them; each link listed in words for the module chosen.
+    // beside them; each line and rule in the neighbourhood of the module chosen.
     private static List<(MapLinkKind Kind, MapRoute Route, bool Faded)> Lines(MapTab map) =>
         [.. map.DrawnLines.Select(line => (line.Bundle.Kind, line.Bundle.Route, line.Faded))];
 
     private static List<(MapLinkKind Kind, MapRoute Route)> Words(MapTab map) =>
         [.. map.DrawnWords.SelectMany(block => block.Bundles).Select(bundle => (bundle.Kind, bundle.Route))];
 
-    private static List<MapLink> Listed(MapTab map) => [.. map.ShownMap.LinksOf(map.Chosen!.Value)];
+    private static List<string> Listed(MapTab map)
+    {
+        var hood = map.Neighbourhood!;
+        return
+        [
+            .. hood.ComesIn.Concat(hood.PassesThrough).Concat(hood.GoesOut).Select(row => $"{row.Words} {row.Amount} {row.From.Name} {row.To.Name}"),
+            .. hood.Rules.Select(rule => $"rule: {rule.Words} {rule.Amount} {rule.Other.Name}"),
+        ];
+    }
 
     // The box a kind is, in the order of the kinds.
     private static int Index(MapLinkKind kind) => Array.IndexOf(Enum.GetValues<MapLinkKind>(), kind);

@@ -4,6 +4,7 @@ using Netto.Web.Client;
 using Netto.Web.Client.River;
 using Netto.Web.Client.Tabs;
 using Shouldly;
+using static Netto.Tests.WebClient.Tabs.MapNeighbourhoodHtml;
 using static Netto.Tests.WebClient.Tabs.MapRendering;
 
 namespace Netto.Tests.WebClient.Tabs;
@@ -197,32 +198,30 @@ public class MapTabTests
             .ShouldBe(view.Bundles().Select(bundle => bundle.Kind.ToString()), ignoreOrder: true);
     }
 
-    // Nothing chosen: no button pressed, no line faded, and the list says how to choose.
+    // Nothing chosen: no button pressed, no line faded, and the column says how to choose.
     [Fact]
     public async Task Tab_nothingChosen_fadesNothingAndSaysHowToChoose()
     {
         var html = await RenderTabAsync(Full);
 
-        (html.Contains("map-line--faded"), Regex.Count(html, "<li class=\"map-links__link\""), Heading(html), html.Contains("Choose a module on the map"))
-            .ShouldBe((false, 0, "A module's links", true));
+        (html.Contains("map-line--faded"), Groups(html).Count, Heading(html), Note(html).StartsWith("Choose a module on the map", StringComparison.Ordinal))
+            .ShouldBe((false, 0, "Around a module", true));
     }
 
-    // A module chosen is pressed, its lines stay and the others fade, and its links are listed in words,
-    // what it carries, its amount and where from and to, each saying its kind.
+    // A module chosen is pressed, its lines stay and the others fade, and its neighbourhood is beside the map,
+    // each of its lines with what it carries, its amount and where it goes.
     [Fact]
-    public async Task Tab_aModuleChosen_marksItBringsOutItsLinesAndListsThemInWords()
+    public async Task Tab_aModuleChosen_marksItBringsOutItsLinesAndDrawsItsNeighbourhood()
     {
         var view = MapView.From(Full, Full.Run());
 
         var html = await RenderTabAsync(Full, RiverModule.Car);
 
-        var links = view.LinksOf(RiverModule.Car).ToList();
         html.ShouldSatisfyAllConditions(
             () => Buttons(html).Where(button => button.Pressed == "true").Select(button => button.Module).ShouldBe(["car"]),
             () => Regex.Count(html, "<polyline class=\"map-line[^\"]*map-line--faded").ShouldBe(view.Bundles().Count(bundle => !bundle.Touches(RiverModule.Car))),
-            () => Heading(html).ShouldBe("Links of Company car"),
-            () => Words(html).Select(word => word.Kind).ShouldBe(links.Select(link => link.Kind.ToString())),
-            () => Words(html).Select(word => word.Text).ShouldContain($"The car's yearly costs: {Formats.Euros(Full.Run().Year!.Car.Costs)}, from Company car to out of the river"));
+            () => Heading(html).ShouldBe("Around Company car"),
+            () => Rows(html, "goes-out").ShouldContain($"The car's yearly costs {Formats.Euros(Full.Run().Year!.Car.Costs)} to out of the river"));
     }
 
     // What comes back is listed from where it comes.
@@ -231,7 +230,7 @@ public class MapTabTests
     {
         var html = await RenderTabAsync(Full, RiverModule.Car);
 
-        Words(html).Select(word => word.Text).ShouldContain(text => text.StartsWith("Your contribution", StringComparison.Ordinal) && text.EndsWith(", from Your pocket to Company car", StringComparison.Ordinal));
+        Rows(html, "comes-in").ShouldContain(row => row.StartsWith("Your contribution", StringComparison.Ordinal) && row.EndsWith("from Your pocket", StringComparison.Ordinal));
     }
 
     // A module chosen that has left the map is none.
@@ -240,7 +239,7 @@ public class MapTabTests
     {
         var html = await RenderTabAsync(RiverInputs.Example, RiverModule.Car);
 
-        (Buttons(html).Any(button => button.Pressed == "true"), Heading(html)).ShouldBe((false, "A module's links"));
+        (Buttons(html).Any(button => button.Pressed == "true"), Heading(html)).ShouldBe((false, "Around a module"));
     }
 
     // A refused amount leaves the map without a line or an amount, as it leaves the bar; the module
@@ -260,16 +259,6 @@ public class MapTabTests
             () => html.ShouldContain("refused-message"));
     }
 
-    // While an amount is refused there is no figure to list: the list says so, never that no money moves
-    // through the module chosen.
-    [Fact]
-    public async Task Tab_aModuleChosenWhileAnAmountIsRefused_saysThereIsNoFigure()
-    {
-        var html = await RenderTabAsync(Full.WithReserve(-1m), RiverModule.Car);
-
-        (Heading(html), Note(html)).ShouldBe(("Links of Company car", "No figures while an amount is refused."));
-    }
-
     // Nothing on the map is a live region: the bar's is the river's only announcement.
     [Fact]
     public async Task Tab_aModuleChosen_isSaidInNoLiveRegion()
@@ -280,15 +269,15 @@ public class MapTabTests
     }
 
     // Room under the head for the filter of the kinds of link, and beside the map for the chosen module's
-    // card, after the words of its links.
+    // card, after its neighbourhood.
     [Fact]
     public async Task Tab_leavesRoomForTheFilterAndTheCard()
     {
         var html = await RenderTabAsync(Full);
 
-        var (head, filter, map, words, panel) = (html.IndexOf("</header>", StringComparison.Ordinal), html.IndexOf("map-tab__filter", StringComparison.Ordinal),
-            html.IndexOf("class=\"map\"", StringComparison.Ordinal), html.IndexOf("map-links", StringComparison.Ordinal), html.IndexOf("map-tab__panel", StringComparison.Ordinal));
-        (head < filter, filter < map, map < words, words < panel).ShouldBe((true, true, true, true));
+        var (head, filter, map, neighbourhood, panel) = (html.IndexOf("</header>", StringComparison.Ordinal), html.IndexOf("map-tab__filter", StringComparison.Ordinal),
+            html.IndexOf("class=\"map\"", StringComparison.Ordinal), html.IndexOf("class=\"map-hood\"", StringComparison.Ordinal), html.IndexOf("map-tab__panel", StringComparison.Ordinal));
+        (head < filter, filter < map, map < neighbourhood, neighbourhood < panel).ShouldBe((true, true, true, true));
     }
 
     // Company year skipped: it stays on the map, drawn dashed and said skipped in words, so that it can be
@@ -302,15 +291,15 @@ public class MapTabTests
             [("company-year", "Company year skipped", true), ("director-pay", "Director pay", false)]);
     }
 
-    // A skipped Company year chosen: its card goes beside the map, its box is marked chosen, and the list of
-    // its links says no money moves through it.
+    // A skipped Company year chosen: its card goes beside the map, its box is marked chosen, and its
+    // neighbourhood says no money moves through it.
     [Fact]
     public async Task Tab_companySkippedAndCompanyYearChosen_listsNoLinkAndHasItsSkippedCard()
     {
         var html = await RenderTabAsync(Full.SkipCompany(), RiverModule.CompanyYear);
 
-        (Heading(html), Note(html), Words(html).Count, html.Contains("module-card--skipped"), Buttons(html).Single(button => button.Pressed == "true").Module)
-            .ShouldBe(("Links of Company year", "No money moves through it in this plan.", 0, true, "company-year"));
+        (Heading(html), Note(html), Rows(html).Count, html.Contains("module-card--skipped"), Buttons(html).Single(button => button.Pressed == "true").Module)
+            .ShouldBe(("Around Company year", "No money moves through it in this plan.", 0, true, "company-year"));
     }
 
     // Entered, Company year is a box like the others.
@@ -376,18 +365,6 @@ public class MapTabTests
             Regex.Match(match.Value, "stroke-dasharray=\"([^\"]*)\"") is { Success: true } dash ? dash.Groups[1].Value : null,
             Regex.Match(match.Value, "stroke-width=\"([^\"]*)\"").Groups[1].Value)),
     ];
-
-    internal static List<(string Kind, string Text)> Words(string html) =>
-    [
-        .. Regex.Matches(html, "<li class=\"map-links__link\" data-link-kind=\"(\\w+)\"[^>]*>(.*?)</li>", RegexOptions.Singleline)
-            .Select(match => (match.Groups[1].Value, Regex.Replace(match.Groups[2].Value, "\\s+", " ").Trim())),
-    ];
-
-    private static string Note(string html) =>
-        Regex.Match(html, "<p class=\"map-links__note\"[^>]*>(.*?)</p>", RegexOptions.Singleline).Groups[1].Value.Trim();
-
-    private static string Heading(string html) =>
-        Regex.Match(html, "<h2 [^>]*class=\"map-links__title\"[^>]*>(.*?)</h2>", RegexOptions.Singleline).Groups[1].Value.Trim();
 
     internal static string CardTitle(RiverModule module) => ResxText.For(MapTabTextTests.Card(module)).Get("Title")!;
 }

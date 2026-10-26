@@ -48,14 +48,6 @@ public class MapTabTextTests
         Resources.Get(MapTabText.Module(module)).ShouldBe(ResxText.For(Card(module)).Get("Title"));
     }
 
-    [Fact]
-    public void MapTabResx_aLink_saysWhatItCarriesItsAmountAndWhereFromAndTo()
-    {
-        (Resources.Format(MapTabText.Link, "Net pay", "€40,000.00", "Director pay", "Your pocket"),
-                Resources.Format(MapTabText.LinkWithoutAmount, "The pay keeps the reduced rate", "The split", "Corporate tax"))
-            .ShouldBe(("Net pay: €40,000.00, from Director pay to Your pocket", "The pay keeps the reduced rate, from The split to Corporate tax"));
-    }
-
     // A condition's words by the key its helper builds, kind by kind and with each variant: a test of the
     // rate that holds says its condition is met, one that fails that the rate is lost.
     public static TheoryData<string, string[], string> ConditionWords => new()
@@ -137,27 +129,11 @@ public class MapTabTextTests
         Resources.Get(MapTabText.OutOfRiver).ShouldBe("out of the river");
     }
 
+    // The column beside the map has a component and a .resx of its own: none of its texts stays here.
     [Fact]
-    public void MapTabResx_theListsHeading_namesTheModuleChosen()
+    public void MapTabResx_theNeighbourhoodsTexts_areTheNeighbourhoodsAlone()
     {
-        (Resources.Format(MapTabText.LinksOf, "Company car"), Resources.Get(MapTabText.LinksOfNone)).ShouldBe(("Links of Company car", "A module's links"));
-    }
-
-    // The chosen module's list says how many of its links the kinds unticked in the legend hide, so a short
-    // list is never read as a module with little to say; the map opens with two kinds unticked, so it never
-    // says the viewer turned them off.
-    [Fact]
-    public void MapTabResx_theLinksTheFilterHides_areCountedInTheSingularAndThePlural()
-    {
-        Resources.Missing([MapTabText.Hidden(1), MapTabText.Hidden(2)]).ShouldBeEmpty();
-        (Resources.Format(MapTabText.Hidden(1)), Resources.Format(MapTabText.Hidden(3), 3))
-            .ShouldBe(("1 link hidden: its kind is unticked in the legend", "3 links hidden: their kinds are unticked in the legend"));
-    }
-
-    [Fact]
-    public void Hidden_noLinkHidden_isRefused()
-    {
-        Should.Throw<ArgumentOutOfRangeException>(() => MapTabText.Hidden(0));
+        Resources.Keys.Intersect(["Link", "LinkWithoutAmount", "LinksOf", "LinksOfNone", "ChooseHint", "NoLinks", "NoFigures", "Hidden_One", "Hidden_Many"]).ShouldBeEmpty();
     }
 
     // Every link of these plans is worded by the texts its label names, its arguments taken.

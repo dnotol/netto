@@ -3,6 +3,7 @@ using Netto.Web.Client;
 using Netto.Web.Client.River;
 using Netto.Web.Client.Tabs;
 using Shouldly;
+using static Netto.Tests.WebClient.Tabs.MapNeighbourhoodHtml;
 using static Netto.Tests.WebClient.Tabs.MapRendering;
 using static Netto.Tests.WebClient.Tabs.MapTabTests;
 
@@ -66,7 +67,7 @@ public class MapTabQuietTests
     }
 
     // A quiet lever chosen: its name pressed in its row, its card beside the map, so that its amounts can be
-    // entered, and the line running past it listed.
+    // entered, and the line running past it in its neighbourhood.
     [Fact]
     public async Task Tab_aQuietLeverChosen_isPressedWithItsCardBesideTheMapAndTheLinePastIt()
     {
@@ -75,7 +76,7 @@ public class MapTabQuietTests
         html.ShouldSatisfyAllConditions(
             () => Buttons(html).Where(button => button.Pressed == "true").Select(button => button.Module).ShouldBe(["rent"]),
             () => (html.IndexOf("class=\"map-tab__panel\"", StringComparison.Ordinal) < html.IndexOf("id=\"card-rent\"", StringComparison.Ordinal)).ShouldBeTrue(),
-            () => Words(html).ShouldHaveSingleItem().Text.ShouldEndWith(", from Vouchers to The split"));
+            () => Rows(html).ShouldHaveSingleItem().ShouldEndWith("from Vouchers to The split"));
     }
 
     // A royalty that comes to nothing is quiet in a row of its own, in its own place.

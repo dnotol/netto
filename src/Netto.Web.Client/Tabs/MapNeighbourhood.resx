@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve">
+    <value>Around {0}</value>
+  </data>
+  <data name="TitleNone" xml:space="preserve">
+    <value>Around a module</value>
+  </data>
+  <data name="Hint" xml:space="preserve">
+    <value>Choose a module on the map to see what comes into it, what goes out and the rules it sets or is under.</value>
+  </data>
+  <data name="NoLinks" xml:space="preserve">
+    <value>No money moves through it in this plan.</value>
+  </data>
+  <data name="NoFigures" xml:space="preserve">
+    <value>No figures while an amount is refused.</value>
+  </data>
+  <data name="ComesIn" xml:space="preserve">
+    <value>Comes in</value>
+  </data>
+  <data name="PassesThrough" xml:space="preserve">
+    <value>Passes through</value>
+  </data>
+  <data name="GoesOut" xml:space="preserve">
+    <value>Goes out</value>
+  </data>
+  <data name="Rules" xml:space="preserve">
+    <value>Rules</value>
+  </data>
+  <data name="From" xml:space="preserve">
+    <value>from</value>
+  </data>
+  <data name="To" xml:space="preserve">
+    <value>to</value>
+  </data>
+  <data name="SetsOn" xml:space="preserve">
+    <value>Sets on</value>
+  </data>
+  <data name="SetBy" xml:space="preserve">
+    <value>Set by</value>
+  </data>
+  <data name="NotHolding" xml:space="preserve">
+    <value>Does not hold</value>
+  </data>
+  <data name="Past" xml:space="preserve">
+    <value>Runs past, holding nothing in this plan: {0}</value>
+  </data>
+</root>

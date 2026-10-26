@@ -43,25 +43,27 @@
 
    A module is a button: chosen, by a click or Enter or Space, it is marked (aria-pressed) and its own
    lines stay, worded beside its box with each card line's words and amount, while the others fade with no
-   word and no amount, and its links are listed in words with their amounts beside the map,
-   the drawing's equivalent for a screen reader, which hears the buttons and the list and nothing of the
+   word and no amount, and its neighbourhood is beside the map (MapNeighbourhood), the drawing's
+   equivalent for a screen reader, which hears the buttons and the neighbourhood and nothing of the
    drawing itself. Choosing it again lets it go. The choice is the page's (Chosen, ChosenChanged), so it
    stays from one tab to the next; the map takes no focus for it, the card it opens beside the map does
    (MapPanel). Nothing here is a live region: the bar's is the river's only announcement. While the engine
    refuses an amount the map draws no line and no amount, as the bar draws no figure, the module holding
    the refused field is marked, in words too, the refusal is said above the map, unless the card of the
    module chosen, beside it, holds the refused field and says it there, so that it is said once, and the
-   list of a module chosen says there is no figure.
+   neighbourhood of a module chosen says there is no figure.
 
    The map is as tall as the window leaves under the bar, and stays there while the column beside it
-   scrolls: the column holds the list of the chosen module's links, then the card of that module
-   (MapPanel, the Plan tab's own, pinned open), whose edits go to the page's one river. Under the head is
-   the filter of the kinds of link (MapFilter), the legend of the lines in one row, whose boxes the viewer
-   ticks: a kind unticked is left out of the lines, their arrowheads and their words, and out of the list
-   of the chosen module's links, which says how many of that module's links are hidden so that a short
-   list is never read as a module with little to say. The map opens quiet: the kinds that are a tax base
-   and a condition start unticked, since their badges say them on the modules they reach, and ticking them
-   draws their lines. The filter shows the map without those links
+   holds two regions that scroll apart: the neighbourhood of the chosen module (MapNeighbourhoodView: what
+   comes into it, what goes out, the rules it sets or is under, each line of money on its own with its
+   amount and a bar, the other end of each a button that chooses that module), kept in sight whatever the
+   length of the card under it, the card of that module (MapPanel, the Plan tab's own, pinned open), whose
+   edits go to the page's one river. Under the head is the filter of the kinds of link (MapFilter), the
+   legend of the lines in one row, whose boxes the viewer ticks: a kind unticked is left out of the lines,
+   their arrowheads and their words, and only of those: the neighbourhood is made from every link of the
+   run, so the rules of a module are listed whether or not their lines are drawn. The map opens quiet: the
+   kinds that are a tax base and a condition start unticked, since their badges say them on the modules
+   they reach, and ticking them draws their lines. The filter shows the map without those links
    (MapLinkFilter.Showing) and leaves everything else where it is: the modules, the buckets and the route
    of every line left are the run's, and the choice of a module is the page's. The lines are an SVG
    stretched to the map's box (preserveAspectRatio="none"), kept to their width by vector-effect; what
@@ -143,43 +145,9 @@
         </div>
     </div>
     <div class="map-tab__side">
-        <section class="map-links" aria-labelledby="map-links-title">
-            @if (_chosen is { } chosen)
-            {
-                <h2 id="map-links-title" class="map-links__title">@L[MapTabText.LinksOf, L[MapTabText.Module(chosen)]]</h2>
-                @if (_view.Refusal is not null)
-                {
-                    <p class="map-links__note">@L[MapTabText.NoFigures]</p>
-                }
-                else
-                {
-                    var hidden = _view.HiddenOf(chosen).Count();
-                    if (_view.LinksOf(chosen).Any())
-                    {
-                        <ul class="map-links__list">
-                            @foreach (var link in _view.LinksOf(chosen))
-                            {
-                                <li class="map-links__link" data-link-kind="@link.Kind">@Words(link)</li>
-                            }
-                        </ul>
-                    }
-                    else if (hidden == 0)
-                    {
-                        <p class="map-links__note">@L["NoLinks"]</p>
-                    }
-
-                    if (hidden > 0)
-                    {
-                        <p class="map-links__note" data-hidden-links="@hidden">@L[MapTabText.Hidden(hidden), hidden]</p>
-                    }
-                }
-            }
-            else
-            {
-                <h2 id="map-links-title" class="map-links__title">@L[MapTabText.LinksOfNone]</h2>
-                <p class="map-links__note">@L["ChooseHint"]</p>
-            }
-        </section>
+        <div class="map-tab__hood" @key="@(_chosen?.ToString() ?? "none")">
+            <MapNeighbourhood Hood="_hood" OnChoose="ChooseAsync" />
+        </div>
         <div class="map-tab__panel">
             <MapPanel Module="_chosen" Inputs="Inputs" InputsChanged="InputsChanged" Run="Run" Search="Search" Refused="ChosenRefusal" />
         </div>
@@ -222,6 +190,7 @@
     private MapView _view = default!;
     private IReadOnlyDictionary<MapLinkKind, int> _counts = default!;
     private RiverModule? _chosen;
+    private MapNeighbourhoodView? _hood;
     private IReadOnlyList<(MapBundle Bundle, bool Faded)> _drawn = [];
     private IReadOnlyList<MapLabelBlock> _blocks = [];
     private readonly Dictionary<MapText, IStringLocalizer> _texts = [];
@@ -234,16 +203,22 @@
 
     internal IReadOnlyList<MapLabelBlock> DrawnWords => _blocks;
 
+    // The neighbourhood of the module chosen, which the column beside the map lists, none while none is.
+    internal MapNeighbourhoodView? Neighbourhood => _hood;
+
     protected override void OnParametersSet()
     {
         _full = MapView.From(Inputs, Run);
         _counts = MapLinkFilter.Counts(_full);
         _chosen = _full.Choice(Chosen);
         Refilter();
+
+        // Made from every link of the run, so the legend, which says which lines are drawn, changes nothing of
+        // it: it is not made again at a tick.
+        _hood = _chosen is { } chosen ? MapNeighbourhoodView.Of(_full, chosen, Carries, EndName) : null;
     }
 
-    // The viewer ticked or unticked a kind: the lines, their words and the list of links are the shown
-    // kinds' again.
+    // The viewer ticked or unticked a kind: the lines and their words are the shown kinds' again.
     private void Refilter()
     {
         _view = Filter.Showing(_full);
@@ -329,10 +304,6 @@
         { Bucket: { } bucket } => BucketTexts[BucketBarText.Bucket(bucket, _view.TaxesOnPayIncludeRent)],
         _ => L[MapTabText.OutOfRiver],
     };
-
-    private string Words(MapLink link) => link.Amount is { } amount
-        ? L[MapTabText.Link, Carries(link.Carries), Formats.Euros(amount), EndName(link.From), EndName(link.To)]
-        : L[MapTabText.LinkWithoutAmount, Carries(link.Carries), EndName(link.From), EndName(link.To)];
 
     private static string Points(MapRoute route) => string.Join(' ', route.Points.Select(point => $"{Number(point.X)},{Number(point.Y)}"));
 

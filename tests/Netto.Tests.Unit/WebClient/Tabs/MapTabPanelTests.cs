@@ -6,19 +6,19 @@ using static Netto.Tests.WebClient.Tabs.MapRendering;
 namespace Netto.Tests.WebClient.Tabs;
 
 // The card of the module chosen beside the map, in the Map tab as the page draws it (the card in the panel is
-// MapPanelTests', the page's work PlanMapPanelTests'): in the column after the links, the room kept while none
+// MapPanelTests', the page's work PlanMapPanelTests'): in the column after the neighbourhood, the room kept while none
 // is chosen, no card for a module off the map.
 public class MapTabPanelTests
 {
     private static readonly RiverInputs Full = MapLinksTests.Full;
 
-    // The module chosen has its own card in the side column, after the words of its links.
+    // The module chosen has its own card in the side column, after its neighbourhood.
     [Fact]
-    public async Task Tab_aModuleChosen_hasItsCardInTheColumnAfterItsLinks()
+    public async Task Tab_aModuleChosen_hasItsCardInTheColumnAfterItsNeighbourhood()
     {
         var html = await RenderTabAsync(Full, RiverModule.Car);
 
-        var (side, links, panel, card) = (html.IndexOf("class=\"map-tab__side\"", StringComparison.Ordinal), html.IndexOf("class=\"map-links\"", StringComparison.Ordinal),
+        var (side, links, panel, card) = (html.IndexOf("class=\"map-tab__side\"", StringComparison.Ordinal), html.IndexOf("class=\"map-hood\"", StringComparison.Ordinal),
             html.IndexOf("class=\"map-tab__panel\"", StringComparison.Ordinal), html.IndexOf("id=\"card-car\"", StringComparison.Ordinal));
         (side < links, links < panel, panel < card, Regex.Count(html, "<section id=\"card-")).ShouldBe((true, true, true, 1));
     }
