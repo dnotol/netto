@@ -10,7 +10,7 @@ namespace Netto.Tests.WebClient.Tabs;
 // crosses no box and no quiet row but the one the chain's line runs through, ends on its two boxes and
 // shares no stretch with another link's, whatever the plan holds and whichever of its levers it leaves
 // empty; and at the widths its lines are drawn, apart from one another, off the boxes and within the sides
-// they meet, on the narrowest map and on the widest.
+// they meet, on the map at 1,201 px, where it is narrowest, and at 1,920 px.
 public class MapLayoutTests
 {
     // The conditions one module sets on another, as the engine will name them: the pay keeping the
@@ -127,7 +127,7 @@ public class MapLayoutTests
     {
         var boxes = Boxes(River(bits, quiet, companySkipped));
 
-        boxes.SelectMany((a, i) => boxes.Skip(i + 1).Where(b => Overlap(a.Slot, b.Slot)).Select(b => $"{a.Id} over {b.Id}")).ShouldBeEmpty();
+        boxes.SelectMany((a, i) => boxes.Skip(i + 1).Where(b => Overlaps(Area(a.Slot), Area(b.Slot))).Select(b => $"{a.Id} over {b.Id}")).ShouldBeEmpty();
     }
 
     [Theory]
@@ -172,7 +172,7 @@ public class MapLayoutTests
         var boxes = view.Places().Select(place => (Id: string.Join('+', place.Nodes.Select(node => node.End.Id)), place.Slot, Modules: place.Nodes.Select(node => node.End.Module!.Value).ToList()))
             .Concat(view.Buckets.Select(bucket => (Id: bucket.End.Id, bucket.Slot, Modules: new List<RiverModule>()))).ToList();
 
-        view.Links.SelectMany(link => Segments(link.Route!).SelectMany(segment =>
+        view.Links.SelectMany(link => Segments(RouteOf(link)).SelectMany(segment =>
                 boxes.Where(box => Enters(segment, box.Slot) && !RunsThrough(link.Through, box.Modules)).Select(box => $"{link.Kind} {link.From.Id} to {link.To.Id} through {box.Id}")))
             .ShouldBeEmpty();
     }
@@ -216,8 +216,8 @@ public class MapLayoutTests
     }
 
     // Lines that run side by side, down a lane, along a side of a box or across a gap, are apart by their
-    // half-widths and a halo's gap, so none covers another, at every size the map is drawn: the narrowest, at
-    // 1,201 px, and at 1,920 px.
+    // half-widths and a halo's gap, so none covers another, on the map at 1,201 px, where it is narrowest,
+    // and at 1,920 px.
     [Theory]
     [MemberData(nameof(Rivers))]
     public void Routed_anyPlan_keepsLinesSideBySideApartAtTheirWidths(int bits, int quiet, bool companySkipped)
@@ -362,7 +362,7 @@ public class MapLayoutTests
         var grid = Grid(river);
         var back = new MapLink(MapLinkKind.IntoBucket, MapEnd.InBucket(bucket), MapEnd.Of(module), module, new MapLabel(MapText.Map, "Back", []), 1m);
 
-        var route = MapLayout.Routed(grid, [back]).Single().Route!;
+        var route = RouteOf(MapLayout.Routed(grid, [back]).Single());
 
         (OnEdge(grid, MapEnd.InBucket(bucket), route.Points[0]), OnEdge(grid, MapEnd.Of(module), route.End)).ShouldBe((true, true));
     }
@@ -386,7 +386,7 @@ public class MapLayoutTests
         var river = MapLinksTests.Full;
         var grid = Grid(river);
 
-        var route = MapLayout.Routed(grid, MapLinks.Of(river, river.Run())).Single(link => link.To.IsOut).Route!;
+        var route = RouteOf(MapLayout.Routed(grid, MapLinks.Of(river, river.Run())).Single(link => link.To.IsOut));
 
         (route.Points[0].X, route.End.X > grid.Slot(MapEnd.Of(RiverModule.Car)).Right, route.Arrow).ShouldBe((grid.Slot(MapEnd.Of(RiverModule.Car)).Right, true, MapDirection.Right));
     }
@@ -474,8 +474,12 @@ public class MapLayoutTests
     private static IReadOnlyList<RoutedLine> RoutesOf(IReadOnlyList<MapLink> links) =>
     [
         .. links.GroupBy(link => link.Route).Select(bundle => bundle.First())
-            .Select(link => new RoutedLine($"{link.Kind} {link.From.Id} to {link.To.Id}", link.From, link.To, link.Route!, link.Through)),
+            .Select(link => new RoutedLine($"{link.Kind} {link.From.Id} to {link.To.Id}", link.From, link.To, RouteOf(link), link.Through)),
     ];
+
+    // The route the layout gave a link, which every link it routed has.
+    private static MapRoute RouteOf(MapLink link) =>
+        link.Route ?? throw new InvalidOperationException($"The layout gave {link.Kind} {link.From.Id} to {link.To.Id} no route.");
 
     // A line as the layout routes it, named by its kind and its ends.
     private sealed record RoutedLine(string Name, MapEnd From, MapEnd To, MapRoute Route, IReadOnlyList<RiverModule> Through);
@@ -528,12 +532,12 @@ public class MapLayoutTests
         foreach (var (size, width) in Sizes)
         {
             var scale = (X: width / 100m, Y: RowPixels * units / 100m);
-            var map = Pixels(new MapSlot(0m, 0m, 100m, 100m), scale);
+            var map = Area(new MapSlot(0m, 0m, 100m, 100m), scale);
             foreach (var route in routes)
             {
                 foreach (var stroke in Segments(route.Route).Select(segment => Stroke(segment, route.Route.Width, scale)))
                 {
-                    faults.AddRange(boxes.Where(box => !RunsThrough(route.Through, box.Modules) && Overlaps(stroke, Pixels(box.Slot, scale)))
+                    faults.AddRange(boxes.Where(box => !RunsThrough(route.Through, box.Modules) && Overlaps(stroke, Area(box.Slot, scale)))
                         .Select(box => $"{route.Name} through {box.Id} at {size}"));
                     if (stroke.Left < map.Left - Tolerance || stroke.Right > map.Right + Tolerance || stroke.Top < map.Top - Tolerance || stroke.Bottom > map.Bottom + Tolerance)
                         faults.Add($"{route.Name} past the map's edge at {size}");
@@ -553,10 +557,14 @@ public class MapLayoutTests
             : (Math.Min(a.X, b.X), a.Y - half, Math.Max(a.X, b.X), a.Y + half);
     }
 
-    private static (decimal Left, decimal Top, decimal Right, decimal Bottom) Pixels(MapSlot slot, (decimal X, decimal Y) scale) =>
-        (slot.Left * scale.X, slot.Top * scale.Y, slot.Right * scale.X, slot.Bottom * scale.Y);
+    // What a box covers, in percent of the map, or in pixels at the scale given.
+    private static (decimal Left, decimal Top, decimal Right, decimal Bottom) Area(MapSlot slot, (decimal X, decimal Y)? scale = null)
+    {
+        var (x, y) = scale ?? (1m, 1m);
+        return (slot.Left * x, slot.Top * y, slot.Right * x, slot.Bottom * y);
+    }
 
-    // Whether two areas share more than an edge.
+    // Whether two areas share more than an edge, a hundredth of their unit left for rounding.
     private static bool Overlaps((decimal Left, decimal Top, decimal Right, decimal Bottom) a, (decimal Left, decimal Top, decimal Right, decimal Bottom) b) =>
         a.Left < b.Right - Tolerance && b.Left < a.Right - Tolerance && a.Top < b.Bottom - Tolerance && b.Top < a.Bottom - Tolerance;
 
@@ -637,8 +645,6 @@ public class MapLayoutTests
     };
 
     private static IEnumerable<(MapPoint A, MapPoint B)> Segments(MapRoute route) => route.Points.Zip(route.Points.Skip(1));
-
-    private static bool Overlap(MapSlot a, MapSlot b) => a.Left < b.Right && b.Left < a.Right && a.Top < b.Bottom && b.Top < a.Bottom;
 
     // Whether a segment, across or down, runs through the inside of a box, its edges left out.
     private static bool Enters((MapPoint A, MapPoint B) segment, MapSlot box)
