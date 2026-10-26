@@ -236,6 +236,12 @@ body:has(.netto-app) .boot-splash {
         margin-bottom: 2rem;
     }
 
+/* For a viewer who asks for less motion, as every browser does on a machine with Windows' animation effects
+   off: nothing scrolls smoothly, an animation plays once at once, and nothing transitions. A transition's
+   property is all by default, so a duration above zero here would turn every change of any computed value of
+   any element into a transition, and a transition ends only at a frame the page draws: in a page that draws
+   none, a background tab or a browser pane not on screen, the Map tab's map and column kept the offset under
+   the bar they had before bucket-bar.js measured the bar. An animation starts only where a rule names one. */
 @media (prefers-reduced-motion: reduce) {
     html {
         scroll-behavior: auto;
@@ -244,6 +250,6 @@ body:has(.netto-app) .boot-splash {
     *, *::before, *::after {
         animation-duration: 0.01ms !important;
         animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
+        transition-duration: 0s !important;
     }
 }
