@@ -144,6 +144,12 @@ internal static class MapLayout
     private const decimal BandBottom = 0.2m;
     private const decimal BucketMargin = 0.2m;
 
+    // The band's rows, top to bottom: the ways into the taxes, what comes back out of them, and the dividend's way
+    // to the pocket, its last.
+    private const int IntoTaxesRow = 0;
+    private const int OutOfTaxesRow = 1;
+    private const int LastBandRow = 2;
+
     // Where Director pay's and the dividend's lines leave their boxes and enter the buckets, in percent across
     // the map. Director pay's taxes lie right of it: its way into them leaves right of where what comes back
     // arrives, and enters the bucket right of where that leaves; the dividend's lie left of it, and its lines
@@ -170,13 +176,14 @@ internal static class MapLayout
     // apart out of its bottom, far enough right for the row it turns along to the pocket's lane to hold its
     // amount; its line on to Director pay right of that, so the two never cross; its tax apart right of both; the
     // split's line into its top far enough left that the condition it sets on the split, out of its right side and
-    // up past the gutter to the gap under the split, has room for its words beside it. What comes back out of a
-    // bucket into the royalty leaves it a step left of the way in.
+    // up past the gutter to the gap under the split and into its bottom, has room for its words beside it. What
+    // comes back out of a bucket into the royalty leaves it a step left of the way in.
     private const decimal RoyaltyToPocket = 20.5m;
     private const decimal RoyaltyToPay = 22.4m;
     private const decimal RoyaltyToTaxes = 25.2m;
     private const decimal SplitToRoyalty = 12.5m;
     private const decimal RoyaltyConditionUp = 36m;
+    private const decimal ConditionIntoSplit = 45m;
     private const decimal RoyaltyBack = 1m;
 
     // The row the royalty's part paid apart turns along, in chain rows under its box, and what comes back out of
@@ -312,12 +319,14 @@ internal static class MapLayout
         private decimal StreamsBottom => BoxTop(MapRow.StreamBottom, Height(MapRow.StreamBottom)) + Height(MapRow.StreamBottom);
 
         // How tall the band is, in chain rows, by the modules the map holds, so that it never jumps with an amount:
-        // its three rows with a dividend, two with Director pay alone, the company skipped; none without either.
-        private decimal BandUnits => (Holds(RiverModule.Dividend) ? 3 : Holds(RiverModule.DirectorPay) ? 2 : 0) switch
-        {
-            0 => 0m,
-            var rows => BandTop + (rows - 1) * BandStep + BandBottom,
-        };
+        // down to its last row with a dividend, down to the row of what comes back out of the taxes with Director
+        // pay alone, the company skipped; none without either.
+        private decimal BandUnits => Holds(RiverModule.Dividend) ? BandDownTo(LastBandRow)
+            : Holds(RiverModule.DirectorPay) ? BandDownTo(OutOfTaxesRow)
+            : 0m;
+
+        // The band from the streams' lowest box down to a row of it and on to the buckets, in chain rows.
+        private static decimal BandDownTo(int row) => BandTop + row * BandStep + BandBottom;
 
         // What the streams' last row keeps under its tallest box, in chain rows, which the band takes first.
         private decimal RoomUnderStreams => Rows.Contains(MapRow.StreamBottom) ? (Weight(MapRow.StreamBottom) - Tallest(MapRow.StreamBottom)) / 2m : 0m;
@@ -722,7 +731,7 @@ internal static class MapLayout
         {
             var (source, target) = (_grid.Slot(from), _grid.Slot(to));
             var (y, gap) = (PortY(bundle, from, MapSide.Right), BelowSplitY(bundle));
-            return new MapRoute([new(source.Right, y), new(RoyaltyConditionUp, y), new(RoyaltyConditionUp, gap), new(45m, gap), new(45m, target.Bottom)], MapLabelSide.Right);
+            return new MapRoute([new(source.Right, y), new(RoyaltyConditionUp, y), new(RoyaltyConditionUp, gap), new(ConditionIntoSplit, gap), new(ConditionIntoSplit, target.Bottom)], MapLabelSide.Right);
         }
 
         // The split's pay to Director pay: down the left gutter into its right side while Copyright royalty
@@ -798,7 +807,7 @@ internal static class MapLayout
             if (bucket is not ("taxes_on_pay" or "taxes_on_profit"))
                 return new MapRoute([new(x, box.Bottom), new(x, tray.Top)], words);
 
-            var row = _grid.BandY(Back(bundle) ? 1 : 0);
+            var row = _grid.BandY(Back(bundle) ? OutOfTaxesRow : IntoTaxesRow);
             var into = Beside(bundle, back => IntoTaxes(module, back), (tray.Left, tray.Right), MapGrid.AcrossPixel);
             return new MapRoute([new(x, box.Bottom), new(x, row), new(into, row), new(into, tray.Top)], words);
         }
@@ -810,7 +819,7 @@ internal static class MapLayout
         {
             var (box, tray) = (_grid.Slot(from), _grid.Slot(to));
             var x = Beside(bundle, back => back ? DividendToPocketOut + BackBeside : DividendToPocketOut, (box.Left, box.Right), MapGrid.AcrossPixel, atModule: true);
-            var gap = _grid.BandY(2) - (Back(bundle) ? DividendBackOver * 100m / _grid.Units : 0m);
+            var gap = _grid.BandY(LastBandRow) - (Back(bundle) ? DividendBackOver * 100m / _grid.Units : 0m);
             var into = Beside(bundle, back => back ? DividendToPocketIn + BackBeside : DividendToPocketIn, (tray.Left, tray.Right), MapGrid.AcrossPixel);
             return new MapRoute([new(x, box.Bottom), new(x, gap), new(into, gap), new(into, tray.Top)], MapLabelSide.Left);
         }
