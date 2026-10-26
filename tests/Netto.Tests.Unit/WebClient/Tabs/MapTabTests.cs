@@ -71,6 +71,23 @@ public class MapTabTests
             .ShouldBe(view.Bundles().Select(bundle => bundle.Kind.ToString()), ignoreOrder: true);
     }
 
+    // Every line is drawn over a halo of the map's ground, right before it, on its points and wider by the
+    // gap each side, so a line drawn over another leaves a gap on each side of it; a faded line's halo fades
+    // with it.
+    [Fact]
+    public async Task Tab_everyLine_isDrawnOverAHaloOfTheGround()
+    {
+        var drawn = MapView.From(Full, Full.Run()).Drawn(RiverModule.Car);
+
+        var html = await RenderTabAsync(Full, RiverModule.Car);
+
+        Regex.Matches(html, "<polyline [^>]*>").Select(match => match.Value).Chunk(2)
+            .Select(pair => (Attribute(pair[0], "class"), Attribute(pair[0], "points") == Attribute(pair[^1], "points"), Attribute(pair[0], "stroke-width"),
+                Attribute(pair[0], "stroke-dasharray"), Attribute(pair[^1], "data-link-kind")))
+            .ShouldBe(drawn.Select(line => ((string?)(line.Faded ? "map-halo map-halo--faded" : "map-halo"), true, (string?)MapLinkStyle.Halo(line.Bundle.Kind), (string?)null,
+                (string?)line.Bundle.Kind.ToString())));
+    }
+
     // Nothing chosen: no button pressed, no line faded, and the list says how to choose.
     [Fact]
     public async Task Tab_nothingChosen_fadesNothingAndSaysHowToChoose()
@@ -202,10 +219,13 @@ public class MapTabTests
                 match.Groups[1].Value.Contains("map-module--refused", StringComparison.Ordinal), match.Groups[1].Value.Contains("map-module--skipped", StringComparison.Ordinal))),
     ];
 
+    private static string? Attribute(string element, string name) =>
+        Regex.Match(element, $" {name}=\"([^\"]*)\"") is { Success: true } match ? match.Groups[1].Value : null;
+
     // Each line: its kind, its dash and its width.
     private static List<(string Kind, string? Dash, string Width)> Lines(string html) =>
     [
-        .. Regex.Matches(html, "<polyline [^>]*>").Select(match => (
+        .. Regex.Matches(html, "<polyline class=\"map-line[^>]*>").Select(match => (
             Regex.Match(match.Value, "data-link-kind=\"(\\w+)\"").Groups[1].Value,
             Regex.Match(match.Value, "stroke-dasharray=\"([^\"]*)\"") is { Success: true } dash ? dash.Groups[1].Value : null,
             Regex.Match(match.Value, "stroke-width=\"([^\"]*)\"").Groups[1].Value)),

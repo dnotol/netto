@@ -63,6 +63,22 @@
     overflow: visible;
 }
 
+/* The halo a line is drawn over, the map's ground, solid, its width the line's and a gap each side
+   (MapLinkStyle.Halo): a line drawn over another leaves a gap each side of it, so the crossing reads as
+   over and under. A faded line's halo fades with it. */
+.map-halo {
+    fill: none;
+    stroke: var(--netto-page);
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    vector-effect: non-scaling-stroke;
+    transition: opacity 120ms ease;
+}
+
+.map-halo--faded {
+    opacity: 0.18;
+}
+
 /* A line keeps its width however the map stretches; its dash and width are its kind's (MapLinkStyle). */
 .map-line {
     fill: none;

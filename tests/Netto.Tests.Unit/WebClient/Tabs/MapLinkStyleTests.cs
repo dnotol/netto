@@ -30,9 +30,23 @@ public class MapLinkStyleTests
         (MapLinkStyle.Dash(MapLinkKind.TaxBase), MapLinkStyle.Dash(MapLinkKind.Condition)).ShouldBe(("1 4", "7 5"));
     }
 
+    // Every line is drawn over a halo of the map's ground, its own width and two pixels each side, so a line
+    // drawn over another leaves a gap on each side of it: the crossing reads as over and under.
+    [Theory]
+    [InlineData(MapLinkKind.PassedOn)]
+    [InlineData(MapLinkKind.IntoBucket)]
+    [InlineData(MapLinkKind.TaxBase)]
+    [InlineData(MapLinkKind.Condition)]
+    public void Halo_everyKind_isItsLinesWidthWithTwoPixelsEachSide(MapLinkKind kind)
+    {
+        (Pixels(MapLinkStyle.Halo(kind)) - Pixels(MapLinkStyle.Width(kind))).ShouldBe(2 * 2m);
+    }
+
     [Fact]
     public void Style_aKindItHasNoStyleFor_isRefused()
     {
         Should.Throw<ArgumentOutOfRangeException>(() => MapLinkStyle.Dash((MapLinkKind)99));
     }
+
+    private static decimal Pixels(string width) => decimal.Parse(width, System.Globalization.CultureInfo.InvariantCulture);
 }

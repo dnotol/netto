@@ -15,7 +15,8 @@
    the map starts at Director pay, over which Company year stays, drawn dashed as the river draws its
    skipped card and said skipped in words, with no link, so that it can be chosen and its year entered
    again beside the map; the cards that only wait for it are left out. Each link is a line of its kind
-   (MapLinkStyle: passed on, into a bucket, a tax base, a condition), with an arrowhead where it goes and
+   (MapLinkStyle: passed on, into a bucket, a tax base, a condition), with an arrowhead where it goes, drawn
+   over a halo of the map's ground so that a line crossing another leaves a gap each side of it, and
    its words and amounts beside its card's box; a line to the pocket is gold, the one gold of the map,
    since that is what reaches the director.
 
@@ -55,6 +56,7 @@
             <svg class="map__lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false">
                 @foreach (var (bundle, faded) in _drawn)
                 {
+                    <polyline class="@HaloClass(faded)" points="@Points(bundle.Route)" stroke-width="@MapLinkStyle.Halo(bundle.Kind)" />
                     <polyline class="@LineClass(bundle, faded)" points="@Points(bundle.Route)" stroke-dasharray="@MapLinkStyle.Dash(bundle.Kind)"
                               stroke-width="@MapLinkStyle.Width(bundle.Kind)" data-link-kind="@bundle.Kind" />
                 }
@@ -222,6 +224,8 @@
 
     private string WordsClass(MapBundle bundle) =>
         $"map-words__bundle{(_chosen is { } chosen && !bundle.Touches(chosen) ? " map-words__bundle--faded" : "")}";
+
+    private static string HaloClass(bool faded) => $"map-halo{(faded ? " map-halo--faded" : "")}";
 
     private string ModuleClass(MapNode node, RiverModule module) =>
         $"map-module{(_chosen == module ? " map-module--chosen" : "")}{(node.Refused ? " map-module--refused" : "")}{(node.Skipped ? " map-module--skipped" : "")}";
