@@ -195,9 +195,9 @@ public class MapNeighbourhoodViewTests
         var hood = Of(CostlyCar, RiverModule.CorporateTax);
 
         hood.ShouldSatisfyAllConditions(
-            () => hood.Rules.Where(rule => rule.NotHolding).Select(Condition).ShouldBe(["Condition_Benefits_Lost"]),
-            () => hood.Rules.Where(rule => !rule.NotHolding).Select(Condition).ShouldContain("Condition_Pay_MinimumPayMet"),
-            () => hood.Rules.Where(rule => rule.Amount is not null).ShouldNotContain(rule => rule.NotHolding));
+            () => hood.Rules.Where(rule => rule.Lost).Select(Condition).ShouldBe(["Condition_Benefits_Lost"]),
+            () => hood.Rules.Where(rule => !rule.Lost).Select(Condition).ShouldContain("Condition_Pay_MinimumPayMet"),
+            () => hood.Rules.Where(rule => rule.Amount is not null).ShouldNotContain(rule => rule.Lost));
     }
 
     // The key a rule's words are said by.
@@ -231,7 +231,7 @@ public class MapNeighbourhoodViewTests
 
         var rule = Of(view, link.From.Module.ShouldNotBeNull()).Rules.ShouldHaveSingleItem();
 
-        rule.NotHolding.ShouldBe(marked);
+        rule.Lost.ShouldBe(marked);
     }
 
     // The legend ticks the lines of the map and nothing here: the view is made from the run's every link, so

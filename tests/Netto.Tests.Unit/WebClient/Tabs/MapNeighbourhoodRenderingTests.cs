@@ -214,7 +214,7 @@ public class MapNeighbourhoodRenderingTests
     }
 
     // A royalty that lowers no pay keeping the reduced rate does not hold either, but loses nothing, as its
-    // badge says in a quiet tone: its sentence is listed and it is not marked.
+    // badge says in its no-effect tone: its sentence is listed and it is not marked.
     [Fact]
     public async Task Tab_aRoyaltyLoweringNoPay_isListedAndNotMarked()
     {
@@ -224,7 +224,7 @@ public class MapNeighbourhoodRenderingTests
         var html = await RenderTabAsync(river, RiverModule.Copyright);
 
         html.ShouldSatisfyAllConditions(
-            () => (link.Holds, link.Badge.ShouldNotBeNull().Tone).ShouldBe((false, MapBadgeTone.Quiet)),
+            () => (link.Holds, link.Badge.ShouldNotBeNull().Tone).ShouldBe((false, MapBadgeTone.NoEffect)),
             () => Rows(html, "rules").ShouldContain($"{Resx(Neighbourhood, "SetsOn")} The split {Words(link.Carries)}"),
             () => Section(html).ShouldNotContain(Resx(Neighbourhood, "NotHolding")),
             () => Section(html).ShouldNotContain("map-hood__row--lost"));
@@ -303,7 +303,7 @@ public class MapNeighbourhoodRenderingTests
             () => Rows(html, "rules").ShouldNotBeEmpty());
     }
 
-    // The first visit, the map quiet: the rules' lines are not drawn and their words are all there.
+    // The first visit, the rules' kinds hidden: their lines are not drawn and their words are all there.
     [Fact]
     public async Task Tab_firstVisit_listsTheRulesThoughTheirLinesAreNotDrawn()
     {

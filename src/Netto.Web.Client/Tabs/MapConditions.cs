@@ -20,7 +20,7 @@ internal static class MapConditions
     // its line says on the map, and in a sentence with its figures (Carries), said in the neighbourhood of
     // the chosen module; and, but the office rule, which always holds, it marks the module it acts
     // on with a badge (Badge) saying which rule and whether it holds, lost where it does not hold and costs
-    // the plan its rate or its reserve, quiet where the royalty lowers no pay, nothing being lost by it.
+    // the plan its rate or its reserve, with no effect where the royalty lowers no pay, nothing being lost by it.
     public static MapLink Link(YearCondition condition) => condition switch
     {
         NoOfficeAllowanceBesideRent office => Of(condition, RiverModule.Allowances, RiverModule.Rent, MapTabText.OfficeState, null,
@@ -36,7 +36,7 @@ internal static class MapConditions
             {
                 { Holds: true } => MapBadgeTone.Holds,
                 { With: null } => MapBadgeTone.Lost,
-                _ => MapBadgeTone.Quiet,
+                _ => MapBadgeTone.NoEffect,
             }),
             MapTabText.RoyaltyCondition(royalty), [.. new[] { royalty.With, royalty.Without }.OfType<decimal>().Select(Formats.Euros)]),
         PayOutCoversReserve reserve => Of(condition, RiverModule.Dividend, RiverModule.Split, MapTabText.ReserveState(reserve.Holds),

@@ -2,7 +2,7 @@
 @inject IStringLocalizer<MapNeighbourhood> L
 
 @* The Map tab's column of words beside the map, above the card of the module chosen: that module's
-   neighbourhood (MapNeighbourhoodView), the words of the lines the map draws quietly. What comes into it
+   neighbourhood (MapNeighbourhoodView), the words of the lines the map draws without them. What comes into it
    and what goes out of it, each line on its own row with what it carries, its amount, the other end of it
    and a bar of its share of the largest amount listed; the line of the chain running past it while it is a
    quiet lever, and the lines that run past quiet levers named on the rows of their two ends; the module
@@ -57,7 +57,7 @@
                                 {
                                     <span class="map-hood__amount">@amount</span>
                                 }
-                                @if (rule.NotHolding)
+                                @if (rule.Lost)
                                 {
                                     <span class="map-hood__lost">@L["NotHolding"]</span>
                                 }
@@ -127,5 +127,5 @@
 
     private static string BarClass(MapNeighbourhoodRow row) => $"map-hood__bar{(row.ToPocket ? " map-hood__bar--pocket" : "")}";
 
-    private static string RuleClass(MapNeighbourhoodRule rule) => $"map-hood__row map-hood__row--rule{(rule.NotHolding ? " map-hood__row--lost" : "")}";
+    private static string RuleClass(MapNeighbourhoodRule rule) => $"map-hood__row map-hood__row--rule{(rule.Lost ? " map-hood__row--lost" : "")}";
 }

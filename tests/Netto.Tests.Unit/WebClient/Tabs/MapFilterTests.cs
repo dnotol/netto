@@ -110,7 +110,7 @@ public class MapFilterTests
         Regex.Count(html, "<label class=\"mud-checkbox[^>]*>(?:(?!</label>).)*<input [^>]*type=\"checkbox\"[^>]*/>.*?</label>", RegexOptions.Singleline).ShouldBe(Enum.GetValues<MapLinkKind>().Length);
     }
 
-    // A viewer who never ticked a box meets the map quiet: the kinds of money ticked, the two of rules not.
+    // A viewer who never ticked a box meets the kinds of money ticked and the two of rules not.
     [Fact]
     public async Task Filter_firstVisit_ticksTheMoneyAndLeavesTheRulesUnticked()
     {

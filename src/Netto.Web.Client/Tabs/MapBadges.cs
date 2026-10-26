@@ -57,7 +57,7 @@ internal enum MapBadgeTone
 {
     Holds,
 
-    Quiet,
+    NoEffect,
 
     Lost,
 
@@ -72,7 +72,7 @@ internal static class MapBadgeStyle
     public static string Class(MapBadgeTone tone) => tone switch
     {
         MapBadgeTone.Holds => "holds",
-        MapBadgeTone.Quiet => "quiet",
+        MapBadgeTone.NoEffect => "no-effect",
         MapBadgeTone.Lost => "lost",
         MapBadgeTone.Amount => "amount",
         _ => throw new ArgumentOutOfRangeException(nameof(tone), tone, "A tone of badge the map has no style for."),
@@ -81,7 +81,7 @@ internal static class MapBadgeStyle
     public static string? Icon(MapBadgeTone tone) => tone switch
     {
         MapBadgeTone.Holds => Icons.Material.Rounded.Check,
-        MapBadgeTone.Quiet => Icons.Material.Rounded.Remove,
+        MapBadgeTone.NoEffect => Icons.Material.Rounded.Remove,
         MapBadgeTone.Lost => Icons.Material.Rounded.ErrorOutline,
         MapBadgeTone.Amount => null,
         _ => throw new ArgumentOutOfRangeException(nameof(tone), tone, "A tone of badge the map has no style for."),

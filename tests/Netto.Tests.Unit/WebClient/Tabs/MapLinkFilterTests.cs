@@ -6,16 +6,16 @@ using static Netto.Tests.WebClient.Tabs.MapRendering;
 namespace Netto.Tests.WebClient.Tabs;
 
 // Which kinds of link the Map tab shows is a viewer's preference, kept in the browser's storage as the
-// kinds they hid: a new MapLinkFilter over the same storage is the page after a reload. The map opens quiet,
-// its rules marked on their modules and their lines left out, so with nothing stored the kinds that are tax
-// bases and conditions are hidden and the others shown; what is stored, even nothing, is the choice, whole.
-// A key of an earlier version is no choice. What the filter shows of a map is the links of the kinds shown,
-// the others left out, the modules, their badges and the lines that stay where they were.
+// kinds they hid: a new MapLinkFilter over the same storage is the page after a reload. The rules are
+// marked on their modules, so with nothing stored the kinds that are tax bases and conditions are hidden by
+// default and the others shown; what is stored, even nothing, is the choice, whole. A key of an earlier
+// version is no choice. What the filter shows of a map is the links of the kinds shown, the others left
+// out, the modules, their badges and the lines that stay where they were.
 public class MapLinkFilterTests
 {
     private static readonly RiverInputs Full = MapLinksTests.Full;
 
-    private static readonly MapLinkKind[] QuietKinds = [MapLinkKind.TaxBase, MapLinkKind.Condition];
+    private static readonly MapLinkKind[] HiddenByDefault = [MapLinkKind.TaxBase, MapLinkKind.Condition];
 
     public static TheoryData<MapLinkKind> Kinds
     {
@@ -36,9 +36,9 @@ public class MapLinkFilterTests
 
     [Theory]
     [MemberData(nameof(Kinds))]
-    public void Shows_nothingStored_theMoneyShowsAndTheRulesAreQuiet(MapLinkKind kind)
+    public void Shows_nothingStored_theMoneyShowsAndTheRulesAreHidden(MapLinkKind kind)
     {
-        new MapLinkFilter(new BrowserStorage()).Shows(kind).ShouldBe(!QuietKinds.Contains(kind));
+        new MapLinkFilter(new BrowserStorage()).Shows(kind).ShouldBe(!HiddenByDefault.Contains(kind));
     }
 
     // The key names the lines, not the links they once were, and the format is the same.
@@ -49,7 +49,7 @@ public class MapLinkFilterTests
     }
 
     // The key of the first version is read by no one, written by no one, and left where it was: a viewer who
-    // chose under it meets the quiet map once.
+    // chose under it meets the kinds hidden by default once.
     [Theory]
     [InlineData("")]
     [InlineData("passed_on")]
@@ -86,9 +86,9 @@ public class MapLinkFilterTests
         Shown(new MapLinkFilter(storage)).ShouldBe(Enum.GetValues<MapLinkKind>());
     }
 
-    // The first tick is the whole of the viewer's choice with it: the other quiet kind stays hidden.
+    // The first tick is the whole of the viewer's choice with it: the other kind hidden by default stays hidden.
     [Fact]
-    public void Set_aQuietKindShown_storesTheOtherAsHiddenStill()
+    public void Set_aKindHiddenByDefaultShown_storesTheOtherAsHiddenStill()
     {
         var storage = new BrowserStorage();
 
@@ -97,9 +97,9 @@ public class MapLinkFilterTests
         (storage.Get(MapLinkFilter.StorageKey), ShownWords(new MapLinkFilter(storage))).ShouldBe(("condition", "PassedOn IntoBucket TaxBase"));
     }
 
-    // Hiding money stores the quiet kinds with it, in the order of the kinds, since what is stored is whole.
+    // Hiding money stores the kinds hidden by default with it, in the order of the kinds, since what is stored is whole.
     [Fact]
-    public void Set_aKindHidden_storesItWithTheQuietKinds()
+    public void Set_aKindHidden_storesItWithTheKindsHiddenByDefault()
     {
         var storage = new BrowserStorage();
 
@@ -115,7 +115,7 @@ public class MapLinkFilterTests
         var storage = new BrowserStorage();
         new MapLinkFilter(storage).Set(shown, shown: true);
 
-        Shown(new MapLinkFilter(storage)).ShouldBe(Enum.GetValues<MapLinkKind>().Where(kind => kind == shown || !QuietKinds.Contains(kind)));
+        Shown(new MapLinkFilter(storage)).ShouldBe(Enum.GetValues<MapLinkKind>().Where(kind => kind == shown || !HiddenByDefault.Contains(kind)));
     }
 
     [Theory]
@@ -125,7 +125,7 @@ public class MapLinkFilterTests
         var storage = new BrowserStorage();
         new MapLinkFilter(storage).Set(hidden, shown: false);
 
-        Shown(new MapLinkFilter(storage)).ShouldBe(Enum.GetValues<MapLinkKind>().Where(kind => kind != hidden && !QuietKinds.Contains(kind)));
+        Shown(new MapLinkFilter(storage)).ShouldBe(Enum.GetValues<MapLinkKind>().Where(kind => kind != hidden && !HiddenByDefault.Contains(kind)));
     }
 
     [Fact]
@@ -134,7 +134,7 @@ public class MapLinkFilterTests
         var storage = new BrowserStorage();
         var filter = new MapLinkFilter(storage);
 
-        foreach (var kind in QuietKinds)
+        foreach (var kind in HiddenByDefault)
             filter.Set(kind, shown: true);
 
         (storage.Get(MapLinkFilter.StorageKey), ShownWords(new MapLinkFilter(storage))).ShouldBe(("", "PassedOn IntoBucket TaxBase Condition"));
@@ -204,7 +204,7 @@ public class MapLinkFilterTests
     }
 
     // Something under Netto's key that names no kind, from another version or a hand edit, is no choice
-    // either: the map opens quiet.
+    // either: the kinds hidden by default are hidden.
     [Theory]
     [InlineData("junk")]
     [InlineData("{\"hidden\":[\"tax_base\"]}")]
@@ -213,7 +213,7 @@ public class MapLinkFilterTests
     [InlineData(" tax_base")]
     [InlineData("tax_base=1")]
     [InlineData("42")]
-    public void Shows_storedValueNamingNoKind_theMapOpensQuiet(string stored)
+    public void Shows_storedValueNamingNoKind_theKindsHiddenByDefaultAreHidden(string stored)
     {
         var storage = new BrowserStorage();
         storage.Set(MapLinkFilter.StorageKey, stored);
@@ -287,8 +287,8 @@ public class MapLinkFilterTests
         var shown = new MapLinkFilter(new BrowserStorage()).Showing(view);
 
         shown.ShouldSatisfyAllConditions(
-            () => shown.Links.ShouldBe(view.Links.Where(link => !QuietKinds.Contains(link.Kind))),
-            () => view.Links.Select(link => link.Kind).Distinct().Except(shown.Links.Select(link => link.Kind)).Order().ShouldBe(QuietKinds.Order()),
+            () => shown.Links.ShouldBe(view.Links.Where(link => !HiddenByDefault.Contains(link.Kind))),
+            () => view.Links.Select(link => link.Kind).Distinct().Except(shown.Links.Select(link => link.Kind)).Order().ShouldBe(HiddenByDefault.Order()),
             () => shown.Modules.SelectMany(node => node.Badges).ShouldBe(view.Modules.SelectMany(node => node.Badges)),
             () => shown.Modules.SelectMany(node => node.Badges).ShouldNotBeEmpty());
     }
@@ -433,9 +433,9 @@ public class MapLinkFilterTests
         var (ofShown, ofAll) = (MapLinkFilter.Counts(shown), MapLinkFilter.Counts(view));
 
         ofShown.ShouldSatisfyAllConditions(
-            () => QuietKinds.Select(kind => ofAll[kind]).ShouldAllBe(count => count > 0),
-            () => QuietKinds.Select(kind => ofShown[kind]).ShouldAllBe(count => count == 0),
-            () => Enum.GetValues<MapLinkKind>().Except(QuietKinds).Select(kind => ofShown[kind]).ShouldBe(
-                Enum.GetValues<MapLinkKind>().Except(QuietKinds).Select(kind => ofAll[kind])));
+            () => HiddenByDefault.Select(kind => ofAll[kind]).ShouldAllBe(count => count > 0),
+            () => HiddenByDefault.Select(kind => ofShown[kind]).ShouldAllBe(count => count == 0),
+            () => Enum.GetValues<MapLinkKind>().Except(HiddenByDefault).Select(kind => ofShown[kind]).ShouldBe(
+                Enum.GetValues<MapLinkKind>().Except(HiddenByDefault).Select(kind => ofAll[kind])));
     }
 }

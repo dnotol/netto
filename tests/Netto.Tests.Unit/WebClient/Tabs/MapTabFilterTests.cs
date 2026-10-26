@@ -137,7 +137,7 @@ public class MapTabFilterTests
             () => LegendBoxes(html).Select(box => box.Ticked).ShouldBe([true, true, false, true]));
     }
 
-    // The first visit, nothing stored: the map is quiet. No line, arrowhead or word is drawn for a tax base
+    // The first visit, nothing stored: the rules' kinds are hidden. No line, arrowhead or word is drawn for a tax base
     // or a condition, the boxes of the modules they reach say them in their badges, and the legend shows the
     // two kinds unticked, with their counts, to bring them back.
     [Fact]

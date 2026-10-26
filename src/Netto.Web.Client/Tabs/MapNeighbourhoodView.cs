@@ -85,8 +85,8 @@ public sealed record MapNeighbourhoodRow(
 
 // A rule the module sets on another (SetsOn) or is under, the other one at Other: its words, its amount
 // where it is a tax base and none for a condition, whose sentence names its figures, and whether a
-// condition is lost (NotHolding): it does not hold and costs the plan its rate or its reserve.
-public sealed record MapNeighbourhoodRule(bool SetsOn, MapNeighbourhoodEnd Other, string Words, string? Amount, bool NotHolding);
+// condition is lost (Lost): it does not hold and costs the plan its rate or its reserve.
+public sealed record MapNeighbourhoodRule(bool SetsOn, MapNeighbourhoodEnd Other, string Words, string? Amount, bool Lost);
 
 // An end of a line, named; a module on the map, which the viewer can go to, has its module.
 public sealed record MapNeighbourhoodEnd(string Name, RiverModule? Module);

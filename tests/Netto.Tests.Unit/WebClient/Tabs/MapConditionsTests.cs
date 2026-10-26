@@ -120,7 +120,7 @@ public class MapConditionsTests
 
     // The mark a condition leaves on the module it acts on, a badge in its box: which rule and whether it
     // holds, in a few words with the state its line says (State), and its tone. One that does not hold and
-    // costs the plan something is lost; the royalty that lowers no pay is quiet, nothing being lost by it.
+    // costs the plan something is lost; the royalty that lowers no pay has no effect, nothing being lost by it.
     public static TheoryData<YearCondition, string, string> Badges => new()
     {
         { new PayKeepsReducedRate(ReducedRateCondition.MinimumPayMet, 51_000m, 60_000m, 40_000m), "pay met", nameof(MapBadgeTone.Holds) },
@@ -130,7 +130,7 @@ public class MapConditionsTests
         { new BenefitsWithinShareOfPay(false, 1_714.29m, 6_714.29m, 0.20m), "rate lost: benefits", nameof(MapBadgeTone.Lost) },
         { new RoyaltyLowersPayKeepingReducedRate(40_000m, 50_000m, false), "royalty lowers pay", nameof(MapBadgeTone.Holds) },
         { new RoyaltyLowersPayKeepingReducedRate(40_000m, null, true), "royalty lowers pay", nameof(MapBadgeTone.Holds) },
-        { new RoyaltyLowersPayKeepingReducedRate(51_000m, 51_000m, false), "royalty: no effect", nameof(MapBadgeTone.Quiet) },
+        { new RoyaltyLowersPayKeepingReducedRate(51_000m, 51_000m, false), "royalty: no effect", nameof(MapBadgeTone.NoEffect) },
         { new RoyaltyLowersPayKeepingReducedRate(null, null, true), "no pay keeps rate", nameof(MapBadgeTone.Lost) },
         { new PayOutCoversReserve(40_000m, 40_000m), "reserve covered", nameof(MapBadgeTone.Holds) },
         { new PayOutCoversReserve(40_000.01m, 40_000m), "reserve not covered", nameof(MapBadgeTone.Lost) },

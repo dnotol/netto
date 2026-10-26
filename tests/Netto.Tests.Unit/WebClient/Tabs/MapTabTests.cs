@@ -63,7 +63,7 @@ public class MapTabTests
         badges.ShouldSatisfyAllConditions(
             () => badges.Select(badge => badge.Tone).ShouldContain("lost"),
             () => badges.Select(badge => badge.Tone).ShouldContain("amount"),
-            () => badges.Where(badge => MapBadgeStyle.Icon(Enum.Parse<MapBadgeTone>(badge.Tone, ignoreCase: true)) is { } icon
+            () => badges.Where(badge => MapBadgeStyle.Icon(Enum.GetValues<MapBadgeTone>().Single(tone => MapBadgeStyle.Class(tone) == badge.Tone)) is { } icon
                     ? !Regex.IsMatch(badge.Icon, "^<svg [^>]*aria-hidden=\"true\"") || !badge.Icon.Contains(icon, StringComparison.Ordinal)
                     : badge.Icon.Length > 0)
                 .Select(badge => $"{badge.Module} {badge.Words}").ShouldBeEmpty());
@@ -370,7 +370,7 @@ public class MapTabTests
     private static List<(string Module, string Tone, string Icon, string Words)> ButtonBadges(string html) =>
     [
         .. Regex.Matches(html, "<button type=\"button\" class=\"map-module[^\"]*\"[^>]*data-module=\"([a-z-]+)\"[^>]*>(.*?)</button>", RegexOptions.Singleline)
-            .SelectMany(button => Regex.Matches(button.Groups[2].Value, "<span class=\"map-badge map-badge--([a-z]+)\"[^>]*>(.*?)<span class=\"map-badge__words\"[^>]*>([^<]*)</span>\\s*</span>", RegexOptions.Singleline)
+            .SelectMany(button => Regex.Matches(button.Groups[2].Value, "<span class=\"map-badge map-badge--([a-z-]+)\"[^>]*>(.*?)<span class=\"map-badge__words\"[^>]*>([^<]*)</span>\\s*</span>", RegexOptions.Singleline)
                 .Select(badge => (button.Groups[1].Value, badge.Groups[1].Value, badge.Groups[2].Value.Trim(), badge.Groups[3].Value.Trim()))),
     ];
 
