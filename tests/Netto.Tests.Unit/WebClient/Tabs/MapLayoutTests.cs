@@ -134,7 +134,7 @@ public class MapLayoutTests
     [MemberData(nameof(Rivers))]
     public void Routed_anyPlan_runsEveryLineAcrossOrDownOnly(int bits, int quiet, bool companySkipped)
     {
-        Routes(River(bits, quiet, companySkipped)).Where(route => Segments(route.Route).Any(segment => segment.A.X != segment.B.X && segment.A.Y != segment.B.Y))
+        Routes(River(bits, quiet, companySkipped)).Where(route => MapLineWidths.Stretches(route.Route).Any(segment => segment.A.X != segment.B.X && segment.A.Y != segment.B.Y))
             .Select(route => route.Name).ShouldBeEmpty();
     }
 
@@ -156,7 +156,7 @@ public class MapLayoutTests
         var river = River(bits, quiet, companySkipped);
         var boxes = Boxes(river);
 
-        Routes(river).SelectMany(route => Segments(route.Route).SelectMany(segment =>
+        Routes(river).SelectMany(route => MapLineWidths.Stretches(route.Route).SelectMany(segment =>
                 boxes.Where(box => Enters(segment, box.Slot) && !RunsThrough(route.Through, box.Modules)).Select(box => $"{route.Name} through {box.Id}")))
             .ShouldBeEmpty();
     }
@@ -172,7 +172,7 @@ public class MapLayoutTests
         var boxes = view.Places().Select(place => (Id: string.Join('+', place.Nodes.Select(node => node.End.Id)), place.Slot, Modules: place.Nodes.Select(node => node.End.Module!.Value).ToList()))
             .Concat(view.Buckets.Select(bucket => (Id: bucket.End.Id, bucket.Slot, Modules: new List<RiverModule>()))).ToList();
 
-        view.Links.SelectMany(link => Segments(RouteOf(link)).SelectMany(segment =>
+        view.Links.SelectMany(link => MapLineWidths.Stretches(RouteOf(link)).SelectMany(segment =>
                 boxes.Where(box => Enters(segment, box.Slot) && !RunsThrough(link.Through, box.Modules)).Select(box => $"{link.Kind} {link.From.Id} to {link.To.Id} through {box.Id}")))
             .ShouldBeEmpty();
     }
@@ -202,7 +202,7 @@ public class MapLayoutTests
         var routes = Routes(River(bits, quiet, companySkipped));
 
         routes.SelectMany((a, i) => routes.Skip(i + 1)
-                .Where(b => Segments(a.Route).Any(sa => Segments(b.Route).Any(sb => Shared(sa, sb))))
+                .Where(b => MapLineWidths.Stretches(a.Route).Any(sa => MapLineWidths.Stretches(b.Route).Any(sb => Shared(sa, sb))))
                 .Select(b => $"{a.Name} with {b.Name}"))
             .ShouldBeEmpty();
     }
@@ -380,6 +380,19 @@ public class MapLayoutTests
             .ShouldBe((new MapArea(50m, 98m, 150m, 102m), new MapArea(96m, 20m, 104m, 80m)));
     }
 
+    // A line's stretches run from each of its points to the next, one of no length left out, and each covers
+    // its own area, across or down.
+    [Fact]
+    public void Strokes_aRoute_isEachStretchFromOnePointToTheNextLeavingOutOneOfNoLength()
+    {
+        var route = new MapRoute([new MapPoint(10m, 10m), new MapPoint(10m, 10m), new MapPoint(30m, 10m), new MapPoint(30m, 40m)]) { Width = 2m };
+        var scale = MapScale.Of(100m, 100m);
+
+        route.ShouldSatisfyAllConditions(
+            () => MapLineWidths.Stretches(route).ShouldBe([(new MapPoint(10m, 10m), new MapPoint(30m, 10m)), (new MapPoint(30m, 10m), new MapPoint(30m, 40m))]),
+            () => MapLineWidths.Strokes(route, scale).ShouldBe([(true, new MapArea(10m, 9m, 30m, 11m)), (false, new MapArea(29m, 10m, 31m, 40m))]));
+    }
+
     // An arrowhead covers its base across the line's end and its length back along it, its point on the end,
     // whichever way the line enters it.
     [Fact]
@@ -412,7 +425,7 @@ public class MapLayoutTests
     // The y of the row a line turns along.
     private static decimal Row(MapBundle line) => line.Route.Points[1].Y;
 
-    private static IEnumerable<(MapPoint A, MapPoint B)> Segments(MapBundle line) => Segments(line.Route);
+    private static IEnumerable<(MapPoint A, MapPoint B)> Segments(MapBundle line) => MapLineWidths.Stretches(line.Route);
 
     // Whether two segments, one across and one down, cross inside both.
     private static bool Cross((MapPoint A, MapPoint B) a, (MapPoint A, MapPoint B) b)
@@ -481,12 +494,12 @@ public class MapLayoutTests
         routes.ShouldSatisfyAllConditions(
             () => routes.Where(route => !OnEdge(grid, route.From, route.Route.Points[0]) || !EndsOn(grid, route.From, route.To, route.Route.End))
                 .Select(route => route.Name).ShouldBeEmpty(),
-            () => routes.SelectMany(route => Segments(route.Route).SelectMany(segment =>
+            () => routes.SelectMany(route => MapLineWidths.Stretches(route.Route).SelectMany(segment =>
                 boxes.Where(box => Enters(segment, box.Slot)).Select(box => $"{route.Name} through {box.Id}"))).ShouldBeEmpty(),
-            () => routes.Where(route => Segments(route.Route).Any(segment => segment.A.X != segment.B.X && segment.A.Y != segment.B.Y))
+            () => routes.Where(route => MapLineWidths.Stretches(route.Route).Any(segment => segment.A.X != segment.B.X && segment.A.Y != segment.B.Y))
                 .Select(route => route.Name).ShouldBeEmpty(),
             () => routes.SelectMany((a, i) => routes.Skip(i + 1)
-                .Where(b => Segments(a.Route).Any(sa => Segments(b.Route).Any(sb => Shared(sa, sb))))
+                .Where(b => MapLineWidths.Stretches(a.Route).Any(sa => MapLineWidths.Stretches(b.Route).Any(sb => Shared(sa, sb))))
                 .Select(b => $"{a.Name} with {b.Name}")).ShouldBeEmpty(),
             () => Crowded(routes, grid.Units).ShouldBeEmpty(),
             () => Crossings(routes, boxes, grid.Units).ShouldBeEmpty(),
@@ -644,7 +657,7 @@ public class MapLayoutTests
         {
             var scale = MapScale.Of(width, RowPixels * units);
             faults.AddRange(routes.SelectMany((a, i) => routes.Skip(i + 1)
-                .Where(b => Segments(a.Route).Any(sa => Segments(b.Route).Any(sb => Closer(sa, sb, (a.Route.Width + b.Route.Width) / 2m + MapLinkStyle.HaloGap, scale))))
+                .Where(b => MapLineWidths.Stretches(a.Route).Any(sa => MapLineWidths.Stretches(b.Route).Any(sb => Closer(sa, sb, (a.Route.Width + b.Route.Width) / 2m + MapLinkStyle.HaloGap, scale))))
                 .Select(b => $"{a.Name} with {b.Name} at {size}")));
         }
 
@@ -677,7 +690,7 @@ public class MapLayoutTests
             var map = MapArea.Of(new MapSlot(0m, 0m, 100m, 100m), scale);
             foreach (var route in routes)
             {
-                foreach (var stroke in Segments(route.Route).Select(segment => MapLineWidths.Stroke(segment.A, segment.B, route.Route.Width, scale)))
+                foreach (var (_, stroke) in MapLineWidths.Strokes(route.Route, scale))
                 {
                     faults.AddRange(boxes.Where(box => !RunsThrough(route.Through, box.Modules) && Overlaps(stroke, MapArea.Of(box.Slot, scale)))
                         .Select(box => $"{route.Name} through {box.Id} at {size}"));
@@ -730,7 +743,7 @@ public class MapLayoutTests
             .. heads.Where(head => head.Long).Select(head => $"{head.Name}'s arrowhead past its last stretch"),
             .. heads.SelectMany((a, i) => heads.Skip(i + 1).Where(b => Overlaps(a.Area, b.Area)).Select(b => $"{a.Name}'s arrowhead over {b.Name}'s")),
             .. heads.SelectMany(head => routes.Where(route => route.Name != head.Name)
-                .Where(route => Segments(route.Route).Any(segment => Overlaps(head.Area, MapLineWidths.Stroke(segment.A, segment.B, route.Route.Width, scale))))
+                .Where(route => MapLineWidths.Strokes(route.Route, scale).Any(stroke => Overlaps(head.Area, stroke.Area)))
                 .Select(route => $"{head.Name}'s arrowhead over {route.Name}")),
         ];
     }
@@ -740,7 +753,7 @@ public class MapLayoutTests
         Math.Abs(route.Points[^1].X - route.Points[^2].X) * scale.X + Math.Abs(route.Points[^1].Y - route.Points[^2].Y) * scale.Y;
 
     // A line of money as large as the run's largest, from a module to an end.
-    private static MapLink Money(RiverModule module, MapEnd to) =>
+    internal static MapLink Money(RiverModule module, MapEnd to) =>
         new(to.Module is null ? MapLinkKind.IntoBucket : MapLinkKind.PassedOn, MapEnd.Of(module), to, module, new MapLabel(MapText.Map, "Money", []), 100_000m);
 
     // The plans at the edges of what a plan holds, by name.
@@ -781,8 +794,6 @@ public class MapLayoutTests
         "the company skipped, a low pay" => MapLinksTests.Full.SkipCompany().WithDirectorPay(12_000m),
         _ => throw new ArgumentOutOfRangeException(nameof(plan), plan, "A plan the tests have no inputs for."),
     };
-
-    private static IEnumerable<(MapPoint A, MapPoint B)> Segments(MapRoute route) => route.Points.Zip(route.Points.Skip(1));
 
     // Whether a segment, across or down, runs through the inside of a box, its edges left out.
     private static bool Enters((MapPoint A, MapPoint B) segment, MapSlot box)

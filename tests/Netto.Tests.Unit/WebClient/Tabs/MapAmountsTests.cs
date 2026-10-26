@@ -257,14 +257,12 @@ public class MapAmountsTests
     private static bool Across(MapAmount amount) => amount.Bundle.Route.Points[amount.Stretch].Y == amount.Bundle.Route.Points[amount.Stretch + 1].Y;
 
     // Each stretch of a line as drawn on the map at a scale, its halo with it, and whether it runs across.
-    internal static IEnumerable<(bool Across, MapArea Area)> Strokes(MapBundle line, MapScale scale) =>
-        line.Route.Points.Zip(line.Route.Points.Skip(1)).Where(stretch => stretch.First != stretch.Second)
-            .Select(stretch => (stretch.First.Y == stretch.Second.Y, MapLineWidths.Stroke(stretch.First, stretch.Second, line.Route.Width, scale, MapLinkStyle.HaloGap)));
+    private static IEnumerable<(bool Across, MapArea Area)> Strokes(MapBundle line, MapScale scale) => MapLineWidths.Strokes(line.Route, scale, MapLinkStyle.HaloGap);
 
     internal static string Name(MapAmount amount) => $"{Name(amount.Bundle)}'s {amount.Text}";
 
     private static string Name(MapBundle line) => $"{line.Kind} {line.From.Id} to {line.To.Id}";
 
-    private static MapLink Money(RiverModule module, MapRoute route) =>
-        new(MapLinkKind.IntoBucket, MapEnd.Of(module), MapEnd.InBucket("pocket"), module, new MapLabel(MapText.Map, "Money", []), 1_000m) { Route = route };
+    // A line of money from a module to the pocket on the route given.
+    private static MapLink Money(RiverModule module, MapRoute route) => MapLayoutTests.Money(module, MapEnd.InBucket("pocket")) with { Route = route };
 }

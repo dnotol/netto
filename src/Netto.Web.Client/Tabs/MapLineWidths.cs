@@ -30,6 +30,14 @@ internal static class MapLineWidths
 
     public static decimal ArrowLength(decimal width) => 1.5m * ArrowHalf(width);
 
+    // The stretches of a line, from each of its points to the next, a stretch of no length left out.
+    public static IEnumerable<(MapPoint A, MapPoint B)> Stretches(MapRoute route) =>
+        route.Points.Zip(route.Points.Skip(1)).Where(stretch => stretch.First != stretch.Second);
+
+    // What each stretch of a line covers on the map drawn at a scale (Stroke), and whether it runs across.
+    public static IEnumerable<(bool Across, MapArea Area)> Strokes(MapRoute route, MapScale scale, decimal halo = 0m) =>
+        Stretches(route).Select(stretch => (stretch.A.Y == stretch.B.Y, Stroke(stretch.A, stretch.B, route.Width, scale, halo)));
+
     // What a stretch of line covers on the map drawn at a scale, in pixels: its length, and half its width
     // each side of it, with its halo's gap each side too when asked (MapLinkStyle.HaloGap). A stretch across
     // the map is one whose ends share their height.

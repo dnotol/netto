@@ -130,13 +130,8 @@ internal static class MapAmounts
             var strokes = new List<Stroke>();
             for (var index = 0; index < lines.Count; index++)
             {
-                var route = lines[index].Route;
-                for (var stretch = 0; stretch + 1 < route.Points.Count; stretch++)
-                {
-                    var (a, b) = (route.Points[stretch], route.Points[stretch + 1]);
-                    if (a != b)
-                        strokes.Add(new Stroke(Rect.Of(MapLineWidths.Stroke(a, b, route.Width, scale, MapLinkStyle.HaloGap)), index, a.Y == b.Y, IsMoney(lines[index])));
-                }
+                foreach (var (across, area) in MapLineWidths.Strokes(lines[index].Route, scale, MapLinkStyle.HaloGap))
+                    strokes.Add(new Stroke(Rect.Of(area), index, across, IsMoney(lines[index])));
             }
 
             _strokes = [.. strokes];
