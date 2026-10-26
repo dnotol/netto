@@ -318,6 +318,36 @@ public class MapLayoutTests
             .ShouldBeEmpty();
     }
 
+    // The royalty's part paid apart leaves its bottom and turns along a row of its own under it to the pocket's
+    // lane, where its amount stands; its line on to Director pay comes down beside it, crossing it nowhere.
+    [Fact]
+    public void Routed_theRoyaltysWayToThePocket_leavesItsBottomAlongARowOfItsOwnCrossingNoneOfItsLines()
+    {
+        var view = MapView.From(MapLinksTests.Full, MapLinksTests.Full.Run());
+        var (royalty, pay) = (view.Modules.Single(node => node.End.Module == RiverModule.Copyright).Slot, view.Modules.Single(node => node.End.Module == RiverModule.DirectorPay).Slot);
+
+        var pocket = Line(view, MapEnd.Of(RiverModule.Copyright), MapEnd.InBucket("pocket"));
+        var others = view.Bundles().Where(line => line.From == MapEnd.Of(RiverModule.Copyright) && line.To != MapEnd.InBucket("pocket")).ToList();
+
+        pocket.ShouldSatisfyAllConditions(
+            () => (pocket.Route.Points[0].Y, Turns(pocket)).ShouldBe((royalty.Bottom, true)),
+            () => (Row(pocket) > royalty.Bottom, Row(pocket) < pay.Top).ShouldBe((true, true)),
+            () => others.Where(other => Segments(pocket).Any(a => Segments(other).Any(b => Cross(a, b)))).Select(other => other.To.Id).ShouldBeEmpty());
+    }
+
+    // The condition a royalty sets on the split leaves the royalty's right side, so it never climbs beside the
+    // split's line into the royalty's top.
+    [Fact]
+    public void Routed_theConditionARoyaltySetsOnTheSplit_leavesTheRoyaltysRightSide()
+    {
+        var view = MapView.From(MapLinksTests.Full, MapLinksTests.Full.Run());
+        var royalty = view.Modules.Single(node => node.End.Module == RiverModule.Copyright).Slot;
+
+        var condition = view.Bundles().Single(line => line.Kind == MapLinkKind.Condition && line.From == MapEnd.Of(RiverModule.Copyright));
+
+        condition.Route.Points[0].X.ShouldBe(royalty.Right);
+    }
+
     // The band over the buckets grows the map only by what the streams' last row lacks under its boxes: its three
     // rows with a dividend, its first 0.1 of a chain row under the lowest box, each 0.35 under the one before, the
     // buckets 0.2 under the last, a whole chain row; two with Director pay alone, 0.65. Every lever: Director pay

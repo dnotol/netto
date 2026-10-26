@@ -152,6 +152,24 @@ internal static class MapLayout
     private const decimal BackBeside = 1.2m;
     private const decimal DividendBackOver = 0.15m;
 
+    // Where the royalty's lines leave it and the split's line enters it, in percent across the map: its part paid
+    // apart out of its bottom, far enough right for the row it turns along to the pocket's lane to hold its
+    // amount; its line on to Director pay right of that, so the two never cross; its tax apart right of both; the
+    // split's line into its top far enough left that the condition it sets on the split, out of its right side and
+    // up past the gutter to the gap under the split, has room for its words beside it. What comes back out of a
+    // bucket into the royalty leaves it a step left of the way in.
+    private const decimal RoyaltyToPocket = 20.5m;
+    private const decimal RoyaltyToPay = 22.4m;
+    private const decimal RoyaltyToTaxes = 25.2m;
+    private const decimal SplitToRoyalty = 12.5m;
+    private const decimal RoyaltyConditionUp = 36m;
+    private const decimal RoyaltyBack = 1m;
+
+    // The row the royalty's part paid apart turns along, in chain rows under its box, and what comes back out of
+    // the pocket under it.
+    private const decimal RoyaltyRow = 0.2m;
+    private const decimal RoyaltyBackUnder = 0.15m;
+
     // Where Corporate tax's line into the taxes on profit comes down, left of the dividend's lines into them and
     // out of them, and the room its tracks keep.
     private const decimal CorporateDrop = 54m;
@@ -428,6 +446,7 @@ internal static class MapLayout
             return Family(bundle) switch
             {
                 RouteFamily.Straight => Down(from, to, MapLabelSide.Gap),
+                RouteFamily.ToPocketLane when Module(bundle) == RiverModule.Copyright => RoyaltyToPocketLane(bundle, from, to),
                 RouteFamily.ToPocketLane => SideToBucket(bundle, from, MapSide.Left, to, PocketLaneX(bundle),
                     Place(Module(bundle)).Column == MapColumn.Left ? MapLabelSide.Right : MapLabelSide.Left),
                 RouteFamily.ChainToTaxesOnPay => SideToBucket(bundle, from, MapSide.Left, to, LeftGutterX(bundle), MapLabelSide.Left),
@@ -435,8 +454,8 @@ internal static class MapLayout
                 RouteFamily.ChainToCorporateTax => SideToTop(bundle, from, MapSide.Right, to, DropX(bundle), MapLabelSide.Right),
                 RouteFamily.OutOfRiver => OutOfRiver(bundle, from),
                 RouteFamily.Bracket => Bracket(bundle, from, to),
-                RouteFamily.SplitToCopyright => BottomToTop(from, 41m, to, LeftColumn.Left + 8m, BelowSplitY(bundle), MapLabelSide.Left),
-                RouteFamily.CopyrightToSplit => BottomToTop(from, LeftColumn.Left + 16m, to, 45m, BelowSplitY(bundle), MapLabelSide.Right, upwards: true),
+                RouteFamily.SplitToCopyright => BottomToTop(from, 41m, to, SplitToRoyalty, BelowSplitY(bundle), MapLabelSide.Left),
+                RouteFamily.CopyrightToSplit => RoyaltyUpToSplit(bundle, from, to),
                 RouteFamily.SplitToDirectorPay => SplitToDirectorPay(bundle, from, to),
                 RouteFamily.SplitToCorporateTax => SideToTop(bundle, from, MapSide.Right, to,
                     bundle.Kind == MapLinkKind.Condition ? SplitConditionToCorporate : SplitToCorporate, MapLabelSide.Right),
@@ -500,12 +519,14 @@ internal static class MapLayout
             var (from, to, _) = bundle;
             return Family(bundle) switch
             {
+                RouteFamily.ToPocketLane when Module(bundle) == RiverModule.Copyright => [],
                 RouteFamily.ToPocketLane or RouteFamily.ChainToTaxesOnPay or RouteFamily.CorporateTaxToBucket => [(Back(bundle) ? to : from, MapSide.Left)],
                 RouteFamily.ChainToDirectorPay => [(from, MapSide.Left), (to, MapSide.Right)],
                 RouteFamily.ChainToCorporateTax or RouteFamily.OutOfRiver or RouteFamily.SplitToCorporateTax => [(from, MapSide.Right)],
                 RouteFamily.Bracket => [(from, MapSide.Right), (to, MapSide.Right)],
                 RouteFamily.SplitToDirectorPay when _grid.Holds(RiverModule.Copyright) => [(to, MapSide.Right)],
                 RouteFamily.DividendToSplit => [(from, MapSide.Right), (to, MapSide.Right)],
+                RouteFamily.CopyrightToSplit => [(from, MapSide.Right)],
                 _ => [],
             };
         }
@@ -627,7 +648,7 @@ internal static class MapLayout
         private MapRoute Down(MapEnd from, MapEnd to, MapLabelSide side)
         {
             var (top, bottom) = (_grid.Slot(from), _grid.Slot(to));
-            var x = top.CenterX;
+            var x = from.Module == RiverModule.Copyright ? RoyaltyToPay : top.CenterX;
             var through = _grid.QuietBetween(Row(from.Module!.Value), Row(to.Module!.Value)).SelectMany(pill => new MapPoint[] { new(x, pill.Top), new(x, pill.Bottom) });
             return new MapRoute([new(x, top.Bottom), .. through, new(x, bottom.Top)], side);
         }
@@ -674,14 +695,20 @@ internal static class MapLayout
             return new MapRoute([new(ChainColumn.Right, y0), new(lane, y0), new(lane, y1), new(ChainColumn.Right, y1)], MapLabelSide.Right);
         }
 
-        // From a box's bottom down into the gap under its row, across it at the y given, and into a box below;
-        // or, upwards, from a box's top up into the gap above it, across it, and up into the box over it.
-        private MapRoute BottomToTop(MapEnd from, decimal fromX, MapEnd to, decimal toX, decimal gap, MapLabelSide words, bool upwards = false)
+        // From a box's bottom down into the gap under its row, across it at the y given, and into a box below.
+        private MapRoute BottomToTop(MapEnd from, decimal fromX, MapEnd to, decimal toX, decimal gap, MapLabelSide words)
         {
             var (source, target) = (_grid.Slot(from), _grid.Slot(to));
-            return upwards
-                ? new MapRoute([new(fromX, source.Top), new(fromX, gap), new(toX, gap), new(toX, target.Bottom)], words)
-                : new MapRoute([new(fromX, source.Bottom), new(fromX, gap), new(toX, gap), new(toX, target.Top)], words);
+            return new MapRoute([new(fromX, source.Bottom), new(fromX, gap), new(toX, gap), new(toX, target.Top)], words);
+        }
+
+        // The condition a royalty sets on the split: out of the royalty's right side, across the gutter, up beside
+        // it into the gap under the split, across it at its y, and up into the split.
+        private MapRoute RoyaltyUpToSplit((MapEnd, MapEnd, MapLinkKind) bundle, MapEnd from, MapEnd to)
+        {
+            var (source, target) = (_grid.Slot(from), _grid.Slot(to));
+            var (y, gap) = (PortY(bundle, from, MapSide.Right), BelowSplitY(bundle));
+            return new MapRoute([new(source.Right, y), new(RoyaltyConditionUp, y), new(RoyaltyConditionUp, gap), new(45m, gap), new(45m, target.Bottom)], MapLabelSide.Right);
         }
 
         // The split's pay to Director pay: down the left gutter into its right side while Copyright royalty
@@ -714,11 +741,23 @@ internal static class MapLayout
         private MapRoute CopyrightToTaxes((MapEnd, MapEnd, MapLinkKind) bundle, MapEnd from, MapEnd to)
         {
             var (source, tray) = (_grid.Slot(from), _grid.Slot(to));
-            var start = Beside(bundle, back => source.Right - (back ? 6m : 4m), (source.Left, source.Right), MapGrid.AcrossPixel, atModule: true);
+            var start = Beside(bundle, back => back ? RoyaltyToTaxes - RoyaltyBack : RoyaltyToTaxes, (source.Left, source.Right), MapGrid.AcrossPixel, atModule: true);
             var gap = Beside(bundle, back => _grid.GapBelow(MapRow.StreamTop, back ? 0.65m : 0.5m),
                 (_grid.GapBelow(MapRow.StreamTop, 0m), _grid.GapBelow(MapRow.StreamTop, 1m)), _grid.DownPixel);
             var x = Beside(bundle, back => back ? 35.2m : 34m, (tray.Left, tray.Right), MapGrid.AcrossPixel);
             return new MapRoute([new(start, source.Bottom), new(start, gap), new(x, gap), new(x, tray.Top)], MapLabelSide.Right);
+        }
+
+        // A royalty's part paid apart, to the pocket: out of its bottom, along a row of its own under it, room for
+        // its amount, to its track down the pocket's lane, and down into the pocket; what comes back runs beside
+        // it, under that row.
+        private MapRoute RoyaltyToPocketLane((MapEnd, MapEnd, MapLinkKind) bundle, MapEnd from, MapEnd to)
+        {
+            var (box, tray) = (_grid.Slot(from), _grid.Slot(to));
+            var x = Beside(bundle, back => back ? RoyaltyToPocket - RoyaltyBack : RoyaltyToPocket, (box.Left, box.Right), MapGrid.AcrossPixel, atModule: true);
+            var row = box.Bottom + (Back(bundle) ? RoyaltyRow + RoyaltyBackUnder : RoyaltyRow) * 100m / _grid.Units;
+            var lane = PocketLaneX(bundle);
+            return new MapRoute([new(x, box.Bottom), new(x, row), new(lane, row), new(lane, tray.Top)], MapLabelSide.Right);
         }
 
         // Down from a stream's last box into a bucket under it: straight, at an x both share, into the pocket or
