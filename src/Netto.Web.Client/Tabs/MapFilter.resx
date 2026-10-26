@@ -19,13 +19,13 @@
     <value>Money passed on</value>
   </data>
   <data name="Gloss_PassedOn" xml:space="preserve">
-    <value>Money handed from one module to the next.</value>
+    <value>Money handed from one module to the next. The thicker the line, the more money.</value>
   </data>
   <data name="Name_IntoBucket" xml:space="preserve">
     <value>Money into a bucket</value>
   </data>
   <data name="Gloss_IntoBucket" xml:space="preserve">
-    <value>Money that ends in one of the bar's buckets, leaves the river, or comes back out of a bucket.</value>
+    <value>Money that ends in one of the bar's buckets, leaves the river, or comes back out of a bucket. The thicker the line, the more money.</value>
   </data>
   <data name="Name_TaxBase" xml:space="preserve">
     <value>Tax base</value>

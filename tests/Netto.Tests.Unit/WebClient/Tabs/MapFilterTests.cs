@@ -72,8 +72,8 @@ public class MapFilterTests
 
         bubbles.ShouldBe(
         [
-            ("More about Money passed on", "Money handed from one module to the next.", false, true),
-            ("More about Money into a bucket", "Money that ends in one of the bar's buckets, leaves the river, or comes back out of a bucket.", false, true),
+            ("More about Money passed on", "Money handed from one module to the next. The thicker the line, the more money.", false, true),
+            ("More about Money into a bucket", "Money that ends in one of the bar's buckets, leaves the river, or comes back out of a bucket. The thicker the line, the more money.", false, true),
             ("More about Tax base", "What changes the amount a tax is worked out on without moving money: a benefit taxed with the pay, what Corporate tax adds back.", false, true),
             ("More about Conditions", "A condition one module sets on another.", false, true),
         ]);
@@ -169,16 +169,41 @@ public class MapFilterTests
     }
 
     // Each sample is drawn in the very ink its kind's lines are drawn in on the map (MapLinkStyle.Ink), so
-    // the legend can never say another colour than the map.
+    // the legend can never say another colour than the map; its arrowhead too.
     [Fact]
     public async Task Filter_everySample_isInkedAsItsKindsLinesOnTheMap()
     {
         var html = await RenderAsync(EveryKind(), Counts);
 
-        Regex.Matches(html, "<svg class=\"map-filter__swatch\" data-link-kind=\"(\\w+)\"[^>]*><line [^>]*style=\"([^\"]*)\"")
-            .Select(match => (match.Groups[1].Value, match.Groups[2].Value))
-            .ShouldBe(Enum.GetValues<MapLinkKind>().Select(kind => (kind.ToString(), $"stroke: {MapLinkStyle.Ink(kind)}")));
+        html.ShouldSatisfyAllConditions(
+            () => Regex.Matches(html, "<svg class=\"map-filter__swatch\" data-link-kind=\"(\\w+)\"[^>]*><line [^>]*style=\"([^\"]*)\"")
+                .Select(match => (match.Groups[1].Value, match.Groups[2].Value))
+                .ShouldBe(Enum.GetValues<MapLinkKind>().Select(kind => (kind.ToString(), $"stroke: {MapLinkStyle.Ink(kind)}"))),
+            () => Samples(html).Where(sample => sample.Arrowhead is not null).Select(sample => (sample.Kind, sample.Arrowhead))
+                .ShouldBe(Enum.GetValues<MapLinkKind>().Where(kind => MapLinkStyle.End(kind) == MapLineEnd.Arrowhead).Select(kind => (kind.ToString(), (string?)$"fill: {MapLinkStyle.Ink(kind)}"))));
     }
+
+    // Each sample ends as its kind's lines end on the map, so the legend tells money passed on from money into
+    // a bucket by their ends, not by a width that is an amount's: an arrowhead, or a bar its line runs into,
+    // the edge of a bucket, drawn in a bucket's frame.
+    [Fact]
+    public async Task Filter_everySample_endsAsItsKindsLinesEnd()
+    {
+        var html = await RenderAsync(EveryKind(), Counts);
+
+        Samples(html).Select(sample => (sample.Kind, sample.Arrowhead is not null, sample.Bucket))
+            .ShouldBe(Enum.GetValues<MapLinkKind>().Select(kind => (kind.ToString(), MapLinkStyle.End(kind) == MapLineEnd.Arrowhead,
+                MapLinkStyle.End(kind) == MapLineEnd.Bucket ? $"stroke: {MapLinkStyle.BucketEdge}" : null)));
+    }
+
+    // Each sample of the legend: its kind, its arrowhead's ink if it has one, and its bar's if it has one.
+    private static List<(string Kind, string? Arrowhead, string? Bucket)> Samples(string html) =>
+    [
+        .. Regex.Matches(html, "<svg class=\"map-filter__swatch\" data-link-kind=\"(\\w+)\"[^>]*>(.*?)</svg>", RegexOptions.Singleline).Select(match => (
+            match.Groups[1].Value,
+            Regex.Match(match.Groups[2].Value, "<polygon class=\"map-filter__arrow\"[^>]*style=\"([^\"]*)\"") is { Success: true } arrow ? arrow.Groups[1].Value : null,
+            Regex.Match(match.Groups[2].Value, "<line class=\"map-filter__bucket\"[^>]*style=\"([^\"]*)\"") is { Success: true } bar ? bar.Groups[1].Value : null)),
+    ];
 
     // The line under the boxes is for the viewer who has ticked none: nothing to read off the map until one
     // is. With one ticked, or all, it is left out, and so is any line of how many links are shown, which

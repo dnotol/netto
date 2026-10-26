@@ -4,25 +4,51 @@ using Shouldly;
 
 namespace Netto.Tests.WebClient.Tabs;
 
-// How each kind of link is drawn, told apart at a glance and with no colour needed: money passed on solid
-// and heavy, money into a bucket solid and light, what only changes a tax base dotted, a condition dashed.
-// The map's lines and the filter's swatches read the one style; a line of money is as thick as its amount
-// (MapLineWidths), a line carrying none its kind's width.
+// How each kind of link is drawn, told apart at a glance and with no colour needed: money passed on solid,
+// ending in an arrowhead, money into a bucket solid, running into it, what only changes a tax base dotted, a
+// condition dashed. The map's lines and the filter's samples read the one style; a line of money is as
+// thick as its amount (MapLineWidths), a line carrying none its kind's width.
 public class MapLinkStyleTests
 {
+    // By their dash and their end alone, neither a width, which is an amount's, nor an ink.
     [Fact]
     public void Style_noTwoKinds_shareOne()
     {
-        Enum.GetValues<MapLinkKind>().Select(kind => (MapLinkStyle.Dash(kind), MapLinkStyle.Sample(kind))).Distinct().Count()
+        Enum.GetValues<MapLinkKind>().Select(kind => (MapLinkStyle.Dash(kind), MapLinkStyle.End(kind))).Distinct().Count()
             .ShouldBe(Enum.GetValues<MapLinkKind>().Length);
     }
 
     [Fact]
-    public void Style_money_isSolidAndHeavierPassedOnThanIntoABucket()
+    public void Style_money_isSolidPassedOnEndingInAnArrowheadIntoABucketInABar()
     {
-        (MapLinkStyle.Dash(MapLinkKind.PassedOn), MapLinkStyle.Dash(MapLinkKind.IntoBucket),
-                Pixels(MapLinkStyle.Sample(MapLinkKind.PassedOn)) > Pixels(MapLinkStyle.Sample(MapLinkKind.IntoBucket)))
-            .ShouldBe((null, null, true));
+        (MapLinkStyle.Dash(MapLinkKind.PassedOn), MapLinkStyle.Dash(MapLinkKind.IntoBucket), MapLinkStyle.End(MapLinkKind.PassedOn), MapLinkStyle.End(MapLinkKind.IntoBucket))
+            .ShouldBe((null, null, MapLineEnd.Arrowhead, MapLineEnd.Bucket));
+    }
+
+    // A rule's line ends in an arrowhead on the module it reaches.
+    [Theory]
+    [InlineData(MapLinkKind.TaxBase)]
+    [InlineData(MapLinkKind.Condition)]
+    public void End_aRulesLine_isAnArrowhead(MapLinkKind kind)
+    {
+        MapLinkStyle.End(kind).ShouldBe(MapLineEnd.Arrowhead);
+    }
+
+    // The legend's samples of money are of one width, saying the kind, not an amount: what tells them
+    // apart is their end.
+    [Fact]
+    public void Sample_ofMoneyEitherWay_isOneWidth()
+    {
+        MapLinkStyle.Sample(MapLinkKind.PassedOn).ShouldBe(MapLinkStyle.Sample(MapLinkKind.IntoBucket));
+    }
+
+    // The bar a sample of money into a bucket runs into is a bucket's edge, in a bucket's frame, a token both
+    // themes declare.
+    [Fact]
+    public void BucketEdge_isTheFrameOfABucketBothThemesDeclare()
+    {
+        (MapLinkStyle.BucketEdge, Stylesheet.ThemeTokens("dark").ContainsKey("--netto-line-input"), Stylesheet.ThemeTokens("light").ContainsKey("--netto-line-input"))
+            .ShouldBe(("var(--netto-line-input)", true, true));
     }
 
     [Fact]

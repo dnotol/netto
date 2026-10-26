@@ -1,8 +1,10 @@
 /* ::deep reaches the MudCheckBoxes, which carry no scope attribute of their own. Colours are the site's
    variables, so both themes follow; the focus ring of a checkbox is the site's (app.css). Gold is the
    checkbox's own active colour, nothing else here. The samples are the map's lines in miniature: the
-   same dash, width and ink (MapLinkStyle), set on each sample itself, so this sheet keeps no ink of its
-   own for them, at least 3:1 on the card in both themes. The four kinds are one row, each as wide as its
+   same dash and ink (MapLinkStyle), a line of money at one width, since on the map its width is its
+   amount's, and the same end, an arrowhead or, money into a bucket, a bar it runs into, the bucket's
+   edge; all set on each sample itself, so this sheet keeps no ink of its own for them, at least 3:1 on the
+   card in both themes. The four kinds are one row, each as wide as its
    box, its info bubble and its count ask, and wrap onto a second only where the window has not the room:
    at 1,024 px they take about 890 of the 966 the page leaves, which is why a checkbox is dense (a 32 px
    button, not MudBlazor's 48) and a count is its number alone to the eye; the checkbox and the bubble stay

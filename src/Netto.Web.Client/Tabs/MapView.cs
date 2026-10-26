@@ -243,6 +243,18 @@ internal static class MapLinkStyle
 
     public const string PocketInk = "var(--netto-gold)";
 
+    // How a kind's lines end, which its sample in the legend shows: an arrowhead on the module a line
+    // reaches, or, money into a bucket, under the bucket, a bar its sample runs into.
+    public static MapLineEnd End(MapLinkKind kind) => kind switch
+    {
+        MapLinkKind.IntoBucket => MapLineEnd.Bucket,
+        MapLinkKind.PassedOn or MapLinkKind.TaxBase or MapLinkKind.Condition => MapLineEnd.Arrowhead,
+        _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, "A kind of link the map has no end for."),
+    };
+
+    // The bar the legend's sample of money into a bucket runs into: a bucket's edge, in its frame's ink.
+    public const string BucketEdge = "var(--netto-line-input)";
+
     // The width of a line that carries no money, which it keeps whatever the plan: a tax base's, a
     // condition's; none for a line of money, as thick as its amount.
     public static decimal? Fixed(MapLinkKind kind) => kind switch
@@ -253,13 +265,11 @@ internal static class MapLinkStyle
         _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, "A kind of link the map has no style for."),
     };
 
-    // The width of the legend's sample of a kind: its lines' own, or, a kind of money, a sample's, saying the
-    // kind rather than an amount.
-    public static string Sample(MapLinkKind kind) => Pixels(Fixed(kind) ?? kind switch
-    {
-        MapLinkKind.PassedOn => 2.5m,
-        _ => 1.25m,
-    });
+    // The width of the legend's sample of a kind: its lines' own, or, a kind of money, a sample's, one width
+    // for both, saying the kind rather than an amount; their ends tell them apart (End).
+    public static string Sample(MapLinkKind kind) => Pixels(Fixed(kind) ?? MoneySample);
+
+    private const decimal MoneySample = 3m;
 
     // A line's width as the map draws it, its route's (MapLineWidths).
     public static string Width(decimal width) => Pixels(width);
@@ -268,6 +278,15 @@ internal static class MapLinkStyle
     public static string Halo(decimal width) => Pixels(width + 2 * HaloGap);
 
     private static string Pixels(decimal pixels) => pixels.ToString("0.##", CultureInfo.InvariantCulture);
+}
+
+// How a line ends: an arrowhead where it reaches a module or leaves the river, or under the bucket it runs
+// into.
+internal enum MapLineEnd
+{
+    Arrowhead,
+
+    Bucket,
 }
 
 // One end of a link: a module of the map, a bucket of the bar (BucketsView.Keys), or the river's edge,

@@ -3,7 +3,8 @@
 @inject MapLinkFilter Filter
 
 @* The Map tab's legend, which is also its filter: one checkbox for every kind of link, in one row, each
-   with a sample of its line (MapLinkStyle, the very dash, width and ink the map draws it with, so the
+   with a sample of its line (MapLinkStyle, the very dash, ink and end the map draws it with, an arrowhead
+   or a bar into a bucket, a line of money at one width since on the map its width is its amount, so the
    legend tells the lines apart without colour), its name and how many links the plan has of it, and beside
    the box an info bubble saying what the kind is, a bubble being a button of its own and so never inside
    the box's label. A kind ticked is drawn, a kind unticked is left out of the lines and of the words beside them,
@@ -26,7 +27,16 @@
                 <MudCheckBox T="bool" Value="row.Shown" ValueChanged="@(shown => OnKindChangedAsync(row.Kind, shown))" Color="Color.Primary" Dense="true">
                     <span class="map-filter__choice">
                         <svg class="map-filter__swatch" data-link-kind="@row.Kind" width="28" height="8" viewBox="0 0 28 8" aria-hidden="true" focusable="false">
-                            <line x1="2" y1="4" x2="26" y2="4" stroke-width="@MapLinkStyle.Sample(row.Kind)" stroke-dasharray="@MapLinkStyle.Dash(row.Kind)" style="stroke: @MapLinkStyle.Ink(row.Kind)" />
+                            @if (MapLinkStyle.End(row.Kind) == MapLineEnd.Bucket)
+                            {
+                                <line x1="2" y1="4" x2="25" y2="4" stroke-width="@MapLinkStyle.Sample(row.Kind)" stroke-dasharray="@MapLinkStyle.Dash(row.Kind)" style="stroke: @MapLinkStyle.Ink(row.Kind)" />
+                                <line class="map-filter__bucket" x1="25" y1="0.5" x2="25" y2="7.5" stroke-width="2" style="stroke: @MapLinkStyle.BucketEdge" />
+                            }
+                            else
+                            {
+                                <line x1="2" y1="4" x2="21" y2="4" stroke-width="@MapLinkStyle.Sample(row.Kind)" stroke-dasharray="@MapLinkStyle.Dash(row.Kind)" style="stroke: @MapLinkStyle.Ink(row.Kind)" />
+                                <polygon class="map-filter__arrow" points="20,0.5 27,4 20,7.5" style="fill: @MapLinkStyle.Ink(row.Kind)" />
+                            }
                         </svg>
                         <span class="map-filter__name">@L[MapFilterText.Name(row.Kind)]</span>
                         <span class="map-filter__count" aria-hidden="true">@row.Count</span>
