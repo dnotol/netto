@@ -10,7 +10,8 @@ namespace Netto.Web.Client.Tabs;
 // each a line a card already shows (MapLinks), with its route. It only selects and regroups the cards' own
 // figures; nothing here decides a tax outcome. While the engine refuses an amount the map has no link, as
 // the bar has no figure, and the module holding the refused field is marked (RiverErrors.Owner); a Company
-// year the viewer skipped stays on the map, marked skipped, with no link. A filter
+// year the viewer skipped stays on the map, marked skipped, with no link; a lever that moves no money of
+// its own is quiet, in a quiet row with no link of its own, the chain's line running past it. A filter
 // shows some links and hides the others as `view with { Links = shown, Hidden = hidden }`: the modules
 // and the routes are the run's, so nothing moves. Units is the map's height in chain rows, which the
 // stylesheet makes its height of.
