@@ -100,17 +100,50 @@ public class MapTabTests
     [Fact]
     public async Task Tab_everyLineAndItsArrowhead_takeTheirKindsInkOrThePocketsGold()
     {
-        var inks = MapView.From(Full, Full.Run()).Drawn(null)
-            .Select(line => (line.Bundle.Kind.ToString(), line.Bundle.To == MapEnd.InBucket("pocket") ? MapLinkStyle.PocketInk : MapLinkStyle.Ink(line.Bundle.Kind))).ToList();
+        var drawn = MapView.From(Full, Full.Run()).Drawn(null);
+        var inks = drawn.Select(line => (line.Bundle.Kind.ToString(), Ink: line.Bundle.To == MapEnd.InBucket("pocket") ? MapLinkStyle.PocketInk : MapLinkStyle.Ink(line.Bundle.Kind))).ToList();
 
         var html = await RenderTabAsync(Full);
 
         html.ShouldSatisfyAllConditions(
-            () => inks.Select(ink => ink.Item2).ShouldContain(MapLinkStyle.PocketInk),
+            () => inks.Select(ink => ink.Ink).ShouldContain(MapLinkStyle.PocketInk),
             () => Regex.Matches(html, "<polyline class=\"map-line[^>]*>").Select(match => (Attribute(match.Value, "data-link-kind"), Attribute(match.Value, "style")))
-                .ShouldBe(inks.Select(ink => ((string?)ink.Item1, (string?)$"stroke: {ink.Item2}"))),
+                .ShouldBe(inks.Select(ink => ((string?)ink.Item1, (string?)$"stroke: {ink.Ink}"))),
             () => Regex.Matches(html, "<span class=\"map-arrow [^>]*>").Select(match => Regex.Match(Attribute(match.Value, "style") ?? "", "--map-arrow: ([^;]*)$").Groups[1].Value)
-                .ShouldBe(inks.Select(ink => ink.Item2)));
+                .ShouldBe(drawn.Zip(inks).Where(pair => pair.First.Bundle.Arrowhead).Select(pair => pair.Second.Ink)));
+    }
+
+    // An arrowhead ends every line that reaches a module or leaves the river, sized by its line, half its
+    // base and its length set on it (MapLineWidths); a line into a bucket has none, the gold lines into the
+    // pocket among them.
+    [Fact]
+    public async Task Tab_anArrowhead_endsEachLineIntoAModuleOrOutOfTheRiverSizedByItsLine()
+    {
+        var drawn = MapView.From(Full, Full.Run()).Drawn(null);
+
+        var html = await RenderTabAsync(Full);
+
+        html.ShouldSatisfyAllConditions(
+            () => drawn.Where(line => !line.Bundle.Arrowhead).ShouldContain(line => line.Bundle.To == MapEnd.InBucket("pocket")),
+            () => Regex.Matches(html, "<span class=\"map-arrow [^>]*>")
+                .Select(match => Regex.Match(Attribute(match.Value, "style") ?? "", "--map-arrow-half: ([^;]*); --map-arrow-length: ([^;]*);") is { Success: true } size ? (size.Groups[1].Value, size.Groups[2].Value) : default)
+                .ShouldBe(drawn.Where(line => line.Bundle.Arrowhead)
+                    .Select(line => ($"{MapLinkStyle.Width(MapLineWidths.ArrowHalf(line.Bundle.Route.Width))}px", $"{MapLinkStyle.Width(MapLineWidths.ArrowLength(line.Bundle.Route.Width))}px"))));
+    }
+
+    // Every line is drawn on its points as drawn: a line into a bucket on under it to its middle, the bucket
+    // drawn over it (MapRoute.Drawn).
+    [Fact]
+    public async Task Tab_everyLine_isDrawnOnItsPointsUnderTheBucketItMeets()
+    {
+        var drawn = MapView.From(Full, Full.Run()).Drawn(null);
+
+        var html = await RenderTabAsync(Full);
+
+        html.ShouldSatisfyAllConditions(
+            () => drawn.Any(line => line.Bundle.Route.Drawn[^1] != line.Bundle.Route.End).ShouldBeTrue(),
+            () => Regex.Matches(html, "<polyline class=\"map-line[^>]*>").Select(match => Attribute(match.Value, "points"))
+                .ShouldBe(drawn.Select(line => (string?)string.Join(' ', line.Bundle.Route.Drawn.Select(point => $"{Number(point.X)},{Number(point.Y)}")))));
     }
 
     // Nothing chosen: one amount beside each line of money or of a tax base, the sum of the card's lines it
@@ -357,6 +390,9 @@ public class MapTabTests
 
     private static string? Attribute(string element, string name) =>
         Regex.Match(element, $" {name}=\"([^\"]*)\"") is { Success: true } match ? match.Groups[1].Value : null;
+
+    // A coordinate of the map as the tab writes it, in percent to the thousandth.
+    private static string Number(decimal value) => Math.Round(value, 3).ToString("0.###", System.Globalization.CultureInfo.InvariantCulture);
 
     // Each line: its kind, its dash and its width.
     private static List<(string Kind, string? Dash, string Width)> Lines(string html) =>

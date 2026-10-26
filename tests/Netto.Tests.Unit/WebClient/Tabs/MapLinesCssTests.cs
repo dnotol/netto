@@ -7,7 +7,8 @@ namespace Netto.Tests.WebClient.Tabs;
 // What the Map tab's stylesheet draws the map's lines on is what the layout keeps them apart for: a map no
 // narrower than a column 34rem wide from 1,201 px, where the column beside it leaves it the least room, and
 // 60rem below, where it scrolls sideways instead (MapLayout.NarrowestRem), and never shorter than a chain
-// row to 3.25rem (MapQuietTests holds that one).
+// row to 3.25rem (MapQuietTests holds that one); a bucket a line runs on under, and an arrowhead sized by
+// its line.
 public class MapLinesCssTests
 {
     private static readonly string Css = Stylesheet.Read("src", "Netto.Web.Client", "Tabs", "MapTab.razor.css");
@@ -24,4 +25,26 @@ public class MapLinesCssTests
     {
         Regex.IsMatch(Css, @"@media \(max-width: 1200px\) \{(?:(?!@media).)*?\n\s*\.map \{[^}]*min-width: 60rem;", RegexOptions.Singleline).ShouldBeTrue();
     }
+
+    // A bucket is drawn over the lines that run on under it, on the map's ground under its wash, so a line
+    // into it meets its edge, rounded corners and all, whatever runs beneath it.
+    [Fact]
+    public void MapTabCss_drawsABucketOpaqueOverTheLinesUnderIt()
+    {
+        Stylesheet.Block(Css, ".map-bucket").ShouldContain("background: linear-gradient(var(--netto-wash), var(--netto-wash)), var(--netto-page);");
+    }
+
+    // An arrowhead is as large as its line asks, the sizes set on it: half its base the border each side,
+    // its length the border it points with, whichever way it points.
+    [Fact]
+    public void MapTabCss_sizesAnArrowheadByWhatIsSetOnIt()
+    {
+        Css.ShouldSatisfyAllConditions(
+            () => Stylesheet.Block(Css, ".map-arrow").ShouldContain("border: var(--map-arrow-half) solid transparent;"),
+            () => Ways.Where(way => !Stylesheet.Block(Css, $".map-arrow--{way}").Contains("var(--map-arrow-length) solid var(--map-arrow)", StringComparison.Ordinal))
+                .ShouldBeEmpty());
+    }
+
+    // The ways an arrowhead points.
+    private static readonly string[] Ways = ["down", "up", "right", "left"];
 }

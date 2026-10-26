@@ -296,6 +296,40 @@ public class MapViewTests
             .ShouldBe(view.Bundles().Where(bundle => filter.Shows(bundle.Kind)).Select(bundle => (bundle.Kind, bundle.Route.Width)));
     }
 
+    // A line ends in an arrowhead where it reaches a module, money passed on, what comes back out of a
+    // bucket or a rule, or where it leaves the river; a line into a bucket has none, running on under the
+    // bucket, which is where its money stops.
+    [Fact]
+    public void Bundles_aLineIntoABucket_endsWithNoArrowheadAndEveryOtherWithOne()
+    {
+        var river = MapViewConditionsTests.CostlyCar;
+
+        var bundles = MapView.From(river, river.Run()).Bundles();
+
+        bundles.ShouldSatisfyAllConditions(
+            () => bundles.Where(bundle => bundle.To.Bucket is not null).ShouldNotBeEmpty(),
+            () => bundles.Where(bundle => bundle.From.Bucket is not null || bundle.To.IsOut).ShouldNotBeEmpty(),
+            () => bundles.Where(bundle => bundle.Arrowhead == bundle.To.Bucket is not null).Select(bundle => $"{bundle.From.Id} to {bundle.To.Id}").ShouldBeEmpty());
+    }
+
+    // A line into a bucket is drawn on under it to its middle, and a line back out of one from there, the
+    // bucket drawn over them, so the line meets its edge wherever that is, at a rounded corner too; a line
+    // between two modules is drawn on its route.
+    [Fact]
+    public void Bundles_aLineMeetingABucket_isDrawnOnUnderItToItsMiddle()
+    {
+        var view = MapView.From(Full, Full.Run());
+        var (pocket, taxes) = (view.Buckets.Single(node => node.End.Bucket == "pocket").Slot, view.Buckets.Single(node => node.End.Bucket == "taxes_on_profit").Slot);
+
+        var (into, back, along) = (Line(view, MapEnd.Of(RiverModule.DirectorPay), MapEnd.InBucket("pocket")).Route,
+            Line(view, MapEnd.InBucket("taxes_on_profit"), MapEnd.Of(RiverModule.Dividend)).Route, Line(view, MapEnd.Of(RiverModule.Split), MapEnd.Of(RiverModule.CorporateTax)).Route);
+
+        into.ShouldSatisfyAllConditions(
+            () => into.Drawn.ShouldBe([.. into.Points.SkipLast(1), new MapPoint(into.End.X, pocket.CenterY)]),
+            () => back.Drawn.ShouldBe([new MapPoint(back.Points[0].X, taxes.CenterY), .. back.Points.Skip(1)]),
+            () => along.Drawn.ShouldBe(along.Points));
+    }
+
     // Each line's words are drawn once: with the other lines its card draws on that side of its box, or
     // beside it in the gap between two boxes.
     [Fact]

@@ -175,6 +175,12 @@ internal sealed record MapBundle(MapRoute Route, IReadOnlyList<MapLink> Links)
     // the card's lines, the one a line and a badge say (MapBadges).
     public static decimal Sum(IEnumerable<MapLink> links) => links.Sum(link => Math.Round(link.Amount ?? 0m, 2, MidpointRounding.AwayFromZero));
 
+    // Whether the line ends in an arrowhead: where it reaches a module, money passed on, what comes back out
+    // of a bucket or a rule, or where it leaves the river. A line into a bucket has none: it runs on under
+    // the bucket (MapRoute.Drawn), which is where its money stops, so the pocket's lines side by side end
+    // as lines, not as a row of arrowheads, and money passed on is told from money into a bucket by its end.
+    public bool Arrowhead => To.Bucket is null;
+
     // Where the line meets its card's box: where it leaves it, or where it comes back into it.
     public MapPoint Meets => From.Module == Card ? Route.Points[0] : Route.End;
 

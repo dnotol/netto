@@ -7,7 +7,7 @@ namespace Netto.Web.Client.Tabs;
 // that only changes a tax base, or a condition, its kind's width (MapLinkStyle.Fixed), since it carries no
 // money. The largest line is the run's, measured before any filter (MapLayout.Routed), so hiding a kind of
 // line thickens none, and a line's amount is the one the map says of it (MapBundle.Sum). Arithmetic of
-// display: nothing here is a tax figure.
+// display: nothing here is a tax figure. And the arrowhead ending a line, sized by it.
 internal static class MapLineWidths
 {
     public const decimal Thinnest = 1.5m;
@@ -22,4 +22,11 @@ internal static class MapLineWidths
     public static decimal Money(decimal amount, decimal largest) => largest == 0m
         ? Thinnest
         : Math.Round(Thinnest + (Thickest - Thinnest) * (decimal)Math.Sqrt((double)(Math.Abs(amount) / Math.Abs(largest))), 2, MidpointRounding.AwayFromZero);
+
+    // The arrowhead ending a line, in pixels: half its base, three pixels wider than half the line, never
+    // less than the 0.3rem every arrowhead had before lines grew with their amounts, so it reads on the
+    // thickest line as on the thinnest; and its length, half as long again as that half.
+    public static decimal ArrowHalf(decimal width) => Math.Max(4.8m, width / 2m + 3m);
+
+    public static decimal ArrowLength(decimal width) => 1.5m * ArrowHalf(width);
 }

@@ -343,10 +343,21 @@ internal static class MapLayout
 
         public MapRoute Route((MapEnd From, MapEnd To, MapLinkKind Kind) bundle)
         {
-            if (Back(bundle))
-                return Reversed(Into(bundle, bundle.To, bundle.From));
+            var route = Back(bundle) ? Reversed(Into(bundle, bundle.To, bundle.From)) : Into(bundle, bundle.From, bundle.To);
+            return route with { Drawn = Under(route, bundle) };
+        }
 
-            return Into(bundle, bundle.From, bundle.To);
+        // A line's points as drawn: on under a bucket it runs into, from its top to its middle, and from
+        // there out of a bucket it comes back from.
+        private IReadOnlyList<MapPoint> Under(MapRoute route, (MapEnd From, MapEnd To, MapLinkKind Kind) bundle)
+        {
+            IReadOnlyList<MapPoint> points = route.Points;
+            if (bundle.To.Bucket is not null)
+                points = [.. points.SkipLast(1), route.End with { Y = _grid.Slot(bundle.To).CenterY }];
+            if (bundle.From.Bucket is not null)
+                points = [points[0] with { Y = _grid.Slot(bundle.From).CenterY }, .. points.Skip(1)];
+
+            return points;
         }
 
         // The route from one end to the other: from its module into its bucket for a line between them,
@@ -455,13 +466,14 @@ internal static class MapLayout
         };
 
         // Where a link meets a side it shares: round the side's middle, each its step along it from the one
-        // before, or further where their widths ask it, all of them on the side.
+        // before, or further where their widths ask it, and the arrowheads of those ending there, all of
+        // them on the side.
         private decimal PortY((MapEnd From, MapEnd To, MapLinkKind Kind) bundle, MapEnd end, MapSide side)
         {
             var slot = _grid.Slot(end);
             var list = _ports[(end, side)];
             return Spread([.. list.Select((line, index) => (slot.CenterY + (index - (list.Count - 1) / 2m) * PortStep * slot.Height, line))],
-                _grid.DownPixel, (slot.Top, slot.Bottom), round: true)[list.IndexOf(bundle)];
+                _grid.DownPixel, (slot.Top, slot.Bottom), round: true, line => line.Item2 == end)[list.IndexOf(bundle)];
         }
 
         private decimal PocketLaneX((MapEnd, MapEnd, MapLinkKind) bundle) =>
@@ -471,22 +483,24 @@ internal static class MapLayout
             Lane(_leftGutter, bundle, index => LeftGutter + index * GutterTrack, (LeftColumn.Right, LeftGutterEnd));
 
         private decimal DropX((MapEnd, MapEnd, MapLinkKind) bundle) =>
-            Lane(_drops, bundle, index => FirstDrop - index * DropTrack, (DropsFrom, RightColumn.Right));
+            Lane(_drops, bundle, index => FirstDrop - index * DropTrack, (DropsFrom, RightColumn.Right), arrowHere: _ => true);
 
         private decimal RightGutterX((MapEnd, MapEnd, MapLinkKind) bundle) =>
             Lane(_rightGutter, bundle, index => RightGutter + index * GutterTrack, (ChainColumn.Right, RightGutterEnd));
 
         // A link's track down a lane: from the lane's first, each its step from the one before, or further
-        // where their widths ask it, all of them in the lane's room.
-        private decimal Lane(List<(MapEnd, MapEnd, MapLinkKind)> lane, (MapEnd, MapEnd, MapLinkKind) bundle, Func<int, decimal> track, (decimal Low, decimal High) room) =>
-            Spread([.. lane.Select((line, index) => (track(index), line))], MapGrid.AcrossPixel, room, round: false)[lane.IndexOf(bundle)];
+        // where their widths ask it, and their arrowheads where they end on the lane's tracks, the drops'
+        // into Corporate tax, all of them in the lane's room.
+        private decimal Lane(List<(MapEnd, MapEnd, MapLinkKind)> lane, (MapEnd, MapEnd, MapLinkKind) bundle, Func<int, decimal> track, (decimal Low, decimal High) room,
+            Func<(MapEnd, MapEnd, MapLinkKind), bool>? arrowHere = null) =>
+            Spread([.. lane.Select((line, index) => (track(index), line))], MapGrid.AcrossPixel, room, round: false, arrowHere ?? (_ => false))[lane.IndexOf(bundle)];
 
         // The y at which one of the split's lines crosses the gap under it: the royalty's a quarter of the way
         // down, the condition a royalty sets on the split halfway and the pay three quarters, or further
         // apart round the gap's middle where their widths ask it.
         private decimal BelowSplitY((MapEnd, MapEnd, MapLinkKind) bundle) =>
             Spread([.. _belowSplit.Select(line => (_grid.GapBelow(MapRow.Split, BelowSplit(line)!.Value), line))], _grid.DownPixel,
-                (_grid.GapBelow(MapRow.Split, 0m), _grid.GapBelow(MapRow.Split, 1m)), round: true)[_belowSplit.IndexOf(bundle)];
+                (_grid.GapBelow(MapRow.Split, 0m), _grid.GapBelow(MapRow.Split, 1m)), round: true, _ => false)[_belowSplit.IndexOf(bundle)];
 
         private decimal? BelowSplit((MapEnd From, MapEnd To, MapLinkKind Kind) bundle) => Family(bundle) switch
         {
@@ -498,28 +512,33 @@ internal static class MapLayout
 
         // Where a line between a module and a bucket, or what comes back out of the bucket beside it, takes
         // one of its places: the run's lines of the pair spread across their room from their places, the
-        // way in first.
-        private decimal Beside((MapEnd From, MapEnd To, MapLinkKind Kind) bundle, Func<bool, decimal> place, (decimal Low, decimal High) room, decimal pixel)
+        // way in first, with the arrowhead of what comes back where it ends on its module's edge (atModule).
+        private decimal Beside((MapEnd From, MapEnd To, MapLinkKind Kind) bundle, Func<bool, decimal> place, (decimal Low, decimal High) room, decimal pixel, bool atModule = false)
         {
             List<(MapEnd From, MapEnd To, MapLinkKind Kind)> pair =
                 [.. _bundles.Where(other => Family(other) == Family(bundle) && Module(other) == Module(bundle) && Bucket(other) == Bucket(bundle)).OrderBy(Back)];
-            return Spread([.. pair.Select(line => (place(Back(line)), line))], pixel, room, round: true)[pair.IndexOf(bundle)];
+            return Spread([.. pair.Select(line => (place(Back(line)), line))], pixel, room, round: true, line => atModule && Back(line))[pair.IndexOf(bundle)];
         }
 
         // Lines side by side across a room, in their order: each at its own place where that keeps every two
-        // of them their half-widths and a halo's gap apart, else as far apart as that asks, from the first's
-        // place down a lane, or round the middle of their places along a side or across a gap; then moved
-        // into the room where they would leave it, or squeezed into it where they cannot all fit, so that
-        // none ever runs past it. Places and room are in percent of the map, a pixel `pixel` of it there.
-        private decimal[] Spread(IReadOnlyList<(decimal Place, (MapEnd, MapEnd, MapLinkKind) Line)> lines, decimal pixel, (decimal Low, decimal High) room, bool round)
+        // of them their half-widths and a halo's gap apart, and the arrowhead of one ending across the room
+        // (arrowHere) clear of the other, else as far apart as that asks, from the first's place down a lane,
+        // or round the middle of their places along a side or across a gap; then moved into the room where
+        // they would leave it, or squeezed into it where they cannot all fit, so that none ever runs past it.
+        // Places and room are in percent of the map, a pixel `pixel` of it there.
+        private decimal[] Spread(IReadOnlyList<(decimal Place, (MapEnd, MapEnd, MapLinkKind) Line)> lines, decimal pixel, (decimal Low, decimal High) room, bool round,
+            Func<(MapEnd, MapEnd, MapLinkKind), bool> arrowHere)
         {
+            // How far a line reaches each side of its place: half its width, or half its arrowhead's base.
+            decimal Reach((MapEnd, MapEnd, MapLinkKind) line) => arrowHere(line) ? MapLineWidths.ArrowHalf(_widths[line]) : _widths[line] / 2m;
+
             var at = new decimal[lines.Count];
             var sign = lines[^1].Place < lines[0].Place ? -1m : 1m;
             at[0] = lines[0].Place;
             for (var index = 1; index < at.Length; index++)
             {
                 var (before, line) = (lines[index - 1], lines[index]);
-                var apart = ((_widths[before.Line] + _widths[line.Line]) / 2m + MapLinkStyle.HaloGap) * pixel;
+                var apart = Math.Max((_widths[before.Line] + _widths[line.Line]) / 2m + MapLinkStyle.HaloGap, Reach(before.Line) + Reach(line.Line) + EdgePixels) * pixel;
                 at[index] = at[index - 1] + sign * Math.Max(Math.Abs(line.Place - before.Place), apart);
             }
 
@@ -527,8 +546,8 @@ internal static class MapLayout
                 Shift(at, (lines[0].Place + lines[^1].Place - at[0] - at[^1]) / 2m);
 
             var (low, high) = sign > 0 ? (0, at.Length - 1) : (at.Length - 1, 0);
-            var from = room.Low + (_widths[lines[low].Line] / 2m + EdgePixels) * pixel;
-            var to = room.High - (_widths[lines[high].Line] / 2m + EdgePixels) * pixel;
+            var from = room.Low + (Reach(lines[low].Line) + EdgePixels) * pixel;
+            var to = room.High - (Reach(lines[high].Line) + EdgePixels) * pixel;
             if (at[high] - at[low] > to - from)
                 return [.. at.Select(place => at.Length == 1 ? (from + to) / 2m : from + (place - at[low]) * (to - from) / (at[high] - at[low]))];
 
@@ -634,7 +653,7 @@ internal static class MapLayout
         private MapRoute CopyrightToTaxes((MapEnd, MapEnd, MapLinkKind) bundle, MapEnd from, MapEnd to)
         {
             var (source, tray) = (_grid.Slot(from), _grid.Slot(to));
-            var start = Beside(bundle, back => source.Right - (back ? 6m : 4m), (source.Left, source.Right), MapGrid.AcrossPixel);
+            var start = Beside(bundle, back => source.Right - (back ? 6m : 4m), (source.Left, source.Right), MapGrid.AcrossPixel, atModule: true);
             var gap = Beside(bundle, back => _grid.GapBelow(MapRow.StreamTop, back ? 0.65m : 0.5m),
                 (_grid.GapBelow(MapRow.StreamTop, 0m), _grid.GapBelow(MapRow.StreamTop, 1m)), _grid.DownPixel);
             var x = Beside(bundle, back => back ? 35.2m : 34m, (tray.Left, tray.Right), MapGrid.AcrossPixel);
@@ -658,7 +677,7 @@ internal static class MapLayout
                 (RiverModule.Dividend, "kept_in_company", false) => 88m,
                 (RiverModule.Dividend, "kept_in_company", true) => 89.2m,
                 _ => throw new ArgumentOutOfRangeException(nameof(bundle), $"{module} {bucket}", "A link the map has no route for."),
-            }, (Math.Max(box.Left, tray.Left), Math.Min(box.Right, tray.Right)), MapGrid.AcrossPixel);
+            }, (Math.Max(box.Left, tray.Left), Math.Min(box.Right, tray.Right)), MapGrid.AcrossPixel, atModule: true);
             return new MapRoute([new(x, box.Bottom), new(x, tray.Top)], module == RiverModule.Dividend ? MapLabelSide.Left : MapLabelSide.Right);
         }
 
@@ -667,7 +686,7 @@ internal static class MapLayout
         private MapRoute DividendToPocket((MapEnd, MapEnd, MapLinkKind) bundle, MapEnd from, MapEnd to)
         {
             var (box, tray) = (_grid.Slot(from), _grid.Slot(to));
-            var x = Beside(bundle, back => back ? 85.2m : 84m, (box.Left, box.Right), MapGrid.AcrossPixel);
+            var x = Beside(bundle, back => back ? 85.2m : 84m, (box.Left, box.Right), MapGrid.AcrossPixel, atModule: true);
             var gap = Beside(bundle, back => _grid.GapBelow(MapRow.StreamBottom, back ? 0.65m : 0.5m),
                 (_grid.GapBelow(MapRow.StreamBottom, 0m), _grid.GapBelow(MapRow.StreamBottom, 1m)), _grid.DownPixel);
             var into = Beside(bundle, back => back ? 19.2m : 18m, (tray.Left, tray.Right), MapGrid.AcrossPixel);
@@ -775,6 +794,17 @@ internal sealed record MapRoute(IReadOnlyList<MapPoint> Points, MapLabelSide Sid
     // How thick the line is drawn, in pixels (MapLineWidths), worked out with its route; the thinnest until
     // it is.
     public decimal Width { get; init; } = MapLineWidths.Thinnest;
+
+    // The line as it is drawn: its points, but where it meets a bucket, under which it runs on to the
+    // bucket's middle, the bucket drawn over it, so that it meets the bucket's edge wherever that is, at a
+    // rounded corner too. Its points until the layout has worked it out.
+    public IReadOnlyList<MapPoint> Drawn
+    {
+        get => _drawn ?? Points;
+        init => _drawn = value;
+    }
+
+    private readonly IReadOnlyList<MapPoint>? _drawn;
 
     public MapPoint End => Points[^1];
 

@@ -19,7 +19,9 @@
    again beside the map; the cards that only wait for it are left out. Each link is a line of its kind
    (MapLinkStyle: passed on, into a bucket, a tax base, a condition), its dash, width and ink set on the line
    itself, a line of money as thick as its amount beside the run's largest (MapLineWidths), with an
-   arrowhead in the same ink where it goes, drawn
+   arrowhead in the same ink, sized by the line, where it reaches a module or leaves the river, and none
+   into a bucket, under which it runs on to the bucket's middle, the bucket being where its money stops:
+   money passed on and money into a bucket are told apart by their ends, not by a colour. Each line is drawn
    over a halo of the map's ground so that a line crossing another leaves a gap each side of it. The links
    of one card between the same two ends and of one kind are one line (MapBundle), which says, beside its
    card's box, one amount and no words: the sum of the card's lines it holds, each a figure the card draws;
@@ -83,14 +85,14 @@
             <svg class="map__lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false">
                 @foreach (var (bundle, faded) in _drawn)
                 {
-                    <polyline class="@HaloClass(faded)" points="@Points(bundle.Route)" stroke-width="@MapLinkStyle.Halo(bundle.Route.Width)" />
-                    <polyline class="@LineClass(faded)" points="@Points(bundle.Route)" stroke-dasharray="@MapLinkStyle.Dash(bundle.Kind)"
+                    <polyline class="@HaloClass(faded)" points="@Points(bundle.Route.Drawn)" stroke-width="@MapLinkStyle.Halo(bundle.Route.Width)" />
+                    <polyline class="@LineClass(faded)" points="@Points(bundle.Route.Drawn)" stroke-dasharray="@MapLinkStyle.Dash(bundle.Kind)"
                               stroke-width="@MapLinkStyle.Width(bundle.Route.Width)" data-link-kind="@bundle.Kind" style="stroke: @Ink(bundle)" />
                 }
             </svg>
-            @foreach (var (bundle, faded) in _drawn)
+            @foreach (var (bundle, faded) in _drawn.Where(line => line.Bundle.Arrowhead))
             {
-                <span class="@ArrowClass(bundle, faded)" style="left: @Percent(bundle.Route.End.X); top: @Percent(bundle.Route.End.Y); --map-arrow: @Ink(bundle)" aria-hidden="true"></span>
+                <span class="@ArrowClass(bundle, faded)" style="left: @Percent(bundle.Route.End.X); top: @Percent(bundle.Route.End.Y); @ArrowSize(bundle) --map-arrow: @Ink(bundle)" aria-hidden="true"></span>
             }
             @foreach (var block in _blocks)
             {
@@ -237,6 +239,10 @@
 
     private static string HaloClass(bool faded) => $"map-halo{(faded ? " map-halo--faded" : "")}";
 
+    // An arrowhead's size, its line's (MapLineWidths): half its base and its length, in pixels.
+    private static string ArrowSize(MapBundle bundle) =>
+        $"--map-arrow-half: {MapLinkStyle.Width(MapLineWidths.ArrowHalf(bundle.Route.Width))}px; --map-arrow-length: {MapLinkStyle.Width(MapLineWidths.ArrowLength(bundle.Route.Width))}px;";
+
     // A line's ink and its arrowhead's, its kind's (MapLinkStyle), or the gold of what reaches the pocket.
     private static string Ink(MapBundle bundle) => ToPocket(bundle) ? MapLinkStyle.PocketInk : MapLinkStyle.Ink(bundle.Kind);
 
@@ -306,7 +312,7 @@
         _ => L[MapTabText.OutOfRiver],
     };
 
-    private static string Points(MapRoute route) => string.Join(' ', route.Points.Select(point => $"{Number(point.X)},{Number(point.Y)}"));
+    private static string Points(IReadOnlyList<MapPoint> points) => string.Join(' ', points.Select(point => $"{Number(point.X)},{Number(point.Y)}"));
 
     private static string Box(MapSlot slot) =>
         $"left: {Percent(slot.Left)}; top: {Percent(slot.Top)}; width: {Percent(slot.Width)}; height: {Percent(slot.Height)}";

@@ -92,7 +92,7 @@ public class MapTabFilterTests
         html.ShouldSatisfyAllConditions(
             () => view.Bundles().Any(bundle => bundle.Kind == hidden).ShouldBeTrue(),
             () => LineKinds(html).ShouldBe(kept.Select(bundle => bundle.Kind.ToString())),
-            () => Regex.Count(html, "<span class=\"map-arrow ").ShouldBe(kept.Count),
+            () => Regex.Count(html, "<span class=\"map-arrow ").ShouldBe(kept.Count(bundle => bundle.Arrowhead)),
             () => Regex.Matches(html, "<div class=\"map-words__bundle[^\"]*\" data-link-kind=\"(\\w+)\"").Select(match => match.Groups[1].Value).ShouldBe(kept.Select(bundle => bundle.Kind.ToString()), ignoreOrder: true),
             () => Regex.Matches(html, "<span class=\"map-words__amount[^\"]*\"[^>]*>([^<]*)</span>").Select(match => match.Groups[1].Value)
                 .ShouldBe(kept.Where(bundle => bundle.Amount is not null).Select(bundle => Formats.Euros(bundle.Amount!.Value)), ignoreOrder: true));
@@ -142,7 +142,7 @@ public class MapTabFilterTests
             () => view.Bundles().Select(bundle => bundle.Kind).ShouldContain(MapLinkKind.TaxBase),
             () => view.Bundles().Select(bundle => bundle.Kind).ShouldContain(MapLinkKind.Condition),
             () => LineKinds(html).ShouldBe(kept.Select(bundle => bundle.Kind.ToString())),
-            () => Regex.Count(html, "<span class=\"map-arrow ").ShouldBe(kept.Count),
+            () => Regex.Count(html, "<span class=\"map-arrow ").ShouldBe(kept.Count(bundle => bundle.Arrowhead)),
             () => Regex.Matches(html, "<div class=\"map-words__bundle[^\"]*\" data-link-kind=\"(\\w+)\"").Select(match => match.Groups[1].Value).Distinct().Order()
                 .ShouldBe(kept.Select(bundle => bundle.Kind.ToString()).Distinct().Order()),
             () => Regex.Count(html, "<span class=\"map-badge ").ShouldBe(view.Modules.Sum(node => node.Badges.Count)),

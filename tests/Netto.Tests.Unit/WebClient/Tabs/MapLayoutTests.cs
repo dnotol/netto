@@ -248,9 +248,22 @@ public class MapLayoutTests
         Overhangs(Routes(river), Grid(river)).ShouldBeEmpty();
     }
 
-    // Plans at the edges of what a plan holds keep their lines apart and off the boxes too: the pay at its
-    // ceiling, a pay low enough for the tax credit on low earned income to come back beside its taxes, a
-    // royalty past its limits, the costly car, and the company skipped with a high pay or a low one.
+    // Each arrowhead, sized by its line (MapLineWidths), is clear of every other and no longer than the
+    // stretch of line it ends, so it reads as an arrowhead and never runs past a turn: on the narrowest map,
+    // where it takes the largest share of it.
+    [Theory]
+    [MemberData(nameof(Rivers))]
+    public void Routed_anyPlan_drawsEachArrowheadClearOfTheOthersAndWithinItsLastStretch(int bits, int quiet, bool companySkipped)
+    {
+        var river = River(bits, quiet, companySkipped);
+
+        Arrowheads(Routes(river), Grid(river).Units).ShouldBeEmpty();
+    }
+
+    // Plans at the edges of what a plan holds keep their lines apart and off the boxes too, and their
+    // arrowheads clear: the pay at its ceiling, a pay low enough for the tax credit on low earned income to
+    // come back beside its taxes, a royalty past its limits, the costly car, and the company skipped with a
+    // high pay or a low one.
     [Theory]
     [MemberData(nameof(ExtremeRivers))]
     public void Routed_aPlanAtTheEdges_keepsItsLinesApartAndOffTheBoxesAtTheirWidths(string plan)
@@ -263,7 +276,8 @@ public class MapLayoutTests
             () => river.Run().Error.ShouldBeNull(),
             () => Crowded(routes, Grid(river).Units).ShouldBeEmpty(),
             () => Crossings(routes, Boxes(river), Grid(river).Units).ShouldBeEmpty(),
-            () => Overhangs(routes, Grid(river)).ShouldBeEmpty());
+            () => Overhangs(routes, Grid(river)).ShouldBeEmpty(),
+            () => Arrowheads(routes, Grid(river).Units).ShouldBeEmpty());
     }
 
     // A lane its lines cannot all fit at their widths squeezes them into it, never past it: five lines down
@@ -333,7 +347,8 @@ public class MapLayoutTests
                 .Select(b => $"{a.Name} with {b.Name}")).ShouldBeEmpty(),
             () => Crowded(routes, grid.Units).ShouldBeEmpty(),
             () => Crossings(routes, boxes, grid.Units).ShouldBeEmpty(),
-            () => Overhangs(routes, grid).ShouldBeEmpty());
+            () => Overhangs(routes, grid).ShouldBeEmpty(),
+            () => Arrowheads(routes, grid.Units).ShouldBeEmpty());
     }
 
     // A line back out of a bucket ends on its module, its arrow pointing into it.
@@ -564,6 +579,38 @@ public class MapLayoutTests
             ? (at.Y - box.Top) * scale.Y < half || (box.Bottom - at.Y) * scale.Y < half
             : (at.X - box.Left) * scale.X < half || (box.Right - at.X) * scale.X < half;
     }
+
+    // Every two arrowheads that overlap, and every arrowhead longer than the stretch of line it ends, on the
+    // narrowest map: an arrowhead is drawn where a line ends on a module or out of the river, none into a
+    // bucket.
+    private static List<string> Arrowheads(IReadOnlyList<RoutedLine> routes, decimal units)
+    {
+        var scale = (X: Sizes[0].Width / 100m, Y: RowPixels * units / 100m);
+        var heads = routes.Where(route => route.To.Bucket is null)
+            .Select(route => (route.Name, Area: Head(route.Route, scale), Long: MapLineWidths.ArrowLength(route.Route.Width) > Last(route.Route, scale) + Tolerance)).ToList();
+        return
+        [
+            .. heads.Where(head => head.Long).Select(head => $"{head.Name}'s arrowhead past its last stretch"),
+            .. heads.SelectMany((a, i) => heads.Skip(i + 1).Where(b => Overlaps(a.Area, b.Area)).Select(b => $"{a.Name}'s arrowhead over {b.Name}'s")),
+        ];
+    }
+
+    // What an arrowhead covers, in pixels, its point on the line's end.
+    private static (decimal Left, decimal Top, decimal Right, decimal Bottom) Head(MapRoute route, (decimal X, decimal Y) scale)
+    {
+        var (half, length, x, y) = (MapLineWidths.ArrowHalf(route.Width), MapLineWidths.ArrowLength(route.Width), route.End.X * scale.X, route.End.Y * scale.Y);
+        return route.Arrow switch
+        {
+            MapDirection.Down => (x - half, y - length, x + half, y),
+            MapDirection.Up => (x - half, y, x + half, y + length),
+            MapDirection.Right => (x - length, y - half, x, y + half),
+            _ => (x, y - half, x + length, y + half),
+        };
+    }
+
+    // How long the last stretch of a line is, in pixels.
+    private static decimal Last(MapRoute route, (decimal X, decimal Y) scale) =>
+        Math.Abs(route.Points[^1].X - route.Points[^2].X) * scale.X + Math.Abs(route.Points[^1].Y - route.Points[^2].Y) * scale.Y;
 
     // A line of money as large as the run's largest, from a module to an end.
     private static MapLink Money(RiverModule module, MapEnd to) =>

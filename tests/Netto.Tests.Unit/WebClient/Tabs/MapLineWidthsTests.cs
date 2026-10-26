@@ -58,6 +58,33 @@ public class MapLineWidthsTests
         MapLineWidths.Of(kind, 25_000m, 100_000m).ShouldBe(MapLineWidths.Money(25_000m, 100_000m));
     }
 
+    // An arrowhead on the thinnest line is as large as every arrowhead was before lines grew with their
+    // amounts: 0.3rem each side of its point's line and 0.45rem long.
+    [Fact]
+    public void Arrowhead_ofTheThinnestLine_isAsLargeAsBefore()
+    {
+        (MapLineWidths.ArrowHalf(MapLineWidths.Thinnest), MapLineWidths.ArrowLength(MapLineWidths.Thinnest)).ShouldBe((4.8m, 7.2m));
+    }
+
+    // An arrowhead grows with its line, three pixels wider than it each side and half as long again as half
+    // its base, so it reads on the thickest line as on the thinnest.
+    [Theory]
+    [InlineData(1.5)]
+    [InlineData(4.75)]
+    [InlineData(8)]
+    public void Arrowhead_ofAnyLine_isWiderThanItByThreePixelsEachSide(double width)
+    {
+        var line = (decimal)width;
+
+        (MapLineWidths.ArrowHalf(line) >= line / 2m + 3m, MapLineWidths.ArrowLength(line)).ShouldBe((true, 1.5m * MapLineWidths.ArrowHalf(line)));
+    }
+
+    [Fact]
+    public void Arrowhead_ofTheThickestLine_isSevenPixelsEachSideAndTenAndAHalfLong()
+    {
+        (MapLineWidths.ArrowHalf(MapLineWidths.Thickest), MapLineWidths.ArrowLength(MapLineWidths.Thickest)).ShouldBe((7m, 10.5m));
+    }
+
     // A tax base and a condition move no money: their lines keep their kind's width, a tax base's 2 px and a
     // condition's 1.75 px, whatever amount they name.
     [Theory]
