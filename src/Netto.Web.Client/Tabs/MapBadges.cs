@@ -21,7 +21,7 @@ internal static class MapBadges
 
         foreach (var reached in links.Where(link => link is { Kind: MapLinkKind.TaxBase, To.Module: not null }).GroupBy(link => link.To.Module!.Value))
         {
-            var gains = reached.Sum(link => Math.Round(link.Amount ?? 0m, 2, MidpointRounding.AwayFromZero));
+            var gains = MapBundle.Sum(reached);
             if (gains != 0m)
                 Add(badges, reached.Key, new MapBadge(MapLinkKind.TaxBase, new MapLabel(MapText.Map, MapTabText.TaxBaseBadge, [Formats.Euros(gains)]), MapBadgeTone.Amount));
         }

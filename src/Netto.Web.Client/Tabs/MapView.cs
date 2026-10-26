@@ -171,9 +171,11 @@ internal sealed record MapBundle(MapRoute Route, IReadOnlyList<MapLink> Links)
 
     public RiverModule Card => Links[0].Card;
 
-    public decimal? Amount => Kind == MapLinkKind.Condition
-        ? null
-        : Links.Sum(link => Math.Round(link.Amount ?? 0m, 2, MidpointRounding.AwayFromZero));
+    public decimal? Amount => Kind == MapLinkKind.Condition ? null : Sum(Links);
+
+    // What links carry together, each figure to the cent as its card draws it: the sum a viewer makes of
+    // the card's lines, the one a line and a badge say (MapBadges).
+    public static decimal Sum(IEnumerable<MapLink> links) => links.Sum(link => Math.Round(link.Amount ?? 0m, 2, MidpointRounding.AwayFromZero));
 
     // Where the line meets its card's box: where it leaves it, or where it comes back into it.
     public MapPoint Meets => From.Module == Card ? Route.Points[0] : Route.End;
