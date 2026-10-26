@@ -29,16 +29,22 @@ namespace Netto.Web.Client.Tabs;
 // streams' rows nothing in the middle). Lines may cross lines; none crosses a box, nor a quiet row's pill
 // but the chain's line past its levers, which runs through it (MapLayoutTests). A line back out of a
 // bucket, a refund, a credit, a contribution or a bonus beyond its surcharge, takes the route money into
-// it would take, the other way, beside it.
+// it would take, the other way, beside it. A line keeps its width in pixels (MapLineWidths): the lines
+// that share a lane, a side of a box or a gap take their places apart at their widths on the narrowest
+// map, a halo's gap between them, and where a room cannot hold them all they are squeezed into it, never
+// past it, so no line crosses a box whatever its amount.
 internal static class MapLayout
 {
     // The three columns' boxes, left to right, the middle of the streams' rows left to the words of their
     // lines, and the buckets along the bottom, each under the stream that fills it most: the pocket and the
     // taxes on pay under the director's, the taxes on profit and what the company keeps under the company's.
-    private static readonly (decimal Left, decimal Right) LeftColumn = (5m, 26m);
+    // The left column leaves the lane to the pocket the room of its lines at their widths, and each stream's
+    // last box reaches 4% over the bucket of its taxes, room for what it pays into them and what comes back
+    // out of them to run down side by side at their widths.
+    private static readonly (decimal Left, decimal Right) LeftColumn = (7m, 26m);
     private static readonly (decimal Left, decimal Right) ChainColumn = (38m, 62m);
     private static readonly (decimal Left, decimal Right) RightColumn = (74m, 95m);
-    private static readonly (decimal Left, decimal Right)[] BucketSpans = [(1m, 22m), (24m, 48m), (52m, 76m), (78m, 99m)];
+    private static readonly (decimal Left, decimal Right)[] BucketSpans = [(1m, 20m), (22m, 48m), (52m, 78m), (80m, 99m)];
 
     // A box is half a chain row high, in the middle of its row; the rest is the gap above and below it,
     // where lines turn. The streams' rows are taller, for the words of their many lines, and the buckets'
@@ -75,24 +81,42 @@ internal static class MapLayout
     private const decimal QuietMarginUnits = 0.1m;
     private const int RoyaltyLines = 2;
 
+    // The narrowest the map is drawn: a column 34rem wide beside the column of the module chosen, from
+    // 1,201 px (MapTab.razor.css), wider below it; and it is never shorter than a chain row to 3.25rem
+    // (SmallestRowRem). A line keeps its width in pixels however large the map is drawn (MapLineWidths), so
+    // the lines side by side, down a lane, along a side of a box or across a gap, are kept apart at their
+    // widths there, where the map is smallest, and are further apart wherever it is larger: their
+    // half-widths and a halo's gap between them (MapLinkStyle.HaloGap), and a pixel between a line and the
+    // edge of its room.
+    internal const decimal NarrowestRem = 34m;
+    private const decimal PixelsPerRem = 16m;
+    private const decimal EdgePixels = 1m;
+
     // The lane down the left edge to the pocket, one track per link, the highest row's furthest out; the
-    // gutter left of the middle column; the gutter right of it; the lane down the right edge.
+    // gutter left of the middle column, its tracks ending before the royalty's tax apart comes down beside
+    // them; the gutter right of it, ending far enough from Corporate tax for an arrowhead into it; the lane
+    // down the right edge. Each track is at least its step from the one before, further where the lines'
+    // widths ask it.
     private const decimal PocketLane = 1.4m;
     private const decimal PocketTrack = 0.6m;
     private const decimal LeftGutter = 28m;
+    private const decimal LeftGutterEnd = 33m;
     private const decimal GutterTrack = 1.2m;
     private const decimal RightGutter = 68m;
+    private const decimal RightGutterEnd = 71m;
     private const decimal RightLane = 98m;
 
-    // A box's side shared by several links: each its own place along it, a fraction of the box apart.
+    // A box's side shared by several links: each its own place along it, a fraction of the box apart, or
+    // further where their widths ask it.
     private const decimal PortStep = 0.22m;
 
     // Where on Corporate tax's top the split's links arrive, and the chain's drops, the highest row's
-    // furthest right.
+    // furthest right, all of them right of the split's.
     private const decimal SplitToCorporate = 80m;
     private const decimal SplitConditionToCorporate = 77m;
     private const decimal FirstDrop = 92m;
     private const decimal DropTrack = 2.5m;
+    private const decimal DropsFrom = 82m;
 
     // How far past the car the stub of its costs runs, out of the river.
     private const decimal OutStub = 4m;
@@ -120,14 +144,15 @@ internal static class MapLayout
 
     // Every link of the run with its route: links with the same ends and kind share one, their words
     // drawn together, as thick as what they carry together beside the run's largest line of money
-    // (MapLineWidths), measured here from every link of the run, so a filter thickens no line.
+    // (MapLineWidths), measured here from every link of the run, so a filter thickens no line, and routed
+    // apart from the lines beside it at their widths.
     public static IReadOnlyList<MapLink> Routed(MapGrid grid, IReadOnlyList<MapLink> links)
     {
         var amounts = links.GroupBy(Key).ToDictionary(bundle => bundle.Key, bundle => MapBundle.Sum(bundle));
         var largest = amounts.Where(bundle => MapLinkStyle.Fixed(bundle.Key.Kind) is null).Select(bundle => Math.Abs(bundle.Value)).DefaultIfEmpty(0m).Max();
         var widths = amounts.ToDictionary(bundle => bundle.Key, bundle => MapLineWidths.Of(bundle.Key.Kind, bundle.Value, largest));
         var bundles = links.Select(Key).Distinct().ToList();
-        var router = new Router(grid, bundles);
+        var router = new Router(grid, bundles, widths);
         var routes = bundles.ToDictionary(bundle => bundle, bundle => router.Route(bundle) with { Width = widths[bundle] });
 
         return [.. links.Select(link => link with { Route = routes[Key(link)] })];
@@ -166,6 +191,11 @@ internal static class MapLayout
         public IReadOnlyList<MapRow> Rows { get; }
 
         public decimal Units => Rows.Sum(Weight);
+
+        // How much of the map a pixel is, across it and down it, where the map is drawn smallest.
+        public static decimal AcrossPixel => 100m / (NarrowestRem * PixelsPerRem);
+
+        public decimal DownPixel => 100m / (SmallestRowRem * PixelsPerRem * Units);
 
         public bool Holds(RiverModule module) => Modules.Contains(module);
 
@@ -270,24 +300,32 @@ internal static class MapLayout
 
     // The routes of one map. Each link's family decides the sides it leaves and enters by and the room it
     // runs through; links sharing a side each take their own place along it, in an order that keeps them
-    // from crossing near the box; links sharing a lane each take their own track in it.
+    // from crossing near the box; links sharing a lane each take their own track in it; the split's lines
+    // across the gap under it, and a line into a bucket and what comes back out of it beside it, each their
+    // own place across their room; all of them apart at their widths (Spread).
     private sealed class Router
     {
         private readonly MapGrid _grid;
+        private readonly IReadOnlyList<(MapEnd From, MapEnd To, MapLinkKind Kind)> _bundles;
+        private readonly IReadOnlyDictionary<(MapEnd From, MapEnd To, MapLinkKind Kind), decimal> _widths;
         private readonly Dictionary<(MapEnd, MapSide), List<(MapEnd, MapEnd, MapLinkKind)>> _ports = [];
         private readonly List<(MapEnd, MapEnd, MapLinkKind)> _pocketLane;
         private readonly List<(MapEnd, MapEnd, MapLinkKind)> _leftGutter;
         private readonly List<(MapEnd, MapEnd, MapLinkKind)> _drops;
         private readonly List<(MapEnd, MapEnd, MapLinkKind)> _rightGutter;
+        private readonly List<(MapEnd, MapEnd, MapLinkKind)> _belowSplit;
 
-        public Router(MapGrid grid, IReadOnlyList<(MapEnd From, MapEnd To, MapLinkKind Kind)> bundles)
+        public Router(MapGrid grid, IReadOnlyList<(MapEnd From, MapEnd To, MapLinkKind Kind)> bundles, IReadOnlyDictionary<(MapEnd From, MapEnd To, MapLinkKind Kind), decimal> widths)
         {
             _grid = grid;
+            _bundles = bundles;
+            _widths = widths;
             _pocketLane = [.. bundles.Where(bundle => Family(bundle) == RouteFamily.ToPocketLane).OrderBy(bundle => Row(Module(bundle))).ThenBy(Back)];
             _leftGutter = [.. bundles.Where(bundle => Family(bundle) is RouteFamily.ChainToTaxesOnPay or RouteFamily.ChainToDirectorPay or RouteFamily.SplitToDirectorPay)
                 .OrderBy(bundle => Row(Module(bundle))).ThenBy(Back)];
             _drops = [.. bundles.Where(bundle => Family(bundle) == RouteFamily.ChainToCorporateTax).OrderBy(bundle => Row(Module(bundle))).ThenBy(bundle => bundle.Kind)];
             _rightGutter = [.. bundles.Where(bundle => Family(bundle) == RouteFamily.CorporateTaxToBucket).OrderBy(Back)];
+            _belowSplit = [.. bundles.Where(bundle => BelowSplit(bundle) is not null).OrderBy(BelowSplit)];
 
             foreach (var bundle in bundles)
             {
@@ -325,16 +363,16 @@ internal static class MapLayout
                 RouteFamily.ChainToCorporateTax => SideToTop(bundle, from, MapSide.Right, to, DropX(bundle), MapLabelSide.Right),
                 RouteFamily.OutOfRiver => OutOfRiver(bundle, from),
                 RouteFamily.Bracket => Bracket(bundle, from, to),
-                RouteFamily.SplitToCopyright => BottomToTop(from, 41m, to, LeftColumn.Left + 8m, 0.25m, MapLabelSide.Left),
-                RouteFamily.CopyrightToSplit => BottomToTop(from, LeftColumn.Left + 16m, to, 45m, 0.5m, MapLabelSide.Right, upwards: true),
+                RouteFamily.SplitToCopyright => BottomToTop(from, 41m, to, LeftColumn.Left + 8m, BelowSplitY(bundle), MapLabelSide.Left),
+                RouteFamily.CopyrightToSplit => BottomToTop(from, LeftColumn.Left + 16m, to, 45m, BelowSplitY(bundle), MapLabelSide.Right, upwards: true),
                 RouteFamily.SplitToDirectorPay => SplitToDirectorPay(bundle, from, to),
                 RouteFamily.SplitToCorporateTax => SideToTop(bundle, from, MapSide.Right, to,
                     bundle.Kind == MapLinkKind.Condition ? SplitConditionToCorporate : SplitToCorporate, MapLabelSide.Right),
                 RouteFamily.DividendToSplit => DividendToSplit(bundle, from, to),
-                RouteFamily.CopyrightToTaxesOnPay => CopyrightToTaxes(from, to, Back(bundle)),
+                RouteFamily.CopyrightToTaxesOnPay => CopyrightToTaxes(bundle, from, to),
                 RouteFamily.CorporateTaxToBucket => SideToBucket(bundle, from, MapSide.Left, to, RightGutterX(bundle), MapLabelSide.Left),
                 RouteFamily.StreamDown => StreamDown(bundle, from, to),
-                RouteFamily.DividendToPocket => DividendToPocket(from, to, Back(bundle)),
+                RouteFamily.DividendToPocket => DividendToPocket(bundle, from, to),
                 _ => throw new ArgumentOutOfRangeException(nameof(bundle), $"{from.Id} to {to.Id}", "A link the map has no route for."),
             };
         }
@@ -416,21 +454,93 @@ internal static class MapLayout
             _ => 0m,
         };
 
+        // Where a link meets a side it shares: round the side's middle, each its step along it from the one
+        // before, or further where their widths ask it, all of them on the side.
         private decimal PortY((MapEnd From, MapEnd To, MapLinkKind Kind) bundle, MapEnd end, MapSide side)
         {
             var slot = _grid.Slot(end);
             var list = _ports[(end, side)];
-            var index = list.IndexOf(bundle);
-            return slot.CenterY + (index - (list.Count - 1) / 2m) * PortStep * slot.Height;
+            return Spread([.. list.Select((line, index) => (slot.CenterY + (index - (list.Count - 1) / 2m) * PortStep * slot.Height, line))],
+                _grid.DownPixel, (slot.Top, slot.Bottom), round: true)[list.IndexOf(bundle)];
         }
 
-        private decimal PocketLaneX((MapEnd, MapEnd, MapLinkKind) bundle) => PocketLane + _pocketLane.IndexOf(bundle) * PocketTrack;
+        private decimal PocketLaneX((MapEnd, MapEnd, MapLinkKind) bundle) =>
+            Lane(_pocketLane, bundle, index => PocketLane + index * PocketTrack, (BucketSpans[0].Left, LeftColumn.Left));
 
-        private decimal LeftGutterX((MapEnd, MapEnd, MapLinkKind) bundle) => LeftGutter + _leftGutter.IndexOf(bundle) * GutterTrack;
+        private decimal LeftGutterX((MapEnd, MapEnd, MapLinkKind) bundle) =>
+            Lane(_leftGutter, bundle, index => LeftGutter + index * GutterTrack, (LeftColumn.Right, LeftGutterEnd));
 
-        private decimal DropX((MapEnd, MapEnd, MapLinkKind) bundle) => FirstDrop - _drops.IndexOf(bundle) * DropTrack;
+        private decimal DropX((MapEnd, MapEnd, MapLinkKind) bundle) =>
+            Lane(_drops, bundle, index => FirstDrop - index * DropTrack, (DropsFrom, RightColumn.Right));
 
-        private decimal RightGutterX((MapEnd, MapEnd, MapLinkKind) bundle) => RightGutter + _rightGutter.IndexOf(bundle) * GutterTrack;
+        private decimal RightGutterX((MapEnd, MapEnd, MapLinkKind) bundle) =>
+            Lane(_rightGutter, bundle, index => RightGutter + index * GutterTrack, (ChainColumn.Right, RightGutterEnd));
+
+        // A link's track down a lane: from the lane's first, each its step from the one before, or further
+        // where their widths ask it, all of them in the lane's room.
+        private decimal Lane(List<(MapEnd, MapEnd, MapLinkKind)> lane, (MapEnd, MapEnd, MapLinkKind) bundle, Func<int, decimal> track, (decimal Low, decimal High) room) =>
+            Spread([.. lane.Select((line, index) => (track(index), line))], MapGrid.AcrossPixel, room, round: false)[lane.IndexOf(bundle)];
+
+        // The y at which one of the split's lines crosses the gap under it: the royalty's a quarter of the way
+        // down, the condition a royalty sets on the split halfway and the pay three quarters, or further
+        // apart round the gap's middle where their widths ask it.
+        private decimal BelowSplitY((MapEnd, MapEnd, MapLinkKind) bundle) =>
+            Spread([.. _belowSplit.Select(line => (_grid.GapBelow(MapRow.Split, BelowSplit(line)!.Value), line))], _grid.DownPixel,
+                (_grid.GapBelow(MapRow.Split, 0m), _grid.GapBelow(MapRow.Split, 1m)), round: true)[_belowSplit.IndexOf(bundle)];
+
+        private decimal? BelowSplit((MapEnd From, MapEnd To, MapLinkKind Kind) bundle) => Family(bundle) switch
+        {
+            RouteFamily.SplitToCopyright => 0.25m,
+            RouteFamily.CopyrightToSplit => 0.5m,
+            RouteFamily.SplitToDirectorPay => 0.75m,
+            _ => null,
+        };
+
+        // Where a line between a module and a bucket, or what comes back out of the bucket beside it, takes
+        // one of its places: the run's lines of the pair spread across their room from their places, the
+        // way in first.
+        private decimal Beside((MapEnd From, MapEnd To, MapLinkKind Kind) bundle, Func<bool, decimal> place, (decimal Low, decimal High) room, decimal pixel)
+        {
+            List<(MapEnd From, MapEnd To, MapLinkKind Kind)> pair =
+                [.. _bundles.Where(other => Family(other) == Family(bundle) && Module(other) == Module(bundle) && Bucket(other) == Bucket(bundle)).OrderBy(Back)];
+            return Spread([.. pair.Select(line => (place(Back(line)), line))], pixel, room, round: true)[pair.IndexOf(bundle)];
+        }
+
+        // Lines side by side across a room, in their order: each at its own place where that keeps every two
+        // of them their half-widths and a halo's gap apart, else as far apart as that asks, from the first's
+        // place down a lane, or round the middle of their places along a side or across a gap; then moved
+        // into the room where they would leave it, or squeezed into it where they cannot all fit, so that
+        // none ever runs past it. Places and room are in percent of the map, a pixel `pixel` of it there.
+        private decimal[] Spread(IReadOnlyList<(decimal Place, (MapEnd, MapEnd, MapLinkKind) Line)> lines, decimal pixel, (decimal Low, decimal High) room, bool round)
+        {
+            var at = new decimal[lines.Count];
+            var sign = lines[^1].Place < lines[0].Place ? -1m : 1m;
+            at[0] = lines[0].Place;
+            for (var index = 1; index < at.Length; index++)
+            {
+                var (before, line) = (lines[index - 1], lines[index]);
+                var apart = ((_widths[before.Line] + _widths[line.Line]) / 2m + MapLinkStyle.HaloGap) * pixel;
+                at[index] = at[index - 1] + sign * Math.Max(Math.Abs(line.Place - before.Place), apart);
+            }
+
+            if (round)
+                Shift(at, (lines[0].Place + lines[^1].Place - at[0] - at[^1]) / 2m);
+
+            var (low, high) = sign > 0 ? (0, at.Length - 1) : (at.Length - 1, 0);
+            var from = room.Low + (_widths[lines[low].Line] / 2m + EdgePixels) * pixel;
+            var to = room.High - (_widths[lines[high].Line] / 2m + EdgePixels) * pixel;
+            if (at[high] - at[low] > to - from)
+                return [.. at.Select(place => at.Length == 1 ? (from + to) / 2m : from + (place - at[low]) * (to - from) / (at[high] - at[low]))];
+
+            Shift(at, Math.Max(from - at[low], 0m) + Math.Min(to - at[high], 0m));
+            return at;
+        }
+
+        private static void Shift(decimal[] at, decimal by)
+        {
+            for (var index = 0; index < at.Length; index++)
+                at[index] += by;
+        }
 
         // Down from one box's bottom into the next one's top, at an x both share, into the pill of a quiet
         // row between them and out of it.
@@ -484,19 +594,14 @@ internal static class MapLayout
             return new MapRoute([new(ChainColumn.Right, y0), new(lane, y0), new(lane, y1), new(ChainColumn.Right, y1)], MapLabelSide.Right);
         }
 
-        // From a box's bottom down into the gap under its row, across it, and into a box below; or, upwards,
-        // from a box's top up into the gap above it, across it, and up into the box over it.
-        private MapRoute BottomToTop(MapEnd from, decimal fromX, MapEnd to, decimal toX, decimal fraction, MapLabelSide words, bool upwards = false)
+        // From a box's bottom down into the gap under its row, across it at the y given, and into a box below;
+        // or, upwards, from a box's top up into the gap above it, across it, and up into the box over it.
+        private MapRoute BottomToTop(MapEnd from, decimal fromX, MapEnd to, decimal toX, decimal gap, MapLabelSide words, bool upwards = false)
         {
             var (source, target) = (_grid.Slot(from), _grid.Slot(to));
-            if (!upwards)
-            {
-                var gap = _grid.GapBelow(Row(from.Module!.Value), fraction);
-                return new MapRoute([new(fromX, source.Bottom), new(fromX, gap), new(toX, gap), new(toX, target.Top)], words);
-            }
-
-            var above = _grid.GapBelow(Row(to.Module!.Value), fraction);
-            return new MapRoute([new(fromX, source.Top), new(fromX, above), new(toX, above), new(toX, target.Bottom)], words);
+            return upwards
+                ? new MapRoute([new(fromX, source.Top), new(fromX, gap), new(toX, gap), new(toX, target.Bottom)], words)
+                : new MapRoute([new(fromX, source.Bottom), new(fromX, gap), new(toX, gap), new(toX, target.Top)], words);
         }
 
         // The split's pay to Director pay: down the left gutter into its right side while Copyright royalty
@@ -504,7 +609,7 @@ internal static class MapLayout
         private MapRoute SplitToDirectorPay((MapEnd, MapEnd, MapLinkKind) bundle, MapEnd from, MapEnd to)
         {
             var (source, target) = (_grid.Slot(from), _grid.Slot(to));
-            var gap = _grid.GapBelow(MapRow.Split, 0.75m);
+            var gap = BelowSplitY(bundle);
             const decimal x = 49m;
             if (_grid.Holds(RiverModule.Copyright))
             {
@@ -526,13 +631,14 @@ internal static class MapLayout
 
         // A royalty's tax apart: out of its bottom, across the gap under it past Director pay, and down into
         // the taxes on pay; what comes back runs beside it.
-        private MapRoute CopyrightToTaxes(MapEnd from, MapEnd to, bool back)
+        private MapRoute CopyrightToTaxes((MapEnd, MapEnd, MapLinkKind) bundle, MapEnd from, MapEnd to)
         {
-            var source = _grid.Slot(from);
-            var gap = _grid.GapBelow(MapRow.StreamTop, back ? 0.65m : 0.5m);
-            var x = back ? 35.2m : 34m;
-            var start = source.Right - (back ? 6m : 4m);
-            return new MapRoute([new(start, source.Bottom), new(start, gap), new(x, gap), new(x, _grid.Slot(to).Top)], MapLabelSide.Right);
+            var (source, tray) = (_grid.Slot(from), _grid.Slot(to));
+            var start = Beside(bundle, back => source.Right - (back ? 6m : 4m), (source.Left, source.Right), MapGrid.AcrossPixel);
+            var gap = Beside(bundle, back => _grid.GapBelow(MapRow.StreamTop, back ? 0.65m : 0.5m),
+                (_grid.GapBelow(MapRow.StreamTop, 0m), _grid.GapBelow(MapRow.StreamTop, 1m)), _grid.DownPixel);
+            var x = Beside(bundle, back => back ? 35.2m : 34m, (tray.Left, tray.Right), MapGrid.AcrossPixel);
+            return new MapRoute([new(start, source.Bottom), new(start, gap), new(x, gap), new(x, tray.Top)], MapLabelSide.Right);
         }
 
         // Straight down from a stream's last box into a bucket under it, at an x both share; what comes
@@ -541,7 +647,7 @@ internal static class MapLayout
         {
             var (module, bucket) = (from.Module!.Value, to.Bucket!);
             var (box, tray) = (_grid.Slot(from), _grid.Slot(to));
-            var x = (module, bucket, Back(bundle)) switch
+            var x = Beside(bundle, back => (module, bucket, back) switch
             {
                 (RiverModule.DirectorPay, "pocket", false) => 12m,
                 (RiverModule.DirectorPay, "pocket", true) => 13.2m,
@@ -552,18 +658,20 @@ internal static class MapLayout
                 (RiverModule.Dividend, "kept_in_company", false) => 88m,
                 (RiverModule.Dividend, "kept_in_company", true) => 89.2m,
                 _ => throw new ArgumentOutOfRangeException(nameof(bundle), $"{module} {bucket}", "A link the map has no route for."),
-            };
+            }, (Math.Max(box.Left, tray.Left), Math.Min(box.Right, tray.Right)), MapGrid.AcrossPixel);
             return new MapRoute([new(x, box.Bottom), new(x, tray.Top)], module == RiverModule.Dividend ? MapLabelSide.Left : MapLabelSide.Right);
         }
 
         // What reaches the pocket of the dividend: out of its bottom, along the gap over the buckets, and
         // down into the pocket; what comes back runs beside it.
-        private MapRoute DividendToPocket(MapEnd from, MapEnd to, bool back)
+        private MapRoute DividendToPocket((MapEnd, MapEnd, MapLinkKind) bundle, MapEnd from, MapEnd to)
         {
-            var gap = _grid.GapBelow(MapRow.StreamBottom, back ? 0.65m : 0.5m);
-            var x = back ? 85.2m : 84m;
-            var into = back ? 19.2m : 18m;
-            return new MapRoute([new(x, _grid.Slot(from).Bottom), new(x, gap), new(into, gap), new(into, _grid.Slot(to).Top)], MapLabelSide.Left);
+            var (box, tray) = (_grid.Slot(from), _grid.Slot(to));
+            var x = Beside(bundle, back => back ? 85.2m : 84m, (box.Left, box.Right), MapGrid.AcrossPixel);
+            var gap = Beside(bundle, back => _grid.GapBelow(MapRow.StreamBottom, back ? 0.65m : 0.5m),
+                (_grid.GapBelow(MapRow.StreamBottom, 0m), _grid.GapBelow(MapRow.StreamBottom, 1m)), _grid.DownPixel);
+            var into = Beside(bundle, back => back ? 19.2m : 18m, (tray.Left, tray.Right), MapGrid.AcrossPixel);
+            return new MapRoute([new(x, box.Bottom), new(x, gap), new(into, gap), new(into, tray.Top)], MapLabelSide.Left);
         }
 
         private static MapRoute Reversed(MapRoute route) => route with { Points = [.. route.Points.Reverse()] };
@@ -573,6 +681,9 @@ internal static class MapLayout
 
         private static RiverModule Module((MapEnd From, MapEnd To, MapLinkKind Kind) bundle) =>
             bundle.From.Module ?? bundle.To.Module ?? throw new ArgumentOutOfRangeException(nameof(bundle), "A link with no module.");
+
+        // The bucket a link runs into or back out of, none for a link between modules.
+        private static string? Bucket((MapEnd From, MapEnd To, MapLinkKind Kind) bundle) => bundle.From.Bucket ?? bundle.To.Bucket;
 
         private static MapRow Row(RiverModule module) => Place(module).Row;
     }

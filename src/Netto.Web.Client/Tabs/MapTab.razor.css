@@ -29,6 +29,12 @@
         top: var(--netto-under-bar);
     }
 
+    /* The map is never narrower than the layout keeps its lines apart for at their widths (MapLayout:
+       NarrowestRem is the 34rem here), what the column beside it leaves it at 1,201 px. */
+    .map {
+        min-width: 34rem;
+    }
+
     .map-tab__side {
         position: sticky;
         top: var(--netto-under-bar);

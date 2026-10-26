@@ -9,7 +9,8 @@ namespace Netto.Tests.WebClient.Tabs;
 // and an orthogonal route for every link, the conditions one module sets on another among them, that
 // crosses no box and no quiet row but the one the chain's line runs through, ends on its two boxes and
 // shares no stretch with another link's, whatever the plan holds and whichever of its levers it leaves
-// empty.
+// empty; and at the widths its lines are drawn, apart from one another, off the boxes and within the sides
+// they meet, on the narrowest map and on the widest.
 public class MapLayoutTests
 {
     // The conditions one module sets on another, as the engine will name them: the pay keeping the
@@ -214,6 +215,78 @@ public class MapLayoutTests
             .Select(route => route.Name).ShouldBeEmpty();
     }
 
+    // Lines that run side by side, down a lane, along a side of a box or across a gap, are apart by their
+    // half-widths and a halo's gap, so none covers another, at every size the map is drawn: the narrowest, at
+    // 1,201 px, and at 1,920 px.
+    [Theory]
+    [MemberData(nameof(Rivers))]
+    public void Routed_anyPlan_keepsLinesSideBySideApartAtTheirWidths(int bits, int quiet, bool companySkipped)
+    {
+        var river = River(bits, quiet, companySkipped);
+
+        Crowded(Routes(river), Grid(river).Units).ShouldBeEmpty();
+    }
+
+    // No line crosses a box at its width, nor runs past the map's edge, but the chain's through its own
+    // quiet row.
+    [Theory]
+    [MemberData(nameof(Rivers))]
+    public void Routed_anyPlan_crossesNoBoxAtItsWidth(int bits, int quiet, bool companySkipped)
+    {
+        var river = River(bits, quiet, companySkipped);
+
+        Crossings(Routes(river), Boxes(river), Grid(river).Units).ShouldBeEmpty();
+    }
+
+    // A line meets each of its boxes within the side it meets, its whole width on it.
+    [Theory]
+    [MemberData(nameof(Rivers))]
+    public void Routed_anyPlan_meetsItsBoxesWithinTheirSidesAtItsWidth(int bits, int quiet, bool companySkipped)
+    {
+        var river = River(bits, quiet, companySkipped);
+
+        Overhangs(Routes(river), Grid(river)).ShouldBeEmpty();
+    }
+
+    // Plans at the edges of what a plan holds keep their lines apart and off the boxes too: the pay at its
+    // ceiling, a pay low enough for the tax credit on low earned income to come back beside its taxes, a
+    // royalty past its limits, the costly car, and the company skipped with a high pay or a low one.
+    [Theory]
+    [MemberData(nameof(ExtremeRivers))]
+    public void Routed_aPlanAtTheEdges_keepsItsLinesApartAndOffTheBoxesAtTheirWidths(string plan)
+    {
+        var river = Extreme(plan);
+
+        var routes = Routes(river);
+
+        routes.ShouldSatisfyAllConditions(
+            () => river.Run().Error.ShouldBeNull(),
+            () => Crowded(routes, Grid(river).Units).ShouldBeEmpty(),
+            () => Crossings(routes, Boxes(river), Grid(river).Units).ShouldBeEmpty(),
+            () => Overhangs(routes, Grid(river)).ShouldBeEmpty());
+    }
+
+    // A lane its lines cannot all fit at their widths squeezes them into it, never past it: five lines down
+    // the pocket's lane, each as large as the run's largest line, cross no box and land on the pocket.
+    [Fact]
+    public void Routed_aLaneTooNarrowForItsLines_squeezesThemIntoItCrossingNoBox()
+    {
+        var river = MapLinksTests.Full;
+        var grid = Grid(river);
+        MapLink[] links =
+        [
+            Money(RiverModule.CompanyYear, MapEnd.Of(RiverModule.Vouchers)),
+            .. new[] { RiverModule.Vouchers, RiverModule.Allowances, RiverModule.Rent, RiverModule.Car, RiverModule.Copyright }.Select(module => Money(module, MapEnd.InBucket("pocket"))),
+        ];
+
+        var routes = RoutesOf(MapLayout.Routed(grid, links));
+
+        routes.ShouldSatisfyAllConditions(
+            () => routes.Select(route => route.Route.Width).Distinct().ShouldBe([MapLineWidths.Thickest]),
+            () => Crossings(routes, Boxes(river), grid.Units).ShouldBeEmpty(),
+            () => Overhangs(routes, grid).ShouldBeEmpty());
+    }
+
     // The ends a card's line joins in these plans are among those the routes are held to below.
     [Theory]
     [InlineData(false, false)]
@@ -230,7 +303,8 @@ public class MapLayoutTests
     }
 
     // A line between a module and a bucket, either way, beside every other line of the plan: it ends on
-    // its two boxes, crosses none, runs across or down only and shares no stretch with another.
+    // its two boxes, crosses none, runs across or down only and shares no stretch with another, and at its
+    // width keeps apart from the others and off the boxes.
     [Theory]
     [MemberData(nameof(EveryDrainEnds))]
     public void Routed_aLineEitherWayBetweenAModuleAndABucket_endsOnBothAndCrossesNoBox(int ends)
@@ -256,7 +330,10 @@ public class MapLayoutTests
                 .Select(route => route.Name).ShouldBeEmpty(),
             () => routes.SelectMany((a, i) => routes.Skip(i + 1)
                 .Where(b => Segments(a.Route).Any(sa => Segments(b.Route).Any(sb => Shared(sa, sb))))
-                .Select(b => $"{a.Name} with {b.Name}")).ShouldBeEmpty());
+                .Select(b => $"{a.Name} with {b.Name}")).ShouldBeEmpty(),
+            () => Crowded(routes, grid.Units).ShouldBeEmpty(),
+            () => Crossings(routes, boxes, grid.Units).ShouldBeEmpty(),
+            () => Overhangs(routes, grid).ShouldBeEmpty());
     }
 
     // A line back out of a bucket ends on its module, its arrow pointing into it.
@@ -364,7 +441,7 @@ public class MapLayoutTests
 
     // Each line of the plan, the run's links and the conditions between the modules it draws with a box,
     // folded past the levers the map draws quiet as the map folds them, once.
-    private static IReadOnlyList<(string Name, MapEnd From, MapEnd To, MapRoute Route, IReadOnlyList<RiverModule> Through)> Routes(RiverInputs river, params MapLink[] more)
+    private static IReadOnlyList<RoutedLine> Routes(RiverInputs river, params MapLink[] more)
     {
         var run = river.Run();
         var modules = MapView.ModulesOf(river);
@@ -374,11 +451,138 @@ public class MapLayoutTests
             .Select(condition => new MapLink(MapLinkKind.Condition, MapEnd.Of(condition.From), MapEnd.Of(condition.To), condition.From,
                 new MapLabel(MapText.Map, "Condition", []), null));
 
-        var links = MapLayout.Routed(MapLayout.Grid(modules, quiet, MostBadges), MapQuiet.Fold([.. MapLinks.Of(river, run), .. conditions, .. more], modules, quiet));
-
-        return [.. links.GroupBy(link => link.Route).Select(bundle => bundle.First())
-            .Select(link => ($"{link.Kind} {link.From.Id} to {link.To.Id}", link.From, link.To, link.Route!, link.Through))];
+        return RoutesOf(MapLayout.Routed(MapLayout.Grid(modules, quiet, MostBadges), MapQuiet.Fold([.. MapLinks.Of(river, run), .. conditions, .. more], modules, quiet)));
     }
+
+    // Each line of links routed, once.
+    private static IReadOnlyList<RoutedLine> RoutesOf(IReadOnlyList<MapLink> links) =>
+    [
+        .. links.GroupBy(link => link.Route).Select(bundle => bundle.First())
+            .Select(link => new RoutedLine($"{link.Kind} {link.From.Id} to {link.To.Id}", link.From, link.To, link.Route!, link.Through)),
+    ];
+
+    // A line as the layout routes it, named by its kind and its ends.
+    private sealed record RoutedLine(string Name, MapEnd From, MapEnd To, MapRoute Route, IReadOnlyList<RiverModule> Through);
+
+    // The sizes the map is drawn at, in pixels, each with a chain row at its smallest, 3.25rem
+    // (MapLayout.SmallestRowRem), the shortest the map is ever drawn: the narrowest, a column 34rem wide
+    // beside the chosen module's from 1,201 px (MapLayout.NarrowestRem), and its 1,184 px at 1,920 px.
+    private static readonly (string Name, decimal Width)[] Sizes = [("1,201 px", MapLayout.NarrowestRem * 16m), ("1,920 px", 1_184m)];
+
+    private const decimal RowPixels = MapLayout.SmallestRowRem * 16m;
+
+    // A hundredth of a pixel, for the rounding of the routes' percents.
+    private const decimal Tolerance = 0.01m;
+
+    // Every two lines running side by side closer than their half-widths and a halo's gap, at each size.
+    private static List<string> Crowded(IReadOnlyList<RoutedLine> routes, decimal units)
+    {
+        var faults = new List<string>();
+        foreach (var (size, width) in Sizes)
+        {
+            var scale = (X: width / 100m, Y: RowPixels * units / 100m);
+            faults.AddRange(routes.SelectMany((a, i) => routes.Skip(i + 1)
+                .Where(b => Segments(a.Route).Any(sa => Segments(b.Route).Any(sb => Closer(sa, sb, (a.Route.Width + b.Route.Width) / 2m + MapLinkStyle.HaloGap, scale))))
+                .Select(b => $"{a.Name} with {b.Name} at {size}")));
+        }
+
+        return faults;
+    }
+
+    // Whether two segments, both across or both down, run side by side along a stretch they share, closer
+    // than the pixels given.
+    private static bool Closer((MapPoint A, MapPoint B) a, (MapPoint A, MapPoint B) b, decimal apart, (decimal X, decimal Y) scale)
+    {
+        if (a.A.X == a.B.X && b.A.X == b.B.X)
+            return Along(a.A.Y, a.B.Y, b.A.Y, b.B.Y) && Math.Abs(a.A.X - b.A.X) * scale.X < apart - Tolerance;
+        if (a.A.Y == a.B.Y && b.A.Y == b.B.Y)
+            return Along(a.A.X, a.B.X, b.A.X, b.B.X) && Math.Abs(a.A.Y - b.A.Y) * scale.Y < apart - Tolerance;
+        return false;
+    }
+
+    // Whether two stretches of one axis share a part of it.
+    private static bool Along(decimal a1, decimal a2, decimal b1, decimal b2) =>
+        Math.Max(Math.Min(a1, a2), Math.Min(b1, b2)) < Math.Min(Math.Max(a1, a2), Math.Max(b1, b2));
+
+    // Every line whose stroke, at its width, enters a box, but the chain's its own quiet row, or runs past
+    // the map's edge, at each size.
+    private static List<string> Crossings(IReadOnlyList<RoutedLine> routes, IReadOnlyList<(string Id, MapSlot Slot, IReadOnlyList<RiverModule> Modules)> boxes, decimal units)
+    {
+        var faults = new List<string>();
+        foreach (var (size, width) in Sizes)
+        {
+            var scale = (X: width / 100m, Y: RowPixels * units / 100m);
+            var map = Pixels(new MapSlot(0m, 0m, 100m, 100m), scale);
+            foreach (var route in routes)
+            {
+                foreach (var stroke in Segments(route.Route).Select(segment => Stroke(segment, route.Route.Width, scale)))
+                {
+                    faults.AddRange(boxes.Where(box => !RunsThrough(route.Through, box.Modules) && Overlaps(stroke, Pixels(box.Slot, scale)))
+                        .Select(box => $"{route.Name} through {box.Id} at {size}"));
+                    if (stroke.Left < map.Left - Tolerance || stroke.Right > map.Right + Tolerance || stroke.Top < map.Top - Tolerance || stroke.Bottom > map.Bottom + Tolerance)
+                        faults.Add($"{route.Name} past the map's edge at {size}");
+                }
+            }
+        }
+
+        return faults;
+    }
+
+    // What a segment covers at its width, in pixels: its length, and half its width each side of it.
+    private static (decimal Left, decimal Top, decimal Right, decimal Bottom) Stroke((MapPoint A, MapPoint B) segment, decimal width, (decimal X, decimal Y) scale)
+    {
+        var (half, a, b) = (width / 2m, (X: segment.A.X * scale.X, Y: segment.A.Y * scale.Y), (X: segment.B.X * scale.X, Y: segment.B.Y * scale.Y));
+        return a.X == b.X
+            ? (a.X - half, Math.Min(a.Y, b.Y), a.X + half, Math.Max(a.Y, b.Y))
+            : (Math.Min(a.X, b.X), a.Y - half, Math.Max(a.X, b.X), a.Y + half);
+    }
+
+    private static (decimal Left, decimal Top, decimal Right, decimal Bottom) Pixels(MapSlot slot, (decimal X, decimal Y) scale) =>
+        (slot.Left * scale.X, slot.Top * scale.Y, slot.Right * scale.X, slot.Bottom * scale.Y);
+
+    // Whether two areas share more than an edge.
+    private static bool Overlaps((decimal Left, decimal Top, decimal Right, decimal Bottom) a, (decimal Left, decimal Top, decimal Right, decimal Bottom) b) =>
+        a.Left < b.Right - Tolerance && b.Left < a.Right - Tolerance && a.Top < b.Bottom - Tolerance && b.Top < a.Bottom - Tolerance;
+
+    // Every line whose width hangs past the side of a box it meets, where it leaves it and where it ends,
+    // the end of a line out of the river left out: on the narrowest map, where a side is the fewest pixels.
+    private static List<string> Overhangs(IReadOnlyList<RoutedLine> routes, MapLayout.MapGrid grid)
+    {
+        var scale = (X: Sizes[0].Width / 100m, Y: RowPixels * grid.Units / 100m);
+        return
+        [
+            .. routes.Where(route => Hangs(grid.Slot(route.From), route.Route.Points[0], route.Route.Width, scale)).Select(route => $"{route.Name} off {route.From.Id}"),
+            .. routes.Where(route => !route.To.IsOut && Hangs(grid.Slot(route.To), route.Route.End, route.Route.Width, scale)).Select(route => $"{route.Name} off {route.To.Id}"),
+        ];
+    }
+
+    // Whether a line meeting a box at a point of its edge hangs past the side the point is on, at its width.
+    private static bool Hangs(MapSlot box, MapPoint at, decimal width, (decimal X, decimal Y) scale)
+    {
+        var half = width / 2m - Tolerance;
+        return at.X == box.Left || at.X == box.Right
+            ? (at.Y - box.Top) * scale.Y < half || (box.Bottom - at.Y) * scale.Y < half
+            : (at.X - box.Left) * scale.X < half || (box.Right - at.X) * scale.X < half;
+    }
+
+    // A line of money as large as the run's largest, from a module to an end.
+    private static MapLink Money(RiverModule module, MapEnd to) =>
+        new(to.Module is null ? MapLinkKind.IntoBucket : MapLinkKind.PassedOn, MapEnd.Of(module), to, module, new MapLabel(MapText.Map, "Money", []), 100_000m);
+
+    // The plans at the edges of what a plan holds, by name.
+    public static TheoryData<string> ExtremeRivers() =>
+        new("the pay at its ceiling", "a low pay", "a royalty past its limits", "the costly car", "the company skipped, a high pay", "the company skipped, a low pay");
+
+    private static RiverInputs Extreme(string plan) => plan switch
+    {
+        "the pay at its ceiling" => MapLinksTests.Full.WithDirectorPay(10_000_000m),
+        "a low pay" => MapLinksTests.Full.WithDirectorPay(12_000m),
+        "a royalty past its limits" => MapLinksTests.Full.WithRoyalty(60_000m),
+        "the costly car" => MapViewConditionsTests.CostlyCar,
+        "the company skipped, a high pay" => MapLinksTests.Full.SkipCompany().WithDirectorPay(200_000m),
+        "the company skipped, a low pay" => MapLinksTests.Full.SkipCompany().WithDirectorPay(12_000m),
+        _ => throw new ArgumentOutOfRangeException(nameof(plan), plan, "A plan the tests have no inputs for."),
+    };
 
     private static IEnumerable<(MapPoint A, MapPoint B)> Segments(MapRoute route) => route.Points.Zip(route.Points.Skip(1));
 
