@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Text.RegularExpressions;
 using Netto.Web.Client.River;
 using Netto.Web.Client.Tabs;
@@ -163,26 +162,22 @@ public class MapAmountsTests
                 .Any(other => Strokes(other, scale).Any(stroke => stroke.Area.Overlaps(amount.Area(scale))))).Select(Name).ShouldBeEmpty());
     }
 
-    // The amounts are placed on each run of the river, in the browser, on the WebAssembly interpreter, many
-    // times slower than here: on the JIT the plan with every lever, 31 lines, takes about half a millisecond
-    // (2026-10-26). Held under 5 ms, the median of 21 placements, so a search grown tenfold fails here before
-    // it is felt there; the browser check measures it in the page.
+    // The amounts are placed on each run of the river, in the browser, on the WebAssembly interpreter. What the
+    // search does for the plan with every lever, 31 lines, is counted rather than timed, and held to about twice
+    // what it did when it was written (2026-10-26: 9,397 boxes, lines and amounts a place was held against, 163
+    // places weighed, 3 moves of an amount in the way), so a search grown many times over fails here, on any
+    // machine, before the browser feels it. The browser measured it then: 11 ms more an edit, on a costly car.
     [Fact]
-    public void Of_thePlanWithEveryLever_placesItsAmountsInUnderFiveMillisecondsOnTheJit()
+    public void Of_thePlanWithEveryLever_takesAtMostTwiceTheWorkItTookWhenWritten()
     {
         var view = MapView.From(MapLinksTests.Full, MapLinksTests.Full.Run());
-        static string Key(MapLabel label) => label.Key;
-        MapAmounts.Of(view, Key);
 
-        var times = Enumerable.Range(0, 21).Select(_ =>
-        {
-            var watch = Stopwatch.StartNew();
-            MapAmounts.Of(view, Key);
-            return watch.Elapsed.TotalMilliseconds;
-        }).Order().ToList();
+        var work = MapAmounts.Work(view, Say);
 
-        TestContext.Current.TestOutputHelper?.WriteLine($"Placing every lever's amounts: {times[10]:0.000} ms, the median of 21.");
-        times[10].ShouldBeLessThan(5);
+        work.ShouldSatisfyAllConditions(
+            () => work.Checks.ShouldBeLessThanOrEqualTo(19_000),
+            () => work.Places.ShouldBeLessThanOrEqualTo(330),
+            () => work.Moves.ShouldBeLessThanOrEqualTo(10));
     }
 
     // A kind of line the search has no rank for is refused, as the map's other switches over the kinds of

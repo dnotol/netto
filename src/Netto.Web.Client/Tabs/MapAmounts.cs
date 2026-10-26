@@ -52,6 +52,19 @@ internal static class MapAmounts
         return lines.Count == 0 ? [] : new Search(view, lines, say).Crowded();
     }
 
+    // What placing a map's amounts takes, counted rather than timed, so a search grown many times over shows
+    // the same on any machine.
+    internal static MapAmountsWork Work(MapView view, Func<MapLabel, string> say)
+    {
+        var lines = view.Bundles();
+        if (lines.Count == 0)
+            return new MapAmountsWork(0, 0, 0);
+
+        var search = new Search(view, lines, say);
+        search.Place();
+        return search.Work;
+    }
+
     private static bool IsMoney(MapBundle line) => line.Kind is MapLinkKind.PassedOn or MapLinkKind.IntoBucket;
 
     // What a line says: its amount, or a condition's word or two.
@@ -111,6 +124,14 @@ internal static class MapAmounts
         private readonly Spot?[] _placed;
         private readonly List<Spot>?[] _spots;
         private int _budget;
+
+        // The work done: the boxes, lines and amounts a place was held against, the places weighed, and the
+        // moves tried of an amount in the way.
+        private int _checks;
+        private int _places;
+        private int _moves;
+
+        public MapAmountsWork Work => new(_checks, _places, _moves);
 
         // What a track's pieces are worked out with, kept from one track to the next.
         private readonly List<int> _nearObstacles = [];
@@ -264,6 +285,7 @@ internal static class MapAmounts
         {
             _nearObstacles.Clear();
             _nearStrokes.Clear();
+            _checks += _obstacles.Length + _strokes.Length;
             for (var obstacle = 0; obstacle < _obstacles.Length; obstacle++)
             {
                 if (_obstacles[obstacle].Hits(area, BoxClearance))
@@ -288,6 +310,7 @@ internal static class MapAmounts
 
             _blocked.Clear();
             _crossed.Clear();
+            _checks += _nearObstacles.Count + _nearStrokes.Count;
             foreach (var obstacle in _nearObstacles)
             {
                 if (track.Beside(_obstacles[obstacle], BoxClearance))
@@ -414,6 +437,7 @@ internal static class MapAmounts
             foreach (var track in _tracks[index])
             {
                 _blocked.Clear();
+                _checks += _placed.Length;
                 for (var other = 0; other < _placed.Length; other++)
                 {
                     if (other != index && _placed[other] is { } placed && track.Beside(placed.Area, AmountClearance))
@@ -439,6 +463,7 @@ internal static class MapAmounts
 
                 void Consider(Piece piece, double from, double to)
                 {
+                    _places++;
                     var spot = SpotOn(track, piece, Math.Clamp(track.Middle, from, to));
                     if (best is null || spot.Score < best.Value.Score)
                         best = spot;
@@ -471,6 +496,7 @@ internal static class MapAmounts
         // the depth or the budget runs out.
         private List<(int Line, Spot Place)>? Make(Rect at, HashSet<int> moving, List<Rect> pinned, int depth)
         {
+            _moves++;
             if (--_budget < 0)
                 return null;
             foreach (var rect in pinned)
@@ -542,6 +568,7 @@ internal static class MapAmounts
             }
 
             spots.Sort(static (a, b) => a.Score.CompareTo(b.Score));
+            _places += spots.Count;
             return _spots[index] = spots;
         }
 
@@ -620,6 +647,10 @@ internal static class MapAmounts
     // A place an amount takes: its track, its middle along it, what it covers, and its score, the lower the better.
     private readonly record struct Spot(Track Track, double Along, Rect Area, double Score);
 }
+
+// What a search for the amounts' places did: the boxes, lines and amounts it held a place against, the
+// places it weighed, and the moves it tried of an amount in the way.
+internal readonly record struct MapAmountsWork(int Checks, int Places, int Moves);
 
 // One line's amount on the map, or a condition's word or two (Text): the point of its line it stands at (At,
 // in percent of the map, to the thousandth as the tab writes it), the stretch of its route that point is on,
