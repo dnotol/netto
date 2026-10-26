@@ -197,9 +197,10 @@ public enum MapLinkKind
 }
 
 // How each kind of link is drawn, told apart at a glance with no colour needed: its dash, none for a solid
-// line, and its width in pixels, which a line keeps however the map stretches (vector-effect). Money
-// passed on is solid and heavy, money into a bucket solid and light, what only changes a tax base dotted,
-// a condition dashed; no two kinds share a style. The map's lines and the filter's swatches read it. Every
+// line, and its width in pixels, which a line keeps however the map stretches (vector-effect), and its
+// ink. Money passed on is solid and heavy, money into a bucket solid and light, what only changes a tax
+// base dotted, a condition dashed; no two kinds share a style. The map's lines and arrowheads and the
+// filter's swatches read it, no stylesheet keeping an ink of its own for them. Every
 // line is drawn over a halo of the map's ground, its width and a gap each side (HaloGap), so a line drawn
 // over another leaves a gap on each side of it and the crossing reads as over and under.
 internal static class MapLinkStyle
@@ -214,6 +215,19 @@ internal static class MapLinkStyle
         MapLinkKind.Condition => "7 5",
         _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, "A kind of link the map has no style for."),
     };
+
+    // The ink a kind's lines, their arrowheads and the legend's sample of them are drawn in, the one place
+    // it is set: money passed on the strongest, money into a bucket and a tax base lighter, a condition
+    // muted, each a token of both themes. What reaches the pocket is the map's one gold.
+    public static string Ink(MapLinkKind kind) => kind switch
+    {
+        MapLinkKind.PassedOn => "var(--netto-data-strong)",
+        MapLinkKind.IntoBucket or MapLinkKind.TaxBase => "var(--netto-data-high)",
+        MapLinkKind.Condition => "var(--netto-text-muted)",
+        _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, "A kind of link the map has no ink for."),
+    };
+
+    public const string PocketInk = "var(--netto-gold)";
 
     public static string Width(MapLinkKind kind) => Pixels(Stroke(kind));
 

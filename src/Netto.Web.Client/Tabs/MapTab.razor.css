@@ -79,53 +79,29 @@
     opacity: 0.18;
 }
 
-/* A line keeps its width however the map stretches; its dash and width are its kind's (MapLinkStyle). */
+/* A line keeps its width however the map stretches; its dash, width and ink are its kind's, or the
+   pocket's gold, the one gold of the map (MapLinkStyle), set on the line itself, so this sheet keeps no
+   ink of its own for it. */
 .map-line {
     fill: none;
-    stroke: var(--netto-data-high);
     stroke-linecap: round;
     stroke-linejoin: round;
     vector-effect: non-scaling-stroke;
     transition: opacity 120ms ease;
 }
 
-.map-line--passed-on {
-    stroke: var(--netto-data-strong);
-}
-
-.map-line--condition {
-    stroke: var(--netto-text-muted);
-}
-
-/* What reaches the pocket, the one gold of the map. */
-.map-line--pocket {
-    stroke: var(--netto-gold);
-}
-
 .map-line--faded {
     opacity: 0.18;
 }
 
-/* An arrowhead where a line arrives, its point on the box's edge. */
+/* An arrowhead where a line arrives, its point on the box's edge, in its line's ink (--map-arrow, set on
+   the arrowhead itself from MapLinkStyle). */
 .map-arrow {
     position: absolute;
     width: 0;
     height: 0;
     border: 0.3rem solid transparent;
     pointer-events: none;
-    --map-arrow: var(--netto-data-high);
-}
-
-.map-arrow--passed-on {
-    --map-arrow: var(--netto-data-strong);
-}
-
-.map-arrow--condition {
-    --map-arrow: var(--netto-text-muted);
-}
-
-.map-arrow--pocket {
-    --map-arrow: var(--netto-gold);
 }
 
 .map-arrow--faded {

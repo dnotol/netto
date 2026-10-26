@@ -17,7 +17,8 @@
    the map starts at Director pay, over which Company year stays, drawn dashed as the river draws its
    skipped card and said skipped in words, with no link, so that it can be chosen and its year entered
    again beside the map; the cards that only wait for it are left out. Each link is a line of its kind
-   (MapLinkStyle: passed on, into a bucket, a tax base, a condition), with an arrowhead where it goes, drawn
+   (MapLinkStyle: passed on, into a bucket, a tax base, a condition), its dash, width and ink set on the line
+   itself, with an arrowhead in the same ink where it goes, drawn
    over a halo of the map's ground so that a line crossing another leaves a gap each side of it. The links
    of one card between the same two ends and of one kind are one line (MapBundle), which says, beside its
    card's box, one amount and no words: the sum of the card's lines it holds, each a figure the card draws;
@@ -71,13 +72,13 @@
                 @foreach (var (bundle, faded) in _drawn)
                 {
                     <polyline class="@HaloClass(faded)" points="@Points(bundle.Route)" stroke-width="@MapLinkStyle.Halo(bundle.Kind)" />
-                    <polyline class="@LineClass(bundle, faded)" points="@Points(bundle.Route)" stroke-dasharray="@MapLinkStyle.Dash(bundle.Kind)"
-                              stroke-width="@MapLinkStyle.Width(bundle.Kind)" data-link-kind="@bundle.Kind" />
+                    <polyline class="@LineClass(faded)" points="@Points(bundle.Route)" stroke-dasharray="@MapLinkStyle.Dash(bundle.Kind)"
+                              stroke-width="@MapLinkStyle.Width(bundle.Kind)" data-link-kind="@bundle.Kind" style="stroke: @Ink(bundle)" />
                 }
             </svg>
             @foreach (var (bundle, faded) in _drawn)
             {
-                <span class="@ArrowClass(bundle, faded)" style="left: @Percent(bundle.Route.End.X); top: @Percent(bundle.Route.End.Y)" aria-hidden="true"></span>
+                <span class="@ArrowClass(bundle, faded)" style="left: @Percent(bundle.Route.End.X); top: @Percent(bundle.Route.End.Y); --map-arrow: @Ink(bundle)" aria-hidden="true"></span>
             }
             @foreach (var block in _blocks)
             {
@@ -244,13 +245,15 @@
     // A module chosen again lets it go.
     private Task ChooseAsync(RiverModule module) => ChosenChanged.InvokeAsync(_chosen == module ? null : module);
 
-    private string LineClass(MapBundle bundle, bool faded) =>
-        $"map-line map-line--{Kind(bundle.Kind)}{(ToPocket(bundle) ? " map-line--pocket" : "")}{(faded ? " map-line--faded" : "")}";
+    private static string LineClass(bool faded) => $"map-line{(faded ? " map-line--faded" : "")}";
 
-    private string ArrowClass(MapBundle bundle, bool faded) =>
-        $"map-arrow map-arrow--{bundle.Route.Arrow.ToString().ToLowerInvariant()} map-arrow--{Kind(bundle.Kind)}{(ToPocket(bundle) ? " map-arrow--pocket" : "")}{(faded ? " map-arrow--faded" : "")}";
+    private static string ArrowClass(MapBundle bundle, bool faded) =>
+        $"map-arrow map-arrow--{bundle.Route.Arrow.ToString().ToLowerInvariant()}{(faded ? " map-arrow--faded" : "")}";
 
     private static string HaloClass(bool faded) => $"map-halo{(faded ? " map-halo--faded" : "")}";
+
+    // A line's ink and its arrowhead's, its kind's (MapLinkStyle), or the gold of what reaches the pocket.
+    private static string Ink(MapBundle bundle) => ToPocket(bundle) ? MapLinkStyle.PocketInk : MapLinkStyle.Ink(bundle.Kind);
 
     // What reaches the pocket is said in the gold of its line.
     private static string AmountClass(MapBundle bundle) => $"map-words__amount{(ToPocket(bundle) ? " map-words__amount--pocket" : "")}";
@@ -280,15 +283,6 @@
         $"map-module{(_chosen == node.End.Module ? " map-module--chosen" : "")}{(node.Refused ? " map-module--refused" : "")}{(node.Skipped ? " map-module--skipped" : "")}{(node.Quiet ? " map-module--quiet" : "")}";
 
     private static bool ToPocket(MapBundle bundle) => bundle.To.Bucket == "pocket";
-
-    private static string Kind(MapLinkKind kind) => kind switch
-    {
-        MapLinkKind.PassedOn => "passed-on",
-        MapLinkKind.IntoBucket => "into-bucket",
-        MapLinkKind.TaxBase => "tax-base",
-        MapLinkKind.Condition => "condition",
-        _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, null),
-    };
 
     private static string Side(MapLabelSide side) => side.ToString().ToLowerInvariant();
 

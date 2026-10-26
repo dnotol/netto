@@ -1,8 +1,8 @@
 /* ::deep reaches the MudCheckBoxes, which carry no scope attribute of their own. Colours are the site's
    variables, so both themes follow; the focus ring of a checkbox is the site's (app.css). Gold is the
    checkbox's own active colour, nothing else here. The samples are the map's lines in miniature: the
-   same dash and width (MapLinkStyle), the same ink as the line is drawn in (MapTab.razor.css), at least
-   3:1 on the card in both themes. */
+   same dash, width and ink (MapLinkStyle), set on each sample itself, so this sheet keeps no ink of its
+   own for them, at least 3:1 on the card in both themes. */
 
 /* A fieldset's own frame and minimum width are taken off, so the group is a plain block. */
 .map-filter {
@@ -72,16 +72,7 @@
 
     .map-filter__swatch line {
         fill: none;
-        stroke: var(--netto-data-high);
         stroke-linecap: round;
-    }
-
-    .map-filter__swatch[data-link-kind="PassedOn"] line {
-        stroke: var(--netto-data-strong);
-    }
-
-    .map-filter__swatch[data-link-kind="Condition"] line {
-        stroke: var(--netto-text-muted);
     }
 
 .map-filter__name {

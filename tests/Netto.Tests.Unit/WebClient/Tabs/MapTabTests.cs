@@ -50,6 +50,24 @@ public class MapTabTests
         Lines(html).ShouldBe(view.Drawn(null).Select(line => (line.Bundle.Kind.ToString(), MapLinkStyle.Dash(line.Bundle.Kind), MapLinkStyle.Width(line.Bundle.Kind))));
     }
 
+    // Each line and its arrowhead are drawn in their kind's ink, the style's own (MapLinkStyle.Ink), or in
+    // the gold of what reaches the pocket: no stylesheet keeps an ink of its own for them.
+    [Fact]
+    public async Task Tab_everyLineAndItsArrowhead_takeTheirKindsInkOrThePocketsGold()
+    {
+        var inks = MapView.From(Full, Full.Run()).Drawn(null)
+            .Select(line => (line.Bundle.Kind.ToString(), line.Bundle.To == MapEnd.InBucket("pocket") ? MapLinkStyle.PocketInk : MapLinkStyle.Ink(line.Bundle.Kind))).ToList();
+
+        var html = await RenderTabAsync(Full);
+
+        html.ShouldSatisfyAllConditions(
+            () => inks.Select(ink => ink.Item2).ShouldContain(MapLinkStyle.PocketInk),
+            () => Regex.Matches(html, "<polyline class=\"map-line[^>]*>").Select(match => (Attribute(match.Value, "data-link-kind"), Attribute(match.Value, "style")))
+                .ShouldBe(inks.Select(ink => ((string?)ink.Item1, (string?)$"stroke: {ink.Item2}"))),
+            () => Regex.Matches(html, "<span class=\"map-arrow [^>]*>").Select(match => Regex.Match(Attribute(match.Value, "style") ?? "", "--map-arrow: ([^;]*)$").Groups[1].Value)
+                .ShouldBe(inks.Select(ink => ink.Item2)));
+    }
+
     // Nothing chosen: one amount beside each line of money or of a tax base, the sum of the card's lines it
     // holds, and no words; a condition's line says in a word or two whether it holds.
     [Fact]

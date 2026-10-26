@@ -101,6 +101,18 @@ public class MapFilterTests
         samples.Distinct().Count().ShouldBe(samples.Count);
     }
 
+    // Each sample is drawn in the very ink its kind's lines are drawn in on the map (MapLinkStyle.Ink), so
+    // the legend can never say another colour than the map.
+    [Fact]
+    public async Task Filter_everySample_isInkedAsItsKindsLinesOnTheMap()
+    {
+        var html = await RenderAsync(new MapLinkFilter(new BrowserStorage()), Counts);
+
+        Regex.Matches(html, "<svg class=\"map-filter__swatch\" data-link-kind=\"(\\w+)\"[^>]*><line [^>]*style=\"([^\"]*)\"")
+            .Select(match => (match.Groups[1].Value, match.Groups[2].Value))
+            .ShouldBe(Enum.GetValues<MapLinkKind>().Select(kind => (kind.ToString(), $"stroke: {MapLinkStyle.Ink(kind)}")));
+    }
+
     [Fact]
     public async Task Filter_thePlansLinks_saysHowManyAreShown()
     {

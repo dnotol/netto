@@ -2,7 +2,7 @@
 @inject MapLinkFilter Filter
 
 @* The Map tab's legend, which is also its filter: one checkbox for every kind of link, each with a sample
-   of its line (MapLinkStyle, the very dash and width the map draws it with, so the legend tells the lines
+   of its line (MapLinkStyle, the very dash, width and ink the map draws it with, so the legend tells the lines
    apart without colour), its name, how many links the plan has of it and what it is. A kind ticked is
    drawn, a kind unticked is left out of the lines and of the words that list a chosen module's links, and
    the choice is the viewer's, remembered in the browser (MapLinkFilter). The group is a fieldset named by
@@ -22,7 +22,7 @@
                     <span class="map-filter__choice">
                         <span class="map-filter__head">
                             <svg class="map-filter__swatch" data-link-kind="@row.Kind" width="40" height="8" viewBox="0 0 40 8" aria-hidden="true" focusable="false">
-                                <line x1="2" y1="4" x2="38" y2="4" stroke-width="@MapLinkStyle.Width(row.Kind)" stroke-dasharray="@MapLinkStyle.Dash(row.Kind)" />
+                                <line x1="2" y1="4" x2="38" y2="4" stroke-width="@MapLinkStyle.Width(row.Kind)" stroke-dasharray="@MapLinkStyle.Dash(row.Kind)" style="stroke: @MapLinkStyle.Ink(row.Kind)" />
                             </svg>
                             <span class="map-filter__name">@L[MapFilterText.Name(row.Kind)]</span>
                             <span class="map-filter__count">@L[MapFilterText.Count(row.Count), row.Count]</span>
