@@ -63,6 +63,9 @@
   <data name="Skipped" xml:space="preserve">
     <value>skipped</value>
   </data>
+  <data name="Quiet" xml:space="preserve">
+    <value>nothing in this plan</value>
+  </data>
   <data name="Link" xml:space="preserve">
     <value>{0}: {1}, from {2} to {3}</value>
   </data>

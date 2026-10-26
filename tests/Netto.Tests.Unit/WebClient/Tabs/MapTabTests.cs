@@ -262,7 +262,7 @@ public class MapTabTests
 
     // Each button: the module it is, its name as a screen reader hears it, its pressed state, and whether
     // it is marked refused.
-    private static List<(string Module, string Name, string Pressed, bool Refused, bool Skipped)> Buttons(string html) =>
+    internal static List<(string Module, string Name, string Pressed, bool Refused, bool Skipped)> Buttons(string html) =>
     [
         .. Regex.Matches(html, "<button type=\"button\" class=\"(map-module[^\"]*)\"[^>]*aria-pressed=\"(\\w+)\"[^>]*data-module=\"([a-z-]+)\"[^>]*>(.*?)</button>", RegexOptions.Singleline)
             .Select(match => (match.Groups[3].Value, Regex.Replace(Regex.Replace(match.Groups[4].Value, "<[^>]*>", " "), "\\s+", " ").Trim(), match.Groups[2].Value,
@@ -270,10 +270,10 @@ public class MapTabTests
     ];
 
     // What the map draws, the list beside it left out.
-    private static string Map(string html) => Regex.Match(html, "<div class=\"map\".*?<div class=\"map-tab__side\"", RegexOptions.Singleline).Value;
+    internal static string Map(string html) => Regex.Match(html, "<div class=\"map\".*?<div class=\"map-tab__side\"", RegexOptions.Singleline).Value;
 
     // The amounts drawn beside the lines, and the words of the conditions' lines.
-    private static List<string> Amounts(string map) =>
+    internal static List<string> Amounts(string map) =>
         [.. Regex.Matches(map, "<span class=\"map-words__amount[^\"]*\"[^>]*>([^<]*)</span>").Select(match => match.Groups[1].Value)];
 
     private static List<string> States(string map) =>
@@ -284,7 +284,7 @@ public class MapTabTests
         [.. Regex.Matches(map, "<div class=\"map-words__bundle\"[^>]*>(.*?)</div>", RegexOptions.Singleline).Select(match => Text(match.Groups[1].Value))];
 
     // Each card line's words and amount beside a line of the module chosen.
-    private static List<string> WordLines(string map) =>
+    internal static List<string> WordLines(string map) =>
         [.. Regex.Matches(map, "<span class=\"map-words__line\"[^>]*>(.*?)</span></span>", RegexOptions.Singleline).Select(match => Text(match.Groups[1].Value))];
 
     private static string Text(string html) => Regex.Replace(Regex.Replace(html, "<[^>]*>", ""), "\\s+", " ").Trim();
@@ -304,7 +304,7 @@ public class MapTabTests
             Regex.Match(match.Value, "stroke-width=\"([^\"]*)\"").Groups[1].Value)),
     ];
 
-    private static List<(string Kind, string Text)> Words(string html) =>
+    internal static List<(string Kind, string Text)> Words(string html) =>
     [
         .. Regex.Matches(html, "<li class=\"map-links__link\" data-link-kind=\"(\\w+)\"[^>]*>(.*?)</li>", RegexOptions.Singleline)
             .Select(match => (match.Groups[1].Value, Regex.Replace(match.Groups[2].Value, "\\s+", " ").Trim())),

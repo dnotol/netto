@@ -24,6 +24,14 @@
    a condition says in a word or two whether it holds, its sentence left to the list. A line to the
    pocket and its amount are gold, the one gold of the map, since that is what reaches the director.
 
+   A lever that moves no money of its own in this plan, one added with nothing in it yet, is quiet
+   (MapQuiet): no box, its name in a dashed row it shares with the quiet levers it follows down the chain,
+   which says their word once, out of a screen reader's hearing, each name saying it in its button; the
+   royalty that comes to nothing is quiet in its own place. The chain's line runs on under the row, from
+   the box above to the box below, its amount said once, under it. A quiet name is a button like a box, so
+   that choosing it opens its card beside the map, where its amounts are entered; once it moves money it
+   has its box back, in its place.
+
    A module is a button: chosen, by a click or Enter or Space, it is marked (aria-pressed) and its own
    lines stay, worded beside its box with each card line's words and amount, while the others fade with no
    word and no amount, and its links are listed in words with their amounts beside the map,
@@ -105,21 +113,22 @@
             {
                 <div class="map-bucket map-bucket--@bucket.End.Id" data-bucket="@bucket.End.Id" style="@Box(bucket.Slot)">@EndName(bucket.End)</div>
             }
-            @foreach (var node in _view.Modules)
+            @foreach (var place in _view.Places())
             {
-                var module = node.End.Module!.Value;
-                <button type="button" class="@ModuleClass(node, module)" style="@Box(node.Slot)" aria-pressed="@(_chosen == module ? "true" : "false")"
-                        data-module="@node.End.Id" @onclick="() => ChooseAsync(module)">
-                    <span class="map-module__title">@L[MapTabText.Module(module)]</span>
-                    @if (node.Refused)
-                    {
-                        <span class="map-module__state">@L["Refused"]</span>
-                    }
-                    @if (node.Skipped)
-                    {
-                        <span class="map-module__state">@L["Skipped"]</span>
-                    }
-                </button>
+                if (place.Quiet)
+                {
+                    <div class="map-quiet" style="@Pill(place.Slot)">
+                        @foreach (var node in place.Nodes)
+                        {
+                            @ModuleButton(node)
+                        }
+                        <span class="map-quiet__word" aria-hidden="true">@L["Quiet"]</span>
+                    </div>
+                }
+                else
+                {
+                    @ModuleButton(place.Nodes[0])
+                }
             }
         </div>
     </div>
@@ -246,8 +255,28 @@
     // What reaches the pocket is said in the gold of its line.
     private static string AmountClass(MapBundle bundle) => $"map-words__amount{(ToPocket(bundle) ? " map-words__amount--pocket" : "")}";
 
-    private string ModuleClass(MapNode node, RiverModule module) =>
-        $"map-module{(_chosen == module ? " map-module--chosen" : "")}{(node.Refused ? " map-module--refused" : "")}{(node.Skipped ? " map-module--skipped" : "")}";
+    // A module's button: a box in its slot, or a name in its quiet row, which places it, saying its state in
+    // a word: refused, skipped, or, out of sight, since its row shows it, what a quiet lever moves.
+    private RenderFragment ModuleButton(MapNode node) =>
+        @<button type="button" class="@ModuleClass(node)" style="@(node.Quiet ? null : Box(node.Slot))" aria-pressed="@(_chosen == node.End.Module ? "true" : "false")"
+                 data-module="@node.End.Id" @onclick="() => ChooseAsync(node.End.Module!.Value)">
+            <span class="map-module__title">@L[MapTabText.Module(node.End.Module!.Value)]</span>
+            @if (node.Refused)
+            {
+                <span class="map-module__state">@L["Refused"]</span>
+            }
+            @if (node.Skipped)
+            {
+                <span class="map-module__state">@L["Skipped"]</span>
+            }
+            @if (node.Quiet)
+            {
+                <span class="map-module__quiet">@(" ")@L["Quiet"]</span>
+            }
+        </button>;
+
+    private string ModuleClass(MapNode node) =>
+        $"map-module{(_chosen == node.End.Module ? " map-module--chosen" : "")}{(node.Refused ? " map-module--refused" : "")}{(node.Skipped ? " map-module--skipped" : "")}{(node.Quiet ? " map-module--quiet" : "")}";
 
     private static bool ToPocket(MapBundle bundle) => bundle.To.Bucket == "pocket";
 
@@ -288,6 +317,11 @@
 
     private static string Box(MapSlot slot) =>
         $"left: {Percent(slot.Left)}; top: {Percent(slot.Top)}; width: {Percent(slot.Width)}; height: {Percent(slot.Height)}";
+
+    // A quiet row: as wide as its slot, at least as tall, placed by its middle, so that it grows about it
+    // when its names wrap.
+    private static string Pill(MapSlot slot) =>
+        $"left: {Percent(slot.Left)}; top: {Percent(slot.CenterY)}; width: {Percent(slot.Width)}; min-height: {Percent(slot.Height)}";
 
     private static string Percent(decimal value) => $"{Number(value)}%";
 

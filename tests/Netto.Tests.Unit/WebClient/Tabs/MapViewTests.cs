@@ -100,12 +100,21 @@ public class MapViewTests
             .ShouldBe((true, false));
     }
 
-    [Fact]
-    public void LinksOf_aModule_isEveryLinkWithItAtOneEnd()
+    // A module's links: every one with it at one end, and the chain's line running past it while it is
+    // quiet, the rent left empty here.
+    [Theory]
+    [InlineData(RiverModule.Car)]
+    [InlineData(RiverModule.Rent)]
+    public void LinksOf_aModule_isEveryLinkWithItAtOneEndOrRunningPastIt(RiverModule module)
     {
-        var view = MapView.From(Full, Full.Run());
+        var river = MapQuietTests.Emptied(Full, OptionalModule.Rent);
+        var view = MapView.From(river, river.Run());
 
-        view.LinksOf(RiverModule.Car).ShouldBe(view.Links.Where(link => link.From.Module == RiverModule.Car || link.To.Module == RiverModule.Car));
+        var links = view.LinksOf(module).ToList();
+
+        links.ShouldSatisfyAllConditions(
+            () => links.ShouldNotBeEmpty(),
+            () => links.ShouldBe(view.Links.Where(link => link.From.Module == module || link.To.Module == module || link.Through.Contains(module))));
     }
 
     [Fact]
