@@ -522,7 +522,7 @@ public class MapLayoutTests
         (OnEdge(grid, MapEnd.InBucket(bucket), route.Points[0]), OnEdge(grid, MapEnd.Of(module), route.End)).ShouldBe((true, true));
     }
 
-    // Links of the same ends and kind are one line on the map, their words drawn together.
+    // Links of the same ends and kind are one line on the map, their amount said once.
     [Fact]
     public void Routed_linksOfTheSameEndsAndKind_shareOneRoute()
     {

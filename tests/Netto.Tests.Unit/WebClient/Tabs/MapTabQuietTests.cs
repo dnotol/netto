@@ -10,10 +10,10 @@ using static Netto.Tests.WebClient.Tabs.MapTabTests;
 namespace Netto.Tests.WebClient.Tabs;
 
 // The Map tab as a viewer meets the levers that move no money of their own in the plan: their names in one
-// dashed row where they follow one another down the chain, each its own button in the river's order, named
-// with the row's word, which the row shows once; no amount on the row, the chain's line through it saying
-// its amount once; a quiet lever chosen pressed, with its card beside the map and the line running past it
-// in its neighbourhood. The royalty that comes to nothing is quiet in its own place.
+// dashed row where they follow one another down the chain, each its own button in the river's order, named,
+// out of sight, with the row's word, which the row does not show; no amount on the row, the chain's line
+// through it saying its amount once; a quiet lever chosen pressed, with its card beside the map and the line
+// running past it in its neighbourhood. The royalty that comes to nothing is quiet in its own place.
 public class MapTabQuietTests
 {
     private static readonly RiverInputs Full = MapLinksTests.Full;
