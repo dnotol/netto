@@ -278,7 +278,22 @@ public class MapLayoutTests
             () => Crowded(routes, Grid(river).Units).ShouldBeEmpty(),
             () => Crossings(routes, Boxes(river), Grid(river).Units).ShouldBeEmpty(),
             () => Overhangs(routes, Grid(river)).ShouldBeEmpty(),
-            () => Arrowheads(routes, Grid(river).Units).ShouldBeEmpty());
+            () => Arrowheads(routes, Grid(river).Units).ShouldBeEmpty(),
+            () => MapRoom.Without(MapView.From(river, river.Run())).ShouldBeEmpty());
+    }
+
+    // Every line of money has a stretch of its own for its amount, on its line or right beside it, where no other
+    // line of money runs along it, clear of the boxes, the quiet rows, the buckets, the arrowheads and the map's
+    // edge, on the narrowest map and at 1,920 px (MapRoom): room for each amount on its own line.
+    [Theory]
+    [MemberData(nameof(Rivers))]
+    public void From_anyPlan_givesEachLineOfMoneyAStretchOfItsOwnForItsAmount(int bits, int quiet, bool companySkipped)
+    {
+        var river = River(bits, quiet, companySkipped);
+
+        var without = MapRoom.Without(MapView.From(river, river.Run()));
+
+        without.ShouldBeEmpty();
     }
 
     // The way into the taxes and what comes back out of them turn along the band over the buckets, a row each,
@@ -600,9 +615,9 @@ public class MapLayoutTests
     // The sizes the map is drawn at, in pixels, each with a chain row at its smallest, 3.25rem
     // (MapLayout.SmallestRowRem), the shortest the map is ever drawn: the narrowest, a column 34rem wide
     // beside the chosen module's from 1,201 px (MapLayout.NarrowestRem), and its 1,184 px at 1,920 px.
-    private static readonly (string Name, decimal Width)[] Sizes = [("1,201 px", MapLayout.NarrowestRem * 16m), ("1,920 px", 1_184m)];
+    internal static readonly (string Name, decimal Width)[] Sizes = [("1,201 px", MapLayout.NarrowestRem * 16m), ("1,920 px", 1_184m)];
 
-    private const decimal RowPixels = MapLayout.SmallestRowRem * 16m;
+    internal const decimal RowPixels = MapLayout.SmallestRowRem * 16m;
 
     // A hundredth of a pixel, for the rounding of the routes' percents.
     private const decimal Tolerance = 0.01m;
