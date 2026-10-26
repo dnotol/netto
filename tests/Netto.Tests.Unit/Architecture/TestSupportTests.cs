@@ -4,8 +4,8 @@ using Shouldly;
 namespace Netto.Tests.Architecture;
 
 // The test support (Support/) is the one definition of what the tests share: the browser's storage
-// fakes, the reader of a component's .resx, and the engine tests' fixtures. A test file that declares
-// its own copy of one fails here, naming the file, so the copies do not come back.
+// fakes, the reader of a component's .resx, the reader of a stylesheet, and the engine tests' fixtures. A
+// test file that declares its own copy of one fails here, naming the file, so the copies do not come back.
 public class TestSupportTests
 {
     private static readonly string Folder =
@@ -70,6 +70,14 @@ public class TestSupportTests
     public void TestSources_componentActivators_areDefinedOnlyInSupport()
     {
         Declaring(@"\bclass\s+\w+[^{;]*:\s*[^{;]*\bIComponentActivator\b").ShouldBeEmpty();
+    }
+
+    // A reader of a stylesheet's rules for a selector, a rem length written as a stylesheet writes it, or a
+    // parse of app.css's theme blocks: Stylesheet is the one place that is.
+    [Fact]
+    public void TestSources_stylesheetReaders_areDefinedOnlyInSupport()
+    {
+        Declaring(@"\bstatic\s+string\s+(?:Block|Rem)\s*\(|:root\\\[data-theme").ShouldBeEmpty();
     }
 
     // The test sources outside Support, and this file, whose patterns would match themselves.

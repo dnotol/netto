@@ -76,17 +76,9 @@ public class NettoThemeTests
 
     // The hex colours declared in the theme's block of app.css: :root for dark, :root[data-theme="light"]
     // for light, which overrides them.
-    private static Dictionary<string, string> AppCssColours(string theme)
-    {
-        var css = File.ReadAllText(RepositoryFile.FindUp("src", "Netto.Web", "wwwroot", "app.css"));
-        var selector = theme == "dark" ? @":root\s*\{" : @":root\[data-theme=""light""\]\s*\{";
-        var block = Regex.Matches(css, selector + @"([^}]*)\}")
-            .Select(match => match.Groups[1].Value)
-            .FirstOrDefault(body => body.Contains("--netto-page")) ?? "";
-
-        return Regex.Matches(block, @"(--netto-[a-z-]+):\s*(#[0-9A-Fa-f]{6});")
-            .ToDictionary(match => match.Groups[1].Value, match => match.Groups[2].Value.ToLowerInvariant());
-    }
+    private static Dictionary<string, string> AppCssColours(string theme) =>
+        Stylesheet.ThemeTokens(theme).Where(token => Regex.IsMatch(token.Value, "^#[0-9A-Fa-f]{6}$"))
+            .ToDictionary(token => token.Key, token => token.Value.ToLowerInvariant());
 
     private static string Hex(MudColor colour) => $"#{colour.R:x2}{colour.G:x2}{colour.B:x2}";
 

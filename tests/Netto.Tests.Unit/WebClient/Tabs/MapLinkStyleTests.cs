@@ -55,13 +55,12 @@ public class MapLinkStyleTests
     [Fact]
     public void Ink_everyKind_isATokenBothThemesDeclare()
     {
-        var css = File.ReadAllText(RepositoryFile.FindUp("src", "Netto.Web", "wwwroot", "app.css"));
-        var (dark, light) = (Declared(css, @":root\s*\{"), Declared(css, @":root\[data-theme=""light""\]\s*\{"));
+        var (dark, light) = (Stylesheet.ThemeTokens("dark"), Stylesheet.ThemeTokens("light"));
         string[] tokens = [.. Enum.GetValues<MapLinkKind>().Select(MapLinkStyle.Ink).Select(Token)];
 
         tokens.ShouldSatisfyAllConditions(
             () => tokens.ShouldBe(["--netto-data-strong", "--netto-data-high", "--netto-data-high", "--netto-text-muted"]),
-            () => tokens.Where(token => !dark.Contains(token) || !light.Contains(token)).ShouldBeEmpty());
+            () => tokens.Where(token => !dark.ContainsKey(token) || !light.ContainsKey(token)).ShouldBeEmpty());
     }
 
     [Fact]
@@ -83,21 +82,15 @@ public class MapLinkStyleTests
     [InlineData("MapFilter.razor.css")]
     public void Stylesheet_inksNoLineArrowheadOrSampleOfItsOwn(string stylesheet)
     {
-        var css = File.ReadAllText(RepositoryFile.FindUp("src", "Netto.Web.Client", "Tabs", stylesheet));
+        var css = Stylesheet.Read("src", "Netto.Web.Client", "Tabs", stylesheet);
 
-        Regex.Matches(Regex.Replace(css, @"/\*.*?\*/", "", RegexOptions.Singleline), @"([^{}]+)\{([^}]*)\}")
-            .Where(rule => Regex.IsMatch(rule.Groups[1].Value, @"\.map-(line|arrow)(--[a-z-]+)?(?![\w-])|\.map-filter__swatch(?![\w-])|data-link-kind"))
-            .Where(rule => Regex.IsMatch(rule.Groups[2].Value, @"(?<![\w-])(stroke|--map-arrow|color)\s*:"))
-            .Select(rule => rule.Groups[1].Value.Trim()).ShouldBeEmpty();
+        Stylesheet.Rules(css)
+            .Where(rule => Regex.IsMatch(rule.Selector, @"\.map-(line|arrow)(--[a-z-]+)?(?![\w-])|\.map-filter__swatch(?![\w-])|data-link-kind"))
+            .Where(rule => Regex.IsMatch(rule.Declarations, @"(?<![\w-])(stroke|--map-arrow|color)\s*:"))
+            .Select(rule => rule.Selector).ShouldBeEmpty();
     }
 
     private static string Token(string ink) => Regex.Match(ink, @"^var\((--netto-[a-z-]+)\)$") is { Success: true } match ? match.Groups[1].Value : ink;
-
-    // The tokens a theme's block of app.css declares.
-    private static HashSet<string> Declared(string css, string selector) =>
-    [
-        .. Regex.Matches(Regex.Match(css, selector + @"([^}]*)\}").Groups[1].Value, @"(--netto-[a-z-]+)\s*:").Select(match => match.Groups[1].Value),
-    ];
 
     private static decimal Pixels(string width) => decimal.Parse(width, System.Globalization.CultureInfo.InvariantCulture);
 }

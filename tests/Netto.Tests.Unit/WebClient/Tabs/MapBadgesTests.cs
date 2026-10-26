@@ -1,5 +1,3 @@
-using System.Globalization;
-using System.Text.RegularExpressions;
 using Netto.Core.Simulation;
 using Netto.Web.Client;
 using Netto.Web.Client.River;
@@ -162,13 +160,13 @@ public class MapBadgesTests
     [Fact]
     public void MapTabCss_drawsABadgeWithTheRoomTheLayoutKeepsForIt()
     {
-        var css = File.ReadAllText(RepositoryFile.FindUp("src", "Netto.Web.Client", "Tabs", "MapTab.razor.css"));
+        var css = Stylesheet.Read("src", "Netto.Web.Client", "Tabs", "MapTab.razor.css");
 
         css.ShouldSatisfyAllConditions(
-            () => Block(css, ".map-badge").ShouldContain($"height: {Rem(MapLayout.BadgeRem)};"),
-            () => Block(css, ".map-badge").ShouldContain("box-sizing: border-box;"),
-            () => Block(css, ".map-module__badges").ShouldContain($"gap: {Rem(MapLayout.BadgeGapRem)};"),
-            () => Block(css, ".map-module__badges").ShouldContain($"margin-top: {Rem(MapLayout.BadgeGapRem)};"),
+            () => Stylesheet.Block(css, ".map-badge").ShouldContain($"height: {Stylesheet.Rem(MapLayout.BadgeRem)};"),
+            () => Stylesheet.Block(css, ".map-badge").ShouldContain("box-sizing: border-box;"),
+            () => Stylesheet.Block(css, ".map-module__badges").ShouldContain($"gap: {Stylesheet.Rem(MapLayout.BadgeGapRem)};"),
+            () => Stylesheet.Block(css, ".map-module__badges").ShouldContain($"margin-top: {Stylesheet.Rem(MapLayout.BadgeGapRem)};"),
             () => ((MapLayout.BadgeRem + MapLayout.BadgeGapRem) / MapLayout.SmallestRowRem).ShouldBe(0.3m));
     }
 
@@ -181,10 +179,4 @@ public class MapBadgesTests
     }
 
     internal static IReadOnlyDictionary<RiverModule, IReadOnlyList<MapBadge>> Of(RiverInputs river) => MapBadges.Of(Links(river));
-
-    // The declarations of a stylesheet's rules for a selector alone, in a media query or not.
-    private static string Block(string css, string selector) =>
-        string.Concat(Regex.Matches(css, $@"(?m)^\s*{Regex.Escape(selector)}\s*\{{([^}}]*)\}}").Select(match => match.Groups[1].Value));
-
-    private static string Rem(decimal value) => value.ToString(CultureInfo.InvariantCulture) + "rem";
 }

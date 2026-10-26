@@ -1,5 +1,3 @@
-using System.Globalization;
-using System.Text.RegularExpressions;
 using Netto.Core.Simulation;
 using Netto.Web.Client.River;
 using Netto.Web.Client.Tabs;
@@ -284,21 +282,15 @@ public class MapQuietTests
     [Fact]
     public void MapTabCss_drawsAQuietRowWithTheRoomTheLayoutKeepsForIt()
     {
-        var css = File.ReadAllText(RepositoryFile.FindUp("src", "Netto.Web.Client", "Tabs", "MapTab.razor.css"));
+        var css = Stylesheet.Read("src", "Netto.Web.Client", "Tabs", "MapTab.razor.css");
 
         css.ShouldSatisfyAllConditions(
-            () => Block(css, ".map").ShouldContain($"min-height: calc(var(--map-units) * {Rem(MapLayout.SmallestRowRem)});"),
-            () => Block(css, ".map-module--quiet").ShouldContain($"min-height: {Rem(MapLayout.QuietTargetRem)};"),
-            () => Block(css, ".map-quiet").ShouldContain($"row-gap: {Rem(MapLayout.QuietGapRem)};"),
-            () => Block(css, ".map-quiet").ShouldContain($"padding: {Rem(MapLayout.QuietPadRem)} 0.6rem;"),
-            () => Block(css, ".map-quiet").ShouldContain("border: 1px dashed"));
+            () => Stylesheet.Block(css, ".map").ShouldContain($"min-height: calc(var(--map-units) * {Stylesheet.Rem(MapLayout.SmallestRowRem)});"),
+            () => Stylesheet.Block(css, ".map-module--quiet").ShouldContain($"min-height: {Stylesheet.Rem(MapLayout.QuietTargetRem)};"),
+            () => Stylesheet.Block(css, ".map-quiet").ShouldContain($"row-gap: {Stylesheet.Rem(MapLayout.QuietGapRem)};"),
+            () => Stylesheet.Block(css, ".map-quiet").ShouldContain($"padding: {Stylesheet.Rem(MapLayout.QuietPadRem)} 0.6rem;"),
+            () => Stylesheet.Block(css, ".map-quiet").ShouldContain("border: 1px dashed"));
     }
-
-    // The declarations of a stylesheet's rules for a selector alone, in a media query or not.
-    private static string Block(string css, string selector) =>
-        string.Concat(Regex.Matches(css, $@"(?m)^\s*{Regex.Escape(selector)}\s*\{{([^}}]*)\}}").Select(match => match.Groups[1].Value));
-
-    private static string Rem(decimal value) => value.ToString(CultureInfo.InvariantCulture) + "rem";
 
     private static RiverModule[] Quiet(MapView view) => [.. view.Modules.Where(node => node.Quiet).Select(node => node.End.Module!.Value)];
 
