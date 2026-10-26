@@ -11,7 +11,8 @@ namespace Netto.Web.Client.Tabs;
 // the largest amount listed (Shares.Of), whichever way the money runs, since a plan at a loss has negative
 // lines (a net pay below nothing): nothing here is computed beyond that division, and no sum is made of the
 // lines. Only a tax base has an amount among the rules, and no bar, since it is money that changes a
-// base and does not move.
+// base and does not move. A condition is marked only where it is lost, as its badge says it (MapBadgeTone
+// .Lost): not where it does not hold and costs the plan nothing, a royalty lowering no pay.
 //
 // It is made of public records of words and plain values, the tab giving the words of a link (carries) and
 // of an end (endName) from its texts, since a component, which is always public, cannot take the map's own
@@ -57,7 +58,7 @@ public sealed record MapNeighbourhoodView(
     }
 
     // A rule from the side of the module chosen: the one it sets on the other end, or the one the other end
-    // sets on it. A condition is marked when it does not hold, in words (the engine says whether).
+    // sets on it. A condition lost is marked, in words; whether it is lost is the engine's (MapConditions).
     private static MapNeighbourhoodRule Rule(MapLink link, RiverModule module, Func<MapLabel, string> carries, Func<MapEnd, MapNeighbourhoodEnd> end)
     {
         var setsOn = link.From.Module == module;
@@ -66,7 +67,7 @@ public sealed record MapNeighbourhoodView(
             end(setsOn ? link.To : link.From),
             carries(link.Carries),
             link.Amount is { } amount ? Formats.Euros(amount) : null,
-            link.Holds == false);
+            link.Badge is { Tone: MapBadgeTone.Lost });
     }
 }
 
@@ -84,7 +85,7 @@ public sealed record MapNeighbourhoodRow(
 
 // A rule the module sets on another (SetsOn) or is under, the other one at Other: its words, its amount
 // where it is a tax base and none for a condition, whose sentence names its figures, and whether a
-// condition does not hold.
+// condition is lost (NotHolding): it does not hold and costs the plan its rate or its reserve.
 public sealed record MapNeighbourhoodRule(bool SetsOn, MapNeighbourhoodEnd Other, string Words, string? Amount, bool NotHolding);
 
 // An end of a line, named; a module on the map, which the viewer can go to, has its module.

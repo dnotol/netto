@@ -1,7 +1,10 @@
+using Netto.Core.CorporateTax;
+using Netto.Core.Simulation;
 using Netto.Web.Client;
 using Netto.Web.Client.River;
 using Netto.Web.Client.Tabs;
 using Shouldly;
+using static Netto.Tests.WebClient.Tabs.MapNeighbourhoodHtml;
 
 namespace Netto.Tests.WebClient.Tabs;
 
@@ -17,8 +20,6 @@ public class MapNeighbourhoodViewTests
     // The costly car's benefit is beyond 20% of the pay: a condition that does not hold.
     private static readonly RiverInputs CostlyCar = MapViewConditionsTests.CostlyCar;
 
-    private static readonly RiverInputs ChainQuiet = MapQuietTests.Emptied(Full, OptionalModule.Allowances, OptionalModule.Rent, OptionalModule.Car);
-
     public static TheoryData<RiverModule> FullPlansModules => new(MapView.ModulesOf(Full));
 
     // A link worded by its key and its arguments, a module end by its name in the map's elements.
@@ -29,8 +30,6 @@ public class MapNeighbourhoodViewTests
     private static MapNeighbourhoodView Of(RiverInputs river, RiverModule module) => Of(MapView.From(river, river.Run()), module);
 
     private static MapNeighbourhoodView Of(MapView view, RiverModule module) => MapNeighbourhoodView.Of(view, module, Words, Name);
-
-    private static bool IsMoney(MapLink link) => link.Kind is MapLinkKind.PassedOn or MapLinkKind.IntoBucket;
 
     // What comes into a module and what goes out of it are its money links with it at one end, one row for
     // each, in the order of the map's links.
@@ -77,7 +76,7 @@ public class MapNeighbourhoodViewTests
 
         hood.ComesIn.Concat(hood.GoesOut).Select(row => (row.Words, row.Amount)).ShouldBe(
             view.LinksOf(module).Where(IsMoney).OrderBy(link => link.To.Module == module ? 0 : 1)
-                .Select(link => (Words(link.Carries), Formats.Euros(link.Amount!.Value))));
+                .Select(link => (Words(link.Carries), Formats.Euros(Money(link)))));
     }
 
     // A row's bar is its amount's share of the largest amount listed for the module, in and out: the
@@ -88,13 +87,13 @@ public class MapNeighbourhoodViewTests
     {
         var view = MapView.From(Full, Full.Run());
         var money = view.LinksOf(module).Where(IsMoney).OrderBy(link => link.To.Module == module ? 0 : 1).ToList();
-        var largest = money.Count == 0 ? 0m : money.Max(link => Math.Abs(link.Amount!.Value));
+        var largest = money.Count == 0 ? 0m : money.Max(link => Math.Abs(Money(link)));
 
         var hood = Of(view, module);
 
         var shares = hood.ComesIn.Concat(hood.GoesOut).Select(row => row.Share).ToList();
         shares.ShouldSatisfyAllConditions(
-            () => shares.ShouldBe(money.Select(link => Shares.Of(Math.Abs(link.Amount!.Value), largest))),
+            () => shares.ShouldBe(money.Select(link => Shares.Of(Math.Abs(Money(link)), largest))),
             () => shares.ShouldAllBe(share => share >= 0m && share <= 1m),
             () => (shares.Count == 0 || shares.Max() == 1m).ShouldBeTrue());
     }
@@ -104,8 +103,8 @@ public class MapNeighbourhoodViewTests
     public void Of_aLineBelowNothing_isBarredByItsSize()
     {
         var view = MapView.From(CostlyCar, CostlyCar.Run());
-        var netPay = view.LinksOf(RiverModule.DirectorPay).Single(link => link.Carries.Key == "Drain_net_pay").Amount!.Value;
-        var largest = view.LinksOf(RiverModule.DirectorPay).Where(IsMoney).Max(link => Math.Abs(link.Amount!.Value));
+        var netPay = Money(view.LinksOf(RiverModule.DirectorPay).Single(link => link.Carries.Key == "Drain_net_pay"));
+        var largest = view.LinksOf(RiverModule.DirectorPay).Where(IsMoney).Max(link => Math.Abs(Money(link)));
 
         var row = Of(view, RiverModule.DirectorPay).GoesOut.Single(row => row.Words == "Drain_net_pay");
 
@@ -188,21 +187,51 @@ public class MapNeighbourhoodViewTests
             () => hood.Rules.Select(rule => rule.Words).ShouldBe(rules.Select(link => Words(link.Carries))));
     }
 
-    // A rule that does not hold is marked, whichever way it is read: the car's benefits are over their share
-    // of the pay, so the rate is lost; the others, which hold, and the tax bases are not.
+    // The rule that is lost is marked and no other is: the costly car's benefits are over their share of the
+    // pay, so the rate is lost; the pay's condition, which holds, and the tax bases are not.
     [Fact]
-    public void Of_aConditionThatDoesNotHold_isMarkedAndNoOtherRuleIs()
+    public void Of_aConditionThatIsLost_isMarkedAndNoOtherRuleIs()
     {
-        var view = MapView.From(CostlyCar, CostlyCar.Run());
-        var conditions = view.Links.Where(link => link.Kind == MapLinkKind.Condition).ToList();
-
-        var hood = Of(view, RiverModule.CorporateTax);
+        var hood = Of(CostlyCar, RiverModule.CorporateTax);
 
         hood.ShouldSatisfyAllConditions(
-            () => conditions.Select(link => link.Holds).Distinct().Order().ShouldBe([false, true]),
-            () => hood.Rules.Count(rule => rule.NotHolding).ShouldBe(view.LinksOf(RiverModule.CorporateTax).Count(link => link.Holds == false)),
-            () => hood.Rules.Count(rule => rule.NotHolding).ShouldBeGreaterThan(0),
+            () => hood.Rules.Where(rule => rule.NotHolding).Select(Condition).ShouldBe(["Condition_Benefits_Lost"]),
+            () => hood.Rules.Where(rule => !rule.NotHolding).Select(Condition).ShouldContain("Condition_Pay_MinimumPayMet"),
             () => hood.Rules.Where(rule => rule.Amount is not null).ShouldNotContain(rule => rule.NotHolding));
+    }
+
+    // The key a rule's words are said by.
+    private static string Condition(MapNeighbourhoodRule rule) => rule.Words.Split('|')[0];
+
+    // A condition each kind in each state, and whether its rule is marked: only where the rate or the reserve
+    // is lost, as its badge says it. A royalty that lowers no pay does not hold either, but loses nothing.
+    public static TheoryData<YearCondition, bool> Conditions => new()
+    {
+        { new PayKeepsReducedRate(ReducedRateCondition.MinimumPayNotMet, 51_000m, 40_000m, 60_000m), true },
+        { new PayKeepsReducedRate(ReducedRateCondition.MinimumPayMet, 51_000m, 60_000m, 40_000m), false },
+        { new PayKeepsReducedRate(ReducedRateCondition.TaxableIncomeNotAbovePay, 51_000m, 50_000m, 50_000m), false },
+        { new BenefitsWithinShareOfPay(false, 1_714.29m, 6_714.29m, 0.20m), true },
+        { new BenefitsWithinShareOfPay(true, 1_714.29m, 51_714.29m, 0.20m), false },
+        { new NoOfficeAllowanceBesideRent(1_380m, 0m), false },
+        { new NoOfficeAllowanceBesideRent(0m, 1_938.44m), false },
+        { new RoyaltyLowersPayKeepingReducedRate(40_000m, 50_000m, false), false },
+        { new RoyaltyLowersPayKeepingReducedRate(40_000m, null, true), false },
+        { new RoyaltyLowersPayKeepingReducedRate(51_000m, 51_000m, false), false },
+        { new RoyaltyLowersPayKeepingReducedRate(null, null, true), true },
+        { new PayOutCoversReserve(40_000m, 40_000m), false },
+        { new PayOutCoversReserve(40_000.01m, 40_000m), true },
+    };
+
+    [Theory]
+    [MemberData(nameof(Conditions))]
+    public void Of_aCondition_isMarkedOnlyWhereTheRateOrTheReserveIsLost(YearCondition condition, bool marked)
+    {
+        var link = MapConditions.Link(condition);
+        var view = MapView.From(Full, Full.Run()) with { Links = [link] };
+
+        var rule = Of(view, link.From.Module.ShouldNotBeNull()).Rules.ShouldHaveSingleItem();
+
+        rule.NotHolding.ShouldBe(marked);
     }
 
     // The legend ticks the lines of the map and nothing here: the view is made from the run's every link, so
@@ -233,7 +262,7 @@ public class MapNeighbourhoodViewTests
             () => hood.Rules.ShouldBeEmpty(),
             () => hood.PassesThrough.ShouldHaveSingleItem().ShouldSatisfyAllConditions(
                 row => row.Words.ShouldBe(Words(past.Carries)),
-                row => row.Amount.ShouldBe(Formats.Euros(past.Amount!.Value)),
+                row => row.Amount.ShouldBe(Formats.Euros(Money(past))),
                 row => row.From.ShouldBe(new MapNeighbourhoodEnd("vouchers", RiverModule.Vouchers)),
                 row => row.To.ShouldBe(new MapNeighbourhoodEnd("split", RiverModule.Split))),
             () => hood.IsEmpty.ShouldBeFalse());
