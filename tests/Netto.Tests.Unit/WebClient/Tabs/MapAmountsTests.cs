@@ -81,10 +81,8 @@ public class MapAmountsTests
             () => view.Bundles().Where(line => !amounts.Any(amount => ReferenceEquals(amount.Bundle.Route, line.Route))).Select(Name).ShouldBeEmpty(),
             () => amounts.Count.ShouldBe(view.Bundles().Count),
             () => amounts.Where(amount => !OnItsStretch(amount)).Select(Name).ShouldBeEmpty(),
-            () => Sizes(view).SelectMany(scale => amounts.SelectMany(amount => view.Bundles()
-                .Where(other => !ReferenceEquals(other.Route, amount.Bundle.Route) && other.Kind is MapLinkKind.PassedOn or MapLinkKind.IntoBucket)
-                .Where(other => Strokes(other, scale).Any(stroke => stroke.Across == Across(amount) && stroke.Area.Overlaps(amount.Area(scale))))
-                .Select(other => $"{Name(amount)} along {Name(other)} at {scale}"))).ShouldBeEmpty());
+            () => Sizes(view).SelectMany(scale => Along(view, amounts, scale)).Where(along => along.Other.Kind is MapLinkKind.PassedOn or MapLinkKind.IntoBucket)
+                .Select(Name).ShouldBeEmpty());
     }
 
     // No amount is over a box, a quiet row, a bucket, an arrowhead or another amount, a pixel off each and two
@@ -98,22 +96,50 @@ public class MapAmountsTests
         Sizes(view).SelectMany(scale => Faults(view, amounts, scale)).ShouldBeEmpty();
     }
 
-    // A line under an amount crosses it square to the stretch it stands on, under its ground, never along it:
-    // every line, under every amount and every condition's word or two but one. The condition the split sets on
-    // Corporate tax comes down between the split's money into Corporate tax and, with a company car, the car's
-    // rules into it, too close to them for its word, which stands where they run along it the least.
+    // Every line under an amount, of money or of a tax base, crosses it square to the stretch it stands on,
+    // under its ground, never along it, at any size.
     [Theory]
     [MemberData(nameof(Plans))]
-    public void Of_anyPlan_crossesAnotherLineOnlySquareButTheCarsRulesBesideTheSplitsCondition(string plan)
+    public void Of_anyPlan_crossesAnotherLineUnderAnAmountOnlySquare(string plan)
     {
         var (view, amounts) = Placed(plan);
 
-        Sizes(view).SelectMany(scale => amounts.SelectMany(amount => view.Bundles().Where(other => !ReferenceEquals(other.Route, amount.Bundle.Route))
-                .Where(other => Strokes(other, scale).Any(stroke => stroke.Across == Across(amount) && stroke.Area.Overlaps(amount.Area(scale))))
-                .Where(other => !(amount.Bundle.Kind == MapLinkKind.Condition && amount.Bundle.From == MapEnd.Of(RiverModule.Split) && amount.Bundle.To == MapEnd.Of(RiverModule.CorporateTax)
-                    && other.Kind is MapLinkKind.TaxBase or MapLinkKind.Condition && other.From == MapEnd.Of(RiverModule.Car) && other.To == MapEnd.Of(RiverModule.CorporateTax)))
-                .Select(other => $"{Name(amount)} along {Name(other)} at {scale}")))
-            .ShouldBeEmpty();
+        Sizes(view).SelectMany(scale => Along(view, amounts.Where(amount => amount.Bundle.Amount is not null), scale)).Select(Name).ShouldBeEmpty();
+    }
+
+    // A rule's line runs along a condition's word in one case alone. The condition the split sets on Corporate
+    // tax comes down between the split's money into Corporate tax and a company car's rules into it, too close to
+    // them for its word: its line is the only one left with no place free of every other line, the other amounts
+    // where they stand (MapAmounts.Crowded), so a rule's line runs along its word, the car's, and only there;
+    // every other line under a condition's word crosses it square.
+    [Theory]
+    [MemberData(nameof(Plans))]
+    public void Of_anyPlan_runsARulesLineAlongTheSplitsConditionOnCorporateTaxAloneBesideTheCarsRulesWhereItHasNoPlaceFreeOfThem(string plan)
+    {
+        var (view, amounts) = Placed(plan);
+        var crowded = MapAmounts.Crowded(view, Say);
+
+        var along = Sizes(view).SelectMany(scale => Along(view, amounts, scale)).ToList();
+
+        along.ShouldSatisfyAllConditions(
+            () => along.Where(pair => !SplitsConditionOnCorporateTax(pair.Amount.Bundle) || !CarsRuleOnCorporateTax(pair.Other)).Select(Name).ShouldBeEmpty(),
+            () => along.Where(pair => !crowded.Any(line => ReferenceEquals(line.Route, pair.Amount.Bundle.Route))).Select(Name).ShouldBeEmpty(),
+            () => crowded.Where(line => !SplitsConditionOnCorporateTax(line)).Select(Name).ShouldBeEmpty());
+    }
+
+    // The case that rule allows happens: with a company car, the split's condition on Corporate tax has no place
+    // left free of every other line, and the car's rules into Corporate tax run along its word.
+    [Fact]
+    public void Of_aCompanyCar_runsTheCarsRulesAlongTheSplitsConditionOnCorporateTaxWhichHasNoPlaceFreeOfThem()
+    {
+        var (view, amounts) = Placed("the costly car");
+
+        var along = Along(view, amounts, MapScale.Smallest(view.Units)).ToList();
+
+        along.ShouldSatisfyAllConditions(
+            () => MapAmounts.Crowded(view, Say).Select(Name).ShouldBe(["Condition split to corporate-tax"]),
+            () => along.ShouldNotBeEmpty(),
+            () => along.ShouldAllBe(pair => SplitsConditionOnCorporateTax(pair.Amount.Bundle) && CarsRuleOnCorporateTax(pair.Other)));
     }
 
     // Of the places on its own line, an amount takes one no other line crosses where there is one: a line
@@ -252,6 +278,21 @@ public class MapAmountsTests
             : amount.At.X == a.X && amount.At.Y >= Math.Min(a.Y, b.Y) && amount.At.Y <= Math.Max(a.Y, b.Y) && amount.Side is MapAmountSide.On or MapAmountSide.Left or MapAmountSide.Right;
         return past || on;
     }
+
+    // Every other line with a stretch running along an amount, the same way as the stretch the amount stands
+    // on, over it, the map drawn at a scale.
+    private static IEnumerable<(MapAmount Amount, MapBundle Other)> Along(MapView view, IEnumerable<MapAmount> amounts, MapScale scale) =>
+        amounts.SelectMany(amount => view.Bundles().Where(other => !ReferenceEquals(other.Route, amount.Bundle.Route))
+            .Where(other => Strokes(other, scale).Any(stroke => stroke.Across == Across(amount) && stroke.Area.Overlaps(amount.Area(scale))))
+            .Select(other => (amount, other)));
+
+    private static string Name((MapAmount Amount, MapBundle Other) along) => $"{Name(along.Amount)} along {Name(along.Other)}";
+
+    private static bool SplitsConditionOnCorporateTax(MapBundle line) =>
+        line.Kind == MapLinkKind.Condition && line.From == MapEnd.Of(RiverModule.Split) && line.To == MapEnd.Of(RiverModule.CorporateTax);
+
+    private static bool CarsRuleOnCorporateTax(MapBundle line) =>
+        line.Kind is MapLinkKind.TaxBase or MapLinkKind.Condition && line.From == MapEnd.Of(RiverModule.Car) && line.To == MapEnd.Of(RiverModule.CorporateTax);
 
     // Whether the stretch an amount stands on runs across the map.
     private static bool Across(MapAmount amount) => amount.Bundle.Route.Points[amount.Stretch].Y == amount.Bundle.Route.Points[amount.Stretch + 1].Y;

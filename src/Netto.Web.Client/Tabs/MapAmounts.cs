@@ -43,6 +43,15 @@ internal static class MapAmounts
         return lines.Count == 0 ? [] : new Search(view, lines, say).Place();
     }
 
+    // The lines whose amount, every other amount where the search placed it, has no place left on its own line
+    // free of every other line: the only ones a rule's line may run along, since one along an amount costs the
+    // search ten crossings (RuleAlong).
+    internal static IReadOnlyList<MapBundle> Crowded(MapView view, Func<MapLabel, string> say)
+    {
+        var lines = view.Bundles();
+        return lines.Count == 0 ? [] : new Search(view, lines, say).Crowded();
+    }
+
     private static bool IsMoney(MapBundle line) => line.Kind is MapLinkKind.PassedOn or MapLinkKind.IntoBucket;
 
     // What a line says: its amount, or a condition's word or two.
@@ -60,8 +69,8 @@ internal static class MapAmounts
     // arrowhead (a pixel off), the map's edge and each other line of money running the same way as the stretch
     // (at its width and halo) rules out a stretch of the track; a line running the other way only crosses it,
     // square, under its ground, which costs a crossing; a rule's line running the same way costs ten, so that it
-    // runs along an amount only where no place is free of it. The places left fall in pieces each crossed by the
-    // same lines.
+    // runs along an amount only where no place free of it is left, the other amounts where they stand (Crowded).
+    // The places left fall in pieces each crossed by the same lines and with the same rules' lines along.
     //
     // The lines of money take their places first, then the tax bases, then the conditions, each kind the most
     // constrained first: each its place costing the least, on its line rather than beside it, nearest the middle
@@ -107,7 +116,7 @@ internal static class MapAmounts
         private readonly List<int> _nearObstacles = [];
         private readonly List<int> _nearStrokes = [];
         private readonly List<(double From, double To)> _blocked = [];
-        private readonly List<(double From, double To, int Cost)> _crossed = [];
+        private readonly List<(double From, double To, bool Along)> _crossed = [];
         private readonly List<(double From, double To)> _free = [];
         private readonly List<double> _cuts = [];
 
@@ -293,11 +302,11 @@ internal static class MapAmounts
 
                 var (from, to) = track.Along(stroke.Area, 0);
                 if (stroke.Across != track.Across)
-                    _crossed.Add((from, to, Square));
+                    _crossed.Add((from, to, false));
                 else if (stroke.Money)
                     _blocked.Add((from, to));
                 else
-                    _crossed.Add((from, to, RuleAlong));
+                    _crossed.Add((from, to, true));
             }
 
             var pieces = new List<Piece>();
@@ -306,7 +315,7 @@ internal static class MapAmounts
             {
                 if (from == to)
                 {
-                    pieces.Add(new Piece(from, to, Cost(from)));
+                    pieces.Add(PieceOf(from, to));
                     continue;
                 }
 
@@ -328,24 +337,43 @@ internal static class MapAmounts
                     var start = cut == 0 ? _cuts[cut] : _cuts[cut] + Slack;
                     var end = cut + 2 == _cuts.Count ? _cuts[cut + 1] : _cuts[cut + 1] - Slack;
                     if (end >= start)
-                        pieces.Add(new Piece(start, end, Cost((start + end) / 2)));
+                        pieces.Add(PieceOf(start, end));
                 }
             }
 
             return pieces;
         }
 
-        // What the lines crossing a place on the track being worked out cost it.
-        private int Cost(double along)
+        // A piece of the track being worked out, with the lines crossing it and the rules' lines along it.
+        private Piece PieceOf(double from, double to)
         {
-            var cost = 0;
-            foreach (var (from, to, each) in _crossed)
+            var (inside, crossings, rulesAlong) = ((from + to) / 2, 0, 0);
+            foreach (var (start, end, along) in _crossed)
             {
-                if (from < along && along < to)
-                    cost += each;
+                if (start < inside && inside < end)
+                {
+                    if (along)
+                        rulesAlong++;
+                    else
+                        crossings++;
+                }
             }
 
-            return cost;
+            return new Piece(from, to, crossings, rulesAlong);
+        }
+
+        // The lines whose amount, the others placed, has no place free of every other line.
+        public List<MapBundle> Crowded()
+        {
+            Place();
+            var crowded = new List<MapBundle>();
+            for (var index = 0; index < _lines.Count; index++)
+            {
+                if (Best(index, freeOfRules: true) is null)
+                    crowded.Add(_lines[index]);
+            }
+
+            return crowded;
         }
 
         // What is left of a stretch of a track once the stretches given are ruled out (each open: a place at its
@@ -378,21 +406,24 @@ internal static class MapAmounts
             free.Add((cursor, max));
         }
 
-        // The best place for a line's amount off the amounts placed: none where there is none.
-        private Spot? Best(int index)
+        // The best place for a line's amount off the other amounts placed, or the best with no rule's line
+        // along it: none where there is none.
+        private Spot? Best(int index, bool freeOfRules = false)
         {
             Spot? best = null;
             foreach (var track in _tracks[index])
             {
                 _blocked.Clear();
-                foreach (var placed in _placed)
+                for (var other = 0; other < _placed.Length; other++)
                 {
-                    if (placed is { } other && track.Beside(other.Area, AmountClearance))
-                        _blocked.Add(track.Along(other.Area, AmountClearance));
+                    if (other != index && _placed[other] is { } placed && track.Beside(placed.Area, AmountClearance))
+                        _blocked.Add(track.Along(placed.Area, AmountClearance));
                 }
 
                 foreach (var piece in track.Pieces)
                 {
+                    if (freeOfRules && piece.RulesAlong > 0)
+                        continue;
                     if (_blocked.Count == 0)
                         Consider(piece, piece.From, piece.To);
                     else
@@ -518,7 +549,7 @@ internal static class MapAmounts
         // beside it, then nearest its stretch's middle, then on the longest stretch.
         private static Spot SpotOn(Track track, Piece piece, double along) =>
             new(track, along, track.At(along),
-                piece.Cost * 100 + track.Cost + Math.Abs(along - track.Middle) / Math.Max(1, track.Length) * 4 - Math.Min(track.Length, 200) / 100);
+                (piece.Crossings * Square + piece.RulesAlong * RuleAlong) * 100 + track.Cost + Math.Abs(along - track.Middle) / Math.Max(1, track.Length) * 4 - Math.Min(track.Length, 200) / 100);
 
         // A place as the tab draws it: its point on its stretch, in percent to the thousandth, the side of it it
         // stands, and its box's corner from it in pixels to the hundredth.
@@ -583,8 +614,8 @@ internal static class MapAmounts
         public Rect At(double along) => Across ? new Rect(along - Half, Low, along + Half, High) : new Rect(Low, along - Half, High, along + Half);
     }
 
-    // A piece of a track crossed by the same lines, and what they cost it.
-    private readonly record struct Piece(double From, double To, int Cost);
+    // A piece of a track crossed by the same lines, square to it, and with the same rules' lines along it.
+    private readonly record struct Piece(double From, double To, int Crossings, int RulesAlong);
 
     // A place an amount takes: its track, its middle along it, what it covers, and its score, the lower the better.
     private readonly record struct Spot(Track Track, double Along, Rect Area, double Score);
