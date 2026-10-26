@@ -159,6 +159,16 @@ public class MapAmountsTests
         times[10].ShouldBeLessThan(5);
     }
 
+    // A kind of line the search has no rank for is refused, as the map's other switches over the kinds of
+    // line refuse it, rather than ranked as one it knows.
+    [Fact]
+    public void Of_aLineOfAKindTheSearchHasNoRankFor_isRefused()
+    {
+        var view = new MapView([], [], 10m) { Links = [Money(RiverModule.Vouchers, new MapRoute([new MapPoint(10m, 50m), new MapPoint(90m, 50m)])) with { Kind = (MapLinkKind)99 }] };
+
+        Should.Throw<ArgumentOutOfRangeException>(() => MapAmounts.Of(view, Say));
+    }
+
     // A refused amount leaves the map no line, and so no amount.
     [Fact]
     public void Of_aRefusedAmount_placesNone()

@@ -159,7 +159,8 @@ internal static class MapAmounts
                 {
                     MapLinkKind.PassedOn or MapLinkKind.IntoBucket => 0,
                     MapLinkKind.TaxBase => 1,
-                    _ => 2,
+                    MapLinkKind.Condition => 2,
+                    var kind => throw new ArgumentOutOfRangeException(nameof(kind), kind, "A kind of line the search has no rank for."),
                 }, room);
             }
 
