@@ -29,4 +29,29 @@ internal static class MapLineWidths
     public static decimal ArrowHalf(decimal width) => Math.Max(4.8m, width / 2m + 3m);
 
     public static decimal ArrowLength(decimal width) => 1.5m * ArrowHalf(width);
+
+    // What a stretch of line covers on the map drawn at a scale, in pixels: its length, and half its width
+    // each side of it, with its halo's gap each side too when asked (MapLinkStyle.HaloGap). A stretch across
+    // the map is one whose ends share their height.
+    public static MapArea Stroke(MapPoint a, MapPoint b, decimal width, MapScale scale, decimal halo = 0m)
+    {
+        var (half, ax, ay, bx, by) = (width / 2m + halo, a.X * scale.X, a.Y * scale.Y, b.X * scale.X, b.Y * scale.Y);
+        return ay == by && ax != bx
+            ? new MapArea(Math.Min(ax, bx), ay - half, Math.Max(ax, bx), ay + half)
+            : new MapArea(ax - half, Math.Min(ay, by), ax + half, Math.Max(ay, by));
+    }
+
+    // What the arrowhead ending a line covers on the map drawn at a scale, in pixels: its base across the
+    // line's end, its point on it.
+    public static MapArea Head(MapRoute route, MapScale scale)
+    {
+        var (half, length, x, y) = (ArrowHalf(route.Width), ArrowLength(route.Width), route.End.X * scale.X, route.End.Y * scale.Y);
+        return route.Arrow switch
+        {
+            MapDirection.Down => new MapArea(x - half, y - length, x + half, y),
+            MapDirection.Up => new MapArea(x - half, y, x + half, y + length),
+            MapDirection.Right => new MapArea(x - length, y - half, x, y + half),
+            _ => new MapArea(x, y - half, x + length, y + half),
+        };
+    }
 }

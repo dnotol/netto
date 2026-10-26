@@ -384,6 +384,42 @@ public class MapLayoutTests
         view.Units.ShouldBe(units);
     }
 
+    // A stretch of line covers its length and half its width each side, its halo's gap too when asked, in the
+    // pixels of the map drawn at a scale: across, a stretch whose ends share their height, else down.
+    [Fact]
+    public void Stroke_aStretchAcrossOrDown_coversItsLengthAndHalfItsWidthEachSide()
+    {
+        var scale = MapScale.Of(500m, 200m);
+
+        (MapLineWidths.Stroke(new MapPoint(10m, 50m), new MapPoint(30m, 50m), 4m, scale), MapLineWidths.Stroke(new MapPoint(20m, 40m), new MapPoint(20m, 10m), 4m, scale, 2m))
+            .ShouldBe((new MapArea(50m, 98m, 150m, 102m), new MapArea(96m, 20m, 104m, 80m)));
+    }
+
+    // An arrowhead covers its base across the line's end and its length back along it, its point on the end,
+    // whichever way the line enters it.
+    [Fact]
+    public void Head_aLinesArrowhead_coversItsBaseAndLengthBackFromItsEnd()
+    {
+        var scale = MapScale.Of(100m, 100m);
+        MapRoute Into(MapPoint from) => new([from, new MapPoint(50m, 50m)], MapLabelSide.Gap) { Width = 2m };
+
+        new[] { new MapPoint(50m, 10m), new MapPoint(50m, 90m), new MapPoint(10m, 50m), new MapPoint(90m, 50m) }.Select(from => MapLineWidths.Head(Into(from), scale))
+            .ShouldBe([new MapArea(45.2m, 42.8m, 54.8m, 50m), new MapArea(45.2m, 50m, 54.8m, 57.2m), new MapArea(42.8m, 45.2m, 50m, 54.8m), new MapArea(50m, 45.2m, 57.2m, 54.8m)]);
+    }
+
+    // Two areas overlap where they share more than an edge, kept a clearance apart, or, the clearance below
+    // nothing, where they overlap by more than it.
+    [Theory]
+    [InlineData(10, 0, false)]
+    [InlineData(9.5, 0, true)]
+    [InlineData(11, 1, false)]
+    [InlineData(10.5, 1, true)]
+    [InlineData(9.995, -0.01, false)]
+    public void Overlaps_anAreaBesideAnother_isWhereTheyShareMoreThanAnEdgeAClearanceApart(double left, double clearance, bool overlaps)
+    {
+        new MapArea(0m, 0m, 10m, 10m).Overlaps(new MapArea((decimal)left, 0m, (decimal)left + 5m, 10m), (decimal)clearance).ShouldBe(overlaps);
+    }
+
     // Whether a line turns once along a row: down, across, down.
     private static bool Turns(MapBundle line) =>
         line.Route.Points is [var a, var b, var c, var d] && a.X == b.X && b.Y == c.Y && c.X == d.X && b.X != c.X;
@@ -521,7 +557,7 @@ public class MapLayoutTests
 
     public static TheoryData<int, int, bool> RiversWithEmptyAllowancesBesideAPaidRent() => Data(Plans().Where(EmptyAllowancesBesideAPaidRent));
 
-    private static IEnumerable<(int Bits, int Quiet, bool CompanySkipped)> Plans()
+    internal static IEnumerable<(int Bits, int Quiet, bool CompanySkipped)> Plans()
     {
         foreach (var bits in Enumerable.Range(0, 32))
         {
@@ -621,7 +657,7 @@ public class MapLayoutTests
         var faults = new List<string>();
         foreach (var (size, width) in Sizes)
         {
-            var scale = (X: width / 100m, Y: RowPixels * units / 100m);
+            var scale = MapScale.Of(width, RowPixels * units);
             faults.AddRange(routes.SelectMany((a, i) => routes.Skip(i + 1)
                 .Where(b => Segments(a.Route).Any(sa => Segments(b.Route).Any(sb => Closer(sa, sb, (a.Route.Width + b.Route.Width) / 2m + MapLinkStyle.HaloGap, scale))))
                 .Select(b => $"{a.Name} with {b.Name} at {size}")));
@@ -632,7 +668,7 @@ public class MapLayoutTests
 
     // Whether two segments, both across or both down, run side by side along a stretch they share, closer
     // than the pixels given.
-    private static bool Closer((MapPoint A, MapPoint B) a, (MapPoint A, MapPoint B) b, decimal apart, (decimal X, decimal Y) scale)
+    private static bool Closer((MapPoint A, MapPoint B) a, (MapPoint A, MapPoint B) b, decimal apart, MapScale scale)
     {
         if (a.A.X == a.B.X && b.A.X == b.B.X)
             return Along(a.A.Y, a.B.Y, b.A.Y, b.B.Y) && Math.Abs(a.A.X - b.A.X) * scale.X < apart - Tolerance;
@@ -652,13 +688,13 @@ public class MapLayoutTests
         var faults = new List<string>();
         foreach (var (size, width) in Sizes)
         {
-            var scale = (X: width / 100m, Y: RowPixels * units / 100m);
-            var map = Area(new MapSlot(0m, 0m, 100m, 100m), scale);
+            var scale = MapScale.Of(width, RowPixels * units);
+            var map = MapArea.Of(new MapSlot(0m, 0m, 100m, 100m), scale);
             foreach (var route in routes)
             {
-                foreach (var stroke in Segments(route.Route).Select(segment => Stroke(segment, route.Route.Width, scale)))
+                foreach (var stroke in Segments(route.Route).Select(segment => MapLineWidths.Stroke(segment.A, segment.B, route.Route.Width, scale)))
                 {
-                    faults.AddRange(boxes.Where(box => !RunsThrough(route.Through, box.Modules) && Overlaps(stroke, Area(box.Slot, scale)))
+                    faults.AddRange(boxes.Where(box => !RunsThrough(route.Through, box.Modules) && Overlaps(stroke, MapArea.Of(box.Slot, scale)))
                         .Select(box => $"{route.Name} through {box.Id} at {size}"));
                     if (stroke.Left < map.Left - Tolerance || stroke.Right > map.Right + Tolerance || stroke.Top < map.Top - Tolerance || stroke.Bottom > map.Bottom + Tolerance)
                         faults.Add($"{route.Name} past the map's edge at {size}");
@@ -669,31 +705,17 @@ public class MapLayoutTests
         return faults;
     }
 
-    // What a segment covers at its width, in pixels: its length, and half its width each side of it.
-    private static (decimal Left, decimal Top, decimal Right, decimal Bottom) Stroke((MapPoint A, MapPoint B) segment, decimal width, (decimal X, decimal Y) scale)
-    {
-        var (half, a, b) = (width / 2m, (X: segment.A.X * scale.X, Y: segment.A.Y * scale.Y), (X: segment.B.X * scale.X, Y: segment.B.Y * scale.Y));
-        return a.X == b.X
-            ? (a.X - half, Math.Min(a.Y, b.Y), a.X + half, Math.Max(a.Y, b.Y))
-            : (Math.Min(a.X, b.X), a.Y - half, Math.Max(a.X, b.X), a.Y + half);
-    }
-
-    // What a box covers, in percent of the map, or in pixels at the scale given.
-    private static (decimal Left, decimal Top, decimal Right, decimal Bottom) Area(MapSlot slot, (decimal X, decimal Y)? scale = null)
-    {
-        var (x, y) = scale ?? (1m, 1m);
-        return (slot.Left * x, slot.Top * y, slot.Right * x, slot.Bottom * y);
-    }
+    // What a box covers, in percent of the map.
+    private static MapArea Area(MapSlot slot) => MapArea.Of(slot, new MapScale(1m, 1m));
 
     // Whether two areas share more than an edge, a hundredth of their unit left for rounding.
-    private static bool Overlaps((decimal Left, decimal Top, decimal Right, decimal Bottom) a, (decimal Left, decimal Top, decimal Right, decimal Bottom) b) =>
-        a.Left < b.Right - Tolerance && b.Left < a.Right - Tolerance && a.Top < b.Bottom - Tolerance && b.Top < a.Bottom - Tolerance;
+    private static bool Overlaps(MapArea a, MapArea b) => a.Overlaps(b, -Tolerance);
 
     // Every line whose width hangs past the side of a box it meets, where it leaves it and where it ends,
     // the end of a line out of the river left out: on the narrowest map, where a side is the fewest pixels.
     private static List<string> Overhangs(IReadOnlyList<RoutedLine> routes, MapLayout.MapGrid grid)
     {
-        var scale = (X: Sizes[0].Width / 100m, Y: RowPixels * grid.Units / 100m);
+        var scale = MapScale.Of(Sizes[0].Width, RowPixels * grid.Units);
         return
         [
             .. routes.Where(route => Hangs(grid.Slot(route.From), route.Route.Points[0], route.Route.Width, scale)).Select(route => $"{route.Name} off {route.From.Id}"),
@@ -702,7 +724,7 @@ public class MapLayoutTests
     }
 
     // Whether a line meeting a box at a point of its edge hangs past the side the point is on, at its width.
-    private static bool Hangs(MapSlot box, MapPoint at, decimal width, (decimal X, decimal Y) scale)
+    private static bool Hangs(MapSlot box, MapPoint at, decimal width, MapScale scale)
     {
         var half = width / 2m - Tolerance;
         return at.X == box.Left || at.X == box.Right
@@ -715,34 +737,21 @@ public class MapLayoutTests
     // or out of the river, none into a bucket.
     private static List<string> Arrowheads(IReadOnlyList<RoutedLine> routes, decimal units)
     {
-        var scale = (X: Sizes[0].Width / 100m, Y: RowPixels * units / 100m);
+        var scale = MapScale.Of(Sizes[0].Width, RowPixels * units);
         var heads = routes.Where(route => route.To.Bucket is null)
-            .Select(route => (route.Name, Area: Head(route.Route, scale), Long: MapLineWidths.ArrowLength(route.Route.Width) > Last(route.Route, scale) + Tolerance)).ToList();
+            .Select(route => (route.Name, Area: MapLineWidths.Head(route.Route, scale), Long: MapLineWidths.ArrowLength(route.Route.Width) > Last(route.Route, scale) + Tolerance)).ToList();
         return
         [
             .. heads.Where(head => head.Long).Select(head => $"{head.Name}'s arrowhead past its last stretch"),
             .. heads.SelectMany((a, i) => heads.Skip(i + 1).Where(b => Overlaps(a.Area, b.Area)).Select(b => $"{a.Name}'s arrowhead over {b.Name}'s")),
             .. heads.SelectMany(head => routes.Where(route => route.Name != head.Name)
-                .Where(route => Segments(route.Route).Any(segment => Overlaps(head.Area, Stroke(segment, route.Route.Width, scale))))
+                .Where(route => Segments(route.Route).Any(segment => Overlaps(head.Area, MapLineWidths.Stroke(segment.A, segment.B, route.Route.Width, scale))))
                 .Select(route => $"{head.Name}'s arrowhead over {route.Name}")),
         ];
     }
 
-    // What an arrowhead covers, in pixels, its point on the line's end.
-    private static (decimal Left, decimal Top, decimal Right, decimal Bottom) Head(MapRoute route, (decimal X, decimal Y) scale)
-    {
-        var (half, length, x, y) = (MapLineWidths.ArrowHalf(route.Width), MapLineWidths.ArrowLength(route.Width), route.End.X * scale.X, route.End.Y * scale.Y);
-        return route.Arrow switch
-        {
-            MapDirection.Down => (x - half, y - length, x + half, y),
-            MapDirection.Up => (x - half, y, x + half, y + length),
-            MapDirection.Right => (x - length, y - half, x, y + half),
-            _ => (x, y - half, x + length, y + half),
-        };
-    }
-
     // How long the last stretch of a line is, in pixels.
-    private static decimal Last(MapRoute route, (decimal X, decimal Y) scale) =>
+    private static decimal Last(MapRoute route, MapScale scale) =>
         Math.Abs(route.Points[^1].X - route.Points[^2].X) * scale.X + Math.Abs(route.Points[^1].Y - route.Points[^2].Y) * scale.Y;
 
     // A line of money as large as the run's largest, from a module to an end.
@@ -750,8 +759,10 @@ public class MapLayoutTests
         new(to.Module is null ? MapLinkKind.IntoBucket : MapLinkKind.PassedOn, MapEnd.Of(module), to, module, new MapLabel(MapText.Map, "Money", []), 100_000m);
 
     // The plans at the edges of what a plan holds, by name.
-    public static TheoryData<string> ExtremeRivers() =>
-        new("the pay at its ceiling", "a low pay", "a royalty past its limits", "the costly car", "a car costly to run", "the company skipped, a high pay", "the company skipped, a low pay");
+    public static TheoryData<string> ExtremeRivers() => new(Extremes);
+
+    internal static readonly string[] Extremes =
+        ["the pay at its ceiling", "a low pay", "a royalty past its limits", "the costly car", "a car costly to run", "the company skipped, a high pay", "the company skipped, a low pay"];
 
     // Plans where the company pays its corporate tax and the dividend its withholding, with the refund on its
     // exempt part, by name.
@@ -774,7 +785,7 @@ public class MapLayoutTests
         _ => Extreme(plan),
     };
 
-    private static RiverInputs Extreme(string plan) => plan switch
+    internal static RiverInputs Extreme(string plan) => plan switch
     {
         "the pay at its ceiling" => MapLinksTests.Full.WithDirectorPay(10_000_000m),
         "a low pay" => MapLinksTests.Full.WithDirectorPay(12_000m),

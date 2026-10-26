@@ -103,7 +103,7 @@ internal static class MapLayout
     // half-widths and a halo's gap between them (MapLinkStyle.HaloGap), and a pixel between a line and the
     // edge of its room.
     internal const decimal NarrowestRem = 34m;
-    private const decimal PixelsPerRem = 16m;
+    internal const decimal PixelsPerRem = 16m;
     private const decimal EdgePixels = 1m;
 
     // The lane down the left edge to the pocket, one track per link, the highest row's furthest out; the
@@ -905,6 +905,28 @@ internal sealed record MapSlot(decimal Left, decimal Top, decimal Width, decimal
     public decimal CenterX => Left + Width / 2m;
 
     public decimal CenterY => Top + Height / 2m;
+}
+
+// How many pixels a percent of the map is, across it and down it, at a size it is drawn.
+internal readonly record struct MapScale(decimal X, decimal Y)
+{
+    public static MapScale Of(decimal width, decimal height) => new(width / 100m, height / 100m);
+
+    // The map where it is drawn smallest: the narrowest column, a chain row to its smallest height
+    // (MapLayout.NarrowestRem, SmallestRowRem).
+    public static MapScale Smallest(decimal units) =>
+        Of(MapLayout.NarrowestRem * MapLayout.PixelsPerRem, units * MapLayout.SmallestRowRem * MapLayout.PixelsPerRem);
+}
+
+// What something drawn on the map covers at a size, in pixels: a box, a stretch of line, an arrowhead or an
+// amount. Two overlap where they share more than an edge, kept a clearance apart; a negative clearance asks
+// them to overlap by more than it.
+internal readonly record struct MapArea(decimal Left, decimal Top, decimal Right, decimal Bottom)
+{
+    public static MapArea Of(MapSlot slot, MapScale scale) => new(slot.Left * scale.X, slot.Top * scale.Y, slot.Right * scale.X, slot.Bottom * scale.Y);
+
+    public bool Overlaps(MapArea other, decimal clearance = 0m) =>
+        Left < other.Right + clearance && other.Left < Right + clearance && Top < other.Bottom + clearance && other.Top < Bottom + clearance;
 }
 
 // Where a link's words are drawn: with the other links its card draws on that side of its box, or beside
