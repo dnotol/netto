@@ -281,6 +281,89 @@ public class MapLayoutTests
             () => Arrowheads(routes, Grid(river).Units).ShouldBeEmpty());
     }
 
+    // The way into the taxes and what comes back out of them turn along the band over the buckets, a row each,
+    // what comes back along the row under the way in and nested inside it, so that the two never cross; the
+    // dividend's way to the pocket runs along the band's last row, under them; Director pay's and the dividend's
+    // ways in share a row, and so do their ways back. A pay low enough for the credit on low earned income to come
+    // back beside the taxes on pay, the withholding refunded on the exempt dividend beside the taxes on profit.
+    [Fact]
+    public void Routed_theWaysIntoTheTaxesAndWhatComesBack_turnAlongTheBandsRowsNestedAboveTheDividendsWayToThePocket()
+    {
+        var view = MapView.From(Extreme("a low pay"), Extreme("a low pay").Run());
+
+        var (payIn, payBack) = (Line(view, MapEnd.Of(RiverModule.DirectorPay), MapEnd.InBucket("taxes_on_pay")), Line(view, MapEnd.InBucket("taxes_on_pay"), MapEnd.Of(RiverModule.DirectorPay)));
+        var (dividendIn, dividendBack) = (Line(view, MapEnd.Of(RiverModule.Dividend), MapEnd.InBucket("taxes_on_profit")), Line(view, MapEnd.InBucket("taxes_on_profit"), MapEnd.Of(RiverModule.Dividend)));
+        var pocket = Line(view, MapEnd.Of(RiverModule.Dividend), MapEnd.InBucket("pocket"));
+
+        view.ShouldSatisfyAllConditions(
+            () => new[] { payIn, payBack, dividendIn, dividendBack, pocket }.Select(Turns).ShouldAllBe(turns => turns),
+            () => (Row(payIn) == Row(dividendIn), Row(payBack) == Row(dividendBack)).ShouldBe((true, true)),
+            () => (Row(payIn) < Row(payBack), Row(payBack) < Row(pocket)).ShouldBe((true, true)),
+            () => (Segments(payIn).Any(a => Segments(payBack).Any(b => Cross(a, b))), Segments(dividendIn).Any(a => Segments(dividendBack).Any(b => Cross(a, b)))).ShouldBe((false, false)));
+    }
+
+    // Corporate tax's way into its taxes comes down clear of the dividend's ways into them and back, crossing none
+    // of the band's rows they turn along.
+    [Theory]
+    [MemberData(nameof(ExtremeRivers))]
+    public void Routed_corporateTaxsWayIntoItsTaxes_crossesNoneOfTheDividendsWaysIntoThemAndBack(string plan)
+    {
+        var river = Extreme(plan);
+        var view = MapView.From(river, river.Run());
+
+        var corporate = view.Bundles().Where(line => line.From == MapEnd.Of(RiverModule.CorporateTax) && line.To == MapEnd.InBucket("taxes_on_profit")).ToList();
+        var dividend = view.Bundles().Where(line => line.Touches(RiverModule.Dividend) && (line.From == MapEnd.InBucket("taxes_on_profit") || line.To == MapEnd.InBucket("taxes_on_profit"))).ToList();
+
+        corporate.SelectMany(a => dividend.Where(b => Segments(a).Any(sa => Segments(b).Any(sb => Cross(sa, sb)))).Select(b => $"{b.From.Id} to {b.To.Id}"))
+            .ShouldBeEmpty();
+    }
+
+    // The band over the buckets grows the map only by what the streams' last row lacks under its boxes: its three
+    // rows with a dividend, its first 0.1 of a chain row under the lowest box, each 0.35 under the one before, the
+    // buckets 0.2 under the last, a whole chain row; two with Director pay alone, 0.65. Every lever: Director pay
+    // holds a badge, its row keeps 0.4 under it, the buckets' row grows from 0.9 to 0.7 and the 0.6 the band lacks,
+    // 10.7 chain rows to 11.1; the example: 0.55 under its boxes, 6.1 to 6.35; the company skipped: 0.55 under its
+    // box covers the band, 3.5 as before.
+    [Theory]
+    [InlineData("every lever", 11.1)]
+    [InlineData("the example", 6.35)]
+    [InlineData("the company skipped", 3.5)]
+    public void From_aPlan_growsByTheBandItsStreamsLackRoomFor(string plan, double units)
+    {
+        var river = plan switch
+        {
+            "every lever" => MapLinksTests.Full,
+            "the example" => RiverInputs.Example,
+            _ => MapLinksTests.Full.SkipCompany(),
+        };
+
+        var view = MapView.From(river, river.Run());
+
+        view.Units.ShouldBe((decimal)units);
+    }
+
+    // The one line of the map between two ends, of the kind money has between them.
+    private static MapBundle Line(MapView view, MapEnd from, MapEnd to) =>
+        view.Bundles().Single(bundle => bundle.From == from && bundle.To == to && bundle.Kind != MapLinkKind.Condition);
+
+    // Whether a line turns once along a row: down, across, down.
+    private static bool Turns(MapBundle line) =>
+        line.Route.Points is [var a, var b, var c, var d] && a.X == b.X && b.Y == c.Y && c.X == d.X && b.X != c.X;
+
+    // The y of the row a line turns along.
+    private static decimal Row(MapBundle line) => line.Route.Points[1].Y;
+
+    private static IEnumerable<(MapPoint A, MapPoint B)> Segments(MapBundle line) => Segments(line.Route);
+
+    // Whether two segments, one across and one down, cross inside both.
+    private static bool Cross((MapPoint A, MapPoint B) a, (MapPoint A, MapPoint B) b)
+    {
+        var (across, down) = a.A.Y == a.B.Y ? (a, b) : (b, a);
+        return across.A.Y == across.B.Y && down.A.X == down.B.X
+            && Math.Min(across.A.X, across.B.X) < down.A.X && down.A.X < Math.Max(across.A.X, across.B.X)
+            && Math.Min(down.A.Y, down.B.Y) < across.A.Y && across.A.Y < Math.Max(down.A.Y, down.B.Y);
+    }
+
     // A lane its lines cannot all fit at their widths squeezes them into it, never past it: five lines down
     // the pocket's lane, each as large as the run's largest line, cross no box and land on the pocket.
     [Fact]
