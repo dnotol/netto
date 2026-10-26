@@ -19,34 +19,35 @@ public class MapTabTests
     private static readonly RiverInputs Full = MapLinksTests.Full;
 
     // Each module is a button named by its card's title and the words of the badges in its box, which a
-    // screen reader hears with it.
+    // screen reader hears with it: every module the map draws, each with the badges MapBadges finds for it.
     [Fact]
     public async Task Tab_everyModule_isAButtonNamedByItsCardsTitleAndItsBadgesInTheRiversOrder()
     {
-        var view = MapView.From(Full, Full.Run());
+        var badges = MapBadgesTests.Of(Full);
 
         var html = await RenderTabAsync(Full);
 
         html.ShouldSatisfyAllConditions(
-            () => view.Modules.ShouldContain(node => node.Badges.Count > 0),
-            () => Buttons(html).Select(button => (button.Module, button.Name, button.Pressed)).ShouldBe(
-                view.Modules.Select(node => (node.End.Id, string.Join(' ', [CardTitle(node.End.Module!.Value), .. node.Badges.Select(BadgeWords)]), "false"))));
+            () => badges.ShouldNotBeEmpty(),
+            () => Buttons(html).Select(button => (button.Module, button.Name, button.Pressed)).ShouldBe(MapView.ModulesOf(Full).Select(module =>
+                (MapModules.Name(module), string.Join(' ', [CardTitle(module), .. badges.GetValueOrDefault(module, []).Select(BadgeWords)]), "false"))));
     }
 
     // Each module a condition or a tax base reaches holds its badges in its box, inside its button, in the
-    // view's order, each drawn in its tone: with the costly car the benefits lose Corporate tax its rate.
+    // river's order and each module's badges in MapBadges' order, each drawn in its tone: with the costly
+    // car the benefits lose Corporate tax its rate.
     [Fact]
     public async Task Tab_aModuleAConditionOrATaxBaseReaches_drawsItsBadgesInItsButton()
     {
         var river = MapViewConditionsTests.CostlyCar;
-        var view = MapView.From(river, river.Run());
+        var badges = MapBadgesTests.Of(river);
 
         var html = await RenderTabAsync(river);
 
         html.ShouldSatisfyAllConditions(
-            () => view.Modules.SelectMany(node => node.Badges).Select(badge => badge.Tone).ShouldContain(MapBadgeTone.Lost),
-            () => ButtonBadges(html).Select(badge => (badge.Module, badge.Tone, badge.Words)).ShouldBe(view.Modules.Where(node => node.Badges.Count > 0)
-                .SelectMany(node => node.Badges.Select(badge => (node.End.Id, MapBadgeStyle.Class(badge.Tone), BadgeWords(badge))))));
+            () => badges.Values.SelectMany(list => list).Select(badge => badge.Tone).ShouldContain(MapBadgeTone.Lost),
+            () => ButtonBadges(html).Select(badge => (badge.Module, badge.Tone, badge.Words)).ShouldBe(MapView.ModulesOf(river)
+                .SelectMany(module => badges.GetValueOrDefault(module, []).Select(badge => (MapModules.Name(module), MapBadgeStyle.Class(badge.Tone), BadgeWords(badge))))));
     }
 
     // A rule lost is said in its words, an icon and an outline, never the colour alone: each badge draws

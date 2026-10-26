@@ -173,14 +173,14 @@ public class MapBadgesTests
     }
 
     // The links of the run, the conditions of its year between modules on the map among them, before a
-    // filter hides any.
-    private static IReadOnlyList<MapLink> Links(RiverInputs river)
+    // filter hides any, and the badges they leave: what the tab's tests hold the buttons to.
+    internal static IReadOnlyList<MapLink> Links(RiverInputs river)
     {
         var run = river.Run();
         return [.. MapLinks.Of(river, run), .. run.Year is { } year ? MapConditions.From(YearConditions.Of(year), MapView.ModulesOf(river)) : []];
     }
 
-    private static IReadOnlyDictionary<RiverModule, IReadOnlyList<MapBadge>> Of(RiverInputs river) => MapBadges.Of(Links(river));
+    internal static IReadOnlyDictionary<RiverModule, IReadOnlyList<MapBadge>> Of(RiverInputs river) => MapBadges.Of(Links(river));
 
     // The declarations of a stylesheet's rules for a selector alone, in a media query or not.
     private static string Block(string css, string selector) =>
