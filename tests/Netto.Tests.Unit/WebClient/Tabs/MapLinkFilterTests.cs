@@ -10,7 +10,7 @@ namespace Netto.Tests.WebClient.Tabs;
 // its rules marked on their modules and their lines left out, so with nothing stored the kinds that are tax
 // bases and conditions are hidden and the others shown; what is stored, even nothing, is the choice, whole.
 // A key of an earlier version is no choice. What the filter shows of a map is the links of the kinds shown,
-// the others kept apart as hidden, the modules, their badges and the lines that stay where they were.
+// the others left out, the modules, their badges and the lines that stay where they were.
 public class MapLinkFilterTests
 {
     private static readonly RiverInputs Full = MapLinksTests.Full;
@@ -274,15 +274,13 @@ public class MapLinkFilterTests
 
         var shown = new MapLinkFilter(EveryKindShown()).Showing(view);
 
-        shown.ShouldSatisfyAllConditions(
-            () => shown.Links.ShouldBe(view.Links),
-            () => shown.Hidden.ShouldBeEmpty());
+        shown.Links.ShouldBe(view.Links);
     }
 
-    // The first visit: the lines of the rules are kept apart, so no line, arrowhead or word is drawn for
+    // The first visit: the lines of the rules are left out, so no line, arrowhead or word is drawn for
     // them, and the badges on the modules they reach are the map's, untouched.
     [Fact]
-    public void Showing_nothingStored_keepsTheRulesLinesApartAndTheirBadges()
+    public void Showing_nothingStored_leavesTheRulesLinesOutAndKeepsTheirBadges()
     {
         var view = MapView.From(Full, Full.Run());
 
@@ -290,15 +288,14 @@ public class MapLinkFilterTests
 
         shown.ShouldSatisfyAllConditions(
             () => shown.Links.ShouldBe(view.Links.Where(link => !QuietKinds.Contains(link.Kind))),
-            () => shown.Hidden.ShouldBe(view.Links.Where(link => QuietKinds.Contains(link.Kind))),
-            () => shown.Hidden.Select(link => link.Kind).Distinct().Order().ShouldBe(QuietKinds.Order()),
+            () => view.Links.Select(link => link.Kind).Distinct().Except(shown.Links.Select(link => link.Kind)).Order().ShouldBe(QuietKinds.Order()),
             () => shown.Modules.SelectMany(node => node.Badges).ShouldBe(view.Modules.SelectMany(node => node.Badges)),
             () => shown.Modules.SelectMany(node => node.Badges).ShouldNotBeEmpty());
     }
 
     [Theory]
     [MemberData(nameof(Kinds))]
-    public void Showing_aKindHidden_keepsItsLinksApartAndTheOthersInOrder(MapLinkKind hidden)
+    public void Showing_aKindHidden_leavesItsLinksOutAndTheOthersInOrder(MapLinkKind hidden)
     {
         var view = MapView.From(Full, Full.Run());
         var filter = new MapLinkFilter(EveryKindShown());
@@ -306,13 +303,11 @@ public class MapLinkFilterTests
 
         var shown = filter.Showing(view);
 
-        shown.ShouldSatisfyAllConditions(
-            () => shown.Links.ShouldBe(view.Links.Where(link => link.Kind != hidden)),
-            () => shown.Hidden.ShouldBe(view.Links.Where(link => link.Kind == hidden)));
+        shown.Links.ShouldBe(view.Links.Where(link => link.Kind != hidden));
     }
 
     [Fact]
-    public void Showing_everyKindHidden_showsNoLinkAndKeepsThemAll()
+    public void Showing_everyKindHidden_showsNoLink()
     {
         var view = MapView.From(Full, Full.Run());
         var filter = new MapLinkFilter(EveryKindShown());
@@ -321,9 +316,7 @@ public class MapLinkFilterTests
 
         var shown = filter.Showing(view);
 
-        shown.ShouldSatisfyAllConditions(
-            () => shown.Links.ShouldBeEmpty(),
-            () => shown.Hidden.ShouldBe(view.Links));
+        shown.Links.ShouldBeEmpty();
     }
 
     // Hiding moves nothing: the modules, the buckets and the routes of the lines left are the map's.
@@ -376,9 +369,10 @@ public class MapLinkFilterTests
         amounts.ShouldBe(placed.Where(amount => amount.Bundle.Kind != MapLinkKind.IntoBucket));
     }
 
-    // A module's links under the filter are the shown ones, and what is hidden is kept apart, still its own.
+    // A module's links under the filter are the shown ones: a hidden kind is in none of them, though the
+    // run's map had it among the module's own.
     [Fact]
-    public void Showing_aKindHidden_leavesItOutOfAModulesLinksAndKeepsItApart()
+    public void Showing_aKindHidden_leavesItOutOfAModulesLinks()
     {
         var view = MapView.From(Full, Full.Run());
         var filter = new MapLinkFilter(EveryKindShown());
@@ -389,8 +383,8 @@ public class MapLinkFilterTests
         shown.ShouldSatisfyAllConditions(
             () => view.LinksOf(RiverModule.Car).Any(link => link.Kind == MapLinkKind.TaxBase).ShouldBeTrue(),
             () => shown.LinksOf(RiverModule.Car).ShouldBe(view.LinksOf(RiverModule.Car).Where(link => link.Kind != MapLinkKind.TaxBase)),
-            () => shown.Hidden.ShouldBe(view.Links.Where(link => link.Kind == MapLinkKind.TaxBase)),
-            () => shown.Hidden.Any(link => link.Touches(RiverModule.Car)).ShouldBeTrue());
+            () => shown.LinksOf(RiverModule.Car).Select(link => link.Kind).ShouldNotContain(MapLinkKind.TaxBase),
+            () => shown.Links.Select(link => link.Kind).ShouldNotContain(MapLinkKind.TaxBase));
     }
 
     // An engine's refusal leaves the map without a link, so there is nothing to hide or show.
@@ -401,9 +395,7 @@ public class MapLinkFilterTests
 
         var shown = new MapLinkFilter(new BrowserStorage()).Showing(MapView.From(refused, refused.Run()));
 
-        shown.ShouldSatisfyAllConditions(
-            () => shown.Links.ShouldBeEmpty(),
-            () => shown.Hidden.ShouldBeEmpty());
+        shown.Links.ShouldBeEmpty();
     }
 
     // What the legend counts is the plan's links of each kind, whatever is hidden, and a kind the plan has
@@ -430,14 +422,20 @@ public class MapLinkFilterTests
         Enum.GetValues<MapLinkKind>().Select(kind => counts[kind]).ShouldAllBe(count => count == 0);
     }
 
-    // The links the first visit keeps apart are still counted: the legend says what ticking a kind brings.
+    // The legend is fed the run's own map, with every link, so that it says what ticking a kind brings: the
+    // map a filter has shown holds only the links it shows, and counts only those.
     [Fact]
-    public void Counts_aViewAFilterHasShown_stillCountsTheHiddenLinks()
+    public void Counts_aViewAFilterHasShown_countsOnlyTheLinksItKeeps()
     {
         var view = MapView.From(Full, Full.Run());
+        var shown = new MapLinkFilter(new BrowserStorage()).Showing(view);
 
-        var (shown, all) = (MapLinkFilter.Counts(new MapLinkFilter(new BrowserStorage()).Showing(view)), MapLinkFilter.Counts(view));
+        var (ofShown, ofAll) = (MapLinkFilter.Counts(shown), MapLinkFilter.Counts(view));
 
-        Enum.GetValues<MapLinkKind>().Select(kind => shown[kind]).ShouldBe(Enum.GetValues<MapLinkKind>().Select(kind => all[kind]));
+        ofShown.ShouldSatisfyAllConditions(
+            () => QuietKinds.Select(kind => ofAll[kind]).ShouldAllBe(count => count > 0),
+            () => QuietKinds.Select(kind => ofShown[kind]).ShouldAllBe(count => count == 0),
+            () => Enum.GetValues<MapLinkKind>().Except(QuietKinds).Select(kind => ofShown[kind]).ShouldBe(
+                Enum.GetValues<MapLinkKind>().Except(QuietKinds).Select(kind => ofAll[kind])));
     }
 }

@@ -31,21 +31,16 @@ internal sealed class MapLinkFilter(IBrowserStorage storage)
         storage.Set(StorageKey, string.Join(';', Enum.GetValues<MapLinkKind>().Where(_hidden.Contains).Select(Word)));
     }
 
-    // The map without the links of the kinds hidden, which it keeps apart as hidden: the modules, the
-    // buckets and the route of each link left are the map's, so nothing moves. The map given is the one
-    // the run makes, with every link.
+    // The map without the links of the kinds hidden: the modules, the buckets and the route of each link
+    // left are the map's, so nothing moves. The map given is the one the run makes, with every link.
     public MapView Showing(MapView view) => _hidden.Count == 0
         ? view
-        : view with
-        {
-            Links = [.. view.Links.Where(link => Shows(link.Kind))],
-            Hidden = [.. view.Links.Where(link => !Shows(link.Kind))],
-        };
+        : view with { Links = [.. view.Links.Where(link => Shows(link.Kind))] };
 
-    // The links of each kind in the plan, whatever is hidden: what the legend says a kind would show, a
-    // kind the plan has none of counted as none.
+    // The links of each kind in the map given, which is the run's, with every link whatever is hidden: what
+    // the legend says a kind would show, a kind the plan has none of counted as none.
     public static IReadOnlyDictionary<MapLinkKind, int> Counts(MapView view) =>
-        Enum.GetValues<MapLinkKind>().ToDictionary(kind => kind, kind => view.Links.Count(link => link.Kind == kind) + view.Hidden.Count(link => link.Kind == kind));
+        Enum.GetValues<MapLinkKind>().ToDictionary(kind => kind, kind => view.Links.Count(link => link.Kind == kind));
 
     // What is stored for a kind, so a kind renamed keeps the choice made of it.
     internal static string Word(MapLinkKind kind) => kind switch

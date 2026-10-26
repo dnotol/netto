@@ -148,18 +148,14 @@ public class MapViewTests
         MapView.From(Full, Full.Run()).Choice(null).ShouldBeNull();
     }
 
-    // A filter shows some links and hides the others: the modules stay where they are, and so does every
-    // line it shows; what it hides is still each module's, out of sight.
+    // A filter shows some links and leaves the others out: the modules stay where they are, and so does
+    // every line it shows.
     [Fact]
-    public void With_someLinksHidden_movesNothing()
+    public void With_someLinksLeftOut_movesNothing()
     {
         var view = MapView.From(Full, Full.Run());
 
-        var filtered = view with
-        {
-            Links = [.. view.Links.Where(link => link.Kind != MapLinkKind.IntoBucket)],
-            Hidden = [.. view.Links.Where(link => link.Kind == MapLinkKind.IntoBucket)],
-        };
+        var filtered = view with { Links = [.. view.Links.Where(link => link.Kind != MapLinkKind.IntoBucket)] };
 
         filtered.ShouldSatisfyAllConditions(
             () => filtered.Modules.ShouldBe(view.Modules),

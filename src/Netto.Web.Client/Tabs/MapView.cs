@@ -13,15 +13,12 @@ namespace Netto.Web.Client.Tabs;
 // year the viewer skipped stays on the map, marked skipped, with no link; a lever that moves no money of
 // its own is quiet, in a quiet row with no link of its own, the chain's line running past it. A module's
 // box holds the badges of the conditions and the tax bases reaching it (MapBadges), read before any filter.
-// A filter shows some links and hides the others as `view with { Links = shown, Hidden = hidden }`: the
-// modules, their badges, the routes and the amounts placed on them (MapAmounts) are the run's, so nothing
-// moves. Units is the map's height in chain rows, which the stylesheet makes its height of.
+// A filter shows some links and leaves the others out as `view with { Links = shown }`: the modules, their
+// badges, the routes and the amounts placed on them (MapAmounts) are the run's, so nothing moves. Units is
+// the map's height in chain rows, which the stylesheet makes its height of.
 internal sealed record MapView(IReadOnlyList<MapNode> Modules, IReadOnlyList<MapNode> Buckets, decimal Units)
 {
     public IReadOnlyList<MapLink> Links { get; init; } = [];
-
-    // The links a filter hides, still each module's.
-    public IReadOnlyList<MapLink> Hidden { get; init; } = [];
 
     // The engine's refusal, which leaves the map without a link.
     public Refusal? Refusal { get; init; }

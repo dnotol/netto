@@ -12,7 +12,8 @@ namespace Netto.Tests.WebClient.Pages;
 // Chosen is). A click is the browser's; here the box's own callback is invoked, as its event would.
 public class PlanMapFilterTests
 {
-    // The first visit: the two kinds of rule are unticked, and nothing is stored until the viewer ticks.
+    // The first visit: the two kinds of rule are unticked, left out of the lines the tab draws though the
+    // run's map holds them, and nothing is stored until the viewer ticks.
     [Fact]
     public async Task Plan_firstVisit_hasTheTwoKindsOfRuleUntickedAndStoresNothing()
     {
@@ -22,9 +23,12 @@ public class PlanMapFilterTests
         await page.LoadAsync("map");
         var map = await page.FindAsync<MapTab>();
 
+        var run = MapView.From(MapLinksTests.Full, MapLinksTests.Full.Run());
+
         map.ShouldSatisfyAllConditions(
             () => map.DrawnLines.Select(line => line.Bundle.Kind).Distinct().Order().ShouldBe([MapLinkKind.PassedOn, MapLinkKind.IntoBucket]),
-            () => map.ShownMap.Hidden.Select(link => link.Kind).Distinct().Order().ShouldBe([MapLinkKind.TaxBase, MapLinkKind.Condition]),
+            () => map.ShownMap.Links.Select(link => link.Kind).Distinct().Order().ShouldBe([MapLinkKind.PassedOn, MapLinkKind.IntoBucket]),
+            () => run.Links.Select(link => link.Kind).Distinct().Except(map.ShownMap.Links.Select(link => link.Kind)).Order().ShouldBe([MapLinkKind.TaxBase, MapLinkKind.Condition]),
             () => storage.Get(MapLinkFilter.StorageKey).ShouldBeNull(),
             () => page.Errors.ShouldBeEmpty());
     }
@@ -99,7 +103,7 @@ public class PlanMapFilterTests
             () => Lines(map).ShouldBe(lines.Where(line => line.Kind != MapLinkKind.TaxBase)),
             () => Words(map).ShouldBe(words.Where(word => word.Kind != MapLinkKind.TaxBase)),
             () => MapNeighbourhoodHtml.Listed(map).ShouldBe(listed),
-            () => map.ShownMap.Hidden.Select(link => link.Kind).Distinct().ShouldBe([MapLinkKind.TaxBase]),
+            () => map.ShownMap.Links.Select(link => link.Kind).ShouldNotContain(MapLinkKind.TaxBase),
             () => map.ShownMap.Modules.ShouldBe(modules),
             () => page.Errors.ShouldBeEmpty());
     }
@@ -111,7 +115,7 @@ public class PlanMapFilterTests
         await page.LoadAsync("map");
         var map = await page.FindAsync<MapTab>();
         await page.InvokeAsync(() => map.ChosenChanged.InvokeAsync(RiverModule.Car));
-        var (lines, words, listed) = (Lines(map), Words(map), MapNeighbourhoodHtml.Listed(map));
+        var (lines, words, listed, links) = (Lines(map), Words(map), MapNeighbourhoodHtml.Listed(map), map.ShownMap.Links);
         var boxes = await page.FindAllAsync<MudCheckBox<bool>>();
         await page.InvokeAsync(() => boxes[Index(MapLinkKind.TaxBase)].ValueChanged.InvokeAsync(false));
         Lines(map).Count.ShouldBeLessThan(lines.Count);
@@ -122,7 +126,7 @@ public class PlanMapFilterTests
             () => Lines(map).ShouldBe(lines),
             () => Words(map).ShouldBe(words),
             () => MapNeighbourhoodHtml.Listed(map).ShouldBe(listed),
-            () => map.ShownMap.Hidden.ShouldBeEmpty());
+            () => map.ShownMap.Links.ShouldBe(links));
     }
 
     // Each line the tab draws, by its kind and its route, and whether it is faded; each amount on them, by
