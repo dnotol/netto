@@ -49,13 +49,9 @@ public class MapConditionsRenderingTests
             .ShouldBe((true, false, true));
     }
 
-    // The words beside the map of every condition's line, each trimmed.
+    // The words on the map of every condition's line, each trimmed.
     private static List<string> ConditionWords(string html) =>
-    [
-        .. Regex.Matches(html, "<div class=\"map-words__bundle[^\"]*\" data-link-kind=\"Condition\"[^>]*>(.*?)</div>", RegexOptions.Singleline)
-            .SelectMany(bundle => Regex.Matches(bundle.Groups[1].Value, "<span class=\"map-words__state\"[^>]*>(.*?)</span>", RegexOptions.Singleline))
-            .Select(line => line.Groups[1].Value.Trim()),
-    ];
+        [.. Regex.Matches(html, "<span class=\"map-amount map-amount--state\" data-link-kind=\"Condition\"[^>]*>([^<]*)</span>").Select(line => line.Groups[1].Value.Trim())];
 
     [Fact]
     public async Task MapTab_theCarChosen_listsItsConditionInWordsWithItsModuleAndThatItDoesNotHold()

@@ -14,13 +14,10 @@ namespace Netto.Web.Client.Tabs;
 // its own is quiet, in a quiet row with no link of its own, the chain's line running past it. A module's
 // box holds the badges of the conditions and the tax bases reaching it (MapBadges), read before any filter.
 // A filter shows some links and hides the others as `view with { Links = shown, Hidden = hidden }`: the
-// modules, their badges and the routes are the run's, so nothing moves. Units is the map's height in chain
-// rows, which the stylesheet makes its height of.
+// modules, their badges, the routes and the amounts placed on them (MapAmounts) are the run's, so nothing
+// moves. Units is the map's height in chain rows, which the stylesheet makes its height of.
 internal sealed record MapView(IReadOnlyList<MapNode> Modules, IReadOnlyList<MapNode> Buckets, decimal Units)
 {
-    // How far a card's words stand from its box.
-    private const decimal BlockGap = 1m;
-
     public IReadOnlyList<MapLink> Links { get; init; } = [];
 
     // The links a filter hides, still each module's.
@@ -108,28 +105,14 @@ internal sealed record MapView(IReadOnlyList<MapNode> Modules, IReadOnlyList<Map
     public IReadOnlyList<(MapBundle Bundle, bool Faded)> Drawn(RiverModule? chosen) =>
         [.. Bundles().Select(bundle => (Bundle: bundle, Faded: chosen is { } module && !bundle.Touches(module))).OrderByDescending(line => line.Faded)];
 
-    // Where each line's words are drawn: a card's lines leaving one side of its box together, beside that
-    // side, in the middle of its height, in the order they meet the box, top to bottom then left to right,
-    // so each is read with its line; a line between two boxes one over the other beside itself, halfway
-    // down the gap. Nothing chosen, every line has its words; a module chosen, only its own lines do,
-    // whichever card draws them, the others' being left out rather than faded, so choosing quiets the map.
-    public IReadOnlyList<MapLabelBlock> Blocks(RiverModule? chosen = null)
+    // The amounts the map draws, of those placed from every link of the run (MapAmounts.Of the run's map):
+    // the lines this map shows, and, a module chosen, only its own lines', whichever card draws them, each
+    // where it was placed, so hiding a kind of line or choosing a module moves none; the others' are left out
+    // rather than faded, so choosing quiets the map.
+    public IReadOnlyList<MapAmount> Amounts(IReadOnlyList<MapAmount> placed, RiverModule? chosen = null)
     {
-        var bundles = Bundles().Where(bundle => chosen is not { } module || bundle.Touches(module)).ToList();
-        var gaps = bundles.Where(bundle => bundle.Route.Side == MapLabelSide.Gap)
-            .Select(bundle => new MapLabelBlock(bundle.Card, MapLabelSide.Gap, bundle.Route.Beside, [bundle]));
-        var sides = bundles.Where(bundle => bundle.Route.Side != MapLabelSide.Gap)
-            .GroupBy(bundle => (bundle.Card, bundle.Route.Side))
-            .Select(block => new MapLabelBlock(block.Key.Card, block.Key.Side, BesideBox(block.Key.Card, block.Key.Side),
-                [.. block.OrderBy(bundle => bundle.Meets.Y).ThenBy(bundle => bundle.Meets.X)]));
-
-        return [.. sides, .. gaps];
-    }
-
-    private MapPoint BesideBox(RiverModule card, MapLabelSide side)
-    {
-        var slot = Modules.Single(node => node.End.Module == card).Slot;
-        return new MapPoint(side == MapLabelSide.Left ? slot.Left - BlockGap : slot.Right + BlockGap, slot.CenterY);
+        var shown = new HashSet<MapRoute>(Links.Select(link => link.Route).OfType<MapRoute>(), ReferenceEqualityComparer.Instance);
+        return [.. placed.Where(amount => shown.Contains(amount.Bundle.Route) && (chosen is not { } module || amount.Bundle.Touches(module)))];
     }
 }
 
@@ -154,11 +137,10 @@ internal sealed record MapPlace(MapSlot Slot, IReadOnlyList<MapNode> Nodes)
     public bool Quiet => Nodes[0].Quiet;
 }
 
-// One line of the map: the links of one route, one after the other in its words, all lines of one card
-// between the same two ends and of one kind. Its amount is their sum, each figure to the cent as its card
-// draws it, so it is the sum a viewer makes of the card's lines: arithmetic of display, no tax figure. A
-// line back out of a bucket is a route of its own, so what comes back is never taken off the way in. A
-// condition has none.
+// One line of the map: the links of one route, all lines of one card between the same two ends and of one
+// kind. Its amount is their sum, each figure to the cent as its card draws it, so it is the sum a viewer
+// makes of the card's lines: arithmetic of display, no tax figure. A line back out of a bucket is a route
+// of its own, so what comes back is never taken off the way in. A condition has none.
 internal sealed record MapBundle(MapRoute Route, IReadOnlyList<MapLink> Links)
 {
     public MapLinkKind Kind => Links[0].Kind;
@@ -181,16 +163,8 @@ internal sealed record MapBundle(MapRoute Route, IReadOnlyList<MapLink> Links)
     // as lines, not as a row of arrowheads, and money passed on is told from money into a bucket by its end.
     public bool Arrowhead => To.Bucket is null;
 
-    // Where the line meets its card's box: where it leaves it, or where it comes back into it.
-    public MapPoint Meets => From.Module == Card ? Route.Points[0] : Route.End;
-
     public bool Touches(RiverModule module) => Links[0].Touches(module);
 }
-
-// The words of a card's lines drawn together beside one side of its box (At, the side's middle, the
-// words ending there on the left, starting there on the right), or of one line beside itself in a gap
-// (At, where the words start).
-internal sealed record MapLabelBlock(RiverModule Card, MapLabelSide Side, MapPoint At, IReadOnlyList<MapBundle> Bundles);
 
 // What a link of the map carries, told apart at a glance: money passed on to the next module (a lever's
 // hand-off, the split's shares, a royalty's part beyond its limits, taxed as pay), money ending in a

@@ -343,10 +343,10 @@ public class MapLinkFilterTests
             () => shown.Links.Select(link => link.Route).ShouldBe(view.Links.Where(link => link.Kind != MapLinkKind.IntoBucket).Select(link => link.Route)));
     }
 
-    // What the map draws of the lines, and the words under a card's lines, are the shown links': a hidden
-    // kind is in no line and no word.
+    // What the map draws of the lines, and the amounts on them, are the shown links': a hidden kind is in no
+    // line and no amount.
     [Fact]
-    public void Showing_aKindHidden_drawsNoLineAndNoWordOfIt()
+    public void Showing_aKindHidden_drawsNoLineAndNoAmountOfIt()
     {
         var view = MapView.From(Full, Full.Run());
         var filter = new MapLinkFilter(EveryKindShown());
@@ -356,9 +356,24 @@ public class MapLinkFilterTests
 
         shown.ShouldSatisfyAllConditions(
             () => shown.Bundles().Select(bundle => bundle.Kind).Distinct().ShouldNotContain(MapLinkKind.TaxBase),
-            () => shown.Blocks().SelectMany(block => block.Bundles).Select(bundle => bundle.Kind).Distinct().ShouldNotContain(MapLinkKind.TaxBase),
+            () => shown.Amounts(MapAmounts.Of(view, MapAmountsTests.Say)).Select(amount => amount.Bundle.Kind).Distinct().ShouldNotContain(MapLinkKind.TaxBase),
             () => shown.Drawn(RiverModule.Car).Select(line => line.Bundle.Kind).Distinct().ShouldNotContain(MapLinkKind.TaxBase),
             () => shown.Bundles().ShouldNotBeEmpty());
+    }
+
+    // The amounts are placed from every link of the run, so the amounts of a map a filter shows are those
+    // placed, the hidden kind's left out, each where it was.
+    [Fact]
+    public void Showing_aKindHidden_movesNoAmountOfTheOthers()
+    {
+        var view = MapView.From(Full, Full.Run());
+        var placed = MapAmounts.Of(view, MapAmountsTests.Say);
+        var filter = new MapLinkFilter(EveryKindShown());
+        filter.Set(MapLinkKind.IntoBucket, shown: false);
+
+        var amounts = filter.Showing(view).Amounts(placed);
+
+        amounts.ShouldBe(placed.Where(amount => amount.Bundle.Kind != MapLinkKind.IntoBucket));
     }
 
     // A module's links under the filter are the shown ones, and what is hidden is kept apart, still its own.

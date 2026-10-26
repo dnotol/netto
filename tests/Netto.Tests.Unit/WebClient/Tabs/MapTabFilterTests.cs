@@ -9,8 +9,8 @@ using static Netto.Tests.WebClient.Tabs.MapRendering;
 namespace Netto.Tests.WebClient.Tabs;
 
 // The Map tab under the viewer's filter of the kinds of link: the legend in its place under the head, and a
-// kind hidden left out of the lines, of the arrowheads and the words beside them; the modules, the buckets
-// and what the lines left are where they were, and the neighbourhood of the module chosen, which lists the
+// kind hidden left out of the lines, of the arrowheads and the amounts on them; the modules, the buckets, the
+// lines left and their amounts are where they were, and the neighbourhood of the module chosen, which lists the
 // module's every link, is as it was (MapNeighbourhoodRenderingTests). The choice is read from the browser's
 // storage before the first draw, so a kind hidden in an earlier visit is hidden at once.
 public class MapTabFilterTests
@@ -93,9 +93,20 @@ public class MapTabFilterTests
             () => view.Bundles().Any(bundle => bundle.Kind == hidden).ShouldBeTrue(),
             () => LineKinds(html).ShouldBe(kept.Select(bundle => bundle.Kind.ToString())),
             () => Regex.Count(html, "<span class=\"map-arrow ").ShouldBe(kept.Count(bundle => bundle.Arrowhead)),
-            () => Regex.Matches(html, "<div class=\"map-words__bundle[^\"]*\" data-link-kind=\"(\\w+)\"").Select(match => match.Groups[1].Value).ShouldBe(kept.Select(bundle => bundle.Kind.ToString()), ignoreOrder: true),
-            () => Regex.Matches(html, "<span class=\"map-words__amount[^\"]*\"[^>]*>([^<]*)</span>").Select(match => match.Groups[1].Value)
-                .ShouldBe(kept.Where(bundle => bundle.Amount is not null).Select(bundle => Formats.Euros(bundle.Amount!.Value)), ignoreOrder: true));
+            () => MapTabTests.Placed(MapTabTests.Map(html)).Select(amount => amount.Kind).ShouldBe(kept.Select(bundle => bundle.Kind.ToString()), ignoreOrder: true),
+            () => MapTabTests.Amounts(MapTabTests.Map(html)).ShouldBe(kept.Where(bundle => bundle.Amount is not null).Select(bundle => Formats.Euros(bundle.Amount!.Value)), ignoreOrder: true));
+    }
+
+    // Hiding a kind moves no amount: those left are drawn where they were with every kind shown.
+    [Theory]
+    [MemberData(nameof(KindsTheFullPlanDraws))]
+    public async Task Tab_aKindHidden_movesNoAmountOfTheOthers(MapLinkKind hidden)
+    {
+        var all = MapTabTests.Placed(MapTabTests.Map(await RenderTabAsync(Full)));
+
+        var html = await RenderTabAsync(Full, more: Hiding(hidden));
+
+        MapTabTests.Placed(MapTabTests.Map(html)).ShouldBe(all.Where(amount => amount.Kind != hidden.ToString()));
     }
 
     // Hiding moves nothing: the modules and the buckets are all there, where the map puts them.
@@ -143,7 +154,7 @@ public class MapTabFilterTests
             () => view.Bundles().Select(bundle => bundle.Kind).ShouldContain(MapLinkKind.Condition),
             () => LineKinds(html).ShouldBe(kept.Select(bundle => bundle.Kind.ToString())),
             () => Regex.Count(html, "<span class=\"map-arrow ").ShouldBe(kept.Count(bundle => bundle.Arrowhead)),
-            () => Regex.Matches(html, "<div class=\"map-words__bundle[^\"]*\" data-link-kind=\"(\\w+)\"").Select(match => match.Groups[1].Value).Distinct().Order()
+            () => MapTabTests.Placed(MapTabTests.Map(html)).Select(amount => amount.Kind).Distinct().Order()
                 .ShouldBe(kept.Select(bundle => bundle.Kind.ToString()).Distinct().Order()),
             () => Regex.Count(html, "<span class=\"map-badge ").ShouldBe(view.Modules.Sum(node => node.Badges.Count)),
             () => view.Modules.Sum(node => node.Badges.Count).ShouldBeGreaterThan(0),

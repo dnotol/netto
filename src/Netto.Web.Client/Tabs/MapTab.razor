@@ -23,10 +23,13 @@
    into a bucket, under which it runs on to the bucket's middle, the bucket being where its money stops:
    money passed on and money into a bucket are told apart by their ends, not by a colour. Each line is drawn
    over a halo of the map's ground so that a line crossing another leaves a gap each side of it. The links
-   of one card between the same two ends and of one kind are one line (MapBundle), which says, beside its
-   card's box, one amount and no words: the sum of the card's lines it holds, each a figure the card draws;
-   a condition says in a word or two whether it holds, its sentence left to the neighbourhood. A line to the
-   pocket and its amount are gold, the one gold of the map, since that is what reaches the director.
+   of one card between the same two ends and of one kind are one line (MapBundle), which says one amount and
+   no words, on a stretch of its own or right beside it, where MapAmounts places it from every link of the
+   run: the sum of the card's lines it holds, each a figure the card draws; a condition says in a word or two
+   whether it holds, placed the same way, its sentence left to the neighbourhood. An amount hangs from its
+   point of its line by its pixels, so it keeps to its line however large the map is drawn, and its ground
+   hides the lines crossing it, square. A line to the pocket and its amount are gold, the one gold of the
+   map, since that is what reaches the director.
 
    The rules are marks on the module they act on: each condition another module sets on it, but the
    office rule, which always holds, is a badge in its box saying which rule and whether it holds, and what
@@ -40,14 +43,14 @@
    chain, each name saying in its button, out of sight, that it holds nothing in this plan; the royalty that
    comes to nothing is quiet in its own place. The row is kept as tall as its names one per line on the
    narrowest map. The chain's line runs on under the row, from the box above to the box below, its amount
-   said once, between the row and the box below. A quiet name is a button like a box, so
+   said once, on the line above or under the row. A quiet name is a button like a box, so
    that choosing it opens its card beside the map, where its amounts are entered; once it moves money it
    has its box back, in its place.
 
    A module is a button: chosen, by a click or Enter or Space, it is marked (aria-pressed) and its own
-   lines stay, worded beside its box with each card line's words and amount, while the others fade with no
-   word and no amount, and its neighbourhood is beside the map (MapNeighbourhood), the drawing's
-   equivalent for a screen reader, which hears the buttons and the neighbourhood and nothing of the
+   lines stay with their amounts where they were, while the others fade with no amount, the map showing no
+   words, and its neighbourhood is beside the map (MapNeighbourhood), saying what each line carries, the
+   drawing's equivalent for a screen reader, which hears the buttons and the neighbourhood and nothing of the
    drawing itself. Choosing it again lets it go. The choice is the page's (Chosen, ChosenChanged), so it
    stays from one tab to the next; the map takes no focus for it, the card it opens beside the map does
    (MapPanel). Nothing here is a live region: the bar's is the river's only announcement. While the engine
@@ -63,14 +66,14 @@
    length of the card under it, the card of that module (MapPanel, the Plan tab's own, pinned open), whose
    edits go to the page's one river. Under the head is the filter of the kinds of link (MapFilter), the
    legend of the lines in one row, whose boxes the viewer ticks: a kind unticked is left out of the lines,
-   their arrowheads and their words, and only of those: the neighbourhood is made from every link of the
+   their arrowheads and their amounts, and only of those: the neighbourhood is made from every link of the
    run, so the rules of a module are listed whether or not their lines are drawn. The map opens quiet: the
    kinds that are a tax base and a condition start unticked, since their badges say them on the modules
    they reach, and ticking them draws their lines. The filter shows the map without those links
-   (MapLinkFilter.Showing) and leaves everything else where it is: the modules, the buckets and the route
-   of every line left are the run's, and the choice of a module is the page's. The lines are an SVG
-   stretched to the map's box (preserveAspectRatio="none"), kept to their width by vector-effect; what
-   must keep its shape, the boxes, the words and the arrowheads, is HTML placed over it in percentages. *@
+   (MapLinkFilter.Showing) and leaves everything else where it is: the modules, the buckets, the route of
+   every line left and its amount are the run's, and the choice of a module is the page's. The lines are an
+   SVG stretched to the map's box (preserveAspectRatio="none"), kept to their width by vector-effect; what
+   must keep its shape, the boxes, the amounts and the arrowheads, is HTML placed over it in percentages. *@
 <TabHead Eyebrow="@L["Eyebrow"]" Title="@L["Title"]" Lede="@L["Lede"]" />
 
 <div class="map-tab__filter">
@@ -94,36 +97,9 @@
             {
                 <span class="@ArrowClass(bundle, faded)" style="left: @Percent(bundle.Route.End.X); top: @Percent(bundle.Route.End.Y); @ArrowSize(bundle) --map-arrow: @Ink(bundle)" aria-hidden="true"></span>
             }
-            @foreach (var block in _blocks)
+            @foreach (var amount in _amounts)
             {
-                <div class="map-words map-words--@Side(block.Side)" style="left: @Percent(block.At.X); top: @Percent(block.At.Y)" aria-hidden="true">
-                    @foreach (var bundle in block.Bundles)
-                    {
-                        <div class="map-words__bundle" data-link-kind="@bundle.Kind">
-                            @if (bundle.Kind == MapLinkKind.Condition)
-                            {
-                                foreach (var link in bundle.Links)
-                                {
-                                    if (link.State is { } state)
-                                    {
-                                        <span class="map-words__state">@Carries(state)</span>
-                                    }
-                                }
-                            }
-                            else if (_chosen is null)
-                            {
-                                <span class="@AmountClass(bundle)">@Formats.Euros(bundle.Amount ?? 0m)</span>
-                            }
-                            else
-                            {
-                                foreach (var link in bundle.Links)
-                                {
-                                    <span class="map-words__line">@Carries(link.Carries)@(" ")<span class="@AmountClass(bundle)">@Formats.Euros(link.Amount ?? 0m)</span></span>
-                                }
-                            }
-                        </div>
-                    }
-                </div>
+                <span class="@AmountClass(amount.Bundle)" data-link-kind="@amount.Bundle.Kind" style="@AmountStyle(amount)" aria-hidden="true">@amount.Text</span>
             }
             @foreach (var bucket in _view.Buckets)
             {
@@ -188,31 +164,41 @@
     private Refusal? ChosenRefusal => _chosen is { } module ? RefusedBy(module) : null;
 
     // The map of the run, and the same without the links of the kinds the viewer hid (MapLinkFilter): the
-    // second is what is drawn, the first what the legend counts and the neighbourhood lists.
+    // second is what is drawn, the first what the legend counts and the neighbourhood lists, and what every
+    // line's amount is placed on (MapAmounts), once a run, so a tick or a choice moves none.
     private MapView _full = default!;
     private MapView _view = default!;
     private IReadOnlyDictionary<MapLinkKind, int> _counts = default!;
+    private IReadOnlyList<MapAmount> _placed = [];
+    private (RiverInputs Inputs, RiverRun Run)? _mapped;
     private RiverModule? _chosen;
     private MapNeighbourhoodView? _hood;
     private IReadOnlyList<(MapBundle Bundle, bool Faded)> _drawn = [];
-    private IReadOnlyList<MapLabelBlock> _blocks = [];
+    private IReadOnlyList<MapAmount> _amounts = [];
     private readonly Dictionary<MapText, IStringLocalizer> _texts = [];
 
     // What the tab draws, for the page's tests to read as they read Chosen (a render of the page writes no
-    // HTML): the map without the links of the kinds hidden, its lines and the words beside them.
+    // HTML): the map without the links of the kinds hidden, its lines and the amounts on them.
     internal MapView ShownMap => _view;
 
     internal IReadOnlyList<(MapBundle Bundle, bool Faded)> DrawnLines => _drawn;
 
-    internal IReadOnlyList<MapLabelBlock> DrawnWords => _blocks;
+    internal IReadOnlyList<MapAmount> DrawnAmounts => _amounts;
 
     // The neighbourhood of the module chosen, which the column beside the map lists, none while none is.
     internal MapNeighbourhoodView? Neighbourhood => _hood;
 
     protected override void OnParametersSet()
     {
-        _full = MapView.From(Inputs, Run);
-        _counts = MapLinkFilter.Counts(_full);
+        // The map and its amounts are the run's: worked out again for another run, not for another choice.
+        if (_mapped is not var (inputs, run) || !ReferenceEquals(inputs, Inputs) || !ReferenceEquals(run, Run))
+        {
+            _full = MapView.From(Inputs, Run);
+            _counts = MapLinkFilter.Counts(_full);
+            _placed = MapAmounts.Of(_full, Carries);
+            _mapped = (Inputs, Run);
+        }
+
         _chosen = _full.Choice(Chosen);
         Refilter();
 
@@ -221,12 +207,13 @@
         _hood = _chosen is { } chosen ? MapNeighbourhoodView.Of(_full, chosen, Carries, EndName) : null;
     }
 
-    // The viewer ticked or unticked a kind: the lines and their words are the shown kinds' again.
+    // The viewer ticked or unticked a kind: the lines and their amounts are the shown kinds' again, each
+    // amount where it was placed.
     private void Refilter()
     {
         _view = Filter.Showing(_full);
         _drawn = _view.Drawn(_chosen);
-        _blocks = _view.Blocks(_chosen);
+        _amounts = _view.Amounts(_placed, _chosen);
     }
 
     // A module chosen again lets it go.
@@ -246,8 +233,14 @@
     // A line's ink and its arrowhead's, its kind's (MapLinkStyle), or the gold of what reaches the pocket.
     private static string Ink(MapBundle bundle) => ToPocket(bundle) ? MapLinkStyle.PocketInk : MapLinkStyle.Ink(bundle.Kind);
 
-    // What reaches the pocket is said in the gold of its line.
-    private static string AmountClass(MapBundle bundle) => $"map-words__amount{(ToPocket(bundle) ? " map-words__amount--pocket" : "")}";
+    // What reaches the pocket is said in the gold of its line, a condition's word or two muted.
+    private static string AmountClass(MapBundle bundle) =>
+        $"map-amount{(ToPocket(bundle) ? " map-amount--pocket" : bundle.Kind == MapLinkKind.Condition ? " map-amount--state" : "")}";
+
+    // Where an amount is drawn: at its point of its line, in percent of the map, as wide as MapAmounts
+    // reckons it, its box moved from that point by its pixels (MapAmount.Left, Top).
+    private static string AmountStyle(MapAmount amount) =>
+        $"left: {Percent(amount.At.X)}; top: {Percent(amount.At.Y)}; width: {Pixels(amount.Width)}; transform: translate({Pixels(amount.Left)}, {Pixels(amount.Top)})";
 
     // A module's button: a box in its slot, or a name in its quiet row, which places it, saying its state in
     // a word: refused, skipped, or, out of sight, since its row's dashes show it, that a quiet lever holds
@@ -292,8 +285,6 @@
 
     private static bool ToPocket(MapBundle bundle) => bundle.To.Bucket == "pocket";
 
-    private static string Side(MapLabelSide side) => side.ToString().ToLowerInvariant();
-
     // What a link carries, in the words of the texts that word its line on its card (MapTabText.Texts), or a
     // condition's word or two, in the map's.
     private string Carries(MapLabel label)
@@ -323,6 +314,8 @@
         $"left: {Percent(slot.Left)}; top: {Percent(slot.CenterY)}; width: {Percent(slot.Width)}";
 
     private static string Percent(decimal value) => $"{Number(value)}%";
+
+    private static string Pixels(decimal value) => $"{value.ToString("0.##", CultureInfo.InvariantCulture)}px";
 
     private static string Number(decimal value) => Math.Round(value, 3).ToString("0.###", CultureInfo.InvariantCulture);
 }

@@ -171,59 +171,37 @@
     transform: translate(0, -50%);
 }
 
-/* The words of a card's lines beside its box, or of one line beside itself in a gap: each line its amount
-   or, a condition, its word or two; the chosen module's, what each card line carries and its amount, kept
-   on one line, read over the lines under them through a halo of the page. */
-.map-words {
+/* A line's amount, or a condition's word or two, on a stretch of its own line or right beside it, where
+   MapAmounts places it: its box hangs from its point of the line by its pixels (the transform set on it),
+   as wide as MapAmounts reckons its text and a ground each side (the width set on it) and a rem high, its
+   text at 0.72rem in Inter at weight 400 with tabular figures (MapAmounts: FontRem, GroundRem and HeightRem
+   are the 0.72rem, 0.3rem and 1rem here), so the box drawn is the box placed. Its ground is the map's, over
+   the lines that cross it, square. */
+.map-amount {
     position: absolute;
-    display: flex;
-    flex-direction: column;
-    gap: 0.3rem;
-    color: var(--netto-text-muted);
-    font-size: 0.72rem;
-    line-height: 1.25;
-    pointer-events: none;
-    text-shadow: 0 0 3px var(--netto-page), 0 0 3px var(--netto-page), 0 0 2px var(--netto-page);
-}
-
-.map-words--left {
-    align-items: flex-end;
-    text-align: right;
-    transform: translate(-100%, -50%);
-}
-
-.map-words--right,
-.map-words--gap {
-    transform: translate(0, -50%);
-}
-
-/* Each line's words sit on the line they word, which runs under them. */
-.map-words__bundle {
-    display: flex;
-    flex-direction: column;
-    padding: 0.05rem 0.3rem;
+    box-sizing: border-box;
+    height: 1rem;
+    padding: 0 0.3rem;
     border-radius: 4px;
     background: var(--netto-page);
-}
-
-.map-words__line {
-    white-space: nowrap;
-}
-
-.map-words__amount {
     color: var(--netto-text);
+    font-size: 0.72rem;
+    font-weight: 400;
+    line-height: 1rem;
     font-variant-numeric: tabular-nums;
+    text-align: center;
     white-space: nowrap;
+    pointer-events: none;
 }
 
 /* What reaches the pocket, in the gold of its line. */
-.map-words__amount--pocket {
+.map-amount--pocket {
     color: var(--netto-gold);
 }
 
 /* Whether a condition holds, in a word or two. */
-.map-words__state {
-    white-space: nowrap;
+.map-amount--state {
+    color: var(--netto-text-muted);
 }
 
 /* A bucket of the bar: where the money ends, nothing to choose. Its wash lies over the map's ground, so it
@@ -278,7 +256,7 @@
    placed by its middle, as wide as its slot and as tall as its names: one line where they fit, one name to
    a line on the narrowest map, which is the height the layout keeps for it (MapLayout: SmallestRowRem,
    QuietTargetRem, QuietGapRem and QuietPadRem are the 3.25rem, 1.5rem, 0.15rem and 0.15rem here), so that
-   it never reaches the boxes around it or the words of the line under it. */
+   it never reaches the boxes around it or the amount of the line through it. */
 .map-quiet {
     position: absolute;
     display: flex;

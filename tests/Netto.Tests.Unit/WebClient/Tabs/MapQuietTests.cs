@@ -204,8 +204,8 @@ public class MapQuietTests
             (false, true, true, MapLayout.Grid(MapView.ModulesOf(river)).Slot(MapEnd.Of(RiverModule.Allowances)).Width));
     }
 
-    // A quiet lever's links are the line running past it: chosen, that line stays and is worded, its words
-    // on its last stretch, under the quiet row, never on it.
+    // A quiet lever's links are the line running past it: chosen, that line stays with its amount, on the line
+    // above or under the quiet row, never on it.
     [Fact]
     public void LinksOf_aQuietLever_isTheLineRunningPastIt()
     {
@@ -214,12 +214,13 @@ public class MapQuietTests
         var pill = Node(view, RiverModule.Rent).Slot;
 
         var past = view.LinksOf(RiverModule.Rent).ShouldHaveSingleItem();
-        var words = view.Blocks(RiverModule.Rent).ShouldHaveSingleItem();
+        var amount = view.Amounts(MapAmounts.Of(view, MapAmountsTests.Say), RiverModule.Rent).ShouldHaveSingleItem();
 
         view.ShouldSatisfyAllConditions(
             () => (past.From.Module, past.To.Module).ShouldBe((RiverModule.Vouchers, RiverModule.Split)),
             () => view.Drawn(RiverModule.Rent).Where(line => !line.Faded).Select(line => line.Bundle.Links[0]).ShouldBe([past]),
-            () => (words.Side, words.At.Y > pill.Bottom, words.At.Y < Node(view, RiverModule.Split).Slot.Top).ShouldBe((MapLabelSide.Gap, true, true)));
+            () => (amount.Bundle.Links[0], amount.At.X).ShouldBe((past, pill.CenterX)),
+            () => (amount.At.Y < pill.Top || amount.At.Y > pill.Bottom).ShouldBeTrue());
     }
 
     // The line past a quiet row runs straight down the chain's middle, into the row and out of it, from the
@@ -257,24 +258,25 @@ public class MapQuietTests
     // The map is never less than its smallest scale, a chain row being 3.25rem (MapLayout.SmallestRowRem),
     // whatever its width: there, a quiet row's names, each a 24 px target, take a line each on the narrowest
     // map, a column 34rem wide where a quiet row is about 150 px; its pill is kept that tall, with its
-    // padding, in the middle of its row, below the box above, and the line's words, a line of about 1rem,
-    // fit between it and the box below.
+    // padding, in the middle of its row, below the box above, and the line's amount, a rem high, fits on the
+    // line between it and a box, clear of both.
     [Theory]
     [MemberData(nameof(QuietRuns))]
-    public void From_aQuietRowAtTheMapsSmallestScale_holdsItsNamesOnePerLineClearOfTheBoxesAndTheLinesWords(int count)
+    public void From_aQuietRowAtTheMapsSmallestScale_holdsItsNamesOnePerLineClearOfTheBoxesAndTheLinesAmount(int count)
     {
         var river = Emptied(Full, [.. Chain.TakeLast(count).Select(module => RiverModules.Lever(module)!.Value)]);
         var view = MapView.From(river, river.Run());
         var rem = 100m / (view.Units * MapLayout.SmallestRowRem);
         var (pill, split) = (Node(view, RiverModule.Car).Slot, Node(view, RiverModule.Split).Slot);
         var above = view.Modules.Last(node => !node.Quiet && node.Slot.Bottom <= pill.Top).Slot;
+        var scale = MapScale.Smallest(view.Units);
 
-        var words = view.Blocks(RiverModule.Car).Single(block => block.Side == MapLabelSide.Gap).At.Y;
+        var amount = view.Amounts(MapAmounts.Of(view, MapAmountsTests.Say), RiverModule.Car).Single().Area(scale);
 
         view.ShouldSatisfyAllConditions(
             () => (pill.Height >= (count * MapLayout.QuietTargetRem + (count - 1) * MapLayout.QuietGapRem + 2 * MapLayout.QuietPadRem) * rem).ShouldBeTrue(),
             () => (pill.Top > above.Bottom).ShouldBeTrue(),
-            () => (words - 0.5m * rem >= pill.Bottom, words + 0.5m * rem <= split.Top).ShouldBe((true, true)));
+            () => new[] { pill, split, above }.Where(box => MapArea.Of(box, scale).Overlaps(amount)).ShouldBeEmpty());
     }
 
     // What the stylesheet draws a quiet row with is what the layout keeps room for: the map's smallest

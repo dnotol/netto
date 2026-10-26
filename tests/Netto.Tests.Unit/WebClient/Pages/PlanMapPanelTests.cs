@@ -62,7 +62,7 @@ public class PlanMapPanelTests
         await using var page = await MapAsync(WithACar);
         await ChooseAsync(page, RiverModule.CompanyYear);
         var before = await page.FindAsync<MapTab>();
-        var wordsBefore = before.DrawnWords;
+        var amountsBefore = before.DrawnAmounts;
         var card = await page.FindAsync<CompanyYearCard>();
         var edited = card.Inputs.WithRevenue(card.Inputs.Company!.Revenue.Value + 30_000m);
 
@@ -75,7 +75,7 @@ public class PlanMapPanelTests
             () => map.Run.ShouldBeSameAs(bar.Run),
             () => changed.Run.ShouldBeSameAs(bar.Run),
             () => bar.Run.Year!.Scenario.Revenue.ShouldBe(edited.Company!.Revenue.Value),
-            () => map.DrawnWords.ShouldNotBe(wordsBefore),
+            () => map.DrawnAmounts.ShouldNotBe(amountsBefore),
             () => bar.Unsaved.ShouldBeTrue(),
             () => page.Errors.ShouldBeEmpty());
     }

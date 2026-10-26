@@ -40,6 +40,24 @@ public class MapAmountsTests
         MapAmounts.Height.ShouldBe(16m);
     }
 
+    // The stylesheet draws an amount at the size it is placed at: its text at 0.72rem, a rem high, its ground
+    // each side, at weight 400 with tabular figures, on one line.
+    [Fact]
+    public void MapTabCss_drawsAnAmountAtTheSizeItIsPlacedAt()
+    {
+        var amount = Stylesheet.Block(Stylesheet.Read("src", "Netto.Web.Client", "Tabs", "MapTab.razor.css"), ".map-amount");
+
+        amount.ShouldSatisfyAllConditions(
+            () => amount.ShouldContain($"font-size: {Stylesheet.Rem(MapAmounts.FontRem)};"),
+            () => amount.ShouldContain($"height: {Stylesheet.Rem(MapAmounts.HeightRem)};"),
+            () => amount.ShouldContain($"line-height: {Stylesheet.Rem(MapAmounts.HeightRem)};"),
+            () => amount.ShouldContain($"padding: 0 {Stylesheet.Rem(MapAmounts.GroundRem)};"),
+            () => amount.ShouldContain("box-sizing: border-box;"),
+            () => amount.ShouldContain("font-weight: 400;"),
+            () => amount.ShouldContain("font-variant-numeric: tabular-nums;"),
+            () => amount.ShouldContain("white-space: nowrap;"));
+    }
+
     // The map's chain row is drawn at most 4.6rem high, the largest size the amounts are held at here.
     [Fact]
     public void MapTabCss_drawsAChainRowAtMostTheLargestTheAmountsAreHeldAt()

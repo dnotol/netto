@@ -77,7 +77,7 @@ public class PlanMapFilterTests
         (storage.Get(MapLinkFilter.StorageKey), page.Errors.Count).ShouldBe(("tax_base", 0));
     }
 
-    // The tab draws again at a tick: the lines and the words beside them lose the links of the kind unticked,
+    // The tab draws again at a tick: the lines and the amounts on them lose the links of the kind unticked,
     // the others stay as they were, and nothing else of the map changes, the chosen module's neighbourhood
     // included, which lists all its links whatever the legend ticks.
     [Fact]
@@ -125,13 +125,13 @@ public class PlanMapFilterTests
             () => map.ShownMap.Hidden.ShouldBeEmpty());
     }
 
-    // Each line the tab draws, by its kind and its route, and whether it is faded; each bundle of words
-    // beside them; each line and rule in the neighbourhood of the module chosen.
+    // Each line the tab draws, by its kind and its route, and whether it is faded; each amount on them, by
+    // its line's kind and route; each line and rule in the neighbourhood of the module chosen.
     private static List<(MapLinkKind Kind, MapRoute Route, bool Faded)> Lines(MapTab map) =>
         [.. map.DrawnLines.Select(line => (line.Bundle.Kind, line.Bundle.Route, line.Faded))];
 
     private static List<(MapLinkKind Kind, MapRoute Route)> Words(MapTab map) =>
-        [.. map.DrawnWords.SelectMany(block => block.Bundles).Select(bundle => (bundle.Kind, bundle.Route))];
+        [.. map.DrawnAmounts.Select(amount => (amount.Bundle.Kind, amount.Bundle.Route))];
 
     // The box a kind is, in the order of the kinds.
     private static int Index(MapLinkKind kind) => Array.IndexOf(Enum.GetValues<MapLinkKind>(), kind);

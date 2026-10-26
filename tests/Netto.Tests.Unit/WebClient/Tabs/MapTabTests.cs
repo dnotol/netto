@@ -10,11 +10,11 @@ using static Netto.Tests.WebClient.Tabs.MapRendering;
 namespace Netto.Tests.WebClient.Tabs;
 
 // The Map tab as a viewer meets it: every module of the plan a button in the river's order, the bar's four
-// buckets, one line for each route of the run's links, drawn over a halo of the ground, with one amount
-// beside it, a condition's with its word or two, each line and amount saying its kind; a module chosen
-// marked, its lines brought out with each card line's words and amount, the others' words and amounts gone,
-// and its neighbourhood beside the map (MapNeighbourhoodRenderingTests'); a refused amount leaving no line
-// and no amount, the module holding it marked. What a click does is the browser's.
+// buckets, one line for each route of the run's links, drawn over a halo of the ground, with its amount on
+// it where MapAmounts places it, a condition's word or two instead, each line and amount saying its kind; a
+// module chosen marked, its lines brought out with their amounts where they were, the others' amounts gone and
+// no words on the map, its neighbourhood beside it (MapNeighbourhoodRenderingTests'); a refused amount leaving
+// no line and no amount, the module holding it marked. What a click does is the browser's.
 public class MapTabTests
 {
     private static readonly RiverInputs Full = MapLinksTests.Full;
@@ -146,8 +146,8 @@ public class MapTabTests
                 .ShouldBe(drawn.Select(line => (string?)string.Join(' ', line.Bundle.Route.Drawn.Select(point => $"{Number(point.X)},{Number(point.Y)}")))));
     }
 
-    // Nothing chosen: one amount beside each line of money or of a tax base, the sum of the card's lines it
-    // holds, and no words; a condition's line says in a word or two whether it holds.
+    // Nothing chosen: one amount on each line of money or of a tax base, the sum of the card's lines it holds,
+    // and no words; a condition's line says in a word or two whether it holds.
     [Fact]
     public async Task Tab_nothingChosen_drawsOneAmountPerLineAndNoWords()
     {
@@ -158,8 +158,21 @@ public class MapTabTests
         map.ShouldSatisfyAllConditions(
             () => view.Bundles().ShouldContain(bundle => bundle.Links.Count > 1),
             () => Amounts(map).ShouldBe(view.Bundles().Where(bundle => bundle.Amount is not null).Select(bundle => Formats.Euros(bundle.Amount!.Value)), ignoreOrder: true),
-            () => map.ShouldNotContain("map-words__line"),
+            () => map.ShouldNotContain("map-words"),
             () => States(map).ShouldBe(view.Links.Where(link => link.Kind == MapLinkKind.Condition).Select(State), ignoreOrder: true));
+    }
+
+    // Each amount is drawn where MapAmounts places it: at its point of its line, in percent of the map, its box
+    // as wide as its text and its ground and moved from that point by its pixels, so it hugs its line however
+    // large the map is drawn; out of a screen reader's hearing, the neighbourhood saying it.
+    [Fact]
+    public async Task Tab_eachAmount_isDrawnWhereMapAmountsPlacesIt()
+    {
+        var view = MapView.From(Full, Full.Run());
+
+        var map = Map(await RenderTabAsync(Full));
+
+        Placed(map).ShouldBe(MapAmounts.Of(view, MapAmountsTests.Say).Select(amount => (amount.Bundle.Kind.ToString(), Style(amount), "true", amount.Text)), ignoreOrder: true);
     }
 
     // What the line to the pocket carries is drawn in its gold, the map's one; no other amount is.
@@ -170,7 +183,7 @@ public class MapTabTests
 
         var map = Map(await RenderTabAsync(Full));
 
-        Regex.Matches(map, "<span class=\"map-words__amount map-words__amount--pocket\"[^>]*>([^<]*)</span>").Select(match => match.Groups[1].Value)
+        Regex.Matches(map, "<span class=\"map-amount map-amount--pocket\"[^>]*>([^<]*)</span>").Select(match => match.Groups[1].Value)
             .ShouldBe(view.Bundles().Where(bundle => bundle.To == MapEnd.InBucket("pocket")).Select(bundle => Formats.Euros(bundle.Amount!.Value)), ignoreOrder: true);
     }
 
@@ -186,24 +199,22 @@ public class MapTabTests
         Bundles(map).Where(text => !Regex.IsMatch(text, "^−?€[0-9,]+\\.[0-9]{2}$") && !states.Contains(text)).ShouldBeEmpty();
     }
 
-    // A module chosen: only its own lines have words on the map, each of its card's lines what it carries
-    // and its amount, as its card says it, a condition still its word or two; no other line has a word or
-    // an amount.
+    // A module chosen: its own lines keep their amounts where they were, a condition its word or two, and no
+    // other line has one; the map has no words, the neighbourhood beside it saying what each line carries.
     [Fact]
-    public async Task Tab_aModuleChosen_wordsOnlyItsOwnLinesEachCardLineWithItsAmount()
+    public async Task Tab_aModuleChosen_keepsItsOwnLinesAmountsWhereTheyWereAndNoWords()
     {
-        var view = MapView.From(Full, Full.Run());
-        var own = view.Bundles().Where(bundle => bundle.Touches(RiverModule.Car)).ToList();
+        var own = MapView.From(Full, Full.Run()).Bundles().Where(bundle => bundle.Touches(RiverModule.Car)).Select(bundle => bundle.Kind.ToString()).ToList();
+        var unchosen = Placed(Map(await RenderTabAsync(Full)));
 
         var map = Map(await RenderTabAsync(Full, RiverModule.Car));
 
         map.ShouldSatisfyAllConditions(
-            () => Regex.Matches(map, "<div class=\"map-words__bundle\" data-link-kind=\"(\\w+)\"").Select(match => match.Groups[1].Value)
-                .ShouldBe(own.Select(bundle => bundle.Kind.ToString()), ignoreOrder: true),
-            () => Amounts(map).ShouldBe(own.Where(bundle => bundle.Amount is not null).SelectMany(bundle => bundle.Links).Select(link => Formats.Euros(link.Amount!.Value)), ignoreOrder: true),
-            () => WordLines(map).Count.ShouldBe(own.Where(bundle => bundle.Amount is not null).Sum(bundle => bundle.Links.Count)),
-            () => WordLines(map).ShouldContain($"The car's yearly costs {Formats.Euros(Full.Run().Year!.Car.Costs)}"),
-            () => States(map).ShouldBe(own.SelectMany(bundle => bundle.Links).Where(link => link.Kind == MapLinkKind.Condition).Select(State), ignoreOrder: true));
+            () => Placed(map).Count.ShouldBe(own.Count),
+            () => Placed(map).Select(amount => amount.Kind).ShouldBe(own, ignoreOrder: true),
+            () => Placed(map).ShouldBeSubsetOf(unchosen),
+            () => map.ShouldNotContain("map-words"),
+            () => map.ShouldNotContain("The car's yearly costs"));
     }
 
     // Every line is drawn over a halo of the map's ground, right before it, on its points and wider by the
@@ -224,14 +235,13 @@ public class MapTabTests
     }
 
     [Fact]
-    public async Task Tab_wordsBesideTheLines_sayTheirKind()
+    public async Task Tab_amountsOnTheLines_sayTheirKind()
     {
         var view = MapView.From(Full, Full.Run());
 
         var html = await RenderTabAsync(Full);
 
-        Regex.Matches(html, "<div class=\"map-words__bundle[^\"]*\" data-link-kind=\"(\\w+)\"").Select(match => match.Groups[1].Value)
-            .ShouldBe(view.Bundles().Select(bundle => bundle.Kind.ToString()), ignoreOrder: true);
+        Placed(Map(html)).Select(amount => amount.Kind).ShouldBe(view.Bundles().Select(bundle => bundle.Kind.ToString()), ignoreOrder: true);
     }
 
     // Nothing chosen: no button pressed, no line faded, and the column says how to choose.
@@ -287,8 +297,8 @@ public class MapTabTests
 
         var map = Regex.Match(html, "<div class=\"map\".*?<div class=\"map-tab__side\"", RegexOptions.Singleline).Value;
         html.ShouldSatisfyAllConditions(
-            () => (Regex.Count(map, "<polyline"), map.Contains('€'), map.Contains("map-badge", StringComparison.Ordinal), Buttons(html).Count)
-                .ShouldBe((0, false, false, MapView.ModulesOf(Full).Count)),
+            () => (Regex.Count(map, "<polyline"), map.Contains('€'), Regex.Count(map, "map-amount"), map.Contains("map-badge", StringComparison.Ordinal), Buttons(html).Count)
+                .ShouldBe((0, false, 0, false, MapView.ModulesOf(Full).Count)),
             () => Buttons(html).Where(button => !button.Refused).Select(button => button.Name).ShouldBe(
                 MapView.ModulesOf(Full).Where(module => module != RiverModule.Dividend).Select(CardTitle)),
             () => Buttons(html).Where(button => button.Refused).Select(button => (button.Module, button.Name)).ShouldBe([("dividend", "Dividend refused")]),
@@ -370,20 +380,30 @@ public class MapTabTests
     // What the map draws, the column beside it left out.
     internal static string Map(string html) => Regex.Match(html, "<div class=\"map\".*?<div class=\"map-tab__side\"", RegexOptions.Singleline).Value;
 
-    // The amounts drawn beside the lines, and the words of the conditions' lines.
+    // Each amount drawn on the lines, a condition's words among them: its kind, its style, whether it is out of a
+    // screen reader's hearing, and its text.
+    internal static List<(string Kind, string Style, string Hidden, string Text)> Placed(string map) =>
+    [
+        .. Regex.Matches(map, "<span class=\"map-amount[^\"]*\" data-link-kind=\"(\\w+)\" style=\"([^\"]*)\" aria-hidden=\"(\\w+)\"[^>]*>([^<]*)</span>")
+            .Select(match => (match.Groups[1].Value, match.Groups[2].Value, match.Groups[3].Value, match.Groups[4].Value)),
+    ];
+
+    // The amounts drawn on the lines of money and of the tax bases, and the words of the conditions' lines.
     internal static List<string> Amounts(string map) =>
-        [.. Regex.Matches(map, "<span class=\"map-words__amount[^\"]*\"[^>]*>([^<]*)</span>").Select(match => match.Groups[1].Value)];
+        [.. Regex.Matches(map, "<span class=\"map-amount(?: map-amount--pocket)?\"[^>]*>([^<]*)</span>").Select(match => match.Groups[1].Value)];
 
     private static List<string> States(string map) =>
-        [.. Regex.Matches(map, "<span class=\"map-words__state\"[^>]*>([^<]*)</span>").Select(match => match.Groups[1].Value.Trim())];
+        [.. Regex.Matches(map, "<span class=\"map-amount map-amount--state\"[^>]*>([^<]*)</span>").Select(match => match.Groups[1].Value.Trim())];
 
-    // What each line of the map says beside it, as a viewer reads it.
-    private static List<string> Bundles(string map) =>
-        [.. Regex.Matches(map, "<div class=\"map-words__bundle\"[^>]*>(.*?)</div>", RegexOptions.Singleline).Select(match => Text(match.Groups[1].Value))];
+    // What each line of the map says on it, as a viewer reads it.
+    private static List<string> Bundles(string map) => [.. Placed(map).Select(amount => amount.Text)];
 
-    // Each card line's words and amount beside a line of the module chosen.
-    internal static List<string> WordLines(string map) =>
-        [.. Regex.Matches(map, "<span class=\"map-words__line\"[^>]*>(.*?)</span></span>", RegexOptions.Singleline).Select(match => Text(match.Groups[1].Value))];
+    // Where the tab draws an amount: its point in percent to the thousandth, its width and its box's corner
+    // from that point in pixels.
+    internal static string Style(MapAmount amount) =>
+        $"left: {Number(amount.At.X)}%; top: {Number(amount.At.Y)}%; width: {Pixels(amount.Width)}; transform: translate({Pixels(amount.Left)}, {Pixels(amount.Top)})";
+
+    private static string Pixels(decimal value) => value.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture) + "px";
 
     // The word or two a condition says of whether it holds.
     private static string State(MapLink link) => ResxText.For<MapTab>().Get(link.State!.Key)!;
