@@ -10,9 +10,11 @@ namespace Netto.Tests.WebClient.Tabs;
 
 // The legend of the kinds of link as a viewer meets it on the Map tab, drawn without a browser: a group
 // named by its legend, a box for every kind in the order of the kinds, ticked while the kind is shown, each
-// with a sample of the map's own line for it, its name, how many links the plan has of it and what it is.
-// Ticking a box is an event: MapLinkFilterTests holds its effect on the filter, MapTabFilterTests what the
-// tab draws of a filter, and PlanMapFilterTests that the tab draws again at a tick.
+// with a sample of the map's own line for it, its name and how many links the plan has of it, and beside
+// the box, an info bubble saying what the kind is. The boxes are one row that wraps only when the window
+// has not the room for it. Ticking a box is an event: MapLinkFilterTests holds its effect on the filter,
+// MapTabFilterTests what the tab draws of a filter, and PlanMapFilterTests that the tab draws again at a
+// tick.
 public class MapFilterTests
 {
     private static readonly Dictionary<MapLinkKind, int> Counts = new()
@@ -30,18 +32,62 @@ public class MapFilterTests
         (Regex.IsMatch(html, "^<fieldset class=\"map-filter\"[^>]*><legend[^>]*>Kinds of link shown</legend>"), Regex.Count(html, "<fieldset")).ShouldBe((true, 1));
     }
 
+    // The label is the sample, the name and the count and nothing more, as a screen reader reads it: the
+    // count's words, not the number the eye reads.
     [Fact]
-    public async Task Filter_everyKind_isABoxWithItsNameItsCountAndWhatItIs()
+    public async Task Filter_everyKind_isABoxWithItsNameAndItsCount()
     {
         var html = await RenderAsync(new MapLinkFilter(new BrowserStorage()), Counts);
 
-        Boxes(html).Select(box => box.Text).ShouldBe(
+        Boxes(html).Select(box => box.Text).ShouldBe(["Money passed on (10 links)", "Money into a bucket (1 link)", "Tax base (6 links)", "Conditions (none in this plan)"]);
+    }
+
+    // What the eye reads of a count is the number alone, which keeps the four boxes in one row; the words
+    // are left to the screen reader, which would hear a bare number as no count.
+    [Fact]
+    public async Task Filter_everyCount_isTheNumberForTheEyeAndTheWordsForTheScreenReader()
+    {
+        var html = await RenderAsync(new MapLinkFilter(new BrowserStorage()), Counts);
+
+        html.ShouldSatisfyAllConditions(
+            () => Regex.Matches(html, "<span class=\"map-filter__count\" aria-hidden=\"true\"[^>]*>([^<]*)</span>").Select(match => match.Groups[1].Value).ShouldBe(["10", "1", "6", "0"]),
+            () => Regex.Matches(html, "<span class=\"map-filter__spoken\"[^>]*>([^<]*)</span>").Select(match => match.Groups[1].Value)
+                .ShouldBe(["(10 links)", "(1 link)", "(6 links)", "(none in this plan)"]));
+    }
+
+    // What a kind is goes in an info bubble beside its box, named "More about" the kind and described by
+    // the text that was once the box's second line; never inside the label, whose text would then carry
+    // it, nor a button inside a label.
+    [Fact]
+    public async Task Filter_everyKind_hasABubbleBesideItsBoxSayingWhatItIs()
+    {
+        var html = await RenderAsync(new MapLinkFilter(new BrowserStorage()), Counts);
+
+        var bubbles = Kinds(html).Select(box => (
+            Regex.Match(box, "<button [^>]*aria-label=\"([^\"]*)\"").Groups[1].Value,
+            Regex.Match(box, "<span id=\"[^\"]*\" class=\"info-bubble__text\"[^>]*>([^<]*)</span>").Groups[1].Value,
+            Regex.IsMatch(Regex.Match(box, "<label.*?</label>", RegexOptions.Singleline).Value, "info-bubble"),
+            Regex.IsMatch(box, "</label>.*<span class=\"info-bubble\"[^>]*>", RegexOptions.Singleline))).ToList();
+
+        bubbles.ShouldBe(
         [
-            "Money passed on (10 links) Money handed from one module to the next.",
-            "Money into a bucket (1 link) Money that ends in one of the bar's buckets, leaves the river, or comes back out of a bucket.",
-            "Tax base (6 links) What changes the amount a tax is worked out on without moving money: a benefit taxed with the pay, what Corporate tax adds back.",
-            "Conditions (none in this plan) A condition one module sets on another.",
+            ("More about Money passed on", "Money handed from one module to the next.", false, true),
+            ("More about Money into a bucket", "Money that ends in one of the bar's buckets, leaves the river, or comes back out of a bucket.", false, true),
+            ("More about Tax base", "What changes the amount a tax is worked out on without moving money: a benefit taxed with the pay, what Corporate tax adds back.", false, true),
+            ("More about Conditions", "A condition one module sets on another.", false, true),
         ]);
+    }
+
+    // The four boxes are one row, a flex row that wraps only when the window has not the room, and each
+    // box takes the room its content asks, not a column of a grid's.
+    [Fact]
+    public void Stylesheet_theKinds_areOneRowThatWrapsOnlyWhenItMust()
+    {
+        var css = Stylesheet.Read("src", "Netto.Web.Client", "Tabs", "MapFilter.razor.css");
+
+        var row = Stylesheet.Block(css, ".map-filter__kinds").Split(';').Select(declaration => declaration.Trim()).Where(declaration => declaration.StartsWith("display", StringComparison.Ordinal) || declaration.StartsWith("flex-wrap", StringComparison.Ordinal));
+        row.ShouldBe(["display: flex", "flex-wrap: wrap"]);
+        Stylesheet.Block(css, ".map-filter__kind").ShouldNotContain("width: 100%");
     }
 
     // The box is a native checkbox inside its label, so it is named by it and operated by the keyboard.
@@ -113,17 +159,9 @@ public class MapFilterTests
             .ShouldBe(Enum.GetValues<MapLinkKind>().Select(kind => (kind.ToString(), $"stroke: {MapLinkStyle.Ink(kind)}")));
     }
 
-    [Fact]
-    public async Task Filter_thePlansLinks_saysHowManyAreShown()
-    {
-        var hidden = new MapLinkFilter(new BrowserStorage());
-        hidden.Set(MapLinkKind.TaxBase, shown: false);
-
-        var (all, some) = (Summary(await RenderAsync(new MapLinkFilter(new BrowserStorage()), Counts)), Summary(await RenderAsync(hidden, Counts)));
-
-        (all, some).ShouldBe(("Showing 17 of 17 links", "Showing 11 of 17 links"));
-    }
-
+    // The line under the boxes is for the viewer who has ticked none: nothing to read off the map until one
+    // is. With one ticked, or all, it is left out, and so is any line of how many links are shown, which
+    // the boxes' own counts and states already say.
     [Fact]
     public async Task Filter_everyKindHidden_saysToTickOne()
     {
@@ -133,16 +171,29 @@ public class MapFilterTests
 
         var html = await RenderAsync(filter, Counts);
 
-        (Summary(html), Boxes(html).Any(box => box.Ticked)).ShouldBe(("Every kind of link is hidden: tick one to see its links.", false));
+        (Note(html), Boxes(html).Any(box => box.Ticked)).ShouldBe(("Every kind of link is hidden: tick one to see its links.", false));
     }
 
-    // A plan without a link, a refused amount leaves none, has nothing to count; the boxes stay.
     [Fact]
-    public async Task Filter_aPlanWithoutALink_drawsNoSummaryButEveryBox()
+    public async Task Filter_aKindStillTicked_saysNothingBelowTheBoxes()
+    {
+        var some = new MapLinkFilter(new BrowserStorage());
+        some.Set(MapLinkKind.TaxBase, shown: false);
+        some.Set(MapLinkKind.Condition, shown: false);
+
+        var (all, part) = (await RenderAsync(new MapLinkFilter(new BrowserStorage()), Counts), await RenderAsync(some, Counts));
+
+        (Note(all), Note(part), all.Contains("map-filter__summary"), part.Contains("map-filter__summary")).ShouldBe(("", "", false, false));
+    }
+
+    // A plan without a link, a refused amount leaves none, has nothing to count; the boxes stay, each
+    // counted as none.
+    [Fact]
+    public async Task Filter_aPlanWithoutALink_drawsEveryBoxCountedAsNone()
     {
         var html = await RenderAsync(new MapLinkFilter(new BrowserStorage()), new Dictionary<MapLinkKind, int>());
 
-        (html.Contains("map-filter__summary"), Boxes(html).Count, Boxes(html).Select(box => box.Text).Distinct().Count()).ShouldBe((false, 4, 4));
+        (Boxes(html).Count, Boxes(html).Select(box => box.Text).Distinct().Count()).ShouldBe((4, 4));
         Boxes(html).Select(box => box.Text).ShouldAllBe(text => text.Contains("(none in this plan)"));
     }
 
@@ -152,24 +203,28 @@ public class MapFilterTests
     {
         var html = await RenderAsync(new MapLinkFilter(new BrowserStorage()), Counts);
 
-        (Regex.IsMatch(html, "aria-live|role=\"(status|alert)\""), Regex.IsMatch(html, "(Name|Gloss)_[A-Z]|Count_(None|One|Many)|Summary_(One|Many)|AllHidden|Hidden_(One|Many)|>Legend<"))
+        (Regex.IsMatch(html, "aria-live|role=\"(status|alert)\""), Regex.IsMatch(html, "(Name|Gloss)_[A-Z]|Count_(None|One|Many)|AllHidden|Hidden_(One|Many)|>Legend<"))
             .ShouldBe((false, false));
     }
 
     private static async Task<string> RenderAsync(MapLinkFilter filter, Dictionary<MapLinkKind, int> counts) =>
         WebUtility.HtmlDecode(await RiverRendering.RenderAsync(typeof(MapFilter), new Folds(new BrowserStorage()), new() { [nameof(MapFilter.Counts)] = counts }, services => services.AddSingleton(filter)));
 
-    // Each box: the kind it is, whether it is ticked, and its label as a screen reader reads it.
+    // The inner HTML of each kind's item: its box and the bubble beside it.
+    private static List<string> Kinds(string html) =>
+        [.. Regex.Matches(html, "<li class=\"map-filter__kind\"[^>]*>(.*?)</li>", RegexOptions.Singleline).Select(match => match.Groups[1].Value)];
+
+    // Each box: the kind it is, whether it is ticked, and its label as a screen reader reads it, what the
+    // eye alone reads of it (the count's number) left out.
     private static List<(MapLinkKind Kind, bool Ticked, string Text)> Boxes(string html) =>
     [
-        .. Regex.Matches(html, "<li class=\"map-filter__kind\"[^>]*>(.*?)</li>", RegexOptions.Singleline)
-            .Select(match => match.Groups[1].Value)
-            .Select(box => (
-                Enum.Parse<MapLinkKind>(Regex.Match(box, "data-link-kind=\"(\\w+)\"").Groups[1].Value),
-                Regex.IsMatch(box, "<input [^>]*type=\"checkbox\"[^>]*\\schecked"),
-                Regex.Replace(Regex.Replace(Regex.Match(box, "<span class=\"mud-typography[^>]*>(.*)</span>", RegexOptions.Singleline).Groups[1].Value, "<[^>]*>", " "), "\\s+", " ").Trim())),
+        .. Kinds(html).Select(box => (
+            Enum.Parse<MapLinkKind>(Regex.Match(box, "data-link-kind=\"(\\w+)\"").Groups[1].Value),
+            Regex.IsMatch(box, "<input [^>]*type=\"checkbox\"[^>]*\\schecked"),
+            Regex.Replace(Regex.Replace(Regex.Replace(Regex.Match(box, "<label.*?</label>", RegexOptions.Singleline).Value,
+                "<span [^>]*aria-hidden=\"true\"[^>]*>[^<]*</span>", ""), "<[^>]*>", " "), "\\s+", " ").Trim())),
     ];
 
-    private static string Summary(string html) =>
-        Regex.Match(html, "<p class=\"map-filter__summary\"[^>]*>(.*?)</p>", RegexOptions.Singleline).Groups[1].Value.Trim();
+    private static string Note(string html) =>
+        Regex.Match(html, "<p class=\"map-filter__note\"[^>]*>(.*?)</p>", RegexOptions.Singleline).Groups[1].Value.Trim();
 }

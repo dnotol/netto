@@ -11,18 +11,6 @@ public class MapFilterTextTests
 
     private static readonly int[] Totals = [0, 1, 2];
 
-    private static MapFilterView View(bool allHidden, int total)
-    {
-        var filter = new MapLinkFilter(new BrowserStorage());
-        if (allHidden)
-        {
-            foreach (var kind in Enum.GetValues<MapLinkKind>())
-                filter.Set(kind, shown: false);
-        }
-
-        return MapFilterView.Of(filter, new Dictionary<MapLinkKind, int> { [MapLinkKind.PassedOn] = total });
-    }
-
     [Fact]
     public void MapFilterResx_everyKind_hasANameAndWhatItIs()
     {
@@ -32,13 +20,9 @@ public class MapFilterTextTests
     }
 
     [Fact]
-    public void MapFilterResx_everyCountAndSummary_hasAText()
+    public void MapFilterResx_everyCountAndTheLineOfNoneTicked_hasAText()
     {
-        var keys = Totals.Select(MapFilterText.Count)
-            .Concat(Totals.Select(total => MapFilterText.Summary(View(allHidden: false, total))).OfType<string>())
-            .Append(MapFilterText.Summary(View(allHidden: true, 0))!);
-
-        Resources.Missing(keys).ShouldBeEmpty();
+        Resources.Missing([.. Totals.Select(MapFilterText.Count), MapFilterText.AllHidden]).ShouldBeEmpty();
     }
 
     // A kind's name is the kind's, and the count after it says what hiding it would take off the map.
@@ -61,25 +45,22 @@ public class MapFilterTextTests
         Should.Throw<ArgumentOutOfRangeException>(() => MapFilterText.Count(-1));
     }
 
+    // The line under the boxes, shown only while none is ticked.
     [Fact]
-    public void Summary_linksShown_saysHowManyOfThePlansLinks()
+    public void AllHidden_saysToTickOne()
     {
-        (Resources.Format(MapFilterText.Summary(View(allHidden: false, 1))!, 1, 1), Resources.Format(MapFilterText.Summary(View(allHidden: false, 38))!, 38, 38))
-            .ShouldBe(("Showing 1 of 1 link", "Showing 38 of 38 links"));
+        Resources.Get(MapFilterText.AllHidden).ShouldBe("Every kind of link is hidden: tick one to see its links.");
     }
 
-    // A plan with no link has nothing to count: the line is left out. Every kind hidden says so instead,
-    // whatever the plan holds.
+    // The summary of how many links are shown is gone with the second line of each box: no text of it is
+    // left to go unused.
     [Fact]
-    public void Summary_noLinkAtAll_isNone()
+    public void MapFilterResx_noText_isLeftUnused()
     {
-        MapFilterText.Summary(View(allHidden: false, 0)).ShouldBeNull();
-    }
+        var used = Enum.GetValues<MapLinkKind>().SelectMany(kind => new[] { MapFilterText.Name(kind), MapFilterText.Gloss(kind) })
+            .Concat(Totals.Select(MapFilterText.Count)).Concat([MapFilterText.Legend, MapFilterText.AllHidden]);
 
-    [Fact]
-    public void Summary_everyKindHidden_saysToTickOne()
-    {
-        Resources.Get(MapFilterText.Summary(View(allHidden: true, 12))!).ShouldBe("Every kind of link is hidden: tick one to see its links.");
+        Resources.Keys.Except(used).ShouldBeEmpty();
     }
 
     [Fact]

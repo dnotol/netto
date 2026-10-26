@@ -1,17 +1,21 @@
+@using Netto.Web.Client.River
 @inject IStringLocalizer<MapFilter> L
 @inject MapLinkFilter Filter
 
-@* The Map tab's legend, which is also its filter: one checkbox for every kind of link, each with a sample
-   of its line (MapLinkStyle, the very dash, width and ink the map draws it with, so the legend tells the lines
-   apart without colour), its name, how many links the plan has of it and what it is. A kind ticked is
-   drawn, a kind unticked is left out of the lines and of the words that list a chosen module's links, and
-   the choice is the viewer's, remembered in the browser (MapLinkFilter). The group is a fieldset named by
-   its legend, so a screen reader hears the kind, its count and its state; the counts are the plan's
-   whatever is hidden, so a box does not change its name as it is ticked. Every kind is always there, even
-   one the plan has no link of, or an unticked kind would be out of sight with nothing to show it again.
-   Nothing here is a live region: the checkbox says its own state, and the line under the group is for
-   the eye (the bar is the river's only announcement). The tab draws its map again when a kind is ticked
-   or unticked (OnChanged). *@
+@* The Map tab's legend, which is also its filter: one checkbox for every kind of link, in one row, each
+   with a sample of its line (MapLinkStyle, the very dash, width and ink the map draws it with, so the
+   legend tells the lines apart without colour), its name and how many links the plan has of it, and beside
+   the box an info bubble saying what the kind is, a bubble being a button of its own and so never inside
+   the box's label. A kind ticked is drawn, a kind unticked is left out of the lines and of the words that
+   list a chosen module's links, and the choice is the viewer's, remembered in the browser (MapLinkFilter).
+   The group is a fieldset named by its legend, so a screen reader hears the kind, its count and its state.
+   The count is the number alone to the eye, which keeps the four boxes in one row where the window has the
+   room, and its words, out of sight, to a screen reader, which would hear a bare number as no count; the
+   counts are the plan's whatever is hidden, so a box does not change its name as it is ticked. Every kind
+   is always there, even one the plan has no link of, or an unticked kind would be out of sight with
+   nothing to show it again. The one line under the boxes, for the viewer who ticked none, is for the eye:
+   nothing here is a live region, the checkbox says its own state (the bar is the river's only
+   announcement). The tab draws its map again when a kind is ticked or unticked (OnChanged). *@
 <fieldset class="map-filter">
     <legend class="map-filter__legend">@L[MapFilterText.Legend]</legend>
     <ul class="map-filter__kinds">
@@ -20,22 +24,21 @@
             <li @key="row.Kind" class="map-filter__kind">
                 <MudCheckBox T="bool" Value="row.Shown" ValueChanged="@(shown => OnKindChangedAsync(row.Kind, shown))" Color="Color.Primary">
                     <span class="map-filter__choice">
-                        <span class="map-filter__head">
-                            <svg class="map-filter__swatch" data-link-kind="@row.Kind" width="40" height="8" viewBox="0 0 40 8" aria-hidden="true" focusable="false">
-                                <line x1="2" y1="4" x2="38" y2="4" stroke-width="@MapLinkStyle.Width(row.Kind)" stroke-dasharray="@MapLinkStyle.Dash(row.Kind)" style="stroke: @MapLinkStyle.Ink(row.Kind)" />
-                            </svg>
-                            <span class="map-filter__name">@L[MapFilterText.Name(row.Kind)]</span>
-                            <span class="map-filter__count">@L[MapFilterText.Count(row.Count), row.Count]</span>
-                        </span>
-                        <span class="map-filter__gloss">@L[MapFilterText.Gloss(row.Kind)]</span>
+                        <svg class="map-filter__swatch" data-link-kind="@row.Kind" width="30" height="8" viewBox="0 0 30 8" aria-hidden="true" focusable="false">
+                            <line x1="2" y1="4" x2="28" y2="4" stroke-width="@MapLinkStyle.Width(row.Kind)" stroke-dasharray="@MapLinkStyle.Dash(row.Kind)" style="stroke: @MapLinkStyle.Ink(row.Kind)" />
+                        </svg>
+                        <span class="map-filter__name">@L[MapFilterText.Name(row.Kind)]</span>
+                        <span class="map-filter__count" aria-hidden="true">@row.Count</span>
+                        <span class="map-filter__spoken">@L[MapFilterText.Count(row.Count), row.Count]</span>
                     </span>
                 </MudCheckBox>
+                <InfoBubble Label="@L[MapFilterText.Name(row.Kind)]">@L[MapFilterText.Gloss(row.Kind)]</InfoBubble>
             </li>
         }
     </ul>
-    @if (MapFilterText.Summary(_view) is { } summary)
+    @if (_view.AllHidden)
     {
-        <p class="map-filter__summary">@L[summary, _view.Shown, _view.Total]</p>
+        <p class="map-filter__note">@L[MapFilterText.AllHidden]</p>
     }
 </fieldset>
 

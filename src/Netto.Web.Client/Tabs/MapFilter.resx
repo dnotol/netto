@@ -48,12 +48,6 @@
   <data name="Count_Many" xml:space="preserve">
     <value>({0} links)</value>
   </data>
-  <data name="Summary_One" xml:space="preserve">
-    <value>Showing {0} of 1 link</value>
-  </data>
-  <data name="Summary_Many" xml:space="preserve">
-    <value>Showing {0} of {1} links</value>
-  </data>
   <data name="AllHidden" xml:space="preserve">
     <value>Every kind of link is hidden: tick one to see its links.</value>
   </data>

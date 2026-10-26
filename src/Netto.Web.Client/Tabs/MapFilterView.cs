@@ -6,11 +6,6 @@ namespace Netto.Web.Client.Tabs;
 // its kind brings back and does not change as the viewer ticks. It only regroups the map's links.
 internal sealed record MapFilterView(IReadOnlyList<MapFilterRow> Rows)
 {
-    // Every link the plan has, and the ones of the kinds shown.
-    public int Total => Rows.Sum(row => row.Count);
-
-    public int Shown => Rows.Where(row => row.Shown).Sum(row => row.Count);
-
     // The viewer hid every kind, whatever the plan holds.
     public bool AllHidden => Rows.All(row => !row.Shown);
 

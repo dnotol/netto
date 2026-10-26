@@ -62,7 +62,7 @@ public class MapTabFilterTests
 
         var html = await RenderTabAsync(Full);
 
-        Regex.Matches(html, "<span class=\"map-filter__count\"[^>]*>([^<]*)</span>").Select(match => match.Groups[1].Value).ShouldBe(
+        Regex.Matches(html, "<span class=\"map-filter__spoken\"[^>]*>([^<]*)</span>").Select(match => match.Groups[1].Value).ShouldBe(
             Enum.GetValues<MapLinkKind>().Select(kind => view.Links.Count(link => link.Kind == kind) is var count and > 0 ? $"({count} link{(count == 1 ? "" : "s")})" : "(none in this plan)"));
     }
 
@@ -220,7 +220,7 @@ public class MapTabFilterTests
     private static List<(string Text, bool Ticked)> Legend(string html) =>
     [
         .. Regex.Matches(html, "<li class=\"map-filter__kind\"[^>]*>(.*?)</li>", RegexOptions.Singleline).Select(match => match.Groups[1].Value)
-            .Select(box => (Regex.Replace(Regex.Replace(Regex.Match(box, "<span class=\"mud-typography[^>]*>(.*)</span>", RegexOptions.Singleline).Groups[1].Value, "<[^>]*>", " "), "\\s+", " ").Trim(),
+            .Select(box => (Regex.Replace(Regex.Replace(Regex.Replace(Regex.Match(box, "<label.*?</label>", RegexOptions.Singleline).Value, "<span [^>]*aria-hidden=\"true\"[^>]*>[^<]*</span>", ""), "<[^>]*>", " "), "\\s+", " ").Trim(),
                 Regex.IsMatch(box, "<input [^>]*type=\"checkbox\"[^>]*\\schecked"))),
     ];
 }

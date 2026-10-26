@@ -2,18 +2,21 @@
    variables, so both themes follow; the focus ring of a checkbox is the site's (app.css). Gold is the
    checkbox's own active colour, nothing else here. The samples are the map's lines in miniature: the
    same dash, width and ink (MapLinkStyle), set on each sample itself, so this sheet keeps no ink of its
-   own for them, at least 3:1 on the card in both themes. */
+   own for them, at least 3:1 on the card in both themes. The four kinds are one row, each as wide as its
+   box, its info bubble and its count ask, and wrap onto a second only where the window has not the room:
+   at 1,024 px they take about 920 of the 960 the page leaves, which is why a count is its number alone
+   to the eye. */
 
 /* A fieldset's own frame and minimum width are taken off, so the group is a plain block. */
 .map-filter {
     min-width: 0;
-    margin: 0 0 1.5rem;
+    margin: 0 0 1rem;
     padding: 0;
     border: 0;
 }
 
 .map-filter__legend {
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.4rem;
     padding: 0;
     color: var(--netto-text-muted);
     font-size: 0.7rem;
@@ -22,18 +25,22 @@
     text-transform: uppercase;
 }
 
-/* Every kind a box of its own, side by side while there is room. */
+/* Every kind a box of its own in one row, each as wide as it needs. */
 .map-filter__kinds {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
-    gap: 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 0.5rem;
     margin: 0;
     padding: 0;
     list-style: none;
 }
 
-/* The whole box is the checkbox's label, so a click anywhere on it ticks the kind. */
+/* The checkbox's label is the box, so a click on its sample, its name or its count ticks the kind, and
+   the info bubble sits beside it, in the same frame, outside the label. */
 .map-filter__kind {
+    display: flex;
+    align-items: center;
+    padding-right: 0.3rem;
     border: 1px solid var(--netto-line);
     border-radius: 10px;
     background: var(--netto-surface);
@@ -45,24 +52,16 @@
 
     .map-filter__kind ::deep .mud-checkbox {
         display: flex;
-        align-items: flex-start;
-        width: 100%;
+        align-items: center;
         margin: 0;
-        padding: 0.25rem 0.75rem 0.5rem 0.15rem;
+        padding: 0.1rem 0.15rem 0.1rem 0.15rem;
     }
 
 .map-filter__choice {
-    display: grid;
-    gap: 0.1rem;
-    padding-top: 0.55rem;
-    line-height: 1.4;
-}
-
-.map-filter__head {
     display: flex;
-    flex-wrap: wrap;
     align-items: center;
-    gap: 0.15rem 0.5rem;
+    gap: 0.4rem;
+    line-height: 1.4;
 }
 
 .map-filter__swatch {
@@ -76,8 +75,9 @@
     }
 
 .map-filter__name {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     font-weight: 600;
+    white-space: nowrap;
 }
 
 .map-filter__count {
@@ -86,15 +86,21 @@
     font-variant-numeric: tabular-nums;
 }
 
-.map-filter__gloss {
-    color: var(--netto-text-muted);
-    font-size: 0.8rem;
+/* The count's words, in the page for a screen reader and out of sight. */
+.map-filter__spoken {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
 }
 
 /* What the boxes leave on the map, for the eye. */
-.map-filter__summary {
-    margin: 0.75rem 0 0;
+.map-filter__note {
+    margin: 0.5rem 0 0;
     color: var(--netto-text-muted);
     font-size: 0.85rem;
-    font-variant-numeric: tabular-nums;
 }
