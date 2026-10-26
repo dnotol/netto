@@ -5,8 +5,9 @@ namespace Netto.Tests.WebClient.Tabs;
 
 // The layout that keeps the Map tab's map in view beside the card of the module chosen, and the look of a
 // skipped Company year's box. How it looks in a window is the browser's check; these hold what it rests on:
-// from 1,201 px the column of links and card is sticky under the bar and never taller than the window leaves,
-// so a long card scrolls inside it, and below it the column goes under the map as tall as its card.
+// from 1,201 px the column of the neighbourhood and the card is sticky under the bar and never taller than
+// the window leaves, its two regions scrolling apart so that a long card never pushes the neighbourhood out of
+// sight, and below it the column goes under the map as tall as its card.
 public class MapPanelLayoutTests
 {
     // From 1,201 px the column is sticky under the bar and never taller than the window leaves, so a long card
@@ -28,7 +29,28 @@ public class MapPanelLayoutTests
             () => Rule(css, ".map").ShouldContain("var(--map-room)"));
     }
 
-    // Below it the column goes under the map, as tall as its card: nothing sticky, nothing scrolling inside.
+    // The column is two regions one above the other, the neighbourhood of the module chosen and its card, each
+    // scrolling inside itself: the neighbourhood takes what it needs up to half of what the window leaves and
+    // does not shrink, the card the rest, so a card as long as it likes scrolls under a neighbourhood that
+    // stays in sight, and a neighbourhood too long for its half scrolls inside it.
+    [Fact]
+    public void Layout_fromTheBreakpoint_keepsTheNeighbourhoodInSightWhateverTheLengthOfTheCard()
+    {
+        var wide = MediaBlock(Stylesheet(), "(min-width: 1201px)");
+
+        wide.ShouldSatisfyAllConditions(
+            () => Rule(wide, ".map-tab__side").ShouldContain("display: flex"),
+            () => Rule(wide, ".map-tab__side").ShouldContain("flex-direction: column"),
+            () => Rule(wide, ".map-tab__hood").ShouldContain("flex: 0 0 auto"),
+            () => Rule(wide, ".map-tab__hood").ShouldContain("max-height: calc(var(--map-room) / 2)"),
+            () => Rule(wide, ".map-tab__hood").ShouldContain("overflow-y: auto"),
+            () => Rule(wide, ".map-tab__panel").ShouldContain("flex: 1 1 auto"),
+            () => Rule(wide, ".map-tab__panel").ShouldContain("min-height: 0"),
+            () => Rule(wide, ".map-tab__panel").ShouldContain("overflow-y: auto"));
+    }
+
+    // Below it the column goes under the map, as tall as its card: nothing sticky, nothing scrolling inside,
+    // the neighbourhood above the card with room between.
     [Fact]
     public void Layout_belowTheBreakpoint_leavesTheColumnUnderTheMapAsTallAsItsCard()
     {
@@ -36,7 +58,10 @@ public class MapPanelLayoutTests
 
         narrow.ShouldSatisfyAllConditions(
             () => narrow.ShouldNotContain(".map-tab__side"),
-            () => narrow.ShouldNotContain("overflow-y"));
+            () => narrow.ShouldNotContain(".map-tab__panel"),
+            () => narrow.ShouldNotContain("overflow-y"),
+            () => narrow.ShouldNotContain("max-height"),
+            () => Rule(narrow, ".map-tab__hood").ShouldContain("margin-bottom: 1rem"));
     }
 
     // A Company year the viewer skipped is drawn as the river draws its skipped card: the same outline, not a

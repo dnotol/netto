@@ -1,10 +1,12 @@
-/* The Map tab: the map and, beside it from 1,201 px, the column of the chosen module's links and its
-   card (MapPanel); below that width the column goes under the map. Once the window leaves room beside the
-   container (MudBlazor's Large, 1,280 px), the two take some of the margins on both sides, as the river's
-   outline takes the left one (Pages/Plan.razor.css), so on a 1,920 px screen the map is about 1,180 px
-   wide beside a column of 34rem. Both stay under the bar while the page scrolls past them, and the
-   column is never taller than the window leaves, so a long card scrolls inside it, the map staying where it
-   is; the grid is at least that tall, so the map has the room to stay. */
+/* The Map tab: the map and, beside it from 1,201 px, the column of the chosen module's neighbourhood
+   (MapNeighbourhood) and its card (MapPanel); below that width the column goes under the map. Once the
+   window leaves room beside the container (MudBlazor's Large, 1,280 px), the two take some of the margins
+   on both sides, as the river's outline takes the left one (Pages/Plan.razor.css), so on a 1,920 px screen
+   the map is about 1,180 px wide beside a column of 34rem. Both stay under the bar while the page scrolls
+   past them, and the column is never taller than the window leaves; the grid is at least that tall, so the
+   map has the room to stay. The column is two regions that scroll apart, the neighbourhood above and the
+   card below, so a long card scrolls under a neighbourhood that stays in sight, the map staying where it
+   is. */
 
 .map-tab {
     /* What the window leaves under the bar: the most the map or the column beside it takes. */
@@ -30,10 +32,36 @@
     .map-tab__side {
         position: sticky;
         top: var(--netto-under-bar);
+        display: flex;
+        flex-direction: column;
         max-height: var(--map-room);
         overflow-y: auto;
         overscroll-behavior: contain;
     }
+
+    /* The neighbourhood takes what it needs up to half of what the window leaves, and scrolls inside that
+       half when it needs more; it does not shrink, so it is never pushed out of sight. */
+    .map-tab__hood {
+        flex: 0 0 auto;
+        max-height: calc(var(--map-room) / 2);
+        overflow-y: auto;
+        overscroll-behavior: contain;
+    }
+
+    /* The card has the rest, and scrolls inside it however long it is; the card taking the focus on its
+       heading brings that into view in this region alone. */
+    .map-tab__panel {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+    }
+}
+
+/* The neighbourhood above the card, with room between, where the column is a block under the map and where
+   it is a column of two regions. */
+.map-tab__hood {
+    margin-bottom: 1rem;
 }
 
 /* Below that width the map keeps a width it can be read at, and scrolls sideways inside its column. */
