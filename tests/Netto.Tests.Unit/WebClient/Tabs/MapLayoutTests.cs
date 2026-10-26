@@ -306,9 +306,9 @@ public class MapLayoutTests
     {
         var view = MapView.From(Extreme("a low pay"), Extreme("a low pay").Run());
 
-        var (payIn, payBack) = (Line(view, MapEnd.Of(RiverModule.DirectorPay), MapEnd.InBucket("taxes_on_pay")), Line(view, MapEnd.InBucket("taxes_on_pay"), MapEnd.Of(RiverModule.DirectorPay)));
-        var (dividendIn, dividendBack) = (Line(view, MapEnd.Of(RiverModule.Dividend), MapEnd.InBucket("taxes_on_profit")), Line(view, MapEnd.InBucket("taxes_on_profit"), MapEnd.Of(RiverModule.Dividend)));
-        var pocket = Line(view, MapEnd.Of(RiverModule.Dividend), MapEnd.InBucket("pocket"));
+        var (payIn, payBack) = (MapViewTests.Line(view, MapEnd.Of(RiverModule.DirectorPay), MapEnd.InBucket("taxes_on_pay")), MapViewTests.Line(view, MapEnd.InBucket("taxes_on_pay"), MapEnd.Of(RiverModule.DirectorPay)));
+        var (dividendIn, dividendBack) = (MapViewTests.Line(view, MapEnd.Of(RiverModule.Dividend), MapEnd.InBucket("taxes_on_profit")), MapViewTests.Line(view, MapEnd.InBucket("taxes_on_profit"), MapEnd.Of(RiverModule.Dividend)));
+        var pocket = MapViewTests.Line(view, MapEnd.Of(RiverModule.Dividend), MapEnd.InBucket("pocket"));
 
         view.ShouldSatisfyAllConditions(
             () => new[] { payIn, payBack, dividendIn, dividendBack, pocket }.Select(Turns).ShouldAllBe(turns => turns),
@@ -344,7 +344,7 @@ public class MapLayoutTests
         var view = MapView.From(MapLinksTests.Full, MapLinksTests.Full.Run());
         var (royalty, pay) = (view.Modules.Single(node => node.End.Module == RiverModule.Copyright).Slot, view.Modules.Single(node => node.End.Module == RiverModule.DirectorPay).Slot);
 
-        var pocket = Line(view, MapEnd.Of(RiverModule.Copyright), MapEnd.InBucket("pocket"));
+        var pocket = MapViewTests.Line(view, MapEnd.Of(RiverModule.Copyright), MapEnd.InBucket("pocket"));
         var others = view.Bundles().Where(line => line.From == MapEnd.Of(RiverModule.Copyright) && line.To != MapEnd.InBucket("pocket")).ToList();
 
         pocket.ShouldSatisfyAllConditions(
@@ -389,10 +389,6 @@ public class MapLayoutTests
 
         view.Units.ShouldBe((decimal)units);
     }
-
-    // The one line of the map between two ends, of the kind money has between them.
-    private static MapBundle Line(MapView view, MapEnd from, MapEnd to) =>
-        view.Bundles().Single(bundle => bundle.From == from && bundle.To == to && bundle.Kind != MapLinkKind.Condition);
 
     // Whether a line turns once along a row: down, across, down.
     private static bool Turns(MapBundle line) =>

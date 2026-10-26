@@ -444,7 +444,7 @@ public class MapViewTests
     private static decimal Amount(MapBundle line) => line.Amount ?? throw new InvalidOperationException("A line of money with no amount.");
 
     // The one line of the map between two ends, of the kind money has between them.
-    private static MapBundle Line(MapView view, MapEnd from, MapEnd to) =>
+    internal static MapBundle Line(MapView view, MapEnd from, MapEnd to) =>
         view.Bundles().Single(bundle => bundle.From == from && bundle.To == to && bundle.Kind != MapLinkKind.Condition);
 
     private static MapLink Link(decimal amount) =>
