@@ -95,6 +95,4 @@ public class MapTabQuietTests
         [.. Regex.Matches(html, "<div class=\"map-quiet\"[^>]*>(.*?)</div>", RegexOptions.Singleline).Select(match => match.Groups[1].Value)];
 
     private static List<string> Modules(string row) => [.. Regex.Matches(row, "data-module=\"([a-z-]+)\"").Select(match => match.Groups[1].Value)];
-
-    private static string CardTitle(RiverModule module) => ResxText.For(MapTabTextTests.Card(module)).Get("Title")!;
 }

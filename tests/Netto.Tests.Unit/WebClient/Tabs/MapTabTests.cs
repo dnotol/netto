@@ -316,5 +316,5 @@ public class MapTabTests
     private static string Heading(string html) =>
         Regex.Match(html, "<h2 [^>]*class=\"map-links__title\"[^>]*>(.*?)</h2>", RegexOptions.Singleline).Groups[1].Value.Trim();
 
-    private static string CardTitle(RiverModule module) => ResxText.For(MapTabTextTests.Card(module)).Get("Title")!;
+    internal static string CardTitle(RiverModule module) => ResxText.For(MapTabTextTests.Card(module)).Get("Title")!;
 }
