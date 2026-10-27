@@ -15,12 +15,6 @@
   <data name="PageTitle" xml:space="preserve">
     <value>Your year: Netto</value>
   </data>
-  <data name="SkipToRiver" xml:space="preserve">
-    <value>Skip to the river</value>
-  </data>
-  <data name="PageTitle_Map" xml:space="preserve">
-    <value>Map: Netto</value>
-  </data>
   <data name="SkipToMap" xml:space="preserve">
     <value>Skip to the map</value>
   </data>
@@ -41,15 +35,6 @@
   </data>
   <data name="SkipToComparison" xml:space="preserve">
     <value>Skip to the comparison</value>
-  </data>
-  <data name="Eyebrow" xml:space="preserve">
-    <value>Your year · Income year 2026</value>
-  </data>
-  <data name="Title" xml:space="preserve">
-    <value>From what your company earns to what reaches you</value>
-  </data>
-  <data name="Lede" xml:space="preserve">
-    <value>Each card takes a part of the money and passes the rest on, and the bar above follows every change. Every figure shows the official text it comes from.</value>
   </data>
   <data name="AssumedTitle" xml:space="preserve">
     <value>Assumed</value>
@@ -98,11 +83,5 @@
   </data>
   <data name="LimitTaxCalc" xml:space="preserve">
     <value>The 2026 figures are computed from the official 2026 amounts. Tax-Calc does not cover 2026 yet; on 2025, the same method matches it to the cent on the income tax, the tax credit for low earned income, the dividend refund, and the surcharge and bonus on your advance payments.</value>
-  </data>
-  <data name="AddHint" xml:space="preserve">
-    <value>Beside your pay: vouchers, allowances, home office rent, a car, a royalty.</value>
-  </data>
-  <data name="AddHintButton" xml:space="preserve">
-    <value>Add them from Composition</value>
   </data>
 </root>

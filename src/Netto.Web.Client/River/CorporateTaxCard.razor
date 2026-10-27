@@ -13,7 +13,7 @@
    advance payments with the surcharge they leave. The payments are taken while typing, like
    revenue, since nothing bounds them, and the card says what more by the first deadline still open,
    on the browser's date, cancels the surcharge (MoreBy), or that none is open any more. *@
-<ModuleCard Name="corporate-tax" Title="@L["Title"]" Summary="@Summary" Glance="@Glance" PassesOn="@_view?.PassesOn" Waiting="Inputs.Company is null" Refused="@Refused"
+<ModuleCard Name="corporate-tax" Title="@L["Title"]" Summary="@Summary" PassesOn="@_view?.PassesOn" Waiting="Inputs.Company is null" Refused="@Refused"
             Sources="@(_view?.Details ?? [])" IncomeYear="Inputs.IncomeYear" DetailsLabel="@L["DetailsLabel"]" SourcesTitle="@L["SourcesTitle", Inputs.IncomeYear]">
     <RefusedMessage Error="@Refused" />
     @if (_view is not null)
@@ -108,8 +108,6 @@
         ? L["Summary", Formats.Euros(year.ProfitAfterPay), Formats.Euros(year.ProfitAfterTax)].Value
         : null;
 
-    // What the company has left after its tax, for the card's row in the river's outline.
-    private CardGlance? Glance => Run.Year is { } year ? new(GlanceKind.LeftAfterTax, Formats.Euros(year.ProfitAfterTax)) : null;
 
     private Task OnSmallCompanyChanged(bool smallCompany) => InputsChanged.InvokeAsync(Inputs.WithSmallCompany(smallCompany));
 

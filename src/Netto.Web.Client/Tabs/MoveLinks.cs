@@ -9,7 +9,7 @@ namespace Netto.Web.Client.Tabs;
 // « Apply » adds its module; a payment's place is When to pay.
 internal static class MoveLinks
 {
-    // The split's card, by the name its fold is remembered under (SplitCard, OutlineRows.Order).
+    // The split's card, by the name its fold is remembered under (SplitCard, MapModules.Name).
     private const string Split = "split";
 
     public static MoveLink? To(Move move, RiverInputs inputs) => move switch

@@ -9,18 +9,11 @@ namespace Netto.Tests.WebClient.Tabs;
 // The modules the map draws: the cards the river draws with figures, in the river's order, an optional
 // module only while it is in the plan, and with the company skipped Company year, drawn skipped, and Director
 // pay, the river starting at the pay: the cards that only wait for the company's year are left out. A card
-// the river gains without a place on the map fails here, as one without a place in the outline does
-// (OutlineRows.Order).
+// the river gains without a place on the map fails here.
 public class MapModulesTests
 {
     // Every one of the 32 compositions of the plan's optional modules, by the bits of a number.
     public static TheoryData<int> Compositions => new(Enumerable.Range(0, 32));
-
-    [Fact]
-    public void Order_isTheOutlinesOrder()
-    {
-        MapModules.Order.Select(MapModules.Name).ShouldBe(OutlineRows.Order);
-    }
 
     // The income year, which no card holds, is the one module of the river the map has no place for.
     [Fact]
@@ -78,7 +71,7 @@ public class MapModulesTests
         var river = everyLever ? PlanComposition.Modules.Aggregate(RiverInputs.Example, (inputs, module) => inputs.AddToPlan(module)) : RiverInputs.Example;
         river = companySkipped ? river.SkipCompany() : river;
 
-        var html = await CardHtml.RenderPlanOpenAsync(river);
+        var html = await CardHtml.RenderCardsOpenAsync(river);
 
         var withFigures = Regex.Matches(html, @"<section id=""card-([a-z-]+)"" class=""module-card\s*(module-card--skipped)?\s*""")
             .Where(card => !card.Groups[2].Success).Select(card => card.Groups[1].Value);

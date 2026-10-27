@@ -122,7 +122,7 @@ html {
    names, its line on the setup starred Today or its tabs make of it (bucket-bar.js measures it, and
    again whenever it changes size), and 1rem of room under it. A notice of a removal at the bottom of
    the screen (River/TakenOutNotice) hides nothing either. The line is one value, --netto-under-bar,
-   which the river's outline sticks at too (River/RiverOutline), and where a card it jumps to lands. */
+   which the map and the column beside it stick at too (Tabs/MapTab). */
 html:has(.bucket-bar) {
     --netto-under-bar: calc(var(--netto-header-height) + 1px + var(--netto-bar-height) + 1rem);
     scroll-padding-top: var(--netto-under-bar);

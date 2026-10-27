@@ -16,7 +16,7 @@
    their texts, the director's own case first. The amounts are taken while typing, like revenue, and
    carry no Min or Max: the engine refuses what the rules do not allow, and its message is what the
    user has to see. Skipped with the company. *@
-<ModuleCard Name="@ModuleFolds.Name(OptionalModule.Allowances)" Title="@L["Title"]" Summary="@Summary" Glance="@Glance" ToYou="@_view?.ToYou" Help="@L["Hint"]" Waiting="Inputs.Company is null"
+<ModuleCard Name="@ModuleFolds.Name(OptionalModule.Allowances)" Title="@L["Title"]" Summary="@Summary" ToYou="@_view?.ToYou" Help="@L["Hint"]" Waiting="Inputs.Company is null"
             Refused="@Refused" Sources="@(_view?.Details ?? [])" IncomeYear="Inputs.IncomeYear" RemoveLabel="@L["Remove"]" OnRemove="Remove">
     <div class="allowances__fields">
         <RiverField Label="@L["OfficeLabel"]" For="river-office-allowance" Origin="Inputs.Allowances.Office.Origin" Help="@OfficeHelp">
@@ -90,8 +90,6 @@
         ? L["Summary", Formats.Euros(view.Total), Formats.Euros(view.Left)].Value
         : null;
 
-    // What reaches the pocket, for the card's row in the river's outline.
-    private CardGlance? Glance => _view is { } view ? new(GlanceKind.ToYou, Formats.Euros(view.Total)) : null;
 
     // The monthly maxima the office allowance's yearly one adds up, in the bubble after its label.
     private string? OfficeHelp => _rules is { } rules ? L["OfficeHelp", OfficeMonths(rules)].Value : null;

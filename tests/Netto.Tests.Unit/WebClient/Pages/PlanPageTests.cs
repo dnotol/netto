@@ -18,14 +18,14 @@ public class PlanPageTests
     // The deadline still open on this date is December's.
     private static readonly DateTimeOffset On23October = new(2026, 10, 23, 12, 0, 0, TimeSpan.Zero);
 
-    // The example opens with Company year, the split, Director pay, Corporate tax and Dividend: five
-    // cards, and the two notes under them.
+    // The plan opens on Company year's card beside the map, pinned open, with what it folds (its conditions
+    // and where its figures come from) folded, and the two notes under the map folded too.
     [Fact]
-    public async Task Plan_firstLoad_foldsEveryCardAndBothNotes()
+    public async Task Plan_firstLoad_foldsWhatCompanyYearsCardFoldsAndBothNotes()
     {
         var toggles = Toggles(await RenderPlanAsync(new Folds(new BrowserStorage())));
 
-        (toggles.Count, toggles.Count(toggle => toggle.Contains("aria-expanded=\"false\""))).ShouldBe((7, 7));
+        (toggles.Count, toggles.Count(toggle => toggle.Contains("aria-expanded=\"false\""))).ShouldBe((4, 4));
     }
 
     [Fact]
@@ -85,13 +85,12 @@ public class PlanPageTests
         var html = await RenderPlanAsync(new Folds(new BrowserStorage()));
 
         Links(html).Select(link => (link.Href, link.Name)).ShouldBe(
-            [("plan", "Plan"), ("plan/map", "Map"), ("plan/optimisation", "Optimisation"), ("plan/when-to-pay", "When to pay"), ("plan/compare", "Compare plans")]);
+            [("plan", "Plan"), ("plan/optimisation", "Optimisation"), ("plan/when-to-pay", "When to pay"), ("plan/compare", "Compare plans")]);
     }
 
     // The tab the URL names is the one current, whatever the case it is typed in.
     [Theory]
     [InlineData(null, "Plan")]
-    [InlineData("map", "Map")]
     [InlineData("optimisation", "Optimisation")]
     [InlineData("when-to-pay", "When to pay")]
     [InlineData("compare", "Compare plans")]
@@ -106,7 +105,6 @@ public class PlanPageTests
     // Each tab opens on its own head: the page's one h1 is the tab's title.
     [Theory]
     [InlineData(null, "From what your company earns to what reaches you")]
-    [InlineData("map", "How your modules act on each other")]
     [InlineData("optimisation", "Optimisation")]
     [InlineData("when-to-pay", "When to pay")]
     [InlineData("compare", "Compare plans")]
@@ -117,27 +115,28 @@ public class PlanPageTests
         Regex.Matches(html, "<h1[^>]*>([^<]*)</h1>").Select(match => match.Groups[1].Value).ShouldBe([title]);
     }
 
-    // The river and its outline are the Plan tab's; Your moves and When to pay are tabs of their own,
-    // no longer cards of the river.
+    // The plan is the map, the card of the module chosen beside it, Company year on arriving, and the two
+    // notes on what Netto assumes and does not count yet under it; Your moves and When to pay are tabs of
+    // their own.
     [Fact]
-    public async Task Plan_onPlan_showsTheRiverWithoutTheMovesOrThePayments()
+    public async Task Plan_onPlan_showsTheMapCompanyYearsCardAndTheNotes()
     {
         var html = await RenderPlanAsync(new Folds(new BrowserStorage()));
 
-        (html.Contains("id=\"river\""), html.Contains("river-outline"), html.Contains("moves__state"), html.Contains("calendar__table"))
-            .ShouldBe((true, true, false, false));
+        (html.Contains("class=\"map-tab\""), html.Contains("id=\"card-company-year\""), html.Contains("<aside class=\"assumed\""),
+                html.Contains("<aside class=\"limits\""), html.Contains("moves__state"), html.Contains("calendar__table"))
+            .ShouldBe((true, true, true, true, false, false));
     }
 
     [Theory]
-    [InlineData("map", "class=\"map-tab\"")]
     [InlineData("optimisation", "moves__state")]
     [InlineData("when-to-pay", "calendar__table")]
     [InlineData("compare", "Two of your saved plans side by side, layer by layer: the second measured against the first, the plan starred Today unless you pick another.")]
-    public async Task Plan_onAnotherTab_showsItsOwnContentWithoutTheRiver(string tab, string content)
+    public async Task Plan_onAnotherTab_showsItsOwnContentWithoutTheMap(string tab, string content)
     {
         var html = await RenderPlanAsync(new Folds(new BrowserStorage()), tab);
 
-        (html.Contains("id=\"river\""), html.Contains("river-outline"), html.Contains(content)).ShouldBe((false, false, true));
+        (html.Contains("class=\"map-tab\""), html.Contains(content)).ShouldBe((false, true));
     }
 
     // The bar sums up the same river on every tab: switching tabs changes no input of it.
@@ -148,7 +147,7 @@ public class PlanPageTests
         var folds = new Folds(new BrowserStorage());
 
         var buckets = new List<string>();
-        foreach (var tab in new[] { null, "map", "optimisation", "when-to-pay", "compare" })
+        foreach (var tab in new[] { null, "optimisation", "when-to-pay", "compare" })
             buckets.Add(Buckets(await RenderPlanAsync(folds, tab, river)));
 
         var pocket = BucketsView.From(river.Run())!.Buckets.Single(bucket => bucket.Key == "pocket").Amount;

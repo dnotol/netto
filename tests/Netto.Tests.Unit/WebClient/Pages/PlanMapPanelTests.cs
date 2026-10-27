@@ -6,11 +6,12 @@ using Shouldly;
 
 namespace Netto.Tests.WebClient.Pages;
 
-// The card of the module chosen on the Map tab, beside the map, on the plan page as the browser runs it
-// (LivePlan): the same card as on the Plan tab, whose edits go to the page's one river so the bar, the map
-// and the card say the same figures at once, the engine's refusal on the card that holds the field, the split's
+// The card of the module chosen on the map, beside it, on the plan page as the browser runs it (LivePlan):
+// the module's card, whose edits go to the page's one river so the bar, the map and the card say the same
+// figures at once, the engine's refusal on the card that holds the field, the split's
 // search, its word to take the module out of the plan with the notice and Undo of any tab, and the focus,
-// which goes to the card's heading when the viewer chooses a module, never on arriving at the tab. The
+// which goes to the card's heading when the viewer chooses a module on the map, never on arriving at the
+// tab nor for a module the page chooses itself, a lever just added. The
 // focus is read from the calls the page makes of the script, the viewer's clicks are the callbacks the
 // page's components hand each other; where the focus lands and how the layout looks is the browser check's.
 public class PlanMapPanelTests
@@ -45,13 +46,29 @@ public class PlanMapPanelTests
             () => (module, cards).ShouldBe(((RiverModule?)null, 0)));
     }
 
-    // Nothing chosen: no card, only its room.
+    // Company year, chosen on arriving, let go: no card, only its room.
     [Fact]
-    public async Task Plan_nothingChosenOnTheMap_drawsNoCard()
+    public async Task Plan_theModuleLetGo_drawsNoCard()
     {
         await using var page = await MapAsync(WithACar);
 
+        await ChooseAsync(page, null);
+
         ((await page.FindAllAsync<ModuleCard>()).Count, (await page.FindAsync<MapPanel>()).Module, page.Errors.Count).ShouldBe((0, (RiverModule?)null, 0));
+    }
+
+    // A lever added from the Composition menu is chosen, its card beside the map to be filled, and the focus
+    // stays in the menu, where the viewer may add another.
+    [Fact]
+    public async Task Plan_aLeverAddedFromTheMenu_isChosenWithoutTakingTheFocus()
+    {
+        await using var page = await MapAsync(RiverInputs.Example);
+        var menu = await page.FindAsync<CompositionMenu>();
+        var before = page.Focuses;
+
+        await page.InvokeAsync(() => menu.InputsChanged.InvokeAsync(RiverInputs.Example.AddToPlan(OptionalModule.Vouchers)));
+
+        ((await page.FindAsync<MapPanel>()).Module, page.Focuses - before, page.Errors.Count).ShouldBe((RiverModule.Vouchers, 0, 0));
     }
 
     // An amount changed on the card changes the river everywhere at once: the bar's run, the map's run and
@@ -204,7 +221,7 @@ public class PlanMapPanelTests
         await page.SwitchTabAsync("compare");
         var before = page.Focuses;
 
-        await page.SwitchTabAsync("map");
+        await page.SwitchTabAsync(null);
 
         var (card, panel) = ((await page.FindAllAsync<ModuleCard>()).Count, await page.FindAsync<MapPanel>());
         (card, panel.Module, page.Focuses - before, page.Errors.Count).ShouldBe((1, RiverModule.Car, 1, 0));
@@ -216,8 +233,8 @@ public class PlanMapPanelTests
     public async Task Plan_aCardBesideTheMap_storesNoFold()
     {
         var storage = new BrowserStorage();
-        await using var page = LivePlan.At("http://localhost/plan/map", storage, river: WithACar);
-        await page.LoadAsync("map");
+        await using var page = LivePlan.At("http://localhost/plan", storage, river: WithACar);
+        await page.LoadAsync();
         await ChooseAsync(page, RiverModule.CompanyYear);
         var card = await page.FindAsync<CompanyYearCard>();
         await page.InvokeAsync(() => card.InputsChanged.InvokeAsync(card.Inputs.WithRevenue(card.Inputs.Company!.Revenue.Value + 1_000m)));
@@ -293,25 +310,10 @@ public class PlanMapPanelTests
             () => page.Errors.ShouldBeEmpty());
     }
 
-    // On the Plan tab the card is the river's, as it was: the page moves no focus for Clear.
-    [Fact]
-    public async Task Plan_companyYearClearedFromItsCardInTheRiver_movesNoFocus()
-    {
-        var storage = new BrowserStorage();
-        new Folds(storage).Set("company-year", true);
-        await using var page = LivePlan.At("http://localhost/plan", storage, river: WithACar);
-        await page.LoadAsync();
-        var before = page.Focuses;
-
-        await page.ClickAsync(button => button.Class == "company-year__clear");
-
-        ((await page.FindAsync<CompanyYearCard>()).Inputs.Company, page.Focuses - before, page.Errors.Count).ShouldBe((null, 0, 0));
-    }
-
     private static async Task<LivePlan> MapAsync(RiverInputs river)
     {
-        var page = LivePlan.At("http://localhost/plan/map", new BrowserStorage(), river: river);
-        await page.LoadAsync("map");
+        var page = LivePlan.At("http://localhost/plan", new BrowserStorage(), river: river);
+        await page.LoadAsync();
 
         return page;
     }

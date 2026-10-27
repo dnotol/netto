@@ -1,5 +1,6 @@
 using System.Text.RegularExpressions;
 using Netto.Web.Client.River;
+using Netto.Web.Client.Tabs;
 using Shouldly;
 using static Netto.Tests.WebClient.River.RiverRendering;
 
@@ -233,27 +234,25 @@ public class CardHtmlTests
         Should.Throw<ShouldAssertException>(() => CardHtml.Card(Page, "rent"));
     }
 
-    // The example's five cards, or ten with every lever in the plan, all open, as « Open all » leaves them;
-    // the notes under the river stay folded.
+    // The example's five cards, or ten with every lever in the plan, all open.
     public static TheoryData<bool, int> Rivers => new() { { false, 5 }, { true, 10 } };
 
     [Theory]
     [MemberData(nameof(Rivers))]
-    public async Task RenderPlanOpenAsync_river_opensEveryCardAndNotTheNotes(bool everyLever, int count)
+    public async Task RenderCardsOpenAsync_river_opensEveryCard(bool everyLever, int count)
     {
-        var html = await CardHtml.RenderPlanOpenAsync(everyLever ? EveryLever : RiverInputs.Example);
+        var html = await CardHtml.RenderCardsOpenAsync(everyLever ? EveryLever : RiverInputs.Example);
 
-        var cards = OutlineRows.Order.Where(name => html.Contains($"id=\"card-{name}\"", StringComparison.Ordinal)).ToList();
-        var notes = Regex.Matches(html, "<aside class=\"(?:assumed|limits)\".*?</aside>", RegexOptions.Singleline);
-        (cards.Count, cards.Count(name => IsOpen(CardHtml.Card(html, name))), notes.Count, notes.Count(note => IsOpen(note.Value))).ShouldBe((count, count, 2, 0));
+        var cards = MapModules.Order.Select(MapModules.Name).Where(name => html.Contains($"id=\"card-{name}\"", StringComparison.Ordinal)).ToList();
+        (cards.Count, cards.Count(name => IsOpen(CardHtml.Card(html, name)))).ShouldBe((count, count));
     }
 
     // Every text the page draws with every lever in the plan and every card open, in sight or not, is in
     // its component's texts.
     [Fact]
-    public async Task RenderPlanOpenAsync_everyLever_leavesNoKeyOnThePage()
+    public async Task RenderCardsOpenAsync_everyLever_leavesNoKeyOnThePage()
     {
-        var html = await CardHtml.RenderPlanOpenAsync(EveryLever);
+        var html = await CardHtml.RenderCardsOpenAsync(EveryLever);
 
         CardHtml.LeakedKeys(html).ShouldBeEmpty();
     }
@@ -261,9 +260,9 @@ public class CardHtmlTests
     // Every (i) the page draws with every lever in the plan and every card open, named « More about » its
     // label, is described by a text that says something.
     [Fact]
-    public async Task RenderPlanOpenAsync_everyLever_everyBubbleSaysSomething()
+    public async Task RenderCardsOpenAsync_everyLever_everyBubbleSaysSomething()
     {
-        var bubbles = CardHtml.Bubbles(await CardHtml.RenderPlanOpenAsync(EveryLever));
+        var bubbles = CardHtml.Bubbles(await CardHtml.RenderCardsOpenAsync(EveryLever));
 
         bubbles.ShouldSatisfyAllConditions(
             () => bubbles.ShouldNotBeEmpty(),

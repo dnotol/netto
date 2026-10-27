@@ -10,39 +10,37 @@
 @inject RiverState State
 @inject SavedPlans Plans
 @inject TimeProvider Clock
-@inject Folds Folds
+
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
 
 <PageTitle>@L[PlanText.PageTitle(_tab)]</PageTitle>
 
 @* The keyboard's first stop from the top of the page, before the site header (MainLayout): it moves
-   the focus to the start of the tab's content, on the river to its first card, past the header's
-   links and the bar of buckets with its tabs, which stay in sight above. Blazor would take a link to a
-   fragment for a navigation, so the link moves the focus itself. On arriving, Blazor puts the focus on
-   the page's title (Routes, FocusOnNavigate), after the link, and so does a switch of tab (TabHead). *@
+   the focus to the start of the tab's content, past the header's links and the bar of buckets with its
+   tabs, which stay in sight above. Blazor would take a link to a fragment for a navigation, so the link
+   moves the focus itself. On arriving, Blazor puts the focus on the page's title (Routes,
+   FocusOnNavigate), after the link, and so does a switch of tab (TabHead). *@
 <SectionContent SectionName="@MainLayout.SkipLinkSection">
     <a href="@SkipHref" class="skip-link" @onclick="SkipAsync" @onclick:preventDefault>@L[PlanText.SkipTo(_tab)]</a>
 </SectionContent>
 
 @* The plan page, split by purpose into tabs under the bar of buckets, which sums up the river on every
-   one of them: the river itself (Plan), its modules from above with the money between them (Map), the
-   moves Netto proposes from the plan starred « Today », or while none is from the plan in the river as it
-   was opened or saved (Optimisation), when the plan's payments fall (When to pay) and the saved plans side
-   by side (Compare plans). Each tab has its own URL (PlanTabRoutes) but they are this one page, so the
-   river's inputs, its run, what the page found and the module chosen on the map stay as they are from one
-   tab to the next, and Blazor keeps the page when the tab changes: the tab is a parameter of the route.
+   one of them: the plan itself, the river's modules from above with the money between them and the card
+   of the module chosen beside them, where it is edited (Plan, MapTab), the moves Netto proposes from the
+   plan starred « Today », or while none is from the plan in the river as it was opened or saved
+   (Optimisation), when the plan's payments fall (When to pay) and the saved plans side by side (Compare
+   plans). Each tab has its own URL (PlanTabRoutes) but they are this one page, so the river's inputs, its
+   run, what the page found and the module chosen stay as they are from one tab to the next, and Blazor
+   keeps the page when the tab changes: the tab is a parameter of the route.
 
-   The river: the year from the company's revenue to the director's pocket, as module cards that each
-   edit their part of one scenario and draw their view of one run. Every figure comes from Netto.Core;
-   the page only holds the inputs and runs them. The optional modules show only while in the plan,
-   which the Composition menu in the bar sets; taking one out, there or from its card, shows a notice
-   with Undo, on any tab. The levers run before the split, but the copyright royalty, which the split
-   pays beside the pay: its card heads the director's stream. On a wide screen the river's outline
-   stands left of the cards (RiverOutline), before them in the page: the cards tell it what they are as
-   they are drawn, through the page's OutlineRows handed down to them. The address may name a card
-   (CardLinks, plan?card=<name>), from a link of the Optimisation tab's moves or loaded as it is: the river
-   opens it as choosing its row in the outline does, and brings it under the bar with its heading focused. *@
+   The river: the year from the company's revenue to the director's pocket, as modules that each edit their
+   part of one scenario on their card and draw their view of one run. Every figure comes from Netto.Core;
+   the page only holds the inputs and runs them. The optional modules are on the map only while in the
+   plan, which the Composition menu in the bar sets; taking one out, there or from its card, shows a notice
+   with Undo, on any tab, and adding one chooses it, so its card opens beside the map to be filled. The
+   module chosen is Company year on arriving, or the one the address names (CardLinks, plan?card=<name>),
+   from a link of the Optimisation tab's moves or loaded as it is. *@
 <BucketBar Run="_run" Setup="_today?.Run" Unsaved="Plans.HasUnsavedChanges(_inputs)">
     <ChildContent>
         <PlansPanel Inputs="_inputs" CanSave="BaselineGain.CanMark(_run)" OnOpen="OnPlanOpened" OnChanged="OnPlansChanged" />
@@ -54,156 +52,91 @@
 </BucketBar>
 <TakenOutNotice @ref="_notice" Module="_takenOut" OnUndo="Undo" OnDismiss="Dismiss" />
 
-@if (_tab != PlanTab.Plan)
-{
-    <section id="@TabContentId" class="plan-tab" tabindex="-1" @ref="_tabContent">
-        <MudContainer MaxWidth="MaxWidth.Large">
-            @switch (_tab)
-            {
-                case PlanTab.Map:
-                    <MapTab Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Search="_search" RefusedBy="Refused" Chosen="_mapChosen" ChosenChanged="OnMapChosen" />
-                    break;
-                case PlanTab.Optimisation:
-                    <OptimisationTab From="_moves.Baseline" Searching="_moves.Searching(Today)" Found="_moves.Found(Today)" Inputs="_inputs" InputsChanged="OnInputsChanged" Search="_search" />
-                    break;
-                case PlanTab.WhenToPay:
-                    <WhenToPayTab Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Date="Today" />
-                    break;
-                case PlanTab.Compare:
-                    <CompareTab />
-                    break;
-            }
-        </MudContainer>
-    </section>
-}
-else
-{
-    <section class="river">
-        <MudContainer MaxWidth="MaxWidth.Large">
-            <TabHead Eyebrow="@L["Eyebrow"]" Title="@L["Title"]" Lede="@L["Lede"]" />
+<section id="@TabContentId" class="plan-tab" tabindex="-1" @ref="_tabContent">
+    <MudContainer MaxWidth="MaxWidth.Large">
+        @switch (_tab)
+        {
+            case PlanTab.Plan:
+                <MapTab Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Search="_search" RefusedBy="Refused" Chosen="_mapChosen" ChosenChanged="OnMapChosen" ViewerChose="_viewerChose" />
 
-            <RefusedMessage Error="@Refused(RiverModule.River)" />
+                <aside class="assumed" aria-labelledby="assumed-title">
+                    <Fold Name="@PlanText.AssumedFold" Title="@L[PlanText.AssumedTitle]" TitleId="assumed-title"
+                          Summary="@L[PlanText.AssumedSummary, PlanText.Assumptions.Count]">
+                        <ul class="assumed__list">
+                            @foreach (var key in PlanText.Assumptions)
+                            {
+                                <li>@L[key]</li>
+                            }
+                        </ul>
+                    </Fold>
+                </aside>
 
-            <CascadingValue Value="_outline" IsFixed="true">
-                <div class="river__body">
-                    <RiverOutline />
-                    <div id="river" class="river__flow" tabindex="-1" @ref="_river">
-                        <CompanyYearCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Refused="@Refused(RiverModule.CompanyYear)" />
-                        @if (_inputs.Composition.Count == 0)
-                        {
-                            <p class="river__add">
-                                @L["AddHint"]
-                                <MudButton Variant="Variant.Text" Size="Size.Small" Color="Color.Primary" OnClick="OpenComposition">@L["AddHintButton"]</MudButton>
-                            </p>
-                        }
-                        @if (_inputs.InPlan(OptionalModule.Vouchers))
-                        {
-                            <VoucherCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Refused="@Refused(RiverModule.Vouchers)" />
-                        }
-                        @if (_inputs.InPlan(OptionalModule.Allowances))
-                        {
-                            <AllowanceCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Refused="@Refused(RiverModule.Allowances)" />
-                        }
-                        @if (_inputs.InPlan(OptionalModule.Rent))
-                        {
-                            <RentCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Refused="@Refused(RiverModule.Rent)" />
-                        }
-                        @if (_inputs.InPlan(OptionalModule.Car))
-                        {
-                            <CarCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Refused="@Refused(RiverModule.Car)" />
-                        }
-                        @if (_inputs.Company is not null)
-                        {
-                            <SplitCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Search="_search" Refused="@Refused(RiverModule.Split)" />
-                        }
-                        <div class="river__streams">
-                            <div class="river__stream">
-                                @if (_inputs.InPlan(OptionalModule.Copyright))
-                                {
-                                    <CopyrightCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Refused="@Refused(RiverModule.Copyright)" />
-                                }
-                                <DirectorPayCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Refused="@Refused(RiverModule.DirectorPay)" />
-                            </div>
-                            <div class="river__stream">
-                                <CorporateTaxCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Refused="@Refused(RiverModule.CorporateTax)" />
-                                <DividendCard Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Refused="@Refused(RiverModule.Dividend)" />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </CascadingValue>
-
-            <aside class="assumed" aria-labelledby="assumed-title">
-                <Fold Name="@PlanText.AssumedFold" Title="@L[PlanText.AssumedTitle]" TitleId="assumed-title"
-                      Summary="@L[PlanText.AssumedSummary, PlanText.Assumptions.Count]">
-                    <ul class="assumed__list">
-                        @foreach (var key in PlanText.Assumptions)
-                        {
-                            <li>@L[key]</li>
-                        }
-                    </ul>
-                </Fold>
-            </aside>
-
-            <aside class="limits" aria-labelledby="limits-title">
-                <Fold Name="@PlanText.LimitsFold" Title="@L[PlanText.LimitsTitle]" TitleId="limits-title"
-                      Summary="@L[PlanText.LimitsSummary, PlanText.Limits.Count]">
-                    <ul class="limits__list">
-                        @foreach (var key in PlanText.Limits)
-                        {
-                            <li>@L[key]</li>
-                        }
-                    </ul>
-                    <p class="limits__note">@L[PlanText.LimitTaxCalcNote]</p>
-                </Fold>
-            </aside>
-        </MudContainer>
-    </section>
-}
+                <aside class="limits" aria-labelledby="limits-title">
+                    <Fold Name="@PlanText.LimitsFold" Title="@L[PlanText.LimitsTitle]" TitleId="limits-title"
+                          Summary="@L[PlanText.LimitsSummary, PlanText.Limits.Count]">
+                        <ul class="limits__list">
+                            @foreach (var key in PlanText.Limits)
+                            {
+                                <li>@L[key]</li>
+                            }
+                        </ul>
+                        <p class="limits__note">@L[PlanText.LimitTaxCalcNote]</p>
+                    </Fold>
+                </aside>
+                break;
+            case PlanTab.Optimisation:
+                <OptimisationTab From="_moves.Baseline" Searching="_moves.Searching(Today)" Found="_moves.Found(Today)" Inputs="_inputs" InputsChanged="OnInputsChanged" Search="_search" />
+                break;
+            case PlanTab.WhenToPay:
+                <WhenToPayTab Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Date="Today" />
+                break;
+            case PlanTab.Compare:
+                <CompareTab />
+                break;
+        }
+    </MudContainer>
+</section>
 
 @code {
-    // Where the skip link sends the focus on a tab other than the river.
+    // Where the skip link sends the focus.
     private const string TabContentId = "tab-content";
 
-    // The URL's segment after /plan/, naming the tab; none for the river (PlanTabRoutes).
+    // The URL's segment after /plan/, naming the tab; none for the plan (PlanTabRoutes).
     [Parameter]
     public string? Tab { get; set; }
 
-    // The card a link from another tab names for the river to open on arrival, by its fold's name
-    // (CardLinks); none for the river alone.
+    // The card a link from another tab names, by its fold's name (CardLinks): its module is chosen on the
+    // map on arrival. None for the plan alone.
     [SupplyParameterFromQuery(Name = CardLinks.Query)]
     public string? Card { get; set; }
 
     private PlanTab _tab;
     private RiverInputs _inputs = default!;
-    private OutlineRows _outline = default!;
     private RiverRun _run = default!;
     private SplitSearchResult? _search;
     private (string Id, RiverRun Run)? _today;
     private RiverInputs? _searched;
     private CompositionMenu _composition = default!;
     private TakenOutNotice _notice = default!;
-    private ElementReference _river;
     private ElementReference _tabContent;
     private OptionalModule? _takenOut;
     private bool _focusUndo;
     private bool _focusComposition;
     private MovesSource _moves = default!;
     private readonly CardArrival _arrival = new();
-    private string? _arriving;
-    private RiverModule? _mapChosen;
+    private RiverModule? _mapChosen = RiverModule.CompanyYear;
+    private bool _viewerChose;
 
     protected override void OnInitialized()
     {
-        _outline = new OutlineRows(Folds);
         _moves = new MovesSource(Plans, State.Inputs);
         OnPlansChanged();
         Show(State.Inputs);
     }
 
     // The tab the URL names, on arriving and at each switch of tab, the page staying the same; a segment
-    // Netto has no tab for is a page it does not have. On the river, the card the URL names, once per
-    // arrival (CardArrival).
+    // Netto has no tab for is a page it does not have. On the plan, the card the URL names, once per
+    // arrival (CardArrival), has its module chosen on the map, while the map draws it.
     protected override void OnParametersSet()
     {
         if (PlanTabRoutes.From(Tab) is { } tab)
@@ -211,23 +144,12 @@ else
         else
             Navigation.NotFound();
 
-        _arriving = _arrival.Take(_tab, Card);
+        if (_arrival.Take(_tab, Card) is { } card && MapModules.Named(card) is { } named && MapView.ModulesOf(_inputs).Contains(named))
+            (_mapChosen, _viewerChose) = (named, false);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        // The river is drawn, and its cards listed in the outline: the card arrived at opens as the
-        // viewer's fold, as choosing its row does, and the script brings it under the bar and focuses its
-        // heading once Blazor has reset the scroll after the link and the tab's head has taken the focus
-        // (river-outline.js, arrive). A card the river does not show, a lever out of the plan, is left
-        // alone.
-        if (_arriving is { } card)
-        {
-            _arriving = null;
-            if (_outline.Arrive(card))
-                await JS.InvokeVoidAsync("nettoOutline.arrive", card);
-        }
-
         if (_focusUndo)
         {
             _focusUndo = false;
@@ -248,10 +170,14 @@ else
     }
 
     // A module taken out shows the notice. Taken out from its card, the word that did it is gone with
-    // the card, so the focus goes to Undo; from the open menu, it stays on the menu's checkbox.
+    // the card, so the focus goes to Undo; from the open menu, it stays on the menu's checkbox. A lever
+    // added, from the menu or by a move applied, is chosen, so its card opens beside the map to be filled;
+    // one Undo brings back is as it was, unchosen.
     private void OnInputsChanged(RiverInputs inputs)
     {
         var takenOut = inputs.Composition.TakenOutSince(_inputs.Composition);
+        if (ModuleFolds.Added(_inputs.Composition, inputs.Composition) is [.., var added] && added != _takenOut)
+            (_mapChosen, _viewerChose) = (MapModules.Of(added), false);
         _takenOut = RemovalNotice.About(_takenOut, _inputs.Composition, inputs.Composition);
         _focusUndo = takenOut is not null && !_composition.IsOpen;
         State.Inputs = inputs;
@@ -271,8 +197,6 @@ else
         Show(plan);
     }
 
-    private void OpenComposition() => _composition.Open();
-
     // The plan starred « Today » runs once, again only when the star moves to another plan. A save opens
     // the river on the plan saved, which the moves are then measured from while no plan is starred.
     private void OnPlansChanged()
@@ -282,11 +206,10 @@ else
             _today = Plans.TodayPlan is { Inputs: { } inputs } today ? (today.Id, inputs.Run()) : null;
     }
 
-    // The next Tab goes on to the first card's heading, or on another tab to the first control of its
-    // content.
-    private async Task SkipAsync() => await (_tab == PlanTab.Plan ? _river : _tabContent).FocusAsync();
+    // The next Tab goes on to the first control of the tab's content.
+    private async Task SkipAsync() => await _tabContent.FocusAsync();
 
-    private string SkipHref => $"{PlanTabRoutes.Href(_tab)}#{(_tab == PlanTab.Plan ? "river" : TabContentId)}";
+    private string SkipHref => $"{PlanTabRoutes.Href(_tab)}#{TabContentId}";
 
     // Undo and Dismiss leave with the notice, so the focus goes to the Composition button, just before
     // it, where the plan's modules are set.
@@ -304,8 +227,9 @@ else
         _focusComposition = true;
     }
 
-    // The module chosen on the Map tab, kept from one tab to the next, let go once it has left the map.
-    private void OnMapChosen(RiverModule? module) => _mapChosen = module;
+    // The module the viewer chose on the map, kept from one tab to the next, let go once it has left the
+    // map.
+    private void OnMapChosen(RiverModule? module) => (_mapChosen, _viewerChose) = (module, true);
 
     // The split's search runs the year at every pay, so it runs again only when an input other than
     // the pay changes: dragging the pay moves its marker along the same curve. A module chosen on the map

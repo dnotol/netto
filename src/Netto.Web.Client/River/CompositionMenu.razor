@@ -1,5 +1,4 @@
 @inject IStringLocalizer<CompositionMenu> L
-@inject Folds Folds
 
 @* Which optional modules are in the plan, from the bar of buckets. A disclosure, not an ARIA menu: the
    button says how many the plan holds and opens a panel, a labelled group of one checkbox per optional
@@ -149,9 +148,9 @@
             _open = false;
     }
 
-    // A module added opens its card so it can be filled; one taken out leaves its fold as it is (ModuleFolds).
+    // A module added is chosen on the map, so its card opens beside it to be filled (Plan).
     private Task OnModuleChanged(OptionalModule module, bool inPlan) =>
-        InputsChanged.InvokeAsync(ModuleFolds.Toggled(Folds, Inputs, module, inPlan));
+        InputsChanged.InvokeAsync(inPlan ? Inputs.AddToPlan(module) : Inputs.TakeOutOfPlan(module));
 
     // What the module is while out of the plan, what it brings while in it.
     private string Note(ModuleChoice choice) => choice switch

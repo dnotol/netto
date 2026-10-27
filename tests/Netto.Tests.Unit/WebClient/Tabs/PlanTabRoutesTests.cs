@@ -8,9 +8,9 @@ namespace Netto.Tests.WebClient.Tabs;
 public class PlanTabRoutesTests
 {
     [Fact]
-    public void Order_isThePlanThenTheMapThenOptimisationThenWhenToPayThenCompare()
+    public void Order_isThePlanThenOptimisationThenWhenToPayThenCompare()
     {
-        PlanTabRoutes.Order.ShouldBe([PlanTab.Plan, PlanTab.Map, PlanTab.Optimisation, PlanTab.WhenToPay, PlanTab.Compare]);
+        PlanTabRoutes.Order.ShouldBe([PlanTab.Plan, PlanTab.Optimisation, PlanTab.WhenToPay, PlanTab.Compare]);
     }
 
     [Fact]
@@ -21,7 +21,6 @@ public class PlanTabRoutesTests
 
     [Theory]
     [InlineData(PlanTab.Plan, "plan")]
-    [InlineData(PlanTab.Map, "plan/map")]
     [InlineData(PlanTab.Optimisation, "plan/optimisation")]
     [InlineData(PlanTab.WhenToPay, "plan/when-to-pay")]
     [InlineData(PlanTab.Compare, "plan/compare")]
@@ -46,16 +45,17 @@ public class PlanTabRoutesTests
     // A URL typed by hand keeps its case: the router matches it whatever the case, and so does the tab.
     [Theory]
     [InlineData("OPTIMISATION", PlanTab.Optimisation)]
-    [InlineData("Map", PlanTab.Map)]
     [InlineData("When-To-Pay", PlanTab.WhenToPay)]
     public void From_segmentInAnotherCase_isTheTab(string segment, PlanTab tab)
     {
         PlanTabRoutes.From(segment).ShouldBe(tab);
     }
 
-    // Any other segment is a page Netto does not have, the river's own name included.
+    // Any other segment is a page Netto does not have, the plan's own name and the map's, which is the
+    // plan since 2026-10-27, included.
     [Theory]
     [InlineData("plan")]
+    [InlineData("map")]
     [InlineData("optimization")]
     [InlineData("")]
     public void From_anyOtherSegment_isNone(string segment)

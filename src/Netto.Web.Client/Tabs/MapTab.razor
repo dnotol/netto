@@ -63,7 +63,7 @@
    holds two regions that scroll apart: the neighbourhood of the chosen module (MapNeighbourhoodView: what
    comes into it, what goes out, the rules it sets or is under, each line of money on its own with its
    amount and a bar, the other end of each a button that chooses that module), kept in sight whatever the
-   length of the card under it, the card of that module (MapPanel, the Plan tab's own, pinned open), whose
+   length of the card under it, the card of that module (MapPanel, pinned open), whose
    edits go to the page's one river. Under the head is the filter of the kinds of link (MapFilter), the
    legend of the lines in one row, whose boxes the viewer ticks: a kind unticked is left out of the lines,
    their arrowheads and their amounts, and only of those: the neighbourhood is made from every link of the
@@ -128,7 +128,7 @@
             <MapNeighbourhood Hood="_hood" OnChoose="ChooseAsync" />
         </div>
         <div class="map-tab__panel">
-            <MapPanel Module="_chosen" Inputs="Inputs" InputsChanged="InputsChanged" Run="Run" Search="Search" Refused="ChosenRefusal" />
+            <MapPanel Module="_chosen" ViewerChose="ViewerChose" Inputs="Inputs" InputsChanged="InputsChanged" Run="Run" Search="Search" Refused="ChosenRefusal" />
         </div>
     </div>
 </div>
@@ -159,6 +159,11 @@
 
     [Parameter]
     public EventCallback<RiverModule?> ChosenChanged { get; set; }
+
+    // Whether the module chosen is the viewer's choice (ChosenChanged), rather than one the page chose
+    // itself, Company year on arriving or a lever just added: only the viewer's takes the focus to its card.
+    [Parameter]
+    public bool ViewerChose { get; set; }
 
     // The engine's refusal the chosen module's card holds, as the Plan page hands it to that card.
     private Refusal? ChosenRefusal => _chosen is { } module ? RefusedBy(module) : null;

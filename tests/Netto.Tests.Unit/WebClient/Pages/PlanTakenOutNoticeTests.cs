@@ -49,14 +49,14 @@ public class PlanTakenOutNoticeTests
         (page.Focuses - before, page.Errors.Count).ShouldBe((1, 0));
     }
 
-    // The river shows the plan as saved and has nothing unsaved, and the split's search runs again on it.
+    // The map shows the plan as saved and has nothing unsaved, and the split's search runs again on it.
     [Fact]
-    public async Task Plan_planOpened_showsItInTheRiverWithoutUnsavedChanges()
+    public async Task Plan_planOpened_showsItOnTheMapWithoutUnsavedChanges()
     {
         var storage = Saved(RiverInputs.Example, WithVouchers);
         await using var page = At(storage);
         await page.LoadAsync();
-        var searched = (await page.FindAsync<SplitCard>()).Search;
+        var searched = (await page.FindAsync<MapTab>()).Search;
         await OpenPanelAsync(page);
 
         await OpenAsync(page, storage, "Plan 1");
@@ -64,12 +64,12 @@ public class PlanTakenOutNoticeTests
         var plan = Inputs(storage, "Plan 1");
         var bar = await page.FindAsync<BucketBar>();
         var menu = await page.FindAsync<CompositionMenu>();
-        var split = await page.FindAsync<SplitCard>();
+        var map = await page.FindAsync<MapTab>();
         page.ShouldSatisfyAllConditions(
             () => bar.Unsaved.ShouldBeFalse(),
             () => menu.Inputs.ShouldBe(plan),
-            () => split.Inputs.ShouldBe(plan),
-            () => split.Search.ShouldNotBeSameAs(searched),
+            () => map.Inputs.ShouldBe(plan),
+            () => map.Search.ShouldNotBeSameAs(searched),
             () => page.Errors.ShouldBeEmpty());
     }
 
@@ -142,12 +142,15 @@ public class PlanTakenOutNoticeTests
         (notice.Module, menu.Inputs.InPlan(OptionalModule.Vouchers), page.Focuses - before, page.Errors.Count).ShouldBe((null, true, 1, 0));
     }
 
-    // Taken out from its card, the word that did it is gone with the card, so the focus goes to Undo.
+    // Taken out from its card beside the map, the word that did it is gone with the card, so the focus goes
+    // to Undo.
     [Fact]
     public async Task Plan_moduleTakenOutFromItsCard_showsTheNoticeAndFocusesUndo()
     {
         await using var page = At(Saved(WithVouchers));
         await page.LoadAsync();
+        var map = await page.FindAsync<MapTab>();
+        await page.InvokeAsync(() => map.ChosenChanged.InvokeAsync(RiverModule.Vouchers));
         var card = (await page.FindAllAsync<ModuleCard>()).First(card => card.RemoveLabel is not null);
         var before = page.Focuses;
 

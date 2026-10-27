@@ -11,8 +11,7 @@ internal static class PlanText
     // The skip link, the keyboard's first stop on the page, worded for where it goes on each tab.
     public static string SkipTo(PlanTab tab) => tab switch
     {
-        PlanTab.Plan => "SkipToRiver",
-        PlanTab.Map => "SkipToMap",
+        PlanTab.Plan => "SkipToMap",
         PlanTab.Optimisation => "SkipToMoves",
         PlanTab.WhenToPay => "SkipToPayments",
         PlanTab.Compare => "SkipToComparison",

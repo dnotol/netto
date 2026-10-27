@@ -29,7 +29,7 @@ public class StreamCardsFiguresTests
         .AddToPlan(OptionalModule.Copyright).WithCreativeShare(0.5m);
 
     // The Plan page on the filled plan with every card open, drawn once for the tests that read it.
-    private static readonly Lazy<Task<string>> Page = new(() => CardHtml.RenderPlanOpenAsync(Filled));
+    private static readonly Lazy<Task<string>> Page = new(() => CardHtml.RenderCardsOpenAsync(Filled));
 
     // The texts of Director pay's .resx, for the rules its bubbles say, read where a test needs one.
     private static readonly ResxText Texts = ResxText.For<DirectorPayCard>();
@@ -73,7 +73,7 @@ public class StreamCardsFiguresTests
     [MemberData(nameof(CardsOfEachPlan))]
     public async Task Card_open_proseRestatesNoAmountOfItsLines(string _, RiverInputs plan, string card)
     {
-        var html = CardHtml.Card(await CardHtml.RenderPlanOpenAsync(plan), card);
+        var html = CardHtml.Card(await CardHtml.RenderCardsOpenAsync(plan), card);
         var lines = CardHtml.LineAmounts(html).Select(Unsigned).ToHashSet();
 
         CardHtml.Prose(html).Where(paragraph => CardHtml.Amounts(paragraph).Any(amount => lines.Contains(Unsigned(amount)))).ShouldBeEmpty();
@@ -137,7 +137,7 @@ public class StreamCardsFiguresTests
     [Fact]
     public async Task Split_payRefused_showsTheRefusalInSightAndNoLines()
     {
-        var html = CardHtml.Card(await CardHtml.RenderPlanOpenAsync(RiverInputs.Example.WithDirectorPay(-1m)), "split");
+        var html = CardHtml.Card(await CardHtml.RenderCardsOpenAsync(RiverInputs.Example.WithDirectorPay(-1m)), "split");
 
         (CardHtml.Lines(html).Count, Regex.IsMatch(html, "class=\"[^\"]*refused-message")).ShouldBe((0, true));
     }
@@ -158,7 +158,7 @@ public class StreamCardsFiguresTests
     [MemberData(nameof(BestPayButtons))]
     public async Task Split_open_offersTheBestPayOnlyWhileThePaySetIsNotIt(string _, RiverInputs plan, int buttons)
     {
-        var html = WebUtility.HtmlDecode(CardHtml.Card(await CardHtml.RenderPlanOpenAsync(plan), "split"));
+        var html = WebUtility.HtmlDecode(CardHtml.Card(await CardHtml.RenderCardsOpenAsync(plan), "split"));
 
         ButtonsSaying(html, SplitTexts.Get("MoveToBest").ShouldNotBeNull()).ShouldBe(buttons);
     }
@@ -168,7 +168,7 @@ public class StreamCardsFiguresTests
     public async Task Split_open_namesTheBestPayInTheButtonsLabel()
     {
         var plan = RiverInputs.Example;
-        var html = WebUtility.HtmlDecode(CardHtml.Card(await CardHtml.RenderPlanOpenAsync(plan), "split"));
+        var html = WebUtility.HtmlDecode(CardHtml.Card(await CardHtml.RenderCardsOpenAsync(plan), "split"));
         var label = SplitTexts.Format("MoveToBestLabel", Formats.Euros(BestPay(plan)));
 
         html.ShouldContain($"aria-label=\"{label}\"");
@@ -208,7 +208,7 @@ public class StreamCardsFiguresTests
     [Fact]
     public async Task DirectorPay_fundFeeGiven_drawsTheFeeLineAfterTheContributions()
     {
-        var html = CardHtml.Card(await CardHtml.RenderPlanOpenAsync(RiverInputs.Example.WithFundFeeRate(0.0305m)), "director-pay");
+        var html = CardHtml.Card(await CardHtml.RenderCardsOpenAsync(RiverInputs.Example.WithFundFeeRate(0.0305m)), "director-pay");
 
         html.ShouldSatisfyAllConditions(
             () => CardHtml.Lines(html).Take(2).Select(line => (line.Amount, line.Share)).ShouldBe([("−€8,251.60", "16.5%"), ("−€251.68", "0.5%")]),
@@ -266,7 +266,7 @@ public class StreamCardsFiguresTests
     [Fact]
     public async Task DirectorPay_nothingWithheld_drawsWhatMoreByTheFirstOpenDeadlineLeavesNoneDue()
     {
-        var html = CardHtml.Card(await CardHtml.RenderPlanOpenAsync(NothingWithheld), "director-pay");
+        var html = CardHtml.Card(await CardHtml.RenderCardsOpenAsync(NothingWithheld), "director-pay");
 
         html.ShouldSatisfyAllConditions(
             () => CardHtml.LineRuns(html).Select(run => run.List).ShouldBe(["drain", "figure"]),
@@ -289,7 +289,7 @@ public class StreamCardsFiguresTests
     [MemberData(nameof(OpenDeadlineDays))]
     public async Task DirectorPay_nothingWithheldOnAnotherDay_drawsTheFirstDeadlineStillOpenAndThePaymentMovesFigure(DateOnly today, string day)
     {
-        var html = CardHtml.Card(await CardHtml.RenderPlanOpenAsync(NothingWithheld, At(today)), "director-pay");
+        var html = CardHtml.Card(await CardHtml.RenderCardsOpenAsync(NothingWithheld, At(today)), "director-pay");
 
         var move = new DirectorAdvancePaymentFinder(today).Find(NothingWithheld.MoveScenario()).ShouldBeOfType<DirectorAdvancePaymentMove>();
         html.ShouldSatisfyAllConditions(
@@ -303,7 +303,7 @@ public class StreamCardsFiguresTests
     [Fact]
     public async Task DirectorPay_everyDeadlinePast_drawsItsNoteInPlaceOfTheLine()
     {
-        var html = CardHtml.Card(await CardHtml.RenderPlanOpenAsync(NothingWithheld, At(new DateOnly(2026, 12, 22))), "director-pay");
+        var html = CardHtml.Card(await CardHtml.RenderCardsOpenAsync(NothingWithheld, At(new DateOnly(2026, 12, 22))), "director-pay");
 
         html.ShouldSatisfyAllConditions(
             () => CardHtml.LineRuns(html).Select(run => run.List).ShouldBe(["drain"]),
@@ -338,7 +338,7 @@ public class StreamCardsFiguresTests
     public async Task DirectorPay_withheldAsThePaySlip_explainsTheWithholdingInTheFieldsBubble()
     {
         var hint = Texts.Get("WithheldHint").ShouldNotBeNull();
-        var html = WebUtility.HtmlDecode(CardHtml.Card(await CardHtml.RenderPlanOpenAsync(RiverInputs.Example.WithTaxAdvancePayment(0, -1m)), "director-pay"));
+        var html = WebUtility.HtmlDecode(CardHtml.Card(await CardHtml.RenderCardsOpenAsync(RiverInputs.Example.WithTaxAdvancePayment(0, -1m)), "director-pay"));
 
         html.ShouldSatisfyAllConditions(
             () => FieldHead(html, "river-tax-withheld").ShouldContain(hint),
@@ -350,7 +350,7 @@ public class StreamCardsFiguresTests
     [Fact]
     public async Task DirectorPay_amountWithheldTyped_keepsOnlyTheWayBackToThePaySlipsAmount()
     {
-        var html = WebUtility.HtmlDecode(CardHtml.Card(await CardHtml.RenderPlanOpenAsync(RiverInputs.Example.WithTaxWithheld(-1m)), "director-pay"));
+        var html = WebUtility.HtmlDecode(CardHtml.Card(await CardHtml.RenderCardsOpenAsync(RiverInputs.Example.WithTaxWithheld(-1m)), "director-pay"));
 
         (html.Contains(Texts.Get("WithheldAsPaySlip").ShouldNotBeNull(), StringComparison.Ordinal),
                 CardHtml.Prose(html).Any(paragraph => paragraph.Contains(Texts.Get("WithheldHint").ShouldNotBeNull(), StringComparison.Ordinal)))

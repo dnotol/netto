@@ -1,5 +1,4 @@
 using System.Globalization;
-using System.Text.RegularExpressions;
 using Netto.Web.Client.Pages;
 using Netto.Web.Client.Tabs;
 using Shouldly;
@@ -15,8 +14,7 @@ public class PlanTextTests
 
     // The keyboard's first stop on the page, past the bar and its tabs to the tab's own content.
     [Theory]
-    [InlineData(PlanTab.Plan, "Skip to the river")]
-    [InlineData(PlanTab.Map, "Skip to the map")]
+    [InlineData(PlanTab.Plan, "Skip to the map")]
     [InlineData(PlanTab.Optimisation, "Skip to your moves")]
     [InlineData(PlanTab.WhenToPay, "Skip to the payments")]
     [InlineData(PlanTab.Compare, "Skip to the comparison")]
@@ -28,7 +26,6 @@ public class PlanTextTests
     // The window's title names the tab, as a new page would.
     [Theory]
     [InlineData(PlanTab.Plan, "Your year: Netto")]
-    [InlineData(PlanTab.Map, "Map: Netto")]
     [InlineData(PlanTab.Optimisation, "Optimisation: Netto")]
     [InlineData(PlanTab.WhenToPay, "When to pay: Netto")]
     [InlineData(PlanTab.Compare, "Compare plans: Netto")]
@@ -100,23 +97,6 @@ public class PlanTextTests
     private static IEnumerable<string> ResxKeys(string prefix) =>
         Resources.Keys.Where(key => key.StartsWith(prefix, StringComparison.Ordinal));
 
-    // The river's lede says what the cards and the bar do, in two sentences at most: how a card opens is
-    // its chevron's to say, and where the example comes from is Company year's, in its bubble.
-    [Fact]
-    public void PlanResx_lede_isAtMostTwoSentences()
-    {
-        Sentences(Text("Lede")).Count.ShouldBeLessThanOrEqualTo(2);
-    }
-
-    [Theory]
-    [InlineData("fold")]
-    [InlineData("open")]
-    [InlineData("example")]
-    public void PlanResx_lede_namesNeitherHowACardOpensNorTheExample(string word)
-    {
-        Text("Lede").ShouldNotContain(word, Case.Insensitive);
-    }
-
     // The cards under the split say what runs down each side: no line between them says it again.
     [Theory]
     [InlineData("Fork")]
@@ -125,9 +105,4 @@ public class PlanTextTests
     {
         Resources.Get(key).ShouldBeNull();
     }
-
-    private static string Text(string key) => Resources.Get(key).ShouldNotBeNull();
-
-    // A sentence ends on its full stop, or the text's end.
-    private static List<string> Sentences(string text) => [.. Regex.Split(text.Trim(), @"(?<=[.!?])\s+").Where(sentence => sentence.Length > 0)];
 }

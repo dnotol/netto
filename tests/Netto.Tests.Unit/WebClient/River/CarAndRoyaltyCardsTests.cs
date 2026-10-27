@@ -116,7 +116,7 @@ public class CarAndRoyaltyCardsTests
     [Fact]
     public async Task Cards_filledPlan_leaveNoKey()
     {
-        var html = await CardHtml.RenderPlanOpenAsync(Filled);
+        var html = await CardHtml.RenderCardsOpenAsync(Filled);
         string[] cards = ["car", "copyright"];
 
         cards.SelectMany(card => CardHtml.LeakedKeys(CardHtml.Card(html, card))).ShouldBeEmpty();

@@ -83,13 +83,19 @@
     [Parameter]
     public SplitSearchResult? Search { get; set; }
 
+    // Whether the module is the viewer's choice on the map, rather than one the page chose itself: only
+    // then does its card take the focus.
+    [Parameter]
+    public bool ViewerChose { get; set; }
+
     // The engine's refusal of a field of this module's card, as the Plan page hands it to that card.
     [Parameter]
     public Refusal? Refused { get; set; }
 
     // The seat of the card shown, new for each module chosen, and whether the panel has drawn before: a
-    // module chosen after that is the viewer's choice and its card takes the focus; the one chosen when the
-    // tab opens is not, the tab's title has the focus then.
+    // module the viewer chooses after that takes the focus to its card; the one chosen when the tab opens
+    // does not, the tab's title has the focus then, nor one the page chose itself, a lever just added from
+    // the Composition menu, whose focus stays in the menu.
     private PinnedCard? _seat;
     private RiverModule? _shown;
     private bool _drawn;
@@ -98,7 +104,7 @@
     {
         if (Module != _shown)
         {
-            _seat = Module is null ? null : new PinnedCard(TakesFocus: _drawn);
+            _seat = Module is null ? null : new PinnedCard(TakesFocus: _drawn && ViewerChose);
             _shown = Module;
         }
 

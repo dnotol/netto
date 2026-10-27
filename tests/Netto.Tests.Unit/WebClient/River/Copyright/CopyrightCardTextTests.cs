@@ -31,37 +31,6 @@ public class CopyrightCardTextTests
         views.Select(CopyrightCardText.Summary).ShouldBe(["SummaryNoRoyalty", "Summary", "Summary_AsPay", "Summary_AllAsPay"]);
     }
 
-    // The card's row in the river's outline glances at the summary's first figure, in its words: what
-    // reaches the pocket after the tax apart, nothing before there is a royalty.
-    [Fact]
-    public void Glance_everySummary_isItsFirstFigure()
-    {
-        var inputs = RiverInputs.Example.AddToPlan(OptionalModule.Copyright);
-        var views = new[] { inputs, inputs.WithRoyalty(10_000m), inputs.WithRoyalty(30_000m) }.Select(river => CopyrightView.From(river.Run().Year!)).ToList();
-
-        views.Select(CopyrightCardText.Glance).ShouldBe(
-        [
-            null,
-            new CardGlance(GlanceKind.ToYou, Netto.Web.Client.Formats.Euros(views[1].AfterTax)),
-            new CardGlance(GlanceKind.ToYou, Netto.Web.Client.Formats.Euros(views[2].AfterTax)),
-        ]);
-    }
-
-    // Four previous years above the cap leave nothing within the limits: the summary says all of it is
-    // taxed as pay, and so does the glance, with the summary's figure and no pocket's icon, since it
-    // reaches the pocket only through the pay.
-    [Fact]
-    public void Glance_nothingWithinTheLimits_isAllOfItTaxedAsPay()
-    {
-        var view = CopyrightView.From(RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithRoyalty(10_000m).WithAverageWithinCap(false).Run().Year!);
-        var summary = Resources.Format(CopyrightCardText.Summary(view),
-            Netto.Web.Client.Formats.Euros(view.AfterTax), Netto.Web.Client.Formats.Euros(view.Result.TaxedAsPay));
-
-        var glance = CopyrightCardText.Glance(view).ShouldNotBeNull();
-
-        (glance.Kind, summary.Contains(glance.Figure), glance.Bucket).ShouldBe((GlanceKind.TaxedAsPay, true, (string?)null));
-    }
-
     [Fact]
     public void CopyrightCardResx_everySummaryKey_hasAText()
     {

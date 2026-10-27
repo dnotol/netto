@@ -18,16 +18,6 @@ internal static class CopyrightCardText
         _ => "Summary",
     };
 
-    // The card's row in the river's outline: the summary's first figure, as the summary says it. What
-    // reaches the pocket after the tax apart, or, with nothing within the limits, all of it taxed as pay;
-    // nothing before there is a royalty.
-    public static CardGlance? Glance(CopyrightView view) => Summary(view) switch
-    {
-        "SummaryNoRoyalty" => null,
-        "Summary_AllAsPay" => new CardGlance(GlanceKind.TaxedAsPay, Formats.Euros(view.Result.TaxedAsPay)),
-        _ => new CardGlance(GlanceKind.ToYou, Formats.Euros(view.AfterTax)),
-    };
-
     // The line of what the royalty leaves in the pocket against the same plan without it: more, less, or
     // the same.
     public static string Gain(CopyrightComparison comparison) => comparison.Gain switch

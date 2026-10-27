@@ -13,7 +13,7 @@
    starts on an example year, which the user replaces or clears. Cleared, the module is skipped and the
    river starts at the pay. No Min or Max on the amounts: MudBlazor would clamp a value silently, and the
    engine's refusal, with its message, is what the user has to see. *@
-<ModuleCard @ref="_card" Name="company-year" Title="@L["Title"]" Summary="@Summary" Glance="@Glance" Help="@L["Hint"]" Skipped="Inputs.Company is null" Refused="@Refused"
+<ModuleCard @ref="_card" Name="company-year" Title="@L["Title"]" Summary="@Summary" Help="@L["Hint"]" Skipped="Inputs.Company is null" Refused="@Refused"
             Sources="@_sources" IncomeYear="Inputs.IncomeYear">
     @if (Inputs.Company is { } company)
     {
@@ -100,8 +100,6 @@
         ? L["Summary", Formats.Euros(year.Scenario.Revenue), Formats.Euros(year.ProfitBeforeLevers)].Value
         : null;
 
-    // Where the river starts, for the card's row in the river's outline.
-    private CardGlance? Glance => Run.Year is { } year ? new(GlanceKind.In, Formats.Euros(year.Scenario.Revenue)) : null;
 
     private Task OnRevenueChanged(decimal revenue) => InputsChanged.InvokeAsync(Inputs.WithRevenue(revenue));
 

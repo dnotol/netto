@@ -18,9 +18,9 @@ public class PlanMapFilterTests
     public async Task Plan_firstVisit_hasTheTwoKindsOfRuleUntickedAndStoresNothing()
     {
         var storage = new BrowserStorage();
-        await using var page = LivePlan.At("http://localhost/plan/map", storage, river: MapLinksTests.Full);
+        await using var page = LivePlan.At("http://localhost/plan", storage, river: MapLinksTests.Full);
 
-        await page.LoadAsync("map");
+        await page.LoadAsync();
         var map = await page.FindAsync<MapTab>();
 
         var run = MapView.From(MapLinksTests.Full, MapLinksTests.Full.Run());
@@ -38,8 +38,8 @@ public class PlanMapFilterTests
     public async Task Plan_aRuleKindTickedOnTheMap_isKeptInTheBrowserAndDrawnByTheTab()
     {
         var storage = new BrowserStorage();
-        await using var page = LivePlan.At("http://localhost/plan/map", storage, river: MapLinksTests.Full);
-        await page.LoadAsync("map");
+        await using var page = LivePlan.At("http://localhost/plan", storage, river: MapLinksTests.Full);
+        await page.LoadAsync();
         var map = await page.FindAsync<MapTab>();
         var boxes = await page.FindAllAsync<MudCheckBox<bool>>();
 
@@ -56,8 +56,8 @@ public class PlanMapFilterTests
     public async Task Plan_aKindUntickedOnTheMap_isKeptInTheBrowserAndNothingFails()
     {
         var storage = new BrowserStorage();
-        await using var page = LivePlan.At("http://localhost/plan/map", storage);
-        await page.LoadAsync("map");
+        await using var page = LivePlan.At("http://localhost/plan", storage);
+        await page.LoadAsync();
         var boxes = await page.FindAllAsync<MudCheckBox<bool>>();
 
         await page.InvokeAsync(() => boxes[Index(MapLinkKind.PassedOn)].ValueChanged.InvokeAsync(false));
@@ -70,8 +70,8 @@ public class PlanMapFilterTests
     public async Task Plan_aKindTickedAgainOnTheMap_leavesOnlyTheOtherOneKept()
     {
         var storage = new BrowserStorage();
-        await using var page = LivePlan.At("http://localhost/plan/map", storage);
-        await page.LoadAsync("map");
+        await using var page = LivePlan.At("http://localhost/plan", storage);
+        await page.LoadAsync();
         var boxes = await page.FindAllAsync<MudCheckBox<bool>>();
 
         await page.InvokeAsync(() => boxes[Index(MapLinkKind.TaxBase)].ValueChanged.InvokeAsync(true));
@@ -87,8 +87,8 @@ public class PlanMapFilterTests
     [Fact]
     public async Task Plan_aKindUntickedOnTheMap_isDrawnNoMoreByTheTab()
     {
-        await using var page = LivePlan.At("http://localhost/plan/map", MapRendering.EveryKindShown(), river: MapLinksTests.Full);
-        await page.LoadAsync("map");
+        await using var page = LivePlan.At("http://localhost/plan", MapRendering.EveryKindShown(), river: MapLinksTests.Full);
+        await page.LoadAsync();
         var map = await page.FindAsync<MapTab>();
         await page.InvokeAsync(() => map.ChosenChanged.InvokeAsync(RiverModule.Car));
         var (lines, words, listed, modules) = (Lines(map), Words(map), MapNeighbourhoodHtml.Listed(map), map.ShownMap.Modules);
@@ -111,8 +111,8 @@ public class PlanMapFilterTests
     [Fact]
     public async Task Plan_aKindTickedAgainOnTheMap_isDrawnAgainByTheTab()
     {
-        await using var page = LivePlan.At("http://localhost/plan/map", MapRendering.EveryKindShown(), river: MapLinksTests.Full);
-        await page.LoadAsync("map");
+        await using var page = LivePlan.At("http://localhost/plan", MapRendering.EveryKindShown(), river: MapLinksTests.Full);
+        await page.LoadAsync();
         var map = await page.FindAsync<MapTab>();
         await page.InvokeAsync(() => map.ChosenChanged.InvokeAsync(RiverModule.Car));
         var (lines, words, listed, links) = (Lines(map), Words(map), MapNeighbourhoodHtml.Listed(map), map.ShownMap.Links);

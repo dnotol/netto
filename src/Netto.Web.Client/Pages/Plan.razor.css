@@ -1,16 +1,8 @@
-/* ::deep reaches the elements MudBlazor renders (MudContainer, MudAlert, MudButton),
-   which carry no scope attribute of their own. The cards style themselves; this file lays out the river
-   around them.
+/* ::deep reaches the elements MudBlazor renders (MudContainer, MudAlert, MudButton), which carry no scope
+   attribute of their own. The tabs style themselves (Tabs/); this file lays out what is around them.
 
-   A vertical river of cards: the company's year and the split across the width, then the pay
-   stream and the company stream side by side on a wide screen, stacked on a phone. */
-
-.river {
-    padding: clamp(2rem, 5vw, 3.5rem) 0 clamp(3rem, 7vw, 5rem);
-}
-
-/* A tab other than the river (Tabs/): its head and what it holds, across the container's width. Where
-   the skip link sends the focus: no control, so no ring; the next Tab rings the tab's first control. */
+   A tab (Tabs/): its head and what it holds, across the container's width. Where the skip link sends the
+   focus: no control, so no ring; the next Tab rings the tab's first control. */
 .plan-tab {
     padding: clamp(2rem, 5vw, 3.5rem) 0 clamp(3rem, 7vw, 5rem);
 }
@@ -42,81 +34,6 @@
     }
 
 /* The head is the tab's (Tabs/TabHead). */
-
-.river ::deep .refused-message {
-    margin-bottom: 1.25rem;
-}
-
-/* The river */
-
-/* The cards and their outline (River/RiverOutline). From 1,201 px, where the bar of buckets holds one
-   row, the outline takes a column of its own left of the cards, which keep at least the width of the
-   narrowest screen their two streams stand side by side on. Once the window leaves room beside the
-   container (MudBlazor's Large, 1,280 px), the outline moves out into the left margin, a little more
-   at each pixel and always short of the window's edge, until the cards have the container's whole
-   width again, as they
-   do without an outline: on a 1,920 px screen the river is as wide as before and only the margin
-   holds the outline. Below 1,201 px the outline is not drawn and the cards take the width alone. */
-.river__body {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-}
-
-@media (min-width: 1201px) {
-    .river__body {
-        grid-template-columns: 15rem minmax(0, 1fr);
-        gap: 1.5rem;
-        margin-left: calc(-1 * clamp(0px, (100vw - 1280px) / 2 - 2rem, 16.5rem));
-    }
-}
-
-.river__flow {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 1.25rem;
-}
-
-    /* Where the skip link sends the focus: no control, so no ring; the next Tab rings the first
-       card's heading. */
-    .river__flow:focus {
-        outline: none;
-    }
-
-/* While the plan holds no optional module, one quiet line under Company year says where to add them. */
-.river__add {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.25rem 0.5rem;
-    margin: -0.25rem 0;
-    color: var(--netto-text-muted);
-    font-size: 0.9rem;
-    line-height: 1.5;
-}
-
-    .river__add ::deep .mud-button-root {
-        margin-left: -0.35rem;
-    }
-
-.river__streams {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    align-items: start;
-    gap: 1.25rem;
-}
-
-@media (min-width: 900px) {
-    .river__streams {
-        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    }
-}
-
-.river__stream {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 1.25rem;
-    min-width: 0;
-}
 
 /* Assumed */
 

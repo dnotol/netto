@@ -16,7 +16,7 @@
    values kept. The amounts are taken while typing, like revenue, and carry no Min or Max: the engine
    refuses what the rules do not allow, and its message is what the user has to see. Skipped with the
    company. *@
-<ModuleCard Name="@ModuleFolds.Name(OptionalModule.Rent)" Title="@L["Title"]" Summary="@Summary" Glance="@Glance" ToYou="@_view?.ToYou" Help="@L["Hint"]" Waiting="Inputs.Company is null"
+<ModuleCard Name="@ModuleFolds.Name(OptionalModule.Rent)" Title="@L["Title"]" Summary="@Summary" ToYou="@_view?.ToYou" Help="@L["Hint"]" Waiting="Inputs.Company is null"
             Refused="@Refused" Sources="@(_view?.Details ?? [])" IncomeYear="Inputs.IncomeYear" RemoveLabel="@L["Remove"]" OnRemove="Remove">
     <Disclosure Title="@L["HomeTitle"]" Values="@SettingWords.Of(L, _settings.Home)" Refused="@RentSettingsView.HomeHolds(Refused)"
                 OpenByDefault="@_settings.NeedsFacts">
@@ -100,8 +100,6 @@
         ? L[RentCardText.Summary(Inputs.InPlan(OptionalModule.Copyright)), Formats.Euros(view.AfterTax), Formats.Euros(view.SplitShares)].Value
         : null;
 
-    // What reaches the pocket after the rent's tax, for the card's row in the river's outline.
-    private CardGlance? Glance => _view is { } view ? new(GlanceKind.ToYou, Formats.Euros(view.AfterTax)) : null;
 
     // How the cap under the rent is set, in the bubble after the rent's label, once the home's facts
     // give one.

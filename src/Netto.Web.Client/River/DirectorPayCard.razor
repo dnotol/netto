@@ -19,7 +19,7 @@
    is the pay slip's amount, derived, until the user types the amount actually withheld, with a way
    back; how it is derived is the field's bubble. It and what the director paid in advance are taken
    while typing, since nothing bounds them. The pay slip and the rules behind each figure are its detail view. *@
-<ModuleCard Name="director-pay" Title="@L["Title"]" Summary="@Summary" Glance="@Glance" ToYou="@_view?.ToYou" Refused="@Refused" Details="@Details"
+<ModuleCard Name="director-pay" Title="@L["Title"]" Summary="@Summary" ToYou="@_view?.ToYou" Refused="@Refused" Details="@Details"
             Sources="@(_view?.Details ?? [])" IncomeYear="Inputs.IncomeYear" DetailsLabel="@L["DetailsLabel"]" SourcesTitle="@L["SourcesTitle", Inputs.IncomeYear]">
     @if (Inputs.Company is null)
     {
@@ -156,8 +156,6 @@
         ? L["Summary", Formats.Euros(pay.CompanyCost + pay.RequalifiedPay), Formats.Euros(pay.NetInPocket)].Value
         : null;
 
-    // What reaches the pocket, for the card's row in the river's outline.
-    private CardGlance? Glance => Run.Pay is { } pay ? new(GlanceKind.ToYou, Formats.Euros(pay.NetInPocket)) : null;
 
     // The pay slip, above where each of its figures comes from, and, while a fund fee is given, the
     // reading Netto takes of it where no text names it as deductible, word for word, first.

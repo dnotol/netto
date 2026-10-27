@@ -104,8 +104,8 @@ public class PlanMapNeighbourhoodTests
     // The Map tab opened with a module chosen.
     private static async Task<LivePlan> MapAsync(RiverInputs river, RiverModule chosen)
     {
-        var page = LivePlan.At("http://localhost/plan/map", MapRendering.EveryKindShown(), river: river);
-        await page.LoadAsync("map");
+        var page = LivePlan.At("http://localhost/plan", MapRendering.EveryKindShown(), river: river);
+        await page.LoadAsync();
         var map = await page.FindAsync<MapTab>();
         await page.InvokeAsync(() => map.ChosenChanged.InvokeAsync(chosen));
         return page;

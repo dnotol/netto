@@ -33,12 +33,12 @@ public class MoveLinksTests
         MoveLinks.To(move, EveryLever).ShouldBe(new MoveLink(PlanTab.Plan, card));
     }
 
-    // The card a link opens is one the river's outline knows, by the name its fold is remembered under.
+    // The card a link opens is one the map knows, by the name its fold is remembered under.
     [Theory]
     [MemberData(nameof(Cards))]
     public void To_moveWithItsCardOnThePlanTab_linksACardOfTheRiversOrder(Move move, string card, Type _)
     {
-        (MoveLinks.To(move, EveryLever)?.Card, OutlineRows.Order.Contains(card)).ShouldBe((card, true));
+        (MoveLinks.To(move, EveryLever)?.Card, MapModules.Named(card) is not null).ShouldBe((card, true));
     }
 
     // The Plan tab, with the card to open on arrival.

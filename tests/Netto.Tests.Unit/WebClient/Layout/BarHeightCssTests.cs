@@ -99,12 +99,6 @@ public class BarHeightCssTests
             () => Regex.Count(script, @"\.disconnect\(\)").ShouldBe(2));
     }
 
-    [Fact]
-    public void RiverOutline_script_measuresAgainWhenTheBarChangesSize()
-    {
-        Read("src/Netto.Web/wwwroot/river-outline.js").ShouldContain(".bucket-bar");
-    }
-
     // The client's and the host's stylesheets, their comments left out.
     private static IEnumerable<string> Stylesheets() =>
         Projects

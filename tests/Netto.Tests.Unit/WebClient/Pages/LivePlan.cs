@@ -84,10 +84,11 @@ internal sealed class LivePlan : IAsyncDisposable
     }
 
     // The viewer follows a link to another tab of the page, which stays the same page: the router sets the
-    // page's Tab again, the segment after /plan/, none for the river, and the page draws what it now shows,
-    // its work after that draw included, with everything else it holds as it was.
+    // page's Tab again, the segment after /plan/, null for the plan itself, as the router sets a parameter
+    // the route matched has none for, and the page draws what it now shows, its work after that draw
+    // included, with everything else it holds as it was.
     public Task SwitchTabAsync(string? tab) =>
-        _renderer.SwitchAsync(tab is null ? ParameterView.Empty : ParameterView.FromDictionary(new Dictionary<string, object?> { ["Tab"] = tab }));
+        _renderer.SwitchAsync(ParameterView.FromDictionary(new Dictionary<string, object?> { ["Tab"] = tab }));
 
     // The browser paints what the page drew, and the page draws again what it did then: done once that is
     // drawn. A page whose work then fails rethrows its error, and one that draws nothing more fails rather

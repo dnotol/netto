@@ -1,23 +1,27 @@
 using System.Net;
+using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.DependencyInjection;
+using Netto.Core.Simulation;
 using Netto.Web.Client;
-using Netto.Web.Client.Pages;
 using Netto.Web.Client.River;
+using Netto.Web.Client.River.CompanyCar;
+using Netto.Web.Client.River.Copyright;
+using Netto.Web.Client.Tabs;
 using Shouldly;
 
 namespace Netto.Tests.WebClient.River;
 
 // A card's HTML read as a viewer reads it, for a test to hold a card to what it draws: the summary beside
 // its title and the rate it ends on, the text of its paragraphs, the lines of its figure and drain lists
-// and the order of the two, the bubbles, and any text a misspelt key leaves; one card cut out of the Plan
-// page, and that page drawn with every card open. It reads what the renderer writes (RiverRendering),
+// and the order of the two, the bubbles, and any text a misspelt key leaves; one card cut out of the
+// river's cards, and those cards drawn one after the other, every one open. It reads what the renderer writes (RiverRendering),
 // encoded or decoded alike. In sight is what a viewer reads: every text but what a bubble's text or an
 // element hidden holds, a folded body or a closed disclosure. What it reads is the card's figures and
 // its shape, never how many words it takes to say them.
 internal static class CardHtml
 {
-    // A day with an advance payment still to come, as the Plan page's own tests take.
+    // A day with an advance payment still to come, as the plan page's own tests take.
     private static readonly DateTimeOffset On23October = new(2026, 10, 23, 12, 0, 0, TimeSpan.Zero);
 
     // An element's start or end tag, its attributes quoted as they may hold a > once decoded, a comment,
@@ -50,30 +54,57 @@ internal static class CardHtml
     // What names or describes an element, where a key can leak as well as into a text.
     private static readonly string[] Naming = ["aria-label", "aria-valuetext", "title", "placeholder", "alt"];
 
-    // The Plan page on the river given, every card in it open as the outline's « Open all » leaves them:
-    // the folds inside the cards, their sources and their conditions, and the notes under the river stay
-    // folded. No plan is saved, so none is starred Today.
-    public static Task<string> RenderPlanOpenAsync(RiverInputs river) => RenderPlanOpenAsync(river, On23October);
+    // Every card the river draws on the river given, one after the other in the river's order, every one
+    // open as a viewer opens it, each handed the engine's refusal it holds as the plan hands it: the folds
+    // inside the cards, their sources and their conditions, stay folded.
+    public static Task<string> RenderCardsOpenAsync(RiverInputs river) => RenderCardsOpenAsync(river, On23October);
 
     // The same on the browser's clock at that instant, for a card that reads the date.
-    public static Task<string> RenderPlanOpenAsync(RiverInputs river, DateTimeOffset on)
+    public static async Task<string> RenderCardsOpenAsync(RiverInputs river, DateTimeOffset on)
     {
         var folds = new Folds(new BrowserStorage());
-        foreach (var card in OutlineRows.Order)
-            folds.Set(card, true);
+        foreach (var module in MapModules.Order)
+            folds.Set(MapModules.Name(module), true);
 
-        return RiverRendering.RenderAsync(typeof(Plan), folds, [], services =>
+        var run = river.Run();
+        var search = river.Company is null ? null : river.SearchSplit();
+        var html = new StringBuilder();
+        foreach (var (card, module) in Cards(river))
         {
-            var storage = new BrowserStorage();
-            var plans = new SavedPlans(storage);
-            services.AddSingleton<IBrowserStorage>(storage);
-            services.AddSingleton(plans);
-            services.AddSingleton(new RiverState(plans) { Inputs = river });
-            services.AddSingleton<TimeProvider>(new Clock(on));
-        });
+            var refused = run.Error is { } error && RiverErrors.Owner(error, river.Company is null) == module ? error : null;
+            var parameters = new Dictionary<string, object?> { ["Inputs"] = river, ["Run"] = run, ["Refused"] = refused };
+            if (card == typeof(SplitCard))
+                parameters["Search"] = search;
+
+            html.Append(await RiverRendering.RenderAsync(card, folds, parameters, services => services.AddSingleton<TimeProvider>(new Clock(on))));
+        }
+
+        return html.ToString();
     }
 
-    // One card of a page by its fold's name (OutlineRows.Order), with all it holds.
+    // The cards the river draws, in its order: Company year, the levers in the plan, the split while the
+    // river holds the company's year, the royalty in the plan, then Director pay, Corporate tax and Dividend.
+    private static IEnumerable<(Type Card, RiverModule Module)> Cards(RiverInputs river)
+    {
+        yield return (typeof(CompanyYearCard), RiverModule.CompanyYear);
+        if (river.InPlan(OptionalModule.Vouchers))
+            yield return (typeof(VoucherCard), RiverModule.Vouchers);
+        if (river.InPlan(OptionalModule.Allowances))
+            yield return (typeof(AllowanceCard), RiverModule.Allowances);
+        if (river.InPlan(OptionalModule.Rent))
+            yield return (typeof(RentCard), RiverModule.Rent);
+        if (river.InPlan(OptionalModule.Car))
+            yield return (typeof(CarCard), RiverModule.Car);
+        if (river.Company is not null)
+            yield return (typeof(SplitCard), RiverModule.Split);
+        if (river.InPlan(OptionalModule.Copyright))
+            yield return (typeof(CopyrightCard), RiverModule.Copyright);
+        yield return (typeof(DirectorPayCard), RiverModule.DirectorPay);
+        yield return (typeof(CorporateTaxCard), RiverModule.CorporateTax);
+        yield return (typeof(DividendCard), RiverModule.Dividend);
+    }
+
+    // One card of the river's by its fold's name (MapModules.Name), with all it holds.
     public static string Card(string html, string name) => ById(html, $"card-{name}");
 
     // What the card's heading says beside its title, without the rate it ends on; none without a summary.

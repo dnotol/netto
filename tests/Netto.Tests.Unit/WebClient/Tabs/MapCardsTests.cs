@@ -24,7 +24,7 @@ public class MapCardsTests
         var river = River(name);
         var links = MapLinks.Of(river, river.Run());
 
-        var html = await CardHtml.RenderPlanOpenAsync(river);
+        var html = await CardHtml.RenderCardsOpenAsync(river);
 
         links.ShouldNotBeEmpty();
         links.Where(link => !Drawn(html, link.Card).Contains(Unsigned(Formats.Euros(link.Amount!.Value))))
@@ -41,7 +41,7 @@ public class MapCardsTests
         var river = River(name);
         var lines = MapView.From(river, river.Run()).Bundles().Where(line => line.Amount is not null).ToList();
 
-        var html = await CardHtml.RenderPlanOpenAsync(river);
+        var html = await CardHtml.RenderCardsOpenAsync(river);
 
         lines.ShouldSatisfyAllConditions(
             () => lines.ShouldContain(line => line.Links.Count > 1),

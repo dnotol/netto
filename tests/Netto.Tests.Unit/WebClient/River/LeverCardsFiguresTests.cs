@@ -156,9 +156,9 @@ public class LeverCardsFiguresTests
 
     [Theory]
     [MemberData(nameof(FilledPlans))]
-    public async Task RenderPlanOpenAsync_filledPlan_leavesNoKeyOnThePage(NamedRiver river)
+    public async Task RenderCardsOpenAsync_filledPlan_leavesNoKeyOnThePage(NamedRiver river)
     {
-        CardHtml.LeakedKeys(await CardHtml.RenderPlanOpenAsync(river.Inputs)).ShouldBeEmpty();
+        CardHtml.LeakedKeys(await CardHtml.RenderCardsOpenAsync(river.Inputs)).ShouldBeEmpty();
     }
 
     // What an open card keeps in sentences is what its figures cannot say: the bounds under its fields,
@@ -342,7 +342,7 @@ public class LeverCardsFiguresTests
             services => services.AddSingleton<IComponentActivator>(new OpenDisclosures())));
     }
 
-    private static async Task<string> OpenCardAsync(NamedRiver river, string card) => CardHtml.Card(await CardHtml.RenderPlanOpenAsync(river.Inputs), card);
+    private static async Task<string> OpenCardAsync(NamedRiver river, string card) => CardHtml.Card(await CardHtml.RenderCardsOpenAsync(river.Inputs), card);
 
     // An amount without the sign a line gives what it takes or what comes back: −€400.00 is €400.00.
     private static string Unsigned(string amount) => amount.TrimStart('−', '+');

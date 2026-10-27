@@ -17,8 +17,8 @@ public class PlanMapQuietTests
     [Fact]
     public async Task Plan_aQuietLeverChosenGivenItsAmounts_getsItsBoxBackInItsPlaceAndStaysChosen()
     {
-        await using var page = LivePlan.At("http://localhost/plan/map", new BrowserStorage(), river: ChainEmpty);
-        await page.LoadAsync("map");
+        await using var page = LivePlan.At("http://localhost/plan", new BrowserStorage(), river: ChainEmpty);
+        await page.LoadAsync();
         var map = await page.FindAsync<MapTab>();
         await page.InvokeAsync(() => map.ChosenChanged.InvokeAsync(RiverModule.Allowances));
 

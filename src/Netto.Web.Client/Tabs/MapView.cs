@@ -333,7 +333,7 @@ internal sealed record MapLink(MapLinkKind Kind, MapEnd From, MapEnd To, RiverMo
     public bool Touches(RiverModule module) => From.Module == module || To.Module == module || Through.Contains(module);
 }
 
-// The river's modules as the map places them, in the river's order, the outline's (OutlineRows.Order),
+// The river's modules as the map places them, in the river's order,
 // each by its card's fold name, which the map's elements are named after. A module the river gains is
 // added here, or the map fails a test (MapModulesTests).
 internal static class MapModules
@@ -352,7 +352,11 @@ internal static class MapModules
         RiverModule.Dividend,
     ];
 
-    // The card's fold name, its row's name in the river's outline.
+    // The module a card's fold name names, as a link to the plan names it (CardLinks), none for a name no
+    // module has.
+    public static RiverModule? Named(string card) => Order.Where(module => Name(module) == card).Cast<RiverModule?>().FirstOrDefault();
+
+    // The card's fold name, which the map's elements and a link to the plan name it by.
     public static string Name(RiverModule module) => module switch
     {
         RiverModule.CompanyYear => "company-year",

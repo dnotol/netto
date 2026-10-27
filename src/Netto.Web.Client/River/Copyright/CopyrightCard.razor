@@ -21,7 +21,7 @@
    the part beyond going on to Director pay. Where no text settles a point, the reading Netto takes is in
    its details, above the sources. An optional module: it shows only while in the plan, and the word at
    its bottom takes it out, its values kept. Skipped with the company. *@
-<ModuleCard Name="@ModuleFolds.Name(OptionalModule.Copyright)" Title="@L["Title"]" Summary="@Summary" Glance="@Glance" ToYou="@_view?.ToYou" Help="@L["Hint"]" Waiting="Inputs.Company is null"
+<ModuleCard Name="@ModuleFolds.Name(OptionalModule.Copyright)" Title="@L["Title"]" Summary="@Summary" ToYou="@_view?.ToYou" Help="@L["Hint"]" Waiting="Inputs.Company is null"
             Refused="@Refused" Details="@Details" Sources="@(_view?.Details ?? [])" IncomeYear="Inputs.IncomeYear" RemoveLabel="@L["Remove"]" OnRemove="Remove">
     <Disclosure Title="@L["SituationTitle"]" Values="@SettingWords.Of(L, _settings.Situation)" Refused="@CopyrightSettingsView.SituationHolds(Refused)"
                 OpenByDefault="@_settings.NeedsFacts">
@@ -114,8 +114,6 @@
         ? L[CopyrightCardText.Summary(view), Formats.Euros(view.AfterTax), Formats.Euros(view.Result.TaxedAsPay)].Value
         : null;
 
-    // The summary's first figure, for the card's row in the river's outline.
-    private CardGlance? Glance => _view is { } view ? CopyrightCardText.Glance(view) : null;
 
     // Where no text settles a point, the reading Netto takes, word for word above the sources.
     private RenderFragment? Details => _view is { Details.Count: > 0 }
