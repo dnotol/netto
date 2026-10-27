@@ -62,25 +62,70 @@ public class ThemePreferenceTests
         reloaded.Current.ShouldBe(ThemeMode.Light);
     }
 
+    // The system's setting changes while the page is open: the page tells the preference, which watches it
+    // from the start.
     [Fact]
-    public void SystemChanged_nothingPicked_isFollowed()
+    public void SystemChange_nothingPicked_isFollowed()
     {
-        var theme = new ThemePreference(new BrowserStorage(), new Page(systemPrefersLight: false));
+        var page = new Page(systemPrefersLight: false);
+        var theme = new ThemePreference(new BrowserStorage(), page);
 
-        theme.SystemChanged(prefersLight: true);
+        page.ChangeSystem(prefersLight: true);
 
         theme.Current.ShouldBe(ThemeMode.Light);
     }
 
     [Fact]
-    public void SystemChanged_afterAPick_isIgnored()
+    public void SystemChange_afterAPick_isIgnored()
     {
-        var theme = new ThemePreference(new BrowserStorage(), new Page(systemPrefersLight: false));
+        var page = new Page(systemPrefersLight: false);
+        var theme = new ThemePreference(new BrowserStorage(), page);
         theme.Switch();
 
-        theme.SystemChanged(prefersLight: false);
+        page.ChangeSystem(prefersLight: false);
 
         theme.Current.ShouldBe(ThemeMode.Light);
+    }
+
+    // What draws in the theme from outside the page's root, MudBlazor's palette in the layout, hears of each
+    // change, whoever made it.
+    [Fact]
+    public void SystemChange_nothingPicked_tellsListeners()
+    {
+        var page = new Page(systemPrefersLight: false);
+        var theme = new ThemePreference(new BrowserStorage(), page);
+        var told = 0;
+        theme.Changed += () => told++;
+
+        page.ChangeSystem(prefersLight: true);
+
+        told.ShouldBe(1);
+    }
+
+    [Fact]
+    public void SystemChange_afterAPick_tellsNoOne()
+    {
+        var page = new Page(systemPrefersLight: false);
+        var theme = new ThemePreference(new BrowserStorage(), page);
+        theme.Switch();
+        var told = 0;
+        theme.Changed += () => told++;
+
+        page.ChangeSystem(prefersLight: true);
+
+        told.ShouldBe(0);
+    }
+
+    [Fact]
+    public void Switch_tellsListeners()
+    {
+        var theme = new ThemePreference(new BrowserStorage(), new Page(systemPrefersLight: false));
+        var told = 0;
+        theme.Changed += () => told++;
+
+        theme.Switch();
+
+        told.ShouldBe(1);
     }
 
     [Fact]
@@ -96,24 +141,24 @@ public class ThemePreferenceTests
     }
 
     [Fact]
-    public void SystemChanged_nothingPicked_showsTheSystemsTheme()
+    public void SystemChange_nothingPicked_showsTheSystemsTheme()
     {
         var page = new Page(systemPrefersLight: false);
-        var theme = new ThemePreference(new BrowserStorage(), page);
+        _ = new ThemePreference(new BrowserStorage(), page);
 
-        theme.SystemChanged(prefersLight: true);
+        page.ChangeSystem(prefersLight: true);
 
         page.Shown.ShouldBe([ThemeMode.Light]);
     }
 
     [Fact]
-    public void SystemChanged_afterAPick_showsNothing()
+    public void SystemChange_afterAPick_showsNothing()
     {
         var page = new Page(systemPrefersLight: false);
         var theme = new ThemePreference(new BrowserStorage(), page);
         theme.Switch();
 
-        theme.SystemChanged(prefersLight: true);
+        page.ChangeSystem(prefersLight: true);
 
         page.Shown.ShouldBe([ThemeMode.Light]);
     }
@@ -146,12 +191,24 @@ public class ThemePreferenceTests
             .ShouldBe((ThemeMode.Light, ThemeMode.Dark));
     }
 
+    // The system's setting starts as given and changes when the test says so, as the browser's would.
     private sealed class Page(bool systemPrefersLight) : IThemePage
     {
+        private readonly List<Action<bool>> _watchers = [];
+
         public List<ThemeMode> Shown { get; } = [];
 
-        public bool SystemPrefersLight { get; } = systemPrefersLight;
+        public bool SystemPrefersLight { get; private set; } = systemPrefersLight;
 
         public void Show(ThemeMode theme) => Shown.Add(theme);
+
+        public void WatchSystem(Action<bool> changed) => _watchers.Add(changed);
+
+        public void ChangeSystem(bool prefersLight)
+        {
+            SystemPrefersLight = prefersLight;
+            foreach (var watcher in _watchers)
+                watcher(prefersLight);
+        }
     }
 }

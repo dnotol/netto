@@ -1,12 +1,14 @@
 ﻿@inherits LayoutComponentBase
+@implements IDisposable
 @using Netto.Web.Client.Pages
 @inject IStringLocalizer<MainLayout> L
 @inject NavigationManager Navigation
 @inject ThemePreference ThemePreference
 
 @* The theme is the viewer's (ThemePreference): MudBlazor must not follow the system on its own, or it
-   would undo a pick; the system's changes come through WatchSystemDarkModeAsync instead. *@
-<MudThemeProvider @ref="_themeProvider" Theme="NettoTheme.Theme" IsDarkMode="ThemePreference.IsDark" ObserveSystemDarkModeChange="false" />
+   would undo a pick. ThemePreference watches the system's setting itself (BrowserThemePage), and the
+   layout draws again each time it changes the theme. *@
+<MudThemeProvider Theme="NettoTheme.Theme" IsDarkMode="ThemePreference.IsDark" ObserveSystemDarkModeChange="false" />
 <MudPopoverProvider />
 
 @* .netto-app is also the signal app.css uses to hide the boot splash. *@
@@ -69,18 +71,11 @@
 
     private bool OnFrontPage => FrontPage.IsAt(Navigation.ToBaseRelativePath(Navigation.Uri));
 
-    private MudThemeProvider _themeProvider = default!;
+    protected override void OnInitialized() => ThemePreference.Changed += OnThemeChanged;
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-            await _themeProvider.WatchSystemDarkModeAsync(SystemChangedAsync);
-    }
+    public void Dispose() => ThemePreference.Changed -= OnThemeChanged;
 
-    // Followed only while the viewer has picked no theme (ThemePreference).
-    private Task SystemChangedAsync(bool systemIsDark) => InvokeAsync(() =>
-    {
-        ThemePreference.SystemChanged(prefersLight: !systemIsDark);
-        StateHasChanged();
-    });
+    // The system's setting followed while nothing is picked, or the header's switch: MudBlazor's palette
+    // takes the theme now shown.
+    private void OnThemeChanged() => _ = InvokeAsync(StateHasChanged);
 }

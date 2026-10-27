@@ -126,5 +126,9 @@ public class MainLayoutTests
         public void Show(ThemeMode theme)
         {
         }
+
+        public void WatchSystem(Action<bool> changed)
+        {
+        }
     }
 }
