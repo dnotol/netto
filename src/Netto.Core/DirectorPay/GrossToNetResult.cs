@@ -21,8 +21,9 @@ namespace Netto.Core.DirectorPay;
 // statement's withholding; TaxablePayWithoutRequalified is the taxable pay as it would be without it,
 // what art. 215's minimum pay reads. TaxedApartTax is what an income taxed apart adds to the year's tax
 // on top of the pay and the rent. In a household taxed jointly, the taxes, the credit and the balance
-// are what the director's income adds to the household's tax, the partner's own tax and withholding
-// left out, and Household holds the household's year beside them; none for a director taxed alone.
+// are the river's share of the household's tax, what the partner would owe filing alone and their
+// withholding left out, and Household holds the household's year beside them; none for a director
+// taxed alone.
 public sealed record GrossToNetResult(
     int IncomeYear,
     Region Region,
@@ -58,13 +59,13 @@ public sealed record GrossToNetResult(
 }
 
 // The year's joint assessment of a household (CIR 92 art. 126): Year, the two partners' columns on the
-// whole year's income, the partner's own professional income included; PartnerOwn, the household's tax
-// on the partner's own income alone, the director earning nothing, which the pay, the river and the
-// balance leave out as the partner's; and QuotientSaves, what the marital quotient saves the director's
-// share of the household's income tax and municipal surcharge: that share were the quotient not
-// applied to the year, the partner's own tax alone left as it is, less the share with it, which is the
+// whole year's income, the partner's own professional income included; PartnerAlone, what the partner
+// would owe filing alone on their own net professional income, a single taxpayer with no quotient and
+// no dependants, which the pay, the river and the balance leave out as the partner's; and QuotientSaves,
+// what the marital quotient saves the director's share of the household's income tax and municipal
+// surcharge: that share were the quotient not applied to the year, less the share with it, which is the
 // household's tax without the quotient less with it, nothing in a year it attributes nothing.
-public sealed record HouseholdTax(JointAssessment Year, PersonalTaxResult PartnerOwn, decimal QuotientSaves);
+public sealed record HouseholdTax(JointAssessment Year, PersonalTaxResult PartnerAlone, decimal QuotientSaves);
 
 // What another income taxed with the pay, a home office's net rent (Income), adds to the year's
 // personal tax: the income tax and the municipal surcharge on the total less the pay's own, the credit

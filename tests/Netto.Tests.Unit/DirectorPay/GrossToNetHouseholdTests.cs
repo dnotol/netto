@@ -8,11 +8,11 @@ using static Netto.Tests.Support.Fixtures;
 namespace Netto.Tests.DirectorPay;
 
 // The pay of a director taxed jointly with a spouse or legal cohabitant. What the pay, the river and the
-// assessment's balance count is what the director's income adds to the household's tax: the joint
-// tax with it less the joint tax on the partner's own income alone, which is the partner's and left
-// out, as is what was withheld on it (decided by the operator, 2026-10-28). The household's two columns
-// and what the quotient saves are beside it. Income year 2026 at a 7% municipal rate; the joint tax
-// itself is pinned by PersonalTaxCalculatorJointTests, so these hold the pay to it.
+// assessment's balance count is the household's joint tax less what the partner would owe filing alone
+// on their own income, which is the partner's and left out, as is what was withheld on it (decided by the
+// operator, 2026-10-28, the baseline the partner filing alone since 2026-10-29). The household's two
+// columns and what the quotient saves are beside it. Income year 2026 at a 7% municipal rate; the joint
+// tax itself is pinned by PersonalTaxCalculatorJointTests, so these hold the pay to it.
 public class GrossToNetHouseholdTests
 {
     private static readonly PersonalTaxRules Rules = PersonalTaxRules.IncomeYear2026;
@@ -29,7 +29,7 @@ public class GrossToNetHouseholdTests
     private static PersonalTaxResult JointTaxOn(GrossToNetResult pay, Household household) =>
         PersonalTaxCalculator.Compute(Rules, pay.TaxablePay, pay.SocialContributions + pay.FundFee, 0.07m, household: household);
 
-    private static PersonalTaxResult PartnerAlone(Household household) => PersonalTaxCalculator.Compute(Rules, 0m, 0m, 0.07m, household: household);
+    private static PersonalTaxResult PartnerAlone(Household household) => PersonalTaxCalculator.PartnerAlone(Rules, household.PartnerIncome, 0.07m);
 
     [Fact]
     public void Compute_partnerWithoutIncome_isTheHouseholdsJointTax()
@@ -52,15 +52,42 @@ public class GrossToNetHouseholdTests
     }
 
     // The household's columns are the whole year's, the partner's own income included, and beside them
-    // what the partner's income alone costs the household, which the pay leaves out.
+    // what the partner would owe filing alone, which the pay leaves out.
     [Fact]
-    public void Compute_partnerWithOwnIncome_holdsTheHouseholdsColumnsAndThePartnersOwnTax()
+    public void Compute_partnerWithOwnIncome_holdsTheHouseholdsColumnsAndThePartnerFilingAlone()
     {
         var pay = Compute(60_000m, Withheld, EarningPartner);
 
         var household = pay.Household.ShouldNotBeNull();
         household.Year.ShouldBe(JointTaxOn(pay, EarningPartner).Joint);
-        household.PartnerOwn.ShouldBe(PartnerAlone(EarningPartner));
+        household.PartnerAlone.ShouldBe(PartnerAlone(EarningPartner));
+    }
+
+    // A partner earning 30% or more of the two together is attributed nothing, and both partners' incomes
+    // exceed their tax-free amounts: the couple pays what two single people pay, so declaring the partner
+    // leaves the pay's tax as it is, the municipal surcharge, taken once on the household's tax, within a
+    // cent. Measured against the household with the director earning nothing, the pay was charged the
+    // quotient that household would give the partner, 4,686.06 less in the pocket at this pay.
+    [Theory]
+    [InlineData(30_000)]
+    [InlineData(40_000)]
+    public void Compute_partnerEarning30PercentOrMore_leavesThePaysTaxAsAlone(int partnerIncome)
+    {
+        var pay = Compute(60_000m, Withheld, new Household(HouseholdStatus.MarriedOrLegalCohabitant, partnerIncome));
+        var alone = Compute(60_000m, Withheld);
+
+        pay.IncomeTax.ShouldBe(alone.IncomeTax);
+        Math.Abs(pay.NetInPocket - alone.NetInPocket).ShouldBeLessThanOrEqualTo(0.01m);
+    }
+
+    // A partner earning a little, under 30% of the two together, is topped up from the director's income
+    // by the quotient, which the pay keeps: more in the pocket than alone.
+    [Fact]
+    public void Compute_partnerEarningALittle_leavesMoreInThePocketThanAlone()
+    {
+        var pay = Compute(60_000m, Withheld, new Household(HouseholdStatus.MarriedOrLegalCohabitant, 10_000m));
+
+        pay.NetInPocket.ShouldBeGreaterThan(Compute(60_000m, Withheld).NetInPocket);
     }
 
     // The balance is what the director's income adds, never the partner's own tax: the final tax is the

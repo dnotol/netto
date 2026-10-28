@@ -144,6 +144,23 @@ public static class PersonalTaxCalculator
             director.TaxedApart) { Joint = new JointAssessment(director, partner) };
     }
 
+    // What the partner would owe filing alone, the river's baseline in a joint year (GrossToNet): a single
+    // taxpayer on their own net professional income, typed net so no flat-rate costs come off it, with
+    // their own tax-free amount, no quotient and no dependants, which are the household's, and no credit
+    // for low earned income, which the joint assessment counts for the director alone (decided 2026-10-29).
+    internal static PersonalTaxResult PartnerAlone(PersonalTaxRules rules, decimal partnerIncome, decimal municipalRate)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(partnerIncome, 0m);
+
+        var partner = Column(
+            rules, municipalRate, professionalIncome: partnerIncome, quotient: 0m, otherIncome: 0m, taxableIncome: partnerIncome,
+            taxFreeAmount: rules.TaxFreeAmount.Value, taxApart: 0m);
+
+        return new PersonalTaxResult(
+            0m, partnerIncome, partner.BasicTax, partner.TaxFreeAmountReduction, partner.StateTax, partner.ReducedStateTax, partner.RegionalAdditionalTax,
+            partner.IncomeTax, partner.MunicipalSurcharge, 0m);
+    }
+
     // What the marital quotient attributes to a partner out of the other's professional income: what
     // tops their own up to the rate of the two together, never more than the cap. Two readings of art. 88
     // hold the cap differently: the law's words cap the share attributed (« une quote-part … sans pouvoir

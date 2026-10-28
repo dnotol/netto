@@ -45,12 +45,14 @@ namespace Netto.Core.DirectorPay;
 //
 // A director taxed jointly with a spouse or legal cohabitant is taxed in the household's joint
 // assessment (PersonalTaxCalculator). What the pay, the year's figures and the assessment's balance count
-// is what the director's income adds to the household's tax: the joint tax with it, less the joint tax
-// on the partner's own professional income alone, which is the partner's, as what was withheld on it
-// is (decided by the operator, 2026-10-28). So the surcharge's base is the pay's share of the household's
-// tax (art. 157 and 158, which take director pay apart), and the river never counts the partner's own
-// tax. The household's two columns, that tax of the partner alone and what the marital quotient saves
-// are beside them (Household).
+// is the river's share of the household's tax: the joint tax, less what the partner would owe filing
+// alone on their own professional income (PersonalTaxCalculator.PartnerAlone), which is the partner's,
+// as what was withheld on it is (decided by the operator, 2026-10-28; the baseline the partner filing
+// alone rather than the household with the director earning nothing since 2026-10-29, which gave the
+// partner a quotient towards the director the pay was then charged with). So the surcharge's base is the
+// pay's share of the household's tax (art. 157 and 158, which take director pay apart), and the river
+// never counts the partner's own tax. The household's two columns, the partner filing alone and what the
+// marital quotient saves are beside them (Household).
 public static class GrossToNet
 {
     public static readonly Refusal GrossPayNegative = new("gross_pay_negative", RefusedInput.DirectorPay);
@@ -149,23 +151,21 @@ public static class GrossToNet
             figures.TaxedApartTax) { Household = HouseholdOf(taxRules, figures, municipalRate.Value, withPay, household) }, null);
     }
 
-    // The household's year beside the pay's: its two columns on the whole income, what the partner's own
-    // income alone costs it, and what the marital quotient saves the pay's share of the household's tax:
-    // that share were the quotient not applied to the year, the partner's own tax alone left as it is,
-    // less the share with it, which is the household's tax without the quotient less with it. Taking the
-    // partner's tax alone without the quotient too would credit the quotient with what it saves the
-    // partner on their own, and say it costs a year it attributes nothing. The credit for low earned
-    // income is the same either way. None for a director taxed alone.
+    // The household's year beside the pay's: its two columns on the whole income, what the partner would
+    // owe filing alone, and what the marital quotient saves the pay's share of the household's tax: that
+    // share were the quotient not applied to the year, less the share with it, which is the household's tax
+    // without the quotient less with it, the partner filing alone being the baseline of both. The credit
+    // for low earned income is the same either way. None for a director taxed alone.
     private static HouseholdTax? HouseholdOf(PersonalTaxRules taxRules, Figures figures, decimal municipalRate, TaxedWithPay withPay, Household household)
     {
-        if (figures.PartnerOwn is not { } partnerOwn || figures.YearTax.Joint is not { } year)
+        if (figures.PartnerAlone is not { } partnerAlone || figures.YearTax.Joint is not { } year)
             return null;
 
         var without = PersonalTaxCalculator.WithoutQuotient(
             taxRules, figures.TaxablePay, figures.SocialContributions + figures.FundFee, municipalRate, withPay.OtherIncome, withPay.Movable.TaxedApart, household);
-        var shareWithout = without.IncomeTax + without.MunicipalSurcharge - partnerOwn.IncomeTax - partnerOwn.MunicipalSurcharge;
+        var shareWithout = without.IncomeTax + without.MunicipalSurcharge - partnerAlone.IncomeTax - partnerAlone.MunicipalSurcharge;
 
-        return new HouseholdTax(year, partnerOwn, Money.Minus(shareWithout, figures.YearTax.IncomeTax + figures.YearTax.MunicipalSurcharge));
+        return new HouseholdTax(year, partnerAlone, Money.Minus(shareWithout, figures.YearTax.IncomeTax + figures.YearTax.MunicipalSurcharge));
     }
 
     // The pay's figures alone, for the split's search, which runs the year at a hundred pays and more
@@ -332,9 +332,8 @@ public static class GrossToNet
     // it; YearTax and YearAdvancePayments are on the whole income, the same as the pay's when nothing
     // else is taxed with it; OtherIncomeTax is what the rent adds to the pay, and TaxedApartTax what an
     // income taxed apart adds on top of both. In a household taxed jointly, Tax and YearTax are what the
-    // director's income adds to the household's tax, their Joint the household's whole columns, and
-    // PartnerOwn the household's tax on the partner's own income alone, which they leave out; none for a
-    // director taxed alone.
+    // river's share of the household's tax, their Joint the household's whole columns, and PartnerAlone
+    // what the partner would owe filing alone, which they leave out; none for a director taxed alone.
     internal sealed record Figures(
         decimal GrossPay,
         decimal SocialContributions,
@@ -353,7 +352,7 @@ public static class GrossToNet
         IncomeTaxAdvancePaymentResult YearAdvancePayments,
         OtherIncomeTax OtherIncomeTax,
         OtherIncomeTax TaxedApartTax,
-        PersonalTaxResult? PartnerOwn)
+        PersonalTaxResult? PartnerAlone)
     {
         // What the director declares as pay: the gross, what the company bore for them, the benefits
         // in kind (cadre XVI, 1) and movable income taxed as pay (Tax-Calc T18).
@@ -387,15 +386,15 @@ public static class GrossToNet
             var withholding = PeriodsOf(withholdingRules, Money.RoundToCent((taxablePay - asPay) / YearParts.Months), WithholdingHouseholds.Of(household));
             var withheld = prepayments.Withheld ?? withholding.Sum(period => period.Withholding.MonthlyWithholding * period.MonthCount);
             var withWithheld = prepayments with { Withheld = withheld };
-            var partnerOwn = household.TaxedJointly ? PersonalTaxCalculator.Compute(taxRules, 0m, 0m, municipalRate, household: household) : null;
-            var tax = Share(PersonalTaxCalculator.Compute(taxRules, taxablePay, ownContributions, municipalRate, household: household), partnerOwn);
+            var partnerAlone = household.TaxedJointly ? PersonalTaxCalculator.PartnerAlone(taxRules, household.PartnerIncome, municipalRate) : null;
+            var tax = Share(PersonalTaxCalculator.Compute(taxRules, taxablePay, ownContributions, municipalRate, household: household), partnerAlone);
             var advancePayments = IncomeTaxAdvancePaymentCalculator.Figures(taxRules.AdvancePayments, tax.IncomeTax, tax.LowEarnedIncomeCredit, withWithheld);
             var (withOther, withOtherAdvancePayments) = withPay.OtherIncome == 0m
                 ? (tax, advancePayments)
-                : YearOf(taxRules, taxablePay, ownContributions, municipalRate, withPay with { Movable = movable with { TaxedApart = null } }, tax, withWithheld, household, partnerOwn);
+                : YearOf(taxRules, taxablePay, ownContributions, municipalRate, withPay with { Movable = movable with { TaxedApart = null } }, tax, withWithheld, household, partnerAlone);
             var (yearTax, yearAdvancePayments) = movable.TaxedApart is null
                 ? (withOther, withOtherAdvancePayments)
-                : YearOf(taxRules, taxablePay, ownContributions, municipalRate, withPay, tax, withWithheld, household, partnerOwn);
+                : YearOf(taxRules, taxablePay, ownContributions, municipalRate, withPay, tax, withWithheld, household, partnerAlone);
 
             // The contributions and the fee come off the pocket when the director pays them; when the
             // company does, they are pay that goes straight back out, so the pocket starts from the
@@ -414,22 +413,22 @@ public static class GrossToNet
                 yearAdvancePayments,
                 Added(withPay.OtherIncome, withOther, withOtherAdvancePayments, tax, advancePayments),
                 Added(movable.TaxedApartIncome, yearTax, yearAdvancePayments, withOther, withOtherAdvancePayments),
-                partnerOwn);
+                partnerAlone);
         }
 
-        // What the director's income adds to the household's tax: each line less the household's on the
-        // partner's own income alone, the household's columns kept whole; the tax itself for a director
-        // taxed alone. The partner has no credit, so the credit is the director's either way.
-        private static PersonalTaxResult Share(PersonalTaxResult tax, PersonalTaxResult? partnerOwn) => partnerOwn is null ? tax : tax with
+        // The river's share of the household's tax: each line less what the partner would owe filing alone,
+        // the household's columns kept whole; the tax itself for a director taxed alone. The partner has no
+        // credit for low earned income, so it is the director's either way.
+        private static PersonalTaxResult Share(PersonalTaxResult tax, PersonalTaxResult? partnerAlone) => partnerAlone is null ? tax : tax with
         {
-            BasicTax = Money.Minus(tax.BasicTax, partnerOwn.BasicTax),
-            TaxFreeAmountReduction = Money.Minus(tax.TaxFreeAmountReduction, partnerOwn.TaxFreeAmountReduction),
-            StateTax = Money.Minus(tax.StateTax, partnerOwn.StateTax),
-            ReducedStateTax = Money.Minus(tax.ReducedStateTax, partnerOwn.ReducedStateTax),
-            RegionalAdditionalTax = Money.Minus(tax.RegionalAdditionalTax, partnerOwn.RegionalAdditionalTax),
-            IncomeTax = Money.Minus(tax.IncomeTax, partnerOwn.IncomeTax),
-            MunicipalSurcharge = Money.Minus(tax.MunicipalSurcharge, partnerOwn.MunicipalSurcharge),
-            LowEarnedIncomeCredit = Money.Minus(tax.LowEarnedIncomeCredit, partnerOwn.LowEarnedIncomeCredit),
+            BasicTax = Money.Minus(tax.BasicTax, partnerAlone.BasicTax),
+            TaxFreeAmountReduction = Money.Minus(tax.TaxFreeAmountReduction, partnerAlone.TaxFreeAmountReduction),
+            StateTax = Money.Minus(tax.StateTax, partnerAlone.StateTax),
+            ReducedStateTax = Money.Minus(tax.ReducedStateTax, partnerAlone.ReducedStateTax),
+            RegionalAdditionalTax = Money.Minus(tax.RegionalAdditionalTax, partnerAlone.RegionalAdditionalTax),
+            IncomeTax = Money.Minus(tax.IncomeTax, partnerAlone.IncomeTax),
+            MunicipalSurcharge = Money.Minus(tax.MunicipalSurcharge, partnerAlone.MunicipalSurcharge),
+            LowEarnedIncomeCredit = Money.Minus(tax.LowEarnedIncomeCredit, partnerAlone.LowEarnedIncomeCredit),
         };
 
         // What an income moves from the figures without it to those with it: the income tax and the
@@ -451,10 +450,10 @@ public static class GrossToNet
         // fund's fee.
         private static (PersonalTaxResult Tax, IncomeTaxAdvancePaymentResult AdvancePayments) YearOf(
             PersonalTaxRules taxRules, decimal taxablePay, decimal ownContributions, decimal municipalRate, TaxedWithPay withPay, PersonalTaxResult payTax,
-            TaxPrepayments prepayments, Household household, PersonalTaxResult? partnerOwn)
+            TaxPrepayments prepayments, Household household, PersonalTaxResult? partnerAlone)
         {
             var yearTax = Share(
-                PersonalTaxCalculator.Compute(taxRules, taxablePay, ownContributions, municipalRate, withPay.OtherIncome, withPay.Movable.TaxedApart, household), partnerOwn);
+                PersonalTaxCalculator.Compute(taxRules, taxablePay, ownContributions, municipalRate, withPay.OtherIncome, withPay.Movable.TaxedApart, household), partnerAlone);
             return (yearTax, IncomeTaxAdvancePaymentCalculator.Figures(taxRules.AdvancePayments, payTax.IncomeTax, yearTax.LowEarnedIncomeCredit, prepayments));
         }
     }
