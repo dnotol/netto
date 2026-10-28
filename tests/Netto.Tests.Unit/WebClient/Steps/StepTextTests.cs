@@ -273,6 +273,34 @@ public class StepTextTests
     }
 
     // The company of the river's example with nothing prepaid and nothing withheld, so the surcharges are among its steps.
+    // The reductions for dependants, each line and each amount the withholding can cite: every row of
+    // n° 38's table and the amount beyond it, n° 39's two and n° 40, 1's, under either method.
+    public static TheoryData<int, int, int, bool, bool> DependantsWithholdingCases => new()
+    {
+        { 1, 0, 0, true, false },
+        { 2, 1, 0, false, true },
+        { 3, 0, 1, true, false },
+        { 4, 0, 0, false, false },
+        { 5, 0, 0, false, false },
+        { 6, 0, 0, false, false },
+        { 7, 0, 0, false, false },
+        { 8, 0, 0, false, false },
+        { 9, 0, 0, false, true },
+    };
+
+    [Theory]
+    [MemberData(nameof(DependantsWithholdingCases))]
+    public void StepDetailsResx_everyKeyOfTheDependantsWithholding_hasAText(int children, int aged66InCare, int others, bool singleParent, bool partnerWithoutIncome)
+    {
+        var dependants = new Dependants(children, SingleParent: singleParent, DependantsAged66InCare: aged66InCare, OtherDependants: others);
+        var household = (partnerWithoutIncome ? new Household(HouseholdStatus.MarriedOrLegalCohabitant) : Household.None) with { Dependants = dependants };
+
+        var (value, _) = GrossToNet.Compute(2026, 120_000m, MunicipalRates.IncomeYear2026.Entered(0.07m), TaxPrepayments.AsWithheld, household: household);
+        var view = GrossToNetView.From(value.ShouldNotBeNull());
+
+        MissingTexts(view.Withholding.Select(period => period.Detail)).ShouldBeEmpty();
+    }
+
     private static Scenario Unprepaid(decimal directorPay, WithholdingCategory category) =>
         Scenario(directorPay: directorPay, category: category, advancePayments: AdvancePayments.None, taxPrepayments: TaxPrepayments.None);
 

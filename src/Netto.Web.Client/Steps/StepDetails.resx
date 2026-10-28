@@ -342,6 +342,15 @@
   <data name="Line_joint_tax_free_amount_reduction" xml:space="preserve">
     <value>Tax on both tax-free amounts, taken off</value>
   </data>
+  <data name="Line_children_reduction" xml:space="preserve">
+    <value>Reduction for dependent children</value>
+  </data>
+  <data name="Line_dependants_reduction" xml:space="preserve">
+    <value>Reduction for other dependants</value>
+  </data>
+  <data name="Line_single_parent_reduction" xml:space="preserve">
+    <value>Reduction for a single parent</value>
+  </data>
   <data name="Line_annual_tax" xml:space="preserve">
     <value>Annual tax, never below zero</value>
   </data>
@@ -416,6 +425,42 @@
   </data>
   <data name="Amount_withholding_joint_tax_free_amount_reduction" xml:space="preserve">
     <value>Tax on the tax-free amounts of both partners</value>
+  </data>
+  <data name="Amount_withholding_child_reduction_1" xml:space="preserve">
+    <value>Withholding reduction, one dependent child</value>
+  </data>
+  <data name="Amount_withholding_child_reduction_2" xml:space="preserve">
+    <value>Withholding reduction, two dependent children</value>
+  </data>
+  <data name="Amount_withholding_child_reduction_3" xml:space="preserve">
+    <value>Withholding reduction, three dependent children</value>
+  </data>
+  <data name="Amount_withholding_child_reduction_4" xml:space="preserve">
+    <value>Withholding reduction, four dependent children</value>
+  </data>
+  <data name="Amount_withholding_child_reduction_5" xml:space="preserve">
+    <value>Withholding reduction, five dependent children</value>
+  </data>
+  <data name="Amount_withholding_child_reduction_6" xml:space="preserve">
+    <value>Withholding reduction, six dependent children</value>
+  </data>
+  <data name="Amount_withholding_child_reduction_7" xml:space="preserve">
+    <value>Withholding reduction, seven dependent children</value>
+  </data>
+  <data name="Amount_withholding_child_reduction_8" xml:space="preserve">
+    <value>Withholding reduction, eight dependent children</value>
+  </data>
+  <data name="Amount_withholding_child_reduction_beyond_8" xml:space="preserve">
+    <value>Withholding reduction, each child beyond the eighth</value>
+  </data>
+  <data name="Amount_withholding_dependant_aged_66_in_care_reduction" xml:space="preserve">
+    <value>Withholding reduction, each dependant aged 66 or more in care</value>
+  </data>
+  <data name="Amount_withholding_other_dependant_reduction" xml:space="preserve">
+    <value>Withholding reduction, each other dependant</value>
+  </data>
+  <data name="Amount_withholding_single_parent_reduction" xml:space="preserve">
+    <value>Withholding reduction, single parent</value>
   </data>
   <data name="Title_assessment_balance" xml:space="preserve">
     <value>Balance on your assessment</value>

@@ -214,6 +214,66 @@ public class GrossToNetViewTests
         ]);
     }
 
+    // GrossToNetWithholdingDependantsTests: a single parent of two takes off the year's tax n° 38's
+    // reduction for two children and n° 40, 1's, each its own line after the tax-free amount's; a
+    // reduction that does not apply has no line.
+    public static TheoryData<int, decimal, decimal, decimal, decimal, decimal> DependantsWithholdingByPeriod => new()
+    {
+        { 0, 2_987.98m, 1_656m, 624m, 8_411.27m, 700.94m },
+        { 1, 3_089.63m, 1_644m, 636m, 8_309.62m, 692.47m },
+    };
+
+    [Theory]
+    [MemberData(nameof(DependantsWithholdingByPeriod))]
+    public void From_gross50000SingleParentOfTwo_withholdingDetailCarriesTheReductionsLines(
+        int period, decimal taxFreeAmountReduction, decimal childrenReduction, decimal singleParentReduction, decimal annualTax, decimal monthly)
+    {
+        var detail = HouseholdView(50_000m, SingleParentOfTwo).Withholding[period].Detail;
+
+        detail.Lines.ShouldBe(
+        [
+            new StepLine("monthly_taxable_pay", 4_166.67m),
+            new StepLine("reduction", 965.86m),
+            new StepLine("annual_gross", 38_409.72m),
+            new StepLine("flat_rate_costs", 1_152.29m),
+            new StepLine("annual_net_taxable", 37_257.43m),
+            new StepLine("basic_tax", 13_679.25m),
+            new StepLine("tax_free_amount_reduction", taxFreeAmountReduction),
+            new StepLine("children_reduction", childrenReduction),
+            new StepLine("single_parent_reduction", singleParentReduction),
+            new StepLine("annual_tax", annualTax),
+            new StepLine("monthly_withholding", monthly),
+        ]);
+    }
+
+    // The other dependants' reduction of n° 39 under the quotient, after its lines.
+    [Fact]
+    public void From_gross50000PartnerWithoutIncomeOtherDependant_withholdingDetailCarriesTheDependantsReduction()
+    {
+        var detail = HouseholdView(50_000m, NonEarningPartner with { Dependants = new Dependants(OtherDependants: 1) }).Withholding[0].Detail;
+
+        detail.Lines.Select(line => line.Key).SkipWhile(key => key != "joint_tax_free_amount_reduction").ShouldBe(
+            ["joint_tax_free_amount_reduction", "dependants_reduction", "annual_tax", "monthly_withholding"]);
+    }
+
+    // The reductions' amounts last, each under its number of the annex: to October as decreed, from
+    // November the coordinated annex.
+    [Theory]
+    [InlineData(0, 1)]
+    [InlineData(1, 11)]
+    public void From_gross50000SingleParentOfTwo_withholdingDetailCitesTheReductionsAmountsLast(int period, int month)
+    {
+        var rules = WithholdingRules.IncomeYear2026.InMonth(month);
+
+        var detail = HouseholdView(50_000m, SingleParentOfTwo).Withholding[period].Detail;
+
+        detail.Sources.TakeLast(2).Select(group => (group.Source, Keys(group))).ShouldBe(new[]
+        {
+            (rules.ChildReductions[1].Source, "withholding_child_reduction_2"),
+            (rules.SingleParentReduction.Source, "withholding_single_parent_reduction"),
+        });
+    }
+
     // The quotient's amounts in place of n° 32: to October all under the annex as decreed, from
     // November under the coordinated annex, the maximum for partners both 66 the one cited for them.
     [Theory]
@@ -746,6 +806,8 @@ public class GrossToNetViewTests
     private static GrossToNetView View(decimal grossPay) => View(grossPay, Withheld);
 
     private static GrossToNetView CompanyPaysView(decimal grossPay) => View(grossPay, Withheld, ContributionsPaidBy.Company);
+
+    private static readonly Household SingleParentOfTwo = Household.None with { Dependants = new Dependants(Children: 2, SingleParent: true) };
 
     private static GrossToNetView HouseholdView(decimal grossPay, Household household)
     {

@@ -108,7 +108,8 @@ internal sealed record GrossToNetView(
     // A month's withholding in a period as a step: the formula's lines in its order, the key formula
     // as the rule, and the annex's amounts under the number each comes from. Under the marital quotient
     // the basic tax is the income imputed to the partner, the tax on it and the tax on the rest, and
-    // what is taken off them both partners' tax-free amounts.
+    // what is taken off them both partners' tax-free amounts. Then the reductions for dependants, under
+    // either method.
     private static StepDetail WithholdingOf(PayStatementPeriod period)
     {
         var formula = period.Withholding;
@@ -139,11 +140,22 @@ internal sealed record GrossToNetView(
                 new StepLine("flat_rate_costs", formula.FlatRateCosts),
                 new StepLine("annual_net_taxable", formula.AnnualNetTaxable),
                 .. basicTax,
+                .. Reductions(formula),
                 new StepLine("annual_tax", formula.AnnualTax),
                 new StepLine("monthly_withholding", formula.MonthlyWithholding),
             ],
         };
     }
+
+    // The reductions for dependants the formula took off the year's tax, in the annex's order (n° 38,
+    // 39, 40, 1), each a line of its own where it took something; none for a director without them.
+    private static IEnumerable<StepLine> Reductions(WithholdingResult formula) =>
+        new[]
+        {
+            new StepLine("children_reduction", formula.ChildrenReduction),
+            new StepLine("dependants_reduction", formula.DependantsReduction),
+            new StepLine("single_parent_reduction", formula.SingleParentReduction),
+        }.Where(line => line.Amount != 0m);
 
     // A step paid out with a negative amount is money that comes back: the tax credit for low earned
     // income. The engine negates it, so a credit of nothing is a negative zero and still comes back.
