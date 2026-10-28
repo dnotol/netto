@@ -8,15 +8,14 @@ namespace Netto.Tests.DirectorPay;
 // Income year 2026's withholding rules cite the texts filed in official-docs/personal-tax/: the key
 // formula ESS-SR/2025-0928 for the method, annex III to the AR/CIR 92 as the royal decree of
 // 11.12.2025 replaced it (« Règles 1er janvier 2026 ») for each amount, and the coordinated annex III
-// for the date each decree's rules hold from. The royal decree of 27.09.2026 (MB 02.10.2026) changes
-// n° 32 for pay paid or attributed from 1 November 2026, and nothing else that reaches a single
-// director's monthly pay: the rules from that date are January's with its 3,089.63, cited to the
-// coordinated annex, the text that holds it. No key formula for 1 November 2026 is published, so
-// those rules apply the January one's method. The same decree changes the marital quotient of n° 34.1.1
+// for the date each decree's rules hold from. The royal decree of 27.09.2026 (MB 02.10.2026) changes,
+// for pay paid or attributed from 1 November 2026, n° 32 to 3,089.63; the marital quotient of n° 34.1.1
 // and 34.2 for a partner without professional income: its maximum, now 12,790 when both partners have
-// reached 66 on 1 January 2027, else 11,780, in place of 13,790, and the 6,179.26 taken off the tax.
-// It also changes the tables of the reductions for dependants, n° 38 to 41, of which Netto applies
-// n° 38 (dependent children), n° 39, 2 and 3 (other dependants) and n° 40, 1 (a single parent).
+// reached 66 on 1 January 2027, else 11,780, in place of 13,790, and the 6,179.26 taken off the tax;
+// and the tables of the reductions for dependants, n° 38 to 41, of which Netto applies n° 38
+// (dependent children), n° 39, 2 and 3 (other dependants) and n° 40, 1 (a single parent). Each is cited
+// to the coordinated annex, the text that holds it. No key formula for 1 November 2026 is published,
+// so those rules apply the January one's method.
 public class WithholdingRulesTests
 {
     private const string Fisconetplus = "https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/";
@@ -382,9 +381,8 @@ public class WithholdingRulesTests
     }
 
     // N° 39, 2 and 3, and n° 40, 1, to 31 October 2026: 1,992 for each dependant aged 66 or over in a
-    // situation of dependency, 624 for each other dependant, 624 for a single parent. The January PDF
-    // sets the amounts of n° 39 beside the wrong rows; the key formula's annexes 4 and 5 list them in
-    // order.
+    // situation of dependency, 624 for each other dependant, 624 for a single parent, as the key formula's
+    // annexes 4 and 5 list them too.
     [Fact]
     public void OtherFamilyReductions_2026_areNumbers39And40AsDecreed()
     {

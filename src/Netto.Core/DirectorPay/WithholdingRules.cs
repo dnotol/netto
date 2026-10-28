@@ -101,8 +101,8 @@ public sealed record WithholdingRules(
 
     private static readonly Source AnnexOtherDependants2026 = DecreedAnnex2026(
         "N° 39, 2 and 3, under either method: 1,992 for each dependant of art. 136, 2° and 3°, CIR 92 aged 66 or over in a situation of dependency (n° 9), "
-        + "624 for each other dependant of art. 136, 2° to 4°, a disabled one counted for two (n° 8); the PDF sets the amounts beside the wrong rows, "
-        + "the key formula's annexes 4 and 5 list them in order");
+        + "624 for each other dependant of art. 136, 2° to 4°, a disabled one counted for two (n° 8), "
+        + "as the key formula's annexes 4 and 5 list them too");
 
     private static readonly Source AnnexSingleParent2026 = DecreedAnnex2026(
         "N° 40, 1, under the single method of n° 32 only: 624 for a widow or widower not remarried, an unmarried father or mother, "
@@ -154,9 +154,10 @@ public sealed record WithholdingRules(
         OtherDependantReduction: new RuleAmount("withholding_other_dependant_reduction", 624m, AnnexOtherDependants2026),
         SingleParentReduction: new RuleAmount("withholding_single_parent_reduction", 624m, AnnexSingleParent2026));
 
-    // From 1 November 2026, the royal decree of 27.09.2026 changes n° 32 and the marital quotient's
-    // maximum and amount taken off (n° 34.1.1 and 34.2) of what reaches a director's monthly pay; no key
-    // formula of that date is published, so the January one's method applies. The quotient's 30%, the
+    // From 1 November 2026, the royal decree of 27.09.2026 changes n° 32, the marital quotient's
+    // maximum and amount taken off (n° 34.1.1 and 34.2), and the reductions for dependants of n° 38 to
+    // 40 that Netto applies; no key formula of that date is published, so the January one's method
+    // applies. The quotient's 30%, the
     // same, is cited to the coordinated annex with the rest of n° 34.1.1, whose January text names
     // January's maximum.
     public static WithholdingRules IncomeYear2026 { get; } = From1January2026 with

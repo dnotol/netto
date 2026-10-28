@@ -10,7 +10,7 @@ namespace Netto.Core.DirectorPay;
 //
 // The annex takes the family situation on 1 January of the year the pay is paid (n° 5.1), the tax on
 // 1 January of the tax year: Netto withholds by the same dependants the user declares for the tax, as
-// n° 5.2 a lets the payer take a change into account once told of it (decided 2026-10-28).
+// n° 5.2 a lets the payer take a change into account once told of it.
 public sealed record WithholdingDependants(
     int Children = 0,
     int DisabledChildren = 0,
