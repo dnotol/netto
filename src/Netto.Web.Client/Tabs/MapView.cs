@@ -308,11 +308,12 @@ internal sealed record MapLabel(MapText Text, string Key, IReadOnlyList<string> 
 
 // One link of the map: its kind, where it runs from and to, the module whose card shows the line it is
 // (Card), what it carries and its amount in this plan, the card's own figure; none for a condition, which
-// names its figures in its words. A condition says whether it holds (Holds), and in a word or two (State),
-// none for any other link, and the badge it leaves on the module it acts on (Badge), none for the office
-// rule, which always holds. Its line is its route (MapLayout), shared with the links of the same ends and
-// kind, worked out from every link of the run, none until the layout has routed it. The chain's line past
-// quiet levers names them (Through, in the river's order): it runs through their quiet row, and touches
+// names its figures in its words (Carries), its sentence kept as the links' data for the cards that will say
+// them; no surface reads them yet (MapConditions). A condition says whether it holds (Holds), and in a word
+// or two (State), none for any other link, and the badge it leaves on the module it acts on (Badge), none for
+// the office rule, which always holds. Its line is its route (MapLayout), shared with the links of the same
+// ends and kind, worked out from every link of the run, none until the layout has routed it. The chain's line
+// past quiet levers names them (Through, in the river's order): it runs through their quiet row, and touches
 // each of them as it touches its two ends.
 internal sealed record MapLink(MapLinkKind Kind, MapEnd From, MapEnd To, RiverModule Card, MapLabel Carries, decimal? Amount)
 {

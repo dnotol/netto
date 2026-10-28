@@ -8,7 +8,8 @@ namespace Netto.Tests.WebClient.Tabs;
 // The conditions on the Map tab as a viewer meets them, drawn without a browser (MapRendering): every
 // lever with the costly car, whose benefit is beyond 20% of the pay. Each is a dashed line that says in a
 // word or two on the map, on its line, whether it holds, never by a colour, and a badge on the module it acts
-// on (MapTabTests); its sentence is the link's words, said nowhere on the tab (operator, 2026-10-28).
+// on (MapTabTests); its sentence is the link's words, not on the tab (operator, 2026-10-28), kept as the
+// link's data for the cards that will say it.
 public class MapConditionsRenderingTests
 {
     private static readonly RiverInputs River = MapViewConditionsTests.CostlyCar;
@@ -37,8 +38,8 @@ public class MapConditionsRenderingTests
             .ShouldBe((true, true, false));
     }
 
-    // Its module chosen, the line still says its word or two on the map, and its sentence is said nowhere
-    // on the tab, beside the map neither.
+    // Its module chosen, the line still says its word or two on the map, and its sentence is not on the tab,
+    // beside the map neither.
     [Fact]
     public async Task MapTab_theCarChosen_saysItsConditionInAWordOnTheMapAndNotItsSentence()
     {

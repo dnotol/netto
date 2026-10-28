@@ -3,10 +3,12 @@ using Netto.Web.Client.River;
 
 namespace Netto.Web.Client.Tabs;
 
-// The conditions one module sets on another, as the engine names them for a year it ran (YearConditions),
-// as links of the map: each from the module that sets it to the one it acts on, dashed (MapLinkKind
-// .Condition), with no amount, its words saying whether it holds and the figures it names (MapTabText),
-// with the badge it leaves on the module it acts on, and only while both its modules are on the map.
+// The conditions one module sets on another, as the engine names them for a year it ran (YearConditions), as
+// links of the map: each from the module that sets it to the one it acts on, dashed (MapLinkKind.Condition),
+// with no amount, its words saying whether it holds and the figures it names (MapTabText), with the badge it
+// leaves on the module it acts on, and only while both its modules are on the map. The sentence of each, with
+// its figures (Carries), is kept as the links' data for the cards that will say them; no surface reads them
+// yet (Backlog, « The split's and the dividend's cards say the condition they set, with its figures »).
 // Whether one holds is the engine's (YearCondition.Holds), carried as it is: nothing here tests a rule. A
 // kind of condition the engine adds has its case here, or drawing it fails, and MapConditionsTests fails
 // until it has.
@@ -17,9 +19,10 @@ internal static class MapConditions
 
     // The office allowance acts on the rent, the pay and the benefits on corporate tax's rate, and a
     // royalty and the reserve on the split's pay. Each says whether it holds in a word or two (State), what
-    // its line says on the map, and in a sentence with its figures (Carries), the link's words, which the
-    // tab says nowhere (operator, 2026-10-28); and, but the office rule, which always holds, it marks the module it acts
-    // on with a badge (Badge) saying which rule and whether it holds, lost where it does not hold and costs
+    // its line says on the map, and in a sentence with its figures (Carries), kept as the link's data for
+    // the cards that will say it, which no surface reads yet; and, but the office rule, which always holds,
+    // it marks the module it acts on with a badge (Badge) saying which rule and whether it holds, lost where
+    // it does not hold and costs
     // the plan its rate or its reserve, with no effect where the royalty lowers no pay, nothing being lost by it.
     public static MapLink Link(YearCondition condition) => condition switch
     {
