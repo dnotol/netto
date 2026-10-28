@@ -45,7 +45,8 @@ public class RiverDifferencesTests
         { "the partner's income, the partner in both", Today.AddToPlan(OptionalModule.Household), Today.WithPartnerIncome(9_000m).AddToPlan(OptionalModule.Household), "Household:Changed" },
         { "the year taxed separately, the partner in both", Today.AddToPlan(OptionalModule.Household), Today.WithTaxedSeparately(true).AddToPlan(OptionalModule.Household), "Household:Changed" },
         { "the partner taken out of the river", Today.AddToPlan(OptionalModule.Household), Today, "Household:LeftOut" },
-        { "the home's cadastral income, the rent out of both plans", Today, Today.WithCadastralIncome(2_000m), "Rent:Changed" },
+        { "the children, the household in both", Today.AddToPlan(OptionalModule.Household), Today.WithChildren(2).AddToPlan(OptionalModule.Household), "Household:Changed" },
+        { "no partner, the household in both", Today.AddToPlan(OptionalModule.Household), Today.WithPartner(false).AddToPlan(OptionalModule.Household), "Household:Changed" },        { "the home's cadastral income, the rent out of both plans", Today, Today.WithCadastralIncome(2_000m), "Rent:Changed" },
         { "the home's share let, the rent in both plans", Today.AddToPlan(OptionalModule.Rent), Today.WithShareLet(0.12m).AddToPlan(OptionalModule.Rent), "Rent:Changed" },
         { "the car taken out of the river", TodayWithCarAndMeals, TodayWithCarAndMeals.TakeOutOfPlan(OptionalModule.Car), "Car:LeftOut" },
         { "the meal vouchers taken out of the river", TodayWithCarAndMeals, TodayWithCarAndMeals.TakeOutOfPlan(OptionalModule.Vouchers), "Vouchers:LeftOut" },
@@ -97,12 +98,13 @@ public class RiverDifferencesTests
         RiverDifferences.Between(Today, Today.AddToPlan(lever)).ShouldBeEmpty();
     }
 
-    // The partner out of both plans is never handed to the engine, whatever their facts: the river holds the
-    // year as Today does.
+    // The household out of both plans is never handed to the engine, whatever its facts, the partner's and
+    // the dependants: the river holds the year as Today does.
     [Fact]
     public void Between_thePartnerOutOfBothPlansWithOtherFacts_isEmpty()
     {
-        var river = Today.WithPartnerIncome(9_000m).WithBothAged66(true).WithTaxedSeparately(true);
+        var river = Today.WithPartnerIncome(9_000m).WithBothAged66(true).WithTaxedSeparately(true).WithPartner(false).WithChildren(2).WithSingleParent(true)
+            .WithDependantsInCare(1).WithOtherDependants(1);
 
         RiverDifferences.Between(river, Today).ShouldBeEmpty();
     }

@@ -15,7 +15,8 @@ namespace Netto.Tests.WebClient.River;
 // version 5 (2026-10-23), what the same car would cost privately version 6 (2026-10-23), and the band
 // of INASTI's company contribution version 7 (2026-10-25), which the rate of the fund's management fee
 // joined without raising it, since version 7 had not left its story branch (decided unattended,
-// 2026-10-25). The partner raised version 8 (2026-10-28).
+// 2026-10-25). The partner raised version 8 (2026-10-28), whether there is one and the dependants
+// version 9 (2026-10-28).
 public class RiverInputsShapeTests
 {
     [Theory]
@@ -29,7 +30,8 @@ public class RiverInputsShapeTests
     [InlineData(typeof(CarInputs), "CatalogueValue:Input`1[Decimal] FirstRegistration:Input`1[DateOnly] YearlyCosts:Input`1[Decimal] CompanyPaysPrivateEnergy:Input`1[Boolean] PersonalContribution:Input`1[Decimal] Engine:Input`1[CarEngine] Co2:Input`1[Int32] NoCo2Data:Input`1[Boolean] Acquired:Input`1[DateOnly] FakeHybrid:Input`1[Boolean] MatchingCarCo2:Input`1[Int32] NoMatchingCar:Input`1[Boolean] SmallNaturalGas:Input`1[Boolean] PrivateCost:Input`1[Nullable`1[Decimal]]")]
     [InlineData(typeof(AdvancePaymentInputs), "First:Input`1[Decimal] Second:Input`1[Decimal] Third:Input`1[Decimal] Fourth:Input`1[Decimal]")]
     [InlineData(typeof(TaxPrepaymentInputs), "Withheld:Input`1[Nullable`1[Decimal]] Paid:AdvancePaymentInputs Starter:Input`1[Boolean]")]
-    [InlineData(typeof(HouseholdInputs), "PartnerIncome:Input`1[Decimal] BothAged66:Input`1[Boolean] TaxedSeparately:Input`1[Boolean]")]
+    [InlineData(typeof(HouseholdInputs), "PartnerIncome:Input`1[Decimal] BothAged66:Input`1[Boolean] TaxedSeparately:Input`1[Boolean] Status:Input`1[HouseholdStatus] Dependants:DependantInputs")]
+    [InlineData(typeof(DependantInputs), "Children:Input`1[Int32] ChildrenUnder3:Input`1[Int32] SingleParent:Input`1[Boolean] DependantsAged66InCare:Input`1[Int32] OtherDependants:Input`1[Int32]")]
     [InlineData(typeof(MunicipalityChoice), "Rates:MunicipalRates Municipality:Municipality Rate:Decimal Origin:InputOrigin")]
     public void Constructor_savedPlansKnowIt_isTheShapePlanStorageStores(Type type, string shape)
     {

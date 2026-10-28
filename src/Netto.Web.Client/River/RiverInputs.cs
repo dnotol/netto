@@ -17,9 +17,10 @@ namespace Netto.Web.Client.River;
 // Everything the user describes in the river, each input with its origin, and the one run of the
 // year every card reads, so the river always adds up. Company is null once its figures are cleared:
 // the river then starts at the pay, and the vouchers, the expense allowances, the rent, the car and
-// the copyright royalty wait for it. Those five and the partner are optional modules: the year counts one
+// the copyright royalty wait for it. Those five and the household are optional modules: the year counts one
 // only while it is in the plan (Composition), and keeps its values while it is out, so adding it back
-// restores them; the partner counts with the company skipped too, the pay taxed jointly. Public because
+// restores them; the household counts with the company skipped too, the pay taxed jointly with a partner
+// and the dependants' supplements on its tax-free amount. Public because
 // the cards, components, take it as a parameter.
 public sealed record RiverInputs(
     int IncomeYear,
@@ -61,6 +62,9 @@ public sealed record RiverInputs(
     // An amount the example holds none of, nothing to enter over, so it names no origin.
     private static Input<decimal> ExampleNothing { get; } = new(0m, InputOrigin.None);
 
+    // A count of people the example holds none of, the same way.
+    private static Input<int> ExampleNoOne { get; } = new(0, InputOrigin.None);
+
     // The example year the river opens on, every amount it gives labelled as such, so the whole river
     // runs at once, and every amount it holds none of naming no origin (decided unattended,
     // 2026-10-23); the statuses and rates are the defaults a typical owner-director starts from. Its
@@ -79,7 +83,9 @@ public sealed record RiverInputs(
     // royalty; one added to the plan follows the pay, a status, none until a creative share is given
     // (operator, 2026-10-23), and assumes the four previous years' copyright income averaged within the
     // cap, a status, until the user says otherwise. Its balance sheet is in the lower band of INASTI's
-    // company contribution, a status, until the user says otherwise.
+    // company contribution, a status, until the user says otherwise. A household added to the plan has a
+    // partner, a status, as it had when it held only the partner, and no dependants, counts it holds none
+    // of, nor a single parent, a status (decided unattended, 2026-10-28).
     public static RiverInputs Example { get; } = new(
         ExampleYear,
         new CompanyFigures(new Input<decimal>(120_000m, InputOrigin.Example), new Input<decimal>(19_590.70m, InputOrigin.Example)),
@@ -113,7 +119,10 @@ public sealed record RiverInputs(
         new Input<ContributionsPaidBy>(Core.SocialContributions.ContributionsPaidBy.Director, InputOrigin.Default),
         NoBilledContributions,
         NoFundFeeRate,
-        new HouseholdInputs(ExampleNothing, new Input<bool>(false, InputOrigin.Default), new Input<bool>(false, InputOrigin.Default)));
+        new HouseholdInputs(
+            ExampleNothing, new Input<bool>(false, InputOrigin.Default), new Input<bool>(false, InputOrigin.Default),
+            new Input<HouseholdStatus>(HouseholdStatus.MarriedOrLegalCohabitant, InputOrigin.Default),
+            new DependantInputs(ExampleNoOne, ExampleNoOne, new Input<bool>(false, InputOrigin.Default), ExampleNoOne, ExampleNoOne)));
 
     // The most the split can give as pay (YearSimulation.PayCeiling): the profit before pay, what the
     // vouchers, the expense allowances, the rent, the car and a fixed royalty in the plan leave of what
@@ -253,6 +262,22 @@ public sealed record RiverInputs(
 
     public RiverInputs WithTaxedSeparately(bool separately) => this with { Household = Household with { TaxedSeparately = Yours(separately) } };
 
+    // A spouse or legal cohabitant, or none: the partner's facts stay as they are, for when one is declared again.
+    public RiverInputs WithPartner(bool partner) => this with
+    {
+        Household = Household with { Status = Yours(partner ? HouseholdStatus.MarriedOrLegalCohabitant : HouseholdStatus.Alone) },
+    };
+
+    public RiverInputs WithChildren(int children) => WithDependants(Household.Dependants with { Children = Yours(children) });
+
+    public RiverInputs WithChildrenUnder3(int children) => WithDependants(Household.Dependants with { ChildrenUnder3 = Yours(children) });
+
+    public RiverInputs WithSingleParent(bool alone) => WithDependants(Household.Dependants with { SingleParent = Yours(alone) });
+
+    public RiverInputs WithDependantsInCare(int dependants) => WithDependants(Household.Dependants with { DependantsAged66InCare = Yours(dependants) });
+
+    public RiverInputs WithOtherDependants(int dependants) => WithDependants(Household.Dependants with { OtherDependants = Yours(dependants) });
+
     public bool InPlan(OptionalModule module) => Composition.Holds(module);
 
     public RiverInputs AddToPlan(OptionalModule module) => this with { Composition = Composition.With(module, true) };
@@ -307,6 +332,8 @@ public sealed record RiverInputs(
 
     private static CompanyFigures Nothing { get; } = new(Yours(0m), Yours(0m));
 
+    private RiverInputs WithDependants(DependantInputs dependants) => this with { Household = Household with { Dependants = dependants } };
+
     private static Input<T> Yours<T>(T value) => new(value, InputOrigin.Yours);
 
     // An optional module out of the plan is the scenario without its values: the engine never sees
@@ -335,7 +362,8 @@ public sealed record RiverInputs(
         Household = HouseholdFacts,
     };
 
-    // The partner while in the plan, the company's year or the pay alone; out of it, the director alone.
+    // The household while in the plan, the company's year or the pay alone: the partner, if there is one,
+    // and the dependants; out of it, the director alone with none.
     private Core.PersonalTax.Household HouseholdFacts => InPlan(OptionalModule.Household) ? Household.Values : Core.PersonalTax.Household.None;
 }
 
@@ -454,15 +482,31 @@ public sealed record CopyrightInputs(
     };
 }
 
-// The director's spouse or legal cohabitant as the user enters them: their net professional income for the
-// year, after their own contributions and costs, none unless given, which the engine reads as no
-// professional income; whether both partners are 66 on 1 January of the tax year, which raises the marital
+// The director's household as the user enters it. Their spouse or legal cohabitant: their net professional
+// income for the year, after their own contributions and costs, none unless given, which the engine reads as
+// no professional income; whether both partners are 66 on 1 January of the tax year, which raises the marital
 // quotient's cap; and whether the year is one the couple is taxed separately in, the year of the marriage or
-// of the declaration of legal cohabitation, or of the divorce, the end of the cohabitation or the separation.
-// A de facto cohabitant is no partner for tax: the director is taxed alone.
-public sealed record HouseholdInputs(Input<decimal> PartnerIncome, Input<bool> BothAged66, Input<bool> TaxedSeparately)
+// of the declaration of legal cohabitation, or of the divorce, the end of the cohabitation or the separation;
+// all read only while Status says there is one. A de facto cohabitant is no partner for tax: the director is
+// taxed alone. And the people the director has as dependants, with a partner or without.
+public sealed record HouseholdInputs(
+    Input<decimal> PartnerIncome, Input<bool> BothAged66, Input<bool> TaxedSeparately, Input<HouseholdStatus> Status, DependantInputs Dependants)
 {
-    public Household Values => new(HouseholdStatus.MarriedOrLegalCohabitant, PartnerIncome.Value, BothAged66.Value, TaxedSeparately.Value);
+    public bool HasPartner => Status.Value == HouseholdStatus.MarriedOrLegalCohabitant;
+
+    // With no partner, the director alone with their dependants, the partner's facts unread.
+    public Household Values =>
+        (HasPartner ? new Household(HouseholdStatus.MarriedOrLegalCohabitant, PartnerIncome.Value, BothAged66.Value, TaxedSeparately.Value) : Household.None)
+        with { Dependants = Dependants.Values };
+}
+
+// The director's dependants on 1 January of the tax year as the user enters them: the dependent children, how
+// many of them are under 3 with no childcare costs claimed, whether the director raises them alone, the
+// dependants aged 66 or more in a situation of dependence, and every other dependant, none unless given.
+public sealed record DependantInputs(
+    Input<int> Children, Input<int> ChildrenUnder3, Input<bool> SingleParent, Input<int> DependantsAged66InCare, Input<int> OtherDependants)
+{
+    public Dependants Values => new(Children.Value, ChildrenUnder3.Value, SingleParent.Value, DependantsAged66InCare.Value, OtherDependants.Value);
 }
 
 // A value of the river with where it comes from.

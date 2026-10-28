@@ -30,7 +30,8 @@ public class PlanStorageTests
         .WithTaxWithheld(9_000m).WithTaxAdvancePayment(1, 500m).WithStarter(true)
         .WithReserve(10_000m).WithDividendCategory(WithholdingCategory.Standard).WithEarlierProfits(5_000m)
         .WithContributionsPaidBy(ContributionsPaidBy.Company)
-        .WithPartnerIncome(18_250.50m).WithBothAged66(true).WithTaxedSeparately(true);
+        .WithPartnerIncome(18_250.50m).WithBothAged66(true).WithTaxedSeparately(true)
+        .WithChildren(3).WithChildrenUnder3(1).WithSingleParent(true).WithDependantsInCare(1).WithOtherDependants(2);
 
     [Fact]
     public void Read_nothingStored_isNoPlanAndReadable()
@@ -73,7 +74,8 @@ public class PlanStorageTests
 
     // What the example holds none of is stored as the example's, as the builds before stored it: the
     // example as version 6 wrote it, with version 7's band of INASTI's company contribution, the default
-    // lower one, after the financial year, its fund fee, none given, and version 8's partner, out of the plan and none, last.
+    // lower one, after the financial year, its fund fee, none given, and version 8's partner, out of the plan and none, last,
+    // with version 9's partner assumed and no dependants.
     [Fact]
     public void Store_example_writesWhatItHoldsNoneOfAsTheBuildBeforeDid()
     {
@@ -82,7 +84,17 @@ public class PlanStorageTests
         before.Add("fundFeeRate", JsonNode.Parse("""{"value":null,"origin":"Yours"}"""));
         before["composition"]!.AsObject().Add("household", false);
         before.Add("household", JsonNode.Parse(
-            """{"partnerIncome":{"value":0,"origin":"Example"},"bothAged66":{"value":false,"origin":"Default"},"taxedSeparately":{"value":false,"origin":"Default"}}"""));
+            """
+            {
+                "partnerIncome": {"value": 0, "origin": "Example"}, "bothAged66": {"value": false, "origin": "Default"},
+                "taxedSeparately": {"value": false, "origin": "Default"}, "status": {"value": "MarriedOrLegalCohabitant", "origin": "Default"},
+                "dependants": {
+                    "children": {"value": 0, "origin": "Example"}, "childrenUnder3": {"value": 0, "origin": "Example"},
+                    "singleParent": {"value": false, "origin": "Default"}, "dependantsAged66InCare": {"value": 0, "origin": "Example"},
+                    "otherDependants": {"value": 0, "origin": "Example"}
+                }
+            }
+            """));
 
         PlanStorage.Store(StoredPlanDocuments.SavedExample).GetRawText().ShouldBe(before.ToJsonString());
     }
@@ -199,11 +211,32 @@ public class PlanStorageTests
         JsonNode.Parse(PlanStorage.Write(PlanBook.Empty))!["version"]!.GetValue<int>().ShouldBe(PlanStorage.Version);
     }
 
-    // Version 8 holds the partner.
+    // Version 9 holds whether there is a partner, and the dependants.
     [Fact]
-    public void Version_isEight()
+    public void Version_isNine()
     {
-        PlanStorage.Version.ShouldBe(8);
+        PlanStorage.Version.ShouldBe(9);
+    }
+
+    // The director alone with their dependants reads back so, the partner's facts kept beside.
+    [Fact]
+    public void Read_written_givesBackNoPartnerAndTheDependants()
+    {
+        var inputs = RiverInputs.Example.AddToPlan(OptionalModule.Household).WithPartnerIncome(9_000m).WithPartner(false).WithChildren(2).WithChildrenUnder3(0);
+
+        PlanStorage.Read(PlanStorage.Write(Book(("a", "Plan 1", inputs)))).Book.Plans.Single().Inputs.ShouldBe(inputs);
+    }
+
+    // Version 8's household was its partner: a plan holding it in its plan declared one, and opens with them
+    // as the user's; a plan that did not opens with a partner assumed, as adding the household now does.
+    [Fact]
+    public void Read_documentOfVersion8_opensThePartnerItHeldAsTheUsersAndAssumesOneElse()
+    {
+        PlanStorage.Read(StoredPlanDocuments.Version8).Book.Plans.Select(plan => plan.Inputs?.Household.Status).ShouldBe(
+        [
+            new Input<Netto.Core.PersonalTax.HouseholdStatus>(Netto.Core.PersonalTax.HouseholdStatus.MarriedOrLegalCohabitant, InputOrigin.Default),
+            new Input<Netto.Core.PersonalTax.HouseholdStatus>(Netto.Core.PersonalTax.HouseholdStatus.MarriedOrLegalCohabitant, InputOrigin.Yours),
+        ]);
     }
 
     [Fact]
@@ -359,6 +392,7 @@ public class PlanStorageTests
     [InlineData(6)]
     [InlineData(7)]
     [InlineData(8)]
+    [InlineData(9)]
     public void Read_documentOfEachVersion_readsEachPlanAsItWasSaved(int version)
     {
         var (read, unreadable) = PlanStorage.Read(StoredPlanDocuments.Of(version));
@@ -379,6 +413,7 @@ public class PlanStorageTests
     [InlineData(6)]
     [InlineData(7)]
     [InlineData(8)]
+    [InlineData(9)]
     public void Write_afterReadingADocumentOfEachVersion_writesEachPlanInThisVersion(int version)
     {
         var rewritten = PlanStorage.Write(PlanStorage.Read(StoredPlanDocuments.Of(version)).Book);
@@ -394,7 +429,7 @@ public class PlanStorageTests
     [Fact]
     public void Write_afterReadingADocumentOfThisVersion_writesItBackAsRead()
     {
-        PlanStorage.Write(PlanStorage.Read(StoredPlanDocuments.Version8).Book).ShouldBe(StoredPlanDocuments.Version8);
+        PlanStorage.Write(PlanStorage.Read(StoredPlanDocuments.Version9).Book).ShouldBe(StoredPlanDocuments.Version9);
     }
 
     // A version's plan carrying a member a later version brought, as that version stored it, is not a plan it
@@ -427,6 +462,8 @@ public class PlanStorageTests
     [InlineData(7, "household", 8)]
     [InlineData(7, "composition.household", 8)]
     [InlineData(3, "composition.household", 8)]
+    [InlineData(8, "household.status", 9)]
+    [InlineData(8, "household.dependants", 9)]
     public void Read_documentOfAVersionWithAMemberALaterVersionBrought_makesThatPlanUnreadable(int version, string member, int broughtBy)
     {
         var brought = Member(PlanInputs(StoredPlanDocuments.Of(broughtBy), 1), member).DeepClone();
@@ -452,6 +489,10 @@ public class PlanStorageTests
     [InlineData(8, "household")]
     [InlineData(8, "household.taxedSeparately")]
     [InlineData(8, "composition.household")]
+    [InlineData(9, "household.status")]
+    [InlineData(9, "household.dependants")]
+    [InlineData(9, "household.dependants.childrenUnder3")]
+    [InlineData(9, "household.dependants.singleParent")]
     [InlineData(1, "composition")]
     [InlineData(2, "composition")]
     [InlineData(2, "car")]
