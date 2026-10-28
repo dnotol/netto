@@ -11,14 +11,32 @@ public static class PersonalTaxCalculator
     // copyright royalty within its limits, is taxed at its own rate, never on the scale nor against the
     // tax-free amount (art. 171), and that tax joins the State tax before the autonomy factor, so the
     // split and the municipal surcharge are on everything (Tax-Calc T16 to T18); none unless given.
+    // A household taxed jointly is taxed in two columns (Joint), the director alone otherwise, a year the
+    // couple starts or ends included; alone unless given.
     public static PersonalTaxResult Compute(
-        PersonalTaxRules rules, decimal directorPay, decimal ownContributions, decimal municipalRate, decimal otherIncome = 0m, IncomeTaxedApart? taxedApart = null)
+        PersonalTaxRules rules, decimal directorPay, decimal ownContributions, decimal municipalRate, decimal otherIncome = 0m, IncomeTaxedApart? taxedApart = null,
+        Household? household = null) =>
+        Compute(rules, directorPay, ownContributions, municipalRate, otherIncome, taxedApart, household, withQuotient: true);
+
+    // The same household's tax as if the marital quotient attributed nothing, what tells the quotient's
+    // worth; the director's tax alone when the household is not taxed jointly.
+    internal static PersonalTaxResult WithoutQuotient(
+        PersonalTaxRules rules, decimal directorPay, decimal ownContributions, decimal municipalRate, decimal otherIncome, IncomeTaxedApart? taxedApart,
+        Household? household) =>
+        Compute(rules, directorPay, ownContributions, municipalRate, otherIncome, taxedApart, household, withQuotient: false);
+
+    private static PersonalTaxResult Compute(
+        PersonalTaxRules rules, decimal directorPay, decimal ownContributions, decimal municipalRate, decimal otherIncome, IncomeTaxedApart? taxedApart,
+        Household? household, bool withQuotient)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(otherIncome, 0m);
         ArgumentOutOfRangeException.ThrowIfLessThan(taxedApart?.Income ?? 0m, 0m);
 
         var flatRateCosts = FlatRateCosts(rules, directorPay - ownContributions);
         var taxableIncome = Math.Max(0m, directorPay - ownContributions - flatRateCosts);
+        if (household is { TaxedJointly: true })
+            return Joint(rules, flatRateCosts, taxableIncome, municipalRate, otherIncome, taxedApart, household, withQuotient);
+
         var globalisedIncome = taxableIncome + otherIncome;
         var incomeTaxedApart = taxedApart?.Income ?? 0m;
 
@@ -57,6 +75,91 @@ public static class PersonalTaxCalculator
             otherIncome,
             incomeTaxedApart,
             taxApart);
+    }
+
+    // A joint assessment (art. 126), each partner in their own column. The marital quotient moves a share
+    // of one partner's professional income to the other (art. 87 and 88); the director's rent joins their
+    // column, never the quotient's base, being no professional income, as an income taxed apart is not.
+    // Each partner has the tax-free amount, and what the partner with the lower taxable income cannot use
+    // passes in full to the other (art. 134 §4, 4°; 3° passes nothing the other could use, there being no
+    // supplements for dependants here), whose tax on it climbs the scale of §2 beyond its first bracket.
+    // Each column then follows a single person's lines, rounded on its own, and the household's lines
+    // are their sums. The credit for low earned income is the director's alone, on their own income
+    // before the quotient (art. 289ter §1, al. 4): what the partner earns is typed without its kind, an
+    // employee's pay taking art. 289ter/1 instead, so theirs is not counted.
+    // Art. 87's clause that the quotient does not apply when it raises the household's State tax is not
+    // modelled: its current wording is unread (art. 87 and 88 not filed yet), and with no supplements for
+    // dependants no case was found where it would bind, the scale of the tax on the tax-free amount never
+    // being below the income scale.
+    private static PersonalTaxResult Joint(
+        PersonalTaxRules rules, decimal flatRateCosts, decimal directorIncome, decimal municipalRate, decimal otherIncome, IncomeTaxedApart? taxedApart,
+        Household household, bool withQuotient)
+    {
+        var partnerIncome = household.PartnerIncome;
+        ArgumentOutOfRangeException.ThrowIfLessThan(partnerIncome, 0m);
+
+        var toPartner = withQuotient ? MaritalQuotient(rules.MaritalQuotient, partnerIncome, directorIncome, household.BothAged66) : 0m;
+        var toDirector = withQuotient ? MaritalQuotient(rules.MaritalQuotient, directorIncome, partnerIncome, household.BothAged66) : 0m;
+        var directorTaxable = directorIncome - toPartner + toDirector + otherIncome;
+        var partnerTaxable = partnerIncome + toPartner - toDirector;
+
+        var taxFreeAmount = rules.TaxFreeAmount.Value;
+        var directorHigher = directorTaxable >= partnerTaxable;
+        var passed = Math.Max(0m, taxFreeAmount - Math.Min(directorTaxable, partnerTaxable));
+        var (directorTaxFree, partnerTaxFree) = directorHigher ? (taxFreeAmount + passed, taxFreeAmount - passed) : (taxFreeAmount - passed, taxFreeAmount + passed);
+
+        var incomeTaxedApart = taxedApart?.Income ?? 0m;
+        var taxApart = taxedApart is null ? 0m : Money.RoundToCent(incomeTaxedApart * taxedApart.Rate.Value);
+        var director = Column(rules, municipalRate, directorIncome, toDirector - toPartner, otherIncome, directorTaxable, directorTaxFree, taxApart)
+            with { LowEarnedIncomeCredit = LowEarnedIncomeCredit(rules, directorIncome, directorIncome + otherIncome + incomeTaxedApart) };
+        var partner = Column(rules, municipalRate, partnerIncome, toPartner - toDirector, 0m, partnerTaxable, partnerTaxFree, 0m);
+
+        return new PersonalTaxResult(
+            flatRateCosts,
+            directorIncome,
+            director.BasicTax + partner.BasicTax,
+            director.TaxFreeAmountReduction + partner.TaxFreeAmountReduction,
+            director.StateTax + partner.StateTax,
+            director.ReducedStateTax + partner.ReducedStateTax,
+            director.RegionalAdditionalTax + partner.RegionalAdditionalTax,
+            director.IncomeTax + partner.IncomeTax,
+            director.MunicipalSurcharge + partner.MunicipalSurcharge,
+            director.LowEarnedIncomeCredit,
+            otherIncome,
+            incomeTaxedApart,
+            taxApart) { Joint = new JointAssessment(director, partner) };
+    }
+
+    // What the marital quotient attributes to a partner out of the other's professional income: what
+    // tops their own up to the rate of the two together, never more than the cap. Two readings of art. 88
+    // hold the cap differently: the law's words cap the share attributed (« une quote-part … sans pouvoir
+    // excéder »), and the administration reads it as including the partner's own professional income
+    // (DOC 56 1243/001, p. 16 and 17: « le revenu professionnel propre inclus »). The administration's
+    // is applied, so the share is at most the cap less their own; with no own income both agree. The
+    // rate's share is rounded to the cent as the assessment shows it (derived: to check against Tax-Calc).
+    internal static decimal MaritalQuotient(MaritalQuotientRules rules, decimal own, decimal other, bool bothAged66)
+    {
+        var share = Money.RoundToCent(rules.Rate.Value * (own + other)) - own;
+        var withinCap = rules.CapFor(bothAged66).Value - own;
+        return Math.Max(0m, Math.Min(share, withinCap));
+    }
+
+    // One partner's lines, a single person's on their taxable income and tax-free amount, the tax on the
+    // tax-free amount on art. 134 §2's scale, up to what their income uses; no credit until one is given.
+    private static TaxpayerColumn Column(
+        PersonalTaxRules rules, decimal municipalRate, decimal professionalIncome, decimal quotient, decimal otherIncome, decimal taxableIncome, decimal taxFreeAmount,
+        decimal taxApart)
+    {
+        var basicTax = Money.RoundToCent(TaxOnScale(rules.Scale, taxableIncome));
+        var reduction = Money.RoundToCent(TaxOnScale(rules.TaxFreeAmountScale, Math.Min(taxFreeAmount, taxableIncome)));
+        var stateTax = Math.Max(0m, basicTax - reduction);
+        var reducedStateTax = Money.RoundToCent((stateTax + taxApart) * (1 - rules.AutonomyFactor.Value));
+        var regionalAdditionalTax = Money.RoundToCent(reducedStateTax * rules.RegionalAdditionalRate.Value);
+        var incomeTax = reducedStateTax + regionalAdditionalTax;
+
+        return new TaxpayerColumn(
+            professionalIncome, quotient, otherIncome, taxableIncome, taxFreeAmount, basicTax, reduction, stateTax, taxApart,
+            reducedStateTax, regionalAdditionalTax, incomeTax, Money.RoundToCent(incomeTax * municipalRate), 0m);
     }
 
     // Art. 289ter, §2 on the activity income: a straight line up from the floor to the full amount,

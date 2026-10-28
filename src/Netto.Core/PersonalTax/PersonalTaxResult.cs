@@ -8,7 +8,9 @@ namespace Netto.Core.PersonalTax;
 // the rent of a home office, and the scale's lines are on their total. IncomeTaxedApart is an income
 // taxed apart at its own rate, a copyright royalty within its limits, and TaxedApart that tax, which
 // joins the State tax the autonomy factor and the regional tax split (Tax-Calc T16): from
-// ReducedStateTax on, the lines are on everything.
+// ReducedStateTax on, the lines are on everything. In a joint assessment Joint holds the two partners'
+// columns and the lines above are their sums, the taxable income staying the director's own net
+// professional income before the marital quotient; none when the director is taxed alone.
 public sealed record PersonalTaxResult(
     decimal FlatRateCosts,
     decimal TaxableIncome,
@@ -22,4 +24,7 @@ public sealed record PersonalTaxResult(
     decimal LowEarnedIncomeCredit,
     decimal OtherIncome = 0m,
     decimal IncomeTaxedApart = 0m,
-    decimal TaxedApart = 0m);
+    decimal TaxedApart = 0m)
+{
+    public JointAssessment? Joint { get; init; }
+}
