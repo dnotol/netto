@@ -33,6 +33,9 @@
   <data name="AverageHint" xml:space="preserve">
     <value>The royalty stays within its limits only while your copyright income of the four previous years, counted before those limits, averaged at most the year's cap. Netto cannot see it, so it assumes it did until you say otherwise. When it did not, Netto taxes the whole royalty as your pay: the law makes the average a condition without saying more, and that reading never overstates the gain.</value>
   </data>
+  <data name="YearsRate" xml:space="preserve">
+    <value>the year's rate</value>
+  </data>
   <data name="NoRoyaltyYet" xml:space="preserve">
     <value>The company pays you no royalty yet.</value>
   </data>

@@ -1,4 +1,6 @@
+using System.Globalization;
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.Localization;
 using Netto.Core.Copyright;
 using Netto.Web.Client.River;
 using Netto.Web.Client.River.Copyright;
@@ -13,6 +15,8 @@ public class CopyrightCardTextTests
     private static readonly ResxText Resources = ResxText.For<CopyrightCard>();
 
     private static readonly CopyrightRules Rules = CopyrightRules.IncomeYear2026;
+
+    private static readonly IStringLocalizer Texts = new CardTexts();
 
     [Fact]
     public void CopyrightCardResx_everyLimitThatSetsThePartWithin_hasAText()
@@ -107,7 +111,7 @@ public class CopyrightCardTextTests
         string[] keys =
         [
             "Title", "Hint", "AverageLabel", "AverageHint", "AttestationLabel", "AttestationHint", "CreativeShareLabel", "CreativeShareHint", "NoRoyaltyYet",
-            "Readings", "WithTitle", "WithoutTitle", "Remove", "PolicyLabel", "PolicyHint", "FixedRoyaltyLabel", "FixedRoyaltyHint",
+            "Readings", "WithTitle", "WithoutTitle", "Remove", "PolicyLabel", "PolicyHint", "FixedRoyaltyLabel", "FixedRoyaltyHint", "YearsRate",
         ];
 
         Resources.Missing(keys).ShouldBeEmpty();
@@ -172,15 +176,19 @@ public class CopyrightCardTextTests
     [Fact]
     public void Rate_aRuleAmount_isItsOwnPercentage()
     {
-        (CopyrightCardText.Rate(Rules.EnvelopeRate), CopyrightCardText.Rate(Rules.WithholdingRate), CopyrightCardText.Rate(Rules.TaxedApartRate),
-                CopyrightCardText.Rate(Rules.RelativeLimit))
+        (CopyrightCardText.Rate(Texts, Rules.EnvelopeRate), CopyrightCardText.Rate(Texts, Rules.WithholdingRate), CopyrightCardText.Rate(Texts, Rules.TaxedApartRate),
+                CopyrightCardText.Rate(Texts, Rules.RelativeLimit))
             .ShouldBe(("25%", "15%", "15%", "30%"));
     }
 
+    // The words come from the card's .resx (YearsRate), never from the helper.
     [Fact]
-    public void Rate_noRateForTheYear_isTheYearsRate()
+    public void Rate_noRateForTheYear_isTheYearsRateOfTheResx()
     {
-        (CopyrightCardText.Rate(CopyrightRules.IncomeYear2025.EnvelopeRate), CopyrightCardText.Rate(null)).ShouldBe(("the year's rate", "the year's rate"));
+        var yearsRate = Resources.Get("YearsRate").ShouldNotBeNull();
+
+        (CopyrightCardText.Rate(Texts, CopyrightRules.IncomeYear2025.EnvelopeRate), CopyrightCardText.Rate(Texts, null)).ShouldBe((yearsRate, yearsRate));
+        yearsRate.ShouldBe("the year's rate");
     }
 
     // The placeholders each text reads, counted from 0: the card passes one argument for each.
@@ -205,5 +213,17 @@ public class CopyrightCardTextTests
         var phrases = variations.SelectMany(inputs => CopyrightSettingsView.From(inputs, inputs.Run()).Situation);
 
         Resources.Missing(phrases.Select(phrase => phrase.Key).Append("SituationTitle")).ShouldBeEmpty();
+    }
+
+    // The card's texts, read from its .resx as IStringLocalizer<CopyrightCard> reads them.
+    private sealed class CardTexts : IStringLocalizer
+    {
+        public LocalizedString this[string name] =>
+            Resources.Get(name) is { } text ? new(name, text) : new(name, name, resourceNotFound: true);
+
+        public LocalizedString this[string name, params object[] arguments] =>
+            Resources.Get(name) is { } text ? new(name, string.Format(CultureInfo.InvariantCulture, text, arguments)) : this[name];
+
+        public IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures) => Resources.Entries.Select(entry => new LocalizedString(entry.Key, entry.Value));
     }
 }
