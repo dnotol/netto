@@ -96,12 +96,20 @@
 }
 
 /* The bucket's own trigger, the name as it is: no dotted underline, which marks a term of running text;
-   gold while hovered or focused, an active state. */
+   gold while hovered or focused, an active state. One line, left-aligned where MudBlazor and the browser
+   centre a button's content, which would cut a name too long for its column at both ends: clamped from its
+   left, it keeps its start and ends on an ellipsis. It wraps, the label's nowrap undone, so the clamp has a line to
+   end on. */
 .bucket__label ::deep .bucket__name {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
     min-width: 0;
+    max-height: 1.5em;
     overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    text-align: left;
+    white-space: normal;
+    overflow-wrap: anywhere;
     transition: color 0.2s ease;
 }
 
