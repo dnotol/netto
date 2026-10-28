@@ -12,7 +12,7 @@
     }
 
 /* The skip link: out of sight above the window until it takes the focus, then a pill at the top
-   left, over the site header. */
+   left, over the band. */
 .skip-link {
     position: fixed;
     top: 0.75rem;
