@@ -80,4 +80,15 @@ public enum RefusedInput
 
     // The net professional income of the partner the director is taxed jointly with.
     PartnerIncome,
+
+    // The dependent children, the director's own or in a joint return the household's.
+    Children,
+
+    // How many of the children are under 3 with no childcare costs claimed for them.
+    ChildrenUnder3,
+
+    // The dependants aged 66 or more in a situation of dependence.
+    DependantsInCare,
+
+    OtherDependants,
 }

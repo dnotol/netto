@@ -56,6 +56,16 @@ public sealed record GrossToNetResult(
     public decimal YearNetInPocket => NetInPocket - OtherIncomeTax.Total - TaxedApartTax.Total;
 
     public HouseholdTax? Household { get; init; }
+
+    // The refundable credit for children the pay's tax takes off (art. 134 §3), refunded beyond the tax:
+    // in a joint year the household's, the partner filing alone having none.
+    public decimal ChildTaxCredit { get; init; }
+
+    // What the dependants add to the tax-free amount, and the taxpayer they go to: the director's taxed
+    // alone, the higher taxable income's in a joint year (art. 134 §4, 2°).
+    public TaxFreeAmountSupplements Supplements { get; init; } = TaxFreeAmountSupplements.None;
+
+    public Taxpayer SupplementsTo { get; init; } = Taxpayer.Director;
 }
 
 // The year's joint assessment of a household (CIR 92 art. 126): Year, the two partners' columns on the
@@ -70,7 +80,8 @@ public sealed record HouseholdTax(JointAssessment Year, PersonalTaxResult Partne
 // What another income taxed with the pay, a home office's net rent (Income), adds to the year's
 // personal tax: the income tax and the municipal surcharge on the total less the pay's own, the credit
 // for low earned income it takes away by raising the total net income, and the surcharge less the
-// bonus that lost credit adds on the pay's tax. Nothing without one.
+// bonus that lost credit adds on the pay's tax. ChildTaxCreditLost is the credit for children it takes
+// away, its income absorbing the tax-free amount the credit stood on. Nothing without one.
 public sealed record OtherIncomeTax(
     decimal Income,
     decimal IncomeTax,
@@ -80,7 +91,9 @@ public sealed record OtherIncomeTax(
 {
     public static OtherIncomeTax None { get; } = new(0m, 0m, 0m, 0m, 0m);
 
-    public decimal Total => IncomeTax + MunicipalSurcharge + LowEarnedIncomeCreditLost + AdvancePayments;
+    public decimal ChildTaxCreditLost { get; init; }
+
+    public decimal Total => IncomeTax + MunicipalSurcharge + LowEarnedIncomeCreditLost + ChildTaxCreditLost + AdvancePayments;
 }
 
 // Where the next 1,000 of gross pay goes in the year: with an income taxed with the pay, the taxes
@@ -94,6 +107,7 @@ public sealed record OtherIncomeTax(
 // than the 1,000. AdvancePayments is the surcharge it adds, less the bonus it adds, with the same
 // advance payments and the same amount withheld, or, when the key formula gives it, the formula's
 // withholding on the next 1,000's own pay.
+// ChildTaxCredit is the credit for children the next 1,000 takes away, another part of it.
 public sealed record NextThousand(
     decimal SocialContributions,
     decimal IncomeTax,
@@ -103,4 +117,6 @@ public sealed record NextThousand(
     decimal NetInPocket)
 {
     public decimal FundFee { get; init; }
+
+    public decimal ChildTaxCredit { get; init; }
 }

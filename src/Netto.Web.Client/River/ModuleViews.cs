@@ -627,7 +627,7 @@ internal sealed record DividendView(
 // split's while the company is there, Director pay's own once it is skipped, and so is the key formula's
 // month of it; the royalty, fixed or following the pay, and its creative share are Copyright royalty's; the
 // income year, which no card holds, and what the fund bills, which the When to pay tab shows itself, the river's;
-// the partner's income the Household card's, the company's year there or not.
+// the partner's income and the dependants the Household card's, the company's year there or not.
 internal static class RiverErrors
 {
     public static RiverModule Owner(Refusal refusal, bool companySkipped) => refusal.Input switch
@@ -645,7 +645,8 @@ internal static class RiverErrors
         RefusedInput.CompanyAdvancePayments => RiverModule.CorporateTax,
         RefusedInput.Reserve or RefusedInput.EarlierProfits => RiverModule.Dividend,
         RefusedInput.BilledContributions => RiverModule.River,
-        RefusedInput.PartnerIncome => RiverModule.Household,
+        RefusedInput.PartnerIncome or RefusedInput.Children or RefusedInput.ChildrenUnder3 or RefusedInput.DependantsInCare or RefusedInput.OtherDependants
+            => RiverModule.Household,
         _ => throw new ArgumentOutOfRangeException(nameof(refusal), refusal.Input, "No card holds this input."),
     };
 }

@@ -42,8 +42,9 @@ internal sealed record RentYear(RentRules Rules, RentResult Rent, bool Used) : L
 
     // What the rent adds to the director's personal tax, taxed with the pay: the income tax and the
     // municipal surcharge on the total less the pay's own, the credit for low earned income it takes
-    // away, and what that lost credit adds to the surcharge on the pay's tax, less the bonus. Each is
-    // paid out of the pocket, the credit's as a positive amount since it is lost, not refunded.
+    // away, and, with children, the credit for children it takes away by absorbing the tax-free amount the
+    // credit stood on, and what those lost credits add to the surcharge on the pay's tax, less the bonus.
+    // Each is paid out of the pocket, a credit's as a positive amount since it is lost, not refunded.
     public override IReadOnlyList<Step> StepsAfterPay(GrossToNetResult pay, PersonalTaxRules taxRules, Source municipalSurcharge, RuleAmount municipalRate) =>
         !Used ? [] :
         [
@@ -53,6 +54,10 @@ internal sealed record RentYear(RentRules Rules, RentResult Rent, bool Used) : L
                 municipalSurcharge, [municipalRate]),
             new Step("rent_low_earned_income_credit_lost", Layer.Personal, TaxableEvent.Rent, Track.PaidOut, pay.OtherIncomeTax.LowEarnedIncomeCreditLost,
                 taxRules.LowEarnedIncomeCredit.Source, taxRules.LowEarnedIncomeCredit.Amounts),
+            .. pay.Supplements.ForChildren > 0m
+                ? [new Step("rent_child_tax_credit_lost", Layer.Personal, TaxableEvent.Rent, Track.PaidOut, pay.OtherIncomeTax.ChildTaxCreditLost,
+                    taxRules.Supplements.CreditSource, [taxRules.Supplements.ChildCreditCapPerChild])]
+                : Array.Empty<Step>(),
             new Step("rent_income_tax_advance_payments", Layer.Personal, TaxableEvent.Rent, Track.PaidOut, pay.OtherIncomeTax.AdvancePayments,
                 taxRules.AdvancePayments.Source, taxRules.AdvancePayments.SurchargeAmounts),
         ];

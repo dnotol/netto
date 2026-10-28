@@ -55,6 +55,14 @@ public class RiverErrorsTests
         (CopyrightCalculator.CreativeShareOutOfRange, false, "Copyright"),
         (GrossToNet.PartnerIncomeNegative, false, "Household"),
         (GrossToNet.PartnerIncomeNegative, true, "Household"),
+        (GrossToNet.ChildrenNegative, false, "Household"),
+        (GrossToNet.ChildrenNegative, true, "Household"),
+        (GrossToNet.ChildrenUnder3OutOfRange, false, "Household"),
+        (GrossToNet.ChildrenUnder3OutOfRange, true, "Household"),
+        (GrossToNet.DependantsInCareNegative, false, "Household"),
+        (GrossToNet.DependantsInCareNegative, true, "Household"),
+        (GrossToNet.OtherDependantsNegative, false, "Household"),
+        (GrossToNet.OtherDependantsNegative, true, "Household"),
     ];
 
     public static TheoryData<Refusal, bool, string> SpreadOverCardsData => new(SpreadOverCards);

@@ -36,6 +36,9 @@
   <data name="Title_low_earned_income_credit" xml:space="preserve">
     <value>Tax credit for low earned income</value>
   </data>
+  <data name="Title_child_tax_credit" xml:space="preserve">
+    <value>Refundable tax credit for children</value>
+  </data>
   <data name="Rule_social_contributions" xml:space="preserve">
     <value>The final contributions of a self-employed person in main occupation, owed on the year's net taxable professional income: one rate up to a first ceiling, a lower rate up to a second ceiling, nothing above it, and never less than the contribution on the minimum income. The social insurance fund bills them in four equal quarters, each rounded to the cent. The contributions lower the very income they are computed on, so the two are solved together.</value>
   </data>
@@ -134,6 +137,36 @@
   </data>
   <data name="Amount_marital_quotient_cap_both_aged_66" xml:space="preserve">
     <value>Marital quotient, most attributed when both partners are 66</value>
+  </data>
+  <data name="Amount_supplement_one_child" xml:space="preserve">
+    <value>Tax-free amount, one dependent child</value>
+  </data>
+  <data name="Amount_supplement_two_children" xml:space="preserve">
+    <value>Tax-free amount, two dependent children</value>
+  </data>
+  <data name="Amount_supplement_three_children" xml:space="preserve">
+    <value>Tax-free amount, three dependent children</value>
+  </data>
+  <data name="Amount_supplement_four_children" xml:space="preserve">
+    <value>Tax-free amount, four dependent children</value>
+  </data>
+  <data name="Amount_supplement_each_child_beyond_four" xml:space="preserve">
+    <value>Tax-free amount, each child beyond the fourth</value>
+  </data>
+  <data name="Amount_supplement_child_under_3" xml:space="preserve">
+    <value>Tax-free amount, each child under 3</value>
+  </data>
+  <data name="Amount_supplement_single_parent" xml:space="preserve">
+    <value>Tax-free amount, single parent</value>
+  </data>
+  <data name="Amount_supplement_dependant_aged_66_in_care" xml:space="preserve">
+    <value>Tax-free amount, each dependant aged 66 or more in care</value>
+  </data>
+  <data name="Amount_supplement_other_dependant" xml:space="preserve">
+    <value>Tax-free amount, each other dependant</value>
+  </data>
+  <data name="Amount_child_tax_credit_cap_per_child" xml:space="preserve">
+    <value>Credit for children, most per child</value>
   </data>
   <data name="Amount_autonomy_factor" xml:space="preserve">
     <value>Autonomy factor</value>
@@ -545,6 +578,15 @@
   </data>
   <data name="Rule_rent_low_earned_income_credit_lost" xml:space="preserve">
     <value>The credit follows your pay, but your total net income, the rent included, limits it: none above the ceiling, and from where the full credit ends up to the ceiling, at most what the same falling line gives on that total. What the rent takes away of the credit your pay alone would get is lost.</value>
+  </data>
+  <data name="Title_rent_child_tax_credit_lost" xml:space="preserve">
+    <value>Tax credit for children the rent takes away</value>
+  </data>
+  <data name="Rule_rent_child_tax_credit_lost" xml:space="preserve">
+    <value>The rent is taxed with your pay, so it uses the tax-free amount your children's supplements raised. What it uses of the part the tax could not absorb, which would have been refunded as the credit for children, is lost.</value>
+  </data>
+  <data name="Rule_child_tax_credit" xml:space="preserve">
+    <value>Your children raise the tax-free amount. When your income is too low for the tax on it to absorb all of that, the part due to the children's supplements is refunded as a tax credit, up to a cap per child. It comes off after the municipal surcharge, and what your tax does not absorb is refunded. In a joint return it is your household's.</value>
   </data>
   <data name="Title_rent_income_tax_advance_payments" xml:space="preserve">
     <value>Advance-payment surcharge the lost credit adds</value>

@@ -307,6 +307,34 @@ public sealed record PersonalTaxRules(
     public IReadOnlyList<RuleAmount> JointIncomeTaxAmounts(bool bothAged66) =>
         [.. IncomeTaxAmounts, .. TaxFreeAmountAmounts.Except(IncomeTaxAmounts), MaritalQuotient.Rate, MaritalQuotient.CapFor(bothAged66)];
 
+    // What the household's income tax uses: a joint assessment's amounts or a single person's, the rest of
+    // the scale of the tax on the tax-free amount once dependants' supplements climb it, and the
+    // supplements the dependants took; the credit's cap is the credit's step's.
+    public IReadOnlyList<RuleAmount> IncomeTaxAmountsFor(Household household)
+    {
+        ArgumentNullException.ThrowIfNull(household);
+
+        var supplements = Supplements.Used(household.Dependants, household.TaxedJointly).Where(amount => amount != Supplements.ChildCreditCapPerChild).ToList();
+        IReadOnlyList<RuleAmount> amounts = household.TaxedJointly
+            ? JointIncomeTaxAmounts(household.BothAged66)
+            : supplements.Count > 0 ? [.. IncomeTaxAmounts, .. TaxFreeAmountAmounts.Except(IncomeTaxAmounts)] : IncomeTaxAmounts;
+
+        return [.. amounts, .. supplements];
+    }
+
+    // The texts the household's income tax rests on besides the scale and its amounts': in a joint
+    // assessment the marital quotient and art. 134 §4, and the source of the dependants' supplements.
+    public IReadOnlyList<Source> IncomeTaxAlsoCites(Household household)
+    {
+        ArgumentNullException.ThrowIfNull(household);
+
+        return
+        [
+            .. household.TaxedJointly ? [MaritalQuotient.Source, TaxFreeAmountSharing] : Array.Empty<Source>(),
+            .. Supplements.Of(household.Dependants, household.TaxedJointly).Total > 0m ? [Supplements.Source] : Array.Empty<Source>(),
+        ];
+    }
+
     public IReadOnlyList<RuleAmount> IncomeTaxAmounts
     {
         get

@@ -147,4 +147,16 @@
   <data name="Error_partner_income_negative" xml:space="preserve">
     <value>Your partner's net professional income cannot be negative. Enter 0 if they have none.</value>
   </data>
+  <data name="Error_children_negative" xml:space="preserve">
+    <value>The number of dependent children cannot be negative. Enter 0 if you have none.</value>
+  </data>
+  <data name="Error_children_under_3_out_of_range" xml:space="preserve">
+    <value>The children under 3 are counted among your dependent children: enter between 0 and the number of children.</value>
+  </data>
+  <data name="Error_dependants_in_care_negative" xml:space="preserve">
+    <value>The number of dependants aged 66 or more in care cannot be negative. Enter 0 if you have none.</value>
+  </data>
+  <data name="Error_other_dependants_negative" xml:space="preserve">
+    <value>The number of other dependants cannot be negative. Enter 0 if you have none.</value>
+  </data>
 </root>

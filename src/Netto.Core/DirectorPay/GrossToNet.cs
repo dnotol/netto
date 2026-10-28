@@ -62,6 +62,10 @@ public static class GrossToNet
     public static readonly Refusal TaxAdvancePaymentNegative = new("tax_advance_payment_negative", RefusedInput.DirectorAdvancePayments);
     public static readonly Refusal FundFeeRateOutOfRange = new("fund_fee_rate_out_of_range", RefusedInput.FundFeeRate);
     public static readonly Refusal PartnerIncomeNegative = new("partner_income_negative", RefusedInput.PartnerIncome);
+    public static readonly Refusal ChildrenNegative = new("children_negative", RefusedInput.Children);
+    public static readonly Refusal ChildrenUnder3OutOfRange = new("children_under_3_out_of_range", RefusedInput.ChildrenUnder3);
+    public static readonly Refusal DependantsInCareNegative = new("dependants_in_care_negative", RefusedInput.DependantsInCare);
+    public static readonly Refusal OtherDependantsNegative = new("other_dependants_negative", RefusedInput.OtherDependants);
 
     private const decimal MaximumMunicipalRate = 0.10m;
 
@@ -110,11 +114,13 @@ public static class GrossToNet
             return (null, TaxAdvancePaymentNegative);
         if (household.TaxedJointly && household.PartnerIncome < 0m)
             return (null, PartnerIncomeNegative);
+        if (DependantsRefusal(household.Dependants) is { } dependantsRefusal)
+            return (null, dependantsRefusal);
 
         var figures = Figures.For(socialRules, taxRules, withholdingRules, grossPay, municipalRate.Value, prepayments, paidBy, withPay, fundFeeRate, household);
         var next = Figures.For(socialRules, taxRules, withholdingRules, grossPay + NextSlice, municipalRate.Value, prepayments, paidBy, withPay, fundFeeRate, household);
         var advancePayments = IncomeTaxAdvancePaymentCalculator.WithTopUps(
-            taxRules.AdvancePayments, figures.YearAdvancePayments, figures.Tax.IncomeTax, figures.YearTax.LowEarnedIncomeCredit,
+            taxRules.AdvancePayments, figures.YearAdvancePayments, figures.Tax.IncomeTax, Credits(figures.YearTax),
             prepayments with { Withheld = figures.Withheld });
 
         return (new GrossToNetResult(
@@ -142,14 +148,41 @@ public static class GrossToNet
                 next.YearTax.MunicipalSurcharge - figures.YearTax.MunicipalSurcharge,
                 figures.YearTax.LowEarnedIncomeCredit - next.YearTax.LowEarnedIncomeCredit,
                 next.YearAdvancePayments.Surcharge - next.YearAdvancePayments.Bonus - figures.YearAdvancePayments.Surcharge + figures.YearAdvancePayments.Bonus,
-                next.YearNetInPocket - figures.YearNetInPocket) { FundFee = next.FundFee - figures.FundFee },
+                next.YearNetInPocket - figures.YearNetInPocket)
+            {
+                FundFee = next.FundFee - figures.FundFee,
+                ChildTaxCredit = Money.Minus(figures.YearTax.ChildTaxCredit, next.YearTax.ChildTaxCredit),
+            },
             Statement(figures),
             AssessmentCalculator.Compute(taxRules, figures.YearTax, advancePayments, figures.Withheld, figures.WithheldGiven, prepayments.Paid, movable.Withheld),
             figures.OtherIncomeTax,
             figures.RequalifiedPay,
             figures.TaxablePayWithoutRequalified,
-            figures.TaxedApartTax) { Household = HouseholdOf(taxRules, figures, municipalRate.Value, withPay, household) }, null);
+            figures.TaxedApartTax)
+        {
+            Household = HouseholdOf(taxRules, figures, municipalRate.Value, withPay, household),
+            ChildTaxCredit = figures.Tax.ChildTaxCredit,
+            Supplements = figures.Tax.Supplements,
+            SupplementsTo = figures.Tax.SupplementsTo,
+        }, null);
     }
+
+    // The dependants as the user declared them, refused on the field that holds them: a count below zero,
+    // or more children under 3 than children.
+    private static Refusal? DependantsRefusal(Dependants dependants) => dependants switch
+    {
+        { Children: < 0 } => ChildrenNegative,
+        { ChildrenUnder3: < 0 } => ChildrenUnder3OutOfRange,
+        _ when dependants.ChildrenUnder3 > dependants.Children => ChildrenUnder3OutOfRange,
+        { DependantsAged66InCare: < 0 } => DependantsInCareNegative,
+        { OtherDependants: < 0 } => OtherDependantsNegative,
+        _ => null,
+    };
+
+    // The tax credits the advance-payment surcharge's base subtracts (art. 175, 1°): the credit for low
+    // earned income and the credit for children, both federal. The river's share of a joint year counts
+    // the household's credit for children whole, the partner filing alone having none.
+    private static decimal Credits(PersonalTaxResult tax) => tax.LowEarnedIncomeCredit + tax.ChildTaxCredit;
 
     // The household's year beside the pay's: its two columns on the whole income, what the partner would
     // owe filing alone, and what the marital quotient saves the pay's share of the household's tax: that
@@ -272,13 +305,15 @@ public static class GrossToNet
         new Step("flat_rate_costs", Layer.Personal, TaxableEvent.DirectorPay, Track.TaxBaseOnly, figures.Tax.FlatRateCosts,
             taxRules.DirectorPayDeductions, taxRules.FlatRateCostsAmounts),
         new Step("taxable_income", Layer.Personal, TaxableEvent.DirectorPay, Track.TaxBaseOnly, figures.Tax.TaxableIncome, taxRules.DirectorPayDeductions, []),
-        household.TaxedJointly
-            ? new Step("income_tax", Layer.Personal, TaxableEvent.DirectorPay, Track.PaidOut, figures.Tax.IncomeTax, taxRules.IncomeTaxScale,
-                taxRules.JointIncomeTaxAmounts(household.BothAged66)) { AlsoCites = [taxRules.MaritalQuotient.Source, taxRules.TaxFreeAmountSharing] }
-            : new Step("income_tax", Layer.Personal, TaxableEvent.DirectorPay, Track.PaidOut, figures.Tax.IncomeTax, taxRules.IncomeTaxScale, taxRules.IncomeTaxAmounts),
+        new Step("income_tax", Layer.Personal, TaxableEvent.DirectorPay, Track.PaidOut, figures.Tax.IncomeTax, taxRules.IncomeTaxScale,
+            taxRules.IncomeTaxAmountsFor(household)) { AlsoCites = taxRules.IncomeTaxAlsoCites(household) },
         new Step("municipal_surcharge", Layer.Personal, TaxableEvent.DirectorPay, Track.PaidOut, figures.Tax.MunicipalSurcharge, municipalSurcharge, [municipalRate]),
         new Step("low_earned_income_credit", Layer.Personal, TaxableEvent.DirectorPay, Track.PaidOut, -figures.Tax.LowEarnedIncomeCredit,
             taxRules.LowEarnedIncomeCredit.Source, taxRules.LowEarnedIncomeCredit.Amounts),
+        .. household.Dependants.Children > 0
+            ? [new Step("child_tax_credit", Layer.Personal, TaxableEvent.DirectorPay, Track.PaidOut, -figures.Tax.ChildTaxCredit,
+                taxRules.Supplements.CreditSource, [taxRules.Supplements.ChildCreditCapPerChild])]
+            : Array.Empty<Step>(),
         new Step("income_tax_advance_payment_surcharge", Layer.Personal, TaxableEvent.DirectorPay, Track.PaidOut, figures.AdvancePayments.Surcharge,
             taxRules.AdvancePayments.Source, taxRules.AdvancePayments.SurchargeAmounts),
         new Step("income_tax_advance_payment_bonus", Layer.Personal, TaxableEvent.DirectorPay, Track.PaidOut, -figures.AdvancePayments.Bonus,
@@ -388,7 +423,7 @@ public static class GrossToNet
             var withWithheld = prepayments with { Withheld = withheld };
             var partnerAlone = household.TaxedJointly ? PersonalTaxCalculator.PartnerAlone(taxRules, household.PartnerIncome, municipalRate) : null;
             var tax = Share(PersonalTaxCalculator.Compute(taxRules, taxablePay, ownContributions, municipalRate, household: household), partnerAlone);
-            var advancePayments = IncomeTaxAdvancePaymentCalculator.Figures(taxRules.AdvancePayments, tax.IncomeTax, tax.LowEarnedIncomeCredit, withWithheld);
+            var advancePayments = IncomeTaxAdvancePaymentCalculator.Figures(taxRules.AdvancePayments, tax.IncomeTax, Credits(tax), withWithheld);
             var (withOther, withOtherAdvancePayments) = withPay.OtherIncome == 0m
                 ? (tax, advancePayments)
                 : YearOf(taxRules, taxablePay, ownContributions, municipalRate, withPay with { Movable = movable with { TaxedApart = null } }, tax, withWithheld, household, partnerAlone);
@@ -407,7 +442,7 @@ public static class GrossToNet
                 grossPay, contributions, fundFee, paidByCompany, benefitInKind, asPay,
                 asPay == 0m ? taxablePay : grossPay + benefitInKind + (companyPays ? CompanyPaidToTheFund(socialRules, taxRules, grossPay + benefitInKind, fundFeeRate) : 0m),
                 withholding, withheld, prepayments.Withheld is not null, tax, advancePayments,
-                taxablePay - benefitInKind - ownContributions - tax.IncomeTax - tax.MunicipalSurcharge + tax.LowEarnedIncomeCredit
+                taxablePay - benefitInKind - ownContributions - tax.IncomeTax - tax.MunicipalSurcharge + tax.LowEarnedIncomeCredit + tax.ChildTaxCredit
                 - advancePayments.Surcharge + advancePayments.Bonus,
                 yearTax,
                 yearAdvancePayments,
@@ -418,7 +453,8 @@ public static class GrossToNet
 
         // The river's share of the household's tax: each line less what the partner would owe filing alone,
         // the household's columns kept whole; the tax itself for a director taxed alone. The partner has no
-        // credit for low earned income, so it is the director's either way.
+        // credit for low earned income, so it is the director's either way; filing alone they have no
+        // dependants, so the supplements and the credit for children are the household's whole.
         private static PersonalTaxResult Share(PersonalTaxResult tax, PersonalTaxResult? partnerAlone) => partnerAlone is null ? tax : tax with
         {
             BasicTax = Money.Minus(tax.BasicTax, partnerAlone.BasicTax),
@@ -432,8 +468,8 @@ public static class GrossToNet
         };
 
         // What an income moves from the figures without it to those with it: the income tax and the
-        // municipal surcharge it adds, the credit it takes away, and the surcharge less the bonus that
-        // lost credit adds; a plain zero for what it moves nothing of.
+        // municipal surcharge it adds, the credits it takes away, and the surcharge less the bonus those
+        // lost credits add; a plain zero for what it moves nothing of.
         private static OtherIncomeTax Added(
             decimal income, PersonalTaxResult with, IncomeTaxAdvancePaymentResult withAdvancePayments, PersonalTaxResult without,
             IncomeTaxAdvancePaymentResult withoutAdvancePayments) =>
@@ -442,7 +478,10 @@ public static class GrossToNet
                 Money.Minus(with.IncomeTax, without.IncomeTax),
                 Money.Minus(with.MunicipalSurcharge, without.MunicipalSurcharge),
                 Money.Minus(without.LowEarnedIncomeCredit, with.LowEarnedIncomeCredit),
-                Money.Minus(withAdvancePayments.Surcharge - withAdvancePayments.Bonus, withoutAdvancePayments.Surcharge - withoutAdvancePayments.Bonus));
+                Money.Minus(withAdvancePayments.Surcharge - withAdvancePayments.Bonus, withoutAdvancePayments.Surcharge - withoutAdvancePayments.Bonus))
+            {
+                ChildTaxCreditLost = Money.Minus(without.ChildTaxCredit, with.ChildTaxCredit),
+            };
 
         // The tax on the pay with what is taxed with it (the other income and an income taxed apart), and
         // the surcharge on the pay's own tax, as art. 158 takes it separately, less the credit the total
@@ -454,7 +493,7 @@ public static class GrossToNet
         {
             var yearTax = Share(
                 PersonalTaxCalculator.Compute(taxRules, taxablePay, ownContributions, municipalRate, withPay.OtherIncome, withPay.Movable.TaxedApart, household), partnerAlone);
-            return (yearTax, IncomeTaxAdvancePaymentCalculator.Figures(taxRules.AdvancePayments, payTax.IncomeTax, yearTax.LowEarnedIncomeCredit, prepayments));
+            return (yearTax, IncomeTaxAdvancePaymentCalculator.Figures(taxRules.AdvancePayments, payTax.IncomeTax, Credits(yearTax), prepayments));
         }
     }
 }

@@ -55,6 +55,37 @@ public class StepTextTests
         MissingTexts(value.ShouldNotBeNull().Steps).ShouldBeEmpty();
     }
 
+    // Dependants cite their supplements and, with children, the credit for children and its cap, alone or
+    // in a joint year, and every supplement a step can cite has its words.
+    public static TheoryData<bool, int> DependantsHouseholds => new() { { false, 1 }, { false, 5 }, { true, 2 }, { true, 6 } };
+
+    [Theory]
+    [MemberData(nameof(DependantsHouseholds))]
+    public void StepDetailsResx_everyKeyOfTheDirectorPayStepsWithDependants_hasAText(bool joint, int children)
+    {
+        var dependants = new Dependants(Children: children, ChildrenUnder3: 1, SingleParent: true, DependantsAged66InCare: 1, OtherDependants: 1);
+        var household = (joint ? new Household(HouseholdStatus.MarriedOrLegalCohabitant) : Household.None) with { Dependants = dependants };
+
+        var (value, _) = GrossToNet.Compute(2026, 20_000m, MunicipalRates.IncomeYear2026.Entered(0.07m), TaxPrepayments.None, household: household);
+
+        MissingTexts(value.ShouldNotBeNull().Steps).ShouldBeEmpty();
+        MissingTexts([new Step("income_tax", Layer.Personal, TaxableEvent.DirectorPay, Track.PaidOut, 0m, PersonalTaxRules.IncomeYear2026.IncomeTaxScale,
+            PersonalTaxRules.IncomeYear2026.Supplements.Amounts)]).ShouldBeEmpty();
+    }
+
+    // A rent taxed with a pay that has children takes away its share of the credit for children.
+    [Fact]
+    public void StepDetailsResx_everyKeyOfTheRentStepsWithChildren_hasAText()
+    {
+        var household = Household.None with { Dependants = new Dependants(Children: 2) };
+        var scenario = Unprepaid(50_000m, WithholdingCategory.Standard) with { Rent = RentAtTheCap, Household = household };
+
+        var (value, _) = YearSimulation.Run(scenario);
+
+        MissingTexts(value.ShouldNotBeNull().Steps).ShouldBeEmpty();
+        value.Steps.ShouldContain(step => step.RuleKey == "rent_child_tax_credit_lost");
+    }
+
     // The river's steps: the company's, the director pay's and the dividend's, nothing kept so a
     // dividend is paid, under each withholding rate the user can declare.
     [Theory]
