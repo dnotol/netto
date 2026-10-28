@@ -16,10 +16,10 @@
 
 <PageTitle>@L[PlanText.PageTitle(_tab)]</PageTitle>
 
-@* The keyboard's first stop from the top of the page, before the site header (MainLayout): it moves
-   the focus to the start of the tab's content, past the header's links and the bar of buckets with its
-   tabs, which stay in sight above. Blazor would take a link to a fragment for a navigation, so the link
-   moves the focus itself. On arriving, Blazor puts the focus on the page's title (Routes,
+@* The keyboard's first stop from the top of the page, before the band at its top (BucketBar, in the site
+   header's place): it moves the focus to the start of the tab's content, past the band's wordmark, tabs,
+   buttons and buckets, which stay in sight above. Blazor would take a link to a fragment for a navigation,
+   so the link moves the focus itself. On arriving, Blazor puts the focus on the page's title (Routes,
    FocusOnNavigate), after the link, and so does a switch of tab (TabHead). *@
 <SectionContent SectionName="@MainLayout.SkipLinkSection">
     <a href="@SkipHref" class="skip-link" @onclick="SkipAsync" @onclick:preventDefault>@L[PlanText.SkipTo(_tab)]</a>
@@ -46,9 +46,9 @@
         <PlansPanel Inputs="_inputs" CanSave="BaselineGain.CanMark(_run)" OnOpen="OnPlanOpened" OnChanged="OnPlansChanged" />
         <CompositionMenu @ref="_composition" Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" />
     </ChildContent>
-    <TabRow>
+    <Tabs>
         <PlanTabBar Current="_tab" Badges="Badges()" />
-    </TabRow>
+    </Tabs>
 </BucketBar>
 <TakenOutNotice @ref="_notice" Module="_takenOut" OnUndo="Undo" OnDismiss="Dismiss" />
 

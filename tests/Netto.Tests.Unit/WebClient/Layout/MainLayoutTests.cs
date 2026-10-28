@@ -72,6 +72,21 @@ public class MainLayoutTests
             .ShouldBe((true, true));
     }
 
+    // On the plan page the band at its top is the header (River/BucketBar): the wordmark, the buckets, the
+    // tabs, the plan's actions and the theme switch, in one band, so the layout draws none of its own.
+    [Theory]
+    [InlineData("plan")]
+    [InlineData("Plan/")]
+    [InlineData("plan/optimisation")]
+    [InlineData("plan/When-To-Pay")]
+    [InlineData("plan?card=split")]
+    public async Task Header_onThePlan_isLeftToThePlansBand(string path)
+    {
+        var html = await RenderLayoutAsync(path);
+
+        (html.Contains("site-header", StringComparison.Ordinal), html.Contains("Switch to dark theme", StringComparison.Ordinal)).ShouldBe((false, false));
+    }
+
     // Every other page keeps the site's header, its wordmark and its theme switch: the front page, the root
     // on its way to the plan, and a page not found, at an address under /plan too.
     [Theory]

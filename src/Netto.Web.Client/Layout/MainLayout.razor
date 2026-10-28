@@ -1,6 +1,7 @@
 ﻿@inherits LayoutComponentBase
 @implements IDisposable
 @using Netto.Web.Client.Pages
+@using Netto.Web.Client.Tabs
 @inject IStringLocalizer<MainLayout> L
 @inject NavigationManager Navigation
 @inject ThemePreference ThemePreference
@@ -13,34 +14,40 @@
 
 @* .netto-app is also the signal app.css uses to hide the boot splash. *@
 <div class="netto-app">
-    @* The page's skip link, if it has one, the keyboard's first stop, before the site header. *@
+    @* The page's skip link, if it has one, the keyboard's first stop, before the site header or the plan's band. *@
     <SectionOutlet SectionName="@SkipLinkSection" />
-    <header class="site-header">
-        <MudContainer MaxWidth="MaxWidth.False" Class="netto-column site-header__inner">
-            @* To the plan, never to /: a link to / leaves the plan page, which is rebuilt and forgets what
-               it had found (PlanEntry), where /plan from one of its tabs keeps the page. *@
-            <a href="/plan" class="wordmark site-header__wordmark">Netto</a>
-            <div class="site-header__end">
-                @* The section links exist only on the front page (/about), where they are same-page links
-                   Blazor scrolls to. Arriving from another page, Blazor resets the scroll to the top once
-                   the new page has rendered (blazor.web.js), undoing any scroll towards the section. The
-                   way into the planner is there too: on the app's own pages it would link to where the
-                   viewer already is, and the front page is reached from the footer. *@
-                @if (OnFrontPage)
-                {
-                    <nav class="site-nav" aria-label="@L["NavLabel"]">
-                        <a href="@FrontPage.Href("levers")">@L["NavLevers"]</a>
-                        <a href="@FrontPage.Href("how-it-works")">@L["NavHowItWorks"]</a>
-                        <a href="@FrontPage.Href("principles")">@L["NavPrinciples"]</a>
-                    </nav>
-                    <MudButton Href="/plan" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small">
-                        @L["NavStart"]
-                    </MudButton>
-                }
-                <span class="site-header__theme"><ThemeSwitch /></span>
-            </div>
-        </MudContainer>
-    </header>
+    @* On the plan page the band at its top is the header: the wordmark, the buckets, the tabs, the plan's
+       actions and the theme switch, in one band that sticks (River/BucketBar), so the layout draws none.
+       Every other page has this one: the front page, the root on its way to the plan, a page not found. *@
+    @if (!OnThePlan)
+    {
+        <header class="site-header">
+            <MudContainer MaxWidth="MaxWidth.False" Class="netto-column site-header__inner">
+                @* To the plan, never to /: a link to / leaves the plan page, which is rebuilt and forgets what
+                   it had found (PlanEntry), where /plan from one of its tabs keeps the page. *@
+                <a href="/plan" class="wordmark site-header__wordmark">Netto</a>
+                <div class="site-header__end">
+                    @* The section links exist only on the front page (/about), where they are same-page links
+                       Blazor scrolls to. Arriving from another page, Blazor resets the scroll to the top once
+                       the new page has rendered (blazor.web.js), undoing any scroll towards the section. The
+                       way into the planner is there too: on the app's own pages it would link to where the
+                       viewer already is, and the front page is reached from the footer. *@
+                    @if (OnFrontPage)
+                    {
+                        <nav class="site-nav" aria-label="@L["NavLabel"]">
+                            <a href="@FrontPage.Href("levers")">@L["NavLevers"]</a>
+                            <a href="@FrontPage.Href("how-it-works")">@L["NavHowItWorks"]</a>
+                            <a href="@FrontPage.Href("principles")">@L["NavPrinciples"]</a>
+                        </nav>
+                        <MudButton Href="/plan" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small">
+                            @L["NavStart"]
+                        </MudButton>
+                    }
+                    <span class="site-header__theme"><ThemeSwitch /></span>
+                </div>
+            </MudContainer>
+        </header>
+    }
 
     <main>
         @Body
@@ -67,6 +74,8 @@
     public const string SkipLinkSection = "skip-link";
 
     private bool OnFrontPage => FrontPage.IsAt(Navigation.ToBaseRelativePath(Navigation.Uri));
+
+    private bool OnThePlan => PlanTabRoutes.IsAt(Navigation.ToBaseRelativePath(Navigation.Uri));
 
     protected override void OnInitialized() => ThemePreference.Changed += OnThemeChanged;
 

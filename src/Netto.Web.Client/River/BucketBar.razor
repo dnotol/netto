@@ -22,8 +22,22 @@
    page opens. Its last row, across its width, is what the page puts there (TabRow): the plan page's
    tabs, which stick with it. Its height is measured once it is drawn and whenever it changes
    (bucket-bar.js), for the line under it that cards are jumped to and controls scrolled to. *@
-<div class="bucket-bar @(TabRow is null ? null : "bucket-bar--tabs")" @ref="_bar">
+<div class="bucket-bar" @ref="_bar">
     <MudContainer MaxWidth="MaxWidth.False" Class="netto-column bucket-bar__inner">
+        <div class="bucket-bar__top">
+            @* To the plan, never to /, as the site header's: a link to / leaves the plan page, which is rebuilt
+               and forgets what it had found (PlanEntry). *@
+            <a href="/plan" class="wordmark bucket-bar__wordmark">Netto</a>
+            @if (Tabs is not null)
+            {
+                <div class="bucket-bar__tabs">@Tabs</div>
+            }
+            @if (ChildContent is not null)
+            {
+                <div class="bucket-bar__actions">@ChildContent</div>
+            }
+            <ThemeSwitch />
+        </div>
         <div class="bucket-bar__figures">
             <dl class="bucket-bar__buckets">
                 @foreach (var key in View?.Buckets.Select(bucket => bucket.Key) ?? BucketsView.Keys)
@@ -84,14 +98,6 @@
             }
             <p class="bucket-bar__live" aria-live="polite">@_announced</p>
         </div>
-        @if (ChildContent is not null)
-        {
-            <div class="bucket-bar__actions">@ChildContent</div>
-        }
-        @if (TabRow is not null)
-        {
-            <div class="bucket-bar__tabs">@TabRow</div>
-        }
     </MudContainer>
 </div>
 
@@ -107,13 +113,13 @@
     [Parameter]
     public bool Unsaved { get; set; }
 
-    // What sits right of the figures.
+    // The plan's actions, in the top row after the tabs, before the theme switch.
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
-    // The bar's last row, under the figures and what sits right of them: the plan page's tabs.
+    // The plan page's tabs, in the top row after the wordmark.
     [Parameter]
-    public RenderFragment? TabRow { get; set; }
+    public RenderFragment? Tabs { get; set; }
 
     private BucketsView? View { get; set; }
 

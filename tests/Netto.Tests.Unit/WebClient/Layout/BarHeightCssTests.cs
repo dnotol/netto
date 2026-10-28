@@ -3,12 +3,13 @@ using Shouldly;
 
 namespace Netto.Tests.WebClient.Layout;
 
-// The line under the sticky header and the bar of buckets, where a card jumped to lands and a control
-// reached with Tab stops (--netto-under-bar), is built from two things the page owns: the header's
-// height, declared once, and the bar's height, measured by bucket-bar.js whatever its width, its names
-// and its tabs make of it. Nothing types the bar's height by hand, so no stylesheet has to agree with
-// another by eye. What the script does in a browser is checked there; these hold the names the
-// stylesheets, the script and the component use for each other.
+// On the plan page the bar of buckets is the band at the top of the window, in the site header's place
+// (MainLayout draws none there): the line under it, where a card jumped to lands and a control reached with
+// Tab stops (--netto-under-bar), is built from the band's height alone, measured by bucket-bar.js whatever
+// its width, its names and its tabs make of it. The site header's height, declared once, is the other pages'.
+// Nothing types the band's height by hand, so no stylesheet has to agree with another by eye. What the script
+// does in a browser is checked there; these hold the names the stylesheets, the script and the component use
+// for each other.
 public class BarHeightCssTests
 {
     private const string HeaderHeight = "--netto-header-height";
@@ -33,16 +34,24 @@ public class BarHeightCssTests
         Stylesheets().Sum(css => Regex.Count(css, @"4\.25rem")).ShouldBe(1);
     }
 
-    [Theory]
-    [InlineData("src/Netto.Web.Client/Layout/MainLayout.razor.css")]
-    [InlineData("src/Netto.Web.Client/River/BucketBar.razor.css")]
-    public void HeaderHeight_aStylesheetThatNeedsIt_readsTheToken(string stylesheet)
+    [Fact]
+    public void HeaderHeight_theSiteHeader_readsTheToken()
     {
-        WithoutComments(Read(stylesheet)).ShouldContain($"var({HeaderHeight})");
+        WithoutComments(Read("src/Netto.Web.Client/Layout/MainLayout.razor.css")).ShouldContain($"var({HeaderHeight})");
+    }
+
+    // The band is the top of the window on the plan page, under no header.
+    [Fact]
+    public void Band_sticksAtTheTopOfTheWindow()
+    {
+        var css = WithoutComments(Read("src/Netto.Web.Client/River/BucketBar.razor.css"));
+
+        (Regex.IsMatch(Stylesheet.Block(css, ".bucket-bar"), @"(^|;)\s*top\s*:\s*0\s*;"), css.Contains(HeaderHeight, StringComparison.Ordinal))
+            .ShouldBe((true, false));
     }
 
     [Fact]
-    public void UnderBar_isDeclaredOnce_fromTheHeaderAndTheMeasuredBar()
+    public void UnderBar_isDeclaredOnce_fromTheMeasuredBandAlone()
     {
         var declarations = Regex.Matches(WithoutComments(Read("src/Netto.Web/wwwroot/app.css")), @"--netto-under-bar\s*:\s*([^;]+);")
             .Select(match => match.Groups[1].Value);
@@ -50,7 +59,7 @@ public class BarHeightCssTests
         var declared = declarations.ShouldHaveSingleItem();
 
         declared.ShouldSatisfyAllConditions(
-            () => declared.ShouldContain($"var({HeaderHeight})"),
+            () => declared.ShouldNotContain(HeaderHeight),
             () => declared.ShouldContain($"var({BarHeight})"));
     }
 

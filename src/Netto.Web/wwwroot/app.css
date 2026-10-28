@@ -111,9 +111,9 @@ html {
     scroll-padding-top: 5.5rem;
 }
 
-/* The site header's height, its 1px border besides (Layout/MainLayout.razor.css), which the bar of
-   buckets sticks under (River/BucketBar.razor.css) and the line under both is counted from; and the
-   bar's own, at nothing until bucket-bar.js has measured it, which it sets on the root. */
+/* The site header's height, its 1px border besides (Layout/MainLayout.razor.css), on every page but the
+   plan, whose band takes its place; and the band's own, at nothing until bucket-bar.js has measured it,
+   which it sets on the root. */
 :root {
     --netto-header-height: 4.25rem;
     --netto-bar-height: 0px;
@@ -131,15 +131,15 @@ html {
     max-width: var(--netto-column);
 }
 
-/* On the plan page, the bar of buckets sticks under the header too (River/BucketBar.razor.css), its
-   row of tabs as its last row (Tabs/PlanTabBar), so a control reached with Tab stops below both, its
-   focus ring in sight: the header and its border, the bar as it is drawn, whatever its width, its
-   names, its line on the setup starred Today or its tabs make of it (bucket-bar.js measures it, and
-   again whenever it changes size), and 1rem of room under it. A notice of a removal at the bottom of
-   the screen (River/TakenOutNotice) hides nothing either. The line is one value, --netto-under-bar,
-   which the map and the column beside it stick at too (Tabs/MapTab). */
+/* On the plan page, the bar of buckets is the band at the top of the window, in the site header's place
+   (River/BucketBar.razor.css), its tabs in its top row (Tabs/PlanTabBar), so a control reached with Tab
+   stops below it, its focus ring in sight: the band as it is drawn, its border included, whatever its
+   width, its names or its tabs make of it (bucket-bar.js measures it, and again whenever it changes size),
+   and 1rem of room under it. A notice of a removal at the bottom of the screen (River/TakenOutNotice) hides
+   nothing either. The line is one value, --netto-under-bar, which the map and the column beside it stick at
+   too (Tabs/MapTab). */
 html:has(.bucket-bar) {
-    --netto-under-bar: calc(var(--netto-header-height) + 1px + var(--netto-bar-height) + 1rem);
+    --netto-under-bar: calc(var(--netto-bar-height) + 1rem);
     scroll-padding-top: var(--netto-under-bar);
 }
 

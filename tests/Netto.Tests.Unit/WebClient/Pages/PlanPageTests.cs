@@ -68,15 +68,17 @@ public class PlanPageTests
             .ShouldBe(2);
     }
 
-    // The tabs are the bar's last row, after its figures and its buttons, so they stick under the site
-    // header with it; a nav of links named for the keyboard and a screen reader.
+    // The tabs are in the band's top row, after its wordmark and before its buttons, so they stick at the top
+    // of the window with it; a nav of links named for the keyboard and a screen reader.
     [Fact]
-    public async Task Plan_tabs_areANamedNavInTheBarsLastRow()
+    public async Task Plan_tabs_areANamedNavInTheBandsTopRow()
     {
         var bar = Bar(await RenderPlanAsync(new Folds(new BrowserStorage())));
 
-        var nav = Regex.Match(bar, "<nav [^>]*aria-label=\"Your plan\"");
-        (nav.Success, nav.Index > bar.IndexOf("bucket-bar__actions", StringComparison.Ordinal)).ShouldBe((true, true));
+        var top = Regex.Match(bar, "<div class=\"bucket-bar__top\".*?<dl class=\"bucket-bar__buckets", RegexOptions.Singleline).Value;
+        var nav = Regex.Match(top, "<nav [^>]*aria-label=\"Your plan\"");
+        (nav.Success, nav.Index > top.IndexOf("bucket-bar__wordmark", StringComparison.Ordinal), nav.Index < top.IndexOf("bucket-bar__actions", StringComparison.Ordinal))
+            .ShouldBe((true, true, true));
     }
 
     [Fact]
@@ -283,9 +285,9 @@ public class PlanPageTests
 
     private static List<string> Toggles(string html) => [.. Regex.Matches(html, "<button[^>]*class=\"fold__toggle\"[^>]*>").Select(match => match.Value)];
 
-    // The bar of buckets, its figures, its buttons and its row of tabs.
+    // The band at the top of the plan page, its top row of tabs and buttons and its figures, to its live region.
     private static string Bar(string html) =>
-        Regex.Match(html, "<div class=\"bucket-bar[^\"]*\".*?<p class=\"bucket-bar__live\".*?</nav>", RegexOptions.Singleline).Value;
+        Regex.Match(html, "<div class=\"bucket-bar[^\"]*\".*?<p class=\"bucket-bar__live\".*?</p>", RegexOptions.Singleline).Value;
 
     // The bar's figures, without the ids its bubbles draw anew each time.
     private static string Buckets(string html) => WebUtility.HtmlDecode(Regex.Replace(

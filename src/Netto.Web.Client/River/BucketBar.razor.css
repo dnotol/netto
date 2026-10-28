@@ -1,21 +1,41 @@
-/* Sticks right under the site header (--netto-header-height, app.css, and its 1px border), opaque so
-   the cards scrolling under it never show through the figures. Its height is measured by bucket-bar.js
-   (--netto-bar-height) for the line under it (--netto-under-bar). */
+/* The band at the top of the window on the plan page, in the site header's place (Layout/MainLayout draws
+   none there): opaque, so the cards scrolling under it never show through the figures, and with no backdrop
+   filter, which would hold the fixed backdrops of the Plans and Composition panels inside it. Its height is
+   measured by bucket-bar.js (--netto-bar-height) for the line under it (--netto-under-bar). Its container is
+   the site's column (app.css, .netto-column). */
 .bucket-bar {
     position: sticky;
-    top: calc(var(--netto-header-height) + 1px);
-    z-index: 9;
+    top: 0;
+    z-index: 10;
     background: var(--netto-page);
     border-bottom: 1px solid var(--netto-line);
 }
 
-.bucket-bar ::deep .mud-container {
+.bucket-bar ::deep .bucket-bar__inner {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.25rem;
+    padding-top: 0.25rem;
+    padding-bottom: 0.5rem;
+}
+
+/* The top row: the wordmark, the tabs, the plan's actions, the theme switch. The tabs fill their links'
+   height, the current one's gold line on the hairline under the row. */
+.bucket-bar__top {
+    display: flex;
     align-items: center;
-    gap: 0.5rem 1.5rem;
-    padding-top: 0.75rem;
-    padding-bottom: 0.75rem;
+    gap: 2rem;
+    min-width: 0;
+    box-shadow: inset 0 -1px 0 var(--netto-line);
+}
+
+.bucket-bar__wordmark {
+    font-size: 1.6rem;
+    line-height: 1;
+}
+
+.bucket-bar__tabs {
+    flex: 1 1 auto;
+    min-width: 0;
 }
 
 .bucket-bar__figures {
@@ -217,13 +237,16 @@
     font-size: 0.8rem;
 }
 
-/* Right of the figures: saving the plan and the saved plans, then the Composition menu. */
+/* Saving the plan and the saved plans, then the Composition menu, at the end of the top row, before the
+   theme switch, which sits close beside them. */
 .bucket-bar__actions {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     justify-content: flex-end;
     gap: 0.5rem;
+    margin-left: auto;
+    margin-right: -1.25rem;
 }
 
 /* What the river leaves in the pocket against the plan starred « Today »: muted like the line above,
@@ -257,36 +280,50 @@
     white-space: nowrap;
 }
 
-/* Below a wide screen the buttons would squeeze the five amounts into each other: they go under the
-   figures, at the right, and the figures take the whole width. */
-@media (max-width: 1200px) {
-    .bucket-bar ::deep .mud-container {
-        grid-template-columns: minmax(0, 1fr);
-        gap: 0.5rem;
+/* Below a wide screen the tabs and the buttons would squeeze each other: the tabs take a row of their own,
+   under the wordmark and the buttons. */
+@media (max-width: 1180px) {
+    .bucket-bar__top {
+        flex-wrap: wrap;
+        row-gap: 0;
     }
 
-    .bucket-bar__actions {
-        justify-self: end;
+    .bucket-bar__tabs {
+        order: 1;
+        flex-basis: 100%;
     }
 }
 
 /* On a phone the bar shares the screen with the sticky site header: buckets two to a row, tighter, so
    the cards keep most of the height. The figures take the whole width. */
 @media (max-width: 640px) {
-    .bucket-bar ::deep .mud-container {
-        grid-template-columns: minmax(0, 1fr);
+    .bucket-bar ::deep .bucket-bar__inner {
         gap: 0.35rem;
-        padding-top: 0.5rem;
         padding-bottom: 0.5rem;
+    }
+
+    .bucket-bar__wordmark {
+        font-size: 1.35rem;
+    }
+
+    /* The wordmark and the theme switch share the first line; the buttons take the next, at the right,
+       so their panels open on the screen; the tabs the last. */
+    .bucket-bar__top ::deep .theme-switch {
+        margin-left: auto;
+    }
+
+    .bucket-bar__actions {
+        order: 1;
+        flex-basis: 100%;
+        margin: 0;
+    }
+
+    .bucket-bar__tabs {
+        order: 2;
     }
 
     .bucket-bar__figures {
         gap: 0.35rem;
-    }
-
-    /* Under the figures, at the right, until the phone's own compact bar. */
-    .bucket-bar__actions {
-        justify-self: end;
     }
 
     .bucket-bar__buckets {
@@ -322,16 +359,4 @@
     .bucket__share {
         display: none;
     }
-}
-
-/* The last row, across the bar's width under everything else: the plan page's tabs (Tabs/PlanTabBar).
-   The bar then has no padding under them, so the current tab's gold line sits on its border. After the
-   narrower widths' rules, which set that padding again. */
-.bucket-bar__tabs {
-    grid-column: 1 / -1;
-    min-width: 0;
-}
-
-.bucket-bar--tabs ::deep .mud-container {
-    padding-bottom: 0;
 }
