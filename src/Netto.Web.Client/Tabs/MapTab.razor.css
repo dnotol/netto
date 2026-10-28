@@ -58,11 +58,13 @@
     }
 
     /* The map's frame, and the map in it, shrink to what the tools leave them under the band, never below
-       the map's smallest scale. */
+       the map's smallest scale: the frame may shrink below its content (min-height: 0, a flex item's being
+       its content's height otherwise), the map in it holding its own minimum. */
     .map-tab__frame {
         display: flex;
         flex: 0 1 auto;
         flex-direction: column;
+        min-height: 0;
     }
 
     .map {

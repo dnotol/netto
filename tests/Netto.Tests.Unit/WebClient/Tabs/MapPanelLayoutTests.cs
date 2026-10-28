@@ -24,7 +24,8 @@ public class MapPanelLayoutTests
 
     // From 1,201 px the map stays under the band while the page scrolls past it, never taller than the window
     // leaves under the band, one custom property saying how much that is; its tools take their line and the
-    // map shrinks to what they leave it, never below its smallest scale.
+    // map's frame and the map in it shrink to what they leave, never below the map's smallest scale: the frame
+    // a flex item that may shrink below its content (min-height: 0), or the map would keep its full height.
     [Fact]
     public void Layout_fromTheBreakpoint_keepsTheMapAndItsToolsWithinWhatTheWindowLeavesUnderTheBand()
     {
@@ -41,6 +42,8 @@ public class MapPanelLayoutTests
             () => Rule(wide, ".map-tab__tools").ShouldContain("flex: none"),
             () => Rule(wide, ".map-tab__frame").ShouldContain("flex: 0 1 auto"),
             () => Rule(wide, ".map-tab__frame").ShouldContain("display: flex"),
+            () => Rule(wide, ".map-tab__frame").ShouldContain("flex-direction: column"),
+            () => Rule(wide, ".map-tab__frame").ShouldContain("min-height: 0"),
             () => Rule(wide, ".map").ShouldContain("flex: 0 1 auto"),
             () => Rule(css, ".map").ShouldContain("var(--map-room)"));
     }
