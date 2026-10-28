@@ -103,6 +103,7 @@ public class PlanTextTests
         Resources.ShouldSatisfyAllConditions(
             () => Resources.Get("AssumedSingle").ShouldBe("Single, with no dependants, unless you add your household to your plan"),
             () => PlanText.Assumptions.ShouldContain("AssumedPartnerWithholding"),
+            () => Resources.Get("AssumedPartnerWithholding").ShouldNotBeNull().ShouldContain("dependants"),
             () => PlanText.Limits.ShouldContain("LimitPartner"),
             () => Resources.Get("LimitPartner").ShouldNotBeNull().ShouldNotContain("dependants"),
             () => PlanText.Limits.ShouldContain("LimitDependants"));
