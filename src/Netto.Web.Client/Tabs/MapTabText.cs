@@ -6,8 +6,7 @@ using Netto.Web.Client.River.CompanyCar;
 namespace Netto.Web.Client.Tabs;
 
 // The resource keys MapTab.razor and the map's links build, held to MapTab.resx by MapTabTextTests, so a
-// module or a link without its words fails a test instead of showing its key on screen. The column beside
-// the map has its own (MapNeighbourhood.resx). The map words the
+// module or a link without its words fails a test instead of showing its key on screen. The map words the
 // conditions on the corporate rate apart from the Corporate tax card: the card states the rate's outcome
 // (CorporateTaxCardText.Condition), the map says each test apart, with its own figures, on the link from
 // the module that sets it.
@@ -45,7 +44,7 @@ internal static class MapTabText
     public static string ReserveCondition(bool holds) => holds ? "Condition_Reserve_Covered" : "Condition_Reserve_NotCovered";
 
     // Whether a condition holds in a word or two, which its line says on the map (MapLink.State), its
-    // sentence above being said in the neighbourhood of the chosen module: a test of the corporate rate
+    // sentence above being the link's words, said nowhere on the tab: a test of the corporate rate
     // met or lost, the office kept, what a royalty does to the pay keeping the rate (lowers it, has no
     // effect on it, or leaves no pay keeping it), the reserve covered or not.
     public static string RateState(bool holds) => holds ? "State_Met" : "State_Lost";

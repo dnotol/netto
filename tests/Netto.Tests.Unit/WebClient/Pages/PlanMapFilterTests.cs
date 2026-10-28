@@ -82,8 +82,8 @@ public class PlanMapFilterTests
     }
 
     // The tab draws again at a tick: the lines and the amounts on them lose the links of the kind unticked,
-    // the others stay as they were, and nothing else of the map changes, the chosen module's neighbourhood
-    // included, which lists all its links whatever the legend ticks.
+    // the others stay as they were, and nothing else of the map changes, what the chosen module receives
+    // included, which is read from all its links whatever the legend ticks.
     [Fact]
     public async Task Plan_aKindUntickedOnTheMap_isDrawnNoMoreByTheTab()
     {
@@ -91,7 +91,7 @@ public class PlanMapFilterTests
         await page.LoadAsync();
         var map = await page.FindAsync<MapTab>();
         await page.InvokeAsync(() => map.ChosenChanged.InvokeAsync(RiverModule.Car));
-        var (lines, words, listed, modules) = (Lines(map), Words(map), MapNeighbourhoodHtml.Listed(map), map.ShownMap.Modules);
+        var (lines, words, listed, modules) = (Lines(map), Words(map), MapReceivedHtml.Listed(map), map.ShownMap.Modules);
         var boxes = await page.FindAllAsync<MudCheckBox<bool>>();
 
         await page.InvokeAsync(() => boxes[Index(MapLinkKind.TaxBase)].ValueChanged.InvokeAsync(false));
@@ -99,10 +99,10 @@ public class PlanMapFilterTests
         map.ShouldSatisfyAllConditions(
             () => lines.Select(line => line.Kind).ShouldContain(MapLinkKind.TaxBase),
             () => words.Select(word => word.Kind).ShouldContain(MapLinkKind.TaxBase),
-            () => listed.ShouldContain(line => line.StartsWith("rule:", StringComparison.Ordinal)),
+            () => listed.ShouldNotBeEmpty(),
             () => Lines(map).ShouldBe(lines.Where(line => line.Kind != MapLinkKind.TaxBase)),
             () => Words(map).ShouldBe(words.Where(word => word.Kind != MapLinkKind.TaxBase)),
-            () => MapNeighbourhoodHtml.Listed(map).ShouldBe(listed),
+            () => MapReceivedHtml.Listed(map).ShouldBe(listed),
             () => map.ShownMap.Links.Select(link => link.Kind).ShouldNotContain(MapLinkKind.TaxBase),
             () => map.ShownMap.Modules.ShouldBe(modules),
             () => page.Errors.ShouldBeEmpty());
@@ -115,7 +115,7 @@ public class PlanMapFilterTests
         await page.LoadAsync();
         var map = await page.FindAsync<MapTab>();
         await page.InvokeAsync(() => map.ChosenChanged.InvokeAsync(RiverModule.Car));
-        var (lines, words, listed, links) = (Lines(map), Words(map), MapNeighbourhoodHtml.Listed(map), map.ShownMap.Links);
+        var (lines, words, listed, links) = (Lines(map), Words(map), MapReceivedHtml.Listed(map), map.ShownMap.Links);
         var boxes = await page.FindAllAsync<MudCheckBox<bool>>();
         await page.InvokeAsync(() => boxes[Index(MapLinkKind.TaxBase)].ValueChanged.InvokeAsync(false));
         Lines(map).Count.ShouldBeLessThan(lines.Count);
@@ -125,12 +125,12 @@ public class PlanMapFilterTests
         map.ShouldSatisfyAllConditions(
             () => Lines(map).ShouldBe(lines),
             () => Words(map).ShouldBe(words),
-            () => MapNeighbourhoodHtml.Listed(map).ShouldBe(listed),
+            () => MapReceivedHtml.Listed(map).ShouldBe(listed),
             () => map.ShownMap.Links.ShouldBe(links));
     }
 
     // Each line the tab draws, by its kind and its route, and whether it is faded; each amount on them, by
-    // its line's kind and route; each line and rule in the neighbourhood of the module chosen.
+    // its line's kind and route.
     private static List<(MapLinkKind Kind, MapRoute Route, bool Faded)> Lines(MapTab map) =>
         [.. map.DrawnLines.Select(line => (line.Bundle.Kind, line.Bundle.Route, line.Faded))];
 

@@ -17,8 +17,8 @@ internal static class MapConditions
 
     // The office allowance acts on the rent, the pay and the benefits on corporate tax's rate, and a
     // royalty and the reserve on the split's pay. Each says whether it holds in a word or two (State), what
-    // its line says on the map, and in a sentence with its figures (Carries), said in the neighbourhood of
-    // the chosen module; and, but the office rule, which always holds, it marks the module it acts
+    // its line says on the map, and in a sentence with its figures (Carries), the link's words, which the
+    // tab says nowhere (operator, 2026-10-28); and, but the office rule, which always holds, it marks the module it acts
     // on with a badge (Badge) saying which rule and whether it holds, lost where it does not hold and costs
     // the plan its rate or its reserve, with no effect where the royalty lowers no pay, nothing being lost by it.
     public static MapLink Link(YearCondition condition) => condition switch

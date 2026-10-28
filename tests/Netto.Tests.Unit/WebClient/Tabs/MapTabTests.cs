@@ -4,7 +4,7 @@ using Netto.Web.Client;
 using Netto.Web.Client.River;
 using Netto.Web.Client.Tabs;
 using Shouldly;
-using static Netto.Tests.WebClient.Tabs.MapNeighbourhoodHtml;
+using static Netto.Tests.WebClient.Tabs.MapReceivedHtml;
 using static Netto.Tests.WebClient.Tabs.MapRendering;
 
 namespace Netto.Tests.WebClient.Tabs;
@@ -13,11 +13,16 @@ namespace Netto.Tests.WebClient.Tabs;
 // buckets, one line for each route of the run's links, drawn over a halo of the ground, with its amount on
 // it where MapAmounts places it, a condition's word or two instead, each line and amount saying its kind; a
 // module chosen marked, its lines brought out with their amounts where they were, the others' amounts gone and
-// no words on the map, its neighbourhood beside it (MapNeighbourhoodRenderingTests'); a refused amount leaving
+// no words on the map, the line of what it receives beside it, over its card; a refused amount leaving
 // no line and no amount, the module holding it marked. What a click does is the browser's.
 public class MapTabTests
 {
     private static readonly RiverInputs Full = MapLinksTests.Full;
+
+    // What the tab draws, in the order it draws it: its head, the map's tools and the filter among them, the
+    // map, the column beside it, the line of what the chosen module receives and its card.
+    private static readonly string[] ToolsAndCard =
+        ["</header>", "class=\"map-tab__tools\"", "map-tab__filter", "class=\"map\"", "class=\"map-tab__side\"", "class=\"map-tab__receives\"", "map-tab__panel"];
 
     // Each module is a button named by its card's title and the words of the badges in its box, which a
     // screen reader hears with it: every module the map draws, each with the badges MapBadges finds for it.
@@ -244,39 +249,63 @@ public class MapTabTests
         Placed(Map(html)).Select(amount => amount.Kind).ShouldBe(view.Bundles().Select(bundle => bundle.Kind.ToString()), ignoreOrder: true);
     }
 
-    // Nothing chosen: no button pressed, no line faded, and the column says how to choose.
+    // Nothing chosen: no button pressed, no line faded, no line of what is received, and the card's room says
+    // how to choose.
     [Fact]
     public async Task Tab_nothingChosen_fadesNothingAndSaysHowToChoose()
     {
         var html = await RenderTabAsync(Full);
 
-        (html.Contains("map-line--faded"), Groups(html).Count, Heading(html), Note(html).StartsWith("Choose a module on the map", StringComparison.Ordinal))
-            .ShouldBe((false, 0, "Around a module", true));
+        (html.Contains("map-line--faded"), Count(html), html.Contains("map-panel__hint", StringComparison.Ordinal)).ShouldBe((false, 0, true));
     }
 
-    // A module chosen is pressed, its lines stay and the others fade, and its neighbourhood is beside the map,
-    // each of its lines with what it carries, its amount and where it goes.
+    // A module chosen is pressed, its lines stay and the others fade, and one line over its card says what
+    // it receives and from where, each part the amount the map says on its line: the car, from the lever
+    // above it and from the pocket, its contribution coming back.
     [Fact]
-    public async Task Tab_aModuleChosen_marksItBringsOutItsLinesAndDrawsItsNeighbourhood()
+    public async Task Tab_aModuleChosen_marksItBringsOutItsLinesAndSaysWhatItReceives()
     {
         var view = MapView.From(Full, Full.Run());
+        var received = MapReceivedView.Of(view, RiverModule.Car, end => end.Id).Lines;
 
         var html = await RenderTabAsync(Full, RiverModule.Car);
 
         html.ShouldSatisfyAllConditions(
             () => Buttons(html).Where(button => button.Pressed == "true").Select(button => button.Module).ShouldBe(["car"]),
             () => Regex.Count(html, "<polyline class=\"map-line[^\"]*map-line--faded").ShouldBe(view.Bundles().Count(bundle => !bundle.Touches(RiverModule.Car))),
-            () => Heading(html).ShouldBe("Around Company car"),
-            () => Rows(html, "goes-out").ShouldContain($"The car's yearly costs {Formats.Euros(Full.Run().Year!.Car.Costs)} to Expenses"));
+            () => received.Select(line => line.From).ShouldBe(["rent", "pocket"]),
+            () => Line(html).ShouldBe($"Receives {received[0].Amount} from {CardTitle(RiverModule.Rent)} · {received[1].Amount} from Your pocket"));
     }
 
-    // What comes back is listed from where it comes.
+    // The module chosen has no list of its lines and no second box of its own beside the map: its card's
+    // drain list says where its money goes, and the map's button is its one button.
     [Fact]
-    public async Task Tab_aModuleChosen_listsWhatComesBackFromItsBucket()
+    public async Task Tab_aModuleChosen_drawsNoListOfItsLinesAndNoSecondButtonForIt()
     {
-        var html = await RenderTabAsync(Full, RiverModule.Car);
+        var html = await RenderTabAsync(Full, RiverModule.Split);
 
-        Rows(html, "comes-in").ShouldContain(row => row.StartsWith("Your contribution", StringComparison.Ordinal) && row.EndsWith("from Your pocket", StringComparison.Ordinal));
+        (html.Contains("map-hood", StringComparison.Ordinal), Count(html), Regex.Count(html, "data-module=\"split\"")).ShouldBe((false, 1, 1));
+    }
+
+    // An end of the line that is a module on the map is a button choosing it, as its box does; a bucket is
+    // named only.
+    [Fact]
+    public async Task Tab_aModuleChosen_namesTheModulesItReceivesFromAsButtons()
+    {
+        var (split, car) = (await RenderTabAsync(RiverInputs.Example, RiverModule.Split), await RenderTabAsync(Full, RiverModule.Car));
+
+        split.ShouldSatisfyAllConditions(
+            () => GoButtons(split).ShouldBe([("company-year", "Company year")]),
+            () => GoButtons(car).ShouldBe([("rent", CardTitle(RiverModule.Rent))]));
+    }
+
+    // Company year receives nothing: no line over its card.
+    [Fact]
+    public async Task Tab_companyYearChosen_saysNothingReceived()
+    {
+        var html = await RenderTabAsync(Full, RiverModule.CompanyYear);
+
+        (Count(html), html.Contains("id=\"card-company-year\"", StringComparison.Ordinal)).ShouldBe((0, true));
     }
 
     // A module chosen that has left the map is none.
@@ -285,7 +314,7 @@ public class MapTabTests
     {
         var html = await RenderTabAsync(RiverInputs.Example, RiverModule.Car);
 
-        (Buttons(html).Any(button => button.Pressed == "true"), Heading(html)).ShouldBe((false, "Around a module"));
+        (Buttons(html).Any(button => button.Pressed == "true"), Count(html)).ShouldBe((false, 0));
     }
 
     // A refused amount leaves the map without a line or an amount, as it leaves the bar; the module
@@ -314,16 +343,15 @@ public class MapTabTests
         Regex.IsMatch(Regex.Match(html, "<div class=\"map-tab\".*", RegexOptions.Singleline).Value, "aria-live|role=\"(status|alert)\"").ShouldBeFalse();
     }
 
-    // Room under the head for the filter of the kinds of link, and beside the map for the chosen module's
-    // card, after its neighbourhood.
+    // Under the head, the map's tools over the map, the filter of the kinds of link among them; beside the
+    // map, the line of what the chosen module receives, then its card.
     [Fact]
-    public async Task Tab_leavesRoomForTheFilterAndTheCard()
+    public async Task Tab_leavesRoomForTheToolsAndTheCard()
     {
-        var html = await RenderTabAsync(Full);
+        var html = await RenderTabAsync(Full, RiverModule.Car);
 
-        var (head, filter, map, neighbourhood, panel) = (html.IndexOf("</header>", StringComparison.Ordinal), html.IndexOf("map-tab__filter", StringComparison.Ordinal),
-            html.IndexOf("class=\"map\"", StringComparison.Ordinal), html.IndexOf("class=\"map-hood\"", StringComparison.Ordinal), html.IndexOf("map-tab__panel", StringComparison.Ordinal));
-        (head < filter, filter < map, map < neighbourhood, neighbourhood < panel).ShouldBe((true, true, true, true));
+        var order = ToolsAndCard.Select(marker => html.IndexOf(marker, StringComparison.Ordinal)).ToList();
+        (order.All(index => index >= 0), order.SequenceEqual(order.Order())).ShouldBe((true, true));
     }
 
     // Company year skipped: it stays on the map, drawn dashed and said skipped in words, so that it can be
@@ -337,15 +365,15 @@ public class MapTabTests
             [("company-year", "Company year skipped", true), ("director-pay", "Director pay", false)]);
     }
 
-    // A skipped Company year chosen: its card goes beside the map, its box is marked chosen, and its
-    // neighbourhood says no money moves through it.
+    // A skipped Company year chosen: its card goes beside the map, its box is marked chosen, and nothing is
+    // said received.
     [Fact]
-    public async Task Tab_companySkippedAndCompanyYearChosen_listsNoLinkAndHasItsSkippedCard()
+    public async Task Tab_companySkippedAndCompanyYearChosen_saysNothingReceivedAndHasItsSkippedCard()
     {
         var html = await RenderTabAsync(Full.SkipCompany(), RiverModule.CompanyYear);
 
-        (Heading(html), Note(html), Rows(html).Count, html.Contains("module-card--skipped"), Buttons(html).Single(button => button.Pressed == "true").Module)
-            .ShouldBe(("Around Company year", "No money moves through it in this plan.", 0, true, "company-year"));
+        (Count(html), html.Contains("module-card--skipped"), Buttons(html).Single(button => button.Pressed == "true").Module)
+            .ShouldBe((0, true, "company-year"));
     }
 
     // Entered, Company year is a box like the others.

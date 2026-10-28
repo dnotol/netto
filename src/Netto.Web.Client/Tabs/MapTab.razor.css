@@ -53,10 +53,57 @@
     }
 }
 
-/* The neighbourhood above the card, with room between. */
-.map-tab__hood {
-    margin-bottom: 1rem;
+/* The one line over the card: what the module chosen receives, each amount and where it comes from, a
+   module a small button that chooses it, a bucket named. Its parts wrap whole where the column has not the
+   room for them on one line. */
+.map-tab__receives {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem 0.4rem;
+    margin: 0 0 0.75rem;
+    color: var(--netto-text-muted);
+    font-size: 0.85rem;
+    line-height: 1.4;
 }
+
+.map-tab__receives-label {
+    color: var(--netto-text-muted);
+    font-weight: 600;
+}
+
+.map-tab__received {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.3rem;
+    color: var(--netto-text);
+    font-variant-numeric: tabular-nums;
+}
+
+.map-tab__place {
+    font-weight: 600;
+}
+
+/* A module the line comes from: a button, as a box of the map is, at least a 24 px target. MudBlazor's
+   global rule centres a button's content, which this keeps. */
+.map-tab__go {
+    display: inline-flex;
+    align-items: center;
+    min-height: 1.5rem;
+    padding: 0 0.5rem;
+    border: 1px solid var(--netto-line-input);
+    border-radius: 6px;
+    background: var(--netto-surface);
+    color: var(--netto-text);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+    .map-tab__go:hover {
+        border-color: var(--netto-gold);
+    }
 
 /* Below that width the map scrolls sideways inside its column once the window is narrower than it. */
 @media (max-width: 1200px) {

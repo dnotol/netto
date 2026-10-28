@@ -6,21 +6,23 @@ using static Netto.Tests.WebClient.Tabs.MapRendering;
 namespace Netto.Tests.WebClient.Tabs;
 
 // The card of the module chosen beside the map, in the Map tab as the page draws it (the card in the panel is
-// MapPanelTests', the page's work PlanMapPanelTests'): in the column after the neighbourhood, the room kept while none
-// is chosen, no card for a module off the map.
+// MapPanelTests', the page's work PlanMapPanelTests'): in the column alone but for the one line of what it
+// receives, over it, the room kept while none is chosen, no card for a module off the map.
 public class MapTabPanelTests
 {
     private static readonly RiverInputs Full = MapLinksTests.Full;
 
-    // The module chosen has its own card in the side column, after its neighbourhood.
+    // The module chosen has its own card in the side column, the line of what it receives over it and
+    // nothing else: the column holds those two children alone.
     [Fact]
-    public async Task Tab_aModuleChosen_hasItsCardInTheColumnAfterItsNeighbourhood()
+    public async Task Tab_aModuleChosen_hasItsCardAloneInTheColumnUnderWhatItReceives()
     {
         var html = await RenderTabAsync(Full, RiverModule.Car);
 
-        var (side, links, panel, card) = (html.IndexOf("class=\"map-tab__side\"", StringComparison.Ordinal), html.IndexOf("class=\"map-hood\"", StringComparison.Ordinal),
-            html.IndexOf("class=\"map-tab__panel\"", StringComparison.Ordinal), html.IndexOf("id=\"card-car\"", StringComparison.Ordinal));
-        (side < links, links < panel, panel < card, Regex.Count(html, "<section id=\"card-")).ShouldBe((true, true, true, 1));
+        var side = Regex.Match(html, "<div class=\"map-tab__side\"[^>]*>(.*)", RegexOptions.Singleline).Groups[1].Value;
+        var (receives, panel, card) = (side.IndexOf("<p class=\"map-tab__receives\"", StringComparison.Ordinal),
+            side.IndexOf("<div class=\"map-tab__panel\"", StringComparison.Ordinal), side.IndexOf("id=\"card-car\"", StringComparison.Ordinal));
+        (side.TrimStart().StartsWith("<p class=\"map-tab__receives\"", StringComparison.Ordinal), receives < panel, panel < card, Regex.Count(html, "<section id=\"card-")).ShouldBe((true, true, true, 1));
     }
 
     // Nothing chosen: the room is kept, in words, so the map does not move when a module is chosen.

@@ -8,11 +8,11 @@ using static Netto.Tests.WebClient.Tabs.MapRendering;
 
 namespace Netto.Tests.WebClient.Tabs;
 
-// The Map tab under the viewer's filter of the kinds of link: the legend in its place under the head, and a
-// kind hidden left out of the lines, of the arrowheads and the amounts on them; the modules, the buckets, the
-// lines left and their amounts are where they were, and the neighbourhood of the module chosen, which lists the
-// module's every link, is as it was (MapNeighbourhoodRenderingTests). The choice is read from the browser's
-// storage before the first draw, so a kind hidden in an earlier visit is hidden at once.
+// The Map tab under the viewer's filter of the kinds of link: the legend in its place among the map's tools,
+// and a kind hidden left out of the lines, of the arrowheads and the amounts on them; the modules, the
+// buckets, the lines left and their amounts are where they were, and the line of what the module chosen
+// receives, read from every link of the run, is as it was. The choice is read from the browser's storage
+// before the first draw, so a kind hidden in an earlier visit is hidden at once.
 public class MapTabFilterTests
 {
     private static readonly RiverInputs Full = MapLinksTests.Full;
@@ -181,9 +181,9 @@ public class MapTabFilterTests
             () => Regex.Count(html, "<span class=\"map-badge ").ShouldBe(view.Modules.Sum(node => node.Badges.Count)));
     }
 
-    // Every kind hidden, a module chosen: no line is drawn and its neighbourhood lists all it did.
+    // Every kind hidden, a module chosen: no line is drawn and the line of what it receives says all it did.
     [Fact]
-    public async Task Tab_aModuleChosenEveryKindHidden_drawsNoLineAndStillListsItsNeighbourhood()
+    public async Task Tab_aModuleChosenEveryKindHidden_drawsNoLineAndStillSaysWhatItReceives()
     {
         var all = await RenderTabAsync(Full, RiverModule.Car);
 
@@ -191,18 +191,18 @@ public class MapTabFilterTests
 
         html.ShouldSatisfyAllConditions(
             () => Regex.Count(html, "<polyline").ShouldBe(0),
-            () => MapNeighbourhoodHtml.Rows(html).ShouldNotBeEmpty(),
-            () => MapNeighbourhoodHtml.Rows(html).ShouldBe(MapNeighbourhoodHtml.Rows(all)),
-            () => html.ShouldNotContain("No money moves through it in this plan."));
+            () => MapReceivedHtml.Line(html).ShouldNotBeNull(),
+            () => MapReceivedHtml.Line(html).ShouldBe(MapReceivedHtml.Line(all)));
     }
 
-    // While the engine refuses an amount there is no link: the column says there is no figure.
+    // While the engine refuses an amount there is no link, and nothing is said received: the refusal is said
+    // once, on the card or above the map.
     [Fact]
-    public async Task Tab_aRefusedAmountAKindHidden_saysNoFigure()
+    public async Task Tab_aRefusedAmountAKindHidden_saysNothingReceived()
     {
         var html = await RenderTabAsync(Full.WithReserve(-1m), RiverModule.Car, Hiding(MapLinkKind.TaxBase));
 
-        MapNeighbourhoodHtml.Note(html).ShouldBe("No figures while an amount is refused.");
+        (MapReceivedHtml.Count(html), html.Contains("refused-message", StringComparison.Ordinal)).ShouldBe((0, true));
     }
 
     // The filter changes no live region: the tab has none.

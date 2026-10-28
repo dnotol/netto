@@ -60,6 +60,12 @@
   <data name="Quiet" xml:space="preserve">
     <value>nothing in this plan</value>
   </data>
+  <data name="Receives" xml:space="preserve">
+    <value>Receives</value>
+  </data>
+  <data name="ReceivedFrom" xml:space="preserve">
+    <value>{0} from</value>
+  </data>
   <data name="Condition_Pay_MinimumPayMet" xml:space="preserve">
     <value>Pay {0} reaches the {1} minimum: pay condition met</value>
   </data>

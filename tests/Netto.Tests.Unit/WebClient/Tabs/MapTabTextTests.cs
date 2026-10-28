@@ -123,12 +123,18 @@ public class MapTabTextTests
         (text, text.Length <= 30).ShouldBe((words, true));
     }
 
-    // The column beside the map has a component and a .resx of its own: none of the texts of the list it
-    // replaced is in this one any more.
+    // None of the texts of the list of a module's links, which the map once had beside it, is here any more.
     [Fact]
-    public void MapTabResx_theTextsOfTheListTheNeighbourhoodReplaced_areGone()
+    public void MapTabResx_theTextsOfTheListOfAModulesLinks_areGone()
     {
         Resources.Keys.Intersect(["Link", "LinkWithoutAmount", "LinksOf", "LinksOfNone", "ChooseHint", "NoLinks", "NoFigures", "Hidden_One", "Hidden_Many"]).ShouldBeEmpty();
+    }
+
+    // The line over the chosen module's card says what it receives, each amount and where it comes from.
+    [Fact]
+    public void MapTabResx_theLineOfWhatAModuleReceives_saysEachAmountAndWhereItComesFrom()
+    {
+        (Resources.Get("Receives"), Resources.Format("ReceivedFrom", ["€1,000.00"])).ShouldBe(("Receives", "€1,000.00 from"));
     }
 
     // Every link of these plans is worded by the texts its label names, its arguments taken.

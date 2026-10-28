@@ -3,7 +3,7 @@ using Netto.Web.Client;
 using Netto.Web.Client.River;
 using Netto.Web.Client.Tabs;
 using Shouldly;
-using static Netto.Tests.WebClient.Tabs.MapNeighbourhoodHtml;
+using static Netto.Tests.WebClient.Tabs.MapReceivedHtml;
 using static Netto.Tests.WebClient.Tabs.MapRendering;
 using static Netto.Tests.WebClient.Tabs.MapTabTests;
 
@@ -12,8 +12,8 @@ namespace Netto.Tests.WebClient.Tabs;
 // The Map tab as a viewer meets the levers that move no money of their own in the plan: their names in one
 // dashed row where they follow one another down the chain, each its own button in the river's order, named,
 // out of sight, with the row's word, which the row does not show; no amount on the row, the chain's line
-// through it saying its amount once; a quiet lever chosen pressed, with its card beside the map and the line
-// running past it in its neighbourhood. The royalty that comes to nothing is quiet in its own place.
+// through it saying its amount once; a quiet lever chosen pressed, with its card beside the map, receiving
+// nothing of its own. The royalty that comes to nothing is quiet in its own place.
 public class MapTabQuietTests
 {
     private static readonly RiverInputs Full = MapLinksTests.Full;
@@ -64,16 +64,16 @@ public class MapTabQuietTests
     }
 
     // A quiet lever chosen: its name pressed in its row, its card beside the map, so that its amounts can be
-    // entered, and the line running past it in its neighbourhood.
+    // entered, and nothing said received, the chain's line running on past it to the box below.
     [Fact]
-    public async Task Tab_aQuietLeverChosen_isPressedWithItsCardBesideTheMapAndTheLinePastIt()
+    public async Task Tab_aQuietLeverChosen_isPressedWithItsCardBesideTheMapReceivingNothing()
     {
         var html = await RenderTabAsync(ChainQuiet, RiverModule.Rent);
 
         html.ShouldSatisfyAllConditions(
             () => Buttons(html).Where(button => button.Pressed == "true").Select(button => button.Module).ShouldBe(["rent"]),
             () => (html.IndexOf("class=\"map-tab__panel\"", StringComparison.Ordinal) < html.IndexOf("id=\"card-rent\"", StringComparison.Ordinal)).ShouldBeTrue(),
-            () => Rows(html).ShouldHaveSingleItem().ShouldEndWith("from Vouchers to The split"));
+            () => Count(html).ShouldBe(0));
     }
 
     // A royalty that comes to nothing is quiet in a row of its own, in its own place.

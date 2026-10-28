@@ -26,7 +26,8 @@
    of one card between the same two ends and of one kind are one line (MapBundle), which says one amount and
    no words, on a stretch of its own or right beside it, where MapAmounts places it from every link of the
    run: the sum of the card's lines it holds, each a figure the card draws; a condition says in a word or two
-   whether it holds, placed the same way, its sentence left to the neighbourhood. An amount hangs from its
+   whether it holds, placed the same way, its badge naming the rule on the module it reaches; its sentence,
+   the link's words, is said nowhere on the tab (operator, 2026-10-28). An amount hangs from its
    point of its line by its pixels, so it keeps to its line however large the map is drawn, and its ground
    hides the lines crossing it, square. A line to the pocket and its amount are gold, the one gold of the
    map, since that is what reaches the director.
@@ -49,25 +50,23 @@
 
    A module is a button: chosen, by a click or Enter or Space, it is marked (aria-pressed) and its own
    lines stay with their amounts where they were, while the others fade with no amount, the map showing no
-   words, and its neighbourhood is beside the map (MapNeighbourhood), saying what each line carries, the
-   drawing's equivalent for a screen reader, which hears the buttons and the neighbourhood and nothing of the
-   drawing itself. Choosing it again lets it go. The choice is the page's (Chosen, ChosenChanged), so it
-   stays from one tab to the next; the map takes no focus for it, the card it opens beside the map does
-   (MapPanel). Nothing here is a live region: the bar's is the river's only announcement. While the engine
-   refuses an amount the map draws no line and no amount, as the bar draws no figure, the module holding
-   the refused field is marked, in words too, the refusal is said above the map, unless the card of the
-   module chosen, beside it, holds the refused field and says it there, so that it is said once, and the
-   neighbourhood of a module chosen says there is no figure.
+   words, and beside the map is its card (MapPanel, pinned open), whose edits go to the page's one river,
+   under one line saying what it receives and from where (MapReceivedView), each amount the one the map says
+   on that line, an end that is a module a button that chooses it as its box does, so a keyboard walks the
+   money upstream; where its money goes is its card's drain list. A screen reader hears the buttons, the
+   line and the card, and nothing of the drawing itself. Choosing it again lets it go. The choice is the
+   page's (Chosen, ChosenChanged), so it stays from one tab to the next; the map takes no focus for it, the
+   card it opens beside the map does (MapPanel). Nothing here is a live region: the bar's is the river's
+   only announcement. While the engine refuses an amount the map draws no line and no amount, as the bar
+   draws no figure, the module holding the refused field is marked, in words too, the refusal is said above
+   the map, unless the card of the module chosen, beside it, holds the refused field and says it there, so
+   that it is said once, and nothing is said received.
 
-   The map is as tall as the window leaves under the bar, and stays there while the column beside it
-   holds two regions that scroll apart: the neighbourhood of the chosen module (MapNeighbourhoodView: what
-   comes into it, what goes out, the rules it sets or is under, each line of money on its own with its
-   amount and a bar, the other end of each a button that chooses that module), kept in sight whatever the
-   length of the card under it, the card of that module (MapPanel, pinned open), whose
-   edits go to the page's one river. Under the head is the filter of the kinds of link (MapFilter), the
-   legend of the lines in one row, whose boxes the viewer ticks: a kind unticked is left out of the lines,
-   their arrowheads and their amounts, and only of those: the neighbourhood is made from every link of the
-   run, so the rules of a module are listed whether or not their lines are drawn. The kinds that are a tax
+   The map is as tall as the window leaves under the band, and stays there while the page scrolls the card
+   beside it, which has no scroll area of its own. Over the map are its tools: the filter of the kinds of
+   link (MapFilter), the legend of the lines, whose boxes the viewer ticks, and what the page puts there
+   (AddToPlan). A kind unticked is left out of the lines, their arrowheads and their amounts, and only of
+   those: what the chosen module receives is read from every link of the run. The kinds that are a tax
    base and a condition start unticked, hidden by default, since their badges say them on the modules
    they reach, and ticking them draws their lines. The filter shows the map without those links
    (MapLinkFilter.Showing) and leaves everything else where it is: the modules, the buckets, the route of
@@ -125,9 +124,20 @@
         </div>
     </div>
     <div class="map-tab__side">
-        <div class="map-tab__hood" @key="@(_chosen?.ToString() ?? "none")">
-            <MapNeighbourhood Hood="_hood" OnChoose="ChooseAsync" />
-        </div>
+        @if (_received is { Lines.Count: > 0 } received)
+        {
+            <p class="map-tab__receives">
+                <span class="map-tab__receives-label">@L["Receives"]</span>
+                @foreach (var (line, first) in received.Lines.Select((line, index) => (line, index == 0)))
+                {
+                    if (!first)
+                    {
+                        <span class="map-tab__receives-gap" aria-hidden="true">·</span>
+                    }
+                    <span class="map-tab__received">@L["ReceivedFrom", line.Amount] @ReceivedEnd(line)</span>
+                }
+            </p>
+        }
         <div class="map-tab__panel">
             <MapPanel Module="_chosen" ViewerChose="ViewerChose" Inputs="Inputs" InputsChanged="InputsChanged" Run="Run" Search="Search" Refused="ChosenRefusal" />
         </div>
@@ -178,7 +188,7 @@
     private IReadOnlyList<MapAmount> _placed = [];
     private (RiverInputs Inputs, RiverRun Run)? _mapped;
     private RiverModule? _chosen;
-    private MapNeighbourhoodView? _hood;
+    private MapReceivedView? _received;
     private IReadOnlyList<(MapBundle Bundle, bool Faded)> _drawn = [];
     private IReadOnlyList<MapAmount> _amounts = [];
     private readonly Dictionary<MapText, IStringLocalizer> _texts = [];
@@ -191,8 +201,8 @@
 
     internal IReadOnlyList<MapAmount> DrawnAmounts => _amounts;
 
-    // The neighbourhood of the module chosen, which the column beside the map lists, none while none is.
-    internal MapNeighbourhoodView? Neighbourhood => _hood;
+    // What the module chosen receives, which the line over its card says, none while none is chosen.
+    internal MapReceivedView? Received => _received;
 
     protected override void OnParametersSet()
     {
@@ -210,7 +220,7 @@
 
         // Made from every link of the run, so the legend, which says which lines are drawn, changes nothing of
         // it: it is not made again at a tick.
-        _hood = _chosen is { } chosen ? MapNeighbourhoodView.Of(_full, chosen, Carries, EndName) : null;
+        _received = _chosen is { } chosen ? MapReceivedView.Of(_full, chosen, EndName) : null;
     }
 
     // The viewer ticked or unticked a kind: the lines and their amounts are the shown kinds' again, each
@@ -224,6 +234,11 @@
 
     // A module chosen again lets it go.
     private Task ChooseAsync(RiverModule module) => ChosenChanged.InvokeAsync(_chosen == module ? null : module);
+
+    // An end of the line over the card: a module on the map is a button that chooses it, a bucket a name.
+    private RenderFragment ReceivedEnd(MapReceived line) => line.Module is { } module
+        ? @<button type="button" class="map-tab__go" data-received-from="@MapModules.Name(module)" @onclick="() => ChooseAsync(module)">@line.From</button>
+        : @<span class="map-tab__place">@line.From</span>;
 
     private static string LineClass(bool faded) => $"map-line{(faded ? " map-line--faded" : "")}";
 

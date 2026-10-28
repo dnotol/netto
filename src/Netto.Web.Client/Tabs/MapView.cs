@@ -241,7 +241,7 @@ internal static class MapLinkStyle
 
     // Whether a kind carries money, a line as thick as its amount, which is a kind with no width of its own;
     // every other kind is a rule. The one place that tells them apart: the lines' widths, the placing of the
-    // amounts and the neighbourhood's lines and rules all ask it here.
+    // amounts and what a module receives all ask it here.
     public static bool IsMoney(MapLinkKind kind) => Fixed(kind) is null;
 
     // The width of the legend's sample of a kind: its lines' own, or, a kind of money, a sample's, one width

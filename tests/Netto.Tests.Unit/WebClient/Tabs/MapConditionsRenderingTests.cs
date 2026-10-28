@@ -7,8 +7,8 @@ namespace Netto.Tests.WebClient.Tabs;
 
 // The conditions on the Map tab as a viewer meets them, drawn without a browser (MapRendering): every
 // lever with the costly car, whose benefit is beyond 20% of the pay. Each is a dashed line that says in a
-// word or two on the map, on its line, whether it holds, and in its sentence, its module chosen, in its
-// neighbourhood, never by a colour.
+// word or two on the map, on its line, whether it holds, never by a colour, and a badge on the module it acts
+// on (MapTabTests); its sentence is the link's words, said nowhere on the tab (operator, 2026-10-28).
 public class MapConditionsRenderingTests
 {
     private static readonly RiverInputs River = MapViewConditionsTests.CostlyCar;
@@ -37,29 +37,20 @@ public class MapConditionsRenderingTests
             .ShouldBe((true, true, false));
     }
 
-    // Its module chosen, the line still says its word or two on the map, and its neighbourhood beside it
-    // its sentence.
+    // Its module chosen, the line still says its word or two on the map, and its sentence is said nowhere
+    // on the tab, beside the map neither.
     [Fact]
-    public async Task MapTab_theCarChosen_saysItsConditionInAWordOnTheMapAndItsSentenceInItsNeighbourhood()
+    public async Task MapTab_theCarChosen_saysItsConditionInAWordOnTheMapAndNotItsSentence()
     {
         var html = await MapRendering.RenderTabAsync(River, RiverModule.Car);
 
         var map = Regex.Match(html, "<div class=\"map\".*?<div class=\"map-tab__side\"", RegexOptions.Singleline).Value;
-        (ConditionWords(map).Contains("lost"), map.Contains(Words(River, RiverModule.Car), StringComparison.Ordinal), html.Contains(Words(River, RiverModule.Car), StringComparison.Ordinal))
-            .ShouldBe((true, false, true));
+        (ConditionWords(map).Contains("lost"), html.Contains(Words(River, RiverModule.Car), StringComparison.Ordinal)).ShouldBe((true, false));
     }
 
     // The words on the map of every condition's line, each trimmed.
     private static List<string> ConditionWords(string html) =>
         [.. Regex.Matches(html, "<span class=\"map-amount map-amount--state\" data-link-kind=\"Condition\"[^>]*>([^<]*)</span>").Select(line => line.Groups[1].Value.Trim())];
-
-    [Fact]
-    public async Task MapTab_theCarChosen_listsItsConditionInWordsWithItsModuleAndThatItDoesNotHold()
-    {
-        var html = await MapRendering.RenderTabAsync(River, RiverModule.Car);
-
-        MapNeighbourhoodHtml.Rows(html, "rules").ShouldContain($"Sets on Corporate tax {Words(River, RiverModule.Car)} Does not hold");
-    }
 
     // The words of the condition the module sets, as the map's texts say them.
     private static string Words(RiverInputs river, RiverModule from)
