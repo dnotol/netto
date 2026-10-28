@@ -15,6 +15,8 @@ namespace Netto.Tests.DirectorPay;
 // those rules apply the January one's method. The same decree changes the marital quotient of n° 34.1.1
 // and 34.2 for a partner without professional income: its maximum, now 12,790 when both partners have
 // reached 66 on 1 January 2027, else 11,780, in place of 13,790, and the 6,179.26 taken off the tax.
+// It also changes the tables of the reductions for dependants, n° 38 to 41, of which Netto applies
+// n° 38 (dependent children), n° 39, 2 and 3 (other dependants) and n° 40, 1 (a single parent).
 public class WithholdingRulesTests
 {
     private const string Fisconetplus = "https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/";
@@ -62,11 +64,12 @@ public class WithholdingRulesTests
         November2026.Later.ShouldBeNull();
     }
 
-    // Only n° 32 and the marital quotient's n° 34.1.1 and 34.2 differ: the method, the reduction, the
-    // flat-rate costs and the scale are January's, and so is the quotient's 30%, cited to the
-    // coordinated annex with the rest of n° 34.1.1.
+    // Only n° 32, the marital quotient's n° 34.1.1 and 34.2 and the reductions for dependants of n° 38
+    // to 40 differ: the method, the reduction, the flat-rate costs and the scale are January's, and so
+    // is the quotient's 30%, cited to the coordinated annex with the rest of n° 34.1.1, and the 1,992
+    // of n° 39, 2, cited to it with the rest of n° 39.
     [Fact]
-    public void Later_2026_areJanuarysButForTheirDateAndNumbers32And34()
+    public void Later_2026_areJanuarysButForTheirDateAndNumbers32To40()
     {
         var asJanuary = November2026 with
         {
@@ -76,6 +79,11 @@ public class WithholdingRulesTests
             QuotientMaximum = Rules2026.QuotientMaximum,
             QuotientMaximumBothAged66 = Rules2026.QuotientMaximumBothAged66,
             JointTaxFreeAmountReduction = Rules2026.JointTaxFreeAmountReduction,
+            ChildReductions = Rules2026.ChildReductions,
+            ChildReductionBeyondEighth = Rules2026.ChildReductionBeyondEighth,
+            DependantAged66InCareReduction = Rules2026.DependantAged66InCareReduction,
+            OtherDependantReduction = Rules2026.OtherDependantReduction,
+            SingleParentReduction = Rules2026.SingleParentReduction,
         };
 
         asJanuary.ShouldBe(Rules2026 with { Later = null });
@@ -339,7 +347,110 @@ public class WithholdingRulesTests
             ("QuotientMaximum", "withholding_quotient_maximum"),
             ("QuotientMaximumBothAged66", bothAged66),
             ("JointTaxFreeAmountReduction", "withholding_joint_tax_free_amount_reduction"),
+            ("ChildReductionBeyondEighth", "withholding_child_reduction_beyond_8"),
+            ("DependantAged66InCareReduction", "withholding_dependant_aged_66_in_care_reduction"),
+            ("OtherDependantReduction", "withholding_other_dependant_reduction"),
+            ("SingleParentReduction", "withholding_single_parent_reduction"),
         ]);
+    }
+
+    // N° 38's table, row by row: the reduction for one to eight dependent children.
+    [Theory]
+    [InlineData(1)]
+    [InlineData(11)]
+    public void IncomeYear2026_eachChildReductionHoldsItsCount(int month)
+    {
+        Rules2026.InMonth(month).ChildReductions.Select(amount => amount.Key).ShouldBe(Enumerable.Range(1, 8).Select(count => $"withholding_child_reduction_{count}"));
+    }
+
+    // N° 38 to 31 October 2026, the reduction for dependent children: 624 for one, then 1,656, 4,404,
+    // 7,620, 11,100, 14,592, 18,120 and 21,996 for eight; 3,864 more for each child beyond the eighth.
+    [Fact]
+    public void ChildReductions_2026_areTheTableOfNumber38AsDecreed()
+    {
+        Rules2026.ChildReductions.Select(amount => amount.Value).Append(Rules2026.ChildReductionBeyondEighth.Value)
+            .ShouldBe([624m, 1_656m, 4_404m, 7_620m, 11_100m, 14_592m, 18_120m, 21_996m, 3_864m]);
+    }
+
+    // N° 38 from 1 November 2026, as the royal decree of 27.09.2026 changes its table: 684 for one, then
+    // 1,644, 4,344, 7,488, 10,884, 14,292, 17,712 and 21,492 for eight; 3,780 more beyond the eighth.
+    [Fact]
+    public void ChildReductions_from1November2026_areTheTableOfNumber38AsTheRoyalDecreeOf27September2026ChangesIt()
+    {
+        November2026.ChildReductions.Select(amount => amount.Value).Append(November2026.ChildReductionBeyondEighth.Value)
+            .ShouldBe([684m, 1_644m, 4_344m, 7_488m, 10_884m, 14_292m, 17_712m, 21_492m, 3_780m]);
+    }
+
+    // N° 39, 2 and 3, and n° 40, 1, to 31 October 2026: 1,992 for each dependant aged 66 or over in a
+    // situation of dependency, 624 for each other dependant, 624 for a single parent. The January PDF
+    // sets the amounts of n° 39 beside the wrong rows; the key formula's annexes 4 and 5 list them in
+    // order.
+    [Fact]
+    public void OtherFamilyReductions_2026_areNumbers39And40AsDecreed()
+    {
+        (Rules2026.DependantAged66InCareReduction.Value, Rules2026.OtherDependantReduction.Value, Rules2026.SingleParentReduction.Value)
+            .ShouldBe((1_992m, 624m, 624m));
+    }
+
+    // From 1 November 2026: 1,992, unchanged, 636 and 636.
+    [Fact]
+    public void OtherFamilyReductions_from1November2026_areNumbers39And40AsTheRoyalDecreeOf27September2026ChangesThem()
+    {
+        (November2026.DependantAged66InCareReduction.Value, November2026.OtherDependantReduction.Value, November2026.SingleParentReduction.Value)
+            .ShouldBe((1_992m, 636m, 636m));
+    }
+
+    [Fact]
+    public void DependantAmounts_2026_areTheChildTableThenNumbers39And40()
+    {
+        string.Join(' ', Rules2026.DependantAmounts.Select(amount => amount.Key)).ShouldBe(
+            "withholding_child_reduction_1 withholding_child_reduction_2 withholding_child_reduction_3 withholding_child_reduction_4 "
+            + "withholding_child_reduction_5 withholding_child_reduction_6 withholding_child_reduction_7 withholding_child_reduction_8 "
+            + "withholding_child_reduction_beyond_8 withholding_dependant_aged_66_in_care_reduction withholding_other_dependant_reduction "
+            + "withholding_single_parent_reduction");
+    }
+
+    [Fact]
+    public void DependantAmounts_2026_citeTheAnnexAsDecreedOn11December2025()
+    {
+        Rules2026.DependantAmounts.ShouldAllBe(amount => amount.Source.Url == new Uri(Fisconetplus + DecreedAnnex));
+    }
+
+    [Fact]
+    public void DependantAmounts_from1November2026_citeTheCoordinatedAnnex()
+    {
+        November2026.DependantAmounts.ShouldAllBe(amount => amount.Source.Document == CoordinatedAnnexDocument);
+    }
+
+    // The amounts a step cites for the dependants are those the formula applied: the row of n° 38 for
+    // the children counted, a disabled child for two (n° 8), the eighth's and the one beyond it above
+    // eight; n° 39, 2 and 3, where there is such a dependant; n° 40, 1, for a single parent with a
+    // dependent child under the single method only.
+    [Theory]
+    [InlineData(1, WithholdingHousehold.AsSingle, 3, 0, 0, 0, false, "withholding_child_reduction_3")]
+    [InlineData(1, WithholdingHousehold.AsSingle, 1, 1, 0, 0, false, "withholding_child_reduction_2")]
+    [InlineData(11, WithholdingHousehold.AsSingle, 9, 0, 0, 0, false, "withholding_child_reduction_8 withholding_child_reduction_beyond_8")]
+    [InlineData(1, WithholdingHousehold.AsSingle, 0, 0, 1, 2, false, "withholding_dependant_aged_66_in_care_reduction withholding_other_dependant_reduction")]
+    [InlineData(1, WithholdingHousehold.AsSingle, 2, 0, 0, 0, true, "withholding_child_reduction_2 withholding_single_parent_reduction")]
+    [InlineData(11, WithholdingHousehold.PartnerWithoutIncome, 2, 0, 0, 0, true, "withholding_child_reduction_2")]
+    [InlineData(1, WithholdingHousehold.AsSingle, 0, 0, 0, 0, true, "")]
+    public void AmountsFor_dependants_addTheReductionsApplied(
+        int month, WithholdingHousehold household, int children, int disabledChildren, int aged66InCare, int others, bool singleParent, string dependantKeys)
+    {
+        var rules = Rules2026.InMonth(month);
+        var dependants = new WithholdingDependants(children, disabledChildren, aged66InCare, others, SingleParent: singleParent);
+
+        var keys = string.Join(' ', rules.AmountsFor(household, dependants).Select(amount => amount.Key));
+
+        keys.ShouldBe(string.Join(' ', [.. rules.AmountsFor(household).Select(amount => amount.Key), .. dependantKeys.Split(' ', StringSplitOptions.RemoveEmptyEntries)]));
+    }
+
+    [Theory]
+    [InlineData(WithholdingHousehold.AsSingle)]
+    [InlineData(WithholdingHousehold.PartnerWithoutIncome)]
+    public void AmountsFor_noDependants_isTheMethodsAmounts(WithholdingHousehold household)
+    {
+        Rules2026.AmountsFor(household, WithholdingDependants.None).ShouldBe(Rules2026.AmountsFor(household));
     }
 
     [Theory]

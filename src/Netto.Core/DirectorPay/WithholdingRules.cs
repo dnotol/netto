@@ -7,7 +7,9 @@ namespace Netto.Core.DirectorPay;
 // to the AR/CIR 92 that the administration's key formula applies in five steps, for a single person
 // (n° 32) and for a spouse or legal cohabitant whose partner has no professional income, the marital
 // quotient (n° 34), whose maximum for partners both 66 or over the annex sets only from some dates
-// (none before: the one maximum holds whatever their ages). Source is
+// (none before: the one maximum holds whatever their ages); then the reductions for dependants it
+// takes off either's basic tax: n° 38 for dependent children, n° 39, 2 and 3 for other dependants and
+// n° 40, 1 for a single parent (n° 39, 1, n° 40, 2 and 3 and n° 41 are not applied). Source is
 // the key formula, the method the withholding step cites as its rule. The rules hold for pay paid or
 // attributed from RulesFrom, the first of a month, until Later's: the rules a decree puts in their
 // place from a later month of the same income year, none when these hold to December. For(year)
@@ -24,20 +26,27 @@ public sealed record WithholdingRules(
     RuleAmount QuotientRate,
     RuleAmount QuotientMaximum,
     RuleAmount? QuotientMaximumBothAged66,
-    RuleAmount JointTaxFreeAmountReduction)
+    RuleAmount JointTaxFreeAmountReduction,
+    IReadOnlyList<RuleAmount> ChildReductions,
+    RuleAmount ChildReductionBeyondEighth,
+    RuleAmount DependantAged66InCareReduction,
+    RuleAmount OtherDependantReduction,
+    RuleAmount SingleParentReduction)
 {
     public WithholdingRules? Later { get; init; }
 
     // The key formula is the method; the amounts it applies are annex III as the royal decree of
     // 11.12.2025 replaced it (filed as « Règles 1er janvier 2026 »); the coordinated annex III dates
-    // each decree, the one of 27.09.2026 among them, and holds n° 32 as that decree changes it.
+    // each decree, the one of 27.09.2026 among them, and holds n° 32, 34 and 38 to 40 as that decree
+// changes them.
     private static readonly Source KeyFormula2026 = new(
         "Key formula for the withholding tax on pay paid from 1 January 2026 (ESS-SR/2025-0928), Fisconetplus, version 17.12.2025",
         "N° 6 to 16, the monthly pay in five steps: the gross less the director's reduction (n° 7, 1°), times 12 (n° 7, 2°); "
         + "less the flat-rate costs (n° 8, 2°); the basic tax on the scale of annexe 1, with the 7% municipal surcharge built in (n° 5), "
         + "less the tax on the tax-free amount of a single person (n° 11, a), or, when the partner has no professional income of their own (n° 11, b), "
         + "30% of the annual net taxable imputed to the partner, the tax on it and the tax on the rest each on that scale, "
-        + "their sum less twice the tax on the tax-free amount; divided by 12 (n° 16); never below zero (n° 21). "
+        + "their sum less twice the tax on the tax-free amount; less the reductions for dependent children (n° 14, annexe 3) and other family charges "
+        + "(n° 15, annexes 4 and 5), which add up but never beyond the basic tax (n° 13); divided by 12 (n° 16); never below zero (n° 21). "
         + "N° 3: each step rounded to the cent, up from five thousandths",
         new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/389035ca-432e-422b-859d-2d32fbdaa4cf"),
         "personal-tax/spf-finances_formule-cle-precompte-professionnel-2026-01-01_2025-12-17.pdf");
@@ -46,7 +55,8 @@ public sealed record WithholdingRules(
         "Annexe III, AR/CIR 92 (revenus 2026), coordinated text on Fisconetplus, last modified 13.10.2026",
         "Its header dates each decree: the rules of the royal decree of 11.12.2025 (MB 29.12.2025) apply to pay paid or attributed from 01.01.2026; "
         + "the royal decree of 27.09.2026 (MB 02.10.2026) changes n° 32 to 3,089.63, the tax on a tax-free amount of 11,550, and the marital quotient's "
-        + "n° 34.1.1 and 34.2, for pay from 01.11.2026, and nothing else Netto applies to a director's monthly pay",
+        + "n° 34.1.1 and 34.2, and the tables of the reductions for dependants of n° 38 to 41, for pay from 01.11.2026, "
+        + "and nothing else Netto applies to a director's monthly pay",
         new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/0c174ec5-448b-4d1e-983b-fc457e5e7e28"),
         "personal-tax/spf-finances_arcir92-annexe-iii-revenus-2026_2026-10-13.html");
 
@@ -84,6 +94,41 @@ public sealed record WithholdingRules(
             + "the tax on the scale less 3,089.63, the tax on the tax-free amount of 11,550",
     };
 
+    private static readonly Source AnnexChildren2026 = DecreedAnnex2026(
+        "N° 38, the reduction of the basic tax for dependent children, a disabled child counted for two (n° 8): 624 for one, 1,656 for two, "
+        + "4,404 for three, 7,620 for four, 11,100 for five, 14,592 for six, 18,120 for seven, 21,996 for eight, "
+        + "and beyond eight 21,996 plus 3,864 for each dependent child beyond the eighth");
+
+    private static readonly Source AnnexOtherDependants2026 = DecreedAnnex2026(
+        "N° 39, 2 and 3, under either method: 1,992 for each dependant of art. 136, 2° and 3°, CIR 92 aged 66 or over in a situation of dependency (n° 9), "
+        + "624 for each other dependant of art. 136, 2° to 4°, a disabled one counted for two (n° 8); the PDF sets the amounts beside the wrong rows, "
+        + "the key formula's annexes 4 and 5 list them in order");
+
+    private static readonly Source AnnexSingleParent2026 = DecreedAnnex2026(
+        "N° 40, 1, under the single method of n° 32 only: 624 for a widow or widower not remarried, an unmarried father or mother, "
+        + "or a divorced or separated parent, with one or more dependent children");
+
+    private static readonly Source CoordinatedChildrenFromNovember2026 = CoordinatedAnnex2026 with
+    {
+        Reference = "N° 38's table as the royal decree of 27.09.2026 (MB 02.10.2026) changes it for pay paid or attributed from 01.11.2026, "
+            + "a disabled child counted for two (n° 8): 684 for one, 1,644 for two, 4,344 for three, 7,488 for four, 10,884 for five, "
+            + "14,292 for six, 17,712 for seven, 21,492 for eight, and beyond eight 21,492 plus 3,780 for each dependent child beyond the eighth",
+    };
+
+    private static readonly Source CoordinatedOtherDependantsFromNovember2026 = CoordinatedAnnex2026 with
+    {
+        Reference = "N° 39, 2 and 3, as the royal decree of 27.09.2026 (MB 02.10.2026) changes its table for pay paid or attributed from 01.11.2026: "
+            + "1,992 for each dependant of art. 136, 2° and 3°, CIR 92 aged 66 or over in a situation of dependency (n° 9), "
+            + "636 for each other dependant of art. 136, 2° to 4°, a disabled one counted for two (n° 8)",
+    };
+
+    private static readonly Source CoordinatedSingleParentFromNovember2026 = CoordinatedAnnex2026 with
+    {
+        Reference = "N° 40, 1, as the royal decree of 27.09.2026 (MB 02.10.2026) changes its table for pay paid or attributed from 01.11.2026, "
+            + "under the single method of n° 32 only: 636 for a widow or widower not remarried, an unmarried father or mother, "
+            + "or a divorced or separated parent, with one or more dependent children",
+    };
+
     private static readonly WithholdingRules From1January2026 = new(
         IncomeYear: 2026,
         Source: KeyFormula2026,
@@ -102,7 +147,12 @@ public sealed record WithholdingRules(
         QuotientRate: new RuleAmount("withholding_quotient_rate", 0.30m, AnnexQuotient2026),
         QuotientMaximum: new RuleAmount("withholding_quotient_maximum", 13_790m, AnnexQuotient2026),
         QuotientMaximumBothAged66: null,
-        JointTaxFreeAmountReduction: new RuleAmount("withholding_joint_tax_free_amount_reduction", 5_975.96m, AnnexQuotient2026));
+        JointTaxFreeAmountReduction: new RuleAmount("withholding_joint_tax_free_amount_reduction", 5_975.96m, AnnexQuotient2026),
+        ChildReductions: ChildTable(AnnexChildren2026, 624m, 1_656m, 4_404m, 7_620m, 11_100m, 14_592m, 18_120m, 21_996m),
+        ChildReductionBeyondEighth: new RuleAmount("withholding_child_reduction_beyond_8", 3_864m, AnnexChildren2026),
+        DependantAged66InCareReduction: new RuleAmount("withholding_dependant_aged_66_in_care_reduction", 1_992m, AnnexOtherDependants2026),
+        OtherDependantReduction: new RuleAmount("withholding_other_dependant_reduction", 624m, AnnexOtherDependants2026),
+        SingleParentReduction: new RuleAmount("withholding_single_parent_reduction", 624m, AnnexSingleParent2026));
 
     // From 1 November 2026, the royal decree of 27.09.2026 changes n° 32 and the marital quotient's
     // maximum and amount taken off (n° 34.1.1 and 34.2) of what reaches a director's monthly pay; no key
@@ -119,6 +169,11 @@ public sealed record WithholdingRules(
             QuotientMaximum = new RuleAmount("withholding_quotient_maximum", 11_780m, CoordinatedQuotientFromNovember2026),
             QuotientMaximumBothAged66 = new RuleAmount("withholding_quotient_maximum_both_aged_66", 12_790m, CoordinatedQuotientFromNovember2026),
             JointTaxFreeAmountReduction = new RuleAmount("withholding_joint_tax_free_amount_reduction", 6_179.26m, CoordinatedQuotientFromNovember2026),
+            ChildReductions = ChildTable(CoordinatedChildrenFromNovember2026, 684m, 1_644m, 4_344m, 7_488m, 10_884m, 14_292m, 17_712m, 21_492m),
+            ChildReductionBeyondEighth = new RuleAmount("withholding_child_reduction_beyond_8", 3_780m, CoordinatedChildrenFromNovember2026),
+            DependantAged66InCareReduction = new RuleAmount("withholding_dependant_aged_66_in_care_reduction", 1_992m, CoordinatedOtherDependantsFromNovember2026),
+            OtherDependantReduction = new RuleAmount("withholding_other_dependant_reduction", 636m, CoordinatedOtherDependantsFromNovember2026),
+            SingleParentReduction = new RuleAmount("withholding_single_parent_reduction", 636m, CoordinatedSingleParentFromNovember2026),
         },
     };
 
@@ -161,15 +216,69 @@ public sealed record WithholdingRules(
         JointTaxFreeAmountReduction,
     ];
 
+    // The reductions for dependants, in the annex's order: n° 38's table for one to eight children and
+    // what each child beyond the eighth adds, then n° 39, 2 and 3, then n° 40, 1.
+    public IReadOnlyList<RuleAmount> DependantAmounts =>
+    [
+        .. ChildReductions,
+        ChildReductionBeyondEighth,
+        DependantAged66InCareReduction,
+        OtherDependantReduction,
+        SingleParentReduction,
+    ];
+
     // The figures by the household's method: the reduction, the flat-rate costs and the scale, then the
-    // single person's n° 32, or the quotient's rate, the one maximum that applies and its n° 34.2.
-    public IReadOnlyList<RuleAmount> AmountsFor(WithholdingHousehold household) => household switch
+    // single person's n° 32, or the quotient's rate, the one maximum that applies and its n° 34.2; then
+    // the reductions the dependants were given (DependantAmountsFor), none unless said.
+    public IReadOnlyList<RuleAmount> AmountsFor(WithholdingHousehold household, WithholdingDependants? dependants = null) =>
+    [
+        .. household switch
+        {
+            WithholdingHousehold.AsSingle => Amounts,
+            WithholdingHousehold.PartnerWithoutIncome or WithholdingHousehold.PartnerWithoutIncomeBothAged66 =>
+                [.. UpToTheScale, QuotientRate, QuotientMaximumFor(household), JointTaxFreeAmountReduction],
+            _ => throw new ArgumentOutOfRangeException(nameof(household), household, "No withholding method for this household."),
+        },
+        .. DependantAmountsFor(household, dependants ?? WithholdingDependants.None),
+    ];
+
+    // The reduction n° 38 gives for the children counted (a disabled child for two): its table's row up
+    // to eight, the eighth's plus the amount for each child beyond it above; nothing for none.
+    public decimal ChildReductionFor(int countedChildren)
     {
-        WithholdingHousehold.AsSingle => Amounts,
-        WithholdingHousehold.PartnerWithoutIncome or WithholdingHousehold.PartnerWithoutIncomeBothAged66 =>
-            [.. UpToTheScale, QuotientRate, QuotientMaximumFor(household), JointTaxFreeAmountReduction],
-        _ => throw new ArgumentOutOfRangeException(nameof(household), household, "No withholding method for this household."),
-    };
+        ArgumentOutOfRangeException.ThrowIfNegative(countedChildren);
+
+        return countedChildren switch
+        {
+            0 => 0m,
+            _ when countedChildren <= ChildReductions.Count => ChildReductions[countedChildren - 1].Value,
+            _ => ChildReductions[^1].Value + (countedChildren - ChildReductions.Count) * ChildReductionBeyondEighth.Value,
+        };
+    }
+
+    // The reductions applied for the dependants: n° 38's row for the children counted, or above eight
+    // the eighth's and the amount beyond it; n° 39, 2 and 3 where there is such a dependant; n° 40, 1
+    // for a single parent with a dependent child under the single method.
+    private IEnumerable<RuleAmount> DependantAmountsFor(WithholdingHousehold household, WithholdingDependants dependants)
+    {
+        var children = dependants.CountedChildren;
+        if (children > ChildReductions.Count)
+        {
+            yield return ChildReductions[^1];
+            yield return ChildReductionBeyondEighth;
+        }
+        else if (children > 0)
+        {
+            yield return ChildReductions[children - 1];
+        }
+
+        if (dependants.DependantsAged66InCare > 0)
+            yield return DependantAged66InCareReduction;
+        if (dependants.CountedOtherDependants > 0)
+            yield return OtherDependantReduction;
+        if (dependants.SingleParentUnder(household))
+            yield return SingleParentReduction;
+    }
 
     // The most the quotient imputes to the partner: the maximum for partners both 66 or over where the
     // annex sets one and they are, else the one for all other cases.
@@ -197,6 +306,10 @@ public sealed record WithholdingRules(
             new WithholdingBand(Reduction2026("reduction_maximum", 1_858.78m), null, null),
         ];
     }
+
+    // N° 38's table for one to eight dependent children, in order.
+    private static RuleAmount[] ChildTable(Source source, params decimal[] values) =>
+        [.. values.Select((value, i) => new RuleAmount($"withholding_child_reduction_{i + 1}", value, source))];
 
     private static RuleAmount Reduction2026(string key, decimal value) => new(key, value, AnnexReduction2026);
 
