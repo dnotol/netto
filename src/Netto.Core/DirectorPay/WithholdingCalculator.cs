@@ -14,22 +14,31 @@ namespace Netto.Core.DirectorPay;
 // net taxable imputed to the partner, rounded, then capped at the period's maximum; the tax on it and
 // the tax on the rest, each on the same scale and rounded; their sum less twice the tax on the tax-free
 // amount, never below zero.
+//
+// Off either method's tax, the reductions for the dependants (key formula n° 13 to 15; annex III n° 38
+// to 40), each a whole euro amount of the annex, as the simulator's columns L and M take them: n° 38's
+// row for the children counted, n° 39, 2 and 3 for each other dependant, n° 40, 1 for a single parent
+// under the single method; all of them never beyond the tax (n° 13), so the year's tax never below zero.
 public static class WithholdingCalculator
 {
     public static readonly Refusal MonthlyPayNegative = new("monthly_pay_negative", RefusedInput.DirectorPay);
 
     public static (WithholdingResult? Value, Refusal? Error) Compute(
-        WithholdingRules rules, decimal monthlyTaxablePay, WithholdingHousehold household = WithholdingHousehold.AsSingle)
+        WithholdingRules rules, decimal monthlyTaxablePay, WithholdingHousehold household = WithholdingHousehold.AsSingle, WithholdingDependants? dependants = null)
     {
         if (monthlyTaxablePay < 0m)
             return (null, MonthlyPayNegative);
 
-        return (Figures(rules, monthlyTaxablePay, household), null);
+        return (Figures(rules, monthlyTaxablePay, household, dependants), null);
     }
 
     // The lines of a pay Compute accepts, for GrossToNet, which refuses a negative pay itself.
-    internal static WithholdingResult Figures(WithholdingRules rules, decimal monthlyTaxablePay, WithholdingHousehold household = WithholdingHousehold.AsSingle)
+    internal static WithholdingResult Figures(
+        WithholdingRules rules, decimal monthlyTaxablePay, WithholdingHousehold household = WithholdingHousehold.AsSingle, WithholdingDependants? dependants = null)
     {
+        dependants ??= WithholdingDependants.None;
+        dependants.ThrowIfImpossible();
+
         var reduction = Money.RoundToCent(OnTable(rules.Reduction, monthlyTaxablePay));
         var annualGross = Money.RoundToCent(monthlyTaxablePay - reduction) * YearParts.Months;
         var flatRateCosts = Math.Min(Money.RoundToCent(annualGross * rules.FlatRateCostsRate.Value), rules.FlatRateCostsMaximum.Value);
@@ -43,7 +52,11 @@ public static class WithholdingCalculator
         };
         var partnerTax = Money.RoundToCent(OnTable(rules.Scale, imputedToPartner));
         var basicTax = Money.RoundToCent(OnTable(rules.Scale, annualNetTaxable - imputedToPartner));
-        var annualTax = Math.Max(0m, partnerTax + basicTax - taxFreeAmountReduction);
+        var childrenReduction = rules.ChildReductionFor(dependants.CountedChildren);
+        var dependantsReduction = dependants.DependantsAged66InCare * rules.DependantAged66InCareReduction.Value
+            + dependants.CountedOtherDependants * rules.OtherDependantReduction.Value;
+        var singleParentReduction = dependants.SingleParentUnder(household) ? rules.SingleParentReduction.Value : 0m;
+        var annualTax = Math.Max(0m, partnerTax + basicTax - taxFreeAmountReduction - childrenReduction - dependantsReduction - singleParentReduction);
 
         return new WithholdingResult(
             monthlyTaxablePay,
@@ -59,6 +72,10 @@ public static class WithholdingCalculator
             Household = household,
             ImputedToPartner = imputedToPartner,
             PartnerTax = partnerTax,
+            Dependants = dependants,
+            ChildrenReduction = childrenReduction,
+            DependantsReduction = dependantsReduction,
+            SingleParentReduction = singleParentReduction,
         };
     }
 

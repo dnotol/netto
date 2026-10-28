@@ -16,8 +16,8 @@ public sealed record PayStatement(
 // The months FirstMonth to LastMonth of the income year (1 is January), withheld on by the rules in
 // force from RulesFrom: the key formula's lines on a month's taxable pay, the same for each of them.
 // Source and AmountsUsed are the key formula and the annex's amounts those rules apply by the method
-// of the withholding's household, the single person's or the marital quotient, as a step carries its
-// rule.
+// of the withholding's household, the single person's or the marital quotient, and the reductions
+// its dependants were given, as a step carries its rule.
 public sealed record PayStatementPeriod(WithholdingRules Rules, int FirstMonth, int LastMonth, WithholdingResult Withholding)
 {
     public int MonthCount => LastMonth - FirstMonth + 1;
@@ -26,7 +26,7 @@ public sealed record PayStatementPeriod(WithholdingRules Rules, int FirstMonth, 
 
     public Source Source => Rules.Source;
 
-    public IReadOnlyList<RuleAmount> AmountsUsed => Rules.AmountsFor(Withholding.Household);
+    public IReadOnlyList<RuleAmount> AmountsUsed => Rules.AmountsFor(Withholding.Household, Withholding.Dependants);
 }
 
 // One month of the statement: the month of the income year (1 is January), the payslip gross over
