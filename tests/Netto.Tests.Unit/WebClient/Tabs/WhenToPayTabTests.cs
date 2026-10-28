@@ -114,6 +114,33 @@ public class WhenToPayTabTests
         (html.Contains("The payments wait for the amount the river refuses."), html.Contains("calendar__table"), html.Contains("class=\"timeline\"")).ShouldBe((true, false, false));
     }
 
+    // The fund's bill is an amount: its field sits in a wrapper that keeps it to the width of one, never the
+    // tab's, and the wrapper's width is the stylesheet's (the browser's check is how it looks).
+    [Fact]
+    public async Task WhenToPay_billedField_isInAWrapperSizedToAnAmount()
+    {
+        var html = await RenderTabAsync(RiverInputs.Example);
+        var css = Stylesheet.Read("src", "Netto.Web.Client", "Tabs", "WhenToPayTab.razor.css");
+
+        var width = Regex.Match(Stylesheet.Block(css, ".calendar__billed"), @"max-width:\s*([0-9.]+)rem");
+        (Regex.IsMatch(html, "<div class=\"calendar__billed\"[^>]*>\\s*<div class=\"river-field\"[^>]*>.*?id=\"river-billed-contributions\"", RegexOptions.Singleline),
+                width.Success && decimal.Parse(width.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture) <= 24m)
+            .ShouldBe((true, true));
+    }
+
+    // Where the tab says which date it reads: with the next deadline it dates, in a note of its own, never in
+    // an introduction above the title.
+    [Fact]
+    public async Task WhenToPay_nextPanel_endsOnTheDateItReads()
+    {
+        var html = await RenderTabAsync(RiverInputs.Example);
+
+        var panel = Regex.Match(html, "<section class=\"calendar__panel\".*?</section>", RegexOptions.Singleline).Value;
+        (Regex.IsMatch(panel, "<p class=\"calendar__note\"[^>]*>Today is your device's date; a deadline stays open until the end of its day\\.</p>\\s*</section>$"),
+                html.Contains("tab-head__lede"))
+            .ShouldBe((true, false));
+    }
+
     // A tab, not a card: no fold to open, its title the page's h1.
     [Fact]
     public async Task WhenToPay_isNoFoldAndOpensOnItsTitle()

@@ -33,8 +33,7 @@ public class HomeTests
     }
 
     // The portfolio's page makes no claim the product does not keep: the planner is there to use, so the page
-    // carries no « In development » label and no line that says it is still being built (the plan's tabs
-    // keep their own chip).
+    // carries no « In development » label and no line that says it is still being built.
     [Fact]
     public async Task Home_firstDraw_carriesNoInDevelopmentLabel()
     {

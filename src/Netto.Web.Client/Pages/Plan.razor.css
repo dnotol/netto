@@ -4,7 +4,7 @@
    A tab (Tabs/): its head and what it holds, across the container's width. Where the skip link sends the
    focus: no control, so no ring; the next Tab rings the tab's first control. */
 .plan-tab {
-    padding: clamp(2rem, 5vw, 3.5rem) 0 clamp(3rem, 7vw, 5rem);
+    padding: clamp(1rem, 2.5vw, 1.5rem) 0 clamp(3rem, 7vw, 5rem);
 }
 
     .plan-tab:focus {

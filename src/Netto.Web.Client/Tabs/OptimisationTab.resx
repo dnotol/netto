@@ -12,14 +12,8 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Eyebrow" xml:space="preserve">
-    <value>Against Today, your current setup</value>
-  </data>
   <data name="Title" xml:space="preserve">
     <value>Optimisation</value>
-  </data>
-  <data name="Lede" xml:space="preserve">
-    <value>What Netto would change in Today, your current setup, to leave more in your pocket. Each move adds what it says on top of the moves above it, so together they add up to the whole plan's gain.</value>
   </data>
   <data name="State_StartsAtPay" xml:space="preserve">
     <value>Today starts at your pay: open it from Plans and enter its company's year to see the moves.</value>
@@ -31,7 +25,7 @@
     <value>Today is already the best Netto finds.</value>
   </data>
   <data name="State_Moves" xml:space="preserve">
-    <value>From Today, your current setup:</value>
+    <value>From Today, your current setup, each move on top of the ones above it:</value>
   </data>
   <data name="Move_Pay" xml:space="preserve">
     <value>Pay yourself {0} instead of {1}</value>
@@ -65,9 +59,6 @@
   </data>
   <data name="BestPay" xml:space="preserve">
     <value>For your river as it stands, the best pay is {0}, not this one.</value>
-  </data>
-  <data name="Total" xml:space="preserve">
-    <value>Together: {0} more than Today.</value>
   </data>
   <data name="Move_CopyrightFollowsPay" xml:space="preserve">
     <value>Let your copyright royalty follow your pay, at what a ruling accepts for {0} of your time spent creating, your pay kept within what the company can pay beside it</value>
@@ -138,20 +129,11 @@
   <data name="After" xml:space="preserve">
     <value>{0} in your pocket after it</value>
   </data>
-  <data name="Eyebrow_Plan" xml:space="preserve">
-    <value>Against the plan in your river</value>
-  </data>
-  <data name="Eyebrow_PlanNamed" xml:space="preserve">
-    <value>Against « {0} », the plan in your river</value>
-  </data>
-  <data name="Lede_Plan" xml:space="preserve">
-    <value>What Netto would change in the plan in your river, as you opened or saved it, to leave more in your pocket. Each move adds what it says on top of the moves above it, so together they add up to the gain of the whole list. What you change in the river afterwards is not counted: save it and star it as Today, your current setup, to measure the moves from it.</value>
-  </data>
   <data name="State_Moves_Plan" xml:space="preserve">
-    <value>From the plan in your river, as you opened or saved it:</value>
+    <value>From the plan in your river, as you opened or saved it, each move on top of the ones above it:</value>
   </data>
   <data name="State_Moves_PlanNamed" xml:space="preserve">
-    <value>From « {0} », as you opened or saved it:</value>
+    <value>From « {0} », as you opened or saved it, each move on top of the ones above it:</value>
   </data>
   <data name="State_AlreadyBest_Plan" xml:space="preserve">
     <value>The plan in your river is already the best Netto finds.</value>
@@ -167,9 +149,6 @@
   </data>
   <data name="Figure_Gain_Plan" xml:space="preserve">
     <value>More than this plan</value>
-  </data>
-  <data name="Total_Plan" xml:space="preserve">
-    <value>Together: {0} more than this plan.</value>
   </data>
   <data name="RiverChanged_One" xml:space="preserve">
     <value>Your river differs from Today in {0}, beyond what the moves set: the moves are still found for Today. Save the river and star it as Today to find them for it.</value>

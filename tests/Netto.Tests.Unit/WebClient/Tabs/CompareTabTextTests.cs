@@ -31,6 +31,15 @@ public class CompareTabTextTests
         (groups.Count, groups.SelectMany(group => group.Rows).Count()).ShouldBe((4, 17));
     }
 
+    // Where « Save this plan » is, the bar's layout decides: the notes name the button, not a place for it.
+    [Fact]
+    public void CompareTabResx_notesOnTooFewPlans_nameSavePlanWithoutSayingWhere()
+    {
+        var notes = new[] { CompareState.NoPlan, CompareState.OnePlan }.Select(state => Resources.Get(CompareTabText.Note(state)));
+
+        notes.ShouldAllBe(note => note!.Contains("« Save this plan »") && !note.Contains("above") && !note.Contains("bar"));
+    }
+
     [Fact]
     public void CompareTabResx_everyStanceHeadlineNoteAndUnreadable_hasAText()
     {

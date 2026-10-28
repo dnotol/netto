@@ -42,6 +42,11 @@
     font-variant-numeric: tabular-nums;
 }
 
+/* What the fund bills is an amount: its field is a few characters wide, not the tab's. */
+.calendar__billed {
+    max-width: 24rem;
+}
+
 .calendar__note,
 .calendar__tax {
     margin: 0;

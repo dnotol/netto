@@ -1,42 +1,14 @@
-/* ::deep reaches the chip MudBlazor renders, which carries no scope attribute of its own. */
+/* The tab's name, small: the page's one h1, a heading to move the focus to and to name the page, no
+   hero. A step above the cards' titles (Fold). */
 
 .tab-head {
-    max-width: 46rem;
-    margin-bottom: 2rem;
-}
-
-.tab-head__eyebrow-row {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.5rem 1rem;
     margin-bottom: 1rem;
 }
 
-.tab-head__eyebrow {
-    margin: 0;
-    color: var(--netto-text-muted);
-    font-size: 0.75rem;
-    font-weight: 600;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-}
-
-.tab-head__eyebrow-row ::deep .mud-chip {
-    margin: 0;
-    font-size: 0.7rem;
-    font-weight: 600;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-}
-
 .tab-head__title {
-    margin: 0 0 1rem;
-}
-
-.tab-head__lede {
     margin: 0;
-    color: var(--netto-text-muted);
-    font-size: 1.08rem;
-    line-height: 1.7;
+    font-family: "Fraunces", Georgia, serif;
+    font-size: 1.5rem;
+    font-weight: 600;
+    line-height: 1.25;
 }

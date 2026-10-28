@@ -47,16 +47,26 @@ public class OptimisationTabTests
         (html.Contains("Today is already the best Netto finds"), html.Contains("moves__move")).ShouldBe((true, false));
     }
 
-    // Each move with what it adds and « Apply », then what they add together.
+    // Each move with what it adds and « Apply ».
     [Fact]
-    public async Task Optimisation_withMoves_listsEachMoveWithItsGainAndApplyThenTheTotal()
+    public async Task Optimisation_withMoves_listsEachMoveWithItsGainAndApply()
     {
         var view = MovesView.Of(RiverInputs.Example, On22October);
 
         var html = await RenderTabAsync(RiverInputs.Example, RiverInputs.Example);
 
-        (Regex.Count(html, "<li class=\"moves__move\""), Applies(html), html.Contains($"Together: {Formats.Euros(view.Total)} more than Today."))
-            .ShouldBe((view.Moves.Count, view.Moves.Count, true));
+        (Regex.Count(html, "<li class=\"moves__move\""), Applies(html)).ShouldBe((view.Moves.Count, view.Moves.Count));
+    }
+
+    // What the moves add together is the tile's gain above the list: the list does not say it a second time.
+    [Fact]
+    public async Task Optimisation_withMoves_drawsNoTotalUnderTheList()
+    {
+        var view = MovesView.Of(RiverInputs.Example, On22October);
+
+        var html = await RenderTabAsync(RiverInputs.Example, RiverInputs.Example);
+
+        (html.Contains("moves__total"), html.Contains("Together"), Figures(html)[2].Figure).ShouldBe((false, false, Formats.Addition(view.Total)));
     }
 
     // A move the river already holds says so where its « Apply » was.
@@ -77,8 +87,8 @@ public class OptimisationTabTests
     {
         var html = await RenderTabAsync(RiverInputs.Example, RiverInputs.Example);
 
-        (html.Contains("fold__toggle"), Regex.IsMatch(html, "<h1[^>]*>Optimisation</h1>"), html.Contains("Against Today, your current setup"))
-            .ShouldBe((false, true, true));
+        (html.Contains("fold__toggle"), Regex.IsMatch(html, "<h1[^>]*>Optimisation</h1>"), html.Contains("Against Today"))
+            .ShouldBe((false, true, false));
     }
 
     // Three figures first, in a description list: Today's pocket, the pocket with every move, and the gain.
@@ -264,18 +274,16 @@ public class OptimisationTabTests
     }
 
     // While no plan is starred Today, the moves are from the plan in the river as it was opened or saved:
-    // the head and the first line say so, and the moves add up over that plan.
+    // the first line says so, with no head above the title to say it, and the moves add up over that plan.
     [Fact]
     public async Task Optimisation_noToday_measuresFromThePlanInTheRiver()
     {
         var from = new MovesBaseline(RiverInputs.Example, IsToday: false);
-        var view = MovesView.Of(from, On22October);
 
         var html = await RenderFromAsync(from, RiverInputs.Example);
 
-        (Paragraph(html, "tab-head__eyebrow"), Paragraph(html, "tab-head__lede").StartsWith("What Netto would change in the plan in your river, as you opened or saved it,", StringComparison.Ordinal),
-                Paragraph(html, "moves__state"), Paragraph(html, "moves__total"))
-            .ShouldBe(("Against the plan in your river", true, "From the plan in your river, as you opened or saved it:", $"Together: {Formats.Euros(view.Total)} more than this plan."));
+        (html.Contains("tab-head__eyebrow"), html.Contains("tab-head__lede"), Paragraph(html, "moves__state"), html.Contains("moves__total"))
+            .ShouldBe((false, false, "From the plan in your river, as you opened or saved it, each move on top of the ones above it:", false));
     }
 
     // Three figures first: the plan's pocket, the pocket with every move, and the gain over the plan.
@@ -296,12 +304,11 @@ public class OptimisationTabTests
 
     // The river shows a saved plan as it was saved: the tab names it.
     [Fact]
-    public async Task Optimisation_noTodayOnASavedPlan_namesItInTheHeadAndTheFirstLine()
+    public async Task Optimisation_noTodayOnASavedPlan_namesItInTheFirstLine()
     {
         var html = await RenderFromAsync(new MovesBaseline(RiverInputs.Example, IsToday: false, "Plan 2"), RiverInputs.Example);
 
-        (Paragraph(html, "tab-head__eyebrow"), Paragraph(html, "moves__state"))
-            .ShouldBe(("Against « Plan 2 », the plan in your river", "From « Plan 2 », as you opened or saved it:"));
+        Paragraph(html, "moves__state").ShouldBe("From « Plan 2 », as you opened or saved it, each move on top of the ones above it:");
     }
 
     // Without moves to show from the plan in the river, the tab says why, of that plan: what it says, for a
@@ -343,13 +350,13 @@ public class OptimisationTabTests
         (view.Moves.Count > 0, Regex.Count(html, "<li class=\"moves__move\""), Applies(html)).ShouldBe((true, view.Moves.Count, view.Moves.Count));
     }
 
-    // Once a plan is starred Today, the moves are from it, and the head and the first line say so.
+    // Once a plan is starred Today, the moves are from it, and the first line says so.
     [Fact]
-    public async Task Optimisation_fromToday_saysTodayInTheHeadAndTheFirstLine()
+    public async Task Optimisation_fromToday_saysTodayInTheFirstLine()
     {
         var html = await RenderTabAsync(RiverInputs.Example, RiverInputs.Example);
 
-        (Paragraph(html, "tab-head__eyebrow"), Paragraph(html, "moves__state")).ShouldBe(("Against Today, your current setup", "From Today, your current setup:"));
+        Paragraph(html, "moves__state").ShouldBe("From Today, your current setup, each move on top of the ones above it:");
     }
 
     // The river changed since its plan was opened or saved: the moves are still from that plan, and the tab
@@ -360,7 +367,7 @@ public class OptimisationTabTests
         var html = await RenderFromAsync(new MovesBaseline(RiverInputs.Example, IsToday: false), RiverInputs.Example.WithDirectorPay(40_000m));
 
         StateParagraphs(html).ShouldBe([
-            "From the plan in your river, as you opened or saved it:",
+            "From the plan in your river, as you opened or saved it, each move on top of the ones above it:",
             "The river has changed since you opened or saved this plan: save it to measure the moves from it.",
         ]);
     }
@@ -381,7 +388,7 @@ public class OptimisationTabTests
         var html = await RenderTabAsync(today, today.WithCreativeShare(0.8m).AddToPlan(OptionalModule.Copyright));
 
         StateParagraphs(html).ShouldBe([
-            "From Today, your current setup:",
+            "From Today, your current setup, each move on top of the ones above it:",
             "Your river differs from Today in Copyright royalty (not in Today), beyond what the moves set: "
             + "the moves are still found for Today. Save the river and star it as Today to find them for it.",
         ]);
@@ -420,7 +427,7 @@ public class OptimisationTabTests
 
         var html = await RenderTabAsync(RiverInputs.Example, river);
 
-        StateParagraphs(html).ShouldBe(["From Today, your current setup:"]);
+        StateParagraphs(html).ShouldBe(["From Today, your current setup, each move on top of the ones above it:"]);
         Regex.IsMatch(html, "RiverChanged_|Module_|Difference_").ShouldBeFalse();
     }
 

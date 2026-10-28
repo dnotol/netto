@@ -10,9 +10,10 @@
    deadline as the plan holds them, the past ones marked, and at the first deadline still open what more
    cancels each surcharge; the pay each month, as the pay slip gives it; and after the year, what each
    assessment leaves. The timeline is a picture and the tables are its text equivalent. It applies
-   nothing: the Optimisation tab is where a payment is applied. Its one input, what the fund bills, shows
-   the engine's refusal beside its field. *@
-<TabHead Eyebrow="@L["Eyebrow"]" Title="@L["Title"]" Lede="@L["Lede"]" />
+   nothing: the Optimisation tab is where a payment is applied. Its one input, what the fund bills, sits
+   in a field sized to an amount and shows the engine's refusal beside it. The one sentence the tab needs to
+   be read right, which date it reads, ends the Next panel, where the deadlines are dated. *@
+<TabHead Title="@L["Title"]" />
 <div class="calendar">
     @if (_view is null)
     {
@@ -28,6 +29,7 @@
                 <p class="calendar__tax">@L[WhenToPayTabText.Company(company), Formats.Euros(company.Surcharge), Formats.Euros(company.More), Day(company.OpenDeadline), _view.IncomeYear]</p>
             }
             <p class="calendar__tax">@L[WhenToPayTabText.Director(_view.Director), Formats.Euros(_view.Director.Surcharge), Formats.Euros(_view.Director.More), Day(_view.Director.OpenDeadline), _view.IncomeYear]</p>
+            <p class="calendar__note">@L["DateNote"]</p>
         </section>
 
         <CalendarTimeline Calendar="_view.Calendar" NextDate="_view.Next?.Date" />
@@ -92,12 +94,14 @@
         {
             <p class="calendar__note">@L["QuartersLeft", _view.QuartersLeft, _view.IncomeYear]</p>
         }
-        <RiverField Label="@L["BilledLabel", _view.IncomeYear]" For="river-billed-contributions"
-                    Origin="@(Inputs.BilledContributions.Value is null ? null : Inputs.BilledContributions.Origin)" Help="@L["BilledHint"]">
-            <RiverNumericField T="decimal?" InputId="river-billed-contributions" Value="Inputs.BilledContributions.Value" ValueChanged="OnBilledChanged"
-                               Euros="true"
-                               Error="@(_view.BilledRefused is not null)" Refusal="@_view.BilledRefused" />
-        </RiverField>
+        <div class="calendar__billed">
+            <RiverField Label="@L["BilledLabel", _view.IncomeYear]" For="river-billed-contributions"
+                        Origin="@(Inputs.BilledContributions.Value is null ? null : Inputs.BilledContributions.Origin)" Help="@L["BilledHint"]">
+                <RiverNumericField T="decimal?" InputId="river-billed-contributions" Value="Inputs.BilledContributions.Value" ValueChanged="OnBilledChanged"
+                                   Euros="true"
+                                   Error="@(_view.BilledRefused is not null)" Refusal="@_view.BilledRefused" />
+            </RiverField>
+        </div>
         <RefusedMessage Error="@_view.BilledRefused" />
         @if (_view.Contributions.Regularisation is { } regularisation)
         {

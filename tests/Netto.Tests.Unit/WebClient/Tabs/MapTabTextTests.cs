@@ -35,9 +35,9 @@ public class MapTabTextTests
     };
 
     [Fact]
-    public void MapTabResx_head_saysWhatTheMapIs()
+    public void MapTabResx_head_isTheTabsName()
     {
-        (Resources.Get("Eyebrow"), Resources.Get("Title")).ShouldBe(("Your year · Income year 2026", "From what your company earns to what reaches you"));
+        Resources.Get("Title").ShouldBe("Plan");
     }
 
     // A module on the map is named as its card is.

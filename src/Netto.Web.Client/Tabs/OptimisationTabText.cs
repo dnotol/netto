@@ -10,12 +10,6 @@ namespace Netto.Web.Client.Tabs;
 // « _PlanNamed » where they name it, their {0} being its name.
 internal static class OptimisationTabText
 {
-    // What the tab is measured against, above its title: « Against « {0} », the plan in your river ».
-    public static string Eyebrow(MovesBaseline from) => $"Eyebrow{Named(from)}";
-
-    // What the tab holds, under its title.
-    public static string Lede(MovesBaseline from) => $"Lede{Plan(from)}";
-
     // The three figures the tab opens on: what the plan the moves are from leaves in the pocket, what it
     // leaves with every move, and the difference.
     public static string FromInPocket(MovesBaseline from) => $"Figure_Today{Plan(from)}";
@@ -26,9 +20,6 @@ internal static class OptimisationTabText
 
     // What the pocket holds once a move is taken, with the moves above it: « {0} in your pocket after it ».
     public const string After = "After";
-
-    // What the moves add together: « Together: {0} more than this plan. »
-    public static string Total(MovesBaseline from) => $"Total{Plan(from)}";
 
     // That the river holds what the plan the moves are still from does not (MovesView.RiverChanged): from
     // the plan in the river, any change since it was opened or saved, one text; from Today, the cards whose

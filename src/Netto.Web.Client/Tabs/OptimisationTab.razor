@@ -6,7 +6,7 @@
 @* The Optimisation tab: what Netto would change in a plan to leave more in the pocket, a tab of its own
    beside the river rather than a card in it, since it is no module of the river. The moves are from the
    plan starred « Today », the user's current setup, or while none is, from the plan in the river as it
-   was opened or saved (MovesBaseline), which the head and the first line say, naming it when it is a
+   was opened or saved (MovesBaseline), which the first line says, naming it when it is a
    saved plan; a change of the river since then is not counted, which a note under the first line says
    while the river differs from that plan, or from Today while it holds what no move sets (MovesView.Differences),
    since the river moves away from Today by the moves by design: it names the cards whose facts differ, three at
@@ -16,7 +16,7 @@
    MovesView), in the order it took them, each numbered for the eye (the list says its place to a screen
    reader), with why it helps (MoveReasons, the engine's figures before and after it), what it adds on top
    of the ones above it, what the pocket holds after it, and a link to the card or the tab where it acts
-   (MoveLinks), while that card is on the map; and their total. « Apply » sets the river's values to
+   (MoveLinks), while that card is on the map; their total is the gain above the list, said once. « Apply » sets the river's values to
    the move's; the plan the moves are from stays as it was, and the moves are applied from here only: the
    split's curve shows the best pay, but moves no pay by itself. A lever a move adds to the plan is chosen on
    the map (Plan), for when the viewer goes back to it, and its link appears. « In the
@@ -28,7 +28,7 @@
    once it has painted, so until then the tab says from which plan it is looking for them, and nothing
    else; no live region says it, nor that they are found. While Netto cannot run that plan, the tab says
    why, and nothing else. *@
-<TabHead Eyebrow="@L[OptimisationTabText.Eyebrow(_view.From), Name]" Title="@L["Title"]" Lede="@L[OptimisationTabText.Lede(_view.From)]" />
+<TabHead Title="@L["Title"]" />
 <div class="moves">
     @if (_view.State is MovesState.Moves or MovesState.AlreadyBest)
     {
@@ -108,7 +108,6 @@
                 </li>
             }
         </ol>
-        <p class="moves__total">@L[OptimisationTabText.Total(_view.From), Formats.Euros(_view.Total)]</p>
     }
 </div>
 

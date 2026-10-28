@@ -1,7 +1,6 @@
 /* ::deep reaches the MudButtons and the star's MudIcon, which carry no scope attribute of their own. */
 
-/* The tab's body under its head: the three figures, what Today leaves to move, the moves, and their
-   total. */
+/* The tab's body under its head: the three figures, what Today leaves to move, and the moves. */
 .moves {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
@@ -66,8 +65,7 @@
     line-height: 1.5;
 }
 
-.moves__state,
-.moves__total {
+.moves__state {
     margin: 0;
     color: var(--netto-text-muted);
     font-size: 0.9rem;
@@ -194,10 +192,6 @@
     .moves__move ::deep .moves__apply:focus-visible {
         border-color: var(--netto-gold);
     }
-
-.moves__total {
-    color: var(--netto-text);
-}
 
 @media (max-width: 839.98px) {
     .moves__move {

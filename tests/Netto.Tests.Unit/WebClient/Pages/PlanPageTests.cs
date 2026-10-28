@@ -104,7 +104,7 @@ public class PlanPageTests
 
     // Each tab opens on its own head: the page's one h1 is the tab's title.
     [Theory]
-    [InlineData(null, "From what your company earns to what reaches you")]
+    [InlineData(null, "Plan")]
     [InlineData("optimisation", "Optimisation")]
     [InlineData("when-to-pay", "When to pay")]
     [InlineData("compare", "Compare plans")]
@@ -113,6 +113,21 @@ public class PlanPageTests
         var html = await RenderPlanAsync(new Folds(new BrowserStorage()), tab);
 
         Regex.Matches(html, "<h1[^>]*>([^<]*)</h1>").Select(match => match.Groups[1].Value).ShouldBe([title]);
+    }
+
+    // A tab opens on its title alone: no eyebrow above it, no « In development » chip, no introduction under
+    // it, so the tab's content starts right under the bar.
+    [Theory]
+    [InlineData(null)]
+    [InlineData("optimisation")]
+    [InlineData("when-to-pay")]
+    [InlineData("compare")]
+    public async Task Plan_onATab_opensOnItsTitleAlone(string? tab)
+    {
+        var html = await RenderPlanAsync(new Folds(new BrowserStorage()), tab);
+
+        (html.Contains("tab-head__eyebrow"), html.Contains("tab-head__lede"), html.Contains("In development", StringComparison.OrdinalIgnoreCase))
+            .ShouldBe((false, false, false));
     }
 
     // The plan is the map, the card of the module chosen beside it, Company year on arriving, and the two
@@ -131,7 +146,7 @@ public class PlanPageTests
     [Theory]
     [InlineData("optimisation", "moves__state")]
     [InlineData("when-to-pay", "calendar__table")]
-    [InlineData("compare", "Two of your saved plans side by side, layer by layer: the second measured against the first, the plan starred Today unless you pick another.")]
+    [InlineData("compare", "There is no plan to compare yet")]
     public async Task Plan_onAnotherTab_showsItsOwnContentWithoutTheMap(string tab, string content)
     {
         var html = await RenderPlanAsync(new Folds(new BrowserStorage()), tab);
@@ -182,8 +197,8 @@ public class PlanPageTests
     {
         var html = WebUtility.HtmlDecode(await RenderPlanAsync(new Folds(new BrowserStorage()), "optimisation"));
 
-        (Paragraph(html, "tab-head__eyebrow"), Paragraph(html, "moves__state"), Regex.Count(html, "<li class=\"moves__move\""))
-            .ShouldBe(("Against the plan in your river", "Looking for the moves from the plan in your river, as you opened or saved it…", 0));
+        (Paragraph(html, "moves__state"), Regex.Count(html, "<li class=\"moves__move\""))
+            .ShouldBe(("Looking for the moves from the plan in your river, as you opened or saved it…", 0));
     }
 
     // Today deleted, the river on the plan it was opened from: the moves are from that plan, by its name.
@@ -195,8 +210,7 @@ public class PlanPageTests
         var html = WebUtility.HtmlDecode(await RenderPlanAsync(new Folds(new BrowserStorage()), "optimisation", opened,
             saved: [RiverInputs.Example, opened], withoutToday: true));
 
-        (Paragraph(html, "tab-head__eyebrow"), Paragraph(html, "moves__state"))
-            .ShouldBe(("Against « Plan 2 », the plan in your river", "Looking for the moves from « Plan 2 », as you opened or saved it…"));
+        Paragraph(html, "moves__state").ShouldBe("Looking for the moves from « Plan 2 », as you opened or saved it…");
     }
 
     // Once a plan is starred Today, the moves are from it, as the tab says.
@@ -206,8 +220,7 @@ public class PlanPageTests
         var html = WebUtility.HtmlDecode(await RenderPlanAsync(new Folds(new BrowserStorage()), "optimisation", RiverInputs.Example.WithDirectorPay(40_000m),
             today: RiverInputs.Example));
 
-        (Paragraph(html, "tab-head__eyebrow"), Paragraph(html, "moves__state"))
-            .ShouldBe(("Against Today, your current setup", "Looking for the moves from Today, your current setup…"));
+        Paragraph(html, "moves__state").ShouldBe("Looking for the moves from Today, your current setup…");
     }
 
     // That the page looks for the moves is said in no live region: the bar's says nothing yet, the notice of

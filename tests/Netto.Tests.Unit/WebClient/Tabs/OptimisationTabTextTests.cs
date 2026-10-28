@@ -36,12 +36,12 @@ public class OptimisationTabTextTests
         { "a named plan", FromANamedPlan },
     };
 
-    // Its head, the figures it opens on and the total, for each plan the moves are from.
+    // The figures it opens on, for each plan the moves are from.
     [Theory]
     [MemberData(nameof(Baselines))]
     public void OptimisationTabResx_everyKeyFromEachPlan_hasAText(string _, MovesBaseline from)
     {
-        new[] { OptimisationTabText.Eyebrow(from), OptimisationTabText.Lede(from), OptimisationTabText.FromInPocket(from), OptimisationTabText.MoreThanFrom(from), OptimisationTabText.Total(from) }
+        new[] { OptimisationTabText.FromInPocket(from), OptimisationTabText.MoreThanFrom(from) }
             .Where(key => Resources.Get(key) is null)
             .ShouldBeEmpty();
     }
@@ -66,6 +66,14 @@ public class OptimisationTabTextTests
             .ShouldBeEmpty();
     }
 
+    // The line that opens the list says the moves come one on top of the other: with no introduction above,
+    // it is where the viewer reads it.
+    [Fact]
+    public void State_movesFromToday_saysEachMoveComesOnTopOfTheOnesAboveIt()
+    {
+        Resources.Get(OptimisationTabText.State(MovesState.Moves, FromToday)).ShouldBe("From Today, your current setup, each move on top of the ones above it:");
+    }
+
     // Today's star is an icon beside the words, not a character in them.
     [Fact]
     public void FromInPocket_today_readsTodayInYourPocket()
@@ -75,16 +83,11 @@ public class OptimisationTabTextTests
 
     // While no plan is starred Today, the tab says its moves are from the plan in the river as it was opened
     // or saved, under its name where it has one: each text's key, what the tab fills its {0} with (the
-    // plan's name, « Plan 2 » here, or the moves' total), and the text.
+    // plan's name, « Plan 2 » here), and the text.
     public static TheoryData<string, string, string> FromThePlan => new()
     {
-        { OptimisationTabText.Eyebrow(FromThePlanInTheRiver), "", "Against the plan in your river" },
-        { OptimisationTabText.Eyebrow(FromANamedPlan), "Plan 2", "Against « Plan 2 », the plan in your river" },
-        { OptimisationTabText.Lede(FromANamedPlan), "", "What Netto would change in the plan in your river, as you opened or saved it, to leave more in your pocket. "
-            + "Each move adds what it says on top of the moves above it, so together they add up to the gain of the whole list. "
-            + "What you change in the river afterwards is not counted: save it and star it as Today, your current setup, to measure the moves from it." },
-        { OptimisationTabText.State(MovesState.Moves, FromThePlanInTheRiver), "", "From the plan in your river, as you opened or saved it:" },
-        { OptimisationTabText.State(MovesState.Moves, FromANamedPlan), "Plan 2", "From « Plan 2 », as you opened or saved it:" },
+        { OptimisationTabText.State(MovesState.Moves, FromThePlanInTheRiver), "", "From the plan in your river, as you opened or saved it, each move on top of the ones above it:" },
+        { OptimisationTabText.State(MovesState.Moves, FromANamedPlan), "Plan 2", "From « Plan 2 », as you opened or saved it, each move on top of the ones above it:" },
         { OptimisationTabText.State(MovesState.AlreadyBest, FromANamedPlan), "Plan 2", "The plan in your river is already the best Netto finds." },
         { OptimisationTabText.State(MovesState.StartsAtPay, FromThePlanInTheRiver), "",
             "The plan in your river starts at your pay: enter its company's year in the river and save it to see the moves." },
@@ -92,7 +95,6 @@ public class OptimisationTabTextTests
             "An amount of the plan in your river is refused: correct it in the river and save it to see the moves." },
         { OptimisationTabText.FromInPocket(FromANamedPlan), "", "This plan, in your pocket" },
         { OptimisationTabText.MoreThanFrom(FromANamedPlan), "", "More than this plan" },
-        { OptimisationTabText.Total(FromThePlanInTheRiver), "€1.00", "Together: €1.00 more than this plan." },
         { OptimisationTabText.RiverChanged(FromThePlanInTheRiver, 0), "", "The river has changed since you opened or saved this plan: save it to measure the moves from it." },
     };
 
