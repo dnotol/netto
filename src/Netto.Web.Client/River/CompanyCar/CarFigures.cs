@@ -37,7 +37,7 @@ internal static class CarFigures
             new(AddBack, car.AddBack) { Args = car.AddBackRate is { } rate ? [Formats.RuleAmount(rate)] : [], Help = "Help_AddBack" },
         ];
 
-    // The plan with its car against the same plan without it, at the pay set: the pocket in each, the cash
+    // The plan with its car against the same plan without it, at the pay the plan with it runs at: the pocket in each, the cash
     // the car takes from it or leaves more in it, and what its benefit adds to the contributions and tax on
     // pay, which Director pay shows.
     public static IReadOnlyList<FigureLine> Cash(CarComparison comparison) =>

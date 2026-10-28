@@ -17,7 +17,8 @@
    CO2 percentage, period by period, the contribution and the benefit taxed as pay, what the company
    deducts of the costs, cannot deduct and adds back of the benefit, with a sentence only for what a
    figure cannot say, a benefit held to the minimum or a percentage held to a bound; then the plan with
-   the car weighed in cash against the same plan without it, and, once the user gives what the same car
+   the car weighed in cash against the same plan without it, both at the pay the plan with the car runs at,
+   which a note names once the pay set is held below (CarComparison.PayHeld), and, once the user gives what the same car
    would cost them privately, the company car against it, until then that this comparison waits; then
    the costs paid into the company's expenses, with INASTI's company contribution, and the contribution
    coming back from the pocket. What the CO2 percentage counts and the administration's reading of
@@ -153,6 +154,10 @@
         @if (_comparison is { } comparison)
         {
             <div class="car__comparison">
+                @if (comparison.PayHeld is { } pay)
+                {
+                    <p class="car__note">@L["PayHeld", Formats.Euros(pay)]</p>
+                }
                 <FigureList Figures="@FigureWords.Of(L, CarFigures.Cash(comparison))" />
                 <div class="car__fields">
                     <RiverField Label="@L["PrivateCostLabel"]" For="river-car-private-cost"

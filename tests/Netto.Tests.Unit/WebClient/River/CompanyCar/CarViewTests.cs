@@ -194,6 +194,61 @@ public class CarViewTests
         (comparison.TaxesOnPayAdded > 0m, comparison.CashCost, CarCardText.Cash(comparison)).ShouldBe((true, 6_162.66m, "Figure_Cash_Takes"));
     }
 
+    // A pay set above what the company can pay once the car's costs are paid is held there in the plan with
+    // the car, but the river without it would pay all of it (RiverInputs.PayUsed): the comparison sets the
+    // plan without the car at the pay the plan with it runs at, so that what differs is the car's alone.
+    // 100,000 before the car, 20,000 of costs, 90,000 typed: 80,000 with it, and 80,000 without it too.
+    [Fact]
+    public void Comparison_payAboveWhatTheCompanyCanPayWithTheCar_comparesTwoYearsAtThePayWithTheCarRuns()
+    {
+        var inputs = ElectricCar.WithCarCosts(20_000m).WithDirectorPay(90_000m);
+        var with = inputs.Run().Year.ShouldNotBeNull();
+        var withoutAtThePaySet = inputs.TakeOutOfPlan(OptionalModule.Car).Run().Year.ShouldNotBeNull();
+        var without = inputs.TakeOutOfPlan(OptionalModule.Car).WithDirectorPay(with.Scenario.DirectorPay).Run().Year.ShouldNotBeNull();
+        var atThatPay = ElectricCar.WithCarCosts(20_000m).WithDirectorPay(80_000m);
+
+        var comparison = CarComparison.From(inputs, inputs.Run()).ShouldNotBeNull();
+
+        comparison.ShouldSatisfyAllConditions(
+            () => (with.Scenario.DirectorPay, withoutAtThePaySet.Scenario.DirectorPay, without.Scenario.DirectorPay).ShouldBe((80_000m, 90_000m, 80_000m)),
+            () => (comparison.PocketWith, comparison.PocketWithout).ShouldBe((with.NetInPocket, without.NetInPocket)),
+            () => comparison.PocketWithout.ShouldNotBe(withoutAtThePaySet.NetInPocket),
+            () => comparison.PayHeld.ShouldBe(80_000m),
+            () => comparison.CashCost.ShouldBe(CarComparison.From(atThatPay, atThatPay.Run()).ShouldNotBeNull().CashCost));
+    }
+
+    // The pay set within what the company can pay with the car, or exactly at it, is the pay of both plans,
+    // as it was: no pay is held.
+    public static TheoryData<string, RiverInputs> PayNotHeld => new()
+    {
+        { "the example's pay", ElectricCar.WithCarCosts(20_000m) },
+        { "exactly the pay it allows", ElectricCar.WithCarCosts(20_000m).WithDirectorPay(80_000m) },
+    };
+
+    [Theory]
+    [MemberData(nameof(PayNotHeld))]
+    public void Comparison_payWithinWhatTheCompanyCanPayWithTheCar_holdsNoPay(string _, RiverInputs inputs)
+    {
+        var with = inputs.Run().Year.ShouldNotBeNull();
+        var without = inputs.TakeOutOfPlan(OptionalModule.Car).Run().Year.ShouldNotBeNull();
+
+        var comparison = CarComparison.From(inputs, inputs.Run()).ShouldNotBeNull();
+
+        (comparison.PayHeld, comparison.PocketWith, comparison.PocketWithout).ShouldBe(((decimal?)null, with.NetInPocket, without.NetInPocket));
+    }
+
+    // Costs above what the car receives leave nothing to pay: the pay is held at nothing, and both plans
+    // run at it.
+    [Fact]
+    public void Comparison_costsAboveWhatTheCarReceives_holdsThePayAtNothing()
+    {
+        var inputs = ElectricCar.WithCarCosts(120_000m);
+
+        var comparison = CarComparison.From(inputs, inputs.Run()).ShouldNotBeNull();
+
+        comparison.PayHeld.ShouldBe(0m);
+    }
+
     // Until the user gives what the same car would cost privately, the comparison with a private car
     // waits for it: there is nothing to weigh the cash against.
     [Fact]

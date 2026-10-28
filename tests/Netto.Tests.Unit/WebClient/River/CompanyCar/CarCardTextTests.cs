@@ -68,6 +68,14 @@ public class CarCardTextTests
         string.Join(' ', CardHtml.Amounts(Resources.Format(key, "€2,000.00", "€9,000.00"))).ShouldBe(amount);
     }
 
+    // The note naming the pay both plans of the comparison run at, when the pay set is held below.
+    [Fact]
+    public void CarCardResx_payHeldNote_hasATextNamingThePay()
+    {
+        Resources.Missing(["PayHeld"]).ShouldBeEmpty();
+        CardHtml.Amounts(Resources.Format("PayHeld", "€80,000.00")).ShouldBe(["€80,000.00"]);
+    }
+
     // Every engine's name, the private energy it is worded with, its hint and its reading.
     [Fact]
     public void CarCardResx_everyEngine_hasItsTexts()

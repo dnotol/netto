@@ -75,8 +75,12 @@ internal sealed record CarView(
         rules.Conditions.Where(condition => condition.Key != "fake_hybrid" || engine.IsPlugInHybrid()).ToList();
 }
 
-// The plan with its car against the same plan without it, at the pay set: what reaches the pocket in
-// each, and what its benefit adds to the taxes on pay. CashCost is what the car takes from the pocket,
+// The plan with its car against the same plan without it, at the pay the plan with the car runs at: what
+// reaches the pocket in each, and what its benefit adds to the taxes on pay. That pay is the pay set
+// unless the company cannot pay so much once the car's costs are paid (YearSimulation.PayCeiling): the
+// river with the car holds it there, but the river without it would pay all of it, so the second run is
+// given the first's pay, or the difference would be the pay's as well as the car's. PayHeld says so, the
+// pay both plans run at, only then. CashCost is what the car takes from the pocket,
 // in cash (operator, 2026-10-23), below zero when the plan with the car leaves more there. Then the
 // company car against the same car bought privately, once the user gives what that car would cost
 // them for the year (PrivateCost), which no rule reads: AgainstPrivate is that cost less the cash the
@@ -87,6 +91,9 @@ internal sealed record CarComparison(decimal PocketWith, decimal PocketWithout, 
 {
     // As the user gives it, or none until given.
     public decimal? PrivateCost { get; init; }
+
+    // The pay both plans run at when the pay set is held below, none otherwise.
+    public decimal? PayHeld { get; init; }
 
     public decimal CashCost => Difference(PocketWithout, PocketWith);
 
@@ -101,12 +108,16 @@ internal sealed record CarComparison(decimal PocketWith, decimal PocketWithout, 
     {
         if (run.Error is not null || run.Year is not { Scenario.Car.Any: true } with)
             return null;
-        if (inputs.TakeOutOfPlan(OptionalModule.Car).Run().Year is not { } without)
+
+        // The river without the car is the river's own run, at the pay the run with the car took.
+        var pay = with.Scenario.DirectorPay;
+        if (inputs.TakeOutOfPlan(OptionalModule.Car).WithDirectorPay(pay).Run().Year is not { } without)
             return null;
 
         return new CarComparison(with.NetInPocket, without.NetInPocket, Difference(TaxesOnPay(with), TaxesOnPay(without)))
         {
             PrivateCost = inputs.Car.PrivateCost.Value,
+            PayHeld = pay < inputs.DirectorPay.Value ? pay : null,
         };
     }
 

@@ -128,6 +128,21 @@ public class CarCardTests
             .ShouldBe((Text("Summary", Formats.Euros(costs), shared), ModuleTexts.Format(ModuleCardText.PassesOn, share)));
     }
 
+    // A pay set above what the company can pay once the car's costs are paid is held there, and both plans of
+    // the comparison run at it: the card says so above them, once, with that pay, and says nothing of the
+    // kind while the pay set is the pay both plans run at.
+    [Fact]
+    public async Task Card_payHeld_namesThePayBothPlansRunAtAboveTheComparisonOnly()
+    {
+        var held = await RenderOpenAsync<CarCard>(OptionalModule.Car, ElectricCar.WithCarCosts(20_000m).WithDirectorPay(90_000m));
+        var notHeld = await RenderOpenAsync<CarCard>(OptionalModule.Car, ElectricCar.WithCarCosts(20_000m));
+        var note = Text("PayHeld", "€80,000.00");
+
+        (CardHtml.Prose(held).Count(sentence => sentence == note), held.IndexOf(note, StringComparison.Ordinal) < held.IndexOf(Text("Figure_WithCar"), StringComparison.Ordinal),
+                CardHtml.Prose(notHeld).Any(sentence => sentence.StartsWith("Both plans run at", StringComparison.Ordinal)))
+            .ShouldBe((1, true, false));
+    }
+
     // Which cars the card counts is no sentence of its own: it is said in the bubble of « Ordered or
     // leased », after what that date is.
     [Fact]

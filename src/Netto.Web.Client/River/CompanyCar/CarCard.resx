@@ -84,6 +84,9 @@
   <data name="PrivateCostHint" xml:space="preserve">
     <value>A private lease of the same car, or what owning and running it would cost you over the year: its depreciation, fuel or charging, insurance, upkeep and taxes, VAT included.</value>
   </data>
+  <data name="PayHeld" xml:space="preserve">
+    <value>Both plans run at {0} of pay, the most the company can pay once the car's costs are paid, so the difference is the car's alone.</value>
+  </data>
   <data name="Private_Waiting" xml:space="preserve">
     <value>Enter it to weigh both cars.</value>
   </data>
