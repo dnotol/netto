@@ -34,7 +34,7 @@ public class CarCardTests
         .WithCarEngine(CarEngine.Petrol).WithCarCo2(120).WithCarAcquired(new DateOnly(2026, 1, 5));
 
     // The benefit and what the company does with the costs, then the plan with the car against the same
-    // plan without it, in cash, then where its money goes: its costs out of the river, 8% of the 100,000
+    // plan without it, in cash, then where its money goes: its costs into the expenses, 8% of the 100,000
     // it receives, and the 92,000 the split shares.
     [Fact]
     public async Task Card_withACar_drawsItsFiguresThenTheCashThenWhereItsMoneyGoes()

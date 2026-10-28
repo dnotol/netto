@@ -16,8 +16,8 @@ namespace Netto.Web.Client.Tabs;
 //
 // It is made of public records of words and plain values, the tab giving the words of a link (carries) and
 // of an end (endName) from its texts, since a component, which is always public, cannot take the map's own
-// internal types as parameters. A module on the map is an end the viewer can go to (Module); a bucket and
-// the river's edge are named only.
+// internal types as parameters. A module on the map is an end the viewer can go to (Module); a bucket is
+// named only.
 public sealed record MapNeighbourhoodView(
     RiverModule Module,
     string Name,
