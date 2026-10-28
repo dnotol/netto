@@ -106,13 +106,14 @@ public class LeverCardsFiguresTests
     // figure's lines first, then the drain lines. The vouchers cost the company 200 × €8.91 and the eco and
     // sport/culture vouchers given, €4.00 of each meal voucher deducted; the rent above its floor loses 40%
     // of flat charges, under it the floor of €463.68 its own (RentFiguresTests); the dividend pays this
-    // year's profit after tax and the €20,000.00 from earlier years, less what is kept.
+    // year's profit after tax and the €20,000.00 from earlier years, the most that can be paid out once a
+    // reserve is kept, less what is kept.
     public static TheoryData<string, NamedRiver, string[]> FiguresAboveDrains => new()
     {
         { "vouchers", Filled, ["€2,062.00", "€1,262.00"] },
         { "rent", Filled, ["€1,000.00", "−€400.00", "€600.00"] },
         { "rent", UnderTheFloor, ["€463.68", "−€185.47", "€278.21"] },
-        { "dividend", Filled, ["€29,978.48", "€44,978.48"] },
+        { "dividend", Filled, ["€29,978.48", "€49,978.48", "€44,978.48"] },
         { "dividend", NothingKept, ["€29,978.48", "€49,978.48"] },
     };
 

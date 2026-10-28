@@ -14,4 +14,9 @@ internal static class DividendCardText
     // The summary starts from what comes in, all of which is paid out, or, once the company keeps
     // some, from what is paid out: the base its rate is out of.
     public static string Summary(DividendView view) => view.Kept > 0m ? "Summary_PaidOut" : "Summary";
+
+    // What the lines cannot say: that a reserve is kept which the company cannot cover. A covered reserve
+    // is read in the lines, the most that can be paid out, the dividend and what is kept; none where no
+    // reserve is kept.
+    public static string? ReserveNote(DividendView view) => view.Reserve > 0m && !view.KeepsReserve ? "Reserve_NotCovered" : null;
 }

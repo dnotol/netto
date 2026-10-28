@@ -17,28 +17,44 @@ public class DividendFiguresTests
     public void From_earlierProfits_isThisYearsProfitAfterTaxThenTheDividend()
     {
         Lines(Prepaid.WithEarlierProfits(60_000m).WithReserve(30_000m))
-            .ShouldBe([(DividendFigures.ProfitAfterTax, 40_000m), (DividendFigures.Dividend, 70_000m)]);
+            .ShouldBe([(DividendFigures.ProfitAfterTax, 40_000m), (DividendFigures.MostPaidOut, 100_000m), (DividendFigures.Dividend, 70_000m)]);
     }
 
-    // Without earlier profits, what can be paid out is the year's profit after tax, which the summary
-    // says: the dividend paid out of it alone is a line.
+    // Once the company keeps a reserve, the most it can pay out is a line, and the dividend after it is
+    // that less the reserve.
     [Fact]
-    public void From_noEarlierProfits_isTheDividendAlone()
+    public void From_aReserve_isTheMostThatCanBePaidOutThenTheDividend()
     {
-        Lines(Prepaid.WithReserve(15_000m)).ShouldBe([(DividendFigures.Dividend, 25_000m)]);
+        Lines(Prepaid.WithReserve(15_000m)).ShouldBe([(DividendFigures.MostPaidOut, 40_000m), (DividendFigures.Dividend, 25_000m)]);
     }
 
-    // All of it kept, no dividend: no line of nothing.
+    // No reserve, nothing the card would state of it: what can be paid out is the year's profit after tax,
+    // which the summary says, and the dividend is a line.
     [Fact]
-    public void From_allKept_isNoLine()
+    public void From_noReserveNorEarlierProfits_isTheDividendAlone()
     {
-        Lines(Prepaid.WithReserve(50_000m)).ShouldBeEmpty();
+        Lines(Prepaid).ShouldBe([(DividendFigures.Dividend, 40_000m)]);
+    }
+
+    // A reserve beyond what can be paid out leaves no dividend: no line of nothing, but the most that can
+    // be paid out, which the reserve is not covered by.
+    [Fact]
+    public void From_aReserveBeyondWhatCanBePaidOut_isTheMostThatCanBePaidOutAlone()
+    {
+        Lines(Prepaid.WithReserve(50_000m)).ShouldBe([(DividendFigures.MostPaidOut, 40_000m)]);
+    }
+
+    // Everything the company has is kept to the cent: the reserve is covered, no dividend.
+    [Fact]
+    public void From_aReserveEqualToWhatCanBePaidOut_isTheMostThatCanBePaidOutAlone()
+    {
+        Lines(Prepaid.WithReserve(40_000m)).ShouldBe([(DividendFigures.MostPaidOut, 40_000m)]);
     }
 
     [Fact]
     public void DividendCardResx_everyLine_hasALabel()
     {
-        new[] { DividendFigures.ProfitAfterTax, DividendFigures.Dividend }
+        new[] { DividendFigures.ProfitAfterTax, DividendFigures.MostPaidOut, DividendFigures.Dividend }
             .Where(key => Resources.Get(key) is null)
             .ShouldBeEmpty();
     }

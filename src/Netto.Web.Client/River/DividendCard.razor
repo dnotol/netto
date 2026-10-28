@@ -12,7 +12,8 @@
    kept can be typed exactly, taken when the field is left, so the field shows what can be paid out
    (the split's field does the same). Under it, the dividend's figure as lines, this year's profit
    after tax beside earlier profits and the dividend paid out (DividendFigures), then where the
-   dividend goes and what is kept. *@
+   dividend goes and what is kept. A reserve the company cannot cover, which the field cannot say as it
+   shows what is kept, is a note after them, with the reserve typed. *@
 <ModuleCard Name="dividend" Title="@L["Title"]" Summary="@Summary" ToYou="@_view?.ToYou" Waiting="Inputs.Company is null" Refused="@Refused"
             Sources="@(_view?.Details ?? [])" IncomeYear="Inputs.IncomeYear">
     <Disclosure Title="@L["SharesTitle"]" Values="@SettingWords.Of(L, _settings.Facts)" Refused="@DividendSettingsView.SharesHold(Refused)">
@@ -50,6 +51,10 @@
     {
         <FigureList Figures="@FigureWords.Of(L, DividendFigures.From(_view))" />
         <DrainList Drains="_view.Drains" />
+        @if (DividendCardText.ReserveNote(_view) is { } note)
+        {
+            <p class="dividend__reserve">@L[note, Formats.Euros(_view.Reserve)]</p>
+        }
     }
 </ModuleCard>
 

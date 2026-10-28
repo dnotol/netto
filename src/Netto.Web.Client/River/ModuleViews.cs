@@ -564,7 +564,9 @@ internal sealed record PaymentField(int Deadline, DateOnly Date, Input<decimal> 
 // The slider runs over what the company can pay out, this year's profit after tax and the profits
 // kept from earlier years, the dividend on one side and what is kept on the other; Kept is where it
 // sits, never above what can be paid out. Each line of the dividend says its share of it, and the card
-// what reaches the pocket of it (ToYou); what the company keeps is not taken from the dividend.
+// what reaches the pocket of it (ToYou); what the company keeps is not taken from the dividend. The
+// Reserve the user keeps, and whether the year covers it (KeepsReserve, the engine's), which the field
+// cannot say for a reserve beyond what there is: it shows what is kept.
 internal sealed record DividendView(
     decimal Maximum,
     decimal ProfitAfterTax,
@@ -575,6 +577,10 @@ internal sealed record DividendView(
     IReadOnlyList<Drain> Drains,
     IReadOnlyList<StepDetail> Details)
 {
+    public decimal Reserve { get; init; }
+
+    public bool KeepsReserve { get; init; } = true;
+
     public static DividendView From(YearResult year)
     {
         var steps = year.Steps.Where(step => step.Event == TaxableEvent.Dividend).ToList();
@@ -591,7 +597,11 @@ internal sealed record DividendView(
                 new Drain("net_dividend", DrainKind.PassedOn, year.Dividend.NetDividend, "pocket").Of(year.Dividend.Dividend),
                 new Drain("kept_in_company", DrainKind.PassedOn, year.KeptInCompany, "kept_in_company"),
             ],
-            steps.Select(StepDetail.From).ToList());
+            steps.Select(StepDetail.From).ToList())
+        {
+            Reserve = year.Scenario.Reserve,
+            KeepsReserve = year.KeepsReserve,
+        };
     }
 }
 

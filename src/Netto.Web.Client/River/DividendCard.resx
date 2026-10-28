@@ -48,6 +48,12 @@
   <data name="Figure_ProfitAfterTax" xml:space="preserve">
     <value>This year's profit after tax</value>
   </data>
+  <data name="Figure_MostPaidOut" xml:space="preserve">
+    <value>Most that can be paid out</value>
+  </data>
+  <data name="Reserve_NotCovered" xml:space="preserve">
+    <value>Your reserve of {0} is more than the company can pay out, so it pays nothing out and keeps it all.</value>
+  </data>
   <data name="Figure_Dividend" xml:space="preserve">
     <value>Dividend</value>
   </data>
