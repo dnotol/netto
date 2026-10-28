@@ -1,7 +1,7 @@
 /* ::deep reaches the MudButtons, which carry no scope attribute of their own.
 
-   Built like the Composition menu: the panel drops under the bar of buckets, against the right edge
-   of its buttons, over the river, with a clear backdrop under it that takes a click outside. */
+   Built like the « Add to plan » menu (CompositionMenu): the panel drops under the band, against the
+   right edge of its buttons, over the tab, with a clear backdrop under it that takes a click outside. */
 .plans {
     position: relative;
     display: flex;
@@ -9,7 +9,7 @@
     gap: 0.5rem;
 }
 
-    /* Pills on the card surface, like the Composition button. */
+    /* Pills on the card surface, like the « Add to plan » button. */
     .plans ::deep .plans__save,
     .plans ::deep .plans__button {
         position: relative;

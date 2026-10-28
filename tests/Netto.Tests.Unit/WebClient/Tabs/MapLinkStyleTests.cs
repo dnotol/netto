@@ -86,8 +86,8 @@ public class MapLinkStyleTests
     }
 
     // A line of money is the one whose kind has no width of its own, as thick as its amount; every other
-    // kind is a rule, a line that carries none. The widths, the placing of the amounts and the
-    // neighbourhood's lines and rules all ask this one question.
+    // kind is a rule, a line that carries none. The widths, the placing of the amounts and what a module
+    // receives all ask this one question.
     [Fact]
     public void IsMoney_aKindWithNoFixedWidth_isMoneyAndEveryOtherKindIsARule()
     {

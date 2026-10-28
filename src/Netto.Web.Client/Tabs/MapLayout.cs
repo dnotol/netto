@@ -99,13 +99,13 @@ internal static class MapLayout
     private const decimal QuietMarginUnits = 0.1m;
     private const int RoyaltyLines = 2;
 
-    // The narrowest the map is drawn: a column 34rem wide beside the column of the module chosen, from
-    // 1,201 px (MapTab.razor.css), wider below it; and it is never shorter than a chain row to 3.25rem
-    // (SmallestRowRem). A line keeps its width in pixels however large the map is drawn (MapLineWidths), so
-    // the lines side by side, down a lane, along a side of a box or across a gap, are kept apart at their
-    // widths there, where the map is smallest, and are further apart wherever it is larger: their
-    // half-widths and a halo's gap between them (MapLinkStyle.HaloGap), and a pixel between a line and the
-    // edge of its room.
+    // The narrowest the map is drawn: 34rem wide at any width, beside the card of the module chosen from
+    // 1,201 px and over it below, where it scrolls sideways past that (MapTab.razor.css); and it is never
+    // shorter than a chain row to 3.25rem (SmallestRowRem). A line keeps its width in pixels however large
+    // the map is drawn (MapLineWidths), so the lines side by side, down a lane, along a side of a box or
+    // across a gap, are kept apart at their widths there, where the map is smallest, and are further apart
+    // wherever it is larger: their half-widths and a halo's gap between them (MapLinkStyle.HaloGap), and a
+    // pixel between a line and the edge of its room.
     internal const decimal NarrowestRem = 34m;
     internal const decimal PixelsPerRem = 16m;
     private const decimal EdgePixels = 1m;

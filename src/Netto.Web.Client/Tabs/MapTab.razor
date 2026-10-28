@@ -192,8 +192,9 @@
     private Refusal? ChosenRefusal => _chosen is { } module ? RefusedBy(module) : null;
 
     // The map of the run, and the same without the links of the kinds the viewer hid (MapLinkFilter): the
-    // second is what is drawn, the first what the legend counts and the neighbourhood lists, and what every
-    // line's amount is placed on (MapAmounts), once a run, so a tick or a choice moves none.
+    // second is what is drawn, the first what the legend counts and what the chosen module receives is read
+    // from, and what every line's amount is placed on (MapAmounts), once a run, so a tick or a choice moves
+    // none.
     private MapView _full = default!;
     private MapView _view = default!;
     private IReadOnlyDictionary<MapLinkKind, int> _counts = default!;

@@ -163,7 +163,7 @@ public class MapViewTests
     }
 
     // Links of the same ends and kind are one line, drawn once, its amount on it; the map shows no words,
-    // the neighbourhood of a module it joins lists them.
+    // the cards at its ends saying each line.
     [Fact]
     public void Bundles_linksSharingARoute_areOneLine()
     {

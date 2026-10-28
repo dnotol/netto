@@ -169,7 +169,7 @@ public class MapTabTests
 
     // Each amount is drawn where MapAmounts places it: at its point of its line, in percent of the map, its box
     // as wide as its text and its ground and moved from that point by its pixels, so it hugs its line however
-    // large the map is drawn; out of a screen reader's hearing, the neighbourhood saying it.
+    // large the map is drawn; out of a screen reader's hearing, the cards saying their figures.
     [Fact]
     public async Task Tab_eachAmount_isDrawnWhereMapAmountsPlacesIt()
     {
@@ -193,7 +193,7 @@ public class MapTabTests
     }
 
     // Nothing chosen, the map holds no sentence, only amounts and a condition's word or two, so nothing runs
-    // past its edge: a condition's sentence is said in the neighbourhood of the chosen module.
+    // past its edge: a condition's sentence is not on the tab (MapConditionsRenderingTests).
     [Fact]
     public async Task Tab_nothingChosen_drawsNoSentenceOnTheMap()
     {
@@ -205,7 +205,7 @@ public class MapTabTests
     }
 
     // A module chosen: its own lines keep their amounts where they were, a condition its word or two, and no
-    // other line has one; the map has no words, the neighbourhood beside it saying what each line carries.
+    // other line has one; the map has no words, the card beside it saying what each line carries.
     [Fact]
     public async Task Tab_aModuleChosen_keepsItsOwnLinesAmountsWhereTheyWereAndNoWords()
     {
