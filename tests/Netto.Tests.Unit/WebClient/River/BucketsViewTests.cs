@@ -16,12 +16,13 @@ public class BucketsViewTests
 {
     private static readonly RiverInputs EveryLever = RiverInputs.Example with { Composition = new PlanComposition(true, true, true, false, false) };
 
-    // What the example's company earns before it pays INASTI or its director anything: 120,000 less its
-    // 19,590.70 of running costs.
-    private const decimal ExampleStart = 100_409.30m;
+    // The example's company: 120,000 of revenue and 19,590.70 of running costs, which every start is after.
+    private static readonly CompanyFigures ExampleCompany = RiverInputs.Example.Company.ShouldNotBeNull();
 
-    // The example's running costs, which every start is after.
-    private const decimal RunningCosts = 19_590.70m;
+    private static readonly decimal RunningCosts = ExampleCompany.RunningCosts.Value;
+
+    // What the example's company earns before it pays INASTI or its director anything: 100,409.30.
+    private static readonly decimal ExampleStart = ExampleCompany.Revenue.Value - RunningCosts;
 
     // The bar's five buckets in its order, the expenses last, whatever the plan holds.
     [Fact]
