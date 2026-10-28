@@ -14,7 +14,9 @@ public sealed record JointAssessment(TaxpayerColumn Director, TaxpayerColumn Par
 // other (§4): the partner who keeps less keeps what their income uses. TaxedApart is the tax on an
 // income taxed at its own rate, a royalty within its limits, the director's, which joins their State
 // tax before the autonomy factor. The credit for low earned income is computed per taxpayer, on their
-// own income before the quotient (art. 289ter §1, al. 4).
+// own income before the quotient (art. 289ter §1, al. 4). Supplements are the dependants' supplements on the
+// partner they go to, the one with the higher taxable income (§4, 2°), none on the other; ChildTaxCredit
+// is the refundable credit for children computed in their column, within the cap both share (§4, 6°).
 public sealed record TaxpayerColumn(
     decimal ProfessionalIncome,
     decimal Quotient,
@@ -29,4 +31,17 @@ public sealed record TaxpayerColumn(
     decimal RegionalAdditionalTax,
     decimal IncomeTax,
     decimal MunicipalSurcharge,
-    decimal LowEarnedIncomeCredit);
+    decimal LowEarnedIncomeCredit)
+{
+    public TaxFreeAmountSupplements Supplements { get; init; } = TaxFreeAmountSupplements.None;
+
+    public decimal ChildTaxCredit { get; init; }
+}
+
+// A taxpayer of the household: the director, or their partner in a joint return.
+public enum Taxpayer
+{
+    Director,
+
+    Partner,
+}

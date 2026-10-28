@@ -12,7 +12,9 @@ public static class PersonalTaxCalculator
     // tax-free amount (art. 171), and that tax joins the State tax before the autonomy factor, so the
     // split and the municipal surcharge are on everything (Tax-Calc T16 to T18); none unless given.
     // A household taxed jointly is taxed in two columns (Joint), the director alone otherwise, a year the
-    // couple starts or ends included; alone unless given.
+    // couple starts or ends included; alone unless given. The household's dependants raise the tax-free
+    // amount by their supplements (art. 132 and 133), and what the tax cannot absorb of the children's
+    // turns into the refundable credit for children (art. 134 §3).
     public static PersonalTaxResult Compute(
         PersonalTaxRules rules, decimal directorPay, decimal ownContributions, decimal municipalRate, decimal otherIncome = 0m, IncomeTaxedApart? taxedApart = null,
         Household? household = null) =>
@@ -38,8 +40,11 @@ public static class PersonalTaxCalculator
             return Joint(rules, flatRateCosts, taxableIncome, municipalRate, otherIncome, taxedApart, household, withQuotient);
 
         // Taxed alone, the director is one column with no quotient: a tax-free amount larger than the
-        // income only frees what there is, a single person passing the unused part on to no one, and the
-        // single person's amount stays within the first bracket of the scale of the tax on it.
+        // income only frees what there is, a single person passing the unused part on to no one but the
+        // credit for children, and the dependants' supplements climb the scale of the tax on it beyond the
+        // single person's first bracket.
+        var dependants = household?.Dependants ?? Dependants.None;
+        var supplements = rules.Supplements.Of(dependants, taxedJointly: false);
         var incomeTaxedApart = taxedApart?.Income ?? 0m;
         var director = Column(
             rules,
@@ -48,8 +53,9 @@ public static class PersonalTaxCalculator
             quotient: 0m,
             otherIncome: otherIncome,
             taxableIncome: taxableIncome + otherIncome,
-            taxFreeAmount: rules.TaxFreeAmount.Value,
-            taxApart: TaxApart(taxedApart));
+            taxFreeAmount: rules.TaxFreeAmount.Value + supplements.Total,
+            taxApart: TaxApart(taxedApart),
+            childSupplements: supplements.ForChildren);
 
         // The surcharge is a share of the tax before any credit comes off it (circular AFER 39/2008,
         // n° 51), so the credit for low earned income comes last and leaves it as it is. The dividend,
@@ -70,26 +76,34 @@ public static class PersonalTaxCalculator
             LowEarnedIncomeCredit(rules, taxableIncome, taxableIncome + otherIncome + incomeTaxedApart),
             otherIncome,
             incomeTaxedApart,
-            director.TaxedApart);
+            director.TaxedApart)
+        {
+            Supplements = supplements,
+            ChildTaxCredit = Math.Min(director.ChildTaxCredit, rules.Supplements.CreditCap(dependants)),
+        };
     }
 
     // A joint assessment (art. 126), each partner in their own column. The marital quotient moves a share
     // of one partner's professional income to the other (art. 87 and 88); the director's rent joins their
     // column, never the quotient's base, being no professional income, as an income taxed apart is not.
-    // Each partner has the tax-free amount, and what the partner with the lower taxable income cannot use
-    // passes in full to the other (art. 134 §4, 4°; 3° passes nothing the other could use, there being no
-    // supplements for dependants here), whose tax on it climbs the scale of §2 beyond its first bracket.
-    // Each column then follows a single person's lines, rounded on its own, and the household's lines
-    // are their sums. The credit for low earned income is the director's alone, on their own income
+    // Each partner has the tax-free amount, the dependants' supplements go to the one with the higher
+    // taxable income, the director at a tie (art. 134 §4, 2°), and the tax-free amounts pass between them
+    // (SharedTaxFreeAmounts), the tax on them climbing the scale of §2 beyond its first bracket. Each
+    // column then follows a single person's lines, rounded on its own, the credit for children computed in
+    // it within the cap both share (ShareCap), and the household's lines are their sums. §4, al. 3, which
+    // gives the supplements to the lower income when that lowers the couple's State tax with the tax on
+    // some movable income, is not modelled: none of that income is on the scale here, and no case was found
+    // where it binds, a tax-free amount passing to the higher income in full or up to the other's income. The credit for low earned income is the director's alone, on their own income
     // before the quotient (art. 289ter §1, al. 4): what the partner earns is typed without its kind, an
     // employee's pay taking art. 289ter/1 instead, so theirs is not counted.
     // The State tax, the autonomy factor and the regional tax are each partner's, rounded in their column;
     // the municipal surcharge is taken once on the household's income tax, as Tax-Calc's detail shows it
     // (« exercice 2026 », checked 2026-10-28), so the columns' own surcharges can sum to a cent more or less.
     // Art. 87's clause that the quotient does not apply when it raises the household's State tax is not
-    // modelled: its current wording is unread (art. 87 and 88 not filed yet), and with no supplements for
+    // modelled: its current wording is unread (art. 87 and 88 not filed yet), and without supplements for
     // dependants no case was found where it would bind, the scale of the tax on the tax-free amount never
-    // being below the income scale.
+    // being below the income scale; with them, a quotient that moves the supplements to the other partner
+    // was not searched for such a case.
     private static PersonalTaxResult Joint(
         PersonalTaxRules rules, decimal flatRateCosts, decimal directorIncome, decimal municipalRate, decimal otherIncome, IncomeTaxedApart? taxedApart,
         Household household, bool withQuotient)
@@ -102,10 +116,13 @@ public static class PersonalTaxCalculator
         var directorTaxable = directorIncome - toPartner + toDirector + otherIncome;
         var partnerTaxable = partnerIncome + toPartner - toDirector;
 
-        var taxFreeAmount = rules.TaxFreeAmount.Value;
+        var dependants = household.Dependants;
+        var supplements = rules.Supplements.Of(dependants, taxedJointly: true);
         var directorHigher = directorTaxable >= partnerTaxable;
-        var passed = Math.Max(0m, taxFreeAmount - Math.Min(directorTaxable, partnerTaxable));
-        var (directorTaxFree, partnerTaxFree) = directorHigher ? (taxFreeAmount + passed, taxFreeAmount - passed) : (taxFreeAmount - passed, taxFreeAmount + passed);
+        var (withSupplements, other) = directorHigher
+            ? SharedTaxFreeAmounts(rules.TaxFreeAmount.Value, supplements, directorTaxable, partnerTaxable)
+            : SharedTaxFreeAmounts(rules.TaxFreeAmount.Value, supplements, partnerTaxable, directorTaxable);
+        var (directorTaxFree, partnerTaxFree) = directorHigher ? (withSupplements, other) : (other, withSupplements);
 
         var incomeTaxedApart = taxedApart?.Income ?? 0m;
         var director = Column(
@@ -115,9 +132,14 @@ public static class PersonalTaxCalculator
             quotient: toDirector - toPartner,
             otherIncome: otherIncome,
             taxableIncome: directorTaxable,
-            taxFreeAmount: directorTaxFree,
-            taxApart: TaxApart(taxedApart))
-            with { LowEarnedIncomeCredit = LowEarnedIncomeCredit(rules, directorIncome, directorIncome + otherIncome + incomeTaxedApart) };
+            taxFreeAmount: directorTaxFree.Total,
+            taxApart: TaxApart(taxedApart),
+            childSupplements: directorTaxFree.ForChildren)
+            with
+            {
+                LowEarnedIncomeCredit = LowEarnedIncomeCredit(rules, directorIncome, directorIncome + otherIncome + incomeTaxedApart),
+                Supplements = directorHigher ? supplements : TaxFreeAmountSupplements.None,
+            };
         var partner = Column(
             rules,
             municipalRate,
@@ -125,8 +147,13 @@ public static class PersonalTaxCalculator
             quotient: toPartner - toDirector,
             otherIncome: 0m,
             taxableIncome: partnerTaxable,
-            taxFreeAmount: partnerTaxFree,
-            taxApart: 0m);
+            taxFreeAmount: partnerTaxFree.Total,
+            taxApart: 0m,
+            childSupplements: partnerTaxFree.ForChildren)
+            with { Supplements = directorHigher ? TaxFreeAmountSupplements.None : supplements };
+        var (directorCredit, partnerCredit) = ShareCap(director.ChildTaxCredit, partner.ChildTaxCredit, rules.Supplements.CreditCap(dependants));
+        director = director with { ChildTaxCredit = directorCredit };
+        partner = partner with { ChildTaxCredit = partnerCredit };
 
         return new PersonalTaxResult(
             flatRateCosts,
@@ -141,7 +168,44 @@ public static class PersonalTaxCalculator
             director.LowEarnedIncomeCredit,
             otherIncome,
             incomeTaxedApart,
-            director.TaxedApart) { Joint = new JointAssessment(director, partner) };
+            director.TaxedApart)
+        {
+            Joint = new JointAssessment(director, partner),
+            Supplements = supplements,
+            SupplementsTo = directorHigher ? Taxpayer.Director : Taxpayer.Partner,
+            ChildTaxCredit = directorCredit + partnerCredit,
+        };
+    }
+
+    // The two partners' tax-free amounts, the one with the supplements' first (art. 134 §4): each has the
+    // base amount; the other passes all they cannot use to the one with the supplements (4°); what that one
+    // cannot use of theirs then passes to the other, up to what the other's income leaves beyond their own
+    // (3°), counted as the base amount and the other supplements first (al. 2). Each with the part of it
+    // that is the children's supplements, whose tax the credit for children reads.
+    private static (TaxFree WithSupplements, TaxFree Other) SharedTaxFreeAmounts(
+        decimal baseAmount, TaxFreeAmountSupplements supplements, decimal withIncome, decimal otherIncome)
+    {
+        var fromOther = Math.Max(0m, baseAmount - otherIncome);
+        var withOwn = baseAmount + supplements.Others + fromOther;
+        var otherTaxFree = baseAmount - fromOther;
+        var toOther = Math.Min(Math.Max(0m, withOwn + supplements.ForChildren - withIncome), Math.Max(0m, otherIncome - otherTaxFree));
+        var childrenPassed = Math.Max(0m, toOther - withOwn);
+
+        return (
+            new TaxFree(withOwn + supplements.ForChildren - toOther, supplements.ForChildren - childrenPassed),
+            new TaxFree(otherTaxFree + toOther, childrenPassed));
+    }
+
+    // The cap of the credit for children above the two partners' credits, shared in proportion to them (art.
+    // 134 §4, al. 2, 2°): the director's share rounded to the cent, the partner's the rest.
+    internal static (decimal Director, decimal Partner) ShareCap(decimal director, decimal partner, decimal cap)
+    {
+        var total = director + partner;
+        if (total <= cap)
+            return (director, partner);
+
+        var directorShare = Money.RoundToCent(cap * director / total);
+        return (directorShare, cap - directorShare);
     }
 
     // What the partner would owe filing alone, the river's baseline in a joint year (GrossToNet): a single
@@ -180,13 +244,15 @@ public static class PersonalTaxCalculator
     private static decimal TaxApart(IncomeTaxedApart? taxedApart) => taxedApart is null ? 0m : Money.RoundToCent(taxedApart.Income * taxedApart.Rate.Value);
 
     // One taxpayer's lines on their taxable income and tax-free amount, the tax on the tax-free amount on
-    // art. 134 §2's scale, up to what their income uses; no credit until one is given. The federal
+    // art. 134 §2's scale, up to what their income uses; no credit for low earned income until one is
+    // given, and the credit for children before its cap (ChildCredit), on the part of the tax-free amount
+    // that is the children's supplements. The federal
     // government keeps the State tax, with the tax apart, less the autonomy factor, and Wallonia adds its
     // regional tax on that share. The two rates are set to cancel out, but each part is rounded on its
     // own, so their sum can be a few cents off the State tax.
     private static TaxpayerColumn Column(
         PersonalTaxRules rules, decimal municipalRate, decimal professionalIncome, decimal quotient, decimal otherIncome, decimal taxableIncome, decimal taxFreeAmount,
-        decimal taxApart)
+        decimal taxApart, decimal childSupplements = 0m)
     {
         var basicTax = Money.RoundToCent(TaxOnScale(rules.Scale, taxableIncome));
         var reduction = Money.RoundToCent(TaxOnScale(rules.TaxFreeAmountScale, Math.Min(taxFreeAmount, taxableIncome)));
@@ -197,8 +263,34 @@ public static class PersonalTaxCalculator
 
         return new TaxpayerColumn(
             professionalIncome, quotient, otherIncome, taxableIncome, taxFreeAmount, basicTax, reduction, stateTax, taxApart,
-            reducedStateTax, regionalAdditionalTax, incomeTax, Money.RoundToCent(incomeTax * municipalRate), 0m);
+            reducedStateTax, regionalAdditionalTax, incomeTax, Money.RoundToCent(incomeTax * municipalRate), 0m)
+        {
+            ChildTaxCredit = ChildCredit(rules, taxableIncome, basicTax, taxFreeAmount - childSupplements, childSupplements),
+        };
     }
+
+    // The part of the tax on the tax-free amount the basic tax cannot absorb, insofar as it is the
+    // children's supplements, before the cap (art. 134 §3, al. 1 and 4): the tax-free amount is the base
+    // amount and the other supplements first, counted only up to the taxable income (2°), the children's on
+    // top; what §2's tax on it all exceeds the basic tax by, at most the tax on the children's layer, each
+    // tax on §2's scale rounded to the cent as the reduction is. The same tax on the tax-free amount up to
+    // the income leaves no State tax wherever this is above nothing, §2's scale never being below art.
+    // 130's, so the credit never meets a municipal surcharge in its column.
+    private static decimal ChildCredit(PersonalTaxRules rules, decimal taxableIncome, decimal basicTax, decimal baseAndOthers, decimal childSupplements)
+    {
+        if (childSupplements <= 0m)
+            return 0m;
+
+        var counted = Math.Min(baseAndOthers, taxableIncome);
+        var onAll = Money.RoundToCent(TaxOnScale(rules.TaxFreeAmountScale, counted + childSupplements));
+        var unabsorbed = Math.Max(0m, onAll - basicTax);
+        var onChildren = onAll - Money.RoundToCent(TaxOnScale(rules.TaxFreeAmountScale, counted));
+
+        return Math.Min(unabsorbed, onChildren);
+    }
+
+    // A tax-free amount and the part of it that is the children's supplements.
+    private readonly record struct TaxFree(decimal Total, decimal ForChildren);
 
     // Art. 289ter, §2 on the activity income: a straight line up from the floor to the full amount,
     // then down from the end of the full amount to nothing at the ceiling, rounded to the cent as the
