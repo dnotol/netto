@@ -14,7 +14,7 @@ public class MapFilterTextTests
     [Fact]
     public void MapFilterResx_everyKind_hasANameAndWhatItIs()
     {
-        var keys = Enum.GetValues<MapLinkKind>().SelectMany(kind => new[] { MapFilterText.Name(kind), MapFilterText.Gloss(kind) }).Append(MapFilterText.Legend);
+        var keys = Enum.GetValues<MapLinkKind>().SelectMany(kind => new[] { MapFilterText.Name(kind), MapFilterText.Gloss(kind) }).Append(MapFilterText.Legend).Append(MapFilterText.GlossLine);
 
         Resources.Missing(keys).ShouldBeEmpty();
     }
@@ -25,11 +25,18 @@ public class MapFilterTextTests
         Resources.Missing([.. Totals.Select(MapFilterText.Count), MapFilterText.AllHidden]).ShouldBeEmpty();
     }
 
-    // A kind's name is the kind's, and the count after it says what hiding it would take off the map.
+    // A kind's name is the kind's, short, and the count after it says what hiding it would take off the map.
     [Fact]
     public void Name_eachKind_isWhatTheMapCallsIt()
     {
-        Enum.GetValues<MapLinkKind>().Select(kind => Resources.Get(MapFilterText.Name(kind))).ShouldBe(["Money passed on", "Money into a bucket", "Tax base", "Conditions"]);
+        Enum.GetValues<MapLinkKind>().Select(kind => Resources.Get(MapFilterText.Name(kind))).ShouldBe(["Passed on", "Into a bucket", "Tax base", "Conditions"]);
+    }
+
+    // In the legend's bubble, each kind is its name, then what it is.
+    [Fact]
+    public void GlossLine_isTheKindsNameThenWhatItIs()
+    {
+        Resources.Format(MapFilterText.GlossLine, "Tax base", "what changes a tax base").ShouldBe("Tax base: what changes a tax base");
     }
 
     [Fact]
@@ -58,7 +65,7 @@ public class MapFilterTextTests
     public void MapFilterResx_noText_isLeftUnused()
     {
         var used = Enum.GetValues<MapLinkKind>().SelectMany(kind => new[] { MapFilterText.Name(kind), MapFilterText.Gloss(kind) })
-            .Concat(Totals.Select(MapFilterText.Count)).Concat([MapFilterText.Legend, MapFilterText.AllHidden]);
+            .Concat(Totals.Select(MapFilterText.Count)).Concat([MapFilterText.Legend, MapFilterText.GlossLine, MapFilterText.AllHidden]);
 
         Resources.Keys.Except(used).ShouldBeEmpty();
     }

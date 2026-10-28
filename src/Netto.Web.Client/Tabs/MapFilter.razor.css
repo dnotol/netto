@@ -4,66 +4,64 @@
    same dash and ink (MapLinkStyle), a line of money at one width, since on the map its width is its
    amount's, and the end of the lines it stands for, an arrowhead or, money into a bucket, a bar it runs
    into, the bucket's edge; all set on each sample itself, so this sheet keeps no ink of its own for them,
-   at least 3:1 on the card in both themes. The four kinds are one row, each as wide as its box, its info
-   bubble and its count ask, and wrap onto a second only where the window has not the room:
-   at 1,024 px they take about 890 of the 966 the page leaves, which is why a checkbox is dense (a 32 px
-   button, not MudBlazor's 48) and a count is its number alone to the eye; the checkbox and the bubble stay
-   targets of at least 24 px. */
+   at least 3:1 on the page in both themes. The legend is compact, one line among the map's tools: the four
+   kinds in one row with no frame of their own, each as wide as its box, its sample and its short name ask,
+   then the one bubble, wrapping onto a second line only where the column has not the room, which is why a
+   checkbox is dense (a 32 px button, not MudBlazor's 48) and a count is words for a screen reader alone;
+   the checkbox and the bubble stay targets of at least 24 px. */
 
-/* A fieldset's own frame and minimum width are taken off, so the group is a plain block. */
+/* A fieldset's own frame and minimum width are taken off, so the group is a plain row: the boxes, then
+   the bubble. */
 .map-filter {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem 0.35rem;
     min-width: 0;
-    margin: 0 0 1rem;
+    margin: 0;
     padding: 0;
     border: 0;
 }
 
+/* The group's name, for a screen reader, out of sight: the samples and the names say it to the eye. */
 .map-filter__legend {
-    margin-bottom: 0.4rem;
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
     padding: 0;
-    color: var(--netto-text-muted);
-    font-size: 0.7rem;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
 }
 
 /* Every kind a box of its own in one row, each as wide as it needs. */
 .map-filter__kinds {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.4rem 0.5rem;
+    gap: 0.1rem 0.4rem;
     margin: 0;
     padding: 0;
     list-style: none;
 }
 
-/* The checkbox's label is the box, so a click on its sample, its name or its count ticks the kind, and
-   the info bubble sits beside it, in the same frame, outside the label. */
+/* The checkbox's label is the box, so a click on its sample or its name ticks the kind. */
 .map-filter__kind {
     display: flex;
     align-items: center;
-    padding-right: 0.3rem;
-    border: 1px solid var(--netto-line);
-    border-radius: 10px;
-    background: var(--netto-surface);
 }
-
-    .map-filter__kind:hover {
-        border-color: var(--netto-edge);
-    }
 
     .map-filter__kind ::deep .mud-checkbox {
         display: flex;
         align-items: center;
         margin: 0;
-        padding: 0.1rem 0.15rem 0.1rem 0.15rem;
+        padding: 0 0.15rem 0 0;
     }
 
 .map-filter__choice {
     display: flex;
     align-items: center;
-    gap: 0.35rem;
+    gap: 0.3rem;
     line-height: 1.4;
 }
 
@@ -78,15 +76,9 @@
     }
 
 .map-filter__name {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     font-weight: 600;
     white-space: nowrap;
-}
-
-.map-filter__count {
-    color: var(--netto-text-muted);
-    font-size: 0.8rem;
-    font-variant-numeric: tabular-nums;
 }
 
 /* The count's words, in the page for a screen reader and out of sight. */
@@ -101,9 +93,19 @@
     white-space: nowrap;
 }
 
-/* What the boxes leave on the map, for the eye. */
+/* In the bubble, each kind on a line of its own. */
+.map-filter__gloss {
+    display: block;
+}
+
+    .map-filter__gloss + .map-filter__gloss {
+        margin-top: 0.35rem;
+    }
+
+/* What the boxes leave on the map, for the eye, on a line of its own under the boxes. */
 .map-filter__note {
-    margin: 0.5rem 0 0;
+    flex-basis: 100%;
+    margin: 0.25rem 0 0;
     color: var(--netto-text-muted);
     font-size: 0.85rem;
 }

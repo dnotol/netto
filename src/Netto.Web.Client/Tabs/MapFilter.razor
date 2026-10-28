@@ -2,20 +2,19 @@
 @inject IStringLocalizer<MapFilter> L
 @inject MapLinkFilter Filter
 
-@* The Map tab's legend, which is also its filter: one checkbox for every kind of link, in one row, each
-   with a sample of its line (MapLinkStyle, the very dash and ink the map draws it with, and the end of the
-   lines it stands for, SampleEnd: an arrowhead, or for money into a bucket a bar its line runs into, a line
-   of that kind coming back out of a bucket ending in an arrowhead as its bubble says;
-   a line of money at one width since on the map its width is its amount, so the legend tells the lines
-   apart without colour), its name and how many links the plan has of it, and beside
-   the box an info bubble saying what the kind is, a bubble being a button of its own and so never inside
-   the box's label. A kind ticked is drawn, a kind unticked is left out of the lines and of their amounts,
-   and of those alone, what a chosen module receives being read from every link of the run whatever is
-   ticked; the choice is the viewer's, remembered in the browser (MapLinkFilter).
-   The group is a fieldset named by its legend, so a screen reader hears the kind, its count and its state.
-   The checkbox is dense (its button 32 px, not 48) and the count is the number alone to the eye, which
-   keeps the four boxes in one row where the window has the room, and its words, out of sight, to a screen
-   reader, which would hear a bare number as no count; the counts are the plan's whatever is hidden, so a
+@* The Map tab's legend, which is also its filter, compact among the map's tools: one checkbox for every
+   kind of link, in one row, each with a sample of its line (MapLinkStyle, the very dash and ink the map
+   draws it with, and the end of the lines it stands for, SampleEnd: an arrowhead, or for money into a bucket
+   a bar its line runs into, a line of that kind coming back out of a bucket ending in an arrowhead as the
+   bubble says; a line of money at one width since on the map its width is its amount, so the legend tells
+   the lines apart without colour) and its short name; after the boxes, one info bubble saying what each kind
+   is, a bubble being a button of its own and so never inside a box's label. A kind ticked is drawn, a kind
+   unticked is left out of the lines and of their amounts, and of those alone, what a chosen module receives
+   being read from every link of the run whatever is ticked; the choice is the viewer's, remembered in the
+   browser (MapLinkFilter). The group is a fieldset named by its legend, out of sight, so a screen reader
+   hears the group, then the kind, its count and its state. The checkbox is dense (its button 32 px, not 48)
+   and the count is words for a screen reader alone, out of sight, which keeps the four boxes and « Add to
+   plan » on one line where the column has the room; the counts are the plan's whatever is hidden, so a
    box does not change its name as it is ticked. Every kind is always there, even one the plan has no link
    of, or an unticked kind would be out of sight with nothing to show it again. The one line under the boxes, for the viewer who ticked none, is for the eye:
    nothing here is a live region, the checkbox says its own state (the bar is the river's only
@@ -41,14 +40,18 @@
                             }
                         </svg>
                         <span class="map-filter__name">@L[MapFilterText.Name(row.Kind)]</span>
-                        <span class="map-filter__count" aria-hidden="true">@row.Count</span>
                         <span class="map-filter__spoken">@L[MapFilterText.Count(row.Count), row.Count]</span>
                     </span>
                 </MudCheckBox>
-                <InfoBubble Label="@L[MapFilterText.Name(row.Kind)]">@L[MapFilterText.Gloss(row.Kind)]</InfoBubble>
             </li>
         }
     </ul>
+    <InfoBubble Label="@L[MapFilterText.Legend]">
+        @foreach (var row in _view.Rows)
+        {
+            <span class="map-filter__gloss">@L[MapFilterText.GlossLine, L[MapFilterText.Name(row.Kind)], L[MapFilterText.Gloss(row.Kind)]]</span>
+        }
+    </InfoBubble>
     @if (_view.AllHidden)
     {
         <p class="map-filter__note">@L[MapFilterText.AllHidden]</p>

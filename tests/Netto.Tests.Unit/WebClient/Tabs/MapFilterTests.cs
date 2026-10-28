@@ -9,13 +9,13 @@ using static Netto.Tests.WebClient.Tabs.MapRendering;
 
 namespace Netto.Tests.WebClient.Tabs;
 
-// The legend of the kinds of link as a viewer meets it on the Map tab, drawn without a browser: a group
-// named by its legend, a box for every kind in the order of the kinds, ticked while the kind is shown, each
-// with a sample of the map's own line for it, its name and how many links the plan has of it, and beside
-// the box, an info bubble saying what the kind is. The boxes are one row that wraps only when the window
-// has not the room for it. Ticking a box is an event: MapLinkFilterTests holds its effect on the filter,
-// MapTabFilterTests what the tab draws of a filter, and PlanMapFilterTests that the tab draws again at a
-// tick.
+// The legend of the kinds of link as a viewer meets it on the Map tab, drawn without a browser, compact
+// among the map's tools: a group named by its legend, out of sight, a box for every kind in the order of the
+// kinds, ticked while the kind is shown, each with a sample of the map's own line for it, its short name and,
+// for a screen reader alone, how many links the plan has of it; after the boxes, one info bubble saying what
+// each kind is. The boxes are one row that wraps only when the column has not the room for it. Ticking a box
+// is an event: MapLinkFilterTests holds its effect on the filter, MapTabFilterTests what the tab draws of a
+// filter, and PlanMapFilterTests that the tab draws again at a tick.
 public class MapFilterTests
 {
     private static readonly Dictionary<MapLinkKind, int> Counts = new()
@@ -40,55 +40,62 @@ public class MapFilterTests
     {
         var html = await RenderAsync(EveryKind(), Counts);
 
-        LegendBoxes(html).Select(box => box.Text).ShouldBe(["Money passed on (10 links)", "Money into a bucket (1 link)", "Tax base (6 links)", "Conditions (none in this plan)"]);
+        LegendBoxes(html).Select(box => box.Text).ShouldBe(["Passed on (10 links)", "Into a bucket (1 link)", "Tax base (6 links)", "Conditions (none in this plan)"]);
     }
 
-    // What the eye reads of a count is the number alone, which keeps the four boxes in one row; the words
-    // are left to the screen reader, which would hear a bare number as no count.
+    // A count is for a screen reader alone, which would hear a bare number as no count: the eye reads the
+    // sample and the name, which keeps the four boxes and « Add to plan » on one line.
     [Fact]
-    public async Task Filter_everyCount_isTheNumberForTheEyeAndTheWordsForTheScreenReader()
+    public async Task Filter_everyCount_isWordsForAScreenReaderAlone()
     {
         var html = await RenderAsync(EveryKind(), Counts);
 
         html.ShouldSatisfyAllConditions(
-            () => Regex.Matches(html, "<span class=\"map-filter__count\" aria-hidden=\"true\"[^>]*>([^<]*)</span>").Select(match => match.Groups[1].Value).ShouldBe(["10", "1", "6", "0"]),
+            () => html.ShouldNotContain("map-filter__count"),
             () => Regex.Matches(html, "<span class=\"map-filter__spoken\"[^>]*>([^<]*)</span>").Select(match => match.Groups[1].Value)
                 .ShouldBe(["(10 links)", "(1 link)", "(6 links)", "(none in this plan)"]));
     }
 
-    // What a kind is goes in an info bubble beside its box, named "More about" the kind and described by
-    // the text that was once the box's second line; never inside the label, whose text would then carry
-    // it, nor a button inside a label.
+    // What each kind is goes in one info bubble after the boxes, named "More about" the legend and described
+    // by each kind's name and what it is; never inside a box's label, whose text would then carry it, nor a
+    // button inside a label.
     [Fact]
-    public async Task Filter_everyKind_hasABubbleBesideItsBoxSayingWhatItIs()
+    public async Task Filter_theKinds_shareOneBubbleAfterTheBoxesSayingWhatEachIs()
     {
         var html = await RenderAsync(EveryKind(), Counts);
 
-        var bubbles = LegendItems(html).Select(box => (
-            Regex.Match(box, "<button [^>]*aria-label=\"([^\"]*)\"").Groups[1].Value,
-            Regex.Match(box, "<span id=\"[^\"]*\" class=\"info-bubble__text\"[^>]*>([^<]*)</span>").Groups[1].Value,
-            Regex.IsMatch(Regex.Match(box, "<label.*?</label>", RegexOptions.Singleline).Value, "info-bubble"),
-            Regex.IsMatch(box, "</label>.*<span class=\"info-bubble\"[^>]*>", RegexOptions.Singleline))).ToList();
+        var bubble = Regex.Match(html, "</ul>\\s*<span class=\"info-bubble\"[^>]*>\\s*<button [^>]*aria-label=\"([^\"]*)\"");
+        var glosses = Regex.Matches(html, "<span class=\"map-filter__gloss\"[^>]*>([^<]*)</span>").Select(match => match.Groups[1].Value).ToList();
 
-        bubbles.ShouldBe(
-        [
-            ("More about Money passed on", "Money handed from one module to the next. The thicker the line, the more money.", false, true),
-            ("More about Money into a bucket", "Money that ends in one of the bar's buckets, its line running into it, or that comes back out of a bucket, its line then ending in an arrowhead. The thicker the line, the more money.", false, true),
-            ("More about Tax base", "What changes the amount a tax is worked out on without moving money: a benefit taxed with the pay, what Corporate tax adds back.", false, true),
-            ("More about Conditions", "A condition one module sets on another.", false, true),
-        ]);
+        html.ShouldSatisfyAllConditions(
+            () => Regex.Count(html, "class=\"info-bubble\"").ShouldBe(1),
+            () => LegendItems(html).ShouldAllBe(item => !item.Contains("info-bubble", StringComparison.Ordinal)),
+            () => bubble.Groups[1].Value.ShouldBe("More about Kinds of link shown"),
+            () => glosses.ShouldBe(
+            [
+                "Passed on: money handed from one module to the next. The thicker the line, the more money.",
+                "Into a bucket: money that ends in one of the bar's buckets, its line running into it, or that comes back out of a bucket, its line then ending in an arrowhead. The thicker the line, the more money.",
+                "Tax base: what changes the amount a tax is worked out on without moving money, a benefit taxed with the pay, what Corporate tax adds back.",
+                "Conditions: a condition one module sets on another.",
+            ]));
     }
 
-    // The four boxes are one row, a flex row that wraps only when the window has not the room, and each
-    // box takes the room its content asks, not a column of a grid's.
+    // The four boxes are one row, a flex row that wraps only when the column has not the room, and each
+    // box takes the room its content asks, not a column of a grid's; compact, with no frame of its own, and
+    // the group's legend out of sight, its words for a screen reader.
     [Fact]
-    public void Stylesheet_theKinds_areOneRowThatWrapsOnlyWhenItMust()
+    public void Stylesheet_theKinds_areOneCompactRowThatWrapsOnlyWhenItMust()
     {
         var css = Stylesheet.Read("src", "Netto.Web.Client", "Tabs", "MapFilter.razor.css");
 
         var row = Stylesheet.Block(css, ".map-filter__kinds").Split(';').Select(declaration => declaration.Trim()).Where(declaration => declaration.StartsWith("display", StringComparison.Ordinal) || declaration.StartsWith("flex-wrap", StringComparison.Ordinal));
-        row.ShouldBe(["display: flex", "flex-wrap: wrap"]);
-        Stylesheet.Block(css, ".map-filter__kind").ShouldNotContain("width: 100%");
+        css.ShouldSatisfyAllConditions(
+            () => row.ShouldBe(["display: flex", "flex-wrap: wrap"]),
+            () => Stylesheet.Block(css, ".map-filter__kind").ShouldNotContain("width: 100%"),
+            () => Stylesheet.Block(css, ".map-filter__kind").ShouldNotContain("border:"),
+            () => Stylesheet.Block(css, ".map-filter__legend").ShouldContain("clip-path: inset(50%)"),
+            () => Stylesheet.Block(css, ".map-filter__legend").ShouldContain("position: absolute"),
+            () => Stylesheet.Block(css, ".map-filter").ShouldContain("margin: 0;"));
     }
 
     // Each box is a dense checkbox, whose button is 32 px square and no more (MudBlazor's 48 px would make

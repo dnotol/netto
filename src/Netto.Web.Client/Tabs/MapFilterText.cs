@@ -4,8 +4,12 @@ namespace Netto.Web.Client.Tabs;
 // or a count without its words fails a test instead of showing its key on screen.
 internal static class MapFilterText
 {
-    // The group's visible name: the legend of the lines, whose boxes say which are drawn.
+    // The group's name, for a screen reader, the legend of the lines, whose boxes say which are drawn; and
+    // what its bubble says more about.
     public const string Legend = "Legend";
+
+    // In the legend's bubble, a kind's name, then what it is.
+    public const string GlossLine = "GlossLine";
 
     // The line under the group when the viewer hid every kind: the one line it ever says, the boxes' own
     // states and counts saying the rest.

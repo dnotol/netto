@@ -16,28 +16,28 @@
     <value>Kinds of link shown</value>
   </data>
   <data name="Name_PassedOn" xml:space="preserve">
-    <value>Money passed on</value>
+    <value>Passed on</value>
   </data>
   <data name="Gloss_PassedOn" xml:space="preserve">
-    <value>Money handed from one module to the next. The thicker the line, the more money.</value>
+    <value>money handed from one module to the next. The thicker the line, the more money.</value>
   </data>
   <data name="Name_IntoBucket" xml:space="preserve">
-    <value>Money into a bucket</value>
+    <value>Into a bucket</value>
   </data>
   <data name="Gloss_IntoBucket" xml:space="preserve">
-    <value>Money that ends in one of the bar's buckets, its line running into it, or that comes back out of a bucket, its line then ending in an arrowhead. The thicker the line, the more money.</value>
+    <value>money that ends in one of the bar's buckets, its line running into it, or that comes back out of a bucket, its line then ending in an arrowhead. The thicker the line, the more money.</value>
   </data>
   <data name="Name_TaxBase" xml:space="preserve">
     <value>Tax base</value>
   </data>
   <data name="Gloss_TaxBase" xml:space="preserve">
-    <value>What changes the amount a tax is worked out on without moving money: a benefit taxed with the pay, what Corporate tax adds back.</value>
+    <value>what changes the amount a tax is worked out on without moving money, a benefit taxed with the pay, what Corporate tax adds back.</value>
   </data>
   <data name="Name_Condition" xml:space="preserve">
     <value>Conditions</value>
   </data>
   <data name="Gloss_Condition" xml:space="preserve">
-    <value>A condition one module sets on another.</value>
+    <value>a condition one module sets on another.</value>
   </data>
   <data name="Count_None" xml:space="preserve">
     <value>(none in this plan)</value>
@@ -47,6 +47,9 @@
   </data>
   <data name="Count_Many" xml:space="preserve">
     <value>({0} links)</value>
+  </data>
+  <data name="GlossLine" xml:space="preserve">
+    <value>{0}: {1}</value>
   </data>
   <data name="AllHidden" xml:space="preserve">
     <value>Every kind of link is hidden: tick one to see its links.</value>
