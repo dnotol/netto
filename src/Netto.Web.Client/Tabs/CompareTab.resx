@@ -42,6 +42,9 @@
   <data name="Row_kept" xml:space="preserve">
     <value>Kept in the company</value>
   </data>
+  <data name="Row_expenses" xml:space="preserve">
+    <value>Expenses</value>
+  </data>
   <data name="Row_taxes" xml:space="preserve">
     <value>All contributions and taxes</value>
   </data>

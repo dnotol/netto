@@ -106,8 +106,8 @@ public class CompareRowsTests
     }
 
     // Taxes are what the engine's layers took: the year's own figures, and the bar's two tax buckets
-    // together; with the pocket and what the company keeps they are what the river started from, after
-    // the car's costs.
+    // together; with the pocket, what the company keeps and its expenses, the contribution and the car's
+    // costs, they are what the river started from.
     [Theory]
     [MemberData(nameof(Years))]
     public void Rows_everyColumn_addsUpToWhatTheRiverStartsFromAndToTheBar(decimal revenue, decimal pay, decimal reserve)
@@ -126,7 +126,8 @@ public class CompareRowsTests
             figure("personal_tax").ShouldBe(year.PersonalTax);
             (figure("corporate_tax") + figure("social_contributions") + figure("personal_tax")).ShouldBe(figure("taxes"));
             figure("taxes").ShouldBe(buckets.Buckets.Single(bucket => bucket.Key == "taxes_on_pay").Amount + buckets.Buckets.Single(bucket => bucket.Key == "taxes_on_profit").Amount);
-            (figure("pocket") + figure("taxes") + figure("kept") + buckets.AmountOf("expenses")).ShouldBe(buckets.Start);
+            figure("expenses").ShouldBe(year.CompanyContribution + year.Car.Costs);
+            (figure("pocket") + figure("taxes") + figure("kept") + figure("expenses")).ShouldBe(buckets.Start);
         }
     }
 
@@ -170,7 +171,7 @@ public class CompareRowsTests
     // company like its running costs: 55,813.08 reaches the pocket, 6,162.66 less than without the car,
     // and the company keeps nothing.
     [Fact]
-    public void Rows_carOnTheSecondSide_sayItsPocketItsShareAndWhatTheCompanyKeeps()
+    public void Rows_carOnTheSecondSide_sayItsPocketItsShareWhatTheCompanyKeepsAndItsExpenses()
     {
         var result = Result(Compare(RiverInputs.Example, ElectricCar));
 
@@ -178,7 +179,7 @@ public class CompareRowsTests
     }
 
     [Fact]
-    public void Rows_carOnTheFirstSide_sayItsPocketItsShareAndWhatTheCompanyKeeps()
+    public void Rows_carOnTheFirstSide_sayItsPocketItsShareWhatTheCompanyKeepsAndItsExpenses()
     {
         var result = Result(Compare(ElectricCar, RiverInputs.Example));
 
@@ -190,6 +191,7 @@ public class CompareRowsTests
         ("pocket", CompareFigure.Money(55_813.08m)),
         ("reach", CompareFigure.Share(55_813.08m / 92_000m)),
         ("kept", CompareFigure.Money(0m)),
+        ("expenses", CompareFigure.Money(8_409.30m)),
     ];
 
     private static IReadOnlyList<CompareRow> Result(CompareView view) => view.Groups.Single(group => group.Key == "result").Rows;

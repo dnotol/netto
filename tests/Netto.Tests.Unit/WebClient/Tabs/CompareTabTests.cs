@@ -76,7 +76,7 @@ public class CompareTabTests
 
         var table = Between(html, "<table", "</table>");
         (Regex.Count(table, "<th scope=\"col\""), Regex.Count(table, "<th scope=\"rowgroup\""), Regex.Count(table, "<th scope=\"row\""))
-            .ShouldBe((4, 4, 11));
+            .ShouldBe((4, 4, 12));
     }
 
     [Fact]

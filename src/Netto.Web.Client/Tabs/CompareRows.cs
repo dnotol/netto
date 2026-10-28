@@ -8,7 +8,7 @@ namespace Netto.Web.Client.Tabs;
 // already show, read from the same runs and set side by side, so a column always says what the river
 // says for that plan. Every row is the engine's own figure for each plan and what separates them, the
 // second plan's less the first's; none is a rule of its own. The year's result first (what the bar
-// draws), then the taxes layer by layer in the law's order, read from the ledger's steps so a river that
+// draws, its buckets of the company's year absent from a river that starts at the pay), then the taxes layer by layer in the law's order, read from the ledger's steps so a river that
 // starts at the pay has them too, then what comes off the company's profit before the split, INASTI's
 // company contribution, a cost of the company in no layer's taxes, and what it pays besides the pay, and
 // the split itself. A row neither plan has a figure for is not drawn, and a group
@@ -25,6 +25,7 @@ internal static class CompareRows
                 Row("pocket", PocketOf(plan), PocketOf(against), OfGain(gain)),
                 Row("reach", Share(plan), Share(against)),
                 Row("kept", Company(plan, KeptOf), Company(against, KeptOf)),
+                Row("expenses", Company(plan, ExpensesOf), Company(against, ExpensesOf)),
             ])),
             new CompareGroup("taxes", Drawn(
             [
@@ -106,6 +107,9 @@ internal static class CompareRows
     private static CompareFigure PocketOf(ComparedPlan column) => Money(column.Buckets!.AmountOf("pocket"));
 
     private static decimal KeptOf(ComparedPlan column) => column.Buckets!.AmountOf("kept_in_company");
+
+    // The company's expenses, its contribution to INASTI and its car's costs, as the bar's last bucket holds them.
+    private static decimal ExpensesOf(ComparedPlan column) => column.Buckets!.AmountOf("expenses");
 
     // What the company owes INASTI whatever it pays its director, read only of a plan with a year of the company.
     private static decimal ContributionOf(ComparedPlan column) => column.Run.Year!.CompanyContribution;
