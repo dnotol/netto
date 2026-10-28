@@ -181,6 +181,54 @@ public class GrossToNetViewTests
         });
     }
 
+    // GrossToNetWithholdingQuotientTests: for a partner without professional income the formula's lines
+    // on 4,166.67 run to the annual net taxable as for a single person, then the marital quotient's: the
+    // income imputed to the partner, the tax on it, the tax on the rest, twice the tax on the tax-free
+    // amount taken off both.
+    public static TheoryData<int, decimal, decimal, decimal> QuotientWithholdingByPeriod => new()
+    {
+        { 0, 5_975.96m, 5_494.33m, 457.86m },
+        { 1, 6_179.26m, 5_291.03m, 440.92m },
+    };
+
+    [Theory]
+    [MemberData(nameof(QuotientWithholdingByPeriod))]
+    public void From_gross50000PartnerWithoutIncome_withholdingDetailCarriesTheQuotientsLines(
+        int period, decimal jointTaxFreeAmountReduction, decimal annualTax, decimal monthly)
+    {
+        var detail = HouseholdView(50_000m, NonEarningPartner).Withholding[period].Detail;
+
+        detail.Lines.ShouldBe(
+        [
+            new StepLine("monthly_taxable_pay", 4_166.67m),
+            new StepLine("reduction", 965.86m),
+            new StepLine("annual_gross", 38_409.72m),
+            new StepLine("flat_rate_costs", 1_152.29m),
+            new StepLine("annual_net_taxable", 37_257.43m),
+            new StepLine("imputed_to_partner", 11_177.23m),
+            new StepLine("partner_tax", 2_989.91m),
+            new StepLine("rest_tax", 8_480.38m),
+            new StepLine("joint_tax_free_amount_reduction", jointTaxFreeAmountReduction),
+            new StepLine("annual_tax", annualTax),
+            new StepLine("monthly_withholding", monthly),
+        ]);
+    }
+
+    // The quotient's amounts in place of n° 32: to October all under the annex as decreed, from
+    // November under the coordinated annex, the maximum for partners both 66 the one cited for them.
+    [Theory]
+    [InlineData(0, 1, false, "withholding_quotient_rate withholding_quotient_maximum withholding_joint_tax_free_amount_reduction")]
+    [InlineData(1, 11, false, "withholding_quotient_rate withholding_quotient_maximum withholding_joint_tax_free_amount_reduction")]
+    [InlineData(1, 11, true, "withholding_quotient_rate withholding_quotient_maximum_both_aged_66 withholding_joint_tax_free_amount_reduction")]
+    public void From_gross50000PartnerWithoutIncome_withholdingDetailCitesTheQuotientsAmountsLast(int period, int month, bool bothAged66, string keys)
+    {
+        var rules = WithholdingRules.IncomeYear2026.InMonth(month);
+
+        var detail = HouseholdView(50_000m, NonEarningPartner with { BothAged66 = bothAged66 }).Withholding[period].Detail;
+
+        (detail.Sources[^1].Source, Keys(detail.Sources[^1])).ShouldBe((rules.QuotientRate.Source, keys));
+    }
+
     [Fact]
     public void From_gross50000WithholdingAsTheKeyFormula_balanceIsTheFinalTaxLessWhatWasWithheldToPay()
     {
@@ -698,6 +746,14 @@ public class GrossToNetViewTests
     private static GrossToNetView View(decimal grossPay) => View(grossPay, Withheld);
 
     private static GrossToNetView CompanyPaysView(decimal grossPay) => View(grossPay, Withheld, ContributionsPaidBy.Company);
+
+    private static GrossToNetView HouseholdView(decimal grossPay, Household household)
+    {
+        var (value, error) = GrossToNet.Compute(2026, grossPay, MunicipalRates.IncomeYear2026.Entered(0.07m), Withheld, household: household);
+
+        error.ShouldBeNull();
+        return GrossToNetView.From(value.ShouldNotBeNull());
+    }
 
     private static GrossToNetView View(
         decimal grossPay, TaxPrepayments prepayments, ContributionsPaidBy paidBy = ContributionsPaidBy.Director, decimal otherIncome = 0m, decimal benefit = 0m,

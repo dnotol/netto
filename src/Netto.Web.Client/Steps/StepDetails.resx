@@ -297,6 +297,18 @@
   <data name="Line_tax_free_amount_reduction" xml:space="preserve">
     <value>Tax on the tax-free amount, taken off</value>
   </data>
+  <data name="Line_imputed_to_partner" xml:space="preserve">
+    <value>Income imputed to your partner</value>
+  </data>
+  <data name="Line_partner_tax" xml:space="preserve">
+    <value>Tax on the income imputed to your partner</value>
+  </data>
+  <data name="Line_rest_tax" xml:space="preserve">
+    <value>Tax on the rest</value>
+  </data>
+  <data name="Line_joint_tax_free_amount_reduction" xml:space="preserve">
+    <value>Tax on both tax-free amounts, taken off</value>
+  </data>
   <data name="Line_annual_tax" xml:space="preserve">
     <value>Annual tax, never below zero</value>
   </data>
@@ -359,6 +371,18 @@
   </data>
   <data name="Amount_tax_free_amount_reduction" xml:space="preserve">
     <value>Tax on the tax-free amount of a single person</value>
+  </data>
+  <data name="Amount_withholding_quotient_rate" xml:space="preserve">
+    <value>Share of the annual net taxable imputed to a partner without professional income</value>
+  </data>
+  <data name="Amount_withholding_quotient_maximum" xml:space="preserve">
+    <value>Most imputed to the partner</value>
+  </data>
+  <data name="Amount_withholding_quotient_maximum_both_aged_66" xml:space="preserve">
+    <value>Most imputed to the partner when both partners are 66 or over</value>
+  </data>
+  <data name="Amount_withholding_joint_tax_free_amount_reduction" xml:space="preserve">
+    <value>Tax on the tax-free amounts of both partners</value>
   </data>
   <data name="Title_assessment_balance" xml:space="preserve">
     <value>Balance on your assessment</value>

@@ -106,10 +106,29 @@ internal sealed record GrossToNetView(
     }
 
     // A month's withholding in a period as a step: the formula's lines in its order, the key formula
-    // as the rule, and the annex's amounts under the number each comes from.
+    // as the rule, and the annex's amounts under the number each comes from. Under the marital quotient
+    // the basic tax is the income imputed to the partner, the tax on it and the tax on the rest, and
+    // what is taken off them both partners' tax-free amounts.
     private static StepDetail WithholdingOf(PayStatementPeriod period)
     {
         var formula = period.Withholding;
+        IReadOnlyList<StepLine> basicTax = formula.Household switch
+        {
+            WithholdingHousehold.AsSingle =>
+            [
+                new StepLine("basic_tax", formula.BasicTax),
+                new StepLine("tax_free_amount_reduction", formula.TaxFreeAmountReduction),
+            ],
+            WithholdingHousehold.PartnerWithoutIncome or WithholdingHousehold.PartnerWithoutIncomeBothAged66 =>
+            [
+                new StepLine("imputed_to_partner", formula.ImputedToPartner),
+                new StepLine("partner_tax", formula.PartnerTax),
+                new StepLine("rest_tax", formula.BasicTax),
+                new StepLine("joint_tax_free_amount_reduction", formula.TaxFreeAmountReduction),
+            ],
+            _ => throw new ArgumentOutOfRangeException(nameof(period), formula.Household, "No withholding lines for this household."),
+        };
+
         return StepDetail.From("withholding", formula.MonthlyWithholding, period.Source, period.AmountsUsed) with
         {
             Lines =
@@ -119,8 +138,7 @@ internal sealed record GrossToNetView(
                 new StepLine("annual_gross", formula.AnnualGross),
                 new StepLine("flat_rate_costs", formula.FlatRateCosts),
                 new StepLine("annual_net_taxable", formula.AnnualNetTaxable),
-                new StepLine("basic_tax", formula.BasicTax),
-                new StepLine("tax_free_amount_reduction", formula.TaxFreeAmountReduction),
+                .. basicTax,
                 new StepLine("annual_tax", formula.AnnualTax),
                 new StepLine("monthly_withholding", formula.MonthlyWithholding),
             ],

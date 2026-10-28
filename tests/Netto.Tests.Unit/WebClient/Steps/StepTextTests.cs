@@ -227,6 +227,20 @@ public class StepTextTests
         MissingTexts([.. view.Withholding.Select(period => period.Detail), view.Balance.Detail]).ShouldBeEmpty();
     }
 
+    // The withholding by the marital quotient, its lines and amounts, the maximum for partners both 66
+    // among them.
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void StepDetailsResx_everyKeyOfTheQuotientsWithholding_hasAText(bool bothAged66)
+    {
+        var (value, _) = GrossToNet.Compute(
+            2026, 50_000m, MunicipalRates.IncomeYear2026.Entered(0.07m), TaxPrepayments.AsWithheld, household: NonEarningPartner with { BothAged66 = bothAged66 });
+        var view = GrossToNetView.From(value.ShouldNotBeNull());
+
+        MissingTexts(view.Withholding.Select(period => period.Detail)).ShouldBeEmpty();
+    }
+
     // The company of the river's example with nothing prepaid and nothing withheld, so the surcharges are among its steps.
     private static Scenario Unprepaid(decimal directorPay, WithholdingCategory category) =>
         Scenario(directorPay: directorPay, category: category, advancePayments: AdvancePayments.None, taxPrepayments: TaxPrepayments.None);
