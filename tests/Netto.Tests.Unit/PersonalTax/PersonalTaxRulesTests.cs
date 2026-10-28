@@ -97,6 +97,65 @@ public class PersonalTaxRulesTests
         PersonalTaxRules.For(incomeYear, region).ShouldBeNull();
     }
 
+    // What a joint assessment uses besides a single person's amounts: the rest of art. 134 §2's scale
+    // of the tax on the tax-free amount, which a tax-free amount passed on from the other partner reaches
+    // (§4), each year's own; and the marital quotient's 30% and its cap. Fisconetplus being down when
+    // they were researched, art. 87 and 88 are not filed yet: the 2026 rate cites the law of 15.07.2026
+    // that sets it, the caps the indexation notice of their tax year, and 2025's rate that notice too.
+    public static TheoryData<int, bool, string, decimal, string> JointAmounts => new()
+    {
+        { 2025, false, "tax_free_amount_bracket_1_upper_limit", 11_460m, "personal-tax/spf-finances_cir92-art-134-revenus-2025_2026-01-14.html" },
+        { 2025, false, "tax_free_amount_bracket_2_rate", 0.30m, "personal-tax/spf-finances_cir92-art-134-revenus-2025_2026-01-14.html" },
+        { 2025, false, "tax_free_amount_bracket_2_upper_limit", 16_320m, "personal-tax/spf-finances_cir92-art-134-revenus-2025_2026-01-14.html" },
+        { 2025, false, "tax_free_amount_bracket_3_rate", 0.40m, "personal-tax/spf-finances_cir92-art-134-revenus-2025_2026-01-14.html" },
+        { 2025, false, "tax_free_amount_bracket_3_upper_limit", 27_190m, "personal-tax/spf-finances_cir92-art-134-revenus-2025_2026-01-14.html" },
+        { 2025, false, "tax_free_amount_bracket_4_rate", 0.45m, "personal-tax/spf-finances_cir92-art-134-revenus-2025_2026-01-14.html" },
+        { 2025, false, "tax_free_amount_bracket_4_upper_limit", 49_840m, "personal-tax/spf-finances_cir92-art-134-revenus-2025_2026-01-14.html" },
+        { 2025, false, "tax_free_amount_bracket_5_rate", 0.50m, "personal-tax/spf-finances_cir92-art-134-revenus-2025_2026-01-14.html" },
+        { 2025, false, "marital_quotient_rate", 0.30m, "personal-tax/spf-finances_avis-indexation-exercice-2026_2026-01-19.html" },
+        { 2025, false, "marital_quotient_cap", 13_460m, "personal-tax/spf-finances_avis-indexation-exercice-2026_2026-01-19.html" },
+        { 2025, true, "marital_quotient_cap_both_aged_66", 13_460m, "personal-tax/spf-finances_avis-indexation-exercice-2026_2026-01-19.html" },
+        { 2026, false, "tax_free_amount_bracket_1_upper_limit", 11_750m, "personal-tax/spf-finances_cir92-art-134-revenus-2026_2026-08-05.html" },
+        { 2026, false, "tax_free_amount_bracket_2_rate", 0.30m, "personal-tax/spf-finances_cir92-art-134-revenus-2026_2026-08-05.html" },
+        { 2026, false, "tax_free_amount_bracket_2_upper_limit", 16_720m, "personal-tax/spf-finances_cir92-art-134-revenus-2026_2026-08-05.html" },
+        { 2026, false, "tax_free_amount_bracket_3_rate", 0.40m, "personal-tax/spf-finances_cir92-art-134-revenus-2026_2026-08-05.html" },
+        { 2026, false, "tax_free_amount_bracket_3_upper_limit", 27_860m, "personal-tax/spf-finances_cir92-art-134-revenus-2026_2026-08-05.html" },
+        { 2026, false, "tax_free_amount_bracket_4_rate", 0.45m, "personal-tax/spf-finances_cir92-art-134-revenus-2026_2026-08-05.html" },
+        { 2026, false, "tax_free_amount_bracket_4_upper_limit", 51_070m, "personal-tax/spf-finances_cir92-art-134-revenus-2026_2026-08-05.html" },
+        { 2026, false, "tax_free_amount_bracket_5_rate", 0.50m, "personal-tax/spf-finances_cir92-art-134-revenus-2026_2026-08-05.html" },
+        { 2026, false, "marital_quotient_rate", 0.30m, "personal-tax/ejustice_loi-reforme-impot-personnes-physiques-2026_2026-07-29.html" },
+        { 2026, false, "marital_quotient_cap", 11_780m, "personal-tax/spf-finances_avis-indexation-exercice-2027_2026-08-03.html" },
+        { 2026, true, "marital_quotient_cap_both_aged_66", 12_790m, "personal-tax/spf-finances_avis-indexation-exercice-2027_2026-08-03.html" },
+    };
+
+    [Theory]
+    [MemberData(nameof(JointAmounts))]
+    public void JointIncomeTaxAmounts_eachAmount_isItsYearsFromItsDocument(int incomeYear, bool bothAged66, string key, decimal value, string document)
+    {
+        var rules = PersonalTaxRules.For(incomeYear, Region.Wallonia).ShouldNotBeNull();
+
+        var amount = rules.JointIncomeTaxAmounts(bothAged66).Single(amount => amount.Key == key);
+
+        (amount.Value, amount.Source.Document).ShouldBe((value, document));
+    }
+
+    // A joint step cites a single person's amounts too, and only the cap that applied.
+    [Theory]
+    [InlineData(false, "marital_quotient_cap", "marital_quotient_cap_both_aged_66")]
+    [InlineData(true, "marital_quotient_cap_both_aged_66", "marital_quotient_cap")]
+    public void JointIncomeTaxAmounts_ageOfTheCouple_citesTheSinglePersonsAmountsAndTheCapThatApplied(bool bothAged66, string cap, string other)
+    {
+        var rules = PersonalTaxRules.IncomeYear2026;
+
+        var keys = rules.JointIncomeTaxAmounts(bothAged66).Select(amount => amount.Key).ToList();
+
+        keys.ShouldBeUnique();
+        keys.ShouldBeSubsetOf(rules.IncomeTaxAmounts.Select(amount => amount.Key).Concat(rules.TaxFreeAmountAmounts.Select(amount => amount.Key))
+            .Concat(rules.MaritalQuotient.Amounts.Select(amount => amount.Key)));
+        rules.IncomeTaxAmounts.Select(amount => amount.Key).ShouldBeSubsetOf(keys);
+        (keys.Contains(cap), keys.Contains(other)).ShouldBe((true, false));
+    }
+
     [Fact]
     public void For_incomeYearWithoutRules_isNone()
     {

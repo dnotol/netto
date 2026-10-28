@@ -38,7 +38,7 @@ public class RuleAmountListTests
     [Theory]
     [InlineData(typeof(SocialContributionRules), new[] { "SocialContributionRules" })]
     [InlineData(typeof(CompanyContributionRules), new[] { "CompanyContributionRules" })]
-    [InlineData(typeof(PersonalTaxRules), new[] { "PersonalTaxRules", "LowEarnedIncomeCreditRules", "IncomeTaxAdvancePaymentRules" })]
+    [InlineData(typeof(PersonalTaxRules), new[] { "PersonalTaxRules", "LowEarnedIncomeCreditRules", "MaritalQuotientRules", "IncomeTaxAdvancePaymentRules" })]
     [InlineData(typeof(CorporateTaxRules), new[] { "CorporateTaxRules", "AdvancePaymentRules" })]
     [InlineData(typeof(WithholdingRules), new[] { "WithholdingRules", "WithholdingRules" })]
     public void Records_ruleSet_areItAndItsNestedRulesRecords(Type ruleType, string[] expected)

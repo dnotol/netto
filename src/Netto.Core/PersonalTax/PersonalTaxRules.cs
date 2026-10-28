@@ -2,8 +2,8 @@ using Netto.Core.Rules;
 
 namespace Netto.Core.PersonalTax;
 
-// Personal income tax of a single resident of one region whose income is director pay and what the
-// levers hand it, for one income year: Wallonia alone, whose regional additional rate it holds, so the
+// Personal income tax of a resident of one region whose income is director pay and what the levers
+// hand it, taxed alone or jointly with a spouse or legal cohabitant, for one income year: Wallonia alone, whose regional additional rate it holds, so the
 // rules of another region are none (For). Income year 2025 is here for the tests only: it is the latest
 // year Tax-Calc covers, so it proves the method and the rounding against the administration's own
 // simulator.
@@ -13,22 +13,27 @@ namespace Netto.Core.PersonalTax;
 // for low earned income is, as a self-employed director's pay is activity income (art. 289ter, §1,
 // al. 2, which leaves out only directors under an employment contract and side activities).
 // IncomeTaxScale, DirectorPayDeductions and AssessmentBalance are the year's texts the pay's steps
-// and its assessment cite as their rule.
+// and its assessment cite as their rule. TaxFreeAmountScale is art. 134 §2's scale of the tax on the
+// tax-free amount, whose first bracket covers a single person's amount and whose next ones a joint
+// assessment reaches when one partner's unused part passes to the other (§4); TaxFreeAmountSharing is
+// that §4, which a joint assessment's step cites besides the scale and the marital quotient.
 public sealed record PersonalTaxRules(
     int IncomeYear,
     Region Region,
     IReadOnlyList<TaxBracket> Scale,
     RuleAmount TaxFreeAmount,
-    RuleAmount TaxFreeAmountRate,
+    IReadOnlyList<TaxBracket> TaxFreeAmountScale,
     RuleAmount FlatRateCostsRate,
     RuleAmount FlatRateCostsMaximum,
     RuleAmount AutonomyFactor,
     RuleAmount RegionalAdditionalRate,
     LowEarnedIncomeCreditRules LowEarnedIncomeCredit,
+    MaritalQuotientRules MaritalQuotient,
     IncomeTaxAdvancePaymentRules AdvancePayments,
     Source IncomeTaxScale,
     Source DirectorPayDeductions,
-    Source AssessmentBalance)
+    Source AssessmentBalance,
+    Source TaxFreeAmountSharing)
 {
     // Each amount cites the administration's coordinated article of its own income year, which carries
     // that year's indexed amounts (filed in official-docs/personal-tax/).
@@ -58,13 +63,15 @@ public sealed record PersonalTaxRules(
 
     private static readonly Source Article134Income2025 = new(
         "CIR 92, art. 134 (revenus 2025), coordinated text on Fisconetplus, last modified 14.01.2026",
-        "§2: the tax on the tax-free amount, deducted from the tax on the scale, is 25% of it up to 11,460",
+        "§2: the tax on the tax-free amount, deducted from the tax on the scale, is 25% of it up to 11,460, 30% to 16,320, 40% to 27,190, 45% to 49,840, 50% above. "
+            + "§4: in a joint assessment it is fixed per partner, and what one partner's taxable income leaves unused passes to the other",
         new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/09b708c4-3d54-468c-a652-9053bd16e2eb"),
         "personal-tax/spf-finances_cir92-art-134-revenus-2025_2026-01-14.html");
 
     private static readonly Source Article134Income2026 = new(
         "CIR 92, art. 134 (revenus 2026), coordinated text on Fisconetplus, last modified 05.08.2026",
-        "§2: the tax on the tax-free amount, deducted from the tax on the scale, is 25% of it up to 11,750",
+        "§2: the tax on the tax-free amount, deducted from the tax on the scale, is 25% of it up to 11,750, 30% to 16,720, 40% to 27,860, 45% to 51,070, 50% above. "
+            + "§4: in a joint assessment it is fixed per partner, and what one partner's taxable income leaves unused passes to the other",
         new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/56f7c2a3-94ab-45dd-85d0-2a0c7f6ddebc"),
         "personal-tax/spf-finances_cir92-art-134-revenus-2026_2026-08-05.html");
 
@@ -107,6 +114,30 @@ public sealed record PersonalTaxRules(
         new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/af20504b-71e6-4daa-89d6-4d3c000c8718"),
         "personal-tax/spf-finances_cir92-art-289ter-revenus-2026_2026-02-19.html");
 
+    // The marital quotient. Fisconetplus was down when it was researched, so art. 87 and 88 are not filed
+    // yet: income year 2026's rate cites the law of 15.07.2026 that sets it from tax year 2027, and its
+    // caps the indexation notice of that tax year; income year 2025's rate and cap cite the notice of
+    // tax year 2026, which gives the cap under art. 87 al. 2 and 88 al. 1, the rate being the article's.
+    // Each turns into Source.Fisconet once the article is filed. The law's explanatory memorandum (DOC
+    // 56 1243/001, p. 16 and 17) reads the cap as including the partner's own professional income.
+    private static readonly Source PersonalTaxReformLaw = new(
+        "Loi du 15 juillet 2026 portant réforme de l'impôt des personnes physiques (MB 29.07.2026)",
+        "Art. 27 and 30, A, from tax year 2027: art. 87, al. 2 attributes 30% of the professional income of the one partner who has any to the other, "
+            + "at most 5,860, or 6,365 when both partners are 66 on 1 January of the tax year; art. 88 tops up a partner below 30% of the two together, within the same maximum",
+        new Uri("https://www.ejustice.just.fgov.be/eli/loi/2026/07/15/2026005724/justel"),
+        "personal-tax/ejustice_loi-reforme-impot-personnes-physiques-2026_2026-07-29.html") { Label = "Law of 15.07.2026" };
+
+    private static readonly Source QuotientCapsTaxYear2027 = SharedSources.IndexationNotice2027 with
+    {
+        Reference = "Art. 87, al. 2 and art. 88, al. 1 and 2: the most the marital quotient attributes, base 6,365, indexed 12,790, when both partners are 66 "
+            + "on 1 January of the tax year, otherwise base 5,860, indexed 11,780",
+    };
+
+    private static readonly Source QuotientTaxYear2026 = SharedSources.IndexationNotice2026 with
+    {
+        Reference = "Art. 87, al. 2 and art. 88, al. 1: the most the marital quotient, 30% of the professional income, attributes, base 6,700, indexed 13,460",
+    };
+
     // The balance on the assessment: what was withheld and paid in advance comes off the tax, and
     // what they leave over is refunded. §2, al. 1 is unchanged since tax year 2018, so the text holds
     // for income year 2025 as well (official-docs/INDEX.md).
@@ -127,7 +158,14 @@ public sealed record PersonalTaxRules(
             new TaxBracket(new RuleAmount("bracket_4_rate", 0.50m, Article130Income2025), null),
         ],
         new RuleAmount("tax_free_amount", 10_910m, Article131Income2025),
-        new RuleAmount("tax_free_amount_rate", 0.25m, Article134Income2025),
+        TaxFreeAmountScale:
+        [
+            new TaxBracket(new RuleAmount("tax_free_amount_rate", 0.25m, Article134Income2025), new RuleAmount("tax_free_amount_bracket_1_upper_limit", 11_460m, Article134Income2025)),
+            new TaxBracket(new RuleAmount("tax_free_amount_bracket_2_rate", 0.30m, Article134Income2025), new RuleAmount("tax_free_amount_bracket_2_upper_limit", 16_320m, Article134Income2025)),
+            new TaxBracket(new RuleAmount("tax_free_amount_bracket_3_rate", 0.40m, Article134Income2025), new RuleAmount("tax_free_amount_bracket_3_upper_limit", 27_190m, Article134Income2025)),
+            new TaxBracket(new RuleAmount("tax_free_amount_bracket_4_rate", 0.45m, Article134Income2025), new RuleAmount("tax_free_amount_bracket_4_upper_limit", 49_840m, Article134Income2025)),
+            new TaxBracket(new RuleAmount("tax_free_amount_bracket_5_rate", 0.50m, Article134Income2025), null),
+        ],
         new RuleAmount("flat_rate_costs_rate", 0.03m, Article51Income2025),
         new RuleAmount("flat_rate_costs_maximum", 3_130m, Article51Income2025),
         new RuleAmount("autonomy_factor", 0.24957m, AutonomyFactorDecree),
@@ -139,10 +177,16 @@ public sealed record PersonalTaxRules(
             new RuleAmount("low_earned_income_full_from", 8_740m, Article289terIncome2025),
             new RuleAmount("low_earned_income_full_up_to", 21_860m, Article289terIncome2025),
             new RuleAmount("low_earned_income_ceiling", 28_420m, Article289terIncome2025)),
+        new MaritalQuotientRules(
+            QuotientTaxYear2026,
+            new RuleAmount("marital_quotient_rate", 0.30m, QuotientTaxYear2026),
+            new RuleAmount("marital_quotient_cap", 13_460m, QuotientTaxYear2026),
+            new RuleAmount("marital_quotient_cap_both_aged_66", 13_460m, QuotientTaxYear2026)),
         IncomeTaxAdvancePaymentRules.IncomeYear2025,
         IncomeTaxScale: Article130Income2025,
         DirectorPayDeductions: Article51Income2025,
-        AssessmentBalance: Article304Income2026);
+        AssessmentBalance: Article304Income2026,
+        TaxFreeAmountSharing: Article134Income2025);
 
     public static PersonalTaxRules IncomeYear2026 { get; } = new(
         IncomeYear: 2026,
@@ -155,7 +199,14 @@ public sealed record PersonalTaxRules(
             new TaxBracket(new RuleAmount("bracket_4_rate", 0.50m, Article130Income2026), null),
         ],
         new RuleAmount("tax_free_amount", 11_550m, Article131Income2026),
-        new RuleAmount("tax_free_amount_rate", 0.25m, Article134Income2026),
+        TaxFreeAmountScale:
+        [
+            new TaxBracket(new RuleAmount("tax_free_amount_rate", 0.25m, Article134Income2026), new RuleAmount("tax_free_amount_bracket_1_upper_limit", 11_750m, Article134Income2026)),
+            new TaxBracket(new RuleAmount("tax_free_amount_bracket_2_rate", 0.30m, Article134Income2026), new RuleAmount("tax_free_amount_bracket_2_upper_limit", 16_720m, Article134Income2026)),
+            new TaxBracket(new RuleAmount("tax_free_amount_bracket_3_rate", 0.40m, Article134Income2026), new RuleAmount("tax_free_amount_bracket_3_upper_limit", 27_860m, Article134Income2026)),
+            new TaxBracket(new RuleAmount("tax_free_amount_bracket_4_rate", 0.45m, Article134Income2026), new RuleAmount("tax_free_amount_bracket_4_upper_limit", 51_070m, Article134Income2026)),
+            new TaxBracket(new RuleAmount("tax_free_amount_bracket_5_rate", 0.50m, Article134Income2026), null),
+        ],
         new RuleAmount("flat_rate_costs_rate", 0.03m, Article51Income2026),
         new RuleAmount("flat_rate_costs_maximum", 3_200m, Article51Income2026),
         new RuleAmount("autonomy_factor", 0.24957m, AutonomyFactorDecree),
@@ -167,10 +218,16 @@ public sealed record PersonalTaxRules(
             new RuleAmount("low_earned_income_full_from", 8_960m, Article289terIncome2026),
             new RuleAmount("low_earned_income_full_up_to", 22_400m, Article289terIncome2026),
             new RuleAmount("low_earned_income_ceiling", 29_120m, Article289terIncome2026)),
+        new MaritalQuotientRules(
+            PersonalTaxReformLaw,
+            new RuleAmount("marital_quotient_rate", 0.30m, PersonalTaxReformLaw),
+            new RuleAmount("marital_quotient_cap", 11_780m, QuotientCapsTaxYear2027),
+            new RuleAmount("marital_quotient_cap_both_aged_66", 12_790m, QuotientCapsTaxYear2027)),
         IncomeTaxAdvancePaymentRules.IncomeYear2026,
         IncomeTaxScale: Article130Income2026,
         DirectorPayDeductions: Article51Income2026,
-        AssessmentBalance: Article304Income2026);
+        AssessmentBalance: Article304Income2026,
+        TaxFreeAmountSharing: Article134Income2026);
 
     public static PersonalTaxRules? For(int incomeYear, Region region) => (incomeYear, region) switch
     {
@@ -179,7 +236,18 @@ public sealed record PersonalTaxRules(
         _ => null,
     };
 
+    // The rate of the scale's first bracket, which a single person's tax-free amount stays within.
+    public RuleAmount TaxFreeAmountRate => TaxFreeAmountScale[0].Rate;
+
     public IReadOnlyList<RuleAmount> FlatRateCostsAmounts => [FlatRateCostsRate, FlatRateCostsMaximum];
+
+    public IReadOnlyList<RuleAmount> TaxFreeAmountAmounts =>
+        [.. TaxFreeAmountScale.SelectMany(bracket => bracket.UpperLimit is { } limit ? [bracket.Rate, limit] : new[] { bracket.Rate })];
+
+    // What a joint assessment's income tax uses: a single person's amounts, the rest of the scale of the
+    // tax on the tax-free amount, and the marital quotient's rate and the cap that applied.
+    public IReadOnlyList<RuleAmount> JointIncomeTaxAmounts(bool bothAged66) =>
+        [.. IncomeTaxAmounts, .. TaxFreeAmountAmounts.Except(IncomeTaxAmounts), MaritalQuotient.Rate, MaritalQuotient.CapFor(bothAged66)];
 
     public IReadOnlyList<RuleAmount> IncomeTaxAmounts
     {
