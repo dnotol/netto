@@ -77,4 +77,7 @@ public enum RefusedInput
 
     // What the social insurance fund bills each quarter, the payment calendar's own input.
     BilledContributions,
+
+    // The net professional income of the partner the director is taxed jointly with.
+    PartnerIncome,
 }

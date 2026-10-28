@@ -102,6 +102,39 @@
   <data name="Amount_tax_free_amount_rate" xml:space="preserve">
     <value>Rate of the tax-free amount reduction</value>
   </data>
+  <data name="Amount_tax_free_amount_bracket_1_upper_limit" xml:space="preserve">
+    <value>Tax-free amount reduction, bracket 1 upper limit</value>
+  </data>
+  <data name="Amount_tax_free_amount_bracket_2_rate" xml:space="preserve">
+    <value>Tax-free amount reduction, bracket 2 rate</value>
+  </data>
+  <data name="Amount_tax_free_amount_bracket_2_upper_limit" xml:space="preserve">
+    <value>Tax-free amount reduction, bracket 2 upper limit</value>
+  </data>
+  <data name="Amount_tax_free_amount_bracket_3_rate" xml:space="preserve">
+    <value>Tax-free amount reduction, bracket 3 rate</value>
+  </data>
+  <data name="Amount_tax_free_amount_bracket_3_upper_limit" xml:space="preserve">
+    <value>Tax-free amount reduction, bracket 3 upper limit</value>
+  </data>
+  <data name="Amount_tax_free_amount_bracket_4_rate" xml:space="preserve">
+    <value>Tax-free amount reduction, bracket 4 rate</value>
+  </data>
+  <data name="Amount_tax_free_amount_bracket_4_upper_limit" xml:space="preserve">
+    <value>Tax-free amount reduction, bracket 4 upper limit</value>
+  </data>
+  <data name="Amount_tax_free_amount_bracket_5_rate" xml:space="preserve">
+    <value>Tax-free amount reduction, bracket 5 rate, above the last limit</value>
+  </data>
+  <data name="Amount_marital_quotient_rate" xml:space="preserve">
+    <value>Marital quotient, share of the professional income</value>
+  </data>
+  <data name="Amount_marital_quotient_cap" xml:space="preserve">
+    <value>Marital quotient, most attributed</value>
+  </data>
+  <data name="Amount_marital_quotient_cap_both_aged_66" xml:space="preserve">
+    <value>Marital quotient, most attributed when both partners are 66</value>
+  </data>
   <data name="Amount_autonomy_factor" xml:space="preserve">
     <value>Autonomy factor</value>
   </data>

@@ -41,6 +41,20 @@ public class StepTextTests
         MissingTexts(value.ShouldNotBeNull().Steps).ShouldBeEmpty();
     }
 
+    // A joint year's income tax cites the marital quotient, the cap that applied, and the scale of the tax
+    // on the tax-free amount the partners share.
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void StepDetailsResx_everyKeyOfAJointYearsDirectorPaySteps_hasAText(bool bothAged66)
+    {
+        var household = new Household(HouseholdStatus.MarriedOrLegalCohabitant, BothAged66: bothAged66);
+
+        var (value, _) = GrossToNet.Compute(2026, 50_000m, MunicipalRates.IncomeYear2026.Entered(0.07m), TaxPrepayments.None, household: household);
+
+        MissingTexts(value.ShouldNotBeNull().Steps).ShouldBeEmpty();
+    }
+
     // The river's steps: the company's, the director pay's and the dividend's, nothing kept so a
     // dividend is paid, under each withholding rate the user can declare.
     [Theory]

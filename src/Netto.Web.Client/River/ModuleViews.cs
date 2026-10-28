@@ -609,7 +609,8 @@ internal sealed record DividendView(
 // every input, so an input no case names is a bug rather than a refusal shown on no field. The pay is the
 // split's while the company is there, Director pay's own once it is skipped, and so is the key formula's
 // month of it; the royalty, fixed or following the pay, and its creative share are Copyright royalty's; the
-// income year, which no card holds, and what the fund bills, which the When to pay tab shows itself, the river's.
+// income year, which no card holds, and what the fund bills, which the When to pay tab shows itself, the river's;
+// the partner's income too, until a card holds the household.
 internal static class RiverErrors
 {
     public static RiverModule Owner(Refusal refusal, bool companySkipped) => refusal.Input switch
@@ -626,7 +627,7 @@ internal static class RiverErrors
         RefusedInput.FundFeeRate or RefusedInput.MunicipalRate or RefusedInput.TaxWithheld or RefusedInput.DirectorAdvancePayments => RiverModule.DirectorPay,
         RefusedInput.CompanyAdvancePayments => RiverModule.CorporateTax,
         RefusedInput.Reserve or RefusedInput.EarlierProfits => RiverModule.Dividend,
-        RefusedInput.BilledContributions => RiverModule.River,
+        RefusedInput.BilledContributions or RefusedInput.PartnerIncome => RiverModule.River,
         _ => throw new ArgumentOutOfRangeException(nameof(refusal), refusal.Input, "No card holds this input."),
     };
 }

@@ -144,4 +144,7 @@
   <data name="Error_monthly_pay_negative" xml:space="preserve">
     <value>The monthly pay cannot be negative.</value>
   </data>
+  <data name="Error_partner_income_negative" xml:space="preserve">
+    <value>Your partner's net professional income cannot be negative. Enter 0 if they have none.</value>
+  </data>
 </root>
