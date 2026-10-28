@@ -63,6 +63,7 @@ public class NettoThemeTests
             ["--netto-line-input"] = palette.LinesInputs,
             ["--netto-gold"] = palette.Primary,
             ["--netto-error"] = palette.Error,
+            ["--netto-expenses"] = new MudColor(Expenses(theme)),
         };
 
         var css = AppCssColours(theme);
@@ -71,15 +72,8 @@ public class NettoThemeTests
             .ShouldBe(mirrored.Select(token => (token.Key, (string?)Hex(token.Value))));
     }
 
-    // The expenses' mark, a colour of its own MudBlazor never draws: in app.css as NettoTheme says it, and
-    // reaching 3:1 on the page and on a card (WCAG 1.4.11).
-    [Theory]
-    [MemberData(nameof(Themes))]
-    public void AppCss_mirrorsTheExpensesMark(string theme)
-    {
-        AppCssColours(theme).GetValueOrDefault("--netto-expenses").ShouldBe(Expenses(theme).ToLowerInvariant());
-    }
-
+    // The expenses' mark, a colour of its own MudBlazor never draws, mirrored in app.css with the palette:
+    // 3:1 on the page and on a card (WCAG 1.4.11).
     [Theory]
     [MemberData(nameof(Themes))]
     public void Expenses_onThePageAndACard_reachThreeToOne(string theme)
