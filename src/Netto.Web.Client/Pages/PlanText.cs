@@ -58,5 +58,6 @@ internal static class PlanText
         "LimitDisallowed",
         "LimitManagementFee",
         "LimitPartner",
+        "LimitDependants",
     ];
 }

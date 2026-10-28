@@ -94,13 +94,18 @@ public class PlanTextTests
         summary.ShouldBe($"{PlanText.Limits.Count} things the figures leave out");
     }
 
-    // The partner is a module of the plan: the notes say what Netto assumes while it is out, how the
-    // withholding takes it while in, and what of the partner's own the figures leave out.
+    // The household is a module of the plan, partner and dependants: the notes say what Netto assumes while it
+    // is out, how the withholding takes the partner while in, and what of the partner's own and of the
+    // dependants the figures leave out; the partner's limit no longer says the dependants are left out.
     [Fact]
-    public void PlanResx_notes_sayWhatTheyAssumeAndLeaveOutOfThePartner()
+    public void PlanResx_notes_sayWhatTheyAssumeAndLeaveOutOfTheHousehold()
     {
-        (Resources.Get("AssumedSingle"), PlanText.Assumptions.Contains("AssumedPartnerWithholding"), PlanText.Limits.Contains("LimitPartner"))
-            .ShouldBe(("Single, with no dependants, unless you add your partner to your plan", true, true));
+        Resources.ShouldSatisfyAllConditions(
+            () => Resources.Get("AssumedSingle").ShouldBe("Single, with no dependants, unless you add your household to your plan"),
+            () => PlanText.Assumptions.ShouldContain("AssumedPartnerWithholding"),
+            () => PlanText.Limits.ShouldContain("LimitPartner"),
+            () => Resources.Get("LimitPartner").ShouldNotBeNull().ShouldNotContain("dependants"),
+            () => PlanText.Limits.ShouldContain("LimitDependants"));
     }
 
     private static IEnumerable<string> ResxKeys(string prefix) =>
