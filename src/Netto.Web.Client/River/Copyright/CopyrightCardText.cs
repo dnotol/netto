@@ -9,6 +9,13 @@ internal static class CopyrightCardText
     // Which limit set the part within them, as the engine says it was, in the note under its lines.
     public static string Limits(CopyrightResult result) => $"Limits_{result.Bound}";
 
+    // The royalty's two ways, one chip each.
+    public static string Policy(bool followsPay) => followsPay ? "Policy_Follows" : "Policy_Fixed";
+
+    // Why a royalty that follows the pay is none; none when the engine set it at what a ruling accepts,
+    // its figure being among the card's lines.
+    public static string? Following(CopyrightFollowing following) => following == CopyrightFollowing.AtCeiling ? null : $"Following_{following}";
+
     // The summary names the part taxed as pay once there is one, and says when all of it is.
     public static string Summary(CopyrightView view) => view switch
     {

@@ -1,3 +1,20 @@
+/* The royalty's two ways, chips as Director pay's payers are. */
+.copyright__policies ::deep .mud-chip {
+    height: auto;
+    min-height: 1.75rem;
+    margin: 0 0.4rem 0.4rem 0;
+    white-space: normal;
+}
+
+/* Why a royalty that follows the pay is none. */
+.copyright__following {
+    margin: 0;
+    color: var(--netto-text-muted);
+    font-size: 0.88rem;
+    line-height: 1.55;
+    font-variant-numeric: tabular-nums;
+}
+
 /* A status the user ticks, with its origin and its bubble. */
 .copyright__tick {
     display: flex;
@@ -6,8 +23,8 @@
     gap: 0.25rem 0.5rem;
 }
 
-/* What a figure cannot say, under the lines it is about: which limit set the part within, or the royalty
-   still to come from the split. */
+/* What a figure cannot say, under the lines it is about: which limit set the part within, or that no
+   royalty is paid yet. */
 .copyright__note {
     margin: 0;
     color: var(--netto-text-muted);

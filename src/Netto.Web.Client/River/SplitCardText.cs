@@ -12,8 +12,12 @@ internal static class SplitCardText
     // beside it.
     public const string SliderValueWithRoyalty = "SliderValue_Royalty";
 
-    // The royalty's two ways, one chip each.
-    public static string Policy(bool followsPay) => followsPay ? "Policy_Follows" : "Policy_Fixed";
+    // The link to the Copyright royalty card, which decides the royalty.
+    public const string RoyaltyLink = "RoyaltyLink";
+
+    // How the royalty beside the pay is set, as the Copyright royalty card sets it: it follows the pay, so
+    // the slider moves it too, or it is a fixed amount whatever the pay.
+    public static string RoyaltyNote(SplitRoyaltyView royalty) => royalty.FollowsPay.Value ? "RoyaltyNote_Follows" : "RoyaltyNote_Fixed";
 
     // The summary names the royalty once it is in the plan, and the best pay once there is one.
     public static string Summary(SplitRoyaltyView? royalty, bool withBest) => (withBest ? "SummaryWithBest" : "Summary") + (royalty is null ? "" : "_Royalty");
@@ -31,10 +35,6 @@ internal static class SplitCardText
         { FollowsPay.Value: true } => "CeilingHint",
         _ => "CeilingHint_Fixed",
     };
-
-    // Why a royalty that follows the pay is none; none when the engine set it at what a ruling
-    // accepts, its figure being among the split's sides.
-    public static string? Following(CopyrightFollowing following) => following == CopyrightFollowing.AtCeiling ? null : $"Following_{following}";
 
     // A sentence about one pay of the curve names the royalty beside it while the royalty follows the
     // pay; a fixed one is the same at every pay.

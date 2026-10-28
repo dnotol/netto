@@ -71,6 +71,7 @@ public class CarAndRoyaltyCardsTests
         { "a royalty with an attestation", typeof(CopyrightCard), OptionalModule.Copyright, CopyrightViewTests.Within.WithAttestation(true) },
         { "a royalty all taxed as pay", typeof(CopyrightCard), OptionalModule.Copyright, CopyrightViewTests.Within.WithAverageWithinCap(false) },
         { "a royalty following the pay", typeof(CopyrightCard), OptionalModule.Copyright, RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithCreativeShare(0.5m) },
+        { "a royalty following the pay, none for want of a share", typeof(CopyrightCard), OptionalModule.Copyright, RiverInputs.Example.AddToPlan(OptionalModule.Copyright) },
         { "a royalty following the pay, the pay held", typeof(CopyrightCard), OptionalModule.Copyright, CopyrightViewTests.FollowingHeld },
     };
 

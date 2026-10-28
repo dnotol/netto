@@ -7,21 +7,12 @@
     font-variant-numeric: tabular-nums;
 }
 
-/* The royalty's two ways, chips as Director pay's payers are. */
-.split__policies ::deep .mud-chip {
-    height: auto;
-    min-height: 1.75rem;
-    margin: 0 0.4rem 0.4rem 0;
-    white-space: normal;
-}
-
-/* Why a royalty that follows the pay is none. */
-.split__following {
+/* How the royalty beside the pay is set, with the link to the card that sets it. */
+.split__royalty {
     margin: 0;
     color: var(--netto-text-muted);
     font-size: 0.88rem;
     line-height: 1.55;
-    font-variant-numeric: tabular-nums;
 }
 
 /* What the pointer reads keeps the room of two lines while the pointer is away, so the lines below

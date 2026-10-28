@@ -83,9 +83,10 @@ public class SplitCardTextTests
         Resources.Missing(["Ceiling", .. keys]).ShouldBeEmpty();
     }
 
-    // Every text the split says about the royalty it pays beside the pay: its two ways, the summary,
-    // the help and why the pay goes no further with no royalty, a fixed one and one that follows the
-    // pay, what the pointer reads beside each, and why one that follows the pay is none.
+    // Every text the split says about the royalty it pays beside the pay, which the Copyright royalty card
+    // decides: the note saying how it is set and the link to the card, the summary, the help and why the
+    // pay goes no further with no royalty, a fixed one and one that follows the pay, and what the pointer
+    // reads beside each.
     [Fact]
     public void SplitCardResx_everyTextOfTheRoyalty_hasAText()
     {
@@ -94,13 +95,13 @@ public class SplitCardTextTests
         string[] curve = ["PointerAt", "PointerMissesReserve"];
         IEnumerable<string> keys =
         [
-            SplitCardText.Policy(true), SplitCardText.Policy(false), SplitCardText.SliderValueWithRoyalty, "RoyaltyLabel", "RoyaltyHint", "FixedRoyaltyLabel", "FixedRoyaltyHint",
+            SplitCardText.SliderValueWithRoyalty, SplitCardText.RoyaltyLink,
             .. royalties.SelectMany(royalty => new[]
             {
                 SplitCardText.Summary(royalty, false), SplitCardText.Summary(royalty, true), SplitCardText.Hint(royalty), SplitCardText.CeilingHint(royalty),
             }),
+            .. royalties.OfType<SplitRoyaltyView>().Select(SplitCardText.RoyaltyNote),
             .. royalties.SelectMany(royalty => curve.Select(key => SplitCardText.AlongTheCurve(key, royalty))),
-            .. Enum.GetValues<CopyrightFollowing>().Select(SplitCardText.Following).OfType<string>(),
         ];
 
         Resources.Missing(keys).ShouldBeEmpty();
@@ -124,16 +125,20 @@ public class SplitCardTextTests
         SplitCardText.CeilingHint(SplitView.From(inputs, inputs.Run()).Royalty).ShouldBe(key);
     }
 
-    // A royalty that follows the pay says why it is none; set at what a ruling accepts, its figure is
-    // among the split's sides, and no sentence says it again.
-    [Theory]
-    [InlineData(CopyrightFollowing.AtCeiling, null)]
-    [InlineData(CopyrightFollowing.NoCreativeShare, "Following_NoCreativeShare")]
-    [InlineData(CopyrightFollowing.AverageAboveCap, "Following_AverageAboveCap")]
-    [InlineData(CopyrightFollowing.NoEnvelopeRate, "Following_NoEnvelopeRate")]
-    public void Following_saysOnlyWhyTheRoyaltyIsNone(CopyrightFollowing following, string? key)
+    // The note says how the royalty is set, the Copyright royalty card deciding it: that it follows the
+    // pay, so the slider moves it too, or that it is a fixed amount whatever the pay.
+    public static TheoryData<string, RiverInputs, string> RoyaltyNotes => new()
     {
-        SplitCardText.Following(following).ShouldBe(key);
+        { "following", RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithCreativeShare(0.75m), "RoyaltyNote_Follows" },
+        { "following without a share", RiverInputs.Example.AddToPlan(OptionalModule.Copyright), "RoyaltyNote_Follows" },
+        { "fixed", RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithRoyalty(10_000m), "RoyaltyNote_Fixed" },
+    };
+
+    [Theory]
+    [MemberData(nameof(RoyaltyNotes))]
+    public void RoyaltyNote_saysHowTheRoyaltyIsSet(string _, RiverInputs inputs, string key)
+    {
+        SplitCardText.RoyaltyNote(SplitView.From(inputs, inputs.Run()).Royalty.ShouldNotBeNull()).ShouldBe(key);
     }
 
     // The curve's sentences name the royalty only while it follows the pay: a fixed one is the same at
@@ -153,10 +158,9 @@ public class SplitCardTextTests
     }
 
     // Each sentence reads only the arguments the card passes it, its placeholders counted from 0:
-    // why a royalty that follows the pay is none takes the income year alone, how the rate is weighed
-    // the difference alone, and the button that moves the pay to the best the best pay alone.
+    // how the rate is weighed takes the difference alone, and the button that moves the pay to the best
+    // the best pay alone.
     [Theory]
-    [InlineData("Following_", 1)]
     [InlineData("Rate_", 1)]
     [InlineData("MoveToBest", 1)]
     public void SplitCardResx_sentence_readsOnlyTheArgumentsTheCardPasses(string prefix, int arguments)

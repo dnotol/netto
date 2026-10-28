@@ -139,24 +139,25 @@ public class ModuleViewsTests
         Split(FollowingRoyalty).Ceiling.ShouldBe(81_250m);
     }
 
-    // A fixed royalty says so, with its amount's origin, and the pay shares what it leaves.
+    // A fixed royalty says so, and the pay shares what it leaves; its amount is the Copyright royalty card's
+    // (CopyrightPolicyViewTests).
     [Fact]
     public void Split_fixedRoyalty_saysItIsFixedWithItsAmount()
     {
         var view = Split(RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithRoyalty(10_000m));
         var royalty = view.Royalty.ShouldNotBeNull();
 
-        (view.Ceiling, royalty.Amount, royalty.FollowsPay.Value, royalty.Fixed, royalty.Following)
-            .ShouldBe((90_000m, (decimal?)10_000m, false, new Input<decimal>(10_000m, InputOrigin.Yours), (Netto.Core.Copyright.CopyrightFollowing?)null));
+        (view.Ceiling, royalty.Amount, royalty.FollowsPay.Value, royalty.Following)
+            .ShouldBe((90_000m, (decimal?)10_000m, false, (Netto.Core.Copyright.CopyrightFollowing?)null));
     }
 
-    // While the royalty is refused it keeps its place, the amount typed in its field, with no figure.
+    // While the royalty is refused the split has no figure for it.
     [Fact]
-    public void Split_royaltyRefused_keepsTheAmountTypedWithoutAFigure()
+    public void Split_royaltyRefused_hasNoFigure()
     {
         var royalty = Split(RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithRoyalty(-1m)).Royalty.ShouldNotBeNull();
 
-        (royalty.Amount, royalty.Fixed.Value, royalty.Shared).ShouldBe(((decimal?)null, -1m, (decimal?)null));
+        (royalty.Amount, royalty.Shared).ShouldBe(((decimal?)null, (decimal?)null));
     }
 
     // With the company skipped there is no split.

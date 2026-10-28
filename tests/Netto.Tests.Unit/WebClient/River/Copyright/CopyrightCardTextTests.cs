@@ -106,10 +106,45 @@ public class CopyrightCardTextTests
         string[] keys =
         [
             "Title", "Hint", "AverageLabel", "AverageHint", "AttestationLabel", "AttestationHint", "CreativeShareLabel", "CreativeShareHint", "NoRoyaltyYet",
-            "Readings", "WithTitle", "WithoutTitle", "Remove",
+            "Readings", "WithTitle", "WithoutTitle", "Remove", "PolicyLabel", "PolicyHint", "FixedRoyaltyLabel", "FixedRoyaltyHint",
         ];
 
         Resources.Missing(keys).ShouldBeEmpty();
+    }
+
+    // How the royalty is decided, on its card: its two ways, one chip each, and why a royalty that follows
+    // the pay is none.
+    [Fact]
+    public void CopyrightCardResx_everyTextOfHowTheRoyaltyIsDecided_hasAText()
+    {
+        Resources.Missing([CopyrightCardText.Policy(true), CopyrightCardText.Policy(false), .. Enum.GetValues<CopyrightFollowing>().Select(CopyrightCardText.Following).OfType<string>()])
+            .ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void Policy_eachWay_isItsChip()
+    {
+        (CopyrightCardText.Policy(true), CopyrightCardText.Policy(false)).ShouldBe(("Policy_Follows", "Policy_Fixed"));
+    }
+
+    // A royalty that follows the pay says why it is none; set at what a ruling accepts, its figure is among
+    // the card's lines, and no sentence says it again.
+    [Theory]
+    [InlineData(CopyrightFollowing.AtCeiling, null)]
+    [InlineData(CopyrightFollowing.NoCreativeShare, "Following_NoCreativeShare")]
+    [InlineData(CopyrightFollowing.AverageAboveCap, "Following_AverageAboveCap")]
+    [InlineData(CopyrightFollowing.NoEnvelopeRate, "Following_NoEnvelopeRate")]
+    public void Following_saysOnlyWhyTheRoyaltyIsNone(CopyrightFollowing following, string? key)
+    {
+        CopyrightCardText.Following(following).ShouldBe(key);
+    }
+
+    // The sentence reads the income year alone, its placeholders counted from 0.
+    [Fact]
+    public void CopyrightCardResx_followingSentence_readsOnlyTheIncomeYear()
+    {
+        InterfaceTexts.Of(typeof(CopyrightCard)).Where(text => text.Key.StartsWith("Following_", StringComparison.Ordinal) && InterfaceTexts.Placeholders(text.Value).Any(index => index >= 1))
+            .Select(text => text.Key).ShouldBeEmpty();
     }
 
     // A royalty all within its limits says the 30% limit with its amount, a bound of the royalty that stays

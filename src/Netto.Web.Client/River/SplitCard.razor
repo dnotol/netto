@@ -1,6 +1,7 @@
 @using System.Globalization
 @using Netto.Core.Rules
 @using Netto.Core.Simulation
+@using Netto.Web.Client.Tabs
 @inject IStringLocalizer<SplitCard> L
 
 @* One pay slider over the profit before pay: every euro taken as pay is a euro less of company
@@ -21,12 +22,12 @@
    the plan they are measured from.
 
    With Copyright royalty in the plan, the split also pays the royalty beside the pay, and shares what
-   the levers leave three ways (operator, 2026-10-23): the royalty follows the pay, what an advance
-   ruling accepts at each pay, so moving the pay moves it and the curve weighs both, or it is a fixed
-   amount, typed here, taken while typing. Following, its figure is among the split's sides, or the
-   card says why it is none;
-   the creative share it reads is set on the Copyright royalty card below, with the royalty's other
-   facts. A refusal of the royalty marks its field, of the pay the pay's.
+   the levers leave three ways: the royalty follows the pay, what an advance ruling accepts at each pay,
+   so moving the pay moves it and the curve weighs both, or it is a fixed amount. How it is set, the
+   fixed amount and why a royalty that follows the pay is none are the Copyright royalty card's
+   (operator, 2026-10-28, reversing the one-place decision of 2026-10-23): here its figure is among the
+   split's sides, a note says how it is set, and a link opens that card, where a refusal of the royalty
+   is marked, the pay's being the pay's here.
 
    The plot stretches to the card's width (preserveAspectRatio="none"), so its lines keep their
    width through vector-effect, and what must keep its shape (the best pay's dot, the axes' labels) is
@@ -111,28 +112,7 @@
     }
     @if (_view.Royalty is { } royalty)
     {
-        <RiverField Label="@L["RoyaltyLabel"]" Origin="royalty.FollowsPay.Origin" Help="@L["RoyaltyHint"]">
-            <div class="split__policies">
-                <MudChipSet T="bool" SelectedValue="royalty.FollowsPay.Value" SelectedValueChanged="OnPolicyChanged"
-                            SelectionMode="SelectionMode.SingleSelection" CheckMark="false" Variant="Variant.Outlined" SelectedColor="Color.Primary"
-                            Size="Size.Small">
-                    <MudChip T="bool" Value="true" Text="@L[SplitCardText.Policy(true)]" />
-                    <MudChip T="bool" Value="false" Text="@L[SplitCardText.Policy(false)]" />
-                </MudChipSet>
-            </div>
-            @if (royalty is { FollowsPay.Value: true, Following: { } following } && SplitCardText.Following(following) is { } none)
-            {
-                <p class="split__following">@L[none, Inputs.IncomeYear]</p>
-            }
-        </RiverField>
-        @if (!royalty.FollowsPay.Value)
-        {
-            <RiverField Label="@L["FixedRoyaltyLabel"]" For="river-split-royalty" Origin="royalty.Fixed.Origin" Help="@L["FixedRoyaltyHint"]">
-                <RiverNumericField T="decimal" InputId="river-split-royalty" Value="royalty.Fixed.Value" ValueChanged="OnRoyaltyChanged"
-                                   Euros="true"
-                                   Error="@RoyaltyRefused" Refusal="@Refused" />
-            </RiverField>
-        }
+        <p class="split__royalty">@L[SplitCardText.RoyaltyNote(royalty)] <a href="@CardLinks.Href(ModuleFolds.Name(OptionalModule.Copyright))">@L[SplitCardText.RoyaltyLink]</a></p>
     }
     <RefusedMessage Error="@Refused" />
     <FigureList Figures="@FigureWords.Of(L, SplitFigures.Sides(_view, Run.Year))" />
@@ -176,7 +156,7 @@
     [Parameter]
     public SplitSearchResult? Search { get; set; }
 
-    // The engine's refusal of the pay or the royalty.
+    // The engine's refusal of the pay.
     [Parameter]
     public Refusal? Refused { get; set; }
 
@@ -218,8 +198,6 @@
     // What the pointer reads of the pay it is on; nothing while it is away from the curve.
     private string PointerText => SplitFigures.Pointer(_pointer, _view.Royalty) is { } reading ? L[reading.Key, [.. reading.Args]].Value : "";
 
-    private bool RoyaltyRefused => Refused?.Input == RefusedInput.Royalty;
-
     // What giving the rate up, or keeping it, leaves less, where the sentence weighs it.
     private string RateText(RateWeighing rate) => L[SplitCardText.Rate(rate, _view.Pay), rate.Difference is { } difference ? Formats.Euros(difference) : ""].Value;
 
@@ -233,12 +211,6 @@
     private Task MoveToBest(BestPayView best) => InputsChanged.InvokeAsync(best.MoveTo(Inputs));
 
     private Task OnPayChanged(decimal pay) => InputsChanged.InvokeAsync(Inputs.WithDirectorPay(pay));
-
-    // Fixed from following, the royalty stays what it came to at the pay.
-    private Task OnPolicyChanged(bool followsPay) =>
-        InputsChanged.InvokeAsync(followsPay ? Inputs.WithRoyaltyFollowingPay() : Inputs.WithRoyaltyFixed());
-
-    private Task OnRoyaltyChanged(decimal amount) => InputsChanged.InvokeAsync(Inputs.WithRoyalty(amount));
 
     // The plot's coordinates run from 0 to 1,000 both ways, the net in pocket upwards.
     private static string X(decimal at) => Coordinate(at * 1_000m);

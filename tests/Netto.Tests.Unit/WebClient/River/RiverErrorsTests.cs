@@ -27,7 +27,8 @@ public class RiverErrorsTests
 
     // The cards the year's, the pay's and the royalty's refusals show on, each module by its name: the pay is
     // the split's while the company is there, Director pay's own once it is skipped, and so is the key
-    // formula's month of it.
+    // formula's month of it; the royalty, whether it is fixed or follows the pay, is the Copyright royalty
+    // card's, which decides it.
     private static readonly (Refusal Refusal, bool CompanySkipped, string Module)[] SpreadOverCards =
     [
         (YearSimulation.RevenueNegative, false, "CompanyYear"),
@@ -47,8 +48,10 @@ public class RiverErrorsTests
         (GrossToNet.TaxWithheldNegative, true, "DirectorPay"),
         (GrossToNet.TaxAdvancePaymentNegative, false, "DirectorPay"),
         (GrossToNet.TaxAdvancePaymentNegative, true, "DirectorPay"),
-        (CopyrightCalculator.RoyaltyNegative, false, "Split"),
-        (CopyrightCalculator.RoyaltyAboveProfit, false, "Split"),
+        (CopyrightCalculator.RoyaltyNegative, false, "Copyright"),
+        (CopyrightCalculator.RoyaltyNegative, true, "Copyright"),
+        (CopyrightCalculator.RoyaltyAboveProfit, false, "Copyright"),
+        (CopyrightCalculator.RoyaltyAboveProfit, true, "Copyright"),
         (CopyrightCalculator.CreativeShareOutOfRange, false, "Copyright"),
     ];
 

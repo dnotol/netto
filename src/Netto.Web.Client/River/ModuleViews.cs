@@ -175,19 +175,19 @@ internal sealed record SplitView(decimal Ceiling, decimal Pay, decimal FieldPay,
     }
 }
 
-// The royalty the split pays beside the pay (operator, 2026-10-23): what the year paid, none while an
-// amount is refused; whether it follows the pay or is fixed, with where that comes from, and the amount
-// given for a fixed one, kept while it follows; how the engine set one that follows the pay, or why it
-// is none (Following); and what the pay, the royalty and the company's profit before tax share, the
-// three adding up to it. None while Copyright royalty is out of the plan, or the company is skipped.
-internal sealed record SplitRoyaltyView(decimal? Amount, Input<bool> FollowsPay, Input<decimal> Fixed, CopyrightFollowing? Following, decimal? Shared)
+// The royalty the split pays beside the pay: what the year paid, none while an amount is refused; whether
+// it follows the pay or is fixed, with where that comes from; how the engine set one that follows the pay
+// (Following); and what the pay, the royalty and the company's profit before tax share, the three adding
+// up to it. The Copyright royalty card decides it (operator, 2026-10-28, reversing 2026-10-23), the fixed
+// amount and why a royalty that follows the pay is none are its own (CopyrightPolicyView). None while
+// Copyright royalty is out of the plan, or the company is skipped.
+internal sealed record SplitRoyaltyView(decimal? Amount, Input<bool> FollowsPay, CopyrightFollowing? Following, decimal? Shared)
 {
     public static SplitRoyaltyView? From(RiverInputs inputs, RiverRun run) => inputs.Company is null || !inputs.InPlan(OptionalModule.Copyright)
         ? null
         : new SplitRoyaltyView(
             run.Year?.Copyright.Royalty,
             inputs.Copyright.FollowsPay,
-            inputs.Copyright.Royalty,
             run.Year?.Copyright.Following,
             run.Year is { } year ? HandOff.Shared(year) : null);
 }
@@ -598,8 +598,8 @@ internal sealed record DividendView(
 // The module whose card shows an engine refusal: the one holding the refused input, case by case over
 // every input, so an input no case names is a bug rather than a refusal shown on no field. The pay is the
 // split's while the company is there, Director pay's own once it is skipped, and so is the key formula's
-// month of it; the royalty is the split's, the royalty's creative share Copyright royalty's; the income
-// year, which no card holds, and what the fund bills, which the When to pay tab shows itself, the river's.
+// month of it; the royalty, fixed or following the pay, and its creative share are Copyright royalty's; the
+// income year, which no card holds, and what the fund bills, which the When to pay tab shows itself, the river's.
 internal static class RiverErrors
 {
     public static RiverModule Owner(Refusal refusal, bool companySkipped) => refusal.Input switch
@@ -611,8 +611,7 @@ internal static class RiverErrors
         RefusedInput.CadastralIncome or RefusedInput.ShareLet or RefusedInput.Rent => RiverModule.Rent,
         RefusedInput.CarCatalogueValue or RefusedInput.CarCo2 or RefusedInput.CarMatchingCo2 or RefusedInput.CarAcquired or RefusedInput.CarYearlyCosts
             or RefusedInput.CarContribution or RefusedInput.CarPrivateCost => RiverModule.Car,
-        RefusedInput.Royalty => RiverModule.Split,
-        RefusedInput.CreativeShare => RiverModule.Copyright,
+        RefusedInput.Royalty or RefusedInput.CreativeShare => RiverModule.Copyright,
         RefusedInput.DirectorPay => companySkipped ? RiverModule.DirectorPay : RiverModule.Split,
         RefusedInput.FundFeeRate or RefusedInput.MunicipalRate or RefusedInput.TaxWithheld or RefusedInput.DirectorAdvancePayments => RiverModule.DirectorPay,
         RefusedInput.CompanyAdvancePayments => RiverModule.CorporateTax,

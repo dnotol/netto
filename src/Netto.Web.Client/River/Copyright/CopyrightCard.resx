@@ -34,7 +34,34 @@
     <value>The royalty stays within its limits only while your copyright income of the four previous years, counted before those limits, averaged at most the year's cap. Netto cannot see it, so it assumes it did until you say otherwise. When it did not, Netto taxes the whole royalty as your pay: the law makes the average a condition without saying more, and that reading never overstates the gain.</value>
   </data>
   <data name="NoRoyaltyYet" xml:space="preserve">
-    <value>The split above pays it beside your pay.</value>
+    <value>The company pays you no royalty yet.</value>
+  </data>
+  <data name="PolicyLabel" xml:space="preserve">
+    <value>How your royalty is set</value>
+  </data>
+  <data name="PolicyHint" xml:space="preserve">
+    <value>Following your pay, the royalty is what an advance ruling accepts beside each pay for the share of your time spent creating: at most 25% of your pay and royalty together, times that share (advance ruling 2026.0484), and never more than keeps all of it within its limits, so none of it is taxed as your pay. Fixed, it is the amount you give, whatever your pay.</value>
+  </data>
+  <data name="Policy_Follows" xml:space="preserve">
+    <value>Follows your pay</value>
+  </data>
+  <data name="Policy_Fixed" xml:space="preserve">
+    <value>A fixed amount</value>
+  </data>
+  <data name="FixedRoyaltyLabel" xml:space="preserve">
+    <value>Royalty for the year</value>
+  </data>
+  <data name="FixedRoyaltyHint" xml:space="preserve">
+    <value>The gross royalty the company pays you for the year for the rights on your works, before the 15% it withholds, as on the 281.45 fiche it files for you.</value>
+  </data>
+  <data name="Following_NoCreativeShare" xml:space="preserve">
+    <value>None until you give your creative share, in « Your copyright situation ».</value>
+  </data>
+  <data name="Following_AverageAboveCap" xml:space="preserve">
+    <value>None: your copyright income of the four previous years averaged above the cap.</value>
+  </data>
+  <data name="Following_NoEnvelopeRate" xml:space="preserve">
+    <value>None: Netto has no rate yet for what a ruling accepts in {0}.</value>
   </data>
   <data name="Limits_None" xml:space="preserve">
     <value>Within {6} of it and your gross pay, {2}, and the cap.</value>

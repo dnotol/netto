@@ -142,34 +142,16 @@
     <value>{0} to your pay · {3} royalty · {1} to the company · best pay {2}</value>
   </data>
   <data name="Hint_Royalty" xml:space="preserve">
-    <value>Move your pay and set your copyright royalty: every euro you take as pay or as royalty is a euro less of company profit. A royalty that follows your pay moves with it.</value>
+    <value>Move your pay: every euro you take as pay or as royalty is a euro less of company profit. A royalty that follows your pay moves with it.</value>
   </data>
-  <data name="RoyaltyLabel" xml:space="preserve">
-    <value>Copyright royalty</value>
+  <data name="RoyaltyNote_Follows" xml:space="preserve">
+    <value>Your royalty follows your pay, so the slider moves it too.</value>
   </data>
-  <data name="RoyaltyHint" xml:space="preserve">
-    <value>Following your pay, the royalty is what an advance ruling accepts beside each pay for the share of your time spent creating: at most 25% of your pay and royalty together, times that share (advance ruling 2026.0484), and never more than keeps all of it within its limits, so none of it is taxed as your pay. Fixed, it is the amount you give, whatever your pay.</value>
+  <data name="RoyaltyNote_Fixed" xml:space="preserve">
+    <value>Your royalty is a fixed amount, whatever your pay.</value>
   </data>
-  <data name="Policy_Follows" xml:space="preserve">
-    <value>Follows your pay</value>
-  </data>
-  <data name="Policy_Fixed" xml:space="preserve">
-    <value>A fixed amount</value>
-  </data>
-  <data name="FixedRoyaltyLabel" xml:space="preserve">
-    <value>Royalty for the year</value>
-  </data>
-  <data name="FixedRoyaltyHint" xml:space="preserve">
-    <value>The gross royalty the company pays you for the year for the rights on your works, before the 15% it withholds, as on the 281.45 fiche it files for you.</value>
-  </data>
-  <data name="Following_NoCreativeShare" xml:space="preserve">
-    <value>None until you give your creative share, on the Copyright royalty card below.</value>
-  </data>
-  <data name="Following_AverageAboveCap" xml:space="preserve">
-    <value>None: your copyright income of the four previous years averaged above the cap.</value>
-  </data>
-  <data name="Following_NoEnvelopeRate" xml:space="preserve">
-    <value>None: Netto has no rate yet for what a ruling accepts in {0}.</value>
+  <data name="RoyaltyLink" xml:space="preserve">
+    <value>Change how it is set on the Copyright royalty card</value>
   </data>
   <data name="SliderValue_Royalty" xml:space="preserve">
     <value>{0}, with a royalty of {1}</value>
