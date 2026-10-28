@@ -37,7 +37,7 @@
     <value>Enter your company's year</value>
   </data>
   <data name="RunningCostsHint" xml:space="preserve">
-    <value>Leave out your pay and INASTI's yearly company contribution, which the river counts below them. If your running costs still include the contribution, take it out, or it counts twice.</value>
+    <value>Leave out your pay and INASTI's yearly company contribution, which Netto counts itself. If your running costs still include the contribution, take it out, or it counts twice.</value>
   </data>
   <data name="Figure_Contribution" xml:space="preserve">
     <value>INASTI's company contribution</value>

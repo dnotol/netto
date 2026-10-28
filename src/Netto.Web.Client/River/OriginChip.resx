@@ -31,7 +31,7 @@
     <value>A typical rate or status, assumed until you change it.</value>
   </data>
   <data name="Hint_Derived" xml:space="preserve">
-    <value>Computed from the modules above, or published for what you picked.</value>
+    <value>Computed from your other figures, or published for what you picked.</value>
   </data>
   <data name="Hint_Yours" xml:space="preserve">
     <value>You entered or moved it.</value>

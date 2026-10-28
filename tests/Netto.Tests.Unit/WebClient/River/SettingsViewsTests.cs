@@ -422,7 +422,7 @@ public class SettingsViewsTests
     }
 
     // The copyright royalty's disclosure, « Your copyright situation »: what Netto cannot see of the
-    // director's copyright income and works. The royalty itself is the split's. The share of working
+    // director's copyright income and works. How the royalty is set is the card's own, outside. The share of working
     // time spent creating has no default: it is none until given, and names no origin; while the engine
     // says the royalty that follows the pay is none for want of it, as the example's added is, the line
     // says it is needed.
@@ -499,7 +499,7 @@ public class SettingsViewsTests
 
     private static CopyrightSettingsView CopyrightSettings(RiverInputs inputs) => CopyrightSettingsView.From(inputs, inputs.Run());
 
-    // Only the share's refusal is on a field inside; the royalty's is on the split.
+    // Only the share's refusal is on a field inside; the royalty's is on its own field outside.
     public static TheoryData<Refusal?, bool> SituationHoldsRefusals => new()
     {
         { CopyrightCalculator.CreativeShareOutOfRange, true },

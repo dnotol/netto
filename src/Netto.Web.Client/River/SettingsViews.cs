@@ -227,7 +227,8 @@ internal sealed record CarSettingsView(IReadOnlyList<SettingPhrase> Car, bool Ne
 // The copyright royalty's one disclosure, « Your copyright situation »: what Netto cannot see of the
 // director's copyright income and works, whether the four previous years' income averaged within the
 // cap, whether they hold an attestation du travail des arts, and the share of their working time
-// spent creating protected works. The royalty itself is the split's. The share has no default: it
+// spent creating protected works. How the royalty is set, following the pay or fixed, is the card's own,
+// above this disclosure (CopyrightPolicyView). The share has no default: it
 // says it is not given, and names no origin, until the user gives it, and that it is needed while the
 // engine says the royalty that follows the pay is none for want of it (CopyrightFollowing), never while
 // it is none for another reason a share would not change. NeedsFacts: then the disclosure opens by
@@ -253,7 +254,7 @@ internal sealed record CopyrightSettingsView(IReadOnlyList<SettingPhrase> Situat
             needsShare);
     }
 
-    // The royalty's own refusals are on the split.
+    // The royalty's own refusals are on its field outside the disclosure.
     public static bool SituationHolds(Refusal? refusal) => refusal?.Input == RefusedInput.CreativeShare;
 }
 

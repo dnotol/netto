@@ -28,7 +28,7 @@ internal sealed record RiverDifference(RiverModule Module, RiverDifferenceKind K
 internal static class RiverDifferences
 {
     // The cards a difference can name, in the order the river draws them, the income year, which no card
-    // holds, first. The split is none: its pay and its royalty are what the moves set.
+    // holds, first. The split is none: its pay, and the royalty beside it, are what the moves set.
     public static IReadOnlyList<RiverModule> Nameable { get; } = [.. Enum.GetValues<RiverModule>().Where(module => module != RiverModule.Split)];
 
     // The cards whose facts differ between the river and the plan, each with whether the river or the plan
@@ -41,7 +41,7 @@ internal static class RiverDifferences
     }
 
     // What the search reads of the river, by the card that holds each fact, less the values the moves set:
-    // the pay, which the split sets with the royalty beside it, its mode and its fixed amount; the company's
+    // the pay, which the split sets with the royalty beside it, and the royalty's mode and fixed amount, which the Copyright royalty card holds; the company's
     // and the director's advance payments; the eco and sport/culture vouchers; and the rent. Those a move
     // takes from the plan as they are, with the levers a move adds to the plan, stay in the facts: the
     // river and the plan hold the same of them unless the user changed them. A car counts only once its
