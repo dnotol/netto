@@ -8,27 +8,42 @@ namespace Netto.Core.DirectorPay;
 // times 12; the flat-rate costs rounded, then capped; the basic tax rounded; the tax on the tax-free
 // amount taken off it, never below zero; the twelfth rounded. The formula takes the reduction off
 // any pay, so a pay under it gives a year below zero, a tax floored at zero and nothing withheld.
+//
+// For a director whose partner has no professional income the basic tax is the marital quotient's
+// (key formula n° 11 b, annex III n° 34), as the simulator's rows 34 and 35 chain it: 30% of the annual
+// net taxable imputed to the partner, rounded, then capped at the period's maximum; the tax on it and
+// the tax on the rest, each on the same scale and rounded; their sum less twice the tax on the tax-free
+// amount, never below zero.
 public static class WithholdingCalculator
 {
     public static readonly Refusal MonthlyPayNegative = new("monthly_pay_negative", RefusedInput.DirectorPay);
 
-    public static (WithholdingResult? Value, Refusal? Error) Compute(WithholdingRules rules, decimal monthlyTaxablePay)
+    public static (WithholdingResult? Value, Refusal? Error) Compute(
+        WithholdingRules rules, decimal monthlyTaxablePay, WithholdingHousehold household = WithholdingHousehold.AsSingle)
     {
         if (monthlyTaxablePay < 0m)
             return (null, MonthlyPayNegative);
 
-        return (Figures(rules, monthlyTaxablePay), null);
+        return (Figures(rules, monthlyTaxablePay, household), null);
     }
 
     // The lines of a pay Compute accepts, for GrossToNet, which refuses a negative pay itself.
-    internal static WithholdingResult Figures(WithholdingRules rules, decimal monthlyTaxablePay)
+    internal static WithholdingResult Figures(WithholdingRules rules, decimal monthlyTaxablePay, WithholdingHousehold household = WithholdingHousehold.AsSingle)
     {
         var reduction = Money.RoundToCent(OnTable(rules.Reduction, monthlyTaxablePay));
         var annualGross = Money.RoundToCent(monthlyTaxablePay - reduction) * YearParts.Months;
         var flatRateCosts = Math.Min(Money.RoundToCent(annualGross * rules.FlatRateCostsRate.Value), rules.FlatRateCostsMaximum.Value);
         var annualNetTaxable = annualGross - flatRateCosts;
-        var basicTax = Money.RoundToCent(OnTable(rules.Scale, annualNetTaxable));
-        var annualTax = Math.Max(0m, basicTax - rules.TaxFreeAmountReduction.Value);
+        var (imputedToPartner, taxFreeAmountReduction) = household switch
+        {
+            WithholdingHousehold.AsSingle => (0m, rules.TaxFreeAmountReduction.Value),
+            WithholdingHousehold.PartnerWithoutIncome or WithholdingHousehold.PartnerWithoutIncomeBothAged66 =>
+                (Math.Min(Money.RoundToCent(annualNetTaxable * rules.QuotientRate.Value), rules.QuotientMaximumFor(household).Value), rules.JointTaxFreeAmountReduction.Value),
+            _ => throw new ArgumentOutOfRangeException(nameof(household), household, "No withholding method for this household."),
+        };
+        var partnerTax = Money.RoundToCent(OnTable(rules.Scale, imputedToPartner));
+        var basicTax = Money.RoundToCent(OnTable(rules.Scale, annualNetTaxable - imputedToPartner));
+        var annualTax = Math.Max(0m, partnerTax + basicTax - taxFreeAmountReduction);
 
         return new WithholdingResult(
             monthlyTaxablePay,
@@ -37,9 +52,14 @@ public static class WithholdingCalculator
             flatRateCosts,
             annualNetTaxable,
             basicTax,
-            rules.TaxFreeAmountReduction.Value,
+            taxFreeAmountReduction,
             annualTax,
-            Money.RoundToCent(annualTax / YearParts.Months));
+            Money.RoundToCent(annualTax / YearParts.Months))
+        {
+            Household = household,
+            ImputedToPartner = imputedToPartner,
+            PartnerTax = partnerTax,
+        };
     }
 
     // What the table gives for the amount: the first band whose upper limit the amount does not
