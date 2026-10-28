@@ -71,6 +71,26 @@ public class NettoThemeTests
             .ShouldBe(mirrored.Select(token => (token.Key, (string?)Hex(token.Value))));
     }
 
+    // The expenses' mark, a colour of its own MudBlazor never draws: in app.css as NettoTheme says it, and
+    // reaching 3:1 on the page and on a card (WCAG 1.4.11).
+    [Theory]
+    [MemberData(nameof(Themes))]
+    public void AppCss_mirrorsTheExpensesMark(string theme)
+    {
+        AppCssColours(theme).GetValueOrDefault("--netto-expenses").ShouldBe(Expenses(theme).ToLowerInvariant());
+    }
+
+    [Theory]
+    [MemberData(nameof(Themes))]
+    public void Expenses_onThePageAndACard_reachThreeToOne(string theme)
+    {
+        var (palette, mark) = (Palette(theme), new MudColor(Expenses(theme)));
+
+        new[] { palette.Background, palette.Surface }.Where(ground => Contrast(mark, ground) < 3).Select(Hex).ShouldBeEmpty();
+    }
+
+    private static string Expenses(string theme) => theme == "dark" ? NettoTheme.ExpensesDark : NettoTheme.ExpensesLight;
+
     private static Palette Palette(string theme) =>
         theme == "dark" ? NettoTheme.Theme.PaletteDark : NettoTheme.Theme.PaletteLight;
 

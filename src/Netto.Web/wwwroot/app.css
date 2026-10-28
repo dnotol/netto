@@ -17,7 +17,8 @@
 /* The design system's tokens (CLAUDE.md's docs map), every colour a hand-written rule draws. The
    plain ones mirror NettoTheme (Netto.Web.Client/Layout/NettoTheme.cs): MudBlazor needs literal hex
    there, so the two are kept equal by hand. The ramp and the data marks are the text colour at an
-   opacity, so they weigh the same on the page and on a card. */
+   opacity, so they weigh the same on the page and on a card; the expenses' mark is a slate grey of its
+   own, mirroring NettoTheme.ExpensesDark and ExpensesLight. */
 :root {
     --netto-page: #0B0A08;
     --netto-surface: #15130F;
@@ -44,6 +45,7 @@
     --netto-data-high: rgba(243, 238, 226, 0.55);
     --netto-data-mid: rgba(243, 238, 226, 0.3);
     --netto-data-low: rgba(243, 238, 226, 0.12);
+    --netto-expenses: #8C9AA6;
     --netto-gold-grid: rgba(212, 175, 55, 0.045);
     --netto-gold-glow: rgba(212, 175, 55, 0.07);
     --netto-gold-soft: rgba(212, 175, 55, 0.35);
@@ -82,6 +84,7 @@
     --netto-data-high: rgba(27, 24, 18, 0.55);
     --netto-data-mid: rgba(27, 24, 18, 0.32);
     --netto-data-low: rgba(27, 24, 18, 0.12);
+    --netto-expenses: #5B6670;
     --netto-gold-grid: rgba(126, 95, 11, 0.07);
     --netto-gold-glow: rgba(212, 175, 55, 0.16);
     --netto-gold-soft: rgba(166, 128, 22, 0.45);

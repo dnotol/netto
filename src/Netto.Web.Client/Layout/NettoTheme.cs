@@ -10,6 +10,12 @@ internal static class NettoTheme
 {
     private static readonly string[] Display = ["Fraunces", "Georgia", "serif"];
 
+    // The mark of the company's expenses in the bar of buckets, which MudBlazor never draws: a slate grey,
+    // neutral, the one cool colour among the warm ones, so it never reads as the pocket's gold or as what
+    // the company keeps (operator, 2026-10-28). app.css mirrors it as --netto-expenses.
+    public const string ExpensesDark = "#8C9AA6";
+    public const string ExpensesLight = "#5B6670";
+
     public static readonly MudTheme Theme = new()
     {
         PaletteDark = new PaletteDark
