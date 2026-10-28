@@ -50,8 +50,8 @@ internal sealed record PlanBook(IReadOnlyList<SavedPlan> Plans, string? Today, s
 // with none given, and versions 1 to 7 no partner, so theirs are read without one, no income given for
 // one and neither of the household's statuses, and versions 1 to 8 no dependants, so theirs are read with
 // none, and no word of whether there is a partner: version 8's household was its partner, so a plan holding
-// it declared one, the user's, and any other has one assumed, as adding the household now does (decided
-// unattended, 2026-10-28). The car's engine, CO2, order date and statuses joined version 2 without raising it,
+// it declared one, the user's, and any other has one assumed, as adding the household does. The car's
+// engine, CO2, order date and statuses joined version 2 without raising it,
 // since version 2 had not left the car's story branch; a plan saved by the car's first build does not
 // open (operator, 2026-10-22). The rest of the royalty's story joins version 3 the same way, and the
 // fund's fee version 7 (decided unattended, 2026-10-22 and 2026-10-25).

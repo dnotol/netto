@@ -20,7 +20,7 @@ public class HouseholdInputsTests
             new Input<decimal>(0m, InputOrigin.None), new Input<bool>(false, InputOrigin.Default), new Input<bool>(false, InputOrigin.Default)));
     }
 
-    // Adding the household starts from a partner, as adding it did when it held only the partner.
+    // Adding the household starts from a partner, a status assumed.
     [Fact]
     public void Example_assumesAPartnerAndHoldsNoDependants()
     {

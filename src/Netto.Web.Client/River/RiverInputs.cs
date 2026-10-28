@@ -84,8 +84,7 @@ public sealed record RiverInputs(
     // (operator, 2026-10-23), and assumes the four previous years' copyright income averaged within the
     // cap, a status, until the user says otherwise. Its balance sheet is in the lower band of INASTI's
     // company contribution, a status, until the user says otherwise. A household added to the plan has a
-    // partner, a status, as it had when it held only the partner, and no dependants, counts it holds none
-    // of, nor a single parent, a status (decided unattended, 2026-10-28).
+    // partner, a status, and no dependants, counts it holds none of, nor a single parent, a status.
     public static RiverInputs Example { get; } = new(
         ExampleYear,
         new CompanyFigures(new Input<decimal>(120_000m, InputOrigin.Example), new Input<decimal>(19_590.70m, InputOrigin.Example)),

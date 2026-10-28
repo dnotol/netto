@@ -7,16 +7,8 @@ namespace Netto.Tests.WebClient.River;
 // Saved plans outlive the code (PlanStorage). When this test fails, the river's inputs changed
 // shape: give PlanStorage the new input, raise PlanStorage.Version, write the patch that brings a plan
 // saved by the version before to it (the new member as frozen JSON with its own origin, or the plan
-// refused), add the new version's document to StoredPlanDocuments, then update the shape here.
-// The exceptions so far: the car's engine, CO2, order date and statuses joined version 2 without
-// raising it, since version 2 had not left the car's story branch (operator, 2026-10-22); the rest of
-// the copyright royalty's story, its attestation du travail des arts and its creative share, joins
-// version 3 the same way (decided unattended, 2026-10-22). Whether the royalty follows the pay raised
-// version 5 (2026-10-23), what the same car would cost privately version 6 (2026-10-23), and the band
-// of INASTI's company contribution version 7 (2026-10-25), which the rate of the fund's management fee
-// joined without raising it, since version 7 had not left its story branch (decided unattended,
-// 2026-10-25). The partner raised version 8 (2026-10-28), whether there is one and the dependants
-// version 9 (2026-10-28).
+// refused), add the new version's document to StoredPlanDocuments, then update the shape here. An input
+// may join a version without raising it while that version has not left its story's branch.
 public class RiverInputsShapeTests
 {
     [Theory]
