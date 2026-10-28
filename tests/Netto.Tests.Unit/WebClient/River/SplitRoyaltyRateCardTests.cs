@@ -100,9 +100,9 @@ public class SplitRoyaltyRateCardTests
         var html = CardHtml.Card(await CardHtml.RenderCardsOpenAsync(plan), "split");
 
         html.ShouldSatisfyAllConditions(
-            () => CardHtml.Lines(html).Where(line => line.Label.StartsWith("Smallest pay keeping the reduced rate", StringComparison.Ordinal)).Select(line => (line.Label, line.Amount))
+            () => CardHtml.Lines(html).Where(line => line.Label == Texts.Get(SplitFigures.RateWithRoyalty) || line.Label == Texts.Get(SplitFigures.RateWithoutRoyalty)).Select(line => (line.Label, line.Amount))
                 .ShouldBe([(Texts.Get(SplitFigures.RateWithoutRoyalty).ShouldNotBeNull(), "€34,285.72")]),
-            () => CardHtml.Prose(html).ShouldContain("No pay keeps the reduced corporate rate beside your royalty."),
+            () => CardHtml.Prose(html).ShouldContain(Said("RoyaltyRate_NoPayKeeps")),
             () => CardHtml.LeakedKeys(html).ShouldBeEmpty());
     }
 
@@ -112,7 +112,7 @@ public class SplitRoyaltyRateCardTests
     {
         var html = CardHtml.Card(await CardHtml.RenderCardsOpenAsync(Fixed), "split");
 
-        CardHtml.Prose(html).ShouldNotContain(prose => prose.StartsWith("No pay keeps", StringComparison.Ordinal));
+        CardHtml.Prose(html).ShouldNotContain(prose => prose == Said("RoyaltyRate_NoPayKeeps") || prose == Said("RoyaltyRate_NoPayKeepsWithout"));
     }
 
     [Fact]
@@ -137,4 +137,7 @@ public class SplitRoyaltyRateCardTests
     {
         CardHtml.LeakedKeys(CardHtml.Card(await CardHtml.RenderCardsOpenAsync(Fixed), "split")).ShouldBeEmpty();
     }
+
+    // A note as a viewer reads it: its text with the term's brackets gone.
+    private static string Said(string key) => Texts.Format(key).Replace("[", "").Replace("]", "");
 }

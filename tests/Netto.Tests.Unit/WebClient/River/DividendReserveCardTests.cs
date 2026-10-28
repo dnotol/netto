@@ -1,3 +1,4 @@
+using Netto.Web.Client;
 using Netto.Web.Client.River;
 using Shouldly;
 
@@ -58,7 +59,7 @@ public class DividendReserveCardTests
         html.ShouldSatisfyAllConditions(
             () => CardHtml.Lines(html).Take(2).Select(line => (line.Label, line.Amount))
                 .ShouldBe([(Texts.Get(DividendFigures.MostPaidOut).ShouldNotBeNull(), "€40,000.00"), (Texts.Get(DividendFigures.Dividend).ShouldNotBeNull(), "€25,000.00")]),
-            () => CardHtml.Prose(html).ShouldNotContain(prose => prose.Contains("is more than the company can pay out", StringComparison.Ordinal)),
+            () => CardHtml.Prose(html).ShouldNotContain(Texts.Format("Reserve_NotCovered", Formats.Euros(15_000m))),
             () => CardHtml.LeakedKeys(html).ShouldBeEmpty());
     }
 
@@ -85,6 +86,6 @@ public class DividendReserveCardTests
 
         html.ShouldSatisfyAllConditions(
             () => CardHtml.Lines(html).ShouldNotContain(line => line.Label == Texts.Get(DividendFigures.MostPaidOut)),
-            () => CardHtml.Prose(html).ShouldNotContain(prose => prose.Contains("is more than the company can pay out", StringComparison.Ordinal)));
+            () => CardHtml.Prose(html).ShouldNotContain(Texts.Format("Reserve_NotCovered", Formats.Euros(0m))));
     }
 }

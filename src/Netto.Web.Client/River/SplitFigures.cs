@@ -4,9 +4,11 @@ namespace Netto.Web.Client.River;
 
 // The split's figures as lines of label, amount and share (FigureLine), which its card words from its
 // own texts: what the split shares (Sides), the best pay the engine's search found with what it leaves
-// beside the pay set (Best), and what the pointer reads of a pay on the curve, only while it points at
-// one (Pointer). They select the engine's figures and divide them (Shares.Of), never calculate; a line
-// of nothing is left out, but for the one heading the lines, the pay or the best pay, which may be none.
+// beside the pay set (Best), the smallest pay keeping the reduced rate with the royalty and without it
+// (RoyaltyRate), and what the pointer reads of a pay on the curve, only while it points at one (Pointer).
+// They select the engine's figures and divide them (Shares.Of), never calculate; a line of nothing is left
+// out, but for the one heading the lines, the pay or the best pay, which may be none, and the two bounds of
+// RoyaltyRate, a pay of nothing being the answer there.
 internal static class SplitFigures
 {
     // The pay, the contributions the company pays on the director's behalf and the fund's fee it pays

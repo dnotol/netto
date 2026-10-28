@@ -8,7 +8,7 @@ namespace Netto.Web.Client.Tabs;
 // with no amount, its line saying in a word or two whether it holds (State, which the link carries), with
 // the badge it leaves on the module it acts on, and only while both its modules are on the map. The
 // sentences with their figures are the cards': Corporate tax, Split and Dividend say them in their own
-// texts, the link carries none. Whether one holds is the engine's (YearCondition.Holds), carried as it is:
+// texts, so the link carries no sentence: its Carries is the State words. Whether one holds is the engine's (YearCondition.Holds), carried as it is:
 // nothing here tests a rule. A kind of condition the engine adds has its case here, or drawing it fails, and
 // MapConditionsTests fails until it has.
 internal static class MapConditions
