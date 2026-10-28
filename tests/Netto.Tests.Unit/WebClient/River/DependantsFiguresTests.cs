@@ -98,6 +98,15 @@ public class DependantsFiguresTests
         DependantsView.From(Household.Run().Pay.ShouldNotBeNull(), Household.Household.Dependants.Values).ShouldBeNull();
     }
 
+    // Raising the children alone, ticked with no child, declares nobody: the card draws no dependant.
+    [Fact]
+    public void From_singleParentTickedWithNoChild_isNone()
+    {
+        var river = Household.WithPartner(false).WithSingleParent(true);
+
+        DependantsView.From(river.Run().Pay.ShouldNotBeNull(), river.Household.Dependants.Values).ShouldBeNull();
+    }
+
     internal static DependantsView View(RiverInputs river) =>
         DependantsView.From(river.Run().Pay.ShouldNotBeNull(), river.Household.Dependants.Values).ShouldNotBeNull();
 

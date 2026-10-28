@@ -115,11 +115,14 @@ public class MapQuietTests
             () => view.LinksOf(RiverModule.Household).ShouldBeEmpty());
     }
 
-    // With no partner and no dependant the household does nothing in this plan: quiet.
-    [Fact]
-    public void From_aHouseholdWithNoPartnerNorDependant_isQuiet()
+    // With no partner and no dependant the household does nothing in this plan: quiet, the single parent's
+    // tick, with no child, declaring nobody.
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void From_aHouseholdWithNoPartnerNorDependant_isQuiet(bool singleParentTicked)
     {
-        var river = Full.WithPartner(false);
+        var river = Full.WithPartner(false).WithSingleParent(singleParentTicked);
 
         Node(MapView.From(river, river.Run()), RiverModule.Household).Quiet.ShouldBeTrue();
     }

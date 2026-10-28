@@ -25,4 +25,8 @@ public sealed record Dependants(
     int OtherDependants = 0)
 {
     public static Dependants None { get; } = new();
+
+    // Whether anyone is counted: a child, a dependant aged 66 or more in care, or any other. Raising the
+    // children alone declares nobody by itself, and the children under 3 are among the children.
+    public bool AnyDeclared => Children > 0 || DependantsAged66InCare > 0 || OtherDependants > 0;
 }

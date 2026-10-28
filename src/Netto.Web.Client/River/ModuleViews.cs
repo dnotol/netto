@@ -428,12 +428,13 @@ internal sealed record HouseholdView(TaxpayerColumn Director, TaxpayerColumn Par
 // dependants declared, the supplements they add to the tax-free amount and the taxpayer they go to, the
 // refundable credit for children the river's tax takes off, less than nothing when the pay takes part of a
 // joint year's away, and what declaring them saves the river's tax; and the year's supplement rules, which
-// its bubbles state. None while no dependant is declared, or for a year or region without rules.
+// its bubbles state. None while nobody is declared, raising the children alone counting no one, or for a
+// year or region without rules.
 internal sealed record DependantsView(
     Dependants Declared, TaxFreeAmountSupplements Supplements, Taxpayer To, decimal ChildTaxCredit, decimal Saves, TaxFreeAmountSupplementRules Rules)
 {
     public static DependantsView? From(GrossToNetResult pay, Dependants declared) =>
-        declared != Dependants.None && PersonalTaxRules.For(pay.IncomeYear, pay.Region) is { } rules
+        declared.AnyDeclared && PersonalTaxRules.For(pay.IncomeYear, pay.Region) is { } rules
             ? new DependantsView(declared, pay.Supplements, pay.SupplementsTo, pay.ChildTaxCredit, pay.DependantsSave, rules.Supplements)
             : null;
 }

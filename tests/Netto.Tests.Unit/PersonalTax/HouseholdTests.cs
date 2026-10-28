@@ -22,6 +22,20 @@ public class HouseholdTests
         (Household.None.Dependants, new Household(HouseholdStatus.MarriedOrLegalCohabitant).Dependants).ShouldBe((Dependants.None, Dependants.None));
     }
 
+    // A dependant is a person counted: a child, a dependant aged 66 or more in care, any other. Raising the
+    // children alone, ticked with none, declares nobody; the children under 3 are among the children.
+    [Theory]
+    [InlineData(0, 0, false, 0, 0, false)]
+    [InlineData(0, 0, true, 0, 0, false)]
+    [InlineData(1, 0, false, 0, 0, true)]
+    [InlineData(0, 0, false, 1, 0, true)]
+    [InlineData(0, 0, false, 0, 1, true)]
+    [InlineData(2, 1, true, 0, 0, true)]
+    public void AnyDeclared_dependants_isWhetherAnyoneIsCounted(int children, int under3, bool singleParent, int inCare, int others, bool declared)
+    {
+        new Dependants(children, under3, singleParent, inCare, others).AnyDeclared.ShouldBe(declared);
+    }
+
     [Theory]
     [InlineData(HouseholdStatus.Alone, false, false)]
     [InlineData(HouseholdStatus.Alone, true, false)]

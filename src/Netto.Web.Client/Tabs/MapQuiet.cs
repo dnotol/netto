@@ -24,7 +24,7 @@ internal static class MapQuiet
 
     // The modules holding what the map draws no line of: the household while it declares a dependant.
     public static IReadOnlySet<RiverModule> Holding(RiverInputs inputs) =>
-        inputs.InPlan(OptionalModule.Household) && inputs.Household.Dependants.Values != Netto.Core.PersonalTax.Dependants.None
+        inputs.InPlan(OptionalModule.Household) && inputs.Household.Dependants.Values.AnyDeclared
             ? new HashSet<RiverModule> { RiverModule.Household }
             : new HashSet<RiverModule>();
 

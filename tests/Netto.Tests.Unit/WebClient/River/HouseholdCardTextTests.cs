@@ -20,6 +20,7 @@ public class HouseholdCardTextTests
         { "a single parent", WithPartner.WithPartner(false).WithChildren(2).WithSingleParent(true), ["Summary_Dependants", "Summary_LessTax"], null },
         { "a quotient and children", WithPartner.WithChildren(2), ["Summary_Quotient", "Summary_Dependants", "Summary_LessTax"], null },
         { "no partner, the year once taxed separately", WithPartner.WithTaxedSeparately(true).WithPartner(false), [], null },
+        { "no partner, raising alone ticked with no child", WithPartner.WithPartner(false).WithSingleParent(true), [], null },
         { "refused", WithPartner.WithPartnerIncome(-1m), [], null },
     };
 
