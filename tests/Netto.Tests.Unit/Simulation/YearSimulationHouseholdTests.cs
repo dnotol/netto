@@ -13,10 +13,6 @@ namespace Netto.Tests.Simulation;
 // still adds up to what the company earns, the partner's own income and tax staying outside it.
 public class YearSimulationHouseholdTests
 {
-    private static readonly Household NonEarningPartner = new(HouseholdStatus.MarriedOrLegalCohabitant);
-
-    private static readonly Household EarningPartner = new(HouseholdStatus.MarriedOrLegalCohabitant, 40_000m);
-
     [Fact]
     public void Run_partnerWithoutIncome_taxesThePayInTheJointAssessment()
     {

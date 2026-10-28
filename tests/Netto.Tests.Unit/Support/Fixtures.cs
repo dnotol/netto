@@ -51,6 +51,15 @@ internal static class Fixtures
     // 12% of a cadastral income of 1,200 let for the 2026 cap, 1,380.00: 828.00 of net rent.
     public static readonly HomeOfficeRent RentAtTheCap = new(1_200m, 0.12m, 1_380m);
 
+    // A spouse or legal cohabitant the director is taxed jointly with, who earns nothing: the marital
+    // quotient attributes them 30% of the director's professional income, up to its cap.
+    public static readonly Household NonEarningPartner = new(HouseholdStatus.MarriedOrLegalCohabitant);
+
+    // One who earns 40,000 of net professional income, more than 30% of the two together beside the
+    // pays these tests reach, so no quotient applies with the pay; alone, the partner would be taxed on
+    // it, the quotient passing part of it to the director's side.
+    public static readonly Household EarningPartner = new(HouseholdStatus.MarriedOrLegalCohabitant, 40_000m);
+
     // An electric car the company puts at the director's disposal all year: a catalogue value of 50,000,
     // first registered in January 2026, so a benefit of 1,714.29 at 4% (CarCalculatorTests), all year at
     // 100%, and 8,000 of yearly costs, which an electric car deducts in full; 17% of the benefit is added

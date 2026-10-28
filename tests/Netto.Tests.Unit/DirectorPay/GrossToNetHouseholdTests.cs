@@ -17,12 +17,6 @@ public class GrossToNetHouseholdTests
 {
     private static readonly PersonalTaxRules Rules = PersonalTaxRules.IncomeYear2026;
 
-    private static readonly Household NonEarningPartner = new(HouseholdStatus.MarriedOrLegalCohabitant);
-
-    // 40,000 is more than 30% of the two together, so no quotient applies with the pay; alone, the
-    // partner would be taxed on it, the quotient passing part of it to the director's side.
-    private static readonly Household EarningPartner = new(HouseholdStatus.MarriedOrLegalCohabitant, 40_000m);
-
     private static GrossToNetResult Compute(decimal grossPay, TaxPrepayments prepayments, Household? household = null)
     {
         var (value, error) = GrossToNet.Compute(2026, grossPay, MunicipalRates.IncomeYear2026.Entered(0.07m), prepayments, household: household);
