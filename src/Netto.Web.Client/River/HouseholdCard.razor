@@ -19,7 +19,7 @@
    in the plan, and the word at its bottom takes it out, its values kept. It counts with the company skipped
    too. *@
 <ModuleCard Name="@ModuleFolds.Name(OptionalModule.Household)" Title="@L["Title"]" Summary="@Summary" Help="@L["Hint"]"
-            Refused="@Refused" Sources="@(_joint?.Details ?? [])" IncomeYear="Inputs.IncomeYear" RemoveLabel="@L["Remove"]" OnRemove="Remove">
+            Refused="@Refused" Sources="@(_view.Joint?.Details ?? [])" IncomeYear="Inputs.IncomeYear" RemoveLabel="@L["Remove"]" OnRemove="Remove">
     <div class="household__tick">
         <MudCheckBox T="bool" Value="Inputs.Household.HasPartner" ValueChanged="OnPartnerChanged" Color="Color.Primary" Label="@L["PartnerLabel"]" />
         <OriginChip Origin="Inputs.Household.Status.Origin" />
@@ -61,15 +61,15 @@
         </RiverField>
     </div>
     <RefusedMessage Error="@Refused" />
-    @if (_lines.Count > 0)
+    @if (_view.Lines.Count > 0)
     {
-        <FigureList Figures="@FigureWords.Of(L, _lines)" />
+        <FigureList Figures="@FigureWords.Of(L, _view.Lines)" />
     }
-    @if (HouseholdCardText.Note(_joint, HouseholdCardText.TaxedSeparately(Inputs.Household)) is { } note)
+    @if (HouseholdCardText.Note(_view.Joint, HouseholdCardText.TaxedSeparately(Inputs.Household)) is { } note)
     {
-        <p class="household__note"><TermSentence Text="@L[note, _joint is null ? "" : Formats.RuleAmount(_joint.Rate), _joint is null ? "" : Formats.RuleAmount(_joint.Cap)]" Meaning="@L[HouseholdCardText.QuotientMeaning]" /></p>
+        <p class="household__note"><TermSentence Text="@L[note, _view.Joint is null ? "" : Formats.RuleAmount(_view.Joint.Rate), _view.Joint is null ? "" : Formats.RuleAmount(_view.Joint.Cap)]" Meaning="@L[HouseholdCardText.QuotientMeaning]" /></p>
     }
-    @if (_joint is not null)
+    @if (_view.Joint is not null)
     {
         <p class="household__note">@L[HouseholdCardText.Counted]</p>
     }
@@ -106,44 +106,21 @@
     [Parameter]
     public Refusal? Refused { get; set; }
 
-    private HouseholdView? _joint;
-    private DependantsView? _dependants;
-    private IReadOnlyList<FigureLine> _lines = [];
+    private HouseholdCardView _view = default!;
     private HouseholdSettingsView _settings = default!;
 
     private DependantInputs Dependants => Inputs.Household.Dependants;
 
     protected override void OnParametersSet()
     {
-        _joint = Run.Pay is { } pay ? HouseholdView.From(pay, Inputs.Household.BothAged66.Value) : null;
-        _dependants = Run.Pay is { } paid ? DependantsView.From(paid, Dependants.Values) : null;
-        _lines =
-        [
-            .. _joint is null ? [] : HouseholdFigures.Of(_joint),
-            .. _dependants is null ? [] : DependantsFigures.Of(_dependants),
-            .. _joint is not null && Run.Pay is { } year ? FigureLines.Shown([HouseholdFigures.Altogether(year.HouseholdSaves)]) : [],
-        ];
+        _view = HouseholdCardView.From(Inputs, Run);
         _settings = HouseholdSettingsView.From(Inputs);
     }
 
-    // The quotient, that it attributes nothing, or that the year is taxed separately; how many dependants; and
-    // what the household saves the river's tax or costs it, joined as the card's summary.
-    private string? Summary
-    {
-        get
-        {
-            var parts = HouseholdCardText.Summary(Run.Pay, _joint, _dependants, HouseholdCardText.TaxedSeparately(Inputs.Household));
-            return parts.Count == 0 ? null : string.Join(L["SummarySeparator"].Value, parts.Select(Part));
-        }
-    }
-
-    private string Part(string key) => key switch
-    {
-        "Summary_Quotient" => L[key, Formats.Euros(Math.Abs(HouseholdFigures.Quotient(_joint!)?.Amount ?? 0m))],
-        "Summary_Dependants" => L[key, (Dependants.Children.Value + Dependants.DependantsAged66InCare.Value + Dependants.OtherDependants.Value).ToString(Formats.Culture)],
-        "Summary_LessTax" or "Summary_MoreTax" => L[key, Formats.Euros(Math.Abs(Run.Pay?.HouseholdSaves ?? 0m))],
-        _ => L[key],
-    };
+    // The view's parts in the card's words, joined.
+    private string? Summary => _view.Summary.Count == 0
+        ? null
+        : string.Join(L["SummarySeparator"].Value, _view.Summary.Select(part => L[part.Key, [.. part.Args]].Value));
 
     private Task OnPartnerChanged(bool partner) => InputsChanged.InvokeAsync(Inputs.WithPartner(partner));
 

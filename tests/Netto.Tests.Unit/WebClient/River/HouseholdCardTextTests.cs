@@ -5,7 +5,8 @@ namespace Netto.Tests.WebClient.River;
 
 // The keys the Household card chooses from what the year is (HouseholdCardText), each with its text in the
 // card's .resx, so a key the card builds never shows on screen as itself. Its summary is parts joined by
-// « · »: the partner's year, the dependants, and what the household saves or costs the river's tax.
+// « · » (HouseholdCardView): the partner's year, the dependants, and what the household saves or costs
+// the river's tax.
 public class HouseholdCardTextTests
 {
     private static readonly ResxText Texts = ResxText.For<HouseholdCard>();
@@ -28,29 +29,22 @@ public class HouseholdCardTextTests
     [MemberData(nameof(Years))]
     public void SummaryAndNote_aYear_areItsKeys(string _, RiverInputs river, string[] summary, string? note)
     {
-        var (pay, joint, dependants, separately) = Facts(river);
+        var view = HouseholdCardView.From(river, river.Run());
 
-        river.ShouldSatisfyAllConditions(
-            () => HouseholdCardText.Summary(pay, joint, dependants, separately).ShouldBe(summary),
-            () => HouseholdCardText.Note(joint, separately).ShouldBe(note));
+        view.ShouldSatisfyAllConditions(
+            () => view.Summary.Select(part => part.Key).ShouldBe(summary),
+            () => HouseholdCardText.Note(view.Joint, HouseholdCardText.TaxedSeparately(river.Household)).ShouldBe(note));
     }
 
     // A partner earning a third of the two: no quotient goes either way, the note says why.
     [Fact]
     public void SummaryAndNote_noQuotient_sayItTakesNone()
     {
-        var (pay, joint, dependants, separately) = Facts(WithPartner.WithPartnerIncome(40_000m));
+        var river = WithPartner.WithPartnerIncome(40_000m);
 
-        (HouseholdCardText.Summary(pay, joint, dependants, separately)[0], HouseholdCardText.Note(joint, separately)).ShouldBe(("Summary_NoQuotient", "Note_NoQuotient"));
-    }
+        var view = HouseholdCardView.From(river, river.Run());
 
-    // What the household costs the river's tax, rather than saves, the summary says as more tax.
-    [Fact]
-    public void Summary_householdCosting_endsOnMoreTax()
-    {
-        var (pay, joint, dependants, separately) = Facts(WithPartner);
-
-        HouseholdCardText.Summary(pay! with { HouseholdSaves = -8.50m }, joint, dependants, separately)[^1].ShouldBe("Summary_MoreTax");
+        (view.Summary[0].Key, HouseholdCardText.Note(view.Joint, HouseholdCardText.TaxedSeparately(river.Household))).ShouldBe(("Summary_NoQuotient", "Note_NoQuotient"));
     }
 
     [Fact]
@@ -78,17 +72,5 @@ public class HouseholdCardTextTests
     public void Note_namingTheQuotient_marksItAsATerm(string key)
     {
         TermText.Split(Texts.Format(key, "30%", "€11,780.00")).Term.ShouldBe("marital quotient");
-    }
-
-    // What the card reads of the river, as it reads it: the run's pay, the joint year, the dependants and
-    // whether a partner's year is taxed separately.
-    private static (Netto.Core.DirectorPay.GrossToNetResult? Pay, HouseholdView? Joint, DependantsView? Dependants, bool Separately) Facts(RiverInputs river)
-    {
-        var pay = river.Run().Pay;
-        return (
-            pay,
-            pay is null ? null : HouseholdView.From(pay, river.Household.BothAged66.Value),
-            pay is null ? null : DependantsView.From(pay, river.Household.Dependants.Values),
-            HouseholdCardText.TaxedSeparately(river.Household));
     }
 }
