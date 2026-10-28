@@ -142,6 +142,22 @@ public class PayStatementTests
             periods => periods[1].AmountsUsed.ShouldBe(Rules2026.InMonth(11).Amounts));
     }
 
+    // A period withheld on by the marital quotient cites the amounts that method applied, the
+    // maximum for partners both 66 or over from 1 November among them.
+    [Theory]
+    [InlineData(1, WithholdingHousehold.PartnerWithoutIncome)]
+    [InlineData(11, WithholdingHousehold.PartnerWithoutIncome)]
+    [InlineData(11, WithholdingHousehold.PartnerWithoutIncomeBothAged66)]
+    public void AmountsUsed_quotientPeriod_areTheAmountsOfItsHouseholdsMethod(int month, WithholdingHousehold household)
+    {
+        var rules = Rules2026.InMonth(month);
+        var withholding = WithholdingCalculator.Compute(rules, 4_166.67m, household).Value.ShouldNotBeNull();
+
+        var period = new PayStatementPeriod(rules, month, month, withholding);
+
+        period.AmountsUsed.ShouldBe(rules.AmountsFor(household));
+    }
+
     private static PayStatement Statement2026(decimal grossPay)
     {
         var (value, error) = GrossToNet.Compute(2026, grossPay, MunicipalRates.IncomeYear2026.Entered(0.07m), Withheld);
