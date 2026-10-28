@@ -69,45 +69,6 @@
   <data name="ReceivedBetween" xml:space="preserve">
     <value>·</value>
   </data>
-  <data name="Condition_Pay_MinimumPayMet" xml:space="preserve">
-    <value>Pay {0} reaches the {1} minimum: pay condition met</value>
-  </data>
-  <data name="Condition_Pay_TaxableIncomeNotAbovePay" xml:space="preserve">
-    <value>Pay {0} not below the {2} taxable profit: pay condition met</value>
-  </data>
-  <data name="Condition_Pay_MinimumPayNotMet" xml:space="preserve">
-    <value>Pay {0} below the {1} minimum and the {2} taxable profit: reduced rate lost</value>
-  </data>
-  <data name="Condition_Benefits_Met" xml:space="preserve">
-    <value>Benefits in kind {0} within {1} of the {2} pay: benefits condition met</value>
-  </data>
-  <data name="Condition_Benefits_Lost" xml:space="preserve">
-    <value>Benefits in kind {0} over {1} of the {2} pay: reduced rate lost</value>
-  </data>
-  <data name="Condition_Office_Rent" xml:space="preserve">
-    <value>No office allowance beside the rent: kept</value>
-  </data>
-  <data name="Condition_Office_Allowance" xml:space="preserve">
-    <value>No rent beside the office allowance: kept</value>
-  </data>
-  <data name="Condition_Royalty_Lowers" xml:space="preserve">
-    <value>Lowers the pay keeping the reduced rate to {0} ({1} without)</value>
-  </data>
-  <data name="Condition_Royalty_LowersFromNone" xml:space="preserve">
-    <value>Lets a pay of {0} keep the reduced rate (none without)</value>
-  </data>
-  <data name="Condition_Royalty_DoesNotLower" xml:space="preserve">
-    <value>Does not lower the pay keeping the reduced rate, {0}</value>
-  </data>
-  <data name="Condition_Royalty_NoPayKeeps" xml:space="preserve">
-    <value>No pay keeps the reduced rate beside it</value>
-  </data>
-  <data name="Condition_Reserve_Covered" xml:space="preserve">
-    <value>Reserve {0} covered: up to {1} to pay out</value>
-  </data>
-  <data name="Condition_Reserve_NotCovered" xml:space="preserve">
-    <value>Reserve {0} not covered: only {1} to pay out</value>
-  </data>
   <data name="State_Met" xml:space="preserve">
     <value>met</value>
   </data>
