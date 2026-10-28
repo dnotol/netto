@@ -1,12 +1,8 @@
-using System.Net;
 using System.Text.RegularExpressions;
-using Microsoft.Extensions.DependencyInjection;
-using Netto.Web.Client;
 using Netto.Web.Client.Pages;
 using Netto.Web.Client.River;
 using Netto.Web.Client.Tabs;
 using Shouldly;
-using static Netto.Tests.WebClient.River.RiverRendering;
 
 namespace Netto.Tests.WebClient.Pages;
 
@@ -17,8 +13,6 @@ namespace Netto.Tests.WebClient.Pages;
 // tab's content where it does not.
 public class PlanAddToPlanTests
 {
-    private static readonly DateTimeOffset On23October = new(2026, 10, 23, 12, 0, 0, TimeSpan.Zero);
-
     // Its button is among the map's tools, after the legend, and the band holds none.
     [Fact]
     public async Task Plan_onThePlanTab_drawsAddToPlanAmongTheMapsToolsAfterTheLegend()
@@ -89,15 +83,6 @@ public class PlanAddToPlanTests
             .ShouldBe((null, true, 1, 0));
     }
 
-    private static async Task<string> RenderPlanAsync(string? tab = null) =>
-        WebUtility.HtmlDecode(await RenderAsync(typeof(Plan), new Folds(new BrowserStorage()), tab is null ? [] : new() { ["Tab"] = tab }, services =>
-        {
-            var storage = new BrowserStorage();
-            var plans = new SavedPlans(storage);
-            services.AddSingleton<IBrowserStorage>(storage);
-            services.AddSingleton(plans);
-            services.AddSingleton(new MapLinkFilter(storage));
-            services.AddSingleton(new RiverState(plans) { Inputs = RiverInputs.Example });
-            services.AddSingleton<TimeProvider>(new Clock(On23October));
-        }));
+    // The plan page drawn on the example, on the tab given, as PlanPageTests draws it.
+    private static Task<string> RenderPlanAsync(string? tab = null) => PlanPageTests.RenderPlanAsync(new Folds(new BrowserStorage()), tab);
 }

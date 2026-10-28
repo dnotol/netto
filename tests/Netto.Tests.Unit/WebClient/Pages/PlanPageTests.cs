@@ -320,7 +320,7 @@ public class PlanPageTests
 
     // The river, the plan starred Today and the plans saved, the first starred unless one is; without Today,
     // the plan starred is deleted once they are all saved.
-    private static Task<string> RenderPlanAsync(Folds folds, string? tab = null, RiverInputs? river = null, RiverInputs? today = null, RiverInputs[]? saved = null,
+    internal static Task<string> RenderPlanAsync(Folds folds, string? tab = null, RiverInputs? river = null, RiverInputs? today = null, RiverInputs[]? saved = null,
         bool withoutToday = false) =>
         RenderAsync(typeof(Plan), folds, tab is null ? [] : new() { ["Tab"] = tab }, services =>
         {
