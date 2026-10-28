@@ -35,22 +35,24 @@
 
 /* The head is the tab's (Tabs/TabHead). */
 
-/* Assumed */
+/* The two notes under the map, Assumed and Not counted yet, one look: a framed fold, folded to one line
+   that counts what it holds (Fold), the same title in the page's own face. ::deep reaches the elements of
+   the Fold, which carry no scope attribute of this page. */
 
-.assumed {
-    margin: 2.5rem 0 0;
+.assumed,
+.limits {
+    margin-top: 1.5rem;
+    padding: 0.25rem 1.25rem;
+    border: 1px solid var(--netto-line);
+    border-radius: 12px;
 }
 
-/* The note folds to one line (Fold), the count in its summary; its title stays the small eyebrow it
-   always was. ::deep reaches the elements of the Fold, which carry no scope attribute of this page. */
-.assumed ::deep .fold__heading--card .fold__title {
-    color: var(--netto-text-muted);
+.assumed ::deep .fold__heading--card .fold__title,
+.limits ::deep .fold__heading--card .fold__title {
     font-family: inherit;
-    font-size: 0.75rem;
+    font-size: 1rem;
     font-weight: 600;
-    letter-spacing: 0.14em;
     line-height: 1.25;
-    text-transform: uppercase;
 }
 
 /* Chips that wrap onto as many lines as the width needs. */
@@ -71,20 +73,7 @@
         font-size: 0.85rem;
     }
 
-/* Not counted yet */
-
-.limits {
-    margin-top: 2rem;
-    padding: 0.5rem 1.75rem;
-    border: 1px dashed var(--netto-line);
-    border-radius: 20px;
-}
-
-.limits ::deep .fold__heading--card .fold__title {
-    font-family: inherit;
-    font-size: 1rem;
-    font-weight: 600;
-}
+/* Not counted yet: a list of what the figures leave out. */
 
 .limits__list {
     margin: 0.75rem 0 1rem;
