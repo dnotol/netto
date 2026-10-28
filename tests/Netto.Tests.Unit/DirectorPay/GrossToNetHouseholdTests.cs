@@ -9,9 +9,9 @@ namespace Netto.Tests.DirectorPay;
 
 // The pay of a director taxed jointly with a spouse or legal cohabitant. What the pay, the river and the
 // assessment's balance count is the household's joint tax less what the partner would owe filing alone
-// on their own income, which is the partner's and left out, as is what was withheld on it (decided by the
-// operator, 2026-10-28, the baseline the partner filing alone since 2026-10-29). The household's two
-// columns and what the quotient saves are beside it. Income year 2026 at a 7% municipal rate; the joint
+// on their own income, which is the partner's and left out, as is what was withheld on it: the partner
+// filing alone is the baseline of the river's share. The household's two columns and what the quotient
+// saves are beside it. Income year 2026 at a 7% municipal rate; the joint
 // tax itself is pinned by PersonalTaxCalculatorJointTests, so these hold the pay to it.
 public class GrossToNetHouseholdTests
 {
@@ -66,8 +66,7 @@ public class GrossToNetHouseholdTests
     // A partner earning 30% or more of the two together is attributed nothing, and both partners' incomes
     // exceed their tax-free amounts: the couple pays what two single people pay, so declaring the partner
     // leaves the pay's tax as it is, the municipal surcharge, taken once on the household's tax, within a
-    // cent. Measured against the household with the director earning nothing, the pay was charged the
-    // quotient that household would give the partner, 4,686.06 less in the pocket at this pay.
+    // cent.
     [Theory]
     [InlineData(30_000)]
     [InlineData(40_000)]

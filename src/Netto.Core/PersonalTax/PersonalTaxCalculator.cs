@@ -211,7 +211,7 @@ public static class PersonalTaxCalculator
     // What the partner would owe filing alone, the river's baseline in a joint year (GrossToNet): a single
     // taxpayer on their own net professional income, typed net so no flat-rate costs come off it, with
     // their own tax-free amount, no quotient and no dependants, which are the household's, and no credit
-    // for low earned income, which the joint assessment counts for the director alone (decided 2026-10-29).
+    // for low earned income, which the joint assessment counts for the director alone.
     internal static PersonalTaxResult PartnerAlone(PersonalTaxRules rules, decimal partnerIncome, decimal municipalRate)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(partnerIncome, 0m);

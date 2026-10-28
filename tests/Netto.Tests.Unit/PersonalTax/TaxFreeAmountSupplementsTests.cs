@@ -6,8 +6,8 @@ namespace Netto.Tests.PersonalTax;
 // The supplements to the tax-free amount for the director's dependants (CIR 92 art. 132 and 133), as the
 // indexation notices give them: for income year 2026 the notice for tax year 2027, table II, the child
 // supplements frozen at the coefficient 2.2793 (art. 178 §2/1) on the bases the law of 15.07.2026 raised for
-// one and two children; for income year 2025 the notice for tax year 2026. Arts 132 and 133 are not filed
-// yet (Fisconetplus down on 2026-10-28).
+// one and two children; for income year 2025 the notice for tax year 2026, table I. Arts 132 and 133 are
+// not filed.
 public class TaxFreeAmountSupplementsTests
 {
     // One child 2,130, two 5,130, three 11,440, four 18,510, then 7,070 for each child beyond the fourth.

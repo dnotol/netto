@@ -141,10 +141,11 @@ public sealed record PersonalTaxRules(
         Reference = "Art. 87, al. 2 and art. 88, al. 1: the most the marital quotient, 30% of the professional income, attributes, base 6,700, indexed 13,460",
     };
 
-    // The dependants' supplements. Fisconetplus being down when they were researched, art. 132 and 133 are
-    // not filed yet: each year's amounts cite the indexation notice of its tax year, table II, the child
-    // supplements frozen at the coefficient 2.2793 (art. 178 §2/1), and turn into Source.Fisconet once the
-    // articles are filed. The credit and its cap cite art. 134 of the income year, filed.
+    // The dependants' supplements. Art. 132 and 133 are not filed: each year's amounts cite the indexation
+    // notice of its tax year, the table that lists them, table II of the notice for tax year 2027 (the child
+    // supplements frozen at the coefficient 2.2793 of art. 178 §2/1) and table I of the notice for tax year
+    // 2026, and turn into Source.Fisconet once the articles are filed. The credit and its cap cite art. 134
+    // of the income year.
     private static readonly Source SupplementsTaxYear2027 = SharedSources.IndexationNotice2027 with
     {
         Reference = "Table II: art. 132 al. 1, the supplements to the tax-free amount for dependants: 1° one child 2,130, 2° two 5,130, 3° three 11,440, "

@@ -47,11 +47,10 @@ namespace Netto.Core.DirectorPay;
 // assessment (PersonalTaxCalculator). What the pay, the year's figures and the assessment's balance count
 // is the river's share of the household's tax: the joint tax, less what the partner would owe filing
 // alone on their own professional income (PersonalTaxCalculator.PartnerAlone), which is the partner's,
-// as what was withheld on it is (decided by the operator, 2026-10-28; the baseline the partner filing
-// alone rather than the household with the director earning nothing since 2026-10-29, which gave the
-// partner a quotient towards the director the pay was then charged with). So the surcharge's base is the
-// pay's share of the household's tax (art. 157 and 158, which take director pay apart), and the river
-// never counts the partner's own tax. The household's two columns, the partner filing alone and what the
+// as what was withheld on it is: the partner filing alone is the baseline of the river's share, so the pay
+// is never charged with a quotient the household would give the partner were the director earning
+// nothing. So the surcharge's base is the pay's share of the household's tax (art. 157 and 158, which
+// take director pay apart), and the river never counts the partner's own tax. The household's two columns, the partner filing alone and what the
 // marital quotient saves are beside them (Household).
 public static class GrossToNet
 {
