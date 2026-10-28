@@ -40,6 +40,7 @@ public class BucketNamesTests
     [InlineData("pocket")]
     [InlineData("taxes_on_pay")]
     [InlineData("taxes_on_profit")]
+    [InlineData("expenses")]
     public void Destination_drainToABucket_isToItsNameInTheBar(string bucket)
     {
         Destination(new Drain("drain", DrainKind.PaidOut, 1m, bucket)).ShouldBe($"to {NameInASentence(bucket)}");

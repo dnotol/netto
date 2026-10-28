@@ -5,7 +5,7 @@ namespace Netto.Web.Client.Tabs;
 // The levers that move no money of their own in this plan, read from the map's own links, and the chain's
 // hand-offs folded past them. A lever is quiet when every link it has is a hand-off along the chain, money
 // passed on from the module above it down the middle or on to the one below, so that it passes on all it
-// receives: no line of its own into a bucket or out of the river, no tax base, no condition, a condition
+// receives: no line of its own into a bucket, no tax base, no condition, a condition
 // counting as any link does (the office allowance beside a paid rent keeps an empty Expense allowances in
 // its box). The royalty, beside the chain, is quiet when it has no link at all: it comes to nothing. Read
 // from every link of the run before a filter hides any, so hiding a kind of link folds nothing; a refused

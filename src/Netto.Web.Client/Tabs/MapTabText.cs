@@ -90,6 +90,7 @@ internal static class MapTabText
     {
         MapText.Map => typeof(MapTab),
         MapText.DrainList => typeof(DrainList),
+        MapText.CompanyYearCard => typeof(CompanyYearCard),
         MapText.SplitCard => typeof(SplitCard),
         MapText.CarCard => typeof(CarCard),
         MapText.VoucherCard => typeof(VoucherCard),

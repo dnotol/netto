@@ -35,12 +35,15 @@ namespace Netto.Web.Client.Tabs;
 // tax's way into its taxes comes down left of the dividend's lines into them and out of them, crossing
 // neither. The royalty's part paid apart leaves its bottom and turns along a row of its own under it to the
 // pocket's lane, its line on to Director pay coming down right of that, and the condition it sets on the
-// split leaves its right side and climbs past the gutter.
+// split leaves its right side and climbs past the gutter. What the chain pays into the expenses, Company
+// year's contribution to INASTI and the car's costs, leaves its module's right side, at its bottom, and
+// comes down a lane of its own right of Corporate tax and the dividend into the expenses at the right edge.
 //
 // A route is orthogonal and runs only through room no box holds: the gap between two rows, the band over
 // the buckets, a lane down the left edge to the pocket, the gutter left of the middle column, Corporate tax's
-// drop right of it, a lane down the right edge, or a row's side the river leaves empty (the chain's rows
-// have nothing left or right of the middle, the streams' rows nothing in the middle). Lines may cross lines;
+// drop right of it, the lane to the expenses and a lane down the right edge past it, or a row's side the
+// river leaves empty (the chain's rows have nothing left or right of the middle, the streams' rows nothing
+// in the middle). Lines may cross lines;
 // none crosses a box, nor a quiet row's pill but the chain's line past its levers, which runs through it
 // (MapLayoutTests). A line back out of a bucket, a refund, a credit, a contribution or a bonus beyond its
 // surcharge, takes the route money into it would take, the other way, beside it. A line keeps its width in
@@ -117,6 +120,13 @@ internal static class MapLayout
     private const decimal LeftGutterEnd = 33m;
     private const decimal GutterTrack = 1.2m;
     private const decimal RightLane = 98m;
+
+    // The lane down to the expenses, right of Corporate tax and the dividend and left of the right edge's
+    // lane, its tracks ending far enough before it to keep their lines apart from its line: one track per
+    // link, the highest row's furthest out.
+    private const decimal ExpensesLane = 97m;
+    private const decimal ExpensesTrack = 0.6m;
+    private const decimal ExpensesLaneEnd = 97.4m;
 
     // How far right of the middle column a condition between two of its boxes runs round it.
     private const decimal BracketLane = 3m;
@@ -418,6 +428,7 @@ internal static class MapLayout
         private readonly List<(MapEnd, MapEnd, MapLinkKind)> _pocketLane;
         private readonly List<(MapEnd, MapEnd, MapLinkKind)> _leftGutter;
         private readonly List<(MapEnd, MapEnd, MapLinkKind)> _drops;
+        private readonly List<(MapEnd, MapEnd, MapLinkKind)> _expensesLane;
         private readonly List<(MapEnd, MapEnd, MapLinkKind)> _corporateDrops;
         private readonly List<(MapEnd, MapEnd, MapLinkKind)> _belowSplit;
 
@@ -430,6 +441,7 @@ internal static class MapLayout
             _leftGutter = [.. bundles.Where(bundle => Family(bundle) is RouteFamily.ChainToTaxesOnPay or RouteFamily.ChainToDirectorPay or RouteFamily.SplitToDirectorPay)
                 .OrderBy(bundle => Row(Module(bundle))).ThenBy(Back)];
             _drops = [.. bundles.Where(bundle => Family(bundle) == RouteFamily.ChainToCorporateTax).OrderBy(bundle => Row(Module(bundle))).ThenBy(bundle => bundle.Kind)];
+            _expensesLane = [.. bundles.Where(bundle => Family(bundle) == RouteFamily.ChainToExpenses).OrderBy(bundle => Row(Module(bundle))).ThenBy(Back)];
             _corporateDrops = [.. bundles.Where(bundle => Family(bundle) == RouteFamily.CorporateTaxToBucket).OrderBy(Back)];
             _belowSplit = [.. bundles.Where(bundle => Family(bundle) is RouteFamily.SplitToCopyright or RouteFamily.CopyrightToSplit or RouteFamily.SplitToDirectorPay)
                 .OrderBy(BelowSplit)];
@@ -479,6 +491,7 @@ internal static class MapLayout
                 RouteFamily.ChainToTaxesOnPay => SideToBucket(bundle, from, MapSide.Left, to, LeftGutterX(bundle)),
                 RouteFamily.ChainToDirectorPay => SideToSide(bundle, from, MapSide.Left, to, MapSide.Right, LeftGutterX(bundle)),
                 RouteFamily.ChainToCorporateTax => SideToTop(bundle, from, MapSide.Right, to, DropX(bundle)),
+                RouteFamily.ChainToExpenses => SideToBucket(bundle, from, MapSide.Right, to, ExpensesLaneX(bundle)),
                 RouteFamily.OutOfRiver => OutOfRiver(bundle, from),
                 RouteFamily.Bracket => Bracket(bundle, from, to),
                 RouteFamily.SplitToCopyright => BottomToTop(from, 41m, to, SplitToRoyalty, BelowSplitY(bundle)),
@@ -531,6 +544,7 @@ internal static class MapLayout
             {
                 (MapColumn.Chain, "pocket", _) => RouteFamily.ToPocketLane,
                 (MapColumn.Chain, "taxes_on_pay", _) => RouteFamily.ChainToTaxesOnPay,
+                (MapColumn.Chain, "expenses", _) => RouteFamily.ChainToExpenses,
                 (_, "pocket", RiverModule.Copyright) => RouteFamily.ToPocketLane,
                 (_, "taxes_on_pay", RiverModule.Copyright) => RouteFamily.CopyrightToTaxesOnPay,
                 (_, _, RiverModule.CorporateTax) => RouteFamily.CorporateTaxToBucket,
@@ -548,6 +562,7 @@ internal static class MapLayout
             {
                 RouteFamily.ToPocketLane when Module(bundle) == RiverModule.Copyright => [],
                 RouteFamily.ToPocketLane or RouteFamily.ChainToTaxesOnPay or RouteFamily.CorporateTaxToBucket => [(Back(bundle) ? to : from, MapSide.Left)],
+                RouteFamily.ChainToExpenses => [(Back(bundle) ? to : from, MapSide.Right)],
                 RouteFamily.ChainToDirectorPay => [(from, MapSide.Left), (to, MapSide.Right)],
                 RouteFamily.ChainToCorporateTax or RouteFamily.OutOfRiver or RouteFamily.SplitToCorporateTax => [(from, MapSide.Right)],
                 RouteFamily.Bracket => [(from, MapSide.Right), (to, MapSide.Right)],
@@ -567,6 +582,7 @@ internal static class MapLayout
             RouteFamily.CorporateTaxToBucket => 0m,
             RouteFamily.DividendToSplit => -RightLane,
             RouteFamily.ChainToCorporateTax => -DropX(bundle),
+            RouteFamily.ChainToExpenses => 2m,
             RouteFamily.SplitToCorporateTax => bundle.Kind == MapLinkKind.Condition ? -SplitConditionToCorporate : -SplitToCorporate,
             RouteFamily.Bracket => 1m,
             RouteFamily.OutOfRiver => 2m,
@@ -593,6 +609,9 @@ internal static class MapLayout
 
         private decimal DropX((MapEnd, MapEnd, MapLinkKind) bundle) =>
             Lane(_drops, bundle, index => FirstDrop - index * DropTrack, (DropsFrom, RightColumn.Right), arrowHere: _ => true);
+
+        private decimal ExpensesLaneX((MapEnd, MapEnd, MapLinkKind) bundle) =>
+            Lane(_expensesLane, bundle, index => ExpensesLane - index * ExpensesTrack, (RightColumn.Right, ExpensesLaneEnd));
 
         private decimal CorporateDropX((MapEnd, MapEnd, MapLinkKind) bundle) =>
             Lane(_corporateDrops, bundle, index => CorporateDrop + index * GutterTrack, (CorporateDropFrom, CorporateDropTo));
@@ -855,6 +874,7 @@ internal static class MapLayout
         ChainToTaxesOnPay,
         ChainToDirectorPay,
         ChainToCorporateTax,
+        ChainToExpenses,
         OutOfRiver,
         Bracket,
         SplitToCopyright,

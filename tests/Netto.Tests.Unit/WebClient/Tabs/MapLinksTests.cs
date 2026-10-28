@@ -8,7 +8,7 @@ using Shouldly;
 namespace Netto.Tests.WebClient.Tabs;
 
 // The links the map draws, from the cards' own lines of one run of the river: what each module passes on
-// to the next, what ends in a bucket or leaves the river, and what only changes a tax base; a line of
+// to the next, what ends in a bucket, and what only changes a tax base; a line of
 // nothing is no link, and a refused amount leaves none. That each one is the very line its card draws is
 // MapCardsTests'.
 public class MapLinksTests
@@ -128,13 +128,35 @@ public class MapLinksTests
         (link.Kind, link.From, link.To, link.Card).ShouldBe((MapLinkKind.IntoBucket, MapEnd.InBucket(bucket), MapEnd.Of(module), module));
     }
 
-    // The car's costs are a cost of the company, out of the river as its running costs are.
+    // The car's costs are a cost of the company: they end in its expenses, as its running costs do.
     [Fact]
-    public void Of_theCarsCosts_leaveTheRiver()
+    public void Of_theCarsCosts_endInTheExpenses()
     {
         var link = MapLinks.Of(Full, Full.Run()).Single(link => link.Carries.Key == "Drain_car_costs");
 
-        (link.Kind, link.From, link.To, link.Amount).ShouldBe((MapLinkKind.IntoBucket, MapEnd.Of(RiverModule.Car), MapEnd.OutOfRiver, Full.Run().Year!.Car.Costs));
+        (link.Kind, link.From, link.To, link.Amount).ShouldBe((MapLinkKind.IntoBucket, MapEnd.Of(RiverModule.Car), MapEnd.InBucket("expenses"), Full.Run().Year!.Car.Costs));
+    }
+
+    // INASTI's company contribution is an expense of the company: Company year's line into the expenses,
+    // in the words and at the amount its card's figure line says it.
+    [Fact]
+    public void Of_theCompanyContribution_runsFromCompanyYearIntoTheExpenses()
+    {
+        var run = RiverInputs.Example.Run();
+
+        var link = MapLinks.Of(RiverInputs.Example, run).Single(link => link.To == MapEnd.InBucket("expenses"));
+
+        (link.Kind, link.From, link.Card, link.Carries.Text, link.Carries.Key, link.Amount)
+            .ShouldBe((MapLinkKind.IntoBucket, MapEnd.Of(RiverModule.CompanyYear), RiverModule.CompanyYear, MapText.CompanyYearCard, CompanyYearFigures.Contribution, run.Year!.CompanyContribution));
+    }
+
+    // A company exempt from the contribution owes nothing: Company year has no line into the expenses.
+    [Fact]
+    public void Of_aCompanyExemptFromTheContribution_drawsNoLineFromCompanyYearIntoTheExpenses()
+    {
+        var river = RiverInputs.Example.WithCompanyContributionBand(CompanyContributionBand.Exempt);
+
+        MapLinks.Of(river, river.Run()).Where(link => link.From == MapEnd.Of(RiverModule.CompanyYear) && link.To.Bucket is not null).ShouldBeEmpty();
     }
 
     // What only changes a tax base: what the company cannot deduct of the vouchers, added back by
@@ -189,7 +211,7 @@ public class MapLinksTests
         MapLinks.Of(river, river.Run()).Where(link => Math.Round(link.Amount ?? 0m, 2, MidpointRounding.AwayFromZero) == 0m).ShouldBeEmpty();
     }
 
-    // Each link joins two of the map's modules, or one and a bucket or the river's edge.
+    // Each link joins two of the map's modules, or one and a bucket.
     [Theory]
     [MemberData(nameof(MapModulesTests.Compositions), MemberType = typeof(MapModulesTests))]
     public void Of_anyComposition_joinsOnlyModulesTheMapDraws(int bits)

@@ -73,7 +73,7 @@ public class MapFilterTests
         bubbles.ShouldBe(
         [
             ("More about Money passed on", "Money handed from one module to the next. The thicker the line, the more money.", false, true),
-            ("More about Money into a bucket", "Money that ends in one of the bar's buckets, its line running into it, or that leaves the river or comes back out of a bucket, its line then ending in an arrowhead. The thicker the line, the more money.", false, true),
+            ("More about Money into a bucket", "Money that ends in one of the bar's buckets, its line running into it, or that comes back out of a bucket, its line then ending in an arrowhead. The thicker the line, the more money.", false, true),
             ("More about Tax base", "What changes the amount a tax is worked out on without moving money: a benefit taxed with the pay, what Corporate tax adds back.", false, true),
             ("More about Conditions", "A condition one module sets on another.", false, true),
         ]);

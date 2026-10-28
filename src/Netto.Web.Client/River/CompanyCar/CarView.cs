@@ -5,8 +5,8 @@ using Netto.Web.Client.Steps;
 
 namespace Netto.Web.Client.River.CompanyCar;
 
-// What the company car costs the company, paid out of the river as a cost of the company like its
-// running costs (CompanyCosts, operator, 2026-10-23), and the director's contribution coming back from
+// What the company car costs the company, paid into its expenses beside its running costs (operator,
+// 2026-10-23 and 2026-10-28), and the director's contribution coming back from
 // their pocket, then what it leaves, passed on to the split, the last lever before it, as what the pay,
 // the company and a royalty share there, from the year's car steps; what it receives is what the levers
 // above leave of what the company earns. The card reads the car as the engine took it (Result): its benefit, period by period,
@@ -25,9 +25,6 @@ internal sealed record CarView(
     IReadOnlyList<Drain> Drains,
     IReadOnlyList<StepDetail> Details)
 {
-    // Where the car's costs go: out of the river, a cost of the company the bar of buckets leaves out.
-    public const string CompanyCosts = "company_costs";
-
     public bool HasCar => Details.Count > 0;
 
     // What the split shares once the car is paid, the royalty in it, which the summary states: the same
@@ -53,7 +50,7 @@ internal sealed record CarView(
         IEnumerable<Drain> drains = steps.Count > 0
             ?
             [
-                new Drain("car_costs", DrainKind.PaidOut, car.Costs, CompanyCosts) { Details = [StepDetail.From(steps["car_costs"])] }.Of(received),
+                new Drain("car_costs", DrainKind.PaidOut, car.Costs, "expenses") { Details = [StepDetail.From(steps["car_costs"])] }.Of(received),
                 new Drain("car_contribution", DrainKind.Back, car.Contribution, "pocket") { Details = [StepDetail.From(steps["car_contribution"])] },
             ]
             : [];

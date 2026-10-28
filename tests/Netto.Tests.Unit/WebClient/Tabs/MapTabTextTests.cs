@@ -123,12 +123,6 @@ public class MapTabTextTests
         (text, text.Length <= 30).ShouldBe((words, true));
     }
 
-    [Fact]
-    public void MapTabResx_theRiversEdge_isOutOfTheRiver()
-    {
-        Resources.Get(MapTabText.OutOfRiver).ShouldBe("out of the river");
-    }
-
     // The column beside the map has a component and a .resx of its own: none of the texts of the list it
     // replaced is in this one any more.
     [Fact]

@@ -72,8 +72,8 @@
   <data name="To_pocket" xml:space="preserve">
     <value>to your pocket</value>
   </data>
-  <data name="To_company_costs" xml:space="preserve">
-    <value>a cost of the company, left out of the bar like its running costs</value>
+  <data name="To_expenses" xml:space="preserve">
+    <value>to expenses</value>
   </data>
   <data name="To_kept_in_company" xml:space="preserve">
     <value>stays in the company</value>

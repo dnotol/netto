@@ -29,11 +29,13 @@ public class MapLayoutTests
     // bucket or, a refund, a credit, a contribution or a bonus beyond its surcharge, back out of it.
     private static readonly (RiverModule Module, string Bucket)[] DrainEnds =
     [
+        (RiverModule.CompanyYear, "expenses"),
         (RiverModule.Vouchers, "pocket"),
         (RiverModule.Allowances, "pocket"),
         (RiverModule.Rent, "taxes_on_pay"),
         (RiverModule.Rent, "pocket"),
         (RiverModule.Car, "pocket"),
+        (RiverModule.Car, "expenses"),
         (RiverModule.Copyright, "taxes_on_pay"),
         (RiverModule.Copyright, "pocket"),
         (RiverModule.DirectorPay, "taxes_on_pay"),
@@ -145,7 +147,7 @@ public class MapLayoutTests
         var river = River(bits, quiet, companySkipped);
         var grid = Grid(river);
 
-        Routes(river).Where(route => !OnEdge(grid, route.From, route.Route.Points[0]) || !EndsOn(grid, route.From, route.To, route.Route.End))
+        Routes(river).Where(route => !OnEdge(grid, route.From, route.Route.Points[0]) || !EndsOn(grid, route.To, route.Route.End))
             .Select(route => route.Name).ShouldBeEmpty();
     }
 
@@ -262,8 +264,8 @@ public class MapLayoutTests
 
     // Plans at the edges of what a plan holds keep their lines apart and off the boxes too, and their
     // arrowheads clear: the pay at its ceiling, a pay low enough for the tax credit on low earned income to
-    // come back beside its taxes, a royalty past its limits, the costly car, a car costly to run, whose stub
-    // out of the river ends in a large arrowhead beside the drops into Corporate tax, and the company skipped
+    // come back beside its taxes, a royalty past its limits, the costly car, a car costly to run, whose thick
+    // line into the expenses leaves its side beside the drops into Corporate tax, and the company skipped
     // with a high pay or a low one.
     [Theory]
     [MemberData(nameof(ExtremeRivers))]
@@ -492,7 +494,7 @@ public class MapLayoutTests
 
         var boxes = Boxes(river);
         routes.ShouldSatisfyAllConditions(
-            () => routes.Where(route => !OnEdge(grid, route.From, route.Route.Points[0]) || !EndsOn(grid, route.From, route.To, route.Route.End))
+            () => routes.Where(route => !OnEdge(grid, route.From, route.Route.Points[0]) || !EndsOn(grid, route.To, route.Route.End))
                 .Select(route => route.Name).ShouldBeEmpty(),
             () => routes.SelectMany(route => MapLineWidths.Stretches(route.Route).SelectMany(segment =>
                 boxes.Where(box => Enters(segment, box.Slot)).Select(box => $"{route.Name} through {box.Id}"))).ShouldBeEmpty(),
@@ -534,16 +536,30 @@ public class MapLayoutTests
             .Select(bundle => $"{bundle.Key.From.Id} to {bundle.Key.To.Id}").ShouldBeEmpty();
     }
 
-    // What the car's costs leave the river by is a stub out of its right side.
+    // The car's costs and INASTI's company contribution leave their module's right side along its row, come
+    // down a lane of their own right of Corporate tax and the dividend, Company year's, the higher, furthest
+    // out, and enter the expenses' top.
     [Fact]
-    public void Routed_theCarsCosts_runOutOfItsRightSide()
+    public void Routed_theCarsCostsAndTheCompanyContribution_comeDownRightOfTheStreamsIntoTheExpensesTop()
     {
         var river = MapLinksTests.Full;
         var grid = Grid(river);
+        var links = MapLayout.Routed(grid, MapLinks.Of(river, river.Run()));
+        var (expenses, streams) = (grid.Slot(MapEnd.InBucket("expenses")), grid.Slot(MapEnd.Of(RiverModule.CorporateTax)).Right);
 
-        var route = RouteOf(MapLayout.Routed(grid, MapLinks.Of(river, river.Run())).Single(link => link.To.IsOut));
+        var (car, company) = (Into(RiverModule.Car), Into(RiverModule.CompanyYear));
 
-        (route.Points[0].X, route.End.X > grid.Slot(MapEnd.Of(RiverModule.Car)).Right, route.Arrow).ShouldBe((grid.Slot(MapEnd.Of(RiverModule.Car)).Right, true, MapDirection.Right));
+        links.ShouldSatisfyAllConditions(
+            () => new[] { (car, RiverModule.Car), (company, RiverModule.CompanyYear) }.Where(line => !Down(line.Item1, line.Item2)).Select(line => line.Item2).ShouldBeEmpty(),
+            () => (company.Points[1].X > car.Points[1].X).ShouldBeTrue(),
+            () => grid.Slot(MapEnd.Of(RiverModule.Dividend)).Right.ShouldBe(streams));
+
+        MapRoute Into(RiverModule module) => RouteOf(links.Single(link => link.From == MapEnd.Of(module) && link.To == MapEnd.InBucket("expenses")));
+
+        bool Down(MapRoute route, RiverModule module) => route.Points is [var a, var b, var c]
+            && a == new MapPoint(grid.Slot(MapEnd.Of(module)).Right, a.Y) && b.Y == a.Y
+            && b.X > streams && c == new MapPoint(b.X, expenses.Top) && c.X > expenses.Left && c.X < expenses.Right
+            && route.Arrow == MapDirection.Down;
     }
 
     // Every composition of the levers, with the company's year and without it, and, with it, every set of
@@ -709,15 +725,15 @@ public class MapLayoutTests
     // Whether two areas share more than an edge, a hundredth of their unit left for rounding.
     private static bool Overlaps(MapArea a, MapArea b) => a.Overlaps(b, -Tolerance);
 
-    // Every line whose width hangs past the side of a box it meets, where it leaves it and where it ends,
-    // the end of a line out of the river left out: on the narrowest map, where a side is the fewest pixels.
+    // Every line whose width hangs past the side of a box it meets, where it leaves it and where it ends: on
+    // the narrowest map, where a side is the fewest pixels.
     private static List<string> Overhangs(IReadOnlyList<RoutedLine> routes, MapLayout.MapGrid grid)
     {
         var scale = MapScale.Of(Sizes[0].Width, RowPixels * grid.Units);
         return
         [
             .. routes.Where(route => Hangs(grid.Slot(route.From), route.Route.Points[0], route.Route.Width, scale)).Select(route => $"{route.Name} off {route.From.Id}"),
-            .. routes.Where(route => !route.To.IsOut && Hangs(grid.Slot(route.To), route.Route.End, route.Route.Width, scale)).Select(route => $"{route.Name} off {route.To.Id}"),
+            .. routes.Where(route => Hangs(grid.Slot(route.To), route.Route.End, route.Route.Width, scale)).Select(route => $"{route.Name} off {route.To.Id}"),
         ];
     }
 
@@ -731,8 +747,8 @@ public class MapLayoutTests
     }
 
     // Every two arrowheads that overlap, every arrowhead over another line, and every arrowhead longer than
-    // the stretch of line it ends, on the narrowest map: an arrowhead is drawn where a line ends on a module
-    // or out of the river, none into a bucket.
+    // the stretch of line it ends, on the narrowest map: an arrowhead is drawn where a line ends on a module,
+    // none into a bucket.
     private static List<string> Arrowheads(IReadOnlyList<RoutedLine> routes, decimal units)
     {
         var scale = MapScale.Of(Sizes[0].Width, RowPixels * units);
@@ -823,13 +839,6 @@ public class MapLayoutTests
         return (withinX && (point.Y == box.Top || point.Y == box.Bottom)) || (withinY && (point.X == box.Left || point.X == box.Right));
     }
 
-    // A line ends on its end's box; one out of the river ends past its module's right side, in its row.
-    private static bool EndsOn(MapLayout.MapGrid grid, MapEnd from, MapEnd to, MapPoint point)
-    {
-        if (!to.IsOut)
-            return OnEdge(grid, to, point);
-
-        var box = grid.Slot(from);
-        return point.X > box.Right && point.Y > box.Top && point.Y < box.Bottom;
-    }
+    // A line ends on its end's box.
+    private static bool EndsOn(MapLayout.MapGrid grid, MapEnd to, MapPoint point) => OnEdge(grid, to, point);
 }

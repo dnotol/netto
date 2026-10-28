@@ -299,6 +299,8 @@ internal enum MapText
 
     DrainList,
 
+    CompanyYearCard,
+
     SplitCard,
 
     CarCard,

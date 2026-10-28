@@ -113,7 +113,7 @@ public class MapTabTests
                 .ShouldBe(drawn.Zip(inks).Where(pair => pair.First.Bundle.Arrowhead).Select(pair => pair.Second.Ink)));
     }
 
-    // An arrowhead ends every line that reaches a module or leaves the river, sized by its line, half its
+    // An arrowhead ends every line that reaches a module, sized by its line, half its
     // base and its length set on it (MapLineWidths); a line into a bucket has none, the gold lines into the
     // pocket among them.
     [Fact]
@@ -267,7 +267,7 @@ public class MapTabTests
             () => Buttons(html).Where(button => button.Pressed == "true").Select(button => button.Module).ShouldBe(["car"]),
             () => Regex.Count(html, "<polyline class=\"map-line[^\"]*map-line--faded").ShouldBe(view.Bundles().Count(bundle => !bundle.Touches(RiverModule.Car))),
             () => Heading(html).ShouldBe("Around Company car"),
-            () => Rows(html, "goes-out").ShouldContain($"The car's yearly costs {Formats.Euros(Full.Run().Year!.Car.Costs)} to out of the river"));
+            () => Rows(html, "goes-out").ShouldContain($"The car's yearly costs {Formats.Euros(Full.Run().Year!.Car.Costs)} to Expenses"));
     }
 
     // What comes back is listed from where it comes.

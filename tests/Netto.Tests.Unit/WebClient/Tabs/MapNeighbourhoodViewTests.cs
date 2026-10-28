@@ -120,7 +120,7 @@ public class MapNeighbourhoodViewTests
         hood.GoesOut.Where(row => row.ToPocket).Select(row => row.Words).ShouldBe(["Drain_net_pay"]);
     }
 
-    // A module on the map is an end the viewer can go to; a bucket and the river's edge are named only.
+    // A module on the map is an end the viewer can go to; a bucket is named only.
     [Fact]
     public void Of_anEnd_isChoosableOnlyWhenItIsAModuleOnTheMap()
     {
@@ -129,7 +129,7 @@ public class MapNeighbourhoodViewTests
         var costs = hood.GoesOut.Single(row => row.Words == "Drain_car_costs");
         var contribution = hood.ComesIn.Single(row => row.Words == "Drain_car_contribution");
         var toTheSplit = hood.GoesOut.Single(row => row.To.Module == RiverModule.Split);
-        (costs.To, contribution.From, toTheSplit.To).ShouldBe((new MapNeighbourhoodEnd("out", null), new MapNeighbourhoodEnd("pocket", null),
+        (costs.To, contribution.From, toTheSplit.To).ShouldBe((new MapNeighbourhoodEnd("expenses", null), new MapNeighbourhoodEnd("pocket", null),
             new MapNeighbourhoodEnd("split", RiverModule.Split)));
     }
 
@@ -305,13 +305,15 @@ public class MapNeighbourhoodViewTests
         Of(Full.SkipCompany(), RiverModule.CompanyYear).IsEmpty.ShouldBeTrue();
     }
 
-    // The river starts at Company year: nothing comes in.
+    // The river starts at Company year: nothing comes in, and out go INASTI's company contribution, into
+    // the expenses, and what the company earns before the levers, to the first of them.
     [Fact]
-    public void Of_companyYear_hasNothingComingIn()
+    public void Of_companyYear_hasNothingComingInAndTheContributionAndTheProfitGoingOut()
     {
         var hood = Of(Full, RiverModule.CompanyYear);
 
-        (hood.ComesIn.Count, hood.GoesOut.Count, hood.IsEmpty).ShouldBe((0, 1, false));
+        (hood.ComesIn.Count, hood.IsEmpty, hood.GoesOut.Select(row => row.To).ToHashSet().SetEquals([new MapNeighbourhoodEnd("expenses", null), new MapNeighbourhoodEnd("vouchers", RiverModule.Vouchers)]))
+            .ShouldBe((0, false, true));
     }
 
     // While the engine refuses an amount there is no link: the neighbourhood says there is no figure.

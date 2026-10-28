@@ -33,14 +33,10 @@ public class MapNeighbourhoodRenderingTests
     // The text a .resx holds under a key.
     private static string Resx(ResxText texts, string key) => texts.Get(key).ShouldNotBeNull();
 
-    // An end as the tab names it: a module by its card's title, a bucket by the bar's name for it, the
-    // river's edge as such.
-    private static string EndName(MapView view, MapEnd end) => end switch
-    {
-        { Module: { } module } => Resx(Texts, MapTabText.Module(module)),
-        { Bucket: { } bucket } => Resx(ResxText.For<BucketBar>(), BucketBarText.Bucket(bucket, view.TaxesOnPayIncludeRent)),
-        _ => Resx(Texts, MapTabText.OutOfRiver),
-    };
+    // An end as the tab names it: a module by its card's title, a bucket by the bar's name for it.
+    private static string EndName(MapView view, MapEnd end) => end.Module is { } module
+        ? Resx(Texts, MapTabText.Module(module))
+        : Resx(ResxText.For<BucketBar>(), BucketBarText.Bucket(end.Bucket.ShouldNotBeNull(), view.TaxesOnPayIncludeRent));
 
     // What a row says of a line: what it carries, its amount, and where it comes from or goes to.
     private static string Row(MapView view, MapLink link, string group)
@@ -110,10 +106,9 @@ public class MapNeighbourhoodRenderingTests
             () => rows.Where(row => row.EndsWith($"{Resx(Neighbourhood, "To")} {EndName(view, MapEnd.InBucket("taxes_on_pay"))}", StringComparison.Ordinal)).Count().ShouldBe(taxes.Count));
     }
 
-    // An end that is a module on the map is a button that chooses it; a bucket and the river's edge are
-    // named and nothing else.
+    // An end that is a module on the map is a button that chooses it; a bucket is named and nothing else.
     [Fact]
-    public async Task Tab_theOtherEnds_areButtonsForModulesAndNamedOnlyForBucketsAndTheRiversEdge()
+    public async Task Tab_theOtherEnds_areButtonsForModulesAndNamedOnlyForBuckets()
     {
         var view = MapView.From(Full, Full.Run());
         var links = view.LinksOf(RiverModule.Car).ToList();
@@ -134,8 +129,8 @@ public class MapNeighbourhoodRenderingTests
             () => expected.ShouldNotBeEmpty(),
             () => GoButtons(html).ShouldBe(expected),
             () => Rows(html, "comes-in").ShouldContain(row => row.Contains($"{Resx(Neighbourhood, "From")} Your pocket", StringComparison.Ordinal)),
-            () => Rows(html, "goes-out").ShouldContain(row => row.EndsWith($"{Resx(Neighbourhood, "To")} out of the river", StringComparison.Ordinal)),
-            () => GoButtons(html).Select(button => button.Name).Intersect([.. BucketsView.Keys.Select(key => EndName(view, MapEnd.InBucket(key))), EndName(view, MapEnd.OutOfRiver)]).ShouldBeEmpty());
+            () => Rows(html, "goes-out").ShouldContain(row => row.EndsWith($"{Resx(Neighbourhood, "To")} Expenses", StringComparison.Ordinal)),
+            () => GoButtons(html).Select(button => button.Name).Intersect([.. BucketsView.Keys.Select(key => EndName(view, MapEnd.InBucket(key)))]).ShouldBeEmpty());
     }
 
     // Each bar is drawn by the share of its row, out of sight of a screen reader, which has the amount.

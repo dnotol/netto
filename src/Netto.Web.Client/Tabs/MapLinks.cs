@@ -38,14 +38,20 @@ internal static class MapLinks
     }
 
     // What the company earns before it pays its director anything, as Company year's summary says it,
-    // handed to the first lever in the plan, or the split.
+    // handed to the first lever in the plan, or the split; and INASTI's company contribution, its card's
+    // figure line, into the company's expenses, none while the company owes none.
     private static IEnumerable<MapLink> CompanyYear(YearResult year, PlanComposition composition)
     {
         var first = PlanComposition.Modules.Where(lever => lever != OptionalModule.Copyright && composition.Holds(lever))
             .Select(lever => (RiverModule?)MapModules.Of(lever)).FirstOrDefault() ?? RiverModule.Split;
 
-        return FigureLines.Shown([new FigureLine(MapTabText.ProfitBeforeLevers, year.ProfitBeforeLevers)])
-            .Select(line => Link(MapLinkKind.PassedOn, RiverModule.CompanyYear, MapEnd.Of(first), new MapLabel(MapText.Map, line.Key, line.Args), line.Amount));
+        return
+        [
+            .. FigureLines.Shown([new FigureLine(MapTabText.ProfitBeforeLevers, year.ProfitBeforeLevers)])
+                .Select(line => Link(MapLinkKind.PassedOn, RiverModule.CompanyYear, MapEnd.Of(first), new MapLabel(MapText.Map, line.Key, line.Args), line.Amount)),
+            .. CompanyYearFigures.Of(year).Where(line => line.Key == CompanyYearFigures.Contribution)
+                .Select(line => Link(MapLinkKind.IntoBucket, RiverModule.CompanyYear, MapEnd.InBucket("expenses"), new MapLabel(MapText.CompanyYearCard, line.Key, line.Args), -line.Amount)),
+        ];
     }
 
     // The vouchers' lines, and what the company cannot deduct of them, which Corporate tax adds back.
@@ -89,8 +95,8 @@ internal static class MapLinks
         _ => throw new ArgumentOutOfRangeException(nameof(key), key, "A line of the split the map has no destination for."),
     };
 
-    // A card's drain lines, as its drain list shows them: money into a bucket, out of the river or on to
-    // a module; what comes back runs from its bucket into the module.
+    // A card's drain lines, as its drain list shows them: money into a bucket or on to a module; what
+    // comes back runs from its bucket into the module.
     private static IEnumerable<MapLink> Drains(RiverModule card, IReadOnlyList<Drain> drains) =>
         DrainLines.Shown(drains).Select(drain =>
         {
@@ -106,15 +112,13 @@ internal static class MapLinks
         FigureLines.Shown(lines).Where(line => taxedBy(line.Key) is not null).Select(line =>
             Link(MapLinkKind.TaxBase, card, MapEnd.Of(taxedBy(line.Key)!.Value), new MapLabel(text, line.Key, line.Args), line.Amount));
 
-    // Money is passed on to a module, or ends in a bucket or out of the river: the one place that tells
-    // the two apart.
+    // Money is passed on to a module, or ends in a bucket: the one place that tells the two apart.
     private static MapLinkKind KindOf(MapEnd other) => other.Module is null ? MapLinkKind.IntoBucket : MapLinkKind.PassedOn;
 
     // Where a drain goes, as its card names it.
     private static MapEnd EndOf(string to) => to switch
     {
-        "pocket" or "taxes_on_pay" or "taxes_on_profit" or "kept_in_company" => MapEnd.InBucket(to),
-        CarView.CompanyCosts => MapEnd.OutOfRiver,
+        "pocket" or "taxes_on_pay" or "taxes_on_profit" or "kept_in_company" or "expenses" => MapEnd.InBucket(to),
         "allowances" => MapEnd.Of(RiverModule.Allowances),
         "rent" => MapEnd.Of(RiverModule.Rent),
         "car" => MapEnd.Of(RiverModule.Car),

@@ -166,9 +166,9 @@ public class MapQuietTests
     [Fact]
     public void From_everyLeverEmpty_runsCompanyYearsLineToTheSplitPastEveryLever()
     {
-        var bare = MapLinks.Of(RiverInputs.Example, RiverInputs.Example.Run()).Single(link => link.From == MapEnd.Of(RiverModule.CompanyYear));
+        var bare = MapLinks.Of(RiverInputs.Example, RiverInputs.Example.Run()).Single(link => link.From == MapEnd.Of(RiverModule.CompanyYear) && link.Kind == MapLinkKind.PassedOn);
 
-        var line = MapView.From(EveryLeverEmpty, EveryLeverEmpty.Run()).Links.Single(link => link.From == MapEnd.Of(RiverModule.CompanyYear));
+        var line = MapView.From(EveryLeverEmpty, EveryLeverEmpty.Run()).Links.Single(link => link.From == MapEnd.Of(RiverModule.CompanyYear) && link.Kind == MapLinkKind.PassedOn);
 
         line.ShouldSatisfyAllConditions(
             () => (line.To, line.Card, line.Carries, line.Amount).ShouldBe((bare.To, bare.Card, bare.Carries, bare.Amount)),

@@ -697,8 +697,8 @@ public sealed record Drain(string Key, DrainKind Kind, decimal Amount, string To
 
 public enum DrainKind
 {
-    // Leaves for good: into a bucket of taxes, or out of the river, a car's costs, a cost of the company
-    // the bar of buckets leaves out like its running costs.
+    // Leaves for good: into a bucket of taxes, or into the company's expenses, a car's costs, beside its
+    // running costs.
     PaidOut,
 
     // Comes back out of a bucket of taxes: the withholding refunded on the exempt dividend, the tax

@@ -293,7 +293,7 @@ public class MapViewTests
     }
 
     // A line ends in an arrowhead where it reaches a module, money passed on, what comes back out of a
-    // bucket or a rule, or where it leaves the river; a line into a bucket has none, running on under the
+    // bucket or a rule; a line into a bucket has none, running on under the
     // bucket, which is where its money stops.
     [Fact]
     public void Bundles_aLineIntoABucket_endsWithNoArrowheadAndEveryOtherWithOne()
@@ -304,7 +304,7 @@ public class MapViewTests
 
         bundles.ShouldSatisfyAllConditions(
             () => bundles.Where(bundle => bundle.To.Bucket is not null).ShouldNotBeEmpty(),
-            () => bundles.Where(bundle => bundle.From.Bucket is not null || bundle.To.IsOut).ShouldNotBeEmpty(),
+            () => bundles.Where(bundle => bundle.From.Bucket is not null).ShouldNotBeEmpty(),
             () => bundles.Where(bundle => bundle.Arrowhead == bundle.To.Bucket is not null).Select(bundle => $"{bundle.From.Id} to {bundle.To.Id}").ShouldBeEmpty());
     }
 

@@ -36,8 +36,8 @@ public class MapLinkStyleTests
 
     // A sample's end is the end the map draws for the lines it stands for: every line passed on, every tax
     // base and every condition ends in an arrowhead; of the money into a bucket, the lines ending in a
-    // bucket run on under it, as the sample's bar shows, and the others, leaving the river or coming back
-    // out of a bucket, end in an arrowhead, as the kind's bubble says.
+    // bucket run on under it, as the sample's bar shows, and the others, coming back out of a bucket, end
+    // in an arrowhead, as the kind's bubble says.
     [Fact]
     public void SampleEnd_ofEachKind_isTheEndTheMapDrawsForTheLinesItStandsFor()
     {
@@ -50,7 +50,7 @@ public class MapLinkStyleTests
         bundles.ShouldSatisfyAllConditions(
             () => bundles.Where(bundle => MapLinkStyle.SampleEnd(bundle.Kind) == MapLineEnd.Arrowhead).ShouldAllBe(bundle => bundle.Arrowhead),
             () => (MapLinkStyle.SampleEnd(MapLinkKind.IntoBucket), intoABucket.Count > 0, intoABucket.All(bundle => !bundle.Arrowhead)).ShouldBe((MapLineEnd.Bucket, true, true)),
-            () => besides.Select(bundle => bundle.To.IsOut ? "out of the river" : "back out of a bucket").Distinct().Order().ShouldBe(["back out of a bucket", "out of the river"]),
+            () => (besides.Count > 0, besides.All(bundle => bundle.From.Bucket is not null)).ShouldBe((true, true)),
             () => besides.ShouldAllBe(bundle => bundle.Arrowhead));
     }
 
