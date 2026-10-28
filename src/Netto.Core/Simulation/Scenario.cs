@@ -59,6 +59,9 @@ public sealed record Scenario(
 
     public CompanyContributionBand CompanyContributionBand { get; init; } = CompanyContributionBand.Lower;
 
+    // The director's household, single unless given: a partner they are taxed jointly with.
+    public Household Household { get; init; } = Household.None;
+
     // What the company earns before it pays its director anything, pay, vouchers, expense allowances,
     // rent, a car or a royalty, and before INASTI's yearly company contribution. What the director pay
     // and the company's profit share is what the contribution and those levers leave of it

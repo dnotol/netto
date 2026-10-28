@@ -17,7 +17,7 @@ namespace Netto.Tests.Support;
 // 409.30 of company contribution with them make the 20,000 of costs that leave 100,000 of profit before
 // the director; a small company past its first four tax periods; 50,000 of pay; a VVPRbis dividend from
 // the third distribution; nothing kept; the director paying their contributions, with no fund fee given;
-// and no lever, until a test gives one. The company prepays enough by 10 April to leave no advance-payment surcharge, and
+// and no lever and no partner, until a test gives one. The company prepays enough by 10 April to leave no advance-payment surcharge, and
 // withholds more than any director pay's tax, unless a test says otherwise. A new lever is a new
 // argument of Scenario, in this one place.
 internal static class Fixtures
@@ -78,7 +78,8 @@ internal static class Fixtures
         CarFacts? car = null,
         CopyrightRoyalty? royalty = null,
         CompanyContributionBand band = CompanyContributionBand.Lower,
-        decimal? fundFeeRate = null) =>
+        decimal? fundFeeRate = null,
+        Household? household = null) =>
         new(2026, revenue, RunningCosts, company ?? SmallPastStartUp, directorPay, MunicipalRates.IncomeYear2026.Entered(0.07m), reserve, category, earlierProfits)
         {
             CompanyContributionBand = band,
@@ -91,6 +92,7 @@ internal static class Fixtures
             Rent = rent ?? HomeOfficeRent.None,
             Car = car ?? CarFacts.None,
             Copyright = royalty ?? CopyrightRoyalty.None,
+            Household = household ?? Household.None,
         };
 
     // The year the engine runs for the scenario, which it must not refuse.
