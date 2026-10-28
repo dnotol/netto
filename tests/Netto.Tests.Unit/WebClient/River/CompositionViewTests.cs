@@ -101,6 +101,30 @@ public class CompositionViewTests
         Menu(inputs).Modules[0].ValuesKept.ShouldBeFalse();
     }
 
+    // The partner brings what the marital quotient saves the pay's tax, as its card says it, even with no
+    // income given for them: the year is taxed jointly as soon as they join the plan.
+    [Fact]
+    public void From_partnerInThePlan_saysWhatTheMaritalQuotientSaves()
+    {
+        var inputs = RiverInputs.Example.AddToPlan(OptionalModule.Household);
+        var saves = HouseholdView.From(inputs.Run().Pay.ShouldNotBeNull(), bothAged66: false).ShouldNotBeNull().QuotientSaves;
+
+        Menu(inputs).Modules.Single(choice => choice.InPlan).ShouldBe(new ModuleChoice(OptionalModule.Household, true, saves, false));
+    }
+
+    // A partner's income given, the partner taken out: the values wait for them; the example's partner, none
+    // given and neither status changed, keeps nothing to speak of.
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void From_partnerTakenOut_saysWhetherValuesOfTheUsersWait(bool incomeGiven)
+    {
+        var inPlan = RiverInputs.Example.AddToPlan(OptionalModule.Household);
+        var inputs = (incomeGiven ? inPlan.WithPartnerIncome(9_000m) : inPlan).TakeOutOfPlan(OptionalModule.Household);
+
+        Menu(inputs).Modules.Single(choice => choice.Module == OptionalModule.Household).ShouldBe(new ModuleChoice(OptionalModule.Household, false, null, incomeGiven));
+    }
+
     [Fact]
     public void From_everyModuleInThePlan_countsThem()
     {
