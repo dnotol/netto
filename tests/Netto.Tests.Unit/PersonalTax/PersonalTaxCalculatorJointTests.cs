@@ -11,8 +11,9 @@ namespace Netto.Tests.PersonalTax;
 // 130), the tax-free amount of 11,550 per partner and the scale of the tax on it (art. 131 and 134 §2),
 // the unused part passing to the other partner (art. 134 §4), the credit per taxpayer before the
 // quotient (art. 289ter §1), the autonomy factor and Wallonia's additional rate, each partner's column
-// rounded to the cent where a single person's lines are. The 2025 case is derived the same way from
-// the amounts for tax year 2026, for a Tax-Calc « exercice 2026 » run to check the method against.
+// rounded to the cent where a single person's lines are, the municipal surcharge once on their sum. The
+// 2025 case is derived the same way from the amounts for tax year 2026, and Tax-Calc « exercice 2026 »
+// confirmed that method on 2026-10-28, line by line.
 public class PersonalTaxCalculatorJointTests
 {
     private static readonly PersonalTaxRules Rules2026 = PersonalTaxRules.IncomeYear2026;
@@ -119,9 +120,10 @@ public class PersonalTaxCalculatorJointTests
         (director.StateTax, partner.StateTax, result.IncomeTax, result.MunicipalSurcharge).ShouldBe((57.50m, 6_701.00m, 6_758.50m, 473.10m));
     }
 
-    // Each column's surcharge rounds on its own: 9,653.00 and 57.50 at 7%, 675.71 and 4.025 rounded up.
+    // Each column says its own surcharge, 9,653.00 and 57.50 at 7%, 675.71 and 4.025 rounded up, but the
+    // assessment takes it once on the household's 9,710.50: 679.735, 679.74, here the same cent.
     [Fact]
-    public void Compute_2026OneEarnerAboveTheCap_roundsEachPartnersLinesOnTheirOwn()
+    public void Compute_2026OneEarnerAboveTheCap_saysEachPartnersSurchargeAndTakesItOnTheirSum()
     {
         var result = PersonalTaxCalculator.Compute(Rules2026, 60_000m, 10_000m, 0.07m, household: Partner());
 
@@ -168,8 +170,10 @@ public class PersonalTaxCalculatorJointTests
         result.ShouldBe(PersonalTaxCalculator.Compute(Rules2026, 60_000m, 10_000m, 0.07m));
     }
 
-    // Income year 2025, for the Tax-Calc « exercice 2026 » check: the cap is 13,460, the tax-free amount
-    // 10,910 each, the scale 25% to 16,320, 40% to 28,800, 45% to 49,840.
+    // Income year 2025: the cap is 13,460, the tax-free amount 10,910 each, the scale 25% to 16,320, 40% to
+    // 28,800, 45% to 49,840. Checked against Tax-Calc « exercice 2026 » on 2026-10-28 (codes 1002, 1400
+    // 60,000, 1405 10,000, 1407 15,000, a 7% rate): every line of both columns agrees, and its municipal
+    // surcharge is taken once on the household's 9,790.00, 685.30, where the columns' own would make 685.31.
     [Fact]
     public void Compute_2025OneEarnerAboveTheCap_attributesThatYearsCap()
     {
@@ -182,7 +186,7 @@ public class PersonalTaxCalculatorJointTests
         (partner.Quotient, partner.BasicTax, partner.TaxFreeAmountReduction, partner.StateTax, partner.ReducedStateTax, partner.RegionalAdditionalTax,
                 partner.MunicipalSurcharge)
             .ShouldBe((13_460.00m, 3_365.00m, 2_727.50m, 637.50m, 478.40m, 159.10m, 44.63m));
-        (result.IncomeTax, result.MunicipalSurcharge).ShouldBe((9_790.00m, 685.31m));
+        (result.IncomeTax, result.MunicipalSurcharge).ShouldBe((9_790.00m, 685.30m));
     }
 
     // Without the quotient the partner's whole 11,550 passes to the director, taxed 25%, 30% and 40%:

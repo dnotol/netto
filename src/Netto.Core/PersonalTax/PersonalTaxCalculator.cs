@@ -83,6 +83,9 @@ public static class PersonalTaxCalculator
     // are their sums. The credit for low earned income is the director's alone, on their own income
     // before the quotient (art. 289ter §1, al. 4): what the partner earns is typed without its kind, an
     // employee's pay taking art. 289ter/1 instead, so theirs is not counted.
+    // The State tax, the autonomy factor and the regional tax are each partner's, rounded in their column;
+    // the municipal surcharge is taken once on the household's income tax, as Tax-Calc's detail shows it
+    // (« exercice 2026 », checked 2026-10-28), so the columns' own surcharges can sum to a cent more or less.
     // Art. 87's clause that the quotient does not apply when it raises the household's State tax is not
     // modelled: its current wording is unread (art. 87 and 88 not filed yet), and with no supplements for
     // dependants no case was found where it would bind, the scale of the tax on the tax-free amount never
@@ -134,7 +137,7 @@ public static class PersonalTaxCalculator
             director.ReducedStateTax + partner.ReducedStateTax,
             director.RegionalAdditionalTax + partner.RegionalAdditionalTax,
             director.IncomeTax + partner.IncomeTax,
-            director.MunicipalSurcharge + partner.MunicipalSurcharge,
+            Money.RoundToCent((director.IncomeTax + partner.IncomeTax) * municipalRate),
             director.LowEarnedIncomeCredit,
             otherIncome,
             incomeTaxedApart,
