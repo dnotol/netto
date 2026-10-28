@@ -33,6 +33,15 @@ public class StylesheetTests
             .ShouldBe((true, true, false));
     }
 
+    // A stylesheet without its comments, on one line or several, so nothing written in one is read.
+    [Fact]
+    public void WithoutComments_aStylesheet_dropsEveryCommentAndKeepsTheRest()
+    {
+        var css = Stylesheet.WithoutComments("/* .map { height: 2rem; } */.map { /* a note,\n on two lines */height: 1rem; }");
+
+        css.ShouldBe(".map { height: 1rem; }");
+    }
+
     // Every rule with its selector and its declarations, a media query's own rules among them, the comments
     // left out so a selector or a declaration in one is never read.
     [Fact]

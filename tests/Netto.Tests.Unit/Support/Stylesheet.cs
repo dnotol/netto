@@ -34,11 +34,14 @@ internal static class Stylesheet
         throw new InvalidOperationException($"The block of {query} is never closed.");
     }
 
+    // A stylesheet without its comments, so nothing written in one is read as a rule.
+    public static string WithoutComments(string css) => Regex.Replace(css, @"/\*.*?\*/", "", RegexOptions.Singleline);
+
     // Every rule of a stylesheet, a media query's own rules among them, with its selector and its
     // declarations, the comments left out.
     public static IReadOnlyList<(string Selector, string Declarations)> Rules(string css) =>
     [
-        .. Regex.Matches(Regex.Replace(css, @"/\*.*?\*/", "", RegexOptions.Singleline), @"([^{}]+)\{([^{}]*)\}")
+        .. Regex.Matches(WithoutComments(css), @"([^{}]+)\{([^{}]*)\}")
             .Select(match => (match.Groups[1].Value.Trim(), match.Groups[2].Value)),
     ];
 

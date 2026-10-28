@@ -1,4 +1,3 @@
-using System.Text.RegularExpressions;
 using Shouldly;
 
 namespace Netto.Tests.WebClient.River;
@@ -7,8 +6,7 @@ namespace Netto.Tests.WebClient.River;
 // browser is the browser check's; these hold the rules it rests on.
 public class BucketBarCssTests
 {
-    private static readonly string Css = Regex.Replace(
-        Stylesheet.Read("src", "Netto.Web.Client", "River", "BucketBar.razor.css"), @"/\*.*?\*/", "", RegexOptions.Singleline);
+    private static readonly string Css = Stylesheet.WithoutComments(Stylesheet.Read("src", "Netto.Web.Client", "River", "BucketBar.razor.css"));
 
     // A name is the trigger of its bubble, a button, which centres what it holds: a name too long for its
     // column would overflow on both sides and lose its start. It is clamped to one line from its left, so it

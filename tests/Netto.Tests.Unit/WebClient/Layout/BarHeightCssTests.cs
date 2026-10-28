@@ -37,14 +37,14 @@ public class BarHeightCssTests
     [Fact]
     public void HeaderHeight_theSiteHeader_readsTheToken()
     {
-        WithoutComments(Read("src/Netto.Web.Client/Layout/MainLayout.razor.css")).ShouldContain($"var({HeaderHeight})");
+        Stylesheet.WithoutComments(Read("src/Netto.Web.Client/Layout/MainLayout.razor.css")).ShouldContain($"var({HeaderHeight})");
     }
 
     // The band is the top of the window on the plan page, under no header.
     [Fact]
     public void Band_sticksAtTheTopOfTheWindow()
     {
-        var css = WithoutComments(Read("src/Netto.Web.Client/River/BucketBar.razor.css"));
+        var css = Stylesheet.WithoutComments(Read("src/Netto.Web.Client/River/BucketBar.razor.css"));
 
         (Regex.IsMatch(Stylesheet.Block(css, ".bucket-bar"), @"(^|;)\s*top\s*:\s*0\s*;"), css.Contains(HeaderHeight, StringComparison.Ordinal))
             .ShouldBe((true, false));
@@ -53,7 +53,7 @@ public class BarHeightCssTests
     [Fact]
     public void UnderBar_isDeclaredOnce_fromTheMeasuredBandAlone()
     {
-        var declarations = Regex.Matches(WithoutComments(Read("src/Netto.Web/wwwroot/app.css")), @"--netto-under-bar\s*:\s*([^;]+);")
+        var declarations = Regex.Matches(Stylesheet.WithoutComments(Read("src/Netto.Web/wwwroot/app.css")), @"--netto-under-bar\s*:\s*([^;]+);")
             .Select(match => match.Groups[1].Value);
 
         var declared = declarations.ShouldHaveSingleItem();
@@ -68,7 +68,7 @@ public class BarHeightCssTests
     [Fact]
     public void BarHeight_isDeclaredInAppCssAndSetByTheScriptUnderTheSameName()
     {
-        var appCss = WithoutComments(Read("src/Netto.Web/wwwroot/app.css"));
+        var appCss = Stylesheet.WithoutComments(Read("src/Netto.Web/wwwroot/app.css"));
         var script = Read("src/Netto.Web/wwwroot/bucket-bar.js");
 
         appCss.ShouldSatisfyAllConditions(
@@ -118,9 +118,7 @@ public class BarHeightCssTests
                 return Directory.EnumerateFiles(folder, "*.css", SearchOption.AllDirectories)
                     .Where(file => !Regex.IsMatch(Path.GetRelativePath(folder, file), @"^(bin|obj)[\\/]"));
             })
-            .Select(file => WithoutComments(File.ReadAllText(file)));
-
-    private static string WithoutComments(string css) => Regex.Replace(css, @"/\*.*?\*/", "", RegexOptions.Singleline);
+            .Select(file => Stylesheet.WithoutComments(File.ReadAllText(file)));
 
     // A file of the checkout, by its path from the root.
     private static string Read(string fromTheRoot) => File.ReadAllText(RepositoryFile.FindUp(fromTheRoot.Split('/')));

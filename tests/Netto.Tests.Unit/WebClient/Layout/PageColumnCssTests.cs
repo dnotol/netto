@@ -14,14 +14,14 @@ public class PageColumnCssTests
     [Fact]
     public void Column_isDeclaredOnceInAppCss_atAHundredRem()
     {
-        Regex.Matches(WithoutComments(AppCss), @"--netto-column\s*:\s*([^;]+);").Select(match => match.Groups[1].Value.Trim())
+        Regex.Matches(Stylesheet.WithoutComments(AppCss), @"--netto-column\s*:\s*([^;]+);").Select(match => match.Groups[1].Value.Trim())
             .ShouldBe(["100rem"]);
     }
 
     [Fact]
     public void ColumnClass_isAsWideAsTheColumn()
     {
-        Stylesheet.Block(WithoutComments(AppCss), ".netto-column").ShouldContain("max-width: var(--netto-column);");
+        Stylesheet.Block(Stylesheet.WithoutComments(AppCss), ".netto-column").ShouldContain("max-width: var(--netto-column);");
     }
 
     // The header's container and the band's take the column, and no width of MudBlazor's.
@@ -34,6 +34,4 @@ public class PageColumnCssTests
 
         (tag.Contains("MaxWidth=\"MaxWidth.False\"", StringComparison.Ordinal), Regex.IsMatch(tag, "Class=\"[^\"]*\\bnetto-column\\b")).ShouldBe((true, true));
     }
-
-    private static string WithoutComments(string css) => Regex.Replace(css, @"/\*.*?\*/", "", RegexOptions.Singleline);
 }
