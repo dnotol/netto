@@ -39,6 +39,9 @@ internal static class CardHtml
     // of the site holds. A key of one plain word (Title) reads as a word and is not found.
     private static readonly Regex KeyLike = new("\\b(?:[A-Za-z][A-Za-z0-9]*(?:_[A-Za-z0-9]+)+|[A-Z][a-z0-9]+(?:[A-Z][a-z0-9]+)+)\\b");
 
+    private static readonly Regex ChipPattern = new(
+        "<button class=\"mud-chip[^\"]*\"[^>]*aria-pressed=\"(?<pressed>true|false)\"[^>]*><span class=\"mud-chip-content\">(?<text>[^<]*)</span>");
+
     // The site's own words run together as a key's are: the tax administration's portal.
     private static readonly HashSet<string> NamesLikeKeys = ["MyMinfin"];
 
@@ -163,6 +166,11 @@ internal static class CardHtml
     // Every text that looks like a key, in sight or not, in what names or describes an element too.
     public static IReadOnlyList<string> LeakedKeys(string html) =>
         [.. AllTexts(Parse(html)).SelectMany(text => KeyLike.Matches(text).Select(match => match.Value)).Where(key => !NamesLikeKeys.Contains(key))];
+
+    // The chips MudBlazor draws, in the order of the page: each a button saying whether it is pressed, its
+    // text inside.
+    public static IReadOnlyList<(string Text, bool Pressed)> Chips(string html) =>
+        [.. ChipPattern.Matches(html).Select(chip => (chip.Groups["text"].Value, chip.Groups["pressed"].Value == "true"))];
 
     // What the bubble after that label says, as a screen reader is given it: the text its (i), named
     // « More about » the label, is described by, read as one line. A label with no bubble after it fails

@@ -27,10 +27,6 @@ public class RoyaltyOnItsCardTests
     // More than the 100,000 the company has before pay and royalty.
     private static readonly RiverInputs Above = Added.WithRoyalty(150_000m);
 
-    // A chip MudBlazor draws: a button saying whether it is pressed, its text inside.
-    private static readonly Regex Chips = new(
-        "<button class=\"mud-chip[^\"]*\"[^>]*aria-pressed=\"(?<pressed>true|false)\"[^>]*><span class=\"mud-chip-content\">(?<text>[^<]*)</span>");
-
     private static readonly ResxText Royalty = ResxText.For<CopyrightCard>();
 
     private static readonly ResxText Split = ResxText.For<SplitCard>();
@@ -47,7 +43,7 @@ public class RoyaltyOnItsCardTests
     [MemberData(nameof(Ways))]
     public async Task CopyrightCard_royalty_hasTwoWaysAndPressesTheOneItIsSetBy(string _, RiverInputs inputs, string pressed)
     {
-        var chips = Chips.Matches(await CopyrightAsync(inputs)).Select(chip => (Text: chip.Groups["text"].Value, Pressed: chip.Groups["pressed"].Value == "true")).ToList();
+        var chips = CardHtml.Chips(await CopyrightAsync(inputs));
 
         chips.ShouldBe([("Follows your pay", pressed == "Follows your pay"), ("A fixed amount", pressed == "A fixed amount")]);
     }
@@ -113,7 +109,7 @@ public class RoyaltyOnItsCardTests
         var html = await SplitAsync(inputs);
 
         html.ShouldSatisfyAllConditions(
-            () => Chips.Matches(html).ShouldBeEmpty(),
+            () => CardHtml.Chips(html).ShouldBeEmpty(),
             () => html.ShouldNotContain("river-split-royalty"),
             () => html.ShouldNotContain(FixedField));
     }

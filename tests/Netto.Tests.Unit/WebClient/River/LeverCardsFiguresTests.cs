@@ -1,5 +1,4 @@
 using System.Net;
-using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Netto.Core.SocialContributions;
@@ -267,7 +266,7 @@ public class LeverCardsFiguresTests
     {
         var html = await CompanyYearOpenAsync(RiverInputs.Example.WithCompanyContributionBand(band));
 
-        var chips = Chips.Matches(html).Select(chip => (Text: chip.Groups["text"].Value, Pressed: chip.Groups["pressed"].Value == "true")).ToList();
+        var chips = CardHtml.Chips(html);
         html.ShouldSatisfyAllConditions(
             () => chips.Select(chip => chip.Text).ShouldBe(["At most €879,163.44", "Above €879,163.44", "Exempt"]),
             () => chips.Where(chip => chip.Pressed).Select(chip => chip.Text).ShouldBe([pressed]),
@@ -326,10 +325,6 @@ public class LeverCardsFiguresTests
     }
 
     // The card of that fold's name on the Plan page, every card open.
-    // A chip MudBlazor draws: a button saying whether it is pressed, its text inside.
-    private static readonly Regex Chips = new(
-        "<button class=\"mud-chip[^\"]*\"[^>]*aria-pressed=\"(?<pressed>true|false)\"[^>]*><span class=\"mud-chip-content\">(?<text>[^<]*)</span>");
-
     // Company year opened by the viewer on the river given, its disclosures open, decoded to the text a
     // viewer reads.
     private static async Task<string> CompanyYearOpenAsync(RiverInputs inputs)
