@@ -16,8 +16,9 @@ namespace Netto.Core.DirectorPay;
 // The reductions for the dependants (n° 13 to 15; annex III n° 38 to 40) are then taken off the basic
 // tax less the tax on the tax-free amount: ChildrenReduction for the dependent children (n° 38),
 // DependantsReduction for the other dependants (n° 39, 2 and 3), SingleParentReduction for a single
-// parent (n° 40, 1), each nothing where it does not apply; the annual tax is what they leave, never
-// below zero (n° 13: they never exceed the basic tax). Dependants are those they were taken for.
+// parent (n° 40, 1), each nothing where it does not apply. Each is what it took off: never more than
+// the ones before it left of the tax (n° 13: together they never exceed the basic tax), so the lines
+// sum to what they cut and the annual tax is never below zero. Dependants are those they were taken for.
 public sealed record WithholdingResult(
     decimal MonthlyTaxablePay,
     decimal Reduction,

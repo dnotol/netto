@@ -18,7 +18,8 @@ namespace Netto.Core.DirectorPay;
 // Off either method's tax, the reductions for the dependants (key formula n° 13 to 15; annex III n° 38
 // to 40), each a whole euro amount of the annex, as the simulator's columns L and M take them: n° 38's
 // row for the children counted, n° 39, 2 and 3 for each other dependant, n° 40, 1 for a single parent
-// under the single method; all of them never beyond the tax (n° 13), so the year's tax never below zero.
+// under the single method; all of them never beyond the tax (n° 13), each taking in that order what the
+// ones before it left, so the lines sum to what they took off and the year's tax is never below zero.
 public static class WithholdingCalculator
 {
     public static readonly Refusal MonthlyPayNegative = new("monthly_pay_negative", RefusedInput.DirectorPay);
@@ -52,11 +53,15 @@ public static class WithholdingCalculator
         };
         var partnerTax = Money.RoundToCent(OnTable(rules.Scale, imputedToPartner));
         var basicTax = Money.RoundToCent(OnTable(rules.Scale, annualNetTaxable - imputedToPartner));
-        var childrenReduction = rules.ChildReductionFor(dependants.CountedChildren);
-        var dependantsReduction = dependants.DependantsAged66InCare * rules.DependantAged66InCareReduction.Value
-            + dependants.CountedOtherDependants * rules.OtherDependantReduction.Value;
-        var singleParentReduction = dependants.SingleParentUnder(household) ? rules.SingleParentReduction.Value : 0m;
-        var annualTax = Math.Max(0m, partnerTax + basicTax - taxFreeAmountReduction - childrenReduction - dependantsReduction - singleParentReduction);
+        var taxLeft = Math.Max(0m, partnerTax + basicTax - taxFreeAmountReduction);
+        var childrenReduction = Math.Min(rules.ChildReductionFor(dependants.CountedChildren), taxLeft);
+        taxLeft = Money.Minus(taxLeft, childrenReduction);
+        var dependantsReduction = Math.Min(
+            dependants.DependantsAged66InCare * rules.DependantAged66InCareReduction.Value + dependants.CountedOtherDependants * rules.OtherDependantReduction.Value,
+            taxLeft);
+        taxLeft = Money.Minus(taxLeft, dependantsReduction);
+        var singleParentReduction = Math.Min(dependants.SingleParentUnder(household) ? rules.SingleParentReduction.Value : 0m, taxLeft);
+        var annualTax = Money.Minus(taxLeft, singleParentReduction);
 
         return new WithholdingResult(
             monthlyTaxablePay,

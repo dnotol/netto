@@ -144,6 +144,36 @@ public class WithholdingCalculatorDependantsTests
         (result.AnnualTax, decimal.IsNegative(result.AnnualTax), result.MonthlyWithholding).ShouldBe((0m, false, 0m));
     }
 
+    // Each reduction line is what it took off the tax, never more than was left of it (n° 13), taken in
+    // the annex's order: the children's first, then the other dependants', then the single parent's.
+    // On 1,500 a month the 624 of one child meets 460.35 of tax; on 2,500, two children's 1,656 and the
+    // 1,992 of a dependant aged 66 or over in care leave 110.20 of 3,758.20 for the single parent's 624.
+    public static TheoryData<decimal, WithholdingDependants, decimal, decimal, decimal> CappedReductions => new()
+    {
+        { 1_500m, OneChild, 460.35m, 0m, 0m },
+        { 1_500m, new WithholdingDependants(1, OtherDependants: 1, SingleParent: true), 460.35m, 0m, 0m },
+        { 2_500m, new WithholdingDependants(2, DependantsAged66InCare: 1, SingleParent: true), 1_656m, 1_992m, 110.20m },
+    };
+
+    [Theory]
+    [MemberData(nameof(CappedReductions))]
+    public void Compute_2026ReductionsBeyondTheTax_takeWhatIsLeftInTheAnnexsOrder(
+        decimal monthlyPay, WithholdingDependants dependants, decimal children, decimal others, decimal singleParent)
+    {
+        var result = Compute(January2026, monthlyPay, WithholdingHousehold.AsSingle, dependants);
+
+        (result.ChildrenReduction, result.DependantsReduction, result.SingleParentReduction, result.AnnualTax).ShouldBe((children, others, singleParent, 0m));
+    }
+
+    // Under the quotient, 2,500's tax is nothing already: no reduction takes anything.
+    [Fact]
+    public void Compute_2026NoTaxLeft_takesNoReduction()
+    {
+        var result = Compute(January2026, 2_500m, WithholdingHousehold.PartnerWithoutIncome, new WithholdingDependants(1, OtherDependants: 1));
+
+        (result.ChildrenReduction, decimal.IsNegative(result.ChildrenReduction), result.DependantsReduction).ShouldBe((0m, false, 0m));
+    }
+
     // Each reduction is its own line and the result says the dependants it was taken for.
     [Fact]
     public void Compute_2026_listsEachReductionAndEchoesTheDependants()
