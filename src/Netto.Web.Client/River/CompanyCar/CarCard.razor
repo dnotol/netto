@@ -21,7 +21,8 @@
    which a note names once the pay set is held below (CarComparison.PayHeld), and, once the user gives what the same car
    would cost them privately, the company car against it, until then that this comparison waits; then
    the costs paid into the company's expenses, with INASTI's company contribution, and the contribution
-   coming back from the pocket. What the CO2 percentage counts and the administration's reading of
+   coming back from the pocket, a sentence above them saying so when the costs are more than the card
+   receives, their share then stopping at 100% and the rate at 0%. What the CO2 percentage counts and the administration's reading of
    « fuel » are in its details, above the sources. An optional module: it shows only while in the plan,
    and the word at its bottom takes it out, its values kept. The amounts are taken while typing and carry
    no Min or Max: the engine refuses what the rules do not allow, and the card a negative private cost,
@@ -178,6 +179,10 @@
     }
     @if (_view is not null)
     {
+        @if (_view.CostsAboveWhatItReceives)
+        {
+            <p class="car__note">@L["CostsAboveReceived"]</p>
+        }
         <DrainList Drains="_view.Drains" />
     }
     @if (_rules is not null)

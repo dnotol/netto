@@ -95,13 +95,55 @@ public class CarViewTests
         { 600m, 600m, 1m },
         { 500m, 600m, 1m },
         { 0m, 600m, 1m },
+        { 120_000m, 0m, 0m },
+        { 150_000m, 0m, 0m },
+        { 120_000m, 600m, 0m },
+        { 120_000m, 20_000m, 0m },
+        { 100_000m, 0m, 0m },
     };
 
     [Theory]
     [MemberData(nameof(PassesOnShares))]
-    public void Car_passesOn_isWhatItsCostsLeaveOfWhatItReceivesAndNeverMore(decimal costs, decimal contribution, decimal share)
+    public void Car_passesOn_isWhatItsCostsLeaveOfWhatItReceivesNeverMoreAndNeverBelowNothing(decimal costs, decimal contribution, decimal share)
     {
-        Car(ElectricCar.WithCarCosts(costs).WithCarContribution(contribution)).PassesOn.ShouldBe(share);
+        var passesOn = Car(ElectricCar.WithCarCosts(costs).WithCarContribution(contribution)).PassesOn.ShouldNotBeNull();
+
+        (passesOn, decimal.IsNegative(passesOn)).ShouldBe((share, false));
+    }
+
+    // The costs take at most all of what the card receives, 100,000: their share stops at 100% once they
+    // are more, and the card says so (CostsAboveWhatItReceives), never while they are no more.
+    public static TheoryData<decimal, decimal, bool> CostsShares => new()
+    {
+        { 8_000m, 0.08m, false },
+        { 100_000m, 1m, false },
+        { 120_000m, 1m, true },
+        { 150_000m, 1m, true },
+    };
+
+    [Theory]
+    [MemberData(nameof(CostsShares))]
+    public void Car_costsAboveWhatItReceives_takeNoMoreThanAllOfItAndSaySo(decimal costs, decimal share, bool above)
+    {
+        var view = Car(ElectricCar.WithCarCosts(costs));
+
+        (view.Drains[0].Key, view.Drains[0].Share, view.CostsAboveWhatItReceives).ShouldBe(("car_costs", (decimal?)share, above));
+    }
+
+    // A company already losing before the car receives nothing to take a share of: no share, no note, and
+    // nothing thrown.
+    [Fact]
+    public void Car_receivingNothing_saysNoShareAndNoNote()
+    {
+        var view = Car(ElectricCar.WithRunningCosts(150_000m));
+
+        (view.PassesOn, view.Drains[0].Share, view.CostsAboveWhatItReceives).ShouldBe(((decimal?)null, (decimal?)null, false));
+    }
+
+    [Fact]
+    public void Car_withoutACar_saysNoNote()
+    {
+        Car(RiverInputs.Example.AddToPlan(OptionalModule.Car)).CostsAboveWhatItReceives.ShouldBeFalse();
     }
 
     // What the contribution brings beyond the costs is a figure of its own, none while the costs are at

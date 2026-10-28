@@ -14,10 +14,12 @@ namespace Netto.Web.Client.River.CompanyCar;
 // deducts of its costs, and what it adds back of the benefit, 40% when it pays the private energy,
 // which for a car it charges, electric or plug-in hybrid, is the administration's reading of « fuel »
 // (ChargingReading). Each line says its share of what the card receives, and the card what it passes
-// on of it (PassesOn), never more than all of it: the costs take nothing once the director's contribution
-// covers them, and what the contribution brings beyond them comes from the director's pocket, not from
-// what the card received, so it is a figure of its own (ContributionBeyondCosts), never a share above
-// 100%. Without a car, nothing but the profit passed on.
+// on of it (PassesOn), never more than all of it nor less than none: the costs take nothing once the
+// director's contribution covers them, and what the contribution brings beyond them comes from the
+// director's pocket, not from what the card received, so it is a figure of its own
+// (ContributionBeyondCosts), never a share above 100%. Costs more than the card receives take all of it
+// and no more (CostsAboveWhatItReceives), so no share is above 100% or below 0%. Without a car, nothing
+// but the profit passed on.
 internal sealed record CarView(
     CarResult Result,
     bool ChargingReading,
@@ -37,6 +39,11 @@ internal sealed record CarView(
     // a cent beyond them: a figure of €0.00 is left out on every card (DrainLines).
     public decimal? ContributionBeyondCosts { get; init; }
 
+    // The costs are more than the card receives: their share stops at all of it, 100%, and the rate at 0%,
+    // so the card says so, since no percentage can say it (operator, 2026-10-28). None while it receives
+    // nothing to take a share of.
+    public bool CostsAboveWhatItReceives { get; init; }
+
     // What the car takes off what the company earns: its costs, less what the director pays for it.
     public static decimal FromProfit(CarResult car) => car.Costs - car.Contribution;
 
@@ -50,7 +57,11 @@ internal sealed record CarView(
         IEnumerable<Drain> drains = steps.Count > 0
             ?
             [
-                new Drain("car_costs", DrainKind.PaidOut, car.Costs, "expenses") { Details = [StepDetail.From(steps["car_costs"])] }.Of(received),
+                new Drain("car_costs", DrainKind.PaidOut, car.Costs, "expenses")
+                {
+                    Details = [StepDetail.From(steps["car_costs"])],
+                    Share = Shares.Of(Math.Min(car.Costs, received), received),
+                },
                 new Drain("car_contribution", DrainKind.Back, car.Contribution, "pocket") { Details = [StepDetail.From(steps["car_contribution"])] },
             ]
             : [];
@@ -58,12 +69,16 @@ internal sealed record CarView(
         return new CarView(
             car,
             steps.Count > 0 && year.Scenario.Car.CompanyPaysPrivateEnergy && CarCardText.Reading(year.Scenario.Car.Engine) is not null,
-            steps.Count > 0 ? Shares.Of(Math.Min(left, received), received) : null,
+            steps.Count > 0 ? Shares.Of(Math.Max(0m, Math.Min(left, received)), received) : null,
             [
                 .. drains,
                 HandOff.Drain(year, OptionalModule.Car, composition),
             ],
-            ledger.Select(StepDetail.From).ToList()) { SplitShares = left, ContributionBeyondCosts = BeyondCosts(car) };
+            ledger.Select(StepDetail.From).ToList()) {
+            SplitShares = left,
+            ContributionBeyondCosts = BeyondCosts(car),
+            CostsAboveWhatItReceives = steps.Count > 0 && received > 0m && car.Costs > received,
+        };
     }
 
     private static decimal? BeyondCosts(CarResult car) =>

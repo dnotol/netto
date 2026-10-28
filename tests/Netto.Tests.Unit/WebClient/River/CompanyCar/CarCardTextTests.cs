@@ -72,7 +72,7 @@ public class CarCardTextTests
     [Fact]
     public void CarCardResx_payHeldNote_hasATextNamingThePay()
     {
-        Resources.Missing(["PayHeld"]).ShouldBeEmpty();
+        Resources.Missing(["PayHeld", "CostsAboveReceived"]).ShouldBeEmpty();
         CardHtml.Amounts(Resources.Format("PayHeld", "€80,000.00")).ShouldBe(["€80,000.00"]);
     }
 

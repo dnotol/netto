@@ -143,6 +143,33 @@ public class CarCardTests
             .ShouldBe((1, true, false));
     }
 
+    // Costs above what the card receives, 100,000, take all of it and no more: the rate stops at 0%, the
+    // costs' share at 100.0%, one short note says the car costs more than the card receives, and no
+    // percentage on the card is negative. The note states no amount a line shows, and no key is drawn.
+    [Fact]
+    public async Task Card_costsAboveWhatItReceives_stopsTheRateAtNothingAndTheCostsAtAllOfIt()
+    {
+        var html = await RenderOpenAsync<CarCard>(OptionalModule.Car, ElectricCar.WithCarCosts(150_000m));
+        var note = Text("CostsAboveReceived");
+
+        html.ShouldSatisfyAllConditions(
+            () => CardHtml.Rate(html).ShouldBe(ModuleTexts.Format(ModuleCardText.PassesOn, "0%")),
+            () => CardHtml.Lines(html).Single(line => line.Label == Drains("Drain_car_costs")).Share.ShouldBe("100.0%"),
+            () => CardHtml.Prose(html).Count(sentence => sentence == note).ShouldBe(1),
+            () => Regex.IsMatch(System.Net.WebUtility.HtmlDecode(html), "[−-]\\s?\\d+(\\.\\d+)?%").ShouldBeFalse(),
+            () => CardHtml.Amounts(note).ShouldBeEmpty(),
+            () => CardHtml.LeakedKeys(html).ShouldBeEmpty());
+    }
+
+    // Nothing of the kind while the costs are no more than the card receives.
+    [Fact]
+    public async Task Card_costsWithinWhatItReceives_saysNothingOfTheKind()
+    {
+        var html = await RenderOpenAsync<CarCard>(OptionalModule.Car, ElectricCar);
+
+        CardHtml.Prose(html).ShouldNotContain(Text("CostsAboveReceived"));
+    }
+
     // Which cars the card counts is no sentence of its own: it is said in the bubble of « Ordered or
     // leased », after what that date is.
     [Fact]

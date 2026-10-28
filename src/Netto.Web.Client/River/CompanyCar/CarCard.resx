@@ -87,6 +87,9 @@
   <data name="PayHeld" xml:space="preserve">
     <value>Both plans run at {0} of pay, the most the company can pay once the car's costs are paid, so the difference is the car's alone.</value>
   </data>
+  <data name="CostsAboveReceived" xml:space="preserve">
+    <value>The car costs more than this card receives, so its costs count for all of it and no more.</value>
+  </data>
   <data name="Private_Waiting" xml:space="preserve">
     <value>Enter it to weigh both cars.</value>
   </data>
