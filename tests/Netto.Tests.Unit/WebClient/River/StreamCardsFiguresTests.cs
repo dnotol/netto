@@ -87,8 +87,9 @@ public class StreamCardsFiguresTests
         CardHtml.LeakedKeys(await CardAsync(card)).ShouldBeEmpty();
     }
 
-    // What the split shares, each side out of the 87,229.80 the levers leave it, then the best pay the
-    // search found and what it leaves, with what reaches the pocket there and at the pay set out of what
+    // What the split shares, each side out of the 87,229.80 the levers leave it, then the smallest pay
+    // keeping the reduced rate with the royalty and without it (YearConditions' two pays, 40,710.67 and
+    // 43,618.57 here), then the best pay the search found and what it leaves, with what reaches the pocket there and at the pay set out of what
     // leaves the company: the amount and the share of each line, in order.
     [Fact]
     public async Task Split_filledPlan_drawsItsSidesThenTheBestPayAsLines()
@@ -98,6 +99,8 @@ public class StreamCardsFiguresTests
             ("€50,000.00", "57.3%"),
             ("€7,142.85", "8.2%"),
             ("€30,086.95", "34.5%"),
+            ("€40,710.67", null),
+            ("€43,618.57", null),
             ("€19,757.00", null),
             ("€46,937.35", null),
             ("€2,822.42", null),

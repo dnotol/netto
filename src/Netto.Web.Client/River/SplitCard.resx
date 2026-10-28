@@ -162,6 +162,18 @@
   <data name="PointerMissesReserve_Royalty" xml:space="preserve">
     <value>At {0} with a royalty of {3}: {1} in your pocket, only {2} kept.</value>
   </data>
+  <data name="Figure_RateWithRoyalty" xml:space="preserve">
+    <value>Smallest pay keeping the reduced rate, with your royalty</value>
+  </data>
+  <data name="Figure_RateWithoutRoyalty" xml:space="preserve">
+    <value>Smallest pay keeping the reduced rate, without your royalty</value>
+  </data>
+  <data name="RoyaltyRate_NoPayKeeps" xml:space="preserve">
+    <value>No pay keeps the [reduced corporate rate] beside your royalty.</value>
+  </data>
+  <data name="RoyaltyRate_NoPayKeepsWithout" xml:space="preserve">
+    <value>No pay keeps the [reduced corporate rate] without your royalty.</value>
+  </data>
   <data name="Term_ReducedRate" xml:space="preserve">
     <value>The lower rate a small company pays on a first slice of its taxable income. From its fifth tax period, it keeps it only if a director's pay reaches a minimum, or its taxable income does not exceed that pay.</value>
   </data>

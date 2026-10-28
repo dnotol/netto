@@ -19,6 +19,15 @@ internal static class SplitCardText
     // the slider moves it too, or it is a fixed amount whatever the pay.
     public static string RoyaltyNote(SplitRoyaltyView royalty) => royalty.FollowsPay.Value ? "RoyaltyNote_Follows" : "RoyaltyNote_Fixed";
 
+    // What the lines of the pays keeping the reduced rate cannot say: that no pay keeps it beside the
+    // royalty, or without it. None where both pays are lines.
+    public static string? RoyaltyRateNote(RoyaltyRateView rate) => rate switch
+    {
+        { With: null } => "RoyaltyRate_NoPayKeeps",
+        { Without: null } => "RoyaltyRate_NoPayKeepsWithout",
+        _ => null,
+    };
+
     // The summary names the royalty once it is in the plan, and the best pay once there is one.
     public static string Summary(SplitRoyaltyView? royalty, bool withBest) => (withBest ? "SummaryWithBest" : "Summary") + (royalty is null ? "" : "_Royalty");
 

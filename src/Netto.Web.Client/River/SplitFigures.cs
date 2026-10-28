@@ -36,6 +36,20 @@ internal static class SplitFigures
             new FigureLine("Figure_Company", company) { Share = Shares.Of(company, received) });
     }
 
+    public const string RateWithRoyalty = "Figure_RateWithRoyalty";
+
+    public const string RateWithoutRoyalty = "Figure_RateWithoutRoyalty";
+
+    // What the royalty does to the smallest pay keeping the reduced corporate rate: that pay with the
+    // royalty and without it, the two set beside each other for the lowering to be read, a line each
+    // where some pay keeps the rate. These are bounds, not flows, so a pay of nothing, which any pay
+    // reaches, is a line too. Kept apart from the sides, which the map draws its lines from.
+    public static IReadOnlyList<FigureLine> RoyaltyRate(RoyaltyRateView rate) =>
+    [
+        .. new[] { (Key: RateWithRoyalty, Pay: rate.With), (Key: RateWithoutRoyalty, Pay: rate.Without) }
+            .Select(line => line.Pay is { } pay ? new FigureLine(line.Key, pay) : null).OfType<FigureLine>(),
+    ];
+
     // The best pay and what it leaves: its dividend and, while the royalty follows the pay, the royalty
     // beside it (a fixed one is the same at every pay, and the split's sides say it); what reaches the
     // pocket there, with its share of what leaves the company (Reach); what it gains over the pay set;

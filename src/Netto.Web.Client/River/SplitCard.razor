@@ -27,7 +27,10 @@
    fixed amount and why a royalty that follows the pay is none are the Copyright royalty card's
    (operator, 2026-10-28, reversing the one-place decision of 2026-10-23): here its figure is among the
    split's sides, a note says how it is set, and a link opens that card, where a refusal of the royalty
-   is marked, the pay's being the pay's here.
+   is marked, the pay's being the pay's here. Right after the sides, two lines set the smallest pay that
+   keeps the reduced corporate rate with the royalty beside the one without it (RoyaltyRateView, the
+   engine's condition), so what the royalty does to it is read by comparing them; a note says only that
+   no pay keeps the rate with it or without it, which no figure can.
 
    The plot stretches to the card's width (preserveAspectRatio="none"), so its lines keep their
    width through vector-effect, and what must keep its shape (the best pay's dot, the axes' labels) is
@@ -116,6 +119,14 @@
     }
     <RefusedMessage Error="@Refused" />
     <FigureList Figures="@FigureWords.Of(L, SplitFigures.Sides(_view, Run.Year))" />
+    @if (_royaltyRate is { } royaltyRate)
+    {
+        <FigureList Figures="@FigureWords.Of(L, SplitFigures.RoyaltyRate(royaltyRate))" />
+        @if (SplitCardText.RoyaltyRateNote(royaltyRate) is { } note)
+        {
+            <p class="split__rate"><TermSentence Text="@L[note]" Meaning="@L[SplitCardText.ReducedRateTerm]" /></p>
+        }
+    }
     @if (_search is { } weighed && Run.Year is { } year)
     {
         <p class="split__pointer">@PointerText</p>
@@ -162,6 +173,7 @@
 
     private SplitView _view = default!;
     private SplitSearchView? _search;
+    private RoyaltyRateView? _royaltyRate;
     private decimal _top;
     private PayLevel? _pointer;
 
@@ -169,6 +181,7 @@
     {
         _view = SplitView.From(Inputs, Run);
         _search = SplitSearchView.From(Inputs, Run, Search);
+        _royaltyRate = RoyaltyRateView.From(Run.Year);
         _top = Search?.Curve[^1].Pay ?? 0m;
         if (_search is null)
             _pointer = null;
