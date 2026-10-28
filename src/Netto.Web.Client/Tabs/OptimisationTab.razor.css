@@ -56,7 +56,7 @@
 }
 
 /* What the figures are measured by and leave out, one sentence under them: the muted text of the line that
-   opens the moves, no wider than a tab's lede, so the long sentence stays readable. */
+   opens the moves, no wider than 46rem, so the long sentence stays readable. */
 .moves__objective {
     max-width: 46rem;
     margin: 0;

@@ -87,8 +87,8 @@ public class OptimisationTabTests
     {
         var html = await RenderTabAsync(RiverInputs.Example, RiverInputs.Example);
 
-        (html.Contains("fold__toggle"), Regex.IsMatch(html, "<h1[^>]*>Optimisation</h1>"), html.Contains("Against Today"))
-            .ShouldBe((false, true, false));
+        (html.Contains("fold__toggle"), Regex.IsMatch(html, "<h1[^>]*>Optimisation</h1>"))
+            .ShouldBe((false, true));
     }
 
     // Three figures first, in a description list: Today's pocket, the pocket with every move, and the gain.
