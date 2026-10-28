@@ -625,7 +625,7 @@ public class GrossToNetViewTests
     [Fact]
     public void From_creditForChildrenTheNextThousandTakesAway_isAPartAndThePartsMakeTheThousand()
     {
-        var parts = HouseholdView(24_000m, SingleParentOfTwo).NextThousand;
+        var parts = HouseholdView(24_000m, SingleParentOfTwoOneUnder3).NextThousand;
 
         parts.ShouldSatisfyAllConditions(
             () => parts.Select(part => part.Key).ShouldBe(
@@ -638,7 +638,7 @@ public class GrossToNetViewTests
     [Fact]
     public void From_singleParentOnALowPay_drawsTheCreditForChildrenComingBack()
     {
-        var row = HouseholdView(20_000m, SingleParentOfTwo).Tracks[0].Rows.Single(row => row.Key == "child_tax_credit");
+        var row = HouseholdView(20_000m, SingleParentOfTwoOneUnder3).Tracks[0].Rows.Single(row => row.Key == "child_tax_credit");
 
         (row.Kind, row.Amount).ShouldBe((RowKind.Back, 1_100m));
     }
@@ -648,7 +648,7 @@ public class GrossToNetViewTests
     [Fact]
     public void From_creditForChildrenThePayTakesAway_drawsItPaidOut()
     {
-        var (value, _) = GrossToNet.Compute(2026, 20_000m, MunicipalRates.IncomeYear2026.Entered(0.07m), Withheld, household: SingleParentOfTwo);
+        var (value, _) = GrossToNet.Compute(2026, 20_000m, MunicipalRates.IncomeYear2026.Entered(0.07m), Withheld, household: SingleParentOfTwoOneUnder3);
         var pay = value.ShouldNotBeNull();
         var takingAway = pay with { Steps = [.. pay.Steps.Select(step => step.RuleKey == "child_tax_credit" ? step with { Amount = 120m } : step)] };
 
@@ -841,7 +841,7 @@ public class GrossToNetViewTests
 
     private static string Keys(SourceGroup group) => string.Join(' ', group.Amounts.Select(amount => amount.Key));
 
-    private static readonly Household SingleParentOfTwo = Household.None with { Dependants = new Dependants(Children: 2, ChildrenUnder3: 1, SingleParent: true) };
+    private static readonly Household SingleParentOfTwoOneUnder3 = Household.None with { Dependants = new Dependants(Children: 2, ChildrenUnder3: 1, SingleParent: true) };
 
     private static GrossToNetView View(decimal grossPay) => View(grossPay, Withheld);
 
