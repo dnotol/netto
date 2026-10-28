@@ -88,43 +88,46 @@
                 <div class="map-tab__add">@AddToPlan</div>
             }
         </div>
-        <div class="map" style="--map-units: @Number(_view.Units)" role="group" aria-label="@L["MapLabel"]">
-            <svg class="map__lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false">
-                @foreach (var (bundle, faded) in _drawn)
+        @* The map alone, which scrolls sideways in it where the column is narrower than the map. *@
+        <div class="map-tab__frame">
+            <div class="map" style="--map-units: @Number(_view.Units)" role="group" aria-label="@L["MapLabel"]">
+                <svg class="map__lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+                    @foreach (var (bundle, faded) in _drawn)
+                    {
+                        <polyline class="@HaloClass(faded)" points="@Points(bundle.Route.Drawn)" stroke-width="@MapLinkStyle.Halo(bundle.Route.Width)" />
+                        <polyline class="@LineClass(faded)" points="@Points(bundle.Route.Drawn)" stroke-dasharray="@MapLinkStyle.Dash(bundle.Kind)"
+                                  stroke-width="@MapLinkStyle.Width(bundle.Route.Width)" data-link-kind="@bundle.Kind" style="stroke: @Ink(bundle)" />
+                    }
+                </svg>
+                @foreach (var (bundle, faded) in _drawn.Where(line => line.Bundle.Arrowhead))
                 {
-                    <polyline class="@HaloClass(faded)" points="@Points(bundle.Route.Drawn)" stroke-width="@MapLinkStyle.Halo(bundle.Route.Width)" />
-                    <polyline class="@LineClass(faded)" points="@Points(bundle.Route.Drawn)" stroke-dasharray="@MapLinkStyle.Dash(bundle.Kind)"
-                              stroke-width="@MapLinkStyle.Width(bundle.Route.Width)" data-link-kind="@bundle.Kind" style="stroke: @Ink(bundle)" />
+                    <span class="@ArrowClass(bundle, faded)" style="left: @Percent(bundle.Route.End.X); top: @Percent(bundle.Route.End.Y); @ArrowSize(bundle) --map-arrow: @Ink(bundle)" aria-hidden="true"></span>
                 }
-            </svg>
-            @foreach (var (bundle, faded) in _drawn.Where(line => line.Bundle.Arrowhead))
-            {
-                <span class="@ArrowClass(bundle, faded)" style="left: @Percent(bundle.Route.End.X); top: @Percent(bundle.Route.End.Y); @ArrowSize(bundle) --map-arrow: @Ink(bundle)" aria-hidden="true"></span>
-            }
-            @foreach (var amount in _amounts)
-            {
-                <span class="@AmountClass(amount.Bundle)" data-link-kind="@amount.Bundle.Kind" style="@AmountStyle(amount)" aria-hidden="true">@amount.Text</span>
-            }
-            @foreach (var bucket in _view.Buckets)
-            {
-                <div class="map-bucket map-bucket--@bucket.End.Id" data-bucket="@bucket.End.Id" style="@Box(bucket.Slot)">@EndName(bucket.End)</div>
-            }
-            @foreach (var place in _view.Places())
-            {
-                if (place.Quiet)
+                @foreach (var amount in _amounts)
                 {
-                    <div class="map-quiet" style="@Pill(place.Slot)">
-                        @foreach (var node in place.Nodes)
-                        {
-                            @ModuleButton(node)
-                        }
-                    </div>
+                    <span class="@AmountClass(amount.Bundle)" data-link-kind="@amount.Bundle.Kind" style="@AmountStyle(amount)" aria-hidden="true">@amount.Text</span>
                 }
-                else
+                @foreach (var bucket in _view.Buckets)
                 {
-                    @ModuleButton(place.Nodes[0])
+                    <div class="map-bucket map-bucket--@bucket.End.Id" data-bucket="@bucket.End.Id" style="@Box(bucket.Slot)">@EndName(bucket.End)</div>
                 }
-            }
+                @foreach (var place in _view.Places())
+                {
+                    if (place.Quiet)
+                    {
+                        <div class="map-quiet" style="@Pill(place.Slot)">
+                            @foreach (var node in place.Nodes)
+                            {
+                                @ModuleButton(node)
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        @ModuleButton(place.Nodes[0])
+                    }
+                }
+            </div>
         </div>
     </div>
     <div class="map-tab__side">

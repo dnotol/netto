@@ -47,7 +47,14 @@
         flex: none;
     }
 
-    /* The map shrinks to what its tools leave it under the band, never below its smallest scale. */
+    /* The map's frame, and the map in it, shrink to what the tools leave them under the band, never below
+       the map's smallest scale. */
+    .map-tab__frame {
+        display: flex;
+        flex: 0 1 auto;
+        flex-direction: column;
+    }
+
     .map {
         flex: 0 1 auto;
     }
@@ -105,9 +112,11 @@
         border-color: var(--netto-gold);
     }
 
-/* Below that width the map scrolls sideways inside its column once the window is narrower than it. */
+/* Below that width the map scrolls sideways once the window is narrower than it, in the frame that holds
+   it alone: a box that scrolls one way scrolls the other too, so the tools over the map, and the panel of
+   « Add to plan » that drops from them over it, stay out of any scroll area. */
 @media (max-width: 1200px) {
-    .map-tab__map {
+    .map-tab__frame {
         overflow-x: auto;
     }
 }

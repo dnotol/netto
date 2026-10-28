@@ -39,6 +39,8 @@ public class MapPanelLayoutTests
             () => Rule(wide, ".map-tab__map").ShouldContain("flex-direction: column"),
             () => Rule(wide, ".map-tab__map").ShouldContain("max-height: var(--map-room)"),
             () => Rule(wide, ".map-tab__tools").ShouldContain("flex: none"),
+            () => Rule(wide, ".map-tab__frame").ShouldContain("flex: 0 1 auto"),
+            () => Rule(wide, ".map-tab__frame").ShouldContain("display: flex"),
             () => Rule(wide, ".map").ShouldContain("flex: 0 1 auto"),
             () => Rule(css, ".map").ShouldContain("var(--map-room)"));
     }

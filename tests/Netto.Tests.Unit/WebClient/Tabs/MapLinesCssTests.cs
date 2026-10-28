@@ -23,11 +23,28 @@ public class MapLinesCssTests
             () => mapRules.ShouldContain(declarations => declarations.Contains($"min-width: {Stylesheet.Rem(MapLayout.NarrowestRem)};", StringComparison.Ordinal)));
     }
 
-    // Below the breakpoint the map scrolls sideways inside its column once the window is narrower than it.
+    // Below the breakpoint the map scrolls sideways inside its column once the window is narrower than it: in
+    // a frame of its own, which holds the map alone, so the tools over it, and the panel of « Add to plan »
+    // that drops from them, are never clipped by a scroll area, nor the map's column given one (a box that
+    // scrolls one way scrolls the other too).
     [Fact]
-    public void MapTabCss_belowTheBreakpoint_scrollsTheMapSidewaysInsideItsColumn()
+    public void MapTabCss_belowTheBreakpoint_scrollsTheMapSidewaysInAFrameOfItsOwn()
     {
-        Stylesheet.Block(Stylesheet.MediaBlock(Css, "(max-width: 1200px)"), ".map-tab__map").ShouldContain("overflow-x: auto;");
+        var rules = Stylesheet.Rules(Css);
+
+        rules.ShouldSatisfyAllConditions(
+            () => Stylesheet.Block(Stylesheet.MediaBlock(Css, "(max-width: 1200px)"), ".map-tab__frame").ShouldContain("overflow-x: auto;"),
+            () => rules.Where(rule => rule.Selector is ".map-tab__map" or ".map-tab__tools" or ".map-tab__add").ShouldAllBe(rule => !rule.Declarations.Contains("overflow")));
+    }
+
+    // The frame holds the map and nothing else: the tools are over it, outside it.
+    [Fact]
+    public async Task MapTab_framesTheMapAloneAndNotItsTools()
+    {
+        var html = await MapRendering.RenderTabAsync(MapLinksTests.Full);
+
+        var frame = System.Text.RegularExpressions.Regex.Match(html, "<div class=\"map-tab__frame\"[^>]*>\\s*<div class=\"map\" ");
+        (frame.Success, html.IndexOf("class=\"map-tab__tools\"", StringComparison.Ordinal) < frame.Index).ShouldBe((true, true));
     }
 
     // A bucket is drawn over the lines that run on under it, on the map's ground under its wash, so a line
