@@ -41,6 +41,7 @@ internal static class PlanText
     public static IReadOnlyList<string> Assumptions { get; } =
     [
         "AssumedSingle",
+        "AssumedPartnerWithholding",
         "AssumedWallonia",
         "AssumedMainOccupation",
         "AssumedNoSpecialContribution",
@@ -56,5 +57,6 @@ internal static class PlanText
         "LimitReserves",
         "LimitDisallowed",
         "LimitManagementFee",
+        "LimitPartner",
     ];
 }

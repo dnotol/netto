@@ -33,7 +33,7 @@ public class PlanPageTests
     {
         var html = await RenderPlanAsync(new Folds(new BrowserStorage()));
 
-        (html.Contains("8 assumptions Netto makes"), html.Contains("3 things the figures leave out")).ShouldBe((true, true));
+        (html.Contains("9 assumptions Netto makes"), html.Contains("4 things the figures leave out")).ShouldBe((true, true));
     }
 
     // The notes are folds like the cards: opened, they show their lines.

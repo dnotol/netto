@@ -43,7 +43,7 @@
     <value>{0} assumptions Netto makes</value>
   </data>
   <data name="AssumedSingle" xml:space="preserve">
-    <value>Single, with no dependants</value>
+    <value>Single, with no dependants, unless you add your partner to your plan</value>
   </data>
   <data name="AssumedWallonia" xml:space="preserve">
     <value>Resident in Wallonia</value>
@@ -63,6 +63,9 @@
   <data name="AssumedSteadyState" xml:space="preserve">
     <value>Each year pays out its own profit, and profits kept from earlier years go out with it at the same rate</value>
   </data>
+  <data name="AssumedPartnerWithholding" xml:space="preserve">
+    <value>With your partner in your plan, the monthly withholding on your pay takes them as having no income, or professional income above the small amounts its rules treat apart</value>
+  </data>
   <data name="AssumedFinalContributions" xml:space="preserve">
     <value>Social contributions are the final amount owed on this year's income</value>
   </data>
@@ -80,6 +83,9 @@
   </data>
   <data name="LimitManagementFee" xml:space="preserve">
     <value>Your social insurance fund's management fee, charged on top of the contributions, until you give its rate on Director pay.</value>
+  </data>
+  <data name="LimitPartner" xml:space="preserve">
+    <value>Your partner's income other than professional income, their own tax credit for low earned income, and dependants.</value>
   </data>
   <data name="LimitTaxCalc" xml:space="preserve">
     <value>The 2026 figures are computed from the official 2026 amounts. Tax-Calc does not cover 2026 yet; on 2025, the same method matches it to the cent on the income tax, the tax credit for low earned income, the dividend refund, and the surcharge and bonus on your advance payments.</value>
