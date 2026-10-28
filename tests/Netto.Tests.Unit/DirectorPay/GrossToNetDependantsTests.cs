@@ -11,7 +11,11 @@ namespace Netto.Tests.DirectorPay;
 // children (pinned by PersonalTaxCalculatorDependantsTests), and the pay, its pocket, its next 1,000, its
 // steps and the assessment's balance follow. The credit comes off after the municipal surcharge, as the
 // credit for low earned income, is refunded beyond the tax (art. 304 §2) and is a federal credit the
-// advance-payment surcharge's base subtracts (art. 175, 1°). Income year 2026 at a 7% municipal rate.
+// advance-payment surcharge's base subtracts (art. 175, 1°). Income year 2026 at a 7% municipal rate; the
+// credits below are derived by hand from the official amounts (art. 130, 131, 134 §2 and §3, the notice for
+// tax year 2027), on the taxable income the engine's contributions leave: two children, one under 3, and a
+// single parent raise the tax-free amount to 11,550 + 5,130 + 740 + 1,980 = 19,400, taxed 5,500.50 on §2's
+// scale.
 public class GrossToNetDependantsTests
 {
     private static readonly PersonalTaxRules Rules = PersonalTaxRules.IncomeYear2026;
@@ -31,8 +35,8 @@ public class GrossToNetDependantsTests
     private static PersonalTaxResult TaxOn(GrossToNetResult pay, Household household, decimal otherIncome = 0m) =>
         PersonalTaxCalculator.Compute(Rules, pay.TaxablePay, pay.SocialContributions + pay.FundFee, 0.07m, otherIncome, household: household);
 
-    // 20,000 leaves 15,945.17 of taxable income, under the 19,400 of tax-free amount: no tax, and the credit
-    // reaches its cap of 1,100.
+    // 20,000 leaves 15,945.17 of taxable income, under the 19,400 of tax-free amount: no tax, and 5,500.50
+    // less the basic tax of 3,986.29 leaves 1,514.21 unabsorbed, all of it the children's, capped at 1,100.
     [Fact]
     public void Compute_singleParentOnALowPay_takesTheTaxAndTheCreditOfTheHousehold()
     {
@@ -67,8 +71,9 @@ public class GrossToNetDependantsTests
         pay.Assessment.Balance.ShouldBeLessThan(-1_100m);
     }
 
-    // 24,000 leaves 19,418.62, just above the tax-free amount: a credit of 241.05, which the next 1,000 takes
-    // away. The next 1,000's parts still add up to it.
+    // 24,000 leaves 19,418.62, just above the tax-free amount: its basic tax is 4,180 + 2,698.62 at 40% =
+    // 5,259.45, and the 241.05 that 5,500.50 exceeds it by is the credit. The next 1,000 raises the basic tax
+    // beyond 5,500.50, so it takes all of it away. Its parts still add up to it.
     [Fact]
     public void Compute_creditTheNextThousandTakesAway_isAPartOfTheNextThousand()
     {
@@ -80,8 +85,10 @@ public class GrossToNetDependantsTests
             .ShouldBe(1_000m);
     }
 
-    // A home office's rent taxed with the pay absorbs the tax-free amount the credit stood on: what it takes
-    // away of the credit is its own, as the credit for low earned income it takes away is.
+    // A home office's rent taxed with the pay absorbs the tax-free amount the credit stood on: its 828 raise
+    // the taxable income to 20,246.62, whose basic tax of 5,590.65 exceeds 5,500.50, so it takes the 241.05
+    // away. What it takes away of the credit is its own, as the credit for low earned income it takes away
+    // is.
     [Fact]
     public void Compute_rentTakingTheCreditAway_countsTheCreditItLoses()
     {

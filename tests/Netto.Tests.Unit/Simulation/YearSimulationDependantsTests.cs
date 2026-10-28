@@ -51,6 +51,10 @@ public class YearSimulationDependantsTests
     }
 
     // A single parent on a low pay: the credit reaches the pocket and the assessment's balance, refunded.
+    // Derived by hand from the official amounts (art. 130, 131, 134 §2 and §3, the notice for tax year 2027):
+    // 20,000 leaves 15,945.17 of taxable income under a tax-free amount of 19,400, taxed 5,500.50 on §2's
+    // scale, 1,514.21 beyond the basic tax of 3,986.29, all of it the children's, capped at 2 × 550; nothing
+    // withheld and no tax, the balance refunds that and the credit for low earned income.
     [Fact]
     public void Run_singleParentOnALowPay_refundsTheCreditOnTheBalance()
     {
