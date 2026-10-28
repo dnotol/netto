@@ -12,8 +12,8 @@ namespace Netto.Tests.WebClient.Tabs;
 // The legend of the kinds of link as a viewer meets it on the Map tab, drawn without a browser, compact
 // among the map's tools: a group named by its legend, out of sight, a box for every kind in the order of the
 // kinds, ticked while the kind is shown, each with a sample of the map's own line for it, its short name and,
-// for a screen reader alone, how many links the plan has of it; after the boxes, one info bubble saying what
-// each kind is. The boxes are one row that wraps only when the column has not the room for it. Ticking a box
+// for a screen reader alone, how many links the plan has of it; beside the last box, one info bubble saying
+// what each kind is. The boxes are one row that wraps only when the column has not the room for it. Ticking a box
 // is an event: MapLinkFilterTests holds its effect on the filter, MapTabFilterTests what the tab draws of a
 // filter, and PlanMapFilterTests that the tab draws again at a tick.
 public class MapFilterTests
@@ -56,20 +56,23 @@ public class MapFilterTests
                 .ShouldBe(["(10 links)", "(1 link)", "(6 links)", "(none in this plan)"]));
     }
 
-    // What each kind is goes in one info bubble after the boxes, named "More about" the legend and described
-    // by each kind's name and what it is; never inside a box's label, whose text would then carry it, nor a
-    // button inside a label.
+    // What each kind is goes in one info bubble after the boxes, beside the last one's box, in its item, so
+    // the two never break apart when the row wraps; named "More about" the legend and described by each
+    // kind's name and what it is; never inside a box's label, whose text would then carry it, nor a button
+    // inside a label.
     [Fact]
-    public async Task Filter_theKinds_shareOneBubbleAfterTheBoxesSayingWhatEachIs()
+    public async Task Filter_theKinds_shareOneBubbleBesideTheLastBoxSayingWhatEachIs()
     {
         var html = await RenderAsync(EveryKind(), Counts);
 
-        var bubble = Regex.Match(html, "</ul>\\s*<span class=\"info-bubble\"[^>]*>\\s*<button [^>]*aria-label=\"([^\"]*)\"");
+        var items = LegendItems(html);
+        var bubble = Regex.Match(items[^1], "</label>.*?<span class=\"info-bubble\"[^>]*>\\s*<button [^>]*aria-label=\"([^\"]*)\"", RegexOptions.Singleline);
         var glosses = Regex.Matches(html, "<span class=\"map-filter__gloss\"[^>]*>([^<]*)</span>").Select(match => match.Groups[1].Value).ToList();
 
         html.ShouldSatisfyAllConditions(
             () => Regex.Count(html, "class=\"info-bubble\"").ShouldBe(1),
-            () => LegendItems(html).ShouldAllBe(item => !item.Contains("info-bubble", StringComparison.Ordinal)),
+            () => items[..^1].ShouldAllBe(item => !item.Contains("info-bubble", StringComparison.Ordinal)),
+            () => Regex.IsMatch(Regex.Match(items[^1], "<label.*?</label>", RegexOptions.Singleline).Value, "info-bubble").ShouldBeFalse(),
             () => bubble.Groups[1].Value.ShouldBe("More about Kinds of link shown"),
             () => glosses.ShouldBe(
             [
@@ -92,6 +95,7 @@ public class MapFilterTests
         css.ShouldSatisfyAllConditions(
             () => row.ShouldBe(["display: flex", "flex-wrap: wrap"]),
             () => Stylesheet.Block(css, ".map-filter__kind").ShouldNotContain("width: 100%"),
+            () => Stylesheet.Block(css, ".map-filter__kind").ShouldContain("flex-wrap: nowrap"),
             () => Stylesheet.Block(css, ".map-filter__kind").ShouldNotContain("border:"),
             () => Stylesheet.Block(css, ".map-filter__legend").ShouldContain("clip-path: inset(50%)"),
             () => Stylesheet.Block(css, ".map-filter__legend").ShouldContain("position: absolute"),

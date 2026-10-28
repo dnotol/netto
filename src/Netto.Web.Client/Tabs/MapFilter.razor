@@ -7,8 +7,9 @@
    draws it with, and the end of the lines it stands for, SampleEnd: an arrowhead, or for money into a bucket
    a bar its line runs into, a line of that kind coming back out of a bucket ending in an arrowhead as the
    bubble says; a line of money at one width since on the map its width is its amount, so the legend tells
-   the lines apart without colour) and its short name; after the boxes, one info bubble saying what each kind
-   is, a bubble being a button of its own and so never inside a box's label. A kind ticked is drawn, a kind
+   the lines apart without colour) and its short name; after the boxes, beside the last one in its item, so
+   the row never breaks the two apart, one info bubble saying what each kind is, a bubble being a button of
+   its own and so never inside a box's label. A kind ticked is drawn, a kind
    unticked is left out of the lines and of their amounts, and of those alone, what a chosen module receives
    being read from every link of the run whatever is ticked; the choice is the viewer's, remembered in the
    browser (MapLinkFilter). The group is a fieldset named by its legend, out of sight, so a screen reader
@@ -43,15 +44,13 @@
                         <span class="map-filter__spoken">@L[MapFilterText.Count(row.Count), row.Count]</span>
                     </span>
                 </MudCheckBox>
+                @if (ReferenceEquals(row, _view.Rows[^1]))
+                {
+                    @Glossary()
+                }
             </li>
         }
     </ul>
-    <InfoBubble Label="@L[MapFilterText.Legend]">
-        @foreach (var row in _view.Rows)
-        {
-            <span class="map-filter__gloss">@L[MapFilterText.GlossLine, L[MapFilterText.Name(row.Kind)], L[MapFilterText.Gloss(row.Kind)]]</span>
-        }
-    </InfoBubble>
     @if (_view.AllHidden)
     {
         <p class="map-filter__note">@L[MapFilterText.AllHidden]</p>
@@ -68,6 +67,16 @@
     public EventCallback OnChanged { get; set; }
 
     private MapFilterView _view = default!;
+
+    // The one bubble saying what each kind is, beside the last kind's box, in its item, so the row never
+    // breaks the two apart.
+    private RenderFragment Glossary() =>
+        @<InfoBubble Label="@L[MapFilterText.Legend]">
+            @foreach (var row in _view.Rows)
+            {
+                <span class="map-filter__gloss">@L[MapFilterText.GlossLine, L[MapFilterText.Name(row.Kind)], L[MapFilterText.Gloss(row.Kind)]]</span>
+            }
+        </InfoBubble>;
 
     protected override void OnParametersSet() => _view = MapFilterView.Of(Filter, Counts);
 

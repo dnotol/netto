@@ -15,15 +15,25 @@
     gap: 2rem;
 }
 
-/* The tools over the map: the legend, then « Add to plan » at the end of the line, wrapping under it where
-   the column has not the room for both. */
+/* The tools over the map: the legend, then « Add to plan » at the end of its first line. The legend takes
+   the room « Add to plan » leaves it, and wraps its boxes inside that room where it must, so the row is two
+   lines at most where the column is narrowest, never « Add to plan » alone on a line. */
 .map-tab__tools {
     display: flex;
-    flex-wrap: wrap;
-    align-items: center;
+    flex-wrap: nowrap;
+    align-items: flex-start;
     justify-content: space-between;
-    gap: 0.5rem 1rem;
+    gap: 1rem;
     margin-bottom: 0.75rem;
+}
+
+.map-tab__filter {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.map-tab__add {
+    flex: none;
 }
 
 @media (min-width: 1201px) {

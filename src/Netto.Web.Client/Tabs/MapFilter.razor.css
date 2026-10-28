@@ -6,12 +6,11 @@
    into, the bucket's edge; all set on each sample itself, so this sheet keeps no ink of its own for them,
    at least 3:1 on the page in both themes. The legend is compact, one line among the map's tools: the four
    kinds in one row with no frame of their own, each as wide as its box, its sample and its short name ask,
-   then the one bubble, wrapping onto a second line only where the column has not the room, which is why a
+   the one bubble beside the last, wrapping onto a second line only where the column has not the room, which is why a
    checkbox is dense (a 32 px button, not MudBlazor's 48) and a count is words for a screen reader alone;
    the checkbox and the bubble stay targets of at least 24 px. */
 
-/* A fieldset's own frame and minimum width are taken off, so the group is a plain row: the boxes, then
-   the bubble. */
+/* A fieldset's own frame and minimum width are taken off, so the group is a plain row of its boxes. */
 .map-filter {
     display: flex;
     flex-wrap: wrap;
@@ -45,9 +44,11 @@
     list-style: none;
 }
 
-/* The checkbox's label is the box, so a click on its sample or its name ticks the kind. */
+/* The checkbox's label is the box, so a click on its sample or its name ticks the kind; the last kind
+   holds the bubble beside its box, never broken from it. */
 .map-filter__kind {
     display: flex;
+    flex-wrap: nowrap;
     align-items: center;
 }
 

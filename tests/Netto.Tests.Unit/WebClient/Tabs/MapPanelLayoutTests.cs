@@ -45,6 +45,22 @@ public class MapPanelLayoutTests
             () => Rule(css, ".map").ShouldContain("var(--map-room)"));
     }
 
+    // The tools are one line, the legend taking what « Add to plan » leaves it and wrapping its boxes inside
+    // that room, never « Add to plan » onto a line of its own: so the row is two lines at most where the
+    // column is narrowest, 1,201 px wide.
+    [Fact]
+    public void Tools_keepAddToPlanOnTheLegendsFirstLine()
+    {
+        var css = MapTabCss();
+
+        css.ShouldSatisfyAllConditions(
+            () => Rule(css, ".map-tab__tools").ShouldContain("flex-wrap: nowrap"),
+            () => Rule(css, ".map-tab__tools").ShouldNotContain("flex-wrap: wrap"),
+            () => Rule(css, ".map-tab__filter").ShouldContain("flex: 1 1 auto"),
+            () => Rule(css, ".map-tab__filter").ShouldContain("min-width: 0"),
+            () => Rule(css, ".map-tab__add").ShouldContain("flex: none"));
+    }
+
     // The card beside the map is the page's to scroll: no rule makes the column or the room of the card a
     // scroll area, sticky or capped, at any width, and the grid keeps no height of its own.
     [Fact]
