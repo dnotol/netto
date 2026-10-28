@@ -83,6 +83,10 @@
             <div class="map-tab__filter">
                 <MapFilter Counts="_counts" OnChanged="Refilter" />
             </div>
+            @if (AddToPlan is not null)
+            {
+                <div class="map-tab__add">@AddToPlan</div>
+            }
         </div>
         <div class="map"style="--map-units: @Number(_view.Units)" role="group" aria-label="@L["MapLabel"]">
             <svg class="map__lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false">
@@ -175,6 +179,10 @@
     // itself, Company year on arriving or a lever just added: only the viewer's takes the focus to its card.
     [Parameter]
     public bool ViewerChose { get; set; }
+
+    // What the page puts among the map's tools, after the legend: « Add to plan » (CompositionMenu).
+    [Parameter]
+    public RenderFragment? AddToPlan { get; set; }
 
     // The engine's refusal the chosen module's card holds, as the Plan page hands it to that card.
     private Refusal? ChosenRefusal => _chosen is { } module ? RefusedBy(module) : null;

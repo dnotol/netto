@@ -13,19 +13,16 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Button" xml:space="preserve">
-    <value>Composition</value>
-  </data>
-  <data name="Count" xml:space="preserve">
-    <value>· {0}</value>
+    <value>Add to plan</value>
   </data>
   <data name="ButtonLabel_None" xml:space="preserve">
-    <value>Composition: no optional module in your plan</value>
+    <value>Add to plan: no optional module in your plan</value>
   </data>
   <data name="ButtonLabel_One" xml:space="preserve">
-    <value>Composition: 1 optional module in your plan</value>
+    <value>Add to plan: 1 optional module in your plan</value>
   </data>
   <data name="ButtonLabel_Many" xml:space="preserve">
-    <value>Composition: {0} optional modules in your plan</value>
+    <value>Add to plan: {0} optional modules in your plan</value>
   </data>
   <data name="PanelLabel" xml:space="preserve">
     <value>Composition of your plan</value>

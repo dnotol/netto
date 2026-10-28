@@ -1,6 +1,6 @@
 /* The band at the top of the window on the plan page, in the site header's place (Layout/MainLayout draws
    none there): opaque, so the cards scrolling under it never show through the figures, and with no backdrop
-   filter, which would hold the fixed backdrops of the Plans and Composition panels inside it. Its height is
+   filter, which would hold the fixed backdrop of the Plans panel inside it. Its height is
    measured by bucket-bar.js (--netto-bar-height) for the line under it (--netto-under-bar). Its container is
    the site's column (app.css, .netto-column). It has the same rows whatever the plan says: the top row, the
    buckets, and the stack's line, which holds the stack or the sentence in its place. */
@@ -39,8 +39,8 @@
     min-width: 0;
 }
 
-/* Saving the plan and the saved plans, then the Composition menu, at the end of the top row, before the
-   theme switch, which sits close beside them. */
+/* Saving the plan and the saved plans, at the end of the top row, before the theme switch, which sits
+   close beside them. */
 .bucket-bar__actions {
     display: flex;
     flex-wrap: wrap;

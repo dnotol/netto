@@ -37,14 +37,14 @@
    The river: the year from the company's revenue to the director's pocket, as modules that each edit their
    part of one scenario on their card and draw their view of one run. Every figure comes from Netto.Core;
    the page only holds the inputs and runs them. The optional modules are on the map only while in the
-   plan, which the Composition menu in the bar sets; taking one out, there or from its card, shows a notice
-   with Undo, on any tab, and adding one chooses it, so its card opens beside the map to be filled. The
+   plan, which « Add to plan » sets, among the map's tools (CompositionMenu, which the page hands the map,
+   so that it keeps hold of it); taking one out, there or from its card, shows a notice with Undo, which
+   outlives a switch of tab, and adding one chooses it, so its card opens beside the map to be filled. The
    module chosen is Company year on arriving, or the one the address names (CardLinks, plan?card=<name>),
    from a link of the Optimisation tab's moves or loaded as it is. *@
 <BucketBar Run="_run" Setup="_today?.Run">
     <ChildContent>
         <PlansPanel Inputs="_inputs" CanSave="BaselineGain.CanMark(_run)" OnOpen="OnPlanOpened" OnChanged="OnPlansChanged" />
-        <CompositionMenu @ref="_composition" Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" />
     </ChildContent>
     <Tabs>
         <PlanTabBar Current="_tab" Badges="Badges()" />
@@ -58,7 +58,11 @@
         @switch (_tab)
         {
             case PlanTab.Plan:
-                <MapTab Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Search="_search" RefusedBy="Refused" Chosen="_mapChosen" ChosenChanged="OnMapChosen" ViewerChose="_viewerChose" />
+                <MapTab Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Search="_search" RefusedBy="Refused" Chosen="_mapChosen" ChosenChanged="OnMapChosen" ViewerChose="_viewerChose">
+                    <AddToPlan>
+                        <CompositionMenu @ref="_composition" Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" />
+                    </AddToPlan>
+                </MapTab>
 
                 <aside class="assumed" aria-labelledby="assumed-title">
                     <Fold Name="@PlanText.AssumedFold" Title="@L[PlanText.AssumedTitle]" TitleId="assumed-title"
@@ -117,7 +121,9 @@
     private SplitSearchResult? _search;
     private (string Id, RiverRun Run)? _today;
     private RiverInputs? _searched;
-    private CompositionMenu _composition = default!;
+    // « Add to plan », while the Plan tab draws it: a reference Blazor keeps once the tab has gone, so it is
+    // read on the Plan tab alone (AddToPlan).
+    private CompositionMenu? _composition;
     private TakenOutNotice _notice = default!;
     private ElementReference _tabContent;
     private OptionalModule? _takenOut;
@@ -160,7 +166,10 @@
         if (_focusComposition)
         {
             _focusComposition = false;
-            await _composition.FocusButtonAsync();
+            if (RemovalNoticeFocus.After(_tab) == RemovalFocus.AddToPlan && AddToPlan is { } menu)
+                await menu.FocusButtonAsync();
+            else
+                await _tabContent.FocusAsync();
         }
 
         // The moves' search runs the year a thousand times or more on the page's one thread, so it waits
@@ -180,7 +189,7 @@
         if (ModuleFolds.Added(_inputs.Composition, inputs.Composition) is [.., var added] && added != _takenOut)
             (_mapChosen, _viewerChose) = (MapModules.Of(added), false);
         _takenOut = RemovalNotice.About(_takenOut, _inputs.Composition, inputs.Composition);
-        _focusUndo = takenOut is not null && !_composition.IsOpen;
+        _focusUndo = takenOut is not null && AddToPlan is not { IsOpen: true };
         State.Inputs = inputs;
         Show(inputs);
     }
@@ -212,8 +221,8 @@
 
     private string SkipHref => $"{PlanTabRoutes.Href(_tab)}#{TabContentId}";
 
-    // Undo and Dismiss leave with the notice, so the focus goes to the Composition button, just before
-    // it, where the plan's modules are set.
+    // Undo and Dismiss leave with the notice, so the focus goes where the plan's modules are set, « Add to
+    // plan », or to the start of the tab's content on a tab that does not draw it (RemovalNoticeFocus).
     private void Undo()
     {
         if (_takenOut is { } module)
@@ -254,6 +263,9 @@
     // they are being looked for.
     private IReadOnlyDictionary<PlanTab, TabBadge> Badges() =>
         TabBadges.Of(_run, _moves.View(Today), CalendarView.From(_inputs, _run, Today), Plans.Plans.Count(plan => plan.Readable));
+
+    // « Add to plan » as the Plan tab draws it, none on another tab.
+    private CompositionMenu? AddToPlan => _tab == PlanTab.Plan ? _composition : null;
 
     // The browser's date, which decides which deadlines are past and which one a payment is proposed by.
     private DateOnly Today => DateOnly.FromDateTime(Clock.GetLocalNow().DateTime);
