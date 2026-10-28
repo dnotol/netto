@@ -1,3 +1,5 @@
+using Netto.Core.PersonalTax;
+
 namespace Netto.Core.DirectorPay;
 
 // The director's dependants as the monthly withholding takes them (annex III to the AR/CIR 92, part 3,
@@ -20,6 +22,25 @@ public sealed record WithholdingDependants(
     bool SingleParent = false)
 {
     public static WithholdingDependants None { get; } = new();
+
+    // The dependants the director's withholding takes from those declared for the tax: all of them when
+    // the assessment gives their supplements to the director's column (CIR 92 art. 134 §4, the higher
+    // income in a joint return), none when it gives them to the partner, who claims them on their own
+    // pay (annex III n° 6 lets the couple choose). The children under 3 raise only the tax; a single
+    // parent counts only when not taxed jointly, as for the tax. No disability is declared yet, so
+    // nobody counts for two.
+    public static WithholdingDependants Of(Household household, Taxpayer supplementsTo)
+    {
+        var declared = household.Dependants;
+
+        return supplementsTo == Taxpayer.Partner
+            ? None
+            : new WithholdingDependants(
+                declared.Children,
+                DependantsAged66InCare: declared.DependantsAged66InCare,
+                OtherDependants: declared.OtherDependants,
+                SingleParent: declared.SingleParent && !household.TaxedJointly);
+    }
 
     // The children n° 38's table is read at, a disabled child counted for two.
     public int CountedChildren => Children + DisabledChildren;
