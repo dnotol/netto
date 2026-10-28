@@ -37,6 +37,7 @@ public class HandOffTests
             (OptionalModule.Rent, 1_380m),
             (OptionalModule.Car, 7_400m),
             (OptionalModule.Copyright, 10_000m),
+            (OptionalModule.Household, 0m),
         });
     }
 
@@ -160,7 +161,7 @@ public class HandOffTests
     [MemberData(nameof(Compositions))]
     public void Views_anyComposition_endOnWhatTheirLeverHandsOn(bool vouchers, bool allowances, bool rent, bool car, bool royalty)
     {
-        var composition = new PlanComposition(vouchers, allowances, rent, car, royalty);
+        var composition = new PlanComposition(vouchers, allowances, rent, car, royalty, false);
         var year = Year(Filled with { Composition = composition });
         var inPlan = Levers.Where(composition.Holds).ToList();
 

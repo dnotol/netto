@@ -184,6 +184,7 @@ public class OptimisationTabTextTests
         ("Car", typeof(CarCard)),
         ("Copyright", typeof(CopyrightCard)),
         ("DirectorPay", typeof(DirectorPayCard)),
+        ("Household", typeof(HouseholdCard)),
         ("CorporateTax", typeof(CorporateTaxCard)),
         ("Dividend", typeof(DividendCard)),
     ];

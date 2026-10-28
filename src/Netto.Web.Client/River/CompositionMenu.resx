@@ -108,4 +108,13 @@
   <data name="Brings_Copyright" xml:space="preserve">
     <value>{0} to your pocket after its tax</value>
   </data>
+  <data name="Title_Household" xml:space="preserve">
+    <value>Your partner</value>
+  </data>
+  <data name="Description_Household" xml:space="preserve">
+    <value>A spouse or legal cohabitant: you are taxed jointly, part of your pay attributed to them. Living together without a declaration is single for tax.</value>
+  </data>
+  <data name="Brings_Household" xml:space="preserve">
+    <value>{0} less tax on your pay</value>
+  </data>
 </root>

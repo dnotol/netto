@@ -195,6 +195,9 @@
   <data name="Module_DirectorPay" xml:space="preserve">
     <value>Director pay</value>
   </data>
+  <data name="Module_Household" xml:space="preserve">
+    <value>Household</value>
+  </data>
   <data name="Module_CorporateTax" xml:space="preserve">
     <value>Corporate tax</value>
   </data>

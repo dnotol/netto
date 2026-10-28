@@ -86,7 +86,8 @@ internal static class CardHtml
     }
 
     // The cards the river draws, in its order: Company year, the levers in the plan, the split while the
-    // river holds the company's year, the royalty in the plan, then Director pay, Corporate tax and Dividend.
+    // river holds the company's year, the royalty in the plan, then Director pay, the partner in the plan,
+    // Corporate tax and Dividend.
     private static IEnumerable<(Type Card, RiverModule Module)> Cards(RiverInputs river)
     {
         yield return (typeof(CompanyYearCard), RiverModule.CompanyYear);
@@ -103,6 +104,8 @@ internal static class CardHtml
         if (river.InPlan(OptionalModule.Copyright))
             yield return (typeof(CopyrightCard), RiverModule.Copyright);
         yield return (typeof(DirectorPayCard), RiverModule.DirectorPay);
+        if (river.InPlan(OptionalModule.Household))
+            yield return (typeof(HouseholdCard), RiverModule.Household);
         yield return (typeof(CorporateTaxCard), RiverModule.CorporateTax);
         yield return (typeof(DividendCard), RiverModule.Dividend);
     }

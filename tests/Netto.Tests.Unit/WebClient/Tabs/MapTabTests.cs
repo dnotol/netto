@@ -355,14 +355,15 @@ public class MapTabTests
     }
 
     // Company year skipped: it stays on the map, drawn dashed and said skipped in words, so that it can be
-    // chosen to enter its year again; the cards that only wait for it are not there, and Director pay is.
+    // chosen to enter its year again; the cards that only wait for it are not there, and Director pay is, with
+    // the partner, whose quotient the pay alone is taxed with.
     [Fact]
-    public async Task Tab_companySkipped_drawsCompanyYearSkippedAndDirectorPay()
+    public async Task Tab_companySkipped_drawsCompanyYearSkippedDirectorPayAndThePartner()
     {
         var html = await RenderTabAsync(Full.SkipCompany());
 
         Buttons(html).Select(button => (button.Module, button.Name, button.Skipped)).ShouldBe(
-            [("company-year", "Company year skipped", true), ("director-pay", "Director pay", false)]);
+            [("company-year", "Company year skipped", true), ("director-pay", "Director pay", false), ("household", "Household +€11,780.00 to tax base", false)]);
     }
 
     // A skipped Company year chosen: its card goes beside the map, its box is marked chosen, and nothing is

@@ -741,7 +741,7 @@ public class ModuleViewsTests
     [InlineData(false, false, "profit_before_pay", "split")]
     public void Vouchers_leftAfterThem_goOnToTheNextModuleInThePlan(bool allowances, bool rent, string key, string next)
     {
-        var inputs = AllVouchers with { Composition = new PlanComposition(true, allowances, rent, false, false) };
+        var inputs = AllVouchers with { Composition = new PlanComposition(true, allowances, rent, false, false, false) };
 
         Vouchers(inputs).Drains[^1].ShouldBe(new Drain(key, DrainKind.PassedOn, 97_689.80m, next));
     }
@@ -799,7 +799,7 @@ public class ModuleViewsTests
     [InlineData(false, "profit_before_pay", "split")]
     public void Allowances_leftAfterThem_goOnToTheNextModuleInThePlan(bool rent, string key, string next)
     {
-        var inputs = FlatRateAllowances(RiverInputs.Example) with { Composition = new PlanComposition(false, true, rent, false, false) };
+        var inputs = FlatRateAllowances(RiverInputs.Example) with { Composition = new PlanComposition(false, true, rent, false, false, false) };
 
         Allowances(inputs).Drains[^1].ShouldBe(new Drain(key, DrainKind.PassedOn, 97_581.56m, next));
     }

@@ -30,7 +30,7 @@ public class UnknownModuleTests
     [Fact]
     public void After_aModuleNoLeverPassesOnTo_isRefusedNotTakenForTheSplit()
     {
-        var everyLever = new PlanComposition(true, true, true, true, false);
+        var everyLever = new PlanComposition(true, true, true, true, false, false);
 
         Should.Throw<ArgumentOutOfRangeException>(() => NextModule.After((OptionalModule)(-1), everyLever));
     }
@@ -40,6 +40,6 @@ public class UnknownModuleTests
     [InlineData(OptionalModule.Copyright)]
     public void After_aModuleWithNoneAfterIt_passesOnToTheSplit(OptionalModule module)
     {
-        NextModule.After(module, new PlanComposition(true, true, true, true, true)).ShouldBe("split");
+        NextModule.After(module, new PlanComposition(true, true, true, true, true, false)).ShouldBe("split");
     }
 }

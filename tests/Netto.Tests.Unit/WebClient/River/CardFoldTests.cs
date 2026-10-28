@@ -24,13 +24,14 @@ public class CardFoldTests
         { typeof(SplitCard), "split" },
         { typeof(CopyrightCard), "copyright" },
         { typeof(DirectorPayCard), "director-pay" },
+        { typeof(HouseholdCard), "household" },
         { typeof(CorporateTaxCard), "corporate-tax" },
         { typeof(DividendCard), "dividend" },
     };
 
     private static readonly RiverInputs Everything = RiverInputs.Example
         .AddToPlan(OptionalModule.Vouchers).AddToPlan(OptionalModule.Allowances).AddToPlan(OptionalModule.Rent)
-        .AddToPlan(OptionalModule.Car).AddToPlan(OptionalModule.Copyright);
+        .AddToPlan(OptionalModule.Car).AddToPlan(OptionalModule.Copyright).AddToPlan(OptionalModule.Household);
 
     [Theory]
     [MemberData(nameof(CardsOfTheRiver))]
@@ -85,6 +86,7 @@ public class CardFoldTests
     [InlineData(typeof(RentCard), OptionalModule.Rent)]
     [InlineData(typeof(CarCard), OptionalModule.Car)]
     [InlineData(typeof(CopyrightCard), OptionalModule.Copyright)]
+    [InlineData(typeof(HouseholdCard), OptionalModule.Household)]
     public async Task Lever_revealedByItsModule_isOpen(Type card, OptionalModule module)
     {
         var folds = new Folds(new BrowserStorage());

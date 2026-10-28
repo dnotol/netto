@@ -63,10 +63,11 @@ internal sealed record MapView(IReadOnlyList<MapNode> Modules, IReadOnlyList<Map
     // optional module only while it is in the plan, as the Plan page draws them (Pages/Plan); with the
     // company skipped, the cards before the pay and the company's are drawn waiting for its year and the map
     // leaves them out, but Company year stays, drawn skipped, so that it can be chosen to enter its year
-    // again, and the map starts at Director pay. Cheap: it reads the inputs alone, so the page can clear a
-    // choice of a module that left the map without running anything.
+    // again, and the map starts at Director pay, the partner beside it while in the plan, the pay taxed
+    // jointly still. Cheap: it reads the inputs alone, so the page can clear a choice of a module that left
+    // the map without running anything.
     public static IReadOnlyList<RiverModule> ModulesOf(RiverInputs inputs) => inputs.Company is null
-        ? [RiverModule.CompanyYear, RiverModule.DirectorPay]
+        ? [RiverModule.CompanyYear, RiverModule.DirectorPay, .. inputs.InPlan(OptionalModule.Household) ? [RiverModule.Household] : Array.Empty<RiverModule>()]
         : [.. MapModules.Order.Where(module => RiverModules.Lever(module) is not { } lever || inputs.InPlan(lever))];
 
     // The module chosen, while the map draws it; none once it has left the map.
@@ -296,6 +297,8 @@ internal enum MapText
     CarCard,
 
     VoucherCard,
+
+    HouseholdCard,
 }
 
 // What a link carries: the key of its words in those texts, with their arguments already formatted, as a
@@ -341,6 +344,7 @@ internal static class MapModules
         RiverModule.Split,
         RiverModule.Copyright,
         RiverModule.DirectorPay,
+        RiverModule.Household,
         RiverModule.CorporateTax,
         RiverModule.Dividend,
     ];
@@ -369,6 +373,7 @@ internal static class MapModules
         OptionalModule.Rent => RiverModule.Rent,
         OptionalModule.Car => RiverModule.Car,
         OptionalModule.Copyright => RiverModule.Copyright,
+        OptionalModule.Household => RiverModule.Household,
         _ => throw new ArgumentOutOfRangeException(nameof(lever), lever, "A lever the map has no place for."),
     };
 

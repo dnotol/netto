@@ -150,6 +150,9 @@ public class MapAmountsTests
     // what it did when it was written (2026-10-26: 9,397 boxes, lines and amounts a place was held against, 163
     // places weighed, 3 moves of an amount in the way), so a search grown many times over fails here, on any
     // machine, before the browser feels it. The browser measured it then: 11 ms more an edit, on a costly car.
+    // The partner's marital quotient made it 32 lines (2026-10-28: 10,644 held against, 232 weighed, 11 moves,
+    // its amount moving those beside the royalty's tax apart and Corporate tax's way into its taxes out of the
+    // room between them): the moves are held to about twice that.
     [Fact]
     public void Of_thePlanWithEveryLever_takesAtMostTwiceTheWorkItTookWhenWritten()
     {
@@ -160,7 +163,7 @@ public class MapAmountsTests
         work.ShouldSatisfyAllConditions(
             () => work.Checks.ShouldBeLessThanOrEqualTo(19_000),
             () => work.Places.ShouldBeLessThanOrEqualTo(330),
-            () => work.Moves.ShouldBeLessThanOrEqualTo(10));
+            () => work.Moves.ShouldBeLessThanOrEqualTo(22));
     }
 
     // A kind of line the search has no rank for is refused, as the map's other switches over the kinds of

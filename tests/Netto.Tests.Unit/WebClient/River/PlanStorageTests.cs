@@ -14,7 +14,7 @@ public class PlanStorageTests
     // an amount withheld typed in.
     private static readonly RiverInputs Everything = RiverInputs.Example
         .AddToPlan(OptionalModule.Vouchers).AddToPlan(OptionalModule.Allowances).AddToPlan(OptionalModule.Rent).AddToPlan(OptionalModule.Car)
-        .AddToPlan(OptionalModule.Copyright)
+        .AddToPlan(OptionalModule.Copyright).AddToPlan(OptionalModule.Household)
         .WithRevenue(150_000m).WithRunningCosts(30_500.50m)
         .WithMealVoucherDays(220).WithEcoVouchers(250m).WithSportCultureVouchers(100m)
         .WithOfficeAllowance(1_938.44m).WithInternetAllowance(240m).WithComputerAllowance(240m).WithPhoneCosts(600m)
@@ -73,13 +73,14 @@ public class PlanStorageTests
 
     // What the example holds none of is stored as the example's, as the builds before stored it: the
     // example as version 6 wrote it, with version 7's band of INASTI's company contribution, the default
-    // lower one, after the financial year, its fund fee, none given, and version 8's partner, none, last.
+    // lower one, after the financial year, its fund fee, none given, and version 8's partner, out of the plan and none, last.
     [Fact]
     public void Store_example_writesWhatItHoldsNoneOfAsTheBuildBeforeDid()
     {
         var before = PlanInputs(StoredPlanDocuments.Version6, 0).AsObject();
         before.Insert(before.IndexOf("financialYear") + 1, "companyContributionBand", JsonNode.Parse("""{"value":"Lower","origin":"Default"}"""));
         before.Add("fundFeeRate", JsonNode.Parse("""{"value":null,"origin":"Yours"}"""));
+        before["composition"]!.AsObject().Add("household", false);
         before.Add("household", JsonNode.Parse(
             """{"partnerIncome":{"value":0,"origin":"Example"},"bothAged66":{"value":false,"origin":"Default"},"taxedSeparately":{"value":false,"origin":"Default"}}"""));
 
@@ -424,6 +425,8 @@ public class PlanStorageTests
     [InlineData(1, "household", 8)]
     [InlineData(5, "household", 8)]
     [InlineData(7, "household", 8)]
+    [InlineData(7, "composition.household", 8)]
+    [InlineData(3, "composition.household", 8)]
     public void Read_documentOfAVersionWithAMemberALaterVersionBrought_makesThatPlanUnreadable(int version, string member, int broughtBy)
     {
         var brought = Member(PlanInputs(StoredPlanDocuments.Of(broughtBy), 1), member).DeepClone();
@@ -448,6 +451,7 @@ public class PlanStorageTests
     [InlineData(8, "reserve")]
     [InlineData(8, "household")]
     [InlineData(8, "household.taxedSeparately")]
+    [InlineData(8, "composition.household")]
     [InlineData(1, "composition")]
     [InlineData(2, "composition")]
     [InlineData(2, "car")]

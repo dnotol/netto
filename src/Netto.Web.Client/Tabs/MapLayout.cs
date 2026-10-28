@@ -4,7 +4,8 @@ namespace Netto.Web.Client.Tabs;
 
 // Where the map draws what, in percent of its box, both ways, as the river is shaped: Company year, the
 // levers in the plan and the split one under the other down the middle, then the director's stream on the
-// left (Copyright royalty over Director pay) and the company's on the right (Corporate tax over Dividend),
+// left (Copyright royalty over Director pay, the partner right of the royalty) and the company's on the
+// right (Corporate tax over Dividend),
 // and the bar's five buckets along the bottom. A row holds what is in it and closes up when it holds
 // nothing, so a lever out of the plan leaves no gap, and with the company skipped the map is Company year,
 // which no link joins, over Director pay and the buckets. The shape is fixed, so every link has its own
@@ -16,7 +17,7 @@ namespace Netto.Web.Client.Tabs;
 // closing up: its pill wider than the chain's boxes and kept as tall as its names take one per line on the
 // narrowest map, so that it never reaches a box or the amount of the line under it, which runs straight
 // through it, from the box above to the box below. The royalty, quiet, is a pill in the middle of its own
-// slot, as wide as its box, and its row stays, Corporate tax's too.
+// slot, as wide as its box, and its row stays, Corporate tax's too; the partner, quiet, the same in its own.
 //
 // A module's badges (MapBadges) are lines of its box: the box grows a line for each, and its row keeps
 // round its tallest box the room a chain row keeps round its own, so a row whose boxes hold no badge keeps
@@ -62,6 +63,15 @@ internal static class MapLayout
     private static readonly (decimal Left, decimal Right) LeftColumn = (7m, 26m);
     private static readonly (decimal Left, decimal Right) ChainColumn = (38m, 62m);
     private static readonly (decimal Left, decimal Right) RightColumn = (74m, 95m);
+
+    // The partner's box, in the director's stream right of Copyright royalty and over Director pay's right, in
+    // the room its row leaves between the condition a royalty sets on the split, which climbs at 36, and
+    // Corporate tax's way into its taxes, which comes down from 52.5: wide enough for its name on one line
+    // on the narrowest map.
+    private static readonly (decimal Left, decimal Right) HouseholdColumn = (38m, 52m);
+
+    // Where the marital quotient climbs from Director pay's row into the partner's bottom, near its right.
+    private const decimal HouseholdClimb = 49.5m;
     private static readonly (decimal Left, decimal Right)[] BucketSpans = [(1m, 20m), (22m, 43m), (45m, 62m), (64m, 82m), (84m, 99m)];
 
     // A box is half a chain row high, in the middle of its row; the rest is the gap above and below it,
@@ -221,6 +231,7 @@ internal static class MapLayout
         RiverModule.Copyright => (MapRow.StreamTop, MapColumn.Left),
         RiverModule.CorporateTax => (MapRow.StreamTop, MapColumn.Right),
         RiverModule.DirectorPay => (MapRow.StreamBottom, MapColumn.Left),
+        RiverModule.Household => (MapRow.StreamTop, MapColumn.Household),
         RiverModule.Dividend => (MapRow.StreamBottom, MapColumn.Right),
         _ => throw new ArgumentOutOfRangeException(nameof(module), module, "A module the map has no place for."),
     };
@@ -311,8 +322,9 @@ internal static class MapLayout
             {
                 MapColumn.Left => LeftColumn,
                 MapColumn.Chain => ChainColumn,
+                MapColumn.Household => HouseholdColumn,
                 _ => RightColumn,
-            }, _quiet.Contains(module) ? PillUnits(RoyaltyLines) : BoxOf(module));
+            }, _quiet.Contains(module) ? PillUnits(QuietLines(module)) : BoxOf(module));
         }
 
         // The y of the gap between the boxes of the row given and of the next, at a fraction of its height.
@@ -356,6 +368,10 @@ internal static class MapLayout
         // holds none, the buckets'.
         private decimal Tallest(MapRow row) =>
             Modules.Where(module => !_quiet.Contains(module) && Place(module).Row == row).Select(BoxOf).DefaultIfEmpty(BoxUnits).Max();
+
+        // How many lines a quiet module's name takes in its own place on the narrowest map: the royalty's wraps in
+        // its narrow column, the partner's one word does not.
+        private static int QuietLines(RiverModule module) => module == RiverModule.Household ? 1 : RoyaltyLines;
 
         // How tall a quiet pill is kept, in chain rows, for the lines of names it may take on the narrowest map.
         private static decimal PillUnits(int lines) =>
@@ -500,6 +516,7 @@ internal static class MapLayout
                 RouteFamily.CorporateTaxToBucket => SideToBucket(bundle, from, MapSide.Left, to, CorporateDropX(bundle)),
                 RouteFamily.StreamDown => StreamDown(bundle, from, to),
                 RouteFamily.DividendToPocket => DividendToPocket(bundle, from, to),
+                RouteFamily.BesidePay => BesidePay(bundle, from, to),
                 _ => throw new ArgumentOutOfRangeException(nameof(bundle), $"{from.Id} to {to.Id}", "A link the map has no route for."),
             };
         }
@@ -519,6 +536,7 @@ internal static class MapLayout
                     (RiverModule.Split, RiverModule.DirectorPay) => RouteFamily.SplitToDirectorPay,
                     (RiverModule.Split, RiverModule.CorporateTax) => RouteFamily.SplitToCorporateTax,
                     (RiverModule.Dividend, RiverModule.Split) => RouteFamily.DividendToSplit,
+                    (RiverModule.DirectorPay, RiverModule.Household) or (RiverModule.Household, RiverModule.DirectorPay) => RouteFamily.BesidePay,
                     (_, RiverModule.CorporateTax) when fromColumn == MapColumn.Chain => RouteFamily.ChainToCorporateTax,
                     (_, RiverModule.DirectorPay) when fromColumn == MapColumn.Chain => RouteFamily.ChainToDirectorPay,
                     _ when kind == MapLinkKind.Condition && fromColumn == MapColumn.Chain && toColumn == MapColumn.Chain => RouteFamily.Bracket,
@@ -562,6 +580,7 @@ internal static class MapLayout
                 RouteFamily.SplitToDirectorPay when _grid.Holds(RiverModule.Copyright) => [(to, MapSide.Right)],
                 RouteFamily.DividendToSplit => [(from, MapSide.Right), (to, MapSide.Right)],
                 RouteFamily.CopyrightToSplit => [(from, MapSide.Right)],
+                RouteFamily.BesidePay => [(MapEnd.Of(RiverModule.DirectorPay), MapSide.Right)],
                 _ => [],
             };
         }
@@ -582,6 +601,7 @@ internal static class MapLayout
             RouteFamily.SplitToCorporateTax => bundle.Kind == MapLinkKind.Condition ? -SplitConditionToCorporate : -SplitToCorporate,
             RouteFamily.Bracket => 1m,
             RouteFamily.SplitToDirectorPay => 2m,
+            RouteFamily.BesidePay => 3m,
             _ => 0m,
         };
 
@@ -761,6 +781,20 @@ internal static class MapLayout
             return new MapRoute([new(x, source.Bottom), new(x, gap), new(target.CenterX, gap), new(target.CenterX, target.Top)]);
         }
 
+        // The marital quotient between Director pay and the partner over its right, either way: out of Director
+        // pay's right side, across its row past the left gutter and the royalty's tax apart, and up the gap
+        // between the streams' rows into the partner's bottom near its right, clear of an amount standing right
+        // of the royalty's tax apart where it comes down past Director pay; or the other way, down from the
+        // partner into Director pay's side.
+        private MapRoute BesidePay((MapEnd, MapEnd, MapLinkKind) bundle, MapEnd from, MapEnd to)
+        {
+            var (pays, partner) = (MapEnd.Of(RiverModule.DirectorPay), MapEnd.Of(RiverModule.Household));
+            var (box, above) = (_grid.Slot(pays), _grid.Slot(partner));
+            var y = PortY(bundle, pays, MapSide.Right);
+            var route = new MapRoute([new(box.Right, y), new(HouseholdClimb, y), new(HouseholdClimb, above.Bottom)]);
+            return from == pays ? route : Reversed(route);
+        }
+
         // The reserve Dividend keeps, back up to the split: out of its right side, up the right edge, and
         // into the split's right side.
         private MapRoute DividendToSplit((MapEnd, MapEnd, MapLinkKind) bundle, MapEnd from, MapEnd to)
@@ -872,6 +906,7 @@ internal static class MapLayout
         CorporateTaxToBucket,
         StreamDown,
         DividendToPocket,
+        BesidePay,
     }
 
     private enum MapSide
@@ -900,6 +935,9 @@ internal enum MapColumn
     Left,
     Chain,
     Right,
+
+    // The partner's, in the middle of the director's stream, beside Director pay.
+    Household,
 }
 
 // A point of the map, each coordinate in percent of its box.

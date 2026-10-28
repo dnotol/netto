@@ -1,3 +1,4 @@
+using Netto.Core.DirectorPay;
 using Netto.Core.Simulation;
 using Netto.Web.Client.River;
 using Netto.Web.Client.River.CompanyCar;
@@ -19,7 +20,7 @@ internal static class MapLinks
         if (run.Error is not null || run.Pay is not { } pay)
             return [];
         if (run.Year is not { } year)
-            return [.. Drains(RiverModule.DirectorPay, DirectorPayView.From(inputs, pay).Drains)];
+            return [.. Drains(RiverModule.DirectorPay, DirectorPayView.From(inputs, pay).Drains), .. Household(inputs, pay)];
 
         var composition = inputs.Composition;
         return
@@ -32,17 +33,18 @@ internal static class MapLinks
             .. Split(inputs, run, year),
             .. inputs.InPlan(OptionalModule.Copyright) ? Drains(RiverModule.Copyright, CopyrightView.From(year).Drains) : [],
             .. Drains(RiverModule.DirectorPay, DirectorPayView.From(inputs, pay).Drains),
+            .. Household(inputs, pay),
             .. Drains(RiverModule.CorporateTax, CorporateTaxView.From(year).Drains),
             .. Drains(RiverModule.Dividend, DividendView.From(year).Drains),
         ];
     }
 
     // What the company earns before it pays its director anything, as Company year's summary says it,
-    // handed to the first lever in the plan, or the split; and INASTI's company contribution, its card's
-    // figure line, into the company's expenses, none while the company owes none.
+    // handed to the first lever in the plan before the split, or the split; and INASTI's company
+    // contribution, its card's figure line, into the company's expenses, none while the company owes none.
     private static IEnumerable<MapLink> CompanyYear(YearResult year, PlanComposition composition)
     {
-        var first = PlanComposition.Modules.Where(lever => lever != OptionalModule.Copyright && composition.Holds(lever))
+        var first = PlanComposition.Modules.Where(lever => lever is not (OptionalModule.Copyright or OptionalModule.Household) && composition.Holds(lever))
             .Select(lever => (RiverModule?)MapModules.Of(lever)).FirstOrDefault() ?? RiverModule.Split;
 
         return
@@ -79,6 +81,23 @@ internal static class MapLinks
             _ => null,
         }),
     ];
+
+    // The marital quotient, the Household card's figure line, a tax base moved between the partners while the
+    // partner is in the plan and the year taxed jointly: from Director pay to the partner while it takes part
+    // of the director's income to theirs, from the partner to Director pay while it adds part of theirs; none
+    // while it attributes nothing. No money moves: what it saves is in Director pay's taxes already.
+    private static IEnumerable<MapLink> Household(RiverInputs inputs, GrossToNetResult pay)
+    {
+        if (!inputs.InPlan(OptionalModule.Household) || HouseholdView.From(pay, inputs.Household.BothAged66.Value) is not { } view
+            || HouseholdFigures.Quotient(view) is not { } line || FigureLines.Shown([line]).Count == 0)
+            return [];
+
+        var label = new MapLabel(MapText.HouseholdCard, line.Key, line.Args);
+        var (pays, partner) = (MapEnd.Of(RiverModule.DirectorPay), MapEnd.Of(RiverModule.Household));
+        return line.Key == HouseholdFigures.QuotientToPartner
+            ? [new MapLink(MapLinkKind.TaxBase, pays, partner, RiverModule.Household, label, -line.Amount)]
+            : [new MapLink(MapLinkKind.TaxBase, partner, pays, RiverModule.Household, label, line.Amount)];
+    }
 
     // What the split shares, a line each of its card: the pay, the contributions the company pays on the
     // director's behalf and the fund's fee with them, all on to Director pay; the royalty, on to Copyright

@@ -15,7 +15,7 @@ internal static class HandOff
 
     // What a module takes off what the company earns: what reaches the pocket of the vouchers and the
     // allowances, the rent, the car's costs less the director's contribution, and the royalty the split
-    // pays beside the pay.
+    // pays beside the pay; nothing for the partner, which changes only how the pay is taxed.
     public static decimal Cost(YearResult year, OptionalModule module) => module switch
     {
         OptionalModule.Vouchers => year.Vouchers.Total,
@@ -23,6 +23,7 @@ internal static class HandOff
         OptionalModule.Rent => year.Rent.Rent,
         OptionalModule.Car => CarView.FromProfit(year.Car),
         OptionalModule.Copyright => year.Copyright.Royalty,
+        OptionalModule.Household => 0m,
         _ => throw new ArgumentOutOfRangeException(nameof(module), module, "A module that takes nothing off what the company earns."),
     };
 

@@ -63,6 +63,7 @@ internal static class RiverDifferences
             [RiverModule.Copyright] = scenario.Copyright with { Royalty = 0m, FollowsPay = false },
             [RiverModule.DirectorPay] =
                 (scenario.MunicipalRate.Value, scenario.ContributionsPaidBy, scenario.FundFeeRate, scenario.TaxPrepayments.Withheld, scenario.TaxPrepayments.Starter),
+            [RiverModule.Household] = scenario.Household,
             [RiverModule.CorporateTax] = scenario.Company,
             [RiverModule.Dividend] = (scenario.Reserve, scenario.DividendCategory, scenario.EarlierProfits),
         };

@@ -22,7 +22,8 @@ public class MapQuietTests
     public static TheoryData<OptionalModule> LeversMovingNothingOnTheirOwn => new(OptionalModule.Vouchers, OptionalModule.Rent, OptionalModule.Car, OptionalModule.Copyright);
 
     // A river with some of its levers emptied: each as the example holds it, with no amount, still in the
-    // plan. The royalty then follows the pay with no creative share, so it comes to nothing.
+    // plan. The royalty then follows the pay with no creative share, so it comes to nothing; the partner, whom
+    // the example holds no income for, is taxed separately, with no marital quotient.
     internal static RiverInputs Emptied(RiverInputs river, params OptionalModule[] levers) => levers.Aggregate(river, (inputs, lever) => lever switch
     {
         OptionalModule.Vouchers => inputs with { Vouchers = RiverInputs.Example.Vouchers },
@@ -30,6 +31,7 @@ public class MapQuietTests
         OptionalModule.Rent => inputs with { Rent = RiverInputs.Example.Rent },
         OptionalModule.Car => inputs with { Car = RiverInputs.Example.Car },
         OptionalModule.Copyright => inputs with { Copyright = RiverInputs.Example.Copyright },
+        OptionalModule.Household => inputs.WithTaxedSeparately(true),
         _ => throw new ArgumentOutOfRangeException(nameof(levers), lever, null),
     });
 
@@ -73,6 +75,23 @@ public class MapQuietTests
         view.ShouldSatisfyAllConditions(
             () => view.LinksOf(RiverModule.Copyright).ShouldBeEmpty(),
             () => (slot.Left, slot.Right, Math.Round(slot.CenterY, 10)).ShouldBe((box.Left, box.Right, Math.Round(box.CenterY, 10))));
+    }
+
+    // The partner taxed separately moves no tax base: quiet in its own place, over Director pay's right, with no
+    // line, its pill as high as its one word takes.
+    [Fact]
+    public void From_aPartnerTaxedSeparately_isQuietInItsOwnPlaceWithNoLink()
+    {
+        var river = Emptied(Full, OptionalModule.Household);
+
+        var view = MapView.From(river, river.Run());
+
+        var box = MapLayout.Grid(MapView.ModulesOf(river), badgeLines: BadgeLines(view)).Slot(MapEnd.Of(RiverModule.Household));
+        var node = Node(view, RiverModule.Household);
+        view.ShouldSatisfyAllConditions(
+            () => node.Quiet.ShouldBeTrue(),
+            () => view.LinksOf(RiverModule.Household).ShouldBeEmpty(),
+            () => (node.Slot.Left, node.Slot.Right, Math.Round(node.Slot.CenterY, 10)).ShouldBe((box.Left, box.Right, Math.Round(box.CenterY, 10))));
     }
 
     // The office allowance is a rule the rent sets on the allowances: while a rent is paid it is a link of
@@ -186,8 +205,8 @@ public class MapQuietTests
         var (one, two) = (Places(together), Places(parted));
 
         one.ShouldSatisfyAllConditions(
-            () => one.ShouldBe(["company-year", "vouchers+allowances+rent+car quiet", "split", "copyright", "director-pay", "corporate-tax", "dividend"]),
-            () => two.ShouldBe(["company-year", "vouchers quiet", "allowances", "rent+car quiet", "split", "copyright", "director-pay", "corporate-tax", "dividend"]));
+            () => one.ShouldBe(["company-year", "vouchers+allowances+rent+car quiet", "split", "copyright", "director-pay", "household", "corporate-tax", "dividend"]),
+            () => two.ShouldBe(["company-year", "vouchers quiet", "allowances", "rent+car quiet", "split", "copyright", "director-pay", "household", "corporate-tax", "dividend"]));
     }
 
     // A lever that moves money again gets its box back in its place: its row, as the map draws it with no

@@ -57,6 +57,7 @@ public class MapLayoutTests
         [RiverModule.Split] = 2,
         [RiverModule.CorporateTax] = 3,
         [RiverModule.DirectorPay] = 1,
+        [RiverModule.Household] = 1,
     };
 
     [Fact]
@@ -89,7 +90,17 @@ public class MapLayoutTests
     [Fact]
     public void Grid_companySkipped_isCompanyYearAndDirectorPayOverTheBuckets()
     {
-        MapLayout.Grid(MapView.ModulesOf(MapLinksTests.Full.SkipCompany())).Rows.ShouldBe([MapRow.CompanyYear, MapRow.StreamBottom, MapRow.Buckets]);
+        var river = MapLinksTests.Full.SkipCompany().TakeOutOfPlan(OptionalModule.Household);
+
+        MapLayout.Grid(MapView.ModulesOf(river)).Rows.ShouldBe([MapRow.CompanyYear, MapRow.StreamBottom, MapRow.Buckets]);
+    }
+
+    // The partner in the plan keeps its row over Director pay's, its quotient a tax base of the pay alone.
+    [Fact]
+    public void Grid_companySkippedWithThePartner_isCompanyYearThePartnerOverDirectorPayAndTheBuckets()
+    {
+        MapLayout.Grid(MapView.ModulesOf(MapLinksTests.Full.SkipCompany())).Rows
+            .ShouldBe([MapRow.CompanyYear, MapRow.StreamTop, MapRow.StreamBottom, MapRow.Buckets]);
     }
 
     // A module's badges grow its box a line each, 0.3 of a chain row (MapLayout.BadgeRem and BadgeGapRem
@@ -353,13 +364,39 @@ public class MapLayoutTests
         condition.Route.Points[0].X.ShouldBe(royalty.Right);
     }
 
+    // The marital quotient leaves Director pay's right side, runs across its row and climbs into the partner's
+    // bottom, its box over Director pay's right; from the partner, the same way back into Director pay's side.
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Routed_theMaritalQuotient_runsFromDirectorPaysRightSideUpIntoThePartnersBottomOrBack(bool fromThePartner)
+    {
+        var river = fromThePartner
+            ? RiverInputs.Example.AddToPlan(OptionalModule.Household).WithDirectorPay(12_000m).WithPartnerIncome(60_000m)
+            : MapLinksTests.Full;
+        var view = MapView.From(river, river.Run());
+        var (pay, partner) = (Slot(view, RiverModule.DirectorPay), Slot(view, RiverModule.Household));
+
+        var route = view.Bundles().Single(line => line.Kind == MapLinkKind.TaxBase && line.Card == RiverModule.Household).Route;
+
+        var (start, end) = fromThePartner ? (route.Points[^1], route.Points[0]) : (route.Points[0], route.Points[^1]);
+        route.ShouldSatisfyAllConditions(
+            () => (start.X, start.Y > pay.Top && start.Y < pay.Bottom).ShouldBe((pay.Right, true)),
+            () => (end.Y, end.X > partner.Left && end.X < partner.Right).ShouldBe((partner.Bottom, true)),
+            () => route.Arrow.ShouldBe(fromThePartner ? MapDirection.Left : MapDirection.Up),
+            () => partner.Bottom.ShouldBeLessThan(pay.Top));
+    }
+
+    private static MapSlot Slot(MapView view, RiverModule module) => view.Modules.Single(node => node.End.Module == module).Slot;
+
     // The band over the buckets grows the map only by what the streams' last row lacks under its boxes: its three
     // rows with a dividend, its first 0.1 of a chain row under the lowest box, each 0.35 under the one before, the
     // buckets 0.2 under the last, a whole chain row; two with Director pay alone, 0.65. Every lever: Director pay
     // holds a badge, its row keeps 0.4 under it, and the buckets' row grows from 0.9 to 1.3, 0.7 for its box and
     // the margin under it and the 0.6 the band lacks past those 0.4, 10.7 chain rows to 11.1; the example: 0.55
     // under its boxes, the buckets' row 0.7 and 0.45, 6.1 to 6.35; the company skipped: 0.55 under its box leaves
-    // the band's 0.65 short by less than the buckets' 0.2 margin over their box, 3.5 as before.
+    // the band's 0.65 short by less than the buckets' 0.2 margin over their box, 3.5 as before; with the partner
+    // in the plan, its row of 1.6 over Director pay's, 5.1.
     [Theory]
     [MemberData(nameof(BandHeights))]
     public void From_aPlan_growsByTheBandItsStreamsLackRoomFor(string plan, decimal units)
@@ -573,9 +610,10 @@ public class MapLayoutTests
 
     internal static IEnumerable<(int Bits, int Quiet, bool CompanySkipped)> Plans()
     {
-        foreach (var bits in Enumerable.Range(0, 32))
+        var compositions = 1 << PlanComposition.Modules.Count;
+        foreach (var bits in Enumerable.Range(0, compositions))
         {
-            foreach (var quiet in Enumerable.Range(0, 32).Where(quiet => (quiet & ~bits) == 0))
+            foreach (var quiet in Enumerable.Range(0, compositions).Where(quiet => (quiet & ~bits) == 0))
                 yield return (bits, quiet, false);
             yield return (bits, 0, true);
         }
@@ -788,6 +826,7 @@ public class MapLayoutTests
         { "every lever", 11.1m },
         { "the example", 6.35m },
         { "the company skipped", 3.5m },
+        { "the company skipped, the partner in the plan", 5.1m },
     };
 
     // A plan by name: every lever, the example, every lever with the company skipped, or one at the edges.
@@ -795,7 +834,8 @@ public class MapLayoutTests
     {
         "every lever" => MapLinksTests.Full,
         "the example" => RiverInputs.Example,
-        "the company skipped" => MapLinksTests.Full.SkipCompany(),
+        "the company skipped" => MapLinksTests.Full.SkipCompany().TakeOutOfPlan(OptionalModule.Household),
+        "the company skipped, the partner in the plan" => MapLinksTests.Full.SkipCompany(),
         _ => Extreme(plan),
     };
 

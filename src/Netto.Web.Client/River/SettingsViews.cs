@@ -114,6 +114,23 @@ internal sealed record DirectorPaySettingsView(IReadOnlyList<SettingPhrase> Situ
     };
 }
 
+// The Household card's one disclosure, « About you two »: whether both partners are 66 on 1 January of the
+// tax year, and whether the couple is taxed separately this year.
+internal sealed record HouseholdSettingsView(IReadOnlyList<SettingPhrase> Situation)
+{
+    public static HouseholdSettingsView From(RiverInputs inputs)
+    {
+        var (aged, separately) = (inputs.Household.BothAged66, inputs.Household.TaxedSeparately);
+        var taxYear = (inputs.IncomeYear + 1).ToString(Formats.Culture);
+
+        return new HouseholdSettingsView(
+            [
+                SettingPhrase.Of(aged.Value ? "Situation_BothAged66" : "Situation_NotBothAged66", aged.Origin, taxYear),
+                SettingPhrase.Of(separately.Value ? "Situation_TaxedSeparately" : "Situation_TaxedJointly", separately.Origin),
+            ]);
+    }
+}
+
 // Corporate tax's two disclosures: « Your company », whether the reduced rate is open to it and which
 // financial year the income year is; and « Advance payments », what the company paid by the deadlines,
 // with the surcharge they leave once the year runs.

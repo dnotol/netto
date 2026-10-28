@@ -14,6 +14,7 @@ internal static class ModuleFolds
         OptionalModule.Rent => "rent",
         OptionalModule.Car => "car",
         OptionalModule.Copyright => "copyright",
+        OptionalModule.Household => "household",
         _ => throw new ArgumentOutOfRangeException(nameof(module), module, null),
     };
 

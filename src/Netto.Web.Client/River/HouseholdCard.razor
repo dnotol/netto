@@ -1,0 +1,97 @@
+@using Netto.Core.Rules
+@inject IStringLocalizer<HouseholdCard> L
+
+@* The director's spouse or legal cohabitant, whom they are taxed jointly with while the partner is in the
+   plan: one assessment in both names, each taxed on the scale on their own income, the marital quotient
+   moving part of the larger professional income to the smaller. The user types the partner's net
+   professional income, none until given, which Netto reads as no professional income; a refusal of it marks
+   its field. Its figures come first after it, as lines (HouseholdFigures): the director's income, the
+   marital quotient taken off it for the partner or added to it from theirs, the director's taxable income,
+   the partner's income and taxable income, and what the quotient saves the pay's tax; then a note for what
+   they cannot say: that the quotient attributes nothing, or that the year is taxed separately, and what the
+   river counts of the household's tax. Behind one disclosure, « About you two », folded to a line that states them, the two statuses
+   Netto cannot see: whether both partners are 66 on 1 January of the tax year, which raises the quotient's
+   cap, and whether the year is one the couple is taxed separately in, each assumed not until the user says
+   so. An optional module: it shows only while in the plan, and the word at its bottom takes it out, its
+   values kept. It counts with the company skipped too: the pay alone is taxed jointly. *@
+<ModuleCard Name="@ModuleFolds.Name(OptionalModule.Household)" Title="@L["Title"]" Summary="@Summary" Help="@L["Hint"]"
+            Refused="@Refused" Sources="@(_view?.Details ?? [])" IncomeYear="Inputs.IncomeYear" RemoveLabel="@L["Remove"]" OnRemove="Remove">
+    <RiverField Label="@L["PartnerIncomeLabel", Inputs.IncomeYear]" For="river-partner-income" Origin="Inputs.Household.PartnerIncome.Origin" Help="@L["PartnerIncomeHint"]">
+        <RiverNumericField T="decimal" InputId="river-partner-income" Value="Inputs.Household.PartnerIncome.Value" ValueChanged="OnPartnerIncomeChanged"
+                           Euros="true"
+                           Error="@(Refused?.Input == RefusedInput.PartnerIncome)" Refusal="@Refused" />
+    </RiverField>
+    <RefusedMessage Error="@Refused" />
+    @if (_view is not null)
+    {
+        <FigureList Figures="@FigureWords.Of(L, HouseholdFigures.Of(_view))" />
+    }
+    @if (HouseholdCardText.Note(_view, Inputs.Household.TaxedSeparately.Value) is { } note)
+    {
+        <p class="household__note"><TermSentence Text="@L[note, _view is null ? "" : Formats.RuleAmount(_view.Rate), _view is null ? "" : Formats.RuleAmount(_view.Cap)]" Meaning="@L[HouseholdCardText.QuotientMeaning]" /></p>
+    }
+    @if (_view is not null)
+    {
+        <p class="household__note">@L[HouseholdCardText.Counted]</p>
+    }
+    <Disclosure Title="@L["SituationTitle"]" Values="@SettingWords.Of(L, _settings.Situation)">
+        <div class="household__tick">
+            <MudCheckBox T="bool" Value="Inputs.Household.BothAged66.Value" ValueChanged="OnBothAged66Changed" Color="Color.Primary"
+                         Label="@L["BothAged66Label", Inputs.IncomeYear + 1]" />
+            <OriginChip Origin="Inputs.Household.BothAged66.Origin" />
+            <InfoBubble Label="@L["BothAged66Label", Inputs.IncomeYear + 1]">@L["BothAged66Hint"]</InfoBubble>
+        </div>
+        <div class="household__tick">
+            <MudCheckBox T="bool" Value="Inputs.Household.TaxedSeparately.Value" ValueChanged="OnTaxedSeparatelyChanged" Color="Color.Primary"
+                         Label="@L["TaxedSeparatelyLabel"]" />
+            <OriginChip Origin="Inputs.Household.TaxedSeparately.Origin" />
+            <InfoBubble Label="@L["TaxedSeparatelyLabel"]">@L["TaxedSeparatelyHint"]</InfoBubble>
+        </div>
+    </Disclosure>
+</ModuleCard>
+
+@code {
+    [Parameter, EditorRequired]
+    public RiverInputs Inputs { get; set; } = default!;
+
+    [Parameter]
+    public EventCallback<RiverInputs> InputsChanged { get; set; }
+
+    [Parameter, EditorRequired]
+    public RiverRun Run { get; set; } = default!;
+
+    // The engine's refusal of the partner's income.
+    [Parameter]
+    public Refusal? Refused { get; set; }
+
+    private HouseholdView? _view;
+    private HouseholdSettingsView _settings = default!;
+
+    protected override void OnParametersSet()
+    {
+        _view = Run.Pay is { } pay ? HouseholdView.From(pay, Inputs.Household.BothAged66.Value) : null;
+        _settings = HouseholdSettingsView.From(Inputs);
+    }
+
+    // The quotient and what it saves the pay's tax, that it attributes nothing, or that the year is taxed
+    // separately.
+    private string? Summary
+    {
+        get
+        {
+            if (HouseholdCardText.Summary(_view, Inputs.Household.TaxedSeparately.Value) is not { } key)
+                return null;
+
+            var quotient = _view is null ? 0m : Math.Abs(HouseholdFigures.Quotient(_view)?.Amount ?? 0m);
+            return L[key, Formats.Euros(quotient), Formats.Euros(_view?.QuotientSaves ?? 0m)].Value;
+        }
+    }
+
+    private Task OnPartnerIncomeChanged(decimal income) => InputsChanged.InvokeAsync(Inputs.WithPartnerIncome(income));
+
+    private Task OnBothAged66Changed(bool both) => InputsChanged.InvokeAsync(Inputs.WithBothAged66(both));
+
+    private Task OnTaxedSeparatelyChanged(bool separately) => InputsChanged.InvokeAsync(Inputs.WithTaxedSeparately(separately));
+
+    private Task Remove() => InputsChanged.InvokeAsync(Inputs.TakeOutOfPlan(OptionalModule.Household));
+}

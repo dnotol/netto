@@ -1,0 +1,16 @@
+/* A status the user ticks, with its origin and its bubble. */
+.household__tick {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem 0.5rem;
+}
+
+/* What a figure cannot say, under the lines it is about: that no quotient goes either way, that the year is
+   taxed separately, and what the river counts of the household's tax. */
+.household__note {
+    margin: 0;
+    color: var(--netto-text-muted);
+    font-size: 0.9rem;
+    line-height: 1.55;
+}

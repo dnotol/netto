@@ -38,6 +38,7 @@ public class LeverChromeTests
     // Those whose figures rest on rules, worded in the plural.
     public static TheoryData<Type, string> Rules => new()
     {
+        { typeof(HouseholdCard), "household" },
         { typeof(VoucherCard), "vouchers" },
         { typeof(AllowanceCard), "allowances" },
         { typeof(RentCard), "rent" },

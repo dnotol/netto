@@ -45,7 +45,8 @@ public class RiverTextTests
     ];
 
     // The vouchers in the plan with each next lever, and the split after them.
-    private static readonly PlanComposition[] Compositions = [new(true, true, true, false, false), new(true, false, true, false, false), new(true, false, false, false, false), new(true, true, true, true, false), new(true, true, true, true, true)];
+    private static readonly PlanComposition[] Compositions =
+        [new(true, true, true, false, false, false), new(true, false, true, false, false, false), new(true, false, false, false, false, false), new(true, true, true, true, false, false), new(true, true, true, true, true, true)];
 
     // What the example holds none of draws no chip, so it has no word.
     [Fact]

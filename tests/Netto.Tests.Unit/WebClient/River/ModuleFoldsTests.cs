@@ -9,7 +9,7 @@ namespace Netto.Tests.WebClient.River;
 // plan chooses on the map so they can be filled (PlanMapChoiceTests).
 public class ModuleFoldsTests
 {
-    private static readonly PlanComposition Everything = new(true, true, true, true, true);
+    private static readonly PlanComposition Everything = new(true, true, true, true, true, true);
 
 
     // Kept from one version to the next, or a viewer's folds are forgotten.
@@ -19,6 +19,7 @@ public class ModuleFoldsTests
     [InlineData(OptionalModule.Rent, "rent")]
     [InlineData(OptionalModule.Car, "car")]
     [InlineData(OptionalModule.Copyright, "copyright")]
+    [InlineData(OptionalModule.Household, "household")]
     public void Name_eachModule_isTheNameItsCardWasAlwaysRememberedUnder(OptionalModule module, string name)
     {
         ModuleFolds.Name(module).ShouldBe(name);

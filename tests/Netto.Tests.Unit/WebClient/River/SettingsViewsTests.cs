@@ -600,6 +600,25 @@ public class SettingsViewsTests
 
     private static CorporateTaxSettingsView CorporateTaxSettings(RiverInputs inputs) => CorporateTaxSettingsView.From(inputs, inputs.Run());
 
+    // « About you two »: neither status given, both assumed; once ticked, the user's.
+    [Fact]
+    public void AboutYouTwo_example_statesBothStatusesAsDefaults()
+    {
+        Phrases(HouseholdSettingsView.From(RiverInputs.Example).Situation).ShouldBe(
+        [
+            ("Situation_NotBothAged66", "2027", InputOrigin.Default),
+            ("Situation_TaxedJointly", "", InputOrigin.Default),
+        ]);
+    }
+
+    [Fact]
+    public void AboutYouTwo_bothTicked_statesThemAsYours()
+    {
+        var inputs = RiverInputs.Example.WithBothAged66(true).WithTaxedSeparately(true);
+
+        Phrases(HouseholdSettingsView.From(inputs).Situation).ShouldBe([("Situation_BothAged66", "2027", null), ("Situation_TaxedSeparately", "", null)]);
+    }
+
     private static List<(string Key, string Args, InputOrigin? Origin)> Phrases(IEnumerable<SettingPhrase> phrases) =>
         [.. phrases.Select(phrase => (phrase.Key, string.Join('|', phrase.Args), phrase.Origin))];
 }

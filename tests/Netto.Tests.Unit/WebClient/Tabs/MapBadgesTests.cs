@@ -102,15 +102,16 @@ public class MapBadgesTests
     private static string Shape(MapBadge badge) => $"{badge.Kind} {badge.Words.Text} {badge.Words.Key} {string.Join(',', badge.Words.Args)} {badge.Tone}";
 
     // A refused amount leaves the map without a link and so without a badge; the company skipped leaves no
-    // year to read.
+    // year to read, and only the partner's marital quotient, a tax base of the pay alone, marks the partner.
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public void From_aRunWithoutAYear_marksNoModule(bool refused)
+    public void From_aRunWithoutAYear_marksNoModuleButThePartnersQuotient(bool refused)
     {
         var river = refused ? Full.WithReserve(-1m) : Full.SkipCompany();
 
-        MapView.From(river, river.Run()).Modules.ShouldAllBe(node => node.Badges.Count == 0);
+        MapView.From(river, river.Run()).Modules.Where(node => node.Badges.Count > 0).Select(node => node.End.Id)
+            .ShouldBe(refused ? [] : ["household"]);
     }
 
     // Whatever the plan holds and leaves empty, a quiet lever has no badge, nothing reaching it, and no

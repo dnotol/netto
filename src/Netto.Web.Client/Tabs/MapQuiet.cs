@@ -7,7 +7,8 @@ namespace Netto.Web.Client.Tabs;
 // passed on from the module above it down the middle or on to the one below, so that it passes on all it
 // receives: no line of its own into a bucket, no tax base, no condition, a condition
 // counting as any link does (the office allowance beside a paid rent keeps an empty Expense allowances in
-// its box). The royalty, beside the chain, is quiet when it has no link at all: it comes to nothing. Read
+// its box). The royalty, beside the chain, is quiet when it has no link at all: it comes to nothing; so is the
+// partner, while the marital quotient attributes nothing, in a year taxed separately among others. Read
 // from every link of the run before a filter hides any, so hiding a kind of link folds nothing; a refused
 // run has no link to read what its levers move, so it folds nothing. Nothing here tests a rule or computes
 // a figure: it reads which lines the cards draw.

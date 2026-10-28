@@ -41,6 +41,10 @@ public class RiverDifferencesTests
         { "expense allowances added", Today, Today.WithOfficeAllowance(1_000m).AddToPlan(OptionalModule.Allowances), "Allowances:Added" },
         { "a company car added", Today, Today.WithCatalogueValue(40_000m).WithCarCosts(5_000m).AddToPlan(OptionalModule.Car), "Car:Added" },
         { "a royalty's creative share added with the royalty", Today, Today.WithCreativeShare(0.8m).AddToPlan(OptionalModule.Copyright), "Copyright:Added" },
+        { "a partner added", Today, Today.AddToPlan(OptionalModule.Household), "Household:Added" },
+        { "the partner's income, the partner in both", Today.AddToPlan(OptionalModule.Household), Today.WithPartnerIncome(9_000m).AddToPlan(OptionalModule.Household), "Household:Changed" },
+        { "the year taxed separately, the partner in both", Today.AddToPlan(OptionalModule.Household), Today.WithTaxedSeparately(true).AddToPlan(OptionalModule.Household), "Household:Changed" },
+        { "the partner taken out of the river", Today.AddToPlan(OptionalModule.Household), Today, "Household:LeftOut" },
         { "the home's cadastral income, the rent out of both plans", Today, Today.WithCadastralIncome(2_000m), "Rent:Changed" },
         { "the home's share let, the rent in both plans", Today.AddToPlan(OptionalModule.Rent), Today.WithShareLet(0.12m).AddToPlan(OptionalModule.Rent), "Rent:Changed" },
         { "the car taken out of the river", TodayWithCarAndMeals, TodayWithCarAndMeals.TakeOutOfPlan(OptionalModule.Car), "Car:LeftOut" },
@@ -75,7 +79,9 @@ public class RiverDifferencesTests
     // A lever that holds nothing is the same in the plan or out of it, whichever holds it: the year is the
     // same, so the note names no card. Each lever by hand, since each keeps its own facts while it is out
     // (the car's carry the example's dates, which only a car with a catalogue value counts).
-    public static TheoryData<OptionalModule> Levers => new(Enum.GetValues<OptionalModule>());
+    // The levers, which take nothing until given an amount; not the partner, whom the engine taxes the year
+    // with as soon as they join the plan, an income given or none (« a partner added » above).
+    public static TheoryData<OptionalModule> Levers => new(Enum.GetValues<OptionalModule>().Where(module => module != OptionalModule.Household));
 
     [Theory]
     [MemberData(nameof(Levers))]
@@ -147,15 +153,15 @@ public class RiverDifferencesTests
     public void Nameable_everyModuleButTheSplit_inTheRiversOrder()
     {
         RiverDifferences.Nameable.Select(module => module.ToString()).ShouldBe(
-            ["River", "CompanyYear", "Vouchers", "Allowances", "Rent", "Car", "Copyright", "DirectorPay", "CorporateTax", "Dividend"]);
+            ["River", "CompanyYear", "Vouchers", "Allowances", "Rent", "Car", "Copyright", "DirectorPay", "Household", "CorporateTax", "Dividend"]);
     }
 
-    // The river with all five optional modules in its plan, and a fact in each lever that makes its being in
+    // The river with all six optional modules in its plan, and a fact in each lever that makes its being in
     // the plan count: a lever that holds nothing is the same in the plan or out of it.
     private static readonly RiverInputs AllInThePlan = RiverInputs.Example
         .WithMealVoucherDays(100).WithOfficeAllowance(500m).WithCatalogueValue(40_000m).WithCarCosts(5_000m)
         .AddToPlan(OptionalModule.Vouchers).AddToPlan(OptionalModule.Allowances).AddToPlan(OptionalModule.Rent)
-        .AddToPlan(OptionalModule.Car).AddToPlan(OptionalModule.Copyright);
+        .AddToPlan(OptionalModule.Car).AddToPlan(OptionalModule.Copyright).AddToPlan(OptionalModule.Household);
 
     // The inputs the tab names no card for, each with why. A move sets the first: the river moves away from
     // Today by it by design. No move reads the others. A module's flag whose facts the moves keep while it is
@@ -180,9 +186,6 @@ public class RiverDifferencesTests
         ["Composition.Copyright"] = "the creative share and statuses are kept while Copyright royalty is out and its amount and mode are the move's: the same in or out",
         ["BilledContributions"] = "no move reads it: what the fund bills reaches only the calendar",
         ["Car.PrivateCost"] = "no move reads it: only the car card weighs the car against it",
-        ["Household.PartnerIncome"] = "the river holds the partner, but hands the engine none yet",
-        ["Household.BothAged66"] = "the river holds the partner, but hands the engine none yet",
-        ["Household.TaxedSeparately"] = "the river holds the partner, but hands the engine none yet",
     };
 
     // The guard of this file. Every input of the river is held to the tab: given another value, it is named

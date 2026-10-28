@@ -14,7 +14,7 @@ namespace Netto.Tests.WebClient.River;
 // plan; with every one in it and its amounts still nothing, its figures stay those.
 public class BucketsViewTests
 {
-    private static readonly RiverInputs EveryLever = RiverInputs.Example with { Composition = new PlanComposition(true, true, true, false, false) };
+    private static readonly RiverInputs EveryLever = RiverInputs.Example with { Composition = new PlanComposition(true, true, true, false, false, false) };
 
     // The example's company: 120,000 of revenue and 19,590.70 of running costs, which every start is after.
     private static readonly CompanyFigures ExampleCompany = RiverInputs.Example.Company.ShouldNotBeNull();

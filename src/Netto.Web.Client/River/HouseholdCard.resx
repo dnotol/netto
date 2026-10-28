@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve">
+    <value>Household</value>
+  </data>
+  <data name="Summary_Quotient" xml:space="preserve">
+    <value>Quotient {0} · {1} less tax</value>
+  </data>
+  <data name="Summary_NoQuotient" xml:space="preserve">
+    <value>Taxed jointly · no marital quotient</value>
+  </data>
+  <data name="Summary_TaxedSeparately" xml:space="preserve">
+    <value>Taxed separately this year</value>
+  </data>
+  <data name="Note_NoQuotient" xml:space="preserve">
+    <value>No [marital quotient] goes either way: the one of you who earns less has {0} or more of your two professional incomes together, or earns {1} or more already.</value>
+  </data>
+  <data name="Note_TaxedSeparately" xml:space="preserve">
+    <value>Taxed separately this year: each of you files alone, with no [marital quotient].</value>
+  </data>
+  <data name="Note_Counted" xml:space="preserve">
+    <value>Netto counts what your pay adds to your household's tax: your partner's own tax and what is withheld on their income are left out.</value>
+  </data>
+  <data name="Meaning_Quotient" xml:space="preserve">
+    <value>In a joint return, part of the larger professional income is attributed to the partner who earns less, so it is taxed in their lower bands.</value>
+  </data>
+  <data name="Hint" xml:space="preserve">
+    <value>Married or legally cohabiting, you and your partner are taxed jointly: one assessment in both names, each of you taxed on the scale on your own income with your own tax-free amount. The marital quotient attributes part of the larger professional income to the partner who earns less, taxed in their lower bands. Living together without a declaration of legal cohabitation is single for tax.</value>
+  </data>
+  <data name="PartnerIncomeLabel" xml:space="preserve">
+    <value>Your partner's net professional income for {0}</value>
+  </data>
+  <data name="PartnerIncomeHint" xml:space="preserve">
+    <value>What your partner earns from their work after their own social contributions and professional costs, as their return states it. Leave it at nothing if they have no professional income.</value>
+  </data>
+  <data name="SituationTitle" xml:space="preserve">
+    <value>About you two</value>
+  </data>
+  <data name="BothAged66Label" xml:space="preserve">
+    <value>Both of you are 66 or over on 1 January {0}</value>
+  </data>
+  <data name="BothAged66Hint" xml:space="preserve">
+    <value>When both partners have reached 66 on 1 January of the tax year, the marital quotient can attribute more.</value>
+  </data>
+  <data name="TaxedSeparatelyLabel" xml:space="preserve">
+    <value>Taxed separately this year</value>
+  </data>
+  <data name="TaxedSeparatelyHint" xml:space="preserve">
+    <value>The year of your marriage or of your declaration of legal cohabitation, unless you were legal cohabitants already, and the year of a divorce or of the end of the cohabitation, or from the year after a de facto separation, each of you is taxed alone, with no marital quotient. The withholding treats that year as single too.</value>
+  </data>
+  <data name="Situation_BothAged66" xml:space="preserve">
+    <value>both 66 or over on 1 January {0}</value>
+  </data>
+  <data name="Situation_NotBothAged66" xml:space="preserve">
+    <value>not both 66 or over on 1 January {0}</value>
+  </data>
+  <data name="Situation_TaxedSeparately" xml:space="preserve">
+    <value>taxed separately this year</value>
+  </data>
+  <data name="Situation_TaxedJointly" xml:space="preserve">
+    <value>taxed jointly this year</value>
+  </data>
+  <data name="Figure_YourIncome" xml:space="preserve">
+    <value>Your net professional income</value>
+  </data>
+  <data name="Figure_QuotientToPartner" xml:space="preserve">
+    <value>Marital quotient to your partner</value>
+  </data>
+  <data name="Figure_QuotientFromPartner" xml:space="preserve">
+    <value>Marital quotient from your partner</value>
+  </data>
+  <data name="Help_Quotient" xml:space="preserve">
+    <value>When one partner's professional income is less than {0} of the two together, part of the other's is attributed to them, up to {0} of the two, and at most {1} including their own. It is taxed in their lower bands.</value>
+  </data>
+  <data name="Figure_YourOtherIncome" xml:space="preserve">
+    <value>Your other income taxed with it</value>
+  </data>
+  <data name="Help_OtherIncome" xml:space="preserve">
+    <value>The rent of a home office let to the company: income of another kind, taxed with yours, never shared by the marital quotient.</value>
+  </data>
+  <data name="Figure_YourTaxableIncome" xml:space="preserve">
+    <value>Your taxable income</value>
+  </data>
+  <data name="Figure_PartnerIncome" xml:space="preserve">
+    <value>Your partner's net professional income</value>
+  </data>
+  <data name="Figure_PartnerTaxableIncome" xml:space="preserve">
+    <value>Your partner's taxable income</value>
+  </data>
+  <data name="Figure_QuotientSaves" xml:space="preserve">
+    <value>The marital quotient saves</value>
+  </data>
+  <data name="Help_QuotientSaves" xml:space="preserve">
+    <value>What your household's income tax and municipal surcharge would be without the marital quotient, less what they are with it. It all comes off the tax on your pay: Netto counts what your pay adds to your household's tax.</value>
+  </data>
+  <data name="Remove" xml:space="preserve">
+    <value>Remove your partner from your plan</value>
+  </data>
+</root>

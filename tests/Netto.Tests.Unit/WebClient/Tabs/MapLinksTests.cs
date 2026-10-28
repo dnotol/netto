@@ -161,7 +161,8 @@ public class MapLinksTests
 
     // What only changes a tax base: what the company cannot deduct of the vouchers, added back by
     // Corporate tax; the car's benefit, taxed as the director's pay; what the company cannot deduct of
-    // the car's costs, and the share of its benefit it adds back, both added back by Corporate tax.
+    // the car's costs, and the share of its benefit it adds back, both added back by Corporate tax; the
+    // marital quotient, from the director's income to their partner with none of their own, the cap of 11,780.
     [Fact]
     public void Of_whatOnlyChangesATaxBase_runsToTheModuleThatTaxesIt()
     {
@@ -174,7 +175,8 @@ public class MapLinksTests
             (RiverModule.Vouchers, RiverModule.CorporateTax, MapText.VoucherCard, VoucherFigures.AddedBack, run.Year.Vouchers.Disallowed),
             (RiverModule.Car, RiverModule.DirectorPay, MapText.CarCard, CarFigures.BenefitTaxed, car.Benefit),
             (RiverModule.Car, RiverModule.CorporateTax, MapText.CarCard, CarFigures.NotDeductible, car.NotDeductibleCosts),
-            (RiverModule.Car, RiverModule.CorporateTax, MapText.CarCard, CarFigures.AddBack, car.AddBack)]);
+            (RiverModule.Car, RiverModule.CorporateTax, MapText.CarCard, CarFigures.AddBack, car.AddBack),
+            (RiverModule.DirectorPay, RiverModule.Household, MapText.HouseholdCard, HouseholdFigures.QuotientToPartner, 11_780m)]);
     }
 
     // The share of the car's benefit the company adds back is said at the rate its rules set, as the card
@@ -223,17 +225,44 @@ public class MapLinksTests
             .Where(end => end.Module is { } module && !modules.Contains(module)).ShouldBeEmpty();
     }
 
-    // With the company skipped, the river starts at the pay: the map draws Director pay's lines alone.
+    // With the company skipped, the river starts at the pay: the map draws Director pay's lines, and the
+    // partner's marital quotient, the pay alone taxed jointly.
     [Fact]
-    public void Of_companySkipped_isDirectorPaysLinesAlone()
+    public void Of_companySkipped_isDirectorPaysLinesAndThePartnersQuotient()
     {
         var river = EveryLever.SkipCompany();
 
         var links = MapLinks.Of(river, river.Run());
 
         links.ShouldSatisfyAllConditions(
-            () => links.ShouldNotBeEmpty(),
-            () => links.ShouldAllBe(link => link.Card == RiverModule.DirectorPay && link.Kind == MapLinkKind.IntoBucket));
+            () => links.Where(link => link.Card == RiverModule.DirectorPay).ShouldNotBeEmpty(),
+            () => links.Where(link => link.Card == RiverModule.DirectorPay).ShouldAllBe(link => link.Kind == MapLinkKind.IntoBucket),
+            () => links.Where(link => link.Card != RiverModule.DirectorPay).Select(link => (link.Card, link.Kind, link.From.Module, link.To.Module))
+                .ShouldBe([(RiverModule.Household, MapLinkKind.TaxBase, RiverModule.DirectorPay, RiverModule.Household)]));
+    }
+
+    // While the partner attributes part of theirs to the director, the quotient runs from the partner to
+    // Director pay, the amount the card adds to the director's income.
+    [Fact]
+    public void Of_partnerEarningFarMore_runsTheQuotientFromThePartnerToDirectorPay()
+    {
+        var river = RiverInputs.Example.AddToPlan(OptionalModule.Household).WithDirectorPay(12_000m).WithPartnerIncome(60_000m);
+        var run = river.Run();
+        var quotient = HouseholdView.From(run.Pay!, bothAged66: false)!.Director.Quotient;
+
+        MapLinks.Of(river, run).Where(link => link.Card == RiverModule.Household).Select(link => (link.From.Module, link.To.Module, link.Carries.Key, link.Amount))
+            .ShouldBe([(RiverModule.Household, RiverModule.DirectorPay, HouseholdFigures.QuotientFromPartner, quotient)]);
+    }
+
+    // Out of the plan, or in a year taxed separately, the partner moves no tax base: no line.
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Of_partnerOutOfThePlanOrTaxedSeparately_drawsNoQuotient(bool inPlan)
+    {
+        var river = inPlan ? RiverInputs.Example.AddToPlan(OptionalModule.Household).WithTaxedSeparately(true) : RiverInputs.Example;
+
+        MapLinks.Of(river, river.Run()).ShouldNotContain(link => link.Card == RiverModule.Household);
     }
 
     // A refused amount leaves no figure: no link, as the bar has no amount.

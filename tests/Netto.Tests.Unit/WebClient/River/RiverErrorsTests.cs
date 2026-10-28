@@ -23,7 +23,6 @@ public class RiverErrorsTests
     {
         [RefusedInput.IncomeYear] = "the river's alert, above every card: an income year with no rules has no field to mark",
         [RefusedInput.BilledContributions] = "When to pay, which holds what the fund bills each quarter and shows its refusal itself",
-        [RefusedInput.PartnerIncome] = "the river's alert, until a card holds the household and the partner's income",
     };
 
     // The cards the year's, the pay's and the royalty's refusals show on, each module by its name: the pay is
@@ -54,6 +53,8 @@ public class RiverErrorsTests
         (CopyrightCalculator.RoyaltyAboveProfit, false, "Copyright"),
         (CopyrightCalculator.RoyaltyAboveProfit, true, "Copyright"),
         (CopyrightCalculator.CreativeShareOutOfRange, false, "Copyright"),
+        (GrossToNet.PartnerIncomeNegative, false, "Household"),
+        (GrossToNet.PartnerIncomeNegative, true, "Household"),
     ];
 
     public static TheoryData<Refusal, bool, string> SpreadOverCardsData => new(SpreadOverCards);

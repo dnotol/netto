@@ -21,7 +21,7 @@ public class RiverInputsShapeTests
     [Theory]
     [InlineData(typeof(RiverInputs), "IncomeYear:Int32 Company:CompanyFigures Composition:PlanComposition Vouchers:VoucherInputs Allowances:AllowanceInputs Rent:RentInputs Car:CarInputs Copyright:CopyrightInputs SmallCompany:Input`1[Boolean] FinancialYear:Input`1[FinancialYear] CompanyContributionBand:Input`1[CompanyContributionBand] AdvancePayments:AdvancePaymentInputs DirectorPay:Input`1[Decimal] Municipality:MunicipalityChoice TaxPrepayments:TaxPrepaymentInputs Reserve:Input`1[Decimal] DividendCategory:Input`1[WithholdingCategory] EarlierProfits:Input`1[Decimal] ContributionsPaidBy:Input`1[ContributionsPaidBy] BilledContributions:Input`1[Nullable`1[Decimal]] FundFeeRate:Input`1[Nullable`1[Decimal]] Household:HouseholdInputs")]
     [InlineData(typeof(CompanyFigures), "Revenue:Input`1[Decimal] RunningCosts:Input`1[Decimal]")]
-    [InlineData(typeof(PlanComposition), "Vouchers:Boolean Allowances:Boolean Rent:Boolean Car:Boolean Copyright:Boolean")]
+    [InlineData(typeof(PlanComposition), "Vouchers:Boolean Allowances:Boolean Rent:Boolean Car:Boolean Copyright:Boolean Household:Boolean")]
     [InlineData(typeof(CopyrightInputs), "Royalty:Input`1[Decimal] FollowsPay:Input`1[Boolean] AverageWithinCap:Input`1[Boolean] HoldsAttestation:Input`1[Boolean] CreativeShare:Input`1[Nullable`1[Decimal]]")]
     [InlineData(typeof(VoucherInputs), "MealVoucherDays:Input`1[Int32] EcoVouchers:Input`1[Decimal] SportCultureVouchers:Input`1[Decimal]")]
     [InlineData(typeof(AllowanceInputs), "Office:Input`1[Decimal] Internet:Input`1[Decimal] Computer:Input`1[Decimal] Phone:Input`1[Decimal]")]

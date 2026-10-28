@@ -28,6 +28,7 @@ public class MapTabTextTests
         RiverModule.Split => typeof(SplitCard),
         RiverModule.Copyright => typeof(CopyrightCard),
         RiverModule.DirectorPay => typeof(DirectorPayCard),
+        RiverModule.Household => typeof(HouseholdCard),
         RiverModule.CorporateTax => typeof(CorporateTaxCard),
         RiverModule.Dividend => typeof(DividendCard),
         _ => throw new ArgumentOutOfRangeException(nameof(module), module, null),

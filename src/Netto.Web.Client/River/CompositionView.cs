@@ -23,8 +23,8 @@ internal sealed record CompositionView(int Count, IReadOnlyList<ModuleChoice> Mo
     }
 
     // What the module's card says it brings: the vouchers and the allowances whole, the rent once its
-    // tax is paid, the car what it costs the company a year, and the royalty its part within the limits
-    // once its tax apart is paid.
+    // tax is paid, the car what it costs the company a year, the royalty its part within the limits once its
+    // tax apart is paid, and the partner what the marital quotient saves the pay's tax.
     internal static decimal ToPocket(YearResult year, PlanComposition composition, OptionalModule module) => module switch
     {
         OptionalModule.Vouchers => VoucherView.From(year, composition).Total,
@@ -32,6 +32,7 @@ internal sealed record CompositionView(int Count, IReadOnlyList<ModuleChoice> Mo
         OptionalModule.Rent => RentView.From(year, composition).AfterTax,
         OptionalModule.Copyright => CopyrightView.From(year).AfterTax,
         OptionalModule.Car => year.Car.Costs,
+        OptionalModule.Household => HouseholdView.From(year.DirectorPay, year.Scenario.Household.BothAged66)?.QuotientSaves ?? 0m,
         _ => throw new ArgumentOutOfRangeException(nameof(module), module, "A module the Composition menu cannot say the pocket of."),
     };
 
@@ -42,6 +43,7 @@ internal sealed record CompositionView(int Count, IReadOnlyList<ModuleChoice> Mo
         OptionalModule.Rent => inputs.Rent.Values != HomeOfficeRent.None,
         OptionalModule.Copyright => inputs.Copyright.Values != RiverInputs.Example.Copyright.Values,
         OptionalModule.Car => inputs.Car.Values != RiverInputs.Example.Car.Values,
+        OptionalModule.Household => inputs.Household.Values != RiverInputs.Example.Household.Values,
         _ => throw new ArgumentOutOfRangeException(nameof(module), module, "A module the Composition menu cannot say the values of."),
     };
 }

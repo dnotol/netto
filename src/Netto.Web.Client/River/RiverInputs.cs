@@ -17,9 +17,10 @@ namespace Netto.Web.Client.River;
 // Everything the user describes in the river, each input with its origin, and the one run of the
 // year every card reads, so the river always adds up. Company is null once its figures are cleared:
 // the river then starts at the pay, and the vouchers, the expense allowances, the rent, the car and
-// the copyright royalty wait for it. Those five are optional modules: the year counts one only while
-// it is in the plan (Composition), and keeps its values while it is out, so adding it back restores
-// them. Public because the cards, components, take it as a parameter.
+// the copyright royalty wait for it. Those five and the partner are optional modules: the year counts one
+// only while it is in the plan (Composition), and keeps its values while it is out, so adding it back
+// restores them; the partner counts with the company skipped too, the pay taxed jointly. Public because
+// the cards, components, take it as a parameter.
 public sealed record RiverInputs(
     int IncomeYear,
     CompanyFigures? Company,
@@ -271,7 +272,8 @@ public sealed record RiverInputs(
         if (Company is null)
         {
             var (pay, payError) = GrossToNet.Compute(
-                IncomeYear, DirectorPay.Value, Municipality.MunicipalRate, TaxPrepayments.Values, ContributionsPaidBy.Value, fundFeeRate: FundFeeRate.Value);
+                IncomeYear, DirectorPay.Value, Municipality.MunicipalRate, TaxPrepayments.Values, ContributionsPaidBy.Value, fundFeeRate: FundFeeRate.Value,
+                household: HouseholdFacts);
             return new RiverRun(pay, null, payError);
         }
 
@@ -330,7 +332,11 @@ public sealed record RiverInputs(
         Rent = InPlan(OptionalModule.Rent) ? Rent.Values : HomeOfficeRent.None,
         Car = InPlan(OptionalModule.Car) ? Car.Values : CarFacts.None,
         Copyright = InPlan(OptionalModule.Copyright) ? Copyright.Values : CopyrightRoyalty.None,
+        Household = HouseholdFacts,
     };
+
+    // The partner while in the plan, the company's year or the pay alone; out of it, the director alone.
+    private Core.PersonalTax.Household HouseholdFacts => InPlan(OptionalModule.Household) ? Household.Values : Core.PersonalTax.Household.None;
 }
 
 // Which financial year of the company the income year is, as the user declares it: one fact that
