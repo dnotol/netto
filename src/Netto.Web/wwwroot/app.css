@@ -119,10 +119,10 @@ html {
     --netto-bar-height: 0px;
 }
 
-/* The site's column: what runs along the top of every page, the site's header (Layout/MainLayout) and the
-   plan page's band (River/BucketBar), and the pages under them, are this wide at most, centred, so a page
-   and the band above it share their edges. A MudContainer takes it with MaxWidth.False, keeping its own
-   gutters (16px, 24px from 600px wide), and Class="netto-column". */
+/* The site's column: the site's header (Layout/MainLayout) and the plan page's band (River/BucketBar) are
+   this wide at most, centred; a page takes it with .netto-column as it adopts it, so it shares their edges.
+   A MudContainer takes it with MaxWidth.False, keeping its own gutters (16px, 24px from 600px wide), and
+   Class="netto-column". */
 :root {
     --netto-column: 100rem;
 }

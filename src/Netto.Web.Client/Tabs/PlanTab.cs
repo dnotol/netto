@@ -1,9 +1,9 @@
 namespace Netto.Web.Client.Tabs;
 
-// The plan page's tabs, by purpose, under the bar of buckets: the plan, its modules from above with the
-// money between them and the card of the one chosen, the moves Netto proposes from the plan starred
-// « Today » or from the plan in the river while none is, when the plan's payments fall, and the saved
-// plans side by side. Public because the tab bar, a component, takes one as a parameter.
+// The plan page's tabs, by purpose, in the top row of the bar of buckets: the plan, its modules from above
+// with the money between them and the card of the one chosen, the moves Netto proposes from the plan
+// starred « Today » or from the plan in the river while none is, when the plan's payments fall, and the
+// saved plans side by side. Public because the tab bar, a component, takes one as a parameter.
 public enum PlanTab
 {
     Plan,
