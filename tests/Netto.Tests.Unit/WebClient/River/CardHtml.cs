@@ -116,6 +116,10 @@ internal static class CardHtml
     // The share the summary ends on, as ModuleCard words it: « 60% to you ».
     public static string? Rate(string html) => FirstInSight(html, "fold__rate") is { } rate ? TextOf(rate) : null;
 
+    // What a viewer reads of a piece of the page, as one line: its tags, its bubbles' texts and what is hidden
+    // left out.
+    public static string TextInSight(string html) => TextOf(Parse(html));
+
     // The text of each paragraph in sight, in the page's order, its whitespace read as one space.
     public static IReadOnlyList<string> Prose(string html) =>
         [.. InSight(Parse(html)).Where(element => element.Name == "p").Select(paragraph => TextOf(paragraph)).Where(text => text.Length > 0)];

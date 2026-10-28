@@ -37,6 +37,17 @@ public class CardHtmlTests
         CardHtml.Prose("<p>&#xAB;&#xA0;Today&#xA0;&#xBB; isn&#x27;t &#x2212;&#x20AC;600.00</p>").ShouldBe(["« Today » isn't −€600.00"]);
     }
 
+    // What a viewer reads of a piece of the page, a part of a list cut out of it included: a bubble's text and
+    // what is hidden left out, its whitespace read as one space.
+    [Fact]
+    public void TextInSight_aPieceOfThePage_isWhatAViewerReads()
+    {
+        const string html = "<dd>€62.00 <span>62%<span> reaches you</span></span><span class=\"info-bubble\"><button>i</button>"
+            + "<span class=\"info-bubble__text\">Out of 99%</span></span><span hidden>gone</span>";
+
+        CardHtml.TextInSight(html).ShouldBe("€62.00 62% reaches youi");
+    }
+
     // An element that holds nothing, void or closed by its own tag, leaves the text after it in its parent.
     [Fact]
     public void Prose_voidAndSelfClosedElements_holdNoTextAndSwallowNone()

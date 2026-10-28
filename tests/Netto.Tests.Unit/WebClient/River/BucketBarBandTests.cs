@@ -83,7 +83,7 @@ public class BucketBarBandTests
 
         var figures = Regex.Match(html, "<dl class=\"bucket-bar__buckets.*?</dl>", RegexOptions.Singleline).Value;
         var pocket = Regex.Match(figures, "<div class=\"bucket bucket--pocket\".*?</dd>", RegexOptions.Singleline).Value;
-        (Regex.Count(Visible(figures), "%"), Visible(pocket).Contains($"{reach} reaches you", StringComparison.Ordinal), html.Contains("bucket__share", StringComparison.Ordinal))
+        (Regex.Count(CardHtml.TextInSight(figures), "%"), CardHtml.TextInSight(pocket).Contains($"{reach} reaches you", StringComparison.Ordinal), html.Contains("bucket__share", StringComparison.Ordinal))
             .ShouldBe((1, true, false));
     }
 
@@ -141,7 +141,7 @@ public class BucketBarBandTests
         var html = await RenderBandAsync(inputs.Run());
 
         var slot = Regex.Match(html, "<div class=\"bucket-bar__slot\"[^>]*>(.*?)</div>", RegexOptions.Singleline).Groups[1].Value;
-        (slot.Contains("bucket-bar__stack", StringComparison.Ordinal), Visible(slot).Trim().StartsWith(said, StringComparison.Ordinal)).ShouldBe((false, true));
+        (slot.Contains("bucket-bar__stack", StringComparison.Ordinal), CardHtml.TextInSight(slot).StartsWith(said, StringComparison.Ordinal)).ShouldBe((false, true));
     }
 
     // The band's rows are the same whatever the plan says, so its height never depends on it: a gain over
@@ -173,10 +173,6 @@ public class BucketBarBandTests
     // YearSimulationCarTests' electric car on the example, so every bucket holds an amount.
     private static RiverInputs WithCar => RiverInputs.Example.AddToPlan(OptionalModule.Car)
         .WithCatalogueValue(50_000m).WithFirstRegistration(new DateOnly(2026, 1, 10)).WithCarCosts(8_000m);
-
-    // What a viewer reads of a piece of the band: its tags and its bubbles' texts left out.
-    private static string Visible(string html) =>
-        Regex.Replace(Regex.Replace(html, "<span [^>]*class=\"info-bubble__text\"[^>]*>.*?</span>", "", RegexOptions.Singleline), "<[^>]*>", "");
 
     private static async Task<string> RenderBandAsync(RiverRun run, RiverRun? setup = null) =>
         WebUtility.HtmlDecode(await RenderAsync<BucketBar>(new Folds(new BrowserStorage()), new()
