@@ -63,7 +63,8 @@ public class WithholdingRulesTests
     }
 
     // Only n° 32 and the marital quotient's n° 34.1.1 and 34.2 differ: the method, the reduction, the
-    // flat-rate costs, the scale and the quotient's 30% are January's.
+    // flat-rate costs and the scale are January's, and so is the quotient's 30%, cited to the
+    // coordinated annex with the rest of n° 34.1.1.
     [Fact]
     public void Later_2026_areJanuarysButForTheirDateAndNumbers32And34()
     {
@@ -71,6 +72,7 @@ public class WithholdingRulesTests
         {
             RulesFrom = Rules2026.RulesFrom,
             TaxFreeAmountReduction = Rules2026.TaxFreeAmountReduction,
+            QuotientRate = Rules2026.QuotientRate,
             QuotientMaximum = Rules2026.QuotientMaximum,
             QuotientMaximumBothAged66 = Rules2026.QuotientMaximumBothAged66,
             JointTaxFreeAmountReduction = Rules2026.JointTaxFreeAmountReduction,
@@ -104,14 +106,14 @@ public class WithholdingRulesTests
         Rules2026.QuotientAmounts.ShouldAllBe(amount => amount.Source.Url == new Uri(Fisconetplus + DecreedAnnex));
     }
 
-    // The 30% is unchanged and still cites the annex as decreed; the amounts the decree of 27.09.2026
-    // changes cite the coordinated annex that holds them.
+    // N° 34.1.1 and 34.2 as the decree of 27.09.2026 changes them, the 30% with them: the January text
+    // that holds the 30% names January's 13,790 and 5,975.96.
     [Fact]
-    public void QuotientAmounts_from1November2026_citeTheCoordinatedAnnexBesidesTheRate()
+    public void QuotientAmounts_from1November2026_citeTheCoordinatedAnnex()
     {
         November2026.QuotientAmounts.Select(amount => (amount.Key, amount.Source.Document)).ShouldBe(
         [
-            ("withholding_quotient_rate", "personal-tax/spf-finances_regles-precompte-professionnel-2026-01-01_2025-12-17.pdf"),
+            ("withholding_quotient_rate", CoordinatedAnnexDocument),
             ("withholding_quotient_maximum", CoordinatedAnnexDocument),
             ("withholding_quotient_maximum_both_aged_66", CoordinatedAnnexDocument),
             ("withholding_joint_tax_free_amount_reduction", CoordinatedAnnexDocument),

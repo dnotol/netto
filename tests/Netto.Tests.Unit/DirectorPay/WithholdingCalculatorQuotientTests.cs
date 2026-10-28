@@ -7,10 +7,11 @@ namespace Netto.Tests.DirectorPay;
 // on made-up monthly pays of income year 2026, for a director whose spouse or legal cohabitant has no
 // professional income: the key formula's lines to the annual net taxable as for a single person, then
 // 30% of it imputed to the partner, at most 13,790 to October 2026 and, from 1 November 2026, 11,780,
-// or 12,790 when both partners have reached 66 on 1 January 2027 (n° 34.1.1); the tax on the imputed
-// income and the tax on the rest, each on the scale of n° 31 (n° 34.1.2 and 34.1.3); their sum less
-// 5,975.96 to October, 6,179.26 from November (n° 34.2), never below zero (n° 21); divided by 12. Each
-// step is rounded to the cent half away from zero (n° 12), in the chain the SPF simulator « Précompte
+// or 12,790 when both partners have reached 66 on 1 January 2027 (annex III n° 34.1.1); the tax on the
+// imputed income and the tax on the rest, each on the scale of annex III n° 31 (n° 34.1.2 and 34.1.3);
+// their sum less 5,975.96 to October, 6,179.26 from November (annex III n° 34.2), never below zero (key
+// formula n° 21); divided by 12 (key formula n° 16). Each step is rounded to the cent half away from
+// zero (key formula n° 3, annex III n° 12), in the chain the SPF simulator « Précompte
 // professionnel 2026 », sheet « Dirigeants d'entreprise », rows 34 and 35 follows:
 // I35 = round(min(H × 30%, 13,790)); I34 = H − I35; J34 = round(scale(I34)); J35 = round(scale(I35));
 // K34 = max(0, J34 + J35 − 5,975.96); O34 = round(K34 ÷ 12).

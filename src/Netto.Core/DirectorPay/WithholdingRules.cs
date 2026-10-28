@@ -35,7 +35,9 @@ public sealed record WithholdingRules(
         "Key formula for the withholding tax on pay paid from 1 January 2026 (ESS-SR/2025-0928), Fisconetplus, version 17.12.2025",
         "N° 6 to 16, the monthly pay in five steps: the gross less the director's reduction (n° 7, 1°), times 12 (n° 7, 2°); "
         + "less the flat-rate costs (n° 8, 2°); the basic tax on the scale of annexe 1, with the 7% municipal surcharge built in (n° 5), "
-        + "less the tax on the tax-free amount of a single person (n° 11, a); divided by 12 (n° 16); never below zero (n° 21). "
+        + "less the tax on the tax-free amount of a single person (n° 11, a), or, when the partner has no professional income of their own (n° 11, b), "
+        + "30% of the annual net taxable imputed to the partner, the tax on it and the tax on the rest each on that scale, "
+        + "their sum less twice the tax on the tax-free amount; divided by 12 (n° 16); never below zero (n° 21). "
         + "N° 3: each step rounded to the cent, up from five thousandths",
         new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/389035ca-432e-422b-859d-2d32fbdaa4cf"),
         "personal-tax/spf-finances_formule-cle-precompte-professionnel-2026-01-01_2025-12-17.pdf");
@@ -104,13 +106,16 @@ public sealed record WithholdingRules(
 
     // From 1 November 2026, the royal decree of 27.09.2026 changes n° 32 and the marital quotient's
     // maximum and amount taken off (n° 34.1.1 and 34.2) of what reaches a director's monthly pay; no key
-    // formula of that date is published, so the January one's method applies.
+    // formula of that date is published, so the January one's method applies. The quotient's 30%, the
+    // same, is cited to the coordinated annex with the rest of n° 34.1.1, whose January text names
+    // January's maximum.
     public static WithholdingRules IncomeYear2026 { get; } = From1January2026 with
     {
         Later = From1January2026 with
         {
             RulesFrom = new RuleDate("rules_from", new DateOnly(2026, 11, 1), CoordinatedAnnex2026),
             TaxFreeAmountReduction = new RuleAmount("tax_free_amount_reduction", 3_089.63m, CoordinatedTaxFreeAmountFromNovember2026),
+            QuotientRate = new RuleAmount("withholding_quotient_rate", 0.30m, CoordinatedQuotientFromNovember2026),
             QuotientMaximum = new RuleAmount("withholding_quotient_maximum", 11_780m, CoordinatedQuotientFromNovember2026),
             QuotientMaximumBothAged66 = new RuleAmount("withholding_quotient_maximum_both_aged_66", 12_790m, CoordinatedQuotientFromNovember2026),
             JointTaxFreeAmountReduction = new RuleAmount("withholding_joint_tax_free_amount_reduction", 6_179.26m, CoordinatedQuotientFromNovember2026),
