@@ -5,7 +5,7 @@ using Shouldly;
 
 namespace Netto.Tests.WebClient.Tabs;
 
-// What the Map tab draws of one run of the river: the modules the river shows with figures, the four
+// What the Map tab draws of one run of the river: the modules the river shows with figures, the five
 // buckets of the bar whatever the plan holds, and the run's links with their routes; none while an amount
 // is refused, the module holding it marked. A filter shows some of the links and hides the rest without
 // moving anything, and a module chosen off the map is none.

@@ -6,7 +6,7 @@ using Netto.Web.Client.River;
 namespace Netto.Web.Client.Tabs;
 
 // What the Map tab draws of the one run of the river: the modules the river shows with figures, each in
-// its slot (MapLayout), the four buckets of the bar whatever the plan holds, and the links between them,
+// its slot (MapLayout), the five buckets of the bar whatever the plan holds, and the links between them,
 // each a line a card already shows (MapLinks), with its route. It only selects and regroups the cards' own
 // figures; nothing here decides a tax outcome. While the engine refuses an amount the map has no link, as
 // the bar has no figure, and the module holding the refused field is marked (RiverErrors.Owner); a Company
