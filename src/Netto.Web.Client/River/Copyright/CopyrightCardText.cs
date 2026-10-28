@@ -1,4 +1,5 @@
 using Netto.Core.Copyright;
+using Netto.Core.Rules;
 
 namespace Netto.Web.Client.River.Copyright;
 
@@ -6,6 +7,10 @@ namespace Netto.Web.Client.River.Copyright;
 // alike.
 internal static class CopyrightCardText
 {
+    // A rate a text states, the rules' own as the card words it; the year's rate where the year has none (the
+    // ruling's envelope in 2025) or has no rules, as the cap is « the year's cap ».
+    public static string Rate(RuleAmount? rate) => rate is null ? "the year's rate" : Formats.RuleAmount(rate);
+
     // Which limit set the part within them, as the engine says it was, in the note under its lines.
     public static string Limits(CopyrightResult result) => $"Limits_{result.Bound}";
 

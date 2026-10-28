@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Netto.Core.Copyright;
 using Netto.Web.Client.River;
 using Netto.Web.Client.River.Copyright;
@@ -158,16 +159,40 @@ public class CopyrightCardTextTests
         CardHtml.Amounts(limits).ShouldBe(["30%", "€18,000.00"]);
     }
 
-    // A rate the rules set is never typed in a text that states it: the rule's own is passed in.
-    [Theory]
-    [InlineData("Limits_None")]
-    [InlineData("Limits_Relative")]
-    [InlineData("Help_WithinLimits")]
-    [InlineData("Help_FlatRateCosts")]
-    [InlineData("Figure_Withheld")]
-    public void CopyrightCardResx_textStatingARulesRate_typesNone(string key)
+    // A rate the rules set is never typed in a text of the card, a hint or a sentence: the rule's own is
+    // passed in (Rate).
+    [Fact]
+    public void CopyrightCardResx_everyText_typesNoPercentage()
     {
-        Resources.Get(key).ShouldNotBeNull().ShouldNotMatch("[0-9]%");
+        Resources.Entries.Where(text => Regex.IsMatch(text.Value, "[0-9]%")).Select(text => text.Key).ShouldBeEmpty();
+    }
+
+    // A rate a text states is the rules' own as the card words it; where the year has none, or no rules, the
+    // year's rate, as the cap is « the year's cap ».
+    [Fact]
+    public void Rate_aRuleAmount_isItsOwnPercentage()
+    {
+        (CopyrightCardText.Rate(Rules.EnvelopeRate), CopyrightCardText.Rate(Rules.WithholdingRate), CopyrightCardText.Rate(Rules.TaxedApartRate),
+                CopyrightCardText.Rate(Rules.RelativeLimit))
+            .ShouldBe(("25%", "15%", "15%", "30%"));
+    }
+
+    [Fact]
+    public void Rate_noRateForTheYear_isTheYearsRate()
+    {
+        (CopyrightCardText.Rate(CopyrightRules.IncomeYear2025.EnvelopeRate), CopyrightCardText.Rate(null)).ShouldBe(("the year's rate", "the year's rate"));
+    }
+
+    // The placeholders each text reads, counted from 0: the card passes one argument for each.
+    [Theory]
+    [InlineData("Hint", 2)]
+    [InlineData("PolicyHint", 1)]
+    [InlineData("FixedRoyaltyHint", 1)]
+    [InlineData("CreativeShareHint", 1)]
+    [InlineData("Readings", 3)]
+    public void CopyrightCardResx_textStatingRulesRates_readsOnePlaceholderForEachArgument(string key, int arguments)
+    {
+        InterfaceTexts.Placeholders(Resources.Get(key).ShouldNotBeNull()).Distinct().Order().ShouldBe(Enumerable.Range(0, arguments));
     }
 
     // The line of « Your copyright situation »: the statuses as assumed and as said, and the share

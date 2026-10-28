@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text.RegularExpressions;
+using Netto.Core.Copyright;
 using Netto.Core.Rules;
 using Netto.Web.Client;
 using Netto.Web.Client.River;
@@ -137,6 +138,55 @@ public class RoyaltyOnItsCardTests
         var html = await SplitAsync(RiverInputs.Example);
 
         html.ShouldNotContain("card=copyright");
+    }
+
+    // The rates the card's hints state are the year's rules' own: the ruling's envelope in the two hints of
+    // the royalty that follows the pay, the rate withheld in the one of the amount that is fixed, and the
+    // withholding and the tax apart in the card's own.
+    [Fact]
+    public async Task CopyrightCard_hints_stateTheRatesOfTheYearsRules()
+    {
+        // No share given yet, so « Your copyright situation » is open, with the share's bubble.
+        var following = await CopyrightAsync(Added);
+        var fixedHtml = await CopyrightAsync(Fixed);
+        var rules = CopyrightRules.IncomeYear2026;
+
+        var envelope = Formats.RuleAmount(rules.EnvelopeRate.ShouldNotBeNull());
+        var withholding = Formats.RuleAmount(rules.WithholdingRate);
+        var title = Royalty.Get("Title")!;
+
+        following.ShouldSatisfyAllConditions(
+            () => CardHtml.BubbleAfter(following, Royalty.Get("PolicyLabel")!).ShouldContain($"at most {envelope} of your pay"),
+            () => CardHtml.BubbleAfter(following, Royalty.Get("CreativeShareLabel")!).ShouldContain($"royalty of at most {envelope} of their pay"),
+            () => CardHtml.BubbleAfter(following, title).ShouldContain($"withholds {withholding}"),
+            () => CardHtml.BubbleAfter(following, title).ShouldContain($"apart at {Formats.RuleAmount(rules.TaxedApartRate)}"),
+            () => CardHtml.BubbleAfter(fixedHtml, Royalty.Get("FixedRoyaltyLabel")!).ShouldContain($"before the {withholding} it withholds"));
+    }
+
+    // The reading of the details names the 30% and the 15% withheld, the rules' own.
+    [Fact]
+    public async Task CopyrightCard_readings_stateTheRatesOfTheYearsRules()
+    {
+        var html = await RenderDetailsOpenAsync(typeof(CopyrightCard), OptionalModule.Copyright, CopyrightViewTests.Within);
+        var rules = CopyrightRules.IncomeYear2026;
+
+        CardHtml.Prose(html).ShouldContain(prose => prose.Contains($"the {Formats.RuleAmount(rules.RelativeLimit)} is measured", StringComparison.Ordinal)
+            && prose.Contains($"the {Formats.RuleAmount(rules.WithholdingRate)} withheld", StringComparison.Ordinal));
+    }
+
+    // A year whose rules hold no rate for what a ruling accepts (2025), or no rules at all, says « the year's
+    // rate » in its place, with no placeholder left and no rate made up.
+    [Theory]
+    [InlineData(2025)]
+    [InlineData(Fixtures.UnsupportedIncomeYear)]
+    public async Task CopyrightCard_yearWithoutAnEnvelopeRate_saysTheYearsRate(int year)
+    {
+        var html = await CopyrightAsync(Added with { IncomeYear = year });
+
+        html.ShouldSatisfyAllConditions(
+            () => CardHtml.BubbleAfter(html, Royalty.Get("PolicyLabel")!).ShouldContain("the year's rate"),
+            () => CardHtml.BubbleAfter(html, Royalty.Get("CreativeShareLabel")!).ShouldContain("the year's rate"),
+            () => CardHtml.Bubbles(html).Where(bubble => Regex.IsMatch(bubble.Text, @"\{\d\}|(?<![0-9])0%")).ShouldBeEmpty());
     }
 
     private static ResxText Refusals => ResxText.For<RefusedMessage>();

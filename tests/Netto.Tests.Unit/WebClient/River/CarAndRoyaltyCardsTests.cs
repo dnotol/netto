@@ -172,8 +172,9 @@ public class CarAndRoyaltyCardsTests
     [Fact]
     public async Task RoyaltyCard_detailsOpen_statesItsReadingsWordForWordAboveTheSources()
     {
-        // The 2026 minimum director pay that keeps the reduced corporate rate.
-        var readings = Royalty("Readings", "€51,000.00");
+        // The 2026 minimum director pay that keeps the reduced corporate rate, the royalty's relative limit and
+        // the rate the company withholds on it.
+        var readings = Royalty("Readings", "€51,000.00", "30%", "15%");
 
         var details = await RenderDetailsOpenAsync(typeof(CopyrightCard), OptionalModule.Copyright, CopyrightViewTests.Within);
         var folded = await RenderOpenAsync<CopyrightCard>(OptionalModule.Copyright, CopyrightViewTests.Within);

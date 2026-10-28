@@ -23,9 +23,9 @@
    the part beyond going on to Director pay. Where no text settles a point, the reading Netto takes is in
    its details, above the sources. An optional module: it shows only while in the plan, and the word at
    its bottom takes it out, its values kept. Skipped with the company. *@
-<ModuleCard Name="@ModuleFolds.Name(OptionalModule.Copyright)" Title="@L["Title"]" Summary="@Summary" ToYou="@_view?.ToYou" Help="@L["Hint"]" Waiting="Inputs.Company is null"
+<ModuleCard Name="@ModuleFolds.Name(OptionalModule.Copyright)" Title="@L["Title"]" Summary="@Summary" ToYou="@_view?.ToYou" Help="@L["Hint", CopyrightCardText.Rate(_rules?.WithholdingRate), CopyrightCardText.Rate(_rules?.TaxedApartRate)]" Waiting="Inputs.Company is null"
             Refused="@Refused" Details="@Details" Sources="@(_view?.Details ?? [])" IncomeYear="Inputs.IncomeYear" RemoveLabel="@L["Remove"]" OnRemove="Remove">
-    <RiverField Label="@L["PolicyLabel"]" Origin="_policy.FollowsPay.Origin" Help="@L["PolicyHint"]">
+    <RiverField Label="@L["PolicyLabel"]" Origin="_policy.FollowsPay.Origin" Help="@L["PolicyHint", CopyrightCardText.Rate(_rules?.EnvelopeRate)]">
         <div class="copyright__policies">
             <MudChipSet T="bool" SelectedValue="_policy.FollowsPay.Value" SelectedValueChanged="OnPolicyChanged"
                         SelectionMode="SelectionMode.SingleSelection" CheckMark="false" Variant="Variant.Outlined" SelectedColor="Color.Primary"
@@ -41,7 +41,7 @@
     </RiverField>
     @if (!_policy.FollowsPay.Value)
     {
-        <RiverField Label="@L["FixedRoyaltyLabel"]" For="river-copyright-royalty" Origin="_policy.Fixed.Origin" Help="@L["FixedRoyaltyHint"]">
+        <RiverField Label="@L["FixedRoyaltyLabel"]" For="river-copyright-royalty" Origin="_policy.Fixed.Origin" Help="@L["FixedRoyaltyHint", CopyrightCardText.Rate(_rules?.WithholdingRate)]">
             <RiverNumericField T="decimal" InputId="river-copyright-royalty" Value="_policy.Fixed.Value" ValueChanged="OnRoyaltyChanged"
                                Euros="true"
                                Error="@(Refused?.Input == RefusedInput.Royalty)" Refusal="@Refused" />
@@ -50,7 +50,7 @@
     <Disclosure Title="@L["SituationTitle"]" Values="@SettingWords.Of(L, _settings.Situation)" Refused="@CopyrightSettingsView.SituationHolds(Refused)"
                 OpenByDefault="@_settings.NeedsFacts">
         <RiverField Label="@L["CreativeShareLabel"]" For="river-copyright-creative-share"
-                    Origin="@(Inputs.Copyright.CreativeShare.Value is null ? null : Inputs.Copyright.CreativeShare.Origin)" Help="@L["CreativeShareHint"]">
+                    Origin="@(Inputs.Copyright.CreativeShare.Value is null ? null : Inputs.Copyright.CreativeShare.Origin)" Help="@L["CreativeShareHint", CopyrightCardText.Rate(_rules?.EnvelopeRate)]">
             <RiverNumericField T="decimal?" InputId="river-copyright-creative-share" Value="CreativeSharePercent" ValueChanged="OnCreativeSharePercentChanged"
                                Format="0.##" Adornment="Adornment.End" AdornmentText="%"
                                Error="@(Refused?.Input == RefusedInput.CreativeShare)" Refusal="@Refused" />
@@ -144,7 +144,8 @@
     // Where no text settles a point, the reading Netto takes, word for word above the sources.
     private RenderFragment? Details => _view is { Details.Count: > 0 }
         ? @<text>
-              <p class="copyright__reading">@L["Readings", Formats.Euros(CorporateTaxRules.For(Inputs.IncomeYear)?.MinimumDirectorPay.Value ?? 0m)]</p>
+              <p class="copyright__reading">@L["Readings", Formats.Euros(CorporateTaxRules.For(Inputs.IncomeYear)?.MinimumDirectorPay.Value ?? 0m),
+                                                CopyrightCardText.Rate(_rules?.RelativeLimit), CopyrightCardText.Rate(_rules?.WithholdingRate)]</p>
           </text>
         : null;
 

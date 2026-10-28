@@ -25,7 +25,7 @@
     <value>No royalty yet</value>
   </data>
   <data name="Hint" xml:space="preserve">
-    <value>What the company pays you for the rights on works you create, code, a game or content, which you transfer or license to it. Within the limits it stays movable income: the company deducts it in full and withholds 15%, and you are taxed on it apart at 15% plus your municipal surcharge, with no social contributions, on less its flat-rate costs if you hold an attestation du travail des arts. What passes the limits is taxed as your pay.</value>
+    <value>What the company pays you for the rights on works you create, code, a game or content, which you transfer or license to it. Within the limits it stays movable income: the company deducts it in full and withholds {0}, and you are taxed on it apart at {1} plus your municipal surcharge, with no social contributions, on less its flat-rate costs if you hold an attestation du travail des arts. What passes the limits is taxed as your pay.</value>
   </data>
   <data name="AverageLabel" xml:space="preserve">
     <value>My copyright income of the four previous years averaged at most {0}</value>
@@ -40,7 +40,7 @@
     <value>How your royalty is set</value>
   </data>
   <data name="PolicyHint" xml:space="preserve">
-    <value>Following your pay, the royalty is what an advance ruling accepts beside each pay for the share of your time spent creating: at most 25% of your pay and royalty together, times that share (advance ruling 2026.0484), and never more than keeps all of it within its limits, so none of it is taxed as your pay. Fixed, it is the amount you give, whatever your pay.</value>
+    <value>Following your pay, the royalty is what an advance ruling accepts beside each pay for the share of your time spent creating: at most {0} of your pay and royalty together, times that share (advance ruling 2026.0484), and never more than keeps all of it within its limits, so none of it is taxed as your pay. Fixed, it is the amount you give, whatever your pay.</value>
   </data>
   <data name="Policy_Follows" xml:space="preserve">
     <value>Follows your pay</value>
@@ -52,7 +52,7 @@
     <value>Royalty for the year</value>
   </data>
   <data name="FixedRoyaltyHint" xml:space="preserve">
-    <value>The gross royalty the company pays you for the year for the rights on your works, before the 15% it withholds, as on the 281.45 fiche it files for you.</value>
+    <value>The gross royalty the company pays you for the year for the rights on your works, before the {0} it withholds, as on the 281.45 fiche it files for you.</value>
   </data>
   <data name="Following_NoCreativeShare" xml:space="preserve">
     <value>None until you give your creative share, in « Your copyright situation ».</value>
@@ -76,7 +76,7 @@
     <value>Nothing within: your four previous years averaged above the cap.</value>
   </data>
   <data name="Readings" xml:space="preserve">
-    <value>Where no text settles a point, Netto takes the reading that never overstates the gain: the 30% is measured on your gross pay on the payslip alone, without benefits in kind or the contributions the company pays for you; neither the royalty nor its part taxed as pay counts in the {0} minimum pay that keeps the reduced corporate rate; the royalty is always taxed apart, never with your other income; the flat-rate costs come off the part within the limits alone, the limits staying on the whole royalty; the royalty is taken as paid on or after 11 June 2026, so the 15% withheld is on its net only with an attestation; and the royalty that follows your pay is measured, like the 30%, on your gross pay on the payslip alone.</value>
+    <value>Where no text settles a point, Netto takes the reading that never overstates the gain: the {1} is measured on your gross pay on the payslip alone, without benefits in kind or the contributions the company pays for you; neither the royalty nor its part taxed as pay counts in the {0} minimum pay that keeps the reduced corporate rate; the royalty is always taxed apart, never with your other income; the flat-rate costs come off the part within the limits alone, the limits staying on the whole royalty; the royalty is taken as paid on or after 11 June 2026, so the {2} withheld is on its net only with an attestation; and the royalty that follows your pay is measured, like the {1}, on your gross pay on the payslip alone.</value>
   </data>
   <data name="Remove" xml:space="preserve">
     <value>Remove the copyright royalty from your plan</value>
@@ -94,7 +94,7 @@
     <value>Share of my working time spent creating protected works</value>
   </data>
   <data name="CreativeShareHint" xml:space="preserve">
-    <value>A royalty that follows your pay reads it, and so do your moves. A ruling of the tax administration accepts a director's royalty of at most 25% of their pay and royalty together, times this share, the basis its rulings take for directors (advance ruling 2026.0484). A royalty that follows your pay is that, kept within the limits. Netto cannot see it, so such a royalty is none until you give it.</value>
+    <value>A royalty that follows your pay reads it, and so do your moves. A ruling of the tax administration accepts a director's royalty of at most {0} of their pay and royalty together, times this share, the basis its rulings take for directors (advance ruling 2026.0484). A royalty that follows your pay is that, kept within the limits. Netto cannot see it, so such a royalty is none until you give it.</value>
   </data>
   <data name="SituationTitle" xml:space="preserve">
     <value>Your copyright situation</value>
