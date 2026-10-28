@@ -520,6 +520,22 @@ public class PlanStorageTests
         PlanStorage.Read(json).Book.Plans.Select(plan => plan.Readable).ShouldBe([false, true]);
     }
 
+    // A plan of version 8 whose composition or household is not an object, or whose household flag is not a
+    // boolean, is not read, never thrown on, and the other plans are.
+    [Theory]
+    [InlineData("composition", "[]")]
+    [InlineData("composition", "5")]
+    [InlineData("composition.household", "\"yes\"")]
+    [InlineData("composition.household", "[]")]
+    [InlineData("household", "[]")]
+    [InlineData("household", "5")]
+    public void Read_planOfVersion8WithAMemberNotOfItsShape_makesThatPlanUnreadable(string member, string value)
+    {
+        var json = Edit(StoredPlanDocuments.Version8, document => Put(PlanInputs(document, 0), member, JsonNode.Parse(value)!));
+
+        PlanStorage.Read(json).Book.Plans.Select(plan => plan.Readable).ShouldBe([false, true]);
+    }
+
     // A plan of an older version that cannot be read is written back exactly as it was stored: nothing
     // added to read it stays.
     [Theory]

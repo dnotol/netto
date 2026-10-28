@@ -225,9 +225,10 @@ internal static class PlanStorage
     private static bool ToVersion8(JsonObject plan) => Add(plan["composition"], "household", "false") && Add(plan, "household", HouseholdOfVersion8);
 
     // Version 9 brought whether there is a partner, version 8's household being its partner, and the
-    // dependants: none.
+    // dependants: none. A composition that is not an object, or a household flag that is not a boolean, is
+    // not a plan version 8 wrote: refused.
     private static bool ToVersion9(JsonObject plan) =>
-        plan["composition"]?["household"] is JsonValue held && held.TryGetValue<bool>(out var partnerHeld)
+        plan["composition"] is JsonObject composition && composition["household"] is JsonValue held && held.TryGetValue<bool>(out var partnerHeld)
         && Add(plan["household"], "status", partnerHeld ? PartnerDeclared : PartnerAssumed) && Add(plan["household"], "dependants", DependantsOfVersion9);
 
     // Adds a member the version before never held, or refuses a plan that already holds it: that version
