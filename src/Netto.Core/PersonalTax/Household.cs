@@ -8,8 +8,9 @@ namespace Netto.Core.PersonalTax;
 // from the year after a de facto separation, which the withholding treats alike (annex III, n° 4.2). A
 // de facto cohabitant is taxed alone. PartnerIncome is the partner's net professional income, the
 // user's to type, none unless given; BothAged66 whether both partners were 66 on 1 January of the tax
-// year, which raises the quotient's cap. None is the director alone. Eligibility is the user's to
-// declare, never the engine's to decide.
+// year, which raises the quotient's cap. Dependants are the people the director has as dependants,
+// with or without a partner: a director alone with children is Alone with them. None is the director
+// alone with no dependants. Eligibility is the user's to declare, never the engine's to decide.
 public sealed record Household(
     HouseholdStatus Status,
     decimal PartnerIncome = 0m,
@@ -17,6 +18,8 @@ public sealed record Household(
     bool TaxedSeparately = false)
 {
     public static Household None { get; } = new(HouseholdStatus.Alone);
+
+    public Dependants Dependants { get; init; } = Dependants.None;
 
     public bool TaxedJointly => Status == HouseholdStatus.MarriedOrLegalCohabitant && !TaxedSeparately;
 }

@@ -17,6 +17,8 @@ namespace Netto.Core.PersonalTax;
 // tax-free amount, whose first bracket covers a single person's amount and whose next ones a joint
 // assessment reaches when one partner's unused part passes to the other (§4); TaxFreeAmountSharing is
 // that §4, which a joint assessment's step cites besides the scale and the marital quotient.
+// Supplements are the dependants' supplements to the tax-free amount and the cap of the refundable credit
+// for children (art. 132 to 134 §3).
 public sealed record PersonalTaxRules(
     int IncomeYear,
     Region Region,
@@ -29,6 +31,7 @@ public sealed record PersonalTaxRules(
     RuleAmount RegionalAdditionalRate,
     LowEarnedIncomeCreditRules LowEarnedIncomeCredit,
     MaritalQuotientRules MaritalQuotient,
+    TaxFreeAmountSupplementRules Supplements,
     IncomeTaxAdvancePaymentRules AdvancePayments,
     Source IncomeTaxScale,
     Source DirectorPayDeductions,
@@ -138,6 +141,35 @@ public sealed record PersonalTaxRules(
         Reference = "Art. 87, al. 2 and art. 88, al. 1: the most the marital quotient, 30% of the professional income, attributes, base 6,700, indexed 13,460",
     };
 
+    // The dependants' supplements. Fisconetplus being down when they were researched, art. 132 and 133 are
+    // not filed yet: each year's amounts cite the indexation notice of its tax year, table II, the child
+    // supplements frozen at the coefficient 2.2793 (art. 178 §2/1), and turn into Source.Fisconet once the
+    // articles are filed. The credit and its cap cite art. 134 of the income year, filed.
+    private static readonly Source SupplementsTaxYear2027 = SharedSources.IndexationNotice2027 with
+    {
+        Reference = "Table II: art. 132 al. 1, the supplements to the tax-free amount for dependants: 1° one child 2,130, 2° two 5,130, 3° three 11,440, "
+            + "4° four 18,510, 5° 7,070 more for each child beyond the fourth, 6° 740 for each child under 3 for whom no childcare costs are deducted, "
+            + "7° 5,950 for each dependant aged 66 or more in a situation of dependence, 8° 1,980 for each other dependant; "
+            + "art. 133 al. 1, 1°: 1,980 for a taxpayer taxed alone who has dependent children",
+    };
+
+    private static readonly Source SupplementsTaxYear2026 = SharedSources.IndexationNotice2026 with
+    {
+        Reference = "Table I: art. 132 al. 1, the supplements to the tax-free amount for dependants: 1° one child 1,980, 2° two 5,110, 3° three 11,440, "
+            + "4° four 18,510, 5° 7,070 more for each child beyond the fourth, 6° 740 for each child under 3 for whom no childcare costs are deducted, "
+            + "7° 5,950 for each dependant aged 66 or more in a situation of dependence, 8° 1,980 for each other dependant; "
+            + "art. 133 al. 1, 1°: 1,980 for a taxpayer taxed alone who has dependent children",
+    };
+
+    private const string ChildCreditReference =
+        "§3: the part of the tax on the tax-free amount that the basic tax cannot absorb, insofar as it is the child supplements of art. 132 al. 1, 1° to 6°, "
+        + "counted after the base amount and the other supplements, the base and other supplements beyond the taxable income left out, is a refundable tax credit "
+        + "of at most 550 per dependent child, not indexed; §4, 6°: in a joint assessment it is computed per partner, the cap for both together";
+
+    private static readonly Source ChildCreditIncome2025 = Article134Income2025 with { Reference = ChildCreditReference };
+
+    private static readonly Source ChildCreditIncome2026 = Article134Income2026 with { Reference = ChildCreditReference };
+
     // The balance on the assessment: what was withheld and paid in advance comes off the tax, and
     // what they leave over is refunded. §2, al. 1 is unchanged since tax year 2018, so the text holds
     // for income year 2025 as well (official-docs/INDEX.md).
@@ -182,6 +214,19 @@ public sealed record PersonalTaxRules(
             new RuleAmount("marital_quotient_rate", 0.30m, QuotientTaxYear2026),
             new RuleAmount("marital_quotient_cap", 13_460m, QuotientTaxYear2026),
             new RuleAmount("marital_quotient_cap_both_aged_66", 13_460m, QuotientTaxYear2026)),
+        new TaxFreeAmountSupplementRules(
+            Source: SupplementsTaxYear2026,
+            CreditSource: ChildCreditIncome2025,
+            OneChild: new RuleAmount("supplement_one_child", 1_980m, SupplementsTaxYear2026),
+            TwoChildren: new RuleAmount("supplement_two_children", 5_110m, SupplementsTaxYear2026),
+            ThreeChildren: new RuleAmount("supplement_three_children", 11_440m, SupplementsTaxYear2026),
+            FourChildren: new RuleAmount("supplement_four_children", 18_510m, SupplementsTaxYear2026),
+            EachChildBeyondFour: new RuleAmount("supplement_each_child_beyond_four", 7_070m, SupplementsTaxYear2026),
+            ChildUnder3: new RuleAmount("supplement_child_under_3", 740m, SupplementsTaxYear2026),
+            SingleParent: new RuleAmount("supplement_single_parent", 1_980m, SupplementsTaxYear2026),
+            DependantAged66InCare: new RuleAmount("supplement_dependant_aged_66_in_care", 5_950m, SupplementsTaxYear2026),
+            OtherDependant: new RuleAmount("supplement_other_dependant", 1_980m, SupplementsTaxYear2026),
+            ChildCreditCapPerChild: new RuleAmount("child_tax_credit_cap_per_child", 550m, ChildCreditIncome2025)),
         IncomeTaxAdvancePaymentRules.IncomeYear2025,
         IncomeTaxScale: Article130Income2025,
         DirectorPayDeductions: Article51Income2025,
@@ -223,6 +268,19 @@ public sealed record PersonalTaxRules(
             new RuleAmount("marital_quotient_rate", 0.30m, PersonalTaxReformLaw),
             new RuleAmount("marital_quotient_cap", 11_780m, QuotientCapsTaxYear2027),
             new RuleAmount("marital_quotient_cap_both_aged_66", 12_790m, QuotientCapsTaxYear2027)),
+        new TaxFreeAmountSupplementRules(
+            Source: SupplementsTaxYear2027,
+            CreditSource: ChildCreditIncome2026,
+            OneChild: new RuleAmount("supplement_one_child", 2_130m, SupplementsTaxYear2027),
+            TwoChildren: new RuleAmount("supplement_two_children", 5_130m, SupplementsTaxYear2027),
+            ThreeChildren: new RuleAmount("supplement_three_children", 11_440m, SupplementsTaxYear2027),
+            FourChildren: new RuleAmount("supplement_four_children", 18_510m, SupplementsTaxYear2027),
+            EachChildBeyondFour: new RuleAmount("supplement_each_child_beyond_four", 7_070m, SupplementsTaxYear2027),
+            ChildUnder3: new RuleAmount("supplement_child_under_3", 740m, SupplementsTaxYear2027),
+            SingleParent: new RuleAmount("supplement_single_parent", 1_980m, SupplementsTaxYear2027),
+            DependantAged66InCare: new RuleAmount("supplement_dependant_aged_66_in_care", 5_950m, SupplementsTaxYear2027),
+            OtherDependant: new RuleAmount("supplement_other_dependant", 1_980m, SupplementsTaxYear2027),
+            ChildCreditCapPerChild: new RuleAmount("child_tax_credit_cap_per_child", 550m, ChildCreditIncome2026)),
         IncomeTaxAdvancePaymentRules.IncomeYear2026,
         IncomeTaxScale: Article130Income2026,
         DirectorPayDeductions: Article51Income2026,

@@ -15,6 +15,13 @@ public class HouseholdTests
             .ShouldBe((HouseholdStatus.Alone, 0m, false, false, false));
     }
 
+    // Dependants live with or without a partner; none unless given.
+    [Fact]
+    public void None_hasNoDependants()
+    {
+        (Household.None.Dependants, new Household(HouseholdStatus.MarriedOrLegalCohabitant).Dependants).ShouldBe((Dependants.None, Dependants.None));
+    }
+
     [Theory]
     [InlineData(HouseholdStatus.Alone, false, false)]
     [InlineData(HouseholdStatus.Alone, true, false)]
