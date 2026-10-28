@@ -108,9 +108,13 @@ public static class SplitSearch
         }
 
         // The best of the candidates between from and to that cover the reserve, refined to the euro
-        // between its neighbours on the grid. Within one side of the jump the curve rises then falls,
-        // and the pays that cover the reserve come first, since the profit after tax falls as the pay
-        // rises: a pay that does not cover it counts as the lowest of all.
+        // between its neighbours on the grid. Within one side of the jump the curve need not rise then
+        // fall: for a director taxed jointly with a partner who earns, the marital quotient's cap counts
+        // the partner's own income, so as the pay rises the quotient can grow and the pay's marginal tax
+        // fall, and the curve can have two local maxima. The grid takes the best of all its pays first,
+        // so the refinement starts beside the global best, and only within its neighbours does it take
+        // the curve to rise then fall. The pays that cover the reserve come first, since the profit
+        // after tax falls as the pay rises: a pay that does not cover it counts as the lowest of all.
         public PayLevel? BestBetween(IEnumerable<PayLevel> candidates, decimal from, decimal to, decimal step)
         {
             var best = candidates.Where(level => level.Pay >= from && level.Pay <= to && level.KeepsReserve)
