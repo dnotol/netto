@@ -28,6 +28,11 @@ internal static class SplitCardText
         _ => null,
     };
 
+    // The curve's key for the dashed line where the reduced rate starts. The pay it starts at is said by
+    // the line of the smallest pay keeping the rate with the royalty while that is drawn (RoyaltyRate), so
+    // the key then names the line alone; without a royalty it states the pay itself.
+    public static string KeyThreshold(RoyaltyRateView? rate) => rate?.With is null ? "KeyThreshold" : "KeyThreshold_Plain";
+
     // The summary names the royalty once it is in the plan, and the best pay once there is one.
     public static string Summary(SplitRoyaltyView? royalty, bool withBest) => (withBest ? "SummaryWithBest" : "Summary") + (royalty is null ? "" : "_Royalty");
 

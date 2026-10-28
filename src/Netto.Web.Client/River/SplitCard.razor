@@ -105,7 +105,7 @@
             }
             @if (Search?.SmallestPayKeepingReducedRate is { } smallest)
             {
-                <li><span class="pay-curve__key-mark pay-curve__key-mark--threshold"></span>@L["KeyThreshold", Formats.Euros(smallest)]</li>
+                <li><span class="pay-curve__key-mark pay-curve__key-mark--threshold"></span>@L[SplitCardText.KeyThreshold(_royaltyRate), Formats.Euros(smallest)]</li>
             }
             @if (shown.Curve.SomeMissReserve)
             {

@@ -1,3 +1,4 @@
+using System.Net;
 using Netto.Web.Client;
 using Netto.Web.Client.River;
 using Shouldly;
@@ -115,6 +116,46 @@ public class SplitRoyaltyRateCardTests
         CardHtml.Prose(html).ShouldNotContain(prose => prose == Said("RoyaltyRate_NoPayKeeps") || prose == Said("RoyaltyRate_NoPayKeepsWithout"));
     }
 
+    // The curve's key names the dashed line with its pay only while no line of the card says that pay: the
+    // pay with the royalty is then the line's.
+    [Theory]
+    [InlineData(null, null, "KeyThreshold")]
+    [InlineData(40_000, 50_000, "KeyThreshold_Plain")]
+    [InlineData(40_000, null, "KeyThreshold_Plain")]
+    [InlineData(null, 50_000, "KeyThreshold")]
+    public void KeyThreshold_namesThePayOnlyWhereNoLineDoes(int? with, int? without, string key)
+    {
+        SplitCardText.KeyThreshold(with is null && without is null ? null : new RoyaltyRateView(with, without)).ShouldBe(key);
+    }
+
+    [Fact]
+    public void SplitCardResx_theKeyOfTheThresholdWithoutItsPay_hasATextWithNoAmount()
+    {
+        Texts.Get("KeyThreshold_Plain").ShouldBe("Reduced corporate rate");
+    }
+
+    [Fact]
+    public async Task SplitCard_aRoyaltyLoweringThePay_keysTheThresholdWithoutItsPay()
+    {
+        var with = RoyaltyRateView.From(Fixed.Run().Year).ShouldNotBeNull().With.ShouldNotBeNull();
+
+        var html = WebUtility.HtmlDecode(CardHtml.Card(await CardHtml.RenderCardsOpenAsync(Fixed), "split"));
+
+        (html.Contains(Key("KeyThreshold_Plain"), StringComparison.Ordinal), html.Contains(Texts.Format("KeyThreshold", Formats.Euros(with)), StringComparison.Ordinal))
+            .ShouldBe((true, false));
+    }
+
+    [Fact]
+    public async Task SplitCard_noRoyaltyInThePlan_keysTheThresholdWithItsPay()
+    {
+        var threshold = RiverInputs.Example.SearchSplit().ShouldNotBeNull().SmallestPayKeepingReducedRate.ShouldNotBeNull();
+
+        var html = WebUtility.HtmlDecode(CardHtml.Card(await CardHtml.RenderCardsOpenAsync(RiverInputs.Example), "split"));
+
+        (html.Contains(Texts.Format("KeyThreshold", Formats.Euros(threshold)), StringComparison.Ordinal), html.Contains(Key("KeyThreshold_Plain"), StringComparison.Ordinal))
+            .ShouldBe((true, false));
+    }
+
     [Fact]
     public async Task SplitCard_noRoyaltyInThePlan_drawsNoPayKeepingTheRate()
     {
@@ -137,6 +178,9 @@ public class SplitRoyaltyRateCardTests
     {
         CardHtml.LeakedKeys(CardHtml.Card(await CardHtml.RenderCardsOpenAsync(Fixed), "split")).ShouldBeEmpty();
     }
+
+    // A key of the curve as the card draws it: after its mark, closing its item.
+    private static string Key(string key) => $"</span>{Texts.Get(key)}</li>";
 
     // A note as a viewer reads it: its text with the term's brackets gone.
     private static string Said(string key) => Texts.Format(key).Replace("[", "").Replace("]", "");

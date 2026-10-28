@@ -54,6 +54,9 @@
   <data name="KeyThreshold" xml:space="preserve">
     <value>Reduced corporate rate from {0}</value>
   </data>
+  <data name="KeyThreshold_Plain" xml:space="preserve">
+    <value>Reduced corporate rate</value>
+  </data>
   <data name="KeyMissesReserve" xml:space="preserve">
     <value>Too little profit to keep {0}</value>
   </data>
