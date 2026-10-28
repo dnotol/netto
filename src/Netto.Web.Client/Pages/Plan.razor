@@ -41,7 +41,7 @@
    with Undo, on any tab, and adding one chooses it, so its card opens beside the map to be filled. The
    module chosen is Company year on arriving, or the one the address names (CardLinks, plan?card=<name>),
    from a link of the Optimisation tab's moves or loaded as it is. *@
-<BucketBar Run="_run" Setup="_today?.Run" Unsaved="Plans.HasUnsavedChanges(_inputs)">
+<BucketBar Run="_run" Setup="_today?.Run">
     <ChildContent>
         <PlansPanel Inputs="_inputs" CanSave="BaselineGain.CanMark(_run)" OnOpen="OnPlanOpened" OnChanged="OnPlansChanged" />
         <CompositionMenu @ref="_composition" Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" />

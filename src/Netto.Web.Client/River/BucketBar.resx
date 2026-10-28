@@ -54,17 +54,17 @@
   <data name="EnterCompany" xml:space="preserve">
     <value>Enter your company's year to see the rest of the river.</value>
   </data>
-  <data name="Reach" xml:space="preserve">
-    <value>[{0} reaches you], {1} goes to contributions and taxes.</value>
+  <data name="ReachShown" xml:space="preserve">
+    <value>{0} reaches you</value>
   </data>
-  <data name="Reach_Kept" xml:space="preserve">
-    <value>Of what the company does not keep, [{0} reaches you], {1} goes to contributions and taxes.</value>
+  <data name="ReachLabel" xml:space="preserve">
+    <value>what reaches you</value>
   </data>
   <data name="ReachMeaning" xml:space="preserve">
     <value>Your pocket, out of what the river starts from less the company's expenses and what it keeps at year end, which is still yours. Running costs, INASTI's yearly company contribution and a company car's costs are left out: they are costs of the company, whatever it pays you.</value>
   </data>
   <data name="Refused" xml:space="preserve">
-    <value>No figures until the amount marked below is corrected.</value>
+    <value>No figures until the amount marked as refused is corrected.</value>
   </data>
   <data name="Holds_pocket" xml:space="preserve">
     <value>What reaches you over the year: your net pay and net dividend, and what the company pays you besides pay, less any tax on it.</value>
@@ -99,11 +99,20 @@
   <data name="Gain_NotComparable" xml:space="preserve">
     <value>Not comparable with Today, your current setup: one starts from the company's year, the other at the pay.</value>
   </data>
+  <data name="GainShown_More" xml:space="preserve">
+    <value>{0} vs Today</value>
+  </data>
+  <data name="GainShown_Less" xml:space="preserve">
+    <value>{0} vs Today</value>
+  </data>
+  <data name="GainShown_Same" xml:space="preserve">
+    <value>Same as Today</value>
+  </data>
+  <data name="GainShown_NotComparable" xml:space="preserve">
+    <value>Not comparable with Today</value>
+  </data>
   <data name="GainLabel" xml:space="preserve">
     <value>the gain over Today</value>
-  </data>
-  <data name="Unsaved" xml:space="preserve">
-    <value>Unsaved changes.</value>
   </data>
   <data name="Holds_taxes_on_pay_and_royalty" xml:space="preserve">
     <value>What leaves your pay and your copyright royalty: your social contributions, the income tax, the royalty's tax apart and the municipal surcharge, less the tax credit for low earned income, and any advance-payment surcharge less its bonus.</value>

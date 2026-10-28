@@ -180,14 +180,13 @@ public class BucketsViewTests
         view.Buckets.ShouldAllBe(bucket => bucket.Share == null);
     }
 
-    // What reaches the pocket out of the 100,000 the contribution leaves, nothing being kept; the rest
-    // went to taxes, rounded as the bar shows the reach, so the two read as the whole.
+    // What reaches the pocket out of the 100,000 the contribution leaves, nothing being kept.
     [Fact]
     public void From_example_reachIsThePocketOutOfTheStart()
     {
         var view = BucketsView.From(RiverInputs.Example.Run()).ShouldNotBeNull();
 
-        (view.Reach, view.TaxesShare).ShouldBe(((decimal?)0.6197574m, (decimal?)0.38m));
+        view.Reach.ShouldBe(0.6197574m);
     }
 
     // What the company keeps is still the director's: the reach is out of what leaves it.
@@ -204,7 +203,7 @@ public class BucketsViewTests
     {
         var view = BucketsView.From(RiverInputs.Example.WithRevenue(10_000m).Run()).ShouldNotBeNull();
 
-        (view.Reach, view.TaxesShare).ShouldBe(((decimal?)null, (decimal?)null));
+        view.Reach.ShouldBeNull();
     }
 
     // With the company skipped the river starts at the pay: the reach is the net out of the gross.
@@ -445,17 +444,14 @@ public class BucketsViewTests
     }
 
     // The reach is out of what leaves the company once the expenses are paid, the 100,409.30 less the
-    // car's 8,000 and the contribution's 409.30; the taxes take the rest of the whole as the bar rounds the
-    // reach.
+    // car's 8,000 and the contribution's 409.30.
     [Fact]
-    public void From_car_saysTheReachAndTheTaxesOutOfWhatLeavesTheCompanyAfterIt()
+    public void From_car_saysTheReachOutOfWhatLeavesTheCompanyAfterIt()
     {
         var view = BucketsView.From(ElectricCar(RiverInputs.Example).WithReserve(10_000m).Run()).ShouldNotBeNull();
         var leaves = 92_000m - view.Buckets.Single(bucket => bucket.Key == "kept_in_company").Amount;
 
-        view.ShouldSatisfyAllConditions(
-            () => view.Reach.ShouldBe(view.Buckets[0].Amount / leaves),
-            () => view.TaxesShare.ShouldBe(1m - Math.Round(view.Buckets[0].Amount / leaves, 2, MidpointRounding.AwayFromZero)));
+        view.Reach.ShouldBe(view.Buckets[0].Amount / leaves);
     }
 
     // A royalty's tax apart is the director's income tax on money received besides the dividend: it

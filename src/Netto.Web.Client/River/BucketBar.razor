@@ -2,26 +2,25 @@
 @inject IStringLocalizer<BucketBar> L
 @inject IJSRuntime JS
 
-@* The river's summary, always in view under the site header: where the money ends up, out of what
-   the river starts from, and, at its right, what the page gives it (the Composition menu). Every
-   amount is the engine's, regrouped by BucketsView. Each bucket's name is followed by its icon
-   (BucketIcons), which a screen reader skips and which goes where the column has no room for it beside
-   the name, and opens an info bubble saying
-   what it holds, and its amount says its share of the start; under them, what reaches the pocket out
-   of what leaves the company (BucketsView.Reach), its bubble saying so, and, once the user has marked
-   their current setup, the plan starred « Today », what the river leaves in the pocket against it
-   (BaselineGain), with an (i) bubble beside a gain that is a figure, saying what it is measured by and
-   what it leaves out (ObjectiveNote, the sentence the Optimisation tab says under its figures): a bubble
-   and not a line in sight, since a sentence that long would grow a bar that sticks on every tab; and
-   whether the river has changes no plan holds. A polite live
-   region says what reaches the pocket, and that gain, once the river has settled
-   (BucketBarAnnouncement), not at every step of a slider dragged, or, while the engine refuses an
-   amount, that there is no figure until it is corrected; the other buckets are read in the bar
-   itself. The region is one of its own, out of sight, since a bubble opening inside the figures
-   would be read out as a change of the bar, and a menu inside it at every change. It is empty as the
-   page opens. Its last row, across its width, is what the page puts there (TabRow): the plan page's
-   tabs, which stick with it. Its height is measured once it is drawn and whenever it changes
-   (bucket-bar.js), for the line under it that cards are jumped to and controls scrolled to. *@
+@* The river's summary and the plan page's header in one band at the top of the window, in the site
+   header's place (Layout/MainLayout draws none on the plan): its top row the wordmark, the page's tabs
+   (Tabs), the plan's actions (ChildContent: Save this plan, Plans, the Composition menu) and the theme
+   switch; under it where the money ends up, five buckets in a row, each told by its swatch and its name,
+   which opens a bubble saying what it holds, then its amount. Every amount is the engine's, regrouped by
+   BucketsView. Beside the pocket's amount, the one share the band shows: what reaches the pocket out of
+   what leaves the company (BucketsView.Reach), its (i) saying what that is out of, the river's start
+   (« Out of … »), and what it means. On the pocket's name line, once the user has starred their current
+   setup « Today », what the river leaves in the pocket against it (BaselineGain), short, its (i) saying
+   what it is measured by and what it leaves out (ObjectiveNote, the sentence the Optimisation tab says
+   under its figures). Under the buckets, their shares drawn as one stack, or, where a share would mean
+   nothing or the engine refuses an amount, the sentence saying so in its place: the band has the same
+   rows whatever the plan says, so its height never depends on it. A polite live region says what reaches
+   the pocket, and that gain, once the river has settled (BucketBarAnnouncement), not at every step of a
+   slider dragged, or, while the engine refuses an amount, that there is no figure until it is corrected;
+   the other buckets are read in the band itself. The region is one of its own, out of sight, since a
+   bubble opening inside the figures would be read out as a change of the band, and a menu inside it at
+   every change. It is empty as the page opens. Its height is measured once it is drawn and whenever it
+   changes (bucket-bar.js), for the line under it that cards are jumped to and controls scrolled to. *@
 <div class="bucket-bar" @ref="_bar">
     <MudContainer MaxWidth="MaxWidth.False" Class="netto-column bucket-bar__inner">
         <div class="bucket-bar__top">
@@ -45,57 +44,51 @@
                     <div class="bucket bucket--@key">
                         <dt class="bucket__label">
                             <span class="bucket__swatch" aria-hidden="true"></span>
-                            <InfoBubble Term="@L[BucketBarText.Bucket(key, IncludesRent)]">@L[BucketBarText.Holds(key, IncludesRent, IncludesRoyalty)]</InfoBubble>
-                            <span class="bucket__icon" aria-hidden="true"><span>@BucketIcons.For(key)</span></span>
+                            <InfoBubble Term="@L[BucketBarText.Bucket(key, IncludesRent)]" TriggerClass="bucket__name">@L[BucketBarText.Holds(key, IncludesRent, IncludesRoyalty)]</InfoBubble>
+                            @if (key == "pocket" && Gain is { } gain)
+                            {
+                                <span class="bucket__gain bucket__gain--@gain.Kind.ToString().ToLowerInvariant()">@GainShown(gain)</span>
+                                <InfoBubble Label="@L["GainLabel"]">
+                                    @if (gain.Kind == GainKind.NotComparable)
+                                    {
+                                        @GainText(gain)
+                                    }
+                                    else
+                                    {
+                                        <ObjectiveNote />
+                                    }
+                                </InfoBubble>
+                            }
                         </dt>
                         <dd class="bucket__amount">
                             @Amount(key)
-                            @if (ShareOf(key) is { } share)
+                            @if (key == "pocket")
                             {
-                                @(" ")<span class="bucket__share">@Formats.WholeShare(share)</span>
+                                @if (View?.Reach is { } reach)
+                                {
+                                    @(" ")<span class="bucket__reach">@L[BucketBarText.ReachShown, Formats.WholeShare(reach)]</span>
+                                }
+                                <InfoBubble Label="@L[BucketBarText.ReachLabel]">@ReachSaid</InfoBubble>
                             }
                         </dd>
                     </div>
                 }
             </dl>
-            @if (View is { } view && view.Buckets.All(bucket => bucket.Share is not null))
-            {
-                <div class="bucket-bar__stack" aria-hidden="true">
-                    @foreach (var bucket in view.Buckets)
-                    {
-                        <span class="bucket-bar__segment bucket--@bucket.Key" style="@SegmentStyle(bucket)"></span>
-                    }
-                </div>
-            }
-            <p class="bucket-bar__from">
-                @From
-                @if (View is { Reach: { } reach } reached)
+            <div class="bucket-bar__slot">
+                @if (View is { } view && view.Buckets.All(bucket => bucket.Share is not null))
                 {
-                    @(" ")<TermSentence Text="@L[BucketBarText.Reach(reached), Formats.WholeShare(reach), Formats.WholeShare(reached.TaxesShare ?? 0m)]"
-                                        Meaning="@L[BucketBarText.ReachMeaning]" />
-                }
-                @if (View is { StartsAtPay: true })
-                {
-                    @(" ")@L[BucketBarText.EnterCompany]
-                }
-            </p>
-            @if (Gain is not null || Unsaved)
-            {
-                <p class="bucket-bar__gain">
-                    @if (Gain is { } gain)
-                    {
-                        <span class="bucket-bar__gain--@gain.Kind.ToString().ToLowerInvariant()">@GainText(gain)</span>
-                        @if (gain.Kind != GainKind.NotComparable)
+                    <div class="bucket-bar__stack" aria-hidden="true">
+                        @foreach (var bucket in view.Buckets)
                         {
-                            <InfoBubble Label="@L["GainLabel"]"><ObjectiveNote /></InfoBubble>
+                            <span class="bucket-bar__segment bucket--@bucket.Key" style="@SegmentStyle(bucket)"></span>
                         }
-                    }
-                    @if (Unsaved)
-                    {
-                        @(Gain is null ? "" : " ")<span class="bucket-bar__unsaved">@L[BucketBarText.Unsaved]</span>
-                    }
-                </p>
-            }
+                    </div>
+                }
+                else
+                {
+                    <p class="bucket-bar__from">@From</p>
+                }
+            </div>
             <p class="bucket-bar__live" aria-live="polite">@_announced</p>
         </div>
     </MudContainer>
@@ -108,10 +101,6 @@
     // The run of the plan starred « Today », the user's current setup, or null while none is.
     [Parameter]
     public RiverRun? Setup { get; set; }
-
-    // Whether the river has changes no saved plan holds.
-    [Parameter]
-    public bool Unsaved { get; set; }
 
     // The plan's actions, in the top row after the tabs, before the theme switch.
     [Parameter]
@@ -191,18 +180,33 @@
     }
 
     // Out of what the river starts from, before INASTI's company contribution and a car's costs, or why
-    // there is no figure.
+    // there is no figure: in the reach's bubble, and in the stack's place where there is no stack.
     private string From => View is { } view
         ? L[BucketBarText.From(view), Formats.Euros(view.Start - view.EarlierProfits), Formats.Euros(view.EarlierProfits)].Value
         : L[BucketBarText.Refused].Value;
 
-    // What the river leaves in the pocket against the setup, or that the two cannot be compared.
+    // What the reach's bubble says: what the band is out of, what the reach means and, with the company
+    // skipped, where the rest of the river is.
+    private string ReachSaid => string.Join(' ', new[]
+    {
+        From,
+        L[BucketBarText.ReachMeaning].Value,
+        View is { StartsAtPay: true } ? L[BucketBarText.EnterCompany].Value : null,
+    }.OfType<string>());
+
+    // What the river leaves in the pocket against the setup, or that the two cannot be compared: in full
+    // in the live region, and in the bubble of a gain that is not a figure.
     private string GainText(BaselineGain gain) => gain.Kind is GainKind.More or GainKind.Less
         ? L[BucketBarText.Gain(gain.Kind), Formats.Euros(gain.Amount)]
         : L[BucketBarText.Gain(gain.Kind)];
 
-    // A bucket's share of what the river starts from, where the bar draws shares.
-    private decimal? ShareOf(string key) => View?.Buckets.Single(bucket => bucket.Key == key).Share;
+    // The same, short, on the pocket's name line, its sign before it.
+    private string GainShown(BaselineGain gain) => gain.Kind switch
+    {
+        GainKind.More => L[BucketBarText.GainShown(gain.Kind), Formats.Addition(gain.Amount)],
+        GainKind.Less => L[BucketBarText.GainShown(gain.Kind), Formats.Deduction(gain.Amount)],
+        _ => L[BucketBarText.GainShown(gain.Kind)],
+    };
 
     private string Amount(string key) =>
         View?.Buckets.Single(bucket => bucket.Key == key).Amount is { } amount ? Formats.Euros(amount) : L["NoFigure"];

@@ -6,12 +6,11 @@ using static Netto.Tests.WebClient.River.RiverRendering;
 
 namespace Netto.Tests.WebClient.River;
 
-// The bar's gain, « €2,551.13 more than Today, your current setup », says what it is measured by in a
-// bubble beside it: the sentence of River/ObjectiveNote (ObjectiveNoteTests), the same as the Optimisation
-// tab says under its figures (OptimisationObjectiveTests). A bubble and not a sentence in sight: the bar
-// sticks under the header on every tab, and a sentence of this length would take two lines of it on a
-// desktop and five on a phone; the bubble takes none. It sits outside the live region, which says the
-// pocket and the gain and nothing else.
+// The band's gain, what the river leaves in the pocket against the plan starred Today, sits on the pocket's
+// name line, short (« +€2,551.13 vs Today »), so it takes no line of its own, and says what it is measured by
+// in a bubble beside it: the sentence of River/ObjectiveNote (ObjectiveNoteTests), the same as the Optimisation
+// tab says under its figures (OptimisationObjectiveTests). It sits outside the live region, which says the
+// pocket and the gain in full and nothing else.
 public class BucketBarGainBubbleTests
 {
     // The sentence as the one component holds it.
@@ -27,7 +26,15 @@ public class BucketBarGainBubbleTests
     {
         { "more", BestPay, Example },
         { "less", Example, BestPay },
-        { "the same", Example, RiverInputs.Example.Run() },
+        { "same", Example, RiverInputs.Example.Run() },
+    };
+
+    // The same, as the pocket's line shows it.
+    public static TheoryData<string, RiverRun, RiverRun, string> GainsShown => new()
+    {
+        { "more", BestPay, Example, "+€2,551.13 vs Today" },
+        { "less", Example, BestPay, "−€2,551.13 vs Today" },
+        { "same", Example, RiverInputs.Example.Run(), "Same as Today" },
     };
 
     [Theory]
@@ -36,41 +43,45 @@ public class BucketBarGainBubbleTests
     {
         var html = await RenderBarAsync(run, setup);
 
-        CardHtml.Bubbles(html).ShouldBe([("the gain over Today", Sentence)]);
+        CardHtml.Bubbles(html).ShouldContain(("the gain over Today", Sentence));
     }
 
-    // Right after the gain's own text, on the gain's line, before « Unsaved changes ».
+    // On the pocket's name line, after its name, short, then its bubble.
     [Theory]
-    [MemberData(nameof(Gains))]
-    public async Task BucketBar_gain_hasItsBubbleAfterItsTextOnItsOwnLine(string _, RiverRun run, RiverRun setup)
+    [MemberData(nameof(GainsShown))]
+    public async Task BucketBar_gain_isOnThePocketsNameLine_shortThenItsBubble(string kind, RiverRun run, RiverRun setup, string shown)
     {
-        var html = await RenderBarAsync(run, setup, unsaved: true);
+        var html = await RenderBarAsync(run, setup);
 
-        var line = Regex.Match(html, "<p class=\"bucket-bar__gain\"[^>]*>(.*?)</p>", RegexOptions.Singleline).Groups[1].Value;
-        Regex.IsMatch(line, "^\\s*<span class=\"bucket-bar__gain--(more|less|same)\"[^>]*>[^<]+</span>\\s*<span class=\"info-bubble\".*</span>\\s*<span class=\"bucket-bar__unsaved\"[^>]*>Unsaved changes\\.</span>\\s*$",
+        var label = Regex.Match(html, "<div class=\"bucket bucket--pocket\".*?<dt[^>]*>(.*?)</dt>", RegexOptions.Singleline).Groups[1].Value;
+        Regex.IsMatch(label, $"<span class=\"bucket__gain bucket__gain--{kind}\"[^>]*>{Regex.Escape(shown)}</span>\\s*<span class=\"info-bubble\".*More about the gain over Today",
             RegexOptions.Singleline).ShouldBeTrue();
     }
 
-    // No gain, so nothing to say what it is measured by: the two cannot be compared, there is no Today to
-    // measure against, or the line holds « Unsaved changes » alone.
-    public static TheoryData<string, RiverRun, RiverRun?, bool> NoGain => new()
+    // Two plans that start from different places cannot be compared: the line says so, short, and its bubble
+    // says why.
+    [Fact]
+    public async Task BucketBar_notComparable_saysWhyInItsBubble()
     {
-        { "not comparable", RiverInputs.Example.SkipCompany().Run(), Example, false },
-        { "no Today", Example, null, false },
-        { "unsaved changes alone", Example, null, true },
-    };
+        var html = await RenderBarAsync(RiverInputs.Example.SkipCompany().Run(), Example);
 
-    [Theory]
-    [MemberData(nameof(NoGain))]
-    public async Task BucketBar_noGainFigure_hasNoBubbleBesideIt(string _, RiverRun run, RiverRun? setup, bool unsaved)
-    {
-        var html = await RenderBarAsync(run, setup, unsaved);
-
-        CardHtml.Bubbles(html).ShouldBeEmpty();
+        var label = Regex.Match(html, "<div class=\"bucket bucket--pocket\".*?<dt[^>]*>(.*?)</dt>", RegexOptions.Singleline).Groups[1].Value;
+        (label.Contains(">Not comparable with Today</span>", StringComparison.Ordinal), CardHtml.Bubbles(html).Contains(
+                ("the gain over Today", "Not comparable with Today, your current setup: one starts from the company's year, the other at the pay.")))
+            .ShouldBe((true, true));
     }
 
-    // The bar's height never depends on the plan: the sentence is behind its bubble, never a paragraph in
-    // sight of the sticky bar.
+    // No Today to measure against: no gain and nothing to say what it is measured by.
+    [Fact]
+    public async Task BucketBar_noToday_hasNoGainNorItsBubble()
+    {
+        var html = await RenderBarAsync(Example, null);
+
+        (html.Contains("bucket__gain", StringComparison.Ordinal), CardHtml.Bubbles(html).Any(bubble => bubble.Label == "the gain over Today"))
+            .ShouldBe((false, false));
+    }
+
+    // The sentence is behind its bubble, never a paragraph in sight of the sticky band.
     [Theory]
     [MemberData(nameof(Gains))]
     public async Task BucketBar_gain_keepsTheSentenceOutOfSight(string _, RiverRun run, RiverRun setup)
@@ -99,6 +110,6 @@ public class BucketBarGainBubbleTests
         ResxText.For<BucketBar>().Get("GainLabel").ShouldBe("the gain over Today");
     }
 
-    private static async Task<string> RenderBarAsync(RiverRun run, RiverRun? setup, bool unsaved = false) =>
-        WebUtility.HtmlDecode(await RenderAsync<BucketBar>(new Folds(new BrowserStorage()), new() { ["Run"] = run, ["Setup"] = setup, ["Unsaved"] = unsaved }));
+    private static async Task<string> RenderBarAsync(RiverRun run, RiverRun? setup) =>
+        WebUtility.HtmlDecode(await RenderAsync<BucketBar>(new Folds(new BrowserStorage()), new() { ["Run"] = run, ["Setup"] = setup }));
 }

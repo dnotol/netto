@@ -36,10 +36,6 @@ internal sealed record BucketsView(
     // draws no shares.
     public decimal? Reach => Drawn ? ReachOf(Start, AmountOf("expenses"), AmountOf("pocket"), AmountOf("kept_in_company")) : null;
 
-    // The rest of it went to taxes: the whole less the reach as the bar rounds it, so the two read as
-    // the whole.
-    public decimal? TaxesShare => Reach is { } reach ? 1m - Rounded(reach) : null;
-
     // What the river starts from once there is a year of the company, the one start every reach is out
     // of, the split's included (SplitSearchView), its expenses left out: what the company earns before it
     // pays INASTI's company contribution, its car or its director anything, plus the profits kept from
@@ -92,8 +88,6 @@ internal sealed record BucketsView(
 
     // What a bucket holds, by its key; the Compare plans tab reads its columns through it.
     internal decimal AmountOf(string key) => Buckets.Single(bucket => bucket.Key == key).Amount;
-
-    private static decimal Rounded(decimal share) => Math.Round(share, 2, MidpointRounding.AwayFromZero);
 
     // What an event's steps pay out, a step coming back counting against it: the sum every bucket of
     // taxes is made of, and a comparison of two plans reads.

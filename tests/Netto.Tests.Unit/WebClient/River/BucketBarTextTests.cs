@@ -87,35 +87,20 @@ public class BucketBarTextTests
         text.ShouldBe("In your pocket: €61,975.74.");
     }
 
-    // Under the bar, what reaches the pocket out of the 100,000 the example's expenses leave, nothing being kept
-    // (BucketsViewTests), the share being the term its bubble explains; the rest went to the social
-    // contributions and the taxes, as the buckets name them.
-    [Fact]
-    public void Reach_example_saysWhatReachesThePocketAndWhatGoesToContributionsAndTaxes()
-    {
-        var view = BucketsView.From(RiverInputs.Example.Run()).ShouldNotBeNull();
-
-        var text = Resources.Format(BucketBarText.Reach(view), "62%", "38%");
-
-        text.ShouldBe("[62% reaches you], 38% goes to contributions and taxes.");
-    }
-
-    // What the company keeps is still the director's: the sentence says the share is of the rest.
-    [Fact]
-    public void Reach_reserve_saysItIsOfWhatTheCompanyDoesNotKeep()
-    {
-        var view = BucketsView.From(RiverInputs.Example.WithReserve(15_000m).Run()).ShouldNotBeNull();
-
-        TermText.Split(Resources.Get(BucketBarText.Reach(view)) ?? "")
-            .ShouldBe(("Of what the company does not keep, ", "{0} reaches you", ", {1} goes to contributions and taxes."));
-    }
-
     [Fact]
     public void BucketBarResx_reach_saysWhatItMeansAndWhereTheRestOfTheRiverIs()
     {
         new[] { BucketBarText.ReachMeaning, BucketBarText.EnterCompany }
             .Where(key => Resources.Get(key) is null)
             .ShouldBeEmpty();
+    }
+
+    // Beside the pocket's amount, the one share the band shows: the example's 62% (BucketsViewTests). What it
+    // is out of is its bubble's, named after « More about ».
+    [Fact]
+    public void ReachShown_example_saysTheShareReachesYou()
+    {
+        (Resources.Format(BucketBarText.ReachShown, "62%"), Resources.Get(BucketBarText.ReachLabel)).ShouldBe(("62% reaches you", "what reaches you"));
     }
 
     [Theory]
@@ -145,22 +130,17 @@ public class BucketBarTextTests
         text.ShouldBe("€2,551.13 less than Today, your current setup.");
     }
 
-    [Fact]
-    public void BucketBarResx_unsaved_saysTheRiverHasChangesNoPlanHolds()
-    {
-        Resources.Get(BucketBarText.Unsaved).ShouldBe("Unsaved changes.");
-    }
-
-    // With a car, the reach says the pocket and the taxes alone, of what the company does not keep once
-    // it keeps some: the car's costs are left out of it, in the expenses.
+    // On the pocket's name line the gain is short, its sign before it; the live region says it in full.
     [Theory]
-    [InlineData(0, "Reach")]
-    [InlineData(10_000, "Reach_Kept")]
-    public void Reach_car_saysThePocketAndTheTaxesAlone(int reserve, string key)
+    [InlineData(GainKind.More, "+€2,551.13 vs Today")]
+    [InlineData(GainKind.Less, "−€2,551.13 vs Today")]
+    [InlineData(GainKind.Same, "Same as Today")]
+    [InlineData(GainKind.NotComparable, "Not comparable with Today")]
+    public void GainShown_eachKind_isShort(GainKind kind, string shown)
     {
-        var view = BucketsView.From(WithCar.WithReserve(reserve).Run()).ShouldNotBeNull();
+        var amount = kind == GainKind.Less ? Formats.Deduction(2_551.13m) : Formats.Addition(2_551.13m);
 
-        BucketBarText.Reach(view).ShouldBe(key);
+        Resources.Format(BucketBarText.GainShown(kind), amount).ShouldBe(shown);
     }
 
     // The reach's bubble says what it is out of: the running costs and the expenses, INASTI's company
@@ -232,14 +212,15 @@ public class BucketBarTextTests
         pocket.ShouldBeNull();
     }
 
-    // The bar, and its live region once the river settles, say instead that there is no figure until
-    // the amount the card marks is corrected.
+    // The band, and its live region once the river settles, say instead that there is no figure until the
+    // amount refused is corrected: the map marks its module as refused, the tabs the tab it is on, and its
+    // card its field.
     [Fact]
     public void BucketBarResx_noFigure_saysWhy()
     {
         var text = Resources.Get(BucketBarText.Refused);
 
-        text.ShouldBe("No figures until the amount marked below is corrected.");
+        text.ShouldBe("No figures until the amount marked as refused is corrected.");
     }
 
     // YearSimulationCarTests' electric car on the example: 8,000 of yearly costs.

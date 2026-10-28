@@ -2,7 +2,8 @@
    none there): opaque, so the cards scrolling under it never show through the figures, and with no backdrop
    filter, which would hold the fixed backdrops of the Plans and Composition panels inside it. Its height is
    measured by bucket-bar.js (--netto-bar-height) for the line under it (--netto-under-bar). Its container is
-   the site's column (app.css, .netto-column). */
+   the site's column (app.css, .netto-column). It has the same rows whatever the plan says: the top row, the
+   buckets, and the stack's line, which holds the stack or the sentence in its place. */
 .bucket-bar {
     position: sticky;
     top: 0;
@@ -13,7 +14,7 @@
 
 .bucket-bar ::deep .bucket-bar__inner {
     display: grid;
-    gap: 0.25rem;
+    gap: 0.4rem;
     padding-top: 0.25rem;
     padding-bottom: 0.5rem;
 }
@@ -38,156 +39,133 @@
     min-width: 0;
 }
 
+/* Saving the plan and the saved plans, then the Composition menu, at the end of the top row, before the
+   theme switch, which sits close beside them. */
+.bucket-bar__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-left: auto;
+    margin-right: -1.25rem;
+}
+
 .bucket-bar__figures {
     display: grid;
-    gap: 0.5rem;
+    gap: 0.4rem;
     min-width: 0;
 }
 
-/* Five buckets in a row while their amounts fit side by side, three then two below that. */
+/* Five buckets in a row, in BucketsView's order, each column as wide as what it says needs: the pocket's
+   holds the gain over Today on its name line and the reach beside its amount, the taxes on pay the
+   longest name. The columns keep their widths whatever the amounts, so nothing moves sideways while a
+   slider is dragged. */
 .bucket-bar__buckets {
     display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 0.5rem 1rem;
+    grid-template-columns: minmax(0, 1.45fr) minmax(0, 1.3fr) repeat(2, minmax(0, 1fr)) minmax(0, 0.9fr);
+    gap: 0.25rem 1.5rem;
     margin: 0;
-}
-
-@media (max-width: 960px) {
-    .bucket-bar__buckets {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
 }
 
 .bucket {
     display: grid;
+    gap: 0.1rem;
     min-width: 0;
 }
 
-/* The name is an info bubble's trigger: the label's padding, taken back by its margin, leaves room
-   inside its clipped box for the trigger's focus outline. The name takes a second line where one is
-   too short for it, and every bucket keeps room for two, so the bar's height never depends on the
-   plan. The bottom padding is 2px deeper, taken back the same way, for the outline around a name of
-   two lines, which reaches 2px lower for its underline (below). */
+/* The swatch, the name and, on the pocket's line, the gain: one line, read at a glance, in sentence case. */
 .bucket__label {
     display: flex;
-    align-items: flex-start;
-    gap: 0.4rem;
-    height: calc(2.6em + 0.5rem + 2px);
-    margin: -0.25rem -0.25rem calc(-0.25rem - 2px);
-    padding: 0.25rem 0.25rem calc(0.25rem + 2px);
-    overflow: hidden;
-    color: var(--netto-text-muted);
-    font-size: 0.7rem;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    line-height: 1.3;
-    text-transform: uppercase;
-}
-
-/* The name takes the room the swatch leaves it and no more: its own width while it fits on one line,
-   the icon taking the rest, and the whole room once it wraps. */
-.bucket__label ::deep .info-bubble {
-    flex: 0 0 auto;
+    align-items: center;
+    gap: 0.45rem;
     min-width: 0;
-    max-width: calc(100% - 1rem);
+    color: var(--netto-text-muted);
+    font-size: 0.8rem;
+    font-weight: 500;
+    line-height: 1.5;
+    white-space: nowrap;
 }
 
-/* Two lines at most, left-aligned where MudBlazor centres a button's content: a name that needs a
-   third, « Contributions and tax on pay and rent » in the narrowest columns, ends its second on an
-   ellipsis, or is cut there where a browser draws none on a button. The 2px under the second line
-   keep its dotted underline inside the cut. */
-.bucket__label ::deep .info-bubble__trigger {
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-    max-height: calc(2.6em + 2px);
-    padding-bottom: 2px;
+/* The name takes the room the swatch and the gain leave it, ending on an ellipsis only where a column is
+   too narrow for it; its full name stays the trigger's, which opens what the bucket holds. */
+.bucket__label ::deep .info-bubble {
+    display: flex;
+    flex: 0 1 auto;
+    min-width: 0;
+}
+
+/* The bucket's own trigger, the name as it is: no dotted underline, which marks a term of running text;
+   gold while hovered or focused, an active state. */
+.bucket__label ::deep .bucket__name {
+    min-width: 0;
     overflow: hidden;
-    text-align: left;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    transition: color 0.2s ease;
+}
+
+    .bucket__label ::deep .bucket__name:hover,
+    .bucket__label ::deep .bucket__name:focus-visible {
+        color: var(--netto-gold);
+    }
+
+/* What the river leaves in the pocket against the plan starred « Today », after the pocket's name: muted,
+   a gain in the pocket's gold, since it is money reaching the director. */
+.bucket__gain {
+    flex: none;
+    font-variant-numeric: tabular-nums;
+}
+
+.bucket__gain--more {
+    color: var(--netto-gold);
 }
 
 .bucket__amount {
     margin: 0;
     font-family: "Fraunces", Georgia, serif;
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     font-weight: 500;
     font-variant-numeric: tabular-nums lining-nums;
+    line-height: 1.3;
     white-space: nowrap;
 }
 
 /* What reaches the director is the key figure: gold, and a little larger. */
 .bucket--pocket .bucket__amount {
     color: var(--netto-gold);
-    font-size: 1.4rem;
+    font-size: 1.25rem;
 }
 
-/* Beside the buttons, from 1,201 px, the five columns are about 156 px wide whatever the screen, the
-   bar's container stopping at 1,280 px: a pocket of €999,999.99 and its share take some 170 px at 1.4rem.
-   The amounts come down a step there, every one within its column up to €999,999.99 and a share of
-   100%, the pocket keeping its lead: some 151 px at 1.2rem, the others some 142 px at 1.1rem. Below
-   1,201 px the figures take the bar's whole width, its columns wider. */
-@media (min-width: 1201px) {
-    .bucket__amount {
-        font-size: 1.1rem;
-    }
-
-    .bucket--pocket .bucket__amount {
-        font-size: 1.2rem;
-    }
-}
-
-/* A bucket's share of the start, beside its amount, small and muted: the amount stays the figure. */
-.bucket__share {
-    margin-left: 0.15rem;
-    font-family: "Inter", system-ui, sans-serif;
-    font-size: 0.75rem;
-    font-weight: 500;
+/* The one share the band shows, beside the pocket's amount, small and muted: the amount stays the figure. */
+.bucket__reach {
+    margin-left: 0.35rem;
     color: var(--netto-text-muted);
+    font-family: "Inter", system-ui, sans-serif;
+    font-size: 0.8rem;
+    font-weight: 500;
     font-variant-numeric: tabular-nums;
 }
 
-/* Centred on the name's first line. */
 .bucket__swatch {
     flex: none;
     width: 0.6rem;
     height: 0.6rem;
-    margin-top: calc((1.3em - 0.6rem) / 2);
     border-radius: 2px;
 }
 
-/* The bucket's icon (BucketIcons), after the name: whole while the column has room for it beside the
-   name, gone once it has not, so it never takes room the name needs. Its box is the one thing on the
-   line that shrinks (the name cannot), and once it is narrower than the icon, the icon wraps onto a
-   second line the box's height hides; the zero-wide first item (::before) keeps the first line. The
-   gap before it lives inside it, the box's margin taking the label's gap back, so a box shrunk to
-   nothing leaves the name the room it had without an icon. Its top margin centres it on the name's
-   first line, a line of the label's 0.7rem at 1.3 against its own of 0.75rem at 1.5, the icon drawn
-   whole in the label's padding. */
-.bucket__icon {
+/* The stack's line, as tall whatever it holds: the stack, or the sentence in its place. */
+.bucket-bar__slot {
     display: flex;
-    flex: 0 1 auto;
-    flex-wrap: wrap;
+    align-items: center;
+    height: 1rem;
     min-width: 0;
-    height: 1.5em;
-    margin: calc((0.7rem * 1.3 - 0.75rem * 1.5) / 2) 0 0 -0.4rem;
-    overflow: hidden;
-    font-size: 0.75rem;
-    letter-spacing: 0;
-    line-height: 1.5;
 }
-
-    .bucket__icon::before {
-        content: "";
-        height: 1.5em;
-    }
-
-    .bucket__icon > span {
-        margin-left: 0.4rem;
-    }
 
 .bucket-bar__stack {
     display: flex;
-    height: 0.5rem;
+    flex: 1 1 auto;
+    height: 0.4rem;
     border-radius: 999px;
     background: var(--netto-wash);
     overflow: hidden;
@@ -197,7 +175,7 @@
     flex: 0 0 auto;
 }
 
-    /* A thin gap in the bar's background colour between buckets. */
+    /* A thin gap in the band's background colour between buckets. */
     .bucket-bar__segment + .bucket-bar__segment {
         border-left: 2px solid var(--netto-page);
     }
@@ -231,44 +209,20 @@
     box-shadow: inset 0 0 0 1px var(--netto-data-high);
 }
 
+/* In the stack's place, where there is no stack: one line, muted. */
 .bucket-bar__from {
+    min-width: 0;
     margin: 0;
+    overflow: hidden;
     color: var(--netto-text-muted);
-    font-size: 0.8rem;
-}
-
-/* Saving the plan and the saved plans, then the Composition menu, at the end of the top row, before the
-   theme switch, which sits close beside them. */
-.bucket-bar__actions {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 0.5rem;
-    margin-left: auto;
-    margin-right: -1.25rem;
-}
-
-/* What the river leaves in the pocket against the plan starred « Today »: muted like the line above,
-   a gain in the pocket's gold, since it is money reaching the director. */
-.bucket-bar__gain {
-    margin: 0;
-    color: var(--netto-text-muted);
-    font-size: 0.8rem;
-}
-
-/* On the gain's line, so the bar stays one line taller at most. */
-.bucket-bar__unsaved {
-    color: var(--netto-text-muted);
-    font-style: italic;
-}
-
-.bucket-bar__gain--more {
-    color: var(--netto-gold);
+    font-size: 0.75rem;
+    line-height: 1rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 /* What the live region reads, out of sight: the figures in sight hold the bubbles of the buckets'
-   names, which a live region would read out as a change of the bar. */
+   names, which a live region would read out as a change of the band. */
 .bucket-bar__live {
     position: absolute;
     width: 1px;
@@ -294,12 +248,18 @@
     }
 }
 
-/* On a phone the bar shares the screen with the sticky site header: buckets two to a row, tighter, so
-   the cards keep most of the height. The figures take the whole width. */
+/* Below that the five amounts would squeeze each other: three to a row, then two. */
+@media (max-width: 960px) {
+    .bucket-bar__buckets {
+        grid-template-columns: minmax(0, 1.3fr) repeat(2, minmax(0, 1fr));
+    }
+}
+
+/* On a phone the band keeps the cards most of the height: the pocket across the width, the other buckets
+   two to a row, tighter. */
 @media (max-width: 640px) {
     .bucket-bar ::deep .bucket-bar__inner {
         gap: 0.35rem;
-        padding-bottom: 0.5rem;
     }
 
     .bucket-bar__wordmark {
@@ -328,15 +288,15 @@
 
     .bucket-bar__buckets {
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 0.3rem 1rem;
+        gap: 0.25rem 1rem;
+    }
+
+    .bucket--pocket {
+        grid-column: 1 / -1;
     }
 
     .bucket__label {
-        font-size: 0.62rem;
-    }
-
-    .bucket__icon {
-        margin-top: calc((0.62rem * 1.3 - 0.75rem * 1.5) / 2);
+        font-size: 0.75rem;
     }
 
     .bucket__amount {
@@ -345,18 +305,5 @@
 
     .bucket--pocket .bucket__amount {
         font-size: 1.15rem;
-    }
-
-    .bucket-bar__stack {
-        height: 0.4rem;
-    }
-
-    .bucket-bar__from {
-        font-size: 0.72rem;
-    }
-
-    /* The phone's rows of buckets keep to their amounts; the line under them says the reach. */
-    .bucket__share {
-        display: none;
     }
 }

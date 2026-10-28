@@ -11,16 +11,17 @@ internal static class BucketBarText
     // Why there is no figure while the engine refuses an amount, in the bar and its live region.
     public const string Refused = "Refused";
 
-    // What the reach is out of, in the bubble its share opens.
+    // Beside the pocket's amount, the one share the band shows: what reaches the pocket.
+    public const string ReachShown = "ReachShown";
+
+    // What the reach's (i) is « More about ».
+    public const string ReachLabel = "ReachLabel";
+
+    // What the reach is out of, in its bubble.
     public const string ReachMeaning = "ReachMeaning";
 
-    // With the company skipped, after the reach: where the rest of the river is.
+    // With the company skipped, in the reach's bubble: where the rest of the river is.
     public const string EnterCompany = "EnterCompany";
-
-    // Under the bar, what reaches the pocket and what went to contributions and taxes: of what the
-    // company does not keep, once it keeps some.
-    public static string Reach(BucketsView view) =>
-        "Reach" + (view.Buckets.Single(bucket => bucket.Key == "kept_in_company").Amount > 0m ? "_Kept" : "");
 
     // What the river starts from, worded with two figures in this order: what the year starts from
     // before the profits kept from earlier years, and those profits. The profit before INASTI's company
@@ -31,12 +32,13 @@ internal static class BucketBarText
         ? view.CompanyPaysContributions ? "FromPayCost" : "FromPay"
         : (view.CarCosts > 0m ? "FromProfitWithCar" : "FromProfit") + (view.EarlierProfits > 0m ? "AndEarlier" : "");
 
-    // Under the gain, that the river has changes no saved plan holds.
-    public const string Unsaved = "Unsaved";
-
-    // Under the reach, what the river leaves in the pocket against the plan starred « Today », or that
-    // the two cannot be compared (BaselineGain); the live region says it after the pocket.
+    // What the river leaves in the pocket against the plan starred « Today », or that the two cannot be
+    // compared (BaselineGain), in full: the live region says it after the pocket, and the bubble of a gain
+    // that is not a figure says why.
     public static string Gain(GainKind kind) => $"Gain_{kind}";
+
+    // The same, short, on the pocket's name line: « +€2,551.13 vs Today ».
+    public static string GainShown(GainKind kind) => $"GainShown_{kind}";
 
     // The bucket of what leaves the pay names the social contributions with the tax, and the rent too
     // once its tax is there; its key keeps its first name, taxes_on_pay. A copyright royalty's tax is
