@@ -166,10 +166,11 @@ public class CompareRowsTests
         Row(Compare(RiverInputs.Example, BestPay), "pocket").Differs.ShouldBeTrue();
     }
 
-    // A car on one side: the result is the pocket, its share and what the company keeps, as for any plan,
-    // out of the 92,000 the river starts from once the car's 8,000 of costs are paid, a cost of the
-    // company like its running costs: 55,813.08 reaches the pocket, 6,162.66 less than without the car,
-    // and the company keeps nothing.
+    // A car on one side: the result is the pocket, its share, what the company keeps and its expenses, as
+    // for any plan. The river starts from 100,409.30, and the car's 8,000 of costs sit in the expenses with
+    // INASTI's 409.30 contribution, 8,409.30, costs of the company like its running costs, which leave
+    // 92,000: 55,813.08 of them reach the pocket, 6,162.66 less than without the car, and the company keeps
+    // nothing.
     [Fact]
     public void Rows_carOnTheSecondSide_sayItsPocketItsShareWhatTheCompanyKeepsAndItsExpenses()
     {
