@@ -85,7 +85,8 @@ public class PlanMapPanelTests
 
         await page.InvokeAsync(() => card.InputsChanged.InvokeAsync(edited));
 
-        var (bar, map, changed) = (await page.FindAsync<BucketBar>(), await page.FindAsync<MapTab>(), await page.FindAsync<CompanyYearCard>());
+        var (bar, map, changed, plans) = (await page.FindAsync<BucketBar>(), await page.FindAsync<MapTab>(), await page.FindAsync<CompanyYearCard>(),
+            await page.FindAsync<PlansPanel>());
         page.ShouldSatisfyAllConditions(
             () => map.Inputs.ShouldBe(edited),
             () => changed.Inputs.ShouldBe(edited),
@@ -93,7 +94,7 @@ public class PlanMapPanelTests
             () => changed.Run.ShouldBeSameAs(bar.Run),
             () => bar.Run.Year!.Scenario.Revenue.ShouldBe(edited.Company!.Revenue.Value),
             () => map.DrawnAmounts.ShouldNotBe(amountsBefore),
-            () => bar.Unsaved.ShouldBeTrue(),
+            () => plans.Unsaved.ShouldBeTrue(),
             () => page.Errors.ShouldBeEmpty());
     }
 

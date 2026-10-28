@@ -28,6 +28,33 @@
             border-color: var(--netto-gold);
         }
 
+/* The river's changes no saved plan holds, after « Save this plan »: a gold dot, the one state the band
+   calls attention to, its room kept while there are none (--saved), so the buttons beside it never move. */
+.plans__unsaved {
+    display: inline-block;
+    width: 0.45rem;
+    height: 0.45rem;
+    margin-left: 0.45rem;
+    border-radius: 50%;
+    background: var(--netto-gold);
+}
+
+.plans__unsaved--saved {
+    visibility: hidden;
+}
+
+/* What the dot means, for a screen reader: out of sight. */
+.plans__spoken {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
 .plans__count {
     margin-left: 0.35rem;
     color: var(--netto-text-muted);

@@ -15,6 +15,9 @@
   <data name="Save" xml:space="preserve">
     <value>Save this plan</value>
   </data>
+  <data name="UnsavedSpoken" xml:space="preserve">
+    <value>(unsaved changes)</value>
+  </data>
   <data name="Button" xml:space="preserve">
     <value>Plans</value>
   </data>

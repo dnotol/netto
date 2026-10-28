@@ -62,11 +62,11 @@ public class PlanTakenOutNoticeTests
         await OpenAsync(page, storage, "Plan 1");
 
         var plan = Inputs(storage, "Plan 1");
-        var bar = await page.FindAsync<BucketBar>();
+        var plans = await page.FindAsync<PlansPanel>();
         var menu = await page.FindAsync<CompositionMenu>();
         var map = await page.FindAsync<MapTab>();
         page.ShouldSatisfyAllConditions(
-            () => bar.Unsaved.ShouldBeFalse(),
+            () => plans.Unsaved.ShouldBeFalse(),
             () => menu.Inputs.ShouldBe(plan),
             () => map.Inputs.ShouldBe(plan),
             () => map.Search.ShouldNotBeSameAs(searched),
