@@ -149,8 +149,9 @@ public static class PersonalTaxCalculator
     // hold the cap differently: the law's words cap the share attributed (« une quote-part … sans pouvoir
     // excéder »), and the administration reads it as including the partner's own professional income
     // (DOC 56 1243/001, p. 16 and 17: « le revenu professionnel propre inclus »). The administration's
-    // is applied, so the share is at most the cap less their own; with no own income both agree. The
-    // rate's share is rounded to the cent as the assessment shows it (derived: to check against Tax-Calc).
+    // is applied, so the share is at most the cap less their own; with no own income both agree. Tax-Calc
+    // « exercice 2026 » applies it too (2026-10-28: 8,610 to a partner earning 4,850, the cap 13,460). The
+    // rate's share is rounded to the cent as the assessment shows it.
     internal static decimal MaritalQuotient(MaritalQuotientRules rules, decimal own, decimal other, bool bothAged66)
     {
         var share = Money.RoundToCent(rules.Rate.Value * (own + other)) - own;

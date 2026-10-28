@@ -189,6 +189,21 @@ public class PersonalTaxCalculatorJointTests
         (result.IncomeTax, result.MunicipalSurcharge).ShouldBe((9_790.00m, 685.30m));
     }
 
+    // Income year 2025, a partner with 4,850 of net professional income (Tax-Calc « exercice 2026 » on
+    // 2026-10-28, codes 2400 5,000 and 2407 500 beside the case above): the cap counts their own income,
+    // so the quotient tops them up to 13,460 with 8,610, not the 11,155 that 30% of the two would give.
+    [Fact]
+    public void Compute_2025PartnerWithIncome_capsTheQuotientWithTheirOwnIncomeIncluded()
+    {
+        var result = PersonalTaxCalculator.Compute(PersonalTaxRules.IncomeYear2025, 60_000m, 10_000m, 0.07m, household: Partner(4_850m));
+
+        var (director, partner) = (result.Joint.ShouldNotBeNull().Director, result.Joint.Partner);
+        (partner.Quotient, director.TaxableIncome, director.BasicTax, director.StateTax, director.ReducedStateTax, director.RegionalAdditionalTax)
+            .ShouldBe((8_610.00m, 39_890.00m, 14_062.50m, 11_335.00m, 8_506.12m, 2_828.88m));
+        (partner.TaxableIncome, partner.StateTax, partner.ReducedStateTax, partner.RegionalAdditionalTax).ShouldBe((13_460.00m, 637.50m, 478.40m, 159.10m));
+        (result.IncomeTax, result.MunicipalSurcharge).ShouldBe((11_972.50m, 838.08m));
+    }
+
     // Without the quotient the partner's whole 11,550 passes to the director, taxed 25%, 30% and 40%:
     // 6,980.50 off 17,841.50, a State tax of 10,861.00, which the quotient brings down to 9,710.50.
     [Fact]
