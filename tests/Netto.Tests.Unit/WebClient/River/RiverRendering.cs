@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using MudBlazor.Services;
 using Netto.Web.Client;
+using Netto.Web.Client.Layout;
 using Netto.Web.Client.River;
 using Shouldly;
 
@@ -15,8 +16,9 @@ namespace Netto.Tests.WebClient.River;
 // A component of the river drawn to HTML without a browser (HtmlRenderer), with the services the app
 // registers: what a viewer sees on first load, before any click. Nothing runs after the render, so a
 // component is read as it is first drawn. The browser's clock is fixed at 23 October 2026, a day with an
-// advance payment still to come, and a script runtime that fails any call and a navigation manager at the
-// plan page's address that goes nowhere, unless the test registers another of them (the last one wins).
+// advance payment still to come, and a script runtime that fails any call, a navigation manager at the
+// plan page's address that goes nowhere and a theme nothing has picked over a system in dark, unless the test
+// registers another of them (the last one wins).
 internal static class RiverRendering
 {
     private static readonly DateTimeOffset On23October = new(2026, 10, 23, 12, 0, 0, TimeSpan.Zero);
@@ -35,6 +37,7 @@ internal static class RiverRendering
         services.AddSingleton<TimeProvider>(new Clock(On23October));
         services.AddSingleton<IJSRuntime, NoJavaScript>();
         services.AddSingleton<NavigationManager, NoNavigation>();
+        services.AddSingleton(new ThemePreference(new BrowserStorage(), new SystemTheme(prefersLight: false)));
         more?.Invoke(services);
         await using var provider = services.BuildServiceProvider();
         await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
@@ -101,6 +104,21 @@ internal static class RiverRendering
 
         public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object?[]? args) =>
             throw new InvalidOperationException($"A static render called JavaScript: {identifier}.");
+    }
+
+    // The viewer's system, which prefers light or not and never changes while the test runs: what the theme
+    // switch is drawn by while nothing is picked.
+    internal sealed class SystemTheme(bool prefersLight) : IThemePage
+    {
+        public bool SystemPrefersLight => prefersLight;
+
+        public void Show(ThemeMode theme)
+        {
+        }
+
+        public void WatchSystem(Action<bool> changed)
+        {
+        }
     }
 
     // MudBlazor's chips ask for the navigation manager; a render without a browser stays at the address it

@@ -119,6 +119,18 @@ html {
     --netto-bar-height: 0px;
 }
 
+/* The site's column: what runs along the top of every page, the site's header (Layout/MainLayout) and the
+   plan page's band (River/BucketBar), and the pages under them, are this wide at most, centred, so a page
+   and the band above it share their edges. A MudContainer takes it with MaxWidth.False, keeping its own
+   gutters (16px, 24px from 600px wide), and Class="netto-column". */
+:root {
+    --netto-column: 100rem;
+}
+
+.netto-column {
+    max-width: var(--netto-column);
+}
+
 /* On the plan page, the bar of buckets sticks under the header too (River/BucketBar.razor.css), its
    row of tabs as its last row (Tabs/PlanTabBar), so a control reached with Tab stops below both, its
    focus ring in sight: the header and its border, the bar as it is drawn, whatever its width, its

@@ -28,18 +28,12 @@
     margin-left: auto;
 }
 
-/* The theme switch, close beside « Start your plan » where the page has it, alone at the end of the header
-   elsewhere: muted at rest, gold while hovered or focused, an active state. */
-.site-header ::deep .site-header__theme {
+/* The theme switch (ThemeSwitch), close beside « Start your plan » where the page has it, alone at the end of
+   the header elsewhere. */
+.site-header__theme {
+    display: inline-flex;
     margin-left: -1.25rem;
-    color: var(--netto-text-muted);
-    transition: color 0.2s ease;
 }
-
-    .site-header ::deep .site-header__theme:hover,
-    .site-header ::deep .site-header__theme:focus-visible {
-        color: var(--netto-gold);
-    }
 
 .site-nav {
     display: flex;

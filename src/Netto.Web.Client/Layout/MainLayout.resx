@@ -39,10 +39,4 @@
   <data name="ErrorReload" xml:space="preserve">
     <value>Reload</value>
   </data>
-  <data name="ThemeToLight" xml:space="preserve">
-    <value>Switch to light theme</value>
-  </data>
-  <data name="ThemeToDark" xml:space="preserve">
-    <value>Switch to dark theme</value>
-  </data>
 </root>

@@ -1,0 +1,16 @@
+/* ::deep reaches the MudIconButton, which carries no scope attribute of its own. Muted at rest, gold while
+   hovered or focused, an active state; the site's focus ring is app.css's. */
+.theme-switch {
+    display: inline-flex;
+    align-items: center;
+}
+
+    .theme-switch ::deep .mud-icon-button {
+        color: var(--netto-text-muted);
+        transition: color 0.2s ease;
+    }
+
+        .theme-switch ::deep .mud-icon-button:hover,
+        .theme-switch ::deep .mud-icon-button:focus-visible {
+            color: var(--netto-gold);
+        }

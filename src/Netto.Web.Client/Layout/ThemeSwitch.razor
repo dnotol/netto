@@ -1,0 +1,22 @@
+@implements IDisposable
+@inject IStringLocalizer<ThemeSwitch> L
+@inject ThemePreference ThemePreference
+
+@* The viewer's switch between the two themes, at the end of the site's header and of the plan page's band
+   (River/BucketBar). Named by what it does, so its name changes with the theme rather than a pressed state.
+   It draws again each time the theme shown changes, picked here or the system's followed while nothing is
+   picked (ThemePreference): a parent drawing again would not redraw it, since it takes no parameter that
+   changes. Muted at rest, gold while hovered or focused, an active state. *@
+<span class="theme-switch">
+    <MudIconButton Icon="@(ThemePreference.IsDark ? Icons.Material.Rounded.LightMode : Icons.Material.Rounded.DarkMode)"
+                   Size="Size.Small" OnClick="ThemePreference.Switch"
+                   aria-label="@L[ThemePreference.IsDark ? "ThemeToLight" : "ThemeToDark"]" />
+</span>
+
+@code {
+    protected override void OnInitialized() => ThemePreference.Changed += OnThemeChanged;
+
+    public void Dispose() => ThemePreference.Changed -= OnThemeChanged;
+
+    private void OnThemeChanged() => _ = InvokeAsync(StateHasChanged);
+}

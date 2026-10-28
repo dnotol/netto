@@ -29,6 +29,19 @@ internal static class PlanTabRoutes
         ? PlanTab.Plan
         : Order.Where(tab => string.Equals(Segment(tab), segment, StringComparison.OrdinalIgnoreCase)).Cast<PlanTab?>().FirstOrDefault();
 
+    // Whether the address, as NavigationManager.ToBaseRelativePath gives it, is one of the plan page's tabs:
+    // the router matches whatever its case and ignores a trailing slash, a query and a fragment, and so does
+    // this. A segment Netto has no tab for is the page not found, drawn at that address.
+    public static bool IsAt(string relativePath)
+    {
+        var path = relativePath.Split('?', '#')[0].TrimEnd('/');
+        if (string.Equals(path, "plan", StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        const string prefix = "plan/";
+        return path.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) && From(path[prefix.Length..]) is not null;
+    }
+
     private static string? Segment(PlanTab tab) => tab switch
     {
         PlanTab.Plan => null,

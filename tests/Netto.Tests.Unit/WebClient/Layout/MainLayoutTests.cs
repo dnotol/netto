@@ -31,8 +31,7 @@ public class MainLayoutTests
     // on the front page.
     [Theory]
     [InlineData("")]
-    [InlineData("plan")]
-    [InlineData("plan/optimisation")]
+    [InlineData("plan/map")]
     [InlineData("not-found")]
     public async Task Header_onAnyOtherPage_hasNoSectionLinks(string path)
     {
@@ -47,8 +46,7 @@ public class MainLayoutTests
     [InlineData("about", true)]
     [InlineData("About/", true)]
     [InlineData("", false)]
-    [InlineData("plan", false)]
-    [InlineData("plan/when-to-pay", false)]
+    [InlineData("plan/map", false)]
     [InlineData("not-found", false)]
     public async Task Header_startYourPlan_isOnlyOnTheFrontPage(string path, bool shown)
     {
@@ -74,13 +72,29 @@ public class MainLayoutTests
             .ShouldBe((true, true));
     }
 
-    // The wordmark goes to the plan, never to /: a link to / leaves the plan page, which is rebuilt, and
-    // forgets what it had found, where /plan from one of its tabs keeps the page.
+    // Every other page keeps the site's header, its wordmark and its theme switch: the front page, the root
+    // on its way to the plan, and a page not found, at an address under /plan too.
     [Theory]
     [InlineData("about")]
-    [InlineData("plan")]
-    [InlineData("plan/optimisation")]
+    [InlineData("")]
     [InlineData("not-found")]
+    [InlineData("plan/map")]
+    public async Task Header_offThePlan_isTheSitesWithItsThemeSwitch(string path)
+    {
+        var html = await RenderLayoutAsync(path);
+
+        var header = Regex.Match(html, "<header class=\"site-header\"[^>]*>.*?</header>", RegexOptions.Singleline).Value;
+        (header.Contains("class=\"wordmark site-header__wordmark\"", StringComparison.Ordinal), header.Contains("aria-label=\"Switch to dark theme\"", StringComparison.Ordinal))
+            .ShouldBe((true, true));
+    }
+
+    // The wordmark goes to the plan, never to /: a link to / leaves the plan page, which is rebuilt, and
+    // forgets what it had found, where /plan from one of its tabs keeps the page. On the plan the band
+    // draws its own (BucketBarBandTests).
+    [Theory]
+    [InlineData("about")]
+    [InlineData("not-found")]
+    [InlineData("plan/map")]
     public async Task Header_wordmark_goesToThePlan(string path)
     {
         var html = await RenderLayoutAsync(path);

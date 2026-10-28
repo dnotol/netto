@@ -7,6 +7,7 @@ using Microsoft.JSInterop;
 using MudBlazor;
 using MudBlazor.Services;
 using Netto.Web.Client;
+using Netto.Web.Client.Layout;
 using Netto.Web.Client.Pages;
 using Netto.Tests.WebClient.River;
 using Netto.Web.Client.River;
@@ -68,6 +69,7 @@ internal sealed class LivePlan : IAsyncDisposable
         var script = new RecordingScript(holdPaint);
         services.AddSingleton<IJSRuntime>(script);
         services.AddSingleton<NavigationManager>(new RiverRendering.NoNavigation(uri));
+        services.AddSingleton(new ThemePreference(storage, new RiverRendering.SystemTheme(prefersLight: false)));
 
         return new LivePlan(services.BuildServiceProvider(), script);
     }

@@ -23,7 +23,7 @@
    tabs, which stick with it. Its height is measured once it is drawn and whenever it changes
    (bucket-bar.js), for the line under it that cards are jumped to and controls scrolled to. *@
 <div class="bucket-bar @(TabRow is null ? null : "bucket-bar--tabs")" @ref="_bar">
-    <MudContainer MaxWidth="MaxWidth.Large">
+    <MudContainer MaxWidth="MaxWidth.False" Class="netto-column bucket-bar__inner">
         <div class="bucket-bar__figures">
             <dl class="bucket-bar__buckets">
                 @foreach (var key in View?.Buckets.Select(bucket => bucket.Key) ?? BucketsView.Keys)

@@ -63,6 +63,35 @@ public class PlanTabRoutesTests
         PlanTabRoutes.From(segment).ShouldBeNull();
     }
 
+    // The plan page's own addresses, as NavigationManager.ToBaseRelativePath gives them: the router matches
+    // whatever their case and ignores a trailing slash, a query or a fragment.
+    [Theory]
+    [InlineData("plan")]
+    [InlineData("Plan/")]
+    [InlineData("plan/optimisation")]
+    [InlineData("plan/When-To-Pay/")]
+    [InlineData("plan/compare")]
+    [InlineData("plan?card=split")]
+    [InlineData("plan/optimisation#tab-content")]
+    public void IsAt_aTabsAddress_isThePlanPage(string path)
+    {
+        PlanTabRoutes.IsAt(path).ShouldBeTrue();
+    }
+
+    // A segment Netto has no tab for is the page not found, drawn at that address; the front page and the
+    // root, which replaces itself with /plan, are pages of their own.
+    [Theory]
+    [InlineData("")]
+    [InlineData("about")]
+    [InlineData("plan/map")]
+    [InlineData("plan/optimisation/more")]
+    [InlineData("planner")]
+    [InlineData("not-found")]
+    public void IsAt_anyOtherAddress_isNot(string path)
+    {
+        PlanTabRoutes.IsAt(path).ShouldBeFalse();
+    }
+
     // The segment after /plan/, none for the river.
     private static string? Segment(PlanTab tab) => PlanTabRoutes.Href(tab) is var href && href.Contains('/') ? href[(href.IndexOf('/') + 1)..] : null;
 }
