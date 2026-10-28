@@ -3,9 +3,10 @@ using Shouldly;
 
 namespace Netto.Tests.Architecture;
 
-// The test support (Support/) is the one definition of what the tests share: the browser's storage
-// fakes, the reader of a component's .resx, the reader of a stylesheet, and the engine tests' fixtures. A
-// test file that declares its own copy of one fails here, naming the file, so the copies do not come back.
+// The test support (Support/) is the one definition of what the tests share: the browser's storage and
+// system theme fakes, the reader of a component's .resx, the reader of a stylesheet, and the engine tests'
+// fixtures. A test file that declares its own copy of one fails here, naming the file, so the copies do not
+// come back.
 public class TestSupportTests
 {
     private static readonly string Folder =
@@ -55,6 +56,13 @@ public class TestSupportTests
     public void TestSources_unsupportedIncomeYear_isNamedOnce()
     {
         Declaring(@"InlineData\(\s*2027\s*\)|IncomeYear\s*=\s*2027\b").ShouldBeEmpty();
+    }
+
+    // A class that implements IThemePage: the viewer's system and the page the theme is drawn on, SystemTheme.
+    [Fact]
+    public void TestSources_themePageFakes_areDefinedOnlyInSupport()
+    {
+        Declaring(@"\bclass\s+\w+[^{;]*:\s*[^{;]*\bIThemePage\b").ShouldBeEmpty();
     }
 
     // A clock standing in for the browser's: a TimeProvider that answers the instant it was given.

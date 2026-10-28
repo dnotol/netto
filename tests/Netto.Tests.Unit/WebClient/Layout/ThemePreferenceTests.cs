@@ -14,7 +14,7 @@ public class ThemePreferenceTests
     [InlineData(false, ThemeMode.Dark)]
     public void Current_nothingPicked_followsTheSystem(bool systemPrefersLight, ThemeMode expected)
     {
-        var theme = new ThemePreference(new BrowserStorage(), new Page(systemPrefersLight));
+        var theme = new ThemePreference(new BrowserStorage(), new SystemTheme(systemPrefersLight));
 
         theme.Current.ShouldBe(expected);
     }
@@ -22,7 +22,7 @@ public class ThemePreferenceTests
     [Fact]
     public void Switch_fromTheSystemsDark_turnsLight()
     {
-        var theme = new ThemePreference(new BrowserStorage(), new Page(systemPrefersLight: false));
+        var theme = new ThemePreference(new BrowserStorage(), new SystemTheme(prefersLight: false));
 
         theme.Switch();
 
@@ -32,7 +32,7 @@ public class ThemePreferenceTests
     [Fact]
     public void Switch_twice_isBackToWhereItStarted()
     {
-        var theme = new ThemePreference(new BrowserStorage(), new Page(systemPrefersLight: true));
+        var theme = new ThemePreference(new BrowserStorage(), new SystemTheme(prefersLight: true));
 
         theme.Switch();
         theme.Switch();
@@ -44,20 +44,20 @@ public class ThemePreferenceTests
     public void Switch_pickKeptAfterAReload()
     {
         var storage = new BrowserStorage();
-        new ThemePreference(storage, new Page(systemPrefersLight: false)).Switch();
+        new ThemePreference(storage, new SystemTheme(prefersLight: false)).Switch();
 
-        new ThemePreference(storage, new Page(systemPrefersLight: false)).Current.ShouldBe(ThemeMode.Light);
+        new ThemePreference(storage, new SystemTheme(prefersLight: false)).Current.ShouldBe(ThemeMode.Light);
     }
 
     [Fact]
     public void Switch_pickedToTheSystemsOwn_stillKeptWhenTheSystemChanges()
     {
         var storage = new BrowserStorage();
-        var theme = new ThemePreference(storage, new Page(systemPrefersLight: true));
+        var theme = new ThemePreference(storage, new SystemTheme(prefersLight: true));
         theme.Switch();
         theme.Switch();
 
-        var reloaded = new ThemePreference(storage, new Page(systemPrefersLight: false));
+        var reloaded = new ThemePreference(storage, new SystemTheme(prefersLight: false));
 
         reloaded.Current.ShouldBe(ThemeMode.Light);
     }
@@ -67,7 +67,7 @@ public class ThemePreferenceTests
     [Fact]
     public void SystemChange_nothingPicked_isFollowed()
     {
-        var page = new Page(systemPrefersLight: false);
+        var page = new SystemTheme(prefersLight: false);
         var theme = new ThemePreference(new BrowserStorage(), page);
 
         page.ChangeSystem(prefersLight: true);
@@ -78,7 +78,7 @@ public class ThemePreferenceTests
     [Fact]
     public void SystemChange_afterAPick_isIgnored()
     {
-        var page = new Page(systemPrefersLight: false);
+        var page = new SystemTheme(prefersLight: false);
         var theme = new ThemePreference(new BrowserStorage(), page);
         theme.Switch();
 
@@ -92,7 +92,7 @@ public class ThemePreferenceTests
     [Fact]
     public void SystemChange_nothingPicked_tellsListeners()
     {
-        var page = new Page(systemPrefersLight: false);
+        var page = new SystemTheme(prefersLight: false);
         var theme = new ThemePreference(new BrowserStorage(), page);
         var told = 0;
         theme.Changed += () => told++;
@@ -105,7 +105,7 @@ public class ThemePreferenceTests
     [Fact]
     public void SystemChange_afterAPick_tellsNoOne()
     {
-        var page = new Page(systemPrefersLight: false);
+        var page = new SystemTheme(prefersLight: false);
         var theme = new ThemePreference(new BrowserStorage(), page);
         theme.Switch();
         var told = 0;
@@ -119,7 +119,7 @@ public class ThemePreferenceTests
     [Fact]
     public void Switch_tellsListeners()
     {
-        var theme = new ThemePreference(new BrowserStorage(), new Page(systemPrefersLight: false));
+        var theme = new ThemePreference(new BrowserStorage(), new SystemTheme(prefersLight: false));
         var told = 0;
         theme.Changed += () => told++;
 
@@ -131,7 +131,7 @@ public class ThemePreferenceTests
     [Fact]
     public void Switch_showsTheNewThemeOnThePage()
     {
-        var page = new Page(systemPrefersLight: false);
+        var page = new SystemTheme(prefersLight: false);
         var theme = new ThemePreference(new BrowserStorage(), page);
 
         theme.Switch();
@@ -143,7 +143,7 @@ public class ThemePreferenceTests
     [Fact]
     public void SystemChange_nothingPicked_showsTheSystemsTheme()
     {
-        var page = new Page(systemPrefersLight: false);
+        var page = new SystemTheme(prefersLight: false);
         _ = new ThemePreference(new BrowserStorage(), page);
 
         page.ChangeSystem(prefersLight: true);
@@ -154,7 +154,7 @@ public class ThemePreferenceTests
     [Fact]
     public void SystemChange_afterAPick_showsNothing()
     {
-        var page = new Page(systemPrefersLight: false);
+        var page = new SystemTheme(prefersLight: false);
         var theme = new ThemePreference(new BrowserStorage(), page);
         theme.Switch();
 
@@ -174,7 +174,7 @@ public class ThemePreferenceTests
         var storage = new BrowserStorage();
         storage.Set(ThemePreference.StorageKey, stored);
 
-        new ThemePreference(storage, new Page(systemPrefersLight: true)).Current.ShouldBe(ThemeMode.Light);
+        new ThemePreference(storage, new SystemTheme(prefersLight: true)).Current.ShouldBe(ThemeMode.Light);
     }
 
     // A private window or blocked site data: nothing is kept across a reload, but the pick holds while
@@ -183,32 +183,11 @@ public class ThemePreferenceTests
     public void Switch_storageRefused_pickHoldsUntilTheReload()
     {
         var storage = new RefusingStorage();
-        var theme = new ThemePreference(storage, new Page(systemPrefersLight: false));
+        var theme = new ThemePreference(storage, new SystemTheme(prefersLight: false));
 
         theme.Switch();
 
-        (theme.Current, new ThemePreference(storage, new Page(systemPrefersLight: false)).Current)
+        (theme.Current, new ThemePreference(storage, new SystemTheme(prefersLight: false)).Current)
             .ShouldBe((ThemeMode.Light, ThemeMode.Dark));
-    }
-
-    // The system's setting starts as given and changes when the test says so, as the browser's would.
-    private sealed class Page(bool systemPrefersLight) : IThemePage
-    {
-        private readonly List<Action<bool>> _watchers = [];
-
-        public List<ThemeMode> Shown { get; } = [];
-
-        public bool SystemPrefersLight { get; private set; } = systemPrefersLight;
-
-        public void Show(ThemeMode theme) => Shown.Add(theme);
-
-        public void WatchSystem(Action<bool> changed) => _watchers.Add(changed);
-
-        public void ChangeSystem(bool prefersLight)
-        {
-            SystemPrefersLight = prefersLight;
-            foreach (var watcher in _watchers)
-                watcher(prefersLight);
-        }
     }
 }

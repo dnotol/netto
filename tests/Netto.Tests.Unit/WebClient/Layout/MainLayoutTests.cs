@@ -123,7 +123,7 @@ public class MainLayoutTests
         {
             services.AddSingleton<NavigationManager>(new NoNavigation($"http://localhost/{path}"));
             services.AddSingleton<IJSRuntime>(new OnlyStopsMudWatching());
-            services.AddSingleton(new ThemePreference(new BrowserStorage(), new LightSystem()));
+            services.AddSingleton(new ThemePreference(new BrowserStorage(), new SystemTheme(prefersLight: true)));
         });
 
     // The header's nav, from its opening tag to its closing one.
@@ -146,18 +146,5 @@ public class MainLayoutTests
             identifier == "mudThemeProvider.stopWatchingDarkMode"
                 ? default
                 : throw new InvalidOperationException($"A static render called JavaScript: {identifier}.");
-    }
-
-    private sealed class LightSystem : IThemePage
-    {
-        public bool SystemPrefersLight => true;
-
-        public void Show(ThemeMode theme)
-        {
-        }
-
-        public void WatchSystem(Action<bool> changed)
-        {
-        }
     }
 }

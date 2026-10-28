@@ -69,7 +69,7 @@ internal sealed class LivePlan : IAsyncDisposable
         var script = new RecordingScript(holdPaint);
         services.AddSingleton<IJSRuntime>(script);
         services.AddSingleton<NavigationManager>(new RiverRendering.NoNavigation(uri));
-        services.AddSingleton(new ThemePreference(storage, new RiverRendering.SystemTheme(prefersLight: false)));
+        services.AddSingleton(new ThemePreference(storage, new SystemTheme(prefersLight: false)));
 
         return new LivePlan(services.BuildServiceProvider(), script);
     }

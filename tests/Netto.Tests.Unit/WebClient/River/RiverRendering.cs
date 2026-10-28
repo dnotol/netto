@@ -106,21 +106,6 @@ internal static class RiverRendering
             throw new InvalidOperationException($"A static render called JavaScript: {identifier}.");
     }
 
-    // The viewer's system, which prefers light or not and never changes while the test runs: what the theme
-    // switch is drawn by while nothing is picked.
-    internal sealed class SystemTheme(bool prefersLight) : IThemePage
-    {
-        public bool SystemPrefersLight => prefersLight;
-
-        public void Show(ThemeMode theme)
-        {
-        }
-
-        public void WatchSystem(Action<bool> changed)
-        {
-        }
-    }
-
     // MudBlazor's chips ask for the navigation manager; a render without a browser stays at the address it
     // was loaded at, the plan page unless a test gives another (LivePlan), and goes nowhere.
     internal sealed class NoNavigation : NavigationManager
