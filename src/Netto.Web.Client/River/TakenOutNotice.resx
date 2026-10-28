@@ -34,6 +34,6 @@
     <value>Copyright royalty taken out of your plan. Your values are kept.</value>
   </data>
   <data name="TakenOut_Household" xml:space="preserve">
-    <value>Your partner taken out of your plan: you are taxed alone. Your values are kept.</value>
+    <value>Your household taken out of your plan: you are taxed alone, with no dependants. Your values are kept.</value>
   </data>
 </root>

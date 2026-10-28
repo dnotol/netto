@@ -61,8 +61,9 @@ internal static class CompositionMenuText
     // What the module is, said while it is out of the plan.
     public static string Description(OptionalModule module) => $"Description_{module}";
 
-    // What it brings to the pocket, said while it is in the plan.
-    public static string Brings(OptionalModule module) => $"Brings_{module}";
+    // What it brings to the pocket, said while it is in the plan, of the amount's size; or what it costs, the
+    // household's tax rising rather than falling.
+    public static string Brings(OptionalModule module, decimal toPocket) => toPocket < 0m ? $"Costs_{module}" : $"Brings_{module}";
 
     // The button's name, with how many optional modules the plan holds.
     public static string ButtonLabel(int count) => count switch

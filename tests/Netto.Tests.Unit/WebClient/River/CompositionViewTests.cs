@@ -101,15 +101,33 @@ public class CompositionViewTests
         Menu(inputs).Modules[0].ValuesKept.ShouldBeFalse();
     }
 
-    // The partner brings what the marital quotient saves the pay's tax, as its card says it, even with no
-    // income given for them: the year is taxed jointly as soon as they join the plan.
+    // The household brings what declaring it saves the river's tax altogether, as its card's summary says it,
+    // even with no income given for the partner: the year is taxed jointly as soon as they join the plan.
     [Fact]
-    public void From_partnerInThePlan_saysWhatTheMaritalQuotientSaves()
+    public void From_partnerInThePlan_saysWhatTheHouseholdSaves()
     {
         var inputs = RiverInputs.Example.AddToPlan(OptionalModule.Household);
-        var saves = HouseholdView.From(inputs.Run().Pay.ShouldNotBeNull(), bothAged66: false).ShouldNotBeNull().QuotientSaves;
+        var saves = inputs.Run().Pay.ShouldNotBeNull().HouseholdSaves;
 
         Menu(inputs).Modules.Single(choice => choice.InPlan).ShouldBe(new ModuleChoice(OptionalModule.Household, true, saves, false));
+    }
+
+    [Fact]
+    public void From_singleParentInThePlan_saysWhatTheirDependantsSave()
+    {
+        var inputs = RiverInputs.Example.AddToPlan(OptionalModule.Household).WithPartner(false).WithChildren(2).WithSingleParent(true);
+        var saves = inputs.Run().Pay.ShouldNotBeNull().HouseholdSaves;
+
+        (saves > 0m, Menu(inputs).Modules.Single(choice => choice.InPlan).ToPocket).ShouldBe((true, saves));
+    }
+
+    // Children declared, the household taken out: their count waits.
+    [Fact]
+    public void From_childrenDeclaredAndHouseholdTakenOut_saysValuesWait()
+    {
+        var inputs = RiverInputs.Example.AddToPlan(OptionalModule.Household).WithChildren(1).TakeOutOfPlan(OptionalModule.Household);
+
+        Menu(inputs).Modules.Single(choice => choice.Module == OptionalModule.Household).ValuesKept.ShouldBeTrue();
     }
 
     // A partner's income given, the partner taken out: the values wait for them; the example's partner, none

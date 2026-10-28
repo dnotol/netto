@@ -153,7 +153,7 @@
     private string Note(ModuleChoice choice) => choice switch
     {
         { InPlan: false } => L[CompositionMenuText.Description(choice.Module)],
-        { ToPocket: { } toPocket } => L[CompositionMenuText.Brings(choice.Module), Formats.Euros(toPocket)],
+        { ToPocket: { } toPocket } => L[CompositionMenuText.Brings(choice.Module, toPocket), Formats.Euros(Math.Abs(toPocket))],
         _ => L["InPlan"],
     };
 }

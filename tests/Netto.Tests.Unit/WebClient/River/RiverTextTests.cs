@@ -140,9 +140,21 @@ public class RiverTextTests
     public void CompositionMenuResx_everyOptionalModule_hasATitleADescriptionAndWhatItBrings()
     {
         var keys = PlanComposition.Modules.SelectMany(module =>
-            new[] { CompositionMenuText.Title(module), CompositionMenuText.Description(module), CompositionMenuText.Brings(module) });
+            new[] { CompositionMenuText.Title(module), CompositionMenuText.Description(module), CompositionMenuText.Brings(module, 1m) });
 
         CompositionMenuResources.Missing(keys).ShouldBeEmpty();
+    }
+
+    // The household can cost the river's tax rather than save it: the menu says so, never « less tax » of a
+    // negative amount.
+    [Fact]
+    public void CompositionMenuText_householdCosting_isWhatItCosts()
+    {
+        var key = CompositionMenuText.Brings(OptionalModule.Household, -8.50m);
+
+        key.ShouldSatisfyAllConditions(
+            () => key.ShouldBe("Costs_Household"),
+            () => CompositionMenuResources.Missing([key]).ShouldBeEmpty());
     }
 
     [Theory]
