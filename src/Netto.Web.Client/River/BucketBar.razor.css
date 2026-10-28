@@ -256,6 +256,23 @@
     }
 }
 
+/* From 641 to 1,200 px the pocket's column is some 210 to 270 px wide, too narrow for a pocket of
+   €999,999.99, « 60% reaches you » and its (i) side by side: the words go out of sight there, kept for a
+   screen reader, the share and its (i), which says what it is, staying. On a phone the pocket takes the
+   band's width, and from 1,201 px its column has room for them. */
+@media (min-width: 641px) and (max-width: 1200px) {
+    .bucket__reach-words {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        margin: -1px;
+        padding: 0;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+    }
+}
+
 /* Below that the five amounts would squeeze each other: three to a row, then two. */
 @media (max-width: 960px) {
     .bucket-bar__buckets {

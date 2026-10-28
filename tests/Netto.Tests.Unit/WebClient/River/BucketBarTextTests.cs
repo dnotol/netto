@@ -95,12 +95,13 @@ public class BucketBarTextTests
             .ShouldBeEmpty();
     }
 
-    // Beside the pocket's amount, the one share the band shows: the example's 62% (BucketsViewTests). What it
-    // is out of is its bubble's, named after « More about ».
+    // Beside the pocket's amount, the one share the band shows, the example's 62% (BucketsViewTests), and the
+    // words saying it reaches you, which a narrow column keeps for a screen reader alone. What it is out of is
+    // its bubble's, named after « More about ».
     [Fact]
-    public void ReachShown_example_saysTheShareReachesYou()
+    public void ReachWords_sayTheShareReachesYou()
     {
-        (Resources.Format(BucketBarText.ReachShown, "62%"), Resources.Get(BucketBarText.ReachLabel)).ShouldBe(("62% reaches you", "what reaches you"));
+        (Resources.Get(BucketBarText.ReachWords), Resources.Get(BucketBarText.ReachLabel)).ShouldBe(("reaches you", "what reaches you"));
     }
 
     [Theory]

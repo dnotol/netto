@@ -87,6 +87,16 @@ public class BucketBarBandTests
             .ShouldBe((1, true, false));
     }
 
+    // The words after the share are an element of their own, which a narrow pocket's column puts out of sight
+    // (BucketBarCssTests): a screen reader still hears them.
+    [Fact]
+    public async Task Band_reach_saysItsWordsInAnElementOfTheirOwn()
+    {
+        var html = await RenderBandAsync(RiverInputs.Example.Run());
+
+        Regex.IsMatch(html, "<span class=\"bucket__reach\"[^>]*>62%<span class=\"bucket__reach-words\"[^>]*> reaches you</span></span>").ShouldBeTrue();
+    }
+
     // The bubble after the reach says what the band is out of and what the reach means; with the company
     // skipped, where the rest of the river is too.
     public static TheoryData<RiverInputs, string[]> ReachBubbles => new()

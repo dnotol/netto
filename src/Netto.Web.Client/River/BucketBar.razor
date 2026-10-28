@@ -66,7 +66,7 @@
                             {
                                 @if (View?.Reach is { } reach)
                                 {
-                                    @(" ")<span class="bucket__reach">@L[BucketBarText.ReachShown, Formats.WholeShare(reach)]</span>
+                                    @(" ")<span class="bucket__reach">@Formats.WholeShare(reach)<span class="bucket__reach-words">@(" " + L[BucketBarText.ReachWords])</span></span>
                                 }
                                 <InfoBubble Label="@L[BucketBarText.ReachLabel]">@ReachSaid</InfoBubble>
                             }

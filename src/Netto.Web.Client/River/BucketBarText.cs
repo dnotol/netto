@@ -11,8 +11,9 @@ internal static class BucketBarText
     // Why there is no figure while the engine refuses an amount, in the bar and its live region.
     public const string Refused = "Refused";
 
-    // Beside the pocket's amount, the one share the band shows: what reaches the pocket.
-    public const string ReachShown = "ReachShown";
+    // Beside the pocket's amount, after the one share the band shows: that it reaches the pocket. Out of
+    // sight in a narrow column, for a screen reader.
+    public const string ReachWords = "ReachWords";
 
     // What the reach's (i) is « More about ».
     public const string ReachLabel = "ReachLabel";

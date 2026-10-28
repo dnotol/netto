@@ -27,4 +27,20 @@ public class BucketBarCssTests
             () => name.ShouldContain("overflow: hidden;"),
             () => name.ShouldContain("white-space: normal;"));
     }
+
+    // From 641 to 1,200 px the pocket's column is some 210 to 270 px wide, too narrow for a pocket of
+    // €999,999.99, « 60% reaches you » and its (i) side by side: the words go out of sight there, kept for a
+    // screen reader, the share and its (i) staying. On a phone the pocket takes the band's width, and from
+    // 1,201 px its column has room for them.
+    [Fact]
+    public void ReachWords_inANarrowPocketsColumn_goOutOfSightForAScreenReader()
+    {
+        var narrow = Stylesheet.Block(Stylesheet.MediaBlock(Css, "(min-width: 641px) and (max-width: 1200px)"), ".bucket__reach-words");
+
+        narrow.ShouldSatisfyAllConditions(
+            () => narrow.ShouldContain("position: absolute;"),
+            () => narrow.ShouldContain("clip-path: inset(50%);"),
+            () => narrow.ShouldContain("width: 1px;"),
+            () => narrow.ShouldNotContain("display: none"));
+    }
 }

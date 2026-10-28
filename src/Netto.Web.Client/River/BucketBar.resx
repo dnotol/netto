@@ -54,8 +54,8 @@
   <data name="EnterCompany" xml:space="preserve">
     <value>Enter your company's year to see the rest of the river.</value>
   </data>
-  <data name="ReachShown" xml:space="preserve">
-    <value>{0} reaches you</value>
+  <data name="ReachWords" xml:space="preserve">
+    <value>reaches you</value>
   </data>
   <data name="ReachLabel" xml:space="preserve">
     <value>what reaches you</value>
