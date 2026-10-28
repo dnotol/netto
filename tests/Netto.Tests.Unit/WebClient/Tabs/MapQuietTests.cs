@@ -94,6 +94,36 @@ public class MapQuietTests
             () => (node.Slot.Left, node.Slot.Right, Math.Round(node.Slot.CenterY, 10)).ShouldBe((box.Left, box.Right, Math.Round(box.CenterY, 10))));
     }
 
+    // The dependants raise a tax-free amount, taxed at its own rates, which is neither money nor a tax base:
+    // no line of theirs. A household declaring them still does something in this plan, so it keeps its box,
+    // with no partner or with one taxed separately alike, and says nothing it does not do.
+    public static TheoryData<string, RiverInputs> HouseholdsWithDependantsAndNoLine => new()
+    {
+        { "a single parent", Full.WithPartner(false).WithChildren(2).WithSingleParent(true) },
+        { "a partner taxed separately, a child", Emptied(Full, OptionalModule.Household).WithChildren(1) },
+        { "no partner, a dependant in care", Full.WithPartner(false).WithDependantsInCare(1) },
+    };
+
+    [Theory]
+    [MemberData(nameof(HouseholdsWithDependantsAndNoLine))]
+    public void From_aHouseholdDeclaringDependants_keepsItsBoxWithNoLine(string _, RiverInputs river)
+    {
+        var view = MapView.From(river, river.Run());
+
+        view.ShouldSatisfyAllConditions(
+            () => Node(view, RiverModule.Household).Quiet.ShouldBeFalse(),
+            () => view.LinksOf(RiverModule.Household).ShouldBeEmpty());
+    }
+
+    // With no partner and no dependant the household does nothing in this plan: quiet.
+    [Fact]
+    public void From_aHouseholdWithNoPartnerNorDependant_isQuiet()
+    {
+        var river = Full.WithPartner(false);
+
+        Node(MapView.From(river, river.Run()), RiverModule.Household).Quiet.ShouldBeTrue();
+    }
+
     // The office allowance is a rule the rent sets on the allowances: while a rent is paid it is a link of
     // Expense allowances, so an empty one keeps its box beside it.
     [Fact]

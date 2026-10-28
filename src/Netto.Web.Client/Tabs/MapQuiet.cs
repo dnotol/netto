@@ -8,16 +8,25 @@ namespace Netto.Web.Client.Tabs;
 // receives: no line of its own into a bucket, no tax base, no condition, a condition
 // counting as any link does (the office allowance beside a paid rent keeps an empty Expense allowances in
 // its box). The royalty, beside the chain, is quiet when it has no link at all: it comes to nothing; so is the
-// partner, while the marital quotient attributes nothing, in a year taxed separately among others. Read
-// from every link of the run before a filter hides any, so hiding a kind of link folds nothing; a refused
-// run has no link to read what its levers move, so it folds nothing. Nothing here tests a rule or computes
-// a figure: it reads which lines the cards draw.
+// partner, while the marital quotient attributes nothing, in a year taxed separately among others. A module
+// holding what the map draws no line of (Holding) is never quiet: a household declaring dependants, whose
+// supplements raise a tax-free amount taxed at its own rates, neither money nor a tax base, does something in
+// the plan all the same. Read from every link of the run before a filter hides any, so hiding a kind of link
+// folds nothing; a refused run has no link to read what its levers move, so it folds nothing. Nothing here
+// tests a rule or computes a figure: it reads which lines the cards draw, and what the plan declares.
 internal static class MapQuiet
 {
-    public static IReadOnlySet<RiverModule> Of(RiverRun run, IReadOnlyList<RiverModule> modules, IReadOnlyList<MapLink> links) =>
+    public static IReadOnlySet<RiverModule> Of(RiverRun run, IReadOnlyList<RiverModule> modules, IReadOnlyList<MapLink> links, IReadOnlySet<RiverModule> holding) =>
         run.Error is not null || run.Year is null
             ? new HashSet<RiverModule>()
-            : modules.Where(module => RiverModules.Lever(module) is not null && links.Where(link => link.Touches(module)).All(HandOff)).ToHashSet();
+            : modules.Where(module => RiverModules.Lever(module) is not null && !holding.Contains(module) && links.Where(link => link.Touches(module)).All(HandOff))
+                .ToHashSet();
+
+    // The modules holding what the map draws no line of: the household while it declares a dependant.
+    public static IReadOnlySet<RiverModule> Holding(RiverInputs inputs) =>
+        inputs.InPlan(OptionalModule.Household) && inputs.Household.Dependants.Values != Netto.Core.PersonalTax.Dependants.None
+            ? new HashSet<RiverModule> { RiverModule.Household }
+            : new HashSet<RiverModule>();
 
     // The chain's line past the quiet levers: the hand-off into the first of them runs on to the next module
     // with a box below them, naming those it runs past (MapLink.Through), with its own words, card and

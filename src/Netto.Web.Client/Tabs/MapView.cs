@@ -38,7 +38,7 @@ internal sealed record MapView(IReadOnlyList<MapNode> Modules, IReadOnlyList<Map
         // mark the modules they reach with badges (MapBadges), lines of their boxes.
         IReadOnlyList<MapLink> links =
             [.. MapLinks.Of(inputs, run), .. run.Year is { } year ? MapConditions.From(YearConditions.Of(year), modules) : []];
-        var quiet = MapQuiet.Of(run, modules, links);
+        var quiet = MapQuiet.Of(run, modules, links, MapQuiet.Holding(inputs));
         var badges = MapBadges.Of(links);
         var grid = MapLayout.Grid(modules, quiet, MapBadges.Lines(badges));
 
