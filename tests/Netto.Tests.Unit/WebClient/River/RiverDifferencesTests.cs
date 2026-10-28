@@ -97,6 +97,16 @@ public class RiverDifferencesTests
         RiverDifferences.Between(Today, Today.AddToPlan(lever)).ShouldBeEmpty();
     }
 
+    // The partner out of both plans is never handed to the engine, whatever their facts: the river holds the
+    // year as Today does.
+    [Fact]
+    public void Between_thePartnerOutOfBothPlansWithOtherFacts_isEmpty()
+    {
+        var river = Today.WithPartnerIncome(9_000m).WithBothAged66(true).WithTaxedSeparately(true);
+
+        RiverDifferences.Between(river, Today).ShouldBeEmpty();
+    }
+
     // The engine counts a car only once its catalogue value is given: its other facts typed, the river
     // holds the year as Today does.
     [Fact]
