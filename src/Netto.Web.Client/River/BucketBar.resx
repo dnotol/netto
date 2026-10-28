@@ -27,20 +27,23 @@
   <data name="Bucket_kept_in_company" xml:space="preserve">
     <value>Kept in company</value>
   </data>
+  <data name="Bucket_expenses" xml:space="preserve">
+    <value>Expenses</value>
+  </data>
   <data name="NoFigure" xml:space="preserve">
     <value>—</value>
   </data>
   <data name="FromProfit" xml:space="preserve">
-    <value>Out of {0} of profit before what the company pays you.</value>
+    <value>Out of {0} of profit before INASTI's company contribution and what the company pays you.</value>
   </data>
   <data name="FromProfitAndEarlier" xml:space="preserve">
-    <value>Out of {0} of profit before what the company pays you and {1} kept from earlier years.</value>
+    <value>Out of {0} of profit before INASTI's company contribution and what the company pays you, and {1} kept from earlier years.</value>
   </data>
-  <data name="FromProfitAfterCar" xml:space="preserve">
-    <value>Out of {0} of profit before what the company pays you, after its car's {2} of costs.</value>
+  <data name="FromProfitWithCar" xml:space="preserve">
+    <value>Out of {0} of profit before INASTI's company contribution, its car's costs and what the company pays you.</value>
   </data>
-  <data name="FromProfitAfterCarAndEarlier" xml:space="preserve">
-    <value>Out of {0} of profit before what the company pays you, after its car's {2} of costs, and {1} kept from earlier years.</value>
+  <data name="FromProfitWithCarAndEarlier" xml:space="preserve">
+    <value>Out of {0} of profit before INASTI's company contribution, its car's costs and what the company pays you, and {1} kept from earlier years.</value>
   </data>
   <data name="FromPay" xml:space="preserve">
     <value>Out of {0} of gross pay.</value>
@@ -58,7 +61,7 @@
     <value>Of what the company does not keep, [{0} reaches you], {1} goes to contributions and taxes.</value>
   </data>
   <data name="ReachMeaning" xml:space="preserve">
-    <value>Your pocket, out of what the river starts from less what the company keeps at year end, which is still yours. Running costs, INASTI's yearly company contribution and a company car's costs are left out: they are costs of the company, whatever it pays you.</value>
+    <value>Your pocket, out of what the river starts from less the company's expenses and what it keeps at year end, which is still yours. Running costs, INASTI's yearly company contribution and a company car's costs are left out: they are costs of the company, whatever it pays you.</value>
   </data>
   <data name="Refused" xml:space="preserve">
     <value>No figures until the amount marked below is corrected.</value>
@@ -77,6 +80,9 @@
   </data>
   <data name="Holds_kept_in_company" xml:space="preserve">
     <value>What stays in the company at year end: the profit after tax, with what it kept from earlier years, that is not paid out as a dividend.</value>
+  </data>
+  <data name="Holds_expenses" xml:space="preserve">
+    <value>What the company spends whatever it pays you: INASTI's yearly company contribution and, with a company car, what the car costs it over the year.</value>
   </data>
   <data name="PocketAnnounced" xml:space="preserve">
     <value>In your pocket: {0}.</value>

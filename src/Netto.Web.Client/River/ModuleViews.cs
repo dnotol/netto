@@ -207,13 +207,13 @@ internal sealed record SplitSearchView(PayCurveView Curve, BestPayView? Best, Ra
         if (search is null || run.Error is not null || run.Year is not { } year || search.Curve[^1].Pay <= 0m)
             return null;
 
-        var start = BucketsView.StartOf(year);
+        var (start, expenses) = (BucketsView.StartOf(year), BucketsView.ExpensesOf(year));
         var best = search.Best is { } level
             ? new BestPayView(
                 level,
                 level.NetInPocket - year.NetInPocket,
                 year.KeepsReserve,
-                BucketsView.ReachOf(start, level.NetInPocket, level.KeptInCompany))
+                BucketsView.ReachOf(start, expenses, level.NetInPocket, level.KeptInCompany))
             : null;
 
         return new SplitSearchView(
@@ -221,7 +221,7 @@ internal sealed record SplitSearchView(PayCurveView Curve, BestPayView? Best, Ra
             best,
             best is null ? null : RateWeighing.From(search, best.Level),
             search.Curve.Max(level => level.KeptInCompany),
-            BucketsView.ReachOf(start, year.NetInPocket, year.KeptInCompany)) { Benefits = year.DirectorPay.BenefitInKind };
+            BucketsView.ReachOf(start, expenses, year.NetInPocket, year.KeptInCompany)) { Benefits = year.DirectorPay.BenefitInKind };
     }
 }
 

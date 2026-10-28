@@ -24,11 +24,18 @@
     min-width: 0;
 }
 
+/* Five buckets in a row while their amounts fit side by side, three then two below that. */
 .bucket-bar__buckets {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 0.5rem 1rem;
     margin: 0;
+}
+
+@media (max-width: 960px) {
+    .bucket-bar__buckets {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
 }
 
 .bucket {
@@ -175,6 +182,13 @@
     background: var(--netto-data-mid);
 }
 
+/* What the company spends whatever it pays the director: neutral, a slate of its own, never a shade
+   of what reaches them or of what the company keeps. */
+.bucket--expenses .bucket__swatch,
+.bucket-bar__segment.bucket--expenses {
+    background: var(--netto-expenses);
+}
+
 /* What stays in the company is not spent: an outline, not a fill. */
 .bucket--kept_in_company .bucket__swatch,
 .bucket-bar__segment.bucket--kept_in_company {
@@ -228,7 +242,7 @@
     white-space: nowrap;
 }
 
-/* Below a wide screen the buttons would squeeze the four amounts into each other: they go under the
+/* Below a wide screen the buttons would squeeze the five amounts into each other: they go under the
    figures, at the right, and the figures take the whole width. */
 @media (max-width: 1200px) {
     .bucket-bar ::deep .mud-container {
@@ -241,7 +255,7 @@
     }
 }
 
-/* On a phone the bar shares the screen with the sticky site header: two rows of buckets, tighter, so
+/* On a phone the bar shares the screen with the sticky site header: buckets two to a row, tighter, so
    the cards keep most of the height. The figures take the whole width. */
 @media (max-width: 640px) {
     .bucket-bar ::deep .mud-container {
@@ -289,7 +303,7 @@
         font-size: 0.72rem;
     }
 
-    /* The phone's two rows of buckets keep to their amounts; the line under them says the reach. */
+    /* The phone's rows of buckets keep to their amounts; the line under them says the reach. */
     .bucket__share {
         display: none;
     }

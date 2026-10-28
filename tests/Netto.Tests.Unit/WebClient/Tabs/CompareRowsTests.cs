@@ -126,7 +126,7 @@ public class CompareRowsTests
             figure("personal_tax").ShouldBe(year.PersonalTax);
             (figure("corporate_tax") + figure("social_contributions") + figure("personal_tax")).ShouldBe(figure("taxes"));
             figure("taxes").ShouldBe(buckets.Buckets.Single(bucket => bucket.Key == "taxes_on_pay").Amount + buckets.Buckets.Single(bucket => bucket.Key == "taxes_on_profit").Amount);
-            (figure("pocket") + figure("taxes") + figure("kept")).ShouldBe(buckets.Start);
+            (figure("pocket") + figure("taxes") + figure("kept") + buckets.AmountOf("expenses")).ShouldBe(buckets.Start);
         }
     }
 

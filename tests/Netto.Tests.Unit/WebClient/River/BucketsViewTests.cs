@@ -5,16 +5,30 @@ using Shouldly;
 
 namespace Netto.Tests.WebClient.River;
 
-// On the river's example (RiverInputsTests): 100,000 of profit before pay end up as 61,975.74 in the
-// pocket, 20,420.70 of taxes on pay (contributions 8,293.36, income tax 11,333.96, municipal
-// surcharge 793.38, and no advance-payment surcharge, the pay being withheld on as the key formula
-// says), 17,603.56 of taxes on profit (corporate tax 10,000 and its advance-payment surcharge 675,
-// nothing being prepaid, withholding 7,078.50 on the 39,325 left, less the refund of 149.94) and
-// nothing kept. The example holds no lever in its plan; with every one in it and its amounts still
-// nothing, its figures stay those.
+// On the river's example (RiverInputsTests): 100,409.30 of profit before INASTI's company contribution
+// and pay end up as 61,975.74 in the pocket, 20,420.70 of taxes on pay (contributions 8,293.36, income
+// tax 11,333.96, municipal surcharge 793.38, and no advance-payment surcharge, the pay being withheld on
+// as the key formula says), 17,603.56 of taxes on profit (corporate tax 10,000 and its advance-payment
+// surcharge 675, nothing being prepaid, withholding 7,078.50 on the 39,325 left, less the refund of
+// 149.94), nothing kept, and the contribution's 409.30 in the expenses. The example holds no lever in its
+// plan; with every one in it and its amounts still nothing, its figures stay those.
 public class BucketsViewTests
 {
     private static readonly RiverInputs EveryLever = RiverInputs.Example with { Composition = new PlanComposition(true, true, true, false, false) };
+
+    // What the example's company earns before it pays INASTI or its director anything: 120,000 less its
+    // 19,590.70 of running costs.
+    private const decimal ExampleStart = 100_409.30m;
+
+    // The example's running costs, which every start is after.
+    private const decimal RunningCosts = 19_590.70m;
+
+    // The bar's five buckets in its order, the expenses last, whatever the plan holds.
+    [Fact]
+    public void Keys_areTheFiveBucketsTheExpensesLast()
+    {
+        BucketsView.Keys.ShouldBe(["pocket", "taxes_on_pay", "taxes_on_profit", "kept_in_company", "expenses"]);
+    }
 
     public static TheoryData<decimal, decimal, decimal> Years => new()
     {
@@ -36,6 +50,7 @@ public class BucketsViewTests
             ("taxes_on_pay", 20_420.70m),
             ("taxes_on_profit", 17_603.56m),
             ("kept_in_company", 0m),
+            ("expenses", 409.30m),
         });
     }
 
@@ -54,12 +69,22 @@ public class BucketsViewTests
             () => view.Buckets.Sum(bucket => bucket.Amount).ShouldBe(view.Start));
     }
 
-    // What reaches the pocket out of what leaves the company, the start less what it keeps there; none
-    // where nothing leaves it.
+    // What reaches the pocket out of what leaves the company, the start less its expenses and what it
+    // keeps there; none where nothing leaves it.
     [Fact]
-    public void ReachOf_whatLeavesTheCompany_isThePocketsShareOfIt()
+    public void ReachOf_whatLeavesTheCompany_isThePocketsShareOfItTheExpensesLeftOut()
     {
-        (BucketsView.ReachOf(100_000m, 60_000m, 20_000m), BucketsView.ReachOf(100_000m, 0m, 100_000m)).ShouldBe(((decimal?)0.75m, (decimal?)null));
+        (BucketsView.ReachOf(110_000m, 10_000m, 60_000m, 20_000m), BucketsView.ReachOf(110_000m, 10_000m, 0m, 100_000m))
+            .ShouldBe(((decimal?)0.75m, (decimal?)null));
+    }
+
+    // The expenses are INASTI's company contribution and what a car costs the company: the example's
+    // 409.30, and with YearSimulationCarTests' electric car its 8,000 besides.
+    [Fact]
+    public void ExpensesOf_year_isTheContributionAndTheCarsCosts()
+    {
+        (BucketsView.ExpensesOf(RiverInputs.Example.Run().Year.ShouldNotBeNull()), BucketsView.ExpensesOf(ElectricCar(RiverInputs.Example).Run().Year.ShouldNotBeNull()))
+            .ShouldBe((409.30m, 8_409.30m));
     }
 
     // The example's steps paid out on the pay are its taxes on pay, 20,420.70, and the company's its tax
@@ -89,15 +114,17 @@ public class BucketsViewTests
             ("taxes_on_pay", 4_034.74m),
             ("taxes_on_profit", 31_438.39m),
             ("kept_in_company", 0m),
+            ("expenses", 409.30m),
         });
     }
 
+    // The river starts before INASTI's company contribution, which the expenses hold.
     [Fact]
-    public void From_example_startsAtTheProfitBeforePay()
+    public void From_example_startsAtTheProfitBeforeTheContributionAndPay()
     {
         var view = BucketsView.From(RiverInputs.Example.Run()).ShouldNotBeNull();
 
-        (view.Start, view.StartsAtPay).ShouldBe((100_000m, false));
+        (view.Start, view.StartsAtPay).ShouldBe((ExampleStart, false));
     }
 
     [Theory]
@@ -115,7 +142,7 @@ public class BucketsViewTests
     {
         var view = BucketsView.From(RiverInputs.Example.WithEarlierProfits(60_000m).WithReserve(30_000m).Run()).ShouldNotBeNull();
 
-        (view.Start, view.EarlierProfits, view.Buckets.Sum(bucket => bucket.Amount)).ShouldBe((160_000m, 60_000m, 160_000m));
+        (view.Start, view.EarlierProfits, view.Buckets.Sum(bucket => bucket.Amount)).ShouldBe((160_409.30m, 60_000m, 160_409.30m));
     }
 
     [Fact]
@@ -137,7 +164,10 @@ public class BucketsViewTests
     {
         var view = BucketsView.From(RiverInputs.Example.Run()).ShouldNotBeNull();
 
-        view.Buckets.Select(bucket => bucket.Share).ShouldBe(new decimal?[] { 0.6197574m, 0.204207m, 0.1760356m, 0m });
+        view.Buckets.Select(bucket => bucket.Share).ShouldBe(new decimal?[]
+        {
+            61_975.74m / ExampleStart, 20_420.70m / ExampleStart, 17_603.56m / ExampleStart, 0m, 409.30m / ExampleStart,
+        });
     }
 
     // A loss stays in the company as a negative amount, which a bar of shares cannot draw.
@@ -149,8 +179,8 @@ public class BucketsViewTests
         view.Buckets.ShouldAllBe(bucket => bucket.Share == null);
     }
 
-    // What reaches the pocket out of the 100,000, nothing being kept; the rest went to taxes, rounded
-    // as the bar shows the reach, so the two read as the whole.
+    // What reaches the pocket out of the 100,000 the contribution leaves, nothing being kept; the rest
+    // went to taxes, rounded as the bar shows the reach, so the two read as the whole.
     [Fact]
     public void From_example_reachIsThePocketOutOfTheStart()
     {
@@ -204,6 +234,7 @@ public class BucketsViewTests
             ("taxes_on_pay", 20_420.70m),
             ("taxes_on_profit", 0m),
             ("kept_in_company", 0m),
+            ("expenses", 0m),
         });
     }
 
@@ -230,6 +261,7 @@ public class BucketsViewTests
             ("taxes_on_pay", 25_943.31m),
             ("taxes_on_profit", 0m),
             ("kept_in_company", 0m),
+            ("expenses", 0m),
         });
     }
 
@@ -246,15 +278,15 @@ public class BucketsViewTests
     {
         var view = BucketsView.From(RiverInputs.Example.WithContributionsPaidBy(ContributionsPaidBy.Company).Run()).ShouldNotBeNull();
 
-        (view.Start, view.Buckets.Sum(bucket => bucket.Amount)).ShouldBe((100_000m, 100_000m));
+        (view.Start, view.Buckets.Sum(bucket => bucket.Amount)).ShouldBe((ExampleStart, ExampleStart));
     }
 
-    // With 220 days of meal vouchers (RiverInputsTests) the river still starts from the 100,000 the
-    // company earns before paying its director anything, of which the vouchers take 1,960.20.
+    // With 220 days of meal vouchers (RiverInputsTests) the river still starts from the 100,409.30 the
+    // company earns before paying INASTI or its director anything, of which the vouchers take 1,960.20.
     [Fact]
     public void From_vouchers_startsBeforeWhatTheCompanyPaysTheDirector()
     {
-        BucketsView.From(EveryLever.WithMealVoucherDays(220).Run()).ShouldNotBeNull().Start.ShouldBe(100_000m);
+        BucketsView.From(EveryLever.WithMealVoucherDays(220).Run()).ShouldNotBeNull().Start.ShouldBe(ExampleStart);
     }
 
     // 62,482.64 in the pocket with the vouchers, 20,420.70 of taxes on pay as without them, and
@@ -271,6 +303,7 @@ public class BucketsViewTests
             ("taxes_on_pay", 20_420.70m),
             ("taxes_on_profit", 17_096.66m),
             ("kept_in_company", 0m),
+            ("expenses", 409.30m),
         });
     }
 
@@ -283,7 +316,7 @@ public class BucketsViewTests
 
         var view = BucketsView.From(inputs.Run()).ShouldNotBeNull();
 
-        (view.Start, view.Buckets.Sum(bucket => bucket.Amount)).ShouldBe((revenue - 20_000m, revenue - 20_000m));
+        (view.Start, view.Buckets.Sum(bucket => bucket.Amount)).ShouldBe((revenue - RunningCosts, revenue - RunningCosts));
     }
 
     // The allowances (RiverInputsTests) leave the start where it was, put their 2,418.44 in the pocket,
@@ -298,13 +331,14 @@ public class BucketsViewTests
         var view = BucketsView.From(inputs.Run()).ShouldNotBeNull();
 
         view.ShouldSatisfyAllConditions(
-            () => view.Start.ShouldBe(100_000m),
+            () => view.Start.ShouldBe(ExampleStart),
             () => view.Buckets.Select(bucket => (bucket.Key, bucket.Amount)).ShouldBe(new[]
             {
                 ("pocket", 62_834.46m),
                 ("taxes_on_pay", 20_420.70m),
                 ("taxes_on_profit", 16_744.84m),
                 ("kept_in_company", 0m),
+                ("expenses", 409.30m),
             }));
     }
 
@@ -318,7 +352,7 @@ public class BucketsViewTests
 
         var view = BucketsView.From(inputs.Run()).ShouldNotBeNull();
 
-        (view.Start, view.Buckets.Sum(bucket => bucket.Amount)).ShouldBe((revenue - 20_000m, revenue - 20_000m));
+        (view.Start, view.Buckets.Sum(bucket => bucket.Amount)).ShouldBe((revenue - RunningCosts, revenue - RunningCosts));
     }
 
     // The rent at the 2026 cap (RiverInputsTests): its 398.68 of tax joins the taxes on pay, 20,819.38,
@@ -331,13 +365,14 @@ public class BucketsViewTests
         var view = BucketsView.From(RentAtTheCap(RiverInputs.Example).Run()).ShouldNotBeNull();
 
         view.ShouldSatisfyAllConditions(
-            () => view.Start.ShouldBe(100_000m),
+            () => view.Start.ShouldBe(ExampleStart),
             () => view.Buckets.Select(bucket => (bucket.Key, bucket.Amount)).ShouldBe(new[]
             {
                 ("pocket", 62_067.06m),
                 ("taxes_on_pay", 20_819.38m),
                 ("taxes_on_profit", 17_113.56m),
                 ("kept_in_company", 0m),
+                ("expenses", 409.30m),
             }));
     }
 
@@ -358,7 +393,7 @@ public class BucketsViewTests
 
         var view = BucketsView.From(inputs.Run()).ShouldNotBeNull();
 
-        (view.Start, view.Buckets.Sum(bucket => bucket.Amount)).ShouldBe((revenue - 20_000m, revenue - 20_000m));
+        (view.Start, view.Buckets.Sum(bucket => bucket.Amount)).ShouldBe((revenue - RunningCosts, revenue - RunningCosts));
     }
 
     [Fact]
@@ -368,9 +403,10 @@ public class BucketsViewTests
     }
 
     // A car's costs are a cost of the company, like its running costs (operator, 2026-10-23): the bar
-    // keeps its four buckets, and the river starts after the car's 8,000, from 92,000.
+    // keeps its five buckets, the car's 8,000 joining the contribution's 409.30 in the expenses, and the
+    // river still starts before them, from 100,409.30.
     [Fact]
-    public void From_car_keepsTheFourBucketsAndStartsAfterItsCosts()
+    public void From_car_putsItsCostsInTheExpensesAndStartsBeforeThem()
     {
         var run = ElectricCar(RiverInputs.Example).Run();
         var year = run.Year.ShouldNotBeNull();
@@ -379,36 +415,37 @@ public class BucketsViewTests
 
         view.ShouldSatisfyAllConditions(
             () => view.Buckets.Select(bucket => bucket.Key).ShouldBe(BucketsView.Keys),
-            () => (view.Start, view.CarCosts, view.Buckets[0].Amount).ShouldBe((92_000m, 8_000m, year.NetInPocket)));
+            () => (view.Start, view.CarCosts, view.AmountOf("expenses"), view.Buckets[0].Amount).ShouldBe((ExampleStart, 8_000m, 8_409.30m, year.NetInPocket)));
     }
 
     // The director's 600 for the car leave the pocket for the company, so they stay in the buckets: they
-    // add up, to the cent, to what the company earns before paying the director less the car's 8,000.
+    // add up, to the cent, to what the company earns before paying INASTI, its car or its director.
     [Theory]
     [MemberData(nameof(Years))]
-    public void From_anyYearWithACar_bucketsAddUpToTheProfitAfterTheCarsCosts(decimal revenue, decimal pay, decimal reserve)
+    public void From_anyYearWithACar_bucketsAddUpToTheProfitBeforeTheExpenses(decimal revenue, decimal pay, decimal reserve)
     {
         var inputs = ElectricCar(EveryLever.WithRevenue(revenue).WithDirectorPay(pay).WithReserve(reserve).WithMealVoucherDays(220))
             .WithCarContribution(600m).WithPrivateEnergyPaid(true).WithContributionsPaidBy(ContributionsPaidBy.Company);
 
         var view = BucketsView.From(inputs.Run()).ShouldNotBeNull();
 
-        (view.Start, view.Buckets.Sum(bucket => bucket.Amount)).ShouldBe((revenue - 28_000m, revenue - 28_000m));
+        (view.Start, view.Buckets.Sum(bucket => bucket.Amount)).ShouldBe((revenue - RunningCosts, revenue - RunningCosts));
     }
 
-    // Until the car counts, the river starts from the whole profit: in the plan with nothing given, or
+    // Until the car counts, the expenses are the contribution alone: in the plan with nothing given, or
     // out of it.
     [Fact]
-    public void From_noCarCounted_startsFromTheWholeProfit()
+    public void From_noCarCounted_holdsTheContributionAloneInTheExpenses()
     {
         var views = new[] { RiverInputs.Example.AddToPlan(OptionalModule.Car), ElectricCar(RiverInputs.Example).TakeOutOfPlan(OptionalModule.Car) }
             .Select(inputs => BucketsView.From(inputs.Run()).ShouldNotBeNull());
 
-        views.Select(view => (view.Start, view.CarCosts)).ShouldBe([(100_000m, 0m), (100_000m, 0m)]);
+        views.Select(view => (view.Start, view.CarCosts, view.AmountOf("expenses"))).ShouldBe([(ExampleStart, 0m, 409.30m), (ExampleStart, 0m, 409.30m)]);
     }
 
-    // The reach is out of what leaves the company once the car is paid, and the taxes take the rest of
-    // the whole as the bar rounds the reach.
+    // The reach is out of what leaves the company once the expenses are paid, the 100,409.30 less the
+    // car's 8,000 and the contribution's 409.30; the taxes take the rest of the whole as the bar rounds the
+    // reach.
     [Fact]
     public void From_car_saysTheReachAndTheTaxesOutOfWhatLeavesTheCompanyAfterIt()
     {
@@ -452,7 +489,7 @@ public class BucketsViewTests
 
         var view = BucketsView.From(inputs.Run()).ShouldNotBeNull();
 
-        (view.Start, view.Buckets.Sum(bucket => bucket.Amount)).ShouldBe((revenue - 20_000m, revenue - 20_000m));
+        (view.Start, view.Buckets.Sum(bucket => bucket.Amount)).ShouldBe((revenue - RunningCosts, revenue - RunningCosts));
     }
 
     // 12% of a cadastral income of 1,200 let for the 2026 cap, 1,380.00 (RentCalculatorTests).

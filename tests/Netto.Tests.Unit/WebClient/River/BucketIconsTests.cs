@@ -22,10 +22,10 @@ public class BucketIconsTests
     [Fact]
     public void For_twoBuckets_neverShareAnIcon()
     {
-        BucketsView.Keys.Select(BucketIcons.For).Distinct().Count().ShouldBe(4);
+        BucketsView.Keys.Select(BucketIcons.For).Distinct().Count().ShouldBe(5);
     }
 
-    // With a car the bar still shows its four buckets, each icon after its bucket's name, the last thing
+    // With a car the bar still shows its five buckets, each icon after its bucket's name, the last thing
     // on the name's line, so that where the column has no room for both it is the icon that goes (the
     // bar's CSS), never a part of the name. A screen reader skips it.
     [Fact]

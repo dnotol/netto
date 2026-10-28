@@ -184,10 +184,10 @@
             await JS.InvokeVoidAsync("nettoBucketBar.stop");
     }
 
-    // Out of what the river starts from, after INASTI's company contribution and a car's costs, or why
+    // Out of what the river starts from, before INASTI's company contribution and a car's costs, or why
     // there is no figure.
     private string From => View is { } view
-        ? L[BucketBarText.From(view), Formats.Euros(view.Start - view.EarlierProfits), Formats.Euros(view.EarlierProfits), Formats.Euros(view.CarCosts)].Value
+        ? L[BucketBarText.From(view), Formats.Euros(view.Start - view.EarlierProfits), Formats.Euros(view.EarlierProfits)].Value
         : L[BucketBarText.Refused].Value;
 
     // What the river leaves in the pocket against the setup, or that the two cannot be compared.

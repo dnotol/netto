@@ -14,7 +14,7 @@ public class MapViewTests
     private static readonly RiverInputs Full = MapLinksTests.Full;
 
     [Fact]
-    public void From_theExample_drawsItsModulesInTheirSlotsAndTheFourBuckets()
+    public void From_theExample_drawsItsModulesInTheirSlotsAndTheFiveBuckets()
     {
         var view = MapView.From(RiverInputs.Example, RiverInputs.Example.Run());
 
@@ -28,7 +28,7 @@ public class MapViewTests
     [InlineData(false, false)]
     [InlineData(true, false)]
     [InlineData(false, true)]
-    public void From_anyPlan_drawsTheBarsFourBuckets(bool refused, bool companySkipped)
+    public void From_anyPlan_drawsTheBarsFiveBuckets(bool refused, bool companySkipped)
     {
         var river = refused ? Full.WithReserve(-1m) : Full;
         river = companySkipped ? river.SkipCompany() : river;

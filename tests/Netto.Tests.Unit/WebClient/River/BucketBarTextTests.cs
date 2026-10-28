@@ -87,7 +87,7 @@ public class BucketBarTextTests
         text.ShouldBe("In your pocket: €61,975.74.");
     }
 
-    // Under the bar, what reaches the pocket out of the example's 100,000, nothing being kept
+    // Under the bar, what reaches the pocket out of the 100,000 the example's expenses leave, nothing being kept
     // (BucketsViewTests), the share being the term its bubble explains; the rest went to the social
     // contributions and the taxes, as the buckets name them.
     [Fact]
@@ -152,7 +152,7 @@ public class BucketBarTextTests
     }
 
     // With a car, the reach says the pocket and the taxes alone, of what the company does not keep once
-    // it keeps some: the car's costs are left out of the bar, as the running costs are.
+    // it keeps some: the car's costs are left out of it, in the expenses.
     [Theory]
     [InlineData(0, "Reach")]
     [InlineData(10_000, "Reach_Kept")]
@@ -163,25 +163,36 @@ public class BucketBarTextTests
         BucketBarText.Reach(view).ShouldBe(key);
     }
 
-    // The reach's bubble says what it is out of: the running costs, INASTI's company contribution and a
-    // car's costs are left out.
+    // The reach's bubble says what it is out of: the running costs and the expenses, INASTI's company
+    // contribution and a car's costs, are left out.
     [Fact]
-    public void BucketBarResx_reachMeaning_saysTheContributionAndACarsCostsAreLeftOutLikeTheRunningCosts()
+    public void BucketBarResx_reachMeaning_saysTheExpensesAreLeftOutLikeTheRunningCosts()
     {
         Resources.Get(BucketBarText.ReachMeaning).ShouldBe(
-            "Your pocket, out of what the river starts from less what the company keeps at year end, which is still yours. "
+            "Your pocket, out of what the river starts from less the company's expenses and what it keeps at year end, which is still yours. "
             + "Running costs, INASTI's yearly company contribution and a company car's costs are left out: they are costs of the company, whatever it pays you.");
     }
 
-    // What the river starts from, each way it can: the profit before what the company pays the director,
-    // after a car's costs once one counts, with the profits kept from earlier years; or, with the company
-    // skipped, the pay and the contributions the company pays on it.
+    // The bar's last bucket, the company's expenses, names in its bubble what it holds: INASTI's company
+    // contribution and a car's costs.
+    [Fact]
+    public void BucketBarResx_expenses_namesTheContributionAndACarsCosts()
+    {
+        (Resources.Get(BucketBarText.Bucket("expenses", false)), Resources.Get(BucketBarText.Holds("expenses", false))).ShouldBe((
+            "Expenses",
+            "What the company spends whatever it pays you: INASTI's yearly company contribution and, with a company car, what the car costs it over the year."));
+    }
+
+    // What the river starts from, each way it can: the profit before INASTI's company contribution and
+    // what the company pays the director, before a car's costs too once one counts, with the profits kept
+    // from earlier years; or, with the company skipped, the pay and the contributions the company pays on
+    // it.
     public static TheoryData<string, RiverInputs> Starts => new()
     {
         { "FromProfit", RiverInputs.Example },
         { "FromProfitAndEarlier", RiverInputs.Example.WithEarlierProfits(10_000m) },
-        { "FromProfitAfterCar", WithCar },
-        { "FromProfitAfterCarAndEarlier", WithCar.WithEarlierProfits(10_000m) },
+        { "FromProfitWithCar", WithCar },
+        { "FromProfitWithCarAndEarlier", WithCar.WithEarlierProfits(10_000m) },
         { "FromPay", RiverInputs.Example.SkipCompany() },
         { "FromPayCost", RiverInputs.Example.SkipCompany().WithContributionsPaidBy(ContributionsPaidBy.Company) },
     };
@@ -195,17 +206,19 @@ public class BucketBarTextTests
         (BucketBarText.From(view), Resources.Get(key) is not null).ShouldBe((key, true));
     }
 
-    // With a car the bar says the river starts after its costs: the example's 100,000 less its 8,000
-    // (BucketsViewTests), and beside them what the company kept from earlier years.
+    // The bar says the river starts before the expenses: the example's 100,409.30 (BucketsViewTests),
+    // before its car's costs too once one counts, and beside them what the company kept from earlier
+    // years. The expenses' bucket says how much they are.
     [Theory]
-    [InlineData(0, "Out of €92,000.00 of profit before what the company pays you, after its car's €8,000.00 of costs.")]
-    [InlineData(10_000, "Out of €92,000.00 of profit before what the company pays you, after its car's €8,000.00 of costs, and €10,000.00 kept from earlier years.")]
-    public void From_car_saysTheRiverStartsAfterItsCosts(int earlierProfits, string expected)
+    [InlineData(false, 0, "Out of €100,409.30 of profit before INASTI's company contribution and what the company pays you.")]
+    [InlineData(false, 10_000, "Out of €100,409.30 of profit before INASTI's company contribution and what the company pays you, and €10,000.00 kept from earlier years.")]
+    [InlineData(true, 0, "Out of €100,409.30 of profit before INASTI's company contribution, its car's costs and what the company pays you.")]
+    [InlineData(true, 10_000, "Out of €100,409.30 of profit before INASTI's company contribution, its car's costs and what the company pays you, and €10,000.00 kept from earlier years.")]
+    public void From_profit_saysTheRiverStartsBeforeTheExpenses(bool car, int earlierProfits, string expected)
     {
-        var view = BucketsView.From(WithCar.WithEarlierProfits(earlierProfits).Run()).ShouldNotBeNull();
+        var view = BucketsView.From((car ? WithCar : RiverInputs.Example).WithEarlierProfits(earlierProfits).Run()).ShouldNotBeNull();
 
-        var text = Resources.Format(BucketBarText.From(view),
-            Formats.Euros(view.Start - view.EarlierProfits), Formats.Euros(view.EarlierProfits), Formats.Euros(view.CarCosts));
+        var text = Resources.Format(BucketBarText.From(view), Formats.Euros(view.Start - view.EarlierProfits), Formats.Euros(view.EarlierProfits));
 
         text.ShouldBe(expected);
     }

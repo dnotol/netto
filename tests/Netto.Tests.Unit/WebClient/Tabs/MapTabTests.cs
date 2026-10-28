@@ -9,7 +9,7 @@ using static Netto.Tests.WebClient.Tabs.MapRendering;
 
 namespace Netto.Tests.WebClient.Tabs;
 
-// The Map tab as a viewer meets it: every module of the plan a button in the river's order, the bar's four
+// The Map tab as a viewer meets it: every module of the plan a button in the river's order, the bar's five
 // buckets, one line for each route of the run's links, drawn over a halo of the ground, with its amount on
 // it where MapAmounts places it, a condition's word or two instead, each line and amount saying its kind; a
 // module chosen marked, its lines brought out with their amounts where they were, the others' amounts gone and
@@ -71,14 +71,14 @@ public class MapTabTests
 
     // The buckets are not modules: nothing to choose, named as the bar names them.
     [Fact]
-    public async Task Tab_buckets_areTheBarsFourByTheBarsNames()
+    public async Task Tab_buckets_areTheBarsFiveByTheBarsNames()
     {
         var html = await RenderTabAsync(Full);
 
         Regex.Matches(html, "<div class=\"map-bucket[^\"]*\" data-bucket=\"([a-z_]+)\"[^>]*>([^<]*)</div>").Select(match => (match.Groups[1].Value, match.Groups[2].Value.Trim()))
             .ShouldBe([
                 ("pocket", "Your pocket"), ("taxes_on_pay", "Contributions and tax on pay and rent"), ("taxes_on_profit", "Taxes on profit"),
-                ("kept_in_company", "Kept in company")]);
+                ("kept_in_company", "Kept in company"), ("expenses", "Expenses")]);
     }
 
     // One line for each route, each saying its kind, the kinds told apart by their dash, each as thick as its

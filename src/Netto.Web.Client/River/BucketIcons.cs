@@ -13,6 +13,7 @@ internal static class BucketIcons
         "taxes_on_pay" => "🧾",
         "taxes_on_profit" => "🏛️",
         "kept_in_company" => "🏦",
+        "expenses" => "💸",
         _ => throw new ArgumentOutOfRangeException(nameof(bucket), bucket, null),
     };
 }

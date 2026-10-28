@@ -22,14 +22,14 @@ internal static class BucketBarText
     public static string Reach(BucketsView view) =>
         "Reach" + (view.Buckets.Single(bucket => bucket.Key == "kept_in_company").Amount > 0m ? "_Kept" : "");
 
-    // What the river starts from, worded with three figures in this order: what the year starts from
-    // before the profits kept from earlier years, those profits, and a car's costs. The profit before
-    // what the company pays the director, after INASTI's company contribution, always, and a car's costs
-    // once there are any (the river starts after them), with the earlier profits once there are any; or,
-    // with the company skipped, the pay, with the contributions the company pays on it when it does.
+    // What the river starts from, worded with two figures in this order: what the year starts from
+    // before the profits kept from earlier years, and those profits. The profit before INASTI's company
+    // contribution and what the company pays the director, always, before a car's costs too once there
+    // are any, which the expenses hold, with the earlier profits once there are any; or, with the
+    // company skipped, the pay, with the contributions the company pays on it when it does.
     public static string From(BucketsView view) => view.StartsAtPay
         ? view.CompanyPaysContributions ? "FromPayCost" : "FromPay"
-        : (view.CarCosts > 0m ? "FromProfitAfterCar" : "FromProfit") + (view.EarlierProfits > 0m ? "AndEarlier" : "");
+        : (view.CarCosts > 0m ? "FromProfitWithCar" : "FromProfit") + (view.EarlierProfits > 0m ? "AndEarlier" : "");
 
     // Under the gain, that the river has changes no saved plan holds.
     public const string Unsaved = "Unsaved";

@@ -41,9 +41,10 @@ public class SplitSearchViewTests
         view.Best.Reach.ShouldBe(best.NetInPocket / (100_000m - best.KeptInCompany));
     }
 
-    // With YearSimulationCarTests' electric car, the river starts after its 8,000 of costs, a cost of
-    // the company like its running costs, from 92,000: the reach at the pay set is the bar's, and the
-    // best pay's is out of the same start, less what the company keeps at that pay.
+    // With YearSimulationCarTests' electric car, the reach leaves out its 8,000 of costs and INASTI's
+    // contribution, the company's expenses, as it leaves out the running costs, out of 92,000: the reach at
+    // the pay set is the bar's, and the best pay's is out of the same, less what the company keeps at that
+    // pay.
     [Fact]
     public void Car_reachIsOutOfTheStartTheBarDrawsAfterItsCosts()
     {
