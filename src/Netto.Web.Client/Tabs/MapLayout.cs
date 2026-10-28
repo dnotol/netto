@@ -5,7 +5,7 @@ namespace Netto.Web.Client.Tabs;
 // Where the map draws what, in percent of its box, both ways, as the river is shaped: Company year, the
 // levers in the plan and the split one under the other down the middle, then the director's stream on the
 // left (Copyright royalty over Director pay) and the company's on the right (Corporate tax over Dividend),
-// and the bar's four buckets along the bottom. A row holds what is in it and closes up when it holds
+// and the bar's five buckets along the bottom. A row holds what is in it and closes up when it holds
 // nothing, so a lever out of the plan leaves no gap, and with the company skipped the map is Company year,
 // which no link joins, over Director pay and the buckets. The shape is fixed, so every link has its own
 // route, worked out once from the slots and every link of the run, never from the links a filter shows,
@@ -50,15 +50,16 @@ namespace Netto.Web.Client.Tabs;
 internal static class MapLayout
 {
     // The three columns' boxes, left to right, the middle of the streams' rows left to the amounts of their
-    // lines, and the buckets along the bottom, each under the stream that fills it most: the pocket and the
-    // taxes on pay under the director's, the taxes on profit and what the company keeps under the company's.
-    // The left column leaves the lane to the pocket the room of its lines at their widths, and each stream's
-    // last box reaches 4% over the bucket of its taxes, room for what it pays into them and what comes back
-    // out of them to run down side by side at their widths.
+    // lines, and the buckets along the bottom in the bar's order: the pocket and the taxes on pay towards the
+    // director's stream, the taxes on profit and what the company keeps towards the company's, and its
+    // expenses at the right edge. The pocket lies under Director pay and what the company keeps under the
+    // dividend, whose lines come straight down into them; the ways into the taxes turn along the band over
+    // the buckets, so the taxes need not lie under their stream. The left column leaves the lane to the
+    // pocket the room of its lines at their widths.
     private static readonly (decimal Left, decimal Right) LeftColumn = (7m, 26m);
     private static readonly (decimal Left, decimal Right) ChainColumn = (38m, 62m);
     private static readonly (decimal Left, decimal Right) RightColumn = (74m, 95m);
-    private static readonly (decimal Left, decimal Right)[] BucketSpans = [(1m, 20m), (22m, 48m), (52m, 78m), (80m, 99m)];
+    private static readonly (decimal Left, decimal Right)[] BucketSpans = [(1m, 20m), (22m, 43m), (45m, 62m), (64m, 82m), (84m, 99m)];
 
     // A box is half a chain row high, in the middle of its row; the rest is the gap above and below it,
     // where lines turn. The streams' rows are taller, for the amounts of their many lines, and the buckets'
@@ -154,18 +155,21 @@ internal static class MapLayout
     // Where Director pay's and the dividend's lines leave their boxes and enter the buckets, in percent across
     // the map. Director pay's taxes lie right of it: its way into them leaves right of where what comes back
     // arrives, and enters the bucket right of where that leaves; the dividend's lie left of it, and its lines
-    // the other way round; so what comes back is nested inside the way in.
+    // the other way round; so what comes back is nested inside the way in. The dividend's lines leave its
+    // bottom left to right: into its taxes and back, to the pocket, then to what the company keeps, each
+    // clear of the arrowhead before it, so that what the company keeps ends under the dividend's left part
+    // and leaves the expenses room at the right edge.
     private const decimal PayToPocket = 15m;
     private const decimal PayToTaxes = 24.4m;
     private const decimal PayFromTaxes = 23.2m;
-    private const decimal PayTaxesIn = 44m;
-    private const decimal PayTaxesOut = 41m;
+    private const decimal PayTaxesIn = 41m;
+    private const decimal PayTaxesOut = 38.5m;
     private const decimal DividendToTaxes = 74.6m;
     private const decimal DividendFromTaxes = 75.4m;
     private const decimal DividendTaxesIn = 57m;
-    private const decimal DividendTaxesOut = 60m;
-    private const decimal DividendToKept = 92m;
-    private const decimal DividendToPocketOut = 80m;
+    private const decimal DividendTaxesOut = 59.5m;
+    private const decimal DividendToKept = 80m;
+    private const decimal DividendToPocketOut = 78m;
     private const decimal DividendToPocketIn = 18m;
 
     // How far a line beside another of the same two ends keeps from it where nothing spreads them: in percent
@@ -784,13 +788,14 @@ internal static class MapLayout
         }
 
         // Down from a stream's last box into a bucket under it: straight, at an x both share, into the pocket or
-        // what the company keeps, with what comes back beside it; into the taxes, along the band's first row of
-        // its own to its place over the bucket, room for its amount, and what comes back out of them along the
-        // second, nested inside it so that the two never cross.
+        // what the company keeps, with what comes back beside it; into the taxes, from anywhere along the box's
+        // bottom along the band's first row of its own to its place over the bucket, room for its amount, and
+        // what comes back out of them along the second, nested inside it so that the two never cross.
         private MapRoute StreamDown((MapEnd From, MapEnd To, MapLinkKind Kind) bundle, MapEnd from, MapEnd to)
         {
             var (module, bucket) = (from.Module!.Value, to.Bucket!);
             var (box, tray) = (_grid.Slot(from), _grid.Slot(to));
+            var taxes = bucket is "taxes_on_pay" or "taxes_on_profit";
             var x = Beside(bundle, back => (module, bucket, back) switch
             {
                 (RiverModule.DirectorPay, "pocket", false) => PayToPocket,
@@ -802,8 +807,8 @@ internal static class MapLayout
                 (RiverModule.Dividend, "kept_in_company", false) => DividendToKept,
                 (RiverModule.Dividend, "kept_in_company", true) => DividendToKept + BackBeside,
                 _ => throw new ArgumentOutOfRangeException(nameof(bundle), $"{module} {bucket}", "A link the map has no route for."),
-            }, (Math.Max(box.Left, tray.Left), Math.Min(box.Right, tray.Right)), MapGrid.AcrossPixel, atModule: true);
-            if (bucket is not ("taxes_on_pay" or "taxes_on_profit"))
+            }, taxes ? (box.Left, box.Right) : (Math.Max(box.Left, tray.Left), Math.Min(box.Right, tray.Right)), MapGrid.AcrossPixel, atModule: true);
+            if (!taxes)
                 return new MapRoute([new(x, box.Bottom), new(x, tray.Top)]);
 
             var row = _grid.BandY(Back(bundle) ? OutOfTaxesRow : IntoTaxesRow);
