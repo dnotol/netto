@@ -37,23 +37,19 @@ public static class PersonalTaxCalculator
         if (household is { TaxedJointly: true })
             return Joint(rules, flatRateCosts, taxableIncome, municipalRate, otherIncome, taxedApart, household, withQuotient);
 
-        var globalisedIncome = taxableIncome + otherIncome;
+        // Taxed alone, the director is one column with no quotient: a tax-free amount larger than the
+        // income only frees what there is, a single person passing the unused part on to no one, and the
+        // single person's amount stays within the first bracket of the scale of the tax on it.
         var incomeTaxedApart = taxedApart?.Income ?? 0m;
-
-        // A tax-free amount larger than the income only frees what there is: a single person cannot
-        // pass the unused part on to anyone.
-        var basicTax = Money.RoundToCent(TaxOnScale(rules.Scale, globalisedIncome));
-        var taxFreeAmountReduction = Money.RoundToCent(
-            rules.TaxFreeAmountRate.Value * Math.Min(rules.TaxFreeAmount.Value, globalisedIncome));
-        var stateTax = Math.Max(0m, basicTax - taxFreeAmountReduction);
-        var taxApart = taxedApart is null ? 0m : Money.RoundToCent(incomeTaxedApart * taxedApart.Rate.Value);
-
-        // The federal government keeps the State tax less the autonomy factor, and Wallonia adds its
-        // regional tax on that share. The two rates are set to cancel out, but each part is rounded
-        // on its own, so their sum can be a few cents off the State tax.
-        var reducedStateTax = Money.RoundToCent((stateTax + taxApart) * (1 - rules.AutonomyFactor.Value));
-        var regionalAdditionalTax = Money.RoundToCent(reducedStateTax * rules.RegionalAdditionalRate.Value);
-        var incomeTax = reducedStateTax + regionalAdditionalTax;
+        var director = Column(
+            rules,
+            municipalRate,
+            professionalIncome: taxableIncome,
+            quotient: 0m,
+            otherIncome: otherIncome,
+            taxableIncome: taxableIncome + otherIncome,
+            taxFreeAmount: rules.TaxFreeAmount.Value,
+            taxApart: TaxApart(taxedApart));
 
         // The surcharge is a share of the tax before any credit comes off it (circular AFER 39/2008,
         // n° 51), so the credit for low earned income comes last and leaves it as it is. The dividend,
@@ -64,17 +60,17 @@ public static class PersonalTaxCalculator
         return new PersonalTaxResult(
             flatRateCosts,
             taxableIncome,
-            basicTax,
-            taxFreeAmountReduction,
-            stateTax,
-            reducedStateTax,
-            regionalAdditionalTax,
-            incomeTax,
-            Money.RoundToCent(incomeTax * municipalRate),
-            LowEarnedIncomeCredit(rules, taxableIncome, globalisedIncome + incomeTaxedApart),
+            director.BasicTax,
+            director.TaxFreeAmountReduction,
+            director.StateTax,
+            director.ReducedStateTax,
+            director.RegionalAdditionalTax,
+            director.IncomeTax,
+            director.MunicipalSurcharge,
+            LowEarnedIncomeCredit(rules, taxableIncome, taxableIncome + otherIncome + incomeTaxedApart),
             otherIncome,
             incomeTaxedApart,
-            taxApart);
+            director.TaxedApart);
     }
 
     // A joint assessment (art. 126), each partner in their own column. The marital quotient moves a share
@@ -109,10 +105,25 @@ public static class PersonalTaxCalculator
         var (directorTaxFree, partnerTaxFree) = directorHigher ? (taxFreeAmount + passed, taxFreeAmount - passed) : (taxFreeAmount - passed, taxFreeAmount + passed);
 
         var incomeTaxedApart = taxedApart?.Income ?? 0m;
-        var taxApart = taxedApart is null ? 0m : Money.RoundToCent(incomeTaxedApart * taxedApart.Rate.Value);
-        var director = Column(rules, municipalRate, directorIncome, toDirector - toPartner, otherIncome, directorTaxable, directorTaxFree, taxApart)
+        var director = Column(
+            rules,
+            municipalRate,
+            professionalIncome: directorIncome,
+            quotient: toDirector - toPartner,
+            otherIncome: otherIncome,
+            taxableIncome: directorTaxable,
+            taxFreeAmount: directorTaxFree,
+            taxApart: TaxApart(taxedApart))
             with { LowEarnedIncomeCredit = LowEarnedIncomeCredit(rules, directorIncome, directorIncome + otherIncome + incomeTaxedApart) };
-        var partner = Column(rules, municipalRate, partnerIncome, toPartner - toDirector, 0m, partnerTaxable, partnerTaxFree, 0m);
+        var partner = Column(
+            rules,
+            municipalRate,
+            professionalIncome: partnerIncome,
+            quotient: toPartner - toDirector,
+            otherIncome: 0m,
+            taxableIncome: partnerTaxable,
+            taxFreeAmount: partnerTaxFree,
+            taxApart: 0m);
 
         return new PersonalTaxResult(
             flatRateCosts,
@@ -127,7 +138,7 @@ public static class PersonalTaxCalculator
             director.LowEarnedIncomeCredit,
             otherIncome,
             incomeTaxedApart,
-            taxApart) { Joint = new JointAssessment(director, partner) };
+            director.TaxedApart) { Joint = new JointAssessment(director, partner) };
     }
 
     // What the marital quotient attributes to a partner out of the other's professional income: what
@@ -144,8 +155,14 @@ public static class PersonalTaxCalculator
         return Math.Max(0m, Math.Min(share, withinCap));
     }
 
-    // One partner's lines, a single person's on their taxable income and tax-free amount, the tax on the
-    // tax-free amount on art. 134 §2's scale, up to what their income uses; no credit until one is given.
+    // The tax on an income taxed apart at its own rate, nothing without one.
+    private static decimal TaxApart(IncomeTaxedApart? taxedApart) => taxedApart is null ? 0m : Money.RoundToCent(taxedApart.Income * taxedApart.Rate.Value);
+
+    // One taxpayer's lines on their taxable income and tax-free amount, the tax on the tax-free amount on
+    // art. 134 §2's scale, up to what their income uses; no credit until one is given. The federal
+    // government keeps the State tax, with the tax apart, less the autonomy factor, and Wallonia adds its
+    // regional tax on that share. The two rates are set to cancel out, but each part is rounded on its
+    // own, so their sum can be a few cents off the State tax.
     private static TaxpayerColumn Column(
         PersonalTaxRules rules, decimal municipalRate, decimal professionalIncome, decimal quotient, decimal otherIncome, decimal taxableIncome, decimal taxFreeAmount,
         decimal taxApart)
