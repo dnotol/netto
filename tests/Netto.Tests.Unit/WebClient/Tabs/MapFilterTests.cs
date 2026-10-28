@@ -121,14 +121,14 @@ public class MapFilterTests
         Regex.Count(html, "<label class=\"mud-checkbox[^>]*>(?:(?!</label>).)*<input [^>]*type=\"checkbox\"[^>]*/>.*?</label>", RegexOptions.Singleline).ShouldBe(Enum.GetValues<MapLinkKind>().Length);
     }
 
-    // A viewer who never ticked a box meets the kinds of money ticked and the two of rules not.
+    // A viewer who never ticked a box meets the kinds of money and the tax base ticked, the conditions not.
     [Fact]
-    public async Task Filter_firstVisit_ticksTheMoneyAndLeavesTheRulesUnticked()
+    public async Task Filter_firstVisit_ticksTheMoneyAndTheTaxBaseAndLeavesTheConditionsUnticked()
     {
         var html = await RenderAsync(new MapLinkFilter(new BrowserStorage()), Counts);
 
         LegendBoxes(html).Select(box => (box.Kind, box.Ticked)).ShouldBe(
-            [(MapLinkKind.PassedOn, true), (MapLinkKind.IntoBucket, true), (MapLinkKind.TaxBase, false), (MapLinkKind.Condition, false)]);
+            [(MapLinkKind.PassedOn, true), (MapLinkKind.IntoBucket, true), (MapLinkKind.TaxBase, true), (MapLinkKind.Condition, false)]);
     }
 
     [Fact]

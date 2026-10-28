@@ -12,10 +12,10 @@ namespace Netto.Tests.WebClient.Pages;
 // Chosen is). A click is the browser's; here the box's own callback is invoked, as its event would.
 public class PlanMapFilterTests
 {
-    // The first visit: the two kinds of rule are unticked, left out of the lines the tab draws though the
-    // run's map holds them, and nothing is stored until the viewer ticks.
+    // The first visit: the conditions are unticked, left out of the lines the tab draws though the run's map
+    // holds them, a tax base drawn, and nothing is stored until the viewer ticks.
     [Fact]
-    public async Task Plan_firstVisit_hasTheTwoKindsOfRuleUntickedAndStoresNothing()
+    public async Task Plan_firstVisit_hasTheConditionsUntickedAndStoresNothing()
     {
         var storage = new BrowserStorage();
         await using var page = LivePlan.At("http://localhost/plan", storage, river: MapLinksTests.Full);
@@ -26,14 +26,14 @@ public class PlanMapFilterTests
         var run = MapView.From(MapLinksTests.Full, MapLinksTests.Full.Run());
 
         map.ShouldSatisfyAllConditions(
-            () => map.DrawnLines.Select(line => line.Bundle.Kind).Distinct().Order().ShouldBe([MapLinkKind.PassedOn, MapLinkKind.IntoBucket]),
-            () => map.ShownMap.Links.Select(link => link.Kind).Distinct().Order().ShouldBe([MapLinkKind.PassedOn, MapLinkKind.IntoBucket]),
-            () => run.Links.Select(link => link.Kind).Distinct().Except(map.ShownMap.Links.Select(link => link.Kind)).Order().ShouldBe([MapLinkKind.TaxBase, MapLinkKind.Condition]),
+            () => map.DrawnLines.Select(line => line.Bundle.Kind).Distinct().Order().ShouldBe([MapLinkKind.PassedOn, MapLinkKind.IntoBucket, MapLinkKind.TaxBase]),
+            () => map.ShownMap.Links.Select(link => link.Kind).Distinct().Order().ShouldBe([MapLinkKind.PassedOn, MapLinkKind.IntoBucket, MapLinkKind.TaxBase]),
+            () => run.Links.Select(link => link.Kind).Distinct().Except(map.ShownMap.Links.Select(link => link.Kind)).Order().ShouldBe([MapLinkKind.Condition]),
             () => storage.Get(MapLinkFilter.StorageKey).ShouldBeNull(),
             () => page.Errors.ShouldBeEmpty());
     }
 
-    // A kind ticked is kept in the browser, whole with the one still unticked, and the tab draws its lines.
+    // A kind ticked is kept in the browser, whole, and the tab draws its lines.
     [Fact]
     public async Task Plan_aRuleKindTickedOnTheMap_isKeptInTheBrowserAndDrawnByTheTab()
     {
@@ -43,12 +43,12 @@ public class PlanMapFilterTests
         var map = await page.FindAsync<MapTab>();
         var boxes = await page.FindAllAsync<MudCheckBox<bool>>();
 
-        await page.InvokeAsync(() => boxes[Index(MapLinkKind.TaxBase)].ValueChanged.InvokeAsync(true));
+        await page.InvokeAsync(() => boxes[Index(MapLinkKind.Condition)].ValueChanged.InvokeAsync(true));
 
         map.ShouldSatisfyAllConditions(
             () => boxes.Count.ShouldBe(Enum.GetValues<MapLinkKind>().Length),
-            () => storage.Get(MapLinkFilter.StorageKey).ShouldBe("condition"),
-            () => map.DrawnLines.Select(line => line.Bundle.Kind).Distinct().Order().ShouldBe([MapLinkKind.PassedOn, MapLinkKind.IntoBucket, MapLinkKind.TaxBase]),
+            () => storage.Get(MapLinkFilter.StorageKey).ShouldBe(""),
+            () => map.DrawnLines.Select(line => line.Bundle.Kind).Distinct().Order().ShouldBe([MapLinkKind.PassedOn, MapLinkKind.IntoBucket, MapLinkKind.TaxBase, MapLinkKind.Condition]),
             () => page.Errors.ShouldBeEmpty());
     }
 
@@ -62,7 +62,7 @@ public class PlanMapFilterTests
 
         await page.InvokeAsync(() => boxes[Index(MapLinkKind.PassedOn)].ValueChanged.InvokeAsync(false));
 
-        (storage.Get(MapLinkFilter.StorageKey), page.Errors.Count).ShouldBe(("passed_on;tax_base;condition", 0));
+        (storage.Get(MapLinkFilter.StorageKey), page.Errors.Count).ShouldBe(("passed_on;condition", 0));
     }
 
     // The box ticked again is shown again: what stays hidden is the kind left unticked, for the next visit.

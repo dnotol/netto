@@ -30,14 +30,14 @@ public class MapFilterViewTests
             [(MapLinkKind.PassedOn, 10, true), (MapLinkKind.IntoBucket, 14, true), (MapLinkKind.TaxBase, 6, false), (MapLinkKind.Condition, 4, true)]);
     }
 
-    // The first visit, nothing stored: the rules' kinds are rows unticked.
+    // The first visit, nothing stored: the conditions are a row unticked, every other kind ticked.
     [Fact]
     public void Of_nothingStored_isTheMoneyShownAndTheRulesNot()
     {
         var view = MapFilterView.Of(new MapLinkFilter(new BrowserStorage()), Counts(10, 14, 6, 4));
 
         view.Rows.Select(row => (row.Kind, row.Shown)).ShouldBe(
-            [(MapLinkKind.PassedOn, true), (MapLinkKind.IntoBucket, true), (MapLinkKind.TaxBase, false), (MapLinkKind.Condition, false)]);
+            [(MapLinkKind.PassedOn, true), (MapLinkKind.IntoBucket, true), (MapLinkKind.TaxBase, true), (MapLinkKind.Condition, false)]);
     }
 
     // A kind the plan has no link of is still a row, counted as none.
