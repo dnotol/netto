@@ -20,7 +20,7 @@ internal interface IThemePage
     void WatchSystem(Action<bool> changed);
 }
 
-// The viewer's theme: the one they picked with the header's switch, kept in the browser so a reload
+// The viewer's theme: the one they picked with the theme switch (ThemeSwitch), kept in the browser so a reload
 // keeps it, or while they have picked none, their system's, followed as it changes. A preference of
 // the viewer's, never part of a plan. theme.js reads the same key to paint the page in it before the
 // app runs.
