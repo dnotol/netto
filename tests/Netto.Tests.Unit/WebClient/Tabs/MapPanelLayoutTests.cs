@@ -65,6 +65,23 @@ public class MapPanelLayoutTests
         narrow.ShouldNotContain("sticky");
     }
 
+    // A module's title keeps to its box on the narrowest map: its size follows the map's width (the map is a
+    // container of its inline size), from 0.72rem on a map 34rem wide to 0.85rem on a wide one, and it wraps
+    // onto a second line where it must, two lines at its smallest size and line height fitting the smallest
+    // box, half a chain row of 3.25rem (MapLayout.SmallestRowRem).
+    [Fact]
+    public void Module_title_scalesWithTheMapAndFitsTwoLinesInTheSmallestBox()
+    {
+        var (map, module) = (Rule(MapTabCss(), ".map"), Rule(MapTabCss(), ".map-module"));
+        var font = Regex.Match(module, @"font-size:\s*clamp\(([\d.]+)rem,\s*[\d.]+cqi,\s*([\d.]+)rem\)");
+        var lineHeight = decimal.Parse(Regex.Match(module, @"line-height:\s*([\d.]+);").Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture);
+
+        module.ShouldSatisfyAllConditions(
+            () => map.ShouldContain("container-type: inline-size"),
+            () => (font.Groups[1].Value, font.Groups[2].Value).ShouldBe(("0.72", "0.85")),
+            () => (2 * 0.72m * lineHeight).ShouldBeLessThanOrEqualTo(0.5m * Netto.Web.Client.Tabs.MapLayout.SmallestRowRem));
+    }
+
     // A Company year the viewer skipped is drawn as the river draws its skipped card: the same outline, not a
     // filled box.
     [Fact]

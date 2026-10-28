@@ -114,9 +114,11 @@
 
 /* The map: as tall as its rows ask, never taller than the window leaves under the band, and never narrower
    than the layout keeps its lines apart for at their widths (MapLayout: NarrowestRem is the 34rem here),
-   at any width. Everything in it is placed in percentages of its box. */
+   at any width. Everything in it is placed in percentages of its box. It is a container of its width, which
+   its modules' titles are sized by. */
 .map {
     position: relative;
+    container-type: inline-size;
     min-width: 34rem;
     height: min(calc(var(--map-units) * 4.6rem), var(--map-room));
     min-height: calc(var(--map-units) * 3.25rem);
@@ -260,22 +262,25 @@
 }
 
 /* A module: a button, its title in its box, gold where the pointer or the choice is on it. MudBlazor's
-   global rule centres a button's content, which the box keeps. */
+   global rule centres a button's content, which the box keeps. The title's size follows the map's width,
+   0.72rem on the narrowest map, 34rem wide, up to 0.85rem from a map of some 850 px, and it wraps onto a
+   second line where it must: two lines at 0.72rem and a line height of 1.1 fit the smallest box, half a
+   chain row of 3.25rem (MapLayout.SmallestRowRem). */
 .map-module {
     position: absolute;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 0 0.5rem;
+    padding: 0 0.35rem;
     border: 1px solid var(--netto-line-input);
     border-radius: 12px;
     background: var(--netto-surface);
     color: var(--netto-text);
     font: inherit;
-    font-size: 0.85rem;
+    font-size: clamp(0.72rem, 1.6cqi, 0.85rem);
     font-weight: 600;
-    line-height: 1.2;
+    line-height: 1.1;
     text-align: center;
     cursor: pointer;
 }
