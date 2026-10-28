@@ -305,8 +305,9 @@ public static class GrossToNet
 
     // Each of the year's withholding rules with the months it covers, from the month its rules date
     // falls in to the month before the next one's, the last to December, and the key formula's lines
-    // on a month's taxable pay by them.
-    private static IReadOnlyList<PayStatementPeriod> PeriodsOf(WithholdingRules rules, decimal monthlyTaxablePay)
+    // on a month's taxable pay by them, by the method the household's withholding takes
+    // (WithholdingHouseholds.Of).
+    private static IReadOnlyList<PayStatementPeriod> PeriodsOf(WithholdingRules rules, decimal monthlyTaxablePay, WithholdingHousehold household)
     {
         var periods = rules.Periods();
 
@@ -316,7 +317,7 @@ public static class GrossToNet
                 period,
                 period.RulesFrom.Value.Month,
                 i + 1 < periods.Count ? periods[i + 1].RulesFrom.Value.Month - 1 : YearParts.Months,
-                WithholdingCalculator.Figures(period, monthlyTaxablePay))),
+                WithholdingCalculator.Figures(period, monthlyTaxablePay, household))),
         ];
     }
 
@@ -383,7 +384,7 @@ public static class GrossToNet
             var ownContributions = contributions + fundFee;
             var paidByCompany = companyPays ? ownContributions : 0m;
             var taxablePay = grossPay + paidByCompany + benefitInKind + asPay;
-            var withholding = PeriodsOf(withholdingRules, Money.RoundToCent((taxablePay - asPay) / YearParts.Months));
+            var withholding = PeriodsOf(withholdingRules, Money.RoundToCent((taxablePay - asPay) / YearParts.Months), WithholdingHouseholds.Of(household));
             var withheld = prepayments.Withheld ?? withholding.Sum(period => period.Withholding.MonthlyWithholding * period.MonthCount);
             var withWithheld = prepayments with { Withheld = withheld };
             var partnerOwn = household.TaxedJointly ? PersonalTaxCalculator.Compute(taxRules, 0m, 0m, municipalRate, household: household) : null;
