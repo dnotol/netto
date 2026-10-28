@@ -1,4 +1,3 @@
-using Netto.Core.Copyright;
 using Netto.Web.Client.River;
 using Netto.Web.Client.River.Copyright;
 using Shouldly;

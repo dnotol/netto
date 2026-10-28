@@ -1,4 +1,3 @@
-using Netto.Core.Copyright;
 using Netto.Core.CorporateTax;
 using Netto.Core.Simulation;
 using Netto.Core.SocialContributions;
