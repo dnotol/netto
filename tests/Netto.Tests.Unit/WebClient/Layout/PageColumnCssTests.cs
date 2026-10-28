@@ -24,10 +24,12 @@ public class PageColumnCssTests
         Stylesheet.Block(Stylesheet.WithoutComments(AppCss), ".netto-column").ShouldContain("max-width: var(--netto-column);");
     }
 
-    // The header's container and the band's take the column, and no width of MudBlazor's.
+    // The header's container and the band's take the column, and no width of MudBlazor's; so does the plan
+    // page's, under the band, every tab of it.
     [Theory]
     [InlineData("src/Netto.Web.Client/Layout/MainLayout.razor", "site-header__inner")]
     [InlineData("src/Netto.Web.Client/River/BucketBar.razor", "bucket-bar__inner")]
+    [InlineData("src/Netto.Web.Client/Pages/Plan.razor", "plan-tab__column")]
     public void Container_alongTheTop_takesTheColumn(string component, string container)
     {
         var tag = Regex.Match(File.ReadAllText(RepositoryFile.FindUp(component.Split('/'))), $"<MudContainer [^>]*{container}[^>]*>").Value;

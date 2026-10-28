@@ -4,24 +4,30 @@ using Shouldly;
 namespace Netto.Tests.WebClient.Tabs;
 
 // What the Map tab's stylesheet draws the map's lines on is what the layout keeps them apart for: a map no
-// narrower than a column 34rem wide from 1,201 px, where the column beside it leaves it the least room, and
-// 60rem below, where it scrolls sideways instead (MapLayout.NarrowestRem), and never shorter than a chain
-// row to 3.25rem (MapQuietTests holds that one); a bucket a line runs on under, and an arrowhead sized by
-// its line.
+// narrower than a column 34rem wide at any width (MapLayout.NarrowestRem), beside the card from 1,201 px and
+// over it below, where it scrolls sideways only once the window has not that room, and never shorter than a
+// chain row to 3.25rem (MapQuietTests holds that one); a bucket a line runs on under, and an arrowhead sized
+// by its line.
 public class MapLinesCssTests
 {
     private static readonly string Css = Stylesheet.Read("src", "Netto.Web.Client", "Tabs", "MapTab.razor.css");
 
+    // One width for every window: the map's own rule holds it, and no media query sets another.
     [Fact]
-    public void MapTabCss_fromTheBreakpoint_drawsTheMapNoNarrowerThanTheLayoutKeepsItsLinesApartFor()
+    public void MapTabCss_atEveryWidth_drawsTheMapNoNarrowerThanTheLayoutKeepsItsLinesApartFor()
     {
-        Stylesheet.Block(Stylesheet.MediaBlock(Css, "(min-width: 1201px)"), ".map").ShouldContain($"min-width: {Stylesheet.Rem(MapLayout.NarrowestRem)};");
+        var mapRules = Stylesheet.Rules(Css).Where(rule => rule.Selector == ".map").Select(rule => rule.Declarations).ToList();
+
+        mapRules.ShouldSatisfyAllConditions(
+            () => mapRules.Count(declarations => declarations.Contains("min-width", StringComparison.Ordinal)).ShouldBe(1),
+            () => mapRules.ShouldContain(declarations => declarations.Contains($"min-width: {Stylesheet.Rem(MapLayout.NarrowestRem)};", StringComparison.Ordinal)));
     }
 
+    // Below the breakpoint the map scrolls sideways inside its column once the window is narrower than it.
     [Fact]
-    public void MapTabCss_belowTheBreakpoint_drawsTheMapWiderThanThat()
+    public void MapTabCss_belowTheBreakpoint_scrollsTheMapSidewaysInsideItsColumn()
     {
-        Stylesheet.Block(Stylesheet.MediaBlock(Css, "(max-width: 1200px)"), ".map").ShouldContain("min-width: 60rem;");
+        Stylesheet.Block(Stylesheet.MediaBlock(Css, "(max-width: 1200px)"), ".map-tab__map").ShouldContain("overflow-x: auto;");
     }
 
     // A bucket is drawn over the lines that run on under it, on the map's ground under its wash, so a line

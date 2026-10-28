@@ -53,7 +53,8 @@
 <TakenOutNotice @ref="_notice" Module="_takenOut" OnUndo="Undo" OnDismiss="Dismiss" />
 
 <section id="@TabContentId" class="plan-tab" tabindex="-1" @ref="_tabContent">
-    <MudContainer MaxWidth="MaxWidth.Large">
+    @* The site's column (app.css), as the band above takes it, so the tab and the band share their edges. *@
+    <MudContainer MaxWidth="MaxWidth.False" Class="netto-column plan-tab__column">
         @switch (_tab)
         {
             case PlanTab.Plan:

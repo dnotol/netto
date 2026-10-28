@@ -1,90 +1,76 @@
-/* The Map tab: the map and, beside it from 1,201 px, the column of the chosen module's neighbourhood
-   (MapNeighbourhood) and its card (MapPanel); below that width the column goes under the map. Once the
-   window leaves room beside the container (MudBlazor's Large, 1,280 px), the two take some of the margins
-   on both sides, as the river's outline takes the left one (Pages/Plan.razor.css), so on a 1,920 px screen
-   the map is about 1,180 px wide beside a column of 34rem. Both stay under the bar while the page scrolls
-   past them, and the column is never taller than the window leaves; the grid is at least that tall, so the
-   map has the room to stay. The column is two regions that scroll apart, the neighbourhood above and the
-   card below, so a long card scrolls under a neighbourhood that stays in sight, the map staying where it
-   is. */
+/* The Map tab: the map, its tools above it (the legend of the kinds of link and « Add to plan »), and
+   beside it from 1,201 px the card of the chosen module (MapPanel); below that width the card goes under the
+   map. Both keep to the page's column (app.css, --netto-column), the map taking the room the card leaves
+   and the card a share of what the column grows past them both, so on a 1,920 px screen the map is about
+   950 px wide beside a card of some 570. From 1,201 px the map and its tools stay under the band while the
+   page scrolls past them, never taller than the window leaves, the map shrinking to what its tools leave
+   it; the card beside them is a plain block, scrolled with the page however long it is, so a viewer
+   reaches its last field by scrolling the page, the map staying where it is. */
 
 .map-tab {
-    /* What the window leaves under the bar: the most the map or the column beside it takes. */
+    /* What the window leaves under the band: the most the map and its tools take. */
     --map-room: calc(100dvh - var(--netto-under-bar, 0px) - 1rem);
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: 2rem;
 }
 
+/* The tools over the map: the legend, then « Add to plan » at the end of the line, wrapping under it where
+   the column has not the room for both. */
+.map-tab__tools {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem 1rem;
+    margin-bottom: 0.75rem;
+}
+
 @media (min-width: 1201px) {
     .map-tab {
-        grid-template-columns: minmax(0, 1fr) 34rem;
+        grid-template-columns: minmax(0, 1fr) minmax(34rem, 0.6fr);
         align-items: start;
-        margin-inline: calc(-1 * clamp(0px, (100vw - 1280px) / 2 - 2rem, 16.5rem));
-        min-height: var(--map-room);
     }
 
+    /* Over the card's own controls, so the panel of « Add to plan » drops over them where it reaches
+       them. */
     .map-tab__map {
         position: sticky;
         top: var(--netto-under-bar);
-    }
-
-    /* The map is never narrower than the layout keeps its lines apart for at their widths (MapLayout:
-       NarrowestRem is the 34rem here), what the column beside it leaves it at 1,201 px. */
-    .map {
-        min-width: 34rem;
-    }
-
-    .map-tab__side {
-        position: sticky;
-        top: var(--netto-under-bar);
+        z-index: 1;
         display: flex;
         flex-direction: column;
         max-height: var(--map-room);
-        overflow-y: auto;
-        overscroll-behavior: contain;
     }
 
-    /* The neighbourhood takes what it needs up to half of what the window leaves, and scrolls inside that
-       half when it needs more; it does not shrink, so it is never pushed out of sight. */
-    .map-tab__hood {
-        flex: 0 0 auto;
-        max-height: calc(var(--map-room) / 2);
-        overflow-y: auto;
-        overscroll-behavior: contain;
+    .map-tab__tools {
+        flex: none;
     }
 
-    /* The card has the rest, and scrolls inside it however long it is; the card taking the focus on its
-       heading brings that into view in this region alone. */
-    .map-tab__panel {
-        flex: 1 1 auto;
-        min-height: 0;
-        overflow-y: auto;
-        overscroll-behavior: contain;
+    /* The map shrinks to what its tools leave it under the band, never below its smallest scale. */
+    .map {
+        flex: 0 1 auto;
     }
 }
 
-/* The neighbourhood above the card, with room between, where the column is a block under the map and where
-   it is a column of two regions. */
+/* The neighbourhood above the card, with room between. */
 .map-tab__hood {
     margin-bottom: 1rem;
 }
 
-/* Below that width the map keeps a width it can be read at, and scrolls sideways inside its column. */
+/* Below that width the map scrolls sideways inside its column once the window is narrower than it. */
 @media (max-width: 1200px) {
     .map-tab__map {
         overflow-x: auto;
     }
-
-    .map {
-        min-width: 60rem;
-    }
 }
 
-/* The map: as tall as its rows ask, never taller than the window leaves under the bar. Everything in it
-   is placed in percentages of its box. */
+/* The map: as tall as its rows ask, never taller than the window leaves under the band, and never narrower
+   than the layout keeps its lines apart for at their widths (MapLayout: NarrowestRem is the 34rem here),
+   at any width. Everything in it is placed in percentages of its box. */
 .map {
     position: relative;
+    min-width: 34rem;
     height: min(calc(var(--map-units) * 4.6rem), var(--map-room));
     min-height: calc(var(--map-units) * 3.25rem);
 }

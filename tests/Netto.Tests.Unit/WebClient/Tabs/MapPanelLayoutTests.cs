@@ -5,63 +5,64 @@ namespace Netto.Tests.WebClient.Tabs;
 
 // The layout that keeps the Map tab's map in view beside the card of the module chosen, and the look of a
 // skipped Company year's box. How it looks in a window is the browser's check; these hold what it rests on:
-// from 1,201 px the column of the neighbourhood and the card is sticky under the bar and never taller than
-// the window leaves, its two regions scrolling apart so that a long card never pushes the neighbourhood out of
-// sight, and below it the column goes under the map as tall as its card.
+// the map and its card share the page's column and never leave it; from 1,201 px the map is sticky under the
+// band, as tall as the window leaves it, its tools above it, and the card beside it is a plain block the page
+// scrolls, with no scroll area of its own or around it; below it the card goes under the map.
 public class MapPanelLayoutTests
 {
-    // From 1,201 px the column is sticky under the bar and never taller than the window leaves, so a long card
-    // scrolls inside it and the map keeps its place; the grid is at least that tall, and one custom property
-    // says how much the window leaves, for the map, the column and the grid alike.
+    // The map and the card take the page's column and no room past it: nothing reaches into the margins.
     [Fact]
-    public void Layout_fromTheBreakpoint_keepsTheColumnWithinWhatTheWindowLeavesUnderTheBar()
+    public void Layout_keepsTheMapAndTheCardInsideThePagesColumn()
+    {
+        var css = MapTabCss();
+
+        css.ShouldSatisfyAllConditions(
+            () => css.ShouldNotContain("margin-inline"),
+            () => css.ShouldNotContain("100vw"),
+            () => Rule(Stylesheet.MediaBlock(css, "(min-width: 1201px)"), ".map-tab").ShouldContain("grid-template-columns: minmax(0, 1fr) minmax(34rem, 0.6fr)"));
+    }
+
+    // From 1,201 px the map stays under the band while the page scrolls past it, never taller than the window
+    // leaves under the band, one custom property saying how much that is; its tools take their line and the
+    // map shrinks to what they leave it, never below its smallest scale.
+    [Fact]
+    public void Layout_fromTheBreakpoint_keepsTheMapAndItsToolsWithinWhatTheWindowLeavesUnderTheBand()
     {
         var css = MapTabCss();
         var wide = Stylesheet.MediaBlock(css, "(min-width: 1201px)");
 
         css.ShouldSatisfyAllConditions(
             () => Regex.Matches(css, @"--map-room\s*:\s*([^;]+);").Select(match => match.Groups[1].Value).ShouldHaveSingleItem().ShouldContain("var(--netto-under-bar"),
-            () => Rule(wide, ".map-tab__side").ShouldContain("position: sticky"),
-            () => Rule(wide, ".map-tab__side").ShouldContain("top: var(--netto-under-bar)"),
-            () => Rule(wide, ".map-tab__side").ShouldContain("max-height: var(--map-room)"),
-            () => Rule(wide, ".map-tab__side").ShouldContain("overflow-y: auto"),
-            () => Rule(wide, ".map-tab").ShouldContain("min-height: var(--map-room)"),
+            () => Rule(wide, ".map-tab__map").ShouldContain("position: sticky"),
+            () => Rule(wide, ".map-tab__map").ShouldContain("top: var(--netto-under-bar)"),
+            () => Rule(wide, ".map-tab__map").ShouldContain("display: flex"),
+            () => Rule(wide, ".map-tab__map").ShouldContain("flex-direction: column"),
+            () => Rule(wide, ".map-tab__map").ShouldContain("max-height: var(--map-room)"),
+            () => Rule(wide, ".map-tab__tools").ShouldContain("flex: none"),
+            () => Rule(wide, ".map").ShouldContain("flex: 0 1 auto"),
             () => Rule(css, ".map").ShouldContain("var(--map-room)"));
     }
 
-    // The column is two regions one above the other, the neighbourhood of the module chosen and its card, each
-    // scrolling inside itself: the neighbourhood takes what it needs up to half of what the window leaves and
-    // does not shrink, the card the rest, so a card as long as it likes scrolls under a neighbourhood that
-    // stays in sight, and a neighbourhood too long for its half scrolls inside it.
+    // The card beside the map is the page's to scroll: no rule makes the column or the room of the card a
+    // scroll area, sticky or capped, at any width, and the grid keeps no height of its own.
     [Fact]
-    public void Layout_fromTheBreakpoint_keepsTheNeighbourhoodInSightWhateverTheLengthOfTheCard()
+    public void Layout_atEveryWidth_givesTheCardNoScrollAreaOfItsOwnAndNoneAroundIt()
     {
-        var wide = Stylesheet.MediaBlock(MapTabCss(), "(min-width: 1201px)");
+        var rules = Stylesheet.Rules(File.ReadAllText(MapTabCssPath())).Where(rule => rule.Selector is ".map-tab" or ".map-tab__side" or ".map-tab__panel").ToList();
 
-        wide.ShouldSatisfyAllConditions(
-            () => Rule(wide, ".map-tab__side").ShouldContain("display: flex"),
-            () => Rule(wide, ".map-tab__side").ShouldContain("flex-direction: column"),
-            () => Rule(wide, ".map-tab__hood").ShouldContain("flex: 0 0 auto"),
-            () => Rule(wide, ".map-tab__hood").ShouldContain("max-height: calc(var(--map-room) / 2)"),
-            () => Rule(wide, ".map-tab__hood").ShouldContain("overflow-y: auto"),
-            () => Rule(wide, ".map-tab__panel").ShouldContain("flex: 1 1 auto"),
-            () => Rule(wide, ".map-tab__panel").ShouldContain("min-height: 0"),
-            () => Rule(wide, ".map-tab__panel").ShouldContain("overflow-y: auto"));
+        rules.ShouldSatisfyAllConditions(
+            () => rules.ShouldNotBeEmpty(),
+            () => rules.ShouldAllBe(rule => !rule.Declarations.Contains("overflow") && !rule.Declarations.Contains("max-height")
+                && !rule.Declarations.Contains("sticky") && !rule.Declarations.Contains("min-height")));
     }
 
-    // Below it the column goes under the map, as tall as its card: nothing sticky, nothing scrolling inside,
-    // the neighbourhood above the card with room between.
+    // The column under the map, below the breakpoint, is as tall as its card: nothing sticks there.
     [Fact]
-    public void Layout_belowTheBreakpoint_leavesTheColumnUnderTheMapAsTallAsItsCard()
+    public void Layout_belowTheBreakpoint_sticksNothing()
     {
         var narrow = MapTabCss().Replace(Stylesheet.MediaBlock(MapTabCss(), "(min-width: 1201px)"), "");
 
-        narrow.ShouldSatisfyAllConditions(
-            () => narrow.ShouldNotContain(".map-tab__side"),
-            () => narrow.ShouldNotContain(".map-tab__panel"),
-            () => narrow.ShouldNotContain("overflow-y"),
-            () => narrow.ShouldNotContain("max-height"),
-            () => Rule(narrow, ".map-tab__hood").ShouldContain("margin-bottom: 1rem"));
+        narrow.ShouldNotContain("sticky");
     }
 
     // A Company year the viewer skipped is drawn as the river draws its skipped card: the same outline, not a
@@ -78,9 +79,10 @@ public class MapPanelLayoutTests
             () => Rule(MapTabCss(), ".map-module--skipped").ShouldContain("background: transparent"));
     }
 
+    private static string MapTabCssPath() => RepositoryFile.FindUp("src", "Netto.Web.Client", "Tabs", "MapTab.razor.css");
+
     // The stylesheet with its comments left out.
-    private static string MapTabCss() =>
-        Without(File.ReadAllText(RepositoryFile.FindUp("src", "Netto.Web.Client", "Tabs", "MapTab.razor.css")));
+    private static string MapTabCss() => Without(File.ReadAllText(MapTabCssPath()));
 
     private static string Without(string css) => Regex.Replace(css, @"/\*.*?\*/", "", RegexOptions.Singleline);
 
