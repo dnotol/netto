@@ -12,7 +12,9 @@ namespace Netto.Tests.DirectorPay;
 // n° 32 for pay paid or attributed from 1 November 2026, and nothing else that reaches a single
 // director's monthly pay: the rules from that date are January's with its 3,089.63, cited to the
 // coordinated annex, the text that holds it. No key formula for 1 November 2026 is published, so
-// those rules apply the January one's method.
+// those rules apply the January one's method. The same decree changes the marital quotient of n° 34.1.1
+// and 34.2 for a partner without professional income: its maximum, now 12,790 when both partners have
+// reached 66 on 1 January 2027, else 11,780, in place of 13,790, and the 6,179.26 taken off the tax.
 public class WithholdingRulesTests
 {
     private const string Fisconetplus = "https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/";
@@ -60,13 +62,90 @@ public class WithholdingRulesTests
         November2026.Later.ShouldBeNull();
     }
 
-    // Only n° 32 differs: the method, the reduction, the flat-rate costs and the scale are January's.
+    // Only n° 32 and the marital quotient's n° 34.1.1 and 34.2 differ: the method, the reduction, the
+    // flat-rate costs, the scale and the quotient's 30% are January's.
     [Fact]
-    public void Later_2026_areJanuarysButForTheirDateAndNumber32()
+    public void Later_2026_areJanuarysButForTheirDateAndNumbers32And34()
     {
-        var asJanuary = November2026 with { RulesFrom = Rules2026.RulesFrom, TaxFreeAmountReduction = Rules2026.TaxFreeAmountReduction };
+        var asJanuary = November2026 with
+        {
+            RulesFrom = Rules2026.RulesFrom,
+            TaxFreeAmountReduction = Rules2026.TaxFreeAmountReduction,
+            QuotientMaximum = Rules2026.QuotientMaximum,
+            QuotientMaximumBothAged66 = Rules2026.QuotientMaximumBothAged66,
+            JointTaxFreeAmountReduction = Rules2026.JointTaxFreeAmountReduction,
+        };
 
         asJanuary.ShouldBe(Rules2026 with { Later = null });
+    }
+
+    // N° 34.1.1 to 31 October 2026: 30% of the annual net taxable imputed to a partner without
+    // professional income, 13,790 at most whatever their ages; n° 34.2: less 5,975.96, twice the tax
+    // on the tax-free amount of 11,170.
+    [Fact]
+    public void Quotient_2026_isNumber34OfTheAnnexAsDecreed()
+    {
+        (Rules2026.QuotientRate.Value, Rules2026.QuotientMaximum.Value, Rules2026.QuotientMaximumBothAged66 is null, Rules2026.JointTaxFreeAmountReduction.Value)
+            .ShouldBe((0.30m, 13_790m, true, 5_975.96m));
+    }
+
+    // From 1 November 2026: 11,780 at most, 12,790 when both partners have reached 66 on 1 January
+    // 2027; less 6,179.26, twice the tax on the tax-free amount of 11,550.
+    [Fact]
+    public void Quotient_from1November2026_isNumber34AsTheRoyalDecreeOf27September2026ChangesIt()
+    {
+        (November2026.QuotientRate.Value, November2026.QuotientMaximum.Value, November2026.QuotientMaximumBothAged66?.Value, November2026.JointTaxFreeAmountReduction.Value)
+            .ShouldBe((0.30m, 11_780m, 12_790m, 6_179.26m));
+    }
+
+    [Fact]
+    public void QuotientAmounts_2026_citeTheAnnexAsDecreedOn11December2025()
+    {
+        Rules2026.QuotientAmounts.ShouldAllBe(amount => amount.Source.Url == new Uri(Fisconetplus + DecreedAnnex));
+    }
+
+    // The 30% is unchanged and still cites the annex as decreed; the amounts the decree of 27.09.2026
+    // changes cite the coordinated annex that holds them.
+    [Fact]
+    public void QuotientAmounts_from1November2026_citeTheCoordinatedAnnexBesidesTheRate()
+    {
+        November2026.QuotientAmounts.Select(amount => (amount.Key, amount.Source.Document)).ShouldBe(
+        [
+            ("withholding_quotient_rate", "personal-tax/spf-finances_regles-precompte-professionnel-2026-01-01_2025-12-17.pdf"),
+            ("withholding_quotient_maximum", CoordinatedAnnexDocument),
+            ("withholding_quotient_maximum_both_aged_66", CoordinatedAnnexDocument),
+            ("withholding_joint_tax_free_amount_reduction", CoordinatedAnnexDocument),
+        ]);
+    }
+
+    // The single method's amounts are Amounts; the quotient's take the single person's n° 32 out and
+    // its own in, with the one maximum that applies.
+    [Theory]
+    [InlineData(1, WithholdingHousehold.AsSingle, "tax_free_amount_reduction")]
+    [InlineData(1, WithholdingHousehold.PartnerWithoutIncome, "withholding_quotient_rate withholding_quotient_maximum withholding_joint_tax_free_amount_reduction")]
+    [InlineData(1, WithholdingHousehold.PartnerWithoutIncomeBothAged66, "withholding_quotient_rate withholding_quotient_maximum withholding_joint_tax_free_amount_reduction")]
+    [InlineData(11, WithholdingHousehold.AsSingle, "tax_free_amount_reduction")]
+    [InlineData(11, WithholdingHousehold.PartnerWithoutIncome, "withholding_quotient_rate withholding_quotient_maximum withholding_joint_tax_free_amount_reduction")]
+    [InlineData(11, WithholdingHousehold.PartnerWithoutIncomeBothAged66, "withholding_quotient_rate withholding_quotient_maximum_both_aged_66 withholding_joint_tax_free_amount_reduction")]
+    public void AmountsFor_household_areTheReductionCostsAndScaleThenItsMethods(int month, WithholdingHousehold household, string methodKeys)
+    {
+        var rules = Rules2026.InMonth(month);
+
+        var keys = string.Join(' ', rules.AmountsFor(household).Select(amount => amount.Key));
+
+        keys.ShouldBe(string.Join(' ', rules.Amounts.SkipLast(1).Select(amount => amount.Key)) + " " + methodKeys);
+    }
+
+    [Fact]
+    public void AmountsFor_single_isAmounts()
+    {
+        Rules2026.AmountsFor(WithholdingHousehold.AsSingle).ShouldBe(Rules2026.Amounts);
+    }
+
+    [Fact]
+    public void AmountsFor_householdNoCaseNames_throws()
+    {
+        Should.Throw<ArgumentOutOfRangeException>(() => Rules2026.AmountsFor((WithholdingHousehold)99));
     }
 
     // N° 32 from 1 November 2026: the tax on the tax-free amount of 11,550 for a single person, 26.75%
@@ -202,7 +281,7 @@ public class WithholdingRulesTests
     [Fact]
     public void Rates_2026_haveKeysEndingInRate()
     {
-        var rates = Rules2026.Reduction.Concat(Rules2026.Scale).Select(band => band.Rate).OfType<RuleAmount>().Append(Rules2026.FlatRateCostsRate);
+        var rates = Rules2026.Reduction.Concat(Rules2026.Scale).Select(band => band.Rate).OfType<RuleAmount>().Append(Rules2026.FlatRateCostsRate).Append(Rules2026.QuotientRate);
 
         rates.ShouldAllBe(rate => rate.Key.EndsWith("_rate", StringComparison.Ordinal));
     }
@@ -243,16 +322,21 @@ public class WithholdingRulesTests
 
     // Each slot holds the amount named for it, in both periods: a swap of two would pass every test of
     // values.
+    // January has no maximum of its own for partners both 66 or over: the annex makes no distinction.
     [Theory]
-    [InlineData(1)]
-    [InlineData(11)]
-    public void IncomeYear2026_eachAmountSlotHoldsItsKey(int month)
+    [InlineData(1, null)]
+    [InlineData(11, "withholding_quotient_maximum_both_aged_66")]
+    public void IncomeYear2026_eachAmountSlotHoldsItsKey(int month, string? bothAged66)
     {
         RuleSets.Slots<RuleAmount>(Rules2026.InMonth(month)).Select(slot => (slot.Slot, slot.Value?.Key)).ShouldBe(
         [
             ("FlatRateCostsRate", "flat_rate_costs_rate"),
             ("FlatRateCostsMaximum", "flat_rate_costs_maximum"),
             ("TaxFreeAmountReduction", "tax_free_amount_reduction"),
+            ("QuotientRate", "withholding_quotient_rate"),
+            ("QuotientMaximum", "withholding_quotient_maximum"),
+            ("QuotientMaximumBothAged66", bothAged66),
+            ("JointTaxFreeAmountReduction", "withholding_joint_tax_free_amount_reduction"),
         ]);
     }
 

@@ -3,8 +3,11 @@ using Netto.Core.Rules;
 namespace Netto.Core.DirectorPay;
 
 // The monthly withholding tax (précompte professionnel) on the periodic pay of a director subject to
-// the self-employed social status, single and resident in Belgium, for one income year: the rules of
-// annex III to the AR/CIR 92 that the administration's key formula applies in five steps. Source is
+// the self-employed social status and resident in Belgium, for one income year: the rules of annex III
+// to the AR/CIR 92 that the administration's key formula applies in five steps, for a single person
+// (n° 32) and for a spouse or legal cohabitant whose partner has no professional income, the marital
+// quotient (n° 34), whose maximum for partners both 66 or over the annex sets only from some dates
+// (none before: the one maximum holds whatever their ages). Source is
 // the key formula, the method the withholding step cites as its rule. The rules hold for pay paid or
 // attributed from RulesFrom, the first of a month, until Later's: the rules a decree puts in their
 // place from a later month of the same income year, none when these hold to December. For(year)
@@ -17,7 +20,11 @@ public sealed record WithholdingRules(
     RuleAmount FlatRateCostsRate,
     RuleAmount FlatRateCostsMaximum,
     IReadOnlyList<WithholdingBand> Scale,
-    RuleAmount TaxFreeAmountReduction)
+    RuleAmount TaxFreeAmountReduction,
+    RuleAmount QuotientRate,
+    RuleAmount QuotientMaximum,
+    RuleAmount? QuotientMaximumBothAged66,
+    RuleAmount JointTaxFreeAmountReduction)
 {
     public WithholdingRules? Later { get; init; }
 
@@ -36,8 +43,8 @@ public sealed record WithholdingRules(
     private static readonly Source CoordinatedAnnex2026 = new(
         "Annexe III, AR/CIR 92 (revenus 2026), coordinated text on Fisconetplus, last modified 13.10.2026",
         "Its header dates each decree: the rules of the royal decree of 11.12.2025 (MB 29.12.2025) apply to pay paid or attributed from 01.01.2026; "
-        + "the royal decree of 27.09.2026 (MB 02.10.2026) changes n° 32 to 3,089.63, the tax on a tax-free amount of 11,550, for pay from 01.11.2026, "
-        + "and nothing else that reaches a single director's monthly pay",
+        + "the royal decree of 27.09.2026 (MB 02.10.2026) changes n° 32 to 3,089.63, the tax on a tax-free amount of 11,550, and the marital quotient's "
+        + "n° 34.1.1 and 34.2, for pay from 01.11.2026, and nothing else Netto applies to a director's monthly pay",
         new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/0c174ec5-448b-4d1e-983b-fc457e5e7e28"),
         "personal-tax/spf-finances_arcir92-annexe-iii-revenus-2026_2026-10-13.html");
 
@@ -54,6 +61,20 @@ public sealed record WithholdingRules(
 
     private static readonly Source AnnexTaxFreeAmount2026 = DecreedAnnex2026(
         "N° 32, a single person: the tax on the scale less 2,987.98, the tax on the tax-free amount of 11,170");
+
+    private static readonly Source AnnexQuotient2026 = DecreedAnnex2026(
+        "N° 34, a partner without professional income of their own: 30% of the annual net taxable imputed to them (n° 34.1.1), "
+        + "13,790 at most (reached at 45,966.67); the tax on the imputed income and the tax on the rest, each on the scale of n° 31, "
+        + "summed less 5,975.96, twice the tax on the tax-free amount of 11,170 (n° 34.2)");
+
+    private static readonly Source CoordinatedQuotientFromNovember2026 = CoordinatedAnnex2026 with
+    {
+        Reference = "N° 34.1.1 and 34.2, a partner without professional income of their own, as the royal decree of 27.09.2026 (MB 02.10.2026) "
+            + "changes them for pay paid or attributed from 01.11.2026: the income imputed to the partner, 30% of the annual net taxable, "
+            + "at most 12,790 when both partners have reached 66 on 1 January 2027 (reached at 42,633.33), in all other cases 11,780 "
+            + "(reached at 39,266.67), also when the payer lacks the information; the two taxes summed less 6,179.26, "
+            + "twice the tax on the tax-free amount of 11,550",
+    };
 
     private static readonly Source CoordinatedTaxFreeAmountFromNovember2026 = CoordinatedAnnex2026 with
     {
@@ -75,17 +96,24 @@ public sealed record WithholdingRules(
             new WithholdingBand(Scale2026("withholding_bracket_3_base", 9_944.05m), Scale2026("withholding_bracket_3_rate", 0.4815m), Scale2026("withholding_bracket_3_upper_limit", 51_050m)),
             new WithholdingBand(Scale2026("withholding_bracket_4_base", 20_320.38m), Scale2026("withholding_bracket_4_rate", 0.535m), null),
         ],
-        TaxFreeAmountReduction: new RuleAmount("tax_free_amount_reduction", 2_987.98m, AnnexTaxFreeAmount2026));
+        TaxFreeAmountReduction: new RuleAmount("tax_free_amount_reduction", 2_987.98m, AnnexTaxFreeAmount2026),
+        QuotientRate: new RuleAmount("withholding_quotient_rate", 0.30m, AnnexQuotient2026),
+        QuotientMaximum: new RuleAmount("withholding_quotient_maximum", 13_790m, AnnexQuotient2026),
+        QuotientMaximumBothAged66: null,
+        JointTaxFreeAmountReduction: new RuleAmount("withholding_joint_tax_free_amount_reduction", 5_975.96m, AnnexQuotient2026));
 
-    // From 1 November 2026, the royal decree of 27.09.2026 changes n° 32 alone of what reaches a single
-    // director's monthly pay; no key formula of that date is published, so the January one's method
-    // applies.
+    // From 1 November 2026, the royal decree of 27.09.2026 changes n° 32 and the marital quotient's
+    // maximum and amount taken off (n° 34.1.1 and 34.2) of what reaches a director's monthly pay; no key
+    // formula of that date is published, so the January one's method applies.
     public static WithholdingRules IncomeYear2026 { get; } = From1January2026 with
     {
         Later = From1January2026 with
         {
             RulesFrom = new RuleDate("rules_from", new DateOnly(2026, 11, 1), CoordinatedAnnex2026),
             TaxFreeAmountReduction = new RuleAmount("tax_free_amount_reduction", 3_089.63m, CoordinatedTaxFreeAmountFromNovember2026),
+            QuotientMaximum = new RuleAmount("withholding_quotient_maximum", 11_780m, CoordinatedQuotientFromNovember2026),
+            QuotientMaximumBothAged66 = new RuleAmount("withholding_quotient_maximum_both_aged_66", 12_790m, CoordinatedQuotientFromNovember2026),
+            JointTaxFreeAmountReduction = new RuleAmount("withholding_joint_tax_free_amount_reduction", 6_179.26m, CoordinatedQuotientFromNovember2026),
         },
     };
 
@@ -110,15 +138,46 @@ public sealed record WithholdingRules(
     // end.
     public IReadOnlyList<WithholdingRules> Periods() => [this, .. Later?.Periods() ?? []];
 
-    // Each figure of the annex once, in the annex's order: the 385 the first two bands of the
-    // reduction share is listed once.
+    // Each figure of the annex the single method applies once, in the annex's order: the 385 the first
+    // two bands of the reduction share is listed once.
     public IReadOnlyList<RuleAmount> Amounts =>
+    [
+        .. UpToTheScale,
+        TaxFreeAmountReduction,
+    ];
+
+    // The marital quotient's own figures, in the annex's order, the maximum for partners both 66 or over
+    // where the annex sets one.
+    public IReadOnlyList<RuleAmount> QuotientAmounts =>
+    [
+        QuotientRate,
+        QuotientMaximum,
+        .. QuotientMaximumBothAged66 is { } bothAged66 ? [bothAged66] : Array.Empty<RuleAmount>(),
+        JointTaxFreeAmountReduction,
+    ];
+
+    // The figures by the household's method: the reduction, the flat-rate costs and the scale, then the
+    // single person's n° 32, or the quotient's rate, the one maximum that applies and its n° 34.2.
+    public IReadOnlyList<RuleAmount> AmountsFor(WithholdingHousehold household) => household switch
+    {
+        WithholdingHousehold.AsSingle => Amounts,
+        WithholdingHousehold.PartnerWithoutIncome or WithholdingHousehold.PartnerWithoutIncomeBothAged66 =>
+            [.. UpToTheScale, QuotientRate, QuotientMaximumFor(household), JointTaxFreeAmountReduction],
+        _ => throw new ArgumentOutOfRangeException(nameof(household), household, "No withholding method for this household."),
+    };
+
+    // The most the quotient imputes to the partner: the maximum for partners both 66 or over where the
+    // annex sets one and they are, else the one for all other cases.
+    public RuleAmount QuotientMaximumFor(WithholdingHousehold household) =>
+        household == WithholdingHousehold.PartnerWithoutIncomeBothAged66 && QuotientMaximumBothAged66 is { } bothAged66 ? bothAged66 : QuotientMaximum;
+
+    // The figures both methods apply, up to the scale.
+    private IReadOnlyList<RuleAmount> UpToTheScale =>
     [
         .. Reduction.SelectMany(band => band.Amounts).Distinct(),
         FlatRateCostsRate,
         FlatRateCostsMaximum,
         .. Scale.SelectMany(band => band.Amounts),
-        TaxFreeAmountReduction,
     ];
 
     // The table gives 385 up to 1,465, then adds 21.50% of the slice over 1,465 to that same 385.
