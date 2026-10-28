@@ -101,6 +101,21 @@
     font-size: 1.4rem;
 }
 
+/* Beside the buttons, from 1,201 px, the five columns are about 156 px wide whatever the screen, the
+   bar's container stopping at 1,280 px: a pocket of €999,999.99 and its share take some 170 px at 1.4rem.
+   The amounts come down a step there, every one within its column up to €999,999.99 and a share of
+   100%, the pocket keeping its lead: some 151 px at 1.2rem, the others some 142 px at 1.1rem. Below
+   1,201 px the figures take the bar's whole width, its columns wider. */
+@media (min-width: 1201px) {
+    .bucket__amount {
+        font-size: 1.1rem;
+    }
+
+    .bucket--pocket .bucket__amount {
+        font-size: 1.2rem;
+    }
+}
+
 /* A bucket's share of the start, beside its amount, small and muted: the amount stays the figure. */
 .bucket__share {
     margin-left: 0.15rem;
