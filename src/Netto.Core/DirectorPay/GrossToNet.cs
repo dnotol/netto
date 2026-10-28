@@ -208,8 +208,9 @@ public static class GrossToNet
     // The household's year beside the pay's: its two columns on the whole income, what the partner would
     // owe filing alone, and what the marital quotient saves the pay's share of the household's tax: that
     // share were the quotient not applied to the year, less the share with it, which is the household's tax
-    // without the quotient less with it, the partner filing alone being the baseline of both. The credit
-    // for low earned income is the same either way. None for a director taxed alone.
+    // without the quotient less with it, the partner filing alone being the baseline of both. Both are net
+    // of the credit for children (NetTax), which the quotient can move as it moves the supplements; the
+    // credit for low earned income is the same either way. None for a director taxed alone.
     private static HouseholdTax? HouseholdOf(PersonalTaxRules taxRules, Figures figures, decimal municipalRate, TaxedWithPay withPay, Household household)
     {
         if (figures.PartnerAlone is not { } partnerAlone || figures.YearTax.Joint is not { } year)
@@ -217,9 +218,9 @@ public static class GrossToNet
 
         var without = PersonalTaxCalculator.WithoutQuotient(
             taxRules, figures.TaxablePay, figures.SocialContributions + figures.FundFee, municipalRate, withPay.OtherIncome, withPay.Movable.TaxedApart, household);
-        var shareWithout = without.IncomeTax + without.MunicipalSurcharge - partnerAlone.IncomeTax - partnerAlone.MunicipalSurcharge;
+        var shareWithout = NetTax(without) - NetTax(partnerAlone);
 
-        return new HouseholdTax(year, partnerAlone, Money.Minus(shareWithout, figures.YearTax.IncomeTax + figures.YearTax.MunicipalSurcharge));
+        return new HouseholdTax(year, partnerAlone, Money.Minus(shareWithout, NetTax(figures.YearTax)));
     }
 
     // The pay's figures alone, for the split's search, which runs the year at a hundred pays and more

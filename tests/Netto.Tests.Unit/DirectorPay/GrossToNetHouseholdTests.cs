@@ -139,6 +139,25 @@ public class GrossToNetHouseholdTests
         saves.ShouldBeGreaterThan(0m);
     }
 
+    // What the quotient saves is net of the credit for children, as the pocket is. With no pay and a
+    // partner earning 14,000 with one child, derived by hand from the official amounts (art. 130, 131,
+    // 134 §2 to §4, the notice for tax year 2027): the quotient attributes the director 4,200, so the
+    // partner's 9,800 takes the child's 2,130 and the director's unused 7,350; the child's layer on 9,800 is
+    // taxed 2,991.50 on §2's scale, 541.50 beyond the basic tax of 2,450.00, the credit. Without it the
+    // partner's 14,000 leaves 639.00 of the child's layer unabsorbed, capped at 550. Neither year has any
+    // tax, so the quotient costs the 8.50 of credit it takes away.
+    [Fact]
+    public void Compute_childCreditBelowTheCap_saysWhatTheQuotientSavesNetOfIt()
+    {
+        var household = new Household(HouseholdStatus.MarriedOrLegalCohabitant, 14_000m) with { Dependants = new Dependants(Children: 1) };
+
+        var pay = Compute(0m, Withheld, household);
+
+        var without = PersonalTaxCalculator.WithoutQuotient(Rules, pay.TaxablePay, pay.SocialContributions + pay.FundFee, 0.07m, 0m, null, household);
+        (pay.ChildTaxCredit, without.ChildTaxCredit, pay.IncomeTax + PartnerAlone(household).IncomeTax, without.IncomeTax).ShouldBe((541.50m, 550m, 0m, 0m));
+        pay.Household.ShouldNotBeNull().QuotientSaves.ShouldBe(-8.50m);
+    }
+
     // A partner earning 30% or more is attributed nothing: the quotient saves nothing.
     [Fact]
     public void Compute_partnerEarning30PercentOrMore_saysTheQuotientSavesNothing()
