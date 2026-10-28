@@ -164,8 +164,29 @@ public static class GrossToNet
             ChildTaxCredit = figures.Tax.ChildTaxCredit,
             Supplements = figures.Tax.Supplements,
             SupplementsTo = figures.Tax.SupplementsTo,
+            DependantsSave = household.Dependants == Dependants.None
+                ? 0m
+                : Money.Minus(YearShareOf(taxRules, figures, municipalRate.Value, withPay, household with { Dependants = Dependants.None }), NetTax(figures.YearTax)),
+            HouseholdSaves = household == Household.None
+                ? 0m
+                : Money.Minus(YearShareOf(taxRules, figures, municipalRate.Value, withPay, Household.None), NetTax(figures.YearTax)),
         }, null);
     }
+
+    // The river's share of the tax on the year's whole income were the household as given: the household's
+    // tax, less what the partner would owe filing alone in a joint year, which no dependant changes.
+    private static decimal YearShareOf(PersonalTaxRules taxRules, Figures figures, decimal municipalRate, TaxedWithPay withPay, Household household)
+    {
+        var tax = PersonalTaxCalculator.Compute(
+            taxRules, figures.TaxablePay, figures.SocialContributions + figures.FundFee, municipalRate, withPay.OtherIncome, withPay.Movable.TaxedApart, household);
+
+        return NetTax(tax) - (household.TaxedJointly && figures.PartnerAlone is { } partnerAlone ? NetTax(partnerAlone) : 0m);
+    }
+
+    // The tax the household's facts move: the income tax and the municipal surcharge, less the credit for
+    // children. The credit for low earned income is the director's on their own income, whatever the
+    // household.
+    private static decimal NetTax(PersonalTaxResult tax) => tax.IncomeTax + tax.MunicipalSurcharge - tax.ChildTaxCredit;
 
     // The dependants as the user declared them, refused on the field that holds them: a count below zero,
     // or more children under 3 than children.

@@ -66,6 +66,17 @@ public sealed record GrossToNetResult(
     public TaxFreeAmountSupplements Supplements { get; init; } = TaxFreeAmountSupplements.None;
 
     public Taxpayer SupplementsTo { get; init; } = Taxpayer.Director;
+
+    // What declaring the dependants saves the river, as QuotientSaves says what the quotient does: the
+    // river's share of the year's income tax and municipal surcharge, less the credit for children, without
+    // the dependants less with them, everything else as declared; nothing without dependants, a director
+    // alone included.
+    public decimal DependantsSave { get; init; }
+
+    // What declaring the household saves the river: the director's tax on the year as a single person with
+    // no dependants less the river's share as declared, the same lines; nothing for a director alone with
+    // no dependants.
+    public decimal HouseholdSaves { get; init; }
 }
 
 // The year's joint assessment of a household (CIR 92 art. 126): Year, the two partners' columns on the
