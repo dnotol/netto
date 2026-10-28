@@ -100,17 +100,17 @@ public class MapViewTests
             .ShouldBe((true, false));
     }
 
-    // A module's links: every one with it at one end, and the chain's line running past it while it is
-    // quiet, the rent left empty here.
+    // A link touches a module at one of its ends, and the chain's line touches the quiet levers it runs past,
+    // the rent left empty here: what a chosen module's lines are, kept and brought out (Drawn, Amounts).
     [Theory]
     [InlineData(RiverModule.Car)]
     [InlineData(RiverModule.Rent)]
-    public void LinksOf_aModule_isEveryLinkWithItAtOneEndOrRunningPastIt(RiverModule module)
+    public void Touches_aModule_isEveryLinkWithItAtOneEndOrRunningPastIt(RiverModule module)
     {
         var river = MapQuietTests.Emptied(Full, OptionalModule.Rent);
         var view = MapView.From(river, river.Run());
 
-        var links = view.LinksOf(module).ToList();
+        var links = view.Links.Where(link => link.Touches(module)).ToList();
 
         links.ShouldSatisfyAllConditions(
             () => links.ShouldNotBeEmpty(),
@@ -118,11 +118,11 @@ public class MapViewTests
     }
 
     [Fact]
-    public void LinksOf_aModule_holdsWhatComesInAndWhatGoesOut()
+    public void Touches_aModule_isWhatComesInAndWhatGoesOut()
     {
         var view = MapView.From(Full, Full.Run());
 
-        var car = view.LinksOf(RiverModule.Car).ToList();
+        var car = view.Links.Where(link => link.Touches(RiverModule.Car)).ToList();
 
         (car.Any(link => link.To.Module == RiverModule.Car && link.From.Module == RiverModule.Rent), car.Any(link => link.From == MapEnd.InBucket("pocket")),
                 car.Any(link => link.To.Module == RiverModule.Split))

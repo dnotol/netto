@@ -1,26 +1,19 @@
 using System.Text.RegularExpressions;
 using Netto.Web.Client.River;
 using Netto.Web.Client.Tabs;
-using Shouldly;
 
 namespace Netto.Tests.WebClient.Tabs;
 
 // The line above the chosen module's card, saying what it receives and from where, as a rendered Map tab
 // draws it, read as a viewer reads it: its text with the markup left out, and the ends that are buttons; and
-// what the Map tab's tests share besides: the plan whose levers in the chain move nothing, the reading of a
-// link as money, and what the tab holds of the line as plain parts.
+// what the Map tab's tests share besides: the plan whose levers in the chain move nothing, and what the tab
+// holds of the line as plain parts.
 internal static class MapReceivedHtml
 {
     // The expense allowances, the rent and the car left empty, the vouchers kept: the quiet levers follow one
     // another down the chain.
     public static readonly RiverInputs ChainQuiet =
         MapQuietTests.Emptied(MapLinksTests.Full, OptionalModule.Allowances, OptionalModule.Rent, OptionalModule.Car);
-
-    // A link that moves money: the others change a tax base or are a condition.
-    public static bool IsMoney(MapLink link) => MapLinkStyle.IsMoney(link.Kind);
-
-    // A link's amount, which every link but a condition has.
-    public static decimal Money(MapLink link) => link.Amount.ShouldNotBeNull();
 
     // Each part of the line the tab holds, its amount and the end it comes from.
     public static List<string> Listed(MapTab map) =>

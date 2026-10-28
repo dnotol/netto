@@ -69,10 +69,6 @@ internal sealed record MapView(IReadOnlyList<MapNode> Modules, IReadOnlyList<Map
         ? [RiverModule.CompanyYear, RiverModule.DirectorPay]
         : [.. MapModules.Order.Where(module => RiverModules.Lever(module) is not { } lever || inputs.InPlan(lever))];
 
-    // A module's links the map shows: what comes into it, what goes out, and the line running past it while
-    // it is quiet.
-    public IEnumerable<MapLink> LinksOf(RiverModule module) => Links.Where(link => link.Touches(module));
-
     // The module chosen, while the map draws it; none once it has left the map.
     public RiverModule? Choice(RiverModule? chosen) => chosen is { } module && Modules.Any(node => node.End.Module == module) ? module : null;
 
