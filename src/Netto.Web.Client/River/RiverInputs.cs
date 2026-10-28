@@ -41,7 +41,8 @@ public sealed record RiverInputs(
     Input<decimal> EarlierProfits,
     Input<ContributionsPaidBy> ContributionsPaidBy,
     Input<decimal?> BilledContributions,
-    Input<decimal?> FundFeeRate)
+    Input<decimal?> FundFeeRate,
+    HouseholdInputs Household)
 {
     // What the social insurance fund bills each quarter as provisional contributions, from its notice:
     // none until the user gives it, with no example, since it rests on the income of three years
@@ -110,7 +111,8 @@ public sealed record RiverInputs(
         ExampleNothing,
         new Input<ContributionsPaidBy>(Core.SocialContributions.ContributionsPaidBy.Director, InputOrigin.Default),
         NoBilledContributions,
-        NoFundFeeRate);
+        NoFundFeeRate,
+        new HouseholdInputs(ExampleNothing, new Input<bool>(false, InputOrigin.Default), new Input<bool>(false, InputOrigin.Default)));
 
     // The most the split can give as pay (YearSimulation.PayCeiling): the profit before pay, what the
     // vouchers, the expense allowances, the rent, the car and a fixed royalty in the plan leave of what
@@ -243,6 +245,12 @@ public sealed record RiverInputs(
 
     // A fraction: 3.05% is 0.0305. Cleared, the rate is none again.
     public RiverInputs WithFundFeeRate(decimal? rate) => this with { FundFeeRate = Yours(rate) };
+
+    public RiverInputs WithPartnerIncome(decimal income) => this with { Household = Household with { PartnerIncome = Yours(income) } };
+
+    public RiverInputs WithBothAged66(bool both) => this with { Household = Household with { BothAged66 = Yours(both) } };
+
+    public RiverInputs WithTaxedSeparately(bool separately) => this with { Household = Household with { TaxedSeparately = Yours(separately) } };
 
     public bool InPlan(OptionalModule module) => Composition.Holds(module);
 
@@ -438,6 +446,17 @@ public sealed record CopyrightInputs(
     {
         FollowsPay = FollowsPay.Value, AverageWithinCap = AverageWithinCap.Value, HoldsAttestation = HoldsAttestation.Value, CreativeShare = CreativeShare.Value,
     };
+}
+
+// The director's spouse or legal cohabitant as the user enters them: their net professional income for the
+// year, after their own contributions and costs, none unless given, which the engine reads as no
+// professional income; whether both partners are 66 on 1 January of the tax year, which raises the marital
+// quotient's cap; and whether the year is one the couple is taxed separately in, the year of the marriage or
+// of the declaration of legal cohabitation, or of the divorce, the end of the cohabitation or the separation.
+// A de facto cohabitant is no partner for tax: the director is taxed alone.
+public sealed record HouseholdInputs(Input<decimal> PartnerIncome, Input<bool> BothAged66, Input<bool> TaxedSeparately)
+{
+    public Household Values => new(HouseholdStatus.MarriedOrLegalCohabitant, PartnerIncome.Value, BothAged66.Value, TaxedSeparately.Value);
 }
 
 // A value of the river with where it comes from.

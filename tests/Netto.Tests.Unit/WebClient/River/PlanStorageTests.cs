@@ -29,7 +29,8 @@ public class PlanStorageTests
         .WithMunicipality(Namur().Enter(0.075m))
         .WithTaxWithheld(9_000m).WithTaxAdvancePayment(1, 500m).WithStarter(true)
         .WithReserve(10_000m).WithDividendCategory(WithholdingCategory.Standard).WithEarlierProfits(5_000m)
-        .WithContributionsPaidBy(ContributionsPaidBy.Company);
+        .WithContributionsPaidBy(ContributionsPaidBy.Company)
+        .WithPartnerIncome(18_250.50m).WithBothAged66(true).WithTaxedSeparately(true);
 
     [Fact]
     public void Read_nothingStored_isNoPlanAndReadable()
@@ -72,13 +73,15 @@ public class PlanStorageTests
 
     // What the example holds none of is stored as the example's, as the builds before stored it: the
     // example as version 6 wrote it, with version 7's band of INASTI's company contribution, the default
-    // lower one, after the financial year, and its fund fee, none given, last.
+    // lower one, after the financial year, its fund fee, none given, and version 8's partner, none, last.
     [Fact]
     public void Store_example_writesWhatItHoldsNoneOfAsTheBuildBeforeDid()
     {
         var before = PlanInputs(StoredPlanDocuments.Version6, 0).AsObject();
         before.Insert(before.IndexOf("financialYear") + 1, "companyContributionBand", JsonNode.Parse("""{"value":"Lower","origin":"Default"}"""));
         before.Add("fundFeeRate", JsonNode.Parse("""{"value":null,"origin":"Yours"}"""));
+        before.Add("household", JsonNode.Parse(
+            """{"partnerIncome":{"value":0,"origin":"Example"},"bothAged66":{"value":false,"origin":"Default"},"taxedSeparately":{"value":false,"origin":"Default"}}"""));
 
         PlanStorage.Store(StoredPlanDocuments.SavedExample).GetRawText().ShouldBe(before.ToJsonString());
     }
@@ -195,12 +198,11 @@ public class PlanStorageTests
         JsonNode.Parse(PlanStorage.Write(PlanBook.Empty))!["version"]!.GetValue<int>().ShouldBe(PlanStorage.Version);
     }
 
-    // Version 7 holds the band of INASTI's company contribution the company's balance sheet is in, and the
-    // rate of the fund's management fee.
+    // Version 8 holds the partner.
     [Fact]
-    public void Version_isSeven()
+    public void Version_isEight()
     {
-        PlanStorage.Version.ShouldBe(7);
+        PlanStorage.Version.ShouldBe(8);
     }
 
     [Fact]
@@ -355,6 +357,7 @@ public class PlanStorageTests
     [InlineData(5)]
     [InlineData(6)]
     [InlineData(7)]
+    [InlineData(8)]
     public void Read_documentOfEachVersion_readsEachPlanAsItWasSaved(int version)
     {
         var (read, unreadable) = PlanStorage.Read(StoredPlanDocuments.Of(version));
@@ -374,6 +377,7 @@ public class PlanStorageTests
     [InlineData(5)]
     [InlineData(6)]
     [InlineData(7)]
+    [InlineData(8)]
     public void Write_afterReadingADocumentOfEachVersion_writesEachPlanInThisVersion(int version)
     {
         var rewritten = PlanStorage.Write(PlanStorage.Read(StoredPlanDocuments.Of(version)).Book);
@@ -389,7 +393,7 @@ public class PlanStorageTests
     [Fact]
     public void Write_afterReadingADocumentOfThisVersion_writesItBackAsRead()
     {
-        PlanStorage.Write(PlanStorage.Read(StoredPlanDocuments.Version7).Book).ShouldBe(StoredPlanDocuments.Version7);
+        PlanStorage.Write(PlanStorage.Read(StoredPlanDocuments.Version8).Book).ShouldBe(StoredPlanDocuments.Version8);
     }
 
     // A version's plan carrying a member a later version brought, as that version stored it, is not a plan it
@@ -417,6 +421,9 @@ public class PlanStorageTests
     [InlineData(1, "fundFeeRate", 7)]
     [InlineData(4, "fundFeeRate", 7)]
     [InlineData(6, "fundFeeRate", 7)]
+    [InlineData(1, "household", 8)]
+    [InlineData(5, "household", 8)]
+    [InlineData(7, "household", 8)]
     public void Read_documentOfAVersionWithAMemberALaterVersionBrought_makesThatPlanUnreadable(int version, string member, int broughtBy)
     {
         var brought = Member(PlanInputs(StoredPlanDocuments.Of(broughtBy), 1), member).DeepClone();
@@ -438,6 +445,9 @@ public class PlanStorageTests
     [InlineData(7, "reserve")]
     [InlineData(7, "companyContributionBand")]
     [InlineData(7, "fundFeeRate")]
+    [InlineData(8, "reserve")]
+    [InlineData(8, "household")]
+    [InlineData(8, "household.taxedSeparately")]
     [InlineData(1, "composition")]
     [InlineData(2, "composition")]
     [InlineData(2, "car")]
@@ -512,6 +522,7 @@ public class PlanStorageTests
     [InlineData(5)]
     [InlineData(6)]
     [InlineData(7)]
+    [InlineData(8)]
     public void Read_documentOfEachVersion_readsAnExampleNothingAsNone(int version)
     {
         var today = PlanStorage.Read(StoredPlanDocuments.Of(version)).Book.Plans[0].Inputs.ShouldNotBeNull();

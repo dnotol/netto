@@ -180,6 +180,9 @@ public class RiverDifferencesTests
         ["Composition.Copyright"] = "the creative share and statuses are kept while Copyright royalty is out and its amount and mode are the move's: the same in or out",
         ["BilledContributions"] = "no move reads it: what the fund bills reaches only the calendar",
         ["Car.PrivateCost"] = "no move reads it: only the car card weighs the car against it",
+        ["Household.PartnerIncome"] = "the river holds the partner, but hands the engine none yet",
+        ["Household.BothAged66"] = "the river holds the partner, but hands the engine none yet",
+        ["Household.TaxedSeparately"] = "the river holds the partner, but hands the engine none yet",
     };
 
     // The guard of this file. Every input of the river is held to the tab: given another value, it is named

@@ -47,7 +47,8 @@ internal sealed record PlanBook(IReadOnlyList<SavedPlan> Plans, string? Today, s
 // INASTI's company contribution, so theirs open in the lower band, the default a plan starts from, a
 // plan whose running costs held the contribution then counting it twice until they are lowered
 // (decided unattended, 2026-10-25), nor the rate of the fund's management fee, so theirs are read
-// with none given. The car's engine, CO2, order date and statuses joined version 2 without raising it,
+// with none given, and versions 1 to 7 no partner, so theirs are read with no income given for one and
+// neither of the household's statuses. The car's engine, CO2, order date and statuses joined version 2 without raising it,
 // since version 2 had not left the car's story branch; a plan saved by the car's first build does not
 // open (operator, 2026-10-22). The rest of the royalty's story joins version 3 the same way, and the
 // fund's fee version 7 (decided unattended, 2026-10-22 and 2026-10-25).
@@ -60,14 +61,14 @@ internal static class PlanStorage
 
     // 2: the company car. 3: the copyright royalty. 4: what the fund bills each quarter. 5: whether the
     // royalty follows the pay. 6: what the same car would cost privately. 7: the band of INASTI's company
-    // contribution and the rate of the fund's management fee.
-    public const int Version = 7;
+    // contribution and the rate of the fund's management fee. 8: the partner.
+    public const int Version = 8;
 
     private const int FirstVersion = 1;
 
     // The patch from each older version to the next: Patches[n - FirstVersion] brings a plan version n
     // stored to version n + 1's shape, or refuses it. A new version adds its own.
-    private static readonly Func<JsonObject, bool>[] Patches = [ToVersion2, ToVersion3, ToVersion4, ToVersion5, ToVersion6, ToVersion7];
+    private static readonly Func<JsonObject, bool>[] Patches = [ToVersion2, ToVersion3, ToVersion4, ToVersion5, ToVersion6, ToVersion7, ToVersion8];
 
     // A plan of an older version holding a member twice is refused as it is parsed.
     private static readonly JsonDocumentOptions OneOfEachMember = new() { AllowDuplicateProperties = false };
@@ -100,6 +101,16 @@ internal static class PlanStorage
             "averageWithinCap": {"value": true, "origin": "Default"},
             "holdsAttestation": {"value": false, "origin": "Default"},
             "creativeShare": {"value": null, "origin": "Yours"}
+        }
+        """;
+
+    // The partner a plan of version 7 never held, as version 8 stored the example's: no income given for
+    // one, neither partner assumed 66, the year assumed taxed jointly.
+    private const string HouseholdOfVersion8 = """
+        {
+            "partnerIncome": {"value": 0, "origin": "Example"},
+            "bothAged66": {"value": false, "origin": "Default"},
+            "taxedSeparately": {"value": false, "origin": "Default"}
         }
         """;
 
@@ -189,6 +200,9 @@ internal static class PlanStorage
     private static bool ToVersion7(JsonObject plan) =>
         Add(plan, "companyContributionBand", """{"value": "Lower", "origin": "Default"}""") && Add(plan, "fundFeeRate", NoneGiven);
 
+    // Version 8 brought the partner: a plan of version 7 holds none.
+    private static bool ToVersion8(JsonObject plan) => Add(plan, "household", HouseholdOfVersion8);
+
     // Adds a member the version before never held, or refuses a plan that already holds it: that version
     // never wrote one.
     private static bool Add(JsonNode? parent, string member, string json)
@@ -238,7 +252,8 @@ internal static class PlanStorage
         Stored(inputs.EarlierProfits),
         Stored(inputs.ContributionsPaidBy),
         Stored(inputs.BilledContributions),
-        Stored(inputs.FundFeeRate));
+        Stored(inputs.FundFeeRate),
+        new StoredHousehold(Stored(inputs.Household.PartnerIncome), Stored(inputs.Household.BothAged66), Stored(inputs.Household.TaxedSeparately)));
 
     // Null when the year has no municipal rates or no longer lists the municipality saved: a plan is
     // never opened with another rate than the one it was saved with. A plan is a Walloon resident's, the
@@ -274,7 +289,8 @@ internal static class PlanStorage
             Input(stored.EarlierProfits),
             Input(stored.ContributionsPaidBy),
             Input(stored.BilledContributions),
-            Input(stored.FundFeeRate));
+            Input(stored.FundFeeRate),
+            new HouseholdInputs(Input(stored.Household.PartnerIncome), Input(stored.Household.BothAged66), Input(stored.Household.TaxedSeparately)));
     }
 
     // What the example holds none of is stored as the example's, as the format held it before
@@ -308,7 +324,7 @@ internal static class PlanStorage
         new(Input(stored.First), Input(stored.Second), Input(stored.Third), Input(stored.Fourth));
 }
 
-// The stored document and plan, version 7. Renaming or removing a member changes the format.
+// The stored document and plan, version 8. Renaming or removing a member changes the format.
 internal sealed record StoredBook(int Version, string? Today, string? Opened, IReadOnlyList<StoredPlan> Plans);
 
 internal sealed record StoredPlan(string Id, string Name, JsonElement Inputs);
@@ -334,7 +350,10 @@ internal sealed record StoredInputs(
     StoredValue<decimal> EarlierProfits,
     StoredValue<ContributionsPaidBy> ContributionsPaidBy,
     StoredValue<decimal?> BilledContributions,
-    StoredValue<decimal?> FundFeeRate);
+    StoredValue<decimal?> FundFeeRate,
+    StoredHousehold Household);
+
+internal sealed record StoredHousehold(StoredValue<decimal> PartnerIncome, StoredValue<bool> BothAged66, StoredValue<bool> TaxedSeparately);
 
 internal sealed record StoredValue<T>(T Value, InputOrigin Origin);
 

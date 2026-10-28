@@ -15,11 +15,11 @@ namespace Netto.Tests.WebClient.River;
 // version 5 (2026-10-23), what the same car would cost privately version 6 (2026-10-23), and the band
 // of INASTI's company contribution version 7 (2026-10-25), which the rate of the fund's management fee
 // joined without raising it, since version 7 had not left its story branch (decided unattended,
-// 2026-10-25).
+// 2026-10-25). The partner raised version 8 (2026-10-28).
 public class RiverInputsShapeTests
 {
     [Theory]
-    [InlineData(typeof(RiverInputs), "IncomeYear:Int32 Company:CompanyFigures Composition:PlanComposition Vouchers:VoucherInputs Allowances:AllowanceInputs Rent:RentInputs Car:CarInputs Copyright:CopyrightInputs SmallCompany:Input`1[Boolean] FinancialYear:Input`1[FinancialYear] CompanyContributionBand:Input`1[CompanyContributionBand] AdvancePayments:AdvancePaymentInputs DirectorPay:Input`1[Decimal] Municipality:MunicipalityChoice TaxPrepayments:TaxPrepaymentInputs Reserve:Input`1[Decimal] DividendCategory:Input`1[WithholdingCategory] EarlierProfits:Input`1[Decimal] ContributionsPaidBy:Input`1[ContributionsPaidBy] BilledContributions:Input`1[Nullable`1[Decimal]] FundFeeRate:Input`1[Nullable`1[Decimal]]")]
+    [InlineData(typeof(RiverInputs), "IncomeYear:Int32 Company:CompanyFigures Composition:PlanComposition Vouchers:VoucherInputs Allowances:AllowanceInputs Rent:RentInputs Car:CarInputs Copyright:CopyrightInputs SmallCompany:Input`1[Boolean] FinancialYear:Input`1[FinancialYear] CompanyContributionBand:Input`1[CompanyContributionBand] AdvancePayments:AdvancePaymentInputs DirectorPay:Input`1[Decimal] Municipality:MunicipalityChoice TaxPrepayments:TaxPrepaymentInputs Reserve:Input`1[Decimal] DividendCategory:Input`1[WithholdingCategory] EarlierProfits:Input`1[Decimal] ContributionsPaidBy:Input`1[ContributionsPaidBy] BilledContributions:Input`1[Nullable`1[Decimal]] FundFeeRate:Input`1[Nullable`1[Decimal]] Household:HouseholdInputs")]
     [InlineData(typeof(CompanyFigures), "Revenue:Input`1[Decimal] RunningCosts:Input`1[Decimal]")]
     [InlineData(typeof(PlanComposition), "Vouchers:Boolean Allowances:Boolean Rent:Boolean Car:Boolean Copyright:Boolean")]
     [InlineData(typeof(CopyrightInputs), "Royalty:Input`1[Decimal] FollowsPay:Input`1[Boolean] AverageWithinCap:Input`1[Boolean] HoldsAttestation:Input`1[Boolean] CreativeShare:Input`1[Nullable`1[Decimal]]")]
@@ -29,6 +29,7 @@ public class RiverInputsShapeTests
     [InlineData(typeof(CarInputs), "CatalogueValue:Input`1[Decimal] FirstRegistration:Input`1[DateOnly] YearlyCosts:Input`1[Decimal] CompanyPaysPrivateEnergy:Input`1[Boolean] PersonalContribution:Input`1[Decimal] Engine:Input`1[CarEngine] Co2:Input`1[Int32] NoCo2Data:Input`1[Boolean] Acquired:Input`1[DateOnly] FakeHybrid:Input`1[Boolean] MatchingCarCo2:Input`1[Int32] NoMatchingCar:Input`1[Boolean] SmallNaturalGas:Input`1[Boolean] PrivateCost:Input`1[Nullable`1[Decimal]]")]
     [InlineData(typeof(AdvancePaymentInputs), "First:Input`1[Decimal] Second:Input`1[Decimal] Third:Input`1[Decimal] Fourth:Input`1[Decimal]")]
     [InlineData(typeof(TaxPrepaymentInputs), "Withheld:Input`1[Nullable`1[Decimal]] Paid:AdvancePaymentInputs Starter:Input`1[Boolean]")]
+    [InlineData(typeof(HouseholdInputs), "PartnerIncome:Input`1[Decimal] BothAged66:Input`1[Boolean] TaxedSeparately:Input`1[Boolean]")]
     [InlineData(typeof(MunicipalityChoice), "Rates:MunicipalRates Municipality:Municipality Rate:Decimal Origin:InputOrigin")]
     public void Constructor_savedPlansKnowIt_isTheShapePlanStorageStores(Type type, string shape)
     {
