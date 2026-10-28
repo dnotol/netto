@@ -18,6 +18,10 @@ public class PaySlipTextTests
     // The name IStringLocalizer<PaySlip> reads DirectorPay/PaySlip.resx under.
     private static readonly ResxText Resources = ResxText.For<PaySlip>();
 
+    // The pay slip's stylesheet as rules, read through the tests' one reader.
+    private static IReadOnlyList<(string Selector, string Declarations)> PaySlipRules =>
+        Stylesheet.Rules(Stylesheet.Read("src", "Netto.Web.Client", "DirectorPay", "PaySlip.razor.css"));
+
     private static readonly Dictionary<string, RuleAmount> RatesByOrigin = new()
     {
         ["municipality"] = MunicipalRates.IncomeYear2026.Municipalities[0].Rate,
@@ -111,14 +115,11 @@ public class PaySlipTextTests
     [Fact]
     public void PaySlipCss_creditForChildrenTheNextThousandTakesAway_isDrawnAsTheOtherCreditLost()
     {
-        var css = File.ReadAllText(RepositoryFile.FindUp("src", "Netto.Web.Client", "DirectorPay", "PaySlip.razor.css"));
+        var (selector, _) = PaySlipRules.Single(rule => rule.Selector.Contains(".next__segment--low_earned_income_credit_lost", StringComparison.Ordinal));
 
-        var rule = System.Text.RegularExpressions.Regex.Matches(css, @"([^{}]+)\{([^{}]*)\}")
-            .Single(match => match.Groups[1].Value.Contains(".next__segment--low_earned_income_credit_lost", StringComparison.Ordinal));
-
-        rule.ShouldSatisfyAllConditions(
-            () => rule.Groups[1].Value.ShouldContain(".next__segment--child_tax_credit_lost"),
-            () => rule.Groups[1].Value.ShouldContain(".next__part--child_tax_credit_lost .next__swatch"));
+        selector.ShouldSatisfyAllConditions(
+            () => selector.ShouldContain(".next__segment--child_tax_credit_lost"),
+            () => selector.ShouldContain(".next__part--child_tax_credit_lost .next__swatch"));
     }
 
     // When the company pays, the note under the next 1,000 names what it adds on top of the 1,000: the
@@ -138,15 +139,12 @@ public class PaySlipTextTests
     [Fact]
     public void PaySlipCss_fundFeesPartOfTheNextThousand_isColouredAsTheContributions()
     {
-        var css = File.ReadAllText(RepositoryFile.FindUp("src", "Netto.Web.Client", "DirectorPay", "PaySlip.razor.css"));
+        var (selector, declarations) = PaySlipRules.Single(rule => rule.Selector.Contains(".next__segment--social_contributions", StringComparison.Ordinal));
 
-        var rule = System.Text.RegularExpressions.Regex.Matches(css, @"([^{}]+)\{([^{}]*)\}")
-            .Single(match => match.Groups[1].Value.Contains(".next__segment--social_contributions", StringComparison.Ordinal));
-
-        rule.ShouldSatisfyAllConditions(
-            () => rule.Groups[1].Value.ShouldContain(".next__segment--fund_fee"),
-            () => rule.Groups[1].Value.ShouldContain(".next__part--fund_fee .next__swatch"),
-            () => rule.Groups[2].Value.ShouldContain("var(--netto-data-high)"));
+        selector.ShouldSatisfyAllConditions(
+            () => selector.ShouldContain(".next__segment--fund_fee"),
+            () => selector.ShouldContain(".next__part--fund_fee .next__swatch"),
+            () => declarations.ShouldContain("var(--netto-data-high)"));
     }
 
     // A royalty beyond its limits adds its row to both tracks and says what the next 1,000 holds; one
