@@ -424,6 +424,20 @@ internal sealed record HouseholdView(TaxpayerColumn Director, TaxpayerColumn Par
             : null;
 }
 
+// What the Household card draws of the dependants the year counts, with a partner or without: the
+// dependants declared, the supplements they add to the tax-free amount and the taxpayer they go to, the
+// refundable credit for children the river's tax takes off, less than nothing when the pay takes part of a
+// joint year's away, and what declaring them saves the river's tax; and the year's supplement rules, which
+// its bubbles state. None while no dependant is declared, or for a year or region without rules.
+internal sealed record DependantsView(
+    Dependants Declared, TaxFreeAmountSupplements Supplements, Taxpayer To, decimal ChildTaxCredit, decimal Saves, TaxFreeAmountSupplementRules Rules)
+{
+    public static DependantsView? From(GrossToNetResult pay, Dependants declared) =>
+        declared != Dependants.None && PersonalTaxRules.For(pay.IncomeYear, pay.Region) is { } rules
+            ? new DependantsView(declared, pay.Supplements, pay.SupplementsTo, pay.ChildTaxCredit, pay.DependantsSave, rules.Supplements)
+            : null;
+}
+
 // The card's field for what was withheld on the pay: the amount the user gave, or, while it is left
 // to the pay slip, the year's withholding the engine derives from it, the sum of its twelve months'. While
 // another input is refused there is no pay slip to derive from, and the field shows nothing.

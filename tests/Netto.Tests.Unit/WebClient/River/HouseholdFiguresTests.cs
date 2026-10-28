@@ -89,6 +89,28 @@ public class HouseholdFiguresTests
             () => line.HelpArgs.ShouldBe(["30%", cap]));
     }
 
+    // The quotient can lower the credit for children more than it lowers the tax: one child, no pay, a partner
+    // earning 14,000, and it costs the household 8.50. The line says what it costs, never « saves » a
+    // negative amount.
+    [Fact]
+    public void Of_quotientCostingTheHousehold_saysWhatItCosts()
+    {
+        var view = View(WithPartner) with { QuotientSaves = -8.50m };
+
+        Lines(HouseholdFigures.Of(view))[^1].ShouldBe(("Figure_QuotientCosts", 8.50m));
+    }
+
+    // Altogether, what declaring the household saves the river's tax, or what it costs.
+    [Theory]
+    [InlineData(1_234.56, "Figure_HouseholdSaves", 1_234.56)]
+    [InlineData(-8.50, "Figure_HouseholdCosts", 8.50)]
+    public void Altogether_saysWhatTheHouseholdSavesOrCosts(decimal saves, string key, decimal amount)
+    {
+        var line = HouseholdFigures.Altogether(saves);
+
+        (line.Key, line.Amount, line.Help).ShouldBe((key, amount, "Help_Altogether"));
+    }
+
     // Taxed separately, the director is taxed alone: the card has no joint year to draw.
     [Fact]
     public void From_yearTaxedSeparately_isNone()

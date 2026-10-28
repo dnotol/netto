@@ -16,7 +16,19 @@
     <value>Household</value>
   </data>
   <data name="Summary_Quotient" xml:space="preserve">
-    <value>Quotient {0} · {1} less tax</value>
+    <value>Quotient {0}</value>
+  </data>
+  <data name="SummarySeparator" xml:space="preserve">
+    <value> · </value>
+  </data>
+  <data name="Summary_Dependants" xml:space="preserve">
+    <value>Dependants {0}</value>
+  </data>
+  <data name="Summary_LessTax" xml:space="preserve">
+    <value>{0} less tax</value>
+  </data>
+  <data name="Summary_MoreTax" xml:space="preserve">
+    <value>{0} more tax</value>
   </data>
   <data name="Summary_NoQuotient" xml:space="preserve">
     <value>Taxed jointly · no marital quotient</value>
@@ -31,13 +43,13 @@
     <value>Taxed separately this year: each of you files alone, with no [marital quotient].</value>
   </data>
   <data name="Note_Counted" xml:space="preserve">
-    <value>Netto counts what your pay adds to your household's tax: your partner's own tax and what is withheld on their income are left out.</value>
+    <value>Netto counts your household's tax less what your partner would owe filing alone on their own income: that, and what is withheld on their income, are left out.</value>
   </data>
   <data name="Meaning_Quotient" xml:space="preserve">
     <value>In a joint return, part of the larger professional income is attributed to the partner who earns less, so it is taxed in their lower bands.</value>
   </data>
   <data name="Hint" xml:space="preserve">
-    <value>Married or legally cohabiting, you and your partner are taxed jointly: one assessment in both names, each of you taxed on the scale on your own income with your own tax-free amount. The marital quotient attributes part of the larger professional income to the partner who earns less, taxed in their lower bands. Living together without a declaration of legal cohabitation is single for tax.</value>
+    <value>Your partner and the people who depend on you. Married or legally cohabiting, you and your partner are taxed jointly: one assessment in both names, each of you taxed on the scale on your own income with your own tax-free amount. The marital quotient attributes part of the larger professional income to the partner who earns less, taxed in their lower bands. Living together without a declaration of legal cohabitation is single for tax. Your dependants raise the tax-free amount, the part of the income taxed at nothing, with or without a partner.</value>
   </data>
   <data name="PartnerIncomeLabel" xml:space="preserve">
     <value>Your partner's net professional income for {0}</value>
@@ -106,6 +118,120 @@
     <value>What your household's income tax and municipal surcharge would be without the marital quotient, less what they are with it. It all comes off the tax on your pay: Netto counts what your pay adds to your household's tax.</value>
   </data>
   <data name="Remove" xml:space="preserve">
-    <value>Remove your partner from your plan</value>
+    <value>Remove your household from your plan</value>
+  </data>
+  <data name="PartnerLabel" xml:space="preserve">
+    <value>You have a spouse or legal cohabitant</value>
+  </data>
+  <data name="PartnerHint" xml:space="preserve">
+    <value>A husband, a wife or a legal cohabitant, with whom you are taxed jointly. Someone you live with without a declaration of legal cohabitation is not: leave this unticked, and you are taxed alone with your dependants.</value>
+  </data>
+  <data name="DependantsTitle" xml:space="preserve">
+    <value>Your dependants on 1 January {0}</value>
+  </data>
+  <data name="ChildrenLabel" xml:space="preserve">
+    <value>Dependent children</value>
+  </data>
+  <data name="ChildrenHint" xml:space="preserve">
+    <value>The children who live with you on 1 January of the tax year and whose own net means stay within the limit, as your return counts them. A child whose care is shared equally, or a disabled child, who counts twice, is not counted as such yet.</value>
+  </data>
+  <data name="ChildrenUnder3Label" xml:space="preserve">
+    <value>Of them, under 3 with no childcare costs claimed</value>
+  </data>
+  <data name="ChildrenUnder3Hint" xml:space="preserve">
+    <value>Children under 3 on 1 January of the tax year for whom you claim no childcare costs in your return. They are counted among your dependent children too.</value>
+  </data>
+  <data name="SingleParentLabel" xml:space="preserve">
+    <value>You raise your children alone</value>
+  </data>
+  <data name="SingleParentHint" xml:space="preserve">
+    <value>Taxed alone, with dependent children, and nobody else at home but your children and relatives: no partner, legal or de facto. It never applies to a joint return.</value>
+  </data>
+  <data name="InCareLabel" xml:space="preserve">
+    <value>Dependants aged 66 or more in care</value>
+  </data>
+  <data name="InCareHint" xml:space="preserve">
+    <value>Your parents, grandparents, brothers or sisters aged 66 or more on 1 January of the tax year, living with you, in a situation of dependence, and whose own net means stay within the limit.</value>
+  </data>
+  <data name="OthersLabel" xml:space="preserve">
+    <value>Other dependants</value>
+  </data>
+  <data name="OthersHint" xml:space="preserve">
+    <value>Anyone else who lives with you and depends on you, such as a parent under 66 or one not in a situation of dependence, whose own net means stay within the limit.</value>
+  </data>
+  <data name="Figure_QuotientCosts" xml:space="preserve">
+    <value>The marital quotient costs</value>
+  </data>
+  <data name="Figure_HouseholdSaves" xml:space="preserve">
+    <value>Altogether, your household saves</value>
+  </data>
+  <data name="Figure_HouseholdCosts" xml:space="preserve">
+    <value>Altogether, your household costs</value>
+  </data>
+  <data name="Help_Altogether" xml:space="preserve">
+    <value>What your tax would be filing alone with no dependants, less what Netto counts of your household's: the income tax and the municipal surcharge, less the credit for children.</value>
+  </data>
+  <data name="Figure_SupplementChildren" xml:space="preserve">
+    <value>Supplement for your children ({0})</value>
+  </data>
+  <data name="Help_SupplementChildren" xml:space="preserve">
+    <value>Added to the tax-free amount: {0} for one child, {1} for two, {2} for three, {3} for four, and {4} more for each child beyond the fourth.</value>
+  </data>
+  <data name="Figure_SupplementUnder3" xml:space="preserve">
+    <value>Supplement for children under 3 ({0})</value>
+  </data>
+  <data name="Help_SupplementUnder3" xml:space="preserve">
+    <value>{0} more for each child under 3 for whom you claim no childcare costs.</value>
+  </data>
+  <data name="Figure_SupplementSingleParent" xml:space="preserve">
+    <value>Supplement for raising them alone</value>
+  </data>
+  <data name="Help_SupplementSingleParent" xml:space="preserve">
+    <value>{0} for a parent taxed alone with dependent children.</value>
+  </data>
+  <data name="Figure_SupplementInCare" xml:space="preserve">
+    <value>Supplement for dependants aged 66 or more in care ({0})</value>
+  </data>
+  <data name="Help_SupplementInCare" xml:space="preserve">
+    <value>{0} for each dependant aged 66 or more in a situation of dependence.</value>
+  </data>
+  <data name="Figure_SupplementOthers" xml:space="preserve">
+    <value>Supplement for other dependants ({0})</value>
+  </data>
+  <data name="Help_SupplementOthers" xml:space="preserve">
+    <value>{0} for each other dependant.</value>
+  </data>
+  <data name="Figure_SupplementsToYou" xml:space="preserve">
+    <value>Added to your tax-free amount</value>
+  </data>
+  <data name="Help_SupplementsToYou" xml:space="preserve">
+    <value>The tax-free amount is the part of your income taxed at nothing. The supplements raise yours: the tax on them, at the tax-free amount's own rates, comes off your tax.</value>
+  </data>
+  <data name="Figure_SupplementsToPartner" xml:space="preserve">
+    <value>Added to your partner's tax-free amount</value>
+  </data>
+  <data name="Help_SupplementsToPartner" xml:space="preserve">
+    <value>In a joint return the supplements go to the one of you with the higher taxable income: this year, your partner.</value>
+  </data>
+  <data name="Figure_ChildTaxCredit" xml:space="preserve">
+    <value>Refundable tax credit for children</value>
+  </data>
+  <data name="Help_ChildTaxCredit" xml:space="preserve">
+    <value>When your income is too low for the tax to use all of your children's supplements, what it cannot use is refunded as a tax credit, at most {0} per child.</value>
+  </data>
+  <data name="Figure_ChildTaxCreditTakenAway" xml:space="preserve">
+    <value>Refundable tax credit for children your pay takes away</value>
+  </data>
+  <data name="Help_ChildTaxCreditTakenAway" xml:space="preserve">
+    <value>In a joint return the credit is your household's. Your pay lets the tax use more of the supplements, so less is refunded: this is what it takes away.</value>
+  </data>
+  <data name="Figure_DependantsSave" xml:space="preserve">
+    <value>Your dependants save</value>
+  </data>
+  <data name="Figure_DependantsCost" xml:space="preserve">
+    <value>Your dependants cost</value>
+  </data>
+  <data name="Help_DependantsSave" xml:space="preserve">
+    <value>What Netto counts of your income tax and municipal surcharge, less the credit for children, without your dependants, less what it counts with them.</value>
   </data>
 </root>

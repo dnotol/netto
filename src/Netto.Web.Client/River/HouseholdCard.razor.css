@@ -6,6 +6,19 @@
     gap: 0.25rem 0.5rem;
 }
 
+/* The dependants' fields, a group under its label, spaced as the card's other fields. */
+.household__dependants {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.household__group-title {
+    margin: 0;
+    color: var(--netto-text);
+    font-weight: 600;
+}
+
 /* What a figure cannot say, under the lines it is about: that no quotient goes either way, that the year is
    taxed separately, and what the river counts of the household's tax. */
 .household__note {

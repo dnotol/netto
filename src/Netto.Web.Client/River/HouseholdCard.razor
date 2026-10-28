@@ -1,53 +1,95 @@
+@using Netto.Core.PersonalTax
 @using Netto.Core.Rules
 @inject IStringLocalizer<HouseholdCard> L
 
-@* The director's spouse or legal cohabitant, whom they are taxed jointly with while the partner is in the
-   plan: one assessment in both names, each taxed on the scale on their own income, the marital quotient
-   moving part of the larger professional income to the smaller. The user types the partner's net
-   professional income, none until given, which Netto reads as no professional income; a refusal of it marks
-   its field. Its figures come first after it, as lines (HouseholdFigures): the director's income, the
-   marital quotient taken off it for the partner or added to it from theirs, the director's taxable income,
-   the partner's income and taxable income, and what the quotient saves the pay's tax; then a note for what
-   they cannot say: that the quotient attributes nothing, or that the year is taxed separately, and what the
-   river counts of the household's tax. Behind one disclosure, « About you two », folded to a line that states them, the two statuses
-   Netto cannot see: whether both partners are 66 on 1 January of the tax year, which raises the quotient's
-   cap, and whether the year is one the couple is taxed separately in, each assumed not until the user says
-   so. An optional module: it shows only while in the plan, and the word at its bottom takes it out, its
-   values kept. It counts with the company skipped too: the pay alone is taxed jointly. *@
+@* The director's household: their spouse or legal cohabitant, whom they are taxed jointly with, and the
+   people who depend on them, with a partner or without. The partner is a status the user ticks, assumed
+   until they say otherwise; with one, the user types their net professional income, none until given, which
+   Netto reads as no professional income, and the year is one assessment in both names, each taxed on the
+   scale on their own income, the marital quotient moving part of the larger professional income to the
+   smaller; without one, the director is taxed alone and the partner's facts wait, kept. The dependants on
+   1 January of the tax year are counts, in a group of their own under its label: the children, of them those
+   under 3, the dependants aged 66 or more in care and the other dependants, and whether the director raises
+   the children alone, a status shown only while the year is not taxed jointly, which never takes it. A
+   refusal marks its field. The figures come first after them, as lines: the joint year's (HouseholdFigures),
+   then the dependants' (DependantsFigures), then, in a joint year, what the household saves altogether; then
+   a note for what they cannot say: that the quotient attributes nothing, or that the year is taxed
+   separately, and what the river counts of a joint year's tax. Behind one disclosure, « About you two »,
+   shown while there is a partner, the two statuses Netto cannot see. An optional module: it shows only while
+   in the plan, and the word at its bottom takes it out, its values kept. It counts with the company skipped
+   too. *@
 <ModuleCard Name="@ModuleFolds.Name(OptionalModule.Household)" Title="@L["Title"]" Summary="@Summary" Help="@L["Hint"]"
-            Refused="@Refused" Sources="@(_view?.Details ?? [])" IncomeYear="Inputs.IncomeYear" RemoveLabel="@L["Remove"]" OnRemove="Remove">
-    <RiverField Label="@L["PartnerIncomeLabel", Inputs.IncomeYear]" For="river-partner-income" Origin="Inputs.Household.PartnerIncome.Origin" Help="@L["PartnerIncomeHint"]">
-        <RiverNumericField T="decimal" InputId="river-partner-income" Value="Inputs.Household.PartnerIncome.Value" ValueChanged="OnPartnerIncomeChanged"
-                           Euros="true"
-                           Error="@(Refused?.Input == RefusedInput.PartnerIncome)" Refusal="@Refused" />
-    </RiverField>
+            Refused="@Refused" Sources="@(_joint?.Details ?? [])" IncomeYear="Inputs.IncomeYear" RemoveLabel="@L["Remove"]" OnRemove="Remove">
+    <div class="household__tick">
+        <MudCheckBox T="bool" Value="Inputs.Household.HasPartner" ValueChanged="OnPartnerChanged" Color="Color.Primary" Label="@L["PartnerLabel"]" />
+        <OriginChip Origin="Inputs.Household.Status.Origin" />
+        <InfoBubble Label="@L["PartnerLabel"]">@L["PartnerHint"]</InfoBubble>
+    </div>
+    @if (Inputs.Household.HasPartner)
+    {
+        <RiverField Label="@L["PartnerIncomeLabel", Inputs.IncomeYear]" For="river-partner-income" Origin="Inputs.Household.PartnerIncome.Origin" Help="@L["PartnerIncomeHint"]">
+            <RiverNumericField T="decimal" InputId="river-partner-income" Value="Inputs.Household.PartnerIncome.Value" ValueChanged="OnPartnerIncomeChanged"
+                               Euros="true"
+                               Error="@(Refused?.Input == RefusedInput.PartnerIncome)" Refusal="@Refused" />
+        </RiverField>
+    }
+    <div class="household__dependants" role="group" aria-labelledby="household-dependants-title">
+        <p id="household-dependants-title" class="household__group-title">@L["DependantsTitle", Inputs.IncomeYear + 1]</p>
+        <RiverField Label="@L["ChildrenLabel"]" For="river-children" Origin="Dependants.Children.Origin" Help="@L["ChildrenHint"]">
+            <RiverNumericField T="int" InputId="river-children" Value="Dependants.Children.Value" ValueChanged="OnChildrenChanged" Format="0"
+                               Error="@(Refused?.Input == RefusedInput.Children)" Refusal="@Refused" />
+        </RiverField>
+        <RiverField Label="@L["ChildrenUnder3Label"]" For="river-children-under-3" Origin="Dependants.ChildrenUnder3.Origin" Help="@L["ChildrenUnder3Hint"]">
+            <RiverNumericField T="int" InputId="river-children-under-3" Value="Dependants.ChildrenUnder3.Value" ValueChanged="OnChildrenUnder3Changed" Format="0"
+                               Error="@(Refused?.Input == RefusedInput.ChildrenUnder3)" Refusal="@Refused" />
+        </RiverField>
+        @if (!Inputs.Household.Values.TaxedJointly)
+        {
+            <div class="household__tick">
+                <MudCheckBox T="bool" Value="Dependants.SingleParent.Value" ValueChanged="OnSingleParentChanged" Color="Color.Primary" Label="@L["SingleParentLabel"]" />
+                <OriginChip Origin="Dependants.SingleParent.Origin" />
+                <InfoBubble Label="@L["SingleParentLabel"]">@L["SingleParentHint"]</InfoBubble>
+            </div>
+        }
+        <RiverField Label="@L["InCareLabel"]" For="river-dependants-in-care" Origin="Dependants.DependantsAged66InCare.Origin" Help="@L["InCareHint"]">
+            <RiverNumericField T="int" InputId="river-dependants-in-care" Value="Dependants.DependantsAged66InCare.Value" ValueChanged="OnInCareChanged" Format="0"
+                               Error="@(Refused?.Input == RefusedInput.DependantsInCare)" Refusal="@Refused" />
+        </RiverField>
+        <RiverField Label="@L["OthersLabel"]" For="river-other-dependants" Origin="Dependants.OtherDependants.Origin" Help="@L["OthersHint"]">
+            <RiverNumericField T="int" InputId="river-other-dependants" Value="Dependants.OtherDependants.Value" ValueChanged="OnOthersChanged" Format="0"
+                               Error="@(Refused?.Input == RefusedInput.OtherDependants)" Refusal="@Refused" />
+        </RiverField>
+    </div>
     <RefusedMessage Error="@Refused" />
-    @if (_view is not null)
+    @if (_lines.Count > 0)
     {
-        <FigureList Figures="@FigureWords.Of(L, HouseholdFigures.Of(_view))" />
+        <FigureList Figures="@FigureWords.Of(L, _lines)" />
     }
-    @if (HouseholdCardText.Note(_view, Inputs.Household.TaxedSeparately.Value) is { } note)
+    @if (HouseholdCardText.Note(_joint, HouseholdCardText.TaxedSeparately(Inputs.Household)) is { } note)
     {
-        <p class="household__note"><TermSentence Text="@L[note, _view is null ? "" : Formats.RuleAmount(_view.Rate), _view is null ? "" : Formats.RuleAmount(_view.Cap)]" Meaning="@L[HouseholdCardText.QuotientMeaning]" /></p>
+        <p class="household__note"><TermSentence Text="@L[note, _joint is null ? "" : Formats.RuleAmount(_joint.Rate), _joint is null ? "" : Formats.RuleAmount(_joint.Cap)]" Meaning="@L[HouseholdCardText.QuotientMeaning]" /></p>
     }
-    @if (_view is not null)
+    @if (_joint is not null)
     {
         <p class="household__note">@L[HouseholdCardText.Counted]</p>
     }
-    <Disclosure Title="@L["SituationTitle"]" Values="@SettingWords.Of(L, _settings.Situation)">
-        <div class="household__tick">
-            <MudCheckBox T="bool" Value="Inputs.Household.BothAged66.Value" ValueChanged="OnBothAged66Changed" Color="Color.Primary"
-                         Label="@L["BothAged66Label", Inputs.IncomeYear + 1]" />
-            <OriginChip Origin="Inputs.Household.BothAged66.Origin" />
-            <InfoBubble Label="@L["BothAged66Label", Inputs.IncomeYear + 1]">@L["BothAged66Hint"]</InfoBubble>
-        </div>
-        <div class="household__tick">
-            <MudCheckBox T="bool" Value="Inputs.Household.TaxedSeparately.Value" ValueChanged="OnTaxedSeparatelyChanged" Color="Color.Primary"
-                         Label="@L["TaxedSeparatelyLabel"]" />
-            <OriginChip Origin="Inputs.Household.TaxedSeparately.Origin" />
-            <InfoBubble Label="@L["TaxedSeparatelyLabel"]">@L["TaxedSeparatelyHint"]</InfoBubble>
-        </div>
-    </Disclosure>
+    @if (Inputs.Household.HasPartner)
+    {
+        <Disclosure Title="@L["SituationTitle"]" Values="@SettingWords.Of(L, _settings.Situation)">
+            <div class="household__tick">
+                <MudCheckBox T="bool" Value="Inputs.Household.BothAged66.Value" ValueChanged="OnBothAged66Changed" Color="Color.Primary"
+                             Label="@L["BothAged66Label", Inputs.IncomeYear + 1]" />
+                <OriginChip Origin="Inputs.Household.BothAged66.Origin" />
+                <InfoBubble Label="@L["BothAged66Label", Inputs.IncomeYear + 1]">@L["BothAged66Hint"]</InfoBubble>
+            </div>
+            <div class="household__tick">
+                <MudCheckBox T="bool" Value="Inputs.Household.TaxedSeparately.Value" ValueChanged="OnTaxedSeparatelyChanged" Color="Color.Primary"
+                             Label="@L["TaxedSeparatelyLabel"]" />
+                <OriginChip Origin="Inputs.Household.TaxedSeparately.Origin" />
+                <InfoBubble Label="@L["TaxedSeparatelyLabel"]">@L["TaxedSeparatelyHint"]</InfoBubble>
+            </div>
+        </Disclosure>
+    }
 </ModuleCard>
 
 @code {
@@ -60,34 +102,62 @@
     [Parameter, EditorRequired]
     public RiverRun Run { get; set; } = default!;
 
-    // The engine's refusal of the partner's income.
+    // The engine's refusal of the partner's income or of a count of dependants.
     [Parameter]
     public Refusal? Refused { get; set; }
 
-    private HouseholdView? _view;
+    private HouseholdView? _joint;
+    private DependantsView? _dependants;
+    private IReadOnlyList<FigureLine> _lines = [];
     private HouseholdSettingsView _settings = default!;
+
+    private DependantInputs Dependants => Inputs.Household.Dependants;
 
     protected override void OnParametersSet()
     {
-        _view = Run.Pay is { } pay ? HouseholdView.From(pay, Inputs.Household.BothAged66.Value) : null;
+        _joint = Run.Pay is { } pay ? HouseholdView.From(pay, Inputs.Household.BothAged66.Value) : null;
+        _dependants = Run.Pay is { } paid ? DependantsView.From(paid, Dependants.Values) : null;
+        _lines =
+        [
+            .. _joint is null ? [] : HouseholdFigures.Of(_joint),
+            .. _dependants is null ? [] : DependantsFigures.Of(_dependants),
+            .. _joint is not null && Run.Pay is { } year ? FigureLines.Shown([HouseholdFigures.Altogether(year.HouseholdSaves)]) : [],
+        ];
         _settings = HouseholdSettingsView.From(Inputs);
     }
 
-    // The quotient and what it saves the pay's tax, that it attributes nothing, or that the year is taxed
-    // separately.
+    // The quotient, that it attributes nothing, or that the year is taxed separately; how many dependants; and
+    // what the household saves the river's tax or costs it, joined as the card's summary.
     private string? Summary
     {
         get
         {
-            if (HouseholdCardText.Summary(_view, Inputs.Household.TaxedSeparately.Value) is not { } key)
-                return null;
-
-            var quotient = _view is null ? 0m : Math.Abs(HouseholdFigures.Quotient(_view)?.Amount ?? 0m);
-            return L[key, Formats.Euros(quotient), Formats.Euros(_view?.QuotientSaves ?? 0m)].Value;
+            var parts = HouseholdCardText.Summary(Run.Pay, _joint, _dependants, HouseholdCardText.TaxedSeparately(Inputs.Household));
+            return parts.Count == 0 ? null : string.Join(L["SummarySeparator"].Value, parts.Select(Part));
         }
     }
 
+    private string Part(string key) => key switch
+    {
+        "Summary_Quotient" => L[key, Formats.Euros(Math.Abs(HouseholdFigures.Quotient(_joint!)?.Amount ?? 0m))],
+        "Summary_Dependants" => L[key, (Dependants.Children.Value + Dependants.DependantsAged66InCare.Value + Dependants.OtherDependants.Value).ToString(Formats.Culture)],
+        "Summary_LessTax" or "Summary_MoreTax" => L[key, Formats.Euros(Math.Abs(Run.Pay?.HouseholdSaves ?? 0m))],
+        _ => L[key],
+    };
+
+    private Task OnPartnerChanged(bool partner) => InputsChanged.InvokeAsync(Inputs.WithPartner(partner));
+
     private Task OnPartnerIncomeChanged(decimal income) => InputsChanged.InvokeAsync(Inputs.WithPartnerIncome(income));
+
+    private Task OnChildrenChanged(int children) => InputsChanged.InvokeAsync(Inputs.WithChildren(children));
+
+    private Task OnChildrenUnder3Changed(int children) => InputsChanged.InvokeAsync(Inputs.WithChildrenUnder3(children));
+
+    private Task OnSingleParentChanged(bool alone) => InputsChanged.InvokeAsync(Inputs.WithSingleParent(alone));
+
+    private Task OnInCareChanged(int dependants) => InputsChanged.InvokeAsync(Inputs.WithDependantsInCare(dependants));
+
+    private Task OnOthersChanged(int dependants) => InputsChanged.InvokeAsync(Inputs.WithOtherDependants(dependants));
 
     private Task OnBothAged66Changed(bool both) => InputsChanged.InvokeAsync(Inputs.WithBothAged66(both));
 
