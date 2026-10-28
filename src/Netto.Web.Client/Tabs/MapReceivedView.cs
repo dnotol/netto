@@ -15,12 +15,14 @@ internal sealed record MapReceivedView(IReadOnlyList<MapReceived> Lines)
     public static MapReceivedView Of(MapView view, RiverModule module, Func<MapEnd, string> endName) =>
         new([.. view.Bundles()
             .Where(bundle => MapLinkStyle.IsMoney(bundle.Kind) && bundle.To.Module == module)
-            .Select(bundle => new MapReceived(
+            .Select((bundle, index) => new MapReceived(
                 Formats.Euros(bundle.Amount ?? 0m),
                 endName(bundle.From),
-                bundle.From.Module is { } from && view.Modules.Any(node => node.End.Module == from) ? from : null))]);
+                bundle.From.Module is { } from && view.Modules.Any(node => node.End.Module == from) ? from : null,
+                First: index == 0))]);
 }
 
-// One line of money into the module chosen: its amount, the name of the end it comes from, and that end's
-// module where the viewer can go to it on the map, none for a bucket.
-internal sealed record MapReceived(string Amount, string From, RiverModule? Module);
+// One line of money into the module chosen: its amount, the name of the end it comes from, that end's
+// module where the viewer can go to it on the map, none for a bucket, and whether it is the line's first
+// part, the others each said after a separator.
+internal sealed record MapReceived(string Amount, string From, RiverModule? Module, bool First);

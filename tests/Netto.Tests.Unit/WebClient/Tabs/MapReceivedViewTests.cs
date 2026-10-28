@@ -51,7 +51,16 @@ public class MapReceivedViewTests
 
         var received = Of(RiverInputs.Example, RiverModule.Split);
 
-        received.Lines.ShouldBe([new MapReceived(Formats.Euros(year.ProfitBeforeLevers), "company-year", RiverModule.CompanyYear)]);
+        received.Lines.ShouldBe([new MapReceived(Formats.Euros(year.ProfitBeforeLevers), "company-year", RiverModule.CompanyYear, First: true)]);
+    }
+
+    // The first part is marked so, the line saying a separator before each of the others alone.
+    [Fact]
+    public void Of_aModuleReceivingFromTwoEnds_marksItsFirstPartAlone()
+    {
+        var received = Of(Full, RiverModule.Car);
+
+        received.Lines.Select(line => line.First).ShouldBe([true, false]);
     }
 
     // What comes back out of a bucket is received from it, a bucket being named only.

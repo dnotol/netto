@@ -136,11 +136,11 @@
         {
             <p class="map-tab__receives">
                 <span class="map-tab__receives-label">@L["Receives"]</span>
-                @foreach (var (line, first) in received.Lines.Select((line, index) => (line, index == 0)))
+                @foreach (var line in received.Lines)
                 {
-                    if (!first)
+                    if (!line.First)
                     {
-                        <span class="map-tab__receives-gap" aria-hidden="true">·</span>
+                        <span class="map-tab__receives-gap" aria-hidden="true">@L["ReceivedBetween"]</span>
                     }
                     <span class="map-tab__received">@L["ReceivedFrom", line.Amount] @ReceivedEnd(line)</span>
                 }

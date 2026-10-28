@@ -134,7 +134,7 @@ public class MapTabTextTests
     [Fact]
     public void MapTabResx_theLineOfWhatAModuleReceives_saysEachAmountAndWhereItComesFrom()
     {
-        (Resources.Get("Receives"), Resources.Format("ReceivedFrom", ["€1,000.00"])).ShouldBe(("Receives", "€1,000.00 from"));
+        (Resources.Get("Receives"), Resources.Format("ReceivedFrom", ["€1,000.00"]), Resources.Get("ReceivedBetween")).ShouldBe(("Receives", "€1,000.00 from", "·"));
     }
 
     // Every link of these plans is worded by the texts its label names, its arguments taken.
