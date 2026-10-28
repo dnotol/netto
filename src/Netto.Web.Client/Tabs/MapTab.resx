@@ -66,9 +66,6 @@
   <data name="Quiet" xml:space="preserve">
     <value>nothing in this plan</value>
   </data>
-  <data name="End_out" xml:space="preserve">
-    <value>out of the river</value>
-  </data>
   <data name="Condition_Pay_MinimumPayMet" xml:space="preserve">
     <value>Pay {0} reaches the {1} minimum: pay condition met</value>
   </data>

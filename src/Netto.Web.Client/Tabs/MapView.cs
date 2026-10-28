@@ -155,7 +155,7 @@ internal sealed record MapBundle(MapRoute Route, IReadOnlyList<MapLink> Links)
     public static decimal Sum(IEnumerable<MapLink> links) => links.Sum(link => Math.Round(link.Amount ?? 0m, 2, MidpointRounding.AwayFromZero));
 
     // Whether the line ends in an arrowhead: where it reaches a module, money passed on, what comes back out
-    // of a bucket or a rule, or where it leaves the river. A line into a bucket has none: it runs on under
+    // of a bucket or a rule. A line into a bucket has none: it runs on under
     // the bucket (MapRoute.Drawn), which is where its money stops, so the pocket's lines side by side end
     // as lines, not as a row of arrowheads, and money passed on is told from money into a bucket by its end.
     public bool Arrowhead => To.Bucket is null;
@@ -165,7 +165,7 @@ internal sealed record MapBundle(MapRoute Route, IReadOnlyList<MapLink> Links)
 
 // What a link of the map carries, told apart at a glance: money passed on to the next module (a lever's
 // hand-off, the split's shares, a royalty's part beyond its limits, taxed as pay), money ending in a
-// bucket or leaving the river (a car's costs) or coming back out of one (a refund, a credit, the
+// bucket (a car's costs among the expenses) or coming back out of one (a refund, a credit, the
 // director's contribution to a car), what only changes a tax base (a car's benefit taxed with the pay,
 // what Corporate tax adds back), and a condition one module sets on another. Public because the map's
 // filter, a component, takes counts keyed by it.
@@ -217,8 +217,8 @@ internal static class MapLinkStyle
     // How the legend's sample of a kind ends, as the lines it stands for end on the map (MapBundle.Arrowhead):
     // money passed on, a tax base and a condition in an arrowhead on the module a line reaches; money into a
     // bucket in a bar its sample runs into, the bucket's edge, as a line of that kind ending in a bucket runs
-    // on under it. A line of that kind that leaves the river or comes back out of a bucket ends in an
-    // arrowhead instead, which the kind's words in the legend say (MapFilter.resx).
+    // on under it. A line of that kind that comes back out of a bucket ends in an arrowhead instead, which
+    // the kind's words in the legend say (MapFilter.resx).
     public static MapLineEnd SampleEnd(MapLinkKind kind) => kind switch
     {
         MapLinkKind.IntoBucket => MapLineEnd.Bucket,
@@ -259,8 +259,7 @@ internal static class MapLinkStyle
     private static string Pixels(decimal pixels) => pixels.ToString("0.##", CultureInfo.InvariantCulture);
 }
 
-// How a line ends: an arrowhead where it reaches a module or leaves the river, or under the bucket it runs
-// into.
+// How a line ends: an arrowhead where it reaches a module, or under the bucket it runs into.
 internal enum MapLineEnd
 {
     Arrowhead,
@@ -268,9 +267,8 @@ internal enum MapLineEnd
     Bucket,
 }
 
-// One end of a link: a module of the map, a bucket of the bar (BucketsView.Keys), or the river's edge,
-// where a cost of the company leaves it. Id names it in the map's elements: a module by its card's fold
-// name, a bucket by its key.
+// One end of a link: a module of the map or a bucket of the bar (BucketsView.Keys). Id names it in the
+// map's elements: a module by its card's fold name, a bucket by its key.
 internal sealed record MapEnd
 {
     private MapEnd(RiverModule? module, string? bucket) => (Module, Bucket) = (module, bucket);
@@ -279,11 +277,7 @@ internal sealed record MapEnd
 
     public string? Bucket { get; }
 
-    public static MapEnd OutOfRiver { get; } = new(null, null);
-
-    public bool IsOut => Module is null && Bucket is null;
-
-    public string Id => Module is { } module ? MapModules.Name(module) : Bucket ?? "out";
+    public string Id => Module is { } module ? MapModules.Name(module) : Bucket ?? throw new InvalidOperationException("An end with neither a module nor a bucket.");
 
     public static MapEnd Of(RiverModule module) => new(module, null);
 

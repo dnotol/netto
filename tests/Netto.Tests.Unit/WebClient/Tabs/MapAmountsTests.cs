@@ -68,8 +68,8 @@ public class MapAmountsTests
     }
 
     // Every line has its amount, a condition its word or two, on a stretch of its own line or beside it: its
-    // point on the stretch, on it or over, under, left or right of it as the stretch runs, or past the end of a
-    // line out of the river; and no other line of money runs along it there, at any size.
+    // point on the stretch, on it or over, under, left or right of it as the stretch runs; and no other line of
+    // money runs along it there, at any size.
     [Theory]
     [MemberData(nameof(Plans))]
     public void Of_anyPlan_givesEveryLineItsAmountOnAStretchOfItsOwnLineNoOtherLineOfMoneyRunsAlong(string plan)
@@ -241,7 +241,7 @@ public class MapAmountsTests
     }
 
     // Whether an amount's point is on the stretch it names, and it stands as that stretch runs: on it, over or
-    // under one across, left or right of one down, or right of the end of a line out of the river, past it.
+    // under one across, or left or right of one down.
     private static bool OnItsStretch(MapAmount amount)
     {
         var points = amount.Bundle.Route.Points;
@@ -249,12 +249,9 @@ public class MapAmountsTests
             return false;
 
         var (a, b) = (points[amount.Stretch], points[amount.Stretch + 1]);
-        var across = a.Y == b.Y;
-        var past = amount.Bundle.To.IsOut && amount.Stretch + 2 == points.Count && amount.At == b && across && amount.Side == MapAmountSide.Past && amount.Left > 0m;
-        var on = across
+        return a.Y == b.Y
             ? amount.At.Y == a.Y && amount.At.X >= Math.Min(a.X, b.X) && amount.At.X <= Math.Max(a.X, b.X) && amount.Side is MapAmountSide.On or MapAmountSide.Above or MapAmountSide.Below
             : amount.At.X == a.X && amount.At.Y >= Math.Min(a.Y, b.Y) && amount.At.Y <= Math.Max(a.Y, b.Y) && amount.Side is MapAmountSide.On or MapAmountSide.Left or MapAmountSide.Right;
-        return past || on;
     }
 
     // Every other line with a stretch running along an amount, the same way as the stretch the amount stands

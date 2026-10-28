@@ -144,9 +144,6 @@ internal static class MapLayout
     private const decimal DropTrack = 2.5m;
     private const decimal DropsFrom = 82m;
 
-    // How far past the car the stub of its costs runs, out of the river.
-    private const decimal OutStub = 4m;
-
     // The band over the buckets, in chain rows: its first row 0.1 under the lowest box of the streams' last
     // row, each next one 0.35 under it, room for an amount on a row between its neighbours on the smallest map
     // (0.35 of a 52 px row is 18.2 px, an amount 16 px and a gap), and the buckets 0.2 under its last; the
@@ -304,7 +301,7 @@ internal static class MapLayout
                 return Box(MapRow.Buckets, BucketSpans[BucketsView.Keys.ToList().IndexOf(bucket)], BoxUnits);
 
             if (end.Module is not { } module)
-                throw new ArgumentOutOfRangeException(nameof(end), end.Id, "The river's edge has no box.");
+                throw new ArgumentOutOfRangeException(nameof(end), "An end with neither a module nor a bucket has no box.");
 
             if (_firstOf.TryGetValue(module, out var first))
                 return Box(Place(first).Row, QuietSpan, PillUnits(_quietRows[Place(first).Row]));
@@ -492,7 +489,6 @@ internal static class MapLayout
                 RouteFamily.ChainToDirectorPay => SideToSide(bundle, from, MapSide.Left, to, MapSide.Right, LeftGutterX(bundle)),
                 RouteFamily.ChainToCorporateTax => SideToTop(bundle, from, MapSide.Right, to, DropX(bundle)),
                 RouteFamily.ChainToExpenses => SideToBucket(bundle, from, MapSide.Right, to, ExpensesLaneX(bundle)),
-                RouteFamily.OutOfRiver => OutOfRiver(bundle, from),
                 RouteFamily.Bracket => Bracket(bundle, from, to),
                 RouteFamily.SplitToCopyright => BottomToTop(from, 41m, to, SplitToRoyalty, BelowSplitY(bundle)),
                 RouteFamily.CopyrightToSplit => RoyaltyUpToSplit(bundle, from, to),
@@ -512,9 +508,6 @@ internal static class MapLayout
         private RouteFamily Family((MapEnd From, MapEnd To, MapLinkKind Kind) bundle)
         {
             var (from, to, kind) = bundle;
-            if (to.IsOut)
-                return RouteFamily.OutOfRiver;
-
             if (from.Module is { } source && to.Module is { } target)
             {
                 var (fromRow, fromColumn) = Place(source);
@@ -564,7 +557,7 @@ internal static class MapLayout
                 RouteFamily.ToPocketLane or RouteFamily.ChainToTaxesOnPay or RouteFamily.CorporateTaxToBucket => [(Back(bundle) ? to : from, MapSide.Left)],
                 RouteFamily.ChainToExpenses => [(Back(bundle) ? to : from, MapSide.Right)],
                 RouteFamily.ChainToDirectorPay => [(from, MapSide.Left), (to, MapSide.Right)],
-                RouteFamily.ChainToCorporateTax or RouteFamily.OutOfRiver or RouteFamily.SplitToCorporateTax => [(from, MapSide.Right)],
+                RouteFamily.ChainToCorporateTax or RouteFamily.SplitToCorporateTax => [(from, MapSide.Right)],
                 RouteFamily.Bracket => [(from, MapSide.Right), (to, MapSide.Right)],
                 RouteFamily.SplitToDirectorPay when _grid.Holds(RiverModule.Copyright) => [(to, MapSide.Right)],
                 RouteFamily.DividendToSplit => [(from, MapSide.Right), (to, MapSide.Right)],
@@ -574,7 +567,10 @@ internal static class MapLayout
         }
 
         // The order of the links along one side, top to bottom: of those leaving by a side, the one
-        // turning furthest away first, so none crosses another near the box.
+        // turning furthest away first, so none crosses another near the box; but the line into the expenses,
+        // last, under a car's rules into Corporate tax, so that the amount of the rules' line keeps the room
+        // over it free of money, and its own line, crossing theirs as they come down, has room for its amount
+        // before them.
         private decimal PortOrder((MapEnd From, MapEnd To, MapLinkKind Kind) bundle) => (Back(bundle) ? 0.5m : 0m) + Family(bundle) switch
         {
             RouteFamily.ToPocketLane => 0m,
@@ -585,20 +581,19 @@ internal static class MapLayout
             RouteFamily.ChainToExpenses => 2m,
             RouteFamily.SplitToCorporateTax => bundle.Kind == MapLinkKind.Condition ? -SplitConditionToCorporate : -SplitToCorporate,
             RouteFamily.Bracket => 1m,
-            RouteFamily.OutOfRiver => 2m,
             RouteFamily.SplitToDirectorPay => 2m,
             _ => 0m,
         };
 
         // Where a link meets a side it shares: round the side's middle, each its step along it from the one
-        // before, or further where their widths ask it, and the arrowheads of those ending there or on the
-        // short stub out of the river beside it, all of them on the side.
+        // before, or further where their widths ask it, and the arrowheads of those ending there, all of them
+        // on the side.
         private decimal PortY((MapEnd From, MapEnd To, MapLinkKind Kind) bundle, MapEnd end, MapSide side)
         {
             var slot = _grid.Slot(end);
             var list = _ports[(end, side)];
             return Spread([.. list.Select((line, index) => (slot.CenterY + (index - (list.Count - 1) / 2m) * PortStep * slot.Height, line))],
-                _grid.DownPixel, (slot.Top, slot.Bottom), round: true, line => line.To == end || line.To.IsOut)[list.IndexOf(bundle)];
+                _grid.DownPixel, (slot.Top, slot.Bottom), round: true, line => line.To == end)[list.IndexOf(bundle)];
         }
 
         private decimal PocketLaneX((MapEnd, MapEnd, MapLinkKind) bundle) =>
@@ -723,14 +718,6 @@ internal static class MapLayout
             var slot = _grid.Slot(from);
             var y = PortY(bundle, from, side);
             return new MapRoute([new(side == MapSide.Left ? slot.Left : slot.Right, y), new(x, y), new(x, _grid.Slot(to).Top)]);
-        }
-
-        // A short stub out of the car's right side: its costs leave the river.
-        private MapRoute OutOfRiver((MapEnd, MapEnd, MapLinkKind) bundle, MapEnd from)
-        {
-            var slot = _grid.Slot(from);
-            var y = PortY(bundle, from, MapSide.Right);
-            return new MapRoute([new(slot.Right, y), new(slot.Right + OutStub, y)]);
         }
 
         // From one box's right side to the one under it, round the right of the middle column.
@@ -875,7 +862,6 @@ internal static class MapLayout
         ChainToDirectorPay,
         ChainToCorporateTax,
         ChainToExpenses,
-        OutOfRiver,
         Bracket,
         SplitToCopyright,
         CopyrightToSplit,

@@ -300,12 +300,12 @@
         return texts[label.Key, [.. label.Args]].Value;
     }
 
-    // A module by its card's title, a bucket by the bar's name for it, the river's edge as such.
+    // A module by its card's title, a bucket by the bar's name for it.
     private string EndName(MapEnd end) => end switch
     {
         { Module: { } module } => L[MapTabText.Module(module)],
         { Bucket: { } bucket } => BucketTexts[BucketBarText.Bucket(bucket, _view.TaxesOnPayIncludeRent)],
-        _ => L[MapTabText.OutOfRiver],
+        _ => throw new ArgumentOutOfRangeException(nameof(end), "An end with neither a module nor a bucket."),
     };
 
     private static string Points(IReadOnlyList<MapPoint> points) => string.Join(' ', points.Select(point => $"{Number(point.X)},{Number(point.Y)}"));

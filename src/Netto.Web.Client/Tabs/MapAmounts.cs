@@ -75,7 +75,7 @@ internal static class MapAmounts
     // of a line is further apart while an amount, an arrowhead and a line's width keep their pixels.
     //
     // Each stretch of a line offers its amount a track: on it, or over and under it if it runs across, left and
-    // right of it if it runs down, and the end of a line out of the river places past it. Along a track the
+    // right of it if it runs down. Along a track the
     // places an amount may take are worked out whole, not tried one by one: each box, quiet row, bucket and
     // arrowhead (a pixel off), the map's edge and each other line of money running the same way as the stretch
     // (at its width and halo) rules out a stretch of the track; a line running the other way only crosses it,
@@ -218,50 +218,31 @@ internal static class MapAmounts
 
                 var across = a.Y == b.Y;
                 var last = stretch + 2 == points.Count;
-                var past = last && line.To.IsOut && across;
                 var gap = (double)(Math.Max(line.Route.Width / 2m, last && line.Arrowhead ? MapLineWidths.ArrowHalf(line.Route.Width) : 0m) + (decimal)BesideGap);
                 var (at, low, high) = across
                     ? ((double)a.Y * _down, (double)Math.Min(a.X, b.X) * _across, (double)Math.Max(a.X, b.X) * _across)
                     : ((double)a.X * _across, (double)Math.Min(a.Y, b.Y) * _down, (double)Math.Max(a.Y, b.Y) * _down);
                 var (half, thick) = across ? (width / 2, height) : (height / 2, width);
                 var (middle, length) = ((low + high) / 2, high - low);
-                var fits = high - low >= 2 * half;
-                if (!fits && !past)
+                if (high - low < 2 * half)
                     continue;
 
-                // What lies near the stretch, within reach of any place on it or beside it, or past its end.
+                // What lies near the stretch, within reach of any place on it or beside it.
                 var reach = gap + thick + AmountClearance;
-                var end = past ? (double)b.X * _across + BesideGap + width : high;
-                Near(across ? new Rect(low, at - reach, end, at + reach) : new Rect(at - reach, low, at + reach, high), index);
+                Near(across ? new Rect(low, at - reach, high, at + reach) : new Rect(at - reach, low, at + reach, high), index);
 
-                if (fits)
+                foreach (var side in across ? AcrossSides : DownSides)
                 {
-                    foreach (var side in across ? AcrossSides : DownSides)
+                    // Its box across the stretch, from its line, and how far it keeps from the stretch's ends.
+                    var from = side switch
                     {
-                        // Its box across the stretch, from its line, and how far it keeps from the stretch's ends.
-                        var from = side switch
-                        {
-                            MapAmountSide.On => -thick / 2,
-                            MapAmountSide.Above or MapAmountSide.Left => -gap - thick,
-                            _ => gap,
-                        };
-                        var margin = side == MapAmountSide.On ? ShowsEachSide : 0;
-                        Add(new Track(stretch, side, across, at + from, at + from + thick, half, low + half + margin, high - half - margin, middle, length,
-                            across ? -half : from, across ? from : -half, side == MapAmountSide.On ? 0 : Beside));
-                    }
-                }
-
-                // Past the end of a line out of the river, right of it: level with it, or else over or under it, off
-                // its arrowhead.
-                if (past)
-                {
-                    var x = (double)b.X * _across + BesideGap + width / 2;
-                    Add(Past(-height / 2, Beside));
-                    Add(Past(-gap - height, Beside + 1));
-                    Add(Past(gap, Beside + 1));
-
-                    Track Past(double from, double cost) =>
-                        new(stretch, MapAmountSide.Past, true, at + from, at + from + height, width / 2, x, x, x, length, BesideGap, from, cost) { Past = true };
+                        MapAmountSide.On => -thick / 2,
+                        MapAmountSide.Above or MapAmountSide.Left => -gap - thick,
+                        _ => gap,
+                    };
+                    var margin = side == MapAmountSide.On ? ShowsEachSide : 0;
+                    Add(new Track(stretch, side, across, at + from, at + from + thick, half, low + half + margin, high - half - margin, middle, length,
+                        across ? -half : from, across ? from : -half, side == MapAmountSide.On ? 0 : Beside));
                 }
             }
 
@@ -331,7 +312,7 @@ internal static class MapAmounts
             }
 
             var pieces = new List<Piece>();
-            Free(min, max, _blocked, track.Past, _free);
+            Free(min, max, _blocked, _free);
             foreach (var (from, to) in _free)
             {
                 if (from == to)
@@ -398,12 +379,11 @@ internal static class MapAmounts
         }
 
         // What is left of a stretch of a track once the stretches given are ruled out (each open: a place at its
-        // bound touches without overlapping), each bound kept Slack inside; a point stays where it is clear.
-        private static void Free(double min, double max, List<(double From, double To)> blocked, bool point, List<(double From, double To)> free)
+        // bound touches without overlapping), each bound kept Slack inside.
+        private static void Free(double min, double max, List<(double From, double To)> blocked, List<(double From, double To)> free)
         {
             free.Clear();
-            if (!point)
-                (min, max) = (min + Slack, max - Slack);
+            (min, max) = (min + Slack, max - Slack);
             if (min > max)
                 return;
 
@@ -415,8 +395,7 @@ internal static class MapAmounts
                 {
                     if (from - Slack >= max)
                         break;
-                    if (!point)
-                        free.Add((cursor, from - Slack));
+                    free.Add((cursor, from - Slack));
                 }
 
                 cursor = Math.Max(cursor, to + Slack);
@@ -450,10 +429,7 @@ internal static class MapAmounts
                         Consider(piece, piece.From, piece.To);
                     else
                     {
-                        if (track.Past)
-                            Free(piece.From, piece.To, _blocked, true, _free);
-                        else
-                            Free(piece.From - Slack, piece.To + Slack, _blocked, false, _free);
+                        Free(piece.From - Slack, piece.To + Slack, _blocked, _free);
                         foreach (var (from, to) in _free)
                             Consider(piece, from, to);
                     }
@@ -581,9 +557,9 @@ internal static class MapAmounts
         private MapAmount Amount(int index, Spot spot)
         {
             var (line, track) = (_lines[index], spot.Track);
-            var (a, b) = (line.Route.Points[track.Stretch], line.Route.Points[track.Stretch + 1]);
-            var at = track.Past ? b
-                : track.Across ? new MapPoint(Math.Round((decimal)(spot.Along / _across), 3), a.Y)
+            var a = line.Route.Points[track.Stretch];
+            var at = track.Across
+                ? new MapPoint(Math.Round((decimal)(spot.Along / _across), 3), a.Y)
                 : new MapPoint(a.X, Math.Round((decimal)(spot.Along / _down), 3));
             return new MapAmount(line, _texts[index], at, track.Stretch, track.Side, Math.Round((decimal)track.Left, 2), Math.Round((decimal)track.Top, 2), _widths[index]);
         }
@@ -605,13 +581,10 @@ internal static class MapAmounts
     // Where an amount may stand along a stretch: on it or on one side, its box from Low to High across the
     // stretch and Half each side of its middle along it, its middle from Min to Max; the stretch's middle and
     // length, the corner of its box from its point on the line (Left, Top), what standing there rather than on
-    // its line costs, and the pieces of it the amount may take. A track past the end of a line out of the river
-    // is a point, the line's end its point.
+    // its line costs, and the pieces of it the amount may take.
     private sealed record Track(int Stretch, MapAmountSide Side, bool Across, double Low, double High, double Half, double Min, double Max, double Middle, double Length,
         double Left, double Top, double Cost)
     {
-        public bool Past { get; init; }
-
         public List<Piece> Pieces { get; set; } = [];
 
         // How much room the track leaves its amount, which orders the lines most constrained first.
@@ -666,8 +639,7 @@ internal sealed record MapAmount(MapBundle Bundle, string Text, MapPoint At, int
 }
 
 // Where an amount stands from its point: on its line, centred on it; over or under a stretch across the map;
-// left or right of a stretch down it; or past the end of a line out of the river, right of its arrowhead, level
-// with the line or over or under it.
+// or left or right of a stretch down it.
 internal enum MapAmountSide
 {
     On,
@@ -679,6 +651,4 @@ internal enum MapAmountSide
     Left,
 
     Right,
-
-    Past,
 }

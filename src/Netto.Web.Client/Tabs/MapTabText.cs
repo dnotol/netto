@@ -17,9 +17,6 @@ internal static class MapTabText
     // summary says it.
     public const string ProfitBeforeLevers = "Carries_ProfitBeforeLevers";
 
-    // Where a cost of the company leaves the river, as a link's end.
-    public const string OutOfRiver = "End_out";
-
     // A module on the map, named as its card is.
     public static string Module(RiverModule module) => $"Module_{module}";
 
