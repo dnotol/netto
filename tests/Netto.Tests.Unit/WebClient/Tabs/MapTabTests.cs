@@ -363,7 +363,7 @@ public class MapTabTests
         var html = await RenderTabAsync(Full.SkipCompany());
 
         Buttons(html).Select(button => (button.Module, button.Name, button.Skipped)).ShouldBe(
-            [("company-year", "Company year skipped", true), ("director-pay", "Director pay", false), ("household", "Household +€11,780.00 to tax base", false)]);
+            [("company-year", "Company year skipped", true), ("director-pay", "Director pay", false), ("household", "Household", false)]);
     }
 
     // A skipped Company year chosen: its card goes beside the map, its box is marked chosen, and nothing is

@@ -102,16 +102,33 @@ public class MapBadgesTests
     private static string Shape(MapBadge badge) => $"{badge.Kind} {badge.Words.Text} {badge.Words.Key} {string.Join(',', badge.Words.Args)} {badge.Tone}";
 
     // A refused amount leaves the map without a link and so without a badge; the company skipped leaves no
-    // year to read, and only the partner's marital quotient, a tax base of the pay alone, marks the partner.
+    // year to read, and the partner's marital quotient, the one tax base of the pay alone, reaches the box of
+    // the card that draws it, which marks nothing.
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public void From_aRunWithoutAYear_marksNoModuleButThePartnersQuotient(bool refused)
+    public void From_aRunWithoutAYear_marksNoModule(bool refused)
     {
         var river = refused ? Full.WithReserve(-1m) : Full.SkipCompany();
 
-        MapView.From(river, river.Run()).Modules.Where(node => node.Badges.Count > 0).Select(node => node.End.Id)
-            .ShouldBe(refused ? [] : ["household"]);
+        MapView.From(river, river.Run()).Modules.ShouldAllBe(node => node.Badges.Count == 0);
+    }
+
+    // A badge tells a box what another module's card does to its tax base. The marital quotient to the partner
+    // is the Household card's own line, its amount said on it: the partner's narrow box takes no badge, which
+    // could not read whole there. From the partner, it reaches Director pay, whose box says it.
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Of_theMaritalQuotient_marksDirectorPayWhenItReachesItAndNeverThePartner(bool toThePartner)
+    {
+        var river = toThePartner
+            ? RiverInputs.Example.AddToPlan(OptionalModule.Household)
+            : RiverInputs.Example.AddToPlan(OptionalModule.Household).WithDirectorPay(12_000m).WithPartnerIncome(60_000m);
+
+        var marked = MapView.From(river, river.Run()).Modules.Where(node => node.Badges.Any(badge => badge.Kind == MapLinkKind.TaxBase)).Select(node => node.End.Id);
+
+        marked.ShouldBe(toThePartner ? [] : ["director-pay"]);
     }
 
     // Whatever the plan holds and leaves empty, a quiet lever has no badge, nothing reaching it, and no

@@ -57,7 +57,6 @@ public class MapLayoutTests
         [RiverModule.Split] = 2,
         [RiverModule.CorporateTax] = 3,
         [RiverModule.DirectorPay] = 1,
-        [RiverModule.Household] = 1,
     };
 
     [Fact]
