@@ -69,8 +69,8 @@ public class PlanCompositionTests
         new PlanComposition(vouchers, allowances, rent, car, false).NextAfter(module).ShouldBe(next);
     }
 
-    // The royalty comes after the split, which decides it beside the pay (operator, 2026-10-23): what the
-    // levers leave goes on to the split, never to the royalty, and nothing goes on from the royalty.
+    // The royalty comes after the split, which pays it beside the pay; the Copyright royalty card decides it.
+    // What the levers leave goes on to the split, never to the royalty, and nothing goes on from the royalty.
     [Theory]
     [InlineData(true, false, OptionalModule.Car, null)]
     [InlineData(false, true, OptionalModule.Rent, null)]
