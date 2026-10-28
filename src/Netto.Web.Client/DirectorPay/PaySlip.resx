@@ -60,6 +60,15 @@
   <data name="Row_low_earned_income_credit_lost" xml:space="preserve">
     <value>Tax credit for low earned income lost</value>
   </data>
+  <data name="Row_child_tax_credit" xml:space="preserve">
+    <value>Refundable tax credit for children</value>
+  </data>
+  <data name="Row_child_tax_credit_taken_away" xml:space="preserve">
+    <value>Refundable tax credit for children your pay takes away</value>
+  </data>
+  <data name="Row_child_tax_credit_lost" xml:space="preserve">
+    <value>Refundable tax credit for children lost</value>
+  </data>
   <data name="Row_net_in_pocket" xml:space="preserve">
     <value>Net in pocket</value>
   </data>

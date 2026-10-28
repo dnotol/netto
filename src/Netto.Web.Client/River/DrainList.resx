@@ -36,6 +36,9 @@
   <data name="Drain_child_tax_credit" xml:space="preserve">
     <value>Refundable tax credit for children</value>
   </data>
+  <data name="Drain_child_tax_credit_taken_away" xml:space="preserve">
+    <value>Refundable tax credit for children your pay takes away</value>
+  </data>
   <data name="Drain_net_pay" xml:space="preserve">
     <value>Net pay</value>
   </data>

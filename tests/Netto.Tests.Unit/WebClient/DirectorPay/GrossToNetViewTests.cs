@@ -619,6 +619,44 @@ public class GrossToNetViewTests
         (lost.Amount > 0m, lost.Width).ShouldBe((true, lost.Share));
     }
 
+    // A single parent of two, one under 3 (GrossToNetDependantsTests): at 24,000 the credit for children is
+    // 241.05, which the next 1,000 takes away whole, a part of its own after the credit for low earned
+    // income's; the parts still make the 1,000.
+    [Fact]
+    public void From_creditForChildrenTheNextThousandTakesAway_isAPartAndThePartsMakeTheThousand()
+    {
+        var parts = HouseholdView(24_000m, SingleParentOfTwo).NextThousand;
+
+        parts.ShouldSatisfyAllConditions(
+            () => parts.Select(part => part.Key).ShouldBe(
+                ["social_contributions", "income_tax", "municipal_surcharge", "low_earned_income_credit_lost", "child_tax_credit_lost", "income_tax_advance_payments", "net_in_pocket"]),
+            () => parts.Single(part => part.Key == "child_tax_credit_lost").Amount.ShouldBe(241.05m),
+            () => parts.Sum(part => part.Amount).ShouldBe(1_000m));
+    }
+
+    // At 20,000 the credit reaches its cap, 1,100, and comes back to the pocket after the taxes.
+    [Fact]
+    public void From_singleParentOnALowPay_drawsTheCreditForChildrenComingBack()
+    {
+        var row = HouseholdView(20_000m, SingleParentOfTwo).Tracks[0].Rows.Single(row => row.Key == "child_tax_credit");
+
+        (row.Kind, row.Amount).ShouldBe((RowKind.Back, 1_100m));
+    }
+
+    // In a joint year the pay's share of the household's credit can be less than nothing: what the pay takes
+    // away of it is paid out, under words of its own.
+    [Fact]
+    public void From_creditForChildrenThePayTakesAway_drawsItPaidOut()
+    {
+        var (value, _) = GrossToNet.Compute(2026, 20_000m, MunicipalRates.IncomeYear2026.Entered(0.07m), Withheld, household: SingleParentOfTwo);
+        var pay = value.ShouldNotBeNull();
+        var takingAway = pay with { Steps = [.. pay.Steps.Select(step => step.RuleKey == "child_tax_credit" ? step with { Amount = 120m } : step)] };
+
+        var row = GrossToNetView.From(takingAway).Tracks[0].Rows.Single(row => row.Key.StartsWith("child_tax_credit", StringComparison.Ordinal));
+
+        (row.Key, row.Kind, row.Amount).ShouldBe(("child_tax_credit_taken_away", RowKind.PaidOut, 120m));
+    }
+
     [Fact]
     public void From_gross50000_detailsEveryStepInTheEngineOrder()
     {
@@ -802,6 +840,8 @@ public class GrossToNetViewTests
         new(10_000m, new IncomeTaxedApart(10_000m, Netto.Core.Copyright.CopyrightRules.IncomeYear2026.TaxedApartRate), 0m, 1_500m);
 
     private static string Keys(SourceGroup group) => string.Join(' ', group.Amounts.Select(amount => amount.Key));
+
+    private static readonly Household SingleParentOfTwo = Household.None with { Dependants = new Dependants(Children: 2, ChildrenUnder3: 1, SingleParent: true) };
 
     private static GrossToNetView View(decimal grossPay) => View(grossPay, Withheld);
 

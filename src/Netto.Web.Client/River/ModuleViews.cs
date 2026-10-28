@@ -718,9 +718,14 @@ public sealed record Drain(string Key, DrainKind Kind, decimal Amount, string To
     // A step paid out with a negative amount is money coming back: the refund on exempt dividends, the
     // tax credit for low earned income.
     // The engine negates both, so a refund or a credit of nothing is a negative zero and still comes back.
-    internal static Drain PaidOutTo(Step step, string bucket) => (decimal.IsNegative(step.Amount)
-        ? new Drain(step.RuleKey, DrainKind.Back, -step.Amount, bucket)
-        : new Drain(step.RuleKey, DrainKind.PaidOut, step.Amount, bucket)) with { Details = [StepDetail.From(step)] };
+    // The credit for children is the pay's share of a joint year's, which can be less than nothing: what the
+    // pay takes away of it is paid out, under words of its own.
+    internal static Drain PaidOutTo(Step step, string bucket) => (step switch
+    {
+        _ when decimal.IsNegative(step.Amount) => new Drain(step.RuleKey, DrainKind.Back, -step.Amount, bucket),
+        { RuleKey: "child_tax_credit", Amount: > 0m } => new Drain("child_tax_credit_taken_away", DrainKind.PaidOut, step.Amount, bucket),
+        _ => new Drain(step.RuleKey, DrainKind.PaidOut, step.Amount, bucket),
+    }) with { Details = [StepDetail.From(step)] };
 
     // A step that reaches the pocket whole: a voucher, an allowance.
     internal static Drain ToPocket(Step step) =>

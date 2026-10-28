@@ -96,6 +96,7 @@ internal sealed record GrossToNetView(
                 ("income_tax", result.NextThousand.IncomeTax),
                 ("municipal_surcharge", result.NextThousand.MunicipalSurcharge),
                 ("low_earned_income_credit_lost", result.NextThousand.LowEarnedIncomeCredit),
+                .. result.Supplements.ForChildren > 0m ? [("child_tax_credit_lost", result.NextThousand.ChildTaxCredit)] : Array.Empty<(string, decimal)>(),
                 ("income_tax_advance_payments", result.NextThousand.AdvancePayments),
                 ("net_in_pocket", result.NextThousand.NetInPocket),
             ]),
@@ -159,9 +160,12 @@ internal sealed record GrossToNetView(
 
     // A step paid out with a negative amount is money that comes back: the tax credit for low earned
     // income. The engine negates it, so a credit of nothing is a negative zero and still comes back.
+    // The credit for children is the pay's share of the household's in a joint year, which can be less than
+    // nothing: what the pay takes away of it is paid out, under words of its own.
     private static Line Deduction(Step step) => step.Track switch
     {
         Track.PaidOut when decimal.IsNegative(step.Amount) => new(step.RuleKey, RowKind.Back, -step.Amount),
+        Track.PaidOut when step.RuleKey == "child_tax_credit" && step.Amount > 0m => new("child_tax_credit_taken_away", RowKind.PaidOut, step.Amount),
         Track.PaidOut => new(step.RuleKey, RowKind.PaidOut, step.Amount),
         _ => new(step.RuleKey, RowKind.TaxBaseOnly, step.Amount),
     };

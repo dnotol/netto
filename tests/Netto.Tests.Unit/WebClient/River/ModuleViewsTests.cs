@@ -1103,6 +1103,24 @@ public class ModuleViewsTests
 
     private static RentCapView? RentCap(RiverInputs inputs) => RentCapView.From(inputs);
 
+    // The credit for children comes back on a low pay; in a joint year the pay's share of the household's can
+    // be less than nothing, what the pay takes away of it, paid out into the taxes on pay under words of its
+    // own, which DrainList.resx holds.
+    [Fact]
+    public void PaidOutTo_creditForChildrenThePayTakesAway_isPaidOutUnderItsOwnWords()
+    {
+        var pay = RiverInputs.Example.AddToPlan(OptionalModule.Household).WithPartner(false).WithChildren(2).SkipCompany().WithDirectorPay(20_000m)
+            .Run().Pay.ShouldNotBeNull();
+        var credit = pay.Steps.Single(step => step.RuleKey == "child_tax_credit");
+
+        var (back, takenAway) = (Drain.PaidOutTo(credit, "taxes_on_pay"), Drain.PaidOutTo(credit with { Amount = 120m }, "taxes_on_pay"));
+
+        back.ShouldSatisfyAllConditions(
+            () => (back.Key, back.Kind).ShouldBe(("child_tax_credit", DrainKind.Back)),
+            () => (takenAway.Key, takenAway.Kind, takenAway.Amount).ShouldBe(("child_tax_credit_taken_away", DrainKind.PaidOut, 120m)),
+            () => ResxText.For<DrainList>().Get(DrainListText.Drain(takenAway.Key)).ShouldNotBeNull());
+    }
+
     // 12% of a cadastral income of 1,200 let for the 2026 cap, 1,380.00 (RentCalculatorTests).
     private static RiverInputs RentAtTheCap(RiverInputs inputs) =>
         inputs.AddToPlan(OptionalModule.Rent).WithCadastralIncome(1_200m).WithShareLet(0.12m).WithRent(1_380m);

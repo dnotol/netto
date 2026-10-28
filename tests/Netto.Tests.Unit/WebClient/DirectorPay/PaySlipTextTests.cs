@@ -86,6 +86,41 @@ public class PaySlipTextTests
             () => keys.Distinct().Where(key => Resources.Get(key) is null).ShouldBeEmpty());
     }
 
+    // Children add the credit for children to the cash track and its part to the next 1,000; the pay's share
+    // of a joint year's credit, taken away, a row of its own words.
+    [Fact]
+    public void PaySlipResx_everyKeyOfAPayWithChildren_hasAText()
+    {
+        var household = Household.None with { Dependants = new Dependants(Children: 2, ChildrenUnder3: 1, SingleParent: true) };
+        var (value, _) = GrossToNet.Compute(2026, 24_000m, MunicipalRates.IncomeYear2026.Entered(0.07m), TaxPrepayments.AsWithheld, household: household);
+        var view = GrossToNetView.From(value.ShouldNotBeNull());
+
+        var keys = view.Tracks.SelectMany(track => track.Rows).Select(row => PaySlipText.Row(row.Key))
+            .Concat(view.NextThousand.Select(part => PaySlipText.Row(part.Key)))
+            .Append(PaySlipText.Row("child_tax_credit_taken_away"))
+            .ToList();
+
+        keys.ShouldSatisfyAllConditions(
+            () => keys.ShouldContain(PaySlipText.Row("child_tax_credit")),
+            () => keys.ShouldContain(PaySlipText.Row("child_tax_credit_lost")),
+            () => keys.Distinct().Where(key => Resources.Get(key) is null).ShouldBeEmpty());
+    }
+
+    // The credit for children the next 1,000 takes away is drawn as the credit for low earned income's is:
+    // money that came back after the tax, its segment and swatch dotted, or both would be drawn empty.
+    [Fact]
+    public void PaySlipCss_creditForChildrenTheNextThousandTakesAway_isDrawnAsTheOtherCreditLost()
+    {
+        var css = File.ReadAllText(RepositoryFile.FindUp("src", "Netto.Web.Client", "DirectorPay", "PaySlip.razor.css"));
+
+        var rule = System.Text.RegularExpressions.Regex.Matches(css, @"([^{}]+)\{([^{}]*)\}")
+            .Single(match => match.Groups[1].Value.Contains(".next__segment--low_earned_income_credit_lost", StringComparison.Ordinal));
+
+        rule.ShouldSatisfyAllConditions(
+            () => rule.Groups[1].Value.ShouldContain(".next__segment--child_tax_credit_lost"),
+            () => rule.Groups[1].Value.ShouldContain(".next__part--child_tax_credit_lost .next__swatch"));
+    }
+
     // When the company pays, the note under the next 1,000 names what it adds on top of the 1,000: the
     // contributions, and the fund's fee once its part is drawn.
     [Theory]
