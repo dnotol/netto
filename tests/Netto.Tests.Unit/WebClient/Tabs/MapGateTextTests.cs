@@ -47,9 +47,9 @@ public class MapGateTextTests
         Should.Throw<ArgumentException>(() => MapGateText.Parts("{0} and {0}"));
     }
 
-    // The room inside a gate at the narrowest map, 34rem or 544 px: a gate's width there, 124 px, less its
-    // padding of 0.35rem each side and its frame of 1px each side.
-    private const decimal GateRoom = 124m - 2m * 0.35m * 16m - 2m;
+    // The room inside a gate at the narrowest map, 34rem or 544 px, as the layout keeps it: a gate's width there,
+    // 124 px, less its padding of 0.35rem each side and its frame of 1px each side (MapLayout.GateRoomPixels).
+    private const decimal GateRoom = MapLayout.GateRoomPixels;
 
     // A gate's line at its own size: what its characters take as MapAmounts.Width reckons them at 0.72rem and
     // weight 400, less the ground it adds, scaled to the line's size, and 2% more for weight 500.

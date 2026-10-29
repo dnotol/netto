@@ -10,11 +10,16 @@
 @* The Map tab: the plan's modules from above, as the river shows them, and the money between them, every
    line the links of the river's one run between the same two ends, whose amount is a figure its card
    draws or the sum of its card's lines between those two ends (MapView, MapLinks, MapBundle): the sum is
-   the map's arithmetic of display, and no tax figure is computed here. The modules sit in fixed slots in
-   the river's shape (MapLayout), Company year, the levers in the plan and the split down the middle, the
-   director's stream left and the company's right, over the bar's five buckets; a lever out of the plan is
-   not on it, and with the company skipped
-   the map starts at Director pay, over which Company year stays, drawn dashed as the river draws its
+   the map's arithmetic of display, and no tax figure is computed here. The modules sit in fixed slots by
+   whose money they move (MapLayout), in three columns framed and labelled over their top, out of a screen
+   reader's hearing, the buttons saying the modules in the river's order: the director's and the household's
+   on the left, Household over Director pay; the ways across in the middle, each lever, the royalty and the
+   dividend a dashed gate whose box says what crosses and what reaches the director (MapGates, a line each);
+   the company's on the right, Company year, the split and Corporate tax, what the company has left running
+   down its own line from Company year into the split, each lever taking its share across to its gate; all
+   over the bar's five buckets, rows in the river's order. The pay crosses straight from the split into
+   Director pay under its pill, which says it. A lever out of the plan is not on it, and with the company
+   skipped the map starts at Director pay, over which Company year stays, drawn dashed as the river draws its
    skipped card and said skipped in words, with no link, so that it can be chosen and its year entered
    again beside the map; the cards that only wait for it are left out. Each link is a line of its kind
    (MapLinkStyle: passed on, into a bucket, a tax base, a condition), its dash, width and ink set on the line
@@ -30,7 +35,8 @@
    with its figures, is not on the tab (operator, 2026-10-28) but the cards' (MapConditions). An amount hangs from its
    point of its line by its pixels, so it keeps to its line however large the map is drawn, and its ground
    hides the lines crossing it, square. A line to the pocket and its amount are gold, the one gold of the
-   map, since that is what reaches the director.
+   map, since that is what reaches the director; a gate's line to the pocket says no amount, its gate saying
+   it, nor what Corporate tax adds back of a gate, its badge saying it.
 
    The rules are marks on the module they act on: each condition another module sets on it, but the
    office rule, which always holds, is a badge in its box saying which rule and whether it holds, and what
@@ -40,11 +46,11 @@
    no effect. The badges are the button's content, so a screen reader hears them with the module's name.
 
    A lever that moves no money of its own in this plan, one added with nothing in it yet, is quiet
-   (MapQuiet): no box, its name muted in a dashed row it shares with the quiet levers it follows down the
-   chain, each name saying in its button, out of sight, that it holds nothing in this plan; the royalty that
-   comes to nothing is quiet in its own place. The row is kept as tall as its names one per line on the
-   narrowest map. The chain's line runs on under the row, from the box above to the box below, its amount
-   said once, on the line above or under the row. A quiet name is a button like a box, so
+   (MapQuiet): no box, its name muted in a dashed pill among the gates it shares with the quiet levers it
+   follows down the company's line, each name saying in its button, out of sight, that it holds nothing in
+   this plan; the royalty that comes to nothing is quiet in its own place. The pill is kept as tall as its
+   names one per line on the narrowest map. The company's line runs on past them in its own column, its
+   amount said once. A quiet name is a button like a box, so
    that choosing it opens its card beside the map, where its amounts are entered; once it moves money it
    has its box back, in its place.
 
@@ -91,6 +97,10 @@
         @* The map alone, which scrolls sideways in it where the column is narrower than the map. *@
         <div class="map-tab__frame">
             <div class="map" style="--map-units: @Number(_view.Units)" role="group" aria-label="@L["MapLabel"]">
+                @foreach (var (owner, slot) in _view.Columns)
+                {
+                    <div class="map-column map-column--@owner.ToString().ToLowerInvariant()" style="@Box(slot)" aria-hidden="true"><span class="map-column__label">@L[MapTabText.Column(owner)]</span></div>
+                }
                 <svg class="map__lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false">
                     @foreach (var (bundle, faded) in _drawn)
                     {
@@ -106,6 +116,10 @@
                 @foreach (var amount in _amounts)
                 {
                     <span class="@AmountClass(amount.Bundle)" data-link-kind="@amount.Bundle.Kind" style="@AmountStyle(amount)" aria-hidden="true">@amount.Text</span>
+                }
+                @if (_view.Pill is { } pill)
+                {
+                    <div class="map-pill" style="@Box(pill.Slot)" aria-hidden="true"><MapGateWords Line="pill.Words" /></div>
                 }
                 @foreach (var bucket in _view.Buckets)
                 {
@@ -284,6 +298,13 @@
         @<button type="button" class="@ModuleClass(node)" style="@(node.Quiet ? null : Box(node.Slot))" aria-pressed="@(_chosen == node.End.Module ? "true" : "false")"
                  data-module="@node.End.Id" @onclick="() => ChooseAsync(node.End.Module!.Value)">
             <span class="map-module__title">@L[MapTabText.Module(node.End.Module!.Value)]</span>
+            @if (!node.Quiet)
+            {
+                foreach (var line in node.Lines)
+                {
+                    <MapGateWords Line="line" />
+                }
+            }
             @if (node.Refused)
             {
                 <span class="map-module__state">@L["Refused"]</span>
@@ -314,7 +335,7 @@
         </button>;
 
     private string ModuleClass(MapNode node) =>
-        $"map-module{(_chosen == node.End.Module ? " map-module--chosen" : "")}{(node.Refused ? " map-module--refused" : "")}{(node.Skipped ? " map-module--skipped" : "")}{(node.Quiet ? " map-module--quiet" : "")}";
+        $"map-module{(node.Gate && !node.Quiet ? " map-module--gate" : "")}{(_chosen == node.End.Module ? " map-module--chosen" : "")}{(node.Refused ? " map-module--refused" : "")}{(node.Skipped ? " map-module--skipped" : "")}{(node.Quiet ? " map-module--quiet" : "")}";
 
     private static bool ToPocket(MapBundle bundle) => bundle.To.Bucket == "pocket";
 

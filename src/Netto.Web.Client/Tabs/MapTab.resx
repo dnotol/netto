@@ -45,6 +45,15 @@
   <data name="Module_Household" xml:space="preserve">
     <value>Household</value>
   </data>
+  <data name="Column_You" xml:space="preserve">
+    <value>You and your household</value>
+  </data>
+  <data name="Column_Across" xml:space="preserve">
+    <value>Ways across</value>
+  </data>
+  <data name="Column_Company" xml:space="preserve">
+    <value>The company</value>
+  </data>
   <data name="Module_CorporateTax" xml:space="preserve">
     <value>Corporate tax</value>
   </data>

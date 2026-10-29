@@ -18,6 +18,10 @@ internal static class MapTabText
     // A module on the map, named as its card is.
     public static string Module(RiverModule module) => $"Module_{module}";
 
+    // A column of the map, by whose money it holds: the director's and their household's, on its way across, or
+    // the company's.
+    public static string Column(MapOwner owner) => $"Column_{owner}";
+
     // Whether a condition one module sets on another holds, in a word or two, which its line says on the map
     // (MapLink.State, MapConditions) and its link carries: a test of the corporate rate met or lost, the
     // office kept, what a royalty does to the pay keeping the rate (lowers it, has no effect on it, or leaves

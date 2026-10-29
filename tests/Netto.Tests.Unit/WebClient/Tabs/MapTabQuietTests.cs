@@ -24,6 +24,7 @@ public class MapTabQuietTests
     public async Task Tab_quietLevers_areButtonsInTheRiversOrderNamedWithTheirWord()
     {
         var badges = MapBadgesTests.Of(ChainQuiet);
+        var gates = MapGates.Of(ChainQuiet, ChainQuiet.Run());
 
         var html = await RenderTabAsync(ChainQuiet);
 
@@ -31,7 +32,7 @@ public class MapTabQuietTests
             MapModules.Name(module),
             module is RiverModule.Allowances or RiverModule.Rent or RiverModule.Car
                 ? $"{CardTitle(module)} {Word}"
-                : string.Join(' ', [CardTitle(module), .. badges.GetValueOrDefault(module, []).Select(BadgeWords)]),
+                : string.Join(' ', [CardTitle(module), .. gates.For(module).Select(GateWords), .. badges.GetValueOrDefault(module, []).Select(BadgeWords)]),
             "false")));
     }
 

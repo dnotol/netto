@@ -260,6 +260,53 @@
     color: var(--netto-text-muted);
 }
 
+/* A column of the map, by whose money it holds: the director's and the company's framed in a dashed line over
+   a wash, the ways across between them unframed, each labelled over the top row's boxes, in the room the row
+   keeps over them (MapLayout.LabelRem, LabelTopRem), under every line and box, taking no pointer. */
+.map-column {
+    position: absolute;
+    box-sizing: border-box;
+    border: 1px dashed var(--netto-line-input);
+    border-radius: 12px;
+    background: var(--netto-wash);
+    pointer-events: none;
+}
+
+.map-column--across {
+    border-color: transparent;
+    background: none;
+}
+
+.map-column__label {
+    position: absolute;
+    top: 0.125rem;
+    right: 0;
+    left: 0;
+    color: var(--netto-text-muted);
+    font-size: 0.6rem;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: 0.06em;
+    text-align: center;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+/* The pay's pill, on its line where it crosses the gates' column, as wide as a gate: the pay in words, over the
+   line, which runs on under it into Director pay. */
+.map-pill {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    padding: 0 0.6rem;
+    border: 1px dashed var(--netto-text-muted);
+    border-radius: 1rem;
+    background: var(--netto-page);
+    pointer-events: none;
+}
+
 /* A bucket of the bar: where the money ends, nothing to choose. Its wash lies over the map's ground, so it
    hides the lines that run on under it to its middle, and each meets its edge, rounded corners and all. */
 .map-bucket {

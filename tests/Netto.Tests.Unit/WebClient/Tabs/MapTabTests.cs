@@ -24,19 +24,83 @@ public class MapTabTests
     private static readonly string[] ToolsAndCard =
         ["</header>", "class=\"map-tab__tools\"", "map-tab__filter", "class=\"map\"", "class=\"map-tab__side\"", "class=\"map-tab__receives\"", "map-tab__panel"];
 
-    // Each module is a button named by its card's title and the words of the badges in its box, which a
-    // screen reader hears with it: every module the map draws, each with the badges MapBadges finds for it.
+    // Each module is a button named by its card's title, the lines its gate says and the words of the badges in
+    // its box, which a screen reader hears with it: every module the map draws, each gate with the lines MapGates
+    // finds for it, each box with the badges MapBadges finds for it.
     [Fact]
-    public async Task Tab_everyModule_isAButtonNamedByItsCardsTitleAndItsBadgesInTheRiversOrder()
+    public async Task Tab_everyModule_isAButtonNamedByItsCardsTitleItsGatesLinesAndItsBadgesInTheRiversOrder()
     {
         var badges = MapBadgesTests.Of(Full);
+        var gates = MapGates.Of(Full, Full.Run());
 
         var html = await RenderTabAsync(Full);
 
         html.ShouldSatisfyAllConditions(
             () => badges.ShouldNotBeEmpty(),
             () => Buttons(html).Select(button => (button.Module, button.Name, button.Pressed)).ShouldBe(MapView.ModulesOf(Full).Select(module =>
-                (MapModules.Name(module), string.Join(' ', [CardTitle(module), .. badges.GetValueOrDefault(module, []).Select(BadgeWords)]), "false"))));
+                (MapModules.Name(module), string.Join(' ', [CardTitle(module), .. gates.For(module).Select(GateWords), .. badges.GetValueOrDefault(module, []).Select(BadgeWords)]),
+                    "false"))));
+    }
+
+    // A way across is a gate: its box dashed, holding a line for each line MapGates says of it, in its order;
+    // every other module a box of its own.
+    [Fact]
+    public async Task Tab_aWayAcross_isAGateHoldingTheLinesItSays()
+    {
+        var gates = MapGates.Of(Full, Full.Run());
+
+        var html = await RenderTabAsync(Full);
+
+        html.ShouldSatisfyAllConditions(
+            () => Regex.Matches(html, "<button type=\"button\" class=\"map-module map-module--gate[^\"]*\"[^>]*data-module=\"([a-z-]+)\"").Select(match => match.Groups[1].Value)
+                .ShouldBe(["vouchers", "allowances", "rent", "car", "copyright", "dividend"]),
+            () => GateLines(html).ShouldBe(gates.Gates.SelectMany(gate => gate.Lines.Select(line => (MapModules.Name(gate.Module), GateWords(line))))));
+    }
+
+    // The map's three columns, framed and labelled over their top by whose money they hold, left to right, out of
+    // a screen reader's hearing, the buttons in the river's order saying the modules: each frame drawn in its slot.
+    [Fact]
+    public async Task Tab_theColumns_areLabelledByWhoseMoneyTheyHold()
+    {
+        var view = MapView.From(Full, Full.Run());
+
+        var html = await RenderTabAsync(Full);
+
+        Regex.Matches(html, "<div class=\"map-column map-column--([a-z]+)\" style=\"([^\"]*)\" aria-hidden=\"true\"[^>]*><span class=\"map-column__label\"[^>]*>([^<]*)</span></div>")
+            .Select(match => (match.Groups[1].Value, match.Groups[2].Value, match.Groups[3].Value))
+            .ShouldBe(view.Columns.Select(column => (column.Owner.ToString().ToLowerInvariant(), Box(column.Slot),
+                ResxText.For<MapTab>().Get(MapTabText.Column(column.Owner))!)));
+    }
+
+    // The pay crosses into Director pay under its pill, in the gates' column, saying what crosses, out of a screen
+    // reader's hearing, the cards saying it; its line says no amount of its own.
+    [Fact]
+    public async Task Tab_thePay_crossesUnderItsPill()
+    {
+        var view = MapView.From(Full, Full.Run());
+        var pill = view.Pill.ShouldNotBeNull();
+
+        var map = Map(await RenderTabAsync(Full));
+
+        map.ShouldSatisfyAllConditions(
+            () => Regex.Matches(map, "<div class=\"map-pill\" style=\"([^\"]*)\" aria-hidden=\"true\"[^>]*>(.*?)</div>", RegexOptions.Singleline)
+                .Select(match => (match.Groups[1].Value, Regex.Replace(Regex.Replace(match.Groups[2].Value, "<[^>]*>", ""), "\\s+", " ").Trim()))
+                .ShouldBe([(Box(pill.Slot), GateWords(pill.Words))]),
+            () => Amounts(map).ShouldNotContain(Formats.Euros(pill.Words.Amount!.Value)));
+    }
+
+    // Each column's label fits over the top row's boxes, in the room the row keeps over them on the narrowest map,
+    // at the size the stylesheet draws it.
+    [Fact]
+    public void MapTabCss_drawsTheColumnsLabelsInTheRoomOverTheTopRow()
+    {
+        var css = Stylesheet.Read("src", "Netto.Web.Client", "Tabs", "MapTab.razor.css");
+
+        css.ShouldSatisfyAllConditions(
+            () => Stylesheet.Block(css, ".map-column__label").ShouldContain($"top: {Stylesheet.Rem(MapLayout.LabelTopRem)};"),
+            () => Stylesheet.Block(css, ".map-column__label").ShouldContain($"font-size: {Stylesheet.Rem(MapLayout.LabelRem)};"),
+            () => Stylesheet.Block(css, ".map-column__label").ShouldContain("line-height: 1;"),
+            () => (MapLayout.LabelTopRem + MapLayout.LabelRem).ShouldBeLessThan((1m - 0.5m) / 2m * MapLayout.SmallestRowRem));
     }
 
     // Each module a condition or a tax base reaches holds its badges in its box, inside its button, in the
@@ -409,6 +473,19 @@ public class MapTabTests
     // A badge's words, as the map's texts say them.
     internal static string BadgeWords(MapBadge badge) => ResxText.For<MapTab>().Format(badge.Words.Key, [.. badge.Words.Args]);
 
+    // A gate's line, or the pay's pill, in its words, its amount among them as the cards format it.
+    internal static string GateWords(MapGateLine line) =>
+        ResxText.For<MapGateWords>().Format(line.Key, line.Amount is { } amount ? [Formats.Euros(amount)] : []).Trim();
+
+    // Each line a gate's button draws, by its module, in its words.
+    private static List<(string Module, string Words)> GateLines(string html) =>
+    [
+        .. Regex.Matches(html, "<button type=\"button\" class=\"map-module[^\"]*\"[^>]*data-module=\"([a-z-]+)\"[^>]*>(.*?)</button>", RegexOptions.Singleline)
+            .SelectMany(button => Regex.Matches(button.Groups[2].Value, "<span class=\"map-gate-words\"[^>]*>(.*?)</span>(?=\\s*(<span class=\"map-gate-words\"|<span class=\"map-module__|$))",
+                    RegexOptions.Singleline)
+                .Select(line => (button.Groups[1].Value, Regex.Replace(Regex.Replace(line.Groups[1].Value, "<[^>]*>", ""), "\\s+", " ").Trim()))),
+    ];
+
     // What the map draws, the column beside it left out.
     internal static string Map(string html) => Regex.Match(html, "<div class=\"map\".*?<div class=\"map-tab__side\"", RegexOptions.Singleline).Value;
 
@@ -445,6 +522,9 @@ public class MapTabTests
 
     // A coordinate of the map as the tab writes it, in percent to the thousandth.
     private static string Number(decimal value) => Math.Round(value, 3).ToString("0.###", System.Globalization.CultureInfo.InvariantCulture);
+
+    // A box's place as the tab styles it, in percent of the map.
+    private static string Box(MapSlot slot) => $"left: {Number(slot.Left)}%; top: {Number(slot.Top)}%; width: {Number(slot.Width)}%; height: {Number(slot.Height)}%";
 
     // Each line: its kind, its dash and its width.
     private static List<(string Kind, string? Dash, string Width)> Lines(string html) =>
