@@ -1,4 +1,3 @@
-using Netto.Core.SocialContributions;
 using Netto.Web.Client.River;
 using Netto.Web.Client.River.CompanyCar;
 using Netto.Web.Client.River.Copyright;
@@ -15,27 +14,12 @@ public class MapGatesTests
 {
     private static readonly RiverInputs Full = MapLinksTests.Full;
 
-    // Every lever in the plan, none with an amount: each moves no money.
-    private static readonly RiverInputs EveryLeverEmpty = PlanComposition.Modules.Aggregate(RiverInputs.Example, (inputs, module) => inputs.AddToPlan(module));
-
     private static readonly MapEnd Pocket = MapEnd.InBucket("pocket");
 
     public static TheoryData<string> Rivers => new()
     {
         "every lever", "the company paying the contributions", "the example", "every lever empty", "a rent under its floor", "a car without contribution",
         "the dividend all kept",
-    };
-
-    internal static RiverInputs River(string name) => name switch
-    {
-        "every lever" => Full,
-        "the company paying the contributions" => Full.WithContributionsPaidBy(ContributionsPaidBy.Company).WithFundFeeRate(0.035m),
-        "the example" => RiverInputs.Example,
-        "every lever empty" => EveryLeverEmpty,
-        "a rent under its floor" => Full.WithRent(1m),
-        "a car without contribution" => Full.WithCarContribution(0m),
-        "the dividend all kept" => Full.WithReserve(1_000_000m),
-        _ => throw new ArgumentOutOfRangeException(nameof(name), name, null),
     };
 
     [Fact]
@@ -89,7 +73,7 @@ public class MapGatesTests
     [MemberData(nameof(Rivers))]
     public void Of_whatReachesYou_isWhatTheGatesGoldLinesCarry(string name)
     {
-        var river = River(name);
+        var river = MapRendering.River(name);
         var run = river.Run();
         var links = MapLinks.Of(river, run);
 
@@ -106,7 +90,7 @@ public class MapGatesTests
     [Fact]
     public void Of_aQuietLever_saysNothing()
     {
-        var gates = MapGates.Of(EveryLeverEmpty, EveryLeverEmpty.Run());
+        var gates = MapGates.Of(MapRendering.EveryLeverEmpty, MapRendering.EveryLeverEmpty.Run());
 
         gates.Gates.Where(gate => RiverModules.Lever(gate.Module) is not null).Select(gate => (gate.Module, gate.Lines.Count)).ShouldBe([
             (RiverModule.Vouchers, 0), (RiverModule.Allowances, 0), (RiverModule.Rent, 0), (RiverModule.Car, 0), (RiverModule.Copyright, 0)]);
@@ -117,7 +101,7 @@ public class MapGatesTests
     [Fact]
     public void Of_allowancesPayingNothingBesideARent_sayNothing()
     {
-        var river = EveryLeverEmpty.WithCadastralIncome(1_200m).WithShareLet(0.12m).WithRent(1_380m);
+        var river = MapRendering.EveryLeverEmpty.WithCadastralIncome(1_200m).WithShareLet(0.12m).WithRent(1_380m);
 
         var gates = MapGates.Of(river, river.Run());
 
@@ -128,7 +112,7 @@ public class MapGatesTests
     [Fact]
     public void Of_aCarWithoutContribution_saysItsBenefitAlone()
     {
-        var river = Full.WithCarContribution(0m);
+        var river = MapRendering.River("a car without contribution");
 
         var gates = MapGates.Of(river, river.Run());
 
@@ -140,7 +124,7 @@ public class MapGatesTests
     [Fact]
     public void Of_aRentUnderItsFloor_saysTheRentAcrossAndWhatTheTaxLeavesSigned()
     {
-        var river = Full.WithRent(1m);
+        var river = MapRendering.River("a rent under its floor");
         var year = river.Run().Year!;
         var view = RentView.From(year, river.Composition);
         view.TaxedOnTheFloor.ShouldBeTrue();
@@ -182,7 +166,7 @@ public class MapGatesTests
     [Fact]
     public void Of_theDividendAllKept_saysNothing()
     {
-        var river = Full.WithReserve(1_000_000m);
+        var river = MapRendering.River("the dividend all kept");
         river.Run().Year!.Dividend.Dividend.ShouldBe(0m);
 
         var gates = MapGates.Of(river, river.Run());
@@ -206,7 +190,7 @@ public class MapGatesTests
     [Fact]
     public void Of_theCompanyPayingTheContributions_pillsThePayAndContributions()
     {
-        var river = River("the company paying the contributions");
+        var river = MapRendering.River("the company paying the contributions");
         var run = river.Run();
         var links = MapLinks.Of(river, run).Where(link => link.From == MapEnd.Of(RiverModule.Split) && link.To == MapEnd.Of(RiverModule.DirectorPay)).ToList();
         links.Count.ShouldBe(3);

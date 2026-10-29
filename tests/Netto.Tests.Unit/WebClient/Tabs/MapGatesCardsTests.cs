@@ -19,7 +19,7 @@ public class MapGatesCardsTests
     [MemberData(nameof(Rivers))]
     public async Task Of_everyFigure_isOneItsCardDraws(string name)
     {
-        var river = MapGatesTests.River(name);
+        var river = MapRendering.River(name);
         var run = river.Run();
         var gates = MapGates.Of(river, run);
         var links = MapLinks.Of(river, run);
@@ -31,16 +31,7 @@ public class MapGatesCardsTests
             : [(gate.Module, line.Amount!.Value)])).ToList();
         amounts.ShouldSatisfyAllConditions(
             () => amounts.Count.ShouldBeGreaterThan(gates.Gates.Count),
-            () => amounts.Where(amount => !Drawn(html, amount.Module).Contains(Unsigned(Formats.Euros(amount.Value))))
+            () => amounts.Where(amount => !MapRendering.Drawn(html, amount.Module).Contains(MapRendering.Unsigned(Formats.Euros(amount.Value))))
                 .Select(amount => $"{amount.Module} {Formats.Euros(amount.Value)}").ShouldBeEmpty());
     }
-
-    // The amounts a card draws in sight: its lines' and its summary's.
-    private static HashSet<string> Drawn(string html, RiverModule module)
-    {
-        var card = CardHtml.Card(html, MapModules.Name(module));
-        return [.. CardHtml.LineAmounts(card).Concat(CardHtml.Amounts(CardHtml.Summary(card) ?? "")).Select(Unsigned)];
-    }
-
-    private static string Unsigned(string amount) => amount.TrimStart('−', '+', '-');
 }

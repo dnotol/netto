@@ -1,5 +1,4 @@
 using System.Globalization;
-using Netto.Core.SocialContributions;
 using Netto.Tests.WebClient.River;
 using Netto.Web.Client;
 using Netto.Web.Client.River;
@@ -21,13 +20,13 @@ public class MapCardsTests
     [MemberData(nameof(Rivers))]
     public async Task Of_everyLink_isAFigureItsCardDraws(string name)
     {
-        var river = River(name);
+        var river = MapRendering.River(name);
         var links = MapLinks.Of(river, river.Run());
 
         var html = await CardHtml.RenderCardsOpenAsync(river);
 
         links.ShouldNotBeEmpty();
-        links.Where(link => !Drawn(html, link.Card).Contains(Unsigned(Formats.Euros(link.Amount!.Value))))
+        links.Where(link => !MapRendering.Drawn(html, link.Card).Contains(MapRendering.Unsigned(Formats.Euros(link.Amount!.Value))))
             .Select(link => $"{link.Card} {link.Carries.Key} {Formats.Euros(link.Amount!.Value)}").ShouldBeEmpty();
     }
 
@@ -38,7 +37,7 @@ public class MapCardsTests
     [MemberData(nameof(Rivers))]
     public async Task View_everyLinesAmount_isAFigureItsCardDrawsOrTheSumOfThem(string name)
     {
-        var river = River(name);
+        var river = MapRendering.River(name);
         var lines = MapView.From(river, river.Run()).Bundles().Where(line => line.Amount is not null).ToList();
 
         var html = await CardHtml.RenderCardsOpenAsync(river);
@@ -51,28 +50,10 @@ public class MapCardsTests
 
     private static bool IsItsCardsFigureOrTheirSum(string html, MapBundle line)
     {
-        var drawn = Drawn(html, line.Card);
-        var parts = line.Links.Select(link => Unsigned(Formats.Euros(link.Amount!.Value))).ToList();
-        var sum = Unsigned(Formats.Euros(parts.Sum(part => decimal.Parse(part, NumberStyles.Currency, Formats.Culture))));
+        var drawn = MapRendering.Drawn(html, line.Card);
+        var parts = line.Links.Select(link => MapRendering.Unsigned(Formats.Euros(link.Amount!.Value))).ToList();
+        var sum = MapRendering.Unsigned(Formats.Euros(parts.Sum(part => decimal.Parse(part, NumberStyles.Currency, Formats.Culture))));
 
-        return line.Links.All(link => link.Card == line.Card) && parts.All(drawn.Contains) && Unsigned(Formats.Euros(line.Amount!.Value)) == sum;
+        return line.Links.All(link => link.Card == line.Card) && parts.All(drawn.Contains) && MapRendering.Unsigned(Formats.Euros(line.Amount!.Value)) == sum;
     }
-
-    private static RiverInputs River(string name) => name switch
-    {
-        "every lever" => MapLinksTests.Full,
-        "the company paying the contributions" => MapLinksTests.Full.WithContributionsPaidBy(ContributionsPaidBy.Company).WithFundFeeRate(0.035m),
-        "the example" => RiverInputs.Example,
-        "the company skipped" => MapLinksTests.Full.SkipCompany(),
-        _ => throw new ArgumentOutOfRangeException(nameof(name), name, null),
-    };
-
-    // The amounts a card draws in sight: its lines' and its summary's.
-    private static HashSet<string> Drawn(string html, RiverModule module)
-    {
-        var card = CardHtml.Card(html, MapModules.Name(module));
-        return [.. CardHtml.LineAmounts(card).Concat(CardHtml.Amounts(CardHtml.Summary(card) ?? "")).Select(Unsigned)];
-    }
-
-    private static string Unsigned(string amount) => amount.TrimStart('−', '+', '-');
 }
