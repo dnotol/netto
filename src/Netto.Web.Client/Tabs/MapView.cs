@@ -13,11 +13,11 @@ namespace Netto.Web.Client.Tabs;
 // year the viewer skipped stays on the map, marked skipped, with no link; a lever that moves no money of
 // its own is quiet, in a quiet pill with no link of its own, the company's line running on past the point
 // beside it. A module's box holds the badges of the conditions and the tax bases reaching it (MapBadges),
-// read before any filter, and a gate's box the lines it says (MapGates). The columns are labelled by whose
-// money they hold (Columns), and the pay crosses under its pill (Pill). A filter shows some links and leaves
-// the others out as `view with { Links = shown }`: the modules, their badges, the routes and the amounts
-// placed on them (MapAmounts) are the run's, so nothing moves. Units is the map's height in chain rows,
-// which the stylesheet makes its height of.
+// read from every link, and a gate's box the lines it says (MapGates). The columns are labelled by whose
+// money they hold (Columns), and the pay crosses under its pill (Pill). What a choice draws is every line of
+// money and the rules' lines of the module chosen (ShowingFor), as `view with { Links = shown }`: the modules,
+// their badges, the routes and the amounts placed on them (MapAmounts) are the run's, so nothing moves. Units
+// is the map's height in chain rows, which the stylesheet makes its height of.
 internal sealed record MapView(IReadOnlyList<MapNode> Modules, IReadOnlyList<MapNode> Buckets, decimal Units)
 {
     public IReadOnlyList<MapLink> Links { get; init; } = [];
@@ -34,11 +34,17 @@ internal sealed record MapView(IReadOnlyList<MapNode> Modules, IReadOnlyList<Map
     // The pay's pill where the pay crosses the gates' column, and what it says; none without a pay.
     public MapPill? Pill { get; init; }
 
-    // The pill as the map draws it: with the pay's line, none while a filter hides that line, the pill being what
-    // the line says.
+    // The pill as the map draws it: with the pay's line, the pill being what the line says.
     public MapPill? ShownPill => Links.Any(link => link.Kind == MapLinkKind.PassedOn && link.From == MapEnd.Of(RiverModule.Split) && link.To == MapEnd.Of(RiverModule.DirectorPay))
         ? Pill
         : null;
+
+    // What the map draws for a choice: every line of money, always, and a tax base's or a condition's line only
+    // where the module chosen is at one end of it, a point of the company's line or of the pocket line beside it
+    // counting as it (MapLink.Touches); none of them while nothing is chosen, their boxes saying them in their
+    // badges. The map given is the run's, with every link, and the lines left keep their routes.
+    public MapView ShowingFor(RiverModule? chosen) =>
+        this with { Links = [.. Links.Where(link => MapLinkStyle.IsMoney(link.Kind) || (chosen is { } module && link.Touches(module)))] };
 
     public static MapView From(RiverInputs inputs, RiverRun run)
     {
@@ -235,7 +241,7 @@ internal sealed record MapBundle(MapRoute Route, IReadOnlyList<MapLink> Links)
 // bucket (a car's costs among the expenses) or coming back out of one (a refund, a credit, the
 // director's contribution to a car), what only changes a tax base (a car's benefit taxed with the pay,
 // what Corporate tax adds back), and a condition one module sets on another. Public because the map's
-// filter, a component, takes counts keyed by it.
+// lines, drawn by a component, are told apart by it.
 public enum MapLinkKind
 {
     PassedOn,
@@ -252,7 +258,8 @@ public enum MapLinkKind
 // changes a tax base dotted, a condition dashed; no two kinds share a style. A line's width is in pixels,
 // which it keeps however the map stretches (vector-effect): a line of money as thick as its amount
 // (MapLineWidths), a line carrying none its kind's (Fixed). The map's lines and arrowheads and the
-// filter's samples read it, no stylesheet keeping an ink of its own for them. Every line is drawn over a
+// key's samples read it (MapKeyView), no stylesheet keeping an ink of its own for them. Every line is drawn over a
+
 // halo of the map's ground, its width and a gap each side (HaloGap), so a line drawn over another leaves a
 // gap on each side of it and the crossing reads as over and under.
 internal static class MapLinkStyle
@@ -268,7 +275,7 @@ internal static class MapLinkStyle
         _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, "A kind of link the map has no style for."),
     };
 
-    // The ink a kind's lines, their arrowheads and the legend's sample of them are drawn in, the one place
+    // The ink a kind's lines, their arrowheads and the key's sample of them are drawn in, the one place
     // it is set: money passed on the strongest, money into a bucket and a tax base lighter, a condition
     // muted, each a token of both themes. What reaches the pocket, the pocket line, is the map's one gold.
     public static string Ink(MapLinkKind kind) => kind switch
@@ -281,11 +288,11 @@ internal static class MapLinkStyle
 
     public const string PocketInk = "var(--netto-gold)";
 
-    // How the legend's sample of a kind ends, as the lines it stands for end on the map (MapBundle.Arrowhead):
+    // How the key's sample of a kind ends, as the lines it stands for end on the map (MapBundle.Arrowhead):
     // money passed on, a tax base and a condition in an arrowhead on the module a line reaches; money into a
     // bucket in a bar its sample runs into, the bucket's edge, as a line of that kind ending in a bucket runs
     // on under it. A line of that kind that comes back out of a bucket ends in an arrowhead instead, which
-    // the kind's words in the legend say (MapFilter.resx).
+    // the kind's words in the key say (MapKey.resx).
     public static MapLineEnd SampleEnd(MapLinkKind kind) => kind switch
     {
         MapLinkKind.IntoBucket => MapLineEnd.Bucket,
@@ -293,7 +300,7 @@ internal static class MapLinkStyle
         _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, "A kind of link the map has no end for."),
     };
 
-    // The bar the legend's sample of money into a bucket runs into: a bucket's edge, in its frame's ink.
+    // The bar the key's sample of money into a bucket runs into: a bucket's edge, in its frame's ink.
     public const string BucketEdge = "var(--netto-line-input)";
 
     // The width of a line that carries no money, which it keeps whatever the plan: a tax base's, a
@@ -311,7 +318,7 @@ internal static class MapLinkStyle
     // amounts and what a module receives all ask it here.
     public static bool IsMoney(MapLinkKind kind) => Fixed(kind) is null;
 
-    // The width of the legend's sample of a kind: its lines' own, or, a kind of money, a sample's, one width
+    // The width of the key's sample of a kind: its lines' own, or, a kind of money, a sample's, one width
     // for both, saying the kind rather than an amount; their ends tell them apart (SampleEnd).
     public static string Sample(MapLinkKind kind) => Pixels(Fixed(kind) ?? MoneySample);
 

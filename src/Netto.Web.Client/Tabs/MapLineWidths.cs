@@ -5,7 +5,7 @@ namespace Netto.Web.Client.Tabs;
 // of the run's largest line of money the rest of the way to the thickest, so the largest is the thickest,
 // a quarter of it halfway, and a line of a few hundred euros beside the year's profit still shows; a line
 // that only changes a tax base, or a condition, its kind's width (MapLinkStyle.Fixed), since it carries no
-// money. The largest line is the run's, measured before any filter (MapLayout.Routed), so hiding a kind of
+// money. The largest line is the run's, measured from every link (MapLayout.Routed), so drawing fewer kinds of
 // line thickens none, and a line's amount is the one the map says of it (MapBundle.Sum). Arithmetic of
 // display: nothing here is a tax figure. And the arrowhead ending a line, sized by it.
 internal static class MapLineWidths

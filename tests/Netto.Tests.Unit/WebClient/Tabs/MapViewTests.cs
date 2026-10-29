@@ -339,19 +339,38 @@ public class MapViewTests
             () => largest.Select(bundle => bundle.Route.Width).ShouldAllBe(width => width == MapLineWidths.Thickest));
     }
 
-    // The largest line is the run's, whatever the viewer hides: hiding the money passed on, the largest
-    // line's kind, thickens no line into a bucket.
-    [Fact]
-    public void Showing_theLargestLinesKindHidden_thickensNoOtherLine()
+    // What the map draws for a choice: every line of money, and the lines of a tax base or a condition with the
+    // module chosen at an end, a point of the company's line or of the pocket line beside it counting as it
+    // (MapLink.Touches); none of them while nothing is chosen. The lines left are the run's, on their routes, at
+    // their widths, in their order; the modules, their badges and boxes, the buckets and the height are the run's.
+    [Theory]
+    [InlineData(null)]
+    [InlineData(RiverModule.Car)]
+    [InlineData(RiverModule.CorporateTax)]
+    [InlineData(RiverModule.Household)]
+    [InlineData(RiverModule.Vouchers)]
+    public void ShowingFor_aChoice_isTheMoneyAndTheRulesOfTheModuleChosen(RiverModule? chosen)
     {
         var view = MapView.From(Full, Full.Run());
-        var filter = new MapLinkFilter(new BrowserStorage());
-        filter.Set(MapLinkKind.PassedOn, shown: false);
 
-        var shown = filter.Showing(view);
+        var shown = view.ShowingFor(chosen);
 
-        shown.Bundles().Select(bundle => (bundle.Kind, bundle.Route.Width))
-            .ShouldBe(view.Bundles().Where(bundle => filter.Shows(bundle.Kind)).Select(bundle => (bundle.Kind, bundle.Route.Width)));
+        shown.ShouldSatisfyAllConditions(
+            () => shown.Links.ShouldBe(view.Links.Where(link => MapLinkStyle.IsMoney(link.Kind) || (chosen is { } module && link.Touches(module)))),
+            () => shown.Links.Where(link => !MapLinkStyle.IsMoney(link.Kind)).Any().ShouldBe(chosen is not null),
+            () => shown.Bundles().Select(bundle => (bundle.Kind, bundle.Route, bundle.Route.Width)).ShouldBe(view.Bundles()
+                .Where(bundle => MapLinkStyle.IsMoney(bundle.Kind) || (chosen is { } module && bundle.Touches(module))).Select(bundle => (bundle.Kind, bundle.Route, bundle.Route.Width))),
+            () => (shown.Modules, shown.Buckets, shown.Units, shown.Pill).ShouldBe((view.Modules, view.Buckets, view.Units, view.Pill)),
+            () => shown.Modules.SelectMany(node => node.Badges).ShouldNotBeEmpty());
+    }
+
+    // A refused amount leaves the map no link to draw, whatever is chosen.
+    [Fact]
+    public void ShowingFor_aRefusedAmount_isNoLine()
+    {
+        var refused = Full.WithReserve(-1m);
+
+        MapView.From(refused, refused.Run()).ShowingFor(RiverModule.Car).Links.ShouldBeEmpty();
     }
 
     // A line ends in an arrowhead where it reaches a module, money passed on, what comes back out of a

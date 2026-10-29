@@ -22,7 +22,7 @@ public class MapTabTests
     // What the tab draws, in the order it draws it: its head, the map's tools and the filter among them, the
     // map, the column beside it, the line of what the chosen module receives and its card.
     private static readonly string[] ToolsAndCard =
-        ["</header>", "class=\"map-tab__tools\"", "map-tab__filter", "class=\"map\"", "class=\"map-tab__side\"", "class=\"map-tab__receives\"", "map-tab__panel"];
+        ["</header>", "class=\"map-tab__tools\"", "map-tab__key", "class=\"map\"", "class=\"map-tab__side\"", "class=\"map-tab__receives\"", "map-tab__panel"];
 
     // Each module is a button named by its card's title, the lines its gate says and the words of the badges in
     // its box, which a screen reader hears with it: every module the map draws, each gate with the lines MapGates
@@ -155,7 +155,7 @@ public class MapTabTests
     [Fact]
     public async Task Tab_everyLine_saysItsKindAndTakesItsStroke()
     {
-        var view = MapView.From(Full, Full.Run());
+        var view = MapView.From(Full, Full.Run()).ShowingFor(null);
 
         var html = await RenderTabAsync(Full);
 
@@ -169,7 +169,7 @@ public class MapTabTests
     [Fact]
     public async Task Tab_everyLineAndItsArrowhead_takeTheirKindsInkOrThePocketsGold()
     {
-        var drawn = MapView.From(Full, Full.Run()).Drawn(null);
+        var drawn = MapView.From(Full, Full.Run()).ShowingFor(null).Drawn(null);
         var inks = drawn.Select(line => (line.Bundle.Kind.ToString(), Ink: line.Bundle.To.InPocket ? MapLinkStyle.PocketInk : MapLinkStyle.Ink(line.Bundle.Kind))).ToList();
 
         var html = await RenderTabAsync(Full);
@@ -188,7 +188,7 @@ public class MapTabTests
     [Fact]
     public async Task Tab_anArrowhead_endsEachLineIntoAModuleOrOutOfTheRiverSizedByItsLine()
     {
-        var drawn = MapView.From(Full, Full.Run()).Drawn(null);
+        var drawn = MapView.From(Full, Full.Run()).ShowingFor(null).Drawn(null);
 
         var html = await RenderTabAsync(Full);
 
@@ -205,7 +205,7 @@ public class MapTabTests
     [Fact]
     public async Task Tab_everyLine_isDrawnOnItsPointsUnderTheBucketItMeets()
     {
-        var drawn = MapView.From(Full, Full.Run()).Drawn(null);
+        var drawn = MapView.From(Full, Full.Run()).ShowingFor(null).Drawn(null);
 
         var html = await RenderTabAsync(Full);
 
@@ -215,12 +215,12 @@ public class MapTabTests
                 .ShouldBe(drawn.Select(line => (string?)string.Join(' ', line.Bundle.Route.Drawn.Select(point => $"{Number(point.X)},{Number(point.Y)}")))));
     }
 
-    // Nothing chosen: one amount on each line of money or of a tax base that says one, the sum of the card's
-    // lines it holds, and no words; a condition's line says in a word or two whether it holds.
+    // Nothing chosen: one amount on each line of money that says one, the sum of the card's lines it holds,
+    // and no words, no tax base's or condition's line being drawn (MapTabRulesTests).
     [Fact]
     public async Task Tab_nothingChosen_drawsOneAmountPerLineAndNoWords()
     {
-        var view = MapView.From(Full, Full.Run());
+        var view = MapView.From(Full, Full.Run()).ShowingFor(null);
 
         var map = Map(await RenderTabAsync(Full));
 
@@ -228,10 +228,10 @@ public class MapTabTests
             () => view.Bundles().ShouldContain(bundle => bundle.Links.Count > 1),
             () => Amounts(map).ShouldBe(view.Bundles().Where(bundle => bundle.Amount is not null && bundle.SaysAmount).Select(bundle => Formats.Euros(bundle.Amount!.Value)), ignoreOrder: true),
             () => map.ShouldNotContain("map-words"),
-            () => States(map).ShouldBe(view.Links.Where(link => link.Kind == MapLinkKind.Condition).Select(State), ignoreOrder: true));
+            () => States(map).ShouldBeEmpty());
     }
 
-    // Each amount is drawn where MapAmounts places it: at its point of its line, in percent of the map, its box
+    // Each amount is drawn where MapAmounts places it, nothing chosen those of the lines of money: at its point of its line, in percent of the map, its box
     // as wide as its text and its ground and moved from that point by its pixels, so it hugs its line however
     // large the map is drawn; out of a screen reader's hearing, the cards saying their figures.
     [Fact]
@@ -241,7 +241,8 @@ public class MapTabTests
 
         var map = Map(await RenderTabAsync(Full));
 
-        Placed(map).ShouldBe(MapAmounts.Of(view, MapAmountsTests.Say).Select(amount => (amount.Bundle.Kind.ToString(), Style(amount), "true", amount.Text)), ignoreOrder: true);
+        Placed(map).ShouldBe(MapAmounts.Of(view, MapAmountsTests.Say).Where(amount => MapLinkStyle.IsMoney(amount.Bundle.Kind))
+            .Select(amount => (amount.Bundle.Kind.ToString(), Style(amount), "true", amount.Text)), ignoreOrder: true);
     }
 
     // What has reached the pocket is drawn in the gold of the pocket line, the map's one, where a stretch of it
@@ -276,14 +277,14 @@ public class MapTabTests
     public async Task Tab_aModuleChosen_keepsItsOwnLinesAmountsWhereTheyWereAndNoWords()
     {
         var own = MapView.From(Full, Full.Run()).Bundles().Where(bundle => bundle.Touches(RiverModule.Car) && bundle.SaysAmount).Select(bundle => bundle.Kind.ToString()).ToList();
-        var unchosen = Placed(Map(await RenderTabAsync(Full)));
+        var placed = MapAmounts.Of(MapView.From(Full, Full.Run()), MapAmountsTests.Say).Select(amount => (amount.Bundle.Kind.ToString(), Style(amount), "true", amount.Text)).ToList();
 
         var map = Map(await RenderTabAsync(Full, RiverModule.Car));
 
         map.ShouldSatisfyAllConditions(
             () => Placed(map).Count.ShouldBe(own.Count),
             () => Placed(map).Select(amount => amount.Kind).ShouldBe(own, ignoreOrder: true),
-            () => Placed(map).ShouldBeSubsetOf(unchosen),
+            () => Placed(map).ShouldBeSubsetOf(placed),
             () => map.ShouldNotContain("map-words"),
             () => map.ShouldNotContain("The car's yearly costs"));
     }
@@ -294,7 +295,7 @@ public class MapTabTests
     [Fact]
     public async Task Tab_everyLine_isDrawnOverAHaloOfTheGround()
     {
-        var drawn = MapView.From(Full, Full.Run()).Drawn(RiverModule.Car);
+        var drawn = MapView.From(Full, Full.Run()).ShowingFor(RiverModule.Car).Drawn(RiverModule.Car);
 
         var html = await RenderTabAsync(Full, RiverModule.Car);
 
@@ -308,7 +309,7 @@ public class MapTabTests
     [Fact]
     public async Task Tab_amountsOnTheLines_sayTheirKind()
     {
-        var view = MapView.From(Full, Full.Run());
+        var view = MapView.From(Full, Full.Run()).ShowingFor(null);
 
         var html = await RenderTabAsync(Full);
 
@@ -331,7 +332,7 @@ public class MapTabTests
     [Fact]
     public async Task Tab_aModuleChosen_marksItBringsOutItsLinesAndSaysWhatItReceives()
     {
-        var view = MapView.From(Full, Full.Run());
+        var view = MapView.From(Full, Full.Run()).ShowingFor(RiverModule.Rent);
         var received = MapReceivedView.Of(view, RiverModule.Rent, end => end.Id).Lines;
 
         var html = await RenderTabAsync(Full, RiverModule.Rent);

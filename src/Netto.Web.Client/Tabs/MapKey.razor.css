@@ -1,0 +1,55 @@
+/* The key to the map's lines: its samples are the map's lines in miniature, the same dash and ink
+   (MapLinkStyle), a line of money at one width, since on the map its width is its amount's, and the end of the
+   lines it stands for, an arrowhead or, money into a bucket, a bar it runs into, the bucket's edge; all set on
+   each sample itself, so this sheet keeps no ink of its own for them, at least 3:1 on the page in both themes.
+   The key is compact, one line among the map's tools: its items in one row with no frame of their own, each as
+   wide as its sample and its short name ask, the one bubble beside the last, wrapping onto a second line only
+   where the column has not the room; the bubble stays a target of at least 24 px. */
+
+/* A list's own markers and indent are taken off, so the key is a plain row of its items. */
+.map-key {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem 0.6rem;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+/* Each line an item of its own, its sample and its name; the last holds the bubble beside it, never broken
+   from it. */
+.map-key__line {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 0.3rem;
+    min-height: 1.5rem;
+    line-height: 1.4;
+}
+
+.map-key__swatch {
+    flex: none;
+    overflow: visible;
+}
+
+    .map-key__swatch line {
+        fill: none;
+        stroke-linecap: round;
+    }
+
+.map-key__name {
+    font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* In the bubble, each line on a line of its own. */
+.map-key__gloss {
+    display: block;
+}
+
+    .map-key__gloss + .map-key__gloss {
+        margin-top: 0.35rem;
+    }

@@ -48,19 +48,19 @@ public class MapPanelLayoutTests
             () => Rule(css, ".map").ShouldContain("var(--map-room)"));
     }
 
-    // The tools are one line, the legend taking what « Add to plan » leaves it and wrapping its boxes inside
+    // The tools are one line, the key taking what « Add to plan » leaves it and wrapping its items inside
     // that room, never « Add to plan » onto a line of its own: so the row is two lines at most where the
     // column is narrowest, 1,201 px wide.
     [Fact]
-    public void Tools_keepAddToPlanOnTheLegendsFirstLine()
+    public void Tools_keepAddToPlanOnTheKeysFirstLine()
     {
         var css = MapTabCss();
 
         css.ShouldSatisfyAllConditions(
             () => Rule(css, ".map-tab__tools").ShouldContain("flex-wrap: nowrap"),
             () => Rule(css, ".map-tab__tools").ShouldNotContain("flex-wrap: wrap"),
-            () => Rule(css, ".map-tab__filter").ShouldContain("flex: 1 1 auto"),
-            () => Rule(css, ".map-tab__filter").ShouldContain("min-width: 0"),
+            () => Rule(css, ".map-tab__key").ShouldContain("flex: 1 1 auto"),
+            () => Rule(css, ".map-tab__key").ShouldContain("min-width: 0"),
             () => Rule(css, ".map-tab__add").ShouldContain("flex: none"));
     }
 

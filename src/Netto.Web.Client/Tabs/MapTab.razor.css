@@ -1,4 +1,4 @@
-/* The Map tab: the map, its tools above it (the legend of the kinds of link and « Add to plan »), and
+/* The Map tab: the map, its tools above it (the key to its lines and « Add to plan »), and
    beside it from 1,201 px the card of the chosen module (MapPanel); below that width the card goes under the
    map. Both keep to the page's column (app.css, --netto-column), the map taking the room the card leaves
    and the card a share of what the column grows past them both, so on a 1,920 px screen the map is about
@@ -15,8 +15,8 @@
     gap: 2rem;
 }
 
-/* The tools over the map: the legend, then « Add to plan » at the end of its first line. The legend takes
-   the room « Add to plan » leaves it, and wraps its boxes inside that room where it must, so the row is two
+/* The tools over the map: the key to its lines, then « Add to plan » at the end of its first line. The key
+   takes the room « Add to plan » leaves it, and wraps its items inside that room where it must, so the row is two
    lines at most where the column is narrowest, never « Add to plan » alone on a line. */
 .map-tab__tools {
     display: flex;
@@ -27,7 +27,7 @@
     margin-bottom: 0.75rem;
 }
 
-.map-tab__filter {
+.map-tab__key {
     flex: 1 1 auto;
     min-width: 0;
 }

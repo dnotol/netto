@@ -213,7 +213,7 @@ public class PlanTakenOutNoticeTests
     // boxes, one for each kind of link.
     private static async Task TakeOutOfTheMenuAsync(LivePlan page, OptionalModule module)
     {
-        var box = (await page.FindAllAsync<MudCheckBox<bool>>())[Enum.GetValues<MapLinkKind>().Length + (int)module];
+        var box = (await page.FindAllAsync<MudCheckBox<bool>>())[(int)module];
         await page.InvokeAsync(() => box.ValueChanged.InvokeAsync(false));
     }
 

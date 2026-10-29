@@ -1,0 +1,47 @@
+@using Netto.Web.Client.River
+@inject IStringLocalizer<MapKey> L
+
+@* The Map tab's key to its lines, compact among the map's tools: an item for every style of line the map draws
+   (MapKeyView), in one row, each with a sample of its line, the very dash, width and ink the map draws it with
+   and the end of the lines it stands for, an arrowhead, or a bar its line runs into, a bucket's edge (MapLinkStyle),
+   a line of money at one width since on the map its width is its amount, so the key tells the lines apart without
+   colour, and its short name; after the items, beside the last one in its item, so the row never breaks the two
+   apart, one info bubble saying what each line is. The key shows and hides nothing: the map draws every line of
+   money, and a tax base's or a condition's for the module chosen. It is a list named for a screen reader, which
+   hears its name, then each line's; the samples are for the eye. Nothing here is a live region. *@
+<ul class="map-key" aria-label="@L[MapKeyText.Key]">
+    @foreach (var line in MapKeyView.Lines)
+    {
+        <li @key="line" class="map-key__line">
+            <svg class="map-key__swatch" data-key-line="@line" width="28" height="8" viewBox="0 0 28 8" aria-hidden="true" focusable="false">
+                @if (MapKeyView.End(line) == MapLineEnd.Bucket)
+                {
+                    <line x1="2" y1="4" x2="25" y2="4" stroke-width="@MapKeyView.Width(line)" stroke-dasharray="@MapKeyView.Dash(line)" style="stroke: @MapKeyView.Ink(line)" />
+                    <line class="map-key__bucket" x1="25" y1="0.5" x2="25" y2="7.5" stroke-width="2" style="stroke: @MapLinkStyle.BucketEdge" />
+                }
+                else
+                {
+                    <line x1="2" y1="4" x2="21" y2="4" stroke-width="@MapKeyView.Width(line)" stroke-dasharray="@MapKeyView.Dash(line)" style="stroke: @MapKeyView.Ink(line)" />
+                    <polygon class="map-key__arrow" points="20,0.5 27,4 20,7.5" style="fill: @MapKeyView.Ink(line)" />
+                }
+            </svg>
+            <span class="map-key__name">@L[MapKeyText.Name(line)]</span>
+            @if (line == MapKeyView.Lines[^1])
+            {
+                @Glossary()
+            }
+        </li>
+    }
+</ul>
+
+@code {
+    // The one bubble saying what each line is, beside the last line's item, in it, so the row never breaks the
+    // two apart.
+    private RenderFragment Glossary() =>
+        @<InfoBubble Label="@L[MapKeyText.Key]">
+            @foreach (var line in MapKeyView.Lines)
+            {
+                <span class="map-key__gloss">@L[MapKeyText.GlossLine, L[MapKeyText.Name(line)], L[MapKeyText.Gloss(line)]]</span>
+            }
+        </InfoBubble>;
+}

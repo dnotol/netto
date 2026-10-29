@@ -12,7 +12,7 @@ namespace Netto.Web.Client.Tabs;
 // separately among others. A module holding what the map draws no line of (Holding) is never quiet: a
 // household declaring dependants, whose supplements raise a tax-free amount taxed at its own rates, neither
 // money nor a tax base, does something in the plan all the same. Read from every link of the run before a
-// filter hides any, so hiding a kind of link folds nothing; a refused run has no link to read what its levers
+// choice draws them, so choosing a module folds nothing; a refused run has no link to read what its levers
 // move, so it folds nothing. Nothing here tests a rule or computes a figure: it reads which lines the cards
 // draw, and what the plan declares.
 internal static class MapQuiet

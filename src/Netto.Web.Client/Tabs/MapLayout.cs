@@ -11,7 +11,7 @@ namespace Netto.Web.Client.Tabs;
 // it and closes up when it holds nothing, so a lever out of the plan leaves no gap, and with the company
 // skipped the map is Company year, which no link joins, over the partner, Director pay and the buckets. The
 // shape is fixed, so every link has its own route, worked out once from the slots and every link of the run,
-// never from the links a filter shows, so hiding a kind of link moves nothing. The columns and lanes are the
+// never from the links a choice draws, so choosing a module moves nothing. The columns and lanes are the
 // pixels of the narrowest map, 34rem wide, which the layout was drawn at, each a percent of the map wherever
 // it is drawn wider.
 //
@@ -255,7 +255,7 @@ internal static class MapLayout
 
     // Every link of the run with its route: links with the same ends and kind share one, their amount
     // said together, as thick as what they carry together beside the run's largest line of money
-    // (MapLineWidths), measured here from every link of the run, so a filter thickens no line, and routed
+    // (MapLineWidths), measured here from every link of the run, so a choice thickens no line, and routed
     // apart from the lines beside it at their widths.
     public static IReadOnlyList<MapLink> Routed(MapGrid grid, IReadOnlyList<MapLink> links)
     {

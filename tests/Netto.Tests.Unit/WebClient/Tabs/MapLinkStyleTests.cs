@@ -165,7 +165,7 @@ public class MapLinkStyleTests
     // arrowhead or a sample an ink of its own, by kind or not, so the two can never drift apart.
     [Theory]
     [InlineData("MapTab.razor.css")]
-    [InlineData("MapFilter.razor.css")]
+    [InlineData("MapKey.razor.css")]
     public void Stylesheet_inksNoLineArrowheadOrSampleOfItsOwn(string stylesheet)
     {
         var css = Stylesheet.Read("src", "Netto.Web.Client", "Tabs", stylesheet);

@@ -5,7 +5,6 @@
 @inject IStringLocalizer<MapTab> L
 @inject IStringLocalizer<BucketBar> BucketTexts
 @inject IStringLocalizerFactory Localizers
-@inject MapLinkFilter Filter
 
 @* The Map tab: the plan's modules from above, as the river shows them, and the money between them, every
    line the links of the river's one run between the same two ends, whose amount is a figure its card
@@ -42,8 +41,8 @@
 
    The rules are marks on the module they act on: each condition another module sets on it, but the
    office rule, which always holds, is a badge in its box saying which rule and whether it holds, and what
-   its tax base gains is one badge with its amount (MapBadges), read before the filter, so hiding a kind of
-   line hides no badge, and the box is a line taller for each (MapLayout). A rule lost is said in its
+   its tax base gains is one badge with its amount (MapBadges), read from every link, so a line left
+   undrawn hides no badge, and the box is a line taller for each (MapLayout). A rule lost is said in its
    words, an icon and an outline in the error colour, never the colour alone; the royalty lowering no pay has
    no effect. The badges are the button's content, so a screen reader hears them with the module's name.
 
@@ -71,14 +70,12 @@
    that it is said once, and nothing is said received.
 
    The map is as tall as the window leaves under the band, and stays there while the page scrolls the card
-   beside it, which has no scroll area of its own. Over the map are its tools: the filter of the kinds of
-   link (MapFilter), the legend of the lines, whose boxes the viewer ticks, and what the page puts there
-   (AddToPlan). A kind unticked is left out of the lines, their arrowheads and their amounts, and only of
-   those: what the chosen module receives is read from every link of the run. The kinds that are a tax
-   base and a condition start unticked, hidden by default, since their badges say them on the modules
-   they reach, and ticking them draws their lines. The filter shows the map without those links
-   (MapLinkFilter.Showing) and leaves everything else where it is: the modules, the buckets, the route of
-   every line left and its amount are the run's, and the choice of a module is the page's. The lines are an
+   beside it, which has no scroll area of its own. Over the map are its tools: the key to its lines (MapKey),
+   saying what each style of line is, and what the page puts there (AddToPlan). Every line of money is drawn;
+   a tax base's and a condition's line only for the module chosen, with its arrowhead and its amount or words,
+   none while nothing is chosen, their badges saying them on the modules they reach (MapView.ShowingFor). The
+   choice leaves everything else where it is: the modules, the buckets, the route of every line and its amount
+   are the run's, placed once from every link of it, and the choice of a module is the page's. The lines are an
    SVG stretched to the map's box (preserveAspectRatio="none"), kept to their width by vector-effect; what
    must keep its shape, the boxes, the amounts and the arrowheads, is HTML placed over it in percentages. *@
 <TabHead Title="@L["Title"]" />
@@ -88,8 +85,8 @@
 <div class="map-tab">
     <div class="map-tab__map">
         <div class="map-tab__tools">
-            <div class="map-tab__filter">
-                <MapFilter Counts="_counts" OnChanged="Refilter" />
+            <div class="map-tab__key">
+                <MapKey />
             </div>
             @if (AddToPlan is not null)
             {
@@ -199,20 +196,18 @@
     [Parameter]
     public bool ViewerChose { get; set; }
 
-    // What the page puts among the map's tools, after the legend: « Add to plan » (CompositionMenu).
+    // What the page puts among the map's tools, after the key: « Add to plan » (CompositionMenu).
     [Parameter]
     public RenderFragment? AddToPlan { get; set; }
 
     // The engine's refusal the chosen module's card holds, as the Plan page hands it to that card.
     private Refusal? ChosenRefusal => _chosen is { } module ? RefusedBy(module) : null;
 
-    // The map of the run, and the same without the links of the kinds the viewer hid (MapLinkFilter): the
-    // second is what is drawn, the first what the legend counts and what the chosen module receives is read
-    // from, and what every line's amount is placed on (MapAmounts), once a run, so a tick or a choice moves
-    // none.
+    // The map of the run, and what the choice draws of it (MapView.ShowingFor): the second is what is drawn, the
+    // first what the chosen module receives is read from, and what every line's amount is placed on
+    // (MapAmounts), once a run, so a choice moves none.
     private MapView _full = default!;
     private MapView _view = default!;
-    private IReadOnlyDictionary<MapLinkKind, int> _counts = default!;
     private IReadOnlyList<MapAmount> _placed = [];
     private (RiverInputs Inputs, RiverRun Run)? _mapped;
     private RiverModule? _chosen;
@@ -222,7 +217,7 @@
     private readonly Dictionary<MapText, IStringLocalizer> _texts = [];
 
     // What the tab draws, for the page's tests to read as they read Chosen (a render of the page writes no
-    // HTML): the map without the links of the kinds hidden, its lines and the amounts on them.
+    // HTML): the map as the choice draws it, its lines and the amounts on them.
     internal MapView ShownMap => _view;
 
     internal IReadOnlyList<(MapBundle Bundle, bool Faded)> DrawnLines => _drawn;
@@ -238,27 +233,20 @@
         if (_mapped is not var (inputs, run) || !ReferenceEquals(inputs, Inputs) || !ReferenceEquals(run, Run))
         {
             _full = MapView.From(Inputs, Run);
-            _counts = MapLinkFilter.Counts(_full);
             _placed = MapAmounts.Of(_full, Carries);
             _mapped = (Inputs, Run);
         }
 
+        // The lines the choice draws, and their amounts, each where it was placed.
         _chosen = _full.Choice(Chosen);
-        Refilter();
+        _view = _full.ShowingFor(_chosen);
+        _drawn = _view.Drawn(_chosen);
+        _amounts = _view.Amounts(_placed, _chosen);
 
-        // Made from every link of the run, so the legend, which says which lines are drawn, changes nothing of
-        // it: it is not made again at a tick.
+        // Made from every link of the run, whatever the choice draws.
         _received = _chosen is { } chosen ? MapReceivedView.Of(_full, chosen, EndName) : null;
     }
 
-    // The viewer ticked or unticked a kind: the lines and their amounts are the shown kinds' again, each
-    // amount where it was placed.
-    private void Refilter()
-    {
-        _view = Filter.Showing(_full);
-        _drawn = _view.Drawn(_chosen);
-        _amounts = _view.Amounts(_placed, _chosen);
-    }
 
     // A module chosen again lets it go.
     private Task ChooseAsync(RiverModule module) => ChosenChanged.InvokeAsync(_chosen == module ? null : module);

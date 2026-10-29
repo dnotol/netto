@@ -12,8 +12,8 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Legend" xml:space="preserve">
-    <value>Kinds of link shown</value>
+  <data name="Key" xml:space="preserve">
+    <value>Key to the lines</value>
   </data>
   <data name="Name_PassedOn" xml:space="preserve">
     <value>Passed on</value>
@@ -25,33 +25,27 @@
     <value>Into a bucket</value>
   </data>
   <data name="Gloss_IntoBucket" xml:space="preserve">
-    <value>money that ends in one of the bar's buckets, its line running into it, or that comes back out of a bucket, its line then ending in an arrowhead. The thicker the line, the more money. The gold line down your column says, after each line joining it, what has reached you so far.</value>
+    <value>money that ends in one of the bar's buckets, its line running into it, or that comes back out of a bucket, its line then ending in an arrowhead. The thicker the line, the more money.</value>
+  </data>
+  <data name="Name_Pocket" xml:space="preserve">
+    <value>Into your pocket</value>
+  </data>
+  <data name="Gloss_Pocket" xml:space="preserve">
+    <value>what reaches you, in gold: one line down your column into your pocket, saying after each line joining it what has reached you so far.</value>
   </data>
   <data name="Name_TaxBase" xml:space="preserve">
     <value>Tax base</value>
   </data>
   <data name="Gloss_TaxBase" xml:space="preserve">
-    <value>what changes the amount a tax is worked out on without moving money, a benefit taxed with the pay, what Corporate tax adds back.</value>
+    <value>what changes the amount a tax is worked out on without moving money, a benefit taxed with the pay, what Corporate tax adds back, the marital quotient. Drawn for the module you choose; the boxes say what they add.</value>
   </data>
   <data name="Name_Condition" xml:space="preserve">
     <value>Conditions</value>
   </data>
   <data name="Gloss_Condition" xml:space="preserve">
-    <value>a condition one module sets on another.</value>
-  </data>
-  <data name="Count_None" xml:space="preserve">
-    <value>(none in this plan)</value>
-  </data>
-  <data name="Count_One" xml:space="preserve">
-    <value>(1 link)</value>
-  </data>
-  <data name="Count_Many" xml:space="preserve">
-    <value>({0} links)</value>
+    <value>a condition one module sets on another. Drawn for the module you choose; the boxes say whether it holds.</value>
   </data>
   <data name="GlossLine" xml:space="preserve">
     <value>{0}: {1}</value>
-  </data>
-  <data name="AllHidden" xml:space="preserve">
-    <value>Every kind of link is hidden: tick one to see its links.</value>
   </data>
 </root>

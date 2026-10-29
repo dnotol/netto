@@ -3,8 +3,8 @@ using Netto.Web.Client.River;
 
 namespace Netto.Web.Client.Tabs;
 
-// The badges of the modules' boxes, read from every link of the run before a filter hides any, so hiding a
-// kind of link hides no badge: each condition one module sets on another marks the module it acts on with
+// The badges of the modules' boxes, read from every link of the run whatever the choice draws, so a line
+// left undrawn hides no badge: each condition one module sets on another marks the module it acts on with
 // its own badge (MapConditions), in the engine's order, but the office rule's, which always holds and has
 // none; then each module a tax base of another module's card reaches is marked once with what that base
 // gains, the sum of the card lines reaching it, each to the cent as its card draws it, which for Corporate tax is the year's disallowed

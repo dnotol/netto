@@ -13,24 +13,25 @@ public class MapConditionsRenderingTests
 {
     private static readonly RiverInputs River = MapViewConditionsTests.CostlyCar;
 
+    // The car chosen, the conditions it sets or meets are its kind's dashed lines.
     [Fact]
     public async Task MapTab_aPlansConditions_areDashedLines()
     {
-        var conditions = MapView.From(River, River.Run()).Bundles().Count(bundle => bundle.Kind == MapLinkKind.Condition);
+        var conditions = MapView.From(River, River.Run()).Bundles().Count(bundle => bundle.Kind == MapLinkKind.Condition && bundle.Touches(RiverModule.Car));
 
-        var html = await MapRendering.RenderTabAsync(River);
+        var html = await MapRendering.RenderTabAsync(River, RiverModule.Car);
 
         var dashes = Regex.Matches(html, "<polyline [^>]*stroke-dasharray=\"([^\"]*)\"[^>]*data-link-kind=\"Condition\"").Select(match => match.Groups[1].Value).ToList();
         (conditions > 0, dashes.Count, string.Join('|', dashes.Distinct())).ShouldBe((true, conditions, MapLinkStyle.Dash(MapLinkKind.Condition)));
     }
 
-    // On the map, on its line, the car's condition says in a word that the rate is lost.
+    // Nothing chosen, no condition's line is drawn, nor its word: the badge on the module it acts on says it.
     [Fact]
-    public async Task MapTab_theCarsCondition_saysOnTheMapThatTheRateIsLost()
+    public async Task MapTab_nothingChosen_saysNoConditionOnTheMapButItsBadge()
     {
         var html = await MapRendering.RenderTabAsync(River);
 
-        ConditionWords(html).ShouldContain("lost");
+        (ConditionWords(html).Count, html.Contains("data-badge-kind=\"Condition\"", StringComparison.Ordinal)).ShouldBe((0, true));
     }
 
     // Its module chosen, the line still says its word or two on the map.

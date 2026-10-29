@@ -18,7 +18,6 @@ builder.Services.AddScoped<IBrowserStorage, LocalStorage>();
 builder.Services.AddScoped<IThemePage, BrowserThemePage>();
 builder.Services.AddScoped<ThemePreference>();
 builder.Services.AddScoped<Folds>();
-builder.Services.AddScoped<MapLinkFilter>();
 builder.Services.AddScoped<SavedPlans>();
 
 // The browser's clock: which advance-payment deadlines are still open.
