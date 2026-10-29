@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The river in code</title>
+<link rel="stylesheet" href="atlas.css">
+<script src="atlas.js" defer></script>
+</head>
+<body>
+<main class="atlas-page">
+
+  <header>
+    <p class="eyebrow">Netto · architecture page</p>
+    <h1>How one income year runs through the engine</h1>
+    <p class="lede">The river a user sees, money flowing from the company's year through the modules to their pocket, is one call in code: <code>YearSimulation.<wbr>Run(<wbr>Scenario)</code>. It walks the year in the order the law computes it and returns one <code>YearResult</code> that every card, the bar and the map read. This page shows that walk, what each lever hands the next layer, and where to add a lever or an income year.</p>
+    <p class="atlas-meta"><span>As of <b>main 29cbc95</b></span><span><b>29 October 2026</b></span></p>
+  </header>
+
+  <section aria-labelledby="h-walk">
+    <h2 id="h-walk">The walk through one year</h2>
+    <p>The page turns its inputs into a <code>Scenario</code>, gated by what is in the plan. <code>Run</code> takes INASTI's yearly company contribution off what the company earns, then folds over the levers in <code>LeverOrder.For(year)</code>: vouchers, expense allowances, home office rent, company car, copyright royalty. Each lever takes its amount off what is left and says what reaches the pocket, what the company cannot deduct and what it hands the pay to be taxed with it. What the levers leave is the profit before pay the split shares. <code>GrossToNet</code> taxes the pay with what the levers handed it, corporate tax takes the rest, and the dividend pays out what is left above the reserve. Every layer reads its rules for the income year and region; nothing in the walk tests the year itself.</p>
+
+    <figure class="atlas-figure" id="walk">
+      <ul class="atlas-layers">
+        <li data-layer="rules">Rule sets</li>
+        <li data-layer="household">Household</li>
+        <li data-layer="searches">Searches</li>
+      </ul>
+      <div class="atlas-scroll">
+        <svg viewBox="0 0 790 670" role="img" aria-labelledby="walk-title walk-desc">
+          <title id="walk-title">YearSimulation.Run, layer by layer</title>
+          <desc id="walk-desc">The page's RiverInputs build a Scenario. Inside YearSimulation.Run, INASTI's company contribution comes off first, then the levers in their order, then GrossToNet taxes the director pay with what the levers hand it, then corporate tax takes the profit after the pay's cost plus what the company cannot deduct, then the dividend. The YearResult, with its figures and steps, is read by the cards, the bar and the map, and by the payment calendar with the date. Every layer reads its rule set for the income year and region. The household's facts on the scenario are read by the personal tax inside GrossToNet. The split's and the moves' searches run the year again at other pays.</desc>
+          <defs>
+            <marker id="walk-head" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker>
+          </defs>
+
+          <rect class="group" x="300" y="100" width="190" height="472" rx="14"/>
+          <text class="group-label" x="310" y="118">Run</text>
+
+          <g class="box" data-node="inputs" data-title="RiverInputs"><rect x="20" y="20" width="150" height="56" rx="8"/><text class="t" x="95" y="44" text-anchor="middle">RiverInputs</text><text class="s" x="95" y="62" text-anchor="middle">The page's inputs</text></g>
+          <g class="box" data-node="scenario" data-title="Scenario"><rect x="320" y="20" width="150" height="56" rx="8"/><text class="t" x="395" y="44" text-anchor="middle">Scenario</text><text class="s" x="395" y="62" text-anchor="middle">One income year</text></g>
+          <g class="box" data-node="searches" data-title="The searches" data-layer="searches"><rect x="600" y="20" width="170" height="56" rx="8"/><text class="t" x="685" y="44" text-anchor="middle">The searches</text><text class="s" x="685" y="62" text-anchor="middle">SplitSearch, MoveSearch</text></g>
+          <g class="box" data-node="contribution" data-title="INASTI company contribution"><rect x="320" y="130" width="150" height="56" rx="8"/><text class="t" x="395" y="154" text-anchor="middle">INASTI</text><text class="s" x="395" y="172" text-anchor="middle">Company contribution</text></g>
+          <g class="box" data-node="levers" data-title="The levers"><rect x="320" y="220" width="150" height="56" rx="8"/><text class="t" x="395" y="244" text-anchor="middle">The levers</text><text class="s" x="395" y="262" text-anchor="middle">LeverOrder.For(year)</text></g>
+          <g class="store" data-node="rules" data-title="Rule sets" data-layer="rules"><rect x="600" y="220" width="170" height="56" rx="8"/><text class="t" x="685" y="244" text-anchor="middle">Rule sets</text><text class="s" x="685" y="262" text-anchor="middle">For(year, region)</text></g>
+          <g class="box" data-node="pay" data-title="GrossToNet"><rect x="320" y="310" width="150" height="56" rx="8"/><text class="t" x="395" y="334" text-anchor="middle">GrossToNet</text><text class="s" x="395" y="352" text-anchor="middle">The pay, its taxes</text></g>
+          <g class="box" data-node="household" data-title="Household" data-layer="household"><rect x="600" y="310" width="170" height="56" rx="8"/><text class="t" x="685" y="334" text-anchor="middle">Household</text><text class="s" x="685" y="352" text-anchor="middle">Scenario.Household</text></g>
+          <g class="box" data-node="corporate" data-title="Corporate tax"><rect x="320" y="400" width="150" height="56" rx="8"/><text class="t" x="395" y="424" text-anchor="middle">Corporate tax</text><text class="s" x="395" y="442" text-anchor="middle">And its surcharge</text></g>
+          <g class="box" data-node="dividend" data-title="Dividend"><rect x="320" y="490" width="150" height="56" rx="8"/><text class="t" x="395" y="514" text-anchor="middle">Dividend</text><text class="s" x="395" y="532" text-anchor="middle">Reserve kept first</text></g>
+          <g class="box" data-node="result" data-title="YearResult"><rect x="320" y="595" width="150" height="56" rx="8"/><text class="t" x="395" y="619" text-anchor="middle">YearResult</text><text class="s" x="395" y="637" text-anchor="middle">Figures and steps</text></g>
+          <g class="box" data-node="views" data-title="Cards, bar and map"><rect x="600" y="595" width="170" height="56" rx="8"/><text class="t" x="685" y="619" text-anchor="middle">Cards, bar, map</text><text class="s" x="685" y="637" text-anchor="middle">Web.Client views</text></g>
+          <g class="box" data-node="calendar" data-title="Payment calendar"><rect x="20" y="595" width="150" height="56" rx="8"/><text class="t" x="95" y="619" text-anchor="middle">Payment calendar</text><text class="s" x="95" y="637" text-anchor="middle">PaymentCalendar.Of</text></g>
+
+          <g data-edge="inputs scenario" data-step="1"><line class="flow" x1="170" y1="48" x2="316" y2="48" marker-end="url(#walk-head)"/><text class="flow-label" x="243" y="40" text-anchor="middle">Scenario(…)</text></g>
+          <g data-edge="scenario contribution" data-step="2"><line class="flow" x1="395" y1="76" x2="395" y2="126" marker-end="url(#walk-head)"/><text class="flow-label" x="403" y="94">ProfitBeforeDirector</text></g>
+          <g data-edge="contribution levers" data-step="3"><line class="flow" x1="395" y1="186" x2="395" y2="216" marker-end="url(#walk-head)"/><text class="flow-label" x="403" y="205">what is left</text></g>
+          <g data-edge="levers pay" data-step="4"><line class="flow" x1="395" y1="276" x2="395" y2="306" marker-end="url(#walk-head)"/><text class="flow-label" x="403" y="295">TaxedWithPay</text></g>
+          <g data-edge="pay corporate" data-step="5"><line class="flow" x1="395" y1="366" x2="395" y2="396" marker-end="url(#walk-head)"/><text class="flow-label" x="403" y="385">CompanyCost</text></g>
+          <g data-edge="levers corporate" data-step="5"><path class="flow" d="M320 248 H272 V428 H316" marker-end="url(#walk-head)"/><text class="flow-label" x="264" y="330" text-anchor="end">ProfitBeforePay,</text><text class="flow-label" x="264" y="346" text-anchor="end">Disallowed</text></g>
+          <g data-edge="corporate dividend" data-step="6"><line class="flow" x1="395" y1="456" x2="395" y2="486" marker-end="url(#walk-head)"/><text class="flow-label" x="403" y="475">ProfitAfterTax</text></g>
+          <g data-edge="dividend result" data-step="7"><line class="flow" x1="395" y1="546" x2="395" y2="591" marker-end="url(#walk-head)"/><text class="flow-label" x="403" y="572">steps joined</text></g>
+          <g data-edge="result views" data-step="8"><line class="flow" x1="470" y1="623" x2="596" y2="623" marker-end="url(#walk-head)"/><text class="flow-label" x="533" y="615" text-anchor="middle">read, never compute</text></g>
+          <g data-edge="result calendar" data-step="8"><line class="flow" x1="320" y1="623" x2="174" y2="623" marker-end="url(#walk-head)"/><text class="flow-label" x="247" y="615" text-anchor="middle">with the date</text></g>
+          <g data-edge="rules levers" data-layer="rules"><line class="flow" x1="600" y1="248" x2="474" y2="248" marker-end="url(#walk-head)"/><text class="flow-label" x="537" y="240" text-anchor="middle">every layer</text></g>
+          <g data-edge="household pay" data-layer="household"><line class="flow" x1="600" y1="338" x2="474" y2="338" marker-end="url(#walk-head)"/><text class="flow-label" x="537" y="330" text-anchor="middle">joint tax</text></g>
+          <g data-edge="searches scenario" data-layer="searches"><line class="flow" x1="600" y1="48" x2="474" y2="48" marker-end="url(#walk-head)"/><text class="flow-label" x="537" y="40" text-anchor="middle">at other pays</text></g>
+        </svg>
+      </div>
+      <figcaption>The dashed frame is the one call, <code>YearSimulation.Run</code>. Thick border: data the engine reads. Arrows carry the figure named on them. Step through it, or select a box for its card.</figcaption>
+
+      <ol class="atlas-steps">
+        <li>The page builds a <code>Scenario</code> from its <code>RiverInputs</code>: a lever out of the plan is passed as its <code>None</code>, so it neither shows nor counts.</li>
+        <li><code>Run</code> checks the inputs, then takes INASTI's yearly company contribution off what the company earns (<code>ProfitBeforeDirector</code>), its first step.</li>
+        <li>The levers run in the law's order, each with <code>Lever.<wbr>Compute(<wbr>scenario, left)</code> beside what the levers before it left; the first refusal stops the year.</li>
+        <li><code>GrossToNet.Compute</code> taxes the pay with what the levers handed it in one record, <code>TaxedWithPay</code>: the rent's net, the car's benefit, the royalty's movable income.</li>
+        <li>Corporate tax takes the profit before pay, less what the pay costs the company, plus what it cannot deduct of the levers; art. 215's conditions read the taxable pay.</li>
+        <li>The dividend is the profit after tax and earlier profits, less the reserve the user keeps, never below zero.</li>
+        <li>The steps are joined in the law's order, each tagged with its <code>Layer</code>, <code>TaxableEvent</code> and <code>Track</code>, its source and the amounts it used.</li>
+        <li>The cards, the bar and the map read the one <code>YearResult</code>; the payment calendar reads it with today's date.</li>
+      </ol>
+
+      <div class="atlas-cards">
+        <article data-card="inputs"><h3>RiverInputs</h3><p>What the page holds: every input with its origin, and which optional modules are in the plan (<code>PlanComposition</code>). <code>Run()</code> builds the scenario and runs the year once; with the company year skipped it runs <code>GrossToNet</code> alone.</p><p class="note">Code: <code>Web.<wbr>Client/River/RiverInputs.<wbr>cs</code> · See <a href="edit-to-repaint.html">what an edit does</a></p></article>
+        <article data-card="scenario"><h3>Scenario</h3><p>One income year as the user describes it: revenue, running costs, company statuses, the pay, the municipal rate, the reserve, the dividend's withholding category, and each lever's facts, <code>None</code> unless given. Wallonia unless another region is given.</p><p class="note">Code: <code>Core/Simulation/Scenario.<wbr>cs</code> · Decision: <a href="decisions/2026-10-19-the-user-declares-what-netto-cannot-see.md">the user declares what Netto cannot see</a></p></article>
+        <article data-card="contribution"><h3>INASTI's company contribution</h3><p>The flat yearly contribution every company owes, by the band of its balance-sheet total, the year's first step (<code>company_contribution</code>, <code>Track.TaxBaseOnly</code>). A cost of the company: the bar shows it in Expenses.</p><p class="note">Code: <code>SocialContributions/CompanyContributionRules.<wbr>cs</code> · Decision: <a href="decisions/2026-10-25-inasti-company-contribution-is-the-first-step.md">the first step</a></p></article>
+        <article data-card="levers"><h3>The levers</h3><p>What the company pays the director besides pay, one <code>Lever</code> each behind one contract: <code>FromProfit</code> (what it takes off), <code>Compute</code> (its <code>LeverYear</code> or a refusal), and for the royalty <code>FollowsPay</code> and <code>AtPay</code>. The one walk <code>Left</code> gives <code>Run</code>, <code>ProfitBeforePay</code> and <code>PayCeiling</code> the same figures.</p><p class="note">Code: <code>Simulation/Levers/</code> · Decisions: <a href="decisions/2026-10-24-levers-behind-one-contract.md">one contract</a>, <a href="decisions/2026-10-20-levers-come-off-the-profit-before-the-split.md">before the split</a></p></article>
+        <article data-card="rules"><h3>Rule sets</h3><p>One record per layer and income year (<code>CorporateTaxRules.<wbr>IncomeYear2026</code>, <code>PersonalTaxRules</code>, <code>WithholdingRules</code>, <code>CarRules</code>…), found through <code>For(year)</code> or <code>For(year, region)</code>, null for a year or region without rules. Every amount is a <code>RuleAmount</code> with its <code>Source</code>.</p><p class="note">Decisions: <a href="decisions/2026-10-19-one-rule-set-per-layer-and-income-year.md">one rule set per layer and year</a>, <a href="decisions/2026-10-24-region-is-a-parameter-of-every-rule-lookup.md">region as a parameter</a></p></article>
+        <article data-card="pay"><h3>GrossToNet</h3><p>The director pay through INASTI's contributions and the fund's fee, the personal tax and municipal surcharge, the credit for low earned income, the advance-payment surcharge and bonus, the monthly withholding by the key formula, and the assessment's balance. Also the next €1,000.</p><p class="note">Code: <code>DirectorPay/GrossToNet.<wbr>cs</code>, <code>PersonalTax/PersonalTaxCalculator.<wbr>cs</code>, <code>SocialContributions/SocialContributionCalculator.<wbr>cs</code></p></article>
+        <article data-card="household"><h3>Household</h3><p>Not a lever: a partner and dependants on <code>Scenario.Household</code>. <code>PersonalTaxCalculator</code> taxes a couple jointly in two columns; the river counts the household's tax less what the partner would owe filing alone.</p><p class="note">Decision: <a href="decisions/2026-10-28-household-taxed-jointly.md">household taxed jointly</a></p></article>
+        <article data-card="corporate"><h3>Corporate tax</h3><p><code>CorporateTaxCalculator</code> on <code>ProfitBeforePay − CompanyCost + Disallowed</code>, with art. 215's pay test and benefits share reported apart; <code>AdvancePaymentCalculator</code> adds the surcharge the company's advance payments did not cover.</p><p class="note">Code: <code>CorporateTax/</code></p></article>
+        <article data-card="dividend"><h3>Dividend</h3><p><code>DividendCalculator</code> on the profit after tax plus earlier profits, less the reserve; withholding at the declared category, the exempt €833 refunded.</p><p class="note">Decisions: <a href="decisions/2026-10-19-dividends-in-steady-state.md">steady state</a>, <a href="decisions/2026-10-19-one-reserve-for-the-company.md">one reserve</a></p></article>
+        <article data-card="result"><h3>YearResult</h3><p>The year's figures and its <code>Steps</code>. Corporate tax, social contributions, personal tax, the pocket and what stays in the company add up to what the company earns less its contribution and a car's costs, plus earlier profits.</p><p class="note">Code: <code>Simulation/YearResult.<wbr>cs</code>, <code>Step.cs</code></p></article>
+        <article data-card="views"><h3>Cards, bar and map</h3><p>View models in <code>Netto.Web.Client</code> select, order and scale the engine's figures and never decide a tax outcome: <code>BucketsView</code> regroups steps into five buckets, each card's <code>*Figures</code> builds its lines, the map reads the cards' views.</p><p class="note">See <a href="map-lines.html">how the map draws its lines</a></p></article>
+        <article data-card="calendar"><h3>Payment calendar</h3><p><code>PaymentCalendar.<wbr>Of(<wbr>year, date)</code>, a record beside the ledger: the advance-payment deadlines, the pay month by month and INASTI's quarters. Steps stay undated. Its first open deadline and top-up are the one figure the moves and the « more by » lines read.</p><p class="note">Decisions: <a href="decisions/2026-10-19-time-is-a-lens.md">time is a lens</a>, <a href="decisions/2026-10-22-payment-calendar-beside-the-ledger.md">beside the ledger</a></p></article>
+        <article data-card="searches"><h3>The searches</h3><p><code>SplitSearch</code> runs <code>YearSimulation.Level</code> at a grid of pays and refines the best to the euro; <code>MoveSearch</code> runs <code>Run</code> once per candidate move. Neither does arithmetic of its own.</p><p class="note">See <a href="optimisation-moves.html">how the moves are found</a></p></article>
+      </div>
+    </figure>
+  </section>
+
+  <section aria-labelledby="h-levers">
+    <h2 id="h-levers">What each lever hands the year</h2>
+    <p>A lever's <code>LeverYear</code> says four things: what reaches the pocket besides the pay (<code>ToPocket</code>), what the company cannot deduct or adds back (<code>Disallowed</code>), what it hands the pay to be taxed with it (<code>TaxedWithPay</code>), and its steps, before the company's and, for a tax of its own, after the pay's (<code>StepsAfterPay</code>).</p>
+    <div class="atlas-table">
+      <table>
+        <thead><tr><th>Lever</th><th>Takes off the profit</th><th>To the pocket</th><th>Disallowed</th><th>Hands the pay</th></tr></thead>
+        <tbody>
+          <tr><td><code>VoucherLever</code></td><td>the company's share of the vouchers</td><td>the vouchers</td><td>what it cannot deduct</td><td>nothing</td></tr>
+          <tr><td><code>AllowanceLever</code></td><td>the allowances</td><td>the allowances</td><td>nothing</td><td>nothing</td></tr>
+          <tr><td><code>RentLever</code></td><td>the rent</td><td>the rent</td><td>nothing</td><td><code>OtherIncome</code>, the net rent; its tax after the pay's</td></tr>
+          <tr><td><code>CarLever</code></td><td>costs less the director's contribution</td><td>minus the contribution</td><td>costs not deductible and the add-back</td><td><code>BenefitInKind</code></td></tr>
+          <tr><td><code>CopyrightLever</code></td><td>the royalty, at the pay when it follows it</td><td>the part paid apart</td><td>nothing</td><td><code>Movable</code>; its tax apart after the pay's</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">Read from <code>Simulation/Levers/*.cs</code>. The car and the royalty compute in their own folders (<code>Core/CompanyCar/</code>, <code>Core/Copyright/</code>) and reach the layers only as plain figures: <a href="decisions/2026-10-22-car-and-royalty-behind-plain-contracts.md">behind plain contracts</a>.</p>
+  </section>
+
+  <section aria-labelledby="h-add">
+    <h2 id="h-add">Adding to it</h2>
+    <div class="atlas-table">
+      <table>
+        <thead><tr><th>To add</th><th>Touch</th></tr></thead>
+        <tbody>
+          <tr><td>A lever</td><td>Its facts on <code>Scenario</code>; a <code>Lever</code> and <code>LeverYear</code> in <code>Simulation/Levers/</code>; its place in <code>LeverOrder.For(year)</code>; a <code>YearResult</code> field if its card reads one; an argument of <code>Fixtures.Scenario</code>. On the site, its module, card and map arms (CLAUDE.md lists them).</td></tr>
+          <tr><td>An income year</td><td>A new instance of each rule set (<code>IncomeYear2027</code>), its case in each <code>For</code>, every amount sourced to a document <code>official-docs/INDEX.md</code> lists as current for that year. Never an edit of the old instance, never a test on the year.</td></tr>
+          <tr><td>A refusal</td><td>A <code>static readonly Refusal</code> beside its rule, its <code>RefusedInput</code> and owner in <code>RiverErrors.Owner</code>, its words as <code>Error_&lt;key&gt;</code> in <code>RefusedMessage.resx</code>: <a href="decisions/2026-10-24-refusal-is-a-typed-value.md">a typed value</a>.</td></tr>
+          <tr><td>A condition between modules</td><td>A <code>YearCondition</code> record, its case in <code>YearConditions.Of</code>, its arm in <code>Tabs/MapConditions</code>: <a href="decisions/2026-10-25-the-engine-names-the-years-conditions.md">the engine names them</a>.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-changes">
+    <h2 id="h-changes">Changes</h2>
+    <ul class="atlas-changes">
+      <li><time datetime="2026-10-29">29.10.2026</time><span>Page drawn in the fresh-start pass, from <code>main</code> at <code>29cbc95</code>.</span></li>
+    </ul>
+  </section>
+
+  <footer>Drawn from the code on <code>main</code> at <code>29cbc95</code>. The code is the source; this page explains it. <a href="index.html">All pages</a>.</footer>
+</main>
+</body>
+</html>

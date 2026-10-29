@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>What runs</title>
+<link rel="stylesheet" href="atlas.css">
+<script src="atlas.js" defer></script>
+</head>
+<body>
+<main class="atlas-page">
+
+  <header>
+    <p class="eyebrow">Netto · architecture page</p>
+    <h1>What runs, and where the figures stay</h1>
+    <p class="lede">Netto is one Blazor WebAssembly app. The server only hands the browser its files; the tax engine runs in the browser tab, and the plans a user saves stay in that browser or in a file they export. This page shows those parts, what each holds, and the settings that shape them.</p>
+    <p class="atlas-meta"><span>As of <b>main 29cbc95</b></span><span><b>29 October 2026</b></span></p>
+  </header>
+
+  <section aria-labelledby="h-runs">
+    <h2 id="h-runs">The parts</h2>
+    <p>Locally, Rider or <code>dotnet run</code> starts <code>Netto.AppHost</code>, an Aspire AppHost whose only resource is the web host. <code>Netto.Web</code> serves the WebAssembly bundle and static files and nothing else: no API, no endpoint that receives a user's figures. In the browser, <code>Netto.Web.Client</code> draws every page and calls <code>Netto.Core</code>, the tax engine, in-process. What the user keeps (their saved plans and a few preferences) goes to the browser's <code>localStorage</code>, or to a JSON file they export and import again.</p>
+
+    <figure class="atlas-figure" id="runs">
+      <ul class="atlas-layers">
+        <li data-layer="launcher">Local launcher</li>
+        <li data-layer="checks">Rule sources and tests</li>
+      </ul>
+      <div class="atlas-scroll">
+        <svg viewBox="0 0 790 470" role="img" aria-labelledby="runs-title runs-desc">
+          <title id="runs-title">The parts of Netto and where data goes</title>
+          <desc id="runs-desc">Rider or dotnet run starts the Aspire AppHost, which shows the Aspire dashboard and starts Netto.Web. Netto.Web serves the app to a browser tab. Inside the tab, Netto.Web.Client calls Netto.Core, keeps saved plans and preferences in localStorage, and exports or imports plans as a JSON file. Outside the running app, the unit tests check every rule's source against the official documents filed in official-docs.</desc>
+          <defs>
+            <marker id="runs-head" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker>
+          </defs>
+
+          <rect class="group" x="400" y="128" width="380" height="212" rx="14"/>
+          <text class="group-label" x="410" y="146">Browser tab</text>
+
+          <g class="ext" data-node="dev" data-title="Rider or dotnet run" data-layer="launcher"><rect x="20" y="40" width="150" height="56" rx="8"/><text class="t" x="95" y="64" text-anchor="middle">Rider</text><text class="s" x="95" y="82" text-anchor="middle">or dotnet run</text></g>
+          <g class="box" data-node="apphost" data-title="Netto.AppHost" data-layer="launcher"><rect x="220" y="40" width="150" height="56" rx="8"/><text class="t" x="295" y="64" text-anchor="middle">Netto.AppHost</text><text class="s" x="295" y="82" text-anchor="middle">Aspire, launcher only</text></g>
+          <g class="box" data-node="dashboard" data-title="Aspire dashboard" data-layer="launcher"><rect x="420" y="40" width="150" height="56" rx="8"/><text class="t" x="495" y="64" text-anchor="middle">Aspire dashboard</text><text class="s" x="495" y="82" text-anchor="middle">localhost:15187</text></g>
+          <g class="box" data-node="web" data-title="Netto.Web"><rect x="220" y="160" width="150" height="56" rx="8"/><text class="t" x="295" y="184" text-anchor="middle">Netto.Web</text><text class="s" x="295" y="202" text-anchor="middle">Serves files only</text></g>
+          <g class="box" data-node="client" data-title="Netto.Web.Client"><rect x="420" y="160" width="150" height="56" rx="8"/><text class="t" x="495" y="184" text-anchor="middle">Netto.Web.Client</text><text class="s" x="495" y="202" text-anchor="middle">Blazor WebAssembly</text></g>
+          <g class="box" data-node="core" data-title="Netto.Core"><rect x="610" y="160" width="150" height="56" rx="8"/><text class="t" x="685" y="184" text-anchor="middle">Netto.Core</text><text class="s" x="685" y="202" text-anchor="middle">The tax engine</text></g>
+          <g class="store" data-node="storage" data-title="localStorage"><rect x="420" y="268" width="150" height="56" rx="8"/><text class="t" x="495" y="292" text-anchor="middle">localStorage</text><text class="s" x="495" y="310" text-anchor="middle">Plans, preferences</text></g>
+          <g class="ext" data-node="file" data-title="Plan file"><rect x="610" y="390" width="150" height="56" rx="8"/><text class="t" x="685" y="414" text-anchor="middle">Plan file</text><text class="s" x="685" y="432" text-anchor="middle">netto-plans-….json</text></g>
+          <g class="store" data-node="docs" data-title="official-docs/" data-layer="checks"><rect x="20" y="390" width="150" height="56" rx="8"/><text class="t" x="95" y="414" text-anchor="middle">official-docs/</text><text class="s" x="95" y="432" text-anchor="middle">Texts and INDEX.md</text></g>
+          <g class="box" data-node="tests" data-title="Netto.Tests.Unit" data-layer="checks"><rect x="220" y="390" width="150" height="56" rx="8"/><text class="t" x="295" y="414" text-anchor="middle">Netto.Tests.Unit</text><text class="s" x="295" y="432" text-anchor="middle">xUnit v3</text></g>
+
+          <g data-edge="dev apphost"><line class="flow" x1="170" y1="68" x2="216" y2="68" marker-end="url(#runs-head)"/></g>
+          <g data-edge="apphost dashboard"><line class="flow" x1="370" y1="68" x2="416" y2="68" marker-end="url(#runs-head)"/></g>
+          <g data-edge="apphost web"><line class="flow" x1="295" y1="96" x2="295" y2="156" marker-end="url(#runs-head)"/><text class="flow-label" x="303" y="131">starts</text></g>
+          <g data-edge="web client"><line class="flow" x1="370" y1="188" x2="416" y2="188" marker-end="url(#runs-head)"/><text class="flow-label" x="393" y="180" text-anchor="middle">serves</text></g>
+          <g data-edge="client core"><line class="flow" x1="570" y1="188" x2="606" y2="188" marker-end="url(#runs-head)"/><text class="flow-label" x="588" y="180" text-anchor="middle">calls</text></g>
+          <g data-edge="client storage"><line class="flow" x1="495" y1="216" x2="495" y2="264" marker-end="url(#runs-head)"/><text class="flow-label" x="503" y="245">reads, writes</text></g>
+          <g data-edge="client file"><path class="flow" d="M560 216 V240 H685 V386" marker-end="url(#runs-head)"/><text class="flow-label" x="693" y="300">export,</text><text class="flow-label" x="693" y="316">import</text></g>
+          <g data-edge="tests docs"><line class="flow" x1="220" y1="418" x2="174" y2="418" marker-end="url(#runs-head)"/><text class="flow-label" x="197" y="462" text-anchor="middle">reads INDEX.md</text></g>
+        </svg>
+      </div>
+      <figcaption>Solid border: a part of Netto. Dashed border: outside it. Thick border: where data is kept. Select a box to see its card.</figcaption>
+
+      <div class="atlas-cards">
+        <article data-card="dev"><h3>Rider or <code>dotnet run</code></h3><p>Starts the AppHost with its <code>http</code> launch profile. Rider usually runs it from <code>bin/Debug</code>, so a build from the command line uses <code>-c Release</code>.</p></article>
+        <article data-card="apphost"><h3>Netto.AppHost</h3><p>An Aspire 13 AppHost with one resource, the web host (<code>AddProject&lt;Projects.<wbr>Netto_Web&gt;(<wbr>"web")</code>). It has no ServiceDefaults: telemetry and health checks join once there is an API to observe. It carries a <code>MessagePack</code> security pin.</p><p class="note">Code: <code>src/Netto.<wbr>AppHost/AppHost.<wbr>cs</code> · Decision: <a href="decisions/2026-10-18-aspire-apphost-as-launcher.md">Aspire AppHost as launcher</a></p></article>
+        <article data-card="dashboard"><h3>Aspire dashboard</h3><p>Aspire's own dashboard at <code>http://localhost:15187</code>; Rider shows the same resource graph.</p></article>
+        <article data-card="web"><h3>Netto.Web</h3><p>An ASP.NET Core host that serves the static assets and the WebAssembly bundle, with <code>AddInteractiveWebAssemblyComponents</code>. <code>App.razor</code> sets <code>InteractiveWebAssemblyRenderMode(<wbr>prerender: false)</code> on <code>&lt;Routes&gt;</code> and <code>&lt;HeadOutlet&gt;</code>, so the server never runs a component. It loads the page's few scripts (<code>theme.js</code>, <code>browser-storage.js</code>, <code>bucket-bar.js</code>, <code>plan-paint.js</code>, <code>plan-file.js</code>, <code>plan-scroll.js</code>, <code>info-bubble.js</code>).</p><p class="note">Code: <code>src/Netto.<wbr>Web/Program.<wbr>cs</code>, <code>Components/App.razor</code> · Decision: <a href="decisions/2026-10-18-webassembly-only-nothing-prerendered.md">WebAssembly only, nothing prerendered</a></p></article>
+        <article data-card="client"><h3>Netto.Web.Client</h3><p>Every page, drawn with MudBlazor 9, its text in a <code>.resx</code> beside each component. One page, <code>Pages/Plan.razor</code> at <code>/plan</code> and <code>/plan/{Tab}</code>, holds the plan's inputs (<code>RiverInputs</code>), runs the engine and hands the result to the bar, the map and the cards. Card and page logic lives in view models it tests without a browser.</p><p class="note">Code: <code>src/Netto.<wbr>Web.<wbr>Client/Program.<wbr>cs</code>, <code>Pages/Plan.razor</code> · See <a href="the-river-in-code.html">the river in code</a></p></article>
+        <article data-card="core"><h3>Netto.Core</h3><p>The tax engine, a plain library: no ASP.NET Core reference and nothing the browser cannot run (<code>SupportedPlatform=browser</code>). It holds every tax rule, one rule set per layer and income year, and returns data and refusals, never display text.</p><p class="note">Code: <code>Simulation/YearSimulation.<wbr>cs</code> · Decisions: <a href="decisions/2026-10-18-core-is-a-plain-library.md">Core is a plain library</a>, <a href="decisions/2026-10-19-one-rule-set-per-layer-and-income-year.md">one rule set per layer and year</a></p></article>
+        <article data-card="storage"><h3>localStorage</h3><p>Five keys: <code>netto.plans</code> (the saved plans, one versioned document), <code>netto.plans.unreadable</code> (a copy of a document Netto could not read), <code>netto.folds</code>, <code>netto.theme</code> and <code>netto.map.lines</code> (viewer preferences). Written synchronously through <code>IBrowserStorage</code> and <code>browser-storage.js</code>.</p><p class="note">Code: <code>BrowserStorage.cs</code>, <code>River/PlanStorage.cs</code> · See <a href="save-and-reopen.html">how a plan is saved</a> · Decision: <a href="decisions/2026-10-22-plans-stay-in-the-browser.md">plans stay in the browser</a></p></article>
+        <article data-card="file"><h3>Plan file</h3><p>Export writes the same document as <code>netto.plans</code>, byte for byte, through <code>plan-file.js</code>. Import reads a file of up to 1 MB through Blazor's <code>InputFile</code> and adds its readable plans.</p></article>
+        <article data-card="docs"><h3>official-docs/</h3><p>The official texts the rules are taken from, each filed with the income years it applies to and its status in <code>INDEX.md</code>. Every <code>Source.Document</code> names one of these files.</p><p class="note">Decision: <a href="decisions/2026-10-19-official-sources-filed-and-tested.md">official sources, filed and tested</a></p></article>
+        <article data-card="tests"><h3>Netto.Tests.Unit</h3><p>References <code>Netto.Core</code> and <code>Netto.Web.Client</code>. Besides the rules and view models, it guards the architecture: <code>CoreDependencyTests</code>, <code>SourceDocumentTests</code> (a document <code>INDEX.md</code> does not list as current for that year fails), <code>BuildPolicyTests</code>. No test needs Docker.</p></article>
+      </div>
+    </figure>
+  </section>
+
+  <section aria-labelledby="h-settings">
+    <h2 id="h-settings">Settings that shape it</h2>
+    <div class="atlas-table">
+      <table>
+        <thead><tr><th>Setting</th><th>Value</th><th>Where</th></tr></thead>
+        <tbody>
+          <tr><td>Render mode</td><td>WebAssembly, <code>prerender: false</code>, set once on <code>&lt;Routes&gt;</code> and <code>&lt;HeadOutlet&gt;</code></td><td><code>Netto.<wbr>Web/Components/App.<wbr>razor</code></td></tr>
+          <tr><td>App and dashboard ports</td><td>5274 and 15187 under the AppHost</td><td><code>Properties/launchSettings.<wbr>json</code></td></tr>
+          <tr><td>Globalisation</td><td><code>InvariantGlobalization</code>; numbers through <code>Formats</code></td><td><code>Netto.<wbr>Web.<wbr>Client.<wbr>csproj</code>, <code>Formats.cs</code></td></tr>
+          <tr><td>Build policy</td><td><code>TreatWarningsAsErrors</code>, analysers at <code>10.0-recommended</code></td><td><code>Directory.Build.props</code></td></tr>
+          <tr><td>Saved-plan format</td><td>version 9</td><td><code>PlanStorage.Version</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-changes">
+    <h2 id="h-changes">Changes</h2>
+    <ul class="atlas-changes">
+      <li><time datetime="2026-10-29">29.10.2026</time><span>Page drawn in the fresh-start pass, from <code>main</code> at <code>29cbc95</code>.</span></li>
+    </ul>
+  </section>
+
+  <footer>Drawn from the code on <code>main</code> at <code>29cbc95</code>. The code is the source; this page explains it. <a href="index.html">All pages</a>.</footer>
+</main>
+</body>
+</html>

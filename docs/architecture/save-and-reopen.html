@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Save and reopen</title>
+<link rel="stylesheet" href="atlas.css">
+<script src="atlas.js" defer></script>
+</head>
+<body>
+<main class="atlas-page">
+
+  <header>
+    <p class="eyebrow">Netto · architecture page · flow</p>
+    <h1>How a plan is saved and opened again</h1>
+    <p class="lede">Saved plans live in the browser, in one versioned document of Netto's own, never the inputs serialised as they are in memory. A plan is read back exactly as it was saved or not at all; an older document is brought forward one version at a time. This page follows a save, the read at start-up, opening a plan, and the export to a file.</p>
+    <p class="atlas-meta"><span>As of <b>main 29cbc95</b></span><span><b>29 October 2026</b></span></p>
+  </header>
+
+  <section aria-labelledby="h-flow">
+    <h2 id="h-flow">Save, start-up, open</h2>
+    <p><code>SavedPlans</code> holds the book of plans for the tab and is the only writer of <code>netto.plans</code>. <code>PlanStorage</code> maps <code>RiverInputs</code> to its stored records (<code>StoredBook</code>, <code>StoredInputs</code>) and back, and holds the version and the patches. The plan page only ever receives a readable <code>RiverInputs</code>.</p>
+
+    <figure class="atlas-figure" id="flow">
+      <ul class="atlas-layers">
+        <li data-layer="unreadable" data-off>An unreadable document</li>
+      </ul>
+      <div class="atlas-scroll">
+        <svg viewBox="0 0 790 580" role="img" aria-labelledby="flow-title flow-desc">
+          <title id="flow-title">Saving, reading at start-up and opening a plan</title>
+          <desc id="flow-desc">To save, the Plans panel calls SavedPlans.Save, which maps the inputs through PlanStorage.Store and writes the whole book to localStorage under netto.plans; the panel then tells the plan page the plans changed. At start-up SavedPlans reads netto.plans and PlanStorage.Read parses it strictly, patching older plans up to version 9; a document it cannot read is copied to netto.plans.unreadable. The page starts on the plan last opened. To open a plan, the panel asks first over unsaved changes, then SavedPlans.Open returns its inputs and the page shows them.</desc>
+          <defs>
+            <marker id="flow-head" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker>
+          </defs>
+
+          <g class="box"><rect x="10" y="18" width="140" height="44" rx="8"/><text class="t" x="80" y="45" text-anchor="middle">Plans panel</text></g>
+          <g class="box"><rect x="165" y="18" width="140" height="44" rx="8"/><text class="t" x="235" y="45" text-anchor="middle">SavedPlans</text></g>
+          <g class="box"><rect x="320" y="18" width="140" height="44" rx="8"/><text class="t" x="390" y="45" text-anchor="middle">PlanStorage</text></g>
+          <g class="store"><rect x="475" y="18" width="140" height="44" rx="8"/><text class="t" x="545" y="45" text-anchor="middle">localStorage</text></g>
+          <g class="box"><rect x="630" y="18" width="140" height="44" rx="8"/><text class="t" x="700" y="45" text-anchor="middle">Plan page</text></g>
+
+          <line class="lifeline" x1="80" y1="62" x2="80" y2="565"/>
+          <line class="lifeline" x1="235" y1="62" x2="235" y2="565"/>
+          <line class="lifeline" x1="390" y1="62" x2="390" y2="565"/>
+          <line class="lifeline" x1="545" y1="62" x2="545" y2="565"/>
+          <line class="lifeline" x1="700" y1="62" x2="700" y2="565"/>
+
+          <text class="group-label" x="776" y="88" text-anchor="end">Save</text>
+          <g data-step="1"><line class="flow" x1="80" y1="105" x2="231" y2="105" marker-end="url(#flow-head)"/><text class="flow-label" x="157" y="97" text-anchor="middle">Save(inputs)</text></g>
+          <g data-step="2"><line class="flow" x1="235" y1="140" x2="386" y2="140" marker-end="url(#flow-head)"/><text class="flow-label" x="312" y="132" text-anchor="middle">Store(inputs)</text></g>
+          <g data-step="3"><line class="flow" x1="235" y1="175" x2="541" y2="175" marker-end="url(#flow-head)"/><text class="flow-label" x="390" y="167" text-anchor="middle">Set(netto.plans, the whole book)</text></g>
+          <g data-step="4"><line class="flow" x1="80" y1="210" x2="696" y2="210" marker-end="url(#flow-head)"/><text class="flow-label" x="390" y="202" text-anchor="middle">OnChanged: Today runs again if the star moved</text></g>
+
+          <text class="group-label" x="776" y="258" text-anchor="end">At start-up</text>
+          <g data-step="5"><line class="flow" x1="235" y1="275" x2="541" y2="275" marker-end="url(#flow-head)"/><text class="flow-label" x="390" y="267" text-anchor="middle">Get(netto.plans)</text></g>
+          <g data-step="6"><line class="flow" x1="235" y1="310" x2="386" y2="310" marker-end="url(#flow-head)"/><text class="flow-label" x="312" y="302" text-anchor="middle">Read(document)</text><text class="flow-label" x="398" y="335">older plans patched up to v9</text></g>
+          <g data-step="7" data-layer="unreadable"><line class="flow" x1="235" y1="370" x2="541" y2="370" marker-end="url(#flow-head)"/><text class="flow-label" x="390" y="362" text-anchor="middle">copy to netto.plans.unreadable</text></g>
+          <g data-step="8"><line class="flow" x1="235" y1="405" x2="696" y2="405" marker-end="url(#flow-head)"/><text class="flow-label" x="467" y="397" text-anchor="middle">the plan last opened, else the example</text></g>
+
+          <text class="group-label" x="776" y="453" text-anchor="end">Open</text>
+          <g data-step="9"><line class="flow" x1="80" y1="470" x2="231" y2="470" marker-end="url(#flow-head)"/><text class="flow-label" x="157" y="462" text-anchor="middle">Open(id)</text><text class="flow-label" x="88" y="492">asks first over unsaved changes</text></g>
+          <g data-step="10"><line class="flow" x1="80" y1="535" x2="696" y2="535" marker-end="url(#flow-head)"/><text class="flow-label" x="390" y="527" text-anchor="middle">OnOpen: the page shows the plan, measured from it</text></g>
+        </svg>
+      </div>
+      <figcaption>Each column is a part, each arrow a call, top to bottom in time. Turn on « An unreadable document » to see where a document Netto cannot read goes.</figcaption>
+
+      <ol class="atlas-steps">
+        <li>« Save this plan » (enabled only while the engine refuses nothing, <code>BaselineGain.CanMark</code>) calls <code>SavedPlans.Save</code>: a new plan with a new id and the first free name, never over another. It becomes the plan opened, and is starred « Today » if none is.</li>
+        <li><code>PlanStorage.Store</code> maps the inputs to its own records, each value with its origin; an origin of <code>None</code> is stored as <code>Example</code>.</li>
+        <li><code>SavedPlans.Keep</code> writes the whole book, <code>PlanStorage.Write</code>, to <code>netto.plans</code> through <code>IBrowserStorage</code>, a synchronous call to <code>browser-storage.js</code>.</li>
+        <li>The panel tells the page the plans changed: the plan starred Today runs again only if the star moved, and the moves are measured from the plan just saved while none is starred.</li>
+        <li>At start-up, the <code>SavedPlans</code> constructor reads <code>netto.plans</code>.</li>
+        <li><code>PlanStorage.Read</code> parses it strictly: no unknown member, no missing one, no duplicate. A plan of version 9 is read; an older one goes through the patches from its version up to 9; a plan that still cannot be read is kept exactly as stored and shown as unreadable, never filled with defaults.</li>
+        <li>A whole document Netto cannot read, malformed or of a version above 9, is copied to <code>netto.plans.unreadable</code> before anything overwrites it, and the panel says so.</li>
+        <li><code>RiverState</code> starts on the plan last opened, else on <code>RiverInputs.Example</code>.</li>
+        <li>Opening from the panel asks first when the river has unsaved changes; <code>SavedPlans.Open</code> returns the plan's inputs, or nothing for an unreadable plan.</li>
+        <li><code>Plan.OnPlanOpened</code> shows the plan; it is no edit of the river, so no « taken out » notice, and the moves are measured from it while no plan is starred Today.</li>
+      </ol>
+    </figure>
+  </section>
+
+  <section aria-labelledby="h-shape">
+    <h2 id="h-shape">The stored document</h2>
+    <p><code>{"version":<wbr>9,<wbr>"today":<wbr>id,<wbr>"opened":<wbr>id,<wbr>"plans":<wbr>[{"id",<wbr>"name",<wbr>"inputs":<wbr>{…}}]<wbr>}</code>, written by a source-generated serializer (camelCase, string enums, unmapped members refused). Each leaf of <code>inputs</code> is <code>{"value":<wbr>…,<wbr>"origin":<wbr>"Example|<wbr>Default|<wbr>Yours"}</code>; the municipality is stored by its INS code and rate. Plans store no region: every plan is read as Walloon.</p>
+    <div class="atlas-table">
+      <table>
+        <thead><tr><th>Key</th><th>Holds</th><th>Owner</th></tr></thead>
+        <tbody>
+          <tr><td><code>netto.plans</code></td><td>The book of saved plans</td><td><code>PlanStorage.Key</code></td></tr>
+          <tr><td><code>netto.plans.unreadable</code></td><td>The last document Netto could not read</td><td><code>PlanStorage</code></td></tr>
+          <tr><td><code>netto.folds</code></td><td>Which folds of the cards are open</td><td><code>River/Folds.cs</code></td></tr>
+          <tr><td><code>netto.theme</code></td><td>The theme picked; <code>theme.js</code> reads it before anything paints</td><td><code>Layout/ThemePreference.<wbr>cs</code></td></tr>
+          <tr><td><code>netto.map.lines</code></td><td>Which kinds of map line are hidden</td><td><code>Tabs/MapLinkFilter.cs</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-versions">
+    <h2 id="h-versions">Versions and their patches</h2>
+    <p>A new input is a new field, a new <code>PlanStorage.Version</code> and one patch adding it as frozen literal JSON, never read from <code>RiverInputs.Example</code>. Each patch adds members with <code>Add</code>, which refuses one already present.</p>
+    <div class="atlas-table">
+      <table>
+        <thead><tr><th>Patch</th><th>Adds</th></tr></thead>
+        <tbody>
+          <tr><td>1 → 2</td><td>The company car, out of the plan</td></tr>
+          <tr><td>2 → 3</td><td>The copyright royalty, out of the plan</td></tr>
+          <tr><td>3 → 4</td><td>What the fund bills, none given</td></tr>
+          <tr><td>4 → 5</td><td>Whether the royalty follows the pay: fixed when the user had typed it</td></tr>
+          <tr><td>5 → 6</td><td>The car's private cost, none given</td></tr>
+          <tr><td>6 → 7</td><td>The company contribution's band (lower, default) and the fund's fee rate, none given</td></tr>
+          <tr><td>7 → 8</td><td>The household, out of the plan</td></tr>
+          <tr><td>8 → 9</td><td>The household's status and its dependants</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">Guarded by <code>RiverInputsShapeTests</code> (the shape of <code>RiverInputs</code>), <code>StoredPlanDocuments</code> (a captured document of each version 1 to 9), <code>PlanStorageTests</code> and <code>SavedPlansTests</code>. Decisions: <a href="decisions/2026-10-22-saved-plans-in-a-strict-versioned-format.md">a strict versioned format</a>, <a href="decisions/2026-10-24-plans-migrated-a-version-at-a-time.md">migrated a version at a time</a>, <a href="decisions/2026-10-22-plans-stay-in-the-browser.md">plans stay in the browser</a>.</p>
+  </section>
+
+  <section aria-labelledby="h-file">
+    <h2 id="h-file">Export and import</h2>
+    <ul>
+      <li><strong>Export</strong> writes <code>SavedPlans.Export()</code>, the same document as <code>netto.plans</code>, to <code>netto-plans-&lt;date&gt;.<wbr>json</code> through <code>plan-file.js</code> (a Blob and a temporary download link).</li>
+      <li><strong>Import</strong> reads a file of up to 1 MB through Blazor's <code>InputFile</code> and the same <code>PlanStorage.Read</code>, so a file of any version is patched. Readable plans are added with new ids; the file's Today is starred only if none is; unreadable plans are skipped and counted.</li>
+    </ul>
+    <p class="note">Known gaps, read from the code: the unreadable copy happens at each start-up into one slot, and nothing reads it back; an unreadable older plan is written back inside a version 9 document, so a later build could not patch it.</p>
+  </section>
+
+  <section aria-labelledby="h-changes">
+    <h2 id="h-changes">Changes</h2>
+    <ul class="atlas-changes">
+      <li><time datetime="2026-10-29">29.10.2026</time><span>Page drawn in the fresh-start pass, from <code>main</code> at <code>29cbc95</code>.</span></li>
+    </ul>
+  </section>
+
+  <footer>Drawn from the code on <code>main</code> at <code>29cbc95</code>. The code is the source; this page explains it. <a href="index.html">All pages</a>.</footer>
+</main>
+</body>
+</html>

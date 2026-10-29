@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Edit to repaint</title>
+<link rel="stylesheet" href="atlas.css">
+<script src="atlas.js" defer></script>
+</head>
+<body>
+<main class="atlas-page">
+
+  <header>
+    <p class="eyebrow">Netto · architecture page · flow</p>
+    <h1>What happens when you edit a field</h1>
+    <p class="lede">An amount typed on a card travels up to the plan page, which builds new inputs, runs the year once in the engine and hands that one result to the bar, the map and the card. This page follows the revenue field of the Company year card from keystroke to repaint, and says what an edit does not do.</p>
+    <p class="atlas-meta"><span>As of <b>main 29cbc95</b></span><span><b>29 October 2026</b></span></p>
+  </header>
+
+  <section aria-labelledby="h-flow">
+    <h2 id="h-flow">One edit, step by step</h2>
+    <p>Inputs are immutable records: a card never changes them, it raises <code>InputsChanged</code> with a copy (<code>Inputs.WithRevenue(…)</code>), marked as the user's own. <code>Pages/Plan.razor</code> is the one owner of the plan's inputs and of the run made from them; everything the user sees is drawn from that run on the next render.</p>
+
+    <figure class="atlas-figure" id="flow">
+      <ul class="atlas-layers">
+        <li data-layer="split">The split's search</li>
+        <li data-layer="refusal" data-off>A refused amount</li>
+      </ul>
+      <div class="atlas-scroll">
+        <svg viewBox="0 0 790 560" role="img" aria-labelledby="flow-title flow-desc">
+          <title id="flow-title">An edit, from the field to the repaint</title>
+          <desc id="flow-desc">The numeric field raises ValueChanged to its card after 400 milliseconds of quiet. The card raises InputsChanged with new inputs to the plan page, through the map's panel. The page stores them and calls Run on the inputs, which runs YearSimulation.Run in the engine and returns a RiverRun holding the year or a refusal. Unless only the pay moved, the page also re-runs the split's search. The page hands the one run to the bar, the map and the pinned card. A refusal is routed to the card that owns the refused field, which marks it. The bar announces the pocket once changes settle.</desc>
+          <defs>
+            <marker id="flow-head" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker>
+          </defs>
+
+          <g class="box"><rect x="10" y="18" width="120" height="44" rx="8"/><text class="t" x="70" y="45" text-anchor="middle">Field</text></g>
+          <g class="box"><rect x="140" y="18" width="120" height="44" rx="8"/><text class="t" x="200" y="45" text-anchor="middle">Card</text></g>
+          <g class="box"><rect x="270" y="18" width="120" height="44" rx="8"/><text class="t" x="330" y="45" text-anchor="middle">Plan page</text></g>
+          <g class="box"><rect x="400" y="18" width="120" height="44" rx="8"/><text class="t" x="460" y="45" text-anchor="middle">RiverInputs</text></g>
+          <g class="box"><rect x="530" y="18" width="120" height="44" rx="8"/><text class="t" x="590" y="45" text-anchor="middle">Netto.Core</text></g>
+          <g class="box"><rect x="660" y="18" width="120" height="44" rx="8"/><text class="t" x="720" y="45" text-anchor="middle">Bar, map, card</text></g>
+
+          <line class="lifeline" x1="70" y1="62" x2="70" y2="545"/>
+          <line class="lifeline" x1="200" y1="62" x2="200" y2="545"/>
+          <line class="lifeline" x1="330" y1="62" x2="330" y2="545"/>
+          <line class="lifeline" x1="460" y1="62" x2="460" y2="545"/>
+          <line class="lifeline" x1="590" y1="62" x2="590" y2="545"/>
+          <line class="lifeline" x1="720" y1="62" x2="720" y2="545"/>
+
+          <g data-step="1"><line class="flow" x1="70" y1="100" x2="196" y2="100" marker-end="url(#flow-head)"/><text class="flow-label" x="133" y="92" text-anchor="middle">ValueChanged</text></g>
+          <g data-step="2"><line class="flow" x1="200" y1="150" x2="326" y2="150" marker-end="url(#flow-head)"/><text class="flow-label" x="263" y="142" text-anchor="middle">InputsChanged</text><text class="flow-label" x="263" y="168" text-anchor="middle">a new RiverInputs</text></g>
+          <g data-step="3"><line class="flow" x1="330" y1="205" x2="456" y2="205" marker-end="url(#flow-head)"/><text class="flow-label" x="393" y="197" text-anchor="middle">Show: Run()</text></g>
+          <g data-step="4"><line class="flow" x1="460" y1="255" x2="586" y2="255" marker-end="url(#flow-head)"/><text class="flow-label" x="523" y="247" text-anchor="middle">YearSimulation.Run</text></g>
+          <g data-step="5"><line class="flow" x1="590" y1="300" x2="464" y2="300" marker-end="url(#flow-head)"/><text class="flow-label" x="527" y="292" text-anchor="middle">year or refusal</text><line class="flow" x1="460" y1="325" x2="334" y2="325" marker-end="url(#flow-head)"/><text class="flow-label" x="397" y="317" text-anchor="middle">RiverRun</text></g>
+          <g data-step="6" data-layer="split"><line class="flow" x1="330" y1="375" x2="586" y2="375" marker-end="url(#flow-head)"/><text class="flow-label" x="458" y="367" text-anchor="middle">SplitSearch.Run, unless only the pay moved</text></g>
+          <g data-step="7"><line class="flow" x1="330" y1="425" x2="716" y2="425" marker-end="url(#flow-head)"/><text class="flow-label" x="523" y="417" text-anchor="middle">the one run, to all three</text></g>
+          <g data-step="8" data-layer="refusal"><line class="flow" x1="720" y1="475" x2="74" y2="475" marker-end="url(#flow-head)"/><text class="flow-label" x="397" y="467" text-anchor="middle">RiverErrors.Owner: the owning card marks the field</text></g>
+          <g data-step="9"><text class="flow-label" x="712" y="525" text-anchor="end">live region, once changes settle</text></g>
+        </svg>
+      </div>
+      <figcaption>Each column is a part, each arrow a call or a value handed on, top to bottom in time. Turn on « A refused amount » to see where a refusal goes.</figcaption>
+
+      <ol class="atlas-steps">
+        <li>The field, a <code>RiverNumericField</code> (a <code>MudNumericField</code>), raises <code>ValueChanged</code> after 400 ms of quiet; a field marked <code>TakenOnLeaving</code> raises it on losing focus instead.</li>
+        <li>The card calls <code>InputsChanged.<wbr>InvokeAsync(<wbr>Inputs.<wbr>WithRevenue(<wbr>revenue))</code>: a new record whose value has the origin <code>Yours</code>. It bubbles through <code>MapPanel</code> and <code>MapTab</code> to <code>Plan.OnInputsChanged</code>.</li>
+        <li>The page notes a module added or taken out, keeps the inputs in <code>RiverState</code> (in memory only) and calls <code>Show</code>, which calls <code>inputs.Run()</code>.</li>
+        <li><code>Run()</code> builds the <code>Scenario</code> at the pay the company can pay (<code>PayUsed</code>, held under <code>PayCeiling</code>) and calls <code>YearSimulation.Run</code>; with the company year skipped it calls <code>GrossToNet.Compute</code> alone.</li>
+        <li>The engine returns the year or the first <code>Refusal</code>; <code>Run()</code> wraps them as a <code>RiverRun(Pay, Year, Error)</code>, which the page keeps.</li>
+        <li>Unless the new inputs are the same besides the pay (<code>SameBesidesPay</code>), the page runs the split's search again, the curve of the pocket at every pay.</li>
+        <li>On the next render the one run flows down as parameters: <code>BucketBar</code> rebuilds <code>BucketsView</code> and the gain over Today, <code>MapTab</code> rebuilds <code>MapView</code>, and the pinned card its figures.</li>
+        <li>A refusal goes to one card only: <code>RiverErrors.Owner</code> maps its <code>RefusedInput</code> to a module, that card marks the field and shows <code>RefusedMessage</code>, and the map marks the module.</li>
+        <li>The bar announces what reaches the pocket in its live region, once changes have settled for 800 ms (<code>BucketBarAnnouncement.<wbr>Settle</code>); the first run is not announced.</li>
+      </ol>
+    </figure>
+  </section>
+
+  <section aria-labelledby="h-not">
+    <h2 id="h-not">What an edit does not do</h2>
+    <ul>
+      <li><strong>It saves nothing.</strong> <code>RiverState</code> holds the inputs in memory; only the Plans panel writes to storage. The panel's « unsaved changes » dot reacts at once (<code>SavedPlans.<wbr>HasUnsavedChanges</code>). See <a href="save-and-reopen.html">how a plan is saved</a>.</li>
+      <li><strong>It does not search the moves.</strong> The Optimisation tab's moves are measured from a baseline that an edit does not change, so <code>MovesSource</code> has nothing to search. See <a href="optimisation-moves.html">how the moves are found</a> and <a href="decisions/2026-10-23-moves-searched-once-per-baseline-after-paint.md">the decision</a>.</li>
+      <li><strong>It computes no tax in the page.</strong> Every figure on the bar, map and card comes from the engine's run: <a href="decisions/2026-10-19-one-year-simulation-in-the-laws-order.md">one year simulation</a>, <a href="decisions/2026-10-25-map-lines-read-from-the-cards.md">map lines read from the cards</a>.</li>
+    </ul>
+    <p class="note">One edit runs the engine more than once: <code>PayCeiling</code> runs its own walk before <code>Run</code>, the split's search runs the year at many pays, and the map's conditions (<code>YearConditions.Of</code>) search the smallest pay that keeps the reduced corporate rate.</p>
+  </section>
+
+  <section aria-labelledby="h-settings">
+    <h2 id="h-settings">Settings that shape it</h2>
+    <div class="atlas-table">
+      <table>
+        <thead><tr><th>Setting</th><th>Value</th><th>Where</th></tr></thead>
+        <tbody>
+          <tr><td>Field debounce</td><td>400 ms, or on losing focus with <code>TakenOnLeaving</code> (the split's pay, the dividend, two car fields)</td><td><code>River/RiverNumericField.<wbr>cs</code></td></tr>
+          <tr><td>Announcement settle</td><td>800 ms</td><td><code>River/BucketBarAnnouncement.<wbr>cs</code></td></tr>
+          <tr><td>Origins</td><td><code>Example</code>, <code>None</code>, <code>Default</code>, <code>Derived</code>, <code>Yours</code>; no chip for <code>None</code></td><td><code>River/InputOrigin.cs</code> · <a href="decisions/2026-10-19-defaults-for-rates-never-for-money.md">decision</a></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-changes">
+    <h2 id="h-changes">Changes</h2>
+    <ul class="atlas-changes">
+      <li><time datetime="2026-10-29">29.10.2026</time><span>Page drawn in the fresh-start pass, from <code>main</code> at <code>29cbc95</code>.</span></li>
+    </ul>
+  </section>
+
+  <footer>Drawn from the code on <code>main</code> at <code>29cbc95</code>. The code is the source; this page explains it. <a href="index.html">All pages</a>.</footer>
+</main>
+</body>
+</html>

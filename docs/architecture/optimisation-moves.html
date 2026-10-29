@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Optimisation moves</title>
+<link rel="stylesheet" href="atlas.css">
+<script src="atlas.js" defer></script>
+</head>
+<body>
+<main class="atlas-page">
+
+  <header>
+    <p class="eyebrow">Netto · architecture page · flow</p>
+    <h1>How the Optimisation tab finds its moves</h1>
+    <p class="lede">The moves are what Netto would change in a plan to put more in the director's pocket. They are measured from one plan, searched once per plan and date after the page has painted, found greedily by the engine, and applied only by « Apply ». This page follows one search and one Apply.</p>
+    <p class="atlas-meta"><span>As of <b>main 29cbc95</b></span><span><b>29 October 2026</b></span></p>
+  </header>
+
+  <section aria-labelledby="h-flow">
+    <h2 id="h-flow">One search, then Apply</h2>
+    <p>The baseline (<code>MovesBaseline</code>) is the plan starred « Today » when it is readable, else the river as it stood when the page opened, when a plan was opened, or when it was saved. An edit never changes it. <code>MovesSource</code>, built once by the plan page, keeps the last result per baseline and date, so a search runs again only when the baseline or the day changes.</p>
+
+    <figure class="atlas-figure" id="flow">
+      <ul class="atlas-layers">
+        <li data-layer="split">The split's search inside a round</li>
+      </ul>
+      <div class="atlas-scroll">
+        <svg viewBox="0 0 790 540" role="img" aria-labelledby="flow-title flow-desc">
+          <title id="flow-title">The moves' search and Apply</title>
+          <desc id="flow-desc">After each render the plan page asks MovesSource to search once painted. When the baseline and date have no result yet, MovesSource waits for the browser to paint through plan-paint.js, then calls MoveSearch.Run in the engine with the baseline's scenario and the date. MoveSearch runs the year for each finder's proposed move, takes the move that adds the most, and repeats until none adds a euro or ten rounds have passed; the pay finder runs the split's search. The plan comes back to MovesSource, the page redraws the badge and the Optimisation tab. Apply on a move turns it into new inputs that go to the page as any edit does.</desc>
+          <defs>
+            <marker id="flow-head" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker>
+          </defs>
+
+          <g class="box"><rect x="10" y="18" width="120" height="44" rx="8"/><text class="t" x="70" y="45" text-anchor="middle">Plan page</text></g>
+          <g class="box"><rect x="140" y="18" width="120" height="44" rx="8"/><text class="t" x="200" y="45" text-anchor="middle">MovesSource</text></g>
+          <g class="ext"><rect x="270" y="18" width="120" height="44" rx="8"/><text class="t" x="330" y="45" text-anchor="middle">Browser paint</text></g>
+          <g class="box"><rect x="400" y="18" width="120" height="44" rx="8"/><text class="t" x="460" y="45" text-anchor="middle">MoveSearch</text></g>
+          <g class="box"><rect x="530" y="18" width="120" height="44" rx="8"/><text class="t" x="590" y="45" text-anchor="middle">The year</text></g>
+          <g class="box"><rect x="660" y="18" width="120" height="44" rx="8"/><text class="t" x="720" y="45" text-anchor="middle">Optimisation</text></g>
+
+          <line class="lifeline" x1="70" y1="62" x2="70" y2="525"/>
+          <line class="lifeline" x1="200" y1="62" x2="200" y2="525"/>
+          <line class="lifeline" x1="330" y1="62" x2="330" y2="525"/>
+          <line class="lifeline" x1="460" y1="62" x2="460" y2="525"/>
+          <line class="lifeline" x1="590" y1="62" x2="590" y2="525"/>
+          <line class="lifeline" x1="720" y1="62" x2="720" y2="525"/>
+
+          <g data-step="1"><line class="flow" x1="70" y1="100" x2="196" y2="100" marker-end="url(#flow-head)"/><text class="flow-label" x="133" y="92" text-anchor="middle">after render</text><text class="flow-label" x="208" y="122">not searched yet?</text></g>
+          <g data-step="2"><line class="flow" x1="200" y1="150" x2="326" y2="150" marker-end="url(#flow-head)"/><text class="flow-label" x="263" y="142" text-anchor="middle">nettoPaint.after</text><line class="flow" x1="330" y1="175" x2="204" y2="175" marker-end="url(#flow-head)"/><text class="flow-label" x="267" y="194" text-anchor="middle">painted</text></g>
+          <g data-step="3"><line class="flow" x1="200" y1="225" x2="456" y2="225" marker-end="url(#flow-head)"/><text class="flow-label" x="328" y="217" text-anchor="middle">MoveSearch.Run(baseline, date)</text></g>
+          <g data-step="4"><line class="flow" x1="460" y1="265" x2="586" y2="265" marker-end="url(#flow-head)"/><text class="flow-label" x="523" y="257" text-anchor="middle">Run each move</text><text class="flow-label" x="468" y="290">best gain ≥ €1 wins;</text><text class="flow-label" x="468" y="306">repeat, ten rounds at most</text></g>
+          <g data-step="4" data-layer="split"><line class="flow" x1="460" y1="330" x2="586" y2="330" marker-end="url(#flow-head)"/><text class="flow-label" x="523" y="322" text-anchor="middle">SplitSearch</text></g>
+          <g data-step="5"><line class="flow" x1="460" y1="375" x2="204" y2="375" marker-end="url(#flow-head)"/><text class="flow-label" x="332" y="367" text-anchor="middle">MovePlan</text></g>
+          <g data-step="6"><line class="flow" x1="200" y1="415" x2="74" y2="415" marker-end="url(#flow-head)"/><text class="flow-label" x="137" y="407" text-anchor="middle">redraw</text><line class="flow" x1="70" y1="445" x2="716" y2="445" marker-end="url(#flow-head)"/><text class="flow-label" x="393" y="437" text-anchor="middle">From, Found: the moves, why, their links</text></g>
+          <g data-step="7"><line class="flow" x1="720" y1="495" x2="74" y2="495" marker-end="url(#flow-head)"/><text class="flow-label" x="397" y="487" text-anchor="middle">Apply: MovesView.Apply → InputsChanged</text></g>
+        </svg>
+      </div>
+      <figcaption>Each column is a part, each arrow a call or a value handed back, top to bottom in time. Dashed border: the browser, outside Netto's code.</figcaption>
+
+      <ol class="atlas-steps">
+        <li>After each render <code>Plan.<wbr>OnAfterRenderAsync</code> calls <code>MovesSource.<wbr>SearchOncePaintedAsync(<wbr>today, …)</code>. It returns at once when this baseline and date already have a result, or the plan starts at the pay (no company year).</li>
+        <li>Otherwise it waits for the browser to paint (<code>plan-paint.js</code>: a frame, then a task), so the bar and the tab's « … » badge show before the page's one thread runs the search.</li>
+        <li>It reads the baseline again and calls <code>RiverInputs.<wbr>FindMoves(<wbr>date)</code>, which runs <code>MoveSearch.Run</code> on <code>MoveScenario()</code>: a module out of the plan keeps its facts with an amount of zero, so a finder can propose it.</li>
+        <li>Each round, each finder proposes its best move from where the plan stands; the move is applied to the scenario and the year run. A candidate must run without refusal and keep the reserve; the largest gain of at least €1 wins, a tie going to the earlier finder. A move of a kind already taken replaces its line, the gains added. The pay finder runs <code>SplitSearch</code>.</li>
+        <li>The result, a <code>MovePlan</code> (the pocket before, each move with its gain, the pocket after), is kept by <code>MovesSource</code> for that baseline and date.</li>
+        <li>The page redraws: the tab's badge shows the gain, and <code>OptimisationTab</code> builds <code>MovesView</code>, each move with why it helps (<code>MoveReasons</code>), a link to its card (<code>MoveLinks</code>) and whether it is applied.</li>
+        <li>« Apply » calls <code>MovesView.Apply</code>, the one place a move is applied to <code>RiverInputs</code>, and the only action that adds a lever to the plan. The new inputs go to the page as <a href="edit-to-repaint.html">any edit</a>; the baseline does not move, so no new search runs.</li>
+      </ol>
+    </figure>
+  </section>
+
+  <section aria-labelledby="h-kinds">
+    <h2 id="h-kinds">The kinds of move</h2>
+    <div class="atlas-table">
+      <table>
+        <thead><tr><th>Move</th><th>Finder</th><th>Proposes</th></tr></thead>
+        <tbody>
+          <tr><td><code>PayMove</code></td><td><code>SplitMoveFinder</code></td><td>The split's best pay, when it is not the pay held</td></tr>
+          <tr><td><code>CompanyAdvancePaymentMove</code></td><td><code>CompanyAdvancePaymentFinder(<wbr>date)</code></td><td>What more by the first open deadline cancels the company's surcharge</td></tr>
+          <tr><td><code>DirectorAdvancePaymentMove</code></td><td><code>DirectorAdvancePaymentFinder(<wbr>date)</code></td><td>What more by the first open deadline leaves none due on the director's tax</td></tr>
+          <tr><td><code>EcoVouchersMove</code></td><td><code>EcoVouchersFinder</code></td><td>Eco vouchers at their yearly maximum</td></tr>
+          <tr><td><code>SportCultureVouchersMove</code></td><td><code>SportCultureVouchersFinder</code></td><td>Sport and culture vouchers at their yearly maximum</td></tr>
+          <tr><td><code>RentMove</code></td><td><code>RentFinder</code></td><td>The home office rent at its cap, once the home's facts are given</td></tr>
+          <tr><td><code>CopyrightFollowsPayMove</code></td><td><code>CopyrightFollowsPayFinder</code></td><td>The royalty following the pay, once a ruling accepts some</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">The payment finders read the first deadline still open on the browser's date, <code>PaymentCalendar.<wbr>Of(<wbr>year, date)</code>. A new kind of move is a <code>Move</code>, its finder, and its arm in each switch that throws on a kind it does not name: <code>MovesView.Applied</code>, <code>MovesView.Apply</code>, <code>MoveReasons.What</code>, <code>MoveLinks.To</code>, <code>OptimisationTabText.<wbr>Move</code> and <code>MoveArguments</code>; what it sets goes in <code>RiverDifferences</code>.</p>
+  </section>
+
+  <section aria-labelledby="h-settings">
+    <h2 id="h-settings">Settings that shape it</h2>
+    <div class="atlas-table">
+      <table>
+        <thead><tr><th>Setting</th><th>Value</th><th>Where</th></tr></thead>
+        <tbody>
+          <tr><td>Smallest gain taken</td><td>€1</td><td><code>MoveSearch.<wbr>SmallestGain</code></td></tr>
+          <tr><td>Rounds</td><td>10 at most</td><td><code>MoveSearch.<wbr>MaximumRounds</code></td></tr>
+          <tr><td>The split's grid</td><td>at most 100 steps, refined to the euro; the pay keeping the reduced rate probed exactly</td><td><code>SplitSearch</code></td></tr>
+          <tr><td>The date</td><td>the browser's local date</td><td><code>TimeProvider</code>, <code>Plan.Today</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">Decisions: <a href="decisions/2026-10-22-moves-found-greedily-from-a-baseline.md">moves found greedily from a baseline</a>, <a href="decisions/2026-10-23-moves-searched-once-per-baseline-after-paint.md">searched once per baseline, after paint</a>, <a href="decisions/2026-10-19-the-split-searches-the-best-pay.md">the split searches the best pay</a>, <a href="decisions/2026-10-23-gains-are-in-cash.md">gains are in cash</a>.</p>
+  </section>
+
+  <section aria-labelledby="h-changes">
+    <h2 id="h-changes">Changes</h2>
+    <ul class="atlas-changes">
+      <li><time datetime="2026-10-29">29.10.2026</time><span>Page drawn in the fresh-start pass, from <code>main</code> at <code>29cbc95</code>.</span></li>
+    </ul>
+  </section>
+
+  <footer>Drawn from the code on <code>main</code> at <code>29cbc95</code>. The code is the source; this page explains it. <a href="index.html">All pages</a>.</footer>
+</main>
+</body>
+</html>
