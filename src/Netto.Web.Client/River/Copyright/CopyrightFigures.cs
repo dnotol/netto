@@ -11,6 +11,9 @@ namespace Netto.Web.Client.River.Copyright;
 // computes none.
 internal static class CopyrightFigures
 {
+    // The royalty the company pays, whole, which the Map tab's gate says crosses (Tabs/MapGates).
+    public const string Paid = "Figure_Royalty";
+
     // The royalty as the engine took it: the part within its limits, with the limits in its bubble, the
     // part beyond them taxed as pay, the flat-rate costs that come off the part within before it is taxed,
     // and what the company withholds on each part at its rate, which the assessment credits. Each rate is
@@ -19,7 +22,7 @@ internal static class CopyrightFigures
         ? []
         :
         [
-            new("Figure_Royalty", royalty.Royalty),
+            new(Paid, royalty.Royalty),
             .. Some(new FigureLine("Figure_WithinLimits", royalty.WithinLimits)
             {
                 Help = "Help_WithinLimits",
