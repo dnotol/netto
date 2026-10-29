@@ -142,6 +142,23 @@ public class PlanMapPanelTests
         said.ShouldBe(1);
     }
 
+    // The module holding the refusal clicked on the map: its card says the refusal, and nothing fails while the
+    // page hands the refusal from the map's note to the card. A rent beside an office allowance is refused.
+    [Fact]
+    public async Task Plan_theModuleHoldingARefusalChosenOnTheMap_saysItOnItsCardAndNothingFails()
+    {
+        var refused = RiverInputs.Example.AddToPlan(OptionalModule.Allowances).WithOfficeAllowance(1_500m)
+            .AddToPlan(OptionalModule.Rent).WithCadastralIncome(1_200m).WithShareLet(0.12m).WithRent(1_380m);
+        await using var page = await MapAsync(refused);
+
+        await page.PressAsync("data-module", "rent");
+
+        var said = (await page.FindAllAsync<RefusedMessage>()).Where(message => message.Error is not null).Select(message => message.Error!.Key);
+        page.ShouldSatisfyAllConditions(
+            () => page.Errors.Select(error => error.Message).ShouldBeEmpty(),
+            () => said.ShouldBe(["rent_with_office_allowance"]));
+    }
+
     // Taken out from the card, the notice and Undo of any tab say so and the focus goes to Undo, as on the
     // Plan tab; the module is off the map, so it is chosen no more and the card goes.
     [Fact]

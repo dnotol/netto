@@ -1,10 +1,11 @@
 @using Netto.Core.Rules
 @inject IStringLocalizer<RefusedMessage> L
 
-@* The engine's refusal, in words, on the card that holds the refused field. *@
-@if (Error is not null)
+@* The engine's refusal, in words, on the card that holds the refused field. The alert's content reads the
+   refusal it was drawn with: it is drawn later, by MudAlert, when Error may already be null. *@
+@if (Error is { } error)
 {
-    <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Dense="true" Class="refused-message">@L[RefusedMessageText.Error(Error)]</MudAlert>
+    <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Dense="true" Class="refused-message">@L[RefusedMessageText.Error(error)]</MudAlert>
 }
 
 @code {
