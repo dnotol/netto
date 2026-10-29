@@ -132,7 +132,7 @@ internal static class MapLinks
             Link(MapLinkKind.TaxBase, card, MapEnd.Of(taxedBy(line.Key)!.Value), new MapLabel(text, line.Key, line.Args), line.Amount));
 
     // Money is passed on to a module, or ends in a bucket: the one place that tells the two apart.
-    private static MapLinkKind KindOf(MapEnd other) => other.Module is null ? MapLinkKind.IntoBucket : MapLinkKind.PassedOn;
+    private static MapLinkKind KindOf(MapEnd other) => other.Bucket is null ? MapLinkKind.PassedOn : MapLinkKind.IntoBucket;
 
     // Where a drain goes, as its card names it.
     private static MapEnd EndOf(string to) => to switch

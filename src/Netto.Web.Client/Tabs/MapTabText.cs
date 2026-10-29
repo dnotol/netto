@@ -66,6 +66,8 @@ internal static class MapTabText
         MapText.SplitCard => typeof(SplitCard),
         MapText.CarCard => typeof(CarCard),
         MapText.VoucherCard => typeof(VoucherCard),
+        MapText.AllowanceCard => typeof(AllowanceCard),
+        MapText.RentCard => typeof(RentCard),
         MapText.HouseholdCard => typeof(HouseholdCard),
         _ => throw new ArgumentOutOfRangeException(nameof(text), text, "Texts the map does not word a link from."),
     };

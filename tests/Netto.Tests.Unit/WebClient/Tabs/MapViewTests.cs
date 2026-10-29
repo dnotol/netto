@@ -117,6 +117,42 @@ public class MapViewTests
             () => links.ShouldBe(view.Links.Where(link => link.From.Module == module || link.To.Module == module || link.Through.Contains(module))));
     }
 
+    // A point of the company's line, where a lever before the split takes its share, is named after the
+    // lever, neither a module of the map nor a bucket.
+    [Theory]
+    [InlineData(RiverModule.Vouchers, "company-line-vouchers")]
+    [InlineData(RiverModule.Allowances, "company-line-allowances")]
+    [InlineData(RiverModule.Rent, "company-line-rent")]
+    [InlineData(RiverModule.Car, "company-line-car")]
+    public void Beside_aLeverBeforeTheSplit_isThePointOfTheCompanysLineBesideIt(RiverModule lever, string id)
+    {
+        var end = MapEnd.Beside(lever);
+
+        (end.Id, end.Lever, end.Module, end.Bucket, end == MapEnd.Beside(lever)).ShouldBe((id, (RiverModule?)lever, (RiverModule?)null, (string?)null, true));
+    }
+
+    // The company's line runs beside the levers before the split alone.
+    [Theory]
+    [InlineData(RiverModule.CompanyYear)]
+    [InlineData(RiverModule.Split)]
+    [InlineData(RiverModule.Copyright)]
+    [InlineData(RiverModule.Household)]
+    [InlineData(RiverModule.Dividend)]
+    public void Beside_aModuleNoLeverBeforeTheSplit_isRefused(RiverModule module)
+    {
+        Should.Throw<ArgumentOutOfRangeException>(() => MapEnd.Beside(module));
+    }
+
+    // A link from or to the company's line beside a lever touches that lever, as one from or to its box does.
+    [Fact]
+    public void Touches_aLinkOfTheCompanysLineBesideALever_touchesTheLever()
+    {
+        var link = new MapLink(MapLinkKind.PassedOn, MapEnd.Beside(RiverModule.Vouchers), MapEnd.Beside(RiverModule.Rent), RiverModule.Vouchers,
+            new MapLabel(MapText.Map, "Line", []), 1m);
+
+        (link.Touches(RiverModule.Vouchers), link.Touches(RiverModule.Rent), link.Touches(RiverModule.Allowances)).ShouldBe((true, true, false));
+    }
+
     [Fact]
     public void Touches_aModule_isWhatComesInAndWhatGoesOut()
     {

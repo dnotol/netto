@@ -56,5 +56,5 @@ internal static class MapQuiet
     private static bool HandOff(MapLink link) =>
         link.Kind == MapLinkKind.PassedOn && link.From.Module is { } from && link.To.Module is { } to && InChain(from) && InChain(to);
 
-    private static bool InChain(RiverModule module) => MapLayout.Place(module).Column == MapColumn.Chain;
+    private static bool InChain(RiverModule module) => MapModules.CompanysLine.Contains(module);
 }

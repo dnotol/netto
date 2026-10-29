@@ -264,23 +264,40 @@ internal enum MapLineEnd
     Bucket,
 }
 
-// One end of a link: a module of the map or a bucket of the bar (BucketsView.Keys). Id names it in the
-// map's elements: a module by its card's fold name, a bucket by its key.
+// One end of a link: a module of the map, a bucket of the bar (BucketsView.Keys), or the point of the
+// company's line beside a lever before the split (Lever), where the lever takes its share of what the company
+// has left, and where what the company pays or receives for it leaves or joins that line. Id names it in the
+// map's elements: a module by its card's fold name, a bucket by its key, a point of the company's line by
+// its lever's.
 internal sealed record MapEnd
 {
-    private MapEnd(RiverModule? module, string? bucket) => (Module, Bucket) = (module, bucket);
+    private MapEnd(RiverModule? module, string? bucket, RiverModule? lever) => (Module, Bucket, Lever) = (module, bucket, lever);
 
     public RiverModule? Module { get; }
 
     public string? Bucket { get; }
 
-    public string Id => Module is { } module ? MapModules.Name(module) : Bucket ?? throw new InvalidOperationException("An end with neither a module nor a bucket.");
+    // The lever before the split whose point of the company's line this is, none for a module or a bucket.
+    public RiverModule? Lever { get; }
 
-    public static MapEnd Of(RiverModule module) => new(module, null);
+    public string Id => (Module, Bucket, Lever) switch
+    {
+        ({ } module, _, _) => MapModules.Name(module),
+        (_, { } bucket, _) => bucket,
+        (_, _, { } lever) => $"company-line-{MapModules.Name(lever)}",
+        _ => throw new InvalidOperationException("An end with neither a module, a bucket nor a lever."),
+    };
+
+    public static MapEnd Of(RiverModule module) => new(module, null, null);
 
     public static MapEnd InBucket(string key) => BucketsView.Keys.Contains(key)
-        ? new(null, key)
+        ? new(null, key, null)
         : throw new ArgumentOutOfRangeException(nameof(key), key, "A bucket the bar does not have.");
+
+    // The point of the company's line beside a lever before the split: none beside any other module.
+    public static MapEnd Beside(RiverModule lever) => MapModules.CompanysLine.Contains(lever) && lever is not (RiverModule.CompanyYear or RiverModule.Split)
+        ? new(null, null, lever)
+        : throw new ArgumentOutOfRangeException(nameof(lever), lever, "A module the company's line does not run beside.");
 }
 
 // Whose texts word a link: the map's own, a drain list's, or the card whose figure line it is.
@@ -297,6 +314,10 @@ internal enum MapText
     CarCard,
 
     VoucherCard,
+
+    AllowanceCard,
+
+    RentCard,
 
     HouseholdCard,
 }
@@ -326,7 +347,8 @@ internal sealed record MapLink(MapLinkKind Kind, MapEnd From, MapEnd To, RiverMo
 
     public IReadOnlyList<RiverModule> Through { get; init; } = [];
 
-    public bool Touches(RiverModule module) => From.Module == module || To.Module == module || Through.Contains(module);
+    public bool Touches(RiverModule module) =>
+        From.Module == module || To.Module == module || From.Lever == module || To.Lever == module || Through.Contains(module);
 }
 
 // The river's modules as the map places them, in the river's order,
@@ -334,6 +356,11 @@ internal sealed record MapLink(MapLinkKind Kind, MapEnd From, MapEnd To, RiverMo
 // added here, or the map fails a test (MapModulesTests).
 internal static class MapModules
 {
+    // The company's line, top to bottom: from Company year past the levers before the split, each taking its
+    // share of it, into the split.
+    public static IReadOnlyList<RiverModule> CompanysLine { get; } =
+        [RiverModule.CompanyYear, RiverModule.Vouchers, RiverModule.Allowances, RiverModule.Rent, RiverModule.Car, RiverModule.Split];
+
     public static IReadOnlyList<RiverModule> Order { get; } =
     [
         RiverModule.CompanyYear,

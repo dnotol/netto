@@ -146,6 +146,13 @@ public class MapTabTextTests
         (MapTabText.Texts(MapText.Map), MapTabText.Texts(MapText.DrainList)).ShouldBe((typeof(MapTab), typeof(DrainList)));
     }
 
+    // The lever cards whose « The company pays » words a lever's share of the company's line.
+    [Fact]
+    public void Texts_theLeverCardsOfAShare_areTheirCards()
+    {
+        (MapTabText.Texts(MapText.RentCard), MapTabText.Texts(MapText.AllowanceCard)).ShouldBe((typeof(RentCard), typeof(AllowanceCard)));
+    }
+
     [Fact]
     public void Texts_textsItHasNoArmFor_areRefused()
     {
