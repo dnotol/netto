@@ -1,8 +1,9 @@
 ---
 type: adr
 title: The map's lines are read from the cards' own views, never computed by the page
-description: MapLinks.Of reads each card's figure and drain lines; MapBundle.Sum adds them; MapCardsTests holds every amount to a card's.
-status: stable
+description: Superseded - MapLinks.Of reads each card's figure and drain lines; MapBundle.Sum adds them; MapCardsTests holds every amount to a card's.
+status: deprecated
+superseded_by: /2026-10-29-map-lines-read-from-the-cards-the-pocket-line-summing-them.md
 decided: 2026-10-25
 tags: [site]
 sources:

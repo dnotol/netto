@@ -14,7 +14,7 @@
     <p class="eyebrow">Netto · architecture page · flow</p>
     <h1>How a plan is saved and opened again</h1>
     <p class="lede">Saved plans live in the browser, in one versioned document of Netto's own, never the inputs serialised as they are in memory. A plan is read back exactly as it was saved or not at all; an older document is brought forward one version at a time. This page follows a save, the read at start-up, opening a plan, and the export to a file.</p>
-    <p class="atlas-meta"><span>As of <b>main 29cbc95</b></span><span><b>29 October 2026</b></span></p>
+    <p class="atlas-meta"><span>As of <b>feature/map-by-owner d6a7fd3</b></span><span><b>29 October 2026</b></span></p>
   </header>
 
   <section aria-labelledby="h-flow">
@@ -90,7 +90,6 @@
           <tr><td><code>netto.plans.unreadable</code></td><td>The last document Netto could not read</td><td><code>PlanStorage</code></td></tr>
           <tr><td><code>netto.folds</code></td><td>Which folds of the cards are open</td><td><code>River/Folds.cs</code></td></tr>
           <tr><td><code>netto.theme</code></td><td>The theme picked; <code>theme.js</code> reads it before anything paints</td><td><code>Layout/ThemePreference.cs</code></td></tr>
-          <tr><td><code>netto.map.lines</code></td><td>Which kinds of map line are hidden</td><td><code>Tabs/MapLinkFilter.cs</code></td></tr>
         </tbody>
       </table>
     </div>
@@ -129,11 +128,12 @@
   <section aria-labelledby="h-changes">
     <h2 id="h-changes">Changes</h2>
     <ul class="atlas-changes">
+      <li><time datetime="2026-10-29">29.10.2026</time><span>The map's filter preference gone: <code>netto.map.lines</code> is no longer read (<a href="decisions/2026-10-29-map-lines-read-from-the-cards-the-pocket-line-summing-them.md">map lines read from the cards</a>, <code>feature/map-by-owner</code> at <code>d6a7fd3</code>).</span></li>
       <li><time datetime="2026-10-29">29.10.2026</time><span>Page drawn in the fresh-start pass, from <code>main</code> at <code>29cbc95</code>.</span></li>
     </ul>
   </section>
 
-  <footer>Drawn from the code on <code>main</code> at <code>29cbc95</code>. The code is the source; this page explains it. <a href="index.html">All pages</a>.</footer>
+  <footer>Drawn from the code on <code>feature/map-by-owner</code> at <code>d6a7fd3</code>. The code is the source; this page explains it. <a href="index.html">All pages</a>.</footer>
 </main>
 </body>
 </html>
