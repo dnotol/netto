@@ -80,7 +80,7 @@
     <ul>
       <li><strong>It saves nothing.</strong> <code>RiverState</code> holds the inputs in memory; only the Plans panel writes to storage. The panel's « unsaved changes » dot reacts at once (<code>SavedPlans.HasUnsavedChanges</code>). See <a href="save-and-reopen.html">how a plan is saved</a>.</li>
       <li><strong>It does not search the moves.</strong> The Optimisation tab's moves are measured from a baseline that an edit does not change, so <code>MovesSource</code> has nothing to search. See <a href="optimisation-moves.html">how the moves are found</a> and <a href="decisions/2026-10-23-moves-searched-once-per-baseline-after-paint.md">the decision</a>.</li>
-      <li><strong>It computes no tax in the page.</strong> Every figure on the bar, map and card comes from the engine's run: <a href="decisions/2026-10-19-one-year-simulation-in-the-laws-order.md">one year simulation</a>, <a href="decisions/2026-10-25-map-lines-read-from-the-cards.md">map lines read from the cards</a>.</li>
+      <li><strong>It computes no tax in the page.</strong> Every figure on the bar, map and card comes from the engine's run: <a href="decisions/2026-10-19-one-year-simulation-in-the-laws-order.md">one year simulation</a>, <a href="decisions/2026-10-29-map-lines-read-from-the-cards-the-pocket-line-summing-them.md">map lines read from the cards</a>.</li>
     </ul>
     <p class="note">One edit runs the engine more than once: <code>PayCeiling</code> runs its own walk before <code>Run</code>, the split's search runs the year at many pays, and the map's conditions (<code>YearConditions.Of</code>) search the smallest pay that keeps the reduced corporate rate.</p>
   </section>
