@@ -57,7 +57,7 @@ internal sealed record MapView(IReadOnlyList<MapNode> Modules, IReadOnlyList<Map
         var badges = MapBadges.Of(links);
         var gates = MapGates.Of(inputs, run);
         var grid = MapLayout.Grid(modules, quiet, MapBadges.Lines(badges), modules.ToDictionary(module => module, module => gates.For(module).Count));
-        var routed = MapLayout.Routed(grid, MapQuiet.Fold(links));
+        var routed = MapLayout.Routed(grid, SaidElsewhere(MapQuiet.Fold(links), gates));
         var pay = routed.FirstOrDefault(link => link.Kind == MapLinkKind.PassedOn && link.From == MapEnd.Of(RiverModule.Split) && link.To == MapEnd.Of(RiverModule.DirectorPay));
 
         return new MapView(
@@ -80,6 +80,23 @@ internal sealed record MapView(IReadOnlyList<MapNode> Modules, IReadOnlyList<Map
             Pill = gates.Pay is { } words && pay?.Route is { } route ? new MapPill(MapLayout.PillOn(grid, route), words) : null,
         };
     }
+
+    // The links with their amounts marked unsaid where the map says them elsewhere (MapLink.Unsaid): a gate's
+    // line into the pocket, its box saying it; the pay, its pill saying it; what Corporate tax adds back, its
+    // badge saying it; and money passed on into a gate whose box says that very amount, to the cent, each line's
+    // the sum of its links (MapBundle.Sum): a lever's share off the company's line, the split's royalty, what
+    // Corporate tax passes the dividend, which keeps its own where the dividend's box says another or none.
+    private static IReadOnlyList<MapLink> SaidElsewhere(IReadOnlyList<MapLink> links, MapGates gates)
+    {
+        var amounts = links.GroupBy(link => (link.From, link.To, link.Kind)).ToDictionary(line => line.Key, line => MapBundle.Sum(line));
+        return [.. links.Select(link => Unsaid(link, amounts[(link.From, link.To, link.Kind)], gates) ? link with { Unsaid = true } : link)];
+    }
+
+    private static bool Unsaid(MapLink link, decimal amount, MapGates gates) =>
+        (link.To.Bucket == "pocket" && link.From.Module is { } gate && MapLayout.Place(gate).Column == MapColumn.Gates)
+        || (link.Kind == MapLinkKind.PassedOn && link.From == MapEnd.Of(RiverModule.Split) && link.To == MapEnd.Of(RiverModule.DirectorPay))
+        || (link.Kind == MapLinkKind.TaxBase && link.To == MapEnd.Of(RiverModule.CorporateTax))
+        || (link.Kind == MapLinkKind.PassedOn && link.To.Module is { } into && gates.Says(into, amount));
 
     // The modules the map draws, in the river's order: the cards the river draws with figures, an
     // optional module only while it is in the plan, as the Plan page draws them (Pages/Plan); with the
@@ -192,13 +209,9 @@ internal sealed record MapBundle(MapRoute Route, IReadOnlyList<MapLink> Links)
     // to the next, a stretch of one line.
     public static bool EndsInArrowhead(MapEnd from, MapEnd to) => to.Bucket is null && (to.Lever is null || from.Bucket is not null);
 
-    // Whether the map says the line's amount on it: every line but a gate's into the pocket, which the gate's
-    // box says (MapGates), the pay, which its pill says, and what Corporate tax adds back of a gate, which its
-    // badge says, the sum its tax base gains (MapBadges).
-    public bool SaysAmount =>
-        !(To.Bucket == "pocket" && From.Module is { } gate && MapLayout.Place(gate).Column == MapColumn.Gates)
-        && !(Kind == MapLinkKind.PassedOn && From == MapEnd.Of(RiverModule.Split) && To == MapEnd.Of(RiverModule.DirectorPay))
-        && !(Kind == MapLinkKind.TaxBase && To == MapEnd.Of(RiverModule.CorporateTax));
+    // Whether the map says the line's amount on it: every line but one whose amount the map says elsewhere, a
+    // box, the pay's pill or a badge saying it (MapLink.Unsaid, marked by MapView.From).
+    public bool SaysAmount => !Links[0].Unsaid;
 
     public bool Touches(RiverModule module) => Links[0].Touches(module);
 }
@@ -390,6 +403,11 @@ internal sealed record MapLink(MapLinkKind Kind, MapEnd From, MapEnd To, RiverMo
     public MapRoute? Route { get; init; }
 
     public IReadOnlyList<RiverModule> Through { get; init; } = [];
+
+    // Whether the map says the link's amount elsewhere than on its line, so that its line says none: a gate's
+    // box, the pay's pill or a badge saying it. Every link of a line shares it, as they share their ends.
+    public bool Unsaid { get; init; }
+
 
     public bool Touches(RiverModule module) =>
         From.Module == module || To.Module == module || From.Lever == module || To.Lever == module || Through.Contains(module);

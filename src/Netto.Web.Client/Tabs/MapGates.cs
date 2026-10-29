@@ -39,7 +39,12 @@ internal sealed record MapGates(IReadOnlyList<MapGate> Gates, MapGateLine? Pay)
     public IReadOnlyList<MapGateLine> For(RiverModule module) =>
         IsGate(module) ? Gates.FirstOrDefault(gate => gate.Module == module)?.Lines ?? [] : [];
 
+    // Whether a gate's box says the amount given, to the cent, among its lines: none for a module that is no gate.
+    public bool Says(RiverModule module, decimal amount) =>
+        For(module).Any(line => line.Amount is { } said && Math.Round(said, 2, MidpointRounding.AwayFromZero) == Math.Round(amount, 2, MidpointRounding.AwayFromZero));
+
     // The modules the map draws as ways across, a module no case names refused.
+
     private static bool IsGate(RiverModule module) => module switch
     {
         RiverModule.Vouchers or RiverModule.Allowances or RiverModule.Rent or RiverModule.Car or RiverModule.Copyright or RiverModule.Dividend => true,

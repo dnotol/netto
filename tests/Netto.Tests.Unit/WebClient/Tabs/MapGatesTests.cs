@@ -22,6 +22,17 @@ public class MapGatesTests
         "the dividend all kept",
     };
 
+    // A gate's box says an amount when one of its lines is that amount to the cent; a module that is no gate
+    // says none.
+    [Fact]
+    public void Says_anAmountOfAGatesBox_isTrueToTheCentAndNoneOfAModuleThatIsNoGate()
+    {
+        var gates = new MapGates([new MapGate(RiverModule.Rent, [new MapGateLine(MapGateText.Across, 1_380.004m, ToYou: false), new MapGateLine(MapGateText.Untaxed, null, ToYou: false)])], null);
+
+        (gates.Says(RiverModule.Rent, 1_380.00m), gates.Says(RiverModule.Rent, 1_380.01m), gates.Says(RiverModule.Vouchers, 1_380.00m), gates.Says(RiverModule.Split, 1_380.00m))
+            .ShouldBe((true, false, false, false));
+    }
+
     [Fact]
     public void Of_aRefusedRun_saysNothing()
     {

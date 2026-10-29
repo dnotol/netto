@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using Netto.Web.Client;
 using Netto.Web.Client.River;
 using Netto.Web.Client.Tabs;
 using Shouldly;
@@ -85,6 +86,43 @@ public class MapAmountsTests
             () => Sizes(view).SelectMany(scale => Along(view, amounts, scale)).Where(along => along.Other.Kind is MapLinkKind.PassedOn or MapLinkKind.IntoBucket)
                 .Select(Name).ShouldBeEmpty());
     }
+
+    // Every line says its amount on it, a condition its word or two, but those whose amount the map says
+    // elsewhere: a gate's line into the pocket, its box saying it; the pay, its pill saying it; what Corporate
+    // tax adds back, its badge saying it; and money passed on into a gate whose box says that very amount, to the
+    // cent: a lever's share off the company's line, the split's royalty, what Corporate tax passes the dividend.
+    [Theory]
+    [MemberData(nameof(Plans))]
+    public void View_anyPlan_saysEveryLinesAmountButWhereTheMapSaysItElsewhere(string plan)
+    {
+        var view = View(plan);
+
+        view.Bundles().Where(line => line.SaysAmount == SaidElsewhere(view, line)).Select(line => $"{Name(line)} {(line.SaysAmount ? "says" : "says nothing")}").ShouldBeEmpty();
+    }
+
+    // Corporate tax's line to the dividend says no amount while the dividend's box says it crosses, and keeps its
+    // own when the box says nothing crosses, the dividend all kept.
+    [Theory]
+    [InlineData("every lever", false)]
+    [InlineData("the dividend all kept", true)]
+    public void View_corporateTaxsLineToTheDividend_saysItsAmountOnlyWhereTheDividendsBoxDoesNot(string river, bool says)
+    {
+        var inputs = MapRendering.River(river);
+        var view = MapView.From(inputs, inputs.Run());
+
+        var line = MapViewTests.Line(view, MapEnd.Of(RiverModule.CorporateTax), MapEnd.Of(RiverModule.Dividend));
+
+        (line.Amount is not null, line.SaysAmount).ShouldBe((true, says));
+    }
+
+    // Whether the map says a line's amount somewhere other than on it: its gate's box, the pay's pill, Corporate
+    // tax's badge, or the box of the gate it passes money into, saying that amount.
+    private static bool SaidElsewhere(MapView view, MapBundle line) =>
+        (line.To == MapEnd.InBucket("pocket") && line.From.Module is { } gate && view.Modules.Single(node => node.End.Module == gate).Gate)
+        || (line.Kind == MapLinkKind.PassedOn && line.From == MapEnd.Of(RiverModule.Split) && line.To == MapEnd.Of(RiverModule.DirectorPay))
+        || (line.Kind == MapLinkKind.TaxBase && line.To == MapEnd.Of(RiverModule.CorporateTax))
+        || (line.Kind == MapLinkKind.PassedOn && line.To.Module is { } into && view.Modules.Single(node => node.End.Module == into) is { Gate: true } box
+            && box.Lines.Any(said => said.Amount is { } amount && Formats.Euros(amount) == Formats.Euros(line.Amount!.Value)));
 
     // No amount is over a box, a quiet row, a bucket, an arrowhead or another amount, a pixel off each and two
     // off another amount, nor past the map's edge, at any size.
