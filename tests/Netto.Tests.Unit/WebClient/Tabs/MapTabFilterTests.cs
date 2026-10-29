@@ -93,8 +93,9 @@ public class MapTabFilterTests
             () => view.Bundles().Any(bundle => bundle.Kind == hidden).ShouldBeTrue(),
             () => LineKinds(html).ShouldBe(kept.Select(bundle => bundle.Kind.ToString())),
             () => Regex.Count(html, "<span class=\"map-arrow ").ShouldBe(kept.Count(bundle => bundle.Arrowhead)),
-            () => MapTabTests.Placed(MapTabTests.Map(html)).Select(amount => amount.Kind).ShouldBe(kept.Select(bundle => bundle.Kind.ToString()), ignoreOrder: true),
-            () => MapTabTests.Amounts(MapTabTests.Map(html)).ShouldBe(kept.Where(bundle => bundle.Amount is not null).Select(bundle => Formats.Euros(bundle.Amount!.Value)), ignoreOrder: true));
+            () => MapTabTests.Placed(MapTabTests.Map(html)).Select(amount => amount.Kind).ShouldBe(kept.Where(bundle => bundle.SaysAmount).Select(bundle => bundle.Kind.ToString()), ignoreOrder: true),
+            () => MapTabTests.Amounts(MapTabTests.Map(html)).ShouldBe(kept.Where(bundle => bundle.Amount is not null && bundle.SaysAmount).Select(bundle => Formats.Euros(bundle.Amount!.Value)),
+                ignoreOrder: true));
     }
 
     // Hiding a kind moves no amount: those left are drawn where they were with every kind shown.
@@ -185,9 +186,9 @@ public class MapTabFilterTests
     [Fact]
     public async Task Tab_aModuleChosenEveryKindHidden_drawsNoLineAndStillSaysWhatItReceives()
     {
-        var all = await RenderTabAsync(Full, RiverModule.Car);
+        var all = await RenderTabAsync(Full, RiverModule.Rent);
 
-        var html = await RenderTabAsync(Full, RiverModule.Car, Hiding([.. Enum.GetValues<MapLinkKind>()]));
+        var html = await RenderTabAsync(Full, RiverModule.Rent, Hiding([.. Enum.GetValues<MapLinkKind>()]));
 
         html.ShouldSatisfyAllConditions(
             () => Regex.Count(html, "<polyline").ShouldBe(0),

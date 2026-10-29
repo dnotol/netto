@@ -2,24 +2,25 @@ using Netto.Web.Client.River;
 
 namespace Netto.Web.Client.Tabs;
 
-// The levers that move no money of their own in this plan, read from the map's own links, and the chain's
-// hand-offs folded past them. A lever is quiet when every link it has is a hand-off along the chain, money
-// passed on from the module above it down the middle or on to the one below, so that it passes on all it
-// receives: no line of its own into a bucket, no tax base, no condition, a condition
-// counting as any link does (the office allowance beside a paid rent keeps an empty Expense allowances in
-// its box). The royalty, beside the chain, is quiet when it has no link at all: it comes to nothing; so is the
-// partner, while the marital quotient attributes nothing, in a year taxed separately among others. A module
-// holding what the map draws no line of (Holding) is never quiet: a household declaring dependants, whose
-// supplements raise a tax-free amount taxed at its own rates, neither money nor a tax base, does something in
-// the plan all the same. Read from every link of the run before a filter hides any, so hiding a kind of link
-// folds nothing; a refused run has no link to read what its levers move, so it folds nothing. Nothing here
-// tests a rule or computes a figure: it reads which lines the cards draw, and what the plan declares.
+// The levers that move no money of their own in this plan, read from the map's own links, and the company's
+// line folded past every point of it where nothing leaves it or joins it. A lever is quiet when every link
+// it has is a stretch of the company's line beside it, so that it takes no share of it and nothing of the
+// company's leaves or joins the line beside it: no share across to its box, no line of its own into a bucket,
+// no tax base, no condition, a condition counting as any link does (the office allowance beside a paid rent
+// keeps an empty Expense allowances in its box). The royalty, beside the line, is quiet when it has no link at
+// all: it comes to nothing; so is the partner, while the marital quotient attributes nothing, in a year taxed
+// separately among others. A module holding what the map draws no line of (Holding) is never quiet: a
+// household declaring dependants, whose supplements raise a tax-free amount taxed at its own rates, neither
+// money nor a tax base, does something in the plan all the same. Read from every link of the run before a
+// filter hides any, so hiding a kind of link folds nothing; a refused run has no link to read what its levers
+// move, so it folds nothing. Nothing here tests a rule or computes a figure: it reads which lines the cards
+// draw, and what the plan declares.
 internal static class MapQuiet
 {
     public static IReadOnlySet<RiverModule> Of(RiverRun run, IReadOnlyList<RiverModule> modules, IReadOnlyList<MapLink> links, IReadOnlySet<RiverModule> holding) =>
         run.Error is not null || run.Year is null
             ? new HashSet<RiverModule>()
-            : modules.Where(module => RiverModules.Lever(module) is not null && !holding.Contains(module) && links.Where(link => link.Touches(module)).All(HandOff))
+            : modules.Where(module => RiverModules.Lever(module) is not null && !holding.Contains(module) && links.Where(link => link.Touches(module)).All(OnCompanysLine))
                 .ToHashSet();
 
     // The modules holding what the map draws no line of: the household while it declares a dependant.
@@ -28,33 +29,41 @@ internal static class MapQuiet
             ? new HashSet<RiverModule> { RiverModule.Household }
             : new HashSet<RiverModule>();
 
-    // The chain's line past the quiet levers: the hand-off into the first of them runs on to the next module
-    // with a box below them, naming those it runs past (MapLink.Through), with its own words, card and
-    // amount, a line of the card above them, which each of them passes on whole; their own hand-offs, of
-    // that amount, are left out, so the chain says it once. No link is left with a quiet end.
-    public static IReadOnlyList<MapLink> Fold(IReadOnlyList<MapLink> links, IReadOnlyList<RiverModule> modules, IReadOnlySet<RiverModule> quiet)
+    // The company's line past every point of it where nothing leaves it or joins it: the stretch into such a
+    // point runs on to the next point where something does, or into the split, naming the levers it runs past
+    // (MapLink.Through), with its own words, card and amount, a line of the card above them, which each of them
+    // passes on whole; the stretches out of those points are left out, so the line says it once. No link is
+    // left with an end at such a point.
+    public static IReadOnlyList<MapLink> Fold(IReadOnlyList<MapLink> links)
     {
-        if (quiet.Count == 0)
+        var empty = links.Where(OnCompanysLine).Select(link => link.To).Where(end => end.Lever is not null)
+            .Where(point => !links.Any(link => !OnCompanysLine(link) && (link.From == point || link.To == point))).ToHashSet();
+        if (empty.Count == 0)
             return links;
 
-        var chain = modules.Where(InChain).ToList();
         return
         [
-            .. links.Where(link => link.From.Module is not { } from || !quiet.Contains(from))
-                .Select(link => link.To.Module is { } to && quiet.Contains(to) ? Past(link, [.. chain.SkipWhile(module => module != to)], quiet) : link),
+            .. links.Where(link => !(OnCompanysLine(link) && empty.Contains(link.From)))
+                .Select(link => OnCompanysLine(link) && empty.Contains(link.To) ? Past(link, links, empty) : link),
         ];
     }
 
-    // The line into a run of quiet levers, on past them to the first module of the chain with a box, the
-    // split at the latest, which is no lever.
-    private static MapLink Past(MapLink link, IReadOnlyList<RiverModule> fromRun, IReadOnlySet<RiverModule> quiet) => link with
+    // The stretch into a run of points where nothing leaves or joins the line, on past them to the first point
+    // where something does, or the split, which ends the line.
+    private static MapLink Past(MapLink link, IReadOnlyList<MapLink> links, HashSet<MapEnd> empty)
     {
-        To = MapEnd.Of(fromRun.First(module => !quiet.Contains(module))),
-        Through = [.. fromRun.TakeWhile(quiet.Contains)],
-    };
+        var (to, through) = (link.To, new List<RiverModule>());
+        while (empty.Contains(to))
+        {
+            through.Add(to.Lever!.Value);
+            to = links.Single(next => OnCompanysLine(next) && next.From == to).To;
+        }
 
-    private static bool HandOff(MapLink link) =>
-        link.Kind == MapLinkKind.PassedOn && link.From.Module is { } from && link.To.Module is { } to && InChain(from) && InChain(to);
+        return link with { To = to, Through = [.. link.Through, .. through] };
+    }
 
-    private static bool InChain(RiverModule module) => MapModules.CompanysLine.Contains(module);
+    // A stretch of the company's line: from Company year or a point of it, to a point of it or the split.
+    private static bool OnCompanysLine(MapLink link) =>
+        link.Kind == MapLinkKind.PassedOn && (link.From == MapEnd.Of(RiverModule.CompanyYear) || link.From.Lever is not null)
+        && (link.To == MapEnd.Of(RiverModule.Split) || link.To.Lever is not null);
 }

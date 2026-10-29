@@ -55,7 +55,7 @@ internal sealed record MapGates(IReadOnlyList<MapGate> Gates, MapGateLine? Pay)
         [
             .. FigureLines.Shown(CarFigures.Benefit(year.Car)).Where(line => line.Key == CarFigures.BenefitTaxed)
                 .Select(line => new MapGateLine(MapGateText.Benefit, line.Amount, ToYou: false)),
-            .. Sum(links.Where(link => link.From == Pocket && link.To == MapEnd.Of(module))).Select(amount => new MapGateLine(MapGateText.YouPay, amount, ToYou: false)),
+            .. Sum(links.Where(link => link.From == Pocket && link.To == MapEnd.Beside(module))).Select(amount => new MapGateLine(MapGateText.YouPay, amount, ToYou: false)),
         ],
         RiverModule.Copyright => CopyrightRules.For(year.Scenario.IncomeYear) is { } rules
             ? [.. Across(CopyrightFigures.Royalty(year.Copyright, rules), CopyrightFigures.Paid), .. ToYou(module, links)]

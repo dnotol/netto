@@ -11,11 +11,13 @@ namespace Netto.Web.Client.Tabs;
 // figures; nothing here decides a tax outcome. While the engine refuses an amount the map has no link, as
 // the bar has no figure, and the module holding the refused field is marked (RiverErrors.Owner); a Company
 // year the viewer skipped stays on the map, marked skipped, with no link; a lever that moves no money of
-// its own is quiet, in a quiet row with no link of its own, the chain's line running past it. A module's
-// box holds the badges of the conditions and the tax bases reaching it (MapBadges), read before any filter.
-// A filter shows some links and leaves the others out as `view with { Links = shown }`: the modules, their
-// badges, the routes and the amounts placed on them (MapAmounts) are the run's, so nothing moves. Units is
-// the map's height in chain rows, which the stylesheet makes its height of.
+// its own is quiet, in a quiet pill with no link of its own, the company's line running on past the point
+// beside it. A module's box holds the badges of the conditions and the tax bases reaching it (MapBadges),
+// read before any filter, and a gate's box the lines it says (MapGates). The columns are labelled by whose
+// money they hold (Columns), and the pay crosses under its pill (Pill). A filter shows some links and leaves
+// the others out as `view with { Links = shown }`: the modules, their badges, the routes and the amounts
+// placed on them (MapAmounts) are the run's, so nothing moves. Units is the map's height in chain rows,
+// which the stylesheet makes its height of.
 internal sealed record MapView(IReadOnlyList<MapNode> Modules, IReadOnlyList<MapNode> Buckets, decimal Units)
 {
     public IReadOnlyList<MapLink> Links { get; init; } = [];
@@ -26,6 +28,12 @@ internal sealed record MapView(IReadOnlyList<MapNode> Modules, IReadOnlyList<Map
     // The bucket of what leaves the pay names the rent too once its tax is there, as the bar names it.
     public bool TaxesOnPayIncludeRent { get; init; }
 
+    // The columns of the map, each with whose money it holds, framed and labelled over its top.
+    public IReadOnlyList<(MapOwner Owner, MapSlot Slot)> Columns { get; init; } = [];
+
+    // The pay's pill where the pay crosses the gates' column, and what it says; none without a pay.
+    public MapPill? Pill { get; init; }
+
     public static MapView From(RiverInputs inputs, RiverRun run)
     {
         var modules = ModulesOf(inputs);
@@ -34,13 +42,17 @@ internal sealed record MapView(IReadOnlyList<MapNode> Modules, IReadOnlyList<Map
         // The run's links, each a line of a card, then the conditions one module sets on another, as the
         // engine names them for the year, between modules on the map; a run without a year, refused or
         // with the company skipped, has none. The levers they leave moving no money of their own are quiet
-        // (MapQuiet), folded into a quiet row the chain's line runs through. The conditions and the tax bases
-        // mark the modules they reach with badges (MapBadges), lines of their boxes.
+        // (MapQuiet), the company's line folded past every point of it where nothing leaves it or joins it.
+        // The conditions and the tax bases mark the modules they reach with badges (MapBadges), lines of their
+        // boxes; what each gate says is a line of its box too (MapGates).
         IReadOnlyList<MapLink> links =
             [.. MapLinks.Of(inputs, run), .. run.Year is { } year ? MapConditions.From(YearConditions.Of(year), modules) : []];
         var quiet = MapQuiet.Of(run, modules, links, MapQuiet.Holding(inputs));
         var badges = MapBadges.Of(links);
-        var grid = MapLayout.Grid(modules, quiet, MapBadges.Lines(badges));
+        var gates = MapGates.Of(inputs, run);
+        var grid = MapLayout.Grid(modules, quiet, MapBadges.Lines(badges), modules.ToDictionary(module => module, module => gates.For(module).Count));
+        var routed = MapLayout.Routed(grid, MapQuiet.Fold(links));
+        var pay = routed.FirstOrDefault(link => link.Kind == MapLinkKind.PassedOn && link.From == MapEnd.Of(RiverModule.Split) && link.To == MapEnd.Of(RiverModule.DirectorPay));
 
         return new MapView(
             [.. modules.Select(module => new MapNode(MapEnd.Of(module), grid.Slot(MapEnd.Of(module)))
@@ -49,13 +61,17 @@ internal sealed record MapView(IReadOnlyList<MapNode> Modules, IReadOnlyList<Map
                 Skipped = module == RiverModule.CompanyYear && inputs.Company is null,
                 Quiet = quiet.Contains(module),
                 Badges = badges.GetValueOrDefault(module, []),
+                Gate = MapLayout.Place(module).Column == MapColumn.Gates,
+                Lines = gates.For(module),
             })],
             [.. BucketsView.Keys.Select(key => new MapNode(MapEnd.InBucket(key), grid.Slot(MapEnd.InBucket(key))))],
             grid.Units)
         {
-            Links = MapLayout.Routed(grid, MapQuiet.Fold(links, modules, quiet)),
+            Links = routed,
             Refusal = run.Error,
             TaxesOnPayIncludeRent = BucketsView.From(run)?.TaxesOnPayIncludeRent ?? false,
+            Columns = grid.Columns(),
+            Pill = gates.Pay is { } words && pay?.Route is { } route ? new MapPill(MapLayout.PillOn(grid, route), words) : null,
         };
     }
 
@@ -74,8 +90,8 @@ internal sealed record MapView(IReadOnlyList<MapNode> Modules, IReadOnlyList<Map
     public RiverModule? Choice(RiverModule? chosen) => chosen is { } module && Modules.Any(node => node.End.Module == module) ? module : null;
 
     // The modules as the map draws them, in the river's order: a box each, but the quiet levers, which
-    // share one place where they follow one another down the chain (MapLayout gives them one slot), the
-    // royalty quiet in its own.
+    // share one place where they follow one another down the company's line (MapLayout gives them one slot),
+    // the royalty quiet in its own.
     public IReadOnlyList<MapPlace> Places()
     {
         var places = new List<MapPlace>();
@@ -113,7 +129,8 @@ internal sealed record MapView(IReadOnlyList<MapNode> Modules, IReadOnlyList<Map
 // A module or a bucket of the map in its box; the module holding a refused field is marked, and so is a
 // Company year the viewer skipped, and a lever that moves no money of its own in this plan (MapQuiet),
 // whose slot is its quiet row's. A module's box holds the badges of the conditions and the tax bases
-// reaching it (MapBadges), none on a bucket.
+// reaching it (MapBadges), none on a bucket. A way across is a gate, its box holding the lines it says
+// (MapGates).
 internal sealed record MapNode(MapEnd End, MapSlot Slot)
 {
     public bool Refused { get; init; }
@@ -123,7 +140,14 @@ internal sealed record MapNode(MapEnd End, MapSlot Slot)
     public bool Quiet { get; init; }
 
     public IReadOnlyList<MapBadge> Badges { get; init; } = [];
+
+    public bool Gate { get; init; }
+
+    public IReadOnlyList<MapGateLine> Lines { get; init; } = [];
 }
+
+// The pay's pill: where the map draws it, on the pay's line in the gates' column, and what it says.
+internal sealed record MapPill(MapSlot Slot, MapGateLine Words);
 
 // Where the map draws modules: one box, or a quiet row of the quiet levers in it.
 internal sealed record MapPlace(MapSlot Slot, IReadOnlyList<MapNode> Nodes)
@@ -155,13 +179,27 @@ internal sealed record MapBundle(MapRoute Route, IReadOnlyList<MapLink> Links)
     // of a bucket or a rule. A line into a bucket has none: it runs on under
     // the bucket (MapRoute.Drawn), which is where its money stops, so the pocket's lines side by side end
     // as lines, not as a row of arrowheads, and money passed on is told from money into a bucket by its end.
-    public bool Arrowhead => To.Bucket is null;
+    public bool Arrowhead => EndsInArrowhead(From, To);
+
+    // Whether a line between two ends ends in an arrowhead: into a module, or into the company's line from a
+    // bucket, the car's contribution joining it; none into a bucket, nor from one point of the company's line
+    // to the next, a stretch of one line.
+    public static bool EndsInArrowhead(MapEnd from, MapEnd to) => to.Bucket is null && (to.Lever is null || from.Bucket is not null);
+
+    // Whether the map says the line's amount on it: every line but a gate's into the pocket, which the gate's
+    // box says (MapGates), the pay, which its pill says, and what Corporate tax adds back of a gate, which its
+    // badge says, the sum its tax base gains (MapBadges).
+    public bool SaysAmount =>
+        !(To.Bucket == "pocket" && From.Module is { } gate && MapLayout.Place(gate).Column == MapColumn.Gates)
+        && !(Kind == MapLinkKind.PassedOn && From == MapEnd.Of(RiverModule.Split) && To == MapEnd.Of(RiverModule.DirectorPay))
+        && !(Kind == MapLinkKind.TaxBase && To == MapEnd.Of(RiverModule.CorporateTax));
 
     public bool Touches(RiverModule module) => Links[0].Touches(module);
 }
 
-// What a link of the map carries, told apart at a glance: money passed on to the next module (a lever's
-// hand-off, the split's shares, a royalty's part beyond its limits, taxed as pay), money ending in a
+// What a link of the map carries, told apart at a glance: money passed on to the next module (the company's
+// line and a lever's share of it, the split's shares, a royalty's part beyond its limits, taxed as pay), money
+// ending in a
 // bucket (a car's costs among the expenses) or coming back out of one (a refund, a credit, the
 // director's contribution to a car), what only changes a tax base (a car's benefit taxed with the pay,
 // what Corporate tax adds back), and a condition one module sets on another. Public because the map's
@@ -332,9 +370,9 @@ internal sealed record MapLabel(MapText Text, string Key, IReadOnlyList<string> 
 // (MapConditions). A condition says whether it holds (Holds), and in a word or two (State), none for any
 // other link, and the badge it leaves on the module it acts on (Badge), none for the office rule, which
 // always holds. Its line is its route (MapLayout), shared with the links of the same
-// ends and kind, worked out from every link of the run, none until the layout has routed it. The chain's line
-// past quiet levers names them (Through, in the river's order): it runs through their quiet row, and touches
-// each of them as it touches its two ends.
+// ends and kind, worked out from every link of the run, none until the layout has routed it. The company's
+// line past the points of it where nothing leaves or joins it names their levers (Through, in the river's
+// order), and touches each of them as it touches the levers beside its two ends.
 internal sealed record MapLink(MapLinkKind Kind, MapEnd From, MapEnd To, RiverModule Card, MapLabel Carries, decimal? Amount)
 {
     public bool? Holds { get; init; }

@@ -13,6 +13,12 @@ namespace Netto.Web.Client.Tabs;
 // as it leaves the bar without a figure. Nothing here computes a figure: it selects and regroups the
 // cards' lines in the river's order, each module's in its card's order. Cheap, since the cards' views read
 // the run: no year is run again.
+//
+// What the company has left runs down a line of its own, from Company year past each lever before the split
+// to the split (MapEnd.Beside): each stretch after a lever is the line its card ends on, what it leaves; each
+// lever takes its share off that line across to its box, the figure its card says the company pays; and the
+// car, which takes none, has its costs leave the line into the expenses, its contribution joining it from the
+// pocket.
 internal static class MapLinks
 {
     public static IReadOnlyList<MapLink> Of(RiverInputs inputs, RiverRun run)
@@ -27,8 +33,8 @@ internal static class MapLinks
         [
             .. CompanyYear(year, composition),
             .. inputs.InPlan(OptionalModule.Vouchers) ? Vouchers(year, composition) : [],
-            .. inputs.InPlan(OptionalModule.Allowances) ? Drains(RiverModule.Allowances, AllowanceView.From(year, composition).Drains) : [],
-            .. inputs.InPlan(OptionalModule.Rent) ? Drains(RiverModule.Rent, RentView.From(year, composition).Drains) : [],
+            .. inputs.InPlan(OptionalModule.Allowances) ? Allowances(year, composition) : [],
+            .. inputs.InPlan(OptionalModule.Rent) ? Rent(year, composition) : [],
             .. inputs.InPlan(OptionalModule.Car) ? Car(year, composition) : [],
             .. Split(inputs, run, year),
             .. inputs.InPlan(OptionalModule.Copyright) ? Drains(RiverModule.Copyright, CopyrightView.From(year).Drains) : [],
@@ -39,41 +45,70 @@ internal static class MapLinks
         ];
     }
 
-    // What the company earns before it pays its director anything, as Company year's summary says it,
-    // handed to the first lever in the plan before the split, or the split; and INASTI's company
-    // contribution, its card's figure line, into the company's expenses, none while the company owes none.
+    // What the company earns before it pays its director anything, as Company year's summary says it, down
+    // the company's line to the first lever in the plan before the split, or into the split; and INASTI's
+    // company contribution, its card's figure line, into the company's expenses, none while the company owes
+    // none.
     private static IEnumerable<MapLink> CompanyYear(YearResult year, PlanComposition composition)
     {
         var first = PlanComposition.Modules.Where(lever => lever is not (OptionalModule.Copyright or OptionalModule.Household) && composition.Holds(lever))
-            .Select(lever => (RiverModule?)MapModules.Of(lever)).FirstOrDefault() ?? RiverModule.Split;
+            .Select(lever => MapEnd.Beside(MapModules.Of(lever))).FirstOrDefault() ?? MapEnd.Of(RiverModule.Split);
 
         return
         [
             .. FigureLines.Shown([new FigureLine(MapTabText.ProfitBeforeLevers, year.ProfitBeforeLevers)])
-                .Select(line => Link(MapLinkKind.PassedOn, RiverModule.CompanyYear, MapEnd.Of(first), new MapLabel(MapText.Map, line.Key, line.Args), line.Amount)),
+                .Select(line => Link(MapLinkKind.PassedOn, RiverModule.CompanyYear, first, new MapLabel(MapText.Map, line.Key, line.Args), line.Amount)),
             .. CompanyYearFigures.Of(year).Where(line => line.Key == CompanyYearFigures.Contribution)
                 .Select(line => Link(MapLinkKind.IntoBucket, RiverModule.CompanyYear, MapEnd.InBucket("expenses"), new MapLabel(MapText.CompanyYearCard, line.Key, line.Args), -line.Amount)),
         ];
     }
 
-    // The vouchers' lines, and what the company cannot deduct of them, which Corporate tax adds back.
+    // The vouchers' share of the company's line, their lines, and what the company cannot deduct of them,
+    // which Corporate tax adds back.
     private static IEnumerable<MapLink> Vouchers(YearResult year, PlanComposition composition)
     {
         var view = VoucherView.From(year, composition);
+        var figures = VoucherFigures.From(view);
 
         return
         [
+            .. Share(RiverModule.Vouchers, MapText.VoucherCard, figures, VoucherFigures.CompanyPays),
             .. Drains(RiverModule.Vouchers, view.Drains),
-            .. TaxBase(RiverModule.Vouchers, MapText.VoucherCard, VoucherFigures.From(view), key => key == VoucherFigures.AddedBack ? RiverModule.CorporateTax : null),
+            .. TaxBase(RiverModule.Vouchers, MapText.VoucherCard, figures, key => key == VoucherFigures.AddedBack ? RiverModule.CorporateTax : null),
         ];
     }
 
-    // The car's lines, then what it changes of a tax base: its benefit, taxed as the director's pay; what
-    // the company cannot deduct of its costs and the share of its benefit it adds back, which Corporate
-    // tax adds back.
+    // The allowances' share of the company's line, and their lines.
+    private static IEnumerable<MapLink> Allowances(YearResult year, PlanComposition composition)
+    {
+        var view = AllowanceView.From(year, composition);
+
+        return
+        [
+            .. Share(RiverModule.Allowances, MapText.AllowanceCard, AllowanceFigures.From(view), AllowanceFigures.CompanyPays),
+            .. Drains(RiverModule.Allowances, view.Drains),
+        ];
+    }
+
+    // The rent's share of the company's line, the rent above its floor and under it alike, and its lines.
+    private static IEnumerable<MapLink> Rent(YearResult year, PlanComposition composition)
+    {
+        var view = RentView.From(year, composition);
+
+        return
+        [
+            .. Share(RiverModule.Rent, MapText.RentCard, RentFigures.From(view), RentFigures.CompanyPays),
+            .. Drains(RiverModule.Rent, view.Drains),
+        ];
+    }
+
+    // The car's lines, which take no share of the company's line: its costs leave the line beside it into the
+    // expenses, the director's contribution joins it from the pocket; then what it changes of a tax base: its
+    // benefit, taxed as the director's pay; what the company cannot deduct of its costs and the share of its
+    // benefit it adds back, which Corporate tax adds back.
     private static IEnumerable<MapLink> Car(YearResult year, PlanComposition composition) =>
     [
-        .. Drains(RiverModule.Car, CarView.From(year, composition).Drains),
+        .. Drains(RiverModule.Car, CarView.From(year, composition).Drains, MapEnd.Beside(RiverModule.Car)),
         .. TaxBase(RiverModule.Car, MapText.CarCard, CarFigures.Benefit(year.Car), key => key switch
         {
             CarFigures.BenefitTaxed => RiverModule.DirectorPay,
@@ -114,17 +149,29 @@ internal static class MapLinks
         _ => throw new ArgumentOutOfRangeException(nameof(key), key, "A line of the split the map has no destination for."),
     };
 
-    // A card's drain lines, as its drain list shows them: money into a bucket or on to a module; what
-    // comes back runs from its bucket into the module.
-    private static IEnumerable<MapLink> Drains(RiverModule card, IReadOnlyList<Drain> drains) =>
+    // A lever's share of the company's line: its card's figure line of what the company pays, from the line
+    // beside it across to its box; none while it pays nothing.
+    private static IEnumerable<MapLink> Share(RiverModule card, MapText text, IReadOnlyList<FigureLine> lines, string key) =>
+        FigureLines.Shown(lines).Where(line => line.Key == key).Select(line =>
+            new MapLink(MapLinkKind.PassedOn, MapEnd.Beside(card), MapEnd.Of(card), card, new MapLabel(text, line.Key, line.Args), line.Amount));
+
+    // A card's drain lines, as its drain list shows them, each from its module, or from the end given (the
+    // car's, the company's line beside it): money into a bucket or on to a module; what comes back runs from
+    // its bucket into the module. What a lever before the split leaves runs on down the company's line, from
+    // the point beside it to the next one's or into the split.
+    private static IEnumerable<MapLink> Drains(RiverModule card, IReadOnlyList<Drain> drains, MapEnd? at = null) =>
         DrainLines.Shown(drains).Select(drain =>
         {
             var other = EndOf(drain.To);
+            var own = OnCompanysLine(other) ? MapEnd.Beside(card) : at ?? MapEnd.Of(card);
             var label = new MapLabel(MapText.DrainList, DrainListText.Drain(drain.Key), []);
             return drain.Kind == DrainKind.Back
-                ? new MapLink(KindOf(other), other, MapEnd.Of(card), card, label, drain.Amount)
-                : Link(KindOf(other), card, other, label, drain.Amount);
+                ? new MapLink(KindOf(other), other, own, card, label, drain.Amount)
+                : new MapLink(KindOf(other), own, other, card, label, drain.Amount);
         });
+
+    // Whether a drain's end is on the company's line: a point of it beside a lever, or the split it runs into.
+    private static bool OnCompanysLine(MapEnd end) => end.Lever is not null || end == MapEnd.Of(RiverModule.Split);
 
     // A card's figure lines that change another module's tax base, each to the module that taxes it.
     private static IEnumerable<MapLink> TaxBase(RiverModule card, MapText text, IReadOnlyList<FigureLine> lines, Func<string, RiverModule?> taxedBy) =>
@@ -138,9 +185,9 @@ internal static class MapLinks
     private static MapEnd EndOf(string to) => to switch
     {
         "pocket" or "taxes_on_pay" or "taxes_on_profit" or "kept_in_company" or "expenses" => MapEnd.InBucket(to),
-        "allowances" => MapEnd.Of(RiverModule.Allowances),
-        "rent" => MapEnd.Of(RiverModule.Rent),
-        "car" => MapEnd.Of(RiverModule.Car),
+        "allowances" => MapEnd.Beside(RiverModule.Allowances),
+        "rent" => MapEnd.Beside(RiverModule.Rent),
+        "car" => MapEnd.Beside(RiverModule.Car),
         "split" => MapEnd.Of(RiverModule.Split),
         "director_pay" => MapEnd.Of(RiverModule.DirectorPay),
         "dividend" => MapEnd.Of(RiverModule.Dividend),

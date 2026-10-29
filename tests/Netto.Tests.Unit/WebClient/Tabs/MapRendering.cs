@@ -29,6 +29,7 @@ internal static class MapRendering
         "every lever empty" => EveryLeverEmpty,
         "a rent under its floor" => MapLinksTests.Full.WithRent(1m),
         "a car without contribution" => MapLinksTests.Full.WithCarContribution(0m),
+        "a contribution beyond the car's costs" => MapLinksTests.Full.WithCarContribution(12_000m),
         "the dividend all kept" => MapLinksTests.Full.WithReserve(1_000_000m),
         _ => throw new ArgumentOutOfRangeException(nameof(name), name, null),
     };

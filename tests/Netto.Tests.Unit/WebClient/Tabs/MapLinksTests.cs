@@ -39,28 +39,87 @@ public class MapLinksTests
             .ShouldBe((MapLinkKind.PassedOn, RiverModule.CompanyYear, MapText.Map, MapTabText.ProfitBeforeLevers, 0, run.Year!.ProfitBeforeLevers));
     }
 
-    // Every lever in the plan: the chain runs from Company year through each lever to the split, each
-    // passing on what its card says it leaves.
+    // Every lever in the plan: what the company has left runs down its own line, from Company year past each
+    // lever to the split, each stretch after a lever what its card says it leaves, and its card's.
     [Fact]
-    public void Of_everyLever_chainsCompanyYearThroughEachLeverToTheSplit()
+    public void Of_everyLever_runsTheCompanysLineFromCompanyYearPastEachLeverToTheSplit()
     {
         var links = MapLinks.Of(Full, Full.Run());
 
-        links.Where(link => link.Kind == MapLinkKind.PassedOn && link.From.Module is { } from && Chain.Contains(from))
-            .Select(link => (link.From.Module, link.To.Module))
-            .ShouldBe([
-                (RiverModule.CompanyYear, RiverModule.Vouchers), (RiverModule.Vouchers, RiverModule.Allowances), (RiverModule.Allowances, RiverModule.Rent),
-                (RiverModule.Rent, RiverModule.Car), (RiverModule.Car, RiverModule.Split)]);
+        CompanysLine(links).Select(link => (link.From.Id, link.To.Id, link.Card, link.Carries.Key)).ShouldBe([
+            ("company-year", "company-line-vouchers", RiverModule.CompanyYear, MapTabText.ProfitBeforeLevers),
+            ("company-line-vouchers", "company-line-allowances", RiverModule.Vouchers, "Drain_left_after_vouchers"),
+            ("company-line-allowances", "company-line-rent", RiverModule.Allowances, "Drain_left_after_allowances"),
+            ("company-line-rent", "company-line-car", RiverModule.Rent, "Drain_left_after_rent"),
+            ("company-line-car", "split", RiverModule.Car, "Drain_profit_before_pay_and_royalty")]);
     }
 
     [Fact]
-    public void Of_aLever_handsOnWhatItsCardSaysItLeaves()
+    public void Of_aLever_leavesOnTheCompanysLineWhatItsCardSaysItLeaves()
     {
         var run = Full.Run();
 
-        var link = Between(MapLinks.Of(Full, run), RiverModule.Vouchers, RiverModule.Allowances).ShouldHaveSingleItem();
+        var link = Between(MapLinks.Of(Full, run), MapEnd.Beside(RiverModule.Vouchers), MapEnd.Beside(RiverModule.Allowances)).ShouldHaveSingleItem();
 
-        (link.Carries.Text, link.Carries.Key, link.Amount).ShouldBe((MapText.DrainList, "Drain_left_after_vouchers", VoucherView.From(run.Year!, Full.Composition).Left));
+        (link.Kind, link.Carries.Text, link.Carries.Key, link.Amount)
+            .ShouldBe((MapLinkKind.PassedOn, MapText.DrainList, "Drain_left_after_vouchers", VoucherView.From(run.Year!, Full.Composition).Left));
+    }
+
+    // Each lever but the car takes its share off the company's line across to its box: what its card says the
+    // company pays, in its words.
+    public static TheoryData<RiverModule, string, string> Shares => new()
+    {
+        { RiverModule.Vouchers, nameof(MapText.VoucherCard), VoucherFigures.CompanyPays },
+        { RiverModule.Allowances, nameof(MapText.AllowanceCard), AllowanceFigures.CompanyPays },
+        { RiverModule.Rent, nameof(MapText.RentCard), RentFigures.CompanyPays },
+    };
+
+    [Theory]
+    [MemberData(nameof(Shares))]
+    public void Of_aLever_takesWhatItsCardSaysTheCompanyPaysOffTheCompanysLine(RiverModule lever, string text, string key)
+    {
+        var year = Full.Run().Year!;
+
+        var link = Between(MapLinks.Of(Full, Full.Run()), MapEnd.Beside(lever), MapEnd.Of(lever)).ShouldHaveSingleItem();
+
+        (link.Kind, link.Card, link.Carries.Text, link.Carries.Key, link.Amount)
+            .ShouldBe((MapLinkKind.PassedOn, lever, Enum.Parse<MapText>(text), key, HandOff.Cost(year, RiverModules.Lever(lever)!.Value)));
+    }
+
+    // Under its floor the rent is taxed on the floor, but the company pays the rent: the share is the rent.
+    [Fact]
+    public void Of_aRentUnderItsFloor_takesTheRentOffTheCompanysLine()
+    {
+        var river = MapRendering.River("a rent under its floor");
+
+        Between(MapLinks.Of(river, river.Run()), MapEnd.Beside(RiverModule.Rent), MapEnd.Of(RiverModule.Rent)).ShouldHaveSingleItem().Amount.ShouldBe(1m);
+    }
+
+    // What the company has left after a lever is what it had before less the lever's share; the car takes none,
+    // its costs leaving the line into the expenses and its contribution joining it from the pocket.
+    [Fact]
+    public void Of_theCompanysLine_losesEachSharePastItsLeverAndTheCarsCostsLessItsContribution()
+    {
+        var links = MapLinks.Of(Full, Full.Run());
+        var line = CompanysLine(links).ToList();
+        var car = MapEnd.Beside(RiverModule.Car);
+
+        line.ShouldSatisfyAllConditions(
+            () => new[] { RiverModule.Vouchers, RiverModule.Allowances, RiverModule.Rent }
+                .Where(lever => Into(line, MapEnd.Beside(lever)) - Between(links, MapEnd.Beside(lever), MapEnd.Of(lever)).Single().Amount != Out(line, MapEnd.Beside(lever)))
+                .ShouldBeEmpty(),
+            () => (Into(line, car) - links.Single(link => link.From == car && link.To == MapEnd.InBucket("expenses")).Amount
+                + links.Single(link => link.From == MapEnd.InBucket("pocket") && link.To == car).Amount).ShouldBe(Out(line, car)),
+            () => links.ShouldNotContain(link => link.From == car && link.To == MapEnd.Of(RiverModule.Car)));
+    }
+
+    // A lever out of the plan leaves no point on the company's line: Company year's line runs to the first in it.
+    [Fact]
+    public void Of_theRentAloneInThePlan_runsCompanyYearsLinePastTheRentToTheSplit()
+    {
+        var river = RiverInputs.Example.AddToPlan(OptionalModule.Rent).WithCadastralIncome(1_200m).WithShareLet(0.12m).WithRent(1_380m);
+
+        CompanysLine(MapLinks.Of(river, river.Run())).Select(link => (link.From.Id, link.To.Id)).ShouldBe([("company-year", "company-line-rent"), ("company-line-rent", "split")]);
     }
 
     // The split shares what it receives between the pay, the royalty and the company: a line each of its
@@ -116,25 +175,35 @@ public class MapLinksTests
             () => links.Where(link => link.To == MapEnd.InBucket("taxes_on_pay")).Select(link => link.Carries.Key).ShouldContain("Drain_social_contributions"));
     }
 
-    // What comes back runs from its bucket: the director's contribution to the car from the pocket, the
-    // withholding refunded on the exempt dividend from the taxes on profit.
-    [Theory]
-    [InlineData("Drain_car_contribution", "pocket", RiverModule.Car)]
-    [InlineData("Drain_dividend_exemption_refund", "taxes_on_profit", RiverModule.Dividend)]
-    public void Of_aLineComingBack_runsFromItsBucketIntoItsModule(string key, string bucket, RiverModule module)
+    // What comes back runs from its bucket: the withholding refunded on the exempt dividend from the taxes on
+    // profit.
+    [Fact]
+    public void Of_aLineComingBack_runsFromItsBucketIntoItsModule()
     {
-        var link = MapLinks.Of(Full, Full.Run()).Single(link => link.Carries.Key == key);
+        var link = MapLinks.Of(Full, Full.Run()).Single(link => link.Carries.Key == "Drain_dividend_exemption_refund");
 
-        (link.Kind, link.From, link.To, link.Card).ShouldBe((MapLinkKind.IntoBucket, MapEnd.InBucket(bucket), MapEnd.Of(module), module));
+        (link.Kind, link.From, link.To, link.Card).ShouldBe((MapLinkKind.IntoBucket, MapEnd.InBucket("taxes_on_profit"), MapEnd.Of(RiverModule.Dividend), RiverModule.Dividend));
     }
 
-    // The car's costs are a cost of the company: they end in its expenses, as its running costs do.
+    // The director's contribution to the car is paid to the company: it joins the company's line beside the
+    // car, from the pocket.
     [Fact]
-    public void Of_theCarsCosts_endInTheExpenses()
+    public void Of_theCarsContribution_joinsTheCompanysLineFromThePocket()
+    {
+        var link = MapLinks.Of(Full, Full.Run()).Single(link => link.Carries.Key == "Drain_car_contribution");
+
+        (link.Kind, link.From, link.To, link.Card, link.Amount)
+            .ShouldBe((MapLinkKind.IntoBucket, MapEnd.InBucket("pocket"), MapEnd.Beside(RiverModule.Car), RiverModule.Car, Full.Run().Year!.Car.Contribution));
+    }
+
+    // The car's costs are a cost of the company: they leave the company's line beside the car into its
+    // expenses, as its running costs do.
+    [Fact]
+    public void Of_theCarsCosts_leaveTheCompanysLineIntoTheExpenses()
     {
         var link = MapLinks.Of(Full, Full.Run()).Single(link => link.Carries.Key == "Drain_car_costs");
 
-        (link.Kind, link.From, link.To, link.Amount).ShouldBe((MapLinkKind.IntoBucket, MapEnd.Of(RiverModule.Car), MapEnd.InBucket("expenses"), Full.Run().Year!.Car.Costs));
+        (link.Kind, link.From, link.To, link.Amount).ShouldBe((MapLinkKind.IntoBucket, MapEnd.Beside(RiverModule.Car), MapEnd.InBucket("expenses"), Full.Run().Year!.Car.Costs));
     }
 
     // INASTI's company contribution is an expense of the company: Company year's line into the expenses,
@@ -222,7 +291,7 @@ public class MapLinksTests
         var modules = MapView.ModulesOf(river);
 
         MapLinks.Of(river, river.Run()).SelectMany(link => new[] { link.From, link.To })
-            .Where(end => end.Module is { } module && !modules.Contains(module)).ShouldBeEmpty();
+            .Where(end => (end.Module ?? end.Lever) is { } module && !modules.Contains(module)).ShouldBeEmpty();
     }
 
     // With the company skipped, the river starts at the pay: the map draws Director pay's lines, and the
@@ -274,9 +343,18 @@ public class MapLinksTests
         MapLinks.Of(river, river.Run()).ShouldBeEmpty();
     }
 
-    private static readonly RiverModule[] Chain =
-        [RiverModule.CompanyYear, RiverModule.Vouchers, RiverModule.Allowances, RiverModule.Rent, RiverModule.Car];
+    private static IEnumerable<MapLink> Between(IEnumerable<MapLink> links, RiverModule from, RiverModule to) => Between(links, MapEnd.Of(from), MapEnd.Of(to));
 
-    private static IEnumerable<MapLink> Between(IEnumerable<MapLink> links, RiverModule from, RiverModule to) =>
-        links.Where(link => link.From == MapEnd.Of(from) && link.To == MapEnd.Of(to));
+    private static IEnumerable<MapLink> Between(IEnumerable<MapLink> links, MapEnd from, MapEnd to) => links.Where(link => link.From == from && link.To == to);
+
+    // The stretches of the company's line, top to bottom: from Company year or a point of it, to a point of
+    // it or the split.
+    internal static IEnumerable<MapLink> CompanysLine(IEnumerable<MapLink> links) =>
+        links.Where(link => link.Kind == MapLinkKind.PassedOn && (link.From == MapEnd.Of(RiverModule.CompanyYear) || link.From.Lever is not null)
+            && (link.To == MapEnd.Of(RiverModule.Split) || link.To.Lever is not null));
+
+    // What the company's line carries into a point of it, and on out of it.
+    private static decimal? Into(IEnumerable<MapLink> line, MapEnd point) => line.Single(link => link.To == point).Amount;
+
+    private static decimal? Out(IEnumerable<MapLink> line, MapEnd point) => line.Single(link => link.From == point).Amount;
 }

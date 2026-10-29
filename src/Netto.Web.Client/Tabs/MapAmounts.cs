@@ -1,8 +1,9 @@
 namespace Netto.Web.Client.Tabs;
 
 // Where the map says what each line carries: its amount, or a condition's word or two, on a stretch of its
-// own line or right beside it, so a reader matches it to its line by place. Every line has one, placed once
-// from every link of the run, so hiding a kind of line or choosing a module moves none.
+// own line or right beside it, so a reader matches it to its line by place. Every line has one but a gate's
+// into the pocket, which its gate's box says, and the pay, which its pill says (MapBundle.SaysAmount), placed
+// once from every link of the run, so hiding a kind of line or choosing a module moves none.
 internal static class MapAmounts
 {
     // An amount's size: its text at 0.72rem in Inter at weight 400 with tabular figures, its ground 0.3rem
@@ -110,6 +111,10 @@ internal static class MapAmounts
         private const int RepairBudget = 4_000;
 
         private readonly IReadOnlyList<MapBundle> _lines;
+
+        // Whether each line says its amount on the map: a gate's line into the pocket and the pay do not
+        // (MapBundle.SaysAmount), and are only lines the others keep clear of.
+        private readonly bool[] _says;
         private readonly string[] _texts;
         private readonly decimal[] _widths;
         private readonly double _width;
@@ -149,10 +154,12 @@ internal static class MapAmounts
             (_width, _height) = (100 * _across, 100 * _down);
             _placed = new Spot?[lines.Count];
             _spots = new List<Spot>?[lines.Count];
+            _says = [.. lines.Select(line => line.SaysAmount)];
 
             _obstacles =
             [
                 .. view.Places().Select(place => place.Slot).Concat(view.Buckets.Select(bucket => bucket.Slot)).Select(slot => Rect.Of(MapArea.Of(slot, scale))),
+                .. view.Pill is { } pill ? [Rect.Of(MapArea.Of(pill.Slot, scale))] : Array.Empty<Rect>(),
                 .. lines.Where(line => line.Arrowhead).Select(line => Rect.Of(MapLineWidths.Head(line.Route, scale))),
             ];
             var strokes = new List<Stroke>();
@@ -190,7 +197,7 @@ internal static class MapAmounts
             Array.Sort(order, (a, b) => keys[a].Kind != keys[b].Kind ? keys[a].Kind.CompareTo(keys[b].Kind)
                 : keys[a].Room != keys[b].Room ? keys[a].Room.CompareTo(keys[b].Room)
                 : a.CompareTo(b));
-            foreach (var index in order)
+            foreach (var index in order.Where(index => _says[index]))
                 _placed[index] = Best(index) ?? Repair(index);
 
             var amounts = new List<MapAmount>(_lines.Count);
@@ -206,6 +213,9 @@ internal static class MapAmounts
         // The tracks a line's stretches offer its amount, each with the pieces of it its amount may take.
         private List<Track> Tracks(int index)
         {
+            if (!_says[index])
+                return [];
+
             var line = _lines[index];
             var (width, height) = ((double)_widths[index], (double)Height);
             var points = line.Route.Points;
@@ -371,7 +381,7 @@ internal static class MapAmounts
             var crowded = new List<MapBundle>();
             for (var index = 0; index < _lines.Count; index++)
             {
-                if (Best(index, freeOfRules: true) is null)
+                if (_says[index] && Best(index, freeOfRules: true) is null)
                     crowded.Add(_lines[index]);
             }
 

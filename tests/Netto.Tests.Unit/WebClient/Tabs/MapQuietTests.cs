@@ -6,10 +6,10 @@ using Shouldly;
 namespace Netto.Tests.WebClient.Tabs;
 
 // The levers that move no money of their own in a plan, as the map reads them from its own links: a lever
-// in the plan whose every link is a hand-off along the chain, or the royalty with no link at all, is quiet.
-// Consecutive quiet levers share one quiet row, the chain's line runs through it with its amount once, into
-// the next module with a box, and a lever gets its box back, in its place, once it moves money. A refused
-// run folds nothing, and a plan whose levers all move money draws as it always did.
+// in the plan whose every link is a stretch of the company's line beside it, or the royalty with no link at
+// all, is quiet. Consecutive quiet levers share one quiet pill among the gates, the company's line runs on past
+// them in its own column with its amount once, and a lever gets its box back, in its place, once it moves
+// money. A refused run folds nothing, and a plan whose levers all move money draws as it always did.
 public class MapQuietTests
 {
     private static readonly RiverInputs Full = MapLinksTests.Full;
@@ -70,11 +70,12 @@ public class MapQuietTests
 
         var view = MapView.From(river, river.Run());
 
-        var box = MapLayout.Grid(MapView.ModulesOf(river), badgeLines: BadgeLines(view)).Slot(MapEnd.Of(RiverModule.Copyright));
+        var grid = MapLayout.Grid(MapView.ModulesOf(river), badgeLines: BadgeLines(view), gateLines: GateLines(view));
+        var box = grid.Slot(MapEnd.Of(RiverModule.Copyright));
         var slot = Node(view, RiverModule.Copyright).Slot;
         view.ShouldSatisfyAllConditions(
             () => view.LinksOf(RiverModule.Copyright).ShouldBeEmpty(),
-            () => (slot.Left, slot.Right, Math.Round(slot.CenterY, 10)).ShouldBe((box.Left, box.Right, Math.Round(box.CenterY, 10))));
+            () => (slot.Left, slot.Right, Rows(slot.CenterY, view.Units)).ShouldBe((box.Left, box.Right, Rows(box.CenterY, grid.Units))));
     }
 
     // The partner taxed separately moves no tax base: quiet in its own place, over Director pay's right, with no
@@ -86,12 +87,13 @@ public class MapQuietTests
 
         var view = MapView.From(river, river.Run());
 
-        var box = MapLayout.Grid(MapView.ModulesOf(river), badgeLines: BadgeLines(view)).Slot(MapEnd.Of(RiverModule.Household));
+        var grid = MapLayout.Grid(MapView.ModulesOf(river), badgeLines: BadgeLines(view), gateLines: GateLines(view));
+        var box = grid.Slot(MapEnd.Of(RiverModule.Household));
         var node = Node(view, RiverModule.Household);
         view.ShouldSatisfyAllConditions(
             () => node.Quiet.ShouldBeTrue(),
             () => view.LinksOf(RiverModule.Household).ShouldBeEmpty(),
-            () => (node.Slot.Left, node.Slot.Right, Math.Round(node.Slot.CenterY, 10)).ShouldBe((box.Left, box.Right, Math.Round(box.CenterY, 10))));
+            () => (node.Slot.Left, node.Slot.Right, Rows(node.Slot.CenterY, view.Units)).ShouldBe((box.Left, box.Right, Rows(box.CenterY, grid.Units))));
     }
 
     // The dependants raise a tax-free amount, taxed at its own rates, which is neither money nor a tax base:
@@ -182,7 +184,7 @@ public class MapQuietTests
         var run = river.Run();
         var modules = MapView.ModulesOf(river);
         IReadOnlyList<MapLink> links = [.. MapLinks.Of(river, run), .. MapConditions.From(YearConditions.Of(run.Year!), modules)];
-        var grid = MapLayout.Grid(modules, badgeLines: MapBadges.Lines(MapBadges.Of(links)));
+        var grid = MapLayout.Grid(modules, badgeLines: MapBadges.Lines(MapBadges.Of(links)), gateLines: MapLayoutTests.GateLines(river));
         var unfolded = MapLayout.Routed(grid, links);
 
         var view = MapView.From(river, run);
@@ -194,23 +196,23 @@ public class MapQuietTests
             () => view.Links.Select(Line).ShouldBe(unfolded.Select(Line)));
     }
 
-    // The chain's line past quiet levers: one link, the hand-off of the module above them, its words, card
-    // and amount, on to the next module with a box, naming those it runs past; their own hand-offs are not
-    // drawn, and no link ends on a quiet lever.
+    // The company's line past quiet levers: one stretch, what the lever above them leaves, its words, card and
+    // amount, on to the split, naming those it runs past; their own stretches are not drawn, and no link ends on
+    // a quiet lever or at the point of the line beside it.
     [Fact]
-    public void From_quietLeversInTheChain_runTheLineAboveThemOnToTheNextBoxNamingThem()
+    public void From_quietLeversOnTheCompanysLine_runTheLineAboveThemOnPastThemNamingThem()
     {
         var river = Emptied(Full, OptionalModule.Allowances, OptionalModule.Rent, OptionalModule.Car);
-        var handOff = MapLinks.Of(river, river.Run()).Single(link => link.From == MapEnd.Of(RiverModule.Vouchers) && link.Kind == MapLinkKind.PassedOn);
+        var handOff = MapLinks.Of(river, river.Run()).Single(link => link.From == MapEnd.Beside(RiverModule.Vouchers) && link.To.Lever is not null);
 
         var view = MapView.From(river, river.Run());
 
-        var chain = view.Links.Where(link => link.Kind == MapLinkKind.PassedOn && link.From.Module is { } from && (from == RiverModule.CompanyYear || Chain.Contains(from))).ToList();
+        var line = MapLinksTests.CompanysLine(view.Links).ToList();
         view.ShouldSatisfyAllConditions(
-            () => chain.Select(link => (link.From.Module, link.To.Module)).ShouldBe([(RiverModule.CompanyYear, RiverModule.Vouchers), (RiverModule.Vouchers, RiverModule.Split)]),
-            () => (chain[1].Card, chain[1].Carries, chain[1].Amount).ShouldBe((handOff.Card, handOff.Carries, handOff.Amount)),
-            () => chain[1].Through.ShouldBe([RiverModule.Allowances, RiverModule.Rent, RiverModule.Car]),
-            () => view.Links.Where(link => Quiet(view).Contains(link.From.Module ?? RiverModule.River) || Quiet(view).Contains(link.To.Module ?? RiverModule.River)).ShouldBeEmpty());
+            () => line.Select(link => (link.From.Id, link.To.Id)).ShouldBe([("company-year", "company-line-vouchers"), ("company-line-vouchers", "split")]),
+            () => (line[1].Card, line[1].Carries, line[1].Amount).ShouldBe((handOff.Card, handOff.Carries, handOff.Amount)),
+            () => line[1].Through.ShouldBe([RiverModule.Allowances, RiverModule.Rent, RiverModule.Car]),
+            () => view.Links.Where(link => Quiet(view).Any(lever => new[] { link.From, link.To }.Any(end => end == MapEnd.Of(lever) || end.Lever == lever))).ShouldBeEmpty());
     }
 
     // Every lever empty: the chain is Company year's line to the split, as the map of a plan without a lever
@@ -256,10 +258,10 @@ public class MapQuietTests
             (false, true, true, MapLayout.Grid(MapView.ModulesOf(river)).Slot(MapEnd.Of(RiverModule.Allowances)).Width));
     }
 
-    // A quiet lever's links are the line running past it: chosen, that line stays with its amount, on the line
-    // above or under the quiet row, never on it.
+    // A quiet lever's links are the company's line running past it: chosen, that line stays with its amount, on
+    // the line in the company's column, never in the quiet pill among the gates.
     [Fact]
-    public void LinksOf_aQuietLever_isTheLineRunningPastIt()
+    public void LinksOf_aQuietLever_isTheCompanysLineRunningPastIt()
     {
         var river = Emptied(Full, OptionalModule.Allowances, OptionalModule.Rent, OptionalModule.Car);
         var view = MapView.From(river, river.Run());
@@ -269,31 +271,30 @@ public class MapQuietTests
         var amount = view.Amounts(MapAmounts.Of(view, MapAmountsTests.Say), RiverModule.Rent).ShouldHaveSingleItem();
 
         view.ShouldSatisfyAllConditions(
-            () => (past.From.Module, past.To.Module).ShouldBe((RiverModule.Vouchers, RiverModule.Split)),
+            () => (past.From, past.To).ShouldBe((MapEnd.Beside(RiverModule.Vouchers), MapEnd.Of(RiverModule.Split))),
             () => view.Drawn(RiverModule.Rent).Where(line => !line.Faded).Select(line => line.Bundle.Links[0]).ShouldBe([past]),
-            () => (amount.Bundle.Links[0], amount.At.X).ShouldBe((past, pill.CenterX)),
-            () => (amount.At.Y < pill.Top || amount.At.Y > pill.Bottom).ShouldBeTrue());
+            () => amount.Bundle.Links[0].ShouldBe(past),
+            () => (amount.At.X > pill.Right).ShouldBeTrue());
     }
 
-    // The line past a quiet row runs straight down the chain's middle, into the row and out of it, from the
-    // box above to the box below, the row centred on it.
+    // The company's line past quiet levers runs straight down its own column, from the point beside the lever
+    // above them into the split, clear of their pill among the gates.
     [Fact]
-    public void Routed_theLinePastAQuietRow_runsStraightDownThroughIt()
+    public void Routed_theCompanysLinePastQuietLevers_runsStraightDownClearOfTheirPill()
     {
         var river = Emptied(Full, OptionalModule.Allowances, OptionalModule.Rent, OptionalModule.Car);
         var view = MapView.From(river, river.Run());
-        var (vouchers, pill, split) = (Node(view, RiverModule.Vouchers).Slot, Node(view, RiverModule.Rent).Slot, Node(view, RiverModule.Split).Slot);
+        var (pill, split) = (Node(view, RiverModule.Rent).Slot, Node(view, RiverModule.Split).Slot);
 
         var route = view.Links.Single(link => link.Through.Count > 0).Route!;
 
         route.ShouldSatisfyAllConditions(
-            () => route.Points.ShouldAllBe(point => point.X == vouchers.CenterX),
-            () => route.Points.Select(point => point.Y).ShouldBe([vouchers.Bottom, pill.Top, pill.Bottom, split.Top]),
-            () => pill.CenterX.ShouldBe(vouchers.CenterX));
+            () => route.Points.Select(point => point.X).Distinct().ShouldHaveSingleItem(),
+            () => (route.Points[0].X > pill.Right, route.End.Y).ShouldBe((true, split.Top)));
     }
 
-    // A quiet row is lower than the lever rows it replaces, the boxes holding the same badges: three levers
-    // take less than two rows.
+    // A quiet pill is lower than the gates it replaces, the boxes holding the same badges and the other gates the
+    // same lines: three levers take one pill, their names one to a line, under the rows they would take.
     [Fact]
     public void From_quietLevers_drawALowerMap()
     {
@@ -301,17 +302,17 @@ public class MapQuietTests
 
         var view = MapView.From(river, river.Run());
 
-        (view.Units < MapLayout.Grid(MapView.ModulesOf(river), badgeLines: BadgeLines(view)).Units - 1m).ShouldBeTrue();
+        view.Units.ShouldBeLessThan(MapLayout.Grid(MapView.ModulesOf(river), badgeLines: BadgeLines(view), gateLines: GateLines(view)).Units);
     }
 
     // The quiet levers ending the chain above the split, one to four of them.
     public static TheoryData<int> QuietRuns => new(1, 2, 3, 4);
 
     // The map is never less than its smallest scale, a chain row being 3.25rem (MapLayout.SmallestRowRem),
-    // whatever its width: there, a quiet row's names, each a 24 px target, take a line each on the narrowest
-    // map, a column 34rem wide where a quiet row is about 150 px; its pill is kept that tall, with its
-    // padding, in the middle of its row, below the box above, and the line's amount, a rem high, fits on the
-    // line between it and a box, clear of both.
+    // whatever its width: there, a quiet pill's names, each a 24 px target, take a line each on the narrowest
+    // map, a column 34rem wide where a gate is 124 px; its pill is kept that tall, with its padding, in the
+    // middle of its row, below the box above, and the amount of the company's line past it is clear of it and
+    // of the boxes.
     [Theory]
     [MemberData(nameof(QuietRuns))]
     public void From_aQuietRowAtTheMapsSmallestScale_holdsItsNamesOnePerLineClearOfTheBoxesAndTheLinesAmount(int count)
@@ -343,6 +344,9 @@ public class MapQuietTests
             () => Stylesheet.Block(css, ".map-module--quiet").ShouldContain($"min-height: {Stylesheet.Rem(MapLayout.QuietTargetRem)};"),
             () => Stylesheet.Block(css, ".map-quiet").ShouldContain($"row-gap: {Stylesheet.Rem(MapLayout.QuietGapRem)};"),
             () => Stylesheet.Block(css, ".map-quiet").ShouldContain($"padding: {Stylesheet.Rem(MapLayout.QuietPadRem)} 0.6rem;"),
+            () => Stylesheet.Block(css, ".map-quiet").ShouldContain("font-size: 0.72rem;"),
+            () => Stylesheet.Block(css, ".map-quiet").ShouldContain("line-height: 1.2;"),
+            () => MapLayout.QuietLineRem.ShouldBe(0.72m * 1.2m),
             () => Stylesheet.Block(css, ".map-quiet").ShouldContain("border: 1px dashed"));
     }
 
@@ -350,8 +354,13 @@ public class MapQuietTests
 
     private static MapNode Node(MapView view, RiverModule module) => view.Modules.Single(node => node.End.Module == module);
 
-    // How many lines of badges each module's box holds on a map.
+    // How many lines of badges each module's box holds on a map, and how many lines each gate's says.
     private static Dictionary<RiverModule, int> BadgeLines(MapView view) => view.Modules.ToDictionary(node => node.End.Module!.Value, node => node.Badges.Count);
+
+    private static Dictionary<RiverModule, int> GateLines(MapView view) => view.Modules.ToDictionary(node => node.End.Module!.Value, node => node.Lines.Count);
+
+    // Where a slot of a map stands down it, in chain rows from its top, to the ten-thousand-millionth.
+    private static decimal Rows(decimal percent, decimal units) => Math.Round(percent * units / 100m, 10);
 
     private static string[] Places(RiverInputs river) =>
         [.. MapView.From(river, river.Run()).Places().Select(place => string.Join('+', place.Nodes.Select(node => node.End.Id)) + (place.Quiet ? " quiet" : ""))];

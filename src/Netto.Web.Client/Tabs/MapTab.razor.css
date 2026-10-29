@@ -310,8 +310,16 @@
         border-color: var(--netto-gold);
     }
 
-/* The levers that move no money of their own in this plan: their names in one dashed row on the chain,
-   the royalty's in its own place, over the chain's line, which runs on under the row's ground. The row is
+/* A way across, a gate: dashed, its name over the lines it says (MapGateWords), with the padding over and
+   under them the layout keeps room for (MapLayout.GatePadRem). */
+.map-module--gate {
+    padding: 0.25rem 0.35rem;
+    border-style: dashed;
+    border-color: var(--netto-text-muted);
+}
+
+/* The levers that move no money of their own in this plan: their names in one dashed pill among the gates,
+   the royalty's in its own place, the partner's in theirs. The pill is
    placed by its middle, as wide as its slot and as tall as its names: one line where they fit, one name to
    a line on the narrowest map, which is the height the layout keeps for it (MapLayout: SmallestRowRem,
    QuietTargetRem, QuietGapRem and QuietPadRem are the 3.25rem, 1.5rem, 0.15rem and 0.15rem here), so that

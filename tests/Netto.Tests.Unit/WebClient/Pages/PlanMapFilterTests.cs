@@ -90,7 +90,7 @@ public class PlanMapFilterTests
         await using var page = LivePlan.At("http://localhost/plan", MapRendering.EveryKindShown(), river: MapLinksTests.Full);
         await page.LoadAsync();
         var map = await page.FindAsync<MapTab>();
-        await page.InvokeAsync(() => map.ChosenChanged.InvokeAsync(RiverModule.Car));
+        await page.InvokeAsync(() => map.ChosenChanged.InvokeAsync(RiverModule.DirectorPay));
         var (lines, words, listed, modules) = (Lines(map), Words(map), MapReceivedHtml.Listed(map), map.ShownMap.Modules);
         var boxes = await page.FindAllAsync<MudCheckBox<bool>>();
 
@@ -114,7 +114,7 @@ public class PlanMapFilterTests
         await using var page = LivePlan.At("http://localhost/plan", MapRendering.EveryKindShown(), river: MapLinksTests.Full);
         await page.LoadAsync();
         var map = await page.FindAsync<MapTab>();
-        await page.InvokeAsync(() => map.ChosenChanged.InvokeAsync(RiverModule.Car));
+        await page.InvokeAsync(() => map.ChosenChanged.InvokeAsync(RiverModule.DirectorPay));
         var (lines, words, listed, links) = (Lines(map), Words(map), MapReceivedHtml.Listed(map), map.ShownMap.Links);
         var boxes = await page.FindAllAsync<MudCheckBox<bool>>();
         await page.InvokeAsync(() => boxes[Index(MapLinkKind.TaxBase)].ValueChanged.InvokeAsync(false));

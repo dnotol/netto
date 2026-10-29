@@ -21,7 +21,7 @@ public class MapViewTests
         view.ShouldSatisfyAllConditions(
             () => view.Modules.Select(node => node.End.Id).ShouldBe(["company-year", "split", "director-pay", "corporate-tax", "dividend"]),
             () => view.Buckets.Select(node => node.End.Id).ShouldBe(BucketsView.Keys),
-            () => view.Units.ShouldBe(6.35m));
+            () => Math.Round(view.Units, 2).ShouldBe(6.58m));
     }
 
     [Theory]
@@ -114,7 +114,8 @@ public class MapViewTests
 
         links.ShouldSatisfyAllConditions(
             () => links.ShouldNotBeEmpty(),
-            () => links.ShouldBe(view.Links.Where(link => link.From.Module == module || link.To.Module == module || link.Through.Contains(module))));
+            () => links.ShouldBe(view.Links.Where(link => link.From.Module == module || link.To.Module == module || link.From.Lever == module || link.To.Lever == module
+                || link.Through.Contains(module))));
     }
 
     // A point of the company's line, where a lever before the split takes its share, is named after the
@@ -160,9 +161,9 @@ public class MapViewTests
 
         var car = view.Links.Where(link => link.Touches(RiverModule.Car)).ToList();
 
-        (car.Any(link => link.To.Module == RiverModule.Car && link.From.Module == RiverModule.Rent), car.Any(link => link.From == MapEnd.InBucket("pocket")),
-                car.Any(link => link.To.Module == RiverModule.Split))
-            .ShouldBe((true, true, true));
+        (car.Any(link => link.To.Lever == RiverModule.Car && link.From.Lever == RiverModule.Rent), car.Any(link => link.From == MapEnd.InBucket("pocket")),
+                car.Any(link => link.To.Module == RiverModule.Split), car.Any(link => link.To.Module == RiverModule.DirectorPay))
+            .ShouldBe((true, true, true, true));
     }
 
     [Fact]
@@ -271,7 +272,7 @@ public class MapViewTests
         var largest = money.Max(Amount);
         money.ShouldSatisfyAllConditions(
             () => money.Select(bundle => bundle.Route.Width).ShouldBe(money.Select(bundle => MapLineWidths.Money(Amount(bundle), largest))),
-            () => money.Where(bundle => bundle.Route.Width == MapLineWidths.Thickest).Select(bundle => (bundle.From.Id, bundle.To.Id)).ShouldBe([("company-year", "vouchers")]));
+            () => money.Where(bundle => bundle.Route.Width == MapLineWidths.Thickest).Select(bundle => (bundle.From.Id, bundle.To.Id)).ShouldBe([("company-year", "company-line-vouchers")]));
     }
 
     // A line holding several of its card's lines is as thick as their sum, thicker than any of them alone:
@@ -341,8 +342,13 @@ public class MapViewTests
         bundles.ShouldSatisfyAllConditions(
             () => bundles.Where(bundle => bundle.To.Bucket is not null).ShouldNotBeEmpty(),
             () => bundles.Where(bundle => bundle.From.Bucket is not null).ShouldNotBeEmpty(),
-            () => bundles.Where(bundle => bundle.Arrowhead == bundle.To.Bucket is not null).Select(bundle => $"{bundle.From.Id} to {bundle.To.Id}").ShouldBeEmpty());
+            () => bundles.Where(bundle => !StretchOfTheCompanysLine(bundle) && bundle.Arrowhead == bundle.To.Bucket is not null).Select(bundle => $"{bundle.From.Id} to {bundle.To.Id}").ShouldBeEmpty(),
+            () => bundles.Where(StretchOfTheCompanysLine).Where(bundle => bundle.Arrowhead != (bundle.To == MapEnd.Of(RiverModule.Split))).Select(bundle => bundle.To.Id).ShouldBeEmpty());
     }
+
+    // A stretch of the company's line has an arrowhead only into the split, which ends it: from one point of the
+    // line to the next it runs on as one line.
+    internal static bool StretchOfTheCompanysLine(MapBundle bundle) => MapLinksTests.CompanysLine(bundle.Links).Any();
 
     // A line into a bucket is drawn on under it to its middle, and a line back out of one from there, the
     // bucket drawn over them, so the line meets its edge wherever that is, at a rounded corner too; a line

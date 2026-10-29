@@ -17,11 +17,11 @@ public class MapTabPanelTests
     [Fact]
     public async Task Tab_aModuleChosen_hasItsCardAloneInTheColumnUnderWhatItReceives()
     {
-        var html = await RenderTabAsync(Full, RiverModule.Car);
+        var html = await RenderTabAsync(Full, RiverModule.Rent);
 
         var side = Regex.Match(html, "<div class=\"map-tab__side\"[^>]*>(.*)", RegexOptions.Singleline).Groups[1].Value;
         var (receives, panel, card) = (side.IndexOf("<p class=\"map-tab__receives\"", StringComparison.Ordinal),
-            side.IndexOf("<div class=\"map-tab__panel\"", StringComparison.Ordinal), side.IndexOf("id=\"card-car\"", StringComparison.Ordinal));
+            side.IndexOf("<div class=\"map-tab__panel\"", StringComparison.Ordinal), side.IndexOf("id=\"card-rent\"", StringComparison.Ordinal));
         (side.TrimStart().StartsWith("<p class=\"map-tab__receives\"", StringComparison.Ordinal), receives < panel, panel < card, Regex.Count(html, "<section id=\"card-")).ShouldBe((true, true, true, 1));
     }
 

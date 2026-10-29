@@ -48,7 +48,7 @@ public class MapLinkStyleTests
         var (intoABucket, besides) = (bundles.Where(bundle => bundle.Kind == MapLinkKind.IntoBucket && bundle.To.Bucket is not null).ToList(),
             bundles.Where(bundle => bundle.Kind == MapLinkKind.IntoBucket && bundle.To.Bucket is null).ToList());
         bundles.ShouldSatisfyAllConditions(
-            () => bundles.Where(bundle => MapLinkStyle.SampleEnd(bundle.Kind) == MapLineEnd.Arrowhead).ShouldAllBe(bundle => bundle.Arrowhead),
+            () => bundles.Where(bundle => MapLinkStyle.SampleEnd(bundle.Kind) == MapLineEnd.Arrowhead && !MapViewTests.StretchOfTheCompanysLine(bundle)).ShouldAllBe(bundle => bundle.Arrowhead),
             () => (MapLinkStyle.SampleEnd(MapLinkKind.IntoBucket), intoABucket.Count > 0, intoABucket.All(bundle => !bundle.Arrowhead)).ShouldBe((MapLineEnd.Bucket, true, true)),
             () => (besides.Count > 0, besides.All(bundle => bundle.From.Bucket is not null)).ShouldBe((true, true)),
             () => besides.ShouldAllBe(bundle => bundle.Arrowhead));

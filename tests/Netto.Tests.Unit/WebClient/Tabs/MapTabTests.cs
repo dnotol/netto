@@ -151,8 +151,8 @@ public class MapTabTests
                 .ShouldBe(drawn.Select(line => (string?)string.Join(' ', line.Bundle.Route.Drawn.Select(point => $"{Number(point.X)},{Number(point.Y)}")))));
     }
 
-    // Nothing chosen: one amount on each line of money or of a tax base, the sum of the card's lines it holds,
-    // and no words; a condition's line says in a word or two whether it holds.
+    // Nothing chosen: one amount on each line of money or of a tax base that says one, the sum of the card's
+    // lines it holds, and no words; a condition's line says in a word or two whether it holds.
     [Fact]
     public async Task Tab_nothingChosen_drawsOneAmountPerLineAndNoWords()
     {
@@ -162,7 +162,7 @@ public class MapTabTests
 
         map.ShouldSatisfyAllConditions(
             () => view.Bundles().ShouldContain(bundle => bundle.Links.Count > 1),
-            () => Amounts(map).ShouldBe(view.Bundles().Where(bundle => bundle.Amount is not null).Select(bundle => Formats.Euros(bundle.Amount!.Value)), ignoreOrder: true),
+            () => Amounts(map).ShouldBe(view.Bundles().Where(bundle => bundle.Amount is not null && bundle.SaysAmount).Select(bundle => Formats.Euros(bundle.Amount!.Value)), ignoreOrder: true),
             () => map.ShouldNotContain("map-words"),
             () => States(map).ShouldBe(view.Links.Where(link => link.Kind == MapLinkKind.Condition).Select(State), ignoreOrder: true));
     }
@@ -180,7 +180,8 @@ public class MapTabTests
         Placed(map).ShouldBe(MapAmounts.Of(view, MapAmountsTests.Say).Select(amount => (amount.Bundle.Kind.ToString(), Style(amount), "true", amount.Text)), ignoreOrder: true);
     }
 
-    // What the line to the pocket carries is drawn in its gold, the map's one; no other amount is.
+    // What the line to the pocket carries is drawn in its gold, the map's one, where the line says it: Director
+    // pay's; a gate's says none, its box saying it. No other amount is.
     [Fact]
     public async Task Tab_nothingChosen_drawsTheAmountsIntoThePocketInGold()
     {
@@ -189,7 +190,7 @@ public class MapTabTests
         var map = Map(await RenderTabAsync(Full));
 
         Regex.Matches(map, "<span class=\"map-amount map-amount--pocket\"[^>]*>([^<]*)</span>").Select(match => match.Groups[1].Value)
-            .ShouldBe(view.Bundles().Where(bundle => bundle.To == MapEnd.InBucket("pocket")).Select(bundle => Formats.Euros(bundle.Amount!.Value)), ignoreOrder: true);
+            .ShouldBe(view.Bundles().Where(bundle => bundle.To == MapEnd.InBucket("pocket") && bundle.SaysAmount).Select(bundle => Formats.Euros(bundle.Amount!.Value)), ignoreOrder: true);
     }
 
     // Nothing chosen, the map holds no sentence, only amounts and a condition's word or two, so nothing runs
@@ -209,7 +210,7 @@ public class MapTabTests
     [Fact]
     public async Task Tab_aModuleChosen_keepsItsOwnLinesAmountsWhereTheyWereAndNoWords()
     {
-        var own = MapView.From(Full, Full.Run()).Bundles().Where(bundle => bundle.Touches(RiverModule.Car)).Select(bundle => bundle.Kind.ToString()).ToList();
+        var own = MapView.From(Full, Full.Run()).Bundles().Where(bundle => bundle.Touches(RiverModule.Car) && bundle.SaysAmount).Select(bundle => bundle.Kind.ToString()).ToList();
         var unchosen = Placed(Map(await RenderTabAsync(Full)));
 
         var map = Map(await RenderTabAsync(Full, RiverModule.Car));
@@ -246,7 +247,7 @@ public class MapTabTests
 
         var html = await RenderTabAsync(Full);
 
-        Placed(Map(html)).Select(amount => amount.Kind).ShouldBe(view.Bundles().Select(bundle => bundle.Kind.ToString()), ignoreOrder: true);
+        Placed(Map(html)).Select(amount => amount.Kind).ShouldBe(view.Bundles().Where(bundle => bundle.SaysAmount).Select(bundle => bundle.Kind.ToString()), ignoreOrder: true);
     }
 
     // Nothing chosen: no button pressed, no line faded, no line of what is received, and the card's room says
@@ -260,21 +261,21 @@ public class MapTabTests
     }
 
     // A module chosen is pressed, its lines stay and the others fade, and one line over its card says what
-    // it receives and from where, each part the amount the map says on its line: the car, from the lever
-    // above it and from the pocket, its contribution coming back.
+    // it receives and from where, each part the amount the map says on its line: the rent, its share off the
+    // company's line, from Company year.
     [Fact]
     public async Task Tab_aModuleChosen_marksItBringsOutItsLinesAndSaysWhatItReceives()
     {
         var view = MapView.From(Full, Full.Run());
-        var received = MapReceivedView.Of(view, RiverModule.Car, end => end.Id).Lines;
+        var received = MapReceivedView.Of(view, RiverModule.Rent, end => end.Id).Lines;
 
-        var html = await RenderTabAsync(Full, RiverModule.Car);
+        var html = await RenderTabAsync(Full, RiverModule.Rent);
 
         html.ShouldSatisfyAllConditions(
-            () => Buttons(html).Where(button => button.Pressed == "true").Select(button => button.Module).ShouldBe(["car"]),
-            () => Regex.Count(html, "<polyline class=\"map-line[^\"]*map-line--faded").ShouldBe(view.Bundles().Count(bundle => !bundle.Touches(RiverModule.Car))),
-            () => received.Select(line => line.From).ShouldBe(["rent", "pocket"]),
-            () => Line(html).ShouldBe($"Receives {received[0].Amount} from {CardTitle(RiverModule.Rent)} · {received[1].Amount} from Your pocket"));
+            () => Buttons(html).Where(button => button.Pressed == "true").Select(button => button.Module).ShouldBe(["rent"]),
+            () => Regex.Count(html, "<polyline class=\"map-line[^\"]*map-line--faded").ShouldBe(view.Bundles().Count(bundle => !bundle.Touches(RiverModule.Rent))),
+            () => received.Select(line => line.From).ShouldBe(["company-year"]),
+            () => Line(html).ShouldBe($"Receives {received[0].Amount} from {CardTitle(RiverModule.CompanyYear)}"));
     }
 
     // The module chosen has no list of its lines and no second box of its own beside the map: its card's
@@ -292,11 +293,13 @@ public class MapTabTests
     [Fact]
     public async Task Tab_aModuleChosen_namesTheModulesItReceivesFromAsButtons()
     {
-        var (split, car) = (await RenderTabAsync(RiverInputs.Example, RiverModule.Split), await RenderTabAsync(Full, RiverModule.Car));
+        var (split, rent, dividend) = (await RenderTabAsync(RiverInputs.Example, RiverModule.Split), await RenderTabAsync(Full, RiverModule.Rent),
+            await RenderTabAsync(Full, RiverModule.Dividend));
 
         split.ShouldSatisfyAllConditions(
             () => GoButtons(split).ShouldBe([("company-year", "Company year")]),
-            () => GoButtons(car).ShouldBe([("rent", CardTitle(RiverModule.Rent))]));
+            () => GoButtons(rent).ShouldBe([("company-year", "Company year")]),
+            () => GoButtons(dividend).ShouldBe([("corporate-tax", CardTitle(RiverModule.CorporateTax))]));
     }
 
     // Company year receives nothing: no line over its card.
@@ -348,7 +351,7 @@ public class MapTabTests
     [Fact]
     public async Task Tab_leavesRoomForTheToolsAndTheCard()
     {
-        var html = await RenderTabAsync(Full, RiverModule.Car);
+        var html = await RenderTabAsync(Full, RiverModule.Rent);
 
         var order = ToolsAndCard.Select(marker => html.IndexOf(marker, StringComparison.Ordinal)).ToList();
         (order.All(index => index >= 0), order.SequenceEqual(order.Order())).ShouldBe((true, true));

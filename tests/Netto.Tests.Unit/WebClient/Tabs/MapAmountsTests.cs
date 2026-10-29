@@ -69,16 +69,18 @@ public class MapAmountsTests
 
     // Every line has its amount, a condition its word or two, on a stretch of its own line or beside it: its
     // point on the stretch, on it or over, under, left or right of it as the stretch runs; and no other line of
-    // money runs along it there, at any size.
+    // money runs along it there, at any size. A gate's line into the pocket has none, its gate's box saying it,
+    // nor the pay, its pill saying it.
     [Theory]
     [MemberData(nameof(Plans))]
     public void Of_anyPlan_givesEveryLineItsAmountOnAStretchOfItsOwnLineNoOtherLineOfMoneyRunsAlong(string plan)
     {
         var (view, amounts) = Placed(plan);
+        var saying = view.Bundles().Where(line => line.SaysAmount).ToList();
 
         amounts.ShouldSatisfyAllConditions(
-            () => view.Bundles().Where(line => !amounts.Any(amount => ReferenceEquals(amount.Bundle.Route, line.Route))).Select(Name).ShouldBeEmpty(),
-            () => amounts.Count.ShouldBe(view.Bundles().Count),
+            () => saying.Where(line => !amounts.Any(amount => ReferenceEquals(amount.Bundle.Route, line.Route))).Select(Name).ShouldBeEmpty(),
+            () => amounts.Count.ShouldBe(saying.Count),
             () => amounts.Where(amount => !OnItsStretch(amount)).Select(Name).ShouldBeEmpty(),
             () => Sizes(view).SelectMany(scale => Along(view, amounts, scale)).Where(along => along.Other.Kind is MapLinkKind.PassedOn or MapLinkKind.IntoBucket)
                 .Select(Name).ShouldBeEmpty());
@@ -131,8 +133,8 @@ public class MapAmountsTests
     {
         MapLink[] links =
         [
-            Money(RiverModule.Vouchers, new MapRoute([new MapPoint(10m, 50m), new MapPoint(90m, 50m)])),
-            Money(RiverModule.Allowances, new MapRoute([new MapPoint(50m, 5m), new MapPoint(50m, 95m)])),
+            Money(RiverModule.DirectorPay, new MapRoute([new MapPoint(10m, 50m), new MapPoint(90m, 50m)])),
+            Money(RiverModule.CompanyYear, new MapRoute([new MapPoint(50m, 5m), new MapPoint(50m, 95m)])),
         ];
         var view = new MapView([], [], 10m) { Links = links };
         var scale = MapScale.Smallest(view.Units);
@@ -171,7 +173,7 @@ public class MapAmountsTests
     [Fact]
     public void Of_aLineOfAKindTheSearchHasNoRankFor_isRefused()
     {
-        var view = new MapView([], [], 10m) { Links = [Money(RiverModule.Vouchers, new MapRoute([new MapPoint(10m, 50m), new MapPoint(90m, 50m)])) with { Kind = (MapLinkKind)99 }] };
+        var view = new MapView([], [], 10m) { Links = [Money(RiverModule.DirectorPay, new MapRoute([new MapPoint(10m, 50m), new MapPoint(90m, 50m)])) with { Kind = (MapLinkKind)99 }] };
 
         Should.Throw<ArgumentOutOfRangeException>(() => MapAmounts.Of(view, Say));
     }

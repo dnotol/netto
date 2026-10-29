@@ -14,7 +14,10 @@ namespace Netto.Tests.WebClient.Tabs;
 // goes, which the map's arrow says instead.
 public class MapCardsTests
 {
-    public static TheoryData<string> Rivers => new() { "every lever", "the company paying the contributions", "the example", "the company skipped" };
+    public static TheoryData<string> Rivers => new()
+    {
+        "every lever", "the company paying the contributions", "the example", "the company skipped", "a rent under its floor", "a contribution beyond the car's costs",
+    };
 
     [Theory]
     [MemberData(nameof(Rivers))]

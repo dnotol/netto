@@ -2,85 +2,78 @@ using Netto.Web.Client.River;
 
 namespace Netto.Web.Client.Tabs;
 
-// Where the map draws what, in percent of its box, both ways, as the river is shaped: Company year, the
-// levers in the plan and the split one under the other down the middle, then the director's stream on the
-// left (Copyright royalty over Director pay, the partner right of the royalty) and the company's on the
-// right (Corporate tax over Dividend),
-// and the bar's five buckets along the bottom. A row holds what is in it and closes up when it holds
-// nothing, so a lever out of the plan leaves no gap, and with the company skipped the map is Company year,
-// which no link joins, over Director pay and the buckets. The shape is fixed, so every link has its own
-// route, worked out once from the slots and every link of the run, never from the links a filter shows,
-// so hiding a kind of link moves nothing.
+// Where the map draws what, in percent of its box, both ways, by whose money each module moves: the
+// director's and the household's on the left (Household over Director pay), the ways across in the middle
+// (each lever before the split, Copyright royalty and Dividend, drawn as gates), the company's on the right
+// (Company year, the split, Corporate tax), each column labelled over its top, and the bar's five buckets
+// along the bottom. Rows keep the river's order top to bottom: Company year, a row for each lever, the split
+// with Director pay beside it, the royalty, Corporate tax with the dividend beside it. A row holds what is in
+// it and closes up when it holds nothing, so a lever out of the plan leaves no gap, and with the company
+// skipped the map is Company year, which no link joins, over the partner, Director pay and the buckets. The
+// shape is fixed, so every link has its own route, worked out once from the slots and every link of the run,
+// never from the links a filter shows, so hiding a kind of link moves nothing. The columns and lanes are the
+// pixels of the narrowest map, 34rem wide, which the layout was drawn at (local/mockups/map-gates-544), each
+// a percent of the map wherever it is drawn wider.
 //
-// The levers that move no money of their own in this plan (MapQuiet) have no box. Those following one
-// another down the chain share one quiet row, in the row of the first of them, the rows of the others
-// closing up: its pill wider than the chain's boxes and kept as tall as its names take one per line on the
-// narrowest map, so that it never reaches a box or the amount of the line under it, which runs straight
-// through it, from the box above to the box below. The royalty, quiet, is a pill in the middle of its own
-// slot, as wide as its box, and its row stays, Corporate tax's too; the partner, quiet, the same in its own.
+// What the company has left runs down its own line at the left of the company's column (Spine), from Company
+// year's bottom into the split's top, a stretch between each two points where a lever takes its share across
+// to its gate's right side (MapEnd.Beside), the car's costs leave it to the right for the expenses and the
+// car's contribution joins it from the pocket, under the car's gate. The pay crosses from the split straight
+// into Director pay, its pill over it in the gates' column (PillOn). A gate's box grows a line for each line
+// it says (MapGates) and a second line for a name that wraps on the narrowest map (TitleLines), so its row
+// grows with it.
 //
-// A module's badges (MapBadges) are lines of its box: the box grows a line for each, and its row keeps
-// round its tallest box the room a chain row keeps round its own, so a row whose boxes hold no badge keeps
-// its height, and a stream's row, taller for the amounts of its lines, grows only once its tallest box takes
-// that room.
+// The levers that move no money of their own in this plan (MapQuiet) have no box: those following one another
+// share one quiet pill in the gates' column, in the row of the first of them, the rows of the others closing
+// up, kept as tall as their names take one per line on the narrowest map. The royalty, quiet, is a pill in its
+// own place, the partner too in theirs. A module's badges (MapBadges) are lines of its box: the box grows a
+// line for each, and its row keeps round its tallest box the room a row keeps round its own.
 //
-// Every line of money has a stretch of its own, where the amount it carries stands on it or right beside it
-// with no other line of money along it, clear of every box and arrowhead, on the narrowest map (MapAmounts,
-// MapAmountsTests). Where the streams meet the buckets their lines would come down side by side too
-// close for that, so a band over the buckets holds rows of its own there, each a fixed share of a chain row
-// under the one before: Director pay's and the dividend's ways into their taxes turn along its first row,
-// what comes back out of the taxes along the second, nested inside the way in so that the two never cross,
-// and the dividend's way to the pocket along the last, under the rest. The band's rows are set by the modules
-// the map holds, never by the lines a plan happens to have, so the map's height does not jump as an amount
-// changes, and the buckets' row grows only by what the streams' last row lacks under its boxes. Corporate
-// tax's way into its taxes comes down left of the dividend's lines into them and out of them, crossing
-// neither. The royalty's part paid apart leaves its bottom and turns along a row of its own under it to the
-// pocket's lane, its line on to Director pay coming down right of that, and the condition it sets on the
-// split leaves its right side and climbs past the gutter. What the chain pays into the expenses, Company
-// year's contribution to INASTI and the car's costs, leaves its module's right side, at its bottom, and
-// comes down a lane of its own right of Corporate tax and the dividend into the expenses at the right edge.
+// The gates' lines into the pocket and the taxes on pay leave their left side and come down a lane between
+// the director's column and the gates, a track each: the car's contribution from the pocket furthest left,
+// the rent's and the royalty's taxes, then what reaches the pocket, the highest row's furthest left, so none
+// crosses another near the gates; the taxes turn along rows of their own in the band over the buckets, which
+// holds the director's ways into the taxes on pay and back, and the dividend's way into what the company keeps.
+// What the company pays into its expenses, Company year's contribution to INASTI and the car's costs, comes
+// down a lane of its own right of the company's boxes into the expenses at the right edge, Company year's, the
+// higher, furthest out. What Corporate tax adds back, from the vouchers and the car, and the condition the car
+// sets on its rate, drop right of the gates into the gap over Corporate tax and enter its top-left; the split's
+// lines enter it top-right.
 //
-// A route is orthogonal and runs only through room no box holds: the gap between two rows, the band over
-// the buckets, a lane down the left edge to the pocket, the gutter left of the middle column, Corporate tax's
-// drop right of it, the lane to the expenses and a lane down the right edge past it, or a row's side the
-// river leaves empty (the chain's rows have nothing left or right of the middle, the streams' rows nothing
-// in the middle). Lines may cross lines;
-// none crosses a box, nor a quiet row's pill but the chain's line past its levers, which runs through it
-// (MapLayoutTests). A line back out of a bucket, a refund, a credit, a contribution or a bonus beyond its
-// surcharge, takes the route money into it would take, the other way, beside it. A line keeps its width in
-// pixels (MapLineWidths): the lines that share a lane, a side of a box or a gap take their places apart at
-// their widths on the narrowest map, a halo's gap between them, and where a room cannot hold them all they
-// are squeezed into it, never past it, so no line crosses a box whatever its amount.
+// A route is orthogonal and runs only through room no box holds; lines may cross lines; none crosses a box, a
+// quiet pill or the pay's pill but the pay itself (MapLayoutTests). A line back out of a bucket takes the route
+// money into it would take, the other way, beside it. A line keeps its width in pixels (MapLineWidths): the
+// lines that share a lane, a side of a box or a gap take their places apart at their widths on the narrowest
+// map, a halo's gap between them, and where a room cannot hold them all they are squeezed into it, never past
+// it, so no line crosses a box whatever its amount.
 internal static class MapLayout
 {
-    // The three columns' boxes, left to right, the middle of the streams' rows left to the amounts of their
-    // lines, and the buckets along the bottom in the bar's order: the pocket and the taxes on pay towards the
-    // director's stream, the taxes on profit and what the company keeps towards the company's, and its
-    // expenses at the right edge. The pocket lies under Director pay and what the company keeps under the
-    // dividend, whose lines come straight down into them; the ways into the taxes turn along the band over
-    // the buckets, so the taxes need not lie under their stream. The left column leaves the lane to the
-    // pocket the room of its lines at their widths.
-    private static readonly (decimal Left, decimal Right) LeftColumn = (7m, 26m);
-    private static readonly (decimal Left, decimal Right) ChainColumn = (38m, 62m);
-    private static readonly (decimal Left, decimal Right) RightColumn = (74m, 95m);
+    // The narrowest the map is drawn: 34rem wide at any width, beside the card of the module chosen from
+    // 1,201 px and over it below, where it scrolls sideways past that (MapTab.razor.css); and it is never
+    // shorter than a chain row to 3.25rem (SmallestRowRem). A line keeps its width in pixels however large
+    // the map is drawn (MapLineWidths), so the lines side by side are kept apart at their widths there,
+    // where the map is smallest, and are further apart wherever it is larger: their half-widths and a halo's
+    // gap between them (MapLinkStyle.HaloGap), and a pixel between a line and the edge of its room.
+    internal const decimal NarrowestRem = 34m;
+    internal const decimal PixelsPerRem = 16m;
+    private const decimal NarrowestPixels = NarrowestRem * PixelsPerRem;
+    private const decimal EdgePixels = 1m;
 
-    // The partner's box, in the director's stream right of Copyright royalty and over Director pay's right, in
-    // the room its row leaves between the condition a royalty sets on the split, which climbs at 36, and
-    // Corporate tax's way into its taxes, which comes down from 52.5: wide enough for its name on one line
-    // on the narrowest map.
-    private static readonly (decimal Left, decimal Right) HouseholdColumn = (38m, 52m);
-
-    // Where the marital quotient climbs from Director pay's row into the partner's bottom, near its right.
-    private const decimal HouseholdClimb = 49.5m;
-    private static readonly (decimal Left, decimal Right)[] BucketSpans = [(1m, 20m), (22m, 43m), (45m, 62m), (64m, 82m), (84m, 99m)];
-
-    // A box is half a chain row high, in the middle of its row; the rest is the gap above and below it,
-    // where lines turn. The streams' rows are taller, for the amounts of their many lines, and the buckets'
-    // shorter.
+    // A box is half a chain row high, in the middle of its row; the rest is the room above and below it,
+    // where lines turn. The rows of the royalty and of Corporate tax are taller, for the amounts of their many
+    // lines.
     private const decimal BoxUnits = 0.5m;
-
-    // The room a chain row keeps round its box, where lines turn, half of it above the box and half below.
     private const decimal RowRoom = 1m - BoxUnits;
+    private const decimal StreamRowUnits = 1.6m;
+
+    // The partner's row, over Director pay's: tall enough for the marital quotient's amount and arrowhead
+    // between the partner and Director pay.
+    private const decimal PartnerRowUnits = 1.3m;
+
+    // The columns' labels, over the top row's boxes in the room the row keeps over them: 0.6rem high on one
+    // line, 0.125rem under the map's top (MapTab.razor.css: .map-column__label).
+    internal const decimal LabelRem = 0.6m;
+    internal const decimal LabelTopRem = 0.125m;
 
     // A badge's line of a box at the map's smallest scale, a chain row to 3.25rem (SmallestRowRem): the
     // badge 0.875rem high, its border in, under 0.1rem of room, so a line is 0.3 of a chain row. The
@@ -89,157 +82,161 @@ internal static class MapLayout
     internal const decimal BadgeGapRem = 0.1m;
     private const decimal BadgeUnits = (BadgeRem + BadgeGapRem) / SmallestRowRem;
 
-    // A quiet row's pill: centred on the chain's middle, wider than its boxes for the names in it and clear
-    // of the lanes each side, the left gutter's tracks ending before it and the lane a condition between two
-    // levers takes round the chain's right lying past it.
-    private static readonly (decimal Left, decimal Right) QuietSpan = (36m, 64m);
+    // A gate's box at the map's smallest scale: its name, a line each at the largest size a module's title is
+    // drawn (0.85rem, line height 1.1), its lines (MapGates) at 0.68rem with a line height of 1.15, 0.25rem
+    // of padding over and under them and its frame. The stylesheet draws a gate with these (MapLayoutTests).
+    internal const decimal TitleLineRem = 0.85m * 1.1m;
+    internal const decimal GateLineRem = 0.68m * 1.15m;
+    internal const decimal GatePadRem = 0.25m;
+    private const decimal FrameRem = 2m / PixelsPerRem;
 
-    // How tall a quiet row's pill is kept: its names wrap one to a line on the narrowest map, a column 34rem
-    // wide, where a pill is about 150 px, and the map is never drawn smaller than a chain row to 3.25rem
-    // (MapTab.razor.css), so the pill is kept the height of its names one per line there, each a target at
-    // least 24 px high (1.5rem) with a gap under it, and of its padding and border, and the row a margin
-    // taller each side, the line's amount fitting between the pill and the box under it. The royalty's name
-    // wraps in its narrow column there: its pill is kept two lines high. The stylesheet draws the pill with
-    // these (MapQuietTests).
+    // How tall a quiet pill is kept: its names one to a line on the narrowest map, each a target at least
+    // 24 px high (1.5rem), or as tall as its two lines at 0.72rem and a line height of 1.2 where it wraps there,
+    // with a gap under it, and its padding and border, and the row a margin taller each side. The stylesheet
+    // draws the pill with these (MapQuietTests).
     internal const decimal SmallestRowRem = 3.25m;
     internal const decimal QuietTargetRem = 1.5m;
+    internal const decimal QuietLineRem = 0.72m * 1.2m;
     internal const decimal QuietGapRem = 0.15m;
     internal const decimal QuietPadRem = 0.15m;
     private const decimal QuietBorderRem = 0.125m;
     private const decimal QuietMarginUnits = 0.1m;
-    private const int RoyaltyLines = 2;
 
-    // The narrowest the map is drawn: 34rem wide at any width, beside the card of the module chosen from
-    // 1,201 px and over it below, where it scrolls sideways past that (MapTab.razor.css); and it is never
-    // shorter than a chain row to 3.25rem (SmallestRowRem). A line keeps its width in pixels however large
-    // the map is drawn (MapLineWidths), so the lines side by side, down a lane, along a side of a box or
-    // across a gap, are kept apart at their widths there, where the map is smallest, and are further apart
-    // wherever it is larger: their half-widths and a halo's gap between them (MapLinkStyle.HaloGap), and a
-    // pixel between a line and the edge of its room.
-    internal const decimal NarrowestRem = 34m;
-    internal const decimal PixelsPerRem = 16m;
-    private const decimal EdgePixels = 1m;
+    // The pay's pill: as wide as a gate, 1.25rem high, centred on the pay's line (MapTab.razor.css: .map-pill).
+    internal const decimal PillRem = 1.25m;
 
-    // The lane down the left edge to the pocket, one track per link, the highest row's furthest out; the
-    // gutter left of the middle column, its tracks ending before the royalty's tax apart comes down beside
-    // them; the lane down the right edge. Each track is at least its step from the one before, further where
-    // the lines' widths ask it.
-    private const decimal PocketLane = 1.4m;
-    private const decimal PocketTrack = 0.6m;
-    private const decimal LeftGutter = 28m;
-    private const decimal LeftGutterEnd = 33m;
-    private const decimal GutterTrack = 1.2m;
-    private const decimal RightLane = 98m;
+    // The columns, from the narrowest map's pixels: the director's, the partner's in it, the gates' and the
+    // company's; and the lane between the director's column and the gates.
+    private static readonly (decimal Left, decimal Right) YouColumn = (Across(8m), Across(104m));
+    private static readonly (decimal Left, decimal Right) HouseholdColumn = (Across(8m), Across(80m));
+    private static readonly (decimal Left, decimal Right) GatesColumn = (Across(180m), Across(304m));
+    private static readonly (decimal Left, decimal Right) CompanyColumn = (Across(400m), Across(508m));
 
-    // The lane down to the expenses, right of Corporate tax and the dividend and left of the right edge's
-    // lane, its tracks ending far enough before it to keep their lines apart from its line: one track per
-    // link, the highest row's furthest out.
-    private const decimal ExpensesLane = 97m;
-    private const decimal ExpensesTrack = 0.6m;
-    private const decimal ExpensesLaneEnd = 97.4m;
+    // The room inside a gate for its lines, where they are drawn smallest, its padding of 0.35rem each side and
+    // its frame left out (MapGateTextTests).
+    internal const decimal GateRoomPixels = 304m - 180m - 2m * 0.35m * PixelsPerRem - 2m;
 
-    // How far right of the middle column a condition between two of its boxes runs round it.
-    private const decimal BracketLane = 3m;
+    // The columns' frames and their labels, as wide as the zones the narrowest map was drawn with.
+    private static readonly (decimal Left, decimal Right) YouZone = (Across(2m), Across(178m));
+    private static readonly (decimal Left, decimal Right) CompanyZone = (Across(394m), Across(542m));
+
+    private static readonly (decimal Left, decimal Right)[] BucketSpans =
+        [(Across(4m), Across(164m)), (Across(168m), Across(284m)), (Across(288m), Across(420m)), (Across(424m), Across(476m)), (Across(480m), Across(540m))];
+
+    // The company's line: half the thickest line and a pixel inside the company's column, so it meets Company
+    // year's bottom and the split's top within their sides whatever it carries.
+    private static readonly decimal Spine = Across(400m + MapLineWidths.Thickest / 2m + EdgePixels);
+
+    // The lane beside the gates: its first track, each next at least this far from the one before, and its room,
+    // from past the longest arrowhead into Director pay's right side to the pocket's right edge, so that every
+    // line down it lands on the pocket or turns along the band.
+    private static readonly decimal LaneFrom = Across(118m);
+    private static readonly decimal LaneTrack = Across(5m);
+    private static readonly (decimal Low, decimal High) LaneRoom = (Across(104m + 1.5m * (MapLineWidths.Thickest / 2m + 3m) + EdgePixels), Across(164m));
+
+    // Where the taxes from the gates enter the taxes on pay: the rent's, the royalty's.
+    private static readonly decimal RentTaxIn = Across(210m);
+    private static readonly decimal RoyaltyTaxIn = Across(250m);
+
+    // Director pay's lines along its bottom and its top: into the taxes on pay and back, the marital quotient,
+    // into the pocket, and what comes into it from the gates over and under it, the car's benefit and the
+    // royalty's part taxed as pay; and where its ways into the taxes enter their bucket.
+    private static readonly decimal PayToTaxes = Across(18m);
+    private static readonly decimal PayFromTaxes = Across(12m);
+    private static readonly decimal QuotientX = Across(44m);
+    private static readonly decimal PayToPocket = Across(60m);
+    private static readonly decimal PayFromGates = Across(92m);
+    private static readonly decimal PayTaxesIn = Across(180m);
+    private static readonly decimal PayTaxesOut = Across(174m);
+
+    // The lane down to the expenses, right of the company's boxes, the highest row's furthest out.
+    private static readonly decimal ExpensesLane = Across(526m);
+    private static readonly decimal ExpensesTrack = Across(10m);
+    private static readonly (decimal Low, decimal High) ExpensesRoom = (Across(508m), Across(540m));
+
+    // What Corporate tax adds back and the car's rule on its rate: their drops left of the company's line, clear
+    // of the arrowheads into the split's left side and into the line, the highest row's furthest right, so that
+    // the car's rule runs along its gate's row long enough for its words, and where they enter Corporate tax's
+    // top, the highest row's furthest right too.
+    private static readonly decimal DropsFrom = Across(388m);
+    private static readonly decimal DropTrack = Across(6m);
+    private static readonly decimal DropsIn = Across(436m);
+    private static readonly decimal DropInTrack = Across(12m);
+
+    // The rule the allowances' office sets beside a rent, round the gates' right.
+    private static readonly decimal Bracket = Across(340m);
+
+    // The conditions the dividend and the royalty set on the split climb into its left side.
+    private static readonly decimal DividendUp = Across(352m);
+    private static readonly decimal RoyaltyUp = Across(362m);
+
+    // The split's lines out of its bottom: the royalty's, the condition it sets on Corporate tax, its profit.
+    private static readonly decimal SplitToRoyalty = Across(406m);
+    private static readonly decimal SplitConditionToCorporate = Across(500m);
+    private static readonly decimal SplitToCorporate = Across(458m);
+
+    // Corporate tax's way into its taxes, and the dividend's lines out of its bottom: into what the company
+    // keeps, into the taxes on profit and back, and where its way into what the company keeps enters it.
+    private static readonly decimal CorporateToTaxes = Across(410m);
+    private static readonly decimal DividendToKept = Across(280m);
+    private static readonly decimal DividendFromKept = Across(274m);
+    private static readonly decimal DividendToTaxes = Across(292m);
+    private static readonly decimal DividendFromTaxes = Across(298m);
+    private static readonly decimal KeptIn = Across(450m);
+    private static readonly decimal KeptOut = Across(444m);
 
     // A box's side shared by several links: each its own place along it, a fraction of the box apart, or
     // further where their widths ask it.
     private const decimal PortStep = 0.22m;
 
-    // Where on Corporate tax's top the split's links arrive, and the chain's drops, the highest row's
-    // furthest right, all of them right of the split's. The condition the split sets on Corporate tax comes
-    // down right of its money, leaving the money's left side free of every line for its amount.
-    private const decimal SplitToCorporate = 80m;
-    private const decimal SplitConditionToCorporate = 83m;
-    private const decimal FirstDrop = 92m;
-    private const decimal DropTrack = 2.5m;
-    private const decimal DropsFrom = 82m;
-
-    // The band over the buckets, in chain rows: its first row 0.1 under the lowest box of the streams' last
-    // row, each next one 0.35 under it, room for an amount on a row between its neighbours on the smallest map
-    // (0.35 of a 52 px row is 18.2 px, an amount 16 px and a gap), and the buckets 0.2 under its last; the
-    // buckets sit 0.2 over the bottom of their row.
+    // The band over the buckets, in chain rows: its first row 0.1 under the lowest box of the last row, each
+    // next one 0.35 under it, room for an amount on a row between its neighbours on the smallest map, and the
+    // buckets 0.2 under its last; with the dividend, a whole chain row, for its lines' amounts; the buckets sit
+    // 0.2 over the bottom of their row.
     private const decimal BandTop = 0.1m;
     private const decimal BandStep = 0.35m;
     private const decimal BandBottom = 0.2m;
+    private const decimal DividendBand = 1m;
     private const decimal BucketMargin = 0.2m;
 
-    // The band's rows, top to bottom: the ways into the taxes, what comes back out of them, and the dividend's way
-    // to the pocket, its last.
+    // The band's rows, top to bottom: the ways into the taxes, what comes back out of them, then the rent's and
+    // the royalty's taxes while they are in the plan and move money.
     private const int IntoTaxesRow = 0;
     private const int OutOfTaxesRow = 1;
-    private const int LastBandRow = 2;
 
-    // Where Director pay's and the dividend's lines leave their boxes and enter the buckets, in percent across
-    // the map. Director pay's taxes lie right of it: its way into them leaves right of where what comes back
-    // arrives, and enters the bucket right of where that leaves; the dividend's lie left of it, and its lines
-    // the other way round; so what comes back is nested inside the way in. The dividend's lines leave its
-    // bottom left to right: into its taxes and back, to the pocket, then to what the company keeps, each
-    // clear of the arrowhead before it, so that what the company keeps ends under the dividend's left part
-    // and leaves the expenses room at the right edge.
-    private const decimal PayToPocket = 15m;
-    private const decimal PayToTaxes = 24.4m;
-    private const decimal PayFromTaxes = 23.2m;
-    private const decimal PayTaxesIn = 41m;
-    private const decimal PayTaxesOut = 38.5m;
-    private const decimal DividendToTaxes = 74.6m;
-    private const decimal DividendFromTaxes = 75.4m;
-    private const decimal DividendTaxesIn = 57m;
-    private const decimal DividendTaxesOut = 59.5m;
-    private const decimal DividendToKept = 80m;
-    private const decimal DividendToPocketOut = 78m;
-    private const decimal DividendToPocketIn = 18m;
-
-    // How far a line beside another of the same two ends keeps from it where nothing spreads them: in percent
-    // across, and, for what comes back from the pocket to the dividend, in chain rows over the band's last row.
-    private const decimal BackBeside = 1.2m;
-    private const decimal DividendBackOver = 0.15m;
-
-    // Where the royalty's lines leave it and the split's line enters it, in percent across the map: its part paid
-    // apart out of its bottom, far enough right for the row it turns along to the pocket's lane to hold its
-    // amount; its line on to Director pay right of that, so the two never cross; its tax apart right of both; the
-    // split's line into its top far enough left that the condition it sets on the split, out of its right side and
-    // up past the gutter to the gap under the split and into its bottom, has room for its word beside it. What
-    // comes back out of a bucket into the royalty leaves it a step left of the way in.
-    private const decimal RoyaltyToPocket = 20.5m;
-    private const decimal RoyaltyToPay = 22.4m;
-    private const decimal RoyaltyToTaxes = 25.2m;
-    private const decimal SplitToRoyalty = 12.5m;
-    private const decimal RoyaltyConditionUp = 36m;
-    private const decimal ConditionIntoSplit = 45m;
-    private const decimal RoyaltyBack = 1m;
-
-    // The row the royalty's part paid apart turns along, in chain rows under its box, and what comes back out of
-    // the pocket under it.
-    private const decimal RoyaltyRow = 0.2m;
-    private const decimal RoyaltyBackUnder = 0.15m;
-
-    // Where Corporate tax's line into the taxes on profit comes down, left of the dividend's lines into them and
-    // out of them, and the room its tracks keep.
-    private const decimal CorporateDrop = 54m;
-    private const decimal CorporateDropFrom = 52.5m;
-    private const decimal CorporateDropTo = 56m;
+    // Across, in percent of the map, from the narrowest map's pixels.
+    private static decimal Across(decimal pixels) => pixels * 100m / NarrowestPixels;
 
     // Where a module sits: its row, and its column in it.
     public static (MapRow Row, MapColumn Column) Place(RiverModule module) => module switch
     {
-        RiverModule.CompanyYear => (MapRow.CompanyYear, MapColumn.Chain),
-        RiverModule.Vouchers => (MapRow.Vouchers, MapColumn.Chain),
-        RiverModule.Allowances => (MapRow.Allowances, MapColumn.Chain),
-        RiverModule.Rent => (MapRow.Rent, MapColumn.Chain),
-        RiverModule.Car => (MapRow.Car, MapColumn.Chain),
-        RiverModule.Split => (MapRow.Split, MapColumn.Chain),
-        RiverModule.Copyright => (MapRow.StreamTop, MapColumn.Left),
-        RiverModule.CorporateTax => (MapRow.StreamTop, MapColumn.Right),
-        RiverModule.DirectorPay => (MapRow.StreamBottom, MapColumn.Left),
-        RiverModule.Household => (MapRow.StreamTop, MapColumn.Household),
-        RiverModule.Dividend => (MapRow.StreamBottom, MapColumn.Right),
+        RiverModule.CompanyYear => (MapRow.CompanyYear, MapColumn.Company),
+        RiverModule.Vouchers => (MapRow.Vouchers, MapColumn.Gates),
+        RiverModule.Allowances => (MapRow.Allowances, MapColumn.Gates),
+        RiverModule.Rent => (MapRow.Rent, MapColumn.Gates),
+        RiverModule.Car => (MapRow.Car, MapColumn.Gates),
+        RiverModule.Household => (MapRow.Car, MapColumn.Household),
+        RiverModule.Split => (MapRow.Split, MapColumn.Company),
+        RiverModule.DirectorPay => (MapRow.Split, MapColumn.You),
+        RiverModule.Copyright => (MapRow.Royalty, MapColumn.Gates),
+        RiverModule.CorporateTax => (MapRow.CorporateTax, MapColumn.Company),
+        RiverModule.Dividend => (MapRow.CorporateTax, MapColumn.Gates),
         _ => throw new ArgumentOutOfRangeException(nameof(module), module, "A module the map has no place for."),
     };
 
-    // The boxes of the modules and of the buckets, the quiet levers given drawn in quiet rows, each module's
-    // box holding the lines of badges given.
-    public static MapGrid Grid(IReadOnlyList<RiverModule> modules, IReadOnlySet<RiverModule>? quiet = null, IReadOnlyDictionary<RiverModule, int>? badgeLines = null) =>
-        new(modules, quiet ?? new HashSet<RiverModule>(), badgeLines ?? new Dictionary<RiverModule, int>());
+    // How many lines a gate's name takes in its box on the narrowest map: the allowances' wraps there; every
+    // other name fits on one line (MapLayoutTests).
+    public static int TitleLines(RiverModule module) => module == RiverModule.Allowances ? 2 : 1;
+
+    // How many lines a quiet module's name takes in its pill on the narrowest map, each a target of its own:
+    // the allowances', the rent's and the royalty's wrap in the gates' column; the others fit (MapLayoutTests).
+    public static int QuietLines(RiverModule module) => module is RiverModule.Allowances or RiverModule.Rent or RiverModule.Copyright ? 2 : 1;
+
+    // The boxes of the modules and of the buckets, the quiet levers given drawn in quiet pills, each module's
+    // box holding the lines of badges given, each gate's the lines it says.
+    public static MapGrid Grid(IReadOnlyList<RiverModule> modules, IReadOnlySet<RiverModule>? quiet = null, IReadOnlyDictionary<RiverModule, int>? badgeLines = null,
+        IReadOnlyDictionary<RiverModule, int>? gateLines = null) =>
+        new(modules, quiet ?? new HashSet<RiverModule>(), badgeLines ?? new Dictionary<RiverModule, int>(), gateLines ?? new Dictionary<RiverModule, int>());
 
     // Every link of the run with its route: links with the same ends and kind share one, their amount
     // said together, as thick as what they carry together beside the run's largest line of money
@@ -257,32 +254,45 @@ internal static class MapLayout
         return [.. links.Select(link => link with { Route = routes[Key(link)] })];
     }
 
+    // The pay's pill on its line: as wide as a gate, in the gates' column, centred on the line where it
+    // crosses it.
+    public static MapSlot PillOn(MapGrid grid, MapRoute pay)
+    {
+        var height = PillRem / SmallestRowRem * 100m / grid.Units;
+        return new MapSlot(GatesColumn.Left, pay.Points[0].Y - height / 2m, GatesColumn.Right - GatesColumn.Left, height);
+    }
+
     private static (MapEnd From, MapEnd To, MapLinkKind Kind) Key(MapLink link) => (link.From, link.To, link.Kind);
 
-    // The slots of one map, in percent of the map's box: its rows top to bottom, the buckets' last, a row
-    // the modules leave empty left out, each as high as its weight (Units, the map's height in chain rows).
-    // The quiet levers of the chain following one another share the row of the first of them, a quiet row.
+    // The slots of one map, in percent of the map's box: its rows top to bottom, the buckets' last, a row the modules leave empty left out, each as high as its weight (Units, the map's
+    // height in chain rows). The quiet levers of the company's line following one another share the row of the
+    // first of them.
     internal sealed class MapGrid
     {
-        // Each quiet lever of the chain, with the first of the quiet levers it follows down the chain
-        // without a box between them, whose row they share.
+        // Each quiet lever of the company's line, with the first of the quiet levers it follows without a box
+        // between them, whose row they share.
         private readonly Dictionary<RiverModule, RiverModule> _firstOf;
 
-        // Each quiet row, with how many names it holds.
-        private readonly Dictionary<MapRow, int> _quietRows;
+        // Each quiet row, with the levers in its pill.
+        private readonly Dictionary<MapRow, List<RiverModule>> _quietRows;
         private readonly IReadOnlySet<RiverModule> _quiet;
-
-        // How many lines of badges each module's box holds.
         private readonly IReadOnlyDictionary<RiverModule, int> _badgeLines;
+        private readonly IReadOnlyDictionary<RiverModule, int> _gateLines;
 
-        public MapGrid(IReadOnlyList<RiverModule> modules, IReadOnlySet<RiverModule> quiet, IReadOnlyDictionary<RiverModule, int> badgeLines)
+        public MapGrid(IReadOnlyList<RiverModule> modules, IReadOnlySet<RiverModule> quiet, IReadOnlyDictionary<RiverModule, int> badgeLines,
+            IReadOnlyDictionary<RiverModule, int> gateLines)
         {
             Modules = modules;
             _quiet = quiet;
             _badgeLines = badgeLines;
+            _gateLines = gateLines;
             _firstOf = FirstOf(modules, quiet);
-            _quietRows = _firstOf.Values.GroupBy(first => Place(first).Row).ToDictionary(run => run.Key, run => run.Count());
-            Rows = [.. Enum.GetValues<MapRow>().Where(row => row == MapRow.Buckets || modules.Any(module => RowOf(module) == row))];
+            _quietRows = _firstOf.GroupBy(pair => Place(pair.Value).Row).ToDictionary(run => run.Key, run => run.Select(pair => pair.Key).ToList());
+            Rows =
+            [
+                .. Enum.GetValues<MapRow>().Where(row => row == MapRow.Buckets || modules.Any(module => RowOf(module) == row)
+                    || (row == MapRow.Royalty && modules.Contains(RiverModule.CorporateTax))),
+            ];
         }
 
         public IReadOnlyList<RiverModule> Modules { get; }
@@ -292,39 +302,43 @@ internal static class MapLayout
         public decimal Units => Rows.Sum(Weight);
 
         // How much of the map a pixel is, across it and down it, where the map is drawn smallest.
-        public static decimal AcrossPixel => 100m / (NarrowestRem * PixelsPerRem);
+        public static decimal AcrossPixel => 100m / NarrowestPixels;
 
         public decimal DownPixel => 100m / (SmallestRowRem * PixelsPerRem * Units);
 
         public bool Holds(RiverModule module) => Modules.Contains(module);
 
-        // Whether the second row is drawn right under the first, or under a quiet row between them, which a
-        // line from one to the other runs through.
-        public bool Follows(MapRow row, MapRow next) => Index(next) > Index(row) && Between(row, next).All(_quietRows.ContainsKey);
-
-        // The pills of the quiet rows between two rows, top to bottom.
-        public IReadOnlyList<MapSlot> QuietBetween(MapRow row, MapRow next) =>
-            [.. Between(row, next).Where(_quietRows.ContainsKey).Select(quietRow => Box(quietRow, QuietSpan, PillUnits(_quietRows[quietRow])))];
+        // Whether a module in the plan moves money in it: held, and not quiet.
+        public bool Moves(RiverModule module) => Holds(module) && !_quiet.Contains(module);
 
         public MapSlot Slot(MapEnd end)
         {
             if (end.Bucket is { } bucket)
                 return Box(MapRow.Buckets, BucketSpans[BucketsView.Keys.ToList().IndexOf(bucket)], BoxUnits);
 
+            if (end.Lever is { } lever)
+                return Point(lever);
+
             if (end.Module is not { } module)
-                throw new ArgumentOutOfRangeException(nameof(end), "An end with neither a module nor a bucket has no box.");
+                throw new ArgumentOutOfRangeException(nameof(end), "An end with neither a module, a bucket nor a lever has no box.");
 
             if (_firstOf.TryGetValue(module, out var first))
-                return Box(Place(first).Row, QuietSpan, PillUnits(_quietRows[Place(first).Row]));
+                return Box(Place(first).Row, GatesColumn, PillUnits(_quietRows[Place(first).Row]));
 
             var (row, column) = Place(module);
-            return Box(row, column switch
-            {
-                MapColumn.Left => LeftColumn,
-                MapColumn.Chain => ChainColumn,
-                MapColumn.Household => HouseholdColumn,
-                _ => RightColumn,
-            }, _quiet.Contains(module) ? PillUnits(QuietLines(module)) : BoxOf(module));
+            return Box(row, Span(column), _quiet.Contains(module) ? PillUnits([module]) : BoxOf(module));
+        }
+
+        // The point of the company's line beside a lever, the stretch of the line where what joins or leaves it
+        // meets it, as wide as its thickest line: as high as the lever's gate, where its share leaves the line and
+        // the car's costs leave it, and, beside the car, on down to the boxes of the row under it, where the car's
+        // contribution joins the line under its gate.
+        private MapSlot Point(RiverModule lever)
+        {
+            var gate = Slot(MapEnd.Of(lever));
+            var bottom = lever == RiverModule.Car ? GapBelow(MapRow.Car, 1m) : gate.Bottom;
+            var half = MapLineWidths.Thickest / 2m * AcrossPixel;
+            return new MapSlot(Spine - half, gate.Top, 2m * half, bottom - gate.Top);
         }
 
         // The y of the gap between the boxes of the row given and of the next, at a fraction of its height.
@@ -335,47 +349,78 @@ internal static class MapLayout
             return bottom + fraction * (top - bottom);
         }
 
-        // The y of a row of the band over the buckets, top to bottom: the ways into the taxes, what comes back
-        // out of them, then the dividend's way to the pocket under the rest.
-        public decimal BandY(int row) => StreamsBottom + (BandTop + row * BandStep) * 100m / Units;
+        // The y of a row of the band over the buckets, top to bottom.
+        public decimal BandY(int row) => LastBottom + (BandTop + row * BandStep) * 100m / Units;
 
-        // The bottom of the streams' last row's lowest box, where the band begins.
-        private decimal StreamsBottom => BoxTop(MapRow.StreamBottom, Height(MapRow.StreamBottom)) + Height(MapRow.StreamBottom);
+        // The band's row of a gate's taxes: the rent's, then the royalty's, under the director's two.
+        public int TaxesRow(RiverModule gate) => gate switch
+        {
+            RiverModule.Rent => OutOfTaxesRow + 1,
+            RiverModule.Copyright => OutOfTaxesRow + 1 + (Moves(RiverModule.Rent) ? 1 : 0),
+            _ => throw new ArgumentOutOfRangeException(nameof(gate), gate, "A gate with no taxes on pay of its own."),
+        };
 
-        // How tall the band is, in chain rows, by the modules the map holds, so that it never jumps with an amount:
-        // down to its last row with a dividend, down to the row of what comes back out of the taxes with Director
-        // pay alone, the company skipped; none without either.
-        private decimal BandUnits => Holds(RiverModule.Dividend) ? BandDownTo(LastBandRow)
-            : Holds(RiverModule.DirectorPay) ? BandDownTo(OutOfTaxesRow)
-            : 0m;
+        // The columns' frames and labels, over every row but the buckets'.
+        public IReadOnlyList<(MapOwner Owner, MapSlot Slot)> Columns()
+        {
+            var bottom = Slot(MapEnd.InBucket(BucketsView.Keys[0])).Top - 4m * DownPixel;
+            return
+            [
+                (MapOwner.You, new MapSlot(YouZone.Left, 0m, YouZone.Right - YouZone.Left, bottom)),
+                (MapOwner.Across, new MapSlot(GatesColumn.Left, 0m, GatesColumn.Right - GatesColumn.Left, bottom)),
+                (MapOwner.Company, new MapSlot(CompanyZone.Left, 0m, CompanyZone.Right - CompanyZone.Left, bottom)),
+            ];
+        }
 
-        // The band from the streams' lowest box down to a row of it and on to the buckets, in chain rows.
-        private static decimal BandDownTo(int row) => BandTop + row * BandStep + BandBottom;
+        // The bottom of the last row's lowest box, where the band begins.
+        private decimal LastBottom => Rows.Count < 2 ? 0m : BoxTop(Rows[^2], Height(Rows[^2])) + Height(Rows[^2]);
 
-        // What the streams' last row keeps under its tallest box, in chain rows, which the band takes first.
-        private decimal RoomUnderStreams => Rows.Contains(MapRow.StreamBottom) ? (Weight(MapRow.StreamBottom) - Tallest(MapRow.StreamBottom)) / 2m : 0m;
+        // How many rows the band holds: the director's ways into the taxes on pay and back, and the gates' taxes
+        // while they move money; none without Director pay.
+        private int BandRows => Holds(RiverModule.DirectorPay) ? 2 + (Moves(RiverModule.Rent) ? 1 : 0) + (Moves(RiverModule.Copyright) ? 1 : 0) : 0;
 
-        // The row a module is drawn in: its own, or, a quiet lever of the chain, the quiet row it shares.
+        // How tall the band is, in chain rows, by the modules the map holds, never by the lines a plan happens
+        // to have, so that it does not jump with an amount: down to its last row and the buckets, a chain row at
+        // least with a dividend.
+        private decimal BandUnits => Math.Max(BandRows > 0 ? BandTop + (BandRows - 1) * BandStep + BandBottom : 0m, Holds(RiverModule.Dividend) ? DividendBand : 0m);
+
+        // What the last row keeps under its tallest box, in chain rows, which the band takes first.
+        private decimal RoomUnderLast => Rows.Count < 2 ? 0m : (Weight(Rows[^2]) - Tallest(Rows[^2])) / 2m;
+
+        // The row a module is drawn in: its own, or, a quiet lever of the company's line, the quiet row it shares.
         private MapRow RowOf(RiverModule module) => Place(_firstOf.GetValueOrDefault(module, module)).Row;
 
-        // How high a row's boxes are drawn: its tallest box's height, or a quiet row's pill's.
-        private decimal Height(MapRow row) => (_quietRows.TryGetValue(row, out var names) ? PillUnits(names) : Tallest(row)) * 100m / Units;
+        // How high a row's boxes reach: its tallest box's height, a quiet pill's among them.
+        private decimal Height(MapRow row) =>
+            Modules.Where(module => RowOf(module) == row).Select(module => _firstOf.TryGetValue(module, out var first) ? PillUnits(_quietRows[Place(first).Row])
+                : _quiet.Contains(module) ? PillUnits([module]) : BoxOf(module)).DefaultIfEmpty(BoxUnits).Max() * 100m / Units;
 
-        // A module's box, in chain rows: half a row, and a line for each of its badges.
-        private decimal BoxOf(RiverModule module) => BoxUnits + _badgeLines.GetValueOrDefault(module) * BadgeUnits;
+        // A module's box, in chain rows: half a row, or a gate's lines, and a line for each of its badges.
+        private decimal BoxOf(RiverModule module) =>
+            (Place(module).Column == MapColumn.Gates ? Math.Max(BoxUnits, GateUnits(module)) : BoxUnits) + _badgeLines.GetValueOrDefault(module) * BadgeUnits;
 
-        // The tallest box of a row, a royalty's quiet pill left out, as tall as a box with no badge when it
-        // holds none, the buckets'.
+        // A gate's name and lines, its padding and frame, in chain rows at the smallest scale.
+        private decimal GateUnits(RiverModule module) =>
+            (TitleLines(module) * TitleLineRem + _gateLines.GetValueOrDefault(module) * GateLineRem + 2m * GatePadRem + FrameRem) / SmallestRowRem;
+
+        // The tallest box of a row with a box, a quiet pill in its own place left out, as tall as a box with no
+        // badge when it holds none, the buckets'.
         private decimal Tallest(MapRow row) =>
             Modules.Where(module => !_quiet.Contains(module) && Place(module).Row == row).Select(BoxOf).DefaultIfEmpty(BoxUnits).Max();
 
-        // How many lines a quiet module's name takes in its own place on the narrowest map: the royalty's wraps in
-        // its narrow column, the partner's one word does not.
-        private static int QuietLines(RiverModule module) => module == RiverModule.Household ? 1 : RoyaltyLines;
+        // How tall a quiet pill is kept, in chain rows, for its names one to a line on the narrowest map, each a
+        // target, or two lines of it where it wraps there.
+        private static decimal PillUnits(List<RiverModule> names) =>
+            (names.Sum(name => Math.Max(QuietTargetRem, QuietLines(name) * QuietLineRem)) + (names.Count - 1) * QuietGapRem + 2 * QuietPadRem + QuietBorderRem) / SmallestRowRem;
 
-        // How tall a quiet pill is kept, in chain rows, for the lines of names it may take on the narrowest map.
-        private static decimal PillUnits(int lines) =>
-            (lines * QuietTargetRem + (lines - 1) * QuietGapRem + 2 * QuietPadRem + QuietBorderRem) / SmallestRowRem;
+        private static (decimal Left, decimal Right) Span(MapColumn column) => column switch
+        {
+            MapColumn.You => YouColumn,
+            MapColumn.Household => HouseholdColumn,
+            MapColumn.Gates => GatesColumn,
+            MapColumn.Company => CompanyColumn,
+            _ => throw new ArgumentOutOfRangeException(nameof(column), column, "A column the map does not draw."),
+        };
 
         private MapSlot Box(MapRow row, (decimal Left, decimal Right) span, decimal units)
         {
@@ -391,32 +436,35 @@ internal static class MapLayout
 
         private decimal Top(MapRow row) => Rows.Take(Index(row)).Sum(Weight) * 100m / Units;
 
-        private IEnumerable<MapRow> Between(MapRow row, MapRow next) => Rows.Skip(Index(row) + 1).Take(Index(next) - Index(row) - 1);
-
         private int Index(MapRow row) => Rows.ToList().IndexOf(row) is var index and >= 0
             ? index
             : throw new ArgumentOutOfRangeException(nameof(row), row, "A row the map does not draw.");
 
-        // How high a row is: a quiet row its pill and a margin each side; the buckets' their box, its margin
-        // under it and over it what the band needs past the room the streams' last row keeps under its boxes,
-        // at least that margin; a row of modules its own height, or its tallest box and the room a chain row
-        // keeps round its box, whichever is taller, so a row whose boxes hold no badge keeps its own.
-        private decimal Weight(MapRow row) => _quietRows.TryGetValue(row, out var names)
-            ? PillUnits(names) + 2 * QuietMarginUnits
-            : row switch
+        // How high a row is: a quiet row its pill and a margin each side, or its boxes'
+        // room; the buckets' their box, its margin under it and over it what the band needs past the room the
+        // last row keeps under its boxes, at least that margin; a row of modules its own height, or its tallest
+        // box and the room a row keeps round its box, whichever is taller.
+        private decimal Weight(MapRow row)
+        {
+            var boxes = row switch
             {
-                MapRow.Buckets => BoxUnits + BucketMargin + Math.Max(BucketMargin, BandUnits - RoomUnderStreams),
-                MapRow.StreamTop or MapRow.StreamBottom => Math.Max(1.6m, Tallest(row) + RowRoom),
+                MapRow.Buckets => BoxUnits + BucketMargin + Math.Max(BucketMargin, BandUnits - RoomUnderLast),
+                MapRow.Royalty or MapRow.CorporateTax => Math.Max(StreamRowUnits, Tallest(row) + RowRoom),
+                MapRow.Car when Moves(RiverModule.Household) => Math.Max(PartnerRowUnits, Tallest(row) + RowRoom),
                 _ => Math.Max(1m, Tallest(row) + RowRoom),
             };
 
-        // The quiet levers of the chain, in its order, each with the first of those it follows with no box
-        // between them.
+            return _quietRows.TryGetValue(row, out var names) ? Math.Max(PillUnits(names) + 2 * QuietMarginUnits, Modules.Any(module =>
+                !_quiet.Contains(module) && Place(module).Row == row) ? boxes : 0m) : boxes;
+        }
+
+        // The quiet levers of the company's line, in its order, each with the first of those it follows with no
+        // box between them.
         private static Dictionary<RiverModule, RiverModule> FirstOf(IReadOnlyList<RiverModule> modules, IReadOnlySet<RiverModule> quiet)
         {
             var firstOf = new Dictionary<RiverModule, RiverModule>();
             RiverModule? first = null;
-            foreach (var module in modules.Where(module => Place(module).Column == MapColumn.Chain))
+            foreach (var module in MapModules.CompanysLine.Where(modules.Contains))
             {
                 first = quiet.Contains(module) ? first ?? module : null;
                 if (first is { } head)
@@ -429,35 +477,27 @@ internal static class MapLayout
 
     // The routes of one map. Each link's family decides the sides it leaves and enters by and the room it
     // runs through; links sharing a side each take their own place along it, in an order that keeps them
-    // from crossing near the box; links sharing a lane each take their own track in it; the split's lines
-    // across the gap under it, and a line into a bucket and what comes back out of it beside it, each their
-    // own place across their room; all of them apart at their widths (Spread).
+    // from crossing near the box; links sharing a lane each take their own track in it; a line into a bucket
+    // and what comes back out of it beside it, each their own place across their room; all of them apart at
+    // their widths (Spread).
     private sealed class Router
     {
         private readonly MapGrid _grid;
         private readonly IReadOnlyList<(MapEnd From, MapEnd To, MapLinkKind Kind)> _bundles;
         private readonly IReadOnlyDictionary<(MapEnd From, MapEnd To, MapLinkKind Kind), decimal> _widths;
         private readonly Dictionary<(MapEnd, MapSide), List<(MapEnd, MapEnd, MapLinkKind)>> _ports = [];
-        private readonly List<(MapEnd, MapEnd, MapLinkKind)> _pocketLane;
-        private readonly List<(MapEnd, MapEnd, MapLinkKind)> _leftGutter;
+        private readonly List<(MapEnd, MapEnd, MapLinkKind)> _lane;
+        private readonly List<(MapEnd, MapEnd, MapLinkKind)> _expenses;
         private readonly List<(MapEnd, MapEnd, MapLinkKind)> _drops;
-        private readonly List<(MapEnd, MapEnd, MapLinkKind)> _expensesLane;
-        private readonly List<(MapEnd, MapEnd, MapLinkKind)> _corporateDrops;
-        private readonly List<(MapEnd, MapEnd, MapLinkKind)> _belowSplit;
 
         public Router(MapGrid grid, IReadOnlyList<(MapEnd From, MapEnd To, MapLinkKind Kind)> bundles, IReadOnlyDictionary<(MapEnd From, MapEnd To, MapLinkKind Kind), decimal> widths)
         {
             _grid = grid;
             _bundles = bundles;
             _widths = widths;
-            _pocketLane = [.. bundles.Where(bundle => Family(bundle) == RouteFamily.ToPocketLane).OrderBy(bundle => Row(Module(bundle))).ThenBy(Back)];
-            _leftGutter = [.. bundles.Where(bundle => Family(bundle) is RouteFamily.ChainToTaxesOnPay or RouteFamily.ChainToDirectorPay or RouteFamily.SplitToDirectorPay)
-                .OrderBy(bundle => Row(Module(bundle))).ThenBy(Back)];
-            _drops = [.. bundles.Where(bundle => Family(bundle) == RouteFamily.ChainToCorporateTax).OrderBy(bundle => Row(Module(bundle))).ThenBy(bundle => bundle.Kind)];
-            _expensesLane = [.. bundles.Where(bundle => Family(bundle) == RouteFamily.ChainToExpenses).OrderBy(bundle => Row(Module(bundle))).ThenBy(Back)];
-            _corporateDrops = [.. bundles.Where(bundle => Family(bundle) == RouteFamily.CorporateTaxToBucket).OrderBy(Back)];
-            _belowSplit = [.. bundles.Where(bundle => Family(bundle) is RouteFamily.SplitToCopyright or RouteFamily.CopyrightToSplit or RouteFamily.SplitToDirectorPay)
-                .OrderBy(BelowSplit)];
+            _lane = [.. bundles.Where(bundle => LaneOrder(bundle) is not null).OrderBy(bundle => LaneOrder(bundle))];
+            _expenses = [.. bundles.Where(bundle => Family(bundle) is RouteFamily.CompanyYearToExpenses or RouteFamily.LineToExpenses).OrderBy(bundle => Row(Owner(bundle))).ThenBy(Back)];
+            _drops = [.. bundles.Where(bundle => Family(bundle) == RouteFamily.AddBack).OrderBy(bundle => Row(Owner(bundle))).ThenBy(bundle => bundle.Kind)];
 
             foreach (var bundle in bundles)
             {
@@ -469,13 +509,13 @@ internal static class MapLayout
                 }
             }
 
-            foreach (var list in _ports.Values)
-                list.Sort((a, b) => PortOrder(a).CompareTo(PortOrder(b)));
+            foreach (var ((end, _), list) in _ports)
+                list.Sort((a, b) => PortOrder(a, end).CompareTo(PortOrder(b, end)));
         }
 
         public MapRoute Route((MapEnd From, MapEnd To, MapLinkKind Kind) bundle)
         {
-            var route = Back(bundle) ? Reversed(Into(bundle, bundle.To, bundle.From)) : Into(bundle, bundle.From, bundle.To);
+            var route = Back(bundle) ? Reversed(Into(bundle)) : Into(bundle);
             return route with { Drawn = Under(route, bundle) };
         }
 
@@ -492,166 +532,346 @@ internal static class MapLayout
             return points;
         }
 
-        // The route from one end to the other: from its module into its bucket for a line between them,
-        // whichever way its money goes.
-        private MapRoute Into((MapEnd From, MapEnd To, MapLinkKind Kind) bundle, MapEnd from, MapEnd to)
+        // The route from one end to the other: from its module, or the company's line, into its bucket for a
+        // line between them, whichever way its money goes.
+        private MapRoute Into((MapEnd From, MapEnd To, MapLinkKind Kind) bundle)
         {
+            var (end, other) = Back(bundle) ? (bundle.To, bundle.From) : (bundle.From, bundle.To);
             return Family(bundle) switch
             {
-                RouteFamily.Straight => Down(from, to),
-                RouteFamily.ToPocketLane when Module(bundle) == RiverModule.Copyright => RoyaltyToPocketLane(bundle, from, to),
-                RouteFamily.ToPocketLane => SideToBucket(bundle, from, MapSide.Left, to, PocketLaneX(bundle)),
-                RouteFamily.ChainToTaxesOnPay => SideToBucket(bundle, from, MapSide.Left, to, LeftGutterX(bundle)),
-                RouteFamily.ChainToDirectorPay => SideToSide(bundle, from, MapSide.Left, to, MapSide.Right, LeftGutterX(bundle)),
-                RouteFamily.ChainToCorporateTax => SideToTop(bundle, from, MapSide.Right, to, DropX(bundle)),
-                RouteFamily.ChainToExpenses => SideToBucket(bundle, from, MapSide.Right, to, ExpensesLaneX(bundle)),
-                RouteFamily.Bracket => Bracket(bundle, from, to),
-                RouteFamily.SplitToCopyright => BottomToTop(from, 41m, to, SplitToRoyalty, BelowSplitY(bundle)),
-                RouteFamily.CopyrightToSplit => RoyaltyUpToSplit(bundle, from, to),
-                RouteFamily.SplitToDirectorPay => SplitToDirectorPay(bundle, from, to),
-                RouteFamily.SplitToCorporateTax => SideToTop(bundle, from, MapSide.Right, to,
-                    bundle.Kind == MapLinkKind.Condition ? SplitConditionToCorporate : SplitToCorporate),
-                RouteFamily.DividendToSplit => DividendToSplit(bundle, from, to),
-                RouteFamily.CopyrightToTaxesOnPay => CopyrightToTaxes(bundle, from, to),
-                RouteFamily.CorporateTaxToBucket => SideToBucket(bundle, from, MapSide.Left, to, CorporateDropX(bundle)),
-                RouteFamily.StreamDown => StreamDown(bundle, from, to),
-                RouteFamily.DividendToPocket => DividendToPocket(bundle, from, to),
-                RouteFamily.BesidePay => BesidePay(bundle, from, to),
-                _ => throw new ArgumentOutOfRangeException(nameof(bundle), $"{from.Id} to {to.Id}", "A link the map has no route for."),
+                RouteFamily.CompanysLine => Line(new MapPoint(Spine, LineTop(end)), new MapPoint(Spine, LineBottom(other))),
+                RouteFamily.Take => Take(bundle),
+                RouteFamily.GoldToPocket => ToLane(bundle, end, other),
+                RouteFamily.GateToTaxes => GateToTaxes(bundle, end, other),
+                RouteFamily.IntoLine => IntoLine(bundle, end, other),
+                RouteFamily.LineToExpenses or RouteFamily.CompanyYearToExpenses => ToExpenses(bundle, end, other),
+                RouteFamily.BenefitToPay => FromGateSide(bundle, end, PayFromGates, _grid.Slot(other).Top),
+                RouteFamily.RoyaltyToPay => FromGateSide(bundle, end, PayFromGates, _grid.Slot(other).Bottom),
+                RouteFamily.Pay => Pay(bundle, end, other),
+                RouteFamily.Quotient => Quotient(end, other),
+                RouteFamily.PayToPocket => StraightDown(bundle, end, other, back => back ? PayToPocket + Across(6m) : PayToPocket),
+                RouteFamily.PayToTaxes => Stepped(bundle, end, other, back => back ? PayFromTaxes : PayToTaxes, back => back ? PayTaxesOut : PayTaxesIn,
+                    back => back ? OutOfTaxesRow : IntoTaxesRow),
+                RouteFamily.AddBack => AddBack(bundle, end, other),
+                RouteFamily.Bracket => BracketRoute(bundle, end, other),
+                RouteFamily.ConditionToSplit => ConditionToSplit(bundle, end, other),
+                RouteFamily.SplitToRoyalty => SplitToRoyaltyRoute(bundle, end, other),
+                RouteFamily.SplitToCorporateTax => Line(new MapPoint(bundle.Kind == MapLinkKind.Condition ? SplitConditionToCorporate : SplitToCorporate, _grid.Slot(end).Bottom),
+                    new MapPoint(bundle.Kind == MapLinkKind.Condition ? SplitConditionToCorporate : SplitToCorporate, _grid.Slot(other).Top)),
+                RouteFamily.CorporateTaxToDividend => CorporateTaxToDividend(bundle, end, other),
+                RouteFamily.CorporateTaxToTaxes => StraightDown(bundle, end, other, back => back ? CorporateToTaxes - Across(6m) : CorporateToTaxes),
+                RouteFamily.DividendToTaxes => StraightDown(bundle, end, other, back => back ? DividendFromTaxes : DividendToTaxes),
+                RouteFamily.DividendToKept => Stepped(bundle, end, other, back => back ? DividendFromKept : DividendToKept, back => back ? KeptOut : KeptIn,
+                    back => back ? OutOfTaxesRow : IntoTaxesRow),
+                _ => throw new ArgumentOutOfRangeException(nameof(bundle), $"{bundle.From.Id} to {bundle.To.Id}", "A link the map has no route for."),
             };
         }
 
-        // The family of routes a link takes, from where its ends sit.
-        private RouteFamily Family((MapEnd From, MapEnd To, MapLinkKind Kind) bundle)
+        // The family of routes a link takes, from its ends, whichever way its money goes.
+        private static RouteFamily Family((MapEnd From, MapEnd To, MapLinkKind Kind) bundle)
         {
             var (from, to, kind) = bundle;
-            if (from.Module is { } source && to.Module is { } target)
+            if ((from.Bucket ?? to.Bucket) is { } bucket)
             {
-                var (fromRow, fromColumn) = Place(source);
-                var (toRow, toColumn) = Place(target);
-                return (source, target) switch
+                var end = from.Bucket is null ? from : to;
+                if (end.Lever is not null)
                 {
-                    (RiverModule.Split, RiverModule.Copyright) => RouteFamily.SplitToCopyright,
-                    (RiverModule.Copyright, RiverModule.Split) => RouteFamily.CopyrightToSplit,
-                    (RiverModule.Split, RiverModule.DirectorPay) => RouteFamily.SplitToDirectorPay,
-                    (RiverModule.Split, RiverModule.CorporateTax) => RouteFamily.SplitToCorporateTax,
-                    (RiverModule.Dividend, RiverModule.Split) => RouteFamily.DividendToSplit,
-                    (RiverModule.DirectorPay, RiverModule.Household) or (RiverModule.Household, RiverModule.DirectorPay) => RouteFamily.BesidePay,
-                    (_, RiverModule.CorporateTax) when fromColumn == MapColumn.Chain => RouteFamily.ChainToCorporateTax,
-                    (_, RiverModule.DirectorPay) when fromColumn == MapColumn.Chain => RouteFamily.ChainToDirectorPay,
-                    _ when kind == MapLinkKind.Condition && fromColumn == MapColumn.Chain && toColumn == MapColumn.Chain => RouteFamily.Bracket,
-                    _ when fromColumn == toColumn && _grid.Follows(fromRow, toRow) => RouteFamily.Straight,
+                    return bucket switch
+                    {
+                        "expenses" => RouteFamily.LineToExpenses,
+                        "pocket" => RouteFamily.IntoLine,
+                        _ => RouteFamily.None,
+                    };
+                }
+
+                return (end.Module, bucket) switch
+                {
+                    (RiverModule.CompanyYear, "expenses") => RouteFamily.CompanyYearToExpenses,
+                    (RiverModule.DirectorPay, "pocket") => RouteFamily.PayToPocket,
+                    (RiverModule.DirectorPay, "taxes_on_pay") => RouteFamily.PayToTaxes,
+                    (RiverModule.CorporateTax, "taxes_on_profit") => RouteFamily.CorporateTaxToTaxes,
+                    (RiverModule.Dividend, "taxes_on_profit") => RouteFamily.DividendToTaxes,
+                    (RiverModule.Dividend, "kept_in_company") => RouteFamily.DividendToKept,
+                    (RiverModule.Rent or RiverModule.Copyright, "taxes_on_pay") => RouteFamily.GateToTaxes,
+                    ({ } gate, "pocket") when Place(gate).Column == MapColumn.Gates => RouteFamily.GoldToPocket,
                     _ => RouteFamily.None,
                 };
             }
 
-            var module = from.Module ?? to.Module;
-            var bucket = from.Bucket ?? to.Bucket;
-            if (module is not { } stream || bucket is null)
-                return RouteFamily.None;
+            if (kind == MapLinkKind.PassedOn && (from == MapEnd.Of(RiverModule.CompanyYear) || from.Lever is not null)
+                && (to == MapEnd.Of(RiverModule.Split) || to.Lever is not null))
+                return RouteFamily.CompanysLine;
 
-            var column = Place(stream).Column;
-            return (column, bucket, stream) switch
+            if (from.Lever is { } lever && to == MapEnd.Of(lever))
+                return RouteFamily.Take;
+
+            return (from.Module, to.Module, kind) switch
             {
-                (MapColumn.Chain, "pocket", _) => RouteFamily.ToPocketLane,
-                (MapColumn.Chain, "taxes_on_pay", _) => RouteFamily.ChainToTaxesOnPay,
-                (MapColumn.Chain, "expenses", _) => RouteFamily.ChainToExpenses,
-                (_, "pocket", RiverModule.Copyright) => RouteFamily.ToPocketLane,
-                (_, "taxes_on_pay", RiverModule.Copyright) => RouteFamily.CopyrightToTaxesOnPay,
-                (_, _, RiverModule.CorporateTax) => RouteFamily.CorporateTaxToBucket,
-                (_, "pocket", RiverModule.Dividend) => RouteFamily.DividendToPocket,
-                (_, _, RiverModule.DirectorPay or RiverModule.Dividend) => RouteFamily.StreamDown,
+                (RiverModule.Car, RiverModule.DirectorPay, _) => RouteFamily.BenefitToPay,
+                (RiverModule.Copyright, RiverModule.DirectorPay, _) => RouteFamily.RoyaltyToPay,
+                (RiverModule.Split, RiverModule.DirectorPay, _) => RouteFamily.Pay,
+                (RiverModule.DirectorPay, RiverModule.Household, _) or (RiverModule.Household, RiverModule.DirectorPay, _) => RouteFamily.Quotient,
+                (RiverModule.Vouchers or RiverModule.Car, RiverModule.CorporateTax, MapLinkKind.TaxBase or MapLinkKind.Condition) => RouteFamily.AddBack,
+                (RiverModule.Allowances, RiverModule.Rent, MapLinkKind.Condition) => RouteFamily.Bracket,
+                (RiverModule.Copyright or RiverModule.Dividend, RiverModule.Split, MapLinkKind.Condition) => RouteFamily.ConditionToSplit,
+                (RiverModule.Split, RiverModule.Copyright, _) => RouteFamily.SplitToRoyalty,
+                (RiverModule.Split, RiverModule.CorporateTax, _) => RouteFamily.SplitToCorporateTax,
+                (RiverModule.CorporateTax, RiverModule.Dividend, _) => RouteFamily.CorporateTaxToDividend,
                 _ => RouteFamily.None,
             };
         }
 
         // The sides of its boxes a link takes a place along, which others may share.
-        private IEnumerable<(MapEnd End, MapSide Side)> Sides((MapEnd From, MapEnd To, MapLinkKind Kind) bundle)
+        private static IEnumerable<(MapEnd End, MapSide Side)> Sides((MapEnd From, MapEnd To, MapLinkKind Kind) bundle)
         {
-            var (from, to, _) = bundle;
+            var (end, other) = Back(bundle) ? (bundle.To, bundle.From) : (bundle.From, bundle.To);
             return Family(bundle) switch
             {
-                RouteFamily.ToPocketLane when Module(bundle) == RiverModule.Copyright => [],
-                RouteFamily.ToPocketLane or RouteFamily.ChainToTaxesOnPay or RouteFamily.CorporateTaxToBucket => [(Back(bundle) ? to : from, MapSide.Left)],
-                RouteFamily.ChainToExpenses => [(Back(bundle) ? to : from, MapSide.Right)],
-                RouteFamily.ChainToDirectorPay => [(from, MapSide.Left), (to, MapSide.Right)],
-                RouteFamily.ChainToCorporateTax or RouteFamily.SplitToCorporateTax => [(from, MapSide.Right)],
-                RouteFamily.Bracket => [(from, MapSide.Right), (to, MapSide.Right)],
-                RouteFamily.SplitToDirectorPay when _grid.Holds(RiverModule.Copyright) => [(to, MapSide.Right)],
-                RouteFamily.DividendToSplit => [(from, MapSide.Right), (to, MapSide.Right)],
-                RouteFamily.CopyrightToSplit => [(from, MapSide.Right)],
-                RouteFamily.BesidePay => [(MapEnd.Of(RiverModule.DirectorPay), MapSide.Right)],
+                RouteFamily.Take => [(bundle.To, MapSide.Right)],
+                RouteFamily.GoldToPocket or RouteFamily.GateToTaxes or RouteFamily.BenefitToPay or RouteFamily.RoyaltyToPay => [(end, MapSide.Left)],
+                RouteFamily.LineToExpenses or RouteFamily.CompanyYearToExpenses => [(end, MapSide.Right)],
+                RouteFamily.Pay => [(end, MapSide.Left)],
+                RouteFamily.AddBack => [(end, MapSide.Right)],
+                RouteFamily.Bracket => [(end, MapSide.Right), (other, MapSide.Right)],
+                RouteFamily.ConditionToSplit => [(end, MapSide.Right), (other, MapSide.Left)],
+                RouteFamily.SplitToRoyalty => [(other, MapSide.Right)],
+                RouteFamily.CorporateTaxToDividend => [(other, MapSide.Right)],
                 _ => [],
             };
         }
 
-        // The order of the links along one side, top to bottom: of those leaving by a side, the one
-        // turning furthest away first, so none crosses another near the box; but the line into the expenses,
-        // last, under a car's rules into Corporate tax, so that the amount of the rules' line keeps the room
-        // over it free of money, and its own line, crossing theirs as they come down, has room for its amount
-        // before them.
-        private decimal PortOrder((MapEnd From, MapEnd To, MapLinkKind Kind) bundle) => (Back(bundle) ? 0.5m : 0m) + Family(bundle) switch
+        // The order of the links along one side, top to bottom, so that none crosses another near the box: on a
+        // gate's right, the rule the allowances' office sets on the rent, what Corporate tax adds back of it, its
+        // share off the company's line, with room under it for its amount, the conditions it sets on the split,
+        // what Corporate tax passes it, the split's royalty, the car's rule on Corporate tax's rate, the office's
+        // rule leaving the allowances; on its left, what it passes Director pay, then its taxes and what reaches
+        // the pocket, by their tracks, the furthest left the highest; on the split's left, the pay, then the
+        // conditions the dividend and the royalty set on it.
+        private decimal PortOrder((MapEnd From, MapEnd To, MapLinkKind Kind) bundle, MapEnd end) => (Back(bundle) ? 0.25m : 0m) + Family(bundle) switch
         {
-            RouteFamily.ToPocketLane => 0m,
-            RouteFamily.ChainToTaxesOnPay or RouteFamily.ChainToDirectorPay => 1m,
-            RouteFamily.CorporateTaxToBucket => 0m,
-            RouteFamily.DividendToSplit => -RightLane,
-            RouteFamily.ChainToCorporateTax => -DropX(bundle),
-            RouteFamily.ChainToExpenses => 2m,
-            RouteFamily.SplitToCorporateTax => bundle.Kind == MapLinkKind.Condition ? -SplitConditionToCorporate : -SplitToCorporate,
-            RouteFamily.Bracket => 1m,
-            RouteFamily.SplitToDirectorPay => 2m,
-            RouteFamily.BesidePay => 3m,
+            RouteFamily.Bracket => end == bundle.From ? 5m : -3m,
+            RouteFamily.Take => -2m,
+            RouteFamily.ConditionToSplit when end == MapEnd.Of(RiverModule.Split) => bundle.From == MapEnd.Of(RiverModule.Dividend) ? 2m : 3m,
+            RouteFamily.ConditionToSplit => -1m,
+            RouteFamily.CorporateTaxToDividend => 0m,
+            RouteFamily.SplitToRoyalty => 1m,
+            RouteFamily.AddBack => bundle.Kind == MapLinkKind.Condition ? 3m : -2.5m,
+            RouteFamily.BenefitToPay or RouteFamily.RoyaltyToPay => 0m,
+            RouteFamily.GateToTaxes or RouteFamily.GoldToPocket => 1m + _lane.IndexOf(bundle) / 100m,
             _ => 0m,
         };
 
         // Where a link meets a side it shares: round the side's middle, each its step along it from the one
         // before, or further where their widths ask it, and the arrowheads of those ending there, all of them
-        // on the side.
+        // on the side; a point of the company's line takes its places along its lever's gate. The split's left
+        // holds the pay in its middle and the conditions under it, so the pay crosses straight into Director
+        // pay, in the middle of its row too, whatever comes in under it.
         private decimal PortY((MapEnd From, MapEnd To, MapLinkKind Kind) bundle, MapEnd end, MapSide side)
         {
-            var slot = _grid.Slot(end);
+            var slot = end.Lever is { } lever ? _grid.Slot(MapEnd.Of(lever)) : _grid.Slot(end);
             var list = _ports[(end, side)];
-            return Spread([.. list.Select((line, index) => (slot.CenterY + (index - (list.Count - 1) / 2m) * PortStep * slot.Height, line))],
-                _grid.DownPixel, (slot.Top, slot.Bottom), round: true, line => line.To == end)[list.IndexOf(bundle)];
+            var fromMiddle = end == MapEnd.Of(RiverModule.Split) && side == MapSide.Left;
+            var at = Spread([.. list.Select((line, index) => (fromMiddle
+                    ? slot.CenterY + index * PortStep * slot.Height
+                    : slot.CenterY + (index - (list.Count - 1) / 2m) * PortStep * slot.Height, line))],
+                _grid.DownPixel, (slot.Top, slot.Bottom), round: !fromMiddle, line => line.To == end);
+            return at[list.IndexOf(bundle)];
         }
 
-        private decimal PocketLaneX((MapEnd, MapEnd, MapLinkKind) bundle) =>
-            Lane(_pocketLane, bundle, index => PocketLane + index * PocketTrack, (BucketSpans[0].Left, LeftColumn.Left));
-
-        private decimal LeftGutterX((MapEnd, MapEnd, MapLinkKind) bundle) =>
-            Lane(_leftGutter, bundle, index => LeftGutter + index * GutterTrack, (LeftColumn.Right, LeftGutterEnd));
-
-        private decimal DropX((MapEnd, MapEnd, MapLinkKind) bundle) =>
-            Lane(_drops, bundle, index => FirstDrop - index * DropTrack, (DropsFrom, RightColumn.Right), arrowHere: _ => true);
-
-        private decimal ExpensesLaneX((MapEnd, MapEnd, MapLinkKind) bundle) =>
-            Lane(_expensesLane, bundle, index => ExpensesLane - index * ExpensesTrack, (RightColumn.Right, ExpensesLaneEnd));
-
-        private decimal CorporateDropX((MapEnd, MapEnd, MapLinkKind) bundle) =>
-            Lane(_corporateDrops, bundle, index => CorporateDrop + index * GutterTrack, (CorporateDropFrom, CorporateDropTo));
-
-        // A link's track down a lane: from the lane's first, each its step from the one before, or further
-        // where their widths ask it, and their arrowheads where they end on the lane's tracks, the drops'
-        // into Corporate tax, all of them in the lane's room.
-        private decimal Lane(List<(MapEnd, MapEnd, MapLinkKind)> lane, (MapEnd, MapEnd, MapLinkKind) bundle, Func<int, decimal> track, (decimal Low, decimal High) room,
-            Func<(MapEnd From, MapEnd To, MapLinkKind Kind), bool>? arrowHere = null) =>
-            Spread([.. lane.Select((line, index) => (track(index), line))], MapGrid.AcrossPixel, room, round: false, arrowHere ?? (_ => false))[lane.IndexOf(bundle)];
-
-        // The y at which one of the split's lines crosses the gap under it: the royalty's a quarter of the way
-        // down, the condition a royalty sets on the split halfway and the pay three quarters, or further
-        // apart round the gap's middle where their widths ask it.
-        private decimal BelowSplitY((MapEnd, MapEnd, MapLinkKind) bundle) =>
-            Spread([.. _belowSplit.Select(line => (_grid.GapBelow(MapRow.Split, BelowSplit(line)), line))], _grid.DownPixel,
-                (_grid.GapBelow(MapRow.Split, 0m), _grid.GapBelow(MapRow.Split, 1m)), round: true, _ => false)[_belowSplit.IndexOf(bundle)];
-
-        private decimal BelowSplit((MapEnd From, MapEnd To, MapLinkKind Kind) bundle) => Family(bundle) switch
+        // Where the company's line is at a point of it: where the lever's share leaves it, else where the car's
+        // costs leave it, else where its contribution joins it.
+        private decimal PointY(MapEnd point)
         {
-            RouteFamily.SplitToCopyright => 0.25m,
-            RouteFamily.CopyrightToSplit => 0.5m,
-            RouteFamily.SplitToDirectorPay => 0.75m,
-            _ => throw new ArgumentOutOfRangeException(nameof(bundle), $"{bundle.From.Id} to {bundle.To.Id}", "A link that does not cross the gap under the split."),
-        };
+            var lever = point.Lever!.Value;
+            var take = (point, MapEnd.Of(lever), MapLinkKind.PassedOn);
+            if (_ports.ContainsKey((MapEnd.Of(lever), MapSide.Right)) && _ports[(MapEnd.Of(lever), MapSide.Right)].Contains(take))
+                return PortY(take, MapEnd.Of(lever), MapSide.Right);
+            if (_ports.TryGetValue((point, MapSide.Right), out var costs))
+                return PortY(costs[0], point, MapSide.Right);
+            return _bundles.FirstOrDefault(bundle => Family(bundle) == RouteFamily.IntoLine && (bundle.From == point || bundle.To == point)) is { From: not null } joins
+                ? ContributionY(joins)
+                : _grid.Slot(MapEnd.Of(lever)).CenterY;
+        }
+
+        // Where the car's contribution joins the company's line: in the gap under the car's row, its arrowhead clear
+        // of the car's gate over it, so that the arrowhead of the line on into the split has the rest of the gap;
+        // what leaves the line for the pocket under it.
+        private decimal ContributionY((MapEnd From, MapEnd To, MapLinkKind Kind) bundle) =>
+            _grid.GapBelow(MapRow.Car, 0m) + (MapLineWidths.ArrowHalf(_widths[bundle]) + EdgePixels + (Back(bundle) ? 0m : 6m)) * _grid.DownPixel;
+
+        // The top of a stretch of the company's line: Company year's bottom, or a point of it.
+        private decimal LineTop(MapEnd end) => end.Lever is null ? _grid.Slot(end).Bottom : PointY(end);
+
+        // The bottom of a stretch of the company's line: the split's top, or a point of it.
+        private decimal LineBottom(MapEnd end) => end.Lever is null ? _grid.Slot(end).Top : PointY(end);
+
+        // A lever's share: from the company's line across to its gate's right side.
+        private MapRoute Take((MapEnd From, MapEnd To, MapLinkKind Kind) bundle)
+        {
+            var y = PortY(bundle, bundle.To, MapSide.Right);
+            return Line(new MapPoint(Spine, y), new MapPoint(_grid.Slot(bundle.To).Right, y));
+        }
+
+        // Out of a gate's left side to its track down the lane beside the gates, and down into the pocket.
+        private MapRoute ToLane((MapEnd, MapEnd, MapLinkKind) bundle, MapEnd gate, MapEnd bucket)
+        {
+            var y = PortY(bundle, gate, MapSide.Left);
+            var x = LaneX(bundle);
+            return new MapRoute([new(_grid.Slot(gate).Left, y), new(x, y), new(x, _grid.Slot(bucket).Top)]);
+        }
+
+        // A gate's taxes on pay: out of its left side to its track down the lane, along its row of the band, and
+        // down into the taxes on pay; what comes back runs beside it.
+        private MapRoute GateToTaxes((MapEnd, MapEnd, MapLinkKind) bundle, MapEnd gate, MapEnd bucket)
+        {
+            var y = PortY(bundle, gate, MapSide.Left);
+            var x = LaneX(bundle);
+            var module = gate.Module!.Value;
+            var row = _grid.BandY(_grid.TaxesRow(module));
+            var into = Beside(bundle, back => (module == RiverModule.Rent ? RentTaxIn : RoyaltyTaxIn) - (back ? Across(6m) : 0m),
+                (_grid.Slot(bucket).Left, _grid.Slot(bucket).Right), MapGrid.AcrossPixel);
+            var band = Back(bundle) ? row + 6m * _grid.DownPixel : row;
+            return new MapRoute([new(_grid.Slot(gate).Left, y), new(x, y), new(x, band), new(into, band), new(into, _grid.Slot(bucket).Top)]);
+        }
+
+        // The car's contribution, from the pocket: up its track furthest left in the lane, across under the car's
+        // gate, into the company's line, which it joins, its arrowhead's point on the line's edge; what leaves the
+        // line for the pocket runs beside it.
+        private MapRoute IntoLine((MapEnd, MapEnd, MapLinkKind) bundle, MapEnd point, MapEnd bucket)
+        {
+            var x = LaneX(bundle);
+            var y = ContributionY(bundle);
+            return new MapRoute([new(Spine - LineHalf(point) * MapGrid.AcrossPixel, y), new(x, y), new(x, _grid.Slot(bucket).Top)]);
+        }
+
+        // Half the width of the company's line at a point of it, its thickest stretch there, in pixels: where a line
+        // joining it or leaving it from the side meets its edge.
+        private decimal LineHalf(MapEnd point) =>
+            _widths.Where(line => Family(line.Key) == RouteFamily.CompanysLine && (line.Key.From == point || line.Key.To == point))
+                .Select(line => line.Value / 2m).DefaultIfEmpty(0m).Max();
+
+        // Into the expenses: out of Company year's right side, or off the company's line beside the car, along its
+        // row to its track down the expenses' lane, and down into their top.
+        private MapRoute ToExpenses((MapEnd, MapEnd, MapLinkKind) bundle, MapEnd from, MapEnd bucket)
+        {
+            var y = PortY(bundle, from, MapSide.Right);
+            var x = Lane(_expenses, bundle, index => ExpensesLane - index * ExpensesTrack, ExpensesRoom);
+            return new MapRoute([new(from.Lever is null ? _grid.Slot(from).Right : Spine + LineHalf(from) * MapGrid.AcrossPixel, y), new(x, y), new(x, _grid.Slot(bucket).Top)]);
+        }
+
+        // Out of a gate's left side across to the x given, then up or down into Director pay at the y given.
+        private MapRoute FromGateSide((MapEnd, MapEnd, MapLinkKind) bundle, MapEnd gate, decimal x, decimal intoY)
+        {
+            var y = PortY(bundle, gate, MapSide.Left);
+            return new MapRoute([new(_grid.Slot(gate).Left, y), new(x, y), new(x, intoY)]);
+        }
+
+        // The pay: out of the split's left side straight across into Director pay's right side, its pill on it.
+        private MapRoute Pay((MapEnd, MapEnd, MapLinkKind) bundle, MapEnd split, MapEnd pay)
+        {
+            var y = PortY(bundle, split, MapSide.Left);
+            return Line(new MapPoint(_grid.Slot(split).Left, y), new MapPoint(_grid.Slot(pay).Right, y));
+        }
+
+        // The marital quotient, either way: up from Director pay's top into the partner's bottom, over it, or
+        // down from the partner into Director pay.
+        private MapRoute Quotient(MapEnd from, MapEnd to)
+        {
+            var (pays, partner) = (_grid.Slot(MapEnd.Of(RiverModule.DirectorPay)), _grid.Slot(MapEnd.Of(RiverModule.Household)));
+            var route = Line(new MapPoint(QuotientX, pays.Top), new MapPoint(QuotientX, partner.Bottom));
+            return from == MapEnd.Of(RiverModule.DirectorPay) ? route : Reversed(route);
+        }
+
+        // What Corporate tax adds back of a gate, or the car's rule on its rate: out of its right side along its
+        // row to its drop just left of the company's line, down into the gap over Corporate tax, across it at its
+        // own height, and down into its top-left, room left over Corporate tax for its arrowhead; the highest
+        // row's drop furthest right, turning highest across the gap and entering furthest right, so that none
+        // crosses another.
+        private MapRoute AddBack((MapEnd, MapEnd, MapLinkKind) bundle, MapEnd gate, MapEnd corporate)
+        {
+            var index = _drops.IndexOf(bundle);
+            var y = PortY(bundle, gate, MapSide.Right);
+            var (x, into) = (DropsFrom - index * DropTrack, DropsIn - index * DropInTrack);
+            var above = _grid.Rows[_grid.Rows.ToList().IndexOf(MapRow.CorporateTax) - 1];
+            var (top, bottom) = (_grid.GapBelow(above, 0m), _grid.GapBelow(above, 1m) - (MapLineWidths.ArrowLength(_widths[bundle]) + EdgePixels) * _grid.DownPixel);
+            var gap = top + (bottom - top) * (index + 1) / (_drops.Count + 1);
+            return new MapRoute([new(_grid.Slot(gate).Right, y), new(x, y), new(x, gap), new(into, gap), new(into, _grid.Slot(corporate).Top)]);
+        }
+
+        // The office's rule the rent sets on the allowances: from the allowances' right side round the gates'
+        // right into the rent's.
+        private MapRoute BracketRoute((MapEnd, MapEnd, MapLinkKind) bundle, MapEnd from, MapEnd to)
+        {
+            var (y0, y1) = (PortY(bundle, from, MapSide.Right), PortY(bundle, to, MapSide.Right));
+            return new MapRoute([new(_grid.Slot(from).Right, y0), new(Bracket, y0), new(Bracket, y1), new(_grid.Slot(to).Right, y1)]);
+        }
+
+        // A condition the dividend or the royalty sets on the split: out of its gate's right side, up beside the
+        // gates, and into the split's left side.
+        private MapRoute ConditionToSplit((MapEnd, MapEnd, MapLinkKind) bundle, MapEnd gate, MapEnd split)
+        {
+            var (y0, y1) = (PortY(bundle, gate, MapSide.Right), PortY(bundle, split, MapSide.Left));
+            var x = gate == MapEnd.Of(RiverModule.Dividend) ? DividendUp : RoyaltyUp;
+            return new MapRoute([new(_grid.Slot(gate).Right, y0), new(x, y0), new(x, y1), new(_grid.Slot(split).Left, y1)]);
+        }
+
+        // The split's royalty: out of its bottom, down beside the company's line and into the royalty's right side.
+        private MapRoute SplitToRoyaltyRoute((MapEnd, MapEnd, MapLinkKind) bundle, MapEnd split, MapEnd royalty)
+        {
+            var y = PortY(bundle, royalty, MapSide.Right);
+            return new MapRoute([new(SplitToRoyalty, _grid.Slot(split).Bottom), new(SplitToRoyalty, y), new(_grid.Slot(royalty).Right, y)]);
+        }
+
+        // What Corporate tax passes the dividend: out of its left side straight across into the dividend's right.
+        private MapRoute CorporateTaxToDividend((MapEnd, MapEnd, MapLinkKind) bundle, MapEnd corporate, MapEnd dividend)
+        {
+            var y = PortY(bundle, dividend, MapSide.Right);
+            return Line(new MapPoint(_grid.Slot(corporate).Left, y), new MapPoint(_grid.Slot(dividend).Right, y));
+        }
+
+        // Straight down from a box's bottom into a bucket under it, at its place; what comes back beside it.
+        private MapRoute StraightDown((MapEnd From, MapEnd To, MapLinkKind Kind) bundle, MapEnd from, MapEnd bucket, Func<bool, decimal> place)
+        {
+            var (box, tray) = (_grid.Slot(from), _grid.Slot(bucket));
+            var x = Beside(bundle, place, (Math.Max(box.Left, tray.Left), Math.Min(box.Right, tray.Right)), MapGrid.AcrossPixel, atModule: true);
+            return Line(new MapPoint(x, box.Bottom), new MapPoint(x, tray.Top));
+        }
+
+        // Down from a box's bottom to a row of the band, along it, and down into a bucket; what comes back out of
+        // it leaves the bucket left of the way in, runs along the band's next row and comes up left of where the
+        // way in leaves, so that the two never cross.
+        private MapRoute Stepped((MapEnd From, MapEnd To, MapLinkKind Kind) bundle, MapEnd from, MapEnd bucket, Func<bool, decimal> leave, Func<bool, decimal> enter,
+            Func<bool, int> row)
+        {
+            var (box, tray) = (_grid.Slot(from), _grid.Slot(bucket));
+            var x = Beside(bundle, leave, (box.Left, box.Right), MapGrid.AcrossPixel, atModule: true);
+            var into = Beside(bundle, enter, (tray.Left, tray.Right), MapGrid.AcrossPixel);
+            var y = _grid.BandY(row(Back(bundle)));
+            return new MapRoute([new(x, box.Bottom), new(x, y), new(into, y), new(into, tray.Top)]);
+        }
+
+        // A link's track down the lane beside the gates.
+        private decimal LaneX((MapEnd, MapEnd, MapLinkKind) bundle) => Lane(_lane, bundle, index => LaneFrom + index * LaneTrack, LaneRoom);
+
+        // The order of the lane's tracks, left to right: the car's contribution, the gates' taxes on pay, then
+        // what reaches the pocket from the gates, the highest row's furthest left; each line back beside its way
+        // in; none for a link that takes no track.
+        private static decimal? LaneOrder((MapEnd From, MapEnd To, MapLinkKind Kind) bundle)
+        {
+            decimal? group = Family(bundle) switch
+            {
+                RouteFamily.IntoLine => 0m,
+                RouteFamily.GateToTaxes => 1m,
+                RouteFamily.GoldToPocket => 2m,
+                _ => null,
+            };
+            return group + (int)Row(Owner(bundle)) / 100m + (Back(bundle) ? 0.005m : 0m);
+        }
+
+        // A link's track down a lane: from the lane's first, each its step from the one before, or further where
+        // their widths ask it, all of them in the lane's room.
+        private decimal Lane(List<(MapEnd, MapEnd, MapLinkKind)> lane, (MapEnd, MapEnd, MapLinkKind) bundle, Func<int, decimal> track, (decimal Low, decimal High) room) =>
+            Spread([.. lane.Select((line, index) => (track(index), line))], MapGrid.AcrossPixel, room, round: false, _ => false)[lane.IndexOf(bundle)];
 
         // Where a line between a module and a bucket, or what comes back out of the bucket beside it, takes
         // one of its places: the run's lines of the pair spread across their room from their places, the
@@ -659,7 +879,7 @@ internal static class MapLayout
         private decimal Beside((MapEnd From, MapEnd To, MapLinkKind Kind) bundle, Func<bool, decimal> place, (decimal Low, decimal High) room, decimal pixel, bool atModule = false)
         {
             List<(MapEnd From, MapEnd To, MapLinkKind Kind)> pair =
-                [.. _bundles.Where(other => Family(other) == Family(bundle) && Module(other) == Module(bundle) && Bucket(other) == Bucket(bundle)).OrderBy(Back)];
+                [.. _bundles.Where(other => Family(other) == Family(bundle) && Owner(other) == Owner(bundle) && Bucket(other) == Bucket(bundle)).OrderBy(Back)];
             return Spread([.. pair.Select(line => (place(Back(line)), line))], pixel, room, round: true, line => atModule && Back(line))[pair.IndexOf(bundle)];
         }
 
@@ -704,182 +924,17 @@ internal static class MapLayout
                 at[index] += by;
         }
 
-        // Down from one box's bottom into the next one's top, at an x both share, into the pill of a quiet
-        // row between them and out of it.
-        private MapRoute Down(MapEnd from, MapEnd to)
-        {
-            var (top, bottom) = (_grid.Slot(from), _grid.Slot(to));
-            var x = from.Module == RiverModule.Copyright ? RoyaltyToPay : top.CenterX;
-            var through = _grid.QuietBetween(Row(from.Module!.Value), Row(to.Module!.Value)).SelectMany(pill => new MapPoint[] { new(x, pill.Top), new(x, pill.Bottom) });
-            return new MapRoute([new(x, top.Bottom), .. through, new(x, bottom.Top)]);
-        }
-
-        // Out of a box's side to a lane, then down the lane into a bucket's top.
-        private MapRoute SideToBucket((MapEnd, MapEnd, MapLinkKind) bundle, MapEnd from, MapSide side, MapEnd bucket, decimal lane)
-        {
-            var slot = _grid.Slot(from);
-            var y = PortY(bundle, from, side);
-            var x = side == MapSide.Left ? slot.Left : slot.Right;
-            return new MapRoute([new(x, y), new(lane, y), new(lane, _grid.Slot(bucket).Top)]);
-        }
-
-        // Out of one box's side to a lane, down the lane, and into another box's side.
-        private MapRoute SideToSide((MapEnd, MapEnd, MapLinkKind) bundle, MapEnd from, MapSide fromSide, MapEnd to, MapSide toSide, decimal lane)
-        {
-            var (source, target) = (_grid.Slot(from), _grid.Slot(to));
-            var (y0, y1) = (PortY(bundle, from, fromSide), PortY(bundle, to, toSide));
-            var (x0, x1) = (fromSide == MapSide.Left ? source.Left : source.Right, toSide == MapSide.Left ? target.Left : target.Right);
-            return new MapRoute([new(x0, y0), new(lane, y0), new(lane, y1), new(x1, y1)]);
-        }
-
-        // Out of a box's side, along its row, then down into a box's top.
-        private MapRoute SideToTop((MapEnd, MapEnd, MapLinkKind) bundle, MapEnd from, MapSide side, MapEnd to, decimal x)
-        {
-            var slot = _grid.Slot(from);
-            var y = PortY(bundle, from, side);
-            return new MapRoute([new(side == MapSide.Left ? slot.Left : slot.Right, y), new(x, y), new(x, _grid.Slot(to).Top)]);
-        }
-
-        // From one box's right side to the one under it, round the right of the middle column.
-        private MapRoute Bracket((MapEnd, MapEnd, MapLinkKind) bundle, MapEnd from, MapEnd to)
-        {
-            var (y0, y1) = (PortY(bundle, from, MapSide.Right), PortY(bundle, to, MapSide.Right));
-            var lane = ChainColumn.Right + BracketLane;
-            return new MapRoute([new(ChainColumn.Right, y0), new(lane, y0), new(lane, y1), new(ChainColumn.Right, y1)]);
-        }
-
-        // From a box's bottom down into the gap under its row, across it at the y given, and into a box below.
-        private MapRoute BottomToTop(MapEnd from, decimal fromX, MapEnd to, decimal toX, decimal gap)
-        {
-            var (source, target) = (_grid.Slot(from), _grid.Slot(to));
-            return new MapRoute([new(fromX, source.Bottom), new(fromX, gap), new(toX, gap), new(toX, target.Top)]);
-        }
-
-        // The condition a royalty sets on the split: out of the royalty's right side, across the gutter, up beside
-        // it into the gap under the split, across it at its y, and up into the split.
-        private MapRoute RoyaltyUpToSplit((MapEnd, MapEnd, MapLinkKind) bundle, MapEnd from, MapEnd to)
-        {
-            var (source, target) = (_grid.Slot(from), _grid.Slot(to));
-            var (y, gap) = (PortY(bundle, from, MapSide.Right), BelowSplitY(bundle));
-            return new MapRoute([new(source.Right, y), new(RoyaltyConditionUp, y), new(RoyaltyConditionUp, gap), new(ConditionIntoSplit, gap), new(ConditionIntoSplit, target.Bottom)]);
-        }
-
-        // The split's pay to Director pay: down the left gutter into its right side while Copyright royalty
-        // sits over it, else straight across the gap and down into its top.
-        private MapRoute SplitToDirectorPay((MapEnd, MapEnd, MapLinkKind) bundle, MapEnd from, MapEnd to)
-        {
-            var (source, target) = (_grid.Slot(from), _grid.Slot(to));
-            var gap = BelowSplitY(bundle);
-            const decimal x = 49m;
-            if (_grid.Holds(RiverModule.Copyright))
-            {
-                var lane = LeftGutterX(bundle);
-                var y = PortY(bundle, to, MapSide.Right);
-                return new MapRoute([new(x, source.Bottom), new(x, gap), new(lane, gap), new(lane, y), new(target.Right, y)]);
-            }
-
-            return new MapRoute([new(x, source.Bottom), new(x, gap), new(target.CenterX, gap), new(target.CenterX, target.Top)]);
-        }
-
-        // The marital quotient between Director pay and the partner over its right, either way: out of Director
-        // pay's right side, across its row past the left gutter and the royalty's tax apart, and up the gap
-        // between the streams' rows into the partner's bottom near its right, clear of an amount standing right
-        // of the royalty's tax apart where it comes down past Director pay; or the other way, down from the
-        // partner into Director pay's side.
-        private MapRoute BesidePay((MapEnd, MapEnd, MapLinkKind) bundle, MapEnd from, MapEnd to)
-        {
-            var (pays, partner) = (MapEnd.Of(RiverModule.DirectorPay), MapEnd.Of(RiverModule.Household));
-            var (box, above) = (_grid.Slot(pays), _grid.Slot(partner));
-            var y = PortY(bundle, pays, MapSide.Right);
-            var route = new MapRoute([new(box.Right, y), new(HouseholdClimb, y), new(HouseholdClimb, above.Bottom)]);
-            return from == pays ? route : Reversed(route);
-        }
-
-        // The reserve Dividend keeps, back up to the split: out of its right side, up the right edge, and
-        // into the split's right side.
-        private MapRoute DividendToSplit((MapEnd, MapEnd, MapLinkKind) bundle, MapEnd from, MapEnd to)
-        {
-            var (y0, y1) = (PortY(bundle, from, MapSide.Right), PortY(bundle, to, MapSide.Right));
-            return new MapRoute([new(RightColumn.Right, y0), new(RightLane, y0), new(RightLane, y1), new(ChainColumn.Right, y1)]);
-        }
-
-        // A royalty's tax apart: out of its bottom, across the gap under it past Director pay, and down into
-        // the taxes on pay; what comes back runs beside it.
-        private MapRoute CopyrightToTaxes((MapEnd, MapEnd, MapLinkKind) bundle, MapEnd from, MapEnd to)
-        {
-            var (source, tray) = (_grid.Slot(from), _grid.Slot(to));
-            var start = Beside(bundle, back => back ? RoyaltyToTaxes - RoyaltyBack : RoyaltyToTaxes, (source.Left, source.Right), MapGrid.AcrossPixel, atModule: true);
-            var gap = Beside(bundle, back => _grid.GapBelow(MapRow.StreamTop, back ? 0.65m : 0.5m),
-                (_grid.GapBelow(MapRow.StreamTop, 0m), _grid.GapBelow(MapRow.StreamTop, 1m)), _grid.DownPixel);
-            var x = Beside(bundle, back => back ? 35.2m : 34m, (tray.Left, tray.Right), MapGrid.AcrossPixel);
-            return new MapRoute([new(start, source.Bottom), new(start, gap), new(x, gap), new(x, tray.Top)]);
-        }
-
-        // A royalty's part paid apart, to the pocket: out of its bottom, along a row of its own under it, room for
-        // its amount, to its track down the pocket's lane, and down into the pocket; what comes back runs beside
-        // it, under that row.
-        private MapRoute RoyaltyToPocketLane((MapEnd, MapEnd, MapLinkKind) bundle, MapEnd from, MapEnd to)
-        {
-            var (box, tray) = (_grid.Slot(from), _grid.Slot(to));
-            var x = Beside(bundle, back => back ? RoyaltyToPocket - RoyaltyBack : RoyaltyToPocket, (box.Left, box.Right), MapGrid.AcrossPixel, atModule: true);
-            var row = box.Bottom + (Back(bundle) ? RoyaltyRow + RoyaltyBackUnder : RoyaltyRow) * 100m / _grid.Units;
-            var lane = PocketLaneX(bundle);
-            return new MapRoute([new(x, box.Bottom), new(x, row), new(lane, row), new(lane, tray.Top)]);
-        }
-
-        // Down from a stream's last box into a bucket under it: straight, at an x both share, into the pocket or
-        // what the company keeps, with what comes back beside it; into the taxes, from anywhere along the box's
-        // bottom along the band's first row of its own to its place over the bucket, room for its amount, and
-        // what comes back out of them along the second, nested inside it so that the two never cross.
-        private MapRoute StreamDown((MapEnd From, MapEnd To, MapLinkKind Kind) bundle, MapEnd from, MapEnd to)
-        {
-            var (module, bucket) = (from.Module!.Value, to.Bucket!);
-            var (box, tray) = (_grid.Slot(from), _grid.Slot(to));
-            var taxes = bucket is "taxes_on_pay" or "taxes_on_profit";
-            var x = Beside(bundle, back => (module, bucket, back) switch
-            {
-                (RiverModule.DirectorPay, "pocket", false) => PayToPocket,
-                (RiverModule.DirectorPay, "pocket", true) => PayToPocket + BackBeside,
-                (RiverModule.DirectorPay, "taxes_on_pay", false) => PayToTaxes,
-                (RiverModule.DirectorPay, "taxes_on_pay", true) => PayFromTaxes,
-                (RiverModule.Dividend, "taxes_on_profit", false) => DividendToTaxes,
-                (RiverModule.Dividend, "taxes_on_profit", true) => DividendFromTaxes,
-                (RiverModule.Dividend, "kept_in_company", false) => DividendToKept,
-                (RiverModule.Dividend, "kept_in_company", true) => DividendToKept + BackBeside,
-                _ => throw new ArgumentOutOfRangeException(nameof(bundle), $"{module} {bucket}", "A link the map has no route for."),
-            }, taxes ? (box.Left, box.Right) : (Math.Max(box.Left, tray.Left), Math.Min(box.Right, tray.Right)), MapGrid.AcrossPixel, atModule: true);
-            if (!taxes)
-                return new MapRoute([new(x, box.Bottom), new(x, tray.Top)]);
-
-            var row = _grid.BandY(Back(bundle) ? OutOfTaxesRow : IntoTaxesRow);
-            var into = Beside(bundle, back => IntoTaxes(module, back), (tray.Left, tray.Right), MapGrid.AcrossPixel);
-            return new MapRoute([new(x, box.Bottom), new(x, row), new(into, row), new(into, tray.Top)]);
-        }
-
-        // What reaches the pocket of the dividend: out of its bottom, along the band's last row, under the rows
-        // of the lines into the taxes and out of them, and down into the pocket; what comes back runs beside it,
-        // over that row.
-        private MapRoute DividendToPocket((MapEnd, MapEnd, MapLinkKind) bundle, MapEnd from, MapEnd to)
-        {
-            var (box, tray) = (_grid.Slot(from), _grid.Slot(to));
-            var x = Beside(bundle, back => back ? DividendToPocketOut + BackBeside : DividendToPocketOut, (box.Left, box.Right), MapGrid.AcrossPixel, atModule: true);
-            var gap = _grid.BandY(LastBandRow) - (Back(bundle) ? DividendBackOver * 100m / _grid.Units : 0m);
-            var into = Beside(bundle, back => back ? DividendToPocketIn + BackBeside : DividendToPocketIn, (tray.Left, tray.Right), MapGrid.AcrossPixel);
-            return new MapRoute([new(x, box.Bottom), new(x, gap), new(into, gap), new(into, tray.Top)]);
-        }
-
-        // Where a stream's way into its taxes enters their bucket, or what comes back out of them leaves it.
-        private static decimal IntoTaxes(RiverModule module, bool back) => module == RiverModule.DirectorPay
-            ? back ? PayTaxesOut : PayTaxesIn
-            : back ? DividendTaxesOut : DividendTaxesIn;
+        private static MapRoute Line(MapPoint from, MapPoint to) => new([from, to]);
 
         private static MapRoute Reversed(MapRoute route) => route with { Points = [.. route.Points.Reverse()] };
 
-        // A line back out of a bucket into its module.
+        // A line back out of a bucket into its module, or into the company's line.
         private static bool Back((MapEnd From, MapEnd To, MapLinkKind Kind) bundle) => bundle.From.Bucket is not null;
 
-        private static RiverModule Module((MapEnd From, MapEnd To, MapLinkKind Kind) bundle) =>
-            bundle.From.Module ?? bundle.To.Module ?? throw new ArgumentOutOfRangeException(nameof(bundle), "A link with no module.");
+        // The module a link belongs to on the map, for its row: its module end, or the lever whose point of the
+        // company's line it leaves or joins.
+        private static RiverModule Owner((MapEnd From, MapEnd To, MapLinkKind Kind) bundle) =>
+            bundle.From.Module ?? bundle.From.Lever ?? bundle.To.Module ?? bundle.To.Lever ?? throw new ArgumentOutOfRangeException(nameof(bundle), "A link with no module.");
 
         // The bucket a link runs into or back out of, none for a link between modules.
         private static string? Bucket((MapEnd From, MapEnd To, MapLinkKind Kind) bundle) => bundle.From.Bucket ?? bundle.To.Bucket;
@@ -890,23 +945,28 @@ internal static class MapLayout
     private enum RouteFamily
     {
         None,
-        Straight,
-        ToPocketLane,
-        ChainToTaxesOnPay,
-        ChainToDirectorPay,
-        ChainToCorporateTax,
-        ChainToExpenses,
+        CompanysLine,
+        Take,
+        GoldToPocket,
+        GateToTaxes,
+        IntoLine,
+        LineToExpenses,
+        CompanyYearToExpenses,
+        BenefitToPay,
+        RoyaltyToPay,
+        Pay,
+        Quotient,
+        PayToPocket,
+        PayToTaxes,
+        AddBack,
         Bracket,
-        SplitToCopyright,
-        CopyrightToSplit,
-        SplitToDirectorPay,
+        ConditionToSplit,
+        SplitToRoyalty,
         SplitToCorporateTax,
-        DividendToSplit,
-        CopyrightToTaxesOnPay,
-        CorporateTaxToBucket,
-        StreamDown,
-        DividendToPocket,
-        BesidePay,
+        CorporateTaxToDividend,
+        CorporateTaxToTaxes,
+        DividendToTaxes,
+        DividendToKept,
     }
 
     private enum MapSide
@@ -916,7 +976,8 @@ internal static class MapLayout
     }
 }
 
-// The map's rows, top to bottom: the chain down the middle, the two streams' rows, then the buckets.
+// The map's rows, top to bottom: Company year, a row for each lever, the split's with Director pay beside it,
+// the royalty's, Corporate tax's with the dividend beside it, then the buckets.
 internal enum MapRow
 {
     CompanyYear,
@@ -925,19 +986,28 @@ internal enum MapRow
     Rent,
     Car,
     Split,
-    StreamTop,
-    StreamBottom,
+    Royalty,
+    CorporateTax,
     Buckets,
 }
 
+// The map's columns, by whose money a module moves: the director's, the partner's in it, the ways across and
+// the company's.
 internal enum MapColumn
 {
-    Left,
-    Chain,
-    Right,
-
-    // The partner's, in the middle of the director's stream, beside Director pay.
+    You,
     Household,
+    Gates,
+    Company,
+}
+
+// Whose money a column of the map holds, which its label says: the director's and their household's, on its way
+// across, or the company's. Public because the Map tab, a component, words it.
+public enum MapOwner
+{
+    You,
+    Across,
+    Company,
 }
 
 // A point of the map, each coordinate in percent of its box.

@@ -20,7 +20,7 @@ public class MapReceivedViewTests
     private static MapReceivedView Of(MapView view, RiverModule module) => MapReceivedView.Of(view, module, end => end.Id);
 
     // Each part is a line of money the map draws into the module, in the map's order, with the amount the
-    // map says on it.
+    // map says on it; what comes off the company's line comes from Company year, whose line it is.
     [Theory]
     [MemberData(nameof(FullPlansModules))]
     public void Of_aModule_isEveryLineOfMoneyIntoItWithTheAmountTheMapSaysOnIt(RiverModule module)
@@ -30,7 +30,21 @@ public class MapReceivedViewTests
 
         var received = Of(view, module);
 
-        received.Lines.Select(line => (line.Amount, line.From)).ShouldBe(into.Select(bundle => (Formats.Euros(bundle.Amount!.Value), bundle.From.Id)));
+        received.Lines.Select(line => (line.Amount, line.From))
+            .ShouldBe(into.Select(bundle => (Formats.Euros(bundle.Amount!.Value), bundle.From.Lever is null ? bundle.From.Id : "company-year")));
+    }
+
+    // A lever receives its share of the company's line, what its card says the company pays, from Company year,
+    // an end the viewer can go to; nothing from the lever above it.
+    [Theory]
+    [InlineData(RiverModule.Vouchers)]
+    [InlineData(RiverModule.Allowances)]
+    [InlineData(RiverModule.Rent)]
+    public void Of_aLever_receivesItsShareFromCompanyYear(RiverModule lever)
+    {
+        var share = HandOff.Cost(Full.Run().Year!, RiverModules.Lever(lever)!.Value);
+
+        Of(Full, lever).Lines.ShouldBe([new MapReceived(Formats.Euros(share), "company-year", RiverModule.CompanyYear, First: true)]);
     }
 
     // A rule reaching a module, a tax base or a condition, moves no money into it: it is not received.
@@ -58,18 +72,17 @@ public class MapReceivedViewTests
     [Fact]
     public void Of_aModuleReceivingFromTwoEnds_marksItsFirstPartAlone()
     {
-        var received = Of(Full, RiverModule.Car);
+        var received = Of(Full, RiverModule.Dividend);
 
         received.Lines.Select(line => line.First).ShouldBe([true, false]);
     }
 
-    // What comes back out of a bucket is received from it, a bucket being named only.
+    // The car takes no share of the company's line, and its contribution joins that line: the car receives no
+    // money, only what crosses it, its benefit, which is a tax base.
     [Fact]
-    public void Of_theCar_receivesYourContributionFromThePocket()
+    public void Of_theCar_receivesNothing()
     {
-        var received = Of(Full, RiverModule.Car);
-
-        received.Lines.ShouldContain(line => line.From == "pocket" && line.Module == null);
+        Of(Full, RiverModule.Car).Lines.ShouldBeEmpty();
     }
 
     // A module on the map is an end the viewer can go to; a bucket, the taxes on profit a credit comes back
@@ -89,16 +102,16 @@ public class MapReceivedViewTests
         Of(Full, RiverModule.CompanyYear).Lines.ShouldBeEmpty();
     }
 
-    // A lever that moves no money of its own receives nothing: the chain's line runs on past it, and the box
-    // under the quiet levers receives it from the box above them.
+    // A lever that moves no money of its own receives nothing: the company's line runs on past it, and the split
+    // receives it from Company year, whose line it is.
     [Fact]
-    public void Of_aQuietLever_receivesNothing_andTheBoxUnderItReceivesFromTheBoxAbove()
+    public void Of_aQuietLever_receivesNothing_andTheSplitReceivesTheCompanysLineFromCompanyYear()
     {
         var (quiet, split) = (Of(MapReceivedHtml.ChainQuiet, RiverModule.Rent), Of(MapReceivedHtml.ChainQuiet, RiverModule.Split));
 
         quiet.ShouldSatisfyAllConditions(
             () => quiet.Lines.ShouldBeEmpty(),
-            () => split.Lines.Select(line => line.Module).ShouldBe([RiverModule.Vouchers]));
+            () => split.Lines.Select(line => line.Module).ShouldBe([RiverModule.CompanyYear]));
     }
 
     // While the engine refuses an amount the map draws no line, so nothing is received.
