@@ -8,7 +8,8 @@
    untaxed and outside INASTI, and the company deducts them in full, like its own running costs, with
    nothing added back to its taxable income: the card's bubble says so. The office, internet and
    computer fields keep their maximum for the year under them, the office allowance's monthly maxima in
-   the bubble after its label; the phone costs have none. Under the fields, where the allowances go,
+   the bubble after its label; the phone costs have none. Under the fields, what the company pays for
+   them (AllowanceFigures), then where the allowances go,
    each to the pocket, and what they leave, on to the home office rent when it is in the plan, or the
    split. An optional module: it shows only while in
    the plan, and the word at its bottom takes it out, its values kept. The circular's flat amounts
@@ -55,6 +56,7 @@
     <RefusedMessage Error="@Refused" />
     @if (_view is not null)
     {
+        <FigureList Figures="@FigureWords.Of(L, AllowanceFigures.From(_view))" />
         <DrainList Drains="_view.Drains" />
     }
     @if (_rules is not null)

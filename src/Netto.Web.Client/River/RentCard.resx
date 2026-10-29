@@ -51,6 +51,9 @@
   <data name="UseTheCap" xml:space="preserve">
     <value>Use {0}</value>
   </data>
+  <data name="Figure_CompanyPays" xml:space="preserve">
+    <value>The company pays</value>
+  </data>
   <data name="Figure_TaxedOnTheRent" xml:space="preserve">
     <value>Taxed on the rent</value>
   </data>

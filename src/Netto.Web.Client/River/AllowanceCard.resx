@@ -48,6 +48,9 @@
   <data name="PhoneLabel" xml:space="preserve">
     <value>Phone costs reimbursed for the year</value>
   </data>
+  <data name="Figure_CompanyPays" xml:space="preserve">
+    <value>The company pays</value>
+  </data>
   <data name="Remove" xml:space="preserve">
     <value>Remove expense allowances from your plan</value>
   </data>
