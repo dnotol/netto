@@ -7,15 +7,17 @@ namespace Netto.Tests.WebClient.Tabs;
 
 // Which kinds of link the Map tab shows is a viewer's preference, kept in the browser's storage as the
 // kinds they hid: a new MapLinkFilter over the same storage is the page after a reload. The rules are
-// marked on their modules, so with nothing stored the conditions are hidden by default and the others
-// shown, a tax base among them, since a partner's box says its quotient only on its line; what is stored, even nothing, is the choice, whole. A key of an earlier
+// marked on their modules, so with nothing stored the conditions and the tax bases are hidden by default,
+// their totals said by their badges, the partner's quotient on its line once ticked (operator, 29.10.2026),
+// and the money shown; what is stored, even nothing, is the choice, whole, a choice saved before the tax
+// bases were hidden by default read as saved. A key of an earlier
 // version is no choice. What the filter shows of a map is the links of the kinds shown, the others left
 // out, the modules, their badges and the lines that stay where they were.
 public class MapLinkFilterTests
 {
     private static readonly RiverInputs Full = MapLinksTests.Full;
 
-    private static readonly MapLinkKind[] HiddenByDefault = [MapLinkKind.Condition];
+    private static readonly MapLinkKind[] HiddenByDefault = [MapLinkKind.TaxBase, MapLinkKind.Condition];
 
     public static TheoryData<MapLinkKind> Kinds
     {
@@ -62,7 +64,20 @@ public class MapLinkFilterTests
 
         var filter = new MapLinkFilter(storage);
 
-        (ShownWords(filter), storage.Writes, storage.Get("netto.map.links")).ShouldBe(("PassedOn IntoBucket TaxBase", writes, stored));
+        (ShownWords(filter), storage.Writes, storage.Get("netto.map.links")).ShouldBe(("PassedOn IntoBucket", writes, stored));
+    }
+
+    // A choice saved while a tax base's lines showed by default is the viewer's still: read as saved.
+    [Theory]
+    [InlineData("condition", "PassedOn IntoBucket TaxBase")]
+    [InlineData("", "PassedOn IntoBucket TaxBase Condition")]
+    [InlineData("into_bucket;condition", "PassedOn TaxBase")]
+    public void Shows_aChoiceSavedWhileTheTaxBasesShowedByDefault_isReadAsSaved(string stored, string shown)
+    {
+        var storage = new BrowserStorage();
+        storage.Set(MapLinkFilter.StorageKey, stored);
+
+        ShownWords(new MapLinkFilter(storage)).ShouldBe(shown);
     }
 
     [Fact]
@@ -73,7 +88,8 @@ public class MapLinkFilterTests
 
         new MapLinkFilter(storage).Set(MapLinkKind.Condition, shown: true);
 
-        (storage.Get("netto.map.links"), storage.Get(MapLinkFilter.StorageKey)).ShouldBe(("passed_on", ""));
+        (storage.Get("netto.map.links"), storage.Get(MapLinkFilter.StorageKey)).ShouldBe(("passed_on", "tax_base"));
+
     }
 
     // Stored, even nothing, is the choice: the viewer ticked every box.
@@ -86,15 +102,15 @@ public class MapLinkFilterTests
         Shown(new MapLinkFilter(storage)).ShouldBe(Enum.GetValues<MapLinkKind>());
     }
 
-    // The first tick is the whole of the viewer's choice with it: hiding a tax base keeps the conditions hidden.
+    // The first tick is the whole of the viewer's choice with it: showing a tax base keeps the conditions hidden.
     [Fact]
-    public void Set_aTaxBaseHidden_storesTheConditionsAsHiddenStill()
+    public void Set_aTaxBaseShown_storesTheConditionsAsHiddenStill()
     {
         var storage = new BrowserStorage();
 
-        new MapLinkFilter(storage).Set(MapLinkKind.TaxBase, shown: false);
+        new MapLinkFilter(storage).Set(MapLinkKind.TaxBase, shown: true);
 
-        (storage.Get(MapLinkFilter.StorageKey), ShownWords(new MapLinkFilter(storage))).ShouldBe(("tax_base;condition", "PassedOn IntoBucket"));
+        (storage.Get(MapLinkFilter.StorageKey), ShownWords(new MapLinkFilter(storage))).ShouldBe(("condition", "PassedOn IntoBucket TaxBase"));
     }
 
     // Hiding money stores the kinds hidden by default with it, in the order of the kinds, since what is stored is whole.
@@ -105,7 +121,7 @@ public class MapLinkFilterTests
 
         new MapLinkFilter(storage).Set(MapLinkKind.PassedOn, shown: false);
 
-        (storage.Get(MapLinkFilter.StorageKey), ShownWords(new MapLinkFilter(storage))).ShouldBe(("passed_on;condition", "IntoBucket TaxBase"));
+        (storage.Get(MapLinkFilter.StorageKey), ShownWords(new MapLinkFilter(storage))).ShouldBe(("passed_on;tax_base;condition", "IntoBucket"));
     }
 
     [Theory]
@@ -151,7 +167,7 @@ public class MapLinkFilterTests
         filter.Set(MapLinkKind.IntoBucket, shown: false);
         filter.Set(MapLinkKind.PassedOn, shown: false);
 
-        storage.Get(MapLinkFilter.StorageKey).ShouldBe("passed_on;into_bucket");
+        storage.Get(MapLinkFilter.StorageKey).ShouldBe("passed_on;into_bucket;tax_base");
     }
 
     // The words are what is stored, so they are not renamed with the kinds: a stored choice would be lost.
@@ -218,8 +234,9 @@ public class MapLinkFilterTests
         var storage = new BrowserStorage();
         storage.Set(MapLinkFilter.StorageKey, stored);
 
-        Shown(new MapLinkFilter(storage)).ShouldBe([MapLinkKind.PassedOn, MapLinkKind.IntoBucket, MapLinkKind.TaxBase]);
+        Shown(new MapLinkFilter(storage)).ShouldBe([MapLinkKind.PassedOn, MapLinkKind.IntoBucket]);
     }
+
 
     // Only separators stored says as little as an empty value does, and is read as it: every kind shows.
     [Fact]

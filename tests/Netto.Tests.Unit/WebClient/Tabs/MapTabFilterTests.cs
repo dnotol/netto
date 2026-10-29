@@ -150,14 +150,14 @@ public class MapTabFilterTests
             () => LegendBoxes(html).Select(box => box.Ticked).ShouldBe([true, true, false, true]));
     }
 
-    // The first visit, nothing stored: the conditions are hidden, a tax base shown. No line, arrowhead or word
-    // is drawn for a condition, the boxes of the modules it reaches say it in their badges, and the legend
-    // shows it unticked, with its count, to bring it back.
+    // The first visit, nothing stored: the conditions and the tax bases are hidden. No line, arrowhead or word
+    // is drawn for either, the boxes of the modules they reach say them in their badges, and the legend shows
+    // them unticked, with their counts, to bring them back.
     [Fact]
-    public async Task Tab_firstVisit_drawsNoLineArrowheadOrWordOfTheConditionsButEveryBadge()
+    public async Task Tab_firstVisit_drawsNoLineArrowheadOrWordOfTheConditionsOrTheTaxBasesButEveryBadge()
     {
         var view = MapView.From(Full, Full.Run());
-        var kept = view.Bundles().Where(bundle => bundle.Kind is not MapLinkKind.Condition).ToList();
+        var kept = view.Bundles().Where(bundle => bundle.Kind is not (MapLinkKind.Condition or MapLinkKind.TaxBase)).ToList();
 
         var html = await RenderTabAsync(Full, more: FirstVisit);
         var everyKind = await RenderTabAsync(Full);
@@ -171,15 +171,16 @@ public class MapTabFilterTests
                 .ShouldBe(kept.Select(bundle => bundle.Kind.ToString()).Distinct().Order()),
             () => Regex.Count(html, "<span class=\"map-badge ").ShouldBe(view.Modules.Sum(node => node.Badges.Count)),
             () => view.Modules.Sum(node => node.Badges.Count).ShouldBeGreaterThan(0),
-            () => LegendBoxes(html).Select(box => box.Ticked).ShouldBe([true, true, true, false]),
+            () => LegendBoxes(html).Select(box => box.Ticked).ShouldBe([true, true, false, false]),
             () => LegendBoxes(html).Select(box => box.Text).ShouldBe(LegendBoxes(everyKind).Select(box => box.Text)));
     }
 
-    // Ticking the conditions draws their lines, arrowheads and words beside a tax base's; unticking a tax base
-    // leaves its lines out, the conditions still hidden; the badges are what they were.
+    // Ticking the conditions draws their lines, arrowheads and words, the tax bases still hidden; ticking a tax
+    // base draws its lines, the conditions still hidden; the badges are what they were.
     [Theory]
-    [InlineData(MapLinkKind.Condition, true, MapLinkKind.Condition, MapLinkKind.TaxBase, true)]
-    [InlineData(MapLinkKind.TaxBase, false, MapLinkKind.PassedOn, MapLinkKind.TaxBase, false)]
+    [InlineData(MapLinkKind.Condition, true, MapLinkKind.Condition, MapLinkKind.TaxBase, false)]
+    [InlineData(MapLinkKind.TaxBase, true, MapLinkKind.TaxBase, MapLinkKind.Condition, false)]
+
     public async Task Tab_aRuleKindSet_drawsTheKindsShown(MapLinkKind set, bool shown, MapLinkKind drawn, MapLinkKind other, bool otherDrawn)
     {
         var storage = new BrowserStorage();

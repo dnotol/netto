@@ -1,9 +1,10 @@
 namespace Netto.Web.Client.Tabs;
 
 // Which kinds of link the Map tab shows: a preference of the viewer's, kept in the browser so a reload
-// keeps it, and never part of a plan. A condition is marked on the module it reaches (MapBadges), so its
-// lines are hidden by default, until the viewer ticks them; a tax base's show, since a partner's box says
-// its quotient only on its line (operator, 28.10.2026), and what is
+// keeps it, and never part of a plan. A condition and what a tax base gains are marked on the module they
+// reach (MapBadges), so their lines are hidden by default, until the viewer ticks them, the partner's marital
+// quotient, which no badge says, said on its line once ticked (operator, 29.10.2026); a choice saved while a
+// tax base's lines showed by default is read as saved. What is
 // stored is the choice, whole: the words of the kinds hidden, none when the viewer ticked every box, and
 // nothing stored at all is no choice. The key of the first version of the filter (netto.map.links) is read
 // by no one and left where it is. The storage is read when the filter is made, before the first draw of
@@ -14,9 +15,10 @@ internal sealed class MapLinkFilter(IBrowserStorage storage)
 {
     internal const string StorageKey = "netto.map.lines";
 
-    // The kinds whose lines the map hides until the viewer ticks them: what one module sets on another,
-    // said by a badge on the module it reaches.
-    private static readonly MapLinkKind[] HiddenByDefault = [MapLinkKind.Condition];
+    // The kinds whose lines the map hides until the viewer ticks them: what changes a tax base and what one
+    // module sets on another, said by a badge on the module they reach.
+    private static readonly MapLinkKind[] HiddenByDefault = [MapLinkKind.TaxBase, MapLinkKind.Condition];
+
 
     private readonly HashSet<MapLinkKind> _hidden = Parse(storage.Get(StorageKey));
 

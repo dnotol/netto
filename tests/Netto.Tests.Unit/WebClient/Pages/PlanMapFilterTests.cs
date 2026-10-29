@@ -12,10 +12,10 @@ namespace Netto.Tests.WebClient.Pages;
 // Chosen is). A click is the browser's; here the box's own callback is invoked, as its event would.
 public class PlanMapFilterTests
 {
-    // The first visit: the conditions are unticked, left out of the lines the tab draws though the run's map
-    // holds them, a tax base drawn, and nothing is stored until the viewer ticks.
+    // The first visit: the conditions and the tax bases are unticked, left out of the lines the tab draws though
+    // the run's map holds them, and nothing is stored until the viewer ticks.
     [Fact]
-    public async Task Plan_firstVisit_hasTheConditionsUntickedAndStoresNothing()
+    public async Task Plan_firstVisit_hasTheConditionsAndTheTaxBasesUntickedAndStoresNothing()
     {
         var storage = new BrowserStorage();
         await using var page = LivePlan.At("http://localhost/plan", storage, river: MapLinksTests.Full);
@@ -26,9 +26,9 @@ public class PlanMapFilterTests
         var run = MapView.From(MapLinksTests.Full, MapLinksTests.Full.Run());
 
         map.ShouldSatisfyAllConditions(
-            () => map.DrawnLines.Select(line => line.Bundle.Kind).Distinct().Order().ShouldBe([MapLinkKind.PassedOn, MapLinkKind.IntoBucket, MapLinkKind.TaxBase]),
-            () => map.ShownMap.Links.Select(link => link.Kind).Distinct().Order().ShouldBe([MapLinkKind.PassedOn, MapLinkKind.IntoBucket, MapLinkKind.TaxBase]),
-            () => run.Links.Select(link => link.Kind).Distinct().Except(map.ShownMap.Links.Select(link => link.Kind)).Order().ShouldBe([MapLinkKind.Condition]),
+            () => map.DrawnLines.Select(line => line.Bundle.Kind).Distinct().Order().ShouldBe([MapLinkKind.PassedOn, MapLinkKind.IntoBucket]),
+            () => map.ShownMap.Links.Select(link => link.Kind).Distinct().Order().ShouldBe([MapLinkKind.PassedOn, MapLinkKind.IntoBucket]),
+            () => run.Links.Select(link => link.Kind).Distinct().Except(map.ShownMap.Links.Select(link => link.Kind)).Order().ShouldBe([MapLinkKind.TaxBase, MapLinkKind.Condition]),
             () => storage.Get(MapLinkFilter.StorageKey).ShouldBeNull(),
             () => page.Errors.ShouldBeEmpty());
     }
@@ -47,8 +47,8 @@ public class PlanMapFilterTests
 
         map.ShouldSatisfyAllConditions(
             () => boxes.Count.ShouldBe(Enum.GetValues<MapLinkKind>().Length),
-            () => storage.Get(MapLinkFilter.StorageKey).ShouldBe(""),
-            () => map.DrawnLines.Select(line => line.Bundle.Kind).Distinct().Order().ShouldBe([MapLinkKind.PassedOn, MapLinkKind.IntoBucket, MapLinkKind.TaxBase, MapLinkKind.Condition]),
+            () => storage.Get(MapLinkFilter.StorageKey).ShouldBe("tax_base"),
+            () => map.DrawnLines.Select(line => line.Bundle.Kind).Distinct().Order().ShouldBe([MapLinkKind.PassedOn, MapLinkKind.IntoBucket, MapLinkKind.Condition]),
             () => page.Errors.ShouldBeEmpty());
     }
 
@@ -62,7 +62,8 @@ public class PlanMapFilterTests
 
         await page.InvokeAsync(() => boxes[Index(MapLinkKind.PassedOn)].ValueChanged.InvokeAsync(false));
 
-        (storage.Get(MapLinkFilter.StorageKey), page.Errors.Count).ShouldBe(("passed_on;condition", 0));
+        (storage.Get(MapLinkFilter.StorageKey), page.Errors.Count).ShouldBe(("passed_on;tax_base;condition", 0));
+
     }
 
     // The box ticked again is shown again: what stays hidden is the kind left unticked, for the next visit.
