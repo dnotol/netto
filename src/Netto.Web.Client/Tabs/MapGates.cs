@@ -15,29 +15,47 @@ namespace Netto.Web.Client.Tabs;
 // viewer, untaxed. A line of nothing is left out, so a lever that moves no money in this plan says nothing.
 // The pay's pill says the split's line to Director pay as the map bundles it, and its words whether the
 // contributions the company pays on the director's behalf cross with it. Made from every link of the run
-// (MapLinks.Of, read here), never those a filter shows, so hiding a kind of line empties no box. Nothing while
-// the engine refuses an amount, or with the company skipped: the map then draws no gate. Nothing here
-// computes a figure: it selects the cards' lines.
+// (MapLinks.Of, read here), whatever lines the map draws, so no box empties. The partner's box says the marital
+// quotient, its words then the amount the Household card's line of it carries, whichever way it goes, the
+// company skipped too; nothing while it attributes nothing. Nothing while the engine refuses an amount, and
+// with the company skipped no gate: the map then draws none. Nothing here computes a figure: it selects the
+// cards' lines.
 internal sealed record MapGates(IReadOnlyList<MapGate> Gates, MapGateLine? Pay)
 {
     private static readonly MapEnd Pocket = MapEnd.InBucket("pocket");
 
     public static MapGates Of(RiverInputs inputs, RiverRun run)
     {
-        if (run.Error is not null || run.Year is not { } year)
+        if (run.Error is not null || run.Pay is null)
             return new([], null);
 
         var links = MapLinks.Of(inputs, run);
+        if (run.Year is not { } year)
+            return new([.. Partner(inputs, links)], null);
+
         return new MapGates(
-            [.. MapModules.Order.Where(module => IsGate(module) && (RiverModules.Lever(module) is not { } lever || inputs.InPlan(lever)))
-                .Select(module => new MapGate(module, Lines(module, inputs, year, links)))],
+            [.. MapModules.Order.Where(module => (IsGate(module) || module == RiverModule.Household) && (RiverModules.Lever(module) is not { } lever || inputs.InPlan(lever)))
+                .Select(module => new MapGate(module, module == RiverModule.Household ? Quotient(links) : Lines(module, inputs, year, links)))],
             PayOf(links));
     }
 
-    // A gate's lines, in the order its box says them; none for a module that is no gate, or a gate out of the
-    // plan.
+    // A gate's lines, in the order its box says them, or the partner's; none for any other module, or one out
+    // of the plan.
     public IReadOnlyList<MapGateLine> For(RiverModule module) =>
-        IsGate(module) ? Gates.FirstOrDefault(gate => gate.Module == module)?.Lines ?? [] : [];
+        IsGate(module) || module == RiverModule.Household ? Gates.FirstOrDefault(gate => gate.Module == module)?.Lines ?? [] : [];
+
+    // The partner's box, while the partner is in the plan, with the company skipped.
+    private static IEnumerable<MapGate> Partner(RiverInputs inputs, IReadOnlyList<MapLink> links) =>
+        inputs.InPlan(OptionalModule.Household) ? [new MapGate(RiverModule.Household, Quotient(links))] : [];
+
+    // The partner's lines: the marital quotient, its words, then its amount, the Household card's line of it as
+    // the map carries it (MapLinks), none while it attributes nothing.
+    private static IReadOnlyList<MapGateLine> Quotient(IReadOnlyList<MapLink> links) =>
+    [
+        .. Sum(links.Where(link => link.Kind == MapLinkKind.TaxBase && link.Card == RiverModule.Household))
+            .SelectMany(amount => new[] { new MapGateLine(MapGateText.Quotient, null, ToYou: false), new MapGateLine(MapGateText.QuotientAmount, amount, ToYou: false) }),
+    ];
+
 
     // Whether a gate's box says the amount given, to the cent, among its lines: none for a module that is no gate.
     public bool Says(RiverModule module, decimal amount) =>

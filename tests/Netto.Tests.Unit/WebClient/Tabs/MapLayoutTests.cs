@@ -144,11 +144,13 @@ public class MapLayoutTests
 
     // A gate's box holds its name, on two lines for the allowances', and a line for each line it says, at the
     // largest sizes the stylesheet draws them, its padding and frame: the rent saying two lines 3.124rem, the
-    // allowances saying two 4.059rem, half a chain row at least.
+    // allowances saying two 4.059rem, half a chain row at least; the partner's box too, saying the marital
+    // quotient on two lines, 3.124rem.
     [Theory]
     [InlineData(RiverModule.Rent, 2, 3.124)]
     [InlineData(RiverModule.Allowances, 2, 4.059)]
     [InlineData(RiverModule.Vouchers, 0, 1.56)]
+    [InlineData(RiverModule.Household, 2, 3.124)]
     public void Grid_aGatesLines_growItsBoxALineEach(RiverModule gate, int lines, double rem)
     {
         var modules = MapView.ModulesOf(MapLinksTests.Full);
@@ -522,12 +524,13 @@ public class MapLayoutTests
     // chain row under the lowest box, each next row 0.35 under the one before, the buckets 0.2 under the last; two
     // rows with Director pay, 0.65, a rent's and a royalty's taxes a row each, and a whole chain row at least with a
     // dividend. Every lever: Company year's row 1; the gates' 1.46, each 0.96 high for its name and two lines, the
-    // allowances' 1.75, theirs on two lines; the split's 1.3, a badge; the royalty's 1.6; Corporate tax's 1.9,
-    // three badges, which keeps 0.25 under its box; the band's four rows 1.35, so the buckets' row 0.7 and 1.1,
-    // 13.73 chain rows. The example: 1, the split's 1, the royalty's 1.6, Corporate tax's 1.6, the dividend's
-    // gate 0.96 keeping 0.32 under it, the buckets' 0.7 and 0.68, 6.58. The company skipped: Company year's row
-    // and Director pay's, 1 each, the buckets' 0.7 and 0.4, 3.1; with the partner in the plan, its row of 1.3 over
-    // Director pay's, room for the marital quotient's amount between them, 4.4.
+    // allowances' 1.75, theirs on two lines, the car's 1.76, the partner's box beside it 0.96 high for its name
+    // and the marital quotient's two lines, with the room round it for the quotient's amount and arrowhead; the
+    // split's 1.3, a badge; the royalty's 1.6; Corporate tax's 1.9, three badges, which keeps 0.25 under its box;
+    // the band's four rows 1.35, so the buckets' row 0.7 and 1.1, 14.03 chain rows. The example: 1, the split's
+    // 1, the royalty's 1.6, Corporate tax's 1.6, the dividend's gate 0.96 keeping 0.32 under it, the buckets'
+    // 0.7 and 0.68, 6.58. The company skipped: Company year's row and Director pay's, 1 each, the buckets' 0.7
+    // and 0.4, 3.1; with the partner in the plan, their row of 1.76 over Director pay's, 4.86.
     [Theory]
     [MemberData(nameof(BandHeights))]
     public void From_aPlan_growsByTheBandItsLastRowLacksRoomFor(string plan, decimal units)
@@ -1020,10 +1023,10 @@ public class MapLayoutTests
     // Plans by name, each with the map's height in chain rows the band leaves it.
     public static TheoryData<string, decimal> BandHeights() => new()
     {
-        { "every lever", 13.73m },
+        { "every lever", 14.03m },
         { "the example", 6.58m },
         { "the company skipped", 3.1m },
-        { "the company skipped, the partner in the plan", 4.4m },
+        { "the company skipped, the partner in the plan", 4.86m },
     };
 
     // A plan by name: every lever, the example, every lever with the company skipped, or one at the edges.

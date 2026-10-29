@@ -73,7 +73,8 @@ internal static class MapLayout
     private const decimal StreamRowUnits = 1.6m;
 
     // The partner's row, over Director pay's: tall enough for the marital quotient's amount and arrowhead
-    // between the partner and Director pay.
+    // between the partner and Director pay, the room it keeps round a box of half a row kept round the partner's
+    // box however tall its lines make it.
     private const decimal PartnerRowUnits = 1.3m;
 
     // The columns' labels, over the top row's boxes in the room the row keeps over them: 0.6rem high on one
@@ -114,13 +115,17 @@ internal static class MapLayout
     // The columns, from the narrowest map's pixels: the director's, the partner's in it, the gates' and the
     // company's; and the lane between the director's column and the gates.
     private static readonly (decimal Left, decimal Right) YouColumn = (Across(14m), Across(104m));
-    private static readonly (decimal Left, decimal Right) HouseholdColumn = (Across(14m), Across(80m));
+    private static readonly (decimal Left, decimal Right) HouseholdColumn = (Across(14m), Across(92m));
     private static readonly (decimal Left, decimal Right) GatesColumn = (Across(180m), Across(304m));
     private static readonly (decimal Left, decimal Right) CompanyColumn = (Across(400m), Across(508m));
 
     // The room inside a gate for its lines, where they are drawn smallest, its padding of 0.35rem each side and
     // its frame left out (MapGateTextTests).
     internal const decimal GateRoomPixels = 304m - 180m - 2m * 0.35m * PixelsPerRem - 2m;
+
+    // The room inside the partner's box for its lines, the marital quotient, likewise: as wide as its amount,
+    // clear of the car's benefit coming down into Director pay right of it.
+    internal const decimal HouseholdRoomPixels = 92m - 14m - 2m * 0.35m * PixelsPerRem - 2m;
 
     // The columns' frames and their labels, as wide as the zones the narrowest map was drawn with.
     private static readonly (decimal Left, decimal Right) YouZone = (Across(2m), Across(178m));
@@ -425,9 +430,10 @@ internal static class MapLayout
             Modules.Where(module => RowOf(module) == row).Select(module => _firstOf.TryGetValue(module, out var first) ? PillUnits(_quietRows[Place(first).Row])
                 : _quiet.Contains(module) ? PillUnits([module]) : BoxOf(module)).DefaultIfEmpty(BoxUnits).Max() * 100m / Units;
 
-        // A module's box, in chain rows: half a row, or a gate's lines, and a line for each of its badges.
+        // A module's box, in chain rows: half a row, or a gate's lines, or the partner's, and a line for each of
+        // its badges.
         private decimal BoxOf(RiverModule module) =>
-            (Place(module).Column == MapColumn.Gates ? Math.Max(BoxUnits, GateUnits(module)) : BoxUnits) + _badgeLines.GetValueOrDefault(module) * BadgeUnits;
+            (Place(module).Column is MapColumn.Gates or MapColumn.Household ? Math.Max(BoxUnits, GateUnits(module)) : BoxUnits) + _badgeLines.GetValueOrDefault(module) * BadgeUnits;
 
         // A gate's name and lines, its padding and frame, in chain rows at the smallest scale.
         private decimal GateUnits(RiverModule module) =>
@@ -480,7 +486,7 @@ internal static class MapLayout
             {
                 MapRow.Buckets => BoxUnits + BucketMargin + Math.Max(BucketMargin, BandUnits - RoomUnderLast),
                 MapRow.Royalty or MapRow.CorporateTax => Math.Max(StreamRowUnits, Tallest(row) + RowRoom),
-                MapRow.Car when Moves(RiverModule.Household) => Math.Max(PartnerRowUnits, Tallest(row) + RowRoom),
+                MapRow.Car when Moves(RiverModule.Household) => Math.Max(Math.Max(PartnerRowUnits, Tallest(row) + RowRoom), BoxOf(RiverModule.Household) + PartnerRowUnits - BoxUnits),
                 _ => Math.Max(1m, Tallest(row) + RowRoom),
             };
 
@@ -732,9 +738,16 @@ internal static class MapLayout
 
         // Where the car's contribution joins the company's line: in the gap under the car's row, its arrowhead clear
         // of the car's gate over it, so that the arrowhead of the line on into the split has the rest of the gap;
-        // what leaves the line for the pocket under it.
-        private decimal ContributionY((MapEnd From, MapEnd To, MapLinkKind Kind) bundle) =>
-            _grid.GapBelow(MapRow.Car, 0m) + (MapLineWidths.ArrowHalf(_widths[bundle]) + EdgePixels + (Back(bundle) ? 0m : 6m)) * _grid.DownPixel;
+        // what leaves the line for the pocket under it; and under the arrowhead of the marital quotient into the
+        // partner's box, while it points there.
+        private decimal ContributionY((MapEnd From, MapEnd To, MapLinkKind Kind) bundle)
+        {
+            var y = _grid.GapBelow(MapRow.Car, 0m) + (MapLineWidths.ArrowHalf(_widths[bundle]) + EdgePixels) * _grid.DownPixel;
+            var partner = MapEnd.Of(RiverModule.Household);
+            if (_bundles.FirstOrDefault(other => Family(other) == RouteFamily.Quotient && other.To == partner) is { From: not null } quotient)
+                y = Math.Max(y, _grid.Slot(partner).Bottom + (MapLineWidths.ArrowLength(_widths[quotient]) + _widths[bundle] / 2m + EdgePixels) * _grid.DownPixel);
+            return y + (Back(bundle) ? 0m : 6m) * _grid.DownPixel;
+        }
 
         // The top of a stretch of the company's line: Company year's bottom, or a point of it.
         private decimal LineTop(MapEnd end) => end.Lever is null ? _grid.Slot(end).Bottom : PointY(end);

@@ -24,6 +24,12 @@ internal static class MapGateText
     // What the viewer pays for the car, their contribution.
     public const string YouPay = "Gate_YouPay";
 
+    // In the partner's box, the marital quotient: its words on a line, then its amount on the next, the box
+    // being too narrow for the two on one.
+    public const string Quotient = "Gate_Quotient";
+
+    public const string QuotientAmount = "Gate_QuotientAmount";
+
     private const string Amount = "{0}";
 
     // The pay's pill: the pay alone, or with the contributions the company pays on the director's behalf.

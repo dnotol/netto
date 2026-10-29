@@ -430,8 +430,9 @@ public class MapTabTests
     {
         var html = await RenderTabAsync(Full.SkipCompany());
 
+        var quotient = Formats.Euros(MapGates.Of(Full.SkipCompany(), Full.SkipCompany().Run()).For(RiverModule.Household)[1].Amount!.Value);
         Buttons(html).Select(button => (button.Module, button.Name, button.Skipped)).ShouldBe(
-            [("company-year", "Company year skipped", true), ("director-pay", "Director pay", false), ("household", "Household", false)]);
+            [("company-year", "Company year skipped", true), ("director-pay", "Director pay", false), ("household", $"Household quotient {quotient}", false)]);
     }
 
     // A skipped Company year chosen: its card goes beside the map, its box is marked chosen, and nothing is

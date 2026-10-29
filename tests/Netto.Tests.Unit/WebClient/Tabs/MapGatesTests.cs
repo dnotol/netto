@@ -45,6 +45,7 @@ public class MapGatesTests
         (gates.Gates.Count, gates.Pay).ShouldBe((0, null));
     }
 
+    // The company skipped, the map draws no gate and no pill: the partner's box alone says its lines.
     [Fact]
     public void Of_theCompanySkipped_hasNoGateAndNoPill()
     {
@@ -52,7 +53,7 @@ public class MapGatesTests
 
         var gates = MapGates.Of(river, river.Run());
 
-        (gates.Gates.Count, gates.Pay).ShouldBe((0, null));
+        (string.Join(' ', gates.Gates.Select(gate => gate.Module)), gates.Pay).ShouldBe((nameof(RiverModule.Household), null));
     }
 
     // Every lever with figures: each gate, in the river's order, says what crosses and, in gold, what reaches
@@ -73,9 +74,47 @@ public class MapGatesTests
             (RiverModule.Rent, $"{MapGateText.Across} {year.Rent.Rent} | {MapGateText.ToYou} {RentView.From(year, Full.Composition).AfterTax} gold"),
             (RiverModule.Car, $"{MapGateText.Benefit} {year.Car.Benefit} | {MapGateText.YouPay} {year.Car.Contribution}"),
             (RiverModule.Copyright, $"{MapGateText.Across} {year.Copyright.Royalty} | {MapGateText.ToYou} {CopyrightView.From(year).AfterTax} gold"),
+            (RiverModule.Household, $"{MapGateText.Quotient} | {MapGateText.QuotientAmount} {Quotient(links)}"),
             (RiverModule.Dividend, $"{MapGateText.Across} {year.Dividend.Dividend} | {MapGateText.ToYou} {year.Dividend.NetDividend} gold"),
         ]);
     }
+
+    // The partner's box says the marital quotient, a line of its words and one of its amount, the Household
+    // card's quotient figure as the map's line of it carries it, which way it goes, to the partner or from them,
+    // and with the company skipped too, the pay taxed jointly still; nothing while it attributes nothing.
+    [Theory]
+    [InlineData("to the partner")]
+    [InlineData("from the partner")]
+    [InlineData("the company skipped")]
+    public void Of_thePartnerInThePlan_saysTheMaritalQuotientInTheirBox(string plan)
+    {
+        var river = plan switch
+        {
+            "to the partner" => RiverInputs.Example.AddToPlan(OptionalModule.Household),
+            "from the partner" => RiverInputs.Example.AddToPlan(OptionalModule.Household).WithDirectorPay(12_000m).WithPartnerIncome(60_000m),
+            _ => Full.SkipCompany(),
+        };
+        var links = MapLinks.Of(river, river.Run());
+
+        var lines = MapGates.Of(river, river.Run()).For(RiverModule.Household);
+
+        lines.ShouldSatisfyAllConditions(
+            () => Quotient(links).ShouldBeGreaterThan(0m),
+            () => lines.Select(Say).ShouldBe([MapGateText.Quotient, $"{MapGateText.QuotientAmount} {Quotient(links)}"]));
+    }
+
+    [Fact]
+    public void Of_aPartnerTheQuotientAttributesNothing_saysNothing()
+    {
+        var river = RiverInputs.Example.AddToPlan(OptionalModule.Household).WithTaxedSeparately(true);
+
+        MapGates.Of(river, river.Run()).For(RiverModule.Household).ShouldBeEmpty();
+    }
+
+    // The marital quotient as the map's line carries it, the Household card's own.
+    private static decimal Quotient(IReadOnlyList<MapLink> links) =>
+        MapBundle.Sum(links.Where(link => link.Kind == MapLinkKind.TaxBase && link.Card == RiverModule.Household));
+
 
     // A gold line from a gate into the pocket carries no amount of its own: its gate's box says it, the very
     // sum the map makes of the gate's lines into the pocket (MapBundle.Sum). No gate says what reaches the
@@ -97,14 +136,15 @@ public class MapGatesTests
         said.ShouldBe(drawn);
     }
 
-    // Every lever in the plan and none with an amount: each is quiet, and says nothing.
+    // Every lever in the plan and none with an amount: each is quiet, and says nothing; the partner, whose
+    // marital quotient the pay alone gives, says it still.
     [Fact]
     public void Of_aQuietLever_saysNothing()
     {
         var gates = MapGates.Of(MapRendering.EveryLeverEmpty, MapRendering.EveryLeverEmpty.Run());
 
         gates.Gates.Where(gate => RiverModules.Lever(gate.Module) is not null).Select(gate => (gate.Module, gate.Lines.Count)).ShouldBe([
-            (RiverModule.Vouchers, 0), (RiverModule.Allowances, 0), (RiverModule.Rent, 0), (RiverModule.Car, 0), (RiverModule.Copyright, 0)]);
+            (RiverModule.Vouchers, 0), (RiverModule.Allowances, 0), (RiverModule.Rent, 0), (RiverModule.Car, 0), (RiverModule.Copyright, 0), (RiverModule.Household, 2)]);
     }
 
     // The office rule keeps an Expense allowances paying nothing in its box beside a rent, with no money: it
@@ -222,7 +262,7 @@ public class MapGatesTests
 
     public static TheoryData<RiverModule> Modules => new(MapModules.Order);
 
-    // Every module of the map: a gate its lines, any other none.
+    // Every module of the map: a gate its lines, the partner theirs, any other none.
     [Theory]
     [MemberData(nameof(Modules))]
     public void For_aModuleOfTheMap_isItsLinesOrNone(RiverModule module)
@@ -232,7 +272,7 @@ public class MapGatesTests
         var lines = gates.For(module);
 
         (lines.Count > 0).ShouldBe(module is RiverModule.Vouchers or RiverModule.Allowances or RiverModule.Rent or RiverModule.Car
-            or RiverModule.Copyright or RiverModule.Dividend);
+            or RiverModule.Copyright or RiverModule.Household or RiverModule.Dividend);
     }
 
     [Fact]

@@ -27,6 +27,12 @@
   <data name="Gate_YouPay" xml:space="preserve">
     <value>you pay {0}</value>
   </data>
+  <data name="Gate_Quotient" xml:space="preserve">
+    <value>quotient</value>
+  </data>
+  <data name="Gate_QuotientAmount" xml:space="preserve">
+    <value>{0}</value>
+  </data>
   <data name="Pill_Pay" xml:space="preserve">
     <value>Pay · {0}</value>
   </data>

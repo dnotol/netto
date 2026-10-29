@@ -19,6 +19,8 @@ public class MapGateTextTests
         { MapGateText.Untaxed, "untaxed" },
         { MapGateText.Benefit, "{0} benefit" },
         { MapGateText.YouPay, "you pay {0}" },
+        { MapGateText.Quotient, "quotient" },
+        { MapGateText.QuotientAmount, "{0}" },
         { MapGateText.Pay(withContributions: false), "Pay · {0}" },
         { MapGateText.Pay(withContributions: true), "Pay and contributions · {0}" },
     };
@@ -74,6 +76,19 @@ public class MapGateTextTests
         var text = Resources.Format(key, Formats.Euros(limit));
 
         LineWidth(text).ShouldBeLessThanOrEqualTo(GateRoom);
+    }
+
+    // The room inside the partner's box at the narrowest map, as the layout keeps it: its width there, 78 px,
+    // less its padding and frame (MapLayout.HouseholdRoomPixels); each line of the marital quotient fits it, its
+    // amount up to €99,999.99, far beyond the most a quotient attributes.
+    [Theory]
+    [InlineData(MapGateText.Quotient)]
+    [InlineData(MapGateText.QuotientAmount)]
+    public void HouseholdLine_withTheQuotientUpToItsLimit_fitsInsideThePartnersBox(string key)
+    {
+        var text = Resources.Format(key, Formats.Euros(99_999.99m));
+
+        (MapLayout.HouseholdRoomPixels, LineWidth(text) <= MapLayout.HouseholdRoomPixels).ShouldBe((78m - 2m * 0.35m * 16m - 2m, true));
     }
 
     // The stylesheet draws a gate's line at the size it is held to here, on one line.
