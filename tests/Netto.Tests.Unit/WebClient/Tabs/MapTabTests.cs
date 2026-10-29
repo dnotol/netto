@@ -19,7 +19,7 @@ public class MapTabTests
 {
     private static readonly RiverInputs Full = MapLinksTests.Full;
 
-    // What the tab draws, in the order it draws it: its head, the map's tools and the filter among them, the
+    // What the tab draws, in the order it draws it: its head, the map's tools and the key among them, the
     // map, the column beside it, the line of what the chosen module receives and its card.
     private static readonly string[] ToolsAndCard =
         ["</header>", "class=\"map-tab__tools\"", "map-tab__key", "class=\"map\"", "class=\"map-tab__side\"", "class=\"map-tab__receives\"", "map-tab__panel"];

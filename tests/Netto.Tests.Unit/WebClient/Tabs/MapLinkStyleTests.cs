@@ -161,7 +161,7 @@ public class MapLinkStyleTests
         Should.Throw<ArgumentOutOfRangeException>(() => MapLinkStyle.Ink((MapLinkKind)99));
     }
 
-    // The ink is the style's alone: neither the map's stylesheet nor the legend's gives a line, an
+    // The ink is the style's alone: neither the map's stylesheet nor the key's gives a line, an
     // arrowhead or a sample an ink of its own, by kind or not, so the two can never drift apart.
     [Theory]
     [InlineData("MapTab.razor.css")]
@@ -171,7 +171,7 @@ public class MapLinkStyleTests
         var css = Stylesheet.Read("src", "Netto.Web.Client", "Tabs", stylesheet);
 
         Stylesheet.Rules(css)
-            .Where(rule => Regex.IsMatch(rule.Selector, @"\.map-(line|arrow)(--[a-z-]+)?(?![\w-])|\.map-filter__swatch(?![\w-])|data-link-kind"))
+            .Where(rule => Regex.IsMatch(rule.Selector, @"\.map-(line|arrow)(--[a-z-]+)?(?![\w-])|\.map-key__(swatch|arrow|bucket)(?![\w-])|data-link-kind|data-key-line"))
             .Where(rule => Regex.IsMatch(rule.Declarations, @"(?<![\w-])(stroke|--map-arrow|color)\s*:"))
             .Select(rule => rule.Selector).ShouldBeEmpty();
     }

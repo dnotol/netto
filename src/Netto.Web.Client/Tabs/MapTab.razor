@@ -246,6 +246,10 @@
     // What the module chosen receives, which the line over its card says, none while none is chosen.
     internal MapReceivedView? Received => _received;
 
+    // What the module chosen does to another's tax base or under another's condition, the list beside its card,
+    // the item of the line under the pointer marked; none while none is chosen.
+    internal MapEffectsView? Effects => _effects;
+
     protected override void OnParametersSet()
     {
         // The map and its amounts are the run's: worked out again for another run, not for another choice.

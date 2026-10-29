@@ -15,7 +15,7 @@ public class MapKeyTextTests
     {
         var keys = MapKeyView.Lines.SelectMany(line => new[] { MapKeyText.Name(line), MapKeyText.Gloss(line) }).Append(MapKeyText.Key).Append(MapKeyText.GlossLine);
 
-        keys.Where(key => Resources.Get(key) is null).ShouldBeEmpty();
+        Resources.Missing(keys).ShouldBeEmpty();
     }
 
     [Fact]

@@ -47,7 +47,7 @@ public class MapGatesTests
 
     // The company skipped, the map draws no gate and no pill: the partner's box alone says its lines.
     [Fact]
-    public void Of_theCompanySkipped_hasNoGateAndNoPill()
+    public void Of_theCompanySkipped_hasThePartnersBoxAndNoPill()
     {
         var river = Full.SkipCompany();
 

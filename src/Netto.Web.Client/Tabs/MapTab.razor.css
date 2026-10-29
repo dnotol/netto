@@ -104,8 +104,6 @@
     font-weight: 600;
 }
 
-/* A module the line comes from: a button, as a box of the map is, at least a 24 px target. MudBlazor's
-   global rule centres a button's content, which this keeps. */
 /* Under the line of what the module chosen receives, what it does to another's tax base or under another's
    condition, and what is done to it so: an item a line, each ending on the module it names, a button; the item
    of the line under the pointer marked by a tint and an edge, nothing moving or fading in. */
@@ -137,6 +135,8 @@
     cursor: help;
 }
 
+/* A module the line comes from: a button, as a box of the map is, at least a 24 px target. MudBlazor's
+   global rule centres a button's content, which this keeps. */
 .map-tab__go {
     display: inline-flex;
     align-items: center;

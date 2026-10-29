@@ -75,6 +75,34 @@ public class PlanMapRulesTests
             () => page.Errors.ShouldBeEmpty());
     }
 
+    // The pointer over a line of the list beside the card marks its item alone; off it, none; over it again and
+    // another module chosen, none: the new module's list marks nothing until the pointer is over one of its lines.
+    [Fact]
+    public async Task Plan_thePointerOverAnEffectsLine_marksItsItemAloneUntilItLeavesOrAnotherModuleIsChosen()
+    {
+        await using var page = LivePlan.At("http://localhost/plan", new BrowserStorage(), river: MapLinksTests.Full);
+        await page.LoadAsync();
+        var map = await page.FindAsync<MapTab>();
+        await page.InvokeAsync(() => map.ChosenChanged.InvokeAsync(RiverModule.CorporateTax));
+
+        await page.SendAsync("data-effect", "1", "onmouseenter");
+        var over = Marked(map);
+        await page.SendAsync("data-effect", "1", "onmouseleave");
+        var off = Marked(map);
+        await page.SendAsync("data-effect", "1", "onmouseenter");
+        await page.InvokeAsync(() => map.ChosenChanged.InvokeAsync(RiverModule.Car));
+        var other = Marked(map);
+
+        map.ShouldSatisfyAllConditions(
+            () => over.ShouldBe("False True False False"),
+            () => off.ShouldBe("False False False False"),
+            () => other.ShouldBe("False False False"),
+            () => page.Errors.ShouldBeEmpty());
+    }
+
+    // Whether each item of the list beside the card is marked, in its order.
+    private static string Marked(MapTab map) => string.Join(' ', (map.Effects?.Items ?? []).Select(item => item.Marked));
+
     // The tax bases' and conditions' lines the tab draws.
     private static List<MapBundle> Rules(MapTab map) =>
         [.. map.DrawnLines.Select(line => line.Bundle).Where(bundle => !MapLinkStyle.IsMoney(bundle.Kind))];

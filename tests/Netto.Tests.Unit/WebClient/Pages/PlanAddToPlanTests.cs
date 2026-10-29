@@ -13,16 +13,15 @@ namespace Netto.Tests.WebClient.Pages;
 // tab's content where it does not.
 public class PlanAddToPlanTests
 {
-    // Its button is among the map's tools, after the legend, and the band holds none.
+    // Its button is among the map's tools, after the key to the lines, and the band holds none.
     [Fact]
-    public async Task Plan_onThePlanTab_drawsAddToPlanAmongTheMapsToolsAfterTheLegend()
+    public async Task Plan_onThePlanTab_drawsAddToPlanAmongTheMapsToolsAfterTheKey()
     {
         var html = await RenderPlanAsync();
 
         var tools = Regex.Match(html, "<div class=\"map-tab__tools\".*?<div class=\"map\" ", RegexOptions.Singleline).Value;
-        (Regex.Count(html, "composition__button"), tools.Contains("composition__button", StringComparison.Ordinal),
-                tools.IndexOf("map-filter", StringComparison.Ordinal) < tools.IndexOf("composition__button", StringComparison.Ordinal))
-            .ShouldBe((1, true, true));
+        var (key, button) = (tools.IndexOf("<ul class=\"map-key\"", StringComparison.Ordinal), tools.IndexOf("composition__button", StringComparison.Ordinal));
+        (Regex.Count(html, "composition__button"), key >= 0, button >= 0, key < button).ShouldBe((1, true, true, true));
     }
 
     // The other tabs draw no map, and no « Add to plan ».
