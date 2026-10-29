@@ -1,0 +1,16 @@
+/* A gate's line on the map, or the pay's pill: small, muted words on one line, at the size its width is held
+   to at the narrowest map (MapGateText.FontRem, MapGateTextTests); what reaches the viewer in gold. */
+.map-gate-words {
+    display: block;
+    color: var(--netto-text-muted);
+    font-size: 0.68rem;
+    font-weight: 500;
+    line-height: 1.15;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+.map-gate-words__amount--to-you {
+    color: var(--netto-gold);
+    font-weight: 600;
+}

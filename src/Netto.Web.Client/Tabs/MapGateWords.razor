@@ -1,0 +1,28 @@
+@inject IStringLocalizer<MapGateWords> L
+
+@* One line of a gate's box on the map, or the pay's pill: its words, with its amount among them where they
+   say it (MapGateText.Parts), formatted as the cards format it, a figure below nothing with its sign. What
+   reaches the viewer is the map's one gold; every other amount is in the words' ink. It draws the line only:
+   the box or the pill around it is the map's. *@
+<span class="map-gate-words">@if (_holdsAmount)
+{@_before<span class="@AmountClass">@_amount</span>@_after}
+else
+{@_before}</span>
+
+@code {
+    [Parameter, EditorRequired]
+    public MapGateLine Line { get; set; } = default!;
+
+    private string _before = "";
+    private string _after = "";
+    private bool _holdsAmount;
+    private string _amount = "";
+
+    private string AmountClass => Line.ToYou ? "map-gate-words__amount map-gate-words__amount--to-you" : "map-gate-words__amount";
+
+    protected override void OnParametersSet()
+    {
+        (_before, _after, _holdsAmount) = MapGateText.Parts(L[Line.Key].Value);
+        _amount = Line.Amount is { } amount ? Formats.Euros(amount) : "";
+    }
+}
