@@ -51,6 +51,7 @@ body {
   margin: 0 auto;
   padding: 40px 16px 64px;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 40px;
 }
 .atlas-page > header { display: grid; gap: 10px; }
@@ -62,8 +63,10 @@ p { margin: 0; max-width: 70ch; }
 .lede { color: var(--ink-2); font-size: 17px; }
 .atlas-meta { display: flex; flex-wrap: wrap; gap: 6px 18px; font: 13px/1.4 var(--mono); color: var(--ink-3); }
 .atlas-meta b { color: var(--ink); font-weight: 500; }
-section { display: grid; gap: 14px; min-width: 0; }
-code { font: .9em var(--mono); background: var(--raised); padding: 1px 5px; border-radius: 4px; }
+section { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; min-width: 0; }
+/* Long code names wrap anywhere, so a page never scrolls sideways at phone width. */
+code { font: .9em var(--mono); background: var(--raised); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere; }
+td code { overflow-wrap: normal; }
 a { color: var(--accent); text-underline-offset: 2px; }
 a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .note { color: var(--ink-2); font-size: 14px; }
@@ -83,6 +86,7 @@ tr:last-child td { border-bottom: 0; }
   border-radius: 12px;
   padding: 16px;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 14px;
   min-width: 0;
 }
@@ -104,7 +108,7 @@ tr:last-child td { border-bottom: 0; }
 }
 .atlas-button:disabled { opacity: .45; cursor: default; }
 .atlas-step-status { font-family: var(--mono); color: var(--ink-3); }
-.atlas-step-caption { flex-basis: 100%; color: var(--ink); font-size: 14px; border-left: 3px solid var(--accent); padding-left: 10px; }
+.atlas-step-caption { flex-basis: 100%; min-width: 0; overflow-wrap: anywhere; color: var(--ink); font-size: 14px; border-left: 3px solid var(--accent); padding-left: 10px; }
 .atlas-timeline { display: inline-flex; gap: 8px; align-items: center; }
 .atlas-timeline-name { font-weight: 600; }
 .atlas-timeline-date { font-family: var(--mono); }

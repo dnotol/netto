@@ -63,14 +63,14 @@
 
       <ol class="atlas-steps">
         <li>The field, a <code>RiverNumericField</code> (a <code>MudNumericField</code>), raises <code>ValueChanged</code> after 400 ms of quiet; a field marked <code>TakenOnLeaving</code> raises it on losing focus instead.</li>
-        <li>The card calls <code>InputsChanged.<wbr>InvokeAsync(<wbr>Inputs.<wbr>WithRevenue(<wbr>revenue))</code>: a new record whose value has the origin <code>Yours</code>. It bubbles through <code>MapPanel</code> and <code>MapTab</code> to <code>Plan.OnInputsChanged</code>.</li>
+        <li>The card calls <code>InputsChanged.InvokeAsync(Inputs.WithRevenue(revenue))</code>: a new record whose value has the origin <code>Yours</code>. It bubbles through <code>MapPanel</code> and <code>MapTab</code> to <code>Plan.OnInputsChanged</code>.</li>
         <li>The page notes a module added or taken out, keeps the inputs in <code>RiverState</code> (in memory only) and calls <code>Show</code>, which calls <code>inputs.Run()</code>.</li>
         <li><code>Run()</code> builds the <code>Scenario</code> at the pay the company can pay (<code>PayUsed</code>, held under <code>PayCeiling</code>) and calls <code>YearSimulation.Run</code>; with the company year skipped it calls <code>GrossToNet.Compute</code> alone.</li>
         <li>The engine returns the year or the first <code>Refusal</code>; <code>Run()</code> wraps them as a <code>RiverRun(Pay, Year, Error)</code>, which the page keeps.</li>
         <li>Unless the new inputs are the same besides the pay (<code>SameBesidesPay</code>), the page runs the split's search again, the curve of the pocket at every pay.</li>
         <li>On the next render the one run flows down as parameters: <code>BucketBar</code> rebuilds <code>BucketsView</code> and the gain over Today, <code>MapTab</code> rebuilds <code>MapView</code>, and the pinned card its figures.</li>
         <li>A refusal goes to one card only: <code>RiverErrors.Owner</code> maps its <code>RefusedInput</code> to a module, that card marks the field and shows <code>RefusedMessage</code>, and the map marks the module.</li>
-        <li>The bar announces what reaches the pocket in its live region, once changes have settled for 800 ms (<code>BucketBarAnnouncement.<wbr>Settle</code>); the first run is not announced.</li>
+        <li>The bar announces what reaches the pocket in its live region, once changes have settled for 800 ms (<code>BucketBarAnnouncement.Settle</code>); the first run is not announced.</li>
       </ol>
     </figure>
   </section>
@@ -78,7 +78,7 @@
   <section aria-labelledby="h-not">
     <h2 id="h-not">What an edit does not do</h2>
     <ul>
-      <li><strong>It saves nothing.</strong> <code>RiverState</code> holds the inputs in memory; only the Plans panel writes to storage. The panel's « unsaved changes » dot reacts at once (<code>SavedPlans.<wbr>HasUnsavedChanges</code>). See <a href="save-and-reopen.html">how a plan is saved</a>.</li>
+      <li><strong>It saves nothing.</strong> <code>RiverState</code> holds the inputs in memory; only the Plans panel writes to storage. The panel's « unsaved changes » dot reacts at once (<code>SavedPlans.HasUnsavedChanges</code>). See <a href="save-and-reopen.html">how a plan is saved</a>.</li>
       <li><strong>It does not search the moves.</strong> The Optimisation tab's moves are measured from a baseline that an edit does not change, so <code>MovesSource</code> has nothing to search. See <a href="optimisation-moves.html">how the moves are found</a> and <a href="decisions/2026-10-23-moves-searched-once-per-baseline-after-paint.md">the decision</a>.</li>
       <li><strong>It computes no tax in the page.</strong> Every figure on the bar, map and card comes from the engine's run: <a href="decisions/2026-10-19-one-year-simulation-in-the-laws-order.md">one year simulation</a>, <a href="decisions/2026-10-25-map-lines-read-from-the-cards.md">map lines read from the cards</a>.</li>
     </ul>
@@ -91,8 +91,8 @@
       <table>
         <thead><tr><th>Setting</th><th>Value</th><th>Where</th></tr></thead>
         <tbody>
-          <tr><td>Field debounce</td><td>400 ms, or on losing focus with <code>TakenOnLeaving</code> (the split's pay, the dividend, two car fields)</td><td><code>River/RiverNumericField.<wbr>cs</code></td></tr>
-          <tr><td>Announcement settle</td><td>800 ms</td><td><code>River/BucketBarAnnouncement.<wbr>cs</code></td></tr>
+          <tr><td>Field debounce</td><td>400 ms, or on losing focus with <code>TakenOnLeaving</code> (the split's pay, the dividend, two car fields)</td><td><code>River/RiverNumericField.cs</code></td></tr>
+          <tr><td>Announcement settle</td><td>800 ms</td><td><code>River/BucketBarAnnouncement.cs</code></td></tr>
           <tr><td>Origins</td><td><code>Example</code>, <code>None</code>, <code>Default</code>, <code>Derived</code>, <code>Yours</code>; no chip for <code>None</code></td><td><code>River/InputOrigin.cs</code> · <a href="decisions/2026-10-19-defaults-for-rates-never-for-money.md">decision</a></td></tr>
         </tbody>
       </table>

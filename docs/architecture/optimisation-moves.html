@@ -60,9 +60,9 @@
       <figcaption>Each column is a part, each arrow a call or a value handed back, top to bottom in time. Dashed border: the browser, outside Netto's code.</figcaption>
 
       <ol class="atlas-steps">
-        <li>After each render <code>Plan.<wbr>OnAfterRenderAsync</code> calls <code>MovesSource.<wbr>SearchOncePaintedAsync(<wbr>today, …)</code>. It returns at once when this baseline and date already have a result, or the plan starts at the pay (no company year).</li>
+        <li>After each render <code>Plan.OnAfterRenderAsync</code> calls <code>MovesSource.SearchOncePaintedAsync(today, …)</code>. It returns at once when this baseline and date already have a result, or the plan starts at the pay (no company year).</li>
         <li>Otherwise it waits for the browser to paint (<code>plan-paint.js</code>: a frame, then a task), so the bar and the tab's « … » badge show before the page's one thread runs the search.</li>
-        <li>It reads the baseline again and calls <code>RiverInputs.<wbr>FindMoves(<wbr>date)</code>, which runs <code>MoveSearch.Run</code> on <code>MoveScenario()</code>: a module out of the plan keeps its facts with an amount of zero, so a finder can propose it.</li>
+        <li>It reads the baseline again and calls <code>RiverInputs.FindMoves(date)</code>, which runs <code>MoveSearch.Run</code> on <code>MoveScenario()</code>: a module out of the plan keeps its facts with an amount of zero, so a finder can propose it.</li>
         <li>Each round, each finder proposes its best move from where the plan stands; the move is applied to the scenario and the year run. A candidate must run without refusal and keep the reserve; the largest gain of at least €1 wins, a tie going to the earlier finder. A move of a kind already taken replaces its line, the gains added. The pay finder runs <code>SplitSearch</code>.</li>
         <li>The result, a <code>MovePlan</code> (the pocket before, each move with its gain, the pocket after), is kept by <code>MovesSource</code> for that baseline and date.</li>
         <li>The page redraws: the tab's badge shows the gain, and <code>OptimisationTab</code> builds <code>MovesView</code>, each move with why it helps (<code>MoveReasons</code>), a link to its card (<code>MoveLinks</code>) and whether it is applied.</li>
@@ -78,8 +78,8 @@
         <thead><tr><th>Move</th><th>Finder</th><th>Proposes</th></tr></thead>
         <tbody>
           <tr><td><code>PayMove</code></td><td><code>SplitMoveFinder</code></td><td>The split's best pay, when it is not the pay held</td></tr>
-          <tr><td><code>CompanyAdvancePaymentMove</code></td><td><code>CompanyAdvancePaymentFinder(<wbr>date)</code></td><td>What more by the first open deadline cancels the company's surcharge</td></tr>
-          <tr><td><code>DirectorAdvancePaymentMove</code></td><td><code>DirectorAdvancePaymentFinder(<wbr>date)</code></td><td>What more by the first open deadline leaves none due on the director's tax</td></tr>
+          <tr><td><code>CompanyAdvancePaymentMove</code></td><td><code>CompanyAdvancePaymentFinder(date)</code></td><td>What more by the first open deadline cancels the company's surcharge</td></tr>
+          <tr><td><code>DirectorAdvancePaymentMove</code></td><td><code>DirectorAdvancePaymentFinder(date)</code></td><td>What more by the first open deadline leaves none due on the director's tax</td></tr>
           <tr><td><code>EcoVouchersMove</code></td><td><code>EcoVouchersFinder</code></td><td>Eco vouchers at their yearly maximum</td></tr>
           <tr><td><code>SportCultureVouchersMove</code></td><td><code>SportCultureVouchersFinder</code></td><td>Sport and culture vouchers at their yearly maximum</td></tr>
           <tr><td><code>RentMove</code></td><td><code>RentFinder</code></td><td>The home office rent at its cap, once the home's facts are given</td></tr>
@@ -87,7 +87,7 @@
         </tbody>
       </table>
     </div>
-    <p class="note">The payment finders read the first deadline still open on the browser's date, <code>PaymentCalendar.<wbr>Of(<wbr>year, date)</code>. A new kind of move is a <code>Move</code>, its finder, and its arm in each switch that throws on a kind it does not name: <code>MovesView.Applied</code>, <code>MovesView.Apply</code>, <code>MoveReasons.What</code>, <code>MoveLinks.To</code>, <code>OptimisationTabText.<wbr>Move</code> and <code>MoveArguments</code>; what it sets goes in <code>RiverDifferences</code>.</p>
+    <p class="note">The payment finders read the first deadline still open on the browser's date, <code>PaymentCalendar.Of(year, date)</code>. A new kind of move is a <code>Move</code>, its finder, and its arm in each switch that throws on a kind it does not name: <code>MovesView.Applied</code>, <code>MovesView.Apply</code>, <code>MoveReasons.What</code>, <code>MoveLinks.To</code>, <code>OptimisationTabText.Move</code> and <code>MoveArguments</code>; what it sets goes in <code>RiverDifferences</code>.</p>
   </section>
 
   <section aria-labelledby="h-settings">
@@ -96,8 +96,8 @@
       <table>
         <thead><tr><th>Setting</th><th>Value</th><th>Where</th></tr></thead>
         <tbody>
-          <tr><td>Smallest gain taken</td><td>€1</td><td><code>MoveSearch.<wbr>SmallestGain</code></td></tr>
-          <tr><td>Rounds</td><td>10 at most</td><td><code>MoveSearch.<wbr>MaximumRounds</code></td></tr>
+          <tr><td>Smallest gain taken</td><td>€1</td><td><code>MoveSearch.SmallestGain</code></td></tr>
+          <tr><td>Rounds</td><td>10 at most</td><td><code>MoveSearch.MaximumRounds</code></td></tr>
           <tr><td>The split's grid</td><td>at most 100 steps, refined to the euro; the pay keeping the reduced rate probed exactly</td><td><code>SplitSearch</code></td></tr>
           <tr><td>The date</td><td>the browser's local date</td><td><code>TimeProvider</code>, <code>Plan.Today</code></td></tr>
         </tbody>

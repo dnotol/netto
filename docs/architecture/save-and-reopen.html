@@ -81,7 +81,7 @@
 
   <section aria-labelledby="h-shape">
     <h2 id="h-shape">The stored document</h2>
-    <p><code>{"version":<wbr>9,<wbr>"today":<wbr>id,<wbr>"opened":<wbr>id,<wbr>"plans":<wbr>[{"id",<wbr>"name",<wbr>"inputs":<wbr>{…}}]<wbr>}</code>, written by a source-generated serializer (camelCase, string enums, unmapped members refused). Each leaf of <code>inputs</code> is <code>{"value":<wbr>…,<wbr>"origin":<wbr>"Example|<wbr>Default|<wbr>Yours"}</code>; the municipality is stored by its INS code and rate. Plans store no region: every plan is read as Walloon.</p>
+    <p><code>{"version":9,"today":id,"opened":id,"plans":[{"id","name","inputs":{…}}]}</code>, written by a source-generated serializer (camelCase, string enums, unmapped members refused). Each leaf of <code>inputs</code> is <code>{"value":…,"origin":"Example|Default|Yours"}</code>; the municipality is stored by its INS code and rate. Plans store no region: every plan is read as Walloon.</p>
     <div class="atlas-table">
       <table>
         <thead><tr><th>Key</th><th>Holds</th><th>Owner</th></tr></thead>
@@ -89,7 +89,7 @@
           <tr><td><code>netto.plans</code></td><td>The book of saved plans</td><td><code>PlanStorage.Key</code></td></tr>
           <tr><td><code>netto.plans.unreadable</code></td><td>The last document Netto could not read</td><td><code>PlanStorage</code></td></tr>
           <tr><td><code>netto.folds</code></td><td>Which folds of the cards are open</td><td><code>River/Folds.cs</code></td></tr>
-          <tr><td><code>netto.theme</code></td><td>The theme picked; <code>theme.js</code> reads it before anything paints</td><td><code>Layout/ThemePreference.<wbr>cs</code></td></tr>
+          <tr><td><code>netto.theme</code></td><td>The theme picked; <code>theme.js</code> reads it before anything paints</td><td><code>Layout/ThemePreference.cs</code></td></tr>
           <tr><td><code>netto.map.lines</code></td><td>Which kinds of map line are hidden</td><td><code>Tabs/MapLinkFilter.cs</code></td></tr>
         </tbody>
       </table>
@@ -120,7 +120,7 @@
   <section aria-labelledby="h-file">
     <h2 id="h-file">Export and import</h2>
     <ul>
-      <li><strong>Export</strong> writes <code>SavedPlans.Export()</code>, the same document as <code>netto.plans</code>, to <code>netto-plans-&lt;date&gt;.<wbr>json</code> through <code>plan-file.js</code> (a Blob and a temporary download link).</li>
+      <li><strong>Export</strong> writes <code>SavedPlans.Export()</code>, the same document as <code>netto.plans</code>, to <code>netto-plans-&lt;date&gt;.json</code> through <code>plan-file.js</code> (a Blob and a temporary download link).</li>
       <li><strong>Import</strong> reads a file of up to 1 MB through Blazor's <code>InputFile</code> and the same <code>PlanStorage.Read</code>, so a file of any version is patched. Readable plans are added with new ids; the file's Today is starred only if none is; unreadable plans are skipped and counted.</li>
     </ul>
     <p class="note">Known gaps, read from the code: the unreadable copy happens at each start-up into one slot, and nothing reads it back; an unreadable older plan is written back inside a version 9 document, so a later build could not patch it.</p>
