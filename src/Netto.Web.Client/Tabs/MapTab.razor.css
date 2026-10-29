@@ -106,6 +106,37 @@
 
 /* A module the line comes from: a button, as a box of the map is, at least a 24 px target. MudBlazor's
    global rule centres a button's content, which this keeps. */
+/* Under the line of what the module chosen receives, what it does to another's tax base or under another's
+   condition, and what is done to it so: an item a line, each ending on the module it names, a button; the item
+   of the line under the pointer marked by a tint and an edge, nothing moving or fading in. */
+.map-tab__effects {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    margin: -0.4rem 0 0.75rem;
+    padding: 0;
+    list-style: none;
+    color: var(--netto-text-muted);
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+
+.map-tab__effect {
+    padding: 0.1rem 0.3rem;
+    border-radius: 4px;
+}
+
+.map-tab__effect--marked {
+    background-color: var(--netto-tint);
+    box-shadow: inset 2px 0 0 var(--netto-line-input);
+    color: var(--netto-text);
+}
+
+/* A line of the list on the map says its sentence as its title under the pointer. */
+.map-effect {
+    cursor: help;
+}
+
 .map-tab__go {
     display: inline-flex;
     align-items: center;

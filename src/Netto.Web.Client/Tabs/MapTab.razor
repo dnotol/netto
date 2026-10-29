@@ -103,9 +103,14 @@
                 <svg class="map__lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false">
                     @foreach (var (bundle, faded) in _drawn)
                     {
-                        <polyline class="@HaloClass(faded)" points="@Points(bundle.Route.Drawn)" stroke-width="@MapLinkStyle.Halo(bundle.Route.Width)" />
-                        <polyline class="@LineClass(faded)" points="@Points(bundle.Route.Drawn)" stroke-dasharray="@MapLinkStyle.Dash(bundle.Kind)"
-                                  stroke-width="@MapLinkStyle.Width(bundle.Route.Width)" data-link-kind="@bundle.Kind" style="stroke: @Ink(bundle)" />
+                        if (EffectOf(bundle) is { } effect)
+                        {
+                            <g class="map-effect" data-effect="@effect.Index" @onmouseenter="() => Mark(bundle.Route)" @onmouseleave="() => Mark(null)"><title>@EffectSentence(effect.Item)</title>@Line(bundle, faded)</g>
+                        }
+                        else
+                        {
+                            @Line(bundle, faded)
+                        }
                     }
                 </svg>
                 @foreach (var (bundle, faded) in _drawn.Where(line => line.Bundle.Arrowhead))
@@ -157,6 +162,15 @@
                     <span class="map-tab__received">@L["ReceivedFrom", line.Amount] @ReceivedEnd(line)</span>
                 }
             </p>
+        }
+        @if (_effects is { Items.Count: > 0 } effects)
+        {
+            <ul class="map-tab__effects" aria-label="@L[MapEffectText.Effects]">
+                @foreach (var (effect, index) in effects.Items.Select((item, index) => (item, index)))
+                {
+                    <li class="@EffectClass(effect)" data-effect="@index">@EffectWords(effect) <button type="button" class="map-tab__go" data-effect-on="@MapModules.Name(effect.Other)" @onclick="() => ChooseAsync(effect.Other)">@L[MapTabText.Module(effect.Other)]</button></li>
+                }
+            </ul>
         }
         <div class="map-tab__panel">
             <MapPanel Module="_chosen" ViewerChose="ViewerChose" Inputs="Inputs" InputsChanged="InputsChanged" Run="Run" Search="Search" Refused="ChosenRefusal" />
@@ -212,6 +226,11 @@
     private (RiverInputs Inputs, RiverRun Run)? _mapped;
     private RiverModule? _chosen;
     private MapReceivedView? _received;
+
+    // What the module chosen does to another's tax base or under another's condition, and what is done to it so,
+    // a line each (MapEffectsView), the one under the viewer's pointer marked; none while none is chosen.
+    private MapEffectsView? _allEffects;
+    private MapEffectsView? _effects;
     private IReadOnlyList<(MapBundle Bundle, bool Faded)> _drawn = [];
     private IReadOnlyList<MapAmount> _amounts = [];
     private readonly Dictionary<MapText, IStringLocalizer> _texts = [];
@@ -245,7 +264,42 @@
 
         // Made from every link of the run, whatever the choice draws.
         _received = _chosen is { } chosen ? MapReceivedView.Of(_full, chosen, EndName) : null;
+        _allEffects = _chosen is { } module ? MapEffectsView.Of(_full, module) : null;
+        _effects = _allEffects;
     }
+
+    // The pointer over a line of the list's, or off it: its item marked, or none.
+    private void Mark(MapRoute? route) => _effects = _allEffects?.Marking(route);
+
+    // The item of the list a line drawn is, and its number, none for a line the list does not hold.
+    private (int Index, MapEffect Item)? EffectOf(MapBundle bundle)
+    {
+        if (_effects is not { } effects)
+            return null;
+        for (var index = 0; index < effects.Items.Count; index++)
+        {
+            if (ReferenceEquals(effects.Items[index].Route, bundle.Route))
+                return (index, effects.Items[index]);
+        }
+
+        return null;
+    }
+
+    // An item's words, up to the other module, which its button names: a condition's rule and its word, a tax
+    // base's card lines and its amount.
+    private string EffectWords(MapEffect effect) => effect.Rule is { } rule
+        ? L[effect.Key, Carries(rule), effect.State is { } state ? Carries(state) : ""].Value
+        : L[effect.Key, string.Join(", ", effect.What.Select(Carries)), effect.Amount ?? ""].Value;
+
+    // An item's whole sentence, the other module named last, as the title of its line on the map.
+    private string EffectSentence(MapEffect effect) => $"{EffectWords(effect)} {L[MapTabText.Module(effect.Other)].Value}";
+
+    private static string EffectClass(MapEffect effect) => $"map-tab__effect{(effect.Marked ? " map-tab__effect--marked" : "")}";
+
+    // A line drawn: its halo of the map's ground, then the line itself in its kind's ink.
+    private RenderFragment Line(MapBundle bundle, bool faded) =>
+        @<text><polyline class="@HaloClass(faded)" points="@Points(bundle.Route.Drawn)" stroke-width="@MapLinkStyle.Halo(bundle.Route.Width)" /><polyline class="@LineClass(faded)" points="@Points(bundle.Route.Drawn)" stroke-dasharray="@MapLinkStyle.Dash(bundle.Kind)" stroke-width="@MapLinkStyle.Width(bundle.Route.Width)" data-link-kind="@bundle.Kind" style="stroke: @Ink(bundle)" /></text>;
+
 
 
     // A module chosen again lets it go.

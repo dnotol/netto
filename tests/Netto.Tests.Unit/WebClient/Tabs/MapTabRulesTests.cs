@@ -118,6 +118,63 @@ public class MapTabRulesTests
         Regex.IsMatch(html, "aria-live|role=\"(status|alert)\"").ShouldBeFalse();
     }
 
+    // A module chosen: under the line of what it receives, Corporate tax's here, the car receiving nothing it says,
+    // a list of what it does to another's tax base or under
+    // another's condition, and what is done to it so, an item for each line of a tax base or a condition drawn for
+    // it, each a sentence ending on the other module, a button to go to it; named for a screen reader.
+    [Fact]
+    public async Task Tab_aModuleChosen_listsItsEffectsUnderWhatItReceives()
+    {
+        var view = MapView.From(Full, Full.Run());
+        var effects = MapEffectsView.Of(view, RiverModule.Car).Items;
+        var benefit = MapViewTests.Line(view, MapEnd.Of(RiverModule.Car), MapEnd.Of(RiverModule.DirectorPay));
+
+        var html = await RenderTabAsync(Full, RiverModule.Car);
+        var corporate = await RenderTabAsync(Full, RiverModule.CorporateTax);
+
+        var (receives, list, panel) = (corporate.IndexOf("class=\"map-tab__receives\"", StringComparison.Ordinal),
+            corporate.IndexOf("<ul class=\"map-tab__effects\" aria-label=\"Effects\"", StringComparison.Ordinal), corporate.IndexOf("class=\"map-tab__panel\"", StringComparison.Ordinal));
+        html.ShouldSatisfyAllConditions(
+            () => (receives > 0, receives < list, list < panel).ShouldBe((true, true, true)),
+            () => Effects(html).Count.ShouldBe(effects.Count),
+            () => Effects(html).Select(effect => effect.Module).ShouldBe(effects.Select(effect => MapModules.Name(effect.Other))),
+            () => Effects(html).ShouldContain(effect => effect.Text == $"Taxed as your pay: +{Formats.Euros(benefit.Amount!.Value)} to the tax base of Director pay"),
+            () => Effects(html).ShouldContain(effect => effect.Text.StartsWith("Benefits within their share of the pay: ", StringComparison.Ordinal) && effect.Text.EndsWith(", on Corporate tax", StringComparison.Ordinal)));
+    }
+
+    // Nothing chosen, or a module with no tax base's or condition's line chosen, there is no list.
+    [Theory]
+    [InlineData(null)]
+    [InlineData(RiverModule.CompanyYear)]
+    public async Task Tab_nothingOrAModuleWithNoEffectChosen_listsNone(RiverModule? chosen)
+    {
+        var html = await RenderTabAsync(Full, chosen);
+
+        html.ShouldNotContain("map-tab__effects");
+    }
+
+    // Each line of the list is drawn in a group of its own on the map, saying its sentence as its title, so the
+    // pointer over the line shows it; the group and the list's item share their number.
+    [Fact]
+    public async Task Tab_anEffectsLine_saysItsSentenceAsItsTitle()
+    {
+        var html = await RenderTabAsync(Full, RiverModule.CorporateTax);
+
+        var titles = Regex.Matches(html, "<g class=\"map-effect\" data-effect=\"(\\d+)\"[^>]*><title[^>]*>([^<]*)</title><polyline [^>]*>(?:</polyline>)?<polyline [^>]*data-link-kind=\"(TaxBase|Condition)\"")
+            .Select(match => (int.Parse(match.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture), match.Groups[2].Value)).ToList();
+        titles.ShouldSatisfyAllConditions(
+            () => titles.ShouldNotBeEmpty(),
+            () => titles.ShouldBe(Effects(html).Select((effect, index) => (index, effect.Text))));
+    }
+
+    // Each item of the list a rendered tab draws, by its number: its text as a viewer reads it and the module its
+    // button goes to.
+    private static List<(string Text, string Module)> Effects(string html) =>
+    [
+        .. Regex.Matches(html, "<li class=\"map-tab__effect[^\"]*\" data-effect=\"\\d+\"[^>]*>(.*?)</li>", RegexOptions.Singleline).Select(match =>
+            (MapReceivedHtml.Text(match.Groups[1].Value), Regex.Match(match.Groups[1].Value, "data-effect-on=\"([a-z-]+)\"").Groups[1].Value)),
+    ];
+
     internal static List<string> LineKinds(string html) =>
         [.. Regex.Matches(html, "<polyline [^>]*data-link-kind=\"(\\w+)\"[^>]*>").Select(match => match.Groups[1].Value)];
 

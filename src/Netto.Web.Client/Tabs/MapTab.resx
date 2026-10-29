@@ -85,6 +85,36 @@
   <data name="ReceivedBetween" xml:space="preserve">
     <value>·</value>
   </data>
+  <data name="Effects" xml:space="preserve">
+    <value>Effects</value>
+  </data>
+  <data name="Effect_TaxBaseOf" xml:space="preserve">
+    <value>{0}: {1} to the tax base of</value>
+  </data>
+  <data name="Effect_TaxBaseFrom" xml:space="preserve">
+    <value>{0}: {1} to its tax base, from</value>
+  </data>
+  <data name="Effect_ConditionOn" xml:space="preserve">
+    <value>{0}: {1}, on</value>
+  </data>
+  <data name="Effect_ConditionFrom" xml:space="preserve">
+    <value>{0}: {1}, set by</value>
+  </data>
+  <data name="Rule_NoOfficeAllowanceBesideRent" xml:space="preserve">
+    <value>No office allowance beside a rent</value>
+  </data>
+  <data name="Rule_PayKeepsReducedRate" xml:space="preserve">
+    <value>Pay keeps the reduced rate</value>
+  </data>
+  <data name="Rule_BenefitsWithinShareOfPay" xml:space="preserve">
+    <value>Benefits within their share of the pay</value>
+  </data>
+  <data name="Rule_RoyaltyLowersPay" xml:space="preserve">
+    <value>Royalty lowers the pay keeping the rate</value>
+  </data>
+  <data name="Rule_PayOutCoversReserve" xml:space="preserve">
+    <value>Pay-out covers the reserve</value>
+  </data>
   <data name="State_Met" xml:space="preserve">
     <value>met</value>
   </data>
