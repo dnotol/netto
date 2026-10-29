@@ -39,6 +39,16 @@ public class MapFilterTextTests
         Resources.Format(MapFilterText.GlossLine, "Tax base", "what changes a tax base").ShouldBe("Tax base: what changes a tax base");
     }
 
+    // Money into a bucket says what runs into it, what comes back out of it, and what the gold line down the
+    // director's column says, which nothing else on the map explains.
+    [Fact]
+    public void Gloss_moneyIntoABucket_saysWhatThePocketLineSays()
+    {
+        Resources.Get(MapFilterText.Gloss(MapLinkKind.IntoBucket)).ShouldBe(
+            "money that ends in one of the bar's buckets, its line running into it, or that comes back out of a bucket, its line then ending in an arrowhead. "
+            + "The thicker the line, the more money. The gold line down your column says, after each line joining it, what has reached you so far.");
+    }
+
     [Fact]
     public void Count_noneOneAndMany_saysHowManyLinksThePlanHasOfAKind()
     {

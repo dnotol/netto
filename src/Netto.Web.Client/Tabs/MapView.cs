@@ -50,14 +50,16 @@ internal sealed record MapView(IReadOnlyList<MapNode> Modules, IReadOnlyList<Map
         // with the company skipped, has none. The levers they leave moving no money of their own are quiet
         // (MapQuiet), the company's line folded past every point of it where nothing leaves it or joins it.
         // The conditions and the tax bases mark the modules they reach with badges (MapBadges), lines of their
-        // boxes; what each gate says is a line of its box too (MapGates).
+        // boxes; what each gate says is a line of its box too (MapGates). What reaches the pocket is drawn into
+        // one line down the director's column (MapPocketLine), and the amounts the map says elsewhere are marked
+        // unsaid on their lines.
         IReadOnlyList<MapLink> links =
             [.. MapLinks.Of(inputs, run), .. run.Year is { } year ? MapConditions.From(YearConditions.Of(year), modules) : []];
         var quiet = MapQuiet.Of(run, modules, links, MapQuiet.Holding(inputs));
         var badges = MapBadges.Of(links);
         var gates = MapGates.Of(inputs, run);
         var grid = MapLayout.Grid(modules, quiet, MapBadges.Lines(badges), modules.ToDictionary(module => module, module => gates.For(module).Count));
-        var routed = MapLayout.Routed(grid, SaidElsewhere(MapQuiet.Fold(links), gates));
+        var routed = MapLayout.Routed(grid, SaidElsewhere(MapPocketLine.Of(MapQuiet.Fold(links)), gates));
         var pay = routed.FirstOrDefault(link => link.Kind == MapLinkKind.PassedOn && link.From == MapEnd.Of(RiverModule.Split) && link.To == MapEnd.Of(RiverModule.DirectorPay));
 
         return new MapView(
@@ -81,22 +83,33 @@ internal sealed record MapView(IReadOnlyList<MapNode> Modules, IReadOnlyList<Map
         };
     }
 
-    // The links with their amounts marked unsaid where the map says them elsewhere (MapLink.Unsaid): a gate's
-    // line into the pocket, its box saying it; the pay, its pill saying it; what Corporate tax adds back, its
-    // badge saying it; and money passed on into a gate whose box says that very amount, to the cent, each line's
-    // the sum of its links (MapBundle.Sum): a lever's share off the company's line, the split's royalty, what
-    // Corporate tax passes the dividend, which keeps its own where the dividend's box says another or none.
+    // The links with their amounts marked unsaid where the map says them elsewhere (MapLink.Unsaid): a line
+    // joining the pocket line, its gate's box or the total under it saying it; the pay, its pill saying it; what
+    // Corporate tax adds back, its badge saying it; money passed on into a gate whose box says that very amount,
+    // to the cent, each line's the sum of its links (MapBundle.Sum): a lever's share off the company's line, the
+    // split's royalty, what Corporate tax passes the dividend, which keeps its own where the dividend's box says
+    // another or none; and a stretch of the pocket line out of a point where money only leaves it, which the
+    // next total under a join says, or below nothing, which says no total (MapPocketLine).
     private static IReadOnlyList<MapLink> SaidElsewhere(IReadOnlyList<MapLink> links, MapGates gates)
     {
         var amounts = links.GroupBy(link => (link.From, link.To, link.Kind)).ToDictionary(line => line.Key, line => MapBundle.Sum(line));
-        return [.. links.Select(link => Unsaid(link, amounts[(link.From, link.To, link.Kind)], gates) ? link with { Unsaid = true } : link)];
+        var joined = links.Where(Joins).Select(link => link.To).ToHashSet();
+        return [.. links.Select(link => Unsaid(link, amounts[(link.From, link.To, link.Kind)], gates, joined) ? link with { Unsaid = true } : link)];
     }
 
-    private static bool Unsaid(MapLink link, decimal amount, MapGates gates) =>
-        (link.To.Bucket == "pocket" && link.From.Module is { } gate && MapLayout.Place(gate).Column == MapColumn.Gates)
+    private static bool Unsaid(MapLink link, decimal amount, MapGates gates, HashSet<MapEnd> joined) =>
+        Joins(link)
         || (link.Kind == MapLinkKind.PassedOn && link.From == MapEnd.Of(RiverModule.Split) && link.To == MapEnd.Of(RiverModule.DirectorPay))
         || (link.Kind == MapLinkKind.TaxBase && link.To == MapEnd.Of(RiverModule.CorporateTax))
-        || (link.Kind == MapLinkKind.PassedOn && link.To.Module is { } into && gates.Says(into, amount));
+        || (link.Kind == MapLinkKind.PassedOn && link.To.Module is { } into && gates.Says(into, amount))
+        || (StretchOfThePocketLine(link) && (!joined.Contains(link.From) || amount < 0m));
+
+    // A line joining the pocket line: from a module into its point.
+    private static bool Joins(MapLink link) => link.To.PocketLine is not null && link.From.PocketLine is null;
+
+    // A stretch of the pocket line: from a point of it to the next, or into the pocket.
+    private static bool StretchOfThePocketLine(MapLink link) => link.From.PocketLine is not null && (link.To.PocketLine is not null || link.To.Bucket == "pocket");
+
 
     // The modules the map draws, in the river's order: the cards the river draws with figures, an
     // optional module only while it is in the plan, as the Plan page draws them (Pages/Plan); with the
@@ -257,7 +270,7 @@ internal static class MapLinkStyle
 
     // The ink a kind's lines, their arrowheads and the legend's sample of them are drawn in, the one place
     // it is set: money passed on the strongest, money into a bucket and a tax base lighter, a condition
-    // muted, each a token of both themes. What reaches the pocket is the map's one gold.
+    // muted, each a token of both themes. What reaches the pocket, the pocket line, is the map's one gold.
     public static string Ink(MapLinkKind kind) => kind switch
     {
         MapLinkKind.PassedOn => "var(--netto-data-strong)",

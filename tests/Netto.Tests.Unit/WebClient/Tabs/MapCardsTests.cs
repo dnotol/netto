@@ -11,7 +11,9 @@ namespace Netto.Tests.WebClient.Tabs;
 // sum of the card's figures between the same two ends and of one kind (MapBundle.Amount): each link's
 // amount is read off the Plan page drawn with every card open, among the lines of that card, or in its
 // summary for what Company year hands on. The sign a drain list draws (−, +) says which way the money
-// goes, which the map's arrow says instead.
+// goes, which the map's arrow says instead. The one line no card draws is the pocket line's: each stretch
+// what has reached the director so far, the sum of the lines joining it above less those leaving it, each a
+// line its card draws, and its last the pocket the bar says.
 public class MapCardsTests
 {
     public static TheoryData<string> Rivers => new()
@@ -41,7 +43,7 @@ public class MapCardsTests
     public async Task View_everyLinesAmount_isAFigureItsCardDrawsOrTheSumOfThem(string name)
     {
         var river = MapRendering.River(name);
-        var lines = MapView.From(river, river.Run()).Bundles().Where(line => line.Amount is not null).ToList();
+        var lines = MapView.From(river, river.Run()).Bundles().Where(line => line.Amount is not null && !StretchOfThePocketLine(line)).ToList();
 
         var html = await CardHtml.RenderCardsOpenAsync(river);
 
@@ -51,7 +53,32 @@ public class MapCardsTests
                 .Select(line => $"{line.Card} {line.From.Id} to {line.To.Id} {Formats.Euros(line.Amount!.Value)}").ShouldBeEmpty());
     }
 
+    // Each stretch of the pocket line carries what has reached the director at its top: every line joining the
+    // line there or above, less every line leaving it there or above, where they meet it; the last ends in the
+    // pocket, the very amount the bar's pocket says.
+    [Theory]
+    [MemberData(nameof(Rivers))]
+    public void View_eachStretchOfThePocketLine_isTheLinesJoiningItAboveLessThoseLeavingItAndTheLastThePockets(string name)
+    {
+        var river = MapRendering.River(name);
+        var bundles = MapView.From(river, river.Run()).Bundles();
+        var stretches = bundles.Where(StretchOfThePocketLine).ToList();
+        var joins = bundles.Where(line => line.To.PocketLine is not null && line.From.PocketLine is null).Select(line => (Y: line.Route.End.Y, Amount: line.Amount!.Value)).ToList();
+        var leaves = bundles.Where(line => line.From.PocketLine is not null && !StretchOfThePocketLine(line)).Select(line => (Y: line.Route.Points[0].Y, Amount: line.Amount!.Value)).ToList();
+
+        stretches.ShouldSatisfyAllConditions(
+            () => stretches.ShouldNotBeEmpty(),
+            () => stretches.Where(stretch => stretch.Amount != joins.Where(join => join.Y <= stretch.Route.Points[0].Y).Sum(join => join.Amount)
+                    - leaves.Where(leave => leave.Y <= stretch.Route.Points[0].Y).Sum(leave => leave.Amount))
+                .Select(stretch => $"{stretch.From.Id} to {stretch.To.Id} {Formats.Euros(stretch.Amount!.Value)}").ShouldBeEmpty(),
+            () => (stretches[^1].To, stretches[^1].Amount).ShouldBe((MapEnd.InBucket("pocket"), BucketsView.From(river.Run())!.AmountOf("pocket"))));
+    }
+
+    private static bool StretchOfThePocketLine(MapBundle line) =>
+        line.From.PocketLine is not null && (line.To.PocketLine is not null || line.To == MapEnd.InBucket("pocket"));
+
     private static bool IsItsCardsFigureOrTheirSum(string html, MapBundle line)
+
     {
         var drawn = MapRendering.Drawn(html, line.Card);
         var parts = line.Links.Select(link => MapRendering.Unsigned(Formats.Euros(link.Amount!.Value))).ToList();

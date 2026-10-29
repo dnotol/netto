@@ -85,7 +85,7 @@ public class MapViewTests
         var view = MapView.From(Full, Full.Run());
 
         (view.Links.Count, view.Links.All(link => link.Route is not null)).ShouldBe(
-            (MapLinks.Of(Full, Full.Run()).Count + MapConditions.From(YearConditions.Of(Full.Run().Year!), MapView.ModulesOf(Full)).Count, true));
+            (MapPocketLine.Of(MapLinks.Of(Full, Full.Run())).Count + MapConditions.From(YearConditions.Of(Full.Run().Year!), MapView.ModulesOf(Full)).Count, true));
     }
 
     // A refused amount leaves the map without a figure, as it leaves the bar: its modules and buckets
@@ -120,7 +120,8 @@ public class MapViewTests
             .ShouldBe((true, false));
     }
 
-    // A link touches a module at one of its ends, and the chain's line touches the quiet levers it runs past,
+    // A link touches a module at one of its ends, a point of the company's line or of the pocket line beside it
+    // among them, and the chain's line touches the quiet levers it runs past,
     // the rent left empty here: what a chosen module's lines are, kept and brought out (Drawn, Amounts).
     [Theory]
     [InlineData(RiverModule.Car)]
@@ -135,7 +136,7 @@ public class MapViewTests
         links.ShouldSatisfyAllConditions(
             () => links.ShouldNotBeEmpty(),
             () => links.ShouldBe(view.Links.Where(link => link.From.Module == module || link.To.Module == module || link.From.Lever == module || link.To.Lever == module
-                || link.Through.Contains(module))));
+                || link.From.PocketLine == module || link.To.PocketLine == module || link.Through.Contains(module))));
     }
 
     // A point of the company's line, where a lever before the split takes its share, is named after the
@@ -181,7 +182,7 @@ public class MapViewTests
 
         var car = view.Links.Where(link => link.Touches(RiverModule.Car)).ToList();
 
-        (car.Any(link => link.To.Lever == RiverModule.Car && link.From.Lever == RiverModule.Rent), car.Any(link => link.From == MapEnd.InBucket("pocket")),
+        (car.Any(link => link.To.Lever == RiverModule.Car && link.From.Lever == RiverModule.Rent), car.Any(link => link.From == MapEnd.OnPocketLine(RiverModule.Car)),
                 car.Any(link => link.To.Module == RiverModule.Split), car.Any(link => link.To.Module == RiverModule.DirectorPay))
             .ShouldBe((true, true, true, true));
     }
@@ -239,7 +240,7 @@ public class MapViewTests
         var run = Full.Run();
         var card = VoucherView.From(run.Year!, Full.Composition).Drains.Where(drain => drain.To == "pocket").ToList();
 
-        var line = Line(MapView.From(Full, run), MapEnd.Of(RiverModule.Vouchers), MapEnd.InBucket("pocket"));
+        var line = Line(MapView.From(Full, run), MapEnd.Of(RiverModule.Vouchers), MapEnd.OnPocketLine(RiverModule.Vouchers));
 
         (card.Count > 1, line.Links.Count, line.Amount).ShouldBe((true, card.Count, card.Sum(drain => drain.Amount)));
     }
@@ -323,7 +324,8 @@ public class MapViewTests
             () => rules.Where(bundle => bundle.Route.Width != MapLinkStyle.Fixed(bundle.Kind)).Select(bundle => $"{bundle.From.Id} to {bundle.To.Id}").ShouldBeEmpty());
     }
 
-    // The company skipped, the river starts at the pay: Director pay's largest line is the thickest.
+    // The company skipped, the river starts at the pay: Director pay's largest line is the thickest, its line
+    // into the pocket line and the pocket line's one stretch, which carries it on, alike.
     [Fact]
     public void From_companySkipped_drawsDirectorPaysLargestLineTheThickest()
     {
@@ -331,7 +333,10 @@ public class MapViewTests
 
         var money = Money(MapView.From(river, river.Run()));
 
-        money.Single(bundle => bundle.Amount == money.Max(line => line.Amount)).Route.Width.ShouldBe(MapLineWidths.Thickest);
+        var largest = money.Where(bundle => bundle.Amount == money.Max(line => line.Amount)).ToList();
+        largest.ShouldSatisfyAllConditions(
+            () => largest.Select(bundle => $"{bundle.From.Id} to {bundle.To.Id}").ShouldBe(["director-pay to pocket-line-director-pay", "pocket-line-director-pay to pocket"]),
+            () => largest.Select(bundle => bundle.Route.Width).ShouldAllBe(width => width == MapLineWidths.Thickest));
     }
 
     // The largest line is the run's, whatever the viewer hides: hiding the money passed on, the largest
@@ -351,7 +356,8 @@ public class MapViewTests
 
     // A line ends in an arrowhead where it reaches a module, money passed on, what comes back out of a
     // bucket or a rule; a line into a bucket has none, running on under the
-    // bucket, which is where its money stops.
+    // bucket, which is where its money stops, nor a line into the pocket line or a stretch of it, which runs on
+    // into the pocket.
     [Fact]
     public void Bundles_aLineIntoABucket_endsWithNoArrowheadAndEveryOtherWithOne()
     {
@@ -361,8 +367,10 @@ public class MapViewTests
 
         bundles.ShouldSatisfyAllConditions(
             () => bundles.Where(bundle => bundle.To.Bucket is not null).ShouldNotBeEmpty(),
-            () => bundles.Where(bundle => bundle.From.Bucket is not null).ShouldNotBeEmpty(),
-            () => bundles.Where(bundle => !StretchOfTheCompanysLine(bundle) && bundle.Arrowhead == bundle.To.Bucket is not null).Select(bundle => $"{bundle.From.Id} to {bundle.To.Id}").ShouldBeEmpty(),
+            () => bundles.Where(bundle => bundle.From.Bucket is not null || (bundle.From.PocketLine is not null && bundle.To.Bucket is null && bundle.To.PocketLine is null)).ShouldNotBeEmpty(),
+            () => bundles.Where(bundle => bundle.To.PocketLine is not null).ShouldNotBeEmpty(),
+            () => bundles.Where(bundle => !StretchOfTheCompanysLine(bundle) && bundle.Arrowhead == (bundle.To.Bucket is not null || bundle.To.PocketLine is not null))
+                .Select(bundle => $"{bundle.From.Id} to {bundle.To.Id}").ShouldBeEmpty(),
             () => bundles.Where(StretchOfTheCompanysLine).Where(bundle => bundle.Arrowhead != (bundle.To == MapEnd.Of(RiverModule.Split))).Select(bundle => bundle.To.Id).ShouldBeEmpty());
     }
 
@@ -379,7 +387,8 @@ public class MapViewTests
         var view = MapView.From(Full, Full.Run());
         var (pocket, taxes) = (view.Buckets.Single(node => node.End.Bucket == "pocket").Slot, view.Buckets.Single(node => node.End.Bucket == "taxes_on_profit").Slot);
 
-        var (into, back, along) = (Line(view, MapEnd.Of(RiverModule.DirectorPay), MapEnd.InBucket("pocket")).Route,
+        var (into, back, along) = (Line(view, MapEnd.OnPocketLine(RiverModule.Dividend), MapEnd.InBucket("pocket")).Route,
+
             Line(view, MapEnd.InBucket("taxes_on_profit"), MapEnd.Of(RiverModule.Dividend)).Route, Line(view, MapEnd.Of(RiverModule.Split), MapEnd.Of(RiverModule.CorporateTax)).Route);
 
         into.ShouldSatisfyAllConditions(

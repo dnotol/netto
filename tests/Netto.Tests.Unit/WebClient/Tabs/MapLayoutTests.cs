@@ -428,21 +428,31 @@ public class MapLayoutTests
                 .ShouldBeEmpty());
     }
 
-    // What reaches the pocket from the gates leaves each gate's left side, along its row to its track down the
-    // lane beside the gates, the highest row's furthest left, and down into the pocket: none crosses another.
+    // What reaches the pocket runs down one line left of the director's column, straight from the highest point
+    // where a line joins it into the pocket's top, its stretches end to end, half its thickest width and a pixel
+    // inside the pocket's left edge and clear of the director's boxes; each gate's line into it leaves its left
+    // side straight across, Director pay's its left side, and none crosses another; the car's contribution
+    // leaves it straight across under the car's gate into the company's line.
     [Fact]
-    public void Routed_theGatesWaysToThePocket_comeDownTheLaneBesideTheGatesTheHighestFurthestLeftCrossingNone()
+    public void Routed_thePocketLine_runsDownTheLeftOfYourColumnEachLineJoiningItStraightAcross()
     {
         var view = MapView.From(MapLinksTests.Full, MapLinksTests.Full.Run());
-        var pocket = view.Bundles().Where(line => line.To == MapEnd.InBucket("pocket") && line.From.Module is { } gate && MapLayout.Place(gate).Column == MapColumn.Gates).ToList();
+        var line = view.Bundles().Where(bundle => bundle.From.PocketLine is not null && (bundle.To.PocketLine is not null || bundle.To == MapEnd.InBucket("pocket"))).ToList();
+        var joins = view.Bundles().Where(bundle => bundle.To.PocketLine is not null && bundle.From.PocketLine is null).ToList();
+        var (pocket, pay, leave) = (view.Buckets[0].Slot, Slot(view, RiverModule.DirectorPay), MapViewTests.Line(view, MapEnd.OnPocketLine(RiverModule.Car), MapEnd.Beside(RiverModule.Car)));
+        var x = line[0].Route.Points[0].X;
 
-        pocket.ShouldSatisfyAllConditions(
-            () => pocket.Select(line => line.From.Module).ShouldBe([RiverModule.Vouchers, RiverModule.Allowances, RiverModule.Rent, RiverModule.Copyright, RiverModule.Dividend]),
-            () => pocket.Select(line => line.Route.Points[0].X).ShouldAllBe(x => x == Slot(view, RiverModule.Vouchers).Left),
-            () => pocket.Select(line => line.Route.Points[1].X).ShouldBeInOrder(SortDirection.Ascending),
-            () => pocket.SelectMany((a, i) => pocket.Skip(i + 1).Where(b => Segments(a).Any(sa => Segments(b).Any(sb => Cross(sa, sb)))).Select(b => $"{a.From.Id} with {b.From.Id}"))
-                .ShouldBeEmpty());
+        view.ShouldSatisfyAllConditions(
+            () => line.SelectMany(bundle => bundle.Route.Points).Select(point => point.X).Distinct().ShouldBe([x]),
+            () => (Math.Round((x - pocket.Left) / MapLayout.MapGrid.AcrossPixel, 6), Math.Round((pay.Left - x) / MapLayout.MapGrid.AcrossPixel, 6)).ShouldBe((MapLineWidths.Thickest / 2m + 1m, 5m)),
+            () => line.Zip(line.Skip(1)).Where(pair => pair.First.Route.End != pair.Second.Route.Points[0]).ShouldBeEmpty(),
+            () => (line[0].Route.Points[0].Y, line[^1].Route.End.Y).ShouldBe((joins.Min(join => join.Route.Points[0].Y), pocket.Top)),
+            () => joins.Select(join => join.From.Module).ShouldBe([RiverModule.Vouchers, RiverModule.Allowances, RiverModule.Rent, RiverModule.DirectorPay, RiverModule.Copyright, RiverModule.Dividend], ignoreOrder: true),
+            () => joins.Where(join => join.Route.Points is not [var a, var b] || a.Y != b.Y || b.X != x || a.X != Slot(view, join.From.Module!.Value).Left).Select(join => join.From.Id).ShouldBeEmpty(),
+            () => joins.SelectMany((a, i) => joins.Skip(i + 1).Where(b => Segments(a).Any(sa => Segments(b).Any(sb => Cross(sa, sb)))).Select(b => $"{a.From.Id} with {b.From.Id}")).ShouldBeEmpty(),
+            () => (leave.Route.Points.Count, leave.Route.Points[0].X, leave.Route.Arrow, leave.Route.End.Y > Slot(view, RiverModule.Car).Bottom).ShouldBe((2, x, MapDirection.Right, true)));
     }
+
 
     // The company's line runs down its own column from Company year's bottom into the split's top, straight; each
     // lever's share leaves it across to its gate's right side, at the share's height; the car's costs leave it to
@@ -454,7 +464,7 @@ public class MapLayoutTests
         var line = view.Bundles().Where(bundle => MapLinksTests.CompanysLine(bundle.Links).Any()).ToList();
         var takes = view.Bundles().Where(bundle => bundle.From.Lever is { } lever && bundle.To == MapEnd.Of(lever)).ToList();
         var (car, costs) = (Slot(view, RiverModule.Car), MapViewTests.Line(view, MapEnd.Beside(RiverModule.Car), MapEnd.InBucket("expenses")));
-        var contribution = MapViewTests.Line(view, MapEnd.InBucket("pocket"), MapEnd.Beside(RiverModule.Car));
+        var contribution = MapViewTests.Line(view, MapEnd.OnPocketLine(RiverModule.Car), MapEnd.Beside(RiverModule.Car));
 
         view.ShouldSatisfyAllConditions(
             () => line.Select(bundle => bundle.Route.Points.Select(point => point.X).Distinct().Count()).ShouldAllBe(count => count == 1),
@@ -596,9 +606,9 @@ public class MapLayoutTests
             && Math.Min(down.A.Y, down.B.Y) < across.A.Y && across.A.Y < Math.Max(down.A.Y, down.B.Y);
     }
 
-    // A lane its lines cannot all fit at their widths squeezes them into it, never past it: the five gates'
-    // lines into the pocket and the rent's and the royalty's taxes down the lane beside the gates, each as large
-    // as the run's largest line, cross no box and land on their buckets.
+    // A lane its lines cannot all fit at their widths squeezes them into it, never past it: the royalty's part
+    // taxed as pay and the rent's and the royalty's taxes and what comes back of them down the lane beside the
+    // gates, each as large as the run's largest line, cross no box and land on their ends.
     [Fact]
     public void Routed_aLaneTooNarrowForItsLines_squeezesThemIntoItCrossingNoBox()
     {
@@ -606,8 +616,9 @@ public class MapLayoutTests
         var grid = Grid(river);
         MapLink[] links =
         [
-            .. new[] { RiverModule.Vouchers, RiverModule.Allowances, RiverModule.Rent, RiverModule.Copyright, RiverModule.Dividend }.Select(module => Money(module, MapEnd.InBucket("pocket"))),
+            Money(RiverModule.Copyright, MapEnd.Of(RiverModule.DirectorPay)),
             .. new[] { RiverModule.Rent, RiverModule.Copyright }.Select(module => Money(module, MapEnd.InBucket("taxes_on_pay"))),
+            .. new[] { RiverModule.Rent, RiverModule.Copyright }.Select(module => Money(module, MapEnd.InBucket("taxes_on_pay")) with { From = MapEnd.InBucket("taxes_on_pay"), To = MapEnd.Of(module) }),
         ];
 
         var routes = RoutesOf(MapLayout.Routed(grid, links));
@@ -615,7 +626,8 @@ public class MapLayoutTests
         routes.ShouldSatisfyAllConditions(
             () => routes.Select(route => route.Route.Width).Distinct().ShouldBe([MapLineWidths.Thickest]),
             () => Crossings(routes, Boxes(river), grid.Units).ShouldBeEmpty(),
-            () => Overhangs(routes, grid).ShouldBeEmpty());
+            () => Overhangs(routes, grid).ShouldBeEmpty(),
+            () => Arrowheads(routes, grid.Units).ShouldBeEmpty());
     }
 
     // The ends a card's line joins in these plans are among those the routes are held to below.
@@ -669,7 +681,8 @@ public class MapLayoutTests
             () => Arrowheads(routes, grid.Units).ShouldBeEmpty());
     }
 
-    // A line back out of a bucket ends on its module, its arrow pointing into it.
+    // A line back out of a bucket ends on its module, its arrow pointing into it; back out of the pocket, it
+    // leaves the pocket line at its module's point.
     [Theory]
     [MemberData(nameof(EveryDrainEnds))]
     public void Routed_aLineBackOutOfABucket_endsOnItsModule(int ends)
@@ -679,10 +692,11 @@ public class MapLayoutTests
         var river = MapLinksTests.Full;
         var grid = Grid(river);
         var back = new MapLink(MapLinkKind.IntoBucket, MapEnd.InBucket(bucket), end, module, new MapLabel(MapText.Map, "Back", []), 1m);
+        var from = bucket == "pocket" ? MapEnd.OnPocketLine(module) : MapEnd.InBucket(bucket);
 
-        var route = RouteOf(MapLayout.Routed(grid, [back]).Single());
+        var route = RouteOf(MapLayout.Routed(grid, MapPocketLine.Of([back])).Single(link => link.To == end));
 
-        (OnEdge(grid, MapEnd.InBucket(bucket), route.Points[0]), OnEdge(grid, end, route.End)).ShouldBe((true, true));
+        (OnEdge(grid, from, route.Points[0]), OnEdge(grid, end, route.End)).ShouldBe((true, true));
     }
 
     // Links of the same ends and kind are one line on the map, their amount said once.
@@ -691,7 +705,7 @@ public class MapLayoutTests
     {
         var river = MapLinksTests.Full;
 
-        var links = MapLayout.Routed(MapLayout.Grid(MapView.ModulesOf(river)), MapLinks.Of(river, river.Run()));
+        var links = MapLayout.Routed(MapLayout.Grid(MapView.ModulesOf(river)), MapPocketLine.Of(MapLinks.Of(river, river.Run())));
 
         links.GroupBy(link => (link.From, link.To, link.Kind)).Where(bundle => bundle.Select(link => link.Route).Distinct().Count() != 1)
             .Select(bundle => $"{bundle.Key.From.Id} to {bundle.Key.To.Id}").ShouldBeEmpty();
@@ -705,7 +719,7 @@ public class MapLayoutTests
     {
         var river = MapLinksTests.Full;
         var grid = Grid(river);
-        var links = MapLayout.Routed(grid, MapLinks.Of(river, river.Run()));
+        var links = MapLayout.Routed(grid, MapPocketLine.Of(MapLinks.Of(river, river.Run())));
         var (expenses, company) = (grid.Slot(MapEnd.InBucket("expenses")), grid.Slot(MapEnd.Of(RiverModule.CorporateTax)).Right);
 
         var (car, year) = (Into(MapEnd.Beside(RiverModule.Car)), Into(MapEnd.Of(RiverModule.CompanyYear)));
@@ -842,7 +856,7 @@ public class MapLayoutTests
     private static bool MayCross(string line, string box) => box == Pill && line == Pay;
 
     // Each line of the plan, the run's links and the conditions between the modules it draws with a box,
-    // folded past the levers the map draws quiet as the map folds them, once.
+    // folded past the levers the map draws quiet and gathered into the pocket line as the map does, once.
     private static IReadOnlyList<RoutedLine> Routes(RiverInputs river, params MapLink[] more)
     {
         var run = river.Run();
@@ -853,7 +867,7 @@ public class MapLayoutTests
             .Select(condition => new MapLink(MapLinkKind.Condition, MapEnd.Of(condition.From), MapEnd.Of(condition.To), condition.From,
                 new MapLabel(MapText.Map, "Condition", []), null));
 
-        return RoutesOf(MapLayout.Routed(MapLayout.Grid(modules, quiet, MostBadges, GateLines(river)), MapQuiet.Fold([.. MapLinks.Of(river, run), .. conditions, .. more])));
+        return RoutesOf(MapLayout.Routed(MapLayout.Grid(modules, quiet, MostBadges, GateLines(river)), MapPocketLine.Of(MapQuiet.Fold([.. MapLinks.Of(river, run), .. conditions, .. more]))));
     }
 
     // Each line of links routed, once.
@@ -941,15 +955,17 @@ public class MapLayoutTests
     private static bool Overlaps(MapArea a, MapArea b) => a.Overlaps(b, -Tolerance);
 
     // Every line whose width hangs past the side of a box it meets, where it leaves it and where it ends: on
-    // the narrowest map, where a side is the fewest pixels. A point of the company's line has no side: the line
-    // runs on through it.
+    // the narrowest map, where a side is the fewest pixels. A point of the company's line or of the pocket line
+    // has no side: the line runs on through it.
     private static List<string> Overhangs(IReadOnlyList<RoutedLine> routes, MapLayout.MapGrid grid)
     {
         var scale = MapScale.Of(Sizes[0].Width, RowPixels * grid.Units);
         return
         [
-            .. routes.Where(route => route.From.Lever is null && Hangs(grid.Slot(route.From), route.Route.Points[0], route.Route.Width, scale)).Select(route => $"{route.Name} off {route.From.Id}"),
-            .. routes.Where(route => route.To.Lever is null && Hangs(grid.Slot(route.To), route.Route.End, route.Route.Width, scale)).Select(route => $"{route.Name} off {route.To.Id}"),
+            .. routes.Where(route => route.From.Lever is null && route.From.PocketLine is null && Hangs(grid.Slot(route.From), route.Route.Points[0], route.Route.Width, scale))
+                .Select(route => $"{route.Name} off {route.From.Id}"),
+            .. routes.Where(route => route.To.Lever is null && route.To.PocketLine is null && Hangs(grid.Slot(route.To), route.Route.End, route.Route.Width, scale))
+                .Select(route => $"{route.Name} off {route.To.Id}"),
         ];
     }
 
@@ -1050,12 +1066,12 @@ public class MapLayoutTests
         return false;
     }
 
-    // Whether a line meets its end: on an edge of a box or a bucket, or on the stretch of the company's line
-    // where its point is, a line joining it or leaving it.
+    // Whether a line meets its end: on an edge of a box or a bucket, or on the stretch of the company's line or
+    // of the pocket line where its point is, a line joining it or leaving it.
     private static bool OnEdge(MapLayout.MapGrid grid, MapEnd end, MapPoint point)
     {
         var box = grid.Slot(end);
-        if (end.Lever is not null)
+        if (end.Lever is not null || end.PocketLine is not null)
             return point.X >= box.Left && point.X <= box.Right && point.Y >= box.Top && point.Y <= box.Bottom;
 
         var withinX = point.X >= box.Left && point.X <= box.Right;

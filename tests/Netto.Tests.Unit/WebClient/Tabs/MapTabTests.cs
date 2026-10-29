@@ -170,7 +170,7 @@ public class MapTabTests
     public async Task Tab_everyLineAndItsArrowhead_takeTheirKindsInkOrThePocketsGold()
     {
         var drawn = MapView.From(Full, Full.Run()).Drawn(null);
-        var inks = drawn.Select(line => (line.Bundle.Kind.ToString(), Ink: line.Bundle.To == MapEnd.InBucket("pocket") ? MapLinkStyle.PocketInk : MapLinkStyle.Ink(line.Bundle.Kind))).ToList();
+        var inks = drawn.Select(line => (line.Bundle.Kind.ToString(), Ink: line.Bundle.To.InPocket ? MapLinkStyle.PocketInk : MapLinkStyle.Ink(line.Bundle.Kind))).ToList();
 
         var html = await RenderTabAsync(Full);
 
@@ -244,8 +244,9 @@ public class MapTabTests
         Placed(map).ShouldBe(MapAmounts.Of(view, MapAmountsTests.Say).Select(amount => (amount.Bundle.Kind.ToString(), Style(amount), "true", amount.Text)), ignoreOrder: true);
     }
 
-    // What the line to the pocket carries is drawn in its gold, the map's one, where the line says it: Director
-    // pay's; a gate's says none, its box saying it. No other amount is.
+    // What has reached the pocket is drawn in the gold of the pocket line, the map's one, where a stretch of it
+    // says it: what has reached you so far; a line joining it says none, its gate's box or the total under it
+    // saying it. No other amount is.
     [Fact]
     public async Task Tab_nothingChosen_drawsTheAmountsIntoThePocketInGold()
     {
@@ -254,7 +255,7 @@ public class MapTabTests
         var map = Map(await RenderTabAsync(Full));
 
         Regex.Matches(map, "<span class=\"map-amount map-amount--pocket\"[^>]*>([^<]*)</span>").Select(match => match.Groups[1].Value)
-            .ShouldBe(view.Bundles().Where(bundle => bundle.To == MapEnd.InBucket("pocket") && bundle.SaysAmount).Select(bundle => Formats.Euros(bundle.Amount!.Value)), ignoreOrder: true);
+            .ShouldBe(view.Bundles().Where(bundle => bundle.To.InPocket && bundle.SaysAmount).Select(bundle => Formats.Euros(bundle.Amount!.Value)), ignoreOrder: true);
     }
 
     // Nothing chosen, the map holds no sentence, only amounts and a condition's word or two, so nothing runs

@@ -25,7 +25,7 @@
     <value>Into a bucket</value>
   </data>
   <data name="Gloss_IntoBucket" xml:space="preserve">
-    <value>money that ends in one of the bar's buckets, its line running into it, or that comes back out of a bucket, its line then ending in an arrowhead. The thicker the line, the more money.</value>
+    <value>money that ends in one of the bar's buckets, its line running into it, or that comes back out of a bucket, its line then ending in an arrowhead. The thicker the line, the more money. The gold line down your column says, after each line joining it, what has reached you so far.</value>
   </data>
   <data name="Name_TaxBase" xml:space="preserve">
     <value>Tax base</value>

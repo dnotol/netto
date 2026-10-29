@@ -185,7 +185,7 @@ public class MapQuietTests
         var modules = MapView.ModulesOf(river);
         IReadOnlyList<MapLink> links = [.. MapLinks.Of(river, run), .. MapConditions.From(YearConditions.Of(run.Year!), modules)];
         var grid = MapLayout.Grid(modules, badgeLines: MapBadges.Lines(MapBadges.Of(links)), gateLines: MapLayoutTests.GateLines(river));
-        var unfolded = MapLayout.Routed(grid, links);
+        var unfolded = MapLayout.Routed(grid, MapPocketLine.Of(links));
 
         var view = MapView.From(river, run);
 

@@ -34,9 +34,11 @@
    whether it holds, placed the same way, its badge naming the rule on the module it reaches; its sentence,
    with its figures, is not on the tab (operator, 2026-10-28) but the cards' (MapConditions). An amount hangs from its
    point of its line by its pixels, so it keeps to its line however large the map is drawn, and its ground
-   hides the lines crossing it, square. A line to the pocket and its amount are gold, the one gold of the
-   map, since that is what reaches the director; a gate's line to the pocket says no amount, its gate saying
-   it, nor what Corporate tax adds back of a gate, its badge saying it.
+   hides the lines crossing it, square. What reaches the director runs into one gold line down the left of
+   their column, the pocket line (MapPocketLine), the one gold of the map, each stretch of it saying what has
+   reached them so far, its last the pocket the bar says; a line joining it says no amount, its gate's box or
+   the total under it saying it, nor does the pay, its pill saying it, what Corporate tax adds back of a gate,
+   its badge saying it, or a gate's share of the company's line its box already says (MapLink.Unsaid).
 
    The rules are marks on the module they act on: each condition another module sets on it, but the
    office rule, which always holds, is a badge in its box saying which rule and whether it holds, and what
@@ -337,7 +339,8 @@
     private string ModuleClass(MapNode node) =>
         $"map-module{(node.Gate && !node.Quiet ? " map-module--gate" : "")}{(_chosen == node.End.Module ? " map-module--chosen" : "")}{(node.Refused ? " map-module--refused" : "")}{(node.Skipped ? " map-module--skipped" : "")}{(node.Quiet ? " map-module--quiet" : "")}";
 
-    private static bool ToPocket(MapBundle bundle) => bundle.To.Bucket == "pocket";
+    // What runs into the pocket, gold: a line joining the pocket line and every stretch of it.
+    private static bool ToPocket(MapBundle bundle) => bundle.To.InPocket;
 
     // What a link carries, in the words of the texts that word its line on its card (MapTabText.Texts), or a
     // condition's word or two, in the map's.

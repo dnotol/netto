@@ -36,8 +36,9 @@ public class MapLinkStyleTests
 
     // A sample's end is the end the map draws for the lines it stands for: every line passed on, every tax
     // base and every condition ends in an arrowhead; of the money into a bucket, the lines ending in a
-    // bucket run on under it, as the sample's bar shows, and the others, coming back out of a bucket, end
-    // in an arrowhead, as the kind's bubble says.
+    // bucket run on under it, as the sample's bar shows, those into the pocket line run on in it, and the
+    // others, coming back out of a bucket or out of the pocket line, end in an arrowhead, as the kind's bubble
+    // says.
     [Fact]
     public void SampleEnd_ofEachKind_isTheEndTheMapDrawsForTheLinesItStandsFor()
     {
@@ -45,12 +46,13 @@ public class MapLinkStyleTests
 
         var bundles = MapView.From(river, river.Run()).Bundles();
 
-        var (intoABucket, besides) = (bundles.Where(bundle => bundle.Kind == MapLinkKind.IntoBucket && bundle.To.Bucket is not null).ToList(),
-            bundles.Where(bundle => bundle.Kind == MapLinkKind.IntoBucket && bundle.To.Bucket is null).ToList());
+        var (intoABucket, besides) = (bundles.Where(bundle => bundle.Kind == MapLinkKind.IntoBucket && (bundle.To.Bucket is not null || bundle.To.PocketLine is not null)).ToList(),
+            bundles.Where(bundle => bundle.Kind == MapLinkKind.IntoBucket && bundle.To.Bucket is null && bundle.To.PocketLine is null).ToList());
         bundles.ShouldSatisfyAllConditions(
             () => bundles.Where(bundle => MapLinkStyle.SampleEnd(bundle.Kind) == MapLineEnd.Arrowhead && !MapViewTests.StretchOfTheCompanysLine(bundle)).ShouldAllBe(bundle => bundle.Arrowhead),
             () => (MapLinkStyle.SampleEnd(MapLinkKind.IntoBucket), intoABucket.Count > 0, intoABucket.All(bundle => !bundle.Arrowhead)).ShouldBe((MapLineEnd.Bucket, true, true)),
-            () => (besides.Count > 0, besides.All(bundle => bundle.From.Bucket is not null)).ShouldBe((true, true)),
+            () => (besides.Count > 0, besides.All(bundle => bundle.From.Bucket is not null || bundle.From.PocketLine is not null)).ShouldBe((true, true)),
+
             () => besides.ShouldAllBe(bundle => bundle.Arrowhead));
     }
 

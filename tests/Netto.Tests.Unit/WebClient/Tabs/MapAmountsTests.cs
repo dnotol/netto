@@ -88,9 +88,12 @@ public class MapAmountsTests
     }
 
     // Every line says its amount on it, a condition its word or two, but those whose amount the map says
-    // elsewhere: a gate's line into the pocket, its box saying it; the pay, its pill saying it; what Corporate
-    // tax adds back, its badge saying it; and money passed on into a gate whose box says that very amount, to the
-    // cent: a lever's share off the company's line, the split's royalty, what Corporate tax passes the dividend.
+    // elsewhere: a line joining the pocket line, its gate's box or the total under it saying it; the pay, its
+    // pill saying it; what Corporate tax adds back, its badge saying it; money passed on into a gate whose box
+    // says that very amount, to the cent: a lever's share off the company's line, the split's royalty, what
+    // Corporate tax passes the dividend; and a stretch of the pocket line out of a point no line joins, where money
+    // only leaves it, which the next total under a join says, or below nothing, which says no total
+    // (operator, 29.10.2026). Every other stretch says what has reached you so far.
     [Theory]
     [MemberData(nameof(Plans))]
     public void View_anyPlan_saysEveryLinesAmountButWhereTheMapSaysItElsewhere(string plan)
@@ -115,10 +118,30 @@ public class MapAmountsTests
         (line.Amount is not null, line.SaysAmount).ShouldBe((true, says));
     }
 
-    // Whether the map says a line's amount somewhere other than on it: its gate's box, the pay's pill, Corporate
-    // tax's badge, or the box of the gate it passes money into, saying that amount.
+    // The car's contribution leaving the pocket line, the stretch out of the car's point says no total; one below
+    // nothing says none either, whether a contribution beyond what reached you above it or a pay taking more than
+    // it brings leaves it there.
+    [Theory]
+    [InlineData("every lever", RiverModule.Car, false)]
+    [InlineData("a contribution beyond the car's costs", RiverModule.Car, true)]
+    [InlineData("the costly car", RiverModule.DirectorPay, true)]
+    public void View_aStretchOfThePocketLine_saysNoTotalOutOfAPointMoneyOnlyLeavesOrBelowNothing(string plan, RiverModule point, bool belowNothing)
+    {
+        var view = plan == "the costly car" ? View(plan) : MapView.From(MapRendering.River(plan), MapRendering.River(plan).Run());
+
+        var stretch = view.Bundles().Single(line => line.From == MapEnd.OnPocketLine(point) && (line.To.PocketLine is not null || line.To == MapEnd.InBucket("pocket")));
+
+        (stretch.Amount < 0m, stretch.SaysAmount).ShouldBe((belowNothing, false));
+    }
+
+    // Whether the map says a line's amount somewhere other than on it: its gate's box or the total under it, the
+    // pay's pill, Corporate tax's badge, the box of the gate it passes money into saying that amount; or, a
+    // stretch of the pocket line, says none out of a point no line joins or below nothing.
     private static bool SaidElsewhere(MapView view, MapBundle line) =>
-        (line.To == MapEnd.InBucket("pocket") && line.From.Module is { } gate && view.Modules.Single(node => node.End.Module == gate).Gate)
+        (line.To.PocketLine is not null && line.From.PocketLine is null)
+        || (line.From.PocketLine is not null && (line.To.PocketLine is not null || line.To == MapEnd.InBucket("pocket"))
+            && (line.Amount < 0m || !view.Bundles().Any(other => other.To == line.From && other.From.PocketLine is null)))
+
         || (line.Kind == MapLinkKind.PassedOn && line.From == MapEnd.Of(RiverModule.Split) && line.To == MapEnd.Of(RiverModule.DirectorPay))
         || (line.Kind == MapLinkKind.TaxBase && line.To == MapEnd.Of(RiverModule.CorporateTax))
         || (line.Kind == MapLinkKind.PassedOn && line.To.Module is { } into && view.Modules.Single(node => node.End.Module == into) is { Gate: true } box

@@ -29,11 +29,17 @@ namespace Netto.Web.Client.Tabs;
 // own place, the partner too in theirs. A module's badges (MapBadges) are lines of its box: the box grows a
 // line for each, and its row keeps round its tallest box the room a row keeps round its own.
 //
-// The gates' lines into the pocket and the taxes on pay leave their left side and come down a lane between
-// the director's column and the gates, a track each: the car's contribution from the pocket furthest left,
-// the rent's and the royalty's taxes, then what reaches the pocket, the highest row's furthest left, so none
-// crosses another near the gates; the taxes turn along rows of their own in the band over the buckets, which
-// holds the director's ways into the taxes on pay and back, and the dividend's way into what the company keeps.
+// What reaches the director runs down one gold line at the left of their column (PocketLineX, MapPocketLine),
+// from the highest point where a line joins it into the pocket's top: each gate's line into the pocket leaves
+// its gate's left side straight across to it, Director pay's its left side, and the car's contribution leaves
+// it under the car's gate straight across into the company's line. A gate's left side holds, top to bottom,
+// what it passes Director pay, its line into the pocket line, then its taxes, which come down a lane between
+// the director's column and the gates, a track each, the highest row's furthest left: the rent's taxes, the
+// royalty's part taxed as pay, up into Director pay's right side under the pay, then the royalty's taxes; the
+// taxes turn along rows of their own in the band over the buckets, nested so that none crosses
+// another, the leftmost lowest: the royalty's along its first row, the rent's, then Director pay's way into
+// the taxes on pay and what comes back, which leave Director pay's bottom; each enters the taxes on pay in that
+// order from its left. The band holds the dividend's way into what the company keeps along its first two rows.
 // What the company pays into its expenses, Company year's contribution to INASTI and the car's costs, comes
 // down a lane of its own right of the company's boxes into the expenses at the right edge, Company year's, the
 // higher, furthest out. What Corporate tax adds back, from the vouchers and the car, and the condition the car
@@ -107,8 +113,8 @@ internal static class MapLayout
 
     // The columns, from the narrowest map's pixels: the director's, the partner's in it, the gates' and the
     // company's; and the lane between the director's column and the gates.
-    private static readonly (decimal Left, decimal Right) YouColumn = (Across(8m), Across(104m));
-    private static readonly (decimal Left, decimal Right) HouseholdColumn = (Across(8m), Across(80m));
+    private static readonly (decimal Left, decimal Right) YouColumn = (Across(14m), Across(104m));
+    private static readonly (decimal Left, decimal Right) HouseholdColumn = (Across(14m), Across(80m));
     private static readonly (decimal Left, decimal Right) GatesColumn = (Across(180m), Across(304m));
     private static readonly (decimal Left, decimal Right) CompanyColumn = (Across(400m), Across(508m));
 
@@ -127,27 +133,30 @@ internal static class MapLayout
     // year's bottom and the split's top within their sides whatever it carries.
     private static readonly decimal Spine = Across(400m + MapLineWidths.Thickest / 2m + EdgePixels);
 
+    // The pocket line: half the thickest line and a pixel inside the pocket's left edge, so it meets the pocket's
+    // top within its side whatever has reached the director, left of the director's column.
+    private static readonly decimal PocketLineX = Across(4m + MapLineWidths.Thickest / 2m + EdgePixels);
+
     // The lane beside the gates: its first track, each next at least this far from the one before, and its room,
-    // from past the longest arrowhead into Director pay's right side to the pocket's right edge, so that every
-    // line down it lands on the pocket or turns along the band.
+    // from past the longest arrowhead into Director pay's right side to the pocket's right edge, so that the
+    // royalty's part taxed as pay has room for its arrowhead and every line down it turns along the band.
     private static readonly decimal LaneFrom = Across(118m);
     private static readonly decimal LaneTrack = Across(5m);
     private static readonly (decimal Low, decimal High) LaneRoom = (Across(104m + 1.5m * (MapLineWidths.Thickest / 2m + 3m) + EdgePixels), Across(164m));
 
-    // Where the taxes from the gates enter the taxes on pay: the rent's, the royalty's.
-    private static readonly decimal RentTaxIn = Across(210m);
-    private static readonly decimal RoyaltyTaxIn = Across(250m);
+    // Where the lines into the taxes on pay and back enter it, from its left in the order their rows nest, the
+    // leftmost lowest: the first a few pixels in, each next at least this far from the one before.
+    private static readonly decimal TaxesOnPayFrom = Across(174m);
+    private static readonly decimal TaxesOnPayStep = Across(8m);
 
-    // Director pay's lines along its bottom and its top: into the taxes on pay and back, the marital quotient,
-    // into the pocket, and what comes into it from the gates over and under it, the car's benefit and the
-    // royalty's part taxed as pay; and where its ways into the taxes enter their bucket.
-    private static readonly decimal PayToTaxes = Across(18m);
-    private static readonly decimal PayFromTaxes = Across(12m);
-    private static readonly decimal QuotientX = Across(44m);
-    private static readonly decimal PayToPocket = Across(60m);
-    private static readonly decimal PayFromGates = Across(92m);
-    private static readonly decimal PayTaxesIn = Across(180m);
-    private static readonly decimal PayTaxesOut = Across(174m);
+    // Director pay's lines along its bottom and its top: into the taxes on pay and back, right, so they run
+    // down clear of the pocket line and of the totals it says beside it; the marital quotient, between the pocket line and the car's benefit into
+    // its top, with room for its amount on it between them.
+    private static readonly decimal PayToTaxes = Across(100m);
+    private static readonly decimal PayFromTaxes = Across(94m);
+    private static readonly decimal QuotientX = Across(51m);
+    private static readonly decimal PayFromPocket = Across(30m);
+    private static readonly decimal PayFromGates = Across(94m);
 
     // The lane down to the expenses, right of the company's boxes, the highest row's furthest out.
     private static readonly decimal ExpensesLane = Across(526m);
@@ -199,10 +208,11 @@ internal static class MapLayout
     private const decimal DividendBand = 1m;
     private const decimal BucketMargin = 0.2m;
 
-    // The band's rows, top to bottom: the ways into the taxes, what comes back out of them, then the rent's and
-    // the royalty's taxes while they are in the plan and move money.
-    private const int IntoTaxesRow = 0;
-    private const int OutOfTaxesRow = 1;
+    // The dividend's rows of the band: its way into what the company keeps along the first, what comes back
+    // along the second.
+    private const int DividendIntoRow = 0;
+    private const int DividendBackRow = 1;
+
 
     // Across, in percent of the map, from the narrowest map's pixels.
     private static decimal Across(decimal pixels) => pixels * 100m / NarrowestPixels;
@@ -319,6 +329,9 @@ internal static class MapLayout
             if (end.Lever is { } lever)
                 return Point(lever);
 
+            if (end.PocketLine is { } joins)
+                return PocketPoint(joins);
+
             if (end.Module is not { } module)
                 throw new ArgumentOutOfRangeException(nameof(end), "An end with neither a module, a bucket nor a lever has no box.");
 
@@ -341,6 +354,18 @@ internal static class MapLayout
             return new MapSlot(Spine - half, gate.Top, 2m * half, bottom - gate.Top);
         }
 
+        // The point of the pocket line beside a module, the stretch of the line where what joins or leaves it
+        // meets it, as wide as its thickest line: as high as the module's box, where its line into the pocket
+        // joins it, and, beside the car and Director pay, on down to the boxes of the row under it, where the
+        // car's contribution leaves it under the car's gate and what would come back into Director pay under it.
+        private MapSlot PocketPoint(RiverModule module)
+        {
+            var box = Slot(MapEnd.Of(module));
+            var bottom = module is RiverModule.Car or RiverModule.DirectorPay ? GapBelow(Place(module).Row, 1m) : box.Bottom;
+            var half = MapLineWidths.Thickest / 2m * AcrossPixel;
+            return new MapSlot(PocketLineX - half, box.Top, 2m * half, bottom - box.Top);
+        }
+
         // The y of the gap between the boxes of the row given and of the next, at a fraction of its height.
         public decimal GapBelow(MapRow row, decimal fraction)
         {
@@ -352,13 +377,18 @@ internal static class MapLayout
         // The y of a row of the band over the buckets, top to bottom.
         public decimal BandY(int row) => LastBottom + (BandTop + row * BandStep) * 100m / Units;
 
-        // The band's row of a gate's taxes: the rent's, then the royalty's, under the director's two.
+        // The band's row of a line into the taxes on pay, nested so that the leftmost runs lowest: the royalty's
+        // taxes along the first while it moves money, the rent's next, then Director pay's way in and, lowest,
+        // what comes back.
         public int TaxesRow(RiverModule gate) => gate switch
         {
-            RiverModule.Rent => OutOfTaxesRow + 1,
-            RiverModule.Copyright => OutOfTaxesRow + 1 + (Moves(RiverModule.Rent) ? 1 : 0),
+            RiverModule.Copyright => 0,
+            RiverModule.Rent => Moves(RiverModule.Copyright) ? 1 : 0,
             _ => throw new ArgumentOutOfRangeException(nameof(gate), gate, "A gate with no taxes on pay of its own."),
         };
+
+        public int PayTaxesRow(bool back) => (Moves(RiverModule.Copyright) ? 1 : 0) + (Moves(RiverModule.Rent) ? 1 : 0) + (back ? 1 : 0);
+
 
         // The columns' frames and labels, over every row but the buckets'.
         public IReadOnlyList<(MapOwner Owner, MapSlot Slot)> Columns()
@@ -489,6 +519,7 @@ internal static class MapLayout
         private readonly List<(MapEnd, MapEnd, MapLinkKind)> _lane;
         private readonly List<(MapEnd, MapEnd, MapLinkKind)> _expenses;
         private readonly List<(MapEnd, MapEnd, MapLinkKind)> _drops;
+        private readonly List<(MapEnd, MapEnd, MapLinkKind)> _taxesOnPay;
 
         public Router(MapGrid grid, IReadOnlyList<(MapEnd From, MapEnd To, MapLinkKind Kind)> bundles, IReadOnlyDictionary<(MapEnd From, MapEnd To, MapLinkKind Kind), decimal> widths)
         {
@@ -498,6 +529,11 @@ internal static class MapLayout
             _lane = [.. bundles.Where(bundle => LaneOrder(bundle) is not null).OrderBy(bundle => LaneOrder(bundle))];
             _expenses = [.. bundles.Where(bundle => Family(bundle) is RouteFamily.CompanyYearToExpenses or RouteFamily.LineToExpenses).OrderBy(bundle => Row(Owner(bundle))).ThenBy(Back)];
             _drops = [.. bundles.Where(bundle => Family(bundle) == RouteFamily.AddBack).OrderBy(bundle => Row(Owner(bundle))).ThenBy(bundle => bundle.Kind)];
+            _taxesOnPay =
+            [
+                .. bundles.Where(bundle => Family(bundle) == RouteFamily.PayToTaxes).OrderBy(bundle => !Back(bundle)),
+                .. _lane.Where(bundle => Family(bundle) == RouteFamily.GateToTaxes),
+            ];
 
             foreach (var bundle in bundles)
             {
@@ -541,17 +577,17 @@ internal static class MapLayout
             {
                 RouteFamily.CompanysLine => Line(new MapPoint(Spine, LineTop(end)), new MapPoint(Spine, LineBottom(other))),
                 RouteFamily.Take => Take(bundle),
-                RouteFamily.GoldToPocket => ToLane(bundle, end, other),
+                RouteFamily.Join => Join(bundle, end),
+                RouteFamily.PocketLine => Line(new MapPoint(PocketLineX, RailY(end)), new MapPoint(PocketLineX, other.Bucket is null ? RailY(other) : _grid.Slot(other).Top)),
                 RouteFamily.GateToTaxes => GateToTaxes(bundle, end, other),
-                RouteFamily.IntoLine => IntoLine(bundle, end, other),
+                RouteFamily.Leave => Leave(bundle, end),
                 RouteFamily.LineToExpenses or RouteFamily.CompanyYearToExpenses => ToExpenses(bundle, end, other),
                 RouteFamily.BenefitToPay => FromGateSide(bundle, end, PayFromGates, _grid.Slot(other).Top),
-                RouteFamily.RoyaltyToPay => FromGateSide(bundle, end, PayFromGates, _grid.Slot(other).Bottom),
+                RouteFamily.RoyaltyToPay => RoyaltyToPay(bundle, end, other),
                 RouteFamily.Pay => Pay(bundle, end, other),
                 RouteFamily.Quotient => Quotient(end, other),
-                RouteFamily.PayToPocket => StraightDown(bundle, end, other, back => back ? PayToPocket + Across(6m) : PayToPocket),
-                RouteFamily.PayToTaxes => Stepped(bundle, end, other, back => back ? PayFromTaxes : PayToTaxes, back => back ? PayTaxesOut : PayTaxesIn,
-                    back => back ? OutOfTaxesRow : IntoTaxesRow),
+                RouteFamily.PayToTaxes => Stepped(bundle, end, other, back => back ? PayFromTaxes : PayToTaxes, _ => 0m,
+                    _grid.PayTaxesRow),
                 RouteFamily.AddBack => AddBack(bundle, end, other),
                 RouteFamily.Bracket => BracketRoute(bundle, end, other),
                 RouteFamily.ConditionToSplit => ConditionToSplit(bundle, end, other),
@@ -562,7 +598,7 @@ internal static class MapLayout
                 RouteFamily.CorporateTaxToTaxes => StraightDown(bundle, end, other, back => back ? CorporateToTaxes - Across(6m) : CorporateToTaxes),
                 RouteFamily.DividendToTaxes => StraightDown(bundle, end, other, back => back ? DividendFromTaxes : DividendToTaxes),
                 RouteFamily.DividendToKept => Stepped(bundle, end, other, back => back ? DividendFromKept : DividendToKept, back => back ? KeptOut : KeptIn,
-                    back => back ? OutOfTaxesRow : IntoTaxesRow),
+                    back => back ? DividendBackRow : DividendIntoRow),
                 _ => throw new ArgumentOutOfRangeException(nameof(bundle), $"{bundle.From.Id} to {bundle.To.Id}", "A link the map has no route for."),
             };
         }
@@ -571,29 +607,29 @@ internal static class MapLayout
         private static RouteFamily Family((MapEnd From, MapEnd To, MapLinkKind Kind) bundle)
         {
             var (from, to, kind) = bundle;
+            if (from.PocketLine is not null && (to.PocketLine is not null || to.Bucket == "pocket"))
+                return RouteFamily.PocketLine;
+
+            if ((from.PocketLine ?? to.PocketLine) is { } joins)
+            {
+                var other = from.PocketLine is null ? from : to;
+                return other == MapEnd.Of(joins) ? RouteFamily.Join : other.Lever == joins ? RouteFamily.Leave : RouteFamily.None;
+            }
+
             if ((from.Bucket ?? to.Bucket) is { } bucket)
             {
                 var end = from.Bucket is null ? from : to;
                 if (end.Lever is not null)
-                {
-                    return bucket switch
-                    {
-                        "expenses" => RouteFamily.LineToExpenses,
-                        "pocket" => RouteFamily.IntoLine,
-                        _ => RouteFamily.None,
-                    };
-                }
+                    return bucket == "expenses" ? RouteFamily.LineToExpenses : RouteFamily.None;
 
                 return (end.Module, bucket) switch
                 {
                     (RiverModule.CompanyYear, "expenses") => RouteFamily.CompanyYearToExpenses,
-                    (RiverModule.DirectorPay, "pocket") => RouteFamily.PayToPocket,
                     (RiverModule.DirectorPay, "taxes_on_pay") => RouteFamily.PayToTaxes,
                     (RiverModule.CorporateTax, "taxes_on_profit") => RouteFamily.CorporateTaxToTaxes,
                     (RiverModule.Dividend, "taxes_on_profit") => RouteFamily.DividendToTaxes,
                     (RiverModule.Dividend, "kept_in_company") => RouteFamily.DividendToKept,
                     (RiverModule.Rent or RiverModule.Copyright, "taxes_on_pay") => RouteFamily.GateToTaxes,
-                    ({ } gate, "pocket") when Place(gate).Column == MapColumn.Gates => RouteFamily.GoldToPocket,
                     _ => RouteFamily.None,
                 };
             }
@@ -628,7 +664,7 @@ internal static class MapLayout
             return Family(bundle) switch
             {
                 RouteFamily.Take => [(bundle.To, MapSide.Right)],
-                RouteFamily.GoldToPocket or RouteFamily.GateToTaxes or RouteFamily.BenefitToPay or RouteFamily.RoyaltyToPay => [(end, MapSide.Left)],
+                RouteFamily.Join or RouteFamily.GateToTaxes or RouteFamily.BenefitToPay or RouteFamily.RoyaltyToPay => [(end, MapSide.Left)],
                 RouteFamily.LineToExpenses or RouteFamily.CompanyYearToExpenses => [(end, MapSide.Right)],
                 RouteFamily.Pay => [(end, MapSide.Left)],
                 RouteFamily.AddBack => [(end, MapSide.Right)],
@@ -644,9 +680,9 @@ internal static class MapLayout
         // gate's right, the rule the allowances' office sets on the rent, what Corporate tax adds back of it, its
         // share off the company's line, with room under it for its amount, the conditions it sets on the split,
         // what Corporate tax passes it, the split's royalty, the car's rule on Corporate tax's rate, the office's
-        // rule leaving the allowances; on its left, what it passes Director pay, then its taxes and what reaches
-        // the pocket, by their tracks, the furthest left the highest; on the split's left, the pay, then the
-        // conditions the dividend and the royalty set on it.
+        // rule leaving the allowances; on its left, what it passes Director pay, then its line into the pocket
+        // line, then its taxes by their tracks, the furthest left the highest, so that what goes up leaves above
+        // what joins and what goes down below; on the split's left, the pay, then the conditions the dividend and the royalty set on it.
         private decimal PortOrder((MapEnd From, MapEnd To, MapLinkKind Kind) bundle, MapEnd end) => (Back(bundle) ? 0.25m : 0m) + Family(bundle) switch
         {
             RouteFamily.Bracket => end == bundle.From ? 5m : -3m,
@@ -657,7 +693,8 @@ internal static class MapLayout
             RouteFamily.SplitToRoyalty => 1m,
             RouteFamily.AddBack => bundle.Kind == MapLinkKind.Condition ? 3m : -2.5m,
             RouteFamily.BenefitToPay or RouteFamily.RoyaltyToPay => 0m,
-            RouteFamily.GateToTaxes or RouteFamily.GoldToPocket => 1m + _lane.IndexOf(bundle) / 100m,
+            RouteFamily.Join => 1m,
+            RouteFamily.GateToTaxes => 2m + _lane.IndexOf(bundle) / 100m,
             _ => 0m,
         };
 
@@ -688,7 +725,7 @@ internal static class MapLayout
                 return PortY(take, MapEnd.Of(lever), MapSide.Right);
             if (_ports.TryGetValue((point, MapSide.Right), out var costs))
                 return PortY(costs[0], point, MapSide.Right);
-            return _bundles.FirstOrDefault(bundle => Family(bundle) == RouteFamily.IntoLine && (bundle.From == point || bundle.To == point)) is { From: not null } joins
+            return _bundles.FirstOrDefault(bundle => Family(bundle) == RouteFamily.Leave && (bundle.From == point || bundle.To == point)) is { From: not null } joins
                 ? ContributionY(joins)
                 : _grid.Slot(MapEnd.Of(lever)).CenterY;
         }
@@ -712,13 +749,28 @@ internal static class MapLayout
             return Line(new MapPoint(Spine, y), new MapPoint(_grid.Slot(bundle.To).Right, y));
         }
 
-        // Out of a gate's left side to its track down the lane beside the gates, and down into the pocket.
-        private MapRoute ToLane((MapEnd, MapEnd, MapLinkKind) bundle, MapEnd gate, MapEnd bucket)
+        // A line into the pocket: out of its module's left side straight across into the pocket line, which runs
+        // on; what comes back out of the pocket runs beside it, but into Director pay, too near the pocket line for
+        // an arrowhead across, which it climbs into from under it, left of its ways into the taxes and back.
+        private MapRoute Join((MapEnd, MapEnd, MapLinkKind) bundle, MapEnd module)
         {
-            var y = PortY(bundle, gate, MapSide.Left);
-            var x = LaneX(bundle);
-            return new MapRoute([new(_grid.Slot(gate).Left, y), new(x, y), new(x, _grid.Slot(bucket).Top)]);
+            if (Back(bundle) && module == MapEnd.Of(RiverModule.DirectorPay))
+            {
+                var bottom = _grid.Slot(module).Bottom;
+                var under = bottom + (MapLineWidths.ArrowLength(_widths[bundle]) + 2m * EdgePixels) * _grid.DownPixel;
+                return new MapRoute([new(PayFromPocket, bottom), new(PayFromPocket, under), new(PocketLineX, under)]);
+            }
+
+            var y = PortY(bundle, module, MapSide.Left);
+            return Line(new MapPoint(_grid.Slot(module).Left, y), new MapPoint(PocketLineX, y));
         }
+
+        // Where the pocket line is at a point of it: where the first of the lines joining it or leaving it there
+        // meets it, the highest, the others meeting it further down.
+        private decimal RailY(MapEnd point) =>
+            _bundles.Where(bundle => Family(bundle) is RouteFamily.Join or RouteFamily.Leave && (bundle.From == point || bundle.To == point))
+                .Select(bundle => Family(bundle) == RouteFamily.Leave ? ContributionY(bundle) : PortY(bundle, MapEnd.Of(point.PocketLine!.Value), MapSide.Left))
+                .DefaultIfEmpty(_grid.Slot(point).CenterY).Min();
 
         // A gate's taxes on pay: out of its left side to its track down the lane, along its row of the band, and
         // down into the taxes on pay; what comes back runs beside it.
@@ -728,21 +780,15 @@ internal static class MapLayout
             var x = LaneX(bundle);
             var module = gate.Module!.Value;
             var row = _grid.BandY(_grid.TaxesRow(module));
-            var into = Beside(bundle, back => (module == RiverModule.Rent ? RentTaxIn : RoyaltyTaxIn) - (back ? Across(6m) : 0m),
-                (_grid.Slot(bucket).Left, _grid.Slot(bucket).Right), MapGrid.AcrossPixel);
+            var into = TaxesOnPayX(bundle, bucket);
             var band = Back(bundle) ? row + 6m * _grid.DownPixel : row;
             return new MapRoute([new(_grid.Slot(gate).Left, y), new(x, y), new(x, band), new(into, band), new(into, _grid.Slot(bucket).Top)]);
         }
 
-        // The car's contribution, from the pocket: up its track furthest left in the lane, across under the car's
-        // gate, into the company's line, which it joins, its arrowhead's point on the line's edge; what leaves the
-        // line for the pocket runs beside it.
-        private MapRoute IntoLine((MapEnd, MapEnd, MapLinkKind) bundle, MapEnd point, MapEnd bucket)
-        {
-            var x = LaneX(bundle);
-            var y = ContributionY(bundle);
-            return new MapRoute([new(Spine - LineHalf(point) * MapGrid.AcrossPixel, y), new(x, y), new(x, _grid.Slot(bucket).Top)]);
-        }
+        // The car's contribution, out of the pocket line at the car's point: straight across under the car's gate
+        // into the company's line, which it joins, its arrowhead's point on the line's edge.
+        private MapRoute Leave((MapEnd, MapEnd, MapLinkKind) bundle, MapEnd point) =>
+            Line(new MapPoint(Spine - LineHalf(point) * MapGrid.AcrossPixel, ContributionY(bundle)), new MapPoint(PocketLineX, ContributionY(bundle)));
 
         // Half the width of the company's line at a point of it, its thickest stretch there, in pixels: where a line
         // joining it or leaving it from the side meets its edge.
@@ -757,6 +803,16 @@ internal static class MapLayout
             var y = PortY(bundle, from, MapSide.Right);
             var x = Lane(_expenses, bundle, index => ExpensesLane - index * ExpensesTrack, ExpensesRoom);
             return new MapRoute([new(from.Lever is null ? _grid.Slot(from).Right : Spine + LineHalf(from) * MapGrid.AcrossPixel, y), new(x, y), new(x, _grid.Slot(bucket).Top)]);
+        }
+
+        // The royalty's part taxed as pay: out of its gate's left side to its track down the lane beside the
+        // gates, the first, up to Director pay's bottom and into its right side under the pay, its arrowhead's base
+        // on the side, its lowest edge a pixel over the box's bottom.
+        private MapRoute RoyaltyToPay((MapEnd From, MapEnd To, MapLinkKind Kind) bundle, MapEnd gate, MapEnd pay)
+        {
+            var (y, x, box) = (PortY(bundle, gate, MapSide.Left), LaneX(bundle), _grid.Slot(pay));
+            var into = box.Bottom - (MapLineWidths.ArrowHalf(_widths[bundle]) + EdgePixels) * _grid.DownPixel;
+            return new MapRoute([new(_grid.Slot(gate).Left, y), new(x, y), new(x, into), new(box.Right, into)]);
         }
 
         // Out of a gate's left side across to the x given, then up or down into Director pay at the y given.
@@ -845,28 +901,35 @@ internal static class MapLayout
         {
             var (box, tray) = (_grid.Slot(from), _grid.Slot(bucket));
             var x = Beside(bundle, leave, (box.Left, box.Right), MapGrid.AcrossPixel, atModule: true);
-            var into = Beside(bundle, enter, (tray.Left, tray.Right), MapGrid.AcrossPixel);
+            var into = Family(bundle) == RouteFamily.PayToTaxes ? TaxesOnPayX(bundle, bucket) : Beside(bundle, enter, (tray.Left, tray.Right), MapGrid.AcrossPixel);
             var y = _grid.BandY(row(Back(bundle)));
             return new MapRoute([new(x, box.Bottom), new(x, y), new(into, y), new(into, tray.Top)]);
         }
 
+        // Where a line into the taxes on pay, or back out of them, enters them: from their left in the order the
+        // band nests its rows, Director pay's back first, its way in, then the gates' by their tracks down the lane,
+        // each its step from the one before, or further where their widths ask it, all of them in the bucket.
+        private decimal TaxesOnPayX((MapEnd, MapEnd, MapLinkKind) bundle, MapEnd bucket) =>
+            Lane(_taxesOnPay, bundle, index => TaxesOnPayFrom + index * TaxesOnPayStep, (_grid.Slot(bucket).Left, _grid.Slot(bucket).Right));
+
         // A link's track down the lane beside the gates.
         private decimal LaneX((MapEnd, MapEnd, MapLinkKind) bundle) => Lane(_lane, bundle, index => LaneFrom + index * LaneTrack, LaneRoom);
 
-        // The order of the lane's tracks, left to right: the car's contribution, the gates' taxes on pay, then
-        // what reaches the pocket from the gates, the highest row's furthest left; each line back beside its way
-        // in; none for a link that takes no track.
+        // The order of the lane's tracks, left to right: the highest row's furthest left, and in the royalty's row
+        // its part taxed as pay before its taxes, so that the part's way up into Director pay crosses none of the
+        // royalty's lines and leaves room right of it for its amount; each line back beside its way in; none for a
+        // link that takes no track.
         private static decimal? LaneOrder((MapEnd From, MapEnd To, MapLinkKind Kind) bundle)
         {
             decimal? group = Family(bundle) switch
             {
-                RouteFamily.IntoLine => 0m,
-                RouteFamily.GateToTaxes => 1m,
-                RouteFamily.GoldToPocket => 2m,
+                RouteFamily.RoyaltyToPay => 0m,
+                RouteFamily.GateToTaxes => 0.5m,
                 _ => null,
             };
-            return group + (int)Row(Owner(bundle)) / 100m + (Back(bundle) ? 0.005m : 0m);
+            return (int)Row(Owner(bundle)) + group + (Back(bundle) ? 0.005m : 0m);
         }
+
 
         // A link's track down a lane: from the lane's first, each its step from the one before, or further where
         // their widths ask it, all of them in the lane's room.
@@ -928,13 +991,16 @@ internal static class MapLayout
 
         private static MapRoute Reversed(MapRoute route) => route with { Points = [.. route.Points.Reverse()] };
 
-        // A line back out of a bucket into its module, or into the company's line.
-        private static bool Back((MapEnd From, MapEnd To, MapLinkKind Kind) bundle) => bundle.From.Bucket is not null;
+        // A line back out of a bucket or out of the pocket line into its module, or into the company's line; a
+        // stretch of the pocket line runs on.
+        private static bool Back((MapEnd From, MapEnd To, MapLinkKind Kind) bundle) =>
+            bundle.From.Bucket is not null || (bundle.From.PocketLine is not null && bundle.To.PocketLine is null && bundle.To.Bucket is null);
 
-        // The module a link belongs to on the map, for its row: its module end, or the lever whose point of the
-        // company's line it leaves or joins.
+        // The module a link belongs to on the map, for its row: its module end, or the module whose point of the
+        // company's line or of the pocket line it leaves or joins.
         private static RiverModule Owner((MapEnd From, MapEnd To, MapLinkKind Kind) bundle) =>
-            bundle.From.Module ?? bundle.From.Lever ?? bundle.To.Module ?? bundle.To.Lever ?? throw new ArgumentOutOfRangeException(nameof(bundle), "A link with no module.");
+            bundle.From.Module ?? bundle.From.Lever ?? bundle.To.Module ?? bundle.To.Lever ?? bundle.From.PocketLine ?? bundle.To.PocketLine
+            ?? throw new ArgumentOutOfRangeException(nameof(bundle), "A link with no module.");
 
         // The bucket a link runs into or back out of, none for a link between modules.
         private static string? Bucket((MapEnd From, MapEnd To, MapLinkKind Kind) bundle) => bundle.From.Bucket ?? bundle.To.Bucket;
@@ -947,17 +1013,18 @@ internal static class MapLayout
         None,
         CompanysLine,
         Take,
-        GoldToPocket,
+        Join,
+        PocketLine,
         GateToTaxes,
-        IntoLine,
+        Leave,
         LineToExpenses,
         CompanyYearToExpenses,
         BenefitToPay,
         RoyaltyToPay,
         Pay,
         Quotient,
-        PayToPocket,
         PayToTaxes,
+
         AddBack,
         Bracket,
         ConditionToSplit,
