@@ -34,6 +34,12 @@ internal sealed record MapView(IReadOnlyList<MapNode> Modules, IReadOnlyList<Map
     // The pay's pill where the pay crosses the gates' column, and what it says; none without a pay.
     public MapPill? Pill { get; init; }
 
+    // The pill as the map draws it: with the pay's line, none while a filter hides that line, the pill being what
+    // the line says.
+    public MapPill? ShownPill => Links.Any(link => link.Kind == MapLinkKind.PassedOn && link.From == MapEnd.Of(RiverModule.Split) && link.To == MapEnd.Of(RiverModule.DirectorPay))
+        ? Pill
+        : null;
+
     public static MapView From(RiverInputs inputs, RiverRun run)
     {
         var modules = ModulesOf(inputs);

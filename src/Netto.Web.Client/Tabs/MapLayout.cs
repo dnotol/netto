@@ -12,8 +12,8 @@ namespace Netto.Web.Client.Tabs;
 // skipped the map is Company year, which no link joins, over the partner, Director pay and the buckets. The
 // shape is fixed, so every link has its own route, worked out once from the slots and every link of the run,
 // never from the links a filter shows, so hiding a kind of link moves nothing. The columns and lanes are the
-// pixels of the narrowest map, 34rem wide, which the layout was drawn at (local/mockups/map-gates-544), each
-// a percent of the map wherever it is drawn wider.
+// pixels of the narrowest map, 34rem wide, which the layout was drawn at, each a percent of the map wherever
+// it is drawn wider.
 //
 // What the company has left runs down its own line at the left of the company's column (Spine), from Company
 // year's bottom into the split's top, a stretch between each two points where a lever takes its share across

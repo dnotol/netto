@@ -117,7 +117,7 @@
                 {
                     <span class="@AmountClass(amount.Bundle)" data-link-kind="@amount.Bundle.Kind" style="@AmountStyle(amount)" aria-hidden="true">@amount.Text</span>
                 }
-                @if (_view.Pill is { } pill)
+                @if (_view.ShownPill is { } pill)
                 {
                     <div class="map-pill" style="@Box(pill.Slot)" aria-hidden="true"><MapGateWords Line="pill.Words" /></div>
                 }

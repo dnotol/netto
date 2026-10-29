@@ -48,6 +48,16 @@ public class MapTabTextTests
         Resources.Get(MapTabText.Module(module)).ShouldBe(ResxText.For(Card(module)).Get("Title"));
     }
 
+    public static TheoryData<MapOwner> Owners => new(Enum.GetValues<MapOwner>());
+
+    // Each column of the map is labelled by whose money it holds.
+    [Theory]
+    [MemberData(nameof(Owners))]
+    public void MapTabResx_aColumn_hasItsLabel(MapOwner owner)
+    {
+        Resources.Get(MapTabText.Column(owner)).ShouldNotBeNullOrWhiteSpace();
+    }
+
     // The sentences of the conditions are on no surface of the map: the cards say them with their figures
     // (the Corporate tax, Copyright royalty, Split and Dividend cards), so their texts are the cards' alone.
     [Fact]

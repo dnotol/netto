@@ -49,14 +49,15 @@ internal static class MapQuiet
     }
 
     // The stretch into a run of points where nothing leaves or joins the line, on past them to the first point
-    // where something does, or the split, which ends the line.
+    // where something does, or the split, which ends the line; or, should a point have no stretch on out of it,
+    // stopped there, so the map draws what it has rather than failing.
     private static MapLink Past(MapLink link, IReadOnlyList<MapLink> links, HashSet<MapEnd> empty)
     {
         var (to, through) = (link.To, new List<RiverModule>());
-        while (empty.Contains(to))
+        while (empty.Contains(to) && links.FirstOrDefault(next => OnCompanysLine(next) && next.From == to) is { } next)
         {
             through.Add(to.Lever!.Value);
-            to = links.Single(next => OnCompanysLine(next) && next.From == to).To;
+            to = next.To;
         }
 
         return link with { To = to, Through = [.. link.Through, .. through] };

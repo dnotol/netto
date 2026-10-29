@@ -98,6 +98,18 @@ public class MapTabFilterTests
                 ignoreOrder: true));
     }
 
+    // The pay's pill says what its line carries: hiding the money passed on hides it with the pay's line; hiding
+    // any other kind leaves it on its line.
+    [Theory]
+    [InlineData(MapLinkKind.PassedOn, 0)]
+    [InlineData(MapLinkKind.IntoBucket, 1)]
+    public async Task Tab_aKindHidden_drawsThePaysPillOnlyWithItsLine(MapLinkKind hidden, int pills)
+    {
+        var html = await RenderTabAsync(Full, more: Hiding(hidden));
+
+        Regex.Count(html, "<div class=\"map-pill\"").ShouldBe(pills);
+    }
+
     // Hiding a kind moves no amount: those left are drawn where they were with every kind shown.
     [Theory]
     [MemberData(nameof(KindsTheFullPlanDraws))]
