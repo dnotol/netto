@@ -203,13 +203,24 @@ public class MapAmountsTests
     // A plan's map, with its amounts placed.
     internal static (MapView View, IReadOnlyList<MapAmount> Amounts) Placed(string plan)
     {
-        var river = Regex.Match(plan, "^levers (\\d+), (?:quiet (\\d+)|(the company skipped))$") is { Success: true } match
+        var view = View(plan);
+        return (view, MapAmounts.Of(view, Say));
+    }
+
+    // A plan's map, by its name among the plans the amounts are held on.
+    internal static MapView View(string plan)
+    {
+        var river = River(plan);
+        return MapView.From(river, river.Run());
+    }
+
+    // A plan by its name among the plans the amounts are held on: its levers and those it leaves empty, or with
+    // the company skipped, or one at the edges.
+    internal static RiverInputs River(string plan) =>
+        Regex.Match(plan, "^levers (\\d+), (?:quiet (\\d+)|(the company skipped))$") is { Success: true } match
             ? MapLayoutTests.River(int.Parse(match.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture),
                 match.Groups[2].Success ? int.Parse(match.Groups[2].Value, System.Globalization.CultureInfo.InvariantCulture) : 0, match.Groups[3].Success)
             : MapLayoutTests.Extreme(plan);
-        var view = MapView.From(river, river.Run());
-        return (view, MapAmounts.Of(view, Say));
-    }
 
     // A condition's words, as the map's texts say them.
     internal static string Say(MapLabel label) => ResxText.For<MapTab>().Format(label.Key, [.. label.Args]);

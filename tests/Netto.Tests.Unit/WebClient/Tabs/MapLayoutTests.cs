@@ -721,6 +721,47 @@ public class MapLayoutTests
             && a.X == leaves && b.Y == a.Y && b.X > company && c == new MapPoint(b.X, expenses.Top) && c.X > expenses.Left && c.X < expenses.Right;
     }
 
+    // No plan's lines cross one another more often than they did on the map by owner before its pocket line
+    // (c211d99), held plan by plan against the counts taken then (MapCrossings.txt): every line but the
+    // conditions', hidden until ticked, each stretch across crossing a stretch down inside both, a line ending
+    // on another being no crossing. Counted on the routes' points, so the same at every width the map is drawn,
+    // 544 px among them.
+    [Theory]
+    [MemberData(nameof(CrossingPlans))]
+    public void From_anyPlan_crossesNoMoreLinesThanTheMapByOwnerDid(string plan)
+    {
+        var crossings = LineCrossings(MapAmountsTests.View(plan));
+
+        crossings.ShouldBeLessThanOrEqualTo(CrossingsBefore[plan]);
+    }
+
+    // The counts held name every plan the crossings are held on, once each.
+    [Fact]
+    public void MapCrossings_namesEveryPlanOnce()
+    {
+        CrossingsBefore.Keys.ShouldBe(CrossingPlans().Select(row => row.Data), ignoreOrder: true);
+    }
+
+    public static TheoryData<string> CrossingPlans() => MapAmountsTests.Plans();
+
+    // How many times the lines of a map cross one another: each stretch across of a line crossing a stretch down
+    // of another inside both, the conditions' lines left out.
+    internal static int LineCrossings(MapView view)
+    {
+        var lines = view.Bundles().Where(line => line.Kind != MapLinkKind.Condition).Select(line => MapLineWidths.Stretches(line.Route).ToList()).ToList();
+        return lines.SelectMany((a, i) => lines.Skip(i + 1).Select(b => a.Sum(sa => b.Count(sb => Cross(sa, sb))))).Sum();
+    }
+
+    // The crossings each plan's map had at c211d99, by the plan's name (MapAmountsTests.Plans): a line each, the
+    // name and the count apart by a tab, a line opening on # a note.
+    private static IReadOnlyDictionary<string, int> CrossingsBefore => Before.Value;
+
+    private static readonly Lazy<IReadOnlyDictionary<string, int>> Before = new(() =>
+        File.ReadAllLines(RepositoryFile.FindUp("tests", "Netto.Tests.Unit", "WebClient", "Tabs", "MapCrossings.txt"))
+            .Where(line => line.Length > 0 && !line.StartsWith('#'))
+            .Select(line => line.Split('\t'))
+            .ToDictionary(parts => parts[0], parts => int.Parse(parts[1], System.Globalization.CultureInfo.InvariantCulture)));
+
     // Every composition of the levers, with the company's year and without it, and, with it, every set of
     // the levers in the plan left empty (quiet, by the bits of a number as the composition's), which the
     // map draws quiet but for Expense allowances beside a rent paid.
