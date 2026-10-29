@@ -129,7 +129,15 @@ public class MapTabTextTests
         (Resources.Get("Receives"), Resources.Format("ReceivedFrom", ["€1,000.00"]), Resources.Get("ReceivedBetween")).ShouldBe(("Receives", "€1,000.00 from", "·"));
     }
 
-    // Every link of these plans is worded by the texts its label names, its arguments taken.
+    // What a stretch of the pocket line carries: what has reached the director so far.
+    [Fact]
+    public void MapTabResx_aStretchOfThePocketLine_carriesWhatHasReachedYouSoFar()
+    {
+        Resources.Get(MapTabText.PocketSoFar).ShouldBe("What has reached you so far");
+    }
+
+    // Every link of these plans is worded by the texts its label names, its arguments taken, the pocket line's
+    // stretches among them.
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -137,7 +145,8 @@ public class MapTabTextTests
     {
         var river = companyPays ? MapLinksTests.Full.WithContributionsPaidBy(ContributionsPaidBy.Company).WithFundFeeRate(0.035m) : MapLinksTests.Full;
 
-        MapLinks.Of(river, river.Run()).Select(link => link.Carries)
+        MapPocketLine.Of(MapLinks.Of(river, river.Run())).Select(link => link.Carries)
+
             .Where(label => ResxText.For(MapTabText.Texts(label.Text)).Get(label.Key) is not { } text
                 || (label.Args.Count > 0 && !text.Contains("{0}", StringComparison.Ordinal)))
             .Select(label => $"{label.Text} {label.Key}").ShouldBeEmpty();

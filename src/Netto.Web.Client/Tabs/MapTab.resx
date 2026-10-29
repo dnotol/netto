@@ -18,6 +18,10 @@
   <data name="Carries_ProfitBeforeLevers" xml:space="preserve">
     <value>Before your pay</value>
   </data>
+  <data name="Carries_PocketSoFar" xml:space="preserve">
+    <value>What has reached you so far</value>
+  </data>
+
   <data name="Module_CompanyYear" xml:space="preserve">
     <value>Company year</value>
   </data>

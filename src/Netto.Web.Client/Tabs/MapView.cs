@@ -204,10 +204,10 @@ internal sealed record MapBundle(MapRoute Route, IReadOnlyList<MapLink> Links)
     // as lines, not as a row of arrowheads, and money passed on is told from money into a bucket by its end.
     public bool Arrowhead => EndsInArrowhead(From, To);
 
-    // Whether a line between two ends ends in an arrowhead: into a module, or into the company's line from a
-    // bucket, the car's contribution joining it; none into a bucket, nor from one point of the company's line
-    // to the next, a stretch of one line.
-    public static bool EndsInArrowhead(MapEnd from, MapEnd to) => to.Bucket is null && (to.Lever is null || from.Bucket is not null);
+    // Whether a line between two ends ends in an arrowhead: into a module, or into the company's line from the
+    // pocket, the car's contribution joining it; none into a bucket or onto the pocket line, which runs on into
+    // the pocket, nor from one point of the company's line to the next, a stretch of one line.
+    public static bool EndsInArrowhead(MapEnd from, MapEnd to) => to.Bucket is null && to.PocketLine is null && (to.Lever is null || from.InPocket);
 
     // Whether the map says the line's amount on it: every line but one whose amount the map says elsewhere, a
     // box, the pay's pill or a badge saying it (MapLink.Unsaid, marked by MapView.From).
@@ -321,14 +321,16 @@ internal enum MapLineEnd
     Bucket,
 }
 
-// One end of a link: a module of the map, a bucket of the bar (BucketsView.Keys), or the point of the
-// company's line beside a lever before the split (Lever), where the lever takes its share of what the company
-// has left, and where what the company pays or receives for it leaves or joins that line. Id names it in the
-// map's elements: a module by its card's fold name, a bucket by its key, a point of the company's line by
-// its lever's.
+// One end of a link: a module of the map, a bucket of the bar (BucketsView.Keys), the point of the company's
+// line beside a lever before the split (Lever), where the lever takes its share of what the company has left,
+// and where what the company pays or receives for it leaves or joins that line, or the point of the pocket line
+// beside a module whose money reaches the director (PocketLine, MapPocketLine), where it joins that line or
+// leaves it. Id names it in the map's elements: a module by its card's fold name, a bucket by its key, a point
+// of a line by its module's.
 internal sealed record MapEnd
 {
-    private MapEnd(RiverModule? module, string? bucket, RiverModule? lever) => (Module, Bucket, Lever) = (module, bucket, lever);
+    private MapEnd(RiverModule? module, string? bucket, RiverModule? lever, RiverModule? pocketLine) =>
+        (Module, Bucket, Lever, PocketLine) = (module, bucket, lever, pocketLine);
 
     public RiverModule? Module { get; }
 
@@ -337,24 +339,38 @@ internal sealed record MapEnd
     // The lever before the split whose point of the company's line this is, none for a module or a bucket.
     public RiverModule? Lever { get; }
 
-    public string Id => (Module, Bucket, Lever) switch
+    // The module whose point of the pocket line this is, none for any other end.
+    public RiverModule? PocketLine { get; }
+
+    // Whether the end is the director's pocket: its bucket, or a point of the line into it.
+    public bool InPocket => Bucket == "pocket" || PocketLine is not null;
+
+    public string Id => (Module, Bucket, Lever, PocketLine) switch
     {
-        ({ } module, _, _) => MapModules.Name(module),
-        (_, { } bucket, _) => bucket,
-        (_, _, { } lever) => $"company-line-{MapModules.Name(lever)}",
-        _ => throw new InvalidOperationException("An end with neither a module, a bucket nor a lever."),
+        ({ } module, _, _, _) => MapModules.Name(module),
+        (_, { } bucket, _, _) => bucket,
+        (_, _, { } lever, _) => $"company-line-{MapModules.Name(lever)}",
+        (_, _, _, { } joins) => $"pocket-line-{MapModules.Name(joins)}",
+        _ => throw new InvalidOperationException("An end with neither a module, a bucket nor a point of a line."),
     };
 
-    public static MapEnd Of(RiverModule module) => new(module, null, null);
+    public static MapEnd Of(RiverModule module) => new(module, null, null, null);
 
     public static MapEnd InBucket(string key) => BucketsView.Keys.Contains(key)
-        ? new(null, key, null)
+        ? new(null, key, null, null)
         : throw new ArgumentOutOfRangeException(nameof(key), key, "A bucket the bar does not have.");
 
     // The point of the company's line beside a lever before the split: none beside any other module.
     public static MapEnd Beside(RiverModule lever) => MapModules.CompanysLine.Contains(lever) && lever is not (RiverModule.CompanyYear or RiverModule.Split)
-        ? new(null, null, lever)
+        ? new(null, null, lever, null)
         : throw new ArgumentOutOfRangeException(nameof(lever), lever, "A module the company's line does not run beside.");
+
+    // The point of the pocket line beside a module whose money reaches the director or leaves them: a way across,
+    // or Director pay; none beside any other module.
+    public static MapEnd OnPocketLine(RiverModule module) => module is RiverModule.Vouchers or RiverModule.Allowances or RiverModule.Rent or RiverModule.Car
+        or RiverModule.Copyright or RiverModule.Dividend or RiverModule.DirectorPay
+        ? new(null, null, null, module)
+        : throw new ArgumentOutOfRangeException(nameof(module), module, "A module whose money never reaches the pocket.");
 }
 
 // Whose texts word a link: the map's own, a drain list's, or the card whose figure line it is.
@@ -410,7 +426,9 @@ internal sealed record MapLink(MapLinkKind Kind, MapEnd From, MapEnd To, RiverMo
 
 
     public bool Touches(RiverModule module) =>
-        From.Module == module || To.Module == module || From.Lever == module || To.Lever == module || Through.Contains(module);
+        From.Module == module || To.Module == module || From.Lever == module || To.Lever == module || From.PocketLine == module || To.PocketLine == module
+        || Through.Contains(module);
+
 }
 
 // The river's modules as the map places them, in the river's order,

@@ -15,6 +15,10 @@ internal static class MapTabText
     // summary says it.
     public const string ProfitBeforeLevers = "Carries_ProfitBeforeLevers";
 
+    // What a stretch of the pocket line carries: what has reached the director so far (MapPocketLine).
+    public const string PocketSoFar = "Carries_PocketSoFar";
+
+
     // A module on the map, named as its card is.
     public static string Module(RiverModule module) => $"Module_{module}";
 
