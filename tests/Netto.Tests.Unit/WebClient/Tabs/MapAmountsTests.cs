@@ -110,8 +110,7 @@ public class MapAmountsTests
     [InlineData("the dividend all kept", true)]
     public void View_corporateTaxsLineToTheDividend_saysItsAmountOnlyWhereTheDividendsBoxDoesNot(string river, bool says)
     {
-        var inputs = MapRendering.River(river);
-        var view = MapView.From(inputs, inputs.Run());
+        var view = View(river);
 
         var line = MapViewTests.Line(view, MapEnd.Of(RiverModule.CorporateTax), MapEnd.Of(RiverModule.Dividend));
 
@@ -127,7 +126,7 @@ public class MapAmountsTests
     [InlineData("the costly car", RiverModule.DirectorPay, true)]
     public void View_aStretchOfThePocketLine_saysNoTotalOutOfAPointMoneyOnlyLeavesOrBelowNothing(string plan, RiverModule point, bool belowNothing)
     {
-        var view = plan == "the costly car" ? View(plan) : MapView.From(MapRendering.River(plan), MapRendering.River(plan).Run());
+        var view = View(plan);
 
         var stretch = view.Bundles().Single(line => line.From == MapEnd.OnPocketLine(point) && (line.To.PocketLine is not null || line.To == MapEnd.InBucket("pocket")));
 
@@ -275,13 +274,14 @@ public class MapAmountsTests
         return MapView.From(river, river.Run());
     }
 
-    // A plan by its name among the plans the amounts are held on: its levers and those it leaves empty, or with
-    // the company skipped, or one at the edges.
+    // A plan by its name: one the amounts are held on, by its levers and those it leaves empty, or with the
+    // company skipped, or one at the edges (MapLayoutTests.Extremes); else a river the map's tests draw by name
+    // (MapRendering.River).
     internal static RiverInputs River(string plan) =>
         Regex.Match(plan, "^levers (\\d+), (?:quiet (\\d+)|(the company skipped))$") is { Success: true } match
             ? MapLayoutTests.River(int.Parse(match.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture),
                 match.Groups[2].Success ? int.Parse(match.Groups[2].Value, System.Globalization.CultureInfo.InvariantCulture) : 0, match.Groups[3].Success)
-            : MapLayoutTests.Extreme(plan);
+            : MapLayoutTests.Extremes.Contains(plan) ? MapLayoutTests.Extreme(plan) : MapRendering.River(plan);
 
     // A condition's words, as the map's texts say them.
     internal static string Say(MapLabel label) => ResxText.For<MapTab>().Format(label.Key, [.. label.Args]);

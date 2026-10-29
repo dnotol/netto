@@ -1,4 +1,4 @@
-# The crossings of each plan's map at c211d99, the map by owner before its pocket line (MapLayoutTests.LineCrossings): every line but the conditions'.
+# The most crossings each plan's map may have (MapLayoutTests.From_anyPlan_crossesNoMoreLinesThanItsBaseline): its name, a tab and MapLayoutTests.LineCrossings of its map, every line but the conditions', counted on the map as drawn before the pocket line.
 levers 0, quiet 0	2
 levers 0, the company skipped	1
 levers 1, quiet 0	6
