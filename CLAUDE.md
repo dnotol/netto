@@ -7,15 +7,14 @@ Netto tells a Belgian SRL owner-director how to pay themselves for the year so t
 | Where | Holds |
 |---|---|
 | `CLAUDE.md` (this file) | What an agent must do, must not do, or would otherwise get wrong. No status, no history, no domain spec. At most 4,000 words: a change that adds a rule removes or shortens another. |
-| Notion, « Netto Development » | Work Items and User Stories, « Goal & scope » (what Netto is and is not), « Engine architecture », and the Lever catalogue with each lever's official sources. What shipped is the git history. |
+| Notion, « Netto Development » | Work Items and User Stories, « Goal & scope » (what Netto is and is not), decisions under debate, and the Lever catalogue with each lever's official sources. What shipped is the git history. |
+| `docs/architecture/` | How the code is shaped: pages drawn from the code (`index.html`), and every decision taken, one ADR each (`decisions/`). |
 | `official-docs/` | The official documents the rules are taken from, each with the income years it applies to and its status (`INDEX.md`; how to file one: `README.md`). |
-| The River Map ([link](https://claude.ai/artifact/C2gkexviNGUUMzDbpaqaEX)), an Artifact | The whole river from above: its modules, where their money goes, the buckets, dated rules, what is open. |
-| Subsystem maps, Artifacts: company car ([link](https://claude.ai/artifact/AhoWfP6DmKmqWatT2xAc1j)), copyright royalty ([link](https://claude.ai/artifact/H78okHrfkQ1Fjs3FtCYGCY)), household ([link](https://claude.ai/artifact/Xq92UJySyaDCQhjKMyE9oR)) | One mechanism in depth: how it computes, its amounts and documents, a worked example, its code and decisions. |
+| The maps, Artifacts: the River Map ([link](https://claude.ai/artifact/C2gkexviNGUUMzDbpaqaEX)), company car ([link](https://claude.ai/artifact/AhoWfP6DmKmqWatT2xAc1j)), copyright royalty ([link](https://claude.ai/artifact/H78okHrfkQ1Fjs3FtCYGCY)), household ([link](https://claude.ai/artifact/Xq92UJySyaDCQhjKMyE9oR)) | The tax rules in depth as of 2026-10-29: amounts, worked examples, documents. A reference, no longer updated: the code and `official-docs/` win. |
 | The design system ([link](https://claude.ai/artifact/4L3FQYC6eQNrHtwuS5frpf)), an Artifact | The look as of 2026-10-27, no longer kept current: the code is the reference. |
 
 **What stays current**
-- A map is updated in the slice that changes what it draws, in place: `Artifact read`, then `path: "index.html"` (strip the publish skeleton before republishing), add a dated rule, bump its date and `main` commit. Only the lead publishes; an implementer reports what its slice changed on a map.
-- A mechanism reaching beyond one card or layer gets a subsystem map before its first slice, linked from the River Map; its rules and decisions live there, not here.
+- `docs/architecture` changes with the code whose boundary it draws (`architecture-views`); a decision taken lands there as an ADR, and its Notion story links to it. Only the lead updates the pages; an implementer reports what moved.
 - `official-docs/` is checked for newer editions when a story is analysed (a researcher per layer touched) and yearly once the next year's amounts are out. A newer edition is filed after the operator's go to download, the old one marked superseded, and the rule set citing it checked in the same story.
 - An Artifact stating Netto's rules or figures gives the ones `official-docs/` gives for its income year.
 
@@ -31,6 +30,7 @@ The generic rules live in the `skillz` plugin. Load the matching skill **before*
 | `csharp-testing` | Implementing or changing any behaviour: the failing test first |
 | `task-analysis` | Sizing picked work and cutting it into slices |
 | `external-tracking` | Reading or writing Notion |
+| `architecture-views` | Moving a boundary the pages draw, or taking a decision |
 | `git-branching` | Committing, and landing a story on `main` |
 
 **If the `skillz` skills are not available in the session, say so and stop.**
@@ -77,7 +77,7 @@ The generic rules live in the `skillz` plugin. Load the matching skill **before*
 
 - No tax rule outside `Netto.Core`: a component growing an `if` about tax means the logic belongs in Core. Core returns data and refusals, never display text.
 - A refusal is a `Refusal` (`Netto.Core.Rules`): a stable key and the `RefusedInput` it refuses, a `static readonly` field beside its rule, declared only in Core and worded as `Error_<key>` in `RefusedMessage.resx`. A refusable result is `(T? Value, Refusal? Error)`. A new input is a `RefusedInput` with its case in `RiverErrors.Owner` (`RiverErrorsTests`, `RiverTextTests`); a refusal declared on `YearSimulation`, `GrossToNet`, `WithholdingCalculator` or `CopyrightCalculator` also takes its row in `RiverErrorsTests.SpreadOverCards`.
-- The engine follows the law's order (Notion, « Engine architecture »): `YearSimulation.Run(Scenario)` composes the layer calculators, and cards read its steps, never calculate. The year starts from the profit less INASTI's company contribution (`company_contribution`), folds over the levers in `LeverOrder.For(year)`, then the split shares what is left (`ProfitBeforePay`). A `Lever` gives its `LeverYear` through `Compute(scenario, left)`: what it takes off the profit, reaches the pocket, leaves undeductible and hands the pay (`TaxedWithPay`), and its steps. A new lever is its facts on `Scenario`, a `Lever` in `Simulation/Levers/`, its place in `LeverOrder.For(year)`, a `YearResult` field if its card reads one, and an argument of `Fixtures.Scenario`.
+- The engine follows the law's order (`docs/architecture/the-river-in-code.html`): `YearSimulation.Run(Scenario)` composes the layer calculators, and cards read its steps, never calculate. The year starts from the profit less INASTI's company contribution (`company_contribution`), folds over the levers in `LeverOrder.For(year)`, then the split shares what is left (`ProfitBeforePay`). A `Lever` gives its `LeverYear` through `Compute(scenario, left)`: what it takes off the profit, reaches the pocket, leaves undeductible and hands the pay (`TaxedWithPay`), and its steps. A new lever is its facts on `Scenario`, a `Lever` in `Simulation/Levers/`, its place in `LeverOrder.For(year)`, a `YearResult` field if its card reads one, and an argument of `Fixtures.Scenario`.
 - The searches do no arithmetic of their own: `SplitSearch` runs `YearSimulation.Level`; `MoveSearch` takes the finders' (`IMoveFinder`) best move until none adds a euro, every gain the difference of two `Run`s, never a move refused or leaving less than the reserve. A new kind of move is a `Move`, its finder, its words (`OptimisationTabText`), its reason (`Tabs/MoveReasons`), its link (`MoveLinks`) and what it sets (`RiverDifferences`); their switches throw at run time on a kind no case names.
 - The company car (`Core/CompanyCar/`, `CarLever`, handing `BenefitInKind`) and the copyright royalty (`Core/Copyright/`, `CopyrightLever`, handing `MovableIncomePaid`) are modules behind one plain contract, each composed in its lever, its card in `Web.Client/River/<Module>/`, explained on its map. The household is no lever: its facts are `Scenario.Household` (a partner, and `Dependants` with or without one), a couple taxed jointly in two columns by `PersonalTaxCalculator`, and the river counts the household's tax less the partner filing alone (its map). Nothing car- or royalty-specific in DirectorPay, PersonalTax, SocialContributions or CorporateTax (checked at review). A rule that changes between years is rule data, never a test on the year.
 - What the levers hand the pay is one record, `DirectorPay/TaxedWithPay` (`OtherIncome`, `BenefitInKind`, `Movable`, summed through `Plus`). The pay statement, the assessment's balance and the payment calendar (`Calendar/PaymentCalendar`) are records beside the ledger; a step is the year's total, undated. The calendar's first open deadline and top-up (`FirstOpen`, `TopUps`) are the one figure the moves, the « more by » lines and When to pay read. `For`, `PaymentCalendar.Of` and `ContributionQuarters.Of` return null for a year or region without rules; nothing throws.
@@ -146,7 +146,7 @@ The generic rules live in the `skillz` plugin. Load the matching skill **before*
 
 1. `dotnet build` clean and `dotnet test` green from the repo root (`TreatWarningsAsErrors`, analysers at `10.0-recommended`; `BuildPolicyTests`).
 2. The acceptance criteria met and shown in the running app (the lead's browser check), not only in tests.
-3. The docs true again: « Goal & scope », this file, the maps, `official-docs/`, and the Notion item at `Done`.
+3. The docs true again: « Goal & scope », this file, `docs/architecture`, `official-docs/`, and the Notion item at `Done`.
 4. The story's commits listed slice by slice with the decision log, and the fast-forward onto `main` approved by the operator. Pushing needs a separate approval.
 
 ## Commands
