@@ -85,7 +85,7 @@
     <value>For the flat-rate costs: you hold an attestation du travail des arts covering these works when the royalty is paid. The starter attestation does not count.</value>
   </data>
   <data name="Condition_not_a_starting_partnership" xml:space="preserve">
-    <value>The company is not a partnership (société de personnes) in its first three years whose managers and most active partners were self-employed for at most 12 of the 40 quarters before it was formed: that company owes none.</value>
+    <value>The company is not a partnership (société de personnes) in its first three years whose managers and the majority of its active partners who are not managers were self-employed for at most 12 of the 40 quarters before it was formed: that company owes none.</value>
   </data>
   <data name="Condition_active_all_year" xml:space="preserve">
     <value>The company had some activity in the year: one with none for a whole calendar year owes none for it, once the SPF Finances attests it.</value>

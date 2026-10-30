@@ -85,7 +85,7 @@
     <value>Pour les frais forfaitaires&#160;: vous détenez une attestation du travail des arts couvrant ces œuvres au moment du paiement des droits d'auteur. L'attestation de débutant ne compte pas.</value>
   </data>
   <data name="Condition_not_a_starting_partnership" xml:space="preserve">
-    <value>La société n'est pas une société de personnes dans ses trois premières années dont les gérants et les associés les plus actifs ont été indépendants pendant 12 trimestres au plus sur les 40 précédant sa constitution&#160;: une telle société ne doit pas la cotisation.</value>
+    <value>La société n'est pas une société de personnes dans ses trois premières années dont les gérants et la majorité des associés actifs non gérants n'ont pas été indépendants pendant plus de 12 des 40 trimestres précédant sa constitution&#160;: une telle société ne doit pas la cotisation.</value>
   </data>
   <data name="Condition_active_all_year" xml:space="preserve">
     <value>La société a eu une activité durant l'année&#160;: celle qui n'en a eu aucune pendant toute une année civile ne doit pas la cotisation pour cette année, une fois que le SPF Finances l'a attesté.</value>
