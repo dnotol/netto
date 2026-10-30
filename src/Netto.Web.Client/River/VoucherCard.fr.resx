@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve">
+    <value>Titres-repas et chèques</value>
+  </data>
+  <data name="Summary" xml:space="preserve">
+    <value>{0} dans votre poche · reste {1}</value>
+  </data>
+  <data name="Hint" xml:space="preserve">
+    <value>Ce que la société peut vous donner en plus de votre rémunération, sans impôt des personnes physiques ni cotisations sociales. Elle les paie sur son bénéfice, avant votre rémunération.</value>
+  </data>
+  <data name="MealDaysLabel" xml:space="preserve">
+    <value>Jours avec un titre-repas</value>
+  </data>
+  <data name="MealDaysHint" xml:space="preserve">
+    <value>Par titre&#160;: au plus {0} à charge de la société, {1} à votre charge.</value>
+  </data>
+  <data name="EcoLabel" xml:space="preserve">
+    <value>Éco-chèques de l'année</value>
+  </data>
+  <data name="SportCultureLabel" xml:space="preserve">
+    <value>Chèques sport/culture de l'année</value>
+  </data>
+  <data name="YearlyMaximum" xml:space="preserve">
+    <value>Au plus {0} par an.</value>
+  </data>
+  <data name="Figure_CompanyPays" xml:space="preserve">
+    <value>La société paie</value>
+  </data>
+  <data name="Figure_AddedBack" xml:space="preserve">
+    <value>Repris en dépenses non admises</value>
+  </data>
+  <data name="Remove" xml:space="preserve">
+    <value>Retirer les titres-repas et chèques de votre plan</value>
+  </data>
+</root>

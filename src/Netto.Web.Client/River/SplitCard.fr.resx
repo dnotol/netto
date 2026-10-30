@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve">
+    <value>La répartition</value>
+  </data>
+  <data name="Summary" xml:space="preserve">
+    <value>{0} en rémunération · {1} à la société</value>
+  </data>
+  <data name="SummaryWithBest" xml:space="preserve">
+    <value>{0} en rémunération · {1} à la société · meilleure rémunération {2}</value>
+  </data>
+  <data name="Hint" xml:space="preserve">
+    <value>Déplacez votre rémunération&#160;: ce qu'elle coûte à la société, votre brut et les cotisations et frais de gestion de la caisse que la société paie éventuellement pour vous, sort du bénéfice de la société.</value>
+  </data>
+  <data name="PayLabel" xml:space="preserve">
+    <value>Rémunération brute de dirigeant de l'année</value>
+  </data>
+  <data name="Ceiling" xml:space="preserve">
+    <value>Au plus {0}</value>
+  </data>
+  <data name="CeilingHint" xml:space="preserve">
+    <value>Jusqu'au bénéfice avant votre rémunération.</value>
+  </data>
+  <data name="CeilingHint_Follows" xml:space="preserve">
+    <value>Jusqu'au point où les droits d'auteur qui suivent votre rémunération prennent le reste de ce que se partagent votre rémunération et vos droits d'auteur.</value>
+  </data>
+  <data name="CeilingHint_Fixed" xml:space="preserve">
+    <value>Jusqu'au bénéfice avant votre rémunération, une fois vos droits d'auteur fixes payés.</value>
+  </data>
+  <data name="CurveHint" xml:space="preserve">
+    <value>La ligne dorée est ce qui arrive dans votre poche à chaque rémunération, tout le reste tel que vous l'avez réglé. Pointez-la pour lire une rémunération&#160;; cliquez pour y placer la vôtre.</value>
+  </data>
+  <data name="ChartLabel" xml:space="preserve">
+    <value>Net dans votre poche à chaque rémunération de dirigeant, de {0} à {1}</value>
+  </data>
+  <data name="KeyYourPay" xml:space="preserve">
+    <value>Votre rémunération</value>
+  </data>
+  <data name="KeyBest" xml:space="preserve">
+    <value>Meilleure rémunération</value>
+  </data>
+  <data name="KeyThreshold" xml:space="preserve">
+    <value>Taux réduit de l'impôt des sociétés dès {0}</value>
+  </data>
+  <data name="KeyThreshold_Plain" xml:space="preserve">
+    <value>Taux réduit de l'impôt des sociétés</value>
+  </data>
+  <data name="KeyMissesReserve" xml:space="preserve">
+    <value>Trop peu de bénéfice pour garder {0}</value>
+  </data>
+  <data name="Figure_Pay" xml:space="preserve">
+    <value>Votre rémunération</value>
+  </data>
+  <data name="Figure_CompanyContributions" xml:space="preserve">
+    <value>Cotisations payées par la société</value>
+  </data>
+  <data name="Figure_CompanyFundFee" xml:space="preserve">
+    <value>Frais de gestion de la caisse payés par la société</value>
+  </data>
+  <data name="Figure_Royalty" xml:space="preserve">
+    <value>Droits d'auteur</value>
+  </data>
+  <data name="Figure_Company" xml:space="preserve">
+    <value>Bénéfice de la société avant impôt</value>
+  </data>
+  <data name="Figure_Best" xml:space="preserve">
+    <value>Meilleure rémunération</value>
+  </data>
+  <data name="Figure_BestIsYours" xml:space="preserve">
+    <value>Votre rémunération est la meilleure</value>
+  </data>
+  <data name="Figure_BestKeepingReserve" xml:space="preserve">
+    <value>Meilleure rémunération en gardant {0} dans la société</value>
+  </data>
+  <data name="Figure_Dividend" xml:space="preserve">
+    <value>Dividende</value>
+  </data>
+  <data name="Figure_InPocket" xml:space="preserve">
+    <value>Dans votre poche</value>
+  </data>
+  <data name="Figure_InPocketThere" xml:space="preserve">
+    <value>Dans votre poche à ce niveau</value>
+  </data>
+  <data name="Figure_MoreThanYours" xml:space="preserve">
+    <value>De plus qu'à votre rémunération</value>
+  </data>
+  <data name="Figure_InPocketAtYours" xml:space="preserve">
+    <value>Dans votre poche à votre rémunération</value>
+  </data>
+  <data name="Figure_KeptAtYours" xml:space="preserve">
+    <value>Gardé dans la société à votre rémunération</value>
+  </data>
+  <data name="MoveToBest" xml:space="preserve">
+    <value>Prendre la meilleure</value>
+  </data>
+  <data name="MoveToBestLabel" xml:space="preserve">
+    <value>Prendre la meilleure rémunération&#160;: {0}</value>
+  </data>
+  <data name="PointerAt" xml:space="preserve">
+    <value>À une rémunération de {0}&#160;: {1} dans votre poche.</value>
+  </data>
+  <data name="PointerMissesReserve" xml:space="preserve">
+    <value>À une rémunération de {0}&#160;: {1} dans votre poche, seulement {2} dans la société.</value>
+  </data>
+  <data name="NoBest" xml:space="preserve">
+    <value>Aucune rémunération ne permet de garder {0} dans la société&#160;: elle peut y garder au plus {1}.</value>
+  </data>
+  <data name="Rate_NotWeighed" xml:space="preserve">
+    <value>Votre rémunération ne change pas ici le taux de l'impôt des sociétés&#160;; la carte Impôt des sociétés dit pourquoi.</value>
+  </data>
+  <data name="Rate_KeepsIt" xml:space="preserve">
+    <value>Elle conserve le [taux réduit]&#160;: y renoncer laisse {0} de moins.</value>
+  </data>
+  <data name="Rate_KeepsItOnly" xml:space="preserve">
+    <value>Elle conserve le [taux réduit].</value>
+  </data>
+  <data name="Rate_KeepsItYours" xml:space="preserve">
+    <value>Elle conserve le [taux réduit]&#160;: votre rémunération est la meilleure qui y renonce.</value>
+  </data>
+  <data name="Rate_GivesItUp" xml:space="preserve">
+    <value>Elle renonce volontairement au [taux réduit]&#160;: le conserver laisse {0} de moins.</value>
+  </data>
+  <data name="Rate_GivesItUpOnly" xml:space="preserve">
+    <value>Elle renonce au [taux réduit]&#160;: toute rémunération qui le conserve garde moins que le montant voulu dans la société.</value>
+  </data>
+  <data name="Rate_GivesItUpYours" xml:space="preserve">
+    <value>Elle renonce au [taux réduit]&#160;: votre rémunération est la meilleure qui le conserve.</value>
+  </data>
+  <data name="Summary_Royalty" xml:space="preserve">
+    <value>{0} en rémunération · {3} en droits d'auteur · {1} à la société</value>
+  </data>
+  <data name="SummaryWithBest_Royalty" xml:space="preserve">
+    <value>{0} en rémunération · {3} en droits d'auteur · {1} à la société · meilleure rémunération {2}</value>
+  </data>
+  <data name="Hint_Royalty" xml:space="preserve">
+    <value>Déplacez votre rémunération&#160;: ce qu'elle coûte à la société, votre brut et les cotisations et frais de gestion de la caisse que la société paie éventuellement pour vous, et vos droits d'auteur sortent du bénéfice de la société. Des droits d'auteur qui suivent votre rémunération bougent avec elle.</value>
+  </data>
+  <data name="RoyaltyNote_Follows" xml:space="preserve">
+    <value>Vos droits d'auteur suivent votre rémunération&#160;: le curseur les déplace aussi.</value>
+  </data>
+  <data name="RoyaltyNote_Fixed" xml:space="preserve">
+    <value>Vos droits d'auteur sont un montant fixe, quelle que soit votre rémunération.</value>
+  </data>
+  <data name="RoyaltyLink" xml:space="preserve">
+    <value>Changer leur réglage sur la carte Droits d'auteur</value>
+  </data>
+  <data name="SliderValue_Royalty" xml:space="preserve">
+    <value>{0}, avec {1} de droits d'auteur</value>
+  </data>
+  <data name="PointerAt_Royalty" xml:space="preserve">
+    <value>À {0} avec {2} de droits d'auteur&#160;: {1} dans votre poche.</value>
+  </data>
+  <data name="PointerMissesReserve_Royalty" xml:space="preserve">
+    <value>À {0} avec {3} de droits d'auteur&#160;: {1} dans votre poche, seulement {2} dans la société.</value>
+  </data>
+  <data name="Figure_RateWithRoyalty" xml:space="preserve">
+    <value>Plus petite rémunération qui conserve le taux réduit, avec vos droits d'auteur</value>
+  </data>
+  <data name="Figure_RateWithoutRoyalty" xml:space="preserve">
+    <value>Plus petite rémunération qui conserve le taux réduit, sans vos droits d'auteur</value>
+  </data>
+  <data name="RoyaltyRate_NoPayKeeps" xml:space="preserve">
+    <value>Aucune rémunération ne conserve le [taux réduit] à côté de vos droits d'auteur.</value>
+  </data>
+  <data name="RoyaltyRate_NoPayKeepsWithout" xml:space="preserve">
+    <value>Aucune rémunération ne conserve le [taux réduit] sans vos droits d'auteur.</value>
+  </data>
+  <data name="Term_ReducedRate" xml:space="preserve">
+    <value>Le taux plus bas qu'une petite société paie sur une première tranche de son revenu imposable. À partir de sa cinquième période imposable, elle ne le conserve que si la rémunération d'un dirigeant atteint un minimum, ou si son revenu imposable ne dépasse pas cette rémunération. Dans chaque période imposable, elle le perd dès que les avantages de toute nature évalués de manière forfaitaire, comme ceux d'une voiture de société, dépassent {0} de cette rémunération, avantages compris.</value>
+  </data>
+</root>

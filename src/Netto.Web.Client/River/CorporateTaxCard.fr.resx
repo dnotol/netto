@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve">
+    <value>Impôt des sociétés</value>
+  </data>
+  <data name="Summary" xml:space="preserve">
+    <value>{0} de bénéfice · {1} après impôt</value>
+  </data>
+  <data name="Figure_TaxableIncome" xml:space="preserve">
+    <value>Revenu imposable</value>
+  </data>
+  <data name="Figure_AddedBackVouchers" xml:space="preserve">
+    <value>Dépenses non admises&#160;: titres-repas et chèques</value>
+  </data>
+  <data name="Help_AddedBackVouchers" xml:space="preserve">
+    <value>Les titres-repas et chèques que la société ne peut pas déduire sont repris en dépenses non admises.</value>
+  </data>
+  <data name="Figure_AddedBackCarCosts" xml:space="preserve">
+    <value>Dépenses non admises&#160;: frais de voiture</value>
+  </data>
+  <data name="Help_AddedBackCarCosts" xml:space="preserve">
+    <value>Les frais de votre voiture de société que la société ne peut pas déduire sont repris en dépenses non admises.</value>
+  </data>
+  <data name="Figure_AddedBackCarBenefit" xml:space="preserve">
+    <value>Dépenses non admises&#160;: avantage de la voiture</value>
+  </data>
+  <data name="Help_AddedBackCarBenefit" xml:space="preserve">
+    <value>Une part de l'avantage de toute nature de votre voiture de société est reprise en dépenses non admises.</value>
+  </data>
+  <data name="SmallCompanyLabel" xml:space="preserve">
+    <value>Une petite société, qui peut bénéficier du taux réduit</value>
+  </data>
+  <data name="SmallCompanyHint" xml:space="preserve">
+    <value>Petite au sens du Code des sociétés et des associations, sans actions ou parts d'une valeur supérieure à la moitié de son capital, et non détenue pour moitié ou plus par d'autres sociétés.</value>
+  </data>
+  <data name="Condition_NotSmallCompany" xml:space="preserve">
+    <value>Taux de base&#160;: le taux réduit est réservé à une petite société.</value>
+  </data>
+  <data name="Condition_FirstFourTaxPeriods" xml:space="preserve">
+    <value>Taux réduit conservé&#160;: dans ses quatre premières périodes imposables, aucune rémunération minimale n'est exigée.</value>
+  </data>
+  <data name="Condition_FirstFourTaxPeriods_WithBenefits" xml:space="preserve">
+    <value>Taux réduit conservé&#160;: pas de rémunération minimale dans ses quatre premières périodes imposables&#160;; avantages dans la limite de {2} de votre [rémunération prise en compte], {3}.</value>
+  </data>
+  <data name="Condition_MinimumPayMet" xml:space="preserve">
+    <value>Taux réduit conservé&#160;: votre [rémunération prise en compte], {3}, atteint la rémunération minimale de {0}.</value>
+  </data>
+  <data name="Condition_MinimumPayMet_WithBenefits" xml:space="preserve">
+    <value>Taux réduit conservé&#160;: votre [rémunération prise en compte], {3} avec les avantages, atteint la rémunération minimale de {0}&#160;; avantages dans la limite de {2}.</value>
+  </data>
+  <data name="Condition_TaxableIncomeNotAbovePay" xml:space="preserve">
+    <value>Taux réduit conservé&#160;: votre [rémunération prise en compte], {3}, sous la rémunération minimale de {0}, couvre le revenu imposable.</value>
+  </data>
+  <data name="Condition_TaxableIncomeNotAbovePay_WithBenefits" xml:space="preserve">
+    <value>Taux réduit conservé&#160;: votre [rémunération prise en compte], {3} avec les avantages, sous la rémunération minimale de {0}, couvre le revenu imposable&#160;; avantages dans la limite de {2}.</value>
+  </data>
+  <data name="Condition_MinimumPayNotMet" xml:space="preserve">
+    <value>Taux de base&#160;: votre [rémunération prise en compte], {3}, est sous la rémunération minimale de {0} et sous le revenu imposable.</value>
+  </data>
+  <data name="Condition_MinimumPayNotMet_WithBenefits" xml:space="preserve">
+    <value>Taux de base&#160;: votre [rémunération prise en compte], {3} avec les avantages, est sous la rémunération minimale de {0} et sous le revenu imposable.</value>
+  </data>
+  <data name="Condition_ExcessBenefits" xml:space="preserve">
+    <value>Taux de base&#160;: vos avantages de toute nature, {1}, dépassent {2} de votre [rémunération prise en compte] avantages compris, {3}.</value>
+  </data>
+  <data name="Term_TestedPay" xml:space="preserve">
+    <value>La rémunération que compte le test du taux réduit&#160;: votre brut, les cotisations et les frais de gestion de la caisse que la société paie pour vous si elle le fait, et vos avantages de toute nature, comme Rémunération de dirigeant les compte dans votre rémunération imposable.</value>
+  </data>
+  <data name="Term_TestedPay_Royalty" xml:space="preserve">
+    <value>La rémunération que compte le test du taux réduit&#160;: votre brut, les cotisations et les frais de gestion de la caisse que la société paie pour vous si elle le fait, et vos avantages de toute nature. Elle laisse de côté la part de vos droits d'auteur, {0}, que Rémunération de dirigeant compte comme rémunération imposable.</value>
+  </data>
+  <data name="Term_TestedPay_RoyaltyCompanyPays" xml:space="preserve">
+    <value>La rémunération que compte le test du taux réduit&#160;: votre brut, les cotisations et les frais de gestion de la caisse que la société paie pour vous, et vos avantages de toute nature. Elle laisse de côté un montant de {0} que Rémunération de dirigeant compte en plus dans la rémunération imposable&#160;: la part de vos droits d'auteur imposée comme rémunération, et les cotisations et frais de gestion de la caisse que la société paie sur cette part.</value>
+  </data>
+  <data name="NoTaxableProfit" xml:space="preserve">
+    <value>Pas de bénéfice imposable&#160;: pas d'impôt des sociétés, et pas de dividende cette année.</value>
+  </data>
+  <data name="NoTaxableProfit_EarlierProfits" xml:space="preserve">
+    <value>Pas de bénéfice imposable&#160;: pas d'impôt des sociétés&#160;; les réserves des années précédentes paient encore le dividende de {0}.</value>
+  </data>
+  <data name="DetailsLabel" xml:space="preserve">
+    <value>D'où vient ce chiffre</value>
+  </data>
+  <data name="SourcesTitle" xml:space="preserve">
+    <value>La règle, avec les montants des revenus {0}</value>
+  </data>
+  <data name="FinancialYearLabel" xml:space="preserve">
+    <value>L'exercice comptable de la société en {0}</value>
+  </data>
+  <data name="FinancialYearHint" xml:space="preserve">
+    <value>Une petite société ne doit pas de majoration pour absence ou insuffisance de versements anticipés dans ses trois premiers exercices comptables, et n'a pas besoin de rémunération minimale de dirigeant pour le taux réduit dans ses quatre premiers.</value>
+  </data>
+  <data name="FinancialYear_First" xml:space="preserve">
+    <value>1er</value>
+  </data>
+  <data name="FinancialYear_Second" xml:space="preserve">
+    <value>2e</value>
+  </data>
+  <data name="FinancialYear_Third" xml:space="preserve">
+    <value>3e</value>
+  </data>
+  <data name="FinancialYear_Fourth" xml:space="preserve">
+    <value>4e</value>
+  </data>
+  <data name="FinancialYear_FifthOrLater" xml:space="preserve">
+    <value>5e ou suivant</value>
+  </data>
+  <data name="PaymentsTitle" xml:space="preserve">
+    <value>Versements anticipés</value>
+  </data>
+  <data name="PaymentsHint" xml:space="preserve">
+    <value>Ce que la société a versé, ou prévoit de verser, sur cet impôt à chaque échéance. Plus un euro est versé tôt, plus il annule de la majoration&#160;; ce qui est versé au-delà de l'impôt est remboursé.</value>
+  </data>
+  <data name="PaymentLabel" xml:space="preserve">
+    <value>Au plus tard le {0}</value>
+  </data>
+  <data name="Surcharge_Exempt" xml:space="preserve">
+    <value>Pas de majoration dans les trois premiers exercices comptables d'une petite société.</value>
+  </data>
+  <data name="Surcharge_NoTax" xml:space="preserve">
+    <value>Pas d'impôt des sociétés, donc pas de majoration.</value>
+  </data>
+  <data name="Surcharge_Covered" xml:space="preserve">
+    <value>Pas de majoration&#160;: les versements anticipés suffisent.</value>
+  </data>
+  <data name="Surcharge_Due" xml:space="preserve">
+    <value>Payer {0} de plus au plus tard le {1} annule la majoration.</value>
+  </data>
+  <data name="Surcharge_TooLate" xml:space="preserve">
+    <value>Toutes les échéances de l'année sont passées&#160;: plus aucun versement ne peut annuler la majoration.</value>
+  </data>
+  <data name="CompanyTitle" xml:space="preserve">
+    <value>Votre société</value>
+  </data>
+  <data name="Company_Small" xml:space="preserve">
+    <value>Une petite société, qui peut bénéficier du taux réduit</value>
+  </data>
+  <data name="Company_NotSmall" xml:space="preserve">
+    <value>Sans accès au taux réduit</value>
+  </data>
+  <data name="Company_FinancialYear_First" xml:space="preserve">
+    <value>dans son 1er exercice comptable</value>
+  </data>
+  <data name="Company_FinancialYear_Second" xml:space="preserve">
+    <value>dans son 2e exercice comptable</value>
+  </data>
+  <data name="Company_FinancialYear_Third" xml:space="preserve">
+    <value>dans son 3e exercice comptable</value>
+  </data>
+  <data name="Company_FinancialYear_Fourth" xml:space="preserve">
+    <value>dans son 4e exercice comptable</value>
+  </data>
+  <data name="Company_FinancialYear_FifthOrLater" xml:space="preserve">
+    <value>dans son 5e exercice comptable ou un suivant</value>
+  </data>
+  <data name="Payments_None" xml:space="preserve">
+    <value>Pas de versements anticipés</value>
+  </data>
+  <data name="Payments_Paid" xml:space="preserve">
+    <value>Versements anticipés&#160;: {0}</value>
+  </data>
+  <data name="Payments_Surcharge" xml:space="preserve">
+    <value>une majoration reste due</value>
+  </data>
+  <data name="Payments_NoSurcharge" xml:space="preserve">
+    <value>pas de majoration</value>
+  </data>
+</root>

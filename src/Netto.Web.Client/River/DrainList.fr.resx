@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Drain_social_contributions" xml:space="preserve">
+    <value>Cotisations sociales</value>
+  </data>
+  <data name="Drain_social_contributions_paid_by_company" xml:space="preserve">
+    <value>Cotisations sociales, payées par la société pour vous</value>
+  </data>
+  <data name="Drain_fund_fee" xml:space="preserve">
+    <value>Frais de gestion de votre caisse</value>
+  </data>
+  <data name="Drain_fund_fee_paid_by_company" xml:space="preserve">
+    <value>Frais de gestion de votre caisse, payés par la société pour vous</value>
+  </data>
+  <data name="Drain_income_tax" xml:space="preserve">
+    <value>Impôt des personnes physiques</value>
+  </data>
+  <data name="Drain_municipal_surcharge" xml:space="preserve">
+    <value>Taxe communale additionnelle</value>
+  </data>
+  <data name="Drain_low_earned_income_credit" xml:space="preserve">
+    <value>Crédit d'impôt pour bas revenus d'activités</value>
+  </data>
+  <data name="Drain_child_tax_credit" xml:space="preserve">
+    <value>Crédit d'impôt remboursable pour enfants à charge</value>
+  </data>
+  <data name="Drain_child_tax_credit_taken_away" xml:space="preserve">
+    <value>Crédit d'impôt remboursable pour enfants à charge que votre rémunération vous retire</value>
+  </data>
+  <data name="Drain_net_pay" xml:space="preserve">
+    <value>Rémunération nette</value>
+  </data>
+  <data name="Drain_corporate_tax" xml:space="preserve">
+    <value>Impôt des sociétés</value>
+  </data>
+  <data name="Drain_profit_after_tax" xml:space="preserve">
+    <value>Bénéfice après impôt</value>
+  </data>
+  <data name="Drain_dividend_withholding" xml:space="preserve">
+    <value>Précompte mobilier</value>
+  </data>
+  <data name="Drain_dividend_exemption_refund" xml:space="preserve">
+    <value>Remboursement sur la part exonérée</value>
+  </data>
+  <data name="Drain_net_dividend" xml:space="preserve">
+    <value>Dividende net</value>
+  </data>
+  <data name="Drain_kept_in_company" xml:space="preserve">
+    <value>Montant gardé</value>
+  </data>
+  <data name="To_taxes_on_pay" xml:space="preserve">
+    <value>vers cotisations et impôt sur la rémunération</value>
+  </data>
+  <data name="To_taxes_on_profit" xml:space="preserve">
+    <value>vers impôts sur le bénéfice</value>
+  </data>
+  <data name="From_taxes_on_profit" xml:space="preserve">
+    <value>revient d'impôts sur le bénéfice, par votre déclaration</value>
+  </data>
+  <data name="From_taxes_on_pay" xml:space="preserve">
+    <value>revient de cotisations et impôt sur la rémunération, par votre déclaration</value>
+  </data>
+  <data name="From_pocket" xml:space="preserve">
+    <value>revient de votre poche</value>
+  </data>
+  <data name="To_pocket" xml:space="preserve">
+    <value>vers votre poche</value>
+  </data>
+  <data name="To_expenses" xml:space="preserve">
+    <value>vers frais</value>
+  </data>
+  <data name="To_kept_in_company" xml:space="preserve">
+    <value>reste dans la société</value>
+  </data>
+  <data name="To_dividend" xml:space="preserve">
+    <value>vers le dividende</value>
+  </data>
+  <data name="Drain_advance_payment_surcharge" xml:space="preserve">
+    <value>Majoration pour insuffisance de versements anticipés</value>
+  </data>
+  <data name="Drain_income_tax_advance_payment_surcharge" xml:space="preserve">
+    <value>Majoration pour insuffisance de versements anticipés sur votre impôt</value>
+  </data>
+  <data name="Drain_income_tax_advance_payment_bonus" xml:space="preserve">
+    <value>Bonification pour vos versements anticipés</value>
+  </data>
+  <data name="Drain_meal_vouchers" xml:space="preserve">
+    <value>Titres-repas</value>
+  </data>
+  <data name="Drain_eco_vouchers" xml:space="preserve">
+    <value>Éco-chèques</value>
+  </data>
+  <data name="Drain_sport_culture_vouchers" xml:space="preserve">
+    <value>Chèques sport/culture</value>
+  </data>
+  <data name="Drain_profit_before_pay" xml:space="preserve">
+    <value>Bénéfice avant votre rémunération</value>
+  </data>
+  <data name="To_split" xml:space="preserve">
+    <value>vers la répartition</value>
+  </data>
+  <data name="Drain_left_after_vouchers" xml:space="preserve">
+    <value>Reste après les titres-repas et chèques</value>
+  </data>
+  <data name="To_allowances" xml:space="preserve">
+    <value>vers les indemnités</value>
+  </data>
+  <data name="Drain_office_allowance" xml:space="preserve">
+    <value>Indemnité de bureau</value>
+  </data>
+  <data name="Drain_internet_allowance" xml:space="preserve">
+    <value>Indemnité d'internet</value>
+  </data>
+  <data name="Drain_computer_allowance" xml:space="preserve">
+    <value>Indemnité d'ordinateur</value>
+  </data>
+  <data name="Drain_phone_costs" xml:space="preserve">
+    <value>Frais de téléphone</value>
+  </data>
+  <data name="Drain_left_after_allowances" xml:space="preserve">
+    <value>Reste après les indemnités</value>
+  </data>
+  <data name="To_rent" xml:space="preserve">
+    <value>vers le loyer</value>
+  </data>
+  <data name="To_car" xml:space="preserve">
+    <value>vers la voiture</value>
+  </data>
+  <data name="Drain_rent_income_tax" xml:space="preserve">
+    <value>Impôt des personnes physiques sur le loyer</value>
+  </data>
+  <data name="Drain_rent_municipal_surcharge" xml:space="preserve">
+    <value>Taxe communale additionnelle sur le loyer</value>
+  </data>
+  <data name="Drain_rent_low_earned_income_credit_lost" xml:space="preserve">
+    <value>Crédit d'impôt pour bas revenus d'activités que le loyer vous retire</value>
+  </data>
+  <data name="Drain_rent_child_tax_credit_lost" xml:space="preserve">
+    <value>Crédit d'impôt pour enfants à charge que le loyer vous retire</value>
+  </data>
+  <data name="Drain_rent_income_tax_advance_payments" xml:space="preserve">
+    <value>Majoration pour insuffisance de versements anticipés que le crédit perdu ajoute</value>
+  </data>
+  <data name="Drain_rent_after_tax" xml:space="preserve">
+    <value>Loyer, une fois son impôt payé</value>
+  </data>
+  <data name="Drain_left_after_rent" xml:space="preserve">
+    <value>Reste après le loyer</value>
+  </data>
+  <data name="Drain_car_costs" xml:space="preserve">
+    <value>Frais annuels de la voiture</value>
+  </data>
+  <data name="Drain_car_contribution" xml:space="preserve">
+    <value>Votre intervention pour son utilisation à des fins personnelles</value>
+  </data>
+  <data name="Source" xml:space="preserve">
+    <value>Source&#160;: {0}</value>
+  </data>
+  <data name="Drain_copyright_tax" xml:space="preserve">
+    <value>Impôt distinct sur les droits d'auteur</value>
+  </data>
+  <data name="Drain_copyright_municipal_surcharge" xml:space="preserve">
+    <value>Taxe communale additionnelle sur les droits d'auteur</value>
+  </data>
+  <data name="Drain_copyright_low_earned_income_credit_lost" xml:space="preserve">
+    <value>Crédit d'impôt pour bas revenus d'activités que les droits d'auteur vous retirent</value>
+  </data>
+  <data name="Drain_copyright_income_tax_advance_payments" xml:space="preserve">
+    <value>Majoration pour insuffisance de versements anticipés que le crédit perdu ajoute</value>
+  </data>
+  <data name="Drain_copyright_after_tax" xml:space="preserve">
+    <value>Droits d'auteur dans les limites, une fois leur impôt payé</value>
+  </data>
+  <data name="Drain_copyright_taxed_as_pay" xml:space="preserve">
+    <value>Droits d'auteur au-delà des limites</value>
+  </data>
+  <data name="Drain_profit_before_pay_and_royalty" xml:space="preserve">
+    <value>Bénéfice avant votre rémunération et vos droits d'auteur</value>
+  </data>
+  <data name="To_director_pay" xml:space="preserve">
+    <value>vers Rémunération de dirigeant, au même impôt que votre rémunération</value>
+  </data>
+</root>

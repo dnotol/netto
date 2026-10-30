@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve">
+    <value>Indemnités de frais</value>
+  </data>
+  <data name="Summary" xml:space="preserve">
+    <value>{0} dans votre poche · reste {1}</value>
+  </data>
+  <data name="Hint" xml:space="preserve">
+    <value>Ce que la société peut vous rembourser pour le travail à domicile avec votre propre bureau, internet, ordinateur et téléphone&#160;: des frais propres à la société, donc ni rémunération ni revenu pour vos cotisations sociales. Elle les paie sur son bénéfice, avant votre rémunération, et les déduit entièrement, comme ses propres frais courants&#160;: rien n'est repris en dépenses non admises.</value>
+  </data>
+  <data name="OfficeLabel" xml:space="preserve">
+    <value>Indemnité de bureau de l'année</value>
+  </data>
+  <data name="OfficeMaximum" xml:space="preserve">
+    <value>Au plus {0} pour l'année.</value>
+  </data>
+  <data name="OfficeHelp" xml:space="preserve">
+    <value>Au plus {0}.</value>
+  </data>
+  <data name="MonthlyFrom" xml:space="preserve">
+    <value>{0} par mois dès {1}</value>
+  </data>
+  <data name="ListSeparator" xml:space="preserve">
+    <value>, </value>
+  </data>
+  <data name="InternetLabel" xml:space="preserve">
+    <value>Indemnité d'internet de l'année</value>
+  </data>
+  <data name="ComputerLabel" xml:space="preserve">
+    <value>Indemnité d'ordinateur de l'année</value>
+  </data>
+  <data name="MonthlyMaximum" xml:space="preserve">
+    <value>Au plus {0} par mois, {1} pour l'année.</value>
+  </data>
+  <data name="PhoneLabel" xml:space="preserve">
+    <value>Frais de téléphone remboursés sur l'année</value>
+  </data>
+  <data name="Figure_CompanyPays" xml:space="preserve">
+    <value>La société paie</value>
+  </data>
+  <data name="Remove" xml:space="preserve">
+    <value>Retirer les indemnités de frais de votre plan</value>
+  </data>
+</root>
