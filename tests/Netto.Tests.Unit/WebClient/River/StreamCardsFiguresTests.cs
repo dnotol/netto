@@ -380,14 +380,14 @@ public class StreamCardsFiguresTests
             () => CardHtml.LineRuns(html).ShouldBe([("figure", 3), ("drain", 3)]));
     }
 
-    // Which condition decided the rate stays in sight, with the minimum pay and the share of it the
-    // benefits may reach, figures no line shows.
+    // Which condition decided the rate stays in sight, with the pay it tested, the 50,000 of gross and the
+    // car's 1,714.29 of benefit, the minimum pay and the share of it the benefits may reach, figures no line shows.
     [Fact]
     public async Task CorporateTax_filledPlan_keepsTheConditionOfTheRateInSight()
     {
         var condition = CardHtml.Prose(await CardAsync("corporate-tax")).SingleOrDefault(paragraph => paragraph.Contains("€51,000.00", StringComparison.Ordinal));
 
-        CardHtml.Amounts(condition.ShouldNotBeNull()).ShouldBe(["€51,000.00", "20%"]);
+        CardHtml.Amounts(condition.ShouldNotBeNull()).ShouldBe(["€51,714.29", "€51,000.00", "20%"]);
     }
 
     // What a small company is is the checkbox's bubble: its text is the bubble's, the bubble beside the

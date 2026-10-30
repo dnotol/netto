@@ -13,6 +13,10 @@ internal static class CorporateTaxCardText
             ? $"Condition_{condition}_WithBenefits"
             : $"Condition_{condition}";
 
+    // What the pay art. 215 tests holds, in the bubble of its term: Director pay's taxable pay, and, while
+    // a copyright royalty's part beyond its limits is taxed as pay there, the part it leaves out.
+    public static string TestedPayTerm(decimal requalifiedPay) => requalifiedPay > 0m ? "Term_TestedPay_Royalty" : "Term_TestedPay";
+
     // A year with no taxable profit pays no dividend out of it, but the profits kept from earlier years
     // still pay one, less this year's loss and the reserve: the sentence names it while there is one.
     public static string NoTaxableProfit(decimal dividend) => dividend > 0m ? "NoTaxableProfit_EarlierProfits" : "NoTaxableProfit";

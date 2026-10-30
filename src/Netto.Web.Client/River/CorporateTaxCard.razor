@@ -8,7 +8,9 @@
    The user declares what Netto cannot see, the company's financial year among it; the engine tests
    the minimum pay, set on the split, and a sentence after the lines says which condition decided
    the rate, with the minimum pay and the share of it the benefits may reach, which no line shows,
-   and the benefits only when they are what gives up the rate. What the user rarely changes sits
+   the benefits only when they are what gives up the rate, and the pay it tested, a term whose bubble
+   says what that pay holds and, beside a royalty taxed as pay, what of Director pay's taxable pay it
+   leaves out. With no taxable profit, it says so, naming the dividend earlier profits still pay. What the user rarely changes sits
    behind two disclosures after it, each folded to a line that states it: the company, and its
    advance payments with the surcharge they leave. The payments are taken while typing, like
    revenue, since nothing bounds them, and the card says what more by the first deadline still open,
@@ -22,12 +24,7 @@
             <FigureList Figures="@FigureWords.Of(L, CorporateTaxFigures.Of(_view))" />
             <DrainList Drains="_view.Drains" />
         </div>
-        <p class="corporate-tax__condition">
-            @(_view.NoTaxableProfit
-                ? L[CorporateTaxCardText.NoTaxableProfit(_dividend), Formats.Euros(_dividend)]
-                : L[CorporateTaxCardText.Condition(_view.Condition, _view.FlatRateBenefits > 0m), Formats.Euros(_view.MinimumDirectorPay), Formats.Euros(_view.FlatRateBenefits),
-                    Formats.WholeShare(_view.ExcessBenefitsShare)])
-        </p>
+        <p class="corporate-tax__condition"><TermSentence Text="@ConditionText(_view)" Meaning="@L[CorporateTaxCardText.TestedPayTerm(_requalifiedPay), Formats.Euros(_requalifiedPay)]" /></p>
     }
     <Disclosure Title="@L["CompanyTitle"]" Values="@SettingWords.Of(L, _settings.Company)">
         <div class="corporate-tax__status">
@@ -90,6 +87,7 @@
     private CorporateTaxView? _view;
     private MoreBy? _moreBy;
     private decimal _dividend;
+    private decimal _requalifiedPay;
     private CorporateTaxSettingsView _settings = default!;
 
     // The browser's date, which decides the first deadline not yet past: the one the sentence of what more
@@ -101,6 +99,7 @@
         _view = Run.Year is { } year ? CorporateTaxView.From(year) : null;
         _moreBy = Run.Year is { } yearToday ? MoreBy.Company(yearToday, Today) : null;
         _dividend = Run.Year?.Dividend.Dividend ?? 0m;
+        _requalifiedPay = Run.Year?.DirectorPay.RequalifiedPay ?? 0m;
         _settings = CorporateTaxSettingsView.From(Inputs, Run);
     }
 
@@ -110,6 +109,13 @@
         ? L["Summary", Formats.Euros(year.ProfitAfterPay), Formats.Euros(year.ProfitAfterTax)].Value
         : null;
 
+
+    // Which condition decided the rate, against the minimum pay, the benefits' share of the pay and the pay
+    // tested; or, with no taxable profit, the dividend the earlier profits still pay.
+    private string ConditionText(CorporateTaxView view) => view.NoTaxableProfit
+        ? L[CorporateTaxCardText.NoTaxableProfit(_dividend), Formats.Euros(_dividend)].Value
+        : L[CorporateTaxCardText.Condition(view.Condition, view.FlatRateBenefits > 0m), Formats.Euros(view.MinimumDirectorPay), Formats.Euros(view.FlatRateBenefits),
+            Formats.WholeShare(view.ExcessBenefitsShare), Formats.Euros(view.DirectorPay)].Value;
 
     private Task OnSmallCompanyChanged(bool smallCompany) => InputsChanged.InvokeAsync(Inputs.WithSmallCompany(smallCompany));
 

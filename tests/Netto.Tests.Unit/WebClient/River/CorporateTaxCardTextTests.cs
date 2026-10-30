@@ -48,6 +48,47 @@ public class CorporateTaxCardTextTests
         CorporateTaxCardText.Condition(condition, true).ShouldBe(key);
     }
 
+    // Every sentence of a condition the pay decides names the pay it tested, a term whose bubble says what
+    // that pay holds; the others name none.
+    [Theory]
+    [InlineData(ReducedRateCondition.MinimumPayMet)]
+    [InlineData(ReducedRateCondition.TaxableIncomeNotAbovePay)]
+    [InlineData(ReducedRateCondition.MinimumPayNotMet)]
+    [InlineData(ReducedRateCondition.ExcessBenefits)]
+    public void CorporateTaxCardResx_conditionThePayDecides_marksThePayTested(ReducedRateCondition condition)
+    {
+        bool[] withoutAndWithBenefits = [false, true];
+
+        withoutAndWithBenefits.Select(benefits => Term(CorporateTaxCardText.Condition(condition, benefits))).ShouldAllBe(term => term == "tested pay");
+    }
+
+    [Theory]
+    [InlineData(ReducedRateCondition.NotSmallCompany)]
+    [InlineData(ReducedRateCondition.FirstFourTaxPeriods)]
+    public void CorporateTaxCardResx_conditionNoPayDecides_marksNoTerm(ReducedRateCondition condition)
+    {
+        Term(CorporateTaxCardText.Condition(condition, false)).ShouldBeNull();
+    }
+
+    // What the pay tested holds, in its bubble: Director pay's taxable pay, and, while a royalty's part is
+    // taxed as pay there, the part this test leaves out of it.
+    [Theory]
+    [InlineData(0, "Term_TestedPay")]
+    [InlineData(6_000, "Term_TestedPay_Royalty")]
+    public void TestedPayTerm_requalifiedPay_isSaidWhileThereIsSome(decimal requalified, string key)
+    {
+        (CorporateTaxCardText.TestedPayTerm(requalified), Resources.Missing([key]).Count()).ShouldBe((key, 0));
+    }
+
+    [Fact]
+    public void TestedPayTerm_royaltyTaxedAsPay_namesThePartLeftOut()
+    {
+        Resources.Format(CorporateTaxCardText.TestedPayTerm(6_000m), "€6,000.00").ShouldSatisfyAllConditions(
+            text => text.ShouldContain("€6,000.00"),
+            text => text.ShouldContain("royalty"),
+            text => text.ShouldContain("contributions"));
+    }
+
     // With no taxable profit, the sentence names the dividend the earlier profits still pay, while they pay one.
     [Theory]
     [InlineData(0, "NoTaxableProfit")]
@@ -124,15 +165,20 @@ public class CorporateTaxCardTextTests
     }
 
     // Each sentence reads only the arguments the card passes it, its placeholders counted from 0:
-    // a condition the minimum pay, the benefits and their share of it, the surcharge what more by the
-    // first deadline still open cancels it and that deadline, a year with no taxable profit the dividend.
+    // a condition the minimum pay, the benefits and their share of it and the pay tested, the surcharge
+    // what more by the first deadline still open cancels it and that deadline, a year with no taxable
+    // profit the dividend, the pay tested's bubble the part of a royalty it leaves out.
     [Theory]
-    [InlineData("Condition_", 3)]
+    [InlineData("Condition_", 4)]
     [InlineData("Surcharge_", 2)]
     [InlineData("NoTaxableProfit", 1)]
+    [InlineData("Term_TestedPay", 1)]
     public void CorporateTaxCardResx_sentence_readsOnlyTheArgumentsTheCardPasses(string prefix, int arguments)
     {
         InterfaceTexts.Of(typeof(CorporateTaxCard)).Where(text => text.Key.StartsWith(prefix, StringComparison.Ordinal) && InterfaceTexts.Placeholders(text.Value).Any(index => index >= arguments))
             .Select(text => text.Key).ShouldBeEmpty();
     }
+
+    // The term a text marks, null where it marks none or is missing.
+    private static string? Term(string key) => Resources.Get(key) is { } text ? TermText.Split(text).Term : null;
 }

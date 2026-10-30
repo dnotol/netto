@@ -52,28 +52,34 @@
     <value>Reduced rate kept: in its first four tax periods, no minimum pay is needed.</value>
   </data>
   <data name="Condition_FirstFourTaxPeriods_WithBenefits" xml:space="preserve">
-    <value>Reduced rate kept: no minimum pay in its first four tax periods; benefits within {2}.</value>
+    <value>Reduced rate kept: no minimum pay in its first four tax periods; benefits within {2} of your [tested pay], {3}.</value>
   </data>
   <data name="Condition_MinimumPayMet" xml:space="preserve">
-    <value>Reduced rate kept: your pay reaches the {0} minimum.</value>
+    <value>Reduced rate kept: your [tested pay], {3}, reaches the {0} minimum.</value>
   </data>
   <data name="Condition_MinimumPayMet_WithBenefits" xml:space="preserve">
-    <value>Reduced rate kept: your pay with benefits reaches the {0} minimum; benefits within {2}.</value>
+    <value>Reduced rate kept: your [tested pay], {3} with benefits, reaches the {0} minimum; benefits within {2}.</value>
   </data>
   <data name="Condition_TaxableIncomeNotAbovePay" xml:space="preserve">
-    <value>Reduced rate kept: your pay, under the {0} minimum, covers the taxable income.</value>
+    <value>Reduced rate kept: your [tested pay], {3}, under the {0} minimum, covers the taxable income.</value>
   </data>
   <data name="Condition_TaxableIncomeNotAbovePay_WithBenefits" xml:space="preserve">
-    <value>Reduced rate kept: your pay, under the {0} minimum, covers taxable income; benefits within {2}.</value>
+    <value>Reduced rate kept: your [tested pay], {3} with benefits, under the {0} minimum, covers taxable income; benefits within {2}.</value>
   </data>
   <data name="Condition_MinimumPayNotMet" xml:space="preserve">
-    <value>Standard rate: your pay is under the {0} minimum and the taxable income.</value>
+    <value>Standard rate: your [tested pay], {3}, is under the {0} minimum and the taxable income.</value>
   </data>
   <data name="Condition_MinimumPayNotMet_WithBenefits" xml:space="preserve">
-    <value>Standard rate: your pay with benefits is under the {0} minimum and the taxable income.</value>
+    <value>Standard rate: your [tested pay], {3} with benefits, is under the {0} minimum and the taxable income.</value>
   </data>
   <data name="Condition_ExcessBenefits" xml:space="preserve">
-    <value>Standard rate: your benefits in kind, {1}, exceed {2} of your pay with them.</value>
+    <value>Standard rate: your benefits in kind, {1}, exceed {2} of your [tested pay] with them, {3}.</value>
+  </data>
+  <data name="Term_TestedPay" xml:space="preserve">
+    <value>The pay the reduced rate's test counts: your gross, the contributions and fund fee the company pays for you if it does, and your benefits in kind, as Director pay's taxable pay counts them.</value>
+  </data>
+  <data name="Term_TestedPay_Royalty" xml:space="preserve">
+    <value>The pay the reduced rate's test counts: your gross, the contributions and fund fee the company pays for you if it does, and your benefits in kind. It leaves out the {0} of your copyright royalty that Director pay's taxable pay counts as pay.</value>
   </data>
   <data name="NoTaxableProfit" xml:space="preserve">
     <value>No taxable profit: no corporate tax, and no dividend this year.</value>

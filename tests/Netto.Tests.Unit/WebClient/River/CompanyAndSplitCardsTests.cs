@@ -42,6 +42,29 @@ public class CompanyAndSplitCardsTests
         CardHtml.Prose(html).ShouldContain(CorporateTexts.Format("NoTaxableProfit"));
     }
 
+    // Art. 215 tests the pay without a royalty's part taxed as pay: beside a fixed royalty of 30,000, whose
+    // 6,000 beyond its limits Director pay counts in a taxable pay of 56,000, the pay tested is the 50,000
+    // of gross, under the 51,000 minimum but above the 20,000 of taxable income left.
+    [Fact]
+    public async Task CorporateTax_royaltyTaxedAsPay_sentenceNamesThePayTested()
+    {
+        var river = RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithRoyalty(30_000m);
+
+        var html = await CardAsync(river, "corporate-tax");
+
+        ShouldNameThePayTested(html, "Condition_TaxableIncomeNotAbovePay", "€50,000.00");
+    }
+
+    // The contributions the company pays count in the pay tested, as in Director pay's taxable pay: the
+    // 50,000 of gross and 9,942.52 of them reach the minimum the gross alone does not.
+    [Fact]
+    public async Task CorporateTax_companyPaysContributions_sentenceNamesThePayWithThem()
+    {
+        var html = await CardAsync(RiverInputs.Example.WithContributionsPaidBy(ContributionsPaidBy.Company), "corporate-tax");
+
+        ShouldNameThePayTested(html, "Condition_MinimumPayMet", "€59,942.52");
+    }
+
     // A small company in its second tax period needs no minimum pay, but a company car's benefit of 1,714.29
     // must stay within 20% of the pay with it: the split weighs the rate from 6,857.16, and the bubble of
     // the reduced corporate rate says why, with the share its rule holds.
@@ -103,6 +126,19 @@ public class CompanyAndSplitCardsTests
         ];
 
         levers.Where(title => !hint.Contains(title, StringComparison.OrdinalIgnoreCase)).ShouldBeEmpty();
+    }
+
+    // The card draws the condition's sentence, which names the pay tested: as drawn without benefits, the
+    // 51,000 minimum, no benefits within 20% of the pay tested, and that pay, its term drawn as the text of
+    // its bubble's trigger.
+    private static void ShouldNameThePayTested(string html, string key, string payTested)
+    {
+        var sentence = CorporateTexts.Format(key, "€51,000.00", "€0.00", "20%", payTested)
+            .Replace("[", "", StringComparison.Ordinal).Replace("]", "", StringComparison.Ordinal);
+
+        sentence.ShouldSatisfyAllConditions(
+            () => sentence.ShouldContain(payTested),
+            () => CardHtml.Prose(html).ShouldContain(sentence));
     }
 
     private static async Task<string> CardAsync(RiverInputs river, string card) => CardHtml.Card(await CardHtml.RenderCardsOpenAsync(river), card);
