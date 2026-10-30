@@ -1,5 +1,9 @@
 # Log
 
+## 2026-10-30
+
+- [The site speaks French by default, English one switch away](/2026-10-30-french-by-default-english-beside-it.md) proposed, from the story « Netto speaks French by default, English one switch away »; once accepted it supersedes [every text from a resource file](/2026-10-18-mudblazor-and-resx-text.md) and [numbers on the invariant culture](/2026-10-19-invariant-culture-for-numbers.md).
+
 ## 2026-10-29
 
 - [The map drawn by owner](/2026-10-29-the-map-drawn-by-owner.md) and [map lines read from the cards, the pocket line summing them](/2026-10-29-map-lines-read-from-the-cards-the-pocket-line-summing-them.md), from the story « I read on the map whose money each module moves ».

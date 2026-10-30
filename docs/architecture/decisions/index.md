@@ -61,6 +61,7 @@ Every decision taken on Netto, one file each, dated the day it was decided. A de
 - [The company's expenses are the bar's fifth bucket, Expenses, last](/2026-10-28-expenses-are-the-fifth-bucket.md): INASTI's company contribution and a car's costs land in Expenses; the bar starts before them and its reach leaves them out.
 - [The map is drawn by whose money each module moves, every euro reaching you on one pocket line](/2026-10-29-the-map-drawn-by-owner.md): Three columns (you, ways across, the company); the company's line down its own with each lever's share across to a gate; what reaches you joins one gold pocket line with its running total; an amount is said once.
 - [The map's lines are read from the cards' own views, the pocket line alone summing them, and its legend is a key](/2026-10-29-map-lines-read-from-the-cards-the-pocket-line-summing-them.md): MapLinks.Of reads each card's lines; the pocket line's totals are the only sums across cards, held by MapCardsTests; lines of money are always drawn, a module's tax-base and condition lines only while it is chosen.
+- [The site speaks French by default, English one switch away](/2026-10-30-french-by-default-english-beside-it.md) *(proposed)*: English in each neutral .resx, French in a .fr.resx beside it; the client stays invariant with PredefinedCulturesOnly=false and sets only the UI culture, at start-up, from the viewer's choice; Formats picks its culture by language; the switch reloads and carries the river.
 
 ## Build and launch
 
