@@ -48,6 +48,15 @@ public class CorporateTaxCardTextTests
         CorporateTaxCardText.Condition(condition, true).ShouldBe(key);
     }
 
+    // With no taxable profit, the sentence names the dividend the earlier profits still pay, while they pay one.
+    [Theory]
+    [InlineData(0, "NoTaxableProfit")]
+    [InlineData(0.01, "NoTaxableProfit_EarlierProfits")]
+    public void NoTaxableProfit_dividend_isNamedWhileThereIsOne(decimal dividend, string key)
+    {
+        (CorporateTaxCardText.NoTaxableProfit(dividend), Resources.Missing([key]).Count()).ShouldBe((key, 0));
+    }
+
     [Fact]
     public void CorporateTaxCardResx_everySurchargeState_hasAText()
     {
@@ -116,10 +125,11 @@ public class CorporateTaxCardTextTests
 
     // Each sentence reads only the arguments the card passes it, its placeholders counted from 0:
     // a condition the minimum pay, the benefits and their share of it, the surcharge what more by the
-    // first deadline still open cancels it and that deadline.
+    // first deadline still open cancels it and that deadline, a year with no taxable profit the dividend.
     [Theory]
     [InlineData("Condition_", 3)]
     [InlineData("Surcharge_", 2)]
+    [InlineData("NoTaxableProfit", 1)]
     public void CorporateTaxCardResx_sentence_readsOnlyTheArgumentsTheCardPasses(string prefix, int arguments)
     {
         InterfaceTexts.Of(typeof(CorporateTaxCard)).Where(text => text.Key.StartsWith(prefix, StringComparison.Ordinal) && InterfaceTexts.Placeholders(text.Value).Any(index => index >= arguments))

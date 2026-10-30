@@ -78,6 +78,9 @@
   <data name="NoTaxableProfit" xml:space="preserve">
     <value>No taxable profit: no corporate tax, and no dividend this year.</value>
   </data>
+  <data name="NoTaxableProfit_EarlierProfits" xml:space="preserve">
+    <value>No taxable profit: no corporate tax; earlier profits still pay the {0} dividend.</value>
+  </data>
   <data name="DetailsLabel" xml:space="preserve">
     <value>Where this figure comes from</value>
   </data>

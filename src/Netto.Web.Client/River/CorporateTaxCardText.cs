@@ -13,6 +13,10 @@ internal static class CorporateTaxCardText
             ? $"Condition_{condition}_WithBenefits"
             : $"Condition_{condition}";
 
+    // A year with no taxable profit pays no dividend out of it, but the profits kept from earlier years
+    // still pay one, less this year's loss and the reserve: the sentence names it while there is one.
+    public static string NoTaxableProfit(decimal dividend) => dividend > 0m ? "NoTaxableProfit_EarlierProfits" : "NoTaxableProfit";
+
     public static string Surcharge(SurchargeState state) => $"Surcharge_{state}";
 
     // What the advance payments leave, as the card says it: why no surcharge is due, or, while one is,
