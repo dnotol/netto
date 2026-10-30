@@ -19,6 +19,27 @@ public class RazorControlsTests
         gold.ShouldBeEmpty();
     }
 
+    // The river's number fields hide their spin buttons (RiverNumericField), the municipal rate's too: a card
+    // that showed them would pass HideSpinButtons.
+    [Fact]
+    public void NumberFields_everyOne_leavesSpinButtonsHidden()
+    {
+        var fields = Tags("RiverNumericField").Concat(Tags("MudNumericField")).ToList();
+
+        var shown = fields.Where(field => field.Tag.Contains("HideSpinButtons", StringComparison.Ordinal)).Select(field => field.Name).ToList();
+
+        fields.Count.ShouldBeGreaterThan(30);
+        shown.ShouldBeEmpty();
+    }
+
+    // Every number field of the river is a RiverNumericField: a MudNumericField placed directly would have
+    // MudBlazor's spin buttons, its clamping of a refused value and none of the river's look.
+    [Fact]
+    public void NumberFields_noneIsPlacedBareFromMudBlazor()
+    {
+        Tags("MudNumericField").ShouldBeEmpty();
+    }
+
     private static List<(string Name, string Tag)> Tags(string component) =>
         [.. RazorSources.Files().SelectMany(file => RazorSources.Tags(file.Text, component).Select(tag => (file.Name, tag)))];
 }

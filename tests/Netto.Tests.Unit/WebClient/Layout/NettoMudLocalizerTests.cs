@@ -18,15 +18,13 @@ public class NettoMudLocalizerTests
 
         var texts = ResxText.For<NettoMudLocalizer>().Entries;
 
-        texts.Count.ShouldBe(4);
+        texts.Count.ShouldBe(2);
         texts.Where(text => mudBlazor.Get(text.Key) != text.Value).ShouldBeEmpty();
     }
 
     [Theory]
     [InlineData("Converter_InvalidNumber", "Nombre non valide")]
     [InlineData("MudInput_Clear", "Effacer")]
-    [InlineData("MudInput_Increment", "Augmenter")]
-    [InlineData("MudInput_Decrement", "Diminuer")]
     public void MudBlazorsWord_inFrench_isTheFrenchText(string key, string expected)
     {
         using var french = InLanguage.French();

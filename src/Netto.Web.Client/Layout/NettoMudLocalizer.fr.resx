@@ -18,10 +18,4 @@
   <data name="MudInput_Clear" xml:space="preserve">
     <value>Effacer</value>
   </data>
-  <data name="MudInput_Increment" xml:space="preserve">
-    <value>Augmenter</value>
-  </data>
-  <data name="MudInput_Decrement" xml:space="preserve">
-    <value>Diminuer</value>
-  </data>
 </root>

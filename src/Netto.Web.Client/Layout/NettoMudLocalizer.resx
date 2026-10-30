@@ -18,10 +18,4 @@
   <data name="MudInput_Clear" xml:space="preserve">
     <value>Clear</value>
   </data>
-  <data name="MudInput_Increment" xml:space="preserve">
-    <value>Increment</value>
-  </data>
-  <data name="MudInput_Decrement" xml:space="preserve">
-    <value>Decrement</value>
-  </data>
 </root>

@@ -107,7 +107,7 @@ public class RiverNumericFieldTests
         (field.Immediate, field.DebounceInterval).ShouldBe((false, 0d));
     }
 
-    // A card's own parameters win over the field's: the municipality's rate keeps its spin buttons and no margin.
+    // A card's own parameters win over the field's: a card can show the spin buttons or take no margin.
     [Fact]
     public async Task Parameters_given_winOverTheDefaults()
     {
