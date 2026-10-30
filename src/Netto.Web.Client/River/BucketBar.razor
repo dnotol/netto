@@ -4,8 +4,8 @@
 
 @* The river's summary and the plan page's header in one band at the top of the window, in the site
    header's place (Layout/MainLayout draws none on the plan): its top row the wordmark, the page's tabs
-   (Tabs), the plan's actions (ChildContent: Save this plan and Plans) and the theme
-   switch; under it where the money ends up, five buckets in a row, each told by its swatch and its name,
+   (Tabs), the plan's actions (ChildContent: Save this plan and Plans) and the language and theme
+   switches; under it where the money ends up, five buckets in a row, each told by its swatch and its name,
    which opens a bubble saying what it holds, then its amount. Every amount is the engine's, regrouped by
    BucketsView. Beside the pocket's amount, the one share the band shows: what reaches the pocket out of
    what leaves the company (BucketsView.Reach), its (i) saying what that is out of, the river's start
@@ -35,7 +35,7 @@
             {
                 <div class="bucket-bar__actions">@ChildContent</div>
             }
-            <ThemeSwitch />
+            <span class="bucket-bar__preferences"><LanguageSwitch /><ThemeSwitch /></span>
         </div>
         <div class="bucket-bar__figures">
             <dl class="bucket-bar__buckets">

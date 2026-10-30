@@ -8,8 +8,8 @@ using static Netto.Tests.WebClient.River.RiverRendering;
 namespace Netto.Tests.WebClient.River;
 
 // On the plan page the bar of buckets is the one band at the top of the window, in the site header's place
-// (MainLayoutTests): its top row the wordmark, the page's tabs, the plan's actions and the theme switch,
-// under it the five buckets. Drawn alone here, with stand-ins for what the page puts in it.
+// (MainLayoutTests): its top row the wordmark, the page's tabs, the plan's actions and the language and theme
+// switches, under it the five buckets. Drawn alone here, with stand-ins for what the page puts in it.
 public class BucketBarBandTests
 {
     private const string Tabs = "THE-TABS";
@@ -27,10 +27,10 @@ public class BucketBarBandTests
             link => link.ShouldContain("href=\"/plan\""));
     }
 
-    // The top row in the order the keyboard meets it: the wordmark, the tabs, the plan's actions, the theme
-    // switch; the buckets after it.
+    // The top row in the order the keyboard meets it: the wordmark, the tabs, the plan's actions, the language
+    // switch and the theme switch; the buckets after it.
     [Fact]
-    public async Task Band_topRow_holdsTheTabsThenTheActionsThenTheThemeSwitch_beforeTheBuckets()
+    public async Task Band_topRow_holdsTheTabsThenTheActionsThenTheLanguageAndThemeSwitches_beforeTheBuckets()
     {
         var html = await RenderBandAsync(RiverInputs.Example.Run());
 
@@ -39,6 +39,7 @@ public class BucketBarBandTests
             html.IndexOf("bucket-bar__wordmark", StringComparison.Ordinal),
             html.IndexOf(Tabs, StringComparison.Ordinal),
             html.IndexOf(Actions, StringComparison.Ordinal),
+            html.IndexOf("lang=\"fr\"", StringComparison.Ordinal),
             html.IndexOf("aria-label=\"Switch to light theme\"", StringComparison.Ordinal),
             html.IndexOf("<dl class=\"bucket-bar__buckets", StringComparison.Ordinal),
         ];
@@ -166,7 +167,7 @@ public class BucketBarBandTests
             .Select(match => match.Groups[1].Value)
             .Where(row => row is not ("bucket-bar__stack" or "bucket-bar__segment" or "bucket-bar__from"))
             .Distinct()
-            .ShouldBe(["bucket-bar__top", "bucket-bar__tabs", "bucket-bar__actions", "bucket-bar__figures", "bucket-bar__buckets", "bucket-bar__slot",
+            .ShouldBe(["bucket-bar__top", "bucket-bar__tabs", "bucket-bar__actions", "bucket-bar__preferences", "bucket-bar__figures", "bucket-bar__buckets", "bucket-bar__slot",
                 "bucket-bar__live"]);
     }
 

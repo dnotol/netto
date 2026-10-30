@@ -1,0 +1,13 @@
+@inject IStringLocalizer<LanguageSwitch> L
+@inject LanguagePreference Preference
+
+@* The viewer's switch between the two languages, before the theme switch at the end of the site's header and of
+   the plan page's band (River/BucketBar). It names the other language in that language, « Français » on an English
+   page and « English » on a French one, marked so a screen reader reads it so; its name is what it shows. A click
+   keeps the other language and loads the page again in it, the river carried across (LanguagePreference), so it
+   never draws again: the page that loads next draws it anew. Muted at rest, gold while hovered or focused, as the
+   theme switch. *@
+<span class="language-switch">
+    <MudButton Variant="Variant.Text" Size="Size.Small" OnClick="Preference.Switch"
+               lang="@Languages.Tag(LanguagePreference.Other)">@L[LanguagePreference.Other == Language.French ? "ToFrench" : "ToEnglish"]</MudButton>
+</span>

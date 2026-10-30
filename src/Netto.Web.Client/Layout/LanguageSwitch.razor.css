@@ -1,0 +1,18 @@
+/* ::deep reaches the MudButton, which carries no scope attribute of its own. Muted at rest, gold while hovered or
+   focused, as the theme switch beside it; the site's focus ring is app.css's. */
+.language-switch {
+    display: inline-flex;
+    align-items: center;
+}
+
+    .language-switch ::deep .mud-button-root {
+        min-width: 0;
+        color: var(--netto-text-muted);
+        font-size: 0.85rem;
+        transition: color 0.2s ease;
+    }
+
+        .language-switch ::deep .mud-button-root:hover,
+        .language-switch ::deep .mud-button-root:focus-visible {
+            color: var(--netto-gold);
+        }

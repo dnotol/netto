@@ -103,6 +103,20 @@ public class MainLayoutTests
             .ShouldBe((true, true));
     }
 
+    // The language switch stands before the theme switch, at the end of the header: the two preferences together.
+    [Theory]
+    [InlineData("about")]
+    [InlineData("not-found")]
+    public async Task Header_offThePlan_hasTheLanguageSwitchBeforeTheThemeSwitch(string path)
+    {
+        var html = await RenderLayoutAsync(path);
+
+        var header = Regex.Match(html, "<header class=\"site-header\"[^>]*>.*?</header>", RegexOptions.Singleline).Value;
+        var language = header.IndexOf("lang=\"fr\"", StringComparison.Ordinal);
+        var theme = header.IndexOf("aria-label=\"Switch to dark theme\"", StringComparison.Ordinal);
+        (language >= 0, language < theme).ShouldBe((true, true));
+    }
+
     // The wordmark goes to the plan, never to /: a link to / leaves the plan page, which is rebuilt, and
     // forgets what it had found, where /plan from one of its tabs keeps the page. On the plan the band
     // draws its own (BucketBarBandTests).

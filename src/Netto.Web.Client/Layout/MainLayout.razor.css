@@ -28,10 +28,12 @@
     margin-left: auto;
 }
 
-/* The theme switch (ThemeSwitch), close beside « Start your plan » where the page has it, alone at the end of
-   the header elsewhere. */
-.site-header__theme {
+/* The language and theme switches (LanguageSwitch, ThemeSwitch) side by side, close beside « Start your plan »
+   where the page has it, alone at the end of the header elsewhere. */
+.site-header__preferences {
     display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
     margin-left: -1.25rem;
 }
 
