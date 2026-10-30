@@ -44,11 +44,12 @@ public class ClientGlobalizationTests
     [InlineData("Netto.Web.Client", new[] { "Language.cs" })]
     public void Sources_culturesCreatedByName_areOnlyTheLanguages(string project, string[] creating)
     {
-        var sources = Files(project, "*.cs").Concat(Files(project, "*.razor")).ToList();
+        var razor = project == "Netto.Web.Client" ? RazorSources.Files() : [];
+        var sources = Files(project, "*.cs").Select(source => (Name: source, Text: File.ReadAllText(Path.Combine(Folder(project), source)))).Concat(razor).ToList();
 
         sources.Count.ShouldBeGreaterThan(10);
-        sources.Where(source => Regex.IsMatch(File.ReadAllText(Path.Combine(Folder(project), source)),
-                @"new\s+CultureInfo\s*\(|CultureInfo\s*\.\s*(?:GetCultureInfo|CreateSpecificCulture)\s*\("))
+        sources.Where(source => Regex.IsMatch(source.Text, @"new\s+CultureInfo\s*\(|CultureInfo\s*\.\s*(?:GetCultureInfo|CreateSpecificCulture)\s*\("))
+            .Select(source => source.Name)
             .ShouldBe(creating);
     }
 

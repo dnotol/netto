@@ -4,8 +4,8 @@ using Shouldly;
 namespace Netto.Tests.Architecture;
 
 // The test support (Support/) is the one definition of what the tests share: the browser's storage and
-// system theme fakes, the reader of a component's .resx, the reader of a stylesheet, and the engine tests'
-// fixtures. A test file that declares its own copy of one fails here, naming the file, so the copies do not
+// system theme fakes, the reader of a component's .resx, the reader of the client's .razor files, the reader of
+// a stylesheet, and the engine tests' fixtures. A test file that declares its own copy of one fails here, naming the file, so the copies do not
 // come back.
 public class TestSupportTests
 {
@@ -34,6 +34,14 @@ public class TestSupportTests
     public void TestSources_resxFiles_areReadOnlyThroughResxFiles()
     {
         Declaring(@"""\*\.resx""|XDocument\s*\.\s*Load\s*\([^;]*\.resx").ShouldBeEmpty();
+    }
+
+    // A reader of the client's .razor files, listing them on disk or stripping their comments: RazorSources is the
+    // one place that is, the localization keys' reader (RazorKeys) and the control rules included.
+    [Fact]
+    public void TestSources_razorFiles_areReadOnlyThroughRazorSources()
+    {
+        Declaring(@"""\*\.razor""|@\\\*\.\*\?\\\*@").ShouldBeEmpty();
     }
 
     // The made-up company the engine tests share, and the levers they put in its year.

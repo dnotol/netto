@@ -38,7 +38,7 @@ internal static partial class RazorKeys
         return keys;
     }
 
-    private static string WithoutComments(string razor) => HtmlComment().Replace(RazorComment().Replace(razor, ""), "");
+    private static string WithoutComments(string razor) => RazorSources.WithoutComments(razor);
 
     // The indexer's first argument, from just after its opening bracket to its first comma or its closing
     // bracket outside any nested bracket, parenthesis, brace or string.
@@ -90,10 +90,4 @@ internal static partial class RazorKeys
 
     [GeneratedRegex(@"(?<![$@\w])""(?<text>(?:[^""\\]|\\.)*)""")]
     private static partial Regex PlainLiteral();
-
-    [GeneratedRegex(@"@\*.*?\*@", RegexOptions.Singleline)]
-    private static partial Regex RazorComment();
-
-    [GeneratedRegex(@"<!--.*?-->", RegexOptions.Singleline)]
-    private static partial Regex HtmlComment();
 }

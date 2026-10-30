@@ -33,11 +33,11 @@ public class RazorSourcesTests
     }
 
     [Fact]
-    public void Files_theClient_listsItsRazorFilesByPathFromSrcAndLeavesBuildOutputOut()
+    public void Files_theClient_listsItsRazorFilesByPathFromItsFolderAndLeavesBuildOutputOut()
     {
         var names = RazorSources.Files().Select(file => file.Name).ToList();
 
-        names.ShouldContain("Netto.Web.Client/River/HouseholdCard.razor");
-        names.Where(name => name.Contains("/obj/", StringComparison.Ordinal) || name.Contains("/bin/", StringComparison.Ordinal)).ShouldBeEmpty();
+        names.ShouldContain("River/HouseholdCard.razor");
+        names.Where(name => name.StartsWith("obj/", StringComparison.Ordinal) || name.StartsWith("bin/", StringComparison.Ordinal)).ShouldBeEmpty();
     }
 }
