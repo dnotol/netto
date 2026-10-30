@@ -49,7 +49,7 @@ public sealed record MunicipalityChoice(MunicipalRates Rates, Municipality? Muni
     public MunicipalityChoice UseOfficialRate() => Municipality is null ? this : Pick(Municipality);
 
     // Every municipality whose name contains the text, in name order, ignoring case, accents, hyphens
-    // and apostrophes: « liege » finds Liège, and « La Bruyère » the SPW's « La Bruyere ».
+    // and apostrophes: « liege » finds Liège, and « la bruyere » La Bruyère.
     public IReadOnlyList<Municipality> Search(string? text)
     {
         var folded = Fold(text ?? "");

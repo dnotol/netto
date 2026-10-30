@@ -174,7 +174,11 @@ public class MunicipalityChoiceTests
     [Theory]
     [InlineData("liege", "Liège")]
     [InlineData("LIÈGE", "Liège")]
-    [InlineData("La Bruyère", "La Bruyere")]
+    [InlineData("la bruyere", "La Bruyère")]
+    [InlineData("LA BRUYÈRE", "La Bruyère")]
+    [InlineData("eghezee", "Eghezée")]
+    [InlineData("chatelet", "Châtelet")]
+    [InlineData("Vaux sur Sure", "Vaux-sur-Sûre")]
     [InlineData("braine l alleud", "Braine-l'Alleud")]
     [InlineData("  court saint  etienne ", "Court-Saint-Etienne")]
     public void Search_textDifferingInCaseAccentsOrPunctuation_findsTheMunicipality(string text, string name)
