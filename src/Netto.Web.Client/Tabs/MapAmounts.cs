@@ -32,7 +32,7 @@ internal static class MapAmounts
         >= '0' and <= '9' or '−' or '-' or '+' => 0.65m,
         '€' => 0.67m,
         ',' or '.' or '·' or ':' or '’' => 0.27m,
-        ' ' or ' ' or ' ' => 0.26m,
+        ' ' or '\u00A0' or '\u202F' => 0.26m,
         '\'' => 0.3m,
         >= 'a' and <= 'z' => Letters[character - 'a'],
         _ when Unaccented(character) is { } letter => Letters[letter - 'a'],

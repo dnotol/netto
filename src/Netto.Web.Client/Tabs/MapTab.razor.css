@@ -399,7 +399,8 @@
 /* The levers that move no money of their own in this plan: their names in one dashed pill among the gates,
    the royalty's in its own place, the partner's in theirs. The pill is
    placed by its middle, as wide as its slot and as tall as its names: one line where they fit, one name to
-   a line on the narrowest map, which is the height the layout keeps for it (MapLayout: SmallestRowRem,
+   a line on the narrowest map, a name that wraps there taking two (MapLayout.QuietLines, PillUnits), which is
+   the height the layout keeps for it (MapLayout: SmallestRowRem,
    QuietTargetRem, QuietGapRem and QuietPadRem are the 3.25rem, 1.5rem, 0.15rem and 0.15rem here), so that
    it never reaches the boxes around it or the amount of the line through it. */
 .map-quiet {
