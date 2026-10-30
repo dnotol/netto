@@ -90,6 +90,8 @@
           <tr><td><code>netto.plans.unreadable</code></td><td>The last document Netto could not read</td><td><code>PlanStorage</code></td></tr>
           <tr><td><code>netto.folds</code></td><td>Which folds of the cards are open</td><td><code>River/Folds.cs</code></td></tr>
           <tr><td><code>netto.theme</code></td><td>The theme picked; <code>theme.js</code> reads it before anything paints</td><td><code>Layout/ThemePreference.cs</code></td></tr>
+          <tr><td><code>netto.language</code></td><td>The language picked, French unless it says <code>en</code>; <code>language.js</code> sets <code>lang</code> from it before anything paints</td><td><code>Layout/LanguagePreference.cs</code></td></tr>
+          <tr><td><code>netto.river</code> (sessionStorage)</td><td>The plan on screen, as a one-plan document, written by a switch of language and taken once by the reloaded page</td><td><code>River/RiverState.cs</code></td></tr>
         </tbody>
       </table>
     </div>

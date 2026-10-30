@@ -53,6 +53,12 @@ Fixed once; every file that names one uses it word for word (the card, the map, 
 | Car's benefit in kind before / after your contribution | Avantage de toute nature de la voiture avant / après votre intervention |
 | tested pay (art. 215) | rémunération prise en compte |
 | reserve (cash the company keeps) | montant gardé dans la société (never « réserve », which is a legal term) |
+| a bucket of the bar | un compartiment |
+| the map · a card | la carte · la carte named by its module (« la carte Rémunération de dirigeant ») |
+| a rate's condition met / not met (on the map) | oui / non |
+| the rent's floor | le plancher |
+| the fund's management fee | les frais de gestion de la caisse |
+| a bill (in the Chamber) | un projet de loi |
 
 # Official terms
 
