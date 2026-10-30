@@ -227,18 +227,16 @@ public class FrenchTabsTests
             .ShouldBe((true, true));
     }
 
-    // The pay's pill is as wide as a gate: the pay alone fits it up to €99,999.99; with the contributions, which
-    // no language fits there at that amount, the French is no wider than the English.
-    [Fact]
-    public void PayPill_inFrench_fitsThePillWithThePayAloneAndIsNoWiderThanTheEnglishWithTheContributions()
+    // The pay's pill is as wide as a gate: the pay alone on one line, with the contributions its words over its
+    // amount, each line fitting inside it at the narrowest map up to €999,999.99.
+    [Theory]
+    [InlineData(false, "Paie · 999.999,99 €")]
+    [InlineData(true, "Paie et cotisations|999.999,99 €")]
+    public void PayPill_inFrenchUpToItsLimit_fitsEachLineInsideThePill(bool withContributions, string drawn)
     {
-        var (french, english) = (ResxText.French<MapGateWords>(), ResxText.For<MapGateWords>());
-        var pill = 124m - 2m * 0.6m * MapLayout.PixelsPerRem - 2m;
+        var lines = MapGateTextTests.PillLinesOf(ResxText.French<MapGateWords>(), withContributions, $"999.999,99{NoBreak}€");
 
-        var (alone, both) = (french.Format(MapGateText.Pay(withContributions: false), $"99.999,99{NoBreak}€"), french.Format(MapGateText.Pay(withContributions: true), $"99.999,99{NoBreak}€"));
-
-        (alone, MapGateTextTests.LineWidth(alone) <= pill, MapGateTextTests.LineWidth(both) <= MapGateTextTests.LineWidth(english.Format(MapGateText.Pay(withContributions: true), "€99,999.99")))
-            .ShouldBe(($"Paie · 99.999,99{NoBreak}€", true, true));
+        (string.Join('|', lines), lines.All(line => MapGateTextTests.LineWidth(line) <= MapLayout.PillRoomPixels)).ShouldBe((drawn, true));
     }
 
     // A deadline's label on the timeline, « 99.999,99 € au 21 déc. », is at most 4% wider than the English, so

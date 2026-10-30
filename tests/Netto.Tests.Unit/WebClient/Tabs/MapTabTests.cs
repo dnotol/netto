@@ -73,20 +73,37 @@ public class MapTabTests
     }
 
     // The pay crosses into Director pay under its pill, in the gates' column, saying what crosses, out of a screen
-    // reader's hearing, the cards saying it; its line says no amount of its own.
-    [Fact]
-    public async Task Tab_thePay_crossesUnderItsPill()
+    // reader's hearing, the cards saying it; its line says no amount of its own. With the contributions it says
+    // its words over its amount, on two lines.
+    [Theory]
+    [InlineData("every lever", "map-pill")]
+    [InlineData("the company paying the contributions", "map-pill map-pill--two")]
+    public async Task Tab_thePay_crossesUnderItsPill(string plan, string classes)
     {
-        var view = MapView.From(Full, Full.Run(), MapNames.English);
+        var river = MapRendering.River(plan);
+        var view = MapView.From(river, river.Run(), MapNames.English);
         var pill = view.Pill.ShouldNotBeNull();
 
-        var map = Map(await RenderTabAsync(Full));
+        var map = Map(await RenderTabAsync(river));
 
         map.ShouldSatisfyAllConditions(
-            () => Regex.Matches(map, "<div class=\"map-pill\" style=\"([^\"]*)\" aria-hidden=\"true\"[^>]*>(.*?)</div>", RegexOptions.Singleline)
-                .Select(match => (match.Groups[1].Value, Regex.Replace(Regex.Replace(match.Groups[2].Value, "<[^>]*>", ""), "\\s+", " ").Trim()))
-                .ShouldBe([(Box(pill.Slot), GateWords(pill.Words))]),
+            () => Regex.Matches(map, "<div class=\"(map-pill[^\"]*)\" style=\"([^\"]*)\" aria-hidden=\"true\"[^>]*>(.*?)</div>", RegexOptions.Singleline)
+                .Select(match => (match.Groups[1].Value, match.Groups[2].Value, Regex.Replace(Regex.Replace(match.Groups[3].Value, "<[^>]*>", ""), "\\s+", " ").Trim()))
+                .ShouldBe([(classes, Box(pill.Slot), GateWords(pill.Words))]),
             () => Amounts(map).ShouldNotContain(Formats.Euros(pill.Words.Amount!.Value)));
+    }
+
+    // The pay's pill keeps the padding its room is reckoned by (MapLayout.PillRoomPixels); on two lines its amount
+    // goes under its words, both centred.
+    [Fact]
+    public void MapTabCss_drawsThePaysPillInItsRoomAndItsAmountUnderItsWordsOnTwoLines()
+    {
+        var css = Stylesheet.Read("src", "Netto.Web.Client", "Tabs", "MapTab.razor.css");
+
+        css.ShouldSatisfyAllConditions(
+            () => Stylesheet.Block(css, ".map-pill").ShouldContain($"padding: 0 {Stylesheet.Rem(MapLayout.PillPadRem)};"),
+            () => Stylesheet.Block(css, ".map-pill--two ::deep .map-gate-words").ShouldContain("text-align: center;"),
+            () => Stylesheet.Block(css, ".map-pill--two ::deep .map-gate-words__amount").ShouldContain("display: block;"));
     }
 
     // Each column's label fits over the top row's boxes, in the room the row keeps over them on the narrowest map,

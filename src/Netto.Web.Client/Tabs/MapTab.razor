@@ -124,7 +124,7 @@
                 }
                 @if (_view.ShownPill is { } pill)
                 {
-                    <div class="map-pill" style="@Box(pill.Slot)" aria-hidden="true"><MapGateWords Line="pill.Words" /></div>
+                    <div class="@PillClass(pill)" style="@Box(pill.Slot)" aria-hidden="true"><MapGateWords Line="pill.Words" /></div>
                 }
                 @foreach (var bucket in _view.Buckets)
                 {
@@ -314,6 +314,9 @@
     private RenderFragment ReceivedEnd(MapReceived line) => line.Module is { } module
         ? @<button type="button" class="map-tab__go" data-received-from="@MapModules.Name(module)" @onclick="() => ChooseAsync(module)">@line.From</button>
         : @<span class="map-tab__place">@line.From</span>;
+
+    // The pay's pill, its amount under its words where it says two lines (MapGateText.PillLines).
+    private static string PillClass(MapPill pill) => MapGateText.PillLines(pill.Words.Key) == 1 ? "map-pill" : "map-pill map-pill--two";
 
     private static string LineClass(bool faded) => $"map-line{(faded ? " map-line--faded" : "")}";
 

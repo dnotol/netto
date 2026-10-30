@@ -324,19 +324,29 @@
 }
 
 /* The pay's pill, on its line where it crosses the gates' column, as wide as a gate: the pay in words, over the
-   line, which runs on under it into Director pay. */
+   line, which runs on under it into Director pay. Its padding is a box's, the one its room is reckoned by
+   (MapLayout.PillPadRem, PillRoomPixels); with the contributions it says its words over its amount, on two
+   lines, as tall as the layout keeps it (MapLayout.PillOn). */
 .map-pill {
     position: absolute;
     display: flex;
     align-items: center;
     justify-content: center;
     box-sizing: border-box;
-    padding: 0 0.6rem;
+    padding: 0 0.35rem;
     border: 1px dashed var(--netto-text-muted);
     border-radius: 1rem;
     background: var(--netto-page);
     pointer-events: none;
 }
+
+    .map-pill--two ::deep .map-gate-words {
+        text-align: center;
+    }
+
+    .map-pill--two ::deep .map-gate-words__amount {
+        display: block;
+    }
 
 /* A bucket of the bar: where the money ends, nothing to choose. Its wash lies over the map's ground, so it
    hides the lines that run on under it to its middle, and each meets its edge, rounded corners and all. */

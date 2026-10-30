@@ -120,8 +120,13 @@ internal static class MapLayout
     private const decimal QuietBorderRem = 0.125m;
     private const decimal QuietMarginUnits = 0.1m;
 
-    // The pay's pill: as wide as a gate, 1.25rem high, centred on the pay's line (MapTab.razor.css: .map-pill).
+    // The pay's pill: as wide as a gate, 1.25rem high on one line, or as tall as its two lines at a gate's line
+    // height and its frame, centred on the pay's line, its padding 0.35rem each side, a box's (MapTab.razor.css:
+    // .map-pill); the room inside it for each line on the narrowest map, its padding and frame left out
+    // (MapGateTextTests).
     internal const decimal PillRem = 1.25m;
+    internal const decimal PillPadRem = 0.35m;
+    internal const decimal PillRoomPixels = 304m - 180m - 2m * PillPadRem * PixelsPerRem - 2m;
 
     // The columns, from the narrowest map's pixels: the director's, the partner's in it, the gates' and the
     // company's; and the lane between the director's column and the gates.
@@ -367,10 +372,10 @@ internal static class MapLayout
     }
 
     // The pay's pill on its line: as wide as a gate, in the gates' column, centred on the line where it
-    // crosses it.
-    public static MapSlot PillOn(MapGrid grid, MapRoute pay)
+    // crosses it, as tall as the lines it says (MapGateText.PillLines).
+    public static MapSlot PillOn(MapGrid grid, MapRoute pay, int lines)
     {
-        var height = PillRem / SmallestRowRem * 100m / grid.Units;
+        var height = (lines == 1 ? PillRem : lines * GateLineRem + FrameRem) / SmallestRowRem * 100m / grid.Units;
         return new MapSlot(GatesColumn.Left, pay.Points[0].Y - height / 2m, GatesColumn.Right - GatesColumn.Left, height);
     }
 

@@ -466,6 +466,49 @@ public class MapLayoutTests
             .ShouldBeEmpty();
     }
 
+    // The pay's pill is as tall as its lines at the size the stylesheet draws them and its frame, a line 1.25rem
+    // (MapLayout.PillRem), two the gate's lines' height each, centred on the pay's line where it crosses the gates.
+    [Theory]
+    [InlineData(1)]
+    [InlineData(2)]
+    public void PillOn_thePaysLine_isAsTallAsItsLinesCentredOnIt(int lines)
+    {
+        var river = MapLinksTests.Full;
+        var (grid, pay) = (Grid(river), Routes(river).Single(route => route.Name == Pay).Route);
+
+        var pill = MapLayout.PillOn(grid, pay, lines);
+
+        (Math.Round(pill.Height * grid.Units / 100m * MapLayout.SmallestRowRem, 12), Math.Round(pill.CenterY, 12))
+            .ShouldBe((lines == 1 ? MapLayout.PillRem : 2m * MapLayout.GateLineRem + 2m / 16m, Math.Round(pay.Points[0].Y, 12)));
+    }
+
+    // The company paying the contributions, the pay's pill says its words over its amount, in English and in
+    // French: as tall as its two lines, no box under it, no line through it but the pay, and no amount over it
+    // at any size the map is drawn.
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void From_theCompanyPayingTheContributions_drawsThePaysPillOnTwoLinesClearOfEveryBoxLineAndAmount(bool inFrench)
+    {
+        using var french = inFrench ? InLanguage.French() : null;
+        var river = MapRendering.River("the company paying the contributions");
+        var view = MapView.From(river, river.Run(), inFrench ? MapNames.French : MapNames.English);
+        var texts = inFrench ? ResxText.French<MapTab>() : ResxText.For<MapTab>();
+        var amounts = MapAmounts.Of(view, label => texts.Format(label.Key, [.. label.Args]));
+
+        var pill = view.Pill.ShouldNotBeNull();
+
+        pill.ShouldSatisfyAllConditions(
+            () => (MapGateText.PillLines(pill.Words.Key), Math.Round(pill.Slot.Height * view.Units / 100m * MapLayout.SmallestRowRem, 12))
+                .ShouldBe((2, 2m * MapLayout.GateLineRem + 2m / 16m)),
+            () => view.Places().Select(place => place.Slot).Concat(view.Buckets.Select(bucket => bucket.Slot)).Where(slot => Overlaps(Area(slot), Area(pill.Slot))).ShouldBeEmpty(),
+            () => view.Links.Where(link => !(link.Kind == MapLinkKind.PassedOn && link.From == MapEnd.Of(RiverModule.Split) && link.To == MapEnd.Of(RiverModule.DirectorPay)))
+                .Where(link => MapLineWidths.Stretches(RouteOf(link)).Any(segment => Enters(segment, pill.Slot)))
+                .Select(link => $"{link.Kind} {link.From.Id} to {link.To.Id}").ShouldBeEmpty(),
+            () => MapAmountsTests.Sizes(view).SelectMany(scale => amounts.Where(amount => amount.Area(scale).Overlaps(MapArea.Of(pill.Slot, scale)))
+                .Select(amount => $"{amount.Text} at {scale}")).ShouldBeEmpty());
+    }
+
     // The levers the routes here are worked out with as quiet, which the map draws quiet, are those the plan
     // leaves empty: every one of them, but for Expense allowances beside a rent paid (below).
     [Theory]
@@ -1059,11 +1102,12 @@ public class MapLayoutTests
     // How tall a module's box is, in chain rows.
     private static decimal Units(MapLayout.MapGrid grid, RiverModule module) => Math.Round(grid.Slot(MapEnd.Of(module)).Height * grid.Units / 100m, 12);
 
-    // Each box of the map, a quiet pill once, with the levers in it, and the pay's pill on the pay's line.
+    // Each box of the map, a quiet pill once, with the levers in it, and the pay's pill on the pay's line, as tall as
+    // it is ever drawn, its two lines with the contributions, so every plan holds it whoever pays them.
     private static IReadOnlyList<(string Id, MapSlot Slot, IReadOnlyList<RiverModule> Modules)> Boxes(RiverInputs river, IReadOnlyList<RoutedLine>? routes = null)
     {
         var grid = Grid(river);
-        var pay = (routes ?? Routes(river)).Where(route => route.Name == Pay).Select(route => MapLayout.PillOn(grid, route.Route)).ToList();
+        var pay = (routes ?? Routes(river)).Where(route => route.Name == Pay).Select(route => MapLayout.PillOn(grid, route.Route, MostPillLines)).ToList();
         return
         [
             .. MapView.ModulesOf(river).GroupBy(module => grid.Slot(MapEnd.Of(module)))
@@ -1073,8 +1117,10 @@ public class MapLayoutTests
         ];
     }
 
-    // The pay's pill, which the pay alone runs through, its pill standing on it.
+    // The pay's pill, which the pay alone runs through, its pill standing on it, and the most lines it says.
     private const string Pill = "pill";
+
+    private const int MostPillLines = 2;
 
     private const string Pay = "PassedOn split to director-pay";
 

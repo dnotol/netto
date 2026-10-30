@@ -35,6 +35,11 @@ internal static class MapGateText
     // The pay's pill: the pay alone, or with the contributions the company pays on the director's behalf.
     public static string Pay(bool withContributions) => withContributions ? "Pill_PayAndContributions" : "Pill_Pay";
 
+    // How many lines the pay's pill says, by its words: the pay alone on one; with the contributions, whose words
+    // no pill holds on one line beside the amount in either language, its words over its amount, on two
+    // (MapGateTextTests, FrenchTabsTests).
+    public static int PillLines(string key) => key == Pay(withContributions: true) ? 2 : 1;
+
     // A sentence cut where its one amount goes: the words before it, after it, and whether it has one; a
     // sentence with no amount is its words alone.
     public static (string Before, string After, bool HoldsAmount) Parts(string sentence)

@@ -22,7 +22,7 @@ public class MapGateTextTests
         { MapGateText.Quotient, "quotient" },
         { MapGateText.QuotientAmount, "{0}" },
         { MapGateText.Pay(withContributions: false), "Pay · {0}" },
-        { MapGateText.Pay(withContributions: true), "Pay and contributions · {0}" },
+        { MapGateText.Pay(withContributions: true), "Pay + contributions {0}" },
     };
 
     [Theory]
@@ -90,6 +90,45 @@ public class MapGateTextTests
         var text = Resources.Format(key, Formats.Euros(99_999.99m));
 
         (MapLayout.HouseholdRoomPixels, LineWidth(text) <= MapLayout.HouseholdRoomPixels).ShouldBe((78m - 2m * 0.35m * 16m - 2m, true));
+    }
+
+    // The pay's pill says the pay alone on one line; with the contributions, its words over its amount, on two.
+    [Theory]
+    [InlineData(false, 1)]
+    [InlineData(true, 2)]
+    public void PillLines_thePaysPill_isOneLineWithThePayAloneAndTwoWithTheContributions(bool withContributions, int lines)
+    {
+        MapGateText.PillLines(MapGateText.Pay(withContributions)).ShouldBe(lines);
+    }
+
+    // The room inside the pay's pill at the narrowest map: a gate's width, 124 px, less its padding of 0.35rem each
+    // side and its frame (MapLayout.PillRoomPixels).
+    [Fact]
+    public void PillRoomPixels_isAGatesWidthLessThePillsPaddingAndFrame()
+    {
+        MapLayout.PillRoomPixels.ShouldBe(124m - 2m * 0.35m * 16m - 2m);
+    }
+
+    // Each line of the pay's pill fits inside it at the narrowest map, the pay up to €999,999.99, with the
+    // contributions or without.
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void PayPill_eachLineUpToItsLimit_fitsInsideThePill(bool withContributions)
+    {
+        var lines = PillLinesOf(Resources, withContributions, Formats.Euros(999_999.99m));
+
+        lines.Where(line => LineWidth(line) > MapLayout.PillRoomPixels).ShouldBeEmpty();
+    }
+
+    // The lines the pay's pill draws, its words in the texts given and its amount: its sentence on one line, or
+    // its words up to the amount over the amount and what follows it.
+    internal static IReadOnlyList<string> PillLinesOf(ResxText texts, bool withContributions, string amount)
+    {
+        var key = MapGateText.Pay(withContributions);
+        var sentence = texts.Get(key).ShouldNotBeNull();
+        var (before, after, _) = MapGateText.Parts(sentence);
+        return MapGateText.PillLines(key) == 1 ? [string.Format(System.Globalization.CultureInfo.InvariantCulture, sentence, amount)] : [before.TrimEnd(), amount + after];
     }
 
     // The stylesheet draws a gate's line at the size it is held to here, on one line.

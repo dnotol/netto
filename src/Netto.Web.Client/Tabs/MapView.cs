@@ -89,7 +89,7 @@ internal sealed record MapView(IReadOnlyList<MapNode> Modules, IReadOnlyList<Map
             Refusal = run.Error,
             TaxesOnPayIncludeRent = BucketsView.From(run)?.TaxesOnPayIncludeRent ?? false,
             Columns = grid.Columns(),
-            Pill = gates.Pay is { } words && pay?.Route is { } route ? new MapPill(MapLayout.PillOn(grid, route), words) : null,
+            Pill = gates.Pay is { } words && pay?.Route is { } route ? new MapPill(MapLayout.PillOn(grid, route, MapGateText.PillLines(words.Key)), words) : null,
         };
     }
 

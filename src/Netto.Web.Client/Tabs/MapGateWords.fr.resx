@@ -37,6 +37,6 @@
     <value>Paie · {0}</value>
   </data>
   <data name="Pill_PayAndContributions" xml:space="preserve">
-    <value>Paie et cotisations · {0}</value>
+    <value>Paie et cotisations {0}</value>
   </data>
 </root>
