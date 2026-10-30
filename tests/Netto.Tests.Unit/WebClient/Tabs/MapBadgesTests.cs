@@ -196,12 +196,17 @@ public class MapBadgesTests
         var css = Stylesheet.Read("src", "Netto.Web.Client", "Tabs", "MapTab.razor.css");
 
         css.ShouldSatisfyAllConditions(
-            () => Stylesheet.Block(css, ".map-module__badges").ShouldContain($"margin-right: -{Stylesheet.Rem(MapLayout.BadgeInsetRem)};"),
-            () => Stylesheet.Block(css, ".map-module__badges").ShouldContain($"margin-left: -{Stylesheet.Rem(MapLayout.BadgeInsetRem)};"),
-            () => Stylesheet.Block(css, ".map-badge").ShouldContain($"padding: 0 {Stylesheet.Rem(MapLayout.BadgePadRem)};"),
-            () => Stylesheet.Block(css, ".map-badge").ShouldContain($"gap: {Stylesheet.Rem(MapLayout.BadgeIconGapRem)};"),
-            () => Stylesheet.Block(css, ".map-badge ::deep .mud-icon-root").ShouldContain($"width: {Stylesheet.Rem(MapLayout.BadgeIconRem)};"));
+            () => Declares(Stylesheet.Block(css, ".map-module__badges"), $"margin-right: -{Stylesheet.Rem(MapLayout.BadgeInsetRem)};").ShouldBeTrue(),
+            () => Declares(Stylesheet.Block(css, ".map-module__badges"), $"margin-left: -{Stylesheet.Rem(MapLayout.BadgeInsetRem)};").ShouldBeTrue(),
+            () => Declares(Stylesheet.Block(css, ".map-badge"), $"padding: 0 {Stylesheet.Rem(MapLayout.BadgePadRem)};").ShouldBeTrue(),
+            () => Declares(Stylesheet.Block(css, ".map-badge"), $"gap: {Stylesheet.Rem(MapLayout.BadgeIconGapRem)};").ShouldBeTrue(),
+            () => Declares(Stylesheet.Block(css, ".map-badge ::deep .mud-icon-root"), $"width: {Stylesheet.Rem(MapLayout.BadgeIconRem)};").ShouldBeTrue());
     }
+
+    // Whether a block declares the declaration given on a line of its own, as a browser reads it: a declaration
+    // after another on its line, behind an escape, is no declaration.
+    private static bool Declares(string block, string declaration) =>
+        System.Text.RegularExpressions.Regex.IsMatch(block, $@"(?m)^\s*{System.Text.RegularExpressions.Regex.Escape(declaration)}\s*$");
 
     // The room a badge's words have on the narrowest map: its box's column less the box's frame and what its
     // padding keeps of it each side, 0.1rem, the badge's frame and padding, and its icon and the gap after it
