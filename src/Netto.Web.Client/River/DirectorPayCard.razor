@@ -79,7 +79,7 @@
                                Refused="@(Refused?.Input == RefusedInput.MunicipalRate)" />
         </RiverField>
         <div class="director-pay__status">
-            <MudCheckBox T="bool" Value="Inputs.TaxPrepayments.Starter.Value" ValueChanged="OnStarterChanged" Color="Color.Primary"
+            <MudCheckBox T="bool" Value="Inputs.TaxPrepayments.Starter.Value" ValueChanged="OnStarterChanged" Color="Color.Primary" UncheckedColor="Color.Default"
                          Label="@L["StarterLabel", Inputs.IncomeYear - 2]" />
             <OriginChip Origin="Inputs.TaxPrepayments.Starter.Origin" />
         </div>

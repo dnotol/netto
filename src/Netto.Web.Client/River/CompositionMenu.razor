@@ -29,7 +29,7 @@
                 @foreach (var choice in _view.Modules)
                 {
                     <li @key="choice.Module" class="composition__module">
-                        <MudCheckBox T="bool" Value="choice.InPlan" ValueChanged="@(inPlan => OnModuleChanged(choice.Module, inPlan))" Color="Color.Primary">
+                        <MudCheckBox T="bool" Value="choice.InPlan" ValueChanged="@(inPlan => OnModuleChanged(choice.Module, inPlan))" Color="Color.Primary" UncheckedColor="Color.Default">
                             <span class="composition__choice">
                                 <span class="composition__title">@L[CompositionMenuText.Title(choice.Module)]</span>
                                 <span class="composition__note">@Note(choice)</span>

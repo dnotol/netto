@@ -95,21 +95,21 @@
         @if (Inputs.Car.Engine.Value.EmitsCo2())
         {
             <div class="car__tick">
-                <MudCheckBox T="bool" Value="Inputs.Car.NoCo2Data.Value" ValueChanged="OnNoCo2DataChanged" Color="Color.Primary" Label="@L["NoCo2Label"]" />
+                <MudCheckBox T="bool" Value="Inputs.Car.NoCo2Data.Value" ValueChanged="OnNoCo2DataChanged" Color="Color.Primary" UncheckedColor="Color.Default" Label="@L["NoCo2Label"]" />
                 <OriginChip Origin="Inputs.Car.NoCo2Data.Origin" />
             </div>
         }
         @if (_settings.FakeHybridApplies)
         {
             <div class="car__tick">
-                <MudCheckBox T="bool" Value="Inputs.Car.FakeHybrid.Value" ValueChanged="OnFakeHybridChanged" Color="Color.Primary" Label="@L["FakeHybridLabel"]" />
+                <MudCheckBox T="bool" Value="Inputs.Car.FakeHybrid.Value" ValueChanged="OnFakeHybridChanged" Color="Color.Primary" UncheckedColor="Color.Default" Label="@L["FakeHybridLabel"]" />
                 <OriginChip Origin="Inputs.Car.FakeHybrid.Origin" />
                 <InfoBubble Label="@L["FakeHybridLabel"]">@L["FakeHybridHint"]</InfoBubble>
             </div>
             @if (Inputs.Car.FakeHybrid.Value)
             {
                 <div class="car__tick">
-                    <MudCheckBox T="bool" Value="Inputs.Car.NoMatchingCar.Value" ValueChanged="OnNoMatchingCarChanged" Color="Color.Primary" Label="@L["NoMatchingLabel"]" />
+                    <MudCheckBox T="bool" Value="Inputs.Car.NoMatchingCar.Value" ValueChanged="OnNoMatchingCarChanged" Color="Color.Primary" UncheckedColor="Color.Default" Label="@L["NoMatchingLabel"]" />
                     <OriginChip Origin="Inputs.Car.NoMatchingCar.Origin" />
                 </div>
             }
@@ -117,7 +117,7 @@
         @if (Inputs.Car.Engine.Value == CarEngine.NaturalGas)
         {
             <div class="car__tick">
-                <MudCheckBox T="bool" Value="Inputs.Car.SmallNaturalGas.Value" ValueChanged="OnSmallNaturalGasChanged" Color="Color.Primary" Label="@L["SmallGasLabel"]" />
+                <MudCheckBox T="bool" Value="Inputs.Car.SmallNaturalGas.Value" ValueChanged="OnSmallNaturalGasChanged" Color="Color.Primary" UncheckedColor="Color.Default" Label="@L["SmallGasLabel"]" />
                 <OriginChip Origin="Inputs.Car.SmallNaturalGas.Origin" />
             </div>
         }
@@ -135,7 +135,7 @@
         </RiverField>
     </div>
     <div class="car__tick">
-        <MudCheckBox T="bool" Value="Inputs.Car.CompanyPaysPrivateEnergy.Value" ValueChanged="OnPrivateEnergyChanged" Color="Color.Primary"
+        <MudCheckBox T="bool" Value="Inputs.Car.CompanyPaysPrivateEnergy.Value" ValueChanged="OnPrivateEnergyChanged" Color="Color.Primary" UncheckedColor="Color.Default"
                      Label="@L[CarCardText.PrivateEnergy(Inputs.Car.Engine.Value)]" />
         <OriginChip Origin="Inputs.Car.CompanyPaysPrivateEnergy.Origin" />
         <InfoBubble Label="@L[CarCardText.PrivateEnergy(Inputs.Car.Engine.Value)]">@L[CarCardText.PrivateEnergyHint(Inputs.Car.Engine.Value)]</InfoBubble>

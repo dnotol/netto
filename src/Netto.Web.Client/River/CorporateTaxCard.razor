@@ -29,7 +29,7 @@
     <Disclosure Title="@L["CompanyTitle"]" Values="@SettingWords.Of(L, _settings.Company)">
         <div class="corporate-tax__status">
             <span class="corporate-tax__choice">
-                <MudCheckBox T="bool" Value="Inputs.SmallCompany.Value" ValueChanged="OnSmallCompanyChanged" Color="Color.Primary"
+                <MudCheckBox T="bool" Value="Inputs.SmallCompany.Value" ValueChanged="OnSmallCompanyChanged" Color="Color.Primary" UncheckedColor="Color.Default"
                              Label="@L["SmallCompanyLabel"]" />
                 <InfoBubble Label="@L["SmallCompanyLabel"]">@L["SmallCompanyHint"]</InfoBubble>
             </span>

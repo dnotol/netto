@@ -56,13 +56,13 @@
                                Error="@(Refused?.Input == RefusedInput.CreativeShare)" Refusal="@Refused" />
         </RiverField>
         <div class="copyright__tick">
-            <MudCheckBox T="bool" Value="Inputs.Copyright.AverageWithinCap.Value" ValueChanged="OnAverageChanged" Color="Color.Primary"
+            <MudCheckBox T="bool" Value="Inputs.Copyright.AverageWithinCap.Value" ValueChanged="OnAverageChanged" Color="Color.Primary" UncheckedColor="Color.Default"
                          Label="@L["AverageLabel", Formats.Euros(_rules?.Cap.Value ?? 0m)]" />
             <OriginChip Origin="Inputs.Copyright.AverageWithinCap.Origin" />
             <InfoBubble Label="@L["AverageLabel", Formats.Euros(_rules?.Cap.Value ?? 0m)]">@L["AverageHint"]</InfoBubble>
         </div>
         <div class="copyright__tick">
-            <MudCheckBox T="bool" Value="Inputs.Copyright.HoldsAttestation.Value" ValueChanged="OnAttestationChanged" Color="Color.Primary"
+            <MudCheckBox T="bool" Value="Inputs.Copyright.HoldsAttestation.Value" ValueChanged="OnAttestationChanged" Color="Color.Primary" UncheckedColor="Color.Default"
                          Label="@L["AttestationLabel"]" />
             <OriginChip Origin="Inputs.Copyright.HoldsAttestation.Origin" />
             <InfoBubble Label="@L["AttestationLabel"]">@L["AttestationHint"]</InfoBubble>

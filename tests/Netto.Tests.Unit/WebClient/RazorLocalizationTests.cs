@@ -9,10 +9,6 @@ namespace Netto.Tests.WebClient;
 // embeds it (ResxText): a text in a refusal's branch or a dialog the tests never open is held too.
 public class RazorLocalizationTests
 {
-    private static readonly string Sources =
-        Path.GetDirectoryName(Path.GetDirectoryName(RepositoryFile.FindUp("src", "Netto.Web.Client", "Netto.Web.Client.csproj")))
-        ?? throw new InvalidOperationException("The client's csproj has no src folder above it.");
-
     // Every .resx the client embeds, by the component it is named after: the last part of its base name.
     private static readonly ILookup<string, ResxText> Resources =
         ResxText.InAssembly(typeof(BucketBar).Assembly).ToLookup(texts => texts.BaseName.Split('.')[^1]);
@@ -64,15 +60,10 @@ public class RazorLocalizationTests
         missing.ShouldBeEmpty();
     }
 
-    private static IEnumerable<(string Name, string Text)> RazorFiles() =>
-        SourceFiles("*.razor").Select(file => (Path.GetRelativePath(Sources, file), File.ReadAllText(file)));
+    private static IEnumerable<(string Name, string Text)> RazorFiles() => RazorSources.Files();
 
     // The keys the component's one .resx holds a text under: none where it has no .resx or more than one,
     // so every key of it reads as missing.
     private static HashSet<string> KeysOf(string component) =>
         Resources[component].ToList() is [var texts] ? [.. texts.Keys] : [];
-
-    private static IEnumerable<string> SourceFiles(string pattern) =>
-        Directory.EnumerateFiles(Sources, pattern, SearchOption.AllDirectories)
-            .Where(file => !Path.GetRelativePath(Sources, file).Split(Path.DirectorySeparatorChar).Any(part => part is "obj" or "bin"));
 }

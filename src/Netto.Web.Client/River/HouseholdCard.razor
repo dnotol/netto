@@ -21,7 +21,7 @@
 <ModuleCard Name="@ModuleFolds.Name(OptionalModule.Household)" Title="@L["Title"]" Summary="@Summary" Help="@L["Hint"]"
             Refused="@Refused" Sources="_view.Sources" IncomeYear="Inputs.IncomeYear" RemoveLabel="@L["Remove"]" OnRemove="Remove">
     <div class="household__tick">
-        <MudCheckBox T="bool" Value="Inputs.Household.HasPartner" ValueChanged="OnPartnerChanged" Color="Color.Primary" Label="@L["PartnerLabel"]" />
+        <MudCheckBox T="bool" Value="Inputs.Household.HasPartner" ValueChanged="OnPartnerChanged" Color="Color.Primary" UncheckedColor="Color.Default" Label="@L["PartnerLabel"]" />
         <OriginChip Origin="Inputs.Household.Status.Origin" />
         <InfoBubble Label="@L["PartnerLabel"]">@L["PartnerHint"]</InfoBubble>
     </div>
@@ -46,7 +46,7 @@
         @if (!Inputs.Household.Values.TaxedJointly)
         {
             <div class="household__tick">
-                <MudCheckBox T="bool" Value="Dependants.SingleParent.Value" ValueChanged="OnSingleParentChanged" Color="Color.Primary" Label="@L["SingleParentLabel"]" />
+                <MudCheckBox T="bool" Value="Dependants.SingleParent.Value" ValueChanged="OnSingleParentChanged" Color="Color.Primary" UncheckedColor="Color.Default" Label="@L["SingleParentLabel"]" />
                 <OriginChip Origin="Dependants.SingleParent.Origin" />
                 <InfoBubble Label="@L["SingleParentLabel"]">@L["SingleParentHint"]</InfoBubble>
             </div>
@@ -77,13 +77,13 @@
     {
         <Disclosure Title="@L["SituationTitle"]" Values="@SettingWords.Of(L, _settings.Situation)">
             <div class="household__tick">
-                <MudCheckBox T="bool" Value="Inputs.Household.BothAged66.Value" ValueChanged="OnBothAged66Changed" Color="Color.Primary"
+                <MudCheckBox T="bool" Value="Inputs.Household.BothAged66.Value" ValueChanged="OnBothAged66Changed" Color="Color.Primary" UncheckedColor="Color.Default"
                              Label="@L["BothAged66Label", Inputs.IncomeYear + 1]" />
                 <OriginChip Origin="Inputs.Household.BothAged66.Origin" />
                 <InfoBubble Label="@L["BothAged66Label", Inputs.IncomeYear + 1]">@L["BothAged66Hint"]</InfoBubble>
             </div>
             <div class="household__tick">
-                <MudCheckBox T="bool" Value="Inputs.Household.TaxedSeparately.Value" ValueChanged="OnTaxedSeparatelyChanged" Color="Color.Primary"
+                <MudCheckBox T="bool" Value="Inputs.Household.TaxedSeparately.Value" ValueChanged="OnTaxedSeparatelyChanged" Color="Color.Primary" UncheckedColor="Color.Default"
                              Label="@L["TaxedSeparatelyLabel"]" />
                 <OriginChip Origin="Inputs.Household.TaxedSeparately.Origin" />
                 <InfoBubble Label="@L["TaxedSeparatelyLabel"]">@L["TaxedSeparatelyHint"]</InfoBubble>
