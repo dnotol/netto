@@ -3,25 +3,42 @@ using Netto.Core.Rules;
 
 namespace Netto.Web.Client;
 
-// How amounts read on an English page, whatever the browser's language: €50,000.00. The culture is
-// the invariant one with the euro sign rather than a named one such as en-IE: the client is published
-// with InvariantGlobalization, so no ICU data is downloaded and a culture created by name throws,
-// while the invariant one needs none, so the browser and the tests format alike. MudBlazor inputs
-// take it through their Culture parameter (a RiverNumericField sets it itself).
+// How amounts and dates read, in the language the page runs in (Languages). In English, whatever the browser's
+// language: €50,000.00, 1 January 2027. In French, like the administration's: 1.234,56 €, 20,5 %, 1er janvier
+// 2027, the unit after the number with a no-break space (U+00A0). Both cultures are built by hand on the
+// invariant one rather than taken by name (en-IE, fr-BE): the client is published with InvariantGlobalization,
+// so no ICU data is downloaded and a named culture has none of its data, while a hand-built one needs none, so
+// the browser and the tests format alike. MudBlazor inputs take Culture through their Culture parameter (a
+// RiverNumericField sets it itself, and reads what is typed strictly, TypedNumber). The page's own culture of
+// numbers is never set: only its UI culture, which picks the culture here.
 internal static class Formats
 {
-    public static CultureInfo Culture { get; } = EnglishWithEuro();
+    // U+00A0, between a number and its unit, so a line never breaks between them.
+    private const string NoBreak = "\u00A0";
+
+    private static readonly CultureInfo English = EnglishWithEuro();
+
+    private static readonly CultureInfo French = FrenchWithEuro();
+
+    // The culture of the language the page runs in.
+    public static CultureInfo Culture => InFrench ? French : English;
+
+    private static bool InFrench => Languages.Current == Language.French;
 
     public static string Euros(decimal amount) => amount.ToString("C2", Culture);
 
     public static string WholeEuros(decimal amount) => amount.ToString("C0", Culture);
 
-    // A chart's axis, short enough to sit beside the plot on a phone: €25k, €2.5k.
+    // A chart's axis, short enough to sit beside the plot on a phone: €25k, €2.5k; in French 25 k€, 2,5 k€.
     public static string ThousandsOfEuros(decimal amount)
     {
-        var sign = amount < 0m ? Culture.NumberFormat.NegativeSign : "";
-        var thousands = (Math.Abs(amount) / 1_000m).ToString("#,0.#", Culture);
-        return amount == 0m ? $"{Culture.NumberFormat.CurrencySymbol}0" : $"{sign}{Culture.NumberFormat.CurrencySymbol}{thousands}k";
+        var culture = Culture;
+        var sign = amount < 0m ? culture.NumberFormat.NegativeSign : "";
+        var thousands = (Math.Abs(amount) / 1_000m).ToString("#,0.#", culture);
+        if (InFrench)
+            return amount == 0m ? $"0{NoBreak}€" : $"{sign}{thousands}{NoBreak}k€";
+
+        return amount == 0m ? $"{culture.NumberFormat.CurrencySymbol}0" : $"{sign}{culture.NumberFormat.CurrencySymbol}{thousands}k";
     }
 
     // Prefixed even at zero, so every part paid out reads as a subtraction.
@@ -38,16 +55,16 @@ internal static class Formats
     // One decimal, as municipalities set their rates (CIR 92 art. 468): 8% reads 8.0%.
     public static string MunicipalRate(decimal fraction) => fraction.ToString("0.0%", Culture);
 
-    // The invariant culture's month names are English: 1 January 2027.
-    public static string Day(DateOnly date) => date.ToString("d MMMM yyyy", Culture);
+    // 1 January 2027; in French 1er janvier 2027, the first of a month being « 1er ».
+    public static string Day(DateOnly date) => $"{DayOfMonth(date)} {date.ToString("MMMM yyyy", Culture)}";
 
-    // A day short enough to sit after a tab's name: 21 Dec.
-    public static string ShortDay(DateOnly date) => date.ToString("d MMM", Culture);
+    // A day short enough to sit after a tab's name: 21 Dec; in French 21 déc., 1er avr.
+    public static string ShortDay(DateOnly date) => $"{DayOfMonth(date)} {date.ToString("MMM", Culture)}";
 
-    // A month of the income year, 1 being January, by its English name.
+    // A month of the income year, 1 being January, by its name: January; in French janvier.
     public static string Month(int year, int month) => new DateOnly(year, month, 1).ToString("MMMM", Culture);
 
-    // A month on the timeline's axis, short enough to sit over a month of a narrow screen: Oct.
+    // A month on the timeline's axis, short enough to sit over a month of a narrow screen: Oct; in French oct.
     public static string ShortMonth(int year, int month) => new DateOnly(year, month, 1).ToString("MMM", Culture);
 
     // The rule sets hold rates as fractions (20.50% is 0.205), under keys ending in _rate or _factor,
@@ -84,11 +101,15 @@ internal static class Formats
     // deduction rate of 61.6%.
     public static string Percentage(decimal fraction) => fraction.ToString("0.###%", Culture);
 
-    // An emission in grams of CO2 per kilometre: 120 g/km, a fake hybrid's 112.5 g/km.
-    public static string Grams(decimal grams) => $"{grams.ToString("0.#", Culture)} g/km";
+    // An emission in grams of CO2 per kilometre: 120 g/km, a fake hybrid's 112.5 g/km; in French 112,5 g/km, after a
+    // no-break space.
+    public static string Grams(decimal grams) => $"{grams.ToString("0.#", Culture)}{(InFrench ? NoBreak : " ")}g/km";
 
     // Percentage points between two shares, to a tenth: 2.5, as the Compare plans tab says them.
     public static string Points(decimal points) => points.ToString("0.0", Culture);
+
+    private static string DayOfMonth(DateOnly date) =>
+        InFrench && date.Day == 1 ? "1er" : date.Day.ToString(CultureInfo.InvariantCulture);
 
     private static CultureInfo EnglishWithEuro()
     {
@@ -100,6 +121,38 @@ internal static class Formats
         // U+2212, the minus sign, which is as wide as a digit where a hyphen is not. Parsing still
         // accepts a typed hyphen.
         culture.NumberFormat.NegativeSign = char.ConvertFromUtf32(0x2212);
+        return CultureInfo.ReadOnly(culture);
+    }
+
+    // Like the administration's: a dot between thousands, a comma before the decimals, the euro and the percent
+    // after the number, a no-break space before them: 1.234,56 €, −1.234,56 €, 20,5 %. The space is part of the
+    // symbol, since a format's pattern would put an ordinary one there, where a line can break. Months in lower
+    // case, the genitive ones too, which a day before the month reads.
+    private static CultureInfo FrenchWithEuro()
+    {
+        var culture = (CultureInfo)CultureInfo.InvariantCulture.Clone();
+        var numbers = culture.NumberFormat;
+        numbers.NumberDecimalSeparator = ",";
+        numbers.NumberGroupSeparator = ".";
+        numbers.CurrencyDecimalSeparator = ",";
+        numbers.CurrencyGroupSeparator = ".";
+        numbers.PercentDecimalSeparator = ",";
+        numbers.PercentGroupSeparator = ".";
+        numbers.CurrencySymbol = NoBreak + "€";
+        numbers.CurrencyPositivePattern = 1; // n€, the symbol carrying its space
+        numbers.CurrencyNegativePattern = 5; // -n€
+        numbers.PercentSymbol = NoBreak + "%";
+        numbers.PercentPositivePattern = 1; // n%
+        numbers.PercentNegativePattern = 1; // -n%
+        numbers.NegativeSign = char.ConvertFromUtf32(0x2212);
+
+        string[] months = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre", ""];
+        string[] shortMonths = ["janv.", "févr.", "mars", "avr.", "mai", "juin", "juil.", "août", "sept.", "oct.", "nov.", "déc.", ""];
+        var dates = culture.DateTimeFormat;
+        dates.MonthNames = months;
+        dates.MonthGenitiveNames = months;
+        dates.AbbreviatedMonthNames = shortMonths;
+        dates.AbbreviatedMonthGenitiveNames = shortMonths;
         return CultureInfo.ReadOnly(culture);
     }
 }
