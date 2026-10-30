@@ -31,11 +31,10 @@ public class ClientGlobalizationTests
     [Fact]
     public void ClientResources_localizedFiles_areNeutralFrench()
     {
-        var resources = Files("Netto.Web.Client", "*.resx");
+        var resources = ResxFiles.In(Folder("Netto.Web.Client"));
 
         resources.Count.ShouldBeGreaterThan(30);
-        resources.Where(resource => Regex.IsMatch(resource, @"\.[A-Za-z]{2,3}(-[A-Za-z]{2,4})?\.resx$") && !resource.EndsWith(".fr.resx", StringComparison.Ordinal))
-            .ShouldBeEmpty();
+        resources.Where(resource => ResxFiles.IsLocalized(resource) && !resource.EndsWith(".fr.resx", StringComparison.Ordinal)).ShouldBeEmpty();
     }
 
     // The one culture created by name is the UI culture the page starts in (Languages); the culture of numbers

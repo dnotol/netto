@@ -28,6 +28,14 @@ public class TestSupportTests
         Declaring(@"\bResourceManager\b|\bResourceReader\b|GetManifestResourceStream").ShouldBeEmpty();
     }
 
+    // A reader of the .resx files as written, listing them on disk or loading one as XML: ResxFiles is the one
+    // place that is, the French files held to their neutral ones included.
+    [Fact]
+    public void TestSources_resxFiles_areReadOnlyThroughResxFiles()
+    {
+        Declaring(@"""\*\.resx""|XDocument\s*\.\s*Load\s*\([^;]*\.resx").ShouldBeEmpty();
+    }
+
     // The made-up company the engine tests share, and the levers they put in its year.
     [Fact]
     public void TestSources_madeUpCompanyFixtures_areDeclaredOnlyInFixtures()

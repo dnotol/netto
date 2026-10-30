@@ -9,8 +9,8 @@ namespace Netto.Tests.Support;
 // The texts of one component's .resx, read as IStringLocalizer<TComponent> reads them (River/RentCard.resx
 // under « Netto.Web.Client.River.RentCard »), for a test to hold the keys a helper builds to the texts that are
 // there: in the invariant culture, the neutral file's English, or in French (French), the .fr.resx beside it,
-// alone, so a key it lacks reads as missing rather than as its English text. The one reader of a .resx in the
-// tests.
+// alone, so a key it lacks reads as missing rather than as its English text. The one reader of the texts the
+// build embedded in the tests; the .resx files as written on disk are ResxFiles'.
 internal sealed class ResxText
 {
     private const string Suffix = ".resources";
