@@ -82,7 +82,7 @@
     <value>You declare the royalty in your tax return every year, though the company withheld on it.</value>
   </data>
   <data name="Condition_attestation" xml:space="preserve">
-    <value>For the flat-rate costs: you hold an attestation du travail des arts covering these works when the royalty is paid. The starter attestation does not count.</value>
+    <value>For the flat-rate costs: when the royalty is paid, you hold an attestation du travail des arts of art. 7 of the law of 16.12.2022 or of art. 12 §8 of the royal decree of 13.03.2023, covering the activities these works come from. One of art. 17 of that decree does not count.</value>
   </data>
   <data name="Condition_not_a_starting_partnership" xml:space="preserve">
     <value>The company is not a partnership (société de personnes) in its first three years whose managers and the majority of its active partners who are not managers were self-employed for at most 12 of the 40 quarters before it was formed: that company owes none.</value>
