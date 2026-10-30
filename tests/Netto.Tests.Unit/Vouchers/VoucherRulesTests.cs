@@ -1,4 +1,5 @@
 using Netto.Core.Vouchers;
+using Netto.Tests.WebClient.Steps;
 using Shouldly;
 
 namespace Netto.Tests.Vouchers;
@@ -54,7 +55,7 @@ public class VoucherRulesTests
     [Fact]
     public void Conditions_2026_citeEachTextByAShortLabel()
     {
-        VoucherRules.IncomeYear2026.Conditions.Select(condition => condition.Sources.Select(source => source.Label)).ShouldBe(new string[][]
+        VoucherRules.IncomeYear2026.Conditions.Select(condition => condition.Sources.Select(source => SourceWordsInEnglish.Of(source).Label)).ShouldBe(new string[][]
         {
             ["CIR 92, art. 38/1"],
             ["CIR 92, art. 38/1"],

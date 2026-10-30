@@ -24,16 +24,14 @@ public sealed record CompanyContributionRules(
     IReadOnlyList<LeverCondition> Conditions)
 {
     private static readonly Source Faq2026 = new(
-        "INASTI, « Quelle cotisation à charge des sociétés dois-je payer ? » (FAQ, as read on 25.10.2026)",
-        "« Pour la cotisation 2026, c'est le total du bilan de votre société en 2024 »: under 879,163.44, 409.30; above it, 1,022.38",
+        "contribution_bands",
         new Uri("https://www.inasti.be/fr/faq/quelle-cotisation-charge-des-societes-dois-je-payer"),
         "social-contributions/inasti_faq-cotisation-a-charge-des-societes_2026-10-25.html");
 
     private static readonly Source Law1992 = new(
-        "Loi du 30.12.1992 portant des dispositions sociales et diverses, consolidated on Justel, updated to 30.12.2022",
-        "Art. 91: a yearly flat contribution by the balance-sheet total of the penultimate closed financial year, the lower one while it does not exceed the threshold, indexed each year; art. 100: of the same nature, for the income taxes, as the contributions due under social legislation",
+        "flat_contribution",
         new Uri("https://www.ejustice.just.fgov.be/eli/loi/1992/12/30/1993021370/justel"),
-        "social-contributions/ejustice_loi-dispositions-sociales-diverses-1992_2022-12-30.html") { Label = "Law of 30.12.1992" };
+        "social-contributions/ejustice_loi-dispositions-sociales-diverses-1992_2022-12-30.html");
 
     public static CompanyContributionRules IncomeYear2026 { get; } = new(
         IncomeYear: 2026,
@@ -41,33 +39,18 @@ public sealed record CompanyContributionRules(
         BalanceSheetThreshold: new RuleAmount("balance_sheet_threshold", 879_163.44m, Faq2026),
         LowerBand: new RuleAmount("company_contribution_lower_band", 409.30m, Faq2026),
         UpperBand: new RuleAmount("company_contribution_upper_band", 1_022.38m, Faq2026),
-        Exemption: new RuleAmount("company_contribution_exempt", 0m, Law1992 with
-        {
-            Reference = "Art. 94, 9°: a société de personnes in its first three years whose managers and most active partners were self-employed for at most 12 of the 40 quarters before it was formed owes none; art. 92bis: nor a company with no activity for a whole calendar year, on an attestation of the SPF Finances",
-            Label = "Law of 30.12.1992, art. 94 and 92bis",
-        }),
+        Exemption: new RuleAmount("company_contribution_exempt", 0m, Law1992 with { Passage = "exemptions" }),
         Law: Law1992,
-        Deduction: SharedSources.Article49Income2026 with
-        {
-            Reference = "The costs made or borne in the period to acquire or keep taxable income are deductible professional costs, INASTI's company contribution among them",
-        },
+        Deduction: SharedSources.Article49Income2026 with { Passage = "contribution_deductible" },
         Conditions:
         [
             new LeverCondition("not_a_starting_partnership",
             [
-                Law1992 with
-                {
-                    Reference = "Art. 94, 9°: a société de personnes owes none for its first three years when its managers and most active partners were self-employed for at most 12 of the 40 quarters before it was formed",
-                    Label = "Law of 30.12.1992, art. 94",
-                },
+                Law1992 with { Passage = "starting_partnership" },
             ]),
             new LeverCondition("active_all_year",
             [
-                Law1992 with
-                {
-                    Reference = "Art. 92bis: a company with no activity for a whole calendar year owes none for it, on an attestation of the SPF Finances",
-                    Label = "Law of 30.12.1992, art. 92bis",
-                },
+                Law1992 with { Passage = "inactive_company" },
             ]),
         ]);
 

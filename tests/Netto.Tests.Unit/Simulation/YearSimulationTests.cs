@@ -401,11 +401,11 @@ public class YearSimulationTests
     }
 
     [Fact]
-    public void Run_2026Vouchers_everyStepHasASourceWithAReferenceAndAnAddress()
+    public void Run_2026Vouchers_everyStepHasASourceWithAPassageAndAnAddress()
     {
         var result = Run(Scenario(directorPay: 50_000m, reserve: 0m, vouchers: AllVouchers));
 
-        result.Steps.ShouldAllBe(step => step.Source.Reference.Length > 0 && step.Source.Url.IsAbsoluteUri);
+        result.Steps.ShouldAllBe(step => step.Source.Passage.Length > 0 && step.Source.Url.IsAbsoluteUri);
     }
 
     // What the company pays the director besides pay reaches the pocket, so the layers, the pocket and
@@ -597,11 +597,11 @@ public class YearSimulationTests
     }
 
     [Fact]
-    public void Run_2026Allowances_everyStepHasASourceWithAReferenceAndAnAddress()
+    public void Run_2026Allowances_everyStepHasASourceWithAPassageAndAnAddress()
     {
         var result = Run(Scenario(directorPay: 50_000m, reserve: 0m, allowances: AllAllowances));
 
-        result.Steps.ShouldAllBe(step => step.Source.Reference.Length > 0 && step.Source.Url.IsAbsoluteUri);
+        result.Steps.ShouldAllBe(step => step.Source.Passage.Length > 0 && step.Source.Url.IsAbsoluteUri);
     }
 
     [Theory]
@@ -777,11 +777,11 @@ public class YearSimulationTests
     }
 
     [Fact]
-    public void Run_2026RentAtTheCap_everyStepHasASourceWithAReferenceAndAnAddress()
+    public void Run_2026RentAtTheCap_everyStepHasASourceWithAPassageAndAnAddress()
     {
         var result = Run(Scenario(directorPay: 50_000m, reserve: 0m, rent: RentAtTheCap));
 
-        result.Steps.ShouldAllBe(step => step.Source.Reference.Length > 0 && step.Source.Url.IsAbsoluteUri);
+        result.Steps.ShouldAllBe(step => step.Source.Passage.Length > 0 && step.Source.Url.IsAbsoluteUri);
     }
 
     // The rent cites the cap it is kept under, what it leaves taxable the floor of art. 7 and its
@@ -856,11 +856,11 @@ public class YearSimulationTests
     }
 
     [Fact]
-    public void Run_2026_everyStepHasASourceWithAReferenceAndAnAddress()
+    public void Run_2026_everyStepHasASourceWithAPassageAndAnAddress()
     {
         var result = Run(Scenario(directorPay: 50_000m, reserve: 0m));
 
-        result.Steps.ShouldAllBe(step => step.Source.Reference.Length > 0 && step.Source.Url.IsAbsoluteUri);
+        result.Steps.ShouldAllBe(step => step.Source.Passage.Length > 0 && step.Source.Url.IsAbsoluteUri);
     }
 
     [Fact]

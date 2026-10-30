@@ -381,11 +381,11 @@ public class GrossToNetTests
     }
 
     [Fact]
-    public void Compute_2026_everyStepHasASourceWithAReferenceAndAnAddress()
+    public void Compute_2026_everyStepHasASourceWithAPassageAndAnAddress()
     {
         var result = Compute2026(50_000m);
 
-        result.Steps.ShouldAllBe(step => step.Source.Reference.Length > 0 && step.Source.Url.IsAbsoluteUri);
+        result.Steps.ShouldAllBe(step => step.Source.Passage.Length > 0 && step.Source.Url.IsAbsoluteUri);
     }
 
     [Fact]

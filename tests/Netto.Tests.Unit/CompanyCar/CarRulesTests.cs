@@ -2,6 +2,7 @@ using Netto.Core.CompanyCar;
 using Netto.Core.CorporateTax;
 using Netto.Core.Rules;
 using Netto.Tests.Rules;
+using Netto.Tests.WebClient.Steps;
 using Shouldly;
 
 namespace Netto.Tests.CompanyCar;
@@ -244,7 +245,7 @@ public class CarRulesTests
                 rules.PetrolReferenceEmission.Source, rules.ReferenceDecree, rules.FormulaDeduction, rules.CompanyExclusions, rules.PlugInDeduction, rules.FakeHybrid,
                 rules.DeductionPeriods[1].PlugInReading.ShouldNotBeNull(), rules.DieselHybridCoefficient.Source,
             }
-            .Select(source => (source.Label, source.Document))
+            .Select(source => (SourceWordsInEnglish.Of(source).Label, source.Document))
             .ShouldBe([
                 ("AR/CIR 92, art. 18", Article18),
                 ("Royal decree of 17.12.2025", "personal-tax/ejustice_arrete-royal-emission-reference-co2-2026_2025-12-24.html"),
@@ -282,7 +283,7 @@ public class CarRulesTests
     [Fact]
     public void Conditions_2026_citeEachTextByAShortLabel()
     {
-        CarRules.IncomeYear2026.Conditions.SelectMany(condition => condition.Sources, (condition, source) => source.Label).ShouldBe(
+        CarRules.IncomeYear2026.Conditions.SelectMany(condition => condition.Sources, (condition, source) => SourceWordsInEnglish.Of(source).Label).ShouldBe(
             ["CIR 92, art. 66", "CIR 92, art. 550", "Circular 2024/C/50", "CIR 92, art. 36", "SPF FAQ on car benefits", "CIR 92, art. 36", "CIR 92, art. 550", "Circular 2026/C/10"]);
     }
 

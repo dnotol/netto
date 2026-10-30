@@ -4,6 +4,7 @@ using Netto.Core.Rent;
 using Netto.Core.SocialContributions;
 using Netto.Core.Vouchers;
 using Netto.Web.Client.River;
+using Netto.Tests.WebClient.Steps;
 using Shouldly;
 
 namespace Netto.Tests.WebClient.River;
@@ -728,7 +729,7 @@ public class ModuleViewsTests
     {
         var meal = Vouchers(AllVouchers).Drains[0].Details.Single();
 
-        meal.Sources.Single(group => group.Source.Label == "CIR 92, art. 38/1").Amounts.Select(amount => (amount.Key, amount.Value))
+        meal.Sources.Single(group => SourceWordsInEnglish.Of(group.Source).Label == "CIR 92, art. 38/1").Amounts.Select(amount => (amount.Key, amount.Value))
             .ShouldBe([("meal_voucher_company_share", 8.91m), ("meal_voucher_holder_share", 1.09m)]);
     }
 

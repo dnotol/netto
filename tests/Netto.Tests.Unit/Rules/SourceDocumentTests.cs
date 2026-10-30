@@ -50,22 +50,26 @@ public class SourceDocumentTests
     }
 
     // A document several rule sets cite is one record (SharedSources), each rule set taking the passage
-    // it rests on: every citation of a file has its title and its address, and one name in a list, or
-    // that name followed by the paragraph it cites (« Circular 2021/C/20, §31 »).
+    // it rests on: every citation of a file has its address, and the article it is, if any, since the
+    // client words a document's title and name by its file alone (SourceText).
     [Fact]
-    public void Citations_ofOneDocument_shareItsTitleAddressAndName()
+    public void Citations_ofOneDocument_shareItsAddressAndArticle()
     {
-        var mismatched =
-            from type in RuleTypes
-            from set in RuleSets.Of(type)
-            from citation in RuleSets.Citations(set.Rules, $"{type.Name} {set.Year}")
-            group citation.Source by citation.Source.Document into document
-            let name = document.Select(source => source.Label).OrderBy(label => label.Length).First()
-            where document.Select(source => (source.Title, source.Url)).Distinct().Count() > 1
-                || document.Any(source => source.Label != name && !source.Label.StartsWith(name + ", ", StringComparison.Ordinal))
-            select $"{document.Key}: {string.Join(" | ", document.Select(source => source.Label).Distinct())}";
+        var mismatched = RuleSets.Sources()
+            .GroupBy(citation => citation.Source.Document)
+            .Where(document => document.Select(citation => (citation.Source.Url, citation.Source.Article)).Distinct().Count() > 1)
+            .Select(document => document.Key);
 
         mismatched.ShouldBeEmpty();
+    }
+
+    // A passage's key is written as the engine's other keys are, so it reads the same in every resource key.
+    [Fact]
+    public void Citations_everyPassage_isASnakeCaseKey()
+    {
+        RuleSets.Sources().Where(citation => !Regex.IsMatch(citation.Source.Passage, "^[a-z0-9]+(_[a-z0-9]+)*$"))
+            .Select(citation => $"{citation.Path}: {citation.Source.Passage}")
+            .ShouldBeEmpty();
     }
 
     // An article of CIR 92 or of the AR/CIR 92 is built by Source.Fisconet, which files it by its article

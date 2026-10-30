@@ -1,5 +1,7 @@
 @using Netto.Core.Rules
+@using Netto.Web.Client.Steps
 @inject IStringLocalizer<ConditionList> L
+@inject IStringLocalizer<SourceText> Sources
 
 @* The conditions of a lever that Netto cannot check, the same list on every lever card: folded to one
    line that counts them (Fold, level 3), opened on demand. Each condition reads in its own words with
@@ -15,8 +17,9 @@
                     <span class="conditions__sources">
                         @foreach (var source in condition.Sources)
                         {
-                            <a href="@source.Url" target="_blank" rel="noopener noreferrer" title="@source.Title" class="conditions__source">
-                                @source.Label<MudIcon Icon="@Icons.Material.Rounded.OpenInNew" Size="Size.Small" aria-hidden="true" />
+                            var words = SourceText.Words(source, Sources);
+                            <a href="@source.Url" target="_blank" rel="noopener noreferrer" title="@words.Title" class="conditions__source">
+                                @words.Label<MudIcon Icon="@Icons.Material.Rounded.OpenInNew" Size="Size.Small" aria-hidden="true" />
                             </a>
                         }
                     </span>

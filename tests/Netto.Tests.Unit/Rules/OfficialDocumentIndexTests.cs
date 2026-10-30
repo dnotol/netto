@@ -120,5 +120,5 @@ public class OfficialDocumentIndexTests
         error.Message.ShouldContain("Applies to");
     }
 
-    private static Source Citing(string document, string url) => new("Title", "Reference", new Uri(url), document);
+    private static Source Citing(string document, string url) => new("any_passage", new Uri(url), document);
 }

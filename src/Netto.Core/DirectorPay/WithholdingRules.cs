@@ -40,94 +40,40 @@ public sealed record WithholdingRules(
     // each decree, the one of 27.09.2026 among them, and holds n° 32, 34 and 38 to 40 as that decree
 // changes them.
     private static readonly Source KeyFormula2026 = new(
-        "Key formula for the withholding tax on pay paid from 1 January 2026 (ESS-SR/2025-0928), Fisconetplus, version 17.12.2025",
-        "N° 6 to 16, the monthly pay in five steps: the gross less the director's reduction (n° 7, 1°), times 12 (n° 7, 2°); "
-        + "less the flat-rate costs (n° 8, 2°); the basic tax on the scale of annexe 1, with the 7% municipal surcharge built in (n° 5), "
-        + "less the tax on the tax-free amount of a single person (n° 11, a), or, when the partner has no professional income of their own (n° 11, b), "
-        + "30% of the annual net taxable imputed to the partner, the tax on it and the tax on the rest each on that scale, "
-        + "their sum less twice the tax on the tax-free amount; less the reductions for dependent children (n° 14, annexe 3) and other family charges "
-        + "(n° 15, annexes 4 and 5), which add up but never beyond the basic tax (n° 13); divided by 12 (n° 16); never below zero (n° 21). "
-        + "N° 3: each step rounded to the cent, up from five thousandths",
+        "monthly_withholding",
         new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/389035ca-432e-422b-859d-2d32fbdaa4cf"),
         "personal-tax/spf-finances_formule-cle-precompte-professionnel-2026-01-01_2025-12-17.pdf");
 
     private static readonly Source CoordinatedAnnex2026 = new(
-        "Annexe III, AR/CIR 92 (revenus 2026), coordinated text on Fisconetplus, last modified 13.10.2026",
-        "Its header dates each decree: the rules of the royal decree of 11.12.2025 (MB 29.12.2025) apply to pay paid or attributed from 01.01.2026; "
-        + "the royal decree of 27.09.2026 (MB 02.10.2026) changes n° 32 to 3,089.63, the tax on a tax-free amount of 11,550, and the marital quotient's "
-        + "n° 34.1.1 and 34.2, and the tables of the reductions for dependants of n° 38 to 41, for pay from 01.11.2026, "
-        + "and nothing else Netto applies to a director's monthly pay",
+        "decrees",
         new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/0c174ec5-448b-4d1e-983b-fc457e5e7e28"),
         "personal-tax/spf-finances_arcir92-annexe-iii-revenus-2026_2026-10-13.html");
 
-    private static readonly Source AnnexReduction2026 = DecreedAnnex2026(
-        "N° 25.2, the monthly reduction, in place of social deductions, on the pay of a director subject to the self-employed social status: "
-        + "385 up to 1,465; 385 + 21.50% of the slice over 1,465 up to 6,310; 1,426.68 + 14.50% of the slice over 6,310 up to 9,290; 1,858.78 above");
+    private static readonly Source AnnexReduction2026 = DecreedAnnex2026("director_reduction");
 
-    private static readonly Source AnnexFlatRateCosts2026 = DecreedAnnex2026(
-        "N° 29, the flat-rate costs on a director's periodic pay: 3% of the annual gross, 3,200 at most (reached at 106,666.67)");
+    private static readonly Source AnnexFlatRateCosts2026 = DecreedAnnex2026("flat_rate_costs");
 
-    private static readonly Source AnnexScale2026 = DecreedAnnex2026(
-        "N° 31, the basic scale: 26.75% up to 16,710; 4,469.93 + 42.80% of the slice over 16,710 up to 29,500; "
-        + "9,944.05 + 48.15% of the slice over 29,500 up to 51,050; 20,320.38 + 53.50% of the slice over 51,050");
+    private static readonly Source AnnexScale2026 = DecreedAnnex2026("scale");
 
-    private static readonly Source AnnexTaxFreeAmount2026 = DecreedAnnex2026(
-        "N° 32, a single person: the tax on the scale less 2,987.98, the tax on the tax-free amount of 11,170");
+    private static readonly Source AnnexTaxFreeAmount2026 = DecreedAnnex2026("single_person");
 
-    private static readonly Source AnnexQuotient2026 = DecreedAnnex2026(
-        "N° 34, a partner without professional income of their own: 30% of the annual net taxable imputed to them (n° 34.1.1), "
-        + "13,790 at most (reached at 45,966.67); the tax on the imputed income and the tax on the rest, each on the scale of n° 31, "
-        + "summed less 5,975.96, twice the tax on the tax-free amount of 11,170 (n° 34.2)");
+    private static readonly Source AnnexQuotient2026 = DecreedAnnex2026("marital_quotient");
 
-    private static readonly Source CoordinatedQuotientFromNovember2026 = CoordinatedAnnex2026 with
-    {
-        Reference = "N° 34.1.1 and 34.2, a partner without professional income of their own, as the royal decree of 27.09.2026 (MB 02.10.2026) "
-            + "changes them for pay paid or attributed from 01.11.2026: the income imputed to the partner, 30% of the annual net taxable, "
-            + "at most 12,790 when both partners have reached 66 on 1 January 2027 (reached at 42,633.33), in all other cases 11,780 "
-            + "(reached at 39,266.67), also when the payer lacks the information; the two taxes summed less 6,179.26, "
-            + "twice the tax on the tax-free amount of 11,550",
-    };
+    private static readonly Source CoordinatedQuotientFromNovember2026 = CoordinatedAnnex2026 with { Passage = "marital_quotient_from_november" };
 
-    private static readonly Source CoordinatedTaxFreeAmountFromNovember2026 = CoordinatedAnnex2026 with
-    {
-        Reference = "N° 32, a single person, as the royal decree of 27.09.2026 (MB 02.10.2026) changes it for pay paid or attributed from 01.11.2026: "
-            + "the tax on the scale less 3,089.63, the tax on the tax-free amount of 11,550",
-    };
+    private static readonly Source CoordinatedTaxFreeAmountFromNovember2026 = CoordinatedAnnex2026 with { Passage = "single_person_from_november" };
 
-    private static readonly Source AnnexChildren2026 = DecreedAnnex2026(
-        "N° 38, the reduction of the basic tax for dependent children, a disabled child counted for two (n° 8): 624 for one, 1,656 for two, "
-        + "4,404 for three, 7,620 for four, 11,100 for five, 14,592 for six, 18,120 for seven, 21,996 for eight, "
-        + "and beyond eight 21,996 plus 3,864 for each dependent child beyond the eighth");
+    private static readonly Source AnnexChildren2026 = DecreedAnnex2026("dependent_children");
 
-    private static readonly Source AnnexOtherDependants2026 = DecreedAnnex2026(
-        "N° 39, 2 and 3, under either method: 1,992 for each dependant of art. 136, 2° and 3°, CIR 92 aged 66 or over in a situation of dependency (n° 9), "
-        + "624 for each other dependant of art. 136, 2° to 4°, a disabled one counted for two (n° 8), "
-        + "as the key formula's annexes 4 and 5 list them too");
+    private static readonly Source AnnexOtherDependants2026 = DecreedAnnex2026("other_dependants");
 
-    private static readonly Source AnnexSingleParent2026 = DecreedAnnex2026(
-        "N° 40, 1, under the single method of n° 32 only: 624 for a widow or widower not remarried, an unmarried father or mother, "
-        + "or a divorced or separated parent, with one or more dependent children");
+    private static readonly Source AnnexSingleParent2026 = DecreedAnnex2026("single_parent");
 
-    private static readonly Source CoordinatedChildrenFromNovember2026 = CoordinatedAnnex2026 with
-    {
-        Reference = "N° 38's table as the royal decree of 27.09.2026 (MB 02.10.2026) changes it for pay paid or attributed from 01.11.2026, "
-            + "a disabled child counted for two (n° 8): 684 for one, 1,644 for two, 4,344 for three, 7,488 for four, 10,884 for five, "
-            + "14,292 for six, 17,712 for seven, 21,492 for eight, and beyond eight 21,492 plus 3,780 for each dependent child beyond the eighth",
-    };
+    private static readonly Source CoordinatedChildrenFromNovember2026 = CoordinatedAnnex2026 with { Passage = "dependent_children_from_november" };
 
-    private static readonly Source CoordinatedOtherDependantsFromNovember2026 = CoordinatedAnnex2026 with
-    {
-        Reference = "N° 39, 2 and 3, as the royal decree of 27.09.2026 (MB 02.10.2026) changes its table for pay paid or attributed from 01.11.2026: "
-            + "1,992 for each dependant of art. 136, 2° and 3°, CIR 92 aged 66 or over in a situation of dependency (n° 9), "
-            + "636 for each other dependant of art. 136, 2° to 4°, a disabled one counted for two (n° 8)",
-    };
+    private static readonly Source CoordinatedOtherDependantsFromNovember2026 = CoordinatedAnnex2026 with { Passage = "other_dependants_from_november" };
 
-    private static readonly Source CoordinatedSingleParentFromNovember2026 = CoordinatedAnnex2026 with
-    {
-        Reference = "N° 40, 1, as the royal decree of 27.09.2026 (MB 02.10.2026) changes its table for pay paid or attributed from 01.11.2026, "
-            + "under the single method of n° 32 only: 636 for a widow or widower not remarried, an unmarried father or mother, "
-            + "or a divorced or separated parent, with one or more dependent children",
-    };
+    private static readonly Source CoordinatedSingleParentFromNovember2026 = CoordinatedAnnex2026 with { Passage = "single_parent_from_november" };
 
     private static readonly WithholdingRules From1January2026 = new(
         IncomeYear: 2026,
@@ -316,9 +262,8 @@ public sealed record WithholdingRules(
 
     private static RuleAmount Scale2026(string key, decimal value) => new(key, value, AnnexScale2026);
 
-    private static Source DecreedAnnex2026(string reference) => new(
-        "Annexe III to the AR/CIR 92 as replaced by the royal decree of 11.12.2025 (MB 29.12.2025), « Règles 1er janvier 2026 » on Fisconetplus, version 17.12.2025",
-        reference,
+    private static Source DecreedAnnex2026(string passage) => new(
+        passage,
         new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/536a741e-81d6-4605-ad11-8e07ebc4a440"),
         "personal-tax/spf-finances_regles-precompte-professionnel-2026-01-01_2025-12-17.pdf");
 }

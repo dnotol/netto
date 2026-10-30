@@ -1,6 +1,7 @@
 using Netto.Core.Rent;
 using Netto.Core.Rules;
 using Netto.Tests.Rules;
+using Netto.Tests.WebClient.Steps;
 using Shouldly;
 
 namespace Netto.Tests.Rent;
@@ -105,7 +106,7 @@ public class RentRulesTests
     {
         var rules = RentRules.For(incomeYear).ShouldNotBeNull();
 
-        rules.Conditions.SelectMany(condition => condition.Sources, (condition, source) => (condition.Key, source.Label)).ShouldBe(new[]
+        rules.Conditions.SelectMany(condition => condition.Sources, (condition, source) => (condition.Key, SourceWordsInEnglish.Of(source).Label)).ShouldBe(new[]
         {
             ("share_yours_to_justify", "CIR 92, art. 7"),
             ("share_yours_to_justify", "CIR 92, art. 32"),

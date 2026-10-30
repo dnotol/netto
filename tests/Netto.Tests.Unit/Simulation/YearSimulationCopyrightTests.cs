@@ -189,9 +189,9 @@ public class YearSimulationCopyrightTests
     }
 
     [Fact]
-    public void Run_2026Royalty_everyStepHasASourceWithAReferenceAndAnAddress()
+    public void Run_2026Royalty_everyStepHasASourceWithAPassageAndAnAddress()
     {
-        Run(Scenario(royalty: new CopyrightRoyalty(10_000m))).Steps.ShouldAllBe(step => step.Source.Reference.Length > 0 && step.Source.Url.IsAbsoluteUri);
+        Run(Scenario(royalty: new CopyrightRoyalty(10_000m))).Steps.ShouldAllBe(step => step.Source.Passage.Length > 0 && step.Source.Url.IsAbsoluteUri);
     }
 
     // Art. 215's minimum pay never counts the royalty, nor the part of it taxed as pay (decided

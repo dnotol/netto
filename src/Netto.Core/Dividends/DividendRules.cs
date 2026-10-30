@@ -17,26 +17,17 @@ public sealed record DividendRules(
     RuleAmount ExemptAmount,
     Source ExemptionRefund)
 {
-    private static readonly Source Article269Income2025 = SharedSources.Article269Income2025 with
-    {
-        Reference = "§1, 1°: 30%. §2, al. 2: VVPRbis shares, 1° 20% for the second accounting year's distribution after a contribution made by 31.12.2025, 2° 15% from the third",
-    };
+    private static readonly Source Article269Income2025 = SharedSources.Article269Income2025 with { Passage = "dividend_withholding" };
 
-    private static readonly Source Article269Income2026 = SharedSources.Article269Income2026 with
-    {
-        Reference = "§1, 1°: 30%. §2, al. 2: VVPRbis shares, 1° 20% for the second accounting year's distribution after a contribution made by 31.12.2025, 2° 18% from the third for dividends paid or attributed from 01.07.2026 (programme law of 30.05.2026, art. 15, 4°, and 18)",
-    };
+    private static readonly Source Article269Income2026 = SharedSources.Article269Income2026 with { Passage = "dividend_withholding" };
 
-    private static readonly Source Article21Income2025 = Source.Fisconet("personal-tax", "21", 2025, new DateOnly(2026, 1, 27), "2121eb14-ea6a-4fa1-b09e-ccc3bec9b2f4",
-        "Al. 1, 14°: the first 833 of ordinary dividends are exempt from personal tax");
+    private static readonly Source Article21Income2025 = Source.Fisconet("personal-tax", "21", 2025, new DateOnly(2026, 1, 27), "2121eb14-ea6a-4fa1-b09e-ccc3bec9b2f4", "exempt_dividends");
 
-    private static readonly Source Article21Income2026 = Source.Fisconet("personal-tax", "21", 2026, new DateOnly(2026, 6, 8), "77a7ba86-4df1-4091-ac75-171cdd277a25",
-        "Al. 1, 14°: the first 833 of ordinary dividends are exempt from personal tax");
+    private static readonly Source Article21Income2026 = Source.Fisconet("personal-tax", "21", 2026, new DateOnly(2026, 6, 8), "77a7ba86-4df1-4091-ac75-171cdd277a25", "exempt_dividends");
 
     // The income year 2026 edition is not published yet; the exemption is claimed the same way.
     private static readonly Source ReturnExplanations2026Part1 = new(
-        "SPF Finances, return explanations 2026, part 1, Wallonia (income year 2025)",
-        "Cadre VII, c): exempt dividends are not declared; the withholding retained on them, for at most 833 of dividends, is declared and credited",
+        "exempt_dividends",
         new Uri("https://fin.belgium.be/sites/default/files/media/documents/explications-partie-1-rw-2026.pdf"),
         "personal-tax/spf-finances_explications-partie-1-rw-2026_2026-04-13.pdf");
 

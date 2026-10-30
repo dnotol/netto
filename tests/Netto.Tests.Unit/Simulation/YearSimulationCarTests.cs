@@ -258,9 +258,9 @@ public class YearSimulationCarTests
     }
 
     [Fact]
-    public void Run_2026Car_everyStepHasASourceWithAReferenceAndAnAddress()
+    public void Run_2026Car_everyStepHasASourceWithAPassageAndAnAddress()
     {
-        Run(Scenario(car: ElectricCar)).Steps.ShouldAllBe(step => step.Source.Reference.Length > 0 && step.Source.Url.IsAbsoluteUri);
+        Run(Scenario(car: ElectricCar)).Steps.ShouldAllBe(step => step.Source.Passage.Length > 0 && step.Source.Url.IsAbsoluteUri);
     }
 
     public static TheoryData<decimal, decimal, decimal, Refusal> CarsOutsideTheRules => new()

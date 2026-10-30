@@ -1,6 +1,7 @@
 using Netto.Core.Rules;
 using Netto.Core.SocialContributions;
 using Netto.Tests.Rules;
+using Netto.Tests.WebClient.Steps;
 using Shouldly;
 
 namespace Netto.Tests.SocialContributions;
@@ -41,8 +42,8 @@ public class SocialContributionRulesTests
     [Fact]
     public void RoyalDecree38_isCitedByItsNameForTheFeeAndByArticle11ForTheCarAndTheRoyalty()
     {
-        (SocialContributionRules.IncomeYear2026.FundFee.Label, Netto.Core.CompanyCar.CarRules.IncomeYear2026.BenefitInContributions.Label,
-                Netto.Core.Copyright.CopyrightRules.IncomeYear2026.OutsideContributions.Label)
+        (SourceWordsInEnglish.Of(SocialContributionRules.IncomeYear2026.FundFee).Label, SourceWordsInEnglish.Of(Netto.Core.CompanyCar.CarRules.IncomeYear2026.BenefitInContributions).Label,
+                SourceWordsInEnglish.Of(Netto.Core.Copyright.CopyrightRules.IncomeYear2026.OutsideContributions).Label)
             .ShouldBe(("Royal decree n° 38", "Royal decree n° 38, art. 11", "Royal decree n° 38, art. 11"));
     }
 }

@@ -1,6 +1,7 @@
 using Netto.Core.Copyright;
 using Netto.Core.Rules;
 using Netto.Tests.Rules;
+using Netto.Tests.WebClient.Steps;
 using Shouldly;
 
 namespace Netto.Tests.Copyright;
@@ -193,7 +194,7 @@ public class CopyrightRulesTests
     public void IncomeYear2026_listsTheConditionsWithTheirTexts()
     {
         CopyrightRules.IncomeYear2026.Conditions
-            .Select(condition => (condition.Key, Labels: string.Join(", ", condition.Sources.Select(source => source.Label))))
+            .Select(condition => (condition.Key, Labels: string.Join(", ", condition.Sources.Select(source => SourceWordsInEnglish.Of(source).Label))))
             .ShouldBe(
             [
                 ("works_you_created", "CIR 92, art. 17"),

@@ -18,8 +18,7 @@ public sealed record MunicipalRates(
     Source Surcharge)
 {
     // Art. 466's record, whose passage names art. 468's rule too, which official-docs/ files beside it.
-    private static readonly Source Articles466And468Income2026 = Source.Fisconet("municipal-surcharge", "466", 2026, new DateOnly(2026, 4, 23), "aa4241fb-2007-4bf8-aaf7-a5cb46dcb853",
-        "Art. 466: the municipal additional tax is computed on the total tax, the federal share and the regional tax together. Art. 468: at one uniform rate per municipality, with at most one decimal");
+    private static readonly Source Articles466And468Income2026 = Source.Fisconet("municipal-surcharge", "466", 2026, new DateOnly(2026, 4, 23), "aa4241fb-2007-4bf8-aaf7-a5cb46dcb853", "municipal_surcharge");
 
     // Tax year 2027 is not published yet (SPW file of 03.09.2026): tax year 2026's rates stand in.
     // CIR 92 art. 469: the municipality is the one the taxpayer lives in on 1 January of the tax year.

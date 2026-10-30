@@ -11,7 +11,7 @@ namespace Netto.Tests.WebClient.DirectorPay;
 // published, on made-up municipalities.
 public class MunicipalityChoiceTests
 {
-    private static readonly Source AnySource = new("Title", "Reference", new Uri("https://example.org"), "layer/issuer_title_2026-01-01.pdf");
+    private static readonly Source AnySource = new("any_passage", new Uri("https://example.org"), "layer/issuer_title_2026-01-01.pdf");
 
     private static readonly Municipality Namur = Named("Namur");
 

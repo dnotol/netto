@@ -20,22 +20,16 @@ public sealed record VoucherRules(
     RuleAmount EcoVoucherFaceValueMaximum,
     IReadOnlyList<LeverCondition> Conditions)
 {
-    private static readonly Source Article38Income2026 = Source.Fisconet("personal-tax", "38", 2026, new DateOnly(2026, 7, 31), "24644f80-3b10-49ba-b4fe-0115166ab59d",
-        "§1, al. 1, 25°: the employer's or company's share of electronic meal vouchers, sport/culture vouchers and eco vouchers that meet the conditions of art. 38/1 is exempt");
+    private static readonly Source Article38Income2026 = Source.Fisconet("personal-tax", "38", 2026, new DateOnly(2026, 7, 31), "24644f80-3b10-49ba-b4fe-0115166ab59d", "vouchers_exempt");
 
-    private static readonly Source Article38_1Income2026 = Source.Fisconet("personal-tax", "38/1", 2026, new DateOnly(2026, 1, 14), "6a028d41-f93b-43f0-85ce-ec749722675a",
-        "§1: not in replacement of pay. §2, al. 1: meal vouchers granted by a written individual agreement where no collective one is possible (1°), one per day actually worked (2°), in the holder's name (3°), the company's share at most 8.91 (5°, vouchers granted from 01.01.2026) and the holder's at least 1.09 (6°). §3: sport/culture vouchers, at most 100 a year (4°). §4: eco vouchers, the agreement stating their face value, at most 10, and how often they are granted (2°), at most 250 a year (6°)");
+    private static readonly Source Article38_1Income2026 = Source.Fisconet("personal-tax", "38/1", 2026, new DateOnly(2026, 1, 14), "6a028d41-f93b-43f0-85ce-ec749722675a", "voucher_conditions");
 
-    private static readonly Source Article53Income2026 = SharedSources.Article53Income2026 with
-    {
-        Reference = "14°: the benefits of art. 38, §1, al. 1, 25° are not professional expenses, except the company's share of an electronic meal voucher, up to 2 a voucher, raised to 4 when that share reaches the 8.91 of art. 38/1, §2, al. 1, 5° (vouchers granted from 01.01.2026)",
-    };
+    private static readonly Source Article53Income2026 = SharedSources.Article53Income2026 with { Passage = "meal_voucher_deduction" };
 
     private static readonly Source ParliamentaryQuestion15220 = new(
-        "Parliamentary question n° 15220 of 01.02.2017 (CRIV 54 COM 582), on Fisconetplus, last modified 04.10.2019",
-        "The Minister of Finance: directors who employ no staff are not excluded from the meal-voucher exemption, but the vouchers must match the days actually worked; without proof of them the exemption does not apply and the company's share is taxable pay",
+        "directors_without_staff",
         new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/81a0efae-d13f-4c4b-ba07-efe720ab8c7f"),
-        "personal-tax/spf-finances_question-parlementaire-15220_2019-10-04.html") { Label = "Question 15220" };
+        "personal-tax/spf-finances_question-parlementaire-15220_2019-10-04.html");
 
     private static readonly RuleAmount EcoVoucherFaceValueMaximum2026 = new("eco_voucher_face_value_maximum", 10m, Article38_1Income2026);
 

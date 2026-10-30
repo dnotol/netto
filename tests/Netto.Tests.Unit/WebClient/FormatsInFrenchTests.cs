@@ -15,7 +15,7 @@ public class FormatsInFrenchTests
     private const string Space = " ";
     private const string Minus = "−";
 
-    private static readonly Source AnySource = new("Title", "Reference", new Uri("https://example.org"), "layer/issuer_title_2026-01-01.pdf");
+    private static readonly Source AnySource = new("any_passage", new Uri("https://example.org"), "layer/issuer_title_2026-01-01.pdf");
 
     [Theory]
     [InlineData("1234.56", "1.234,56" + Space + "€")]

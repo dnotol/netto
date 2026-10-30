@@ -1,6 +1,7 @@
 using Netto.Core.Rules;
 using Netto.Core.SocialContributions;
 using Netto.Tests.Rules;
+using Netto.Tests.WebClient.Steps;
 using Shouldly;
 
 namespace Netto.Tests.SocialContributions;
@@ -49,7 +50,7 @@ public class CompanyContributionRulesTests
     {
         var exemption = CompanyContributionRules.IncomeYear2026.Exemption;
 
-        (exemption.Key, exemption.Value, exemption.Source.Document, exemption.Source.Label)
+        (exemption.Key, exemption.Value, exemption.Source.Document, SourceWordsInEnglish.Of(exemption.Source).Label)
             .ShouldBe(("company_contribution_exempt", 0m, Law, "Law of 30.12.1992, art. 94 and 92bis"));
     }
 
@@ -136,7 +137,7 @@ public class CompanyContributionRulesTests
     [Fact]
     public void Conditions_2026_areTheTwoExemptionsTheLawGrants()
     {
-        CompanyContributionRules.IncomeYear2026.Conditions.SelectMany(condition => condition.Sources, (condition, source) => (condition.Key, source.Document, source.Label))
+        CompanyContributionRules.IncomeYear2026.Conditions.SelectMany(condition => condition.Sources, (condition, source) => (condition.Key, source.Document, SourceWordsInEnglish.Of(source).Label))
             .ShouldBe(new[]
             {
                 ("not_a_starting_partnership", Law, "Law of 30.12.1992, art. 94"),

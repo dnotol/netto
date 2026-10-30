@@ -1,6 +1,7 @@
 @using Netto.Web.Client.Steps
 @inject IStringLocalizer<DrainList> L
 @inject IStringLocalizer<StepDetails> Steps
+@inject IStringLocalizer<SourceText> Sources
 
 @* Where a module's money goes, line by line: what leaves into a bucket of taxes, what comes back
    out of one, and what is passed on to the pocket, the company's reserve or the next module. Only
@@ -61,7 +62,7 @@
                 @foreach (var group in detail.Sources)
                 {
                     <span class="drain-bubble__group">
-                        <span class="drain-bubble__source">@L[DrainListText.Source, group.Source.Label]</span>
+                        <span class="drain-bubble__source">@L[DrainListText.Source, SourceText.Words(group.Source, Sources).Label]</span>
                         @if (group.Amounts.Count > 0)
                         {
                             <span class="drain-bubble__figures">

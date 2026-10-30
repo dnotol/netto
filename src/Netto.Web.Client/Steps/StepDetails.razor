@@ -1,4 +1,5 @@
 @inject IStringLocalizer<StepDetails> L
+@inject IStringLocalizer<SourceText> Sources
 
 @* Each step of a module card with its rule, the lines of its computation when the rule is a chain
    of them, the official texts behind it and that year's amounts it used. Every card lists its steps
@@ -42,11 +43,12 @@
                     }
                     @foreach (var group in detail.Sources)
                     {
+                        var words = SourceText.Words(group.Source, Sources);
                         <div class="step-details__source">
                             <a href="@group.Source.Url" target="_blank" rel="noopener noreferrer" class="step-details__link">
-                                @group.Source.Title<MudIcon Icon="@Icons.Material.Rounded.OpenInNew" Size="Size.Small" aria-hidden="true" />
+                                @words.Title<MudIcon Icon="@Icons.Material.Rounded.OpenInNew" Size="Size.Small" aria-hidden="true" />
                             </a>
-                            <p class="step-details__reference">@group.Source.Reference</p>
+                            <p class="step-details__reference">@words.Reference</p>
                             @if (group.Amounts.Count > 0)
                             {
                                 <dl class="step-details__amounts">

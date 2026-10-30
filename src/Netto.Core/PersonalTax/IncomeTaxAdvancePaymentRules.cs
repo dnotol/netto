@@ -30,71 +30,46 @@ public sealed record IncomeTaxAdvancePaymentRules(
     // Art. 161: the ECB's marginal lending rate on 1 January of the income year, rounded down: 3.40%
     // on 1 January 2025, 2.40% on 1 January 2026.
     private static readonly Source EcbKeyRates = new(
-        "European Central Bank, key ECB interest rates, as read on 20.10.2026",
-        "Marginal lending facility: 3.40% from 18.12.2024, 2.40% from 11.06.2025; CIR 92 art. 161 takes it on 1 January of the income year, rounded down",
+        "marginal_lending_rate",
         new Uri("https://www.ecb.europa.eu/stats/policy_and_exchange_rates/key_ecb_interest_rates/html/index.en.html"),
         "personal-tax/ecb_key-interest-rates_2026-10-20.html");
 
-    private static readonly Source Article157Income2025 = SharedSources.Article157Income2025 with
-    {
-        Reference = "The total tax on profits, benefits and directors' pay not withheld or paid in advance during the year is surcharged; art. 158: on that tax, less the withholding and the tax credits on it",
-    };
+    private static readonly Source Article157Income2025 = SharedSources.Article157Income2025 with { Passage = "surcharged_tax_less_credits" };
 
-    private static readonly Source Article157Income2026 = SharedSources.Article157Income2026 with
-    {
-        Reference = "The total tax on directors' pay (art. 30, 2°) not withheld or paid in advance during the year is surcharged, as the law of 15.07.2026 leaves it; art. 158: on that tax, less the withholding and the tax credits on it",
-    };
+    private static readonly Source Article157Income2026 = SharedSources.Article157Income2026 with { Passage = "surcharged_tax_less_credits" };
 
-    private static readonly Source Article159Income2025 = Source.Fisconet("personal-tax", "159", 2025, new DateOnly(2025, 1, 16), "36817772-e503-470b-a6f1-e63fc8f93ffa",
-        "The surcharge: the tax times 2.25 times the reference rate, less the advance payments times 3, 2.5, 2 and 1.5 times it, by 10 April, 10 July, 10 October and 20 December");
+    private static readonly Source Article159Income2025 = Source.Fisconet("personal-tax", "159", 2025, new DateOnly(2025, 1, 16), "36817772-e503-470b-a6f1-e63fc8f93ffa", "surcharge");
 
     private static readonly Source Article159Income2026 = SharedSources.Article159Income2026;
 
-    private static readonly Source Article160Income2025 = Source.Fisconet("personal-tax", "160", 2025, new DateOnly(2025, 1, 16), "2dc99977-5705-4843-a89f-f64845844e9f",
-        "The surcharge is kept at 90% of its amount");
+    private static readonly Source Article160Income2025 = Source.Fisconet("personal-tax", "160", 2025, new DateOnly(2025, 1, 16), "2dc99977-5705-4843-a89f-f64845844e9f", "surcharge_at_90");
 
-    private static readonly Source Article160Income2026 = Source.Fisconet("personal-tax", "160", 2026, new DateOnly(2026, 2, 9), "16683e97-29ed-4e3a-b36d-f1b689f0d8ef",
-        "The surcharge is kept at 90% of its amount");
+    private static readonly Source Article160Income2026 = Source.Fisconet("personal-tax", "160", 2026, new DateOnly(2026, 2, 9), "16683e97-29ed-4e3a-b36d-f1b689f0d8ef", "surcharge_at_90");
 
-    private static readonly Source Article163Income2025 = Source.Fisconet("personal-tax", "163", 2025, new DateOnly(2025, 1, 27), "5d0de455-ba7b-4a43-ad7c-92832f0381ff",
-        "No surcharge when it does not reach 0.5% of the tax it is computed on, or the indexed minimum");
+    private static readonly Source Article163Income2025 = Source.Fisconet("personal-tax", "163", 2025, new DateOnly(2025, 1, 27), "5d0de455-ba7b-4a43-ad7c-92832f0381ff", "no_small_surcharge");
 
-    private static readonly Source Article163Income2026 = Source.Fisconet("personal-tax", "163", 2026, new DateOnly(2026, 2, 18), "ea2a99fb-c40c-4dac-bf5b-eb2994b6c9f6",
-        "No surcharge when it does not reach 0.5% of the tax it is computed on, or the indexed minimum");
+    private static readonly Source Article163Income2026 = Source.Fisconet("personal-tax", "163", 2026, new DateOnly(2026, 2, 18), "ea2a99fb-c40c-4dac-bf5b-eb2994b6c9f6", "no_small_surcharge");
 
-    private static readonly Source Article165Income2025 = Source.Fisconet("personal-tax", "165", 2025, new DateOnly(2025, 1, 16), "8243ed34-15bb-4ce7-a5ec-bd9f02699845",
-        "The total tax is taken at 106%");
+    private static readonly Source Article165Income2025 = Source.Fisconet("personal-tax", "165", 2025, new DateOnly(2025, 1, 16), "8243ed34-15bb-4ce7-a5ec-bd9f02699845", "tax_at_106");
 
-    private static readonly Source Article165Income2026 = Source.Fisconet("personal-tax", "165", 2026, new DateOnly(2026, 2, 9), "df4c60b7-8de3-487c-836d-56a0ad1297c0",
-        "The total tax is taken at 106%");
+    private static readonly Source Article165Income2026 = Source.Fisconet("personal-tax", "165", 2026, new DateOnly(2026, 2, 9), "df4c60b7-8de3-487c-836d-56a0ad1297c0", "tax_at_106");
 
-    private static readonly Source Article175Income2025 = Source.Fisconet("personal-tax", "175", 2025, new DateOnly(2025, 1, 16), "170d765a-d2dc-4691-b3ea-522e7a1262ef",
-        "The bonus, on the total tax at 106% less the withholding, the tax credits and the advance payments needed to avoid the surcharge; art. 176: on the payments beyond those; AR/CIR 92 art. 65: the payments count first towards the needed amount");
+    private static readonly Source Article175Income2025 = Source.Fisconet("personal-tax", "175", 2025, new DateOnly(2025, 1, 16), "170d765a-d2dc-4691-b3ea-522e7a1262ef", "bonus_base");
 
-    private static readonly Source Article175Income2026 = Source.Fisconet("personal-tax", "175", 2026, new DateOnly(2026, 7, 31), "b64c185b-8b1a-4801-84c0-a2aa55de4c3d",
-        "The bonus, on the total tax at 106% less the withholding, the tax credits and the advance payments needed to avoid the surcharge; art. 176: on the payments beyond those; AR/CIR 92 art. 65: the payments count first towards the needed amount");
+    private static readonly Source Article175Income2026 = Source.Fisconet("personal-tax", "175", 2026, new DateOnly(2026, 7, 31), "b64c185b-8b1a-4801-84c0-a2aa55de4c3d", "bonus_base");
 
-    private static readonly Source Article177Income2025 = Source.Fisconet("personal-tax", "177", 2025, new DateOnly(2025, 1, 16), "201d665d-68b0-4245-b694-0c94455fad98",
-        "The bonus: the payments beyond those needed times 1.5, 1.25, 1 and 0.75 times the reference rate, by 10 April, 10 July, 10 October and 20 December");
+    private static readonly Source Article177Income2025 = Source.Fisconet("personal-tax", "177", 2025, new DateOnly(2025, 1, 16), "201d665d-68b0-4245-b694-0c94455fad98", "bonus");
 
-    private static readonly Source Article177Income2026 = Source.Fisconet("personal-tax", "177", 2026, new DateOnly(2026, 7, 31), "2b763b79-95cd-4103-8617-1f669e4ed673",
-        "The bonus: the payments beyond those needed times 1.5, 1.25, 1 and 0.75 times the reference rate, by the deadline each was paid by");
+    private static readonly Source Article177Income2026 = Source.Fisconet("personal-tax", "177", 2026, new DateOnly(2026, 7, 31), "2b763b79-95cd-4103-8617-1f669e4ed673", "bonus");
 
-    private static readonly Source IndexationNotice2026 = SharedSources.IndexationNotice2026 with
-    {
-        Reference = "CIR 92 art. 163: minimum of the advance-payment surcharge, base 50, indexed 100",
-    };
+    private static readonly Source IndexationNotice2026 = SharedSources.IndexationNotice2026 with { Passage = "surcharge_minimum" };
 
-    private static readonly Source IndexationNotice2027 = SharedSources.IndexationNotice2027 with
-    {
-        Reference = "CIR 92 art. 163: minimum of the advance-payment surcharge, base 50, indexed 100",
-    };
+    private static readonly Source IndexationNotice2027 = SharedSources.IndexationNotice2027 with { Passage = "surcharge_minimum" };
 
     // The statutory 10 October and 20 December 2026 fall on a weekend; the page gives the dates they
     // move to.
     private static readonly Source SelfEmployedPage2027 = new(
-        "SPF Finances, « Versements anticipés » for the self-employed and directors, tax year 2027, as read on 20.10.2026",
-        "« Quand dois-je effectuer mes versements anticipés ? »: by 10 April, 10 July, 12 October and 21 December 2026",
+        "deadlines",
         new Uri("https://finances.belgium.be/fr/independants_professions_liberales/versements_anticipes"),
         "personal-tax/spf-finances_versements-anticipes-independants_2026-10-20.html");
 

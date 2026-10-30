@@ -22,28 +22,21 @@ public sealed record SocialContributionRules(
     Source FundFeeCommentary)
 {
     private static readonly Source Inasti2026 = new(
-        "INASTI, « Cotisations 2026 » (January 2026)",
-        "§1 B.2 « Cotisations définitives, en général », per note to the funds P741/25/9 of 11.12.2025",
+        "definitive_contributions",
         new Uri("https://www.inasti.be/sites/rsvz/files/2024-01/folder_cotisations_sociales.pdf"),
         "social-contributions/inasti_cotisations-sociales-2026_2026-01-05.pdf");
 
     // Cited by the decree's name alone, which a file's citations share; its reference says the article.
-    private static readonly Source RoyalDecree38FundFee = SharedSources.RoyalDecree38 with
-    {
-        Reference = "Art. 20 §4: the funds' management costs are borne by their members, whose share is a contribution set for each fund every year by the minister, "
-            + "after hearing the fund, and perceived and recovered as the contributions are",
-    };
+    private static readonly Source RoyalDecree38FundFee = SharedSources.RoyalDecree38 with { Passage = "fund_fee" };
 
     // The record the forager read, the text in force from 01.01.2021, until the coordinated article for
     // income year 2026 is filed.
-    private static readonly Source Article52Income2026 = Source.Fisconet("personal-tax", "52", 2026, new DateOnly(2026, 2, 4), "60edb410-72a2-4f9e-b5a4-e42f49c9127c",
-        "7°: the personal contributions due under social legislation are deductible professional costs");
+    private static readonly Source Article52Income2026 = Source.Fisconet("personal-tax", "52", 2026, new DateOnly(2026, 2, 4), "60edb410-72a2-4f9e-b5a4-e42f49c9127c", "own_contributions");
 
     private static readonly Source Commentary52 = new(
-        "Commentaire du CIR 92, n° 52/124, on Fisconetplus, last modified 09.11.2020",
-        "Those subject to the social status of the self-employed deduct as professional costs every contribution the law makes them pay to the social insurance fund of their choice",
+        "contributions_deductible",
         new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/588446ce-27fa-4638-94b4-8fcbe94d1510"),
-        "personal-tax/spf-finances_commentaire-cir92-art-52_2020-11-09.html") { Label = "Com.IR 92, n° 52/124" };
+        "personal-tax/spf-finances_commentaire-cir92-art-52_2020-11-09.html");
 
     public static SocialContributionRules IncomeYear2026 { get; } = new(
         IncomeYear: 2026,

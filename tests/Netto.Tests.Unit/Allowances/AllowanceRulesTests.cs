@@ -1,4 +1,5 @@
 using Netto.Core.Allowances;
+using Netto.Tests.WebClient.Steps;
 using Shouldly;
 
 namespace Netto.Tests.Allowances;
@@ -66,7 +67,7 @@ public class AllowanceRulesTests
     [Fact]
     public void Conditions_2026_citeEachTextByAShortLabel()
     {
-        AllowanceRules.IncomeYear2026.Conditions.SelectMany(condition => condition.Sources, (condition, source) => source.Label).Distinct()
+        AllowanceRules.IncomeYear2026.Conditions.SelectMany(condition => condition.Sources, (condition, source) => SourceWordsInEnglish.Of(source).Label).Distinct()
             .ShouldBe(["Circular 2021/C/20", "CIR 92, art. 32"]);
     }
 }

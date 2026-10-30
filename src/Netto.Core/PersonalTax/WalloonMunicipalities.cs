@@ -14,9 +14,7 @@ internal static partial class WalloonMunicipalities
     private static class Sources
     {
         public static readonly Source TaxYear2026 = new(
-            "SPW Intérieur, « Évolution taux PI et IPP depuis 1990 par commune de la Région wallonne », version of 03.09.2026",
-            "Excel file listed on the Memento fiscal page, sheet « Taux IPP », column 2026: rates of tax year 2026, "
-            + "that is income year 2025, set by each municipality under CIR 92 art. 468",
+            "municipal_rates",
             new Uri("https://interieur.wallonie.be/home/finances/fiscalite/memento-fiscal.html"),
             "municipal-surcharge/spw_evolution-taux-pi-ipp-1990-2026_2026-09-03.xls");
     }
