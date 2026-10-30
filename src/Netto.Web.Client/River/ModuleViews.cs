@@ -412,15 +412,12 @@ internal sealed record DirectorPayView(
 // the quotient saves the pay's share of the household's tax; and the quotient's rate and the cap that
 // applies, the higher one once both partners are 66, the year's rules, which the card states. None while the
 // director is taxed alone: the partner out of the plan, or a year the couple is taxed separately.
-// The card's sources are the pay's income tax, the step that applies the quotient and cites it.
 internal sealed record HouseholdView(TaxpayerColumn Director, TaxpayerColumn Partner, decimal QuotientSaves, RuleAmount Rate, RuleAmount Cap)
 {
-    public IReadOnlyList<StepDetail> Details { get; init; } = [];
-
     public static HouseholdView? From(GrossToNetResult pay, bool bothAged66) =>
         pay.Household is { } household && PersonalTaxRules.For(pay.IncomeYear, pay.Region) is { } rules
             ? new HouseholdView(household.Year.Director, household.Year.Partner, household.QuotientSaves, rules.MaritalQuotient.Rate,
-                rules.MaritalQuotient.CapFor(bothAged66)) { Details = [.. pay.Steps.Where(step => step.RuleKey == "income_tax").Select(StepDetail.From)] }
+                rules.MaritalQuotient.CapFor(bothAged66))
             : null;
 }
 

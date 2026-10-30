@@ -115,7 +115,7 @@
     <value>The marital quotient saves</value>
   </data>
   <data name="Help_QuotientSaves" xml:space="preserve">
-    <value>What your household's income tax and municipal surcharge would be without the marital quotient, less what they are with it. It all comes off the tax on your pay: Netto counts what your pay adds to your household's tax.</value>
+    <value>What your household's tax would be without the marital quotient, less what it is with it: the income tax and the municipal surcharge, less the credit for children. It all comes off the tax on your pay: Netto counts what your pay adds to your household's tax.</value>
   </data>
   <data name="Remove" xml:space="preserve">
     <value>Remove your household from your plan</value>

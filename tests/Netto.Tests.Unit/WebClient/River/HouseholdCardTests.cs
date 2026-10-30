@@ -75,6 +75,16 @@ public class HouseholdCardTests
         CardHtml.Prose(html).ShouldContain(paragraph => paragraph.StartsWith("No marital quotient goes either way: the one of you who earns less has 30% or more", StringComparison.Ordinal));
     }
 
+    // The quotient's figure is net of the credit for children, which the quotient can move: its bubble says so,
+    // as the bubble of what the household saves altogether does.
+    [Fact]
+    public async Task Card_quotientSaves_bubbleNamesTheCreditForChildren()
+    {
+        var html = await CardAsync(WithPartner.WithChildren(2));
+
+        CardHtml.BubbleAfter(html, Texts.Format("Figure_QuotientSaves")).ShouldContain("credit for children");
+    }
+
     // The statuses behind « About you two », assumed until the user says otherwise.
     [Fact]
     public async Task Card_example_statesBothStatusesAsAssumed()

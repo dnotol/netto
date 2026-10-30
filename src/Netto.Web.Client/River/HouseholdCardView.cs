@@ -1,18 +1,24 @@
+using Netto.Core.DirectorPay;
+using Netto.Web.Client.Steps;
+
 namespace Netto.Web.Client.River;
 
 // What the Household card binds of the one run: the joint year, none while the director is taxed alone; the
 // dependants, none while nobody is declared; its lines in their order, the joint year's (HouseholdFigures),
 // then the dependants' (DependantsFigures), then, in a joint year, what the household saves altogether,
 // which for a director alone is what the dependants save, said once already; and its summary, the parts the
-// card joins with « · », each a key of its texts with its arguments formatted. While the engine refuses an
-// input there is no year to read: no line and no summary. It selects and formats the engine's figures, the
-// sign of what the household saves read in one place.
-internal sealed record HouseholdCardView(HouseholdView? Joint, DependantsView? Dependants, IReadOnlyList<FigureLine> Lines, IReadOnlyList<SummaryPart> Summary)
+// card joins with « · », each a key of its texts with its arguments formatted; and the sources of the amounts
+// its bubbles state: the pay's income tax, which applies the quotient and the supplements, and the credit for
+// children when there are children, whether or not a partner makes a joint year. While the engine refuses an
+// input there is no year to read: no line, no summary and no source. It selects and formats the engine's
+// figures, the sign of what the household saves read in one place.
+internal sealed record HouseholdCardView(
+    HouseholdView? Joint, DependantsView? Dependants, IReadOnlyList<FigureLine> Lines, IReadOnlyList<SummaryPart> Summary, IReadOnlyList<StepDetail> Sources)
 {
     public static HouseholdCardView From(RiverInputs inputs, RiverRun run)
     {
         if (run.Pay is not { } pay)
-            return new HouseholdCardView(null, null, [], []);
+            return new HouseholdCardView(null, null, [], [], []);
 
         var joint = HouseholdView.From(pay, inputs.Household.BothAged66.Value);
         var dependants = DependantsView.From(pay, inputs.Household.Dependants.Values);
@@ -24,8 +30,14 @@ internal sealed record HouseholdCardView(HouseholdView? Joint, DependantsView? D
             .. joint is null ? [] : FigureLines.Shown([HouseholdFigures.Altogether(pay.HouseholdSaves)]),
         ];
 
-        return new HouseholdCardView(joint, dependants, lines, Parts(inputs, pay.HouseholdSaves, joint, dependants));
+        return new HouseholdCardView(joint, dependants, lines, Parts(inputs, pay.HouseholdSaves, joint, dependants), SourcesOf(pay, joint, dependants));
     }
+
+    // The steps the card's amounts come from, none while it states no amount: no joint year and nobody declared.
+    private static IReadOnlyList<StepDetail> SourcesOf(GrossToNetResult pay, HouseholdView? joint, DependantsView? dependants) =>
+        joint is null && dependants is null
+            ? []
+            : [.. pay.Steps.Where(step => step.RuleKey is "income_tax" or "child_tax_credit").Select(StepDetail.From)];
 
     // The quotient, that it attributes nothing, or that the year is taxed separately; how many people are
     // declared, the children under 3 among the children; and what the household saves the river's tax or,

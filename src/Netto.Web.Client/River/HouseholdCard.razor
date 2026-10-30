@@ -19,7 +19,7 @@
    in the plan, and the word at its bottom takes it out, its values kept. It counts with the company skipped
    too. *@
 <ModuleCard Name="@ModuleFolds.Name(OptionalModule.Household)" Title="@L["Title"]" Summary="@Summary" Help="@L["Hint"]"
-            Refused="@Refused" Sources="@(_view.Joint?.Details ?? [])" IncomeYear="Inputs.IncomeYear" RemoveLabel="@L["Remove"]" OnRemove="Remove">
+            Refused="@Refused" Sources="_view.Sources" IncomeYear="Inputs.IncomeYear" RemoveLabel="@L["Remove"]" OnRemove="Remove">
     <div class="household__tick">
         <MudCheckBox T="bool" Value="Inputs.Household.HasPartner" ValueChanged="OnPartnerChanged" Color="Color.Primary" Label="@L["PartnerLabel"]" />
         <OriginChip Origin="Inputs.Household.Status.Origin" />

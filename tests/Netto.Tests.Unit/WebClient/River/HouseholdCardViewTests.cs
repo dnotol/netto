@@ -81,6 +81,43 @@ public class HouseholdCardViewTests
         (view.Lines.Count, view.Summary.Count).ShouldBe((0, 0));
     }
 
+    // The card cites the rules behind the amounts its bubbles state. A parent alone has no joint year, yet
+    // the supplements' amounts and the credit for children's cap are still stated, so their steps are cited.
+    [Fact]
+    public void Sources_singleParent_areTheIncomeTaxAndChildCreditStepsWithTheSupplementsAmounts()
+    {
+        var view = HouseholdCardView.From(SingleParentOfTwo, SingleParentOfTwo.Run());
+
+        view.ShouldSatisfyAllConditions(
+            () => view.Joint.ShouldBeNull(),
+            () => view.Sources.Select(source => source.RuleKey).ShouldBe(["income_tax", "child_tax_credit"]),
+            () => view.Sources[0].Sources.SelectMany(group => group.Amounts).Select(amount => amount.Value).ShouldContain(5_130m));
+    }
+
+    [Fact]
+    public void Sources_partnerOnly_areTheIncomeTaxStep()
+    {
+        HouseholdCardView.From(WithPartner, WithPartner.Run()).Sources.Select(source => source.RuleKey).ShouldBe(["income_tax"]);
+    }
+
+    [Fact]
+    public void Sources_partnerAndChildren_areTheIncomeTaxAndChildCreditSteps()
+    {
+        var river = WithPartner.WithChildren(2);
+
+        HouseholdCardView.From(river, river.Run()).Sources.Select(source => source.RuleKey).ShouldBe(["income_tax", "child_tax_credit"]);
+    }
+
+    // Nobody declared and no partner, or an input refused: nothing is stated, so nothing is cited.
+    [Fact]
+    public void Sources_nobodyDeclaredOrRefused_areNone()
+    {
+        var alone = WithPartner.WithPartner(false);
+        var refused = WithPartner.WithChildren(-1);
+
+        (HouseholdCardView.From(alone, alone.Run()).Sources, HouseholdCardView.From(refused, refused.Run()).Sources).ShouldBe(([], []));
+    }
+
     private static IReadOnlyList<(string Key, decimal Amount)> Lines(IEnumerable<FigureLine> lines) => [.. lines.Select(line => (line.Key, line.Amount))];
 
     private static IReadOnlyList<(string Key, string Args)> Parts(HouseholdCardView view) =>
