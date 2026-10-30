@@ -41,7 +41,8 @@ public class AllowanceRulesTests
     }
 
     // The conditions the user confirms, each with the text it comes from, the director's own case
-    // first: the circular's flat amounts are not written for directors (§7–8); the company bears none
+    // first: the circular's flat amounts are not written for directors (§7–8); the office allowance
+    // goes to a worker who teleworks regularly and structurally (§16, §18, §23); the company bears none
     // of these costs otherwise (§18, §48, §52); the office allowance covers the room, its rent included
     // (§31); the phone, on invoices, is a reimbursement of the company's own costs (art. 32 and §8).
     [Fact]
@@ -53,6 +54,7 @@ public class AllowanceRulesTests
         rules.Conditions.SelectMany(condition => condition.Sources, (condition, source) => (condition.Key, source.Document)).ShouldBe(new[]
         {
             ("directors_case_by_case", circular),
+            ("regular_telework", circular),
             ("no_other_company_share", circular),
             ("office_covers_rent", circular),
             ("phone_on_invoices", rules.Reimbursement.Document),

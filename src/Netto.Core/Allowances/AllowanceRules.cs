@@ -28,6 +28,7 @@ public sealed record AllowanceRules(
     private static readonly Source Circular2021C20 = SharedSources.Circular2021C20 with
     {
         Reference = "§7–8: not for company directors, who are reimbursed on documents or on serious and concordant flat norms, case by case, for which an advance ruling (SDA) can be asked. "
+            + "§16, §18 and §23: the office allowance goes to a worker who teleworks structurally and regularly, the equivalent of one working day a week, judged month by month. "
             + "§15–18 and §30–31: the office allowance covers every office cost, the use of a room of the home and its rent included, if the employer bears none of them otherwise; "
             + "its maximum is the one ONSS accepts, not indexed for tax. §47–48: private internet up to 20 a month, not indexed, if the employer bears no other part of its cost. "
             + "§51–52: a private computer with its peripherals up to 20 a month, not indexed, if the employer bears no other part of its cost nor provides a laptop or a tablet",
@@ -51,6 +52,7 @@ public sealed record AllowanceRules(
         new RuleAmount("computer_allowance_monthly_maximum", 20m, Circular2021C20),
         [
             new LeverCondition("directors_case_by_case", [Circular2021C20]),
+            new LeverCondition("regular_telework", [Circular2021C20]),
             new LeverCondition("no_other_company_share", [Circular2021C20]),
             new LeverCondition("office_covers_rent", [Circular2021C20]),
             new LeverCondition("phone_on_invoices", [Article32Income2026, Circular2021C20]),

@@ -204,6 +204,28 @@ public class LeverCardsFiguresTests
         CardHtml.BubbleAfter(await OpenCardAsync(Filled, "allowances"), "Expense allowances").ShouldNotBeNullOrWhiteSpace();
     }
 
+    // The office allowance goes only to a worker who teleworks regularly and structurally (circular
+    // 2021/C/20, §18 and §23), which Netto cannot see: the card lists it, second after the director's case,
+    // among the conditions to confirm.
+    [Fact]
+    public async Task Allowances_conditions_listTheRegularTeleworkTheOfficeAllowanceNeeds()
+    {
+        var folds = new Folds(new BrowserStorage());
+        folds.Set("allowances", true);
+        folds.Set("allowances-conditions", true);
+        var inputs = Filled.Inputs;
+
+        var html = WebUtility.HtmlDecode(await RiverRendering.RenderAsync(typeof(AllowanceCard), folds,
+            new() { ["Inputs"] = inputs, ["Run"] = inputs.Run(), ["Refused"] = null }));
+
+        var telework = ConditionListResources.Get(ConditionListText.Condition("regular_telework"));
+
+        html.ShouldSatisfyAllConditions(
+            () => html.ShouldContain(ConditionListResources.Format(ConditionListText.Heading(5), 5)),
+            () => telework.ShouldNotBeNull().ShouldStartWith("For the office allowance:"),
+            () => html.ShouldContain(telework ?? "no text"));
+    }
+
     // The rate a dividend is withheld at is declared: what VVPRbis shares are, and which of their rates is
     // for which distribution, are in the bubble after its label, inside the disclosure a refusal opens.
     [Fact]
