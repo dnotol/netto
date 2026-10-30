@@ -38,5 +38,10 @@ public class PlansPanelSaveTests
 
     private static async Task<string> RenderPanelAsync(RiverInputs river) =>
         WebUtility.HtmlDecode(await RenderAsync(typeof(PlansPanel), new Folds(new BrowserStorage()), new() { ["Inputs"] = river, ["CanSave"] = true },
-            services => services.AddSingleton(new SavedPlans(new BrowserStorage()))));
+            services =>
+            {
+                var plans = new SavedPlans(new BrowserStorage());
+                services.AddSingleton(plans);
+                services.AddSingleton(new RiverState(plans, new BrowserSession()));
+            }));
 }

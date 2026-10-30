@@ -2,6 +2,8 @@
 @inject SavedPlans Plans
 @inject IJSRuntime JS
 @inject TimeProvider Clock
+@inject RiverState State
+@inject TypedFields Fields
 
 @* The user's saved plans, from the band at the top of the plan page: « Save this plan » keeps the river as
    it is as a new plan, never over another, and says itself whether the river has changes no saved plan
@@ -15,7 +17,7 @@
    every plan to a file and imports a file's plans after the ones here (SavedPlans.Export, Import):
    the browser writes and reads the file, which never reaches a server. *@
 <div class="plans" @onkeydown="OnKeyDown">
-    <MudButton Variant="Variant.Outlined" Size="Size.Small" Class="plans__save" StartIcon="@Icons.Material.Rounded.BookmarkAdd"
+    <MudButton id="plans-save" Variant="Variant.Outlined" Size="Size.Small" Class="plans__save" StartIcon="@Icons.Material.Rounded.BookmarkAdd"
                Disabled="@(!CanSave)" OnClick="Save">
         @L["Save"]<span class="plans__unsaved@(Unsaved ? "" : " plans__unsaved--saved")" aria-hidden="true"></span>
         @if (Unsaved)
@@ -134,7 +136,9 @@
 </div>
 
 @code {
-    // The river as it is now, what « Save this plan » keeps.
+    // The river as last drawn, what the panel shows and compares with the saved plans (Unsaved). « Save this
+    // plan » keeps the river after the fields have taken what is typed in them (TypedFields), which this has not
+    // seen yet until the page draws again.
     [Parameter, EditorRequired]
     public RiverInputs Inputs { get; set; } = default!;
 
@@ -201,9 +205,17 @@
         }
     }
 
+    // A click right after typing comes before the field takes the amount: the fields take what is typed first,
+    // then the river is read as the page holds it, and kept only if the engine accepts it, as the button disabled
+    // says for an amount already taken.
     private async Task Save()
     {
-        Plans.Save(Inputs, number => L["DefaultName", number]);
+        await Fields.CommitAsync();
+        var river = State.Inputs;
+        if (!BaselineGain.CanMark(river.Run()))
+            return;
+
+        Plans.Save(river, number => L["DefaultName", number]);
         Refresh();
         await OnChanged.InvokeAsync();
     }
