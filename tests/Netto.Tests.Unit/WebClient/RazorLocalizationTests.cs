@@ -5,7 +5,7 @@ namespace Netto.Tests.WebClient;
 
 // A key a .razor file reads its text by, misspelt or left without its text, shows on the page as the key
 // itself, and a static render only meets the branches it draws. So every literal key of every .razor file
-// under src (RazorKeys) is held to the .resx of the component its localizer is injected for, as the client
+// of the client (RazorSources, RazorKeys) is held to the .resx of the component its localizer is injected for, as the client
 // embeds it (ResxText): a text in a refusal's branch or a dialog the tests never open is held too.
 public class RazorLocalizationTests
 {

@@ -9,14 +9,14 @@ internal static class FrontPage
     public const string Path = "about";
 
     // The ids of the page's sections, in page order: the header links to each, and the page scrolls to one
-    // when opened at it, the fragment becoming a CSS selector, so only these are taken.
+    // when opened at it (SectionAt): the address is the viewer's to type, so only these are taken.
     public static IReadOnlyList<string> Sections { get; } = ["levers", "how-it-works", "principles"];
 
     // A link to one of the page's sections, from anywhere.
     public static string Href(string section) => $"/{Path}#{section}";
 
-    // The section a page address (NavigationManager.Uri) opens the front page at, or none: the fragment becomes a
-    // CSS selector in the browser, so only the page's own sections are taken, never a typed one such as "#1abc".
+    // The section a page address (NavigationManager.Uri) opens the front page at, or none: the address is the
+    // viewer's to type, so only the page's own sections are scrolled to, never a typed one such as "#1abc".
     public static string? SectionAt(string uri)
     {
         var fragment = new Uri(uri).Fragment.TrimStart('#');

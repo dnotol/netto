@@ -52,8 +52,8 @@ public class FrontPageTests
         FrontPage.IsAt(relativePath).ShouldBeFalse();
     }
 
-    // The section a page address opens the front page at, or none: the fragment becomes a CSS selector in
-    // the browser, so only the page's own sections are taken, never a typed one such as "#1abc".
+    // The section a page address opens the front page at, or none: the address is the viewer's to type, so
+    // only the page's own sections are scrolled to, never a typed one such as "#1abc".
     [Theory]
     [InlineData("http://localhost/about#principles", "principles")]
     [InlineData("http://localhost/about#levers", "levers")]
