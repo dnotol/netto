@@ -16,10 +16,8 @@ public static class RentCalculator
     // contributions and no charges (art. 32, al. 2, 3°), which Netto does not model.
     public static (RentResult? Value, Refusal? Error) Compute(RentRules rules, HomeOfficeRent rent, decimal officeAllowance)
     {
-        if (rent.CadastralIncome < 0m)
-            return (null, CadastralIncomeNegative);
-        if (rent.ShareLet is < 0m or > 1m)
-            return (null, ShareLetOutOfRange);
+        if (FactsRefusal(rent) is { } factsRefusal)
+            return (null, factsRefusal);
         if (rent.Rent < 0m)
             return (null, RentNegative);
         if (rent.Any && officeAllowance > 0m)
@@ -41,6 +39,16 @@ public static class RentCalculator
 
         return (new RentResult(rent.Rent, cadastralIncomeLet, cap, indexed, floor, taxableRent, charges, taxableRent - charges), null);
     }
+
+    // What the rules refuse of the dwelling's own facts, whatever the rent: a negative cadastral income, a
+    // share let beyond nothing to all of the dwelling. Compute gives it before it looks at any rent, so a
+    // caller that holds the facts of a rent not in play can tell whether the engine would read them.
+    public static Refusal? FactsRefusal(HomeOfficeRent rent) => rent switch
+    {
+        { CadastralIncome: < 0m } => CadastralIncomeNegative,
+        { ShareLet: < 0m or > 1m } => ShareLetOutOfRange,
+        _ => null,
+    };
 
     // The most the company can pay for the part let before the excess is director pay: 5/3 of its
     // cadastral income revalued by art. 13's coefficient, taken down to the cent so that it never

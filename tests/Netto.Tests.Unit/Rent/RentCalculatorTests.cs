@@ -131,6 +131,20 @@ public class RentCalculatorTests
         RentCalculator.Compute(Rules2026, new HomeOfficeRent(cadastralIncome, shareLet, rent), 0m).ShouldBe((null, expected));
     }
 
+    // The refusal of the dwelling's own facts, which Compute gives before it looks at any rent.
+    [Theory]
+    [InlineData(-0.01, 0.12, "cadastral_income_negative")]
+    [InlineData(1_200, -0.01, "share_let_out_of_range")]
+    [InlineData(1_200, 1.01, "share_let_out_of_range")]
+    [InlineData(0, 0, null)]
+    [InlineData(1_200, 1, null)]
+    public void FactsRefusal_dwellingFacts_isTheRefusalOfTheOnesOutsideTheRules(double cadastralIncome, double shareLet, string? key)
+    {
+        var refusal = RentCalculator.FactsRefusal(new HomeOfficeRent((decimal)cadastralIncome, (decimal)shareLet, 0m));
+
+        (refusal?.Key).ShouldBe(key);
+    }
+
     [Fact]
     public void Compute_2026WholeDwellingLet_isAccepted()
     {

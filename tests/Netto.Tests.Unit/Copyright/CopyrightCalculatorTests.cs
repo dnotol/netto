@@ -223,6 +223,17 @@ public class CopyrightCalculatorTests
         (result.FlatRateCosts, result.TaxedApart?.Income, result.WithheldWithinLimits).ShouldBe((12_525m, 17_475m, 2_621.25m));
     }
 
+    [Theory]
+    [InlineData(-0.01, false)]
+    [InlineData(0, true)]
+    [InlineData(1, true)]
+    [InlineData(1.01, false)]
+    public void ShareRefusal_aShare_isRefusedOutsideNothingToAll(double share, bool accepted)
+    {
+        (CopyrightCalculator.ShareRefusal((decimal)share), CopyrightCalculator.ShareRefusal(null))
+            .ShouldBe((accepted ? null : CopyrightCalculator.CreativeShareOutOfRange, null));
+    }
+
     // The share of working time spent creating is a rate between nothing and all of it.
     [Theory]
     [InlineData(-0.01)]

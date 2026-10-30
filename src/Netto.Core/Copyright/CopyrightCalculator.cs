@@ -31,8 +31,8 @@ public static class CopyrightCalculator
     {
         if (!royalty.FollowsPay && royalty.Royalty < 0m)
             return (null, RoyaltyNegative);
-        if (royalty.CreativeShare is < 0m or > 1m)
-            return (null, CreativeShareOutOfRange);
+        if (ShareRefusal(royalty.CreativeShare) is { } shareRefusal)
+            return (null, shareRefusal);
 
         var following = royalty.FollowsPay ? Following(rules, royalty) : (CopyrightFollowing?)null;
         var ceilingAmounts = royalty.FollowsPay ? Measured(rules, royalty, grossPay)?.Amounts : null;
@@ -70,6 +70,11 @@ public static class CopyrightCalculator
             CeilingAmounts = ceilingAmounts ?? [],
         }, null);
     }
+
+    // What the rules refuse of the creative share, whatever the royalty: a share beyond nothing to all of the
+    // working time. Compute gives it before it looks at any royalty, so a caller that holds the share of a
+    // royalty not in play can tell whether the engine would read it. None is not refused.
+    public static Refusal? ShareRefusal(decimal? share) => share is < 0m or > 1m ? CreativeShareOutOfRange : null;
 
     // What an advance ruling accepts as a royalty beside the gross pay on the payslip, which Netto
     // proposes as a move and a royalty that follows the pay comes to: the envelope rate times the creative
