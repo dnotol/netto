@@ -1,4 +1,6 @@
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.DependencyInjection;
 using Netto.Core.CompanyCar;
 using Netto.Web.Client;
 using Netto.Web.Client.River;
@@ -299,6 +301,30 @@ public class CarCardTests
 
         (run.Error, string.Join(" ", marked.Select(field => field.Groups["year"].Value)), Regex.Count(html, Regex.Escape(message)))
             .ShouldBe((CarCalculator.AcquiredAfterYear, "2027", 2));
+    }
+
+    // The fake-hybrid rule starts with the cars ordered or leased in 2018 (the engine's decision): before
+    // it the card offers neither the tick nor the matching car's CO2, and its line says the car's own CO2
+    // counts, though both values are kept. From 2018 it offers them and states the matching car's CO2.
+    [Theory]
+    [InlineData(2017, false)]
+    [InlineData(2024, true)]
+    public async Task Card_plugInHybridWithTheFakeTickKept_offersTheFakeHybridFieldsOnlyFrom2018(int acquiredIn, bool offered)
+    {
+        // No catalogue value yet, so the card opens « Your car » by itself, its fields in sight.
+        var inputs = ElectricCar.WithCatalogueValue(0m).WithCarEngine(CarEngine.PetrolPlugInHybrid).WithCarCo2(45).WithCarAcquired(new DateOnly(acquiredIn, 3, 1))
+            .WithFakeHybrid(true).WithMatchingCarCo2(150);
+        var folds = new Folds(new BrowserStorage());
+        folds.Set(ModuleFolds.Name(OptionalModule.Car), true);
+
+        var html = System.Net.WebUtility.HtmlDecode(await RenderAsync(typeof(CarCard), folds,
+            new() { ["Inputs"] = inputs, ["Run"] = inputs.Run(), ["Refused"] = null },
+            services => services.AddSingleton<IComponentActivator>(new OpenDisclosures())));
+
+        (html.Contains(Text("FakeHybridLabel"), StringComparison.Ordinal), html.Contains(Text("MatchingCo2Label"), StringComparison.Ordinal),
+                html.Contains(Text("Car_FakeHybrid", "150 g/km"), StringComparison.Ordinal),
+                html.Contains(Text("Car_FakeHybrid_NotYet", "2018"), StringComparison.Ordinal))
+            .ShouldBe((offered, offered, offered, !offered));
     }
 
     private static string Text(string key, params object[] figures) =>

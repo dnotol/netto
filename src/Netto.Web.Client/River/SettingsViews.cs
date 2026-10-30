@@ -183,15 +183,20 @@ internal sealed record RentSettingsView(IReadOnlyList<SettingPhrase> Home, bool 
 
 // The company car's one disclosure, « Your car »: what the car is, as its papers say, its engine, its
 // catalogue value, its CO2, when it was first registered and when it was ordered or leased, what makes
-// a plug-in hybrid a fake one and whether a natural gas car is a small one. What the company pays for
-// it each year, the director's contribution and the private energy the company pays stay in sight.
+// a plug-in hybrid a fake one, which the rules ask only of a car ordered or leased from 2018
+// (FakeHybridApplies, the engine's decision), and whether a natural gas car is a small one. What the
+// company pays for it each year, the director's contribution and the private energy the company pays
+// stay in sight.
 // NeedsFacts: no car counts without a catalogue value, so the disclosure opens by itself.
-internal sealed record CarSettingsView(IReadOnlyList<SettingPhrase> Car, bool NeedsFacts)
+internal sealed record CarSettingsView(IReadOnlyList<SettingPhrase> Car, bool NeedsFacts, bool FakeHybridApplies)
 {
     public static CarSettingsView From(RiverInputs inputs)
     {
         var car = inputs.Car;
         var engine = car.Engine.Value;
+        var rules = CarRules.For(inputs.IncomeYear);
+        // A year without rules decides nothing: a plug-in hybrid keeps its fields.
+        var fakeHybridApplies = engine.IsPlugInHybrid() && (rules is null || CarCalculator.FakeHybridApplies(rules, engine, car.Acquired.Value));
 
         return new CarSettingsView(
             [
@@ -200,10 +205,11 @@ internal sealed record CarSettingsView(IReadOnlyList<SettingPhrase> Car, bool Ne
                 .. Co2(car, engine),
                 SettingPhrase.Of("Car_Registered", car.FirstRegistration.Origin, MonthAndYear(car.FirstRegistration.Value)),
                 SettingPhrase.Of("Car_Acquired", car.Acquired.Origin, MonthAndYear(car.Acquired.Value)),
-                .. Hybrid(car, engine),
+                .. Hybrid(car, engine, rules),
                 .. NaturalGas(car, engine),
             ],
-            car.CatalogueValue.Value <= 0m);
+            car.CatalogueValue.Value <= 0m,
+            fakeHybridApplies);
     }
 
     // Every refusal of a field inside; the yearly costs and the contribution are in sight.
@@ -222,10 +228,14 @@ internal sealed record CarSettingsView(IReadOnlyList<SettingPhrase> Car, bool Ne
         : [];
 
     // A plug-in hybrid is a real one until the user says it is a fake one, which has its matching car's
-    // CO2, or none.
-    private static IEnumerable<SettingPhrase> Hybrid(CarInputs car, CarEngine engine) => engine.IsPlugInHybrid()
+    // CO2, or none. The rule starts with the cars ordered or leased from its date: before it the car
+    // counts at its own CO2 whatever was ticked, and the line says so (the values kept, the engine's
+    // decision in CarCalculator.FakeHybridApplies).
+    private static IEnumerable<SettingPhrase> Hybrid(CarInputs car, CarEngine engine, CarRules? rules) => engine.IsPlugInHybrid()
         ? [car switch
         {
+            _ when rules is not null && !CarCalculator.FakeHybridApplies(rules, engine, car.Acquired.Value) =>
+                new SettingPhrase("Car_FakeHybrid_NotYet", [rules.FakeHybridFrom.Year.ToString(Formats.Culture)], null),
             { FakeHybrid.Value: false } => SettingPhrase.Of("Car_NotFakeHybrid", car.FakeHybrid.Origin),
             { NoMatchingCar.Value: true } => SettingPhrase.Of("Car_FakeHybrid_NoMatching", car.FakeHybrid.Origin),
             { MatchingCarCo2.Value: > 0 } => SettingPhrase.Of("Car_FakeHybrid", car.FakeHybrid.Origin, Formats.Grams(car.MatchingCarCo2.Value)),

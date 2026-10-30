@@ -273,6 +273,9 @@
   <data name="Car_FakeHybrid_NotGiven" xml:space="preserve">
     <value>a fake hybrid, its matching car's CO2 not given</value>
   </data>
+  <data name="Car_FakeHybrid_NotYet" xml:space="preserve">
+    <value>its own CO2 counts: the fake-hybrid rule starts in {0}</value>
+  </data>
   <data name="Car_SmallGas" xml:space="preserve">
     <value>under 12 fiscal horsepower</value>
   </data>

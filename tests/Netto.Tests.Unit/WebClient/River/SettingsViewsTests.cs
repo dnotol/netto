@@ -370,6 +370,33 @@ public class SettingsViewsTests
         Phrases(CarSettingsView.From(inputs).Car)[^1].ShouldBe(("Car_FakeHybrid_NotGiven", "", null));
     }
 
+    // The rule is the engine's from 1 January 2018: for an older plug-in hybrid the car counts at its own
+    // CO2 whatever was ticked, so the line says that and no matching car's CO2, the values kept.
+    [Fact]
+    public void Car_plugInHybridBefore2018WithTheTickKept_saysItsOwnCo2CountsFromTheYearTheRuleStarts()
+    {
+        var inputs = RiverInputs.Example.WithCarEngine(CarEngine.PetrolPlugInHybrid).WithCarCo2(120).WithCarAcquired(new DateOnly(2017, 6, 1))
+            .WithFakeHybrid(true).WithMatchingCarCo2(150);
+
+        var phrases = Phrases(CarSettingsView.From(inputs).Car);
+
+        (phrases[^1], phrases.Select(phrase => phrase.Key).Any(key => key.StartsWith("Car_FakeHybrid", StringComparison.Ordinal) && key != "Car_FakeHybrid_NotYet"))
+            .ShouldBe((("Car_FakeHybrid_NotYet", "2018", null), false));
+    }
+
+    [Theory]
+    [InlineData(CarEngine.PetrolPlugInHybrid, 2017, false)]
+    [InlineData(CarEngine.DieselPlugInHybrid, 2017, false)]
+    [InlineData(CarEngine.PetrolPlugInHybrid, 2018, true)]
+    [InlineData(CarEngine.PetrolHybrid, 2024, false)]
+    [InlineData(CarEngine.Electric, 2024, false)]
+    public void FakeHybridApplies_engineAndAcquisitionDate_isTheEnginesDecisionForAPlugInHybrid(CarEngine engine, int acquiredIn, bool applies)
+    {
+        var inputs = RiverInputs.Example.WithCarEngine(engine).WithCarAcquired(new DateOnly(acquiredIn, 6, 1));
+
+        CarSettingsView.From(inputs).FakeHybridApplies.ShouldBe(applies);
+    }
+
     [Fact]
     public void Car_hybridWhichIsNotPlugIn_statesNothingAboutFakeHybrids()
     {

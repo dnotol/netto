@@ -188,6 +188,7 @@ public class CarCardTextTests
                 example.WithCarEngine(engine).WithCarCo2(118).WithFakeHybrid(true).WithNoMatchingCar(true),
                 example.WithCarEngine(engine).WithCarCo2(118).WithFakeHybrid(true),
                 example.WithCarEngine(engine).WithCarCo2(118).WithSmallNaturalGas(true),
+                example.WithCarEngine(engine).WithCarCo2(118).WithCarAcquired(new DateOnly(2017, 6, 1)).WithFakeHybrid(true).WithMatchingCarCo2(112),
             }),
         ];
         var phrases = variations.SelectMany(inputs => CarSettingsView.From(inputs).Car);

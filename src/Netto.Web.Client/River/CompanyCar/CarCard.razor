@@ -6,7 +6,8 @@
 @* The last lever before the split: a car the company puts at the director's disposal for private use.
    The user gives its catalogue value, the month and year of its first registration, what drives it,
    for a car that burns fuel its CO2 or that none is registered, the month and year it was ordered or
-   leased, for a plug-in hybrid whether it is a fake one with its matching car's CO2, for natural gas
+   leased, for a plug-in hybrid ordered or leased from 2018, when the rule starts (the engine's call,
+   CarCalculator.FakeHybridApplies), whether it is a fake one with its matching car's CO2, for natural gas
    whether it is under 12 fiscal horsepower, its yearly costs to the company, whether the company pays
    the private energy, and their own contribution; a field that does not apply to what drives the car
    is not shown, its value kept. What the car is, as its papers say, sits behind one disclosure,
@@ -82,7 +83,7 @@
                                        Error="@(Refused?.Input == RefusedInput.CarAcquired)" Refusal="@Refused" />
                 </div>
             </RiverField>
-            @if (Inputs.Car.Engine.Value.IsPlugInHybrid() && Inputs.Car.FakeHybrid.Value)
+            @if (_settings.FakeHybridApplies && Inputs.Car.FakeHybrid.Value)
             {
                 <RiverField Label="@L["MatchingCo2Label"]" For="river-car-matching-co2" Origin="Inputs.Car.MatchingCarCo2.Origin" Help="@L["MatchingCo2Hint"]">
                     <RiverNumericField T="int" InputId="river-car-matching-co2" Value="Inputs.Car.MatchingCarCo2.Value" ValueChanged="OnMatchingCo2Changed"
@@ -98,7 +99,7 @@
                 <OriginChip Origin="Inputs.Car.NoCo2Data.Origin" />
             </div>
         }
-        @if (Inputs.Car.Engine.Value.IsPlugInHybrid())
+        @if (_settings.FakeHybridApplies)
         {
             <div class="car__tick">
                 <MudCheckBox T="bool" Value="Inputs.Car.FakeHybrid.Value" ValueChanged="OnFakeHybridChanged" Color="Color.Primary" Label="@L["FakeHybridLabel"]" />

@@ -150,10 +150,14 @@ public static class CarCalculator
 
     private sealed record DeductionTaken(decimal Rate, IReadOnlyList<RuleAmount> Amounts, IReadOnlyList<Source> Sources);
 
-    // The fake-hybrid rule holds for a plug-in hybrid bought or leased from its first date on, once
-    // the user says it is one (art. 36 §2 al. 9, art. 550 al. 6).
+    // The fake-hybrid rule can apply to a plug-in hybrid bought or leased from its first date on
+    // (art. 36 §2 al. 9, art. 550 al. 6): the question the user is asked, and whether their answer counts.
+    public static bool FakeHybridApplies(CarRules rules, CarEngine engine, DateOnly acquired) =>
+        engine.IsPlugInHybrid() && acquired >= rules.FakeHybridFrom;
+
+    // It holds once the user says the car is one.
     private static bool FakeHybridHolds(CarRules rules, CarFacts car) =>
-        car.Engine.IsPlugInHybrid() && car.FakeHybrid && car.Acquired >= rules.FakeHybridFrom;
+        car.FakeHybrid && FakeHybridApplies(rules, car.Engine, car.Acquired);
 
     // The CO2 the benefit counts and its percentage (art. 36 §2): 5.5% at the reference of the car's
     // fuel, a tenth of a point per gram above or below, between the minimum and the maximum. A car

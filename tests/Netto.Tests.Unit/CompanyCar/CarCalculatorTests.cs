@@ -320,6 +320,21 @@ public class CarCalculatorTests
         result.Co2Counted.ShouldBe(45m);
     }
 
+    // The decision whether the rule can apply is the engine's, which the card binds: a plug-in hybrid
+    // ordered or leased from 1 January 2018 (art. 36 §2 al. 9, art. 550 al. 6), whatever was ticked.
+    [Theory]
+    [InlineData(CarEngine.PetrolPlugInHybrid, 2017, 12, 31, false)]
+    [InlineData(CarEngine.DieselPlugInHybrid, 2017, 12, 1, false)]
+    [InlineData(CarEngine.PetrolPlugInHybrid, 2018, 1, 1, true)]
+    [InlineData(CarEngine.DieselPlugInHybrid, 2026, 1, 1, true)]
+    [InlineData(CarEngine.PetrolHybrid, 2024, 5, 1, false)]
+    [InlineData(CarEngine.Petrol, 2024, 5, 1, false)]
+    [InlineData(CarEngine.Electric, 2024, 5, 1, false)]
+    public void FakeHybridApplies_engineAndAcquisitionDate_holdsForAPlugInHybridFrom2018(CarEngine engine, int year, int month, int day, bool applies)
+    {
+        CarCalculator.FakeHybridApplies(Rules, engine, new DateOnly(year, month, day)).ShouldBe(applies);
+    }
+
     // An electric car emits nothing, whatever its CO2 field holds: 4%.
     [Fact]
     public void Compute_electricCar_takesTheMinimumPercentageWhateverItsCo2Field()
