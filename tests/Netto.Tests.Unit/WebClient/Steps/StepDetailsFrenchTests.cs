@@ -8,21 +8,15 @@ using static Netto.Tests.WebClient.River.RiverRendering;
 
 namespace Netto.Tests.WebClient.Steps;
 
-// What Steps/StepDetails.fr.resx holds that ResxTranslationTests cannot see: every step of the year has its
-// French text, the steps of a card read in French, the VVPRbis rates count accounting years after the
-// contribution as DividendStepTextTests holds in English, the car's two benefits are named as the glossary
-// fixes them for every file that names them, and what reads the same in English reads the same in French.
+// What Steps/StepDetails.fr.resx holds that ResxTranslationTests cannot see: the steps of a card read in
+// French, the VVPRbis rates count accounting years after the contribution as DividendStepTextTests holds in
+// English, the car's two benefits are named as the glossary fixes them for every file that names them, and
+// what reads the same in English reads the same in French.
 public class StepDetailsFrenchTests
 {
     private static readonly ResxText English = ResxText.For<StepDetails>();
 
     private static readonly ResxText French = ResxText.French<StepDetails>();
-
-    [Fact]
-    public void StepDetailsFrench_everyKeyOfTheNeutralFile_hasAFrenchText()
-    {
-        French.Missing(English.Keys).ShouldBeEmpty();
-    }
 
     // The steps of a director's pay, folded as a card first draws them: each named in French, with its amount
     // as French writes it.
@@ -40,7 +34,7 @@ public class StepDetailsFrenchTests
             () => html.ShouldContain(">Frais professionnels forfaitaires</span>"),
             () => html.ShouldContain(">Impôt des personnes physiques</span>"),
             () => html.ShouldContain(">Taxe communale additionnelle</span>"),
-            () => html.ShouldContain(" €</span>"),
+            () => html.ShouldContain("\u00A0€</span>"),
             () => html.ShouldNotContain("Social contributions"),
             () => html.ShouldNotContain("Income tax"));
     }
