@@ -1,0 +1,366 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve">
+    <value>Voiture de société</value>
+  </data>
+  <data name="Summary" xml:space="preserve">
+    <value>{0} de frais de voiture · {1} avant votre rémunération</value>
+  </data>
+  <data name="SummaryNoCar" xml:space="preserve">
+    <value>Pas encore de voiture · {0} avant votre rémunération</value>
+  </data>
+  <data name="Summary_Royalty" xml:space="preserve">
+    <value>{0} de frais de voiture · {1} avant votre rémunération et vos droits d'auteur</value>
+  </data>
+  <data name="SummaryNoCar_Royalty" xml:space="preserve">
+    <value>Pas encore de voiture · {0} avant votre rémunération et vos droits d'auteur</value>
+  </data>
+  <data name="SummaryBeyond" xml:space="preserve">
+    <value>{0} de frais de voiture · {1} de votre intervention au-delà des frais · {2} avant votre rémunération</value>
+  </data>
+  <data name="SummaryBeyond_Royalty" xml:space="preserve">
+    <value>{0} de frais de voiture · {1} de votre intervention au-delà des frais · {2} avant votre rémunération et vos droits d'auteur</value>
+  </data>
+  <data name="Hint" xml:space="preserve">
+    <value>Une voiture que la société met à votre disposition et que vous utilisez aussi à des fins personnelles. La société paie ses frais sur son bénéfice, avant votre rémunération, et les déduit dans la mesure où sa date de commande, sa motorisation et son CO2 le permettent&#160;; vous êtes imposé sur un avantage de toute nature forfaitaire avec votre rémunération, bien qu'il ne soit jamais payé en espèces.</value>
+  </data>
+  <data name="Scope" xml:space="preserve">
+    <value>Netto compte une voiture électrique, à carburant, hybride ou hybride rechargeable, commandée ou prise en leasing au plus tard à la fin de l'année.</value>
+  </data>
+  <data name="CatalogueLabel" xml:space="preserve">
+    <value>Valeur catalogue</value>
+  </data>
+  <data name="CatalogueHint" xml:space="preserve">
+    <value>Le prix de la voiture neuve pour un acheteur particulier, options et TVA comprises, hors remise, tel qu'il figure sur son bon de commande ou la liste de prix du constructeur.</value>
+  </data>
+  <data name="RegistrationLabel" xml:space="preserve">
+    <value>Première immatriculation</value>
+  </data>
+  <data name="RegistrationHint" xml:space="preserve">
+    <value>Le mois et l'année de sa première immatriculation, sur son certificat d'immatriculation. Son avantage diminue chaque année à partir de ce mois, tout mois commencé comptant pour un mois entier.</value>
+  </data>
+  <data name="MonthLabel" xml:space="preserve">
+    <value>Mois</value>
+  </data>
+  <data name="YearLabel" xml:space="preserve">
+    <value>Année</value>
+  </data>
+  <data name="CostsLabel" xml:space="preserve">
+    <value>Ses frais annuels</value>
+  </data>
+  <data name="CostsHint" xml:space="preserve">
+    <value>Tout ce que la voiture coûte à la société sur l'année, leasing ou amortissement, carburant ou recharge, assurance, entretien et taxes, tels que la société les supporte, TVA non récupérable comprise.</value>
+  </data>
+  <data name="ContributionLabel" xml:space="preserve">
+    <value>Votre intervention annuelle</value>
+  </data>
+  <data name="ContributionHint" xml:space="preserve">
+    <value>Ce que vous payez à la société pour l'utilisation de la voiture à des fins personnelles, le cas échéant.</value>
+  </data>
+  <data name="NoCarYet" xml:space="preserve">
+    <value>Saisissez sa valeur catalogue pour voir ses chiffres.</value>
+  </data>
+  <data name="AtTheMinimum" xml:space="preserve">
+    <value>Avantage limité au minimum de l'année.</value>
+  </data>
+  <data name="AddBackReading" xml:space="preserve">
+    <value>La société reprend 40&#160;% en dépenses non admises parce qu'elle paie votre recharge privée&#160;: la loi dit «&#160;carburant&#160;», et l'administration l'entend comme la recharge d'une voiture électrique.</value>
+  </data>
+  <data name="PrivateCostLabel" xml:space="preserve">
+    <value>La même voiture en privé, par an</value>
+  </data>
+  <data name="PrivateCostHint" xml:space="preserve">
+    <value>Un leasing privé de la même voiture, ou ce que la posséder et l'utiliser vous coûterait sur l'année&#160;: son amortissement, le carburant ou la recharge, l'assurance, l'entretien et les taxes, TVA comprise.</value>
+  </data>
+  <data name="PayHeld" xml:space="preserve">
+    <value>Les deux plans retiennent une rémunération de {0}, le maximum que la société peut payer une fois les frais de la voiture payés, si bien que la différence est due à la voiture seule.</value>
+  </data>
+  <data name="CostsAboveReceived" xml:space="preserve">
+    <value>La voiture coûte plus que ce que cette carte reçoit, si bien que ses frais comptent pour tout ce montant et pas davantage.</value>
+  </data>
+  <data name="Private_Waiting" xml:space="preserve">
+    <value>Saisissez-le pour comparer les deux voitures.</value>
+  </data>
+  <data name="Private_Gain" xml:space="preserve">
+    <value>La voiture de société vous laisse {0} de plus qu'une voiture privée.</value>
+  </data>
+  <data name="Private_Loss" xml:space="preserve">
+    <value>La voiture de société vous coûte {0} de plus qu'une voiture privée.</value>
+  </data>
+  <data name="Private_Tie" xml:space="preserve">
+    <value>La voiture de société vous coûte autant qu'une voiture privée.</value>
+  </data>
+  <data name="Remove" xml:space="preserve">
+    <value>Retirer la voiture de société de votre plan</value>
+  </data>
+  <data name="EngineLabel" xml:space="preserve">
+    <value>Motorisation</value>
+  </data>
+  <data name="EngineHint" xml:space="preserve">
+    <value>Sa motorisation, telle qu'indiquée sur son certificat d'immatriculation. Une hybride recharge sa batterie en roulant&#160;; une hybride rechargeable aussi sur une prise.</value>
+  </data>
+  <data name="Engine_Electric" xml:space="preserve">
+    <value>Électrique</value>
+  </data>
+  <data name="Engine_Petrol" xml:space="preserve">
+    <value>Essence</value>
+  </data>
+  <data name="Engine_Diesel" xml:space="preserve">
+    <value>Diesel</value>
+  </data>
+  <data name="Engine_Lpg" xml:space="preserve">
+    <value>LPG</value>
+  </data>
+  <data name="Engine_NaturalGas" xml:space="preserve">
+    <value>Gaz naturel</value>
+  </data>
+  <data name="Engine_PetrolHybrid" xml:space="preserve">
+    <value>Hybride essence</value>
+  </data>
+  <data name="Engine_DieselHybrid" xml:space="preserve">
+    <value>Hybride diesel</value>
+  </data>
+  <data name="Engine_PetrolPlugInHybrid" xml:space="preserve">
+    <value>Hybride rechargeable essence</value>
+  </data>
+  <data name="Engine_DieselPlugInHybrid" xml:space="preserve">
+    <value>Hybride rechargeable diesel</value>
+  </data>
+  <data name="Co2Label" xml:space="preserve">
+    <value>Ses émissions de CO2</value>
+  </data>
+  <data name="Co2Hint" xml:space="preserve">
+    <value>En grammes par kilomètre, telles que l'immatriculation du véhicule les enregistre&#160;: sur son certificat d'immatriculation ou son certificat de conformité.</value>
+  </data>
+  <data name="NoCo2Label" xml:space="preserve">
+    <value>Aucune émission de CO2 n'est enregistrée pour elle</value>
+  </data>
+  <data name="AcquiredLabel" xml:space="preserve">
+    <value>Date de commande ou de leasing</value>
+  </data>
+  <data name="AcquiredHint" xml:space="preserve">
+    <value>Le mois et l'année où la société l'a commandée, même avant sa livraison, ou a signé son contrat de leasing ou de location. Ce que la société peut déduire de ses frais dépend de cette date.</value>
+  </data>
+  <data name="FakeHybridLabel" xml:space="preserve">
+    <value>C'est un faux hybride</value>
+  </data>
+  <data name="FakeHybridHint" xml:space="preserve">
+    <value>Une hybride rechargeable achetée ou prise en leasing à partir de 2018 dont la batterie a une capacité de moins de 0,5&#160;kWh par 100 kg du poids de la voiture, ou qui émet plus de 50&#160;g/km, 75&#160;g/km sous Euro 6e-bis. Le SPF les répertorie avec leurs voitures correspondantes.</value>
+  </data>
+  <data name="MatchingCo2Label" xml:space="preserve">
+    <value>CO2 de sa voiture correspondante</value>
+  </data>
+  <data name="MatchingCo2Hint" xml:space="preserve">
+    <value>Le CO2 de la même voiture roulant uniquement à son carburant, tel que le donne la liste des voitures correspondantes du SPF.</value>
+  </data>
+  <data name="NoMatchingLabel" xml:space="preserve">
+    <value>Elle n'a pas de voiture correspondante</value>
+  </data>
+  <data name="SmallGasLabel" xml:space="preserve">
+    <value>Elle a moins de 12 chevaux fiscaux</value>
+  </data>
+  <data name="PrivateEnergy_Charging" xml:space="preserve">
+    <value>La société paie ma recharge privée</value>
+  </data>
+  <data name="PrivateEnergy_FuelOrCharging" xml:space="preserve">
+    <value>La société paie mon carburant ou ma recharge à usage privé</value>
+  </data>
+  <data name="PrivateEnergy_Fuel" xml:space="preserve">
+    <value>La société paie mon carburant privé</value>
+  </data>
+  <data name="PrivateEnergyHint_Charging" xml:space="preserve">
+    <value>Une borne de recharge à votre domicile dont la société paie l'électricité, ou une carte de recharge à son nom, sans vous refacturer la recharge de votre usage privé.</value>
+  </data>
+  <data name="PrivateEnergyHint_FuelOrCharging" xml:space="preserve">
+    <value>Une carte carburant au nom de la société, une borne de recharge à votre domicile dont elle paie l'électricité, ou une carte de recharge à son nom, sans vous refacturer ce que prend votre usage privé.</value>
+  </data>
+  <data name="PrivateEnergyHint_Fuel" xml:space="preserve">
+    <value>Une carte carburant au nom de la société, ou le carburant de vos trajets privés qu'elle vous rembourse, sans vous refacturer ce que prend votre usage privé.</value>
+  </data>
+  <data name="AddBackReading_PlugIn" xml:space="preserve">
+    <value>La société reprend 40&#160;% en dépenses non admises parce qu'elle paie votre carburant ou votre recharge à usage privé&#160;: la loi dit «&#160;carburant&#160;», et l'administration compte aussi la recharge d'une hybride rechargeable comme du carburant.</value>
+  </data>
+  <data name="Co2_Electric" xml:space="preserve">
+    <value>Une voiture électrique n'émet pas de CO2&#160;: elle prend le pourcentage le plus bas, {2}.</value>
+  </data>
+  <data name="Co2_Registered" xml:space="preserve">
+    <value>Ses émissions de CO2, {0}, sont comparées à l'émission de référence des revenus {3} pour son carburant, {1}&#160;: {2}.</value>
+  </data>
+  <data name="Co2_WithoutData" xml:space="preserve">
+    <value>Sans CO2 enregistré, la voiture compte pour {0}, chiffre comparé à l'émission de référence des revenus {3} pour son carburant, {1}&#160;: {2}.</value>
+  </data>
+  <data name="Co2_MatchingCar" xml:space="preserve">
+    <value>Comme faux hybride, la voiture compte au CO2 de sa voiture correspondante, {0}, chiffre comparé à l'émission de référence des revenus {3} pour son carburant, {1}&#160;: {2}.</value>
+  </data>
+  <data name="Co2_OwnTimesMultiplier" xml:space="preserve">
+    <value>Comme faux hybride sans voiture correspondante, la voiture compte à son propre CO2 multiplié par 2,5, soit {0}, chiffre comparé à l'émission de référence des revenus {3} pour son carburant, {1}&#160;: {2}.</value>
+  </data>
+  <data name="Co2_HeldToMinimum" xml:space="preserve">
+    <value>Pourcentage CO2 limité au plus bas&#160;: son CO2 donnerait moins.</value>
+  </data>
+  <data name="Co2_HeldToMaximum" xml:space="preserve">
+    <value>Pourcentage CO2 limité au plus haut&#160;: son CO2 donnerait plus.</value>
+  </data>
+  <data name="CarTitle" xml:space="preserve">
+    <value>Votre voiture</value>
+  </data>
+  <data name="Car_Engine_Electric" xml:space="preserve">
+    <value>Voiture électrique</value>
+  </data>
+  <data name="Car_Engine_Petrol" xml:space="preserve">
+    <value>Voiture à essence</value>
+  </data>
+  <data name="Car_Engine_Diesel" xml:space="preserve">
+    <value>Voiture diesel</value>
+  </data>
+  <data name="Car_Engine_Lpg" xml:space="preserve">
+    <value>Voiture au LPG</value>
+  </data>
+  <data name="Car_Engine_NaturalGas" xml:space="preserve">
+    <value>Voiture au gaz naturel</value>
+  </data>
+  <data name="Car_Engine_PetrolHybrid" xml:space="preserve">
+    <value>Hybride essence</value>
+  </data>
+  <data name="Car_Engine_DieselHybrid" xml:space="preserve">
+    <value>Hybride diesel</value>
+  </data>
+  <data name="Car_Engine_PetrolPlugInHybrid" xml:space="preserve">
+    <value>Hybride rechargeable essence</value>
+  </data>
+  <data name="Car_Engine_DieselPlugInHybrid" xml:space="preserve">
+    <value>Hybride rechargeable diesel</value>
+  </data>
+  <data name="Car_Catalogue" xml:space="preserve">
+    <value>valeur catalogue {0}</value>
+  </data>
+  <data name="Car_Co2" xml:space="preserve">
+    <value>CO2 {0}</value>
+  </data>
+  <data name="Car_Co2_NoData" xml:space="preserve">
+    <value>aucun CO2 enregistré</value>
+  </data>
+  <data name="Car_Co2_NotGiven" xml:space="preserve">
+    <value>CO2 non indiqué</value>
+  </data>
+  <data name="Car_Registered" xml:space="preserve">
+    <value>première immatriculation en {0} {1}</value>
+  </data>
+  <data name="Car_Acquired" xml:space="preserve">
+    <value>commande ou leasing en {0} {1}</value>
+  </data>
+  <data name="Car_NotFakeHybrid" xml:space="preserve">
+    <value>pas un faux hybride</value>
+  </data>
+  <data name="Car_FakeHybrid" xml:space="preserve">
+    <value>faux hybride, CO2 de sa voiture correspondante {0}</value>
+  </data>
+  <data name="Car_FakeHybrid_NoMatching" xml:space="preserve">
+    <value>faux hybride sans voiture correspondante</value>
+  </data>
+  <data name="Car_FakeHybrid_NotGiven" xml:space="preserve">
+    <value>faux hybride, CO2 de sa voiture correspondante non indiqué</value>
+  </data>
+  <data name="Car_FakeHybrid_NotYet" xml:space="preserve">
+    <value>son propre CO2 compte&#160;: la règle du faux hybride commence en {0}</value>
+  </data>
+  <data name="Car_SmallGas" xml:space="preserve">
+    <value>moins de 12 chevaux fiscaux</value>
+  </data>
+  <data name="Car_NotSmallGas" xml:space="preserve">
+    <value>12 chevaux fiscaux ou plus</value>
+  </data>
+  <data name="Figure_Benefit" xml:space="preserve">
+    <value>Avantage de toute nature de la voiture avant votre intervention</value>
+  </data>
+  <data name="Figure_Co2" xml:space="preserve">
+    <value>Pourcentage CO2</value>
+  </data>
+  <data name="Figure_Period" xml:space="preserve">
+    <value>Entre {0} et {1}, à {2}</value>
+  </data>
+  <data name="Figure_Period_Month" xml:space="preserve">
+    <value>En {0}, à {2}</value>
+  </data>
+  <data name="Help_Period" xml:space="preserve">
+    <value>À la part de sa valeur catalogue que laisse l'âge de la voiture, pondérée par les jours de la période.</value>
+  </data>
+  <data name="Figure_Contribution" xml:space="preserve">
+    <value>Votre intervention</value>
+  </data>
+  <data name="Figure_BenefitTaxed" xml:space="preserve">
+    <value>Avantage de toute nature de la voiture après votre intervention</value>
+  </data>
+  <data name="Help_BenefitTaxed" xml:space="preserve">
+    <value>Il est imposé comme votre rémunération, bien qu'il ne soit jamais payé en espèces.</value>
+  </data>
+  <data name="Figure_Deduction_Full" xml:space="preserve">
+    <value>Frais déduits, à {0}</value>
+  </data>
+  <data name="Figure_Deduction_AllCarvedOut" xml:space="preserve">
+    <value>Frais déduits, en totalité</value>
+  </data>
+  <data name="Help_Deduction_AllCarvedOut" xml:space="preserve">
+    <value>Ils ne dépassent pas votre avantage imposé et votre intervention, qui restent déductibles.</value>
+  </data>
+  <data name="Figure_Deduction_None" xml:space="preserve">
+    <value>Frais déduits</value>
+  </data>
+  <data name="Help_Deduction_None" xml:space="preserve">
+    <value>Seule la part égale à votre avantage imposé et à votre intervention&#160;: sa date de commande, sa motorisation et son CO2 ne laissent rien de plus déductible.</value>
+  </data>
+  <data name="Figure_Deduction_Rate" xml:space="preserve">
+    <value>Frais déduits, le reste à {0}</value>
+  </data>
+  <data name="Help_Deduction_Rate" xml:space="preserve">
+    <value>La part égale à votre avantage imposé et à votre intervention en totalité, et le reste à {0}, le taux que donnent sa date de commande, sa motorisation et son CO2.</value>
+  </data>
+  <data name="Figure_NotDeductible" xml:space="preserve">
+    <value>Frais que la société ne peut pas déduire</value>
+  </data>
+  <data name="Help_NotDeductible" xml:space="preserve">
+    <value>Ils sont repris en dépenses non admises dans son revenu imposable.</value>
+  </data>
+  <data name="Figure_AddBack" xml:space="preserve">
+    <value>Avantage repris en dépenses non admises, à {0}</value>
+  </data>
+  <data name="Help_AddBack" xml:space="preserve">
+    <value>La société reprend cette part de l'avantage avant votre intervention en dépenses non admises dans son revenu imposable.</value>
+  </data>
+  <data name="Figure_WithCar" xml:space="preserve">
+    <value>Votre poche avec la voiture</value>
+  </data>
+  <data name="Figure_WithoutCar" xml:space="preserve">
+    <value>Sans elle</value>
+  </data>
+  <data name="Figure_Cash_Takes" xml:space="preserve">
+    <value>Argent que la voiture vous prend</value>
+  </data>
+  <data name="Figure_Cash_None" xml:space="preserve">
+    <value>Argent que la voiture vous prend</value>
+  </data>
+  <data name="Figure_Cash_Adds" xml:space="preserve">
+    <value>Argent que la voiture vous ajoute</value>
+  </data>
+  <data name="Figure_TaxesOnPay" xml:space="preserve">
+    <value>Cotisations et impôt qu'elle ajoute</value>
+  </data>
+  <data name="Help_TaxesOnPay" xml:space="preserve">
+    <value>Dans la carte Rémunération de dirigeant, où son avantage est imposé avec votre rémunération.</value>
+  </data>
+  <data name="Figure_Period_Year" xml:space="preserve">
+    <value>Toute l'année, à {2}</value>
+  </data>
+</root>

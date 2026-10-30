@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve">
+    <value>Droits d'auteur</value>
+  </data>
+  <data name="Summary" xml:space="preserve">
+    <value>{0} dans votre poche</value>
+  </data>
+  <data name="Summary_AsPay" xml:space="preserve">
+    <value>{0} dans votre poche · {1} de droits imposés comme rémunération</value>
+  </data>
+  <data name="SummaryNoRoyalty" xml:space="preserve">
+    <value>Pas encore de droits d'auteur</value>
+  </data>
+  <data name="Hint" xml:space="preserve">
+    <value>Ce que la société vous paie pour les droits sur les œuvres que vous créez, du code, un jeu ou du contenu, que vous lui cédez ou dont vous lui concédez l'usage. Dans les limites, ce sont des revenus mobiliers&#160;: la société les déduit entièrement et retient le précompte mobilier ({0}), et ils sont imposables distinctement ({1}) plus votre taxe communale additionnelle, sans cotisations sociales, après déduction des frais forfaitaires si vous détenez une attestation du travail des arts. Ce qui dépasse les limites est imposé comme votre rémunération.</value>
+  </data>
+  <data name="AverageLabel" xml:space="preserve">
+    <value>Mes revenus de droits d'auteur des quatre années précédentes n'ont pas dépassé {0} en moyenne</value>
+  </data>
+  <data name="AverageHint" xml:space="preserve">
+    <value>Les droits ne restent dans leurs limites que si vos revenus de droits d'auteur des quatre années précédentes, comptés avant ces limites, n'ont pas dépassé en moyenne le plafond de l'année. Netto ne peut pas le voir, il suppose donc que c'est le cas jusqu'à ce que vous disiez le contraire. Sinon, Netto impose la totalité des droits comme votre rémunération&#160;: la loi fait de la moyenne une condition sans en dire plus, et cette lecture ne surestime jamais le gain.</value>
+  </data>
+  <data name="YearsRate" xml:space="preserve">
+    <value>le taux de l'année</value>
+  </data>
+  <data name="NoRoyaltyYet" xml:space="preserve">
+    <value>La société ne vous paie pas encore de droits d'auteur.</value>
+  </data>
+  <data name="PolicyLabel" xml:space="preserve">
+    <value>Comment vos droits sont fixés</value>
+  </data>
+  <data name="PolicyHint" xml:space="preserve">
+    <value>Selon votre rémunération, vos droits sont ce qu'une décision anticipée accepte à côté de chaque rémunération pour la part de votre temps consacrée à créer&#160;: une fraction de votre rémunération et de vos droits réunis qui ne dépasse pas {0} multiplié par cette part (décision anticipée 2026.0484), et jamais plus que ce qui les garde tous dans leurs limites, si bien qu'aucune partie n'est imposée comme votre rémunération. Avec un montant fixe, c'est le montant que vous indiquez, quelle que soit votre rémunération.</value>
+  </data>
+  <data name="Policy_Follows" xml:space="preserve">
+    <value>Selon votre rémunération</value>
+  </data>
+  <data name="Policy_Fixed" xml:space="preserve">
+    <value>Un montant fixe</value>
+  </data>
+  <data name="FixedRoyaltyLabel" xml:space="preserve">
+    <value>Droits d'auteur de l'année</value>
+  </data>
+  <data name="FixedRoyaltyHint" xml:space="preserve">
+    <value>Les droits d'auteur bruts que la société vous paie pour l'année pour les droits sur vos œuvres, avant le précompte mobilier qu'elle retient ({0}), tels qu'ils figurent sur la fiche 281.45 qu'elle établit pour vous.</value>
+  </data>
+  <data name="Following_NoCreativeShare" xml:space="preserve">
+    <value>Néant tant que vous n'indiquez pas votre coefficient de créativité, dans «&#160;Votre situation en droits d'auteur&#160;».</value>
+  </data>
+  <data name="Following_AverageAboveCap" xml:space="preserve">
+    <value>Néant&#160;: vos revenus de droits d'auteur des quatre années précédentes ont dépassé le plafond en moyenne.</value>
+  </data>
+  <data name="Following_NoEnvelopeRate" xml:space="preserve">
+    <value>Néant&#160;: Netto n'a pas encore de taux, pour les revenus {0}, de ce qu'une décision anticipée accepte.</value>
+  </data>
+  <data name="Limits_None" xml:space="preserve">
+    <value>Dans les limites&#160;: {6} des droits et de votre rémunération brute, {2}, et le plafond.</value>
+  </data>
+  <data name="Limits_Relative" xml:space="preserve">
+    <value>Limite&#160;: {6} des droits et de votre rémunération brute.</value>
+  </data>
+  <data name="Limits_Cap" xml:space="preserve">
+    <value>Limite&#160;: le plafond des revenus {5}.</value>
+  </data>
+  <data name="Limits_Average" xml:space="preserve">
+    <value>Rien dans les limites&#160;: vos quatre années précédentes ont dépassé le plafond en moyenne.</value>
+  </data>
+  <data name="Readings" xml:space="preserve">
+    <value>Là où aucun texte ne tranche, Netto prend la lecture qui ne surestime jamais le gain&#160;: la limite relative ({1}) se mesure sur votre seule rémunération brute de la fiche de paie, sans avantages de toute nature ni les cotisations que la société paie pour vous&#160;; ni les droits ni leur part imposée comme rémunération ne comptent dans la rémunération minimale ({0}) qui garde le taux réduit de l'impôt des sociétés&#160;; les droits sont toujours imposés distinctement, jamais avec vos autres revenus&#160;; les frais forfaitaires ne viennent en déduction que de la part dans les limites, les limites restant sur la totalité des droits&#160;; les droits sont considérés comme payés le 11 juin 2026 ou après, si bien que le précompte mobilier ({2}) ne porte sur leur montant net qu'avec une attestation&#160;; et les droits qui suivent votre rémunération se mesurent, comme la limite relative ({1}), sur votre seule rémunération brute de la fiche de paie.</value>
+  </data>
+  <data name="Remove" xml:space="preserve">
+    <value>Retirer les droits d'auteur de votre plan</value>
+  </data>
+  <data name="Summary_AllAsPay" xml:space="preserve">
+    <value>{1} de droits imposés comme rémunération</value>
+  </data>
+  <data name="AttestationLabel" xml:space="preserve">
+    <value>Je détiens une attestation du travail des arts couvrant ces œuvres</value>
+  </data>
+  <data name="AttestationHint" xml:space="preserve">
+    <value>Avec une attestation du travail des arts, des frais forfaitaires viennent en déduction de ce qui est imposé des droits dans les limites, sans preuve de frais réels. Netto ne peut pas la voir, il suppose donc que vous n'en détenez pas jusqu'à ce que vous l'indiquiez.</value>
+  </data>
+  <data name="CreativeShareLabel" xml:space="preserve">
+    <value>Part de mon temps de travail consacrée à créer des œuvres protégées</value>
+  </data>
+  <data name="CreativeShareHint" xml:space="preserve">
+    <value>Des droits qui suivent votre rémunération en dépendent, tout comme vos ajustements. Une décision de l'administration fiscale accepte pour un dirigeant des droits qui, rapportés à sa rémunération et à ses droits réunis, ne dépassent pas {0} multiplié par cette part, la base que ses décisions retiennent pour les dirigeants (décision anticipée 2026.0484). Des droits qui suivent votre rémunération sont ce montant, gardé dans les limites. Netto ne peut pas voir cette part, si bien que de tels droits sont nuls tant que vous ne l'indiquez pas.</value>
+  </data>
+  <data name="SituationTitle" xml:space="preserve">
+    <value>Votre situation en droits d'auteur</value>
+  </data>
+  <data name="Settings_AverageWithin" xml:space="preserve">
+    <value>Moyenne des revenus de droits d'auteur des quatre années précédentes dans le plafond</value>
+  </data>
+  <data name="Settings_AverageAbove" xml:space="preserve">
+    <value>Moyenne des revenus de droits d'auteur des quatre années précédentes au-dessus du plafond</value>
+  </data>
+  <data name="Settings_Attestation_Holds" xml:space="preserve">
+    <value>avec attestation du travail des arts</value>
+  </data>
+  <data name="Settings_Attestation_None" xml:space="preserve">
+    <value>sans attestation du travail des arts</value>
+  </data>
+  <data name="Settings_CreativeShare" xml:space="preserve">
+    <value>{0} de votre temps de travail consacré à créer</value>
+  </data>
+  <data name="Settings_CreativeShare_None" xml:space="preserve">
+    <value>coefficient de créativité non indiqué</value>
+  </data>
+  <data name="Settings_CreativeShare_Needed" xml:space="preserve">
+    <value>coefficient de créativité non indiqué, dont des droits qui suivent votre rémunération ont besoin</value>
+  </data>
+  <data name="Figure_Royalty" xml:space="preserve">
+    <value>Droits d'auteur</value>
+  </data>
+  <data name="Figure_WithinLimits" xml:space="preserve">
+    <value>Dans les limites</value>
+  </data>
+  <data name="Help_WithinLimits" xml:space="preserve">
+    <value>Au plus {0} des droits et de votre rémunération brute, {1}, et au plus {2} pour les revenus {3}. Des droits restent dans la limite de {0} tant qu'ils ne dépassent pas les 3/7 de votre rémunération brute.</value>
+  </data>
+  <data name="Figure_TaxedAsPay" xml:space="preserve">
+    <value>Au-delà des limites, imposable comme rémunération</value>
+  </data>
+  <data name="Figure_FlatRateCosts" xml:space="preserve">
+    <value>Frais forfaitaires</value>
+  </data>
+  <data name="Help_FlatRateCosts" xml:space="preserve">
+    <value>Avec votre attestation&#160;: {0} de la première tranche de {1} et {2} de la tranche suivante jusqu'à {3}. L'impôt de {4} et le précompte mobilier portent sur ce qui reste, bien que tout arrive dans votre poche.</value>
+  </data>
+  <data name="Figure_Withheld" xml:space="preserve">
+    <value>Précompte mobilier retenu par la société à {0}</value>
+  </data>
+  <data name="Help_Withheld" xml:space="preserve">
+    <value>Votre avertissement-extrait de rôle l'impute.</value>
+  </data>
+  <data name="WithTitle" xml:space="preserve">
+    <value>Avec les droits d'auteur</value>
+  </data>
+  <data name="WithoutTitle" xml:space="preserve">
+    <value>Sans eux</value>
+  </data>
+  <data name="PayHeld" xml:space="preserve">
+    <value>Les deux plans retiennent une rémunération de {0}, le maximum que la société peut payer à côté des droits, si bien que la différence est due aux droits seuls.</value>
+  </data>
+  <data name="Figure_Pocket" xml:space="preserve">
+    <value>Dans votre poche</value>
+  </data>
+  <data name="Figure_TaxesOnPay" xml:space="preserve">
+    <value>Cotisations et impôt sur la rémunération</value>
+  </data>
+  <data name="Figure_TaxesOnProfit" xml:space="preserve">
+    <value>Impôts sur le bénéfice</value>
+  </data>
+  <data name="Help_KeptAsProfit" xml:space="preserve">
+    <value>La société garde les droits comme bénéfice, imposé et distribué avec le dividende.</value>
+  </data>
+  <data name="Figure_Gain_More" xml:space="preserve">
+    <value>De plus dans votre poche avec les droits d'auteur</value>
+  </data>
+  <data name="Figure_Gain_Less" xml:space="preserve">
+    <value>De moins dans votre poche avec les droits d'auteur</value>
+  </data>
+  <data name="Figure_Gain_None" xml:space="preserve">
+    <value>Aucune différence dans votre poche</value>
+  </data>
+</root>
