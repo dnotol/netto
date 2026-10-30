@@ -1,5 +1,7 @@
+using System.Collections;
 using System.Reflection;
 using Netto.Core.PersonalTax;
+using Netto.Core.Rules;
 
 namespace Netto.Tests.Rules;
 
@@ -44,4 +46,28 @@ internal static class RuleSets
     // document and a swap of two neighbours fails.
     public static IEnumerable<(string Slot, T? Value)> Slots<T>(object record) where T : class =>
         Properties(record.GetType()).Where(property => property.PropertyType == typeof(T)).Select(property => (property.Name, property.GetValue(record) as T));
+
+    // Every type of Netto.Core whose For(year), or For(year, region), returns one of its own: one per layer.
+    public static IReadOnlyList<Type> Types { get; } = [.. typeof(Source).Assembly.GetTypes().Where(type => Lookup(type) is not null)];
+
+    // Every source a rule set holds, through its amounts, its lists (the scale, the municipalities)
+    // and the records of Netto.Core inside it (LowEarnedIncomeCreditRules), with the path to it.
+    public static IEnumerable<(string Path, Source Source)> Citations(object? value, string path) => value switch
+    {
+        null or string => [],
+        Source source => [(path, source)],
+        RuleAmount amount => [($"{path} ({amount.Key})", amount.Source)],
+        IEnumerable items => items.Cast<object?>().SelectMany((item, index) => Citations(item, $"{path}[{index}]")),
+        _ when value.GetType().Assembly == typeof(Source).Assembly => Properties(value.GetType())
+            .SelectMany(property => Citations(property.GetValue(value), $"{path}.{property.Name}")),
+        _ => [],
+    };
+
+    // Every source of every rule set of every year, each once, with the first path it was found at.
+    public static IReadOnlyList<(string Path, Source Source)> Sources() =>
+        [.. (from type in Types
+             from set in Of(type)
+             from citation in Citations(set.Rules, $"{type.Name} {set.Year}")
+             select citation)
+            .DistinctBy(citation => citation.Source)];
 }

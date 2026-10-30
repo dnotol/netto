@@ -23,29 +23,17 @@ public sealed record RentRules(
     RuleAmount ChargesLimitMultiplier,
     IReadOnlyList<LeverCondition> Conditions)
 {
-    private static readonly Source Article7Income2025 = new(
-        "CIR 92, art. 7 (revenus 2025), coordinated text on Fisconetplus, last modified 25.11.2024",
-        "§1, 2°, c: a built property let otherwise than to a natural person for housing, to a company, yields the total of the rent and the rental benefits, never less than the cadastral income plus 40%",
-        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/90f0344b-4877-42fd-a0d5-761d3d974c88"),
-        "personal-tax/spf-finances_cir92-art-7-revenus-2025_2024-11-25.html") { Label = "CIR 92, art. 7" };
+    private static readonly Source Article7Income2025 = Source.Fisconet("personal-tax", "7", 2025, new DateOnly(2024, 11, 25), "90f0344b-4877-42fd-a0d5-761d3d974c88",
+        "§1, 2°, c: a built property let otherwise than to a natural person for housing, to a company, yields the total of the rent and the rental benefits, never less than the cadastral income plus 40%");
 
-    private static readonly Source Article7Income2026 = new(
-        "CIR 92, art. 7 (revenus 2026), coordinated text on Fisconetplus, last modified 02.03.2026",
-        "§1, 2°, c: a built property let otherwise than to a natural person for housing, to a company, yields the total of the rent and the rental benefits, never less than the cadastral income plus 40%",
-        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/583b6854-60c4-42fc-83bf-5476d1fd3e33"),
-        "personal-tax/spf-finances_cir92-art-7-revenus-2026_2026-03-02.html") { Label = "CIR 92, art. 7" };
+    private static readonly Source Article7Income2026 = Source.Fisconet("personal-tax", "7", 2026, new DateOnly(2026, 3, 2), "583b6854-60c4-42fc-83bf-5476d1fd3e33",
+        "§1, 2°, c: a built property let otherwise than to a natural person for housing, to a company, yields the total of the rent and the rental benefits, never less than the cadastral income plus 40%");
 
-    private static readonly Source Article13Income2025 = new(
-        "CIR 92, art. 13 (revenus 2025), coordinated text on Fisconetplus, last modified 23.01.2025",
-        "The net rent is the rent less 40% for maintenance and repairs, for a property let under art. 7, §1, 2°, c at most 2/3 of the cadastral income revalued by the coefficient 5.63",
-        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/4a6920bd-c5d9-42b6-a300-4a70c584a27d"),
-        "personal-tax/spf-finances_cir92-art-13-revenus-2025_2025-01-23.html");
+    private static readonly Source Article13Income2025 = Source.Fisconet("personal-tax", "13", 2025, new DateOnly(2025, 1, 23), "4a6920bd-c5d9-42b6-a300-4a70c584a27d",
+        "The net rent is the rent less 40% for maintenance and repairs, for a property let under art. 7, §1, 2°, c at most 2/3 of the cadastral income revalued by the coefficient 5.63");
 
-    private static readonly Source Article13Income2026 = new(
-        "CIR 92, art. 13 (revenus 2026), coordinated text on Fisconetplus, last modified 02.03.2026",
-        "The net rent is the rent less 40% for maintenance and repairs, for a property let under art. 7, §1, 2°, c at most 2/3 of the cadastral income revalued by the coefficient 5.75",
-        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/649627a2-38e4-424a-8421-bbae6332266f"),
-        "personal-tax/spf-finances_cir92-art-13-revenus-2026_2026-03-02.html");
+    private static readonly Source Article13Income2026 = Source.Fisconet("personal-tax", "13", 2026, new DateOnly(2026, 3, 2), "649627a2-38e4-424a-8421-bbae6332266f",
+        "The net rent is the rent less 40% for maintenance and repairs, for a property let under art. 7, §1, 2°, c at most 2/3 of the cadastral income revalued by the coefficient 5.75");
 
     private static readonly Source Article32Income2025 = SharedSources.Article32Income2025 with
     {

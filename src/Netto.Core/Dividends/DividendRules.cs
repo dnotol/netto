@@ -27,17 +27,11 @@ public sealed record DividendRules(
         Reference = "§1, 1°: 30%. §2, al. 2: VVPRbis shares, 1° 20% for the second accounting year's distribution after a contribution made by 31.12.2025, 2° 18% from the third for dividends paid or attributed from 01.07.2026 (programme law of 30.05.2026, art. 15, 4°, and 18)",
     };
 
-    private static readonly Source Article21Income2025 = new(
-        "CIR 92, art. 21 (revenus 2025), coordinated text on Fisconetplus, last modified 27.01.2026",
-        "Al. 1, 14°: the first 833 of ordinary dividends are exempt from personal tax",
-        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/2121eb14-ea6a-4fa1-b09e-ccc3bec9b2f4"),
-        "personal-tax/spf-finances_cir92-art-21-revenus-2025_2026-01-27.html");
+    private static readonly Source Article21Income2025 = Source.Fisconet("personal-tax", "21", 2025, new DateOnly(2026, 1, 27), "2121eb14-ea6a-4fa1-b09e-ccc3bec9b2f4",
+        "Al. 1, 14°: the first 833 of ordinary dividends are exempt from personal tax");
 
-    private static readonly Source Article21Income2026 = new(
-        "CIR 92, art. 21 (revenus 2026), coordinated text on Fisconetplus, last modified 08.06.2026",
-        "Al. 1, 14°: the first 833 of ordinary dividends are exempt from personal tax",
-        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/77a7ba86-4df1-4091-ac75-171cdd277a25"),
-        "personal-tax/spf-finances_cir92-art-21-revenus-2026_2026-06-08.html");
+    private static readonly Source Article21Income2026 = Source.Fisconet("personal-tax", "21", 2026, new DateOnly(2026, 6, 8), "77a7ba86-4df1-4091-ac75-171cdd277a25",
+        "Al. 1, 14°: the first 833 of ordinary dividends are exempt from personal tax");
 
     // The income year 2026 edition is not published yet; the exemption is claimed the same way.
     private static readonly Source ReturnExplanations2026Part1 = new(

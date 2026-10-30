@@ -34,25 +34,25 @@ public sealed record CopyrightRules(
     RuleAmount? EnvelopeRate,
     IReadOnlyList<LeverCondition> Conditions)
 {
-    private static readonly Source Article17Income2026 = Source.Fisconet("personal-tax", 17, 2026, new DateOnly(2026, 7, 30), "91154b02-bee7-4b6b-b039-48f3172766a2",
+    private static readonly Source Article17Income2026 = Source.Fisconet("personal-tax", "17", 2026, new DateOnly(2026, 7, 30), "91154b02-bee7-4b6b-b039-48f3172766a2",
         "§1, 5°: income from the transfer or licence by their original holder of copyright and neighbouring rights on original works, performances or, from 01.01.2026, computer programs, "
         + "for their effective exploitation according to the profession's honest practices, with an attestation du travail des arts or, failing one, transferred or licensed for communication to the public, public performance or reproduction");
 
-    private static readonly Source Article37Income2025 = Source.Fisconet("personal-tax", 37, 2025, new DateOnly(2025, 8, 1), "fe5f86ce-b042-46d3-823f-90e47abd6404",
+    private static readonly Source Article37Income2025 = Source.Fisconet("personal-tax", "37", 2025, new DateOnly(2025, 8, 1), "fe5f86ce-b042-46d3-823f-90e47abd6404",
         "Al. 2: copyright income keeps its quality of movable income except to the extent that the royalties exceed 30% of the total remuneration, services included, or 75,360, "
         + "and only while the four previous periods' copyright income averaged at most 75,360");
 
-    private static readonly Source Article37Income2026 = Source.Fisconet("personal-tax", 37, 2026, new DateOnly(2026, 2, 18), "1166a251-1e63-4826-948f-fb6b842e05ac",
+    private static readonly Source Article37Income2026 = Source.Fisconet("personal-tax", "37", 2026, new DateOnly(2026, 2, 18), "1166a251-1e63-4826-948f-fb6b842e05ac",
         "Al. 2: copyright income keeps its quality of movable income except to the extent that the royalties exceed 30% of the total remuneration, services included, or 77,220, "
         + "and only while the four previous periods' copyright income averaged at most 77,220");
 
-    private static readonly Source Article551 = Source.Fisconet("personal-tax", 551, 2026, new DateOnly(2026, 1, 21), "c2769973-9bec-45c6-9393-d99e8cce81f8",
+    private static readonly Source Article551 = Source.Fisconet("personal-tax", "551", 2026, new DateOnly(2026, 1, 21), "c2769973-9bec-45c6-9393-d99e8cce81f8",
         "§1: the 30% was 50% for tax year 2024 and 40% for tax year 2025 only");
 
-    private static readonly Source Article171Income2025 = Source.Fisconet("personal-tax", 171, 2025, new DateOnly(2026, 1, 19), "a5b9bf88-53d5-4c36-90ed-664ab49bbcb5",
+    private static readonly Source Article171Income2025 = Source.Fisconet("personal-tax", "171", 2025, new DateOnly(2026, 1, 19), "a5b9bf88-53d5-4c36-90ed-664ab49bbcb5",
         "2°bis, b): the first tranche of copyright income, up to 30% or 75,360, is taxed apart at 15%");
 
-    private static readonly Source Article171Income2026 = Source.Fisconet("personal-tax", 171, 2026, new DateOnly(2026, 7, 31), "d9683eeb-c029-4bc0-bb2c-b17f7990f2d4",
+    private static readonly Source Article171Income2026 = Source.Fisconet("personal-tax", "171", 2026, new DateOnly(2026, 7, 31), "d9683eeb-c029-4bc0-bb2c-b17f7990f2d4",
         "2°bis, b): the first tranche of copyright income, up to 30% or 77,220, is taxed apart at 15%, unless taxing it with the other income gives less");
 
     private static readonly Source Article269Income2025 = SharedSources.Article269Income2025 with
@@ -67,7 +67,7 @@ public sealed record CopyrightRules(
 
     private static readonly Source Article49 = SharedSources.Article49Income2026;
 
-    private static readonly Source Article57 = Source.Fisconet("corporate-tax", 57, 2026, new DateOnly(2026, 2, 5), "c4a55933-7d39-42c3-9403-fd2ed7c860e3",
+    private static readonly Source Article57 = Source.Fisconet("corporate-tax", "57", 2026, new DateOnly(2026, 2, 5), "c4a55933-7d39-42c3-9403-fd2ed7c860e3",
         "Al. 1, 4°: copyright income of art. 17 §1, 5° is a professional cost only when justified by individual fiches, the 281.45");
 
     private static readonly Source Article53Income2026 = SharedSources.Article53Income2026 with
@@ -75,7 +75,7 @@ public sealed record CopyrightRules(
         Reference = "10°: costs are not professional costs to the extent that they exceed professional needs unreasonably",
     };
 
-    private static readonly Source Article313Income2026 = Source.Fisconet("personal-tax", 313, 2026, new DateOnly(2026, 6, 2), "7dbc7a05-c597-479b-b18e-6e3b3cb852af",
+    private static readonly Source Article313Income2026 = Source.Fisconet("personal-tax", "313", 2026, new DateOnly(2026, 6, 2), "7dbc7a05-c597-479b-b18e-6e3b3cb852af",
         "Al. 1, 4°: copyright income must be declared even though it bore withholding");
 
     private static readonly Source Article32Income2025 = SharedSources.Article32Income2025;
@@ -98,33 +98,21 @@ public sealed record CopyrightRules(
         Reference = "The surcharge is on the tax on directors' pay (art. 30, 2°) alone, as the law of 15.07.2026 leaves it",
     };
 
-    private static readonly Source Article22 = Source.Fisconet("personal-tax", 22, 2026, new DateOnly(2026, 2, 2), "81a07df1-57c0-46c0-8871-fd08bdee178a",
+    private static readonly Source Article22 = Source.Fisconet("personal-tax", "22", 2026, new DateOnly(2026, 2, 2), "81a07df1-57c0-46c0-8871-fd08bdee178a",
         "§3: the net income of copyright is its gross less the costs of acquiring or keeping it; without proof of them, the King sets them at a flat rate");
 
-    private static readonly Source ArCir3Income2025 = new(
-        "AR/CIR 92, art. 3 (revenus 2025), coordinated text on Fisconetplus, last modified 15.01.2025",
-        "Without proof of real costs, the costs of acquiring or keeping copyright income are a flat rate of its gross, which art. 4 raises",
-        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/f569b4c2-4eb8-4dd1-843d-8dc652a424ea"),
-        "personal-tax/spf-finances_arcir92-art-3-revenus-2025_2025-01-15.html") { Label = "AR/CIR 92, art. 3" };
+    private static readonly Source ArCir3Income2025 = Source.Fisconet("personal-tax", "3", 2025, new DateOnly(2025, 1, 15), "f569b4c2-4eb8-4dd1-843d-8dc652a424ea",
+        "Without proof of real costs, the costs of acquiring or keeping copyright income are a flat rate of its gross, which art. 4 raises", FisconetCode.ArCir92);
 
-    private static readonly Source ArCir3Income2026 = new(
-        "AR/CIR 92, art. 3 (revenus 2026), coordinated text on Fisconetplus, last modified 17.09.2026",
-        "Al. 2: from 01.01.2026 the flat-rate costs on copyright income apply only to income from activities for which the holder has an attestation du travail des arts when it is paid",
-        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/88dd058b-58eb-40d1-9346-1dfe4dcd5087"),
-        "personal-tax/spf-finances_arcir92-art-3-revenus-2026_2026-09-17.html") { Label = "AR/CIR 92, art. 3" };
+    private static readonly Source ArCir3Income2026 = Source.Fisconet("personal-tax", "3", 2026, new DateOnly(2026, 9, 17), "88dd058b-58eb-40d1-9346-1dfe4dcd5087",
+        "Al. 2: from 01.01.2026 the flat-rate costs on copyright income apply only to income from activities for which the holder has an attestation du travail des arts when it is paid", FisconetCode.ArCir92);
 
-    private static readonly Source ArCir4Income2025 = new(
-        "AR/CIR 92, art. 4 (revenus 2025), coordinated text on Fisconetplus, last modified 12.01.2026",
-        "Al. 1, 1°: for copyright income, the flat-rate costs are 50% of the first tranche and 25% of the second, for every author",
-        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/b2ffb531-81a4-4572-99ba-a4409cd451d8"),
-        "personal-tax/spf-finances_arcir92-art-4-revenus-2025_2026-01-12.html") { Label = "AR/CIR 92, art. 4" };
+    private static readonly Source ArCir4Income2025 = Source.Fisconet("personal-tax", "4", 2025, new DateOnly(2026, 1, 12), "b2ffb531-81a4-4572-99ba-a4409cd451d8",
+        "Al. 1, 1°: for copyright income, the flat-rate costs are 50% of the first tranche and 25% of the second, for every author", FisconetCode.ArCir92);
 
-    private static readonly Source ArCir4Income2026 = new(
-        "AR/CIR 92, art. 4 (revenus 2026), coordinated text on Fisconetplus, last modified 17.09.2026",
+    private static readonly Source ArCir4Income2026 = Source.Fisconet("personal-tax", "4", 2026, new DateOnly(2026, 9, 17), "800a668f-5588-4f3e-b2bb-a79c1743008c",
         "Al. 1, 1°: for copyright income, the flat-rate costs are 50% of the first tranche and 25% of the second; al. 2: only for income from activities an attestation du travail des arts covers when it is paid, "
-        + "not the starter attestation of art. 17 of the royal decree of 13.03.2023",
-        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/800a668f-5588-4f3e-b2bb-a79c1743008c"),
-        "personal-tax/spf-finances_arcir92-art-4-revenus-2026_2026-09-17.html") { Label = "AR/CIR 92, art. 4" };
+        + "not the starter attestation of art. 17 of the royal decree of 13.03.2023", FisconetCode.ArCir92);
 
     // The text of art. 4 for income 2026 still reads a second tranche « de 20.100 euros »: the ceilings
     // are the notice's.

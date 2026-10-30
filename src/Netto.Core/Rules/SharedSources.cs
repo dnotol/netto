@@ -30,33 +30,33 @@ internal static class SharedSources
         new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/c4b263eb-091c-4a11-8ad0-24e2b11bb7db"),
         "personal-tax/spf-finances_circulaire-2021-c-20-teletravail_2026-09-09.html") { Label = "Circular 2021/C/20" };
 
-    internal static readonly Source Article32Income2025 = Source.Fisconet("personal-tax", 32, 2025, new DateOnly(2024, 12, 2), "adf7c228-083c-4468-b8d1-151c1e03a067",
+    internal static readonly Source Article32Income2025 = Source.Fisconet("personal-tax", "32", 2025, new DateOnly(2024, 12, 2), "adf7c228-083c-4468-b8d1-151c1e03a067",
         "A director's pay is what they obtain for their office or their functions in the company, whatever its name");
 
-    internal static readonly Source Article32Income2026 = Source.Fisconet("personal-tax", 32, 2026, new DateOnly(2026, 1, 29), "7628aa2c-168a-4bd8-aec4-288108a91757",
+    internal static readonly Source Article32Income2026 = Source.Fisconet("personal-tax", "32", 2026, new DateOnly(2026, 1, 29), "7628aa2c-168a-4bd8-aec4-288108a91757",
         "A director's pay is what they obtain for their office or their functions in the company, whatever its name");
 
-    internal static readonly Source Article49Income2026 = Source.Fisconet("corporate-tax", 49, 2026, new DateOnly(2026, 2, 4), "34fb9ab5-38a2-4f93-b73d-0727e67e54d3",
+    internal static readonly Source Article49Income2026 = Source.Fisconet("corporate-tax", "49", 2026, new DateOnly(2026, 2, 4), "34fb9ab5-38a2-4f93-b73d-0727e67e54d3",
         "The costs made or borne in the period to acquire or keep taxable income are deductible professional costs");
 
-    internal static readonly Source Article53Income2026 = Source.Fisconet("corporate-tax", 53, 2026, new DateOnly(2026, 2, 18), "796aa044-5b54-4569-88a4-abe7be55e077",
+    internal static readonly Source Article53Income2026 = Source.Fisconet("corporate-tax", "53", 2026, new DateOnly(2026, 2, 18), "796aa044-5b54-4569-88a4-abe7be55e077",
         "The costs that are not professional costs");
 
-    internal static readonly Source Article157Income2025 = Source.Fisconet("personal-tax", 157, 2025, new DateOnly(2025, 1, 16), "cdf69919-b665-491b-9a02-059fd68dd24f",
+    internal static readonly Source Article157Income2025 = Source.Fisconet("personal-tax", "157", 2025, new DateOnly(2025, 1, 16), "cdf69919-b665-491b-9a02-059fd68dd24f",
         "The total tax on profits, benefits and directors' pay not withheld or paid in advance during the year is surcharged");
 
-    internal static readonly Source Article157Income2026 = Source.Fisconet("personal-tax", 157, 2026, new DateOnly(2026, 7, 30), "c6e47940-53f0-4608-b567-ae774014a621",
+    internal static readonly Source Article157Income2026 = Source.Fisconet("personal-tax", "157", 2026, new DateOnly(2026, 7, 30), "c6e47940-53f0-4608-b567-ae774014a621",
         "The total tax on directors' pay (art. 30, 2°) not withheld or paid in advance during the year is surcharged, as the law of 15.07.2026 leaves it");
 
-    internal static readonly Source Article159Income2026 = Source.Fisconet("corporate-tax", 159, 2026, new DateOnly(2026, 2, 9), "ed182474-e88a-4931-91a3-51286d1dc47a",
+    internal static readonly Source Article159Income2026 = Source.Fisconet("corporate-tax", "159", 2026, new DateOnly(2026, 2, 9), "ed182474-e88a-4931-91a3-51286d1dc47a",
         "The surcharge: the tax times 2.25 times the reference rate, less the advance payments times 3, 2.5, 2 and 1.5 times it, by the deadline each was paid by");
 
-    internal static readonly Source Article269Income2025 = Source.Fisconet("personal-tax", 269, 2025, new DateOnly(2025, 8, 1), "580606b1-7faa-4683-8861-8da64ff59d25",
+    internal static readonly Source Article269Income2025 = Source.Fisconet("personal-tax", "269", 2025, new DateOnly(2025, 8, 1), "580606b1-7faa-4683-8861-8da64ff59d25",
         "The rates of the withholding on movable income");
 
-    internal static readonly Source Article269Income2026 = Source.Fisconet("personal-tax", 269, 2026, new DateOnly(2026, 6, 2), "fb744b8d-7ddb-4067-903a-f84eae927052",
+    internal static readonly Source Article269Income2026 = Source.Fisconet("personal-tax", "269", 2026, new DateOnly(2026, 6, 2), "fb744b8d-7ddb-4067-903a-f84eae927052",
         "The rates of the withholding on movable income");
 
-    internal static readonly Source Article304Income2026 = Source.Fisconet("personal-tax", 304, 2026, new DateOnly(2026, 2, 19), "bda433e6-7da6-4dc9-882c-0c9d92591877",
+    internal static readonly Source Article304Income2026 = Source.Fisconet("personal-tax", "304", 2026, new DateOnly(2026, 2, 19), "bda433e6-7da6-4dc9-882c-0c9d92591877",
         "§2: what the advance payments, the withholdings and the tax credits leave over after the tax is set against the other assessments, and the rest is refunded once it reaches 2.50");
 }

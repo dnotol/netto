@@ -20,17 +20,11 @@ public sealed record VoucherRules(
     RuleAmount EcoVoucherFaceValueMaximum,
     IReadOnlyList<LeverCondition> Conditions)
 {
-    private static readonly Source Article38Income2026 = new(
-        "CIR 92, art. 38 (revenus 2026), coordinated text on Fisconetplus, last modified 31.07.2026",
-        "§1, al. 1, 25°: the employer's or company's share of electronic meal vouchers, sport/culture vouchers and eco vouchers that meet the conditions of art. 38/1 is exempt",
-        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/24644f80-3b10-49ba-b4fe-0115166ab59d"),
-        "personal-tax/spf-finances_cir92-art-38-revenus-2026_2026-07-31.html");
+    private static readonly Source Article38Income2026 = Source.Fisconet("personal-tax", "38", 2026, new DateOnly(2026, 7, 31), "24644f80-3b10-49ba-b4fe-0115166ab59d",
+        "§1, al. 1, 25°: the employer's or company's share of electronic meal vouchers, sport/culture vouchers and eco vouchers that meet the conditions of art. 38/1 is exempt");
 
-    private static readonly Source Article38_1Income2026 = new(
-        "CIR 92, art. 38/1 (revenus 2026), coordinated text on Fisconetplus, last modified 14.01.2026",
-        "§1: not in replacement of pay. §2, al. 1: meal vouchers granted by a written individual agreement where no collective one is possible (1°), one per day actually worked (2°), in the holder's name (3°), the company's share at most 8.91 (5°, vouchers granted from 01.01.2026) and the holder's at least 1.09 (6°). §3: sport/culture vouchers, at most 100 a year (4°). §4: eco vouchers, the agreement stating their face value, at most 10, and how often they are granted (2°), at most 250 a year (6°)",
-        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/6a028d41-f93b-43f0-85ce-ec749722675a"),
-        "personal-tax/spf-finances_cir92-art-38-1-revenus-2026_2026-01-14.html") { Label = "CIR 92, art. 38/1" };
+    private static readonly Source Article38_1Income2026 = Source.Fisconet("personal-tax", "38/1", 2026, new DateOnly(2026, 1, 14), "6a028d41-f93b-43f0-85ce-ec749722675a",
+        "§1: not in replacement of pay. §2, al. 1: meal vouchers granted by a written individual agreement where no collective one is possible (1°), one per day actually worked (2°), in the holder's name (3°), the company's share at most 8.91 (5°, vouchers granted from 01.01.2026) and the holder's at least 1.09 (6°). §3: sport/culture vouchers, at most 100 a year (4°). §4: eco vouchers, the agreement stating their face value, at most 10, and how often they are granted (2°), at most 250 a year (6°)");
 
     private static readonly Source Article53Income2026 = SharedSources.Article53Income2026 with
     {

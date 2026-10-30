@@ -58,22 +58,16 @@ public sealed record CarRules(
     DateOnly PlugInFuelCappedUntil,
     IReadOnlyList<LeverCondition> Conditions)
 {
-    private static readonly Source Article36Income2026 = new(
-        "CIR 92, art. 36 (revenus 2026), coordinated text on Fisconetplus, last modified 15.06.2026",
+    private static readonly Source Article36Income2026 = Source.Fisconet("personal-tax", "36", 2026, new DateOnly(2026, 6, 15), "7f4492e1-5ef2-42a9-a179-04fc3bcc5d55",
         "§2: the benefit of a car put at a person's disposal for private use is a CO2 percentage of 6/7 of its catalogue value, as sold new to a private buyer, options and VAT paid included, discounts excluded; "
         + "the catalogue value is taken at 100% up to 12 months from the first registration, then 94, 88, 82 and 76% by twelve months, 70% from the 61st, a month begun counting whole; "
         + "the percentage is 5.5% at the year's reference emission, 0.1% more or less for each gram above or below it, at least 4%, which a car that emits no CO2 takes, and at most 18%; "
         + "a car whose CO2 the vehicle registration does not hold counts as 205 g/km on petrol, LPG or natural gas and 195 g/km on diesel; "
         + "a plug-in hybrid bought or leased from 2018 whose battery holds less than 0.5 kWh per 100 kg, or that emits more than 50 g/km (75 g/km under Euro 6e-bis), takes the CO2 of the corresponding car running on its fuel alone, or its own × 2.5 when there is none; "
-        + "the benefit is at least 1,690 a year (indexed amount), less the beneficiary's own contribution",
-        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/7f4492e1-5ef2-42a9-a179-04fc3bcc5d55"),
-        "personal-tax/spf-finances_cir92-art-36-revenus-2026_2026-06-15.html") { Label = "CIR 92, art. 36" };
+        + "the benefit is at least 1,690 a year (indexed amount), less the beneficiary's own contribution");
 
-    private static readonly Source Article18ArIncome2026 = new(
-        "AR/CIR 92, art. 18 (revenus 2026), coordinated text on Fisconetplus, last modified 10.08.2026",
-        "§3, 9: the reference CO2 emission for 2026 is 70 g/km for a car running on petrol, LPG or natural gas and 58 g/km for one running on diesel, for the benefits granted from 01.01.2026",
-        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/f3ebfcea-9d61-4d4a-bd76-33f13ef93825"),
-        "personal-tax/spf-finances_arcir92-art-18-revenus-2026_2026-08-10.html") { Label = "AR/CIR 92, art. 18" };
+    private static readonly Source Article18ArIncome2026 = Source.Fisconet("personal-tax", "18", 2026, new DateOnly(2026, 8, 10), "f3ebfcea-9d61-4d4a-bd76-33f13ef93825",
+        "§3, 9: the reference CO2 emission for 2026 is 70 g/km for a car running on petrol, LPG or natural gas and 58 g/km for one running on diesel, for the benefits granted from 01.01.2026", FisconetCode.ArCir92);
 
     private static readonly Source RoyalDecree20251217 = new(
         "Arrêté royal du 17.12.2025 modifiant, en ce qui concerne les avantages de toute nature, l'AR/CIR 92 (MB 24.12.2025), consolidated on Justel",
@@ -94,19 +88,13 @@ public sealed record CarRules(
         new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/8c873a40-df98-4d8d-832a-6baff8743303"),
         "personal-tax/spf-finances_faq-avantage-vehicule-mis-a-disposition_2022-03-15.html") { Label = "SPF FAQ on car benefits" };
 
-    private static readonly Source Article31Income2026 = new(
-        "CIR 92, art. 31 (revenus 2026), coordinated text on Fisconetplus, last modified 30.07.2026",
-        "Al. 2, 2°: pay includes the benefits in kind obtained because of the activity, which art. 32 applies to a director's pay",
-        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/72ee79ba-3c3f-47a6-83a5-f0a1ec0e5209"),
-        "personal-tax/spf-finances_cir92-art-31-revenus-2026_2026-07-30.html") { Label = "CIR 92, art. 31" };
+    private static readonly Source Article31Income2026 = Source.Fisconet("personal-tax", "31", 2026, new DateOnly(2026, 7, 30), "72ee79ba-3c3f-47a6-83a5-f0a1ec0e5209",
+        "Al. 2, 2°: pay includes the benefits in kind obtained because of the activity, which art. 32 applies to a director's pay");
 
     private static readonly Source RoyalDecree38 = SharedSources.RoyalDecree38 with { Label = "Royal decree n° 38, art. 11" };
 
-    private static readonly Source Article66Income2026 = new(
-        "CIR 92, art. 66 (revenus 2026), coordinated text on Fisconetplus, last modified 15.06.2026",
-        "§1: the costs of a car of art. 65 are not deductible unless it emits no CO2; §3, 3°: the part of the costs equal to the benefit taxed and to the beneficiary's contribution stays deductible",
-        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/f233da76-42c8-4f81-a098-33aef1b6e8d8"),
-        "corporate-tax/spf-finances_cir92-art-66-revenus-2026_2026-06-15.html") { Label = "CIR 92, art. 66" };
+    private static readonly Source Article66Income2026 = Source.Fisconet("corporate-tax", "66", 2026, new DateOnly(2026, 6, 15), "f233da76-42c8-4f81-a098-33aef1b6e8d8",
+        "§1: the costs of a car of art. 65 are not deductible unless it emits no CO2; §3, 3°: the part of the costs equal to the benefit taxed and to the beneficiary's contribution stays deductible");
 
     private static readonly Source Circular2024C50 = new(
         "Circulaire 2024/C/50 avec la FAQ relative au verdissement fiscal de la mobilité, Fisconetplus, last modified 23.07.2024",
@@ -114,19 +102,13 @@ public sealed record CarRules(
         new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/45e88e8f-fbd0-402d-8c2d-92356e8f4075"),
         "corporate-tax/spf-finances_circulaire-2024-c-50-verdissement-mobilite_2024-07-23.html") { Label = "Circular 2024/C/50" };
 
-    private static readonly Source Article550Income2026 = new(
-        "CIR 92, art. 550 (revenus 2026), coordinated text on Fisconetplus, last modified 02.03.2026",
+    private static readonly Source Article550Income2026 = Source.Fisconet("corporate-tax", "550", 2026, new DateOnly(2026, 3, 2), "8a670bab-e5e4-4b38-81a9-89ac35f0c65f",
         "Al. 1: a car bought, leased or rented before 01.01.2026 is deductible at 120% − 0.5% × coefficient × g/km, the coefficient 1 for a car running on diesel alone, 0.95 for the others, 0.90 for natural gas under 12 fiscal horsepower, rounded to a tenth; "
         + "al. 2: acquired before 01.07.2023, between 50% and 100%, 40% from 200 g/km or without CO2 data; al. 4: acquired from 01.07.2023 to 31.12.2025, at most 50%, 0% without CO2 data; "
-        + "al. 6: a fake hybrid takes the CO2 of its corresponding car, or its own × 2.5; al. 7: a plug-in hybrid acquired from 01.01.2023 to 30.06.2023 deducts its petrol or diesel at 50% at most",
-        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/8a670bab-e5e4-4b38-81a9-89ac35f0c65f"),
-        "corporate-tax/spf-finances_cir92-art-550-revenus-2026_2026-03-02.html") { Label = "CIR 92, art. 550" };
+        + "al. 6: a fake hybrid takes the CO2 of its corresponding car, or its own × 2.5; al. 7: a plug-in hybrid acquired from 01.01.2023 to 30.06.2023 deducts its petrol or diesel at 50% at most");
 
-    private static readonly Source Article198bisIncome2026 = new(
-        "CIR 92, art. 198bis (revenus 2026), coordinated text on Fisconetplus, last modified 02.03.2026",
-        "Art. 66 §1/1 and art. 550 al. 3 and 5 do not apply in corporate tax: no relief for plug-in hybrids and no minimum for a car acquired before 2018",
-        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/8e743626-5dcc-4073-8a53-5323ae46ab9b"),
-        "corporate-tax/spf-finances_cir92-art-198bis-revenus-2026_2026-03-02.html") { Label = "CIR 92, art. 198bis" };
+    private static readonly Source Article198bisIncome2026 = Source.Fisconet("corporate-tax", "198bis", 2026, new DateOnly(2026, 3, 2), "8e743626-5dcc-4073-8a53-5323ae46ab9b",
+        "Art. 66 §1/1 and art. 550 al. 3 and 5 do not apply in corporate tax: no relief for plug-in hybrids and no minimum for a car acquired before 2018");
 
     private static readonly Source Circular2026C11 = new(
         "Circulaire 2026/C/11 relative à la déduction des frais professionnels des véhicules hybrides rechargeables, Fisconetplus, 07.01.2026",
@@ -147,11 +129,8 @@ public sealed record CarRules(
         new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/584a3a58-ea1a-42e7-8dd0-577da42f2204"),
         "corporate-tax/spf-finances_question-parlementaire-96_2022-02-10.html") { Label = "Question 96" };
 
-    private static readonly Source Article198Income2026 = new(
-        "CIR 92, art. 198 (revenus 2026), coordinated text on Fisconetplus, last modified 10.02.2026",
-        "§1, 9°: the costs of a car put at someone's disposal for private use are not professional costs up to 17% of the benefit as art. 36 §2, al. 1 to 12 sets it; 9°bis: 40% when the company bears all or part of the fuel for that use",
-        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/5cf99cca-101c-4b02-924e-35e149217648"),
-        "corporate-tax/spf-finances_cir92-art-198-revenus-2026_2026-02-10.html") { Label = "CIR 92, art. 198" };
+    private static readonly Source Article198Income2026 = Source.Fisconet("corporate-tax", "198", 2026, new DateOnly(2026, 2, 10), "5cf99cca-101c-4b02-924e-35e149217648",
+        "§1, 9°: the costs of a car put at someone's disposal for private use are not professional costs up to 17% of the benefit as art. 36 §2, al. 1 to 12 sets it; 9°bis: 40% when the company bears all or part of the fuel for that use");
 
     private static readonly Source Module53 = new(
         "SPF Finances, Cours de base impôt des sociétés, MODULE 5.3 : Dépenses non admises et autres éléments du résultat, Fisconetplus, last modified 17.03.2023",

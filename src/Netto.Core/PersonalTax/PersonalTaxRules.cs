@@ -40,55 +40,31 @@ public sealed record PersonalTaxRules(
 {
     // Each amount cites the administration's coordinated article of its own income year, which carries
     // that year's indexed amounts (filed in official-docs/personal-tax/).
-    private static readonly Source Article130Income2025 = new(
-        "CIR 92, art. 130 (revenus 2025), coordinated text on Fisconetplus, last modified 24.01.2025",
-        "The scale: 25% up to 16,320, 40% up to 28,800, 45% up to 49,840, 50% above",
-        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/68216320-026d-4a35-a81d-1221bfe21b53"),
-        "personal-tax/spf-finances_cir92-art-130-revenus-2025_2025-01-24.html");
+    private static readonly Source Article130Income2025 = Source.Fisconet("personal-tax", "130", 2025, new DateOnly(2025, 1, 24), "68216320-026d-4a35-a81d-1221bfe21b53",
+        "The scale: 25% up to 16,320, 40% up to 28,800, 45% up to 49,840, 50% above");
 
-    private static readonly Source Article130Income2026 = new(
-        "CIR 92, art. 130 (revenus 2026), coordinated text on Fisconetplus, last modified 18.02.2026",
-        "The scale: 25% up to 16,720, 40% up to 29,510, 45% up to 51,070, 50% above",
-        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/aff72054-004a-4858-8747-1d70964c8e3d"),
-        "personal-tax/spf-finances_cir92-art-130-revenus-2026_2026-02-18.html");
+    private static readonly Source Article130Income2026 = Source.Fisconet("personal-tax", "130", 2026, new DateOnly(2026, 2, 18), "aff72054-004a-4858-8747-1d70964c8e3d",
+        "The scale: 25% up to 16,720, 40% up to 29,510, 45% up to 51,070, 50% above");
 
-    private static readonly Source Article131Income2025 = new(
-        "CIR 92, art. 131 (revenus 2025), coordinated text on Fisconetplus, last modified 23.01.2025",
-        "Tax-free amount of 10,910",
-        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/d888718e-4593-44a2-bb28-7e26d17baa94"),
-        "personal-tax/spf-finances_cir92-art-131-revenus-2025_2025-01-23.html");
+    private static readonly Source Article131Income2025 = Source.Fisconet("personal-tax", "131", 2025, new DateOnly(2025, 1, 23), "d888718e-4593-44a2-bb28-7e26d17baa94",
+        "Tax-free amount of 10,910");
 
-    private static readonly Source Article131Income2026 = new(
-        "CIR 92, art. 131 (revenus 2026), coordinated text on Fisconetplus, last modified 03.08.2026",
-        "Tax-free amount of 11,550, as raised by the law of 15.07.2026",
-        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/2fb89ed0-b93e-47d7-816c-85f1ac679b8a"),
-        "personal-tax/spf-finances_cir92-art-131-revenus-2026_2026-08-03.html");
+    private static readonly Source Article131Income2026 = Source.Fisconet("personal-tax", "131", 2026, new DateOnly(2026, 8, 3), "2fb89ed0-b93e-47d7-816c-85f1ac679b8a",
+        "Tax-free amount of 11,550, as raised by the law of 15.07.2026");
 
-    private static readonly Source Article134Income2025 = new(
-        "CIR 92, art. 134 (revenus 2025), coordinated text on Fisconetplus, last modified 14.01.2026",
+    private static readonly Source Article134Income2025 = Source.Fisconet("personal-tax", "134", 2025, new DateOnly(2026, 1, 14), "09b708c4-3d54-468c-a652-9053bd16e2eb",
         "§2: the tax on the tax-free amount, deducted from the tax on the scale, is 25% of it up to 11,460, 30% to 16,320, 40% to 27,190, 45% to 49,840, 50% above. "
-            + "§4: in a joint assessment it is fixed per partner, and what one partner's taxable income leaves unused passes to the other",
-        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/09b708c4-3d54-468c-a652-9053bd16e2eb"),
-        "personal-tax/spf-finances_cir92-art-134-revenus-2025_2026-01-14.html");
+            + "§4: in a joint assessment it is fixed per partner, and what one partner's taxable income leaves unused passes to the other");
 
-    private static readonly Source Article134Income2026 = new(
-        "CIR 92, art. 134 (revenus 2026), coordinated text on Fisconetplus, last modified 05.08.2026",
+    private static readonly Source Article134Income2026 = Source.Fisconet("personal-tax", "134", 2026, new DateOnly(2026, 8, 5), "56f7c2a3-94ab-45dd-85d0-2a0c7f6ddebc",
         "§2: the tax on the tax-free amount, deducted from the tax on the scale, is 25% of it up to 11,750, 30% to 16,720, 40% to 27,860, 45% to 51,070, 50% above. "
-            + "§4: in a joint assessment it is fixed per partner, and what one partner's taxable income leaves unused passes to the other",
-        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/56f7c2a3-94ab-45dd-85d0-2a0c7f6ddebc"),
-        "personal-tax/spf-finances_cir92-art-134-revenus-2026_2026-08-05.html");
+            + "§4: in a joint assessment it is fixed per partner, and what one partner's taxable income leaves unused passes to the other");
 
-    private static readonly Source Article51Income2025 = new(
-        "CIR 92, art. 51 (revenus 2025), coordinated text on Fisconetplus, last modified 14.01.2026",
-        "A director's pay, less the own social contributions of art. 52, 7°: flat-rate costs of 3%, at most 3,130",
-        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/1c87b91e-3a27-418d-9743-bfa0fecdc5e2"),
-        "personal-tax/spf-finances_cir92-art-51-revenus-2025_2026-01-14.html");
+    private static readonly Source Article51Income2025 = Source.Fisconet("personal-tax", "51", 2025, new DateOnly(2026, 1, 14), "1c87b91e-3a27-418d-9743-bfa0fecdc5e2",
+        "A director's pay, less the own social contributions of art. 52, 7°: flat-rate costs of 3%, at most 3,130");
 
-    private static readonly Source Article51Income2026 = new(
-        "CIR 92, art. 51 (revenus 2026), coordinated text on Fisconetplus, last modified 18.02.2026",
-        "A director's pay, less the own social contributions of art. 52, 7°: flat-rate costs of 3%, at most 3,200",
-        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/21dd9b61-2989-4125-a2e0-6142c607eec8"),
-        "personal-tax/spf-finances_cir92-art-51-revenus-2026_2026-02-18.html");
+    private static readonly Source Article51Income2026 = Source.Fisconet("personal-tax", "51", 2026, new DateOnly(2026, 2, 18), "21dd9b61-2989-4125-a2e0-6142c607eec8",
+        "A director's pay, less the own social contributions of art. 52, 7°: flat-rate costs of 3%, at most 3,200");
 
     private static readonly Source AutonomyFactorDecree = new(
         "Royal decree of 19.12.2017 fixing the autonomy factor (MB 22.12.2017)",
@@ -105,17 +81,11 @@ public sealed record PersonalTaxRules(
     // The law of 15.07.2026 leaves art. 289ter as it was; its title 16 changes art. 289ter/1, the
     // employees' « bonus emploi fiscal ». What the credit leaves over after the tax is set against the
     // municipal surcharge and refunded (art. 304, §2), so it reaches the pocket in full.
-    private static readonly Source Article289terIncome2025 = new(
-        "CIR 92, art. 289ter (revenus 2025), coordinated text on Fisconetplus, last modified 30.01.2025",
-        "Tax credit for low earned income: none above 28,420 of total net income; on the activity income, from 6,550 rising to 880 at 8,740, 880 up to 21,860, falling to none at 28,420. Refunded beyond the tax (art. 304, §2)",
-        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/e8b166ab-07c3-4964-aa70-716fb1dae0be"),
-        "personal-tax/spf-finances_cir92-art-289ter-revenus-2025_2025-01-30.html");
+    private static readonly Source Article289terIncome2025 = Source.Fisconet("personal-tax", "289ter", 2025, new DateOnly(2025, 1, 30), "e8b166ab-07c3-4964-aa70-716fb1dae0be",
+        "Tax credit for low earned income: none above 28,420 of total net income; on the activity income, from 6,550 rising to 880 at 8,740, 880 up to 21,860, falling to none at 28,420. Refunded beyond the tax (art. 304, §2)");
 
-    private static readonly Source Article289terIncome2026 = new(
-        "CIR 92, art. 289ter (revenus 2026), coordinated text on Fisconetplus, last modified 19.02.2026",
-        "Tax credit for low earned income: none above 29,120 of total net income; on the activity income, from 6,710 rising to 910 at 8,960, 910 up to 22,400, falling to none at 29,120. Refunded beyond the tax (art. 304, §2)",
-        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/af20504b-71e6-4daa-89d6-4d3c000c8718"),
-        "personal-tax/spf-finances_cir92-art-289ter-revenus-2026_2026-02-19.html");
+    private static readonly Source Article289terIncome2026 = Source.Fisconet("personal-tax", "289ter", 2026, new DateOnly(2026, 2, 19), "af20504b-71e6-4daa-89d6-4d3c000c8718",
+        "Tax credit for low earned income: none above 29,120 of total net income; on the activity income, from 6,710 rising to 910 at 8,960, 910 up to 22,400, falling to none at 29,120. Refunded beyond the tax (art. 304, §2)");
 
     // The marital quotient. Fisconetplus was down when it was researched, so art. 87 and 88 are not filed
     // yet: income year 2026's rate cites the law of 15.07.2026 that sets it from tax year 2027, and its

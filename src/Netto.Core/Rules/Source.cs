@@ -13,15 +13,38 @@ public sealed record Source(string Title, string Reference, Uri Url, string Docu
     // name: the title itself until one is given.
     public string Label { get; init; } = Title;
 
-    // An article of CIR 92 as the administration coordinates it for one income year on Fisconetplus:
-    // its record there, at the version last modified on the date given, filed in official-docs/ under
-    // the folder given, and cited in a list by its article alone, « CIR 92, art. 157 ».
-    public static Source Fisconet(string folder, int article, int incomeYear, DateOnly lastModified, string recordId, string reference) => new(
-        string.Create(CultureInfo.InvariantCulture, $"CIR 92, art. {article} (revenus {incomeYear}), coordinated text on Fisconetplus, last modified {lastModified:dd.MM.yyyy}"),
-        reference,
-        new Uri($"https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/{recordId}"),
-        string.Create(CultureInfo.InvariantCulture, $"{folder}/spf-finances_cir92-art-{article}-revenus-{incomeYear}_{lastModified:yyyy-MM-dd}.html"))
+    // The article it is, for an article of a code as Fisconetplus coordinates it (Fisconet); none for
+    // any other text.
+    public FisconetArticle? Article { get; init; }
+
+    // An article of CIR 92, or of its royal decree of execution, as the administration coordinates it
+    // for one income year on Fisconetplus: its record there, at the version last modified on the date
+    // given, filed in official-docs/ under the folder given, and cited in a list by its article alone,
+    // « CIR 92, art. 157 ».
+    public static Source Fisconet(string folder, string article, int incomeYear, DateOnly lastModified, string recordId, string reference, FisconetCode code = FisconetCode.Cir92)
     {
-        Label = string.Create(CultureInfo.InvariantCulture, $"CIR 92, art. {article}"),
-    };
+        var name = code == FisconetCode.ArCir92 ? "AR/CIR 92" : "CIR 92";
+        var file = code == FisconetCode.ArCir92 ? "arcir92" : "cir92";
+        return new(
+            string.Create(CultureInfo.InvariantCulture, $"{name}, art. {article} (revenus {incomeYear}), coordinated text on Fisconetplus, last modified {lastModified:dd.MM.yyyy}"),
+            reference,
+            new Uri($"https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/{recordId}"),
+            string.Create(CultureInfo.InvariantCulture, $"{folder}/spf-finances_{file}-art-{article.Replace('/', '-')}-revenus-{incomeYear}_{lastModified:yyyy-MM-dd}.html"))
+        {
+            Label = $"{name}, art. {article}",
+            Article = new FisconetArticle(code, article, incomeYear, lastModified),
+        };
+    }
 }
+
+// The code an article coordinated on Fisconetplus belongs to: the income tax code of 1992, or the royal
+// decree executing it.
+public enum FisconetCode
+{
+    Cir92,
+    ArCir92,
+}
+
+// An article of a code as Fisconetplus coordinates it for one income year: its number as the code writes
+// it (« 38/1 », « 198bis »), and the day its record was last modified.
+public sealed record FisconetArticle(FisconetCode Code, string Number, int IncomeYear, DateOnly LastModified);

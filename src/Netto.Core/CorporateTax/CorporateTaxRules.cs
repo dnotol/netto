@@ -25,18 +25,12 @@ public sealed record CorporateTaxRules(
     Source Source,
     Source AssessmentBalance)
 {
-    private static readonly Source Article215Income2026 = new(
-        "CIR 92, art. 215 (revenus 2026), coordinated text on Fisconetplus, last modified 03.08.2026",
+    private static readonly Source Article215Income2026 = Source.Fisconet("corporate-tax", "215", 2026, new DateOnly(2026, 8, 3), "7132fb4e-e229-4008-a585-4ad4853edca5",
         "Al. 1: 25%. Al. 2: 20% on the first 100,000 for a small company. Al. 3, 4°: from its fifth tax period, only if a director's pay reaches the indexed minimum, or the taxable income does not exceed that pay. "
-        + "Al. 3, 5°: not for a company that allots its directors the excessive part of benefits in kind of art. 2 §1, 25°",
-        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/7132fb4e-e229-4008-a585-4ad4853edca5"),
-        "corporate-tax/spf-finances_cir92-art-215-revenus-2026_2026-08-03.html");
+        + "Al. 3, 5°: not for a company that allots its directors the excessive part of benefits in kind of art. 2 §1, 25°");
 
-    private static readonly Source Article2Income2026 = new(
-        "CIR 92, art. 2 (revenus 2026), coordinated text on Fisconetplus, last modified 30.07.2026",
-        "§1, 25° (from tax year 2027): the excessive part of the benefits in kind allotted to directors is the part of the total of the flat-rate benefits (art. 36 §1, al. 2 or §2) worth more than 20% of the total pay allotted to directors in the taxable period, which art. 215 al. 3, 5° takes the reduced rate for",
-        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/8a86d077-36f5-4f5f-ba01-49395a2cf922"),
-        "corporate-tax/spf-finances_cir92-art-2-revenus-2026_2026-07-30.html");
+    private static readonly Source Article2Income2026 = Source.Fisconet("corporate-tax", "2", 2026, new DateOnly(2026, 7, 30), "8a86d077-36f5-4f5f-ba01-49395a2cf922",
+        "§1, 25° (from tax year 2027): the excessive part of the benefits in kind allotted to directors is the part of the total of the flat-rate benefits (art. 36 §1, al. 2 or §2) worth more than 20% of the total pay allotted to directors in the taxable period, which art. 215 al. 3, 5° takes the reduced rate for");
 
     private static readonly Source Article215Commentary = new(
         "Commentaire de l'art. 215 CIR 92, Fisconetplus, last modified 30.11.2020",
@@ -55,11 +49,8 @@ public sealed record CorporateTaxRules(
         Reference = "CIR 92 art. 215, al. 3, 4°: minimum director pay, base 25,000, indexed 51,000",
     };
 
-    private static readonly Source Article218Income2026 = new(
-        "CIR 92, art. 218 (revenus 2026), coordinated text on Fisconetplus, last modified 03.08.2026",
-        "§1: the tax of art. 215 to 217 is increased as art. 157 to 168 provide when advance payments fall short, the reference rate of art. 161 at least 3%, without the 90% limit, the 106% base or the exception of art. 163. §2: none for a small company on the tax of its first three financial years",
-        new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/604a81d6-b1ac-4cb8-84bd-13cf088ca1b0"),
-        "corporate-tax/spf-finances_cir92-art-218-revenus-2026_2026-08-03.html");
+    private static readonly Source Article218Income2026 = Source.Fisconet("corporate-tax", "218", 2026, new DateOnly(2026, 8, 3), "604a81d6-b1ac-4cb8-84bd-13cf088ca1b0",
+        "§1: the tax of art. 215 to 217 is increased as art. 157 to 168 provide when advance payments fall short, the reference rate of art. 161 at least 3%, without the 90% limit, the 106% base or the exception of art. 163. §2: none for a small company on the tax of its first three financial years");
 
     private static readonly Source Article159Income2026 = SharedSources.Article159Income2026;
 

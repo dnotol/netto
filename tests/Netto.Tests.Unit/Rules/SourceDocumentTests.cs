@@ -1,5 +1,5 @@
-using System.Collections;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using Netto.Core.Rules;
 using Shouldly;
 
@@ -43,7 +43,7 @@ public class SourceDocumentTests
         var citations =
             from type in RuleTypes
             from set in RuleSets.Of(type)
-            from citation in Citations(set.Rules, $"{type.Name} {set.Year}")
+            from citation in RuleSets.Citations(set.Rules, $"{type.Name} {set.Year}")
             select (citation.Path, Problem: Documents.Problem(citation.Source, set.Year));
 
         Problems(citations).ShouldBeEmpty();
@@ -58,7 +58,7 @@ public class SourceDocumentTests
         var mismatched =
             from type in RuleTypes
             from set in RuleSets.Of(type)
-            from citation in Citations(set.Rules, $"{type.Name} {set.Year}")
+            from citation in RuleSets.Citations(set.Rules, $"{type.Name} {set.Year}")
             group citation.Source by citation.Source.Document into document
             let name = document.Select(source => source.Label).OrderBy(label => label.Length).First()
             where document.Select(source => (source.Title, source.Url)).Distinct().Count() > 1
@@ -66,6 +66,18 @@ public class SourceDocumentTests
             select $"{document.Key}: {string.Join(" | ", document.Select(source => source.Label).Distinct())}";
 
         mismatched.ShouldBeEmpty();
+    }
+
+    // An article of CIR 92 or of the AR/CIR 92 is built by Source.Fisconet, which files it by its article
+    // and income year and words its title and its name in a list the same way for every article.
+    [Fact]
+    public void Citations_ofACir92Article_areBuiltByFisconet()
+    {
+        var unbuilt = RuleSets.Sources()
+            .Where(citation => IsCodeArticle(citation.Source.Document) && citation.Source.Article is null)
+            .Select(citation => $"{citation.Path}: {citation.Source.Document}");
+
+        unbuilt.ShouldBeEmpty();
     }
 
     // A source a step cites is its income year's rule set's, held above to that year's documents, so a
@@ -104,16 +116,7 @@ public class SourceDocumentTests
                 : $"{group.First().Path} and {group.Count() - 1} more: {group.Key}")
             .ToList();
 
-    // Every source a rule set holds, through its amounts, its lists (the scale, the municipalities)
-    // and the records of Netto.Core inside it (LowEarnedIncomeCreditRules), with the path to it.
-    private static IEnumerable<(string Path, Source Source)> Citations(object? value, string path) => value switch
-    {
-        null or string => [],
-        Source source => [(path, source)],
-        RuleAmount amount => [($"{path} ({amount.Key})", amount.Source)],
-        IEnumerable items => items.Cast<object?>().SelectMany((item, index) => Citations(item, $"{path}[{index}]")),
-        _ when value.GetType().Assembly == Core => RuleSets.Properties(value.GetType())
-            .SelectMany(property => Citations(property.GetValue(value), $"{path}.{property.Name}")),
-        _ => [],
-    };
+    // A file of official-docs/ that is an article of CIR 92 or AR/CIR 92 itself, a commentary on one aside.
+    private static bool IsCodeArticle(string document) =>
+        Regex.IsMatch(document, @"/spf-finances_(ar)?cir92-art-");
 }
