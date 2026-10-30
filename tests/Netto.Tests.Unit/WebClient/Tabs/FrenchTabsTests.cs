@@ -156,6 +156,29 @@ public class FrenchTabsTests
         (text, text?.Length <= 14).ShouldBe((words, true));
     }
 
+    // A badge is cut beyond its box's width, 87 px on Corporate tax at 1,280 px, which « taux perdu : paie » fills
+    // exactly (measured in the browser on 30.10.2026). A condition's badge in French fits that room, or is no
+    // wider than its English, so it still says met or lost. The tax base's carries an amount, cut alike in English.
+    private static readonly decimal BadgeRoom = MapAmounts.Width("taux perdu : paie");
+
+    [Theory]
+    [InlineData("Badge_Pay_Met")]
+    [InlineData("Badge_Pay_Lost")]
+    [InlineData("Badge_Benefits_Met")]
+    [InlineData("Badge_Benefits_Lost")]
+    [InlineData("Badge_Royalty_Lowers")]
+    [InlineData("Badge_Royalty_NoEffect")]
+    [InlineData("Badge_Royalty_NoPayKeeps")]
+    [InlineData("Badge_Reserve_Covered")]
+    [InlineData("Badge_Reserve_NotCovered")]
+    public void Badge_inFrench_isNoWiderThanInEnglish(string key)
+    {
+        var french = ResxText.French<MapTab>().Get(key).ShouldNotBeNull();
+        var english = ResxText.For<MapTab>().Get(key).ShouldNotBeNull();
+
+        MapAmounts.Width(french).ShouldBeLessThanOrEqualTo(Math.Max(MapAmounts.Width(english), BadgeRoom));
+    }
+
     // A badge fits a box on one line, 30 characters at most, a tax base's at an amount of millions.
     [Theory]
     [InlineData("Badge_Pay_Met")]

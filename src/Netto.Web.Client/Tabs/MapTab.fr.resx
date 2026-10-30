@@ -140,31 +140,31 @@
     <value>non couvert</value>
   </data>
   <data name="Badge_Pay_Met" xml:space="preserve">
-    <value>rémunération suffisante</value>
+    <value>paie&#160;: oui</value>
   </data>
   <data name="Badge_Pay_Lost" xml:space="preserve">
-    <value>taux perdu&#160;: rémunération</value>
+    <value>paie&#160;: non</value>
   </data>
   <data name="Badge_Benefits_Met" xml:space="preserve">
-    <value>avantages dans la limite</value>
+    <value>ATN&#160;: oui</value>
   </data>
   <data name="Badge_Benefits_Lost" xml:space="preserve">
-    <value>taux perdu&#160;: avantages</value>
+    <value>ATN&#160;: non</value>
   </data>
   <data name="Badge_Royalty_Lowers" xml:space="preserve">
-    <value>seuil abaissé par les droits</value>
+    <value>seuil abaissé</value>
   </data>
   <data name="Badge_Royalty_NoEffect" xml:space="preserve">
-    <value>droits d'auteur&#160;: sans effet</value>
+    <value>droits sans effet</value>
   </data>
   <data name="Badge_Royalty_NoPayKeeps" xml:space="preserve">
-    <value>taux réduit inaccessible</value>
+    <value>taux réduit exclu</value>
   </data>
   <data name="Badge_Reserve_Covered" xml:space="preserve">
-    <value>montant gardé couvert</value>
+    <value>gardé&#160;: couvert</value>
   </data>
   <data name="Badge_Reserve_NotCovered" xml:space="preserve">
-    <value>montant gardé non couvert</value>
+    <value>gardé non couvert</value>
   </data>
   <data name="Badge_TaxBase" xml:space="preserve">
     <value>+{0} à la base</value>
