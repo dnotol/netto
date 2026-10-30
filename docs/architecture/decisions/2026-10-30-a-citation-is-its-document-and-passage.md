@@ -2,8 +2,8 @@
 type: adr
 title: A citation is its document and passage, and the client words it
 description: Source keeps a passage key, its document and its address; its title, label and reference are worded in Steps/SourceText.resx and its .fr.resx; a CIR 92 article's title is built from its structured article.
-status: draft
-decision: proposed
+status: stable
+accepted_by: human:Johnny Amadeus
 decided: 2026-10-30
 tags: [rules, site]
 sources:

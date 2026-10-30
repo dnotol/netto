@@ -2,7 +2,8 @@
 type: adr
 title: Components come from MudBlazor and every text from a resource file
 description: MudBlazor for components; English UI copy in a .resx beside each component, read through IStringLocalizer, never inline.
-status: stable
+status: deprecated
+superseded_by: /2026-10-30-french-by-default-english-beside-it.md
 decided: 2026-10-18
 tags: [site]
 sources:

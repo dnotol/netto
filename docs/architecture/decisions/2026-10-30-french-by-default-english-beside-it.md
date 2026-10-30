@@ -2,8 +2,8 @@
 type: adr
 title: The site speaks French by default, English one switch away
 description: English in each neutral .resx, French in a .fr.resx beside it; the client stays invariant with PredefinedCulturesOnly=false and sets only the UI culture, at start-up, from the viewer's choice; Formats picks its culture by language; the switch reloads and carries the river.
-status: draft
-decision: proposed
+status: stable
+accepted_by: human:Johnny Amadeus
 decided: 2026-10-30
 tags: [site]
 sources:

@@ -2,7 +2,8 @@
 type: adr
 title: Numbers are formatted on the invariant culture, and the app's culture is never set
 description: Every amount goes through Formats (invariant culture with the euro sign); MudBlazor inputs take Formats.Culture.
-status: stable
+status: deprecated
+superseded_by: /2026-10-30-french-by-default-english-beside-it.md
 decided: 2026-10-19
 tags: [site]
 sources:

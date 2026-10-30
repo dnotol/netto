@@ -40,7 +40,7 @@ Fixed once; every file that names one uses it word for word (the card, the map, 
 | Dividend | Dividende |
 | Income year (the whole river) | Revenus {year}, or « L'année » where no year is shown |
 | Your pocket | Votre poche |
-| Contributions and tax on pay (and rent) | Cotisations et impôt sur la rémunération (et le loyer) |
+| Contributions and tax on pay · and rent | Cotisations et impôt sur la rémunération · Cotisations et impôt sur paie et loyer (short, to fit the bar on one line) |
 | Taxes on profit | Impôts sur le bénéfice |
 | Kept in company | Gardé dans la société |
 | Expenses | Frais |

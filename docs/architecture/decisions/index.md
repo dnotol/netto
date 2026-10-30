@@ -30,7 +30,7 @@ Every decision taken on Netto, one file each, dated the day it was decided. A de
 - [Each layer has one rule set per income year, every amount with its source](/2026-10-19-one-rule-set-per-layer-and-income-year.md): A new income year is a new rule-set instance found through For(year), never an edit; every amount is a RuleAmount carrying its Source.
 - [The region is a parameter of every rule lookup, and a year or region without rules gives null](/2026-10-24-region-is-a-parameter-of-every-rule-lookup.md): Scenario.Region, Wallonia unless given; only Wallonia has rules, others are refused; no lookup throws.
 - [What a decree changes within the year is rule data, and each month withholds by the rules in force on its first day](/2026-10-25-a-decree-within-the-year-is-rule-data.md): WithholdingRules.Later holds the rules from a date; InMonth picks a month's; November 2026 is the first case.
-- [A citation is its document and passage, and the client words it](/2026-10-30-a-citation-is-its-document-and-passage.md) *(proposed)*: Source keeps a passage key, its document and its address; its title, label and reference are worded in Steps/SourceText.resx and its .fr.resx; a CIR 92 article's title is built from its structured article.
+- [A citation is its document and passage, and the client words it](/2026-10-30-a-citation-is-its-document-and-passage.md): Source keeps a passage key, its document and its address; its title, label and reference are worded in Steps/SourceText.resx and its .fr.resx; a CIR 92 article's title is built from its structured article.
 
 ## Readings of the law
 
@@ -52,9 +52,9 @@ Every decision taken on Netto, one file each, dated the day it was decided. A de
 
 ## The site
 
-- [Components come from MudBlazor and every text from a resource file](/2026-10-18-mudblazor-and-resx-text.md): MudBlazor for components; English UI copy in a .resx beside each component, read through IStringLocalizer, never inline.
+- [Components come from MudBlazor and every text from a resource file](/2026-10-18-mudblazor-and-resx-text.md) *(deprecated)*: Superseded - MudBlazor for components; English UI copy in a .resx beside each component, read through IStringLocalizer, never inline.
 - [Every page runs in WebAssembly and nothing is prerendered](/2026-10-18-webassembly-only-nothing-prerendered.md): The server only serves files; every component runs in the browser, so no user figure ever reaches a server.
-- [Numbers are formatted on the invariant culture, and the app's culture is never set](/2026-10-19-invariant-culture-for-numbers.md): Every amount goes through Formats (invariant culture with the euro sign); MudBlazor inputs take Formats.Culture.
+- [Numbers are formatted on the invariant culture, and the app's culture is never set](/2026-10-19-invariant-culture-for-numbers.md) *(deprecated)*: Superseded - Every amount goes through Formats (invariant culture with the euro sign); MudBlazor inputs take Formats.Culture.
 - [Optional levers join the plan from a menu, and what is out neither shows nor counts](/2026-10-21-optional-levers-neither-shown-nor-counted.md): PlanComposition holds which levers are in; an absent lever is its None in the Scenario, its values kept for when it comes back.
 - [The plan page splits into tabs by purpose, each with its own address](/2026-10-23-tabs-by-purpose.md): Plan, Optimisation, When to pay and Compare plans are PlanTab values under /plan/{Tab}, one page keeping the plan across them.
 - [The map's lines are read from the cards' own views, never computed by the page](/2026-10-25-map-lines-read-from-the-cards.md) *(deprecated)*: Superseded - MapLinks.Of reads each card's figure and drain lines; MapBundle.Sum adds them; MapCardsTests holds every amount to a card's.
@@ -62,7 +62,7 @@ Every decision taken on Netto, one file each, dated the day it was decided. A de
 - [The company's expenses are the bar's fifth bucket, Expenses, last](/2026-10-28-expenses-are-the-fifth-bucket.md): INASTI's company contribution and a car's costs land in Expenses; the bar starts before them and its reach leaves them out.
 - [The map is drawn by whose money each module moves, every euro reaching you on one pocket line](/2026-10-29-the-map-drawn-by-owner.md): Three columns (you, ways across, the company); the company's line down its own with each lever's share across to a gate; what reaches you joins one gold pocket line with its running total; an amount is said once.
 - [The map's lines are read from the cards' own views, the pocket line alone summing them, and its legend is a key](/2026-10-29-map-lines-read-from-the-cards-the-pocket-line-summing-them.md): MapLinks.Of reads each card's lines; the pocket line's totals are the only sums across cards, held by MapCardsTests; lines of money are always drawn, a module's tax-base and condition lines only while it is chosen.
-- [The site speaks French by default, English one switch away](/2026-10-30-french-by-default-english-beside-it.md) *(proposed)*: English in each neutral .resx, French in a .fr.resx beside it; the client stays invariant with PredefinedCulturesOnly=false and sets only the UI culture, at start-up, from the viewer's choice; Formats picks its culture by language; the switch reloads and carries the river.
+- [The site speaks French by default, English one switch away](/2026-10-30-french-by-default-english-beside-it.md): English in each neutral .resx, French in a .fr.resx beside it; the client stays invariant with PredefinedCulturesOnly=false and sets only the UI culture, at start-up, from the viewer's choice; Formats picks its culture by language; the switch reloads and carries the river.
 
 ## Build and launch
 

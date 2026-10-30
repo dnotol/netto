@@ -19,7 +19,7 @@
     <value>Cotisations et impôt sur la rémunération</value>
   </data>
   <data name="Bucket_taxes_on_pay_and_rent" xml:space="preserve">
-    <value>Cotisations et impôt sur la rémunération et le loyer</value>
+    <value>Cotisations et impôt sur paie et loyer</value>
   </data>
   <data name="Bucket_taxes_on_profit" xml:space="preserve">
     <value>Impôts sur le bénéfice</value>

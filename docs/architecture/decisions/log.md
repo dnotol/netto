@@ -2,6 +2,7 @@
 
 ## 2026-10-30
 
+- [French by default, English beside it](/2026-10-30-french-by-default-english-beside-it.md) and [a citation is its document and passage](/2026-10-30-a-citation-is-its-document-and-passage.md) accepted by the operator at landing; [every text from a resource file](/2026-10-18-mudblazor-and-resx-text.md) and [numbers on the invariant culture](/2026-10-19-invariant-culture-for-numbers.md) deprecated, superseded by the first.
 - [A citation is its document and passage, and the client words it](/2026-10-30-a-citation-is-its-document-and-passage.md) proposed, from the same story.
 - [The site speaks French by default, English one switch away](/2026-10-30-french-by-default-english-beside-it.md) proposed, from the story « Netto speaks French by default, English one switch away »; once accepted it supersedes [every text from a resource file](/2026-10-18-mudblazor-and-resx-text.md) and [numbers on the invariant culture](/2026-10-19-invariant-culture-for-numbers.md).
 
