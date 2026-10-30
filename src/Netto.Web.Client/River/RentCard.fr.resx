@@ -22,7 +22,7 @@
     <value>{0} dans votre poche · {1} avant votre rémunération et vos droits d'auteur</value>
   </data>
   <data name="Hint" xml:space="preserve">
-    <value>Si la société utilise une partie de votre logement comme bureau, elle peut vous louer cette partie, non meublée, par un bail. Elle paie le loyer sur son bénéfice, avant votre rémunération, et le déduit. Le loyer n'est jamais une rémunération&#160;: vous êtes imposé dessus avec votre rémunération, sans cotisations sociales, sur le loyer ou, quand le loyer est inférieur au plancher fixé par la loi, sur ce plancher, moins des charges forfaitaires.</value>
+    <value>Si la société utilise une partie de votre logement comme bureau, elle peut prendre cette partie en location chez vous, non meublée, par un bail. Elle paie le loyer sur son bénéfice, avant votre rémunération, et le déduit. Le loyer n'est jamais une rémunération&#160;: vous êtes imposé dessus avec votre rémunération, sans cotisations sociales, sur le loyer ou, quand le loyer est inférieur au plancher fixé par la loi, sur ce plancher, moins des charges forfaitaires.</value>
   </data>
   <data name="CadastralIncomeLabel" xml:space="preserve">
     <value>Revenu cadastral de votre logement</value>
@@ -70,7 +70,7 @@
     <value>Une déduction forfaitaire pour l'entretien et les réparations au lieu des frais réels&#160;: {0} de ce sur quoi vous êtes imposé, le plancher quand le loyer lui est inférieur, au plus les {1} du revenu cadastral de la partie louée, revalorisé par le coefficient {2}.</value>
   </data>
   <data name="Help_JoinsTaxableIncome" xml:space="preserve">
-    <value>Netto impose tout dans votre colonne, comme si le logement était à vous seul. Un logement que vous possédez avec votre conjoint est partagé par la loi, par moitié sous le régime de la communauté, selon vos parts sinon&#160;: Netto ne le répartit pas encore.</value>
+    <value>Netto impose tout dans votre colonne, comme si le logement était à vous seul. Un logement que vous possédez avec votre conjoint est partagé par la loi, par moitié sous le régime de la communauté, et selon vos parts dans les autres cas&#160;: Netto ne le répartit pas encore.</value>
   </data>
   <data name="Figure_JoinsTaxableIncome" xml:space="preserve">
     <value>Ajouté à votre revenu imposable</value>

@@ -49,7 +49,7 @@
     <value>Votre bilan</value>
   </data>
   <data name="BalanceSheetHint" xml:space="preserve">
-    <value>Le total du bilan de l'avant-dernier exercice clôturé de votre société, tel qu'il se présentait au 1er janvier, détermine laquelle des deux cotisations à charge des sociétés de l'INASTI elle doit pour {0}. Un texte en cours d'examen à la Chambre peut modifier les montants de {0} avec effet rétroactif&#160;; Netto applique la loi en vigueur.</value>
+    <value>Le total du bilan de l'avant-dernier exercice clôturé de votre société, tel qu'il se présentait au 1er janvier, détermine laquelle des deux cotisations à charge des sociétés de l'INASTI elle doit pour les revenus {0}. Un projet de loi en cours d'examen à la Chambre peut modifier les montants des revenus {0} avec effet rétroactif&#160;; Netto applique la loi en vigueur.</value>
   </data>
   <data name="BalanceSheetLabel" xml:space="preserve">
     <value>Total du bilan de {0}</value>

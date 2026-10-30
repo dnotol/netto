@@ -76,13 +76,13 @@
     <value>Taux de base&#160;: vos avantages de toute nature, {1}, dépassent {2} de votre [rémunération prise en compte] avantages compris, {3}.</value>
   </data>
   <data name="Term_TestedPay" xml:space="preserve">
-    <value>La rémunération que compte le test du taux réduit&#160;: votre brut, les cotisations et les frais de gestion de la caisse que la société paie pour vous si elle le fait, et vos avantages de toute nature, comme Rémunération de dirigeant les compte dans votre rémunération imposable.</value>
+    <value>La rémunération que compte le test du taux réduit&#160;: votre brut, les cotisations et les frais de gestion de la caisse que la société paie pour vous si elle le fait, et vos avantages de toute nature, comme la carte Rémunération de dirigeant les compte dans votre rémunération imposable.</value>
   </data>
   <data name="Term_TestedPay_Royalty" xml:space="preserve">
-    <value>La rémunération que compte le test du taux réduit&#160;: votre brut, les cotisations et les frais de gestion de la caisse que la société paie pour vous si elle le fait, et vos avantages de toute nature. Elle laisse de côté la part de vos droits d'auteur, {0}, que Rémunération de dirigeant compte comme rémunération imposable.</value>
+    <value>La rémunération que compte le test du taux réduit&#160;: votre brut, les cotisations et les frais de gestion de la caisse que la société paie pour vous si elle le fait, et vos avantages de toute nature. Elle laisse de côté la part de vos droits d'auteur, {0}, que la carte Rémunération de dirigeant compte comme rémunération imposable.</value>
   </data>
   <data name="Term_TestedPay_RoyaltyCompanyPays" xml:space="preserve">
-    <value>La rémunération que compte le test du taux réduit&#160;: votre brut, les cotisations et les frais de gestion de la caisse que la société paie pour vous, et vos avantages de toute nature. Elle laisse de côté un montant de {0} que Rémunération de dirigeant compte en plus dans la rémunération imposable&#160;: la part de vos droits d'auteur imposée comme rémunération, et les cotisations et frais de gestion de la caisse que la société paie sur cette part.</value>
+    <value>La rémunération que compte le test du taux réduit&#160;: votre brut, les cotisations et les frais de gestion de la caisse que la société paie pour vous, et vos avantages de toute nature. Elle laisse de côté un montant de {0} que la carte Rémunération de dirigeant compte en plus dans la rémunération imposable&#160;: la part de vos droits d'auteur imposée comme rémunération, et les cotisations et frais de gestion de la caisse que la société paie sur cette part.</value>
   </data>
   <data name="NoTaxableProfit" xml:space="preserve">
     <value>Pas de bénéfice imposable&#160;: pas d'impôt des sociétés, et pas de dividende cette année.</value>
