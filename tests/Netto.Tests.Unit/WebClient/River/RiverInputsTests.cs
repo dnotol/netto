@@ -1296,4 +1296,63 @@ public class RiverInputsTests
         RiverInputs.Example.WithCreativeShare(0.75m).MoveScenario().Copyright
             .ShouldBe(new Netto.Core.Copyright.CopyrightRoyalty(0m) { CreativeShare = 0.75m });
     }
+
+    // Facts the engine refuses (a negative cadastral income, a share let beyond the dwelling) are kept in
+    // the river while Rent is out, but the search never sees them: no card shows their refusal, so the
+    // plan must not be refused for them. In the plan, Run still refuses them on the card.
+    [Theory]
+    [InlineData(-1, 0.12)]
+    [InlineData(1_200, 1.5)]
+    [InlineData(1_200, -0.01)]
+    public void MoveScenario_rentFactsTheEngineRefusesOutOfThePlan_dropsThem(int cadastralIncome, double shareLet)
+    {
+        var inputs = RiverInputs.Example.WithCadastralIncome(cadastralIncome).WithShareLet((decimal)shareLet);
+
+        var scenario = inputs.MoveScenario();
+
+        (scenario.Rent, YearSimulation.Run(scenario).Error, inputs.Rent.CadastralIncome.Value, inputs.Rent.ShareLet.Value)
+            .ShouldBe((HomeOfficeRent.None, null, cadastralIncome, (decimal)shareLet));
+    }
+
+    [Theory]
+    [InlineData(-1, 0.12, "cadastral_income_negative")]
+    [InlineData(1_200, 1.5, "share_let_out_of_range")]
+    public void Run_rentFactsTheEngineRefusesInThePlan_stillRefusesThem(int cadastralIncome, double shareLet, string key)
+    {
+        var inputs = RiverInputs.Example.WithCadastralIncome(cadastralIncome).WithShareLet((decimal)shareLet).AddToPlan(OptionalModule.Rent);
+
+        (inputs.Run().Error?.Key, inputs.MoveScenario().Rent).ShouldBe((key, inputs.Rent.Values));
+    }
+
+    [Theory]
+    [InlineData(1.5)]
+    [InlineData(-0.01)]
+    public void MoveScenario_creativeShareTheEngineRefusesOutOfThePlan_dropsItAndKeepsTheStatuses(double share)
+    {
+        var inputs = RiverInputs.Example.WithCreativeShare((decimal)share).WithAttestation(true);
+
+        var scenario = inputs.MoveScenario();
+
+        (scenario.Copyright, YearSimulation.Run(scenario).Error, inputs.Copyright.CreativeShare.Value)
+            .ShouldBe((new Netto.Core.Copyright.CopyrightRoyalty(0m) { HoldsAttestation = true }, null, (decimal)share));
+    }
+
+    [Fact]
+    public void Run_creativeShareTheEngineRefusesInThePlan_stillRefusesIt()
+    {
+        var inputs = RiverInputs.Example.WithCreativeShare(1.5m).AddToPlan(OptionalModule.Copyright);
+
+        (inputs.Run().Error, inputs.MoveScenario().Copyright.CreativeShare).ShouldBe((Netto.Core.Copyright.CopyrightCalculator.CreativeShareOutOfRange, 1.5m));
+    }
+
+    [Theory]
+    [InlineData(1_200, 1.5, 0.75)]
+    [InlineData(1_200, 0.12, 1.5)]
+    [InlineData(-1, 0.12, 0.75)]
+    public void FindMoves_factsOfLeversOutOfThePlanTheEngineRefuses_isNotRefused(int cadastralIncome, double shareLet, double creativeShare)
+    {
+        var inputs = RiverInputs.Example.WithCadastralIncome(cadastralIncome).WithShareLet((decimal)shareLet).WithCreativeShare((decimal)creativeShare);
+
+        inputs.FindMoves(new DateOnly(2026, 10, 22))!.Value.Error.ShouldBeNull();
+    }
 }

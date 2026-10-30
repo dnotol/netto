@@ -319,13 +319,24 @@ public sealed record RiverInputs(
     // rent at nothing, which the engine counts as no rent, and the royalty's creative share and statuses
     // kept the same way while Copyright royalty is out, its royalty fixed at nothing, never following:
     // the year is the same, and the search can propose the rent at the cap and letting the royalty
-    // follow the pay.
+    // follow the pay. Facts the engine refuses are not kept: no card shows a module out of the plan, so
+    // nothing would tell why the plan is refused, and no move could be found from them anyway. The home
+    // is then none, the share none.
     internal Scenario MoveScenario()
     {
         var scenario = Scenario(PayUsed);
-        var withHome = InPlan(OptionalModule.Rent) ? scenario : scenario with { Rent = Rent.Values with { Rent = 0m } };
-        return InPlan(OptionalModule.Copyright) ? withHome : withHome with { Copyright = Copyright.Values with { Royalty = 0m, FollowsPay = false } };
+        var withHome = InPlan(OptionalModule.Rent) ? scenario : scenario with { Rent = KeptHome };
+        return InPlan(OptionalModule.Copyright) ? withHome : withHome with { Copyright = KeptRoyalty };
     }
+
+    // The home's facts with no rent, none when the engine refuses them.
+    private HomeOfficeRent KeptHome => RentCalculator.FactsRefusal(Rent.Values) is null ? Rent.Values with { Rent = 0m } : HomeOfficeRent.None;
+
+    // The royalty's share and statuses with no royalty and not following, the share none when the engine refuses it.
+    private CopyrightRoyalty KeptRoyalty => Copyright.Values with
+    {
+        Royalty = 0m, FollowsPay = false, CreativeShare = CopyrightCalculator.ShareRefusal(Copyright.CreativeShare.Value) is null ? Copyright.CreativeShare.Value : null,
+    };
 
     public bool SameBesidesPay(RiverInputs other) => this with { DirectorPay = other.DirectorPay } == other;
 

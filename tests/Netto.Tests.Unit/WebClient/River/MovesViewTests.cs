@@ -96,6 +96,24 @@ public class MovesViewTests
         MovesView.Of(RiverInputs.Example.SkipCompany(), On22October).State.ShouldBe(MovesState.StartsAtPay);
     }
 
+    // A lever out of the plan shows no card, so facts of it the engine refuses refuse nothing: the plan is
+    // not refused, and starts from the pocket the river shows.
+    public static TheoryData<string, RiverInputs> UnreadableFactsOfLeversOutOfThePlan => new()
+    {
+        { "a share let beyond the dwelling, Rent out of the plan", RiverInputs.Example.WithCadastralIncome(1_200m).WithShareLet(1.5m) },
+        { "a negative cadastral income, Rent out of the plan", RiverInputs.Example.WithCadastralIncome(-1m).WithShareLet(0.12m) },
+        { "a creative share beyond all the time, Copyright royalty out of the plan", RiverInputs.Example.WithCreativeShare(1.5m) },
+    };
+
+    [Theory]
+    [MemberData(nameof(UnreadableFactsOfLeversOutOfThePlan))]
+    public void Of_unreadableFactsOfALeverOutOfThePlan_isNotRefused(string _, RiverInputs today)
+    {
+        var view = MovesView.Of(today, On22October);
+
+        (view.State, view.Error, view.FromInPocket).ShouldBe((MovesState.Moves, null, today.Run().Year.ShouldNotBeNull().NetInPocket));
+    }
+
     [Fact]
     public void Of_todayRefused_givesTheEnginesError()
     {
