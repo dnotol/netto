@@ -136,7 +136,7 @@
     <value>Ce que votre caisse vous facture chaque trimestre ne peut pas être négatif.</value>
   </data>
   <data name="Error_copyright_royalty_above_profit" xml:space="preserve">
-    <value>Plus de droits d'auteur que la société n'en a avant votre rémunération&#160;: elle les paierait à perte. Gardez les droits d'auteur au niveau de ce que la société gagne, moins ses autres frais, ce que les titres-repas, les indemnités et le loyer vous rapportent, et les frais de sa voiture.</value>
+    <value>Plus de droits d'auteur que la société n'a de bénéfice avant votre rémunération&#160;: elle les paierait à perte. Gardez les droits d'auteur au plus à ce que la société gagne, moins ses autres frais, ce que les titres-repas, les indemnités et le loyer vous rapportent, et les frais de sa voiture.</value>
   </data>
   <data name="Error_copyright_creative_share_out_of_range" xml:space="preserve">
     <value>La part de votre temps de travail consacrée à créer est comprise entre 0&#160;% et 100&#160;%.</value>
