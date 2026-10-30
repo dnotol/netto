@@ -211,6 +211,39 @@ public class PlanStorageTests
         JsonNode.Parse(PlanStorage.Write(PlanBook.Empty))!["version"]!.GetValue<int>().ShouldBe(PlanStorage.Version);
     }
 
+    // A plan saved or exported while the page is in French opens unchanged in English, and the other way: the
+    // document never carries a figure formatted in the page's language.
+    [Fact]
+    public void Write_inFrench_isTheDocumentWrittenInEnglish()
+    {
+        var book = Book(("a", "Plan 1", Everything)) with { Today = "a", Opened = "a" };
+        var english = PlanStorage.Write(book);
+
+        using var french = InLanguage.French();
+
+        PlanStorage.Write(book).ShouldBe(english);
+    }
+
+    [Fact]
+    public void Read_inFrench_givesBackEveryInputWrittenInEnglish()
+    {
+        var written = PlanStorage.Write(Book(("a", "Plan 1", Everything)));
+
+        using var french = InLanguage.French();
+
+        PlanStorage.Read(written).Book.Plans.Single().Inputs.ShouldBe(Everything);
+    }
+
+    [Fact]
+    public void Read_inEnglish_givesBackEveryInputWrittenInFrench()
+    {
+        string written;
+        using (InLanguage.French())
+            written = PlanStorage.Write(Book(("a", "Plan 1", Everything)));
+
+        PlanStorage.Read(written).Book.Plans.Single().Inputs.ShouldBe(Everything);
+    }
+
     // Version 9 holds whether there is a partner, and the dependants.
     [Fact]
     public void Version_isNine()
