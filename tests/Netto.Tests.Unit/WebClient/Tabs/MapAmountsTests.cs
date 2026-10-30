@@ -136,6 +136,51 @@ public class MapAmountsTests
                 .Select(Name).ShouldBeEmpty());
     }
 
+    // In French, whose amounts take a no-break space more and whose conditions say other words, every plan keeps
+    // the rules of its amounts: each on a stretch of its own line, over no box, arrowhead or other amount nor past
+    // the map, crossed only square, and no line along a condition's word. All but a pay low enough for the credit
+    // on low earned income to come back into Director pay (below).
+    [Theory]
+    [MemberData(nameof(FrenchPlans))]
+    public void Of_anyPlanInFrench_keepsEveryRuleOfItsAmounts(string plan)
+    {
+        using var french = InLanguage.French();
+        var view = View(plan);
+        var amounts = MapAmounts.Of(view, SayInFrench);
+        var saying = view.Bundles().Where(line => line.SaysAmount).ToList();
+
+        amounts.ShouldSatisfyAllConditions(
+            () => amounts.Count.ShouldBe(saying.Count),
+            () => amounts.Where(amount => !OnItsStretch(amount)).Select(Name).ShouldBeEmpty(),
+            () => Sizes(view).SelectMany(scale => Faults(view, amounts, scale)).ShouldBeEmpty(),
+            () => Sizes(view).SelectMany(scale => Along(view, amounts, scale)).Select(Name).ShouldBeEmpty(),
+            () => MapAmounts.Crowded(view, SayInFrench).Select(Name).ShouldBeEmpty());
+    }
+
+    public static TheoryData<string> FrenchPlans() => new(Plans().Select(row => row.Data).Where(plan => plan != LowPay));
+
+    // Known, and reported (2026-10-30): with a pay low enough for the credit on low earned income to come back
+    // into Director pay, the line back runs down beside the pocket line under Director pay, as close as the line
+    // into the taxes on pay and their widths let it, which leaves the totals beside the pocket line the room of an
+    // English amount and three pixels short of a French one. Those three totals have no free place; this pins it,
+    // so that a layout giving them room turns it red and lets them join the rule above.
+    private const string LowPay = "a low pay";
+
+    [Fact]
+    public void Of_aLowPayInFrench_leavesTheThreeTotalsUnderDirectorPayNoFreePlace()
+    {
+        using var french = InLanguage.French();
+        var view = View(LowPay);
+
+        MapAmounts.Crowded(view, SayInFrench).Select(Name).ShouldBe([
+            "IntoBucket pocket-line-director-pay to pocket-line-copyright",
+            "IntoBucket pocket-line-copyright to pocket-line-dividend",
+            "IntoBucket pocket-line-dividend to pocket",
+        ], ignoreOrder: true);
+    }
+
+    private static string SayInFrench(MapLabel label) => ResxText.French<MapTab>().Format(label.Key, [.. label.Args]);
+
     // Every line says its amount on it, a condition its word or two, but those whose amount the map says
     // elsewhere: a line joining the pocket line, its gate's box or the total under it saying it; the pay, its
     // pill saying it; what Corporate tax adds back, its badge saying it; money passed on into a gate whose box

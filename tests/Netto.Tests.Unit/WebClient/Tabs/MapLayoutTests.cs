@@ -176,24 +176,169 @@ public class MapLayoutTests
             () => (MapLayout.TitleLineRem, MapLayout.GateLineRem).ShouldBe((0.85m * 1.1m, 0.68m * 1.15m)));
     }
 
-    // How many lines a name takes on the narrowest map, as wide as Inter draws it at 0.72rem (MapAmounts.Width),
-    // 4% more for weight 600: in a gate's box, 124 px less its padding and frame, and in a quiet pill in the
-    // gates' column, less its padding and frame and a name's own padding. The allowances' name wraps in its box;
-    // the allowances', the rent's and the royalty's wrap in a pill.
-    [Theory]
-    [InlineData(RiverModule.Vouchers)]
-    [InlineData(RiverModule.Allowances)]
-    [InlineData(RiverModule.Rent)]
-    [InlineData(RiverModule.Car)]
-    [InlineData(RiverModule.Copyright)]
-    [InlineData(RiverModule.Dividend)]
-    public void TitleLinesAndQuietLines_aGatesName_areTheLinesItTakesOnTheNarrowestMap(RiverModule gate)
+    // How many lines a module's name takes in its box on the narrowest map, in the language the page reads: its
+    // column less the box's padding and frame (a gate's 124 px, the company's 108, Director pay's 90, the
+    // partner's 78). In English the allowances' name wraps; in French the vouchers', the allowances', the
+    // company's year's, Corporate tax's and Director pay's.
+    public static TheoryData<RiverModule, int> EnglishTitleLines => new()
     {
-        var name = ResxText.For<MapTab>().Get(MapTabText.Module(gate)).ShouldNotBeNull();
-        var width = (MapAmounts.Width(name) - 2m * MapAmounts.GroundRem * MapLayout.PixelsPerRem) * 1.04m;
-        var pill = 124m - 2m * 0.6m * MapLayout.PixelsPerRem - 2m - 2m * 0.35m * MapLayout.PixelsPerRem;
+        { RiverModule.CompanyYear, 1 }, { RiverModule.Vouchers, 1 }, { RiverModule.Allowances, 2 }, { RiverModule.Rent, 1 },
+        { RiverModule.Car, 1 }, { RiverModule.Split, 1 }, { RiverModule.Copyright, 1 }, { RiverModule.DirectorPay, 1 },
+        { RiverModule.Household, 1 }, { RiverModule.CorporateTax, 1 }, { RiverModule.Dividend, 1 },
+    };
 
-        (MapLayout.TitleLines(gate), MapLayout.QuietLines(gate)).ShouldBe((width > MapLayout.GateRoomPixels ? 2 : 1, width > pill ? 2 : 1));
+    public static TheoryData<RiverModule, int> FrenchTitleLines => new()
+    {
+        { RiverModule.CompanyYear, 2 }, { RiverModule.Vouchers, 2 }, { RiverModule.Allowances, 2 }, { RiverModule.Rent, 1 },
+        { RiverModule.Car, 1 }, { RiverModule.Split, 1 }, { RiverModule.Copyright, 1 }, { RiverModule.DirectorPay, 2 },
+        { RiverModule.Household, 1 }, { RiverModule.CorporateTax, 2 }, { RiverModule.Dividend, 1 },
+    };
+
+    [Theory]
+    [MemberData(nameof(EnglishTitleLines))]
+    public void TitleLines_aModulesNameInEnglish_isTheLinesItTakesInItsBoxOnTheNarrowestMap(RiverModule module, int lines)
+    {
+        MapLayout.TitleLines(module).ShouldBe(lines);
+    }
+
+    [Theory]
+    [MemberData(nameof(FrenchTitleLines))]
+    public void TitleLines_aModulesNameInFrench_isTheLinesItTakesInItsBoxOnTheNarrowestMap(RiverModule module, int lines)
+    {
+        using var french = InLanguage.French();
+
+        MapLayout.TitleLines(module).ShouldBe(lines);
+    }
+
+    // How many lines the name of a module the map can draw quiet, a lever or the partner, takes in a quiet pill
+    // in its column on the narrowest map, less the pill's padding and frame and a name's own padding: in English
+    // the allowances', the rent's and the royalty's wrap; in French the vouchers', the allowances', the rent's and
+    // the car's.
+    public static TheoryData<RiverModule, int> EnglishQuietLines => new()
+    {
+        { RiverModule.Vouchers, 1 }, { RiverModule.Allowances, 2 }, { RiverModule.Rent, 2 }, { RiverModule.Car, 1 }, { RiverModule.Copyright, 2 }, { RiverModule.Household, 1 },
+    };
+
+    public static TheoryData<RiverModule, int> FrenchQuietLines => new()
+    {
+        { RiverModule.Vouchers, 2 }, { RiverModule.Allowances, 2 }, { RiverModule.Rent, 2 }, { RiverModule.Car, 2 }, { RiverModule.Copyright, 1 }, { RiverModule.Household, 1 },
+    };
+
+    [Theory]
+    [MemberData(nameof(EnglishQuietLines))]
+    public void QuietLines_aQuietModulesNameInEnglish_isTheLinesItTakesInAPillOnTheNarrowestMap(RiverModule module, int lines)
+    {
+        MapLayout.QuietLines(module).ShouldBe(lines);
+    }
+
+    [Theory]
+    [MemberData(nameof(FrenchQuietLines))]
+    public void QuietLines_aQuietModulesNameInFrench_isTheLinesItTakesInAPillOnTheNarrowestMap(RiverModule module, int lines)
+    {
+        using var french = InLanguage.French();
+
+        MapLayout.QuietLines(module).ShouldBe(lines);
+    }
+
+    // The modules a quiet pill can hold, held in both lists: every optional module.
+    [Fact]
+    public void QuietLines_theModulesHeld_areEveryOptionalModule()
+    {
+        var optional = PlanComposition.Modules.Select(MapModules.Of).ToList();
+
+        optional.ShouldSatisfyAllConditions(
+            () => EnglishQuietLines.Select(row => row.Data.Item1).ShouldBe(optional, ignoreOrder: true),
+            () => FrenchQuietLines.Select(row => row.Data.Item1).ShouldBe(optional, ignoreOrder: true));
+    }
+
+    // The rooms the names are laid in, at the narrowest map: a box's column less its padding of 0.35rem each
+    // side and its frame, a quiet pill's less its padding of 0.6rem each side and its frame and a name's padding.
+    [Theory]
+    [InlineData(RiverModule.Vouchers, 124 - 13.2, 124 - 19.2 - 2 - 11.2)]
+    [InlineData(RiverModule.CompanyYear, 108 - 13.2, 108 - 19.2 - 2 - 11.2)]
+    [InlineData(RiverModule.DirectorPay, 90 - 13.2, 90 - 19.2 - 2 - 11.2)]
+    [InlineData(RiverModule.Household, 78 - 13.2, 78 - 19.2 - 2 - 11.2)]
+    public void TitleRoomAndQuietRoom_aModule_isItsColumnLessItsPaddingAndFrame(RiverModule module, double title, double quiet)
+    {
+        (MapLayout.TitleRoom(module), MapLayout.QuietRoom(module)).ShouldBe(((decimal)title, (decimal)quiet));
+    }
+
+    // A name is wrapped as a browser wraps it: each line as many words as fit, after a space, a hyphen or a soft
+    // hyphen, which then draws a hyphen; a word wider than the room a line of its own. Each line as wide as Inter
+    // draws it at 0.72rem (MapAmounts.Width), 4% more for weight 600.
+    [Theory]
+    [InlineData("Expense allowances", 110.8, 2)]
+    [InlineData("Expense allowances", 130, 1)]
+    [InlineData("Titres-repas et chèques", 110.8, 2)]
+    [InlineData("Titres-repas", 60, 2)]
+    [InlineData("Titres-repas", 30, 2)]
+    [InlineData("Rémunération de dirigeant", 76.8, 2)]
+    [InlineData("Rémunération", 40, 1)]
+    [InlineData("a b c", 5, 3)]
+    public void Lines_aName_wrapsAsABrowserWrapsIt(string name, double room, int lines)
+    {
+        MapLayout.Lines(name, (decimal)room).ShouldBe(lines);
+    }
+
+    [Fact]
+    public void Lines_aSoftHyphen_breaksTheWordThereDrawingAHyphen()
+    {
+        var name = "Rémuné" + SoftHyphen + "ration";
+
+        (MapLayout.Lines(name, 90m), MapLayout.Lines(name, 75m), MapLayout.Lines(name, 50m)).ShouldBe((1, 2, 2));
+    }
+
+    private const char SoftHyphen = (char)0x00AD;
+
+    // A box of the company's column or Director pay's whose name takes two lines grows to hold them, at the largest
+    // size a title is drawn, its frame, as a gate's box does: the company's year and Corporate tax in French; on one
+    // line, it keeps half a chain row.
+    [Fact]
+    public void Grid_aNameOnTwoLines_growsItsBoxInTheCompanysColumnOrDirectorPays()
+    {
+        var modules = MapView.ModulesOf(MapLinksTests.Full);
+        var english = MapLayout.Grid(modules);
+        using var french = InLanguage.French();
+
+        var grid = MapLayout.Grid(modules);
+
+        var two = Math.Round((2m * MapLayout.TitleLineRem + 2m / 16m) / MapLayout.SmallestRowRem, 12);
+        (Units(english, RiverModule.CompanyYear), Units(grid, RiverModule.CompanyYear), Units(grid, RiverModule.CorporateTax), Units(grid, RiverModule.DirectorPay), Units(grid, RiverModule.Split))
+            .ShouldBe((0.5m, two, two, two, 0.5m));
+    }
+
+    // Every module's longest word stays inside its box's frame on the narrowest map, its padding the most it may
+    // take of it, in both languages: « Rémunération », over Director pay's room by a few pixels at this estimate,
+    // takes a pixel or two of its padding each side, and is not cut.
+    public static TheoryData<RiverModule> MapsModules => new(MapModules.Order);
+
+    [Theory]
+    [MemberData(nameof(MapsModules))]
+    public void Name_eachModulesLongestWordInEnglish_staysInsideItsBoxsFrame(RiverModule module)
+    {
+        LongestWord(module).ShouldBeLessThanOrEqualTo(MapLayout.TitleRoom(module) + 2m * 0.35m * MapLayout.PixelsPerRem);
+    }
+
+    [Theory]
+    [MemberData(nameof(MapsModules))]
+    public void Name_eachModulesLongestWordInFrench_staysInsideItsBoxsFrame(RiverModule module)
+    {
+        using var french = InLanguage.French();
+
+        LongestWord(module).ShouldBeLessThanOrEqualTo(MapLayout.TitleRoom(module) + 2m * 0.35m * MapLayout.PixelsPerRem);
+    }
+
+    private static decimal LongestWord(RiverModule module) =>
+        MapLayout.Name(module).Split(' ', '-').Max(word => (MapAmounts.Width(word) - 2m * MapAmounts.GroundRem * MapLayout.PixelsPerRem) * 1.04m);
+
+    // The names the layout counts lines of are those the map draws: its texts in the language the page reads.
+    [Fact]
+    public void Name_aModule_isTheMapsTextForItInTheLanguageThePageReads()
+    {
+        var english = MapLayout.Name(RiverModule.Car);
+        using var french = InLanguage.French();
+
+        (english, MapLayout.Name(RiverModule.Car)).ShouldBe((ResxText.For<MapTab>().Get("Module_Car"), ResxText.French<MapTab>().Get("Module_Car")));
     }
 
     // A module's badges grow its box a line each, 0.3 of a chain row (MapLayout.BadgeRem and BadgeGapRem
@@ -388,6 +533,45 @@ public class MapLayoutTests
             () => Crossings(routes, Boxes(river), Grid(river).Units).ShouldBeEmpty(),
             () => Overhangs(routes, Grid(river)).ShouldBeEmpty(),
             () => Arrowheads(routes, Grid(river).Units).ShouldBeEmpty());
+    }
+
+    // In French, whose names take more lines in their boxes and pills, every plan keeps the layout's rules: no box
+    // over another, each in its column, every line across or down, ending on its two boxes, through no box, inside
+    // the map, sharing no stretch with another, apart from the others at their widths, within the sides it meets,
+    // and its arrowhead clear; and it crosses no more lines than its baseline holds in English.
+    [Theory]
+    [MemberData(nameof(Rivers))]
+    public void Routed_anyPlanInFrench_keepsEveryRuleOfTheLayout(int bits, int quiet, bool companySkipped)
+    {
+        using var french = InLanguage.French();
+        var river = River(bits, quiet, companySkipped);
+        var (grid, boxes, routes) = (Grid(river), Boxes(river), Routes(river));
+        var view = MapView.From(river, river.Run());
+        var columns = view.Columns.ToDictionary(column => column.Owner, column => column.Slot);
+
+        routes.ShouldSatisfyAllConditions(
+            () => boxes.SelectMany((a, i) => boxes.Skip(i + 1).Where(b => Overlaps(Area(a.Slot), Area(b.Slot))).Select(b => $"{a.Id} over {b.Id}")).ShouldBeEmpty(),
+            () => view.Modules.Where(node => !Within(node.Slot, columns[OwnerOf(node.End.Module!.Value)])).Select(node => node.End.Id).ShouldBeEmpty(),
+            () => routes.Where(route => MapLineWidths.Stretches(route.Route).Any(segment => segment.A.X != segment.B.X && segment.A.Y != segment.B.Y)).Select(route => route.Name).ShouldBeEmpty(),
+            () => routes.Where(route => !OnEdge(grid, route.From, route.Route.Points[0]) || !EndsOn(grid, route.To, route.Route.End)).Select(route => route.Name).ShouldBeEmpty(),
+            () => routes.SelectMany(route => MapLineWidths.Stretches(route.Route).SelectMany(segment =>
+                boxes.Where(box => Enters(segment, box.Slot) && !MayCross(route.Name, box.Id)).Select(box => $"{route.Name} through {box.Id}"))).ShouldBeEmpty(),
+            () => routes.Where(route => route.Route.Points.Any(point => point.X is < 0m or > 100m || point.Y is < 0m or > 100m)).Select(route => route.Name).ShouldBeEmpty(),
+            () => routes.SelectMany((a, i) => routes.Skip(i + 1).Where(b => MapLineWidths.Stretches(a.Route).Any(sa => MapLineWidths.Stretches(b.Route).Any(sb => Shared(sa, sb))))
+                .Select(b => $"{a.Name} with {b.Name}")).ShouldBeEmpty(),
+            () => Crowded(routes, grid.Units).ShouldBeEmpty(),
+            () => Crossings(routes, boxes, grid.Units).ShouldBeEmpty(),
+            () => Overhangs(routes, grid).ShouldBeEmpty(),
+            () => Arrowheads(routes, grid.Units).ShouldBeEmpty());
+    }
+
+    [Theory]
+    [MemberData(nameof(CrossingPlans))]
+    public void From_anyPlanInFrench_crossesNoMoreLinesThanItsBaseline(string plan)
+    {
+        using var french = InLanguage.French();
+
+        LineCrossings(MapAmountsTests.View(plan)).ShouldBeLessThanOrEqualTo(Baseline[plan]);
     }
 
     // Director pay's way into the taxes on pay and what comes back out of them turn along the band over the

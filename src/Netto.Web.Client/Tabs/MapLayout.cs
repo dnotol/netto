@@ -1,3 +1,5 @@
+using System.Globalization;
+using System.Resources;
 using Netto.Web.Client.River;
 
 namespace Netto.Web.Client.Tabs;
@@ -114,10 +116,14 @@ internal static class MapLayout
 
     // The columns, from the narrowest map's pixels: the director's, the partner's in it, the gates' and the
     // company's; and the lane between the director's column and the gates.
-    private static readonly (decimal Left, decimal Right) YouColumn = (Across(14m), Across(104m));
-    private static readonly (decimal Left, decimal Right) HouseholdColumn = (Across(14m), Across(92m));
-    private static readonly (decimal Left, decimal Right) GatesColumn = (Across(180m), Across(304m));
-    private static readonly (decimal Left, decimal Right) CompanyColumn = (Across(400m), Across(508m));
+    private static readonly (decimal Left, decimal Right) YouPixels = (14m, 104m);
+    private static readonly (decimal Left, decimal Right) HouseholdPixels = (14m, 92m);
+    private static readonly (decimal Left, decimal Right) GatesPixels = (180m, 304m);
+    private static readonly (decimal Left, decimal Right) CompanyPixels = (400m, 508m);
+    private static readonly (decimal Left, decimal Right) YouColumn = (Across(YouPixels.Left), Across(YouPixels.Right));
+    private static readonly (decimal Left, decimal Right) HouseholdColumn = (Across(HouseholdPixels.Left), Across(HouseholdPixels.Right));
+    private static readonly (decimal Left, decimal Right) GatesColumn = (Across(GatesPixels.Left), Across(GatesPixels.Right));
+    private static readonly (decimal Left, decimal Right) CompanyColumn = (Across(CompanyPixels.Left), Across(CompanyPixels.Right));
 
     // The room inside a gate for its lines, where they are drawn smallest, its padding of 0.35rem each side and
     // its frame left out (MapGateTextTests).
@@ -155,13 +161,14 @@ internal static class MapLayout
     private static readonly decimal TaxesOnPayStep = Across(8m);
 
     // Director pay's lines along its bottom and its top: into the taxes on pay and back, right, so they run
-    // down clear of the pocket line and of the totals it says beside it; the marital quotient, between the pocket line and the car's benefit into
-    // its top, with room for its amount on it between them.
+    // down clear of the pocket line and of the totals it says beside it; the marital quotient, between the pocket
+    // line and the car's benefit into its top, with room for its amount on it between them in French too, whose
+    // amounts take a no-break space more (MapAmountsTests).
     private static readonly decimal PayToTaxes = Across(100m);
     private static readonly decimal PayFromTaxes = Across(94m);
-    private static readonly decimal QuotientX = Across(51m);
+    private static readonly decimal QuotientX = Across(53m);
     private static readonly decimal PayFromPocket = Across(30m);
-    private static readonly decimal PayFromGates = Across(94m);
+    private static readonly decimal PayFromGates = Across(97m);
 
     // The lane down to the expenses, right of the company's boxes, the highest row's furthest out.
     private static readonly decimal ExpensesLane = Across(526m);
@@ -184,9 +191,10 @@ internal static class MapLayout
     private static readonly decimal DividendUp = Across(352m);
     private static readonly decimal RoyaltyUp = Across(362m);
 
-    // The split's lines out of its bottom: the royalty's, the condition it sets on Corporate tax, its profit.
+    // The split's lines out of its bottom: the royalty's, the condition it sets on Corporate tax, its profit, the
+    // condition far enough right of the profit for its amount in French too.
     private static readonly decimal SplitToRoyalty = Across(406m);
-    private static readonly decimal SplitConditionToCorporate = Across(500m);
+    private static readonly decimal SplitConditionToCorporate = Across(503m);
     private static readonly decimal SplitToCorporate = Across(458m);
 
     // Corporate tax's way into its taxes, and the dividend's lines out of its bottom: into what the company
@@ -239,13 +247,90 @@ internal static class MapLayout
         _ => throw new ArgumentOutOfRangeException(nameof(module), module, "A module the map has no place for."),
     };
 
-    // How many lines a gate's name takes in its box on the narrowest map: the allowances' wraps there; every
-    // other name fits on one line (MapLayoutTests).
-    public static int TitleLines(RiverModule module) => module == RiverModule.Allowances ? 2 : 1;
+    // The name the map draws a module by, in the language the page reads (MapTab.resx, the .fr.resx beside it),
+    // which the lines of its box and of a quiet pill are counted from.
+    public static string Name(RiverModule module) =>
+        ModuleNames.GetString(MapTabText.Module(module), CultureInfo.CurrentUICulture) ?? MapTabText.Module(module);
 
-    // How many lines a quiet module's name takes in its pill on the narrowest map, each a target of its own:
-    // the allowances', the rent's and the royalty's wrap in the gates' column; the others fit (MapLayoutTests).
-    public static int QuietLines(RiverModule module) => module is RiverModule.Allowances or RiverModule.Rent or RiverModule.Copyright ? 2 : 1;
+    private static readonly ResourceManager ModuleNames = new(typeof(MapTab).FullName!, typeof(MapTab).Assembly);
+
+    // How many lines a module's name takes in its box on the narrowest map, so that a box grows with it: in
+    // English the allowances' wraps there; in French the vouchers', the allowances', the company's year's,
+    // Corporate tax's and Director pay's (MapLayoutTests).
+    public static int TitleLines(RiverModule module) => Lines(Name(module), TitleRoom(module));
+
+    // How many lines a quiet module's name takes in its pill on the narrowest map, each a target of its own.
+    public static int QuietLines(RiverModule module) => Lines(Name(module), QuietRoom(module));
+
+    // The room a name has in its box on the narrowest map, its column less the box's padding of 0.35rem each
+    // side and its frame; and in a quiet pill in that column, less the pill's padding of 0.6rem each side and
+    // its frame, and the name's own padding (MapTab.razor.css: .map-module, .map-quiet).
+    internal static decimal TitleRoom(RiverModule module) => ColumnPixels(Place(module).Column) - 2m * BoxPadRem * PixelsPerRem - 2m;
+
+    internal static decimal QuietRoom(RiverModule module) =>
+        ColumnPixels(Place(module).Column) - 2m * QuietPillPadRem * PixelsPerRem - 2m - 2m * BoxPadRem * PixelsPerRem;
+
+    private const decimal BoxPadRem = 0.35m;
+    private const decimal QuietPillPadRem = 0.6m;
+
+    // How many lines a name takes in a room of the pixels given, wrapped as a browser wraps it: each line as many
+    // of its words as fit, after a space, a hyphen or a soft hyphen, which then draws a hyphen; a word wider than
+    // the room a line of its own, which it overflows. Each line as wide as Inter draws it at 0.72rem
+    // (MapAmounts.Width, its ground left out), 4% more for the title's weight, 600.
+    internal static int Lines(string name, decimal room)
+    {
+        var pieces = Pieces(name);
+        var (lines, from) = (1, 0);
+        for (var to = 1; to < pieces.Count; to++)
+        {
+            if (LineWidth(pieces, from, to + 1) > room)
+                (lines, from) = (lines + 1, to);
+        }
+
+        return lines;
+    }
+
+    private const char SoftHyphen = (char)0x00AD;
+
+    // A name cut after each place a line may end: a space, a hyphen, a soft hyphen.
+    private static List<string> Pieces(string name)
+    {
+        var pieces = new List<string>();
+        var start = 0;
+        for (var at = 0; at < name.Length; at++)
+        {
+            if (name[at] is ' ' or '-' or SoftHyphen)
+            {
+                pieces.Add(name[start..(at + 1)]);
+                start = at + 1;
+            }
+        }
+
+        if (start < name.Length)
+            pieces.Add(name[start..]);
+        return pieces;
+    }
+
+    // A line of the pieces given, as drawn: its last space dropped, its last soft hyphen a hyphen, the others
+    // nothing.
+    private static decimal LineWidth(List<string> pieces, int from, int to)
+    {
+        var line = string.Concat(pieces.Skip(from).Take(to - from)).TrimEnd(' ');
+        line = line.EndsWith(SoftHyphen) ? $"{line[..^1]}-" : line;
+        return (MapAmounts.Width(line.Replace(SoftHyphen.ToString(), "", StringComparison.Ordinal)) - 2m * MapAmounts.GroundRem * PixelsPerRem) * TitleWeight;
+    }
+
+    private const decimal TitleWeight = 1.04m;
+
+    // A column's width on the narrowest map, in pixels.
+    private static decimal ColumnPixels(MapColumn column) => column switch
+    {
+        MapColumn.You => YouPixels.Right - YouPixels.Left,
+        MapColumn.Household => HouseholdPixels.Right - HouseholdPixels.Left,
+        MapColumn.Gates => GatesPixels.Right - GatesPixels.Left,
+        MapColumn.Company => CompanyPixels.Right - CompanyPixels.Left,
+        _ => throw new ArgumentOutOfRangeException(nameof(column), column, "A column the map does not draw."),
+    };
 
     // The boxes of the modules and of the buckets, the quiet levers given drawn in quiet pills, each module's
     // box holding the lines of badges given, each gate's the lines it says.
@@ -294,6 +379,11 @@ internal static class MapLayout
         private readonly IReadOnlyDictionary<RiverModule, int> _badgeLines;
         private readonly IReadOnlyDictionary<RiverModule, int> _gateLines;
 
+        // The lines each module's name takes in its box and in a quiet pill, in the language the page reads,
+        // counted once for the grid.
+        private readonly Dictionary<RiverModule, int> _titleLines;
+        private readonly Dictionary<RiverModule, int> _quietLines;
+
         public MapGrid(IReadOnlyList<RiverModule> modules, IReadOnlySet<RiverModule> quiet, IReadOnlyDictionary<RiverModule, int> badgeLines,
             IReadOnlyDictionary<RiverModule, int> gateLines)
         {
@@ -301,6 +391,8 @@ internal static class MapLayout
             _quiet = quiet;
             _badgeLines = badgeLines;
             _gateLines = gateLines;
+            _titleLines = MapModules.Order.ToDictionary(module => module, TitleLines);
+            _quietLines = MapModules.Order.ToDictionary(module => module, QuietLines);
             _firstOf = FirstOf(modules, quiet);
             _quietRows = _firstOf.GroupBy(pair => Place(pair.Value).Row).ToDictionary(run => run.Key, run => run.Select(pair => pair.Key).ToList());
             Rows =
@@ -430,14 +522,17 @@ internal static class MapLayout
             Modules.Where(module => RowOf(module) == row).Select(module => _firstOf.TryGetValue(module, out var first) ? PillUnits(_quietRows[Place(first).Row])
                 : _quiet.Contains(module) ? PillUnits([module]) : BoxOf(module)).DefaultIfEmpty(BoxUnits).Max() * 100m / Units;
 
-        // A module's box, in chain rows: half a row, or a gate's lines, or the partner's, and a line for each of
-        // its badges.
+        // A module's box, in chain rows: half a row, or a gate's lines, or the partner's, or the lines of a name
+        // that wraps, and a line for each of its badges.
         private decimal BoxOf(RiverModule module) =>
-            (Place(module).Column is MapColumn.Gates or MapColumn.Household ? Math.Max(BoxUnits, GateUnits(module)) : BoxUnits) + _badgeLines.GetValueOrDefault(module) * BadgeUnits;
+            Math.Max(BoxUnits, Place(module).Column is MapColumn.Gates or MapColumn.Household ? GateUnits(module) : TitleUnits(module)) + _badgeLines.GetValueOrDefault(module) * BadgeUnits;
 
         // A gate's name and lines, its padding and frame, in chain rows at the smallest scale.
         private decimal GateUnits(RiverModule module) =>
-            (TitleLines(module) * TitleLineRem + _gateLines.GetValueOrDefault(module) * GateLineRem + 2m * GatePadRem + FrameRem) / SmallestRowRem;
+            (_titleLines[module] * TitleLineRem + _gateLines.GetValueOrDefault(module) * GateLineRem + 2m * GatePadRem + FrameRem) / SmallestRowRem;
+
+        // Another box's name and its frame, which has no padding over and under it: half a row holds one line.
+        private decimal TitleUnits(RiverModule module) => (_titleLines[module] * TitleLineRem + FrameRem) / SmallestRowRem;
 
         // The tallest box of a row with a box, a quiet pill in its own place left out, as tall as a box with no
         // badge when it holds none, the buckets'.
@@ -446,8 +541,8 @@ internal static class MapLayout
 
         // How tall a quiet pill is kept, in chain rows, for its names one to a line on the narrowest map, each a
         // target, or two lines of it where it wraps there.
-        private static decimal PillUnits(List<RiverModule> names) =>
-            (names.Sum(name => Math.Max(QuietTargetRem, QuietLines(name) * QuietLineRem)) + (names.Count - 1) * QuietGapRem + 2 * QuietPadRem + QuietBorderRem) / SmallestRowRem;
+        private decimal PillUnits(List<RiverModule> names) =>
+            (names.Sum(name => Math.Max(QuietTargetRem, _quietLines[name] * QuietLineRem)) + (names.Count - 1) * QuietGapRem + 2 * QuietPadRem + QuietBorderRem) / SmallestRowRem;
 
         private static (decimal Left, decimal Right) Span(MapColumn column) => column switch
         {
