@@ -15,6 +15,14 @@ internal static class FrontPage
     // A link to one of the page's sections, from anywhere.
     public static string Href(string section) => $"/{Path}#{section}";
 
+    // The section a page address (NavigationManager.Uri) opens the front page at, or none: the fragment becomes a
+    // CSS selector in the browser, so only the page's own sections are taken, never a typed one such as "#1abc".
+    public static string? SectionAt(string uri)
+    {
+        var fragment = new Uri(uri).Fragment.TrimStart('#');
+        return Sections.Contains(fragment) ? fragment : null;
+    }
+
     // Whether the address, as NavigationManager.ToBaseRelativePath gives it, is the front page's: the router
     // matches whatever its case and ignores a trailing slash, so this does too.
     public static bool IsAt(string relativePath) =>

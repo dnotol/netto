@@ -1,7 +1,7 @@
 ﻿@page "/about"
 @inject IStringLocalizer<Home> L
 @inject NavigationManager Navigation
-@inject IScrollManager ScrollManager
+@inject IJSRuntime JS
 
 <PageTitle>@L["PageTitle"]</PageTitle>
 
@@ -168,8 +168,8 @@
 @code {
     // Blazor scrolls to a #section on a same-page link, but not when the link comes from another
     // page (/plan to /about#levers) or the address is opened directly: the section only exists once
-    // this page has rendered, so the scroll happens here, to this page's own sections only (the
-    // fragment becomes a CSS selector, and a typed one such as "#1abc" would make the browser throw).
+    // this page has rendered, so the scroll happens here, to this page's own sections only (FrontPage.SectionAt).
+    // It is front-page.js's, to the start of the section under the header: MudBlazor's own scroll centres it.
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender)
@@ -177,10 +177,10 @@
             return;
         }
 
-        var fragment = new Uri(Navigation.Uri).Fragment.TrimStart('#');
-        if (FrontPage.Sections.Contains(fragment))
+        var section = FrontPage.SectionAt(Navigation.Uri);
+        if (section is not null)
         {
-            await ScrollManager.ScrollIntoViewAsync($"#{fragment}", ScrollBehavior.Auto);
+            await JS.InvokeVoidAsync("nettoFrontPage.scrollTo", section);
         }
     }
 }

@@ -51,4 +51,26 @@ public class FrontPageTests
     {
         FrontPage.IsAt(relativePath).ShouldBeFalse();
     }
+
+    // The section a page address opens the front page at, or none: the fragment becomes a CSS selector in
+    // the browser, so only the page's own sections are taken, never a typed one such as "#1abc".
+    [Theory]
+    [InlineData("http://localhost/about#principles", "principles")]
+    [InlineData("http://localhost/about#levers", "levers")]
+    [InlineData("http://localhost/about?x=1#how-it-works", "how-it-works")]
+    public void SectionAt_anAddressAtASection_isThatSection(string uri, string section)
+    {
+        FrontPage.SectionAt(uri).ShouldBe(section);
+    }
+
+    [Theory]
+    [InlineData("http://localhost/about")]
+    [InlineData("http://localhost/about#")]
+    [InlineData("http://localhost/about#1abc")]
+    [InlineData("http://localhost/about#Principles")]
+    [InlineData("http://localhost/about#hero")]
+    public void SectionAt_anyOtherAddress_isNone(string uri)
+    {
+        FrontPage.SectionAt(uri).ShouldBeNull();
+    }
 }
