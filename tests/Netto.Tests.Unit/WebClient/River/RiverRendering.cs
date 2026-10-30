@@ -17,8 +17,8 @@ namespace Netto.Tests.WebClient.River;
 // registers: what a viewer sees on first load, before any click. Nothing runs after the render, so a
 // component is read as it is first drawn. The browser's clock is fixed at 23 October 2026, a day with an
 // advance payment still to come, and a script runtime that fails any call, a navigation manager at the
-// plan page's address that goes nowhere and a theme nothing has picked over a system in dark, unless the test
-// registers another of them (the last one wins).
+// plan page's address that goes nowhere, a theme nothing has picked over a system in dark and a language nothing
+// has chosen, its switch reloading nothing, unless the test registers another of them (the last one wins).
 internal static class RiverRendering
 {
     private static readonly DateTimeOffset On23October = new(2026, 10, 23, 12, 0, 0, TimeSpan.Zero);
@@ -38,6 +38,7 @@ internal static class RiverRendering
         services.AddSingleton<IJSRuntime, NoJavaScript>();
         services.AddSingleton<NavigationManager, NoNavigation>();
         services.AddSingleton(new ThemePreference(new BrowserStorage(), new SystemTheme(prefersLight: false)));
+        services.AddSingleton(new LanguagePreference(new BrowserStorage(), new PageReloads(), new RiverState(new SavedPlans(new BrowserStorage()), new BrowserSession())));
         more?.Invoke(services);
         await using var provider = services.BuildServiceProvider();
         await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());

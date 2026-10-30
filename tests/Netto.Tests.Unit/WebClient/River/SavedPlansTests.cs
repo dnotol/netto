@@ -214,13 +214,13 @@ public class SavedPlansTests
         plans.Save(RiverInputs.Example, Name);
         plans.Save(BestPay, Name);
 
-        new RiverState(new SavedPlans(storage)).Inputs.ShouldBe(BestPay);
+        new RiverState(new SavedPlans(storage), new BrowserSession()).Inputs.ShouldBe(BestPay);
     }
 
     [Fact]
     public void RiverState_nothingSaved_startsOnTheExample()
     {
-        new RiverState(new SavedPlans(new BrowserStorage())).Inputs.ShouldBe(RiverInputs.Example);
+        new RiverState(new SavedPlans(new BrowserStorage()), new BrowserSession()).Inputs.ShouldBe(RiverInputs.Example);
     }
 
     // The file is the document the browser keeps: it reads back as a saved plan does.

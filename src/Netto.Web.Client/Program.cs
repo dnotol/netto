@@ -21,13 +21,17 @@ builder.Services.AddTransient<MudLocalizer, NettoMudLocalizer>();
 builder.Services.AddScoped<IBrowserStorage, LocalStorage>();
 builder.Services.AddScoped<IThemePage, BrowserThemePage>();
 builder.Services.AddScoped<ThemePreference>();
+builder.Services.AddScoped<ILanguagePage, BrowserLanguagePage>();
+builder.Services.AddScoped<LanguagePreference>();
 builder.Services.AddScoped<Folds>();
 builder.Services.AddScoped<SavedPlans>();
 
 // The browser's clock: which advance-payment deadlines are still open.
 builder.Services.AddSingleton(TimeProvider.System);
 
-// The river's inputs while the tab is open, starting on the plan last opened.
+// The river's inputs while the tab is open, starting on the river a switch of language carried across the
+// reload, kept in the tab's own storage, else on the plan last opened.
+builder.Services.AddScoped<IBrowserSession, SessionStorage>();
 builder.Services.AddScoped<RiverState>();
 
 // The page starts in the viewer's language, French unless they chose English: its texts are read in it from

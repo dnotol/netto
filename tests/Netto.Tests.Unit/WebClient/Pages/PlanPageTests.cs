@@ -334,7 +334,7 @@ public class PlanPageTests
                 plans.Delete(starred);
             services.AddSingleton<IBrowserStorage>(storage);
             services.AddSingleton(plans);
-            services.AddSingleton(new RiverState(plans) { Inputs = river ?? RiverInputs.Example });
+            services.AddSingleton(new RiverState(plans, new BrowserSession()) { Inputs = river ?? RiverInputs.Example });
             services.AddSingleton<TimeProvider>(new Clock(On23October));
         });
 }

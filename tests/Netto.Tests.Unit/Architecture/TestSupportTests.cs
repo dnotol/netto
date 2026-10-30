@@ -66,6 +66,20 @@ public class TestSupportTests
         Declaring(@"InlineData\(\s*2027\s*\)|IncomeYear\s*=\s*2027\b").ShouldBeEmpty();
     }
 
+    // A class that implements IBrowserSession: a fake of the browser tab's own storage, BrowserSession.
+    [Fact]
+    public void TestSources_browserSessionFakes_areDefinedOnlyInSupport()
+    {
+        Declaring(@"\bclass\s+\w+[^{;]*:\s*[^{;]*\bIBrowserSession\b").ShouldBeEmpty();
+    }
+
+    // A class that implements ILanguagePage: the page a language is switched on, PageReloads.
+    [Fact]
+    public void TestSources_languagePageFakes_areDefinedOnlyInSupport()
+    {
+        Declaring(@"\bclass\s+\w+[^{;]*:\s*[^{;]*\bILanguagePage\b").ShouldBeEmpty();
+    }
+
     // A class that implements IThemePage: the viewer's system and the page the theme is drawn on, SystemTheme.
     [Fact]
     public void TestSources_themePageFakes_areDefinedOnlyInSupport()

@@ -17,4 +17,24 @@ window.nettoStorage = {
             // Refused or full: the preference holds until the page is left.
         }
     },
+    // The tab's own sessionStorage (SessionStorage in Netto.Web.Client): what one load of the page hands the
+    // next, the river carried across a switch of language. Taken once, read and removed in one call.
+    session: {
+        take(key) {
+            try {
+                const value = window.sessionStorage.getItem(key);
+                window.sessionStorage.removeItem(key);
+                return value;
+            } catch {
+                return null;
+            }
+        },
+        set(key, value) {
+            try {
+                window.sessionStorage.setItem(key, value);
+            } catch {
+                // Refused or full: the river is not carried, and the page opens on the plan it was opened from.
+            }
+        },
+    },
 };

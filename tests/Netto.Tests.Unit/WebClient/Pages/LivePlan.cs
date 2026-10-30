@@ -63,12 +63,14 @@ internal sealed class LivePlan : IAsyncDisposable
         services.AddSingleton<IBrowserStorage>(storage);
         services.AddSingleton(new Folds(storage));
         services.AddSingleton(plans);
-        services.AddSingleton(new RiverState(plans) { Inputs = river ?? RiverInputs.Example });
+        var state = new RiverState(plans, new BrowserSession()) { Inputs = river ?? RiverInputs.Example };
+        services.AddSingleton(state);
         services.AddSingleton<TimeProvider>(new Clock(On23October));
         var script = new RecordingScript(holdPaint);
         services.AddSingleton<IJSRuntime>(script);
         services.AddSingleton<NavigationManager>(new RiverRendering.NoNavigation(uri));
         services.AddSingleton(new ThemePreference(storage, new SystemTheme(prefersLight: false)));
+        services.AddSingleton(new LanguagePreference(storage, new PageReloads(), state));
 
         return new LivePlan(services.BuildServiceProvider(), script);
     }
