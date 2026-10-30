@@ -63,7 +63,7 @@ public class RiverNumericFieldTests
     }
 
     // What is typed is read strictly (TypedNumberConverter): in French a decimal point is no number, never ten
-    // or a hundred times the amount, and a French number is its value.
+    // or a hundred times the amount, nor a group led by 0 a thousand times it, and a French number is its value.
     [Fact]
     public async Task Typed_inFrench_isReadStrictly()
     {
@@ -75,6 +75,9 @@ public class RiverNumericFieldTests
         converter.ShouldSatisfyAllConditions(
             () => Should.Throw<ConversionException>(() => converter.ConvertBack("1.5")),
             () => Should.Throw<ConversionException>(() => converter.ConvertBack("12.50")),
+            () => Should.Throw<ConversionException>(() => converter.ConvertBack("0.500")),
+            () => Should.Throw<ConversionException>(() => converter.ConvertBack("012.345")),
+            () => converter.ConvertBack("0,5").ShouldBe(0.5m),
             () => converter.ConvertBack("1.234,56").ShouldBe(1_234.56m));
     }
 

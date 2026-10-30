@@ -7,8 +7,9 @@ namespace Netto.Web.Client.River;
 
 // What a viewer types in a number field, read strictly. MudBlazor reads a number with NumberStyles.Any, which
 // takes a thousands separator anywhere: in French, where it is a dot, « 1.5 » would read 15 and « 12.50 » 1250.
-// So a thousands separator is taken only between groups of exactly three digits, after one to three, and the
-// decimal separator, once, ends the whole part; a minus, typed (-) or as Formats writes it (U+2212), may lead.
+// So a thousands separator is taken only between groups of exactly three digits, after one to three that do not
+// start with 0 (« 0.500 » is never 500), and the decimal separator, once, ends the whole part; a minus, typed (-)
+// or as Formats writes it (U+2212), may lead.
 // « 1.234,56 », « 1234,56 », « -1,5 » are numbers in French, « 1.5 » and « 1234.56 » are not; in English the
 // same rule holds with the comma and the dot swapped.
 internal static class TypedNumber
@@ -21,7 +22,7 @@ internal static class TypedNumber
         var point = Regex.Escape(numbers.NumberDecimalSeparator);
         var minus = Regex.Escape(numbers.NegativeSign);
         var match = Regex.Match(text.Trim(),
-            $@"^(?<minus>-|{minus})?(?<whole>\d{{1,3}}(?:{group}\d{{3}})+|\d+)?(?:{point}(?<fraction>\d*))?$",
+            $@"^(?<minus>-|{minus})?(?<whole>[1-9]\d{{0,2}}(?:{group}\d{{3}})+|\d+)?(?:{point}(?<fraction>\d*))?$",
             RegexOptions.CultureInvariant, TimeSpan.FromSeconds(1));
         if (!match.Success)
             return null;

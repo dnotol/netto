@@ -27,6 +27,10 @@ public class TypedNumberConverterTests
     [InlineData("1.5")]
     [InlineData("12.50")]
     [InlineData("1234.56")]
+    [InlineData("0.500")]
+    [InlineData("0.125")]
+    [InlineData("00.123")]
+    [InlineData("012.345")]
     public void ConvertBack_frenchDecimalPoint_isRefusedAsNoNumber(string typed)
     {
         using var french = InLanguage.French();
@@ -38,6 +42,9 @@ public class TypedNumberConverterTests
     [InlineData("1.234,56", "1234.56")]
     [InlineData("1234,56", "1234.56")]
     [InlineData("-1,5", "-1.5")]
+    [InlineData("0,5", "0.5")]
+    [InlineData("0", "0")]
+    [InlineData("007", "7")]
     public void ConvertBack_frenchNumber_isItsValue(string typed, string expected)
     {
         using var french = InLanguage.French();
@@ -45,10 +52,13 @@ public class TypedNumberConverterTests
         Converter<decimal>().ConvertBack(typed).ShouldBe(decimal.Parse(expected, CultureInfo.InvariantCulture));
     }
 
-    [Fact]
-    public void ConvertBack_englishCommaBetweenTooFewDigits_isRefused()
+    [Theory]
+    [InlineData("1,5")]
+    [InlineData("0,500")]
+    [InlineData("012,345")]
+    public void ConvertBack_englishCommaThatGroupsNoThousands_isRefused(string typed)
     {
-        Should.Throw<ConversionException>(() => Converter<decimal>().ConvertBack("1,5"));
+        Should.Throw<ConversionException>(() => Converter<decimal>().ConvertBack(typed));
     }
 
     [Fact]

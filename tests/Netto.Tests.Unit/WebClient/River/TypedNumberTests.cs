@@ -25,6 +25,9 @@ public class TypedNumberTests
     [InlineData("12,", "12")]
     [InlineData("8,0", "8.0")]
     [InlineData("220", "220")]
+    [InlineData("0", "0")]
+    [InlineData("007", "007")]
+    [InlineData("0,125", "0.125")]
     [InlineData(" 1.234,56 ", "1234.56")]
     public void Invariant_frenchNumber_isReadTheFrenchWay(string typed, string expected)
     {
@@ -34,6 +37,7 @@ public class TypedNumberTests
     }
 
     // A dot is a thousands separator in French, so a typed decimal point is no number: never 15, 1250 or 123456.
+    // A grouped number starts with a digit other than 0, so « 0.500 » is never 500 nor « 012.345 » 12345.
     [Theory]
     [InlineData("1.5")]
     [InlineData("12.50")]
@@ -41,6 +45,10 @@ public class TypedNumberTests
     [InlineData("1.23")]
     [InlineData("1.2345")]
     [InlineData("1234.567")]
+    [InlineData("0.500")]
+    [InlineData("0.125")]
+    [InlineData("00.123")]
+    [InlineData("012.345")]
     [InlineData("1.234.")]
     [InlineData("1..234")]
     [InlineData(".5")]
@@ -65,6 +73,9 @@ public class TypedNumberTests
     [InlineData("−3,561.68", "-3561.68")]
     [InlineData("50,000.00", "50000.00")]
     [InlineData("8.0", "8.0")]
+    [InlineData("0.5", "0.5")]
+    [InlineData("0", "0")]
+    [InlineData("007", "007")]
     public void Invariant_englishNumber_isReadTheEnglishWay(string typed, string expected)
     {
         TypedNumber.Invariant(typed, Formats.Culture.NumberFormat).ShouldBe(expected);
@@ -76,6 +87,10 @@ public class TypedNumberTests
     [InlineData("12,50")]
     [InlineData("1234,56")]
     [InlineData("1,234,5")]
+    [InlineData("0,500")]
+    [InlineData("0,125")]
+    [InlineData("00,123")]
+    [InlineData("012,345")]
     public void Invariant_englishTextThatIsNoEnglishNumber_isRefused(string typed)
     {
         TypedNumber.Invariant(typed, Formats.Culture.NumberFormat).ShouldBeNull();
