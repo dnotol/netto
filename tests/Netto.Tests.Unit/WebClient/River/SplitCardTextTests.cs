@@ -52,6 +52,20 @@ public class SplitCardTextTests
         Terms(keys).ShouldAllBe(term => term == "reduced corporate rate");
     }
 
+    // The reduced rate's bubble states the share of the pay the benefits may reach, from its rule, and that
+    // it holds in every tax period, the first four too.
+    [Fact]
+    public void ReducedRateTerm_namesTheBenefitsShareFromItsRule()
+    {
+        var arguments = SplitCardText.ReducedRateArguments(2026);
+
+        arguments.ShouldSatisfyAllConditions(
+            () => arguments.ShouldBe(["20%"]),
+            () => Resources.Format(SplitCardText.ReducedRateTerm, arguments).ShouldContain("benefits in kind"),
+            () => Resources.Format(SplitCardText.ReducedRateTerm, arguments).ShouldContain("20%"),
+            () => Resources.Format(SplitCardText.ReducedRateTerm, arguments).ShouldContain("every tax period"));
+    }
+
     [Fact]
     public void SplitCardResx_reducedRate_saysWhatItMeans()
     {

@@ -22,7 +22,7 @@
     <value>{0} to your pay · {1} to the company · best pay {2}</value>
   </data>
   <data name="Hint" xml:space="preserve">
-    <value>Move your pay: every euro you take as director pay is a euro less of company profit.</value>
+    <value>Move your pay: what it costs the company, your gross and any contributions and fund fee the company pays for you, comes off the company's profit.</value>
   </data>
   <data name="PayLabel" xml:space="preserve">
     <value>Gross director pay for the year</value>
@@ -145,7 +145,7 @@
     <value>{0} to your pay · {3} royalty · {1} to the company · best pay {2}</value>
   </data>
   <data name="Hint_Royalty" xml:space="preserve">
-    <value>Move your pay: every euro you take as pay or as royalty is a euro less of company profit. A royalty that follows your pay moves with it.</value>
+    <value>Move your pay: what it costs the company, your gross and any contributions and fund fee the company pays for you, and your royalty come off the company's profit. A royalty that follows your pay moves with it.</value>
   </data>
   <data name="RoyaltyNote_Follows" xml:space="preserve">
     <value>Your royalty follows your pay, so the slider moves it too.</value>
@@ -178,6 +178,6 @@
     <value>No pay keeps the [reduced corporate rate] without your royalty.</value>
   </data>
   <data name="Term_ReducedRate" xml:space="preserve">
-    <value>The lower rate a small company pays on a first slice of its taxable income. From its fifth tax period, it keeps it only if a director's pay reaches a minimum, or its taxable income does not exceed that pay.</value>
+    <value>The lower rate a small company pays on a first slice of its taxable income. From its fifth tax period, it keeps it only if a director's pay reaches a minimum, or its taxable income does not exceed that pay. In every tax period, it loses it once benefits in kind valued at a flat rate, such as a company car's, exceed {0} of that pay, the benefits included.</value>
   </data>
 </root>

@@ -1,4 +1,5 @@
 using Netto.Core.Copyright;
+using Netto.Core.CorporateTax;
 
 namespace Netto.Web.Client.River;
 
@@ -7,6 +8,11 @@ internal static class SplitCardText
 {
     // What the reduced corporate rate is, in the bubble the term opens where the rate is weighed.
     public const string ReducedRateTerm = "Term_ReducedRate";
+
+    // What the bubble states of the year's rules: the share of the pay the flat-rate benefits may reach
+    // (art. 215 al. 3, 5°), none for a year without them, when no rate is weighed.
+    public static object[] ReducedRateArguments(int incomeYear) =>
+        CorporateTaxRules.For(incomeYear) is { } rules ? [Formats.RuleAmount(rules.ExcessBenefitsShare)] : [""];
 
     // What the slider says of its value while the royalty follows the pay: the pay and the royalty
     // beside it.

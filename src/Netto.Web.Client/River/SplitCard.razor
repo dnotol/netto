@@ -4,8 +4,9 @@
 @using Netto.Web.Client.Tabs
 @inject IStringLocalizer<SplitCard> L
 
-@* One pay slider over the profit before pay: every euro taken as pay is a euro less of company
-   profit. Above it, the engine's search draws the net in pocket at every pay, with the pay set and
+@* One pay slider over the profit before pay: what the pay costs the company, the gross and the
+   contributions and fund fee it pays for the director if it does, is that much less of its profit.
+   Above it, the engine's search draws the net in pocket at every pay, with the pay set and
    the best pay marked; pointing at the curve reads a pay, in a line that keeps its room while the
    pointer is away, and a click moves the pay there. What the pointer reads is no live region: it
    changes at every step of the slider, and the bar of buckets says what reaches the pocket once the
@@ -124,7 +125,7 @@
         <FigureList Figures="@FigureWords.Of(L, SplitFigures.RoyaltyRate(royaltyRate))" />
         @if (SplitCardText.RoyaltyRateNote(royaltyRate) is { } note)
         {
-            <p class="split__rate"><TermSentence Text="@L[note]" Meaning="@L[SplitCardText.ReducedRateTerm]" /></p>
+            <p class="split__rate"><TermSentence Text="@L[note]" Meaning="@ReducedRateMeaning" /></p>
         }
     }
     @if (_search is { } weighed && Run.Year is { } year)
@@ -135,7 +136,7 @@
             <FigureList Figures="@FigureWords.Of(L, SplitFigures.Best(weighed, year, _view.Royalty, Inputs.Reserve.Value))" />
             @if (weighed.Rate is { } rate)
             {
-                <p class="split__rate"><TermSentence Text="@RateText(rate)" Meaning="@L[SplitCardText.ReducedRateTerm]" /></p>
+                <p class="split__rate"><TermSentence Text="@RateText(rate)" Meaning="@ReducedRateMeaning" /></p>
             }
             @if (!bestPay.IsYours)
             {
@@ -194,6 +195,10 @@
             _search?.Best is { } best ? Formats.WholeEuros(best.Level.Pay) : "", Formats.WholeEuros(_view.Royalty?.Amount ?? 0m)].Value
         : null;
 
+
+    // What the reduced corporate rate is, where a sentence weighs it, with the share of the pay its rule
+    // lets the benefits reach in every tax period.
+    private string ReducedRateMeaning => L[SplitCardText.ReducedRateTerm, SplitCardText.ReducedRateArguments(Inputs.IncomeYear)].Value;
 
     private string ChartLabel => L["ChartLabel", Formats.Euros(0m), Formats.Euros(_top)].Value;
 
