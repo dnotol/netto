@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve">
+    <value>Ménage</value>
+  </data>
+  <data name="Summary_Quotient" xml:space="preserve">
+    <value>Quotient conjugal {0}</value>
+  </data>
+  <data name="SummarySeparator" xml:space="preserve">
+    <value> · </value>
+  </data>
+  <data name="Summary_Dependants" xml:space="preserve">
+    <value>Personnes à charge {0}</value>
+  </data>
+  <data name="Summary_LessTax" xml:space="preserve">
+    <value>{0} d'impôt en moins</value>
+  </data>
+  <data name="Summary_MoreTax" xml:space="preserve">
+    <value>{0} d'impôt en plus</value>
+  </data>
+  <data name="Summary_NoQuotient" xml:space="preserve">
+    <value>Imposition commune · pas de quotient conjugal</value>
+  </data>
+  <data name="Summary_TaxedSeparately" xml:space="preserve">
+    <value>Imposition isolée cette année</value>
+  </data>
+  <data name="Note_NoQuotient" xml:space="preserve">
+    <value>Pas de [quotient conjugal], ni dans un sens ni dans l'autre&#160;: celui de vous deux qui gagne le moins a {0} ou plus de vos deux revenus professionnels réunis, ou gagne déjà {1} ou plus.</value>
+  </data>
+  <data name="Note_TaxedSeparately" xml:space="preserve">
+    <value>Imposition isolée cette année&#160;: chacun de vous dépose sa propre déclaration, sans [quotient conjugal].</value>
+  </data>
+  <data name="Note_Counted" xml:space="preserve">
+    <value>Netto compte l'impôt de votre ménage moins ce que votre conjoint devrait en déclarant seul ses propres revenus&#160;: ce montant, et le précompte retenu sur ses revenus, sont laissés de côté.</value>
+  </data>
+  <data name="Meaning_Quotient" xml:space="preserve">
+    <value>Dans une déclaration commune, une partie du revenu professionnel le plus élevé est attribuée au conjoint qui gagne le moins, et imposée dans ses tranches plus basses.</value>
+  </data>
+  <data name="Hint" xml:space="preserve">
+    <value>Votre conjoint et les personnes qui sont à votre charge. Mariés ou cohabitants légaux, vous et votre conjoint êtes imposés en commun&#160;: un seul avertissement-extrait de rôle aux deux noms, chacun imposé au barème sur ses propres revenus avec sa propre quotité exemptée d'impôt. Le quotient conjugal attribue une partie du revenu professionnel le plus élevé au conjoint qui gagne le moins, imposée dans ses tranches plus basses. Vivre ensemble sans déclaration de cohabitation légale, c'est être isolé pour l'impôt. Vos personnes à charge augmentent la quotité exemptée d'impôt, la part des revenus imposée à zéro, avec ou sans conjoint.</value>
+  </data>
+  <data name="PartnerIncomeLabel" xml:space="preserve">
+    <value>Revenu professionnel net de votre conjoint en {0}</value>
+  </data>
+  <data name="PartnerIncomeHint" xml:space="preserve">
+    <value>Ce que votre conjoint gagne de son travail après ses propres cotisations sociales et frais professionnels, tel que sa déclaration l'indique. Laissez zéro en l'absence de revenu professionnel.</value>
+  </data>
+  <data name="SituationTitle" xml:space="preserve">
+    <value>À propos de vous deux</value>
+  </data>
+  <data name="BothAged66Label" xml:space="preserve">
+    <value>Les deux conjoints ont 66 ans ou plus au 1er janvier {0}</value>
+  </data>
+  <data name="BothAged66Hint" xml:space="preserve">
+    <value>Quand les deux conjoints ont atteint 66 ans au 1er janvier de l'exercice d'imposition, le quotient conjugal peut attribuer davantage.</value>
+  </data>
+  <data name="TaxedSeparatelyLabel" xml:space="preserve">
+    <value>Imposition isolée cette année</value>
+  </data>
+  <data name="TaxedSeparatelyHint" xml:space="preserve">
+    <value>L'année de votre mariage ou de votre déclaration de cohabitation légale, sauf si vous étiez déjà cohabitants légaux, et l'année d'un divorce ou de la fin de la cohabitation, ou à partir de l'année qui suit une séparation de fait, chacun de vous est imposé isolément, sans quotient conjugal. Le précompte professionnel traite aussi cette année comme celle d'un isolé.</value>
+  </data>
+  <data name="Situation_BothAged66" xml:space="preserve">
+    <value>Les deux conjoints ont 66 ans ou plus au 1er janvier {0}</value>
+  </data>
+  <data name="Situation_NotBothAged66" xml:space="preserve">
+    <value>Au moins un conjoint de moins de 66 ans au 1er janvier {0}</value>
+  </data>
+  <data name="Situation_TaxedSeparately" xml:space="preserve">
+    <value>imposition isolée cette année</value>
+  </data>
+  <data name="Situation_TaxedJointly" xml:space="preserve">
+    <value>imposition commune cette année</value>
+  </data>
+  <data name="Figure_YourIncome" xml:space="preserve">
+    <value>Votre revenu professionnel net</value>
+  </data>
+  <data name="Figure_QuotientToPartner" xml:space="preserve">
+    <value>Quotient conjugal attribué à votre conjoint</value>
+  </data>
+  <data name="Figure_QuotientFromPartner" xml:space="preserve">
+    <value>Quotient conjugal reçu de votre conjoint</value>
+  </data>
+  <data name="Help_Quotient" xml:space="preserve">
+    <value>Quand le revenu professionnel d'un conjoint est inférieur à {0} des deux réunis, une partie de celui de l'autre lui est attribuée, jusqu'à {0} des deux, et au plus {1} y compris le sien. Elle est imposée dans ses tranches plus basses.</value>
+  </data>
+  <data name="Figure_YourOtherIncome" xml:space="preserve">
+    <value>Vos autres revenus imposés avec lui</value>
+  </data>
+  <data name="Help_OtherIncome" xml:space="preserve">
+    <value>Le loyer d'un bureau dans votre logement loué à la société&#160;: un revenu d'une autre catégorie, imposé avec le vôtre, jamais partagé par le quotient conjugal.</value>
+  </data>
+  <data name="Figure_YourTaxableIncome" xml:space="preserve">
+    <value>Votre revenu imposable</value>
+  </data>
+  <data name="Figure_PartnerIncome" xml:space="preserve">
+    <value>Revenu professionnel net de votre conjoint</value>
+  </data>
+  <data name="Figure_PartnerTaxableIncome" xml:space="preserve">
+    <value>Revenu imposable de votre conjoint</value>
+  </data>
+  <data name="Figure_QuotientSaves" xml:space="preserve">
+    <value>Économie due au quotient conjugal</value>
+  </data>
+  <data name="Help_QuotientSaves" xml:space="preserve">
+    <value>Ce que serait l'impôt de votre ménage sans le quotient conjugal, moins ce qu'il est avec&#160;: l'impôt des personnes physiques et la taxe communale additionnelle, moins le crédit d'impôt pour enfants. Tout cela vient en déduction de l'impôt sur votre rémunération&#160;: Netto compte ce que votre rémunération ajoute à l'impôt de votre ménage.</value>
+  </data>
+  <data name="Remove" xml:space="preserve">
+    <value>Retirer votre ménage de votre plan</value>
+  </data>
+  <data name="PartnerLabel" xml:space="preserve">
+    <value>Vous avez un conjoint ou un cohabitant légal</value>
+  </data>
+  <data name="PartnerHint" xml:space="preserve">
+    <value>Un mari, une femme ou un cohabitant légal, avec qui vous êtes imposé en commun. Une personne avec qui vous vivez sans déclaration de cohabitation légale ne l'est pas&#160;: laissez cette case décochée, et vous êtes imposé isolément avec vos personnes à charge.</value>
+  </data>
+  <data name="DependantsTitle" xml:space="preserve">
+    <value>Vos personnes à charge au 1er janvier {0}</value>
+  </data>
+  <data name="ChildrenLabel" xml:space="preserve">
+    <value>Enfants à charge</value>
+  </data>
+  <data name="ChildrenHint" xml:space="preserve">
+    <value>Les enfants qui vivent avec vous au 1er janvier de l'exercice d'imposition et dont les moyens nets restent dans la limite, tels que votre déclaration les compte. Un enfant en hébergement égalitaire, ou un enfant handicapé, qui compte double, n'est pas encore compté comme tel.</value>
+  </data>
+  <data name="ChildrenUnder3Label" xml:space="preserve">
+    <value>Dont de moins de 3 ans, sans frais de garde déclarés</value>
+  </data>
+  <data name="ChildrenUnder3Hint" xml:space="preserve">
+    <value>Les enfants de moins de 3 ans au 1er janvier de l'exercice d'imposition pour lesquels vous ne déclarez aucuns frais de garde. Ils sont aussi comptés parmi vos enfants à charge.</value>
+  </data>
+  <data name="SingleParentLabel" xml:space="preserve">
+    <value>Parent isolé avec enfants à charge</value>
+  </data>
+  <data name="SingleParentHint" xml:space="preserve">
+    <value>Une imposition isolée, avec des enfants à charge, et personne d'autre au foyer que vos enfants et des parents&#160;: aucun conjoint ni partenaire, légal ou de fait. Cela ne s'applique jamais à une déclaration commune.</value>
+  </data>
+  <data name="InCareLabel" xml:space="preserve">
+    <value>Personnes à charge de 66 ans ou plus en situation de dépendance</value>
+  </data>
+  <data name="InCareHint" xml:space="preserve">
+    <value>Vos parents, grands-parents, frères ou sœurs de 66 ans ou plus au 1er janvier de l'exercice d'imposition, qui vivent avec vous, en situation de dépendance, et dont les moyens nets restent dans la limite.</value>
+  </data>
+  <data name="OthersLabel" xml:space="preserve">
+    <value>Autres personnes à charge</value>
+  </data>
+  <data name="OthersHint" xml:space="preserve">
+    <value>Toute autre personne qui vit avec vous et est à votre charge, comme un parent de moins de 66 ans ou qui n'est pas en situation de dépendance, dont les moyens nets restent dans la limite.</value>
+  </data>
+  <data name="Figure_QuotientCosts" xml:space="preserve">
+    <value>Coût du quotient conjugal</value>
+  </data>
+  <data name="Figure_HouseholdSaves" xml:space="preserve">
+    <value>Au total, économie due à votre ménage</value>
+  </data>
+  <data name="Figure_HouseholdCosts" xml:space="preserve">
+    <value>Au total, coût de votre ménage</value>
+  </data>
+  <data name="Help_Altogether" xml:space="preserve">
+    <value>Ce que serait votre impôt en déclarant seul sans personne à charge, moins ce que Netto compte de celui de votre ménage&#160;: l'impôt des personnes physiques et la taxe communale additionnelle, moins le crédit d'impôt pour enfants.</value>
+  </data>
+  <data name="Figure_SupplementChildren" xml:space="preserve">
+    <value>Supplément pour vos enfants ({0})</value>
+  </data>
+  <data name="Help_SupplementChildren" xml:space="preserve">
+    <value>Ajouté à la quotité exemptée d'impôt&#160;: {0} pour un enfant, {1} pour deux, {2} pour trois, {3} pour quatre, et {4} de plus par enfant au-delà du quatrième.</value>
+  </data>
+  <data name="Figure_SupplementUnder3" xml:space="preserve">
+    <value>Supplément pour enfants de moins de 3 ans ({0})</value>
+  </data>
+  <data name="Help_SupplementUnder3" xml:space="preserve">
+    <value>{0} de plus par enfant de moins de 3 ans pour lequel vous ne déclarez aucuns frais de garde.</value>
+  </data>
+  <data name="Figure_SupplementSingleParent" xml:space="preserve">
+    <value>Supplément pour parent isolé</value>
+  </data>
+  <data name="Help_SupplementSingleParent" xml:space="preserve">
+    <value>{0} pour un parent imposé isolément avec des enfants à charge.</value>
+  </data>
+  <data name="Figure_SupplementInCare" xml:space="preserve">
+    <value>Supplément pour personnes à charge de 66 ans ou plus en situation de dépendance ({0})</value>
+  </data>
+  <data name="Help_SupplementInCare" xml:space="preserve">
+    <value>{0} par personne à charge de 66 ans ou plus en situation de dépendance.</value>
+  </data>
+  <data name="Figure_SupplementOthers" xml:space="preserve">
+    <value>Supplément pour autres personnes à charge ({0})</value>
+  </data>
+  <data name="Help_SupplementOthers" xml:space="preserve">
+    <value>{0} par autre personne à charge.</value>
+  </data>
+  <data name="Figure_SupplementsToYou" xml:space="preserve">
+    <value>Ajouté à votre quotité exemptée d'impôt</value>
+  </data>
+  <data name="Help_SupplementsToYou" xml:space="preserve">
+    <value>La quotité exemptée d'impôt est la part de vos revenus imposée à zéro. Les suppléments augmentent la vôtre&#160;: l'impôt sur ceux-ci, aux taux propres à la quotité exemptée, vient en déduction de votre impôt.</value>
+  </data>
+  <data name="Figure_SupplementsToPartner" xml:space="preserve">
+    <value>Ajouté à la quotité exemptée d'impôt de votre conjoint</value>
+  </data>
+  <data name="Help_SupplementsToPartner" xml:space="preserve">
+    <value>Dans une déclaration commune, les suppléments vont à celui de vous deux qui a le revenu imposable le plus élevé&#160;: cette année, votre conjoint.</value>
+  </data>
+  <data name="Figure_ChildTaxCredit" xml:space="preserve">
+    <value>Crédit d'impôt remboursable pour enfants à charge</value>
+  </data>
+  <data name="Help_ChildTaxCredit" xml:space="preserve">
+    <value>Quand vos revenus sont trop bas pour que l'impôt utilise tous les suppléments de vos enfants, ce qu'il ne peut utiliser est remboursé sous forme de crédit d'impôt, au plus {0} par enfant.</value>
+  </data>
+  <data name="Figure_ChildTaxCreditTakenAway" xml:space="preserve">
+    <value>Crédit d'impôt remboursable pour enfants à charge que votre rémunération retire</value>
+  </data>
+  <data name="Help_ChildTaxCreditTakenAway" xml:space="preserve">
+    <value>Dans une déclaration commune, le crédit est celui de votre ménage. Votre rémunération permet à l'impôt d'utiliser davantage de suppléments, donc moins est remboursé&#160;: voici ce qu'elle retire.</value>
+  </data>
+  <data name="Figure_DependantsSave" xml:space="preserve">
+    <value>Économie due à vos personnes à charge</value>
+  </data>
+  <data name="Figure_DependantsCost" xml:space="preserve">
+    <value>Coût de vos personnes à charge</value>
+  </data>
+  <data name="Help_DependantsSave" xml:space="preserve">
+    <value>Ce que Netto compte de votre impôt des personnes physiques et de votre taxe communale additionnelle, moins le crédit d'impôt pour enfants, sans vos personnes à charge, moins ce qu'il compte avec elles.</value>
+  </data>
+</root>
