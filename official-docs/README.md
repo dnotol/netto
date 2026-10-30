@@ -38,5 +38,5 @@ Downloading a document needs the operator's go.
 The SPW file holds every Walloon municipality's rate per tax year. `Netto.Core` carries them as checked-in data (`PersonalTax/WalloonMunicipalities.TaxYear<YYYY>.cs`), generated from the file, so the browser never downloads anything. Each year, once the SPW adds a column:
 
 1. File the new edition here and mark the old one superseded.
-2. Generate the new year's data with `tools/municipal-rates/generate_rates.py` (its header says how to run it). It checks every rate has at most one decimal and lies between 0% and 10%, and lists the rows it skips (a merged municipality has no rate of its own).
+2. Generate the new year's data with `tools/municipal-rates/generate_rates.py` (its header says how to run it), which takes each municipality's name from Statbel's REFNIS list filed here (the SPW file drops some accents). It checks every rate has at most one decimal and lies between 0% and 10%, and lists the rows it skips (a merged municipality has no rate of its own).
 3. Point the matching `MunicipalRates` income year at the new data, with the file's version in its `Source` and the file in its `Document`.
