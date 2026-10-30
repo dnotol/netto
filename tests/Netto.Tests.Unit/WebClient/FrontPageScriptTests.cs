@@ -12,10 +12,20 @@ public class FrontPageScriptTests
     private static string Script => File.ReadAllText(RepositoryFile.FindUp("src", "Netto.Web", "wwwroot", "front-page.js"));
 
     [Fact]
-    public void Script_scrollTo_namesTheFunctionTheFrontPageCalls()
+    public void Script_exposesNettoFrontPageScrollTo()
     {
         Script.ShouldContain("window.nettoFrontPage");
         Script.ShouldContain("scrollTo(id)");
+    }
+
+    // The page calls the function by the name the script exposes it under, with the section's id: the page's
+    // after-render scroll is the browser check's, a static render never reaching it.
+    [Fact]
+    public void Home_scrollsToASectionThroughTheScript()
+    {
+        var home = File.ReadAllText(RepositoryFile.FindUp("src", "Netto.Web.Client", "Pages", "Home.razor"));
+
+        home.ShouldContain("JS.InvokeVoidAsync(\"nettoFrontPage.scrollTo\", section)");
     }
 
     [Fact]
