@@ -583,7 +583,7 @@
     <value>The part of the car's costs beyond your benefit taxed and your contribution that its deduction rate leaves out. It is added back to the company's taxable income; the part equal to your benefit and contribution stays deductible.</value>
   </data>
   <data name="Title_car_benefit" xml:space="preserve">
-    <value>Benefit in kind</value>
+    <value>Car's benefit in kind before your contribution</value>
   </data>
   <data name="Rule_car_benefit" xml:space="preserve">
     <value>6/7 of the catalogue value times the car's CO2 percentage, at the share of the catalogue value the car's age leaves, each part of the year weighed by its days; never less than the year's minimum. The percentage is 5.5% at the year's reference emission for the car's fuel, a tenth of a point more or less for each gram above or below it, between 4%, which a car that emits no CO2 takes, and 18%.</value>
@@ -595,7 +595,7 @@
     <value>What you pay the company for the car's private use. It comes off the benefit you are taxed on, after the minimum, and leaves your pocket for the company.</value>
   </data>
   <data name="Title_car_benefit_taxed" xml:space="preserve">
-    <value>Benefit taxed as pay</value>
+    <value>Car's benefit in kind after your contribution</value>
   </data>
   <data name="Rule_car_benefit_taxed" xml:space="preserve">
     <value>The benefit less your contribution, never below zero. It is director pay never paid in cash: in your social contributions' base, your income tax and the monthly withholding.</value>

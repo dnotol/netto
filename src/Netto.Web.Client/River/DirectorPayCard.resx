@@ -31,10 +31,10 @@
     <value>Fund fee the company pays</value>
   </data>
   <data name="Figure_BenefitInKind" xml:space="preserve">
-    <value>Benefit in kind</value>
+    <value>Car's benefit in kind after your contribution</value>
   </data>
   <data name="Help_BenefitInKind" xml:space="preserve">
-    <value>Your pay is taxed with your company car's benefit in kind, though the benefit is never paid in cash.</value>
+    <value>Your pay is taxed with your company car's benefit in kind, less your contribution for its private use, though the benefit is never paid in cash. The Company car card shows how it is built.</value>
   </data>
   <data name="Figure_RequalifiedPay" xml:space="preserve">
     <value>Copyright beyond its limits</value>

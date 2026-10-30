@@ -280,7 +280,7 @@
     <value>12 fiscal horsepower or more</value>
   </data>
   <data name="Figure_Benefit" xml:space="preserve">
-    <value>Benefit in kind</value>
+    <value>Car's benefit in kind before your contribution</value>
   </data>
   <data name="Figure_Co2" xml:space="preserve">
     <value>CO2 percentage</value>
@@ -298,7 +298,7 @@
     <value>Your contribution</value>
   </data>
   <data name="Figure_BenefitTaxed" xml:space="preserve">
-    <value>Taxed as your pay</value>
+    <value>Car's benefit in kind after your contribution</value>
   </data>
   <data name="Help_BenefitTaxed" xml:space="preserve">
     <value>It is taxed as your pay, though never paid in cash.</value>

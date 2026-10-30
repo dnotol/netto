@@ -138,7 +138,7 @@ public class MapTabRulesTests
             () => (receives > 0, receives < list, list < panel).ShouldBe((true, true, true)),
             () => Effects(html).Count.ShouldBe(effects.Count),
             () => Effects(html).Select(effect => effect.Module).ShouldBe(effects.Select(effect => MapModules.Name(effect.Other))),
-            () => Effects(html).ShouldContain(effect => effect.Text == $"Taxed as your pay: +{Formats.Euros(benefit.Amount!.Value)} to the tax base of Director pay"),
+            () => Effects(html).ShouldContain(effect => effect.Text == $"Car's benefit in kind after your contribution: +{Formats.Euros(benefit.Amount!.Value)} to the tax base of Director pay"),
             () => Effects(html).ShouldContain(effect => effect.Text.StartsWith("Benefits within their share of the pay: ", StringComparison.Ordinal) && effect.Text.EndsWith(", on Corporate tax", StringComparison.Ordinal)));
     }
 
