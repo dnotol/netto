@@ -16,7 +16,7 @@ public class MapViewTests
     [Fact]
     public void From_theExample_drawsItsModulesInTheirSlotsAndTheFiveBuckets()
     {
-        var view = MapView.From(RiverInputs.Example, RiverInputs.Example.Run());
+        var view = MapView.From(RiverInputs.Example, RiverInputs.Example.Run(), MapNames.English);
 
         view.ShouldSatisfyAllConditions(
             () => view.Modules.Select(node => node.End.Id).ShouldBe(["company-year", "split", "director-pay", "corporate-tax", "dividend"]),
@@ -37,7 +37,7 @@ public class MapViewTests
     [Fact]
     public void ShownPill_thePaysLineHidden_isNone()
     {
-        var view = MapView.From(Full, Full.Run());
+        var view = MapView.From(Full, Full.Run(), MapNames.English);
 
         var hidden = view with { Links = [.. view.Links.Where(link => link.Kind != MapLinkKind.PassedOn)] };
 
@@ -53,7 +53,7 @@ public class MapViewTests
         var river = refused ? Full.WithReserve(-1m) : Full;
         river = companySkipped ? river.SkipCompany() : river;
 
-        MapView.From(river, river.Run()).Buckets.Select(node => node.End.Id).ShouldBe(BucketsView.Keys);
+        MapView.From(river, river.Run(), MapNames.English).Buckets.Select(node => node.End.Id).ShouldBe(BucketsView.Keys);
     }
 
     // The company skipped: Company year stays, marked skipped, with no link to or from it; Director pay keeps
@@ -63,7 +63,7 @@ public class MapViewTests
     {
         var river = Full.SkipCompany();
 
-        var view = MapView.From(river, river.Run());
+        var view = MapView.From(river, river.Run(), MapNames.English);
 
         view.ShouldSatisfyAllConditions(
             () => view.Modules.Select(node => (node.End.Id, node.Skipped)).ShouldBe([("company-year", true), ("director-pay", false), ("household", false)]),
@@ -76,13 +76,13 @@ public class MapViewTests
     [Fact]
     public void From_companyEntered_marksNoModuleSkipped()
     {
-        MapView.From(Full, Full.Run()).Modules.Any(node => node.Skipped).ShouldBeFalse();
+        MapView.From(Full, Full.Run(), MapNames.English).Modules.Any(node => node.Skipped).ShouldBeFalse();
     }
 
     [Fact]
     public void From_everyLever_routesEveryLinkOfTheRun()
     {
-        var view = MapView.From(Full, Full.Run());
+        var view = MapView.From(Full, Full.Run(), MapNames.English);
 
         (view.Links.Count, view.Links.All(link => link.Route is not null)).ShouldBe(
             (MapPocketLine.Of(MapLinks.Of(Full, Full.Run())).Count + MapConditions.From(YearConditions.Of(Full.Run().Year!), MapView.ModulesOf(Full)).Count, true));
@@ -95,7 +95,7 @@ public class MapViewTests
     {
         var river = Full.WithReserve(-1m);
 
-        var view = MapView.From(river, river.Run());
+        var view = MapView.From(river, river.Run(), MapNames.English);
 
         view.ShouldSatisfyAllConditions(
             () => (view.Links.Count, view.Refusal, view.Modules.Count).ShouldBe((0, river.Run().Error, MapView.ModulesOf(river).Count)),
@@ -108,7 +108,7 @@ public class MapViewTests
     {
         var river = RiverInputs.Example with { IncomeYear = Fixtures.UnsupportedIncomeYear };
 
-        var view = MapView.From(river, river.Run());
+        var view = MapView.From(river, river.Run(), MapNames.English);
 
         (view.Refusal is not null, view.Modules.Any(node => node.Refused), view.Links.Count).ShouldBe((true, false, 0));
     }
@@ -116,7 +116,7 @@ public class MapViewTests
     [Fact]
     public void From_aRent_namesTheTaxesOnPayWithTheRentAsTheBarDoes()
     {
-        (MapView.From(Full, Full.Run()).TaxesOnPayIncludeRent, MapView.From(RiverInputs.Example, RiverInputs.Example.Run()).TaxesOnPayIncludeRent)
+        (MapView.From(Full, Full.Run(), MapNames.English).TaxesOnPayIncludeRent, MapView.From(RiverInputs.Example, RiverInputs.Example.Run(), MapNames.English).TaxesOnPayIncludeRent)
             .ShouldBe((true, false));
     }
 
@@ -129,7 +129,7 @@ public class MapViewTests
     public void Touches_aModule_isEveryLinkWithItAtOneEndOrRunningPastIt(RiverModule module)
     {
         var river = MapQuietTests.Emptied(Full, OptionalModule.Rent);
-        var view = MapView.From(river, river.Run());
+        var view = MapView.From(river, river.Run(), MapNames.English);
 
         var links = view.Links.Where(link => link.Touches(module)).ToList();
 
@@ -178,7 +178,7 @@ public class MapViewTests
     [Fact]
     public void Touches_aModule_isWhatComesInAndWhatGoesOut()
     {
-        var view = MapView.From(Full, Full.Run());
+        var view = MapView.From(Full, Full.Run(), MapNames.English);
 
         var car = view.Links.Where(link => link.Touches(RiverModule.Car)).ToList();
 
@@ -190,20 +190,20 @@ public class MapViewTests
     [Fact]
     public void Choice_aModuleOnTheMap_isIt()
     {
-        MapView.From(Full, Full.Run()).Choice(RiverModule.Car).ShouldBe(RiverModule.Car);
+        MapView.From(Full, Full.Run(), MapNames.English).Choice(RiverModule.Car).ShouldBe(RiverModule.Car);
     }
 
     // A lever taken out of the plan leaves the map, and its choice with it.
     [Fact]
     public void Choice_aModuleOffTheMap_isNone()
     {
-        MapView.From(RiverInputs.Example, RiverInputs.Example.Run()).Choice(RiverModule.Car).ShouldBeNull();
+        MapView.From(RiverInputs.Example, RiverInputs.Example.Run(), MapNames.English).Choice(RiverModule.Car).ShouldBeNull();
     }
 
     [Fact]
     public void Choice_none_isNone()
     {
-        MapView.From(Full, Full.Run()).Choice(null).ShouldBeNull();
+        MapView.From(Full, Full.Run(), MapNames.English).Choice(null).ShouldBeNull();
     }
 
     // A filter shows some links and leaves the others out: the modules stay where they are, and so does
@@ -211,7 +211,7 @@ public class MapViewTests
     [Fact]
     public void With_someLinksLeftOut_movesNothing()
     {
-        var view = MapView.From(Full, Full.Run());
+        var view = MapView.From(Full, Full.Run(), MapNames.English);
 
         var filtered = view with { Links = [.. view.Links.Where(link => link.Kind != MapLinkKind.IntoBucket)] };
 
@@ -225,7 +225,7 @@ public class MapViewTests
     [Fact]
     public void Bundles_linksSharingARoute_areOneLine()
     {
-        var view = MapView.From(Full, Full.Run());
+        var view = MapView.From(Full, Full.Run(), MapNames.English);
 
         var bundles = view.Bundles();
 
@@ -240,7 +240,7 @@ public class MapViewTests
         var run = Full.Run();
         var card = VoucherView.From(run.Year!, Full.Composition).Drains.Where(drain => drain.To == "pocket").ToList();
 
-        var line = Line(MapView.From(Full, run), MapEnd.Of(RiverModule.Vouchers), MapEnd.OnPocketLine(RiverModule.Vouchers));
+        var line = Line(MapView.From(Full, run, MapNames.English), MapEnd.Of(RiverModule.Vouchers), MapEnd.OnPocketLine(RiverModule.Vouchers));
 
         (card.Count > 1, line.Links.Count, line.Amount).ShouldBe((true, card.Count, card.Sum(drain => drain.Amount)));
     }
@@ -262,7 +262,7 @@ public class MapViewTests
     {
         var river = MapViewConditionsTests.CostlyCar;
 
-        MapView.From(river, river.Run()).Bundles().Where(bundle => bundle.Kind == MapLinkKind.Condition).ShouldAllBe(bundle => bundle.Amount == null);
+        MapView.From(river, river.Run(), MapNames.English).Bundles().Where(bundle => bundle.Kind == MapLinkKind.Condition).ShouldAllBe(bundle => bundle.Amount == null);
     }
 
     // What comes back out of a bucket is a line of its own with its own amount, never taken off the way in:
@@ -272,7 +272,7 @@ public class MapViewTests
     {
         var run = Full.Run();
         var drains = DividendView.From(run.Year!).Drains.Where(drain => drain.To == "taxes_on_profit").ToList();
-        var view = MapView.From(Full, run);
+        var view = MapView.From(Full, run, MapNames.English);
 
         var (into, back) = (Line(view, MapEnd.Of(RiverModule.Dividend), MapEnd.InBucket("taxes_on_profit")),
             Line(view, MapEnd.InBucket("taxes_on_profit"), MapEnd.Of(RiverModule.Dividend)));
@@ -286,7 +286,7 @@ public class MapViewTests
     [Fact]
     public void From_everyLever_drawsEachLineOfMoneyAsThickAsItsAmountTheLargestTheThickest()
     {
-        var view = MapView.From(Full, Full.Run());
+        var view = MapView.From(Full, Full.Run(), MapNames.English);
 
         var money = Money(view);
 
@@ -301,7 +301,7 @@ public class MapViewTests
     [Fact]
     public void From_aLineOfSeveral_isAsThickAsTheirSum()
     {
-        var view = MapView.From(Full, Full.Run());
+        var view = MapView.From(Full, Full.Run(), MapNames.English);
         var largest = Money(view).Max(Amount);
 
         var line = Line(view, MapEnd.Of(RiverModule.DirectorPay), MapEnd.InBucket("taxes_on_pay"));
@@ -317,7 +317,7 @@ public class MapViewTests
     {
         var river = MapViewConditionsTests.CostlyCar;
 
-        var rules = MapView.From(river, river.Run()).Bundles().Where(bundle => bundle.Kind is MapLinkKind.TaxBase or MapLinkKind.Condition).ToList();
+        var rules = MapView.From(river, river.Run(), MapNames.English).Bundles().Where(bundle => bundle.Kind is MapLinkKind.TaxBase or MapLinkKind.Condition).ToList();
 
         rules.ShouldSatisfyAllConditions(
             () => rules.Select(bundle => bundle.Kind).Distinct().Count().ShouldBe(2),
@@ -331,7 +331,7 @@ public class MapViewTests
     {
         var river = Full.SkipCompany();
 
-        var money = Money(MapView.From(river, river.Run()));
+        var money = Money(MapView.From(river, river.Run(), MapNames.English));
 
         var largest = money.Where(bundle => bundle.Amount == money.Max(line => line.Amount)).ToList();
         largest.ShouldSatisfyAllConditions(
@@ -351,7 +351,7 @@ public class MapViewTests
     [InlineData(RiverModule.Vouchers)]
     public void ShowingFor_aChoice_isTheMoneyAndTheRulesOfTheModuleChosen(RiverModule? chosen)
     {
-        var view = MapView.From(Full, Full.Run());
+        var view = MapView.From(Full, Full.Run(), MapNames.English);
 
         var shown = view.ShowingFor(chosen);
 
@@ -370,7 +370,7 @@ public class MapViewTests
     {
         var refused = Full.WithReserve(-1m);
 
-        MapView.From(refused, refused.Run()).ShowingFor(RiverModule.Car).Links.ShouldBeEmpty();
+        MapView.From(refused, refused.Run(), MapNames.English).ShowingFor(RiverModule.Car).Links.ShouldBeEmpty();
     }
 
     // A line ends in an arrowhead where it reaches a module, money passed on, what comes back out of a
@@ -382,7 +382,7 @@ public class MapViewTests
     {
         var river = MapViewConditionsTests.CostlyCar;
 
-        var bundles = MapView.From(river, river.Run()).Bundles();
+        var bundles = MapView.From(river, river.Run(), MapNames.English).Bundles();
 
         bundles.ShouldSatisfyAllConditions(
             () => bundles.Where(bundle => bundle.To.Bucket is not null).ShouldNotBeEmpty(),
@@ -403,7 +403,7 @@ public class MapViewTests
     [Fact]
     public void Bundles_aLineMeetingABucket_isDrawnOnUnderItToItsMiddle()
     {
-        var view = MapView.From(Full, Full.Run());
+        var view = MapView.From(Full, Full.Run(), MapNames.English);
         var (pocket, taxes) = (view.Buckets.Single(node => node.End.Bucket == "pocket").Slot, view.Buckets.Single(node => node.End.Bucket == "taxes_on_profit").Slot);
 
         var (into, back, along) = (Line(view, MapEnd.OnPocketLine(RiverModule.Dividend), MapEnd.InBucket("pocket")).Route,
@@ -420,7 +420,7 @@ public class MapViewTests
     [Fact]
     public void Amounts_nothingChosen_isEveryLinesWhereItWasPlaced()
     {
-        var view = MapView.From(Full, Full.Run());
+        var view = MapView.From(Full, Full.Run(), MapNames.English);
         var placed = MapAmounts.Of(view, MapAmountsTests.Say);
 
         view.Amounts(placed).ShouldBe(placed);
@@ -431,7 +431,7 @@ public class MapViewTests
     [Fact]
     public void Amounts_aModuleChosen_isItsOwnLinesWhereTheyWerePlaced()
     {
-        var view = MapView.From(Full, Full.Run());
+        var view = MapView.From(Full, Full.Run(), MapNames.English);
         var placed = MapAmounts.Of(view, MapAmountsTests.Say);
 
         var amounts = view.Amounts(placed, RiverModule.CorporateTax);
@@ -446,7 +446,7 @@ public class MapViewTests
     [Fact]
     public void Drawn_aModuleChosen_fadesTheOtherLinesAndDrawsItsOwnLast()
     {
-        var view = MapView.From(Full, Full.Run());
+        var view = MapView.From(Full, Full.Run(), MapNames.English);
 
         var drawn = view.Drawn(RiverModule.Car);
 
@@ -459,7 +459,7 @@ public class MapViewTests
     [Fact]
     public void Drawn_nothingChosen_fadesNothing()
     {
-        MapView.From(Full, Full.Run()).Drawn(null).ShouldAllBe(line => !line.Faded);
+        MapView.From(Full, Full.Run(), MapNames.English).Drawn(null).ShouldAllBe(line => !line.Faded);
     }
 
     // The lines of money of a map, and what one carries.

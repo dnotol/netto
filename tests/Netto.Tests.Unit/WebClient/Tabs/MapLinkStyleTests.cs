@@ -44,7 +44,7 @@ public class MapLinkStyleTests
     {
         var river = MapViewConditionsTests.CostlyCar;
 
-        var bundles = MapView.From(river, river.Run()).Bundles();
+        var bundles = MapView.From(river, river.Run(), MapNames.English).Bundles();
 
         var (intoABucket, besides) = (bundles.Where(bundle => bundle.Kind == MapLinkKind.IntoBucket && (bundle.To.Bucket is not null || bundle.To.PocketLine is not null)).ToList(),
             bundles.Where(bundle => bundle.Kind == MapLinkKind.IntoBucket && bundle.To.Bucket is null && bundle.To.PocketLine is null).ToList());

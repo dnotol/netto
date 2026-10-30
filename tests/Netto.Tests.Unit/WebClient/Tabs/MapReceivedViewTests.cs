@@ -15,7 +15,7 @@ public class MapReceivedViewTests
 
     public static TheoryData<RiverModule> FullPlansModules => new(MapView.ModulesOf(Full));
 
-    private static MapReceivedView Of(RiverInputs river, RiverModule module) => Of(MapView.From(river, river.Run()), module);
+    private static MapReceivedView Of(RiverInputs river, RiverModule module) => Of(MapView.From(river, river.Run(), MapNames.English), module);
 
     private static MapReceivedView Of(MapView view, RiverModule module) => MapReceivedView.Of(view, module, end => end.Id);
 
@@ -25,7 +25,7 @@ public class MapReceivedViewTests
     [MemberData(nameof(FullPlansModules))]
     public void Of_aModule_isEveryLineOfMoneyIntoItWithTheAmountTheMapSaysOnIt(RiverModule module)
     {
-        var view = MapView.From(Full, Full.Run());
+        var view = MapView.From(Full, Full.Run(), MapNames.English);
         var into = view.Bundles().Where(bundle => MapLinkStyle.IsMoney(bundle.Kind) && bundle.To.Module == module).ToList();
 
         var received = Of(view, module);

@@ -17,7 +17,7 @@ public class MapConditionsRenderingTests
     [Fact]
     public async Task MapTab_aPlansConditions_areDashedLines()
     {
-        var conditions = MapView.From(River, River.Run()).Bundles().Count(bundle => bundle.Kind == MapLinkKind.Condition && bundle.Touches(RiverModule.Car));
+        var conditions = MapView.From(River, River.Run(), MapNames.English).Bundles().Count(bundle => bundle.Kind == MapLinkKind.Condition && bundle.Touches(RiverModule.Car));
 
         var html = await MapRendering.RenderTabAsync(River, RiverModule.Car);
 

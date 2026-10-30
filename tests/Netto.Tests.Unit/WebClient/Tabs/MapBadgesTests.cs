@@ -92,7 +92,7 @@ public class MapBadgesTests
     {
         var badges = Of(Full);
 
-        var view = MapView.From(Full, Full.Run());
+        var view = MapView.From(Full, Full.Run(), MapNames.English);
 
         view.Modules.Select(node => (node.End.Module!.Value, string.Join(" | ", node.Badges.Select(Shape))))
             .ShouldBe(MapView.ModulesOf(Full).Select(module => (module, string.Join(" | ", badges.GetValueOrDefault(module, []).Select(Shape)))));
@@ -111,7 +111,7 @@ public class MapBadgesTests
     {
         var river = refused ? Full.WithReserve(-1m) : Full.SkipCompany();
 
-        MapView.From(river, river.Run()).Modules.ShouldAllBe(node => node.Badges.Count == 0);
+        MapView.From(river, river.Run(), MapNames.English).Modules.ShouldAllBe(node => node.Badges.Count == 0);
     }
 
     // A badge tells a box what another module's card does to its tax base. The marital quotient to the partner
@@ -126,7 +126,7 @@ public class MapBadgesTests
             ? RiverInputs.Example.AddToPlan(OptionalModule.Household)
             : RiverInputs.Example.AddToPlan(OptionalModule.Household).WithDirectorPay(12_000m).WithPartnerIncome(60_000m);
 
-        var marked = MapView.From(river, river.Run()).Modules.Where(node => node.Badges.Any(badge => badge.Kind == MapLinkKind.TaxBase)).Select(node => node.End.Id);
+        var marked = MapView.From(river, river.Run(), MapNames.English).Modules.Where(node => node.Badges.Any(badge => badge.Kind == MapLinkKind.TaxBase)).Select(node => node.End.Id);
 
         marked.ShouldBe(toThePartner ? [] : ["director-pay"]);
     }
@@ -139,7 +139,7 @@ public class MapBadgesTests
     {
         var river = MapLayoutTests.River(bits, quiet, companySkipped);
 
-        MapView.From(river, river.Run()).Modules.Where(node => node.Badges.Count > (node.Quiet ? 0 : MapLayoutTests.MostBadges.GetValueOrDefault(node.End.Module!.Value)))
+        MapView.From(river, river.Run(), MapNames.English).Modules.Where(node => node.Badges.Count > (node.Quiet ? 0 : MapLayoutTests.MostBadges.GetValueOrDefault(node.End.Module!.Value)))
             .Select(node => $"{node.End.Id} {node.Badges.Count}").ShouldBeEmpty();
     }
 
@@ -148,7 +148,7 @@ public class MapBadgesTests
     {
         var river = MapViewConditionsTests.CostlyCar;
 
-        MapView.From(river, river.Run()).Modules.Where(node => node.Badges.Count > MapLayoutTests.MostBadges.GetValueOrDefault(node.End.Module!.Value))
+        MapView.From(river, river.Run(), MapNames.English).Modules.Where(node => node.Badges.Count > MapLayoutTests.MostBadges.GetValueOrDefault(node.End.Module!.Value))
             .Select(node => $"{node.End.Id} {node.Badges.Count}").ShouldBeEmpty();
     }
 

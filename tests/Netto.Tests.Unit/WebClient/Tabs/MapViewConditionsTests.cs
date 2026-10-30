@@ -17,7 +17,7 @@ public class MapViewConditionsTests
         var river = CostlyCar;
         var run = river.Run();
 
-        var conditions = MapView.From(river, run).Links.Where(link => link.Kind == MapLinkKind.Condition).ToList();
+        var conditions = MapView.From(river, run, MapNames.English).Links.Where(link => link.Kind == MapLinkKind.Condition).ToList();
 
         conditions.ShouldSatisfyAllConditions(
             () => conditions.Select(Shape).ShouldBe(MapConditions.From(YearConditions.Of(run.Year!), MapView.ModulesOf(river)).Select(Shape)),
@@ -37,7 +37,7 @@ public class MapViewConditionsTests
     {
         var river = refused ? MapLinksTests.Full.WithReserve(-1m) : MapLinksTests.Full.SkipCompany();
 
-        MapView.From(river, river.Run()).Links.Where(link => link.Kind == MapLinkKind.Condition).ShouldBeEmpty();
+        MapView.From(river, river.Run(), MapNames.English).Links.Where(link => link.Kind == MapLinkKind.Condition).ShouldBeEmpty();
     }
 
     // With the allowances out of the plan the rent sets no condition the map can draw.
@@ -46,7 +46,7 @@ public class MapViewConditionsTests
     {
         var river = MapLinksTests.Full.TakeOutOfPlan(OptionalModule.Allowances);
 
-        MapView.From(river, river.Run()).Links.Where(link => link is { Kind: MapLinkKind.Condition, To.Module: RiverModule.Rent }).ShouldBeEmpty();
+        MapView.From(river, river.Run(), MapNames.English).Links.Where(link => link is { Kind: MapLinkKind.Condition, To.Module: RiverModule.Rent }).ShouldBeEmpty();
     }
 
     // Every lever, its car at a catalogue value of 1,000,000.

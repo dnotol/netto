@@ -312,7 +312,7 @@ public class MapAmountsTests
     [Fact]
     public void Of_thePlanWithEveryLever_takesAtMostTwiceTheWorkItTookWhenWritten()
     {
-        var view = MapView.From(MapLinksTests.Full, MapLinksTests.Full.Run());
+        var view = MapView.From(MapLinksTests.Full, MapLinksTests.Full.Run(), MapNames.Drawn);
 
         var work = MapAmounts.Work(view, Say);
 
@@ -338,7 +338,7 @@ public class MapAmountsTests
     {
         var river = MapLinksTests.Full.WithReserve(-1m);
 
-        MapAmounts.Of(MapView.From(river, river.Run()), Say).ShouldBeEmpty();
+        MapAmounts.Of(MapView.From(river, river.Run(), MapNames.Drawn), Say).ShouldBeEmpty();
     }
 
     // The plans the amounts are held on: every one MapLayoutTests routes, by its levers and those it leaves
@@ -365,7 +365,7 @@ public class MapAmountsTests
     internal static MapView View(string plan)
     {
         var river = River(plan);
-        return MapView.From(river, river.Run());
+        return MapView.From(river, river.Run(), MapNames.Drawn);
     }
 
     // A plan by its name: one the amounts are held on, by its levers and those it leaves empty, or with the

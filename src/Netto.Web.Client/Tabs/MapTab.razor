@@ -255,7 +255,7 @@
         // The map and its amounts are the run's: worked out again for another run, not for another choice.
         if (_mapped is not var (inputs, run) || !ReferenceEquals(inputs, Inputs) || !ReferenceEquals(run, Run))
         {
-            _full = MapView.From(Inputs, Run);
+            _full = MapView.From(Inputs, Run, module => L[MapTabText.Module(module)].Value);
             _placed = MapAmounts.Of(_full, Carries);
             _mapped = (Inputs, Run);
         }

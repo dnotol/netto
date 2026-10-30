@@ -94,7 +94,7 @@ public class MapLayoutTests
     public void From_anyPlan_drawsEachBoxInTheColumnOfWhoseMoneyItMoves(int bits, int quiet, bool companySkipped)
     {
         var river = River(bits, quiet, companySkipped);
-        var view = MapView.From(river, river.Run());
+        var view = MapView.From(river, river.Run(), MapNames.Drawn);
         var columns = view.Columns.ToDictionary(column => column.Owner, column => column.Slot);
 
         view.ShouldSatisfyAllConditions(
@@ -115,14 +115,14 @@ public class MapLayoutTests
     [Fact]
     public void Grid_theExample_closesUpOverTheLeversOutOfThePlan()
     {
-        MapLayout.Grid(MapView.ModulesOf(RiverInputs.Example)).Rows
+        MapLayout.Grid(MapView.ModulesOf(RiverInputs.Example), MapNames.Drawn).Rows
             .ShouldBe([MapRow.CompanyYear, MapRow.Split, MapRow.Royalty, MapRow.CorporateTax, MapRow.Buckets]);
     }
 
     [Fact]
     public void Grid_everyLever_drawsEveryRow()
     {
-        MapLayout.Grid(MapView.ModulesOf(MapLinksTests.Full)).Rows.ShouldBe(Enum.GetValues<MapRow>());
+        MapLayout.Grid(MapView.ModulesOf(MapLinksTests.Full), MapNames.Drawn).Rows.ShouldBe(Enum.GetValues<MapRow>());
     }
 
     [Fact]
@@ -130,7 +130,7 @@ public class MapLayoutTests
     {
         var river = MapLinksTests.Full.SkipCompany().TakeOutOfPlan(OptionalModule.Household);
 
-        MapLayout.Grid(MapView.ModulesOf(river)).Rows.ShouldBe([MapRow.CompanyYear, MapRow.Split, MapRow.Buckets]);
+        MapLayout.Grid(MapView.ModulesOf(river), MapNames.Drawn).Rows.ShouldBe([MapRow.CompanyYear, MapRow.Split, MapRow.Buckets]);
     }
 
     // The partner in the plan keeps its row over Director pay's, the car's, its quotient a tax base of the pay
@@ -138,7 +138,7 @@ public class MapLayoutTests
     [Fact]
     public void Grid_companySkippedWithThePartner_isCompanyYearThePartnerOverDirectorPayAndTheBuckets()
     {
-        MapLayout.Grid(MapView.ModulesOf(MapLinksTests.Full.SkipCompany())).Rows
+        MapLayout.Grid(MapView.ModulesOf(MapLinksTests.Full.SkipCompany()), MapNames.Drawn).Rows
             .ShouldBe([MapRow.CompanyYear, MapRow.Car, MapRow.Split, MapRow.Buckets]);
     }
 
@@ -155,7 +155,7 @@ public class MapLayoutTests
     {
         var modules = MapView.ModulesOf(MapLinksTests.Full);
 
-        var grid = MapLayout.Grid(modules, gateLines: new Dictionary<RiverModule, int> { [gate] = lines });
+        var grid = MapLayout.Grid(modules, MapNames.Drawn, gateLines: new Dictionary<RiverModule, int> { [gate] = lines });
 
         Units(grid, gate).ShouldBe(Math.Round(Math.Max(0.5m, (decimal)rem / MapLayout.SmallestRowRem), 12));
     }
@@ -198,16 +198,14 @@ public class MapLayoutTests
     [MemberData(nameof(EnglishTitleLines))]
     public void TitleLines_aModulesNameInEnglish_isTheLinesItTakesInItsBoxOnTheNarrowestMap(RiverModule module, int lines)
     {
-        MapLayout.TitleLines(module).ShouldBe(lines);
+        MapLayout.TitleLines(module, MapNames.English(module)).ShouldBe(lines);
     }
 
     [Theory]
     [MemberData(nameof(FrenchTitleLines))]
     public void TitleLines_aModulesNameInFrench_isTheLinesItTakesInItsBoxOnTheNarrowestMap(RiverModule module, int lines)
     {
-        using var french = InLanguage.French();
-
-        MapLayout.TitleLines(module).ShouldBe(lines);
+        MapLayout.TitleLines(module, MapNames.French(module)).ShouldBe(lines);
     }
 
     // How many lines the name of a module the map can draw quiet, a lever or the partner, takes in a quiet pill
@@ -228,16 +226,14 @@ public class MapLayoutTests
     [MemberData(nameof(EnglishQuietLines))]
     public void QuietLines_aQuietModulesNameInEnglish_isTheLinesItTakesInAPillOnTheNarrowestMap(RiverModule module, int lines)
     {
-        MapLayout.QuietLines(module).ShouldBe(lines);
+        MapLayout.QuietLines(module, MapNames.English(module)).ShouldBe(lines);
     }
 
     [Theory]
     [MemberData(nameof(FrenchQuietLines))]
     public void QuietLines_aQuietModulesNameInFrench_isTheLinesItTakesInAPillOnTheNarrowestMap(RiverModule module, int lines)
     {
-        using var french = InLanguage.French();
-
-        MapLayout.QuietLines(module).ShouldBe(lines);
+        MapLayout.QuietLines(module, MapNames.French(module)).ShouldBe(lines);
     }
 
     // The modules a quiet pill can hold, held in both lists: every optional module.
@@ -297,10 +293,9 @@ public class MapLayoutTests
     public void Grid_aNameOnTwoLines_growsItsBoxInTheCompanysColumnOrDirectorPays()
     {
         var modules = MapView.ModulesOf(MapLinksTests.Full);
-        var english = MapLayout.Grid(modules);
-        using var french = InLanguage.French();
+        var english = MapLayout.Grid(modules, MapNames.English);
 
-        var grid = MapLayout.Grid(modules);
+        var grid = MapLayout.Grid(modules, MapNames.French);
 
         var two = Math.Round((2m * MapLayout.TitleLineRem + 2m / 16m) / MapLayout.SmallestRowRem, 12);
         (Units(english, RiverModule.CompanyYear), Units(grid, RiverModule.CompanyYear), Units(grid, RiverModule.CorporateTax), Units(grid, RiverModule.DirectorPay), Units(grid, RiverModule.Split))
@@ -316,29 +311,31 @@ public class MapLayoutTests
     [MemberData(nameof(MapsModules))]
     public void Name_eachModulesLongestWordInEnglish_staysInsideItsBoxsFrame(RiverModule module)
     {
-        LongestWord(module).ShouldBeLessThanOrEqualTo(MapLayout.TitleRoom(module) + 2m * 0.35m * MapLayout.PixelsPerRem);
+        LongestWord(MapNames.English(module)).ShouldBeLessThanOrEqualTo(MapLayout.TitleRoom(module) + 2m * 0.35m * MapLayout.PixelsPerRem);
     }
 
     [Theory]
     [MemberData(nameof(MapsModules))]
     public void Name_eachModulesLongestWordInFrench_staysInsideItsBoxsFrame(RiverModule module)
     {
-        using var french = InLanguage.French();
-
-        LongestWord(module).ShouldBeLessThanOrEqualTo(MapLayout.TitleRoom(module) + 2m * 0.35m * MapLayout.PixelsPerRem);
+        LongestWord(MapNames.French(module)).ShouldBeLessThanOrEqualTo(MapLayout.TitleRoom(module) + 2m * 0.35m * MapLayout.PixelsPerRem);
     }
 
-    private static decimal LongestWord(RiverModule module) =>
-        MapLayout.Name(module).Split(' ', '-').Max(word => (MapAmounts.Width(word) - 2m * MapAmounts.GroundRem * MapLayout.PixelsPerRem) * 1.04m);
+    private static decimal LongestWord(string name) =>
+        name.Split(' ', '-').Max(word => (MapAmounts.Width(word) - 2m * MapAmounts.GroundRem * MapLayout.PixelsPerRem) * 1.04m);
 
-    // The names the layout counts lines of are those the map draws: its texts in the language the page reads.
+    // The tab sizes its boxes from the names it draws, its localizer's: in French, the company's year's box is
+    // as tall as its two lines of name, its box as the map draws it.
     [Fact]
-    public void Name_aModule_isTheMapsTextForItInTheLanguageThePageReads()
+    public async Task MapTab_inFrench_drawsEachBoxAsTallAsTheNameItDraws()
     {
-        var english = MapLayout.Name(RiverModule.Car);
         using var french = InLanguage.French();
+        var slot = MapView.From(MapLinksTests.Full, MapLinksTests.Full.Run(), MapNames.French).Modules.Single(node => node.End.Module == RiverModule.CompanyYear).Slot;
 
-        (english, MapLayout.Name(RiverModule.Car)).ShouldBe((ResxText.For<MapTab>().Get("Module_Car"), ResxText.French<MapTab>().Get("Module_Car")));
+        var html = await MapRendering.RenderTabAsync(MapLinksTests.Full);
+
+        System.Text.RegularExpressions.Regex.Match(html, "style=\"([^\"]*)\"[^>]*data-module=\"company-year\"").Groups[1].Value
+            .ShouldEndWith($"height: {Math.Round(slot.Height, 3).ToString("0.###", System.Globalization.CultureInfo.InvariantCulture)}%");
     }
 
     // A module's badges grow its box a line each, 0.3 of a chain row (MapLayout.BadgeRem and BadgeGapRem
@@ -348,7 +345,7 @@ public class MapLayoutTests
     public void Grid_aBoxsBadges_growItALineEachAndItsRowWithIt()
     {
         var modules = MapView.ModulesOf(MapLinksTests.Full);
-        var (without, with) = (MapLayout.Grid(modules), MapLayout.Grid(modules, badgeLines: new Dictionary<RiverModule, int> { [RiverModule.Split] = 2 }));
+        var (without, with) = (MapLayout.Grid(modules, MapNames.Drawn), MapLayout.Grid(modules, MapNames.Drawn, badgeLines: new Dictionary<RiverModule, int> { [RiverModule.Split] = 2 }));
 
         with.ShouldSatisfyAllConditions(
             () => Units(with, RiverModule.Split).ShouldBe(0.5m + 2 * 0.3m),
@@ -368,9 +365,9 @@ public class MapLayoutTests
     {
         var modules = MapView.ModulesOf(MapLinksTests.Full);
 
-        var with = MapLayout.Grid(modules, badgeLines: new Dictionary<RiverModule, int> { [RiverModule.CorporateTax] = lines });
+        var with = MapLayout.Grid(modules, MapNames.Drawn, badgeLines: new Dictionary<RiverModule, int> { [RiverModule.CorporateTax] = lines });
 
-        (Units(with, RiverModule.CorporateTax), with.Units - MapLayout.Grid(modules).Units).ShouldBe((0.5m + lines * 0.3m, (decimal)growth));
+        (Units(with, RiverModule.CorporateTax), with.Units - MapLayout.Grid(modules, MapNames.Drawn).Units).ShouldBe((0.5m + lines * 0.3m, (decimal)growth));
     }
 
     [Theory]
@@ -420,7 +417,7 @@ public class MapLayoutTests
     public void From_anyPlan_drawsNoLineThroughABox(int bits, int quiet, bool companySkipped)
     {
         var river = River(bits, quiet, companySkipped);
-        var view = MapView.From(river, river.Run());
+        var view = MapView.From(river, river.Run(), MapNames.Drawn);
         var boxes = view.Places().Select(place => (Id: string.Join('+', place.Nodes.Select(node => node.End.Id)), place.Slot))
             .Concat(view.Buckets.Select(bucket => (Id: bucket.End.Id, bucket.Slot)))
             .Concat(view.Pill is { } pill ? [(Id: Pill, pill.Slot)] : []).ToList();
@@ -546,7 +543,7 @@ public class MapLayoutTests
         using var french = InLanguage.French();
         var river = River(bits, quiet, companySkipped);
         var (grid, boxes, routes) = (Grid(river), Boxes(river), Routes(river));
-        var view = MapView.From(river, river.Run());
+        var view = MapView.From(river, river.Run(), MapNames.Drawn);
         var columns = view.Columns.ToDictionary(column => column.Owner, column => column.Slot);
 
         routes.ShouldSatisfyAllConditions(
@@ -583,7 +580,7 @@ public class MapLayoutTests
     [Fact]
     public void Routed_theWaysIntoTheTaxesAndWhatComesBack_turnAlongTheBandsRowsCrossingNeitherTheOther()
     {
-        var view = MapView.From(Extreme("a low pay"), Extreme("a low pay").Run());
+        var view = MapView.From(Extreme("a low pay"), Extreme("a low pay").Run(), MapNames.Drawn);
 
         var (payIn, payBack) = (MapViewTests.Line(view, MapEnd.Of(RiverModule.DirectorPay), MapEnd.InBucket("taxes_on_pay")), MapViewTests.Line(view, MapEnd.InBucket("taxes_on_pay"), MapEnd.Of(RiverModule.DirectorPay)));
         var (dividendIn, dividendBack) = (MapViewTests.Line(view, MapEnd.Of(RiverModule.Dividend), MapEnd.InBucket("taxes_on_profit")), MapViewTests.Line(view, MapEnd.InBucket("taxes_on_profit"), MapEnd.Of(RiverModule.Dividend)));
@@ -603,7 +600,7 @@ public class MapLayoutTests
     public void Routed_corporateTaxsWayIntoItsTaxes_crossesNoneOfTheDividendsWaysIntoThemAndBack(string plan)
     {
         var river = Plan(plan);
-        var view = MapView.From(river, river.Run());
+        var view = MapView.From(river, river.Run(), MapNames.Drawn);
 
         var corporate = view.Bundles().Where(line => line.From == MapEnd.Of(RiverModule.CorporateTax) && line.To == MapEnd.InBucket("taxes_on_profit")).ToList();
         var dividend = view.Bundles().Where(line => line.Touches(RiverModule.Dividend) && (line.From == MapEnd.InBucket("taxes_on_profit") || line.To == MapEnd.InBucket("taxes_on_profit"))).ToList();
@@ -622,7 +619,7 @@ public class MapLayoutTests
     [Fact]
     public void Routed_thePocketLine_runsDownTheLeftOfYourColumnEachLineJoiningItStraightAcross()
     {
-        var view = MapView.From(MapLinksTests.Full, MapLinksTests.Full.Run());
+        var view = MapView.From(MapLinksTests.Full, MapLinksTests.Full.Run(), MapNames.Drawn);
         var line = view.Bundles().Where(bundle => bundle.From.PocketLine is not null && (bundle.To.PocketLine is not null || bundle.To == MapEnd.InBucket("pocket"))).ToList();
         var joins = view.Bundles().Where(bundle => bundle.To.PocketLine is not null && bundle.From.PocketLine is null).ToList();
         var (pocket, pay, leave) = (view.Buckets[0].Slot, Slot(view, RiverModule.DirectorPay), MapViewTests.Line(view, MapEnd.OnPocketLine(RiverModule.Car), MapEnd.Beside(RiverModule.Car)));
@@ -646,7 +643,7 @@ public class MapLayoutTests
     [Fact]
     public void Routed_theCompanysLine_runsStraightDownFromCompanyYearIntoTheSplitEachShareAcrossToItsGate()
     {
-        var view = MapView.From(MapLinksTests.Full, MapLinksTests.Full.Run());
+        var view = MapView.From(MapLinksTests.Full, MapLinksTests.Full.Run(), MapNames.Drawn);
         var line = view.Bundles().Where(bundle => MapLinksTests.CompanysLine(bundle.Links).Any()).ToList();
         var takes = view.Bundles().Where(bundle => bundle.From.Lever is { } lever && bundle.To == MapEnd.Of(lever)).ToList();
         var (car, costs) = (Slot(view, RiverModule.Car), MapViewTests.Line(view, MapEnd.Beside(RiverModule.Car), MapEnd.InBucket("expenses")));
@@ -671,7 +668,7 @@ public class MapLayoutTests
     [Fact]
     public void Routed_theConditionARoyaltySetsOnTheSplit_leavesTheRoyaltysRightSide()
     {
-        var view = MapView.From(MapLinksTests.Full, MapLinksTests.Full.Run());
+        var view = MapView.From(MapLinksTests.Full, MapLinksTests.Full.Run(), MapNames.Drawn);
         var royalty = view.Modules.Single(node => node.End.Module == RiverModule.Copyright).Slot;
 
         var condition = view.Bundles().Single(line => line.Kind == MapLinkKind.Condition && line.From == MapEnd.Of(RiverModule.Copyright));
@@ -689,7 +686,7 @@ public class MapLayoutTests
         var river = fromThePartner
             ? RiverInputs.Example.AddToPlan(OptionalModule.Household).WithDirectorPay(12_000m).WithPartnerIncome(60_000m)
             : MapLinksTests.Full;
-        var view = MapView.From(river, river.Run());
+        var view = MapView.From(river, river.Run(), MapNames.Drawn);
         var (pay, partner) = (Slot(view, RiverModule.DirectorPay), Slot(view, RiverModule.Household));
 
         var route = view.Bundles().Single(line => line.Kind == MapLinkKind.TaxBase && line.Card == RiverModule.Household).Route;
@@ -721,7 +718,7 @@ public class MapLayoutTests
     {
         var river = Plan(plan);
 
-        var view = MapView.From(river, river.Run());
+        var view = MapView.From(river, river.Run(), MapNames.Drawn);
 
         Math.Round(view.Units, 2).ShouldBe(units);
     }
@@ -892,7 +889,7 @@ public class MapLayoutTests
     {
         var river = MapLinksTests.Full;
 
-        var links = MapLayout.Routed(MapLayout.Grid(MapView.ModulesOf(river)), MapPocketLine.Of(MapLinks.Of(river, river.Run())));
+        var links = MapLayout.Routed(MapLayout.Grid(MapView.ModulesOf(river), MapNames.Drawn), MapPocketLine.Of(MapLinks.Of(river, river.Run())));
 
         links.GroupBy(link => (link.From, link.To, link.Kind)).Where(bundle => bundle.Select(link => link.Route).Distinct().Count() != 1)
             .Select(bundle => $"{bundle.Key.From.Id} to {bundle.Key.To.Id}").ShouldBeEmpty();
@@ -1007,11 +1004,11 @@ public class MapLayoutTests
 
     // The levers the map draws quiet, read off the map itself, the conditions of its year among its links.
     private static HashSet<RiverModule> Quiet(RiverInputs river) =>
-        MapView.From(river, river.Run()).Modules.Where(node => node.Quiet).Select(node => node.End.Module!.Value).ToHashSet();
+        MapView.From(river, river.Run(), MapNames.Drawn).Modules.Where(node => node.Quiet).Select(node => node.End.Module!.Value).ToHashSet();
 
     // The plan's grid with the levers the map draws quiet, every box holding the most badges it can and every gate
     // the lines it says.
-    private static MapLayout.MapGrid Grid(RiverInputs river) => MapLayout.Grid(MapView.ModulesOf(river), Quiet(river), MostBadges, GateLines(river));
+    private static MapLayout.MapGrid Grid(RiverInputs river) => MapLayout.Grid(MapView.ModulesOf(river), MapNames.Drawn, Quiet(river), MostBadges, GateLines(river));
 
     // How many lines each gate of a plan says (MapGates), as the map draws them.
     internal static IReadOnlyDictionary<RiverModule, int> GateLines(RiverInputs river)
@@ -1056,7 +1053,7 @@ public class MapLayoutTests
             .Select(condition => new MapLink(MapLinkKind.Condition, MapEnd.Of(condition.From), MapEnd.Of(condition.To), condition.From,
                 new MapLabel(MapText.Map, "Condition", []), null));
 
-        return RoutesOf(MapLayout.Routed(MapLayout.Grid(modules, quiet, MostBadges, GateLines(river)), MapPocketLine.Of(MapQuiet.Fold([.. MapLinks.Of(river, run), .. conditions, .. more]))));
+        return RoutesOf(MapLayout.Routed(MapLayout.Grid(modules, MapNames.Drawn, quiet, MostBadges, GateLines(river)), MapPocketLine.Of(MapQuiet.Fold([.. MapLinks.Of(river, run), .. conditions, .. more]))));
     }
 
     // Each line of links routed, once.

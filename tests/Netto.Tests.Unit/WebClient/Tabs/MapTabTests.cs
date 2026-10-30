@@ -62,7 +62,7 @@ public class MapTabTests
     [Fact]
     public async Task Tab_theColumns_areLabelledByWhoseMoneyTheyHold()
     {
-        var view = MapView.From(Full, Full.Run());
+        var view = MapView.From(Full, Full.Run(), MapNames.English);
 
         var html = await RenderTabAsync(Full);
 
@@ -77,7 +77,7 @@ public class MapTabTests
     [Fact]
     public async Task Tab_thePay_crossesUnderItsPill()
     {
-        var view = MapView.From(Full, Full.Run());
+        var view = MapView.From(Full, Full.Run(), MapNames.English);
         var pill = view.Pill.ShouldNotBeNull();
 
         var map = Map(await RenderTabAsync(Full));
@@ -155,7 +155,7 @@ public class MapTabTests
     [Fact]
     public async Task Tab_everyLine_saysItsKindAndTakesItsStroke()
     {
-        var view = MapView.From(Full, Full.Run()).ShowingFor(null);
+        var view = MapView.From(Full, Full.Run(), MapNames.English).ShowingFor(null);
 
         var html = await RenderTabAsync(Full);
 
@@ -169,7 +169,7 @@ public class MapTabTests
     [Fact]
     public async Task Tab_everyLineAndItsArrowhead_takeTheirKindsInkOrThePocketsGold()
     {
-        var drawn = MapView.From(Full, Full.Run()).ShowingFor(null).Drawn(null);
+        var drawn = MapView.From(Full, Full.Run(), MapNames.English).ShowingFor(null).Drawn(null);
         var inks = drawn.Select(line => (line.Bundle.Kind.ToString(), Ink: line.Bundle.To.InPocket ? MapLinkStyle.PocketInk : MapLinkStyle.Ink(line.Bundle.Kind))).ToList();
 
         var html = await RenderTabAsync(Full);
@@ -188,7 +188,7 @@ public class MapTabTests
     [Fact]
     public async Task Tab_anArrowhead_endsEachLineIntoAModuleOrOutOfTheRiverSizedByItsLine()
     {
-        var drawn = MapView.From(Full, Full.Run()).ShowingFor(null).Drawn(null);
+        var drawn = MapView.From(Full, Full.Run(), MapNames.English).ShowingFor(null).Drawn(null);
 
         var html = await RenderTabAsync(Full);
 
@@ -205,7 +205,7 @@ public class MapTabTests
     [Fact]
     public async Task Tab_everyLine_isDrawnOnItsPointsUnderTheBucketItMeets()
     {
-        var drawn = MapView.From(Full, Full.Run()).ShowingFor(null).Drawn(null);
+        var drawn = MapView.From(Full, Full.Run(), MapNames.English).ShowingFor(null).Drawn(null);
 
         var html = await RenderTabAsync(Full);
 
@@ -220,7 +220,7 @@ public class MapTabTests
     [Fact]
     public async Task Tab_nothingChosen_drawsOneAmountPerLineAndNoWords()
     {
-        var view = MapView.From(Full, Full.Run()).ShowingFor(null);
+        var view = MapView.From(Full, Full.Run(), MapNames.English).ShowingFor(null);
 
         var map = Map(await RenderTabAsync(Full));
 
@@ -237,7 +237,7 @@ public class MapTabTests
     [Fact]
     public async Task Tab_eachAmount_isDrawnWhereMapAmountsPlacesIt()
     {
-        var view = MapView.From(Full, Full.Run());
+        var view = MapView.From(Full, Full.Run(), MapNames.English);
 
         var map = Map(await RenderTabAsync(Full));
 
@@ -251,7 +251,7 @@ public class MapTabTests
     [Fact]
     public async Task Tab_nothingChosen_drawsTheAmountsIntoThePocketInGold()
     {
-        var view = MapView.From(Full, Full.Run());
+        var view = MapView.From(Full, Full.Run(), MapNames.English);
 
         var map = Map(await RenderTabAsync(Full));
 
@@ -276,8 +276,8 @@ public class MapTabTests
     [Fact]
     public async Task Tab_aModuleChosen_keepsItsOwnLinesAmountsWhereTheyWereAndNoWords()
     {
-        var own = MapView.From(Full, Full.Run()).Bundles().Where(bundle => bundle.Touches(RiverModule.Car) && bundle.SaysAmount).Select(bundle => bundle.Kind.ToString()).ToList();
-        var placed = MapAmounts.Of(MapView.From(Full, Full.Run()), MapAmountsTests.Say).Select(amount => (amount.Bundle.Kind.ToString(), Style(amount), "true", amount.Text)).ToList();
+        var own = MapView.From(Full, Full.Run(), MapNames.English).Bundles().Where(bundle => bundle.Touches(RiverModule.Car) && bundle.SaysAmount).Select(bundle => bundle.Kind.ToString()).ToList();
+        var placed = MapAmounts.Of(MapView.From(Full, Full.Run(), MapNames.English), MapAmountsTests.Say).Select(amount => (amount.Bundle.Kind.ToString(), Style(amount), "true", amount.Text)).ToList();
 
         var map = Map(await RenderTabAsync(Full, RiverModule.Car));
 
@@ -295,7 +295,7 @@ public class MapTabTests
     [Fact]
     public async Task Tab_everyLine_isDrawnOverAHaloOfTheGround()
     {
-        var drawn = MapView.From(Full, Full.Run()).ShowingFor(RiverModule.Car).Drawn(RiverModule.Car);
+        var drawn = MapView.From(Full, Full.Run(), MapNames.English).ShowingFor(RiverModule.Car).Drawn(RiverModule.Car);
 
         var html = await RenderTabAsync(Full, RiverModule.Car);
 
@@ -309,7 +309,7 @@ public class MapTabTests
     [Fact]
     public async Task Tab_amountsOnTheLines_sayTheirKind()
     {
-        var view = MapView.From(Full, Full.Run()).ShowingFor(null);
+        var view = MapView.From(Full, Full.Run(), MapNames.English).ShowingFor(null);
 
         var html = await RenderTabAsync(Full);
 
@@ -332,7 +332,7 @@ public class MapTabTests
     [Fact]
     public async Task Tab_aModuleChosen_marksItBringsOutItsLinesAndSaysWhatItReceives()
     {
-        var view = MapView.From(Full, Full.Run()).ShowingFor(RiverModule.Rent);
+        var view = MapView.From(Full, Full.Run(), MapNames.English).ShowingFor(RiverModule.Rent);
         var received = MapReceivedView.Of(view, RiverModule.Rent, end => end.Id).Lines;
 
         var html = await RenderTabAsync(Full, RiverModule.Rent);

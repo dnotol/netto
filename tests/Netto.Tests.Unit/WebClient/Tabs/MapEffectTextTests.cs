@@ -36,7 +36,7 @@ public class MapEffectTextTests
     [Fact]
     public void Rule_everyConditionTheMapDraws_hasItsWords()
     {
-        var view = MapView.From(MapLinksTests.Full, MapLinksTests.Full.Run());
+        var view = MapView.From(MapLinksTests.Full, MapLinksTests.Full.Run(), MapNames.English);
 
         view.Bundles().Where(line => line.Kind == MapLinkKind.Condition).Select(line => Resources.Get(MapEffectText.Rule(line.From.Module!.Value, line.To.Module!.Value)))
             .ShouldAllBe(words => !string.IsNullOrEmpty(words));

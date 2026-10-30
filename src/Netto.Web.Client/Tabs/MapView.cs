@@ -46,7 +46,9 @@ internal sealed record MapView(IReadOnlyList<MapNode> Modules, IReadOnlyList<Map
     public MapView ShowingFor(RiverModule? chosen) =>
         this with { Links = [.. Links.Where(link => MapLinkStyle.IsMoney(link.Kind) || (chosen is { } module && link.Touches(module)))] };
 
-    public static MapView From(RiverInputs inputs, RiverRun run)
+    // The map of the run, each module named as the page draws it (names: MapTab's localizer), which its box is
+    // sized to hold.
+    public static MapView From(RiverInputs inputs, RiverRun run, Func<RiverModule, string> names)
     {
         var modules = ModulesOf(inputs);
         var refused = run.Error is { } error ? RiverErrors.Owner(error, inputs.Company is null) : (RiverModule?)null;
@@ -64,7 +66,7 @@ internal sealed record MapView(IReadOnlyList<MapNode> Modules, IReadOnlyList<Map
         var quiet = MapQuiet.Of(run, modules, links, MapQuiet.Holding(inputs));
         var badges = MapBadges.Of(links);
         var gates = MapGates.Of(inputs, run);
-        var grid = MapLayout.Grid(modules, quiet, MapBadges.Lines(badges), modules.ToDictionary(module => module, module => gates.For(module).Count));
+        var grid = MapLayout.Grid(modules, names, quiet, MapBadges.Lines(badges), modules.ToDictionary(module => module, module => gates.For(module).Count));
         var routed = MapLayout.Routed(grid, SaidElsewhere(MapPocketLine.Of(MapQuiet.Fold(links)), gates));
         var pay = routed.FirstOrDefault(link => link.Kind == MapLinkKind.PassedOn && link.From == MapEnd.Of(RiverModule.Split) && link.To == MapEnd.Of(RiverModule.DirectorPay));
 

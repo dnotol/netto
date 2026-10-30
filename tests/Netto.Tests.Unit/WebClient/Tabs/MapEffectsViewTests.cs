@@ -13,7 +13,7 @@ public class MapEffectsViewTests
 {
     private static readonly RiverInputs Full = MapLinksTests.Full;
 
-    private static MapView View(RiverInputs river) => MapView.From(river, river.Run());
+    private static MapView View(RiverInputs river) => MapView.From(river, river.Run(), MapNames.English);
 
     // Every item is a line of a tax base or a condition the map draws for the module chosen, in their order.
     [Theory]

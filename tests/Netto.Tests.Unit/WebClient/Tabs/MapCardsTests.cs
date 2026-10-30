@@ -43,7 +43,7 @@ public class MapCardsTests
     public async Task View_everyLinesAmount_isAFigureItsCardDrawsOrTheSumOfThem(string name)
     {
         var river = MapRendering.River(name);
-        var lines = MapView.From(river, river.Run()).Bundles().Where(line => line.Amount is not null && !StretchOfThePocketLine(line)).ToList();
+        var lines = MapView.From(river, river.Run(), MapNames.English).Bundles().Where(line => line.Amount is not null && !StretchOfThePocketLine(line)).ToList();
 
         var html = await CardHtml.RenderCardsOpenAsync(river);
 
@@ -61,7 +61,7 @@ public class MapCardsTests
     public void View_eachStretchOfThePocketLine_isTheLinesJoiningItAboveLessThoseLeavingItAndTheLastThePockets(string name)
     {
         var river = MapRendering.River(name);
-        var bundles = MapView.From(river, river.Run()).Bundles();
+        var bundles = MapView.From(river, river.Run(), MapNames.English).Bundles();
         var stretches = bundles.Where(StretchOfThePocketLine).ToList();
         var joins = bundles.Where(line => line.To.PocketLine is not null && line.From.PocketLine is null).Select(line => (Y: line.Route.End.Y, Amount: line.Amount!.Value)).ToList();
         var leaves = bundles.Where(line => line.From.PocketLine is not null && !StretchOfThePocketLine(line)).Select(line => (Y: line.Route.Points[0].Y, Amount: line.Amount!.Value)).ToList();

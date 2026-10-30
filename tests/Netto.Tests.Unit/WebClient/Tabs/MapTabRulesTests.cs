@@ -35,7 +35,7 @@ public class MapTabRulesTests
     [Fact]
     public async Task Tab_nothingChosen_drawsTheMoneyAndNoRulesLineButEveryBadge()
     {
-        var view = MapView.From(Full, Full.Run());
+        var view = MapView.From(Full, Full.Run(), MapNames.English);
         var money = view.Bundles().Where(bundle => MapLinkStyle.IsMoney(bundle.Kind)).ToList();
 
         var html = await RenderTabAsync(Full);
@@ -58,7 +58,7 @@ public class MapTabRulesTests
     [InlineData(RiverModule.Household)]
     public async Task Tab_aModuleChosen_drawsItsRulesLinesAndTheirWordsWhereTheyWerePlaced(RiverModule chosen)
     {
-        var view = MapView.From(Full, Full.Run());
+        var view = MapView.From(Full, Full.Run(), MapNames.English);
         var placed = MapAmounts.Of(view, MapAmountsTests.Say);
         var rules = view.Bundles().Where(bundle => !MapLinkStyle.IsMoney(bundle.Kind) && bundle.Touches(chosen)).ToList();
         var drawn = view.Bundles().Where(bundle => MapLinkStyle.IsMoney(bundle.Kind) || bundle.Touches(chosen)).ToList();
@@ -125,7 +125,7 @@ public class MapTabRulesTests
     [Fact]
     public async Task Tab_aModuleChosen_listsItsEffectsUnderWhatItReceives()
     {
-        var view = MapView.From(Full, Full.Run());
+        var view = MapView.From(Full, Full.Run(), MapNames.English);
         var effects = MapEffectsView.Of(view, RiverModule.Car).Items;
         var benefit = MapViewTests.Line(view, MapEnd.Of(RiverModule.Car), MapEnd.Of(RiverModule.DirectorPay));
 

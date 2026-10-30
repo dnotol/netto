@@ -1,5 +1,3 @@
-using System.Globalization;
-using System.Resources;
 using Netto.Web.Client.River;
 
 namespace Netto.Web.Client.Tabs;
@@ -247,20 +245,13 @@ internal static class MapLayout
         _ => throw new ArgumentOutOfRangeException(nameof(module), module, "A module the map has no place for."),
     };
 
-    // The name the map draws a module by, in the language the page reads (MapTab.resx, the .fr.resx beside it),
-    // which the lines of its box and of a quiet pill are counted from.
-    public static string Name(RiverModule module) =>
-        ModuleNames.GetString(MapTabText.Module(module), CultureInfo.CurrentUICulture) ?? MapTabText.Module(module);
-
-    private static readonly ResourceManager ModuleNames = new(typeof(MapTab).FullName!, typeof(MapTab).Assembly);
-
-    // How many lines a module's name takes in its box on the narrowest map, so that a box grows with it: in
-    // English the allowances' wraps there; in French the vouchers', the allowances', the company's year's,
-    // Corporate tax's and Director pay's (MapLayoutTests).
-    public static int TitleLines(RiverModule module) => Lines(Name(module), TitleRoom(module));
+    // How many lines a module's name, as the map draws it in the language the page reads, takes in its box on
+    // the narrowest map, so that a box grows with it: in English the allowances' wraps there; in French the
+    // vouchers', the allowances', the company's year's, Corporate tax's and Director pay's (MapLayoutTests).
+    public static int TitleLines(RiverModule module, string name) => Lines(name, TitleRoom(module));
 
     // How many lines a quiet module's name takes in its pill on the narrowest map, each a target of its own.
-    public static int QuietLines(RiverModule module) => Lines(Name(module), QuietRoom(module));
+    public static int QuietLines(RiverModule module, string name) => Lines(name, QuietRoom(module));
 
     // The room a name has in its box on the narrowest map, its column less the box's padding of 0.35rem each
     // side and its frame; and in a quiet pill in that column, less the pill's padding of 0.6rem each side and
@@ -332,11 +323,12 @@ internal static class MapLayout
         _ => throw new ArgumentOutOfRangeException(nameof(column), column, "A column the map does not draw."),
     };
 
-    // The boxes of the modules and of the buckets, the quiet levers given drawn in quiet pills, each module's
-    // box holding the lines of badges given, each gate's the lines it says.
-    public static MapGrid Grid(IReadOnlyList<RiverModule> modules, IReadOnlySet<RiverModule>? quiet = null, IReadOnlyDictionary<RiverModule, int>? badgeLines = null,
-        IReadOnlyDictionary<RiverModule, int>? gateLines = null) =>
-        new(modules, quiet ?? new HashSet<RiverModule>(), badgeLines ?? new Dictionary<RiverModule, int>(), gateLines ?? new Dictionary<RiverModule, int>());
+    // The boxes of the modules and of the buckets, each module's named as the map draws it (MapTab passes the
+    // names its localizer gives), the quiet levers given drawn in quiet pills, each module's box holding the
+    // lines of badges given, each gate's the lines it says.
+    public static MapGrid Grid(IReadOnlyList<RiverModule> modules, Func<RiverModule, string> names, IReadOnlySet<RiverModule>? quiet = null,
+        IReadOnlyDictionary<RiverModule, int>? badgeLines = null, IReadOnlyDictionary<RiverModule, int>? gateLines = null) =>
+        new(modules, names, quiet ?? new HashSet<RiverModule>(), badgeLines ?? new Dictionary<RiverModule, int>(), gateLines ?? new Dictionary<RiverModule, int>());
 
     // Every link of the run with its route: links with the same ends and kind share one, their amount
     // said together, as thick as what they carry together beside the run's largest line of money
@@ -379,20 +371,19 @@ internal static class MapLayout
         private readonly IReadOnlyDictionary<RiverModule, int> _badgeLines;
         private readonly IReadOnlyDictionary<RiverModule, int> _gateLines;
 
-        // The lines each module's name takes in its box and in a quiet pill, in the language the page reads,
-        // counted once for the grid.
+        // The lines each module's name takes in its box and in a quiet pill, counted once for the grid.
         private readonly Dictionary<RiverModule, int> _titleLines;
         private readonly Dictionary<RiverModule, int> _quietLines;
 
-        public MapGrid(IReadOnlyList<RiverModule> modules, IReadOnlySet<RiverModule> quiet, IReadOnlyDictionary<RiverModule, int> badgeLines,
-            IReadOnlyDictionary<RiverModule, int> gateLines)
+        public MapGrid(IReadOnlyList<RiverModule> modules, Func<RiverModule, string> names, IReadOnlySet<RiverModule> quiet,
+            IReadOnlyDictionary<RiverModule, int> badgeLines, IReadOnlyDictionary<RiverModule, int> gateLines)
         {
             Modules = modules;
             _quiet = quiet;
             _badgeLines = badgeLines;
             _gateLines = gateLines;
-            _titleLines = MapModules.Order.ToDictionary(module => module, TitleLines);
-            _quietLines = MapModules.Order.ToDictionary(module => module, QuietLines);
+            _titleLines = MapModules.Order.ToDictionary(module => module, module => TitleLines(module, names(module)));
+            _quietLines = MapModules.Order.ToDictionary(module => module, module => QuietLines(module, names(module)));
             _firstOf = FirstOf(modules, quiet);
             _quietRows = _firstOf.GroupBy(pair => Place(pair.Value).Row).ToDictionary(run => run.Key, run => run.Select(pair => pair.Key).ToList());
             Rows =

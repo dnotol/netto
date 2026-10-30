@@ -38,7 +38,7 @@ public class MapQuietTests
     [Fact]
     public void From_everyLeverEmpty_drawsEveryLeverQuiet()
     {
-        var view = MapView.From(EveryLeverEmpty, EveryLeverEmpty.Run());
+        var view = MapView.From(EveryLeverEmpty, EveryLeverEmpty.Run(), MapNames.English);
 
         Quiet(view).ShouldBe([RiverModule.Vouchers, RiverModule.Allowances, RiverModule.Rent, RiverModule.Car, RiverModule.Copyright]);
     }
@@ -49,7 +49,7 @@ public class MapQuietTests
     {
         var river = Emptied(Full, lever);
 
-        Quiet(MapView.From(river, river.Run())).ShouldBe([MapModules.Of(lever)]);
+        Quiet(MapView.From(river, river.Run(), MapNames.English)).ShouldBe([MapModules.Of(lever)]);
     }
 
     // A royalty fixed at nothing comes to nothing, as one following the pay with no creative share does.
@@ -58,7 +58,7 @@ public class MapQuietTests
     {
         var river = Full.WithRoyalty(0m);
 
-        Quiet(MapView.From(river, river.Run())).ShouldBe([RiverModule.Copyright]);
+        Quiet(MapView.From(river, river.Run(), MapNames.English)).ShouldBe([RiverModule.Copyright]);
     }
 
     // The royalty is quiet in its own place, a slot as wide as its box and centred on it, and nothing runs to
@@ -68,9 +68,9 @@ public class MapQuietTests
     {
         var river = Emptied(Full, OptionalModule.Copyright);
 
-        var view = MapView.From(river, river.Run());
+        var view = MapView.From(river, river.Run(), MapNames.English);
 
-        var grid = MapLayout.Grid(MapView.ModulesOf(river), badgeLines: BadgeLines(view), gateLines: GateLines(view));
+        var grid = MapLayout.Grid(MapView.ModulesOf(river), MapNames.English, badgeLines: BadgeLines(view), gateLines: GateLines(view));
         var box = grid.Slot(MapEnd.Of(RiverModule.Copyright));
         var slot = Node(view, RiverModule.Copyright).Slot;
         view.ShouldSatisfyAllConditions(
@@ -85,9 +85,9 @@ public class MapQuietTests
     {
         var river = Emptied(Full, OptionalModule.Household);
 
-        var view = MapView.From(river, river.Run());
+        var view = MapView.From(river, river.Run(), MapNames.English);
 
-        var grid = MapLayout.Grid(MapView.ModulesOf(river), badgeLines: BadgeLines(view), gateLines: GateLines(view));
+        var grid = MapLayout.Grid(MapView.ModulesOf(river), MapNames.English, badgeLines: BadgeLines(view), gateLines: GateLines(view));
         var box = grid.Slot(MapEnd.Of(RiverModule.Household));
         var node = Node(view, RiverModule.Household);
         view.ShouldSatisfyAllConditions(
@@ -110,7 +110,7 @@ public class MapQuietTests
     [MemberData(nameof(HouseholdsWithDependantsAndNoLine))]
     public void From_aHouseholdDeclaringDependants_keepsItsBoxWithNoLine(string _, RiverInputs river)
     {
-        var view = MapView.From(river, river.Run());
+        var view = MapView.From(river, river.Run(), MapNames.English);
 
         view.ShouldSatisfyAllConditions(
             () => Node(view, RiverModule.Household).Quiet.ShouldBeFalse(),
@@ -126,7 +126,7 @@ public class MapQuietTests
     {
         var river = Full.WithPartner(false).WithSingleParent(singleParentTicked);
 
-        Node(MapView.From(river, river.Run()), RiverModule.Household).Quiet.ShouldBeTrue();
+        Node(MapView.From(river, river.Run(), MapNames.English), RiverModule.Household).Quiet.ShouldBeTrue();
     }
 
     // The office allowance is a rule the rent sets on the allowances: while a rent is paid it is a link of
@@ -136,7 +136,7 @@ public class MapQuietTests
     {
         var river = Emptied(Full, OptionalModule.Allowances);
 
-        var view = MapView.From(river, river.Run());
+        var view = MapView.From(river, river.Run(), MapNames.English);
 
         view.ShouldSatisfyAllConditions(
             () => view.LinksOf(RiverModule.Allowances).ShouldContain(link => link.Kind == MapLinkKind.Condition),
@@ -148,7 +148,7 @@ public class MapQuietTests
     {
         var river = Emptied(Full, OptionalModule.Allowances, OptionalModule.Rent);
 
-        Quiet(MapView.From(river, river.Run())).ShouldBe([RiverModule.Allowances, RiverModule.Rent]);
+        Quiet(MapView.From(river, river.Run(), MapNames.English)).ShouldBe([RiverModule.Allowances, RiverModule.Rent]);
     }
 
     // A refused run has no link to read what its levers move: it folds nothing, and the lever holding the
@@ -158,7 +158,7 @@ public class MapQuietTests
     {
         var river = Emptied(Full, OptionalModule.Vouchers, OptionalModule.Rent).WithCatalogueValue(-1m);
 
-        var view = MapView.From(river, river.Run());
+        var view = MapView.From(river, river.Run(), MapNames.English);
 
         view.ShouldSatisfyAllConditions(
             () => Quiet(view).ShouldBeEmpty(),
@@ -170,7 +170,7 @@ public class MapQuietTests
     {
         var river = Emptied(Full, OptionalModule.Vouchers, OptionalModule.Rent).WithReserve(-1m);
 
-        Quiet(MapView.From(river, river.Run())).ShouldBeEmpty();
+        Quiet(MapView.From(river, river.Run(), MapNames.English)).ShouldBeEmpty();
     }
 
     // Every lever moving money, in every composition: nothing is quiet, and the map is the one drawn without
@@ -184,10 +184,10 @@ public class MapQuietTests
         var run = river.Run();
         var modules = MapView.ModulesOf(river);
         IReadOnlyList<MapLink> links = [.. MapLinks.Of(river, run), .. MapConditions.From(YearConditions.Of(run.Year!), modules)];
-        var grid = MapLayout.Grid(modules, badgeLines: MapBadges.Lines(MapBadges.Of(links)), gateLines: MapLayoutTests.GateLines(river));
+        var grid = MapLayout.Grid(modules, MapNames.English, badgeLines: MapBadges.Lines(MapBadges.Of(links)), gateLines: MapLayoutTests.GateLines(river));
         var unfolded = MapLayout.Routed(grid, MapPocketLine.Of(links));
 
-        var view = MapView.From(river, run);
+        var view = MapView.From(river, run, MapNames.English);
 
         view.ShouldSatisfyAllConditions(
             () => Quiet(view).ShouldBeEmpty(),
@@ -205,7 +205,7 @@ public class MapQuietTests
         var river = Emptied(Full, OptionalModule.Allowances, OptionalModule.Rent, OptionalModule.Car);
         var handOff = MapLinks.Of(river, river.Run()).Single(link => link.From == MapEnd.Beside(RiverModule.Vouchers) && link.To.Lever is not null);
 
-        var view = MapView.From(river, river.Run());
+        var view = MapView.From(river, river.Run(), MapNames.English);
 
         var line = MapLinksTests.CompanysLine(view.Links).ToList();
         view.ShouldSatisfyAllConditions(
@@ -222,7 +222,7 @@ public class MapQuietTests
     {
         var bare = MapLinks.Of(RiverInputs.Example, RiverInputs.Example.Run()).Single(link => link.From == MapEnd.Of(RiverModule.CompanyYear) && link.Kind == MapLinkKind.PassedOn);
 
-        var line = MapView.From(EveryLeverEmpty, EveryLeverEmpty.Run()).Links.Single(link => link.From == MapEnd.Of(RiverModule.CompanyYear) && link.Kind == MapLinkKind.PassedOn);
+        var line = MapView.From(EveryLeverEmpty, EveryLeverEmpty.Run(), MapNames.English).Links.Single(link => link.From == MapEnd.Of(RiverModule.CompanyYear) && link.Kind == MapLinkKind.PassedOn);
 
         line.ShouldSatisfyAllConditions(
             () => (line.To, line.Card, line.Carries, line.Amount).ShouldBe((bare.To, bare.Card, bare.Carries, bare.Amount)),
@@ -251,11 +251,11 @@ public class MapQuietTests
     {
         var river = Emptied(Full, OptionalModule.Vouchers, OptionalModule.Allowances, OptionalModule.Rent, OptionalModule.Car) with { Allowances = Full.Allowances };
 
-        var view = MapView.From(river, river.Run());
+        var view = MapView.From(river, river.Run(), MapNames.English);
 
         var (vouchers, allowances, rent) = (Node(view, RiverModule.Vouchers).Slot, Node(view, RiverModule.Allowances).Slot, Node(view, RiverModule.Rent).Slot);
         (Node(view, RiverModule.Allowances).Quiet, vouchers.Bottom < allowances.Top, allowances.Bottom < rent.Top, allowances.Width).ShouldBe(
-            (false, true, true, MapLayout.Grid(MapView.ModulesOf(river)).Slot(MapEnd.Of(RiverModule.Allowances)).Width));
+            (false, true, true, MapLayout.Grid(MapView.ModulesOf(river), MapNames.English).Slot(MapEnd.Of(RiverModule.Allowances)).Width));
     }
 
     // A quiet lever's links are the company's line running past it: chosen, that line stays with its amount, on
@@ -264,7 +264,7 @@ public class MapQuietTests
     public void LinksOf_aQuietLever_isTheCompanysLineRunningPastIt()
     {
         var river = Emptied(Full, OptionalModule.Allowances, OptionalModule.Rent, OptionalModule.Car);
-        var view = MapView.From(river, river.Run());
+        var view = MapView.From(river, river.Run(), MapNames.English);
         var pill = Node(view, RiverModule.Rent).Slot;
 
         var past = view.LinksOf(RiverModule.Rent).ShouldHaveSingleItem();
@@ -283,7 +283,7 @@ public class MapQuietTests
     public void Routed_theCompanysLinePastQuietLevers_runsStraightDownClearOfTheirPill()
     {
         var river = Emptied(Full, OptionalModule.Allowances, OptionalModule.Rent, OptionalModule.Car);
-        var view = MapView.From(river, river.Run());
+        var view = MapView.From(river, river.Run(), MapNames.English);
         var (pill, split) = (Node(view, RiverModule.Rent).Slot, Node(view, RiverModule.Split).Slot);
 
         var route = view.Links.Single(link => link.Through.Count > 0).Route!;
@@ -300,9 +300,9 @@ public class MapQuietTests
     {
         var river = Emptied(Full, OptionalModule.Allowances, OptionalModule.Rent, OptionalModule.Car);
 
-        var view = MapView.From(river, river.Run());
+        var view = MapView.From(river, river.Run(), MapNames.English);
 
-        view.Units.ShouldBeLessThan(MapLayout.Grid(MapView.ModulesOf(river), badgeLines: BadgeLines(view), gateLines: GateLines(view)).Units);
+        view.Units.ShouldBeLessThan(MapLayout.Grid(MapView.ModulesOf(river), MapNames.English, badgeLines: BadgeLines(view), gateLines: GateLines(view)).Units);
     }
 
     // The quiet levers ending the chain above the split, one to four of them.
@@ -318,7 +318,7 @@ public class MapQuietTests
     public void From_aQuietRowAtTheMapsSmallestScale_holdsItsNamesOnePerLineClearOfTheBoxesAndTheLinesAmount(int count)
     {
         var river = Emptied(Full, [.. Chain.TakeLast(count).Select(module => RiverModules.Lever(module)!.Value)]);
-        var view = MapView.From(river, river.Run());
+        var view = MapView.From(river, river.Run(), MapNames.English);
         var rem = 100m / (view.Units * MapLayout.SmallestRowRem);
         var (pill, split) = (Node(view, RiverModule.Car).Slot, Node(view, RiverModule.Split).Slot);
         var above = view.Modules.Last(node => !node.Quiet && node.Slot.Bottom <= pill.Top).Slot;
@@ -363,7 +363,7 @@ public class MapQuietTests
     private static decimal Rows(decimal percent, decimal units) => Math.Round(percent * units / 100m, 10);
 
     private static string[] Places(RiverInputs river) =>
-        [.. MapView.From(river, river.Run()).Places().Select(place => string.Join('+', place.Nodes.Select(node => node.End.Id)) + (place.Quiet ? " quiet" : ""))];
+        [.. MapView.From(river, river.Run(), MapNames.English).Places().Select(place => string.Join('+', place.Nodes.Select(node => node.End.Id)) + (place.Quiet ? " quiet" : ""))];
 
     private static string Line(MapLink link) =>
         $"{link.Kind} {link.From.Id} {link.To.Id} {link.Amount} {link.Through.Count} {string.Join(' ', link.Route!.Points)}";
