@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Microsoft.JSInterop;
+using MudBlazor;
 using MudBlazor.Services;
 using Netto.Web.Client;
 using Netto.Web.Client.Layout;
@@ -7,10 +9,12 @@ using Netto.Web.Client.Tabs;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
-// Interface text lives in a .resx beside each component (Pages/Home.resx for Pages/Home.razor),
-// read through IStringLocalizer<TComponent>.
+// Interface text lives in a .resx beside each component (Pages/Home.resx for Pages/Home.razor), its French in a
+// .fr.resx beside it (Pages/Home.fr.resx), read through IStringLocalizer<TComponent>; MudBlazor's own words Netto
+// shows, through NettoMudLocalizer.
 builder.Services.AddLocalization();
 builder.Services.AddMudServices();
+builder.Services.AddTransient<MudLocalizer, NettoMudLocalizer>();
 
 // What is kept in the browser, never on a server: the viewer's preferences, their theme, which folds of
 // the river are open and which kinds of link the Map tab hides, and the plans they save.
@@ -26,4 +30,9 @@ builder.Services.AddSingleton(TimeProvider.System);
 // The river's inputs while the tab is open, starting on the plan last opened.
 builder.Services.AddScoped<RiverState>();
 
-await builder.Build().RunAsync();
+// The page starts in the viewer's language, French unless they chose English: its texts are read in it from
+// here on, and RunAsync loads its satellite resources. Only the UI culture is set; numbers go through Formats.
+var host = builder.Build();
+Languages.Apply(LanguagePreference.Stored(new LocalStorage(host.Services.GetRequiredService<IJSRuntime>())));
+
+await host.RunAsync();
