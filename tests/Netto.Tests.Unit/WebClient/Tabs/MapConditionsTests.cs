@@ -110,13 +110,13 @@ public class MapConditionsTests
         { new PayKeepsReducedRate(ReducedRateCondition.TaxableIncomeNotAbovePay, 51_000m, 50_000m, 50_000m), "pay met", nameof(MapBadgeTone.Holds) },
         { new PayKeepsReducedRate(ReducedRateCondition.MinimumPayNotMet, 51_000m, 40_000m, 60_000m), "rate lost: pay", nameof(MapBadgeTone.Lost) },
         { new BenefitsWithinShareOfPay(true, 1_714.29m, 51_714.29m, 0.20m), "benefits met", nameof(MapBadgeTone.Holds) },
-        { new BenefitsWithinShareOfPay(false, 1_714.29m, 6_714.29m, 0.20m), "rate lost: benefits", nameof(MapBadgeTone.Lost) },
-        { new RoyaltyLowersPayKeepingReducedRate(40_000m, 50_000m, false), "royalty lowers pay", nameof(MapBadgeTone.Holds) },
-        { new RoyaltyLowersPayKeepingReducedRate(40_000m, null, true), "royalty lowers pay", nameof(MapBadgeTone.Holds) },
-        { new RoyaltyLowersPayKeepingReducedRate(51_000m, 51_000m, false), "royalty: no effect", nameof(MapBadgeTone.NoEffect) },
-        { new RoyaltyLowersPayKeepingReducedRate(null, null, true), "no pay keeps rate", nameof(MapBadgeTone.Lost) },
-        { new PayOutCoversReserve(40_000m, 40_000m), "reserve covered", nameof(MapBadgeTone.Holds) },
-        { new PayOutCoversReserve(40_000.01m, 40_000m), "reserve not covered", nameof(MapBadgeTone.Lost) },
+        { new BenefitsWithinShareOfPay(false, 1_714.29m, 6_714.29m, 0.20m), "benefits lost", nameof(MapBadgeTone.Lost) },
+        { new RoyaltyLowersPayKeepingReducedRate(40_000m, 50_000m, false), "royalty lowers", nameof(MapBadgeTone.Holds) },
+        { new RoyaltyLowersPayKeepingReducedRate(40_000m, null, true), "royalty lowers", nameof(MapBadgeTone.Holds) },
+        { new RoyaltyLowersPayKeepingReducedRate(51_000m, 51_000m, false), "royalty: none", nameof(MapBadgeTone.NoEffect) },
+        { new RoyaltyLowersPayKeepingReducedRate(null, null, true), "no pay keeps", nameof(MapBadgeTone.Lost) },
+        { new PayOutCoversReserve(40_000m, 40_000m), "reserve met", nameof(MapBadgeTone.Holds) },
+        { new PayOutCoversReserve(40_000.01m, 40_000m), "reserve short", nameof(MapBadgeTone.Lost) },
     };
 
     [Theory]
@@ -130,14 +130,18 @@ public class MapConditionsTests
 
     public static TheoryData<YearCondition> Badged => new(Badges.Select(row => row.Data.Item1));
 
-    // A badge says, beside the rule it names, the very state its condition's line says on the map.
-    [Theory]
-    [MemberData(nameof(Badged))]
-    public void Link_aConditionsBadge_saysTheStateItsLineSays(YearCondition condition)
+    // A badge names its rule in words of its own, in English and in French, so no two badges say the same, and
+    // its icon says whether the rule holds (MapBadgeStyle), its words short enough to read whole in its box
+    // (MapBadgesTests), never the line's whole state.
+    [Fact]
+    public void Link_everyConditionsBadge_hasWordsOfItsOwnAndAnIcon()
     {
-        var link = MapConditions.Link(condition);
+        var badges = Badged.Select(row => MapConditions.Link(row.Data).Badge!).DistinctBy(badge => badge.Words.Key).ToList();
 
-        Resources.Format(link.Badge!.Words.Key, [.. link.Badge.Words.Args]).ShouldContain(Resources.Get(link.State!.Key)!, Case.Sensitive);
+        badges.ShouldSatisfyAllConditions(
+            () => badges.Select(badge => Resources.Get(badge.Words.Key)).Distinct().Count().ShouldBe(badges.Count),
+            () => badges.Select(badge => ResxText.French<MapTab>().Get(badge.Words.Key)).Distinct().Count().ShouldBe(badges.Count),
+            () => badges.ShouldAllBe(badge => MapBadgeStyle.Icon(badge.Tone) != null));
     }
 
     public static TheoryData<YearCondition> OfficeRules => new(new YearCondition[] { new NoOfficeAllowanceBesideRent(1_380m, 0m), new NoOfficeAllowanceBesideRent(0m, 1_938.44m) });

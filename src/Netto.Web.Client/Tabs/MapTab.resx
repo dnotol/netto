@@ -149,22 +149,22 @@
     <value>benefits met</value>
   </data>
   <data name="Badge_Benefits_Lost" xml:space="preserve">
-    <value>rate lost: benefits</value>
+    <value>benefits lost</value>
   </data>
   <data name="Badge_Royalty_Lowers" xml:space="preserve">
-    <value>royalty lowers pay</value>
+    <value>royalty lowers</value>
   </data>
   <data name="Badge_Royalty_NoEffect" xml:space="preserve">
-    <value>royalty: no effect</value>
+    <value>royalty: none</value>
   </data>
   <data name="Badge_Royalty_NoPayKeeps" xml:space="preserve">
-    <value>no pay keeps rate</value>
+    <value>no pay keeps</value>
   </data>
   <data name="Badge_Reserve_Covered" xml:space="preserve">
-    <value>reserve covered</value>
+    <value>reserve met</value>
   </data>
   <data name="Badge_Reserve_NotCovered" xml:space="preserve">
-    <value>reserve not covered</value>
+    <value>reserve short</value>
   </data>
   <data name="Badge_TaxBase" xml:space="preserve">
     <value>+{0} to tax base</value>

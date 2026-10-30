@@ -51,6 +51,19 @@ internal static class MapBadges
 // module's button, so its words are part of the name a screen reader hears.
 internal sealed record MapBadge(MapLinkKind Kind, MapLabel Words, MapBadgeTone Tone);
 
+// A badge's words as its box draws them: those seen, and those only heard, out of sight, part of the button's
+// name. A badge whose words hold an amount, what a tax base gains, shows them up to its amount, its sign and the
+// amount itself, so it reads whole on the narrowest map; the words after it are heard, its dotted outline, its
+// line's, saying what it is, as the key does. A condition's badge, with no amount, is seen whole.
+internal static class MapBadgeWords
+{
+    public static (string Seen, string Heard) Of(MapBadge badge, string template)
+    {
+        var (before, after, holdsAmount) = MapGateText.Parts(template);
+        return holdsAmount ? (before + badge.Words.Args[0], after) : (template, "");
+    }
+}
+
 // How a badge is drawn: a condition that holds muted with a check; one that does not hold but loses
 // nothing, the royalty lowering no pay, muted with a dash; one that does not hold and costs the plan its
 // rate or its reserve in the error colour, outlined and with its icon, its words saying it too, never the

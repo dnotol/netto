@@ -155,16 +155,16 @@
     <value>seuil abaissé</value>
   </data>
   <data name="Badge_Royalty_NoEffect" xml:space="preserve">
-    <value>droits sans effet</value>
+    <value>droits&#160;: neutre</value>
   </data>
   <data name="Badge_Royalty_NoPayKeeps" xml:space="preserve">
-    <value>taux réduit exclu</value>
+    <value>taux perdu</value>
   </data>
   <data name="Badge_Reserve_Covered" xml:space="preserve">
-    <value>gardé&#160;: couvert</value>
+    <value>gardé&#160;: oui</value>
   </data>
   <data name="Badge_Reserve_NotCovered" xml:space="preserve">
-    <value>gardé non couvert</value>
+    <value>gardé&#160;: non</value>
   </data>
   <data name="Badge_TaxBase" xml:space="preserve">
     <value>+{0} à la base</value>

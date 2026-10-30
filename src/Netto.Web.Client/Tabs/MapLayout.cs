@@ -89,6 +89,13 @@ internal static class MapLayout
     internal const decimal BadgeGapRem = 0.1m;
     private const decimal BadgeUnits = (BadgeRem + BadgeGapRem) / SmallestRowRem;
 
+    // A badge across its box: the badges reach this far into the box's padding each side, keeping 0.1rem of it;
+    // a badge's padding each side, and its tone's icon and the gap after it (MapTab.razor.css: .map-badge).
+    internal const decimal BadgeInsetRem = 0.25m;
+    internal const decimal BadgePadRem = 0.25m;
+    internal const decimal BadgeIconRem = 0.75m;
+    internal const decimal BadgeIconGapRem = 0.15m;
+
     // A gate's box at the map's smallest scale: its name, a line each at the largest size a module's title is
     // drawn (0.85rem, line height 1.1), its lines (MapGates) at 0.68rem with a line height of 1.15, 0.25rem
     // of padding over and under them and its frame. The stylesheet draws a gate with these (MapLayoutTests).
@@ -264,6 +271,12 @@ internal static class MapLayout
 
     internal static decimal QuietRoom(RiverModule module) =>
         ColumnPixels(Place(module).Column) - 2m * QuietPillPadRem * PixelsPerRem - 2m - 2m * BoxPadRem * PixelsPerRem;
+
+    // The room a badge's words have in a module's box on the narrowest map: the box's room for its name, the
+    // badges reaching into its padding each side, less the badge's frame and padding, and its icon and the gap
+    // after it where its tone has one (MapBadgeStyle.Icon), so its words read whole (MapBadgesTests).
+    internal static decimal BadgeRoom(RiverModule module, bool icon) =>
+        TitleRoom(module) + 2m * BadgeInsetRem * PixelsPerRem - 2m - 2m * BadgePadRem * PixelsPerRem - (icon ? (BadgeIconRem + BadgeIconGapRem) * PixelsPerRem : 0m);
 
     private const decimal BoxPadRem = 0.35m;
     private const decimal QuietPillPadRem = 0.6m;

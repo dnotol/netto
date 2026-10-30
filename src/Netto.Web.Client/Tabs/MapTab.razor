@@ -41,7 +41,8 @@
 
    The rules are marks on the module they act on: each condition another module sets on it, but the
    office rule, which always holds, is a badge in its box saying which rule and whether it holds, and what
-   its tax base gains is one badge with its amount (MapBadges), read from every link, so a line left
+   its tax base gains is one badge showing its amount, its words heard out of sight (MapBadgeWords), each
+   reading whole on the narrowest map (MapLayout.BadgeRoom), read from every link, so a line left
    undrawn hides no badge, and the box is a line taller for each (MapLayout). A rule lost is said in its
    words, an icon and an outline in the error colour, never the colour alone; the royalty lowering no pay has
    no effect. The badges are the button's content, so a screen reader hears them with the module's name.
@@ -370,12 +371,14 @@
                 <span class="map-module__badges">
                     @foreach (var badge in node.Badges)
                     {
+                        var (seen, heard) = MapBadgeWords.Of(badge, Template(badge.Words));
                         <span class="map-badge map-badge--@MapBadgeStyle.Class(badge.Tone)" data-badge-kind="@badge.Kind">
                             @if (MapBadgeStyle.Icon(badge.Tone) is { } icon)
                             {
                                 <MudIcon Icon="@icon" Size="Size.Small" aria-hidden="true" />
                             }
-                            <span class="map-badge__words">@Carries(badge.Words)</span>
+                            <span class="map-badge__words">@seen</span>@if (heard.Length > 0)
+                            {<span class="map-badge__heard">@heard</span>}
                         </span>
                     }
                 </span>
@@ -390,12 +393,18 @@
 
     // What a link carries, in the words of the texts that word its line on its card (MapTabText.Texts), or a
     // condition's word or two, in the map's.
-    private string Carries(MapLabel label)
+    private string Carries(MapLabel label) => TextsOf(label)[label.Key, [.. label.Args]].Value;
+
+    // A label's words as its texts write them, its amount's place among them, which a badge's words are cut at
+    // (MapBadgeWords).
+    private string Template(MapLabel label) => TextsOf(label)[label.Key].Value;
+
+    private IStringLocalizer TextsOf(MapLabel label)
     {
         if (!_texts.TryGetValue(label.Text, out var texts))
             _texts[label.Text] = texts = Localizers.Create(MapTabText.Texts(label.Text));
 
-        return texts[label.Key, [.. label.Args]].Value;
+        return texts;
     }
 
     // A module by its card's title, a bucket by the bar's name for it.

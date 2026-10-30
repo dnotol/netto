@@ -74,7 +74,7 @@ public class MapBadgesTests
                 .ShouldBe(links.Where(link => link.Badge is not null).Select(link => (link.To.Module!.Value, link.Badge!)), ignoreOrder: true),
             () => badges.Values.ShouldAllBe(list => list.SkipWhile(badge => badge.Kind == MapLinkKind.Condition).All(badge => badge.Kind == MapLinkKind.TaxBase)),
             () => badges[RiverModule.CorporateTax].Select(badge => (Resources.Format(badge.Words.Key, [.. badge.Words.Args]), badge.Tone))
-                .ShouldContain(("rate lost: benefits", MapBadgeTone.Lost)));
+                .ShouldContain(("benefits lost", MapBadgeTone.Lost)));
     }
 
     // The office rule always holds: the rent it acts on has no badge.
@@ -186,6 +186,92 @@ public class MapBadgesTests
             () => Stylesheet.Block(css, ".map-module__badges").ShouldContain($"gap: {Stylesheet.Rem(MapLayout.BadgeGapRem)};"),
             () => Stylesheet.Block(css, ".map-module__badges").ShouldContain($"margin-top: {Stylesheet.Rem(MapLayout.BadgeGapRem)};"),
             () => ((MapLayout.BadgeRem + MapLayout.BadgeGapRem) / MapLayout.SmallestRowRem).ShouldBe(0.3m));
+    }
+
+    // What the stylesheet draws a badge with is what the layout reckons its words' room by: the badges reaching
+    // into the box's padding, the badge's own padding, and its icon and the gap after it.
+    [Fact]
+    public void MapTabCss_drawsABadgeWithThePaddingAndIconItsRoomIsReckonedBy()
+    {
+        var css = Stylesheet.Read("src", "Netto.Web.Client", "Tabs", "MapTab.razor.css");
+
+        css.ShouldSatisfyAllConditions(
+            () => Stylesheet.Block(css, ".map-module__badges").ShouldContain($"margin-right: -{Stylesheet.Rem(MapLayout.BadgeInsetRem)};"),
+            () => Stylesheet.Block(css, ".map-module__badges").ShouldContain($"margin-left: -{Stylesheet.Rem(MapLayout.BadgeInsetRem)};"),
+            () => Stylesheet.Block(css, ".map-badge").ShouldContain($"padding: 0 {Stylesheet.Rem(MapLayout.BadgePadRem)};"),
+            () => Stylesheet.Block(css, ".map-badge").ShouldContain($"gap: {Stylesheet.Rem(MapLayout.BadgeIconGapRem)};"),
+            () => Stylesheet.Block(css, ".map-badge ::deep .mud-icon-root").ShouldContain($"width: {Stylesheet.Rem(MapLayout.BadgeIconRem)};"));
+    }
+
+    // The room a badge's words have on the narrowest map: its box's column less the box's frame and what its
+    // padding keeps of it each side, 0.1rem, the badge's frame and padding, and its icon and the gap after it
+    // where it has one: Director pay's 90 px, the company's 108.
+    [Theory]
+    [InlineData(RiverModule.DirectorPay, false, 90 - 2 - 3.2 - 2 - 8)]
+    [InlineData(RiverModule.CorporateTax, false, 108 - 2 - 3.2 - 2 - 8)]
+    [InlineData(RiverModule.CorporateTax, true, 108 - 2 - 3.2 - 2 - 8 - 12 - 2.4)]
+    [InlineData(RiverModule.Split, true, 108 - 2 - 3.2 - 2 - 8 - 12 - 2.4)]
+    public void BadgeRoom_aModule_isItsColumnLessItsFramesPaddingsAndIcon(RiverModule module, bool icon, double room)
+    {
+        MapLayout.BadgeRoom(module, icon).ShouldBe((decimal)room);
+    }
+
+    // Every condition's badge reads whole in the box it marks on the narrowest map, its icon beside it, in English
+    // and in French: no ellipsis.
+    [Theory]
+    [MemberData(nameof(MapConditionsTests.Badged), MemberType = typeof(MapConditionsTests))]
+    public void Badge_aConditionsInEitherLanguage_readsWholeInTheBoxItMarks(YearCondition condition)
+    {
+        var link = MapConditions.Link(condition);
+        var (badge, room) = (link.Badge.ShouldNotBeNull(), MapLayout.BadgeRoom(link.To.Module!.Value, icon: true));
+
+        (MapGateTextTests.LineWidth(Resources.Get(badge.Words.Key).ShouldNotBeNull()) <= room, MapGateTextTests.LineWidth(ResxText.French<MapTab>().Get(badge.Words.Key).ShouldNotBeNull()) <= room)
+            .ShouldBe((true, true));
+    }
+
+    // A tax base's badge shows its amount alone, its sign before it; the words after it are heard, part of the
+    // button's name, the dotted outline its line has saying what it is, as the key does. A condition's badge is
+    // seen whole.
+    [Theory]
+    [InlineData("+{0} to tax base", "€3,450.00", "+€3,450.00", " to tax base")]
+    [InlineData("+{0} à la base", "3.450,00 €", "+3.450,00 €", " à la base")]
+    public void Words_aTaxBasesBadge_showsItsAmountAndLeavesItsWordsHeard(string template, string amount, string seen, string heard)
+    {
+        var badge = new MapBadge(MapLinkKind.TaxBase, new MapLabel(MapText.Map, MapTabText.TaxBaseBadge, [amount]), MapBadgeTone.Amount);
+
+        MapBadgeWords.Of(badge, template).ShouldBe((seen, heard));
+    }
+
+    [Fact]
+    public void Words_aConditionsBadge_isSeenWhole()
+    {
+        var badge = new MapBadge(MapLinkKind.Condition, new MapLabel(MapText.Map, MapTabText.ReserveBadge(holds: true), []), MapBadgeTone.Holds);
+
+        MapBadgeWords.Of(badge, "reserve met").ShouldBe(("reserve met", ""));
+    }
+
+    // What a tax base gains reads whole in the box it marks on the narrowest map, in English and in French, up to
+    // the most it is held to: Director pay's, a car's benefit and the marital quotient, up to €99,999.99, far
+    // beyond either; Corporate tax's, the year's disallowed expenses, up to €9,999,999.99.
+    public static TheoryData<RiverModule, string, string> TaxBaseLimits => new()
+    {
+        { RiverModule.DirectorPay, Formats.Euros(99_999.99m), $"99.999,99{NoBreak}€" },
+        { RiverModule.CorporateTax, Formats.Euros(9_999_999.99m), $"9.999.999,99{NoBreak}€" },
+    };
+
+    private const char NoBreak = (char)0x00A0;
+
+    [Theory]
+    [MemberData(nameof(TaxBaseLimits))]
+    public void Badge_aTaxBasesAmountUpToItsLimitInEitherLanguage_readsWholeInTheBoxItMarks(RiverModule module, string english, string french)
+    {
+        var (en, fr) = (Seen(Resources, english), Seen(ResxText.French<MapTab>(), french));
+
+        (en, MapGateTextTests.LineWidth(en) <= MapLayout.BadgeRoom(module, icon: false), fr, MapGateTextTests.LineWidth(fr) <= MapLayout.BadgeRoom(module, icon: false))
+            .ShouldBe(($"+{english}", true, $"+{french}", true));
+
+        static string Seen(ResxText texts, string amount) =>
+            MapBadgeWords.Of(new MapBadge(MapLinkKind.TaxBase, new MapLabel(MapText.Map, MapTabText.TaxBaseBadge, [amount]), MapBadgeTone.Amount), texts.Get(MapTabText.TaxBaseBadge).ShouldNotBeNull()).Seen;
     }
 
     // The links of the run, the conditions of its year between modules on the map among them, before a

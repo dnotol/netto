@@ -138,6 +138,33 @@ public class MapTabTests
                 .Select(badge => $"{badge.Module} {badge.Words}").ShouldBeEmpty());
     }
 
+    // What a tax base gains shows as its amount alone in the box it marks, so it reads whole on the narrowest map;
+    // its words are heard with it, out of sight, so the button's name keeps them whole. A condition's badge is
+    // seen whole.
+    [Fact]
+    public async Task Tab_aTaxBasesBadge_showsItsAmountAndLeavesItsWordsHeard()
+    {
+        var html = await RenderTabAsync(MapViewConditionsTests.CostlyCar);
+
+        var badges = ButtonBadges(html);
+        badges.ShouldSatisfyAllConditions(
+            () => badges.Where(badge => badge.Tone == "amount").Select(badge => (badge.Module, badge.Seen.StartsWith('+'), badge.Seen.Contains(' ', StringComparison.Ordinal), badge.Heard))
+                .ShouldBe([("director-pay", true, false, " to tax base"), ("corporate-tax", true, false, " to tax base")]),
+            () => badges.Where(badge => badge.Tone != "amount").ShouldAllBe(badge => badge.Heard.Length == 0 && badge.Seen.Length > 0));
+    }
+
+    // What a badge leaves heard is out of sight, as a quiet name's state is.
+    [Fact]
+    public void MapTabCss_hidesWhatABadgeLeavesHeard()
+    {
+        var heard = Stylesheet.Block(Stylesheet.Read("src", "Netto.Web.Client", "Tabs", "MapTab.razor.css"), ".map-badge__heard");
+
+        heard.ShouldSatisfyAllConditions(
+            () => heard.ShouldContain("position: absolute;"),
+            () => heard.ShouldContain("clip-path: inset(50%);"),
+            () => heard.ShouldContain("overflow: hidden;"));
+    }
+
     // The buckets are not modules: nothing to choose, named as the bar names them.
     [Fact]
     public async Task Tab_buckets_areTheBarsFiveByTheBarsNames()
@@ -465,12 +492,16 @@ public class MapTabTests
                 match.Groups[1].Value.Contains("map-module--refused", StringComparison.Ordinal), match.Groups[1].Value.Contains("map-module--skipped", StringComparison.Ordinal))),
     ];
 
-    // Each badge drawn in a module's button: the module, its tone, the icon before its words, and its words.
-    private static List<(string Module, string Tone, string Icon, string Words)> ButtonBadges(string html) =>
+    // Each badge drawn in a module's button: the module, its tone, the icon before its words, and its words, those
+    // seen and those only heard, out of sight.
+    private static List<(string Module, string Tone, string Icon, string Words, string Seen, string Heard)> ButtonBadges(string html) =>
     [
         .. Regex.Matches(html, "<button type=\"button\" class=\"map-module[^\"]*\"[^>]*data-module=\"([a-z-]+)\"[^>]*>(.*?)</button>", RegexOptions.Singleline)
-            .SelectMany(button => Regex.Matches(button.Groups[2].Value, "<span class=\"map-badge map-badge--([a-z-]+)\"[^>]*>(.*?)<span class=\"map-badge__words\"[^>]*>([^<]*)</span>\\s*</span>", RegexOptions.Singleline)
-                .Select(badge => (button.Groups[1].Value, badge.Groups[1].Value, badge.Groups[2].Value.Trim(), badge.Groups[3].Value.Trim()))),
+            .SelectMany(button => Regex.Matches(button.Groups[2].Value,
+                    "<span class=\"map-badge map-badge--([a-z-]+)\"[^>]*>(.*?)<span class=\"map-badge__words\"[^>]*>([^<]*)</span>(?:\\s*<span class=\"map-badge__heard\"[^>]*>([^<]*)</span>)?\\s*</span>",
+                    RegexOptions.Singleline)
+                .Select(badge => (button.Groups[1].Value, badge.Groups[1].Value, badge.Groups[2].Value.Trim(), (badge.Groups[3].Value + badge.Groups[4].Value).Trim(),
+                    badge.Groups[3].Value, badge.Groups[4].Value))),
     ];
 
     // A badge's words, as the map's texts say them.

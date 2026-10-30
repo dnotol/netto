@@ -156,27 +156,21 @@ public class FrenchTabsTests
         (text, text?.Length <= 14).ShouldBe((words, true));
     }
 
-    // A badge is cut beyond its box's width, 87 px on Corporate tax at 1,280 px, which « taux perdu : paie » fills
-    // exactly (measured in the browser on 30.10.2026). A condition's badge in French fits that room, or is no
-    // wider than its English, so it still says met or lost. The tax base's carries an amount, cut alike in English.
-    private static readonly decimal BadgeRoom = MapAmounts.Width("taux perdu : paie");
-
+    // A condition's badge says which rule and whether it holds in a word or two, short enough to read whole in
+    // its box on the narrowest map (MapBadgesTests): the reserve as « gardé », never « réserve », a legal term.
     [Theory]
-    [InlineData("Badge_Pay_Met")]
-    [InlineData("Badge_Pay_Lost")]
-    [InlineData("Badge_Benefits_Met")]
-    [InlineData("Badge_Benefits_Lost")]
-    [InlineData("Badge_Royalty_Lowers")]
-    [InlineData("Badge_Royalty_NoEffect")]
-    [InlineData("Badge_Royalty_NoPayKeeps")]
-    [InlineData("Badge_Reserve_Covered")]
-    [InlineData("Badge_Reserve_NotCovered")]
-    public void Badge_inFrench_isNoWiderThanInEnglish(string key)
+    [InlineData("Badge_Pay_Met", "paie : oui")]
+    [InlineData("Badge_Pay_Lost", "paie : non")]
+    [InlineData("Badge_Benefits_Met", "ATN : oui")]
+    [InlineData("Badge_Benefits_Lost", "ATN : non")]
+    [InlineData("Badge_Royalty_Lowers", "seuil abaissé")]
+    [InlineData("Badge_Royalty_NoEffect", "droits : neutre")]
+    [InlineData("Badge_Royalty_NoPayKeeps", "taux perdu")]
+    [InlineData("Badge_Reserve_Covered", "gardé : oui")]
+    [InlineData("Badge_Reserve_NotCovered", "gardé : non")]
+    public void Badge_inFrench_saysItsRuleAndWhetherItHolds(string key, string words)
     {
-        var french = ResxText.French<MapTab>().Get(key).ShouldNotBeNull();
-        var english = ResxText.For<MapTab>().Get(key).ShouldNotBeNull();
-
-        MapAmounts.Width(french).ShouldBeLessThanOrEqualTo(Math.Max(MapAmounts.Width(english), BadgeRoom));
+        ResxText.French<MapTab>().Get(key).ShouldBe(words.Replace(" :", $"{NoBreak}:", StringComparison.Ordinal));
     }
 
     // A badge fits a box on one line, 30 characters at most, a tax base's at an amount of millions.

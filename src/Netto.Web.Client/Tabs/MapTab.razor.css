@@ -475,8 +475,11 @@
 
 /* The badges of a box under its title, a line each: the conditions other modules set on it and what its
    tax base gains (MapBadges). A line is as tall as the layout keeps for it at the map's smallest scale
-   (MapLayout: BadgeRem and BadgeGapRem are the 0.875rem and 0.1rem here), its words on one line, cut short
-   by an ellipsis only where the box is narrower than them, the button's name keeping them whole. */
+   (MapLayout: BadgeRem and BadgeGapRem are the 0.875rem and 0.1rem here), its words on one line. The badges
+   reach 0.25rem into the box's padding each side, keeping 0.1rem of it, and a badge's padding, icon and gap
+   are the ones its words' room is reckoned by (MapLayout: BadgeInsetRem, BadgePadRem, BadgeIconRem and
+   BadgeIconGapRem), so its words read whole on the narrowest map (MapBadgesTests); an ellipsis would cut
+   them only past what those tests hold, the button's name keeping them whole. */
 .map-module__badges {
     display: flex;
     flex-direction: column;
@@ -485,17 +488,18 @@
     gap: 0.1rem;
     min-width: 0;
     margin-top: 0.1rem;
+    margin-right: -0.25rem;\n    margin-left: -0.25rem;
 }
 
 /* A rule that holds, or the royalty lowering no pay: muted, with its icon. */
 .map-badge {
     display: inline-flex;
     align-items: center;
-    gap: 0.2rem;
+    gap: 0.15rem;
     box-sizing: border-box;
     max-width: 100%;
     height: 0.875rem;
-    padding: 0 0.35rem;
+    padding: 0 0.25rem;
     border: 1px solid transparent;
     border-radius: 999px;
     color: var(--netto-text-muted);
@@ -509,6 +513,17 @@
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+/* What a badge leaves heard, out of sight: a tax base's words after its amount (MapBadgeWords), part of the
+   button's name. */
+.map-badge__heard {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
 }
 
 /* A rule lost: its words, its icon and its outline in the error colour, never the colour alone. */
