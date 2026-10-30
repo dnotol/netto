@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 
 <head>
     <meta charset="utf-8" />
@@ -9,6 +9,8 @@
     @* Before anything paints: sets the page's theme, the viewer's pick or their system's, so the splash
        is drawn in it too. After <base>, so its path resolves from the root on any page. *@
     <script src="@Assets["theme.js"]"></script>
+    @* Before anything paints too: names the page's language on the root, the viewer's choice or French. *@
+    <script src="@Assets["language.js"]"></script>
     <ResourcePreloader />
     @* Preload paths must match the url() paths inside app.css, and fonts are CORS-fetched even
        same-origin: without crossorigin the browser downloads each font twice. *@
