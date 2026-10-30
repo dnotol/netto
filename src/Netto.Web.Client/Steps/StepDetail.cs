@@ -11,6 +11,14 @@ public sealed record StepDetail(string RuleKey, decimal Amount, IReadOnlyList<So
 {
     public IReadOnlyList<StepLine> Lines { get; init; } = [];
 
+    // Money that comes back: the refund on exempt dividends, the tax credit for low earned income. The engine
+    // negates what comes back, so a refund or a credit of nothing is a negative zero, which is not less than
+    // zero: the sign bit says so, as it does on the drains (Drain.PaidOutTo, GrossToNetView).
+    public bool ComesBack => decimal.IsNegative(Amount);
+
+    // The amount as the card shows it: an addition when it comes back, else the amount.
+    public string AmountShown => ComesBack ? Formats.Addition(-Amount) : Formats.Euros(Amount);
+
     public static StepDetail From(Step step) => From(step.RuleKey, step.Amount, step.Source, step.AmountsUsed, step.AlsoCites);
 
     // The step's own source first, even with no amount of its own, then each other source in the
