@@ -814,7 +814,7 @@
     <value>Frais forfaitaires sur les droits d'auteur</value>
   </data>
   <data name="Rule_copyright_flat_rate_costs" xml:space="preserve">
-    <value>Sans preuve de frais réels, la part dans les limites est imposée après déduction de frais forfaitaires&#160;: 50&#160;% de la première tranche et 25&#160;% de la suivante jusqu'au plafond de la seconde tranche, rien au-delà. À partir de 2026, ils ne valent que pour les œuvres qu'une attestation du travail des arts couvre au moment où les droits sont payés, jamais l'attestation du travail des arts starter. Ils diminuent ce qui est imposé distinctement et retenu, jamais ce qui arrive dans votre poche, et ne sont jamais déduits de la part imposée comme rémunération.</value>
+    <value>Sans preuve de frais réels, la part dans les limites est imposée après déduction de frais forfaitaires&#160;: 50&#160;% de la première tranche et 25&#160;% de la suivante jusqu'au plafond de la seconde tranche, rien au-delà. À partir de 2026, ils ne valent que pour les œuvres couvertes, au moment où les droits sont payés, par une attestation du travail des arts visée à l'art. 7 de la loi du 16.12.2022 ou à l'art. 12, §8 de l'arrêté royal du 13.03.2023, jamais par une attestation visée à l'art. 17 de cet arrêté. Ils diminuent ce qui est imposé distinctement et retenu, jamais ce qui arrive dans votre poche, et ne sont jamais déduits de la part imposée comme rémunération.</value>
   </data>
   <data name="Amount_copyright_flat_rate_costs_first_band_rate" xml:space="preserve">
     <value>Frais forfaitaires sur la première tranche</value>
