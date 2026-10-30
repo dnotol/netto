@@ -97,6 +97,14 @@ internal sealed record RentView(
     // same at every pay, while the profit before pay alone moves with a royalty that follows the pay.
     public decimal SplitShares { get; init; }
 
+    // The year's rules, which give the rates and coefficients the lines' bubbles state; none for a year
+    // without rules.
+    public RentRules? Rules { get; init; }
+
+    // A partner is taxed jointly with the director: the net rent is then taxed in the director's column
+    // whoever owns the home, which the line it joins the taxable income on says.
+    public bool TaxedJointly { get; init; }
+
     public static RentView From(YearResult year, PlanComposition composition)
     {
         var steps = year.Steps.Where(step => step.Event == TaxableEvent.Rent).ToList();
@@ -119,7 +127,12 @@ internal sealed record RentView(
                 .. afterTax,
                 HandOff.Drain(year, OptionalModule.Rent, composition),
             ],
-            steps.Select(StepDetail.From).ToList()) { SplitShares = HandOff.Shared(year) };
+            steps.Select(StepDetail.From).ToList())
+        {
+            SplitShares = HandOff.Shared(year),
+            Rules = RentRules.For(year.Scenario.IncomeYear),
+            TaxedJointly = year.Scenario.Household.TaxedJointly,
+        };
     }
 }
 

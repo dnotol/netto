@@ -1,3 +1,4 @@
+using Netto.Core.Rent;
 using Netto.Web.Client.River;
 using Shouldly;
 
@@ -16,6 +17,9 @@ public class RentFiguresTests
 
     private static readonly RiverInputs RentAtTheCap = RentInPlan.WithCadastralIncome(1_200m).WithShareLet(0.12m).WithRent(1_380m);
 
+    // The household in the plan, a partner declared and taxed jointly with the director: the example's.
+    private static readonly RiverInputs WithAPartner = RentAtTheCap.AddToPlan(OptionalModule.Household);
+
     [Fact]
     public void From_rentAboveTheFloor_isWhatTheCompanyPaysThenTheRentLessItsFlatChargesJoiningTheTaxableIncome()
     {
@@ -31,18 +35,53 @@ public class RentFiguresTests
             (RentFigures.CompanyPays, 400m), (RentFigures.TaxedOnTheFloor, 463.68m), (RentFigures.FlatCharges, -185.47m), (RentFigures.JoinsTaxableIncome, 278.21m)]);
     }
 
-    // The flat charges' bubble says what they are.
+    // Under the floor what joins the taxable income can exceed the rent paid: a cadastral income of 500
+    // wholly let, a rent of 600, is taxed on the floor of 1,610.00 (500 x 2.3 x 1.4), less 644.00.
     [Fact]
-    public void From_rentAboveTheFloor_explainsTheFlatCharges()
+    public void From_rentUnderTheFloorByEnough_joinsMoreThanTheRent()
     {
-        Helps(RentAtTheCap).ShouldBe([null, null, RentFigures.FlatChargesHelp, null]);
+        Lines(RentInPlan.WithCadastralIncome(500m).WithShareLet(1m).WithRent(600m)).ShouldBe([
+            (RentFigures.CompanyPays, 600m), (RentFigures.TaxedOnTheFloor, 1_610m), (RentFigures.FlatCharges, -644m), (RentFigures.JoinsTaxableIncome, 966m)]);
+    }
+
+    // The flat charges' bubble says what they are, and the line the net rent joins the taxable income on,
+    // with a partner taxed jointly, that it is all taxed in the director's column.
+    [Fact]
+    public void From_rentAboveTheFloor_explainsTheFlatChargesAndWhereTheNetRentIsTaxed()
+    {
+        Helps(WithAPartner).ShouldBe([null, null, RentFigures.FlatChargesHelp, RentFigures.JoinsTaxableIncomeHelp]);
     }
 
     // So does the floor's, under it.
     [Fact]
     public void From_rentUnderTheFloor_explainsTheFloorAndTheFlatCharges()
     {
-        Helps(RentAtTheCap.WithRent(400m)).ShouldBe([null, RentFigures.FloorHelp, RentFigures.FlatChargesHelp, null]);
+        Helps(WithAPartner.WithRent(400m)).ShouldBe([null, RentFigures.FloorHelp, RentFigures.FlatChargesHelp, RentFigures.JoinsTaxableIncomeHelp]);
+    }
+
+    // With no household in the plan, alone, or with a partner taxed separately, the whole net rent is the director's whatever the law says
+    // of a shared home: nothing to explain.
+    [Fact]
+    public void From_noPartnerTaxedJointly_doesNotExplainWhereTheNetRentIsTaxed()
+    {
+        RiverInputs[] taxedAlone = [RentAtTheCap, WithAPartner.WithPartner(false), WithAPartner.WithTaxedSeparately(true)];
+
+        foreach (var inputs in taxedAlone)
+            Helps(inputs).ShouldBe([null, null, RentFigures.FlatChargesHelp, null]);
+    }
+
+    // The bubbles' amounts are the year's rules': under the 2025 rules the floor is indexed by 2.2446 and
+    // the flat charges limited by the cadastral income revalued by 5.63.
+    [Fact]
+    public void From_ruleSetOfAYear_fillsTheBubblesFromIt()
+    {
+        var view = RentView.From(RentAtTheCap.WithRent(400m).Run().Year.ShouldNotBeNull(), RentAtTheCap.Composition) with { Rules = RentRules.IncomeYear2025 };
+
+        var lines = RentFigures.From(view);
+
+        lines.ShouldSatisfyAllConditions(
+            () => lines.Single(line => line.Help == RentFigures.FloorHelp).HelpArgs.ShouldBe(["2.2446", "40%"]),
+            () => lines.Single(line => line.Help == RentFigures.FlatChargesHelp).HelpArgs.ShouldBe(["40%", "2/3", "5.63"]));
     }
 
     // No rent paid, nothing taxed: no line of nothing.
@@ -55,7 +94,7 @@ public class RentFiguresTests
     [Fact]
     public void RentCardResx_everyLineAndItsBubble_haveTheirTexts()
     {
-        new[] { RentFigures.CompanyPays, RentFigures.TaxedOnTheRent, RentFigures.TaxedOnTheFloor, RentFigures.FlatCharges, RentFigures.JoinsTaxableIncome, RentFigures.FloorHelp, RentFigures.FlatChargesHelp }
+        new[] { RentFigures.CompanyPays, RentFigures.TaxedOnTheRent, RentFigures.TaxedOnTheFloor, RentFigures.FlatCharges, RentFigures.JoinsTaxableIncome, RentFigures.FloorHelp, RentFigures.FlatChargesHelp, RentFigures.JoinsTaxableIncomeHelp }
             .Where(key => Resources.Get(key) is null)
             .ShouldBeEmpty();
     }

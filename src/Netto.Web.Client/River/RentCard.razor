@@ -103,8 +103,9 @@
 
     // How the cap under the rent is set, in the bubble after the rent's label, once the home's facts
     // give one.
-    private string? CapHelp => _cap is { } cap
-        ? L[RentCardText.CapHelp, Formats.Euros(cap.Cap), Formats.Euros(cap.CadastralIncomeLet), Formats.RuleAmount(cap.RevaluationCoefficient)].Value
+    private string? CapHelp => _cap is { } cap && _rules is { } rules
+        ? L[RentCardText.CapHelp, Formats.Euros(cap.Cap), Formats.Euros(cap.CadastralIncomeLet), Formats.RuleAmount(cap.RevaluationCoefficient),
+            Formats.Fraction(rules.CapMultiplier)].Value
         : null;
 
     private Task OnCadastralIncomeChanged(decimal amount) => InputsChanged.InvokeAsync(Inputs.WithCadastralIncome(amount));

@@ -37,7 +37,7 @@ public class RentCardTextTests
     [Fact]
     public void RentCardResx_bubbles_markNoTerm()
     {
-        new[] { RentCardText.CadastralIncomeHelp, RentCardText.CapHelp, RentFigures.FloorHelp, RentFigures.FlatChargesHelp }
+        new[] { RentCardText.CadastralIncomeHelp, RentCardText.CapHelp, RentFigures.FloorHelp, RentFigures.FlatChargesHelp, RentFigures.JoinsTaxableIncomeHelp, "Hint" }
             .Where(key => Resources.Get(key) is { } text && TermText.Split(text).Term is not null)
             .ShouldBeEmpty();
     }
