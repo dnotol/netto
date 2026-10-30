@@ -4,47 +4,57 @@ using Shouldly;
 
 namespace Netto.Tests.Architecture;
 
-// The client runs in the browser without ICU data (InvariantGlobalization): the site is English only,
-// its amounts and dates go through Formats, built on the invariant culture, and its texts through
-// neutral .resx files, so no culture-specific data is read and none is downloaded (about 0.2 MB of the
-// compressed payload for each visitor). The test host is not the browser, so the suite itself runs with
-// ICU: these tests hold what the setting relies on. The day the site is translated, a localized .resx
-// or a culture created by name fails here: turn the setting off, or set PredefinedCulturesOnly to
-// false, with the translation.
+// The client runs in the browser without ICU data (InvariantGlobalization), so no culture data is downloaded
+// (about 0.2 MB of the compressed payload for each visitor): its amounts and dates go through Formats, whose
+// French culture is built by hand on an invariant clone. It still speaks French: the UI culture « fr » finds
+// the French texts, each .fr.resx beside its neutral English one, built into a satellite assembly. Creating
+// that culture by name needs PredefinedCulturesOnly off, which InvariantGlobalization turns on by default:
+// left on, new CultureInfo("fr") throws in the browser. The test host is not the browser and runs with ICU,
+// so it would never throw here: these tests hold what the browser relies on, and the browser check the rest.
 public class ClientGlobalizationTests
 {
     [Fact]
     public void ClientProject_globalization_isInvariant()
     {
-        var project = XDocument.Load(RepositoryFile.FindUp("src", "Netto.Web.Client", "Netto.Web.Client.csproj"));
-
-        project.Descendants("InvariantGlobalization").Select(element => element.Value).ShouldBe(["true"]);
+        Property("InvariantGlobalization").ShouldBe(["true"]);
     }
 
-    // Texts are in neutral files, Home.resx beside Home.razor; a Home.fr.resx would never be read.
     [Fact]
-    public void ClientResources_localizedFiles_donotExist()
+    public void ClientProject_culturesCreatedByName_areAllowed()
+    {
+        Property("PredefinedCulturesOnly").ShouldBe(["false"]);
+    }
+
+    // In invariant mode a culture created by name has the invariant culture as its parent: a Home.fr-BE.resx
+    // would be read only by fr-BE, which the site never starts in (Languages), and fr-BE would never find
+    // Home.fr.resx. The French texts are in .fr.resx files alone.
+    [Fact]
+    public void ClientResources_localizedFiles_areNeutralFrench()
     {
         var resources = Files("Netto.Web.Client", "*.resx");
 
         resources.Count.ShouldBeGreaterThan(30);
-        resources.Where(resource => Regex.IsMatch(resource, @"\.[a-z]{2,3}(-[A-Za-z]{2,4})?\.resx$")).ShouldBeEmpty();
+        resources.Where(resource => Regex.IsMatch(resource, @"\.[A-Za-z]{2,3}(-[A-Za-z]{2,4})?\.resx$") && !resource.EndsWith(".fr.resx", StringComparison.Ordinal))
+            .ShouldBeEmpty();
     }
 
-    // In invariant mode a culture created by name, new CultureInfo("fr-BE"), throws; the invariant culture
-    // and its clone (Formats.Culture) are the only ones the code uses.
+    // The one culture created by name is the UI culture the page starts in (Languages); the culture of numbers
+    // is Formats', built on the invariant culture.
     [Theory]
-    [InlineData("Netto.Core")]
-    [InlineData("Netto.Web.Client")]
-    public void Sources_culturesCreatedByName_donotExist(string project)
+    [InlineData("Netto.Core", new string[0])]
+    [InlineData("Netto.Web.Client", new[] { "Language.cs" })]
+    public void Sources_culturesCreatedByName_areOnlyTheLanguages(string project, string[] creating)
     {
         var sources = Files(project, "*.cs").Concat(Files(project, "*.razor")).ToList();
 
         sources.Count.ShouldBeGreaterThan(10);
         sources.Where(source => Regex.IsMatch(File.ReadAllText(Path.Combine(Folder(project), source)),
                 @"new\s+CultureInfo\s*\(|CultureInfo\s*\.\s*(?:GetCultureInfo|CreateSpecificCulture)\s*\("))
-            .ShouldBeEmpty();
+            .ShouldBe(creating);
     }
+
+    private static IEnumerable<string> Property(string name) =>
+        XDocument.Load(RepositoryFile.FindUp("src", "Netto.Web.Client", "Netto.Web.Client.csproj")).Descendants(name).Select(element => element.Value);
 
     private static string Folder(string project) =>
         new FileInfo(RepositoryFile.FindUp("src", project, $"{project}.csproj")).DirectoryName
