@@ -1,4 +1,6 @@
+using System.Globalization;
 using System.Resources;
+using Netto.Web.Client.Layout;
 using Netto.Web.Client.River;
 using Netto.Web.Client.Tabs;
 using Shouldly;
@@ -78,5 +80,50 @@ public class ResxTextTests
     public void For_typeWithoutAResx_fails()
     {
         Should.Throw<MissingManifestResourceException>(() => ResxText.For<RiverInputs>());
+    }
+
+    // A component's French texts, as the page reads them in French: its .fr.resx alone, so a key it lacks reads
+    // as missing rather than as its English text. NettoMudLocalizer's stands for any component's.
+    [Fact]
+    public void French_keyWithAFrenchText_givesTheFrenchText()
+    {
+        ResxText.French<NettoMudLocalizer>().Get("MudInput_Clear").ShouldBe("Effacer");
+    }
+
+    [Fact]
+    public void French_keyWithoutAText_isNull()
+    {
+        ResxText.French<NettoMudLocalizer>().Get("No_such_key").ShouldBeNull();
+    }
+
+    [Fact]
+    public void French_entries_areTheFrenchFilesOwn()
+    {
+        ResxText.French<NettoMudLocalizer>().Entries.ShouldContain(("MudInput_Clear", "Effacer"));
+    }
+
+    [Fact]
+    public void French_culture_isTheFrenchUiCulture()
+    {
+        (ResxText.French<NettoMudLocalizer>().Culture.Name, ResxText.For<PlanTabBar>().Culture).ShouldBe(("fr", CultureInfo.InvariantCulture));
+    }
+
+    // A type with no .resx at all has no French one either: it fails at once, as For does.
+    [Fact]
+    public void French_typeWithoutAResx_fails()
+    {
+        Should.Throw<MissingManifestResourceException>(() => ResxText.French<RiverInputs>());
+    }
+
+    // The French texts of every component that has them, for a test that holds all the French texts to a rule.
+    [Fact]
+    public void InAssembly_inFrench_listsTheComponentsWithFrenchTexts()
+    {
+        var french = ResxText.FrenchInAssembly(typeof(PlanTabBar).Assembly).ToList();
+
+        french.ShouldSatisfyAllConditions(
+            () => french.Select(texts => texts.BaseName).ShouldContain(typeof(NettoMudLocalizer).FullName),
+            () => french.ShouldAllBe(texts => texts.Culture.Name == "fr"),
+            () => french.SelectMany(texts => texts.Entries).ShouldContain(("MudInput_Clear", "Effacer")));
     }
 }
