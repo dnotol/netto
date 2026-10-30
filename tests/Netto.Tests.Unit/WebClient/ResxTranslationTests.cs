@@ -8,10 +8,6 @@ namespace Netto.Tests.WebClient;
 // or a placeholder the other text lacks, would show a text that is not the one the code fills.
 public class ResxTranslationTests
 {
-    // On once every neutral .resx has its French file: until then the translation is under way, and a file not
-    // yet translated shows its English.
-    private const bool FrenchIsComplete = false;
-
     private static readonly string Client =
         Path.GetDirectoryName(RepositoryFile.FindUp("src", "Netto.Web.Client", "Netto.Web.Client.csproj"))
         ?? throw new InvalidOperationException("The client's csproj has no folder.");
@@ -22,11 +18,10 @@ public class ResxTranslationTests
         ResxFiles.Differences(Client).ShouldBeEmpty();
     }
 
+    // A component with no French file would show its English in the middle of a French page.
     [Fact]
     public void ClientResources_everyNeutralFile_hasItsFrenchFile()
     {
-        Assert.SkipUnless(FrenchIsComplete, "The French translation is under way: FrenchIsComplete turns this on.");
-
         ResxFiles.WithoutFrench(Client).ShouldBeEmpty();
     }
 }
