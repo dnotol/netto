@@ -1,10 +1,10 @@
 namespace Netto.Core.Dividends;
 
 // Which rate of CIR 92 art. 269 the user declares for the year's dividend. Whether shares qualify as
-// VVPRbis, and which distribution this is, is theirs to declare.
+// VVPRbis, and which accounting year after the contribution this is, is theirs to declare.
 public enum WithholdingCategory
 {
-    // Ordinary shares, or the first distributions of VVPRbis shares.
+    // Ordinary shares, or VVPRbis shares in the year of the contribution or the year after it.
     Standard,
 
     // VVPRbis shares, the second accounting year's distribution after a contribution made by 31.12.2025.

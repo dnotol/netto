@@ -37,13 +37,13 @@
     <value>{0} · ordinary shares</value>
   </data>
   <data name="Category_VvprbisSecondYear" xml:space="preserve">
-    <value>{0} · VVPRbis, second distribution</value>
+    <value>{0} · VVPRbis, second accounting year after the contribution</value>
   </data>
   <data name="Category_VvprbisThirdYearOnwards" xml:space="preserve">
-    <value>{0} · VVPRbis, third distribution on</value>
+    <value>{0} · VVPRbis, third accounting year after the contribution or later</value>
   </data>
   <data name="Help_Category" xml:space="preserve">
-    <value>VVPRbis shares are shares a small company issued in return for a new contribution in cash, under the regime's conditions: their dividends can be withheld at a reduced rate from a later distribution on. They pay the ordinary rate on their first distributions; the second-distribution rate is for a contribution made by 2025.</value>
+    <value>VVPRbis shares are shares a small company issued in return for a new contribution in cash, under the regime's conditions: their dividends can be withheld at a reduced rate from the second accounting year after the one of the contribution. The year of the contribution and the year after it pay the ordinary rate; the second-year rate is for a contribution made by 2025.</value>
   </data>
   <data name="Figure_ProfitAfterTax" xml:space="preserve">
     <value>This year's profit after tax</value>
@@ -70,9 +70,9 @@
     <value>ordinary shares, {0} withheld</value>
   </data>
   <data name="Settings_Category_VvprbisSecondYear" xml:space="preserve">
-    <value>VVPRbis shares, second distribution, {0} withheld</value>
+    <value>VVPRbis shares, second accounting year after the contribution, {0} withheld</value>
   </data>
   <data name="Settings_Category_VvprbisThirdYearOnwards" xml:space="preserve">
-    <value>VVPRbis shares, third distribution on, {0} withheld</value>
+    <value>VVPRbis shares, third accounting year after the contribution or later, {0} withheld</value>
   </data>
 </root>

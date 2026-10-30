@@ -211,7 +211,7 @@
     <value>The company's taxable income is its profit after your director pay, with what it cannot deduct of the vouchers added back; no other disallowed expenses and no losses carried forward. A small company pays the reduced rate on a first slice and the standard rate on the rest. From its fifth tax period, it keeps the reduced rate only if a director's pay reaches the minimum, or if its taxable income does not exceed that pay; otherwise the standard rate applies to all of it.</value>
   </data>
   <data name="Rule_dividend_withholding" xml:space="preserve">
-    <value>The company withholds tax on the dividend it pays you, at the rate you declare: the standard rate, or a reduced rate for VVPRbis shares, which depends on which distribution after the capital contribution this is. The withholding is the final tax on the dividend: no income tax, no municipal surcharge and no social contributions come on top.</value>
+    <value>The company withholds tax on the dividend it pays you, at the rate you declare: the standard rate, or a reduced rate for VVPRbis shares, which applies from the second accounting year after the one of the capital contribution. The withholding is the final tax on the dividend: no income tax, no municipal surcharge and no social contributions come on top.</value>
   </data>
   <data name="Rule_dividend_exemption_refund" xml:space="preserve">
     <value>The first slice of ordinary dividends a person receives each year is exempt from personal tax. The company still withholds on it, so you declare that withholding in your return and it is credited back, even when you owe no other tax.</value>
@@ -235,10 +235,10 @@
     <value>Standard withholding rate</value>
   </data>
   <data name="Amount_vvprbis_second_year_rate" xml:space="preserve">
-    <value>VVPRbis rate, second distribution</value>
+    <value>VVPRbis rate, second accounting year after the contribution</value>
   </data>
   <data name="Amount_vvprbis_third_year_onwards_rate" xml:space="preserve">
-    <value>VVPRbis rate, third distribution onwards</value>
+    <value>VVPRbis rate, third accounting year after the contribution or later</value>
   </data>
   <data name="Amount_exempt_dividends" xml:space="preserve">
     <value>Exempt dividends per year</value>

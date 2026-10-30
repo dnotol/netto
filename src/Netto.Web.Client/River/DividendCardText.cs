@@ -5,7 +5,7 @@ namespace Netto.Web.Client.River;
 // The resource keys the Dividend card builds from values, gone through by the card and its tests alike.
 internal static class DividendCardText
 {
-    // What VVPRbis shares are and which of their rates is for which distribution, in the bubble after
+    // What VVPRbis shares are and which of their rates is for which accounting year after the contribution, in the bubble after
     // the rate's label.
     public const string CategoryHelp = "Help_Category";
 

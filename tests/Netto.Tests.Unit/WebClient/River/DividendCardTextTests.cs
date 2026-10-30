@@ -55,6 +55,47 @@ public class DividendCardTextTests
         Resources.Missing(phrases.Select(phrase => phrase.Key).Append("SharesTitle")).ShouldBeEmpty();
     }
 
+    // The reduced rates count accounting years after the year of the contribution (art. 269 §2), not
+    // distributions: an SRL founded in 2025 that pays every year is in the first year after it in 2026, so the
+    // chips offer the third and second year's rates with the rules' 18% and 20%, then the ordinary 30%, and
+    // none of them speaks of a distribution. The chips are in the disclosure a refusal opens.
+    [Fact]
+    public async Task Card_rateChips_nameTheAccountingYearAfterTheContribution()
+    {
+        var html = CardHtml.Card(await CardHtml.RenderCardsOpenAsync(RiverInputs.Example.WithEarlierProfits(-1m)), "dividend");
+
+        CardHtml.Chips(html).Select(chip => System.Net.WebUtility.HtmlDecode(chip.Text)).ShouldBe(
+        [
+            "18% · VVPRbis, third accounting year after the contribution or later",
+            "20% · VVPRbis, second accounting year after the contribution",
+            "30% · ordinary shares",
+        ]);
+    }
+
+    // The bubble after the rate's label says the contribution's own year and the next pay the ordinary rate.
+    [Fact]
+    public async Task Card_rateBubble_namesTheAccountingYearAfterTheContribution()
+    {
+        var html = CardHtml.Card(await CardHtml.RenderCardsOpenAsync(RiverInputs.Example.WithEarlierProfits(-1m)), "dividend");
+
+        var bubble = CardHtml.BubbleAfter(html, Resources.Format("CategoryLabel"));
+
+        bubble.ShouldSatisfyAllConditions(
+            () => bubble.ShouldContain("second accounting year after the one of the contribution"),
+            () => bubble.ShouldNotContain("distribution"));
+    }
+
+    // The line of the disclosure's fold names the same years.
+    [Theory]
+    [InlineData(WithholdingCategory.VvprbisSecondYear, "VVPRbis shares, second accounting year after the contribution, 20% withheld")]
+    [InlineData(WithholdingCategory.VvprbisThirdYearOnwards, "VVPRbis shares, third accounting year after the contribution or later, 18% withheld")]
+    public void SettingsLine_vvprbisCategory_namesTheAccountingYearAfterTheContribution(WithholdingCategory category, string line)
+    {
+        var fact = DividendSettingsView.From(RiverInputs.Example.WithDividendCategory(category)).Facts[^1];
+
+        Resources.Format(fact.Key, [.. fact.Args]).ShouldBe(line);
+    }
+
     // What VVPRbis shares are, in the bubble after the rate's label, which draws its text as it is: a term
     // marked in it would show its brackets.
     [Fact]
