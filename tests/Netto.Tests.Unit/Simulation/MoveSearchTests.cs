@@ -317,6 +317,23 @@ public class MoveSearchTests
         plan.Moves.Select(move => move.Move.Apply(withCar).Car).ShouldAllBe(car => car == withCar.Car);
     }
 
+    // A car whose benefit no pay holds within 20%, the company paying the contributions: no payslip gross
+    // keeps the reduced rate, and the pay still moves to the split's best, its gain two runs of the year.
+    [Fact]
+    public void Run_noGrossKeepsTheReducedRateCompanyPays_movesThePayToTheBest()
+    {
+        var withCar = Today with
+        {
+            ContributionsPaidBy = ContributionsPaidBy.Company,
+            Car = new CarFacts(1_000_000m, new DateOnly(2026, 1, 10), 8_000m, false, 0m),
+        };
+        var best = Search(withCar).Best.ShouldNotBeNull().Pay;
+
+        var plan = MoveSearch.Run(withCar, SplitOnly).Value.ShouldNotBeNull();
+
+        Lines(plan).ShouldBe([(new PayMove(best), Pocket(withCar with { DirectorPay = best }) - Pocket(withCar))]);
+    }
+
     // Without vouchers, each kind is proposed at its yearly maximum, 250 and 100 for 2026.
     [Fact]
     public void Run_noVouchers_grantsEachKindAtItsMaximum()
