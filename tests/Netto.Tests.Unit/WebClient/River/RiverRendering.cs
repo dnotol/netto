@@ -38,7 +38,9 @@ internal static class RiverRendering
         services.AddSingleton<IJSRuntime, NoJavaScript>();
         services.AddSingleton<NavigationManager, NoNavigation>();
         services.AddSingleton(new ThemePreference(new BrowserStorage(), new SystemTheme(prefersLight: false)));
-        services.AddSingleton(new LanguagePreference(new BrowserStorage(), new PageReloads(), new RiverState(new SavedPlans(new BrowserStorage()), new BrowserSession())));
+        var fields = new TypedFields();
+        services.AddSingleton(fields);
+        services.AddSingleton(new LanguagePreference(new BrowserStorage(), new PageReloads(), new RiverState(new SavedPlans(new BrowserStorage()), new BrowserSession()), fields));
         more?.Invoke(services);
         await using var provider = services.BuildServiceProvider();
         await using var renderer = new HtmlRenderer(provider, provider.GetRequiredService<ILoggerFactory>());

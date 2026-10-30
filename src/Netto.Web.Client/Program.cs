@@ -34,6 +34,9 @@ builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddScoped<IBrowserSession, SessionStorage>();
 builder.Services.AddScoped<RiverState>();
 
+// The river's number fields on the page, which an action that ends it asks to take what is typed first.
+builder.Services.AddScoped<TypedFields>();
+
 // The page starts in the viewer's language, French unless they chose English: its texts are read in it from
 // here on, and RunAsync loads its satellite resources. Only the UI culture is set; numbers go through Formats.
 var host = builder.Build();

@@ -30,8 +30,14 @@ public sealed class RiverNumericField<T> : MudNumericField<T>
     // The engine's message the field last took as its error text, taken back once the refusal ends.
     private string? _refusalText;
 
+    // Its place among the fields an action that ends the page asks to take what is typed (TypedFields).
+    private IDisposable? _joined;
+
     [Inject]
     private IStringLocalizer<RefusedMessage> Messages { get; set; } = default!;
+
+    [Inject]
+    private TypedFields Fields { get; set; } = default!;
 
     // The engine's refusal on the card, worded as the field's error text while Error is set.
     [Parameter]
@@ -85,6 +91,23 @@ public sealed class RiverNumericField<T> : MudNumericField<T>
         __builder.CloseRegion();
         __builder.CloseElement();
     }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        _joined = Fields.Add(TakeTypedAsync);
+    }
+
+    protected override async ValueTask DisposeAsyncCore()
+    {
+        _joined?.Dispose();
+        await base.DisposeAsyncCore();
+    }
+
+    // What is typed and not taken yet, taken now, as leaving the field would: nothing when the text is the value
+    // as the field shows it, so a value is never rounded to the text that shows it.
+    private Task TakeTypedAsync() =>
+        string.Equals(ReadText, ConvertSet(ReadValue), StringComparison.Ordinal) ? Task.CompletedTask : UpdateValuePropertyAsync(true);
 
     protected override async Task OnParametersSetAsync()
     {

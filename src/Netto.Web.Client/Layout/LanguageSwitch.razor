@@ -8,6 +8,6 @@
    never draws again: the page that loads next draws it anew. Muted at rest, gold while hovered or focused, as the
    theme switch. *@
 <span class="language-switch">
-    <MudButton Variant="Variant.Text" Size="Size.Small" OnClick="Preference.Switch"
+    <MudButton Variant="Variant.Text" Size="Size.Small" OnClick="Preference.SwitchAsync"
                lang="@Languages.Tag(LanguagePreference.Other)">@L[LanguagePreference.Other == Language.French ? "ToFrench" : "ToEnglish"]</MudButton>
 </span>

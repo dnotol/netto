@@ -70,22 +70,22 @@ public class LanguagePreferenceTests
     }
 
     [Fact]
-    public void Switch_inEnglish_keepsFrench()
+    public async Task Switch_inEnglish_keepsFrench()
     {
         var storage = new BrowserStorage();
 
-        Preference(storage, new BrowserSession(), new PageReloads()).Switch();
+        await Preference(storage, new BrowserSession(), new PageReloads()).SwitchAsync();
 
         storage.Get(LanguagePreference.StorageKey).ShouldBe("fr");
     }
 
     [Fact]
-    public void Switch_inFrench_keepsEnglish()
+    public async Task Switch_inFrench_keepsEnglish()
     {
         using var french = InLanguage.French();
         var storage = new BrowserStorage();
 
-        Preference(storage, new BrowserSession(), new PageReloads()).Switch();
+        await Preference(storage, new BrowserSession(), new PageReloads()).SwitchAsync();
 
         storage.Get(LanguagePreference.StorageKey).ShouldBe("en");
     }
@@ -93,30 +93,48 @@ public class LanguagePreferenceTests
     // By the time the page reloads, the language is kept and the river carried: the page that loads next starts
     // in the other language, on the river as it was.
     [Fact]
-    public void Switch_reloadsOnce_afterKeepingTheLanguageAndCarryingTheRiver()
+    public async Task Switch_reloadsOnce_afterKeepingTheLanguageAndCarryingTheRiver()
     {
         var storage = new BrowserStorage();
         var session = new BrowserSession();
         (string? Language, string? River) atReload = default;
         var page = new PageReloads(() => atReload = (storage.Get(LanguagePreference.StorageKey), session.Peek(RiverState.CarriedKey)));
 
-        Preference(storage, session, page).Switch();
+        await Preference(storage, session, page).SwitchAsync();
 
         (page.Reloads, atReload.Language, atReload.River is not null).ShouldBe((1, "fr", true));
     }
 
     [Fact]
-    public void Switch_carriesTheRiverAsItIsNow()
+    public async Task Switch_carriesTheRiverAsItIsNow()
     {
         var session = new BrowserSession();
         var edited = RiverInputs.Example.WithDirectorPay(31_000m);
         var river = new RiverState(new SavedPlans(new BrowserStorage()), session) { Inputs = edited };
 
-        new LanguagePreference(new BrowserStorage(), new PageReloads(), river).Switch();
+        await new LanguagePreference(new BrowserStorage(), new PageReloads(), river, new TypedFields()).SwitchAsync();
 
         new RiverState(new SavedPlans(new BrowserStorage()), session).Inputs.ShouldBe(edited);
     }
 
+    // What a field holds typed and not taken yet is taken first, so the river carried holds it.
+    [Fact]
+    public async Task Switch_fieldHoldingWhatWasTyped_carriesTheRiverWithIt()
+    {
+        var session = new BrowserSession();
+        var river = new RiverState(new SavedPlans(new BrowserStorage()), session);
+        var fields = new TypedFields();
+        using var field = fields.Add(() =>
+        {
+            river.Inputs = river.Inputs.WithRevenue(140_000m);
+            return Task.CompletedTask;
+        });
+
+        await new LanguagePreference(new BrowserStorage(), new PageReloads(), river, fields).SwitchAsync();
+
+        new RiverState(new SavedPlans(new BrowserStorage()), session).Inputs.Company?.Revenue.Value.ShouldBe(140_000m);
+    }
+
     private static LanguagePreference Preference(BrowserStorage storage, BrowserSession session, PageReloads page) =>
-        new(storage, page, new RiverState(new SavedPlans(new BrowserStorage()), session));
+        new(storage, page, new RiverState(new SavedPlans(new BrowserStorage()), session), new TypedFields());
 }

@@ -33,12 +33,20 @@ internal sealed class LivePlan : IAsyncDisposable
     private readonly RecordingScript _script;
     private Task _loading = Task.CompletedTask;
 
-    private LivePlan(ServiceProvider provider, RecordingScript script)
+    private LivePlan(ServiceProvider provider, RecordingScript script, BrowserSession session, PageReloads reloads)
     {
         _provider = provider;
         _script = script;
+        Session = session;
+        Reloads = reloads;
         _renderer = new LiveRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
     }
+
+    // The browser tab's own storage, where a switch of language carries the river across the reload.
+    public BrowserSession Session { get; }
+
+    // The page a switch of language reloads, counting each reload.
+    public PageReloads Reloads { get; }
 
     // What the page asked the script, each call by its name and its text arguments, in order.
     public IReadOnlyList<string> Calls => _script.Calls;
@@ -63,16 +71,20 @@ internal sealed class LivePlan : IAsyncDisposable
         services.AddSingleton<IBrowserStorage>(storage);
         services.AddSingleton(new Folds(storage));
         services.AddSingleton(plans);
-        var state = new RiverState(plans, new BrowserSession()) { Inputs = river ?? RiverInputs.Example };
+        var session = new BrowserSession();
+        var reloads = new PageReloads();
+        var state = new RiverState(plans, session) { Inputs = river ?? RiverInputs.Example };
         services.AddSingleton(state);
         services.AddSingleton<TimeProvider>(new Clock(On23October));
         var script = new RecordingScript(holdPaint);
         services.AddSingleton<IJSRuntime>(script);
         services.AddSingleton<NavigationManager>(new RiverRendering.NoNavigation(uri));
         services.AddSingleton(new ThemePreference(storage, new SystemTheme(prefersLight: false)));
-        services.AddSingleton(new LanguagePreference(storage, new PageReloads(), state));
+        var fields = new TypedFields();
+        services.AddSingleton(fields);
+        services.AddSingleton(new LanguagePreference(storage, reloads, state, fields));
 
-        return new LivePlan(services.BuildServiceProvider(), script);
+        return new LivePlan(services.BuildServiceProvider(), script, session, reloads);
     }
 
     // As on a first load, on the tab the URL's segment after /plan/ names (the router's Tab), none for the
@@ -125,7 +137,18 @@ internal sealed class LivePlan : IAsyncDisposable
     // of that event (onmouseenter, onmouseleave), as the browser sends it, the same way as a click.
     public async Task SendAsync(string attribute, string value, string @event)
     {
-        await _renderer.Dispatcher.InvokeAsync(() => _renderer.SendAsync(attribute, value, @event));
+        await _renderer.Dispatcher.InvokeAsync(() => _renderer.SendAsync(attribute, value, @event, new MouseEventArgs()));
+        await _renderer.Dispatcher.InvokeAsync(() => { });
+    }
+
+    // Events the browser sends one right after the other, as a viewer types in a field and clicks a button at
+    // once: each is handed to the page as the one before it lets go of the page's thread, not once it is done,
+    // as the browser hands the next event over while the page still awaits what the last one started. Done once
+    // the page has done what all of them did.
+    public async Task SendTogetherAsync(params (string Attribute, string Value, string Event, EventArgs Args)[] events)
+    {
+        var sent = events.Select(sending => _renderer.Dispatcher.InvokeAsync(() => _renderer.SendAsync(sending.Attribute, sending.Value, sending.Event, sending.Args))).ToList();
+        await Task.WhenAll(sent);
         await _renderer.Dispatcher.InvokeAsync(() => { });
     }
 
@@ -229,12 +252,12 @@ internal sealed class LivePlan : IAsyncDisposable
         }
 
         // The event on the one element the page draws with that attribute's value, sent to its handler of it.
-        public Task SendAsync(string attribute, string value, string @event)
+        public Task SendAsync(string attribute, string value, string @event, EventArgs args)
         {
             List<ulong> handlers = [];
             Handlers(_page, attribute, value, @event, handlers);
             return handlers.Count == 1
-                ? DispatchEventAsync(handlers[0], null, new MouseEventArgs())
+                ? DispatchEventAsync(handlers[0], null, args)
                 : throw new InvalidOperationException($"{handlers.Count} elements with {attribute}=\"{value}\" and a handler of {@event}, not one.");
         }
 
