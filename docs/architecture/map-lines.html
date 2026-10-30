@@ -14,7 +14,7 @@
     <p class="eyebrow">Netto · architecture page · flow</p>
     <h1>How the Plan tab's map draws its lines</h1>
     <p class="lede">The Plan tab is a map of the plan's modules and the money between them, drawn by whose money each module moves, with the chosen module's card beside it. The map computes no figure: every line of money is a line a card already shows, every condition line is one the engine names, and the one sum of its own, the pocket line's running total, adds those lines. This page follows the page's one run to the drawn map.</p>
-    <p class="atlas-meta"><span>As of <b>main 7dfc6b5</b></span><span><b>29 October 2026</b></span></p>
+    <p class="atlas-meta"><span>As of <b>feature/french-by-default b1d21ed</b></span><span><b>30 October 2026</b></span></p>
   </header>
 
   <section aria-labelledby="h-owners">
@@ -73,7 +73,7 @@
         <li><code>MapConditions.From</code> turns each condition the engine names into a condition line, kept only when both its modules are on the map.</li>
         <li><code>MapView.From</code> takes the modules in the plan in <code>MapModules.Order</code>, the five buckets, the links and conditions, the quiet levers (<code>MapQuiet</code>, folding the company's line past them), what each gate says (<code>MapGates</code>) and the badges (<code>MapBadges</code>).</li>
         <li><code>MapPocketLine.Of</code> joins every line into the pocket onto one line at its module's point, each stretch the sum of the lines joining it above less those leaving it; the lines whose amount is said elsewhere are marked <code>Unsaid</code>.</li>
-        <li><code>MapLayout</code> gives each module its slot in its owner's column (<code>Place</code>, <code>Grid</code>) and routes the lines (<code>Routed</code>): lines of one kind between the same two ends are bundled, their amounts summed (<code>MapBundle.Sum</code>), their width set by <code>MapLineWidths</code>; amounts are placed once from every line (<code>MapAmounts</code>).</li>
+        <li><code>MapLayout</code> gives each module its slot in its owner's column (<code>Place</code>, <code>Grid</code>, from the names <code>MapTab</code> draws) and routes the lines (<code>Routed</code>): lines of one kind between the same two ends are bundled, their amounts summed (<code>MapBundle.Sum</code>), their width set by <code>MapLineWidths</code>; amounts are placed once from every line (<code>MapAmounts</code>).</li>
         <li>The module chosen keeps every line of money and its own tax-base and condition lines (<code>MapView.ShowingFor</code>); nothing chosen keeps the money alone. Nothing moves.</li>
         <li><code>MapTab.razor</code> draws each bundle as a halo and a line, with arrowheads, amounts, buckets, the pill and module buttons in HTML over the SVG; an effect line's sentence is its <code>title</code>. The key (<code>MapKey</code>) says what each line style means.</li>
         <li>Choosing a module, or a link to <code>plan?card=…</code>, draws its card pinned open in <code>MapPanel</code>, under what it receives (<code>MapReceivedView</code>) and its effects in words (<code>MapEffectsView</code>); edits there go to the page like any edit.</li>
@@ -87,7 +87,7 @@
         <article data-card="links"><h3>MapLinks</h3><p>Turns each card's lines into links: the company's line from Company year past each lever (<code>MapEnd.Beside</code>) into the split, each share across to its gate, a drain that comes back running from the bucket into the module, a line to a bucket <code>IntoBucket</code>, between modules <code>PassedOn</code>, and the car's benefit or the partner's quotient <code>TaxBase</code>.</p><p class="note">Decision: <a href="decisions/2026-10-29-map-lines-read-from-the-cards-the-pocket-line-summing-them.md">map lines read from the cards</a> · Guard: <code>MapCardsTests</code></p></article>
         <article data-card="mapview"><h3>MapView</h3><p>The map's whole state for one run: the nodes (modules and the buckets of <code>BucketsView.Keys</code>), the routed links, the columns, the gates' lines and the pill, the quiet modules, the badges, and a refused module marked. <code>MapModules</code>, <code>MapEnd</code>, <code>MapBundle</code>, <code>MapLinkKind</code> and <code>MapLinkStyle</code> live in the same file.</p></article>
         <article data-card="pocket"><h3>MapPocketLine</h3><p>The one line no card draws: every line into the pocket re-ended at its module's point (<code>MapEnd.OnPocketLine</code>), the points in the map's rows, each stretch what has reached the director so far. No total out of a point money only leaves, nor below zero.</p><p class="note">Guard: <code>MapPocketLineTests</code>, <code>MapCardsTests</code> (the last total is the bar's pocket)</p></article>
-        <article data-card="layout"><h3>MapLayout</h3><p>Three columns by owner, rows in the river's order, slots worked out by <code>MapGrid</code>, and orthogonal routes from a set of route families, so no line crosses a box, a gate or the pill. Guards: <code>MapLayoutTests</code> (with no plan crossing more lines than its count in <code>MapCrossings.txt</code>), <code>MapAmountsTests</code>.</p></article>
+        <article data-card="layout"><h3>MapLayout</h3><p>Three columns by owner, rows in the river's order, slots worked out by <code>MapGrid</code>, each box sized from its module's name as <code>MapTab</code> draws it in the page's language (a name that wraps on the narrowest map makes its box taller), and orthogonal routes from a set of route families, so no line crosses a box, a gate or the pill. Guards: <code>MapLayoutTests</code> (with no plan crossing more lines than its count in <code>MapCrossings.txt</code>), <code>MapAmountsTests</code>.</p></article>
         <article data-card="choice"><h3>The choice</h3><p>Lines of money are always drawn; a tax-base or condition line only while a module at either of its ends is chosen, its total or state still a badge. No viewer preference: a stored <code>netto.map.lines</code> is no longer read.</p></article>
         <article data-card="svg"><h3>MapTab</h3><p>The SVG: a halo polyline and a line polyline per bundle, styled by its kind, gold when it reaches the pocket; the chosen module's lines drawn last, the others faded. The key above it is a list, « Key to the lines », with nothing to tick.</p></article>
         <article data-card="panel"><h3>MapPanel</h3><p>The chosen module's card in a <code>PinnedCard</code> seat, open and editable, under what it receives and, one per tax-base or condition line drawn for it, what it does to another module or what another does to it, each naming that module as a button; the pointer over an effect's line marks its item.</p><p class="note">Decision: <a href="decisions/2026-10-27-the-plan-is-the-map.md">the plan is the map</a></p></article>
@@ -131,12 +131,13 @@
   <section aria-labelledby="h-changes">
     <h2 id="h-changes">Changes</h2>
     <ul class="atlas-changes">
+      <li><time datetime="2026-10-30">30.10.2026</time><span>boxes sized from the module names in the page's language (<a href="decisions/2026-10-30-french-by-default-english-beside-it.md">French by default</a>).</span></li>
       <li><time datetime="2026-10-29">29.10.2026</time><span>The map drawn by owner: three columns, the company's line with each lever's share, the gates, the pay's pill, the pocket line with its running totals, the legend a key and the rule lines drawn for the module chosen, its effects listed beside the card (<code>e102b05..7dfc6b5</code>).</span></li>
       <li><time datetime="2026-10-29">29.10.2026</time><span>Page drawn in the fresh-start pass, from <code>main</code> at <code>29cbc95</code>.</span></li>
     </ul>
   </section>
 
-  <footer>Drawn from the code on <code>main</code> at <code>7dfc6b5</code>. The code is the source; this page explains it. <a href="index.html">All pages</a>.</footer>
+  <footer>Drawn from the code on <code>feature/french-by-default</code> at <code>b1d21ed</code>. The code is the source; this page explains it. <a href="index.html">All pages</a>.</footer>
 </main>
 </body>
 </html>

@@ -23,7 +23,7 @@ The French story ([story](https://app.notion.com/p/409b6b39bd12818f9c82e79a28e87
   - an optional `Label_{Document}` and an optional label per passage;
   - a required `Reference_{Document}#{passage}`;
   - format strings that build a Fisconetplus article's title and label in each language.
-- Every CIR 92 or AR/CIR 92 source is built by `Source.Fisconet`. A citation's dates read `dd.MM.yyyy` in both languages: they identify the document.
+- Every coordinated article of the CIR 92 or the AR/CIR 92 is built by `Source.Fisconet`; any other text (an annex, a commentary) is written by hand under `Title_{Document}`. A citation's dates read `dd.MM.yyyy` in both languages: they identify the document.
 - French shows each document's official French name, taken from the filed document. English keeps today's wording.
 - A test fails when a source of any rule set lacks its words in either language (`SourceTextTests`).
 

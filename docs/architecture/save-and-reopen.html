@@ -14,7 +14,7 @@
     <p class="eyebrow">Netto · architecture page · flow</p>
     <h1>How a plan is saved and opened again</h1>
     <p class="lede">Saved plans live in the browser, in one versioned document of Netto's own, never the inputs serialised as they are in memory. A plan is read back exactly as it was saved or not at all; an older document is brought forward one version at a time. This page follows a save, the read at start-up, opening a plan, and the export to a file.</p>
-    <p class="atlas-meta"><span>As of <b>main 7dfc6b5</b></span><span><b>29 October 2026</b></span></p>
+    <p class="atlas-meta"><span>As of <b>feature/french-by-default b1d21ed</b></span><span><b>30 October 2026</b></span></p>
   </header>
 
   <section aria-labelledby="h-flow">
@@ -28,7 +28,7 @@
       <div class="atlas-scroll">
         <svg viewBox="0 0 790 580" role="img" aria-labelledby="flow-title flow-desc">
           <title id="flow-title">Saving, reading at start-up and opening a plan</title>
-          <desc id="flow-desc">To save, the Plans panel calls SavedPlans.Save, which maps the inputs through PlanStorage.Store and writes the whole book to localStorage under netto.plans; the panel then tells the plan page the plans changed. At start-up SavedPlans reads netto.plans and PlanStorage.Read parses it strictly, patching older plans up to version 9; a document it cannot read is copied to netto.plans.unreadable. The page starts on the plan last opened. To open a plan, the panel asks first over unsaved changes, then SavedPlans.Open returns its inputs and the page shows them.</desc>
+          <desc id="flow-desc">To save, the Plans panel calls SavedPlans.Save, which maps the inputs through PlanStorage.Store and writes the whole book to localStorage under netto.plans; the panel then tells the plan page the plans changed. At start-up SavedPlans reads netto.plans and PlanStorage.Read parses it strictly, patching older plans up to version 9; a document it cannot read is copied to netto.plans.unreadable. The page starts on the river carried across a switch of language (netto.river in sessionStorage, taken once), else the plan last opened. To open a plan, the panel asks first over unsaved changes, then SavedPlans.Open returns its inputs and the page shows them.</desc>
           <defs>
             <marker id="flow-head" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker>
           </defs>
@@ -55,7 +55,7 @@
           <g data-step="5"><line class="flow" x1="235" y1="275" x2="541" y2="275" marker-end="url(#flow-head)"/><text class="flow-label" x="390" y="267" text-anchor="middle">Get(netto.plans)</text></g>
           <g data-step="6"><line class="flow" x1="235" y1="310" x2="386" y2="310" marker-end="url(#flow-head)"/><text class="flow-label" x="312" y="302" text-anchor="middle">Read(document)</text><text class="flow-label" x="398" y="335">older plans patched up to v9</text></g>
           <g data-step="7" data-layer="unreadable"><line class="flow" x1="235" y1="370" x2="541" y2="370" marker-end="url(#flow-head)"/><text class="flow-label" x="390" y="362" text-anchor="middle">copy to netto.plans.unreadable</text></g>
-          <g data-step="8"><line class="flow" x1="235" y1="405" x2="696" y2="405" marker-end="url(#flow-head)"/><text class="flow-label" x="467" y="397" text-anchor="middle">the plan last opened, else the example</text></g>
+          <g data-step="8"><line class="flow" x1="235" y1="405" x2="696" y2="405" marker-end="url(#flow-head)"/><text class="flow-label" x="467" y="397" text-anchor="middle">the carried river, else the plan last opened, else the example</text></g>
 
           <text class="group-label" x="776" y="453" text-anchor="end">Open</text>
           <g data-step="9"><line class="flow" x1="80" y1="470" x2="231" y2="470" marker-end="url(#flow-head)"/><text class="flow-label" x="157" y="462" text-anchor="middle">Open(id)</text><text class="flow-label" x="88" y="492">asks first over unsaved changes</text></g>
@@ -72,7 +72,7 @@
         <li>At start-up, the <code>SavedPlans</code> constructor reads <code>netto.plans</code>.</li>
         <li><code>PlanStorage.Read</code> parses it strictly: no unknown member, no missing one, no duplicate. A plan of version 9 is read; an older one goes through the patches from its version up to 9; a plan that still cannot be read is kept exactly as stored and shown as unreadable, never filled with defaults.</li>
         <li>A whole document Netto cannot read, malformed or of a version above 9, is copied to <code>netto.plans.unreadable</code> before anything overwrites it, and the panel says so.</li>
-        <li><code>RiverState</code> starts on the plan last opened, else on <code>RiverInputs.Example</code>.</li>
+        <li><code>RiverState</code> starts on the river a switch of language carried across its reload (<code>netto.river</code> in sessionStorage, taken once through <code>IBrowserSession</code>), else on the plan last opened, else on <code>RiverInputs.Example</code>.</li>
         <li>Opening from the panel asks first when the river has unsaved changes; <code>SavedPlans.Open</code> returns the plan's inputs, or nothing for an unreadable plan.</li>
         <li><code>Plan.OnPlanOpened</code> shows the plan; it is no edit of the river, so no « taken out » notice, and the moves are measured from it while no plan is starred Today.</li>
       </ol>
@@ -130,12 +130,13 @@
   <section aria-labelledby="h-changes">
     <h2 id="h-changes">Changes</h2>
     <ul class="atlas-changes">
+      <li><time datetime="2026-10-30">30.10.2026</time><span>the language picked (<code>netto.language</code>) and the river carried across a switch of language (<code>netto.river</code>, sessionStorage), read first at start-up (<a href="decisions/2026-10-30-french-by-default-english-beside-it.md">French by default</a>).</span></li>
       <li><time datetime="2026-10-29">29.10.2026</time><span>The map's filter preference gone: <code>netto.map.lines</code> is no longer read (<a href="decisions/2026-10-29-map-lines-read-from-the-cards-the-pocket-line-summing-them.md">map lines read from the cards</a>, <code>main</code> at <code>7dfc6b5</code>).</span></li>
       <li><time datetime="2026-10-29">29.10.2026</time><span>Page drawn in the fresh-start pass, from <code>main</code> at <code>29cbc95</code>.</span></li>
     </ul>
   </section>
 
-  <footer>Drawn from the code on <code>main</code> at <code>7dfc6b5</code>. The code is the source; this page explains it. <a href="index.html">All pages</a>.</footer>
+  <footer>Drawn from the code on <code>feature/french-by-default</code> at <code>b1d21ed</code>. The code is the source; this page explains it. <a href="index.html">All pages</a>.</footer>
 </main>
 </body>
 </html>

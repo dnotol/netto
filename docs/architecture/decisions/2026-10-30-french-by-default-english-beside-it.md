@@ -21,11 +21,12 @@ The operator asked for the whole site in French by default, with English kept be
 
 - English stays in each component's neutral `.resx`; French goes in `<Name>.fr.resx` beside it, the same keys, placeholders and `[term]` markers (`ResxTranslationTests`). Its words follow the [glossary](../../knowledge/domain/french-glossary.md).
 - The client keeps `InvariantGlobalization` and sets `PredefinedCulturesOnly=false`, so the culture named `fr` can be created. Only the neutral `fr` is used, never `fr-BE`, whose parent is invariant in this mode.
-- `Program.cs` sets only `CultureInfo.DefaultThreadCurrentUICulture`, after `Build()` and before `RunAsync()`, from the viewer's choice in localStorage (`netto.language`), French when there is none. `CurrentCulture` stays invariant, so a number formatted without a culture never turns French in an attribute.
+- `Program.cs` calls `Languages.Apply` after `Build()` and before `RunAsync()`. It sets the UI culture (`DefaultThreadCurrentUICulture` and `CurrentUICulture`) from the viewer's choice in localStorage (`netto.language`), French when there is none, and never `CurrentCulture`. That stays invariant, so a number formatted without a culture never turns French in an attribute.
 - `Formats` picks its culture by the UI language: the English one as today, or a French one built on an invariant clone, reading « 1.234,56 € », « 20,5 % », « 1er janvier 2027 ».
 - The switch (« Français » / « English ») stores the choice and reloads the page, since satellite resources load once at start-up; the river is carried across the reload in sessionStorage, so unsaved edits stay.
 - MudBlazor's own strings go through Netto's `MudLocalizer`.
 - Tests run on the invariant culture, so they read English; French is read through `InLanguage`.
+- What the two decisions replaced still held: components come from MudBlazor; no text is written inline in a `.razor`, every text read through `IStringLocalizer<T>` (`RazorLocalizationTests`), keys built in code through a helper with its own test; every number goes through `Formats`, a rule amount formatted by its key's suffix; the browser and the tests format alike.
 
 # Alternatives rejected
 
