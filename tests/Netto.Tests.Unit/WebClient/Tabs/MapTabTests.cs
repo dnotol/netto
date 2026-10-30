@@ -170,13 +170,16 @@ public class MapTabTests
             () => badges.Where(badge => badge.Tone != "amount").ShouldAllBe(badge => badge.Heard.Length == 0 && badge.Seen.Length > 0));
     }
 
-    // What a badge leaves heard is out of sight, as a quiet name's state is.
+    // What a badge leaves heard is out of sight by the very rule that hides a quiet name's state.
     [Fact]
     public void MapTabCss_hidesWhatABadgeLeavesHeard()
     {
-        var heard = Stylesheet.Block(Stylesheet.Read("src", "Netto.Web.Client", "Tabs", "MapTab.razor.css"), ".map-badge__heard");
+        var css = Stylesheet.Read("src", "Netto.Web.Client", "Tabs", "MapTab.razor.css");
+        var heard = Stylesheet.Block(css, ".map-badge__heard");
 
         heard.ShouldSatisfyAllConditions(
+            () => Regex.IsMatch(css, @"(?m)^\.map-module__quiet,\s*^\.map-badge__heard \{").ShouldBeTrue(),
+            () => Regex.Count(css, @"(?m)^\.map-badge__heard\b").ShouldBe(1),
             () => heard.ShouldContain("position: absolute;"),
             () => heard.ShouldContain("clip-path: inset(50%);"),
             () => heard.ShouldContain("overflow: hidden;"));

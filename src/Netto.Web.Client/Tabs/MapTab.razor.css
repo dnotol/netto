@@ -448,8 +448,10 @@
 }
 
 /* What a quiet name says of itself, out of sight: that it holds nothing in this plan, which the row's
-   dashes and muted names show. */
-.map-module__quiet {
+   dashes and muted names show; and what a badge leaves heard, a tax base's words after its amount
+   (MapBadgeWords), part of the button's name. */
+.map-module__quiet,
+.map-badge__heard {
     position: absolute;
     width: 1px;
     height: 1px;
@@ -524,17 +526,6 @@
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
-}
-
-/* What a badge leaves heard, out of sight: a tax base's words after its amount (MapBadgeWords), part of the
-   button's name. */
-.map-badge__heard {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
 }
 
 /* A rule lost: its words, its icon and its outline in the error colour, never the colour alone. */
