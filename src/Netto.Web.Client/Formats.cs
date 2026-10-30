@@ -65,6 +65,21 @@ internal static class Formats
                         ? Grams(amount.Value)
                         : Euros(amount.Value);
 
+    // A multiplier the law writes as a fraction, 2/3 or 5/3, read as one (RuleAmount would round it to
+    // 0.67× or 1.67×): the fraction of the smallest denominator up to 12 that the value is, to four
+    // decimals; any other amount reads as RuleAmount reads it.
+    public static string Fraction(RuleAmount amount)
+    {
+        for (var denominator = 2; denominator <= 12 && amount.Value != Math.Truncate(amount.Value); denominator++)
+        {
+            var numerator = Math.Round(amount.Value * denominator);
+            if (Math.Abs(numerator / denominator - amount.Value) < 0.0001m)
+                return $"{numerator.ToString("0", Culture)}/{denominator.ToString(Culture)}";
+        }
+
+        return RuleAmount(amount);
+    }
+
     // A percentage with as many decimals as it has, up to three: a car's CO2 percentage of 9.75%, a
     // deduction rate of 61.6%.
     public static string Percentage(decimal fraction) => fraction.ToString("0.###%", Culture);

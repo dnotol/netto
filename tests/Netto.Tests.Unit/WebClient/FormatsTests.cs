@@ -202,4 +202,18 @@ public class FormatsTests
 
         text.ShouldBe(expected);
     }
+
+    // A multiplier the law writes as a fraction reads as one, 2/3 and not 0.67×; one that is no simple
+    // fraction reads as RuleAmount reads it.
+    [Theory]
+    [InlineData("rent_charges_limit_multiplier", "0.6666666666666666666666666667", "2/3")]
+    [InlineData("rent_cap_multiplier", "1.6666666666666666666666666667", "5/3")]
+    [InlineData("half_multiplier", "0.5", "1/2")]
+    [InlineData("odd_multiplier", "2.37", "2.37×")]
+    public void Fraction_multiplier_readsAsAFractionWhenItIsOne(string key, string value, string expected)
+    {
+        var amount = new RuleAmount(key, decimal.Parse(value, System.Globalization.CultureInfo.InvariantCulture), AnySource);
+
+        Formats.Fraction(amount).ShouldBe(expected);
+    }
 }
