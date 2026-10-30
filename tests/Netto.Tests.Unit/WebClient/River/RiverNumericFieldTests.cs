@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using MudBlazor;
 using MudBlazor.Extensions;
+using MudBlazor.Utilities.Exceptions;
 using Netto.Web.Client;
 using Netto.Web.Client.River;
 using Shouldly;
@@ -47,6 +48,34 @@ public class RiverNumericFieldTests
 
         (html.Contains("value=\"1,234.50\"", StringComparison.Ordinal), html.IndexOf('€', StringComparison.Ordinal) < html.IndexOf("<input", StringComparison.Ordinal))
             .ShouldBe((true, true));
+    }
+
+    // In French the amount reads like the administration's, the euro after it.
+    [Fact]
+    public async Task Euros_inFrench_drawsTheAmountTheFrenchWayBeforeAEuroSign()
+    {
+        using var french = InLanguage.French();
+
+        var html = WebUtility.HtmlDecode(await RenderAsync(new() { ["Euros"] = true }));
+
+        (html.Contains("value=\"1.234,50\"", StringComparison.Ordinal), html.IndexOf('€', StringComparison.Ordinal) > html.IndexOf("<input", StringComparison.Ordinal))
+            .ShouldBe((true, true));
+    }
+
+    // What is typed is read strictly (TypedNumberConverter): in French a decimal point is no number, never ten
+    // or a hundred times the amount, and a French number is its value.
+    [Fact]
+    public async Task Typed_inFrench_isReadStrictly()
+    {
+        using var french = InLanguage.French();
+        var field = await CaptureAsync(new() { ["Euros"] = true });
+
+        var converter = field.Converting.ShouldBeOfType<TypedNumberConverter<decimal>>();
+
+        converter.ShouldSatisfyAllConditions(
+            () => Should.Throw<ConversionException>(() => converter.ConvertBack("1.5")),
+            () => Should.Throw<ConversionException>(() => converter.ConvertBack("12.50")),
+            () => converter.ConvertBack("1.234,56").ShouldBe(1_234.56m));
     }
 
     // What is kept in the company and the split's exact pay: the same look, taken when the field is left.

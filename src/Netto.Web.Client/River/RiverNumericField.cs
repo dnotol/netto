@@ -16,8 +16,9 @@ namespace Netto.Web.Client.River;
 // field; the card shows it in sight (RefusedMessage), so RiverField keeps the field's copy out of sight
 // while it is refused (river-number--refused), and MudBlazor's own errors, a number it cannot read, in
 // sight. Every field of the river looks and behaves the same unless its card says otherwise: outlined and
-// dense, without spin buttons, in the site's culture, taking what is typed after 400 ms of quiet; an
-// amount in euros (Euros) with two decimals and a € before it; a field the river bounds taken once it is
+// dense, without spin buttons, in the site's culture, taking what is typed after 400 ms of quiet and reading
+// it strictly (TypedNumberConverter), so a French « 1.5 » is no number rather than 15; an amount in euros
+// (Euros) with two decimals and a € before it, after it in French; a field the river bounds taken once it is
 // left (TakenOnLeaving), so the bounded amount replaces the typed one.
 public sealed class RiverNumericField<T> : MudNumericField<T>
 {
@@ -62,12 +63,17 @@ public sealed class RiverNumericField<T> : MudNumericField<T>
         if (parameters.TryGetValue<bool>(nameof(Euros), out var euros) && euros)
         {
             Format = "N2";
-            Adornment = Adornment.Start;
+            Adornment = Languages.Current == Language.French ? Adornment.End : Adornment.Start;
             AdornmentText = "€";
         }
 
         return base.SetParametersAsync(parameters);
     }
+
+    // The converter the field reads and shows its text through, for a test to read what is typed as the field does.
+    internal IConverter<T?, string?> Converting => GetConverter();
+
+    protected override IConverter<T?, string?> GetDefaultConverter() => new TypedNumberConverter<T> { Culture = GetCulture, Format = GetFormat };
 
     // The parameter keeps the name the Razor compiler gives it in the base component (CA1725).
     protected override void BuildRenderTree(RenderTreeBuilder __builder)
