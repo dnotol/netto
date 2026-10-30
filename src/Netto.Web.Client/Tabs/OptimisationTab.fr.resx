@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve">
+    <value>Optimisation</value>
+  </data>
+  <data name="State_StartsAtPay" xml:space="preserve">
+    <value>Aujourd'hui part de votre rémunération&#160;: ouvrez-le depuis Plans et saisissez l'exercice de sa société pour voir les ajustements.</value>
+  </data>
+  <data name="State_Refused" xml:space="preserve">
+    <value>Un montant d'Aujourd'hui est refusé&#160;: ouvrez-le depuis Plans et corrigez-le pour voir les ajustements.</value>
+  </data>
+  <data name="State_AlreadyBest" xml:space="preserve">
+    <value>Aujourd'hui est déjà le meilleur plan que Netto trouve.</value>
+  </data>
+  <data name="State_Moves" xml:space="preserve">
+    <value>Depuis Aujourd'hui, votre situation actuelle, chaque ajustement s'ajoute à ceux du dessus&#160;:</value>
+  </data>
+  <data name="Move_Pay" xml:space="preserve">
+    <value>Vous verser {0} au lieu de {1}</value>
+  </data>
+  <data name="Move_CompanyPayment" xml:space="preserve">
+    <value>Faire un versement anticipé de {0} au plus tard le {1} sur l'impôt des sociétés</value>
+  </data>
+  <data name="Move_DirectorPayment" xml:space="preserve">
+    <value>Faire un versement anticipé de {0} au plus tard le {1} sur votre impôt des personnes physiques</value>
+  </data>
+  <data name="Move_EcoVouchers" xml:space="preserve">
+    <value>Accorder {0} d'éco-chèques par an</value>
+  </data>
+  <data name="Move_SportCultureVouchers" xml:space="preserve">
+    <value>Accorder {0} de chèques sport/culture par an</value>
+  </data>
+  <data name="Move_Rent" xml:space="preserve">
+    <value>Louer à la société le bureau de votre logement pour {0} par an</value>
+  </data>
+  <data name="Gain" xml:space="preserve">
+    <value>{0} de plus</value>
+  </data>
+  <data name="Apply" xml:space="preserve">
+    <value>Appliquer</value>
+  </data>
+  <data name="ApplyLabel" xml:space="preserve">
+    <value>Appliquer&#160;: {0}</value>
+  </data>
+  <data name="Applied" xml:space="preserve">
+    <value>Dans le plan affiché</value>
+  </data>
+  <data name="BestPay" xml:space="preserve">
+    <value>Pour le plan affiché tel qu'il est, la meilleure rémunération est {0}, pas celle-ci.</value>
+  </data>
+  <data name="Move_CopyrightFollowsPay" xml:space="preserve">
+    <value>Aligner vos droits d'auteur sur votre rémunération, au montant qu'une décision anticipée accepte pour {0} de votre temps consacré à la création, votre rémunération restant dans ce que la société peut payer à côté</value>
+  </data>
+  <data name="Why_Pay" xml:space="preserve">
+    <value>Votre rémunération passe de {0} à {1}, et le dividende distribué de {2} à {3}.</value>
+  </data>
+  <data name="Why_PayWithRoyalty" xml:space="preserve">
+    <value>Votre rémunération passe de {0} à {1}, vos droits d'auteur de {2} à {3}, et le dividende distribué de {4} à {5}.</value>
+  </data>
+  <data name="Why_ReducedRateGivenUp" xml:space="preserve">
+    <value>Avec cet ajustement, la société renonce au taux réduit de l'impôt des sociétés.</value>
+  </data>
+  <data name="Why_ReducedRateGained" xml:space="preserve">
+    <value>Avec cet ajustement, la société a droit au taux réduit de l'impôt des sociétés.</value>
+  </data>
+  <data name="Why_CompanySurcharge" xml:space="preserve">
+    <value>La majoration sur l'impôt des sociétés passe de {0} à {1}.</value>
+  </data>
+  <data name="Why_CompanySurchargeCancelled" xml:space="preserve">
+    <value>Cet ajustement supprime la majoration de {0} sur l'impôt des sociétés.</value>
+  </data>
+  <data name="Why_DirectorSurcharge" xml:space="preserve">
+    <value>La majoration sur votre impôt des personnes physiques passe de {0} à {1}.</value>
+  </data>
+  <data name="Why_DirectorSurchargeCancelled" xml:space="preserve">
+    <value>Cet ajustement supprime la majoration de {0} sur votre impôt des personnes physiques.</value>
+  </data>
+  <data name="Why_Vouchers" xml:space="preserve">
+    <value>Vous recevez {0} de plus sans impôt&#160;; la société en déduit {1}.</value>
+  </data>
+  <data name="Why_VouchersNotDeducted" xml:space="preserve">
+    <value>Vous recevez {0} de plus sans impôt&#160;; la société n'en déduit rien.</value>
+  </data>
+  <data name="Why_Rent" xml:space="preserve">
+    <value>Le loyer que la société vous paie passe de {0} à {1}, et ce qui vous en revient après impôt de {2} à {3}.</value>
+  </data>
+  <data name="Why_CopyrightFollowsPay" xml:space="preserve">
+    <value>Vos droits d'auteur passent de {0} à {1}, et l'impôt distinct qui les frappe, à part de votre rémunération, de {2} à {3}.</value>
+  </data>
+  <data name="Link_split" xml:space="preserve">
+    <value>Voir sur la carte La répartition</value>
+  </data>
+  <data name="Link_vouchers" xml:space="preserve">
+    <value>Voir sur la carte Titres-repas et chèques</value>
+  </data>
+  <data name="Link_rent" xml:space="preserve">
+    <value>Voir sur la carte Loyer du bureau</value>
+  </data>
+  <data name="Link_copyright" xml:space="preserve">
+    <value>Voir sur la carte Droits d'auteur</value>
+  </data>
+  <data name="Link_WhenToPay" xml:space="preserve">
+    <value>Voir dans l'onglet Quand payer</value>
+  </data>
+  <data name="LinkLabel" xml:space="preserve">
+    <value>{0}&#160;: {1}</value>
+  </data>
+  <data name="Figure_Today" xml:space="preserve">
+    <value>Aujourd'hui, dans votre poche</value>
+  </data>
+  <data name="Figure_Plan" xml:space="preserve">
+    <value>Avec chaque ajustement ci-dessous</value>
+  </data>
+  <data name="Figure_Gain" xml:space="preserve">
+    <value>Gain par rapport à Aujourd'hui</value>
+  </data>
+  <data name="After" xml:space="preserve">
+    <value>{0} dans votre poche après cet ajustement</value>
+  </data>
+  <data name="State_Moves_Plan" xml:space="preserve">
+    <value>Depuis le plan affiché, tel que vous l'avez ouvert ou enregistré, chaque ajustement s'ajoute à ceux du dessus&#160;:</value>
+  </data>
+  <data name="State_Moves_PlanNamed" xml:space="preserve">
+    <value>Depuis «&#160;{0}&#160;», tel que vous l'avez ouvert ou enregistré, chaque ajustement s'ajoute à ceux du dessus&#160;:</value>
+  </data>
+  <data name="State_AlreadyBest_Plan" xml:space="preserve">
+    <value>Le plan affiché est déjà le meilleur que Netto trouve.</value>
+  </data>
+  <data name="State_StartsAtPay_Plan" xml:space="preserve">
+    <value>Le plan affiché part de votre rémunération&#160;: saisissez l'exercice de sa société, puis enregistrez le plan pour voir les ajustements.</value>
+  </data>
+  <data name="State_Refused_Plan" xml:space="preserve">
+    <value>Un montant du plan affiché est refusé&#160;: corrigez-le, puis enregistrez le plan pour voir les ajustements.</value>
+  </data>
+  <data name="Figure_Today_Plan" xml:space="preserve">
+    <value>Ce plan, dans votre poche</value>
+  </data>
+  <data name="Figure_Gain_Plan" xml:space="preserve">
+    <value>Gain par rapport à ce plan</value>
+  </data>
+  <data name="RiverChanged_One" xml:space="preserve">
+    <value>Le plan affiché diffère d'Aujourd'hui, au-delà de ce que fixent les ajustements, par&#160;: {0}. Les ajustements restent ceux d'Aujourd'hui. Enregistrez le plan affiché et marquez-le d'une étoile comme Aujourd'hui pour les trouver pour lui.</value>
+  </data>
+  <data name="RiverChanged_Two" xml:space="preserve">
+    <value>Le plan affiché diffère d'Aujourd'hui, au-delà de ce que fixent les ajustements, par&#160;: {0} et {1}. Les ajustements restent ceux d'Aujourd'hui. Enregistrez le plan affiché et marquez-le d'une étoile comme Aujourd'hui pour les trouver pour lui.</value>
+  </data>
+  <data name="RiverChanged_Three" xml:space="preserve">
+    <value>Le plan affiché diffère d'Aujourd'hui, au-delà de ce que fixent les ajustements, par&#160;: {0}, {1} et {2}. Les ajustements restent ceux d'Aujourd'hui. Enregistrez le plan affiché et marquez-le d'une étoile comme Aujourd'hui pour les trouver pour lui.</value>
+  </data>
+  <data name="RiverChanged_More" xml:space="preserve">
+    <value>Le plan affiché diffère d'Aujourd'hui, au-delà de ce que fixent les ajustements, par&#160;: {0}, {1} et {2} autres. Les ajustements restent ceux d'Aujourd'hui. Enregistrez le plan affiché et marquez-le d'une étoile comme Aujourd'hui pour les trouver pour lui.</value>
+  </data>
+  <data name="Difference_Changed" xml:space="preserve">
+    <value>{0}</value>
+  </data>
+  <data name="Difference_Added" xml:space="preserve">
+    <value>{0} (pas dans Aujourd'hui)</value>
+  </data>
+  <data name="Difference_LeftOut" xml:space="preserve">
+    <value>{0} (pas dans le plan affiché)</value>
+  </data>
+  <data name="Module_River" xml:space="preserve">
+    <value>L'année</value>
+  </data>
+  <data name="Module_CompanyYear" xml:space="preserve">
+    <value>Exercice de la société</value>
+  </data>
+  <data name="Module_Vouchers" xml:space="preserve">
+    <value>Titres-repas et chèques</value>
+  </data>
+  <data name="Module_Allowances" xml:space="preserve">
+    <value>Indemnités de frais</value>
+  </data>
+  <data name="Module_Rent" xml:space="preserve">
+    <value>Loyer du bureau</value>
+  </data>
+  <data name="Module_Car" xml:space="preserve">
+    <value>Voiture de société</value>
+  </data>
+  <data name="Module_Copyright" xml:space="preserve">
+    <value>Droits d'auteur</value>
+  </data>
+  <data name="Module_DirectorPay" xml:space="preserve">
+    <value>Rémunération de dirigeant</value>
+  </data>
+  <data name="Module_Household" xml:space="preserve">
+    <value>Ménage</value>
+  </data>
+  <data name="Module_CorporateTax" xml:space="preserve">
+    <value>Impôt des sociétés</value>
+  </data>
+  <data name="Module_Dividend" xml:space="preserve">
+    <value>Dividende</value>
+  </data>
+  <data name="RiverChanged_Plan" xml:space="preserve">
+    <value>Le plan affiché a changé depuis que vous avez ouvert ou enregistré ce plan&#160;: enregistrez-le pour mesurer les ajustements à partir de lui.</value>
+  </data>
+  <data name="State_Searching" xml:space="preserve">
+    <value>Recherche des ajustements depuis Aujourd'hui, votre situation actuelle…</value>
+  </data>
+  <data name="State_Searching_Plan" xml:space="preserve">
+    <value>Recherche des ajustements depuis le plan affiché, tel que vous l'avez ouvert ou enregistré…</value>
+  </data>
+  <data name="State_Searching_PlanNamed" xml:space="preserve">
+    <value>Recherche des ajustements depuis «&#160;{0}&#160;», tel que vous l'avez ouvert ou enregistré…</value>
+  </data>
+</root>

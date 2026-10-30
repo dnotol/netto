@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve">
+    <value>Plan</value>
+  </data>
+  <data name="Carries_ProfitBeforeLevers" xml:space="preserve">
+    <value>Avant votre rémunération</value>
+  </data>
+  <data name="Carries_PocketSoFar" xml:space="preserve">
+    <value>Ce qui vous est parvenu jusqu'ici</value>
+  </data>
+
+  <data name="Module_CompanyYear" xml:space="preserve">
+    <value>Exercice de la société</value>
+  </data>
+  <data name="Module_Vouchers" xml:space="preserve">
+    <value>Titres-repas et chèques</value>
+  </data>
+  <data name="Module_Allowances" xml:space="preserve">
+    <value>Indemnités de frais</value>
+  </data>
+  <data name="Module_Rent" xml:space="preserve">
+    <value>Loyer du bureau</value>
+  </data>
+  <data name="Module_Car" xml:space="preserve">
+    <value>Voiture de société</value>
+  </data>
+  <data name="Module_Split" xml:space="preserve">
+    <value>La répartition</value>
+  </data>
+  <data name="Module_Copyright" xml:space="preserve">
+    <value>Droits d'auteur</value>
+  </data>
+  <data name="Module_DirectorPay" xml:space="preserve">
+    <value>Rémunération de dirigeant</value>
+  </data>
+  <data name="Module_Household" xml:space="preserve">
+    <value>Ménage</value>
+  </data>
+  <data name="Column_You" xml:space="preserve">
+    <value>Vous et votre ménage</value>
+  </data>
+  <data name="Column_Across" xml:space="preserve">
+    <value>Voies de passage</value>
+  </data>
+  <data name="Column_Company" xml:space="preserve">
+    <value>La société</value>
+  </data>
+  <data name="Module_CorporateTax" xml:space="preserve">
+    <value>Impôt des sociétés</value>
+  </data>
+  <data name="Module_Dividend" xml:space="preserve">
+    <value>Dividende</value>
+  </data>
+  <data name="MapLabel" xml:space="preserve">
+    <value>La carte de votre plan</value>
+  </data>
+  <data name="Refused" xml:space="preserve">
+    <value>refusé</value>
+  </data>
+  <data name="Skipped" xml:space="preserve">
+    <value>non saisi</value>
+  </data>
+  <data name="Quiet" xml:space="preserve">
+    <value>rien dans ce plan</value>
+  </data>
+  <data name="Receives" xml:space="preserve">
+    <value>Reçoit</value>
+  </data>
+  <data name="ReceivedFrom" xml:space="preserve">
+    <value>{0}, origine&#160;:</value>
+  </data>
+  <data name="ReceivedBetween" xml:space="preserve">
+    <value>·</value>
+  </data>
+  <data name="Effects" xml:space="preserve">
+    <value>Effets</value>
+  </data>
+  <data name="Effect_TaxBaseOf" xml:space="preserve">
+    <value>{0}&#160;: {1} sur la base imposable du module</value>
+  </data>
+  <data name="Effect_TaxBaseFrom" xml:space="preserve">
+    <value>{0}&#160;: {1} sur sa base imposable, venant du module</value>
+  </data>
+  <data name="Effect_ConditionOn" xml:space="preserve">
+    <value>{0}&#160;: {1}, sur le module</value>
+  </data>
+  <data name="Effect_ConditionFrom" xml:space="preserve">
+    <value>{0}&#160;: {1}, condition posée par le module</value>
+  </data>
+  <data name="Rule_NoOfficeAllowanceBesideRent" xml:space="preserve">
+    <value>Pas d'indemnité de bureau à côté d'un loyer</value>
+  </data>
+  <data name="Rule_PayKeepsReducedRate" xml:space="preserve">
+    <value>La rémunération garde le taux réduit</value>
+  </data>
+  <data name="Rule_BenefitsWithinShareOfPay" xml:space="preserve">
+    <value>Les avantages restent dans leur part de la rémunération</value>
+  </data>
+  <data name="Rule_RoyaltyLowersPay" xml:space="preserve">
+    <value>Les droits d'auteur abaissent la rémunération qui garde le taux</value>
+  </data>
+  <data name="Rule_PayOutCoversReserve" xml:space="preserve">
+    <value>La distribution couvre le montant gardé dans la société</value>
+  </data>
+  <data name="State_Met" xml:space="preserve">
+    <value>oui</value>
+  </data>
+  <data name="State_Lost" xml:space="preserve">
+    <value>non</value>
+  </data>
+  <data name="State_Kept" xml:space="preserve">
+    <value>respectée</value>
+  </data>
+  <data name="State_Lowers" xml:space="preserve">
+    <value>abaisse</value>
+  </data>
+  <data name="State_NoEffect" xml:space="preserve">
+    <value>sans effet</value>
+  </data>
+  <data name="State_NoPayKeeps" xml:space="preserve">
+    <value>inaccessible</value>
+  </data>
+  <data name="State_Covered" xml:space="preserve">
+    <value>couvert</value>
+  </data>
+  <data name="State_NotCovered" xml:space="preserve">
+    <value>non couvert</value>
+  </data>
+  <data name="Badge_Pay_Met" xml:space="preserve">
+    <value>rémunération suffisante</value>
+  </data>
+  <data name="Badge_Pay_Lost" xml:space="preserve">
+    <value>taux perdu&#160;: rémunération</value>
+  </data>
+  <data name="Badge_Benefits_Met" xml:space="preserve">
+    <value>avantages dans la limite</value>
+  </data>
+  <data name="Badge_Benefits_Lost" xml:space="preserve">
+    <value>taux perdu&#160;: avantages</value>
+  </data>
+  <data name="Badge_Royalty_Lowers" xml:space="preserve">
+    <value>seuil abaissé par les droits</value>
+  </data>
+  <data name="Badge_Royalty_NoEffect" xml:space="preserve">
+    <value>droits d'auteur&#160;: sans effet</value>
+  </data>
+  <data name="Badge_Royalty_NoPayKeeps" xml:space="preserve">
+    <value>taux réduit inaccessible</value>
+  </data>
+  <data name="Badge_Reserve_Covered" xml:space="preserve">
+    <value>montant gardé couvert</value>
+  </data>
+  <data name="Badge_Reserve_NotCovered" xml:space="preserve">
+    <value>montant gardé non couvert</value>
+  </data>
+  <data name="Badge_TaxBase" xml:space="preserve">
+    <value>+{0} à la base</value>
+  </data>
+</root>

@@ -31,7 +31,8 @@
 
 /* The plot's minimum is what keeps the labels of two neighbouring deadlines apart: the closest are 12
    October and 21 December, under a fifth of the year (0.19), so at this minimum the plot is 664px and
-   leaves 127px between their centres, where a label of an amount up to €99,999.99 and a day is 118px.
+   leaves 127px between their centres, where a label of an amount up to €99,999.99 and a day is 118px, and
+   in French, « 99.999,99 € au 21 déc. », at most 4% wider, about 123px (FrenchTabsTests).
    The year's end has a margin of its own (--timeline-end) for the last label, which is centred on its
    mark a fortnight short of the year's end. */
 .timeline__chart {

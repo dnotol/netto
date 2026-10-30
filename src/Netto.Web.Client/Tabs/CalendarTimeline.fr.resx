@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve">
+    <value>L'année d'un coup d'œil</value>
+  </data>
+  <data name="Lane_Company" xml:space="preserve">
+    <value>La société · versements anticipés</value>
+  </data>
+  <data name="Lane_Director" xml:space="preserve">
+    <value>Vous · versements anticipés</value>
+  </data>
+  <data name="Lane_Pay" xml:space="preserve">
+    <value>Votre rémunération</value>
+  </data>
+  <data name="Lane_Contributions" xml:space="preserve">
+    <value>Cotisations sociales</value>
+  </data>
+  <data name="Lane_Contributions_Company" xml:space="preserve">
+    <value>Cotisations sociales · payées par la société</value>
+  </data>
+  <data name="Note_NoneDue" xml:space="preserve">
+    <value>aucun versement dû</value>
+  </data>
+  <data name="Note_Exempt" xml:space="preserve">
+    <value>exonération de la majoration</value>
+  </data>
+  <data name="Note_Nothing" xml:space="preserve">
+    <value>rien cette année</value>
+  </data>
+  <data name="Mark_Amount" xml:space="preserve">
+    <value>{0} au {1}</value>
+  </data>
+  <data name="Pay_Caption" xml:space="preserve">
+    <value>{0} net en {1}</value>
+  </data>
+  <data name="Contributions_Caption" xml:space="preserve">
+    <value>{0} au T{1}</value>
+  </data>
+  <data name="Quarter" xml:space="preserve">
+    <value>T{0}</value>
+  </data>
+  <data name="Today" xml:space="preserve">
+    <value>Aujourd'hui, {0}</value>
+  </data>
+  <data name="Note_Today_BeforeYear" xml:space="preserve">
+    <value>Aujourd'hui, {0}, est avant {1}&#160;: toute l'année est encore à venir.</value>
+  </data>
+  <data name="Note_Today_AfterYear" xml:space="preserve">
+    <value>Aujourd'hui, {0}, est après {1}&#160;: toute l'année est passée.</value>
+  </data>
+  <data name="Legend_Quarters" xml:space="preserve">
+    <value>Les trimestres sont tracés en entier&#160;: Netto ne modélise pas le jour où chacun est payé.</value>
+  </data>
+  <data name="Key" xml:space="preserve">
+    <value>Légende de la chronologie</value>
+  </data>
+  <data name="Key_PastDeadline" xml:space="preserve">
+    <value>Échéance passée</value>
+  </data>
+  <data name="Key_NextPayment" xml:space="preserve">
+    <value>Prochain versement</value>
+  </data>
+  <data name="Key_LaterPayment" xml:space="preserve">
+    <value>Versement prévu pour une échéance ultérieure</value>
+  </data>
+  <data name="Key_NothingToPay" xml:space="preserve">
+    <value>Échéance à venir, rien à verser</value>
+  </data>
+  <data name="Key_EndedSpan" xml:space="preserve">
+    <value>Mois ou trimestre écoulé</value>
+  </data>
+  <data name="Key_ComingSpan" xml:space="preserve">
+    <value>Mois ou trimestre à venir</value>
+  </data>
+  <data name="Key_Today" xml:space="preserve">
+    <value>Aujourd'hui</value>
+  </data>
+  <data name="Label_Year" xml:space="preserve">
+    <value>Chronologie de {0}.</value>
+  </data>
+  <data name="Label_Today_InYear" xml:space="preserve">
+    <value>Nous sommes le {0}.</value>
+  </data>
+  <data name="Label_Today_BeforeYear" xml:space="preserve">
+    <value>Nous sommes le {0}, avant l'année.</value>
+  </data>
+  <data name="Label_Today_AfterYear" xml:space="preserve">
+    <value>Nous sommes le {0}, après l'année.</value>
+  </data>
+  <data name="Label_Next_Company" xml:space="preserve">
+    <value>Prochain versement au plus tard le {0}&#160;: {1} par la société.</value>
+  </data>
+  <data name="Label_Next_Director" xml:space="preserve">
+    <value>Prochain versement au plus tard le {0}&#160;: {2} par vous.</value>
+  </data>
+  <data name="Label_Next_Both" xml:space="preserve">
+    <value>Prochain versement au plus tard le {0}&#160;: {1} par la société, {2} par vous.</value>
+  </data>
+  <data name="Label_Next_Nothing" xml:space="preserve">
+    <value>Plus aucun versement anticipé à faire.</value>
+  </data>
+  <data name="Label_Pay" xml:space="preserve">
+    <value>Votre rémunération&#160;: {0} net par mois.</value>
+  </data>
+  <data name="Label_PayRun" xml:space="preserve">
+    <value>Votre rémunération entre {1} et {2}&#160;: {0} net par mois.</value>
+  </data>
+  <data name="Label_PayRunOne" xml:space="preserve">
+    <value>Votre rémunération en {1}&#160;: {0} net.</value>
+  </data>
+  <data name="Label_PayLeft" xml:space="preserve">
+    <value>Encore à venir&#160;: {0} à {1}.</value>
+  </data>
+  <data name="Label_PayLeftOne" xml:space="preserve">
+    <value>Encore à venir&#160;: {0}.</value>
+  </data>
+  <data name="Label_PayNothing" xml:space="preserve">
+    <value>Pas de rémunération cette année.</value>
+  </data>
+  <data name="Label_Contributions" xml:space="preserve">
+    <value>Cotisations sociales&#160;: {0} par trimestre.</value>
+  </data>
+  <data name="Label_Contributions_Company" xml:space="preserve">
+    <value>Cotisations sociales, payées par la société&#160;: {0} par trimestre.</value>
+  </data>
+  <data name="Label_Contributions_WithFee" xml:space="preserve">
+    <value>Cotisations sociales avec les frais de gestion de votre caisse&#160;: {0} par trimestre.</value>
+  </data>
+  <data name="Label_Contributions_Company_WithFee" xml:space="preserve">
+    <value>Cotisations sociales avec les frais de gestion de votre caisse, payées par la société&#160;: {0} par trimestre.</value>
+  </data>
+  <data name="Label_ContributionsNothing" xml:space="preserve">
+    <value>Pas de cotisations sociales cette année.</value>
+  </data>
+  <data name="Label_QuartersLeft" xml:space="preserve">
+    <value>Trimestres encore à venir&#160;: {0} sur 4.</value>
+  </data>
+  <data name="Label_Tables" xml:space="preserve">
+    <value>Les tableaux ci-dessous donnent chaque chiffre.</value>
+  </data>
+</root>

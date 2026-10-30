@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve">
+    <value>Quand payer</value>
+  </data>
+  <data name="DateNote" xml:space="preserve">
+    <value>La date du jour est celle de votre appareil&#160;; une échéance reste ouverte jusqu'à la fin de sa journée.</value>
+  </data>
+  <data name="NextHeading" xml:space="preserve">
+    <value>Prochaine échéance</value>
+  </data>
+  <data name="Next_Company" xml:space="preserve">
+    <value>{0} · {1} à payer par la société</value>
+  </data>
+  <data name="Next_Director" xml:space="preserve">
+    <value>{0} · {2} à payer par vous</value>
+  </data>
+  <data name="Next_Both" xml:space="preserve">
+    <value>{0} · {1} à payer par la société, {2} par vous</value>
+  </data>
+  <data name="Next_Nothing" xml:space="preserve">
+    <value>Plus aucun versement anticipé à faire en {3}</value>
+  </data>
+  <data name="Refused" xml:space="preserve">
+    <value>Les paiements attendent la correction du montant refusé.</value>
+  </data>
+  <data name="AdvancePayments" xml:space="preserve">
+    <value>Versements anticipés</value>
+  </data>
+  <data name="Deadline" xml:space="preserve">
+    <value>Échéance</value>
+  </data>
+  <data name="TheCompany" xml:space="preserve">
+    <value>La société</value>
+  </data>
+  <data name="You" xml:space="preserve">
+    <value>Vous</value>
+  </data>
+  <data name="Past" xml:space="preserve">
+    <value>passée</value>
+  </data>
+  <data name="Nothing" xml:space="preserve">
+    <value>rien</value>
+  </data>
+  <data name="CompanyMore" xml:space="preserve">
+    <value>encore {0} pour supprimer la majoration</value>
+  </data>
+  <data name="DirectorMore" xml:space="preserve">
+    <value>encore {0} pour ne devoir aucune majoration</value>
+  </data>
+  <data name="NoRows" xml:space="preserve">
+    <value>Aucun versement anticipé n'est fait ni nécessaire pour {0}.</value>
+  </data>
+  <data name="Company_Exempt" xml:space="preserve">
+    <value>La société ne doit aucune majoration sur son impôt des sociétés&#160;: une petite société en est exonérée pendant ses trois premiers exercices comptables.</value>
+  </data>
+  <data name="Company_NoTax" xml:space="preserve">
+    <value>La société ne doit pas d'impôt des sociétés, donc rien à verser par anticipation.</value>
+  </data>
+  <data name="Company_Covered" xml:space="preserve">
+    <value>Les versements de la société suppriment la majoration sur son impôt des sociétés.</value>
+  </data>
+  <data name="Company_Due" xml:space="preserve">
+    <value>Les versements de la société laissent une majoration de {0} sur son impôt des sociétés&#160;: verser encore {1} au plus tard le {2} la supprime.</value>
+  </data>
+  <data name="Company_TooLate" xml:space="preserve">
+    <value>Les versements de la société laissent une majoration de {0} sur son impôt des sociétés, et toutes les échéances de {3} sont passées.</value>
+  </data>
+  <data name="Director_Exempt" xml:space="preserve">
+    <value>Vous ne devez aucune majoration sur l'impôt de votre rémunération&#160;: vos trois premières années d'indépendant débutant en sont exonérées.</value>
+  </data>
+  <data name="Director_NoTax" xml:space="preserve">
+    <value>Votre rémunération ne supporte aucun impôt des personnes physiques&#160;: vous n'avez rien à verser par anticipation.</value>
+  </data>
+  <data name="Director_Covered" xml:space="preserve">
+    <value>Le précompte professionnel retenu sur votre rémunération et vos propres versements ne laissent aucune majoration due sur son impôt.</value>
+  </data>
+  <data name="Director_BelowMinimum" xml:space="preserve">
+    <value>Le précompte professionnel retenu sur votre rémunération laisse la majoration sur son impôt sous le minimum&#160;: aucune n'est due.</value>
+  </data>
+  <data name="Director_Due" xml:space="preserve">
+    <value>L'impôt sur votre rémunération entraîne une majoration de {0}&#160;: verser encore {1} au plus tard le {2} évite toute majoration.</value>
+  </data>
+  <data name="PayHeading" xml:space="preserve">
+    <value>Votre rémunération chaque mois</value>
+  </data>
+  <data name="PayLine" xml:space="preserve">
+    <value>Chaque mois&#160;: {0} de brut sur votre fiche de paie, {1} de précompte retenu par la société, {2} de net versé.</value>
+  </data>
+  <data name="PayLineMonths" xml:space="preserve">
+    <value>Chaque mois, entre {3} et {4}&#160;: {0} de brut sur votre fiche de paie, {1} de précompte retenu par la société, {2} de net versé.</value>
+  </data>
+  <data name="PayLineMonth" xml:space="preserve">
+    <value>En {3}&#160;: {0} de brut sur votre fiche de paie, {1} de précompte retenu par la société, {2} de net versé.</value>
+  </data>
+  <data name="PayLeft" xml:space="preserve">
+    <value>Encore à venir en {2}&#160;: {0} à {1}.</value>
+  </data>
+  <data name="PayLeftOne" xml:space="preserve">
+    <value>Encore à venir en {1}&#160;: {0}.</value>
+  </data>
+  <data name="PayWithheldGiven" xml:space="preserve">
+    <value>Vous avez indiqué {0} de précompte retenu sur l'année&#160;; les mois montrent ce que la formule-clé retient.</value>
+  </data>
+  <data name="ContributionsHeading" xml:space="preserve">
+    <value>Cotisations sociales chaque trimestre</value>
+  </data>
+  <data name="ContributionsLine" xml:space="preserve">
+    <value>Chaque trimestre&#160;: {0} sur les revenus de cette année, pour payer les cotisations de l'année au fur et à mesure.</value>
+  </data>
+  <data name="ContributionsLine_Company" xml:space="preserve">
+    <value>Chaque trimestre&#160;: {0} sur les revenus de cette année, que la société paie pour vous.</value>
+  </data>
+  <data name="ContributionsLine_WithFee" xml:space="preserve">
+    <value>Chaque trimestre&#160;: {0} sur les revenus de cette année, frais de gestion de votre caisse compris, pour payer les cotisations de l'année au fur et à mesure.</value>
+  </data>
+  <data name="ContributionsLine_Company_WithFee" xml:space="preserve">
+    <value>Chaque trimestre&#160;: {0} sur les revenus de cette année, frais de gestion de votre caisse compris, que la société paie pour vous.</value>
+  </data>
+  <data name="QuartersLeft" xml:space="preserve">
+    <value>Trimestres encore à venir en {1}&#160;: {0} sur 4.</value>
+  </data>
+  <data name="BilledLabel" xml:space="preserve">
+    <value>Montant facturé par votre caisse chaque trimestre en {0}</value>
+  </data>
+  <data name="BilledHint" xml:space="preserve">
+    <value>La cotisation provisoire figurant sur l'avis de votre caisse d'assurances sociales, avec ses frais de gestion dès que vous en donnez le taux sur la carte Rémunération de dirigeant. Elle repose sur vos revenus d'il y a trois ans, réévalués, et peut donc différer de ce que coûtent les revenus de cette année&#160;; la différence est régularisée dès que votre caisse connaît les revenus de cette année. Les chiffres de Netto utilisent ceux de cette année.</value>
+  </data>
+  <data name="Regularisation_Pay" xml:space="preserve">
+    <value>Dès que votre caisse connaît les revenus de cette année&#160;: encore {0} à payer, la régularisation.</value>
+  </data>
+  <data name="Regularisation_Refund" xml:space="preserve">
+    <value>Dès que votre caisse connaît les revenus de cette année&#160;: un remboursement de {0}, la régularisation.</value>
+  </data>
+  <data name="Regularisation_Nothing" xml:space="preserve">
+    <value>Ce que votre caisse facture couvre les cotisations de cette année&#160;: rien à régulariser.</value>
+  </data>
+  <data name="AfterHeading" xml:space="preserve">
+    <value>Après l'année</value>
+  </data>
+  <data name="CompanyBalance_Pay" xml:space="preserve">
+    <value>Sur l'avertissement-extrait de rôle de la société pour l'exercice d'imposition {0}&#160;: {1} à payer, à la date que fixe l'administration.</value>
+  </data>
+  <data name="CompanyBalance_Refund" xml:space="preserve">
+    <value>Sur l'avertissement-extrait de rôle de la société pour l'exercice d'imposition {0}&#160;: un remboursement de {1}, les versements anticipés au-delà de son impôt.</value>
+  </data>
+  <data name="CompanyBalance_Nothing" xml:space="preserve">
+    <value>Sur l'avertissement-extrait de rôle de la société pour l'exercice d'imposition {0}&#160;: rien à payer ni à rembourser.</value>
+  </data>
+  <data name="DirectorBalance_Pay" xml:space="preserve">
+    <value>Sur votre avertissement-extrait de rôle pour l'exercice d'imposition {0}&#160;: {1} à payer, à la date que fixe l'administration.</value>
+  </data>
+  <data name="DirectorBalance_Refund" xml:space="preserve">
+    <value>Sur votre avertissement-extrait de rôle pour l'exercice d'imposition {0}&#160;: un remboursement de {1}.</value>
+  </data>
+  <data name="DirectorBalance_Nothing" xml:space="preserve">
+    <value>Sur votre avertissement-extrait de rôle pour l'exercice d'imposition {0}&#160;: rien à payer ni à rembourser.</value>
+  </data>
+  <data name="Director_TooLate" xml:space="preserve">
+    <value>L'impôt sur votre rémunération entraîne une majoration de {0}, et toutes les échéances de {3} sont passées.</value>
+  </data>
+</root>

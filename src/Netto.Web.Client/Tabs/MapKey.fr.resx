@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Key" xml:space="preserve">
+    <value>Légende des lignes</value>
+  </data>
+  <data name="Name_PassedOn" xml:space="preserve">
+    <value>Transmis</value>
+  </data>
+  <data name="Gloss_PassedOn" xml:space="preserve">
+    <value>l'argent transmis d'un module au suivant. Plus la ligne est épaisse, plus il y a d'argent.</value>
+  </data>
+  <data name="Name_IntoBucket" xml:space="preserve">
+    <value>Vers un compartiment</value>
+  </data>
+  <data name="Gloss_IntoBucket" xml:space="preserve">
+    <value>l'argent qui aboutit dans l'un des compartiments de la barre, sa ligne y entrant, ou qui ressort d'un compartiment, sa ligne finissant alors par une pointe de flèche. Plus la ligne est épaisse, plus il y a d'argent.</value>
+  </data>
+  <data name="Name_Pocket" xml:space="preserve">
+    <value>Vers votre poche</value>
+  </data>
+  <data name="Gloss_Pocket" xml:space="preserve">
+    <value>ce qui vous parvient, en or&#160;: une seule ligne qui descend votre colonne jusqu'à votre poche, et dit après chaque ligne qui la rejoint ce qui vous est parvenu jusqu'ici.</value>
+  </data>
+  <data name="Name_TaxBase" xml:space="preserve">
+    <value>Base imposable</value>
+  </data>
+  <data name="Gloss_TaxBase" xml:space="preserve">
+    <value>ce qui change le montant sur lequel un impôt est calculé sans déplacer d'argent&#160;: un avantage imposé avec la rémunération, ce que le module Impôt des sociétés reprend en dépenses non admises, le quotient conjugal. Ces lignes sont tracées pour le module que vous choisissez&#160;; les modules disent ce qu'elles ajoutent.</value>
+  </data>
+  <data name="Name_Condition" xml:space="preserve">
+    <value>Conditions</value>
+  </data>
+  <data name="Gloss_Condition" xml:space="preserve">
+    <value>une condition qu'un module pose à un autre. Ces lignes sont tracées pour le module que vous choisissez&#160;; les modules disent si elle est remplie.</value>
+  </data>
+  <data name="GlossLine" xml:space="preserve">
+    <value>{0}&#160;: {1}</value>
+  </data>
+</root>

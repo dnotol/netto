@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve">
+    <value>Comparer les plans</value>
+  </data>
+  <data name="Group_result" xml:space="preserve">
+    <value>Le résultat de l'année</value>
+  </data>
+  <data name="Group_taxes" xml:space="preserve">
+    <value>Les impôts, couche par couche</value>
+  </data>
+  <data name="Group_before_split" xml:space="preserve">
+    <value>Avant la répartition</value>
+  </data>
+  <data name="Group_split" xml:space="preserve">
+    <value>La répartition</value>
+  </data>
+  <data name="Row_pocket" xml:space="preserve">
+    <value>Votre poche</value>
+  </data>
+  <data name="Row_reach" xml:space="preserve">
+    <value>Ce qui vous revient</value>
+  </data>
+  <data name="Row_kept" xml:space="preserve">
+    <value>Gardé dans la société</value>
+  </data>
+  <data name="Row_expenses" xml:space="preserve">
+    <value>Frais</value>
+  </data>
+  <data name="Row_taxes" xml:space="preserve">
+    <value>Toutes les cotisations et tous les impôts</value>
+  </data>
+  <data name="Row_corporate_tax" xml:space="preserve">
+    <value>Impôt des sociétés</value>
+  </data>
+  <data name="Row_social_contributions" xml:space="preserve">
+    <value>Cotisations sociales</value>
+  </data>
+  <data name="Row_personal_tax" xml:space="preserve">
+    <value>Impôt des personnes physiques</value>
+  </data>
+  <data name="Row_company_contribution" xml:space="preserve">
+    <value>Cotisation à charge des sociétés de l'INASTI</value>
+  </data>
+  <data name="Row_vouchers" xml:space="preserve">
+    <value>Titres-repas et chèques</value>
+  </data>
+  <data name="Row_allowances" xml:space="preserve">
+    <value>Indemnités de frais</value>
+  </data>
+  <data name="Row_rent" xml:space="preserve">
+    <value>Loyer du bureau</value>
+  </data>
+  <data name="Row_car_costs" xml:space="preserve">
+    <value>Frais de la voiture de société</value>
+  </data>
+  <data name="Row_director_pay" xml:space="preserve">
+    <value>Rémunération de dirigeant (brute)</value>
+  </data>
+  <data name="Row_royalty" xml:space="preserve">
+    <value>Droits d'auteur</value>
+  </data>
+  <data name="Row_dividend" xml:space="preserve">
+    <value>Dividende distribué</value>
+  </data>
+  <data name="Row_reduced_rate" xml:space="preserve">
+    <value>Taux réduit de l'impôt des sociétés</value>
+  </data>
+  <data name="Rate_Kept" xml:space="preserve">
+    <value>Gardé</value>
+  </data>
+  <data name="Rate_GivenUp" xml:space="preserve">
+    <value>Abandonné</value>
+  </data>
+  <data name="Rate_NotOpen" xml:space="preserve">
+    <value>Pas accessible à la société</value>
+  </data>
+  <data name="NotInPlan" xml:space="preserve">
+    <value>Pas dans ce plan</value>
+  </data>
+  <data name="NoFigure" xml:space="preserve">
+    <value>Pas de chiffre</value>
+  </data>
+  <data name="NoDifference" xml:space="preserve">
+    <value>Pas de différence à montrer</value>
+  </data>
+  <data name="Same" xml:space="preserve">
+    <value>Pareil</value>
+  </data>
+  <data name="Changed" xml:space="preserve">
+    <value>Modifié</value>
+  </data>
+  <data name="Points_More" xml:space="preserve">
+    <value>+{0} points</value>
+  </data>
+  <data name="Points_Less" xml:space="preserve">
+    <value>−{0} points</value>
+  </data>
+  <data name="Spoken_More" xml:space="preserve">
+    <value>{0} de plus</value>
+  </data>
+  <data name="Spoken_Less" xml:space="preserve">
+    <value>{0} de moins</value>
+  </data>
+  <data name="SpokenPoints_More" xml:space="preserve">
+    <value>{0} points de plus</value>
+  </data>
+  <data name="SpokenPoints_Less" xml:space="preserve">
+    <value>{0} points de moins</value>
+  </data>
+  <data name="PickersLabel" xml:space="preserve">
+    <value>Plans à comparer</value>
+  </data>
+  <data name="PlanLabel" xml:space="preserve">
+    <value>Plan</value>
+  </data>
+  <data name="AgainstLabel" xml:space="preserve">
+    <value>Par rapport à</value>
+  </data>
+  <data name="ChoiceToday" xml:space="preserve">
+    <value>{0} (Aujourd'hui)</value>
+  </data>
+  <data name="TodayTag" xml:space="preserve">
+    <value>Aujourd'hui</value>
+  </data>
+  <data name="PocketTitle" xml:space="preserve">
+    <value>Votre poche</value>
+  </data>
+  <data name="Headline_More" xml:space="preserve">
+    <value>«&#160;{0}&#160;» laisse {1} de plus dans votre poche que «&#160;{2}&#160;».</value>
+  </data>
+  <data name="Headline_Less" xml:space="preserve">
+    <value>«&#160;{0}&#160;» laisse {1} de moins dans votre poche que «&#160;{2}&#160;».</value>
+  </data>
+  <data name="Headline_Same" xml:space="preserve">
+    <value>«&#160;{0}&#160;» laisse autant dans votre poche que «&#160;{1}&#160;».</value>
+  </data>
+  <data name="TableTitle" xml:space="preserve">
+    <value>Chiffre par chiffre</value>
+  </data>
+  <data name="ColumnFigure" xml:space="preserve">
+    <value>Chiffre</value>
+  </data>
+  <data name="ColumnDifference" xml:space="preserve">
+    <value>Différence</value>
+  </data>
+  <data name="ColumnDifferenceFor" xml:space="preserve">
+    <value>, {0} par rapport à {1}</value>
+  </data>
+  <data name="NoPlan" xml:space="preserve">
+    <value>Il n'y a pas encore de plan à comparer. Modifiez le plan affiché dans l'onglet Plan, ou appliquez les ajustements de Netto dans Optimisation, puis gardez-le avec «&#160;Enregistrer ce plan&#160;».</value>
+  </data>
+  <data name="CouldNotRead" xml:space="preserve">
+    <value>Cette version de Netto n'a pas pu lire vos plans enregistrés. Ils sont gardés de côté dans votre navigateur, intacts.</value>
+  </data>
+  <data name="OnePlan" xml:space="preserve">
+    <value>Vous avez un plan enregistré, «&#160;{0}&#160;». Enregistrez-en un second pour les comparer&#160;: modifiez le plan affiché dans l'onglet Plan, ou appliquez un ajustement dans Optimisation, puis gardez-le avec «&#160;Enregistrer ce plan&#160;».</value>
+  </data>
+  <data name="NoToday" xml:space="preserve">
+    <value>Aucun plan n'est marqué d'une étoile comme Aujourd'hui&#160;: les deux plans ne sont donc comparés qu'entre eux. Marquez d'une étoile votre situation actuelle dans le panneau Plans pour y mesurer les autres.</value>
+  </data>
+  <data name="Unreadable_One" xml:space="preserve">
+    <value>1 plan enregistré ne peut pas être lu par cette version de Netto et est laissé de côté.</value>
+  </data>
+  <data name="Unreadable_Many" xml:space="preserve">
+    <value>{0} plans enregistrés ne peuvent pas être lus par cette version de Netto et sont laissés de côté.</value>
+  </data>
+  <data name="NotComparable" xml:space="preserve">
+    <value>«&#160;{0}&#160;» part de la rémunération du dirigeant&#160;: il laisse donc de côté le dividende, et ne peut pas être comparé à «&#160;{1}&#160;», qui part de l'exercice de la société.</value>
+  </data>
+  <data name="RefusedPlan" xml:space="preserve">
+    <value>Un montant de «&#160;{0}&#160;» est refusé&#160;: il n'a donc pas de chiffres à comparer.</value>
+  </data>
+</root>
