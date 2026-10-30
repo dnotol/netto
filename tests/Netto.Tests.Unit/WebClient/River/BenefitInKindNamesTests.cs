@@ -48,4 +48,21 @@ public class BenefitInKindNamesTests
     {
         DirectorPay.Get("Help_BenefitInKind").ShouldNotBeNull().ShouldContain("less your contribution");
     }
+
+    // In French the three files name the two amounts alike, in the glossary's words.
+    [Fact]
+    public void InFrench_theCarsTwoAmounts_areNamedAlikeOnEveryCardAndStep()
+    {
+        var directorPay = ResxText.French<DirectorPayCard>();
+        var car = ResxText.French<CarCard>();
+        var steps = ResxText.French<StepDetails>();
+
+        (car.Get("Figure_Benefit"), car.Get(CarFigures.BenefitTaxed), directorPay.Get("Figure_BenefitInKind"),
+                steps.Get("Title_car_benefit"), steps.Get("Title_car_benefit_taxed"))
+            .ShouldBe(("Avantage de toute nature de la voiture avant votre intervention",
+                "Avantage de toute nature de la voiture après votre intervention",
+                "Avantage de toute nature de la voiture après votre intervention",
+                "Avantage de toute nature de la voiture avant votre intervention",
+                "Avantage de toute nature de la voiture après votre intervention"));
+    }
 }
