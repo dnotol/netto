@@ -2,6 +2,7 @@ using Netto.Core.CompanyCar;
 using Netto.Core.Copyright;
 using Netto.Core.CorporateTax;
 using Netto.Core.Simulation;
+using Netto.Core.SocialContributions;
 using Shouldly;
 using static Netto.Tests.Support.Fixtures;
 
@@ -218,6 +219,18 @@ public class YearConditionsTests
     public void Of_royaltyWhereNoPayKeepsTheRateEitherWay_setsNoConditionOnIt()
     {
         Conditions(Scenario(car: CostlyCar, royalty: FixedRoyalty)).OfType<RoyaltyLowersPayKeepingReducedRate>().ShouldBeEmpty();
+    }
+
+    // The company paying the contributions, no payslip gross up to what the company pays has a taxable
+    // pay of four times the costly car's benefit, with the royalty fixed or following the pay: the royalty
+    // sets nothing on the rate, and the pay test is still said.
+    [Theory]
+    [MemberData(nameof(Royalties))]
+    public void Of_royaltyWhereNoGrossKeepsTheRateCompanyPays_setsNoConditionOnIt(CopyrightRoyalty royalty)
+    {
+        var conditions = Conditions(Scenario(paidBy: ContributionsPaidBy.Company, car: CostlyCar, royalty: royalty));
+
+        (conditions.OfType<RoyaltyLowersPayKeepingReducedRate>().Count(), conditions.OfType<PayKeepsReducedRate>().Count()).ShouldBe((0, 1));
     }
 
     // It holds where the royalty leaves a pay that keeps the rate below the one without it, or one where
