@@ -2,6 +2,8 @@ using System.Net;
 using Netto.Core.CompanyCar;
 using Netto.Core.SocialContributions;
 using Netto.Web.Client.River;
+using Netto.Web.Client.River.CompanyCar;
+using Netto.Web.Client.River.Copyright;
 using Shouldly;
 
 namespace Netto.Tests.WebClient.River;
@@ -14,6 +16,10 @@ public class CompanyAndSplitCardsTests
     private static readonly ResxText CorporateTexts = ResxText.For<CorporateTaxCard>();
 
     private static readonly ResxText SplitTexts = ResxText.For<SplitCard>();
+
+    private static readonly ResxText CompanyYearTexts = ResxText.For<CompanyYearCard>();
+
+    private static readonly ResxText ConditionTexts = ResxText.For<ConditionList>();
 
     // Revenue of 15,000 leaves a loss of 5,000 before any pay: no pay, and a taxable income of −5,000.
     private static readonly RiverInputs Loss = RiverInputs.Example.WithRevenue(15_000m);
@@ -68,6 +74,35 @@ public class CompanyAndSplitCardsTests
         var hint = CardHtml.BubbleAfter(await CardAsync(river, "split"), SplitTexts.Format("Title"));
 
         hint.ShouldContain("contributions");
+    }
+
+    // The conditions Company year lists are those under which the company owes INASTI's contribution: an
+    // exempt company meets one of the two exemptions instead, which the Exempt choice's bubble names, so
+    // it lists none.
+    [Theory]
+    [InlineData(CompanyContributionBand.Lower, true)]
+    [InlineData(CompanyContributionBand.Upper, true)]
+    [InlineData(CompanyContributionBand.Exempt, false)]
+    public async Task CompanyYear_band_listsTheConditionsOfOwingOnlyWhileItOwes(CompanyContributionBand band, bool listed)
+    {
+        var html = await CardAsync(RiverInputs.Example.WithCompanyContributionBand(band), "company-year");
+
+        html.Contains(ConditionTexts.Format(ConditionListText.Heading(2), 2), StringComparison.Ordinal).ShouldBe(listed);
+    }
+
+    // What another card of the plan counts comes off the company's profit there: the running costs leave it
+    // out, as the pay and INASTI's contribution, or it counts twice. Their bubble names each lever's card.
+    [Fact]
+    public async Task CompanyYear_runningCostsBubble_namesEveryLeverCard()
+    {
+        var hint = CardHtml.BubbleAfter(await CardAsync(RiverInputs.Example, "company-year"), CompanyYearTexts.Format("RunningCostsLabel"));
+        string[] levers =
+        [
+            ResxText.For<VoucherCard>().Format("Title"), ResxText.For<AllowanceCard>().Format("Title"), ResxText.For<RentCard>().Format("Title"),
+            ResxText.For<CarCard>().Format("Title"), ResxText.For<CopyrightCard>().Format("Title"),
+        ];
+
+        levers.Where(title => !hint.Contains(title, StringComparison.OrdinalIgnoreCase)).ShouldBeEmpty();
     }
 
     private static async Task<string> CardAsync(RiverInputs river, string card) => CardHtml.Card(await CardHtml.RenderCardsOpenAsync(river), card);

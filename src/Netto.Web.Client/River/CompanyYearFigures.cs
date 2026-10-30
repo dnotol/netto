@@ -1,3 +1,4 @@
+using Netto.Core.Rules;
 using Netto.Core.Simulation;
 using Netto.Core.SocialContributions;
 using Netto.Web.Client.Steps;
@@ -24,6 +25,12 @@ internal static class CompanyYearFigures
             },
         ])
         : [];
+
+    // The conditions Netto cannot check, those under which the company owes the contribution as its rules
+    // hold them; none once the user declares it exempt, which one of the two exemptions is instead, a
+    // choice between them a list of conditions to meet cannot say: the Exempt choice's bubble names them.
+    public static IReadOnlyList<LeverCondition> Conditions(CompanyContributionRules rules, CompanyContributionBand band) =>
+        band == CompanyContributionBand.Exempt ? [] : rules.Conditions;
 
     public static IReadOnlyList<StepDetail> Sources(YearResult year) =>
         [.. year.Steps.Where(step => step.Event == TaxableEvent.CompanyContribution).Select(StepDetail.From)];

@@ -65,6 +65,22 @@ public class CompanyYearFiguresTests
             () => Resources.Format(line.Help!, [.. line.HelpArgs]).ShouldContain("€879,163.44"));
     }
 
+    // The conditions Netto cannot check are those under which the company owes the contribution: none once
+    // the user declares it exempt, which is one of the two exemptions instead.
+    [Fact]
+    public void Conditions_exempt_isNone()
+    {
+        CompanyYearFigures.Conditions(CompanyContributionRules.IncomeYear2026, CompanyContributionBand.Exempt).ShouldBeEmpty();
+    }
+
+    [Theory]
+    [InlineData(CompanyContributionBand.Lower)]
+    [InlineData(CompanyContributionBand.Upper)]
+    public void Conditions_band_isTheRules(CompanyContributionBand band)
+    {
+        CompanyYearFigures.Conditions(CompanyContributionRules.IncomeYear2026, band).ShouldBe(CompanyContributionRules.IncomeYear2026.Conditions);
+    }
+
     private static IReadOnlyList<FigureLine> Of(RiverInputs inputs) => CompanyYearFigures.Of(inputs.Run().Year.ShouldNotBeNull());
 
     private static List<(string Key, decimal Amount)> Lines(RiverInputs inputs) => [.. Of(inputs).Select(line => (line.Key, line.Amount))];

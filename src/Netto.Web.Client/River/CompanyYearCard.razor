@@ -7,12 +7,13 @@
    what it owes INASTI that year whatever it pays its director, its one figure line (CompanyYearFigures),
    which leave what it earns before it pays its director anything; the vouchers, the expense allowances
    and the rent in the plan come off it next, then the pay. The running costs' bubble says the
-   contribution is not among them. Which of the contribution's two bands the company's balance sheet
-   puts it in, or that the law exempts it, sits behind a disclosure folded to the line that states it,
-   with the exemptions' conditions the user confirms, and its source in the details. Its bubble says the river
-   starts on an example year, which the user replaces or clears. Cleared, the module is skipped and the
-   river starts at the pay. No Min or Max on the amounts: MudBlazor would clamp a value silently, and the
-   engine's refusal, with its message, is what the user has to see. *@
+   contribution is not among them, nor what another card of the plan counts. Which of the
+   contribution's two bands the company's balance sheet puts it in, or that the law exempts it, sits
+   behind a disclosure folded to the line that states it, with the conditions of owing it the user
+   confirms, none once exempt (CompanyYearFigures.Conditions), and its source in the details. Its
+   bubble says the river starts on an example year, which the user replaces or clears. Cleared, the
+   module is skipped and the river starts at the pay. No Min or Max on the amounts: MudBlazor would
+   clamp a value silently, and the engine's refusal, with its message, is what the user has to see. *@
 <ModuleCard @ref="_card" Name="company-year" Title="@L["Title"]" Summary="@Summary" Help="@L["Hint"]" Skipped="Inputs.Company is null" Refused="@Refused"
             Sources="@_sources" IncomeYear="Inputs.IncomeYear">
     @if (Inputs.Company is { } company)
@@ -50,7 +51,10 @@
                     </div>
                 </RiverField>
             </Disclosure>
-            <ConditionList Name="company-year-conditions" Conditions="rules.Conditions" />
+            @if (CompanyYearFigures.Conditions(rules, Inputs.CompanyContributionBand.Value) is { Count: > 0 } conditions)
+            {
+                <ConditionList Name="company-year-conditions" Conditions="conditions" />
+            }
         }
         <div class="company-year__actions">
             <MudButton Variant="Variant.Outlined" Size="Size.Small" Class="company-year__clear" OnClick="SkipCompany">@L["Clear"]</MudButton>
