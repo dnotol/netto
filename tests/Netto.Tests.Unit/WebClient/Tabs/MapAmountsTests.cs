@@ -35,6 +35,55 @@ public class MapAmountsTests
         (drawn >= measured, drawn <= measured * 1.04).ShouldBe((true, true));
     }
 
+    // A French amount is an English one's figures, separators and sign, the sign after a no-break space, which
+    // takes a space's advance: « 100.000,00 € » is « €100,000.00 » and a space wide.
+    [Theory]
+    [InlineData("100.000,00\u00A0€", "€100,000.00 ")]
+    [InlineData("−1.234,56\u00A0€", "−€1,234.56 ")]
+    [InlineData("20,5\u00A0%", "20.5 %")]
+    [InlineData("20,5\u202F%", "20.5 %")]
+    public void Width_aFrenchText_takesAnEnglishOnesWidthItsNoBreakSpaceASpace(string french, string english)
+    {
+        MapAmounts.Width(french).ShouldBe(MapAmounts.Width(english));
+    }
+
+    // A French word is as wide as its letters without their accents, which Inter draws on the same advance
+    // (inter-latin-wght-normal.woff2, read 2026-10-30): « société » as « societe ».
+    [Theory]
+    [InlineData("à", "a")]
+    [InlineData("â", "a")]
+    [InlineData("ç", "c")]
+    [InlineData("é", "e")]
+    [InlineData("è", "e")]
+    [InlineData("ê", "e")]
+    [InlineData("ë", "e")]
+    [InlineData("î", "i")]
+    [InlineData("ï", "i")]
+    [InlineData("ô", "o")]
+    [InlineData("ù", "u")]
+    [InlineData("û", "u")]
+    [InlineData("ü", "u")]
+    [InlineData("société", "societe")]
+    public void Width_anAccentedLetter_isItsLettersWithoutTheAccent(string accented, string plain)
+    {
+        MapAmounts.Width(accented).ShouldBe(MapAmounts.Width(plain));
+    }
+
+    // The punctuation of French words, which Inter draws narrow (inter-latin-wght-normal.woff2, read 2026-10-30):
+    // a middle dot and a colon on a point's advance, a typographic apostrophe on less, a straight one on a little
+    // more, 0.3em; none a whole em, as a character Inter is not known to draw is reckoned.
+    [Theory]
+    [InlineData("·", 0.27)]
+    [InlineData(":", 0.27)]
+    [InlineData("’", 0.27)]
+    [InlineData("'", 0.3)]
+    public void Width_aFrenchPunctuationMark_isItsAdvance(string mark, double em)
+    {
+        var drawn = MapAmounts.Width(mark) - 2m * MapAmounts.GroundRem * MapLayout.PixelsPerRem;
+
+        drawn.ShouldBe(Math.Ceiling((decimal)em * MapAmounts.FontRem * MapLayout.PixelsPerRem * 100m) / 100m);
+    }
+
     [Fact]
     public void Height_isARem()
     {

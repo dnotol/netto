@@ -19,7 +19,11 @@ internal static class MapAmounts
     // advances in Inter, which a browser measured (2026-10-26) and which are rounded up here to the
     // hundredth of an em, a figure, a minus and a hyphen 0.6485em, the euro sign 0.6665em, a comma and a
     // point 0.2686em, a space 0.255em, a lower-case letter its own, any other character a whole em; and its
-    // ground each side.
+    // ground each side. French's own characters are reckoned from the self-hosted Inter's advances
+    // (inter-latin-wght-normal.woff2, read 2026-10-30), each beside one measured: a no-break space, the one
+    // before « € » and « % », a space's; an accented letter its letter's, the accent taking no advance; a middle
+    // dot and a colon a point's, which Inter draws alike; a typographic apostrophe a point's too, a straight one
+    // 0.3em, a little more.
     public static decimal Width(string text) =>
         Math.Ceiling((text.Sum(Em) * FontRem * MapLayout.PixelsPerRem + 2m * GroundRem * MapLayout.PixelsPerRem) * 100m) / 100m;
 
@@ -27,10 +31,25 @@ internal static class MapAmounts
     {
         >= '0' and <= '9' or '−' or '-' or '+' => 0.65m,
         '€' => 0.67m,
-        ',' or '.' => 0.27m,
-        ' ' => 0.26m,
+        ',' or '.' or '·' or ':' or '’' => 0.27m,
+        ' ' or ' ' or ' ' => 0.26m,
+        '\'' => 0.3m,
         >= 'a' and <= 'z' => Letters[character - 'a'],
+        _ when Unaccented(character) is { } letter => Letters[letter - 'a'],
         _ => 1m,
+    };
+
+    // The letter a French accented lower-case letter is drawn on, or none.
+    private static char? Unaccented(char character) => character switch
+    {
+        'à' or 'â' or 'ä' => 'a',
+        'ç' => 'c',
+        'é' or 'è' or 'ê' or 'ë' => 'e',
+        'î' or 'ï' => 'i',
+        'ô' or 'ö' => 'o',
+        'ù' or 'û' or 'ü' => 'u',
+        'ÿ' => 'y',
+        _ => null,
     };
 
     // Inter's lower-case letters at weight 400, a to z, in em, rounded up to the hundredth.
