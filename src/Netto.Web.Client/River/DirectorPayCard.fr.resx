@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve">
+    <value>Rémunération de dirigeant</value>
+  </data>
+  <data name="Summary" xml:space="preserve">
+    <value>{0} en entrée · {1} dans votre poche</value>
+  </data>
+  <data name="OwnPayLabel" xml:space="preserve">
+    <value>Rémunération brute de dirigeant pour l'année</value>
+  </data>
+  <data name="PayFromSplit" xml:space="preserve">
+    <value>Rémunération brute issue de la répartition</value>
+  </data>
+  <data name="Figure_CompanyContributions" xml:space="preserve">
+    <value>Cotisations payées par la société</value>
+  </data>
+  <data name="Figure_CompanyFundFee" xml:space="preserve">
+    <value>Frais de gestion payés par la société</value>
+  </data>
+  <data name="Figure_BenefitInKind" xml:space="preserve">
+    <value>Avantage de toute nature de la voiture après votre intervention</value>
+  </data>
+  <data name="Help_BenefitInKind" xml:space="preserve">
+    <value>Votre rémunération est imposée avec l'avantage de toute nature de votre voiture de société, moins votre intervention pour son utilisation à des fins personnelles, bien que cet avantage ne soit jamais payé en espèces. La carte Voiture de société montre comment il est calculé.</value>
+  </data>
+  <data name="Figure_RequalifiedPay" xml:space="preserve">
+    <value>Droits d'auteur au-delà des limites</value>
+  </data>
+  <data name="Help_RequalifiedPay" xml:space="preserve">
+    <value>Votre rémunération est imposée avec la part de vos droits d'auteur au-delà de leurs limites, versée en dehors de votre fiche de paie.</value>
+  </data>
+  <data name="Figure_TaxablePay" xml:space="preserve">
+    <value>Rémunération imposable</value>
+  </data>
+  <data name="PaidByLabel" xml:space="preserve">
+    <value>Qui paie vos cotisations sociales</value>
+  </data>
+  <data name="PaidBy_Director" xml:space="preserve">
+    <value>Je les paie moi-même</value>
+  </data>
+  <data name="PaidBy_Company" xml:space="preserve">
+    <value>La société les paie pour moi</value>
+  </data>
+  <data name="PaidByHint" xml:space="preserve">
+    <value>Les cotisations que la société paie à votre place comptent comme rémunération&#160;: l'impôt porte sur votre brut augmenté de ces cotisations, et elles coûtent à la société autant en plus de votre brut.</value>
+  </data>
+  <data name="FundFeeLabel" xml:space="preserve">
+    <value>Frais de gestion de votre caisse</value>
+  </data>
+  <data name="FundFeeHint" xml:space="preserve">
+    <value>Ce que votre caisse d'assurances sociales facture en plus des cotisations sociales pour gérer votre dossier&#160;: un pourcentage de celles-ci, fixé chaque année pour chaque caisse, que son avis indique. Ces frais sont facturés avec chaque trimestre de cotisations et déduits avec elles, et la société les paie avec elles quand elle paie vos cotisations. Netto n'en compte aucun tant que vous ne les indiquez pas.</value>
+  </data>
+  <data name="FundFeeReading" xml:space="preserve">
+    <value>Aucun texte qui les rend déductibles ne nomme les frais de gestion de votre caisse. Netto les lit comme une partie des cotisations que la loi vous oblige à payer à votre caisse, que vous déduisez comme les vôtres&#160;: ils diminuent votre revenu imposable et le revenu sur lequel vos cotisations sont dues, et quand la société paie vos cotisations, elle paie ces frais avec elles, eux aussi comme rémunération.</value>
+  </data>
+  <data name="MunicipalityHead" xml:space="preserve">
+    <value>Votre domicile, pour la taxe communale additionnelle</value>
+  </data>
+  <data name="DetailsLabel" xml:space="preserve">
+    <value>Fiche de paie et sources</value>
+  </data>
+  <data name="SourcesTitle" xml:space="preserve">
+    <value>D'où vient chaque chiffre, avec les montants des revenus {0}</value>
+  </data>
+  <data name="PrepaymentsTitle" xml:space="preserve">
+    <value>Impôt payé pendant l'année</value>
+  </data>
+  <data name="PrepaymentsHint" xml:space="preserve">
+    <value>Ce que la société a retenu sur votre rémunération, et ce que vous avez versé vous-même par anticipation. Plus un euro est versé tôt, plus il annule de majoration&#160;; au-delà de ce qui l'évite, un versement donne droit à une bonification, et le reste est remboursé.</value>
+  </data>
+  <data name="WithheldLabel" xml:space="preserve">
+    <value>Précompte professionnel retenu sur votre rémunération en {0}</value>
+  </data>
+  <data name="WithheldHint" xml:space="preserve">
+    <value>Calculé à partir de la fiche de paie&#160;: le précompte professionnel des douze mois selon la formule-clé, la formule de l'administration pour l'impôt qu'une société retient sur la rémunération de chaque mois, avec les règles de l'annexe III de l'arrêté royal d'exécution du Code des impôts sur les revenus en vigueur au moment du paiement. Saisissez le montant réellement retenu s'il diffère.</value>
+  </data>
+  <data name="PaymentLabel" xml:space="preserve">
+    <value>Au plus tard le {0}</value>
+  </data>
+  <data name="StarterLabel" xml:space="preserve">
+    <value>Ma première activité d'indépendant a commencé en {0} ou après</value>
+  </data>
+  <data name="Surcharge_Exempt" xml:space="preserve">
+    <value>Pas de majoration pendant vos trois premières années d'indépendant.</value>
+  </data>
+  <data name="Surcharge_NoTax" xml:space="preserve">
+    <value>Pas d'impôt des personnes physiques sur cette rémunération, donc pas de majoration.</value>
+  </data>
+  <data name="Surcharge_Covered" xml:space="preserve">
+    <value>Pas de majoration&#160;: le précompte professionnel et les versements anticipés la couvrent.</value>
+  </data>
+  <data name="Surcharge_BelowMinimum" xml:space="preserve">
+    <value>Pas de majoration&#160;: ce qui reste est sous le minimum.</value>
+  </data>
+  <data name="Surcharge_Due" xml:space="preserve">
+    <value>Versement en plus au plus tard le {0} qui évite toute majoration</value>
+  </data>
+  <data name="Surcharge_TooLate" xml:space="preserve">
+    <value>Toutes les échéances de l'année sont passées&#160;: plus aucun versement ne peut éviter la majoration.</value>
+  </data>
+  <data name="WithheldAsPaySlip" xml:space="preserve">
+    <value>Reprendre le montant de la fiche de paie</value>
+  </data>
+  <data name="SituationTitle" xml:space="preserve">
+    <value>Votre situation</value>
+  </data>
+  <data name="Situation_PaidBy_Director" xml:space="preserve">
+    <value>Vous payez vos cotisations</value>
+  </data>
+  <data name="Situation_PaidBy_Company" xml:space="preserve">
+    <value>La société paie vos cotisations</value>
+  </data>
+  <data name="Situation_FundFee" xml:space="preserve">
+    <value>frais de gestion de {0}</value>
+  </data>
+  <data name="Situation_Rate" xml:space="preserve">
+    <value>taux communal de {0}</value>
+  </data>
+  <data name="Situation_Rate_Official" xml:space="preserve">
+    <value>taux communal de {1} ({0})</value>
+  </data>
+  <data name="Situation_Rate_Overridden" xml:space="preserve">
+    <value>votre taux communal de {0}, au lieu du taux officiel ({1})</value>
+  </data>
+  <data name="Situation_Starter" xml:space="preserve">
+    <value>première activité d'indépendant en {0} ou après</value>
+  </data>
+  <data name="Situation_NotStarter" xml:space="preserve">
+    <value>première activité d'indépendant avant {0}</value>
+  </data>
+  <data name="Prepaid_Withheld_PaySlip" xml:space="preserve">
+    <value>Précompte professionnel de {0}, selon la fiche de paie</value>
+  </data>
+  <data name="Prepaid_Withheld_AsPaySlip" xml:space="preserve">
+    <value>Précompte professionnel selon la fiche de paie</value>
+  </data>
+  <data name="Prepaid_Withheld" xml:space="preserve">
+    <value>Précompte professionnel de {0}</value>
+  </data>
+  <data name="Prepaid_None" xml:space="preserve">
+    <value>aucun versement anticipé</value>
+  </data>
+  <data name="Prepaid_Paid" xml:space="preserve">
+    <value>versements anticipés de {0}</value>
+  </data>
+</root>

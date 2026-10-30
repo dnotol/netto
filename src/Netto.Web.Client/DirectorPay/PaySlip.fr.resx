@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Track_cash" xml:space="preserve">
+    <value>Ce que vous payez</value>
+  </data>
+  <data name="TrackHint_cash" xml:space="preserve">
+    <value>De votre rémunération à ce qui arrive dans votre poche.</value>
+  </data>
+  <data name="Track_tax_base" xml:space="preserve">
+    <value>Ce sur quoi porte l'impôt</value>
+  </data>
+  <data name="TrackHint_tax_base" xml:space="preserve">
+    <value>De votre rémunération au revenu imposable sur lequel l'impôt des personnes physiques est calculé.</value>
+  </data>
+  <data name="TaxBaseOnlyNote" xml:space="preserve">
+    <value>Réduit la base imposable, rien n'est payé</value>
+  </data>
+  <data name="AddedNote" xml:space="preserve">
+    <value>Imposable comme rémunération, sans versement en espèces</value>
+  </data>
+  <data name="Row_gross_pay" xml:space="preserve">
+    <value>Rémunération brute</value>
+  </data>
+  <data name="Row_benefit_in_kind" xml:space="preserve">
+    <value>Avantage de toute nature de la voiture de société</value>
+  </data>
+  <data name="Row_social_contributions" xml:space="preserve">
+    <value>Cotisations sociales</value>
+  </data>
+  <data name="Row_fund_fee" xml:space="preserve">
+    <value>Frais de gestion de la caisse</value>
+  </data>
+  <data name="Row_flat_rate_costs" xml:space="preserve">
+    <value>Frais professionnels forfaitaires</value>
+  </data>
+  <data name="Row_taxable_income" xml:space="preserve">
+    <value>Revenu imposable</value>
+  </data>
+  <data name="Row_income_tax" xml:space="preserve">
+    <value>Impôt des personnes physiques</value>
+  </data>
+  <data name="Row_municipal_surcharge" xml:space="preserve">
+    <value>Taxe communale additionnelle</value>
+  </data>
+  <data name="Row_low_earned_income_credit" xml:space="preserve">
+    <value>Crédit d'impôt pour bas revenus d'activités</value>
+  </data>
+  <data name="Row_low_earned_income_credit_lost" xml:space="preserve">
+    <value>Crédit d'impôt pour bas revenus d'activités perdu</value>
+  </data>
+  <data name="Row_child_tax_credit" xml:space="preserve">
+    <value>Crédit d'impôt remboursable pour enfants à charge</value>
+  </data>
+  <data name="Row_child_tax_credit_taken_away" xml:space="preserve">
+    <value>Crédit d'impôt remboursable pour enfants à charge que votre rémunération retire</value>
+  </data>
+  <data name="Row_child_tax_credit_lost" xml:space="preserve">
+    <value>Crédit d'impôt remboursable pour enfants à charge perdu</value>
+  </data>
+  <data name="Row_net_in_pocket" xml:space="preserve">
+    <value>Net en poche</value>
+  </data>
+  <data name="NextTitle" xml:space="preserve">
+    <value>Où vont 1.000&#160;€ de rémunération brute en plus</value>
+  </data>
+  <data name="Row_income_tax_advance_payment_surcharge" xml:space="preserve">
+    <value>Majoration pour insuffisance de versements anticipés</value>
+  </data>
+  <data name="Row_income_tax_advance_payment_bonus" xml:space="preserve">
+    <value>Bonification des versements anticipés</value>
+  </data>
+  <data name="Row_income_tax_advance_payments" xml:space="preserve">
+    <value>Majoration pour insuffisance de versements anticipés, moins la bonification</value>
+  </data>
+  <data name="Row_company_cost" xml:space="preserve">
+    <value>Votre rémunération, plus les cotisations que la société paie pour vous</value>
+  </data>
+  <data name="NextCompanyPaysNote" xml:space="preserve">
+    <value>Les cotisations sont ce que 1.000&#160;€ de plus ajoutent à celles que la société paie pour vous, en plus de ces 1.000&#160;€&#160;: les autres parts font 1.000&#160;€, et toutes ensemble ce que cela coûte à la société, si bien que les parts dépassent ensemble 100&#160;%.</value>
+  </data>
+  <data name="NextCompanyPaysNote_WithFee" xml:space="preserve">
+    <value>Les cotisations et les frais de gestion de votre caisse sont ce que 1.000&#160;€ de plus ajoutent à ceux que la société paie pour vous, en plus de ces 1.000&#160;€&#160;: les autres parts font 1.000&#160;€, et toutes ensemble ce que cela coûte à la société, si bien que les parts dépassent ensemble 100&#160;%.</value>
+  </data>
+  <data name="StatementTitle" xml:space="preserve">
+    <value>Votre rémunération, mois par mois</value>
+  </data>
+  <data name="StatementHint" xml:space="preserve">
+    <value>Douze mois égaux de rémunération, chacun soumis au précompte professionnel selon la formule-clé de l'administration, avec les règles en vigueur au moment du paiement&#160;; le net payé est le brut moins le précompte. Une vraie fiche de paie peut différer d'un centime selon les arrondis de son logiciel.</value>
+  </data>
+  <data name="ColumnMonth" xml:space="preserve">
+    <value>Mois</value>
+  </data>
+  <data name="ColumnGross" xml:space="preserve">
+    <value>Brut</value>
+  </data>
+  <data name="ColumnCompanyPaid" xml:space="preserve">
+    <value>Payé par la société</value>
+  </data>
+  <data name="ColumnBenefit" xml:space="preserve">
+    <value>Avantage de toute nature</value>
+  </data>
+  <data name="ColumnTaxablePay" xml:space="preserve">
+    <value>Rémunération imposable</value>
+  </data>
+  <data name="ColumnWithholding" xml:space="preserve">
+    <value>Précompte professionnel</value>
+  </data>
+  <data name="ColumnNetPaid" xml:space="preserve">
+    <value>Net payé</value>
+  </data>
+  <data name="WithholdingMonths" xml:space="preserve">
+    <value>Précompte professionnel&#160;: {0} à {1}</value>
+  </data>
+  <data name="WithholdingMonth" xml:space="preserve">
+    <value>Précompte professionnel&#160;: {0}</value>
+  </data>
+  <data name="BalanceTitle" xml:space="preserve">
+    <value>Le solde de votre année sur l'avertissement-extrait de rôle</value>
+  </data>
+  <data name="BalanceHint" xml:space="preserve">
+    <value>Ce que laisse votre déclaration une fois le précompte professionnel et vos versements anticipés imputés sur l'impôt final.</value>
+  </data>
+  <data name="FinalTax" xml:space="preserve">
+    <value>Impôt final sur votre rémunération</value>
+  </data>
+  <data name="Withheld_Derived" xml:space="preserve">
+    <value>Précompte professionnel retenu sur votre rémunération, calculé par la fiche de paie ci-dessus</value>
+  </data>
+  <data name="Withheld_Given" xml:space="preserve">
+    <value>Précompte professionnel retenu sur votre rémunération, tel que vous l'avez saisi</value>
+  </data>
+  <data name="AdvancePayments" xml:space="preserve">
+    <value>Vos versements anticipés</value>
+  </data>
+  <data name="Balance_ToPay" xml:space="preserve">
+    <value>Reste à payer</value>
+  </data>
+  <data name="Balance_Refunded" xml:space="preserve">
+    <value>À vous rembourser</value>
+  </data>
+  <data name="Balance_Settled" xml:space="preserve">
+    <value>Plus rien à payer</value>
+  </data>
+  <data name="FinalTax_WithRent" xml:space="preserve">
+    <value>Impôt final sur votre rémunération et le loyer imposé avec elle</value>
+  </data>
+  <data name="FinalTaxOnRent" xml:space="preserve">
+    <value>dont sur le loyer</value>
+  </data>
+  <data name="NextRentNote" xml:space="preserve">
+    <value>Le loyer de votre bureau est imposé avec votre rémunération, ce sont donc les impôts de l'année&#160;: 1.000&#160;€ de rémunération en plus augmentent aussi l'impôt sur le loyer, compris dans leurs parts.</value>
+  </data>
+  <data name="Row_requalified_pay" xml:space="preserve">
+    <value>Droits d'auteur au-delà de leurs limites</value>
+  </data>
+  <data name="FinalTaxOnRoyalty" xml:space="preserve">
+    <value>dont sur vos droits d'auteur dans leurs limites</value>
+  </data>
+  <data name="WithheldOnRoyalty" xml:space="preserve">
+    <value>Précompte mobilier retenu par la société sur vos droits d'auteur</value>
+  </data>
+  <data name="NextFollowingRoyaltyNote" xml:space="preserve">
+    <value>Les 1.000&#160;€ de plus laissent vos droits d'auteur tels quels, bien qu'ils suivent votre rémunération&#160;: ils omettent la hausse propre des droits à côté et l'impôt distinct sur cette hausse. La courbe de la répartition pèse les deux.</value>
+  </data>
+  <data name="NextRoyaltyNote" xml:space="preserve">
+    <value>Les 1.000&#160;€ de plus laissent telle quelle la part de vos droits d'auteur au-delà de leurs limites, bien que 30&#160;% de la rémunération déplace cette limite&#160;: la courbe de la répartition en tient compte.</value>
+  </data>
+  <data name="FinalTax_WithRoyalty" xml:space="preserve">
+    <value>Impôt final sur votre rémunération et vos droits d'auteur</value>
+  </data>
+  <data name="FinalTax_WithRentAndRoyalty" xml:space="preserve">
+    <value>Impôt final sur votre rémunération, le loyer imposé avec elle et vos droits d'auteur</value>
+  </data>
+</root>

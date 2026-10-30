@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="MunicipalityLabel" xml:space="preserve">
+    <value>Commune au {0}</value>
+  </data>
+  <data name="MunicipalityNoMatch" xml:space="preserve">
+    <value>Aucune commune wallonne ne correspond. Vous pouvez saisir son taux à la place.</value>
+  </data>
+  <data name="RateLabel" xml:space="preserve">
+    <value>Taux communal</value>
+  </data>
+  <data name="RateNote_example" xml:space="preserve">
+    <value>Un taux d'exemple&#160;: choisissez votre commune, ou saisissez son taux.</value>
+  </data>
+  <data name="RateNote_entered" xml:space="preserve">
+    <value>Le taux que vous avez saisi. Choisissez votre commune pour utiliser son taux officiel.</value>
+  </data>
+  <data name="RateNote_official" xml:space="preserve">
+    <value>Commune&#160;: {0}, taux officiel des revenus {1}.</value>
+  </data>
+  <data name="RateNote_official_earlier" xml:space="preserve">
+    <value>Commune&#160;: {0}, taux des revenus {1}, celui des revenus {2} n'étant pas encore publié.</value>
+  </data>
+  <data name="RateNote_overridden" xml:space="preserve">
+    <value>Votre taux remplace le taux officiel de {1} ({0}).</value>
+  </data>
+  <data name="UseOfficialRate" xml:space="preserve">
+    <value>Utiliser le taux officiel</value>
+  </data>
+</root>
