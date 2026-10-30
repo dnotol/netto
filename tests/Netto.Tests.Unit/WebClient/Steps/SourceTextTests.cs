@@ -17,12 +17,10 @@ namespace Netto.Tests.WebClient.Steps;
 // every rule set has them, and every text there belongs to one.
 public class SourceTextTests
 {
-    private static readonly ResxText English = ResxText.For<SourceText>();
-
     private static readonly ResxText French = ResxText.French<SourceText>();
 
     // Each language's texts, read alone: a French text missing reads as missing, not as its English.
-    private static readonly Dictionary<string, ResxText> Languages = new() { ["English"] = English, ["French"] = French };
+    private static readonly Dictionary<string, ResxText> Languages = new() { ["English"] = SourceWordsInEnglish.Texts, ["French"] = French };
 
     public static TheoryData<string> LanguageNames => [.. Languages.Keys];
 
@@ -32,7 +30,7 @@ public class SourceTextTests
     [Fact]
     public void Words_fisconetArticle_readItsCoordinatedTextAndItsArticle()
     {
-        var words = SourceText.Words(Article157, English.Get);
+        var words = SourceWordsInEnglish.Of(Article157);
 
         (words.Title, words.Label).ShouldBe((
             "CIR 92, art. 157 (revenus 2026), coordinated text on Fisconetplus, last modified 30.07.2026",
@@ -68,7 +66,7 @@ public class SourceTextTests
     {
         var source = Source.Fisconet("personal-tax", "18", 2026, new DateOnly(2026, 8, 10), "f3ebfcea-9d61-4d4a-bd76-33f13ef93825", "reference_emission", FisconetCode.ArCir92);
 
-        var words = SourceText.Words(source, English.Get);
+        var words = SourceWordsInEnglish.Of(source);
 
         (words.Title, words.Label).ShouldBe((
             "AR/CIR 92, art. 18 (revenus 2026), coordinated text on Fisconetplus, last modified 10.08.2026",
@@ -79,7 +77,7 @@ public class SourceTextTests
     [Fact]
     public void Words_documentWithNoShorterName_isNamedByItsTitle()
     {
-        var words = SourceText.Words(SocialContributionRules.IncomeYear2026.Source, English.Get);
+        var words = SourceWordsInEnglish.Of(SocialContributionRules.IncomeYear2026.Source);
 
         (words.Title, words.Label).ShouldBe(("INASTI, « Cotisations 2026 » (January 2026)", "INASTI, « Cotisations 2026 » (January 2026)"));
     }
@@ -90,7 +88,7 @@ public class SourceTextTests
     {
         var circular = RentRules.IncomeYear2026.Conditions.Single(condition => condition.Key == "not_with_office_allowance").Sources.Single();
 
-        var words = SourceText.Words(circular, English.Get);
+        var words = SourceWordsInEnglish.Of(circular);
 
         (words.Label, words.Reference).ShouldBe((
             "Circular 2021/C/20, §31",
@@ -101,7 +99,7 @@ public class SourceTextTests
     [Fact]
     public void Words_passageStatingAnotherArticle_isNamedByBoth()
     {
-        (SourceText.Words(MunicipalRates.IncomeYear2026.Surcharge, English.Get).Label, SourceText.Words(MunicipalRates.IncomeYear2026.Surcharge, French.Get).Label)
+        (SourceWordsInEnglish.Of(MunicipalRates.IncomeYear2026.Surcharge).Label, SourceText.Words(MunicipalRates.IncomeYear2026.Surcharge, French.Get).Label)
             .ShouldBe(("CIR 92, art. 466 and 468", "CIR 92, art. 466 et 468"));
     }
 
@@ -110,7 +108,7 @@ public class SourceTextTests
     {
         var source = new Source("nowhere", new Uri("https://example.org/"), "personal-tax/none.html");
 
-        var words = SourceText.Words(source, English.Get);
+        var words = SourceWordsInEnglish.Of(source);
 
         words.ShouldBe(new SourceWords("Title_personal-tax/none.html", "Title_personal-tax/none.html", "Reference_personal-tax/none.html#nowhere"));
     }
@@ -161,7 +159,7 @@ public class SourceTextTests
         var folds = new Folds(new BrowserStorage());
         folds.Set("conditions", true);
         var article = VoucherRules.IncomeYear2026.Conditions[0].Sources[0];
-        var words = SourceText.Words(article, English.Get);
+        var words = SourceWordsInEnglish.Of(article);
 
         var html = WebUtility.HtmlDecode(await RenderAsync<ConditionList>(folds, new() { ["Name"] = "conditions", ["Conditions"] = VoucherRules.IncomeYear2026.Conditions }));
 
@@ -184,12 +182,4 @@ public class SourceTextTests
         (words.Label, html.Contains($"title=\"{words.Title}\"", StringComparison.Ordinal), html.Contains($"{words.Label}<", StringComparison.Ordinal))
             .ShouldBe(("Question n° 15220", true, true));
     }
-}
-
-// A source's words as an English page reads them, for the rule sets' tests to name the texts a rule cites.
-internal static class SourceWordsInEnglish
-{
-    private static readonly ResxText English = ResxText.For<SourceText>();
-
-    public static SourceWords Of(Source source) => SourceText.Words(source, English.Get);
 }

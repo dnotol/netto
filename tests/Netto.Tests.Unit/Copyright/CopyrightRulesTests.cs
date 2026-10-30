@@ -1,7 +1,6 @@
 using Netto.Core.Copyright;
 using Netto.Core.Rules;
 using Netto.Tests.Rules;
-using Netto.Tests.WebClient.Steps;
 using Shouldly;
 
 namespace Netto.Tests.Copyright;

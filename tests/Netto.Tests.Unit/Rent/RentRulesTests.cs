@@ -1,7 +1,6 @@
 using Netto.Core.Rent;
 using Netto.Core.Rules;
 using Netto.Tests.Rules;
-using Netto.Tests.WebClient.Steps;
 using Shouldly;
 
 namespace Netto.Tests.Rent;

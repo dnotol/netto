@@ -4,7 +4,6 @@ using Netto.Core.Rent;
 using Netto.Core.SocialContributions;
 using Netto.Core.Vouchers;
 using Netto.Web.Client.River;
-using Netto.Tests.WebClient.Steps;
 using Shouldly;
 
 namespace Netto.Tests.WebClient.River;

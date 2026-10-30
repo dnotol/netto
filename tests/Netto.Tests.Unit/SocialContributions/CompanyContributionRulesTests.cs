@@ -1,7 +1,6 @@
 using Netto.Core.Rules;
 using Netto.Core.SocialContributions;
 using Netto.Tests.Rules;
-using Netto.Tests.WebClient.Steps;
 using Shouldly;
 
 namespace Netto.Tests.SocialContributions;

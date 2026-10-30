@@ -1,5 +1,4 @@
 using Netto.Core.Vouchers;
-using Netto.Tests.WebClient.Steps;
 using Shouldly;
 
 namespace Netto.Tests.Vouchers;
