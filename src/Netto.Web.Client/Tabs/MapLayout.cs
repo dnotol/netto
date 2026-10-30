@@ -122,11 +122,11 @@ internal static class MapLayout
 
     // The pay's pill: as wide as a gate, 1.25rem high on one line, or as tall as its two lines at a gate's line
     // height and its frame, centred on the pay's line, its padding 0.35rem each side, a box's (MapTab.razor.css:
-    // .map-pill); the room inside it for each line on the narrowest map, its padding and frame left out
-    // (MapGateTextTests).
+    // .map-pill); the room inside it for each line on the narrowest map is a gate's, the same padding and frame
+    // left out (MapGateTextTests).
     internal const decimal PillRem = 1.25m;
     internal const decimal PillPadRem = 0.35m;
-    internal const decimal PillRoomPixels = 304m - 180m - 2m * PillPadRem * PixelsPerRem - 2m;
+    internal const decimal PillRoomPixels = GateRoomPixels;
 
     // The columns, from the narrowest map's pixels: the director's, the partner's in it, the gates' and the
     // company's; and the lane between the director's column and the gates.

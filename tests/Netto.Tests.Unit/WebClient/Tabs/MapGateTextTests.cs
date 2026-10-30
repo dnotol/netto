@@ -101,12 +101,12 @@ public class MapGateTextTests
         MapGateText.PillLines(MapGateText.Pay(withContributions)).ShouldBe(lines);
     }
 
-    // The room inside the pay's pill at the narrowest map: a gate's width, 124 px, less its padding of 0.35rem each
-    // side and its frame (MapLayout.PillRoomPixels).
+    // The room inside the pay's pill at the narrowest map is a gate's: as wide as a gate, with a gate's padding
+    // of 0.35rem each side and its frame (MapLayout.PillRoomPixels, GateRoomPixels).
     [Fact]
-    public void PillRoomPixels_isAGatesWidthLessThePillsPaddingAndFrame()
+    public void PillRoomPixels_isAGatesRoom()
     {
-        MapLayout.PillRoomPixels.ShouldBe(124m - 2m * 0.35m * 16m - 2m);
+        (MapLayout.PillRoomPixels, MapLayout.PillPadRem).ShouldBe((MapLayout.GateRoomPixels, 0.35m));
     }
 
     // Each line of the pay's pill fits inside it at the narrowest map, the pay up to €999,999.99, with the
