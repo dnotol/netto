@@ -30,6 +30,7 @@ Every decision taken on Netto, one file each, dated the day it was decided. A de
 - [Each layer has one rule set per income year, every amount with its source](/2026-10-19-one-rule-set-per-layer-and-income-year.md): A new income year is a new rule-set instance found through For(year), never an edit; every amount is a RuleAmount carrying its Source.
 - [The region is a parameter of every rule lookup, and a year or region without rules gives null](/2026-10-24-region-is-a-parameter-of-every-rule-lookup.md): Scenario.Region, Wallonia unless given; only Wallonia has rules, others are refused; no lookup throws.
 - [What a decree changes within the year is rule data, and each month withholds by the rules in force on its first day](/2026-10-25-a-decree-within-the-year-is-rule-data.md): WithholdingRules.Later holds the rules from a date; InMonth picks a month's; November 2026 is the first case.
+- [A citation is its document and passage, and the client words it](/2026-10-30-a-citation-is-its-document-and-passage.md) *(proposed)*: Source keeps a passage key, its document and its address; its title, label and reference are worded in Steps/SourceText.resx and its .fr.resx; a CIR 92 article's title is built from its structured article.
 
 ## Readings of the law
 

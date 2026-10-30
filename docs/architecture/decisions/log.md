@@ -2,6 +2,7 @@
 
 ## 2026-10-30
 
+- [A citation is its document and passage, and the client words it](/2026-10-30-a-citation-is-its-document-and-passage.md) proposed, from the same story.
 - [The site speaks French by default, English one switch away](/2026-10-30-french-by-default-english-beside-it.md) proposed, from the story « Netto speaks French by default, English one switch away »; once accepted it supersedes [every text from a resource file](/2026-10-18-mudblazor-and-resx-text.md) and [numbers on the invariant culture](/2026-10-19-invariant-culture-for-numbers.md).
 
 ## 2026-10-29
