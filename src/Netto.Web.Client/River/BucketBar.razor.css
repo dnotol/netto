@@ -39,8 +39,6 @@
     min-width: 0;
 }
 
-/* Saving the plan and the saved plans, at the end of the top row, before the theme switch, which sits
-   close beside them. */
 /* The language and theme switches (LanguageSwitch, ThemeSwitch) side by side, at the end of the row. */
 .bucket-bar__preferences {
     display: inline-flex;
@@ -48,6 +46,8 @@
     gap: 0.25rem;
 }
 
+/* Saving the plan and the saved plans, at the end of the top row, before the language and theme switches, which
+   sit close beside them. */
 .bucket-bar__actions {
     display: flex;
     flex-wrap: wrap;
