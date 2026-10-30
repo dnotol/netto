@@ -152,6 +152,20 @@ public class AssessmentCalculatorTests
         (assessment.WithheldGiven, assessment.Balance).ShouldBe((withheldGiven, 1_436.06m));
     }
 
+    // Nothing taxed, nothing withheld: the balance is a plain zero. A chain of subtractions ends on a negative zero
+    // where a zero meets a zero of more decimals (0.00 less 0.0000), which a step or a drain reads as money
+    // coming back (Money.PlainZero).
+    [Theory]
+    [InlineData("0")]
+    [InlineData("0.00")]
+    [InlineData("0.0000")]
+    public void Compute_2026NothingTaxedOrWithheld_balancesOnAPlainZero(string withheld)
+    {
+        var assessment = Assessment2026(0m, 0m, new TaxPrepayments(decimal.Parse(withheld, System.Globalization.CultureInfo.InvariantCulture), AdvancePayments.None));
+
+        (assessment.FinalTax, assessment.Balance, decimal.IsNegative(assessment.FinalTax), decimal.IsNegative(assessment.Balance)).ShouldBe((0m, 0m, false, false));
+    }
+
     private static Assessment Assessment2025(
         decimal directorPay, decimal ownContributions, TaxPrepayments prepayments, decimal otherIncome = 0m, decimal taxedApart = 0m, decimal withheldBesidesPay = 0m) =>
         Assessment(Rules2025, directorPay, ownContributions, prepayments, true, otherIncome, taxedApart, withheldBesidesPay);

@@ -8,7 +8,8 @@ namespace Netto.Core.PersonalTax;
 // and what was withheld at source on movable income paid besides the pay, a copyright
 // royalty's, which the assessment sets against it and refunds beyond it (CIR 92 art. 279 and 304, §2;
 // Tax-Calc T16 to T18). Every line is rounded already, so the balance is their arithmetic; the 2.50
-// under which nothing is collected or refunded (art. 304, §1 and §2) is not modelled.
+// under which nothing is collected or refunded (art. 304, §1 and §2) is not modelled. Neither the final tax
+// nor the balance is a negative zero when nothing is due: a balance of nothing is settled, not refunded.
 public static class AssessmentCalculator
 {
     public static Assessment Compute(
@@ -17,10 +18,10 @@ public static class AssessmentCalculator
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(withheldBesidesPay, 0m);
 
-        var finalTax = tax.IncomeTax + tax.MunicipalSurcharge - tax.LowEarnedIncomeCredit - tax.ChildTaxCredit + advancePayments.Surcharge - advancePayments.Bonus;
+        var finalTax = Money.PlainZero(tax.IncomeTax + tax.MunicipalSurcharge - tax.LowEarnedIncomeCredit - tax.ChildTaxCredit + advancePayments.Surcharge - advancePayments.Bonus);
         var paidInAdvance = paid.ByDeadline.Sum();
 
-        return new Assessment(finalTax, withheld, withheldGiven, paidInAdvance, finalTax - withheld - withheldBesidesPay - paidInAdvance, rules.AssessmentBalance)
+        return new Assessment(finalTax, withheld, withheldGiven, paidInAdvance, Money.PlainZero(finalTax - withheld - withheldBesidesPay - paidInAdvance), rules.AssessmentBalance)
         {
             WithheldBesidesPay = withheldBesidesPay,
         };

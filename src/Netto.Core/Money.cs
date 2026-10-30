@@ -22,5 +22,7 @@ internal static class Money
     // left less half a cent already rounds up to it.
     public static decimal SmallestCovering(decimal left, decimal rate) => UpToCent((left - 0.005m) / rate);
 
-    private static decimal PlainZero(decimal amount) => amount == 0m ? 0m : amount;
+    // The amount as is, a plain zero where it is a negative one: a chain of subtractions and additions can end on
+    // 0 - 0.00, which a step or a drain reads as money coming back.
+    public static decimal PlainZero(decimal amount) => amount == 0m ? 0m : amount;
 }

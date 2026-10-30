@@ -360,6 +360,16 @@ public class GrossToNetViewTests
             balance => balance.Sources.Select(group => (group.Source, Keys(group))).ShouldBe([(PersonalTaxRules.IncomeYear2026.AssessmentBalance, "")]));
     }
 
+    // No pay, so no tax, and nothing withheld or prepaid: nothing to pay or to get back. The balance reads as
+    // settled, €0.00, in the detail too, where a negative zero would read as money coming back.
+    [Fact]
+    public void From_noPayNothingWithheld_balanceDetailReadsAsNothingNotAsMoneyBack()
+    {
+        var balance = View(0m, new TaxPrepayments(0.0000m, AdvancePayments.None)).Balance;
+
+        (balance.Kind, balance.Detail.ComesBack, balance.Detail.AmountShown).ShouldBe((BalanceKind.Settled, false, "€0.00"));
+    }
+
     [Fact]
     public void From_gross50000_drawsTheCashTrackThenTheTaxBaseTrack()
     {
