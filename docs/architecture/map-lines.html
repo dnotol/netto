@@ -14,7 +14,7 @@
     <p class="eyebrow">Netto · architecture page · flow</p>
     <h1>How the Plan tab's map draws its lines</h1>
     <p class="lede">The Plan tab is a map of the plan's modules and the money between them, drawn by whose money each module moves, with the chosen module's card beside it. The map computes no figure: every line of money is a line a card already shows, every condition line is one the engine names, and the one sum of its own, the pocket line's running total, adds those lines. This page follows the page's one run to the drawn map.</p>
-    <p class="atlas-meta"><span>As of <b>feature/french-by-default b1d21ed</b></span><span><b>30 October 2026</b></span></p>
+    <p class="atlas-meta"><span>As of <b>feature/backlog-bugs 34698cc</b></span><span><b>30 October 2026</b></span></p>
   </header>
 
   <section aria-labelledby="h-owners">
@@ -24,7 +24,7 @@
       <li><b>The company's line</b>, down the left of the company's column from Company year into the split. Each lever takes its share across to its gate at a point beside it (<code>MapEnd.Beside</code>), the share its card's « The company pays »; the line's amount after each point is the card's « Left after … ». The car takes no share: its costs leave the line into Expenses and the viewer's contribution joins it. Points where nothing leaves or joins are folded past (<code>MapQuiet.Fold</code>).</li>
       <li><b>The pocket line</b>, gold, down the left of your column into Your pocket. Every line into the pocket joins it at its module's point (<code>MapEnd.OnPocketLine</code>); after each join it says what has reached you so far, its last total the bar's pocket. The car's contribution leaves it at the car's row (<code>MapPocketLine</code>).</li>
     </ul>
-    <p>A gate says what crosses and what reaches you (<code>MapGates</code>, <code>MapGateWords</code>); the pay crosses under a « Pay · €x » pill; Household's box says its quotient. An amount is said once (<code>MapLink.Unsaid</code>): a join, the pay, a tax base into Corporate tax, and a line into a gate whose box says the same amount carry none. Decision: <a href="decisions/2026-10-29-the-map-drawn-by-owner.md">the map drawn by owner</a>.</p>
+    <p>A gate says what crosses and what reaches you (<code>MapGates</code>, <code>MapGateWords</code>); the pay crosses under a « Pay · €x » pill, two lines (« Pay + contributions » over its amount) when the company pays the contributions; a badge fits its box at the narrowest map, a tax base's showing its amount and leaving its words heard; Household's box says its quotient. An amount is said once (<code>MapLink.Unsaid</code>): a join, the pay, a tax base into Corporate tax, and a line into a gate whose box says the same amount carry none. Decision: <a href="decisions/2026-10-29-the-map-drawn-by-owner.md">the map drawn by owner</a>.</p>
   </section>
 
   <section aria-labelledby="h-flow">
@@ -131,13 +131,14 @@
   <section aria-labelledby="h-changes">
     <h2 id="h-changes">Changes</h2>
     <ul class="atlas-changes">
+      <li><time datetime="2026-10-30">30.10.2026</time><span>The pay's pill on two lines when the company pays the contributions; badges fitted to the narrowest map, a tax base's showing its amount (bug batch).</span></li>
       <li><time datetime="2026-10-30">30.10.2026</time><span>boxes sized from the module names in the page's language (<a href="decisions/2026-10-30-french-by-default-english-beside-it.md">French by default</a>).</span></li>
       <li><time datetime="2026-10-29">29.10.2026</time><span>The map drawn by owner: three columns, the company's line with each lever's share, the gates, the pay's pill, the pocket line with its running totals, the legend a key and the rule lines drawn for the module chosen, its effects listed beside the card (<code>e102b05..7dfc6b5</code>).</span></li>
       <li><time datetime="2026-10-29">29.10.2026</time><span>Page drawn in the fresh-start pass, from <code>main</code> at <code>29cbc95</code>.</span></li>
     </ul>
   </section>
 
-  <footer>Drawn from the code on <code>feature/french-by-default</code> at <code>b1d21ed</code>. The code is the source; this page explains it. <a href="index.html">All pages</a>.</footer>
+  <footer>Drawn from the code on <code>feature/backlog-bugs</code> at <code>34698cc</code>. The code is the source; this page explains it. <a href="index.html">All pages</a>.</footer>
 </main>
 </body>
 </html>
