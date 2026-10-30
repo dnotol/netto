@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Save" xml:space="preserve">
+    <value>Enregistrer ce plan</value>
+  </data>
+  <data name="UnsavedSpoken" xml:space="preserve">
+    <value>(modifications non enregistrées)</value>
+  </data>
+  <data name="Button" xml:space="preserve">
+    <value>Plans</value>
+  </data>
+  <data name="Count" xml:space="preserve">
+    <value>· {0}</value>
+  </data>
+  <data name="ButtonLabel_None" xml:space="preserve">
+    <value>Plans&#160;: aucun enregistré</value>
+  </data>
+  <data name="ButtonLabel_One" xml:space="preserve">
+    <value>Plans&#160;: 1 enregistré</value>
+  </data>
+  <data name="ButtonLabel_Many" xml:space="preserve">
+    <value>Plans&#160;: {0} enregistrés</value>
+  </data>
+  <data name="PanelLabel" xml:space="preserve">
+    <value>Vos plans enregistrés</value>
+  </data>
+  <data name="Title" xml:space="preserve">
+    <value>Vos plans</value>
+  </data>
+  <data name="NoPlan" xml:space="preserve">
+    <value>Aucun plan enregistré. «&#160;Enregistrer ce plan&#160;» garde le plan tel qu'il est, et le premier plan que vous enregistrez est marqué d'une étoile comme Aujourd'hui, votre situation actuelle.</value>
+  </data>
+  <data name="Lede" xml:space="preserve">
+    <value>Le plan marqué d'une étoile est Aujourd'hui, votre situation actuelle&#160;: chaque autre plan dit ce qu'il laisse dans votre poche par rapport à lui.</value>
+  </data>
+  <data name="LedeNoToday" xml:space="preserve">
+    <value>Aucun plan n'est marqué comme Aujourd'hui&#160;: marquez d'une étoile votre situation actuelle pour y comparer les autres.</value>
+  </data>
+  <data name="CouldNotRead" xml:space="preserve">
+    <value>Cette version de Netto n'a pas pu lire vos plans enregistrés. Ils sont gardés de côté dans votre navigateur, intacts.</value>
+  </data>
+  <data name="DefaultName" xml:space="preserve">
+    <value>Plan {0}</value>
+  </data>
+  <data name="StarLabel" xml:space="preserve">
+    <value>Aujourd'hui&#160;: {0}</value>
+  </data>
+  <data name="NameLabel" xml:space="preserve">
+    <value>Nom du plan</value>
+  </data>
+  <data name="Unreadable" xml:space="preserve">
+    <value>Cette version de Netto ne peut pas ouvrir ce plan. Il est gardé tel qu'il a été enregistré.</value>
+  </data>
+  <data name="Pocket" xml:space="preserve">
+    <value>{0} dans votre poche</value>
+  </data>
+  <data name="NoFigure" xml:space="preserve">
+    <value>Pas de chiffres&#160;: un montant de ce plan est refusé.</value>
+  </data>
+  <data name="IsToday" xml:space="preserve">
+    <value>Aujourd'hui, votre situation actuelle</value>
+  </data>
+  <data name="Gain_More" xml:space="preserve">
+    <value>{0} de plus qu'Aujourd'hui</value>
+  </data>
+  <data name="Gain_Less" xml:space="preserve">
+    <value>{0} de moins qu'Aujourd'hui</value>
+  </data>
+  <data name="Gain_Same" xml:space="preserve">
+    <value>Pareil qu'Aujourd'hui</value>
+  </data>
+  <data name="Gain_NotComparable" xml:space="preserve">
+    <value>Non comparable à Aujourd'hui&#160;: l'un part de l'exercice de la société, l'autre de la rémunération.</value>
+  </data>
+  <data name="InRiver" xml:space="preserve">
+    <value>Affiché maintenant</value>
+  </data>
+  <data name="Open" xml:space="preserve">
+    <value>Ouvrir</value>
+  </data>
+  <data name="OpenLabel" xml:space="preserve">
+    <value>Ouvrir {0} comme plan affiché</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Supprimer</value>
+  </data>
+  <data name="DeleteLabel" xml:space="preserve">
+    <value>Supprimer {0}</value>
+  </data>
+  <data name="ConfirmOpen" xml:space="preserve">
+    <value>Vos modifications du plan affiché ne sont pas enregistrées. Ouvrir {0} quand même&#160;?</value>
+  </data>
+  <data name="OpenYes" xml:space="preserve">
+    <value>Ouvrir quand même</value>
+  </data>
+  <data name="ConfirmDelete" xml:space="preserve">
+    <value>Supprimer {0}&#160;?</value>
+  </data>
+  <data name="DeleteYes" xml:space="preserve">
+    <value>Supprimer</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Annuler</value>
+  </data>
+  <data name="Done" xml:space="preserve">
+    <value>Terminé</value>
+  </data>
+  <data name="Export" xml:space="preserve">
+    <value>Exporter vers un fichier</value>
+  </data>
+  <data name="Import" xml:space="preserve">
+    <value>Importer depuis un fichier</value>
+  </data>
+  <data name="Imported_One" xml:space="preserve">
+    <value>1 plan importé.</value>
+  </data>
+  <data name="Imported_Many" xml:space="preserve">
+    <value>{0} plans importés.</value>
+  </data>
+  <data name="Imported_Some" xml:space="preserve">
+    <value>Plans importés&#160;: {0}. Plans que cette version de Netto ne peut pas lire, ignorés&#160;: {1}.</value>
+  </data>
+  <data name="Imported_None" xml:space="preserve">
+    <value>Le fichier ne contient aucun plan que cette version de Netto puisse lire.</value>
+  </data>
+  <data name="Imported_Refused" xml:space="preserve">
+    <value>Cette version de Netto ne peut pas lire ce fichier&#160;: rien n'a été importé.</value>
+  </data>
+</root>

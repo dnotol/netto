@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Error_revenue_negative" xml:space="preserve">
+    <value>Le chiffre d'affaires ne peut pas être négatif.</value>
+  </data>
+  <data name="Error_running_costs_negative" xml:space="preserve">
+    <value>Les frais courants ne peuvent pas être négatifs.</value>
+  </data>
+  <data name="Error_gross_pay_negative" xml:space="preserve">
+    <value>La rémunération de dirigeant ne peut pas être négative.</value>
+  </data>
+  <data name="Error_municipal_rate_out_of_range" xml:space="preserve">
+    <value>Saisissez un taux de taxe communale additionnelle entre 0&#160;% et 10&#160;% pour voir les chiffres.</value>
+  </data>
+  <data name="Error_fund_fee_rate_out_of_range" xml:space="preserve">
+    <value>Saisissez le taux des frais de gestion de votre caisse entre 0&#160;% et 10&#160;% pour voir les chiffres.</value>
+  </data>
+  <data name="Error_reserve_negative" xml:space="preserve">
+    <value>Le montant que vous gardez dans la société ne peut pas être négatif.</value>
+  </data>
+  <data name="Error_earlier_profits_negative" xml:space="preserve">
+    <value>Les réserves taxées des années précédentes ne peuvent pas être négatives. Saisissez 0 si la société n'en a pas.</value>
+  </data>
+  <data name="Error_income_year_not_supported" xml:space="preserve">
+    <value>L'année n'est pas encore prise en charge.</value>
+  </data>
+  <data name="Error_advance_payment_negative" xml:space="preserve">
+    <value>Un versement anticipé ne peut pas être négatif. Saisissez 0 pour une échéance à laquelle la société n'a rien payé.</value>
+  </data>
+  <data name="Error_tax_withheld_negative" xml:space="preserve">
+    <value>Le précompte professionnel retenu sur votre rémunération ne peut pas être négatif. Saisissez 0 s'il n'y en a pas eu.</value>
+  </data>
+  <data name="Error_tax_advance_payment_negative" xml:space="preserve">
+    <value>Un versement anticipé sur votre impôt ne peut pas être négatif. Saisissez 0 pour une échéance à laquelle vous n'avez rien payé.</value>
+  </data>
+  <data name="Error_meal_voucher_days_negative" xml:space="preserve">
+    <value>Le nombre de journées avec titre-repas ne peut pas être négatif. Saisissez 0 si la société n'en accorde pas.</value>
+  </data>
+  <data name="Error_meal_voucher_days_above_year" xml:space="preserve">
+    <value>Plus de journées avec titre-repas que l'année n'en compte&#160;: un titre-repas par journée de travail effectivement fournie.</value>
+  </data>
+  <data name="Error_eco_vouchers_negative" xml:space="preserve">
+    <value>Les éco-chèques ne peuvent pas être négatifs. Saisissez 0 si la société n'en accorde pas.</value>
+  </data>
+  <data name="Error_eco_vouchers_above_maximum" xml:space="preserve">
+    <value>Plus d'éco-chèques que l'année ne le permet&#160;: au-delà du maximum annuel, ils ne sont plus exonérés.</value>
+  </data>
+  <data name="Error_sport_culture_vouchers_negative" xml:space="preserve">
+    <value>Les chèques sport/culture ne peuvent pas être négatifs. Saisissez 0 si la société n'en accorde pas.</value>
+  </data>
+  <data name="Error_sport_culture_vouchers_above_maximum" xml:space="preserve">
+    <value>Plus de chèques sport/culture que l'année ne le permet&#160;: au-delà du maximum annuel, ils ne sont plus exonérés.</value>
+  </data>
+  <data name="Error_office_allowance_negative" xml:space="preserve">
+    <value>L'indemnité de bureau ne peut pas être négative. Saisissez 0 si la société n'en paie pas.</value>
+  </data>
+  <data name="Error_office_allowance_above_maximum" xml:space="preserve">
+    <value>Plus d'indemnité de bureau que l'année ne le permet&#160;: au-delà des maxima mensuels que l'administration admet, ce n'est plus un remboursement sans pièces justificatives.</value>
+  </data>
+  <data name="Error_internet_allowance_negative" xml:space="preserve">
+    <value>L'indemnité d'internet ne peut pas être négative. Saisissez 0 si la société n'en paie pas.</value>
+  </data>
+  <data name="Error_internet_allowance_above_maximum" xml:space="preserve">
+    <value>Plus d'indemnité d'internet que l'année ne le permet&#160;: au-delà du maximum mensuel que l'administration admet, ce n'est plus un remboursement sans pièces justificatives.</value>
+  </data>
+  <data name="Error_computer_allowance_negative" xml:space="preserve">
+    <value>L'indemnité d'ordinateur ne peut pas être négative. Saisissez 0 si la société n'en paie pas.</value>
+  </data>
+  <data name="Error_computer_allowance_above_maximum" xml:space="preserve">
+    <value>Plus d'indemnité d'ordinateur que l'année ne le permet&#160;: au-delà du maximum mensuel que l'administration admet, ce n'est plus un remboursement sans pièces justificatives.</value>
+  </data>
+  <data name="Error_phone_costs_negative" xml:space="preserve">
+    <value>Les frais de téléphone ne peuvent pas être négatifs. Saisissez 0 si la société n'en rembourse aucun.</value>
+  </data>
+  <data name="Error_cadastral_income_negative" xml:space="preserve">
+    <value>Le revenu cadastral ne peut pas être négatif. Saisissez celui de votre logement, tel que votre avertissement de précompte immobilier l'indique.</value>
+  </data>
+  <data name="Error_share_let_out_of_range" xml:space="preserve">
+    <value>La part louée à la société est une partie de votre logement&#160;: entre 0&#160;% et 100&#160;%.</value>
+  </data>
+  <data name="Error_rent_negative" xml:space="preserve">
+    <value>Le loyer ne peut pas être négatif. Saisissez 0 si la société n'en paie pas.</value>
+  </data>
+  <data name="Error_catalogue_value_negative" xml:space="preserve">
+    <value>La valeur catalogue ne peut pas être négative. Saisissez le prix de la voiture neuve, options et TVA comprises.</value>
+  </data>
+  <data name="Error_car_yearly_costs_negative" xml:space="preserve">
+    <value>Les frais annuels de la voiture ne peuvent pas être négatifs. Saisissez 0 si vous n'en avez pas encore.</value>
+  </data>
+  <data name="Error_car_contribution_negative" xml:space="preserve">
+    <value>Votre intervention ne peut pas être négative. Saisissez 0 si vous ne payez rien pour l'utilisation à des fins personnelles de la voiture.</value>
+  </data>
+  <data name="Error_car_co2_negative" xml:space="preserve">
+    <value>Le CO2 de la voiture ne peut pas être négatif. Saisissez-le en grammes par kilomètre, comme sur son certificat d'immatriculation.</value>
+  </data>
+  <data name="Error_car_co2_missing" xml:space="preserve">
+    <value>Une voiture dont le moteur brûle du carburant émet du CO2&#160;: saisissez son émission en grammes par kilomètre, comme sur son certificat d'immatriculation, ou cochez qu'aucune n'est enregistrée pour elle.</value>
+  </data>
+  <data name="Error_car_matching_co2_negative" xml:space="preserve">
+    <value>Le CO2 de la voiture équivalente ne peut pas être négatif. Saisissez-le en grammes par kilomètre.</value>
+  </data>
+  <data name="Error_car_matching_co2_missing" xml:space="preserve">
+    <value>Un faux hybride est taxé au CO2 de sa voiture équivalente&#160;: saisissez-le, tel que la liste du SPF le donne, ou cochez qu'elle n'en a pas.</value>
+  </data>
+  <data name="Error_car_acquired_after_year" xml:space="preserve">
+    <value>Une voiture commandée ou prise en leasing après la fin de l'année n'est pas celle de la société pendant celle-ci&#160;: saisissez la date de sa commande ou de son contrat de leasing, dans l'année ou avant.</value>
+  </data>
+  <data name="Error_car_plug_in_first_half_2023" xml:space="preserve">
+    <value>Un hybride rechargeable commandé ou pris en leasing au premier semestre 2023 déduit son essence ou son diesel à 50&#160;% au plus et ses autres frais à un autre taux, et Netto ne répartit pas encore ses frais&#160;: il ne peut pas peser cette voiture pour l'instant.</value>
+  </data>
+  <data name="Error_car_private_cost_negative" xml:space="preserve">
+    <value>Ce que la même voiture vous coûterait à titre privé ne peut pas être négatif.</value>
+  </data>
+  <data name="Error_rent_above_cap" xml:space="preserve">
+    <value>Plus de loyer que le plafond&#160;: ce que la société paie au-delà serait imposé comme rémunération de dirigeant, avec cotisations sociales et sans charges déduites. Netto garde le loyer au plafond ou en dessous.</value>
+  </data>
+  <data name="Error_rent_with_office_allowance" xml:space="preserve">
+    <value>Un loyer et une indemnité de bureau ne vont pas ensemble&#160;: l'indemnité de bureau couvre déjà la pièce, loyer compris. Mettez l'indemnité de bureau à 0 pour louer la pièce, ou le loyer à 0 pour garder l'indemnité.</value>
+  </data>
+  <data name="Error_copyright_royalty_negative" xml:space="preserve">
+    <value>Les droits d'auteur ne peuvent pas être négatifs.</value>
+  </data>
+  <data name="Error_billed_contributions_negative" xml:space="preserve">
+    <value>Ce que votre caisse vous facture chaque trimestre ne peut pas être négatif.</value>
+  </data>
+  <data name="Error_copyright_royalty_above_profit" xml:space="preserve">
+    <value>Plus de droits d'auteur que la société n'en a avant votre rémunération&#160;: elle les paierait à perte. Gardez les droits d'auteur au niveau de ce que la société gagne, moins ses autres frais, ce que les titres-repas, les indemnités et le loyer vous rapportent, et les frais de sa voiture.</value>
+  </data>
+  <data name="Error_copyright_creative_share_out_of_range" xml:space="preserve">
+    <value>La part de votre temps de travail consacrée à créer est comprise entre 0&#160;% et 100&#160;%.</value>
+  </data>
+  <data name="Error_monthly_pay_negative" xml:space="preserve">
+    <value>La rémunération mensuelle ne peut pas être négative.</value>
+  </data>
+  <data name="Error_partner_income_negative" xml:space="preserve">
+    <value>Le revenu professionnel net de votre conjoint ne peut pas être négatif. Saisissez 0 s'il n'en a pas.</value>
+  </data>
+  <data name="Error_children_negative" xml:space="preserve">
+    <value>Le nombre d'enfants à charge ne peut pas être négatif. Saisissez 0 si vous n'en avez pas.</value>
+  </data>
+  <data name="Error_children_under_3_out_of_range" xml:space="preserve">
+    <value>Les enfants de moins de 3 ans sont comptés parmi vos enfants à charge&#160;: saisissez un nombre entre 0 et le nombre d'enfants.</value>
+  </data>
+  <data name="Error_dependants_in_care_negative" xml:space="preserve">
+    <value>Le nombre de personnes à charge de 66 ans ou plus dont vous vous occupez ne peut pas être négatif. Saisissez 0 si vous n'en avez pas.</value>
+  </data>
+  <data name="Error_other_dependants_negative" xml:space="preserve">
+    <value>Le nombre d'autres personnes à charge ne peut pas être négatif. Saisissez 0 si vous n'en avez pas.</value>
+  </data>
+</root>

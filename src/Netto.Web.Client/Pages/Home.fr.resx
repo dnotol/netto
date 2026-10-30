@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Netto&#160;: gardez plus de ce que gagne votre SRL</value>
+  </data>
+  <data name="HeroTitle" xml:space="preserve">
+    <value>Votre société le gagne.</value>
+  </data>
+  <data name="HeroTitleAccent" xml:space="preserve">
+    <value>Gardez-en plus.</value>
+  </data>
+  <data name="HeroLede" xml:space="preserve">
+    <value>Netto calcule comment un dirigeant-actionnaire de SRL doit se rémunérer&#160;: rémunération de dirigeant ou dividendes, les indemnités et avantages que la société peut supporter, et les versements anticipés qui évitent une majoration. Le résultat est un plan pour votre année, ajustement par ajustement.</value>
+  </data>
+  <data name="CtaStart" xml:space="preserve">
+    <value>Commencer votre plan</value>
+  </data>
+  <data name="CtaHow" xml:space="preserve">
+    <value>Voir comment ça marche</value>
+  </data>
+  <data name="TrustPrivate" xml:space="preserve">
+    <value>Vos chiffres ne quittent jamais votre navigateur</value>
+  </data>
+  <data name="TrustOfficial" xml:space="preserve">
+    <value>Uniquement des sources officielles</value>
+  </data>
+  <data name="TrustTraceable" xml:space="preserve">
+    <value>Chaque chiffre relié à sa règle</value>
+  </data>
+  <data name="PlanCardLabel" xml:space="preserve">
+    <value>Un exemple de plan construit par Netto</value>
+  </data>
+  <data name="PlanCardTitle" xml:space="preserve">
+    <value>Votre plan pour l'année</value>
+  </data>
+  <data name="PlanCardBadge" xml:space="preserve">
+    <value>Exemple</value>
+  </data>
+  <data name="PlanMovePay" xml:space="preserve">
+    <value>Rééquilibrer rémunération de dirigeant et dividendes</value>
+  </data>
+  <data name="PlanMoveAllowance" xml:space="preserve">
+    <value>Vous verser l'indemnité de bureau</value>
+  </data>
+  <data name="PlanMoveRent" xml:space="preserve">
+    <value>Louer votre bureau à domicile à la société</value>
+  </data>
+  <data name="PlanMoveAdvance" xml:space="preserve">
+    <value>Étaler les versements anticipés sur l'année</value>
+  </data>
+  <data name="PlanCardTotal" xml:space="preserve">
+    <value>Gain sur l'année</value>
+  </data>
+  <data name="PlanCardNote" xml:space="preserve">
+    <value>Illustration. Netto calcule votre plan à partir de vos propres chiffres.</value>
+  </data>
+  <data name="LeversEyebrow" xml:space="preserve">
+    <value>Ce que Netto optimise</value>
+  </data>
+  <data name="LeversTitle" xml:space="preserve">
+    <value>Chaque levier qu'une SRL unipersonnelle peut actionner, pesé ensemble.</value>
+  </data>
+  <data name="LeversIntro" xml:space="preserve">
+    <value>Chaque choix modifie les autres. Netto les teste comme un seul système et garde la combinaison qui laisse le plus dans votre poche.</value>
+  </data>
+  <data name="LeverPayTitle" xml:space="preserve">
+    <value>Rémunération ou dividendes</value>
+  </data>
+  <data name="LeverPayText" xml:space="preserve">
+    <value>La répartition entre rémunération de dirigeant et dividendes VVPRbis, y compris la rémunération minimale qui conserve le taux réduit de l'impôt des sociétés.</value>
+  </data>
+  <data name="LeverCostsTitle" xml:space="preserve">
+    <value>Frais et avantages</value>
+  </data>
+  <data name="LeverCostsText" xml:space="preserve">
+    <value>Indemnités forfaitaires, loyer de votre bureau à domicile, voiture de société et titres-repas, chacun là où vous y avez droit.</value>
+  </data>
+  <data name="LeverAdvanceTitle" xml:space="preserve">
+    <value>Versements anticipés</value>
+  </data>
+  <data name="LeverAdvanceText" xml:space="preserve">
+    <value>Ce que la société et vous devez payer par anticipation, et quand, pour éviter la majoration sans payer trop tôt.</value>
+  </data>
+  <data name="LeverReserveTitle" xml:space="preserve">
+    <value>Un montant qui reste dans la société</value>
+  </data>
+  <data name="LeverReserveText" xml:space="preserve">
+    <value>Gardez un coussin dans la société, en montant ou en mois de frais courants, et distribuez le reste de la meilleure façon.</value>
+  </data>
+  <data name="StepsEyebrow" xml:space="preserve">
+    <value>Comment ça marche</value>
+  </data>
+  <data name="StepsTitle" xml:space="preserve">
+    <value>Trois étapes jusqu'à votre plan.</value>
+  </data>
+  <data name="StepDescribeTitle" xml:space="preserve">
+    <value>Décrivez votre année</value>
+  </data>
+  <data name="StepDescribeText" xml:space="preserve">
+    <value>Chiffre d'affaires et frais attendus, ce que vous vous versez aujourd'hui, et les statuts de votre société.</value>
+  </data>
+  <data name="StepOptimiseTitle" xml:space="preserve">
+    <value>Netto trouve le meilleur mélange</value>
+  </data>
+  <data name="StepOptimiseText" xml:space="preserve">
+    <value>Il pèse ensemble l'impôt des sociétés, l'impôt des personnes physiques et les cotisations sociales, et garde ce qui vous laisse le plus cette année.</value>
+  </data>
+  <data name="StepActTitle" xml:space="preserve">
+    <value>Agissez ajustement par ajustement</value>
+  </data>
+  <data name="StepActText" xml:space="preserve">
+    <value>Chaque ajustement avec ce qu'il vous fait gagner, et un calendrier de ce qu'il faut payer et quand.</value>
+  </data>
+  <data name="PrinciplesEyebrow" xml:space="preserve">
+    <value>Principes</value>
+  </data>
+  <data name="PrinciplesTitle" xml:space="preserve">
+    <value>Conçu pour qu'on lui confie ses chiffres.</value>
+  </data>
+  <data name="PrinciplePrivateTitle" xml:space="preserve">
+    <value>Privé par conception</value>
+  </data>
+  <data name="PrinciplePrivateText" xml:space="preserve">
+    <value>Netto fonctionne entièrement dans votre navigateur. Il n'y a pas de compte, et vos chiffres ne sont jamais envoyés nulle part.</value>
+  </data>
+  <data name="PrincipleSourcesTitle" xml:space="preserve">
+    <value>Uniquement des sources officielles</value>
+  </data>
+  <data name="PrincipleSourcesText" xml:space="preserve">
+    <value>Chaque taux et chaque plafond vient de l'administration fiscale, du Moniteur belge ou de l'INASTI, avec sa référence.</value>
+  </data>
+  <data name="PrincipleAdviceTitle" xml:space="preserve">
+    <value>Un simulateur, pas un conseil</value>
+  </data>
+  <data name="PrincipleAdviceText" xml:space="preserve">
+    <value>Netto vous montre les chiffres. Vérifiez votre plan avec votre comptable avant d'agir.</value>
+  </data>
+  <data name="CtaBandTitle" xml:space="preserve">
+    <value>Prêt quand votre année l'est.</value>
+  </data>
+  <data name="CtaBandText" xml:space="preserve">
+    <value>Décrivez l'année de votre société et voyez le plan que Netto en tire.</value>
+  </data>
+</root>

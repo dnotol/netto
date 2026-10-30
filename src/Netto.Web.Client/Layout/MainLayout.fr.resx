@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="NavLabel" xml:space="preserve">
+    <value>Navigation principale</value>
+  </data>
+  <data name="NavLevers" xml:space="preserve">
+    <value>Ce que Netto optimise</value>
+  </data>
+  <data name="NavHowItWorks" xml:space="preserve">
+    <value>Comment ça marche</value>
+  </data>
+  <data name="NavPrinciples" xml:space="preserve">
+    <value>Principes</value>
+  </data>
+  <data name="NavStart" xml:space="preserve">
+    <value>Commencer votre plan</value>
+  </data>
+  <data name="FooterDisclaimer" xml:space="preserve">
+    <value>Netto est un simulateur, pas un conseil fiscal. Confirmez votre plan avec votre comptable avant d'agir.</value>
+  </data>
+  <data name="FooterAbout" xml:space="preserve">
+    <value>À propos de Netto</value>
+  </data>
+  <data name="ErrorUnhandled" xml:space="preserve">
+    <value>Une erreur s'est produite.</value>
+  </data>
+  <data name="ErrorReload" xml:space="preserve">
+    <value>Recharger</value>
+  </data>
+</root>

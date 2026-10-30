@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Button" xml:space="preserve">
+    <value>Ajouter au plan</value>
+  </data>
+  <data name="ButtonLabel_None" xml:space="preserve">
+    <value>Ajouter au plan&#160;: aucun module facultatif dans votre plan</value>
+  </data>
+  <data name="ButtonLabel_One" xml:space="preserve">
+    <value>Ajouter au plan&#160;: 1 module facultatif dans votre plan</value>
+  </data>
+  <data name="ButtonLabel_Many" xml:space="preserve">
+    <value>Ajouter au plan&#160;: {0} modules facultatifs dans votre plan</value>
+  </data>
+  <data name="PanelLabel" xml:space="preserve">
+    <value>Composition de votre plan</value>
+  </data>
+  <data name="AddTitle" xml:space="preserve">
+    <value>Ajouter à votre plan</value>
+  </data>
+  <data name="Lede" xml:space="preserve">
+    <value>Ce qui est dans votre plan s'affiche et compte&#160;; ce que vous retirez garde vos valeurs pour le jour où vous le rajoutez.</value>
+  </data>
+  <data name="Title_Vouchers" xml:space="preserve">
+    <value>Titres-repas et chèques</value>
+  </data>
+  <data name="Title_Allowances" xml:space="preserve">
+    <value>Indemnités de frais</value>
+  </data>
+  <data name="Title_Rent" xml:space="preserve">
+    <value>Loyer du bureau</value>
+  </data>
+  <data name="Title_Car" xml:space="preserve">
+    <value>Voiture de société</value>
+  </data>
+  <data name="Description_Vouchers" xml:space="preserve">
+    <value>Titres-repas, éco-chèques et chèques sport/culture, sans impôt</value>
+  </data>
+  <data name="Description_Allowances" xml:space="preserve">
+    <value>Bureau, internet, ordinateur et téléphone, remboursés sans impôt</value>
+  </data>
+  <data name="Description_Rent" xml:space="preserve">
+    <value>Loyer de la partie de votre logement qu'utilise la société</value>
+  </data>
+  <data name="Description_Car" xml:space="preserve">
+    <value>Une voiture que la société met à votre disposition</value>
+  </data>
+  <data name="Brings_Vouchers" xml:space="preserve">
+    <value>{0} dans votre poche</value>
+  </data>
+  <data name="Brings_Allowances" xml:space="preserve">
+    <value>{0} dans votre poche</value>
+  </data>
+  <data name="Brings_Rent" xml:space="preserve">
+    <value>{0} dans votre poche après impôt</value>
+  </data>
+  <data name="Brings_Car" xml:space="preserve">
+    <value>{0} de frais de voiture par an, payés par la société</value>
+  </data>
+  <data name="InPlan" xml:space="preserve">
+    <value>Dans votre plan</value>
+  </data>
+  <data name="Kept" xml:space="preserve">
+    <value>Pas dans votre plan · vos valeurs sont conservées</value>
+  </data>
+  <data name="CoreTitle" xml:space="preserve">
+    <value>Toujours dans votre plan</value>
+  </data>
+  <data name="Core_CompanyYear" xml:space="preserve">
+    <value>Exercice de la société</value>
+  </data>
+  <data name="Core_Split" xml:space="preserve">
+    <value>La répartition</value>
+  </data>
+  <data name="Core_DirectorPay" xml:space="preserve">
+    <value>Rémunération de dirigeant</value>
+  </data>
+  <data name="Core_CorporateTax" xml:space="preserve">
+    <value>Impôt des sociétés</value>
+  </data>
+  <data name="Core_Dividend" xml:space="preserve">
+    <value>Dividende</value>
+  </data>
+  <data name="More" xml:space="preserve">
+    <value>D'autres modules s'ajouteront ici au fil de leur construction.</value>
+  </data>
+  <data name="Done" xml:space="preserve">
+    <value>Terminé</value>
+  </data>
+  <data name="Title_Copyright" xml:space="preserve">
+    <value>Droits d'auteur</value>
+  </data>
+  <data name="Description_Copyright" xml:space="preserve">
+    <value>Des droits d'auteur pour les droits sur les œuvres que vous créez, imposés distinctement à 15&#160;%</value>
+  </data>
+  <data name="Brings_Copyright" xml:space="preserve">
+    <value>{0} dans votre poche après impôt</value>
+  </data>
+  <data name="Title_Household" xml:space="preserve">
+    <value>Votre ménage</value>
+  </data>
+  <data name="Description_Household" xml:space="preserve">
+    <value>Un conjoint ou cohabitant légal avec qui vous êtes imposé en commun, et les enfants et autres personnes qui sont à votre charge. Vivre ensemble sans déclaration, c'est être isolé pour l'impôt.</value>
+  </data>
+  <data name="Brings_Household" xml:space="preserve">
+    <value>{0} d'impôt en moins sur votre rémunération</value>
+  </data>
+  <data name="Costs_Household" xml:space="preserve">
+    <value>{0} d'impôt en plus sur votre rémunération</value>
+  </data>
+</root>

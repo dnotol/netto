@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Heading_One" xml:space="preserve">
+    <value>{0} condition que Netto ne peut pas vérifier</value>
+  </data>
+  <data name="Heading_Many" xml:space="preserve">
+    <value>{0} conditions que Netto ne peut pas vérifier</value>
+  </data>
+  <data name="Condition_written_agreement" xml:space="preserve">
+    <value>Une convention individuelle écrite avec la société les accorde.</value>
+  </data>
+  <data name="Condition_not_instead_of_pay" xml:space="preserve">
+    <value>Ils ne sont pas accordés à la place d'une rémunération, d'une prime ou d'un autre avantage.</value>
+  </data>
+  <data name="Condition_days_actually_worked" xml:space="preserve">
+    <value>Un titre-repas par journée de travail effectivement fournie, et vous pouvez prouver ces journées. Un dirigeant sans personnel y a droit&#160;; sans cette preuve, l'intervention de la société est une rémunération imposable.</value>
+  </data>
+  <data name="Condition_in_your_name" xml:space="preserve">
+    <value>Les titres-repas sont électroniques, et chaque titre est émis à votre nom.</value>
+  </data>
+  <data name="Condition_eco_agreement_terms" xml:space="preserve">
+    <value>Pour les éco-chèques, la convention indique la valeur nominale de chacun, de {0} au plus, et la fréquence à laquelle ils sont accordés dans l'année.</value>
+  </data>
+  <data name="Condition_directors_case_by_case" xml:space="preserve">
+    <value>Ces montants forfaitaires sont ceux que l'administration admet de la part d'un employeur, et sa circulaire ne les applique pas aux dirigeants d'entreprise. Un dirigeant est remboursé sur pièces justificatives, ou sur des normes forfaitaires sérieuses et concordantes appréciées au cas par cas&#160;: une décision anticipée du SDA peut confirmer un montant forfaitaire avant de vous y fier.</value>
+  </data>
+  <data name="Condition_regular_telework" xml:space="preserve">
+    <value>Pour l'indemnité forfaitaire de bureau&#160;: vous faites du télétravail structurel et régulier, à raison de l'équivalent d'un jour de travail par semaine, apprécié mois par mois. Moins que cela ne suffit pas.</value>
+  </data>
+  <data name="Condition_no_other_company_share" xml:space="preserve">
+    <value>La société ne supporte aucun de ces frais par ailleurs&#160;: pas de charges payées pour le bureau, pas de part de la facture d'internet, pas d'ordinateur portable ou de tablette de la société en plus de l'indemnité d'ordinateur.</value>
+  </data>
+  <data name="Condition_office_covers_rent" xml:space="preserve">
+    <value>L'indemnité de bureau couvre la pièce, loyer compris&#160;: vous ne pouvez pas aussi louer la même pièce à la société.</value>
+  </data>
+  <data name="Condition_phone_on_invoices" xml:space="preserve">
+    <value>Pour le téléphone, la société rembourse la part professionnelle de vos propres factures, sur justificatifs&#160;: Netto retient le montant que vous saisissez comme cette part.</value>
+  </data>
+  <data name="Condition_share_yours_to_justify" xml:space="preserve">
+    <value>La part louée est à justifier par vous, généralement par la surface que la société utilise réellement&#160;: le plancher et le plafond portent sur le revenu cadastral de cette partie.</value>
+  </data>
+  <data name="Condition_not_with_office_allowance" xml:space="preserve">
+    <value>Pas d'indemnité de bureau en plus&#160;: l'indemnité couvre déjà la pièce, loyer compris.</value>
+  </data>
+  <data name="Condition_ordered_or_leased" xml:space="preserve">
+    <value>Commandée ou prise en leasing à la date que vous indiquez&#160;: une commande compte à partir de sa propre date, même avant la livraison de la voiture, et un leasing ou une location à partir de celle de son contrat&#160;; prolonger un leasing au-delà de ce que son contrat prévoyait, ou le reprendre, ouvre une nouvelle date. Une voiture électrique commandée ou prise en leasing avant 2027 reste déductible en totalité aussi longtemps que la société la garde.</value>
+  </data>
+  <data name="Condition_private_use_all_year" xml:space="preserve">
+    <value>À votre disposition à des fins personnelles pendant toute l'année&#160;: l'avantage est celui d'une année, et une voiture que vous n'avez que pendant une partie de l'année n'est pas encore modélisée.</value>
+  </data>
+  <data name="Condition_fake_hybrid" xml:space="preserve">
+    <value>Un hybride rechargeable acheté ou pris en leasing à partir de 2018 est un faux hybride lorsque sa batterie contient moins de 0,5 kWh par 100 kg de la voiture, ou qu'il émet plus de 50 g/km, 75 g/km mesurés selon la norme Euro 6e-bis ou une norme ultérieure&#160;: son avantage de toute nature et sa déduction prennent alors le CO2 de la voiture équivalente fonctionnant au seul carburant, selon la liste du SPF, ou son propre CO2 multiplié par 2,5 s'il n'y en a pas. Vous indiquez si le vôtre en est un.</value>
+  </data>
+  <data name="Condition_works_you_created" xml:space="preserve">
+    <value>Vous avez créé vous-même les œuvres, originales, et vous cédez ou concédez par écrit à la société vos droits sur elles, avec le montant des droits d'auteur, l'étendue de la cession et sa durée.</value>
+  </data>
+  <data name="Condition_for_the_public" xml:space="preserve">
+    <value>Sauf si vous détenez une attestation du travail des arts, la société exploite les œuvres pour la communication au public, l'exécution publique ou la reproduction&#160;: un jeu ou un logiciel qu'elle vend ou concède sous licence au public y répond, un code destiné à l'usage propre d'un seul client probablement pas.</value>
+  </data>
+  <data name="Condition_effectively_exploited" xml:space="preserve">
+    <value>La société exploite effectivement les droits, selon les usages honnêtes de votre profession.</value>
+  </data>
+  <data name="Condition_arm_length" xml:space="preserve">
+    <value>Les droits d'auteur sont à un prix de pleine concurrence&#160;: ce qui dépasse déraisonnablement les besoins professionnels de la société n'est pas déductible. Une décision anticipée peut le confirmer.</value>
+  </data>
+  <data name="Condition_fiche_281_45" xml:space="preserve">
+    <value>La société établit chaque année une fiche 281.45 à votre nom, sans laquelle elle ne peut pas déduire les droits d'auteur.</value>
+  </data>
+  <data name="Condition_declared" xml:space="preserve">
+    <value>Vous déclarez les droits d'auteur dans votre déclaration chaque année, bien que la société ait opéré le précompte mobilier dessus.</value>
+  </data>
+  <data name="Condition_attestation" xml:space="preserve">
+    <value>Pour les frais forfaitaires&#160;: vous détenez une attestation du travail des arts couvrant ces œuvres au moment du paiement des droits d'auteur. L'attestation de débutant ne compte pas.</value>
+  </data>
+  <data name="Condition_not_a_starting_partnership" xml:space="preserve">
+    <value>La société n'est pas une société de personnes dans ses trois premières années dont les gérants et les associés les plus actifs ont été indépendants pendant 12 trimestres au plus sur les 40 précédant sa constitution&#160;: une telle société ne doit pas la cotisation.</value>
+  </data>
+  <data name="Condition_active_all_year" xml:space="preserve">
+    <value>La société a eu une activité durant l'année&#160;: celle qui n'en a eu aucune pendant toute une année civile ne doit pas la cotisation pour cette année, une fois que le SPF Finances l'a attesté.</value>
+  </data>
+</root>

@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Votre année&#160;: Netto</value>
+  </data>
+  <data name="SkipToMap" xml:space="preserve">
+    <value>Aller à la carte</value>
+  </data>
+  <data name="PageTitle_Optimisation" xml:space="preserve">
+    <value>Optimisation&#160;: Netto</value>
+  </data>
+  <data name="PageTitle_WhenToPay" xml:space="preserve">
+    <value>Quand payer&#160;: Netto</value>
+  </data>
+  <data name="PageTitle_Compare" xml:space="preserve">
+    <value>Comparer les plans&#160;: Netto</value>
+  </data>
+  <data name="SkipToMoves" xml:space="preserve">
+    <value>Aller à vos ajustements</value>
+  </data>
+  <data name="SkipToPayments" xml:space="preserve">
+    <value>Aller aux paiements</value>
+  </data>
+  <data name="SkipToComparison" xml:space="preserve">
+    <value>Aller à la comparaison</value>
+  </data>
+  <data name="AssumedTitle" xml:space="preserve">
+    <value>Hypothèses</value>
+  </data>
+  <data name="AssumedSummary" xml:space="preserve">
+    <value>{0} hypothèses retenues par Netto</value>
+  </data>
+  <data name="AssumedSingle" xml:space="preserve">
+    <value>Isolé, sans personne à charge, sauf si vous ajoutez votre ménage à votre plan</value>
+  </data>
+  <data name="AssumedWallonia" xml:space="preserve">
+    <value>Résident en Wallonie</value>
+  </data>
+  <data name="AssumedMainOccupation" xml:space="preserve">
+    <value>Dirigeant d'entreprise indépendant à titre principal</value>
+  </data>
+  <data name="AssumedNoSpecialContribution" xml:space="preserve">
+    <value>Donc pas de cotisation spéciale pour la sécurité sociale&#160;: elle n'est pas due à titre principal</value>
+  </data>
+  <data name="AssumedLowIncomeCredit" xml:space="preserve">
+    <value>Et le crédit d'impôt pour bas revenus d'activités sur une faible rémunération, le dividende, taxé à la source, restant en dehors de votre déclaration</value>
+  </data>
+  <data name="AssumedCalendarYear" xml:space="preserve">
+    <value>L'exercice comptable de la société est l'année civile</value>
+  </data>
+  <data name="AssumedSteadyState" xml:space="preserve">
+    <value>Chaque année distribue son propre bénéfice, et les réserves taxées des années précédentes sortent avec lui au même taux</value>
+  </data>
+  <data name="AssumedPartnerWithholding" xml:space="preserve">
+    <value>Avec votre ménage dans votre plan, le précompte professionnel mensuel sur votre rémunération considère votre conjoint comme sans revenus, ou avec des revenus professionnels au-dessus des petits montants que ses règles traitent à part, et en déduit ses réductions pour vos enfants à charge et autres personnes à charge</value>
+  </data>
+  <data name="AssumedFinalContributions" xml:space="preserve">
+    <value>Les cotisations sociales sont le montant définitif dû sur les revenus de cette année</value>
+  </data>
+  <data name="LimitsTitle" xml:space="preserve">
+    <value>Pas encore pris en compte</value>
+  </data>
+  <data name="LimitsSummary" xml:space="preserve">
+    <value>{0} éléments que les chiffres laissent de côté</value>
+  </data>
+  <data name="LimitReserves" xml:space="preserve">
+    <value>Les tests du droit des sociétés sur ce qui peut être distribué, et la réserve de liquidation&#160;: les réserves taxées des années précédentes sont traitées comme des bénéfices reportés ordinaires.</value>
+  </data>
+  <data name="LimitDisallowed" xml:space="preserve">
+    <value>Les dépenses non admises autres que celles des titres-repas et chèques, et les pertes reportées des années précédentes.</value>
+  </data>
+  <data name="LimitManagementFee" xml:space="preserve">
+    <value>Les frais de gestion de votre caisse d'assurances sociales, perçus en plus des cotisations, tant que vous n'en donnez pas le taux dans Rémunération de dirigeant.</value>
+  </data>
+  <data name="LimitPartner" xml:space="preserve">
+    <value>Les revenus de votre conjoint autres que professionnels, et son propre crédit d'impôt pour bas revenus d'activités.</value>
+  </data>
+  <data name="LimitDependants" xml:space="preserve">
+    <value>Un enfant handicapé ou une personne à charge handicapée comptant pour deux, les enfants en hébergement égalitaire, les frais de garde d'enfants, le supplément de quotité exemptée d'impôt d'un contribuable handicapé, un supplément en plus pour l'isolé avec enfants à charge à faible revenu, et le supplément pour conjoint disposant de peu de ressources l'année du mariage.</value>
+  </data>
+  <data name="LimitTaxCalc" xml:space="preserve">
+    <value>Les chiffres des revenus 2026 sont calculés d'après les montants officiels de 2026. Tax-Calc ne couvre pas encore 2026&#160;; sur les revenus 2025, la même méthode donne le même résultat au centime près pour l'impôt des personnes physiques, le crédit d'impôt pour bas revenus d'activités, le remboursement du précompte mobilier sur le dividende, et la majoration et la bonification sur vos versements anticipés.</value>
+  </data>
+</root>

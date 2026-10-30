@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Bucket_pocket" xml:space="preserve">
+    <value>Votre poche</value>
+  </data>
+  <data name="Bucket_taxes_on_pay" xml:space="preserve">
+    <value>Cotisations et impôt sur la rémunération</value>
+  </data>
+  <data name="Bucket_taxes_on_pay_and_rent" xml:space="preserve">
+    <value>Cotisations et impôt sur la rémunération et le loyer</value>
+  </data>
+  <data name="Bucket_taxes_on_profit" xml:space="preserve">
+    <value>Impôts sur le bénéfice</value>
+  </data>
+  <data name="Bucket_kept_in_company" xml:space="preserve">
+    <value>Gardé dans la société</value>
+  </data>
+  <data name="Bucket_expenses" xml:space="preserve">
+    <value>Frais</value>
+  </data>
+  <data name="NoFigure" xml:space="preserve">
+    <value>—</value>
+  </data>
+  <data name="FromProfit" xml:space="preserve">
+    <value>Sur {0} de bénéfice avant la cotisation à charge des sociétés de l'INASTI et ce que la société vous verse.</value>
+  </data>
+  <data name="FromProfitAndEarlier" xml:space="preserve">
+    <value>Sur {0} de bénéfice avant la cotisation à charge des sociétés de l'INASTI et ce que la société vous verse, plus {1} de réserves taxées des années précédentes.</value>
+  </data>
+  <data name="FromProfitWithCar" xml:space="preserve">
+    <value>Sur {0} de bénéfice avant la cotisation à charge des sociétés de l'INASTI, les frais de sa voiture et ce que la société vous verse.</value>
+  </data>
+  <data name="FromProfitWithCarAndEarlier" xml:space="preserve">
+    <value>Sur {0} de bénéfice avant la cotisation à charge des sociétés de l'INASTI, les frais de sa voiture et ce que la société vous verse, plus {1} de réserves taxées des années précédentes.</value>
+  </data>
+  <data name="FromPay" xml:space="preserve">
+    <value>Sur {0} de rémunération brute.</value>
+  </data>
+  <data name="FromPayCost" xml:space="preserve">
+    <value>Sur {0}, votre rémunération brute et les cotisations que la société paie pour vous.</value>
+  </data>
+  <data name="EnterCompany" xml:space="preserve">
+    <value>Saisissez l'exercice de votre société pour voir le reste du plan.</value>
+  </data>
+  <data name="ReachWords" xml:space="preserve">
+    <value>vous revient</value>
+  </data>
+  <data name="ReachLabel" xml:space="preserve">
+    <value>ce qui vous revient</value>
+  </data>
+  <data name="ReachMeaning" xml:space="preserve">
+    <value>Votre poche, sur le point de départ du plan moins les frais de la société et ce qu'elle garde à la fin de l'exercice, qui reste à vous. Les frais courants, la cotisation annuelle à charge des sociétés de l'INASTI et les frais d'une voiture de société sont laissés de côté&#160;: ce sont des frais de la société, quoi qu'elle vous verse.</value>
+  </data>
+  <data name="Refused" xml:space="preserve">
+    <value>Pas de chiffres tant que le montant signalé comme refusé n'est pas corrigé.</value>
+  </data>
+  <data name="Holds_pocket" xml:space="preserve">
+    <value>Ce qui vous revient sur l'année&#160;: votre rémunération nette et votre dividende net, et ce que la société vous verse en dehors de la rémunération, déduction faite de l'impôt éventuel.</value>
+  </data>
+  <data name="Holds_taxes_on_pay" xml:space="preserve">
+    <value>Ce qui sort de votre rémunération&#160;: vos cotisations sociales, l'impôt des personnes physiques et la taxe communale additionnelle, moins le crédit d'impôt pour bas revenus d'activités, et toute majoration pour insuffisance de versements anticipés, moins sa bonification.</value>
+  </data>
+  <data name="Holds_taxes_on_pay_and_rent" xml:space="preserve">
+    <value>Ce qui sort de votre rémunération et du loyer imposé avec elle&#160;: vos cotisations sociales, l'impôt des personnes physiques et la taxe communale additionnelle, moins le crédit d'impôt pour bas revenus d'activités, et toute majoration pour insuffisance de versements anticipés, moins sa bonification.</value>
+  </data>
+  <data name="Holds_taxes_on_profit" xml:space="preserve">
+    <value>Ce qui sort du bénéfice de la société&#160;: l'impôt des sociétés et sa majoration pour insuffisance de versements anticipés, et le précompte mobilier retenu sur votre dividende, moins ce qui revient sur sa part exonérée.</value>
+  </data>
+  <data name="Holds_kept_in_company" xml:space="preserve">
+    <value>Ce qui reste dans la société à la fin de l'exercice&#160;: le bénéfice après impôt, avec les réserves taxées des années précédentes, qui n'est pas distribué en dividende.</value>
+  </data>
+  <data name="Holds_expenses" xml:space="preserve">
+    <value>Ce que la société dépense quoi qu'elle vous verse&#160;: la cotisation annuelle à charge des sociétés de l'INASTI et, avec une voiture de société, ce que la voiture lui coûte sur l'année.</value>
+  </data>
+  <data name="PocketAnnounced" xml:space="preserve">
+    <value>Dans votre poche&#160;: {0}.</value>
+  </data>
+  <data name="Gain_More" xml:space="preserve">
+    <value>{0} de plus qu'Aujourd'hui, votre situation actuelle.</value>
+  </data>
+  <data name="Gain_Less" xml:space="preserve">
+    <value>{0} de moins qu'Aujourd'hui, votre situation actuelle.</value>
+  </data>
+  <data name="Gain_Same" xml:space="preserve">
+    <value>Pareil qu'Aujourd'hui, votre situation actuelle.</value>
+  </data>
+  <data name="Gain_NotComparable" xml:space="preserve">
+    <value>Non comparable à Aujourd'hui, votre situation actuelle&#160;: l'un part de l'exercice de la société, l'autre de la rémunération.</value>
+  </data>
+  <data name="GainShown_More" xml:space="preserve">
+    <value>{0} vs Aujourd'hui</value>
+  </data>
+  <data name="GainShown_Less" xml:space="preserve">
+    <value>{0} vs Aujourd'hui</value>
+  </data>
+  <data name="GainShown_Same" xml:space="preserve">
+    <value>Comme Aujourd'hui</value>
+  </data>
+  <data name="GainShown_NotComparable" xml:space="preserve">
+    <value>Non comparable à Aujourd'hui</value>
+  </data>
+  <data name="GainLabel" xml:space="preserve">
+    <value>le gain par rapport à Aujourd'hui</value>
+  </data>
+  <data name="Holds_taxes_on_pay_and_royalty" xml:space="preserve">
+    <value>Ce qui sort de votre rémunération et de vos droits d'auteur&#160;: vos cotisations sociales, l'impôt des personnes physiques, l'impôt distinct sur les droits d'auteur et la taxe communale additionnelle, moins le crédit d'impôt pour bas revenus d'activités, et toute majoration pour insuffisance de versements anticipés, moins sa bonification.</value>
+  </data>
+  <data name="Holds_taxes_on_pay_rent_and_royalty" xml:space="preserve">
+    <value>Ce qui sort de votre rémunération, du loyer imposé avec elle et de vos droits d'auteur&#160;: vos cotisations sociales, l'impôt des personnes physiques, l'impôt distinct sur les droits d'auteur et la taxe communale additionnelle, moins le crédit d'impôt pour bas revenus d'activités, et toute majoration pour insuffisance de versements anticipés, moins sa bonification.</value>
+  </data>
+</root>
