@@ -90,10 +90,16 @@ public class SplitSearchCarTests
             .ShouldBe(((decimal?)null, (PayLevel?)null, (PayLevel?)null));
     }
 
+    // The company paying the contributions, the payslip gross at the 1,000 left has a taxable pay of the
+    // gross and INASTI's minimum on it with the benefit, short of the 6,857.16 the benefit needs: no
+    // gross keeps the rate, and the split still finds its best pay.
     [Fact]
     public void Run_2026CarBeyondItsShareOfAnyPayCompanyPays_doesNotWeighTheRate()
     {
-        Search(Scenario(revenue: 29_000m, paidBy: ContributionsPaidBy.Company, car: ElectricCar)).SmallestPayKeepingReducedRate.ShouldBeNull();
+        var result = Search(Scenario(revenue: 29_000m, paidBy: ContributionsPaidBy.Company, car: ElectricCar));
+
+        (result.SmallestPayKeepingReducedRate, result.BestKeepingReducedRate, result.BestLosingReducedRate, result.Best is null)
+            .ShouldBe(((decimal?)null, (PayLevel?)null, (PayLevel?)null, false));
     }
 
     [Fact]
