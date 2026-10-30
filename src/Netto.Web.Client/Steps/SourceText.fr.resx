@@ -1,0 +1,609 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Fisconet_Title" xml:space="preserve">
+    <value>{0}, art. {1} (revenus {2}), texte coordonné sur Fisconetplus, dernière modification le {3}</value>
+  </data>
+  <data name="Fisconet_Label" xml:space="preserve">
+    <value>{0}, art. {1}</value>
+  </data>
+  <data name="Code_Cir92" xml:space="preserve">
+    <value>CIR 92</value>
+  </data>
+  <data name="Code_ArCir92" xml:space="preserve">
+    <value>AR/CIR 92</value>
+  </data>
+  <data name="Title_corporate-tax/lachambre_doc-56-1243-001-projet-loi-reforme-ipp_2025-12-17.pdf" xml:space="preserve">
+    <value>Chambre des représentants, DOC 56 1243/001, projet de loi portant réforme de l'impôt des personnes physiques, déposé le 17.12.2025</value>
+  </data>
+  <data name="Label_corporate-tax/lachambre_doc-56-1243-001-projet-loi-reforme-ipp_2025-12-17.pdf" xml:space="preserve">
+    <value>DOC 56 1243/001</value>
+  </data>
+  <data name="Reference_corporate-tax/lachambre_doc-56-1243-001-projet-loi-reforme-ipp_2025-12-17.pdf#excess_benefits" xml:space="preserve">
+    <value>L'exposé des motifs de l'art. 2, §1, 25° et de l'art. 215, al. 3, 5°&#160;: les avantages évalués de manière forfaitaire sont comptés dans la rémunération totale à laquelle on les compare&#160;; 30.000&#160;€ en espèces, une voiture de 6.000&#160;€ et un logement de 20.000&#160;€ font 26.000&#160;€ d'avantages sur 56.000&#160;€, plus de 20&#160;%, et le taux réduit est perdu bien que la rémunération atteigne le minimum</value>
+  </data>
+  <data name="Reference_corporate-tax/spf-finances_cir92-art-159-revenus-2026_2026-02-09.html#surcharge" xml:space="preserve">
+    <value>La majoration&#160;: l'impôt multiplié par 2,25 fois le taux de référence, diminué des versements anticipés multipliés par 3, 2,5, 2 et 1,5 fois ce taux, selon l'échéance à laquelle chacun a été effectué</value>
+  </data>
+  <data name="Reference_corporate-tax/spf-finances_cir92-art-198-revenus-2026_2026-02-10.html#car_costs_added_back" xml:space="preserve">
+    <value>§1, 9°&#160;: les frais d'une voiture mise à disposition pour un usage privé ne sont pas des frais professionnels à concurrence de 17&#160;% de l'avantage tel que l'art. 36, §2, al. 1 à 12 le détermine&#160;; 9°bis&#160;: 40&#160;% lorsque la société prend en charge tout ou partie du carburant pour cet usage</value>
+  </data>
+  <data name="Reference_corporate-tax/spf-finances_cir92-art-198bis-revenus-2026_2026-03-02.html#corporate_tax_exceptions" xml:space="preserve">
+    <value>L'art. 66, §1/1 et l'art. 550, al. 3 et 5 ne s'appliquent pas à l'impôt des sociétés&#160;: pas d'assouplissement pour les hybrides rechargeables ni de minimum pour une voiture acquise avant 2018</value>
+  </data>
+  <data name="Reference_corporate-tax/spf-finances_cir92-art-2-revenus-2026_2026-07-30.html#excess_benefits" xml:space="preserve">
+    <value>§1, 25° (à partir de l'exercice d'imposition 2027)&#160;: la partie excessive des avantages de toute nature attribués aux dirigeants d'entreprise est la partie du total des avantages évalués de manière forfaitaire (art. 36, §1, al. 2 ou §2) qui dépasse 20&#160;% de la rémunération totale attribuée aux dirigeants d'entreprise pendant la période imposable, ce qui prive du taux réduit de l'art. 215, al. 3, 5°</value>
+  </data>
+  <data name="Reference_corporate-tax/spf-finances_cir92-art-215-revenus-2026_2026-08-03.html#rates_and_conditions" xml:space="preserve">
+    <value>Al. 1&#160;: 25&#160;%. Al. 2&#160;: 20&#160;% sur la première tranche de 100.000&#160;€ pour une petite société. Al. 3, 4°&#160;: à partir de sa cinquième période imposable, seulement si la rémunération d'un dirigeant d'entreprise atteint le minimum indexé, ou si le revenu imposable ne dépasse pas cette rémunération. Al. 3, 5°&#160;: pas pour une société qui attribue à ses dirigeants d'entreprise la partie excessive des avantages de toute nature de l'art. 2, §1, 25°</value>
+  </data>
+  <data name="Reference_corporate-tax/spf-finances_cir92-art-218-revenus-2026_2026-08-03.html#advance_payment_surcharge" xml:space="preserve">
+    <value>§1&#160;: l'impôt des art. 215 à 217 est majoré comme le prévoient les art. 157 à 168 en cas d'absence ou d'insuffisance de versements anticipés, le taux de référence de l'art. 161 étant d'au moins 3&#160;%, sans la limite de 90&#160;%, la base de 106&#160;% ni l'exception de l'art. 163. §2&#160;: aucune majoration pour une petite société sur l'impôt de ses trois premiers exercices comptables</value>
+  </data>
+  <data name="Reference_corporate-tax/spf-finances_cir92-art-49-revenus-2026_2026-02-04.html#contribution_deductible" xml:space="preserve">
+    <value>Les frais faits ou supportés pendant la période imposable en vue d'acquérir ou de conserver les revenus imposables sont des frais professionnels déductibles, la cotisation à charge des sociétés de l'INASTI comprise</value>
+  </data>
+  <data name="Reference_corporate-tax/spf-finances_cir92-art-49-revenus-2026_2026-02-04.html#deductible_costs" xml:space="preserve">
+    <value>Les frais faits ou supportés pendant la période imposable en vue d'acquérir ou de conserver les revenus imposables sont des frais professionnels déductibles</value>
+  </data>
+  <data name="Reference_corporate-tax/spf-finances_cir92-art-53-revenus-2026_2026-02-18.html#meal_voucher_deduction" xml:space="preserve">
+    <value>14°&#160;: les avantages de l'art. 38, §1, al. 1, 25° ne sont pas des frais professionnels, sauf l'intervention de la société dans un titre-repas électronique, à concurrence de 2&#160;€ par titre, portés à 4&#160;€ lorsque cette intervention atteint les 8,91&#160;€ de l'art. 38/1, §2, al. 1, 5° (titres octroyés à partir du 01.01.2026)</value>
+  </data>
+  <data name="Reference_corporate-tax/spf-finances_cir92-art-53-revenus-2026_2026-02-18.html#unreasonable_costs" xml:space="preserve">
+    <value>10°&#160;: les frais ne sont pas des frais professionnels dans la mesure où ils dépassent de manière déraisonnable les besoins professionnels</value>
+  </data>
+  <data name="Reference_corporate-tax/spf-finances_cir92-art-550-revenus-2026_2026-03-02.html#deduction_formula" xml:space="preserve">
+    <value>Al. 1&#160;: une voiture achetée, prise en leasing ou louée avant le 01.01.2026 est déductible à 120&#160;% − 0,5&#160;% × coefficient × g/km, le coefficient étant de 1 pour une voiture uniquement au diesel, de 0,95 pour les autres et de 0,90 au gaz naturel sous 12 chevaux fiscaux, arrondi au dixième&#160;; al. 2&#160;: acquise avant le 01.07.2023, entre 50&#160;% et 100&#160;%, 40&#160;% à partir de 200 g/km ou sans données de CO2&#160;; al. 4&#160;: acquise du 01.07.2023 au 31.12.2025, 50&#160;% au plus, 0&#160;% sans données de CO2&#160;; al. 6&#160;: un faux hybride prend le CO2 de la voiture correspondante, ou le sien × 2,5&#160;; al. 7&#160;: un hybride rechargeable acquis du 01.01.2023 au 30.06.2023 déduit son essence ou son diesel à 50&#160;% au plus</value>
+  </data>
+  <data name="Reference_corporate-tax/spf-finances_cir92-art-57-revenus-2026_2026-02-05.html#fiches_281_45" xml:space="preserve">
+    <value>Al. 1, 4°&#160;: les revenus de droits d'auteur de l'art. 17, §1, 5° ne sont des frais professionnels que s'ils sont justifiés par des fiches individuelles, les 281.45</value>
+  </data>
+  <data name="Reference_corporate-tax/spf-finances_cir92-art-66-revenus-2026_2026-06-15.html#car_costs_deduction" xml:space="preserve">
+    <value>§1&#160;: les frais d'une voiture de l'art. 65 ne sont pas déductibles, sauf si elle n'émet pas de CO2&#160;; §3, 3°&#160;: la partie des frais égale à l'avantage imposé et à l'intervention du bénéficiaire reste déductible</value>
+  </data>
+  <data name="Title_corporate-tax/spf-finances_circulaire-2024-c-50-verdissement-mobilite_2024-07-23.html" xml:space="preserve">
+    <value>Circulaire 2024/C/50 avec la FAQ relative au verdissement fiscal de la mobilité, Fisconetplus, dernière modification le 23.07.2024</value>
+  </data>
+  <data name="Label_corporate-tax/spf-finances_circulaire-2024-c-50-verdissement-mobilite_2024-07-23.html" xml:space="preserve">
+    <value>Circulaire 2024/C/50</value>
+  </data>
+  <data name="Reference_corporate-tax/spf-finances_circulaire-2024-c-50-verdissement-mobilite_2024-07-23.html#zero_emission_deduction" xml:space="preserve">
+    <value>Question 4&#160;: une voiture sans émission de CO2 achetée, prise en leasing ou louée jusqu'en 2026 reste déductible à 100&#160;% pendant toute sa durée de vie&#160;; une voiture commandée et non livrée compte comme achetée, un leasing ou une location à la date de son contrat</value>
+  </data>
+  <data name="Title_corporate-tax/spf-finances_circulaire-2026-c-11-hybrides-rechargeables_2026-01-09.html" xml:space="preserve">
+    <value>Circulaire 2026/C/11 relative à la déduction des frais professionnels des véhicules hybrides rechargeables, Fisconetplus, 07.01.2026</value>
+  </data>
+  <data name="Label_corporate-tax/spf-finances_circulaire-2026-c-11-hybrides-rechargeables_2026-01-09.html" xml:space="preserve">
+    <value>Circulaire 2026/C/11</value>
+  </data>
+  <data name="Reference_corporate-tax/spf-finances_circulaire-2026-c-11-hybrides-rechargeables_2026-01-09.html#plug_in_hybrids" xml:space="preserve">
+    <value>N° 6&#160;: l'assouplissement pour les hybrides rechargeables ne vaut qu'à l'impôt des personnes physiques, le seuil de faux hybride de 75 g/km selon la norme Euro 6e-bis s'appliquant aussi aux sociétés&#160;; n° 14&#160;: un hybride rechargeable acquis du 01.01.2023 au 30.06.2023 déduit son essence ou son diesel à 50&#160;% au plus&#160;; n° 16&#160;: aucun véhicule acquis à partir du 01.01.2026 ne déduit son carburant</value>
+  </data>
+  <data name="Title_corporate-tax/spf-finances_commentaire-cir92-art-215_2020-11-30.html" xml:space="preserve">
+    <value>Commentaire de l'art. 215 CIR 92, Fisconetplus, dernière modification le 30.11.2020</value>
+  </data>
+  <data name="Label_corporate-tax/spf-finances_commentaire-cir92-art-215_2020-11-30.html" xml:space="preserve">
+    <value>Commentaire de l'art. 215, n° 215/44</value>
+  </data>
+  <data name="Reference_corporate-tax/spf-finances_commentaire-cir92-art-215_2020-11-30.html#pay_tested" xml:space="preserve">
+    <value>N° 215/44&#160;: la rémunération que vérifie l'al. 3, 4° est la rémunération brute de l'art. 32, avant les retenues sociales, augmentée des charges sociales que la société supporte pour le dirigeant d'entreprise et des avantages de toute nature</value>
+  </data>
+  <data name="Title_corporate-tax/spf-finances_cours-isoc-module-5-3-depenses-non-admises_2023-03-17.pdf" xml:space="preserve">
+    <value>SPF Finances, Cours de base impôt des sociétés, MODULE 5.3&#160;: Dépenses non admises et autres éléments du résultat, Fisconetplus, dernière modification le 17.03.2023</value>
+  </data>
+  <data name="Label_corporate-tax/spf-finances_cours-isoc-module-5-3-depenses-non-admises_2023-03-17.pdf" xml:space="preserve">
+    <value>Cours du SPF, module 5.3</value>
+  </data>
+  <data name="Reference_corporate-tax/spf-finances_cours-isoc-module-5-3-depenses-non-admises_2023-03-17.pdf#electric_car_charging" xml:space="preserve">
+    <value>Point 8.2, p. 80&#160;: pour une voiture électrique, 40&#160;% lorsque la société fournit une borne de recharge dont elle supporte les frais, ou une carte de recharge, sauf si elle refacture l'électricité de l'usage privé et en est remboursée&#160;; l'intervention du bénéficiaire ne diminue pas le montant repris en dépenses non admises</value>
+  </data>
+  <data name="Title_corporate-tax/spf-finances_question-parlementaire-819_2026-08-05.html" xml:space="preserve">
+    <value>Question parlementaire n° 819 de monsieur Wouter Vermeersch du 12.01.2026, QRVA 56/42 du 19.02.2026, Fisconetplus</value>
+  </data>
+  <data name="Label_corporate-tax/spf-finances_question-parlementaire-819_2026-08-05.html" xml:space="preserve">
+    <value>Question n° 819</value>
+  </data>
+  <data name="Reference_corporate-tax/spf-finances_question-parlementaire-819_2026-08-05.html#deduction_2023_to_2025" xml:space="preserve">
+    <value>Le ministre&#160;: à l'impôt des sociétés, un véhicule acquis du 01.07.2023 au 31.12.2025 est déduit pour l'exercice d'imposition 2027 selon la formule CO2, à 50&#160;% au plus, pour son électricité, son essence et ses autres frais de la même manière (art. 550, al. 1 et 4)</value>
+  </data>
+  <data name="Title_corporate-tax/spf-finances_question-parlementaire-96_2022-02-10.html" xml:space="preserve">
+    <value>Question parlementaire n° 96 de madame Kathleen Depoorter du 27.11.2019, QRVA 55/008 du 07.01.2020, Fisconetplus</value>
+  </data>
+  <data name="Label_corporate-tax/spf-finances_question-parlementaire-96_2022-02-10.html" xml:space="preserve">
+    <value>Question n° 96</value>
+  </data>
+  <data name="Reference_corporate-tax/spf-finances_question-parlementaire-96_2022-02-10.html#diesel_hybrid_coefficient" xml:space="preserve">
+    <value>Le ministre&#160;: un hybride équipé d'un moteur diesel et d'un moteur électrique peut prendre le coefficient 0,95 de la formule de déduction, celui d'un véhicule équipé d'un autre moteur</value>
+  </data>
+  <data name="Title_corporate-tax/spf-finances_versements-anticipes-societes_2026-10-20.html" xml:space="preserve">
+    <value>SPF Finances, «&#160;Versements anticipés&#160;» pour les sociétés, exercice d'imposition 2027, consulté le 20.10.2026</value>
+  </data>
+  <data name="Reference_corporate-tax/spf-finances_versements-anticipes-societes_2026-10-20.html#deadlines" xml:space="preserve">
+    <value>«&#160;Quand ma société doit-elle effectuer ses versements anticipés&#160;?&#160;»&#160;: au plus tard le 10 avril, le 10 juillet, le 12 octobre et le 21 décembre 2026</value>
+  </data>
+  <data name="Label_municipal-surcharge/spf-finances_cir92-art-466-revenus-2026_2026-04-23.html#municipal_surcharge" xml:space="preserve">
+    <value>CIR 92, art. 466 et 468</value>
+  </data>
+  <data name="Reference_municipal-surcharge/spf-finances_cir92-art-466-revenus-2026_2026-04-23.html#municipal_surcharge" xml:space="preserve">
+    <value>Art. 466&#160;: la taxe communale additionnelle est calculée sur l'impôt total, la part fédérale et l'impôt régional ensemble. Art. 468&#160;: à un taux unique par commune, avec une décimale au plus</value>
+  </data>
+  <data name="Title_municipal-surcharge/spw_evolution-taux-pi-ipp-1990-2026_2026-09-03.xls" xml:space="preserve">
+    <value>SPW Intérieur, «&#160;Évolution taux PI et IPP depuis 1990 par commune de la Région wallonne&#160;», version du 03.09.2026</value>
+  </data>
+  <data name="Reference_municipal-surcharge/spw_evolution-taux-pi-ipp-1990-2026_2026-09-03.xls#municipal_rates" xml:space="preserve">
+    <value>Fichier Excel publié sur la page du Memento fiscal, feuille «&#160;Taux IPP&#160;», colonne 2026&#160;: les taux de l'exercice d'imposition 2026, soit des revenus 2025, fixés par chaque commune en vertu de l'art. 468 CIR 92</value>
+  </data>
+  <data name="Title_personal-tax/ecb_key-interest-rates_2026-10-20.html" xml:space="preserve">
+    <value>Banque centrale européenne, taux d'intérêt directeurs de la BCE, consulté le 20.10.2026</value>
+  </data>
+  <data name="Reference_personal-tax/ecb_key-interest-rates_2026-10-20.html#marginal_lending_rate" xml:space="preserve">
+    <value>Facilité de prêt marginal&#160;: 3,40&#160;% à partir du 18.12.2024, 2,40&#160;% à partir du 11.06.2025&#160;; l'art. 161 CIR 92 retient ce taux au 1er janvier de l'année des revenus, arrondi vers le bas</value>
+  </data>
+  <data name="Title_personal-tax/ejustice_arrete-royal-emission-reference-co2-2026_2025-12-24.html" xml:space="preserve">
+    <value>Arrêté royal du 17.12.2025 modifiant, en ce qui concerne les avantages de toute nature, l'AR/CIR 92 (MB 24.12.2025), version consolidée sur Justel</value>
+  </data>
+  <data name="Label_personal-tax/ejustice_arrete-royal-emission-reference-co2-2026_2025-12-24.html" xml:space="preserve">
+    <value>Arrêté royal du 17.12.2025</value>
+  </data>
+  <data name="Reference_personal-tax/ejustice_arrete-royal-emission-reference-co2-2026_2025-12-24.html#reference_emission" xml:space="preserve">
+    <value>Art. 1&#160;: les émissions de CO2 de référence pour 2026, 70 et 58 g/km&#160;; en vigueur le 01.01.2026</value>
+  </data>
+  <data name="Title_personal-tax/ejustice_arrete-royal-facteur-autonomie-2017_2017-12-22.html" xml:space="preserve">
+    <value>Arrêté royal du 19.12.2017 fixant le facteur d'autonomie (MB 22.12.2017)</value>
+  </data>
+  <data name="Reference_personal-tax/ejustice_arrete-royal-facteur-autonomie-2017_2017-12-22.html#autonomy_factor" xml:space="preserve">
+    <value>Art. 1&#160;: facteur d'autonomie définitif de 24,957&#160;% à partir de l'exercice d'imposition 2018&#160;; loi spéciale du 16.01.1989, art. 5/2</value>
+  </data>
+  <data name="Title_personal-tax/ejustice_decret-wallon-modifications-fiscales-2017_2017-12-22.html" xml:space="preserve">
+    <value>Décret wallon du 13.12.2017 portant diverses modifications fiscales (MB 22.12.2017)</value>
+  </data>
+  <data name="Reference_personal-tax/ejustice_decret-wallon-modifications-fiscales-2017_2017-12-22.html#regional_additional_tax" xml:space="preserve">
+    <value>Art. 33&#160;: centimes additionnels régionaux de 33,257&#160;% de l'impôt État réduit, à partir de l'exercice d'imposition 2018 (art. 39)</value>
+  </data>
+  <data name="Title_personal-tax/ejustice_loi-programme-2026-05-30_2026-06-01.html" xml:space="preserve">
+    <value>Loi-programme du 30.05.2026, Moniteur belge du 01.06.2026, erratum du 19.06.2026, version consolidée sur Justel</value>
+  </data>
+  <data name="Label_personal-tax/ejustice_loi-programme-2026-05-30_2026-06-01.html" xml:space="preserve">
+    <value>Loi-programme du 30.05.2026</value>
+  </data>
+  <data name="Reference_personal-tax/ejustice_loi-programme-2026-05-30_2026-06-01.html#attestation_du_travail_des_arts" xml:space="preserve">
+    <value>Art. 10 à 12&#160;: pour les revenus payés ou attribués à partir du 01.01.2026, les frais forfaitaires sur les revenus de droits d'auteur ne valent que pour les revenus d'activités couvertes par une attestation du travail des arts au moment du paiement, jamais par l'attestation de début de carrière de l'art. 17 de l'arrêté royal du 13.03.2023&#160;; pour le précompte mobilier, à partir des revenus payés ou attribués le 11.06.2026</value>
+  </data>
+  <data name="Title_personal-tax/ejustice_loi-reforme-impot-personnes-physiques-2026_2026-07-29.html" xml:space="preserve">
+    <value>Loi du 15 juillet 2026 portant réforme de l'impôt des personnes physiques (MB 29.07.2026)</value>
+  </data>
+  <data name="Label_personal-tax/ejustice_loi-reforme-impot-personnes-physiques-2026_2026-07-29.html" xml:space="preserve">
+    <value>Loi du 15.07.2026</value>
+  </data>
+  <data name="Reference_personal-tax/ejustice_loi-reforme-impot-personnes-physiques-2026_2026-07-29.html#marital_quotient" xml:space="preserve">
+    <value>Art. 27 et 30, A, à partir de l'exercice d'imposition 2027&#160;: l'art. 87, al. 2 impute au conjoint 30&#160;% des revenus professionnels de celui des deux qui en a seul, 5.860&#160;€ au plus, ou 6.365&#160;€ lorsque les deux conjoints ont 66 ans au 1er janvier de l'exercice d'imposition&#160;; l'art. 88 complète la part du conjoint qui a moins de 30&#160;% des revenus des deux, dans le même maximum</value>
+  </data>
+  <data name="Title_personal-tax/spf-finances_arcir92-annexe-iii-revenus-2026_2026-10-13.html" xml:space="preserve">
+    <value>Annexe III, AR/CIR 92 (revenus 2026), texte coordonné sur Fisconetplus, dernière modification le 13.10.2026</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_arcir92-annexe-iii-revenus-2026_2026-10-13.html#decrees" xml:space="preserve">
+    <value>Son en-tête date chaque arrêté&#160;: les règles de l'arrêté royal du 11.12.2025 (MB 29.12.2025) s'appliquent aux rémunérations payées ou attribuées à partir du 01.01.2026&#160;; l'arrêté royal du 27.09.2026 (MB 02.10.2026) porte le n° 32 à 3.089,63&#160;€, l'impôt sur une quotité exemptée de 11.550&#160;€, et modifie les n° 34.1.1 et 34.2 du quotient conjugal ainsi que les barèmes des réductions pour charges de famille des n° 38 à 41, pour les rémunérations à partir du 01.11.2026, et rien d'autre de ce que Netto applique à la rémunération mensuelle d'un dirigeant d'entreprise</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_arcir92-annexe-iii-revenus-2026_2026-10-13.html#dependent_children_from_november" xml:space="preserve">
+    <value>Le barème du n° 38 tel que l'arrêté royal du 27.09.2026 (MB 02.10.2026) le modifie pour les rémunérations payées ou attribuées à partir du 01.11.2026, un enfant handicapé comptant pour deux (n° 8)&#160;: 684&#160;€ pour un, 1.644&#160;€ pour deux, 4.344&#160;€ pour trois, 7.488&#160;€ pour quatre, 10.884&#160;€ pour cinq, 14.292&#160;€ pour six, 17.712&#160;€ pour sept, 21.492&#160;€ pour huit et, au-delà de huit, 21.492&#160;€ plus 3.780&#160;€ par enfant à charge au-delà du huitième</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_arcir92-annexe-iii-revenus-2026_2026-10-13.html#marital_quotient_from_november" xml:space="preserve">
+    <value>N° 34.1.1 et 34.2, un conjoint sans revenus professionnels propres, tels que l'arrêté royal du 27.09.2026 (MB 02.10.2026) les modifie pour les rémunérations payées ou attribuées à partir du 01.11.2026&#160;: le revenu imputé au conjoint, 30&#160;% du revenu annuel net imposable, au plus 12.790&#160;€ lorsque les deux conjoints ont atteint 66 ans au 1er janvier 2027 (atteint à 42.633,33&#160;€), dans tous les autres cas 11.780&#160;€ (atteint à 39.266,67&#160;€), y compris lorsque le débiteur ne dispose pas de l'information&#160;; les deux impôts additionnés, diminués de 6.179,26&#160;€, deux fois l'impôt sur la quotité exemptée de 11.550&#160;€</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_arcir92-annexe-iii-revenus-2026_2026-10-13.html#other_dependants_from_november" xml:space="preserve">
+    <value>N° 39, 2 et 3, tel que l'arrêté royal du 27.09.2026 (MB 02.10.2026) en modifie le barème pour les rémunérations payées ou attribuées à partir du 01.11.2026&#160;: 1.992&#160;€ par personne à charge de l'art. 136, 2° et 3°, CIR 92 âgée de 66 ans ou plus en situation de dépendance (n° 9), 636&#160;€ par autre personne à charge de l'art. 136, 2° à 4°, une personne handicapée comptant pour deux (n° 8)</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_arcir92-annexe-iii-revenus-2026_2026-10-13.html#single_parent_from_november" xml:space="preserve">
+    <value>N° 40, 1, tel que l'arrêté royal du 27.09.2026 (MB 02.10.2026) en modifie le barème pour les rémunérations payées ou attribuées à partir du 01.11.2026, selon la seule méthode du n° 32&#160;: 636&#160;€ pour un veuf ou une veuve non remarié(e), un père ou une mère célibataire, ou un parent divorcé ou séparé, ayant un ou plusieurs enfants à charge</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_arcir92-annexe-iii-revenus-2026_2026-10-13.html#single_person_from_november" xml:space="preserve">
+    <value>N° 32, un isolé, tel que l'arrêté royal du 27.09.2026 (MB 02.10.2026) le modifie pour les rémunérations payées ou attribuées à partir du 01.11.2026&#160;: l'impôt selon le barème diminué de 3.089,63&#160;€, l'impôt sur la quotité exemptée de 11.550&#160;€</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_arcir92-art-18-revenus-2026_2026-08-10.html#reference_emission" xml:space="preserve">
+    <value>§3, 9&#160;: l'émission de CO2 de référence pour 2026 est de 70 g/km pour une voiture à essence, au LPG ou au gaz naturel et de 58 g/km pour une voiture au diesel, pour les avantages octroyés à partir du 01.01.2026</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_arcir92-art-3-revenus-2025_2025-01-15.html#flat_rate_costs" xml:space="preserve">
+    <value>Sans preuve des frais réels, les frais d'acquisition ou de conservation des revenus de droits d'auteur sont fixés forfaitairement en pourcentage de leur montant brut, ce que l'art. 4 augmente</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_arcir92-art-3-revenus-2026_2026-09-17.html#attestation_du_travail_des_arts" xml:space="preserve">
+    <value>Al. 2&#160;: à partir du 01.01.2026, les frais forfaitaires sur les revenus de droits d'auteur ne s'appliquent qu'aux revenus d'activités pour lesquelles le bénéficiaire dispose d'une attestation du travail des arts au moment du paiement</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_arcir92-art-4-revenus-2025_2026-01-12.html#flat_rate_costs" xml:space="preserve">
+    <value>Al. 1, 1°&#160;: pour les revenus de droits d'auteur, les frais forfaitaires sont de 50&#160;% de la première tranche et de 25&#160;% de la deuxième, pour tout auteur</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_arcir92-art-4-revenus-2026_2026-09-17.html#flat_rate_costs" xml:space="preserve">
+    <value>Al. 1, 1°&#160;: pour les revenus de droits d'auteur, les frais forfaitaires sont de 50&#160;% de la première tranche et de 25&#160;% de la deuxième&#160;; al. 2&#160;: uniquement pour les revenus d'activités couvertes par une attestation du travail des arts au moment du paiement, pas par l'attestation de début de carrière de l'art. 17 de l'arrêté royal du 13.03.2023</value>
+  </data>
+  <data name="Title_personal-tax/spf-finances_avis-indexation-exercice-2026_2026-01-19.html" xml:space="preserve">
+    <value>Indexation automatique – revenus 2025 – exercice d'imposition 2026, version du 19.01.2026</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_avis-indexation-exercice-2026_2026-01-19.html#cadastral_coefficient" xml:space="preserve">
+    <value>H&#160;: le coefficient de l'art. 518 CIR 92, qui indexe le revenu cadastral, est de 2,2446 pour les revenus 2025</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_avis-indexation-exercice-2026_2026-01-19.html#copyright_cost_ceilings" xml:space="preserve">
+    <value>VIII&#160;: les plafonds des frais forfaitaires sur les revenus de droits d'auteur (AR/CIR 92, art. 4, al. 1, 1°) sont de 20.100&#160;€ pour la première tranche et de 40.190&#160;€ pour la deuxième</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_avis-indexation-exercice-2026_2026-01-19.html#dependants_supplements" xml:space="preserve">
+    <value>Tableau I&#160;: art. 132, al. 1, les suppléments à la quotité exemptée pour personnes à charge&#160;: 1° un enfant 1.980&#160;€, 2° deux 5.110&#160;€, 3° trois 11.440&#160;€, 4° quatre 18.510&#160;€, 5° 7.070&#160;€ de plus par enfant au-delà du quatrième, 6° 740&#160;€ par enfant de moins de 3 ans pour lequel aucuns frais de garde ne sont déduits, 7° 5.950&#160;€ par personne à charge âgée de 66 ans ou plus en situation de dépendance, 8° 1.980&#160;€ par autre personne à charge&#160;; art. 133, al. 1, 1°&#160;: 1.980&#160;€ pour un contribuable imposé isolément qui a des enfants à charge</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_avis-indexation-exercice-2026_2026-01-19.html#marital_quotient_cap" xml:space="preserve">
+    <value>Art. 87, al. 2 et art. 88, al. 1&#160;: le maximum que le quotient conjugal, 30&#160;% des revenus professionnels, impute, base 6.700&#160;€, indexé 13.460&#160;€</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_avis-indexation-exercice-2026_2026-01-19.html#surcharge_minimum" xml:space="preserve">
+    <value>Art. 163 CIR 92&#160;: minimum de la majoration pour absence ou insuffisance de versements anticipés, base 50&#160;€, indexé 100&#160;€</value>
+  </data>
+  <data name="Title_personal-tax/spf-finances_avis-indexation-exercice-2027_2026-08-03.html" xml:space="preserve">
+    <value>Indexation automatique – revenus 2026 – exercice d'imposition 2027, version du 03.08.2026, adaptée à la loi du 15.07.2026</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_avis-indexation-exercice-2027_2026-08-03.html#cadastral_coefficient" xml:space="preserve">
+    <value>J&#160;: le coefficient de l'art. 518 CIR 92, qui indexe le revenu cadastral, est de 2,3000 pour les revenus 2026</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_avis-indexation-exercice-2027_2026-08-03.html#copyright_cost_ceilings" xml:space="preserve">
+    <value>VIII&#160;: les plafonds des frais forfaitaires sur les revenus de droits d'auteur (AR/CIR 92, art. 4, al. 1, 1°) sont de 20.590&#160;€ pour la première tranche et de 41.180&#160;€ pour la deuxième</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_avis-indexation-exercice-2027_2026-08-03.html#dependants_supplements" xml:space="preserve">
+    <value>Tableau II&#160;: art. 132, al. 1, les suppléments à la quotité exemptée pour personnes à charge&#160;: 1° un enfant 2.130&#160;€, 2° deux 5.130&#160;€, 3° trois 11.440&#160;€, 4° quatre 18.510&#160;€, 5° 7.070&#160;€ de plus par enfant au-delà du quatrième, 6° 740&#160;€ par enfant de moins de 3 ans pour lequel aucuns frais de garde ne sont déduits, 7° 5.950&#160;€ par personne à charge âgée de 66 ans ou plus en situation de dépendance, 8° 1.980&#160;€ par autre personne à charge&#160;; art. 133, al. 1, 1°&#160;: 1.980&#160;€ pour un contribuable imposé isolément qui a des enfants à charge</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_avis-indexation-exercice-2027_2026-08-03.html#marital_quotient_caps" xml:space="preserve">
+    <value>Art. 87, al. 2 et art. 88, al. 1 et 2&#160;: le maximum que le quotient conjugal impute, base 6.365&#160;€, indexé 12.790&#160;€, lorsque les deux conjoints ont 66 ans au 1er janvier de l'exercice d'imposition, sinon base 5.860&#160;€, indexé 11.780&#160;€</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_avis-indexation-exercice-2027_2026-08-03.html#minimum_director_pay" xml:space="preserve">
+    <value>Art. 215, al. 3, 4° CIR 92&#160;: rémunération minimale d'un dirigeant d'entreprise, base 25.000&#160;€, indexée 51.000&#160;€</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_avis-indexation-exercice-2027_2026-08-03.html#surcharge_minimum" xml:space="preserve">
+    <value>Art. 163 CIR 92&#160;: minimum de la majoration pour absence ou insuffisance de versements anticipés, base 50&#160;€, indexé 100&#160;€</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_cir92-art-13-revenus-2025_2025-01-23.html#net_rent" xml:space="preserve">
+    <value>Le loyer net est le loyer diminué de 40&#160;% pour frais d'entretien et de réparation, pour un bien loué selon l'art. 7, §1, 2°, c, au plus 2/3 du revenu cadastral revalorisé par le coefficient 5,63</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_cir92-art-13-revenus-2026_2026-03-02.html#net_rent" xml:space="preserve">
+    <value>Le loyer net est le loyer diminué de 40&#160;% pour frais d'entretien et de réparation, pour un bien loué selon l'art. 7, §1, 2°, c, au plus 2/3 du revenu cadastral revalorisé par le coefficient 5,75</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_cir92-art-130-revenus-2025_2025-01-24.html#scale" xml:space="preserve">
+    <value>Le barème&#160;: 25&#160;% jusqu'à 16.320&#160;€, 40&#160;% jusqu'à 28.800&#160;€, 45&#160;% jusqu'à 49.840&#160;€, 50&#160;% au-delà</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_cir92-art-130-revenus-2026_2026-02-18.html#scale" xml:space="preserve">
+    <value>Le barème&#160;: 25&#160;% jusqu'à 16.720&#160;€, 40&#160;% jusqu'à 29.510&#160;€, 45&#160;% jusqu'à 51.070&#160;€, 50&#160;% au-delà</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_cir92-art-131-revenus-2025_2025-01-23.html#tax_free_amount" xml:space="preserve">
+    <value>Quotité du revenu exemptée d'impôt de 10.910&#160;€</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_cir92-art-131-revenus-2026_2026-08-03.html#tax_free_amount" xml:space="preserve">
+    <value>Quotité du revenu exemptée d'impôt de 11.550&#160;€, telle que relevée par la loi du 15.07.2026</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_cir92-art-134-revenus-2025_2026-01-14.html#child_credit" xml:space="preserve">
+    <value>§3&#160;: la partie de l'impôt sur la quotité exemptée que l'impôt de base ne peut absorber, dans la mesure où elle correspond aux suppléments pour enfants de l'art. 132, al. 1, 1° à 6°, comptés après le montant de base et les autres suppléments, le montant de base et les autres suppléments qui dépassent le revenu imposable étant écartés, est un crédit d'impôt remboursable d'au plus 550&#160;€ par enfant à charge, non indexé&#160;; §4, 6°&#160;: en cas d'imposition commune, il est calculé par conjoint, le plafond valant pour les deux ensemble</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_cir92-art-134-revenus-2025_2026-01-14.html#tax_on_tax_free_amount" xml:space="preserve">
+    <value>§2&#160;: l'impôt sur la quotité exemptée, déduit de l'impôt selon le barème, est de 25&#160;% jusqu'à 11.460&#160;€, 30&#160;% jusqu'à 16.320&#160;€, 40&#160;% jusqu'à 27.190&#160;€, 45&#160;% jusqu'à 49.840&#160;€, 50&#160;% au-delà. §4&#160;: en cas d'imposition commune, elle est fixée par conjoint, et ce que le revenu imposable de l'un laisse inutilisé passe à l'autre</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_cir92-art-134-revenus-2026_2026-08-05.html#child_credit" xml:space="preserve">
+    <value>§3&#160;: la partie de l'impôt sur la quotité exemptée que l'impôt de base ne peut absorber, dans la mesure où elle correspond aux suppléments pour enfants de l'art. 132, al. 1, 1° à 6°, comptés après le montant de base et les autres suppléments, le montant de base et les autres suppléments qui dépassent le revenu imposable étant écartés, est un crédit d'impôt remboursable d'au plus 550&#160;€ par enfant à charge, non indexé&#160;; §4, 6°&#160;: en cas d'imposition commune, il est calculé par conjoint, le plafond valant pour les deux ensemble</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_cir92-art-134-revenus-2026_2026-08-05.html#tax_on_tax_free_amount" xml:space="preserve">
+    <value>§2&#160;: l'impôt sur la quotité exemptée, déduit de l'impôt selon le barème, est de 25&#160;% jusqu'à 11.750&#160;€, 30&#160;% jusqu'à 16.720&#160;€, 40&#160;% jusqu'à 27.860&#160;€, 45&#160;% jusqu'à 51.070&#160;€, 50&#160;% au-delà. §4&#160;: en cas d'imposition commune, elle est fixée par conjoint, et ce que le revenu imposable de l'un laisse inutilisé passe à l'autre</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_cir92-art-157-revenus-2025_2025-01-16.html#surcharge_not_on_movable_income" xml:space="preserve">
+    <value>La majoration porte sur l'impôt afférent aux bénéfices, profits et rémunérations de dirigeants d'entreprise, pas sur les revenus mobiliers</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_cir92-art-157-revenus-2025_2025-01-16.html#surcharged_tax_less_credits" xml:space="preserve">
+    <value>L'impôt total afférent aux bénéfices, profits et rémunérations de dirigeants d'entreprise qui n'a pas été perçu par voie de précomptes ni versé anticipativement pendant l'année est majoré&#160;; art. 158&#160;: sur cet impôt, diminué du précompte et des crédits d'impôt qui s'y rapportent</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_cir92-art-157-revenus-2026_2026-07-30.html#surcharge_not_on_movable_income" xml:space="preserve">
+    <value>La majoration porte sur le seul impôt afférent aux rémunérations de dirigeants d'entreprise (art. 30, 2°), tel que le laisse la loi du 15.07.2026</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_cir92-art-157-revenus-2026_2026-07-30.html#surcharged_tax_less_credits" xml:space="preserve">
+    <value>L'impôt total afférent aux rémunérations de dirigeants d'entreprise (art. 30, 2°) qui n'a pas été perçu par voie de précomptes ni versé anticipativement pendant l'année est majoré, tel que le laisse la loi du 15.07.2026&#160;; art. 158&#160;: sur cet impôt, diminué du précompte et des crédits d'impôt qui s'y rapportent</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_cir92-art-159-revenus-2025_2025-01-16.html#surcharge" xml:space="preserve">
+    <value>La majoration&#160;: l'impôt multiplié par 2,25 fois le taux de référence, diminué des versements anticipés multipliés par 3, 2,5, 2 et 1,5 fois ce taux, effectués au plus tard le 10 avril, le 10 juillet, le 10 octobre et le 20 décembre</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_cir92-art-160-revenus-2025_2025-01-16.html#surcharge_at_90" xml:space="preserve">
+    <value>La majoration est retenue à concurrence de 90&#160;% de son montant</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_cir92-art-160-revenus-2026_2026-02-09.html#surcharge_at_90" xml:space="preserve">
+    <value>La majoration est retenue à concurrence de 90&#160;% de son montant</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_cir92-art-163-revenus-2025_2025-01-27.html#no_small_surcharge" xml:space="preserve">
+    <value>Aucune majoration lorsqu'elle n'atteint pas 0,5&#160;% de l'impôt sur lequel elle est calculée, ou le minimum indexé</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_cir92-art-163-revenus-2026_2026-02-18.html#no_small_surcharge" xml:space="preserve">
+    <value>Aucune majoration lorsqu'elle n'atteint pas 0,5&#160;% de l'impôt sur lequel elle est calculée, ou le minimum indexé</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_cir92-art-165-revenus-2025_2025-01-16.html#tax_at_106" xml:space="preserve">
+    <value>L'impôt total est porté à 106&#160;%</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_cir92-art-165-revenus-2026_2026-02-09.html#tax_at_106" xml:space="preserve">
+    <value>L'impôt total est porté à 106&#160;%</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_cir92-art-17-revenus-2026_2026-07-30.html#copyright_income" xml:space="preserve">
+    <value>§1, 5°&#160;: les revenus de la cession ou de la concession, par leur titulaire originaire, de droits d'auteur et de droits voisins sur des œuvres, des prestations ou, à partir du 01.01.2026, des programmes d'ordinateur originaux, en vue de leur exploitation effective selon les usages honnêtes de la profession, avec une attestation du travail des arts ou, à défaut, cédés ou concédés pour la communication au public, l'exécution publique ou la reproduction</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_cir92-art-171-revenus-2025_2026-01-19.html#taxed_apart" xml:space="preserve">
+    <value>2°bis, b)&#160;: la première tranche des revenus de droits d'auteur, jusqu'à 30&#160;% ou 75.360&#160;€, est imposée distinctement à 15&#160;%</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_cir92-art-171-revenus-2026_2026-07-31.html#taxed_apart" xml:space="preserve">
+    <value>2°bis, b)&#160;: la première tranche des revenus de droits d'auteur, jusqu'à 30&#160;% ou 77.220&#160;€, est imposée distinctement à 15&#160;%, sauf si l'imposition avec les autres revenus est moins élevée</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_cir92-art-175-revenus-2025_2025-01-16.html#bonus_base" xml:space="preserve">
+    <value>La bonification porte sur l'impôt total porté à 106&#160;%, diminué des précomptes, des crédits d'impôt et des versements anticipés nécessaires pour éviter la majoration&#160;; art. 176&#160;: sur les versements qui les dépassent&#160;; AR/CIR 92, art. 65&#160;: les versements s'imputent d'abord sur le montant nécessaire</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_cir92-art-175-revenus-2026_2026-07-31.html#bonus_base" xml:space="preserve">
+    <value>La bonification porte sur l'impôt total porté à 106&#160;%, diminué des précomptes, des crédits d'impôt et des versements anticipés nécessaires pour éviter la majoration&#160;; art. 176&#160;: sur les versements qui les dépassent&#160;; AR/CIR 92, art. 65&#160;: les versements s'imputent d'abord sur le montant nécessaire</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_cir92-art-177-revenus-2025_2025-01-16.html#bonus" xml:space="preserve">
+    <value>La bonification&#160;: les versements qui dépassent ceux qui sont nécessaires, multipliés par 1,5, 1,25, 1 et 0,75 fois le taux de référence, effectués au plus tard le 10 avril, le 10 juillet, le 10 octobre et le 20 décembre</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_cir92-art-177-revenus-2026_2026-07-31.html#bonus" xml:space="preserve">
+    <value>La bonification&#160;: les versements qui dépassent ceux qui sont nécessaires, multipliés par 1,5, 1,25, 1 et 0,75 fois le taux de référence, selon l'échéance à laquelle chacun a été effectué</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_cir92-art-21-revenus-2025_2026-01-27.html#exempt_dividends" xml:space="preserve">
+    <value>Al. 1, 14°&#160;: la première tranche de 833&#160;€ des dividendes ordinaires est exonérée à l'impôt des personnes physiques</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_cir92-art-21-revenus-2026_2026-06-08.html#exempt_dividends" xml:space="preserve">
+    <value>Al. 1, 14°&#160;: la première tranche de 833&#160;€ des dividendes ordinaires est exonérée à l'impôt des personnes physiques</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_cir92-art-22-revenus-2026_2026-02-02.html#net_copyright_income" xml:space="preserve">
+    <value>§3&#160;: le revenu net des droits d'auteur est leur montant brut diminué des frais d'acquisition ou de conservation&#160;; à défaut de preuve de ces frais, le Roi les fixe forfaitairement</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_cir92-art-269-revenus-2025_2025-08-01.html#copyright_withholding" xml:space="preserve">
+    <value>§1, 4°&#160;: 15&#160;% sur la première tranche des revenus de droits d'auteur, jusqu'à 30&#160;% ou 75.360&#160;€&#160;; §1, 1°&#160;: 30&#160;% sur les revenus mobiliers pour lesquels le §1 ne prévoit pas d'autre taux</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_cir92-art-269-revenus-2025_2025-08-01.html#dividend_withholding" xml:space="preserve">
+    <value>§1, 1°&#160;: 30&#160;%. §2, al. 2&#160;: actions ou parts VVPRbis, 1° 20&#160;% pour la distribution du bénéfice du deuxième exercice comptable après un apport effectué au plus tard le 31.12.2025, 2° 15&#160;% à partir du troisième</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_cir92-art-269-revenus-2026_2026-06-02.html#copyright_withholding" xml:space="preserve">
+    <value>§1, 4°&#160;: 15&#160;% sur la première tranche des revenus de droits d'auteur, jusqu'à 30&#160;% ou 77.220&#160;€&#160;; §1, 1°&#160;: 30&#160;% sur les revenus mobiliers pour lesquels le §1 ne prévoit pas d'autre taux</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_cir92-art-269-revenus-2026_2026-06-02.html#dividend_withholding" xml:space="preserve">
+    <value>§1, 1°&#160;: 30&#160;%. §2, al. 2&#160;: actions ou parts VVPRbis, 1° 20&#160;% pour la distribution du bénéfice du deuxième exercice comptable après un apport effectué au plus tard le 31.12.2025, 2° 18&#160;% à partir du troisième pour les dividendes payés ou attribués à partir du 01.07.2026 (loi-programme du 30.05.2026, art. 15, 4°, et 18)</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_cir92-art-289ter-revenus-2025_2025-01-30.html#low_earned_income_credit" xml:space="preserve">
+    <value>Crédit d'impôt pour bas revenus d'activités&#160;: aucun au-delà de 28.420&#160;€ de revenu net total&#160;; sur les revenus d'activités, de 6.550&#160;€ en montant jusqu'à 880&#160;€ à 8.740&#160;€, 880&#160;€ jusqu'à 21.860&#160;€, en diminuant jusqu'à zéro à 28.420&#160;€. Remboursé au-delà de l'impôt (art. 304, §2)</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_cir92-art-289ter-revenus-2026_2026-02-19.html#low_earned_income_credit" xml:space="preserve">
+    <value>Crédit d'impôt pour bas revenus d'activités&#160;: aucun au-delà de 29.120&#160;€ de revenu net total&#160;; sur les revenus d'activités, de 6.710&#160;€ en montant jusqu'à 910&#160;€ à 8.960&#160;€, 910&#160;€ jusqu'à 22.400&#160;€, en diminuant jusqu'à zéro à 29.120&#160;€. Remboursé au-delà de l'impôt (art. 304, §2)</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_cir92-art-304-revenus-2026_2026-02-19.html#company_balance" xml:space="preserve">
+    <value>§2, al. 2&#160;: pour une société résidente, l'excédent des versements anticipés des art. 157 à 168 et 218 sur l'impôt est imputé sur les cotisations distinctes, et le solde est remboursé s'il atteint 2,50&#160;€</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_cir92-art-304-revenus-2026_2026-02-19.html#personal_balance" xml:space="preserve">
+    <value>§2, al. 1&#160;: l'excédent des versements anticipés des art. 157 et 175, du précompte des art. 270 à 272 et du crédit d'impôt de l'art. 289ter sur l'impôt est imputé sur la taxe communale additionnelle, et le solde est remboursé s'il atteint 2,50&#160;€</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_cir92-art-31-revenus-2026_2026-07-30.html#benefits_in_kind" xml:space="preserve">
+    <value>Al. 2, 2°&#160;: les rémunérations comprennent les avantages de toute nature obtenus en raison de l'activité, ce que l'art. 32 applique à la rémunération d'un dirigeant d'entreprise</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_cir92-art-313-revenus-2026_2026-06-02.html#declared" xml:space="preserve">
+    <value>Al. 1, 4°&#160;: les revenus de droits d'auteur doivent être déclarés même s'ils ont supporté le précompte mobilier</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_cir92-art-32-revenus-2025_2024-12-02.html#director_pay" xml:space="preserve">
+    <value>La rémunération d'un dirigeant d'entreprise est ce qu'il obtient en raison de son mandat ou de ses fonctions dans la société, quelle qu'en soit la dénomination</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_cir92-art-32-revenus-2025_2024-12-02.html#rent_as_director_pay" xml:space="preserve">
+    <value>Al. 2, 3°&#160;: le loyer qu'un dirigeant d'entreprise reçoit de sa société pour un bien bâti est une rémunération de dirigeant d'entreprise pour la partie qui dépasse 5/3 du revenu cadastral revalorisé par le coefficient de l'art. 13, sans déduction de frais sur cette partie</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_cir92-art-32-revenus-2026_2026-01-29.html#director_pay" xml:space="preserve">
+    <value>La rémunération d'un dirigeant d'entreprise est ce qu'il obtient en raison de son mandat ou de ses fonctions dans la société, quelle qu'en soit la dénomination</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_cir92-art-32-revenus-2026_2026-01-29.html#director_pay_every_sum" xml:space="preserve">
+    <value>Al. 2, 1°&#160;: la rémunération d'un dirigeant d'entreprise comprend toute somme que la société lui alloue, autre que des dividendes et le remboursement de dépenses propres à la société</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_cir92-art-32-revenus-2026_2026-01-29.html#rent_as_director_pay" xml:space="preserve">
+    <value>Al. 2, 3°&#160;: le loyer qu'un dirigeant d'entreprise reçoit de sa société pour un bien bâti est une rémunération de dirigeant d'entreprise pour la partie qui dépasse 5/3 du revenu cadastral revalorisé par le coefficient de l'art. 13, sans déduction de frais sur cette partie</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_cir92-art-36-revenus-2026_2026-06-15.html#car_benefit" xml:space="preserve">
+    <value>§2&#160;: l'avantage d'une voiture mise à disposition pour un usage privé est un pourcentage CO2 des 6/7 de sa valeur catalogue, prix de vente à l'état neuf à un particulier, options et TVA effectivement payée comprises, remises exclues&#160;; la valeur catalogue est prise à 100&#160;% jusqu'à 12 mois après la première immatriculation, puis à 94, 88, 82 et 76&#160;% par période de douze mois, à 70&#160;% à partir du 61e mois, un mois commencé comptant entier&#160;; le pourcentage est de 5,5&#160;% à l'émission de référence de l'année, augmenté ou diminué de 0,1&#160;% par gramme au-dessus ou en dessous, au moins 4&#160;%, ce que prend une voiture qui n'émet pas de CO2, et au plus 18&#160;%&#160;; une voiture dont le certificat d'immatriculation ne mentionne pas le CO2 compte pour 205 g/km à l'essence, au LPG ou au gaz naturel et 195 g/km au diesel&#160;; un hybride rechargeable acheté ou pris en leasing à partir de 2018 dont la batterie a une capacité de moins de 0,5 kWh par 100 kg, ou qui émet plus de 50 g/km (75 g/km selon la norme Euro 6e-bis), prend le CO2 de la voiture correspondante qui ne roule qu'avec son carburant, ou le sien × 2,5 à défaut&#160;; l'avantage est d'au moins 1.690&#160;€ par an (montant indexé), diminué de l'intervention propre du bénéficiaire</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_cir92-art-37-revenus-2025_2025-08-01.html#movable_income_limits" xml:space="preserve">
+    <value>Al. 2&#160;: les revenus de droits d'auteur gardent leur qualité de revenus mobiliers, sauf dans la mesure où les indemnités dépassent 30&#160;% de la rémunération totale, prestations comprises, ou 75.360&#160;€, et seulement tant que les revenus de droits d'auteur des quatre périodes imposables précédentes n'ont pas dépassé 75.360&#160;€ en moyenne</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_cir92-art-37-revenus-2026_2026-02-18.html#movable_income_limits" xml:space="preserve">
+    <value>Al. 2&#160;: les revenus de droits d'auteur gardent leur qualité de revenus mobiliers, sauf dans la mesure où les indemnités dépassent 30&#160;% de la rémunération totale, prestations comprises, ou 77.220&#160;€, et seulement tant que les revenus de droits d'auteur des quatre périodes imposables précédentes n'ont pas dépassé 77.220&#160;€ en moyenne</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_cir92-art-38-1-revenus-2026_2026-01-14.html#voucher_conditions" xml:space="preserve">
+    <value>§1&#160;: pas octroyés en remplacement de la rémunération. §2, al. 1&#160;: des titres-repas octroyés par une convention individuelle écrite à défaut de convention collective possible (1°), un par journée de travail effectivement fournie (2°), au nom du bénéficiaire (3°), l'intervention de la société d'au plus 8,91&#160;€ (5°, titres octroyés à partir du 01.01.2026) et celle du bénéficiaire d'au moins 1,09&#160;€ (6°). §3&#160;: des chèques sport et culture, au plus 100&#160;€ par an (4°). §4&#160;: des éco-chèques, la convention mentionnant leur valeur faciale, 10&#160;€ au plus, et leur fréquence d'octroi (2°), au plus 250&#160;€ par an (6°)</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_cir92-art-38-revenus-2026_2026-07-31.html#vouchers_exempt" xml:space="preserve">
+    <value>§1, al. 1, 25°&#160;: l'intervention de l'employeur ou de la société dans les titres-repas électroniques, les chèques sport et culture et les éco-chèques qui remplissent les conditions de l'art. 38/1 est exonérée</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_cir92-art-51-revenus-2025_2026-01-14.html#flat_rate_costs" xml:space="preserve">
+    <value>La rémunération d'un dirigeant d'entreprise, diminuée des cotisations sociales personnelles de l'art. 52, 7°&#160;: frais professionnels forfaitaires de 3&#160;%, au plus 3.130&#160;€</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_cir92-art-51-revenus-2026_2026-02-18.html#flat_rate_costs" xml:space="preserve">
+    <value>La rémunération d'un dirigeant d'entreprise, diminuée des cotisations sociales personnelles de l'art. 52, 7°&#160;: frais professionnels forfaitaires de 3&#160;%, au plus 3.200&#160;€</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_cir92-art-52-revenus-2026_2026-02-04.html#own_contributions" xml:space="preserve">
+    <value>7°&#160;: les cotisations personnelles dues en exécution de la législation sociale sont des frais professionnels déductibles</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_cir92-art-551-revenus-2026_2026-01-21.html#transitional_share" xml:space="preserve">
+    <value>§1&#160;: les 30&#160;% étaient de 50&#160;% pour l'exercice d'imposition 2024 et de 40&#160;% pour l'exercice d'imposition 2025 seulement</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_cir92-art-7-revenus-2025_2024-11-25.html#rent_to_a_company" xml:space="preserve">
+    <value>§1, 2°, c&#160;: un bien bâti donné en location autrement qu'à une personne physique qui l'affecte à son habitation, à une société, produit le montant total du loyer et des avantages locatifs, jamais moins que le revenu cadastral majoré de 40&#160;%</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_cir92-art-7-revenus-2026_2026-03-02.html#rent_to_a_company" xml:space="preserve">
+    <value>§1, 2°, c&#160;: un bien bâti donné en location autrement qu'à une personne physique qui l'affecte à son habitation, à une société, produit le montant total du loyer et des avantages locatifs, jamais moins que le revenu cadastral majoré de 40&#160;%</value>
+  </data>
+  <data name="Title_personal-tax/spf-finances_circulaire-2021-c-20-teletravail_2026-09-09.html" xml:space="preserve">
+    <value>Circulaire 2021/C/20 du 26.02.2021 relative aux interventions de l'employeur pour le télétravail, sur Fisconetplus, dernière modification le 09.09.2026</value>
+  </data>
+  <data name="Label_personal-tax/spf-finances_circulaire-2021-c-20-teletravail_2026-09-09.html" xml:space="preserve">
+    <value>Circulaire 2021/C/20</value>
+  </data>
+  <data name="Label_personal-tax/spf-finances_circulaire-2021-c-20-teletravail_2026-09-09.html#office_allowance_covers_rent" xml:space="preserve">
+    <value>Circulaire 2021/C/20, §31</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_circulaire-2021-c-20-teletravail_2026-09-09.html#expense_allowances" xml:space="preserve">
+    <value>§7–8&#160;: pas pour les dirigeants d'entreprise, remboursés sur pièces justificatives ou selon des critères forfaitaires sérieux et concordants, au cas par cas, pour lesquels une décision anticipée (SDA) peut être demandée. §16, §18 et §23&#160;: l'indemnité de bureau va au travailleur qui télétravaille de manière structurelle et régulière, l'équivalent d'un jour de travail par semaine, apprécié mois par mois. §15–18 et §30–31&#160;: l'indemnité de bureau couvre tous les frais de bureau, l'usage d'une pièce du logement et son loyer compris, si l'employeur n'en supporte aucun autrement&#160;; son maximum est celui qu'accepte l'ONSS, non indexé fiscalement. §47–48&#160;: internet privé jusqu'à 20&#160;€ par mois, non indexé, si l'employeur ne supporte aucune autre partie de son coût. §51–52&#160;: un ordinateur privé avec ses périphériques jusqu'à 20&#160;€ par mois, non indexé, si l'employeur ne supporte aucune autre partie de son coût et ne fournit ni ordinateur portable ni tablette</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_circulaire-2021-c-20-teletravail_2026-09-09.html#office_allowance_covers_rent" xml:space="preserve">
+    <value>§31&#160;: l'indemnité de bureau forfaitaire couvre notamment l'usage d'un espace de bureau dans le logement, son loyer compris</value>
+  </data>
+  <data name="Title_personal-tax/spf-finances_circulaire-2026-c-10-faux-hybride_2026-01-07.html" xml:space="preserve">
+    <value>Circulaire 2026/C/10 relative à l'avantage de toute nature résultant de l'utilisation à des fins personnelles d'un «&#160;faux hybride&#160;» conforme à la norme Euro 6e-bis, Fisconetplus, 07.01.2026</value>
+  </data>
+  <data name="Label_personal-tax/spf-finances_circulaire-2026-c-10-faux-hybride_2026-01-07.html" xml:space="preserve">
+    <value>Circulaire 2026/C/10</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_circulaire-2026-c-10-faux-hybride_2026-01-07.html#fake_hybrid" xml:space="preserve">
+    <value>N° 4, 11 à 13&#160;: un faux hybride est un hybride rechargeable acheté ou pris en leasing à partir de 2018 dont la batterie a une capacité de moins de 0,5 kWh par 100 kg de son poids, ou qui émet plus de 50 g/km, 75 g/km lorsque la mesure suit la norme Euro 6e-bis ou une norme ultérieure&#160;; n° 5 et 14&#160;: son avantage prend le CO2 de la voiture correspondante qui ne roule qu'avec son carburant, selon la liste du SPF, ou le sien × 2,5 à défaut</value>
+  </data>
+  <data name="Title_personal-tax/spf-finances_circulaire-2026-c-84-teletravail-annexe_2026-09-09.html" xml:space="preserve">
+    <value>Circulaire 2026/C/84 du 09.09.2026 relative aux interventions de l'employeur pour le télétravail (annexe&#160;: montants maximaux de l'indemnité de bureau depuis janvier 2020), onzième addendum à la circulaire 2021/C/20, sur Fisconetplus</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_circulaire-2026-c-84-teletravail-annexe_2026-09-09.html#office_allowance_maxima" xml:space="preserve">
+    <value>Le maximum mensuel de l'indemnité de bureau&#160;: 157,83&#160;€ de mars 2025 à février 2026, 160,99&#160;€ de mars à août 2026, 164,21&#160;€ à partir de septembre 2026</value>
+  </data>
+  <data name="Title_personal-tax/spf-finances_commentaire-cir92-art-52_2020-11-09.html" xml:space="preserve">
+    <value>Commentaire du CIR 92, n° 52/124, sur Fisconetplus, dernière modification le 09.11.2020</value>
+  </data>
+  <data name="Label_personal-tax/spf-finances_commentaire-cir92-art-52_2020-11-09.html" xml:space="preserve">
+    <value>Com.IR 92, n° 52/124</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_commentaire-cir92-art-52_2020-11-09.html#contributions_deductible" xml:space="preserve">
+    <value>Les assujettis au statut social des travailleurs indépendants déduisent à titre de frais professionnels toutes les cotisations que la loi les oblige à verser à la caisse d'assurances sociales de leur choix</value>
+  </data>
+  <data name="Title_personal-tax/spf-finances_decision-anticipee-2026-0484_2026-09-17.html" xml:space="preserve">
+    <value>Décision anticipée n° 2026.0484 du 18.08.2026 du Service des Décisions Anticipées, sur Fisconetplus, dernière modification le 17.09.2026</value>
+  </data>
+  <data name="Label_personal-tax/spf-finances_decision-anticipee-2026-0484_2026-09-17.html" xml:space="preserve">
+    <value>Décision anticipée 2026.0484</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_decision-anticipee-2026-0484_2026-09-17.html#royalty_share_of_envelope" xml:space="preserve">
+    <value>Points 11 et 31&#160;: les droits d'auteur d'un dirigeant d'entreprise sont d'au plus 25&#160;% de l'enveloppe annuelle, rémunération de dirigeant plus droits d'auteur, multipliés par la part de son temps de travail consacrée à créer des œuvres protégées&#160;; la rémunération est le brut effectivement payé ou attribué en espèces ou en nature, sans l'avantage de toute nature de la voiture de société</value>
+  </data>
+  <data name="Title_personal-tax/spf-finances_explications-partie-1-rw-2026_2026-04-13.pdf" xml:space="preserve">
+    <value>SPF Finances, Explications de la partie 1 du document préparatoire à la déclaration à l'impôt des personnes physiques, Région wallonne, exercice d'imposition 2026 (revenus 2025)</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_explications-partie-1-rw-2026_2026-04-13.pdf#exempt_dividends" xml:space="preserve">
+    <value>Cadre VII, c)&#160;: les dividendes exonérés ne sont pas déclarés&#160;; le précompte mobilier retenu sur eux, pour 833&#160;€ de dividendes au plus, est déclaré et imputé</value>
+  </data>
+  <data name="Title_personal-tax/spf-finances_faq-avantage-vehicule-mis-a-disposition_2022-03-15.html" xml:space="preserve">
+    <value>FAQ détaillées sur les avantages de toute nature résultant de l'utilisation à des fins personnelles d'un véhicule mis à disposition, Fisconetplus, dernière modification le 15.03.2022</value>
+  </data>
+  <data name="Label_personal-tax/spf-finances_faq-avantage-vehicule-mis-a-disposition_2022-03-15.html" xml:space="preserve">
+    <value>FAQ du SPF sur l'ATN voiture</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_faq-avantage-vehicule-mis-a-disposition_2022-03-15.html#age_and_periods" xml:space="preserve">
+    <value>L'âge se compte à partir du premier jour du mois de la première immatriculation&#160;; l'avantage de l'année pondère chaque période à son pourcentage selon ses jours civils sur ceux de l'année, chaque partie arrondie au cent</value>
+  </data>
+  <data name="Title_personal-tax/spf-finances_formule-cle-precompte-professionnel-2026-01-01_2025-12-17.pdf" xml:space="preserve">
+    <value>Formule-clé pour le calcul du précompte professionnel sur les rémunérations payées à partir du 1er janvier 2026 (ESS-SR/2025-0928), Fisconetplus, version du 17.12.2025</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_formule-cle-precompte-professionnel-2026-01-01_2025-12-17.pdf#monthly_withholding" xml:space="preserve">
+    <value>N° 6 à 16, la rémunération mensuelle en cinq étapes&#160;: le brut diminué de la réduction du dirigeant d'entreprise (n° 7, 1°), multiplié par 12 (n° 7, 2°)&#160;; diminué des frais professionnels forfaitaires (n° 8, 2°)&#160;; l'impôt de base selon le barème de l'annexe 1, avec la taxe communale additionnelle de 7&#160;% incluse (n° 5), diminué de l'impôt sur la quotité exemptée d'un isolé (n° 11, a) ou, lorsque le conjoint n'a pas de revenus professionnels propres (n° 11, b), 30&#160;% du revenu annuel net imposable imputés au conjoint, l'impôt sur ce montant et l'impôt sur le reste chacun selon ce barème, leur somme diminuée de deux fois l'impôt sur la quotité exemptée&#160;; diminué des réductions pour enfants à charge (n° 14, annexe 3) et pour autres charges de famille (n° 15, annexes 4 et 5), qui s'additionnent sans jamais dépasser l'impôt de base (n° 13)&#160;; divisé par 12 (n° 16)&#160;; jamais négatif (n° 21). N° 3&#160;: chaque étape arrondie au cent, vers le haut à partir de cinq millièmes</value>
+  </data>
+  <data name="Title_personal-tax/spf-finances_question-parlementaire-15220_2019-10-04.html" xml:space="preserve">
+    <value>Question parlementaire orale n° 15220 de madame Carina Van Cauter du 01.02.2017 (CRIV 54 COM 582), sur Fisconetplus, dernière modification le 04.10.2019</value>
+  </data>
+  <data name="Label_personal-tax/spf-finances_question-parlementaire-15220_2019-10-04.html" xml:space="preserve">
+    <value>Question n° 15220</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_question-parlementaire-15220_2019-10-04.html#directors_without_staff" xml:space="preserve">
+    <value>Le ministre des Finances&#160;: les dirigeants d'entreprise qui n'occupent pas de personnel ne sont pas exclus de l'exonération des titres-repas, mais les titres doivent correspondre aux journées de travail effectivement fournies&#160;; sans preuve de ceux-ci, l'exonération ne s'applique pas et l'intervention de la société est une rémunération imposable</value>
+  </data>
+  <data name="Title_personal-tax/spf-finances_regles-precompte-professionnel-2026-01-01_2025-12-17.pdf" xml:space="preserve">
+    <value>Annexe III à l'AR/CIR 92 telle que remplacée par l'arrêté royal du 11.12.2025 (MB 29.12.2025), «&#160;Règles 1er janvier 2026&#160;» sur Fisconetplus, version du 17.12.2025</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_regles-precompte-professionnel-2026-01-01_2025-12-17.pdf#dependent_children" xml:space="preserve">
+    <value>N° 38, la réduction de l'impôt de base pour enfants à charge, un enfant handicapé comptant pour deux (n° 8)&#160;: 624&#160;€ pour un, 1.656&#160;€ pour deux, 4.404&#160;€ pour trois, 7.620&#160;€ pour quatre, 11.100&#160;€ pour cinq, 14.592&#160;€ pour six, 18.120&#160;€ pour sept, 21.996&#160;€ pour huit et, au-delà de huit, 21.996&#160;€ plus 3.864&#160;€ par enfant à charge au-delà du huitième</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_regles-precompte-professionnel-2026-01-01_2025-12-17.pdf#director_reduction" xml:space="preserve">
+    <value>N° 25.2, la réduction mensuelle, en lieu et place des retenues sociales, sur la rémunération d'un dirigeant d'entreprise assujetti au statut social des travailleurs indépendants&#160;: 385&#160;€ jusqu'à 1.465&#160;€&#160;; 385&#160;€ + 21,50&#160;% de la tranche au-delà de 1.465&#160;€ jusqu'à 6.310&#160;€&#160;; 1.426,68&#160;€ + 14,50&#160;% de la tranche au-delà de 6.310&#160;€ jusqu'à 9.290&#160;€&#160;; 1.858,78&#160;€ au-delà</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_regles-precompte-professionnel-2026-01-01_2025-12-17.pdf#flat_rate_costs" xml:space="preserve">
+    <value>N° 29, les frais professionnels forfaitaires sur la rémunération périodique d'un dirigeant d'entreprise&#160;: 3&#160;% du brut annuel, au plus 3.200&#160;€ (atteint à 106.666,67&#160;€)</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_regles-precompte-professionnel-2026-01-01_2025-12-17.pdf#marital_quotient" xml:space="preserve">
+    <value>N° 34, un conjoint sans revenus professionnels propres&#160;: 30&#160;% du revenu annuel net imposable lui sont imputés (n° 34.1.1), au plus 13.790&#160;€ (atteint à 45.966,67&#160;€)&#160;; l'impôt sur le revenu imputé et l'impôt sur le reste, chacun selon le barème du n° 31, additionnés et diminués de 5.975,96&#160;€, deux fois l'impôt sur la quotité exemptée de 11.170&#160;€ (n° 34.2)</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_regles-precompte-professionnel-2026-01-01_2025-12-17.pdf#other_dependants" xml:space="preserve">
+    <value>N° 39, 2 et 3, selon l'une ou l'autre méthode&#160;: 1.992&#160;€ par personne à charge de l'art. 136, 2° et 3°, CIR 92 âgée de 66 ans ou plus en situation de dépendance (n° 9), 624&#160;€ par autre personne à charge de l'art. 136, 2° à 4°, une personne handicapée comptant pour deux (n° 8), comme les annexes 4 et 5 de la formule-clé les reprennent aussi</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_regles-precompte-professionnel-2026-01-01_2025-12-17.pdf#scale" xml:space="preserve">
+    <value>N° 31, le barème de base&#160;: 26,75&#160;% jusqu'à 16.710&#160;€&#160;; 4.469,93&#160;€ + 42,80&#160;% de la tranche au-delà de 16.710&#160;€ jusqu'à 29.500&#160;€&#160;; 9.944,05&#160;€ + 48,15&#160;% de la tranche au-delà de 29.500&#160;€ jusqu'à 51.050&#160;€&#160;; 20.320,38&#160;€ + 53,50&#160;% de la tranche au-delà de 51.050&#160;€</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_regles-precompte-professionnel-2026-01-01_2025-12-17.pdf#single_parent" xml:space="preserve">
+    <value>N° 40, 1, selon la seule méthode du n° 32&#160;: 624&#160;€ pour un veuf ou une veuve non remarié(e), un père ou une mère célibataire, ou un parent divorcé ou séparé, ayant un ou plusieurs enfants à charge</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_regles-precompte-professionnel-2026-01-01_2025-12-17.pdf#single_person" xml:space="preserve">
+    <value>N° 32, un isolé&#160;: l'impôt selon le barème diminué de 2.987,98&#160;€, l'impôt sur la quotité exemptée de 11.170&#160;€</value>
+  </data>
+  <data name="Title_personal-tax/spf-finances_versements-anticipes-independants_2026-10-20.html" xml:space="preserve">
+    <value>SPF Finances, «&#160;Versements anticipés&#160;» pour les indépendants et les dirigeants d'entreprise, exercice d'imposition 2027, consulté le 20.10.2026</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_versements-anticipes-independants_2026-10-20.html#deadlines" xml:space="preserve">
+    <value>«&#160;Quand dois-je effectuer mes versements anticipés&#160;?&#160;»&#160;: au plus tard le 10 avril, le 10 juillet, le 12 octobre et le 21 décembre 2026</value>
+  </data>
+  <data name="Title_social-contributions/ejustice_arrete-royal-38-statut-social-independants_2026-06-01.html" xml:space="preserve">
+    <value>Arrêté royal n° 38 du 27.07.1967 organisant le statut social des travailleurs indépendants, version consolidée sur Justel, à jour au 01.06.2026</value>
+  </data>
+  <data name="Label_social-contributions/ejustice_arrete-royal-38-statut-social-independants_2026-06-01.html" xml:space="preserve">
+    <value>Arrêté royal n° 38</value>
+  </data>
+  <data name="Label_social-contributions/ejustice_arrete-royal-38-statut-social-independants_2026-06-01.html#contributions_base" xml:space="preserve">
+    <value>Arrêté royal n° 38, art. 11</value>
+  </data>
+  <data name="Label_social-contributions/ejustice_arrete-royal-38-statut-social-independants_2026-06-01.html#contributions_base_copyright" xml:space="preserve">
+    <value>Arrêté royal n° 38, art. 11</value>
+  </data>
+  <data name="Reference_social-contributions/ejustice_arrete-royal-38-statut-social-independants_2026-06-01.html#contributions_base" xml:space="preserve">
+    <value>Art. 11, §1 et §2&#160;: les cotisations sont un pourcentage des revenus professionnels tels que la législation relative à l'impôt sur les revenus les fixe, le brut diminué des frais professionnels</value>
+  </data>
+  <data name="Reference_social-contributions/ejustice_arrete-royal-38-statut-social-independants_2026-06-01.html#contributions_base_copyright" xml:space="preserve">
+    <value>Art. 11, §1 et §2&#160;: les cotisations sont un pourcentage des revenus professionnels tels que la législation relative à l'impôt sur les revenus les fixe, ce que ne sont pas les revenus de droits d'auteur dans les limites de l'art. 37</value>
+  </data>
+  <data name="Reference_social-contributions/ejustice_arrete-royal-38-statut-social-independants_2026-06-01.html#fund_fee" xml:space="preserve">
+    <value>Art. 20, §4&#160;: les frais de gestion des caisses sont à charge de leurs affiliés, dont la part est une cotisation fixée chaque année pour chaque caisse par le ministre, la caisse entendue, et perçue et recouvrée comme les cotisations</value>
+  </data>
+  <data name="Title_social-contributions/ejustice_loi-dispositions-sociales-diverses-1992_2022-12-30.html" xml:space="preserve">
+    <value>Loi du 30.12.1992 portant des dispositions sociales et diverses, version consolidée sur Justel, à jour au 30.12.2022</value>
+  </data>
+  <data name="Label_social-contributions/ejustice_loi-dispositions-sociales-diverses-1992_2022-12-30.html" xml:space="preserve">
+    <value>Loi du 30.12.1992</value>
+  </data>
+  <data name="Label_social-contributions/ejustice_loi-dispositions-sociales-diverses-1992_2022-12-30.html#exemptions" xml:space="preserve">
+    <value>Loi du 30.12.1992, art. 94 et 92bis</value>
+  </data>
+  <data name="Label_social-contributions/ejustice_loi-dispositions-sociales-diverses-1992_2022-12-30.html#inactive_company" xml:space="preserve">
+    <value>Loi du 30.12.1992, art. 92bis</value>
+  </data>
+  <data name="Label_social-contributions/ejustice_loi-dispositions-sociales-diverses-1992_2022-12-30.html#starting_partnership" xml:space="preserve">
+    <value>Loi du 30.12.1992, art. 94</value>
+  </data>
+  <data name="Reference_social-contributions/ejustice_loi-dispositions-sociales-diverses-1992_2022-12-30.html#exemptions" xml:space="preserve">
+    <value>Art. 94, 9°&#160;: une société de personnes, pendant ses trois premières années, dont les gérants et les associés actifs majoritaires n'ont pas été indépendants pendant plus de 12 des 40 trimestres précédant sa constitution n'en doit pas&#160;; art. 92bis&#160;: ni une société sans activité pendant toute une année civile, sur attestation du SPF Finances</value>
+  </data>
+  <data name="Reference_social-contributions/ejustice_loi-dispositions-sociales-diverses-1992_2022-12-30.html#flat_contribution" xml:space="preserve">
+    <value>Art. 91&#160;: une cotisation forfaitaire annuelle selon le total du bilan de l'avant-dernier exercice comptable clôturé, la plus basse tant qu'il ne dépasse pas le seuil, indexée chaque année&#160;; art. 100&#160;: de même nature, pour les impôts sur les revenus, que les cotisations dues en exécution de la législation sociale</value>
+  </data>
+  <data name="Reference_social-contributions/ejustice_loi-dispositions-sociales-diverses-1992_2022-12-30.html#inactive_company" xml:space="preserve">
+    <value>Art. 92bis&#160;: une société sans activité pendant toute une année civile n'en doit pas pour celle-ci, sur attestation du SPF Finances</value>
+  </data>
+  <data name="Reference_social-contributions/ejustice_loi-dispositions-sociales-diverses-1992_2022-12-30.html#starting_partnership" xml:space="preserve">
+    <value>Art. 94, 9°&#160;: une société de personnes n'en doit pas pour ses trois premières années lorsque ses gérants et ses associés actifs majoritaires n'ont pas été indépendants pendant plus de 12 des 40 trimestres précédant sa constitution</value>
+  </data>
+  <data name="Title_social-contributions/inasti_cotisations-sociales-2026_2026-01-05.pdf" xml:space="preserve">
+    <value>INASTI, «&#160;Cotisations 2026&#160;» (janvier 2026)</value>
+  </data>
+  <data name="Reference_social-contributions/inasti_cotisations-sociales-2026_2026-01-05.pdf#definitive_contributions" xml:space="preserve">
+    <value>§1 B.2 «&#160;Cotisations définitives, en général&#160;», selon la note aux caisses P741/25/9 du 11.12.2025</value>
+  </data>
+  <data name="Title_social-contributions/inasti_faq-cotisation-a-charge-des-societes_2026-10-25.html" xml:space="preserve">
+    <value>INASTI, «&#160;Quelle cotisation à charge des sociétés dois-je payer&#160;?&#160;» (FAQ, consultée le 25.10.2026)</value>
+  </data>
+  <data name="Reference_social-contributions/inasti_faq-cotisation-a-charge-des-societes_2026-10-25.html#contribution_bands" xml:space="preserve">
+    <value>«&#160;Pour la cotisation 2026, c'est le total du bilan de votre société en 2024&#160;»&#160;: sous 879.163,44&#160;€, 409,30&#160;€&#160;; au-delà, 1.022,38&#160;€</value>
+  </data>
+</root>
