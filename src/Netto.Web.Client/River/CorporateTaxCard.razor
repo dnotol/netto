@@ -24,7 +24,7 @@
             <FigureList Figures="@FigureWords.Of(L, CorporateTaxFigures.Of(_view))" />
             <DrainList Drains="_view.Drains" />
         </div>
-        <p class="corporate-tax__condition"><TermSentence Text="@ConditionText(_view)" Meaning="@L[CorporateTaxCardText.TestedPayTerm(_requalifiedPay), Formats.Euros(_requalifiedPay)]" /></p>
+        <p class="corporate-tax__condition"><TermSentence Text="@ConditionText(_view)" Meaning="@L[_testedPayTerm.Key, Formats.Euros(_testedPayTerm.LeftOut)]" /></p>
     }
     <Disclosure Title="@L["CompanyTitle"]" Values="@SettingWords.Of(L, _settings.Company)">
         <div class="corporate-tax__status">
@@ -87,7 +87,7 @@
     private CorporateTaxView? _view;
     private MoreBy? _moreBy;
     private decimal _dividend;
-    private decimal _requalifiedPay;
+    private (string Key, decimal LeftOut) _testedPayTerm;
     private CorporateTaxSettingsView _settings = default!;
 
     // The browser's date, which decides the first deadline not yet past: the one the sentence of what more
@@ -99,7 +99,7 @@
         _view = Run.Year is { } year ? CorporateTaxView.From(year) : null;
         _moreBy = Run.Year is { } yearToday ? MoreBy.Company(yearToday, Today) : null;
         _dividend = Run.Year?.Dividend.Dividend ?? 0m;
-        _requalifiedPay = Run.Year?.DirectorPay.RequalifiedPay ?? 0m;
+        _testedPayTerm = Run.Year is { } ran ? CorporateTaxCardText.TestedPayTerm(ran.DirectorPay) : default;
         _settings = CorporateTaxSettingsView.From(Inputs, Run);
     }
 

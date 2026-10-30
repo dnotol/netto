@@ -1,4 +1,6 @@
+using System.Globalization;
 using System.Net;
+using System.Text.RegularExpressions;
 using Netto.Core.CompanyCar;
 using Netto.Core.SocialContributions;
 using Netto.Web.Client.River;
@@ -23,6 +25,8 @@ public class CompanyAndSplitCardsTests
 
     // Revenue of 15,000 leaves a loss of 5,000 before any pay: no pay, and a taxable income of −5,000.
     private static readonly RiverInputs Loss = RiverInputs.Example.WithRevenue(15_000m);
+
+    private static readonly RiverInputs CompanyPays = RiverInputs.Example.WithContributionsPaidBy(ContributionsPaidBy.Company);
 
     // A year with no taxable profit still pays a dividend out of the profits kept from earlier years:
     // 60,000 of them less this year's loss of 5,000.
@@ -60,9 +64,26 @@ public class CompanyAndSplitCardsTests
     [Fact]
     public async Task CorporateTax_companyPaysContributions_sentenceNamesThePayWithThem()
     {
-        var html = await CardAsync(RiverInputs.Example.WithContributionsPaidBy(ContributionsPaidBy.Company), "corporate-tax");
+        var html = await CardAsync(CompanyPays, "corporate-tax");
 
         ShouldNameThePayTested(html, "Condition_MinimumPayMet", "€59,942.52");
+    }
+
+    // Beside a royalty taxed as pay with the company paying the contributions, Director pay's taxable pay
+    // counts the royalty's part and the contributions and fund fee on it, which the pay tested leaves out:
+    // the sentence's pay and what its bubble says is left out add up to it.
+    [Fact]
+    public async Task CorporateTax_royaltyTaxedAsPayAndCompanyPays_bubbleNamesAllTheTestLeavesOut()
+    {
+        var river = CompanyPays.AddToPlan(OptionalModule.Copyright).WithRoyalty(30_000m);
+
+        var cards = await CardHtml.RenderCardsOpenAsync(river);
+        var corporateTax = CardHtml.Card(cards, "corporate-tax");
+        var tested = Euros(CardHtml.Amounts(CardHtml.Prose(corporateTax).Single(paragraph => paragraph.Contains("tested pay", StringComparison.Ordinal)))[0]);
+        var leftOut = Euros(CardHtml.Amounts(TermBubble(corporateTax, "tested pay"))[0]);
+        var taxablePay = Euros(CardHtml.Lines(CardHtml.Card(cards, "director-pay")).Single(line => line.Label == "Taxable pay").Amount);
+
+        (tested + leftOut).ShouldBe(taxablePay);
     }
 
     // A small company in its second tax period needs no minimum pay, but a company car's benefit of 1,714.29
@@ -85,18 +106,16 @@ public class CompanyAndSplitCardsTests
 
     // What the pay costs the company comes off its profit: with the company paying the contributions, each
     // euro of gross takes more than a euro of it, which the split's bubble says, with a royalty or without.
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task Split_companyPaysContributions_hintNamesThem(bool withRoyalty)
+    [Fact]
+    public async Task Split_companyPaysContributions_hintNamesThem()
     {
-        var river = RiverInputs.Example.WithContributionsPaidBy(ContributionsPaidBy.Company);
-        if (withRoyalty)
-            river = river.AddToPlan(OptionalModule.Copyright).WithRoyalty(30_000m);
+        (await SplitHintAsync(CompanyPays)).ShouldContain("contributions");
+    }
 
-        var hint = CardHtml.BubbleAfter(await CardAsync(river, "split"), SplitTexts.Format("Title"));
-
-        hint.ShouldContain("contributions");
+    [Fact]
+    public async Task Split_companyPaysContributionsBesideARoyalty_hintNamesThem()
+    {
+        (await SplitHintAsync(CompanyPays.AddToPlan(OptionalModule.Copyright).WithRoyalty(30_000m))).ShouldContain("contributions");
     }
 
     // The conditions Company year lists are those under which the company owes INASTI's contribution: an
@@ -140,6 +159,20 @@ public class CompanyAndSplitCardsTests
             () => sentence.ShouldContain(payTested),
             () => CardHtml.Prose(html).ShouldContain(sentence));
     }
+
+    private static async Task<string> SplitHintAsync(RiverInputs river) => CardHtml.BubbleAfter(await CardAsync(river, "split"), SplitTexts.Format("Title"));
+
+    // The text of the bubble a term in running text opens, as a screen reader is given it: the description
+    // right after the term's trigger.
+    private static string TermBubble(string html, string term)
+    {
+        var bubble = Regex.Match(WebUtility.HtmlDecode(html), $@"<button[^>]*>\s*{Regex.Escape(term)}\s*</button><span [^>]*class=""info-bubble__text""[^>]*>(?<text>[^<]*)</span>");
+        bubble.Success.ShouldBeTrue($"No bubble follows « {term} ».");
+
+        return bubble.Groups["text"].Value;
+    }
+
+    private static decimal Euros(string amount) => decimal.Parse(amount.TrimStart('€'), NumberStyles.Number, CultureInfo.InvariantCulture);
 
     private static async Task<string> CardAsync(RiverInputs river, string card) => CardHtml.Card(await CardHtml.RenderCardsOpenAsync(river), card);
 }

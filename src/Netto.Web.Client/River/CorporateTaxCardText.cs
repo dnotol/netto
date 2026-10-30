@@ -1,4 +1,5 @@
 using Netto.Core.CorporateTax;
+using Netto.Core.DirectorPay;
 
 namespace Netto.Web.Client.River;
 
@@ -13,9 +14,16 @@ internal static class CorporateTaxCardText
             ? $"Condition_{condition}_WithBenefits"
             : $"Condition_{condition}";
 
-    // What the pay art. 215 tests holds, in the bubble of its term: Director pay's taxable pay, and, while
-    // a copyright royalty's part beyond its limits is taxed as pay there, the part it leaves out.
-    public static string TestedPayTerm(decimal requalifiedPay) => requalifiedPay > 0m ? "Term_TestedPay_Royalty" : "Term_TestedPay";
+    // What the pay art. 215 tests holds, in the bubble of its term: Director pay's taxable pay while no
+    // copyright royalty's part beyond its limits is taxed as pay; beside one, what that taxable pay counts
+    // beyond the pay tested, the difference of the engine's two figures: that part, and, when the company
+    // pays the contributions, the contributions and the fund's fee on it, which the test leaves out too.
+    public static (string Key, decimal LeftOut) TestedPayTerm(GrossToNetResult pay) => pay switch
+    {
+        { RequalifiedPay: <= 0m } => ("Term_TestedPay", 0m),
+        { ContributionsPaidByCompany: > 0m } => ("Term_TestedPay_RoyaltyCompanyPays", pay.TaxablePay - pay.TaxablePayWithoutRequalified),
+        _ => ("Term_TestedPay_Royalty", pay.TaxablePay - pay.TaxablePayWithoutRequalified),
+    };
 
     // A year with no taxable profit pays no dividend out of it, but the profits kept from earlier years
     // still pay one, less this year's loss and the reserve: the sentence names it while there is one.

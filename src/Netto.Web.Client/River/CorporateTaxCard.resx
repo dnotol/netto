@@ -81,6 +81,9 @@
   <data name="Term_TestedPay_Royalty" xml:space="preserve">
     <value>The pay the reduced rate's test counts: your gross, the contributions and fund fee the company pays for you if it does, and your benefits in kind. It leaves out the {0} of your copyright royalty that Director pay's taxable pay counts as pay.</value>
   </data>
+  <data name="Term_TestedPay_RoyaltyCompanyPays" xml:space="preserve">
+    <value>The pay the reduced rate's test counts: your gross, the contributions and fund fee the company pays for you, and your benefits in kind. It leaves out the {0} Director pay's taxable pay counts besides: your copyright royalty's part taxed as pay, and the contributions and fund fee the company pays on it.</value>
+  </data>
   <data name="NoTaxableProfit" xml:space="preserve">
     <value>No taxable profit: no corporate tax, and no dividend this year.</value>
   </data>
