@@ -93,6 +93,10 @@ internal static class MapLayout
     // drawn (0.85rem, line height 1.1), its lines (MapGates) at 0.68rem with a line height of 1.15, 0.25rem
     // of padding over and under them and its frame. The stylesheet draws a gate with these (MapLayoutTests).
     internal const decimal TitleLineRem = 0.85m * 1.1m;
+
+    // The state a box says under its name, refused or skipped: 0.72rem, at its name's line height of 1.1
+    // (MapTab.razor.css: .map-module__state).
+    internal const decimal StateLineRem = 0.72m * 1.1m;
     internal const decimal GateLineRem = 0.68m * 1.15m;
     internal const decimal GatePadRem = 0.25m;
     private const decimal FrameRem = 2m / PixelsPerRem;
@@ -325,10 +329,13 @@ internal static class MapLayout
 
     // The boxes of the modules and of the buckets, each module's named as the map draws it (MapTab passes the
     // names its localizer gives), the quiet levers given drawn in quiet pills, each module's box holding the
-    // lines of badges given, each gate's the lines it says.
+    // lines of badges given and of the states it says under its name (refused, skipped), each gate's the lines
+    // it says.
     public static MapGrid Grid(IReadOnlyList<RiverModule> modules, Func<RiverModule, string> names, IReadOnlySet<RiverModule>? quiet = null,
-        IReadOnlyDictionary<RiverModule, int>? badgeLines = null, IReadOnlyDictionary<RiverModule, int>? gateLines = null) =>
-        new(modules, names, quiet ?? new HashSet<RiverModule>(), badgeLines ?? new Dictionary<RiverModule, int>(), gateLines ?? new Dictionary<RiverModule, int>());
+        IReadOnlyDictionary<RiverModule, int>? badgeLines = null, IReadOnlyDictionary<RiverModule, int>? gateLines = null,
+        IReadOnlyDictionary<RiverModule, int>? stateLines = null) =>
+        new(modules, names, quiet ?? new HashSet<RiverModule>(), badgeLines ?? new Dictionary<RiverModule, int>(), gateLines ?? new Dictionary<RiverModule, int>(),
+            stateLines ?? new Dictionary<RiverModule, int>());
 
     // Every link of the run with its route: links with the same ends and kind share one, their amount
     // said together, as thick as what they carry together beside the run's largest line of money
@@ -370,18 +377,20 @@ internal static class MapLayout
         private readonly IReadOnlySet<RiverModule> _quiet;
         private readonly IReadOnlyDictionary<RiverModule, int> _badgeLines;
         private readonly IReadOnlyDictionary<RiverModule, int> _gateLines;
+        private readonly IReadOnlyDictionary<RiverModule, int> _stateLines;
 
         // The lines each module's name takes in its box and in a quiet pill, counted once for the grid.
         private readonly Dictionary<RiverModule, int> _titleLines;
         private readonly Dictionary<RiverModule, int> _quietLines;
 
         public MapGrid(IReadOnlyList<RiverModule> modules, Func<RiverModule, string> names, IReadOnlySet<RiverModule> quiet,
-            IReadOnlyDictionary<RiverModule, int> badgeLines, IReadOnlyDictionary<RiverModule, int> gateLines)
+            IReadOnlyDictionary<RiverModule, int> badgeLines, IReadOnlyDictionary<RiverModule, int> gateLines, IReadOnlyDictionary<RiverModule, int> stateLines)
         {
             Modules = modules;
             _quiet = quiet;
             _badgeLines = badgeLines;
             _gateLines = gateLines;
+            _stateLines = stateLines;
             _titleLines = MapModules.Order.ToDictionary(module => module, module => TitleLines(module, names(module)));
             _quietLines = MapModules.Order.ToDictionary(module => module, module => QuietLines(module, names(module)));
             _firstOf = FirstOf(modules, quiet);
@@ -514,16 +523,20 @@ internal static class MapLayout
                 : _quiet.Contains(module) ? PillUnits([module]) : BoxOf(module)).DefaultIfEmpty(BoxUnits).Max() * 100m / Units;
 
         // A module's box, in chain rows: half a row, or a gate's lines, or the partner's, or the lines of a name
-        // that wraps, and a line for each of its badges.
+        // that wraps and of the state it says under it, and a line for each of its badges.
         private decimal BoxOf(RiverModule module) =>
             Math.Max(BoxUnits, Place(module).Column is MapColumn.Gates or MapColumn.Household ? GateUnits(module) : TitleUnits(module)) + _badgeLines.GetValueOrDefault(module) * BadgeUnits;
 
         // A gate's name and lines, its padding and frame, in chain rows at the smallest scale.
         private decimal GateUnits(RiverModule module) =>
-            (_titleLines[module] * TitleLineRem + _gateLines.GetValueOrDefault(module) * GateLineRem + 2m * GatePadRem + FrameRem) / SmallestRowRem;
+            (NameRem(module) + _gateLines.GetValueOrDefault(module) * GateLineRem + 2m * GatePadRem + FrameRem) / SmallestRowRem;
 
-        // Another box's name and its frame, which has no padding over and under it: half a row holds one line.
-        private decimal TitleUnits(RiverModule module) => (_titleLines[module] * TitleLineRem + FrameRem) / SmallestRowRem;
+        // Another box's name, its state and its frame, which has no padding over and under them: half a row holds
+        // one line.
+        private decimal TitleUnits(RiverModule module) => (NameRem(module) + FrameRem) / SmallestRowRem;
+
+        // A box's name and the state it says under it, each at the largest size it is drawn.
+        private decimal NameRem(RiverModule module) => _titleLines[module] * TitleLineRem + _stateLines.GetValueOrDefault(module) * StateLineRem;
 
         // The tallest box of a row with a box, a quiet pill in its own place left out, as tall as a box with no
         // badge when it holds none, the buckets'.

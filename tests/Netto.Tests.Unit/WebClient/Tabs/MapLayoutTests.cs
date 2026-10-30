@@ -302,6 +302,44 @@ public class MapLayoutTests
             .ShouldBe((0.5m, two, two, two, 0.5m));
     }
 
+    // A box saying its state under its name, refused or skipped, grows a line for it, as tall as the stylesheet
+    // draws it: the company's year skipped, its name on one line in English and on two in French, and the box of
+    // the module holding a refused amount.
+    [Theory]
+    [InlineData(false, 1)]
+    [InlineData(true, 2)]
+    public void From_theCompanySkipped_growsCompanyYearsBoxForItsNameAndItsState(bool inFrench, int nameLines)
+    {
+        var river = MapLinksTests.Full.SkipCompany();
+
+        var view = MapView.From(river, river.Run(), inFrench ? MapNames.French : MapNames.English);
+
+        Units(view, RiverModule.CompanyYear).ShouldBe(Math.Round((nameLines * MapLayout.TitleLineRem + MapLayout.StateLineRem + 2m / 16m) / MapLayout.SmallestRowRem, 12));
+    }
+
+    [Fact]
+    public void From_anAmountRefused_growsTheBoxOfTheModuleHoldingItForItsState()
+    {
+        var river = MapLinksTests.Full.WithReserve(-1m);
+        var view = MapView.From(river, river.Run(), MapNames.French);
+        var refused = view.Modules.Single(node => node.Refused).End.Module!.Value;
+
+        var holds = MapLayout.TitleLines(refused, MapNames.French(refused)) * MapLayout.TitleLineRem + MapLayout.StateLineRem + 2m / 16m;
+
+        (Units(view, refused) * MapLayout.SmallestRowRem).ShouldBeGreaterThanOrEqualTo(Math.Round(holds, 12));
+    }
+
+    [Fact]
+    public void MapTabCss_drawsAStateAtTheSizeTheLayoutKeepsForIt()
+    {
+        var state = Stylesheet.Block(Stylesheet.Read("src", "Netto.Web.Client", "Tabs", "MapTab.razor.css"), ".map-module__state");
+
+        (state.Contains("font-size: 0.72rem;", StringComparison.Ordinal), state.Contains("line-height", StringComparison.Ordinal), MapLayout.StateLineRem).ShouldBe((true, false, 0.72m * 1.1m));
+    }
+
+    private static decimal Units(MapView view, RiverModule module) =>
+        Math.Round(view.Modules.Single(node => node.End.Module == module).Slot.Height * view.Units / 100m, 12);
+
     // Every module's longest word stays inside its box's frame on the narrowest map, its padding the most it may
     // take of it, in both languages: « Rémunération », over Director pay's room by a few pixels at this estimate,
     // takes a pixel or two of its padding each side, and is not cut.
@@ -710,8 +748,9 @@ public class MapLayoutTests
     // split's 1.3, a badge; the royalty's 1.6; Corporate tax's 1.9, three badges, which keeps 0.25 under its box;
     // the band's four rows 1.35, so the buckets' row 0.7 and 1.1, 14.03 chain rows. The example: 1, the split's
     // 1, the royalty's 1.6, Corporate tax's 1.6, the dividend's gate 0.96 keeping 0.32 under it, the buckets'
-    // 0.7 and 0.68, 6.58. The company skipped: Company year's row and Director pay's, 1 each, the buckets' 0.7
-    // and 0.4, 3.1; with the partner in the plan, their row of 1.76 over Director pay's, 4.86.
+    // 0.7 and 0.68, 6.58. The company skipped: Company year's row 1.07, its box 0.57 for its name and the state it
+    // says under it, Director pay's 1, the buckets' 0.7 and 0.4, 3.17; with the partner in the plan, their row of
+    // 1.76 over Director pay's, 4.93.
     [Theory]
     [MemberData(nameof(BandHeights))]
     public void From_aPlan_growsByTheBandItsLastRowLacksRoomFor(string plan, decimal units)
@@ -1206,8 +1245,8 @@ public class MapLayoutTests
     {
         { "every lever", 14.03m },
         { "the example", 6.58m },
-        { "the company skipped", 3.1m },
-        { "the company skipped, the partner in the plan", 4.86m },
+        { "the company skipped", 3.17m },
+        { "the company skipped, the partner in the plan", 4.93m },
     };
 
     // A plan by name: every lever, the example, every lever with the company skipped, or one at the edges.

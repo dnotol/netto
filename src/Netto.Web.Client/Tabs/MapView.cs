@@ -66,7 +66,9 @@ internal sealed record MapView(IReadOnlyList<MapNode> Modules, IReadOnlyList<Map
         var quiet = MapQuiet.Of(run, modules, links, MapQuiet.Holding(inputs));
         var badges = MapBadges.Of(links);
         var gates = MapGates.Of(inputs, run);
-        var grid = MapLayout.Grid(modules, names, quiet, MapBadges.Lines(badges), modules.ToDictionary(module => module, module => gates.For(module).Count));
+        var skipped = inputs.Company is null ? RiverModule.CompanyYear : (RiverModule?)null;
+        var states = modules.ToDictionary(module => module, module => (module == refused ? 1 : 0) + (module == skipped ? 1 : 0));
+        var grid = MapLayout.Grid(modules, names, quiet, MapBadges.Lines(badges), modules.ToDictionary(module => module, module => gates.For(module).Count), states);
         var routed = MapLayout.Routed(grid, SaidElsewhere(MapPocketLine.Of(MapQuiet.Fold(links)), gates));
         var pay = routed.FirstOrDefault(link => link.Kind == MapLinkKind.PassedOn && link.From == MapEnd.Of(RiverModule.Split) && link.To == MapEnd.Of(RiverModule.DirectorPay));
 
@@ -74,7 +76,7 @@ internal sealed record MapView(IReadOnlyList<MapNode> Modules, IReadOnlyList<Map
             [.. modules.Select(module => new MapNode(MapEnd.Of(module), grid.Slot(MapEnd.Of(module)))
             {
                 Refused = module == refused,
-                Skipped = module == RiverModule.CompanyYear && inputs.Company is null,
+                Skipped = module == skipped,
                 Quiet = quiet.Contains(module),
                 Badges = badges.GetValueOrDefault(module, []),
                 Gate = MapLayout.Place(module).Column == MapColumn.Gates,
