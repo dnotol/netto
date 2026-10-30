@@ -194,7 +194,7 @@ public class FrenchTabsTests
 
         var (_, _, holds) = MapGateText.Parts(sentence);
 
-        (holds, GateLineWidth(string.Format(CultureInfo.InvariantCulture, sentence, limit)) <= MapLayout.GateRoomPixels).ShouldBe((limit.Length > 0, true));
+        (holds, MapGateTextTests.LineWidth(string.Format(CultureInfo.InvariantCulture, sentence, limit)) <= MapLayout.GateRoomPixels).ShouldBe((limit.Length > 0, true));
     }
 
     // The partner's box is as narrow as its English amount: the quotient's word fits inside it, and its amount,
@@ -205,8 +205,8 @@ public class FrenchTabsTests
     {
         var french = ResxText.French<MapGateWords>();
 
-        (GateLineWidth(french.Get(MapGateText.Quotient)!) <= MapLayout.HouseholdRoomPixels,
-                GateLineWidth(french.Format(MapGateText.QuotientAmount, $"99.999,99{NoBreak}€")) <= MapLayout.HouseholdRoomPixels + 2m * 0.35m * MapLayout.PixelsPerRem)
+        (MapGateTextTests.LineWidth(french.Get(MapGateText.Quotient).ShouldNotBeNull()) <= MapLayout.HouseholdRoomPixels,
+                MapGateTextTests.LineWidth(french.Format(MapGateText.QuotientAmount, $"99.999,99{NoBreak}€")) <= MapLayout.HouseholdRoomPixels + 2m * 0.35m * MapLayout.PixelsPerRem)
             .ShouldBe((true, true));
     }
 
@@ -220,13 +220,9 @@ public class FrenchTabsTests
 
         var (alone, both) = (french.Format(MapGateText.Pay(withContributions: false), $"99.999,99{NoBreak}€"), french.Format(MapGateText.Pay(withContributions: true), $"99.999,99{NoBreak}€"));
 
-        (alone, GateLineWidth(alone) <= pill, GateLineWidth(both) <= GateLineWidth(english.Format(MapGateText.Pay(withContributions: true), "€99,999.99")))
+        (alone, MapGateTextTests.LineWidth(alone) <= pill, MapGateTextTests.LineWidth(both) <= MapGateTextTests.LineWidth(english.Format(MapGateText.Pay(withContributions: true), "€99,999.99")))
             .ShouldBe(($"Paie · 99.999,99{NoBreak}€", true, true));
     }
-
-    // A gate's line at its own size, as MapGateTextTests reckons it: 0.68rem, 2% more for weight 500.
-    private static decimal GateLineWidth(string text) =>
-        (MapAmounts.Width(text) - 2m * MapAmounts.GroundRem * MapLayout.PixelsPerRem) * MapGateText.FontRem / MapAmounts.FontRem * 1.02m;
 
     // A deadline's label on the timeline, « 99.999,99 € au 21 déc. », is at most 4% wider than the English, so
     // the 118 px the English takes at the widest amount and the closest deadlines stays within the 127 px between

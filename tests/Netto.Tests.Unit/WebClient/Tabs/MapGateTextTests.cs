@@ -54,8 +54,9 @@ public class MapGateTextTests
     private const decimal GateRoom = MapLayout.GateRoomPixels;
 
     // A gate's line at its own size: what its characters take as MapAmounts.Width reckons them at 0.72rem and
-    // weight 400, less the ground it adds, scaled to the line's size, and 2% more for weight 500.
-    private static decimal LineWidth(string text) =>
+    // weight 400, less the ground it adds, scaled to the line's size, and 2% more for weight 500. FrenchTabsTests
+    // holds the French lines with it.
+    internal static decimal LineWidth(string text) =>
         (MapAmounts.Width(text) - 2m * MapAmounts.GroundRem * MapLayout.PixelsPerRem) * MapGateText.FontRem / MapAmounts.FontRem * 1.02m;
 
     // Each line with the largest amount it is held to: what crosses and what reaches the viewer up to

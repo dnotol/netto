@@ -70,7 +70,7 @@ public class MapAmountsTests
     }
 
     // The punctuation of French words, which Inter draws narrow (inter-latin-wght-normal.woff2, read 2026-10-30):
-    // a middle dot and a colon on a point's advance, a typographic apostrophe on less, a straight one on a little
+    // a middle dot, a colon and a typographic apostrophe on a point's advance, a straight apostrophe on a little
     // more, 0.3em; none a whole em, as a character Inter is not known to draw is reckoned.
     [Theory]
     [InlineData("·", 0.27)]
