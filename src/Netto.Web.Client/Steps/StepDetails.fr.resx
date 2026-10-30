@@ -1,0 +1,849 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title_social_contributions" xml:space="preserve">
+    <value>Cotisations sociales</value>
+  </data>
+  <data name="Title_fund_fee" xml:space="preserve">
+    <value>Frais de gestion de votre caisse</value>
+  </data>
+  <data name="Rule_fund_fee" xml:space="preserve">
+    <value>Ce que votre caisse d'assurances sociales facture pour gérer votre dossier&#160;: le taux de votre caisse appliqué à chaque trimestre des cotisations qu'elle facture, arrondi au cent. Netto déduit ces frais avec les cotisations, comme des cotisations personnelles&#160;: ils diminuent votre revenu imposable et le revenu sur lequel les cotisations sont dues.</value>
+  </data>
+  <data name="Title_flat_rate_costs" xml:space="preserve">
+    <value>Frais professionnels forfaitaires</value>
+  </data>
+  <data name="Title_taxable_income" xml:space="preserve">
+    <value>Revenu imposable</value>
+  </data>
+  <data name="Title_income_tax" xml:space="preserve">
+    <value>Impôt des personnes physiques</value>
+  </data>
+  <data name="Title_municipal_surcharge" xml:space="preserve">
+    <value>Taxe communale additionnelle</value>
+  </data>
+  <data name="Title_low_earned_income_credit" xml:space="preserve">
+    <value>Crédit d'impôt pour bas revenus d'activités</value>
+  </data>
+  <data name="Title_child_tax_credit" xml:space="preserve">
+    <value>Crédit d'impôt remboursable pour enfants à charge</value>
+  </data>
+  <data name="Rule_social_contributions" xml:space="preserve">
+    <value>Les cotisations définitives d'un indépendant à titre principal, dues sur les revenus professionnels nets imposables de l'année&#160;: un taux jusqu'à un premier plafond, un taux plus bas jusqu'à un second plafond, rien au-delà, et jamais moins que la cotisation sur le revenu minimum. La caisse d'assurances sociales les facture en quatre trimestres égaux, chacun arrondi au cent. Les cotisations diminuent le revenu même sur lequel elles sont calculées&#160;: les deux sont donc déterminés ensemble.</value>
+  </data>
+  <data name="Rule_flat_rate_costs" xml:space="preserve">
+    <value>Un dirigeant d'entreprise qui ne prouve pas de frais professionnels réels déduit des frais forfaitaires&#160;: un pourcentage de la rémunération restant après les cotisations sociales, jusqu'à un maximum annuel. Ils diminuent le revenu imposable et ne sont jamais versés.</value>
+  </data>
+  <data name="Rule_taxable_income" xml:space="preserve">
+    <value>La rémunération brute moins vos propres cotisations sociales et les frais forfaitaires. Le revenu imposable n'est jamais inférieur à zéro.</value>
+  </data>
+  <data name="Rule_income_tax" xml:space="preserve">
+    <value>Le barème progressif appliqué au revenu imposable, moins la réduction pour la quotité exemptée d'impôt, donne l'impôt État. L'État fédéral garde cet impôt diminué du facteur d'autonomie, et la Wallonie ajoute ses centimes additionnels régionaux sur la part fédérale. Chacune des deux parts est arrondie au cent, et l'impôt des personnes physiques est leur somme.</value>
+  </data>
+  <data name="Rule_municipal_surcharge" xml:space="preserve">
+    <value>Le taux de votre commune appliqué à l'impôt des personnes physiques, c'est-à-dire la part fédérale plus les centimes additionnels régionaux.</value>
+  </data>
+  <data name="Rule_low_earned_income_credit" xml:space="preserve">
+    <value>Un crédit d'impôt fédéral sur un revenu imposable modeste tiré de votre propre travail, comme l'est la rémunération d'un dirigeant d'entreprise indépendant. Il monte de zéro à son montant entier, s'y maintient, puis redescend à zéro au plafond. Il s'impute après la taxe communale additionnelle, qu'il laisse telle quelle, et ce que votre impôt n'absorbe pas est remboursé. Votre dividende, imposé à la source et non déclaré, ne compte pas&#160;; un dirigeant sous contrat de travail ou en activité complémentaire n'y a pas droit.</value>
+  </data>
+  <data name="Amount_minimum_income" xml:space="preserve">
+    <value>Revenu minimum</value>
+  </data>
+  <data name="Amount_first_band_rate" xml:space="preserve">
+    <value>Taux jusqu'au premier plafond</value>
+  </data>
+  <data name="Amount_first_band_ceiling" xml:space="preserve">
+    <value>Premier plafond</value>
+  </data>
+  <data name="Amount_second_band_rate" xml:space="preserve">
+    <value>Taux jusqu'au second plafond</value>
+  </data>
+  <data name="Amount_second_band_ceiling" xml:space="preserve">
+    <value>Second plafond</value>
+  </data>
+  <data name="Amount_flat_rate_costs_rate" xml:space="preserve">
+    <value>Taux des frais forfaitaires</value>
+  </data>
+  <data name="Amount_flat_rate_costs_maximum" xml:space="preserve">
+    <value>Maximum des frais forfaitaires</value>
+  </data>
+  <data name="Amount_bracket_1_rate" xml:space="preserve">
+    <value>Taux de la première tranche</value>
+  </data>
+  <data name="Amount_bracket_1_upper_limit" xml:space="preserve">
+    <value>Limite supérieure de la première tranche</value>
+  </data>
+  <data name="Amount_bracket_2_rate" xml:space="preserve">
+    <value>Taux de la deuxième tranche</value>
+  </data>
+  <data name="Amount_bracket_2_upper_limit" xml:space="preserve">
+    <value>Limite supérieure de la deuxième tranche</value>
+  </data>
+  <data name="Amount_bracket_3_rate" xml:space="preserve">
+    <value>Taux de la troisième tranche</value>
+  </data>
+  <data name="Amount_bracket_3_upper_limit" xml:space="preserve">
+    <value>Limite supérieure de la troisième tranche</value>
+  </data>
+  <data name="Amount_bracket_4_rate" xml:space="preserve">
+    <value>Taux de la quatrième tranche, au-delà de la dernière limite</value>
+  </data>
+  <data name="Amount_tax_free_amount" xml:space="preserve">
+    <value>Quotité exemptée d'impôt</value>
+  </data>
+  <data name="Amount_tax_free_amount_rate" xml:space="preserve">
+    <value>Taux de la réduction pour la quotité exemptée</value>
+  </data>
+  <data name="Amount_tax_free_amount_bracket_1_upper_limit" xml:space="preserve">
+    <value>Réduction pour la quotité exemptée, limite supérieure de la première tranche</value>
+  </data>
+  <data name="Amount_tax_free_amount_bracket_2_rate" xml:space="preserve">
+    <value>Réduction pour la quotité exemptée, taux de la deuxième tranche</value>
+  </data>
+  <data name="Amount_tax_free_amount_bracket_2_upper_limit" xml:space="preserve">
+    <value>Réduction pour la quotité exemptée, limite supérieure de la deuxième tranche</value>
+  </data>
+  <data name="Amount_tax_free_amount_bracket_3_rate" xml:space="preserve">
+    <value>Réduction pour la quotité exemptée, taux de la troisième tranche</value>
+  </data>
+  <data name="Amount_tax_free_amount_bracket_3_upper_limit" xml:space="preserve">
+    <value>Réduction pour la quotité exemptée, limite supérieure de la troisième tranche</value>
+  </data>
+  <data name="Amount_tax_free_amount_bracket_4_rate" xml:space="preserve">
+    <value>Réduction pour la quotité exemptée, taux de la quatrième tranche</value>
+  </data>
+  <data name="Amount_tax_free_amount_bracket_4_upper_limit" xml:space="preserve">
+    <value>Réduction pour la quotité exemptée, limite supérieure de la quatrième tranche</value>
+  </data>
+  <data name="Amount_tax_free_amount_bracket_5_rate" xml:space="preserve">
+    <value>Réduction pour la quotité exemptée, taux de la cinquième tranche, au-delà de la dernière limite</value>
+  </data>
+  <data name="Amount_marital_quotient_rate" xml:space="preserve">
+    <value>Quotient conjugal, part des revenus professionnels</value>
+  </data>
+  <data name="Amount_marital_quotient_cap" xml:space="preserve">
+    <value>Quotient conjugal, montant maximum attribué</value>
+  </data>
+  <data name="Amount_marital_quotient_cap_both_aged_66" xml:space="preserve">
+    <value>Quotient conjugal, montant maximum attribué lorsque les deux conjoints ont atteint l'âge de 66 ans</value>
+  </data>
+  <data name="Amount_supplement_one_child" xml:space="preserve">
+    <value>Quotité exemptée, supplément pour un enfant à charge</value>
+  </data>
+  <data name="Amount_supplement_two_children" xml:space="preserve">
+    <value>Quotité exemptée, supplément pour deux enfants à charge</value>
+  </data>
+  <data name="Amount_supplement_three_children" xml:space="preserve">
+    <value>Quotité exemptée, supplément pour trois enfants à charge</value>
+  </data>
+  <data name="Amount_supplement_four_children" xml:space="preserve">
+    <value>Quotité exemptée, supplément pour quatre enfants à charge</value>
+  </data>
+  <data name="Amount_supplement_each_child_beyond_four" xml:space="preserve">
+    <value>Quotité exemptée, supplément par enfant au-delà du quatrième</value>
+  </data>
+  <data name="Amount_supplement_child_under_3" xml:space="preserve">
+    <value>Quotité exemptée, supplément par enfant de moins de 3 ans</value>
+  </data>
+  <data name="Amount_supplement_single_parent" xml:space="preserve">
+    <value>Quotité exemptée, supplément pour un isolé avec enfants à charge</value>
+  </data>
+  <data name="Amount_supplement_dependant_aged_66_in_care" xml:space="preserve">
+    <value>Quotité exemptée, supplément par personne à charge de 66 ans ou plus nécessitant des soins</value>
+  </data>
+  <data name="Amount_supplement_other_dependant" xml:space="preserve">
+    <value>Quotité exemptée, supplément par autre personne à charge</value>
+  </data>
+  <data name="Amount_child_tax_credit_cap_per_child" xml:space="preserve">
+    <value>Crédit pour enfants, maximum par enfant</value>
+  </data>
+  <data name="Amount_autonomy_factor" xml:space="preserve">
+    <value>Facteur d'autonomie</value>
+  </data>
+  <data name="Amount_regional_additional_rate" xml:space="preserve">
+    <value>Taux des centimes additionnels régionaux wallons</value>
+  </data>
+  <data name="Amount_municipal_rate" xml:space="preserve">
+    <value>Taux de votre commune</value>
+  </data>
+  <data name="Amount_entered_municipal_rate" xml:space="preserve">
+    <value>Taux de la taxe communale additionnelle, tel que vous l'avez saisi</value>
+  </data>
+  <data name="Amount_fund_fee_rate" xml:space="preserve">
+    <value>Taux des frais de gestion de votre caisse, tel que vous l'avez saisi</value>
+  </data>
+  <data name="Amount_low_earned_income_credit" xml:space="preserve">
+    <value>Crédit entier</value>
+  </data>
+  <data name="Amount_low_earned_income_floor" xml:space="preserve">
+    <value>Commence au-delà d'un revenu imposable de</value>
+  </data>
+  <data name="Amount_low_earned_income_full_from" xml:space="preserve">
+    <value>Entier à partir de</value>
+  </data>
+  <data name="Amount_low_earned_income_full_up_to" xml:space="preserve">
+    <value>Entier jusqu'à</value>
+  </data>
+  <data name="Amount_low_earned_income_ceiling" xml:space="preserve">
+    <value>Nul à partir de</value>
+  </data>
+  <data name="Title_corporate_tax" xml:space="preserve">
+    <value>Impôt des sociétés</value>
+  </data>
+  <data name="Title_dividend_withholding" xml:space="preserve">
+    <value>Précompte mobilier sur le dividende</value>
+  </data>
+  <data name="Title_dividend_exemption_refund" xml:space="preserve">
+    <value>Remboursement sur les dividendes exonérés</value>
+  </data>
+  <data name="Rule_corporate_tax" xml:space="preserve">
+    <value>Le revenu imposable de la société est son bénéfice après votre rémunération de dirigeant, où est repris ce qu'elle ne peut pas déduire des titres-repas et chèques&#160;; pas d'autres dépenses non admises ni de pertes reportées. Une petite société paie le taux réduit sur une première tranche et le taux de base sur le reste. À partir de sa cinquième période imposable, elle ne garde le taux réduit que si la rémunération d'un dirigeant atteint la rémunération minimale, ou si son revenu imposable ne dépasse pas cette rémunération&#160;; sinon, le taux de base s'applique à l'ensemble.</value>
+  </data>
+  <data name="Rule_dividend_withholding" xml:space="preserve">
+    <value>La société retient un précompte mobilier sur le dividende qu'elle vous verse, au taux que vous déclarez&#160;: le taux de base, ou un taux réduit pour les actions ou parts VVPRbis, qui s'applique à partir du deuxième exercice comptable suivant celui de l'apport en capital. Le précompte est libératoire, c'est l'impôt final sur le dividende&#160;: ni impôt des personnes physiques, ni taxe communale additionnelle, ni cotisations sociales ne s'y ajoutent.</value>
+  </data>
+  <data name="Rule_dividend_exemption_refund" xml:space="preserve">
+    <value>La première tranche des dividendes ordinaires qu'une personne reçoit chaque année est exonérée d'impôt des personnes physiques. La société retient tout de même le précompte mobilier sur cette tranche&#160;: vous le reprenez dans votre déclaration et il vous est remboursé, même si vous ne devez aucun autre impôt.</value>
+  </data>
+  <data name="Amount_standard_rate" xml:space="preserve">
+    <value>Taux de base</value>
+  </data>
+  <data name="Amount_reduced_rate" xml:space="preserve">
+    <value>Taux réduit</value>
+  </data>
+  <data name="Amount_reduced_rate_ceiling" xml:space="preserve">
+    <value>Taux réduit jusqu'à</value>
+  </data>
+  <data name="Amount_minimum_director_pay" xml:space="preserve">
+    <value>Rémunération minimale du dirigeant</value>
+  </data>
+  <data name="Amount_excess_benefits_rate" xml:space="preserve">
+    <value>Part maximale des avantages de toute nature forfaitaires dans la rémunération de dirigeant</value>
+  </data>
+  <data name="Amount_dividend_standard_rate" xml:space="preserve">
+    <value>Taux de base du précompte mobilier</value>
+  </data>
+  <data name="Amount_vvprbis_second_year_rate" xml:space="preserve">
+    <value>Taux VVPRbis, deuxième exercice comptable suivant l'apport</value>
+  </data>
+  <data name="Amount_vvprbis_third_year_onwards_rate" xml:space="preserve">
+    <value>Taux VVPRbis, à partir du troisième exercice comptable suivant l'apport</value>
+  </data>
+  <data name="Amount_exempt_dividends" xml:space="preserve">
+    <value>Dividendes exonérés par an</value>
+  </data>
+  <data name="Title_advance_payment_surcharge" xml:space="preserve">
+    <value>Majoration pour insuffisance de versements anticipés</value>
+  </data>
+  <data name="Rule_advance_payment_surcharge" xml:space="preserve">
+    <value>L'impôt des sociétés que la société n'a pas payé par anticipation pendant l'année est majoré&#160;: l'impôt multiplié par un multiple du taux de référence, moins un crédit pour chaque versement anticipé, à un multiple de ce taux d'autant plus petit que l'échéance à laquelle il a été payé est tardive. Une société n'a ni seuil en dessous duquel rien n'est dû, ni bonification pour un paiement supérieur&#160;: ce qui est payé au-delà de l'impôt est remboursé. Une petite société n'en doit aucune sur l'impôt de ses trois premiers exercices comptables. La majoration n'est pas déductible&#160;: elle ne diminue pas le revenu imposable.</value>
+  </data>
+  <data name="Amount_reference_rate" xml:space="preserve">
+    <value>Taux de référence</value>
+  </data>
+  <data name="Amount_surcharge_multiplier" xml:space="preserve">
+    <value>Majoration, en multiple du taux de référence</value>
+  </data>
+  <data name="Amount_first_credit_multiplier" xml:space="preserve">
+    <value>Crédit pour un versement au plus tard à la première échéance, en multiple du taux de référence</value>
+  </data>
+  <data name="Amount_second_credit_multiplier" xml:space="preserve">
+    <value>Crédit pour un versement au plus tard à la deuxième échéance, en multiple du taux de référence</value>
+  </data>
+  <data name="Amount_third_credit_multiplier" xml:space="preserve">
+    <value>Crédit pour un versement au plus tard à la troisième échéance, en multiple du taux de référence</value>
+  </data>
+  <data name="Amount_fourth_credit_multiplier" xml:space="preserve">
+    <value>Crédit pour un versement au plus tard à la quatrième échéance, en multiple du taux de référence</value>
+  </data>
+  <data name="Title_income_tax_advance_payment_surcharge" xml:space="preserve">
+    <value>Majoration de votre impôt pour insuffisance de versements anticipés</value>
+  </data>
+  <data name="Rule_income_tax_advance_payment_surcharge" xml:space="preserve">
+    <value>L'impôt des personnes physiques sur votre rémunération de dirigeant, pris seul sans le loyer éventuellement imposé avec elle, que la société n'a pas retenu et que vous n'avez pas versé par anticipation pendant l'année est majoré. La base est l'impôt à 106&#160;%, moins le précompte professionnel retenu et le crédit d'impôt pour bas revenus d'activités que vous obtenez. La majoration est calculée sur cette base à un multiple du taux de référence, moins un crédit pour chaque versement anticipé, à un multiple de ce taux d'autant plus petit que l'échéance à laquelle il a été payé est tardive, et 90&#160;% de ce qui reste est dû. Rien n'est dû lorsque ce montant est inférieur au minimum ou à sa part minimale de la base, ni pendant les trois premières années d'une première activité indépendante.</value>
+  </data>
+  <data name="Title_income_tax_advance_payment_bonus" xml:space="preserve">
+    <value>Bonification de vos versements anticipés</value>
+  </data>
+  <data name="Rule_income_tax_advance_payment_bonus" xml:space="preserve">
+    <value>Vos versements anticipés comptent d'abord pour ce qui évite la majoration, les premiers en date d'abord. Ce que vous avez versé au-delà donne droit à une bonification, à un multiple du taux de référence d'autant plus petit que l'échéance à laquelle il a été payé est tardive, sur au plus l'impôt à 106&#160;% moins le précompte professionnel retenu, les crédits d'impôt et les versements qui évitent la majoration. Au-delà, ce que vous avez versé est remboursé.</value>
+  </data>
+  <data name="Amount_base_factor" xml:space="preserve">
+    <value>Impôt calculé à</value>
+  </data>
+  <data name="Amount_kept_rate" xml:space="preserve">
+    <value>Part de la majoration due</value>
+  </data>
+  <data name="Amount_minimum_surcharge" xml:space="preserve">
+    <value>Majoration minimale due</value>
+  </data>
+  <data name="Amount_minimum_share_rate" xml:space="preserve">
+    <value>Majoration minimale due, en part de sa base</value>
+  </data>
+  <data name="Amount_first_bonus_multiplier" xml:space="preserve">
+    <value>Bonification pour un versement au plus tard à la première échéance, en multiple du taux de référence</value>
+  </data>
+  <data name="Amount_second_bonus_multiplier" xml:space="preserve">
+    <value>Bonification pour un versement au plus tard à la deuxième échéance, en multiple du taux de référence</value>
+  </data>
+  <data name="Amount_third_bonus_multiplier" xml:space="preserve">
+    <value>Bonification pour un versement au plus tard à la troisième échéance, en multiple du taux de référence</value>
+  </data>
+  <data name="Amount_fourth_bonus_multiplier" xml:space="preserve">
+    <value>Bonification pour un versement au plus tard à la quatrième échéance, en multiple du taux de référence</value>
+  </data>
+  <data name="Title_withholding" xml:space="preserve">
+    <value>Précompte professionnel sur la rémunération d'un mois</value>
+  </data>
+  <data name="Rule_withholding" xml:space="preserve">
+    <value>Ce que la société retient chaque mois sur votre rémunération, selon la formule-clé de l'administration&#160;: la rémunération du mois moins une réduction tenant lieu de retenues sociales, multipliée par douze, moins les frais professionnels forfaitaires, donne le revenu annuel net imposable. L'impôt de base calculé sur ce revenu au barème de l'annexe III, qui intègre déjà une taxe communale additionnelle de 7&#160;%, moins l'impôt sur la quotité exemptée d'impôt d'un isolé, donne l'impôt annuel, jamais inférieur à zéro, dont un douzième est retenu. Chaque étape est arrondie au cent. Sur l'année, les montants retenus sont imputés sur votre impôt final, sur l'avertissement-extrait de rôle.</value>
+  </data>
+  <data name="Line_monthly_taxable_pay" xml:space="preserve">
+    <value>Rémunération imposable du mois</value>
+  </data>
+  <data name="Line_reduction" xml:space="preserve">
+    <value>Réduction tenant lieu de retenues sociales</value>
+  </data>
+  <data name="Line_annual_gross" xml:space="preserve">
+    <value>Revenu annuel brut&#160;: la rémunération moins la réduction, multipliée par douze</value>
+  </data>
+  <data name="Line_flat_rate_costs" xml:space="preserve">
+    <value>Frais professionnels forfaitaires</value>
+  </data>
+  <data name="Line_annual_net_taxable" xml:space="preserve">
+    <value>Revenu annuel net imposable</value>
+  </data>
+  <data name="Line_basic_tax" xml:space="preserve">
+    <value>Impôt de base selon le barème</value>
+  </data>
+  <data name="Line_tax_free_amount_reduction" xml:space="preserve">
+    <value>Impôt sur la quotité exemptée, déduit</value>
+  </data>
+  <data name="Line_imputed_to_partner" xml:space="preserve">
+    <value>Revenu imputé à votre conjoint</value>
+  </data>
+  <data name="Line_partner_tax" xml:space="preserve">
+    <value>Impôt sur le revenu imputé à votre conjoint</value>
+  </data>
+  <data name="Line_rest_tax" xml:space="preserve">
+    <value>Impôt sur le reste</value>
+  </data>
+  <data name="Line_joint_tax_free_amount_reduction" xml:space="preserve">
+    <value>Impôt sur les deux quotités exemptées, déduit</value>
+  </data>
+  <data name="Line_children_reduction" xml:space="preserve">
+    <value>Réduction pour enfants à charge</value>
+  </data>
+  <data name="Line_dependants_reduction" xml:space="preserve">
+    <value>Réduction pour autres personnes à charge</value>
+  </data>
+  <data name="Line_single_parent_reduction" xml:space="preserve">
+    <value>Réduction pour un isolé avec enfants à charge</value>
+  </data>
+  <data name="Line_annual_tax" xml:space="preserve">
+    <value>Impôt annuel, jamais inférieur à zéro</value>
+  </data>
+  <data name="Line_monthly_withholding" xml:space="preserve">
+    <value>Précompte professionnel du mois, un douzième de cet impôt</value>
+  </data>
+  <data name="Amount_reduction_minimum" xml:space="preserve">
+    <value>Réduction jusqu'à la première limite</value>
+  </data>
+  <data name="Amount_reduction_band_1_upper_limit" xml:space="preserve">
+    <value>Première limite de la réduction</value>
+  </data>
+  <data name="Amount_reduction_band_2_rate" xml:space="preserve">
+    <value>Taux sur la tranche au-delà de la première limite</value>
+  </data>
+  <data name="Amount_reduction_band_2_upper_limit" xml:space="preserve">
+    <value>Deuxième limite de la réduction</value>
+  </data>
+  <data name="Amount_reduction_band_3_base" xml:space="preserve">
+    <value>Réduction à la deuxième limite</value>
+  </data>
+  <data name="Amount_reduction_band_3_rate" xml:space="preserve">
+    <value>Taux sur la tranche au-delà de la deuxième limite</value>
+  </data>
+  <data name="Amount_reduction_band_3_upper_limit" xml:space="preserve">
+    <value>Troisième limite de la réduction</value>
+  </data>
+  <data name="Amount_reduction_maximum" xml:space="preserve">
+    <value>Réduction au-delà de la troisième limite</value>
+  </data>
+  <data name="Amount_withholding_bracket_1_rate" xml:space="preserve">
+    <value>Taux de la première tranche</value>
+  </data>
+  <data name="Amount_withholding_bracket_1_upper_limit" xml:space="preserve">
+    <value>Limite supérieure de la première tranche</value>
+  </data>
+  <data name="Amount_withholding_bracket_2_base" xml:space="preserve">
+    <value>Impôt au début de la deuxième tranche</value>
+  </data>
+  <data name="Amount_withholding_bracket_2_rate" xml:space="preserve">
+    <value>Taux de la deuxième tranche</value>
+  </data>
+  <data name="Amount_withholding_bracket_2_upper_limit" xml:space="preserve">
+    <value>Limite supérieure de la deuxième tranche</value>
+  </data>
+  <data name="Amount_withholding_bracket_3_base" xml:space="preserve">
+    <value>Impôt au début de la troisième tranche</value>
+  </data>
+  <data name="Amount_withholding_bracket_3_rate" xml:space="preserve">
+    <value>Taux de la troisième tranche</value>
+  </data>
+  <data name="Amount_withholding_bracket_3_upper_limit" xml:space="preserve">
+    <value>Limite supérieure de la troisième tranche</value>
+  </data>
+  <data name="Amount_withholding_bracket_4_base" xml:space="preserve">
+    <value>Impôt au début de la quatrième tranche</value>
+  </data>
+  <data name="Amount_withholding_bracket_4_rate" xml:space="preserve">
+    <value>Taux de la quatrième tranche, au-delà de la dernière limite</value>
+  </data>
+  <data name="Amount_tax_free_amount_reduction" xml:space="preserve">
+    <value>Impôt sur la quotité exemptée d'impôt d'un isolé</value>
+  </data>
+  <data name="Amount_withholding_quotient_rate" xml:space="preserve">
+    <value>Revenu annuel net imposable imputé à un conjoint sans revenus professionnels, à raison de</value>
+  </data>
+  <data name="Amount_withholding_quotient_maximum" xml:space="preserve">
+    <value>Revenu imputé au conjoint, au plus</value>
+  </data>
+  <data name="Amount_withholding_quotient_maximum_both_aged_66" xml:space="preserve">
+    <value>Revenu imputé au conjoint lorsque les deux conjoints ont 66 ans ou plus, au plus</value>
+  </data>
+  <data name="Amount_withholding_joint_tax_free_amount_reduction" xml:space="preserve">
+    <value>Impôt sur les quotités exemptées des deux conjoints</value>
+  </data>
+  <data name="Amount_withholding_child_reduction_1" xml:space="preserve">
+    <value>Réduction du précompte, un enfant à charge</value>
+  </data>
+  <data name="Amount_withholding_child_reduction_2" xml:space="preserve">
+    <value>Réduction du précompte, deux enfants à charge</value>
+  </data>
+  <data name="Amount_withholding_child_reduction_3" xml:space="preserve">
+    <value>Réduction du précompte, trois enfants à charge</value>
+  </data>
+  <data name="Amount_withholding_child_reduction_4" xml:space="preserve">
+    <value>Réduction du précompte, quatre enfants à charge</value>
+  </data>
+  <data name="Amount_withholding_child_reduction_5" xml:space="preserve">
+    <value>Réduction du précompte, cinq enfants à charge</value>
+  </data>
+  <data name="Amount_withholding_child_reduction_6" xml:space="preserve">
+    <value>Réduction du précompte, six enfants à charge</value>
+  </data>
+  <data name="Amount_withholding_child_reduction_7" xml:space="preserve">
+    <value>Réduction du précompte, sept enfants à charge</value>
+  </data>
+  <data name="Amount_withholding_child_reduction_8" xml:space="preserve">
+    <value>Réduction du précompte, huit enfants à charge</value>
+  </data>
+  <data name="Amount_withholding_child_reduction_beyond_8" xml:space="preserve">
+    <value>Réduction du précompte, par enfant au-delà du huitième</value>
+  </data>
+  <data name="Amount_withholding_dependant_aged_66_in_care_reduction" xml:space="preserve">
+    <value>Réduction du précompte, par personne à charge de 66 ans ou plus nécessitant des soins</value>
+  </data>
+  <data name="Amount_withholding_other_dependant_reduction" xml:space="preserve">
+    <value>Réduction du précompte, par autre personne à charge</value>
+  </data>
+  <data name="Amount_withholding_single_parent_reduction" xml:space="preserve">
+    <value>Réduction du précompte, isolé avec enfants à charge</value>
+  </data>
+  <data name="Title_assessment_balance" xml:space="preserve">
+    <value>Solde de votre avertissement-extrait de rôle</value>
+  </data>
+  <data name="Rule_assessment_balance" xml:space="preserve">
+    <value>Votre avertissement-extrait de rôle établit l'impôt final sur les revenus de votre année, votre rémunération et le loyer éventuel que la société vous paie, imposé avec elle&#160;: l'impôt des personnes physiques avec la taxe communale additionnelle, moins le crédit d'impôt pour bas revenus d'activités, plus la majoration pour insuffisance de versements anticipés et moins la bonification. Le précompte professionnel que la société a retenu sur votre rémunération pendant l'année et vos versements anticipés y sont imputés&#160;: ce qui reste est à payer, et ce qui a été payé au-delà est remboursé.</value>
+  </data>
+  <data name="Title_meal_vouchers" xml:space="preserve">
+    <value>Titres-repas</value>
+  </data>
+  <data name="Rule_meal_vouchers" xml:space="preserve">
+    <value>L'intervention de la société dans un titre-repas électronique est exonérée pour vous&#160;: elle n'est ni imposée comme rémunération ni comptée dans le revenu sur lequel vos cotisations sociales sont dues, tant que les conditions de l'exonération sont remplies. Netto donne à chaque titre l'intervention maximale que la société peut y verser, la seule qui ouvre la déduction plus élevée&#160;; votre propre intervention, au moins le montant fixé, paie le reste du titre et ne change rien.</value>
+  </data>
+  <data name="Title_eco_vouchers" xml:space="preserve">
+    <value>Éco-chèques</value>
+  </data>
+  <data name="Rule_eco_vouchers" xml:space="preserve">
+    <value>Les éco-chèques, pour des produits et services écologiques, sont exonérés pour vous jusqu'à un maximum annuel, chacun d'une valeur nominale que la convention fixe, au plus le montant ci-dessous. Ni imposés comme rémunération ni comptés pour vos cotisations sociales.</value>
+  </data>
+  <data name="Title_sport_culture_vouchers" xml:space="preserve">
+    <value>Chèques sport/culture</value>
+  </data>
+  <data name="Rule_sport_culture_vouchers" xml:space="preserve">
+    <value>Les chèques sport/culture sont exonérés pour vous jusqu'à un maximum annuel. Ni imposés comme rémunération ni comptés pour vos cotisations sociales.</value>
+  </data>
+  <data name="Title_disallowed_vouchers" xml:space="preserve">
+    <value>Ce que la société ne peut pas déduire des titres-repas et chèques</value>
+  </data>
+  <data name="Rule_disallowed_vouchers" xml:space="preserve">
+    <value>Un avantage exonéré n'est pas une dépense professionnelle pour la société, à une exception près&#160;: de chaque titre-repas, elle déduit un montant fixe, relevé lorsque son intervention atteint le maximum qu'elle peut verser. Le reste de chaque titre-repas, et la totalité des éco-chèques et des chèques sport/culture, est une dépense non admise, reprise dans son revenu imposable. Versé, il quitte tout de même le bénéfice de la société.</value>
+  </data>
+  <data name="Amount_meal_voucher_company_share" xml:space="preserve">
+    <value>Intervention maximale de la société dans un titre-repas</value>
+  </data>
+  <data name="Amount_meal_voucher_holder_share" xml:space="preserve">
+    <value>Votre intervention minimale</value>
+  </data>
+  <data name="Amount_meal_voucher_deduction" xml:space="preserve">
+    <value>Déduction par titre-repas</value>
+  </data>
+  <data name="Amount_meal_voucher_deduction_at_maximum" xml:space="preserve">
+    <value>Déduction par titre-repas à l'intervention maximale de la société</value>
+  </data>
+  <data name="Amount_sport_culture_vouchers_maximum" xml:space="preserve">
+    <value>Chèques sport/culture, maximum par an</value>
+  </data>
+  <data name="Amount_eco_vouchers_maximum" xml:space="preserve">
+    <value>Éco-chèques, maximum par an</value>
+  </data>
+  <data name="Amount_eco_voucher_face_value_maximum" xml:space="preserve">
+    <value>Valeur nominale d'un éco-chèque, au plus</value>
+  </data>
+  <data name="Title_office_allowance" xml:space="preserve">
+    <value>Indemnité forfaitaire de bureau</value>
+  </data>
+  <data name="Rule_office_allowance" xml:space="preserve">
+    <value>Une indemnité forfaitaire pour un bureau dans votre habitation couvre tous les frais de bureau&#160;: la pièce et son loyer, l'énergie et l'eau, les fournitures, l'entretien. La société rembourse des frais qui lui sont propres&#160;: ce n'est donc pas une rémunération, ni imposée ni comptée dans le revenu sur lequel vos cotisations sociales sont dues, et la société la déduit. L'administration accepte au plus, chaque mois, le montant que l'ONSS accepte, qui change en cours d'année.</value>
+  </data>
+  <data name="Title_internet_allowance" xml:space="preserve">
+    <value>Indemnité forfaitaire d'internet</value>
+  </data>
+  <data name="Rule_internet_allowance" xml:space="preserve">
+    <value>Une indemnité forfaitaire pour l'utilisation professionnelle de votre connexion internet privée, jusqu'à un montant fixe par mois qui n'est pas indexé. La société rembourse des frais qui lui sont propres&#160;: ce n'est pas une rémunération, et la société la déduit.</value>
+  </data>
+  <data name="Title_computer_allowance" xml:space="preserve">
+    <value>Indemnité forfaitaire d'ordinateur</value>
+  </data>
+  <data name="Rule_computer_allowance" xml:space="preserve">
+    <value>Une indemnité forfaitaire pour l'utilisation professionnelle de votre ordinateur privé et de ses périphériques, jusqu'à un montant fixe par mois qui n'est pas indexé. La société rembourse des frais qui lui sont propres&#160;: ce n'est pas une rémunération, et la société la déduit.</value>
+  </data>
+  <data name="Title_phone_costs" xml:space="preserve">
+    <value>Frais de téléphone</value>
+  </data>
+  <data name="Rule_phone_costs" xml:space="preserve">
+    <value>La part professionnelle de vos propres factures de téléphone, remboursée sur pièces&#160;: aucun texte officiel ne fixe de montant forfaitaire pour un téléphone. La société rembourse des frais qui lui sont propres&#160;: ce n'est pas une rémunération, et la société les déduit.</value>
+  </data>
+  <data name="Amount_office_allowance_maximum_from_january" xml:space="preserve">
+    <value>Indemnité de bureau, maximum par mois à partir de janvier</value>
+  </data>
+  <data name="Amount_office_allowance_maximum_from_march" xml:space="preserve">
+    <value>Indemnité de bureau, maximum par mois à partir de mars</value>
+  </data>
+  <data name="Amount_office_allowance_maximum_from_september" xml:space="preserve">
+    <value>Indemnité de bureau, maximum par mois à partir de septembre</value>
+  </data>
+  <data name="Amount_internet_allowance_monthly_maximum" xml:space="preserve">
+    <value>Indemnité d'internet, maximum par mois</value>
+  </data>
+  <data name="Amount_computer_allowance_monthly_maximum" xml:space="preserve">
+    <value>Indemnité d'ordinateur, maximum par mois</value>
+  </data>
+  <data name="Title_rent" xml:space="preserve">
+    <value>Loyer de votre bureau</value>
+  </data>
+  <data name="Rule_rent" xml:space="preserve">
+    <value>Le loyer que la société vous paie pour la partie de votre habitation qu'elle utilise comme bureau, non meublée, arrive dans votre poche, et la société le déduit entièrement comme ses autres frais. S'il ne dépasse pas le plafond, 5/3 du revenu cadastral de la partie louée revalorisé par le coefficient de l'année, aucune partie n'en est requalifiée en rémunération de dirigeant&#160;; au-delà, l'excédent serait imposé comme rémunération, avec des cotisations sociales et sans charges déduites.</value>
+  </data>
+  <data name="Title_rent_charges" xml:space="preserve">
+    <value>Charges forfaitaires sur le loyer</value>
+  </data>
+  <data name="Rule_rent_charges" xml:space="preserve">
+    <value>Un bien bâti loué à une société est imposé sur son loyer moins 40&#160;% pour frais d'entretien et de réparation, au plus 2/3 du revenu cadastral de la partie louée revalorisé par le coefficient de l'année&#160;: au plafond, les 40&#160;% valent exactement cette limite. Ces charges diminuent le loyer imposable et ne sont jamais versées.</value>
+  </data>
+  <data name="Title_rent_taxable_income" xml:space="preserve">
+    <value>Loyer imposable</value>
+  </data>
+  <data name="Rule_rent_taxable_income" xml:space="preserve">
+    <value>Le loyer, jamais inférieur au revenu cadastral de la partie louée, indexé par le coefficient de l'année, augmenté de 40&#160;%, moins ses charges forfaitaires. C'est un revenu immobilier, imposé avec votre rémunération&#160;; ce n'est pas un revenu professionnel&#160;: aucune cotisation sociale n'est donc due sur celui-ci.</value>
+  </data>
+  <data name="Title_car_costs" xml:space="preserve">
+    <value>Les frais de la voiture</value>
+  </data>
+  <data name="Rule_car_costs" xml:space="preserve">
+    <value>Les frais de la voiture pour la société sur l'année, tels qu'elle les supporte&#160;: une charge de la société, comme ses frais courants, qui diminue son bénéfice. Une voiture électrique commandée ou prise en leasing avant 2027 reste entièrement déductible&#160;; une autre voiture l'est au taux que donnent sa date de commande ou de leasing, son moteur et son CO2, au-delà de la part égale à votre avantage imposé et à votre intervention, qui reste déductible à concurrence des frais.</value>
+  </data>
+  <data name="Title_car_costs_not_deductible" xml:space="preserve">
+    <value>Frais que la société ne peut pas déduire</value>
+  </data>
+  <data name="Rule_car_costs_not_deductible" xml:space="preserve">
+    <value>La part des frais de la voiture au-delà de votre avantage imposé et de votre intervention que son taux de déduction laisse de côté. Elle est reprise dans le revenu imposable de la société&#160;; la part égale à votre avantage et à votre intervention reste déductible.</value>
+  </data>
+  <data name="Title_car_benefit" xml:space="preserve">
+    <value>Avantage de toute nature de la voiture avant votre intervention</value>
+  </data>
+  <data name="Rule_car_benefit" xml:space="preserve">
+    <value>Le pourcentage CO2 de la voiture appliqué à 6/7 de la valeur catalogue, à la part de la valeur catalogue que l'âge de la voiture laisse, chaque partie de l'année au prorata de ses jours&#160;; jamais moins que le minimum de l'année. Le pourcentage est de 5,5&#160;% à l'émission de référence de l'année pour le carburant de la voiture, un dixième de point de plus ou de moins par gramme au-dessus ou en dessous, entre 4&#160;%, que prend une voiture qui n'émet pas de CO2, et 18&#160;%.</value>
+  </data>
+  <data name="Title_car_contribution" xml:space="preserve">
+    <value>Votre intervention</value>
+  </data>
+  <data name="Rule_car_contribution" xml:space="preserve">
+    <value>Ce que vous payez à la société pour l'utilisation à des fins personnelles de la voiture. Elle est déduite de l'avantage sur lequel vous êtes imposé, après le minimum, et quitte votre poche pour la société.</value>
+  </data>
+  <data name="Title_car_benefit_taxed" xml:space="preserve">
+    <value>Avantage de toute nature de la voiture après votre intervention</value>
+  </data>
+  <data name="Rule_car_benefit_taxed" xml:space="preserve">
+    <value>L'avantage moins votre intervention, jamais inférieur à zéro. C'est une rémunération de dirigeant jamais versée en espèces&#160;: dans la base de vos cotisations sociales, votre impôt des personnes physiques et le précompte professionnel mensuel.</value>
+  </data>
+  <data name="Title_car_add_back" xml:space="preserve">
+    <value>Repris en dépenses non admises par la société</value>
+  </data>
+  <data name="Rule_car_add_back" xml:space="preserve">
+    <value>Une part de l'avantage avant votre intervention s'ajoute au revenu imposable de la société&#160;: 17&#160;%, ou 40&#160;% lorsque la société prend en charge le carburant ou la recharge de votre utilisation personnelle.</value>
+  </data>
+  <data name="Title_rent_income_tax" xml:space="preserve">
+    <value>Impôt des personnes physiques sur le loyer</value>
+  </data>
+  <data name="Rule_rent_income_tax" xml:space="preserve">
+    <value>Le loyer imposable s'ajoute au revenu imposable de votre rémunération&#160;: le barème progressif et la quotité exemptée d'impôt s'appliquent aux deux ensemble. Ce que cela ajoute à l'impôt des personnes physiques sur votre seule rémunération revient au loyer.</value>
+  </data>
+  <data name="Title_rent_municipal_surcharge" xml:space="preserve">
+    <value>Taxe communale additionnelle sur le loyer</value>
+  </data>
+  <data name="Rule_rent_municipal_surcharge" xml:space="preserve">
+    <value>Le taux de votre commune appliqué à l'impôt des personnes physiques qu'ajoute le loyer.</value>
+  </data>
+  <data name="Title_rent_low_earned_income_credit_lost" xml:space="preserve">
+    <value>Crédit d'impôt pour bas revenus d'activités que le loyer fait perdre</value>
+  </data>
+  <data name="Rule_rent_low_earned_income_credit_lost" xml:space="preserve">
+    <value>Le crédit suit votre rémunération, mais votre revenu net total, loyer compris, le limite&#160;: aucun au-delà du plafond, et de là où le crédit entier prend fin jusqu'au plafond, au plus ce que la même droite descendante donne sur ce total. Ce que le loyer retire du crédit que votre seule rémunération obtiendrait est perdu.</value>
+  </data>
+  <data name="Title_rent_child_tax_credit_lost" xml:space="preserve">
+    <value>Crédit d'impôt pour enfants que le loyer fait perdre</value>
+  </data>
+  <data name="Rule_rent_child_tax_credit_lost" xml:space="preserve">
+    <value>Le loyer est imposé avec votre rémunération&#160;: il utilise la quotité exemptée que les suppléments pour vos enfants ont relevée. Ce qu'il utilise de la part que l'impôt ne pouvait pas absorber, qui aurait été remboursée comme crédit pour enfants, est perdu.</value>
+  </data>
+  <data name="Rule_child_tax_credit" xml:space="preserve">
+    <value>Vos enfants relèvent la quotité exemptée d'impôt. Lorsque votre revenu est trop bas pour que l'impôt correspondant absorbe tout ce relèvement, la part due aux suppléments pour enfants est remboursée comme crédit d'impôt, jusqu'à un maximum par enfant. Il s'impute après la taxe communale additionnelle, et ce que votre impôt n'absorbe pas est remboursé. Dans une imposition commune, c'est celui de votre ménage.</value>
+  </data>
+  <data name="Title_rent_income_tax_advance_payments" xml:space="preserve">
+    <value>Majoration pour insuffisance de versements anticipés due au crédit perdu</value>
+  </data>
+  <data name="Rule_rent_income_tax_advance_payments" xml:space="preserve">
+    <value>La majoration pour insuffisance de versements anticipés porte sur l'impôt sur votre seule rémunération&#160;: l'impôt propre au loyer n'est donc jamais majoré. Mais sa base est cet impôt à 106&#160;% moins le précompte professionnel retenu et le crédit que vous obtenez réellement&#160;: un crédit que le loyer fait perdre augmente cette base, et avec elle la majoration, moins toute variation de la bonification.</value>
+  </data>
+  <data name="Amount_rent_cap_multiplier" xml:space="preserve">
+    <value>Plafond, 5/3 du revenu cadastral revalorisé</value>
+  </data>
+  <data name="Amount_cadastral_income_revaluation_coefficient" xml:space="preserve">
+    <value>Coefficient de revalorisation du revenu cadastral</value>
+  </data>
+  <data name="Amount_rent_floor_uplift_rate" xml:space="preserve">
+    <value>Minimum, revenu cadastral indexé augmenté de</value>
+  </data>
+  <data name="Amount_cadastral_income_indexation_coefficient" xml:space="preserve">
+    <value>Coefficient d'indexation du revenu cadastral</value>
+  </data>
+  <data name="Amount_rent_charges_rate" xml:space="preserve">
+    <value>Charges forfaitaires</value>
+  </data>
+  <data name="Amount_zero_emission_deduction_rate" xml:space="preserve">
+    <value>Part déductible des frais d'une voiture électrique</value>
+  </data>
+  <data name="Amount_emitting_from_2026_deduction_rate" xml:space="preserve">
+    <value>Part déductible d'une voiture qui émet du CO2, commandée ou prise en leasing à partir de 2026</value>
+  </data>
+  <data name="Amount_deduction_formula_base_rate" xml:space="preserve">
+    <value>Taux de départ de la formule de déduction</value>
+  </data>
+  <data name="Amount_deduction_formula_per_gram_rate" xml:space="preserve">
+    <value>Taux diminué, par gramme de CO2 multiplié par le coefficient, de</value>
+  </data>
+  <data name="Amount_diesel_coefficient" xml:space="preserve">
+    <value>Coefficient d'une voiture roulant uniquement au diesel</value>
+  </data>
+  <data name="Amount_other_fuel_coefficient" xml:space="preserve">
+    <value>Coefficient d'une voiture roulant à un autre carburant</value>
+  </data>
+  <data name="Amount_diesel_hybrid_coefficient" xml:space="preserve">
+    <value>Coefficient d'une hybride diesel</value>
+  </data>
+  <data name="Amount_small_natural_gas_coefficient" xml:space="preserve">
+    <value>Coefficient d'une voiture au gaz naturel de moins de 12 chevaux fiscaux</value>
+  </data>
+  <data name="Amount_deduction_floor_rate" xml:space="preserve">
+    <value>Part déductible minimale, voiture commandée ou prise en leasing avant le 1er juillet 2023</value>
+  </data>
+  <data name="Amount_deduction_ceiling_rate" xml:space="preserve">
+    <value>Part déductible maximale</value>
+  </data>
+  <data name="Amount_high_emission_grams" xml:space="preserve">
+    <value>Émission à partir de laquelle la part est fixe</value>
+  </data>
+  <data name="Amount_high_emission_deduction_rate" xml:space="preserve">
+    <value>Part déductible à partir de cette émission, ou sans données CO2</value>
+  </data>
+  <data name="Amount_transition_deduction_ceiling_rate" xml:space="preserve">
+    <value>Part déductible maximale, voiture commandée ou prise en leasing du 1er juillet 2023 au 31 décembre 2025</value>
+  </data>
+  <data name="Amount_transition_without_data_deduction_rate" xml:space="preserve">
+    <value>Part déductible sans données CO2, voiture commandée ou prise en leasing du 1er juillet 2023 au 31 décembre 2025</value>
+  </data>
+  <data name="Amount_catalogue_share_rate" xml:space="preserve">
+    <value>Part de la valeur catalogue (6/7)</value>
+  </data>
+  <data name="Amount_minimum_co2_rate" xml:space="preserve">
+    <value>Pourcentage CO2 minimal, que prend une voiture qui n'en émet pas</value>
+  </data>
+  <data name="Amount_maximum_co2_rate" xml:space="preserve">
+    <value>Pourcentage CO2 maximal</value>
+  </data>
+  <data name="Amount_base_co2_rate" xml:space="preserve">
+    <value>Pourcentage CO2 à l'émission de référence</value>
+  </data>
+  <data name="Amount_co2_per_gram_rate" xml:space="preserve">
+    <value>Par gramme au-dessus ou en dessous de la référence, en plus ou en moins</value>
+  </data>
+  <data name="Amount_petrol_reference_grams" xml:space="preserve">
+    <value>Émission de référence en essence, LPG ou gaz naturel</value>
+  </data>
+  <data name="Amount_diesel_reference_grams" xml:space="preserve">
+    <value>Émission de référence en diesel</value>
+  </data>
+  <data name="Amount_petrol_without_data_grams" xml:space="preserve">
+    <value>Émission comptée sans données CO2, en essence, LPG ou gaz naturel</value>
+  </data>
+  <data name="Amount_diesel_without_data_grams" xml:space="preserve">
+    <value>Émission comptée sans données CO2, en diesel</value>
+  </data>
+  <data name="Amount_fake_hybrid_without_match_multiplier" xml:space="preserve">
+    <value>Émission propre d'un faux hybride sans véhicule correspondant, comptée à</value>
+  </data>
+  <data name="Amount_age_up_to_12_months_rate" xml:space="preserve">
+    <value>Valeur catalogue retenue, de 0 à 12 mois</value>
+  </data>
+  <data name="Amount_age_13_to_24_months_rate" xml:space="preserve">
+    <value>Valeur catalogue retenue, de 13 à 24 mois</value>
+  </data>
+  <data name="Amount_age_25_to_36_months_rate" xml:space="preserve">
+    <value>Valeur catalogue retenue, de 25 à 36 mois</value>
+  </data>
+  <data name="Amount_age_37_to_48_months_rate" xml:space="preserve">
+    <value>Valeur catalogue retenue, de 37 à 48 mois</value>
+  </data>
+  <data name="Amount_age_49_to_60_months_rate" xml:space="preserve">
+    <value>Valeur catalogue retenue, de 49 à 60 mois</value>
+  </data>
+  <data name="Amount_age_from_61_months_rate" xml:space="preserve">
+    <value>Valeur catalogue retenue, à partir de 61 mois</value>
+  </data>
+  <data name="Amount_minimum_car_benefit" xml:space="preserve">
+    <value>Avantage minimum de l'année</value>
+  </data>
+  <data name="Amount_car_add_back_rate" xml:space="preserve">
+    <value>Part reprise</value>
+  </data>
+  <data name="Amount_car_add_back_with_private_energy_rate" xml:space="preserve">
+    <value>Part reprise lorsque la société prend en charge le carburant ou la recharge privés</value>
+  </data>
+  <data name="Amount_rent_charges_limit_multiplier" xml:space="preserve">
+    <value>Charges, au plus 2/3 du revenu cadastral revalorisé</value>
+  </data>
+  <data name="Title_copyright_royalty" xml:space="preserve">
+    <value>Droits d'auteur</value>
+  </data>
+  <data name="Rule_copyright_royalty" xml:space="preserve">
+    <value>Les droits d'auteur que la société vous paie pour l'exploitation de vos œuvres, déduits entièrement comme ses autres frais, à condition qu'elle établisse pour vous la fiche 281.45. Ils viennent en déduction de son bénéfice avant votre rémunération.</value>
+  </data>
+  <data name="Title_copyright_within_limits" xml:space="preserve">
+    <value>Droits d'auteur dans les limites</value>
+  </data>
+  <data name="Rule_copyright_within_limits" xml:space="preserve">
+    <value>La part des droits d'auteur qui garde sa qualité de revenu mobilier&#160;: au plus 30&#160;% des droits d'auteur et de votre rémunération brute, et au plus le plafond de l'année, tant que vos revenus de droits d'auteur des quatre années précédentes n'ont pas dépassé ce plafond en moyenne. Elle arrive dans votre poche imposée distinctement, hors de vos cotisations sociales et de la majoration pour insuffisance de versements anticipés.</value>
+  </data>
+  <data name="Title_copyright_taxed_as_pay" xml:space="preserve">
+    <value>Droits d'auteur imposés comme rémunération</value>
+  </data>
+  <data name="Rule_copyright_taxed_as_pay" xml:space="preserve">
+    <value>Ce dont les droits d'auteur dépassent les limites est un revenu professionnel, que Netto impose comme votre rémunération de dirigeant&#160;: avec votre rémunération, dans la base de vos cotisations sociales, au barème et dans la base de la majoration pour insuffisance de versements anticipés, mais jamais sur votre fiche de paie.</value>
+  </data>
+  <data name="Title_copyright_tax" xml:space="preserve">
+    <value>Impôt distinct sur les droits d'auteur</value>
+  </data>
+  <data name="Rule_copyright_tax" xml:space="preserve">
+    <value>La part dans les limites est imposable distinctement au taux de 15&#160;%, jamais au barème ni contre la quotité exemptée d'impôt. Cet impôt rejoint l'impôt État avant que le facteur d'autonomie et les centimes additionnels régionaux ne le partagent&#160;: ce qu'il ajoute peut donc s'écarter d'un cent de 15&#160;%. Il porte sur cette part moins ses frais forfaitaires, que seul le titulaire d'une attestation du travail des arts déduit à partir de 2026.</value>
+  </data>
+  <data name="Title_copyright_municipal_surcharge" xml:space="preserve">
+    <value>Taxe communale additionnelle sur les droits d'auteur</value>
+  </data>
+  <data name="Rule_copyright_municipal_surcharge" xml:space="preserve">
+    <value>Le taux de votre commune appliqué à l'impôt qu'ajoutent les droits d'auteur&#160;: la taxe communale additionnelle porte sur l'impôt entier.</value>
+  </data>
+  <data name="Title_copyright_low_earned_income_credit_lost" xml:space="preserve">
+    <value>Crédit d'impôt pour bas revenus d'activités que les droits d'auteur font perdre</value>
+  </data>
+  <data name="Rule_copyright_low_earned_income_credit_lost" xml:space="preserve">
+    <value>Le crédit suit votre seule rémunération, mais votre revenu net total, droits d'auteur dans les limites compris, le limite&#160;: aucun au-delà du plafond, et de là où le crédit entier prend fin jusqu'au plafond, au plus ce que la même droite descendante donne sur ce total. Ce que les droits d'auteur retirent du crédit est perdu.</value>
+  </data>
+  <data name="Title_copyright_income_tax_advance_payments" xml:space="preserve">
+    <value>Majoration pour insuffisance de versements anticipés due au crédit perdu</value>
+  </data>
+  <data name="Rule_copyright_income_tax_advance_payments" xml:space="preserve">
+    <value>L'impôt propre aux droits d'auteur n'est jamais majoré. Mais la majoration sur l'impôt de votre rémunération porte sur cet impôt à 106&#160;% moins le précompte professionnel retenu et le crédit que vous obtenez réellement&#160;: un crédit que les droits d'auteur font perdre l'augmente, moins toute variation de la bonification.</value>
+  </data>
+  <data name="Amount_copyright_relative_limit_rate" xml:space="preserve">
+    <value>Part des droits d'auteur et de la rémunération dans les limites</value>
+  </data>
+  <data name="Amount_copyright_cap" xml:space="preserve">
+    <value>Plafond des droits d'auteur dans les limites</value>
+  </data>
+  <data name="Amount_copyright_envelope_rate" xml:space="preserve">
+    <value>Part de votre rémunération et de vos droits d'auteur qu'une décision anticipée accepte comme droits d'auteur, pour tout votre temps de création</value>
+  </data>
+  <data name="Amount_copyright_taxed_apart_rate" xml:space="preserve">
+    <value>Taux de l'impôt distinct</value>
+  </data>
+  <data name="Title_copyright_flat_rate_costs" xml:space="preserve">
+    <value>Frais forfaitaires sur les droits d'auteur</value>
+  </data>
+  <data name="Rule_copyright_flat_rate_costs" xml:space="preserve">
+    <value>Sans preuve de frais réels, la part dans les limites est imposée après déduction de frais forfaitaires&#160;: 50&#160;% de la première tranche et 25&#160;% de la suivante jusqu'au plafond de la seconde tranche, rien au-delà. À partir de 2026, ils ne valent que pour les œuvres qu'une attestation du travail des arts couvre au moment où les droits sont payés, jamais l'attestation du travail des arts starter. Ils diminuent ce qui est imposé distinctement et retenu, jamais ce qui arrive dans votre poche, et ne sont jamais déduits de la part imposée comme rémunération.</value>
+  </data>
+  <data name="Amount_copyright_flat_rate_costs_first_band_rate" xml:space="preserve">
+    <value>Frais forfaitaires sur la première tranche</value>
+  </data>
+  <data name="Amount_copyright_flat_rate_costs_first_band" xml:space="preserve">
+    <value>Plafond de la première tranche</value>
+  </data>
+  <data name="Amount_copyright_flat_rate_costs_second_band_rate" xml:space="preserve">
+    <value>Frais forfaitaires sur la seconde tranche</value>
+  </data>
+  <data name="Amount_copyright_flat_rate_costs_second_band" xml:space="preserve">
+    <value>Plafond de la seconde tranche</value>
+  </data>
+  <data name="Title_company_contribution" xml:space="preserve">
+    <value>Cotisation à charge des sociétés de l'INASTI</value>
+  </data>
+  <data name="Rule_company_contribution" xml:space="preserve">
+    <value>La cotisation forfaitaire que toute société paie chaque année à l'INASTI, quoi qu'elle vous verse&#160;: le montant le plus bas tant que le total du bilan de son avant-dernier exercice clôturé, tel qu'il se présentait au 1er janvier, ne dépasse pas le seuil, le plus élevé au-delà. Une charge de la société, comme ses frais courants, qui diminue son bénéfice&#160;: la société la déduit comme frais professionnel.</value>
+  </data>
+  <data name="Amount_company_contribution_lower_band" xml:space="preserve">
+    <value>Cotisation, total du bilan au plus égal au seuil</value>
+  </data>
+  <data name="Amount_company_contribution_upper_band" xml:space="preserve">
+    <value>Cotisation, total du bilan au-delà du seuil</value>
+  </data>
+  <data name="Amount_company_contribution_exempt" xml:space="preserve">
+    <value>Cotisation, société que la loi exonère</value>
+  </data>
+  <data name="Amount_balance_sheet_threshold" xml:space="preserve">
+    <value>Seuil du total du bilan entre les deux montants</value>
+  </data>
+</root>
