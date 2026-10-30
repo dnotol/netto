@@ -162,21 +162,33 @@ public class MapAmountsTests
     // Known, and reported (2026-10-30): with a pay low enough for the credit on low earned income to come back
     // into Director pay, the line back runs down beside the pocket line under Director pay, as close as the line
     // into the taxes on pay and their widths let it, which leaves the totals beside the pocket line the room of an
-    // English amount and three pixels short of a French one. Those three totals have no free place; this pins it,
-    // so that a layout giving them room turns it red and lets them join the rule above.
+    // English amount and three pixels short of a French one. Those three totals have no free place, and the map
+    // draws none of them; every other amount of the plan keeps the rules. This pins it, so that a layout giving
+    // them room turns it red and lets the plan join the rule above.
     private const string LowPay = "a low pay";
 
+    private static readonly string[] LowPayTotals =
+    [
+        "IntoBucket pocket-line-director-pay to pocket-line-copyright",
+        "IntoBucket pocket-line-copyright to pocket-line-dividend",
+        "IntoBucket pocket-line-dividend to pocket",
+    ];
+
     [Fact]
-    public void Of_aLowPayInFrench_leavesTheThreeTotalsUnderDirectorPayNoFreePlace()
+    public void Of_aLowPayInFrench_drawsEveryAmountByTheRulesButTheThreeTotalsUnderDirectorPay()
     {
         using var french = InLanguage.French();
         var view = View(LowPay);
+        var amounts = MapAmounts.Of(view, SayInFrench);
 
-        MapAmounts.Crowded(view, SayInFrench).Select(Name).ShouldBe([
-            "IntoBucket pocket-line-director-pay to pocket-line-copyright",
-            "IntoBucket pocket-line-copyright to pocket-line-dividend",
-            "IntoBucket pocket-line-dividend to pocket",
-        ], ignoreOrder: true);
+        var undrawn = view.Bundles().Where(line => line.SaysAmount && !amounts.Any(amount => ReferenceEquals(amount.Bundle.Route, line.Route))).Select(Name);
+
+        amounts.ShouldSatisfyAllConditions(
+            () => undrawn.ShouldBe(LowPayTotals, ignoreOrder: true),
+            () => MapAmounts.Crowded(view, SayInFrench).Select(Name).ShouldBe(LowPayTotals, ignoreOrder: true),
+            () => amounts.Where(amount => !OnItsStretch(amount)).Select(Name).ShouldBeEmpty(),
+            () => Sizes(view).SelectMany(scale => Faults(view, amounts, scale)).ShouldBeEmpty(),
+            () => Sizes(view).SelectMany(scale => Along(view, amounts, scale)).Select(Name).ShouldBeEmpty());
     }
 
     private static string SayInFrench(MapLabel label) => ResxText.French<MapTab>().Format(label.Key, [.. label.Args]);
