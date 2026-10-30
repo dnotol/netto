@@ -45,9 +45,10 @@ internal static class MapTabText
     public static string ReserveState(bool holds) => holds ? "State_Covered" : "State_NotCovered";
 
     // The badge a condition leaves in the box of the module it acts on (MapBadges): which rule and whether
-    // it holds, in a few words with its line's state, so two rules on one module are told apart: the pay
-    // met or the rate lost by it, the benefits likewise, what a royalty does to the pay keeping the rate,
-    // the reserve covered or not. The office rule, which always holds, leaves none.
+    // it holds, in words of its own short enough to read whole in its box on the narrowest map, its icon saying
+    // whether it holds, so two rules on one module are told apart: the pay met or the rate lost by it, the
+    // benefits likewise, what a royalty does to the pay keeping the rate, the reserve met or short. The office
+    // rule, which always holds, leaves none.
     public static string PayBadge(bool holds) => holds ? "Badge_Pay_Met" : "Badge_Pay_Lost";
 
     public static string BenefitsBadge(bool holds) => holds ? "Badge_Benefits_Met" : "Badge_Benefits_Lost";
@@ -61,7 +62,7 @@ internal static class MapTabText
 
     public static string ReserveBadge(bool holds) => holds ? "Badge_Reserve_Covered" : "Badge_Reserve_NotCovered";
 
-    // What a module's tax base gains, its amount first.
+    // What a module's tax base gains, its amount first, the one part of its words seen (MapBadgeWords).
     public const string TaxBaseBadge = "Badge_TaxBase";
 
     // The component whose texts word a link (MapLabel.Text): the map's own, a drain list's, or the card
