@@ -1,5 +1,9 @@
 # Log
 
+## 2026-11-06
+
+- [The map's lines are drawn as a river](/2026-11-06-the-map-drawn-as-a-river.md) proposed, from the work item « The map's lines merge into the pocket line and the buckets as a river, not as T-joins », and [a bucket is chosen like a module](/2026-11-06-a-bucket-is-chosen-like-a-module.md) proposed, from the story « I open a bucket and see what fills it ».
+
 ## 2026-10-30
 
 - [French by default, English beside it](/2026-10-30-french-by-default-english-beside-it.md) and [a citation is its document and passage](/2026-10-30-a-citation-is-its-document-and-passage.md) accepted by the operator at landing; [every text from a resource file](/2026-10-18-mudblazor-and-resx-text.md) and [numbers on the invariant culture](/2026-10-19-invariant-culture-for-numbers.md) deprecated, superseded by the first.

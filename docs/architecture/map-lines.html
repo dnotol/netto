@@ -50,6 +50,7 @@
           <g class="box" data-node="layout" data-title="MapLayout"><rect x="620" y="270" width="150" height="56" rx="8"/><text class="t" x="695" y="294" text-anchor="middle">MapLayout</text><text class="s" x="695" y="312" text-anchor="middle">Place, route, sum</text></g>
           <g class="box" data-node="choice" data-title="MapView.ShowingFor"><rect x="620" y="390" width="150" height="56" rx="8"/><text class="t" x="695" y="414" text-anchor="middle">The choice</text><text class="s" x="695" y="432" text-anchor="middle">ShowingFor</text></g>
           <g class="box" data-node="svg" data-title="MapTab.razor"><rect x="620" y="510" width="150" height="56" rx="8"/><text class="t" x="695" y="534" text-anchor="middle">MapTab</text><text class="s" x="695" y="552" text-anchor="middle">SVG, key, buttons</text></g>
+          <g class="box planned" data-node="bucketcard" data-title="BucketCard"><rect x="220" y="510" width="150" height="56" rx="8"/><text class="t" x="295" y="534" text-anchor="middle">BucketCard</text><text class="s" x="295" y="552" text-anchor="middle">What fills a bucket</text></g>
           <g class="box" data-node="panel" data-title="MapPanel"><rect x="420" y="510" width="150" height="56" rx="8"/><text class="t" x="495" y="534" text-anchor="middle">MapPanel</text><text class="s" x="495" y="552" text-anchor="middle">Card and effects</text></g>
 
           <g data-edge="run views" data-step="1"><line class="flow" x1="95" y1="86" x2="95" y2="146" marker-end="url(#flow-head)"/><text class="flow-label" x="103" y="121">same run</text></g>
@@ -63,6 +64,7 @@
           <g data-edge="layout choice" data-step="7"><line class="flow" x1="695" y1="326" x2="695" y2="386" marker-end="url(#flow-head)"/><text class="flow-label" x="687" y="360" text-anchor="end">module chosen</text></g>
           <g data-edge="choice svg" data-step="8"><line class="flow" x1="695" y1="446" x2="695" y2="506" marker-end="url(#flow-head)"/></g>
           <g data-edge="svg panel" data-step="9"><line class="flow" x1="620" y1="538" x2="574" y2="538" marker-end="url(#flow-head)"/><text class="flow-label" x="597" y="530" text-anchor="middle">chosen</text></g>
+          <g class="planned" data-edge="panel bucketcard" data-step="9"><line class="flow" x1="420" y1="538" x2="374" y2="538" marker-end="url(#flow-head)"/><text class="flow-label" x="397" y="530" text-anchor="middle">bucket</text></g>
         </svg>
       </div>
       <figcaption>Boxes are classes of <code>Netto.Web.Client/Tabs/</code> unless their card says otherwise; arrows carry what the next one reads. Step through it, or select a box for its card.</figcaption>
@@ -90,6 +92,7 @@
         <article data-card="layout"><h3>MapLayout</h3><p>Three columns by owner, rows in the river's order, slots worked out by <code>MapGrid</code>, each box sized from its module's name as <code>MapTab</code> draws it in the page's language (a name that wraps on the narrowest map makes its box taller), and orthogonal routes from a set of route families, so no line crosses a box, a gate or the pill. Guards: <code>MapLayoutTests</code> (with no plan crossing more lines than its count in <code>MapCrossings.txt</code>), <code>MapAmountsTests</code>.</p></article>
         <article data-card="choice"><h3>The choice</h3><p>Lines of money are always drawn; a tax-base or condition line only while a module at either of its ends is chosen, its total or state still a badge. No viewer preference: a stored <code>netto.map.lines</code> is no longer read.</p></article>
         <article data-card="svg"><h3>MapTab</h3><p>The SVG: a halo polyline and a line polyline per bundle, styled by its kind, gold when it reaches the pocket; the chosen module's lines drawn last, the others faded. The key above it is a list, « Key to the lines », with nothing to tick.</p></article>
+        <article data-card="bucketcard"><h3>BucketCard (planned)</h3><p>A chosen bucket's read-only card: its total, its share of the bar's start, one line per module sending money into it, read from the map's links and summing to the bar's bucket; the pocket's also lists the pocket line's running totals. The choice becomes a module or a bucket (<code>MapChoice</code>); the bar's bucket chooses it too. Planned on 06.11.2026.</p><p class="note">Decision: <a href="decisions/2026-11-06-a-bucket-is-chosen-like-a-module.md">a bucket is chosen like a module</a> (proposed)</p></article>
         <article data-card="panel"><h3>MapPanel</h3><p>The chosen module's card in a <code>PinnedCard</code> seat, open and editable, under what it receives and, one per tax-base or condition line drawn for it, what it does to another module or what another does to it, each naming that module as a button; the pointer over an effect's line marks its item.</p><p class="note">Decision: <a href="decisions/2026-10-27-the-plan-is-the-map.md">the plan is the map</a></p></article>
       </div>
     </figure>
@@ -131,6 +134,7 @@
   <section aria-labelledby="h-changes">
     <h2 id="h-changes">Changes</h2>
     <ul class="atlas-changes">
+      <li><time datetime="2026-11-06">06.11.2026</time><span>Planned: the lines drawn as a river, on arcs, the pocket line one stepped shape (<a href="decisions/2026-11-06-the-map-drawn-as-a-river.md">proposed</a>); a bucket chosen like a module, with its card (<a href="decisions/2026-11-06-a-bucket-is-chosen-like-a-module.md">proposed</a>).</span></li>
       <li><time datetime="2026-10-30">30.10.2026</time><span>The pay's pill on two lines when the company pays the contributions; badges fitted to the narrowest map, a tax base's showing its amount (bug batch).</span></li>
       <li><time datetime="2026-10-30">30.10.2026</time><span>boxes sized from the module names in the page's language (<a href="decisions/2026-10-30-french-by-default-english-beside-it.md">French by default</a>).</span></li>
       <li><time datetime="2026-10-29">29.10.2026</time><span>The map drawn by owner: three columns, the company's line with each lever's share, the gates, the pay's pill, the pocket line with its running totals, the legend a key and the rule lines drawn for the module chosen, its effects listed beside the card (<code>e102b05..7dfc6b5</code>).</span></li>
