@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Rate" xml:space="preserve">
+    <value>{0} du point de départ</value>
+  </data>
+  <data name="Nothing" xml:space="preserve">
+    <value>Rien n'y arrive dans ce plan.</value>
+  </data>
+  <data name="Refused" xml:space="preserve">
+    <value>Pas de chiffre tant que le montant refusé par le moteur n'est pas corrigé.</value>
+  </data>
+  <data name="PocketLine" xml:space="preserve">
+    <value>Le long de la ligne de votre poche&#160;: ce qui vous a atteint après chaque module</value>
+  </data>
+</root>
