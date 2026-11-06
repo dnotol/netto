@@ -15,6 +15,10 @@ internal static class BucketBarText
     // sight in a narrow column, for a screen reader.
     public const string ReachWords = "ReachWords";
 
+    // After a bucket's amount, which is a button choosing the bucket on the map, out of sight: the bucket's name
+    // and what the button does.
+    public const string ChooseWords = "ChooseWords";
+
     // What the reach's (i) is « More about ».
     public const string ReachLabel = "ReachLabel";
 

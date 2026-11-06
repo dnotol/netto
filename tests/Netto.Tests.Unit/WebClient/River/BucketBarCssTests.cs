@@ -41,4 +41,50 @@ public class BucketBarCssTests
             () => narrow.ShouldContain("width: 1px;"),
             () => narrow.ShouldNotContain("display: none"));
     }
+
+    // A bucket's amount, a button choosing the bucket, is drawn as the figure it is: the amount's type, size,
+    // line height and colour, no padding, frame or ground of the browser's, so the band's rows, measured by
+    // bucket-bar.js, keep their height whether it is a button or not.
+    [Fact]
+    public void Choose_isDrawnAsTheAmountItIs()
+    {
+        var choose = Stylesheet.Block(Css, ".bucket__choose");
+
+        choose.ShouldSatisfyAllConditions(
+            () => choose.ShouldContain("padding: 0;"),
+            () => choose.ShouldContain("border: 0;"),
+            () => choose.ShouldContain("background: none;"),
+            () => choose.ShouldContain("color: inherit;"),
+            () => choose.ShouldContain("font: inherit;"),
+            () => choose.ShouldContain("line-height: inherit;"),
+            () => choose.ShouldContain("cursor: pointer;"));
+    }
+
+    // The button reaches over its whole bucket, so the bucket is the target, the bubbles of its name, its gain and
+    // its reach staying over it, each its own button.
+    [Fact]
+    public void Choose_coversItsWholeBucketUnderItsBubbles()
+    {
+        var (cover, trigger) = (Stylesheet.Block(Css, ".bucket__choose::after"), Stylesheet.Block(Css, ".bucket ::deep .info-bubble__trigger"));
+
+        Css.ShouldSatisfyAllConditions(
+            () => Stylesheet.Block(Css, ".bucket").ShouldContain("position: relative;"),
+            () => cover.ShouldContain("content: \"\";"),
+            () => cover.ShouldContain("position: absolute;"),
+            () => cover.ShouldContain("inset: 0;"),
+            () => trigger.ShouldContain("position: relative;"),
+            () => trigger.ShouldContain("z-index: 1;"));
+    }
+
+    // What the button does, after its amount, is out of sight, for a screen reader.
+    [Fact]
+    public void ChooseWords_areOutOfSightForAScreenReader()
+    {
+        var words = Stylesheet.Block(Css, ".bucket__choose-words");
+
+        words.ShouldSatisfyAllConditions(
+            () => words.ShouldContain("position: absolute;"),
+            () => words.ShouldContain("clip-path: inset(50%);"),
+            () => words.ShouldContain("overflow: hidden;"));
+    }
 }

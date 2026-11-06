@@ -31,12 +31,14 @@ internal sealed class LivePlan : IAsyncDisposable
     private readonly ServiceProvider _provider;
     private readonly LiveRenderer _renderer;
     private readonly RecordingScript _script;
+    private readonly RecordingNavigation _navigation;
     private Task _loading = Task.CompletedTask;
 
-    private LivePlan(ServiceProvider provider, RecordingScript script, BrowserSession session, PageReloads reloads)
+    private LivePlan(ServiceProvider provider, RecordingScript script, RecordingNavigation navigation, BrowserSession session, PageReloads reloads)
     {
         _provider = provider;
         _script = script;
+        _navigation = navigation;
         Session = session;
         Reloads = reloads;
         _renderer = new LiveRenderer(provider, provider.GetRequiredService<ILoggerFactory>());
@@ -47,6 +49,10 @@ internal sealed class LivePlan : IAsyncDisposable
 
     // The page a switch of language reloads, counting each reload.
     public PageReloads Reloads { get; }
+
+    // Where the page asked the browser to go, each address as the page gave it, in order: the router's part,
+    // setting the page's Tab, is the test's (SwitchTabAsync).
+    public IReadOnlyList<string> Navigations => _navigation.Navigations;
 
     // What the page asked the script, each call by its name and its text arguments, in order.
     public IReadOnlyList<string> Calls => _script.Calls;
@@ -78,13 +84,14 @@ internal sealed class LivePlan : IAsyncDisposable
         services.AddSingleton<TimeProvider>(new Clock(On23October));
         var script = new RecordingScript(holdPaint);
         services.AddSingleton<IJSRuntime>(script);
-        services.AddSingleton<NavigationManager>(new RiverRendering.NoNavigation(uri));
+        var navigation = new RecordingNavigation(uri);
+        services.AddSingleton<NavigationManager>(navigation);
         services.AddSingleton(new ThemePreference(storage, new SystemTheme(prefersLight: false)));
         var fields = new TypedFields();
         services.AddSingleton(fields);
         services.AddSingleton(new LanguagePreference(storage, reloads, state, fields));
 
-        return new LivePlan(services.BuildServiceProvider(), script, session, reloads);
+        return new LivePlan(services.BuildServiceProvider(), script, navigation, session, reloads);
     }
 
     // As on a first load, on the tab the URL's segment after /plan/ names (the router's Tab), none for the
@@ -281,6 +288,17 @@ internal sealed class LivePlan : IAsyncDisposable
         }
     }
 #pragma warning restore BL0006
+
+    // Records each address the page asks the browser to go to, and goes nowhere: the page stays at the address it
+    // was loaded at.
+    private sealed class RecordingNavigation : NavigationManager
+    {
+        public RecordingNavigation(string uri) => Initialize("http://localhost/", uri);
+
+        public List<string> Navigations { get; } = [];
+
+        protected override void NavigateToCore(string uri, NavigationOptions options) => Navigations.Add(uri);
+    }
 
     // Records each call the page makes, by its name and arguments, and answers each with nothing; the
     // paint, when held, once the test lets the browser paint.

@@ -43,7 +43,7 @@
    choice on the map, a module or a bucket (MapChoice), is Company year on arriving, or the one the address
    names (CardLinks, plan?card=<name>), from a link of the Optimisation tab's moves or loaded as it is, or the
    bucket the viewer presses in the band, from any tab, which brings them to the plan. *@
-<BucketBar Run="_run" Setup="_today?.Run">
+<BucketBar Run="_run" Setup="_today?.Run" BucketChosen="OnBucketChosen">
     <ChildContent>
         <PlansPanel Inputs="_inputs" CanSave="BaselineGain.CanMark(_run)" OnOpen="OnPlanOpened" OnChanged="OnPlansChanged" />
     </ChildContent>
@@ -241,6 +241,16 @@
     // The module or the bucket the viewer chose on the map, kept from one tab to the next, a module let go
     // once it has left the map.
     private void OnMapChosen(MapChoice? choice) => (_mapChosen, _viewerChose) = (choice, true);
+
+    // A bucket the viewer pressed in the band: chosen on the map, as the viewer's choice, whatever was; from
+    // another tab the page goes to the plan, where the tab's title takes the focus, the map's panel drawing
+    // the bucket's card for the first time (MapPanel). An action, never a toggle: pressed again, it stays.
+    private void OnBucketChosen(string bucket)
+    {
+        (_mapChosen, _viewerChose) = (MapChoice.InBucket(bucket), true);
+        if (_tab != PlanTab.Plan)
+            Navigation.NavigateTo(PlanTabRoutes.Href(PlanTab.Plan));
+    }
 
     // The split's search runs the year at every pay, so it runs again only when an input other than
     // the pay changes: dragging the pay moves its marker along the same curve. A module chosen on the map

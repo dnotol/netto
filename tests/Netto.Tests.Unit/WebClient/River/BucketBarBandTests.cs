@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Components;
 using Netto.Web.Client;
 using Netto.Web.Client.River;
 using Shouldly;
@@ -171,16 +172,52 @@ public class BucketBarBandTests
                 "bucket-bar__live"]);
     }
 
+    // On the plan page each bucket's amount is a button choosing that bucket on the map, heard with the bucket's
+    // name and what it does, the visible amount first in its name; the bubbles beside it stay their own buttons.
+    [Fact]
+    public async Task Band_choosing_makesEachBucketsAmountAButtonNamedByItsBucket()
+    {
+        var run = WithCar.Run();
+        var view = BucketsView.From(run).ShouldNotBeNull();
+
+        var html = await RenderBandAsync(run, choosing: true);
+
+        ChooseButtons(html).ShouldBe(view.Buckets.Select(bucket => (bucket.Key,
+            $"{Formats.Euros(bucket.Amount)} {ResxText.For<BucketBar>().Format(BucketBarText.ChooseWords, ResxText.For<BucketBar>().Get(BucketBarText.Bucket(bucket.Key, view.TaxesOnPayIncludeRent))!)}")));
+    }
+
+    // Drawn with nothing to choose on, the band's amounts are plain figures.
+    [Fact]
+    public async Task Band_notChoosing_drawsNoButtonChoosingABucket()
+    {
+        var html = await RenderBandAsync(WithCar.Run());
+
+        (ChooseButtons(html).Count, html.Contains("bucket__choose", StringComparison.Ordinal)).ShouldBe((0, false));
+    }
+
     // YearSimulationCarTests' electric car on the example, so every bucket holds an amount.
     private static RiverInputs WithCar => RiverInputs.Example.AddToPlan(OptionalModule.Car)
         .WithCatalogueValue(50_000m).WithFirstRegistration(new DateOnly(2026, 1, 10)).WithCarCosts(8_000m);
 
-    private static async Task<string> RenderBandAsync(RiverRun run, RiverRun? setup = null) =>
-        WebUtility.HtmlDecode(await RenderAsync<BucketBar>(new Folds(new BrowserStorage()), new()
+    private static async Task<string> RenderBandAsync(RiverRun run, RiverRun? setup = null, bool choosing = false)
+    {
+        var parameters = new Dictionary<string, object?>
         {
             ["Run"] = run,
             ["Setup"] = setup,
             ["ChildContent"] = Text(Actions),
             ["Tabs"] = Text(Tabs),
-        }));
+        };
+        if (choosing)
+            parameters["BucketChosen"] = EventCallback.Factory.Create<string>(new object(), _ => { });
+
+        return WebUtility.HtmlDecode(await RenderAsync<BucketBar>(new Folds(new BrowserStorage()), parameters));
+    }
+
+    // Each button choosing a bucket: the bucket it chooses, and its name as a screen reader hears it.
+    private static List<(string Bucket, string Name)> ChooseButtons(string html) =>
+    [
+        .. Regex.Matches(html, "<button type=\"button\" class=\"bucket__choose\" data-bucket-choose=\"([a-z_]+)\"[^>]*>(.*?)</button>", RegexOptions.Singleline)
+            .Select(match => (match.Groups[1].Value, Regex.Replace(Regex.Replace(match.Groups[2].Value, "<[^>]*>", " "), "\\s+", " ").Trim())),
+    ];
 }

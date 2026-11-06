@@ -17,7 +17,10 @@
    rows whatever the plan says, so its height never depends on it. A polite live region says what reaches
    the pocket, and that gain, once the river has settled (BucketBarAnnouncement), not at every step of a
    slider dragged, or, while the engine refuses an amount, that there is no figure until it is corrected;
-   the other buckets are read in the band itself. The region is one of its own, out of sight, since a
+   the other buckets are read in the band itself. On the plan page each bucket's amount is a button that
+   chooses the bucket on the map (BucketChosen), reaching over the whole bucket, its name's, gain's and
+   reach's bubbles over it, each its own button: an action, not a toggle, heard with the bucket's name and
+   what it does, and announcing nothing. The region is one of its own, out of sight, since a
    bubble opening inside the figures would be read out as a change of the band, and a menu inside it at
    every change. It is empty as the page opens. Its height is measured once it is drawn and whenever it
    changes (bucket-bar.js), for the line under it that cards are jumped to and controls scrolled to. *@
@@ -61,7 +64,14 @@
                             }
                         </dt>
                         <dd class="bucket__amount">
-                            @Amount(key)
+                            @if (BucketChosen.HasDelegate)
+                            {
+                                <button type="button" class="bucket__choose" data-bucket-choose="@key" @onclick="() => BucketChosen.InvokeAsync(key)">@Amount(key)<span class="bucket__choose-words">@(" " + L[BucketBarText.ChooseWords, L[BucketBarText.Bucket(key, IncludesRent)]])</span></button>
+                            }
+                            else
+                            {
+                                @Amount(key)
+                            }
                             @if (key == "pocket")
                             {
                                 @if (View?.Reach is { } reach)
@@ -109,6 +119,11 @@
     // The plan page's tabs, in the top row after the wordmark.
     [Parameter]
     public RenderFragment? Tabs { get; set; }
+
+    // A bucket pressed, by its key, which the plan page chooses on the map; none, and the amounts are plain
+    // figures.
+    [Parameter]
+    public EventCallback<string> BucketChosen { get; set; }
 
     private BucketsView? View { get; set; }
 

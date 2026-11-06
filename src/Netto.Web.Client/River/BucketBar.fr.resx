@@ -120,4 +120,7 @@
   <data name="Holds_taxes_on_pay_rent_and_royalty" xml:space="preserve">
     <value>Ce qui sort de votre rémunération, du loyer imposé avec elle et de vos droits d'auteur&#160;: vos cotisations sociales, l'impôt des personnes physiques, l'impôt distinct sur les droits d'auteur et la taxe communale additionnelle, moins le crédit d'impôt pour bas revenus d'activités, et toute majoration pour insuffisance de versements anticipés, moins sa bonification.</value>
   </data>
+  <data name="ChooseWords" xml:space="preserve">
+    <value>{0}&#160;: voir ce qui le remplit</value>
+  </data>
 </root>
