@@ -60,6 +60,21 @@ public class BucketBarCssTests
             () => choose.ShouldContain("cursor: pointer;"));
     }
 
+    // MudBlazor's global rule makes every button a positioned inline flex box set on the middle of its line
+    // (button { position: relative; display: inline-flex; vertical-align: middle }): the amount's button would then
+    // hold its stretched cover to itself rather than its bucket, and stand taller than the figure, growing the
+    // band. It undoes all three, so it is the amount's text in the line and its cover reaches the bucket.
+    [Fact]
+    public void Choose_undoesTheGlobalButtonsPositionDisplayAndAlignment()
+    {
+        var choose = Stylesheet.Block(Css, ".bucket__choose");
+
+        choose.ShouldSatisfyAllConditions(
+            () => choose.ShouldContain("position: static;"),
+            () => choose.ShouldContain("display: inline;"),
+            () => choose.ShouldContain("vertical-align: baseline;"));
+    }
+
     // The button reaches over its whole bucket, so the bucket is the target, the bubbles of its name, its gain and
     // its reach staying over it, each its own button.
     [Fact]

@@ -152,8 +152,13 @@
    the amount's type, size, line height and colour, nothing of the browser's, so the band's rows, measured by
    bucket-bar.js, keep their height. It reaches over its whole bucket, so the bucket is the target, the
    triggers of its bubbles, its name's, its gain's and its reach's, staying over it, each its own button; under
-   the pointer the amount is underlined, the focus ring app.css's. Nothing transitions. */
+   the pointer the amount is underlined, the focus ring app.css's. Nothing transitions. MudBlazor's global rule
+   makes a button a positioned inline flex box on the middle of its line, which would keep the cover to the
+   button and stand it taller than the figure: it is undone here, the button the amount's text in its line. */
 .bucket__choose {
+    position: static;
+    display: inline;
+    vertical-align: baseline;
     padding: 0;
     border: 0;
     background: none;
