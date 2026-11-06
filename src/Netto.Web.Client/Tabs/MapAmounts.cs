@@ -13,6 +13,10 @@ internal static class MapAmounts
     internal const decimal GroundRem = 0.3m;
     internal const decimal HeightRem = 1m;
 
+    // How far, in pixels, an amount on its line keeps from the ends of its stretch, past any arc the line turns
+    // there on (MapPath), so that the line shows each side of it.
+    internal const double ShowsEachSide = 4;
+
     public static decimal Height => HeightRem * MapLayout.PixelsPerRem;
 
     // How wide an amount is drawn, in pixels, to the hundredth above: what its characters take at their
@@ -110,17 +114,17 @@ internal static class MapAmounts
     // pocket line's, stands right of it rather than on the gold line, which it would cut, or left of it, nearest
     // just under where the join it follows ends its turn down into the line (MapPocketLine.Steps). An amount on its
     // line keeps clear of the arcs its line turns its corners on (MapPath), and none stands over the turn a line
-    // takes down into the pocket line. A line left with no place free moves the amounts in the way of one
-    // of its places to places of their own, those in their way in turn, three deep, within a budget.
+    // takes down into the pocket line. A line left with no place free moves the amounts in the way of one of its
+    // places to places of their own, those in their way in turn, three deep, within a budget.
     private sealed class Search
     {
-        // How far from the ends of its stretch an amount on its line keeps, so that the line shows each side of
-        // it; how far beside its line, or its arrowhead, an amount beside it stands, and what standing there
-        // rather than on its line costs, and a running total on the pocket line or left of it rather than right; what a line crossing it costs, and a rule's line along it; how far off a
-        // box or an arrowhead, and off another amount, it keeps; how far inside the bounds of its piece it is
-        // placed, so that it holds as it is rounded and drawn at any size; how finely a piece is tried for a
-        // place when the amounts in the way are moved, how many places of each, how deep and how often.
-        private const double ShowsEachSide = 4;
+        // How far beside its line, or its arrowhead, an amount beside it stands, and what standing there rather
+        // than on its line costs, and a running total on the pocket line or left of it rather than right; what a
+        // line crossing it costs, and a rule's line along it; how far off a box or an arrowhead, and off another
+        // amount, it keeps; how far inside the bounds of its piece it is placed, so that it holds as it is rounded
+        // and drawn at any size; how finely a piece is tried for a place when the amounts in the way are moved,
+        // how many places of each, how deep and how often. How far from the ends of its stretch an amount on its
+        // line keeps is ShowsEachSide's.
         private const double BesideGap = 2;
         private const double Beside = 3;
         private const double OffThePocketLine = 6;
@@ -267,7 +271,7 @@ internal static class MapAmounts
             var (width, height) = ((double)_widths[index], (double)Height);
             var points = line.Route.Points;
             var tracks = new List<Track>();
-            var turns = MapPath.Turns(_view.PointsOf(line), _view.Scale, line.Arrowhead ? MapLineWidths.ArrowLength(line.Route.Width) : 0m)
+            var turns = MapPath.Turns(_view.PointsOf(line), _view.Scale, MapView.ArrowLength(line))
                 .GroupBy(turn => turn.Corner).ToDictionary(corner => corner.Key, corner => (double)corner.Max(turn => turn.Radius));
             var stepTop = _stepTops.TryGetValue(line.Route, out var top) ? (double)top * _down : (double?)null;
             for (var stretch = 0; stretch + 1 < points.Count; stretch++)

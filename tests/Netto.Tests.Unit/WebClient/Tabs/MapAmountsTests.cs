@@ -226,14 +226,15 @@ public class MapAmountsTests
     private static bool ClearOfArcs(MapView view, MapAmount amount, MapScale scale)
     {
         var line = amount.Bundle;
-        var turns = MapPath.Turns(view.PointsOf(line), scale, line.Arrowhead ? MapLineWidths.ArrowLength(line.Route.Width) : 0m);
+        var turns = MapPath.Turns(view.PointsOf(line), scale, MapView.ArrowLength(line));
         decimal Arc(MapPoint end) => turns.Where(turn => turn.Corner == end).Select(turn => turn.Radius).DefaultIfEmpty(0m).Max();
         var (a, b) = (line.Route.Points[amount.Stretch], line.Route.Points[amount.Stretch + 1]);
         var area = amount.Area(scale);
         var (low, high) = a.Y == b.Y ? (area.Left, area.Right) : (area.Top, area.Bottom);
         var (first, second) = a.Y == b.Y ? (a.X * scale.X, b.X * scale.X) : (a.Y * scale.Y, b.Y * scale.Y);
         var (lowEnd, highEnd) = first < second ? (a, b) : (b, a);
-        return low >= Math.Min(first, second) + Arc(lowEnd) + 4m - 0.1m && high <= Math.Max(first, second) - Arc(highEnd) - 4m + 0.1m;
+        var shows = (decimal)MapAmounts.ShowsEachSide;
+        return low >= Math.Min(first, second) + Arc(lowEnd) + shows - 0.1m && high <= Math.Max(first, second) - Arc(highEnd) - shows + 0.1m;
     }
 
     private static string SayInFrench(MapLabel label) => ResxText.French<MapTab>().Format(label.Key, [.. label.Args]);

@@ -114,7 +114,8 @@ internal static class MapPath
     private static MapPoint Toward(MapPoint from, MapPoint to, decimal pixels, MapScale scale) =>
         new(from.X + Math.Sign(to.X - from.X) * pixels / scale.X, from.Y + Math.Sign(to.Y - from.Y) * pixels / scale.Y);
 
-    // Which way a line turns at b, on the screen, its y running down: clockwise above nothing, none in line.
+    // The sign of the turn at b: positive where the line bends clockwise on the screen (y running down), zero
+    // where the three points are in line.
     private static decimal Cross(MapPoint a, MapPoint b, MapPoint c) => (b.X - a.X) * (c.Y - b.Y) - (b.Y - a.Y) * (c.X - b.X);
 
     private static string Point(MapPoint point) => $"{Number(point.X)},{Number(point.Y)}";

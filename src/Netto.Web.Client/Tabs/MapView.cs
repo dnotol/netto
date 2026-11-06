@@ -216,7 +216,8 @@ internal sealed record MapView(IReadOnlyList<MapNode> Modules, IReadOnlyList<Map
             : MapPath.Of(bundle.Route.Drawn, Scale, ArrowLength(bundle), trimStart: clear);
     }
 
-    private static decimal ArrowLength(MapBundle bundle) => bundle.Arrowhead ? MapLineWidths.ArrowLength(bundle.Route.Width) : 0m;
+    // How long the arrowhead ending a line is, in pixels (MapLineWidths), none for a line without one.
+    internal static decimal ArrowLength(MapBundle bundle) => bundle.Arrowhead ? MapLineWidths.ArrowLength(bundle.Route.Width) : 0m;
 
     // Whether the pocket line runs down to a point of it: a stretch of it ending there.
     private bool FlowsDownTo(MapEnd point) => Links.Any(link => link.To == point && link.From.PocketLine is not null);
