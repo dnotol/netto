@@ -1,7 +1,7 @@
 ---
 type: adr
 title: The map's lines are drawn as a river, on arcs, the pocket line one stepped shape at full ink
-description: Routes stay orthogonal points; the drawing turns every corner on an arc (MapPath), a line into the pocket line curves down into it with no halo where they meet, and the pocket line is one stepped shape, never faded per stretch; lines into one bucket arrive spread across its top.
+description: Routes stay orthogonal points; the drawing turns every corner on an arc (MapPath), a line into the pocket line curves down into it with no halo where they meet, and the pocket line is one stepped shape, never faded per stretch; the lines into a bucket keep their ports.
 status: draft
 decision: proposed
 decided: 2026-11-06
@@ -21,12 +21,13 @@ On the map drawn by owner ([decision](/2026-10-29-the-map-drawn-by-owner.md)) th
 - **A join curves into the flow.** A line into the pocket line ends on a quarter arc turning down along it; its halo stops where the arc begins, so nothing cuts the gold. A line leaving the pocket line curves out of it the same way.
 - **The pocket line is one shape.** Its stretches are drawn as one group under every other line, each step centred on the line with its own stretch's width (`MapLineWidths.Money` of the running total), starting where its join's arc ends, square-ended. It is never faded per stretch: full ink when a module or the pocket is chosen, faded whole when another bucket is.
 - **A running total sits under its join**, right of the pocket line, clear of the arc.
-- **Lines into one bucket arrive at ports spread across its top edge**, in their nested order, adding no crossing; the Expenses bucket's two lines keep their lane (operator, 2026-11-06).
+- **The lines into a bucket keep their ports.** Spreading the lines into taxes on pay across its top would take the only free place of the dividend's amount in every plan with the company, so the operator left them as they are (2026-11-06); moving that amount first is a [backlog item](https://app.notion.com/p/410b6b39bd128163b067c1b68dbeb5bb).
 
 # Alternatives rejected
 
 - Rounded points in `MapLayout`: every route and crossing test would move for a drawing change.
 - An exact pixel radius at every width: needs a script measuring the map and redrawing on resize, for a few pixels.
+- Spreading the lines into taxes on pay across its whole top: no free place left for the dividend's amount (measured: every plan with the company fails the amount rules). Spreading them only into the room left (gaps of about 11 px instead of 8): barely visible.
 - Spreading Expenses' lines: only by a new route along the band, with real crossing risk.
 
 # Consequences
