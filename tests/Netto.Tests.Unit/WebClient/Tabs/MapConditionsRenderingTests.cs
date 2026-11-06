@@ -19,7 +19,7 @@ public class MapConditionsRenderingTests
     {
         var conditions = MapView.From(River, River.Run(), MapNames.English).Bundles().Count(bundle => bundle.Kind == MapLinkKind.Condition && bundle.Touches(RiverModule.Car));
 
-        var html = await MapRendering.RenderTabAsync(River, RiverModule.Car);
+        var html = await MapRendering.RenderTabAsync(River, MapChoice.Of(RiverModule.Car));
 
         var dashes = Regex.Matches(html, "<path [^>]*stroke-dasharray=\"([^\"]*)\"[^>]*data-link-kind=\"Condition\"").Select(match => match.Groups[1].Value).ToList();
         (conditions > 0, dashes.Count, string.Join('|', dashes.Distinct())).ShouldBe((true, conditions, MapLinkStyle.Dash(MapLinkKind.Condition)));
@@ -38,7 +38,7 @@ public class MapConditionsRenderingTests
     [Fact]
     public async Task MapTab_theCarChosen_saysItsConditionInAWordOnTheMap()
     {
-        var html = await MapRendering.RenderTabAsync(River, RiverModule.Car);
+        var html = await MapRendering.RenderTabAsync(River, MapChoice.Of(RiverModule.Car));
 
         var map = Regex.Match(html, "<div class=\"map\".*?<div class=\"map-tab__side\"", RegexOptions.Singleline).Value;
         ConditionWords(map).ShouldContain("lost");

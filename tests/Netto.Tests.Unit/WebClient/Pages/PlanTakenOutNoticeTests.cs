@@ -150,7 +150,7 @@ public class PlanTakenOutNoticeTests
         await using var page = At(Saved(WithVouchers));
         await page.LoadAsync();
         var map = await page.FindAsync<MapTab>();
-        await page.InvokeAsync(() => map.ChosenChanged.InvokeAsync(RiverModule.Vouchers));
+        await page.InvokeAsync(() => map.ChosenChanged.InvokeAsync(MapChoice.Of(RiverModule.Vouchers)));
         var card = (await page.FindAllAsync<ModuleCard>()).First(card => card.RemoveLabel is not null);
         var before = page.Focuses;
 

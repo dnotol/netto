@@ -268,11 +268,11 @@ public class MapQuietTests
         var pill = Node(view, RiverModule.Rent).Slot;
 
         var past = view.LinksOf(RiverModule.Rent).ShouldHaveSingleItem();
-        var amount = view.Amounts(MapAmounts.Of(view, MapAmountsTests.Say), RiverModule.Rent).ShouldHaveSingleItem();
+        var amount = view.Amounts(MapAmounts.Of(view, MapAmountsTests.Say), MapChoice.Of(RiverModule.Rent)).ShouldHaveSingleItem();
 
         view.ShouldSatisfyAllConditions(
             () => (past.From, past.To).ShouldBe((MapEnd.Beside(RiverModule.Vouchers), MapEnd.Of(RiverModule.Split))),
-            () => view.Drawn(RiverModule.Rent).Where(line => !line.Faded).Select(line => line.Bundle.Links[0]).ShouldBe([past]),
+            () => view.Drawn(MapChoice.Of(RiverModule.Rent)).Where(line => !line.Faded).Select(line => line.Bundle.Links[0]).ShouldBe([past]),
             () => amount.Bundle.Links[0].ShouldBe(past),
             () => (amount.At.X > pill.Right).ShouldBeTrue());
     }
@@ -324,7 +324,7 @@ public class MapQuietTests
         var above = view.Modules.Last(node => !node.Quiet && node.Slot.Bottom <= pill.Top).Slot;
         var scale = MapScale.Smallest(view.Units);
 
-        var amount = view.Amounts(MapAmounts.Of(view, MapAmountsTests.Say), RiverModule.Car).Single().Area(scale);
+        var amount = view.Amounts(MapAmounts.Of(view, MapAmountsTests.Say), MapChoice.Of(RiverModule.Car)).Single().Area(scale);
 
         view.ShouldSatisfyAllConditions(
             () => (pill.Height >= (count * MapLayout.QuietTargetRem + (count - 1) * MapLayout.QuietGapRem + 2 * MapLayout.QuietPadRem) * rem).ShouldBeTrue(),

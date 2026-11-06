@@ -185,16 +185,60 @@ public class MapTabTests
             () => heard.ShouldContain("overflow: hidden;"));
     }
 
-    // The buckets are not modules: nothing to choose, named as the bar names them.
+    // The buckets are buttons as the modules are, named as the bar names them, none pressed while nothing is
+    // chosen, after every module, as the river ends in them, so a keyboard reaches them last.
     [Fact]
-    public async Task Tab_buckets_areTheBarsFiveByTheBarsNames()
+    public async Task Tab_buckets_areTheBarsFiveByTheBarsNamesAsButtonsAfterTheModules()
     {
         var html = await RenderTabAsync(Full);
 
-        Regex.Matches(html, "<div class=\"map-bucket[^\"]*\" data-bucket=\"([a-z_]+)\"[^>]*>([^<]*)</div>").Select(match => (match.Groups[1].Value, match.Groups[2].Value.Trim()))
-            .ShouldBe([
-                ("pocket", "Your pocket"), ("taxes_on_pay", "Contributions and tax on pay and rent"), ("taxes_on_profit", "Taxes on profit"),
-                ("kept_in_company", "Kept in company"), ("expenses", "Expenses")]);
+        html.ShouldSatisfyAllConditions(
+            () => BucketButtons(html).Select(button => (button.Bucket, button.Name, button.Pressed)).ShouldBe([
+                ("pocket", "Your pocket", "false"), ("taxes_on_pay", "Contributions and tax on pay and rent", "false"), ("taxes_on_profit", "Taxes on profit", "false"),
+                ("kept_in_company", "Kept in company", "false"), ("expenses", "Expenses", "false")]),
+            () => html.IndexOf("data-bucket=\"pocket\"", StringComparison.Ordinal).ShouldBeGreaterThan(html.LastIndexOf("data-module=", StringComparison.Ordinal)));
+    }
+
+    // A bucket chosen is pressed, no module is, its lines stay and the others fade, and beside the map is its card,
+    // with no line over it saying what it receives and no list of rules, its card saying what fills it.
+    [Fact]
+    public async Task Tab_aBucketChosen_marksItBringsOutItsLinesAndHasItsCardAlone()
+    {
+        var chosen = MapChoice.InBucket("taxes_on_profit");
+        var view = MapView.From(Full, Full.Run(), MapNames.English).ShowingFor(chosen);
+
+        var html = await RenderTabAsync(Full, chosen);
+
+        html.ShouldSatisfyAllConditions(
+            () => BucketButtons(html).Where(button => button.Pressed == "true").Select(button => (button.Bucket, button.Chosen)).ShouldBe([("taxes_on_profit", true)]),
+            () => BucketButtons(html).Count(button => button.Chosen).ShouldBe(1),
+            () => Buttons(html).ShouldAllBe(button => button.Pressed == "false"),
+            () => Regex.Count(html, "<path class=\"map-line[^\"]*map-line--faded").ShouldBe(view.Drawn(chosen).Count(line => line.Faded)),
+            () => Regex.Count(html, "<path class=\"map-line[^\"]*map-line--faded").ShouldBeGreaterThan(0),
+            () => (Count(html), html.Contains("map-tab__effects", StringComparison.Ordinal)).ShouldBe((0, false)),
+            () => (html.Contains("id=\"card-taxes_on_profit\"", StringComparison.Ordinal), Regex.Count(html, "<section id=\"card-")).ShouldBe((true, 1)));
+    }
+
+    // Another bucket chosen, the pocket line fades whole with the other lines; the pocket chosen, it stays at full
+    // ink, as with a module or nothing chosen.
+    [Theory]
+    [InlineData("expenses", "map-pocket-line map-pocket-line--faded")]
+    [InlineData("pocket", "map-pocket-line")]
+    public async Task Tab_aBucketChosen_fadesThePocketLineWholeUnlessItIsThePocket(string bucket, string classes)
+    {
+        var html = await RenderTabAsync(Full, MapChoice.InBucket(bucket));
+
+        Attribute(Regex.Match(html, "<g class=\"map-pocket-line[^\"]*\"[^>]*>").Value, "class").ShouldBe(classes);
+    }
+
+    // A bucket's card holds no field, so while the engine refuses an amount the refusal is said above the map,
+    // once.
+    [Fact]
+    public async Task Tab_aBucketChosenWhileAnAmountIsRefused_saysTheRefusalAboveTheMapOnce()
+    {
+        var html = await RenderTabAsync(Full.WithReserve(-1m), MapChoice.InBucket("pocket"));
+
+        (Regex.Count(html, "refused-message"), html.IndexOf("refused-message", StringComparison.Ordinal) < html.IndexOf("<div class=\"map-tab\"", StringComparison.Ordinal)).ShouldBe((1, true));
     }
 
     // One line for each route, each saying its kind, the kinds told apart by their dash, each as thick as its
@@ -272,11 +316,11 @@ public class MapTabTests
     [InlineData(RiverModule.Rent)]
     public async Task Tab_thePocketLine_isOneShapeUnderEveryLineAtFullInk(RiverModule? chosen)
     {
-        var view = MapView.From(Full, Full.Run(), MapNames.English).ShowingFor(chosen);
+        var view = MapView.From(Full, Full.Run(), MapNames.English).ShowingFor(Chosen(chosen));
         var steps = view.PocketLine().Steps;
         string Path(MapPocketStep step) => MapPath.Of([new MapPoint(step.X, step.Top), new MapPoint(step.X, step.Bottom)], view.Scale);
 
-        var html = await RenderTabAsync(Full, chosen);
+        var html = await RenderTabAsync(Full, Chosen(chosen));
 
         var shape = Regex.Matches(html, "<g class=\"map-pocket-line[^\"]*\"[^>]*>.*?</g>", RegexOptions.Singleline).ShouldHaveSingleItem().Value;
         shape.ShouldSatisfyAllConditions(
@@ -353,7 +397,7 @@ public class MapTabTests
         var own = MapView.From(Full, Full.Run(), MapNames.English).Bundles().Where(bundle => bundle.Touches(RiverModule.Car) && bundle.SaysAmount).Select(bundle => bundle.Kind.ToString()).ToList();
         var placed = MapAmounts.Of(MapView.From(Full, Full.Run(), MapNames.English), MapAmountsTests.Say).Select(amount => (amount.Bundle.Kind.ToString(), Style(amount), "true", amount.Text)).ToList();
 
-        var map = Map(await RenderTabAsync(Full, RiverModule.Car));
+        var map = Map(await RenderTabAsync(Full, MapChoice.Of(RiverModule.Car)));
 
         map.ShouldSatisfyAllConditions(
             () => Placed(map).Count.ShouldBe(own.Count),
@@ -370,10 +414,10 @@ public class MapTabTests
     [Fact]
     public async Task Tab_everyLine_isDrawnOverAHaloOfTheGround()
     {
-        var view = MapView.From(Full, Full.Run(), MapNames.English).ShowingFor(RiverModule.Car);
-        var drawn = view.Drawn(RiverModule.Car);
+        var view = MapView.From(Full, Full.Run(), MapNames.English).ShowingFor(MapChoice.Of(RiverModule.Car));
+        var drawn = view.Drawn(MapChoice.Of(RiverModule.Car));
 
-        var html = await RenderTabAsync(Full, RiverModule.Car);
+        var html = await RenderTabAsync(Full, MapChoice.Of(RiverModule.Car));
 
         var expected = drawn.SelectMany(line => (view.HaloPathOf(line.Bundle) is { Length: > 0 } halo
                 ? new[] { ((string?)(line.Faded ? "map-halo map-halo--faded" : "map-halo"), (string?)halo, (string?)MapLinkStyle.Halo(line.Bundle.Route.Width), (string?)null) }
@@ -413,14 +457,14 @@ public class MapTabTests
     [Fact]
     public async Task Tab_aModuleChosen_marksItBringsOutItsLinesAndSaysWhatItReceives()
     {
-        var view = MapView.From(Full, Full.Run(), MapNames.English).ShowingFor(RiverModule.Rent);
+        var view = MapView.From(Full, Full.Run(), MapNames.English).ShowingFor(MapChoice.Of(RiverModule.Rent));
         var received = MapReceivedView.Of(view, RiverModule.Rent, end => end.Id).Lines;
 
-        var html = await RenderTabAsync(Full, RiverModule.Rent);
+        var html = await RenderTabAsync(Full, MapChoice.Of(RiverModule.Rent));
 
         html.ShouldSatisfyAllConditions(
             () => Buttons(html).Where(button => button.Pressed == "true").Select(button => button.Module).ShouldBe(["rent"]),
-            () => Regex.Count(html, "<path class=\"map-line[^\"]*map-line--faded").ShouldBe(view.Drawn(RiverModule.Rent).Count(line => line.Faded)),
+            () => Regex.Count(html, "<path class=\"map-line[^\"]*map-line--faded").ShouldBe(view.Drawn(MapChoice.Of(RiverModule.Rent)).Count(line => line.Faded)),
             () => received.Select(line => line.From).ShouldBe(["company-year"]),
             () => Line(html).ShouldBe($"Receives {received[0].Amount} from {CardTitle(RiverModule.CompanyYear)}"));
     }
@@ -430,7 +474,7 @@ public class MapTabTests
     [Fact]
     public async Task Tab_aModuleChosen_drawsNoListOfItsLinesAndNoSecondButtonForIt()
     {
-        var html = await RenderTabAsync(Full, RiverModule.Split);
+        var html = await RenderTabAsync(Full, MapChoice.Of(RiverModule.Split));
 
         (html.Contains("map-hood", StringComparison.Ordinal), Count(html), Regex.Count(html, "data-module=\"split\"")).ShouldBe((false, 1, 1));
     }
@@ -440,8 +484,8 @@ public class MapTabTests
     [Fact]
     public async Task Tab_aModuleChosen_namesTheModulesItReceivesFromAsButtons()
     {
-        var (split, rent, dividend) = (await RenderTabAsync(RiverInputs.Example, RiverModule.Split), await RenderTabAsync(Full, RiverModule.Rent),
-            await RenderTabAsync(Full, RiverModule.Dividend));
+        var (split, rent, dividend) = (await RenderTabAsync(RiverInputs.Example, MapChoice.Of(RiverModule.Split)), await RenderTabAsync(Full, MapChoice.Of(RiverModule.Rent)),
+            await RenderTabAsync(Full, MapChoice.Of(RiverModule.Dividend)));
 
         split.ShouldSatisfyAllConditions(
             () => GoButtons(split).ShouldBe([("company-year", "Company year")]),
@@ -453,7 +497,7 @@ public class MapTabTests
     [Fact]
     public async Task Tab_companyYearChosen_saysNothingReceived()
     {
-        var html = await RenderTabAsync(Full, RiverModule.CompanyYear);
+        var html = await RenderTabAsync(Full, MapChoice.Of(RiverModule.CompanyYear));
 
         (Count(html), html.Contains("id=\"card-company-year\"", StringComparison.Ordinal)).ShouldBe((0, true));
     }
@@ -462,7 +506,7 @@ public class MapTabTests
     [Fact]
     public async Task Tab_aModuleChosenOffTheMap_choosesNone()
     {
-        var html = await RenderTabAsync(RiverInputs.Example, RiverModule.Car);
+        var html = await RenderTabAsync(RiverInputs.Example, MapChoice.Of(RiverModule.Car));
 
         (Buttons(html).Any(button => button.Pressed == "true"), Count(html)).ShouldBe((false, 0));
     }
@@ -488,7 +532,7 @@ public class MapTabTests
     [Fact]
     public async Task Tab_aModuleChosen_isSaidInNoLiveRegion()
     {
-        var html = await RenderTabAsync(Full, RiverModule.Car);
+        var html = await RenderTabAsync(Full, MapChoice.Of(RiverModule.Car));
 
         Regex.IsMatch(Regex.Match(html, "<div class=\"map-tab\".*", RegexOptions.Singleline).Value, "aria-live|role=\"(status|alert)\"").ShouldBeFalse();
     }
@@ -498,7 +542,7 @@ public class MapTabTests
     [Fact]
     public async Task Tab_leavesRoomForTheToolsAndTheCard()
     {
-        var html = await RenderTabAsync(Full, RiverModule.Rent);
+        var html = await RenderTabAsync(Full, MapChoice.Of(RiverModule.Rent));
 
         var order = ToolsAndCard.Select(marker => html.IndexOf(marker, StringComparison.Ordinal)).ToList();
         (order.All(index => index >= 0), order.SequenceEqual(order.Order())).ShouldBe((true, true));
@@ -522,7 +566,7 @@ public class MapTabTests
     [Fact]
     public async Task Tab_companySkippedAndCompanyYearChosen_saysNothingReceivedAndHasItsSkippedCard()
     {
-        var html = await RenderTabAsync(Full.SkipCompany(), RiverModule.CompanyYear);
+        var html = await RenderTabAsync(Full.SkipCompany(), MapChoice.Of(RiverModule.CompanyYear));
 
         (Count(html), html.Contains("module-card--skipped"), Buttons(html).Single(button => button.Pressed == "true").Module)
             .ShouldBe((0, true, "company-year"));
@@ -544,6 +588,13 @@ public class MapTabTests
         .. Regex.Matches(html, "<button type=\"button\" class=\"(map-module[^\"]*)\"[^>]*aria-pressed=\"(\\w+)\"[^>]*data-module=\"([a-z-]+)\"[^>]*>(.*?)</button>", RegexOptions.Singleline)
             .Select(match => (match.Groups[3].Value, Regex.Replace(Regex.Replace(match.Groups[4].Value, "<[^>]*>", " "), "\\s+", " ").Trim(), match.Groups[2].Value,
                 match.Groups[1].Value.Contains("map-module--refused", StringComparison.Ordinal), match.Groups[1].Value.Contains("map-module--skipped", StringComparison.Ordinal))),
+    ];
+
+    // Each bucket's button: the bucket it is, its name, its pressed state, and whether it is drawn chosen.
+    internal static List<(string Bucket, string Name, string Pressed, bool Chosen)> BucketButtons(string html) =>
+    [
+        .. Regex.Matches(html, "<button type=\"button\" class=\"(map-bucket[^\"]*)\" aria-pressed=\"(\\w+)\" data-bucket=\"([a-z_]+)\"[^>]*>([^<]*)</button>")
+            .Select(match => (match.Groups[3].Value, match.Groups[4].Value.Trim(), match.Groups[2].Value, match.Groups[1].Value.Contains("map-bucket--chosen", StringComparison.Ordinal))),
     ];
 
     // Each badge drawn in a module's button: the module, its tone, the icon before its words, and its words, those

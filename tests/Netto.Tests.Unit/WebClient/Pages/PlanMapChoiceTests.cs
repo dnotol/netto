@@ -19,7 +19,7 @@ public class PlanMapChoiceTests
 
         await page.LoadAsync();
 
-        ((await page.FindAsync<MapTab>()).Chosen, page.Errors.Count).ShouldBe((RiverModule.CompanyYear, 0));
+        ((await page.FindAsync<MapTab>()).Chosen, page.Errors.Count).ShouldBe((MapChoice.Of(RiverModule.CompanyYear), 0));
     }
 
     // A link from another tab names a card, the Optimisation tab's moves by the card they act on.
@@ -30,7 +30,7 @@ public class PlanMapChoiceTests
 
         await page.LoadAsync();
 
-        ((await page.FindAsync<MapTab>()).Chosen, page.Errors.Count).ShouldBe((RiverModule.Split, 0));
+        ((await page.FindAsync<MapTab>()).Chosen, page.Errors.Count).ShouldBe((MapChoice.Of(RiverModule.Split), 0));
     }
 
     // From « Add to plan » or a move applied: the viewer asked for the lever, so its card opens beside
@@ -44,7 +44,7 @@ public class PlanMapChoiceTests
 
         await page.InvokeAsync(() => map.InputsChanged.InvokeAsync(RiverInputs.Example.AddToPlan(OptionalModule.Car)));
 
-        ((await page.FindAsync<MapTab>()).Chosen, page.Errors.Count).ShouldBe((RiverModule.Car, 0));
+        ((await page.FindAsync<MapTab>()).Chosen, page.Errors.Count).ShouldBe((MapChoice.Of(RiverModule.Car), 0));
     }
 
     [Fact]
@@ -54,9 +54,9 @@ public class PlanMapChoiceTests
         await page.LoadAsync();
         var map = await page.FindAsync<MapTab>();
 
-        await page.InvokeAsync(() => map.ChosenChanged.InvokeAsync(RiverModule.Car));
+        await page.InvokeAsync(() => map.ChosenChanged.InvokeAsync(MapChoice.Of(RiverModule.Car)));
 
-        ((await page.FindAsync<MapTab>()).Chosen, page.Errors.Count).ShouldBe((RiverModule.Car, 0));
+        ((await page.FindAsync<MapTab>()).Chosen, page.Errors.Count).ShouldBe((MapChoice.Of(RiverModule.Car), 0));
     }
 
     [Fact]
@@ -65,11 +65,11 @@ public class PlanMapChoiceTests
         await using var page = LivePlan.At("http://localhost/plan", new BrowserStorage(), river: WithACar);
         await page.LoadAsync();
         var map = await page.FindAsync<MapTab>();
-        await page.InvokeAsync(() => map.ChosenChanged.InvokeAsync(RiverModule.Car));
+        await page.InvokeAsync(() => map.ChosenChanged.InvokeAsync(MapChoice.Of(RiverModule.Car)));
 
         await page.InvokeAsync(() => map.InputsChanged.InvokeAsync(WithACar.TakeOutOfPlan(OptionalModule.Car)));
 
-        ((await page.FindAsync<MapTab>()).Chosen, page.Errors.Count).ShouldBe(((RiverModule?)null, 0));
+        ((await page.FindAsync<MapTab>()).Chosen, page.Errors.Count).ShouldBe(((MapChoice?)null, 0));
     }
 
     // A module the river still draws stays chosen whatever else changes.
@@ -79,10 +79,57 @@ public class PlanMapChoiceTests
         await using var page = LivePlan.At("http://localhost/plan", new BrowserStorage(), river: WithACar);
         await page.LoadAsync();
         var map = await page.FindAsync<MapTab>();
-        await page.InvokeAsync(() => map.ChosenChanged.InvokeAsync(RiverModule.DirectorPay));
+        await page.InvokeAsync(() => map.ChosenChanged.InvokeAsync(MapChoice.Of(RiverModule.DirectorPay)));
 
         await page.InvokeAsync(() => map.InputsChanged.InvokeAsync(WithACar.TakeOutOfPlan(OptionalModule.Car)));
 
-        (await page.FindAsync<MapTab>()).Chosen.ShouldBe(RiverModule.DirectorPay);
+        (await page.FindAsync<MapTab>()).Chosen.ShouldBe(MapChoice.Of(RiverModule.DirectorPay));
+    }
+
+    // A link names a bucket by its key, as it names a module by its fold's name.
+    [Fact]
+    public async Task Plan_arrivingWithABucket_choosesIt()
+    {
+        await using var page = LivePlan.At("http://localhost/plan?card=pocket", new BrowserStorage());
+
+        await page.LoadAsync();
+
+        ((await page.FindAsync<MapTab>()).Chosen, page.Errors.Count).ShouldBe((MapChoice.InBucket("pocket"), 0));
+    }
+
+    // The viewer presses a bucket on the map, as the browser sends the click to it: it is chosen, its card beside
+    // the map; pressed again, it is let go.
+    [Fact]
+    public async Task Plan_aBucketPressedOnTheMap_isChosenAndPressedAgainLetGo()
+    {
+        await using var page = LivePlan.At("http://localhost/plan", new BrowserStorage(), river: WithACar);
+        await page.LoadAsync();
+
+        await page.PressAsync("data-bucket", "expenses");
+        var (chosen, cards) = ((await page.FindAsync<MapTab>()).Chosen, string.Join(' ', (await page.FindAllAsync<BucketCard>()).Select(card => card.Bucket)));
+        await page.PressAsync("data-bucket", "expenses");
+
+        var letGo = (await page.FindAsync<MapTab>()).Chosen;
+        page.ShouldSatisfyAllConditions(
+            () => (chosen, cards).ShouldBe((MapChoice.InBucket("expenses"), "expenses")),
+            () => letGo.ShouldBeNull(),
+            () => page.Errors.ShouldBeEmpty());
+    }
+
+    // The five buckets are on the map whatever the plan holds: a bucket chosen stays chosen through an edit, a
+    // lever taken out and the company skipped.
+    [Fact]
+    public async Task Plan_aBucketChosen_staysChosenWhateverTheRiverBecomes()
+    {
+        await using var page = LivePlan.At("http://localhost/plan", new BrowserStorage(), river: WithACar);
+        await page.LoadAsync();
+        var map = await page.FindAsync<MapTab>();
+        await page.InvokeAsync(() => map.ChosenChanged.InvokeAsync(MapChoice.InBucket("kept_in_company")));
+
+        await page.InvokeAsync(() => map.InputsChanged.InvokeAsync(WithACar.WithRevenue(WithACar.Company!.Revenue.Value + 1_000m)));
+        await page.InvokeAsync(() => map.InputsChanged.InvokeAsync(WithACar.TakeOutOfPlan(OptionalModule.Car)));
+        await page.InvokeAsync(() => map.InputsChanged.InvokeAsync(WithACar.TakeOutOfPlan(OptionalModule.Car).SkipCompany()));
+
+        ((await page.FindAsync<MapTab>()).Chosen, page.Errors.Count).ShouldBe((MapChoice.InBucket("kept_in_company"), 0));
     }
 }

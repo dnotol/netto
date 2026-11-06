@@ -24,8 +24,8 @@ public class PlanMapReceivedTests
         await page.PressAsync("data-received-from", "corporate-tax");
 
         var (map, panel) = (await page.FindAsync<MapTab>(), await page.FindAsync<MapPanel>());
-        (map.Chosen, panel.Module, MapReceivedHtml.Listed(map).Single().EndsWith($"from {MapTabTests.CardTitle(RiverModule.Split)}", StringComparison.Ordinal), page.Focuses - before, page.Errors.Count)
-            .ShouldBe((RiverModule.CorporateTax, RiverModule.CorporateTax, true, 1, 0));
+        (map.Chosen, panel.Chosen, MapReceivedHtml.Listed(map).Single().EndsWith($"from {MapTabTests.CardTitle(RiverModule.Split)}", StringComparison.Ordinal), page.Focuses - before, page.Errors.Count)
+            .ShouldBe((MapChoice.Of(RiverModule.CorporateTax), MapChoice.Of(RiverModule.CorporateTax), true, 1, 0));
     }
 
     // The same state, the same focus, as a choice on the map.
@@ -38,7 +38,7 @@ public class PlanMapReceivedTests
         var (beforeLine, beforeMap) = (fromTheLine.Focuses, fromTheMap.Focuses);
 
         await fromTheLine.PressAsync("data-received-from", "corporate-tax");
-        await fromTheMap.InvokeAsync(() => map.ChosenChanged.InvokeAsync(RiverModule.CorporateTax));
+        await fromTheMap.InvokeAsync(() => map.ChosenChanged.InvokeAsync(MapChoice.Of(RiverModule.CorporateTax)));
 
         var (shownFromTheLine, shownFromTheMap) = (await fromTheLine.FindAsync<MapTab>(), await fromTheMap.FindAsync<MapTab>());
         (shownFromTheLine.Chosen, fromTheLine.Focuses - beforeLine).ShouldBe((shownFromTheMap.Chosen, fromTheMap.Focuses - beforeMap));
@@ -57,7 +57,7 @@ public class PlanMapReceivedTests
         {
             (await page.FindAsync<MapTab>()).Received.ShouldNotBeNull().Lines.Select(line => line.Module).ShouldContain(next);
             await page.PressAsync("data-received-from", MapModules.Name(next));
-            visited.Add((await page.FindAsync<MapTab>()).Chosen);
+            visited.Add((await page.FindAsync<MapTab>()).Chosen?.Module);
         }
 
         visited.ShouldBe([RiverModule.CorporateTax, RiverModule.Split]);
@@ -82,7 +82,7 @@ public class PlanMapReceivedTests
         var page = LivePlan.At("http://localhost/plan", new BrowserStorage(), river: river);
         await page.LoadAsync();
         var map = await page.FindAsync<MapTab>();
-        await page.InvokeAsync(() => map.ChosenChanged.InvokeAsync(chosen));
+        await page.InvokeAsync(() => map.ChosenChanged.InvokeAsync(MapChoice.Of(chosen)));
         return page;
     }
 }

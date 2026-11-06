@@ -366,8 +366,10 @@
         display: block;
     }
 
-/* A bucket of the bar: where the money ends, nothing to choose. Its wash lies over the map's ground, so it
-   hides the lines that run on under it to its middle, and each meets its edge, rounded corners and all. */
+/* A bucket of the bar: where the money ends, a button that chooses it as a module's box does, gold where the
+   pointer or the choice is on it. Its wash lies over the map's ground, so it hides the lines that run on under
+   it to its middle, and each meets its edge, rounded corners and all. MudBlazor's global rule centres a
+   button's content, which the box keeps. */
 .map-bucket {
     position: absolute;
     display: flex;
@@ -378,14 +380,25 @@
     border-radius: 12px;
     background: linear-gradient(var(--netto-wash), var(--netto-wash)), var(--netto-page);
     color: var(--netto-text-muted);
+    font: inherit;
     font-size: 0.8rem;
     font-weight: 600;
     line-height: 1.25;
     text-align: center;
+    cursor: pointer;
 }
+
+    .map-bucket:hover {
+        border-color: var(--netto-gold);
+    }
 
 .map-bucket--pocket {
     color: var(--netto-text);
+}
+
+.map-bucket--chosen {
+    border-color: var(--netto-gold);
+    box-shadow: inset 0 0 0 1px var(--netto-gold);
 }
 
 /* A module: a button, its title in its box, gold where the pointer or the choice is on it. MudBlazor's

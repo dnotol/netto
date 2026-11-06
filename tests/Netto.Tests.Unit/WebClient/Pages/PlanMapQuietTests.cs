@@ -20,13 +20,13 @@ public class PlanMapQuietTests
         await using var page = LivePlan.At("http://localhost/plan", new BrowserStorage(), river: ChainEmpty);
         await page.LoadAsync();
         var map = await page.FindAsync<MapTab>();
-        await page.InvokeAsync(() => map.ChosenChanged.InvokeAsync(RiverModule.Allowances));
+        await page.InvokeAsync(() => map.ChosenChanged.InvokeAsync(MapChoice.Of(RiverModule.Allowances)));
 
         await page.InvokeAsync(() => map.InputsChanged.InvokeAsync(ChainEmpty with { Allowances = MapLinksTests.Full.Allowances }));
 
         var shown = await page.FindAsync<MapTab>();
         shown.ShouldSatisfyAllConditions(
-            () => (shown.Chosen, page.Errors.Count).ShouldBe((RiverModule.Allowances, 0)),
+            () => (shown.Chosen, page.Errors.Count).ShouldBe((MapChoice.Of(RiverModule.Allowances), 0)),
             () => shown.ShownMap.Places().Select(place => (string.Join('+', place.Nodes.Select(node => node.End.Id)), place.Quiet)).Take(4).ShouldBe(
                 [("company-year", false), ("vouchers", true), ("allowances", false), ("rent+car", true)]));
     }

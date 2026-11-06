@@ -55,6 +55,22 @@ public class MapLinesCssTests
         Stylesheet.Block(Css, ".map-bucket").ShouldContain("background: linear-gradient(var(--netto-wash), var(--netto-wash)), var(--netto-page);");
     }
 
+    // A bucket is a button as a module is: in the map's own type, not the browser's, its size its own after
+    // that, a pointer over it, gold where the pointer or the choice is on it, as a module is.
+    [Fact]
+    public void MapTabCss_drawsABucketAsAButtonGoldWhereThePointerOrTheChoiceIsOnIt()
+    {
+        var bucket = Stylesheet.Block(Css, ".map-bucket");
+
+        Css.ShouldSatisfyAllConditions(
+            () => bucket.ShouldContain("font: inherit;"),
+            () => bucket.IndexOf("font: inherit;", StringComparison.Ordinal).ShouldBeLessThan(bucket.IndexOf("font-size: 0.8rem;", StringComparison.Ordinal)),
+            () => bucket.ShouldContain("cursor: pointer;"),
+            () => Stylesheet.Block(Css, ".map-bucket:hover").ShouldContain("border-color: var(--netto-gold);"),
+            () => Stylesheet.Block(Css, ".map-bucket--chosen").ShouldContain("border-color: var(--netto-gold);"),
+            () => Stylesheet.Block(Css, ".map-bucket--chosen").ShouldContain("box-shadow: inset 0 0 0 1px var(--netto-gold);"));
+    }
+
     // An arrowhead is as large as its line asks, the sizes set on it: half its base the border each side,
     // its length the border it points with, whichever way it points.
     [Fact]

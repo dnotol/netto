@@ -40,8 +40,9 @@
    plan, which « Add to plan » sets, among the map's tools (CompositionMenu, which the page hands the map,
    so that it keeps hold of it); taking one out, there or from its card, shows a notice with Undo, which
    outlives a switch of tab, and adding one chooses it, so its card opens beside the map to be filled. The
-   module chosen is Company year on arriving, or the one the address names (CardLinks, plan?card=<name>),
-   from a link of the Optimisation tab's moves or loaded as it is. *@
+   choice on the map, a module or a bucket (MapChoice), is Company year on arriving, or the one the address
+   names (CardLinks, plan?card=<name>), from a link of the Optimisation tab's moves or loaded as it is, or the
+   bucket the viewer presses in the band, from any tab, which brings them to the plan. *@
 <BucketBar Run="_run" Setup="_today?.Run">
     <ChildContent>
         <PlansPanel Inputs="_inputs" CanSave="BaselineGain.CanMark(_run)" OnOpen="OnPlanOpened" OnChanged="OnPlansChanged" />
@@ -110,8 +111,8 @@
     [Parameter]
     public string? Tab { get; set; }
 
-    // The card a link from another tab names, by its fold's name (CardLinks): its module is chosen on the
-    // map on arrival. None for the plan alone.
+    // The card a link from another tab names, by its fold's name or its bucket's key (CardLinks): its module
+    // or its bucket is chosen on the map on arrival. None for the plan alone.
     [SupplyParameterFromQuery(Name = CardLinks.Query)]
     public string? Card { get; set; }
 
@@ -131,7 +132,7 @@
     private bool _focusComposition;
     private MovesSource _moves = default!;
     private readonly CardArrival _arrival = new();
-    private RiverModule? _mapChosen = RiverModule.CompanyYear;
+    private MapChoice? _mapChosen = MapChoice.Of(RiverModule.CompanyYear);
     private bool _viewerChose;
 
     protected override void OnInitialized()
@@ -143,7 +144,7 @@
 
     // The tab the URL names, on arriving and at each switch of tab, the page staying the same; a segment
     // Netto has no tab for is a page it does not have. On the plan, the card the URL names, once per
-    // arrival (CardArrival), has its module chosen on the map, while the map draws it.
+    // arrival (CardArrival), has its module chosen on the map, while the map draws it, or its bucket.
     protected override void OnParametersSet()
     {
         if (PlanTabRoutes.From(Tab) is { } tab)
@@ -151,7 +152,7 @@
         else
             Navigation.NotFound();
 
-        if (_arrival.Take(_tab, Card) is { } card && MapModules.Named(card) is { } named && MapView.ModulesOf(_inputs).Contains(named))
+        if (_arrival.Take(_tab, Card) is { } card && MapChoice.Named(card, MapView.ModulesOf(_inputs)) is { } named)
             (_mapChosen, _viewerChose) = (named, false);
     }
 
@@ -187,7 +188,7 @@
     {
         var takenOut = inputs.Composition.TakenOutSince(_inputs.Composition);
         if (ModuleFolds.Added(_inputs.Composition, inputs.Composition) is [.., var added] && added != _takenOut)
-            (_mapChosen, _viewerChose) = (MapModules.Of(added), false);
+            (_mapChosen, _viewerChose) = (MapChoice.Of(MapModules.Of(added)), false);
         _takenOut = RemovalNotice.About(_takenOut, _inputs.Composition, inputs.Composition);
         _focusUndo = takenOut is not null && AddToPlan is not { IsOpen: true };
         State.Inputs = inputs;
@@ -237,18 +238,19 @@
         _focusComposition = true;
     }
 
-    // The module the viewer chose on the map, kept from one tab to the next, let go once it has left the
-    // map.
-    private void OnMapChosen(RiverModule? module) => (_mapChosen, _viewerChose) = (module, true);
+    // The module or the bucket the viewer chose on the map, kept from one tab to the next, a module let go
+    // once it has left the map.
+    private void OnMapChosen(MapChoice? choice) => (_mapChosen, _viewerChose) = (choice, true);
 
     // The split's search runs the year at every pay, so it runs again only when an input other than
     // the pay changes: dragging the pay moves its marker along the same curve. A module chosen on the map
-    // that the river no longer draws, a lever taken out of the plan, is chosen no more.
+    // that the river no longer draws, a lever taken out of the plan, is chosen no more; a bucket, always on
+    // the map, stays chosen.
     private void Show(RiverInputs inputs)
     {
         _inputs = inputs;
         _run = inputs.Run();
-        if (_mapChosen is { } chosen && !MapView.ModulesOf(inputs).Contains(chosen))
+        if (_mapChosen?.Module is { } chosen && !MapView.ModulesOf(inputs).Contains(chosen))
             _mapChosen = null;
         if (_searched is null || !inputs.SameBesidesPay(_searched))
         {

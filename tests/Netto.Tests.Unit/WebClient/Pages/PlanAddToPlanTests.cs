@@ -69,7 +69,7 @@ public class PlanAddToPlanTests
         await using var page = LivePlan.At("http://localhost/plan", storage, holdPaint: true, river: RiverInputs.Example.AddToPlan(OptionalModule.Vouchers));
         await page.LoadAsync();
         var map = await page.FindAsync<MapTab>();
-        await page.InvokeAsync(() => map.ChosenChanged.InvokeAsync(RiverModule.Vouchers));
+        await page.InvokeAsync(() => map.ChosenChanged.InvokeAsync(MapChoice.Of(RiverModule.Vouchers)));
         var card = (await page.FindAllAsync<ModuleCard>()).First(card => card.RemoveLabel is not null);
         await page.InvokeAsync(() => card.OnRemove.InvokeAsync());
         await page.SwitchTabAsync("optimisation");

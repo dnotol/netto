@@ -13,6 +13,6 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Hint" xml:space="preserve">
-    <value>La carte du module que vous choisissez s'ouvre ici, pour en modifier les montants.</value>
+    <value>La carte du module ou du compartiment que vous choisissez s'ouvre ici&#160;: celle d'un module pour en modifier les montants, celle d'un compartiment pour voir ce qui le remplit.</value>
   </data>
 </root>

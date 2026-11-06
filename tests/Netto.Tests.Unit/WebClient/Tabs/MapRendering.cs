@@ -43,7 +43,10 @@ internal static class MapRendering
     // arrow or a gate's words say instead.
     public static string Unsigned(string amount) => amount.TrimStart('−', '+', '-');
 
-    public static async Task<string> RenderTabAsync(RiverInputs river, RiverModule? chosen = null, Action<IServiceCollection>? more = null) =>
+    // The choice of a module or none, as a theory names it (MapChoice holds in no attribute).
+    public static MapChoice? Chosen(RiverModule? module) => module is { } chosen ? MapChoice.Of(chosen) : null;
+
+    public static async Task<string> RenderTabAsync(RiverInputs river, MapChoice? chosen = null, Action<IServiceCollection>? more = null) =>
         WebUtility.HtmlDecode(await RiverRendering.RenderAsync(typeof(MapTab), new Folds(new BrowserStorage()), new()
         {
             [nameof(MapTab.Inputs)] = river,

@@ -41,10 +41,11 @@ internal sealed record MapView(IReadOnlyList<MapNode> Modules, IReadOnlyList<Map
 
     // What the map draws for a choice: every line of money, always, and a tax base's or a condition's line only
     // where the module chosen is at one end of it, a point of the company's line or of the pocket line beside it
-    // counting as it (MapLink.Touches); none of them while nothing is chosen, their boxes saying them in their
-    // badges. The map given is the run's, with every link, and the lines left keep their routes.
-    public MapView ShowingFor(RiverModule? chosen) =>
-        this with { Links = [.. Links.Where(link => MapLinkStyle.IsMoney(link.Kind) || (chosen is { } module && link.Touches(module)))] };
+    // counting as it (MapLink.Touches); none of them while nothing or a bucket is chosen, no rule reaching a
+    // bucket, their boxes saying them in their badges. The map given is the run's, with every link, and the lines
+    // left keep their routes.
+    public MapView ShowingFor(MapChoice? chosen) =>
+        this with { Links = [.. Links.Where(link => MapLinkStyle.IsMoney(link.Kind) || (chosen?.Module is { } module && link.Touches(module)))] };
 
     // The map of the run, each module named as the page draws it (names: MapTab's localizer), which its box is
     // sized to hold.
@@ -132,8 +133,9 @@ internal sealed record MapView(IReadOnlyList<MapNode> Modules, IReadOnlyList<Map
         ? [RiverModule.CompanyYear, RiverModule.DirectorPay, .. inputs.InPlan(OptionalModule.Household) ? [RiverModule.Household] : Array.Empty<RiverModule>()]
         : [.. MapModules.Order.Where(module => RiverModules.Lever(module) is not { } lever || inputs.InPlan(lever))];
 
-    // The module chosen, while the map draws it; none once it has left the map.
-    public RiverModule? Choice(RiverModule? chosen) => chosen is { } module && Modules.Any(node => node.End.Module == module) ? module : null;
+    // The module or the bucket chosen, while the map draws it: a module none once it has left the map, a bucket
+    // always, the map drawing the five whatever the plan holds.
+    public MapChoice? Choice(MapChoice? chosen) => chosen is not null && Modules.Concat(Buckets).Any(node => node.End == chosen.End) ? chosen : null;
 
     // The modules as the map draws them, in the river's order: a box each, but the quiet levers, which
     // share one place where they follow one another down the company's line (MapLayout gives them one slot),
@@ -156,16 +158,16 @@ internal sealed record MapView(IReadOnlyList<MapNode> Modules, IReadOnlyList<Map
     public IReadOnlyList<MapBundle> Bundles() =>
         [.. Links.Where(link => link.Route is not null).GroupBy(link => link.Route!).Select(bundle => new MapBundle(bundle.Key, [.. bundle]))];
 
-    // The lines in the order they are drawn, each faded while another module is chosen: the chosen one's
-    // last, over the others. The pocket line is not among them: it is drawn as one shape of its own, under them
-    // all (PocketLine).
-    public IReadOnlyList<(MapBundle Bundle, bool Faded)> Drawn(RiverModule? chosen) =>
-        [.. Bundles().Where(bundle => !bundle.StretchOfThePocketLine).Select(bundle => (Bundle: bundle, Faded: chosen is { } module && !bundle.Touches(module))).OrderByDescending(line => line.Faded)];
+    // The lines in the order they are drawn, each faded while a module or a bucket is chosen that does not keep
+    // it (MapBundle.Shows): the chosen one's last, over the others. The pocket line is not among them: it is drawn
+    // as one shape of its own, under them all (PocketLine).
+    public IReadOnlyList<(MapBundle Bundle, bool Faded)> Drawn(MapChoice? chosen) =>
+        [.. Bundles().Where(bundle => !bundle.StretchOfThePocketLine).Select(bundle => (Bundle: bundle, Faded: chosen is not null && !bundle.Shows(chosen))).OrderByDescending(line => line.Faded)];
 
     // The pocket line as the map draws it, one shape, a step for each stretch (MapPocketLine.Steps), at full ink
-    // whichever module is chosen, or none: the module's share shows by its own line into it. Faded whole, never a
-    // stretch of it alone, where the map is told so (Faded).
-    public MapPocketShape PocketLine() => new(MapPocketLine.Steps(this));
+    // whichever module is chosen, or none, the module's share showing by its own line into it, and with the pocket
+    // chosen, whose line it is; faded whole, never a stretch of it alone, while another bucket is chosen.
+    public MapPocketShape PocketLine(MapChoice? chosen = null) => new(MapPocketLine.Steps(this)) { Faded = chosen?.Bucket is { } bucket && bucket != "pocket" };
 
     // The scale the map's drawing is worked out at: where the map is drawn smallest, as its layout is (MapPath).
     public MapScale Scale => MapScale.Smallest(Units);
@@ -223,13 +225,13 @@ internal sealed record MapView(IReadOnlyList<MapNode> Modules, IReadOnlyList<Map
     private bool FlowsDownTo(MapEnd point) => Links.Any(link => link.To == point && link.From.PocketLine is not null);
 
     // The amounts the map draws, of those placed from every link of the run (MapAmounts.Of the run's map):
-    // the lines this map shows, and, a module chosen, only its own lines', whichever card draws them, each
-    // where it was placed, so hiding a kind of line or choosing a module moves none; the others' are left out
-    // rather than faded, so choosing quiets the map.
-    public IReadOnlyList<MapAmount> Amounts(IReadOnlyList<MapAmount> placed, RiverModule? chosen = null)
+    // the lines this map shows, and, a module or a bucket chosen, only the lines it keeps (MapBundle.Shows),
+    // whichever card draws them, each where it was placed, so hiding a kind of line or choosing moves none; the
+    // others' are left out rather than faded, so choosing quiets the map.
+    public IReadOnlyList<MapAmount> Amounts(IReadOnlyList<MapAmount> placed, MapChoice? chosen = null)
     {
         var shown = new HashSet<MapRoute>(Links.Select(link => link.Route).OfType<MapRoute>(), ReferenceEqualityComparer.Instance);
-        return [.. placed.Where(amount => shown.Contains(amount.Bundle.Route) && (chosen is not { } module || amount.Bundle.Touches(module)))];
+        return [.. placed.Where(amount => shown.Contains(amount.Bundle.Route) && (chosen is null || amount.Bundle.Shows(chosen)))];
     }
 }
 
@@ -298,6 +300,16 @@ internal sealed record MapBundle(MapRoute Route, IReadOnlyList<MapLink> Links)
     public bool SaysAmount => !Links[0].Unsaid;
 
     public bool Touches(RiverModule module) => Links[0].Touches(module);
+
+    // Whether a choice keeps the line drawn: a module's own lines (Touches); a bucket's, the lines at either end of
+    // it, into it and back out of it, and for the pocket every line into or out of the pocket line too, its joins
+    // and its stretches, which are what fills it.
+    public bool Shows(MapChoice chosen) => chosen switch
+    {
+        { Module: { } module } => Touches(module),
+        { Bucket: "pocket" } => From.InPocket || To.InPocket,
+        _ => From == chosen.End || To == chosen.End,
+    };
 
     // A stretch of the pocket line: from a point of it to the next, or into the pocket (MapPocketLine).
     public bool StretchOfThePocketLine => From.PocketLine is not null && (To.PocketLine is not null || To.Bucket == "pocket");

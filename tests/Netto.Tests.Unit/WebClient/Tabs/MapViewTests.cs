@@ -190,14 +190,14 @@ public class MapViewTests
     [Fact]
     public void Choice_aModuleOnTheMap_isIt()
     {
-        MapView.From(Full, Full.Run(), MapNames.English).Choice(RiverModule.Car).ShouldBe(RiverModule.Car);
+        MapView.From(Full, Full.Run(), MapNames.English).Choice(MapChoice.Of(RiverModule.Car)).ShouldBe(MapChoice.Of(RiverModule.Car));
     }
 
     // A lever taken out of the plan leaves the map, and its choice with it.
     [Fact]
     public void Choice_aModuleOffTheMap_isNone()
     {
-        MapView.From(RiverInputs.Example, RiverInputs.Example.Run(), MapNames.English).Choice(RiverModule.Car).ShouldBeNull();
+        MapView.From(RiverInputs.Example, RiverInputs.Example.Run(), MapNames.English).Choice(MapChoice.Of(RiverModule.Car)).ShouldBeNull();
     }
 
     [Fact]
@@ -353,7 +353,7 @@ public class MapViewTests
     {
         var view = MapView.From(Full, Full.Run(), MapNames.English);
 
-        var shown = view.ShowingFor(chosen);
+        var shown = view.ShowingFor(MapRendering.Chosen(chosen));
 
         shown.ShouldSatisfyAllConditions(
             () => shown.Links.ShouldBe(view.Links.Where(link => MapLinkStyle.IsMoney(link.Kind) || (chosen is { } module && link.Touches(module)))),
@@ -370,7 +370,7 @@ public class MapViewTests
     {
         var refused = Full.WithReserve(-1m);
 
-        MapView.From(refused, refused.Run(), MapNames.English).ShowingFor(RiverModule.Car).Links.ShouldBeEmpty();
+        MapView.From(refused, refused.Run(), MapNames.English).ShowingFor(MapChoice.Of(RiverModule.Car)).Links.ShouldBeEmpty();
     }
 
     // A line ends in an arrowhead where it reaches a module, money passed on, what comes back out of a
@@ -434,7 +434,7 @@ public class MapViewTests
         var view = MapView.From(Full, Full.Run(), MapNames.English);
         var placed = MapAmounts.Of(view, MapAmountsTests.Say);
 
-        var amounts = view.Amounts(placed, RiverModule.CorporateTax);
+        var amounts = view.Amounts(placed, MapChoice.Of(RiverModule.CorporateTax));
 
         amounts.ShouldSatisfyAllConditions(
             () => amounts.ShouldBe(placed.Where(amount => amount.Bundle.Touches(RiverModule.CorporateTax))),
@@ -448,7 +448,7 @@ public class MapViewTests
     {
         var view = MapView.From(Full, Full.Run(), MapNames.English);
 
-        var drawn = view.Drawn(RiverModule.Car);
+        var drawn = view.Drawn(MapChoice.Of(RiverModule.Car));
 
         drawn.ShouldSatisfyAllConditions(
             () => drawn.Where(line => !line.Faded).Select(line => line.Bundle).ShouldAllBe(bundle => bundle.Touches(RiverModule.Car)),
@@ -462,13 +462,114 @@ public class MapViewTests
         MapView.From(Full, Full.Run(), MapNames.English).Drawn(null).ShouldAllBe(line => !line.Faded);
     }
 
+    // The five buckets are on the map whatever the plan holds, so a bucket chosen is chosen whatever it holds,
+    // the company skipped too.
+    [Theory]
+    [InlineData("pocket")]
+    [InlineData("expenses")]
+    public void Choice_aBucket_isItWhateverThePlan(string key)
+    {
+        var skipped = RiverInputs.Example.SkipCompany();
+
+        MapView.From(skipped, skipped.Run(), MapNames.English).Choice(MapChoice.InBucket(key)).ShouldBe(MapChoice.InBucket(key));
+    }
+
+    // No rule reaches a bucket: a bucket chosen shows every line of money and no tax base's or condition's line,
+    // as nothing chosen does.
+    [Fact]
+    public void ShowingFor_aBucket_isTheMoneyAlone()
+    {
+        var view = MapView.From(Full, Full.Run(), MapNames.English);
+
+        view.ShowingFor(MapChoice.InBucket("taxes_on_profit")).Links.ShouldBe(view.ShowingFor(null).Links);
+    }
+
+    // A bucket chosen keeps the lines at either end of it, into it and back out of it, the others fading under
+    // them: Taxes on profit's, the dividend's refund out of it among them.
+    [Fact]
+    public void Drawn_aBucketChosen_keepsTheLinesIntoItAndBackOutOfItAndFadesTheRest()
+    {
+        var view = MapView.From(Full, Full.Run(), MapNames.English);
+        var bucket = MapEnd.InBucket("taxes_on_profit");
+
+        var drawn = view.Drawn(MapChoice.InBucket("taxes_on_profit"));
+
+        drawn.ShouldSatisfyAllConditions(
+            () => drawn.Where(line => !line.Faded).Select(line => line.Bundle.Route).ShouldBe(
+                view.Bundles().Where(bundle => !bundle.StretchOfThePocketLine && (bundle.From == bucket || bundle.To == bucket)).Select(bundle => bundle.Route), ignoreOrder: true),
+            () => drawn.Where(line => !line.Faded).Select(line => line.Bundle.From).ShouldContain(bucket),
+            () => drawn.Where(line => !line.Faded).Select(line => line.Bundle.To).ShouldContain(bucket),
+            () => drawn.ShouldContain(line => line.Faded),
+            () => drawn.SkipWhile(line => line.Faded).ShouldAllBe(line => !line.Faded));
+    }
+
+    // The pocket chosen keeps every line into the pocket line or out of it, its joins and what leaves it, which are
+    // what fills it, and every line into the pocket or back out of it.
+    [Fact]
+    public void Drawn_thePocketChosen_keepsEveryLineIntoOrOutOfThePocketLine()
+    {
+        var view = MapView.From(Full, Full.Run(), MapNames.English);
+
+        var drawn = view.Drawn(MapChoice.InBucket("pocket"));
+
+        drawn.ShouldSatisfyAllConditions(
+            () => drawn.Where(line => !line.Faded).Select(line => line.Bundle.Route).ShouldBe(
+                view.Bundles().Where(bundle => !bundle.StretchOfThePocketLine && (bundle.From.InPocket || bundle.To.InPocket)).Select(bundle => bundle.Route), ignoreOrder: true),
+            () => drawn.Where(line => !line.Faded).ShouldContain(line => line.Bundle.JoinsThePocketLine),
+            () => drawn.ShouldContain(line => line.Faded));
+    }
+
+    // Another bucket chosen, the pocket line fades with the other lines, whole, never a stretch of it alone.
+    [Theory]
+    [InlineData("taxes_on_pay")]
+    [InlineData("taxes_on_profit")]
+    [InlineData("kept_in_company")]
+    [InlineData("expenses")]
+    public void PocketLine_anotherBucketChosen_isFadedWhole(string key)
+    {
+        var view = MapView.From(Full, Full.Run(), MapNames.English);
+
+        var line = view.PocketLine(MapChoice.InBucket(key));
+
+        (line.Faded, line.Steps.Count).ShouldBe((true, view.PocketLine().Steps.Count));
+    }
+
+    // The pocket chosen, its line is at full ink, whole.
+    [Fact]
+    public void PocketLine_thePocketChosen_isAtFullInk()
+    {
+        MapView.From(Full, Full.Run(), MapNames.English).PocketLine(MapChoice.InBucket("pocket")).Faded.ShouldBeFalse();
+    }
+
+    // A bucket chosen, the map draws the amounts of the lines it keeps, where they were placed: the pocket's, the
+    // running totals of the pocket line among them.
+    [Theory]
+    [InlineData("pocket")]
+    [InlineData("taxes_on_profit")]
+    public void Amounts_aBucketChosen_isTheLinesItKeepsWhereTheyWerePlaced(string key)
+    {
+        var view = MapView.From(Full, Full.Run(), MapNames.English);
+        var placed = MapAmounts.Of(view, MapAmountsTests.Say);
+        var bucket = MapEnd.InBucket(key);
+
+        var amounts = view.Amounts(placed, MapChoice.InBucket(key));
+
+        amounts.ShouldSatisfyAllConditions(
+            () => amounts.ShouldBe(placed.Where(amount => key == "pocket"
+                ? amount.Bundle.From.InPocket || amount.Bundle.To.InPocket
+                : amount.Bundle.From == bucket || amount.Bundle.To == bucket)),
+            () => amounts.ShouldNotBeEmpty(),
+            () => amounts.Count.ShouldBeLessThan(placed.Count),
+            () => amounts.Any(amount => amount.Bundle.StretchOfThePocketLine).ShouldBe(key == "pocket"));
+    }
+
     // The pocket line is drawn as one shape of its own (PocketLine), not among the lines a choice fades.
     [Fact]
     public void Drawn_leavesThePocketLineToItsOwnDrawing()
     {
         var view = MapView.From(Full, Full.Run(), MapNames.English);
 
-        var drawn = view.Drawn(RiverModule.Car);
+        var drawn = view.Drawn(MapChoice.Of(RiverModule.Car));
 
         (drawn.Any(line => line.Bundle.StretchOfThePocketLine), drawn.Count).ShouldBe((false, view.Bundles().Count(bundle => !bundle.StretchOfThePocketLine)));
     }
@@ -482,7 +583,7 @@ public class MapViewTests
     [InlineData(RiverModule.CorporateTax)]
     public void PocketLine_whateverModuleIsChosen_isOneShapeAtFullInk(RiverModule? chosen)
     {
-        var view = MapView.From(Full, Full.Run(), MapNames.English).ShowingFor(chosen);
+        var view = MapView.From(Full, Full.Run(), MapNames.English).ShowingFor(MapRendering.Chosen(chosen));
 
         var line = view.PocketLine();
 

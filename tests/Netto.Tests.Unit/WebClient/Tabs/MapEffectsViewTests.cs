@@ -25,7 +25,7 @@ public class MapEffectsViewTests
     public void Of_aModuleChosen_isEachRulesLineTheMapDrawsForItInTheirOrder(RiverModule chosen)
     {
         var view = View(Full);
-        var lines = view.ShowingFor(chosen).Bundles().Where(line => !MapLinkStyle.IsMoney(line.Kind)).ToList();
+        var lines = view.ShowingFor(MapChoice.Of(chosen)).Bundles().Where(line => !MapLinkStyle.IsMoney(line.Kind)).ToList();
 
         var effects = MapEffectsView.Of(view, chosen);
 

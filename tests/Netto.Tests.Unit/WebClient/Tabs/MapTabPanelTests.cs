@@ -1,5 +1,6 @@
 using System.Text.RegularExpressions;
 using Netto.Web.Client.River;
+using Netto.Web.Client.Tabs;
 using Shouldly;
 using static Netto.Tests.WebClient.Tabs.MapRendering;
 
@@ -17,7 +18,7 @@ public class MapTabPanelTests
     [Fact]
     public async Task Tab_aModuleChosen_hasItsCardAloneInTheColumnUnderWhatItReceives()
     {
-        var html = await RenderTabAsync(Full, RiverModule.Rent);
+        var html = await RenderTabAsync(Full, MapChoice.Of(RiverModule.Rent));
 
         var side = Regex.Match(html, "<div class=\"map-tab__side\"[^>]*>(.*)", RegexOptions.Singleline).Groups[1].Value;
         var (receives, panel, card) = (side.IndexOf("<p class=\"map-tab__receives\"", StringComparison.Ordinal),
@@ -39,7 +40,7 @@ public class MapTabPanelTests
     [Fact]
     public async Task Tab_aModuleChosenOffTheMap_hasNoCard()
     {
-        var html = await RenderTabAsync(RiverInputs.Example, RiverModule.Car);
+        var html = await RenderTabAsync(RiverInputs.Example, MapChoice.Of(RiverModule.Car));
 
         Regex.IsMatch(html, "<section id=\"card-").ShouldBeFalse();
     }

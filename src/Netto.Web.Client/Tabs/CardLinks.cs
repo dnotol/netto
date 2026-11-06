@@ -1,8 +1,8 @@
 namespace Netto.Web.Client.Tabs;
 
-// The Plan tab's address with a card to open on arrival, plan?card=<its fold's name>: the page opens that
-// card as the viewer's fold and brings it under the bar of buckets, its heading focused, as choosing its
-// row in the river's outline does (Plan). A real link, so Back and a new browser tab work.
+// The Plan tab's address with a card to open on arrival, plan?card=<its name>: a module's card by its fold's
+// name, a bucket's by its key (MapChoice.Name, MapChoice.Named): the page chooses it on the map, its card
+// beside it (Plan). A real link, so Back and a new browser tab work.
 internal static class CardLinks
 {
     // The query parameter that names the card.

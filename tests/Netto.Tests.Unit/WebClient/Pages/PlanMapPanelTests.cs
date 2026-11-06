@@ -27,7 +27,7 @@ public class PlanMapPanelTests
         await ChooseAsync(page, RiverModule.Car);
 
         var (panel, card) = (await page.FindAsync<MapPanel>(), await page.FindAsync<ModuleCard>());
-        (panel.Module, card.Name, (await page.FindAllAsync<ModuleCard>()).Count, page.Errors.Count).ShouldBe((RiverModule.Car, "car", 1, 0));
+        (panel.Chosen, card.Name, (await page.FindAllAsync<ModuleCard>()).Count, page.Errors.Count).ShouldBe((MapChoice.Of(RiverModule.Car), "car", 1, 0));
     }
 
     // The viewer clicks the module chosen on the map again, as the browser sends the click to its box: it is
@@ -40,10 +40,10 @@ public class PlanMapPanelTests
 
         await page.PressAsync("data-module", "director-pay");
 
-        var (module, cards) = ((await page.FindAsync<MapPanel>()).Module, (await page.FindAllAsync<ModuleCard>()).Count);
+        var (module, cards) = ((await page.FindAsync<MapPanel>()).Chosen, (await page.FindAllAsync<ModuleCard>()).Count);
         page.ShouldSatisfyAllConditions(
             () => page.Errors.Select(error => error.Message).ShouldBeEmpty(),
-            () => (module, cards).ShouldBe(((RiverModule?)null, 0)));
+            () => (module, cards).ShouldBe(((MapChoice?)null, 0)));
     }
 
     // Company year, chosen on arriving, let go: no card, only its room.
@@ -54,7 +54,7 @@ public class PlanMapPanelTests
 
         await ChooseAsync(page, null);
 
-        ((await page.FindAllAsync<ModuleCard>()).Count, (await page.FindAsync<MapPanel>()).Module, page.Errors.Count).ShouldBe((0, (RiverModule?)null, 0));
+        ((await page.FindAllAsync<ModuleCard>()).Count, (await page.FindAsync<MapPanel>()).Chosen, page.Errors.Count).ShouldBe((0, (MapChoice?)null, 0));
     }
 
     // A lever added from « Add to plan » is chosen, its card beside the map to be filled, and the focus stays
@@ -68,7 +68,7 @@ public class PlanMapPanelTests
 
         await page.InvokeAsync(() => menu.InputsChanged.InvokeAsync(RiverInputs.Example.AddToPlan(OptionalModule.Vouchers)));
 
-        ((await page.FindAsync<MapPanel>()).Module, page.Focuses - before, page.Errors.Count).ShouldBe((RiverModule.Vouchers, 0, 0));
+        ((await page.FindAsync<MapPanel>()).Chosen, page.Focuses - before, page.Errors.Count).ShouldBe((MapChoice.Of(RiverModule.Vouchers), 0, 0));
     }
 
     // An amount changed on the card changes the river everywhere at once: the bar's run, the map's run and
@@ -142,6 +142,19 @@ public class PlanMapPanelTests
         said.ShouldBe(1);
     }
 
+    // A bucket's card holds no field: with a bucket chosen the refusal is said above the map, once.
+    [Fact]
+    public async Task Plan_aRefusedAmount_isSaidOnceWithABucketChosen()
+    {
+        await using var page = await MapAsync(RiverInputs.Example.WithReserve(-1m));
+        var map = await page.FindAsync<MapTab>();
+        await page.InvokeAsync(() => map.ChosenChanged.InvokeAsync(MapChoice.InBucket("pocket")));
+
+        var said = (await page.FindAllAsync<RefusedMessage>()).Count(message => message.Error is not null);
+
+        (said, page.Errors.Count).ShouldBe((1, 0));
+    }
+
     // The module holding the refusal clicked on the map: its card says the refusal, and nothing fails while the
     // page hands the refusal from the map's note to the card. A rent beside an office allowance is refused.
     [Fact]
@@ -176,7 +189,7 @@ public class PlanMapPanelTests
             () => notice.Module.ShouldBe(OptionalModule.Car),
             () => page.Focuses.ShouldBe(before + 1),
             () => map.Chosen.ShouldBeNull(),
-            () => panel.Module.ShouldBeNull(),
+            () => panel.Chosen.ShouldBeNull(),
             () => map.Inputs.InPlan(OptionalModule.Car).ShouldBeFalse(),
             () => cards.ShouldBeEmpty(),
             () => page.Errors.ShouldBeEmpty());
@@ -194,7 +207,7 @@ public class PlanMapPanelTests
         await page.ClickAsync(button => button.Class == "taken-out__undo");
 
         var map = await page.FindAsync<MapTab>();
-        (map.Inputs.InPlan(OptionalModule.Car), map.Chosen, (await page.FindAllAsync<ModuleCard>()).Count, page.Errors.Count).ShouldBe((true, (RiverModule?)null, 0, 0));
+        (map.Inputs.InPlan(OptionalModule.Car), map.Chosen, (await page.FindAllAsync<ModuleCard>()).Count, page.Errors.Count).ShouldBe((true, (MapChoice?)null, 0, 0));
     }
 
     // The viewer's choice puts the focus on the card's heading, once for each module chosen; letting a module
@@ -213,6 +226,26 @@ public class PlanMapPanelTests
         var letGo = page.Focuses;
 
         (first - opened, second - first, letGo - second, page.Errors.Count).ShouldBe((1, 1, 0, 0));
+    }
+
+    // A bucket the viewer chooses on the map takes the focus to its card's heading, once, as a module does: going
+    // from a module to a bucket and from one bucket to another, each moves it; letting it go moves it nowhere.
+    [Fact]
+    public async Task Plan_eachBucketChosen_takesTheFocusToItsCardOnce()
+    {
+        await using var page = await MapAsync(WithACar);
+        var map = await page.FindAsync<MapTab>();
+        var opened = page.Focuses;
+
+        await page.InvokeAsync(() => map.ChosenChanged.InvokeAsync(MapChoice.InBucket("pocket")));
+        var first = page.Focuses;
+        await page.InvokeAsync(() => map.ChosenChanged.InvokeAsync(MapChoice.InBucket("expenses")));
+        var second = page.Focuses;
+        await page.InvokeAsync(() => map.ChosenChanged.InvokeAsync(null));
+        var letGo = page.Focuses;
+
+        var cards = (await page.FindAllAsync<BucketCard>()).Count;
+        (first - opened, second - first, letGo - second, cards, page.Errors.Count).ShouldBe((1, 1, 0, 0, 0));
     }
 
     // A change made on the card does not take the focus again: it is where the viewer left it.
@@ -242,7 +275,7 @@ public class PlanMapPanelTests
         await page.SwitchTabAsync(null);
 
         var (card, panel) = ((await page.FindAllAsync<ModuleCard>()).Count, await page.FindAsync<MapPanel>());
-        (card, panel.Module, page.Focuses - before, page.Errors.Count).ShouldBe((1, RiverModule.Car, 1, 0));
+        (card, panel.Chosen, page.Focuses - before, page.Errors.Count).ShouldBe((1, MapChoice.Of(RiverModule.Car), 1, 0));
     }
 
     // Nothing the card does touches the folds the viewer made: nothing is stored by choosing, editing or
@@ -281,7 +314,7 @@ public class PlanMapPanelTests
         page.ShouldSatisfyAllConditions(
             () => skipped.ShouldBeNull(),
             () => card.Inputs.Company.ShouldNotBeNull(),
-            () => map.Chosen.ShouldBe(RiverModule.CompanyYear),
+            () => map.Chosen.ShouldBe(MapChoice.Of(RiverModule.CompanyYear)),
             () => map.ShownMap.Modules.Select(node => node.End.Module).ShouldContain(RiverModule.Split),
             () => page.Focuses.ShouldBe(before + 1),
             () => page.Errors.ShouldBeEmpty());
@@ -301,8 +334,8 @@ public class PlanMapPanelTests
         var (map, card, panel) = (await page.FindAsync<MapTab>(), await page.FindAsync<CompanyYearCard>(), await page.FindAsync<MapPanel>());
         page.ShouldSatisfyAllConditions(
             () => card.Inputs.Company.ShouldBeNull(),
-            () => map.Chosen.ShouldBe(RiverModule.CompanyYear),
-            () => panel.Module.ShouldBe(RiverModule.CompanyYear),
+            () => map.Chosen.ShouldBe(MapChoice.Of(RiverModule.CompanyYear)),
+            () => panel.Chosen.ShouldBe(MapChoice.Of(RiverModule.CompanyYear)),
             () => map.ShownMap.Modules.Select(node => node.End.Module).ShouldBe([RiverModule.CompanyYear, RiverModule.DirectorPay]),
             () => page.Focuses.ShouldBe(before + 1),
             () => page.Errors.ShouldBeEmpty());
@@ -322,7 +355,7 @@ public class PlanMapPanelTests
         var (map, card) = (await page.FindAsync<MapTab>(), await page.FindAsync<CompanyYearCard>());
         page.ShouldSatisfyAllConditions(
             () => card.Inputs.Company.ShouldNotBeNull(),
-            () => map.Chosen.ShouldBe(RiverModule.CompanyYear),
+            () => map.Chosen.ShouldBe(MapChoice.Of(RiverModule.CompanyYear)),
             () => map.ShownMap.Modules.Select(node => node.End.Module).ShouldContain(RiverModule.Split),
             () => page.Focuses.ShouldBe(before + 2),
             () => page.Errors.ShouldBeEmpty());
@@ -340,7 +373,7 @@ public class PlanMapPanelTests
     private static async Task ChooseAsync(LivePlan page, RiverModule? module)
     {
         var map = await page.FindAsync<MapTab>();
-        await page.InvokeAsync(() => map.ChosenChanged.InvokeAsync(module));
+        await page.InvokeAsync(() => map.ChosenChanged.InvokeAsync(Tabs.MapRendering.Chosen(module)));
     }
 
     private static int Focuses(LivePlan page) => page.Calls.Count(call => call.Contains("focus", StringComparison.OrdinalIgnoreCase));

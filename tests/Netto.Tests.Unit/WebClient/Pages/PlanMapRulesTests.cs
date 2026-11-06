@@ -60,9 +60,9 @@ public class PlanMapRulesTests
         var map = await page.FindAsync<MapTab>();
         var modules = map.ShownMap.Modules;
 
-        await page.InvokeAsync(() => map.ChosenChanged.InvokeAsync(RiverModule.Car));
+        await page.InvokeAsync(() => map.ChosenChanged.InvokeAsync(MapChoice.Of(RiverModule.Car)));
         var car = Rules(map);
-        await page.InvokeAsync(() => map.ChosenChanged.InvokeAsync(RiverModule.Split));
+        await page.InvokeAsync(() => map.ChosenChanged.InvokeAsync(MapChoice.Of(RiverModule.Split)));
         var split = Rules(map);
 
         map.ShouldSatisfyAllConditions(
@@ -83,14 +83,14 @@ public class PlanMapRulesTests
         await using var page = LivePlan.At("http://localhost/plan", new BrowserStorage(), river: MapLinksTests.Full);
         await page.LoadAsync();
         var map = await page.FindAsync<MapTab>();
-        await page.InvokeAsync(() => map.ChosenChanged.InvokeAsync(RiverModule.CorporateTax));
+        await page.InvokeAsync(() => map.ChosenChanged.InvokeAsync(MapChoice.Of(RiverModule.CorporateTax)));
 
         await page.SendAsync("data-effect", "1", "onmouseenter");
         var over = Marked(map);
         await page.SendAsync("data-effect", "1", "onmouseleave");
         var off = Marked(map);
         await page.SendAsync("data-effect", "1", "onmouseenter");
-        await page.InvokeAsync(() => map.ChosenChanged.InvokeAsync(RiverModule.Car));
+        await page.InvokeAsync(() => map.ChosenChanged.InvokeAsync(MapChoice.Of(RiverModule.Car)));
         var other = Marked(map);
 
         map.ShouldSatisfyAllConditions(

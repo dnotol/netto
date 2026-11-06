@@ -127,7 +127,7 @@ public class MapPanelTests
     private static async Task<string> RenderPanelAsync(RiverInputs river, RiverModule? module, Folds? folds = null, Refusal? refused = null, Netto.Core.Simulation.SplitSearchResult? search = null) =>
         WebUtility.HtmlDecode(await RenderAsync(typeof(MapPanel), folds ?? new Folds(new BrowserStorage()), new()
         {
-            [nameof(MapPanel.Module)] = module,
+            [nameof(MapPanel.Chosen)] = MapRendering.Chosen(module),
             [nameof(MapPanel.Inputs)] = river,
             [nameof(MapPanel.Run)] = river.Run(),
             [nameof(MapPanel.Search)] = search,

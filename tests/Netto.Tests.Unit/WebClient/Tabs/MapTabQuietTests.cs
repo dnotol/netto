@@ -69,7 +69,7 @@ public class MapTabQuietTests
     [Fact]
     public async Task Tab_aQuietLeverChosen_isPressedWithItsCardBesideTheMapReceivingNothing()
     {
-        var html = await RenderTabAsync(ChainQuiet, RiverModule.Rent);
+        var html = await RenderTabAsync(ChainQuiet, MapChoice.Of(RiverModule.Rent));
 
         html.ShouldSatisfyAllConditions(
             () => Buttons(html).Where(button => button.Pressed == "true").Select(button => button.Module).ShouldBe(["rent"]),

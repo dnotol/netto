@@ -15,7 +15,7 @@ namespace Netto.Web.Client.Tabs;
 internal sealed record MapEffectsView(IReadOnlyList<MapEffect> Items)
 {
     public static MapEffectsView Of(MapView view, RiverModule chosen) =>
-        new([.. view.ShowingFor(chosen).Bundles().Where(line => !MapLinkStyle.IsMoney(line.Kind) && line.Touches(chosen)).Select(line => Effect(line, chosen))]);
+        new([.. view.ShowingFor(MapChoice.Of(chosen)).Bundles().Where(line => !MapLinkStyle.IsMoney(line.Kind) && line.Touches(chosen)).Select(line => Effect(line, chosen))]);
 
     // The list with the item of the line given marked, the line under the viewer's pointer, none marked for none.
     public MapEffectsView Marking(MapRoute? route) =>

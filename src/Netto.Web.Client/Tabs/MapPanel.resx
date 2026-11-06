@@ -13,6 +13,6 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Hint" xml:space="preserve">
-    <value>The card of the module you choose opens here, to edit its amounts.</value>
+    <value>The card of the module or the bucket you choose opens here: a module's to edit its amounts, a bucket's to see what fills it.</value>
   </data>
 </root>

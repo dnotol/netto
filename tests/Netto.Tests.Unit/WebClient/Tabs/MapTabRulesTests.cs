@@ -18,7 +18,7 @@ public class MapTabRulesTests
 
     private const string ModuleButton = "<button type=\"button\" class=\"map-module";
 
-    private const string BucketBox = "<div class=\"map-bucket";
+    private const string BucketBox = "<button type=\"button\" class=\"map-bucket";
 
     [Fact]
     public async Task Tab_underTheHead_holdsTheKeyToTheLines()
@@ -63,7 +63,7 @@ public class MapTabRulesTests
         var rules = view.Bundles().Where(bundle => !MapLinkStyle.IsMoney(bundle.Kind) && bundle.Touches(chosen)).ToList();
         var drawn = view.Bundles().Where(bundle => MapLinkStyle.IsMoney(bundle.Kind) || bundle.Touches(chosen)).ToList();
 
-        var html = await RenderTabAsync(Full, chosen);
+        var html = await RenderTabAsync(Full, Chosen(chosen));
 
         html.ShouldSatisfyAllConditions(
             () => rules.ShouldNotBeEmpty(),
@@ -79,7 +79,7 @@ public class MapTabRulesTests
     [InlineData(RiverModule.Car)]
     public async Task Tab_whateverIsChosen_drawsThePaysPill(RiverModule? chosen)
     {
-        var html = await RenderTabAsync(Full, chosen);
+        var html = await RenderTabAsync(Full, Chosen(chosen));
 
         Regex.Count(html, "<div class=\"map-pill\"").ShouldBe(1);
     }
@@ -90,7 +90,7 @@ public class MapTabRulesTests
     {
         var none = await RenderTabAsync(Full);
 
-        var html = await RenderTabAsync(Full, RiverModule.Car);
+        var html = await RenderTabAsync(Full, MapChoice.Of(RiverModule.Car));
 
         html.ShouldSatisfyAllConditions(
             () => Boxes(html, ModuleButton).ShouldBe(Boxes(none, ModuleButton)),
@@ -104,7 +104,7 @@ public class MapTabRulesTests
     [Fact]
     public async Task Tab_aRefusedAmount_drawsNoLineAndSaysNothingReceived()
     {
-        var html = await RenderTabAsync(Full.WithReserve(-1m), RiverModule.Car);
+        var html = await RenderTabAsync(Full.WithReserve(-1m), MapChoice.Of(RiverModule.Car));
 
         (Regex.Count(html, "<path class=\"map-"), MapReceivedHtml.Count(html), html.Contains("refused-message", StringComparison.Ordinal)).ShouldBe((0, 0, true));
     }
@@ -113,7 +113,7 @@ public class MapTabRulesTests
     [Fact]
     public async Task Tab_withTheKey_isSaidInNoLiveRegion()
     {
-        var html = await RenderTabAsync(Full, RiverModule.Car);
+        var html = await RenderTabAsync(Full, MapChoice.Of(RiverModule.Car));
 
         Regex.IsMatch(html, "aria-live|role=\"(status|alert)\"").ShouldBeFalse();
     }
@@ -129,8 +129,8 @@ public class MapTabRulesTests
         var effects = MapEffectsView.Of(view, RiverModule.Car).Items;
         var benefit = MapViewTests.Line(view, MapEnd.Of(RiverModule.Car), MapEnd.Of(RiverModule.DirectorPay));
 
-        var html = await RenderTabAsync(Full, RiverModule.Car);
-        var corporate = await RenderTabAsync(Full, RiverModule.CorporateTax);
+        var html = await RenderTabAsync(Full, MapChoice.Of(RiverModule.Car));
+        var corporate = await RenderTabAsync(Full, MapChoice.Of(RiverModule.CorporateTax));
 
         var (receives, list, panel) = (corporate.IndexOf("class=\"map-tab__receives\"", StringComparison.Ordinal),
             corporate.IndexOf("<ul class=\"map-tab__effects\" aria-label=\"Effects\"", StringComparison.Ordinal), corporate.IndexOf("class=\"map-tab__panel\"", StringComparison.Ordinal));
@@ -148,7 +148,7 @@ public class MapTabRulesTests
     [InlineData(RiverModule.CompanyYear)]
     public async Task Tab_nothingOrAModuleWithNoEffectChosen_listsNone(RiverModule? chosen)
     {
-        var html = await RenderTabAsync(Full, chosen);
+        var html = await RenderTabAsync(Full, Chosen(chosen));
 
         html.ShouldNotContain("map-tab__effects");
     }
@@ -158,7 +158,7 @@ public class MapTabRulesTests
     [Fact]
     public async Task Tab_anEffectsLine_saysItsSentenceAsItsTitle()
     {
-        var html = await RenderTabAsync(Full, RiverModule.CorporateTax);
+        var html = await RenderTabAsync(Full, MapChoice.Of(RiverModule.CorporateTax));
 
         var titles = Regex.Matches(html, "<g class=\"map-effect\" data-effect=\"(\\d+)\"[^>]*><title[^>]*>([^<]*)</title><path [^>]*>(?:</path>)?<path [^>]*data-link-kind=\"(TaxBase|Condition)\"")
             .Select(match => (int.Parse(match.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture), match.Groups[2].Value)).ToList();

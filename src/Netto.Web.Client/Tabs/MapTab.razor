@@ -69,13 +69,21 @@
    under one line saying what it receives and from where (MapReceivedView), each amount the one the map says
    on that line, an end that is a module a button that chooses it as its box does, so a keyboard walks the
    money upstream; where its money goes is its card's drain list. A screen reader hears the buttons, the
-   line and the card, and nothing of the drawing itself. Choosing it again lets it go. The choice is the
-   page's (Chosen, ChosenChanged), so it stays from one tab to the next; the map takes no focus for it, the
-   card it opens beside the map does (MapPanel). Nothing here is a live region: the bar's is the river's
+   line and the card, and nothing of the drawing itself. Choosing it again lets it go.
+
+   A bucket is a button too, named as the bar names it, after every module, as the river ends in them, so a
+   keyboard reaches them last: chosen, on the map or in the bar, it is marked as a module is and keeps the
+   lines at either end of it, into it and back out of it, the pocket every line into or out of the pocket
+   line, while the others fade, the pocket line whole with them unless the pocket is chosen (MapBundle.Shows,
+   MapView.PocketLine); beside the map is its read-only card (BucketCard), with no line over it, the card
+   saying what fills it, and no rule's line, none reaching a bucket. The choice, a module or a bucket
+   (MapChoice), is the page's (Chosen, ChosenChanged), so it stays from one tab to the next; the map takes no
+   focus for it, the card it opens beside the map does (MapPanel). Nothing here is a live region: the bar's is the river's
    only announcement. While the engine refuses an amount the map draws no line and no amount, as the bar
    draws no figure, the module holding the refused field is marked, in words too, the refusal is said above
    the map, unless the card of the module chosen, beside it, holds the refused field and says it there, so
-   that it is said once, and nothing is said received.
+   that it is said once, and nothing is said received; a bucket's card holds no field, so with a bucket
+   chosen it is said above the map.
 
    The map is as tall as the window leaves under the band, and stays there while the page scrolls the card
    beside it, which has no scroll area of its own. Over the map are its tools: the key to its lines (MapKey),
@@ -146,10 +154,6 @@
                 {
                     <div class="@PillClass(pill)" style="@Box(pill.Slot)" aria-hidden="true"><MapGateWords Line="pill.Words" /></div>
                 }
-                @foreach (var bucket in _view.Buckets)
-                {
-                    <div class="map-bucket map-bucket--@bucket.End.Id" data-bucket="@bucket.End.Id" style="@Box(bucket.Slot)">@EndName(bucket.End)</div>
-                }
                 @foreach (var place in _view.Places())
                 {
                     if (place.Quiet)
@@ -165,6 +169,11 @@
                     {
                         @ModuleButton(place.Nodes[0])
                     }
+                }
+                @* After the modules, as the river ends in them, so a keyboard reaches them last. *@
+                @foreach (var bucket in _view.Buckets)
+                {
+                    @BucketButton(bucket)
                 }
             </div>
         </div>
@@ -194,7 +203,7 @@
             </ul>
         }
         <div class="map-tab__panel">
-            <MapPanel Module="_chosen" ViewerChose="ViewerChose" Inputs="Inputs" InputsChanged="InputsChanged" Run="Run" Search="Search" Refused="ChosenRefusal" />
+            <MapPanel Chosen="_chosen" ViewerChose="ViewerChose" Inputs="Inputs" InputsChanged="InputsChanged" Run="Run" Search="Search" Refused="ChosenRefusal" />
         </div>
     </div>
 </div>
@@ -218,15 +227,15 @@
     [Parameter]
     public Func<RiverModule, Refusal?> RefusedBy { get; set; } = _ => null;
 
-    // The module chosen on the map, the page's, so it stays from one tab to the next; none once it has
-    // left the map.
+    // The module or the bucket chosen on the map, the page's, so it stays from one tab to the next; a module
+    // none once it has left the map.
     [Parameter]
-    public RiverModule? Chosen { get; set; }
+    public MapChoice? Chosen { get; set; }
 
     [Parameter]
-    public EventCallback<RiverModule?> ChosenChanged { get; set; }
+    public EventCallback<MapChoice?> ChosenChanged { get; set; }
 
-    // Whether the module chosen is the viewer's choice (ChosenChanged), rather than one the page chose
+    // Whether the choice is the viewer's (ChosenChanged, or a bucket of the bar), rather than one the page made
     // itself, Company year on arriving or a lever just added: only the viewer's takes the focus to its card.
     [Parameter]
     public bool ViewerChose { get; set; }
@@ -235,8 +244,9 @@
     [Parameter]
     public RenderFragment? AddToPlan { get; set; }
 
-    // The engine's refusal the chosen module's card holds, as the Plan page hands it to that card.
-    private Refusal? ChosenRefusal => _chosen is { } module ? RefusedBy(module) : null;
+    // The engine's refusal the chosen module's card holds, as the Plan page hands it to that card; none for a
+    // bucket, whose card holds no field, so the refusal is said above the map.
+    private Refusal? ChosenRefusal => _chosen?.Module is { } module ? RefusedBy(module) : null;
 
     // The map of the run, and what the choice draws of it (MapView.ShowingFor): the second is what is drawn, the
     // first what the chosen module receives is read from, and what every line's amount is placed on
@@ -245,7 +255,7 @@
     private MapView _view = default!;
     private IReadOnlyList<MapAmount> _placed = [];
     private (RiverInputs Inputs, RiverRun Run)? _mapped;
-    private RiverModule? _chosen;
+    private MapChoice? _chosen;
     private MapReceivedView? _received;
 
     // What the module chosen does to another's tax base or under another's condition, and what is done to it so,
@@ -288,12 +298,13 @@
         _chosen = _full.Choice(Chosen);
         _view = _full.ShowingFor(_chosen);
         _drawn = _view.Drawn(_chosen);
-        _pocket = _view.PocketLine();
+        _pocket = _view.PocketLine(_chosen);
         _amounts = _view.Amounts(_placed, _chosen);
 
-        // Made from every link of the run, whatever the choice draws.
-        _received = _chosen is { } chosen ? MapReceivedView.Of(_full, chosen, EndName) : null;
-        _allEffects = _chosen is { } module ? MapEffectsView.Of(_full, module) : null;
+        // Made from every link of the run, whatever the choice draws; a module's alone: a bucket's card says what
+        // fills it, so nothing over it says it again, and no rule reaches a bucket.
+        _received = _chosen?.Module is { } chosen ? MapReceivedView.Of(_full, chosen, EndName) : null;
+        _allEffects = _chosen?.Module is { } module ? MapEffectsView.Of(_full, module) : null;
         _effects = _allEffects;
     }
 
@@ -338,8 +349,20 @@
     private static string PocketClass(MapPocketShape line) => $"map-pocket-line{(line.Faded ? " map-pocket-line--faded" : "")}";
 
 
-    // A module chosen again lets it go.
-    private Task ChooseAsync(RiverModule module) => ChosenChanged.InvokeAsync(_chosen == module ? null : module);
+    // A module or a bucket chosen again lets it go.
+    private Task ChooseAsync(MapChoice choice) => ChosenChanged.InvokeAsync(_chosen == choice ? null : choice);
+
+    private Task ChooseAsync(RiverModule module) => ChooseAsync(MapChoice.Of(module));
+
+    // Whether a box of the map is the module or the bucket chosen.
+    private bool IsChosen(MapNode node) => _chosen is not null && _chosen.End == node.End;
+
+    // A bucket's button: its name, as the bar names it, marked while chosen.
+    private RenderFragment BucketButton(MapNode bucket) =>
+        @<button type="button" class="@BucketClass(bucket)" aria-pressed="@(IsChosen(bucket) ? "true" : "false")" data-bucket="@bucket.End.Id" style="@Box(bucket.Slot)"
+                 @onclick="() => ChooseAsync(MapChoice.InBucket(bucket.End.Id))">@EndName(bucket.End)</button>;
+
+    private string BucketClass(MapNode bucket) => $"map-bucket map-bucket--{bucket.End.Id}{(IsChosen(bucket) ? " map-bucket--chosen" : "")}";
 
     // An end of the line over the card: a module on the map is a button that chooses it, a bucket a name.
     private RenderFragment ReceivedEnd(MapReceived line) => line.Module is { } module
@@ -378,7 +401,7 @@
     // room), each its tone's icon, out of a screen reader's hearing, and its words, which are part of the
     // button's name.
     private RenderFragment ModuleButton(MapNode node) =>
-        @<button type="button" class="@ModuleClass(node)" style="@(node.Quiet ? null : Box(node.Slot))" aria-pressed="@(_chosen == node.End.Module ? "true" : "false")"
+        @<button type="button" class="@ModuleClass(node)" style="@(node.Quiet ? null : Box(node.Slot))" aria-pressed="@(IsChosen(node) ? "true" : "false")"
                  data-module="@node.End.Id" @onclick="() => ChooseAsync(node.End.Module!.Value)">
             <span class="map-module__title">@L[MapTabText.Module(node.End.Module!.Value)]</span>
             @if (!node.Quiet)
@@ -420,7 +443,7 @@
         </button>;
 
     private string ModuleClass(MapNode node) =>
-        $"map-module{(node.Gate && !node.Quiet ? " map-module--gate" : "")}{(_chosen == node.End.Module ? " map-module--chosen" : "")}{(node.Refused ? " map-module--refused" : "")}{(node.Skipped ? " map-module--skipped" : "")}{(node.Quiet ? " map-module--quiet" : "")}";
+        $"map-module{(node.Gate && !node.Quiet ? " map-module--gate" : "")}{(IsChosen(node) ? " map-module--chosen" : "")}{(node.Refused ? " map-module--refused" : "")}{(node.Skipped ? " map-module--skipped" : "")}{(node.Quiet ? " map-module--quiet" : "")}";
 
     // What runs into the pocket, gold: a line joining the pocket line and every stretch of it.
     private static bool ToPocket(MapBundle bundle) => bundle.To.InPocket;
