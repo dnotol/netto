@@ -106,20 +106,24 @@ internal static class MapAmounts
     //
     // The lines of money take their places first, then the tax bases, then the conditions, each kind the most
     // constrained first: each its place costing the least, on its line rather than beside it, nearest the middle
-    // of the longest stretch, off the amounts already placed (two pixels off). A line left with no place free
-    // moves the amounts in the way of one of its places to places of their own, those in their way in turn,
-    // three deep, within a budget.
+    // of the longest stretch, off the amounts already placed (two pixels off). A running total, a stretch of the
+    // pocket line's, stands right of it rather than on the gold line, which it would cut, or left of it, nearest
+    // just under where the join it follows ends its turn down into the line (MapPocketLine.Steps). An amount on its
+    // line keeps clear of the arcs its line turns its corners on (MapPath), and none stands over the turn a line
+    // takes down into the pocket line. A line left with no place free moves the amounts in the way of one
+    // of its places to places of their own, those in their way in turn, three deep, within a budget.
     private sealed class Search
     {
         // How far from the ends of its stretch an amount on its line keeps, so that the line shows each side of
         // it; how far beside its line, or its arrowhead, an amount beside it stands, and what standing there
-        // rather than on its line costs; what a line crossing it costs, and a rule's line along it; how far off a
+        // rather than on its line costs, and a running total on the pocket line or left of it rather than right; what a line crossing it costs, and a rule's line along it; how far off a
         // box or an arrowhead, and off another amount, it keeps; how far inside the bounds of its piece it is
         // placed, so that it holds as it is rounded and drawn at any size; how finely a piece is tried for a
         // place when the amounts in the way are moved, how many places of each, how deep and how often.
         private const double ShowsEachSide = 4;
         private const double BesideGap = 2;
         private const double Beside = 3;
+        private const double OffThePocketLine = 6;
         private const int Square = 1;
         private const int RuleAlong = 10;
         private const double BoxClearance = 1;
@@ -130,7 +134,11 @@ internal static class MapAmounts
         private const int RepairDepth = 3;
         private const int RepairBudget = 4_000;
 
+        private readonly MapView _view;
         private readonly IReadOnlyList<MapBundle> _lines;
+
+        // Where each step of the pocket line begins, by its stretch's route, in percent of the map down it.
+        private readonly Dictionary<MapRoute, decimal> _stepTops;
 
         // Whether each line says its amount on the map: a gate's line into the pocket and the pay do not
         // (MapBundle.SaysAmount), and are only lines the others keep clear of.
@@ -166,7 +174,9 @@ internal static class MapAmounts
 
         public Search(MapView view, IReadOnlyList<MapBundle> lines, Func<MapLabel, string> say)
         {
+            _view = view;
             _lines = lines;
+            _stepTops = view.PocketLine().Steps.ToDictionary(step => step.Stretch.Route, step => step.Top);
             _texts = [.. lines.Select(line => Text(line, say))];
             _widths = [.. _texts.Select(Width)];
             var scale = MapScale.Smallest(view.Units);
@@ -181,6 +191,7 @@ internal static class MapAmounts
                 .. view.Places().Select(place => place.Slot).Concat(view.Buckets.Select(bucket => bucket.Slot)).Select(slot => Rect.Of(MapArea.Of(slot, scale))),
                 .. view.Pill is { } pill ? [Rect.Of(MapArea.Of(pill.Slot, scale))] : Array.Empty<Rect>(),
                 .. lines.Where(line => line.Arrowhead).Select(line => Rect.Of(MapLineWidths.Head(line.Route, scale))),
+                .. lines.Select(line => TurnIntoThePocketLine(view, line, scale)).OfType<Rect>(),
             ];
             var strokes = new List<Stroke>();
             for (var index = 0; index < lines.Count; index++)
@@ -230,6 +241,22 @@ internal static class MapAmounts
             return amounts;
         }
 
+        // What the turn a line takes down into the pocket line covers, in pixels on the map drawn at a scale, where
+        // the running total under it would otherwise stand: from the pocket line, its width with it, across to where
+        // the turn meets the line's straight stretch, whose stroke the search already keeps clear of, and down the
+        // turn; none for a line taking no turn into it. A line curving out of it, the car's contribution, leaves its
+        // turn to the search's other rules: kept clear, it pushed the marital quotient's amount, in French, out of
+        // the room under the partner it has.
+        private static Rect? TurnIntoThePocketLine(MapView view, MapBundle line, MapScale scale)
+        {
+            var turn = line.JoinsThePocketLine ? view.Turn(line) : 0m;
+            if (turn == 0m)
+                return null;
+
+            var (x, y, half) = (line.Route.End.X * scale.X, line.Route.End.Y * scale.Y, line.Route.Width / 2m);
+            return Rect.Of(new MapArea(x - half, y - half, x + turn, y + turn));
+        }
+
         // The tracks a line's stretches offer its amount, each with the pieces of it its amount may take.
         private List<Track> Tracks(int index)
         {
@@ -240,6 +267,9 @@ internal static class MapAmounts
             var (width, height) = ((double)_widths[index], (double)Height);
             var points = line.Route.Points;
             var tracks = new List<Track>();
+            var turns = MapPath.Turns(_view.PointsOf(line), _view.Scale, line.Arrowhead ? MapLineWidths.ArrowLength(line.Route.Width) : 0m)
+                .GroupBy(turn => turn.Corner).ToDictionary(corner => corner.Key, corner => (double)corner.Max(turn => turn.Radius));
+            var stepTop = _stepTops.TryGetValue(line.Route, out var top) ? (double)top * _down : (double?)null;
             for (var stretch = 0; stretch + 1 < points.Count; stretch++)
             {
                 var (a, b) = (points[stretch], points[stretch + 1]);
@@ -257,6 +287,14 @@ internal static class MapAmounts
                 if (high - low < 2 * half)
                     continue;
 
+                // A running total aims just under where its step of the pocket line begins.
+                if (stepTop is { } aim)
+                    middle = aim + BesideGap + half;
+
+                // How far the arcs at the stretch's ends reach along it.
+                var (lowEnd, highEnd) = (across ? a.X < b.X : a.Y < b.Y) ? (a, b) : (b, a);
+                var (lowArc, highArc) = (turns.GetValueOrDefault(lowEnd), turns.GetValueOrDefault(highEnd));
+
                 // What lies near the stretch, within reach of any place on it or beside it.
                 var reach = gap + thick + AmountClearance;
                 Near(across ? new Rect(low, at - reach, high, at + reach) : new Rect(at - reach, low, at + reach, high), index);
@@ -270,9 +308,10 @@ internal static class MapAmounts
                         MapAmountSide.Above or MapAmountSide.Left => -gap - thick,
                         _ => gap,
                     };
-                    var margin = side == MapAmountSide.On ? ShowsEachSide : 0;
-                    Add(new Track(stretch, side, across, at + from, at + from + thick, half, low + half + margin, high - half - margin, middle, length,
-                        across ? -half : from, across ? from : -half, side == MapAmountSide.On ? 0 : Beside));
+                    var (lowMargin, highMargin) = side == MapAmountSide.On ? (ShowsEachSide + lowArc, ShowsEachSide + highArc) : (0, 0);
+                    var cost = stepTop is not null ? (side == MapAmountSide.Right ? 0 : OffThePocketLine) : side == MapAmountSide.On ? 0 : Beside;
+                    Add(new Track(stretch, side, across, at + from, at + from + thick, half, low + half + lowMargin, high - half - highMargin, middle, length,
+                        across ? -half : from, across ? from : -half, cost));
                 }
             }
 

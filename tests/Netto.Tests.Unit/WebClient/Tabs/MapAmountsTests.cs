@@ -191,6 +191,51 @@ public class MapAmountsTests
             () => Sizes(view).SelectMany(scale => Along(view, amounts, scale)).Select(Name).ShouldBeEmpty());
     }
 
+    // A running total stands right of the pocket line, its edge a halo's gap off the line's, never on the gold line,
+    // which it would cut, where there is room beside it: just under where the join it follows ends its turn down
+    // into the line, clear of the turn; Director pay's, whose box stands right of the line there, under that box.
+    [Fact]
+    public void Of_everyLever_saysEachRunningTotalRightOfThePocketLineJustUnderItsJoin()
+    {
+        var view = View("every lever");
+        var (scale, steps) = (view.Scale, view.PocketLine().Steps);
+        var pay = MapArea.Of(view.Modules.Single(node => node.End.Module == RiverModule.DirectorPay).Slot, scale);
+
+        var totals = MapAmounts.Of(view, Say).Where(amount => amount.Bundle.StretchOfThePocketLine).ToList();
+
+        decimal Under(MapAmount total) => total.Area(scale).Top - steps.Single(step => ReferenceEquals(step.Stretch.Route, total.Bundle.Route)).Top * scale.Y;
+        totals.ShouldSatisfyAllConditions(
+            () => totals.Count.ShouldBe(steps.Count(step => step.Stretch.SaysAmount)),
+            () => totals.Where(total => total.Side != MapAmountSide.Right || Math.Abs(total.Left - (total.Bundle.Route.Width / 2m + MapLinkStyle.HaloGap)) > 0.01m).Select(Name).ShouldBeEmpty(),
+            () => totals.Where(total => total.Bundle.From.PocketLine != RiverModule.DirectorPay && Math.Abs(Under(total) - MapLinkStyle.HaloGap) > 0.1m).Select(Name).ShouldBeEmpty(),
+            () => totals.Where(total => total.Bundle.From.PocketLine == RiverModule.DirectorPay).ShouldAllBe(total => total.Area(scale).Top >= pay.Bottom));
+    }
+
+    // An amount on its line keeps clear of the arcs its line turns its corners on (MapPath), and the four pixels
+    // that let the line show each side of it, so its ground hides no turn.
+    [Theory]
+    [MemberData(nameof(Plans))]
+    public void Of_anyPlan_drawsNoAmountOnItsLineOverAnArc(string plan)
+    {
+        var (view, amounts) = Placed(plan);
+        var scale = view.Scale;
+
+        amounts.Where(amount => amount.Side == MapAmountSide.On && !ClearOfArcs(view, amount, scale)).Select(Name).ShouldBeEmpty();
+    }
+
+    private static bool ClearOfArcs(MapView view, MapAmount amount, MapScale scale)
+    {
+        var line = amount.Bundle;
+        var turns = MapPath.Turns(view.PointsOf(line), scale, line.Arrowhead ? MapLineWidths.ArrowLength(line.Route.Width) : 0m);
+        decimal Arc(MapPoint end) => turns.Where(turn => turn.Corner == end).Select(turn => turn.Radius).DefaultIfEmpty(0m).Max();
+        var (a, b) = (line.Route.Points[amount.Stretch], line.Route.Points[amount.Stretch + 1]);
+        var area = amount.Area(scale);
+        var (low, high) = a.Y == b.Y ? (area.Left, area.Right) : (area.Top, area.Bottom);
+        var (first, second) = a.Y == b.Y ? (a.X * scale.X, b.X * scale.X) : (a.Y * scale.Y, b.Y * scale.Y);
+        var (lowEnd, highEnd) = first < second ? (a, b) : (b, a);
+        return low >= Math.Min(first, second) + Arc(lowEnd) + 4m - 0.1m && high <= Math.Max(first, second) - Arc(highEnd) - 4m + 0.1m;
+    }
+
     private static string SayInFrench(MapLabel label) => ResxText.French<MapTab>().Format(label.Key, [.. label.Args]);
 
     // Every line says its amount on it, a condition its word or two, but those whose amount the map says
