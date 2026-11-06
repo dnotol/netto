@@ -43,7 +43,7 @@ public class MapTabRulesTests
         html.ShouldSatisfyAllConditions(
             () => view.Bundles().Select(bundle => bundle.Kind).ShouldContain(MapLinkKind.TaxBase),
             () => view.Bundles().Select(bundle => bundle.Kind).ShouldContain(MapLinkKind.Condition),
-            () => LineKinds(html).ShouldBe(money.Select(bundle => bundle.Kind.ToString())),
+            () => LineKinds(html).ShouldBe(money.Where(bundle => !bundle.StretchOfThePocketLine).Select(bundle => bundle.Kind.ToString())),
             () => Regex.Count(html, "<span class=\"map-arrow ").ShouldBe(money.Count(bundle => bundle.Arrowhead)),
             () => MapTabTests.Amounts(MapTabTests.Map(html)).ShouldBe(money.Where(bundle => bundle.SaysAmount).Select(bundle => Formats.Euros(bundle.Amount!.Value)), ignoreOrder: true),
             () => Regex.Count(html, "<span class=\"map-badge ").ShouldBe(view.Modules.Sum(node => node.Badges.Count)),
@@ -67,7 +67,7 @@ public class MapTabRulesTests
 
         html.ShouldSatisfyAllConditions(
             () => rules.ShouldNotBeEmpty(),
-            () => LineKinds(html).Order().ShouldBe(drawn.Select(bundle => bundle.Kind.ToString()).Order()),
+            () => LineKinds(html).Order().ShouldBe(drawn.Where(bundle => !bundle.StretchOfThePocketLine).Select(bundle => bundle.Kind.ToString()).Order()),
             () => Regex.Count(html, "<span class=\"map-arrow ").ShouldBe(drawn.Count(bundle => bundle.Arrowhead)),
             () => MapTabTests.Placed(MapTabTests.Map(html)).ShouldBe(placed.Where(amount => amount.Bundle.Touches(chosen))
                 .Select(amount => (amount.Bundle.Kind.ToString(), MapTabTests.Style(amount), "true", amount.Text)), ignoreOrder: true));
@@ -106,7 +106,7 @@ public class MapTabRulesTests
     {
         var html = await RenderTabAsync(Full.WithReserve(-1m), RiverModule.Car);
 
-        (Regex.Count(html, "<polyline"), MapReceivedHtml.Count(html), html.Contains("refused-message", StringComparison.Ordinal)).ShouldBe((0, 0, true));
+        (Regex.Count(html, "<path class=\"map-"), MapReceivedHtml.Count(html), html.Contains("refused-message", StringComparison.Ordinal)).ShouldBe((0, 0, true));
     }
 
     // The key and the choice change no live region: the tab has none.
@@ -160,7 +160,7 @@ public class MapTabRulesTests
     {
         var html = await RenderTabAsync(Full, RiverModule.CorporateTax);
 
-        var titles = Regex.Matches(html, "<g class=\"map-effect\" data-effect=\"(\\d+)\"[^>]*><title[^>]*>([^<]*)</title><polyline [^>]*>(?:</polyline>)?<polyline [^>]*data-link-kind=\"(TaxBase|Condition)\"")
+        var titles = Regex.Matches(html, "<g class=\"map-effect\" data-effect=\"(\\d+)\"[^>]*><title[^>]*>([^<]*)</title><path [^>]*>(?:</path>)?<path [^>]*data-link-kind=\"(TaxBase|Condition)\"")
             .Select(match => (int.Parse(match.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture), match.Groups[2].Value)).ToList();
         titles.ShouldSatisfyAllConditions(
             () => titles.ShouldNotBeEmpty(),
@@ -176,7 +176,7 @@ public class MapTabRulesTests
     ];
 
     internal static List<string> LineKinds(string html) =>
-        [.. Regex.Matches(html, "<polyline [^>]*data-link-kind=\"(\\w+)\"[^>]*>").Select(match => match.Groups[1].Value)];
+        [.. Regex.Matches(html, "<path [^>]*data-link-kind=\"(\\w+)\"[^>]*>").Select(match => match.Groups[1].Value)];
 
     // The boxes drawn of a kind of element, as their opening tags: where the map puts them.
     private static List<string> Boxes(string html, string opening) =>

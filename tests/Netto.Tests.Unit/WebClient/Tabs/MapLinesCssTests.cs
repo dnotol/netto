@@ -75,6 +75,25 @@ public class MapLinesCssTests
         Stylesheet.Block(Css, ".map-arrow").ShouldContain("background: var(--netto-page);");
     }
 
+    // The pocket line's steps are square-ended, so each join reads as the line widening rather than as a round cap
+    // bulging into the next step, its halo the ground, both keeping their width as the map stretches; nothing of it
+    // transitions, and only the whole of it fades, never a step.
+    [Fact]
+    public void MapTabCss_drawsThePocketLineSquareEndedFadingOnlyWhole()
+    {
+        var shape = Stylesheet.Rules(Css).Single(rule => rule.Selector.Contains(".map-pocket-line__halo", StringComparison.Ordinal)
+            && rule.Selector.Contains(".map-pocket-line__step", StringComparison.Ordinal)).Declarations;
+
+        Css.ShouldSatisfyAllConditions(
+            () => shape.ShouldContain("stroke-linecap: butt;"),
+            () => shape.ShouldContain("vector-effect: non-scaling-stroke;"),
+            () => Stylesheet.Block(Css, ".map-pocket-line__halo").ShouldContain("stroke: var(--netto-page);"),
+            () => Stylesheet.Block(Css, ".map-pocket-line--faded").ShouldContain("opacity: 0.18;"),
+            () => Stylesheet.Rules(Css).Where(rule => rule.Selector.Contains("map-pocket-line", StringComparison.Ordinal))
+                .Where(rule => rule.Declarations.Contains("transition", StringComparison.Ordinal) || (rule.Selector != ".map-pocket-line--faded" && rule.Declarations.Contains("opacity", StringComparison.Ordinal)))
+                .Select(rule => rule.Selector).ShouldBeEmpty());
+    }
+
     // The ways an arrowhead points.
     private static readonly string[] Ways = ["down", "up", "right", "left"];
 }

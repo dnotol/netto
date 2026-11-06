@@ -25,8 +25,10 @@
    itself, a line of money as thick as its amount beside the run's largest (MapLineWidths), with an
    arrowhead in the same ink, sized by the line, where it reaches a module, and none
    into a bucket, under which it runs on to the bucket's middle, the bucket being where its money stops:
-   money passed on and money into a bucket are told apart by their ends, not by a colour. Each line is drawn
-   over a halo of the map's ground so that a line crossing another leaves a gap each side of it. The links
+   money passed on and money into a bucket are told apart by their ends, not by a colour. Each line is a path
+   through its route's points, its corners turned on arcs (MapPath, MapView.PathOf), the route itself staying
+   the layout's orthogonal points, drawn over a halo of the map's ground on the same path so that a line
+   crossing another leaves a gap each side of it. The links
    of one card between the same two ends and of one kind are one line (MapBundle), which says one amount and
    no words, on a stretch of its own or right beside it, where MapAmounts places it from every link of the
    run: the sum of the card's lines it holds, each a figure the card draws; a condition says in a word or two
@@ -35,7 +37,11 @@
    point of its line by its pixels, so it keeps to its line however large the map is drawn, and its ground
    hides the lines crossing it, square. What reaches the director runs into one gold line down the left of
    their column, the pocket line (MapPocketLine), the one gold of the map, each stretch of it saying what has
-   reached them so far, its last the pocket the bar says; a line joining it says no amount, its gate's box or
+   reached them so far, right of it just under the join it follows, its last the pocket the bar says. It is
+   drawn as one shape under every other line, a square-ended step for each stretch as wide as what has reached
+   them so far (MapView.PocketLine), never faded a stretch alone; a line joining it turns down into it on an
+   arc and a line leaving it curves out of it the same way, in the flow's direction, neither with a halo where
+   they meet it (MapView.HaloPathOf), so nothing cuts the gold line; a line joining it says no amount, its gate's box or
    the total under it saying it, nor does the pay, its pill saying it, what Corporate tax adds back of a gate,
    its badge saying it, or a gate's share of the company's line its box already says (MapLink.Unsaid).
 
@@ -57,7 +63,8 @@
    has its box back, in its place.
 
    A module is a button: chosen, by a click or Enter or Space, it is marked (aria-pressed) and its own
-   lines stay with their amounts where they were, while the others fade with no amount, the map showing no
+   lines stay with their amounts where they were, while the others fade with no amount, but the pocket line,
+   which stays whole at full ink, the module's share of it showing by its own line into it, the map showing no
    words, and beside the map is its card (MapPanel, pinned open), whose edits go to the page's one river,
    under one line saying what it receives and from where (MapReceivedView), each amount the one the map says
    on that line, an end that is a module a button that chooses it as its box does, so a keyboard walks the
@@ -102,6 +109,19 @@
                     <div class="map-column map-column--@owner.ToString().ToLowerInvariant()" style="@Box(slot)" aria-hidden="true"><span class="map-column__label">@L[MapTabText.Column(owner)]</span></div>
                 }
                 <svg class="map__lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+                    @if (_pocket.Steps.Count > 0)
+                    {
+                        <g class="@PocketClass(_pocket)">
+                            @foreach (var step in _pocket.Steps)
+                            {
+                                <path class="map-pocket-line__halo" d="@StepPath(step)" stroke-width="@MapLinkStyle.Halo(step.Width)" />
+                            }
+                            @foreach (var step in _pocket.Steps)
+                            {
+                                <path class="map-pocket-line__step" d="@StepPath(step)" stroke-width="@MapLinkStyle.Width(step.Width)" style="stroke: @MapLinkStyle.PocketInk" />
+                            }
+                        </g>
+                    }
                     @foreach (var (bundle, faded) in _drawn)
                     {
                         if (EffectOf(bundle) is { } effect)
@@ -233,6 +253,7 @@
     private MapEffectsView? _allEffects;
     private MapEffectsView? _effects;
     private IReadOnlyList<(MapBundle Bundle, bool Faded)> _drawn = [];
+    private MapPocketShape _pocket = new([]);
     private IReadOnlyList<MapAmount> _amounts = [];
     private readonly Dictionary<MapText, IStringLocalizer> _texts = [];
 
@@ -241,6 +262,8 @@
     internal MapView ShownMap => _view;
 
     internal IReadOnlyList<(MapBundle Bundle, bool Faded)> DrawnLines => _drawn;
+
+    internal MapPocketShape DrawnPocketLine => _pocket;
 
     internal IReadOnlyList<MapAmount> DrawnAmounts => _amounts;
 
@@ -265,6 +288,7 @@
         _chosen = _full.Choice(Chosen);
         _view = _full.ShowingFor(_chosen);
         _drawn = _view.Drawn(_chosen);
+        _pocket = _view.PocketLine();
         _amounts = _view.Amounts(_placed, _chosen);
 
         // Made from every link of the run, whatever the choice draws.
@@ -301,10 +325,17 @@
 
     private static string EffectClass(MapEffect effect) => $"map-tab__effect{(effect.Marked ? " map-tab__effect--marked" : "")}";
 
-    // A line drawn: its halo of the map's ground, then the line itself in its kind's ink.
+    // A line drawn: its halo of the map's ground, on its own path but where it stops short of the pocket line
+    // (MapView.HaloPathOf), none where nothing of it is left, then the line itself in its kind's ink, its corners
+    // turned on arcs (MapView.PathOf).
     private RenderFragment Line(MapBundle bundle, bool faded) =>
-        @<text><polyline class="@HaloClass(faded)" points="@Points(bundle.Route.Drawn)" stroke-width="@MapLinkStyle.Halo(bundle.Route.Width)" /><polyline class="@LineClass(faded)" points="@Points(bundle.Route.Drawn)" stroke-dasharray="@MapLinkStyle.Dash(bundle.Kind)" stroke-width="@MapLinkStyle.Width(bundle.Route.Width)" data-link-kind="@bundle.Kind" style="stroke: @Ink(bundle)" /></text>;
+        @<text>@if (_view.HaloPathOf(bundle) is { Length: > 0 } halo)
+        {<path class="@HaloClass(faded)" d="@halo" stroke-width="@MapLinkStyle.Halo(bundle.Route.Width)" />}<path class="@LineClass(faded)" d="@_view.PathOf(bundle)" stroke-dasharray="@MapLinkStyle.Dash(bundle.Kind)" stroke-width="@MapLinkStyle.Width(bundle.Route.Width)" data-link-kind="@bundle.Kind" style="stroke: @Ink(bundle)" /></text>;
 
+    // A step of the pocket line: straight down its line from its top to its bottom.
+    private string StepPath(MapPocketStep step) => MapPath.Of([new MapPoint(step.X, step.Top), new MapPoint(step.X, step.Bottom)], _view.Scale);
+
+    private static string PocketClass(MapPocketShape line) => $"map-pocket-line{(line.Faded ? " map-pocket-line--faded" : "")}";
 
 
     // A module chosen again lets it go.
@@ -417,8 +448,6 @@
         { Bucket: { } bucket } => BucketTexts[BucketBarText.Bucket(bucket, _view.TaxesOnPayIncludeRent)],
         _ => throw new ArgumentOutOfRangeException(nameof(end), "An end with neither a module nor a bucket."),
     };
-
-    private static string Points(IReadOnlyList<MapPoint> points) => string.Join(' ', points.Select(point => $"{Number(point.X)},{Number(point.Y)}"));
 
     private static string Box(MapSlot slot) =>
         $"left: {Percent(slot.Left)}; top: {Percent(slot.Top)}; width: {Percent(slot.Width)}; height: {Percent(slot.Height)}";

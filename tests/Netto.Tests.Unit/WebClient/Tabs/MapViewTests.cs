@@ -462,6 +462,127 @@ public class MapViewTests
         MapView.From(Full, Full.Run(), MapNames.English).Drawn(null).ShouldAllBe(line => !line.Faded);
     }
 
+    // The pocket line is drawn as one shape of its own (PocketLine), not among the lines a choice fades.
+    [Fact]
+    public void Drawn_leavesThePocketLineToItsOwnDrawing()
+    {
+        var view = MapView.From(Full, Full.Run(), MapNames.English);
+
+        var drawn = view.Drawn(RiverModule.Car);
+
+        (drawn.Any(line => line.Bundle.StretchOfThePocketLine), drawn.Count).ShouldBe((false, view.Bundles().Count(bundle => !bundle.StretchOfThePocketLine)));
+    }
+
+    // Whichever module is chosen, or none, the pocket line is drawn whole at full ink, a step for each of its
+    // stretches: the module's share shows by its own line into it.
+    [Theory]
+    [InlineData(null)]
+    [InlineData(RiverModule.Rent)]
+    [InlineData(RiverModule.Dividend)]
+    [InlineData(RiverModule.CorporateTax)]
+    public void PocketLine_whateverModuleIsChosen_isOneShapeAtFullInk(RiverModule? chosen)
+    {
+        var view = MapView.From(Full, Full.Run(), MapNames.English).ShowingFor(chosen);
+
+        var line = view.PocketLine();
+
+        line.ShouldSatisfyAllConditions(
+            () => line.Faded.ShouldBeFalse(),
+            () => line.Steps.Select(step => step.Stretch.Route).ShouldBe(view.Bundles().Where(bundle => bundle.StretchOfThePocketLine).Select(bundle => bundle.Route)));
+    }
+
+    // A line into the pocket line is drawn on down along it, twice the radius it turns on, so it turns down into
+    // the flow on an arc rather than meeting it square: each gate's on 8 px, Director pay's, 5 px from it, on half
+    // that.
+    [Fact]
+    public void PointsOf_aLineJoiningThePocketLine_turnsDownAlongIt()
+    {
+        var view = MapView.From(Full, Full.Run(), MapNames.English);
+        var joins = view.Bundles().Where(bundle => bundle.JoinsThePocketLine).ToList();
+        bool TurnsDown(MapBundle join) =>
+            view.PointsOf(join).SequenceEqual([.. join.Route.Drawn, join.Route.End with { Y = join.Route.End.Y + 2m * MapPath.Radius / view.Scale.Y }]);
+
+        joins.ShouldSatisfyAllConditions(
+            () => joins.Count.ShouldBe(6),
+            () => joins.Where(join => !TurnsDown(join)).Select(join => join.From.Id).ShouldBeEmpty(),
+            () => joins.Select(join => (join.From.Module, Math.Round(view.Turn(join), 6))).ShouldBe(
+                [(RiverModule.Vouchers, 8m), (RiverModule.Allowances, 8m), (RiverModule.Rent, 8m), (RiverModule.DirectorPay, 2.5m), (RiverModule.Copyright, 8m), (RiverModule.Dividend, 8m)],
+                ignoreOrder: true));
+    }
+
+    // Its halo stops where its turn begins, the halo's round end too, so it cuts no gap in the gold line where they
+    // meet; Director pay's, shorter than that, has none.
+    [Fact]
+    public void HaloPathOf_aLineJoiningThePocketLine_stopsShortOfItsTurn()
+    {
+        var view = MapView.From(Full, Full.Run(), MapNames.English);
+        var joins = view.Bundles().Where(bundle => bundle.JoinsThePocketLine).ToList();
+        bool StopsShort(MapBundle join) =>
+            Last(view.HaloPathOf(join)).X - join.Route.End.X >= (view.Turn(join) + join.Route.Width / 2m + MapLinkStyle.HaloGap) / view.Scale.X - 0.001m;
+
+        joins.ShouldSatisfyAllConditions(
+            () => joins.Where(join => join.From.Module != RiverModule.DirectorPay && !StopsShort(join)).Select(join => join.From.Id).ShouldBeEmpty(),
+            () => view.HaloPathOf(joins.Single(join => join.From.Module == RiverModule.DirectorPay)).ShouldBe(""));
+    }
+
+    // A line leaving the pocket line, the car's contribution, curves out of it from above, in the flow's way, its
+    // halo starting past its turn.
+    [Fact]
+    public void PointsOf_aLineLeavingThePocketLine_curvesOutOfItFromAbove()
+    {
+        var view = MapView.From(Full, Full.Run(), MapNames.English);
+        var leave = Line(view, MapEnd.OnPocketLine(RiverModule.Car), MapEnd.Beside(RiverModule.Car));
+
+        var points = view.PointsOf(leave);
+
+        points.ShouldSatisfyAllConditions(
+            () => leave.LeavesThePocketLine.ShouldBeTrue(),
+            () => points.ShouldBe([leave.Route.Drawn[0] with { Y = leave.Route.Drawn[0].Y - 2m * MapPath.Radius / view.Scale.Y }, .. leave.Route.Drawn]),
+            () => Math.Round(view.Turn(leave), 6).ShouldBe(MapPath.Radius),
+            () => (First(view.HaloPathOf(leave)).X - leave.Route.Points[0].X >= (MapPath.Radius + leave.Route.Width / 2m + MapLinkStyle.HaloGap) / view.Scale.X - 0.001m).ShouldBeTrue());
+    }
+
+    // Leaving the pocket line at its top, where nothing flows down to it, the car's contribution goes straight out,
+    // its halo starting past the pocket line's thickest half.
+    [Fact]
+    public void PointsOf_aLineLeavingTheTopOfThePocketLine_goesStraightOut()
+    {
+        var river = Full with { Composition = MapModulesTests.Composition(8) };
+        var view = MapView.From(river, river.Run(), MapNames.English);
+        var leave = Line(view, MapEnd.OnPocketLine(RiverModule.Car), MapEnd.Beside(RiverModule.Car));
+
+        var points = view.PointsOf(leave);
+
+        points.ShouldSatisfyAllConditions(
+            () => view.PocketLine().Steps[0].Stretch.From.ShouldBe(MapEnd.OnPocketLine(RiverModule.Car)),
+            () => points.ShouldBe(leave.Route.Drawn),
+            () => view.Turn(leave).ShouldBe(0m),
+            () => (First(view.HaloPathOf(leave)).X - leave.Route.Points[0].X >= (MapLineWidths.Thickest / 2m + leave.Route.Width / 2m + MapLinkStyle.HaloGap) / view.Scale.X - 0.001m)
+                .ShouldBeTrue());
+    }
+
+    // Every other line is drawn on its own points: no turn where it meets nothing it flows into.
+    [Fact]
+    public void PointsOf_aLineThatNeitherJoinsNorLeavesThePocketLine_isItsPointsAsDrawn()
+    {
+        var view = MapView.From(Full, Full.Run(), MapNames.English);
+
+        view.Bundles().Where(bundle => !bundle.JoinsThePocketLine && !bundle.LeavesThePocketLine)
+            .Where(bundle => !view.PointsOf(bundle).SequenceEqual(bundle.Route.Drawn)).Select(bundle => $"{bundle.From.Id} to {bundle.To.Id}").ShouldBeEmpty();
+    }
+
+    // The first and last points of a path's data.
+    internal static MapPoint First(string path) => PointsIn(path)[0];
+
+    internal static MapPoint Last(string path) => PointsIn(path)[^1];
+
+    private static List<MapPoint> PointsIn(string path) =>
+    [
+        .. System.Text.RegularExpressions.Regex.Matches(path, "(-?[\\d.]+),(-?[\\d.]+)")
+            .Select(match => new MapPoint(decimal.Parse(match.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture),
+                decimal.Parse(match.Groups[2].Value, System.Globalization.CultureInfo.InvariantCulture))),
+    ];
+
     // The lines of money of a map, and what one carries.
     private static List<MapBundle> Money(MapView view) => [.. view.Bundles().Where(bundle => bundle.Kind is MapLinkKind.PassedOn or MapLinkKind.IntoBucket)];
 

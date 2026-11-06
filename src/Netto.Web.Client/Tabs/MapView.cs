@@ -157,9 +157,69 @@ internal sealed record MapView(IReadOnlyList<MapNode> Modules, IReadOnlyList<Map
         [.. Links.Where(link => link.Route is not null).GroupBy(link => link.Route!).Select(bundle => new MapBundle(bundle.Key, [.. bundle]))];
 
     // The lines in the order they are drawn, each faded while another module is chosen: the chosen one's
-    // last, over the others.
+    // last, over the others. The pocket line is not among them: it is drawn as one shape of its own, under them
+    // all (PocketLine).
     public IReadOnlyList<(MapBundle Bundle, bool Faded)> Drawn(RiverModule? chosen) =>
-        [.. Bundles().Select(bundle => (Bundle: bundle, Faded: chosen is { } module && !bundle.Touches(module))).OrderByDescending(line => line.Faded)];
+        [.. Bundles().Where(bundle => !bundle.StretchOfThePocketLine).Select(bundle => (Bundle: bundle, Faded: chosen is { } module && !bundle.Touches(module))).OrderByDescending(line => line.Faded)];
+
+    // The pocket line as the map draws it, one shape, a step for each stretch (MapPocketLine.Steps), at full ink
+    // whichever module is chosen, or none: the module's share shows by its own line into it. Faded whole, never a
+    // stretch of it alone, where the map is told so (Faded).
+    public MapPocketShape PocketLine() => new(MapPocketLine.Steps(this));
+
+    // The scale the map's drawing is worked out at: where the map is drawn smallest, as its layout is (MapPath).
+    public MapScale Scale => MapScale.Smallest(Units);
+
+    // The points a line is drawn through: its route as drawn (MapRoute.Drawn), and where it meets the pocket line,
+    // in the flow: a line into it on down along it twice the radius it turns on, so it turns down into it on an
+    // arc; a line out of it from as far up it, so it curves out of it, but at its top, where nothing flows down to
+    // it, straight out. Every other line its route as drawn.
+    public IReadOnlyList<MapPoint> PointsOf(MapBundle bundle)
+    {
+        var drawn = bundle.Route.Drawn;
+        var along = 2m * MapPath.Radius / Scale.Y;
+        if (bundle.JoinsThePocketLine && drawn[^2].Y == drawn[^1].Y)
+            return [.. drawn, drawn[^1] with { Y = drawn[^1].Y + along }];
+        if (bundle.LeavesThePocketLine && drawn[0].Y == drawn[1].Y && FlowsDownTo(bundle.From))
+            return [drawn[0] with { Y = drawn[0].Y - along }, .. drawn];
+        return drawn;
+    }
+
+    // The radius, in pixels, a line turns on where it meets the pocket line: none for a line meeting it square, or
+    // not meeting it.
+    public decimal Turn(MapBundle bundle)
+    {
+        var points = PointsOf(bundle);
+        if (points.Count == bundle.Route.Drawn.Count)
+            return 0m;
+
+        var turns = MapPath.Turns(points, Scale, ArrowLength(bundle));
+        return bundle.JoinsThePocketLine ? turns[^1].Radius : turns[0].Radius;
+    }
+
+    // A line's path data, turning its corners on arcs (MapPath), behind its arrowhead.
+    public string PathOf(MapBundle bundle) => MapPath.Of(PointsOf(bundle), Scale, ArrowLength(bundle));
+
+    // The path data of a line's halo: its line's, but where it meets the pocket line, which it stops short of by
+    // its turn, its own half-width and the halo's gap, its round end included, so no halo cuts the gold line where
+    // they meet; meeting it square, by the pocket line's thickest half instead of a turn. Nothing where the line
+    // is shorter than that.
+    public string HaloPathOf(MapBundle bundle)
+    {
+        if (!bundle.JoinsThePocketLine && !bundle.LeavesThePocketLine)
+            return PathOf(bundle);
+
+        var turn = Turn(bundle);
+        var clear = (turn > 0m ? turn : MapLineWidths.Thickest / 2m) + bundle.Route.Width / 2m + MapLinkStyle.HaloGap;
+        return bundle.JoinsThePocketLine
+            ? MapPath.Of(bundle.Route.Drawn, Scale, ArrowLength(bundle), trimEnd: clear)
+            : MapPath.Of(bundle.Route.Drawn, Scale, ArrowLength(bundle), trimStart: clear);
+    }
+
+    private static decimal ArrowLength(MapBundle bundle) => bundle.Arrowhead ? MapLineWidths.ArrowLength(bundle.Route.Width) : 0m;
+
+    // Whether the pocket line runs down to a point of it: a stretch of it ending there.
+    private bool FlowsDownTo(MapEnd point) => Links.Any(link => link.To == point && link.From.PocketLine is not null);
 
     // The amounts the map draws, of those placed from every link of the run (MapAmounts.Of the run's map):
     // the lines this map shows, and, a module chosen, only its own lines', whichever card draws them, each
@@ -237,6 +297,15 @@ internal sealed record MapBundle(MapRoute Route, IReadOnlyList<MapLink> Links)
     public bool SaysAmount => !Links[0].Unsaid;
 
     public bool Touches(RiverModule module) => Links[0].Touches(module);
+
+    // A stretch of the pocket line: from a point of it to the next, or into the pocket (MapPocketLine).
+    public bool StretchOfThePocketLine => From.PocketLine is not null && (To.PocketLine is not null || To.Bucket == "pocket");
+
+    // A line joining the pocket line, from a module or the company's line into a point of it.
+    public bool JoinsThePocketLine => To.PocketLine is not null && From.PocketLine is null;
+
+    // A line leaving the pocket line, out of a point of it into a module or the company's line.
+    public bool LeavesThePocketLine => From.PocketLine is not null && To.PocketLine is null && To.Bucket is null;
 }
 
 // What a link of the map carries, told apart at a glance: money passed on to the next module (the company's

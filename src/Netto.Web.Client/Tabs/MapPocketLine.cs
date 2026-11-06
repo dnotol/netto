@@ -47,6 +47,31 @@ internal static class MapPocketLine
         ];
     }
 
+    // The pocket line as the map draws it, one shape under every other line: a step for each stretch, centred on
+    // the line and as wide as its stretch (MapLineWidths.Money of what has reached the director so far), from where
+    // the line joining it at its upper point ends its turn down into it (MapView.Turn), the highest of them there, or
+    // from that point where none joins it, to a pixel past where the next step begins, so no seam shows between
+    // them, the last on under the pocket to its middle. Square-ended, so each join reads as the line widening.
+    public static IReadOnlyList<MapPocketStep> Steps(MapView view)
+    {
+        var bundles = view.Bundles();
+        var stretches = bundles.Where(bundle => bundle.StretchOfThePocketLine).OrderBy(stretch => stretch.Route.Points[0].Y).ToList();
+        var tops = stretches.Select(stretch => TopOf(view, bundles, stretch)).ToList();
+        var pixel = 1m / view.Scale.Y;
+        return
+        [
+            .. stretches.Select((stretch, index) =>
+                new MapPocketStep(stretch, stretch.Route.Points[0].X, tops[index], index + 1 < stretches.Count ? tops[index + 1] + pixel : stretch.Route.Drawn[^1].Y)),
+        ];
+    }
+
+    private static decimal TopOf(MapView view, IReadOnlyList<MapBundle> bundles, MapBundle stretch)
+    {
+        var top = stretch.Route.Points[0].Y;
+        var join = bundles.Where(bundle => bundle.JoinsThePocketLine && bundle.To == stretch.From).OrderBy(bundle => bundle.Route.End.Y).FirstOrDefault();
+        return join is not null && join.Route.End.Y == top ? top + view.Turn(join) / view.Scale.Y : top;
+    }
+
     // The module whose point of the line a line into the pocket or out of it meets: its other end's module, or
     // the lever whose point of the company's line it leaves for or joins from.
     private static RiverModule PointOf(MapLink link)
@@ -54,4 +79,18 @@ internal static class MapPocketLine
         var other = link.To == Pocket ? link.From : link.To;
         return other.Module ?? other.Lever ?? throw new ArgumentOutOfRangeException(nameof(link), other.Id, "A line into the pocket from no module.");
     }
+}
+
+// The pocket line as the map draws it: its steps, top to bottom, and whether it is faded, which it only ever is
+// whole; nothing fades it yet, whichever module is chosen.
+internal sealed record MapPocketShape(IReadOnlyList<MapPocketStep> Steps)
+{
+    public bool Faded { get; init; }
+}
+
+// A step of the pocket line: its stretch, and where the map draws it, in percent of the map: down its line (X)
+// from its top to its bottom, as wide as its stretch, in pixels.
+internal sealed record MapPocketStep(MapBundle Stretch, decimal X, decimal Top, decimal Bottom)
+{
+    public decimal Width => Stretch.Route.Width;
 }

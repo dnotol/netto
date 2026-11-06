@@ -223,15 +223,15 @@ public class MapTabTests
 
         html.ShouldSatisfyAllConditions(
             () => inks.Select(ink => ink.Ink).ShouldContain(MapLinkStyle.PocketInk),
-            () => Regex.Matches(html, "<polyline class=\"map-line[^>]*>").Select(match => (Attribute(match.Value, "data-link-kind"), Attribute(match.Value, "style")))
+            () => Regex.Matches(html, "<path class=\"map-line[^>]*>").Select(match => (Attribute(match.Value, "data-link-kind"), Attribute(match.Value, "style")))
                 .ShouldBe(inks.Select(ink => ((string?)ink.Item1, (string?)$"stroke: {ink.Ink}"))),
             () => Regex.Matches(html, "<span class=\"map-arrow [^>]*>").Select(match => Regex.Match(Attribute(match.Value, "style") ?? "", "--map-arrow: ([^;]*)$").Groups[1].Value)
                 .ShouldBe(drawn.Zip(inks).Where(pair => pair.First.Bundle.Arrowhead).Select(pair => pair.Second.Ink)));
     }
 
     // An arrowhead ends every line that reaches a module, sized by its line, half its
-    // base and its length set on it (MapLineWidths); a line into a bucket has none, the gold lines into the
-    // pocket among them.
+    // base and its length set on it (MapLineWidths); a line into a bucket has none, nor a gold line joining the
+    // pocket line, which runs on into the pocket.
     [Fact]
     public async Task Tab_anArrowhead_endsEachLineIntoAModuleOrOutOfTheRiverSizedByItsLine()
     {
@@ -240,26 +240,53 @@ public class MapTabTests
         var html = await RenderTabAsync(Full);
 
         html.ShouldSatisfyAllConditions(
-            () => drawn.Where(line => !line.Bundle.Arrowhead).ShouldContain(line => line.Bundle.To == MapEnd.InBucket("pocket")),
+            () => drawn.Where(line => !line.Bundle.Arrowhead).ShouldContain(line => line.Bundle.JoinsThePocketLine),
             () => Regex.Matches(html, "<span class=\"map-arrow [^>]*>")
                 .Select(match => Regex.Match(Attribute(match.Value, "style") ?? "", "--map-arrow-half: ([^;]*); --map-arrow-length: ([^;]*);") is { Success: true } size ? (size.Groups[1].Value, size.Groups[2].Value) : default)
                 .ShouldBe(drawn.Where(line => line.Bundle.Arrowhead)
                     .Select(line => ($"{MapLinkStyle.Width(MapLineWidths.ArrowHalf(line.Bundle.Route.Width))}px", $"{MapLinkStyle.Width(MapLineWidths.ArrowLength(line.Bundle.Route.Width))}px"))));
     }
 
-    // Every line is drawn on its points as drawn: a line into a bucket on under it to its middle, the bucket
-    // drawn over it (MapRoute.Drawn).
+    // Every line is drawn on a path through its points as drawn, a line into a bucket on under it to its middle,
+    // the bucket drawn over it (MapRoute.Drawn), its corners turned on arcs and a line into the pocket line turning
+    // down along it (MapView.PathOf).
     [Fact]
-    public async Task Tab_everyLine_isDrawnOnItsPointsUnderTheBucketItMeets()
+    public async Task Tab_everyLine_isDrawnOnItsPathTurningItsCornersOnArcs()
     {
-        var drawn = MapView.From(Full, Full.Run(), MapNames.English).ShowingFor(null).Drawn(null);
+        var view = MapView.From(Full, Full.Run(), MapNames.English).ShowingFor(null);
+        var drawn = view.Drawn(null);
 
         var html = await RenderTabAsync(Full);
 
         html.ShouldSatisfyAllConditions(
             () => drawn.Any(line => line.Bundle.Route.Drawn[^1] != line.Bundle.Route.End).ShouldBeTrue(),
-            () => Regex.Matches(html, "<polyline class=\"map-line[^>]*>").Select(match => Attribute(match.Value, "points"))
-                .ShouldBe(drawn.Select(line => (string?)string.Join(' ', line.Bundle.Route.Drawn.Select(point => $"{Number(point.X)},{Number(point.Y)}")))));
+            () => drawn.Where(line => line.Bundle.JoinsThePocketLine).ShouldAllBe(line => view.PathOf(line.Bundle).Contains(" A ", StringComparison.Ordinal)),
+            () => Regex.Matches(html, "<path class=\"map-line[^>]*>").Select(match => Attribute(match.Value, "d"))
+                .ShouldBe(drawn.Select(line => (string?)view.PathOf(line.Bundle))));
+    }
+
+    // The pocket line is one shape under every other line, at full ink whichever module is chosen: a step for each
+    // stretch, over its halo, square-ended, in the pocket's gold, none of it faded.
+    [Theory]
+    [InlineData(null)]
+    [InlineData(RiverModule.Rent)]
+    public async Task Tab_thePocketLine_isOneShapeUnderEveryLineAtFullInk(RiverModule? chosen)
+    {
+        var view = MapView.From(Full, Full.Run(), MapNames.English).ShowingFor(chosen);
+        var steps = view.PocketLine().Steps;
+        string Path(MapPocketStep step) => MapPath.Of([new MapPoint(step.X, step.Top), new MapPoint(step.X, step.Bottom)], view.Scale);
+
+        var html = await RenderTabAsync(Full, chosen);
+
+        var shape = Regex.Matches(html, "<g class=\"map-pocket-line[^\"]*\"[^>]*>.*?</g>", RegexOptions.Singleline).ShouldHaveSingleItem().Value;
+        shape.ShouldSatisfyAllConditions(
+            () => Attribute(shape, "class").ShouldBe("map-pocket-line"),
+            () => html.IndexOf(shape, StringComparison.Ordinal).ShouldBeLessThan(html.IndexOf("<path class=\"map-halo", StringComparison.Ordinal)),
+            () => Regex.Matches(shape, "<path class=\"map-pocket-line__halo\"[^>]*>").Select(match => (Attribute(match.Value, "d"), Attribute(match.Value, "stroke-width")))
+                .ShouldBe(steps.Select(step => ((string?)Path(step), (string?)MapLinkStyle.Halo(step.Width)))),
+            () => Regex.Matches(shape, "<path class=\"map-pocket-line__step\"[^>]*>").Select(match => (Attribute(match.Value, "d"), Attribute(match.Value, "stroke-width"), Attribute(match.Value, "style")))
+                .ShouldBe(steps.Select(step => ((string?)Path(step), (string?)MapLinkStyle.Width(step.Width), (string?)$"stroke: {MapLinkStyle.PocketInk}"))),
+            () => shape.ShouldNotContain("faded"));
     }
 
     // Nothing chosen: one amount on each line of money that says one, the sum of the card's lines it holds,
@@ -336,21 +363,28 @@ public class MapTabTests
             () => map.ShouldNotContain("The car's yearly costs"));
     }
 
-    // Every line is drawn over a halo of the map's ground, right before it, on its points and wider by the
-    // gap each side, so a line drawn over another leaves a gap on each side of it; a faded line's halo fades
-    // with it.
+    // Every line is drawn over a halo of the map's ground, right before it, on its own path and wider by the gap
+    // each side, so a line drawn over another leaves a gap on each side of it, its arcs too; a faded line's halo
+    // fades with it. Where a line meets the pocket line its halo stops short of it (MapView.HaloPathOf), none left
+    // of Director pay's, so no halo cuts the gold line.
     [Fact]
     public async Task Tab_everyLine_isDrawnOverAHaloOfTheGround()
     {
-        var drawn = MapView.From(Full, Full.Run(), MapNames.English).ShowingFor(RiverModule.Car).Drawn(RiverModule.Car);
+        var view = MapView.From(Full, Full.Run(), MapNames.English).ShowingFor(RiverModule.Car);
+        var drawn = view.Drawn(RiverModule.Car);
 
         var html = await RenderTabAsync(Full, RiverModule.Car);
 
-        Regex.Matches(html, "<polyline [^>]*>").Select(match => match.Value).Chunk(2)
-            .Select(pair => (Attribute(pair[0], "class"), Attribute(pair[0], "points") == Attribute(pair[^1], "points"), Attribute(pair[0], "stroke-width"),
-                Attribute(pair[0], "stroke-dasharray"), Attribute(pair[^1], "data-link-kind")))
-            .ShouldBe(drawn.Select(line => ((string?)(line.Faded ? "map-halo map-halo--faded" : "map-halo"), true, (string?)MapLinkStyle.Halo(line.Bundle.Route.Width), (string?)null,
+        var expected = drawn.SelectMany(line => (view.HaloPathOf(line.Bundle) is { Length: > 0 } halo
+                ? new[] { ((string?)(line.Faded ? "map-halo map-halo--faded" : "map-halo"), (string?)halo, (string?)MapLinkStyle.Halo(line.Bundle.Route.Width), (string?)null) }
+                : [])
+            .Append(((string?)(line.Faded ? "map-line map-line--faded" : "map-line"), (string?)view.PathOf(line.Bundle), (string?)MapLinkStyle.Width(line.Bundle.Route.Width),
                 (string?)line.Bundle.Kind.ToString())));
+        html.ShouldSatisfyAllConditions(
+            () => drawn.Where(line => !line.Bundle.JoinsThePocketLine && !line.Bundle.LeavesThePocketLine).ShouldAllBe(line => view.HaloPathOf(line.Bundle) == view.PathOf(line.Bundle)),
+            () => drawn.Where(line => line.Bundle.JoinsThePocketLine).ShouldAllBe(line => view.HaloPathOf(line.Bundle) != view.PathOf(line.Bundle)),
+            () => Regex.Matches(html, "<path class=\"map-(?:halo|line)[^>]*>").Select(match => (Attribute(match.Value, "class"), Attribute(match.Value, "d"), Attribute(match.Value, "stroke-width"),
+                Attribute(match.Value, "data-link-kind"))).ShouldBe(expected));
     }
 
     [Fact]
@@ -386,7 +420,7 @@ public class MapTabTests
 
         html.ShouldSatisfyAllConditions(
             () => Buttons(html).Where(button => button.Pressed == "true").Select(button => button.Module).ShouldBe(["rent"]),
-            () => Regex.Count(html, "<polyline class=\"map-line[^\"]*map-line--faded").ShouldBe(view.Bundles().Count(bundle => !bundle.Touches(RiverModule.Rent))),
+            () => Regex.Count(html, "<path class=\"map-line[^\"]*map-line--faded").ShouldBe(view.Drawn(RiverModule.Rent).Count(line => line.Faded)),
             () => received.Select(line => line.From).ShouldBe(["company-year"]),
             () => Line(html).ShouldBe($"Receives {received[0].Amount} from {CardTitle(RiverModule.CompanyYear)}"));
     }
@@ -442,7 +476,7 @@ public class MapTabTests
 
         var map = Regex.Match(html, "<div class=\"map\".*?<div class=\"map-tab__side\"", RegexOptions.Singleline).Value;
         html.ShouldSatisfyAllConditions(
-            () => (Regex.Count(map, "<polyline"), map.Contains('€'), Regex.Count(map, "map-amount"), map.Contains("map-badge", StringComparison.Ordinal), Buttons(html).Count)
+            () => (Regex.Count(map, "<path class=\"map-"), map.Contains('€'), Regex.Count(map, "map-amount"), map.Contains("map-badge", StringComparison.Ordinal), Buttons(html).Count)
                 .ShouldBe((0, false, 0, false, MapView.ModulesOf(Full).Count)),
             () => Buttons(html).Where(button => !button.Refused).Select(button => button.Name).ShouldBe(
                 MapView.ModulesOf(Full).Where(module => module != RiverModule.Dividend).Select(CardTitle)),
@@ -583,7 +617,7 @@ public class MapTabTests
     // Each line: its kind, its dash and its width.
     private static List<(string Kind, string? Dash, string Width)> Lines(string html) =>
     [
-        .. Regex.Matches(html, "<polyline class=\"map-line[^>]*>").Select(match => (
+        .. Regex.Matches(html, "<path class=\"map-line[^>]*>").Select(match => (
             Regex.Match(match.Value, "data-link-kind=\"(\\w+)\"").Groups[1].Value,
             Regex.Match(match.Value, "stroke-dasharray=\"([^\"]*)\"") is { Success: true } dash ? dash.Groups[1].Value : null,
             Regex.Match(match.Value, "stroke-width=\"([^\"]*)\"").Groups[1].Value)),

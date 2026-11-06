@@ -215,6 +215,24 @@
     opacity: 0.18;
 }
 
+/* The pocket line: one shape under every other line, a step for each stretch, each as wide as what has reached
+   the director so far, over a halo of the ground; square-ended, so each join reads as the line widening rather
+   than as a cap. Never faded a stretch alone: where it fades, the whole of it fades (MapPocketShape.Faded). */
+.map-pocket-line__halo,
+.map-pocket-line__step {
+    fill: none;
+    stroke-linecap: butt;
+    vector-effect: non-scaling-stroke;
+}
+
+.map-pocket-line__halo {
+    stroke: var(--netto-page);
+}
+
+.map-pocket-line--faded {
+    opacity: 0.18;
+}
+
 /* An arrowhead where a line arrives on a module, its point on the box's edge, in its
    line's ink and as large as its line asks (--map-arrow, --map-arrow-half and --map-arrow-length, set on
    the arrowhead itself from MapLinkStyle and MapLineWidths). Its box, its base by its length, is the map's

@@ -69,6 +69,30 @@ public class MapPocketLineTests
         (last.To, last.Amount).ShouldBe((Pocket, BucketsView.From(river.Run())!.AmountOf("pocket")));
     }
 
+    // The pocket line is drawn as one shape: a step for each stretch, centred on the line and as wide as its
+    // stretch, from where the line joining it at its upper point ends its turn down (each gate's 8 px under it,
+    // Director pay's 2.5), or from that point where none joins it (the car's, where the contribution leaves), to a
+    // pixel past where the next begins, so no seam shows between them, the last on under the pocket to its middle.
+    [Fact]
+    public void Steps_everyLever_widenAfterEachJoinFromTheEndOfItsTurn()
+    {
+        var view = MapView.From(MapLinksTests.Full, MapLinksTests.Full.Run(), MapNames.English);
+        var stretches = view.Bundles().Where(bundle => bundle.StretchOfThePocketLine).ToList();
+
+        var steps = MapPocketLine.Steps(view);
+
+        var pixel = 1m / view.Scale.Y;
+        steps.ShouldSatisfyAllConditions(
+            () => steps.Select(step => step.Stretch.Route).ShouldBe(stretches.Select(stretch => stretch.Route)),
+            () => steps.Select(step => (step.X, step.Width)).ShouldBe(stretches.Select(stretch => (stretch.Route.Points[0].X, stretch.Route.Width))),
+            () => steps.Select(step => (step.Stretch.From.PocketLine, Math.Round((step.Top - step.Stretch.Route.Points[0].Y) / pixel, 6))).ShouldBe(
+            [
+                (RiverModule.Vouchers, 8m), (RiverModule.Allowances, 8m), (RiverModule.Rent, 8m), (RiverModule.Car, 0m), (RiverModule.DirectorPay, 2.5m),
+                (RiverModule.Copyright, 8m), (RiverModule.Dividend, 8m),
+            ]),
+            () => steps.Select(step => step.Bottom).ShouldBe([.. steps.Skip(1).Select(step => step.Top + pixel), stretches[^1].Route.Drawn[^1].Y]));
+    }
+
     // A contribution beyond what has reached the director above the car leaves the line below nothing there.
     [Fact]
     public void Of_aContributionBeyondWhatReachedYouAboveIt_leavesTheLineBelowNothingAtTheCar()
