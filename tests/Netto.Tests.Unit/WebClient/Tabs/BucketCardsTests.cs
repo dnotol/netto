@@ -1,4 +1,5 @@
 using Netto.Web.Client.River;
+using Netto.Web.Client.Tabs;
 using Shouldly;
 
 namespace Netto.Tests.WebClient.Tabs;
@@ -21,6 +22,41 @@ public class BucketCardsTests
                     data.Add(river, key);
             return data;
         }
+    }
+
+
+    // The pocket card says a running total exactly where the map says one: the stretches of the pocket line
+    // MapView leaves said (not Unsaid), each with the amount the map draws, so a drift in either fails.
+    [Theory]
+    [InlineData("every lever")]
+    [InlineData("the company paying the contributions")]
+    [InlineData("the example")]
+    [InlineData("the company skipped")]
+    [InlineData("a rent under its floor")]
+    [InlineData("a contribution beyond the car's costs")]
+    [InlineData("a car without contribution")]
+    [InlineData("every lever empty")]
+    [InlineData("the dividend all kept")]
+    public void RunningTotals_areTheStretchesTheMapSays(string name)
+    {
+        var river = MapRendering.River(name);
+        var run = river.Run();
+        var stretches = MapView.From(river, run, MapNames.English).Links
+            .Where(link => link.From.PocketLine is not null && (link.To.PocketLine is not null || link.To.Bucket == "pocket") && !link.Unsaid)
+            .Select(link => (link.From.PocketLine!.Value, link.Amount!.Value)).ToList();
+
+        var totals = BucketCardView.From(river, run, "pocket")!.RunningTotals.Select(total => (total.Module, total.Total)).ToList();
+
+        totals.ShouldBe(stretches);
+    }
+
+    [Fact]
+    public void RunningTotals_theCases_includeOneWhereTheMapLeavesATotalUnsaid()
+    {
+        var river = MapRendering.River("a contribution beyond the car's costs");
+        var all = MapView.From(river, river.Run(), MapNames.English).Links.Count(link => link.From.PocketLine is not null && link.To.PocketLine is not null || link.From.PocketLine is not null && link.To.Bucket == "pocket");
+
+        all.ShouldBeGreaterThan(BucketCardView.From(river, river.Run(), "pocket")!.RunningTotals.Count);
     }
 
     [Theory]

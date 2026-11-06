@@ -38,11 +38,20 @@ internal sealed record BucketCardView(
         return new BucketCardView(key, bucket.Amount, bucket.Share, lines, key == "pocket" ? PocketTotals(links) : [], buckets.TaxesOnPayIncludeRent, buckets.TaxesOnPayIncludeRoyalty);
     }
 
-    // What has reached the director once each module's lines joined the pocket line or left it, from the top.
-    private static List<PocketTotal> PocketTotals(IReadOnlyList<MapLink> links) =>
-        [.. MapPocketLine.Of(links)
+    // What has reached the director once each module's lines joined the pocket line or left it, from the top,
+    // where the map says a total: the rule of MapView.SaidElsewhere, which marks a stretch unsaid out of a point
+    // where money only leaves the line (the car's contribution), the next total under a join saying it, and
+    // below nothing. BucketCardsTests holds the two to each other.
+    private static List<PocketTotal> PocketTotals(IReadOnlyList<MapLink> links)
+    {
+        var onTheLine = MapPocketLine.Of(links);
+        var joined = onTheLine.Where(link => link.To.PocketLine is not null && link.From.PocketLine is null).Select(link => link.To).ToHashSet();
+
+        return [.. onTheLine
             .Where(link => link.From.PocketLine is not null && (link.To.PocketLine is not null || link.To.InPocket))
+            .Where(stretch => joined.Contains(stretch.From) && stretch.Amount >= 0m)
             .Select(stretch => new PocketTotal(stretch.From.PocketLine!.Value, stretch.Amount!.Value))];
+    }
 }
 
 // One module's net sending into a bucket, with its share of the bar's start where the bar draws shares.

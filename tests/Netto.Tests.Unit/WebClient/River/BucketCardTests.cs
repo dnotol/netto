@@ -79,7 +79,7 @@ public class BucketCardTests
         var html = await RenderBucketAsync(Full.WithRevenue(-1m), "pocket");
 
         CardHtml.Lines(html).ShouldBeEmpty();
-        CardHtml.Prose(html).Count.ShouldBe(1);
+        CardHtml.Prose(html).ShouldBe([ResxText.For<BucketBar>().Get(BucketBarText.Refused)!]);
     }
 
     [Fact]

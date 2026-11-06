@@ -15,9 +15,6 @@
   <data name="Nothing" xml:space="preserve">
     <value>Nothing is sent into it in this plan.</value>
   </data>
-  <data name="Refused" xml:space="preserve">
-    <value>No figure until the amount the engine refuses is corrected.</value>
-  </data>
   <data name="PocketLine" xml:space="preserve">
     <value>Down the pocket line: what has reached you after each module</value>
   </data>

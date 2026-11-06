@@ -97,16 +97,20 @@ public class BucketCardViewTests
     }
 
     [Fact]
-    public void RunningTotals_ofThePocket_areThePocketLinesStretches_theLastThePocket()
+    public void RunningTotals_ofThePocket_endOnThePocket()
     {
         var run = Full.Run();
-        var stretches = MapPocketLine.Of(MapLinks.Of(Full, run))
-            .Where(link => link.From.PocketLine is not null && (link.To.PocketLine is not null || link.To.InPocket)).ToList();
 
-        var totals = BucketCardView.From(Full, run, "pocket")!.RunningTotals;
+        BucketCardView.From(Full, run, "pocket")!.RunningTotals[^1].Total.ShouldBe(BucketsView.From(run)!.AmountOf("pocket"));
+    }
 
-        totals.Select(t => (t.Module, t.Total)).ToList().ShouldBe(stretches.Select(s => (s.From.PocketLine!.Value, s.Amount!.Value)).ToList());
-        totals[^1].Total.ShouldBe(BucketsView.From(run)!.AmountOf("pocket"));
+    // Money only leaves the pocket line at the car's point, so the map says no total there: nor does the card.
+    [Fact]
+    public void RunningTotals_aCarsContributionLeavingThePocketLine_haveNoTotalAtTheCar()
+    {
+        var river = Full.WithCarContribution(1_000m);
+
+        View(river, "pocket").RunningTotals.Select(total => total.Module).ShouldNotContain(RiverModule.Car);
     }
 
     [Fact]
