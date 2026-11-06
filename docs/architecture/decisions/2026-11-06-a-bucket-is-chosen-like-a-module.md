@@ -2,8 +2,8 @@
 type: adr
 title: A bucket is chosen like a module, its read-only card saying what fills it
 description: The map's choice is a module or a bucket (MapChoice); a chosen bucket shows BucketCard beside the map, one line per module sending money into it, read from the map's links and summing to the bar's bucket; the bar's bucket chooses it too.
-status: draft
-decision: proposed
+status: stable
+accepted_by: human:Johnny Amadeus
 decided: 2026-11-06
 tags: [site]
 sources:

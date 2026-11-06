@@ -2,6 +2,7 @@
 
 ## 2026-11-06
 
+- [The map's lines are drawn as a river](/2026-11-06-the-map-drawn-as-a-river.md) and [a bucket is chosen like a module](/2026-11-06-a-bucket-is-chosen-like-a-module.md) accepted by the operator at landing.
 - [The map's lines are drawn as a river](/2026-11-06-the-map-drawn-as-a-river.md) proposed, from the work item « The map's lines merge into the pocket line and the buckets as a river, not as T-joins », and [a bucket is chosen like a module](/2026-11-06-a-bucket-is-chosen-like-a-module.md) proposed, from the story « I open a bucket and see what fills it ».
 
 ## 2026-10-30

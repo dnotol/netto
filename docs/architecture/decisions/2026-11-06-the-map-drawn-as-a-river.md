@@ -2,8 +2,8 @@
 type: adr
 title: The map's lines are drawn as a river, on arcs, the pocket line one stepped shape at full ink
 description: Routes stay orthogonal points; the drawing turns every corner on an arc (MapPath), a line into the pocket line curves down into it with no halo where they meet, and the pocket line is one stepped shape, never faded per stretch; the lines into a bucket keep their ports.
-status: draft
-decision: proposed
+status: stable
+accepted_by: human:Johnny Amadeus
 decided: 2026-11-06
 tags: [site]
 sources:
