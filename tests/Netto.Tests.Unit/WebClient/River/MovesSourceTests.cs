@@ -242,12 +242,6 @@ public class MovesSourceTests
 
     private static MovesSource Source(Screen screen, Wait quiet, Search search) => new(() => screen.Plan, quiet.After, search.Run);
 
-    // The plan the page shows, as the viewer edits it.
-    private sealed class Screen(RiverInputs plan)
-    {
-        public RiverInputs Plan { get; set; } = plan;
-    }
-
     // The engine's search stood in for: each plan and date it is asked for, in order, and a refusal of its
     // own as what it found, for a test to tell its view from the others.
     private sealed class Search
@@ -261,22 +255,5 @@ public class MovesSourceTests
             Asked.Add((plan, date));
             return (null, Refusal);
         }
-    }
-
-    // The browser's next paint, or the edits' pause, stood in for: how many times the page waited for it,
-    // and, held, done only once the test releases it.
-    private sealed class Wait(bool held = false)
-    {
-        private readonly TaskCompletionSource _done = new(TaskCreationOptions.RunContinuationsAsynchronously);
-
-        public int Asked { get; private set; }
-
-        public ValueTask After()
-        {
-            Asked++;
-            return held ? new ValueTask(_done.Task) : ValueTask.CompletedTask;
-        }
-
-        public void Release() => _done.SetResult();
     }
 }

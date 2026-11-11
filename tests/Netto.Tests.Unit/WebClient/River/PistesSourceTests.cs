@@ -239,11 +239,6 @@ public class PistesSourceTests
 
     private static PistesSource Source(RiverInputs plan, Search search) => new(() => plan, _ => (OptimisersPlan, null), search.Run);
 
-    private sealed class Screen(RiverInputs plan)
-    {
-        public RiverInputs Plan { get; set; } = plan;
-    }
-
     // The engine's search stood in for: each trial, plan it is measured against and date, in order, and an
     // idea gaining 10.00 as what it found.
     private sealed class Search
@@ -255,22 +250,5 @@ public class PistesSourceTests
             Asked.Add((trial, without, date));
             return (new Piste(trial.Lever, without, without with { PlanInPocket = without.PlanInPocket + 10m }, []), null);
         }
-    }
-
-    // The browser's next paint stood in for: how many times the page waited for it, and, held, done only once
-    // the test releases it.
-    private sealed class Wait(bool held = false)
-    {
-        private readonly TaskCompletionSource _done = new(TaskCreationOptions.RunContinuationsAsynchronously);
-
-        public int Asked { get; private set; }
-
-        public ValueTask After()
-        {
-            Asked++;
-            return held ? new ValueTask(_done.Task) : ValueTask.CompletedTask;
-        }
-
-        public void Release() => _done.SetResult();
     }
 }

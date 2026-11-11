@@ -123,9 +123,9 @@ public class PisteTrialTests
     [Fact]
     public void Search_vouchersOnTheExampleWithARoyalty_gains63()
     {
-        var without = ExampleWithRoyalty.FindMoves(On11November)?.Value.ShouldNotBeNull();
+        var without = ExampleWithRoyalty.FindMoves(On11November).ShouldNotBeNull().Value.ShouldNotBeNull();
 
-        var (piste, error) = PisteTrial.Of(ExampleWithRoyalty, LeverKind.Vouchers).Search(without!, On11November).ShouldNotBeNull();
+        var (piste, error) = PisteTrial.Of(ExampleWithRoyalty, LeverKind.Vouchers).Search(without, On11November).ShouldNotBeNull();
 
         error.ShouldBeNull();
         (piste.ShouldNotBeNull().Without.PlanInPocket, piste.With.PlanInPocket, piste.Gain).ShouldBe((65_933.99m, 65_996.99m, 63.00m));
@@ -137,12 +137,12 @@ public class PisteTrialTests
     [Fact]
     public void Search_rentAnswered_measuresTheHomesFacts()
     {
-        var without = ExampleWithRoyalty.FindMoves(On11November)?.Value.ShouldNotBeNull();
+        var without = ExampleWithRoyalty.FindMoves(On11November).ShouldNotBeNull().Value.ShouldNotBeNull();
         var trial = PisteTrial.Of(ExampleWithRoyalty, LeverKind.Rent).WithCadastralIncome(1_500m).WithShareLet(0.15m);
 
-        var piste = trial.Search(without!, On11November)?.Value.ShouldNotBeNull();
+        var piste = trial.Search(without, On11November).ShouldNotBeNull().Value.ShouldNotBeNull();
 
-        piste!.Gain.ShouldBe(296.82m);
+        piste.Gain.ShouldBe(296.82m);
     }
 
     // A plan that starts at the pay has no ideas, as it has no moves.
@@ -218,7 +218,7 @@ public class PisteTrialTests
 
     private static Piste Searched(PisteTrial trial)
     {
-        var without = trial.Plan.FindMoves(On11November)?.Value.ShouldNotBeNull();
-        return trial.Search(without!, On11November)?.Value.ShouldNotBeNull()!;
+        var without = trial.Plan.FindMoves(On11November).ShouldNotBeNull().Value.ShouldNotBeNull();
+        return trial.Search(without, On11November).ShouldNotBeNull().Value.ShouldNotBeNull();
     }
 }

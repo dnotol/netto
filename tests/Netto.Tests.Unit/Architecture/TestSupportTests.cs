@@ -118,6 +118,13 @@ public class TestSupportTests
         Declaring(@"\bstatic\s+string\s+(?:Block|Rem)\s*\(|:root\\\[data-theme").ShouldBeEmpty();
     }
 
+    // The plan on screen and the paint or pause a source of the plan page reads and waits for: Screen and Wait.
+    [Fact]
+    public void TestSources_screenAndWaitFakes_areDefinedOnlyInSupport()
+    {
+        Declaring(@"class\s+(?:Screen|Wait)").ShouldBeEmpty();
+    }
+
     // The test sources outside Support, and this file, whose patterns would match themselves.
     private static IEnumerable<(string Name, string Text)> Sources() =>
         Directory.EnumerateFiles(Folder, "*.cs", SearchOption.AllDirectories)
