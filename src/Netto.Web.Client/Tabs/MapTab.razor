@@ -121,7 +121,7 @@
             }
             else
             {
-            <div class="map"style="--map-units: @Number(_view.Units)" role="group" aria-label="@L["MapLabel"]">
+            <div class="map" style="--map-units: @Number(_view.Units)" role="group" aria-label="@L["MapLabel"]">
                 @foreach (var (owner, slot) in _view.Columns)
                 {
                     <div class="map-column map-column--@owner.ToString().ToLowerInvariant()" style="@Box(slot)" aria-hidden="true"><span class="map-column__label">@L[MapTabText.Column(owner)]</span></div>
