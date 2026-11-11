@@ -2,8 +2,8 @@
 type: adr
 title: When to pay is a section of Optimise, not a lens of My plan
 description: The whole payment calendar is a section of the Optimise view at /plan/optimisation?show=when, under the moves and the pay curve; My plan has no lens; the next deadline is a badge on the Optimise tab; the old addresses lead to the section.
-status: draft
-decision: proposed
+status: stable
+accepted_by: human:Johnny Amadeus
 decided: 2026-11-11
 tags: [site]
 sources:

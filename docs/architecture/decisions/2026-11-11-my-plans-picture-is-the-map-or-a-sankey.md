@@ -2,8 +2,8 @@
 type: adr
 title: My plan's picture is the map or a Sankey, the viewer's choice, until one of them wins
 description: A switch in the map's tools swaps the drawing for a Sankey of the same plan (SankeyView from MapLinks.Of, money conserved at every node, SankeyLayout one ordering rule); the choice is kept in the browser, the map the default; cards, choice and effects are shared.
-status: draft
-decision: proposed
+status: stable
+accepted_by: human:Johnny Amadeus
 decided: 2026-11-11
 tags: [site]
 sources:
