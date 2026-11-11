@@ -1,7 +1,7 @@
 ---
 type: adr
 title: An idea is a lever not in the plan, its gain the optimised plan with it less the optimised plan without it
-description: PisteSearch composes MoveSearch twice; ideas are the levers whose cash gain the engine measures (vouchers, rent, royalty); each asks first what Netto cannot see; a trial lives in the Ideas view until kept.
+description: PisteSearch runs MoveSearch once with the lever and sets it against the Optimiser's plan; ideas are the levers whose cash gain the engine measures (vouchers, rent, royalty); each asks first what Netto cannot see; a trial lives in the Ideas view until kept.
 status: draft
 decision: proposed
 decided: 2026-11-11
