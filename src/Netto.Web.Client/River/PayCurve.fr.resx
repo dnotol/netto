@@ -33,9 +33,6 @@
   <data name="KeyThreshold" xml:space="preserve">
     <value>Taux réduit de l'impôt des sociétés dès {0}</value>
   </data>
-  <data name="KeyThreshold_Plain" xml:space="preserve">
-    <value>Taux réduit de l'impôt des sociétés</value>
-  </data>
   <data name="KeyMissesReserve" xml:space="preserve">
     <value>Trop peu de bénéfice pour garder {0}</value>
   </data>

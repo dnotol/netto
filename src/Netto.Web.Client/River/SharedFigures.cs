@@ -36,8 +36,7 @@ internal static class SharedFigures
             new FigureLine("Figure_Company", company) { Share = Shares.Of(company, received) });
     }
 
-    // The lines that say something: the first, which heads them, and every other one that is not
-    // nothing as Formats reads it to the cent, a negative one kept.
+    // The lines that say something (FigureLines.Shown), the first, which heads them, always kept.
     internal static IReadOnlyList<FigureLine> Shown(FigureLine first, params FigureLine?[] rest) =>
-        [first, .. rest.OfType<FigureLine>().Where(line => Math.Round(line.Amount, 2, MidpointRounding.AwayFromZero) != 0m)];
+        [first, .. FigureLines.Shown(rest.OfType<FigureLine>())];
 }

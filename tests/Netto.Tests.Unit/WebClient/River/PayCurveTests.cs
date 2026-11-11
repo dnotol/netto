@@ -105,17 +105,16 @@ public class PayCurveTests
             () => html.ShouldContain(meaning));
     }
 
-    // The curve's key names the dashed line with its pay only while no line of the Copyright royalty card says
-    // that pay: with a royalty, the pay with it is that card's line.
+    // The curve's key says the pay the dashed line starts at wherever the search found one, with a royalty in the
+    // plan too: no card of Optimise says it, so the key is where it is read.
     [Fact]
-    public async Task Curve_aRoyaltyLoweringThePay_keysTheThresholdWithoutItsPay()
+    public async Task Curve_aRoyaltyLoweringThePay_keysTheThresholdWithItsPay()
     {
-        var with = RoyaltyRateView.From(Fixed.Run().Year).ShouldNotBeNull().With.ShouldNotBeNull();
+        var threshold = Fixed.SearchSplit().ShouldNotBeNull().SmallestPayKeepingReducedRate.ShouldNotBeNull();
 
         var html = WebUtility.HtmlDecode(await CurveAsync(Fixed));
 
-        (html.Contains(Key("KeyThreshold_Plain"), StringComparison.Ordinal), html.Contains(Texts.Format("KeyThreshold", Formats.Euros(with)), StringComparison.Ordinal))
-            .ShouldBe((true, false));
+        html.ShouldContain(Texts.Format("KeyThreshold", Formats.Euros(threshold)));
     }
 
     [Fact]
@@ -125,24 +124,7 @@ public class PayCurveTests
 
         var html = WebUtility.HtmlDecode(await CurveAsync(RiverInputs.Example));
 
-        (html.Contains(Texts.Format("KeyThreshold", Formats.Euros(threshold)), StringComparison.Ordinal), html.Contains(Key("KeyThreshold_Plain"), StringComparison.Ordinal))
-            .ShouldBe((true, false));
-    }
-
-    [Theory]
-    [InlineData(null, null, "KeyThreshold")]
-    [InlineData(40_000, 50_000, "KeyThreshold_Plain")]
-    [InlineData(40_000, null, "KeyThreshold_Plain")]
-    [InlineData(null, 50_000, "KeyThreshold")]
-    public void KeyThreshold_namesThePayOnlyWhereNoLineDoes(int? with, int? without, string key)
-    {
-        PayCurveText.KeyThreshold(with is null && without is null ? null : new RoyaltyRateView(with, without)).ShouldBe(key);
-    }
-
-    [Fact]
-    public void Resx_theKeyOfTheThresholdWithoutItsPay_hasATextWithNoAmount()
-    {
-        Texts.Get("KeyThreshold_Plain").ShouldBe("Reduced corporate rate");
+        html.ShouldContain(Texts.Format("KeyThreshold", Formats.Euros(threshold)));
     }
 
     [Theory]
@@ -224,9 +206,6 @@ public class PayCurveTests
 
     // The best pay the search finds for the river as it stands.
     private static decimal BestPay(RiverInputs river) => river.SearchSplit().ShouldNotBeNull().Best.ShouldNotBeNull().Pay;
-
-    // A key of the curve as the component draws it: after its mark, closing its item.
-    private static string Key(string key) => $"</span>{Texts.Get(key)}</li>";
 
     // The component on the plan on screen, with the page's search for it, or none.
     internal static async Task<string> CurveAsync(RiverInputs river, bool search = true) =>

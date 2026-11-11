@@ -1,4 +1,6 @@
+using System.Net;
 using Netto.Core.SocialContributions;
+using Netto.Web.Client;
 using Netto.Web.Client.River;
 using Shouldly;
 
@@ -28,6 +30,28 @@ public class SharedCardTextTests
         }).Select(line => line.Key);
 
         Resources.Missing(["Title", "Summary", "Hint", "PayLink", "ReserveLink", SharedCardText.RoyaltyLink, .. keys]).ShouldBeEmpty();
+    }
+
+    // The summary says what is shared as every card's summary and the line into the node say an amount, to the
+    // cent, in either language: « €100,000.00 to share », « 100.000,00 € à partager ».
+    [Fact]
+    public async Task SharedCard_summary_saysTheAmountToTheCentInEnglish()
+    {
+        var html = CardHtml.Card(await CardHtml.RenderCardsOpenAsync(RiverInputs.Example), "split");
+
+        WebUtility.HtmlDecode(CardHtml.Summary(html).ShouldNotBeNull()).ShouldBe("€100,000.00 to share");
+    }
+
+    [Fact]
+    public async Task SharedCard_summary_saysTheAmountToTheCentInFrench()
+    {
+        using var french = InLanguage.French();
+
+        var html = CardHtml.Card(await CardHtml.RenderCardsOpenAsync(RiverInputs.Example), "split");
+
+        var expected = ResxText.French<SharedCard>().Format("Summary", Formats.Euros(100_000m));
+
+        WebUtility.HtmlDecode(CardHtml.Summary(html).ShouldNotBeNull()).Replace(' ', ' ').ShouldBe(WebUtility.HtmlDecode(expected).Replace(' ', ' '));
     }
 
     // The note says how the royalty is set, the Copyright royalty card deciding it: that it follows the

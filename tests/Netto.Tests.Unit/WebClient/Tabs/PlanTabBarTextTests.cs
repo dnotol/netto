@@ -24,7 +24,7 @@ public class PlanTabBarTextTests
     // A badge shows short (+€3,054.18, 21 Dec, an icon) and a screen reader hears it in full, after the
     // tab's name.
     [Theory]
-    [InlineData(TabBadgeKind.MoreThanPlan, "€3,054.18", "€3,054.18 more than the plan in your river")]
+    [InlineData(TabBadgeKind.MoreThanPlan, "€3,054.18", "€3,054.18 more than the plan on screen")]
     [InlineData(TabBadgeKind.NextBy, "21 December 2026", "next advance payment by 21 December 2026")]
     [InlineData(TabBadgeKind.Refused, "", "an amount here is refused")]
     [InlineData(TabBadgeKind.Searching, "", "looking for moves")]

@@ -129,6 +129,6 @@ public class PayNoteTests
     {
         var text = ResxText.For<OptimisationTab>().Format("BestPay", "€51,000.00");
 
-        text.ShouldBe("For your river as it stands, the best pay is €51,000.00, not this one.");
+        text.ShouldBe("For the plan on screen as it stands, the best pay is €51,000.00, not this one.");
     }
 }

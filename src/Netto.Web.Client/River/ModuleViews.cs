@@ -377,8 +377,8 @@ internal enum RateChoice
 // card shows what the pay costs the company, the gross plus them, and their drains say the company pays
 // them. The
 // engine says what the withholding and the advance payments leave on its tax; the surcharge and the
-// bonus they earn are drains, from the pay's steps, and what more by the first deadline still open
-// leaves no surcharge due depends on the date the card is seen on (MoreBy). Each line says its share
+// bonus they earn are drains, from the pay's steps; what more to pay by a deadline leaves none due is the
+// calendar's (PaymentCalendar.FirstOpen, TopUps), which the moves and the by-date lens read. Each line says its share
 // of what the pay costs the company, and the card what reaches the pocket of it (ToYou). A copyright
 // royalty's part beyond its limits is taxed as pay and paid besides the payslip
 // (GrossToNetResult.RequalifiedPay): what flows in is then the pay's cost and that part, which the
@@ -492,7 +492,7 @@ internal static class TaxAdvancePaymentFields
 }
 
 // The condition is the engine's: which part of art. 215 decided the rate, against which minimum pay,
-// and against which share of the total pay its flat-rate benefits may reach. So is the surcharge the advance payments leave; what more by the first deadline still open cancels it depends on the date the card is seen on (MoreBy). What
+// and against which share of the total pay its flat-rate benefits may reach. So is the surcharge the advance payments leave; what more to pay cancels it is the calendar's (PaymentCalendar.FirstOpen, TopUps). What
 // comes in is the profit the split leaves the company; its taxable income adds back the disallowed
 // expenses the engine counts, what it cannot deduct of the vouchers. The card lists the corporate
 // layer's steps, that one among them. Each line says its share of what comes in, and the card what

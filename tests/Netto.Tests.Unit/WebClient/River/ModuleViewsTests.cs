@@ -338,7 +338,7 @@ public class ModuleViewsTests
     }
 
     // Nothing withheld: 486.57 on the pay's tax, a drain of its own (what more by a deadline leaves none
-    // due is MoreBy's, on the date the card is seen).
+    // due is the calendar's, PaymentCalendar.FirstOpen and TopUps).
     [Fact]
     public void DirectorPay_nothingWithheld_saysTheSurchargeIsDue()
     {
@@ -551,7 +551,7 @@ public class ModuleViewsTests
     }
 
     // 4.5% of 14,999.89 by 21 December, 674.99505, rounds to the 675 (what more by a deadline cancels it
-    // is MoreBy's, on the date the card is seen).
+    // is the calendar's, PaymentCalendar.FirstOpen and TopUps).
     [Fact]
     public void CorporateTax_example_saysTheSurchargeIsDue()
     {

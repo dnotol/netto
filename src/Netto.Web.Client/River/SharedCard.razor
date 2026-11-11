@@ -36,5 +36,5 @@
     protected override void OnParametersSet() => _view = SplitView.From(Inputs, Run);
 
     // What is shared, the amount the line into the node says too (HandOff.Shared); none while an amount is refused.
-    private string? Summary => Run.Year is { } year ? L["Summary", Formats.WholeEuros(HandOff.Shared(year))].Value : null;
+    private string? Summary => Run.Year is { } year ? L["Summary", Formats.Euros(HandOff.Shared(year))].Value : null;
 }

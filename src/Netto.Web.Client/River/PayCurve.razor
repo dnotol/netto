@@ -78,7 +78,7 @@
             }
             @if (Search?.SmallestPayKeepingReducedRate is { } smallest)
             {
-                <li><span class="pay-curve__key-mark pay-curve__key-mark--threshold"></span>@L[PayCurveText.KeyThreshold(_royaltyRate), Formats.Euros(smallest)]</li>
+                <li><span class="pay-curve__key-mark pay-curve__key-mark--threshold"></span>@L["KeyThreshold", Formats.Euros(smallest)]</li>
             }
             @if (curve.SomeMissReserve)
             {
@@ -127,7 +127,6 @@
 
     private SplitSearchView? _search;
     private SplitRoyaltyView? _royalty;
-    private RoyaltyRateView? _royaltyRate;
     private YearResult? _year;
     private decimal _top;
     private PayLevel? _pointer;
@@ -140,7 +139,6 @@
         _year = run.Year;
         _royalty = SplitRoyaltyView.From(Inputs, run);
         _search = SplitSearchView.From(Inputs, run, Search);
-        _royaltyRate = RoyaltyRateView.From(run.Year);
         _top = Search?.Curve[^1].Pay ?? 0m;
         if (_search is null)
             _pointer = null;

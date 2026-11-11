@@ -28,7 +28,7 @@
     <value>an amount here is refused</value>
   </data>
   <data name="Spoken_MoreThanPlan" xml:space="preserve">
-    <value>{0} more than the plan in your river</value>
+    <value>{0} more than the plan on screen</value>
   </data>
   <data name="Spoken_NextBy" xml:space="preserve">
     <value>next advance payment by {0}</value>

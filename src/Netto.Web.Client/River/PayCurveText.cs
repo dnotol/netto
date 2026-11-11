@@ -5,11 +5,6 @@ namespace Netto.Web.Client.River;
 // The resource keys the pay curve builds from values, gone through by the component and its tests alike.
 internal static class PayCurveText
 {
-    // The curve's key for the dashed line where the reduced rate starts. The pay it starts at is said by
-    // the line of the smallest pay keeping the rate with the royalty on the Copyright royalty card while that
-    // is drawn, so the key then names the line alone; without a royalty it states the pay itself.
-    public static string KeyThreshold(RoyaltyRateView? rate) => rate?.With is null ? "KeyThreshold" : "KeyThreshold_Plain";
-
     // A sentence about one pay of the curve names the royalty beside it while the royalty follows the
     // pay; a fixed one is the same at every pay.
     public static string AlongTheCurve(string key, SplitRoyaltyView? royalty) => royalty is { FollowsPay.Value: true } ? $"{key}_Royalty" : key;
