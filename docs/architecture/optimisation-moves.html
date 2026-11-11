@@ -12,23 +12,23 @@
 
   <header>
     <p class="eyebrow">Netto · architecture page · flow</p>
-    <h1>How the Optimisation tab finds its moves</h1>
-    <p class="lede">The moves are what Netto would change in a plan to put more in the director's pocket. They are measured from one plan, searched once per plan and date after the page has painted, found greedily by the engine, and applied only by « Apply ». This page follows one search and one Apply.</p>
-    <p class="atlas-meta"><span>As of <b>feature/backlog-bugs 34698cc</b></span><span><b>30 October 2026</b></span></p>
+    <h1>How Optimise finds its moves and Ideas its ideas</h1>
+    <p class="lede">The moves are what Netto would retune in the plan on screen to put more in the director's pocket, using only the levers the plan already holds and the facts it was given. An idea is a lever the plan does not use, its gain the optimised plan with it less the optimised plan without it. Both are searched after the page has painted, found greedily by the engine, and changed in the plan only by « Apply » and « Keep ». This page follows one search of the moves, one search of an idea, and the pay curve that sets the plan's own pay.</p>
+    <p class="atlas-meta"><span>As of <b>feature/three-views 232a941</b></span><span><b>11 November 2026</b></span></p>
   </header>
 
   <section aria-labelledby="h-flow">
     <h2 id="h-flow">One search, then Apply</h2>
-    <p>The baseline (<code>MovesBaseline</code>) is the plan starred « Today » when it is readable, else the river as it stood when the page opened, when a plan was opened, or when it was saved. An edit never changes it. <code>MovesSource</code>, built once by the plan page, keeps the last result per baseline and date, so a search runs again only when the baseline or the day changes.</p>
+    <p>The moves are measured from the plan on screen, the river the band runs: no baseline is kept, and « Today », the starred plan, feeds only the band's gain. <code>MovesSource</code>, built once by the plan page, keeps the last result for one plan and one date, so a search runs again as soon as an edit, an opened plan or the day makes that result stale. Until then Optimise and the badges say they are looking for the moves, and no stale move is ever listed or applied.</p>
 
     <figure class="atlas-figure" id="flow">
       <ul class="atlas-layers">
         <li data-layer="split">The split's search inside a round</li>
       </ul>
       <div class="atlas-scroll">
-        <svg viewBox="0 0 790 540" role="img" aria-labelledby="flow-title flow-desc">
+        <svg viewBox="0 0 790 580" role="img" aria-labelledby="flow-title flow-desc">
           <title id="flow-title">The moves' search and Apply</title>
-          <desc id="flow-desc">After each render the plan page asks MovesSource to search once painted. When the baseline and date have no result yet, MovesSource waits for the browser to paint through plan-paint.js, then calls MoveSearch.Run in the engine with the baseline's scenario and the date. MoveSearch runs the year for each finder's proposed move, takes the move that adds the most, and repeats until none adds a euro or ten rounds have passed; the pay finder runs the split's search. The plan comes back to MovesSource, the page redraws the badge and the Optimisation tab. Apply on a move turns it into new inputs that go to the page as any edit does.</desc>
+          <desc id="flow-desc">After each render the plan page asks MovesSource to search once painted. When the plan on screen and the date have no result yet, MovesSource waits for the browser to paint through plan-paint.js and, off the Optimise view, for the edits to pause, then calls MoveSearch.Run in the engine with the plan's scenario, the date and the levers in the plan. MoveSearch runs the year for each finder's proposed move, takes the move that adds the most, and repeats until none adds a euro or ten rounds have passed; the pay finder runs the split's search. The plan comes back to MovesSource, the page redraws the badges and the Optimise view. Apply on a move turns it into new inputs that go to the page as any edit does, after which the moves are searched again.</desc>
           <defs>
             <marker id="flow-head" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker>
           </defs>
@@ -38,35 +38,37 @@
           <g class="ext"><rect x="270" y="18" width="120" height="44" rx="8"/><text class="t" x="330" y="45" text-anchor="middle">Browser paint</text></g>
           <g class="box"><rect x="400" y="18" width="120" height="44" rx="8"/><text class="t" x="460" y="45" text-anchor="middle">MoveSearch</text></g>
           <g class="box"><rect x="530" y="18" width="120" height="44" rx="8"/><text class="t" x="590" y="45" text-anchor="middle">The year</text></g>
-          <g class="box"><rect x="660" y="18" width="120" height="44" rx="8"/><text class="t" x="720" y="45" text-anchor="middle">Optimisation</text></g>
+          <g class="box"><rect x="660" y="18" width="120" height="44" rx="8"/><text class="t" x="720" y="45" text-anchor="middle">Optimise view</text></g>
 
-          <line class="lifeline" x1="70" y1="62" x2="70" y2="525"/>
-          <line class="lifeline" x1="200" y1="62" x2="200" y2="525"/>
-          <line class="lifeline" x1="330" y1="62" x2="330" y2="525"/>
-          <line class="lifeline" x1="460" y1="62" x2="460" y2="525"/>
-          <line class="lifeline" x1="590" y1="62" x2="590" y2="525"/>
-          <line class="lifeline" x1="720" y1="62" x2="720" y2="525"/>
+          <line class="lifeline" x1="70" y1="62" x2="70" y2="565"/>
+          <line class="lifeline" x1="200" y1="62" x2="200" y2="565"/>
+          <line class="lifeline" x1="330" y1="62" x2="330" y2="565"/>
+          <line class="lifeline" x1="460" y1="62" x2="460" y2="565"/>
+          <line class="lifeline" x1="590" y1="62" x2="590" y2="565"/>
+          <line class="lifeline" x1="720" y1="62" x2="720" y2="565"/>
 
           <g data-step="1"><line class="flow" x1="70" y1="100" x2="196" y2="100" marker-end="url(#flow-head)"/><text class="flow-label" x="133" y="92" text-anchor="middle">after render</text><text class="flow-label" x="208" y="122">not searched yet?</text></g>
           <g data-step="2"><line class="flow" x1="200" y1="150" x2="326" y2="150" marker-end="url(#flow-head)"/><text class="flow-label" x="263" y="142" text-anchor="middle">nettoPaint.after</text><line class="flow" x1="330" y1="175" x2="204" y2="175" marker-end="url(#flow-head)"/><text class="flow-label" x="267" y="194" text-anchor="middle">painted</text></g>
-          <g data-step="3"><line class="flow" x1="200" y1="225" x2="456" y2="225" marker-end="url(#flow-head)"/><text class="flow-label" x="328" y="217" text-anchor="middle">MoveSearch.Run(baseline, date)</text></g>
-          <g data-step="4"><line class="flow" x1="460" y1="265" x2="586" y2="265" marker-end="url(#flow-head)"/><text class="flow-label" x="523" y="257" text-anchor="middle">Run each move</text><text class="flow-label" x="468" y="290">best gain ≥ €1 wins;</text><text class="flow-label" x="468" y="306">repeat, ten rounds at most</text></g>
-          <g data-step="4" data-layer="split"><line class="flow" x1="460" y1="330" x2="586" y2="330" marker-end="url(#flow-head)"/><text class="flow-label" x="523" y="322" text-anchor="middle">SplitSearch</text></g>
-          <g data-step="5"><line class="flow" x1="460" y1="375" x2="204" y2="375" marker-end="url(#flow-head)"/><text class="flow-label" x="332" y="367" text-anchor="middle">MovePlan</text></g>
-          <g data-step="6"><line class="flow" x1="200" y1="415" x2="74" y2="415" marker-end="url(#flow-head)"/><text class="flow-label" x="137" y="407" text-anchor="middle">redraw</text><line class="flow" x1="70" y1="445" x2="716" y2="445" marker-end="url(#flow-head)"/><text class="flow-label" x="393" y="437" text-anchor="middle">From, Found: the moves, why, their links</text></g>
-          <g data-step="7"><line class="flow" x1="720" y1="495" x2="74" y2="495" marker-end="url(#flow-head)"/><text class="flow-label" x="397" y="487" text-anchor="middle">Apply: MovesView.Apply → InputsChanged</text></g>
+          <g data-step="3"><line class="flow" x1="200" y1="225" x2="74" y2="225" marker-end="url(#flow-head)"/><text class="flow-label" x="137" y="217" text-anchor="middle">the plan on screen</text><text class="flow-label" x="208" y="247">off Optimise: after 500 ms of quiet,</text><text class="flow-label" x="208" y="263">again while the plan changes</text></g>
+          <g data-step="4"><line class="flow" x1="200" y1="305" x2="456" y2="305" marker-end="url(#flow-head)"/><text class="flow-label" x="328" y="297" text-anchor="middle">MoveSearch.Run(scenario, date, inPlan)</text></g>
+          <g data-step="5"><line class="flow" x1="460" y1="345" x2="586" y2="345" marker-end="url(#flow-head)"/><text class="flow-label" x="523" y="337" text-anchor="middle">Run each move</text><text class="flow-label" x="468" y="370">best gain ≥ €1 wins;</text><text class="flow-label" x="468" y="386">repeat, ten rounds at most</text></g>
+          <g data-step="5" data-layer="split"><line class="flow" x1="460" y1="410" x2="586" y2="410" marker-end="url(#flow-head)"/><text class="flow-label" x="523" y="402" text-anchor="middle">SplitSearch</text></g>
+          <g data-step="6"><line class="flow" x1="460" y1="450" x2="204" y2="450" marker-end="url(#flow-head)"/><text class="flow-label" x="332" y="442" text-anchor="middle">MovePlan</text></g>
+          <g data-step="7"><line class="flow" x1="200" y1="490" x2="74" y2="490" marker-end="url(#flow-head)"/><text class="flow-label" x="137" y="482" text-anchor="middle">redraw</text><line class="flow" x1="70" y1="515" x2="716" y2="515" marker-end="url(#flow-head)"/><text class="flow-label" x="393" y="507" text-anchor="middle">MovesView: the moves, why, their links</text></g>
+          <g data-step="8"><line class="flow" x1="720" y1="555" x2="74" y2="555" marker-end="url(#flow-head)"/><text class="flow-label" x="397" y="547" text-anchor="middle">Apply, Apply all: MovesView.Apply → InputsChanged</text></g>
         </svg>
       </div>
       <figcaption>Each column is a part, each arrow a call or a value handed back, top to bottom in time. Dashed border: the browser, outside Netto's code.</figcaption>
 
       <ol class="atlas-steps">
-        <li>After each render <code>Plan.OnAfterRenderAsync</code> calls <code>MovesSource.SearchOncePaintedAsync(today, …)</code>. It returns at once when this baseline and date already have a result, or the plan starts at the pay (no company year).</li>
-        <li>Otherwise it waits for the browser to paint (<code>plan-paint.js</code>: a frame, then a task), so the bar and the tab's « … » badge show before the page's one thread runs the search.</li>
-        <li>It reads the baseline again and calls <code>RiverInputs.FindMoves(date)</code>, which runs <code>MoveSearch.Run</code> on <code>MoveScenario()</code>: a module out of the plan keeps its facts with an amount of zero, so a finder can propose it, except facts the engine would refuse (<code>RentCalculator.FactsRefusal</code>, <code>CopyrightCalculator.ShareRefusal</code>), which are left out, so no card the plan does not show can refuse the search.</li>
+        <li>After each render <code>Plan.OnAfterRenderAsync</code> calls <code>MovesSource.SearchOncePaintedAsync(today, atOnce, …)</code>, <code>atOnce</code> being true while Optimise is shown. It returns at once when the plan on screen and the date already have a result, or the plan starts at the pay (no company year).</li>
+        <li>Otherwise it waits for the browser to paint (<code>plan-paint.js</code>: a frame, then a task), so the bar and the badges' « … » show before the page's one thread runs the search.</li>
+        <li>The first search of a page, and any search while Optimise is shown, goes on at once. On the other views it waits for the edits to pause (<code>MovesSource.QuietPeriod</code>, 500 ms), reads the plan on screen again, and waits again while it changes, so typing or dragging is not held up by a search per value.</li>
+        <li>It calls <code>RiverInputs.FindMoves(date)</code>, which runs <code>MoveSearch.Run(MoveScenario(), date, LeversInPlan)</code>. The client only names the levers the plan holds (<code>PlanComposition</code>, as <code>LeverKind</code>): a lever out of the plan is its <code>None</code> in the scenario, which Core cannot tell from one in the plan at zero. The search runs the finders of those levers and the ones every plan holds, the pay and both advance payments (<code>MoveSearch.FindersFor</code>); it never adds a lever.</li>
         <li>Each round, each finder proposes its best move from where the plan stands; the move is applied to the scenario and the year run. A candidate must run without refusal and keep the reserve; the largest gain of at least €1 wins, a tie going to the earlier finder. A move of a kind already taken replaces its line, the gains added. The pay finder runs <code>SplitSearch</code>.</li>
-        <li>The result, a <code>MovePlan</code> (the pocket before, each move with its gain, the pocket after), is kept by <code>MovesSource</code> for that baseline and date.</li>
-        <li>The page redraws: the tab's badge shows the gain, and <code>OptimisationTab</code> builds <code>MovesView</code>, each move with why it helps (<code>MoveReasons</code>), a link to its card (<code>MoveLinks</code>) and whether it is applied.</li>
-        <li>« Apply » calls <code>MovesView.Apply</code>, the one place a move is applied to <code>RiverInputs</code>, and the only action that adds a lever to the plan. The new inputs go to the page as <a href="edit-to-repaint.html">any edit</a>; the baseline does not move, so no new search runs.</li>
+        <li>The result, a <code>MovePlan</code> (the pocket before, each move with its gain, the pocket after), is kept by <code>MovesSource</code> for that plan and date.</li>
+        <li>The page redraws: the badges and My plan's line of nudges read what was found, and <code>OptimisationTab</code> builds <code>MovesView</code>, each move with why it helps (<code>MoveReasons</code>), a link to its card (<code>MoveLinks</code>) and whether it is applied.</li>
+        <li>« Apply » calls <code>MovesView.Apply</code> and « Apply all » <code>MovesView.ApplyAll</code>, the one place a move is applied to <code>RiverInputs</code>. The new inputs go to the page as <a href="edit-to-repaint.html">any edit</a>; the plan on screen is no longer the one searched, so the moves are searched again at once and listed from the plan the move left. Nothing is applied unasked.</li>
       </ol>
     </figure>
   </section>
@@ -75,19 +77,72 @@
     <h2 id="h-kinds">The kinds of move</h2>
     <div class="atlas-table">
       <table>
-        <thead><tr><th>Move</th><th>Finder</th><th>Proposes</th></tr></thead>
+        <thead><tr><th>Move</th><th>Finder</th><th>Lever it needs in the plan</th><th>Proposes</th></tr></thead>
         <tbody>
-          <tr><td><code>PayMove</code></td><td><code>SplitMoveFinder</code></td><td>The split's best pay, when it is not the pay held</td></tr>
-          <tr><td><code>CompanyAdvancePaymentMove</code></td><td><code>CompanyAdvancePaymentFinder(date)</code></td><td>What more by the first open deadline cancels the company's surcharge</td></tr>
-          <tr><td><code>DirectorAdvancePaymentMove</code></td><td><code>DirectorAdvancePaymentFinder(date)</code></td><td>What more by the first open deadline leaves none due on the director's tax</td></tr>
-          <tr><td><code>EcoVouchersMove</code></td><td><code>EcoVouchersFinder</code></td><td>Eco vouchers at their yearly maximum</td></tr>
-          <tr><td><code>SportCultureVouchersMove</code></td><td><code>SportCultureVouchersFinder</code></td><td>Sport and culture vouchers at their yearly maximum</td></tr>
-          <tr><td><code>RentMove</code></td><td><code>RentFinder</code></td><td>The home office rent at its cap, once the home's facts are given</td></tr>
-          <tr><td><code>CopyrightFollowsPayMove</code></td><td><code>CopyrightFollowsPayFinder</code></td><td>The royalty following the pay, once a ruling accepts some</td></tr>
+          <tr><td><code>PayMove</code></td><td><code>SplitMoveFinder</code></td><td>none</td><td>The split's best pay, when it is not the pay held</td></tr>
+          <tr><td><code>CompanyAdvancePaymentMove</code></td><td><code>CompanyAdvancePaymentFinder(date)</code></td><td>none</td><td>What more by the first open deadline cancels the company's surcharge</td></tr>
+          <tr><td><code>DirectorAdvancePaymentMove</code></td><td><code>DirectorAdvancePaymentFinder(date)</code></td><td>none</td><td>What more by the first open deadline leaves none due on the director's tax</td></tr>
+          <tr><td><code>EcoVouchersMove</code></td><td><code>EcoVouchersFinder</code></td><td><code>Vouchers</code></td><td>Eco vouchers at their yearly maximum</td></tr>
+          <tr><td><code>SportCultureVouchersMove</code></td><td><code>SportCultureVouchersFinder</code></td><td><code>Vouchers</code></td><td>Sport and culture vouchers at their yearly maximum</td></tr>
+          <tr><td><code>RentMove</code></td><td><code>RentFinder</code></td><td><code>Rent</code></td><td>The home office rent at its cap, once the home's facts are given</td></tr>
+          <tr><td><code>CopyrightFollowsPayMove</code></td><td><code>CopyrightFollowsPayFinder</code></td><td><code>Copyright</code></td><td>The royalty following the pay, once a ruling accepts some</td></tr>
         </tbody>
       </table>
     </div>
-    <p class="note">The payment finders read the first deadline still open on the browser's date, <code>PaymentCalendar.Of(year, date)</code>. A new kind of move is a <code>Move</code>, its finder, and its arm in each switch that throws on a kind it does not name: <code>MovesView.Applied</code>, <code>MovesView.Apply</code>, <code>MoveReasons.What</code>, <code>MoveLinks.To</code>, <code>OptimisationTabText.Move</code> and <code>MoveArguments</code>; what it sets goes in <code>RiverDifferences</code>.</p>
+    <p class="note">The payment finders read the first deadline still open on the browser's date, <code>PaymentCalendar.Of(year, date)</code>. <code>LeverKind</code> also names <code>Allowances</code> and <code>Car</code>, which no finder proposes. A new kind of move is a <code>Move</code>, its finder naming its <code>LeverKind</code> (<code>IMoveFinder.Lever</code>, null for what every plan holds), and its arm in each switch that throws on a kind it does not name: <code>MovesView.Apply</code>, <code>MoveReasons.What</code>, <code>MoveLinks.To</code>, <code>OptimisationTabText.Move</code> and <code>MoveArguments</code>.</p>
+  </section>
+
+  <section aria-labelledby="h-ideas">
+    <h2 id="h-ideas">The ideas</h2>
+    <p>An idea is a lever the plan does not hold whose gain in cash the engine measures from the facts the viewer gives: the vouchers, the home office rent and the copyright royalty (<code>PisteSearch.Levers</code>). A move that switched such a lever on would rest on conditions Netto cannot see, so it is not one of Optimise's moves: the idea first asks what its card holds and Netto cannot see (<code>PisteTrial.Questions</code>), and shows no gain before they are answered. Its gain is plan against plan: the pocket of the optimised plan with the lever, less the pocket of the optimised plan without it, both runs of the year. The « without » side is the plan the moves search above already found, shared by every idea.</p>
+
+    <figure class="atlas-figure" id="ideas">
+      <div class="atlas-scroll">
+        <svg viewBox="0 0 790 520" role="img" aria-labelledby="ideas-title ideas-desc">
+          <title id="ideas-title">The search of one idea</title>
+          <desc id="ideas-desc">Once MovesSource has found the moves, the plan page asks PistesSource after each render for the next idea. PistesSource waits for a paint, then has the idea's trial run PisteSearch with the plan the moves found as its without side. PisteSearch runs MoveSearch from the plan with the lever, with the retuning finders and the lever's own, and returns the idea with its gain. PistesSource hands the rows to the Ideas view. Try, Drop and the answers go to PistesSource; Keep sends the river with the lever to the page as an edit.</desc>
+          <defs>
+            <marker id="ideas-head" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker>
+          </defs>
+
+          <g class="box"><rect x="10" y="18" width="140" height="44" rx="8"/><text class="t" x="80" y="45" text-anchor="middle">Plan page</text></g>
+          <g class="box"><rect x="165" y="18" width="140" height="44" rx="8"/><text class="t" x="235" y="45" text-anchor="middle">PistesSource</text></g>
+          <g class="box"><rect x="320" y="18" width="140" height="44" rx="8"/><text class="t" x="390" y="45" text-anchor="middle">PisteSearch</text></g>
+          <g class="box"><rect x="475" y="18" width="140" height="44" rx="8"/><text class="t" x="545" y="45" text-anchor="middle">MoveSearch</text></g>
+          <g class="box"><rect x="630" y="18" width="140" height="44" rx="8"/><text class="t" x="700" y="45" text-anchor="middle">Ideas view</text></g>
+
+          <line class="lifeline" x1="80" y1="62" x2="80" y2="505"/>
+          <line class="lifeline" x1="235" y1="62" x2="235" y2="505"/>
+          <line class="lifeline" x1="390" y1="62" x2="390" y2="505"/>
+          <line class="lifeline" x1="545" y1="62" x2="545" y2="505"/>
+          <line class="lifeline" x1="700" y1="62" x2="700" y2="505"/>
+
+          <g data-step="1"><line class="flow" x1="80" y1="100" x2="231" y2="100" marker-end="url(#ideas-head)"/><text class="flow-label" x="157" y="92" text-anchor="middle">after render</text><text class="flow-label" x="243" y="122">once the moves are found,</text><text class="flow-label" x="243" y="138">one idea per paint</text></g>
+          <g data-step="2"><line class="flow" x1="235" y1="185" x2="386" y2="185" marker-end="url(#ideas-head)"/><text class="flow-label" x="312" y="177" text-anchor="middle">PisteTrial.Search</text><text class="flow-label" x="243" y="210">a tried idea first, then the river's order</text></g>
+          <g data-step="3"><line class="flow" x1="390" y1="260" x2="541" y2="260" marker-end="url(#ideas-head)"/><text class="flow-label" x="466" y="252" text-anchor="middle">MoveSearch.Run</text><text class="flow-label" x="398" y="280">the plan's finders + the lever's</text></g>
+          <g data-step="4"><line class="flow" x1="545" y1="320" x2="394" y2="320" marker-end="url(#ideas-head)"/><text class="flow-label" x="470" y="312" text-anchor="middle">MovePlan, with</text><line class="flow" x1="390" y1="350" x2="239" y2="350" marker-end="url(#ideas-head)"/><text class="flow-label" x="315" y="342" text-anchor="middle">Piste, its gain</text></g>
+          <g data-step="5"><line class="flow" x1="235" y1="395" x2="696" y2="395" marker-end="url(#ideas-head)"/><text class="flow-label" x="465" y="387" text-anchor="middle">PistesView: a row per idea, its state</text></g>
+          <g data-step="6"><line class="flow" x1="700" y1="440" x2="239" y2="440" marker-end="url(#ideas-head)"/><text class="flow-label" x="470" y="432" text-anchor="middle">answers, Try, Drop</text></g>
+          <g data-step="7"><line class="flow" x1="700" y1="490" x2="84" y2="490" marker-end="url(#ideas-head)"/><text class="flow-label" x="392" y="482" text-anchor="middle">Keep → InputsChanged: an edit like any</text></g>
+        </svg>
+      </div>
+      <figcaption>Each column is a part, each arrow a call or a value handed on, top to bottom in time.</figcaption>
+
+      <ol class="atlas-steps">
+        <li>After each render, and only when the moves' search has not just run, <code>Plan.OnAfterRenderAsync</code> calls <code>PistesSource.SearchNextOncePaintedAsync</code>. It does nothing until <code>MovesSource</code> has found the moves for the plan on screen, nor when no idea is left to measure.</li>
+        <li>It waits for the browser to paint, then takes the next idea: one with nothing left to answer, not yet searched for its answers and date, and either holding no answer the viewer typed or one « Try » was pressed on, a tried one first. It calls <code>PisteTrial.Search(without, date)</code>, <code>without</code> being what <code>MovesSource</code> found.</li>
+        <li><code>PisteSearch.Run</code> runs <code>MoveSearch</code> on the trial's river with the lever added, with the finders of the levers in the plan and that lever's own, from the plan with the lever's facts as the viewer gave them.</li>
+        <li>The plan found is the « with » side. <code>PisteSearch</code> returns a <code>Piste</code>: both plans, the moves of the lever's own values (<code>Adds</code>), and the gain, the pocket with less the pocket without. A refused plan is the engine's refusal, never a gain.</li>
+        <li><code>PistesView</code> builds a row per idea not in the plan (<code>PisteState</code>: asking, ready, searching, priced, no gain, refused) for <code>PistesTab</code>; a gain is never shown for answers other than the ones typed.</li>
+        <li>The answers, « Try » and « Drop » go to the trial held by <code>PistesSource</code>; an answer changed closes the trial. None of them changes the plan on screen.</li>
+        <li>« Keep » calls <code>PistesSource.Keep</code>, which gives <code>PisteTrial.Keep</code>: the river with the lever, its answers and the values of the idea's own moves, never the retunes. The page takes it as any edit (<code>Plan.OnPisteKept</code>): the lever is added and chosen, and Optimise retunes around it.</li>
+      </ol>
+    </figure>
+  </section>
+
+  <section aria-labelledby="h-curve">
+    <h2 id="h-curve">The pay curve</h2>
+    <p>Under the moves, Optimise draws the curve of the pocket at every pay (<code>PayCurve</code>): the question of tuning the pay, drawn. It reads the page's own search of the split (<code>RiverInputs.SearchSplit</code>, run again <a href="edit-to-repaint.html">on an edit</a> unless only the pay moved), with the plan's own pay marked and the best pay marked. A click on the curve, or « move to the best pay », sets the plan's own pay, said as such: it is an edit like any other and no move of the list, which are applied only by « Apply ». The pay itself is typed on the Director pay card; the node « To share » on the map holds a read-only card. Under the pay's move a note (<code>PayNote</code>) says when the river, at that pay, has a better one than the move found.</p>
   </section>
 
   <section aria-labelledby="h-settings">
@@ -98,23 +153,26 @@
         <tbody>
           <tr><td>Smallest gain taken</td><td>€1</td><td><code>MoveSearch.SmallestGain</code></td></tr>
           <tr><td>Rounds</td><td>10 at most</td><td><code>MoveSearch.MaximumRounds</code></td></tr>
+          <tr><td>Quiet period before a search off Optimise</td><td>500 ms</td><td><code>MovesSource.QuietPeriod</code></td></tr>
+          <tr><td>Levers that can be ideas</td><td>vouchers, rent, copyright royalty</td><td><code>PisteSearch.Levers</code></td></tr>
           <tr><td>The split's grid</td><td>at most 100 steps, refined to the euro; the pay keeping the reduced rate probed exactly</td><td><code>SplitSearch</code></td></tr>
           <tr><td>The date</td><td>the browser's local date</td><td><code>TimeProvider</code>, <code>Plan.Today</code></td></tr>
         </tbody>
       </table>
     </div>
-    <p class="note">Decisions: <a href="decisions/2026-10-22-moves-found-greedily-from-a-baseline.md">moves found greedily from a baseline</a>, <a href="decisions/2026-10-23-moves-searched-once-per-baseline-after-paint.md">searched once per baseline, after paint</a>, <a href="decisions/2026-10-19-the-split-searches-the-best-pay.md">the split searches the best pay</a>, <a href="decisions/2026-10-23-gains-are-in-cash.md">gains are in cash</a>.</p>
+    <p class="note">Decisions: <a href="decisions/2026-11-11-moves-retune-the-plan-on-screen.md">the moves retune the plan on screen</a>, <a href="decisions/2026-11-11-an-ideas-gain-is-optimised-against-optimised.md">an idea's gain is optimised against optimised</a>, <a href="decisions/2026-11-11-three-views-one-question-each.md">three views, one question each</a>, <a href="decisions/2026-11-11-the-split-is-a-node-named-for-its-money.md">the split is a node named for its money</a>, <a href="decisions/2026-10-22-moves-found-greedily-from-a-baseline.md">moves found greedily</a>, <a href="decisions/2026-10-19-the-split-searches-the-best-pay.md">the split searches the best pay</a>, <a href="decisions/2026-10-23-gains-are-in-cash.md">gains are in cash</a>.</p>
   </section>
 
   <section aria-labelledby="h-changes">
     <h2 id="h-changes">Changes</h2>
     <ul class="atlas-changes">
+      <li><time datetime="2026-11-11">11.11.2026</time><span>The moves retune only the levers in the plan, measured from the plan on screen and searched after paint and a quiet period, with no baseline; the ideas added, each measured against the optimised plan; the pay curve is a section of Optimise (<a href="decisions/2026-11-11-moves-retune-the-plan-on-screen.md">moves retune the plan on screen</a>, <a href="decisions/2026-11-11-an-ideas-gain-is-optimised-against-optimised.md">an idea's gain is optimised against optimised</a>, <a href="decisions/2026-11-11-three-views-one-question-each.md">three views</a>).</span></li>
       <li><time datetime="2026-10-30">30.10.2026</time><span>Facts the engine would refuse, of a rent or a royalty out of the plan, left out of the search's scenario (bug batch).</span></li>
       <li><time datetime="2026-10-29">29.10.2026</time><span>Page drawn in the fresh-start pass, from <code>main</code> at <code>29cbc95</code>.</span></li>
     </ul>
   </section>
 
-  <footer>Drawn from the code on <code>feature/backlog-bugs</code> at <code>34698cc</code>. The code is the source; this page explains it. <a href="index.html">All pages</a>.</footer>
+  <footer>Drawn from the code on <code>feature/three-views</code> at <code>232a941</code>. The code is the source; this page explains it. <a href="index.html">All pages</a>.</footer>
 </main>
 </body>
 </html>

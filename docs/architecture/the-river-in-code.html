@@ -14,12 +14,12 @@
     <p class="eyebrow">Netto · architecture page</p>
     <h1>How one income year runs through the engine</h1>
     <p class="lede">The river a user sees, money flowing from the company's year through the modules to their pocket, is one call in code: <code>YearSimulation.Run(Scenario)</code>. It walks the year in the order the law computes it and returns one <code>YearResult</code> that every card, the bar and the map read. This page shows that walk, what each lever hands the next layer, and where to add a lever or an income year.</p>
-    <p class="atlas-meta"><span>As of <b>main 29cbc95</b></span><span><b>29 October 2026</b></span></p>
+    <p class="atlas-meta"><span>As of <b>feature/three-views 232a941</b></span><span><b>11 November 2026</b></span></p>
   </header>
 
   <section aria-labelledby="h-walk">
     <h2 id="h-walk">The walk through one year</h2>
-    <p>The page turns its inputs into a <code>Scenario</code>, gated by what is in the plan. <code>Run</code> takes INASTI's yearly company contribution off what the company earns, then folds over the levers in <code>LeverOrder.For(year)</code>: vouchers, expense allowances, home office rent, company car, copyright royalty. Each lever takes its amount off what is left and says what reaches the pocket, what the company cannot deduct and what it hands the pay to be taxed with it. What the levers leave is the profit before pay the split shares. <code>GrossToNet</code> taxes the pay with what the levers handed it, corporate tax takes the rest, and the dividend pays out what is left above the reserve. Every layer reads its rules for the income year and region; nothing in the walk tests the year itself.</p>
+    <p>The page turns its inputs into a <code>Scenario</code>, gated by what is in the plan. <code>Run</code> takes INASTI's yearly company contribution off what the company earns, then folds over the levers in <code>LeverOrder.For(year)</code>: vouchers, expense allowances, home office rent, company car, copyright royalty. Each lever takes its amount off what is left and says what reaches the pocket, what the company cannot deduct and what it hands the pay to be taxed with it. What the levers leave is the profit before pay the split shares, the node « To share » on the map. <code>GrossToNet</code> taxes the pay with what the levers handed it, corporate tax takes the rest, and the dividend pays out what is left above the reserve. Every layer reads its rules for the income year and region; nothing in the walk tests the year itself.</p>
 
     <figure class="atlas-figure" id="walk">
       <ul class="atlas-layers">
@@ -92,8 +92,8 @@
         <article data-card="dividend"><h3>Dividend</h3><p><code>DividendCalculator</code> on the profit after tax plus earlier profits, less the reserve; withholding at the declared category, the exempt €833 refunded.</p><p class="note">Decisions: <a href="decisions/2026-10-19-dividends-in-steady-state.md">steady state</a>, <a href="decisions/2026-10-19-one-reserve-for-the-company.md">one reserve</a></p></article>
         <article data-card="result"><h3>YearResult</h3><p>The year's figures and its <code>Steps</code>. Corporate tax, social contributions, personal tax, the pocket and what stays in the company add up to what the company earns less its contribution and a car's costs, plus earlier profits.</p><p class="note">Code: <code>Simulation/YearResult.cs</code>, <code>Step.cs</code></p></article>
         <article data-card="views"><h3>Cards, bar and map</h3><p>View models in <code>Netto.Web.Client</code> select, order and scale the engine's figures and never decide a tax outcome: <code>BucketsView</code> regroups steps into five buckets, each card's <code>*Figures</code> builds its lines, the map reads the cards' views.</p><p class="note">See <a href="map-lines.html">how the map draws its lines</a></p></article>
-        <article data-card="calendar"><h3>Payment calendar</h3><p><code>PaymentCalendar.Of(year, date)</code>, a record beside the ledger: the advance-payment deadlines, the pay month by month and INASTI's quarters. Steps stay undated. Its first open deadline and top-up are the one figure the moves and the « more by » lines read.</p><p class="note">Decisions: <a href="decisions/2026-10-19-time-is-a-lens.md">time is a lens</a>, <a href="decisions/2026-10-22-payment-calendar-beside-the-ledger.md">beside the ledger</a></p></article>
-        <article data-card="searches"><h3>The searches</h3><p><code>SplitSearch</code> runs <code>YearSimulation.Level</code> at a grid of pays and refines the best to the euro; <code>MoveSearch</code> runs <code>Run</code> once per candidate move. Neither does arithmetic of its own.</p><p class="note">See <a href="optimisation-moves.html">how the moves are found</a></p></article>
+        <article data-card="calendar"><h3>Payment calendar</h3><p><code>PaymentCalendar.Of(year, date)</code>, a record beside the ledger: the advance-payment deadlines, the pay month by month and INASTI's quarters. Steps stay undated. Its first open deadline and top-up are the one figure the advance-payment moves and the by-date lens of My plan read.</p><p class="note">Decisions: <a href="decisions/2026-10-19-time-is-a-lens.md">time is a lens</a>, <a href="decisions/2026-10-22-payment-calendar-beside-the-ledger.md">beside the ledger</a></p></article>
+        <article data-card="searches"><h3>The searches</h3><p><code>SplitSearch</code> runs <code>YearSimulation.Level</code> at a grid of pays and refines the best to the euro; <code>MoveSearch</code> runs <code>Run</code> once per candidate move, with the finders of the levers in the plan only (<code>inPlan</code>, a set of <code>LeverKind</code>); <code>PisteSearch</code> runs it twice for an idea, the plan with the lever less the plan without it. None does arithmetic of its own.</p><p class="note">See <a href="optimisation-moves.html">how the moves and the ideas are found</a></p></article>
       </div>
     </figure>
   </section>
@@ -134,11 +134,12 @@
   <section aria-labelledby="h-changes">
     <h2 id="h-changes">Changes</h2>
     <ul class="atlas-changes">
+      <li><time datetime="2026-11-11">11.11.2026</time><span>The searches: <code>MoveSearch</code> retunes only the levers in the plan and <code>PisteSearch</code> measures an idea (<a href="decisions/2026-11-11-moves-retune-the-plan-on-screen.md">moves retune the plan on screen</a>, <a href="decisions/2026-11-11-an-ideas-gain-is-optimised-against-optimised.md">an idea's gain is optimised against optimised</a>); the split shares what is left, the node « To share » (<a href="decisions/2026-11-11-the-split-is-a-node-named-for-its-money.md">the split is a node named for its money</a>).</span></li>
       <li><time datetime="2026-10-29">29.10.2026</time><span>Page drawn in the fresh-start pass, from <code>main</code> at <code>29cbc95</code>.</span></li>
     </ul>
   </section>
 
-  <footer>Drawn from the code on <code>main</code> at <code>29cbc95</code>. The code is the source; this page explains it. <a href="index.html">All pages</a>.</footer>
+  <footer>Drawn from the code on <code>feature/three-views</code> at <code>232a941</code>. The code is the source; this page explains it. <a href="index.html">All pages</a>.</footer>
 </main>
 </body>
 </html>

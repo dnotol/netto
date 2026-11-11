@@ -14,12 +14,12 @@
     <p class="eyebrow">Netto · architecture page · flow</p>
     <h1>How a plan is saved and opened again</h1>
     <p class="lede">Saved plans live in the browser, in one versioned document of Netto's own, never the inputs serialised as they are in memory. A plan is read back exactly as it was saved or not at all; an older document is brought forward one version at a time. This page follows a save, the read at start-up, opening a plan, and the export to a file.</p>
-    <p class="atlas-meta"><span>As of <b>feature/french-by-default b1d21ed</b></span><span><b>30 October 2026</b></span></p>
+    <p class="atlas-meta"><span>As of <b>feature/three-views 232a941</b></span><span><b>11 November 2026</b></span></p>
   </header>
 
   <section aria-labelledby="h-flow">
     <h2 id="h-flow">Save, start-up, open</h2>
-    <p><code>SavedPlans</code> holds the book of plans for the tab and is the only writer of <code>netto.plans</code>. <code>PlanStorage</code> maps <code>RiverInputs</code> to its stored records (<code>StoredBook</code>, <code>StoredInputs</code>) and back, and holds the version and the patches. The plan page only ever receives a readable <code>RiverInputs</code>.</p>
+    <p><code>SavedPlans</code> holds the book of plans for the tab and is the only writer of <code>netto.plans</code>. <code>PlanStorage</code> maps <code>RiverInputs</code> to its stored records (<code>StoredBook</code>, <code>StoredInputs</code>) and back, and holds the version and the patches. The plan page only ever receives a readable <code>RiverInputs</code>. The Plans panel's comparison of two plans (<code>CompareTab</code>, a mode of the panel, opened by <code>/plan?plans=compare</code>) only reads the book and hears of a change through <code>SavedPlans.Changed</code>.</p>
 
     <figure class="atlas-figure" id="flow">
       <ul class="atlas-layers">
@@ -59,7 +59,7 @@
 
           <text class="group-label" x="776" y="453" text-anchor="end">Open</text>
           <g data-step="9"><line class="flow" x1="80" y1="470" x2="231" y2="470" marker-end="url(#flow-head)"/><text class="flow-label" x="157" y="462" text-anchor="middle">Open(id)</text><text class="flow-label" x="88" y="492">asks first over unsaved changes</text></g>
-          <g data-step="10"><line class="flow" x1="80" y1="535" x2="696" y2="535" marker-end="url(#flow-head)"/><text class="flow-label" x="390" y="527" text-anchor="middle">OnOpen: the page shows the plan, measured from it</text></g>
+          <g data-step="10"><line class="flow" x1="80" y1="535" x2="696" y2="535" marker-end="url(#flow-head)"/><text class="flow-label" x="390" y="527" text-anchor="middle">OnOpen: the page shows the plan</text></g>
         </svg>
       </div>
       <figcaption>Each column is a part, each arrow a call, top to bottom in time. Turn on « An unreadable document » to see where a document Netto cannot read goes.</figcaption>
@@ -68,13 +68,13 @@
         <li>« Save this plan » (enabled only while the engine refuses nothing, <code>BaselineGain.CanMark</code>) calls <code>SavedPlans.Save</code>: a new plan with a new id and the first free name, never over another. It becomes the plan opened, and is starred « Today » if none is.</li>
         <li><code>PlanStorage.Store</code> maps the inputs to its own records, each value with its origin; an origin of <code>None</code> is stored as <code>Example</code>.</li>
         <li><code>SavedPlans.Keep</code> writes the whole book, <code>PlanStorage.Write</code>, to <code>netto.plans</code> through <code>IBrowserStorage</code>, a synchronous call to <code>browser-storage.js</code>.</li>
-        <li>The panel tells the page the plans changed: the plan starred Today runs again only if the star moved, and the moves are measured from the plan just saved while none is starred.</li>
+        <li>The panel tells the page the plans changed: the plan starred Today runs again only if the star moved. Today feeds the band's gain alone: saving or starring re-baselines nothing for Optimise, whose moves are measured from the plan on screen.</li>
         <li>At start-up, the <code>SavedPlans</code> constructor reads <code>netto.plans</code>.</li>
         <li><code>PlanStorage.Read</code> parses it strictly: no unknown member, no missing one, no duplicate. A plan of version 9 is read; an older one goes through the patches from its version up to 9; a plan that still cannot be read is kept exactly as stored and shown as unreadable, never filled with defaults.</li>
         <li>A whole document Netto cannot read, malformed or of a version above 9, is copied to <code>netto.plans.unreadable</code> before anything overwrites it, and the panel says so.</li>
         <li><code>RiverState</code> starts on the river a switch of language carried across its reload (<code>netto.river</code> in sessionStorage, taken once through <code>IBrowserSession</code>), else on the plan last opened, else on <code>RiverInputs.Example</code>.</li>
         <li>Opening from the panel asks first when the river has unsaved changes; <code>SavedPlans.Open</code> returns the plan's inputs, or nothing for an unreadable plan.</li>
-        <li><code>Plan.OnPlanOpened</code> shows the plan; it is no edit of the river, so no « taken out » notice, and the moves are measured from it while no plan is starred Today.</li>
+        <li><code>Plan.OnPlanOpened</code> shows the plan; it is no edit of the river, so no « taken out » notice; the plan opened is the plan on screen, so the moves are searched again for it once the page has painted (<code>MovesSource</code>).</li>
       </ol>
     </figure>
   </section>
@@ -130,13 +130,14 @@
   <section aria-labelledby="h-changes">
     <h2 id="h-changes">Changes</h2>
     <ul class="atlas-changes">
+      <li><time datetime="2026-11-11">11.11.2026</time><span>The moves are no longer measured from a plan opened or saved: Today feeds the band alone, and the comparison of two plans is a mode of the Plans panel (<a href="decisions/2026-11-11-moves-retune-the-plan-on-screen.md">moves retune the plan on screen</a>, <a href="decisions/2026-11-11-three-views-one-question-each.md">three views, one question each</a>).</span></li>
       <li><time datetime="2026-10-30">30.10.2026</time><span>the language picked (<code>netto.language</code>) and the river carried across a switch of language (<code>netto.river</code>, sessionStorage), read first at start-up (<a href="decisions/2026-10-30-french-by-default-english-beside-it.md">French by default</a>).</span></li>
       <li><time datetime="2026-10-29">29.10.2026</time><span>The map's filter preference gone: <code>netto.map.lines</code> is no longer read (<a href="decisions/2026-10-29-map-lines-read-from-the-cards-the-pocket-line-summing-them.md">map lines read from the cards</a>, <code>main</code> at <code>7dfc6b5</code>).</span></li>
       <li><time datetime="2026-10-29">29.10.2026</time><span>Page drawn in the fresh-start pass, from <code>main</code> at <code>29cbc95</code>.</span></li>
     </ul>
   </section>
 
-  <footer>Drawn from the code on <code>feature/french-by-default</code> at <code>b1d21ed</code>. The code is the source; this page explains it. <a href="index.html">All pages</a>.</footer>
+  <footer>Drawn from the code on <code>feature/three-views</code> at <code>232a941</code>. The code is the source; this page explains it. <a href="index.html">All pages</a>.</footer>
 </main>
 </body>
 </html>

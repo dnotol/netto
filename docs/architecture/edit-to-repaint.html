@@ -14,7 +14,7 @@
     <p class="eyebrow">Netto · architecture page · flow</p>
     <h1>What happens when you edit a field</h1>
     <p class="lede">An amount typed on a card travels up to the plan page, which builds new inputs, runs the year once in the engine and hands that one result to the bar, the map and the card. This page follows the revenue field of the Company year card from keystroke to repaint, and says what an edit does not do.</p>
-    <p class="atlas-meta"><span>As of <b>feature/french-by-default b1d21ed</b></span><span><b>30 October 2026</b></span></p>
+    <p class="atlas-meta"><span>As of <b>feature/three-views 232a941</b></span><span><b>11 November 2026</b></span></p>
   </header>
 
   <section aria-labelledby="h-flow">
@@ -23,13 +23,13 @@
 
     <figure class="atlas-figure" id="flow">
       <ul class="atlas-layers">
-        <li data-layer="split">The split's search</li>
+        <li data-layer="split">The pay curve's search</li>
         <li data-layer="refusal" data-off>A refused amount</li>
       </ul>
       <div class="atlas-scroll">
         <svg viewBox="0 0 790 560" role="img" aria-labelledby="flow-title flow-desc">
           <title id="flow-title">An edit, from the field to the repaint</title>
-          <desc id="flow-desc">The numeric field raises ValueChanged to its card after 400 milliseconds of quiet. The card raises InputsChanged with new inputs to the plan page, through the map's panel. The page stores them and calls Run on the inputs, which runs YearSimulation.Run in the engine and returns a RiverRun holding the year or a refusal. Unless only the pay moved, the page also re-runs the split's search. The page hands the one run to the bar, the map and the pinned card. A refusal is routed to the card that owns the refused field, which marks it. The bar announces the pocket once changes settle.</desc>
+          <desc id="flow-desc">The numeric field raises ValueChanged to its card after 400 milliseconds of quiet. The card raises InputsChanged with new inputs to the plan page, through the map's panel. The page stores them and calls Run on the inputs, which runs YearSimulation.Run in the engine and returns a RiverRun holding the year or a refusal. Unless only the pay moved, the page also re-runs the search of the pay curve. The page hands the one run to the bar, the map and the pinned card. A refusal is routed to the card that owns the refused field, which marks it. The bar announces the pocket once changes settle.</desc>
           <defs>
             <marker id="flow-head" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker>
           </defs>
@@ -67,7 +67,7 @@
         <li>The page notes a module added or taken out, keeps the inputs in <code>RiverState</code> (in memory) and calls <code>Show</code>, which calls <code>inputs.Run()</code>.</li>
         <li><code>Run()</code> builds the <code>Scenario</code> at the pay the company can pay (<code>PayUsed</code>, held under <code>PayCeiling</code>) and calls <code>YearSimulation.Run</code>; with the company year skipped it calls <code>GrossToNet.Compute</code> alone.</li>
         <li>The engine returns the year or the first <code>Refusal</code>; <code>Run()</code> wraps them as a <code>RiverRun(Pay, Year, Error)</code>, which the page keeps.</li>
-        <li>Unless the new inputs are the same besides the pay (<code>SameBesidesPay</code>), the page runs the split's search again, the curve of the pocket at every pay.</li>
+        <li>Unless the new inputs are the same besides the pay (<code>SameBesidesPay</code>), the page runs the split's search again (<code>RiverInputs.SearchSplit</code>): the curve of the pocket at every pay, which the pay curve of the Optimise view draws.</li>
         <li>On the next render the one run flows down as parameters: <code>BucketBar</code> rebuilds <code>BucketsView</code> and the gain over Today, <code>MapTab</code> rebuilds <code>MapView</code>, and the pinned card its figures.</li>
         <li>A refusal goes to one card only: <code>RiverErrors.Owner</code> maps its <code>RefusedInput</code> to a module, that card marks the field and shows <code>RefusedMessage</code>, and the map marks the module.</li>
         <li>The bar announces what reaches the pocket in its live region, once changes have settled for 800 ms (<code>BucketBarAnnouncement.Settle</code>); the first run is not announced.</li>
@@ -79,7 +79,7 @@
     <h2 id="h-not">What an edit does not do</h2>
     <ul>
       <li><strong>It saves nothing.</strong> <code>RiverState</code> holds the inputs in memory; only the Plans panel writes them to storage, and a switch of language carries them across its reload in sessionStorage (<code>netto.river</code>). The panel's « unsaved changes » dot reacts at once (<code>SavedPlans.HasUnsavedChanges</code>). See <a href="save-and-reopen.html">how a plan is saved</a>.</li>
-      <li><strong>It does not search the moves.</strong> The Optimisation tab's moves are measured from a baseline that an edit does not change, so <code>MovesSource</code> has nothing to search. See <a href="optimisation-moves.html">how the moves are found</a> and <a href="decisions/2026-10-23-moves-searched-once-per-baseline-after-paint.md">the decision</a>.</li>
+      <li><strong>It does not search the moves in the edit.</strong> The moves are measured from the plan on screen, so an edit makes the ones found stale: <code>MovesSource</code> then says it is searching, and the page searches again once it has painted, at once on the Optimise view and after the edits have paused (<code>MovesSource.QuietPeriod</code>) on the others. The ideas follow, one per paint. See <a href="optimisation-moves.html">how the moves and the ideas are found</a> and <a href="decisions/2026-11-11-moves-retune-the-plan-on-screen.md">the decision</a>.</li>
       <li><strong>It computes no tax in the page.</strong> Every figure on the bar, map and card comes from the engine's run: <a href="decisions/2026-10-19-one-year-simulation-in-the-laws-order.md">one year simulation</a>, <a href="decisions/2026-10-29-map-lines-read-from-the-cards-the-pocket-line-summing-them.md">map lines read from the cards</a>.</li>
     </ul>
     <p class="note">One edit runs the engine more than once: <code>PayCeiling</code> runs its own walk before <code>Run</code>, the split's search runs the year at many pays, and the map's conditions (<code>YearConditions.Of</code>) search the smallest pay that keeps the reduced corporate rate.</p>
@@ -91,7 +91,8 @@
       <table>
         <thead><tr><th>Setting</th><th>Value</th><th>Where</th></tr></thead>
         <tbody>
-          <tr><td>Field debounce</td><td>400 ms, or on losing focus with <code>TakenOnLeaving</code> (the split's pay, the dividend, two car fields)</td><td><code>River/RiverNumericField.cs</code></td></tr>
+          <tr><td>Field debounce</td><td>400 ms, or on losing focus with <code>TakenOnLeaving</code> (the pay on the Director pay card while the company year is there, the dividend, two car fields)</td><td><code>River/RiverNumericField.cs</code></td></tr>
+          <tr><td>Quiet period before the moves are searched again off Optimise</td><td>500 ms</td><td><code>River/MovesSource.cs</code></td></tr>
           <tr><td>Announcement settle</td><td>800 ms</td><td><code>River/BucketBarAnnouncement.cs</code></td></tr>
           <tr><td>Origins</td><td><code>Example</code>, <code>None</code>, <code>Default</code>, <code>Derived</code>, <code>Yours</code>; no chip for <code>None</code></td><td><code>River/InputOrigin.cs</code> · <a href="decisions/2026-10-19-defaults-for-rates-never-for-money.md">decision</a></td></tr>
         </tbody>
@@ -102,12 +103,13 @@
   <section aria-labelledby="h-changes">
     <h2 id="h-changes">Changes</h2>
     <ul class="atlas-changes">
+      <li><time datetime="2026-11-11">11.11.2026</time><span>An edit makes the moves stale and they are searched again after paint and a quiet period; the pay is typed on the Director pay card and the pay curve is in Optimise (<a href="decisions/2026-11-11-moves-retune-the-plan-on-screen.md">moves retune the plan on screen</a>, <a href="decisions/2026-11-11-the-split-is-a-node-named-for-its-money.md">the split is a node named for its money</a>).</span></li>
       <li><time datetime="2026-10-30">30.10.2026</time><span>the inputs carried across a switch of language's reload (<a href="decisions/2026-10-30-french-by-default-english-beside-it.md">French by default</a>).</span></li>
       <li><time datetime="2026-10-29">29.10.2026</time><span>Page drawn in the fresh-start pass, from <code>main</code> at <code>29cbc95</code>.</span></li>
     </ul>
   </section>
 
-  <footer>Drawn from the code on <code>feature/french-by-default</code> at <code>b1d21ed</code>. The code is the source; this page explains it. <a href="index.html">All pages</a>.</footer>
+  <footer>Drawn from the code on <code>feature/three-views</code> at <code>232a941</code>. The code is the source; this page explains it. <a href="index.html">All pages</a>.</footer>
 </main>
 </body>
 </html>
