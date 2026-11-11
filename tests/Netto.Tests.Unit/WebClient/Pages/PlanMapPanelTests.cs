@@ -269,7 +269,7 @@ public class PlanMapPanelTests
     {
         await using var page = await MapAsync(WithACar);
         await ChooseAsync(page, RiverModule.Car);
-        await page.SwitchTabAsync("compare");
+        await page.SwitchTabAsync("pistes");
         var before = page.Focuses;
 
         await page.SwitchTabAsync(null);

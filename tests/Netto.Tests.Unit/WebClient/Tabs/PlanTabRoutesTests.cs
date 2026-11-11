@@ -8,9 +8,9 @@ namespace Netto.Tests.WebClient.Tabs;
 public class PlanTabRoutesTests
 {
     [Fact]
-    public void Order_isThePlanThenOptimisationThenWhenToPayThenCompare()
+    public void Order_isMyPlanThenOptimisationThenPistes()
     {
-        PlanTabRoutes.Order.ShouldBe([PlanTab.Plan, PlanTab.Optimisation, PlanTab.WhenToPay, PlanTab.Compare]);
+        PlanTabRoutes.Order.ShouldBe([PlanTab.Plan, PlanTab.Optimisation, PlanTab.Pistes]);
     }
 
     [Fact]
@@ -22,8 +22,7 @@ public class PlanTabRoutesTests
     [Theory]
     [InlineData(PlanTab.Plan, "plan")]
     [InlineData(PlanTab.Optimisation, "plan/optimisation")]
-    [InlineData(PlanTab.WhenToPay, "plan/when-to-pay")]
-    [InlineData(PlanTab.Compare, "plan/compare")]
+    [InlineData(PlanTab.Pistes, "plan/pistes")]
     public void Href_eachTab_isItsUrlFromTheBase(PlanTab tab, string href)
     {
         PlanTabRoutes.Href(tab).ShouldBe(href);
@@ -45,7 +44,7 @@ public class PlanTabRoutesTests
     // A URL typed by hand keeps its case: the router matches it whatever the case, and so does the tab.
     [Theory]
     [InlineData("OPTIMISATION", PlanTab.Optimisation)]
-    [InlineData("When-To-Pay", PlanTab.WhenToPay)]
+    [InlineData("PISTES", PlanTab.Pistes)]
     public void From_segmentInAnotherCase_isTheTab(string segment, PlanTab tab)
     {
         PlanTabRoutes.From(segment).ShouldBe(tab);
@@ -57,6 +56,8 @@ public class PlanTabRoutesTests
     [InlineData("plan")]
     [InlineData("map")]
     [InlineData("optimization")]
+    [InlineData("when-to-pay")]
+    [InlineData("compare")]
     [InlineData("")]
     public void From_anyOtherSegment_isNone(string segment)
     {
@@ -69,8 +70,10 @@ public class PlanTabRoutesTests
     [InlineData("plan")]
     [InlineData("Plan/")]
     [InlineData("plan/optimisation")]
-    [InlineData("plan/When-To-Pay/")]
-    [InlineData("plan/compare")]
+    [InlineData("plan/Pistes/")]
+    [InlineData("plan?by=date")]
+    [InlineData("plan/when-to-pay")]
+    [InlineData("Plan/Compare/")]
     [InlineData("plan?card=split")]
     [InlineData("plan/optimisation#tab-content")]
     public void IsAt_aTabsAddress_isThePlanPage(string path)
@@ -90,6 +93,57 @@ public class PlanTabRoutesTests
     public void IsAt_anyOtherAddress_isNot(string path)
     {
         PlanTabRoutes.IsAt(path).ShouldBeFalse();
+    }
+
+    // The addresses the plan page once had for the views it folded in, and where each now is, as a link
+    // writes it: the lens of My plan, and the Plans panel opened on its compare mode.
+    [Theory]
+    [InlineData("when-to-pay", "plan?by=date")]
+    [InlineData("When-To-Pay", "plan?by=date")]
+    [InlineData("compare", "plan?plans=compare")]
+    [InlineData("COMPARE", "plan?plans=compare")]
+    public void Moved_aFoldedViewsOldSegment_isItsNewPlace(string segment, string href)
+    {
+        PlanTabRoutes.Moved(segment).ShouldBe(href);
+    }
+
+    [Theory]
+    [InlineData("optimisation")]
+    [InlineData("pistes")]
+    [InlineData("when")]
+    [InlineData("")]
+    [InlineData(null)]
+    public void Moved_anyOtherSegment_isNone(string? segment)
+    {
+        PlanTabRoutes.Moved(segment).ShouldBeNull();
+    }
+
+    // The lens is a query on My plan, the by-bucket lens being the plan's own address.
+    [Theory]
+    [InlineData(PlanLens.ByBucket, "plan")]
+    [InlineData(PlanLens.ByDate, "plan?by=date")]
+    public void Href_myPlanThroughALens_isItsAddress(PlanLens lens, string href)
+    {
+        PlanTabRoutes.Href(PlanTab.Plan, lens).ShouldBe(href);
+    }
+
+    [Theory]
+    [InlineData(PlanLens.ByBucket)]
+    [InlineData(PlanLens.ByDate)]
+    public void Href_aTabOtherThanMyPlanThroughALens_isItsOwnAddress(PlanLens lens)
+    {
+        PlanTabRoutes.Href(PlanTab.Optimisation, lens).ShouldBe("plan/optimisation");
+    }
+
+    [Theory]
+    [InlineData(null, PlanLens.ByBucket)]
+    [InlineData("date", PlanLens.ByDate)]
+    [InlineData("DATE", PlanLens.ByDate)]
+    [InlineData("bucket", PlanLens.ByBucket)]
+    [InlineData("nonsense", PlanLens.ByBucket)]
+    public void LensFrom_aQueryValue_isALensOrTheDefault(string? value, PlanLens lens)
+    {
+        PlanTabRoutes.LensFrom(value).ShouldBe(lens);
     }
 
     // The segment after /plan/, none for the river.

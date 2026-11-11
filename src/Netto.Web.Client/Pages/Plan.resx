@@ -13,28 +13,31 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="PageTitle" xml:space="preserve">
-    <value>Your year: Netto</value>
+    <value>My plan: Netto</value>
   </data>
   <data name="SkipToMap" xml:space="preserve">
     <value>Skip to the map</value>
   </data>
   <data name="PageTitle_Optimisation" xml:space="preserve">
-    <value>Optimisation: Netto</value>
+    <value>Optimise: Netto</value>
   </data>
-  <data name="PageTitle_WhenToPay" xml:space="preserve">
-    <value>When to pay: Netto</value>
+  <data name="PageTitle_ByDate" xml:space="preserve">
+    <value>My plan by date: Netto</value>
   </data>
-  <data name="PageTitle_Compare" xml:space="preserve">
-    <value>Compare plans: Netto</value>
+  <data name="PageTitle_Pistes" xml:space="preserve">
+    <value>Ideas: Netto</value>
+  </data>
+  <data name="MyPlanTitle" xml:space="preserve">
+    <value>My plan</value>
+  </data>
+  <data name="SkipToPistes" xml:space="preserve">
+    <value>Skip to the ideas</value>
   </data>
   <data name="SkipToMoves" xml:space="preserve">
     <value>Skip to your moves</value>
   </data>
   <data name="SkipToPayments" xml:space="preserve">
     <value>Skip to the payments</value>
-  </data>
-  <data name="SkipToComparison" xml:space="preserve">
-    <value>Skip to the comparison</value>
   </data>
   <data name="AssumedTitle" xml:space="preserve">
     <value>Assumed</value>

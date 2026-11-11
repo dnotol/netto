@@ -16,22 +16,16 @@
     <value>Your plan</value>
   </data>
   <data name="Tab_Plan" xml:space="preserve">
-    <value>Plan</value>
+    <value>My plan</value>
   </data>
   <data name="Tab_Optimisation" xml:space="preserve">
-    <value>Optimisation</value>
+    <value>Optimise</value>
   </data>
-  <data name="Tab_WhenToPay" xml:space="preserve">
-    <value>When to pay</value>
-  </data>
-  <data name="Tab_Compare" xml:space="preserve">
-    <value>Compare plans</value>
+  <data name="Tab_Pistes" xml:space="preserve">
+    <value>Ideas</value>
   </data>
   <data name="Spoken_Refused" xml:space="preserve">
     <value>an amount here is refused</value>
-  </data>
-  <data name="Spoken_MoreThanToday" xml:space="preserve">
-    <value>{0} more than Today</value>
   </data>
   <data name="Spoken_MoreThanPlan" xml:space="preserve">
     <value>{0} more than the plan in your river</value>
@@ -39,8 +33,8 @@
   <data name="Spoken_NextBy" xml:space="preserve">
     <value>next advance payment by {0}</value>
   </data>
-  <data name="Spoken_SavedPlans" xml:space="preserve">
-    <value>{0} saved plans to compare</value>
+  <data name="Spoken_Pistes" xml:space="preserve">
+    <value>ideas priced: {0}, questions: {1}</value>
   </data>
   <data name="Spoken_Searching" xml:space="preserve">
     <value>looking for moves</value>

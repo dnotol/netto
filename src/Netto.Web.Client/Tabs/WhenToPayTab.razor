@@ -1,8 +1,10 @@
 @using Netto.Web.Client.River
 @inject IStringLocalizer<WhenToPayTab> L
 
-@* The When to pay tab: when the plan's payments fall, a lens over the whole river, not a module in it, so
-   a tab of its own beside it rather than a card in it, with no rate and no « Remove ». It reads the
+@* My plan read by date, the « by date » lens (PlanLensBar): when the plan's payments fall, a lens over the
+   whole river, not a module in it, so no card in it, with no rate and no « Remove ». It was the When to pay
+   tab, whose old address now leads here (PlanMoved). It opens under My plan's head, which the page draws
+   (Plan), and its sections are h2. It reads the
    river's one run and the date (CalendarView over the engine's PaymentCalendar): first who pays what
    next, by which day, with one sentence per tax saying what its payments leave and what more cancels
    the surcharge, as its card says it (the Next panel); then the year on a timeline (CalendarTimeline),
@@ -10,10 +12,9 @@
    deadline as the plan holds them, the past ones marked, and at the first deadline still open what more
    cancels each surcharge; the pay each month, as the pay slip gives it; and after the year, what each
    assessment leaves. The timeline is a picture and the tables are its text equivalent. It applies
-   nothing: the Optimisation tab is where a payment is applied. Its one input, what the fund bills, sits
+   nothing: the Optimisation view is where a payment is applied. Its one input, what the fund bills, sits
    in a field sized to an amount and shows the engine's refusal beside it. The one sentence the tab needs to
    be read right, which date it reads, ends the Next panel, where the deadlines are dated. *@
-<TabHead Title="@L["Title"]" />
 <div class="calendar">
     @if (_view is null)
     {

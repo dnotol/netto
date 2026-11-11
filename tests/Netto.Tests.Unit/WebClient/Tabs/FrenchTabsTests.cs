@@ -111,15 +111,15 @@ public class FrenchTabsTests
         ResxText.French<MapTab>().Get("ReceivedFrom").ShouldBe($"{{0}}, origine{NoBreak}:");
     }
 
-    // Each link of a move is a sentence of its own, naming its card or tab as a title after « la carte » or
-    // « l'onglet ».
+    // Each link of a move is a sentence of its own, naming its card as a title after « la carte », or the
+    // lens of My plan it leads to.
     [Theory]
     [InlineData("Link_split", "Voir sur la carte La répartition")]
     [InlineData("Link_vouchers", "Voir sur la carte Titres-repas et chèques")]
     [InlineData("Link_rent", "Voir sur la carte Loyer du bureau")]
     [InlineData("Link_copyright", "Voir sur la carte Droits d'auteur")]
-    [InlineData("Link_WhenToPay", "Voir dans l'onglet Quand payer")]
-    public void Link_aMovesLink_isASentenceNamingItsCardOrTab(string key, string words)
+    [InlineData("Link_ByDate", "Voir par date")]
+    public void Link_aMovesLink_isASentenceNamingItsCardOrLens(string key, string words)
     {
         ResxText.French<OptimisationTab>().Get(key).ShouldBe(words);
     }
@@ -308,7 +308,7 @@ public class FrenchTabsTests
             services => services.AddSingleton(Saved(RiverInputs.Example, RiverInputs.Example.WithDirectorPay(20_799m)))));
 
         html.ShouldSatisfyAllConditions(
-            () => html.ShouldContain(">Comparer les plans</h1>"),
+            () => html.ShouldContain(">Comparer les plans</h2>"),
             () => html.ShouldContain(">Chiffre par chiffre</h2>"),
             () => html.ShouldContain(">Votre poche</h2>"),
             () => html.ShouldNotContain("Figure by figure"));

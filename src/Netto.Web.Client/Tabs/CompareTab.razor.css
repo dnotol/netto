@@ -1,6 +1,14 @@
-/* ::deep reaches nothing here but the refusal's alert, which RefusedMessage draws and styles itself. The
-   tab's head is TabHead's. Colours are the site's variables, so both themes follow; gold is the one
+/* ::deep reaches nothing here but the refusal's alert, which RefusedMessage draws and styles itself. Colours are the site's variables, so both themes follow; gold is the one
    accent, the larger pocket and the gain it leaves. */
+
+/* The comparison's title, a step under the page's: it is focused by script, never a stop of the keyboard. */
+.compare__head {
+    margin: 0 0 0.75rem;
+    font-family: "Fraunces", Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: 600;
+    line-height: 1.3;
+}
 
 .compare {
     display: grid;

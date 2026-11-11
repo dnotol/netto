@@ -4,21 +4,22 @@
 @inject IStringLocalizer<CompareTab> L
 @inject SavedPlans Plans
 
-@* The Compare plans tab: two of the saved plans side by side, layer by layer, the first the baseline (the
+@* Compare plans, a mode of the Plans panel in the band (PlansPanel): two of the saved plans side by side, layer by layer, the first the baseline (the
    plan starred « Today » unless the viewer picks another) and the second measured against it, with their
    difference, the second less the first, as a plan's gain is against Today (CompareView). Every figure is
    the engine's own for that plan, the same the bar of buckets and the cards say (CompareRows); nothing
    here decides a tax outcome. The plans are the saved ones only: the river as it is now is compared by
    saving it, « Save this plan » in the bar, and an alternative is made in the river or by applying a move
-   in Optimisation. The tab only reads: it opens, deletes and stars nothing, and says nothing aloud: the
+   in Optimisation. It only reads: it opens, deletes and stars nothing, and says nothing aloud: the
    bar is the river's one live region, so the table changes silently when the viewer picks. It keeps the
    view, which runs the two plans, and builds it again only when the viewer picks or the saved plans change
-   (SavedPlans.Changed), from the Plans panel in the bar. The picks are the viewer's only until the tab is
-   left. The pickers are native selects: a plan's name is all they hold, and a native control is named,
+   (SavedPlans.Changed), from the list in the same panel. The picks are the viewer's only until the panel
+   goes back to its list or closes. The pickers are native selects: a plan's name is all they hold, and a native control is named,
    operated and tested without a script. Each lists every plan; choosing the one the other holds swaps the
-   two (CompareView.PickPlan), so two plans never leave a picker with nothing to pick. The head is drawn once, first, whatever the plans: it takes the
-   focus when the viewer arrives (TabHead). *@
-<TabHead Title="@L["Title"]" />
+   two (CompareView.PickPlan), so two plans never leave a picker with nothing to pick. The title is drawn once, first, whatever the plans, an h2
+   under the page's h1 and the panel's own name: it takes the focus when the viewer comes to the comparison, so a
+   screen reader says where they are. *@
+<h2 id="compare-title" class="compare__head" tabindex="-1" @ref="_title">@L["Title"]</h2>
 
 <div class="compare">
     @foreach (var note in Notes())
@@ -129,6 +130,7 @@
 
 @code {
     private CompareView _view = default!;
+    private ElementReference _title;
 
     // What the viewer picked, none until they do: the plans then follow the defaults as the saved plans
     // change.
@@ -142,6 +144,13 @@
     }
 
     public void Dispose() => Plans.Changed -= OnPlansChanged;
+
+    // The comparison was just shown: its title takes the focus, as the head of a view does.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+            await _title.FocusAsync();
+    }
 
     private void Build() => _view = CompareView.Of(Plans, _planPick, _againstPick);
 

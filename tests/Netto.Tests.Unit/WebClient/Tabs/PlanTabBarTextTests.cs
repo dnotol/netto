@@ -18,21 +18,25 @@ public class PlanTabBarTextTests
     [Fact]
     public void PlanTabBarResx_everyTab_hasItsName()
     {
-        PlanTabRoutes.Order.Select(tab => Resources.Get(PlanTabBarText.Name(tab))).ShouldBe(["Plan", "Optimisation", "When to pay", "Compare plans"]);
+        PlanTabRoutes.Order.Select(tab => Resources.Get(PlanTabBarText.Name(tab))).ShouldBe(["My plan", "Optimise", "Ideas"]);
     }
 
     // A badge shows short (+€3,054.18, 21 Dec, an icon) and a screen reader hears it in full, after the
     // tab's name.
     [Theory]
-    [InlineData(TabBadgeKind.MoreThanToday, "€3,054.18", "€3,054.18 more than Today")]
     [InlineData(TabBadgeKind.MoreThanPlan, "€3,054.18", "€3,054.18 more than the plan in your river")]
     [InlineData(TabBadgeKind.NextBy, "21 December 2026", "next advance payment by 21 December 2026")]
     [InlineData(TabBadgeKind.Refused, "", "an amount here is refused")]
-    [InlineData(TabBadgeKind.SavedPlans, "3", "3 saved plans to compare")]
     [InlineData(TabBadgeKind.Searching, "", "looking for moves")]
     public void PlanTabBarResx_everyBadge_isSpokenInFull(TabBadgeKind kind, string figure, string expected)
     {
         Resources.Format(PlanTabBarText.Spoken(kind), figure).ShouldBe(expected);
+    }
+
+    [Fact]
+    public void PlanTabBarResx_pistes_isSpokenWithBothCounts()
+    {
+        Resources.Format(PlanTabBarText.Spoken(TabBadgeKind.Pistes), 1, 3).ShouldBe("ideas priced: 1, questions: 3");
     }
 
     // While the page looks for the moves, the badge shows an ellipsis, which a screen reader skips for the

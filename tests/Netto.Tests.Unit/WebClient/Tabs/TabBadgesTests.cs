@@ -5,9 +5,9 @@ using Shouldly;
 namespace Netto.Tests.WebClient.Tabs;
 
 // What each tab says after its name, from the views its content draws: the moves' total on Optimisation,
-// over the plan starred Today or the plan in the river, the next advance payment's date on When to pay,
-// and on a tab holding an amount the engine refuses, that refusal, which wins over a date, and the number
-// of plans to compare on Compare plans.
+// over the plan on screen, the next advance payment's date on My plan, which the by-date lens shows, and
+// there too an amount the engine refuses, which wins over a date, and on Pistes how many pistes are priced
+// and how many questions wait, once something supplies them.
 public class TabBadgesTests
 {
     // The deadline still open on this date is December's.
@@ -24,9 +24,9 @@ public class TabBadgesTests
     }
 
     [Fact]
-    public void Of_riverRunning_badgesNoPlan()
+    public void Of_riverRunning_marksNoRefusal()
     {
-        Badges(RiverInputs.Example, On23October).ContainsKey(PlanTab.Plan).ShouldBeFalse();
+        Badges(RiverInputs.Example, On23October).GetValueOrDefault(PlanTab.Plan)?.Kind.ShouldNotBe(TabBadgeKind.Refused);
     }
 
     // The gain of every move together, what the tab adds to the plan on screen, whatever plan is starred
@@ -47,7 +47,7 @@ public class TabBadgesTests
         var run = RiverInputs.Example.Run();
         var moves = MovesView.Searching(RiverInputs.Example);
 
-        TabBadges.Of(run, moves, CalendarView.From(RiverInputs.Example, run, On23October), 0).GetValueOrDefault(PlanTab.Optimisation)
+        TabBadges.Of(run, moves, CalendarView.From(RiverInputs.Example, run, On23October), null).GetValueOrDefault(PlanTab.Optimisation)
             .ShouldBe(new TabBadge(TabBadgeKind.Searching));
     }
 
@@ -67,67 +67,71 @@ public class TabBadgesTests
     }
 
     // The example prepays nothing by the company, so its next payment is the one that cancels the
-    // surcharge on its corporate tax, by 21 December.
+    // surcharge on its corporate tax, by 21 December: My plan's badge, the deadline staying in the band.
     [Fact]
-    public void Of_paymentStillToMake_badgesWhenToPayWithItsDeadline()
+    public void Of_paymentStillToMake_badgesMyPlanWithItsDeadline()
     {
-        Badges(RiverInputs.Example, On23October).GetValueOrDefault(PlanTab.WhenToPay)
+        Badges(RiverInputs.Example, On23October).GetValueOrDefault(PlanTab.Plan)
             .ShouldBe(new TabBadge(TabBadgeKind.NextBy, Date: new DateOnly(2026, 12, 21)));
     }
 
     [Fact]
-    public void Of_everyDeadlinePast_badgesNoWhenToPay()
+    public void Of_everyDeadlinePast_badgesNoMyPlan()
     {
-        Badges(RiverInputs.Example, AfterTheYear).ContainsKey(PlanTab.WhenToPay).ShouldBeFalse();
+        Badges(RiverInputs.Example, AfterTheYear).ContainsKey(PlanTab.Plan).ShouldBeFalse();
     }
 
-    // What the fund bills is refused: the tab holding the field says so, rather than the date.
+    // What the fund bills is refused, a field of the by-date lens: My plan says so, rather than the date.
     [Fact]
-    public void Of_billedAmountRefused_marksWhenToPay()
+    public void Of_billedAmountRefused_marksMyPlanOverItsDeadline()
     {
         var river = RiverInputs.Example.WithBilledContributions(-1m);
 
-        Badges(river, On23October).GetValueOrDefault(PlanTab.WhenToPay).ShouldBe(new TabBadge(TabBadgeKind.Refused));
+        Badges(river, On23October).GetValueOrDefault(PlanTab.Plan).ShouldBe(new TabBadge(TabBadgeKind.Refused));
     }
 
-    // The river refused, there is no calendar: the refusal is the Plan tab's.
+    // The river refused, there is no calendar and no deadline: the refusal alone.
     [Fact]
-    public void Of_riverRefused_badgesNoWhenToPay()
+    public void Of_riverRefused_badgesTheRefusalAlone()
     {
-        Badges(RiverInputs.Example.WithReserve(-1m), On23October).ContainsKey(PlanTab.WhenToPay).ShouldBeFalse();
+        Badges(RiverInputs.Example.WithReserve(-1m), On23October).GetValueOrDefault(PlanTab.Plan)
+            .ShouldBe(new TabBadge(TabBadgeKind.Refused));
     }
 
-    // Compare plans says how many saved plans the viewer can compare, once there are two.
-    [Theory]
-    [InlineData(2)]
-    [InlineData(5)]
-    public void Of_twoPlansOrMoreToCompare_badgesCompareWithTheirCount(int plans)
-    {
-        Badges(RiverInputs.Example, On23October, plans).GetValueOrDefault(PlanTab.Compare).ShouldBe(new TabBadge(TabBadgeKind.SavedPlans, Count: plans));
-    }
-
-    // Nothing to compare yet: with none, or one plan, the tab has no badge.
-    [Theory]
-    [InlineData(0)]
-    [InlineData(1)]
-    public void Of_lessThanTwoPlansToCompare_badgesNoCompare(int plans)
-    {
-        Badges(RiverInputs.Example, On23October, plans).ContainsKey(PlanTab.Compare).ShouldBeFalse();
-    }
-
-    // The plans are the tab's own, whatever the river does: a refused river leaves the count.
+    // Nothing supplies the pistes yet: Pistes has no badge. Once something does, it says how many are
+    // priced and how many questions wait.
     [Fact]
-    public void Of_riverRefused_stillBadgesCompare()
+    public void Of_noPistesCount_badgesNoPistes()
     {
-        Badges(RiverInputs.Example.WithReserve(-1m), On23October, plans: 3).GetValueOrDefault(PlanTab.Compare)
-            .ShouldBe(new TabBadge(TabBadgeKind.SavedPlans, Count: 3));
+        Badges(RiverInputs.Example, On23October).ContainsKey(PlanTab.Pistes).ShouldBeFalse();
+    }
+
+    [Fact]
+    public void Of_pistesToSay_badgesPistesWithBothCounts()
+    {
+        Badges(RiverInputs.Example, On23October, new PistesCount(1, 3)).GetValueOrDefault(PlanTab.Pistes)
+            .ShouldBe(new TabBadge(TabBadgeKind.Pistes, Count: 1, Questions: 3));
+    }
+
+    [Fact]
+    public void Of_noPisteAndNoQuestion_badgesNoPistes()
+    {
+        Badges(RiverInputs.Example, On23October, new PistesCount(0, 0)).ContainsKey(PlanTab.Pistes).ShouldBeFalse();
+    }
+
+    // A question without a priced piste is still something to say.
+    [Fact]
+    public void Of_onlyQuestions_badgesPistes()
+    {
+        Badges(RiverInputs.Example, On23October, new PistesCount(0, 2)).GetValueOrDefault(PlanTab.Pistes)
+            .ShouldBe(new TabBadge(TabBadgeKind.Pistes, Count: 0, Questions: 2));
     }
 
     // The moves from the plan on screen.
-    private static IReadOnlyDictionary<PlanTab, TabBadge> Badges(RiverInputs river, DateOnly date, int plans = 0)
+    private static IReadOnlyDictionary<PlanTab, TabBadge> Badges(RiverInputs river, DateOnly date, PistesCount? pistes = null)
     {
         var run = river.Run();
         var moves = MovesView.Of(river, date);
-        return TabBadges.Of(run, moves, CalendarView.From(river, run, date), plans);
+        return TabBadges.Of(run, moves, CalendarView.From(river, run, date), pistes);
     }
 }

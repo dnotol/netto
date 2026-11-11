@@ -31,17 +31,19 @@ public class TabHeadTests
         (Regex.Count(html, "<h1[ >]"), Regex.IsMatch(html, "<h1 [^>]*tabindex=\"-1\"[^>]*>Optimisation</h1>")).ShouldBe((1, true));
     }
 
-    // No tab words an eyebrow or an introduction any more: a text of one would be drawn by nobody.
+    // No tab words an eyebrow or an introduction any more: a text of one would be drawn by nobody. The title
+    // of a view is a text of its own, held by PlanTextTests (My plan's) and PistesTabTests.
     [Theory]
     [InlineData(typeof(MapTab))]
     [InlineData(typeof(OptimisationTab))]
+    [InlineData(typeof(PistesTab))]
     [InlineData(typeof(WhenToPayTab))]
     [InlineData(typeof(CompareTab))]
     public void TabResx_everyTab_holdsNoEyebrowNorLede(Type tab)
     {
         var texts = ResxText.For(tab);
 
-        (texts.Get("Eyebrow"), texts.Get("Lede"), string.IsNullOrWhiteSpace(texts.Get("Title"))).ShouldBe((null, null, false));
+        (texts.Get("Eyebrow"), texts.Get("Lede")).ShouldBe((null, null));
     }
 
     // A compact title: a size in rem a tab's name does not need more than, and no rule left for the eyebrow,

@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Netto.Web.Client;
 using Netto.Web.Client.Pages;
@@ -11,8 +12,8 @@ using static Netto.Tests.WebClient.River.RiverRendering;
 namespace Netto.Tests.WebClient.Pages;
 
 // The plan page as a viewer meets it on first load, drawn whole without a browser (RiverRendering): the
-// bar of buckets with its row of tabs, and the tab its URL names: the river, every card folded to its
-// summary and the notes under it folded to one line each, or another tab in its place.
+// bar of buckets with its row of tabs, and the view its URL names: My plan, the river with every card folded
+// to its summary and the notes under it folded to one line each, or by date, or another view in its place.
 public class PlanPageTests
 {
     // The deadline still open on this date is December's.
@@ -82,49 +83,48 @@ public class PlanPageTests
     }
 
     [Fact]
-    public async Task Plan_tabs_linkEveryTabInOrder()
+    public async Task Plan_tabs_linkEveryViewInOrder()
     {
         var html = await RenderPlanAsync(new Folds(new BrowserStorage()));
 
-        Links(html).Select(link => (link.Href, link.Name)).ShouldBe(
-            [("plan", "Plan"), ("plan/optimisation", "Optimisation"), ("plan/when-to-pay", "When to pay"), ("plan/compare", "Compare plans")]);
+        Links(html).Select(link => (link.Href, link.Name)).ShouldBe([("plan", "My plan"), ("plan/optimisation", "Optimise"), ("plan/pistes", "Ideas")]);
     }
 
-    // The tab the URL names is the one current, whatever the case it is typed in.
+    // The view the URL names is the one current, whatever the case it is typed in; My plan stays current by
+    // date, which is its lens and not another view.
     [Theory]
-    [InlineData(null, "Plan")]
-    [InlineData("optimisation", "Optimisation")]
-    [InlineData("when-to-pay", "When to pay")]
-    [InlineData("compare", "Compare plans")]
-    [InlineData("When-To-Pay", "When to pay")]
-    public async Task Plan_onATab_marksItAloneCurrent(string? tab, string current)
+    [InlineData(null, null, "My plan")]
+    [InlineData(null, "date", "My plan")]
+    [InlineData("optimisation", null, "Optimise")]
+    [InlineData("pistes", null, "Ideas")]
+    [InlineData("Pistes", null, "Ideas")]
+    public async Task Plan_onAView_marksItAloneCurrent(string? tab, string? by, string current)
     {
-        var html = await RenderPlanAsync(new Folds(new BrowserStorage()), tab);
+        var html = await RenderPlanAsync(new Folds(new BrowserStorage()), tab, by: by);
 
         Links(html).Where(link => link.Current).Select(link => link.Name).ShouldBe([current]);
     }
 
-    // Each tab opens on its own head: the page's one h1 is the tab's title.
+    // Each view opens on its own head: the page's one h1 is the view's title, whatever the lens.
     [Theory]
-    [InlineData(null, "Plan")]
-    [InlineData("optimisation", "Optimisation")]
-    [InlineData("when-to-pay", "When to pay")]
-    [InlineData("compare", "Compare plans")]
-    public async Task Plan_onATab_opensOnItsTitle(string? tab, string title)
+    [InlineData(null, null, "My plan")]
+    [InlineData(null, "date", "My plan")]
+    [InlineData("optimisation", null, "Optimise")]
+    [InlineData("pistes", null, "Ideas")]
+    public async Task Plan_onAView_opensOnItsTitle(string? tab, string? by, string title)
     {
-        var html = await RenderPlanAsync(new Folds(new BrowserStorage()), tab);
+        var html = await RenderPlanAsync(new Folds(new BrowserStorage()), tab, by: by);
 
         Regex.Matches(html, "<h1[^>]*>([^<]*)</h1>").Select(match => match.Groups[1].Value).ShouldBe([title]);
     }
 
-    // A tab opens on its title alone: no eyebrow above it, no « In development » chip, no introduction under
-    // it, so the tab's content starts right under the bar.
+    // A view opens on its title alone: no eyebrow above it, no « In development » chip, no introduction under
+    // it, so the view's content starts right under the bar.
     [Theory]
     [InlineData(null)]
     [InlineData("optimisation")]
-    [InlineData("when-to-pay")]
-    [InlineData("compare")]
-    public async Task Plan_onATab_opensOnItsTitleAlone(string? tab)
+    [InlineData("pistes")]
+    public async Task Plan_onAView_opensOnItsTitleAlone(string? tab)
     {
         var html = await RenderPlanAsync(new Folds(new BrowserStorage()), tab);
 
@@ -132,70 +132,90 @@ public class PlanPageTests
             .ShouldBe((false, false, false));
     }
 
-    // The plan is the map, the card of the module chosen beside it, Company year on arriving, and the two
-    // notes on what Netto assumes and does not count yet under it; Your moves and When to pay are tabs of
-    // their own.
+    // My plan is the map, the card of the module chosen beside it, Company year on arriving, and the two
+    // notes on what Netto assumes and does not count yet under it; the moves are a view of their own. Under
+    // the head come the lens, by bucket, and no calendar.
     [Fact]
-    public async Task Plan_onPlan_showsTheMapCompanyYearsCardAndTheNotes()
+    public async Task Plan_onMyPlan_showsTheLensTheMapCompanyYearsCardAndTheNotes()
     {
         var html = await RenderPlanAsync(new Folds(new BrowserStorage()));
 
         (html.Contains("class=\"map-tab\""), html.Contains("id=\"card-company-year\""), html.Contains("<aside class=\"assumed\""),
-                html.Contains("<aside class=\"limits\""), html.Contains("moves__state"), html.Contains("calendar__table"))
-            .ShouldBe((true, true, true, true, false, false));
+                html.Contains("<aside class=\"limits\""), html.Contains("moves__state"), html.Contains("calendar__table"), html.Contains("plan-lens"))
+            .ShouldBe((true, true, true, true, false, false, true));
+    }
+
+    // By date, what the When to pay tab showed takes the place of the map, its card and the notes under it,
+    // under the same head and lens.
+    [Fact]
+    public async Task Plan_onMyPlanByDate_showsTheCalendarInPlaceOfTheMapAndTheNotes()
+    {
+        var html = await RenderPlanAsync(new Folds(new BrowserStorage()), by: "date");
+
+        (html.Contains("calendar__table"), html.Contains("class=\"calendar\""), html.Contains("plan-lens"), html.Contains("class=\"map-tab\""),
+                html.Contains("id=\"card-company-year\""), html.Contains("<aside class=\"assumed\""), html.Contains("<aside class=\"limits\""))
+            .ShouldBe((true, true, true, false, false, false, false));
+    }
+
+    // Any value of the query that names no lens is the plan by bucket.
+    [Fact]
+    public async Task Plan_onMyPlanByAnUnknownLens_isByBucket()
+    {
+        var html = await RenderPlanAsync(new Folds(new BrowserStorage()), by: "nonsense");
+
+        (html.Contains("class=\"map-tab\""), html.Contains("calendar__table")).ShouldBe((true, false));
     }
 
     [Theory]
     [InlineData("optimisation", "moves__state")]
-    [InlineData("when-to-pay", "calendar__table")]
-    [InlineData("compare", "There is no plan to compare yet")]
-    public async Task Plan_onAnotherTab_showsItsOwnContentWithoutTheMap(string tab, string content)
+    [InlineData("pistes", "Nothing is measured here yet.")]
+    public async Task Plan_onAnotherView_showsItsOwnContentWithoutTheMap(string tab, string content)
     {
         var html = await RenderPlanAsync(new Folds(new BrowserStorage()), tab);
 
-        (html.Contains("class=\"map-tab\""), html.Contains(content)).ShouldBe((false, true));
+        (html.Contains("class=\"map-tab\""), html.Contains("plan-lens"), html.Contains(content)).ShouldBe((false, false, true));
     }
 
-    // The bar sums up the same river on every tab: switching tabs changes no input of it.
+    // The bar sums up the same river on every view and lens: switching changes no input of it.
     [Fact]
-    public async Task Plan_everyTab_drawsTheSameBuckets()
+    public async Task Plan_everyView_drawsTheSameBuckets()
     {
         var river = RiverInputs.Example.WithDirectorPay(40_000m);
         var folds = new Folds(new BrowserStorage());
 
         var buckets = new List<string>();
-        foreach (var tab in new[] { null, "optimisation", "when-to-pay", "compare" })
-            buckets.Add(Buckets(await RenderPlanAsync(folds, tab, river)));
+        foreach (var (tab, by) in new (string?, string?)[] { (null, null), (null, "date"), ("optimisation", null), ("pistes", null) })
+            buckets.Add(Buckets(await RenderPlanAsync(folds, tab, river, by: by)));
 
         var pocket = BucketsView.From(river.Run())!.Buckets.Single(bucket => bucket.Key == "pocket").Amount;
         (buckets.Distinct().Count(), buckets[0].Contains(Formats.Euros(pocket))).ShouldBe((1, true));
     }
 
     // The page draws before it looks for the moves, which it does once the browser has painted what it
-    // drew (PlanMovesSearchTests): on first load Optimisation says it is looking for them, short after its
+    // drew (PlanMovesSearchTests): on first load Optimise says it is looking for them, short after its
     // name and in full for a screen reader, whether a plan is starred Today or not.
     [Fact]
-    public async Task Plan_firstDrawWithToday_badgesOptimisationAsLookingForMoves()
+    public async Task Plan_firstDrawWithToday_badgesOptimiseAsLookingForMoves()
     {
         var html = await RenderPlanAsync(new Folds(new BrowserStorage()), today: RiverInputs.Example);
 
-        var optimisation = Links(html).Single(link => link.Name == "Optimisation");
-        (optimisation.Badge, optimisation.Spoken).ShouldBe(("…", "looking for moves"));
+        var optimise = Links(html).Single(link => link.Name == "Optimise");
+        (optimise.Badge, optimise.Spoken).ShouldBe(("…", "looking for moves"));
     }
 
     [Fact]
-    public async Task Plan_firstDrawWithoutToday_badgesOptimisationAsLookingForMoves()
+    public async Task Plan_firstDrawWithoutToday_badgesOptimiseAsLookingForMoves()
     {
         var html = await RenderPlanAsync(new Folds(new BrowserStorage()));
 
-        var optimisation = Links(html).Single(link => link.Name == "Optimisation");
-        (optimisation.Badge, optimisation.Spoken).ShouldBe(("…", "looking for moves"));
+        var optimise = Links(html).Single(link => link.Name == "Optimise");
+        (optimise.Badge, optimise.Spoken).ShouldBe(("…", "looking for moves"));
     }
 
-    // On the Optimisation tab, the line that opens the moves once found says the page is looking for them
+    // On the Optimisation view, the line that opens the moves once found says the page is looking for them
     // from the plan on screen, with no move yet.
     [Fact]
-    public async Task Plan_optimisationTabFirstDrawn_looksForTheMovesFromThePlanOnScreen()
+    public async Task Plan_optimisationFirstDrawn_looksForTheMovesFromThePlanOnScreen()
     {
         var html = WebUtility.HtmlDecode(await RenderPlanAsync(new Folds(new BrowserStorage()), "optimisation"));
 
@@ -205,7 +225,7 @@ public class PlanPageTests
 
     // A plan starred Today changes nothing of it: Today feeds the band's gain alone.
     [Fact]
-    public async Task Plan_optimisationTabWithToday_looksForTheMovesFromThePlanOnScreenStill()
+    public async Task Plan_optimisationWithToday_looksForTheMovesFromThePlanOnScreenStill()
     {
         var html = WebUtility.HtmlDecode(await RenderPlanAsync(new Folds(new BrowserStorage()), "optimisation", RiverInputs.Example.WithDirectorPay(40_000m),
             today: RiverInputs.Example));
@@ -214,7 +234,7 @@ public class PlanPageTests
     }
 
     // That the page looks for the moves is said in no live region: the bar's says nothing yet, the notice of
-    // a module taken out nothing, and neither the tabs nor the tab's line are one.
+    // a module taken out nothing, and neither the tabs nor the view's line are one.
     [Fact]
     public async Task Plan_firstDraw_saysTheSearchInNoLiveRegion()
     {
@@ -228,47 +248,66 @@ public class PlanPageTests
             .ShouldBe((true, true, true, true, false));
     }
 
-    // When to pay says the next advance payment's day, on every tab.
+    // My plan says the next advance payment's day, on every view: the deadline stays in the band.
     [Theory]
     [InlineData(null)]
     [InlineData("optimisation")]
-    public async Task Plan_paymentStillToMake_badgesWhenToPayWithItsDay(string? tab)
+    [InlineData("pistes")]
+    public async Task Plan_paymentStillToMake_badgesMyPlanWithItsDay(string? tab)
     {
         var html = await RenderPlanAsync(new Folds(new BrowserStorage()), tab);
 
-        var whenToPay = Links(html).Single(link => link.Name == "When to pay");
-        (whenToPay.Badge, whenToPay.Spoken).ShouldBe(("21 Dec", "next advance payment by 21 December 2026"));
+        var myPlan = Links(html).Single(link => link.Name == "My plan");
+        (myPlan.Badge, myPlan.Spoken).ShouldBe(("21 Dec", "next advance payment by 21 December 2026"));
     }
 
-    // A refusal on When to pay shows on its tab while the viewer is on another.
-    [Fact]
-    public async Task Plan_billedAmountRefused_marksWhenToPayOnThePlanTab()
-    {
-        var html = await RenderPlanAsync(new Folds(new BrowserStorage()), river: RiverInputs.Example.WithBilledContributions(-1m));
-
-        var whenToPay = Links(html).Single(link => link.Name == "When to pay");
-        (whenToPay.Refused, whenToPay.Spoken).ShouldBe((true, "an amount here is refused"));
-    }
-
-    // Compare plans says how many saved plans can be compared, short after its name and in full for a
-    // screen reader, from two.
+    // A refusal of what the fund bills, a field of the by-date lens, shows on My plan's tab on every view.
     [Theory]
     [InlineData(null)]
-    [InlineData("compare")]
-    public async Task Plan_twoSavedPlans_badgesCompareWithTheirCount(string? tab)
+    [InlineData("optimisation")]
+    public async Task Plan_billedAmountRefused_marksMyPlan(string? tab)
     {
-        var html = await RenderPlanAsync(new Folds(new BrowserStorage()), tab, saved: [RiverInputs.Example, RiverInputs.Example.WithDirectorPay(40_000m), RiverInputs.Example]);
+        var html = await RenderPlanAsync(new Folds(new BrowserStorage()), tab, river: RiverInputs.Example.WithBilledContributions(-1m));
 
-        var compare = Links(html).Single(link => link.Name == "Compare plans");
-        (compare.Badge, compare.Spoken).ShouldBe(("3", "3 saved plans to compare"));
+        var myPlan = Links(html).Single(link => link.Name == "My plan");
+        (myPlan.Refused, myPlan.Spoken).ShouldBe((true, "an amount here is refused"));
+    }
+
+    // Saved plans are compared in the Plans panel, which counts them itself: the tab bar holds no badge for
+    // them, and Ideas none while nothing finds ideas.
+    [Fact]
+    public async Task Plan_twoSavedPlans_badgeNoTab()
+    {
+        var html = await RenderPlanAsync(new Folds(new BrowserStorage()), saved: [RiverInputs.Example, RiverInputs.Example.WithDirectorPay(40_000m)]);
+
+        Links(html).Where(link => link.Name != "My plan" && link.Name != "Optimise").Select(link => link.Badge).ShouldBe([null]);
+    }
+
+    // The one line of nudges is drawn only when it has something to say: on first draw the moves are still
+    // being looked for and nothing supplies ideas, so none.
+    [Fact]
+    public async Task Plan_onMyPlanFirstDraw_drawsNoNudgeYet()
+    {
+        var html = await RenderPlanAsync(new Folds(new BrowserStorage()));
+
+        html.ShouldNotContain("plan-nudges");
+    }
+
+    // Plans opens on its comparison where the address asks (plan?plans=compare), the panel closed otherwise.
+    [Fact]
+    public async Task Plan_comparePlansAddress_opensThePlansPanelOnTheComparison()
+    {
+        var html = await RenderPlanAsync(new Folds(new BrowserStorage()), plansMode: "compare");
+
+        (html.Contains("plans__panel plans__panel--compare"), html.Contains("compare-title")).ShouldBe((true, true));
     }
 
     [Fact]
-    public async Task Plan_onlyOneSavedPlan_badgesNoCompare()
+    public async Task Plan_noComparePlansAddress_leavesThePlansPanelClosed()
     {
-        var html = await RenderPlanAsync(new Folds(new BrowserStorage()), saved: [RiverInputs.Example]);
+        var html = await RenderPlanAsync(new Folds(new BrowserStorage()));
 
-        Links(html).Single(link => link.Name == "Compare plans").Badge.ShouldBeNull();
+        (html.Contains("plans__panel--compare"), html.Contains("compare-title")).ShouldBe((false, false));
     }
 
     private static List<string> Toggles(string html) => [.. Regex.Matches(html, "<button[^>]*class=\"fold__toggle\"[^>]*>").Select(match => match.Value)];
@@ -309,7 +348,7 @@ public class PlanPageTests
     // The river, the plan starred Today and the plans saved, the first starred unless one is; without Today,
     // the plan starred is deleted once they are all saved.
     internal static Task<string> RenderPlanAsync(Folds folds, string? tab = null, RiverInputs? river = null, RiverInputs? today = null, RiverInputs[]? saved = null,
-        bool withoutToday = false) =>
+        bool withoutToday = false, string? by = null, string? plansMode = null) =>
         RenderAsync(typeof(Plan), folds, tab is null ? [] : new() { ["Tab"] = tab }, services =>
         {
             var storage = new BrowserStorage();
@@ -324,5 +363,22 @@ public class PlanPageTests
             services.AddSingleton(plans);
             services.AddSingleton(new RiverState(plans, new BrowserSession()) { Inputs = river ?? RiverInputs.Example });
             services.AddSingleton<TimeProvider>(new Clock(On23October));
+            // The lens and the Plans panel's mode are the address's queries (SupplyParameterFromQuery).
+            var query = string.Join('&', new[] { by is null ? null : $"by={by}", plansMode is null ? null : $"plans={plansMode}" }.OfType<string>());
+            if (query.Length > 0)
+            {
+                services.AddSupplyValueFromQueryProvider();
+                services.AddSingleton<NavigationManager>(new AtAddress($"http://localhost/plan?{query}"));
+            }
         });
+
+    // The page's address, which the queries are read from; it goes nowhere.
+    private sealed class AtAddress : NavigationManager
+    {
+        public AtAddress(string uri) => Initialize("http://localhost/", uri);
+
+        protected override void NavigateToCore(string uri, NavigationOptions options)
+        {
+        }
+    }
 }

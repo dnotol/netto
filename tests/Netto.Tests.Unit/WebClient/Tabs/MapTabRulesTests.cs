@@ -21,13 +21,13 @@ public class MapTabRulesTests
     private const string BucketBox = "<button type=\"button\" class=\"map-bucket";
 
     [Fact]
-    public async Task Tab_underTheHead_holdsTheKeyToTheLines()
+    public async Task Tab_overTheMap_holdsTheKeyToTheLines()
     {
         var html = await RenderTabAsync(Full);
 
-        var (head, slot, key, map) = (html.IndexOf("</header>", StringComparison.Ordinal), html.IndexOf("class=\"map-tab__key\"", StringComparison.Ordinal),
+        var (slot, key, map) = (html.IndexOf("class=\"map-tab__key\"", StringComparison.Ordinal),
             html.IndexOf("<ul class=\"map-key\"", StringComparison.Ordinal), html.IndexOf("class=\"map\"", StringComparison.Ordinal));
-        (head < slot, slot < key, key < map, Regex.Count(html, "<ul class=\"map-key\"")).ShouldBe((true, true, true, 1));
+        (slot < key, key < map, Regex.Count(html, "<ul class=\"map-key\"")).ShouldBe((true, true, 1));
     }
 
     // Nothing chosen: every line of money and its amount, no line, arrowhead or word of a tax base or a

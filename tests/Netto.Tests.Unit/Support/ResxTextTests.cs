@@ -28,7 +28,7 @@ public class ResxTextTests
     [Fact]
     public void Format_placeholder_isFilledAsTheSiteWritesIt()
     {
-        Texts.Format(PlanTabBarText.Spoken(TabBadgeKind.SavedPlans), "3").ShouldBe("3 saved plans to compare");
+        Texts.Format(PlanTabBarText.Spoken(TabBadgeKind.MoreThanPlan), "€3").ShouldBe("€3 more than the plan in your river");
     }
 
     // What a viewer would read where the text is missing: the key itself, as the localizer shows it.

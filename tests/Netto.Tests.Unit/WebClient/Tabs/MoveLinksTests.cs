@@ -7,7 +7,7 @@ using Shouldly;
 namespace Netto.Tests.WebClient.Tabs;
 
 // Where each move links to: the card of the Plan tab it acts on while that card is on the tab, named by
-// its title, or the When to pay tab for a payment.
+// its title, or My plan by date for a payment.
 public class MoveLinksTests
 {
     private static readonly DateOnly On21December = new(2026, 12, 21);
@@ -84,24 +84,24 @@ public class MoveLinksTests
         new CompanyAdvancePaymentMove(3, On21December, 29_700.45m), new DirectorAdvancePaymentMove(3, On21December, 14_317.50m),
     };
 
-    // A payment's place is the When to pay tab, whatever the river holds.
+    // A payment's place is My plan read by date, whatever the river holds.
     [Theory]
     [MemberData(nameof(Payments))]
-    public void To_payment_linksTheWhenToPayTab(Move move)
+    public void To_payment_linksMyPlanByDate(Move move)
     {
         var link = MoveLinks.To(move, RiverInputs.Example.SkipCompany()).ShouldNotBeNull();
 
-        (link, link.Href).ShouldBe((new MoveLink(PlanTab.WhenToPay, null), "plan/when-to-pay"));
+        (link, link.Href).ShouldBe((new MoveLink(PlanTab.Plan, null, PlanLens.ByDate), "plan?by=date"));
     }
 
-    // « See it in » the tab's own name, as the tab bar reads it.
+    // « See it » by the lens' own name, as the lens bar reads it.
     [Theory]
     [MemberData(nameof(Payments))]
-    public void Text_payment_namesTheTab(Move move)
+    public void Text_payment_namesTheLens(Move move)
     {
-        var tab = ResxText.For<PlanTabBar>().Get(PlanTabBarText.Name(PlanTab.WhenToPay));
+        var lens = ResxText.For<PlanLensBar>().Get(PlanLensBarText.Name(PlanLens.ByDate));
 
-        Text(MoveLinks.To(move, RiverInputs.Example).ShouldNotBeNull()).ShouldBe($"See it in {tab.ShouldNotBeNull()}");
+        Text(MoveLinks.To(move, RiverInputs.Example).ShouldNotBeNull()).ShouldBe($"See it {lens.ShouldNotBeNull().ToLowerInvariant()}");
     }
 
     private static string? Text(MoveLink link) =>

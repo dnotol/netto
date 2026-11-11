@@ -112,6 +112,16 @@ internal sealed class LivePlan : IAsyncDisposable
     public Task SwitchTabAsync(string? tab) =>
         _renderer.SwitchAsync(ParameterView.FromDictionary(new Dictionary<string, object?> { ["Tab"] = tab }));
 
+    // The viewer follows a link to another address of the plan page, a lens or a query as much as another
+    // view: the address changes under the page, which stays the same page, and its queries are read again
+    // (SupplyParameterFromQuery) as the router sets the page's Tab (SwitchTabAsync). Done once the page has
+    // drawn what it now shows.
+    public async Task GoToAsync(string uri, string? tab)
+    {
+        await _renderer.Dispatcher.InvokeAsync(() => _navigation.MoveTo(uri));
+        await SwitchTabAsync(tab);
+    }
+
     // The browser paints what the page drew, and the page draws again what it did then: done once that is
     // drawn. A page whose work then fails rethrows its error, and one that draws nothing more fails rather
     // than waiting for ever.
@@ -296,6 +306,13 @@ internal sealed class LivePlan : IAsyncDisposable
         public RecordingNavigation(string uri) => Initialize("http://localhost/", uri);
 
         public List<string> Navigations { get; } = [];
+
+        // The address the viewer followed a link to, announced as the browser announces it.
+        public void MoveTo(string uri)
+        {
+            Uri = ToAbsoluteUri(uri).ToString();
+            NotifyLocationChanged(false);
+        }
 
         protected override void NavigateToCore(string uri, NavigationOptions options) => Navigations.Add(uri);
     }

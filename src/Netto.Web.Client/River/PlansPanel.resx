@@ -138,4 +138,10 @@
   <data name="Imported_Refused" xml:space="preserve">
     <value>This file is not one this version of Netto can read: nothing was imported.</value>
   </data>
+  <data name="Compare" xml:space="preserve">
+    <value>Compare plans</value>
+  </data>
+  <data name="Back" xml:space="preserve">
+    <value>Back to plans</value>
+  </data>
 </root>

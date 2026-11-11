@@ -27,6 +27,8 @@ public class PageRoutesTests
             ("/about", nameof(Home)),
             ("/not-found", nameof(NotFound)),
             ("/plan", nameof(Plan)),
+            ("/plan/compare", nameof(PlanMoved)),
+            ("/plan/when-to-pay", nameof(PlanMoved)),
             ("/plan/{Tab}", nameof(Plan)),
         ]);
     }

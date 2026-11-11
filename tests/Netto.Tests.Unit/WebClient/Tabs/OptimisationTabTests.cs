@@ -96,7 +96,7 @@ public class OptimisationTabTests
     {
         var html = await RenderTabAsync(RiverInputs.Example);
 
-        (html.Contains("fold__toggle"), Regex.IsMatch(html, "<h1[^>]*>Optimisation</h1>"), html.Contains("tab-head__eyebrow"), html.Contains("tab-head__lede"))
+        (html.Contains("fold__toggle"), Regex.IsMatch(html, "<h1[^>]*>Optimise</h1>"), html.Contains("tab-head__eyebrow"), html.Contains("tab-head__lede"))
             .ShouldBe((false, true, false, false));
     }
 
@@ -173,11 +173,11 @@ public class OptimisationTabTests
     }
 
     [Fact]
-    public async Task Optimisation_paymentMove_linksWhenToPay()
+    public async Task Optimisation_paymentMove_linksMyPlanByDate()
     {
         var html = await RenderTabAsync(RiverInputs.Example);
 
-        Regex.IsMatch(html, "<a class=\"moves__link\" href=\"plan/when-to-pay\" aria-label=\"See it in When to pay: Pay €[\\d,.]+ by 21 December 2026 on the company's corporate tax\"[^>]*>See it in When to pay</a>")
+        Regex.IsMatch(html, "<a class=\"moves__link\" href=\"plan\\?by=date\" aria-label=\"See it by date: Pay €[\\d,.]+ by 21 December 2026 on the company's corporate tax\"[^>]*>See it by date</a>")
             .ShouldBeTrue();
     }
 

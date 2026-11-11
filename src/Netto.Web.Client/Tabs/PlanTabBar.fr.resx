@@ -16,22 +16,16 @@
     <value>Votre plan</value>
   </data>
   <data name="Tab_Plan" xml:space="preserve">
-    <value>Plan</value>
+    <value>Mon plan</value>
   </data>
   <data name="Tab_Optimisation" xml:space="preserve">
-    <value>Optimisation</value>
+    <value>Optimiser</value>
   </data>
-  <data name="Tab_WhenToPay" xml:space="preserve">
-    <value>Quand payer</value>
-  </data>
-  <data name="Tab_Compare" xml:space="preserve">
-    <value>Comparer les plans</value>
+  <data name="Tab_Pistes" xml:space="preserve">
+    <value>Pistes</value>
   </data>
   <data name="Spoken_Refused" xml:space="preserve">
     <value>un montant est refusé ici</value>
-  </data>
-  <data name="Spoken_MoreThanToday" xml:space="preserve">
-    <value>{0} de plus qu'Aujourd'hui</value>
   </data>
   <data name="Spoken_MoreThanPlan" xml:space="preserve">
     <value>{0} de plus que le plan affiché</value>
@@ -39,8 +33,8 @@
   <data name="Spoken_NextBy" xml:space="preserve">
     <value>prochain versement anticipé au plus tard le {0}</value>
   </data>
-  <data name="Spoken_SavedPlans" xml:space="preserve">
-    <value>{0} plans enregistrés à comparer</value>
+  <data name="Spoken_Pistes" xml:space="preserve">
+    <value>pistes chiffrées : {0}, questions : {1}</value>
   </data>
   <data name="Spoken_Searching" xml:space="preserve">
     <value>recherche d'ajustements</value>

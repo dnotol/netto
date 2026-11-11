@@ -5,16 +5,24 @@ namespace Netto.Web.Client.Pages;
 // The resource keys of Plan.razor that PlanTextTests holds to Plan.resx.
 internal static class PlanText
 {
-    // The window's title on each tab, as a page of its own would have.
-    public static string PageTitle(PlanTab tab) => tab == PlanTab.Plan ? "PageTitle" : $"PageTitle_{tab}";
+    // The head of My plan, the page's one h1 there: drawn by the page, above the lens, so that a switch of lens
+    // keeps the focus where the viewer is (TabHead).
+    public const string MyPlanTitle = "MyPlanTitle";
 
-    // The skip link, the keyboard's first stop on the page, worded for where it goes on each tab.
-    public static string SkipTo(PlanTab tab) => tab switch
+    // The window's title on each view, as a page of its own would have, My plan's by date apart.
+    public static string PageTitle(PlanTab tab, PlanLens lens) => tab switch
     {
-        PlanTab.Plan => "SkipToMap",
+        PlanTab.Plan => lens == PlanLens.ByDate ? "PageTitle_ByDate" : "PageTitle",
+        _ => $"PageTitle_{tab}",
+    };
+
+    // The skip link, the keyboard's first stop on the page, worded for where it goes on each view: the map, or
+    // the payments of the plan read by date.
+    public static string SkipTo(PlanTab tab, PlanLens lens) => tab switch
+    {
+        PlanTab.Plan => lens == PlanLens.ByDate ? "SkipToPayments" : "SkipToMap",
         PlanTab.Optimisation => "SkipToMoves",
-        PlanTab.WhenToPay => "SkipToPayments",
-        PlanTab.Compare => "SkipToComparison",
+        PlanTab.Pistes => "SkipToPistes",
         _ => throw new ArgumentOutOfRangeException(nameof(tab), tab, null),
     };
 

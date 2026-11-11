@@ -45,7 +45,6 @@
     font-variant-numeric: tabular-nums;
 }
 
-.plan-tab-bar__badge--morethantoday,
 .plan-tab-bar__badge--morethanplan {
     color: var(--netto-gold);
 }

@@ -1,3 +1,4 @@
+@using Netto.Web.Client.Tabs
 @inject IStringLocalizer<PlansPanel> L
 @inject SavedPlans Plans
 @inject IJSRuntime JS
@@ -13,7 +14,12 @@
    closes with Escape, a click outside or Done, each giving focus back to its button. Each row says what
    reaches the pocket and its share, and its difference from the plan starred « Today », the user's current
    setup, with every figure the engine's (PlanRow). A row is renamed in place, starred, opened in the river or
-   deleted; opening over unsaved changes and deleting ask first, in the row itself. The panel's foot exports
+   deleted; opening over unsaved changes and deleting ask first, in the row itself. From two plans on, the
+   panel also compares two of them side by side (CompareTab), a mode of the panel, not a view of the plan
+   (docs/architecture/decisions/2026-11-11-three-views-one-question-each.md): « Compare plans » takes the
+   place of the list, widening the panel, with « Back to plans » to return; Escape, a click outside and Done
+   close it whichever it shows. The address /plan?plans=compare, where Compare plans' old address goes,
+   opens it on the comparison once (OpenOnCompare). The panel's foot exports
    every plan to a file and imports a file's plans after the ones here (SavedPlans.Export, Import):
    the browser writes and reads the file, which never reaches a server. *@
 <div class="plans" @onkeydown="OnKeyDown">
@@ -38,10 +44,19 @@
     {
         <div class="plans__backdrop" @onclick="Close"></div>
     }
-    <div id="@_panelId" class="plans__panel" role="group" aria-label="@L["PanelLabel"]" tabindex="-1" hidden="@(!_open)" @ref="_panel">
+    <div id="@_panelId" class="plans__panel@(_comparing ? " plans__panel--compare" : "")" role="group" aria-label="@L["PanelLabel"]" tabindex="-1" hidden="@(!_open)" @ref="_panel">
         @if (_open)
         {
             <p class="plans__eyebrow">@L["Title"]</p>
+            @if (_comparing)
+            {
+                <div class="plans__back">
+                    <MudButton @ref="_back" Variant="Variant.Text" Size="Size.Small" Class="plans__back-button" StartIcon="@Icons.Material.Rounded.ArrowBack" OnClick="BackToPlans">@L["Back"]</MudButton>
+                </div>
+                <CompareTab />
+            }
+            else
+            {
             @if (Plans.CouldNotRead)
             {
                 <p class="plans__warning" role="note">@L["CouldNotRead"]</p>
@@ -115,20 +130,30 @@
                         </li>
                     }
                 </ul>
+                @if (Plans.Plans.Count >= 2)
+                {
+                    <div class="plans__compare">
+                        <MudButton @ref="_compare" Variant="Variant.Outlined" Size="Size.Small" Class="plans__compare-button" StartIcon="@Icons.Material.Rounded.CompareArrows" OnClick="Compare">@L["Compare"]</MudButton>
+                    </div>
+                }
             }
             @if (_imported is { } imported)
             {
                 <p class="plans__imported" role="status">@L[PlansPanelText.Imported(imported), imported.Added, imported.Skipped]</p>
             }
+            }
             <div class="plans__foot">
-                <div class="plans__file">
-                    @if (Plans.Plans.Count > 0)
-                    {
-                        <MudButton Variant="Variant.Text" Size="Size.Small" OnClick="ExportAsync">@L["Export"]</MudButton>
-                    }
-                    <InputFile id="@_fileId" class="plans__file-input" accept=".json,application/json" OnChange="ImportAsync" />
-                    <label for="@_fileId" class="plans__import">@L["Import"]</label>
-                </div>
+                @if (!_comparing)
+                {
+                    <div class="plans__file">
+                        @if (Plans.Plans.Count > 0)
+                        {
+                            <MudButton Variant="Variant.Text" Size="Size.Small" OnClick="ExportAsync">@L["Export"]</MudButton>
+                        }
+                        <InputFile id="@_fileId" class="plans__file-input" accept=".json,application/json" OnChange="ImportAsync" />
+                        <label for="@_fileId" class="plans__import">@L["Import"]</label>
+                    </div>
+                }
                 <MudButton Variant="Variant.Outlined" Size="Size.Small" Class="plans__done" OnClick="Close" @onkeydown="OnDoneKeyDown">@L["Done"]</MudButton>
             </div>
         }
@@ -154,6 +179,11 @@
     [Parameter]
     public EventCallback OnChanged { get; set; }
 
+    // Whether the address asks the panel to open on the comparison, /plan?plans=compare. It opens it once, as
+    // the address arrives: while the address keeps asking, closing the panel or going back to the list stays.
+    [Parameter]
+    public bool OpenOnCompare { get; set; }
+
     // Whether the river has changes no saved plan holds, which « Save this plan » shows.
     internal bool Unsaved => Plans.HasUnsavedChanges(Inputs);
 
@@ -166,17 +196,26 @@
     private IReadOnlyList<PlanRow> _rows = [];
     private MudButton? _button;
     private MudButton? _cancel;
+    private MudButton? _compare;
+    private MudButton? _back;
     private ElementReference _panel;
     private bool _open;
     private bool _focusPanel;
     private bool _focusButton;
     private bool _focusConfirm;
+    private bool _focusCompare;
+    private bool _comparing;
+    private bool _arrived;
 
     // The row asking to open over unsaved changes, or to delete.
     private (string Id, bool Delete)? _confirming;
 
     protected override void OnParametersSet()
     {
+        if (OpenOnCompare && !_arrived)
+            (_open, _comparing, _confirming, _imported) = (true, true, null, null);
+        _arrived = OpenOnCompare;
+
         if (_open)
             _rows = PlanRow.From(Plans);
     }
@@ -195,6 +234,17 @@
             _focusConfirm = false;
             if (_cancel is not null)
                 await _cancel.FocusAsync();
+        }
+
+        // Back from the comparison, the focus returns to the button that opened it (or the panel, when the
+        // list has not two plans to compare any more).
+        if (_focusCompare)
+        {
+            _focusCompare = false;
+            if (_compare is not null)
+                await _compare.FocusAsync();
+            else
+                await _panel.FocusAsync();
         }
 
         if (_focusButton)
@@ -223,6 +273,7 @@
     private void Toggle()
     {
         _open = !_open;
+        _comparing = false;
         _focusPanel = _open;
         _confirming = null;
         _imported = null;
@@ -254,9 +305,26 @@
         await OnChanged.InvokeAsync();
     }
 
+    // The comparison takes the list's place in the panel; its title takes the focus (CompareTab).
+    private void Compare()
+    {
+        _comparing = true;
+        _confirming = null;
+        _imported = null;
+    }
+
+    // Back to the list, the focus on the button that opened the comparison.
+    private void BackToPlans()
+    {
+        _comparing = false;
+        _focusCompare = true;
+        Refresh();
+    }
+
     private void Close()
     {
         _open = false;
+        _comparing = false;
         _confirming = null;
         _focusButton = true;
     }
@@ -271,7 +339,7 @@
     private void OnDoneKeyDown(KeyboardEventArgs e)
     {
         if (e is { Key: "Tab", ShiftKey: false })
-            _open = false;
+            (_open, _comparing) = (false, false);
     }
 
     private async Task Star(PlanRow row)

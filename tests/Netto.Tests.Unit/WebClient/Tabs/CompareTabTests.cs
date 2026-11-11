@@ -26,15 +26,19 @@ public class CompareTabTests
         (html.Contains("There is no plan to compare yet"), html.Contains("<select"), html.Contains("<table")).ShouldBe((true, false, false));
     }
 
-    // The head stays when there is nothing to compare, so the page always opens on its title.
+    // The title stays when there is nothing to compare, so the comparison always opens on it; it is an h2,
+    // under the page's h1 (the head is TabHead's, and the comparison is not a view of its own).
     [Fact]
-    public async Task Compare_everyState_drawsTheHeadOnce()
+    public async Task Compare_everyState_drawsItsTitleOnceAsAnH2AndNoH1()
     {
-        var heads = new List<int>();
+        var titles = new List<(int H2, int H1)>();
         foreach (var plans in new[] { Saved(), Saved(RiverInputs.Example), Saved(RiverInputs.Example, BestPay) })
-            heads.Add(Regex.Count(await RenderTabAsync(plans), "<h1[^>]*>Compare plans</h1>"));
+        {
+            var html = await RenderTabAsync(plans);
+            titles.Add((Regex.Count(html, "<h2 id=\"compare-title\"[^>]*tabindex=\"-1\"[^>]*>Compare plans</h2>"), Regex.Count(html, "<h1")));
+        }
 
-        heads.ShouldBe([1, 1, 1]);
+        titles.ShouldBe([(1, 0), (1, 0), (1, 0)]);
     }
 
     [Fact]

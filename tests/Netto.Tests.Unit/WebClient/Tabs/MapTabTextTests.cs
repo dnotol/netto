@@ -34,12 +34,6 @@ public class MapTabTextTests
         _ => throw new ArgumentOutOfRangeException(nameof(module), module, null),
     };
 
-    [Fact]
-    public void MapTabResx_head_isTheTabsName()
-    {
-        Resources.Get("Title").ShouldBe("Plan");
-    }
-
     // A module on the map is named as its card is.
     [Theory]
     [MemberData(nameof(Modules))]

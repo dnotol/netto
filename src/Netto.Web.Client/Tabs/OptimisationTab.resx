@@ -13,7 +13,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Title" xml:space="preserve">
-    <value>Optimisation</value>
+    <value>Optimise</value>
   </data>
   <data name="State_StartsAtPay" xml:space="preserve">
     <value>Your plan starts at your pay: enter its company's year to see the moves.</value>
@@ -108,8 +108,8 @@
   <data name="Link_copyright" xml:space="preserve">
     <value>See it on Copyright royalty</value>
   </data>
-  <data name="Link_WhenToPay" xml:space="preserve">
-    <value>See it in When to pay</value>
+  <data name="Link_ByDate" xml:space="preserve">
+    <value>See it by date</value>
   </data>
   <data name="LinkLabel" xml:space="preserve">
     <value>{0}: {1}</value>

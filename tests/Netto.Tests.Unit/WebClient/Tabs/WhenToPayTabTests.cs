@@ -25,7 +25,7 @@ public class WhenToPayTabTests
     {
         var html = await RenderTabAsync(RiverInputs.Example);
 
-        Regex.IsMatch(html, "</header>\\s*<div class=\"calendar\"[^>]*>\\s*<section class=\"calendar__panel\"[^>]*>\\s*<h2[^>]*>Next</h2>\\s*<p class=\"calendar__next\"[^>]*>21 December 2026 · €14,999.89 from the company</p>").ShouldBeTrue();
+        Regex.IsMatch(html, "^\\s*<div class=\"calendar\"[^>]*>\\s*<section class=\"calendar__panel\"[^>]*>\\s*<h2[^>]*>Next</h2>\\s*<p class=\"calendar__next\"[^>]*>21 December 2026 · €14,999.89 from the company</p>").ShouldBeTrue();
     }
 
     [Fact]
@@ -141,13 +141,13 @@ public class WhenToPayTabTests
             .ShouldBe((true, false));
     }
 
-    // A tab, not a card: no fold to open, its title the page's h1.
+    // A lens, not a card: no fold to open, and no head of its own: My plan's h1 is the page's, drawn above the lens.
     [Fact]
-    public async Task WhenToPay_isNoFoldAndOpensOnItsTitle()
+    public async Task WhenToPay_isNoFoldAndHoldsNoHeadOfItsOwn()
     {
         var html = await RenderTabAsync(RiverInputs.Example);
 
-        (html.Contains("fold__toggle"), Regex.IsMatch(html, "<h1[^>]*>When to pay</h1>")).ShouldBe((false, true));
+        (html.Contains("fold__toggle"), html.Contains("<h1"), html.Contains("<header")).ShouldBe((false, false, false));
     }
 
     private static int Count(string html, string text) => html.Split(text).Length - 1;

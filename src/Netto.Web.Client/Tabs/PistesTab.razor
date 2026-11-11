@@ -1,0 +1,10 @@
+@inject IStringLocalizer<PistesTab> L
+
+@* The Ideas view (« Pistes »): what could I add, the levers the plan does not use yet, each a question to the
+   viewer before it is a gain (docs/architecture/decisions/2026-11-11-three-views-one-question-each.md).
+   Until something finds and prices them, it opens on its head and says what it is for and that nothing is
+   measured here yet: no figure, no count, no promise of when. The head is drawn once, first, as every
+   tab's: it takes the focus when the viewer arrives (TabHead). *@
+<TabHead Title="@L["Title"]" />
+
+<p class="pistes__empty">@L["Empty"]</p>

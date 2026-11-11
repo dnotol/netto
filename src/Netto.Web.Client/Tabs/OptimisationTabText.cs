@@ -57,7 +57,7 @@ internal static class OptimisationTabText
     public static string Why(MoveReasonKind kind) => $"Why_{kind}";
 
     // Where a move links to, by the card's name or the tab's: « See it on The split ».
-    public static string Link(MoveLink link) => link.Card is { } card ? $"Link_{card}" : $"Link_{link.Tab}";
+    public static string Link(MoveLink link) => link.Card is { } card ? $"Link_{card}" : $"Link_{link.Lens}";
 
     // The link's name for a screen reader, its text then the move it is about: « See it on The split: {move} ».
     public const string LinkLabel = "LinkLabel";

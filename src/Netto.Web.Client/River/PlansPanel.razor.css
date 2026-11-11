@@ -84,6 +84,12 @@
     box-shadow: var(--netto-shadow-float);
 }
 
+    /* The comparison needs room for two plans side by side: the panel widens, to the window's width at most,
+       and keeps within the window's height, scrolling inside. */
+    .plans__panel--compare {
+        width: min(46rem, calc(100vw - 2rem));
+    }
+
     /* A display set on the panel would otherwise win over the hidden attribute. */
     .plans__panel[hidden] {
         display: none;
@@ -273,3 +279,14 @@
         .plans__foot ::deep .plans__done:focus-visible {
             border-color: var(--netto-gold);
         }
+
+/* « Compare plans » under the list, « Back to plans » above the comparison: small buttons on the panel's own
+   surface, at the panel's left. */
+.plans__compare,
+.plans__back {
+    display: flex;
+}
+
+.plans__back {
+    margin: -0.25rem 0 -0.25rem -0.5rem;
+}
