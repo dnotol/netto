@@ -151,6 +151,8 @@ public class MovesViewTests
 
     // The example with a royalty following the pay, unsaved: the band's 62,624.32, the pay and the company's
     // payment, 3,309.67 more, 65,933.99 once applied.
+    // These are the engine's own figures for the example plan, a regression pin matching the band on
+    // 2026-11-11, not a Tax-Calc value.
     [Fact]
     public void ApplyAll_royaltyFollowingThePay_landsOn65933_99()
     {

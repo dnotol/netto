@@ -1313,6 +1313,8 @@ public class RiverInputsTests
     // The example with a royalty following the pay at a 25% creative share, unsaved: the moves start from
     // what the river leaves, 62,624.32, the band's figure, and retune the pay and the company's advance
     // payment by 21 December, 3,309.67 in all; vouchers out of the plan are never proposed.
+    // These are the engine's own figures for the example plan, a regression pin matching the band on
+    // 2026-11-11, not a Tax-Calc value.
     [Fact]
     public void FindMoves_royaltyFollowingThePay_startsFromTheRiversPocketAndRetunesThePayAndThePayment()
     {

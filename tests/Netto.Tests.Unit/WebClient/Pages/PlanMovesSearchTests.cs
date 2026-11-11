@@ -65,6 +65,8 @@ public class PlanMovesSearchTests
     // of the time added to the river and not saved. The tab said « this plan: 61,975.74 » while the band said
     // 62,624.32: the moves were measured from Today. They are measured from the plan on screen, whatever is
     // starred, and the vouchers, out of the plan, are no move.
+    // These are the engine's own figures for the example plan, a regression pin matching the band on
+    // 2026-11-11, not a Tax-Calc value.
     [Fact]
     public async Task Plan_riverEditedWithTodayStarred_measuresTheMovesFromThePlanOnScreen()
     {
