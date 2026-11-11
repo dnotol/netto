@@ -44,10 +44,11 @@ public class PlanWhenToPayTests
         ((await page.FindAllAsync<WhenToPaySection>()).Count, (await page.FindAllAsync<MapTab>()).Count, page.Errors.Count).ShouldBe((1, 0, 0));
     }
 
-    // Opened at the section, the title does not take the focus, the section's heading does: once, then once
-    // more when the moves, found after the paint, have pushed the section down (OnAfterRenderAsync).
+    // Opened at the section, the title does not take the focus, the section's heading does, once: the moves,
+    // found after the paint, never take it again, so a viewer who has gone into a field of the section is not
+    // pulled back to its heading mid-edit.
     [Fact]
-    public async Task Plan_openedAtTheSection_focusesItOnceAndAgainWhenTheMovesAreFound()
+    public async Task Plan_openedAtTheSection_focusesItOnceAndNeverAgainWhenTheMovesAreFound()
     {
         await using var page = LivePlan.At(Section, new BrowserStorage(), holdPaint: true);
 
@@ -55,7 +56,7 @@ public class PlanWhenToPayTests
         var onLoad = page.Focuses;
         await page.PaintAsync();
 
-        (onLoad, page.Focuses - onLoad, page.Errors.Count).ShouldBe((1, 1, 0));
+        (onLoad, page.Focuses - onLoad, page.Errors.Count).ShouldBe((1, 0, 0));
     }
 
     // Opened at Optimise alone, the title takes the focus and the section none, before or after the moves.

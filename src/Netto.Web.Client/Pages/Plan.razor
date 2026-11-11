@@ -173,10 +173,8 @@
     private PistesSource _pistes = default!;
     private readonly CardArrival _arrival = new();
     private readonly SectionArrival _sectionArrival = new();
-    // The When to pay section is to take the focus at the next render, and again once the moves above it are
-    // found if the page arrived while they were still looked for, their list pushing the section down.
+    // The When to pay section is to take the focus at the next render.
     private bool _focusCalendar;
-    private bool _refocusCalendar;
     private MapChoice? _mapChosen = MapChoice.Of(RiverModule.CompanyYear);
     private bool _viewerChose;
 
@@ -211,9 +209,9 @@
         if (_arrival.Take(_tab, Card) is { } card && MapChoice.Named(card, MapView.ModulesOf(_inputs)) is { } named)
             (_mapChosen, _viewerChose) = (named, false);
         if (_sectionArrival.Take(_tab, ShowSection))
-            (_focusCalendar, _refocusCalendar) = (true, _moves.Searching(Today));
+            _focusCalendar = true;
         else if (_tab != PlanTab.Optimisation)
-            (_focusCalendar, _refocusCalendar) = (false, false);
+            _focusCalendar = false;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -246,8 +244,6 @@
         // what it found for the plan on screen (MovesSource).
         if (await _moves.SearchOncePaintedAsync(Today, _tab == PlanTab.Optimisation, () => JS.InvokeVoidAsync("nettoPaint.after")))
         {
-            // Arrived at the section while the moves were looked for: their list has pushed it down since.
-            (_focusCalendar, _refocusCalendar) = (_refocusCalendar && _tab == PlanTab.Optimisation, false);
             StateHasChanged();
             return;
         }

@@ -36,7 +36,7 @@ public class TabBadgesTests
     {
         var total = MovesView.Of(RiverInputs.Example, On23October).Total;
 
-        Badges(RiverInputs.Example, On23October).GetValueOrDefault(PlanTab.Optimisation)![0]
+        Badges(RiverInputs.Example, On23October).GetValueOrDefault(PlanTab.Optimisation).ShouldNotBeNull()[0]
             .ShouldBe(new TabBadge(TabBadgeKind.MoreThanPlan, Amount: total));
     }
 
@@ -47,7 +47,7 @@ public class TabBadgesTests
         var run = RiverInputs.Example.Run();
         var moves = MovesView.Searching(RiverInputs.Example);
 
-        TabBadges.Of(run, moves, CalendarView.From(RiverInputs.Example, run, On23October), null).GetValueOrDefault(PlanTab.Optimisation)![0]
+        TabBadges.Of(run, moves, CalendarView.From(RiverInputs.Example, run, On23October), null).GetValueOrDefault(PlanTab.Optimisation).ShouldNotBeNull()[0]
             .ShouldBe(new TabBadge(TabBadgeKind.Searching));
     }
 
@@ -57,7 +57,7 @@ public class TabBadgesTests
     {
         var planned = MovesView.Of(RiverInputs.Example, On23October).ApplyAll(RiverInputs.Example);
 
-        Badges(planned, On23October).GetValueOrDefault(PlanTab.Optimisation)!.ShouldNotContain(badge => badge.Kind == TabBadgeKind.MoreThanPlan);
+        Badges(planned, On23October).GetValueOrDefault(PlanTab.Optimisation).ShouldNotBeNull().ShouldNotContain(badge => badge.Kind == TabBadgeKind.MoreThanPlan);
     }
 
     [Fact]
@@ -99,7 +99,7 @@ public class TabBadgesTests
 
         var badges = Badges(river, On23October);
 
-        badges.GetValueOrDefault(PlanTab.Optimisation)!.Select(badge => badge.Kind).ShouldBe([TabBadgeKind.MoreThanPlan, TabBadgeKind.BilledRefused]);
+        badges.GetValueOrDefault(PlanTab.Optimisation).ShouldNotBeNull().Select(badge => badge.Kind).ShouldBe([TabBadgeKind.MoreThanPlan, TabBadgeKind.BilledRefused]);
         badges.ContainsKey(PlanTab.Plan).ShouldBeFalse();
     }
 
