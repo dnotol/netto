@@ -5,29 +5,29 @@ using Shouldly;
 
 namespace Netto.Tests.WebClient.Tabs;
 
-public class WhenToPayTabTextTests
+public class WhenToPaySectionTextTests
 {
-    // The name IStringLocalizer<WhenToPayTab> reads Tabs/WhenToPayTab.resx under.
-    private static readonly ResxText Resources = ResxText.For<WhenToPayTab>();
+    // The name IStringLocalizer<WhenToPaySection> reads Tabs/WhenToPaySection.resx under.
+    private static readonly ResxText Resources = ResxText.For<WhenToPaySection>();
 
     private static readonly DateOnly On21December = new(2026, 12, 21);
 
     [Fact]
-    public void WhenToPayTabResx_everyCompanyState_hasAText()
+    public void WhenToPaySectionResx_everyCompanyState_hasAText()
     {
         Enum.GetValues<SurchargeState>()
             .SelectMany(state => new[] { new CalendarTax<SurchargeState>(state, 1m, 1m, On21December), new CalendarTax<SurchargeState>(state, 1m, 0m, null) })
-            .Select(WhenToPayTabText.Company)
+            .Select(WhenToPaySectionText.Company)
             .Where(key => Resources.Get(key) is null)
             .ShouldBeEmpty();
     }
 
     [Fact]
-    public void WhenToPayTabResx_everyDirectorState_hasAText()
+    public void WhenToPaySectionResx_everyDirectorState_hasAText()
     {
         Enum.GetValues<TaxSurchargeState>()
             .SelectMany(state => new[] { new CalendarTax<TaxSurchargeState>(state, 1m, 1m, On21December), new CalendarTax<TaxSurchargeState>(state, 1m, 0m, null) })
-            .Select(WhenToPayTabText.Director)
+            .Select(WhenToPaySectionText.Director)
             .Where(key => Resources.Get(key) is null)
             .ShouldBeEmpty();
     }
@@ -46,7 +46,7 @@ public class WhenToPayTabTextTests
             FundFeeEachQuarter = (decimal)fee,
         };
 
-        var key = WhenToPayTabText.Contributions(quarters);
+        var key = WhenToPaySectionText.Contributions(quarters);
 
         (key, Resources.Get(key) is not null).ShouldBe((expected, true));
     }
@@ -62,7 +62,7 @@ public class WhenToPayTabTextTests
     {
         var next = company == 0 && director == 0 ? null : new CalendarRow(On21December, false, 0m, (decimal)company, 0m, (decimal)director);
 
-        var text = Resources.Format(WhenToPayTabText.Next(next),
+        var text = Resources.Format(WhenToPaySectionText.Next(next),
             next is null ? "" : Netto.Web.Client.Formats.Day(next.Date), Netto.Web.Client.Formats.Euros(next?.Company ?? 0m),
             Netto.Web.Client.Formats.Euros(next?.Director ?? 0m), 2026);
 
@@ -78,7 +78,7 @@ public class WhenToPayTabTextTests
     [InlineData(false, false, "Nothing")]
     public void Payers_whoPaysByTheNextDeadline_isOneOfFour(bool company, bool director, string expected)
     {
-        WhenToPayTabText.Payers(company, director).ToString().ShouldBe(expected);
+        WhenToPaySectionText.Payers(company, director).ToString().ShouldBe(expected);
     }
 
     // A row with an amount on a side has that payer, whatever the other pays.
@@ -88,30 +88,30 @@ public class WhenToPayTabTextTests
     [InlineData(15_000, 14_317.50, "Next_Both")]
     public void Next_row_isNamedByTheSidesThatPay(double company, double director, string expected)
     {
-        WhenToPayTabText.Next(new CalendarRow(On21December, false, 0m, (decimal)company, 0m, (decimal)director)).ShouldBe(expected);
+        WhenToPaySectionText.Next(new CalendarRow(On21December, false, 0m, (decimal)company, 0m, (decimal)director)).ShouldBe(expected);
     }
 
     [Fact]
     public void Next_noRow_isNothing()
     {
-        WhenToPayTabText.Next(null).ShouldBe("Next_Nothing");
+        WhenToPaySectionText.Next(null).ShouldBe("Next_Nothing");
     }
 
     [Theory]
     [InlineData(1)]
     [InlineData(-1)]
     [InlineData(0)]
-    public void WhenToPayTabResx_everyBalance_hasAText(int balance)
+    public void WhenToPaySectionResx_everyBalance_hasAText(int balance)
     {
-        Resources.Get(WhenToPayTabText.CompanyBalance(balance)).ShouldNotBeNull();
-        Resources.Get(WhenToPayTabText.DirectorBalance(balance)).ShouldNotBeNull();
-        Resources.Get(WhenToPayTabText.Regularisation(balance)).ShouldNotBeNull();
+        Resources.Get(WhenToPaySectionText.CompanyBalance(balance)).ShouldNotBeNull();
+        Resources.Get(WhenToPaySectionText.DirectorBalance(balance)).ShouldNotBeNull();
+        Resources.Get(WhenToPaySectionText.Regularisation(balance)).ShouldNotBeNull();
     }
 
     [Fact]
     public void DirectorBalance_toPay_saysTheTaxYearAndTheAmount()
     {
-        var text = Resources.Format(WhenToPayTabText.DirectorBalance(1_436.06m), 2027, "€1,436.06");
+        var text = Resources.Format(WhenToPaySectionText.DirectorBalance(1_436.06m), 2027, "€1,436.06");
 
         text.ShouldBe("On your assessment for tax year 2027: €1,436.06 to pay, on the day the administration sets.");
     }
@@ -119,7 +119,7 @@ public class WhenToPayTabTextTests
     [Fact]
     public void Company_dueWithADeadlineOpen_saysWhatMoreCancelsItByWhen()
     {
-        var text = Resources.Format(WhenToPayTabText.Company(new CalendarTax<SurchargeState>(SurchargeState.Due, 675m, 15_000m, On21December)),
+        var text = Resources.Format(WhenToPaySectionText.Company(new CalendarTax<SurchargeState>(SurchargeState.Due, 675m, 15_000m, On21December)),
             "€675.00", "€15,000.00", "21 December 2026", 2026);
 
         text.ShouldBe("The company's payments leave a surcharge of €675.00 on its corporate tax: €15,000.00 more by 21 December 2026 cancels it.");
@@ -135,7 +135,7 @@ public class WhenToPayTabTextTests
     {
         var run = new PayRun(new DateOnly(2026, firstMonth, 1), new DateOnly(2026, lastMonth, 1), 4_166.67m, 882.47m, 3_284.20m);
 
-        var text = Resources.Format(WhenToPayTabText.PayLine(run, runs), Formats.Euros(run.GrossPay), Formats.Euros(run.Withholding), Formats.Euros(run.NetPaid),
+        var text = Resources.Format(WhenToPaySectionText.PayLine(run, runs), Formats.Euros(run.GrossPay), Formats.Euros(run.Withholding), Formats.Euros(run.NetPaid),
             Formats.Month(2026, firstMonth), Formats.Month(2026, lastMonth));
 
         text.ShouldBe(expected);

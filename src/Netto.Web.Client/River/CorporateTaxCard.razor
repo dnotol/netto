@@ -13,7 +13,7 @@
    behind two disclosures after it, each folded to a line that states it: the company, and its
    advance payments with the surcharge they leave. The payments are taken while typing, like
    revenue, since nothing bounds them; the card says why a surcharge is due or why none is, never what
-   to pay to cancel it (Optimise's advance-payment move and My plan by date). *@
+   to pay to cancel it (Optimise's advance-payment move and its When to pay section). *@
 <ModuleCard Name="corporate-tax" Title="@L["Title"]" Summary="@Summary" PassesOn="@_view?.PassesOn" Waiting="Inputs.Company is null" Refused="@Refused"
             Sources="@(_view?.Details ?? [])" IncomeYear="Inputs.IncomeYear" DetailsLabel="@L["DetailsLabel"]" SourcesTitle="@L["SourcesTitle", Inputs.IncomeYear]">
     <RefusedMessage Error="@Refused" />

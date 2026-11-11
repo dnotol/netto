@@ -5,34 +5,42 @@
    role=tab: it opens directly, in a new browser tab too, and back and forward move between tabs. The
    current one says so (aria-current="page") and is underlined in gold, an active state, and set
    heavier, so colour is not its only sign. The page they lead to is the same one, so the river's inputs
-   stay as they are from one tab to the next. After a tab's name, its badge (TabBadges): shown short,
-   +€3,054.18 or 21 Dec or 1 · 3? (only the counts that are not zero) or a warning, or « … » while the moves are looked for or an idea measured, which a
-   screen reader skips, and said in full out of sight, so the link's name is the tab's name followed by
-   what its badge means. My plan's is the next deadline, which stays in the band. *@
+   stay as they are from one tab to the next. After a tab's name, its badges (TabBadges): shown short,
+   +€3,054.18 or 1 · 3? (only the counts that are not zero) or a warning, or « … » while the moves are looked for
+   or an idea measured, which a screen reader skips, and said in full out of sight, so the link's name is the
+   tab's name followed by what its badges mean. Optimise's second badge, the next deadline (21 Dec) or a
+   refusal of what the fund bills, belongs to its When to pay section: a link cannot hold another, so it is a
+   link of its own beside the tab's, to the section (plan/optimisation?show=when), named by itself in full,
+   « When to pay: next advance payment by 21 December 2026 ». It stays in the band on every view. Following it
+   from the address it names already, the page is told (DeadlineChosen) so that the focus still goes to the
+   section. *@
 <nav class="plan-tab-bar" aria-label="@L[PlanTabBarText.Label]">
     <ul class="plan-tab-bar__tabs">
         @foreach (var tab in PlanTabRoutes.Order)
         {
-            <li>
+            var badges = Badges.GetValueOrDefault(tab) ?? [];
+            <li class="plan-tab-bar__item">
                 <a href="@PlanTabRoutes.Href(tab)" class="plan-tab-bar__tab" aria-current="@(tab == Current ? "page" : null)">
                     <span class="plan-tab-bar__name">@L[PlanTabBarText.Name(tab)]</span>
-                    @if (Badges.GetValueOrDefault(tab) is { } badge)
+                    @foreach (var badge in badges.Where(badge => !badge.LinksToSection))
                     {
                         <span class="plan-tab-bar__badge plan-tab-bar__badge--@badge.Kind.ToString().ToLowerInvariant()" aria-hidden="true">
-                            @if (badge.Kind == TabBadgeKind.Refused)
-                            {
-                                <MudIcon Icon="@Icons.Material.Rounded.WarningAmber" Size="Size.Small" Color="Color.Warning" />
-                            }
-                            else
-                            {
-                                @Shown(badge)
-                            }
+                            @Drawn(badge)
                         </span>
                         @* Razor drops the whitespace next to a code block: without it, a screen reader reads
                            the name run into the badge. *@
                         @(" ")<span class="plan-tab-bar__spoken">@Spoken(badge)</span>
                     }
                 </a>
+                @foreach (var badge in badges.Where(badge => badge.LinksToSection))
+                {
+                    <a href="@PlanTabRoutes.WhenToPayHref" class="plan-tab-bar__deadline" @onclick="DeadlineChosen">
+                        <span class="plan-tab-bar__badge plan-tab-bar__badge--@badge.Kind.ToString().ToLowerInvariant()" aria-hidden="true">
+                            @Drawn(badge)
+                        </span>
+                        @(" ")<span class="plan-tab-bar__spoken">@Spoken(badge)</span>
+                    </a>
+                }
             </li>
         }
     </ul>
@@ -43,9 +51,26 @@
     [Parameter, EditorRequired]
     public PlanTab Current { get; set; }
 
-    // Each tab's badge, none for a tab with nothing to say.
+    // Each tab's badges, none for a tab with nothing to say.
     [Parameter]
-    public IReadOnlyDictionary<PlanTab, TabBadge> Badges { get; set; } = new Dictionary<PlanTab, TabBadge>();
+    public IReadOnlyDictionary<PlanTab, IReadOnlyList<TabBadge>> Badges { get; set; } = new Dictionary<PlanTab, IReadOnlyList<TabBadge>>();
+
+    // The badge that leads to the When to pay section followed, as a link is: the page moves the focus to the
+    // section even where the address names it already.
+    [Parameter]
+    public EventCallback DeadlineChosen { get; set; }
+
+    private RenderFragment Drawn(TabBadge badge) =>
+        @<text>
+            @if (badge.Kind is TabBadgeKind.Refused or TabBadgeKind.BilledRefused)
+            {
+                <MudIcon Icon="@Icons.Material.Rounded.WarningAmber" Size="Size.Small" Color="Color.Warning" />
+            }
+            else
+            {
+                @Shown(badge)
+            }
+        </text>;
 
     private string Shown(TabBadge badge) => badge.Kind switch
     {

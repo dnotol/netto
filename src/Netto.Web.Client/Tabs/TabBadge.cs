@@ -13,8 +13,11 @@ public enum TabBadgeKind
     // What the moves from the plan on screen add to it (Amount).
     MoreThanPlan,
 
-    // The next advance payment's deadline (Date).
+    // The next advance payment's deadline (Date), a link to the When to pay section of Optimise.
     NextBy,
+
+    // What the fund bills, a field of the When to pay section, is refused: a link to the section.
+    BilledRefused,
 
     // The moves are being looked for (MovesSource).
     Searching,
@@ -50,8 +53,13 @@ internal static class PistesCountText
     }
 }
 
-// One tab's badge: its kind and the figure it shows, an amount, a date or counts.
-public sealed record TabBadge(TabBadgeKind Kind, decimal Amount = 0m, DateOnly Date = default, int Count = 0, int Questions = 0);
+// One badge of a tab: its kind and the figure it shows, an amount, a date or counts.
+public sealed record TabBadge(TabBadgeKind Kind, decimal Amount = 0m, DateOnly Date = default, int Count = 0, int Questions = 0)
+{
+    // Whether the badge is a link of its own, to the When to pay section, beside its tab's link rather than in
+    // it: a link cannot hold another.
+    public bool LinksToSection => Kind is TabBadgeKind.NextBy or TabBadgeKind.BilledRefused;
+}
 
 // The pistes the Pistes view found for the plan on screen: how many are priced and how many questions wait
 // for the viewer. Supplied by whatever searches them (the page's Pistes); while nothing does there are
@@ -61,30 +69,37 @@ public sealed record PistesCount(int Priced, int Questions)
     public bool IsEmpty => Priced == 0 && Questions == 0;
 }
 
-// The tabs' badges, from the views their contents draw, so a badge says only what its tab shows: the
-// moves' total on Optimisation once they add something to the plan on screen (MovesView), or that they
-// are being looked for; on My plan the next advance payment's date while one is left (CalendarView.Next,
-// the deadline the by-date lens shows, staying in the band), and, which wins over a date, that the river
-// or what the fund bills is refused; on Pistes how many are priced and how many questions wait, once
-// something supplies them, or that one is still being measured, as Optimisation's says of the moves, with no
-// count that would change once it is found. A tab with nothing to say has none.
+// The tabs' badges, from the views their contents draw, so a badge says only what its tab shows: on Optimise
+// the moves' total once they add something to the plan on screen (MovesView), or that they are being looked
+// for, then what its When to pay section says, the next advance payment's date while one is left
+// (CalendarView.Next) or that what the fund bills is refused, which wins over a date; on My plan that the
+// river is refused; on Pistes how many are priced and how many questions wait, once something supplies them,
+// or that one is still being measured, as Optimisation's says of the moves, with no count that would change
+// once it is found. A tab with nothing to say has none; one with two says the gain first.
 internal static class TabBadges
 {
-    public static IReadOnlyDictionary<PlanTab, TabBadge> Of(RiverRun run, MovesView moves, CalendarView? calendar, PistesCount? pistes, bool pistesSearching = false)
+    public static IReadOnlyDictionary<PlanTab, IReadOnlyList<TabBadge>> Of(RiverRun run, MovesView moves, CalendarView? calendar, PistesCount? pistes, bool pistesSearching = false)
     {
-        var badges = new Dictionary<PlanTab, TabBadge>();
-        if (run.Error is not null || calendar is { BilledRefused: not null })
-            badges[PlanTab.Plan] = new TabBadge(TabBadgeKind.Refused);
-        else if (calendar?.Next is { } next)
-            badges[PlanTab.Plan] = new TabBadge(TabBadgeKind.NextBy, Date: next.Date);
+        var badges = new Dictionary<PlanTab, IReadOnlyList<TabBadge>>();
+        if (run.Error is not null)
+            badges[PlanTab.Plan] = [new TabBadge(TabBadgeKind.Refused)];
+
+        List<TabBadge> optimisation = [];
         if (moves.State == MovesState.Searching)
-            badges[PlanTab.Optimisation] = new TabBadge(TabBadgeKind.Searching);
+            optimisation.Add(new TabBadge(TabBadgeKind.Searching));
         else if (moves.State == MovesState.Moves)
-            badges[PlanTab.Optimisation] = new TabBadge(TabBadgeKind.MoreThanPlan, Amount: moves.Total);
+            optimisation.Add(new TabBadge(TabBadgeKind.MoreThanPlan, Amount: moves.Total));
+        if (calendar is { BilledRefused: not null })
+            optimisation.Add(new TabBadge(TabBadgeKind.BilledRefused));
+        else if (calendar?.Next is { } next)
+            optimisation.Add(new TabBadge(TabBadgeKind.NextBy, Date: next.Date));
+        if (optimisation.Count > 0)
+            badges[PlanTab.Optimisation] = optimisation;
+
         if (pistesSearching)
-            badges[PlanTab.Pistes] = new TabBadge(TabBadgeKind.PistesSearching);
+            badges[PlanTab.Pistes] = [new TabBadge(TabBadgeKind.PistesSearching)];
         else if (pistes is { IsEmpty: false } found)
-            badges[PlanTab.Pistes] = new TabBadge(TabBadgeKind.Pistes, Count: found.Priced, Questions: found.Questions);
+            badges[PlanTab.Pistes] = [new TabBadge(TabBadgeKind.Pistes, Count: found.Priced, Questions: found.Questions)];
 
         return badges;
     }

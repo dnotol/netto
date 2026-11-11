@@ -378,7 +378,7 @@ internal enum RateChoice
 // them. The
 // engine says what the withholding and the advance payments leave on its tax; the surcharge and the
 // bonus they earn are drains, from the pay's steps; what more to pay by a deadline leaves none due is the
-// calendar's (PaymentCalendar.FirstOpen, TopUps), which the moves and the by-date lens read. Each line says its share
+// calendar's (PaymentCalendar.FirstOpen, TopUps), which the moves and the When to pay section read. Each line says its share
 // of what the pay costs the company, and the card what reaches the pocket of it (ToYou). A copyright
 // royalty's part beyond its limits is taxed as pay and paid besides the payslip
 // (GrossToNetResult.RequalifiedPay): what flows in is then the pay's cost and that part, which the
@@ -461,7 +461,7 @@ internal sealed record WithheldFieldView(decimal Amount, InputOrigin Origin)
 }
 
 // What the withholding and the advance payments leave on the income tax on the pay.
-internal enum TaxSurchargeState
+public enum TaxSurchargeState
 {
     // In the first three years of a first self-employed activity, none is due.
     Exempt,
@@ -575,7 +575,7 @@ internal static class SurchargeStates
 }
 
 // What the advance payments leave on the corporate tax.
-internal enum SurchargeState
+public enum SurchargeState
 {
     // A small company in its first three financial years owes none.
     Exempt,
@@ -651,7 +651,7 @@ internal sealed record DividendView(
 // every input, so an input no case names is a bug rather than a refusal shown on no field. The pay is
 // Director pay's, with the company's year or without it, and so is the key formula's
 // month of it; the royalty, fixed or following the pay, and its creative share are Copyright royalty's; the
-// income year, which no card holds, and what the fund bills, which the My plan's by-date lens shows itself, the river's;
+// income year, which no card holds, and what the fund bills, which Optimise's When to pay section shows itself, the river's;
 // the partner's income and the dependants the Household card's, the company's year there or not.
 internal static class RiverErrors
 {
@@ -679,7 +679,7 @@ internal static class RiverErrors
 // it as a parameter.
 public enum RiverModule
 {
-    // Nothing a card holds: the income year, and what the fund bills, which the My plan's by-date lens shows.
+    // Nothing a card holds: the income year, and what the fund bills, which Optimise's When to pay section shows.
     River,
 
     CompanyYear,

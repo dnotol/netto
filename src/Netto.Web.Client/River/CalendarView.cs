@@ -3,7 +3,7 @@ using Netto.Core.Rules;
 
 namespace Netto.Web.Client.River;
 
-// What the My plan's by-date lens draws: the payments the plan in the river implies (PaymentCalendar), seen on
+// What the When to pay section of Optimise draws, and its tab's badge says: the payments the plan in the river implies (PaymentCalendar), seen on
 // the date the card is shown. Rows are the deadlines by which the company or the director pays
 // something or needs to, in their order; a deadline with nothing paid and nothing needed is left out,
 // as a drain of nothing is. Company is null for a river that starts at the pay, and each tax says
@@ -11,7 +11,7 @@ namespace Netto.Web.Client.River;
 // open with something to pay. Pay is the pay statement's months in runs that pay the same, and
 // Balances what each assessment leaves after the year, the company's first. The view only selects and
 // orders the engine's figures.
-internal sealed record CalendarView(
+public sealed record CalendarView(
     int IncomeYear,
     IReadOnlyList<CalendarRow> Rows,
     CalendarTax<SurchargeState>? Company,
@@ -74,7 +74,7 @@ internal sealed record CalendarView(
 
 // One deadline: its date, whether it is past, what the company and the director pay by it as the plan
 // stands, and what more by it cancels each surcharge (only at the first deadline still open).
-internal sealed record CalendarRow(DateOnly Date, bool Past, decimal CompanyPlanned, decimal CompanyMore, decimal DirectorPlanned, decimal DirectorMore)
+public sealed record CalendarRow(DateOnly Date, bool Past, decimal CompanyPlanned, decimal CompanyMore, decimal DirectorPlanned, decimal DirectorMore)
 {
     public decimal Company => CompanyPlanned + CompanyMore;
 
@@ -87,7 +87,7 @@ internal sealed record CalendarRow(DateOnly Date, bool Past, decimal CompanyPlan
 // run while every month does. Left is the months not ended yet, the first and the last, none once the
 // year is over. WithheldGiven is the year's withholding the user gave, which the months do not split:
 // they show the key formula's.
-internal sealed record CalendarPay(IReadOnlyList<PayRun> Runs, (DateOnly First, DateOnly Last)? Left, decimal? WithheldGiven)
+public sealed record CalendarPay(IReadOnlyList<PayRun> Runs, (DateOnly First, DateOnly Last)? Left, decimal? WithheldGiven)
 {
     public static CalendarPay Of(IReadOnlyList<CalendarMonth> months, Netto.Core.PersonalTax.Assessment assessment)
     {
@@ -104,7 +104,7 @@ internal sealed record CalendarPay(IReadOnlyList<PayRun> Runs, (DateOnly First, 
 // gross on the payslip, what the key formula withholds and the net paid. The months of one period of
 // the year's withholding rules are one run, and two periods that withhold alike, a pay the formula
 // withholds nothing on, one run too.
-internal sealed record PayRun(DateOnly First, DateOnly Last, decimal GrossPay, decimal Withholding, decimal NetPaid)
+public sealed record PayRun(DateOnly First, DateOnly Last, decimal GrossPay, decimal Withholding, decimal NetPaid)
 {
     public static IReadOnlyList<PayRun> Of(IReadOnlyList<CalendarMonth> months)
     {
@@ -123,7 +123,7 @@ internal sealed record PayRun(DateOnly First, DateOnly Last, decimal GrossPay, d
 
 // What one tax's payments leave: its state as its card says it, the surcharge left, what more by the
 // first deadline still open cancels it, and that deadline, none once every one is past.
-internal sealed record CalendarTax<TState>(TState State, decimal Surcharge, decimal More, DateOnly? OpenDeadline) where TState : struct, Enum
+public sealed record CalendarTax<TState>(TState State, decimal Surcharge, decimal More, DateOnly? OpenDeadline) where TState : struct, Enum
 {
     // A surcharge is left and no deadline is open to cancel it.
     public bool TooLate => More == 0m && Surcharge > 0m && OpenDeadline is null;

@@ -108,8 +108,8 @@
   <data name="Link_copyright" xml:space="preserve">
     <value>See it on Copyright royalty</value>
   </data>
-  <data name="Link_ByDate" xml:space="preserve">
-    <value>See it by date</value>
+  <data name="Link_WhenToPay" xml:space="preserve">
+    <value>See when to pay</value>
   </data>
   <data name="LinkLabel" xml:space="preserve">
     <value>{0}: {1}</value>

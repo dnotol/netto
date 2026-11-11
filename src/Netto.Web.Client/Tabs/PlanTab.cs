@@ -2,9 +2,9 @@ namespace Netto.Web.Client.Tabs;
 
 // The plan page's three views, each answering one question, in the top row of the bar of buckets: My plan,
 // where I stand (the plan, its modules from above with the money between them and the card of the one
-// chosen, or the same plan by date), Optimise, how to do better with the facts I gave (the moves Netto
-// proposes from the plan on screen), and Ideas, what I could add (« Pistes »). Public because the tab
-// bar, a component, takes one as a parameter.
+// chosen), Optimise, how to do better with the facts I gave (the moves Netto proposes from the plan on
+// screen, and under them when the plan's payments fall), and Ideas, what I could add (« Pistes »). Public
+// because the tab bar, a component, takes one as a parameter.
 public enum PlanTab
 {
     Plan,
@@ -12,26 +12,24 @@ public enum PlanTab
     Pistes,
 }
 
-// How My plan is read: by bucket, the map and the chosen card, or by date, when the plan's payments fall
-// (WhenToPayTab). The lens is a state of My plan, not a view, so it is a query on its address.
-public enum PlanLens
-{
-    ByBucket,
-    ByDate,
-}
-
 // Where each view lives: /plan for My plan, /plan/<segment> for the others, one page (Pages/Plan) for
 // all, so the river's inputs and what the page found stay as they are from one view to the next. A new
 // view is a value above, its segment here and its place in the order.
 internal static class PlanTabRoutes
 {
-    // The query that names the lens, /plan?by=date; none is the by-bucket lens.
-    public const string LensQuery = "by";
+    // The query that named My plan's lens, /plan?by=date, before When to pay became a section of Optimise: only
+    // read, to send an old bookmark to the section.
+    public const string LegacyLensQuery = "by";
+
+    // The query that names a section of the Optimise view to arrive at, /plan/optimisation?show=when.
+    public const string ShowQuery = "show";
 
     // The query that opens the Plans panel on arrival, /plan?plans=compare, on its compare mode.
     public const string PlansQuery = "plans";
 
-    private const string ByDate = "date";
+    private const string LegacyByDate = "date";
+
+    private const string When = "when";
 
     private const string Compare = "compare";
 
@@ -41,14 +39,16 @@ internal static class PlanTabRoutes
     // The tab's address from the page's base (<base href="/">), as a link writes it.
     public static string Href(PlanTab tab) => Segment(tab) is { } segment ? $"plan/{segment}" : "plan";
 
-    // The address of a tab read through a lens: only My plan has one, by date as a query, by bucket being
-    // the plan's own address.
-    public static string Href(PlanTab tab, PlanLens lens) =>
-        tab == PlanTab.Plan && lens == PlanLens.ByDate ? $"plan?{LensQuery}={ByDate}" : Href(tab);
+    // The address of When to pay, the section of the Optimise view that holds the payment calendar, as a link
+    // writes it. A query, as a card's is (CardLinks): a fragment would be taken for a navigation.
+    public static string WhenToPayHref { get; } = $"{Href(PlanTab.Optimisation)}?{ShowQuery}={When}";
 
-    // The lens a query value names, by bucket for none or a value Netto has no lens for.
-    public static PlanLens LensFrom(string? value) =>
-        string.Equals(value, ByDate, StringComparison.OrdinalIgnoreCase) ? PlanLens.ByDate : PlanLens.ByBucket;
+    // Whether the query value that names a section asks for When to pay.
+    public static bool OpensWhenToPay(string? show) => string.Equals(show, When, StringComparison.OrdinalIgnoreCase);
+
+    // Where a bookmark to My plan read by date, /plan?by=date, now is: the section. None for any other value.
+    public static string? MovedFromLens(string? by) =>
+        string.Equals(by, LegacyByDate, StringComparison.OrdinalIgnoreCase) ? WhenToPayHref : null;
 
     // The tab a URL's segment after /plan/ names, My plan for none, or none for a segment Netto has no
     // tab for. The router matches a URL whatever its case, so the segment is read the same way.
@@ -56,13 +56,13 @@ internal static class PlanTabRoutes
         ? PlanTab.Plan
         : Order.Where(tab => string.Equals(Segment(tab), segment, StringComparison.OrdinalIgnoreCase)).Cast<PlanTab?>().FirstOrDefault();
 
-    // Where a view folded into another has gone, from its old segment: When to pay is the by-date lens of
-    // My plan, Compare plans a mode of the Plans panel. None for any other segment. Both addresses replace
+    // Where a view folded into another has gone, from its old segment: When to pay is a section of Optimise,
+    // Compare plans a mode of the Plans panel. None for any other segment. Both addresses replace
     // themselves (Pages/PlanMoved), so a bookmark keeps working.
     public static string? Moved(string? segment)
     {
         if (string.Equals(segment, "when-to-pay", StringComparison.OrdinalIgnoreCase))
-            return Href(PlanTab.Plan, PlanLens.ByDate);
+            return WhenToPayHref;
 
         return string.Equals(segment, "compare", StringComparison.OrdinalIgnoreCase) ? $"plan?{PlansQuery}={Compare}" : null;
     }

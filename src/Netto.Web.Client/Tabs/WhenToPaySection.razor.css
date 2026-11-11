@@ -1,9 +1,16 @@
-/* The tab's body under its head: who pays what next, the year on a timeline, then each part of the
-   calendar under its own heading. */
+/* The section under the moves and the pay curve: who pays what next, the year on a timeline, then each part
+   of the calendar under its own heading. */
 .calendar {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+/* The section's own heading, as « Tune your pay » is the pay curve's. */
+.calendar__title {
+    margin: 0;
+    font-size: 1.15rem;
 }
 
 /* What is paid next, with what each surcharge leaves, raised off the page like the timeline under it. */

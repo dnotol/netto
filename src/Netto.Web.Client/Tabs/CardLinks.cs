@@ -12,7 +12,7 @@ internal static class CardLinks
 }
 
 // Which card a link arrives at, asked on every set of the page's parameters: the card My plan's address
-// names while it is read by bucket, which draws the cards, once per arrival. The same address given again, as Blazor may while the page stays
+// names, once per arrival. The same address given again, as Blazor may while the page stays
 // there, arrives nowhere more, so the card stays where the viewer left it; the same link followed again
 // after the address named another tab, or no card, is a new arrival.
 internal sealed class CardArrival
@@ -20,10 +20,29 @@ internal sealed class CardArrival
     // The card the address named when last asked, none on another tab or without a card.
     private string? _named;
 
-    public string? Take(PlanTab tab, PlanLens lens, string? card)
+    public string? Take(PlanTab tab, string? card)
     {
-        var named = tab == PlanTab.Plan && lens == PlanLens.ByBucket ? card : null;
+        var named = tab == PlanTab.Plan ? card : null;
         var arriving = named is not null && named != _named ? named : null;
+        _named = named;
+
+        return arriving;
+    }
+}
+
+// Whether a link arrives at the When to pay section of Optimise (/plan/optimisation?show=when), asked on every
+// set of the page's parameters as a card's arrival is (CardArrival): true once per arrival. The same address
+// given again arrives nowhere more, so the viewer who has moved on is not pulled back; the same link followed
+// after the address named another view or no section is a new arrival.
+internal sealed class SectionArrival
+{
+    // Whether the address named the section when last asked.
+    private bool _named;
+
+    public bool Take(PlanTab tab, string? show)
+    {
+        var named = tab == PlanTab.Optimisation && PlanTabRoutes.OpensWhenToPay(show);
+        var arriving = named && !_named;
         _named = named;
 
         return arriving;

@@ -25,7 +25,8 @@ public class PlanTabBarTextTests
     // tab's name.
     [Theory]
     [InlineData(TabBadgeKind.MoreThanPlan, "€3,054.18", "€3,054.18 more than the plan on screen")]
-    [InlineData(TabBadgeKind.NextBy, "21 December 2026", "next advance payment by 21 December 2026")]
+    [InlineData(TabBadgeKind.NextBy, "21 December 2026", "When to pay: next advance payment by 21 December 2026")]
+    [InlineData(TabBadgeKind.BilledRefused, "", "When to pay: what the fund bills is refused")]
     [InlineData(TabBadgeKind.Refused, "", "an amount here is refused")]
     [InlineData(TabBadgeKind.Searching, "", "looking for moves")]
     public void PlanTabBarResx_everyBadge_isSpokenInFull(TabBadgeKind kind, string figure, string expected)

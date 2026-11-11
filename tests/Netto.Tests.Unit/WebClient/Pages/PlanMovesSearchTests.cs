@@ -22,7 +22,7 @@ public class PlanMovesSearchTests
         await page.LoadAsync();
 
         var bar = await page.FindAsync<PlanTabBar>();
-        (page.Calls.Count(call => call == "nettoPaint.after"), bar.Badges.GetValueOrDefault(PlanTab.Optimisation), page.Errors.Count)
+        (page.Calls.Count(call => call == "nettoPaint.after"), bar.Badges[PlanTab.Optimisation][0], page.Errors.Count)
             .ShouldBe((1, new TabBadge(TabBadgeKind.Searching), 0));
     }
 
@@ -38,7 +38,7 @@ public class PlanMovesSearchTests
         await page.PaintAsync();
 
         var bar = await page.FindAsync<PlanTabBar>();
-        (bar.Badges.GetValueOrDefault(PlanTab.Optimisation), page.Calls.Count(call => call == "nettoPaint.after"), page.Errors.Count)
+        (bar.Badges[PlanTab.Optimisation][0], page.Calls.Count(call => call == "nettoPaint.after"), page.Errors.Count)
             .ShouldBe((new TabBadge(TabBadgeKind.MoreThanPlan, Amount: total), 2, 0));
     }
 

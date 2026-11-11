@@ -24,14 +24,14 @@ public class PlanAddToPlanTests
         (Regex.Count(html, "composition__button"), key >= 0, button >= 0, key < button).ShouldBe((1, true, true, true));
     }
 
-    // The other views draw no map, and no « Add to plan »; nor does My plan by date.
+    // The other views draw no map, and no « Add to plan »; nor does Optimise at the When to pay section.
     [Theory]
     [InlineData("optimisation", null)]
+    [InlineData("optimisation", "when")]
     [InlineData("pistes", null)]
-    [InlineData(null, "date")]
-    public async Task Plan_onAnotherViewOrByDate_drawsNoAddToPlan(string? tab, string? by)
+    public async Task Plan_onAnotherView_drawsNoAddToPlan(string? tab, string? show)
     {
-        var html = await PlanPageTests.RenderPlanAsync(new Folds(new BrowserStorage()), tab, by: by);
+        var html = await PlanPageTests.RenderPlanAsync(new Folds(new BrowserStorage()), tab, show: show);
 
         html.ShouldNotContain("composition__button");
     }
@@ -47,16 +47,15 @@ public class PlanAddToPlanTests
             .ShouldBe(("Add to plan: no optional module in your plan", "Add to plan"));
     }
 
-    // On the map the focus goes back to « Add to plan »; where it is not drawn, on another view or on My plan
-    // by date, to the start of the view's content, never to a button no longer on the page.
+    // On the map the focus goes back to « Add to plan »; where it is not drawn, on another view, to the start of
+    // the view's content, never to a button no longer on the page.
     [Theory]
-    [InlineData(PlanTab.Plan, PlanLens.ByBucket, true)]
-    [InlineData(PlanTab.Plan, PlanLens.ByDate, false)]
-    [InlineData(PlanTab.Optimisation, PlanLens.ByBucket, false)]
-    [InlineData(PlanTab.Pistes, PlanLens.ByBucket, false)]
-    public void RemovalNoticeFocus_onAView_isAddToPlanWhereItIsDrawnAndTheViewsContentElsewhere(PlanTab tab, PlanLens lens, bool toAddToPlan)
+    [InlineData(PlanTab.Plan, true)]
+    [InlineData(PlanTab.Optimisation, false)]
+    [InlineData(PlanTab.Pistes, false)]
+    public void RemovalNoticeFocus_onAView_isAddToPlanWhereItIsDrawnAndTheViewsContentElsewhere(PlanTab tab, bool toAddToPlan)
     {
-        RemovalNoticeFocus.After(tab, lens).ShouldBe(toAddToPlan ? RemovalFocus.AddToPlan : RemovalFocus.TabContent);
+        RemovalNoticeFocus.After(tab).ShouldBe(toAddToPlan ? RemovalFocus.AddToPlan : RemovalFocus.TabContent);
     }
 
     // A module taken out on the Plan tab, the notice still showing on Optimisation: Undo puts it back, the

@@ -84,13 +84,13 @@ public class CalendarTimelineTests
         html.ShouldContain("Next payment by 21 December 2026: €14,999.89 from the company, €14,317.50 from you.");
     }
 
-    // The one picture is a named group a keyboard can scroll, headed by an h2 one level under the tab's h1.
+    // The one picture is a named group a keyboard can scroll, headed by an h3 under the When to pay section's h2.
     [Fact]
-    public async Task Timeline_example_isAFocusableNamedBoxUnderItsOwnH2()
+    public async Task Timeline_example_isAFocusableNamedBoxUnderItsOwnH3()
     {
         var html = await RenderAsync(RiverInputs.Example, On23October);
 
-        Regex.IsMatch(html, "<h2 id=\"timeline-title\" class=\"timeline__title\"[^>]*>The year at a glance</h2>").ShouldBeTrue();
+        Regex.IsMatch(html, "<h3 id=\"timeline-title\" class=\"timeline__title\"[^>]*>The year at a glance</h3>").ShouldBeTrue();
         html.ShouldContain("<div class=\"timeline__scroll\" role=\"group\" aria-labelledby=\"timeline-title\" tabindex=\"0\"");
     }
 

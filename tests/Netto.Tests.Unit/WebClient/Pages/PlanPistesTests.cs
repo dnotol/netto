@@ -20,7 +20,7 @@ public class PlanPistesTests
         await page.LoadAsync("pistes");
 
         var bar = await page.FindAsync<PlanTabBar>();
-        (bar.Badges.GetValueOrDefault(PlanTab.Pistes), page.Errors.Count).ShouldBe((new TabBadge(TabBadgeKind.PistesSearching), 0));
+        (bar.Badges[PlanTab.Pistes].Single(), page.Errors.Count).ShouldBe((new TabBadge(TabBadgeKind.PistesSearching), 0));
     }
 
     // Painted, the vouchers are measured and the rent and the royalty ask: the badge and the nudge say one
@@ -36,7 +36,7 @@ public class PlanPistesTests
         var bar = await page.FindAsync<PlanTabBar>();
         var nudges = await page.FindAsync<PlanNudges>();
         page.ShouldSatisfyAllConditions(
-            () => bar.Badges.GetValueOrDefault(PlanTab.Pistes).ShouldBe(new TabBadge(TabBadgeKind.Pistes, Count: 1, Questions: 2)),
+            () => bar.Badges[PlanTab.Pistes].Single().ShouldBe(new TabBadge(TabBadgeKind.Pistes, Count: 1, Questions: 2)),
             () => nudges.Pistes.ShouldBe(new PistesCount(1, 2)),
             () => page.Errors.ShouldBeEmpty());
     }

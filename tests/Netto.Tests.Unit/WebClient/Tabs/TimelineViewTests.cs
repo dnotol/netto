@@ -453,7 +453,7 @@ public class TimelineViewTests
     }
 
     // The picture's label and the Next panel name the same payers: both are chosen by one classifier
-    // (WhenToPayTabText.Payers), from the same next deadline.
+    // (WhenToPaySectionText.Payers), from the same next deadline.
     [Theory]
     [InlineData(false, false, false, 10, 23)]
     [InlineData(true, false, false, 10, 23)]
@@ -472,7 +472,7 @@ public class TimelineViewTests
 
         var (view, timeline) = Of(inputs, new DateOnly(2026, month, day));
 
-        var panel = WhenToPayTabText.Next(view.Next);
+        var panel = WhenToPaySectionText.Next(view.Next);
         var label = TimelineText.Next(timeline.NextCompany, timeline.NextDirector);
         label["Label_Next_".Length..].ShouldBe(panel["Next_".Length..]);
     }

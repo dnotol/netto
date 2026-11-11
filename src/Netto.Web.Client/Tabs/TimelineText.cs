@@ -19,9 +19,9 @@ internal static class TimelineText
     public static string Key(KeyItem item) => $"Key_{item}";
 
     // The sentence naming whoever pays at the next deadline: the company, the director, both or nobody,
-    // chosen by the classifier the Next panel uses (WhenToPayTabText.Payers), so the two agree.
+    // chosen by the classifier the Next panel uses (WhenToPaySectionText.Payers), so the two agree.
     public static string Next(TimelineMark? company, TimelineMark? director) =>
-        $"Label_Next_{WhenToPayTabText.Payers(company is not null, director is not null)}";
+        $"Label_Next_{WhenToPaySectionText.Payers(company is not null, director is not null)}";
 
     // The contributions' lane, and their sentence in the picture's label, name the company when it pays
     // them on the director's behalf; the sentence names the fund's fee too once the quarters hold it.
@@ -36,7 +36,7 @@ internal static class TimelineText
     };
 
     // The pay's sentence in the picture's label for a run of its months, as the table beside it runs
-    // them (WhenToPayTabText.PayLine): every month while the year pays alike, else the run's months, or
+    // them (WhenToPaySectionText.PayLine): every month while the year pays alike, else the run's months, or
     // its month alone.
     public static string Pay(PayRun run, int runs) => runs == 1 ? "Label_Pay" : run.First == run.Last ? "Label_PayRunOne" : "Label_PayRun";
 }

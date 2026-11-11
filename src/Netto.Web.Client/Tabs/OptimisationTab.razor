@@ -20,8 +20,14 @@
    pay, the curve's below, whenever the river at that pay is not at its best (PayNote), from the search the
    page hands the tab. The page finds the moves, once per plan and date (MovesSource), after it has painted;
    until then the tab says it is looking for them, and nothing else. While Netto cannot run the plan, the tab
-   says why, and nothing else. *@
-<TabHead Title="@L["Title"]" />
+   says why, and nothing else.
+
+   Last comes « When to pay » (WhenToPaySection), the whole payment calendar of the plan on screen: facts, where
+   the moves above are gains, and it applies nothing. Its address is this view asking for it,
+   plan/optimisation?show=when, which the page reads once per arrival and answers by FocusCalendarAsync; a
+   move about a payment links to it, and the tab's badge for the next deadline does too. The link of a move
+   moves the focus itself as well, since it may be followed while the address already names the section. *@
+<TabHead Title="@L["Title"]" Focus="@(!OpensCalendar)" />
 <div class="moves">
     @if (_view.State is MovesState.Moves or MovesState.AlreadyBest)
     {
@@ -73,7 +79,7 @@
                         }
                         @if (link is not null)
                         {
-                            <a class="moves__link" href="@link.Href" aria-label="@L[OptimisationTabText.LinkLabel, L[OptimisationTabText.Link(link)], What(move)]">@L[OptimisationTabText.Link(link)]</a>
+                            <a class="moves__link" href="@link.Href" @onclick="@(() => OnMoveLinkAsync(link))" aria-label="@L[OptimisationTabText.LinkLabel, L[OptimisationTabText.Link(link)], What(move)]">@L[OptimisationTabText.Link(link)]</a>
                         }
                     </div>
                     <div class="moves__amounts">
@@ -90,6 +96,7 @@
     }
 </div>
 <PayCurve Inputs="Inputs" InputsChanged="InputsChanged" Search="Search" />
+<WhenToPaySection @ref="_calendar" Inputs="Inputs" InputsChanged="InputsChanged" Calendar="Calendar" />
 
 @code {
     // Whether the page is still to search the moves from the plan on screen, which it does once it has
@@ -117,6 +124,17 @@
     [Parameter]
     public SplitSearchResult? Search { get; set; }
 
+    // The payment calendar of the plan on screen for this draw, built once by the page for the tab's badge too
+    // (CalendarView.From); none while Netto cannot run the plan or what the fund bills is refused.
+    [Parameter]
+    public CalendarView? Calendar { get; set; }
+
+    // Whether the address asks for the When to pay section (plan/optimisation?show=when): the section's
+    // heading takes the focus (FocusCalendarAsync), so the title does not.
+    [Parameter]
+    public bool OpensCalendar { get; set; }
+
+    private WhenToPaySection? _calendar;
     private MovesView _view = default!;
     private ElementReference _state;
     private bool _focusState;
@@ -147,6 +165,22 @@
     {
         _focusState = true;
         await InputsChanged.InvokeAsync(_view.ApplyAll(Inputs));
+    }
+
+    // A move's link followed: the one to the section moves the focus there itself, the address possibly naming
+    // it already.
+    private async Task OnMoveLinkAsync(MoveLink link)
+    {
+        if (link.WhenToPay)
+            await FocusCalendarAsync();
+    }
+
+    // Brings the When to pay section into view and focus: its heading, which the browser scrolls to below the
+    // band. Called by the page on arriving at the section and by a move's link to it.
+    public async Task FocusCalendarAsync()
+    {
+        if (_calendar is { } calendar)
+            await calendar.FocusAsync();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

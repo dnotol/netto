@@ -10,6 +10,13 @@
     list-style: none;
 }
 
+/* A tab's link and, on Optimise, the link of its next deadline beside it. */
+.plan-tab-bar__item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
 .plan-tab-bar__tab {
     display: inline-flex;
     align-items: center;
@@ -32,6 +39,23 @@
         color: var(--netto-text);
         font-weight: 600;
         box-shadow: inset 0 -2px 0 var(--netto-gold);
+    }
+
+/* The next deadline, or the refusal of what the fund bills, a link of its own to the When to pay section, as
+   tall as the tabs; the site's focus ring is drawn around it (app.css). */
+.plan-tab-bar__deadline {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    padding: 0 0.15rem;
+    color: var(--netto-text-muted);
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+    .plan-tab-bar__deadline:hover {
+        color: var(--netto-text);
+        text-decoration: underline;
     }
 
 /* A badge after the name, short and muted; what the moves add in the pocket's gold, as money reaching
@@ -80,12 +104,17 @@
             outline-offset: -3px;
         }
 
-    /* The names alone, but for a refusal: a screen reader still hears every badge. */
-    .plan-tab-bar__badge {
+    /* The names alone, but for a refusal: a screen reader still hears every badge. The deadline is a link of
+       its own: it keeps its figure, a link with nothing to see being a stop nobody could place. */
+    .plan-tab-bar__tab .plan-tab-bar__badge {
         display: none;
     }
 
-    .plan-tab-bar__badge--refused {
+    .plan-tab-bar__tab .plan-tab-bar__badge--refused {
         display: inline-flex;
+    }
+
+    .plan-tab-bar__item {
+        gap: 0.35rem;
     }
 }

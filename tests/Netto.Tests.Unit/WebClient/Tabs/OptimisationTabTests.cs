@@ -173,11 +173,11 @@ public class OptimisationTabTests
     }
 
     [Fact]
-    public async Task Optimisation_paymentMove_linksMyPlanByDate()
+    public async Task Optimisation_paymentMove_linksTheWhenToPaySection()
     {
         var html = await RenderTabAsync(RiverInputs.Example);
 
-        Regex.IsMatch(html, "<a class=\"moves__link\" href=\"plan\\?by=date\" aria-label=\"See it by date: Pay €[\\d,.]+ by 21 December 2026 on the company's corporate tax\"[^>]*>See it by date</a>")
+        Regex.IsMatch(html, "<a class=\"moves__link\" href=\"plan/optimisation\\?show=when\" aria-label=\"See when to pay: Pay €[\\d,.]+ by 21 December 2026 on the company's corporate tax\"[^>]*>See when to pay</a>")
             .ShouldBeTrue();
     }
 
@@ -256,7 +256,7 @@ public class OptimisationTabTests
         Regex.IsMatch(html, "<p class=\"moves__state\" tabindex=\"-1\"").ShouldBeTrue();
     }
 
-    // « Tune your pay » is the tab's last section, under the moves, once the page hands the tab its search: the
+    // « Tune your pay » is the section under the moves, before When to pay, once the page hands the tab its search: the
     // curve of the pocket at every pay, also while the moves are looked for, since it reads that search alone.
     [Theory]
     [InlineData(false)]
@@ -271,6 +271,21 @@ public class OptimisationTabTests
             () => html.ShouldContain("<h2 id=\"tune-title\""),
             () => html.ShouldContain("class=\"pay-curve__plot\""),
             () => html.IndexOf("class=\"tune\"", StringComparison.Ordinal).ShouldBeGreaterThan(html.IndexOf("class=\"moves\"", StringComparison.Ordinal)));
+    }
+
+    // « When to pay » is the tab's last section, the whole calendar the plan holds, under the moves and the
+    // pay curve; the head is the one h1, the section the next h2 after the curve's, and its parts h3.
+    [Fact]
+    public async Task Optimisation_withTheCalendar_drawsWhenToPayLastWithHeadingsInOrder()
+    {
+        var html = await RenderWithCalendarAsync(RiverInputs.Example, openingIt: false);
+
+        html.ShouldSatisfyAllConditions(
+            () => Regex.Matches(html, "<h([123])[ >]").Select(match => match.Groups[1].Value).ShouldBe(["1", "2", "2", "3", "3", "3", "3", "3", "3"]),
+            () => html.IndexOf("id=\"when-to-pay-title\"", StringComparison.Ordinal).ShouldBeGreaterThan(html.IndexOf("class=\"tune\"", StringComparison.Ordinal)),
+            () => html.ShouldContain("class=\"calendar__table\""),
+            () => html.ShouldContain("class=\"timeline\""),
+            () => html.ShouldContain("id=\"river-billed-contributions\""));
     }
 
     // With no search, the company's year skipped or an amount refused, the tab draws no curve.
@@ -333,6 +348,14 @@ public class OptimisationTabTests
         WebUtility.HtmlDecode(await RenderAsync<OptimisationTab>(new Folds(new BrowserStorage()), new()
         {
             ["Searching"] = searching, ["Found"] = searching ? null : plan.FindMoves(On22October), ["Inputs"] = plan, ["Search"] = plan.SearchSplit(),
+        }));
+
+    // The tab with the calendar the page built for the plan on its date, and the search for the curve.
+    private static async Task<string> RenderWithCalendarAsync(RiverInputs plan, bool openingIt) =>
+        WebUtility.HtmlDecode(await RenderAsync<OptimisationTab>(new Folds(new BrowserStorage()), new()
+        {
+            ["Searching"] = false, ["Found"] = plan.FindMoves(On22October), ["Inputs"] = plan, ["Search"] = plan.SearchSplit(),
+            ["Calendar"] = CalendarView.From(plan, plan.Run(), On22October), ["OpensCalendar"] = openingIt,
         }));
 
     private static async Task<string> RenderStateAsync(RiverInputs plan, (MovePlan? Value, Refusal? Error)? found, bool searching) =>

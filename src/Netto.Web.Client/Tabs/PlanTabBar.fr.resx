@@ -31,7 +31,10 @@
     <value>{0} de plus que le plan affiché</value>
   </data>
   <data name="Spoken_NextBy" xml:space="preserve">
-    <value>prochain versement anticipé au plus tard le {0}</value>
+    <value>Quand payer&#160;: prochain versement anticipé au plus tard le {0}</value>
+  </data>
+  <data name="Spoken_BilledRefused" xml:space="preserve">
+    <value>Quand payer&#160;: le montant facturé par votre caisse est refusé</value>
   </data>
   <data name="Spoken_Pistes" xml:space="preserve">
     <value>{0}</value>

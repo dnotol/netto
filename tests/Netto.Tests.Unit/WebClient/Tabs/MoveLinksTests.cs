@@ -84,24 +84,24 @@ public class MoveLinksTests
         new CompanyAdvancePaymentMove(3, On21December, 29_700.45m), new DirectorAdvancePaymentMove(3, On21December, 14_317.50m),
     };
 
-    // A payment's place is My plan read by date, whatever the river holds.
+    // A payment's place is the When to pay section of Optimise, whatever the river holds.
     [Theory]
     [MemberData(nameof(Payments))]
-    public void To_payment_linksMyPlanByDate(Move move)
+    public void To_payment_linksTheWhenToPaySection(Move move)
     {
         var link = MoveLinks.To(move, RiverInputs.Example.SkipCompany()).ShouldNotBeNull();
 
-        (link, link.Href).ShouldBe((new MoveLink(PlanTab.Plan, null, PlanLens.ByDate), "plan?by=date"));
+        (link, link.Href).ShouldBe((new MoveLink(PlanTab.Optimisation, null, WhenToPay: true), "plan/optimisation?show=when"));
     }
 
-    // « See it » by the lens' own name, as the lens bar reads it.
+    // « See when to pay », by the section's own name, as its heading reads it.
     [Theory]
     [MemberData(nameof(Payments))]
-    public void Text_payment_namesTheLens(Move move)
+    public void Text_payment_namesTheSection(Move move)
     {
-        var lens = ResxText.For<PlanLensBar>().Get(PlanLensBarText.Name(PlanLens.ByDate));
+        var section = ResxText.For<WhenToPaySection>().Get("Title");
 
-        Text(MoveLinks.To(move, RiverInputs.Example).ShouldNotBeNull()).ShouldBe($"See it {lens.ShouldNotBeNull().ToLowerInvariant()}");
+        Text(MoveLinks.To(move, RiverInputs.Example).ShouldNotBeNull()).ShouldBe($"See {section.ShouldNotBeNull().ToLowerInvariant()}");
     }
 
     private static string? Text(MoveLink link) =>

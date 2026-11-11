@@ -21,7 +21,7 @@ public class FrenchTabsTests
     private const char NoBreak = (char)0x00A0;
 
     public static TheoryData<Type> Tabs => new(
-        typeof(MapTab), typeof(MapGateWords), typeof(MapKey), typeof(MapPanel), typeof(OptimisationTab), typeof(WhenToPayTab), typeof(CalendarTimeline), typeof(CompareTab));
+        typeof(MapTab), typeof(MapGateWords), typeof(MapKey), typeof(MapPanel), typeof(OptimisationTab), typeof(WhenToPaySection), typeof(CalendarTimeline), typeof(CompareTab));
 
     // A text French writes as English does: a tab or a label of the same word, a separator, a placeholder alone,
     // a quotient, the conditions, a count of points.
@@ -76,8 +76,8 @@ public class FrenchTabsTests
     // naming months puts « entre », « en », « à » or a colon before them.
     public static TheoryData<Type, string, int> Months => new()
     {
-        { typeof(WhenToPayTab), "PayLineMonths", 3 }, { typeof(WhenToPayTab), "PayLineMonths", 4 }, { typeof(WhenToPayTab), "PayLineMonth", 3 },
-        { typeof(WhenToPayTab), "PayLeft", 0 }, { typeof(WhenToPayTab), "PayLeft", 1 }, { typeof(WhenToPayTab), "PayLeftOne", 0 },
+        { typeof(WhenToPaySection), "PayLineMonths", 3 }, { typeof(WhenToPaySection), "PayLineMonths", 4 }, { typeof(WhenToPaySection), "PayLineMonth", 3 },
+        { typeof(WhenToPaySection), "PayLeft", 0 }, { typeof(WhenToPaySection), "PayLeft", 1 }, { typeof(WhenToPaySection), "PayLeftOne", 0 },
         { typeof(CalendarTimeline), "Label_PayRun", 1 }, { typeof(CalendarTimeline), "Label_PayRun", 2 }, { typeof(CalendarTimeline), "Label_PayRunOne", 1 },
         { typeof(CalendarTimeline), "Label_PayLeft", 0 }, { typeof(CalendarTimeline), "Label_PayLeft", 1 }, { typeof(CalendarTimeline), "Label_PayLeftOne", 0 },
         { typeof(CalendarTimeline), "Pay_Caption", 1 },
@@ -112,14 +112,14 @@ public class FrenchTabsTests
     }
 
     // Each link of a move is a sentence of its own, naming its card as a title after « la carte », or the
-    // lens of My plan it leads to.
+    // section of Optimise it leads to.
     [Theory]
     [InlineData("Link_director-pay", "Voir sur la carte Rémunération de dirigeant")]
     [InlineData("Link_vouchers", "Voir sur la carte Titres-repas et chèques")]
     [InlineData("Link_rent", "Voir sur la carte Loyer du bureau")]
     [InlineData("Link_copyright", "Voir sur la carte Droits d'auteur")]
-    [InlineData("Link_ByDate", "Voir par date")]
-    public void Link_aMovesLink_isASentenceNamingItsCardOrLens(string key, string words)
+    [InlineData("Link_WhenToPay", "Voir quand payer")]
+    public void Link_aMovesLink_isASentenceNamingItsCardOrSection(string key, string words)
     {
         ResxText.French<OptimisationTab>().Get(key).ShouldBe(words);
     }
@@ -242,7 +242,7 @@ public class FrenchTabsTests
     [Fact]
     public void QuartersLeft_saysHowManyOfFourAreToCome()
     {
-        ResxText.French<WhenToPayTab>().Format("QuartersLeft", 2, 2026).ShouldBe($"Trimestres encore à venir en 2026{NoBreak}: 2 sur 4.");
+        ResxText.French<WhenToPaySection>().Format("QuartersLeft", 2, 2026).ShouldBe($"Trimestres encore à venir en 2026{NoBreak}: 2 sur 4.");
     }
 
     // Each tab reads in French as a viewer meets it: its head, its first words, none left in English.
@@ -283,19 +283,20 @@ public class FrenchTabsTests
     }
 
     [Fact]
-    public async Task WhenToPayTab_inFrench_saysWhatIsPaidNextInFrench()
+    public async Task WhenToPaySection_inFrench_saysWhatIsPaidNextInFrench()
     {
         using var french = InLanguage.French();
 
-        var html = WebUtility.HtmlDecode(await RenderAsync<WhenToPayTab>(new Folds(new BrowserStorage()), new()
+        var html = WebUtility.HtmlDecode(await RenderAsync<WhenToPaySection>(new Folds(new BrowserStorage()), new()
         {
-            ["Inputs"] = RiverInputs.Example, ["Run"] = RiverInputs.Example.Run(), ["Date"] = new DateOnly(2026, 10, 23),
+            ["Inputs"] = RiverInputs.Example, ["Calendar"] = CalendarView.From(RiverInputs.Example, RiverInputs.Example.Run(), new DateOnly(2026, 10, 23)),
         }));
 
         html.ShouldSatisfyAllConditions(
-            () => html.ShouldContain(">Prochaine échéance</h2>"),
+            () => html.ShouldContain(">Quand payer</h2>"),
+            () => html.ShouldContain(">Prochaine échéance</h3>"),
             () => html.ShouldContain($"21 décembre 2026 · 14.999,89{NoBreak}€ à payer par la société"),
-            () => html.ShouldContain(">L'année d'un coup d'œil</h2>"),
+            () => html.ShouldContain(">L'année d'un coup d'œil</h3>"),
             () => html.ShouldNotContain("from the company"));
     }
 

@@ -13,7 +13,7 @@ namespace Netto.Tests.WebClient.Pages;
 
 // The plan page as a viewer meets it on first load, drawn whole without a browser (RiverRendering): the
 // bar of buckets with its row of tabs, and the view its URL names: My plan, the river with every card folded
-// to its summary and the notes under it folded to one line each, or by date, or another view in its place.
+// to its summary and the notes under it folded to one line each, or another view in its place.
 public class PlanPageTests
 {
     // The deadline still open on this date is December's.
@@ -90,30 +90,30 @@ public class PlanPageTests
         Links(html).Select(link => (link.Href, link.Name)).ShouldBe([("plan", "My plan"), ("plan/optimisation", "Optimise"), ("plan/pistes", "Ideas")]);
     }
 
-    // The view the URL names is the one current, whatever the case it is typed in; My plan stays current by
-    // date, which is its lens and not another view.
+    // The view the URL names is the one current, whatever the case it is typed in; Optimise stays the one
+    // current at its When to pay section, which is its own and not another view.
     [Theory]
     [InlineData(null, null, "My plan")]
-    [InlineData(null, "date", "My plan")]
     [InlineData("optimisation", null, "Optimise")]
+    [InlineData("optimisation", "when", "Optimise")]
     [InlineData("pistes", null, "Ideas")]
     [InlineData("Pistes", null, "Ideas")]
-    public async Task Plan_onAView_marksItAloneCurrent(string? tab, string? by, string current)
+    public async Task Plan_onAView_marksItAloneCurrent(string? tab, string? show, string current)
     {
-        var html = await RenderPlanAsync(new Folds(new BrowserStorage()), tab, by: by);
+        var html = await RenderPlanAsync(new Folds(new BrowserStorage()), tab, show: show);
 
         Links(html).Where(link => link.Current).Select(link => link.Name).ShouldBe([current]);
     }
 
-    // Each view opens on its own head: the page's one h1 is the view's title, whatever the lens.
+    // Each view opens on its own head: the page's one h1 is the view's title, at its section too.
     [Theory]
     [InlineData(null, null, "My plan")]
-    [InlineData(null, "date", "My plan")]
     [InlineData("optimisation", null, "Optimise")]
+    [InlineData("optimisation", "when", "Optimise")]
     [InlineData("pistes", null, "Ideas")]
-    public async Task Plan_onAView_opensOnItsTitle(string? tab, string? by, string title)
+    public async Task Plan_onAView_opensOnItsTitle(string? tab, string? show, string title)
     {
-        var html = await RenderPlanAsync(new Folds(new BrowserStorage()), tab, by: by);
+        var html = await RenderPlanAsync(new Folds(new BrowserStorage()), tab, show: show);
 
         Regex.Matches(html, "<h1[^>]*>([^<]*)</h1>").Select(match => match.Groups[1].Value).ShouldBe([title]);
     }
@@ -133,33 +133,44 @@ public class PlanPageTests
     }
 
     // My plan is the map, the card of the module chosen beside it, Company year on arriving, and the two
-    // notes on what Netto assumes and does not count yet under it; the moves are a view of their own. Under
-    // the head come the lens, by bucket, and no calendar.
+    // notes on what Netto assumes and does not count yet under it; the moves and the calendar are Optimise's.
+    // Under the head come the nudges and the map: no lens, no calendar.
     [Fact]
-    public async Task Plan_onMyPlan_showsTheLensTheMapCompanyYearsCardAndTheNotes()
+    public async Task Plan_onMyPlan_showsTheMapCompanyYearsCardAndTheNotesWithNoLensNorCalendar()
     {
         var html = await RenderPlanAsync(new Folds(new BrowserStorage()));
 
         (html.Contains("class=\"map-tab\""), html.Contains("id=\"card-company-year\""), html.Contains("<aside class=\"assumed\""),
                 html.Contains("<aside class=\"limits\""), html.Contains("moves__state"), html.Contains("calendar__table"), html.Contains("plan-lens"))
-            .ShouldBe((true, true, true, true, false, false, true));
+            .ShouldBe((true, true, true, true, false, false, false));
     }
 
-    // By date, what the When to pay tab showed takes the place of the map, its card and the notes under it,
-    // under the same head and lens.
+    // The When to pay section stands under the moves and the pay curve on Optimise, with or without the query
+    // that asks for it: the address only brings it into focus.
+    [Theory]
+    [InlineData(null)]
+    [InlineData("when")]
+    public async Task Plan_onOptimise_drawsTheWholeCalendarAsASection(string? show)
+    {
+        var html = await RenderPlanAsync(new Folds(new BrowserStorage()), "optimisation", show: show);
+
+        (html.Contains("calendar__table"), html.Contains("class=\"calendar\""), html.Contains("id=\"when-to-pay-title\""), html.Contains("class=\"map-tab\""))
+            .ShouldBe((true, true, true, false));
+    }
+
+    // A bookmark to My plan by date draws nothing before it replaces itself (PlanMovedTests, PlanWhenToPayTests):
+    // not the map it is leaving, nor the band.
     [Fact]
-    public async Task Plan_onMyPlanByDate_showsTheCalendarInPlaceOfTheMapAndTheNotes()
+    public async Task Plan_onTheOldByDateAddress_drawsNothingBeforeItGoes()
     {
         var html = await RenderPlanAsync(new Folds(new BrowserStorage()), by: "date");
 
-        (html.Contains("calendar__table"), html.Contains("class=\"calendar\""), html.Contains("plan-lens"), html.Contains("class=\"map-tab\""),
-                html.Contains("id=\"card-company-year\""), html.Contains("<aside class=\"assumed\""), html.Contains("<aside class=\"limits\""))
-            .ShouldBe((true, true, true, false, false, false, false));
+        (html.Contains("class=\"map-tab\""), html.Contains("bucket-bar"), html.Contains("calendar__table")).ShouldBe((false, false, false));
     }
 
-    // Any value of the query that names no lens is the plan by bucket.
+    // Any other value of the old query is My plan.
     [Fact]
-    public async Task Plan_onMyPlanByAnUnknownLens_isByBucket()
+    public async Task Plan_onMyPlanByAnUnknownValue_isMyPlan()
     {
         var html = await RenderPlanAsync(new Folds(new BrowserStorage()), by: "nonsense");
 
@@ -176,7 +187,7 @@ public class PlanPageTests
         (html.Contains("class=\"map-tab\""), html.Contains("plan-lens"), html.Contains(content)).ShouldBe((false, false, true));
     }
 
-    // The bar sums up the same river on every view and lens: switching changes no input of it.
+    // The bar sums up the same river on every view: switching changes no input of it.
     [Fact]
     public async Task Plan_everyView_drawsTheSameBuckets()
     {
@@ -184,8 +195,8 @@ public class PlanPageTests
         var folds = new Folds(new BrowserStorage());
 
         var buckets = new List<string>();
-        foreach (var (tab, by) in new (string?, string?)[] { (null, null), (null, "date"), ("optimisation", null), ("pistes", null) })
-            buckets.Add(Buckets(await RenderPlanAsync(folds, tab, river, by: by)));
+        foreach (var (tab, show) in new (string?, string?)[] { (null, null), ("optimisation", null), ("optimisation", "when"), ("pistes", null) })
+            buckets.Add(Buckets(await RenderPlanAsync(folds, tab, river, show: show)));
 
         var pocket = BucketsView.From(river.Run())!.Buckets.Single(bucket => bucket.Key == "pocket").Amount;
         (buckets.Distinct().Count(), buckets[0].Contains(Formats.Euros(pocket))).ShouldBe((1, true));
@@ -248,29 +259,44 @@ public class PlanPageTests
             .ShouldBe((true, true, true, true, false));
     }
 
-    // My plan says the next advance payment's day, on every view: the deadline stays in the band.
+    // Optimise says the next advance payment's day, on every view: the deadline stays in the band, a link of its
+    // own to the When to pay section beside the tab's, never inside it; My plan has none.
     [Theory]
     [InlineData(null)]
     [InlineData("optimisation")]
     [InlineData("pistes")]
-    public async Task Plan_paymentStillToMake_badgesMyPlanWithItsDay(string? tab)
+    public async Task Plan_paymentStillToMake_badgesOptimiseWithItsDayAsALinkToTheSection(string? tab)
     {
         var html = await RenderPlanAsync(new Folds(new BrowserStorage()), tab);
 
-        var myPlan = Links(html).Single(link => link.Name == "My plan");
-        (myPlan.Badge, myPlan.Spoken).ShouldBe(("21 Dec", "next advance payment by 21 December 2026"));
+        var deadline = DeadlineLink(html).ShouldNotBeNull();
+        (deadline.Href, deadline.Badge, deadline.Spoken, Links(html).Single(link => link.Name == "My plan").Badge)
+            .ShouldBe(("plan/optimisation?show=when", "21 Dec", "When to pay: next advance payment by 21 December 2026", null));
+        Regex.Matches(html, "<a [^>]*class=\"plan-tab-bar__tab\"[^>]*>.*?</a>", RegexOptions.Singleline).Any(link => link.Value.Contains("plan-tab-bar__deadline")).ShouldBeFalse();
     }
 
-    // A refusal of what the fund bills, a field of the by-date lens, shows on My plan's tab on every view.
+    // The deadline link follows the Optimise tab's link, in the same list item.
+    [Fact]
+    public async Task Plan_deadlineLink_standsBesideTheOptimiseTab()
+    {
+        var html = await RenderPlanAsync(new Folds(new BrowserStorage()));
+
+        Regex.IsMatch(html, "<li class=\"plan-tab-bar__item\"[^>]*>\\s*<a [^>]*class=\"plan-tab-bar__tab\"[^>]*>(?:(?!</li>).)*?Optimise(?:(?!</li>).)*?</a>\\s*<a [^>]*class=\"plan-tab-bar__deadline\"", RegexOptions.Singleline)
+            .ShouldBeTrue();
+    }
+
+    // A refusal of what the fund bills, a field of the section, shows beside Optimise's tab on every view, as
+    // the link to the section; My plan's river runs and says nothing.
     [Theory]
     [InlineData(null)]
     [InlineData("optimisation")]
-    public async Task Plan_billedAmountRefused_marksMyPlan(string? tab)
+    public async Task Plan_billedAmountRefused_marksTheSectionLink(string? tab)
     {
         var html = await RenderPlanAsync(new Folds(new BrowserStorage()), tab, river: RiverInputs.Example.WithBilledContributions(-1m));
 
-        var myPlan = Links(html).Single(link => link.Name == "My plan");
-        (myPlan.Refused, myPlan.Spoken).ShouldBe((true, "an amount here is refused"));
+        var deadline = DeadlineLink(html).ShouldNotBeNull();
+        (deadline.Href, deadline.Spoken, deadline.Refused, Links(html).Single(link => link.Name == "My plan").Refused)
+            .ShouldBe(("plan/optimisation?show=when", "When to pay: what the fund bills is refused", true, false));
     }
 
     // Saved plans are compared in the Plans panel, which counts them itself: the tab bar holds no badge for
@@ -333,6 +359,14 @@ public class PlanPageTests
             match.Value.Contains("plan-tab-bar__badge--refused"))),
     ];
 
+    // The link to the When to pay section beside the Optimise tab: where it goes, its badge as shown, as spoken and
+    // whether it marks a refusal; none while there is nothing to say.
+    private static (string Href, string? Badge, string? Spoken, bool Refused)? DeadlineLink(string html) =>
+        Regex.Match(html, "<a [^>]*class=\"plan-tab-bar__deadline\"[^>]*>.*?</a>", RegexOptions.Singleline) is { Success: true } match
+            ? (Regex.Match(match.Value, "href=\"([^\"]*)\"").Groups[1].Value, Text(match.Value, "plan-tab-bar__badge"), Text(match.Value, "plan-tab-bar__spoken"),
+                match.Value.Contains("plan-tab-bar__badge--billedrefused"))
+            : null;
+
     // The text of the link's span of that class, the visible badge's text without the icon a refusal
     // draws; none without such a span.
     private static string? Text(string link, string span)
@@ -348,7 +382,7 @@ public class PlanPageTests
     // The river, the plan starred Today and the plans saved, the first starred unless one is; without Today,
     // the plan starred is deleted once they are all saved.
     internal static Task<string> RenderPlanAsync(Folds folds, string? tab = null, RiverInputs? river = null, RiverInputs? today = null, RiverInputs[]? saved = null,
-        bool withoutToday = false, string? by = null, string? plansMode = null) =>
+        bool withoutToday = false, string? by = null, string? show = null, string? plansMode = null) =>
         RenderAsync(typeof(Plan), folds, tab is null ? [] : new() { ["Tab"] = tab }, services =>
         {
             var storage = new BrowserStorage();
@@ -363,8 +397,8 @@ public class PlanPageTests
             services.AddSingleton(plans);
             services.AddSingleton(new RiverState(plans, new BrowserSession()) { Inputs = river ?? RiverInputs.Example });
             services.AddSingleton<TimeProvider>(new Clock(On23October));
-            // The lens and the Plans panel's mode are the address's queries (SupplyParameterFromQuery).
-            var query = string.Join('&', new[] { by is null ? null : $"by={by}", plansMode is null ? null : $"plans={plansMode}" }.OfType<string>());
+            // The old by-date query, the section and the Plans panel's mode are the address's queries (SupplyParameterFromQuery).
+            var query = string.Join('&', new[] { by is null ? null : $"by={by}", show is null ? null : $"show={show}", plansMode is null ? null : $"plans={plansMode}" }.OfType<string>());
             if (query.Length > 0)
             {
                 services.AddSupplyValueFromQueryProvider();

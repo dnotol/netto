@@ -3,8 +3,9 @@
 @using Netto.Web.Client.Tabs
 @inject NavigationManager Navigation
 
-@* The two views the plan page folded in keep their addresses: When to pay is the by-date lens of My plan,
-   Compare plans a mode of the Plans panel (PlanTabRoutes.Moved). Like the root (PlanEntry), the address
+@* The two views the plan page folded in keep their addresses: When to pay is a section of Optimise, Compare
+   plans a mode of the Plans panel (PlanTabRoutes.Moved). The by-date lens of My plan, /plan?by=date, which
+   was When to pay's place for a day, is the plan page's own address and replaces itself in the page (Plan). Like the root (PlanEntry), the address
    draws no page, it replaces itself with the new place as it is first drawn, so Back goes to what the
    viewer came from and not round to the old address again. A literal route beats the plan page's
    /plan/{Tab} (PlanMovedTests), so the plan page, its map and its searches are never built for it. It runs

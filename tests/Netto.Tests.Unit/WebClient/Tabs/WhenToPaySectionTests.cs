@@ -7,10 +7,10 @@ using static Netto.Tests.WebClient.River.RiverRendering;
 
 namespace Netto.Tests.WebClient.Tabs;
 
-// The When to pay tab as a viewer meets it, drawn without a browser (RiverRendering): what the calendar
-// card held at the end of the river, now a tab of its own, open, under its own head: who pays what next,
-// the year on a timeline, then the tables. The figures are CalendarViewTests'.
-public class WhenToPayTabTests
+// The When to pay section of Optimise as a viewer meets it, drawn without a browser (RiverRendering): what the
+// calendar card held at the end of the river, then a tab of its own, then a lens of My plan, under its own
+// h2: who pays what next, the year on a timeline, then the tables. The figures are CalendarViewTests'.
+public class WhenToPaySectionTests
 {
     // The deadline still open on this date is December's.
     private static readonly DateOnly On23October = new(2026, 10, 23);
@@ -25,7 +25,7 @@ public class WhenToPayTabTests
     {
         var html = await RenderTabAsync(RiverInputs.Example);
 
-        Regex.IsMatch(html, "^\\s*<div class=\"calendar\"[^>]*>\\s*<section class=\"calendar__panel\"[^>]*>\\s*<h2[^>]*>Next</h2>\\s*<p class=\"calendar__next\"[^>]*>21 December 2026 · €14,999.89 from the company</p>").ShouldBeTrue();
+        Regex.IsMatch(html, "^\\s*<section class=\"calendar\"[^>]*>\\s*<h2[^>]*>When to pay</h2>\\s*<section class=\"calendar__panel\"[^>]*>\\s*<h3[^>]*>Next</h3>\\s*<p class=\"calendar__next\"[^>]*>21 December 2026 · €14,999.89 from the company</p>").ShouldBeTrue();
     }
 
     [Fact]
@@ -78,14 +78,17 @@ public class WhenToPayTabTests
         html.ShouldContain("Next payment by 21 December 2026: €14,999.89 from the company.");
     }
 
-    // Each part of the calendar under a heading of its own, one level under the tab's title.
+    // The section is one h2, « When to pay », which takes the focus when a link names it; each part of the
+    // calendar is an h3 under it.
     [Fact]
-    public async Task WhenToPay_example_showsEachPartUnderItsOwnH2()
+    public async Task WhenToPay_example_isOneH2WithEachPartUnderItsOwnH3()
     {
         var html = await RenderTabAsync(RiverInputs.Example);
 
-        Regex.Matches(html, "<h2[^>]*>([^<]*)</h2>").Select(match => match.Groups[1].Value)
+        Regex.Matches(html, "<h2[^>]*>([^<]*)</h2>").Select(match => match.Groups[1].Value).ShouldBe(["When to pay"]);
+        Regex.Matches(html, "<h3[^>]*>([^<]*)</h3>").Select(match => match.Groups[1].Value)
             .ShouldBe(["Next", "The year at a glance", "Advance payments", "Your pay each month", "Social contributions each quarter", "After the year"]);
+        Regex.IsMatch(html, "<h2 id=\"when-to-pay-title\" class=\"calendar__title\" tabindex=\"-1\"").ShouldBeTrue();
     }
 
     // What the fund bills is the tab's one input: refused, the refusal shows beside its field.
@@ -120,7 +123,7 @@ public class WhenToPayTabTests
     public async Task WhenToPay_billedField_isInAWrapperSizedToAnAmount()
     {
         var html = await RenderTabAsync(RiverInputs.Example);
-        var css = Stylesheet.Read("src", "Netto.Web.Client", "Tabs", "WhenToPayTab.razor.css");
+        var css = Stylesheet.Read("src", "Netto.Web.Client", "Tabs", "WhenToPaySection.razor.css");
 
         var width = Regex.Match(Stylesheet.Block(css, ".calendar__billed"), @"max-width:\s*([0-9.]+)rem");
         (Regex.IsMatch(html, "<div class=\"calendar__billed\"[^>]*>\\s*<div class=\"river-field\"[^>]*>.*?id=\"river-billed-contributions\"", RegexOptions.Singleline),
@@ -153,8 +156,8 @@ public class WhenToPayTabTests
     private static int Count(string html, string text) => html.Split(text).Length - 1;
 
     private static async Task<string> RenderTabAsync(RiverInputs river, DateOnly? date = null) =>
-        WebUtility.HtmlDecode(await RenderAsync<WhenToPayTab>(new Folds(new BrowserStorage()), new()
+        WebUtility.HtmlDecode(await RenderAsync<WhenToPaySection>(new Folds(new BrowserStorage()), new()
         {
-            ["Inputs"] = river, ["Run"] = river.Run(), ["Date"] = date ?? On23October,
+            ["Inputs"] = river, ["Calendar"] = CalendarView.From(river, river.Run(), date ?? On23October),
         }));
 }

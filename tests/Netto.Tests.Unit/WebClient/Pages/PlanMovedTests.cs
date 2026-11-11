@@ -9,7 +9,7 @@ using static Netto.Tests.WebClient.River.RiverRendering;
 
 namespace Netto.Tests.WebClient.Pages;
 
-// The addresses of the two views the plan page folded in: When to pay, now the by-date lens of My plan, and
+// The addresses of the two views the plan page folded in: When to pay, now a section of Optimise, and
 // Compare plans, now a mode of the Plans panel. A bookmark to either replaces itself with the new place as
 // it is first drawn, so Back from there goes to what the viewer came from. A static render runs the
 // component's first lifecycle step, which is where it navigates, and goes nowhere, so the navigation is
@@ -17,10 +17,10 @@ namespace Netto.Tests.WebClient.Pages;
 public class PlanMovedTests
 {
     [Theory]
-    [InlineData("http://localhost/plan/when-to-pay", "plan?by=date")]
+    [InlineData("http://localhost/plan/when-to-pay", "plan/optimisation?show=when")]
     [InlineData("http://localhost/plan/compare", "plan?plans=compare")]
     [InlineData("http://localhost/Plan/Compare/", "plan?plans=compare")]
-    [InlineData("http://localhost/plan/when-to-pay?x=1#section", "plan?by=date")]
+    [InlineData("http://localhost/plan/when-to-pay?x=1#section", "plan/optimisation?show=when")]
     public async Task PlanMoved_firstDraw_replacesItselfWithTheNewPlaceWithoutReloading(string address, string place)
     {
         var navigation = new RecordingNavigation(address);
@@ -42,6 +42,7 @@ public class PlanMovedTests
     [InlineData("/plan/optimisation", nameof(Plan), "Tab=optimisation")]
     [InlineData("/plan", nameof(Plan), "Tab=")]
     [InlineData("/plan?by=date", nameof(Plan), "Tab=")]
+    [InlineData("/plan/optimisation?show=when", nameof(Plan), "Tab=optimisation")]
     public async Task Router_anAddress_reachesThePageThatAnswersIt(string path, string page, string values)
     {
         var html = await RenderAsync(typeof(Routed), new Folds(new BrowserStorage()), [], services =>

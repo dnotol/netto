@@ -37,7 +37,7 @@ public class TabHeadTests
     [InlineData(typeof(MapTab))]
     [InlineData(typeof(OptimisationTab))]
     [InlineData(typeof(PistesTab))]
-    [InlineData(typeof(WhenToPayTab))]
+    [InlineData(typeof(WhenToPaySection))]
     [InlineData(typeof(CompareTab))]
     public void TabResx_everyTab_holdsNoEyebrowNorLede(Type tab)
     {

@@ -12,42 +12,40 @@ public class PlanTextTests
     // The name IStringLocalizer<Plan> reads Pages/Plan.resx under.
     private static readonly ResxText Resources = ResxText.For<Plan>();
 
-    // The keyboard's first stop on the page, past the bar and its tabs to the tab's own content: the map or,
-    // with My plan read by date, the payments.
+    // The keyboard's first stop on the page, past the bar and its tabs to the tab's own content: the map, the
+    // moves or the ideas.
     [Theory]
-    [InlineData(PlanTab.Plan, PlanLens.ByBucket, "Skip to the map")]
-    [InlineData(PlanTab.Plan, PlanLens.ByDate, "Skip to the payments")]
-    [InlineData(PlanTab.Optimisation, PlanLens.ByBucket, "Skip to your moves")]
-    [InlineData(PlanTab.Pistes, PlanLens.ByBucket, "Skip to the ideas")]
-    public void PlanResx_skipLink_saysWhereItGoesOnEachView(PlanTab tab, PlanLens lens, string expected)
+    [InlineData(PlanTab.Plan, "Skip to the map")]
+    [InlineData(PlanTab.Optimisation, "Skip to your moves")]
+    [InlineData(PlanTab.Pistes, "Skip to the ideas")]
+    public void PlanResx_skipLink_saysWhereItGoesOnEachView(PlanTab tab, string expected)
     {
-        Resources.Get(PlanText.SkipTo(tab, lens)).ShouldBe(expected);
+        Resources.Get(PlanText.SkipTo(tab)).ShouldBe(expected);
     }
 
-    // The window's title names the view, as a new page would, and My plan's lens.
+    // The window's title names the view, as a new page would.
     [Theory]
-    [InlineData(PlanTab.Plan, PlanLens.ByBucket, "My plan: Netto")]
-    [InlineData(PlanTab.Plan, PlanLens.ByDate, "My plan by date: Netto")]
-    [InlineData(PlanTab.Optimisation, PlanLens.ByBucket, "Optimise: Netto")]
-    [InlineData(PlanTab.Pistes, PlanLens.ByBucket, "Ideas: Netto")]
-    public void PlanResx_pageTitle_namesEachView(PlanTab tab, PlanLens lens, string expected)
+    [InlineData(PlanTab.Plan, "My plan: Netto")]
+    [InlineData(PlanTab.Optimisation, "Optimise: Netto")]
+    [InlineData(PlanTab.Pistes, "Ideas: Netto")]
+    public void PlanResx_pageTitle_namesEachView(PlanTab tab, string expected)
     {
-        Resources.Get(PlanText.PageTitle(tab, lens)).ShouldBe(expected);
+        Resources.Get(PlanText.PageTitle(tab)).ShouldBe(expected);
     }
 
-    // A view or a lens added later fails here until it has both, in English and in French.
+    // A view added later fails here until it has both, in English and in French.
     [Fact]
-    public void PlanResx_everyViewAndLens_hasATitleAndASkipLinkInBothLanguages()
+    public void PlanResx_everyView_hasATitleAndASkipLinkInBothLanguages()
     {
         var french = ResxText.French<Plan>();
-        var keys = Enum.GetValues<PlanTab>().SelectMany(tab => Enum.GetValues<PlanLens>().Select(lens => (tab, lens)))
-            .SelectMany(view => new[] { PlanText.PageTitle(view.tab, view.lens), PlanText.SkipTo(view.tab, view.lens) })
+        var keys = Enum.GetValues<PlanTab>()
+            .SelectMany(tab => new[] { PlanText.PageTitle(tab), PlanText.SkipTo(tab) })
             .Append(PlanText.MyPlanTitle).Distinct();
 
         keys.Where(key => string.IsNullOrWhiteSpace(Resources.Get(key)) || string.IsNullOrWhiteSpace(french.Get(key))).ShouldBeEmpty();
     }
 
-    // The head of My plan, the page's h1, drawn by the page above the lens.
+    // The head of My plan, the page's h1, drawn by the page.
     [Fact]
     public void PlanResx_myPlanTitle_isTheViewsName()
     {

@@ -14,30 +14,37 @@
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
 
-<PageTitle>@L[PlanText.PageTitle(_tab, _lens)]</PageTitle>
+@* A bookmark to My plan read by date (/plan?by=date) replaces itself with the When to pay section of Optimise
+   (OnParametersSet): until the browser has gone there the page draws nothing, not a map it is leaving. *@
+@if (_redirecting)
+{
+    return;
+}
+
+<PageTitle>@L[PlanText.PageTitle(_tab)]</PageTitle>
 
 @* The keyboard's first stop from the top of the page, before the band at its top (BucketBar, in the site
    header's place): it moves the focus to the start of the tab's content, past the band's wordmark, tabs,
    buttons and buckets, which stay in sight above. Blazor would take a link to a fragment for a navigation,
    so the link moves the focus itself. On arriving, Blazor puts the focus on the page's title (Routes,
-   FocusOnNavigate), after the link, and so does a switch of view (TabHead), but not a switch of My plan's
-   lens, which keeps the focus on the lens link pressed. *@
+   FocusOnNavigate), after the link, and so does a switch of view (TabHead). *@
 <SectionContent SectionName="@MainLayout.SkipLinkSection">
-    <a href="@SkipHref" class="skip-link" @onclick="SkipAsync" @onclick:preventDefault>@L[PlanText.SkipTo(_tab, _lens)]</a>
+    <a href="@SkipHref" class="skip-link" @onclick="SkipAsync" @onclick:preventDefault>@L[PlanText.SkipTo(_tab)]</a>
 </SectionContent>
 
 @* The plan page, three views each answering one question (docs/architecture/decisions/2026-11-11-three-views-one-question-each.md),
    in the top row of the band (BucketBar), which sums up the river on every one of them: My plan, where I
    stand, the river's modules from above with the money between them and the card of the module chosen
-   beside them, where it is edited (MapTab), or the same plan by date, when its payments fall
-   (WhenToPayTab), the lens being a query, ?by=date (PlanLensBar); Optimise, the moves Netto proposes from
-   the plan on screen, retuning only the levers it holds (Optimisation); and Ideas, what could be added
-   (Pistes). My plan suggests nothing: the other two appear in it only as the tabs' badges and one line of
-   nudges (PlanNudges). Comparing two saved plans is a mode of the Plans panel, in the band. Each view has
-   its own URL (PlanTabRoutes) but they are this one page, so the river's inputs, its run, what the page
-   found and the module chosen stay as they are from one view to the next, and Blazor keeps the page when
-   the view or the lens changes: the view is a parameter of the route, the lens and the card queries. The
-   old addresses of When to pay and Compare plans replace themselves with their new place (PlanMoved).
+   beside them, where it is edited (MapTab); Optimise, the moves Netto proposes from the plan on screen,
+   retuning only the levers it holds, then when the plan's payments fall, a section named by a query,
+   ?show=when (OptimisationTab, WhenToPaySection); and Ideas, what could be added (Pistes). My plan
+   suggests nothing: the other two appear in it only as the tabs' badges and one line of nudges
+   (PlanNudges). Comparing two saved plans is a mode of the Plans panel, in the band. Each view has its own
+   URL (PlanTabRoutes) but they are this one page, so the river's inputs, its run, what the page found and
+   the module chosen stay as they are from one view to the next, and Blazor keeps the page when the view
+   changes: the view is a parameter of the route, the section, the card and the Plans panel's mode queries.
+   The old addresses of When to pay (/plan/when-to-pay, /plan?by=date) and Compare plans replace themselves
+   with their new place (PlanMoved, OnParametersSet).
 
    The river: the year from the company's revenue to the director's pocket, as modules that each edit their
    part of one scenario on their card and draw their view of one run. Every figure comes from Netto.Core;
@@ -53,13 +60,14 @@
 @{
     var moves = _moves.View(Today);
     var pistes = _pistes.View(Today);
+    var calendar = CalendarView.From(_inputs, _run, Today);
 }
 <BucketBar Run="_run" Setup="_today?.Run" BucketChosen="OnBucketChosen">
     <ChildContent>
         <PlansPanel Inputs="_inputs" CanSave="BaselineGain.CanMark(_run)" OnOpen="OnPlanOpened" OnChanged="OnPlansChanged" OpenOnCompare="PlanTabRoutes.OpensCompare(PlansMode)" />
     </ChildContent>
     <Tabs>
-        <PlanTabBar Current="_tab" Badges="Badges(moves, pistes)" />
+        <PlanTabBar Current="_tab" Badges="Badges(moves, calendar, pistes)" DeadlineChosen="OnDeadlineChosen" />
     </Tabs>
 </BucketBar>
 <TakenOutNotice @ref="_notice" Module="_takenOut" OnUndo="Undo" OnDismiss="Dismiss" />
@@ -70,51 +78,44 @@
         @switch (_tab)
         {
             case PlanTab.Plan:
-                @* My plan's head, the page's one h1 there, is drawn once above the lens, so a switch of lens keeps
-                   the focus where the viewer is and only arriving at the view moves it to the title (TabHead). *@
+                @* My plan's head, the page's one h1 there, is drawn by the page, so that a change of what its content draws
+                   keeps the focus where the viewer is and only arriving at the view moves it to the title (TabHead). *@
                 <TabHead Title="@L[PlanText.MyPlanTitle]" Focus="@(!PlanTabRoutes.OpensCompare(PlansMode))" />
-                <PlanLensBar Current="_lens" />
                 <PlanNudges Gain="NudgeGain(moves)" Pistes="PistesFound(pistes)" />
-                @if (_lens == PlanLens.ByDate)
-                {
-                    <WhenToPayTab Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Date="Today" />
-                }
-                else
-                {
-                    <MapTab Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" RefusedBy="Refused" Chosen="_mapChosen" ChosenChanged="OnMapChosen" ViewerChose="_viewerChose">
-                        <AddToPlan>
-                            <CompositionMenu @ref="_composition" Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" />
-                        </AddToPlan>
-                    </MapTab>
+                <MapTab Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" RefusedBy="Refused" Chosen="_mapChosen" ChosenChanged="OnMapChosen" ViewerChose="_viewerChose">
+                    <AddToPlan>
+                        <CompositionMenu @ref="_composition" Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" />
+                    </AddToPlan>
+                </MapTab>
 
-                    <aside class="assumed" aria-labelledby="assumed-title">
-                        <Fold Name="@PlanText.AssumedFold" Title="@L[PlanText.AssumedTitle]" TitleId="assumed-title"
-                              Summary="@L[PlanText.AssumedSummary, PlanText.Assumptions.Count]">
-                            <ul class="assumed__list">
-                                @foreach (var key in PlanText.Assumptions)
-                                {
-                                    <li>@L[key]</li>
-                                }
-                            </ul>
-                        </Fold>
-                    </aside>
+                <aside class="assumed" aria-labelledby="assumed-title">
+                    <Fold Name="@PlanText.AssumedFold" Title="@L[PlanText.AssumedTitle]" TitleId="assumed-title"
+                          Summary="@L[PlanText.AssumedSummary, PlanText.Assumptions.Count]">
+                        <ul class="assumed__list">
+                            @foreach (var key in PlanText.Assumptions)
+                            {
+                                <li>@L[key]</li>
+                            }
+                        </ul>
+                    </Fold>
+                </aside>
 
-                    <aside class="limits" aria-labelledby="limits-title">
-                        <Fold Name="@PlanText.LimitsFold" Title="@L[PlanText.LimitsTitle]" TitleId="limits-title"
-                              Summary="@L[PlanText.LimitsSummary, PlanText.Limits.Count]">
-                            <ul class="limits__list">
-                                @foreach (var key in PlanText.Limits)
-                                {
-                                    <li>@L[key]</li>
-                                }
-                            </ul>
-                            <p class="limits__note">@L[PlanText.LimitTaxCalcNote]</p>
-                        </Fold>
-                    </aside>
-                }
+                <aside class="limits" aria-labelledby="limits-title">
+                    <Fold Name="@PlanText.LimitsFold" Title="@L[PlanText.LimitsTitle]" TitleId="limits-title"
+                          Summary="@L[PlanText.LimitsSummary, PlanText.Limits.Count]">
+                        <ul class="limits__list">
+                            @foreach (var key in PlanText.Limits)
+                            {
+                                <li>@L[key]</li>
+                            }
+                        </ul>
+                        <p class="limits__note">@L[PlanText.LimitTaxCalcNote]</p>
+                    </Fold>
+                </aside>
                 break;
             case PlanTab.Optimisation:
-                <OptimisationTab Searching="_moves.Searching(Today)" Found="_moves.Found(Today)" Inputs="_inputs" InputsChanged="OnInputsChanged" Search="_search" />
+                <OptimisationTab @ref="_optimisation" Searching="_moves.Searching(Today)" Found="_moves.Found(Today)" Inputs="_inputs" InputsChanged="OnInputsChanged" Search="_search"
+                                 Calendar="calendar" OpensCalendar="PlanTabRoutes.OpensWhenToPay(ShowSection)" />
                 break;
             case PlanTab.Pistes:
                 <PistesTab View="pistes" Answered="_pistes.Answer" Tried="OnPisteTried" Dropped="_pistes.Drop" Kept="OnPisteKept" />
@@ -131,9 +132,15 @@
     [Parameter]
     public string? Tab { get; set; }
 
-    // The lens My plan is read through, /plan?by=date (PlanTabRoutes.LensFrom): by bucket, the map, for none.
-    [SupplyParameterFromQuery(Name = PlanTabRoutes.LensQuery)]
+    // The lens My plan was once read through, /plan?by=date, before When to pay became a section of Optimise: a
+    // bookmark to it replaces itself with the section (PlanTabRoutes.MovedFromLens).
+    [SupplyParameterFromQuery(Name = PlanTabRoutes.LegacyLensQuery)]
     public string? By { get; set; }
+
+    // The section of the Optimise view the address asks for, /plan/optimisation?show=when
+    // (PlanTabRoutes.OpensWhenToPay): the page brings it into focus once per arrival (SectionArrival).
+    [SupplyParameterFromQuery(Name = PlanTabRoutes.ShowQuery)]
+    public string? ShowSection { get; set; }
 
     // What the address asks the Plans panel to open on, /plan?plans=compare, where Compare plans' old address
     // goes (PlanTabRoutes.Moved).
@@ -146,7 +153,7 @@
     public string? Card { get; set; }
 
     private PlanTab _tab;
-    private PlanLens _lens;
+    private bool _redirecting;
     private RiverInputs _inputs = default!;
     private RiverRun _run = default!;
     private SplitSearchResult? _search;
@@ -155,6 +162,8 @@
     // « Add to plan », while My plan draws the map: a reference Blazor keeps once the map has gone, so it is
     // read there alone (AddToPlan).
     private CompositionMenu? _composition;
+    // The Optimise view, while it is drawn: a reference Blazor keeps once it has gone, read only on Optimise.
+    private OptimisationTab? _optimisation;
     private TakenOutNotice _notice = default!;
     private ElementReference _tabContent;
     private OptionalModule? _takenOut;
@@ -163,6 +172,11 @@
     private MovesSource _moves = default!;
     private PistesSource _pistes = default!;
     private readonly CardArrival _arrival = new();
+    private readonly SectionArrival _sectionArrival = new();
+    // The When to pay section is to take the focus at the next render, and again once the moves above it are
+    // found if the page arrived while they were still looked for, their list pushing the section down.
+    private bool _focusCalendar;
+    private bool _refocusCalendar;
     private MapChoice? _mapChosen = MapChoice.Of(RiverModule.CompanyYear);
     private bool _viewerChose;
 
@@ -174,9 +188,11 @@
         Show(State.Inputs);
     }
 
-    // The view the URL names, and the lens of My plan, on arriving and at each switch, the page staying the
-    // same; a segment Netto has no view for is a page it does not have. On the map, the card the URL names,
-    // once per arrival (CardArrival), has its module chosen on the map, while the map draws it, or its bucket.
+    // The view the URL names, on arriving and at each switch, the page staying the same; a segment Netto has no
+    // view for is a page it does not have, and My plan by date, which no longer exists, goes to the section that
+    // holds what it showed. On the map, the card the URL names, once per arrival (CardArrival), has its module
+    // chosen on the map, or its bucket. On Optimise, the section the URL names, once per arrival
+    // (SectionArrival), takes the focus.
     protected override void OnParametersSet()
     {
         if (PlanTabRoutes.From(Tab) is { } tab)
@@ -184,10 +200,20 @@
         else
             Navigation.NotFound();
 
+        _redirecting = _tab == PlanTab.Plan && PlanTabRoutes.MovedFromLens(By) is not null;
+        if (_redirecting)
+        {
+            Navigation.NavigateTo(PlanTabRoutes.MovedFromLens(By)!, replace: true);
+            return;
+        }
+
         SearchSplitForOptimisation();
-        _lens = PlanTabRoutes.LensFrom(By);
-        if (_arrival.Take(_tab, _lens, Card) is { } card && MapChoice.Named(card, MapView.ModulesOf(_inputs)) is { } named)
+        if (_arrival.Take(_tab, Card) is { } card && MapChoice.Named(card, MapView.ModulesOf(_inputs)) is { } named)
             (_mapChosen, _viewerChose) = (named, false);
+        if (_sectionArrival.Take(_tab, ShowSection))
+            (_focusCalendar, _refocusCalendar) = (true, _moves.Searching(Today));
+        else if (_tab != PlanTab.Optimisation)
+            (_focusCalendar, _refocusCalendar) = (false, false);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -198,10 +224,17 @@
             await _notice.FocusUndoAsync();
         }
 
+        if (_focusCalendar)
+        {
+            _focusCalendar = false;
+            if (_tab == PlanTab.Optimisation && _optimisation is { } optimisation)
+                await optimisation.FocusCalendarAsync();
+        }
+
         if (_focusComposition)
         {
             _focusComposition = false;
-            if (RemovalNoticeFocus.After(_tab, _lens) == RemovalFocus.AddToPlan && AddToPlan is { } menu)
+            if (RemovalNoticeFocus.After(_tab) == RemovalFocus.AddToPlan && AddToPlan is { } menu)
                 await menu.FocusButtonAsync();
             else
                 await _tabContent.FocusAsync();
@@ -213,6 +246,8 @@
         // what it found for the plan on screen (MovesSource).
         if (await _moves.SearchOncePaintedAsync(Today, _tab == PlanTab.Optimisation, () => JS.InvokeVoidAsync("nettoPaint.after")))
         {
+            // Arrived at the section while the moves were looked for: their list has pushed it down since.
+            (_focusCalendar, _refocusCalendar) = (_refocusCalendar && _tab == PlanTab.Optimisation, false);
             StateHasChanged();
             return;
         }
@@ -271,7 +306,11 @@
     // The next Tab goes on to the first control of the view's content.
     private async Task SkipAsync() => await _tabContent.FocusAsync();
 
-    private string SkipHref => $"{PlanTabRoutes.Href(_tab, _lens)}#{TabContentId}";
+    private string SkipHref => $"{PlanTabRoutes.Href(_tab)}#{TabContentId}";
+
+    // The tab's deadline badge followed: on the section's own address nothing changes under the page, so the
+    // focus is asked for here too (the address of another view brings it by arrival).
+    private void OnDeadlineChosen() => _focusCalendar = true;
 
     // Undo and Dismiss leave with the notice, so the focus goes where the plan's modules are set, « Add to
     // plan », or to the start of the view's content where it is not drawn (RemovalNoticeFocus).
@@ -294,9 +333,9 @@
     private void OnMapChosen(MapChoice? choice) => (_mapChosen, _viewerChose) = (choice, true);
 
     // A bucket the viewer pressed in the band: chosen on the map, as the viewer's choice, whatever was; from
-    // another view, or from My plan by date, which draws no map, the page goes to the plan by bucket, where
-    // the map's panel draws the bucket's card for the first time (MapPanel), and, from another view, the
-    // title takes the focus. An action, never a toggle: pressed again, it stays.
+    // another view, which draws no map, the page goes to My plan, where the map's panel draws the bucket's
+    // card for the first time (MapPanel), and the title takes the focus. An action, never a toggle: pressed
+    // again, it stays.
     private void OnBucketChosen(string bucket)
     {
         (_mapChosen, _viewerChose) = (MapChoice.InBucket(bucket), true);
@@ -337,8 +376,8 @@
     // since the search runs the split at every move, and only after the page has painted: until then the
     // badge says they are being looked for. My plan's own is the next deadline.
     // The Ideas badge says « … » while an idea is still measured, as Optimise's does for the moves.
-    private IReadOnlyDictionary<PlanTab, TabBadge> Badges(MovesView moves, PistesView pistes) =>
-        TabBadges.Of(_run, moves, CalendarView.From(_inputs, _run, Today), PistesFound(pistes), pistes.Searching);
+    private IReadOnlyDictionary<PlanTab, IReadOnlyList<TabBadge>> Badges(MovesView moves, CalendarView? calendar, PistesView pistes) =>
+        TabBadges.Of(_run, moves, calendar, PistesFound(pistes), pistes.Searching);
 
     // The ideas found for the plan on screen, for the Ideas badge and My plan's nudge: how many are priced and
     // how many still ask, none while one is still measured, so no count changes once it is found.
@@ -348,8 +387,8 @@
     // none while they are looked for or there are none.
     private static decimal? NudgeGain(MovesView moves) => moves is { State: MovesState.Moves } ? moves.Total : null;
 
-    // Whether the map, and its tools, are what My plan draws: the plan read by bucket.
-    private bool OnTheMap => _tab == PlanTab.Plan && _lens == PlanLens.ByBucket;
+    // Whether the map, and its tools, are what the page draws: My plan.
+    private bool OnTheMap => _tab == PlanTab.Plan;
 
     // « Add to plan » as the map draws it, none anywhere else.
     private CompositionMenu? AddToPlan => OnTheMap ? _composition : null;

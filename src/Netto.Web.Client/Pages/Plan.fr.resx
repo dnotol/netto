@@ -21,9 +21,6 @@
   <data name="PageTitle_Optimisation" xml:space="preserve">
     <value>Optimiser&#160;: Netto</value>
   </data>
-  <data name="PageTitle_ByDate" xml:space="preserve">
-    <value>Mon plan par date&#160;: Netto</value>
-  </data>
   <data name="PageTitle_Pistes" xml:space="preserve">
     <value>Pistes&#160;: Netto</value>
   </data>
@@ -35,9 +32,6 @@
   </data>
   <data name="SkipToMoves" xml:space="preserve">
     <value>Aller à vos ajustements</value>
-  </data>
-  <data name="SkipToPayments" xml:space="preserve">
-    <value>Aller aux paiements</value>
   </data>
   <data name="AssumedTitle" xml:space="preserve">
     <value>Hypothèses</value>

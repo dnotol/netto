@@ -31,7 +31,10 @@
     <value>{0} more than the plan on screen</value>
   </data>
   <data name="Spoken_NextBy" xml:space="preserve">
-    <value>next advance payment by {0}</value>
+    <value>When to pay: next advance payment by {0}</value>
+  </data>
+  <data name="Spoken_BilledRefused" xml:space="preserve">
+    <value>When to pay: what the fund bills is refused</value>
   </data>
   <data name="Spoken_Pistes" xml:space="preserve">
     <value>{0}</value>

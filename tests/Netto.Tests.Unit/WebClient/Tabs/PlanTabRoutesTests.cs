@@ -72,6 +72,7 @@ public class PlanTabRoutesTests
     [InlineData("plan/optimisation")]
     [InlineData("plan/Pistes/")]
     [InlineData("plan?by=date")]
+    [InlineData("plan/optimisation?show=when")]
     [InlineData("plan/when-to-pay")]
     [InlineData("Plan/Compare/")]
     [InlineData("plan?card=split")]
@@ -96,10 +97,10 @@ public class PlanTabRoutesTests
     }
 
     // The addresses the plan page once had for the views it folded in, and where each now is, as a link
-    // writes it: the lens of My plan, and the Plans panel opened on its compare mode.
+    // writes it: the When to pay section of Optimise, and the Plans panel opened on its compare mode.
     [Theory]
-    [InlineData("when-to-pay", "plan?by=date")]
-    [InlineData("When-To-Pay", "plan?by=date")]
+    [InlineData("when-to-pay", "plan/optimisation?show=when")]
+    [InlineData("When-To-Pay", "plan/optimisation?show=when")]
     [InlineData("compare", "plan?plans=compare")]
     [InlineData("COMPARE", "plan?plans=compare")]
     public void Moved_aFoldedViewsOldSegment_isItsNewPlace(string segment, string href)
@@ -118,32 +119,35 @@ public class PlanTabRoutesTests
         PlanTabRoutes.Moved(segment).ShouldBeNull();
     }
 
-    // The lens is a query on My plan, the by-bucket lens being the plan's own address.
-    [Theory]
-    [InlineData(PlanLens.ByBucket, "plan")]
-    [InlineData(PlanLens.ByDate, "plan?by=date")]
-    public void Href_myPlanThroughALens_isItsAddress(PlanLens lens, string href)
+    // When to pay is a section of Optimise, named by a query as a card is (plan?card=), never a fragment.
+    [Fact]
+    public void WhenToPayHref_isTheOptimiseViewAskingForTheSection()
     {
-        PlanTabRoutes.Href(PlanTab.Plan, lens).ShouldBe(href);
+        PlanTabRoutes.WhenToPayHref.ShouldBe("plan/optimisation?show=when");
     }
 
     [Theory]
-    [InlineData(PlanLens.ByBucket)]
-    [InlineData(PlanLens.ByDate)]
-    public void Href_aTabOtherThanMyPlanThroughALens_isItsOwnAddress(PlanLens lens)
+    [InlineData("when", true)]
+    [InlineData("WHEN", true)]
+    [InlineData("nonsense", false)]
+    [InlineData("", false)]
+    [InlineData(null, false)]
+    public void OpensWhenToPay_aQueryValue_isWhetherItNamesTheSection(string? show, bool opens)
     {
-        PlanTabRoutes.Href(PlanTab.Optimisation, lens).ShouldBe("plan/optimisation");
+        PlanTabRoutes.OpensWhenToPay(show).ShouldBe(opens);
     }
 
+    // A bookmark to My plan read by date goes to the section; any other value of the old query stays My plan.
     [Theory]
-    [InlineData(null, PlanLens.ByBucket)]
-    [InlineData("date", PlanLens.ByDate)]
-    [InlineData("DATE", PlanLens.ByDate)]
-    [InlineData("bucket", PlanLens.ByBucket)]
-    [InlineData("nonsense", PlanLens.ByBucket)]
-    public void LensFrom_aQueryValue_isALensOrTheDefault(string? value, PlanLens lens)
+    [InlineData("date", "plan/optimisation?show=when")]
+    [InlineData("DATE", "plan/optimisation?show=when")]
+    [InlineData("bucket", null)]
+    [InlineData("nonsense", null)]
+    [InlineData("", null)]
+    [InlineData(null, null)]
+    public void MovedFromLens_aQueryValue_isTheSectionForByDateAndNothingElse(string? by, string? href)
     {
-        PlanTabRoutes.LensFrom(value).ShouldBe(lens);
+        PlanTabRoutes.MovedFromLens(by).ShouldBe(href);
     }
 
     // The segment after /plan/, none for the river.
