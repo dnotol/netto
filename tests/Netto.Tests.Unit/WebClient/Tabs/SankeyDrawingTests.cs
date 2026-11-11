@@ -170,6 +170,17 @@ public class SankeyDrawingTests
             .ShouldBe((false, false, true));
     }
 
+    // A band the choice does not touch still reads as money: faded by one value, never as far as the map's rules lines.
+    [Fact]
+    public void Stylesheet_aFadedBand_keepsAtLeastFortyPercentOfItsInk_byOneValue()
+    {
+        var css = Stylesheet.WithoutComments(Stylesheet.Read("src", "Netto.Web.Client", "Tabs", "SankeyDrawing.razor.css"));
+
+        var faded = decimal.Parse(Regex.Match(Stylesheet.Block(css, ".sankey"), "--sankey-faded:\\s*([0-9.]+);").Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture);
+
+        (faded >= 0.4m, Stylesheet.Rules(css).Single(rule => rule.Selector.Contains(".sankey-band--faded", StringComparison.Ordinal)).Declarations.Contains("opacity: var(--sankey-faded);", StringComparison.Ordinal)).ShouldBe((true, true));
+    }
+
     internal static async Task<string> RenderAsync(RiverInputs river, MapChoice? chosen = null) =>
         WebUtility.HtmlDecode(await RiverRendering.RenderAsync(typeof(SankeyDrawing), new Folds(new BrowserStorage()), new()
         {

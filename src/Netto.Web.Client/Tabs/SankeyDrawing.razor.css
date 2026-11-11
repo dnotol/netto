@@ -55,9 +55,15 @@
     fill: var(--netto-expenses);
 }
 
+/* A band the choice does not touch stays money on the page in both themes, the chosen ones standing out over it:
+   one value to tune, --sankey-faded. */
+.sankey {
+    --sankey-faded: 0.45;
+}
+
 .sankey-band--faded,
 .sankey-loop--faded {
-    opacity: 0.18;
+    opacity: var(--sankey-faded);
 }
 
 /* The car's contribution going back out of the pocket: dashed, in the pocket's gold, under the bands. */
