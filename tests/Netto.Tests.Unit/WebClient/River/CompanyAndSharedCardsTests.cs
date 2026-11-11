@@ -10,10 +10,10 @@ using Shouldly;
 
 namespace Netto.Tests.WebClient.River;
 
-// Company year, the split and Corporate tax as a viewer reads them among the river's cards, all open
-// (CardHtml): what their sentences and bubbles say holds for what the engine does. The river's example
+// Company year, To share (SharedCard) and Corporate tax as a viewer reads them among the river's cards, all
+// open (CardHtml): what their sentences and bubbles say holds for what the engine does. The river's example
 // (RiverInputsTests) earns 100,000 once its running costs and INASTI's 409.30 are paid, and pays 50,000.
-public class CompanyAndSplitCardsTests
+public class CompanyAndSharedCardsTests
 {
     private static readonly ResxText CorporateTexts = ResxText.For<CorporateTaxCard>();
 
