@@ -320,7 +320,7 @@ public sealed record RiverInputs(
     public IReadOnlySet<LeverKind> LeversInPlan =>
         PlanComposition.Modules.Where(InPlan).Select(LeverOf).OfType<LeverKind>().ToHashSet();
 
-    private static LeverKind? LeverOf(OptionalModule module) => module switch
+    internal static LeverKind? LeverOf(OptionalModule module) => module switch
     {
         OptionalModule.Vouchers => LeverKind.Vouchers,
         OptionalModule.Allowances => LeverKind.Allowances,

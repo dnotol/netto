@@ -43,7 +43,7 @@ public static class PisteSearch
     }
 
     // The lever whose value a move sets, none for what every plan holds: the pay and both advance payments.
-    private static LeverKind? LeverOf(Move move) => move switch
+    internal static LeverKind? LeverOf(Move move) => move switch
     {
         PayMove or CompanyAdvancePaymentMove or DirectorAdvancePaymentMove => null,
         EcoVouchersMove or SportCultureVouchersMove => LeverKind.Vouchers,

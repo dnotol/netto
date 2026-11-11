@@ -17,6 +17,13 @@ public class PisteTrialTests
     private static readonly RiverInputs ExampleWithRoyalty =
         RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithCreativeShare(0.25m).WithRoyaltyFollowingPay();
 
+    // The page's module of an idea and the engine's lever of a module are two mappings that must agree.
+    [Fact]
+    public void ModuleOf_everyIdea_isTheModuleOfThatLever()
+    {
+        PisteSearch.Levers.Select(lever => RiverInputs.LeverOf(PisteTrial.ModuleOf(lever))).ShouldBe(PisteSearch.Levers.Cast<LeverKind?>());
+    }
+
     [Fact]
     public void Of_aLeverInThePlan_throws()
     {

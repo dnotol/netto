@@ -1,4 +1,5 @@
 using Netto.Core.Copyright;
+using Netto.Core.PersonalTax;
 using Netto.Core.Rent;
 using Netto.Core.Simulation;
 using Shouldly;
@@ -46,6 +47,26 @@ public class PisteSearchTests
         piste.With.PlanInPocket.ShouldBe(65_996.99m);
         piste.Gain.ShouldBe(63.00m);
         piste.Adds.Select(move => (move.Move, move.Gain)).ShouldBe([(new EcoVouchersMove(250m), 45.00m), (new SportCultureVouchersMove(100m), 18.00m)]);
+    }
+
+    // Two mappings from a move to its lever, the finder's and the idea search's, must not disagree: on a plan
+    // where every finder has a move to propose, the lever the idea search reads off a move is its finder's.
+    [Fact]
+    public void LeverOf_theMoveOfEveryFinder_isTheLeverOfItsFinder()
+    {
+        var everyFinderProposes = RiverExample with
+        {
+            Copyright = new CopyrightRoyalty(0m) { CreativeShare = 0.25m },
+            Rent = new HomeOfficeRent(1_500m, 0.15m, 0m),
+            TaxPrepayments = TaxPrepayments.None,
+        };
+
+        var finders = MoveSearch.Finders(On11November);
+
+        var proposed = finders.Select(finder => (Finder: finder.GetType().Name, Move: finder.Find(everyFinderProposes)));
+        proposed.Where(found => found.Move is null).ShouldBeEmpty();
+        finders.Select(finder => (finder.GetType().Name, Lever: PisteSearch.LeverOf(finder.Find(everyFinderProposes)!)))
+            .ShouldBe(finders.Select(finder => (finder.GetType().Name, finder.Lever)));
     }
 
     // The search does no arithmetic of its own: the gain is the pocket of one run of the year less another's.
