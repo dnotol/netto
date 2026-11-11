@@ -26,7 +26,8 @@ public class PlanMovesSearchTests
             .ShouldBe((1, new TabBadge(TabBadgeKind.Searching), 0));
     }
 
-    // Painted, the badge says what the moves add to the plan on screen, and the page waits for no other paint.
+    // Painted, the badge says what the moves add to the plan on screen; the page then waits for one more paint,
+    // the ideas' (PlanPistesTests), and no other.
     [Fact]
     public async Task Plan_painted_badgesOptimisationWithWhatTheMovesAdd()
     {
@@ -38,7 +39,7 @@ public class PlanMovesSearchTests
 
         var bar = await page.FindAsync<PlanTabBar>();
         (bar.Badges.GetValueOrDefault(PlanTab.Optimisation), page.Calls.Count(call => call == "nettoPaint.after"), page.Errors.Count)
-            .ShouldBe((new TabBadge(TabBadgeKind.MoreThanPlan, Amount: total), 1, 0));
+            .ShouldBe((new TabBadge(TabBadgeKind.MoreThanPlan, Amount: total), 2, 0));
     }
 
     // On the Optimisation tab, opened directly: looking for the moves until the paint, then the moves the

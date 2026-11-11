@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="VouchersGranted" xml:space="preserve">
+    <value>La société les accorde aux conditions de la carte Titres-repas et chèques</value>
+  </data>
+  <data name="State_Asking" xml:space="preserve">
+    <value>Gain chiffré dès vos réponses</value>
+  </data>
+  <data name="State_Ready" xml:space="preserve">
+    <value>Répondu&#160;: essayez-la pour chiffrer le gain</value>
+  </data>
+  <data name="State_Searching" xml:space="preserve">
+    <value>Chiffrage en cours…</value>
+  </data>
+  <data name="State_Priced" xml:space="preserve">
+    <value>Mesuré plan optimisé contre plan optimisé</value>
+  </data>
+  <data name="State_NoGain" xml:space="preserve">
+    <value>N'ajoute rien à votre plan optimisé</value>
+  </data>
+  <data name="State_Refused" xml:space="preserve">
+    <value>Netto ne peut pas la chiffrer avec ces faits</value>
+  </data>
+  <data name="Gain" xml:space="preserve">
+    <value>{0} de plus dans votre poche</value>
+  </data>
+  <data name="Gain_IfYes" xml:space="preserve">
+    <value>Si oui, {0} de plus dans votre poche</value>
+  </data>
+  <data name="Try" xml:space="preserve">
+    <value>Essayer</value>
+  </data>
+  <data name="TryLabel" xml:space="preserve">
+    <value>Essayer {0}</value>
+  </data>
+  <data name="Keep" xml:space="preserve">
+    <value>Garder</value>
+  </data>
+  <data name="KeepLabel" xml:space="preserve">
+    <value>Garder {0} dans votre plan</value>
+  </data>
+  <data name="Drop" xml:space="preserve">
+    <value>Abandonner</value>
+  </data>
+  <data name="DropLabel" xml:space="preserve">
+    <value>Abandonner l'essai de {0}</value>
+  </data>
+  <data name="TrialWithout" xml:space="preserve">
+    <value>Votre plan optimisé</value>
+  </data>
+  <data name="TrialWith" xml:space="preserve">
+    <value>Avec cette piste</value>
+  </data>
+  <data name="TrialGain" xml:space="preserve">
+    <value>Gain</value>
+  </data>
+  <data name="Trial_Asking" xml:space="preserve">
+    <value>Répondez aux questions ci-dessus pour la chiffrer.</value>
+  </data>
+  <data name="Trial_Ready" xml:space="preserve">
+    <value>Essayez-la pour la chiffrer.</value>
+  </data>
+  <data name="Trial_Searching" xml:space="preserve">
+    <value>Chiffrage de votre plan optimisé avec cette piste…</value>
+  </data>
+  <data name="Trial_Priced" xml:space="preserve">
+    <value>Votre plan optimisé avec cette piste, chaque ajustement s'ajoutant à ceux du dessus&#160;:</value>
+  </data>
+  <data name="Trial_NoGain" xml:space="preserve">
+    <value>Optimisé avec cette piste, votre plan ne gagne rien.</value>
+  </data>
+  <data name="Trial_Refused" xml:space="preserve">
+    <value>Netto ne peut pas calculer votre plan avec ces faits.</value>
+  </data>
+  <data name="KeepNote" xml:space="preserve">
+    <value>Garder ajoute cette piste seule à votre plan&#160;; Optimiser ajuste ensuite le reste.</value>
+  </data>
+</root>

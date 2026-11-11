@@ -111,7 +111,7 @@
                 <OptimisationTab Searching="_moves.Searching(Today)" Found="_moves.Found(Today)" Inputs="_inputs" InputsChanged="OnInputsChanged" Search="_search" />
                 break;
             case PlanTab.Pistes:
-                <PistesTab />
+                <PistesTab View="_pistes.View(Today)" Answered="_pistes.Answer" Tried="OnPisteTried" Dropped="_pistes.Drop" Kept="OnPisteKept" />
                 break;
         }
     </MudContainer>
@@ -155,6 +155,7 @@
     private bool _focusUndo;
     private bool _focusComposition;
     private MovesSource _moves = default!;
+    private PistesSource _pistes = default!;
     private readonly CardArrival _arrival = new();
     private MapChoice? _mapChosen = MapChoice.Of(RiverModule.CompanyYear);
     private bool _viewerChose;
@@ -162,6 +163,7 @@
     protected override void OnInitialized()
     {
         _moves = new MovesSource(() => _inputs, () => new ValueTask(Task.Delay(MovesSource.QuietPeriod, Clock)));
+        _pistes = new PistesSource(() => _inputs, date => _moves.Found(date));
         OnPlansChanged();
         Show(State.Inputs);
     }
@@ -203,7 +205,26 @@
         // looks for them (plan-paint.js), and off Optimisation for the edits to pause, then the page draws
         // what it found for the plan on screen (MovesSource).
         if (await _moves.SearchOncePaintedAsync(Today, _tab == PlanTab.Optimisation, () => JS.InvokeVoidAsync("nettoPaint.after")))
+        {
             StateHasChanged();
+            return;
+        }
+
+        // Then the ideas, measured against what the Optimiser found: each costs about a search of the moves,
+        // so one is measured per paint, the page drawing what it found before the next (PistesSource).
+        if (await _pistes.SearchNextOncePaintedAsync(Today, () => JS.InvokeVoidAsync("nettoPaint.after")))
+            StateHasChanged();
+    }
+
+    // « Try » on an idea: measured once the browser has painted, unless found already; the river stays as it is.
+    private void OnPisteTried(LeverKind lever) => _pistes.Try(lever);
+
+    // « Keep »: the river with the lever, its answers and its own moves' values, the page's one edit, which
+    // chooses the lever added as any lever just added is; nothing while the idea is not measured as it stands.
+    private void OnPisteKept(LeverKind lever)
+    {
+        if (_pistes.Keep(lever, Today) is { } river)
+            OnInputsChanged(river);
     }
 
     // A module taken out shows the notice. Taken out from its card, the word that did it is gone with
@@ -297,11 +318,13 @@
     // its badge and My plan's nudge need on every view, found once per plan on screen and date (MovesSource),
     // since the search runs the split at every move, and only after the page has painted: until then the
     // badge says they are being looked for. My plan's own is the next deadline.
-    private IReadOnlyDictionary<PlanTab, TabBadge> Badges() => TabBadges.Of(_run, _moves.View(Today), CalendarView.From(_inputs, _run, Today), Pistes);
+    // The Ideas badge says « … » while an idea is still measured, as Optimise's does for the moves.
+    private IReadOnlyDictionary<PlanTab, TabBadge> Badges() =>
+        TabBadges.Of(_run, _moves.View(Today), CalendarView.From(_inputs, _run, Today), Pistes, _pistes.View(Today).Searching);
 
-    // The ideas found for the plan on screen, for the Ideas badge and My plan's nudge: none while nothing
-    // finds them (the Pistes view supplies them).
-    private PistesCount? Pistes => null;
+    // The ideas found for the plan on screen, for the Ideas badge and My plan's nudge: how many are priced and
+    // how many still ask, none while one is still measured, so no count changes once it is found.
+    private PistesCount? Pistes => _pistes.View(Today) is { Searching: false } view ? new PistesCount(view.Priced, view.Questions) : null;
 
     // What the moves add to the plan on screen, for My plan's nudge: the Optimisation badge's own amount, so
     // none while they are looked for or there are none.

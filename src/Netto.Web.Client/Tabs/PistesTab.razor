@@ -1,10 +1,118 @@
+@using Netto.Core.Copyright
+@using Netto.Core.Simulation
+@using Netto.Web.Client.River
+@using Netto.Web.Client.River.Copyright
 @inject IStringLocalizer<PistesTab> L
+@inject IStringLocalizer<VoucherCard> Vouchers
+@inject IStringLocalizer<RentCard> Rent
+@inject IStringLocalizer<CopyrightCard> Copyright
 
 @* The Ideas view (« Pistes »): what could I add, the levers the plan does not use yet, each a question to the
-   viewer before it is a gain (docs/architecture/decisions/2026-11-11-three-views-one-question-each.md).
-   Until something finds and prices them, it opens on its head and says what it is for and that nothing is
-   measured here yet: no figure, no count, no promise of when. The head is drawn once, first, as every
-   tab's: it takes the focus when the viewer arrives (TabHead). *@
+   viewer before it is a gain (docs/architecture/decisions/2026-11-11-three-views-one-question-each.md,
+   2026-11-11-an-ideas-gain-is-optimised-against-optimised.md). Its head, then how a gain is measured and that
+   Netto asks, never decides; then one card per idea not in the plan, in the river's order (PisteCard), each
+   named by its lever's card title; then what Netto does not model, one muted line, no button, no promise.
+   The page measures the ideas, one per paint, after the Optimiser (PistesSource), and hands the view what it
+   found (PistesView); the view applies nothing itself. An idea kept leaves the view: a line says it is in the
+   plan now and points to Optimise for the retunes, and takes the focus, its card being gone. *@
 <TabHead Title="@L["Title"]" />
+<div class="pistes">
+    <p class="pistes__intro">@L[PistesTabText.Intro]</p>
+    @if (_kept is { } kept)
+    {
+        <p class="pistes__kept" tabindex="-1" @ref="_keptLine">
+            @L[PistesTabText.Kept, Title(kept)]<a class="pistes__link" href="@PlanTabRoutes.Href(PlanTab.Optimisation)">@L[PistesTabText.GoToOptimise]</a>
+        </p>
+    }
+    @if (View.Rows.Count == 0)
+    {
+        <p class="pistes__none">@L[PistesTabText.None(View.StartsAtPay)]</p>
+    }
+    @foreach (var row in View.Rows)
+    {
+        <PisteCard @key="row.Lever" Row="row" Title="@Title(row.Lever)" Help="@Help(row)"
+                   Answered="OnAnswered" Tried="@(() => OnTried(row.Lever))" Dropped="@(() => OnDropped(row.Lever))" Kept="@(() => OnKept(row.Lever))" />
+    }
+    @foreach (var kind in View.NotYet)
+    {
+        <p class="pistes__not-yet">@L[PistesTabText.NotYet(kind)]<span class="pistes__not-yet-status">@L[PistesTabText.NotInNetto]</span></p>
+    }
+</div>
 
-<p class="pistes__empty">@L["Empty"]</p>
+@code {
+    // The ideas the page found for the plan on screen (PistesSource.View).
+    [Parameter, EditorRequired]
+    public PistesView View { get; set; } = default!;
+
+    // The trial with the viewer's new answer, which the page keeps (PistesSource.Answer).
+    [Parameter]
+    public EventCallback<PisteTrial> Answered { get; set; }
+
+    // « Try », « Drop » and « Keep » on an idea, which the page carries out; Keep changes the river.
+    [Parameter]
+    public EventCallback<LeverKind> Tried { get; set; }
+
+    [Parameter]
+    public EventCallback<LeverKind> Dropped { get; set; }
+
+    [Parameter]
+    public EventCallback<LeverKind> Kept { get; set; }
+
+    private LeverKind? _kept;
+    private ElementReference _keptLine;
+    private bool _focusKept;
+
+    // The idea's name: its lever's card title.
+    private string Title(LeverKind lever) => lever switch
+    {
+        LeverKind.Vouchers => Vouchers["Title"],
+        LeverKind.Rent => Rent["Title"],
+        LeverKind.Copyright => Copyright["Title"],
+        _ => throw new ArgumentOutOfRangeException(nameof(lever), lever, "A lever that is no idea."),
+    };
+
+    // What the lever is: its card's own help.
+    private string Help(PisteRow row) => row.Lever switch
+    {
+        LeverKind.Vouchers => Vouchers["Hint"],
+        LeverKind.Rent => Rent["Hint"],
+        LeverKind.Copyright => Copyright["Hint", CopyrightCardText.Rate(Copyright, CopyrightRules.For(row.Trial.Plan.IncomeYear)?.WithholdingRate),
+            CopyrightCardText.Rate(Copyright, CopyrightRules.For(row.Trial.Plan.IncomeYear)?.TaxedApartRate)],
+        _ => throw new ArgumentOutOfRangeException(nameof(row), row.Lever, "A lever that is no idea."),
+    };
+
+    private async Task OnAnswered(PisteTrial trial)
+    {
+        _kept = null;
+        await Answered.InvokeAsync(trial);
+    }
+
+    private async Task OnTried(LeverKind lever)
+    {
+        _kept = null;
+        await Tried.InvokeAsync(lever);
+    }
+
+    private async Task OnDropped(LeverKind lever)
+    {
+        _kept = null;
+        await Dropped.InvokeAsync(lever);
+    }
+
+    // Kept, its card leaves the view: the line saying it is in the plan takes the focus.
+    private async Task OnKept(LeverKind lever)
+    {
+        _kept = lever;
+        _focusKept = true;
+        await Kept.InvokeAsync(lever);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_focusKept && _kept is not null)
+        {
+            _focusKept = false;
+            await _keptLine.FocusAsync();
+        }
+    }
+}

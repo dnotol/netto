@@ -1,0 +1,221 @@
+@using Netto.Core.Copyright
+@using Netto.Core.Rules
+@using Netto.Core.Simulation
+@using Netto.Core.Vouchers
+@using Netto.Web.Client.River
+@using Netto.Web.Client.River.Copyright
+@inject IStringLocalizer<PisteCard> L
+@inject IStringLocalizer<OptimisationTab> Moves
+@inject IStringLocalizer<RentCard> Rent
+@inject IStringLocalizer<CopyrightCard> Copyright
+
+@* One idea of the Ideas view, a lever not in the plan, as a card: its h2 the lever's card title, what the lever
+   is in the bubble after it (its card's own help), then what Netto cannot see, asked with the card's own
+   fields and words (eligibility is the viewer's to declare: the vouchers a yes on their card's conditions,
+   the rent the home's facts, the royalty the creative share and its statuses), and beside them where it
+   stands: its tuned gain, « if yes » before the vouchers' yes, « … » while it is measured, never a figure
+   measured for other answers. « Try » waits for every answer and the yes. Tried, its trial opens inside the
+   card: the optimised plan without the idea and with it, the gain, and the moves of that plan in the words of
+   Optimise; « Keep » only on an idea that gains, adding it alone, and « Drop ». The answers go to the trial,
+   never to the plan on screen, which changes only on Keep, through the page. A refusal of the answers is the
+   engine's, said by RefusedMessage. On « Try » the focus goes to the line opening the trial, which says it is
+   measured, then what was found; on « Drop » back to the card's title; on « Keep » the card leaves, and the
+   Ideas view takes the focus. No live region: the band's is the page's one announcement. *@
+<section class="piste" aria-labelledby="@HeadingId">
+    <div class="piste__body">
+        <div class="piste__head">
+            <h2 class="piste__title" id="@HeadingId" tabindex="-1" @ref="_heading">@Title</h2>
+            <InfoBubble Label="@Title">@Help</InfoBubble>
+        </div>
+        <div class="piste__questions">
+            @switch (Row.Lever)
+            {
+                case LeverKind.Vouchers:
+                    <div class="piste__tick">
+                        <MudCheckBox T="bool" Value="Row.Trial.Granted" ValueChanged="OnGrantedChanged" Color="Color.Primary" UncheckedColor="Color.Default"
+                                     Label="@L[PisteCardText.VouchersGranted]" />
+                    </div>
+                    @if (VoucherRules.For(Row.Trial.Plan.IncomeYear) is { } vouchers)
+                    {
+                        <ConditionList Name="piste-vouchers-conditions" Conditions="vouchers.Conditions" />
+                    }
+                    break;
+                case LeverKind.Rent:
+                    <RiverField Label="@Rent["CadastralIncomeLabel"]" For="piste-cadastral-income" Origin="Row.Trial.River.Rent.CadastralIncome.Origin"
+                                Help="@Rent["CadastralIncomeHint"]">
+                        <RiverNumericField T="decimal" InputId="piste-cadastral-income" Value="Row.Trial.River.Rent.CadastralIncome.Value" ValueChanged="OnCadastralIncomeChanged"
+                                           Euros="true" Error="@(Row.Error?.Input == RefusedInput.CadastralIncome)" Refusal="@Row.Error" />
+                    </RiverField>
+                    <RiverField Label="@Rent["ShareLabel"]" For="piste-share-let" Origin="Row.Trial.River.Rent.ShareLet.Origin" Help="@Rent["ShareHint"]">
+                        <RiverNumericField T="decimal" InputId="piste-share-let" Value="Row.Trial.River.Rent.ShareLet.Value * 100m" ValueChanged="OnSharePercentChanged"
+                                           Format="0.##" Adornment="Adornment.End" AdornmentText="%"
+                                           Error="@(Row.Error?.Input == RefusedInput.ShareLet)" Refusal="@Row.Error" />
+                    </RiverField>
+                    break;
+                case LeverKind.Copyright:
+                    var share = Row.Trial.River.Copyright.CreativeShare;
+                    var rules = CopyrightRules.For(Row.Trial.Plan.IncomeYear);
+                    <RiverField Label="@Copyright["CreativeShareLabel"]" For="piste-creative-share" Origin="@(share.Value is null ? null : share.Origin)"
+                                Help="@Copyright["CreativeShareHint", CopyrightCardText.Rate(Copyright, rules?.EnvelopeRate)]">
+                        <RiverNumericField T="decimal?" InputId="piste-creative-share" Value="share.Value * 100m" ValueChanged="OnCreativeSharePercentChanged"
+                                           Format="0.##" Adornment="Adornment.End" AdornmentText="%"
+                                           Error="@(Row.Error?.Input == RefusedInput.CreativeShare)" Refusal="@Row.Error" />
+                    </RiverField>
+                    <div class="piste__tick">
+                        <MudCheckBox T="bool" Value="Row.Trial.River.Copyright.AverageWithinCap.Value" ValueChanged="OnAverageChanged" Color="Color.Primary" UncheckedColor="Color.Default"
+                                     Label="@Copyright["AverageLabel", Formats.Euros(rules?.Cap.Value ?? 0m)]" />
+                        <OriginChip Origin="Row.Trial.River.Copyright.AverageWithinCap.Origin" />
+                        <InfoBubble Label="@Copyright["AverageLabel", Formats.Euros(rules?.Cap.Value ?? 0m)]">@Copyright["AverageHint"]</InfoBubble>
+                    </div>
+                    <div class="piste__tick">
+                        <MudCheckBox T="bool" Value="Row.Trial.River.Copyright.HoldsAttestation.Value" ValueChanged="OnAttestationChanged" Color="Color.Primary" UncheckedColor="Color.Default"
+                                     Label="@Copyright["AttestationLabel"]" />
+                        <OriginChip Origin="Row.Trial.River.Copyright.HoldsAttestation.Origin" />
+                        <InfoBubble Label="@Copyright["AttestationLabel"]">@Copyright["AttestationHint"]</InfoBubble>
+                    </div>
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(Row), Row.Lever, "A lever that is no idea.");
+            }
+        </div>
+        <RefusedMessage Error="@Row.Error" />
+    </div>
+    <div class="piste__result">
+        @if (Row.Gain is { } gain)
+        {
+            <p class="piste__gain">@L[PisteCardText.Gain(Row.AwaitsYes), Formats.Addition(gain)]</p>
+        }
+        <p class="piste__state">@L[PisteCardText.State(Row.State)]</p>
+        @if (!Row.ShowsTrial)
+        {
+            <MudButton Variant="Variant.Outlined" Size="Size.Small" Class="piste__try" Disabled="@(!Row.CanTry)" OnClick="TryAsync"
+                       aria-label="@L["TryLabel", Title]">@L["Try"]</MudButton>
+        }
+    </div>
+    @if (Row.ShowsTrial)
+    {
+        <div class="piste__trial">
+            <p class="piste__trial-state" tabindex="-1" @ref="_trialLine">@L[PisteCardText.Trial(Row.State)]</p>
+            @if (Row.Piste is { } piste)
+            {
+                <dl class="piste__figures">
+                    <div class="piste__pair">
+                        <dt class="piste__term">@L[PisteCardText.TrialWithout]</dt>
+                        <dd class="piste__figure">@Formats.Euros(piste.Without.PlanInPocket)</dd>
+                    </div>
+                    <div class="piste__pair">
+                        <dt class="piste__term">@L[PisteCardText.TrialWith]</dt>
+                        <dd class="piste__figure">@Formats.Euros(piste.With.PlanInPocket)</dd>
+                    </div>
+                    <div class="piste__pair">
+                        <dt class="piste__term">@L[PisteCardText.TrialGain]</dt>
+                        <dd class="piste__figure piste__figure--gain">@Formats.Addition(piste.Gain)</dd>
+                    </div>
+                </dl>
+                @* A list styled without its markers loses its role in some browsers: it is said again. *@
+                <ol class="piste__moves" role="list">
+                    @foreach (var move in piste.With.Moves)
+                    {
+                        <li class="piste__move">
+                            <span class="piste__what">@What(move)</span>
+                            <span class="piste__move-gain">@Moves["Gain", Formats.Euros(move.Gain)]</span>
+                        </li>
+                    }
+                </ol>
+            }
+            @if (Row.CanKeep)
+            {
+                <p class="piste__keep-note">@L[PisteCardText.KeepNote]</p>
+            }
+            <div class="piste__actions">
+                @if (Row.CanKeep)
+                {
+                    <MudButton Variant="Variant.Outlined" Size="Size.Small" Class="piste__keep" OnClick="Kept"
+                               aria-label="@L["KeepLabel", Title]">@L["Keep"]</MudButton>
+                }
+                <MudButton Variant="Variant.Text" Size="Size.Small" Class="piste__drop" OnClick="DropAsync"
+                           aria-label="@L["DropLabel", Title]">@L["Drop"]</MudButton>
+            </div>
+        </div>
+    }
+</section>
+
+@code {
+    // The idea as the Ideas view draws it (PistesView).
+    [Parameter, EditorRequired]
+    public PisteRow Row { get; set; } = default!;
+
+    // The lever's card title, and what the lever is, its card's own help.
+    [Parameter, EditorRequired]
+    public string Title { get; set; } = "";
+
+    [Parameter]
+    public string? Help { get; set; }
+
+    // The trial with the viewer's new answer.
+    [Parameter]
+    public EventCallback<PisteTrial> Answered { get; set; }
+
+    [Parameter]
+    public EventCallback Tried { get; set; }
+
+    [Parameter]
+    public EventCallback Dropped { get; set; }
+
+    [Parameter]
+    public EventCallback Kept { get; set; }
+
+    private ElementReference _heading;
+    private ElementReference _trialLine;
+    private Focus _focus;
+
+    private string HeadingId => $"piste-{Row.Lever.ToString().ToLowerInvariant()}";
+
+    // What a move of the idea's plan changes, in Optimise's words, from the pay the trial runs.
+    private string What(PlannedMove move) =>
+        Moves[OptimisationTabText.Move(move.Move),
+            OptimisationTabText.MoveArguments(move.Move, Row.Trial.WithLever.PayUsed, Row.Trial.WithLever.Copyright.CreativeShare.Value ?? 0m)];
+
+    private Task OnGrantedChanged(bool granted) => Answered.InvokeAsync(Row.Trial.WithGranted(granted));
+
+    private Task OnCadastralIncomeChanged(decimal amount) => Answered.InvokeAsync(Row.Trial.WithCadastralIncome(amount));
+
+    // The share is a fraction in the river; the field shows it as a percentage.
+    private Task OnSharePercentChanged(decimal percent) => Answered.InvokeAsync(Row.Trial.WithShareLet(percent / 100m));
+
+    private Task OnCreativeSharePercentChanged(decimal? percent) => Answered.InvokeAsync(Row.Trial.WithCreativeShare(percent / 100m));
+
+    private Task OnAverageChanged(bool within) => Answered.InvokeAsync(Row.Trial.WithAverageWithinCap(within));
+
+    private Task OnAttestationChanged(bool holds) => Answered.InvokeAsync(Row.Trial.WithAttestation(holds));
+
+    private async Task TryAsync()
+    {
+        _focus = Focus.Trial;
+        await Tried.InvokeAsync();
+    }
+
+    private async Task DropAsync()
+    {
+        _focus = Focus.Heading;
+        await Dropped.InvokeAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        var focus = _focus;
+        _focus = Focus.None;
+        if (focus == Focus.Trial && Row.ShowsTrial)
+            await _trialLine.FocusAsync();
+        else if (focus == Focus.Heading)
+            await _heading.FocusAsync();
+    }
+
+    // Where the focus goes once the card has drawn what the viewer pressed.
+    private enum Focus
+    {
+        None,
+        Trial,
+        Heading,
+    }
+}

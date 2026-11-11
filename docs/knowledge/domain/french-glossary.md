@@ -56,6 +56,12 @@ Fixed once; every file that names one uses it word for word (the card, the map, 
 | the river (the plan on screen) | not translated as a metaphor: « le plan », « le plan affiché » |
 | a move (Optimise) | un ajustement |
 | a lever | un levier |
+| an idea (Ideas: a lever not in the plan) | une piste |
+| Try · Keep · Drop (an idea) | Essayer · Garder · Abandonner |
+| a trial (of an idea, inside the Ideas view) | un essai |
+| if yes (an idea's gain before the viewer's yes) | si oui |
+| measuring ideas (the Ideas badge, spoken, while one is measured) | chiffrage des pistes |
+| not in Netto yet (what Netto does not model, no promise) | pas encore dans Netto |
 | Car's benefit in kind before / after your contribution | Avantage de toute nature de la voiture avant / après votre intervention |
 | tested pay (art. 215) | rémunération prise en compte |
 | reserve (cash the company keeps) | montant gardé dans la société (never « réserve », which is a legal term) |

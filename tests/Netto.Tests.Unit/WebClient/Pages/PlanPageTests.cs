@@ -168,7 +168,7 @@ public class PlanPageTests
 
     [Theory]
     [InlineData("optimisation", "moves__state")]
-    [InlineData("pistes", "Nothing is measured here yet.")]
+    [InlineData("pistes", "Each gain is measured optimised plan against optimised plan")]
     public async Task Plan_onAnotherView_showsItsOwnContentWithoutTheMap(string tab, string content)
     {
         var html = await RenderPlanAsync(new Folds(new BrowserStorage()), tab);
@@ -274,13 +274,13 @@ public class PlanPageTests
     }
 
     // Saved plans are compared in the Plans panel, which counts them itself: the tab bar holds no badge for
-    // them, and Ideas none while nothing finds ideas.
+    // them; on first draw Ideas says only that its ideas are being measured.
     [Fact]
-    public async Task Plan_twoSavedPlans_badgeNoTab()
+    public async Task Plan_twoSavedPlans_badgeNoTabForThem()
     {
         var html = await RenderPlanAsync(new Folds(new BrowserStorage()), saved: [RiverInputs.Example, RiverInputs.Example.WithDirectorPay(40_000m)]);
 
-        Links(html).Where(link => link.Name != "My plan" && link.Name != "Optimise").Select(link => link.Badge).ShouldBe([null]);
+        Links(html).Where(link => link.Name != "My plan" && link.Name != "Optimise").Select(link => link.Badge).ShouldBe(["…"]);
     }
 
     // The one line of nudges is drawn only when it has something to say: on first draw the moves are still
