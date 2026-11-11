@@ -16,7 +16,9 @@
    copyright situation », folded to a line that states them. Its figures come first, as lines
    (CopyrightFigures): the royalty, the part within the limits and the part beyond them, taxed as pay,
    the flat-rate costs the attestation takes off the first part and what the company withholds on each,
-   with a sentence for which limit set the part within; then the plan with the royalty and the same plan
+   with a sentence for which limit set the part within; then what the royalty does to the smallest pay that
+   keeps the reduced corporate rate, that pay with it and without it, or a note that no pay keeps the rate
+   (RoyaltyRateView, the engine's condition: the royalty's, which this card holds); then the plan with the royalty and the same plan
    without it, each by what reaches the pocket and what goes to the taxes on pay and on profit, and the
    difference, both at the pay the plan with the royalty runs at, which a note names once the pay set is
    held below (CopyrightComparison.PayHeld); then where its money goes: its tax apart, what of the part within reaches the pocket and
@@ -76,6 +78,14 @@
         <p class="copyright__note">@L[CopyrightCardText.Limits(result), Formats.Euros(result.Royalty), Formats.Euros(result.WithinLimits),
                                       Formats.Euros(result.RelativeLimit), Formats.Euros(result.Cap), Formats.Euros(result.TaxedAsPay), Inputs.IncomeYear,
                                       Formats.RuleAmount(_rules.RelativeLimit)]</p>
+        @if (_rate is { } rate)
+        {
+            <FigureList Figures="@FigureWords.Of(L, CopyrightFigures.RoyaltyRate(rate))" />
+            @if (CopyrightCardText.RoyaltyRateNote(rate) is { } rateNote)
+            {
+                <p class="copyright__note"><TermSentence Text="@L[rateNote]" Meaning="@L[ReducedRateText.Term, ReducedRateText.Arguments(Inputs.IncomeYear)]" /></p>
+            }
+        }
         @if (_comparison is { } comparison)
         {
             <div class="copyright__comparison">
@@ -124,6 +134,7 @@
     private CopyrightPolicyView _policy = default!;
     private CopyrightView? _view;
     private CopyrightComparison? _comparison;
+    private RoyaltyRateView? _rate;
     private CopyrightRules? _rules;
     private CopyrightSettingsView _settings = default!;
 
@@ -132,6 +143,7 @@
         _policy = CopyrightPolicyView.From(Inputs, Run);
         _view = Run.Year is { } year ? CopyrightView.From(year) : null;
         _comparison = CopyrightComparison.From(Inputs, Run);
+        _rate = _view is { HasRoyalty: true } ? RoyaltyRateView.From(Run.Year) : null;
         _rules = CopyrightRules.For(Inputs.IncomeYear);
         _settings = CopyrightSettingsView.From(Inputs, Run);
     }

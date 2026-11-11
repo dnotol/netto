@@ -25,7 +25,7 @@ public class MapTabTextTests
         RiverModule.Allowances => typeof(AllowanceCard),
         RiverModule.Rent => typeof(RentCard),
         RiverModule.Car => typeof(CarCard),
-        RiverModule.Split => typeof(SplitCard),
+        RiverModule.Split => typeof(SharedCard),
         RiverModule.Copyright => typeof(CopyrightCard),
         RiverModule.DirectorPay => typeof(DirectorPayCard),
         RiverModule.Household => typeof(HouseholdCard),

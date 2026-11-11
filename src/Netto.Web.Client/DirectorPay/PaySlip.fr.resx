@@ -172,10 +172,10 @@
     <value>Précompte mobilier retenu par la société sur vos droits d'auteur</value>
   </data>
   <data name="NextFollowingRoyaltyNote" xml:space="preserve">
-    <value>Les 1.000&#160;€ de plus laissent vos droits d'auteur tels quels, bien qu'ils suivent votre rémunération&#160;: ils omettent la hausse propre des droits à côté et l'impôt distinct sur cette hausse. La courbe de la répartition pèse les deux.</value>
+    <value>Les 1.000&#160;€ de plus laissent vos droits d'auteur tels quels, bien qu'ils suivent votre rémunération&#160;: ils omettent la hausse propre des droits à côté et l'impôt distinct sur cette hausse. La courbe de rémunération dans Optimiser pèse les deux.</value>
   </data>
   <data name="NextRoyaltyNote" xml:space="preserve">
-    <value>Les 1.000&#160;€ de plus laissent telle quelle la part de vos droits d'auteur au-delà de leurs limites, bien que 30&#160;% de la rémunération déplace cette limite&#160;: la courbe de la répartition en tient compte.</value>
+    <value>Les 1.000&#160;€ de plus laissent telle quelle la part de vos droits d'auteur au-delà de leurs limites, bien que 30&#160;% de la rémunération déplace cette limite&#160;: la courbe de rémunération dans Optimiser en tient compte.</value>
   </data>
   <data name="FinalTax_WithRoyalty" xml:space="preserve">
     <value>Impôt final sur votre rémunération et vos droits d'auteur</value>

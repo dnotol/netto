@@ -30,7 +30,7 @@ public class RoyaltyOnItsCardTests
 
     private static readonly ResxText Royalty = ResxText.For<CopyrightCard>();
 
-    private static readonly ResxText Split = ResxText.For<SplitCard>();
+    private static readonly ResxText Shared = ResxText.For<SharedCard>();
 
     // Its two ways, one chip each, the way the royalty is set pressed.
     public static TheoryData<string, RiverInputs, string> Ways => new()
@@ -93,7 +93,7 @@ public class RoyaltyOnItsCardTests
 
     // The river as the plan draws it hands the refusal to the Copyright card alone.
     [Fact]
-    public async Task Cards_fixedRoyaltyAboveWhatTheCompanyHas_isRefusedOnTheCopyrightCardNotTheSplit()
+    public async Task Cards_fixedRoyaltyAboveWhatTheCompanyHas_isRefusedOnTheCopyrightCardNotTheSharedCard()
     {
         var html = await CardHtml.RenderCardsOpenAsync(Above);
         var message = Refusals.Get($"Error_{Above.Run().Error.ShouldNotBeNull().Key}").ShouldNotBeNull();
@@ -102,12 +102,12 @@ public class RoyaltyOnItsCardTests
             .ShouldBe((true, false));
     }
 
-    // The split holds neither the way the royalty is set nor its amount any more.
+    // The node's card holds neither the way the royalty is set nor its amount.
     [Theory]
     [MemberData(nameof(Ways))]
-    public async Task SplitCard_royalty_hasNoChipsAndNoFieldForIt(string _, RiverInputs inputs, string _1)
+    public async Task SharedCard_royalty_hasNoChipsAndNoFieldForIt(string _, RiverInputs inputs, string _1)
     {
-        var html = await SplitAsync(inputs);
+        var html = await SharedAsync(inputs);
 
         html.ShouldSatisfyAllConditions(
             () => CardHtml.Chips(html).ShouldBeEmpty(),
@@ -120,22 +120,23 @@ public class RoyaltyOnItsCardTests
     [Theory]
     [InlineData(true, "RoyaltyNote_Follows")]
     [InlineData(false, "RoyaltyNote_Fixed")]
-    public async Task SplitCard_royalty_keepsItsLineASayingHowItIsSetAndALinkToItsCard(bool following, string note)
+    public async Task SharedCard_royalty_keepsItsLineASayingHowItIsSetAndALinkToItsCard(bool following, string note)
     {
-        var html = await SplitAsync(following ? Following : Fixed);
+        var html = await SharedAsync(following ? Following : Fixed);
 
         html.ShouldSatisfyAllConditions(
-            () => CardHtml.Lines(html).ShouldContain(line => line.Label == Split.Get("Figure_Royalty")),
-            () => CardHtml.Prose(html).ShouldContain(Split.Get(note).ShouldNotBeNull() + " " + Split.Get("RoyaltyLink").ShouldNotBeNull()),
+            () => CardHtml.Lines(html).ShouldContain(line => line.Label == Shared.Get("Figure_Royalty")),
+            () => CardHtml.Prose(html).ShouldContain(Shared.Get(note).ShouldNotBeNull()),
+            () => html.ShouldContain(Shared.Get("RoyaltyLink").ShouldNotBeNull()),
             () => Regex.IsMatch(html, "<a href=\"plan\\?card=copyright\"[^>]*>").ShouldBeTrue(),
             () => CardHtml.LeakedKeys(html).ShouldBeEmpty());
     }
 
     // No royalty in the plan, no note and no link.
     [Fact]
-    public async Task SplitCard_noRoyaltyInThePlan_saysNothingOfOne()
+    public async Task SharedCard_noRoyaltyInThePlan_saysNothingOfOne()
     {
-        var html = await SplitAsync(RiverInputs.Example);
+        var html = await SharedAsync(RiverInputs.Example);
 
         html.ShouldNotContain("card=copyright");
     }
@@ -193,11 +194,11 @@ public class RoyaltyOnItsCardTests
 
     private static Task<string> CopyrightAsync(RiverInputs inputs) => RenderOpenAsync<CopyrightCard>(OptionalModule.Copyright, inputs);
 
-    private static async Task<string> SplitAsync(RiverInputs inputs)
+    private static async Task<string> SharedAsync(RiverInputs inputs)
     {
         var folds = new Folds(new BrowserStorage());
         folds.Set("split", true);
 
-        return WebUtility.HtmlDecode(await RenderAsync<SplitCard>(folds, new() { ["Inputs"] = inputs, ["Run"] = inputs.Run(), ["Refused"] = null, ["Search"] = inputs.SearchSplit() }));
+        return WebUtility.HtmlDecode(await RenderAsync<SharedCard>(folds, new() { ["Inputs"] = inputs, ["Run"] = inputs.Run() }));
     }
 }

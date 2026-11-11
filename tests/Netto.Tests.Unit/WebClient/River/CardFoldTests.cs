@@ -13,7 +13,7 @@ namespace Netto.Tests.WebClient.River;
 // (RiverRendering), so a card that did not pass its refusal on to its frame fails here.
 public class CardFoldTests
 {
-    // Every card the engine can refuse a field of, with the optional ones in the plan.
+    // Every card the engine can refuse a field of, with the optional ones in the plan (the node « To share » holds no field).
     public static TheoryData<Type, string> CardsOfTheRiver => new()
     {
         { typeof(CompanyYearCard), "company-year" },
@@ -21,7 +21,6 @@ public class CardFoldTests
         { typeof(AllowanceCard), "allowances" },
         { typeof(RentCard), "rent" },
         { typeof(CarCard), "car" },
-        { typeof(SplitCard), "split" },
         { typeof(CopyrightCard), "copyright" },
         { typeof(DirectorPayCard), "director-pay" },
         { typeof(HouseholdCard), "household" },
@@ -100,8 +99,6 @@ public class CardFoldTests
     private static Dictionary<string, object?> Parameters(Type card, Refusal? refused)
     {
         var parameters = new Dictionary<string, object?> { ["Inputs"] = Everything, ["Run"] = Everything.Run(), ["Refused"] = refused };
-        if (card == typeof(SplitCard))
-            parameters["Search"] = Everything.SearchSplit();
 
         return parameters;
     }

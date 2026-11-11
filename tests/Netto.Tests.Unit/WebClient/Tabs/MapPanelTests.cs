@@ -64,14 +64,16 @@ public class MapPanelTests
             () => html.ShouldContain("id=\"river-running-costs\""));
     }
 
-    // The split's search is the page's, the curve its card draws; without it the card draws no curve.
+    // The node « To share » draws a read-only card: its sides, no field and no pay curve, which is Optimise's.
     [Fact]
-    public async Task Panel_theSplit_drawsTheSearchThePageHandsIt()
+    public async Task Panel_theSplit_drawsItsReadOnlyCardWithNoFieldAndNoCurve()
     {
-        var with = await RenderPanelAsync(Full, RiverModule.Split, search: Full.SearchSplit());
-        var without = await RenderPanelAsync(Full, RiverModule.Split);
+        var html = await RenderPanelAsync(Full, RiverModule.Split);
 
-        (with.Contains("pay-curve__plot"), without.Contains("pay-curve__plot")).ShouldBe((true, false));
+        html.ShouldSatisfyAllConditions(
+            () => html.ShouldContain("id=\"card-split\""),
+            () => html.ShouldNotContain("<input"),
+            () => html.ShouldNotContain("pay-curve"));
     }
 
     // The engine's refusal goes to the card that holds the field, as the Plan page hands it, with its words.
@@ -124,13 +126,12 @@ public class MapPanelTests
         Regex.IsMatch(html, "aria-live|role=\"(status|alert)\"").ShouldBeFalse();
     }
 
-    private static async Task<string> RenderPanelAsync(RiverInputs river, RiverModule? module, Folds? folds = null, Refusal? refused = null, Netto.Core.Simulation.SplitSearchResult? search = null) =>
+    private static async Task<string> RenderPanelAsync(RiverInputs river, RiverModule? module, Folds? folds = null, Refusal? refused = null) =>
         WebUtility.HtmlDecode(await RenderAsync(typeof(MapPanel), folds ?? new Folds(new BrowserStorage()), new()
         {
             [nameof(MapPanel.Chosen)] = MapRendering.Chosen(module),
             [nameof(MapPanel.Inputs)] = river,
             [nameof(MapPanel.Run)] = river.Run(),
-            [nameof(MapPanel.Search)] = search,
             [nameof(MapPanel.Refused)] = refused,
         }));
 }

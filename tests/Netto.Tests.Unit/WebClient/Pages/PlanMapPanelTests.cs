@@ -98,17 +98,17 @@ public class PlanMapPanelTests
             () => page.Errors.ShouldBeEmpty());
     }
 
-    // The split's search is the page's one, the curve its card draws; the card has no search of its own.
+    // The node « To share » chosen on the map opens its read-only card beside it, which holds no field and no
+    // curve: the pay is typed on the Director pay card and the curve is Optimise's.
     [Fact]
-    public async Task Plan_theSplitChosenOnTheMap_isHandedThePagesSearch()
+    public async Task Plan_theSplitChosenOnTheMap_isItsReadOnlyCard()
     {
         await using var page = await MapAsync(WithACar);
 
         await ChooseAsync(page, RiverModule.Split);
 
-        var (split, map) = (await page.FindAsync<SplitCard>(), await page.FindAsync<MapTab>());
-        map.Search.ShouldNotBeNull();
-        split.Search.ShouldBeSameAs(map.Search);
+        var shared = await page.FindAsync<SharedCard>();
+        shared.Inputs.ShouldBe((await page.FindAsync<MapTab>()).Inputs);
     }
 
     // The engine's refusal goes to the card holding the refused field, as on the Plan tab, and to no other.

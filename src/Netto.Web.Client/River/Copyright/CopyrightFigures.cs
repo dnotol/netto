@@ -11,6 +11,20 @@ namespace Netto.Web.Client.River.Copyright;
 // computes none.
 internal static class CopyrightFigures
 {
+    public const string RateWithRoyalty = "Figure_RateWithRoyalty";
+
+    public const string RateWithoutRoyalty = "Figure_RateWithoutRoyalty";
+
+    // What the royalty does to the smallest pay keeping the reduced corporate rate: that pay with the
+    // royalty and without it, the two set beside each other for the lowering to be read, a line each
+    // where some pay keeps the rate. These are bounds, not flows, so a pay of nothing, which any pay
+    // reaches, is a line too.
+    public static IReadOnlyList<FigureLine> RoyaltyRate(RoyaltyRateView rate) =>
+    [
+        .. new[] { (Key: RateWithRoyalty, Pay: rate.With), (Key: RateWithoutRoyalty, Pay: rate.Without) }
+            .Select(line => line.Pay is { } pay ? new FigureLine(line.Key, pay) : null).OfType<FigureLine>(),
+    ];
+
     // The royalty the company pays, whole, which the Map tab's gate says crosses (Tabs/MapGates).
     public const string Paid = "Figure_Royalty";
 

@@ -138,8 +138,8 @@ internal static class MapLinks
     // director's behalf and the fund's fee with them, all on to Director pay; the royalty, on to Copyright
     // royalty; the company's profit, on to Corporate tax.
     private static IEnumerable<MapLink> Split(RiverInputs inputs, RiverRun run, YearResult year) =>
-        FigureLines.Shown(SplitFigures.Sides(SplitView.From(inputs, run), year)).Select(line =>
-            Link(MapLinkKind.PassedOn, RiverModule.Split, MapEnd.Of(SplitTo(line.Key)), new MapLabel(MapText.SplitCard, line.Key, line.Args), line.Amount));
+        FigureLines.Shown(SharedFigures.Sides(SplitView.From(inputs, run), year)).Select(line =>
+            Link(MapLinkKind.PassedOn, RiverModule.Split, MapEnd.Of(SplitTo(line.Key)), new MapLabel(MapText.SharedCard, line.Key, line.Args), line.Amount));
 
     private static RiverModule SplitTo(string key) => key switch
     {

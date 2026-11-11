@@ -1,0 +1,63 @@
+using Netto.Core.Simulation;
+
+namespace Netto.Web.Client.River;
+
+// The pay curve's figures as lines of label, amount and share (FigureLine), which its section of the
+// Optimisation tab words from its own texts: the best pay the engine's search found with what it leaves beside
+// the pay set (Best), and what the pointer reads of a pay on the curve, only while it points at one (Pointer).
+// They select the engine's figures and divide them (Shares.Of), never calculate; a line of nothing is left out,
+// but for the one heading the lines, the pay or the best pay, which may be none.
+internal static class PayCurveFigures
+{
+    // The best pay and what it leaves: its dividend and, while the royalty follows the pay, the royalty
+    // beside it (a fixed one is the same at every pay, and the split's sides say it); what reaches the
+    // pocket there, with its share of what leaves the company (Reach); what it gains over the pay set;
+    // and what reaches the pocket at the pay set, with its own. A pay set within a euro of the best is
+    // the best: the lines are then the pay set's own figures, its pay, its dividend and what reaches the
+    // pocket at it, and no royalty, which the sides above show at that same pay. A pay set whose profit
+    // cannot keep the reserve is weighed apart: the best pay that keeps it, against what the pay set
+    // leaves in the pocket and in the company, with no gain and no reach, the two not leaving the same
+    // company behind. None when no pay keeps the reserve.
+    public static IReadOnlyList<FigureLine> Best(SplitSearchView search, YearResult year, SplitRoyaltyView? royalty, decimal reserve)
+    {
+        if (search.Best is not { } best)
+            return [];
+
+        var level = best.Level;
+        var dividend = new FigureLine("Figure_Dividend", level.Dividend);
+        var royaltyThere = royalty is { FollowsPay.Value: true } ? new FigureLine("Figure_Royalty", level.Royalty) : null;
+
+        return best switch
+        {
+            { IsYours: true } => SharedFigures.Shown(
+                new FigureLine("Figure_BestIsYours", year.DirectorPay.GrossPay), new FigureLine("Figure_Dividend", year.Dividend.Dividend),
+                new FigureLine("Figure_InPocket", year.NetInPocket) { Share = search.Reach }),
+            { YoursKeepsReserve: false } => SharedFigures.Shown(
+                new FigureLine("Figure_BestKeepingReserve", level.Pay) { Args = [Formats.Euros(reserve)] }, dividend, royaltyThere,
+                new FigureLine("Figure_InPocketThere", level.NetInPocket),
+                new FigureLine("Figure_InPocketAtYours", year.NetInPocket),
+                new FigureLine("Figure_KeptAtYours", year.KeptInCompany)),
+            _ => SharedFigures.Shown(
+                new FigureLine("Figure_Best", level.Pay), dividend, royaltyThere,
+                new FigureLine("Figure_InPocketThere", level.NetInPocket) { Share = best.Reach },
+                new FigureLine("Figure_MoreThanYours", best.Gain),
+                new FigureLine("Figure_InPocketAtYours", year.NetInPocket) { Share = search.Reach }),
+        };
+    }
+
+    // What reaches the pocket at the pay the pointer is on, with the royalty beside it while it follows
+    // the pay, and what the company keeps there when that is too little for the reserve, the chart's key
+    // saying what it keeps. None while it points at no pay.
+    public static PointerReading? Pointer(PayLevel? pointed, SplitRoyaltyView? royalty) => pointed switch
+    {
+        null => null,
+        { KeepsReserve: true } level => new(PayCurveText.AlongTheCurve("PointerAt", royalty),
+            [Formats.Euros(level.Pay), Formats.Euros(level.NetInPocket), Formats.Euros(level.Royalty)]),
+        { } level => new(PayCurveText.AlongTheCurve("PointerMissesReserve", royalty),
+            [Formats.Euros(level.Pay), Formats.Euros(level.NetInPocket), Formats.Euros(level.KeptInCompany), Formats.Euros(level.Royalty)]),
+    };
+}
+
+// A sentence the pay curve reads from the engine's figures: the key of its text in the card's texts, with
+// its arguments already formatted.
+internal sealed record PointerReading(string Key, IReadOnlyList<string> Args);

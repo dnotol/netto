@@ -75,7 +75,7 @@
                 }
                 else
                 {
-                    <MapTab Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Search="_search" RefusedBy="Refused" Chosen="_mapChosen" ChosenChanged="OnMapChosen" ViewerChose="_viewerChose">
+                    <MapTab Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" RefusedBy="Refused" Chosen="_mapChosen" ChosenChanged="OnMapChosen" ViewerChose="_viewerChose">
                         <AddToPlan>
                             <CompositionMenu @ref="_composition" Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" />
                         </AddToPlan>
@@ -341,5 +341,5 @@
 
     // The engine's refusal goes to the card holding the refused field, and only there.
     private Refusal? Refused(RiverModule module) =>
-        _run.Error is { } error && RiverErrors.Owner(error, _inputs.Company is null) == module ? error : null;
+        _run.Error is { } error && RiverErrors.Owner(error) == module ? error : null;
 }

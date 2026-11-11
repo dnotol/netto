@@ -70,7 +70,7 @@ public class DependantsModuleTests
     {
         var error = inputs.Run().Error.ShouldNotBeNull();
 
-        (error, RiverErrors.Owner(error, companySkipped: false)).ShouldBe((refusal, RiverModule.Household));
+        (error, RiverErrors.Owner(error)).ShouldBe((refusal, RiverModule.Household));
     }
 
     [Theory]
@@ -79,7 +79,7 @@ public class DependantsModuleTests
     {
         var error = inputs.SkipCompany().Run().Error.ShouldNotBeNull();
 
-        (error, RiverErrors.Owner(error, companySkipped: true)).ShouldBe((refusal, RiverModule.Household));
+        (error, RiverErrors.Owner(error)).ShouldBe((refusal, RiverModule.Household));
     }
 
     // Out of the plan the engine never sees the dependants, so never refuses them.

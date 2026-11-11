@@ -12,6 +12,15 @@ internal static class CopyrightCardText
     // has none (the ruling's envelope in 2025) or has no rules, as the cap is « the year's cap ».
     public static string Rate(IStringLocalizer texts, RuleAmount? rate) => rate is null ? texts["YearsRate"].Value : Formats.RuleAmount(rate);
 
+    // What the lines of the smallest pays keeping the reduced rate cannot say: that no pay keeps it beside the
+    // royalty, or without it. None where both pays are lines.
+    public static string? RoyaltyRateNote(RoyaltyRateView rate) => rate switch
+    {
+        { With: null } => "RoyaltyRate_NoPayKeeps",
+        { Without: null } => "RoyaltyRate_NoPayKeepsWithout",
+        _ => null,
+    };
+
     // Which limit set the part within them, as the engine says it was, in the note under its lines.
     public static string Limits(CopyrightResult result) => $"Limits_{result.Bound}";
 

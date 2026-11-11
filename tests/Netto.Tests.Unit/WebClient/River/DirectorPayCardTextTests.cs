@@ -35,6 +35,33 @@ public class DirectorPayCardTextTests
             () => notes.Select(note => Resources.Get(note).ShouldNotBeNull()).Where(text => text.Contains("{0}")).ShouldBeEmpty());
     }
 
+    // Why the pay goes no further: beside a royalty that follows the pay only while the engine set it at
+    // what a ruling accepts; one that is none leaves the whole profit before pay, as no royalty does.
+    public static TheoryData<string, RiverInputs, string> CeilingHints => new()
+    {
+        { "no royalty", RiverInputs.Example, "CeilingHint" },
+        { "following without a share", RiverInputs.Example.AddToPlan(OptionalModule.Copyright), "CeilingHint" },
+        { "following above the cap", RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithAverageWithinCap(false).WithCreativeShare(0.75m), "CeilingHint" },
+        { "following at 75%", RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithCreativeShare(0.75m), "CeilingHint_Follows" },
+        { "fixed", RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithRoyalty(10_000m), "CeilingHint_Fixed" },
+    };
+
+    [Theory]
+    [MemberData(nameof(CeilingHints))]
+    public void CeilingHint_namesTheFollowingRoyaltyOnlyWhileARulingAcceptsOne(string _, RiverInputs inputs, string key)
+    {
+        DirectorPayCardText.CeilingHint(SplitView.From(inputs, inputs.Run()).Royalty).ShouldBe(key);
+        Resources.Missing([key]).ShouldBeEmpty();
+    }
+
+    // The pay's slider and bound read their own texts: its label, how far the pay goes, and the slider's
+    // value with the royalty beside it.
+    [Fact]
+    public void DirectorPayCardResx_thePayFieldsTexts_haveAText()
+    {
+        Resources.Missing(["OwnPayLabel", "Ceiling", DirectorPayCardText.SliderValueWithRoyalty]).ShouldBeEmpty();
+    }
+
     // The card's own source names the fee (AR n° 38, art. 20 §4): what no text says is that it is
     // deductible, which Netto's reading supplies.
     [Fact]

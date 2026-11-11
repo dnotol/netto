@@ -1,0 +1,40 @@
+@using Netto.Web.Client.Tabs
+@inject IStringLocalizer<SharedCard> L
+
+@* The card of the node « To share » chosen on the map, in the seat of a module's card beside it (PinnedCard):
+   what the levers and the company's costs leave, which the split shares between the pay, a royalty and the
+   company. It is read-only, as a bucket's card is: the node is no module with inputs, so no field and no
+   « Remove … from your plan ». Its lines are the split's sides (SharedFigures.Sides), each out of what is
+   shared, the very figures the map draws from the node; under them, where each amount is set: the pay on the
+   Director pay card, the royalty on the Copyright royalty card (a note says how it is set) and what the company
+   keeps on the Dividend card. The best pay and the curve of the pocket at every pay are the Optimisation tab's. *@
+<ModuleCard Name="split" Title="@L["Title"]" Summary="@Summary" Help="@L["Hint"]">
+    <FigureList Figures="@FigureWords.Of(L, SharedFigures.Sides(_view, Run.Year))" />
+    @if (_view.Royalty is { } royalty)
+    {
+        <p class="shared__royalty">@L[SharedCardText.RoyaltyNote(royalty)]</p>
+    }
+    <ul class="shared__links">
+        <li><a href="@CardLinks.Href(MapModules.Name(RiverModule.DirectorPay))">@L["PayLink"]</a></li>
+        @if (_view.Royalty is not null)
+        {
+            <li><a href="@CardLinks.Href(ModuleFolds.Name(OptionalModule.Copyright))">@L[SharedCardText.RoyaltyLink]</a></li>
+        }
+        <li><a href="@CardLinks.Href(MapModules.Name(RiverModule.Dividend))">@L["ReserveLink"]</a></li>
+    </ul>
+</ModuleCard>
+
+@code {
+    [Parameter, EditorRequired]
+    public RiverInputs Inputs { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public RiverRun Run { get; set; } = default!;
+
+    private SplitView _view = default!;
+
+    protected override void OnParametersSet() => _view = SplitView.From(Inputs, Run);
+
+    // What is shared, the amount the line into the node says too (HandOff.Shared); none while an amount is refused.
+    private string? Summary => Run.Year is { } year ? L["Summary", Formats.WholeEuros(HandOff.Shared(year))].Value : null;
+}

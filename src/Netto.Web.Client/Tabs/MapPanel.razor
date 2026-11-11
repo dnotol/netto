@@ -43,7 +43,7 @@
                     <CarCard Inputs="Inputs" InputsChanged="InputsChanged" Run="Run" Refused="Refused" />
                     break;
                 case RiverModule.Split:
-                    <SplitCard Inputs="Inputs" InputsChanged="InputsChanged" Run="Run" Search="Search" Refused="Refused" />
+                    <SharedCard Inputs="Inputs" Run="Run" />
                     break;
                 case RiverModule.Copyright:
                     <CopyrightCard Inputs="Inputs" InputsChanged="InputsChanged" Run="Run" Refused="Refused" />
@@ -86,10 +86,6 @@
 
     [Parameter, EditorRequired]
     public RiverRun Run { get; set; } = default!;
-
-    // The split's search, which the split's card draws.
-    [Parameter]
-    public SplitSearchResult? Search { get; set; }
 
     // Whether the module or the bucket is the viewer's choice, on the map or in the bar, rather than one the
     // page made itself: only then does its card take the focus.

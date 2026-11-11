@@ -109,7 +109,7 @@
     <value>Bénéfice avant votre rémunération</value>
   </data>
   <data name="To_split" xml:space="preserve">
-    <value>vers la répartition</value>
+    <value>vers ce qui reste à partager</value>
   </data>
   <data name="Drain_left_after_vouchers" xml:space="preserve">
     <value>Reste après les titres-repas et chèques</value>

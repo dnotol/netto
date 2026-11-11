@@ -109,7 +109,7 @@
     <value>Profit before your pay</value>
   </data>
   <data name="To_split" xml:space="preserve">
-    <value>to the split</value>
+    <value>to what is left to share</value>
   </data>
   <data name="Drain_left_after_vouchers" xml:space="preserve">
     <value>Left after the vouchers</value>

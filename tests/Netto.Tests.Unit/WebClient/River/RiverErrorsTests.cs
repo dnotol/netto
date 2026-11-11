@@ -26,55 +26,39 @@ public class RiverErrorsTests
     };
 
     // The cards the year's, the pay's and the royalty's refusals show on, each module by its name: the pay is
-    // the split's while the company is there, Director pay's own once it is skipped, and so is the key
-    // formula's month of it; the royalty, whether it is fixed or follows the pay, is the Copyright royalty
+    // Director pay's, with the company's year or without it, and so is the key formula's month of it; the royalty, whether it is fixed or follows the pay, is the Copyright royalty
     // card's, which decides it.
-    private static readonly (Refusal Refusal, bool CompanySkipped, string Module)[] SpreadOverCards =
+    private static readonly (Refusal Refusal, string Module)[] SpreadOverCards =
     [
-        (YearSimulation.RevenueNegative, false, "CompanyYear"),
-        (YearSimulation.RunningCostsNegative, false, "CompanyYear"),
-        (YearSimulation.ReserveNegative, false, "Dividend"),
-        (YearSimulation.EarlierProfitsNegative, false, "Dividend"),
-        (YearSimulation.AdvancePaymentNegative, false, "CorporateTax"),
-        (GrossToNet.GrossPayNegative, false, "Split"),
-        (GrossToNet.GrossPayNegative, true, "DirectorPay"),
-        (WithholdingCalculator.MonthlyPayNegative, false, "Split"),
-        (WithholdingCalculator.MonthlyPayNegative, true, "DirectorPay"),
-        (GrossToNet.MunicipalRateOutOfRange, false, "DirectorPay"),
-        (GrossToNet.MunicipalRateOutOfRange, true, "DirectorPay"),
-        (GrossToNet.FundFeeRateOutOfRange, false, "DirectorPay"),
-        (GrossToNet.FundFeeRateOutOfRange, true, "DirectorPay"),
-        (GrossToNet.TaxWithheldNegative, false, "DirectorPay"),
-        (GrossToNet.TaxWithheldNegative, true, "DirectorPay"),
-        (GrossToNet.TaxAdvancePaymentNegative, false, "DirectorPay"),
-        (GrossToNet.TaxAdvancePaymentNegative, true, "DirectorPay"),
-        (CopyrightCalculator.RoyaltyNegative, false, "Copyright"),
-        (CopyrightCalculator.RoyaltyNegative, true, "Copyright"),
-        (CopyrightCalculator.RoyaltyAboveProfit, false, "Copyright"),
-        (CopyrightCalculator.RoyaltyAboveProfit, true, "Copyright"),
-        (CopyrightCalculator.CreativeShareOutOfRange, false, "Copyright"),
-        (GrossToNet.PartnerIncomeNegative, false, "Household"),
-        (GrossToNet.PartnerIncomeNegative, true, "Household"),
-        (GrossToNet.ChildrenNegative, false, "Household"),
-        (GrossToNet.ChildrenNegative, true, "Household"),
-        (GrossToNet.ChildrenUnder3OutOfRange, false, "Household"),
-        (GrossToNet.ChildrenUnder3OutOfRange, true, "Household"),
-        (GrossToNet.DependantsInCareNegative, false, "Household"),
-        (GrossToNet.DependantsInCareNegative, true, "Household"),
-        (GrossToNet.OtherDependantsNegative, false, "Household"),
-        (GrossToNet.OtherDependantsNegative, true, "Household"),
+        (YearSimulation.RevenueNegative, "CompanyYear"),
+        (YearSimulation.RunningCostsNegative, "CompanyYear"),
+        (YearSimulation.ReserveNegative, "Dividend"),
+        (YearSimulation.EarlierProfitsNegative, "Dividend"),
+        (YearSimulation.AdvancePaymentNegative, "CorporateTax"),
+        (GrossToNet.GrossPayNegative, "DirectorPay"),
+        (WithholdingCalculator.MonthlyPayNegative, "DirectorPay"),
+        (GrossToNet.MunicipalRateOutOfRange, "DirectorPay"),
+        (GrossToNet.FundFeeRateOutOfRange, "DirectorPay"),
+        (GrossToNet.TaxWithheldNegative, "DirectorPay"),
+        (GrossToNet.TaxAdvancePaymentNegative, "DirectorPay"),
+        (CopyrightCalculator.RoyaltyNegative, "Copyright"),
+        (CopyrightCalculator.RoyaltyAboveProfit, "Copyright"),
+        (CopyrightCalculator.CreativeShareOutOfRange, "Copyright"),
+        (GrossToNet.PartnerIncomeNegative, "Household"),
+        (GrossToNet.ChildrenNegative, "Household"),
+        (GrossToNet.ChildrenUnder3OutOfRange, "Household"),
+        (GrossToNet.DependantsInCareNegative, "Household"),
+        (GrossToNet.OtherDependantsNegative, "Household"),
     ];
 
-    public static TheoryData<Refusal, bool, string> SpreadOverCardsData => new(SpreadOverCards);
+    public static TheoryData<Refusal, string> SpreadOverCardsData => new(SpreadOverCards);
 
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void Owner_everyEngineRefusal_isACardsUnlessItsInputIsNotOnACard(bool companySkipped)
+    [Fact]
+    public void Owner_everyEngineRefusal_isACardsUnlessItsInputIsNotOnACard()
     {
         var refusals = EngineRefusals.All.Where(refusal => !NotOnACard.ContainsKey(refusal.Input)).ToList();
 
-        var unowned = refusals.Where(refusal => RiverErrors.Owner(refusal, companySkipped) == RiverModule.River).ToList();
+        var unowned = refusals.Where(refusal => RiverErrors.Owner(refusal) == RiverModule.River).ToList();
 
         refusals.Count.ShouldBeGreaterThan(30);
         unowned.ShouldBeEmpty();
@@ -86,7 +70,7 @@ public class RiverErrorsTests
     {
         var wrong = NotOnACard.Keys
             .Where(input => EngineRefusals.All.FirstOrDefault(refusal => refusal.Input == input) is not { } refusal
-                || RiverErrors.Owner(refusal, false) != RiverModule.River || RiverErrors.Owner(refusal, true) != RiverModule.River)
+                || RiverErrors.Owner(refusal) != RiverModule.River)
             .ToList();
 
         wrong.ShouldBeEmpty();
@@ -101,7 +85,7 @@ public class RiverErrorsTests
     {
         var refusals = EngineRefusals.DeclaredBy(calculator).ToList();
 
-        var elsewhere = refusals.Where(refusal => RiverErrors.Owner(refusal, false).ToString() != module).ToList();
+        var elsewhere = refusals.Where(refusal => RiverErrors.Owner(refusal).ToString() != module).ToList();
 
         refusals.ShouldNotBeEmpty();
         elsewhere.ShouldBeEmpty();
@@ -109,9 +93,9 @@ public class RiverErrorsTests
 
     [Theory]
     [MemberData(nameof(SpreadOverCardsData))]
-    public void Owner_yearPayOrRoyaltyRefusal_isTheCardHoldingTheField(Refusal refusal, bool companySkipped, string module)
+    public void Owner_yearPayOrRoyaltyRefusal_isTheCardHoldingTheField(Refusal refusal, string module)
     {
-        var owner = RiverErrors.Owner(refusal, companySkipped);
+        var owner = RiverErrors.Owner(refusal);
 
         owner.ToString().ShouldBe(module);
     }
@@ -131,14 +115,12 @@ public class RiverErrorsTests
     }
 
     // Every input has its case, whether or not a refusal refuses it yet: the switch is exhaustive.
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void Owner_everyInput_hasACase(bool companySkipped)
+    [Fact]
+    public void Owner_everyInput_hasACase()
     {
         var inputs = Enum.GetValues<RefusedInput>();
 
-        var unmapped = inputs.Where(input => !Maps(new Refusal("any_refusal", input), companySkipped)).ToList();
+        var unmapped = inputs.Where(input => !Maps(new Refusal("any_refusal", input))).ToList();
 
         unmapped.ShouldBeEmpty();
     }
@@ -149,14 +131,14 @@ public class RiverErrorsTests
     {
         var refusal = new Refusal("made_up", (RefusedInput)int.MaxValue);
 
-        Should.Throw<ArgumentOutOfRangeException>(() => RiverErrors.Owner(refusal, false));
+        Should.Throw<ArgumentOutOfRangeException>(() => RiverErrors.Owner(refusal));
     }
 
-    private static bool Maps(Refusal refusal, bool companySkipped)
+    private static bool Maps(Refusal refusal)
     {
         try
         {
-            RiverErrors.Owner(refusal, companySkipped);
+            RiverErrors.Owner(refusal);
             return true;
         }
         catch (ArgumentOutOfRangeException)

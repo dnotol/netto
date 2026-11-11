@@ -21,7 +21,7 @@ public class CompanyCardsInFrenchTests
 
     public static TheoryData<Type> CompanyCards() =>
     [
-        typeof(CompanyYearCard), typeof(VoucherCard), typeof(AllowanceCard), typeof(RentCard), typeof(SplitCard),
+        typeof(CompanyYearCard), typeof(VoucherCard), typeof(AllowanceCard), typeof(RentCard), typeof(SharedCard),
         typeof(CorporateTaxCard), typeof(DividendCard), typeof(DrainList),
     ];
 
@@ -32,7 +32,7 @@ public class CompanyCardsInFrenchTests
         (ModuleFolds.Name(OptionalModule.Vouchers), "Titres-repas et chèques"),
         (ModuleFolds.Name(OptionalModule.Allowances), "Indemnités de frais"),
         (ModuleFolds.Name(OptionalModule.Rent), "Loyer du bureau"),
-        ("split", "La répartition"),
+        ("split", "À partager"),
         ("corporate-tax", "Impôt des sociétés"),
         ("dividend", "Dividende"),
     ];

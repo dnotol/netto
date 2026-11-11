@@ -201,7 +201,7 @@
             </ul>
         }
         <div class="map-tab__panel">
-            <MapPanel Chosen="_chosen" ViewerChose="ViewerChose" Inputs="Inputs" InputsChanged="InputsChanged" Run="Run" Search="Search" Refused="ChosenRefusal" />
+            <MapPanel Chosen="_chosen" ViewerChose="ViewerChose" Inputs="Inputs" InputsChanged="InputsChanged" Run="Run" Refused="ChosenRefusal" />
         </div>
     </div>
 </div>
@@ -216,10 +216,6 @@
 
     [Parameter, EditorRequired]
     public RiverRun Run { get; set; } = default!;
-
-    // The split's search, which the split's card beside the map draws.
-    [Parameter]
-    public SplitSearchResult? Search { get; set; }
 
     // The engine's refusal a module's card holds, as the Plan page hands it to that card.
     [Parameter]

@@ -21,9 +21,6 @@
   <data name="OwnPayLabel" xml:space="preserve">
     <value>Gross director pay for the year</value>
   </data>
-  <data name="PayFromSplit" xml:space="preserve">
-    <value>Gross pay from the split</value>
-  </data>
   <data name="Figure_CompanyContributions" xml:space="preserve">
     <value>Contributions the company pays</value>
   </data>
@@ -152,5 +149,20 @@
   </data>
   <data name="Prepaid_Paid" xml:space="preserve">
     <value>{0} paid in advance</value>
+  </data>
+  <data name="Ceiling" xml:space="preserve">
+    <value>At most {0}</value>
+  </data>
+  <data name="CeilingHint" xml:space="preserve">
+    <value>Up to the profit before your pay.</value>
+  </data>
+  <data name="CeilingHint_Follows" xml:space="preserve">
+    <value>Up to where the royalty that follows your pay takes the rest of what your pay and royalty share.</value>
+  </data>
+  <data name="CeilingHint_Fixed" xml:space="preserve">
+    <value>Up to the profit before your pay once your fixed royalty is paid.</value>
+  </data>
+  <data name="SliderValue_Royalty" xml:space="preserve">
+    <value>{0}, with a royalty of {1}</value>
   </data>
 </root>

@@ -1,8 +1,8 @@
 /* ::deep reaches the MudCheckBox, the MudChipSet's chips and the MudButton, which carry no scope
    attribute of their own, and the lists of the card's figures (FigureList, DrainList). */
 
-/* The gross from the split, what the pay is taxed on and where it goes read as one list: the block
-   draws the rule over its first line, and the lists inside draw none of their own. */
+/* What the pay is taxed on and where it goes read as one list: the block draws the rule over its first
+   line, and the lists inside draw none of their own. */
 .director-pay__lines {
     display: grid;
     border-top: 1px solid var(--netto-line);
@@ -13,30 +13,13 @@
         border-top: 0;
     }
 
-/* The gross from the split, drawn as a figure list's line, with where it comes from beside its label. */
-.director-pay__pay {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: baseline;
-    gap: 0.1rem 1rem;
+/* How far the pay goes, under its field: a bound stays in sight, why in the field's bubble. */
+.director-pay__ceiling {
     margin: 0;
-    padding: 0.45rem 0;
-    border-bottom: 1px solid var(--netto-line);
-    font-size: 0.92rem;
-}
-
-.director-pay__pay-label {
-    display: inline-flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: 0.25rem 0.5rem;
-    min-width: 0;
-}
-
-.director-pay__pay-amount {
+    color: var(--netto-text-muted);
+    font-size: 0.8rem;
+    line-height: 1.55;
     font-variant-numeric: tabular-nums;
-    text-align: right;
-    white-space: nowrap;
 }
 
 /* A chip's text wraps rather than widening the card on a phone. */

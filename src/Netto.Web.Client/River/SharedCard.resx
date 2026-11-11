@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve">
+    <value>To share</value>
+  </data>
+  <data name="Summary" xml:space="preserve">
+    <value>{0} to share</value>
+  </data>
+  <data name="Hint" xml:space="preserve">
+    <value>What the levers and the company's costs leave, which your pay, any royalty and the company take between them. What your pay costs the company, your gross and any contributions and fund fee it pays for you, comes off the company's profit. Each amount is set on the card named under it.</value>
+  </data>
+  <data name="PayLink" xml:space="preserve">
+    <value>Set your pay on the Director pay card</value>
+  </data>
+  <data name="ReserveLink" xml:space="preserve">
+    <value>Set what the company keeps on the Dividend card</value>
+  </data>
+  <data name="RoyaltyNote_Follows" xml:space="preserve">
+    <value>Your royalty follows your pay, so the slider moves it too.</value>
+  </data>
+  <data name="RoyaltyNote_Fixed" xml:space="preserve">
+    <value>Your royalty is a fixed amount, whatever your pay.</value>
+  </data>
+  <data name="RoyaltyLink" xml:space="preserve">
+    <value>Change how it is set on the Copyright royalty card</value>
+  </data>
+  <data name="Figure_Pay" xml:space="preserve">
+    <value>Your pay</value>
+  </data>
+  <data name="Figure_CompanyContributions" xml:space="preserve">
+    <value>Contributions the company pays</value>
+  </data>
+  <data name="Figure_CompanyFundFee" xml:space="preserve">
+    <value>Fund fee the company pays</value>
+  </data>
+  <data name="Figure_Royalty" xml:space="preserve">
+    <value>Royalty</value>
+  </data>
+  <data name="Figure_Company" xml:space="preserve">
+    <value>Company profit before tax</value>
+  </data>
+</root>

@@ -314,7 +314,7 @@ public class LeverCardsFiguresTests
         { "allowances", "to the allowances" },
         { "rent", "to the rent" },
         { "car", "to the car" },
-        { "split", "to the split" },
+        { "split", "to what is left to share" },
         { "dividend", "to the dividend" },
         { "director_pay", "to Director pay, taxed as your pay" },
     };

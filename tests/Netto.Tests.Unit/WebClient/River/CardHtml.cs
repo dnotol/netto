@@ -70,14 +70,13 @@ internal static class CardHtml
             folds.Set(MapModules.Name(module), true);
 
         var run = river.Run();
-        var search = river.Company is null ? null : river.SearchSplit();
         var html = new StringBuilder();
         foreach (var (card, module) in Cards(river))
         {
-            var refused = run.Error is { } error && RiverErrors.Owner(error, river.Company is null) == module ? error : null;
+            var refused = run.Error is { } error && RiverErrors.Owner(error) == module ? error : null;
             var parameters = new Dictionary<string, object?> { ["Inputs"] = river, ["Run"] = run, ["Refused"] = refused };
-            if (card == typeof(SplitCard))
-                parameters["Search"] = search;
+            if (card == typeof(SharedCard))
+                parameters.Remove("Refused");
 
             html.Append(await RiverRendering.RenderAsync(card, folds, parameters, services => services.AddSingleton<TimeProvider>(new Clock(on))));
         }
@@ -100,7 +99,7 @@ internal static class CardHtml
         if (river.InPlan(OptionalModule.Car))
             yield return (typeof(CarCard), RiverModule.Car);
         if (river.Company is not null)
-            yield return (typeof(SplitCard), RiverModule.Split);
+            yield return (typeof(SharedCard), RiverModule.Split);
         if (river.InPlan(OptionalModule.Copyright))
             yield return (typeof(CopyrightCard), RiverModule.Copyright);
         yield return (typeof(DirectorPayCard), RiverModule.DirectorPay);

@@ -1,0 +1,17 @@
+/* How the royalty beside the pay is set; the cards that set each amount are listed under the lines. */
+.shared__royalty {
+    margin: 0;
+    color: var(--netto-text-muted);
+    font-size: 0.88rem;
+    line-height: 1.55;
+}
+
+.shared__links {
+    display: grid;
+    gap: 0.25rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: 0.88rem;
+    line-height: 1.55;
+}

@@ -60,7 +60,7 @@ public class HouseholdModuleTests
 
         var error = (companySkipped ? inputs.SkipCompany() : inputs).Run().Error.ShouldNotBeNull();
 
-        (error, RiverErrors.Owner(error, companySkipped)).ShouldBe((GrossToNet.PartnerIncomeNegative, RiverModule.Household));
+        (error, RiverErrors.Owner(error)).ShouldBe((GrossToNet.PartnerIncomeNegative, RiverModule.Household));
     }
 
     // Out of the plan the engine never sees the partner, so never refuses what they earn.

@@ -52,7 +52,7 @@ internal sealed record MapView(IReadOnlyList<MapNode> Modules, IReadOnlyList<Map
     public static MapView From(RiverInputs inputs, RiverRun run, Func<RiverModule, string> names)
     {
         var modules = ModulesOf(inputs);
-        var refused = run.Error is { } error ? RiverErrors.Owner(error, inputs.Company is null) : (RiverModule?)null;
+        var refused = run.Error is { } error ? RiverErrors.Owner(error) : (RiverModule?)null;
 
         // The run's links, each a line of a card, then the conditions one module sets on another, as the
         // engine names them for the year, between modules on the map; a run without a year, refused or
@@ -488,7 +488,7 @@ internal enum MapText
 
     CompanyYearCard,
 
-    SplitCard,
+    SharedCard,
 
     CarCard,
 

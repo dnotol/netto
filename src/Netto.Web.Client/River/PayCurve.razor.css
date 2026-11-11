@@ -1,76 +1,79 @@
-/* How far the pay goes, under its field: a bound stays in sight, why in the field's bubble. */
-.split__ceiling {
-    margin: 0;
-    color: var(--netto-text-muted);
-    font-size: 0.8rem;
-    line-height: 1.55;
-    font-variant-numeric: tabular-nums;
+/* The tune-your-pay section of the Optimisation tab, under the moves. */
+.tune {
+    display: grid;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
 }
 
-/* How the royalty beside the pay is set, with the link to the card that sets it. */
-.split__royalty {
+.tune__title {
+    margin: 0;
+    font-size: 1.15rem;
+}
+
+.tune__note {
+    max-width: 46rem;
     margin: 0;
     color: var(--netto-text-muted);
-    font-size: 0.88rem;
-    line-height: 1.55;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+/* Where the focus goes once the pay is set to the best: the figures that then say it is. */
+.tune__result {
+    display: grid;
+    gap: 0.5rem;
+    outline: none;
 }
 
 /* What the pointer reads keeps the room of two lines while the pointer is away, so the lines below
    never jump as it comes and goes. */
-.split__pointer,
-.split__best,
-.split__rate {
+.tune__pointer,
+.tune__best,
+.tune__rate {
     margin: 0;
     font-size: 0.9rem;
     line-height: 1.55;
 }
 
-.split__pointer {
+.tune__pointer {
     min-height: 3.1em;
     color: var(--netto-text-muted);
     font-variant-numeric: tabular-nums;
 }
 
-.split__rate {
+.tune__rate {
     color: var(--netto-text-muted);
 }
 
-/* The button that moves the pay to the best pay, drawn as the Optimisation tab's Apply is: a neutral
+/* The button that sets the plan's pay to the best pay, drawn as the moves' Apply is: a neutral
    outline, gold only where the keyboard or the pointer is on it. */
-.split__actions {
+.tune__actions {
     display: flex;
 }
 
-    .split__actions ::deep .split__move-to-best {
+    .tune__actions ::deep .tune__move-to-best {
         border-color: var(--netto-edge);
         border-radius: 999px;
         color: var(--netto-text);
     }
 
-        .split__actions ::deep .split__move-to-best:hover,
-        .split__actions ::deep .split__move-to-best:focus-visible {
+        .tune__actions ::deep .tune__move-to-best:hover,
+        .tune__actions ::deep .tune__move-to-best:focus-visible {
             border-color: var(--netto-gold);
         }
 
-/* The net in pocket at every pay: the amounts up the left, the plot, the pays under it and the
-   slider under them, the plot and the pays inset by the slider thumb's radius so that a pay sits
-   right above the thumb that sets it. A small MudSlider's thumb is 2px wide, scaled up only to draw. */
+/* The net in pocket at every pay: the amounts up the left, the plot and the pays under it. */
 .pay-curve {
     --pay-curve-axis: 2.75rem;
-    --pay-curve-inset: 1px;
+    --pay-curve-inset: 0px;
     display: grid;
     grid-template-columns: var(--pay-curve-axis) minmax(0, 1fr);
     grid-template-areas:
         "net plot"
-        ". pays"
-        ". slider";
+        ". pays";
     row-gap: 0.2rem;
-    /* Room for the top amount, centred on the plot's top edge, under the field's label. */
+    /* Room for the top amount, centred on the plot's top edge. */
     margin-top: 0.6rem;
-}
-
-.pay-curve--bare {
-    display: block;
 }
 
 .pay-curve__net-axis {
@@ -127,11 +130,6 @@
     .pay-curve__pay-tick:last-child {
         transform: translateX(-100%);
     }
-
-.pay-curve__slider {
-    grid-area: slider;
-    min-width: 0;
-}
 
 /* Hairline grid, the gold pocket line, and the neutral marks over it (CLAUDE.md, UI). */
 .pay-curve__grid,

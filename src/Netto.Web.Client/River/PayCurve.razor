@@ -1,0 +1,200 @@
+@using System.Globalization
+@using Netto.Core.Simulation
+@inject IStringLocalizer<PayCurve> L
+
+@* The pay curve of the Optimisation tab, under the moves: the tuning question drawn. The engine's search draws
+   the net in pocket at every pay, with the plan's own pay marked and the best pay marked; pointing at the curve
+   reads a pay, in a line that keeps its room while the pointer is away, and a click sets the plan's pay there.
+   What the pointer reads is no live region: it changes at every step, and the bar of buckets says what reaches
+   the pocket once the pay settles. The plan's pay is typed on the Director pay card, so there is no slider here.
+
+   The figures follow, as lines (PayCurveFigures): the best pay and what it leaves against the pay set, a
+   sentence saying only how it stands against the reduced corporate rate, or that no pay keeps the reserve.
+   While the pay set is not that best pay, a button after them sets it there (BestPayView.MoveTo): the best pay
+   of the plan's own facts, which follows their edits, where the moves above are found once for the plan on
+   screen. Both edit the river, so the moves are looked for again at once, the tab being on screen; the focus
+   stays on the figures, which say the pay is then the best, rather than on a button that goes.
+
+   The plot stretches to its width (preserveAspectRatio="none"), so its lines keep their width through
+   vector-effect, and what must keep its shape (the best pay's dot, the axes' labels) is HTML placed over it in
+   percentages. Nothing is drawn while the engine refuses an amount, the company's year is skipped or there is no
+   profit to share. *@
+@if (_search is { } search)
+{
+    var curve = search.Curve;
+    <section class="tune" aria-labelledby="tune-title">
+        <h2 id="tune-title" class="tune__title">@L["Title"]</h2>
+        <p class="tune__note">@L["Note"]</p>
+        <p class="tune__note">@L["CurveHint"]</p>
+        <div class="pay-curve">
+            <div class="pay-curve__net-axis" aria-hidden="true">
+                @foreach (var tick in curve.NetTicks)
+                {
+                    <span class="pay-curve__net-tick" style="bottom: @Percent(tick.At)">@Formats.ThousandsOfEuros(tick.Amount)</span>
+                }
+            </div>
+            <div class="pay-curve__plot" @onmouseleave="ClearPointer">
+                <svg viewBox="0 0 1000 1000" preserveAspectRatio="none" role="img" aria-label="@ChartLabel">
+                    @foreach (var tick in curve.NetTicks)
+                    {
+                        <line class="pay-curve__grid" x1="0" x2="1000" y1="@Y(tick.At)" y2="@Y(tick.At)" />
+                    }
+                    @if (curve.ThresholdAt is { } threshold)
+                    {
+                        <line class="pay-curve__threshold" x1="@X(threshold)" x2="@X(threshold)" y1="0" y2="1000" />
+                    }
+                    @foreach (var run in curve.Runs)
+                    {
+                        <polyline class="pay-curve__net @(run.KeepsReserve ? null : "pay-curve__net--misses")" points="@Points(run.Points)" />
+                    }
+                    <line class="pay-curve__yours" x1="@X(curve.PayAt)" x2="@X(curve.PayAt)" y1="0" y2="1000" />
+                    @if (_pointer is { } pointed)
+                    {
+                        <line class="pay-curve__pointer" x1="@X(pointed.Pay / _top)" x2="@X(pointed.Pay / _top)" y1="0" y2="1000" />
+                    }
+                    @foreach (var band in curve.Bands)
+                    {
+                        <rect class="pay-curve__band" x="@X(band.From)" width="@Length(band.To - band.From)" y="0" height="1000"
+                              @onmouseover="() => Point(band.Level)" @onclick="() => MoveTo(band.Level.Pay)" />
+                    }
+                </svg>
+                @if (curve.BestAt is { } best)
+                {
+                    <span class="pay-curve__best" style="left: @Percent(best.X); bottom: @Percent(best.Y)"></span>
+                }
+            </div>
+            <div class="pay-curve__pay-axis" aria-hidden="true">
+                @foreach (var tick in curve.PayTicks)
+                {
+                    <span class="pay-curve__pay-tick" style="left: @Percent(tick.At)">@Formats.ThousandsOfEuros(tick.Amount)</span>
+                }
+            </div>
+        </div>
+        <ul class="pay-curve__key">
+            <li><span class="pay-curve__key-mark pay-curve__key-mark--yours"></span>@L["KeyYourPay"]</li>
+            @if (search.Best is not null)
+            {
+                <li><span class="pay-curve__key-mark pay-curve__key-mark--best"></span>@L["KeyBest"]</li>
+            }
+            @if (Search?.SmallestPayKeepingReducedRate is { } smallest)
+            {
+                <li><span class="pay-curve__key-mark pay-curve__key-mark--threshold"></span>@L[PayCurveText.KeyThreshold(_royaltyRate), Formats.Euros(smallest)]</li>
+            }
+            @if (curve.SomeMissReserve)
+            {
+                <li><span class="pay-curve__key-mark pay-curve__key-mark--misses"></span>@L["KeyMissesReserve", Formats.Euros(Inputs.Reserve.Value)]</li>
+            }
+        </ul>
+        <p class="tune__pointer">@PointerText</p>
+        <div class="tune__result" tabindex="-1" @ref="_result">
+            @if (search.Best is { } bestPay && _year is { } year)
+            {
+                <FigureList Figures="@FigureWords.Of(L, PayCurveFigures.Best(search, year, _royalty, Inputs.Reserve.Value))" />
+                @if (search.Rate is { } rate)
+                {
+                    <p class="tune__rate"><TermSentence Text="@RateText(rate)" Meaning="@ReducedRateMeaning" /></p>
+                }
+                @if (!bestPay.IsYours)
+                {
+                    <div class="tune__actions">
+                        <MudButton Variant="Variant.Outlined" Size="Size.Small" Class="tune__move-to-best" OnClick="@(() => MoveToBest(bestPay))"
+                                   aria-label="@L["MoveToBestLabel", Formats.Euros(bestPay.Level.Pay)]">@L["MoveToBest"]</MudButton>
+                    </div>
+                }
+            }
+            else
+            {
+                <p class="tune__best">@L["NoBest", Formats.Euros(Inputs.Reserve.Value), Formats.Euros(search.MostKept)]</p>
+            }
+        </div>
+    </section>
+}
+
+@code {
+    // The plan on screen, whose own pay the curve sets.
+    [Parameter, EditorRequired]
+    public RiverInputs Inputs { get; set; } = default!;
+
+    // The river with the pay set to a pay of the curve, or to the best pay.
+    [Parameter]
+    public EventCallback<RiverInputs> InputsChanged { get; set; }
+
+    // The engine's search across every pay for the river as it is, which the page runs again only when an
+    // input other than the pay changes (Plan, RiverInputs.SearchSplit). None while the company's year is
+    // skipped or an amount is refused: the section then draws nothing.
+    [Parameter]
+    public SplitSearchResult? Search { get; set; }
+
+    private SplitSearchView? _search;
+    private SplitRoyaltyView? _royalty;
+    private RoyaltyRateView? _royaltyRate;
+    private YearResult? _year;
+    private decimal _top;
+    private PayLevel? _pointer;
+    private ElementReference _result;
+    private bool _focusResult;
+
+    protected override void OnParametersSet()
+    {
+        var run = Inputs.Run();
+        _year = run.Year;
+        _royalty = SplitRoyaltyView.From(Inputs, run);
+        _search = SplitSearchView.From(Inputs, run, Search);
+        _royaltyRate = RoyaltyRateView.From(run.Year);
+        _top = Search?.Curve[^1].Pay ?? 0m;
+        if (_search is null)
+            _pointer = null;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_focusResult)
+        {
+            _focusResult = false;
+            await _result.FocusAsync();
+        }
+    }
+
+    // What the reduced corporate rate is, where a sentence weighs it, with the share of the pay its rule
+    // lets the benefits reach in every tax period.
+    private string ReducedRateMeaning => L[ReducedRateText.Term, ReducedRateText.Arguments(Inputs.IncomeYear)].Value;
+
+    private string ChartLabel => L["ChartLabel", Formats.Euros(0m), Formats.Euros(_top)].Value;
+
+    // What the pointer reads of the pay it is on; nothing while it is away from the curve.
+    private string PointerText => PayCurveFigures.Pointer(_pointer, _royalty) is { } reading ? L[reading.Key, [.. reading.Args]].Value : "";
+
+    // What giving the rate up, or keeping it, leaves less, where the sentence weighs it.
+    private string RateText(RateWeighing rate) =>
+        L[PayCurveText.Rate(rate, _year?.DirectorPay.GrossPay ?? 0m), rate.Difference is { } difference ? Formats.Euros(difference) : ""].Value;
+
+    private void Point(PayLevel level) => _pointer = level;
+
+    private void ClearPointer() => _pointer = null;
+
+    private Task MoveTo(decimal pay)
+    {
+        _focusResult = true;
+        return InputsChanged.InvokeAsync(Inputs.WithDirectorPay(pay));
+    }
+
+    // The best pay of the river's own facts, the search's, whatever the moves above were found for.
+    private Task MoveToBest(BestPayView best)
+    {
+        _focusResult = true;
+        return InputsChanged.InvokeAsync(best.MoveTo(Inputs));
+    }
+
+    // The plot's coordinates run from 0 to 1,000 both ways, the net in pocket upwards.
+    private static string X(decimal at) => Coordinate(at * 1_000m);
+
+    private static string Y(decimal at) => Coordinate((1m - at) * 1_000m);
+
+    private static string Length(decimal fraction) => Coordinate(fraction * 1_000m);
+
+    private static string Points(IReadOnlyList<ChartPoint> points) => string.Join(' ', points.Select(point => $"{X(point.X)},{Y(point.Y)}"));
+
+    private static string Percent(decimal at) => $"{Coordinate(at * 100m)}%";
+
+    private static string Coordinate(decimal value) => Math.Round(value, 2).ToString("0.##", CultureInfo.InvariantCulture);
+}

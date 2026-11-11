@@ -49,14 +49,13 @@ public class PlanTakenOutNoticeTests
         (page.Focuses - before, page.Errors.Count).ShouldBe((1, 0));
     }
 
-    // The map shows the plan as saved and has nothing unsaved, and the split's search runs again on it.
+    // The map shows the plan as saved and has nothing unsaved, as saved.
     [Fact]
     public async Task Plan_planOpened_showsItOnTheMapWithoutUnsavedChanges()
     {
         var storage = Saved(RiverInputs.Example, WithVouchers);
         await using var page = At(storage);
         await page.LoadAsync();
-        var searched = (await page.FindAsync<MapTab>()).Search;
         await OpenPanelAsync(page);
 
         await OpenAsync(page, storage, "Plan 1");
@@ -69,7 +68,6 @@ public class PlanTakenOutNoticeTests
             () => plans.Unsaved.ShouldBeFalse(),
             () => menu.Inputs.ShouldBe(plan),
             () => map.Inputs.ShouldBe(plan),
-            () => map.Search.ShouldNotBeSameAs(searched),
             () => page.Errors.ShouldBeEmpty());
     }
 

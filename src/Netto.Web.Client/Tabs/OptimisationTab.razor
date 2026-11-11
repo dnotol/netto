@@ -13,10 +13,11 @@
    what it adds on top of the ones above it, what the pocket holds after it, and a link to the card or the tab
    where it acts (MoveLinks), while that card is on the map; their total is the gain above the list, said
    once. « Apply » sets the river's values to the move's, « Apply all » every move's: nothing is applied
-   unasked, and the split's curve shows the best pay but moves no pay by itself. Applied, the river is a plan
+   unasked. Under the moves, « Tune your pay » draws the curve of the pocket at every pay (PayCurve): a click on it
+   or « move to the best pay » sets the plan's own pay, said as such, and is no move applied. Applied, the river is a plan
    the moves were not searched for, so the tab says it looks for them again, and the focus goes to that line;
    no live region says it, nor that they are found. Under the pay's move a note names the river's own best
-   pay, the split card's, whenever the river at that pay is not at its best (PayNote), from the search the
+   pay, the curve's below, whenever the river at that pay is not at its best (PayNote), from the search the
    page hands the tab. The page finds the moves, once per plan and date (MovesSource), after it has painted;
    until then the tab says it is looking for them, and nothing else. While Netto cannot run the plan, the tab
    says why, and nothing else. *@
@@ -88,6 +89,7 @@
         </ol>
     }
 </div>
+<PayCurve Inputs="Inputs" InputsChanged="InputsChanged" Search="Search" />
 
 @code {
     // Whether the page is still to search the moves from the plan on screen, which it does once it has

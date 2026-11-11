@@ -4,9 +4,14 @@
 @inject IStringLocalizer<DirectorPayCard> L
 
 @* The director's gross pay through INASTI's contributions, the income tax and the municipal
-   surcharge to the net. The pay comes from the split, or has a slider of its own once the company
-   is skipped. Its figures come first, as one list: the gross from the split, what the pay is taxed
-   on besides it (DirectorPayFigures), then where the pay goes (DrainList); then what the withholding
+   surcharge to the net. The pay is typed here, with the company's year or without it: one slider over the
+   profit before pay (the company's year decides how far it goes, why in its bubble, the bound staying in
+   sight under the field) and the exact amount below it, taken when the field is left rather than while
+   typing, since SplitView keeps the pay within the profit and MudBlazor redraws a field's text from its
+   value only once it has lost focus; with a royalty that follows the pay the slider says both as it
+   moves. The best pay and the curve of the pocket at every pay are Optimise's. Its figures come first,
+   as one list: what the pay is taxed on besides it (DirectorPayFigures), then where the pay goes
+   (DrainList); then what the withholding
    and the advance payments leave on the tax: a sentence saying why a surcharge is due or why none is,
    never what to pay to cancel it (that is Optimise's advance-payment move and My plan by date). What the user rarely changes sits behind two
    disclosures after them, each folded to a line that states it: their situation, and the tax paid
@@ -19,28 +24,22 @@
    while typing, since nothing bounds them. The pay slip and the rules behind each figure are its detail view. *@
 <ModuleCard Name="director-pay" Title="@L["Title"]" Summary="@Summary" ToYou="@_view?.ToYou" Refused="@Refused" Details="@Details"
             Sources="@(_view?.Details ?? [])" IncomeYear="Inputs.IncomeYear" DetailsLabel="@L["DetailsLabel"]" SourcesTitle="@L["SourcesTitle", Inputs.IncomeYear]">
-    @if (Inputs.Company is null)
-    {
-        <RiverField Label="@L["OwnPayLabel"]" For="river-pay" Origin="Inputs.DirectorPay.Origin">
-            <MudSlider T="decimal" Value="@OwnPay" ValueChanged="OnPayChanged"
-                       Min="0m" Max="OwnPayMaximum" Step="100m" Immediate="true" Color="Color.Primary" Culture="Formats.Culture"
-                       aria-labelledby="river-pay-label" aria-valuetext="@Formats.Euros(OwnPay)" />
-            <RiverNumericField T="decimal" InputId="river-pay" Value="Inputs.DirectorPay.Value" ValueChanged="OnPayChanged"
-                               Euros="true"
-                               Error="@(Refused?.Input == RefusedInput.DirectorPay)" Refusal="@Refused" />
-        </RiverField>
-    }
+    <RiverField Label="@L["OwnPayLabel"]" For="river-pay" Origin="Inputs.DirectorPay.Origin" Help="@(Inputs.Company is null ? null : Ceiling)">
+        <MudSlider T="decimal" Value="@SliderPay" ValueChanged="OnPayChanged"
+                   Min="0m" Max="SliderMaximum" Step="100m" Immediate="true" Color="Color.Primary" Culture="Formats.Culture"
+                   Disabled="@(SliderMaximum == 0m)" aria-labelledby="river-pay-label" aria-valuetext="@SliderValue" />
+        <RiverNumericField T="decimal" InputId="river-pay" Value="FieldPay" ValueChanged="OnPayChanged"
+                           Euros="true" TakenOnLeaving="@(Inputs.Company is not null)"
+                           Error="@(Refused?.Input == RefusedInput.DirectorPay)" Refusal="@Refused" />
+        @if (Inputs.Company is not null)
+        {
+            <p class="director-pay__ceiling">@L["Ceiling", Formats.Euros(_split.Ceiling)]</p>
+        }
+    </RiverField>
     <RefusedMessage Error="@Refused" />
     @if (_view is not null && Run.Pay is { } pay)
     {
         <div class="director-pay__lines">
-            @if (Inputs.Company is not null)
-            {
-                <p class="director-pay__pay">
-                    <span class="director-pay__pay-label">@L["PayFromSplit"] <OriginChip Origin="InputOrigin.Derived" /></span>
-                    <span class="director-pay__pay-amount">@Formats.Euros(pay.GrossPay)</span>
-                </p>
-            }
             <FigureList Figures="@FigureWords.Of(L, DirectorPayFigures.Taxed(pay))" />
             <DrainList Drains="_view.Drains" />
         </div>
@@ -122,18 +121,34 @@
     public Refusal? Refused { get; set; }
 
     private DirectorPayView? _view;
+    private SplitView _split = default!;
     private WithheldFieldView _withheld = default!;
     private DirectorPaySettingsView _settings = default!;
 
     protected override void OnParametersSet()
     {
         _view = Run.Pay is { } pay ? DirectorPayView.From(Inputs, pay) : null;
+        _split = SplitView.From(Inputs, Run);
         _withheld = WithheldFieldView.From(Inputs, Run);
         _settings = DirectorPaySettingsView.From(Inputs, Run);
     }
 
-    // Where the slider of a pay of its own stands: the pay, within the slider's ends.
-    private decimal OwnPay => Math.Clamp(Inputs.DirectorPay.Value, 0m, OwnPayMaximum);
+    // With the company's year the slider runs over the profit before pay and stands on the pay the year gives;
+    // without it, as far as the pay page's slider went, the pay within its ends.
+    private decimal SliderMaximum => Inputs.Company is null ? OwnPayMaximum : _split.Ceiling;
+
+    private decimal SliderPay => Inputs.Company is null ? Math.Clamp(Inputs.DirectorPay.Value, 0m, OwnPayMaximum) : _split.Pay;
+
+    // The exact amount shows the pay the year gives, or what was typed while that is refused.
+    private decimal FieldPay => Inputs.Company is null ? Inputs.DirectorPay.Value : _split.FieldPay;
+
+    // Why the pay goes no further, in the field's bubble, its bound staying in sight under it.
+    private string Ceiling => L[DirectorPayCardText.CeilingHint(_split.Royalty)].Value;
+
+    // The pay, and the royalty beside it while it follows the pay, so the slider says both as it moves.
+    private string SliderValue => _split.Royalty is { FollowsPay.Value: true, Amount: { } royalty } && Inputs.Company is not null
+        ? L[DirectorPayCardText.SliderValueWithRoyalty, Formats.Euros(SliderPay), Formats.Euros(royalty)].Value
+        : Formats.Euros(SliderPay);
 
     // What flows in is what the pay costs the company, the gross plus the contributions it pays, and a
     // copyright royalty's part taxed as pay.

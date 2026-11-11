@@ -172,10 +172,10 @@
     <value>Withheld by the company on your copyright royalty</value>
   </data>
   <data name="NextFollowingRoyaltyNote" xml:space="preserve">
-    <value>The next 1,000 holds your copyright royalty as it is, though it follows your pay: it leaves out the royalty's own rise beside it and that rise's tax apart. The split's curve weighs both.</value>
+    <value>The next 1,000 holds your copyright royalty as it is, though it follows your pay: it leaves out the royalty's own rise beside it and that rise's tax apart. The pay curve in Optimise weighs both.</value>
   </data>
   <data name="NextRoyaltyNote" xml:space="preserve">
-    <value>The next 1,000 holds your copyright royalty's part beyond its limits as it is, though 30% of the pay moves that limit: the split's curve weighs it.</value>
+    <value>The next 1,000 holds your copyright royalty's part beyond its limits as it is, though 30% of the pay moves that limit: the pay curve in Optimise weighs it.</value>
   </data>
   <data name="FinalTax_WithRoyalty" xml:space="preserve">
     <value>Final tax on your pay and your copyright royalty</value>

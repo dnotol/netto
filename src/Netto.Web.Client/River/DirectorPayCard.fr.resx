@@ -21,9 +21,6 @@
   <data name="OwnPayLabel" xml:space="preserve">
     <value>Rémunération brute de dirigeant pour l'année</value>
   </data>
-  <data name="PayFromSplit" xml:space="preserve">
-    <value>Rémunération brute issue de la répartition</value>
-  </data>
   <data name="Figure_CompanyContributions" xml:space="preserve">
     <value>Cotisations payées par la société</value>
   </data>
@@ -152,5 +149,20 @@
   </data>
   <data name="Prepaid_Paid" xml:space="preserve">
     <value>versements anticipés de {0}</value>
+  </data>
+  <data name="Ceiling" xml:space="preserve">
+    <value>Au plus {0}</value>
+  </data>
+  <data name="CeilingHint" xml:space="preserve">
+    <value>Jusqu'au bénéfice avant votre rémunération.</value>
+  </data>
+  <data name="CeilingHint_Follows" xml:space="preserve">
+    <value>Jusqu'au point où les droits d'auteur qui suivent votre rémunération prennent le reste de ce que se partagent votre rémunération et vos droits d'auteur.</value>
+  </data>
+  <data name="CeilingHint_Fixed" xml:space="preserve">
+    <value>Jusqu'au bénéfice avant votre rémunération, une fois vos droits d'auteur fixes payés.</value>
+  </data>
+  <data name="SliderValue_Royalty" xml:space="preserve">
+    <value>{0}, avec {1} de droits d'auteur</value>
   </data>
 </root>

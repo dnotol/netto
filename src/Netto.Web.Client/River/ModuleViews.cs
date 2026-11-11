@@ -340,7 +340,7 @@ internal sealed record BestPayView(PayLevel Level, decimal Gain, bool YoursKeeps
     public bool IsYours => YoursKeepsReserve && Gain < 1m;
 
     // The river with its pay set to the best pay, as a typed pay is (RiverInputs.WithDirectorPay): the
-    // split's button offers it while the pay set is not the best. The best pay is the search's for the
+    // pay curve's button offers it while the pay set is not the best. The best pay is the search's for the
     // river's own facts, which the pay moving alone leaves as they are, so the pay set there is the best.
     public RiverInputs MoveTo(RiverInputs river) => river.WithDirectorPay(Level.Pay);
 }
@@ -648,14 +648,14 @@ internal sealed record DividendView(
 }
 
 // The module whose card shows an engine refusal: the one holding the refused input, case by case over
-// every input, so an input no case names is a bug rather than a refusal shown on no field. The pay is the
-// split's while the company is there, Director pay's own once it is skipped, and so is the key formula's
+// every input, so an input no case names is a bug rather than a refusal shown on no field. The pay is
+// Director pay's, with the company's year or without it, and so is the key formula's
 // month of it; the royalty, fixed or following the pay, and its creative share are Copyright royalty's; the
 // income year, which no card holds, and what the fund bills, which the When to pay tab shows itself, the river's;
 // the partner's income and the dependants the Household card's, the company's year there or not.
 internal static class RiverErrors
 {
-    public static RiverModule Owner(Refusal refusal, bool companySkipped) => refusal.Input switch
+    public static RiverModule Owner(Refusal refusal) => refusal.Input switch
     {
         RefusedInput.IncomeYear => RiverModule.River,
         RefusedInput.Revenue or RefusedInput.RunningCosts => RiverModule.CompanyYear,
@@ -665,8 +665,7 @@ internal static class RiverErrors
         RefusedInput.CarCatalogueValue or RefusedInput.CarCo2 or RefusedInput.CarMatchingCo2 or RefusedInput.CarAcquired or RefusedInput.CarYearlyCosts
             or RefusedInput.CarContribution or RefusedInput.CarPrivateCost => RiverModule.Car,
         RefusedInput.Royalty or RefusedInput.CreativeShare => RiverModule.Copyright,
-        RefusedInput.DirectorPay => companySkipped ? RiverModule.DirectorPay : RiverModule.Split,
-        RefusedInput.FundFeeRate or RefusedInput.MunicipalRate or RefusedInput.TaxWithheld or RefusedInput.DirectorAdvancePayments => RiverModule.DirectorPay,
+        RefusedInput.DirectorPay or RefusedInput.FundFeeRate or RefusedInput.MunicipalRate or RefusedInput.TaxWithheld or RefusedInput.DirectorAdvancePayments => RiverModule.DirectorPay,
         RefusedInput.CompanyAdvancePayments => RiverModule.CorporateTax,
         RefusedInput.Reserve or RefusedInput.EarlierProfits => RiverModule.Dividend,
         RefusedInput.BilledContributions => RiverModule.River,

@@ -21,7 +21,7 @@ namespace Netto.Tests.WebClient.River;
 // royalty that follows the pay, at half of the director's time spent creating.
 public class StreamCardsFiguresTests
 {
-    private static readonly RiverInputs Filled = RiverInputs.Example
+    internal static readonly RiverInputs Filled = RiverInputs.Example
         .AddToPlan(OptionalModule.Vouchers).WithMealVoucherDays(220).WithEcoVouchers(250m).WithSportCultureVouchers(100m)
         .AddToPlan(OptionalModule.Allowances).WithInternetAllowance(240m).WithComputerAllowance(240m).WithPhoneCosts(600m)
         .AddToPlan(OptionalModule.Rent).WithCadastralIncome(1_200m).WithShareLet(0.12m).WithRent(1_380m)
@@ -33,9 +33,6 @@ public class StreamCardsFiguresTests
 
     // The texts of Director pay's .resx, for the rules its bubbles say, read where a test needs one.
     private static readonly ResxText Texts = ResxText.For<DirectorPayCard>();
-
-    // The split's, for the words of its button.
-    private static readonly ResxText SplitTexts = ResxText.For<SplitCard>();
 
     // Corporate tax's, for the sentence its disclosure states about the surcharge.
     private static readonly ResxText CorporateTexts = ResxText.For<CorporateTaxCard>();
@@ -87,35 +84,36 @@ public class StreamCardsFiguresTests
         CardHtml.LeakedKeys(await CardAsync(card)).ShouldBeEmpty();
     }
 
-    // What the split shares, each side out of the 87,229.80 the levers leave it, then the smallest pay
-    // keeping the reduced rate with the royalty and without it (YearConditions' two pays, 40,710.67 and
-    // 43,618.57 here), then the best pay the search found and what it leaves, with what reaches the pocket there and at the pay set out of what
-    // leaves the company: the amount and the share of each line, in order.
+    // What the split shares, each side out of the 87,229.80 the levers leave it: the pay, the royalty and the
+    // company's profit, the amount and the share of each line, in order. The best pay is Optimise's.
     [Fact]
-    public async Task Split_filledPlan_drawsItsSidesThenTheBestPayAsLines()
+    public async Task Shared_filledPlan_drawsItsSidesAsLines()
     {
         CardHtml.Lines(await CardAsync("split")).Select(line => (line.Amount, line.Share)).ShouldBe(
         [
             ("€50,000.00", "57.3%"),
             ("€7,142.85", "8.2%"),
             ("€30,086.95", "34.5%"),
-            ("€40,710.67", null),
-            ("€43,618.57", null),
-            ("€19,757.00", null),
-            ("€46,937.35", null),
-            ("€2,822.42", null),
-            ("€60,866.97", "66.2%"),
-            ("€2,619.44", null),
-            ("€58,247.53", "63.3%"),
         ]);
+    }
+
+    // The split's lines reach the card, which says nothing of a best pay.
+    [Fact]
+    public async Task Shared_filledPlan_drawsNoCurveNorBestPay()
+    {
+        var html = await CardAsync("split");
+
+        html.ShouldSatisfyAllConditions(
+            () => html.ShouldNotContain("pay-curve"),
+            () => html.ShouldNotContain("Best pay"));
     }
 
     // How far the pay goes is a bound, in sight under its field and never in a bubble; why, the field's
     // bubble says.
     [Fact]
-    public async Task Split_filledPlan_keepsThePaysBoundInSightAndWhyInItsBubble()
+    public async Task DirectorPay_filledPlan_keepsThePaysBoundInSightAndWhyInItsBubble()
     {
-        var html = await CardAsync("split");
+        var html = await CardAsync("director-pay");
         var bubble = CardHtml.BubbleAfter(html, "Gross director pay for the year");
 
         html.ShouldSatisfyAllConditions(
@@ -124,68 +122,17 @@ public class StreamCardsFiguresTests
             () => bubble.ShouldNotContain("€76,326.08"));
     }
 
-    // How the best pay stands against the reduced rate is a sentence, with what keeping the rate would
-    // leave less, no line saying it.
+    // A refused pay leaves no figure to draw: the refusal stands in sight where the lines were, on the Director
+    // pay card, which holds the field.
     [Fact]
-    public async Task Split_filledPlan_weighsTheReducedRateInASentence()
+    public async Task DirectorPay_payRefused_showsTheRefusalInSightAndNoLines()
     {
-        var html = await CardAsync("split");
-
-        html.ShouldSatisfyAllConditions(
-            () => CardHtml.Prose(html).ShouldContain(paragraph => paragraph.Contains("€1,016.20", StringComparison.Ordinal)),
-            () => CardHtml.LineAmounts(html).Select(Unsigned).ShouldNotContain("€1,016.20"));
-    }
-
-    // A refused pay leaves no figure to draw: the refusal stands in sight where the lines were.
-    [Fact]
-    public async Task Split_payRefused_showsTheRefusalInSightAndNoLines()
-    {
-        var html = CardHtml.Card(await CardHtml.RenderCardsOpenAsync(RiverInputs.Example.WithDirectorPay(-1m)), "split");
+        var html = CardHtml.Card(await CardHtml.RenderCardsOpenAsync(RiverInputs.Example.WithDirectorPay(-1m)), "director-pay");
 
         (CardHtml.Lines(html).Count, Regex.IsMatch(html, "class=\"[^\"]*refused-message")).ShouldBe((0, true));
     }
 
-    // The river's best pay, whatever the facts the river holds now, is offered by a button of its own
-    // while the pay set is not it: not at the best, where no pay keeps the reserve, or while the pay is
-    // refused and there is no search to read it from. The Optimisation tab's pay line is another
-    // baseline's, and is not this button.
-    public static TheoryData<string, RiverInputs, int> BestPayButtons => new()
-    {
-        { "the pay set away from the best", RiverInputs.Example, 1 },
-        { "the pay set at the best", RiverInputs.Example.WithDirectorPay(BestPay(RiverInputs.Example)), 0 },
-        { "no pay keeping the reserve", RiverInputs.Example.WithReserve(80_000m), 0 },
-        { "the pay refused", RiverInputs.Example.WithDirectorPay(-1m), 0 },
-    };
-
-    [Theory]
-    [MemberData(nameof(BestPayButtons))]
-    public async Task Split_open_offersTheBestPayOnlyWhileThePaySetIsNotIt(string _, RiverInputs plan, int buttons)
-    {
-        var html = WebUtility.HtmlDecode(CardHtml.Card(await CardHtml.RenderCardsOpenAsync(plan), "split"));
-
-        ButtonsSaying(html, SplitTexts.Get("MoveToBest").ShouldNotBeNull()).ShouldBe(buttons);
-    }
-
-    // The button says which pay it moves to for a screen reader, its visible words a part of its name.
-    [Fact]
-    public async Task Split_open_namesTheBestPayInTheButtonsLabel()
-    {
-        var plan = RiverInputs.Example;
-        var html = WebUtility.HtmlDecode(CardHtml.Card(await CardHtml.RenderCardsOpenAsync(plan), "split"));
-        var label = SplitTexts.Format("MoveToBestLabel", Formats.Euros(BestPay(plan)));
-
-        html.ShouldContain($"aria-label=\"{label}\"");
-        label.ShouldStartWith(SplitTexts.Get("MoveToBest").ShouldNotBeNull());
-    }
-
-    // Until the pointer is on the curve, its line keeps its room in the card, empty.
-    [Fact]
-    public async Task Split_firstDraw_keepsThePointersLineEmpty()
-    {
-        Regex.IsMatch(await CardAsync("split"), @"<p class=""split__pointer""[^>]*>\s*</p>").ShouldBeTrue();
-    }
-
-    // The gross the split gives, from which the lines go on: what the car's benefit adds to what the pay
+    // The pay typed in its field, from which the lines go on: what the car's benefit adds to what the pay
     // is taxed on, then where the pay goes.
     [Fact]
     public async Task DirectorPay_filledPlan_drawsWhatThePayIsTaxedOnThenWhereItGoes()
@@ -193,7 +140,7 @@ public class StreamCardsFiguresTests
         var html = await CardAsync("director-pay");
 
         html.ShouldSatisfyAllConditions(
-            () => CardHtml.Prose(html)[0].ShouldContain("€50,000.00"),
+            () => html.ShouldContain("id=\"river-pay\""),
             () => CardHtml.Lines(html).Select(line => (line.Amount, line.Share)).ShouldBe(
             [
                 ("€1,714.29", null),
@@ -204,6 +151,32 @@ public class StreamCardsFiguresTests
                 ("€28,627.10", "57.3%"),
             ]),
             () => CardHtml.LineRuns(html).ShouldBe([("figure", 2), ("drain", 4)]));
+    }
+
+    // The pay is typed here, with the company's year: a slider over the profit before pay and the exact amount
+    // below it, how far it goes in sight under the field, why in the field's bubble, never in a second place.
+    [Fact]
+    public async Task DirectorPay_companyInTheYear_hasTheSliderTheFieldAndTheBound()
+    {
+        var html = CardHtml.Card(await CardHtml.RenderCardsOpenAsync(RiverInputs.Example), "director-pay");
+
+        html.ShouldSatisfyAllConditions(
+            () => html.ShouldContain("mud-slider"),
+            () => html.ShouldContain("id=\"river-pay\""),
+            () => CardHtml.Prose(html).ShouldContain(paragraph => paragraph.StartsWith("At most €100,000.00", StringComparison.Ordinal)),
+            () => CardHtml.LeakedKeys(html).ShouldBeEmpty());
+    }
+
+    // Without the company's year the pay has no bound but the slider's own: the same field, no line saying
+    // how far it goes.
+    [Fact]
+    public async Task DirectorPay_companySkipped_hasTheSliderAndTheFieldWithNoBound()
+    {
+        var html = CardHtml.Card(await CardHtml.RenderCardsOpenAsync(RiverInputs.Example.SkipCompany()), "director-pay");
+
+        html.ShouldSatisfyAllConditions(
+            () => html.ShouldContain("id=\"river-pay\""),
+            () => CardHtml.Prose(html).ShouldNotContain(paragraph => paragraph.StartsWith("At most", StringComparison.Ordinal)));
     }
 
     // The fund's fee at 3.05% is a drain line of its own right after the contributions, with its share of
@@ -379,13 +352,6 @@ public class StreamCardsFiguresTests
                 services.AddSingleton<IComponentActivator>(new OpenDisclosures());
                 services.AddSingleton<TimeProvider>(new Clock(on));
             }));
-
-    // The best pay the split's search finds for the river as it stands.
-    private static decimal BestPay(RiverInputs river) => river.SearchSplit().ShouldNotBeNull().Best.ShouldNotBeNull().Pay;
-
-    // The buttons of a card that say that, whole.
-    private static int ButtonsSaying(string html, string text) =>
-        Regex.Count(html, $"<button\\b[^>]*>(?:(?!</button>).)*?{Regex.Escape(text)}", RegexOptions.Singleline);
 
     // A card opened by the viewer, as a fold of its own.
     private static Folds OpenCard(string name)

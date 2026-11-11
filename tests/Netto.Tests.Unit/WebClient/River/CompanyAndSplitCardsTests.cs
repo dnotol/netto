@@ -17,7 +17,7 @@ public class CompanyAndSplitCardsTests
 {
     private static readonly ResxText CorporateTexts = ResxText.For<CorporateTaxCard>();
 
-    private static readonly ResxText SplitTexts = ResxText.For<SplitCard>();
+    private static readonly ResxText SharedTexts = ResxText.For<SharedCard>();
 
     private static readonly ResxText CompanyYearTexts = ResxText.For<CompanyYearCard>();
 
@@ -86,36 +86,18 @@ public class CompanyAndSplitCardsTests
         (tested + leftOut).ShouldBe(taxablePay);
     }
 
-    // A small company in its second tax period needs no minimum pay, but a company car's benefit of 1,714.29
-    // must stay within 20% of the pay with it: the split weighs the rate from 6,857.16, and the bubble of
-    // the reduced corporate rate says why, with the share its rule holds.
-    [Fact]
-    public async Task Split_carInSecondPeriod_termBubbleNamesTheBenefitsTest()
-    {
-        var river = RiverInputs.Example.WithFinancialYear(FinancialYear.Second).AddToPlan(OptionalModule.Car)
-            .WithCatalogueValue(50_000m).WithFirstRegistration(new DateOnly(2026, 1, 10)).WithCarCosts(8_000m).WithCarEngine(CarEngine.Electric);
-
-        var html = WebUtility.HtmlDecode(await CardAsync(river, "split"));
-
-        var meaning = SplitTexts.Format(SplitCardText.ReducedRateTerm, "20%");
-
-        meaning.ShouldSatisfyAllConditions(
-            () => meaning.ShouldContain("20%"),
-            () => html.ShouldContain(meaning));
-    }
-
     // What the pay costs the company comes off its profit: with the company paying the contributions, each
     // euro of gross takes more than a euro of it, which the split's bubble says, with a royalty or without.
     [Fact]
-    public async Task Split_companyPaysContributions_hintNamesThem()
+    public async Task Shared_companyPaysContributions_hintNamesThem()
     {
-        (await SplitHintAsync(CompanyPays)).ShouldContain("contributions");
+        (await SharedHintAsync(CompanyPays)).ShouldContain("contributions");
     }
 
     [Fact]
-    public async Task Split_companyPaysContributionsBesideARoyalty_hintNamesThem()
+    public async Task Shared_companyPaysContributionsBesideARoyalty_hintNamesThem()
     {
-        (await SplitHintAsync(CompanyPays.AddToPlan(OptionalModule.Copyright).WithRoyalty(30_000m))).ShouldContain("contributions");
+        (await SharedHintAsync(CompanyPays.AddToPlan(OptionalModule.Copyright).WithRoyalty(30_000m))).ShouldContain("contributions");
     }
 
     // The conditions Company year lists are those under which the company owes INASTI's contribution: an
@@ -160,7 +142,7 @@ public class CompanyAndSplitCardsTests
             () => CardHtml.Prose(html).ShouldContain(sentence));
     }
 
-    private static async Task<string> SplitHintAsync(RiverInputs river) => CardHtml.BubbleAfter(await CardAsync(river, "split"), SplitTexts.Format("Title"));
+    private static async Task<string> SharedHintAsync(RiverInputs river) => CardHtml.BubbleAfter(await CardAsync(river, "split"), SharedTexts.Format("Title"));
 
     // The text of the bubble a term in running text opens, as a screen reader is given it: the description
     // right after the term's trigger.

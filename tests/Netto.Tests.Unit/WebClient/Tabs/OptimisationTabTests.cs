@@ -164,12 +164,12 @@ public class OptimisationTabTests
 
     // A link named first by what it shows, then by the move.
     [Fact]
-    public async Task Optimisation_payMove_linksTheSplit()
+    public async Task Optimisation_payMove_linksTheDirectorPayCard()
     {
         var html = await RenderTabAsync(RiverInputs.Example);
 
-        Regex.IsMatch(html, Regex.Escape("<a class=\"moves__link\" href=\"plan?card=split\" aria-label=\"See it on The split: Pay yourself €20,799.00 instead of €50,000.00\"")
-            + "[^>]*>See it on The split</a>").ShouldBeTrue();
+        Regex.IsMatch(html, Regex.Escape("<a class=\"moves__link\" href=\"plan?card=director-pay\" aria-label=\"See it on Director pay: Pay yourself €20,799.00 instead of €50,000.00\"")
+            + "[^>]*>See it on Director pay</a>").ShouldBeTrue();
     }
 
     [Fact]
@@ -256,6 +256,32 @@ public class OptimisationTabTests
         Regex.IsMatch(html, "<p class=\"moves__state\" tabindex=\"-1\"").ShouldBeTrue();
     }
 
+    // « Tune your pay » is the tab's last section, under the moves, once the page hands the tab its search: the
+    // curve of the pocket at every pay, also while the moves are looked for, since it reads that search alone.
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Optimisation_withTheSearch_drawsTheCurveAfterTheMoves(bool searching)
+    {
+        var plan = RiverInputs.Example;
+
+        var html = await RenderWithCurveAsync(plan, searching);
+
+        html.ShouldSatisfyAllConditions(
+            () => html.ShouldContain("<h2 id=\"tune-title\""),
+            () => html.ShouldContain("class=\"pay-curve__plot\""),
+            () => html.IndexOf("class=\"tune\"", StringComparison.Ordinal).ShouldBeGreaterThan(html.IndexOf("class=\"moves\"", StringComparison.Ordinal)));
+    }
+
+    // With no search, the company's year skipped or an amount refused, the tab draws no curve.
+    [Fact]
+    public async Task Optimisation_noSearch_drawsNoCurve()
+    {
+        var html = await RenderTabAsync(RiverInputs.Example);
+
+        html.ShouldNotContain("pay-curve__plot");
+    }
+
     // While the page looks for the moves, once painted or after an edit, the tab says so under its head, and
     // nothing else: no figure, no move, nothing to apply.
     [Fact]
@@ -301,6 +327,13 @@ public class OptimisationTabTests
 
     // The tab while the page looks for the moves from the plan on screen, having found none yet.
     private static Task<string> RenderSearchingAsync(RiverInputs plan) => RenderStateAsync(plan, found: null, searching: true);
+
+    // The tab with the page's search for the plan, for the curve under the moves.
+    private static async Task<string> RenderWithCurveAsync(RiverInputs plan, bool searching) =>
+        WebUtility.HtmlDecode(await RenderAsync<OptimisationTab>(new Folds(new BrowserStorage()), new()
+        {
+            ["Searching"] = searching, ["Found"] = searching ? null : plan.FindMoves(On22October), ["Inputs"] = plan, ["Search"] = plan.SearchSplit(),
+        }));
 
     private static async Task<string> RenderStateAsync(RiverInputs plan, (MovePlan? Value, Refusal? Error)? found, bool searching) =>
         WebUtility.HtmlDecode(await RenderAsync<OptimisationTab>(new Folds(new BrowserStorage()), new()

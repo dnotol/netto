@@ -81,9 +81,6 @@
   <data name="Core_CompanyYear" xml:space="preserve">
     <value>Exercice de la société</value>
   </data>
-  <data name="Core_Split" xml:space="preserve">
-    <value>La répartition</value>
-  </data>
   <data name="Core_DirectorPay" xml:space="preserve">
     <value>Rémunération de dirigeant</value>
   </data>

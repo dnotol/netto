@@ -81,9 +81,6 @@
   <data name="Core_CompanyYear" xml:space="preserve">
     <value>Company year</value>
   </data>
-  <data name="Core_Split" xml:space="preserve">
-    <value>The split</value>
-  </data>
   <data name="Core_DirectorPay" xml:space="preserve">
     <value>Director pay</value>
   </data>

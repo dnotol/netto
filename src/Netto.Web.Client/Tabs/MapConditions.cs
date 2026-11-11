@@ -17,7 +17,7 @@ internal static class MapConditions
         [.. conditions.Select(Link).Where(link => onMap.Contains(link.From.Module!.Value) && onMap.Contains(link.To.Module!.Value))];
 
     // The office allowance acts on the rent, the pay and the benefits on corporate tax's rate, and a
-    // royalty and the reserve on the split's pay. Each says whether it holds in a word or two (State), and,
+    // royalty and the reserve on the pay the node « To share » gives. Each says whether it holds in a word or two (State), and,
     // but the office rule, which always holds, marks the module it acts on with a badge (Badge) saying which
     // rule and whether it holds, lost where it does not hold and costs the plan its rate or its reserve, with
     // no effect where the royalty lowers no pay, nothing being lost by it.

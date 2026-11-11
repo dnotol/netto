@@ -19,7 +19,7 @@ public class MoveLinksTests
     // Each move with the card it acts on, and the card component whose .resx holds its title.
     public static TheoryData<Move, string, Type> Cards => new()
     {
-        { new PayMove(20_799m), "split", typeof(SplitCard) },
+        { new PayMove(20_799m), "director-pay", typeof(DirectorPayCard) },
         { new EcoVouchersMove(250m), "vouchers", typeof(VoucherCard) },
         { new SportCultureVouchersMove(100m), "vouchers", typeof(VoucherCard) },
         { new RentMove(1_380m), "rent", typeof(RentCard) },

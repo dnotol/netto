@@ -67,9 +67,9 @@ public class FrenchTabsTests
     }
 
     [Fact]
-    public void ModuleNames_theSplitOnTheMap_isTheGlossarys()
+    public void ModuleNames_theNodeToShareOnTheMap_isTheGlossarys()
     {
-        ResxText.French<MapTab>().Get(MapTabText.Module(RiverModule.Split)).ShouldBe("La répartition");
+        ResxText.French<MapTab>().Get(MapTabText.Module(RiverModule.Split)).ShouldBe("À partager");
     }
 
     // A month filled in by code never follows « de », which « d'avril » or « d'août » would need: each text
@@ -114,7 +114,7 @@ public class FrenchTabsTests
     // Each link of a move is a sentence of its own, naming its card as a title after « la carte », or the
     // lens of My plan it leads to.
     [Theory]
-    [InlineData("Link_split", "Voir sur la carte La répartition")]
+    [InlineData("Link_director-pay", "Voir sur la carte Rémunération de dirigeant")]
     [InlineData("Link_vouchers", "Voir sur la carte Titres-repas et chèques")]
     [InlineData("Link_rent", "Voir sur la carte Loyer du bureau")]
     [InlineData("Link_copyright", "Voir sur la carte Droits d'auteur")]

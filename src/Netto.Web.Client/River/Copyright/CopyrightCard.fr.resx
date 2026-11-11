@@ -177,4 +177,19 @@
   <data name="Figure_Gain_None" xml:space="preserve">
     <value>Aucune différence dans votre poche</value>
   </data>
+  <data name="Figure_RateWithRoyalty" xml:space="preserve">
+    <value>Plus petite rémunération qui conserve le taux réduit, avec vos droits d'auteur</value>
+  </data>
+  <data name="Figure_RateWithoutRoyalty" xml:space="preserve">
+    <value>Plus petite rémunération qui conserve le taux réduit, sans vos droits d'auteur</value>
+  </data>
+  <data name="RoyaltyRate_NoPayKeeps" xml:space="preserve">
+    <value>Aucune rémunération ne conserve le [taux réduit] à côté de vos droits d'auteur.</value>
+  </data>
+  <data name="RoyaltyRate_NoPayKeepsWithout" xml:space="preserve">
+    <value>Aucune rémunération ne conserve le [taux réduit] sans vos droits d'auteur.</value>
+  </data>
+  <data name="Term_ReducedRate" xml:space="preserve">
+    <value>Le taux plus bas qu'une petite société paie sur une première tranche de son revenu imposable. À partir de sa cinquième période imposable, elle ne le conserve que si la rémunération d'un dirigeant atteint un minimum, ou si son revenu imposable ne dépasse pas cette rémunération. Dans chaque période imposable, elle le perd dès que les avantages de toute nature évalués de manière forfaitaire, comme ceux d'une voiture de société, dépassent {0} de cette rémunération, avantages compris.</value>
+  </data>
 </root>

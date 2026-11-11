@@ -132,9 +132,9 @@ public class MapLinksTests
         var links = MapLinks.Of(Full, Full.Run()).Where(link => link.From.Module == RiverModule.Split);
 
         links.Select(link => (link.Kind, link.To.Module, link.Carries.Text, link.Carries.Key, link.Amount)).ShouldBe([
-            (MapLinkKind.PassedOn, RiverModule.DirectorPay, MapText.SplitCard, "Figure_Pay", year.DirectorPay.GrossPay),
-            (MapLinkKind.PassedOn, RiverModule.Copyright, MapText.SplitCard, "Figure_Royalty", year.Copyright.Royalty),
-            (MapLinkKind.PassedOn, RiverModule.CorporateTax, MapText.SplitCard, "Figure_Company", year.ProfitAfterPay)]);
+            (MapLinkKind.PassedOn, RiverModule.DirectorPay, MapText.SharedCard, "Figure_Pay", year.DirectorPay.GrossPay),
+            (MapLinkKind.PassedOn, RiverModule.Copyright, MapText.SharedCard, "Figure_Royalty", year.Copyright.Royalty),
+            (MapLinkKind.PassedOn, RiverModule.CorporateTax, MapText.SharedCard, "Figure_Company", year.ProfitAfterPay)]);
     }
 
     // The contributions the company pays on the director's behalf, with the fund's fee, are pay too: the

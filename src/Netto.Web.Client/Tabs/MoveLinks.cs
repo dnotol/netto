@@ -4,17 +4,14 @@ using Netto.Web.Client.River;
 namespace Netto.Web.Client.Tabs;
 
 // Where a move of the Optimisation tab links to: the card of My plan it acts on, while that card is on the
-// map, or the plan by date. The split is on the Plan tab while the river holds the company's year, a
+// map, or the plan by date. The pay is on the Director pay card while the river holds the company's year, a
 // lever's card while its module is in the plan, so a lever's move not applied yet links nowhere until
 // « Apply » adds its module; a payment's place is My plan by date.
 internal static class MoveLinks
 {
-    // The split's card, by the name its fold is remembered under (SplitCard, MapModules.Name).
-    private const string Split = "split";
-
     public static MoveLink? To(Move move, RiverInputs inputs) => move switch
     {
-        PayMove => inputs.Company is null ? null : new MoveLink(PlanTab.Plan, Split),
+        PayMove => inputs.Company is null ? null : new MoveLink(PlanTab.Plan, MapModules.Name(RiverModule.DirectorPay)),
         CompanyAdvancePaymentMove or DirectorAdvancePaymentMove => new MoveLink(PlanTab.Plan, null, PlanLens.ByDate),
         EcoVouchersMove or SportCultureVouchersMove => Lever(OptionalModule.Vouchers, inputs),
         RentMove => Lever(OptionalModule.Rent, inputs),

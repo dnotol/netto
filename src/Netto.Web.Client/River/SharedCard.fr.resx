@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve">
+    <value>À partager</value>
+  </data>
+  <data name="Summary" xml:space="preserve">
+    <value>{0} à partager</value>
+  </data>
+  <data name="Hint" xml:space="preserve">
+    <value>Ce que laissent les leviers et les frais de la société, que votre rémunération, les droits d'auteur éventuels et la société se partagent. Ce que votre rémunération coûte à la société, votre brut et les cotisations et frais de gestion de la caisse qu'elle paie éventuellement pour vous, sort de son bénéfice. Chaque montant se règle sur la carte nommée dessous.</value>
+  </data>
+  <data name="PayLink" xml:space="preserve">
+    <value>Régler votre rémunération sur la carte Rémunération de dirigeant</value>
+  </data>
+  <data name="ReserveLink" xml:space="preserve">
+    <value>Régler ce que la société garde sur la carte Dividende</value>
+  </data>
+  <data name="RoyaltyNote_Follows" xml:space="preserve">
+    <value>Vos droits d'auteur suivent votre rémunération&#160;: le curseur les déplace aussi.</value>
+  </data>
+  <data name="RoyaltyNote_Fixed" xml:space="preserve">
+    <value>Vos droits d'auteur sont un montant fixe, quelle que soit votre rémunération.</value>
+  </data>
+  <data name="RoyaltyLink" xml:space="preserve">
+    <value>Changer leur réglage sur la carte Droits d'auteur</value>
+  </data>
+  <data name="Figure_Pay" xml:space="preserve">
+    <value>Votre rémunération</value>
+  </data>
+  <data name="Figure_CompanyContributions" xml:space="preserve">
+    <value>Cotisations payées par la société</value>
+  </data>
+  <data name="Figure_CompanyFundFee" xml:space="preserve">
+    <value>Frais de gestion de la caisse payés par la société</value>
+  </data>
+  <data name="Figure_Royalty" xml:space="preserve">
+    <value>Droits d'auteur</value>
+  </data>
+  <data name="Figure_Company" xml:space="preserve">
+    <value>Bénéfice de la société avant impôt</value>
+  </data>
+</root>
