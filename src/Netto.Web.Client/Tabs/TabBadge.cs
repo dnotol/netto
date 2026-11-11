@@ -20,6 +20,9 @@ public enum TabBadgeKind
 
     // How many pistes are priced (Count) and how many questions wait (Questions).
     Pistes,
+
+    // An idea is still being measured (PistesSource).
+    PistesSearching,
 }
 
 // One tab's badge: its kind and the figure it shows, an amount, a date or counts.
@@ -38,10 +41,11 @@ public sealed record PistesCount(int Priced, int Questions)
 // are being looked for; on My plan the next advance payment's date while one is left (CalendarView.Next,
 // the deadline the by-date lens shows, staying in the band), and, which wins over a date, that the river
 // or what the fund bills is refused; on Pistes how many are priced and how many questions wait, once
-// something supplies them. A tab with nothing to say has none.
+// something supplies them, or that one is still being measured, as Optimisation's says of the moves, with no
+// count that would change once it is found. A tab with nothing to say has none.
 internal static class TabBadges
 {
-    public static IReadOnlyDictionary<PlanTab, TabBadge> Of(RiverRun run, MovesView moves, CalendarView? calendar, PistesCount? pistes)
+    public static IReadOnlyDictionary<PlanTab, TabBadge> Of(RiverRun run, MovesView moves, CalendarView? calendar, PistesCount? pistes, bool pistesSearching = false)
     {
         var badges = new Dictionary<PlanTab, TabBadge>();
         if (run.Error is not null || calendar is { BilledRefused: not null })
@@ -52,7 +56,9 @@ internal static class TabBadges
             badges[PlanTab.Optimisation] = new TabBadge(TabBadgeKind.Searching);
         else if (moves.State == MovesState.Moves)
             badges[PlanTab.Optimisation] = new TabBadge(TabBadgeKind.MoreThanPlan, Amount: moves.Total);
-        if (pistes is { IsEmpty: false } found)
+        if (pistesSearching)
+            badges[PlanTab.Pistes] = new TabBadge(TabBadgeKind.PistesSearching);
+        else if (pistes is { IsEmpty: false } found)
             badges[PlanTab.Pistes] = new TabBadge(TabBadgeKind.Pistes, Count: found.Priced, Questions: found.Questions);
 
         return badges;

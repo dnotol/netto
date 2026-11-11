@@ -39,6 +39,9 @@
   <data name="Spoken_Searching" xml:space="preserve">
     <value>recherche d'ajustements</value>
   </data>
+  <data name="Spoken_PistesSearching" xml:space="preserve">
+    <value>chiffrage des pistes</value>
+  </data>
   <data name="Shown_Searching" xml:space="preserve">
     <value>…</value>
   </data>

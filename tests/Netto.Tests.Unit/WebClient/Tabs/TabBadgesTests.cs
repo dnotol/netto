@@ -127,11 +127,20 @@ public class TabBadgesTests
             .ShouldBe(new TabBadge(TabBadgeKind.Pistes, Count: 0, Questions: 2));
     }
 
+    // While an idea is still being measured, the badge says so, as Optimise's does for the moves, and no count
+    // that would change once it is found.
+    [Fact]
+    public void Of_pistesBeingMeasured_badgesPistesAsBeingMeasured()
+    {
+        Badges(RiverInputs.Example, On23October, new PistesCount(1, 3), pistesSearching: true).GetValueOrDefault(PlanTab.Pistes)
+            .ShouldBe(new TabBadge(TabBadgeKind.PistesSearching));
+    }
+
     // The moves from the plan on screen.
-    private static IReadOnlyDictionary<PlanTab, TabBadge> Badges(RiverInputs river, DateOnly date, PistesCount? pistes = null)
+    private static IReadOnlyDictionary<PlanTab, TabBadge> Badges(RiverInputs river, DateOnly date, PistesCount? pistes = null, bool pistesSearching = false)
     {
         var run = river.Run();
         var moves = MovesView.Of(river, date);
-        return TabBadges.Of(run, moves, CalendarView.From(river, run, date), pistes);
+        return TabBadges.Of(run, moves, CalendarView.From(river, run, date), pistes, pistesSearching);
     }
 }

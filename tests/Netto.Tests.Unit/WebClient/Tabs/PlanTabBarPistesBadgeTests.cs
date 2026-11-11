@@ -22,6 +22,16 @@ public class PlanTabBarPistesBadgeTests
             .ShouldBe(("Ideas", "1 · 3?", "ideas priced: 1, questions: 3"));
     }
 
+    // While an idea is being measured: « … », which a screen reader skips, and said in full.
+    [Fact]
+    public async Task PlanTabBar_pistesBeingMeasured_showsAnEllipsisAndSaysSo()
+    {
+        var html = await RenderBarAsync(new Dictionary<PlanTab, TabBadge> { [PlanTab.Pistes] = new(TabBadgeKind.PistesSearching) });
+
+        var link = Regex.Matches(html, "<a [^>]*class=\"plan-tab-bar__tab\"[^>]*>.*?</a>", RegexOptions.Singleline).Select(match => match.Value).Last();
+        (Span(link, "plan-tab-bar__badge"), Span(link, "plan-tab-bar__spoken")).ShouldBe(("…", "measuring ideas"));
+    }
+
     [Fact]
     public async Task PlanTabBar_noPistesBadge_drawsNoneAfterIdeas()
     {
