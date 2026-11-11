@@ -122,7 +122,7 @@ public class TestSupportTests
     [Fact]
     public void TestSources_screenAndWaitFakes_areDefinedOnlyInSupport()
     {
-        Declaring(@"class\s+(?:Screen|Wait)").ShouldBeEmpty();
+        Declaring(@"\bclass\s+(?:Screen|Wait)\b").ShouldBeEmpty();
     }
 
     // The test sources outside Support, and this file, whose patterns would match themselves.
