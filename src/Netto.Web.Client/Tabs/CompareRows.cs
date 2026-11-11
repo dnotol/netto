@@ -4,7 +4,7 @@ using Netto.Web.Client.River;
 
 namespace Netto.Web.Client.Tabs;
 
-// The rows of the Compare plans table: the figures of two plans' runs the bar of buckets and the cards
+// The rows of the Plans panel's comparison table: the figures of two plans' runs the bar of buckets and the cards
 // already show, read from the same runs and set side by side, so a column always says what the river
 // says for that plan. Every row is the engine's own figure for each plan and what separates them, the
 // second plan's less the first's; none is a rule of its own. The year's result first (what the bar

@@ -5,13 +5,13 @@
 @using Netto.Web.Client.River.Copyright
 @inject IStringLocalizer<MapPanel> L
 
-@* The room beside the Map tab's map for the card of the module or the bucket chosen on it: a module's the
-   same component as on the Plan tab, editable, and every edit goes back to the page's one river, so the bar,
+@* The room beside My plan's map for the card of the module or the bucket chosen on it: a module's the
+   same component as in the river, editable, and every edit goes back to the page's one river, so the bar,
    the map and the card say the same figures at once; a bucket's read-only, saying what fills it (BucketCard).
    While nothing is chosen it says whose card goes there. A card is the module's own; the one line over it
    says what it receives (MapTab), none over a bucket's. The card is pinned open
-   (PinnedCard): it has no toggle, it does not read the fold the viewer made on the Plan tab nor write one,
-   and a refusal on it reveals nothing there; the folds inside it are the viewer's, as on the Plan tab. A card that is refused shows the
+   (PinnedCard): it has no toggle, it does not read the fold the viewer made in the river nor write one,
+   and a refusal on it reveals nothing there; the folds inside it are the viewer's, as in the river. A card that is refused shows the
    engine's refusal on its field, as the river does (Refused). When the viewer chooses a module the card
    takes the focus on its heading; on arriving at the tab with a module already chosen, the tab's own title
    keeps it. Nothing here is a live region: the bar's is the river's only announcement. *@

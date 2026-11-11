@@ -2,7 +2,7 @@ using Netto.Web.Client.River;
 
 namespace Netto.Web.Client.Tabs;
 
-// What the Compare plans tab draws: two of the saved plans side by side, the first the baseline (the
+// What the Plans panel's comparison draws: two of the saved plans side by side, the first the baseline (the
 // plan starred « Today » unless the viewer picked another) and the second measured against it, the
 // difference being the second less the first, as a plan's gain is against Today (BaselineGain). It only
 // selects the engine's figures of each plan's run and regroups them (CompareRows); it decides no tax

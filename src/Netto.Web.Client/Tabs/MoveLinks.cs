@@ -3,7 +3,7 @@ using Netto.Web.Client.River;
 
 namespace Netto.Web.Client.Tabs;
 
-// Where a move of the Optimisation tab links to: the card of My plan it acts on, while that card is on the
+// Where a move of the Optimise view links to: the card of My plan it acts on, while that card is on the
 // map, or the plan by date. The pay is on the Director pay card while the river holds the company's year, a
 // lever's card while its module is in the plan, so a lever's move not applied yet links nowhere until
 // « Apply » adds its module; a payment's place is My plan by date.

@@ -105,7 +105,7 @@ internal static class Formats
     // no-break space.
     public static string Grams(decimal grams) => $"{grams.ToString("0.#", Culture)}{(InFrench ? NoBreak : " ")}g/km";
 
-    // Percentage points between two shares, to a tenth: 2.5, as the Compare plans tab says them.
+    // Percentage points between two shares, to a tenth: 2.5, as the Plans panel's comparison says them.
     public static string Points(decimal points) => points.ToString("0.0", Culture);
 
     private static string DayOfMonth(DateOnly date) =>

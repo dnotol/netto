@@ -86,7 +86,7 @@ internal sealed record BucketsView(
 
     private bool Drawn => Buckets.All(bucket => bucket.Share is not null);
 
-    // What a bucket holds, by its key; the Compare plans tab reads its columns through it.
+    // What a bucket holds, by its key; the Plans panel's comparison reads its columns through it.
     internal decimal AmountOf(string key) => Buckets.Single(bucket => bucket.Key == key).Amount;
 
     // What an event's steps pay out, a step coming back counting against it: the sum every bucket of

@@ -4,7 +4,7 @@ using Netto.Web.Client.River;
 
 namespace Netto.Web.Client.Tabs;
 
-// Why a move helps, the line under it on the Optimisation tab: the engine's figures that differ between
+// Why a move helps, the line under it on the Optimise view: the engine's figures that differ between
 // the year before its line and the year after it (PlannedMove.Before, After), worded by kind, so the line
 // says what changes with the move, measured on top of the moves above it. It picks figures and applies no
 // rule of its own: which sentence says them follows the figures too, a surcharge left or none, a

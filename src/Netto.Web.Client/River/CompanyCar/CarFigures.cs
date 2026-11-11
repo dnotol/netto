@@ -10,7 +10,7 @@ namespace Netto.Web.Client.River.CompanyCar;
 // computes none.
 internal static class CarFigures
 {
-    // The lines the Map tab draws as what the car changes of a tax base (Tabs/MapLinks).
+    // The lines the map draws as what the car changes of a tax base (Tabs/MapLinks).
     public const string BenefitTaxed = "Figure_BenefitTaxed";
 
     public const string NotDeductible = "Figure_NotDeductible";

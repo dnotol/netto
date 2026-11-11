@@ -50,7 +50,7 @@
         cursor: default;
     }
 
-/* A pinned fold (the card chosen beside the Map tab's map) is no button: the same row, the title and the
+/* A pinned fold (the card chosen beside My plan's map) is no button: the same row, the title and the
    summary, with nothing to press. */
 .fold__toggle--pinned {
     cursor: default;

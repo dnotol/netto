@@ -255,7 +255,7 @@ body:has(.netto-app) .boot-splash {
    off: nothing scrolls smoothly, an animation plays once at once, and nothing transitions. A transition's
    property is all by default, so a duration above zero here would turn every change of any computed value of
    any element into a transition, and a transition ends only at a frame the page draws: in a page that draws
-   none, a background tab or a browser pane not on screen, the Map tab's map and column kept the offset under
+   none, a background tab or a browser pane not on screen, My plan's map and column kept the offset under
    the bar they had before bucket-bar.js measured the bar. An animation starts only where a rule names one. */
 @media (prefers-reduced-motion: reduce) {
     html {

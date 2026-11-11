@@ -25,7 +25,7 @@ internal static class CopyrightFigures
             .Select(line => line.Pay is { } pay ? new FigureLine(line.Key, pay) : null).OfType<FigureLine>(),
     ];
 
-    // The royalty the company pays, whole, which the Map tab's gate says crosses (Tabs/MapGates).
+    // The royalty the company pays, whole, which the map's gate says crosses (Tabs/MapGates).
     public const string Paid = "Figure_Royalty";
 
     // The royalty as the engine took it: the part within its limits, with the limits in its bubble, the

@@ -2,7 +2,7 @@ using Netto.Web.Client.River;
 
 namespace Netto.Web.Client.Tabs;
 
-// What the module chosen on the Map tab receives, and from where: the one line above its card beside the
+// What the module chosen on the map receives, and from where: the one line above its card beside the
 // map, the card's drain list saying where its money goes. A part for each line of money the map draws into
 // the module (MapBundle), in the order of the map's links, its amount the one the map says on that line, the
 // sum of the card's lines it holds (MapBundle.Amount), and the end it comes from, a module the viewer can go

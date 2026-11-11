@@ -46,8 +46,8 @@
    so that it keeps hold of it); taking one out, there or from its card, shows a notice with Undo, which
    outlives a switch of tab, and adding one chooses it, so its card opens beside the map to be filled. The
    choice on the map, a module or a bucket (MapChoice), is Company year on arriving, or the one the address
-   names (CardLinks, plan?card=<name>), from a link of the Optimisation tab's moves or loaded as it is, or the
-   bucket the viewer presses in the band, from any tab, which brings them to the plan. *@
+   names (CardLinks, plan?card=<name>), from a link of the Optimise view's moves or loaded as it is, or the
+   bucket the viewer presses in the band, from any view, which brings them to My plan. *@
 <BucketBar Run="_run" Setup="_today?.Run" BucketChosen="OnBucketChosen">
     <ChildContent>
         <PlansPanel Inputs="_inputs" CanSave="BaselineGain.CanMark(_run)" OnOpen="OnPlanOpened" OnChanged="OnPlansChanged" OpenOnCompare="PlanTabRoutes.OpensCompare(PlansMode)" />
@@ -314,7 +314,7 @@
         }
     }
 
-    // What each tab says after its name, from what its content draws: the Optimisation tab's moves, which
+    // What each tab says after its name, from what its content draws: the Optimise view's moves, which
     // its badge and My plan's nudge need on every view, found once per plan on screen and date (MovesSource),
     // since the search runs the split at every move, and only after the page has painted: until then the
     // badge says they are being looked for. My plan's own is the next deadline.

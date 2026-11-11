@@ -17,7 +17,7 @@ builder.Services.AddMudServices();
 builder.Services.AddTransient<MudLocalizer, NettoMudLocalizer>();
 
 // What is kept in the browser, never on a server: the viewer's preferences, their theme, which folds of
-// the river are open and which kinds of link the Map tab hides, and the plans they save.
+// the river are open and which kinds of link the map hides, and the plans they save.
 builder.Services.AddScoped<IBrowserStorage, LocalStorage>();
 builder.Services.AddScoped<IThemePage, BrowserThemePage>();
 builder.Services.AddScoped<ThemePreference>();

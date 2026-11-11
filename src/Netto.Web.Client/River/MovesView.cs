@@ -3,7 +3,7 @@ using Netto.Core.Simulation;
 
 namespace Netto.Web.Client.River;
 
-// What the Optimisation tab draws: the engine's moves (MoveSearch) that retune the plan on screen, From,
+// What the Optimise view draws: the engine's moves (MoveSearch) that retune the plan on screen, From,
 // or why there are none, with what that plan leaves in the pocket and what it leaves with every move. The
 // page searches once per plan and date (MovesSource), since the search runs the split at every move; while
 // the plan on screen is not the one searched, the view is searching, so no move found for another plan is

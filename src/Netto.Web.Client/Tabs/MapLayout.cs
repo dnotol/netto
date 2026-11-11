@@ -1199,7 +1199,7 @@ internal enum MapColumn
 }
 
 // Whose money a column of the map holds, which its label says: the director's and their household's, on its way
-// across, or the company's. Public because the Map tab, a component, words it.
+// across, or the company's. Public because MapTab, a component, words it.
 public enum MapOwner
 {
     You,

@@ -3,7 +3,7 @@ using Netto.Web.Client.River;
 
 namespace Netto.Web.Client.Tabs;
 
-// What the Optimisation tab says under the pay's move when the river, at that pay, has a better one. The
+// What the Optimise view says under the pay's move when the river, at that pay, has a better one. The
 // moves are found once from the plan they are measured from, so a fact the river holds that the plan does
 // not (or a value a move sets, edited since) leaves the move's pay and the split's best pay for the river
 // apart, and « In the river », which is by value, would say the river is at the best pay while the pay

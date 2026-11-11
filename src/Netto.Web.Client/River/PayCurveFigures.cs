@@ -3,7 +3,7 @@ using Netto.Core.Simulation;
 namespace Netto.Web.Client.River;
 
 // The pay curve's figures as lines of label, amount and share (FigureLine), which its section of the
-// Optimisation tab words from its own texts: the best pay the engine's search found with what it leaves beside
+// Optimise view words from its own texts: the best pay the engine's search found with what it leaves beside
 // the pay set (Best), and what the pointer reads of a pay on the curve, only while it points at one (Pointer).
 // They select the engine's figures and divide them (Shares.Of), never calculate; a line of nothing is left out,
 // but for the one heading the lines, the pay or the best pay, which may be none.

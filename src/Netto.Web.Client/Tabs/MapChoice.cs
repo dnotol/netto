@@ -6,7 +6,7 @@ namespace Netto.Web.Client.Tabs;
 // bucket is no module of the river (RiverModule): it has no inputs, no hand-off and no module after it, so no
 // switch over the modules takes a bucket arm; its card is read-only (BucketCard). Name is what a link to the
 // plan names it by (CardLinks, plan?card=<name>): a module by its card's fold name, a bucket by its key
-// (BucketsView.Keys), none of which is a fold name. Public because the Map tab and its panel take it as a
+// (BucketsView.Keys), none of which is a fold name. Public because MapTab and its panel take it as a
 // parameter.
 public sealed record MapChoice
 {

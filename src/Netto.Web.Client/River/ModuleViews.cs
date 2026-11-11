@@ -651,7 +651,7 @@ internal sealed record DividendView(
 // every input, so an input no case names is a bug rather than a refusal shown on no field. The pay is
 // Director pay's, with the company's year or without it, and so is the key formula's
 // month of it; the royalty, fixed or following the pay, and its creative share are Copyright royalty's; the
-// income year, which no card holds, and what the fund bills, which the When to pay tab shows itself, the river's;
+// income year, which no card holds, and what the fund bills, which the My plan's by-date lens shows itself, the river's;
 // the partner's income and the dependants the Household card's, the company's year there or not.
 internal static class RiverErrors
 {
@@ -675,11 +675,11 @@ internal static class RiverErrors
     };
 }
 
-// A module of the river, its card. Public because the Map tab, a component, takes the module chosen on
+// A module of the river, its card. Public because MapTab, a component, takes the module chosen on
 // it as a parameter.
 public enum RiverModule
 {
-    // Nothing a card holds: the income year, and what the fund bills, which the When to pay tab shows.
+    // Nothing a card holds: the income year, and what the fund bills, which the My plan's by-date lens shows.
     River,
 
     CompanyYear,

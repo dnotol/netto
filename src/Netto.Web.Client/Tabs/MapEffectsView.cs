@@ -2,7 +2,7 @@ using Netto.Web.Client.River;
 
 namespace Netto.Web.Client.Tabs;
 
-// What the module chosen on the Map tab does to another module's tax base or under another's condition, and what
+// What the module chosen on the map does to another module's tax base or under another's condition, and what
 // is done to it so: the short list under the line of what it receives, beside its card, an item for each line of a
 // tax base or a condition the map draws for it (MapView.ShowingFor), in the order of the map's links. A tax base
 // says what changes it, the words of the card lines its line holds, its amount, the sum the map says on that line

@@ -3,7 +3,7 @@ using Netto.Core.Simulation;
 
 namespace Netto.Web.Client.River;
 
-// Where the Optimisation tab and its badge take their moves from: the plan on screen, the river the band
+// Where the Optimise view and its badge take their moves from: the plan on screen, the river the band
 // runs, and what the search found for it. The search runs the split at every move, about a second in the
 // browser on the page's one thread, so it never runs while the page draws: the page draws first, the tab
 // and its badge saying the moves are being looked for, and searches once the browser has painted that

@@ -111,7 +111,7 @@
 
     private Task OnBandChanged(CompanyContributionBand band) => InputsChanged.InvokeAsync(Inputs.WithCompanyContributionBand(band));
 
-    // The word the viewer pressed goes with the content it was in, so a card beside the Map tab's map puts
+    // The word the viewer pressed goes with the content it was in, so a card beside My plan's map puts
     // the focus on its heading once it is drawn again (ModuleCard.FocusHeadingAsync).
     private Task SkipCompany()
     {

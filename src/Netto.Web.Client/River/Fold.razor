@@ -12,7 +12,7 @@
    amount is accepted it stays open, for the field not to vanish under the cursor, until the viewer
    folds it. It has no text of its own: the card gives its title and its summary, and what its module
    is (Help), in an info bubble at the row's end, outside the heading and its button, inside which no
-   other control may sit. A pinned fold (Pinned), the card of the module chosen on the Map tab, is always
+   other control may sit. A pinned fold (Pinned), the card of the module chosen on the map, is always
    open and is no button: its title and summary are the heading's plain text, the heading takes the focus
    when the page asks (FocusAsync), and it neither reads nor writes the viewer's fold, nor reveals one. *@
 @if (Level == 3)
@@ -71,8 +71,8 @@ else
     [Parameter]
     public bool Refused { get; set; }
 
-    // Always open and no button, the viewer's folds left alone: the card of the module chosen on the Map
-    // tab, beside its map (PinnedCard).
+    // Always open and no button, the viewer's folds left alone: the card of the module chosen on My plan's map, beside it
+    // (PinnedCard).
     [Parameter]
     public bool Pinned { get; set; }
 
@@ -90,7 +90,7 @@ else
     private string? HeadingTabIndex => Pinned ? "-1" : null;
 
     // A refusal reveals the fold, so it stays open once the amount is accepted. A pinned fold is open
-    // anyway, and revealing it would open the same card on the Plan tab.
+    // anyway, and revealing it would open the same card in the river.
     protected override void OnParametersSet()
     {
         if (Refused && !Pinned)

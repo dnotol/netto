@@ -2,7 +2,7 @@ using Netto.Core.CorporateTax;
 
 namespace Netto.Web.Client.River;
 
-// The bubble of the term « reduced corporate rate », which the Optimisation tab's pay curve and the Copyright
+// The bubble of the term « reduced corporate rate », which the Optimise view's pay curve and the Copyright
 // royalty card both explain where they weigh it: the key each card's texts hold it under, and what it states
 // of the year's rules.
 internal static class ReducedRateText

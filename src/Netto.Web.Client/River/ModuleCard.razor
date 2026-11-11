@@ -116,7 +116,7 @@
     [Parameter]
     public EventCallback OnRemove { get; set; }
 
-    // The seat the Map tab's panel gives the card of the module chosen, beside its map, where there is one:
+    // The seat My plan's map panel gives the card of the module chosen, beside its map, where there is one:
     // the card is then pinned open and takes the focus on its first draw if the seat says so.
     [CascadingParameter]
     private PinnedCard? Seat { get; set; }
@@ -133,7 +133,7 @@
 
     // A card beside the map whose content has just changed under the control the viewer pressed (Company
     // year, cleared or entered again) puts the focus on its heading, rather than let it fall to the
-    // document with the control. On the Plan tab, where the heading is a button, the card does nothing.
+    // document with the control. In the river, where the heading is a button, the card does nothing.
     public async Task FocusHeadingAsync()
     {
         if (Seat is not null && _fold is not null)
