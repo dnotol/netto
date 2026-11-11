@@ -1,0 +1,192 @@
+@using System.Globalization
+@using Netto.Web.Client.River
+@inject IStringLocalizer<SankeyDrawing> L
+@inject IStringLocalizer<MapTab> Modules
+@inject IStringLocalizer<BucketBar> BucketTexts
+
+@* My plan's other picture, the Sankey, in the map's place when the viewer picks it (MapPictureSwitch,
+   docs/architecture/decisions/2026-11-11-my-plans-picture-is-the-map-or-a-sankey.md): the money from what the company
+   earns to the bar's five buckets, every band the sum of the map's links it gathers, as wide as its money (SankeyView),
+   laid out by one ordering rule (SankeyLayout). Nothing here computes a figure.
+
+   Over it, its key: what a band's width says and where it says more than its money (the minimum), and, where the plan
+   has them, the dashed loop and « net ». The bands and the bars are one SVG stretched across the drawing's width,
+   what runs down in pixels, so a band keeps its thickness however wide the drawing is; for the eye only, since the
+   nodes say what they hold. Each node is a button over its bar and its label, its name over its amount, which a
+   screen reader hears as its name; pressed, it chooses its module or its bucket as the map does (MapChoice, the
+   page's), so the card beside the drawing is the same one. Chosen, a node is pressed and the bands not touching it
+   fade, as the map's lines do, with no transition; a bucket keeps the bands at either end of it. The car's
+   contribution, money going back out of the pocket into the company, is the one dashed loop under the bands, said in
+   words under the drawing with its amount. A bucket money came back into says « net ».
+
+   Under it: that tax bases, conditions and the household move no money and are listed beside the card, and the
+   modules of the plan without a band, each a button choosing it, so the keyboard reaches every module. Where there is
+   no honest picture (a refusal, a loss), one line says so and every module of the plan is such a button. *@
+@if (_view is { } view && _picture is { } picture)
+{
+    <ul class="sankey-key" aria-label="@L["Key"]">
+        <li class="sankey-key__item" data-key="width">@L["KeyWidth"]</li>
+        @if (Loop is not null)
+        {
+            <li class="sankey-key__item" data-key="loop">@L["KeyLoop"]</li>
+        }
+        @if (view.Bands.Any(band => band.Back > 0m))
+        {
+            <li class="sankey-key__item" data-key="net">@L["KeyNet"]</li>
+        }
+    </ul>
+    <div class="sankey" style="height: @Pixels(picture.Height)" role="group" aria-label="@L["Label"]">
+        <svg class="sankey__bands" viewBox="0 0 100 @Number(picture.Height)" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+            @foreach (var strip in picture.Strips.Where(strip => !strip.Band.Loop))
+            {
+                <path class="@BandClass(strip)" d="@BandPath(strip)" data-band="@($"{strip.Band.From.Id} {strip.Band.To.Id}")" data-at-minimum="@(strip.AtMinimum ? "true" : null)" />
+            }
+            @if (Loop is { } loop && picture.LoopY is { } loopY)
+            {
+                <path class="@LoopClass(loop)" d="@LoopPath(loop, loopY)" stroke-width="@Number(loop.Thickness)" />
+            }
+            @foreach (var place in picture.Places)
+            {
+                <rect class="@BarClass(place)" x="@Number(place.Left)" y="@Number(place.Top)" width="@Number(place.Width)" height="@Number(place.Height)" />
+            }
+        </svg>
+        @foreach (var place in picture.Places)
+        {
+            <button type="button" class="@NodeClass(place)" aria-pressed="@(IsChosen(place.Node.Choice) ? "true" : "false")" data-node="@place.Node.Id"
+                    style="@NodeStyle(place)" @onclick="() => Choose.InvokeAsync(place.Node.Choice)">
+                @for (var line = 0; line < place.Label.Lines.Count; line++)
+                {
+                    <span class="sankey-node__line">@place.Label.Lines[line]</span>@(line < place.Label.Lines.Count - 1 ? " " : "")
+                }
+            </button>
+        }
+    </div>
+    @if (Loop is { } shown)
+    {
+        <p class="sankey__loop">@L["Loop", Formats.Euros(shown.Band.Amount)]</p>
+    }
+}
+else
+{
+    <p class="sankey__none">@L["NoPicture"]</p>
+}
+<p class="sankey__no-money">@L["NoMoney"]</p>
+@if (_unbanded.Count > 0)
+{
+    <p class="sankey__also">
+        <span class="sankey__also-label">@L["AlsoInPlan"]</span>
+        @foreach (var module in _unbanded)
+        {
+            @(" ")<button type="button" class="sankey__also-module" aria-pressed="@(IsChosen(MapChoice.Of(module)) ? "true" : "false")" data-module="@MapModules.Name(module)"
+                    @onclick="() => Choose.InvokeAsync(MapChoice.Of(module))">@Modules[MapTabText.Module(module)]</button>
+        }
+    </p>
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public RiverInputs Inputs { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public RiverRun Run { get; set; } = default!;
+
+    // The module or the bucket chosen, the page's (MapTab's), none for nothing.
+    [Parameter]
+    public MapChoice? Chosen { get; set; }
+
+    // A node or a module pressed: MapTab chooses it, or lets it go when it was chosen.
+    [Parameter]
+    public EventCallback<MapChoice> Choose { get; set; }
+
+    private SankeyView? _view;
+    private SankeyPicture? _picture;
+    private IReadOnlyList<RiverModule> _unbanded = [];
+    private (RiverInputs Inputs, RiverRun Run)? _drawn;
+
+    // The picture is the run's: worked out again for another run, not for another choice.
+    protected override void OnParametersSet()
+    {
+        if (_drawn is var (inputs, run) && ReferenceEquals(inputs, Inputs) && ReferenceEquals(run, Run))
+            return;
+
+        _drawn = (Inputs, Run);
+        _view = SankeyView.From(Inputs, Run);
+        _picture = _view is { } view ? SankeyLayout.Of(view, node => Words(view, node)) : null;
+        var banded = _view?.Nodes.Select(node => node.Module).OfType<RiverModule>().ToHashSet() ?? [];
+        _unbanded = [.. MapView.ModulesOf(Inputs).Where(module => !banded.Contains(module))];
+    }
+
+    // A node's words: its name, as the map and the bar name it, and the amount it holds, « net » where money came
+    // back into a bucket.
+    private (string Name, string Amount) Words(SankeyView view, SankeyNode node)
+    {
+        var amount = Formats.Euros(view.Says(node));
+        var net = node.Bucket is not null && view.Bands.Any(band => band.To == node && band.Back > 0m);
+        return (Name(view, node), net ? L["Net", amount].Value : amount);
+    }
+
+    private string Name(SankeyView view, SankeyNode node) => node switch
+    {
+        { Module: { } module } => Modules[MapTabText.Module(module)],
+        { Bucket: { } key } => BucketTexts[BucketBarText.Bucket(key, view.Bar.TaxesOnPayIncludeRent)],
+        _ => L["EarlierProfits"],
+    };
+
+    private SankeyStrip? Loop => _picture?.Strips.FirstOrDefault(strip => strip.Band.Loop);
+
+    private bool IsChosen(MapChoice choice) => Chosen is not null && Chosen == choice;
+
+    // Whether the choice keeps a band drawn: a module's bands (SankeyBand.Touches), a bucket's at either end of it.
+    private bool Shows(SankeyBand band) => Chosen switch
+    {
+        null => true,
+        { Module: { } module } => band.Touches(module),
+        { Bucket: { } key } => band.From == SankeyNode.InBucket(key) || band.To == SankeyNode.InBucket(key),
+        _ => true,
+    };
+
+    // A band's ink is its destination's: a module's, or its bucket's as the bar draws it.
+    private string BandClass(SankeyStrip strip) =>
+        $"sankey-band sankey-band--{strip.Band.To.Bucket ?? "module"}{(Shows(strip.Band) ? "" : " sankey-band--faded")}";
+
+    private string LoopClass(SankeyStrip strip) => $"sankey-loop{(Shows(strip.Band) ? "" : " sankey-loop--faded")}";
+
+    private string BarClass(SankeyPlace place) =>
+        $"sankey__bar sankey__bar--{place.Node.Bucket ?? "module"}{(IsChosen(place.Node.Choice) ? " sankey__bar--chosen" : "")}";
+
+    private string NodeClass(SankeyPlace place) => $"sankey-node{(IsChosen(place.Node.Choice) ? " sankey-node--chosen" : "")}";
+
+    // The button over a node's bar and its label: from the bar's left edge to the label's right, as tall as the label,
+    // its words set after the bar.
+    private static string NodeStyle(SankeyPlace place) =>
+        $"left: {Number(place.Left)}%; top: {Pixels(place.Label.Top)}; height: {Pixels(place.Label.Height)}; "
+        + $"width: calc({Number(place.Width)}% + {Number(2m * SankeyLayout.LabelGapPixels + place.Label.Width)}px); "
+        + $"padding-left: calc({Number(place.Width)}% + {Number(SankeyLayout.LabelGapPixels)}px)";
+
+    // A band: from the right edge of the bar it leaves to the left edge of the bar it reaches, its top and its bottom
+    // each a curve level at both ends.
+    private static string BandPath(SankeyStrip strip)
+    {
+        var (x1, x2) = (strip.FromX, strip.ToX);
+        var middle = (x1 + x2) / 2m;
+        var (top1, top2) = (strip.FromTop, strip.ToTop);
+        var (bottom1, bottom2) = (top1 + strip.Thickness, top2 + strip.Thickness);
+        return $"M {Number(x1)} {Number(top1)} C {Number(middle)} {Number(top1)}, {Number(middle)} {Number(top2)}, {Number(x2)} {Number(top2)} "
+            + $"L {Number(x2)} {Number(bottom2)} C {Number(middle)} {Number(bottom2)}, {Number(middle)} {Number(bottom1)}, {Number(x1)} {Number(bottom1)} Z";
+    }
+
+    // The loop: out of the pocket's bar to the right, down under every place, across to the left of Company year and
+    // up into its bar, along its middle.
+    private static string LoopPath(SankeyStrip strip, decimal loopY)
+    {
+        var (from, to) = (strip.FromTop + strip.Thickness / 2m, strip.ToTop + strip.Thickness / 2m);
+        return $"M {Number(strip.FromX)} {Number(from)} H {Number(strip.FromX + LoopReach)} V {Number(loopY)} H {Number(strip.ToX - LoopReach)} V {Number(to)} H {Number(strip.ToX)}";
+    }
+
+    // How far, in percent of the width, the loop runs out beside the bars it joins.
+    private const decimal LoopReach = 1m;
+
+    private static string Pixels(decimal pixels) => $"{Number(pixels)}px";
+
+    private static string Number(decimal value) => Math.Round(value, 3).ToString("0.###", CultureInfo.InvariantCulture);
+}

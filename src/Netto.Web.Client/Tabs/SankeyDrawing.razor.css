@@ -1,0 +1,175 @@
+/* The Sankey: its key in one row, then the drawing, as tall as SankeyLayout makes it and never narrower than the
+   layout keeps its labels apart at (SankeyLayout.NarrowestPixels, the map's 34rem); the bands and bars an SVG
+   stretched across its width, the nodes buttons over them. Every ink is a token of both themes, a band's its
+   destination's as the bar draws its buckets, separated from the bands beside it by an edge of the page's ground.
+   Nothing transitions: choosing fades the bands at once. */
+.sankey-key {
+    display: flex;
+    flex: none;
+    flex-wrap: wrap;
+    gap: 0.25rem 1rem;
+    margin: 0 0 0.75rem;
+    padding: 0;
+    list-style: none;
+    color: var(--netto-text-muted);
+    font-size: 0.8rem;
+    line-height: 1.4;
+}
+
+.sankey {
+    position: relative;
+    flex: none;
+    min-width: 34rem;
+}
+
+.sankey__bands {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+
+/* A band: filled in its destination's ink, an edge of the ground between it and the next. */
+.sankey-band {
+    stroke: var(--netto-page);
+    stroke-width: 1px;
+    vector-effect: non-scaling-stroke;
+}
+
+.sankey-band--module,
+.sankey-band--kept_in_company {
+    fill: var(--netto-data-high);
+}
+
+.sankey-band--pocket {
+    fill: var(--netto-gold);
+}
+
+.sankey-band--taxes_on_pay,
+.sankey-band--taxes_on_profit {
+    fill: var(--netto-data-strong);
+}
+
+.sankey-band--expenses {
+    fill: var(--netto-expenses);
+}
+
+.sankey-band--faded,
+.sankey-loop--faded {
+    opacity: 0.18;
+}
+
+/* The car's contribution going back out of the pocket: dashed, in the pocket's gold, under the bands. */
+.sankey-loop {
+    fill: none;
+    stroke: var(--netto-gold);
+    stroke-dasharray: 6 4;
+    vector-effect: non-scaling-stroke;
+}
+
+.sankey__bar {
+    fill: var(--netto-text-muted);
+}
+
+.sankey__bar--pocket {
+    fill: var(--netto-gold);
+}
+
+.sankey__bar--taxes_on_pay,
+.sankey__bar--taxes_on_profit {
+    fill: var(--netto-data-strong);
+}
+
+.sankey__bar--kept_in_company {
+    fill: var(--netto-data-high);
+}
+
+.sankey__bar--expenses {
+    fill: var(--netto-expenses);
+}
+
+.sankey__bar--chosen {
+    stroke: var(--netto-gold);
+    stroke-width: 2px;
+    vector-effect: non-scaling-stroke;
+}
+
+/* A node: a button over its bar and its label, the label's lines on the page's ground so a band under them never
+   crosses the words; 0.72rem on 1rem lines, as SankeyLayout measures them. Chosen, its words heavier and underlined
+   in gold, so colour is not its only sign. */
+.sankey-node {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    margin: 0;
+    padding-top: 0;
+    padding-right: 0;
+    padding-bottom: 0;
+    border: 0;
+    background: none;
+    color: var(--netto-text);
+    font: inherit;
+    font-size: 0.72rem;
+    line-height: 1rem;
+    text-align: left;
+    cursor: pointer;
+}
+
+.sankey-node__line {
+    display: block;
+    background: var(--netto-page);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+.sankey-node:hover .sankey-node__line {
+    text-decoration: underline;
+}
+
+.sankey-node--chosen .sankey-node__line {
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-color: var(--netto-gold);
+    text-decoration-thickness: 2px;
+}
+
+.sankey__loop,
+.sankey__none,
+.sankey__no-money,
+.sankey__also {
+    flex: none;
+    margin: 0.5rem 0 0;
+    color: var(--netto-text-muted);
+    font-size: 0.8rem;
+}
+
+.sankey__also {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.sankey__also-module {
+    min-height: 1.75rem;
+    padding: 0 0.6rem;
+    border: 1px solid var(--netto-line-input);
+    border-radius: 999px;
+    background: var(--netto-surface);
+    color: var(--netto-text);
+    font: inherit;
+    cursor: pointer;
+}
+
+    .sankey__also-module:hover,
+    .sankey__also-module[aria-pressed="true"] {
+        border-color: var(--netto-gold);
+    }
+
+    .sankey__also-module[aria-pressed="true"] {
+        box-shadow: inset 0 0 0 1px var(--netto-gold);
+        font-weight: 600;
+    }

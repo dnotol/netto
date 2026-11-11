@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Label" xml:space="preserve">
+    <value>Sankey of the plan: where the money goes</value>
+  </data>
+  <data name="Key" xml:space="preserve">
+    <value>Key to the Sankey</value>
+  </data>
+  <data name="KeyWidth" xml:space="preserve">
+    <value>Each band is as wide as its money; one thinner than 2 px is drawn at 2 px, wider than its money.</value>
+  </data>
+  <data name="KeyLoop" xml:space="preserve">
+    <value>Dashed: money going back out of your pocket.</value>
+  </data>
+  <data name="KeyNet" xml:space="preserve">
+    <value>« net »: after what came back into the bucket.</value>
+  </data>
+  <data name="Net" xml:space="preserve">
+    <value>{0} net</value>
+  </data>
+  <data name="EarlierProfits" xml:space="preserve">
+    <value>Profits kept from earlier years, after tax</value>
+  </data>
+  <data name="Loop" xml:space="preserve">
+    <value>Dashed under the bands: {0} of your contribution to the car, back from your pocket to the company.</value>
+  </data>
+  <data name="NoMoney" xml:space="preserve">
+    <value>Tax bases, conditions and the household move no money: they are listed beside the card of the module chosen.</value>
+  </data>
+  <data name="AlsoInPlan" xml:space="preserve">
+    <value>Also in your plan:</value>
+  </data>
+  <data name="NoPicture" xml:space="preserve">
+    <value>No Sankey of this plan: an amount is refused, or some of the money is less than nothing. The map draws it.</value>
+  </data>
+</root>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Label" xml:space="preserve">
+    <value>Sankey du plan : où va l'argent</value>
+  </data>
+  <data name="Key" xml:space="preserve">
+    <value>Légende du Sankey</value>
+  </data>
+  <data name="KeyWidth" xml:space="preserve">
+    <value>Chaque bande est aussi large que son argent ; une bande de moins de 2 px est dessinée à 2 px, plus large que son argent.</value>
+  </data>
+  <data name="KeyLoop" xml:space="preserve">
+    <value>En tirets : l'argent qui ressort de votre poche.</value>
+  </data>
+  <data name="KeyNet" xml:space="preserve">
+    <value>« net » : après ce qui est revenu dans le compartiment.</value>
+  </data>
+  <data name="Net" xml:space="preserve">
+    <value>{0} net</value>
+  </data>
+  <data name="EarlierProfits" xml:space="preserve">
+    <value>Réserves taxées des années précédentes</value>
+  </data>
+  <data name="Loop" xml:space="preserve">
+    <value>En tirets sous les bandes : {0} de votre contribution à la voiture, rendus par votre poche à la société.</value>
+  </data>
+  <data name="NoMoney" xml:space="preserve">
+    <value>Les bases imposables, les conditions et le ménage ne déplacent pas d'argent : ils sont listés à côté de la carte du module choisi.</value>
+  </data>
+  <data name="AlsoInPlan" xml:space="preserve">
+    <value>Aussi dans votre plan :</value>
+  </data>
+  <data name="NoPicture" xml:space="preserve">
+    <value>Pas de Sankey pour ce plan : un montant est refusé, ou une part de l'argent est inférieure à zéro. La carte le dessine.</value>
+  </data>
+</root>

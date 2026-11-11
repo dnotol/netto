@@ -73,6 +73,10 @@ Fixed once; every file that names one uses it word for word (the card, the map, 
 | the rent's floor | le plancher |
 | the fund's management fee | les frais de gestion de la caisse |
 | a bill (in the Chamber) | un projet de loi |
+| the picture of the plan (the map or the Sankey) · Map · Sankey | l'image du plan · Carte · Sankey |
+| a band (of the Sankey) | une bande |
+| net (a bucket's amount after what came back into it) | net |
+| profits kept from earlier years, after tax (the Sankey's node and the Dividend card's field) | réserves taxées des années précédentes |
 
 # Official terms
 

@@ -1,0 +1,24 @@
+@inject IStringLocalizer<MapPictureSwitch> L
+
+@* The switch over My plan's picture, first among the map's tools: the map or a Sankey of the same plan, side by side
+   until one of them wins (docs/architecture/decisions/2026-11-11-my-plans-picture-is-the-map-or-a-sankey.md). A group
+   named for a screen reader holding two buttons, the picture drawn pressed (aria-pressed) and marked in gold and set
+   heavier, so colour is not its only sign. Pressing one swaps the drawing beside the card and nothing else; the focus
+   stays on the button pressed, and nothing is said aloud: the band's live region is the river's one announcement. *@
+<div class="map-picture-switch" role="group" aria-label="@L["Label"]">
+    @foreach (var picture in Enum.GetValues<PlanPicture>())
+    {
+        <button type="button" class="map-picture-switch__button" aria-pressed="@(picture == Current ? "true" : "false")" data-picture="@picture.ToString().ToLowerInvariant()"
+                @onclick="() => Chosen.InvokeAsync(picture)">@L[picture == PlanPicture.Sankey ? "Sankey" : "Map"]</button>
+    }
+</div>
+
+@code {
+    // The picture My plan draws.
+    [Parameter, EditorRequired]
+    public PlanPicture Current { get; set; }
+
+    // The picture pressed.
+    [Parameter]
+    public EventCallback<PlanPicture> Chosen { get; set; }
+}

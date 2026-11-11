@@ -5,6 +5,7 @@
 @inject IStringLocalizer<MapTab> L
 @inject IStringLocalizer<BucketBar> BucketTexts
 @inject IStringLocalizerFactory Localizers
+@inject PicturePreference Pictures
 
 @* The map of My plan: the plan's modules from above, as the river shows them, and the money between them, every
    line the links of the river's one run between the same two ends, whose amount is a figure its card
@@ -99,17 +100,28 @@
 <div class="map-tab">
     <div class="map-tab__map">
         <div class="map-tab__tools">
-            <div class="map-tab__key">
-                <MapKey />
-            </div>
+            <MapPictureSwitch Current="Pictures.Current" Chosen="OnPictureChosen" />
+            @if (Pictures.Current == PlanPicture.Map)
+            {
+                <div class="map-tab__key">
+                    <MapKey />
+                </div>
+            }
             @if (AddToPlan is not null)
             {
                 <div class="map-tab__add">@AddToPlan</div>
             }
         </div>
-        @* The map alone, which scrolls sideways in it where the column is narrower than the map. *@
+        @* The map alone, or the Sankey in its place with its own key (SankeyDrawing), the viewer's pick on the switch
+           (PicturePreference), which scrolls sideways in it where the column is narrower than the picture. *@
         <div class="map-tab__frame">
-            <div class="map" style="--map-units: @Number(_view.Units)" role="group" aria-label="@L["MapLabel"]">
+            @if (Pictures.Current == PlanPicture.Sankey)
+            {
+                <SankeyDrawing Inputs="Inputs" Run="Run" Chosen="_chosen" Choose="choice => ChooseAsync(choice)" />
+            }
+            else
+            {
+            <div class="map"style="--map-units: @Number(_view.Units)" role="group" aria-label="@L["MapLabel"]">
                 @foreach (var (owner, slot) in _view.Columns)
                 {
                     <div class="map-column map-column--@owner.ToString().ToLowerInvariant()" style="@Box(slot)" aria-hidden="true"><span class="map-column__label">@L[MapTabText.Column(owner)]</span></div>
@@ -174,6 +186,7 @@
                     @BucketButton(bucket)
                 }
             </div>
+            }
         </div>
     </div>
     <div class="map-tab__side">
@@ -342,6 +355,9 @@
 
     private static string PocketClass(MapPocketShape line) => $"map-pocket-line{(line.Faded ? " map-pocket-line--faded" : "")}";
 
+
+    // A picture pressed on the switch: kept as the viewer's, and drawn.
+    private void OnPictureChosen(PlanPicture picture) => Pictures.Set(picture);
 
     // A module or a bucket chosen again lets it go.
     private Task ChooseAsync(MapChoice choice) => ChosenChanged.InvokeAsync(_chosen == choice ? null : choice);

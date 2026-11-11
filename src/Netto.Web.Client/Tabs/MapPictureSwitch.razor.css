@@ -1,0 +1,41 @@
+/* The switch: two buttons joined in one frame, each a target of at least 24 px; the picture drawn pressed, its
+   border and an inner line in gold and its name set heavier, so colour is not its only sign. Nothing clips the focus ring, and nothing transitions. */
+.map-picture-switch {
+    display: inline-flex;
+    flex: none;
+    border: 1px solid var(--netto-line-input);
+    border-radius: 999px;
+}
+
+.map-picture-switch__button {
+    min-height: 1.75rem;
+    padding: 0 0.75rem;
+    border: 0;
+    background: var(--netto-surface);
+    color: var(--netto-text-muted);
+    font: inherit;
+    font-size: 0.8rem;
+    cursor: pointer;
+}
+
+    .map-picture-switch__button:first-child {
+        border-radius: 999px 0 0 999px;
+    }
+
+    .map-picture-switch__button:last-child {
+        border-radius: 0 999px 999px 0;
+    }
+
+    .map-picture-switch__button + .map-picture-switch__button {
+        border-left: 1px solid var(--netto-line-input);
+    }
+
+    .map-picture-switch__button[aria-pressed="true"] {
+        box-shadow: inset 0 0 0 1px var(--netto-gold);
+        color: var(--netto-text);
+        font-weight: 600;
+    }
+
+    .map-picture-switch__button:hover {
+        color: var(--netto-text);
+    }
