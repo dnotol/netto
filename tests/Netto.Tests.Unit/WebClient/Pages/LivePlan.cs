@@ -169,6 +169,9 @@ internal sealed class LivePlan : IAsyncDisposable
         await _renderer.Dispatcher.InvokeAsync(() => { });
     }
 
+    // The page itself, the root of what it draws, for a test to read what it holds.
+    public Task<Plan> PageAsync() => _renderer.Dispatcher.InvokeAsync(() => _renderer.Page);
+
     // The first component of that type the page draws, as it now stands.
     public Task<TComponent> FindAsync<TComponent>() where TComponent : IComponent =>
         _renderer.Dispatcher.InvokeAsync(() => _renderer.Components().OfType<TComponent>().First());
@@ -212,9 +215,14 @@ internal sealed class LivePlan : IAsyncDisposable
 
         public List<Exception> Errors { get; } = [];
 
+        // The page's own instance.
+        public Plan Page { get; private set; } = default!;
+
         public Task LoadAsync(Type page, ParameterView parameters) => Dispatcher.InvokeAsync(async () =>
         {
-            _page = AssignRootComponentId(InstantiateComponent(page));
+            var instance = InstantiateComponent(page);
+            Page = (Plan)instance;
+            _page = AssignRootComponentId(instance);
             await RenderRootComponentAsync(_page, parameters);
             await Task.Yield();
         });

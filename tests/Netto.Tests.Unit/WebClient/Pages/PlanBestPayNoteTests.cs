@@ -1,3 +1,6 @@
+using System.Reflection;
+using Netto.Core.Simulation;
+using Netto.Web.Client.Pages;
 using Netto.Web.Client.River;
 using Netto.Web.Client.Tabs;
 using Shouldly;
@@ -58,5 +61,59 @@ public class PlanBestPayNoteTests
         await page.InvokeAsync(() => tab.InputsChanged.InvokeAsync(Today.WithDirectorPay(30_000m)));
 
         (await page.FindAsync<OptimisationTab>()).Search.ShouldBeSameAs(before);
+    }
+
+    // The search runs the year at every pay on the browser's one thread, and only the Optimise view reads it:
+    // an edit on My plan runs none, whatever the input.
+    [Fact]
+    public async Task Plan_editedOnMyPlan_runsNoSplitSearch()
+    {
+        await using var page = LivePlan.At("http://localhost/plan", new BrowserStorage(), holdPaint: true, river: Today);
+        await page.LoadAsync();
+        var map = await page.FindAsync<MapTab>();
+
+        await page.InvokeAsync(() => map.InputsChanged.InvokeAsync(WithARoyalty));
+
+        (await SplitSearchHeldAsync(page), page.Errors.Count).ShouldBe((null, 0));
+    }
+
+    // Arriving at the view after edits made on My plan: the curve is the search of the plan on screen, not of
+    // the plan the page opened on.
+    [Fact]
+    public async Task Plan_arrivingAtOptimisationAfterEditsOnMyPlan_handsTheTabTheSearchOfThePlanOnScreen()
+    {
+        await using var page = LivePlan.At("http://localhost/plan", new BrowserStorage(), holdPaint: true, river: Today);
+        await page.LoadAsync();
+        var map = await page.FindAsync<MapTab>();
+        await page.InvokeAsync(() => map.InputsChanged.InvokeAsync(WithARoyalty));
+
+        await page.SwitchTabAsync("optimisation");
+
+        var tab = await page.FindAsync<OptimisationTab>();
+        (tab.Search.ShouldNotBeNull().Best.ShouldNotBeNull().Pay, page.Errors.Count).ShouldBe((51_000m, 0));
+    }
+
+    // The pay alone edited on My plan: the curve found before is still the plan's, so arriving again keeps it.
+    [Fact]
+    public async Task Plan_arrivingAtOptimisationAgainAfterAPayEditOnMyPlan_keepsTheSearchFound()
+    {
+        await using var page = LivePlan.At("http://localhost/plan/optimisation", new BrowserStorage(), holdPaint: true, river: Today);
+        await page.LoadAsync("optimisation");
+        var before = (await page.FindAsync<OptimisationTab>()).Search.ShouldNotBeNull();
+        await page.SwitchTabAsync(null);
+        var map = await page.FindAsync<MapTab>();
+        await page.InvokeAsync(() => map.InputsChanged.InvokeAsync(Today.WithDirectorPay(30_000m)));
+
+        await page.SwitchTabAsync("optimisation");
+
+        (await page.FindAsync<OptimisationTab>()).Search.ShouldBeSameAs(before);
+    }
+
+    // The search the page holds, read as its private state: no seam counts the searches, and what a tab was
+    // handed is only drawn on Optimise.
+    private static async Task<SplitSearchResult?> SplitSearchHeldAsync(LivePlan page)
+    {
+        var plan = await page.PageAsync();
+        return (SplitSearchResult?)typeof(Plan).GetField("_search", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(plan);
     }
 }

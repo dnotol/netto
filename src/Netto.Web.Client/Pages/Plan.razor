@@ -48,12 +48,18 @@
    choice on the map, a module or a bucket (MapChoice), is Company year on arriving, or the one the address
    names (CardLinks, plan?card=<name>), from a link of the Optimise view's moves or loaded as it is, or the
    bucket the viewer presses in the band, from any view, which brings them to My plan. *@
+@* The moves and the ideas found for the plan on screen, each built once per draw, for the badges, My plan's
+   nudges and the views alike. *@
+@{
+    var moves = _moves.View(Today);
+    var pistes = _pistes.View(Today);
+}
 <BucketBar Run="_run" Setup="_today?.Run" BucketChosen="OnBucketChosen">
     <ChildContent>
         <PlansPanel Inputs="_inputs" CanSave="BaselineGain.CanMark(_run)" OnOpen="OnPlanOpened" OnChanged="OnPlansChanged" OpenOnCompare="PlanTabRoutes.OpensCompare(PlansMode)" />
     </ChildContent>
     <Tabs>
-        <PlanTabBar Current="_tab" Badges="Badges()" />
+        <PlanTabBar Current="_tab" Badges="Badges(moves, pistes)" />
     </Tabs>
 </BucketBar>
 <TakenOutNotice @ref="_notice" Module="_takenOut" OnUndo="Undo" OnDismiss="Dismiss" />
@@ -68,7 +74,7 @@
                    the focus where the viewer is and only arriving at the view moves it to the title (TabHead). *@
                 <TabHead Title="@L[PlanText.MyPlanTitle]" Focus="@(!PlanTabRoutes.OpensCompare(PlansMode))" />
                 <PlanLensBar Current="_lens" />
-                <PlanNudges Gain="NudgeGain" Pistes="Pistes" />
+                <PlanNudges Gain="NudgeGain(moves)" Pistes="PistesFound(pistes)" />
                 @if (_lens == PlanLens.ByDate)
                 {
                     <WhenToPayTab Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" Date="Today" />
@@ -111,7 +117,7 @@
                 <OptimisationTab Searching="_moves.Searching(Today)" Found="_moves.Found(Today)" Inputs="_inputs" InputsChanged="OnInputsChanged" Search="_search" />
                 break;
             case PlanTab.Pistes:
-                <PistesTab View="_pistes.View(Today)" Answered="_pistes.Answer" Tried="OnPisteTried" Dropped="_pistes.Drop" Kept="OnPisteKept" />
+                <PistesTab View="pistes"Answered="_pistes.Answer" Tried="OnPisteTried" Dropped="_pistes.Drop" Kept="OnPisteKept" />
                 break;
         }
     </MudContainer>
@@ -178,6 +184,7 @@
         else
             Navigation.NotFound();
 
+        SearchSplitForOptimisation();
         _lens = PlanTabRoutes.LensFrom(By);
         if (_arrival.Take(_tab, _lens, Card) is { } card && MapChoice.Named(card, MapView.ModulesOf(_inputs)) is { } named)
             (_mapChosen, _viewerChose) = (named, false);
@@ -307,10 +314,21 @@
         _run = inputs.Run();
         if (_mapChosen?.Module is { } chosen && !MapView.ModulesOf(inputs).Contains(chosen))
             _mapChosen = null;
-        if (_searched is null || !inputs.SameBesidesPay(_searched))
+        SearchSplitForOptimisation();
+    }
+
+    // Only the Optimise view reads the split's search (its pay curve and its note on the best pay), so the
+    // other views run none: on arriving at Optimise, the search is made if the plan on screen differs besides
+    // its pay from the one the search found was made for, which an edit of the pay alone never does.
+    private void SearchSplitForOptimisation()
+    {
+        if (_tab != PlanTab.Optimisation)
+            return;
+
+        if (_searched is null || !_inputs.SameBesidesPay(_searched))
         {
-            _search = inputs.SearchSplit();
-            _searched = inputs;
+            _search = _inputs.SearchSplit();
+            _searched = _inputs;
         }
     }
 
@@ -319,16 +337,16 @@
     // since the search runs the split at every move, and only after the page has painted: until then the
     // badge says they are being looked for. My plan's own is the next deadline.
     // The Ideas badge says « … » while an idea is still measured, as Optimise's does for the moves.
-    private IReadOnlyDictionary<PlanTab, TabBadge> Badges() =>
-        TabBadges.Of(_run, _moves.View(Today), CalendarView.From(_inputs, _run, Today), Pistes, _pistes.View(Today).Searching);
+    private IReadOnlyDictionary<PlanTab, TabBadge> Badges(MovesView moves, PistesView pistes) =>
+        TabBadges.Of(_run, moves, CalendarView.From(_inputs, _run, Today), PistesFound(pistes), pistes.Searching);
 
     // The ideas found for the plan on screen, for the Ideas badge and My plan's nudge: how many are priced and
     // how many still ask, none while one is still measured, so no count changes once it is found.
-    private PistesCount? Pistes => _pistes.View(Today) is { Searching: false } view ? new PistesCount(view.Priced, view.Questions) : null;
+    private static PistesCount? PistesFound(PistesView view) => view is { Searching: false } ? new PistesCount(view.Priced, view.Questions) : null;
 
     // What the moves add to the plan on screen, for My plan's nudge: the Optimisation badge's own amount, so
     // none while they are looked for or there are none.
-    private decimal? NudgeGain => _moves.View(Today) is { State: MovesState.Moves } moves ? moves.Total : null;
+    private static decimal? NudgeGain(MovesView moves) => moves is { State: MovesState.Moves } ? moves.Total : null;
 
     // Whether the map, and its tools, are what My plan draws: the plan read by bucket.
     private bool OnTheMap => _tab == PlanTab.Plan && _lens == PlanLens.ByBucket;
