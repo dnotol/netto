@@ -15,8 +15,8 @@ public class PisteSearchTests
 {
     private static readonly DateOnly On11November = new(2026, 11, 11);
 
-    // The river's example year with a copyright royalty that follows the pay at a creative share of 25%,
-    // the plan of the story's position paper: it leaves 62,624.32 in the pocket.
+    // Fixtures.ExampleWithRoyalty as a scenario: the river's example year with a copyright royalty that
+    // follows the pay at a creative share of 25% (the fixture says where the figures pinned on it come from).
     private static readonly Scenario ExampleWithRoyalty = RiverExample with
     {
         Copyright = new CopyrightRoyalty(0m) { FollowsPay = true, CreativeShare = 0.25m },
@@ -26,8 +26,8 @@ public class PisteSearchTests
 
     private static readonly IReadOnlySet<LeverKind> NoLever = new HashSet<LeverKind>();
 
-    // The engine's own figures on the example with its royalty (a regression pin): optimised without the
-    // vouchers, 65,933.99; with them, 65,996.99; the idea gains 63.00. By hand, at the optimised pay of
+    // The figures of Fixtures.ExampleWithRoyalty: optimised without the vouchers, 65,933.99; with them,
+    // 65,996.99; the idea gains 63.00. By hand, at the optimised pay of
     // 20,807, where the company pays 18% withholding on its dividend: eco vouchers are deductible for no
     // part (VoucherCalculator deducts only the meal vouchers' 4 a day), so the 250 the company pays for
     // them joins its taxable income and its corporate tax does not move; its profit after tax, all paid

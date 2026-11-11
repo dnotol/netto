@@ -11,9 +11,6 @@ namespace Netto.Tests.WebClient.River;
 // stands in for the engine's (PisteSearchTests, PisteTrialTests hold its figures).
 public class PistesViewTests
 {
-    private static readonly RiverInputs ExampleWithRoyalty =
-        RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithCreativeShare(0.25m).WithRoyaltyFollowingPay();
-
     private static readonly Refusal Refused = new("searched_refusal", RefusedInput.Revenue);
 
     // Every idea out of the plan has its row, in the river's order; the levers in it have none.
@@ -22,7 +19,7 @@ public class PistesViewTests
     {
         PistesView.Of(RiverInputs.Example, Trials(RiverInputs.Example), NothingFound, NotTried).Rows.Select(row => row.Lever)
             .ShouldBe([LeverKind.Vouchers, LeverKind.Rent, LeverKind.Copyright]);
-        PistesView.Of(ExampleWithRoyalty, Trials(ExampleWithRoyalty), NothingFound, NotTried).Rows.Select(row => row.Lever)
+        PistesView.Of(Fixtures.ExampleWithRoyalty, Trials(Fixtures.ExampleWithRoyalty), NothingFound, NotTried).Rows.Select(row => row.Lever)
             .ShouldBe([LeverKind.Vouchers, LeverKind.Rent]);
     }
 
@@ -52,7 +49,7 @@ public class PistesViewTests
     [Fact]
     public void Rows_found_arePricedWithTheirGain()
     {
-        var view = PistesView.Of(ExampleWithRoyalty, Trials(ExampleWithRoyalty), trial => (Gaining(trial.Lever, 63.00m), null), NotTried);
+        var view = PistesView.Of(Fixtures.ExampleWithRoyalty, Trials(Fixtures.ExampleWithRoyalty), trial => (Gaining(trial.Lever, 63.00m), null), NotTried);
 
         var vouchers = view.Rows[0];
         (vouchers.State, vouchers.Gain, vouchers.Piste.ShouldNotBeNull().Gain).ShouldBe((PisteState.Priced, 63.00m, 63.00m));
@@ -62,7 +59,7 @@ public class PistesViewTests
     [Fact]
     public void Rows_foundAddingNothing_haveNoGain()
     {
-        var view = PistesView.Of(ExampleWithRoyalty, Trials(ExampleWithRoyalty), trial => (Gaining(trial.Lever, 0m), null), NotTried);
+        var view = PistesView.Of(Fixtures.ExampleWithRoyalty, Trials(Fixtures.ExampleWithRoyalty), trial => (Gaining(trial.Lever, 0m), null), NotTried);
 
         (view.Rows[0].State, view.Rows[0].Gain).ShouldBe((PisteState.NoGain, (decimal?)null));
     }
@@ -71,7 +68,7 @@ public class PistesViewTests
     [Fact]
     public void Rows_refused_carryTheRefusal()
     {
-        var view = PistesView.Of(ExampleWithRoyalty, Trials(ExampleWithRoyalty), _ => (null, Refused), NotTried);
+        var view = PistesView.Of(Fixtures.ExampleWithRoyalty, Trials(Fixtures.ExampleWithRoyalty), _ => (null, Refused), NotTried);
 
         (view.Rows[0].State, view.Rows[0].Error, view.Rows[0].Gain).ShouldBe((PisteState.Refused, Refused, (decimal?)null));
     }
@@ -108,11 +105,11 @@ public class PistesViewTests
         (rent.Trial.Lever, rent.Trial.Open.Count, rent.Trial.CanTry).ShouldBe((LeverKind.Rent, 2, false));
     }
 
-    // My plan's count on the position paper's plan: the vouchers priced, the rent asking: « 1 · 1 ? ».
+    // My plan's count on Fixtures.ExampleWithRoyalty: the vouchers priced, the rent asking: « 1 · 1 ? ».
     [Fact]
     public void Count_onThePositionPapersPlan_isOnePricedAndOneAsking()
     {
-        var view = PistesView.Of(ExampleWithRoyalty, Trials(ExampleWithRoyalty), trial => (Gaining(trial.Lever, 63.00m), null), NotTried);
+        var view = PistesView.Of(Fixtures.ExampleWithRoyalty, Trials(Fixtures.ExampleWithRoyalty), trial => (Gaining(trial.Lever, 63.00m), null), NotTried);
 
         (view.Priced, view.Questions).ShouldBe((1, 1));
     }
@@ -136,10 +133,10 @@ public class PistesViewTests
     [Fact]
     public void Row_vouchersPricedBeforeTheYes_awaitTheYesAndCannotBeTried()
     {
-        var granted = Trials(ExampleWithRoyalty).Select(trial => trial.WithGranted(true)).ToList();
+        var granted = Trials(Fixtures.ExampleWithRoyalty).Select(trial => trial.WithGranted(true)).ToList();
 
-        var before = PistesView.Of(ExampleWithRoyalty, Trials(ExampleWithRoyalty), trial => (Gaining(trial.Lever, 63.00m), null), NotTried).Rows[0];
-        var after = PistesView.Of(ExampleWithRoyalty, granted, trial => (Gaining(trial.Lever, 63.00m), null), NotTried).Rows[0];
+        var before = PistesView.Of(Fixtures.ExampleWithRoyalty, Trials(Fixtures.ExampleWithRoyalty), trial => (Gaining(trial.Lever, 63.00m), null), NotTried).Rows[0];
+        var after = PistesView.Of(Fixtures.ExampleWithRoyalty, granted, trial => (Gaining(trial.Lever, 63.00m), null), NotTried).Rows[0];
 
         (before.AwaitsYes, before.CanTry, after.AwaitsYes, after.CanTry).ShouldBe((true, false, false, true));
     }
@@ -170,9 +167,9 @@ public class PistesViewTests
     [InlineData(0.0, false)]
     public void Row_tried_showsItsTrialAndIsKeptOnlyWhenItGains(double gain, bool canKeep)
     {
-        var granted = Trials(ExampleWithRoyalty).Select(trial => trial.WithGranted(true)).ToList();
+        var granted = Trials(Fixtures.ExampleWithRoyalty).Select(trial => trial.WithGranted(true)).ToList();
 
-        var row = PistesView.Of(ExampleWithRoyalty, granted, trial => (Gaining(trial.Lever, (decimal)gain), null), _ => true).Rows[0];
+        var row = PistesView.Of(Fixtures.ExampleWithRoyalty, granted, trial => (Gaining(trial.Lever, (decimal)gain), null), _ => true).Rows[0];
 
         (row.ShowsTrial, row.CanTry, row.CanKeep).ShouldBe((true, false, canKeep));
     }
@@ -181,9 +178,9 @@ public class PistesViewTests
     [Fact]
     public void Row_triedAndRefused_isNeverKept()
     {
-        var granted = Trials(ExampleWithRoyalty).Select(trial => trial.WithGranted(true)).ToList();
+        var granted = Trials(Fixtures.ExampleWithRoyalty).Select(trial => trial.WithGranted(true)).ToList();
 
-        var row = PistesView.Of(ExampleWithRoyalty, granted, _ => (null, Refused), _ => true).Rows[0];
+        var row = PistesView.Of(Fixtures.ExampleWithRoyalty, granted, _ => (null, Refused), _ => true).Rows[0];
 
         (row.ShowsTrial, row.CanKeep).ShouldBe((true, false));
     }
@@ -192,9 +189,9 @@ public class PistesViewTests
     [Fact]
     public void Row_triedAndSearching_showsItsTrial()
     {
-        var granted = Trials(ExampleWithRoyalty).Select(trial => trial.WithGranted(true)).ToList();
+        var granted = Trials(Fixtures.ExampleWithRoyalty).Select(trial => trial.WithGranted(true)).ToList();
 
-        var row = PistesView.Of(ExampleWithRoyalty, granted, NothingFound, _ => true).Rows[0];
+        var row = PistesView.Of(Fixtures.ExampleWithRoyalty, granted, NothingFound, _ => true).Rows[0];
 
         (row.State, row.ShowsTrial, row.CanKeep).ShouldBe((PisteState.Searching, true, false));
     }

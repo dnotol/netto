@@ -12,15 +12,11 @@ namespace Netto.Tests.WebClient.Tabs;
 // The Ideas view as it draws (RiverRendering, its first draw without a browser): one card per idea not in the
 // plan, its h2 the lever's card title, asking what its card asks, then its tuned gain, « … » while it is
 // measured; a trial inside the view, Keep only on an idea that gains; the pension one muted line. The ideas
-// are measured by the engine (PistesSource over the river's own search): the figures are the engine's own,
-// a regression pin (PisteSearchTests holds the derivation of the vouchers' 63.00).
+// are measured by the engine (PistesSource over the river's own search): the figures are
+// Fixtures.ExampleWithRoyalty's (PisteSearchTests holds the derivation of the vouchers' 63.00).
 public class PistesTabTests
 {
     private static readonly DateOnly On11November = new(2026, 11, 11);
-
-    // The position paper's plan: the example with a royalty following the pay at a quarter of the time.
-    private static readonly RiverInputs ExampleWithRoyalty =
-        RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithCreativeShare(0.25m).WithRoyaltyFollowingPay();
 
     [Fact]
     public async Task PistesTab_example_drawsItsTitleTheIntroductionAndOneCardPerIdea()
@@ -47,7 +43,7 @@ public class PistesTabTests
     [Fact]
     public async Task PistesTab_vouchersBeforeTheYes_sayIfYesAndCannotBeTried()
     {
-        var html = await DrawAsync(await MeasuredAsync(ExampleWithRoyalty));
+        var html = await DrawAsync(await MeasuredAsync(Fixtures.ExampleWithRoyalty));
 
         var vouchers = Card(html, "Vouchers");
         vouchers.ShouldContain("If yes, +€63.00 more in your pocket");
@@ -59,7 +55,7 @@ public class PistesTabTests
     [Fact]
     public async Task PistesTab_vouchersAfterTheYes_canBeTried()
     {
-        var html = await DrawAsync(await MeasuredAsync(ExampleWithRoyalty, source => source.Answer(source.Trial(LeverKind.Vouchers).WithGranted(true))));
+        var html = await DrawAsync(await MeasuredAsync(Fixtures.ExampleWithRoyalty, source => source.Answer(source.Trial(LeverKind.Vouchers).WithGranted(true))));
 
         var vouchers = Card(html, "Vouchers");
         (vouchers.Contains("+€63.00 more in your pocket"), vouchers.Contains("If yes"), vouchers.Contains("Still to answer"), Regex.IsMatch(Button(vouchers, "Try"), "disabled"))
@@ -99,7 +95,7 @@ public class PistesTabTests
     [Fact]
     public async Task PistesTab_vouchersTried_showTheTrialWithKeepAndDrop()
     {
-        var html = await DrawAsync(await MeasuredAsync(ExampleWithRoyalty, source =>
+        var html = await DrawAsync(await MeasuredAsync(Fixtures.ExampleWithRoyalty, source =>
         {
             source.Answer(source.Trial(LeverKind.Vouchers).WithGranted(true));
             source.Try(LeverKind.Vouchers);
@@ -125,8 +121,8 @@ public class PistesTabTests
     public async Task PistesTab_triedAddingNothing_offersDropButNoKeep()
     {
         var trials = PisteSearch.Levers.Where(lever => lever != LeverKind.Copyright)
-            .Select(lever => PisteTrial.Of(ExampleWithRoyalty, lever).WithGranted(true)).ToList();
-        var view = PistesView.Of(ExampleWithRoyalty, trials, trial => (new Piste(trial.Lever, Plan(65_000m), Plan(65_000m), []), null), _ => true);
+            .Select(lever => PisteTrial.Of(Fixtures.ExampleWithRoyalty, lever).WithGranted(true)).ToList();
+        var view = PistesView.Of(Fixtures.ExampleWithRoyalty, trials, trial => (new Piste(trial.Lever, Plan(65_000m), Plan(65_000m), []), null), _ => true);
 
         var vouchers = Card(await DrawAsync(view), "Vouchers");
 
@@ -159,7 +155,7 @@ public class PistesTabTests
     [Fact]
     public async Task PistesTab_everyIdeaInThePlan_saysSo()
     {
-        var plan = ExampleWithRoyalty.AddToPlan(OptionalModule.Vouchers).AddToPlan(OptionalModule.Rent);
+        var plan = Fixtures.ExampleWithRoyalty.AddToPlan(OptionalModule.Vouchers).AddToPlan(OptionalModule.Rent);
 
         var html = await DrawAsync(await MeasuredAsync(plan));
 
@@ -181,7 +177,7 @@ public class PistesTabTests
     {
         using var french = InLanguage.French();
 
-        var html = await DrawAsync(await MeasuredAsync(ExampleWithRoyalty));
+        var html = await DrawAsync(await MeasuredAsync(Fixtures.ExampleWithRoyalty));
 
         (Headings(html, 1).Single(), html.Contains($"Si oui, {Formats.Addition(63m)} de plus dans votre poche"), html.Contains("Pas encore dans Netto."))
             .ShouldBe(("Pistes", true, true));

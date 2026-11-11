@@ -65,15 +65,13 @@ public class PlanMovesSearchTests
     // Found in the browser on 2026-11-06: the example starred Today, a royalty following the pay at a quarter
     // of the time added to the river and not saved. The tab said « this plan: 61,975.74 » while the band said
     // 62,624.32: the moves were measured from Today. They are measured from the plan on screen, whatever is
-    // starred, and the vouchers, out of the plan, are no move.
-    // These are the engine's own figures for the example plan, a regression pin matching the band on
-    // 2026-11-11, not a Tax-Calc value.
+    // starred, and the vouchers, out of the plan, are no move. The figures are Fixtures.ExampleWithRoyalty's.
     [Fact]
     public async Task Plan_riverEditedWithTodayStarred_measuresTheMovesFromThePlanOnScreen()
     {
         var storage = new BrowserStorage();
         new SavedPlans(storage).Save(RiverInputs.Example, number => $"Plan {number}");
-        var river = RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithCreativeShare(0.25m).WithRoyaltyFollowingPay();
+        var river = Fixtures.ExampleWithRoyalty;
         await using var page = LivePlan.At("http://localhost/plan/optimisation", storage, holdPaint: true, river: river);
         await page.LoadAsync("optimisation");
 

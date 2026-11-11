@@ -53,6 +53,14 @@ public class TestSupportTests
             .ShouldBeEmpty();
     }
 
+    // The page's example river with a royalty following the pay at a quarter: Fixtures.ExampleWithRoyalty, which
+    // says where the figures pinned on it come from, declared or built inline nowhere else.
+    [Fact]
+    public void TestSources_exampleWithARoyalty_isDeclaredOnlyInFixtures()
+    {
+        Declaring(@"\bstatic\s+readonly\s+RiverInputs\s+ExampleWithRoyalty\b|WithCreativeShare\(0\.25m\)\s*\.WithRoyaltyFollowingPay\(\)").ShouldBeEmpty();
+    }
+
     // A factory of the made-up company's scenario, and a wrapper that runs the year or the split and asserts no error.
     [Fact]
     public void TestSources_scenarioFactoriesAndRunWrappers_areDefinedOnlyInFixtures()

@@ -7,15 +7,10 @@ namespace Netto.Tests.WebClient.River;
 // A trial copy of the plan for one idea: the viewer's answers on top of the plan on screen, the lever still
 // out of it, searched as the river with the lever added, kept as that river with the values of the idea's
 // own moves, never with the retunes. The plan on screen never changes before « Keep ». The figures pinned
-// are the engine's own (PisteSearchTests holds the hand derivation of the vouchers' 45 and 18).
+// are Fixtures.ExampleWithRoyalty's (PisteSearchTests holds the hand derivation of the vouchers' 45 and 18).
 public class PisteTrialTests
 {
     private static readonly DateOnly On11November = new(2026, 11, 11);
-
-    // The river's example with a royalty that follows the pay at a creative share of 25%, the position
-    // paper's plan: 62,624.32 in the pocket.
-    private static readonly RiverInputs ExampleWithRoyalty =
-        RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithCreativeShare(0.25m).WithRoyaltyFollowingPay();
 
     // The page's module of an idea and the engine's lever of a module are two mappings that must agree.
     [Fact]
@@ -27,7 +22,7 @@ public class PisteTrialTests
     [Fact]
     public void Of_aLeverInThePlan_throws()
     {
-        Should.Throw<ArgumentException>(() => PisteTrial.Of(ExampleWithRoyalty, LeverKind.Copyright));
+        Should.Throw<ArgumentException>(() => PisteTrial.Of(Fixtures.ExampleWithRoyalty, LeverKind.Copyright));
     }
 
     [Theory]
@@ -93,7 +88,7 @@ public class PisteTrialTests
     [Fact]
     public void CanTry_vouchers_onlyAfterTheYes()
     {
-        var trial = PisteTrial.Of(ExampleWithRoyalty, LeverKind.Vouchers);
+        var trial = PisteTrial.Of(Fixtures.ExampleWithRoyalty, LeverKind.Vouchers);
 
         (trial.CanTry, trial.WithGranted(true).CanTry, trial.WithGranted(true).Open.Count).ShouldBe((false, true, 0));
     }
@@ -125,14 +120,14 @@ public class PisteTrialTests
         trial.WithLever.ShouldBe(trial.River.AddToPlan(OptionalModule.Rent));
     }
 
-    // The vouchers on the position paper's plan, through the river: the Optimiser's own plan, 65,933.99,
-    // against the vouchers' plan, 65,996.99, the engine's own figures (a regression pin).
+    // The vouchers on Fixtures.ExampleWithRoyalty, through the river: the Optimiser's own plan, 65,933.99,
+    // against the vouchers' plan, 65,996.99 (the fixture says where the figures come from).
     [Fact]
     public void Search_vouchersOnTheExampleWithARoyalty_gains63()
     {
-        var without = ExampleWithRoyalty.FindMoves(On11November).ShouldNotBeNull().Value.ShouldNotBeNull();
+        var without = Fixtures.ExampleWithRoyalty.FindMoves(On11November).ShouldNotBeNull().Value.ShouldNotBeNull();
 
-        var (piste, error) = PisteTrial.Of(ExampleWithRoyalty, LeverKind.Vouchers).Search(without, On11November).ShouldNotBeNull();
+        var (piste, error) = PisteTrial.Of(Fixtures.ExampleWithRoyalty, LeverKind.Vouchers).Search(without, On11November).ShouldNotBeNull();
 
         error.ShouldBeNull();
         (piste.ShouldNotBeNull().Without.PlanInPocket, piste.With.PlanInPocket, piste.Gain).ShouldBe((65_933.99m, 65_996.99m, 63.00m));
@@ -144,8 +139,8 @@ public class PisteTrialTests
     [Fact]
     public void Search_rentAnswered_measuresTheHomesFacts()
     {
-        var without = ExampleWithRoyalty.FindMoves(On11November).ShouldNotBeNull().Value.ShouldNotBeNull();
-        var trial = PisteTrial.Of(ExampleWithRoyalty, LeverKind.Rent).WithCadastralIncome(1_500m).WithShareLet(0.15m);
+        var without = Fixtures.ExampleWithRoyalty.FindMoves(On11November).ShouldNotBeNull().Value.ShouldNotBeNull();
+        var trial = PisteTrial.Of(Fixtures.ExampleWithRoyalty, LeverKind.Rent).WithCadastralIncome(1_500m).WithShareLet(0.15m);
 
         var piste = trial.Search(without, On11November).ShouldNotBeNull().Value.ShouldNotBeNull();
 
@@ -166,21 +161,21 @@ public class PisteTrialTests
     [Fact]
     public void Keep_vouchers_addsThemAtTheirMaximaAndRetunesNothing()
     {
-        var trial = PisteTrial.Of(ExampleWithRoyalty, LeverKind.Vouchers).WithGranted(true);
+        var trial = PisteTrial.Of(Fixtures.ExampleWithRoyalty, LeverKind.Vouchers).WithGranted(true);
         var piste = Searched(trial);
 
         var kept = trial.Keep(piste);
 
         (kept.InPlan(OptionalModule.Vouchers), kept.Vouchers.EcoVouchers.Value, kept.Vouchers.SportCultureVouchers.Value, kept.DirectorPay)
-            .ShouldBe((true, 250m, 100m, ExampleWithRoyalty.DirectorPay));
-        kept.AdvancePayments.ShouldBe(ExampleWithRoyalty.AdvancePayments);
+            .ShouldBe((true, 250m, 100m, Fixtures.ExampleWithRoyalty.DirectorPay));
+        kept.AdvancePayments.ShouldBe(Fixtures.ExampleWithRoyalty.AdvancePayments);
     }
 
     // The vouchers are kept only after the yes.
     [Fact]
     public void Keep_vouchersWithoutTheYes_throws()
     {
-        var trial = PisteTrial.Of(ExampleWithRoyalty, LeverKind.Vouchers);
+        var trial = PisteTrial.Of(Fixtures.ExampleWithRoyalty, LeverKind.Vouchers);
         var piste = Searched(trial);
 
         Should.Throw<InvalidOperationException>(() => trial.Keep(piste));
@@ -190,7 +185,7 @@ public class PisteTrialTests
     [Fact]
     public void Keep_rent_addsTheHomesFactsAndTheRentAtItsCap()
     {
-        var trial = PisteTrial.Of(ExampleWithRoyalty, LeverKind.Rent).WithCadastralIncome(1_500m).WithShareLet(0.15m);
+        var trial = PisteTrial.Of(Fixtures.ExampleWithRoyalty, LeverKind.Rent).WithCadastralIncome(1_500m).WithShareLet(0.15m);
         var piste = Searched(trial);
         var cap = piste.Adds.ShouldHaveSingleItem().Move.ShouldBeOfType<RentMove>().Rent;
 
@@ -217,8 +212,8 @@ public class PisteTrialTests
     [Fact]
     public void Keep_anotherIdeasPiste_throws()
     {
-        var vouchers = Searched(PisteTrial.Of(ExampleWithRoyalty, LeverKind.Vouchers));
-        var rent = PisteTrial.Of(ExampleWithRoyalty, LeverKind.Rent).WithCadastralIncome(1_500m).WithShareLet(0.15m);
+        var vouchers = Searched(PisteTrial.Of(Fixtures.ExampleWithRoyalty, LeverKind.Vouchers));
+        var rent = PisteTrial.Of(Fixtures.ExampleWithRoyalty, LeverKind.Rent).WithCadastralIncome(1_500m).WithShareLet(0.15m);
 
         Should.Throw<ArgumentException>(() => rent.Keep(vouchers));
     }

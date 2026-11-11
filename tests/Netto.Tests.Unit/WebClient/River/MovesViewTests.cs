@@ -115,7 +115,7 @@ public class MovesViewTests
     public static TheoryData<string, RiverInputs, DateOnly> Plans => new()
     {
         { "the example", RiverInputs.Example, On22October },
-        { "a royalty following the pay", RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithCreativeShare(0.25m).WithRoyaltyFollowingPay(), new DateOnly(2026, 11, 11) },
+        { "a royalty following the pay", Fixtures.ExampleWithRoyalty, new DateOnly(2026, 11, 11) },
         { "nothing withheld on the pay", RiverInputs.Example.WithTaxWithheld(0m), On22October },
         { "every lever with a move in the plan", Furnished, On22October },
     };
@@ -150,13 +150,13 @@ public class MovesViewTests
     }
 
     // The example with a royalty following the pay, unsaved: the band's 62,624.32, the pay and the company's
-    // payment, 3,309.67 more, 65,933.99 once applied.
+    // payment, 3,309.67 more, 65,933.99 once applied (Fixtures.ExampleWithRoyalty's figures).
     // These are the engine's own figures for the example plan, a regression pin matching the band on
     // 2026-11-11, not a Tax-Calc value.
     [Fact]
     public void ApplyAll_royaltyFollowingThePay_landsOn65933_99()
     {
-        var plan = RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithCreativeShare(0.25m).WithRoyaltyFollowingPay();
+        var plan = Fixtures.ExampleWithRoyalty;
         var view = MovesView.Of(plan, new DateOnly(2026, 11, 11));
 
         (view.FromInPocket, view.Total, view.ApplyAll(plan).Run().Year?.NetInPocket).ShouldBe((62_624.32m, 3_309.67m, 65_933.99m));

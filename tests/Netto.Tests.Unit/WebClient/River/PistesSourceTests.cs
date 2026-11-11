@@ -244,7 +244,7 @@ public class PistesSourceTests
     [Fact]
     public async Task Keep_measured_givesTheRiverWithTheLever()
     {
-        var plan = RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithCreativeShare(0.25m).WithRoyaltyFollowingPay();
+        var plan = Fixtures.ExampleWithRoyalty;
         var source = new PistesSource(() => plan, date => plan.FindMoves(date));
         await source.SearchNextOncePaintedAsync(On11November, new Wait().After);
 
