@@ -49,7 +49,7 @@ Fixed once; every file that names one uses it word for word (the card, the map, 
 | Compare plans (the Plans panel's button and its comparison) · Back to plans | Comparer les plans · Retour aux plans |
 | next advance payment by {date} (My plan's badge, spoken) | prochain versement anticipé au plus tard le {date} |
 | Optimise can add {amount} without changing anything else (My plan's nudge) | Optimiser peut ajouter {amount} sans rien changer d'autre |
-| ideas priced: {n}, questions: {m} (the Ideas badge and nudge) | pistes chiffrées : {n}, questions : {m} (no plural to agree: counts after a colon) |
+| Ideas: {n} priced, {m} questions (My plan's nudge; the badge shows « {n} · {m}? » and says the counts alone; a count of zero is left out) | Pistes : {n} chiffrée(s), {m} question(s) (agreement by key, one or many; a count of zero is left out) |
 | page titles: My plan · My plan by date · Optimise · Ideas, each followed by « : Netto » | Mon plan · Mon plan par date · Optimiser · Pistes, each followed by « : Netto » (non-breaking space before the colon) |
 | Your plans · Save this plan · Add to plan | Vos plans · Enregistrer ce plan · Ajouter au plan |
 | Today (the starred plan) | Aujourd'hui (a name, capitalised: « de plus qu'Aujourd'hui ») |

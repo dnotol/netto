@@ -25,7 +25,7 @@
     <value>Being measured…</value>
   </data>
   <data name="State_Priced" xml:space="preserve">
-    <value>Measured optimised plan against optimised plan</value>
+    <value>Measured: optimised plan against optimised plan</value>
   </data>
   <data name="State_NoGain" xml:space="preserve">
     <value>Adds nothing to your optimised plan</value>
@@ -66,12 +66,6 @@
   <data name="TrialGain" xml:space="preserve">
     <value>Gain</value>
   </data>
-  <data name="Trial_Asking" xml:space="preserve">
-    <value>Answer the questions above to measure it.</value>
-  </data>
-  <data name="Trial_Ready" xml:space="preserve">
-    <value>Try it to measure it.</value>
-  </data>
   <data name="Trial_Searching" xml:space="preserve">
     <value>Measuring your optimised plan with this idea…</value>
   </data>
@@ -86,5 +80,8 @@
   </data>
   <data name="KeepNote" xml:space="preserve">
     <value>Keep adds this idea alone to your plan; Optimise then retunes the rest.</value>
+  </data>
+  <data name="ToAnswer" xml:space="preserve">
+    <value>Still to answer: {0}.</value>
   </data>
 </root>

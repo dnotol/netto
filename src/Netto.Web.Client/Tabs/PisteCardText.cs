@@ -18,11 +18,17 @@ internal static class PisteCardText
     // That Keep adds the idea alone, Optimise retuning the rest.
     public const string KeepNote = "KeepNote";
 
+    // What is still to answer before « Try », the questions' labels joined: « Still to answer: … ».
+    public const string ToAnswer = "ToAnswer";
+
     // Where the idea stands, beside its gain or in its place.
     public static string State(PisteState state) => $"State_{state}";
 
-    // The line that opens the idea's trial, where the focus goes on « Try ».
-    public static string Trial(PisteState state) => $"Trial_{state}";
+    // The line that opens the idea's trial, where the focus goes on « Try »: only a state a trial shows has
+    // one, an idea asking or answered being not tried yet.
+    public static string Trial(PisteState state) => state is PisteState.Asking or PisteState.Ready
+        ? throw new ArgumentOutOfRangeException(nameof(state), state, "An idea asking or answered shows no trial.")
+        : $"Trial_{state}";
 
     // The tuned gain, « if yes » while the idea awaits the viewer's yes.
     public static string Gain(bool awaitsYes) => awaitsYes ? "Gain_IfYes" : "Gain";

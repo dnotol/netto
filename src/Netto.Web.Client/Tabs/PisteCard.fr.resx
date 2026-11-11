@@ -25,7 +25,7 @@
     <value>Chiffrage en cours…</value>
   </data>
   <data name="State_Priced" xml:space="preserve">
-    <value>Mesuré plan optimisé contre plan optimisé</value>
+    <value>Mesuré&#160;: plan optimisé contre plan optimisé</value>
   </data>
   <data name="State_NoGain" xml:space="preserve">
     <value>N'ajoute rien à votre plan optimisé</value>
@@ -66,12 +66,6 @@
   <data name="TrialGain" xml:space="preserve">
     <value>Gain</value>
   </data>
-  <data name="Trial_Asking" xml:space="preserve">
-    <value>Répondez aux questions ci-dessus pour la chiffrer.</value>
-  </data>
-  <data name="Trial_Ready" xml:space="preserve">
-    <value>Essayez-la pour la chiffrer.</value>
-  </data>
   <data name="Trial_Searching" xml:space="preserve">
     <value>Chiffrage de votre plan optimisé avec cette piste…</value>
   </data>
@@ -86,5 +80,8 @@
   </data>
   <data name="KeepNote" xml:space="preserve">
     <value>Garder ajoute cette piste seule à votre plan&#160;; Optimiser ajuste ensuite le reste.</value>
+  </data>
+  <data name="ToAnswer" xml:space="preserve">
+    <value>Reste à répondre&#160;: {0}.</value>
   </data>
 </root>

@@ -33,6 +33,6 @@
             yield return (PlanTabRoutes.Href(PlanTab.Optimisation), L[PlanNudgesText.Optimise, Formats.Addition(gain)]);
 
         if (Pistes is { IsEmpty: false } pistes)
-            yield return (PlanTabRoutes.Href(PlanTab.Pistes), L[PlanNudgesText.Pistes, pistes.Priced, pistes.Questions]);
+            yield return (PlanTabRoutes.Href(PlanTab.Pistes), L[PlanNudgesText.Pistes, PistesCountText.Words(L, pistes.Priced, pistes.Questions)]);
     }
 }

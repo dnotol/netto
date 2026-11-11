@@ -168,7 +168,7 @@ public class PlanPageTests
 
     [Theory]
     [InlineData("optimisation", "moves__state")]
-    [InlineData("pistes", "Each gain is measured optimised plan against optimised plan")]
+    [InlineData("pistes", "Each gain compares your optimised plan with the idea and without it.")]
     public async Task Plan_onAnotherView_showsItsOwnContentWithoutTheMap(string tab, string content)
     {
         var html = await RenderPlanAsync(new Folds(new BrowserStorage()), tab);

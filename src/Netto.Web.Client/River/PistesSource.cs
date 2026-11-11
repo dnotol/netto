@@ -46,14 +46,20 @@ internal sealed class PistesSource
     public PisteTrial Trial(LeverKind lever) =>
         _trials.TryGetValue(lever, out var trial) && trial.Plan == Plan ? trial : PisteTrial.Of(Plan, lever);
 
-    // The viewer's answers, on the plan on screen: searched only once « Try » is pressed.
+    // The viewer's answers, on the plan on screen: searched only once « Try » is pressed. An answer changed
+    // closes the trial, even back to answers tried before; the same answers given again, a field left
+    // without a change, keep it open.
     public void Answer(PisteTrial trial)
     {
         ArgumentNullException.ThrowIfNull(trial);
         if (trial.Plan != Plan)
             throw new ArgumentException("Answers are given on the plan on screen.", nameof(trial));
 
+        if (trial == Trial(trial.Lever))
+            return;
+
         _trials[trial.Lever] = trial;
+        _tried.Remove(trial.Lever);
     }
 
     // « Try » on the idea as it stands: searched once the browser has painted, unless found already. False

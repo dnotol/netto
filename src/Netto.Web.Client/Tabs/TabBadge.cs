@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Localization;
 using Netto.Web.Client.River;
 
 namespace Netto.Web.Client.Tabs;
@@ -23,6 +24,30 @@ public enum TabBadgeKind
 
     // An idea is still being measured (PistesSource).
     PistesSearching,
+}
+
+// How the ideas' counts are said: short in the badge, « 1 · 2? », and in words, « 1 priced, 2 questions »,
+// only the counts that are not zero, each word agreeing with its number (one or many), in the texts of the
+// component that says them (PlanTabBar, PlanNudges).
+internal static class PistesCountText
+{
+    public static string Short(int priced, int questions) => string.Join(" · ", Parts(priced, questions)
+        .Select(part => part.Priced ? part.Count.ToString(Formats.Culture) : $"{part.Count.ToString(Formats.Culture)}?"));
+
+    public static string Words(IStringLocalizer texts, int priced, int questions) => string.Join(", ", Parts(priced, questions)
+        .Select(part => texts[part.Priced ? Priced(part.Count) : Questions(part.Count), part.Count].Value));
+
+    public static string Priced(int count) => count == 1 ? "Pistes_Priced_One" : "Pistes_Priced_Many";
+
+    public static string Questions(int count) => count == 1 ? "Pistes_Questions_One" : "Pistes_Questions_Many";
+
+    private static IEnumerable<(bool Priced, int Count)> Parts(int priced, int questions)
+    {
+        if (priced > 0)
+            yield return (true, priced);
+        if (questions > 0)
+            yield return (false, questions);
+    }
 }
 
 // One tab's badge: its kind and the figure it shows, an amount, a date or counts.

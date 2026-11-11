@@ -29,7 +29,7 @@ public class PistesTabTests
 
         Headings(html, 1).ShouldBe(["Ideas"]);
         Headings(html, 2).ShouldBe(["Vouchers", "Home office rent", "Copyright royalty"]);
-        html.ShouldContain("Each gain is measured optimised plan against optimised plan");
+        html.ShouldContain("Each gain compares your optimised plan with the idea and without it.");
     }
 
     // Before the Optimiser has searched, nothing is measured: « … », and no figure.
@@ -52,6 +52,7 @@ public class PistesTabTests
         var vouchers = Card(html, "Vouchers");
         vouchers.ShouldContain("If yes, +€63.00 more in your pocket");
         vouchers.ShouldContain("The company grants them on the conditions of the Vouchers card");
+        vouchers.ShouldContain("Still to answer: The company grants them on the conditions of the Vouchers card.");
         Regex.IsMatch(Button(vouchers, "Try"), "disabled").ShouldBeTrue();
     }
 
@@ -61,7 +62,8 @@ public class PistesTabTests
         var html = await DrawAsync(await MeasuredAsync(ExampleWithRoyalty, source => source.Answer(source.Trial(LeverKind.Vouchers).WithGranted(true))));
 
         var vouchers = Card(html, "Vouchers");
-        (vouchers.Contains("+€63.00 more in your pocket"), vouchers.Contains("If yes"), Regex.IsMatch(Button(vouchers, "Try"), "disabled")).ShouldBe((true, false, false));
+        (vouchers.Contains("+€63.00 more in your pocket"), vouchers.Contains("If yes"), vouchers.Contains("Still to answer"), Regex.IsMatch(Button(vouchers, "Try"), "disabled"))
+            .ShouldBe((true, false, false, false));
     }
 
     // The rent asks its card's own questions, with the card's own labels, before any gain.
@@ -76,6 +78,7 @@ public class PistesTabTests
         rent.ShouldContain("id=\"piste-cadastral-income\"");
         rent.ShouldContain("id=\"piste-share-let\"");
         rent.ShouldContain("Gain measured once you answer");
+        rent.ShouldContain("Still to answer: Cadastral income of your home, Share let to the company.");
         Regex.IsMatch(Button(rent, "Try"), "disabled").ShouldBeTrue();
     }
 

@@ -50,6 +50,9 @@ public sealed record PisteRow(PisteTrial Trial, PisteState State, Piste? Piste, 
     // Whether « Try » can be pressed: everything it asks answered, the yes included, and not tried yet.
     public bool CanTry => Trial.CanTry && !Tried;
 
+    // What is still to answer before « Try »: the yes it awaits, then what its gain needs (PisteTrial.Open).
+    public IReadOnlyList<PisteQuestion> ToAnswer => [.. AwaitsYes ? [PisteQuestion.VouchersGranted] : Array.Empty<PisteQuestion>(), .. Trial.Open];
+
     // Whether its trial shows: tried, and measured or being measured.
     public bool ShowsTrial => Tried && State is PisteState.Searching or PisteState.Priced or PisteState.NoGain or PisteState.Refused;
 

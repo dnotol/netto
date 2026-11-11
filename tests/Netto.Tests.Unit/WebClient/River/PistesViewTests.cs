@@ -144,6 +144,17 @@ public class PistesViewTests
         (before.AwaitsYes, before.CanTry, after.AwaitsYes, after.CanTry).ShouldBe((true, false, false, true));
     }
 
+    // What is still to answer before Try: the yes the vouchers await, the facts the rent's and the royalty's gains need.
+    [Fact]
+    public void Row_toAnswer_isTheYesAwaitedAndWhatTheGainNeeds()
+    {
+        var view = PistesView.Of(RiverInputs.Example, Trials(RiverInputs.Example), NothingFound, NotTried);
+
+        view.Rows.Select(row => row.ToAnswer).ShouldBe([
+            [PisteQuestion.VouchersGranted], [PisteQuestion.CadastralIncome, PisteQuestion.ShareLet], [PisteQuestion.CreativeShare],
+        ]);
+    }
+
     // A rent asking cannot be tried, and asks no yes.
     [Fact]
     public void Row_asking_cannotBeTried()

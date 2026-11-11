@@ -19,7 +19,33 @@ public class PlanTabBarPistesBadgeTests
 
         var link = Regex.Matches(html, "<a [^>]*class=\"plan-tab-bar__tab\"[^>]*>.*?</a>", RegexOptions.Singleline).Select(match => match.Value).Last();
         (Span(link, "plan-tab-bar__name"), Span(link, "plan-tab-bar__badge"), Span(link, "plan-tab-bar__spoken"))
-            .ShouldBe(("Ideas", "1 · 3?", "ideas priced: 1, questions: 3"));
+            .ShouldBe(("Ideas", "1 · 3?", "1 priced, 3 questions"));
+    }
+
+    // Only what there is: no question open, the priced count alone; nothing priced, the questions alone.
+    [Theory]
+    [InlineData(1, 0, "1", "1 priced")]
+    [InlineData(2, 0, "2", "2 priced")]
+    [InlineData(0, 2, "2?", "2 questions")]
+    [InlineData(0, 1, "1?", "1 question")]
+    public async Task PlanTabBar_pistesBadge_saysOnlyTheCountsThatAreNotZero(int priced, int questions, string shown, string spoken)
+    {
+        var html = await RenderBarAsync(new Dictionary<PlanTab, TabBadge> { [PlanTab.Pistes] = new(TabBadgeKind.Pistes, Count: priced, Questions: questions) });
+
+        var link = Regex.Matches(html, "<a [^>]*class=\"plan-tab-bar__tab\"[^>]*>.*?</a>", RegexOptions.Singleline).Select(match => match.Value).Last();
+        (Span(link, "plan-tab-bar__badge"), Span(link, "plan-tab-bar__spoken")).ShouldBe((shown, spoken));
+    }
+
+    // In French, each count agrees with its number.
+    [Fact]
+    public async Task PlanTabBar_pistesBadgeInFrench_agreesWithEachCount()
+    {
+        using var french = InLanguage.French();
+
+        var html = await RenderBarAsync(new Dictionary<PlanTab, TabBadge> { [PlanTab.Pistes] = new(TabBadgeKind.Pistes, Count: 2, Questions: 1) });
+
+        var link = Regex.Matches(html, "<a [^>]*class=\"plan-tab-bar__tab\"[^>]*>.*?</a>", RegexOptions.Singleline).Select(match => match.Value).Last();
+        Span(link, "plan-tab-bar__spoken").ShouldBe("2 chiffrées, 1 question");
     }
 
     // While an idea is being measured: « … », which a screen reader skips, and said in full.

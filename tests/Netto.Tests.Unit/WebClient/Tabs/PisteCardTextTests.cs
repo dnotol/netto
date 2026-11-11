@@ -13,9 +13,18 @@ public class PisteCardTextTests
     private static readonly ResxText French = ResxText.French<PisteCard>();
 
     [Fact]
-    public void PisteCardResx_everyState_hasAWordAndATrialLine()
+    public void PisteCardResx_everyState_hasAWord()
     {
-        Enum.GetValues<PisteState>().SelectMany(state => new[] { PisteCardText.State(state), PisteCardText.Trial(state) })
+        Enum.GetValues<PisteState>().Select(PisteCardText.State)
+            .Where(key => Resources.Get(key) is null)
+            .ShouldBeEmpty();
+    }
+
+    // Only a state a trial can show opens it with a line: an idea asking or answered is not tried.
+    [Fact]
+    public void PisteCardResx_everyStateATrialShows_hasItsLine()
+    {
+        new[] { PisteState.Searching, PisteState.Priced, PisteState.NoGain, PisteState.Refused }.Select(PisteCardText.Trial)
             .Where(key => Resources.Get(key) is null)
             .ShouldBeEmpty();
     }
@@ -26,10 +35,34 @@ public class PisteCardTextTests
         new[]
             {
                 PisteCardText.Gain(awaitsYes: false), PisteCardText.Gain(awaitsYes: true), PisteCardText.VouchersGranted, PisteCardText.TrialWithout,
-                PisteCardText.TrialWith, PisteCardText.TrialGain, PisteCardText.KeepNote,
+                PisteCardText.TrialWith, PisteCardText.TrialGain, PisteCardText.KeepNote, PisteCardText.ToAnswer,
             }
             .Where(key => Resources.Get(key) is null)
             .ShouldBeEmpty();
+    }
+
+    [Theory]
+    [InlineData(PisteState.Asking)]
+    [InlineData(PisteState.Ready)]
+    public void Trial_aStateNoTrialShows_isRefused(PisteState state)
+    {
+        Should.Throw<ArgumentOutOfRangeException>(() => PisteCardText.Trial(state));
+    }
+
+    // What is still to answer before Try, in both languages.
+    [Fact]
+    public void ToAnswer_namesWhatIsStillToAnswer()
+    {
+        (Resources.Format(PisteCardText.ToAnswer, "Share let to the company"), French.Format(PisteCardText.ToAnswer, "Part louée à la société"))
+            .ShouldBe(("Still to answer: Share let to the company.", "Reste à répondre\u00a0: Part louée à la société."));
+    }
+
+    // A priced idea says how it was measured, as one phrase.
+    [Fact]
+    public void State_priced_saysHowItWasMeasured()
+    {
+        (Resources.Get(PisteCardText.State(PisteState.Priced)), French.Get(PisteCardText.State(PisteState.Priced)))
+            .ShouldBe(("Measured: optimised plan against optimised plan", "Mesuré\u00a0: plan optimisé contre plan optimisé"));
     }
 
     // Before the yes, the vouchers' gain is conditional, in both languages.

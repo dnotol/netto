@@ -34,7 +34,7 @@
     <value>next advance payment by {0}</value>
   </data>
   <data name="Spoken_Pistes" xml:space="preserve">
-    <value>ideas priced: {0}, questions: {1}</value>
+    <value>{0}</value>
   </data>
   <data name="Spoken_Searching" xml:space="preserve">
     <value>looking for moves</value>
@@ -44,5 +44,17 @@
   </data>
   <data name="Shown_Searching" xml:space="preserve">
     <value>…</value>
+  </data>
+  <data name="Pistes_Priced_One" xml:space="preserve">
+    <value>{0} priced</value>
+  </data>
+  <data name="Pistes_Priced_Many" xml:space="preserve">
+    <value>{0} priced</value>
+  </data>
+  <data name="Pistes_Questions_One" xml:space="preserve">
+    <value>{0} question</value>
+  </data>
+  <data name="Pistes_Questions_Many" xml:space="preserve">
+    <value>{0} questions</value>
   </data>
 </root>

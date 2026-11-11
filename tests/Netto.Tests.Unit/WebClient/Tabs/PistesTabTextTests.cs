@@ -32,6 +32,14 @@ public class PistesTabTextTests
     public void Intro_saysOptimisedAgainstOptimisedAndThatNettoAsks()
     {
         Resources.Get(PistesTabText.Intro).ShouldBe(
-            "Each gain is measured optimised plan against optimised plan: with the idea and without it. Netto never decides whether you are entitled to it; it asks you.");
+            "Each gain compares your optimised plan with the idea and without it. Netto never decides whether you are entitled to it; it asks you.");
+    }
+
+    // The French says it as one sentence, a non-breaking space before the semicolon.
+    [Fact]
+    public void Intro_inFrench_readsAsOneSentence()
+    {
+        ResxText.French<PistesTab>().Get(PistesTabText.Intro).ShouldBe(
+            "Chaque gain compare votre plan optimisé avec la piste et sans elle. Netto ne décide jamais si vous y avez droit\u00a0; il vous le demande.");
     }
 }

@@ -16,6 +16,18 @@
     <value>Optimise can add {0} without changing anything else</value>
   </data>
   <data name="Pistes" xml:space="preserve">
-    <value>Ideas: priced {0}, questions {1}</value>
+    <value>Ideas: {0}</value>
+  </data>
+  <data name="Pistes_Priced_One" xml:space="preserve">
+    <value>{0} priced</value>
+  </data>
+  <data name="Pistes_Priced_Many" xml:space="preserve">
+    <value>{0} priced</value>
+  </data>
+  <data name="Pistes_Questions_One" xml:space="preserve">
+    <value>{0} question</value>
+  </data>
+  <data name="Pistes_Questions_Many" xml:space="preserve">
+    <value>{0} questions</value>
   </data>
 </root>

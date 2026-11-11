@@ -164,6 +164,36 @@ public class PistesSourceTests
         (source.View(On11November).Rows[1].State, source.View(On11November).Rows[1].Gain).ShouldBe((PisteState.Ready, (decimal?)null));
     }
 
+    // An answer changed closes the trial, even back to the answers tried: the viewer presses Try again.
+    [Fact]
+    public async Task Answer_changed_closesTheTrial()
+    {
+        var source = Source(RiverInputs.Example, new Search());
+        var answered = source.Trial(LeverKind.Rent).WithCadastralIncome(1_500m).WithShareLet(0.15m);
+        source.Answer(answered);
+        source.Try(LeverKind.Rent);
+        await source.SearchNextOncePaintedAsync(On11November, new Wait().After);
+
+        source.Answer(answered.WithShareLet(0.2m));
+        source.Answer(answered);
+
+        source.View(On11November).Rows[1].Tried.ShouldBeFalse();
+    }
+
+    // The same answers given again, a field left without a change, keep the trial open.
+    [Fact]
+    public void Answer_unchanged_keepsTheTrialOpen()
+    {
+        var source = Source(RiverInputs.Example, new Search());
+        var answered = source.Trial(LeverKind.Rent).WithCadastralIncome(1_500m).WithShareLet(0.15m);
+        source.Answer(answered);
+        source.Try(LeverKind.Rent);
+
+        source.Answer(answered);
+
+        source.View(On11November).Rows[1].Tried.ShouldBeTrue();
+    }
+
     // The vouchers are tried only after the yes; the rent only once answered.
     [Fact]
     public void Try_beforeItCanBe_isRefused()

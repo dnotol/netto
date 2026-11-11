@@ -14,7 +14,8 @@
    fields and words (eligibility is the viewer's to declare: the vouchers a yes on their card's conditions,
    the rent the home's facts, the royalty the creative share and its statuses), and beside them where it
    stands: its tuned gain, « if yes » before the vouchers' yes, « … » while it is measured, never a figure
-   measured for other answers. « Try » waits for every answer and the yes. Tried, its trial opens inside the
+   measured for other answers. « Try » waits for every answer and the yes, and a line under it names what
+   is still to answer, so a disabled Try always says why. Tried, its trial opens inside the
    card: the optimised plan without the idea and with it, the gain, and the moves of that plan in the words of
    Optimise; « Keep » only on an idea that gains, adding it alone, and « Drop ». The answers go to the trial,
    never to the plan on screen, which changes only on Keep, through the page. A refusal of the answers is the
@@ -86,6 +87,10 @@
             <p class="piste__gain">@L[PisteCardText.Gain(Row.AwaitsYes), Formats.Addition(gain)]</p>
         }
         <p class="piste__state">@L[PisteCardText.State(Row.State)]</p>
+        @if (Row.ToAnswer.Count > 0 && !Row.ShowsTrial)
+        {
+            <p class="piste__to-answer">@L[PisteCardText.ToAnswer, string.Join(", ", Row.ToAnswer.Select(Label))]</p>
+        }
         @if (!Row.ShowsTrial)
         {
             <MudButton Variant="Variant.Outlined" Size="Size.Small" Class="piste__try" Disabled="@(!Row.CanTry)" OnClick="TryAsync"
@@ -175,6 +180,18 @@
     private string What(PlannedMove move) =>
         Moves[OptimisationTabText.Move(move.Move),
             OptimisationTabText.MoveArguments(move.Move, Row.Trial.WithLever.PayUsed, Row.Trial.WithLever.Copyright.CreativeShare.Value ?? 0m)];
+
+    // A question's label, as its field says it.
+    private string Label(PisteQuestion question) => question switch
+    {
+        PisteQuestion.VouchersGranted => L[PisteCardText.VouchersGranted],
+        PisteQuestion.CadastralIncome => Rent["CadastralIncomeLabel"],
+        PisteQuestion.ShareLet => Rent["ShareLabel"],
+        PisteQuestion.CreativeShare => Copyright["CreativeShareLabel"],
+        PisteQuestion.AverageWithinCap => Copyright["AverageLabel", Formats.Euros(CopyrightRules.For(Row.Trial.Plan.IncomeYear)?.Cap.Value ?? 0m)],
+        PisteQuestion.HoldsAttestation => Copyright["AttestationLabel"],
+        _ => throw new ArgumentOutOfRangeException(nameof(question), question, "A question no idea asks."),
+    };
 
     private Task OnGrantedChanged(bool granted) => Answered.InvokeAsync(Row.Trial.WithGranted(granted));
 

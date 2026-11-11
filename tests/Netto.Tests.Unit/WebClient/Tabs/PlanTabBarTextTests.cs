@@ -33,10 +33,11 @@ public class PlanTabBarTextTests
         Resources.Format(PlanTabBarText.Spoken(kind), figure).ShouldBe(expected);
     }
 
+    // The ideas' badge is said by its counts alone, after the tab's name: « Ideas 1 priced, 3 questions ».
     [Fact]
-    public void PlanTabBarResx_pistes_isSpokenWithBothCounts()
+    public void PlanTabBarResx_pistes_isSpokenByItsCounts()
     {
-        Resources.Format(PlanTabBarText.Spoken(TabBadgeKind.Pistes), 1, 3).ShouldBe("ideas priced: 1, questions: 3");
+        Resources.Format(PlanTabBarText.Spoken(TabBadgeKind.Pistes), "1 priced, 3 questions").ShouldBe("1 priced, 3 questions");
     }
 
     // While the page looks for the moves, the badge shows an ellipsis, which a screen reader skips for the

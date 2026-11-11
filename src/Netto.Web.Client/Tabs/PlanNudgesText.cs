@@ -6,6 +6,6 @@ internal static class PlanNudgesText
     // What Optimise can add, as a gain: « Optimise can add +€3,309.67 without changing anything else ».
     public const string Optimise = "Optimise";
 
-    // The ideas priced and the questions waiting, each a count, one line saying both.
+    // The ideas priced and the questions waiting, only those not zero, in words (PistesCountText): « Ideas: {0} ».
     public const string Pistes = "Pistes";
 }

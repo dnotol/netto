@@ -6,7 +6,7 @@
    current one says so (aria-current="page") and is underlined in gold, an active state, and set
    heavier, so colour is not its only sign. The page they lead to is the same one, so the river's inputs
    stay as they are from one tab to the next. After a tab's name, its badge (TabBadges): shown short,
-   +€3,054.18 or 21 Dec or 1 · 3? or a warning, or « … » while the moves are looked for or an idea measured, which a
+   +€3,054.18 or 21 Dec or 1 · 3? (only the counts that are not zero) or a warning, or « … » while the moves are looked for or an idea measured, which a
    screen reader skips, and said in full out of sight, so the link's name is the tab's name followed by
    what its badge means. My plan's is the next deadline, which stays in the band. *@
 <nav class="plan-tab-bar" aria-label="@L[PlanTabBarText.Label]">
@@ -51,7 +51,7 @@
     {
         TabBadgeKind.MoreThanPlan => Formats.Addition(badge.Amount),
         TabBadgeKind.NextBy => Formats.ShortDay(badge.Date),
-        TabBadgeKind.Pistes => $"{badge.Count.ToString(Formats.Culture)} · {badge.Questions.ToString(Formats.Culture)}?",
+        TabBadgeKind.Pistes => PistesCountText.Short(badge.Count, badge.Questions),
         TabBadgeKind.Searching or TabBadgeKind.PistesSearching => L[PlanTabBarText.Searching],
         _ => "",
     };
@@ -60,7 +60,7 @@
     {
         TabBadgeKind.MoreThanPlan => L[PlanTabBarText.Spoken(badge.Kind), Formats.Euros(badge.Amount)],
         TabBadgeKind.NextBy => L[PlanTabBarText.Spoken(badge.Kind), Formats.Day(badge.Date)],
-        TabBadgeKind.Pistes => L[PlanTabBarText.Spoken(badge.Kind), badge.Count, badge.Questions],
+        TabBadgeKind.Pistes => L[PlanTabBarText.Spoken(badge.Kind), PistesCountText.Words(L, badge.Count, badge.Questions)],
         _ => L[PlanTabBarText.Spoken(badge.Kind)],
     };
 }

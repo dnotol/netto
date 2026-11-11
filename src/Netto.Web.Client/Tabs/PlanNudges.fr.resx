@@ -16,6 +16,18 @@
     <value>Optimiser peut ajouter {0} sans rien changer d'autre</value>
   </data>
   <data name="Pistes" xml:space="preserve">
-    <value>Pistes&#160;: chiffrées&#160;: {0}, questions&#160;: {1}</value>
+    <value>Pistes&#160;: {0}</value>
+  </data>
+  <data name="Pistes_Priced_One" xml:space="preserve">
+    <value>{0} chiffrée</value>
+  </data>
+  <data name="Pistes_Priced_Many" xml:space="preserve">
+    <value>{0} chiffrées</value>
+  </data>
+  <data name="Pistes_Questions_One" xml:space="preserve">
+    <value>{0} question</value>
+  </data>
+  <data name="Pistes_Questions_Many" xml:space="preserve">
+    <value>{0} questions</value>
   </data>
 </root>

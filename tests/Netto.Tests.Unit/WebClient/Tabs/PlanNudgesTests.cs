@@ -26,7 +26,18 @@ public class PlanNudgesTests
     {
         var html = await RenderAsync(pistes: new PistesCount(1, 3));
 
-        Nudges(html).ShouldBe([("plan/pistes", "Ideas: priced 1, questions 3")]);
+        Nudges(html).ShouldBe([("plan/pistes", "Ideas: 1 priced, 3 questions")]);
+    }
+
+    // Only what there is: a count of nothing is not said.
+    [Theory]
+    [InlineData(2, 0, "Ideas: 2 priced")]
+    [InlineData(0, 1, "Ideas: 1 question")]
+    public async Task PlanNudges_pistes_saysOnlyTheCountsThatAreNotZero(int priced, int questions, string expected)
+    {
+        var html = await RenderAsync(pistes: new PistesCount(priced, questions));
+
+        Nudges(html).Single().Text.ShouldBe(expected);
     }
 
     [Fact]
@@ -70,8 +81,18 @@ public class PlanNudgesTests
 
         Nudges(html).Select(nudge => nudge.Text).ShouldBe([
             "Optimiser peut ajouter +3.309,67 € sans rien changer d'autre",
-            "Pistes : chiffrées : 1, questions : 3",
+            "Pistes : 1 chiffrée, 3 questions",
         ]);
+    }
+
+    [Fact]
+    public async Task PlanNudges_inFrench_agreesWithEachCount()
+    {
+        using var french = InLanguage.French();
+
+        var html = await RenderAsync(pistes: new PistesCount(2, 1));
+
+        Nudges(html).Single().Text.ShouldBe("Pistes : 2 chiffrées, 1 question");
     }
 
     private static Task<string> RenderAsync(decimal? gain = null, PistesCount? pistes = null) =>

@@ -16,7 +16,7 @@
     <value>Pistes</value>
   </data>
   <data name="Intro" xml:space="preserve">
-    <value>Chaque gain est mesuré plan optimisé contre plan optimisé&#160;: avec la piste, et sans elle. Netto ne décide jamais si vous y avez droit&#160;; il vous le demande.</value>
+    <value>Chaque gain compare votre plan optimisé avec la piste et sans elle. Netto ne décide jamais si vous y avez droit&#160;; il vous le demande.</value>
   </data>
   <data name="None_StartsAtPay" xml:space="preserve">
     <value>Les pistes partent de l'exercice de la société, comme les ajustements d'Optimiser&#160;: donnez ses chiffres pour les voir.</value>
