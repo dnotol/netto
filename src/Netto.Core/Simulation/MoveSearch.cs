@@ -95,9 +95,31 @@ public sealed record MovePlan(decimal TodayInPocket, IReadOnlyList<PlannedMove> 
     public decimal Gain => PlanInPocket - TodayInPocket;
 }
 
+// The optional levers of the year, as LeverOrder computes them: what a plan may hold or leave out. The
+// client says which are in the plan (its composition); a lever that is out is its None in the scenario,
+// which the engine cannot tell from one in the plan at nothing.
+public enum LeverKind
+{
+    Vouchers,
+    Allowances,
+    Rent,
+    Car,
+    Copyright,
+}
+
+// Whether a finder's move retunes what the plan holds, or would add a lever the plan leaves out.
+public enum MoveKind
+{
+    Retune,
+    Add,
+}
+
 // Proposes the best move of one kind from a scenario, or none.
 internal interface IMoveFinder
 {
+    // The lever whose value the move sets, none for what every plan holds: the pay and the advance payments.
+    LeverKind? Lever { get; }
+
     Move? Find(Scenario scenario);
 }
 
@@ -116,12 +138,26 @@ public static class MoveSearch
     // Moves that keep undoing each other stop here.
     private const int MaximumRounds = 10;
 
-    // On that date: a payment is proposed by the first deadline not yet past, none once all are.
-    public static (MovePlan? Value, Refusal? Error) Run(Scenario today, DateOnly date) =>
-        Run(today, [
-            new SplitMoveFinder(), new CompanyAdvancePaymentFinder(date), new DirectorAdvancePaymentFinder(date),
-            new EcoVouchersFinder(), new SportCultureVouchersFinder(), new RentFinder(), new CopyrightFollowsPayFinder(),
-        ]);
+    // The moves that retune the levers in the plan (inPlan), never one adding a lever, on that date: a
+    // payment is proposed by the first deadline not yet past, none once all are.
+    public static (MovePlan? Value, Refusal? Error) Run(Scenario today, DateOnly date, IReadOnlySet<LeverKind> inPlan) =>
+        Run(today, FindersFor(date, inPlan));
+
+    // Every finder on that date, in the order a tie between their moves is settled.
+    internal static IReadOnlyList<IMoveFinder> Finders(DateOnly date) =>
+    [
+        new SplitMoveFinder(), new CompanyAdvancePaymentFinder(date), new DirectorAdvancePaymentFinder(date),
+        new EcoVouchersFinder(), new SportCultureVouchersFinder(), new RentFinder(), new CopyrightFollowsPayFinder(),
+    ];
+
+    // The finders that retune a plan holding those levers, in that order: a search with one lever more
+    // in the set is the plan's own with that lever's finders besides.
+    internal static IReadOnlyList<IMoveFinder> FindersFor(DateOnly date, IReadOnlySet<LeverKind> inPlan) =>
+        [.. Finders(date).Where(finder => KindOf(finder, inPlan) == MoveKind.Retune)];
+
+    // A finder retunes what every plan holds, or a lever in the plan; it would add a lever that is out.
+    internal static MoveKind KindOf(IMoveFinder finder, IReadOnlySet<LeverKind> inPlan) =>
+        finder.Lever is { } lever && !inPlan.Contains(lever) ? MoveKind.Add : MoveKind.Retune;
 
     // Round after round from Today.
     internal static (MovePlan? Value, Refusal? Error) Run(Scenario today, IReadOnlyList<IMoveFinder> finders)
@@ -170,6 +206,8 @@ public static class MoveSearch
 // The split's best pay, when it is not the pay already set.
 internal sealed class SplitMoveFinder : IMoveFinder
 {
+    public LeverKind? Lever => null;
+
     public Move? Find(Scenario scenario) =>
         SplitSearch.Run(scenario).Value?.Best is { } best && best.Pay != scenario.DirectorPay ? new PayMove(best.Pay) : null;
 }
@@ -179,6 +217,8 @@ internal sealed class SplitMoveFinder : IMoveFinder
 // or every deadline is past.
 internal sealed class CompanyAdvancePaymentFinder(DateOnly date) : IMoveFinder
 {
+    public LeverKind? Lever => null;
+
     public Move? Find(Scenario scenario) =>
         YearSimulation.Run(scenario).Value is { } year && PaymentCalendar.Of(year, date)?.Company is { Open: { } open, More: > 0m } company
             ? new CompanyAdvancePaymentMove(open, company.Payments[open].Deadline.Value, company.More)
@@ -190,6 +230,8 @@ internal sealed class CompanyAdvancePaymentFinder(DateOnly date) : IMoveFinder
 // past.
 internal sealed class DirectorAdvancePaymentFinder(DateOnly date) : IMoveFinder
 {
+    public LeverKind? Lever => null;
+
     public Move? Find(Scenario scenario) =>
         YearSimulation.Run(scenario).Value is { } year && PaymentCalendar.Of(year, date)?.Director is { Open: { } open, More: > 0m } director
             ? new DirectorAdvancePaymentMove(open, director.Payments[open].Deadline.Value, director.More)
@@ -200,6 +242,8 @@ internal sealed class DirectorAdvancePaymentFinder(DateOnly date) : IMoveFinder
 // cannot see, only the conditions the Vouchers card lists.
 internal sealed class EcoVouchersFinder : IMoveFinder
 {
+    public LeverKind? Lever => LeverKind.Vouchers;
+
     public Move? Find(Scenario scenario) =>
         VoucherRules.For(scenario.IncomeYear)?.EcoVouchersMaximum.Value is { } maximum && scenario.Vouchers.EcoVouchers < maximum
             ? new EcoVouchersMove(maximum)
@@ -209,6 +253,8 @@ internal sealed class EcoVouchersFinder : IMoveFinder
 // The sport/culture vouchers at their yearly maximum, when the company grants less.
 internal sealed class SportCultureVouchersFinder : IMoveFinder
 {
+    public LeverKind? Lever => LeverKind.Vouchers;
+
     public Move? Find(Scenario scenario) =>
         VoucherRules.For(scenario.IncomeYear)?.SportCultureVouchersMaximum.Value is { } maximum && scenario.Vouchers.SportCultureVouchers < maximum
             ? new SportCultureVouchersMove(maximum)
@@ -219,6 +265,8 @@ internal sealed class SportCultureVouchersFinder : IMoveFinder
 // it.
 internal sealed class RentFinder : IMoveFinder
 {
+    public LeverKind? Lever => LeverKind.Rent;
+
     public Move? Find(Scenario scenario)
     {
         if (RentRules.For(scenario.IncomeYear) is not { } rules || scenario.Rent is not { CadastralIncome: > 0m, ShareLet: > 0m } rent)
@@ -237,6 +285,8 @@ internal sealed class RentFinder : IMoveFinder
 // royalty with it, so no later move can leave it above what a ruling accepts.
 internal sealed class CopyrightFollowsPayFinder : IMoveFinder
 {
+    public LeverKind? Lever => LeverKind.Copyright;
+
     public Move? Find(Scenario scenario) =>
         !scenario.Copyright.FollowsPay && CopyrightRules.For(scenario.IncomeYear) is { } rules
         && CopyrightCalculator.Ceiling(rules, scenario.Copyright, scenario.DirectorPay) is { } ceiling && ceiling > scenario.Copyright.Royalty

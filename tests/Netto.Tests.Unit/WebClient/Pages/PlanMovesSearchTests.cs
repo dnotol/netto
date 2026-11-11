@@ -6,14 +6,13 @@ namespace Netto.Tests.WebClient.Pages;
 
 // The plan page as the browser runs it (LivePlan), its paint held until the test lets the browser paint:
 // the page draws the bar, the river and Optimisation looking for the moves, asks to be told once that is
-// painted (nettoPaint.after), and only then searches the moves from the plan they are measured from, here
-// the example the page opens on, and draws them. What the first draw shows is PlanPageTests'; which plan is
-// searched and when, MovesSourceTests'.
+// painted (nettoPaint.after), and only then searches the moves from the plan on screen, here the example the
+// page opens on, and draws them. What the first draw shows is PlanPageTests'; when the page searches,
+// MovesSourceTests'.
 public class PlanMovesSearchTests
 {
     private static readonly DateOnly On23October = new(2026, 10, 23);
 
-    private static readonly MovesBaseline FromTheExample = new(RiverInputs.Example, IsToday: false);
 
     [Fact]
     public async Task Plan_loaded_waitsForThePaintBeforeSearchingTheMoves()
@@ -27,12 +26,11 @@ public class PlanMovesSearchTests
             .ShouldBe((1, new TabBadge(TabBadgeKind.Searching), 0));
     }
 
-    // Painted, the badge says what the moves add to the plan in the river, as the page opened on it, and the
-    // page waits for no other paint.
+    // Painted, the badge says what the moves add to the plan on screen, and the page waits for no other paint.
     [Fact]
     public async Task Plan_painted_badgesOptimisationWithWhatTheMovesAdd()
     {
-        var total = MovesView.Of(FromTheExample, On23October).Total;
+        var total = MovesView.Of(RiverInputs.Example, On23October).Total;
         await using var page = LivePlan.At("http://localhost/plan", new BrowserStorage(), holdPaint: true);
         await page.LoadAsync();
 
@@ -48,7 +46,7 @@ public class PlanMovesSearchTests
     [Fact]
     public async Task Plan_paintedOnOptimisation_drawsTheMovesFound()
     {
-        var expected = MovesView.Of(FromTheExample, On23October);
+        var expected = MovesView.Of(RiverInputs.Example, On23October);
         await using var page = LivePlan.At("http://localhost/plan/optimisation", new BrowserStorage(), holdPaint: true);
         await page.LoadAsync("optimisation");
         var searchingBeforeThePaint = (await page.FindAsync<OptimisationTab>()).Searching;
@@ -56,10 +54,33 @@ public class PlanMovesSearchTests
         await page.PaintAsync();
 
         var tab = await page.FindAsync<OptimisationTab>();
-        var drawn = MovesView.Of(tab.From, tab.Found);
+        var drawn = MovesView.Of(tab.Inputs, tab.Found);
         page.ShouldSatisfyAllConditions(
             () => (searchingBeforeThePaint, tab.Searching, drawn.State, drawn.Total).ShouldBe((true, false, MovesState.Moves, expected.Total)),
             () => drawn.Moves.Select(move => (move.Move, move.Gain)).ShouldBe(expected.Moves.Select(move => (move.Move, move.Gain))),
+            () => page.Errors.ShouldBeEmpty());
+    }
+
+    // Found in the browser on 2026-11-06: the example starred Today, a royalty following the pay at a quarter
+    // of the time added to the river and not saved. The tab said « this plan: 61,975.74 » while the band said
+    // 62,624.32: the moves were measured from Today. They are measured from the plan on screen, whatever is
+    // starred, and the vouchers, out of the plan, are no move.
+    [Fact]
+    public async Task Plan_riverEditedWithTodayStarred_measuresTheMovesFromThePlanOnScreen()
+    {
+        var storage = new BrowserStorage();
+        new SavedPlans(storage).Save(RiverInputs.Example, number => $"Plan {number}");
+        var river = RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithCreativeShare(0.25m).WithRoyaltyFollowingPay();
+        await using var page = LivePlan.At("http://localhost/plan/optimisation", storage, holdPaint: true, river: river);
+        await page.LoadAsync("optimisation");
+
+        await page.PaintAsync();
+
+        var drawn = MovesView.Of((await page.FindAsync<OptimisationTab>()).Inputs, (await page.FindAsync<OptimisationTab>()).Found);
+        var bar = await page.FindAsync<BucketBar>();
+        page.ShouldSatisfyAllConditions(
+            () => (drawn.FromInPocket, bar.Run.Year?.NetInPocket, drawn.Total).ShouldBe((62_624.32m, 62_624.32m, 3_309.67m)),
+            () => drawn.Moves.Select(move => move.Move.GetType()).ShouldBe([typeof(Netto.Core.Simulation.PayMove), typeof(Netto.Core.Simulation.CompanyAdvancePaymentMove)]),
             () => page.Errors.ShouldBeEmpty());
     }
 

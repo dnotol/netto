@@ -311,32 +311,28 @@ public sealed record RiverInputs(
     // the pay, so the pay moving alone needs no new search (SameBesidesPay).
     public SplitSearchResult? SearchSplit() => Company is null ? null : SplitSearch.Run(Scenario(DirectorPay.Value)).Value;
 
-    // The moves Netto recommends from the plan given, this river, at the pay Run runs, on that date
-    // (MoveSearch): none while the company is skipped, the split being where they start.
-    public (MovePlan? Value, Refusal? Error)? FindMoves(DateOnly date) => Company is null ? null : MoveSearch.Run(MoveScenario(), date);
+    // The moves that retune this river, the plan on screen, from the year Run runs, on that date
+    // (MoveSearch): only the levers in the plan are retuned, and none is added. None while the company is
+    // skipped, the split being where they start.
+    public (MovePlan? Value, Refusal? Error)? FindMoves(DateOnly date) => Company is null ? null : MoveSearch.Run(MoveScenario(), date, LeversInPlan);
 
-    // The scenario Run runs, but with the home office's facts kept while Rent is out of the plan, its
-    // rent at nothing, which the engine counts as no rent, and the royalty's creative share and statuses
-    // kept the same way while Copyright royalty is out, its royalty fixed at nothing, never following:
-    // the year is the same, and the search can propose the rent at the cap and letting the royalty
-    // follow the pay. Facts the engine refuses are not kept: no card shows a module out of the plan, so
-    // nothing would tell why the plan is refused, and no move could be found from them anyway. The home
-    // is then none, the share none.
-    internal Scenario MoveScenario()
+    // The levers the plan holds, as the move search names them: the household is no lever.
+    public IReadOnlySet<LeverKind> LeversInPlan =>
+        PlanComposition.Modules.Where(InPlan).Select(LeverOf).OfType<LeverKind>().ToHashSet();
+
+    private static LeverKind? LeverOf(OptionalModule module) => module switch
     {
-        var scenario = Scenario(PayUsed);
-        var withHome = InPlan(OptionalModule.Rent) ? scenario : scenario with { Rent = KeptHome };
-        return InPlan(OptionalModule.Copyright) ? withHome : withHome with { Copyright = KeptRoyalty };
-    }
-
-    // The home's facts with no rent, none when the engine refuses them.
-    private HomeOfficeRent KeptHome => RentCalculator.FactsRefusal(Rent.Values) is null ? Rent.Values with { Rent = 0m } : HomeOfficeRent.None;
-
-    // The royalty's share and statuses with no royalty and not following, the share none when the engine refuses it.
-    private CopyrightRoyalty KeptRoyalty => Copyright.Values with
-    {
-        Royalty = 0m, FollowsPay = false, CreativeShare = CopyrightCalculator.ShareRefusal(Copyright.CreativeShare.Value) is null ? Copyright.CreativeShare.Value : null,
+        OptionalModule.Vouchers => LeverKind.Vouchers,
+        OptionalModule.Allowances => LeverKind.Allowances,
+        OptionalModule.Rent => LeverKind.Rent,
+        OptionalModule.Car => LeverKind.Car,
+        OptionalModule.Copyright => LeverKind.Copyright,
+        OptionalModule.Household => null,
+        _ => throw new ArgumentOutOfRangeException(nameof(module), module, "A module the move search has no lever for."),
     };
+
+    // The scenario Run runs, at the pay it runs, which the move search starts from.
+    internal Scenario MoveScenario() => Scenario(PayUsed);
 
     public bool SameBesidesPay(RiverInputs other) => this with { DirectorPay = other.DirectorPay } == other;
 

@@ -20,46 +20,32 @@ public class TabBadgesTests
     {
         var river = RiverInputs.Example.WithReserve(-1m);
 
-        Badges(river, today: null, On23October).GetValueOrDefault(PlanTab.Plan).ShouldBe(new TabBadge(TabBadgeKind.Refused));
+        Badges(river, On23October).GetValueOrDefault(PlanTab.Plan).ShouldBe(new TabBadge(TabBadgeKind.Refused));
     }
 
     [Fact]
     public void Of_riverRunning_badgesNoPlan()
     {
-        Badges(RiverInputs.Example, today: null, On23October).ContainsKey(PlanTab.Plan).ShouldBeFalse();
+        Badges(RiverInputs.Example, On23October).ContainsKey(PlanTab.Plan).ShouldBeFalse();
     }
 
-    // The gain of every move together, what the tab adds to Today.
+    // The gain of every move together, what the tab adds to the plan on screen, whatever plan is starred
+    // Today: Today feeds the band's gain alone.
     [Fact]
-    public void Of_movesFromToday_badgesOptimisationWithTheirTotal()
+    public void Of_moves_badgesOptimisationWithTheirTotalOverThePlanOnScreen()
     {
         var total = MovesView.Of(RiverInputs.Example, On23October).Total;
 
-        Badges(RiverInputs.Example, RiverInputs.Example, On23October).GetValueOrDefault(PlanTab.Optimisation)
-            .ShouldBe(new TabBadge(TabBadgeKind.MoreThanToday, Amount: total));
+        Badges(RiverInputs.Example, On23October).GetValueOrDefault(PlanTab.Optimisation)
+            .ShouldBe(new TabBadge(TabBadgeKind.MoreThanPlan, Amount: total));
     }
 
-    // While no plan is starred Today, the moves are from the plan in the river: what they add, they add to
-    // that plan.
+    // While the page looks for the moves, once painted or after an edit, the tab says so.
     [Fact]
-    public void Of_movesFromThePlanInTheRiver_badgesOptimisationWithTheirTotalOverThePlan()
-    {
-        var moves = MovesView.Of(new MovesBaseline(RiverInputs.Example, IsToday: false), On23October);
-        var run = RiverInputs.Example.Run();
-
-        TabBadges.Of(run, moves, CalendarView.From(RiverInputs.Example, run, On23October), 0).GetValueOrDefault(PlanTab.Optimisation)
-            .ShouldBe(new TabBadge(TabBadgeKind.MoreThanPlan, Amount: moves.Total));
-    }
-
-    // While the page looks for the moves, once painted, the tab says so, from Today or from the plan in the
-    // river alike.
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public void Of_movesStillLookedFor_badgesOptimisationAsSearching(bool fromToday)
+    public void Of_movesStillLookedFor_badgesOptimisationAsSearching()
     {
         var run = RiverInputs.Example.Run();
-        var moves = MovesView.Searching(new MovesBaseline(RiverInputs.Example, fromToday));
+        var moves = MovesView.Searching(RiverInputs.Example);
 
         TabBadges.Of(run, moves, CalendarView.From(RiverInputs.Example, run, On23October), 0).GetValueOrDefault(PlanTab.Optimisation)
             .ShouldBe(new TabBadge(TabBadgeKind.Searching));
@@ -67,18 +53,17 @@ public class TabBadgesTests
 
     // No move adds a euro: nothing to say beside the tab's name.
     [Fact]
-    public void Of_todayAlreadyTheBest_badgesNoOptimisation()
+    public void Of_planAlreadyTheBest_badgesNoOptimisation()
     {
-        var view = MovesView.Of(RiverInputs.Example, On23October);
-        var planned = view.Moves.Aggregate(RiverInputs.Example, (river, move) => view.Apply(move, river));
+        var planned = MovesView.Of(RiverInputs.Example, On23October).ApplyAll(RiverInputs.Example);
 
-        Badges(planned, planned, On23October).ContainsKey(PlanTab.Optimisation).ShouldBeFalse();
+        Badges(planned, On23October).ContainsKey(PlanTab.Optimisation).ShouldBeFalse();
     }
 
     [Fact]
-    public void Of_todayRefused_badgesNoOptimisation()
+    public void Of_planRefused_badgesNoOptimisation()
     {
-        Badges(RiverInputs.Example, RiverInputs.Example.WithReserve(-1m), On23October).ContainsKey(PlanTab.Optimisation).ShouldBeFalse();
+        Badges(RiverInputs.Example.WithReserve(-1m), On23October).ContainsKey(PlanTab.Optimisation).ShouldBeFalse();
     }
 
     // The example prepays nothing by the company, so its next payment is the one that cancels the
@@ -86,14 +71,14 @@ public class TabBadgesTests
     [Fact]
     public void Of_paymentStillToMake_badgesWhenToPayWithItsDeadline()
     {
-        Badges(RiverInputs.Example, today: null, On23October).GetValueOrDefault(PlanTab.WhenToPay)
+        Badges(RiverInputs.Example, On23October).GetValueOrDefault(PlanTab.WhenToPay)
             .ShouldBe(new TabBadge(TabBadgeKind.NextBy, Date: new DateOnly(2026, 12, 21)));
     }
 
     [Fact]
     public void Of_everyDeadlinePast_badgesNoWhenToPay()
     {
-        Badges(RiverInputs.Example, today: null, AfterTheYear).ContainsKey(PlanTab.WhenToPay).ShouldBeFalse();
+        Badges(RiverInputs.Example, AfterTheYear).ContainsKey(PlanTab.WhenToPay).ShouldBeFalse();
     }
 
     // What the fund bills is refused: the tab holding the field says so, rather than the date.
@@ -102,14 +87,14 @@ public class TabBadgesTests
     {
         var river = RiverInputs.Example.WithBilledContributions(-1m);
 
-        Badges(river, today: null, On23October).GetValueOrDefault(PlanTab.WhenToPay).ShouldBe(new TabBadge(TabBadgeKind.Refused));
+        Badges(river, On23October).GetValueOrDefault(PlanTab.WhenToPay).ShouldBe(new TabBadge(TabBadgeKind.Refused));
     }
 
     // The river refused, there is no calendar: the refusal is the Plan tab's.
     [Fact]
     public void Of_riverRefused_badgesNoWhenToPay()
     {
-        Badges(RiverInputs.Example.WithReserve(-1m), today: null, On23October).ContainsKey(PlanTab.WhenToPay).ShouldBeFalse();
+        Badges(RiverInputs.Example.WithReserve(-1m), On23October).ContainsKey(PlanTab.WhenToPay).ShouldBeFalse();
     }
 
     // Compare plans says how many saved plans the viewer can compare, once there are two.
@@ -118,7 +103,7 @@ public class TabBadgesTests
     [InlineData(5)]
     public void Of_twoPlansOrMoreToCompare_badgesCompareWithTheirCount(int plans)
     {
-        Badges(RiverInputs.Example, today: null, On23October, plans).GetValueOrDefault(PlanTab.Compare).ShouldBe(new TabBadge(TabBadgeKind.SavedPlans, Count: plans));
+        Badges(RiverInputs.Example, On23October, plans).GetValueOrDefault(PlanTab.Compare).ShouldBe(new TabBadge(TabBadgeKind.SavedPlans, Count: plans));
     }
 
     // Nothing to compare yet: with none, or one plan, the tab has no badge.
@@ -127,22 +112,22 @@ public class TabBadgesTests
     [InlineData(1)]
     public void Of_lessThanTwoPlansToCompare_badgesNoCompare(int plans)
     {
-        Badges(RiverInputs.Example, RiverInputs.Example, On23October, plans).ContainsKey(PlanTab.Compare).ShouldBeFalse();
+        Badges(RiverInputs.Example, On23October, plans).ContainsKey(PlanTab.Compare).ShouldBeFalse();
     }
 
     // The plans are the tab's own, whatever the river does: a refused river leaves the count.
     [Fact]
     public void Of_riverRefused_stillBadgesCompare()
     {
-        Badges(RiverInputs.Example.WithReserve(-1m), today: null, On23October, plans: 3).GetValueOrDefault(PlanTab.Compare)
+        Badges(RiverInputs.Example.WithReserve(-1m), On23October, plans: 3).GetValueOrDefault(PlanTab.Compare)
             .ShouldBe(new TabBadge(TabBadgeKind.SavedPlans, Count: 3));
     }
 
-    // Without a plan starred Today, the moves are from the river as a plan, as the page opens on it.
-    private static IReadOnlyDictionary<PlanTab, TabBadge> Badges(RiverInputs river, RiverInputs? today, DateOnly date, int plans = 0)
+    // The moves from the plan on screen.
+    private static IReadOnlyDictionary<PlanTab, TabBadge> Badges(RiverInputs river, DateOnly date, int plans = 0)
     {
         var run = river.Run();
-        var moves = MovesView.Of(today is null ? new MovesBaseline(river, IsToday: false) : MovesBaseline.Today(today), date);
+        var moves = MovesView.Of(river, date);
         return TabBadges.Of(run, moves, CalendarView.From(river, run, date), plans);
     }
 }

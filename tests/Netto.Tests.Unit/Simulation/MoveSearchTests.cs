@@ -32,6 +32,73 @@ public class MoveSearchTests
     // Only 21 December is still open.
     private static readonly DateOnly On22October = new(2026, 10, 22);
 
+    // Every lever in the plan, so every finder retunes; and none, so only the pay and the payments do.
+    private static readonly IReadOnlySet<LeverKind> EveryLever = Enum.GetValues<LeverKind>().ToHashSet();
+
+    private static readonly IReadOnlySet<LeverKind> NoLever = new HashSet<LeverKind>();
+
+    // Each finder names the lever whose value its move sets, none for what every plan holds.
+    [Fact]
+    public void Finders_eachKind_namesItsLever()
+    {
+        MoveSearch.Finders(On22October).Select(finder => (finder.GetType().Name, finder.Lever)).ShouldBe([
+            (nameof(SplitMoveFinder), null), (nameof(CompanyAdvancePaymentFinder), null), (nameof(DirectorAdvancePaymentFinder), null),
+            (nameof(EcoVouchersFinder), LeverKind.Vouchers), (nameof(SportCultureVouchersFinder), LeverKind.Vouchers), (nameof(RentFinder), LeverKind.Rent),
+            (nameof(CopyrightFollowsPayFinder), LeverKind.Copyright),
+        ]);
+    }
+
+    // A finder whose lever is in the plan retunes it, one whose lever is out would add it; the pay and the
+    // payments, in every plan, always retune.
+    [Theory]
+    [InlineData(null, false, MoveKind.Retune)]
+    [InlineData(LeverKind.Vouchers, true, MoveKind.Retune)]
+    [InlineData(LeverKind.Vouchers, false, MoveKind.Add)]
+    [InlineData(LeverKind.Copyright, false, MoveKind.Add)]
+    public void KindOf_aFinder_retunesALeverInThePlanAndAddsOneOut(LeverKind? lever, bool inPlan, MoveKind kind)
+    {
+        var levers = lever is { } some && inPlan ? new HashSet<LeverKind> { some } : new HashSet<LeverKind>();
+
+        MoveSearch.KindOf(new Fixed(new PayMove(1m), lever), levers).ShouldBe(kind);
+    }
+
+    // The finders of the plan: every one that retunes, in the search's order, none that adds.
+    [Fact]
+    public void FindersFor_vouchersInThePlan_areThePayThePaymentsAndTheVouchers()
+    {
+        MoveSearch.FindersFor(On22October, new HashSet<LeverKind> { LeverKind.Vouchers }).Select(finder => finder.GetType().Name).ShouldBe([
+            nameof(SplitMoveFinder), nameof(CompanyAdvancePaymentFinder), nameof(DirectorAdvancePaymentFinder), nameof(EcoVouchersFinder), nameof(SportCultureVouchersFinder),
+        ]);
+    }
+
+    // Vouchers out of the plan are its scenario at no voucher, as a plan granting none: the search, told
+    // they are out, proposes none.
+    [Fact]
+    public void Run_vouchersOutOfThePlan_hasNoVoucherMove()
+    {
+        var plan = MoveSearch.Run(Today, On22October, NoLever).Value.ShouldNotBeNull();
+
+        plan.Moves.Select(move => move.Move).ShouldNotContain(move => move is EcoVouchersMove || move is SportCultureVouchersMove);
+    }
+
+    [Fact]
+    public void Run_vouchersInThePlan_grantsEachAtItsMaximum()
+    {
+        var plan = MoveSearch.Run(Today, On22October, new HashSet<LeverKind> { LeverKind.Vouchers }).Value.ShouldNotBeNull();
+
+        plan.Moves.Select(move => move.Move).ShouldContain(new EcoVouchersMove(250m));
+        plan.Moves.Select(move => move.Move).ShouldContain(new SportCultureVouchersMove(100m));
+    }
+
+    // The home's facts given with the rent out of the plan: no rent move, which would add it.
+    [Fact]
+    public void Run_rentFactsWithRentOutOfThePlan_hasNoRentMove()
+    {
+        var plan = MoveSearch.Run(Today with { Rent = new HomeOfficeRent(1_200m, 0.12m, 0m) }, On22October, NoLever).Value.ShouldNotBeNull();
+
+        plan.Moves.Select(move => move.Move).OfType<RentMove>().ShouldBeEmpty();
+    }
+
     [Fact]
     public void Run_example_movesThePayToTheBest()
     {
@@ -84,7 +151,7 @@ public class MoveSearchTests
     [Fact]
     public void Run_refusedScenario_givesTheEnginesError()
     {
-        var (plan, error) = MoveSearch.Run(Today with { Reserve = -1m }, AfterTheYear);
+        var (plan, error) = MoveSearch.Run(Today with { Reserve = -1m }, AfterTheYear, EveryLever);
 
         (plan, error).ShouldBe((null, YearSimulation.Run(Today with { Reserve = -1m }).Error));
     }
@@ -246,7 +313,7 @@ public class MoveSearchTests
     [Fact]
     public void Run_exampleOn21December_paysThatDay()
     {
-        var plan = MoveSearch.Run(Today, new DateOnly(2026, 12, 21)).Value.ShouldNotBeNull();
+        var plan = MoveSearch.Run(Today, new DateOnly(2026, 12, 21), EveryLever).Value.ShouldNotBeNull();
 
         plan.Moves.Select(move => move.Move).OfType<CompanyAdvancePaymentMove>().Single().Date.ShouldBe(new DateOnly(2026, 12, 21));
     }
@@ -254,7 +321,7 @@ public class MoveSearchTests
     [Fact]
     public void Run_exampleAfterTheYear_hasNoPaymentMove()
     {
-        var plan = MoveSearch.Run(Today, AfterTheYear).Value.ShouldNotBeNull();
+        var plan = MoveSearch.Run(Today, AfterTheYear, EveryLever).Value.ShouldNotBeNull();
 
         plan.Moves.Select(move => move.Move).OfType<CompanyAdvancePaymentMove>().ShouldBeEmpty();
     }
@@ -263,7 +330,7 @@ public class MoveSearchTests
     [Fact]
     public void Run_exemptCompany_hasNoPaymentMove()
     {
-        var plan = MoveSearch.Run(Today with { Company = new CompanyStatus(true, true, true) }, On22October).Value.ShouldNotBeNull();
+        var plan = MoveSearch.Run(Today with { Company = new CompanyStatus(true, true, true) }, On22October, EveryLever).Value.ShouldNotBeNull();
 
         plan.Moves.Select(move => move.Move).OfType<CompanyAdvancePaymentMove>().ShouldBeEmpty();
     }
@@ -312,7 +379,7 @@ public class MoveSearchTests
     {
         var withCar = Today with { Car = new CarFacts(50_000m, new DateOnly(2026, 1, 10), 8_000m, false, 0m) };
 
-        var plan = MoveSearch.Run(withCar, On22October).Value.ShouldNotBeNull();
+        var plan = MoveSearch.Run(withCar, On22October, EveryLever).Value.ShouldNotBeNull();
 
         plan.Moves.Select(move => move.Move.Apply(withCar).Car).ShouldAllBe(car => car == withCar.Car);
     }
@@ -398,7 +465,7 @@ public class MoveSearchTests
     [Fact]
     public void Run_everyKindOn22October_sumsItsGainsToThePlanLessToday()
     {
-        var plan = MoveSearch.Run(Today with { Rent = new HomeOfficeRent(1_200m, 0.12m, 0m) }, On22October).Value.ShouldNotBeNull();
+        var plan = MoveSearch.Run(Today with { Rent = new HomeOfficeRent(1_200m, 0.12m, 0m) }, On22October, EveryLever).Value.ShouldNotBeNull();
 
         (plan.Moves.Count, plan.Moves.Sum(move => move.Gain)).ShouldBe((5, plan.PlanInPocket - plan.TodayInPocket));
     }
@@ -414,8 +481,10 @@ public class MoveSearchTests
     }
 
     // Proposes the same move whatever the scenario.
-    private sealed class Fixed(Move move) : IMoveFinder
+    private sealed class Fixed(Move move, LeverKind? lever = null) : IMoveFinder
     {
+        public LeverKind? Lever => lever;
+
         public Move? Find(Scenario scenario) => move;
     }
 
@@ -426,12 +495,16 @@ public class MoveSearchTests
 
         public Move[] Moves => moves;
 
+        public LeverKind? Lever => null;
+
         public Move? Find(Scenario scenario) => _next < moves.Length ? moves[_next++] : null;
     }
 
     // Ten thousand more revenue, every time: a move that always adds.
     private sealed class MoreRevenue : IMoveFinder
     {
+        public LeverKind? Lever => null;
+
         public Move? Find(Scenario scenario) => new RevenueMove(scenario.Revenue + 10_000m);
     }
 

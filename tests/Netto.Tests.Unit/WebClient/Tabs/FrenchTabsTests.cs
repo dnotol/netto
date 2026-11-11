@@ -61,16 +61,15 @@ public class FrenchTabsTests
 
     [Theory]
     [MemberData(nameof(GlossaryNames))]
-    public void ModuleNames_onTheMapAndInOptimisation_areTheGlossarys(RiverModule module, string name)
+    public void ModuleNames_onTheMap_areTheGlossarys(RiverModule module, string name)
     {
-        (ResxText.French<MapTab>().Get(MapTabText.Module(module)), ResxText.French<OptimisationTab>().Get(OptimisationTabText.Module(module))).ShouldBe((name, name));
+        ResxText.French<MapTab>().Get(MapTabText.Module(module)).ShouldBe(name);
     }
 
     [Fact]
-    public void ModuleNames_theSplitOnTheMapAndTheWholeYearInOptimisation_areTheGlossarys()
+    public void ModuleNames_theSplitOnTheMap_isTheGlossarys()
     {
-        (ResxText.French<MapTab>().Get(MapTabText.Module(RiverModule.Split)), ResxText.French<OptimisationTab>().Get(OptimisationTabText.Module(RiverModule.River)))
-            .ShouldBe(("La répartition", "L'année"));
+        ResxText.French<MapTab>().Get(MapTabText.Module(RiverModule.Split)).ShouldBe("La répartition");
     }
 
     // A month filled in by code never follows « de », which « d'avril » or « d'août » would need: each text
@@ -110,18 +109,6 @@ public class FrenchTabsTests
     public void ReceivedFrom_theLineOverACard_endsOnAColonBeforeTheModuleOrBucket()
     {
         ResxText.French<MapTab>().Get("ReceivedFrom").ShouldBe($"{{0}}, origine{NoBreak}:");
-    }
-
-    [Theory]
-    [InlineData("RiverChanged_One")]
-    [InlineData("RiverChanged_Two")]
-    [InlineData("RiverChanged_Three")]
-    [InlineData("RiverChanged_More")]
-    public void RiverChanged_theNote_namesTheCardsAfterAColonWithNoPrepositionBeforeAny(string key)
-    {
-        var text = ResxText.French<OptimisationTab>().Get(key).ShouldNotBeNull();
-
-        (text.Contains($"par{NoBreak}: {{0}}", StringComparison.Ordinal), Regex.IsMatch(text, @"\b(de|du|d'|à|au|en|dans|sur)\s*\{[0-2]\}")).ShouldBe((true, false));
     }
 
     // Each link of a move is a sentence of its own, naming its card or tab as a title after « la carte » or
@@ -276,20 +263,23 @@ public class FrenchTabsTests
     }
 
     [Fact]
-    public async Task OptimisationTab_inFrench_saysTheMovesFromTodayInFrench()
+    public async Task OptimisationTab_inFrench_saysTheMovesFromThePlanOnScreenInFrench()
     {
         using var french = InLanguage.French();
-        var from = MovesBaseline.Today(RiverInputs.Example);
 
         var html = WebUtility.HtmlDecode(await RenderAsync<OptimisationTab>(new Folds(new BrowserStorage()), new()
         {
-            ["From"] = from, ["Searching"] = false, ["Found"] = from.Plan.FindMoves(new DateOnly(2026, 10, 22)), ["Inputs"] = RiverInputs.Example,
+            ["Searching"] = false, ["Found"] = RiverInputs.Example.FindMoves(new DateOnly(2026, 10, 22)), ["Inputs"] = RiverInputs.Example,
         }));
 
         html.ShouldSatisfyAllConditions(
-            () => html.ShouldContain("Depuis Aujourd'hui, votre situation actuelle, chaque ajustement s'ajoute à ceux du dessus"),
+            () => html.ShouldContain("Mesuré depuis le plan affiché. Netto ne touche qu'aux leviers déjà dans votre plan, avec les faits que vous avez donnés"),
+            () => html.ShouldContain(">Votre plan<"),
+            () => html.ShouldContain(">Optimisé<"),
+            () => html.ShouldContain(">Gain certain<"),
+            () => html.ShouldContain("Tout appliquer"),
             () => html.ShouldContain(">Appliquer<"),
-            () => html.ShouldNotContain("From Today"));
+            () => html.ShouldNotContain("Measured from"));
     }
 
     [Fact]

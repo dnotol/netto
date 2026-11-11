@@ -3,136 +3,85 @@ using Netto.Core.Simulation;
 
 namespace Netto.Web.Client.River;
 
-// What the Optimisation tab draws: the engine's moves (MoveSearch) from the plan they are measured from
-// (MovesBaseline), the plan starred « Today » or, while none is, the plan in the river as it was opened or
-// saved, or why there are none, with what that plan leaves in the pocket and what it leaves with every
-// move. Found once per plan and date, since the search runs the split at every move; which moves the
-// river already holds is read from the river at each change.
+// What the Optimisation tab draws: the engine's moves (MoveSearch) that retune the plan on screen, From,
+// or why there are none, with what that plan leaves in the pocket and what it leaves with every move. The
+// page searches once per plan and date (MovesSource), since the search runs the split at every move; while
+// the plan on screen is not the one searched, the view is searching, so no move found for another plan is
+// ever drawn or applied.
 internal sealed record MovesView(
     MovesState State,
     Refusal? Error,
-    MovesBaseline From,
+    RiverInputs From,
     decimal FromPay,
     IReadOnlyList<PlannedMove> Moves,
     decimal Total,
     decimal FromInPocket,
     decimal PlanInPocket)
 {
-    // From Today on that date, which decides the deadline a payment is proposed by.
-    public static MovesView Of(RiverInputs today, DateOnly date) => Of(MovesBaseline.Today(today), date);
-
-    // From what the search found for Today (RiverInputs.FindMoves), none for a Today that starts at the pay.
-    public static MovesView Of(RiverInputs today, (MovePlan? Value, Refusal? Error)? found) => Of(MovesBaseline.Today(today), found);
-
-    // From the plan they are measured from, on that date.
-    public static MovesView Of(MovesBaseline from, DateOnly date) => Of(from, from.Plan.FindMoves(date));
+    // The moves from that plan on that date, searched here: for the tests, the page searching once painted.
+    public static MovesView Of(RiverInputs from, DateOnly date) => Of(from, from.FindMoves(date));
 
     // While the page has not searched the moves from that plan yet, which it does once it has painted
-    // (MovesSource): no figure and no move, only the plan they will be from.
-    public static MovesView Searching(MovesBaseline from) => new(MovesState.Searching, null, from, 0m, [], 0m, 0m, 0m);
+    // (MovesSource): no figure and no move.
+    public static MovesView Searching(RiverInputs from) => new(MovesState.Searching, null, from, 0m, [], 0m, 0m, 0m);
 
-    // From what the search found for that plan, none for one that starts at the pay: the page searches
-    // once per plan and date (MovesSource), and the tab draws the view of what it found.
-    public static MovesView Of(MovesBaseline from, (MovePlan? Value, Refusal? Error)? found)
+    // From what the search found for that plan (RiverInputs.FindMoves), none for one that starts at the pay.
+    public static MovesView Of(RiverInputs from, (MovePlan? Value, Refusal? Error)? found)
     {
         if (found is not { } result)
             return new MovesView(MovesState.StartsAtPay, null, from, 0m, [], 0m, 0m, 0m);
         if (result.Value is not { } plan)
             return new MovesView(MovesState.Refused, result.Error, from, 0m, [], 0m, 0m, 0m);
 
-        var pay = from.Plan.PayUsed;
+        var pay = from.PayUsed;
         return plan.Moves.Count == 0
             ? new MovesView(MovesState.AlreadyBest, null, from, pay, [], 0m, plan.TodayInPocket, plan.TodayInPocket)
             : new MovesView(MovesState.Moves, null, from, pay, plan.Moves, plan.Gain, plan.TodayInPocket, plan.PlanInPocket);
     }
 
-    // What the pocket holds once the move at that place in the list is taken: what the plan the moves are
-    // from leaves, with the gains of the moves up to it and its own, so the last move's is what every move
-    // leaves. It is the moves' running account, not a run of the moves above alone: a line a later round
-    // topped up (Move.After) holds that round's gain too, measured on top of the moves between.
+    // What the pocket holds once the move at that place in the list is taken: what the plan leaves, with
+    // the gains of the moves up to it and its own, so the last move's is what every move leaves. It is the
+    // moves' running account, not a run of the moves above alone: a line a later round topped up
+    // (Move.After) holds that round's gain too, measured on top of the moves between.
     public decimal InPocketAfter(int index) => FromInPocket + Moves.Take(index + 1).Sum(move => move.Gain);
 
-    // Whether the river holds what the plan the moves are from does not: said beside the moves, or beside
-    // that plan's being the best already (Differences).
-    public bool RiverChanged(RiverInputs river) => Differences(river) is not null;
-
-    // What the river holds that the plan the moves are from does not, none while it holds nothing, or while
-    // there are no moves to compare it with. From the plan in the river, which the moves are from while no
-    // plan is starred Today, any change since it was opened or saved: an empty list, since the tab says it in
-    // one text. From Today, the setup the river is measured against and moves away from by design, only what
-    // no move sets, by the card that holds it (RiverDifferences): the moves were found for Today's facts,
-    // and a river with other facts (a royalty Today holds no share for, another revenue) would have others.
-    public IReadOnlyList<RiverDifference>? Differences(RiverInputs river)
-    {
-        if (State is not (MovesState.Moves or MovesState.AlreadyBest))
-            return null;
-        if (!From.IsToday)
-            return river != From.Plan ? [] : null;
-
-        return RiverDifferences.Between(river, From.Plan) is { Count: > 0 } differences ? differences : null;
-    }
-
-    // Whether the river holds the move's values already: its pay, the payment by the deadline of the plan
-    // the moves are from with the move's amount on top, a lever's amount with its module in the plan, or a
-    // royalty in the plan that follows the pay.
-    public bool Applied(PlannedMove move, RiverInputs river) => move.Move switch
-    {
-        PayMove pay => river.DirectorPay.Value == pay.Pay,
-        CompanyAdvancePaymentMove payment => river.AdvancePayments.ByDeadline[payment.Deadline].Value == Planned(payment),
-        DirectorAdvancePaymentMove payment => river.TaxPrepayments.Paid.ByDeadline[payment.Deadline].Value == Planned(payment),
-        EcoVouchersMove eco => river.InPlan(OptionalModule.Vouchers) && river.Vouchers.EcoVouchers.Value == eco.Amount,
-        SportCultureVouchersMove sport => river.InPlan(OptionalModule.Vouchers) && river.Vouchers.SportCultureVouchers.Value == sport.Amount,
-        RentMove rent => river.InPlan(OptionalModule.Rent) && river.Rent.Rent.Value == rent.Rent,
-        CopyrightFollowsPayMove => river.InPlan(OptionalModule.Copyright) && river.Copyright.FollowsPay.Value,
-        _ => throw new ArgumentOutOfRangeException(nameof(move), move, "A move the river cannot tell is applied."),
-    };
-
-    // The river with the move's values, everything else as it is. Applying a lever's move is the one
-    // action that adds a module to the plan: the user asked for it. A royalty that follows the pay holds
-    // a pay above what the company pays beside it there, as the move does, in the river's own run.
+    // The plan with the move's values, everything else as it is. Every move retunes a value the plan holds:
+    // none adds a lever (MoveSearch.Run). A royalty that follows the pay holds a pay above what the company
+    // pays beside it there, as the move does, in the river's own run.
     public RiverInputs Apply(PlannedMove move, RiverInputs river) => move.Move switch
     {
         PayMove pay => river.WithDirectorPay(pay.Pay),
         CompanyAdvancePaymentMove payment => river.WithAdvancePayment(payment.Deadline, Planned(payment)),
         DirectorAdvancePaymentMove payment => river.WithTaxAdvancePayment(payment.Deadline, Planned(payment)),
-        EcoVouchersMove eco => river.WithEcoVouchers(eco.Amount).AddToPlan(OptionalModule.Vouchers),
-        SportCultureVouchersMove sport => river.WithSportCultureVouchers(sport.Amount).AddToPlan(OptionalModule.Vouchers),
-        RentMove rent => WithPlansHome(river).WithRent(rent.Rent).AddToPlan(OptionalModule.Rent),
-        CopyrightFollowsPayMove => WithPlansCreativeShare(river).WithRoyaltyFollowingPay().AddToPlan(OptionalModule.Copyright),
+        EcoVouchersMove eco => river.WithEcoVouchers(eco.Amount),
+        SportCultureVouchersMove sport => river.WithSportCultureVouchers(sport.Amount),
+        RentMove rent => river.WithRent(rent.Rent),
+        CopyrightFollowsPayMove => river.WithRoyaltyFollowingPay(),
         _ => throw new ArgumentOutOfRangeException(nameof(move), move, "A move the river cannot apply."),
     };
 
-    // The rent is the home's of the plan the moves are from: its cadastral income and share let come with it.
-    private RiverInputs WithPlansHome(RiverInputs river) =>
-        river.WithCadastralIncome(From.Plan.Rent.CadastralIncome.Value).WithShareLet(From.Plan.Rent.ShareLet.Value);
+    // The plan with every move's values, in the order they were taken: the plan the search ends on, whose
+    // pocket is PlanInPocket.
+    public RiverInputs ApplyAll(RiverInputs river) => Moves.Aggregate(river, (applied, move) => Apply(move, applied));
 
-    // The royalty follows the pay at what a ruling accepts for the creative share of the plan the moves
-    // are from, under its statuses: they come with it as that plan holds them, origins and all.
-    private RiverInputs WithPlansCreativeShare(RiverInputs river) => river with
-    {
-        Copyright = river.Copyright with
-        {
-            CreativeShare = From.Plan.Copyright.CreativeShare, AverageWithinCap = From.Plan.Copyright.AverageWithinCap, HoldsAttestation = From.Plan.Copyright.HoldsAttestation,
-        },
-    };
+    // A payment's line holds what the moves add by its deadline: on top of what the plan pays there.
+    private decimal Planned(CompanyAdvancePaymentMove payment) => From.AdvancePayments.ByDeadline[payment.Deadline].Value + payment.Amount;
 
-    private decimal Planned(CompanyAdvancePaymentMove payment) => From.Plan.AdvancePayments.ByDeadline[payment.Deadline].Value + payment.Amount;
-
-    private decimal Planned(DirectorAdvancePaymentMove payment) => From.Plan.TaxPrepayments.Paid.ByDeadline[payment.Deadline].Value + payment.Amount;
+    private decimal Planned(DirectorAdvancePaymentMove payment) => From.TaxPrepayments.Paid.ByDeadline[payment.Deadline].Value + payment.Amount;
 }
 
 internal enum MovesState
 {
-    // The page has not searched the moves from that plan yet: it does once it has painted (MovesSource).
+    // The page has not searched the moves from the plan on screen yet: it does once it has painted (MovesSource).
     Searching,
 
-    // The plan the moves are from skips the company's year: the split, and so every move, starts from it.
+    // The plan skips the company's year: the split, and so every move, starts from it.
     StartsAtPay,
 
-    // The engine refuses an amount of the plan the moves are from (Error).
+    // The engine refuses an amount of the plan (Error).
     Refused,
 
-    // No move adds a euro to the plan the moves are from.
+    // No move adds a euro to the plan.
     AlreadyBest,
 
     Moves,

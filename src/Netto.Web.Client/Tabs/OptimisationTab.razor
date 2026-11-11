@@ -3,46 +3,30 @@
 @using Netto.Web.Client.River
 @inject IStringLocalizer<OptimisationTab> L
 
-@* The Optimisation tab: what Netto would change in a plan to leave more in the pocket, a tab of its own
-   beside the river rather than a card in it, since it is no module of the river. The moves are from the
-   plan starred « Today », the user's current setup, or while none is, from the plan in the river as it
-   was opened or saved (MovesBaseline), which the first line says, naming it when it is a
-   saved plan; a change of the river since then is not counted, which a note under the first line says
-   while the river differs from that plan, or from Today while it holds what no move sets (MovesView.Differences),
-   since the river moves away from Today by the moves by design: it names the cards whose facts differ, three at
-   most and then how many more (RiverDifferences, worded by OptimisationTabText), and a lever one holds and the other
-   does not. One page of moves from that plan: first what it leaves in the
-   pocket, what it leaves with every move and the difference; then the engine's moves (MoveSearch, through
-   MovesView), in the order it took them, each numbered for the eye (the list says its place to a screen
-   reader), with why it helps (MoveReasons, the engine's figures before and after it), what it adds on top
-   of the ones above it, what the pocket holds after it, and a link to the card or the tab where it acts
-   (MoveLinks), while that card is on the map; their total is the gain above the list, said once. « Apply » sets the river's values to
-   the move's; the plan the moves are from stays as it was, and the moves are applied from here only: the
-   split's curve shows the best pay, but moves no pay by itself. A lever a move adds to the plan is chosen on
-   the map (Plan), for when the viewer goes back to it, and its link appears. « In the
-   river » is by value, so under the pay's move a note names the river's own best pay, the split card's,
-   whenever the river at that pay is not at its best (PayNote), from the search the page hands the tab,
-   which it runs for the river anyway. The page
-   finds the moves, once per plan and date (MovesSource), the search running the split at every move, and
-   the tab draws what it found; which ones the river holds is read at each change. The page searches only
-   once it has painted, so until then the tab says from which plan it is looking for them, and nothing
-   else; no live region says it, nor that they are found. While Netto cannot run that plan, the tab says
-   why, and nothing else. *@
+@* The Optimisation tab: what Netto would retune in the plan on screen to leave more in the pocket, a tab of
+   its own beside the river rather than a card in it, since it is no module of the river. The moves are
+   measured from the plan on screen, the river the band runs, and retune only the levers already in it, with
+   the facts it holds: none adds a lever or asks a question (MoveSearch, RiverInputs.FindMoves). One page of
+   moves: first what the plan leaves in the pocket, what it leaves with every move and the difference, with
+   « Apply all »; then the engine's moves, in the order it took them, each numbered for the eye (the list says
+   its place to a screen reader), with why it helps (MoveReasons, the engine's figures before and after it),
+   what it adds on top of the ones above it, what the pocket holds after it, and a link to the card or the tab
+   where it acts (MoveLinks), while that card is on the map; their total is the gain above the list, said
+   once. « Apply » sets the river's values to the move's, « Apply all » every move's: nothing is applied
+   unasked, and the split's curve shows the best pay but moves no pay by itself. Applied, the river is a plan
+   the moves were not searched for, so the tab says it looks for them again, and the focus goes to that line;
+   no live region says it, nor that they are found. Under the pay's move a note names the river's own best
+   pay, the split card's, whenever the river at that pay is not at its best (PayNote), from the search the
+   page hands the tab. The page finds the moves, once per plan and date (MovesSource), after it has painted;
+   until then the tab says it is looking for them, and nothing else. While Netto cannot run the plan, the tab
+   says why, and nothing else. *@
 <TabHead Title="@L["Title"]" />
 <div class="moves">
     @if (_view.State is MovesState.Moves or MovesState.AlreadyBest)
     {
         <dl class="moves__figures">
             <div class="moves__pair">
-                @if (_view.From.IsToday)
-                {
-                    @* The star the Plans panel marks Today with, drawn for the eye: the words say it. *@
-                    <dt class="moves__term"><MudIcon Icon="@Icons.Material.Rounded.Star" Size="Size.Small" Class="moves__star" aria-hidden="true" /> @L[OptimisationTabText.FromInPocket(_view.From)]</dt>
-                }
-                else
-                {
-                    <dt class="moves__term">@L[OptimisationTabText.FromInPocket(_view.From)]</dt>
-                }
+                <dt class="moves__term">@L[OptimisationTabText.FromInPocket]</dt>
                 <dd class="moves__figure">@Formats.Euros(_view.FromInPocket)</dd>
             </div>
             @if (_view.State == MovesState.Moves)
@@ -52,21 +36,23 @@
                     <dd class="moves__figure">@Formats.Euros(_view.PlanInPocket)</dd>
                 </div>
                 <div class="moves__pair">
-                    <dt class="moves__term">@L[OptimisationTabText.MoreThanFrom(_view.From)]</dt>
+                    <dt class="moves__term">@L[OptimisationTabText.MoreThanFrom]</dt>
                     <dd class="moves__figure moves__figure--gain">@Formats.Addition(_view.Total)</dd>
                 </div>
             }
         </dl>
+        @if (_view.State == MovesState.Moves)
+        {
+            <div class="moves__all">
+                <MudButton Variant="Variant.Outlined" Size="Size.Small" Class="moves__apply" OnClick="ApplyAll">@L[OptimisationTabText.ApplyAll]</MudButton>
+            </div>
+        }
         @* What the figures are measured by and what they leave out, beside them and in sight: a visitor needs
-           it to read the first recommendation. It names no plan, so it is the same from Today and from the
-           plan in the river (ObjectiveNote, which the bar's gain says in a bubble). *@
+           it to read the first recommendation (ObjectiveNote, which the bar's gain says in a bubble). *@
         <p class="moves__objective"><ObjectiveNote /></p>
     }
-    <p class="moves__state">@L[OptimisationTabText.State(_view.State, _view.From), Name]</p>
-    @if (_differences is not null)
-    {
-        <p class="moves__state">@RiverNote(_differences)</p>
-    }
+    @* Where the focus goes once a move is applied: the line that then says the moves are looked for again. *@
+    <p class="moves__state" tabindex="-1" @ref="_state">@L[OptimisationTabText.State(_view.State)]</p>
     @if (_view.State == MovesState.Moves)
     {
         @* A list styled without its markers loses its role in some browsers: it is said again. *@
@@ -94,16 +80,8 @@
                         <span class="moves__after">@L[OptimisationTabText.After, Formats.Euros(_view.InPocketAfter(index))]</span>
                     </div>
                     <div class="moves__action">
-                        @if (_view.Applied(move, Inputs))
-                        {
-                            @* The focus goes here once applied, so the note, which a screen reader would not meet, describes it. *@
-                            <span class="moves__applied" tabindex="-1" @ref="_applied[index]" aria-describedby="@(bestPay is null ? null : "moves-pay-note")">@L["Applied"]</span>
-                        }
-                        else
-                        {
-                            <MudButton Variant="Variant.Outlined" Size="Size.Small" Class="moves__apply" OnClick="@(() => Apply(move, index))"
-                                       aria-label="@L["ApplyLabel", What(move)]">@L["Apply"]</MudButton>
-                        }
+                        <MudButton Variant="Variant.Outlined" Size="Size.Small" Class="moves__apply" OnClick="@(() => Apply(move))"
+                                   aria-label="@L["ApplyLabel", What(move)]">@L["Apply"]</MudButton>
                     </div>
                 </li>
             }
@@ -112,25 +90,21 @@
 </div>
 
 @code {
-    // The plan the moves are measured from (MovesSource).
-    [Parameter, EditorRequired]
-    public MovesBaseline From { get; set; } = default!;
-
-    // Whether the page is still to search the moves from that plan, which it does once it has painted
-    // (MovesSource): Found is then nothing yet.
+    // Whether the page is still to search the moves from the plan on screen, which it does once it has
+    // painted (MovesSource): Found is then nothing yet.
     [Parameter]
     public bool Searching { get; set; }
 
-    // What the page's search found for that plan on its date (MovesSource), none for a plan that starts at
-    // the pay.
+    // What the page's search found for the plan on screen on its date (MovesSource), none for a plan that
+    // starts at the pay.
     [Parameter]
     public (MovePlan? Value, Refusal? Error)? Found { get; set; }
 
-    // The river as it is, to tell the moves it holds and the cards on its tab.
+    // The plan on screen, the moves are measured from and applied to.
     [Parameter, EditorRequired]
     public RiverInputs Inputs { get; set; } = default!;
 
-    // The river with a move applied.
+    // The river with a move applied, or every move.
     [Parameter]
     public EventCallback<RiverInputs> InputsChanged { get; set; }
 
@@ -142,58 +116,43 @@
     public SplitSearchResult? Search { get; set; }
 
     private MovesView _view = default!;
-    private IReadOnlyList<RiverDifference>? _differences;
-    private readonly Dictionary<int, ElementReference> _applied = [];
-    private int? _focusApplied;
+    private ElementReference _state;
+    private bool _focusState;
 
-    // The view of what was found, or that the moves are being looked for, which searches nothing; and what
-    // the river holds that the plan the moves are from does not, read once here since it runs the search's
-    // scenario of both.
-    protected override void OnParametersSet()
-    {
-        _view = Searching ? MovesView.Searching(From) : MovesView.Of(From, Found);
-        _differences = _view.Differences(Inputs);
-    }
-
-    // The note on a river that holds what the plan the moves are from does not: the cards that differ, three
-    // at most, or the one text of the plan in the river, which names none (OptimisationTabText).
-    private string RiverNote(IReadOnlyList<RiverDifference> differences) =>
-        L[OptimisationTabText.RiverChanged(_view.From, differences.Count),
-            OptimisationTabText.RiverChangedArguments([.. OptimisationTabText.Shown(differences).Select(Named)], differences.Count)];
-
-    // A card whose facts differ, named as the note words it: its title, with whether the river or Today
-    // holds the lever the other does not (OptimisationTabText).
-    private string Named(RiverDifference difference) =>
-        L[OptimisationTabText.Difference(difference.Kind), L[OptimisationTabText.Module(difference.Module)].Value].Value;
-
-    // The saved plan the moves are from, named in the texts that name it.
-    private string Name => _view.From.Name ?? "";
+    // The view of what was found, or that the moves are being looked for, which searches nothing.
+    protected override void OnParametersSet() =>
+        _view = Searching ? MovesView.Searching(Inputs) : MovesView.Of(Inputs, Found);
 
     // What the move changes, in words (OptimisationTabText); a move it has none for is refused.
     private string What(PlannedMove move) =>
         L[OptimisationTabText.Move(move.Move),
-            OptimisationTabText.MoveArguments(move.Move, _view.FromPay, _view.From.Plan.Copyright.CreativeShare.Value ?? 0m)];
+            OptimisationTabText.MoveArguments(move.Move, _view.FromPay, _view.From.Copyright.CreativeShare.Value ?? 0m)];
 
     // Why the move helps, its sentences one after the other, every amount in euros.
     private string Why(PlannedMove move) =>
         string.Join(" ", MoveReasons.Of(move).Select(reason =>
             L[OptimisationTabText.Why(reason.Kind), [.. reason.Amounts.Select(amount => (object)Formats.Euros(amount))]].Value));
 
-    // Apply goes with the move applied, so the focus goes to what replaces it, « In the river ». A lever
-    // the move adds to the plan is chosen on the map (Plan), so the viewer sees what the move put there
-    // once back on the Plan tab.
-    private async Task Apply(PlannedMove move, int index)
+    // Applied, the list goes until the moves are found for the plan it leaves, so the focus goes to the line
+    // saying they are looked for.
+    private async Task Apply(PlannedMove move)
     {
-        _focusApplied = index;
+        _focusState = true;
         await InputsChanged.InvokeAsync(_view.Apply(move, Inputs));
+    }
+
+    private async Task ApplyAll()
+    {
+        _focusState = true;
+        await InputsChanged.InvokeAsync(_view.ApplyAll(Inputs));
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (_focusApplied is { } index && _applied.TryGetValue(index, out var applied))
+        if (_focusState)
         {
-            _focusApplied = null;
-            await applied.FocusAsync();
+            _focusState = false;
+            await _state.FocusAsync();
         }
     }
 }

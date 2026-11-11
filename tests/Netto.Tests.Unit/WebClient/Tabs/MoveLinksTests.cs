@@ -59,7 +59,7 @@ public class MoveLinksTests
         Text(MoveLinks.To(move, EveryLever).ShouldNotBeNull()).ShouldBe($"See it on {title.ShouldNotBeNull()}");
     }
 
-    // A lever out of the plan has no card on the Plan tab: its move links nowhere until « Apply » adds it.
+    // A lever out of the plan has no card on the Plan tab: its move links nowhere.
     public static TheoryData<Move> Levers => new()
     {
         new EcoVouchersMove(250m), new SportCultureVouchersMove(100m), new RentMove(1_380m), new CopyrightFollowsPayMove(),
@@ -70,17 +70,6 @@ public class MoveLinksTests
     public void To_leverOutOfThePlan_linksNothing(Move move)
     {
         MoveLinks.To(move, RiverInputs.Example).ShouldBeNull();
-    }
-
-    // Applying the move adds its lever, and its card, to the plan: the link appears.
-    [Theory]
-    [MemberData(nameof(Levers))]
-    public void To_leverMoveApplied_linksItsCard(Move move)
-    {
-        var today = RiverInputs.Example.WithCadastralIncome(1_200m).WithShareLet(0.12m).WithCreativeShare(0.75m);
-        var applied = MovesView.Of(today, On21December).Apply(new PlannedMove(move, 1m, Year(today), Year(today)), RiverInputs.Example);
-
-        MoveLinks.To(move, applied).ShouldNotBeNull().Tab.ShouldBe(PlanTab.Plan);
     }
 
     // A river that starts at the pay has no split: the pay's move links nowhere.
@@ -117,6 +106,4 @@ public class MoveLinksTests
 
     private static string? Text(MoveLink link) =>
         ResxText.For<OptimisationTab>().Get(OptimisationTabText.Link(link));
-
-    private static YearResult Year(RiverInputs river) => river.Run().Year.ShouldNotBeNull();
 }

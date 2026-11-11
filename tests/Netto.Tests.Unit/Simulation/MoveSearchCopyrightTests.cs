@@ -14,6 +14,18 @@ public class MoveSearchCopyrightTests
 
     private static readonly IReadOnlyList<IMoveFinder> FollowOnly = [new CopyrightFollowsPayFinder()];
 
+    // The royalty in the plan, so its finder retunes it.
+    private static readonly IReadOnlySet<LeverKind> EveryLever = Enum.GetValues<LeverKind>().ToHashSet();
+
+    // The share given with the royalty out of the plan: letting it follow the pay would add it, never a move.
+    [Fact]
+    public void Run_royaltyOutOfThePlan_proposesNoRoyalty()
+    {
+        var plan = MoveSearch.Run(Today, new DateOnly(2026, 10, 22), new HashSet<LeverKind>()).Value.ShouldNotBeNull();
+
+        plan.Moves.Select(move => move.Move).OfType<CopyrightFollowsPayMove>().ShouldBeEmpty();
+    }
+
     // A royalty within its limits beats leaving the money in the company (CopyrightViewTests).
     [Fact]
     public void Run_creativeShareGiven_gainsFromTheRoyalty()
@@ -34,7 +46,7 @@ public class MoveSearchCopyrightTests
     [Fact]
     public void Run_everyKind_includesLettingTheRoyaltyFollowThePay()
     {
-        var plan = MoveSearch.Run(Today, new DateOnly(2026, 10, 22)).Value.ShouldNotBeNull();
+        var plan = MoveSearch.Run(Today, new DateOnly(2026, 10, 22), EveryLever).Value.ShouldNotBeNull();
 
         plan.Moves.ShouldContain(planned => planned.Move is CopyrightFollowsPayMove);
     }
@@ -42,7 +54,7 @@ public class MoveSearchCopyrightTests
     [Fact]
     public void Run_everyKind_sumsItsGainsToThePlanLessToday()
     {
-        var plan = MoveSearch.Run(Today, new DateOnly(2026, 10, 22)).Value.ShouldNotBeNull();
+        var plan = MoveSearch.Run(Today, new DateOnly(2026, 10, 22), EveryLever).Value.ShouldNotBeNull();
 
         plan.Moves.Sum(move => move.Gain).ShouldBe(plan.PlanInPocket - plan.TodayInPocket);
     }
@@ -52,7 +64,7 @@ public class MoveSearchCopyrightTests
     [Fact]
     public void Run_everyKind_endsWithTheRoyaltyAtWhatARulingAcceptsAtThePlansPay()
     {
-        var plan = MoveSearch.Run(Today, new DateOnly(2026, 10, 22)).Value.ShouldNotBeNull();
+        var plan = MoveSearch.Run(Today, new DateOnly(2026, 10, 22), EveryLever).Value.ShouldNotBeNull();
         var final = Final(Today, plan);
 
         YearSimulation.Run(final).Value.ShouldNotBeNull().Copyright.Royalty

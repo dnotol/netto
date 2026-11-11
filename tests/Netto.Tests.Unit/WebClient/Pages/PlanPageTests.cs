@@ -192,37 +192,25 @@ public class PlanPageTests
         (optimisation.Badge, optimisation.Spoken).ShouldBe(("…", "looking for moves"));
     }
 
-    // On the Optimisation tab, the head says which plan the moves are from, here the example the page opens
-    // on, and the line that opens them once found says the page is looking for them, with no move yet.
+    // On the Optimisation tab, the line that opens the moves once found says the page is looking for them
+    // from the plan on screen, with no move yet.
     [Fact]
-    public async Task Plan_optimisationTabWithoutTodayFirstDrawn_looksForTheMovesFromThePlanInTheRiver()
+    public async Task Plan_optimisationTabFirstDrawn_looksForTheMovesFromThePlanOnScreen()
     {
         var html = WebUtility.HtmlDecode(await RenderPlanAsync(new Folds(new BrowserStorage()), "optimisation"));
 
         (Paragraph(html, "moves__state"), Regex.Count(html, "<li class=\"moves__move\""))
-            .ShouldBe(("Looking for the moves from the plan in your river, as you opened or saved it…", 0));
+            .ShouldBe(("Looking for the moves from the plan on screen…", 0));
     }
 
-    // Today deleted, the river on the plan it was opened from: the moves are from that plan, by its name.
+    // A plan starred Today changes nothing of it: Today feeds the band's gain alone.
     [Fact]
-    public async Task Plan_optimisationTabWithAnOpenedPlanAndNoToday_namesIt()
-    {
-        var opened = RiverInputs.Example.WithDirectorPay(40_000m);
-
-        var html = WebUtility.HtmlDecode(await RenderPlanAsync(new Folds(new BrowserStorage()), "optimisation", opened,
-            saved: [RiverInputs.Example, opened], withoutToday: true));
-
-        Paragraph(html, "moves__state").ShouldBe("Looking for the moves from « Plan 2 », as you opened or saved it…");
-    }
-
-    // Once a plan is starred Today, the moves are from it, as the tab says.
-    [Fact]
-    public async Task Plan_optimisationTabWithToday_saysToday()
+    public async Task Plan_optimisationTabWithToday_looksForTheMovesFromThePlanOnScreenStill()
     {
         var html = WebUtility.HtmlDecode(await RenderPlanAsync(new Folds(new BrowserStorage()), "optimisation", RiverInputs.Example.WithDirectorPay(40_000m),
             today: RiverInputs.Example));
 
-        Paragraph(html, "moves__state").ShouldBe("Looking for the moves from Today, your current setup…");
+        Paragraph(html, "moves__state").ShouldBe("Looking for the moves from the plan on screen…");
     }
 
     // That the page looks for the moves is said in no live region: the bar's says nothing yet, the notice of

@@ -93,9 +93,9 @@ public class PlanTakenOutNoticeTests
         page.Errors.ShouldBeEmpty();
     }
 
-    // With no plan starred Today, the moves are measured from the plan opened, under its name.
+    // A plan opened is the plan on screen, which the moves are measured from.
     [Fact]
-    public async Task Plan_planOpenedWithNoTodayStarred_measuresTheMovesFromIt()
+    public async Task Plan_planOpened_measuresTheMovesFromIt()
     {
         var storage = SavedWithoutToday(RiverInputs.Example.WithDirectorPay(40_000m), RiverInputs.Example, WithVouchers);
         await using var page = At(storage, "optimisation");
@@ -106,7 +106,7 @@ public class PlanTakenOutNoticeTests
 
         var tab = await page.FindAsync<OptimisationTab>();
         page.ShouldSatisfyAllConditions(
-            () => tab.From.ShouldBe(new MovesBaseline(Inputs(storage, "Plan 2"), IsToday: false, "Plan 2")),
+            () => tab.Inputs.ShouldBe(Inputs(storage, "Plan 2")),
             () => page.Errors.ShouldBeEmpty());
     }
 

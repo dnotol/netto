@@ -1,13 +1,13 @@
-/* ::deep reaches the MudButtons and the star's MudIcon, which carry no scope attribute of their own. */
+/* ::deep reaches the MudButtons, which carry no scope attribute of their own. */
 
-/* The tab's body under its head: the three figures, what Today leaves to move, and the moves. */
+/* The tab's body under its head: the three figures, Apply all, what they are measured by, and the moves. */
 .moves {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: 1rem;
 }
 
-/* Today's pocket, the plan's and the difference side by side, raised off the page as the moves are;
+/* The plan's pocket, the optimised plan's and the difference side by side, raised off the page as the moves are;
    one under the other on a phone. The difference is the key figure: gold. */
 .moves__figures {
     display: grid;
@@ -31,15 +31,6 @@
     color: var(--netto-text-muted);
     font-size: 0.8rem;
     font-weight: 500;
-}
-
-/* The Plans panel's star for Today, before the words, muted: it marks the plan, it is no accent. */
-.moves__term ::deep .moves__star {
-    width: 1rem;
-    height: 1rem;
-    margin-right: 0.2rem;
-    color: var(--netto-text-muted);
-    vertical-align: -0.15em;
 }
 
 .moves__figure {
@@ -176,20 +167,20 @@
     align-self: center;
 }
 
-.moves__applied {
-    color: var(--netto-text-muted);
-    font-size: 0.85rem;
-    white-space: nowrap;
+/* Apply all, under the figures it lands on, at the start of its line. */
+.moves__all {
+    justify-self: start;
 }
 
-.moves__move ::deep .moves__apply {
+/* Apply, on each move and for all of them. */
+.moves ::deep .moves__apply {
     border-color: var(--netto-edge);
     border-radius: 999px;
     color: var(--netto-text);
 }
 
-    .moves__move ::deep .moves__apply:hover,
-    .moves__move ::deep .moves__apply:focus-visible {
+    .moves ::deep .moves__apply:hover,
+    .moves ::deep .moves__apply:focus-visible {
         border-color: var(--netto-gold);
     }
 

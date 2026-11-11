@@ -19,13 +19,13 @@ public class UnknownMoveTests
     }
 
     [Fact]
-    public void Applied_aMoveTheRiverCannotApply_isRefusedNotShownAsNotYetApplied()
+    public void Apply_aMoveTheRiverCannotApply_isRefusedNotAppliedAsNothing()
     {
         var river = RiverInputs.Example;
         var year = river.Run().Year.ShouldNotBeNull();
         var unknown = new PlannedMove(new UnknownMove(), 1m, year, year);
 
-        Should.Throw<ArgumentOutOfRangeException>(() => MovesView.Of(river, On21December).Applied(unknown, river));
+        Should.Throw<ArgumentOutOfRangeException>(() => MovesView.Of(river, On21December).Apply(unknown, river));
     }
 
     [Fact]

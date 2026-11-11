@@ -16,16 +16,16 @@
     <value>Optimisation</value>
   </data>
   <data name="State_StartsAtPay" xml:space="preserve">
-    <value>Today starts at your pay: open it from Plans and enter its company's year to see the moves.</value>
+    <value>Your plan starts at your pay: enter its company's year to see the moves.</value>
   </data>
   <data name="State_Refused" xml:space="preserve">
-    <value>An amount of Today is refused: open it from Plans and correct it to see the moves.</value>
+    <value>An amount of your plan is refused: correct it to see the moves.</value>
   </data>
   <data name="State_AlreadyBest" xml:space="preserve">
-    <value>Today is already the best Netto finds.</value>
+    <value>Your plan is already the best Netto finds with the facts you gave.</value>
   </data>
   <data name="State_Moves" xml:space="preserve">
-    <value>From Today, your current setup, each move on top of the ones above it:</value>
+    <value>Measured from the plan on screen. Netto only retunes the levers already in your plan, with the facts you gave; each move on top of the ones above it:</value>
   </data>
   <data name="Move_Pay" xml:space="preserve">
     <value>Pay yourself {0} instead of {1}</value>
@@ -53,9 +53,6 @@
   </data>
   <data name="ApplyLabel" xml:space="preserve">
     <value>Apply: {0}</value>
-  </data>
-  <data name="Applied" xml:space="preserve">
-    <value>In the river</value>
   </data>
   <data name="BestPay" xml:space="preserve">
     <value>For your river as it stands, the best pay is {0}, not this one.</value>
@@ -117,103 +114,22 @@
   <data name="LinkLabel" xml:space="preserve">
     <value>{0}: {1}</value>
   </data>
-  <data name="Figure_Today" xml:space="preserve">
-    <value>Today, in your pocket</value>
-  </data>
   <data name="Figure_Plan" xml:space="preserve">
-    <value>With every move below</value>
+    <value>Optimised</value>
   </data>
   <data name="Figure_Gain" xml:space="preserve">
-    <value>More than Today</value>
+    <value>Certain gain</value>
   </data>
   <data name="After" xml:space="preserve">
     <value>{0} in your pocket after it</value>
   </data>
-  <data name="State_Moves_Plan" xml:space="preserve">
-    <value>From the plan in your river, as you opened or saved it, each move on top of the ones above it:</value>
-  </data>
-  <data name="State_Moves_PlanNamed" xml:space="preserve">
-    <value>From « {0} », as you opened or saved it, each move on top of the ones above it:</value>
-  </data>
-  <data name="State_AlreadyBest_Plan" xml:space="preserve">
-    <value>The plan in your river is already the best Netto finds.</value>
-  </data>
-  <data name="State_StartsAtPay_Plan" xml:space="preserve">
-    <value>The plan in your river starts at your pay: enter its company's year in the river and save it to see the moves.</value>
-  </data>
-  <data name="State_Refused_Plan" xml:space="preserve">
-    <value>An amount of the plan in your river is refused: correct it in the river and save it to see the moves.</value>
-  </data>
-  <data name="Figure_Today_Plan" xml:space="preserve">
-    <value>This plan, in your pocket</value>
-  </data>
-  <data name="Figure_Gain_Plan" xml:space="preserve">
-    <value>More than this plan</value>
-  </data>
-  <data name="RiverChanged_One" xml:space="preserve">
-    <value>Your river differs from Today in {0}, beyond what the moves set: the moves are still found for Today. Save the river and star it as Today to find them for it.</value>
-  </data>
-  <data name="RiverChanged_Two" xml:space="preserve">
-    <value>Your river differs from Today in {0} and {1}, beyond what the moves set: the moves are still found for Today. Save the river and star it as Today to find them for it.</value>
-  </data>
-  <data name="RiverChanged_Three" xml:space="preserve">
-    <value>Your river differs from Today in {0}, {1} and {2}, beyond what the moves set: the moves are still found for Today. Save the river and star it as Today to find them for it.</value>
-  </data>
-  <data name="RiverChanged_More" xml:space="preserve">
-    <value>Your river differs from Today in {0}, {1} and {2} more, beyond what the moves set: the moves are still found for Today. Save the river and star it as Today to find them for it.</value>
-  </data>
-  <data name="Difference_Changed" xml:space="preserve">
-    <value>{0}</value>
-  </data>
-  <data name="Difference_Added" xml:space="preserve">
-    <value>{0} (not in Today)</value>
-  </data>
-  <data name="Difference_LeftOut" xml:space="preserve">
-    <value>{0} (not in your river)</value>
-  </data>
-  <data name="Module_River" xml:space="preserve">
-    <value>Income year</value>
-  </data>
-  <data name="Module_CompanyYear" xml:space="preserve">
-    <value>Company year</value>
-  </data>
-  <data name="Module_Vouchers" xml:space="preserve">
-    <value>Vouchers</value>
-  </data>
-  <data name="Module_Allowances" xml:space="preserve">
-    <value>Expense allowances</value>
-  </data>
-  <data name="Module_Rent" xml:space="preserve">
-    <value>Home office rent</value>
-  </data>
-  <data name="Module_Car" xml:space="preserve">
-    <value>Company car</value>
-  </data>
-  <data name="Module_Copyright" xml:space="preserve">
-    <value>Copyright royalty</value>
-  </data>
-  <data name="Module_DirectorPay" xml:space="preserve">
-    <value>Director pay</value>
-  </data>
-  <data name="Module_Household" xml:space="preserve">
-    <value>Household</value>
-  </data>
-  <data name="Module_CorporateTax" xml:space="preserve">
-    <value>Corporate tax</value>
-  </data>
-  <data name="Module_Dividend" xml:space="preserve">
-    <value>Dividend</value>
-  </data>
-  <data name="RiverChanged_Plan" xml:space="preserve">
-    <value>The river has changed since you opened or saved this plan: save it to measure the moves from it.</value>
-  </data>
   <data name="State_Searching" xml:space="preserve">
-    <value>Looking for the moves from Today, your current setup…</value>
+    <value>Looking for the moves from the plan on screen…</value>
   </data>
-  <data name="State_Searching_Plan" xml:space="preserve">
-    <value>Looking for the moves from the plan in your river, as you opened or saved it…</value>
+  <data name="Figure_From" xml:space="preserve">
+    <value>Your plan</value>
   </data>
-  <data name="State_Searching_PlanNamed" xml:space="preserve">
-    <value>Looking for the moves from « {0} », as you opened or saved it…</value>
+  <data name="ApplyAll" xml:space="preserve">
+    <value>Apply all</value>
   </data>
 </root>

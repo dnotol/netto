@@ -1263,57 +1263,6 @@ public class RiverInputsTests
         inputs.SameBesidesPay(inputs.WithCarCosts(9_000m)).ShouldBeFalse();
     }
 
-    // The move search keeps the home's facts while Rent is out of the plan, with no rent: the year it
-    // starts from is Run's.
-    [Fact]
-    public void MoveScenario_rentFactsOutOfThePlan_runsTheSameYear()
-    {
-        var inputs = RiverInputs.Example.WithCadastralIncome(1_200m).WithShareLet(0.12m).WithRent(1_380m);
-
-        var scenario = inputs.MoveScenario();
-
-        (scenario.Rent, YearSimulation.Run(scenario).Value?.NetInPocket).ShouldBe((new HomeOfficeRent(1_200m, 0.12m, 0m), inputs.Run().Year?.NetInPocket));
-    }
-
-    // The same for the royalty: its share and statuses kept while it is out of the plan, the royalty at
-    // nothing, so the search can propose it.
-    [Fact]
-    public void MoveScenario_royaltyOutOfThePlan_keepsItsShareAndStatusesAndRunsTheSameYear()
-    {
-        var inputs = RiverInputs.Example.WithRoyalty(10_000m).WithCreativeShare(0.75m).WithAttestation(true);
-
-        var scenario = inputs.MoveScenario();
-
-        (scenario.Copyright, YearSimulation.Run(scenario).Value?.NetInPocket)
-            .ShouldBe((new Netto.Core.Copyright.CopyrightRoyalty(0m) { CreativeShare = 0.75m, HoldsAttestation = true }, inputs.Run().Year?.NetInPocket));
-    }
-
-    // A royalty that follows the pay, out of the plan, is fixed at nothing there, never following, so
-    // the search can propose letting it follow.
-    [Fact]
-    public void MoveScenario_followingRoyaltyOutOfThePlan_isFixedAtNothing()
-    {
-        RiverInputs.Example.WithCreativeShare(0.75m).MoveScenario().Copyright
-            .ShouldBe(new Netto.Core.Copyright.CopyrightRoyalty(0m) { CreativeShare = 0.75m });
-    }
-
-    // Facts the engine refuses (a negative cadastral income, a share let beyond the dwelling) are kept in
-    // the river while Rent is out, but the search never sees them: no card shows their refusal, so the
-    // plan must not be refused for them. In the plan, Run still refuses them on the card.
-    [Theory]
-    [InlineData(-1, 0.12)]
-    [InlineData(1_200, 1.5)]
-    [InlineData(1_200, -0.01)]
-    public void MoveScenario_rentFactsTheEngineRefusesOutOfThePlan_dropsThem(int cadastralIncome, double shareLet)
-    {
-        var inputs = RiverInputs.Example.WithCadastralIncome(cadastralIncome).WithShareLet((decimal)shareLet);
-
-        var scenario = inputs.MoveScenario();
-
-        (scenario.Rent, YearSimulation.Run(scenario).Error, inputs.Rent.CadastralIncome.Value, inputs.Rent.ShareLet.Value)
-            .ShouldBe((HomeOfficeRent.None, null, cadastralIncome, (decimal)shareLet));
-    }
-
     [Theory]
     [InlineData(-1, 0.12, "cadastral_income_negative")]
     [InlineData(1_200, 1.5, "share_let_out_of_range")]
@@ -1322,19 +1271,6 @@ public class RiverInputsTests
         var inputs = RiverInputs.Example.WithCadastralIncome(cadastralIncome).WithShareLet((decimal)shareLet).AddToPlan(OptionalModule.Rent);
 
         (inputs.Run().Error?.Key, inputs.MoveScenario().Rent).ShouldBe((key, inputs.Rent.Values));
-    }
-
-    [Theory]
-    [InlineData(1.5)]
-    [InlineData(-0.01)]
-    public void MoveScenario_creativeShareTheEngineRefusesOutOfThePlan_dropsItAndKeepsTheStatuses(double share)
-    {
-        var inputs = RiverInputs.Example.WithCreativeShare((decimal)share).WithAttestation(true);
-
-        var scenario = inputs.MoveScenario();
-
-        (scenario.Copyright, YearSimulation.Run(scenario).Error, inputs.Copyright.CreativeShare.Value)
-            .ShouldBe((new Netto.Core.Copyright.CopyrightRoyalty(0m) { HoldsAttestation = true }, null, (decimal)share));
     }
 
     [Fact]
@@ -1355,4 +1291,65 @@ public class RiverInputsTests
 
         inputs.FindMoves(new DateOnly(2026, 10, 22))!.Value.Error.ShouldBeNull();
     }
+
+    // Each optional module in the plan is its lever for the move search; the household is no lever.
+    [Theory]
+    [InlineData(OptionalModule.Vouchers, LeverKind.Vouchers)]
+    [InlineData(OptionalModule.Allowances, LeverKind.Allowances)]
+    [InlineData(OptionalModule.Rent, LeverKind.Rent)]
+    [InlineData(OptionalModule.Car, LeverKind.Car)]
+    [InlineData(OptionalModule.Copyright, LeverKind.Copyright)]
+    public void LeversInPlan_moduleInThePlan_isItsLever(OptionalModule module, LeverKind lever)
+    {
+        RiverInputs.Example.AddToPlan(module).LeversInPlan.ShouldBe(new HashSet<LeverKind> { lever });
+    }
+
+    [Fact]
+    public void LeversInPlan_householdAlone_isNone()
+    {
+        RiverInputs.Example.AddToPlan(OptionalModule.Household).LeversInPlan.ShouldBeEmpty();
+    }
+
+    // The example with a royalty following the pay at a 25% creative share, unsaved: the moves start from
+    // what the river leaves, 62,624.32, the band's figure, and retune the pay and the company's advance
+    // payment by 21 December, 3,309.67 in all; vouchers out of the plan are never proposed.
+    [Fact]
+    public void FindMoves_royaltyFollowingThePay_startsFromTheRiversPocketAndRetunesThePayAndThePayment()
+    {
+        var river = WithRoyaltyFollowingAQuarter(RiverInputs.Example);
+
+        var plan = river.FindMoves(On11November)!.Value.Value.ShouldNotBeNull();
+
+        plan.ShouldSatisfyAllConditions(
+            () => (plan.TodayInPocket, river.Run().Year?.NetInPocket).ShouldBe((62_624.32m, 62_624.32m)),
+            () => plan.Moves.Select(move => (move.Move, move.Gain)).ShouldBe([
+                (new PayMove(20_807m), 2_233.03m), (new CompanyAdvancePaymentMove(3, new DateOnly(2026, 12, 21), 29_177m), 1_076.64m),
+            ]),
+            () => (plan.Gain, plan.PlanInPocket).ShouldBe((3_309.67m, 65_933.99m)));
+    }
+
+    // Vouchers in the plan, at none: raising them to their maximum retunes them, 45 and 18 more.
+    [Fact]
+    public void FindMoves_vouchersInThePlan_raisesEachToItsMaximum()
+    {
+        var plan = WithRoyaltyFollowingAQuarter(RiverInputs.Example).AddToPlan(OptionalModule.Vouchers).FindMoves(On11November)!.Value.Value.ShouldNotBeNull();
+
+        plan.Moves.Where(move => move.Move is EcoVouchersMove or SportCultureVouchersMove).Select(move => (move.Move, move.Gain))
+            .ShouldBe([(new EcoVouchersMove(250m), 45.00m), (new SportCultureVouchersMove(100m), 18.00m)], ignoreOrder: true);
+    }
+
+    // The home's facts given while Rent is out, or a creative share while the royalty is: no move adds them.
+    [Fact]
+    public void FindMoves_factsOfLeversOutOfThePlan_proposesNoMoveAddingThem()
+    {
+        var river = RiverInputs.Example.WithCadastralIncome(1_200m).WithShareLet(0.12m).WithCreativeShare(0.75m);
+
+        river.FindMoves(On11November)!.Value.Value.ShouldNotBeNull().Moves.Select(move => move.Move.GetType())
+            .ShouldBe([typeof(PayMove), typeof(CompanyAdvancePaymentMove)]);
+    }
+
+    private static readonly DateOnly On11November = new(2026, 11, 11);
+
+    private static RiverInputs WithRoyaltyFollowingAQuarter(RiverInputs river) =>
+        river.AddToPlan(OptionalModule.Copyright).WithCreativeShare(0.25m).WithRoyaltyFollowingPay();
 }

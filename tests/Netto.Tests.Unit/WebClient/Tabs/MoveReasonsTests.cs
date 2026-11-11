@@ -16,6 +16,12 @@ public class MoveReasonsTests
 
     private static readonly RiverInputs Creator = RiverInputs.Example.WithCreativeShare(0.75m).WithAttestation(true);
 
+    // The creator's royalty in the plan, fixed at nothing: the moves retune it to follow the pay.
+    private static readonly RiverInputs CreatorWithAFixedRoyalty = Creator.AddToPlan(OptionalModule.Copyright).WithRoyalty(0m);
+
+    // The creator's royalty in the plan, following the pay.
+    private static readonly RiverInputs CreatorFollowing = Creator.AddToPlan(OptionalModule.Copyright).WithRoyaltyFollowingPay();
+
     // From 50,000 to 20,799: the dividend takes what the pay leaves.
     [Fact]
     public void Of_payMove_saysThePayAndTheDividendPaidOutBeforeAndAfter()
@@ -58,13 +64,12 @@ public class MoveReasonsTests
     [Fact]
     public void Of_payMoveWithTheRoyaltyFollowing_saysTheRoyaltyToo()
     {
-        var line = Line<PayMove>(Creator);
+        var line = Line<PayMove>(CreatorFollowing);
 
         var reason = MoveReasons.Of(line)[0];
 
-        var following = Creator.AddToPlan(OptionalModule.Copyright).WithRoyaltyFollowingPay();
-        var before = Year(following);
-        var after = Year(following.WithDirectorPay(((PayMove)line.Move).Pay));
+        var before = Year(CreatorFollowing);
+        var after = Year(CreatorFollowing.WithDirectorPay(((PayMove)line.Move).Pay));
         Said(reason).ShouldBe((MoveReasonKind.PayWithRoyalty, Amounts(
             before.DirectorPay.GrossPay, after.DirectorPay.GrossPay, before.Copyright.Royalty, after.Copyright.Royalty,
             before.Dividend.Dividend, after.Dividend.Dividend)));
@@ -125,7 +130,7 @@ public class MoveReasonsTests
     [Fact]
     public void Of_ecoVouchers_sayWhatReachesYouAndThatTheCompanyDeductsNone()
     {
-        var reason = MoveReasons.Of(Line<EcoVouchersMove>(RiverInputs.Example)).Single();
+        var reason = MoveReasons.Of(Line<EcoVouchersMove>(RiverInputs.Example.AddToPlan(OptionalModule.Vouchers))).Single();
 
         Said(reason).ShouldBe((MoveReasonKind.VouchersNotDeducted, Amounts(250m)));
     }
@@ -133,7 +138,7 @@ public class MoveReasonsTests
     [Fact]
     public void Of_sportCultureVouchers_sayWhatReachesYouAndThatTheCompanyDeductsNone()
     {
-        var reason = MoveReasons.Of(Line<SportCultureVouchersMove>(RiverInputs.Example)).Single();
+        var reason = MoveReasons.Of(Line<SportCultureVouchersMove>(RiverInputs.Example.AddToPlan(OptionalModule.Vouchers))).Single();
 
         Said(reason).ShouldBe((MoveReasonKind.VouchersNotDeducted, Amounts(100m)));
     }
@@ -152,12 +157,12 @@ public class MoveReasonsTests
         Said(reason).ShouldBe((MoveReasonKind.Vouchers, Amounts(250m, after.Vouchers.Deductible)));
     }
 
-    // The home's facts given, Rent out of Today's plan: the rent goes from nothing to the cap, 1,380, and
+    // The home's facts given, Rent in the plan at no rent: the rent goes from nothing to the cap, 1,380, and
     // what reaches the pocket of it is what is left once the tax it adds is paid.
     [Fact]
     public void Of_rent_saysTheRentAndWhatReachesYouOfItAfterItsTax()
     {
-        var line = Line<RentMove>(RiverInputs.Example.WithCadastralIncome(1_200m).WithShareLet(0.12m));
+        var line = Line<RentMove>(RiverInputs.Example.WithCadastralIncome(1_200m).WithShareLet(0.12m).AddToPlan(OptionalModule.Rent));
 
         var reason = MoveReasons.Of(line).Single();
 
@@ -168,14 +173,14 @@ public class MoveReasonsTests
     [Fact]
     public void Of_royaltyFollowingThePay_saysTheRoyaltyAndItsTaxApart()
     {
-        var reason = MoveReasons.Of(Line<CopyrightFollowsPayMove>(Creator)).Single();
+        var reason = MoveReasons.Of(Line<CopyrightFollowsPayMove>(CreatorWithAFixedRoyalty)).Single();
 
-        var following = Year(Creator.AddToPlan(OptionalModule.Copyright).WithRoyaltyFollowingPay());
+        var following = Year(CreatorFollowing);
         Said(reason).ShouldBe((MoveReasonKind.CopyrightFollowsPay,
             Amounts(0m, following.Copyright.Royalty, 0m, following.DirectorPay.TaxedApartTax.Total)));
     }
 
-    // The first line of that kind among Today's moves on 22 October.
+    // The first line of that kind among the plan's moves on 22 October.
     private static PlannedMove Line<TMove>(RiverInputs today) where TMove : Move =>
         MovesView.Of(today, On22October).Moves.First(move => move.Move is TMove);
 
