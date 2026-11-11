@@ -2,8 +2,8 @@
 type: adr
 title: The split is a node of the map named for the money it holds, not a card with inputs
 description: « To share » (« À partager ») keeps the split's place on the map with a read-only card; the pay is typed on the Director pay card; the pay curve and the best pay are in Optimise; no card of My plan suggests a payment.
-status: draft
-decision: proposed
+status: stable
+accepted_by: human:Johnny Amadeus
 decided: 2026-11-11
 tags: [site]
 sources:

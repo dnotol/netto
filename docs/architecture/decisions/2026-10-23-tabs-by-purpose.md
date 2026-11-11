@@ -2,7 +2,8 @@
 type: adr
 title: The plan page splits into tabs by purpose, each with its own address
 description: Plan, Optimisation, When to pay and Compare plans are PlanTab values under /plan/{Tab}, one page keeping the plan across them.
-status: stable
+status: deprecated
+superseded_by: /2026-11-11-three-views-one-question-each.md
 decided: 2026-10-23
 tags: [site]
 sources:

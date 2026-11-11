@@ -2,8 +2,8 @@
 type: adr
 title: The plan page has three views, each answering one question, and time is a lens of the first
 description: My plan, Optimise and Ideas (Mon plan, Optimiser, Pistes) are the PlanTab values; When to pay is the « by date » lens of My plan at /plan?by=date; Compare plans is a mode of the Plans panel; the old addresses replace themselves.
-status: draft
-decision: proposed
+status: stable
+accepted_by: human:Johnny Amadeus
 decided: 2026-11-11
 tags: [site]
 sources:

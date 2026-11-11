@@ -2,8 +2,8 @@
 type: adr
 title: The moves retune only the levers in the plan, measured from the plan on screen
 description: Each finder names its lever (LeverKind); MoveSearch runs only the finders of levers in the plan; MovesSource measures from the river on screen, searching after paint and a quiet period; Today feeds only the band.
-status: draft
-decision: proposed
+status: stable
+accepted_by: human:Johnny Amadeus
 decided: 2026-11-11
 tags: [search, site]
 sources:

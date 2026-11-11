@@ -2,7 +2,8 @@
 type: adr
 title: The moves are searched once per baseline and date, after the page has painted, never on an edit
 description: MovesBaseline is Today, else the plan as opened or saved; MovesSource searches once per baseline and date, after plan-paint.js.
-status: stable
+status: deprecated
+superseded_by: /2026-11-11-moves-retune-the-plan-on-screen.md
 decided: 2026-10-23
 tags: [search, site]
 sources:
