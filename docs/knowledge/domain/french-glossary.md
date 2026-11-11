@@ -46,12 +46,13 @@ Fixed once; every file that names one uses it word for word (the card, the map, 
 | Kept in company | Gardé dans la société |
 | Expenses | Frais |
 | My plan · Optimise · Ideas (the three views of the plan page) | Mon plan · Optimiser · Pistes |
-| By bucket · By date (the two lenses of My plan) | Par compartiment · Par date |
+| When to pay (the section of Optimise that holds the payment calendar, and the spoken name of its link in the band) | Quand payer |
 | Compare plans (the Plans panel's button and its comparison) · Back to plans | Comparer les plans · Retour aux plans |
-| next advance payment by {date} (My plan's badge, spoken) | prochain versement anticipé au plus tard le {date} |
+| next advance payment by {date} (the link to When to pay beside Optimise's tab, spoken after « When to pay: ») | Quand payer : prochain versement anticipé au plus tard le {date} (non-breaking space before the colon) |
+| what the fund bills is refused (the same link, spoken) | Quand payer : le montant facturé par votre caisse est refusé |
 | Optimise can add {amount} without changing anything else (My plan's nudge) | Optimiser peut ajouter {amount} sans rien changer d'autre |
 | Ideas: {n} priced, {m} questions (My plan's nudge; the badge shows « {n} · {m}? » and says the counts alone; a count of zero is left out) | Pistes : {n} chiffrée(s), {m} question(s) (agreement by key, one or many; a count of zero is left out) |
-| page titles: My plan · My plan by date · Optimise · Ideas, each followed by « : Netto » | Mon plan · Mon plan par date · Optimiser · Pistes, each followed by « : Netto » (non-breaking space before the colon) |
+| page titles: My plan · Optimise · Ideas, each followed by « : Netto » | Mon plan · Optimiser · Pistes, each followed by « : Netto » (non-breaking space before the colon) |
 | Your plans · Save this plan · Add to plan | Vos plans · Enregistrer ce plan · Ajouter au plan |
 | Today (the starred plan) | Aujourd'hui (a name, capitalised: « de plus qu'Aujourd'hui ») |
 | the river (the plan on screen) | not translated as a metaphor: « le plan », « le plan affiché » |
