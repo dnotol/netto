@@ -9,7 +9,7 @@
     @foreach (var picture in Enum.GetValues<PlanPicture>())
     {
         <button type="button" class="map-picture-switch__button" aria-pressed="@(picture == Current ? "true" : "false")" data-picture="@picture.ToString().ToLowerInvariant()"
-                @onclick="() => Chosen.InvokeAsync(picture)">@L[picture == PlanPicture.Sankey ? "Sankey" : "Map"]</button>
+                @onclick="() => Chosen.InvokeAsync(picture)">@L[MapPictureSwitchText.Name(picture)]</button>
     }
 </div>
 
