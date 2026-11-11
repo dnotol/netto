@@ -308,9 +308,9 @@ public class FrenchTabsTests
             services => services.AddSingleton(Saved(RiverInputs.Example, RiverInputs.Example.WithDirectorPay(20_799m)))));
 
         html.ShouldSatisfyAllConditions(
-            () => html.ShouldContain(">Comparer les plans</h2>"),
-            () => html.ShouldContain(">Chiffre par chiffre</h2>"),
-            () => html.ShouldContain(">Votre poche</h2>"),
+            () => html.ShouldContain(">Comparer les plans</p>"),
+            () => html.ShouldContain(">Chiffre par chiffre</p>"),
+            () => html.ShouldContain(">Votre poche</p>"),
             () => html.ShouldNotContain("Figure by figure"));
     }
 }

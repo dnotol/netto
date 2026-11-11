@@ -16,10 +16,12 @@
    (SavedPlans.Changed), from the list in the same panel. The picks are the viewer's only until the panel
    goes back to its list or closes. The pickers are native selects: a plan's name is all they hold, and a native control is named,
    operated and tested without a script. Each lists every plan; choosing the one the other holds swaps the
-   two (CompareView.PickPlan), so two plans never leave a picker with nothing to pick. The title is drawn once, first, whatever the plans, an h2
-   under the page's h1 and the panel's own name: it takes the focus when the viewer comes to the comparison, so a
-   screen reader says where they are. *@
-<h2 id="compare-title" class="compare__head" tabindex="-1" @ref="_title">@L["Title"]</h2>
+   two (CompareView.PickPlan), so two plans never leave a picker with nothing to pick. The title is drawn once, first, whatever the plans, and it
+   takes the focus when the viewer comes to the comparison, so a screen reader says where they are. The panel
+   sits in the band, above the page's h1, so nothing in the comparison is a heading (WCAG order: h1 page, h2
+   card, h3 fold): the title and the two sections' titles are paragraphs, the sections named by them through
+   aria-labelledby, as the panel itself is named by its label. *@
+<p id="compare-title" class="compare__head" tabindex="-1" @ref="_title">@L["Title"]</p>
 
 <div class="compare">
     @foreach (var note in Notes())
@@ -68,7 +70,7 @@
                 break;
             case CompareState.Compared when _view.Pocket is { } pocket:
                 <section class="compare__panel" aria-labelledby="compare-pocket-title">
-                    <h2 id="compare-pocket-title" class="mud-typography mud-typography-h6 compare__title">@L["PocketTitle"]</h2>
+                    <p id="compare-pocket-title" class="mud-typography mud-typography-h6 compare__title">@L["PocketTitle"]</p>
                     <p class="compare__headline">@Headline(pocket)</p>
                     <ul class="compare__bars" aria-hidden="true">
                         @foreach (var bar in new[] { pocket.Plan, pocket.Against })
@@ -87,7 +89,7 @@
                     </ul>
                 </section>
                 <section class="compare__panel" aria-labelledby="compare-table-title">
-                    <h2 id="compare-table-title" class="mud-typography mud-typography-h6 compare__title">@L["TableTitle"]</h2>
+                    <p id="compare-table-title" class="mud-typography mud-typography-h6 compare__title">@L["TableTitle"]</p>
                     <div class="compare__scroll" role="region" tabindex="0" aria-labelledby="compare-table-title">
                         <table class="compare__table" aria-labelledby="compare-table-title">
                             <thead>

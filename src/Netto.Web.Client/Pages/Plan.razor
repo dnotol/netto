@@ -66,7 +66,7 @@
             case PlanTab.Plan:
                 @* My plan's head, the page's one h1 there, is drawn once above the lens, so a switch of lens keeps
                    the focus where the viewer is and only arriving at the view moves it to the title (TabHead). *@
-                <TabHead Title="@L[PlanText.MyPlanTitle]" />
+                <TabHead Title="@L[PlanText.MyPlanTitle]" Focus="@(!PlanTabRoutes.OpensCompare(PlansMode))" />
                 <PlanLensBar Current="_lens" />
                 <PlanNudges Gain="NudgeGain" Pistes="Pistes" />
                 @if (_lens == PlanLens.ByDate)

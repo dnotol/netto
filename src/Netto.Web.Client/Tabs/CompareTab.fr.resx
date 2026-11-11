@@ -160,13 +160,13 @@
     <value>, {0} par rapport à {1}</value>
   </data>
   <data name="NoPlan" xml:space="preserve">
-    <value>Il n'y a pas encore de plan à comparer. Modifiez le plan affiché dans l'onglet Plan, ou appliquez les ajustements de Netto dans Optimisation, puis gardez-le avec «&#160;Enregistrer ce plan&#160;».</value>
+    <value>Il n'y a pas encore de plan à comparer. Modifiez le plan affiché dans Mon plan, ou appliquez les ajustements de Netto dans Optimiser, puis gardez-le avec «&#160;Enregistrer ce plan&#160;».</value>
   </data>
   <data name="CouldNotRead" xml:space="preserve">
     <value>Cette version de Netto n'a pas pu lire vos plans enregistrés. Ils sont gardés de côté dans votre navigateur, intacts.</value>
   </data>
   <data name="OnePlan" xml:space="preserve">
-    <value>Vous avez un plan enregistré, «&#160;{0}&#160;». Enregistrez-en un second pour les comparer&#160;: modifiez le plan affiché dans l'onglet Plan, ou appliquez un ajustement dans Optimisation, puis gardez-le avec «&#160;Enregistrer ce plan&#160;».</value>
+    <value>Vous avez un plan enregistré, «&#160;{0}&#160;». Enregistrez-en un second pour les comparer&#160;: modifiez le plan affiché dans Mon plan, ou appliquez un ajustement dans Optimiser, puis gardez-le avec «&#160;Enregistrer ce plan&#160;».</value>
   </data>
   <data name="NoToday" xml:space="preserve">
     <value>Aucun plan n'est marqué d'une étoile comme Aujourd'hui&#160;: les deux plans ne sont donc comparés qu'entre eux. Marquez d'une étoile votre situation actuelle dans le panneau Plans pour y mesurer les autres.</value>

@@ -23,7 +23,7 @@ generated: {by: claude-opus-5-5/knowledge-base, at: 2026-10-30T18:00:00+01:00}
 
 # Netto's own names
 
-Fixed once; every file that names one uses it word for word (the card, the map, Optimisation, the menu, the tab bar).
+Fixed once; every file that names one uses it word for word (the card, the map, the Optimise view, the menu, the tab bar).
 
 | English | French |
 |---|---|
@@ -44,11 +44,17 @@ Fixed once; every file that names one uses it word for word (the card, the map, 
 | Taxes on profit | Impôts sur le bénéfice |
 | Kept in company | Gardé dans la société |
 | Expenses | Frais |
-| Plan · Optimisation · When to pay · Compare plans | Plan · Optimisation · Quand payer · Comparer les plans |
+| My plan · Optimise · Ideas (the three views of the plan page) | Mon plan · Optimiser · Pistes |
+| By bucket · By date (the two lenses of My plan) | Par compartiment · Par date |
+| Compare plans (the Plans panel's button and its comparison) · Back to plans | Comparer les plans · Retour aux plans |
+| next advance payment by {date} (My plan's badge, spoken) | prochain versement anticipé au plus tard le {date} |
+| Optimise can add {amount} without changing anything else (My plan's nudge) | Optimiser peut ajouter {amount} sans rien changer d'autre |
+| ideas priced: {n}, questions: {m} (the Ideas badge and nudge) | pistes chiffrées : {n}, questions : {m} (no plural to agree: counts after a colon) |
+| page titles: My plan · My plan by date · Optimise · Ideas, each followed by « : Netto » | Mon plan · Mon plan par date · Optimiser · Pistes, each followed by « : Netto » (non-breaking space before the colon) |
 | Your plans · Save this plan · Add to plan | Vos plans · Enregistrer ce plan · Ajouter au plan |
 | Today (the starred plan) | Aujourd'hui (a name, capitalised: « de plus qu'Aujourd'hui ») |
 | the river (the plan on screen) | not translated as a metaphor: « le plan », « le plan affiché » |
-| a move (Optimisation) | un ajustement |
+| a move (Optimise) | un ajustement |
 | a lever | un levier |
 | Car's benefit in kind before / after your contribution | Avantage de toute nature de la voiture avant / après votre intervention |
 | tested pay (art. 215) | rémunération prise en compte |

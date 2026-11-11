@@ -160,13 +160,13 @@
     <value>, {0} compared with {1}</value>
   </data>
   <data name="NoPlan" xml:space="preserve">
-    <value>There is no plan to compare yet. Change the river in Plan, or apply Netto's moves in Optimisation, then keep it with « Save this plan ».</value>
+    <value>There is no plan to compare yet. Change the river in My plan, or apply Netto's moves in Optimise, then keep it with « Save this plan ».</value>
   </data>
   <data name="CouldNotRead" xml:space="preserve">
     <value>Your saved plans could not be read by this version of Netto. They are kept aside in your browser, untouched.</value>
   </data>
   <data name="OnePlan" xml:space="preserve">
-    <value>You have one saved plan, « {0} ». Save a second one to compare them: change the river in Plan, or apply a move in Optimisation, then keep it with « Save this plan ».</value>
+    <value>You have one saved plan, « {0} ». Save a second one to compare them: change the river in My plan, or apply a move in Optimise, then keep it with « Save this plan ».</value>
   </data>
   <data name="NoToday" xml:space="preserve">
     <value>No plan is starred as Today, so the two plans are compared with each other only. Star your current setup in the Plans panel to measure the others against it.</value>

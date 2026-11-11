@@ -130,7 +130,7 @@
                         </li>
                     }
                 </ul>
-                @if (Plans.Plans.Count >= 2)
+                @if (Plans.Plans.Count(plan => plan.Readable) >= 2)
                 {
                     <div class="plans__compare">
                         <MudButton @ref="_compare" Variant="Variant.Outlined" Size="Size.Small" Class="plans__compare-button" StartIcon="@Icons.Material.Rounded.CompareArrows" OnClick="Compare">@L["Compare"]</MudButton>

@@ -24,6 +24,12 @@
     [Parameter, EditorRequired]
     public string Title { get; set; } = "";
 
+    // Whether the title takes the focus when first drawn. Not when the address opens something that takes it
+    // itself, the Plans panel on its comparison (/plan?plans=compare): the focus goes to the panel that opened,
+    // and the head, which awaits the scroll first, would otherwise take it back.
+    [Parameter]
+    public bool Focus { get; set; } = true;
+
     private ElementReference _title;
 
     // Whether this head took the scroll restoration from the browser, to give it back as it goes.
@@ -36,7 +42,8 @@
 
         await JS.InvokeVoidAsync("nettoPlanScroll.hold");
         _holdsScroll = true;
-        await _title.FocusAsync();
+        if (Focus)
+            await _title.FocusAsync();
     }
 
     // Gone with its tab: to another tab, which holds the scroll again, or off the plan page, whose entry

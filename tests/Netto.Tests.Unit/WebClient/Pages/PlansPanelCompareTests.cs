@@ -20,6 +20,22 @@ public class PlansPanelCompareTests
         (await page.FindAllAsync<MudButton>()).Count(Styled("plans__compare-button")).ShouldBe(1);
     }
 
+    // Two saved plans of which one cannot be read by this version are one to compare: the button counts the
+    // readable ones, as the comparison does.
+    [Fact]
+    public async Task Panel_twoPlansOneUnreadable_offersNothingToCompare()
+    {
+        var storage = Storage(plans: 2);
+        var book = System.Text.Json.Nodes.JsonNode.Parse(new SavedPlans(storage).Export())!;
+        book["plans"]![1]!["inputs"]!["carLease"] = 850;
+        storage.Set(PlanStorage.Key, book.ToJsonString());
+        await using var page = LivePlan.At("http://localhost/plan", storage);
+        await page.LoadAsync();
+        await page.ClickAsync(Styled("plans__button"));
+
+        (await page.FindAllAsync<MudButton>()).Count(Styled("plans__compare-button")).ShouldBe(0);
+    }
+
     [Theory]
     [InlineData(0)]
     [InlineData(1)]
@@ -82,6 +98,19 @@ public class PlansPanelCompareTests
         await page.LoadAsync();
 
         ((await page.FindAllAsync<CompareTab>()).Count, page.Errors.Count).ShouldBe((1, 0));
+    }
+
+    // A panel that opens takes the focus: the arrival ends on the comparison's title alone, the page's head
+    // leaves it (TabHead.Focus): the head awaits the scroll before it focuses, so it would take the focus back
+    // from the panel. Exactly one focus is asked for, and the head holds none.
+    [Fact]
+    public async Task Panel_comparePlansAddress_endsWithTheFocusOnTheComparisonTitleAlone()
+    {
+        await using var page = LivePlan.At("http://localhost/plan?plans=compare", Storage(plans: 2));
+
+        await page.LoadAsync();
+
+        (page.Focuses, (await page.FindAllAsync<TabHead>()).Single().Focus).ShouldBe((1, false));
     }
 
     // Once: with the address still asking, going back to the list stays on the list through what the page
