@@ -37,7 +37,64 @@ public class SankeyViewTests
         var river = River(plan);
         var run = river.Run();
 
-        (SankeyView.From(river, run) is not null).ShouldBe(run.Error is null && BucketsView.From(run)?.Reach is not null);
+        (SankeyView.From(river, run) is not null).ShouldBe(run.Error is null && BucketsView.From(run)?.Buckets.All(bucket => bucket.Share is not null) == true);
+    }
+
+    // The dividend all kept in the company: the Sankey draws Company year on to what is kept, as the bar does.
+    [Fact]
+    public void From_dividendAllKept_isDrawn_intoWhatIsKept()
+    {
+        var river = RiverInputs.Example.WithReserve(1_000_000m);
+        var bar = BucketsView.From(river.Run())!;
+
+        var view = SankeyView.From(river, river.Run());
+
+        view?.In(SankeyNode.InBucket("kept_in_company")).ShouldBe(bar.AmountOf("kept_in_company"));
+    }
+
+    // No pay and no dividend: the director still owes the self-employed's minimum contributions, which the pocket
+    // pays, so the pocket is below nothing and neither the bar nor the Sankey draws shares.
+    [Fact]
+    public void From_planPayingNothingOut_drawsNothing_thePocketBelowNothing()
+    {
+        var river = RiverInputs.Example.WithDirectorPay(0m).WithReserve(1_000_000m);
+        var bar = BucketsView.From(river.Run())!;
+
+        var view = SankeyView.From(river, river.Run());
+
+        (bar.AmountOf("pocket") < 0m, bar.Buckets.All(bucket => bucket.Share is null), view).ShouldBe((true, true, (SankeyView?)null));
+    }
+
+    // Money back out of a bucket into a module sending nothing into it has no band to net it on, and the car's
+    // contribution is the one loop the Sankey draws: no honest picture.
+    [Fact]
+    public void Gather_aCreditBackIntoAModuleWithNoBandIntoItsBucket_drawsNothing()
+    {
+        var bar = BucketsView.From(RiverInputs.Example.Run())!;
+        var label = new MapLabel(MapText.Map, "Line", []);
+        MapLink[] links =
+        [
+            new(MapLinkKind.PassedOn, MapEnd.Of(RiverModule.DirectorPay), MapEnd.InBucket("pocket"), RiverModule.DirectorPay, label, 100m),
+            new(MapLinkKind.PassedOn, MapEnd.InBucket("taxes_on_pay"), MapEnd.Of(RiverModule.DirectorPay), RiverModule.DirectorPay, label, 10m),
+        ];
+
+        SankeyView.Gather(links, bar, 0m).ShouldBeNull();
+    }
+
+    [Fact]
+    public void Gather_theSameCreditWithABandIntoItsBucket_isNettedOnIt()
+    {
+        var bar = BucketsView.From(RiverInputs.Example.Run())!;
+        var label = new MapLabel(MapText.Map, "Line", []);
+        MapLink[] links =
+        [
+            new(MapLinkKind.PassedOn, MapEnd.Of(RiverModule.DirectorPay), MapEnd.InBucket("taxes_on_pay"), RiverModule.DirectorPay, label, 30m),
+            new(MapLinkKind.PassedOn, MapEnd.InBucket("taxes_on_pay"), MapEnd.Of(RiverModule.DirectorPay), RiverModule.DirectorPay, label, 10m),
+        ];
+
+        var band = SankeyView.Gather(links, bar, 0m)!.Bands.ShouldHaveSingleItem();
+
+        (band.Amount, band.Back, band.Loop).ShouldBe((20m, 10m, false));
     }
 
     [Theory]

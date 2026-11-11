@@ -23,14 +23,19 @@ namespace Netto.Web.Client.Tabs;
 // picture.
 internal sealed record SankeyView(IReadOnlyList<SankeyNode> Nodes, IReadOnlyList<SankeyBand> Bands, BucketsView Bar)
 {
-    public static SankeyView? From(RiverInputs inputs, RiverRun run)
-    {
-        if (run.Error is not null || BucketsView.From(run) is not { Reach: not null } bar)
-            return null;
+    public static SankeyView? From(RiverInputs inputs, RiverRun run) =>
+        run.Error is null && BucketsView.From(run) is { } bar && bar.Buckets.All(bucket => bucket.Share is not null)
+            ? Gather(MapLinks.Of(inputs, run), bar, run.Year is { } year ? DividendView.From(year).EarlierProfits : 0m)
+            : null;
 
+    // The bands of the map's links, for a bar that draws its shares, earlier profits a source into Dividend while
+    // there are any. None while a band nets to less than nothing, or money comes back into a module with no band to
+    // net it on but the car's contribution into the company's line, the one loop.
+    internal static SankeyView? Gather(IEnumerable<MapLink> links, BucketsView bar, decimal earlierProfits)
+    {
         var forward = new List<(SankeyNode From, SankeyNode To, MapLink Link)>();
         var back = new List<(SankeyNode Module, SankeyNode Bucket, MapLink Link)>();
-        foreach (var link in MapLinks.Of(inputs, run).Where(link => MapLinkStyle.IsMoney(link.Kind)))
+        foreach (var link in links.Where(link => MapLinkStyle.IsMoney(link.Kind)))
         {
             if (link.From.Bucket is not null)
                 back.Add((NodeOf(link.To), NodeOf(link.From), link));
@@ -54,16 +59,20 @@ internal sealed record SankeyView(IReadOnlyList<SankeyNode> Nodes, IReadOnlyList
         bands.AddRange(back.Where(line => !netted.Contains((line.Module, line.Bucket))).GroupBy(line => (line.Bucket, line.Module)).Select(loop =>
             new SankeyBand(loop.Key.Bucket, loop.Key.Module, MapBundle.Sum(loop.Select(line => line.Link))) { Loop = true, Links = [.. loop.Select(line => line.Link)] }));
 
-        if (run.Year is { } year && DividendView.From(year).EarlierProfits is var earlier and > 0m)
-            bands.Add(new SankeyBand(SankeyNode.EarlierProfits, SankeyNode.Of(RiverModule.Dividend), earlier));
+        if (earlierProfits > 0m)
+            bands.Add(new SankeyBand(SankeyNode.EarlierProfits, SankeyNode.Of(RiverModule.Dividend), earlierProfits));
 
-        if (bands.Any(band => band.Amount < 0m))
+        if (bands.Any(band => band.Amount < 0m || (band.Loop && !IsCarContribution(band))))
             return null;
 
         var drawn = bands.Where(band => band.Amount != 0m).OrderBy(band => band.Loop).ThenBy(band => SankeyLayout.Rank(band.From)).ThenBy(band => SankeyLayout.Rank(band.To)).ToList();
         var nodes = drawn.SelectMany(band => new[] { band.From, band.To }).Concat(BucketsView.Keys.Select(SankeyNode.InBucket)).Distinct().OrderBy(SankeyLayout.Rank).ToList();
         return new SankeyView(nodes, drawn, bar);
     }
+
+    // The one loop the Sankey draws: the director's contribution to a car, out of the pocket into the company's line.
+    private static bool IsCarContribution(SankeyBand loop) =>
+        loop.From == SankeyNode.InBucket("pocket") && loop.To == SankeyNode.Of(RiverModule.CompanyYear) && loop.Links.All(link => link.Card == RiverModule.Car);
 
     // What enters a node, the loop into it included.
     public decimal In(SankeyNode node) => Bands.Where(band => band.To == node).Sum(band => band.Amount);
