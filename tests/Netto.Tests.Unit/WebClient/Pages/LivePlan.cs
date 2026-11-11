@@ -87,6 +87,7 @@ internal sealed class LivePlan : IAsyncDisposable
         var navigation = new RecordingNavigation(uri);
         services.AddSingleton<NavigationManager>(navigation);
         services.AddSingleton(new ThemePreference(storage, new SystemTheme(prefersLight: false)));
+        services.AddSingleton(new PicturePreference(storage));
         var fields = new TypedFields();
         services.AddSingleton(fields);
         services.AddSingleton(new LanguagePreference(storage, reloads, state, fields));

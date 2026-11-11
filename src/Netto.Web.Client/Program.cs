@@ -21,6 +21,7 @@ builder.Services.AddTransient<MudLocalizer, NettoMudLocalizer>();
 builder.Services.AddScoped<IBrowserStorage, LocalStorage>();
 builder.Services.AddScoped<IThemePage, BrowserThemePage>();
 builder.Services.AddScoped<ThemePreference>();
+builder.Services.AddScoped<PicturePreference>();
 builder.Services.AddScoped<ILanguagePage, BrowserLanguagePage>();
 builder.Services.AddScoped<LanguagePreference>();
 builder.Services.AddScoped<Folds>();

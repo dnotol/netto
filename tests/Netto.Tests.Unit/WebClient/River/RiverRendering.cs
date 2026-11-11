@@ -9,6 +9,7 @@ using MudBlazor.Services;
 using Netto.Web.Client;
 using Netto.Web.Client.Layout;
 using Netto.Web.Client.River;
+using Netto.Web.Client.Tabs;
 using Shouldly;
 
 namespace Netto.Tests.WebClient.River;
@@ -38,6 +39,7 @@ internal static class RiverRendering
         services.AddSingleton<IJSRuntime, NoJavaScript>();
         services.AddSingleton<NavigationManager, NoNavigation>();
         services.AddSingleton(new ThemePreference(new BrowserStorage(), new SystemTheme(prefersLight: false)));
+        services.AddSingleton(new PicturePreference(new BrowserStorage()));
         var fields = new TypedFields();
         services.AddSingleton(fields);
         services.AddSingleton(new LanguagePreference(new BrowserStorage(), new PageReloads(), new RiverState(new SavedPlans(new BrowserStorage()), new BrowserSession()), fields));
