@@ -106,10 +106,7 @@
     <value>Pas de majoration&#160;: ce qui reste est sous le minimum.</value>
   </data>
   <data name="Surcharge_Due" xml:space="preserve">
-    <value>Versement en plus au plus tard le {0} qui évite toute majoration</value>
-  </data>
-  <data name="Surcharge_TooLate" xml:space="preserve">
-    <value>Toutes les échéances de l'année sont passées&#160;: plus aucun versement ne peut éviter la majoration.</value>
+    <value>Le précompte et les versements anticipés ne couvrent pas tout l'impôt&#160;: le reste est la majoration.</value>
   </data>
   <data name="WithheldAsPaySlip" xml:space="preserve">
     <value>Reprendre le montant de la fiche de paie</value>

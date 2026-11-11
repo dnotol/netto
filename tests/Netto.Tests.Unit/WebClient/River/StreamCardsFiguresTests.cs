@@ -262,76 +262,32 @@ public class StreamCardsFiguresTests
             () => CardHtml.LineRuns(html).Select(run => run.List).ShouldBe(["figure", "drain"]));
     }
 
-    // Due, the surcharge is a drain line, and what more by the first deadline still open leaves none due a
-    // line of its own, a figure line drawn after the drains. The example's pay has no benefit in kind, so no
-    // figure line stands before them. The page's clock is 23 October, when 21 December, the last, is the
-    // one deadline left.
-    [Fact]
-    public async Task DirectorPay_nothingWithheld_drawsWhatMoreByTheFirstOpenDeadlineLeavesNoneDue()
-    {
-        var html = CardHtml.Card(await CardHtml.RenderCardsOpenAsync(NothingWithheld), "director-pay");
-
-        html.ShouldSatisfyAllConditions(
-            () => CardHtml.LineRuns(html).Select(run => run.List).ShouldBe(["drain", "figure"]),
-            () => CardHtml.Lines(html).Select(line => (line.Amount, line.Share)).Last().ShouldBe(("€14,317.50", null)),
-            () => html.ShouldNotContain("class=\"director-pay__condition\""));
-    }
-
-    // The line follows the browser's date: it names the first deadline not yet past on it, before the
-    // first, on a deadline and between two, with the amount the Optimisation tab's payment move proposes
-    // for that date. 2026's deadlines are 10 April, 10 July, 12 October and 21 December.
-    public static TheoryData<DateOnly, string> OpenDeadlineDays => new()
-    {
-        { new(2026, 3, 1), "10 April 2026" },
-        { new(2026, 4, 10), "10 April 2026" },
-        { new(2026, 7, 15), "12 October 2026" },
-        { new(2026, 10, 13), "21 December 2026" },
-    };
-
+    // Due, the surcharge is a drain line and the card says why in a note: it suggests no payment, so no
+    // figure line stands after the drains, whatever day the page is seen on (the amount and the date to pay
+    // are Optimise's advance-payment move and My plan by date).
     [Theory]
-    [MemberData(nameof(OpenDeadlineDays))]
-    public async Task DirectorPay_nothingWithheldOnAnotherDay_drawsTheFirstDeadlineStillOpenAndThePaymentMovesFigure(DateOnly today, string day)
+    [InlineData(2026, 3, 1)]
+    [InlineData(2026, 10, 23)]
+    [InlineData(2026, 12, 22)]
+    public async Task DirectorPay_nothingWithheld_saysWhyASurchargeIsDueAndSuggestsNoPayment(int year, int month, int day)
     {
-        var html = CardHtml.Card(await CardHtml.RenderCardsOpenAsync(NothingWithheld, At(today)), "director-pay");
-
-        var move = new DirectorAdvancePaymentFinder(today).Find(NothingWithheld.MoveScenario()).ShouldBeOfType<DirectorAdvancePaymentMove>();
-        html.ShouldSatisfyAllConditions(
-            () => CardHtml.LineRuns(html).Select(run => run.List).ShouldBe(["drain", "figure"]),
-            () => CardHtml.Lines(html).Select(line => (line.Label, line.Amount)).Last().ShouldBe((Texts.Format("Surcharge_Due", day), Formats.Euros(move.Amount))),
-            () => html.ShouldNotContain("class=\"director-pay__condition\""));
-    }
-
-    // Once every deadline is past no payment can still leave none due: the line gives way to a note that
-    // says so, the surcharge staying among the drains.
-    [Fact]
-    public async Task DirectorPay_everyDeadlinePast_drawsItsNoteInPlaceOfTheLine()
-    {
-        var html = CardHtml.Card(await CardHtml.RenderCardsOpenAsync(NothingWithheld, At(new DateOnly(2026, 12, 22))), "director-pay");
+        var html = CardHtml.Card(await CardHtml.RenderCardsOpenAsync(NothingWithheld, At(new DateOnly(year, month, day))), "director-pay");
 
         html.ShouldSatisfyAllConditions(
             () => CardHtml.LineRuns(html).Select(run => run.List).ShouldBe(["drain"]),
-            () => CardHtml.Prose(html).ShouldContain(Texts.Get("Surcharge_TooLate").ShouldNotBeNull()),
+            () => CardHtml.Prose(html).ShouldContain(Texts.Get("Surcharge_Due").ShouldNotBeNull()),
             () => CardHtml.Lines(html).Select(line => line.Label).ShouldNotContain(label => label.StartsWith("More by", StringComparison.Ordinal)));
     }
 
-    // In its Advance payments disclosure, Corporate tax says what more by the first deadline still open
-    // cancels its surcharge, as the company's payment move proposes for that date.
+    // Corporate tax says the same in its Advance payments disclosure: why, and no amount to pay by a date.
     [Theory]
-    [MemberData(nameof(OpenDeadlineDays))]
-    public async Task CorporateTax_onAnotherDay_saysWhatMoreByTheFirstDeadlineStillOpenCancelsTheSurcharge(DateOnly today, string day)
+    [InlineData(2026, 3, 1)]
+    [InlineData(2026, 12, 22)]
+    public async Task CorporateTax_surchargeDue_saysWhyAndSuggestsNoPayment(int year, int month, int day)
     {
-        var html = await CorporateTaxAsync(At(today));
+        var html = await CorporateTaxAsync(At(new DateOnly(year, month, day)));
 
-        var move = new CompanyAdvancePaymentFinder(today).Find(RiverInputs.Example.MoveScenario()).ShouldBeOfType<CompanyAdvancePaymentMove>();
-        CardHtml.Prose(html).ShouldContain(CorporateTexts.Format("Surcharge_Due", Formats.Euros(move.Amount), day));
-    }
-
-    [Fact]
-    public async Task CorporateTax_everyDeadlinePast_saysNoPaymentCanStillCancelTheSurcharge()
-    {
-        var html = await CorporateTaxAsync(At(new DateOnly(2026, 12, 22)));
-
-        CardHtml.Prose(html).ShouldContain(CorporateTexts.Get("Surcharge_TooLate").ShouldNotBeNull());
+        CardHtml.Prose(html).ShouldContain(CorporateTexts.Get("Surcharge_Due").ShouldNotBeNull());
     }
 
     // How the withholding is derived from the pay slip, and what the key formula is, are rules: the

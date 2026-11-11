@@ -122,66 +122,7 @@ public class DirectorPayFiguresTests
         Taxed(inputs).Select(line => line.Help).ShouldBe(["PaidByHint", "FundFeeHint", "Help_BenefitInKind", "Help_RequalifiedPay", null]);
     }
 
-    // Nothing withheld: 486.57 on the pay's tax, among the pay's drains, and on 23 October, 14,317.50 by
-    // 21 December, the one deadline left, brings it under the minimum.
-    [Fact]
-    public void Surcharge_nothingWithheldOn23October_isWhatMoreBy21DecemberLeavesNoneDue()
-    {
-        var lines = Surcharge(RiverInputs.Example.WithTaxWithheld(0m), On23October);
-
-        lines.ShouldSatisfyAllConditions(
-            () => Lines(lines).ShouldBe([("Surcharge_Due", 14_317.50m, null)]),
-            () => lines[0].Args.ShouldBe(["21 December 2026"]));
-    }
-
-    // The line names the first deadline still open on the date, before the first, on a deadline and between
-    // two, and its amount is the payment move's.
-    public static TheoryData<DateOnly, string> OpenDeadlineDays => new()
-    {
-        { new(2026, 3, 1), "10 April 2026" },
-        { new(2026, 4, 10), "10 April 2026" },
-        { new(2026, 7, 15), "12 October 2026" },
-    };
-
-    [Theory]
-    [MemberData(nameof(OpenDeadlineDays))]
-    public void Surcharge_aDeadlineStillOpen_namesTheFirstOneAndWhatThePaymentMoveProposes(DateOnly today, string day)
-    {
-        var lines = Surcharge(NothingWithheld, today);
-
-        var move = new DirectorAdvancePaymentFinder(today).Find(NothingWithheld.MoveScenario()).ShouldBeOfType<DirectorAdvancePaymentMove>();
-        lines.ShouldSatisfyAllConditions(
-            () => Lines(lines).ShouldBe([("Surcharge_Due", move.Amount, null)]),
-            () => lines[0].Args.ShouldBe([day]));
-    }
-
-    // Once every deadline is past nothing can still leave none due: no line, and the card says so.
-    [Fact]
-    public void Surcharge_everyDeadlinePast_drawsNoLine()
-    {
-        Surcharge(NothingWithheld, new DateOnly(2026, 12, 22)).ShouldBeEmpty();
-    }
-
-    // With no surcharge due, the card says why in a sentence: no line.
-    public static TheoryData<string, RiverInputs> NoneDue => new()
-    {
-        { "under the minimum", RiverInputs.Example },
-        { "covered", RiverInputs.Example.WithTaxWithheld(20_000m) },
-        { "exempt", RiverInputs.Example.WithStarter(true) },
-        { "no tax", RiverInputs.Example.WithDirectorPay(0m) },
-    };
-
-    [Theory]
-    [MemberData(nameof(NoneDue))]
-    public void Surcharge_noneDue_drawsNoLine(string _, RiverInputs inputs)
-    {
-        Surcharge(inputs, On23October).ShouldBeEmpty();
-    }
-
     private static IReadOnlyList<FigureLine> Taxed(RiverInputs inputs) => DirectorPayFigures.Taxed(inputs.Run().Pay.ShouldNotBeNull());
-
-    private static IReadOnlyList<FigureLine> Surcharge(RiverInputs inputs, DateOnly today) =>
-        DirectorPayFigures.Surcharge(MoreBy.Director(inputs, inputs.Run().Pay.ShouldNotBeNull(), today));
 
     private static List<(string Key, decimal Amount, decimal? Share)> Lines(IEnumerable<FigureLine> lines) =>
         [.. lines.Select(line => (line.Key, line.Amount, line.Share))];

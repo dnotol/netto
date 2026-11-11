@@ -29,15 +29,8 @@ internal static class CorporateTaxCardText
     // still pay one, less this year's loss and the reserve: the sentence names it while there is one.
     public static string NoTaxableProfit(decimal dividend) => dividend > 0m ? "NoTaxableProfit_EarlierProfits" : "NoTaxableProfit";
 
+    // What the advance payments leave: why a surcharge is due or why none is, never what to pay to cancel it.
     public static string Surcharge(SurchargeState state) => $"Surcharge_{state}";
-
-    // What the advance payments leave, as the card says it: why no surcharge is due, or, while one is,
-    // what more by the first deadline still open cancels it, or that no payment can, once none is open.
-    public static string SurchargeSentence(SurchargeState state, MoreBy? more) =>
-        state == SurchargeState.Due && more is null ? "Surcharge_TooLate" : Surcharge(state);
-
-    // The sentence's arguments: that amount and that deadline, as the card words them.
-    public static object[] SurchargeArguments(MoreBy? more) => more is null ? [] : [Formats.Euros(more.Amount), Formats.Day(more.Deadline)];
 
     public static string FinancialYear(FinancialYear year) => $"FinancialYear_{year}";
 

@@ -29,11 +29,4 @@ internal static class DirectorPayFigures
 
         return taxed.Count == 0 ? [] : [.. taxed, new FigureLine("Figure_TaxablePay", pay.TaxablePay)];
     }
-
-    // What more by the first deadline still open leaves no surcharge due, while one is and a deadline is
-    // open: the surcharge's amount is among the pay's drains. None otherwise, the card saying why
-    // (DirectorPayCardText.Note).
-    public static IReadOnlyList<FigureLine> Surcharge(MoreBy? more) => more is null
-        ? []
-        : [new FigureLine(DirectorPayCardText.Surcharge(TaxSurchargeState.Due), more.Amount) { Args = [Formats.Day(more.Deadline)] }];
 }

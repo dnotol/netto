@@ -106,10 +106,7 @@
     <value>No surcharge: what is left is under the minimum.</value>
   </data>
   <data name="Surcharge_Due" xml:space="preserve">
-    <value>More by {0} leaves none due</value>
-  </data>
-  <data name="Surcharge_TooLate" xml:space="preserve">
-    <value>Every deadline of the year is past, so no payment can still leave none due.</value>
+    <value>The withholding and the advance payments leave part of the tax uncovered: that is the surcharge.</value>
   </data>
   <data name="WithheldAsPaySlip" xml:space="preserve">
     <value>Use the pay slip's amount</value>

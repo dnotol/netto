@@ -136,10 +136,7 @@
     <value>Pas de majoration&#160;: les versements anticipés suffisent.</value>
   </data>
   <data name="Surcharge_Due" xml:space="preserve">
-    <value>Payer {0} de plus au plus tard le {1} annule la majoration.</value>
-  </data>
-  <data name="Surcharge_TooLate" xml:space="preserve">
-    <value>Toutes les échéances de l'année sont passées&#160;: plus aucun versement ne peut annuler la majoration.</value>
+    <value>Les versements anticipés ne couvrent pas tout l'impôt&#160;: le reste est la majoration.</value>
   </data>
   <data name="CompanyTitle" xml:space="preserve">
     <value>Votre société</value>

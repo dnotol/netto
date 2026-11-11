@@ -13,49 +13,26 @@ public class DirectorPayCardTextTests
     private static readonly ResxText Resources = ResxText.For<DirectorPayCard>();
 
     // Every label and bubble of Director pay's lines: the contributions the company pays, a car's
-    // benefit and a royalty's part beyond its limits with the taxable pay they make, and what more by the
-    // first deadline still open leaves no surcharge due.
+    // benefit and a royalty's part beyond its limits with the taxable pay they make.
     [Fact]
     public void DirectorPayCardResx_everyLabelAndBubbleOfItsLines_hasAText()
     {
         var taxed = RiverInputs.Example.AddToPlan(OptionalModule.Car).WithCatalogueValue(50_000m).WithFirstRegistration(new DateOnly(2026, 1, 10)).WithCarCosts(8_000m)
             .AddToPlan(OptionalModule.Copyright).WithRoyalty(30_000m).WithContributionsPaidBy(ContributionsPaidBy.Company).WithFundFeeRate(0.0305m);
-        var due = RiverInputs.Example.WithTaxWithheld(0m);
-        var lines = DirectorPayFigures.Taxed(taxed.Run().Pay.ShouldNotBeNull())
-            .Concat(DirectorPayFigures.Surcharge(MoreBy.Director(due, due.Run().Pay.ShouldNotBeNull(), new DateOnly(2026, 10, 23))));
+        var lines = DirectorPayFigures.Taxed(taxed.Run().Pay.ShouldNotBeNull());
 
         Resources.Missing(lines.SelectMany(line => new[] { line.Key, line.Help }).OfType<string>()).ShouldBeEmpty();
     }
 
+    // The note says why a surcharge is due or why none is, in every state, and suggests no payment.
     [Fact]
-    public void DirectorPayCardResx_everyTaxSurchargeState_hasAText()
+    public void DirectorPayCardResx_everySurchargeNote_hasATextThatNamesNoAmountNorDate()
     {
-        Resources.Missing(Enum.GetValues<TaxSurchargeState>().Select(DirectorPayCardText.Surcharge)).ShouldBeEmpty();
-    }
+        var notes = Enum.GetValues<TaxSurchargeState>().Select(DirectorPayCardText.Note).ToList();
 
-    // With a surcharge due and a deadline open the card draws a line, not a note; with it due and every
-    // deadline past it says so; any other state is why none is due, as before.
-    [Fact]
-    public void DirectorPayCardText_surchargeDueWithEveryDeadlinePast_isTheTooLateNote()
-    {
-        DirectorPayCardText.Note(TaxSurchargeState.Due, null).ShouldBe("Surcharge_TooLate");
-    }
-
-    [Fact]
-    public void DirectorPayCardText_surchargeNotDue_isWhyNoneIsDue()
-    {
-        var states = Enum.GetValues<TaxSurchargeState>().Where(state => state != TaxSurchargeState.Due).ToList();
-
-        states.Select(state => DirectorPayCardText.Note(state, null)).ShouldBe(states.Select(DirectorPayCardText.Surcharge));
-    }
-
-    [Fact]
-    public void DirectorPayCardResx_everyNote_hasAText()
-    {
-        var more = new MoreBy(new DateOnly(2026, 12, 21), 1m);
-        var notes = Enum.GetValues<TaxSurchargeState>().SelectMany(state => new[] { DirectorPayCardText.Note(state, null), DirectorPayCardText.Note(state, more) });
-
-        Resources.Missing(notes).ShouldBeEmpty();
+        notes.ShouldSatisfyAllConditions(
+            () => Resources.Missing(notes).ShouldBeEmpty(),
+            () => notes.Select(note => Resources.Get(note).ShouldNotBeNull()).Where(text => text.Contains("{0}")).ShouldBeEmpty());
     }
 
     // The card's own source names the fee (AR n° 38, art. 20 §4): what no text says is that it is

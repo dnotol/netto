@@ -133,42 +133,16 @@ public class CorporateTaxCardTextTests
         Resources.Missing(Enum.GetValues<SurchargeState>().Select(CorporateTaxCardText.Surcharge)).ShouldBeEmpty();
     }
 
-    // What the advance payments leave is a sentence of the card's: while a surcharge is due and a deadline
-    // is open, what more by that deadline cancels it; due with every deadline past, that none can; any
-    // other state is why none is due, as before.
+    // What the advance payments leave is a sentence of the card's: why a surcharge is due or why none is, never
+    // what to pay to cancel it, so no state's sentence names an amount or a date.
     [Fact]
-    public void CorporateTaxCardText_surchargeDue_isWhatMoreByTheOpenDeadlineCancelsItOrThatEveryDeadlineIsPast()
+    public void CorporateTaxCardResx_everySurchargeSentence_hasATextThatNamesNoAmountNorDate()
     {
-        var more = new MoreBy(new DateOnly(2026, 12, 21), 1m);
+        var sentences = Enum.GetValues<SurchargeState>().Select(CorporateTaxCardText.Surcharge).ToList();
 
-        (CorporateTaxCardText.SurchargeSentence(SurchargeState.Due, more), CorporateTaxCardText.SurchargeSentence(SurchargeState.Due, null))
-            .ShouldBe(("Surcharge_Due", "Surcharge_TooLate"));
-    }
-
-    [Fact]
-    public void CorporateTaxCardText_surchargeNotDue_isWhyNoneIsDue()
-    {
-        var states = Enum.GetValues<SurchargeState>().Where(state => state != SurchargeState.Due).ToList();
-
-        states.Select(state => CorporateTaxCardText.SurchargeSentence(state, null)).ShouldBe(states.Select(CorporateTaxCardText.Surcharge));
-    }
-
-    [Fact]
-    public void CorporateTaxCardResx_everySurchargeSentence_hasAText()
-    {
-        var more = new MoreBy(new DateOnly(2026, 12, 21), 1m);
-        var sentences = Enum.GetValues<SurchargeState>()
-            .SelectMany(state => new[] { CorporateTaxCardText.SurchargeSentence(state, null), CorporateTaxCardText.SurchargeSentence(state, more) });
-
-        Resources.Missing(sentences).ShouldBeEmpty();
-    }
-
-    // The sentence of what more by a deadline cancels the surcharge takes its amount and that deadline.
-    [Fact]
-    public void CorporateTaxCardText_surchargeArguments_areTheAmountAndTheDeadline()
-    {
-        CorporateTaxCardText.SurchargeArguments(new MoreBy(new DateOnly(2026, 12, 21), 14_999.89m)).ShouldBe(["€14,999.89", "21 December 2026"]);
-        CorporateTaxCardText.SurchargeArguments(null).ShouldBeEmpty();
+        sentences.ShouldSatisfyAllConditions(
+            () => Resources.Missing(sentences).ShouldBeEmpty(),
+            () => sentences.Select(sentence => Resources.Get(sentence).ShouldNotBeNull()).Where(text => text.Contains("{0}")).ShouldBeEmpty());
     }
 
     // Every way the lines of Corporate tax's disclosures read: a small company or not, in each of its
@@ -199,7 +173,7 @@ public class CorporateTaxCardTextTests
     // profit the dividend, the pay tested's bubble the part of a royalty it leaves out.
     [Theory]
     [InlineData("Condition_", 4)]
-    [InlineData("Surcharge_", 2)]
+    [InlineData("Surcharge_", 0)]
     [InlineData("NoTaxableProfit", 1)]
     [InlineData("Term_TestedPay", 1)]
     public void CorporateTaxCardResx_sentence_readsOnlyTheArgumentsTheCardPasses(string prefix, int arguments)
