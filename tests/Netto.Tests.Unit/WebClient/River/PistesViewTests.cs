@@ -132,6 +132,62 @@ public class PistesViewTests
         PistesView.Of(RiverInputs.Example, Trials(RiverInputs.Example), NothingFound, NotTried).NotYet.ShouldBe([NotInNetto.Pension]);
     }
 
+    // The vouchers' gain is said « if yes » until the viewer says yes; « Try » waits for it.
+    [Fact]
+    public void Row_vouchersPricedBeforeTheYes_awaitTheYesAndCannotBeTried()
+    {
+        var granted = Trials(ExampleWithRoyalty).Select(trial => trial.WithGranted(true)).ToList();
+
+        var before = PistesView.Of(ExampleWithRoyalty, Trials(ExampleWithRoyalty), trial => (Gaining(trial.Lever, 63.00m), null), NotTried).Rows[0];
+        var after = PistesView.Of(ExampleWithRoyalty, granted, trial => (Gaining(trial.Lever, 63.00m), null), NotTried).Rows[0];
+
+        (before.AwaitsYes, before.CanTry, after.AwaitsYes, after.CanTry).ShouldBe((true, false, false, true));
+    }
+
+    // A rent asking cannot be tried, and asks no yes.
+    [Fact]
+    public void Row_asking_cannotBeTried()
+    {
+        var rent = PistesView.Of(RiverInputs.Example, Trials(RiverInputs.Example), NothingFound, NotTried).Rows[1];
+
+        (rent.CanTry, rent.AwaitsYes, rent.ShowsTrial, rent.CanKeep).ShouldBe((false, false, false, false));
+    }
+
+    // Tried, a row shows its trial; it can be tried no more, and is kept only once it gains.
+    [Theory]
+    [InlineData(63.00, true)]
+    [InlineData(0.0, false)]
+    public void Row_tried_showsItsTrialAndIsKeptOnlyWhenItGains(double gain, bool canKeep)
+    {
+        var granted = Trials(ExampleWithRoyalty).Select(trial => trial.WithGranted(true)).ToList();
+
+        var row = PistesView.Of(ExampleWithRoyalty, granted, trial => (Gaining(trial.Lever, (decimal)gain), null), _ => true).Rows[0];
+
+        (row.ShowsTrial, row.CanTry, row.CanKeep).ShouldBe((true, false, canKeep));
+    }
+
+    // A refused trial shows its refusal in the trial, and is never kept.
+    [Fact]
+    public void Row_triedAndRefused_isNeverKept()
+    {
+        var granted = Trials(ExampleWithRoyalty).Select(trial => trial.WithGranted(true)).ToList();
+
+        var row = PistesView.Of(ExampleWithRoyalty, granted, _ => (null, Refused), _ => true).Rows[0];
+
+        (row.ShowsTrial, row.CanKeep).ShouldBe((true, false));
+    }
+
+    // Tried and still being measured, the trial shows, saying so.
+    [Fact]
+    public void Row_triedAndSearching_showsItsTrial()
+    {
+        var granted = Trials(ExampleWithRoyalty).Select(trial => trial.WithGranted(true)).ToList();
+
+        var row = PistesView.Of(ExampleWithRoyalty, granted, NothingFound, _ => true).Rows[0];
+
+        (row.State, row.ShowsTrial, row.CanKeep).ShouldBe((PisteState.Searching, true, false));
+    }
+
     private static List<PisteTrial> Trials(RiverInputs plan) =>
         [.. PisteSearch.Levers.Where(lever => !plan.LeversInPlan.Contains(lever)).Select(lever => PisteTrial.Of(plan, lever))];
 

@@ -43,6 +43,18 @@ public sealed record PisteRow(PisteTrial Trial, PisteState State, Piste? Piste, 
 
     // The tuned gain, only once measured with one: never an untuned figure, nor one for another trial.
     public decimal? Gain => State == PisteState.Priced ? Piste?.Gain : null;
+
+    // Whether its gain is said « if yes »: an idea asking a yes the viewer has not given.
+    public bool AwaitsYes => Trial.Questions.Contains(PisteQuestion.VouchersGranted) && !Trial.Granted;
+
+    // Whether « Try » can be pressed: everything it asks answered, the yes included, and not tried yet.
+    public bool CanTry => Trial.CanTry && !Tried;
+
+    // Whether its trial shows: tried, and measured or being measured.
+    public bool ShowsTrial => Tried && State is PisteState.Searching or PisteState.Priced or PisteState.NoGain or PisteState.Refused;
+
+    // Whether « Keep » is offered: tried and gaining, never on an idea that adds nothing or is refused.
+    public bool CanKeep => Tried && State == PisteState.Priced && Trial.CanTry;
 }
 
 // What the Ideas view draws: one row per idea not in the plan, in the river's order (PisteSearch.Levers),
@@ -52,6 +64,9 @@ public sealed record PisteRow(PisteTrial Trial, PisteState State, Piste? Piste, 
 // takes it.
 public sealed record PistesView(IReadOnlyList<PisteRow> Rows, IReadOnlyList<NotInNetto> NotYet)
 {
+    // Whether the plan starts at the pay, which has no ideas, as it has no moves.
+    public bool StartsAtPay { get; init; }
+
     public int Priced => Rows.Count(row => row.State == PisteState.Priced);
 
     public int Questions => Rows.Count(row => row.State == PisteState.Asking);
@@ -67,7 +82,7 @@ public sealed record PistesView(IReadOnlyList<PisteRow> Rows, IReadOnlyList<NotI
     {
         ArgumentNullException.ThrowIfNull(plan);
         if (plan.Company is null)
-            return new PistesView([], [NotInNetto.Pension]);
+            return new PistesView([], [NotInNetto.Pension]) { StartsAtPay = true };
 
         var byLever = trials.ToDictionary(trial => trial.Lever);
         var rows = PisteSearch.Levers.Where(lever => !plan.LeversInPlan.Contains(lever))
