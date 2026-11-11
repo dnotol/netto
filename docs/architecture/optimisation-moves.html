@@ -14,7 +14,7 @@
     <p class="eyebrow">Netto · architecture page · flow</p>
     <h1>How Optimise finds its moves and Ideas its ideas</h1>
     <p class="lede">The moves are what Netto would retune in the plan on screen to put more in the director's pocket, using only the levers the plan already holds and the facts it was given. An idea is a lever the plan does not use, its gain the optimised plan with it less the optimised plan without it. Both are searched after the page has painted, found greedily by the engine, and changed in the plan only by « Apply » and « Keep ». This page follows one search of the moves, one search of an idea, and the pay curve that sets the plan's own pay.</p>
-    <p class="atlas-meta"><span>As of <b>feature/three-views 232a941</b></span><span><b>11 November 2026</b></span></p>
+    <p class="atlas-meta"><span>As of <b>feature/calendar-in-optimiser-sankey-toggle c627a48</b></span><span><b>11 November 2026</b></span></p>
   </header>
 
   <section aria-labelledby="h-flow">
@@ -67,7 +67,7 @@
         <li>It calls <code>RiverInputs.FindMoves(date)</code>, which runs <code>MoveSearch.Run(MoveScenario(), date, LeversInPlan)</code>. The client only names the levers the plan holds (<code>PlanComposition</code>, as <code>LeverKind</code>): a lever out of the plan is its <code>None</code> in the scenario, which Core cannot tell from one in the plan at zero. The search runs the finders of those levers and the ones every plan holds, the pay and both advance payments (<code>MoveSearch.FindersFor</code>); it never adds a lever.</li>
         <li>Each round, each finder proposes its best move from where the plan stands; the move is applied to the scenario and the year run. A candidate must run without refusal and keep the reserve; the largest gain of at least €1 wins, a tie going to the earlier finder. A move of a kind already taken replaces its line, the gains added. The pay finder runs <code>SplitSearch</code>.</li>
         <li>The result, a <code>MovePlan</code> (the pocket before, each move with its gain, the pocket after), is kept by <code>MovesSource</code> for that plan and date.</li>
-        <li>The page redraws: the badges and My plan's line of nudges read what was found, and <code>OptimisationTab</code> builds <code>MovesView</code>, each move with why it helps (<code>MoveReasons</code>), a link to its card (<code>MoveLinks</code>) and whether it is applied.</li>
+        <li>The page redraws: the badges and My plan's line of nudges read what was found, and <code>OptimisationTab</code> builds <code>MovesView</code>, each move with why it helps (<code>MoveReasons</code>), a link to the card it acts on or, for an advance payment, to the When to pay section of the same view (<code>MoveLinks</code>) and whether it is applied.</li>
         <li>« Apply » calls <code>MovesView.Apply</code> and « Apply all » <code>MovesView.ApplyAll</code>, the one place a move is applied to <code>RiverInputs</code>. The new inputs go to the page as <a href="edit-to-repaint.html">any edit</a>; the plan on screen is no longer the one searched, so the moves are searched again at once and listed from the plan the move left. Nothing is applied unasked.</li>
       </ol>
     </figure>
@@ -166,6 +166,7 @@
   <section aria-labelledby="h-changes">
     <h2 id="h-changes">Changes</h2>
     <ul class="atlas-changes">
+      <li><time datetime="2026-11-11">11.11.2026</time><span>An advance-payment move links to the When to pay section of Optimise (<a href="decisions/2026-11-11-when-to-pay-is-a-section-of-optimise.md">when to pay is a section of Optimise</a>).</span></li>
       <li><time datetime="2026-11-11">11.11.2026</time><span>The moves retune only the levers in the plan, measured from the plan on screen and searched after paint and a quiet period, with no baseline; the ideas added, each measured against the optimised plan; the pay curve is a section of Optimise (<a href="decisions/2026-11-11-moves-retune-the-plan-on-screen.md">moves retune the plan on screen</a>, <a href="decisions/2026-11-11-an-ideas-gain-is-optimised-against-optimised.md">an idea's gain is optimised against optimised</a>, <a href="decisions/2026-11-11-three-views-one-question-each.md">three views</a>).</span></li>
       <li><time datetime="2026-10-30">30.10.2026</time><span>Facts the engine would refuse, of a rent or a royalty out of the plan, left out of the search's scenario (bug batch).</span></li>
       <li><time datetime="2026-10-29">29.10.2026</time><span>Page drawn in the fresh-start pass, from <code>main</code> at <code>29cbc95</code>.</span></li>

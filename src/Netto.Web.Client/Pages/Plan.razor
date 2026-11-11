@@ -370,7 +370,7 @@
     // What each tab says after its name, from what its content draws: the Optimise view's moves, which
     // its badge and My plan's nudge need on every view, found once per plan on screen and date (MovesSource),
     // since the search runs the split at every move, and only after the page has painted: until then the
-    // badge says they are being looked for. My plan's own is the next deadline.
+    // badge says they are being looked for. My plan's own says only that the plan is refused.
     // The Ideas badge says « … » while an idea is still measured, as Optimise's does for the moves.
     private IReadOnlyDictionary<PlanTab, IReadOnlyList<TabBadge>> Badges(MovesView moves, CalendarView? calendar, PistesView pistes) =>
         TabBadges.Of(_run, moves, calendar, PistesFound(pistes), pistes.Searching);
