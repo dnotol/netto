@@ -1,5 +1,9 @@
 # Log
 
+## 2026-11-11
+
+- Proposed, from the story « I see my plan, what Netto can improve with what I gave, and what I could add, each in its own view »: [three views, each answering one question](/2026-11-11-three-views-one-question-each.md), which once accepted supersedes [tabs by purpose](/2026-10-23-tabs-by-purpose.md); [the moves retune the plan on screen](/2026-11-11-moves-retune-the-plan-on-screen.md), which once accepted supersedes [moves searched once per baseline](/2026-10-23-moves-searched-once-per-baseline-after-paint.md); [an idea's gain is optimised against optimised](/2026-11-11-an-ideas-gain-is-optimised-against-optimised.md); [the split is a node named for its money](/2026-11-11-the-split-is-a-node-named-for-its-money.md).
+
 ## 2026-11-06
 
 - [The map's lines are drawn as a river](/2026-11-06-the-map-drawn-as-a-river.md) and [a bucket is chosen like a module](/2026-11-06-a-bucket-is-chosen-like-a-module.md) accepted by the operator at landing.
