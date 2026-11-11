@@ -32,7 +32,8 @@ Fixed once; every file that names one uses it word for word (the card, the map, 
 | Expense allowances | Indemnités de frais |
 | Home office rent | Loyer du bureau |
 | Company car | Voiture de société |
-| The split | La répartition |
+| The split (the pay-versus-dividend concept) | La répartition |
+| To share (the node of the map: what the levers leave to split) | À partager |
 | Copyright royalty | Droits d'auteur |
 | Director pay | Rémunération de dirigeant |
 | Household / Your household | Ménage / Votre ménage |
