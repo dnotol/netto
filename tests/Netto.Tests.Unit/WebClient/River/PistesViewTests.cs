@@ -105,7 +105,7 @@ public class PistesViewTests
         var view = PistesView.Of(RiverInputs.Example, Trials(RiverInputs.Example), NothingFound, NotTried);
 
         var rent = view.Rows[1];
-        (rent.Trial.Lever, rent.Module, rent.Trial.Open.Count, rent.Trial.CanTry).ShouldBe((LeverKind.Rent, OptionalModule.Rent, 2, false));
+        (rent.Trial.Lever, rent.Trial.Open.Count, rent.Trial.CanTry).ShouldBe((LeverKind.Rent, 2, false));
     }
 
     // My plan's count on the position paper's plan: the vouchers priced, the rent asking: « 1 · 1 ? ».

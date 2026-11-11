@@ -39,8 +39,6 @@ public sealed record PisteRow(PisteTrial Trial, PisteState State, Piste? Piste, 
 {
     public LeverKind Lever => Trial.Lever;
 
-    public OptionalModule Module => PisteTrial.ModuleOf(Trial.Lever);
-
     // The tuned gain, only once measured with one: never an untuned figure, nor one for another trial.
     public decimal? Gain => State == PisteState.Priced ? Piste?.Gain : null;
 
