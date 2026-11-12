@@ -93,7 +93,7 @@ public class PaySlipTextTests
             .Distinct().Where(key => Resources.Get(key) is null).ShouldBeEmpty();
     }
 
-    // The fund's fee adds its row to both tracks and its part to the next 1,000, whoever pays it.
+    // The fund's fee adds its row to the track and its part to the next 1,000, whoever pays it.
     [Theory]
     [InlineData(ContributionsPaidBy.Director)]
     [InlineData(ContributionsPaidBy.Company)]
@@ -111,8 +111,7 @@ public class PaySlipTextTests
             () => keys.Distinct().Where(key => Resources.Get(key) is null).ShouldBeEmpty());
     }
 
-    // Children add the credit for children to the cash track and its part to the next 1,000; the pay's share
-    // of a joint year's credit, taken away, a row of its own words.
+    // Children add the credit for children's part to the next 1,000.
     [Fact]
     public void PaySlipResx_everyKeyOfAPayWithChildren_hasAText()
     {
@@ -122,11 +121,9 @@ public class PaySlipTextTests
 
         var keys = view.Tracks.SelectMany(track => track.Rows).Select(row => PaySlipText.Row(row.Key))
             .Concat(view.NextThousand.Select(part => PaySlipText.Row(part.Key)))
-            .Append(PaySlipText.Row("child_tax_credit_taken_away"))
             .ToList();
 
         keys.ShouldSatisfyAllConditions(
-            () => keys.ShouldContain(PaySlipText.Row("child_tax_credit")),
             () => keys.ShouldContain(PaySlipText.Row("child_tax_credit_lost")),
             () => keys.Distinct().Where(key => Resources.Get(key) is null).ShouldBeEmpty());
     }
@@ -168,7 +165,7 @@ public class PaySlipTextTests
             () => declarations.ShouldContain("var(--netto-data-high)"));
     }
 
-    // A royalty beyond its limits adds its row to both tracks and says what the next 1,000 holds; one
+    // A royalty beyond its limits adds its row to the track and says what the next 1,000 holds; one
     // within them adds its lines to the balance.
     [Fact]
     public void PaySlipResx_everyKeyOfAPayWithARoyalty_hasAText()

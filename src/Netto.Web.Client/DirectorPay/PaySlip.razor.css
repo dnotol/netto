@@ -106,9 +106,8 @@
     background: var(--netto-data-mid);
 }
 
-/* Dots mark the tax credits, for low earned income and for children, here and in the next 1,000: money
+/* Dots mark the tax credits, for low earned income and for children, in the next 1,000: money
    that comes back to the pocket after the tax, neutral like the rest, since only the net is gold. */
-.funnel-row--back .funnel-row__bar,
 .next__segment--low_earned_income_credit_lost,
 .next__part--low_earned_income_credit_lost .next__swatch,
 .next__segment--child_tax_credit_lost,
@@ -134,19 +133,6 @@
 .funnel-row--taxable-income .funnel-row__bar {
     background: var(--netto-data-low);
     box-shadow: inset 0 0 0 1px var(--netto-data-strong);
-}
-
-.funnel-row--net .funnel-row__bar {
-    background: var(--netto-gold);
-}
-
-.funnel-row--net .funnel-row__label,
-.funnel-row--net .funnel-row__amount {
-    font-weight: 600;
-}
-
-.funnel-row--net .funnel-row__amount {
-    color: var(--netto-gold);
 }
 
 .funnel-row__note {

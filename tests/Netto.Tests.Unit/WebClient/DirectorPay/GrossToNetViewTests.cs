@@ -23,32 +23,13 @@ namespace Netto.Tests.WebClient.DirectorPay;
 public class GrossToNetViewTests
 {
     [Fact]
-    public void From_gross50000_cashTrackStartsFromTheGrossPay()
+    public void From_gross50000_oneTrackStartsFromTheGrossPay()
     {
         var view = View(50_000m);
 
-        (view.CompanyPaysContributions, view.Tracks[0].Rows[0].Key, view.Tracks[1].Rows[0].Key).ShouldBe((false, "gross_pay", "gross_pay"));
-    }
-
-    // The contributions the company pays are pay that goes straight back out: the track starts from
-    // what the pay costs the company and the contributions stay paid out, down to the same net the
-    // gross alone leaves after the tax.
-    [Fact]
-    public void From_companyPaysGross50000_cashTrackStartsFromTheCompanysCost()
-    {
-        var cash = CompanyPaysView(50_000m).Tracks[0];
-
-        cash.Rows.Select(row => (row.Key, row.Kind, row.Amount)).ShouldBe(new[]
-        {
-            ("company_cost", RowKind.Gross, 59_942.52m),
-            ("social_contributions", RowKind.PaidOut, 9_942.52m),
-            ("income_tax", RowKind.PaidOut, 14_954.01m),
-            ("municipal_surcharge", RowKind.PaidOut, 1_046.78m),
-            ("low_earned_income_credit", RowKind.Back, 0m),
-            ("income_tax_advance_payment_surcharge", RowKind.PaidOut, 0m),
-            ("income_tax_advance_payment_bonus", RowKind.Back, 0m),
-            ("net_in_pocket", RowKind.NetInPocket, 33_999.21m),
-        });
+        view.ShouldSatisfyAllConditions(
+            () => view.CompanyPaysContributions.ShouldBeFalse(),
+            () => view.Tracks.Select(track => (track.Key, track.Rows[0].Key)).ShouldBe([("tax_base", "gross_pay")]));
     }
 
     // The director declares the gross plus them and deducts them as their own contributions, so the
@@ -56,7 +37,7 @@ public class GrossToNetViewTests
     [Fact]
     public void From_companyPaysGross50000_taxBaseTrackStartsFromTheTaxablePay()
     {
-        var taxBase = CompanyPaysView(50_000m).Tracks[1];
+        var taxBase = CompanyPaysView(50_000m).Tracks[0];
 
         taxBase.Rows.Select(row => (row.Key, row.Kind, row.Amount)).ShouldBe(new[]
         {
@@ -396,57 +377,32 @@ public class GrossToNetViewTests
         (balance.Kind, balance.Detail.ComesBack, balance.Detail.AmountShown).ShouldBe((BalanceKind.Settled, false, "€0.00"));
     }
 
+    // Where the pay goes is the card's drain list, said once: the slip draws only what the tax is computed on.
     [Fact]
-    public void From_gross50000_drawsTheCashTrackThenTheTaxBaseTrack()
+    public void From_gross50000_drawsTheTaxBaseTrackAlone()
     {
         var view = View(50_000m);
 
-        view.Tracks.Select(track => track.Key).ShouldBe(["cash", "tax_base"]);
+        view.Tracks.Select(track => track.Key).ShouldBe(["tax_base"]);
     }
 
-    [Fact]
-    public void From_gross50000_cashTrackRunsFromGrossThroughWhatIsPaidOutToNet()
-    {
-        var cash = View(50_000m).Tracks[0];
-
-        cash.Rows.Select(row => (row.Key, row.Kind, row.Amount)).ShouldBe(new[]
-        {
-            ("gross_pay", RowKind.Gross, 50_000m),
-            ("social_contributions", RowKind.PaidOut, 8_293.36m),
-            ("income_tax", RowKind.PaidOut, 11_333.96m),
-            ("municipal_surcharge", RowKind.PaidOut, 793.38m),
-            ("low_earned_income_credit", RowKind.Back, 0m),
-            ("income_tax_advance_payment_surcharge", RowKind.PaidOut, 0m),
-            ("income_tax_advance_payment_bonus", RowKind.Back, 0m),
-            ("net_in_pocket", RowKind.NetInPocket, 29_579.30m),
-        });
-    }
-
-    // Each row's share of the gross the track starts from, the tax base's as well as the cash's.
+    // Each row's share of the gross the track starts from.
     [Fact]
     public void From_gross50000_eachRowSaysItsShareOfTheGross()
     {
         var view = View(50_000m);
 
-        view.Tracks.Select(track => track.Rows.Select(row => (row.Key, row.Share))).ShouldBe(new[]
-        {
-            new (string, decimal?)[]
-            {
-                ("gross_pay", 1m), ("social_contributions", 0.1658672m), ("income_tax", 0.2266792m), ("municipal_surcharge", 0.0158676m),
-                ("low_earned_income_credit", 0m), ("income_tax_advance_payment_surcharge", 0m), ("income_tax_advance_payment_bonus", 0m),
-                ("net_in_pocket", 0.591586m),
-            },
-            new (string, decimal?)[] { ("gross_pay", 1m), ("social_contributions", 0.1658672m), ("flat_rate_costs", 0.025024m), ("taxable_income", 0.8091088m) },
-        });
+        view.Tracks.Single().Rows.Select(row => (row.Key, row.Share)).ShouldBe(
+            [("gross_pay", 1m), ("social_contributions", 0.1658672m), ("flat_rate_costs", 0.025024m), ("taxable_income", 0.8091088m)]);
     }
 
-    // With the company paying the contributions both tracks start from what the pay costs it.
+    // With the company paying the contributions the track starts from what the pay costs it.
     [Fact]
     public void From_companyPaysGross50000_sharesAreOfTheCompanysCost()
     {
-        var cash = CompanyPaysView(50_000m).Tracks[0];
+        var taxBase = CompanyPaysView(50_000m).Tracks[0];
 
-        cash.Rows[^1].Share.ShouldBe(33_999.21m / 59_942.52m);
+        taxBase.Rows[^1].Share.ShouldBe(48_500m / 59_942.52m);
     }
 
     // A pay of nothing has no share to take of it.
@@ -457,38 +413,9 @@ public class GrossToNetViewTests
     }
 
     [Fact]
-    public void From_gross20000_cashTrackShowsTheCreditComingBack()
-    {
-        var cash = View(20_000m).Tracks[0];
-
-        cash.Rows.Select(row => (row.Key, row.Kind, row.Amount)).ShouldBe(new[]
-        {
-            ("gross_pay", RowKind.Gross, 20_000m),
-            ("social_contributions", RowKind.PaidOut, 3_561.68m),
-            ("income_tax", RowKind.PaidOut, 1_098.78m),
-            ("municipal_surcharge", RowKind.PaidOut, 76.91m),
-            ("low_earned_income_credit", RowKind.Back, 910m),
-            ("income_tax_advance_payment_surcharge", RowKind.PaidOut, 0m),
-            ("income_tax_advance_payment_bonus", RowKind.Back, 0m),
-            ("net_in_pocket", RowKind.NetInPocket, 16_172.63m),
-        });
-    }
-
-    // What comes back is drawn from the balance it finds, 15,262.63, up to the net it leaves; it is
-    // 4.55% of the gross.
-    [Fact]
-    public void From_gross20000_creditBarRisesFromTheBalanceToTheNet()
-    {
-        var cash = View(20_000m).Tracks[0];
-
-        cash.Rows.Single(row => row.Key == "low_earned_income_credit").ShouldBe(
-            new FunnelRow("low_earned_income_credit", RowKind.Back, 910m, 76.31315m, 80.86315m) { Share = 0.0455m });
-    }
-
-    [Fact]
     public void From_gross50000_taxBaseTrackRunsFromGrossThroughTheDeductionsToTaxableIncome()
     {
-        var taxBase = View(50_000m).Tracks[1];
+        var taxBase = View(50_000m).Tracks[0];
 
         taxBase.Rows.Select(row => (row.Key, row.Kind, row.Amount)).ShouldBe(new[]
         {
@@ -499,30 +426,10 @@ public class GrossToNetViewTests
         });
     }
 
-    // Each part paid out is drawn where the balance before it ended, so the bars step down from the
-    // gross to the net: 41,706.64, then 30,372.68, then 29,579.30 left, as shares of 50,000.
     [Fact]
-    public void From_gross50000_cashBarsStepDownFromTheGrossToTheNet()
+    public void From_gross50000_taxBaseBarsStepDownFromTheGrossToTheTaxableIncome()
     {
-        var cash = View(50_000m).Tracks[0];
-
-        cash.Rows.Select(row => (row.BarStart, row.BarEnd)).ShouldBe(new[]
-        {
-            (0m, 100m),
-            (83.41328m, 100m),
-            (60.74536m, 83.41328m),
-            (59.1586m, 60.74536m),
-            (59.1586m, 59.1586m),
-            (59.1586m, 59.1586m),
-            (59.1586m, 59.1586m),
-            (0m, 59.1586m),
-        });
-    }
-
-    [Fact]
-    public void From_gross50000_taxBaseBarsShareTheCashTrackScale()
-    {
-        var taxBase = View(50_000m).Tracks[1];
+        var taxBase = View(50_000m).Tracks[0];
 
         taxBase.Rows.Select(row => (row.BarStart, row.BarEnd)).ShouldBe(new[]
         {
@@ -533,23 +440,19 @@ public class GrossToNetViewTests
         });
     }
 
-    // At 0 the minimum contributions make the net negative, so the scale runs from -3,561.68 to 0:
-    // the gross is a bar of no width at zero, on the right, and the net fills the scale leftwards.
+    // At 0 the minimum contributions take the balance below zero, so the scale runs from -3,561.68 to 0:
+    // the gross is a bar of no width at zero, on the right, and the contributions fill the scale leftwards.
     [Fact]
-    public void From_gross0_scaleReachesDownToTheNegativeNet()
+    public void From_gross0_scaleReachesDownToTheContributionsBelowZero()
     {
-        var cash = View(0m).Tracks[0];
+        var taxBase = View(0m).Tracks[0];
 
-        cash.Rows.Select(row => (row.Key, row.BarStart, row.BarEnd)).ShouldBe(new[]
+        taxBase.Rows.Select(row => (row.Key, row.BarStart, row.BarEnd)).ShouldBe(new[]
         {
             ("gross_pay", 100m, 100m),
             ("social_contributions", 0m, 100m),
-            ("income_tax", 0m, 0m),
-            ("municipal_surcharge", 0m, 0m),
-            ("low_earned_income_credit", 0m, 0m),
-            ("income_tax_advance_payment_surcharge", 0m, 0m),
-            ("income_tax_advance_payment_bonus", 0m, 0m),
-            ("net_in_pocket", 0m, 100m),
+            ("flat_rate_costs", 0m, 0m),
+            ("taxable_income", 100m, 100m),
         });
     }
 
@@ -558,28 +461,26 @@ public class GrossToNetViewTests
     [Fact]
     public void From_gross0_taxableIncomeStaysAtZero()
     {
-        var taxBase = View(0m).Tracks[1];
+        var taxBase = View(0m).Tracks[0];
 
         taxBase.Rows[^1].ShouldBe(new FunnelRow("taxable_income", RowKind.TaxableIncome, 0m, 100m, 100m));
     }
 
-    // The fund's fee at 3.05% is deducted with the contributions (GrossToNetFundFeeTests): the tax base
-    // track takes it off right after them, and the cash track pays it out there too.
+    // The fund's fee at 3.05% is deducted with the contributions (GrossToNetFundFeeTests): the track takes
+    // it off right after them.
     [Fact]
-    public void From_gross50000WithAFundFee_bothTracksTakeTheFeeOffAfterTheContributions()
+    public void From_gross50000WithAFundFee_theTrackTakesTheFeeOffAfterTheContributions()
     {
         var view = View(50_000m, Withheld, fundFeeRate: 0.0305m);
 
-        view.ShouldSatisfyAllConditions(
-            () => view.Tracks[1].Rows.Select(row => (row.Key, row.Kind, row.Amount)).ShouldBe(new[]
-            {
-                ("gross_pay", RowKind.Gross, 50_000m),
-                ("social_contributions", RowKind.PaidOut, 8_251.60m),
-                ("fund_fee", RowKind.PaidOut, 251.68m),
-                ("flat_rate_costs", RowKind.TaxBaseOnly, 1_244.90m),
-                ("taxable_income", RowKind.TaxableIncome, 40_251.82m),
-            }),
-            () => view.Tracks[0].Rows.Select(row => row.Key).Take(3).ShouldBe(["gross_pay", "social_contributions", "fund_fee"]));
+        view.Tracks[0].Rows.Select(row => (row.Key, row.Kind, row.Amount)).ShouldBe(new[]
+        {
+            ("gross_pay", RowKind.Gross, 50_000m),
+            ("social_contributions", RowKind.PaidOut, 8_251.60m),
+            ("fund_fee", RowKind.PaidOut, 251.68m),
+            ("flat_rate_costs", RowKind.TaxBaseOnly, 1_244.90m),
+            ("taxable_income", RowKind.TaxableIncome, 40_251.82m),
+        });
     }
 
     // Whether the pay holds the fund's fee, for the next 1,000's note to name it.
@@ -670,29 +571,6 @@ public class GrossToNetViewTests
             () => parts.Sum(part => part.Amount).ShouldBe(1_000m));
     }
 
-    // At 20,000 the credit reaches its cap, 1,100, and comes back to the pocket after the taxes.
-    [Fact]
-    public void From_singleParentOnALowPay_drawsTheCreditForChildrenComingBack()
-    {
-        var row = HouseholdView(20_000m, SingleParentOfTwoOneUnder3).Tracks[0].Rows.Single(row => row.Key == "child_tax_credit");
-
-        (row.Kind, row.Amount).ShouldBe((RowKind.Back, 1_100m));
-    }
-
-    // In a joint year the pay's share of the household's credit can be less than nothing: what the pay takes
-    // away of it is paid out, under words of its own.
-    [Fact]
-    public void From_creditForChildrenThePayTakesAway_drawsItPaidOut()
-    {
-        var (value, _) = GrossToNet.Compute(2026, 20_000m, MunicipalRates.IncomeYear2026.Entered(0.07m), Withheld, household: SingleParentOfTwoOneUnder3);
-        var pay = value.ShouldNotBeNull();
-        var takingAway = pay with { Steps = [.. pay.Steps.Select(step => step.RuleKey == "child_tax_credit" ? step with { Amount = 120m } : step)] };
-
-        var row = GrossToNetView.From(takingAway).Tracks[0].Rows.Single(row => row.Key.StartsWith("child_tax_credit", StringComparison.Ordinal));
-
-        (row.Key, row.Kind, row.Amount).ShouldBe(("child_tax_credit_taken_away", RowKind.PaidOut, 120m));
-    }
-
     [Fact]
     public void From_gross50000_detailsEveryStepInTheEngineOrder()
     {
@@ -771,9 +649,9 @@ public class GrossToNetViewTests
     [Fact]
     public void From_gross50000WithABenefit_taxBaseTrackAddsTheBenefitToTheGross()
     {
-        var asCash = View(52_400m).Tracks[1].Rows;
+        var asCash = View(52_400m).Tracks[0].Rows;
 
-        var taxBase = View(50_000m, Withheld, benefit: 2_400m).Tracks[1].Rows;
+        var taxBase = View(50_000m, Withheld, benefit: 2_400m).Tracks[0].Rows;
 
         taxBase.Select(row => (row.Key, row.Kind, row.Amount)).ShouldBe(new[]
         {
@@ -789,18 +667,9 @@ public class GrossToNetViewTests
     [Fact]
     public void From_gross50000WithABenefit_benefitBarRisesFromTheGross()
     {
-        var rows = View(50_000m, Withheld, benefit: 2_400m).Tracks[1].Rows;
+        var rows = View(50_000m, Withheld, benefit: 2_400m).Tracks[0].Rows;
 
         (rows[1].BarStart, rows[1].BarEnd).ShouldBe((rows[0].BarEnd, rows[0].BarEnd + (rows[0].BarEnd - rows[0].BarStart) * 2_400m / 50_000m));
-    }
-
-    // The cash track starts from the gross and ends on what is paid, the benefit's tax taken.
-    [Fact]
-    public void From_gross50000WithABenefit_cashTrackHasNoBenefit()
-    {
-        var cash = View(50_000m, Withheld, benefit: 2_400m).Tracks[0].Rows;
-
-        (cash[0].Amount, cash.Any(row => row.Key == "benefit_in_kind"), cash[^1].Kind).ShouldBe((50_000m, false, RowKind.NetInPocket));
     }
 
     [Fact]
@@ -816,34 +685,31 @@ public class GrossToNetViewTests
     {
         var view = View(50_000m);
 
-        (view.Statement.HasBenefit, view.Tracks[1].Rows.Any(row => row.Key == "benefit_in_kind")).ShouldBe((false, false));
+        (view.Statement.HasBenefit, view.Tracks[0].Rows.Any(row => row.Key == "benefit_in_kind")).ShouldBe((false, false));
     }
 
-    // A royalty's part beyond its limits, 5,000, is pay paid besides the payslip: it joins both tracks
-    // after the gross, and the rest of each is that of a cash pay of 55,000 (GrossToNetMovableIncomeTests).
+    // A royalty's part beyond its limits, 5,000, is pay paid besides the payslip: it joins the track
+    // after the gross, and the rest of it is that of a cash pay of 55,000 (GrossToNetMovableIncomeTests).
     [Fact]
-    public void From_gross50000WithARoyaltyBeyondItsLimits_bothTracksAddThePartTaxedAsPay()
+    public void From_gross50000WithARoyaltyBeyondItsLimits_theTrackAddsThePartTaxedAsPay()
     {
         var view = View(50_000m, Withheld, movable: new MovableIncomePaid(5_000m, null, 5_000m, 1_500m));
 
-        view.Tracks.Select(track => track.Rows.Take(2).Select(row => (row.Key, row.Kind, row.Amount)).ToList()).ShouldBe(new[]
-        {
-            new List<(string, RowKind, decimal)> { ("gross_pay", RowKind.Gross, 50_000m), ("requalified_pay", RowKind.Added, 5_000m) },
-            [("gross_pay", RowKind.Gross, 50_000m), ("requalified_pay", RowKind.Added, 5_000m)],
-        });
+        view.Tracks[0].Rows.Take(2).Select(row => (row.Key, row.Kind, row.Amount)).ShouldBe(
+            [("gross_pay", RowKind.Gross, 50_000m), ("requalified_pay", RowKind.Added, 5_000m)]);
     }
 
     [Fact]
-    public void From_gross50000WithARoyaltyBeyondItsLimits_endsOnTheCashPaysNetAndTaxableIncome()
+    public void From_gross50000WithARoyaltyBeyondItsLimits_endsOnTheCashPaysTaxableIncome()
     {
         var asCash = View(55_000m);
 
         var view = View(50_000m, Withheld, movable: new MovableIncomePaid(5_000m, null, 5_000m, 1_500m));
 
-        (view.Tracks[0].Rows[^1].Amount, view.Tracks[1].Rows[^1].Amount).ShouldBe((asCash.Tracks[0].Rows[^1].Amount, asCash.Tracks[1].Rows[^1].Amount));
+        view.Tracks[0].Rows[^1].Amount.ShouldBe(asCash.Tracks[0].Rows[^1].Amount);
     }
 
-    // The shares are out of what the tracks start from, the gross and that part.
+    // The shares are out of what the track starts from, the gross and that part.
     [Fact]
     public void From_gross50000WithARoyaltyBeyondItsLimits_sharesAreOutOfTheGrossAndThatPart()
     {

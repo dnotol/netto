@@ -411,8 +411,14 @@ internal sealed record DirectorPayView(
                     .Select(step => Payer(Drain.PaidOutTo(step, "taxes_on_pay"), companyPays).Of(inflow)),
                 new Drain("net_pay", DrainKind.PassedOn, pay.NetInPocket, "pocket").Of(inflow),
             ],
-            pay.Steps.Select(StepDetail.From).ToList());
+            Sources(pay));
     }
+
+    // The steps the pay's drain lines do not state, each with its rules and none of nothing: the ones that
+    // move money are drains with their sources in their bubbles, so the breakdown is given once. What is
+    // left only takes the tax base down.
+    private static List<StepDetail> Sources(GrossToNetResult pay) =>
+        [.. pay.Steps.Where(step => step.Track != Track.PaidOut && Math.Round(step.Amount, 2, MidpointRounding.AwayFromZero) != 0m).Select(StepDetail.From)];
 
     // The contributions and the fund's fee drains are the same steps of the engine whoever pays; their
     // labels say when the company does.

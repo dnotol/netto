@@ -217,17 +217,15 @@
     {
         RowKind.Gross => "gross",
         RowKind.PaidOut => "paid-out",
-        RowKind.Back => "back",
         RowKind.Added => "added",
         RowKind.TaxBaseOnly => "tax-base-only",
         RowKind.TaxableIncome => "taxable-income",
-        RowKind.NetInPocket => "net",
         _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, null),
     };
 
     private static string Amount(FunnelRow row) => row.Kind switch
     {
-        RowKind.Back or RowKind.Added => Formats.Addition(row.Amount),
+        RowKind.Added => Formats.Addition(row.Amount),
         _ when row.IsDeduction => Formats.Deduction(row.Amount),
         _ => Formats.Euros(row.Amount),
     };

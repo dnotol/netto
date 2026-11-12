@@ -12,12 +12,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Track_cash" xml:space="preserve">
-    <value>Ce que vous payez</value>
-  </data>
-  <data name="TrackHint_cash" xml:space="preserve">
-    <value>De votre rémunération à ce qui arrive dans votre poche.</value>
-  </data>
   <data name="Track_tax_base" xml:space="preserve">
     <value>Ce sur quoi porte l'impôt</value>
   </data>
@@ -54,17 +48,8 @@
   <data name="Row_municipal_surcharge" xml:space="preserve">
     <value>Taxe communale additionnelle</value>
   </data>
-  <data name="Row_low_earned_income_credit" xml:space="preserve">
-    <value>Crédit d'impôt pour bas revenus d'activités</value>
-  </data>
   <data name="Row_low_earned_income_credit_lost" xml:space="preserve">
     <value>Crédit d'impôt pour bas revenus d'activités perdu</value>
-  </data>
-  <data name="Row_child_tax_credit" xml:space="preserve">
-    <value>Crédit d'impôt remboursable pour enfants à charge</value>
-  </data>
-  <data name="Row_child_tax_credit_taken_away" xml:space="preserve">
-    <value>Crédit d'impôt remboursable pour enfants à charge que votre rémunération retire</value>
   </data>
   <data name="Row_child_tax_credit_lost" xml:space="preserve">
     <value>Crédit d'impôt remboursable pour enfants à charge perdu</value>
@@ -74,12 +59,6 @@
   </data>
   <data name="NextTitle" xml:space="preserve">
     <value>Où vont 1.000&#160;€ de rémunération brute en plus</value>
-  </data>
-  <data name="Row_income_tax_advance_payment_surcharge" xml:space="preserve">
-    <value>Majoration pour insuffisance de versements anticipés</value>
-  </data>
-  <data name="Row_income_tax_advance_payment_bonus" xml:space="preserve">
-    <value>Bonification des versements anticipés</value>
   </data>
   <data name="Row_income_tax_advance_payments" xml:space="preserve">
     <value>Majoration pour insuffisance de versements anticipés, moins la bonification</value>

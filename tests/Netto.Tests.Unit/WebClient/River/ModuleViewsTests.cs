@@ -329,12 +329,22 @@ public class ModuleViewsTests
         (view.ToYou, view.Drains.All(drain => drain.Share == null)).ShouldBe(((decimal?)null, true));
     }
 
+    // The sources hold what the drain lines do not: a step that moves money is a drain with its own sources
+    // in its bubble, said once; what only takes the tax base down is listed here, none of nothing.
     [Fact]
-    public void DirectorPay_example_listsThePaysStepsWithTheirSources()
+    public void DirectorPay_example_listsOnlyTheStepsNoDrainStates()
     {
-        DirectorPay(RiverInputs.Example).Details.Select(detail => detail.RuleKey)
-            .ShouldBe(["social_contributions", "flat_rate_costs", "taxable_income", "income_tax", "municipal_surcharge", "low_earned_income_credit",
-                "income_tax_advance_payment_surcharge", "income_tax_advance_payment_bonus"]);
+        var view = DirectorPay(RiverInputs.Example);
+
+        view.ShouldSatisfyAllConditions(
+            () => view.Details.Select(detail => detail.RuleKey).ShouldBe(["flat_rate_costs", "taxable_income"]),
+            () => DrainLines.Shown(view.Drains).SelectMany(drain => drain.Details).Select(detail => detail.RuleKey).ShouldBe(["social_contributions", "income_tax", "municipal_surcharge"]));
+    }
+
+    [Fact]
+    public void DirectorPay_noPay_listsNoStepOfNothing()
+    {
+        DirectorPay(RiverInputs.Example.WithDirectorPay(0m)).Details.ShouldAllBe(detail => Math.Round(detail.Amount, 2, MidpointRounding.AwayFromZero) != 0m);
     }
 
     // Nothing withheld: 486.57 on the pay's tax, a drain of its own (what more by a deadline leaves none

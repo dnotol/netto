@@ -5,21 +5,22 @@ using Netto.Web.Client.Steps;
 
 namespace Netto.Web.Client.DirectorPay;
 
-// What the pay slip draws from one gross-to-net result: each track as rows of bars on one scale
-// shared by every track, so equal amounts are equally long, the next 1,000 as shares, the monthly
+// What the pay slip draws from one gross-to-net result: the tax base as rows of bars on one scale, from the
+// pay to the net professional income the tax is computed on (where the pay goes is the card's drain list,
+// said once there), the next 1,000 as shares, the monthly
 // statement, the key formula's withholding as a step with its lines and sources for each period of
 // the year's withholding rules, with the months it covers, the balance on the assessment, and each
 // step's amounts grouped under their sources. It only selects, orders and scales the engine's
 // figures; every amount is the engine's. When the company pays the contributions
 // on the director's behalf (CompanyPaysContributions) they are pay that goes straight back out, so
-// both tracks start from what the pay costs the company, the gross plus them, which is also the pay
+// the track starts from what the pay costs the company, the gross plus them, which is also the pay
 // the director declares, and the contributions stay paid out. The fund's fee on the contributions is a
-// row of its own after them on both tracks, deducted with them, and a part of the next 1,000 while
+// row of its own after them, deducted with them, and a part of the next 1,000 while
 // there is one. With a rent taxed with the pay
-// (TaxedWithOtherIncome) the tracks stay the pay's own, while the next 1,000 and the balance are the
-// year's, the rent's tax in them. A benefit in kind, a company car's, joins the tax base track after
-// the gross, never the cash track: it is taxed as pay but never paid. A copyright royalty's part beyond
-// its limits joins both after the gross: taxed as pay and paid, though besides the payslip, so each
+// (TaxedWithOtherIncome) the track stays the pay's own, while the next 1,000 and the balance are the
+// year's, the rent's tax in them. A benefit in kind, a company car's, joins the track after
+// the gross: it is taxed as pay but never paid. A copyright royalty's part beyond
+// its limits joins it after the gross: taxed as pay and paid, though besides the payslip, so each
 // row's share is out of the gross and that part. With a royalty within its limits taxed apart
 // (TaxedApart), the balance says how much of the final tax is its and what the company withheld on it.
 internal sealed record GrossToNetView(
@@ -54,14 +55,8 @@ internal sealed record GrossToNetView(
             ? new Line("company_cost", RowKind.Gross, result.CompanyCost)
             : new Line("gross_pay", RowKind.Gross, result.GrossPay);
 
-        // A royalty's part taxed as pay, added to the gross on both tracks.
+        // A royalty's part taxed as pay, added to the gross.
         IReadOnlyList<Line> requalified = result.RequalifiedPay > 0m ? [new Line("requalified_pay", RowKind.Added, result.RequalifiedPay)] : [];
-
-        // What leaves the pocket, in the engine's order, down to the net.
-        var cash = new List<Line> { gross };
-        cash.AddRange(requalified);
-        cash.AddRange(result.Steps.Where(step => step.Track == Track.PaidOut).Select(Deduction));
-        cash.Add(new Line("net_in_pocket", RowKind.NetInPocket, result.NetInPocket));
 
         // What lowers the tax base, in the engine's order, down to the taxable income it closes on, a
         // benefit in kind and a royalty's part taxed as pay added to the gross first.
@@ -72,9 +67,9 @@ internal sealed record GrossToNetView(
         taxBase.AddRange(result.Steps.TakeWhile(step => step.RuleKey != "taxable_income").Select(Deduction));
         taxBase.Add(new Line("taxable_income", RowKind.TaxableIncome, result.TaxableIncome));
 
-        var tracks = new[] { (Key: "cash", Bars: Bars(cash)), (Key: "tax_base", Bars: Bars(taxBase)) };
+        var tracks = new[] { (Key: "tax_base", Bars: Bars(taxBase)) };
 
-        // From the lowest point, or zero, to the highest: below zero only when the net is negative.
+        // From the lowest point, or zero, to the highest: below zero only when the contributions outrun the pay.
         var ends = tracks.SelectMany(track => track.Bars).SelectMany(bar => new[] { bar.From, bar.To }).Append(0m).ToList();
         var (minimum, maximum) = (ends.Min(), ends.Max());
         decimal Percent(decimal amount) => maximum == minimum ? 0m : (amount - minimum) / (maximum - minimum) * 100m;
@@ -158,17 +153,9 @@ internal sealed record GrossToNetView(
             new StepLine("single_parent_reduction", formula.SingleParentReduction),
         }.Where(line => line.Amount != 0m);
 
-    // A step paid out with a negative amount is money that comes back: the tax credit for low earned
-    // income. The engine negates it, so a credit of nothing is a negative zero and still comes back.
-    // The credit for children is the pay's share of the household's in a joint year, which can be less than
-    // nothing: what the pay takes away of it is paid out, under words of its own.
-    private static Line Deduction(Step step) => step.Track switch
-    {
-        Track.PaidOut when decimal.IsNegative(step.Amount) => new(step.RuleKey, RowKind.Back, -step.Amount),
-        Track.PaidOut when step.RuleKey == "child_tax_credit" && step.Amount > 0m => new("child_tax_credit_taken_away", RowKind.PaidOut, step.Amount),
-        Track.PaidOut => new(step.RuleKey, RowKind.PaidOut, step.Amount),
-        _ => new(step.RuleKey, RowKind.TaxBaseOnly, step.Amount),
-    };
+    // What takes the tax base down before the taxable income: the contributions and the fund's fee, paid out
+    // and deducted, and the flat-rate costs, deducted and never paid.
+    private static Line Deduction(Step step) => new(step.RuleKey, step.Track == Track.PaidOut ? RowKind.PaidOut : RowKind.TaxBaseOnly, step.Amount);
 
     // Where the credit rises, the next 1,000 gains some of it: that part is negative and the pocket's is
     // more than the 1,000. The bar then draws only the parts that take money, each as wide as its share
@@ -195,7 +182,7 @@ internal sealed record GrossToNetView(
                 bars.Add((line, balance - line.Amount, balance));
                 balance -= line.Amount;
             }
-            else if (line.Kind is RowKind.Back or RowKind.Added)
+            else if (line.Kind is RowKind.Added)
             {
                 bars.Add((line, balance, balance + line.Amount));
                 balance += line.Amount;
@@ -234,9 +221,6 @@ internal enum RowKind
     // Leaves the pocket: social contributions, income tax, municipal surcharge.
     PaidOut,
 
-    // Comes back to the pocket after the tax: the tax credit for low earned income.
-    Back,
-
     // Joins the tax base without ever reaching the pocket: a benefit in kind.
     Added,
 
@@ -244,7 +228,6 @@ internal enum RowKind
     TaxBaseOnly,
 
     TaxableIncome,
-    NetInPocket,
 }
 
 internal static class RowKindExtensions

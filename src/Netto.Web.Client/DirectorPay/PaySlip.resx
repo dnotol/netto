@@ -12,12 +12,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Track_cash" xml:space="preserve">
-    <value>What you pay</value>
-  </data>
-  <data name="TrackHint_cash" xml:space="preserve">
-    <value>From your pay to what reaches your pocket.</value>
-  </data>
   <data name="Track_tax_base" xml:space="preserve">
     <value>What you are taxed on</value>
   </data>
@@ -54,17 +48,8 @@
   <data name="Row_municipal_surcharge" xml:space="preserve">
     <value>Municipal surcharge</value>
   </data>
-  <data name="Row_low_earned_income_credit" xml:space="preserve">
-    <value>Tax credit for low earned income</value>
-  </data>
   <data name="Row_low_earned_income_credit_lost" xml:space="preserve">
     <value>Tax credit for low earned income lost</value>
-  </data>
-  <data name="Row_child_tax_credit" xml:space="preserve">
-    <value>Refundable tax credit for children</value>
-  </data>
-  <data name="Row_child_tax_credit_taken_away" xml:space="preserve">
-    <value>Refundable tax credit for children your pay takes away</value>
   </data>
   <data name="Row_child_tax_credit_lost" xml:space="preserve">
     <value>Refundable tax credit for children lost</value>
@@ -74,12 +59,6 @@
   </data>
   <data name="NextTitle" xml:space="preserve">
     <value>Where the next €1,000 of gross pay goes</value>
-  </data>
-  <data name="Row_income_tax_advance_payment_surcharge" xml:space="preserve">
-    <value>Advance-payment surcharge</value>
-  </data>
-  <data name="Row_income_tax_advance_payment_bonus" xml:space="preserve">
-    <value>Bonus on advance payments</value>
   </data>
   <data name="Row_income_tax_advance_payments" xml:space="preserve">
     <value>Advance-payment surcharge, less the bonus</value>
