@@ -24,6 +24,15 @@ public class FigureWordsTests
         figures.ShouldBe([new Figure("Costs deducted at 61.6%", 4_928m)]);
     }
 
+    // A line the map reads by its key may be worded by another key of the card's texts, its key unchanged.
+    [Fact]
+    public void Of_lineWithItsOwnLabel_wordsItByThatKey()
+    {
+        var figures = FigureWords.Of(Texts, [new FigureLine("Figure_Deducted", 4_928m) { Label = "Figure_Co2" }]);
+
+        figures.ShouldBe([new Figure("CO2 percentage", 4_928m)]);
+    }
+
     [Fact]
     public void Of_lineWithHelp_wordsWhatItsBubbleSaysWithItsArguments()
     {

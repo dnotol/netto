@@ -66,9 +66,6 @@
   <data name="NoCarYet" xml:space="preserve">
     <value>Enter its catalogue value to see its figures.</value>
   </data>
-  <data name="AtTheMinimum" xml:space="preserve">
-    <value>Benefit held to the year's minimum.</value>
-  </data>
   <data name="AddBackReading" xml:space="preserve">
     <value>It adds back 40% because it pays your private charging: the law says « fuel », and the administration reads it as the charging of an electric car.</value>
   </data>
@@ -297,32 +294,14 @@
   <data name="Help_BenefitTaxed" xml:space="preserve">
     <value>It is taxed as your pay, though never paid in cash.</value>
   </data>
-  <data name="Figure_Deduction_Full" xml:space="preserve">
-    <value>Costs deducted, at {0}</value>
-  </data>
-  <data name="Figure_Deduction_AllCarvedOut" xml:space="preserve">
-    <value>Costs deducted, all of them</value>
-  </data>
-  <data name="Help_Deduction_AllCarvedOut" xml:space="preserve">
-    <value>They are no more than your benefit taxed and your contribution, which stay deductible.</value>
-  </data>
-  <data name="Figure_Deduction_None" xml:space="preserve">
-    <value>Costs deducted</value>
-  </data>
   <data name="Help_Deduction_None" xml:space="preserve">
-    <value>Only the part equal to your benefit taxed and your contribution: its order date, its engine and its CO2 leave nothing more deductible.</value>
-  </data>
-  <data name="Figure_Deduction_Rate" xml:space="preserve">
-    <value>Costs deducted, the rest at {0}</value>
+    <value>Only the part equal to your benefit taxed and your contribution: its order date, its engine and its CO2 leave nothing more deductible. What it cannot deduct is added back to its taxable income.</value>
   </data>
   <data name="Help_Deduction_Rate" xml:space="preserve">
-    <value>The part equal to your benefit taxed and your contribution in full, and the rest at {0}, the rate its order date, its engine and its CO2 give.</value>
+    <value>The part equal to your benefit taxed and your contribution in full, and the rest at {0}, the rate its order date, its engine and its CO2 give. What it cannot deduct is added back to its taxable income.</value>
   </data>
   <data name="Figure_NotDeductible" xml:space="preserve">
     <value>Costs the company cannot deduct</value>
-  </data>
-  <data name="Help_NotDeductible" xml:space="preserve">
-    <value>They are added back to its taxable income.</value>
   </data>
   <data name="Figure_AddBack" xml:space="preserve">
     <value>Benefit added back, at {0}</value>
@@ -336,15 +315,6 @@
   <data name="Figure_WithoutCar" xml:space="preserve">
     <value>Without it</value>
   </data>
-  <data name="Figure_Cash_Takes" xml:space="preserve">
-    <value>Cash the car takes</value>
-  </data>
-  <data name="Figure_Cash_None" xml:space="preserve">
-    <value>Cash the car takes</value>
-  </data>
-  <data name="Figure_Cash_Adds" xml:space="preserve">
-    <value>Cash the car adds</value>
-  </data>
   <data name="Figure_TaxesOnPay" xml:space="preserve">
     <value>Contributions and tax it adds</value>
   </data>
@@ -353,5 +323,20 @@
   </data>
   <data name="Figure_Period_Year" xml:space="preserve">
     <value>All year, at {2}</value>
+  </data>
+  <data name="Figure_BenefitTaxed_Minimum" xml:space="preserve">
+    <value>Benefit taxed, the year's minimum</value>
+  </data>
+  <data name="Figure_Benefit_Minimum" xml:space="preserve">
+    <value>Car's benefit in kind, the year's minimum, before your contribution</value>
+  </data>
+  <data name="Help_Minimum" xml:space="preserve">
+    <value>Its catalogue value, at its CO2 percentage and the share its age leaves, gives {0}, less than the minimum the law sets for the year. It is taxed as your pay, though never paid in cash.</value>
+  </data>
+  <data name="Figure_Co2_Electric" xml:space="preserve">
+    <value>CO2 percentage of an electric car, the minimum</value>
+  </data>
+  <data name="Figure_NotDeductible_Rate" xml:space="preserve">
+    <value>Costs the company cannot deduct, at a deduction rate of {0}</value>
   </data>
 </root>

@@ -125,7 +125,7 @@ public class CarViewTests
     {
         var comparison = CarComparison.From(ElectricCar, ElectricCar.Run()).ShouldNotBeNull();
 
-        (comparison.TaxesOnPayAdded > 0m, comparison.CashCost, CarCardText.Cash(comparison)).ShouldBe((true, 6_162.66m, "Figure_Cash_Takes"));
+        (comparison.TaxesOnPayAdded > 0m, comparison.CashCost).ShouldBe((true, 6_162.66m));
     }
 
     // A pay set above what the company can pay once the car's costs are paid is held there in the plan with
@@ -334,19 +334,19 @@ public class CarViewTests
             .ShouldBe([null, null, "Co2_HeldToMinimum", "Co2_HeldToMaximum"]);
     }
 
-    // How the company deducts the car's costs: in full; the part equal to the benefit and the
-    // contribution in full and the rest at its rate; that part alone; or all of them, being no more
-    // than that part.
+    // How the company deducts costs it does not deduct in full, said in the bubble of what it cannot deduct:
+    // nothing for costs in full or no more than the benefit; the part equal to the benefit and the
+    // contribution in full and the rest at its rate; that part alone.
     [Fact]
-    public void Car_deduction_saysHowTheCompanyDeductsItsCosts()
+    public void Car_deduction_saysHowTheCompanyDeductsCostsItDoesNotDeductInFull()
     {
         var orderedIn2025 = PetrolCar.WithCatalogueValue(30_000m).WithCarCosts(10_000m).WithCarCo2(100).WithCarAcquired(new DateOnly(2025, 11, 1));
         var cheapDiesel = PetrolCar.WithCatalogueValue(60_000m).WithFirstRegistration(new DateOnly(2019, 3, 5)).WithCarCosts(3_500m)
             .WithCarEngine(CarEngine.Diesel).WithCarCo2(140).WithCarAcquired(new DateOnly(2019, 2, 1));
 
         new[] { ElectricCar, orderedIn2025, PetrolCar, cheapDiesel }
-            .Select(inputs => CarCardText.Deduction(Car(inputs).Result))
-            .ShouldBe(["Figure_Deduction_Full", "Figure_Deduction_Rate", "Figure_Deduction_None", "Figure_Deduction_AllCarvedOut"]);
+            .Select(inputs => CarCardText.DeductionHelp(Car(inputs).Result))
+            .ShouldBe([null, "Help_Deduction_Rate", "Help_Deduction_None", null]);
     }
 
     [Fact]

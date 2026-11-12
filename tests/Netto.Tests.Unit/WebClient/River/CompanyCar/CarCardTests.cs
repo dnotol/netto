@@ -46,15 +46,11 @@ public class CarCardTests
 
         CardHtml.Lines(html).ShouldBe(
         [
-            (Text("Figure_Benefit"), "€1,714.29", null),
-            (Text("Figure_Co2"), "4%", null),
-            (Text("Figure_Period_Year", "January", "December", "100%"), "€1,714.29", null),
+            (Text("Figure_Co2_Electric"), "4%", null),
             (Text("Figure_BenefitTaxed"), "€1,714.29", null),
-            (Text("Figure_Deduction_Full", "100%"), "€8,000.00", null),
             (Text("Figure_AddBack", "17%"), "€291.43", null),
             (Text("Figure_WithCar"), Formats.Euros(comparison.PocketWith), null),
             (Text("Figure_WithoutCar"), Formats.Euros(comparison.PocketWithout), null),
-            (Text("Figure_Cash_Takes"), "€6,162.66", null),
             (Text("Figure_TaxesOnPay"), Formats.Euros(comparison.TaxesOnPayAdded), null),
             (Drains("Drain_car_costs"), "−€8,000.00", null),
         ]);
@@ -144,13 +140,27 @@ public class CarCardTests
             .ShouldBe((true, true, false));
     }
 
-    // What a figure cannot say stays in sight: a benefit held to the year's minimum, a CO2 percentage held
-    // to the lowest or the highest, and a car not counted until its catalogue value is given.
+    // A car at the year's minimum draws the benefit taxed once, worded as the minimum, what its scale gives in
+    // its bubble; no CO2 percentage, no period, and no sentence saying it is held there.
+    [Fact]
+    public async Task Card_atTheMinimum_drawsTheMinimumOnceWithWhatTheScaleGivesInItsBubble()
+    {
+        var html = await RenderOpenAsync<CarCard>(OptionalModule.Car, ElectricCar.WithCatalogueValue(30_000m));
+        var lines = CardHtml.Lines(html);
+
+        html.ShouldSatisfyAllConditions(
+            () => lines.Take(2).ShouldBe([(Text("Figure_BenefitTaxed_Minimum"), "€1,690.00", null), (Text("Figure_AddBack", "17%"), "€287.30", null)]),
+            () => CardHtml.BubbleAfter(html, Text("Figure_BenefitTaxed_Minimum")).ShouldContain("€1,028.57"),
+            () => lines.Count(line => line.Amount == "€1,690.00").ShouldBe(1));
+    }
+
+    // What a figure cannot say stays in sight: a CO2 percentage held to the lowest or the highest, and a car
+    // not counted until its catalogue value is given. A benefit held to the year's minimum is its line's
+    // label, no sentence.
     public static TheoryData<string, RiverInputs, string> Notes => new()
     {
-        { "a benefit below the minimum", ElectricCar.WithCatalogueValue(30_000m), Text("AtTheMinimum") },
         { "a diesel at 250 g/km", PetrolCar.WithCarEngine(CarEngine.Diesel).WithCarCo2(250), Text("Co2_HeldToMaximum") },
-        { "a plug-in hybrid at 20 g/km", PetrolCar.WithCarEngine(CarEngine.PetrolPlugInHybrid).WithCarCo2(20), Text("Co2_HeldToMinimum") },
+        { "a plug-in hybrid at 20 g/km above the minimum", PetrolCar.WithCatalogueValue(80_000m).WithCarEngine(CarEngine.PetrolPlugInHybrid).WithCarCo2(20), Text("Co2_HeldToMinimum") },
         { "no catalogue value", RiverInputs.Example.AddToPlan(OptionalModule.Car), Text("NoCarYet") },
     };
 
@@ -175,7 +185,7 @@ public class CarCardTests
         html.ShouldSatisfyAllConditions(
             () => CardHtml.Bubbles(field).ShouldHaveSingleItem().Text.ShouldNotBeNullOrWhiteSpace(),
             () => field.ShouldNotContain("origin-chip"),
-            () => CardHtml.LineAmounts(html).ShouldContain("€6,162.66"),
+            () => CardHtml.Summary(html).ShouldNotBeNull().ShouldContain("€6,162.66"),
             () => CardHtml.Amounts(Gap(html)).ShouldBeEmpty());
     }
 

@@ -13,32 +13,6 @@ public class CarCardTextTests
 
     private static readonly CarRules Rules = CarRules.IncomeYear2026;
 
-    // What the car takes in cash from the pocket, each way it can fall: some, none, or more cash left in
-    // the pocket than without it, which a benefit that keeps the reduced corporate rate can do.
-    [Fact]
-    public void CarCardResx_everyCashLine_hasALabel()
-    {
-        var comparisons = new[] { new CarComparison(40_000m, 43_000m, 1_000m), new CarComparison(40_000m, 40_000m, 0m), new CarComparison(41_000m, 40_000m, 1_000m) };
-
-        comparisons.Select(CarCardText.Cash).ShouldBe(["Figure_Cash_Takes", "Figure_Cash_None", "Figure_Cash_Adds"]);
-        Resources.Missing(comparisons.Select(CarCardText.Cash)).ShouldBeEmpty();
-    }
-
-    // The line's amount is the cash; its label says which way it goes: a car that takes none is worded as
-    // one that takes.
-    [Fact]
-    public void Cash_none_readsAsTakes()
-    {
-        Resources.Get("Figure_Cash_None").ShouldBe(Resources.Get("Figure_Cash_Takes").ShouldNotBeNull());
-    }
-
-    // A car that adds cash is worded otherwise than one that takes it.
-    [Fact]
-    public void Cash_adds_differsFromTakes()
-    {
-        Resources.Get("Figure_Cash_Adds").ShouldNotBeNull().ShouldNotBe(Resources.Get("Figure_Cash_Takes").ShouldNotBeNull());
-    }
-
     // The company car against the same car bought privately, each way it can fall, and the field that
     // asks what that car would cost, with what to count.
     [Fact]
@@ -86,16 +60,29 @@ public class CarCardTextTests
         Resources.Missing(keys).ShouldBeEmpty();
     }
 
-    // Every way the CO2 percentage is taken, and every way the company deducts the costs, with the bubble of
-    // each that does not deduct them at one rate.
+    // Every way the CO2 percentage is taken, and every way the company deducts costs it does not deduct in
+    // full, in the bubble of what it cannot deduct.
     [Fact]
-    public void CarCardResx_everyCo2SentenceAndDeductionLine_hasAText()
+    public void CarCardResx_everyCo2SentenceAndDeductionBubble_hasAText()
     {
         var keys = Enum.GetValues<CarCo2Basis>().Select(basis => CarCardText.Co2(CarResult.None with { Co2Basis = basis }))
-            .Concat(["Co2_HeldToMinimum", "Co2_HeldToMaximum", "Figure_Deduction_Full", "Figure_Deduction_Rate", "Figure_Deduction_None", "Figure_Deduction_AllCarvedOut",
-                "Help_Deduction_Rate", "Help_Deduction_None", "Help_Deduction_AllCarvedOut"]);
+            .Concat(["Co2_HeldToMinimum", "Co2_HeldToMaximum", "Help_Deduction_Rate", "Help_Deduction_None"]);
 
         Resources.Missing(keys).ShouldBeEmpty();
+    }
+
+    // The bubble of what the company cannot deduct: that part alone, or the rest at its rate; none while it
+    // deducts them all.
+    [Theory]
+    [InlineData(0, 4_950, "Help_Deduction_None")]
+    [InlineData(0.5, 3_907.14, "Help_Deduction_Rate")]
+    [InlineData(1, 0, null)]
+    [InlineData(0, 0, null)]
+    public void DeductionHelp_eachWay_isItsBubble(decimal rate, decimal notDeductible, string? key)
+    {
+        var car = CarResult.None with { Costs = 10_000m, Deductible = 10_000m - notDeductible, DeductionRate = rate };
+
+        CarCardText.DeductionHelp(car).ShouldBe(key);
     }
 
     // A part of the benefit's year by its months, a month begun counting whole: the whole year, one month, or
@@ -117,7 +104,8 @@ public class CarCardTextTests
 
     // Every line the car's figures draw, and what its bubble says, on cars that take each of them: new or
     // turning a year older during the year, at the minimum, with a contribution, deducted each way, its
-    // private charging paid; and the cash each way it falls.
+    // private charging paid, at the minimum with a contribution, turning a year older; and the plan with the
+    // car against the one without. A line worded by a label of its own is held to that label.
     [Fact]
     public void CarCardResx_everyLineOfTheFiguresAndItsBubble_hasAText()
     {
@@ -127,13 +115,14 @@ public class CarCardTextTests
         [
             electric, electric with { FirstRegistration = new DateOnly(2022, 2, 10), CompanyPaysPrivateEnergy = true }, electric with { CatalogueValue = 30_000m },
             petrol, petrol with { Acquired = new DateOnly(2025, 11, 1), Co2 = 100 }, petrol with { YearlyCosts = 1_000m },
+            electric with { CatalogueValue = 30_000m, PersonalContribution = 0m }, electric with { FirstRegistration = new DateOnly(2025, 6, 21) },
         ];
         var lines = cars.SelectMany(car => CarFigures.Benefit(CarCalculator.Compute(Rules, car).Value.ShouldNotBeNull()))
             .Concat(new[] { new CarComparison(40_000m, 43_000m, 1_000m), new CarComparison(40_000m, 40_000m, 0m), new CarComparison(41_000m, 40_000m, 1_000m) }
                 .SelectMany(CarFigures.Cash))
             .ToList();
 
-        Resources.Missing(lines.Select(line => line.Key).Concat(lines.Select(line => line.Help).OfType<string>()).Distinct()).ShouldBeEmpty();
+        Resources.Missing(lines.Select(line => line.Label ?? line.Key).Concat(lines.Select(line => line.Help).OfType<string>()).Distinct()).ShouldBeEmpty();
     }
 
     // The car's summary says what it adds to the pocket or takes from it, or that there is no car yet.

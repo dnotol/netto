@@ -5,15 +5,6 @@ namespace Netto.Web.Client.River.CompanyCar;
 // The resource keys the car card builds from values, gone through by the card and its tests alike.
 internal static class CarCardText
 {
-    // The line of what the car takes in cash from the pocket, against the same plan without it: some,
-    // none, or it leaves more cash there, which a benefit that keeps the reduced corporate rate can do.
-    public static string Cash(CarComparison comparison) => comparison.CashCost switch
-    {
-        > 0m => "Figure_Cash_Takes",
-        < 0m => "Figure_Cash_Adds",
-        _ => "Figure_Cash_None",
-    };
-
     // The company car against the same car bought privately: what it gains, what it costs more, the
     // same, or the comparison waits for what that car would cost, while it is not given or is refused.
     public static string Private(CarComparison comparison) => comparison.AgainstPrivate switch
@@ -58,16 +49,6 @@ internal static class CarCardText
         _ => null,
     };
 
-    // The line of how the company deducts the car's costs: all of them; all of them, being no more than
-    // the benefit taxed and the contribution; that part alone; or that part and the rest at its rate.
-    public static string Deduction(CarResult car) => car switch
-    {
-        { DeductionRate: 1m } => "Figure_Deduction_Full",
-        _ when car.CarvedOut == car.Costs => "Figure_Deduction_AllCarvedOut",
-        { DeductionRate: 0m } => "Figure_Deduction_None",
-        _ => "Figure_Deduction_Rate",
-    };
-
     // The line of a part of the benefit's year by its months, a month begun counting whole: the whole year,
     // one month, or from one month to another.
     public static string Period(DateOnly from, DateOnly to) => (from.Month, to.Month) switch
@@ -77,18 +58,14 @@ internal static class CarCardText
         _ => "Figure_Period",
     };
 
-    // The rate the costs are deducted at is in the line's label when it applies to them: all of them, or
-    // the rest beyond the part equal to the benefit taxed and the contribution.
-    public static bool DeductionTakesItsRate(CarResult car) => Deduction(car) is "Figure_Deduction_Full" or "Figure_Deduction_Rate";
-
-    // How the company deducts costs it does not deduct at one rate, in the line's bubble; none for costs
-    // deducted in full.
-    public static string? DeductionHelp(CarResult car) => Deduction(car) switch
+    // How the company deducts costs it does not deduct in full, in the bubble of what it cannot deduct: the
+    // part equal to the benefit taxed and the contribution alone, or that part and the rest at its rate;
+    // none while it deducts them all, and there is no such line.
+    public static string? DeductionHelp(CarResult car) => car switch
     {
-        "Figure_Deduction_AllCarvedOut" => "Help_Deduction_AllCarvedOut",
-        "Figure_Deduction_None" => "Help_Deduction_None",
-        "Figure_Deduction_Rate" => "Help_Deduction_Rate",
-        _ => null,
+        { NotDeductibleCosts: 0m } => null,
+        { DeductionRate: 0m } => "Help_Deduction_None",
+        _ => "Help_Deduction_Rate",
     };
 
     private static string Energy(CarEngine engine) => engine switch

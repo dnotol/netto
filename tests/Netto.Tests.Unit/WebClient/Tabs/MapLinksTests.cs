@@ -231,8 +231,9 @@ public class MapLinksTests
 
     // What only changes a tax base: what the company cannot deduct of the vouchers, added back by
     // Corporate tax; the car's benefit, taxed as the director's pay; what the company cannot deduct of
-    // the car's costs, and the share of its benefit it adds back, both added back by Corporate tax; the
-    // marital quotient, from the director's income to their partner with none of their own, the cap of 11,780.
+    // the car's costs, worded with the rate it deducts them at as the card words that line, and the share of
+    // its benefit it adds back, both added back by Corporate tax; the marital quotient, from the director's
+    // income to their partner with none of their own, the cap of 11,780.
     [Fact]
     public void Of_whatOnlyChangesATaxBase_runsToTheModuleThatTaxesIt()
     {
@@ -244,7 +245,7 @@ public class MapLinksTests
         links.Select(link => (link.From.Module, link.To.Module, link.Carries.Text, link.Carries.Key, link.Amount)).ShouldBe([
             (RiverModule.Vouchers, RiverModule.CorporateTax, MapText.VoucherCard, VoucherFigures.AddedBack, run.Year.Vouchers.Disallowed),
             (RiverModule.Car, RiverModule.DirectorPay, MapText.CarCard, CarFigures.BenefitTaxed, car.Benefit),
-            (RiverModule.Car, RiverModule.CorporateTax, MapText.CarCard, CarFigures.NotDeductible, car.NotDeductibleCosts),
+            (RiverModule.Car, RiverModule.CorporateTax, MapText.CarCard, "Figure_NotDeductible_Rate", car.NotDeductibleCosts),
             (RiverModule.Car, RiverModule.CorporateTax, MapText.CarCard, CarFigures.AddBack, car.AddBack),
             (RiverModule.DirectorPay, RiverModule.Household, MapText.HouseholdCard, HouseholdFigures.QuotientToPartner, 11_780m)]);
     }

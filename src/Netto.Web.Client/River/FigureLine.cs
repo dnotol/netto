@@ -10,6 +10,10 @@ internal sealed record FigureLine(string Key, decimal Amount)
 {
     public IReadOnlyList<string> Args { get; init; } = [];
 
+    // The key of its label when it is not its key: a line the map reads by its key, worded another way in
+    // one case, the car's benefit taxed at the year's minimum.
+    public string? Label { get; init; }
+
     public decimal? Share { get; init; }
 
     // None for a line whose label needs no explaining.

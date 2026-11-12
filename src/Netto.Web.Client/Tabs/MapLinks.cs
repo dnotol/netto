@@ -155,7 +155,7 @@ internal static class MapLinks
     // beside it across to its box; none while it pays nothing.
     private static IEnumerable<MapLink> Share(RiverModule card, MapText text, IReadOnlyList<FigureLine> lines, string key) =>
         FigureLines.Shown(lines).Where(line => line.Key == key).Select(line =>
-            new MapLink(MapLinkKind.PassedOn, MapEnd.Beside(card), MapEnd.Of(card), card, new MapLabel(text, line.Key, line.Args), line.Amount));
+            new MapLink(MapLinkKind.PassedOn, MapEnd.Beside(card), MapEnd.Of(card), card, new MapLabel(text, line.Label ?? line.Key, line.Args), line.Amount));
 
     // A card's drain lines, as its drain list shows them, each from its module, or from the end given (the
     // car's, the company's line beside it): money into a bucket or on to a module; what comes back runs from
@@ -178,7 +178,7 @@ internal static class MapLinks
     // A card's figure lines that change another module's tax base, each to the module that taxes it.
     private static IEnumerable<MapLink> TaxBase(RiverModule card, MapText text, IReadOnlyList<FigureLine> lines, Func<string, RiverModule?> taxedBy) =>
         FigureLines.Shown(lines).Where(line => taxedBy(line.Key) is not null).Select(line =>
-            Link(MapLinkKind.TaxBase, card, MapEnd.Of(taxedBy(line.Key)!.Value), new MapLabel(text, line.Key, line.Args), line.Amount));
+            Link(MapLinkKind.TaxBase, card, MapEnd.Of(taxedBy(line.Key)!.Value), new MapLabel(text, line.Label ?? line.Key, line.Args), line.Amount));
 
     // Money is passed on to a module, or ends in a bucket: the one place that tells the two apart.
     private static MapLinkKind KindOf(MapEnd other) => other.Bucket is null ? MapLinkKind.PassedOn : MapLinkKind.IntoBucket;

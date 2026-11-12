@@ -3,11 +3,11 @@ using Netto.Core.CompanyCar;
 namespace Netto.Web.Client.River.CompanyCar;
 
 // The company car's figures, line by line, as its card shows them before where its money goes (FigureList),
-// keys of the card's texts with their amounts: how the benefit in kind is built and what the company does
-// with the car's costs, then the plan with the car weighed in cash against the same plan without it. What a
-// label cannot say, a line's bubble does (Help); a rule the card no longer says in a sentence is in its
-// details, on the step it is the rule of. The view model selects and orders the engine's figures, and
-// computes none.
+// keys of the card's texts with their amounts: how the benefit in kind is built and what the company cannot
+// deduct of the car's costs, then the plan with the car weighed in cash against the same plan without it.
+// Each amount is said once: a line equal to the line it builds is left out. What a label cannot say, a
+// line's bubble does (Help); a rule the card no longer says in a sentence is in its details, on the step it
+// is the rule of. The view model selects and orders the engine's figures, and computes none.
 internal static class CarFigures
 {
     // The lines the map draws as what the car changes of a tax base (Tabs/MapLinks).
@@ -17,40 +17,54 @@ internal static class CarFigures
 
     public const string AddBack = "Figure_AddBack";
 
-    // The benefit as the engine took the car: before the contribution, at least the year's minimum, at
-    // its CO2 percentage, period by period at the share of its value the car's age leaves; the contribution
-    // off it, and the benefit taxed as pay. Then what the company deducts of the car's costs, what it cannot
-    // deduct and the share of the benefit it adds back to its taxable income. A line of nothing is left
-    // out (no contribution, no costs, every cost deducted), but not the benefit taxed, which is the benefit's
-    // result even when a contribution leaves none. Each rate the rules set is theirs, as they state it. None
-    // without a car.
+    // The benefit as the engine took the car, then what the company cannot deduct of its costs and the share
+    // of the benefit it adds back to its taxable income. On the scale: its CO2 percentage, the periods at the
+    // share of its value the car's age leaves while there are several (one is the benefit itself), then the
+    // benefit before the contribution and the contribution off it while there is one, and the benefit taxed
+    // as pay. Held to the year's minimum: the minimum alone, the value the scale gives in its bubble, no CO2
+    // percentage nor period, which no longer set it. The benefit taxed is always a line, the map reading it,
+    // even when a contribution leaves none. Each rate the rules set is theirs, as they state it. None without
+    // a car.
     public static IReadOnlyList<FigureLine> Benefit(CarResult car) => car.Periods.Count == 0
         ? []
         :
         [
-            new("Figure_Benefit", car.BenefitBeforeContribution),
-            new("Figure_Co2", car.Co2Percentage) { Format = FigureFormat.Percentage },
-            .. car.Periods.Select(Period),
-            .. car.Contribution > 0m ? [new FigureLine("Figure_Contribution", -car.Contribution)] : Array.Empty<FigureLine>(),
-            new(BenefitTaxed, car.Benefit) { Help = "Help_BenefitTaxed" },
-            .. Deduction(car),
+            .. car.AtTheMinimum ? [] : Scale(car),
+            .. car.Contribution > 0m
+                ? [Minimum(new FigureLine("Figure_Benefit", car.BenefitBeforeContribution), car, "Figure_Benefit_Minimum"), new FigureLine("Figure_Contribution", -car.Contribution)]
+                : Array.Empty<FigureLine>(),
+            car.Contribution == 0m
+                ? Minimum(new FigureLine(BenefitTaxed, car.Benefit) { Help = "Help_BenefitTaxed" }, car, "Figure_BenefitTaxed_Minimum")
+                : new FigureLine(BenefitTaxed, car.Benefit) { Help = "Help_BenefitTaxed" },
+            .. NotDeducted(car),
             new(AddBack, car.AddBack) { Args = car.AddBackRate is { } rate ? [Formats.RuleAmount(rate)] : [], Help = "Help_AddBack" },
         ];
 
-    // The plan with its car against the same plan without it, at the pay the plan with it runs at: the pocket in each, the cash
-    // the car takes from it or leaves more in it, and what its benefit adds to the contributions and tax on
-    // pay, which Director pay shows.
+    // The plan with its car against the same plan without it, at the pay the plan with it runs at: the pocket
+    // in each, and what its benefit adds to the contributions and tax on pay, which Director pay shows. What
+    // the car takes from the pocket is the card's summary.
     public static IReadOnlyList<FigureLine> Cash(CarComparison comparison) =>
     [
         new("Figure_WithCar", comparison.PocketWith),
         new("Figure_WithoutCar", comparison.PocketWithout),
-        new(CarCardText.Cash(comparison), Math.Abs(comparison.CashCost)),
         new("Figure_TaxesOnPay", comparison.TaxesOnPayAdded) { Help = "Help_TaxesOnPay" },
     ];
 
+    // The CO2 percentage, an electric car's named as the lowest the law gives, and the periods while there
+    // are several.
+    private static IEnumerable<FigureLine> Scale(CarResult car) =>
+    [
+        new("Figure_Co2", car.Co2Percentage) { Format = FigureFormat.Percentage, Label = car.Co2Basis == CarCo2Basis.None ? "Figure_Co2_Electric" : null },
+        .. car.Periods.Count > 1 ? car.Periods.Select(Period) : [],
+    ];
+
+    // At the year's minimum, the line worded as the minimum, what the scale would give in its bubble.
+    private static FigureLine Minimum(FigureLine line, CarResult car, string label) => car.AtTheMinimum
+        ? line with { Label = label, Help = "Help_Minimum", HelpArgs = [Formats.Euros(car.BenefitOnTheScale)] }
+        : line;
+
     // A part of the year at one age coefficient, by its first and last months, since a month begun counts
-    // whole, and its coefficient; its label, the whole year, one month or from one to another, says those
-    // it needs.
+    // whole, and its coefficient; its label, one month or from one to another, says those it needs.
     private static FigureLine Period(CarBenefitPeriod period)
     {
         var (from, to) = (period.Period.From, period.Period.To);
@@ -62,24 +76,21 @@ internal static class CarFigures
         };
     }
 
-    // What the company deducts of the costs, at the rate the label says, how it deducts them when not in
-    // full in the bubble, and what it cannot deduct; nothing without costs.
-    private static IEnumerable<FigureLine> Deduction(CarResult car)
+    // What the company cannot deduct of the costs, the rate it deducts them at in the label and how in the
+    // bubble; nothing while it deducts them all, the costs' own line saying them.
+    private static IEnumerable<FigureLine> NotDeducted(CarResult car)
     {
-        if (car.Costs == 0m)
+        if (car.NotDeductibleCosts == 0m)
             return [];
 
         var rate = Formats.Percentage(car.DeductionRate);
-        var deducted = new FigureLine(CarCardText.Deduction(car), car.Deductible)
-        {
-            Args = CarCardText.DeductionTakesItsRate(car) ? [rate] : [],
-            Help = CarCardText.DeductionHelp(car),
-            HelpArgs = [rate],
-        };
-
-        return car.NotDeductibleCosts == 0m
-            ? [deducted]
-            : [deducted, new FigureLine(NotDeductible, car.NotDeductibleCosts) { Help = "Help_NotDeductible" }];
+        return
+        [
+            new FigureLine(NotDeductible, car.NotDeductibleCosts)
+            {
+                Label = "Figure_NotDeductible_Rate", Args = [rate], Help = CarCardText.DeductionHelp(car), HelpArgs = [rate],
+            },
+        ];
     }
 
     private static string Month(DateOnly date) => Formats.Month(date.Year, date.Month);

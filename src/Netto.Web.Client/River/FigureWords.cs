@@ -21,7 +21,7 @@ public sealed record Figure(string Label, decimal Amount)
 internal static class FigureWords
 {
     public static IReadOnlyList<Figure> Of(IStringLocalizer texts, IEnumerable<FigureLine> lines) =>
-        [.. lines.Select(line => new Figure(texts[line.Key, [.. line.Args]].Value, line.Amount)
+        [.. lines.Select(line => new Figure(texts[line.Label ?? line.Key, [.. line.Args]].Value, line.Amount)
         {
             Share = line.Share,
             Help = line.Help is { } help ? texts[help, [.. line.HelpArgs]].Value : null,

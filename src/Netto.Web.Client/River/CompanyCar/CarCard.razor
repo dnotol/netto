@@ -14,10 +14,10 @@
    « Your car », folded to a line that states it and opening by itself each time the card is drawn
    while no catalogue value is given, since no car counts without it; its yearly costs, the
    contribution and the private energy the company pays stay in sight. Which cars it counts is said in
-   the bubble of the order date. Its figures come first, as lines (CarFigures): the benefit in kind, its
-   CO2 percentage, period by period, the contribution and the benefit taxed as pay, what the company
-   deducts of the costs, cannot deduct and adds back of the benefit, with a sentence only for what a
-   figure cannot say, a benefit held to the minimum or a percentage held to a bound; then the plan with
+   the bubble of the order date. Its figures come first, as lines (CarFigures), each amount once: the
+   benefit in kind, its CO2 percentage and periods while they set it, the contribution and the benefit
+   taxed as pay, what the company cannot deduct of the costs and adds back of the benefit, with a sentence
+   only for what a figure cannot say, a percentage held to a bound; then the plan with
    the car weighed in cash against the same plan without it, both at the pay the plan with the car runs at,
    which a note names once the pay set is held below (CarComparison.PayHeld), and, once the user gives what the same car
    would cost them privately, the company car against it, until then that this comparison waits; then
@@ -147,11 +147,7 @@
     {
         var result = shown.Result;
         <FigureList Figures="@FigureWords.Of(L, CarFigures.Benefit(result))" />
-        @if (result.AtTheMinimum)
-        {
-            <p class="car__note">@L["AtTheMinimum"]</p>
-        }
-        @if (_rules is not null && CarCardText.Co2Held(result, _rules) is { } held)
+        @if (!result.AtTheMinimum && _rules is not null && CarCardText.Co2Held(result, _rules) is { } held)
         {
             <p class="car__note">@L[held]</p>
         }

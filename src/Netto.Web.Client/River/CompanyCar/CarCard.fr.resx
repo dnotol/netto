@@ -66,9 +66,6 @@
   <data name="NoCarYet" xml:space="preserve">
     <value>Saisissez sa valeur catalogue pour voir ses chiffres.</value>
   </data>
-  <data name="AtTheMinimum" xml:space="preserve">
-    <value>Avantage limité au minimum de l'année.</value>
-  </data>
   <data name="AddBackReading" xml:space="preserve">
     <value>La société reprend 40&#160;% en dépenses non admises parce qu'elle paie votre recharge privée&#160;: la loi dit «&#160;carburant&#160;», et l'administration l'entend comme la recharge d'une voiture électrique.</value>
   </data>
@@ -297,32 +294,14 @@
   <data name="Help_BenefitTaxed" xml:space="preserve">
     <value>Il est imposé comme votre rémunération, bien qu'il ne soit jamais payé en espèces.</value>
   </data>
-  <data name="Figure_Deduction_Full" xml:space="preserve">
-    <value>Frais déduits, à {0}</value>
-  </data>
-  <data name="Figure_Deduction_AllCarvedOut" xml:space="preserve">
-    <value>Frais déduits, en totalité</value>
-  </data>
-  <data name="Help_Deduction_AllCarvedOut" xml:space="preserve">
-    <value>Ils ne dépassent pas votre avantage imposé et votre intervention, qui restent déductibles.</value>
-  </data>
-  <data name="Figure_Deduction_None" xml:space="preserve">
-    <value>Frais déduits</value>
-  </data>
   <data name="Help_Deduction_None" xml:space="preserve">
-    <value>Seule la part égale à votre avantage imposé et à votre intervention&#160;: sa date de commande, sa motorisation et son CO2 ne laissent rien de plus déductible.</value>
-  </data>
-  <data name="Figure_Deduction_Rate" xml:space="preserve">
-    <value>Frais déduits, le reste à {0}</value>
+    <value>Seule la part égale à votre avantage imposé et à votre intervention&#160;: sa date de commande, sa motorisation et son CO2 ne laissent rien de plus déductible. Ce qu'elle ne peut pas déduire est repris en dépenses non admises dans son revenu imposable.</value>
   </data>
   <data name="Help_Deduction_Rate" xml:space="preserve">
-    <value>La part égale à votre avantage imposé et à votre intervention en totalité, et le reste à {0}, le taux que donnent sa date de commande, sa motorisation et son CO2.</value>
+    <value>La part égale à votre avantage imposé et à votre intervention en totalité, et le reste à {0}, le taux que donnent sa date de commande, sa motorisation et son CO2. Ce qu'elle ne peut pas déduire est repris en dépenses non admises dans son revenu imposable.</value>
   </data>
   <data name="Figure_NotDeductible" xml:space="preserve">
     <value>Frais que la société ne peut pas déduire</value>
-  </data>
-  <data name="Help_NotDeductible" xml:space="preserve">
-    <value>Ils sont repris en dépenses non admises dans son revenu imposable.</value>
   </data>
   <data name="Figure_AddBack" xml:space="preserve">
     <value>Avantage repris en dépenses non admises, à {0}</value>
@@ -336,15 +315,6 @@
   <data name="Figure_WithoutCar" xml:space="preserve">
     <value>Sans elle</value>
   </data>
-  <data name="Figure_Cash_Takes" xml:space="preserve">
-    <value>Argent que la voiture vous prend</value>
-  </data>
-  <data name="Figure_Cash_None" xml:space="preserve">
-    <value>Argent que la voiture vous prend</value>
-  </data>
-  <data name="Figure_Cash_Adds" xml:space="preserve">
-    <value>Argent que la voiture vous ajoute</value>
-  </data>
   <data name="Figure_TaxesOnPay" xml:space="preserve">
     <value>Cotisations et impôt qu'elle ajoute</value>
   </data>
@@ -353,5 +323,20 @@
   </data>
   <data name="Figure_Period_Year" xml:space="preserve">
     <value>Toute l'année, à {2}</value>
+  </data>
+  <data name="Figure_BenefitTaxed_Minimum" xml:space="preserve">
+    <value>Avantage imposé, minimum de l'année</value>
+  </data>
+  <data name="Figure_Benefit_Minimum" xml:space="preserve">
+    <value>Avantage de toute nature, minimum de l'année, avant votre intervention</value>
+  </data>
+  <data name="Help_Minimum" xml:space="preserve">
+    <value>Sa valeur catalogue, à son pourcentage CO2 et à la part que laisse son âge, donne {0}, moins que le minimum que la loi fixe pour l'année. Il est imposé comme votre rémunération, bien qu'il ne soit jamais payé en espèces.</value>
+  </data>
+  <data name="Figure_Co2_Electric" xml:space="preserve">
+    <value>Pourcentage CO2 d'une voiture électrique, le minimum</value>
+  </data>
+  <data name="Figure_NotDeductible_Rate" xml:space="preserve">
+    <value>Frais que la société ne peut pas déduire, au taux de déduction de {0}</value>
   </data>
 </root>
