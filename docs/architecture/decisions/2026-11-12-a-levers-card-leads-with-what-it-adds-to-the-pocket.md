@@ -17,7 +17,7 @@ The story « [Every figure I read means one thing, and I see none I do not need]
 # Decision
 
 - **One measure for every lever in the plan**: `River/LeverGain`, a client view model, gives the pocket of the plan's run less the pocket of the run with the lever taken out, at the pay the plan uses, and says when the pay is held. It is a difference of two engine runs, as a share is a division of the engine's figures: no tax rule. It is none while the plan is refused or the lever is out.
-- **The card's summary leads with it**, as more, less or none in the pocket, and ends on one rate, the gain over what the company pays out; the car, whose payout is its costs, ends on no rate.
+- **The card's summary leads with it**, as more, less or none in the pocket, and ends on one rate, the gain over what the company pays out; the car, whose payout is its costs, ends on no rate, nor does a lever that takes from the pocket.
 - **What the lever pays out is a figure line**, labelled as a payout.
 - The car's and the royalty's comparisons are built on the same measure.
 - The run is made only for the card on screen and kept until the inputs change.

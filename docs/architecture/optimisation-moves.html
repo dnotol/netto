@@ -14,7 +14,7 @@
     <p class="eyebrow">Netto · architecture page · flow</p>
     <h1>How Optimise finds its moves and Ideas its ideas</h1>
     <p class="lede">The moves are what Netto would retune in the plan on screen to put more in the director's pocket, using only the levers the plan already holds and the facts it was given. An idea is a lever the plan does not use, its gain the optimised plan with it less the optimised plan without it. Both are searched after the page has painted, found greedily by the engine, and changed in the plan only by « Apply » and « Keep ». This page follows one search of the moves, one search of an idea, and the pay curve that sets the plan's own pay.</p>
-    <p class="atlas-meta"><span>As of <b>feature/calendar-in-optimiser-sankey-toggle c627a48</b></span><span><b>11 November 2026</b></span></p>
+    <p class="atlas-meta"><span>As of <b>feature/figures-mean-one-thing 9decb3c</b></span><span><b>12 November 2026</b></span></p>
   </header>
 
   <section aria-labelledby="h-flow">
@@ -142,7 +142,7 @@
 
   <section aria-labelledby="h-curve">
     <h2 id="h-curve">The pay curve</h2>
-    <p>Under the moves, Optimise draws the curve of the pocket at every pay (<code>PayCurve</code>): the question of tuning the pay, drawn. It reads the page's own search of the split (<code>RiverInputs.SearchSplit</code>, run again <a href="edit-to-repaint.html">on an edit</a> unless only the pay moved), with the plan's own pay marked and the best pay marked. A click on the curve, or « move to the best pay », sets the plan's own pay, said as such: it is an edit like any other and no move of the list, which are applied only by « Apply ». The pay itself is typed on the Director pay card; the node « To share » on the map holds a read-only card. Under the pay's move a note (<code>PayNote</code>) says when the river, at that pay, has a better one than the move found.</p>
+    <p>Under the moves, Optimise draws the curve of the pocket at every pay (<code>PayCurve</code>): the question of tuning the pay, drawn. It reads the page's own search of the split (<code>RiverInputs.SearchSplit</code>, run again <a href="edit-to-repaint.html">on an edit</a> unless only the pay moved), with the plan's own pay marked and the best pay marked. A click on the curve, or « move to the best pay », sets the plan's own pay, said as such: it is an edit like any other and no move of the list, which are applied only by « Apply ». The pay itself is typed on the Director pay card; the node « To share » on the map holds a read-only card. The moves are stacked, each found on top of those above it, while the curve and the When to pay section are for the plan on screen: their headings say so, and a note says why a move's pay or payment can differ from theirs. A move whose sentence states a figure that is not its gain (vouchers, a rent, the company's surcharge) bridges the two in that sentence (<code>MoveReasons.Bridged</code>).</p>
   </section>
 
   <section aria-labelledby="h-settings">
@@ -166,6 +166,7 @@
   <section aria-labelledby="h-changes">
     <h2 id="h-changes">Changes</h2>
     <ul class="atlas-changes">
+        <li><time datetime="2026-11-12">12.11.2026</time><span>The pay curve and When to pay are headed as the plan on screen's, the note under the pay's move gone; a move's sentence bridges its figure to its gain.</span></li>
       <li><time datetime="2026-11-11">11.11.2026</time><span>An advance-payment move links to the When to pay section of Optimise (<a href="decisions/2026-11-11-when-to-pay-is-a-section-of-optimise.md">when to pay is a section of Optimise</a>).</span></li>
       <li><time datetime="2026-11-11">11.11.2026</time><span>The moves retune only the levers in the plan, measured from the plan on screen and searched after paint and a quiet period, with no baseline; the ideas added, each measured against the optimised plan; the pay curve is a section of Optimise (<a href="decisions/2026-11-11-moves-retune-the-plan-on-screen.md">moves retune the plan on screen</a>, <a href="decisions/2026-11-11-an-ideas-gain-is-optimised-against-optimised.md">an idea's gain is optimised against optimised</a>, <a href="decisions/2026-11-11-three-views-one-question-each.md">three views</a>).</span></li>
       <li><time datetime="2026-10-30">30.10.2026</time><span>Facts the engine would refuse, of a rent or a royalty out of the plan, left out of the search's scenario (bug batch).</span></li>
