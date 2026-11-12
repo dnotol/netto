@@ -24,17 +24,6 @@
    no honest picture (a refusal, a loss), one line says so and every module of the plan is such a button. *@
 @if (_view is { } view && _picture is { } picture)
 {
-    <ul class="sankey-key" aria-label="@L["Key"]">
-        <li class="sankey-key__item" data-key="width">@L["KeyWidth"]</li>
-        @if (Loop is not null)
-        {
-            <li class="sankey-key__item" data-key="loop">@L["KeyLoop"]</li>
-        }
-        @if (view.Bands.Any(band => band.Back > 0m))
-        {
-            <li class="sankey-key__item" data-key="net">@L["KeyNet"]</li>
-        }
-    </ul>
     <div class="sankey" style="height: @Pixels(picture.Height)" role="group" aria-label="@L["Label"]">
         <svg class="sankey__bands" viewBox="0 0 100 @Number(picture.Height)" preserveAspectRatio="none" aria-hidden="true" focusable="false">
             @foreach (var strip in picture.Strips.Where(strip => !strip.Band.Loop))
@@ -116,14 +105,8 @@ else
         _unbanded = [.. MapView.ModulesOf(Inputs).Where(module => !banded.Contains(module))];
     }
 
-    // A node's words: its name, as the map and the bar name it, and the amount it holds, « net » where money came
-    // back into a bucket.
-    private (string Name, string Amount) Words(SankeyView view, SankeyNode node)
-    {
-        var amount = Formats.Euros(view.Says(node));
-        var net = node.Bucket is not null && view.Bands.Any(band => band.To == node && band.Back > 0m);
-        return (Name(view, node), net ? L["Net", amount].Value : amount);
-    }
+    // A node's words: its name, as the map and the bar name it, and the amount it holds.
+    private (string Name, string Amount) Words(SankeyView view, SankeyNode node) => (Name(view, node), Formats.Euros(view.Says(node)));
 
     private string Name(SankeyView view, SankeyNode node) => node switch
     {

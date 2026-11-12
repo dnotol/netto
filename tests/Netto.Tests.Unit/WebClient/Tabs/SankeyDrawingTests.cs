@@ -28,11 +28,23 @@ public class SankeyDrawingTests
     }
 
     [Fact]
-    public async Task Drawing_aBucketsLabel_saysNet_whereMoneyCameBackIntoIt()
+    public async Task Drawing_aBucketsLabel_isTheBarsAmount_withNoWordAfterIt()
     {
         var html = await RenderAsync(Full);
 
-        Nodes(html).Single(node => node.Id == "taxes_on_profit").Name.ShouldEndWith(" net");
+        Nodes(html).Single(node => node.Id == "taxes_on_profit").Name.ShouldEndWith(Formats.Euros(BucketsView.From(Full.Run())!.AmountOf("taxes_on_profit")));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Drawing_says_nothingOfHowItIsDrawn(bool french)
+    {
+        using var language = french ? InLanguage.French() : null;
+
+        var html = await RenderAsync(Full);
+
+        (html.Contains("sankey-key", StringComparison.Ordinal), Regex.IsMatch(html, @"2 px|net", RegexOptions.IgnoreCase)).ShouldBe((false, false));
     }
 
     [Fact]
@@ -84,13 +96,21 @@ public class SankeyDrawingTests
     }
 
     [Fact]
-    public async Task Drawing_noLoop_saysNoneAndKeysNone()
+    public async Task Drawing_theCarContributionSentence_readsAloneWithoutALegend()
+    {
+        var html = await RenderAsync(Full);
+
+        Text(html, "sankey__loop").ShouldBe($"Your contribution to the car, {Formats.Euros(Full.Run().Year!.Car.Contribution)}, goes back from your pocket to the company.");
+    }
+
+    [Fact]
+    public async Task Drawing_noLoop_saysNone()
     {
         var river = MapRendering.River("a car without contribution");
 
         var html = await RenderAsync(river);
 
-        (html.Contains("sankey__loop", StringComparison.Ordinal), html.Contains("data-key=\"loop\"", StringComparison.Ordinal)).ShouldBe((false, false));
+        html.Contains("sankey__loop", StringComparison.Ordinal).ShouldBeFalse();
     }
 
     [Fact]

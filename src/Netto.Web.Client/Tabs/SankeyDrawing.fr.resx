@@ -15,26 +15,11 @@
   <data name="Label" xml:space="preserve">
     <value>Sankey du plan : où va l'argent</value>
   </data>
-  <data name="Key" xml:space="preserve">
-    <value>Légende du Sankey</value>
-  </data>
-  <data name="KeyWidth" xml:space="preserve">
-    <value>Chaque bande est aussi large que son argent ; une bande de moins de 2 px est dessinée à 2 px, plus large que son argent.</value>
-  </data>
-  <data name="KeyLoop" xml:space="preserve">
-    <value>En tirets : l'argent qui ressort de votre poche.</value>
-  </data>
-  <data name="KeyNet" xml:space="preserve">
-    <value>« net » : après ce qui est revenu dans le compartiment.</value>
-  </data>
-  <data name="Net" xml:space="preserve">
-    <value>{0} net</value>
-  </data>
   <data name="EarlierProfits" xml:space="preserve">
     <value>Réserves taxées des années précédentes</value>
   </data>
   <data name="Loop" xml:space="preserve">
-    <value>En tirets sous les bandes : {0} de votre contribution à la voiture, rendus par votre poche à la société.</value>
+    <value>Votre contribution à la voiture, {0}, retourne de votre poche à la société.</value>
   </data>
   <data name="NoMoney" xml:space="preserve">
     <value>Les bases imposables, les conditions et le ménage ne déplacent pas d'argent : ils sont listés à côté de la carte du module choisi.</value>

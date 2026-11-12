@@ -1,21 +1,8 @@
-/* The Sankey: its key in one row, then the drawing, as tall as SankeyLayout makes it and never narrower than the
+/* The Sankey: the drawing, as tall as SankeyLayout makes it and never narrower than the
    layout keeps its labels apart at (SankeyLayout.NarrowestPixels, the map's 34rem); the bands and bars an SVG
    stretched across its width, the nodes buttons over them. Every ink is a token of both themes, a band's its
    destination's as the bar draws its buckets, separated from the bands beside it by an edge of the page's ground.
    Nothing transitions: choosing fades the bands at once. */
-.sankey-key {
-    display: flex;
-    flex: none;
-    flex-wrap: wrap;
-    gap: 0.25rem 1rem;
-    margin: 0 0 0.75rem;
-    padding: 0;
-    list-style: none;
-    color: var(--netto-text-muted);
-    font-size: 0.8rem;
-    line-height: 1.4;
-}
-
 .sankey {
     position: relative;
     flex: none;

@@ -221,8 +221,7 @@ public class SankeyLayoutTests
     internal static (string Name, string Amount) Words(SankeyView view, SankeyNode node)
     {
         var amount = Formats.Euros(view.Says(node));
-        var net = node.Bucket is not null && view.Bands.Any(band => band.To == node && band.Back > 0m);
-        return (Name(view, node), net ? $"{amount} net" : amount);
+        return (Name(view, node), amount);
     }
 
     private static string Name(SankeyView view, SankeyNode node) => node switch
