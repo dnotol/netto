@@ -90,8 +90,8 @@ public class MapGatesTests
     {
         var river = plan switch
         {
-            "to the partner" => RiverInputs.Example.AddToPlan(OptionalModule.Household),
-            "from the partner" => RiverInputs.Example.AddToPlan(OptionalModule.Household).WithDirectorPay(12_000m).WithPartnerIncome(60_000m),
+            "to the partner" => RiverInputs.Example.AddToPlan(OptionalModule.Household).WithPartner(true),
+            "from the partner" => RiverInputs.Example.AddToPlan(OptionalModule.Household).WithPartner(true).WithDirectorPay(12_000m).WithPartnerIncome(60_000m),
             _ => Full.SkipCompany(),
         };
         var links = MapLinks.Of(river, river.Run());
@@ -106,7 +106,7 @@ public class MapGatesTests
     [Fact]
     public void Of_aPartnerTheQuotientAttributesNothing_saysNothing()
     {
-        var river = RiverInputs.Example.AddToPlan(OptionalModule.Household).WithTaxedSeparately(true);
+        var river = RiverInputs.Example.AddToPlan(OptionalModule.Household).WithPartner(true).WithTaxedSeparately(true);
 
         MapGates.Of(river, river.Run()).For(RiverModule.Household).ShouldBeEmpty();
     }

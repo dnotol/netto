@@ -10,7 +10,7 @@ namespace Netto.Tests.WebClient.River;
 // a small one, from a partner who earns far more.
 public class HouseholdFiguresTests
 {
-    private static readonly RiverInputs WithPartner = RiverInputs.Example.AddToPlan(OptionalModule.Household);
+    private static readonly RiverInputs WithPartner = RiverInputs.Example.AddToPlan(OptionalModule.Household).WithPartner(true);
 
     // A partner with no professional income: 30% of the director's goes to them, within the cap, which is
     // all their taxable income; what the quotient saves last.

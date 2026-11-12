@@ -22,9 +22,9 @@ public class MapLinksTests
         .WithCadastralIncome(1_200m).WithShareLet(0.12m).WithRent(1_380m)
         .WithCatalogueValue(45_000m).WithFirstRegistration(new DateOnly(2026, 1, 10)).WithCarCosts(9_000m)
         .WithCarEngine(CarEngine.Petrol).WithCarCo2(120).WithCarAcquired(new DateOnly(2026, 1, 5)).WithPrivateEnergyPaid(true).WithCarContribution(600m)
-        .WithRoyalty(30_000m);
+        .WithRoyalty(30_000m).WithPartner(true);
 
-    private static readonly RiverInputs EveryLever = PlanComposition.Modules.Aggregate(RiverInputs.Example, (inputs, module) => inputs.AddToPlan(module));
+    private static readonly RiverInputs EveryLever = PlanComposition.Modules.Aggregate(RiverInputs.Example, (inputs, module) => inputs.AddToPlan(module)).WithPartner(true);
 
     // The example: Company year hands the split what the company earns before it pays its director, the
     // figure its summary says before the pay.
@@ -315,7 +315,7 @@ public class MapLinksTests
     [Fact]
     public void Of_partnerEarningFarMore_runsTheQuotientFromThePartnerToDirectorPay()
     {
-        var river = RiverInputs.Example.AddToPlan(OptionalModule.Household).WithDirectorPay(12_000m).WithPartnerIncome(60_000m);
+        var river = RiverInputs.Example.AddToPlan(OptionalModule.Household).WithPartner(true).WithDirectorPay(12_000m).WithPartnerIncome(60_000m);
         var run = river.Run();
         var quotient = HouseholdView.From(run.Pay!, bothAged66: false)!.Director.Quotient;
 
@@ -329,7 +329,7 @@ public class MapLinksTests
     [InlineData(true)]
     public void Of_partnerOutOfThePlanOrTaxedSeparately_drawsNoQuotient(bool inPlan)
     {
-        var river = inPlan ? RiverInputs.Example.AddToPlan(OptionalModule.Household).WithTaxedSeparately(true) : RiverInputs.Example;
+        var river = inPlan ? RiverInputs.Example.AddToPlan(OptionalModule.Household).WithPartner(true).WithTaxedSeparately(true) : RiverInputs.Example;
 
         MapLinks.Of(river, river.Run()).ShouldNotContain(link => link.Card == RiverModule.Household);
     }

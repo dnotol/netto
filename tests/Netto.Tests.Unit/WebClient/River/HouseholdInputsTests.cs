@@ -20,14 +20,14 @@ public class HouseholdInputsTests
             new Input<decimal>(0m, InputOrigin.None), new Input<bool>(false, InputOrigin.Default), new Input<bool>(false, InputOrigin.Default)));
     }
 
-    // Adding the household starts from a partner, a status assumed.
+    // Adding the household starts from no partner: the viewer ticks the box, a status never assumed to be a partner.
     [Fact]
-    public void Example_assumesAPartnerAndHoldsNoDependants()
+    public void Example_assumesNoPartnerAndHoldsNoDependants()
     {
         var household = RiverInputs.Example.Household;
 
         (household.Status, household.Dependants).ShouldBe((
-            new Input<HouseholdStatus>(HouseholdStatus.MarriedOrLegalCohabitant, InputOrigin.Default),
+            new Input<HouseholdStatus>(HouseholdStatus.Alone, InputOrigin.Default),
             new DependantInputs(None(0), None(0), new Input<bool>(false, InputOrigin.Default), None(0), None(0))));
     }
 
@@ -55,7 +55,7 @@ public class HouseholdInputsTests
     [Fact]
     public void Values_areAMarriedOrLegallyCohabitingPartnersFacts()
     {
-        var household = RiverInputs.Example.WithPartnerIncome(12_000m).WithBothAged66(true).Household;
+        var household = RiverInputs.Example.WithPartner(true).WithPartnerIncome(12_000m).WithBothAged66(true).Household;
 
         household.Values.ShouldBe(new Household(HouseholdStatus.MarriedOrLegalCohabitant, 12_000m, BothAged66: true, TaxedSeparately: false));
     }
@@ -63,7 +63,7 @@ public class HouseholdInputsTests
     [Fact]
     public void Values_partnerWithDependants_holdsBoth()
     {
-        var household = RiverInputs.Example.WithPartnerIncome(12_000m).WithChildren(2).WithChildrenUnder3(1).Household;
+        var household = RiverInputs.Example.WithPartner(true).WithPartnerIncome(12_000m).WithChildren(2).WithChildrenUnder3(1).Household;
 
         household.Values.ShouldBe(new Household(HouseholdStatus.MarriedOrLegalCohabitant, 12_000m) { Dependants = new Dependants(2, 1) });
     }

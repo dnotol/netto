@@ -123,8 +123,8 @@ public class MapBadgesTests
     public void Of_theMaritalQuotient_marksDirectorPayWhenItReachesItAndNeverThePartner(bool toThePartner)
     {
         var river = toThePartner
-            ? RiverInputs.Example.AddToPlan(OptionalModule.Household)
-            : RiverInputs.Example.AddToPlan(OptionalModule.Household).WithDirectorPay(12_000m).WithPartnerIncome(60_000m);
+            ? RiverInputs.Example.AddToPlan(OptionalModule.Household).WithPartner(true)
+            : RiverInputs.Example.AddToPlan(OptionalModule.Household).WithPartner(true).WithDirectorPay(12_000m).WithPartnerIncome(60_000m);
 
         var marked = MapView.From(river, river.Run(), MapNames.English).Modules.Where(node => node.Badges.Any(badge => badge.Kind == MapLinkKind.TaxBase)).Select(node => node.End.Id);
 

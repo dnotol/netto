@@ -130,10 +130,11 @@ internal static class PlanStorage
         }
         """;
 
-    // A partner a plan of version 8 declared by holding its household, and one assumed.
+    // A partner a plan of version 8 declared by holding its household, and none assumed: a partner is the
+    // viewer's to tick, as adding the household now opens (2026-11-12).
     private const string PartnerDeclared = """{"value": "MarriedOrLegalCohabitant", "origin": "Yours"}""";
 
-    private const string PartnerAssumed = """{"value": "MarriedOrLegalCohabitant", "origin": "Default"}""";
+    private const string PartnerAssumed = """{"value": "Alone", "origin": "Default"}""";
 
     // An amount with no default, until the user gives it.
     private const string NoneGiven = """{"value": null, "origin": "Yours"}""";

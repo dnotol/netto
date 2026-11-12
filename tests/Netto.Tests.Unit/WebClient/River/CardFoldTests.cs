@@ -30,7 +30,7 @@ public class CardFoldTests
 
     private static readonly RiverInputs Everything = RiverInputs.Example
         .AddToPlan(OptionalModule.Vouchers).AddToPlan(OptionalModule.Allowances).AddToPlan(OptionalModule.Rent)
-        .AddToPlan(OptionalModule.Car).AddToPlan(OptionalModule.Copyright).AddToPlan(OptionalModule.Household);
+        .AddToPlan(OptionalModule.Car).AddToPlan(OptionalModule.Copyright).AddToPlan(OptionalModule.Household).WithPartner(true);
 
     [Theory]
     [MemberData(nameof(CardsOfTheRiver))]

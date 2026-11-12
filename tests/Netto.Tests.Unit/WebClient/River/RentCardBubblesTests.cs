@@ -60,7 +60,7 @@ public class RentCardBubblesTests
     [Fact]
     public async Task JoinsTaxableIncome_withAPartnerTaxedJointly_saysAllOfItIsTaxedInYourColumn()
     {
-        var bubble = CardHtml.BubbleAfter(await OpenAsync(UnderTheFloor.AddToPlan(OptionalModule.Household)), "Joins your taxable income");
+        var bubble = CardHtml.BubbleAfter(await OpenAsync(UnderTheFloor.AddToPlan(OptionalModule.Household).WithPartner(true)), "Joins your taxable income");
 
         bubble.ShouldSatisfyAllConditions(
             () => bubble.ShouldContain("all of it in your column"),
@@ -78,7 +78,7 @@ public class RentCardBubblesTests
     [Fact]
     public async Task JoinsTaxableIncome_withAPartnerTaxedSeparately_hasNoBubble()
     {
-        var html = await OpenAsync(UnderTheFloor.AddToPlan(OptionalModule.Household).WithTaxedSeparately(true));
+        var html = await OpenAsync(UnderTheFloor.AddToPlan(OptionalModule.Household).WithPartner(true).WithTaxedSeparately(true));
 
         CardHtml.Bubbles(html).Select(bubble => bubble.Label).ShouldNotContain("Joins your taxable income");
     }

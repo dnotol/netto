@@ -12,7 +12,7 @@ namespace Netto.Tests.WebClient.River;
 // 20,000 a single parent of two, one under 3, gets the credit's cap of 1,100 (GrossToNetDependantsTests).
 public class DependantsFiguresTests
 {
-    private static readonly RiverInputs Household = RiverInputs.Example.AddToPlan(OptionalModule.Household);
+    private static readonly RiverInputs Household = RiverInputs.Example.AddToPlan(OptionalModule.Household).WithPartner(true);
 
     private static readonly RiverInputs SingleParentOfTwo = Household.WithPartner(false).WithChildren(2).WithChildrenUnder3(1).WithSingleParent(true);
 

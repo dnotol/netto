@@ -87,7 +87,7 @@ public class PlanStorageTests
             """
             {
                 "partnerIncome": {"value": 0, "origin": "Example"}, "bothAged66": {"value": false, "origin": "Default"},
-                "taxedSeparately": {"value": false, "origin": "Default"}, "status": {"value": "MarriedOrLegalCohabitant", "origin": "Default"},
+                "taxedSeparately": {"value": false, "origin": "Default"}, "status": {"value": "Alone", "origin": "Default"},
                 "dependants": {
                     "children": {"value": 0, "origin": "Example"}, "childrenUnder3": {"value": 0, "origin": "Example"},
                     "singleParent": {"value": false, "origin": "Default"}, "dependantsAged66InCare": {"value": 0, "origin": "Example"},
@@ -261,13 +261,13 @@ public class PlanStorageTests
     }
 
     // Version 8's household was its partner: a plan holding it in its plan declared one, and opens with them
-    // as the user's; a plan that did not opens with a partner assumed, as adding the household now does.
+    // as the user's; a plan that did not opens with no partner, as adding the household now does.
     [Fact]
-    public void Read_documentOfVersion8_opensThePartnerItHeldAsTheUsersAndAssumesOneElse()
+    public void Read_documentOfVersion8_opensThePartnerItHeldAsTheUsersAndAssumesNoneElse()
     {
         PlanStorage.Read(StoredPlanDocuments.Version8).Book.Plans.Select(plan => plan.Inputs?.Household.Status).ShouldBe(
         [
-            new Input<Netto.Core.PersonalTax.HouseholdStatus>(Netto.Core.PersonalTax.HouseholdStatus.MarriedOrLegalCohabitant, InputOrigin.Default),
+            new Input<Netto.Core.PersonalTax.HouseholdStatus>(Netto.Core.PersonalTax.HouseholdStatus.Alone, InputOrigin.Default),
             new Input<Netto.Core.PersonalTax.HouseholdStatus>(Netto.Core.PersonalTax.HouseholdStatus.MarriedOrLegalCohabitant, InputOrigin.Yours),
         ]);
     }

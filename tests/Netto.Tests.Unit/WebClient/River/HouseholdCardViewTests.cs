@@ -11,7 +11,7 @@ namespace Netto.Tests.WebClient.River;
 // saying which.
 public class HouseholdCardViewTests
 {
-    private static readonly RiverInputs WithPartner = RiverInputs.Example.AddToPlan(OptionalModule.Household);
+    private static readonly RiverInputs WithPartner = RiverInputs.Example.AddToPlan(OptionalModule.Household).WithPartner(true);
 
     private static readonly RiverInputs SingleParentOfTwo = WithPartner.WithPartner(false).WithChildren(2).WithSingleParent(true);
 

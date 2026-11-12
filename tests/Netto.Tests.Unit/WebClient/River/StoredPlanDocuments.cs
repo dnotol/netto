@@ -62,7 +62,7 @@ internal static class StoredPlanDocuments
     // The example as versions 1 to 6 stored it, read back: what each of their documents' « Today » plan
     // means, in the lower band of INASTI's company contribution they never held, with no fund fee given,
     // and with no partner's income given nor either of the household's statuses, which versions 1 to 7
-    // never held, a partner assumed and no dependants, which versions 1 to 8 never held. An amount it holds none of is stored as the example's at nothing and read back as none.
+    // never held, no partner assumed and no dependants, which versions 1 to 8 never held. An amount it holds none of is stored as the example's at nothing and read back as none.
     public static readonly RiverInputs SavedExample = new(
         2026,
         new CompanyFigures(Example(120_000m), Example(20_000m)),
@@ -88,7 +88,7 @@ internal static class StoredPlanDocuments
         Default(ContributionsPaidBy.Director),
         NoneGiven,
         NoneGiven,
-        new HouseholdInputs(Nothing, Default(false), Default(false), Default(HouseholdStatus.MarriedOrLegalCohabitant), NoDependants));
+        new HouseholdInputs(Nothing, Default(false), Default(false), Default(HouseholdStatus.Alone), NoDependants));
 
     // No dependant: the counts the example holds none of, and no single parent assumed.
     private static DependantInputs NoDependants => new(Count(0), Count(0), Default(false), Count(0), Count(0));
@@ -117,7 +117,7 @@ internal static class StoredPlanDocuments
     };
 
     // What the plans of that version's document mean, in its order: the example, then the user's plan.
-    public static IReadOnlyList<RiverInputs> Plans(int version) => [version < 7 ? SavedExample : SavedExampleOfVersion7, version switch
+    public static IReadOnlyList<RiverInputs> Plans(int version) => [version < 7 ? SavedExample : version < 9 ? SavedExampleOfVersion7 : SavedExampleOfVersion9, version switch
     {
         1 => Version1Plan,
         2 => Version2Plan,
@@ -133,6 +133,13 @@ internal static class StoredPlanDocuments
 
     // The example as version 7 stores it: its running costs no longer hold INASTI's company contribution.
     private static RiverInputs SavedExampleOfVersion7 => SavedExample with { Company = new CompanyFigures(Example(120_000m), Example(19_590.70m)) };
+
+    // The example as version 9 stored it, with the partner assumed that the build before this one opened on and
+    // a plan of that version keeps as saved.
+    private static RiverInputs SavedExampleOfVersion9 => SavedExampleOfVersion7 with
+    {
+        Household = SavedExampleOfVersion7.Household with { Status = Default(HouseholdStatus.MarriedOrLegalCohabitant) },
+    };
 
     private static RiverInputs Version1Plan => SavedExample with
     {

@@ -21,7 +21,7 @@ public class LeverChromeTests
         .WithEcoVouchers(250m).WithMealVoucherDays(220).WithInternetAllowance(240m)
         .WithCadastralIncome(1_200m).WithShareLet(0.12m).WithRent(1_380m)
         .WithCatalogueValue(50_000m).WithFirstRegistration(new DateOnly(2026, 1, 10)).WithCarCosts(8_000m)
-        .WithCreativeShare(0.5m);
+        .WithCreativeShare(0.5m).WithPartner(true);
 
     // The cards that wait for the company's year, by their fold's name.
     public static TheoryData<Type, string> Waiting => new()

@@ -106,7 +106,7 @@ public class CompositionViewTests
     [Fact]
     public void From_partnerInThePlan_saysWhatTheHouseholdSaves()
     {
-        var inputs = RiverInputs.Example.AddToPlan(OptionalModule.Household);
+        var inputs = RiverInputs.Example.AddToPlan(OptionalModule.Household).WithPartner(true);
         var saves = inputs.Run().Pay.ShouldNotBeNull().HouseholdSaves;
 
         Menu(inputs).Modules.Single(choice => choice.InPlan).ShouldBe(new ModuleChoice(OptionalModule.Household, true, saves, false));
@@ -130,15 +130,15 @@ public class CompositionViewTests
         Menu(inputs).Modules.Single(choice => choice.Module == OptionalModule.Household).ValuesKept.ShouldBeTrue();
     }
 
-    // A partner's income given, the partner taken out: the values wait for them; the example's partner, none
-    // given and neither status changed, keeps nothing to speak of.
+    // A partner ticked with their income given, the household taken out: the values wait for them; the household
+    // as the example gives it, no partner ticked, keeps nothing to speak of.
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
     public void From_partnerTakenOut_saysWhetherValuesOfTheUsersWait(bool incomeGiven)
     {
         var inPlan = RiverInputs.Example.AddToPlan(OptionalModule.Household);
-        var inputs = (incomeGiven ? inPlan.WithPartnerIncome(9_000m) : inPlan).TakeOutOfPlan(OptionalModule.Household);
+        var inputs = (incomeGiven ? inPlan.WithPartner(true).WithPartnerIncome(9_000m) : inPlan).TakeOutOfPlan(OptionalModule.Household);
 
         Menu(inputs).Modules.Single(choice => choice.Module == OptionalModule.Household).ShouldBe(new ModuleChoice(OptionalModule.Household, false, null, incomeGiven));
     }

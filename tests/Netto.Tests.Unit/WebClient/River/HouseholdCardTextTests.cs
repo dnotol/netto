@@ -11,7 +11,7 @@ public class HouseholdCardTextTests
 {
     private static readonly ResxText Texts = ResxText.For<HouseholdCard>();
 
-    private static readonly RiverInputs WithPartner = RiverInputs.Example.AddToPlan(OptionalModule.Household);
+    private static readonly RiverInputs WithPartner = RiverInputs.Example.AddToPlan(OptionalModule.Household).WithPartner(true);
 
     public static TheoryData<string, RiverInputs, string[], string?> Years => new()
     {

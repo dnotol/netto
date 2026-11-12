@@ -15,7 +15,7 @@ public class MapQuietTests
     private static readonly RiverInputs Full = MapLinksTests.Full;
 
     // Every lever in the plan and none with an amount: the example's inputs for each.
-    private static readonly RiverInputs EveryLeverEmpty = PlanComposition.Modules.Aggregate(RiverInputs.Example, (inputs, module) => inputs.AddToPlan(module));
+    private static readonly RiverInputs EveryLeverEmpty = PlanComposition.Modules.Aggregate(RiverInputs.Example, (inputs, module) => inputs.AddToPlan(module)).WithPartner(true);
 
     private static readonly RiverModule[] Chain = [RiverModule.Vouchers, RiverModule.Allowances, RiverModule.Rent, RiverModule.Car];
 

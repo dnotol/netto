@@ -10,7 +10,16 @@ namespace Netto.Tests.WebClient.River;
 // separately is taxed alone too. The engine refuses a partner's income below nothing, on the card that holds it.
 public class HouseholdModuleTests
 {
-    private static readonly RiverInputs WithPartner = RiverInputs.Example.AddToPlan(OptionalModule.Household);
+    private static readonly RiverInputs WithPartner = RiverInputs.Example.AddToPlan(OptionalModule.Household).WithPartner(true);
+
+    // The household added, its partner box not ticked yet: nothing moves, the pocket stays what it was.
+    [Fact]
+    public void Run_householdAddedWithoutTickingThePartner_leavesThePocketWhereItWas()
+    {
+        var added = RiverInputs.Example.AddToPlan(OptionalModule.Household).Run();
+
+        (added.Pay.ShouldNotBeNull().Household, added.Year.ShouldNotBeNull().NetInPocket).ShouldBe((null, RiverInputs.Example.Run().Year.ShouldNotBeNull().NetInPocket));
+    }
 
     [Fact]
     public void Run_partnerInThePlan_taxesTheYearJointly()

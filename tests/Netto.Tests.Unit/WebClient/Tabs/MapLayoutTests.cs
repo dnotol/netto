@@ -765,7 +765,7 @@ public class MapLayoutTests
     public void Routed_theMaritalQuotient_runsStraightUpFromDirectorPayIntoThePartnerOrBackDown(bool fromThePartner)
     {
         var river = fromThePartner
-            ? RiverInputs.Example.AddToPlan(OptionalModule.Household).WithDirectorPay(12_000m).WithPartnerIncome(60_000m)
+            ? RiverInputs.Example.AddToPlan(OptionalModule.Household).WithPartner(true).WithDirectorPay(12_000m).WithPartnerIncome(60_000m)
             : MapLinksTests.Full;
         var view = MapView.From(river, river.Run(), MapNames.Drawn);
         var (pay, partner) = (Slot(view, RiverModule.DirectorPay), Slot(view, RiverModule.Household));

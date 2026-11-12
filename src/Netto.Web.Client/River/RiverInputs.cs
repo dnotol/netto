@@ -120,7 +120,7 @@ public sealed record RiverInputs(
         NoFundFeeRate,
         new HouseholdInputs(
             ExampleNothing, new Input<bool>(false, InputOrigin.Default), new Input<bool>(false, InputOrigin.Default),
-            new Input<HouseholdStatus>(HouseholdStatus.MarriedOrLegalCohabitant, InputOrigin.Default),
+            new Input<HouseholdStatus>(HouseholdStatus.Alone, InputOrigin.Default),
             new DependantInputs(ExampleNoOne, ExampleNoOne, new Input<bool>(false, InputOrigin.Default), ExampleNoOne, ExampleNoOne)));
 
     // The most the split can give as pay (YearSimulation.PayCeiling): the profit before pay, what the

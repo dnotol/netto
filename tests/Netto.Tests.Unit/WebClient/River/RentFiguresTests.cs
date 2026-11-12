@@ -18,7 +18,7 @@ public class RentFiguresTests
     private static readonly RiverInputs RentAtTheCap = RentInPlan.WithCadastralIncome(1_200m).WithShareLet(0.12m).WithRent(1_380m);
 
     // The household in the plan, a partner declared and taxed jointly with the director: the example's.
-    private static readonly RiverInputs WithAPartner = RentAtTheCap.AddToPlan(OptionalModule.Household);
+    private static readonly RiverInputs WithAPartner = RentAtTheCap.AddToPlan(OptionalModule.Household).WithPartner(true);
 
     [Fact]
     public void From_rentAboveTheFloor_isWhatTheCompanyPaysThenTheRentLessItsFlatChargesJoiningTheTaxableIncome()

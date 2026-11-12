@@ -13,7 +13,7 @@ namespace Netto.Tests.WebClient.River;
 // The supplements' amounts are 2026's, from the indexation notice for tax year 2027.
 public class DependantsModuleTests
 {
-    private static readonly RiverInputs Household = RiverInputs.Example.AddToPlan(OptionalModule.Household);
+    private static readonly RiverInputs Household = RiverInputs.Example.AddToPlan(OptionalModule.Household).WithPartner(true);
 
     private static readonly RiverInputs SingleParent = Household.WithPartner(false).WithChildren(2).WithSingleParent(true);
 

@@ -14,7 +14,7 @@ namespace Netto.Tests.WebClient.Tabs;
 internal static class MapRendering
 {
     // Every lever in the plan, none with an amount: each moves no money.
-    public static readonly RiverInputs EveryLeverEmpty = PlanComposition.Modules.Aggregate(RiverInputs.Example, (inputs, module) => inputs.AddToPlan(module));
+    public static readonly RiverInputs EveryLeverEmpty = PlanComposition.Modules.Aggregate(RiverInputs.Example, (inputs, module) => inputs.AddToPlan(module)).WithPartner(true);
 
     // The rivers the map's tests draw, by name.
     public static RiverInputs River(string name) => name switch
