@@ -122,6 +122,9 @@ The French is the administration's wording; the source is the filed document in 
 |---|---|---|
 | director · director pay | le dirigeant d'entreprise · la rémunération de dirigeant d'entreprise | art. 32, 51 |
 | gross pay · taxable pay · net pay | la rémunération brute · imposable · nette | formule-clé n° 7 |
+| net professional income (the pay's, before the marital quotient) | le revenu professionnel net | art. 130, 134 |
+| income on the scale (each partner's own, plus or minus the quotient, plus other income) | le revenu au barème | art. 134 §4; art. 87-88 |
+| paid after withholding (a month's amount, before contributions and the final tax) | versé après précompte (jamais « net payé ») | formule-clé |
 | benefit in kind | l'avantage de toute nature (ATN) | art. 36 |
 | flat-rate professional costs | les frais professionnels forfaitaires | formule-clé n° 8; art. 51 |
 | income tax | l'impôt des personnes physiques (IPP) | art. 466 |
