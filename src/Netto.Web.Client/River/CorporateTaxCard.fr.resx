@@ -61,16 +61,16 @@
     <value>Taux réduit conservé&#160;: votre [rémunération prise en compte], {3} avec les avantages, atteint la rémunération minimale de {0}&#160;; avantages dans la limite de {2}.</value>
   </data>
   <data name="Condition_TaxableIncomeNotAbovePay" xml:space="preserve">
-    <value>Taux réduit conservé&#160;: votre [rémunération prise en compte], {3}, sous la rémunération minimale de {0}, couvre le revenu imposable.</value>
+    <value>Taux réduit conservé&#160;: votre [rémunération prise en compte], {3}, couvre le revenu imposable, {4}.</value>
   </data>
   <data name="Condition_TaxableIncomeNotAbovePay_WithBenefits" xml:space="preserve">
-    <value>Taux réduit conservé&#160;: votre [rémunération prise en compte], {3} avec les avantages, sous la rémunération minimale de {0}, couvre le revenu imposable&#160;; avantages dans la limite de {2}.</value>
+    <value>Taux réduit conservé&#160;: votre [rémunération prise en compte], {3} avec les avantages, couvre le revenu imposable, {4}&#160;; avantages dans la limite de {2}.</value>
   </data>
   <data name="Condition_MinimumPayNotMet" xml:space="preserve">
-    <value>Taux de base&#160;: votre [rémunération prise en compte], {3}, est sous la rémunération minimale de {0} et sous le revenu imposable.</value>
+    <value>Taux de base&#160;: votre [rémunération prise en compte], {3}, n'atteint ni la rémunération minimale de {0} ni le revenu imposable de {4}.</value>
   </data>
   <data name="Condition_MinimumPayNotMet_WithBenefits" xml:space="preserve">
-    <value>Taux de base&#160;: votre [rémunération prise en compte], {3} avec les avantages, est sous la rémunération minimale de {0} et sous le revenu imposable.</value>
+    <value>Taux de base&#160;: votre [rémunération prise en compte], {3} avec les avantages, n'atteint ni la rémunération minimale de {0} ni le revenu imposable de {4}.</value>
   </data>
   <data name="Condition_ExcessBenefits" xml:space="preserve">
     <value>Taux de base&#160;: vos avantages de toute nature, {1}, dépassent {2} de votre [rémunération prise en compte] avantages compris, {3}.</value>

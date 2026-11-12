@@ -3,6 +3,7 @@ using System.Net;
 using System.Text.RegularExpressions;
 using Netto.Core.CompanyCar;
 using Netto.Core.SocialContributions;
+using Netto.Web.Client;
 using Netto.Web.Client.River;
 using Netto.Web.Client.River.CompanyCar;
 using Netto.Web.Client.River.Copyright;
@@ -56,7 +57,7 @@ public class CompanyAndSharedCardsTests
 
         var html = await CardAsync(river, "corporate-tax");
 
-        ShouldNameThePayTested(html, "Condition_TaxableIncomeNotAbovePay", "€50,000.00");
+        ShouldNameThePayTested(html, "Condition_TaxableIncomeNotAbovePay", "€50,000.00", Income(river));
     }
 
     // The contributions the company pays count in the pay tested, as in Director pay's taxable pay: the
@@ -66,7 +67,7 @@ public class CompanyAndSharedCardsTests
     {
         var html = await CardAsync(CompanyPays, "corporate-tax");
 
-        ShouldNameThePayTested(html, "Condition_MinimumPayMet", "€59,942.52");
+        ShouldNameThePayTested(html, "Condition_MinimumPayMet", "€59,942.52", Income(CompanyPays));
     }
 
     // Beside a royalty taxed as pay with the company paying the contributions, Director pay's taxable pay
@@ -132,15 +133,17 @@ public class CompanyAndSharedCardsTests
     // The card draws the condition's sentence, which names the pay tested: as drawn without benefits, the
     // 51,000 minimum, no benefits within 20% of the pay tested, and that pay, its term drawn as the text of
     // its bubble's trigger.
-    private static void ShouldNameThePayTested(string html, string key, string payTested)
+    private static void ShouldNameThePayTested(string html, string key, string payTested, string taxableIncome)
     {
-        var sentence = CorporateTexts.Format(key, "€51,000.00", "€0.00", "20%", payTested)
+        var sentence = CorporateTexts.Format(key, "€51,000.00", "€0.00", "20%", payTested, taxableIncome)
             .Replace("[", "", StringComparison.Ordinal).Replace("]", "", StringComparison.Ordinal);
 
         sentence.ShouldSatisfyAllConditions(
             () => sentence.ShouldContain(payTested),
             () => CardHtml.Prose(html).ShouldContain(sentence));
     }
+
+    private static string Income(RiverInputs river) => Formats.Euros(river.Run().Year.ShouldNotBeNull().Company.TaxableIncome);
 
     private static async Task<string> SharedHintAsync(RiverInputs river) => CardHtml.BubbleAfter(await CardAsync(river, "split"), SharedTexts.Format("Title"));
 

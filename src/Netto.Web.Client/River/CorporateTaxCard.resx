@@ -61,16 +61,16 @@
     <value>Reduced rate kept: your [tested pay], {3} with benefits, reaches the {0} minimum; benefits within {2}.</value>
   </data>
   <data name="Condition_TaxableIncomeNotAbovePay" xml:space="preserve">
-    <value>Reduced rate kept: your [tested pay], {3}, under the {0} minimum, covers the taxable income.</value>
+    <value>Reduced rate kept: your [tested pay], {3}, covers the taxable income, {4}.</value>
   </data>
   <data name="Condition_TaxableIncomeNotAbovePay_WithBenefits" xml:space="preserve">
-    <value>Reduced rate kept: your [tested pay], {3} with benefits, under the {0} minimum, covers taxable income; benefits within {2}.</value>
+    <value>Reduced rate kept: your [tested pay], {3} with benefits, covers the taxable income, {4}; benefits within {2}.</value>
   </data>
   <data name="Condition_MinimumPayNotMet" xml:space="preserve">
-    <value>Standard rate: your [tested pay], {3}, is under the {0} minimum and the taxable income.</value>
+    <value>Standard rate: your [tested pay], {3}, reaches neither the {0} minimum nor the taxable income, {4}.</value>
   </data>
   <data name="Condition_MinimumPayNotMet_WithBenefits" xml:space="preserve">
-    <value>Standard rate: your [tested pay], {3} with benefits, is under the {0} minimum and the taxable income.</value>
+    <value>Standard rate: your [tested pay], {3} with benefits, reaches neither the {0} minimum nor the taxable income, {4}.</value>
   </data>
   <data name="Condition_ExcessBenefits" xml:space="preserve">
     <value>Standard rate: your benefits in kind, {1}, exceed {2} of your [tested pay] with them, {3}.</value>

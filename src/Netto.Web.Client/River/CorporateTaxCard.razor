@@ -103,12 +103,12 @@
         : null;
 
 
-    // Which condition decided the rate, against the minimum pay, the benefits' share of the pay and the pay
-    // tested; or, with no taxable profit, the dividend the earlier profits still pay.
+    // Which condition decided the rate, against the minimum pay, the benefits' share of the pay, the pay
+    // tested and the taxable income it is held against; or, with no taxable profit, the dividend the earlier profits still pay.
     private string ConditionText(CorporateTaxView view) => view.NoTaxableProfit
         ? L[CorporateTaxCardText.NoTaxableProfit(_dividend), Formats.Euros(_dividend)].Value
         : L[CorporateTaxCardText.Condition(view.Condition, view.FlatRateBenefits > 0m), Formats.Euros(view.MinimumDirectorPay), Formats.Euros(view.FlatRateBenefits),
-            Formats.WholeShare(view.ExcessBenefitsShare), Formats.Euros(view.DirectorPay)].Value;
+            Formats.WholeShare(view.ExcessBenefitsShare), Formats.Euros(view.DirectorPay), Formats.Euros(view.TaxableIncome)].Value;
 
     private Task OnSmallCompanyChanged(bool smallCompany) => InputsChanged.InvokeAsync(Inputs.WithSmallCompany(smallCompany));
 

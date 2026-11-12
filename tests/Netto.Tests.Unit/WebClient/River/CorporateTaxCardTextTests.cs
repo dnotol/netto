@@ -172,7 +172,7 @@ public class CorporateTaxCardTextTests
     // what more by the first deadline still open cancels it and that deadline, a year with no taxable
     // profit the dividend, the pay tested's bubble the part of a royalty it leaves out.
     [Theory]
-    [InlineData("Condition_", 4)]
+    [InlineData("Condition_", 5)]
     [InlineData("Surcharge_", 0)]
     [InlineData("NoTaxableProfit", 1)]
     [InlineData("Term_TestedPay", 1)]
@@ -180,6 +180,63 @@ public class CorporateTaxCardTextTests
     {
         InterfaceTexts.Of(typeof(CorporateTaxCard)).Where(text => text.Key.StartsWith(prefix, StringComparison.Ordinal) && InterfaceTexts.Placeholders(text.Value).Any(index => index >= arguments))
             .Select(text => text.Key).ShouldBeEmpty();
+    }
+
+    // The pay test says passed or failed with the bar that decides it: a pay under the minimum that covers the
+    // taxable income names that income and not the minimum, which it does not reach; a pay reaching the minimum
+    // names the minimum alone; a pay under both names both, since it must meet one of them.
+    [Theory]
+    [InlineData("Condition_TaxableIncomeNotAbovePay", "€30,000.00", "€40,000.00", "€51,000.00")]
+    [InlineData("Condition_TaxableIncomeNotAbovePay_WithBenefits", "€30,000.00", "€40,000.00", "€51,000.00")]
+    public void CorporateTaxCardResx_payCoveringTheIncome_namesTheIncomeNotTheMinimum(string key, string income, string pay, string minimum)
+    {
+        var sentence = Resources.Format(key, minimum, "€1,000.00", "20%", pay, income);
+
+        sentence.ShouldSatisfyAllConditions(
+            () => sentence.ShouldContain(pay),
+            () => sentence.ShouldContain(income),
+            () => sentence.ShouldNotContain(minimum));
+    }
+
+    [Fact]
+    public void CorporateTaxCardResx_payReachingTheMinimum_namesTheMinimumAlone()
+    {
+        var sentence = Resources.Format("Condition_MinimumPayMet", "€51,000.00", "€0.00", "20%", "€52,000.00", "€99,999.00");
+
+        (sentence.Contains("€51,000.00", StringComparison.Ordinal), sentence.Contains("€99,999.00", StringComparison.Ordinal)).ShouldBe((true, false));
+    }
+
+    [Theory]
+    [InlineData("Condition_MinimumPayNotMet")]
+    [InlineData("Condition_MinimumPayNotMet_WithBenefits")]
+    public void CorporateTaxCardResx_payUnderBothBars_namesBoth(string key)
+    {
+        var sentence = Resources.Format(key, "€51,000.00", "€0.00", "20%", "€30,000.00", "€60,000.00");
+
+        sentence.ShouldSatisfyAllConditions(
+            () => sentence.ShouldContain("neither"),
+            () => sentence.ShouldContain("€51,000.00"),
+            () => sentence.ShouldContain("€60,000.00"));
+    }
+
+    [Fact]
+    public void CorporateTaxCardResx_payCoveringTheIncomeInFrench_namesTheIncomeNotTheMinimum()
+    {
+        var sentence = ResxText.French<CorporateTaxCard>().Format("Condition_TaxableIncomeNotAbovePay", "51.000,00 €", "0,00 €", "20%", "40.000,00 €", "30.000,00 €");
+
+        sentence.ShouldSatisfyAllConditions(
+            () => sentence.ShouldContain("30.000,00 €"),
+            () => sentence.ShouldNotContain("51.000,00 €"));
+    }
+
+    [Fact]
+    public void CorporateTaxCardResx_payUnderBothBarsInFrench_namesBoth()
+    {
+        var sentence = ResxText.French<CorporateTaxCard>().Format("Condition_MinimumPayNotMet", "51.000,00 €", "0,00 €", "20%", "30.000,00 €", "60.000,00 €");
+
+        sentence.ShouldSatisfyAllConditions(
+            () => sentence.ShouldContain("ni la rémunération minimale de 51.000,00 €"),
+            () => sentence.ShouldContain("ni le revenu imposable de 60.000,00 €"));
     }
 
     private static (string Key, decimal LeftOut) TestedPayTerm(RiverInputs river) =>
