@@ -7,8 +7,8 @@ using Shouldly;
 namespace Netto.Tests.WebClient.Tabs;
 
 // The conditions one module sets on another, the engine's (YearConditions), as links of the map: each
-// dashed, from the module that sets it to the one it acts on, saying in a word or two whether it holds,
-// only while both its modules are on the map, and none on a run that has no year.
+// dashed, from the module that sets it to the one it acts on, with no amount and no word on its line, carrying
+// whether it holds in a word or two for the Effects list, only while both its modules are on the map, and none on a run that has no year.
 public class MapConditionsTests
 {
     private static readonly ResxText Resources = ResxText.For<MapTab>();
@@ -62,7 +62,7 @@ public class MapConditionsTests
         MapConditions.Link(condition).Holds.ShouldBe(condition.Holds);
     }
 
-    // Whether it holds in a word or two, what the map draws on its line: a test of the rate met or lost, the
+    // Whether it holds in a word or two, what the Effects list says after its rule: a test of the rate met or lost, the
     // office kept, what a royalty does to the pay keeping the rate, the reserve covered or not.
     public static TheoryData<YearCondition, string> States => new()
     {

@@ -1,8 +1,8 @@
 namespace Netto.Web.Client.Tabs;
 
-// Where the map says what each line carries: its amount, or a condition's word or two, on a stretch of its
-// own line or right beside it, so a reader matches it to its line by place. Every line has one but those whose
-// amount the map says elsewhere, a gate's box, the pay's pill or a badge (MapBundle.SaysAmount), placed once
+// Where the map says what each line carries: its amount, on a stretch of its own line or right beside it, so a
+// reader matches it to its line by place. Every line has one but a condition's, which has no amount and no word,
+// and those whose amount the map says elsewhere, a gate's box, the pay's pill or a badge (MapBundle.SaysAmount), placed once
 // from every link of the run, so hiding a kind of line or choosing a module moves none.
 
 internal static class MapAmounts
@@ -694,7 +694,7 @@ internal static class MapAmounts
 // places it weighed, and the moves it tried of an amount in the way.
 internal readonly record struct MapAmountsWork(int Checks, int Places, int Moves);
 
-// One line's amount on the map, or a condition's word or two (Text): the point of its line it stands at (At,
+// One line's amount on the map (Text): the point of its line it stands at (At,
 // in percent of the map, to the thousandth as the tab writes it), the stretch of its route that point is on,
 // the side of the point it stands, and, in pixels, its box's top left corner from that point (Left, Top) and
 // its width, MapAmounts.Height high. Its box is placed from that point in pixels, so it hugs its line however

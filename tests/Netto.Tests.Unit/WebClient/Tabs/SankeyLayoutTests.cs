@@ -217,7 +217,7 @@ public class SankeyLayoutTests
     }
 
     // The amount a label says, its words, in the page's language as the drawing would: the node's name, as the map
-    // and the bar name it, and the amount the view says it holds, « net » where money came back into a bucket.
+    // and the bar name it, and the amount the view says it holds.
     internal static (string Name, string Amount) Words(SankeyView view, SankeyNode node)
     {
         var amount = Formats.Euros(view.Says(node));

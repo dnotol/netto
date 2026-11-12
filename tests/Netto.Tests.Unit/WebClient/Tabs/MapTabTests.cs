@@ -11,7 +11,7 @@ namespace Netto.Tests.WebClient.Tabs;
 
 // The Map tab as a viewer meets it: every module of the plan a button in the river's order, the bar's five
 // buckets, one line for each route of the run's links, drawn over a halo of the ground, with its amount on
-// it where MapAmounts places it, a condition's word or two instead, each line and amount saying its kind; a
+// it where MapAmounts places it, a condition's line with none, each line and amount saying its kind; a
 // module chosen marked, its lines brought out with their amounts where they were, the others' amounts gone and
 // no words on the map, the line of what it receives beside it, over its card; a refused amount leaving
 // no line and no amount, the module holding it marked. What a click does is the browser's.
@@ -345,8 +345,7 @@ public class MapTabTests
         map.ShouldSatisfyAllConditions(
             () => view.Bundles().ShouldContain(bundle => bundle.Links.Count > 1),
             () => Amounts(map).ShouldBe(view.Bundles().Where(bundle => bundle.Amount is not null && bundle.SaysAmount).Select(bundle => Formats.Euros(bundle.Amount!.Value)), ignoreOrder: true),
-            () => map.ShouldNotContain("map-words"),
-            () => States(map).ShouldBeEmpty());
+            () => map.ShouldNotContain("map-words"));
     }
 
     // Each amount is drawn where MapAmounts places it, nothing chosen those of the lines of money: at its point of its line, in percent of the map, its box
@@ -377,7 +376,7 @@ public class MapTabTests
             .ShouldBe(view.Bundles().Where(bundle => bundle.To.InPocket && bundle.SaysAmount).Select(bundle => Formats.Euros(bundle.Amount!.Value)), ignoreOrder: true);
     }
 
-    // Nothing chosen, the map holds no sentence, only amounts and a condition's word or two, so nothing runs
+    // Nothing chosen, the map holds no sentence, only amounts, so nothing runs
     // past its edge: a condition's sentence is not on the tab (MapConditionsRenderingTests).
     [Fact]
     public async Task Tab_nothingChosen_drawsNoSentenceOnTheMap()
@@ -389,8 +388,8 @@ public class MapTabTests
         Bundles(map).Where(text => !Regex.IsMatch(text, "^−?€[0-9,]+\\.[0-9]{2}$") && !states.Contains(text)).ShouldBeEmpty();
     }
 
-    // A module chosen: its own lines keep their amounts where they were, a condition its word or two, and no
-    // other line has one; the map has no words, the card beside it saying what each line carries.
+    // A module chosen: its own lines keep their amounts where they were, and no
+    // other line has one, a condition's line none at all; the map has no words, the card beside it saying what each line carries.
     [Fact]
     public async Task Tab_aModuleChosen_keepsItsOwnLinesAmountsWhereTheyWereAndNoWords()
     {
@@ -628,7 +627,7 @@ public class MapTabTests
     // What the map draws, the column beside it left out.
     internal static string Map(string html) => Regex.Match(html, "<div class=\"map\".*?<div class=\"map-tab__side\"", RegexOptions.Singleline).Value;
 
-    // Each amount drawn on the lines, a condition's words among them: its kind, its style, whether it is out of a
+    // Each amount drawn on the lines: its kind, its style, whether it is out of a
     // screen reader's hearing, and its text.
     internal static List<(string Kind, string Style, string Hidden, string Text)> Placed(string map) =>
     [
@@ -636,12 +635,9 @@ public class MapTabTests
             .Select(match => (match.Groups[1].Value, match.Groups[2].Value, match.Groups[3].Value, match.Groups[4].Value)),
     ];
 
-    // The amounts drawn on the lines of money and of the tax bases, and the words of the conditions' lines.
+    // The amounts drawn on the lines of money and of the tax bases.
     internal static List<string> Amounts(string map) =>
         [.. Regex.Matches(map, "<span class=\"map-amount(?: map-amount--pocket)?\"[^>]*>([^<]*)</span>").Select(match => match.Groups[1].Value)];
-
-    private static List<string> States(string map) =>
-        [.. Regex.Matches(map, "<span class=\"map-amount map-amount--state\"[^>]*>([^<]*)</span>").Select(match => match.Groups[1].Value.Trim())];
 
     // What each line of the map says on it, as a viewer reads it.
     private static List<string> Bundles(string map) => [.. Placed(map).Select(amount => amount.Text)];
@@ -652,9 +648,6 @@ public class MapTabTests
         $"left: {Number(amount.At.X)}%; top: {Number(amount.At.Y)}%; width: {Pixels(amount.Width)}; transform: translate({Pixels(amount.Left)}, {Pixels(amount.Top)})";
 
     private static string Pixels(decimal value) => value.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture) + "px";
-
-    // The word or two a condition says of whether it holds.
-    private static string State(MapLink link) => ResxText.For<MapTab>().Get(link.State!.Key)!;
 
     private static string? Attribute(string element, string name) =>
         Regex.Match(element, $" {name}=\"([^\"]*)\"") is { Success: true } match ? match.Groups[1].Value : null;

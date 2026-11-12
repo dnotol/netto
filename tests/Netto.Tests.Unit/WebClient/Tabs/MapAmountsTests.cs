@@ -6,7 +6,7 @@ using Shouldly;
 
 namespace Netto.Tests.WebClient.Tabs;
 
-// Where the map says what each line carries: every line's amount, a condition's word or two too, on a stretch
+// Where the map says what each line carries: every line's amount, but a condition's, which has none, on a stretch
 // of its own line or right beside it, where no other line of money runs along it, clear of the boxes, the quiet
 // rows, the buckets, every arrowhead and every other amount, inside the map; a line crossing it does so square,
 // under its ground, where the fewest do. Held on every plan MapLayoutTests routes and on those at the edges, on
@@ -129,7 +129,7 @@ public class MapAmountsTests
         Stylesheet.Block(css, ".map").ShouldContain($"height: min(calc(var(--map-units) * {Stylesheet.Rem(LargestRowRem)}), var(--map-room));");
     }
 
-    // Every line has its amount, a condition its word or two, on a stretch of its own line or beside it: its
+    // Every line has its amount, a condition's line none, on a stretch of its own line or beside it: its
     // point on the stretch, on it or over, under, left or right of it as the stretch runs; and no other line of
     // money runs along it there, at any size. A gate's line into the pocket has none, its gate's box saying it,
     // nor the pay, its pill saying it.
@@ -248,8 +248,6 @@ public class MapAmountsTests
         var shows = (decimal)MapAmounts.ShowsEachSide;
         return low >= Math.Min(first, second) + Arc(lowEnd) + shows - 0.1m && high <= Math.Max(first, second) - Arc(highEnd) - shows + 0.1m;
     }
-
-    private static string SayInFrench(MapLabel label) => ResxText.French<MapTab>().Format(label.Key, [.. label.Args]);
 
     // Every line says its amount on it but those whose amount the map says elsewhere, a condition's line having none: a line joining the pocket line, its gate's box or the total under it saying it; the pay, its
     // pill saying it; what Corporate tax adds back, its badge saying it; money passed on into a gate whose box
@@ -446,9 +444,6 @@ public class MapAmountsTests
             ? MapLayoutTests.River(int.Parse(match.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture),
                 match.Groups[2].Success ? int.Parse(match.Groups[2].Value, System.Globalization.CultureInfo.InvariantCulture) : 0, match.Groups[3].Success)
             : MapLayoutTests.Extremes.Contains(plan) ? MapLayoutTests.Extreme(plan) : MapRendering.River(plan);
-
-    // A condition's words, as the map's texts say them.
-    internal static string Say(MapLabel label) => ResxText.For<MapTab>().Format(label.Key, [.. label.Args]);
 
     // The tallest a chain row is drawn (MapTab.razor.css), and the sizes the map is drawn at, from its
     // smallest to its largest: the narrowest map and 1,920 px's, each at its shortest and its tallest.

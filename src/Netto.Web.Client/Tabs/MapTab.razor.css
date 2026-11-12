@@ -276,7 +276,7 @@
     transform: translate(0, -50%);
 }
 
-/* A line's amount, or a condition's word or two, on a stretch of its own line or right beside it, where
+/* A line's amount on a stretch of its own line or right beside it, where
    MapAmounts places it: its box hangs from its point of the line by its pixels (the transform set on it),
    as wide as MapAmounts reckons its text and a ground each side (the width set on it) and a rem high, its
    text at 0.72rem in Inter at weight 400 with tabular figures (MapAmounts: FontRem, GroundRem and HeightRem
@@ -530,7 +530,7 @@
     margin-left: -0.25rem;
 }
 
-/* A rule that holds, or the royalty lowering no pay: muted, with its icon. */
+/* A badge: what a rule lost costs the plan, or what a tax base gains, drawn in the tones below. */
 .map-badge {
     display: inline-flex;
     align-items: center;

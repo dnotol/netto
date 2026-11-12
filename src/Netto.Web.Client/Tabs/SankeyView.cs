@@ -158,7 +158,7 @@ internal sealed record SankeyNode
 // the bucket it runs into (Back), netted; or the loop, money back out of a bucket with no band to net it on.
 internal sealed record SankeyBand(SankeyNode From, SankeyNode To, decimal Amount)
 {
-    // What came back out of the bucket the band runs into, netted on it: the band says « net ».
+    // What came back out of the bucket the band runs into, netted on it.
     public decimal Back { get; init; }
 
     // Money going back out of a bucket, drawn as the one dashed loop: the director's contribution to a car.

@@ -10,7 +10,7 @@ namespace Netto.Tests.WebClient.Tabs;
 
 // The Sankey as a viewer meets it: every node a button named by its label, in the view's order, the buckets last; the
 // bands for the eye only, each in its place, those not touching the choice faded; the car's contribution a dashed
-// loop said in words under the drawing; « net » where money came back into a bucket; the modules without a band
+// loop said in words under the drawing; no key and no « net »; the modules without a band
 // buttons of their own; one line where there is no picture. What a click does is the browser's.
 public class SankeyDrawingTests
 {

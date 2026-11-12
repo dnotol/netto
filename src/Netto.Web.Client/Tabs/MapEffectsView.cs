@@ -7,7 +7,7 @@ namespace Netto.Web.Client.Tabs;
 // tax base or a condition the map draws for it (MapView.ShowingFor), in the order of the map's links. A tax base
 // says what changes it, the words of the card lines its line holds, its amount, the sum the map says on that line
 // (MapBundle.Amount), and the other module, the one whose tax base it changes or the one it comes from; a condition
-// says which rule, whether it holds in the word its line says (MapLink.State), and the other module, the one it is
+// says which rule, whether it holds in the word its link carries (MapLink.State), and the other module, the one it is
 // set on or the one that sets it. The other module is one the viewer can go to on the map. It is made from every
 // link of the run, as the lines are drawn for the choice; none for a module with no such line, nor while the
 // engine refuses an amount and the map draws no line. The item of the line under the viewer's pointer is marked
@@ -37,7 +37,7 @@ internal sealed record MapEffectsView(IReadOnlyList<MapEffect> Items)
 }
 
 // One item of the list: the line it is (Route), the key of its sentence (MapEffectText), the rule a condition is and
-// the word saying whether it holds, a tax base's amount and the card lines saying what changes it (What), the other
+// the word saying whether it holds, which only this list says, a tax base's amount and the card lines saying what changes it (What), the other
 // module, and whether the line is under the viewer's pointer.
 internal sealed record MapEffect(MapRoute Route, string Key, MapLabel? Rule, MapLabel? State, string? Amount, RiverModule Other)
 {

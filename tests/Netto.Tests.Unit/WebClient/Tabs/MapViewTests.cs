@@ -256,7 +256,7 @@ public class MapViewTests
         line.Amount.ShouldBe(3.02m);
     }
 
-    // A condition carries no amount: its words say whether it holds.
+    // A condition carries no amount: its line has no amount and no word, its state being the Effects list's.
     [Fact]
     public void Bundles_aCondition_carriesNoAmount()
     {

@@ -785,11 +785,12 @@ public class MapLayoutTests
     // The band over the buckets grows the map only by what the last row lacks under its boxes: its first 0.1 of a
     // chain row under the lowest box, each next row 0.35 under the one before, the buckets 0.2 under the last; two
     // rows with Director pay, 0.65, a rent's and a royalty's taxes a row each, and a whole chain row at least with a
-    // dividend. Every lever: Company year's row 1; the gates' 1.46, each 0.96 high for its name and two lines, the
-    // allowances' 1.75, theirs on two lines, the car's 1.76, the partner's box beside it 0.96 high for its name
-    // and the marital quotient's two lines, with the room round it for the quotient's amount and arrowhead; the
-    // split's 1.3, a badge; the royalty's 1.6; Corporate tax's 1.9, three badges, which keeps 0.25 under its box;
-    // the band's four rows 1.35, so the buckets' row 0.7 and 1.1, 14.03 chain rows before the badges of a rule that holds went (2026-11-12), 13.66 now. The example: 1, the split's
+    // dividend. Every lever: 0.25 over Company year's box, its row 1; the gates' 1.46, each 0.96 high for its name and two
+    // lines, the allowances' 1.75, theirs on two lines, the rent's 1.61, the car's 1.76, the partner's box beside it
+    // 0.96 high for its name and the marital quotient's two lines, with the room round it for the quotient's amount
+    // and arrowhead; the split's 1.22; the royalty's 1.68; Corporate tax's 2.23, its box 0.8 high for its name and
+    // its one badge, the tax base's, the dividend's gate beside it reaching lower; the buckets' 0.5 and the 0.2
+    // under them, 0.25 + 12.71 + 0.5 + 0.2 = 13.66 chain rows. The example: 1, the split's
     // 1, the royalty's 1.6, Corporate tax's 1.6, the dividend's gate 0.96 keeping 0.32 under it, the buckets'
     // 0.7 and 0.68, 6.58. The company skipped: Company year's row 1.07, its box 0.57 for its name and the state it
     // says under it, Director pay's 1, the buckets' 0.7 and 0.4, 3.17; with the partner in the plan, their row of

@@ -507,11 +507,11 @@ internal enum MapText
 internal sealed record MapLabel(MapText Text, string Key, IReadOnlyList<string> Args);
 
 // One link of the map: its kind, where it runs from and to, the module whose card shows the line it is
-// (Card), what it carries and its amount in this plan, the card's own figure; none for a condition, which
-// carries the word or two its line draws (State) and no sentence, the cards saying those with their figures
-// (MapConditions). A condition says whether it holds (Holds), and in a word or two (State), none for any
-// other link, and the badge it leaves on the module it acts on (Badge), none for the office rule, which
-// always holds. Its line is its route (MapLayout), shared with the links of the same
+// (Card), what it carries and its amount in this plan, the card's own figure; none for a condition, whose line
+// has no amount and no word: it carries the words of its state (State) for the Effects list and no sentence, the
+// cards saying those with their figures (MapConditions). A condition says whether it holds (Holds), and in a word
+// or two (State), none for any other link, and the badge it leaves on the module it acts on (Badge), only where
+// it is lost, none for the office rule, a rule that holds or a royalty that changes nothing. Its line is its route (MapLayout), shared with the links of the same
 // ends and kind, worked out from every link of the run, none until the layout has routed it. The company's
 // line past the points of it where nothing leaves or joins it names their levers (Through, in the river's
 // order), and touches each of them as it touches the levers beside its two ends.

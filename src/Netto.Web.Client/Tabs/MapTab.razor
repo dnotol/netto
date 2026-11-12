@@ -460,7 +460,7 @@
     private static bool ToPocket(MapBundle bundle) => bundle.To.InPocket;
 
     // What a link carries, in the words of the texts that word its line on its card (MapTabText.Texts), or a
-    // condition's word or two, in the map's.
+    // condition's state, in the map's, for the Effects list.
     private string Carries(MapLabel label) => TextsOf(label)[label.Key, [.. label.Args]].Value;
 
     // A label's words as its texts write them, its amount's place among them, which a badge's words are cut at

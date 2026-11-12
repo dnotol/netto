@@ -47,8 +47,8 @@ internal static class MapBadges
     }
 }
 
-// A mark in a module's box: a condition another module sets on it, in a few words saying which rule and
-// whether it holds, or what its tax base gains, its amount, worded in the map's texts. It is part of the
+// A mark in a module's box: what a condition another module sets on it costs the plan, in a few words, or what
+// its tax base gains, its amount, worded in the map's texts. It is part of the
 // module's button, so its words are part of the name a screen reader hears.
 internal sealed record MapBadge(MapLinkKind Kind, MapLabel Words, MapBadgeTone Tone);
 
