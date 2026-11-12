@@ -204,6 +204,20 @@ public class PayCurveTests
         Regex.IsMatch(await CurveAsync(RiverInputs.Example), @"<p class=""tune__pointer""[^>]*>\s*</p>").ShouldBeTrue();
     }
 
+    // The curve is the plan on screen's own, not the plan after the moves above it: its heading says so, and
+    // its note says why its best pay can differ from a move's pay, in English and French.
+    [Fact]
+    public async Task Curve_heading_saysItIsForThePlanOnScreen()
+    {
+        var english = WebUtility.HtmlDecode(await CurveAsync(RiverInputs.Example));
+        using var french = InLanguage.French();
+        var frenchHtml = WebUtility.HtmlDecode(await CurveAsync(RiverInputs.Example));
+
+        (Regex.Match(english, "<h2[^>]*>([^<]*)</h2>").Groups[1].Value, english.Contains("not after the moves above"),
+                Regex.Match(frenchHtml, "<h2[^>]*>([^<]*)</h2>").Groups[1].Value, frenchHtml.Contains("pas après les ajustements ci-dessus"))
+            .ShouldBe(("Tune your pay for the plan on screen", true, "Ajuster votre rémunération pour le plan affiché", true));
+    }
+
     // The best pay the search finds for the river as it stands.
     private static decimal BestPay(RiverInputs river) => river.SearchSplit().ShouldNotBeNull().Best.ShouldNotBeNull().Pay;
 

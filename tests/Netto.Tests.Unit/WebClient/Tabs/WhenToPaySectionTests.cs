@@ -25,7 +25,7 @@ public class WhenToPaySectionTests
     {
         var html = await RenderTabAsync(RiverInputs.Example);
 
-        Regex.IsMatch(html, "^\\s*<section class=\"calendar\"[^>]*>\\s*<h2[^>]*>When to pay</h2>\\s*<section class=\"calendar__panel\"[^>]*>\\s*<h3[^>]*>Next</h3>\\s*<p class=\"calendar__next\"[^>]*>21 December 2026 · €14,999.89 from the company</p>").ShouldBeTrue();
+        Regex.IsMatch(html, "^\\s*<section class=\"calendar\"[^>]*>\\s*<h2[^>]*>When to pay, for the plan on screen</h2>\\s*<p class=\"calendar__note\"[^>]*>[^<]*</p>\\s*<section class=\"calendar__panel\"[^>]*>\\s*<h3[^>]*>Next</h3>\\s*<p class=\"calendar__next\"[^>]*>21 December 2026 · €14,999.89 from the company</p>").ShouldBeTrue();
     }
 
     [Fact]
@@ -85,7 +85,7 @@ public class WhenToPaySectionTests
     {
         var html = await RenderTabAsync(RiverInputs.Example);
 
-        Regex.Matches(html, "<h2[^>]*>([^<]*)</h2>").Select(match => match.Groups[1].Value).ShouldBe(["When to pay"]);
+        Regex.Matches(html, "<h2[^>]*>([^<]*)</h2>").Select(match => match.Groups[1].Value).ShouldBe(["When to pay, for the plan on screen"]);
         Regex.Matches(html, "<h3[^>]*>([^<]*)</h3>").Select(match => match.Groups[1].Value)
             .ShouldBe(["Next", "The year at a glance", "Advance payments", "Your pay each month", "Social contributions each quarter", "After the year"]);
         Regex.IsMatch(html, "<h2 id=\"when-to-pay-title\" class=\"calendar__title\" tabindex=\"-1\"").ShouldBeTrue();
@@ -151,6 +151,20 @@ public class WhenToPaySectionTests
         var html = await RenderTabAsync(RiverInputs.Example);
 
         (html.Contains("fold__toggle"), html.Contains("<h1"), html.Contains("<header")).ShouldBe((false, false, false));
+    }
+
+    // The section is for the plan on screen, not the plan after the moves above it: its heading says so and a
+    // note under it says why a move's payment can differ, in English and French.
+    [Fact]
+    public async Task WhenToPay_heading_saysItIsForThePlanOnScreen()
+    {
+        var english = await RenderTabAsync(RiverInputs.Example);
+        using var french = InLanguage.French();
+        var frenchHtml = await RenderTabAsync(RiverInputs.Example);
+
+        (Regex.Match(english, "<h2[^>]*>([^<]*)</h2>").Groups[1].Value, english.Contains("not after the moves above"),
+                Regex.Match(frenchHtml, "<h2[^>]*>([^<]*)</h2>").Groups[1].Value, frenchHtml.Contains("pas après les ajustements ci-dessus"))
+            .ShouldBe(("When to pay, for the plan on screen", true, "Quand payer, pour le plan affiché", true));
     }
 
     private static int Count(string html, string text) => html.Split(text).Length - 1;

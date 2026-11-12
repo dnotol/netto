@@ -94,14 +94,16 @@ public class MoveLinksTests
         (link, link.Href).ShouldBe((new MoveLink(PlanTab.Optimisation, null, WhenToPay: true), "plan/optimisation?show=when"));
     }
 
-    // « See when to pay », by the section's own name, as its heading reads it.
+    // « See when to pay », by the section's own name, which its heading starts with (it goes on to say it is for
+    // the plan on screen).
     [Theory]
     [MemberData(nameof(Payments))]
     public void Text_payment_namesTheSection(Move move)
     {
-        var section = ResxText.For<WhenToPaySection>().Get("Title");
+        var section = ResxText.For<WhenToPaySection>().Get("Title").ShouldNotBeNull();
 
-        Text(MoveLinks.To(move, RiverInputs.Example).ShouldNotBeNull()).ShouldBe($"See {section.ShouldNotBeNull().ToLowerInvariant()}");
+        (section.StartsWith("When to pay", StringComparison.Ordinal), Text(MoveLinks.To(move, RiverInputs.Example).ShouldNotBeNull()))
+            .ShouldBe((true, "See when to pay"));
     }
 
     private static string? Text(MoveLink link) =>

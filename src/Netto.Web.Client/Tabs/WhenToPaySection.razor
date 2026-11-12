@@ -13,11 +13,14 @@
    advance payments by each deadline as the plan holds them, the past ones marked, and at the first deadline
    still open what more cancels each surcharge; the pay each month, as the pay slip gives it; and after the
    year, what each assessment leaves. The timeline is a picture and the tables are its text equivalent. It
-   applies nothing: the moves above are where a payment is applied. Its one input, what the fund bills, sits
+   applies nothing: the moves above are where a payment is applied. Its heading and the note under it say it
+   is for the plan on screen as it stands, not after the moves above: a move's payment is found on top of the
+   moves above it, so the two can differ. Its one input, what the fund bills, sits
    in a field sized to an amount and shows the engine's refusal beside it. The one sentence the section needs
    to be read right, which date it reads, ends the Next panel, where the deadlines are dated. *@
 <section class="calendar" aria-labelledby="when-to-pay-title">
     <h2 id="when-to-pay-title" class="calendar__title" tabindex="-1" @ref="_title">@L["Title"]</h2>
+    <p class="calendar__note">@L["ForPlan"]</p>
     @if (_view is null)
     {
         <p class="calendar__note">@L["Refused"]</p>

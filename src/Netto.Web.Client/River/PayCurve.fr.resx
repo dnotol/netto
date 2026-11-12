@@ -13,10 +13,10 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Title" xml:space="preserve">
-    <value>Ajuster votre rémunération</value>
+    <value>Ajuster votre rémunération pour le plan affiché</value>
   </data>
   <data name="Note" xml:space="preserve">
-    <value>Cette courbe et son bouton agissent sur la rémunération de votre plan, pas sur une proposition ci-dessus&#160;: les propositions sont recherchées de nouveau dès que vous la changez.</value>
+    <value>Cette courbe et son bouton valent pour le plan tel qu'il est, pas après les ajustements ci-dessus&#160;: sa meilleure rémunération peut différer de celle d'un ajustement, cherchée avec les ajustements qui l'entourent. Ils agissent sur la rémunération de votre plan, et les ajustements sont recherchés de nouveau dès que vous la changez.</value>
   </data>
   <data name="CurveHint" xml:space="preserve">
     <value>La ligne dorée est ce qui arrive dans votre poche à chaque rémunération, tout le reste tel que vous l'avez réglé. Pointez-la pour lire une rémunération&#160;; cliquez pour y placer la vôtre.</value>

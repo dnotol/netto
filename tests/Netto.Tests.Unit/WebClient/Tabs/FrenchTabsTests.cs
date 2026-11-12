@@ -293,7 +293,7 @@ public class FrenchTabsTests
         }));
 
         html.ShouldSatisfyAllConditions(
-            () => html.ShouldContain(">Quand payer</h2>"),
+            () => html.ShouldContain(">Quand payer, pour le plan affiché</h2>"),
             () => html.ShouldContain(">Prochaine échéance</h3>"),
             () => html.ShouldContain($"21 décembre 2026 · 14.999,89{NoBreak}€ à payer par la société"),
             () => html.ShouldContain(">L'année d'un coup d'œil</h3>"),
