@@ -25,7 +25,7 @@
     <value>Frais professionnels forfaitaires</value>
   </data>
   <data name="Title_taxable_income" xml:space="preserve">
-    <value>Revenu imposable</value>
+    <value>Revenu professionnel net</value>
   </data>
   <data name="Title_income_tax" xml:space="preserve">
     <value>Impôt des personnes physiques</value>
@@ -46,7 +46,7 @@
     <value>Un dirigeant d'entreprise qui ne prouve pas de frais professionnels réels déduit des frais forfaitaires&#160;: un pourcentage de la rémunération restant après les cotisations sociales, jusqu'à un maximum annuel. Ils diminuent le revenu imposable et ne sont jamais versés.</value>
   </data>
   <data name="Rule_taxable_income" xml:space="preserve">
-    <value>La rémunération brute moins vos propres cotisations sociales et les frais forfaitaires. Le revenu imposable n'est jamais inférieur à zéro.</value>
+    <value>La rémunération brute moins vos propres cotisations sociales et les frais forfaitaires. Le revenu professionnel net n'est jamais inférieur à zéro.</value>
   </data>
   <data name="Rule_income_tax" xml:space="preserve">
     <value>Le barème progressif appliqué au revenu imposable, moins la réduction pour la quotité exemptée d'impôt, donne l'impôt État. L'État fédéral garde cet impôt diminué du facteur d'autonomie, et la Wallonie ajoute ses centimes additionnels régionaux sur la part fédérale. Chacune des deux parts est arrondie au cent, et l'impôt des personnes physiques est leur somme.</value>

@@ -22,7 +22,7 @@
     <value>Ce sur quoi porte l'impôt</value>
   </data>
   <data name="TrackHint_tax_base" xml:space="preserve">
-    <value>De votre rémunération au revenu imposable sur lequel l'impôt des personnes physiques est calculé.</value>
+    <value>De votre rémunération à votre revenu professionnel net, avant tout quotient conjugal&#160;: le revenu sur lequel l'impôt des personnes physiques est calculé.</value>
   </data>
   <data name="TaxBaseOnlyNote" xml:space="preserve">
     <value>Réduit la base imposable, rien n'est payé</value>
@@ -46,7 +46,7 @@
     <value>Frais professionnels forfaitaires</value>
   </data>
   <data name="Row_taxable_income" xml:space="preserve">
-    <value>Revenu imposable</value>
+    <value>Revenu professionnel net</value>
   </data>
   <data name="Row_income_tax" xml:space="preserve">
     <value>Impôt des personnes physiques</value>

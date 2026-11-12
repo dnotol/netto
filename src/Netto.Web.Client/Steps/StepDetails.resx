@@ -25,7 +25,7 @@
     <value>Flat-rate professional costs</value>
   </data>
   <data name="Title_taxable_income" xml:space="preserve">
-    <value>Taxable income</value>
+    <value>Net professional income</value>
   </data>
   <data name="Title_income_tax" xml:space="preserve">
     <value>Income tax</value>
@@ -46,7 +46,7 @@
     <value>A director who does not prove real professional costs deducts flat-rate costs: a percentage of the pay left after the social contributions, up to a yearly maximum. They lower the taxable income and are never paid out.</value>
   </data>
   <data name="Rule_taxable_income" xml:space="preserve">
-    <value>Gross pay less your own social contributions and the flat-rate costs. It is never below zero.</value>
+    <value>Gross pay less your own social contributions and the flat-rate costs. The net professional income is never below zero.</value>
   </data>
   <data name="Rule_income_tax" xml:space="preserve">
     <value>The progressive scale applied to the taxable income, less the reduction for the tax-free amount, gives the State tax. The federal government keeps that tax less the autonomy factor, and Wallonia adds its regional tax on the federal share. Each of the two is rounded to the cent, and the income tax is their sum.</value>

@@ -22,6 +22,16 @@ public class PaySlipTextTests
     private static IReadOnlyList<(string Selector, string Declarations)> PaySlipRules =>
         Stylesheet.Rules(Stylesheet.Read("src", "Netto.Web.Client", "DirectorPay", "PaySlip.razor.css"));
 
+    // The pay's income before the marital quotient is its net professional income, the Household card's own
+    // word for it: « taxable income » is left to the income on the scale, after the quotient, which another
+    // value holds there.
+    [Fact]
+    public void Row_taxableIncome_isTheNetProfessionalIncomeInBothLanguages()
+    {
+        (Resources.Get("Row_taxable_income"), ResxText.French<PaySlip>().Get("Row_taxable_income"))
+            .ShouldBe(("Net professional income", "Revenu professionnel net"));
+    }
+
     private static readonly Dictionary<string, RuleAmount> RatesByOrigin = new()
     {
         ["municipality"] = MunicipalRates.IncomeYear2026.Municipalities[0].Rate,
