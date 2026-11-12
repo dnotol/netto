@@ -28,7 +28,7 @@
     <value>Régler ce que la société garde sur la carte Dividende</value>
   </data>
   <data name="RoyaltyNote_Follows" xml:space="preserve">
-    <value>Vos droits d'auteur suivent votre rémunération&#160;: le curseur les déplace aussi.</value>
+    <value>Vos droits d'auteur suivent votre rémunération&#160;: ils changent avec elle.</value>
   </data>
   <data name="RoyaltyNote_Fixed" xml:space="preserve">
     <value>Vos droits d'auteur sont un montant fixe, quelle que soit votre rémunération.</value>

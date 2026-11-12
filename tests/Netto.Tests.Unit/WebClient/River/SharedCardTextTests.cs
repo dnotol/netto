@@ -70,4 +70,22 @@ public class SharedCardTextTests
         SharedCardText.RoyaltyNote(SplitView.From(inputs, inputs.Run()).Royalty.ShouldNotBeNull()).ShouldBe(key);
         Resources.Missing([key]).ShouldBeEmpty();
     }
+
+    // The card has no slider (the pay is typed on Director pay), so no sentence of it points at one.
+    [Theory]
+    [InlineData("RoyaltyNote_Follows")]
+    [InlineData("RoyaltyNote_Fixed")]
+    public void SharedCardResx_royaltyNote_pointsAtNoSlider(string key)
+    {
+        string?[] texts = [Resources.Get(key), ResxText.French<SharedCard>().Get(key)];
+
+        texts.ShouldAllBe(text => text != null && !text.Contains("slider", StringComparison.OrdinalIgnoreCase) && !text.Contains("curseur", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public void SharedCardResx_followingRoyaltyNote_saysItChangesWithThePay()
+    {
+        (Resources.Get("RoyaltyNote_Follows"), ResxText.French<SharedCard>().Get("RoyaltyNote_Follows"))
+            .ShouldBe(("Your royalty follows your pay: it changes with it.", "Vos droits d'auteur suivent votre rémunération : ils changent avec elle."));
+    }
 }

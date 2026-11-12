@@ -28,7 +28,7 @@
     <value>Set what the company keeps on the Dividend card</value>
   </data>
   <data name="RoyaltyNote_Follows" xml:space="preserve">
-    <value>Your royalty follows your pay, so the slider moves it too.</value>
+    <value>Your royalty follows your pay: it changes with it.</value>
   </data>
   <data name="RoyaltyNote_Fixed" xml:space="preserve">
     <value>Your royalty is a fixed amount, whatever your pay.</value>
