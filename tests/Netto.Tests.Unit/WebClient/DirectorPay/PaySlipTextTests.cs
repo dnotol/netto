@@ -39,7 +39,7 @@ public class PaySlipTextTests
     {
         var french = ResxText.French<PaySlip>();
 
-        (Resources.Get("ColumnNetPaid"), french.Get("ColumnNetPaid"), Resources.Get("StatementHint")?.Contains("Net pay"), french.Get("StatementHint")?.Contains("Rémunération nette"))
+        (Resources.Get("ColumnNetPaid"), french.Get("ColumnNetPaid"), Resources.Get("StatementHint")?.Contains("Net pay"), french.Get("StatementHint")?.Contains("« Rémunération nette »"))
             .ShouldBe(("Paid after withholding", "Versé après précompte", true, true));
     }
 

@@ -107,7 +107,7 @@
 }
 
 /* Dots mark the tax credits, for low earned income and for children, in the next 1,000: money
-   that comes back to the pocket after the tax, neutral like the rest, since only the net is gold. */
+   that comes back to the pocket after the tax, neutral like the rest, since only what reaches the pocket is gold. */
 .next__segment--low_earned_income_credit_lost,
 .next__part--low_earned_income_credit_lost .next__swatch,
 .next__segment--child_tax_credit_lost,

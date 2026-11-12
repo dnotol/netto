@@ -16,7 +16,7 @@
     <value>Ce sur quoi porte l'impôt</value>
   </data>
   <data name="TrackHint_tax_base" xml:space="preserve">
-    <value>De votre rémunération à votre revenu professionnel net, avant tout quotient conjugal&#160;: le revenu sur lequel l'impôt des personnes physiques est calculé.</value>
+    <value>De votre rémunération à votre revenu professionnel net, à partir duquel l'impôt des personnes physiques est calculé, après le quotient conjugal lorsqu'un conjoint en reçoit une part.</value>
   </data>
   <data name="TaxBaseOnlyNote" xml:space="preserve">
     <value>Réduit la base imposable, rien n'est payé</value>
@@ -76,7 +76,7 @@
     <value>Votre rémunération, mois par mois</value>
   </data>
   <data name="StatementHint" xml:space="preserve">
-    <value>Douze mois égaux de rémunération, chacun soumis au précompte professionnel selon la formule-clé de l'administration, avec les règles en vigueur au moment du paiement&#160;; ce qui est versé est le brut moins le précompte seulement&#160;: vos cotisations sociales et l'impôt final en sont encore à retirer, ce qui arrive dans votre poche sur l'année est donc la « Rémunération nette » de la carte. Une vraie fiche de paie peut différer d'un centime selon les arrondis de son logiciel.</value>
+    <value>Douze mois égaux de rémunération, chacun soumis au précompte professionnel selon la formule-clé de l'administration, avec les règles en vigueur au moment du paiement&#160;; ce qui est versé est le brut moins le précompte seulement&#160;: vos cotisations sociales et l'impôt final en sont encore à retirer, ce qui arrive dans votre poche sur l'année est donc la «&#160;Rémunération nette&#160;» de la carte. Une vraie fiche de paie peut différer d'un centime selon les arrondis de son logiciel.</value>
   </data>
   <data name="ColumnMonth" xml:space="preserve">
     <value>Mois</value>

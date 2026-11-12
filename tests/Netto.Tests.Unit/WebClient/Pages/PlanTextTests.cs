@@ -109,9 +109,10 @@ public class PlanTextTests
     public void PlanResx_notes_sayWhatTheyAssumeAndLeaveOutOfTheHousehold()
     {
         Resources.ShouldSatisfyAllConditions(
-            () => Resources.Get("AssumedSingle").ShouldBe("Single, with no dependants, unless you add your household to your plan"),
+            () => Resources.Get("AssumedSingle").ShouldBe("Single, with no dependants, unless your household, in your plan, has a partner or dependants"),
             () => PlanText.Assumptions.ShouldContain("AssumedPartnerWithholding"),
             () => Resources.Get("AssumedPartnerWithholding").ShouldNotBeNull().ShouldContain("dependants"),
+            () => Resources.Get("AssumedPartnerWithholding").ShouldNotBeNull().ShouldStartWith("With a partner ticked in your household"),
             () => PlanText.Limits.ShouldContain("LimitPartner"),
             () => Resources.Get("LimitPartner").ShouldNotBeNull().ShouldNotContain("dependants"),
             () => PlanText.Limits.ShouldContain("LimitDependants"));

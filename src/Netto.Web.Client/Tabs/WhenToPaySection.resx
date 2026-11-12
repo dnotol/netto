@@ -100,13 +100,13 @@
     <value>Your pay each month</value>
   </data>
   <data name="PayLine" xml:space="preserve">
-    <value>Each month: {0} gross on your payslip, {1} withheld by the company, {2} net paid to you.</value>
+    <value>Each month: {0} gross on your payslip, {1} withheld by the company, {2} paid to you after withholding.</value>
   </data>
   <data name="PayLineMonths" xml:space="preserve">
-    <value>Each month from {3} to {4}: {0} gross on your payslip, {1} withheld by the company, {2} net paid to you.</value>
+    <value>Each month from {3} to {4}: {0} gross on your payslip, {1} withheld by the company, {2} paid to you after withholding.</value>
   </data>
   <data name="PayLineMonth" xml:space="preserve">
-    <value>In {3}: {0} gross on your payslip, {1} withheld by the company, {2} net paid to you.</value>
+    <value>In {3}: {0} gross on your payslip, {1} withheld by the company, {2} paid to you after withholding.</value>
   </data>
   <data name="PayLeft" xml:space="preserve">
     <value>Still to come in {2}: {0} to {1}.</value>

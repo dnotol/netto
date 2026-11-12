@@ -40,7 +40,7 @@
     <value>{0} assumptions Netto makes</value>
   </data>
   <data name="AssumedSingle" xml:space="preserve">
-    <value>Single, with no dependants, unless you add your household to your plan</value>
+    <value>Single, with no dependants, unless your household, in your plan, has a partner or dependants</value>
   </data>
   <data name="AssumedWallonia" xml:space="preserve">
     <value>Resident in Wallonia</value>
@@ -61,7 +61,7 @@
     <value>Each year pays out its own profit, and profits kept from earlier years go out with it at the same rate</value>
   </data>
   <data name="AssumedPartnerWithholding" xml:space="preserve">
-    <value>With your household in your plan, the monthly withholding on your pay takes your partner as having no income, or professional income above the small amounts its rules treat apart, and takes off its reductions for your dependent children and other dependants</value>
+    <value>With a partner ticked in your household, the monthly withholding on your pay takes your partner as having no income, or professional income above the small amounts its rules treat apart, and takes off its reductions for your dependent children and other dependants</value>
   </data>
   <data name="AssumedFinalContributions" xml:space="preserve">
     <value>Social contributions are the final amount owed on this year's income</value>

@@ -100,13 +100,13 @@
     <value>Votre rémunération chaque mois</value>
   </data>
   <data name="PayLine" xml:space="preserve">
-    <value>Chaque mois&#160;: {0} de brut sur votre fiche de paie, {1} de précompte retenu par la société, {2} de net versé.</value>
+    <value>Chaque mois&#160;: {0} de brut sur votre fiche de paie, {1} de précompte retenu par la société, {2} versés après précompte.</value>
   </data>
   <data name="PayLineMonths" xml:space="preserve">
-    <value>Chaque mois, entre {3} et {4}&#160;: {0} de brut sur votre fiche de paie, {1} de précompte retenu par la société, {2} de net versé.</value>
+    <value>Chaque mois, entre {3} et {4}&#160;: {0} de brut sur votre fiche de paie, {1} de précompte retenu par la société, {2} versés après précompte.</value>
   </data>
   <data name="PayLineMonth" xml:space="preserve">
-    <value>En {3}&#160;: {0} de brut sur votre fiche de paie, {1} de précompte retenu par la société, {2} de net versé.</value>
+    <value>En {3}&#160;: {0} de brut sur votre fiche de paie, {1} de précompte retenu par la société, {2} versés après précompte.</value>
   </data>
   <data name="PayLeft" xml:space="preserve">
     <value>Encore à venir en {2}&#160;: {0} à {1}.</value>

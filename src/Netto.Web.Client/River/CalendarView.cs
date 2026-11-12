@@ -101,7 +101,7 @@ public sealed record CalendarPay(IReadOnlyList<PayRun> Runs, (DateOnly First, Da
 }
 
 // Months in a row, from First to Last (each its month's first day), whose statement pays the same: the
-// gross on the payslip, what the key formula withholds and the net paid. The months of one period of
+// gross on the payslip, what the key formula withholds and what is paid after it. The months of one period of
 // the year's withholding rules are one run, and two periods that withhold alike, a pay the formula
 // withholds nothing on, one run too.
 public sealed record PayRun(DateOnly First, DateOnly Last, decimal GrossPay, decimal Withholding, decimal NetPaid)

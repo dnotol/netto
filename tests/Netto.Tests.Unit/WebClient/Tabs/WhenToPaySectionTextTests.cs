@@ -128,9 +128,9 @@ public class WhenToPaySectionTextTests
     // The pay's line for a run of its months, here 4,166.67 gross and 882.47 withheld: every month while
     // the year pays alike, else the run's months, or its month alone.
     [Theory]
-    [InlineData(1, 12, 1, "Each month: €4,166.67 gross on your payslip, €882.47 withheld by the company, €3,284.20 net paid to you.")]
-    [InlineData(11, 12, 2, "Each month from November to December: €4,166.67 gross on your payslip, €882.47 withheld by the company, €3,284.20 net paid to you.")]
-    [InlineData(12, 12, 2, "In December: €4,166.67 gross on your payslip, €882.47 withheld by the company, €3,284.20 net paid to you.")]
+    [InlineData(1, 12, 1, "Each month: €4,166.67 gross on your payslip, €882.47 withheld by the company, €3,284.20 paid to you after withholding.")]
+    [InlineData(11, 12, 2, "Each month from November to December: €4,166.67 gross on your payslip, €882.47 withheld by the company, €3,284.20 paid to you after withholding.")]
+    [InlineData(12, 12, 2, "In December: €4,166.67 gross on your payslip, €882.47 withheld by the company, €3,284.20 paid to you after withholding.")]
     public void PayLine_aRunOfThePaysMonths_saysWhatEachOfThemPays(int firstMonth, int lastMonth, int runs, string expected)
     {
         var run = new PayRun(new DateOnly(2026, firstMonth, 1), new DateOnly(2026, lastMonth, 1), 4_166.67m, 882.47m, 3_284.20m);

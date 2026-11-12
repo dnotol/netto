@@ -574,12 +574,11 @@ public class RiverInputsTests
         (RiverInputs.Example.Composition, PlanComposition.Modules.Any(RiverInputs.Example.InPlan)).ShouldBe((PlanComposition.None, false));
     }
 
-    // Its amounts for them are nothing, so adding every lever changes no figure; not the partner, whom the
-    // year is taxed jointly with as soon as they join the plan (HouseholdModuleTests).
+    // Its amounts for them are nothing, so adding every lever changes no figure.
     [Fact]
     public void Run_exampleWithEveryLeverAdded_keepsTheExamplesFigures()
     {
-        var everything = PlanComposition.Modules.Where(module => module != OptionalModule.Household)
+        var everything = PlanComposition.Modules
             .Aggregate(RiverInputs.Example, (inputs, module) => inputs.AddToPlan(module));
 
         (Figures(everything), everything.PayCeiling).ShouldBe((Figures(RiverInputs.Example), 100_000m));

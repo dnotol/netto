@@ -344,7 +344,7 @@ public class ModuleViewsTests
     [Fact]
     public void DirectorPay_noPay_listsNoStepOfNothing()
     {
-        DirectorPay(RiverInputs.Example.WithDirectorPay(0m)).Details.ShouldAllBe(detail => Math.Round(detail.Amount, 2, MidpointRounding.AwayFromZero) != 0m);
+        DirectorPay(RiverInputs.Example.WithDirectorPay(0m)).Details.ShouldAllBe(detail => !FigureLines.IsNothing(detail.Amount));
     }
 
     // Nothing withheld: 486.57 on the pay's tax, a drain of its own (what more by a deadline leaves none

@@ -40,7 +40,7 @@
     <value>{0} hypothèses retenues par Netto</value>
   </data>
   <data name="AssumedSingle" xml:space="preserve">
-    <value>Isolé, sans personne à charge, sauf si vous ajoutez votre ménage à votre plan</value>
+    <value>Isolé, sans personne à charge, sauf si votre ménage, dans votre plan, compte un conjoint ou des personnes à charge</value>
   </data>
   <data name="AssumedWallonia" xml:space="preserve">
     <value>Résident en Wallonie</value>
@@ -61,7 +61,7 @@
     <value>Chaque année distribue son propre bénéfice, et les réserves taxées des années précédentes sortent avec lui au même taux</value>
   </data>
   <data name="AssumedPartnerWithholding" xml:space="preserve">
-    <value>Avec votre ménage dans votre plan, le précompte professionnel mensuel sur votre rémunération considère votre conjoint comme sans revenus, ou avec des revenus professionnels au-dessus des petits montants que ses règles traitent à part, et en déduit ses réductions pour vos enfants à charge et autres personnes à charge</value>
+    <value>Avec un conjoint coché dans votre ménage, le précompte professionnel mensuel sur votre rémunération considère votre conjoint comme sans revenus, ou avec des revenus professionnels au-dessus des petits montants que ses règles traitent à part, et en déduit ses réductions pour vos enfants à charge et autres personnes à charge</value>
   </data>
   <data name="AssumedFinalContributions" xml:space="preserve">
     <value>Les cotisations sociales sont le montant définitif dû sur les revenus de cette année</value>

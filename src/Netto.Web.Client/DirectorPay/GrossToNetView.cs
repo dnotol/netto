@@ -7,7 +7,7 @@ using Netto.Web.Client.Steps;
 namespace Netto.Web.Client.DirectorPay;
 
 // What the pay slip draws from one gross-to-net result: the tax base as rows of bars on one scale, from the
-// pay to the net professional income the tax is computed on (where the pay goes is the card's drain list,
+// pay to the net professional income the tax is computed from, after the marital quotient when a partner takes one (where the pay goes is the card's drain list,
 // said once there), the next 1,000 as shares, the monthly
 // statement, the key formula's withholding as a step with its lines and sources for each period of
 // the year's withholding rules, with the months it covers, the balance on the assessment, and each

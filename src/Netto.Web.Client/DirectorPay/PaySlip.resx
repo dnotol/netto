@@ -16,7 +16,7 @@
     <value>What you are taxed on</value>
   </data>
   <data name="TrackHint_tax_base" xml:space="preserve">
-    <value>From your pay to your net professional income, before any marital quotient: the income the income tax is computed on.</value>
+    <value>From your pay to your net professional income, from which the income tax is computed, after the marital quotient when a partner takes one.</value>
   </data>
   <data name="TaxBaseOnlyNote" xml:space="preserve">
     <value>Lowers the tax base, not paid out</value>
