@@ -156,24 +156,24 @@ public class HandOffTests
         });
     }
 
-    // Each lever's card ends on what it hands on.
+    // No lever's card says what it hands on: what the company has left after it is the map's company line
+    // (MapLinks), never a line of the card.
     [Theory]
     [MemberData(nameof(Compositions))]
-    public void Views_anyComposition_endOnWhatTheirLeverHandsOn(bool vouchers, bool allowances, bool rent, bool car, bool royalty)
+    public void Views_anyComposition_sayNothingOfWhatTheirLeverHandsOn(bool vouchers, bool allowances, bool rent, bool car, bool royalty)
     {
         var composition = new PlanComposition(vouchers, allowances, rent, car, royalty, false);
         var year = Year(Filled with { Composition = composition });
-        var inPlan = Levers.Where(composition.Holds).ToList();
 
-        var last = inPlan.Select(lever => lever switch
+        var drains = Levers.Where(composition.Holds).SelectMany(lever => lever switch
         {
-            OptionalModule.Vouchers => VoucherView.From(year, composition).Drains[^1],
-            OptionalModule.Allowances => AllowanceView.From(year, composition).Drains[^1],
-            OptionalModule.Rent => RentView.From(year, composition).Drains[^1],
-            _ => CarView.From(year, composition).Drains[^1],
+            OptionalModule.Vouchers => VoucherView.From(year, composition).Drains,
+            OptionalModule.Allowances => AllowanceView.From(year, composition).Drains,
+            OptionalModule.Rent => RentView.From(year, composition).Drains,
+            _ => CarView.From(year, composition).Drains,
         });
 
-        last.ShouldBe(inPlan.Select(lever => HandOff.Drain(year, lever, composition)));
+        drains.Where(drain => drain.To is "allowances" or "rent" or "car" or "split").ShouldBeEmpty();
     }
 
     private static YearResult Year(RiverInputs inputs) => inputs.Run().Year.ShouldNotBeNull();

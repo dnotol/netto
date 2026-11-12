@@ -10,13 +10,13 @@ namespace Netto.Web.Client.River.Copyright;
 // it is paid, and its part beyond the limits, going on to Director pay, taxed as pay. The card reads the
 // royalty as the engine took it (Result): the limits, which one set the part within, what the company
 // withheld, and for a royalty that follows the pay, how it was set. Its lines say their share of the
-// royalty, and the card what reaches the pocket of it from here (ToYou); the part taxed as pay reaches
-// it through Director pay, net of its own taxes there. Without a royalty, nothing.
+// royalty; the part taxed as pay reaches the pocket through Director pay, net of its own taxes there. What
+// the royalty adds to the pocket is its LeverGain, which the card's summary states. Without a royalty,
+// nothing.
 internal sealed record CopyrightView(
     CopyrightResult Result,
     decimal Tax,
     decimal AfterTax,
-    decimal? ToYou,
     IReadOnlyList<Drain> Drains,
     IReadOnlyList<StepDetail> Details)
 {
@@ -45,7 +45,6 @@ internal sealed record CopyrightView(
             royalty,
             tax,
             afterTax,
-            ledger.Count > 0 ? Shares.Of(afterTax, royalty.Royalty) : null,
             [.. drains],
             ledger.Select(StepDetail.From).ToList());
     }

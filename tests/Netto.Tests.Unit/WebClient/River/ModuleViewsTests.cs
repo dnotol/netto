@@ -702,33 +702,34 @@ public class ModuleViewsTests
         Dividend(Prepaid).Details.Select(detail => detail.RuleKey).ShouldBe(["dividend_withholding", "dividend_exemption_refund"]);
     }
 
-    // No vouchers yet: what the company earns goes on whole, to the split while the plan holds no
-    // other lever, as the profit before pay, and there are no steps to list.
+    // No vouchers yet: no line, and no steps to list; what the company earns goes on whole, on the map's
+    // company line alone.
     [Fact]
-    public void Vouchers_addedWithNothing_passWhatTheCompanyEarnsOnToTheSplit()
+    public void Vouchers_addedWithNothing_drawNoLine()
     {
         var view = Vouchers(RiverInputs.Example.AddToPlan(OptionalModule.Vouchers));
 
-        (view.Total, view.Deductible, view.Disallowed, view.Left, view.Details.Count, view.Drains.Single())
-            .ShouldBe((0m, 0m, 0m, 100_000m, 0, new Drain("profit_before_pay", DrainKind.PassedOn, 100_000m, "split")));
+        (view.Total, view.Deductible, view.Disallowed, view.Left, view.Details.Count, view.Drains.Count)
+            .ShouldBe((0m, 0m, 0m, 100_000m, 0, 0));
     }
 
+    // Each kind to the pocket, and no line of what the company has left after them: that is the map's
+    // company line (HandOff), never the card's.
     [Fact]
-    public void Vouchers_allThree_drainEachToThePocketAndTheRestOnDownTheRiver()
+    public void Vouchers_allThree_drainEachToThePocketAndNothingOnDownTheRiver()
     {
         Lines(Vouchers(AllVouchers).Drains).ShouldBe(new[]
         {
             new Drain("meal_vouchers", DrainKind.PassedOn, 1_960.20m, "pocket"),
             new Drain("eco_vouchers", DrainKind.PassedOn, 250m, "pocket"),
             new Drain("sport_culture_vouchers", DrainKind.PassedOn, 100m, "pocket"),
-            new Drain("profit_before_pay", DrainKind.PassedOn, 97_689.80m, "split"),
         });
     }
 
     [Fact]
     public void Vouchers_allThree_eachLineOfAStepCarriesThatStep()
     {
-        Explained(Vouchers(AllVouchers).Drains).ShouldBe(["meal_vouchers", "eco_vouchers", "sport_culture_vouchers", ""]);
+        Explained(Vouchers(AllVouchers).Drains).ShouldBe(["meal_vouchers", "eco_vouchers", "sport_culture_vouchers"]);
     }
 
     // The meal vouchers' line is computed with what the company pays into each voucher and what the
@@ -740,20 +741,6 @@ public class ModuleViewsTests
 
         meal.Sources.Single(group => SourceWordsInEnglish.Of(group.Source).Label == "CIR 92, art. 38/1").Amounts.Select(amount => (amount.Key, amount.Value))
             .ShouldBe([("meal_voucher_company_share", 8.91m), ("meal_voucher_holder_share", 1.09m)]);
-    }
-
-    // What the vouchers leave goes on to the next module in the plan, or to the split as the profit
-    // before pay when they are the last lever.
-    [Theory]
-    [InlineData(true, true, "left_after_vouchers", "allowances")]
-    [InlineData(true, false, "left_after_vouchers", "allowances")]
-    [InlineData(false, true, "left_after_vouchers", "rent")]
-    [InlineData(false, false, "profit_before_pay", "split")]
-    public void Vouchers_leftAfterThem_goOnToTheNextModuleInThePlan(bool allowances, bool rent, string key, string next)
-    {
-        var inputs = AllVouchers with { Composition = new PlanComposition(true, allowances, rent, false, false, false) };
-
-        Vouchers(inputs).Drains[^1].ShouldBe(new Drain(key, DrainKind.PassedOn, 97_689.80m, next));
     }
 
     // The river runs on: what the vouchers leave is what they leave, whatever the allowances take next.
@@ -791,31 +778,18 @@ public class ModuleViewsTests
         });
     }
 
-    // No allowances yet: what the company earns goes on whole, to the split while the plan holds no
-    // rent, as the profit before pay, and there are no steps to list.
+    // No allowances yet: no line, and no steps to list.
     [Fact]
-    public void Allowances_addedWithNothing_passWhatTheCompanyEarnsOnToTheSplit()
+    public void Allowances_addedWithNothing_drawNoLine()
     {
         var view = Allowances(RiverInputs.Example.AddToPlan(OptionalModule.Allowances));
 
-        (view.Total, view.Left, view.Details.Count, view.Drains.Single())
-            .ShouldBe((0m, 100_000m, 0, new Drain("profit_before_pay", DrainKind.PassedOn, 100_000m, "split")));
+        (view.Total, view.Details.Count, view.Drains.Count).ShouldBe((0m, 0, 0));
     }
 
-    // What the allowances leave goes on to the rent while it is in the plan, to the split as the profit
-    // before pay otherwise.
-    [Theory]
-    [InlineData(true, "left_after_allowances", "rent")]
-    [InlineData(false, "profit_before_pay", "split")]
-    public void Allowances_leftAfterThem_goOnToTheNextModuleInThePlan(bool rent, string key, string next)
-    {
-        var inputs = FlatRateAllowances(RiverInputs.Example) with { Composition = new PlanComposition(false, true, rent, false, false, false) };
-
-        Allowances(inputs).Drains[^1].ShouldBe(new Drain(key, DrainKind.PassedOn, 97_581.56m, next));
-    }
-
+    // Each to the pocket, and no line of what the company has left after them: the map's company line.
     [Fact]
-    public void Allowances_all_drainEachToThePocketAndTheRestOnDownTheRiver()
+    public void Allowances_all_drainEachToThePocketAndNothingOnDownTheRiver()
     {
         Lines(Allowances(AllAllowances(RiverInputs.Example)).Drains).ShouldBe(new[]
         {
@@ -823,7 +797,6 @@ public class ModuleViewsTests
             new Drain("internet_allowance", DrainKind.PassedOn, 240m, "pocket"),
             new Drain("computer_allowance", DrainKind.PassedOn, 240m, "pocket"),
             new Drain("phone_costs", DrainKind.PassedOn, 600m, "pocket"),
-            new Drain("profit_before_pay", DrainKind.PassedOn, 96_981.56m, "split"),
         });
     }
 
@@ -831,7 +804,7 @@ public class ModuleViewsTests
     public void Allowances_all_eachLineOfAStepCarriesThatStep()
     {
         Explained(Allowances(AllAllowances(RiverInputs.Example)).Drains)
-            .ShouldBe(["office_allowance", "internet_allowance", "computer_allowance", "phone_costs", ""]);
+            .ShouldBe(["office_allowance", "internet_allowance", "computer_allowance", "phone_costs"]);
     }
 
     [Fact]
@@ -840,66 +813,38 @@ public class ModuleViewsTests
         Allowances(AllAllowances(RiverInputs.Example)).Total.ShouldBe(3_018.44m);
     }
 
-    // Untaxed and outside INASTI, all of what the company pays as vouchers or allowances reaches the
-    // pocket. Their lines need no share: the card's says it, and what they leave is not theirs.
+    // Untaxed and outside INASTI, the vouchers' and the allowances' lines need no share: each is what the
+    // company pays out for one kind, whole, to the pocket.
     [Fact]
-    public void Levers_vouchersAndAllowances_allReachThePocket()
+    public void Levers_vouchersAndAllowances_sayNoShare()
     {
         var (vouchers, allowances) = (Vouchers(AllVouchers), Allowances(AllAllowances(RiverInputs.Example)));
 
-        (vouchers.ToYou, allowances.ToYou, vouchers.Drains.Concat(allowances.Drains).All(drain => drain.Share == null))
-            .ShouldBe(((decimal?)1m, (decimal?)1m, true));
+        vouchers.Drains.Concat(allowances.Drains).ShouldAllBe(drain => drain.Share == null);
     }
 
-    // Through a lever of nothing no money flows: no share to say.
-    [Fact]
-    public void Levers_addedWithNothing_sayNoShare()
-    {
-        var inputs = RiverInputs.Example.AddToPlan(OptionalModule.Vouchers).AddToPlan(OptionalModule.Allowances).AddToPlan(OptionalModule.Rent);
-
-        (Vouchers(inputs).ToYou, Allowances(inputs).ToYou, Rent(inputs).ToYou).ShouldBe(((decimal?)null, (decimal?)null, (decimal?)null));
-    }
-
-    // Out of the 1,380.00 of rent, what its tax takes and what reaches the pocket; the profit it
-    // passes on to the split is not the rent's.
+    // Out of the 1,380.00 of rent, what its tax takes and what reaches the pocket.
     [Fact]
     public void Rent_atTheCap_saysTheShareOfTheRentEachLineTakes()
     {
         var view = Rent(RentAtTheCap(RiverInputs.Example));
 
-        view.ToYou.ShouldBe(981.32m / 1_380m);
-        Shares(view.Drains).ShouldBe([0.27m, 26.08m / 1_380m, 0m, 0m, 981.32m / 1_380m, null]);
+        Shares(view.Drains).ShouldBe([0.27m, 26.08m / 1_380m, 0m, 0m, 981.32m / 1_380m]);
     }
 
-    // After the vouchers' 2,310.20 and the allowances' 2,418.44, 95,271.36 go on to the rent.
+    // No rent: no line, and no steps to list.
     [Fact]
-    public void Allowances_afterVouchers_passOnWhatBothLeave()
-    {
-        Allowances(FlatRateAllowances(AllVouchers)).Drains[^1].ShouldBe(new Drain("profit_before_pay", DrainKind.PassedOn, 95_271.36m, "split"));
-    }
-
-    // The river runs on: what the allowances leave is what they leave, whatever the rent takes next.
-    // Internet and computer only, 480, since the office allowance excludes a rent.
-    [Fact]
-    public void Allowances_withRent_passOnWhatTheAllowancesLeave()
-    {
-        Allowances(RentAtTheCap(RiverInputs.Example).AddToPlan(OptionalModule.Allowances).WithInternetAllowance(240m).WithComputerAllowance(240m))
-            .Left.ShouldBe(99_520m);
-    }
-
-    // No rent: the profit before pay goes on to the split whole, and there are no steps to list.
-    [Fact]
-    public void Rent_example_passesTheProfitBeforePayOnToTheSplit()
+    public void Rent_example_drawsNoLine()
     {
         var view = Rent(RiverInputs.Example);
 
-        (view.Rent, view.Tax, view.Details.Count, view.Drains.Single()).ShouldBe((0m, 0m, 0, new Drain("profit_before_pay", DrainKind.PassedOn, 100_000m, "split")));
+        (view.Rent, view.Tax, view.Details.Count, view.Drains.Count).ShouldBe((0m, 0m, 0, 0));
     }
 
-    // Its tax is the year's taxes on pay, line by line (GrossToNetTests); the rest reaches the pocket,
-    // and the profit before pay, 100,000 less the 1,380.00, goes on to the split.
+    // Its tax is the year's taxes on pay, line by line (GrossToNetTests), and the rest reaches the pocket;
+    // what the company has left after it is the map's company line, no line of the card.
     [Fact]
-    public void Rent_atTheCap_drainsItsTaxToTaxesOnPayTheRestToThePocketAndTheProfitToTheSplit()
+    public void Rent_atTheCap_drainsItsTaxToTaxesOnPayAndTheRestToThePocket()
     {
         Lines(Rent(RentAtTheCap(RiverInputs.Example)).Drains).ShouldBe(new[]
         {
@@ -908,16 +853,15 @@ public class ModuleViewsTests
             new Drain("rent_low_earned_income_credit_lost", DrainKind.PaidOut, 0m, "taxes_on_pay"),
             new Drain("rent_income_tax_advance_payments", DrainKind.PaidOut, 0m, "taxes_on_pay"),
             new Drain("rent_after_tax", DrainKind.PassedOn, 981.32m, "pocket"),
-            new Drain("profit_before_pay", DrainKind.PassedOn, 98_620m, "split"),
         });
     }
 
-    // What the rent leaves once taxed and what goes on to the split are passed on: no step of their own.
+    // What the rent leaves once taxed is passed on: no step of its own.
     [Fact]
     public void Rent_atTheCap_eachLineOfAStepCarriesThatStep()
     {
         Explained(Rent(RentAtTheCap(RiverInputs.Example)).Drains).ShouldBe(
-            ["rent_income_tax", "rent_municipal_surcharge", "rent_low_earned_income_credit_lost", "rent_income_tax_advance_payments", "", ""]);
+            ["rent_income_tax", "rent_municipal_surcharge", "rent_low_earned_income_credit_lost", "rent_income_tax_advance_payments", ""]);
     }
 
     // Taxed on the rent less 40% of charges, at their limit at the cap (RentCalculatorTests).
@@ -937,25 +881,6 @@ public class ModuleViewsTests
         var view = Rent(RentAtTheCap(RiverInputs.Example).WithRent(400m));
 
         (view.TaxableRent, view.TaxedOnTheFloor, view.NetRent).ShouldBe((463.68m, true, 278.21m));
-    }
-
-    // What the split shares once the rent is paid, 98,620, stays the same at every pay with a royalty that
-    // follows it, which the card's summary states; the profit before pay alone falls as the royalty
-    // rises with the pay.
-    [Theory]
-    [InlineData(50_000)]
-    [InlineData(60_000)]
-    public void Rent_withAFollowingRoyalty_saysWhatTheSplitSharesAtEveryPay(int pay)
-    {
-        Rent(RentAtTheCap(FollowingRoyalty).WithDirectorPay(pay)).SplitShares.ShouldBe(98_620m);
-    }
-
-    [Fact]
-    public void Rent_withoutARoyalty_saysWhatTheSplitSharesAsTheProfitBeforePay()
-    {
-        var inputs = RentAtTheCap(RiverInputs.Example);
-
-        Rent(inputs).SplitShares.ShouldBe(inputs.Run().Year.ShouldNotBeNull().ProfitBeforePay);
     }
 
     [Fact]

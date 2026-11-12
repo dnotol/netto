@@ -33,7 +33,7 @@ public class CopyrightViewTests
     {
         var view = Royalty(RiverInputs.Example.AddToPlan(OptionalModule.Copyright));
 
-        (view.HasRoyalty, view.Details.Count, view.ToYou, view.Drains.Count).ShouldBe((false, 0, (decimal?)null, 0));
+        (view.HasRoyalty, view.Details.Count, view.Drains.Count).ShouldBe((false, 0, 0));
     }
 
     // Its tax apart and the municipal surcharge go to the taxes on pay, the rest of the part within the
@@ -85,15 +85,13 @@ public class CopyrightViewTests
             .ShouldBe((24_000m, new Drain("copyright_taxed_as_pay", DrainKind.PassedOn, 6_000m, "director_pay")));
     }
 
-    // What it receives is the royalty the split pays; each line says its share of it, and the card what
-    // reaches the pocket of it from here.
+    // What it receives is the royalty the split pays; each line says its share of it.
     [Fact]
     public void Royalty_saysItsSharesOfTheRoyalty()
     {
         var view = Royalty(Beyond);
 
-        (view.Result.Royalty, view.Drains.Single(drain => drain.Key == "copyright_taxed_as_pay").Share, view.ToYou)
-            .ShouldBe((30_000m, (decimal?)0.2m, Netto.Web.Client.Shares.Of(view.AfterTax, 30_000m)));
+        (view.Result.Royalty, view.Drains.Single(drain => drain.Key == "copyright_taxed_as_pay").Share).ShouldBe((30_000m, (decimal?)0.2m));
     }
 
     // Every line takes part of the royalty: none is a remainder passed on.
@@ -262,13 +260,13 @@ public class CopyrightViewTests
     }
 
     // With the royalty in the plan, the rent passes on to the split what the pay and the royalty share
-    // there, the royalty still in it.
+    // there, the royalty still in it, on the map's company line (HandOff).
     [Fact]
     public void Rent_withTheRoyalty_passesWhatThePayAndTheRoyaltyShareOnToTheSplit()
     {
         var inputs = Within.AddToPlan(OptionalModule.Rent).WithCadastralIncome(1_200m).WithShareLet(0.12m).WithRent(1_380m);
 
-        RentView.From(inputs.Run().Year.ShouldNotBeNull(), inputs.Composition).Drains[^1]
+        HandOff.Drain(inputs.Run().Year.ShouldNotBeNull(), OptionalModule.Rent, inputs.Composition)
             .ShouldBe(new Drain("profit_before_pay_and_royalty", DrainKind.PassedOn, 98_620m, "split"));
     }
 

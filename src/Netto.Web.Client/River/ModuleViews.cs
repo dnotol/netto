@@ -14,73 +14,56 @@ namespace Netto.Web.Client.River;
 // What each module card draws from the one run of the river. They only select, order and regroup
 // the engine's figures and steps; no card calculates on its own.
 
-// What the vouchers bring to the pocket, one drain for each kind once the company grants any, what the
-// company deducts of them and what it cannot, and what they leave of what the company earns, handed on
-// to the next module in the plan, or the split (HandOff), from the year's voucher steps, and the share
-// of what the company pays in them that reaches the pocket (ToYou). The shares, the yearly maximums and the conditions are the year's rules, which the
-// card reads beside it, so they stay while an amount is refused.
+// What the vouchers bring to the pocket, one drain for each kind once the company grants any, and what
+// the company pays out for them, deducts of them and cannot, from the year's voucher steps. What they
+// leave of what the company earns is no line of the card: the map's company line carries it
+// (HandOff.Drain, read by MapLinks); Left is that amount, which no card shows. The shares, the yearly
+// maximums and the conditions are the year's rules, which the card reads beside it, so they stay while an
+// amount is refused. The plan's composition decides none of the vouchers' own lines.
 internal sealed record VoucherView(
     decimal Total,
     decimal Deductible,
     decimal Disallowed,
     decimal Left,
-    decimal? ToYou,
     IReadOnlyList<Drain> Drains,
     IReadOnlyList<StepDetail> Details)
 {
     public static VoucherView From(YearResult year, PlanComposition composition)
     {
         var steps = year.Steps.Where(step => step.Event == TaxableEvent.Vouchers).ToList();
-        var inPocket = steps.Where(step => step.Track == Track.InPocket).ToList();
-        var left = HandOff.After(year, OptionalModule.Vouchers);
 
         return new VoucherView(
             year.Vouchers.Total,
             year.Vouchers.Deductible,
             year.Vouchers.Disallowed,
-            left,
-            Shares.Of(inPocket.Sum(step => step.Amount), year.Vouchers.Total),
-            [
-                .. inPocket.Select(Drain.ToPocket),
-                HandOff.Drain(year, OptionalModule.Vouchers, composition),
-            ],
+            HandOff.After(year, OptionalModule.Vouchers),
+            [.. steps.Where(step => step.Track == Track.InPocket).Select(Drain.ToPocket)],
             steps.Select(StepDetail.From).ToList());
     }
 }
 
-// What the expense allowances bring to the pocket, one drain for each once the company pays any, and
-// what the vouchers and they leave of what the company earns, handed on to the next module in the
-// plan, or the split (HandOff). The maxima and the conditions are the year's rules, which the card
-// reads beside it, so they stay while an amount is refused. The company deducts them in full: nothing of them reaches
-// Corporate tax, and all of them reach the pocket (ToYou) once it pays any.
-internal sealed record AllowanceView(decimal Total, decimal Left, decimal? ToYou, IReadOnlyList<Drain> Drains, IReadOnlyList<StepDetail> Details)
+// What the expense allowances bring to the pocket, one drain for each once the company pays any, and what
+// it pays out for them all (Total). What they leave of what the company earns is the map's company line,
+// no line of the card. The maxima and the conditions are the year's rules, which the card reads beside it,
+// so they stay while an amount is refused. The company deducts them in full: nothing of them reaches
+// Corporate tax.
+internal sealed record AllowanceView(decimal Total, IReadOnlyList<Drain> Drains, IReadOnlyList<StepDetail> Details)
 {
     public static AllowanceView From(YearResult year, PlanComposition composition)
     {
         var steps = year.Steps.Where(step => step.Event == TaxableEvent.ExpenseAllowances).ToList();
-        var left = HandOff.After(year, OptionalModule.Allowances);
-        var total = steps.Where(step => step.Track == Track.InPocket).Sum(step => step.Amount);
+        var inPocket = steps.Where(step => step.Track == Track.InPocket).ToList();
 
-        return new AllowanceView(
-            total,
-            left,
-            Shares.Of(total, total),
-            [
-                .. steps.Where(step => step.Track == Track.InPocket).Select(Drain.ToPocket),
-                HandOff.Drain(year, OptionalModule.Allowances, composition),
-            ],
-            steps.Select(StepDetail.From).ToList());
+        return new AllowanceView(inPocket.Sum(step => step.Amount), [.. inPocket.Select(Drain.ToPocket)], steps.Select(StepDetail.From).ToList());
     }
 }
 
-// What the rent costs in personal tax, each line of it into the taxes on pay, what reaches the pocket
-// once that is paid, and what it leaves of what the company earns, handed on to the car when it is in
-// the plan, or to the split (HandOff), from the year's rent steps; and what the rules
-// tax it on: the rent, or the floor when it is less (TaxedOnTheFloor), less its flat charges. The cap
-// and the conditions are the year's rules, which the card reads beside it (RentCapView), so they stay
-// while the rent is refused. The company deducts it in full: nothing of it reaches Corporate tax. Its
-// tax and what reaches the pocket each say their share of the rent, and the card what reaches the
-// pocket of it (ToYou); what it passes on is not the rent's.
+// What the rent costs in personal tax, each line of it into the taxes on pay, and what reaches the pocket
+// once that is paid, from the year's rent steps; and what the rules tax it on: the rent, or the floor when
+// it is less (TaxedOnTheFloor), less its flat charges. What it leaves of what the company earns is the
+// map's company line, no line of the card. The cap and the conditions are the year's rules, which the card
+// reads beside it (RentCapView), so they stay while the rent is refused. The company deducts it in full:
+// nothing of it reaches Corporate tax. Its tax and what reaches the pocket each say their share of the rent.
 internal sealed record RentView(
     decimal Rent,
     decimal TaxableRent,
@@ -89,14 +72,9 @@ internal sealed record RentView(
     decimal NetRent,
     decimal Tax,
     decimal AfterTax,
-    decimal? ToYou,
     IReadOnlyList<Drain> Drains,
     IReadOnlyList<StepDetail> Details)
 {
-    // What the split shares once the levers are paid, the royalty in it, which the summary states: the
-    // same at every pay, while the profit before pay alone moves with a royalty that follows the pay.
-    public decimal SplitShares { get; init; }
-
     // The year's rules, which give the rates and coefficients the lines' bubbles state; none for a year
     // without rules.
     public RentRules? Rules { get; init; }
@@ -121,15 +99,12 @@ internal sealed record RentView(
             rent.NetRent,
             tax,
             rent.Rent - tax,
-            Shares.Of(rent.Rent - tax, rent.Rent),
             [
                 .. paidOut.Select(step => Drain.PaidOutTo(step, "taxes_on_pay").Of(rent.Rent)),
                 .. afterTax,
-                HandOff.Drain(year, OptionalModule.Rent, composition),
             ],
             steps.Select(StepDetail.From).ToList())
         {
-            SplitShares = HandOff.Shared(year),
             Rules = RentRules.For(year.Scenario.IncomeYear),
             TaxedJointly = year.Scenario.Household.TaxedJointly,
         };

@@ -36,8 +36,8 @@ public class CarCardTests
         .WithCarEngine(CarEngine.Petrol).WithCarCo2(120).WithCarAcquired(new DateOnly(2026, 1, 5));
 
     // The benefit and what the company does with the costs, then the plan with the car against the same
-    // plan without it, in cash, then where its money goes: its costs into the expenses, 8% of the 100,000
-    // it receives, and the 92,000 the split shares.
+    // plan without it, in cash, then where its money goes: its costs into the expenses, as no share of what
+    // the company has left before it, and nothing of what it leaves, which is the map's company line.
     [Fact]
     public async Task Card_withACar_drawsItsFiguresThenTheCashThenWhereItsMoneyGoes()
     {
@@ -56,8 +56,7 @@ public class CarCardTests
             (Text("Figure_WithoutCar"), Formats.Euros(comparison.PocketWithout), null),
             (Text("Figure_Cash_Takes"), "€6,162.66", null),
             (Text("Figure_TaxesOnPay"), Formats.Euros(comparison.TaxesOnPayAdded), null),
-            (Drains("Drain_car_costs"), "−€8,000.00", "8.0%"),
-            (Drains("Drain_profit_before_pay"), "€92,000.00", null),
+            (Drains("Drain_car_costs"), "−€8,000.00", null),
         ]);
     }
 

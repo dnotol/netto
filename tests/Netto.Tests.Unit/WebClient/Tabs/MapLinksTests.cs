@@ -54,15 +54,16 @@ public class MapLinksTests
             ("company-line-car", "split", RiverModule.Car, "Drain_profit_before_pay_and_royalty")]);
     }
 
+    // What a lever leaves runs on down the company's line: the engine's hand-off, which no card shows.
     [Fact]
-    public void Of_aLever_leavesOnTheCompanysLineWhatItsCardSaysItLeaves()
+    public void Of_aLever_leavesOnTheCompanysLineWhatItHandsOn()
     {
         var run = Full.Run();
 
         var link = Between(MapLinks.Of(Full, run), MapEnd.Beside(RiverModule.Vouchers), MapEnd.Beside(RiverModule.Allowances)).ShouldHaveSingleItem();
 
         (link.Kind, link.Carries.Text, link.Carries.Key, link.Amount)
-            .ShouldBe((MapLinkKind.PassedOn, MapText.DrainList, "Drain_left_after_vouchers", VoucherView.From(run.Year!, Full.Composition).Left));
+            .ShouldBe((MapLinkKind.PassedOn, MapText.DrainList, "Drain_left_after_vouchers", HandOff.After(run.Year!, OptionalModule.Vouchers)));
     }
 
     // Each lever but the car takes its share off the company's line across to its box: what its card says the

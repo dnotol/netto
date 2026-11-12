@@ -63,6 +63,19 @@ public class LeverCardsSummaryTests
         rate.ShouldBe(payout is { } paid ? Chrome.Format("OfThePayout", Formats.WholeShare(gain / paid)) : null);
     }
 
+    // What the company has left after a lever, and what the split shares after the last, are on no card.
+    [Theory]
+    [MemberData(nameof(Levers))]
+    public async Task Card_aLeverInThePlan_saysNothingOfWhatTheCompanyHasLeft(OptionalModule lever)
+    {
+        var year = Filled.Run().Year.ShouldNotBeNull();
+        string[] left = [.. new[] { OptionalModule.Vouchers, OptionalModule.Allowances, OptionalModule.Rent, OptionalModule.Car }.Select(each => Formats.Euros(HandOff.After(year, each)))];
+
+        var text = CardHtml.TextInSight(await RenderOpenAsync(CardOf(lever), lever, Filled));
+
+        left.Where(text.Contains).ShouldBeEmpty();
+    }
+
     // A lever that changes nothing in the pocket says so, without a figure.
     [Fact]
     public async Task Summary_vouchersGrantingNothing_sayNoDifference()

@@ -16,53 +16,26 @@ public class CarViewTests
     private static readonly RiverInputs ElectricCar = RiverInputs.Example.AddToPlan(OptionalModule.Car)
         .WithCatalogueValue(50_000m).WithFirstRegistration(new DateOnly(2026, 1, 10)).WithCarCosts(8_000m);
 
-    // Added with nothing: no car yet, so the profit goes on whole to the split, and there are no steps
-    // to list.
+    // Added with nothing: no car yet, so no line, and no steps to list.
     [Fact]
-    public void Car_addedWithNothing_passesTheProfitOnToTheSplit()
+    public void Car_addedWithNothing_drawsNoLine()
     {
         var view = Car(RiverInputs.Example.AddToPlan(OptionalModule.Car));
 
-        (view.HasCar, view.Details.Count, view.PassesOn, view.Drains.Single())
-            .ShouldBe((false, 0, (decimal?)null, new Drain("profit_before_pay", DrainKind.PassedOn, 100_000m, "split")));
+        (view.HasCar, view.Details.Count, view.Drains.Count).ShouldBe((false, 0, 0));
     }
 
-    // Its costs end in the company's expenses, beside its running costs, the director's
-    // contribution comes back from the pocket, and the profit before pay, 100,000 less 8,000 plus 600,
-    // goes on to the split.
+    // Its costs end in the company's expenses, beside its running costs, and the director's contribution
+    // comes back from the pocket. What the company has left after the car, on to the split, is the map's
+    // company line, no line of the card.
     [Fact]
-    public void Car_withAContribution_paysItsCostsOutAsACompanyCostAndPassesTheRestOn()
+    public void Car_withAContribution_paysItsCostsOutAsACompanyCostAndTakesTheContributionBack()
     {
         Lines(Car(ElectricCar.WithCarContribution(600m)).Drains).ShouldBe(new[]
         {
             new Drain("car_costs", DrainKind.PaidOut, 8_000m, "expenses"),
             new Drain("car_contribution", DrainKind.Back, 600m, "pocket"),
-            new Drain("profit_before_pay", DrainKind.PassedOn, 92_600m, "split"),
         });
-    }
-
-    // What the split shares once the car is paid, 92,000, stays the same at every pay with a royalty that
-    // follows it, which the card's summary states; the profit before pay alone falls as the royalty
-    // rises with the pay.
-    [Theory]
-    [InlineData(50_000)]
-    [InlineData(60_000)]
-    public void Car_withAFollowingRoyalty_saysWhatTheSplitSharesAtEveryPay(int pay)
-    {
-        Car(ElectricCar.AddToPlan(OptionalModule.Copyright).WithCreativeShare(0.75m).WithDirectorPay(pay)).SplitShares.ShouldBe(92_000m);
-    }
-
-    // With the royalty in the plan, what the car leaves goes on to the split, which shares it between the
-    // pay, the royalty and the company: the royalty is still in it.
-    [Fact]
-    public void Car_withTheRoyaltyInThePlan_passesWhatThePayAndTheRoyaltyShareOnToTheSplit()
-    {
-        var inputs = ElectricCar.AddToPlan(OptionalModule.Copyright).WithRoyalty(10_000m);
-
-        var view = Car(inputs);
-
-        (HandOff.Before(inputs.Run().Year.ShouldNotBeNull(), OptionalModule.Car), view.Drains[^1], view.PassesOn)
-            .ShouldBe((100_000m, new Drain("profit_before_pay_and_royalty", DrainKind.PassedOn, 92_000m, "split"), (decimal?)0.92m));
     }
 
     // The costs and the contribution are steps of the ledger: their lines carry them.
@@ -70,105 +43,25 @@ public class CarViewTests
     public void Car_eachLineOfAStepCarriesThatStep()
     {
         Car(ElectricCar.WithCarContribution(600m)).Drains.Select(drain => drain.Details.SingleOrDefault()?.RuleKey ?? "")
-            .ShouldBe(["car_costs", "car_contribution", ""]);
+            .ShouldBe(["car_costs", "car_contribution"]);
     }
 
-    // What it receives is what the levers above leave of what the company earns; the costs line says
-    // its share of it, and the card what it passes on.
-    [Fact]
-    public void Car_saysItsSharesOfWhatItReceives()
-    {
-        var view = Car(ElectricCar);
-
-        (HandOff.Before(ElectricCar.Run().Year.ShouldNotBeNull(), OptionalModule.Car), view.Drains[0].Share, view.PassesOn)
-            .ShouldBe((100_000m, (decimal?)0.08m, (decimal?)0.92m));
-    }
-
-    // What the card passes on of what it receives is what its costs leave of it, net of the director's
-    // contribution, and never more than all of it: the costs take nothing once the contribution covers
-    // them, and what it brings beyond them comes from the director's pocket, not from what the card
-    // received, so it is no share above 100%.
-    public static TheoryData<decimal, decimal, decimal> PassesOnShares => new()
-    {
-        { 8_000m, 0m, 0.92m },
-        { 8_000m, 600m, 0.926m },
-        { 600m, 600m, 1m },
-        { 500m, 600m, 1m },
-        { 0m, 600m, 1m },
-        { 120_000m, 0m, 0m },
-        { 150_000m, 0m, 0m },
-        { 120_000m, 600m, 0m },
-        { 120_000m, 20_000m, 0m },
-        { 100_000m, 0m, 0m },
-    };
-
+    // The card measures nothing against what the company has left before the car: its costs say no share of
+    // it, whether they are less than it, more, or it is nothing.
     [Theory]
-    [MemberData(nameof(PassesOnShares))]
-    public void Car_passesOn_isWhatItsCostsLeaveOfWhatItReceivesNeverMoreAndNeverBelowNothing(decimal costs, decimal contribution, decimal share)
+    [InlineData(8_000, 0)]
+    [InlineData(150_000, 0)]
+    [InlineData(8_000, 150_000)]
+    public void Car_costs_sayNoShareOfWhatTheCompanyHasLeft(int costs, int runningCosts)
     {
-        var passesOn = Car(ElectricCar.WithCarCosts(costs).WithCarContribution(contribution)).PassesOn.ShouldNotBeNull();
+        var view = Car(ElectricCar.WithCarCosts(costs).WithRunningCosts(runningCosts));
 
-        (passesOn, decimal.IsNegative(passesOn)).ShouldBe((share, false));
-    }
-
-    // The costs take at most all of what the card receives, 100,000: their share stops at 100% once they
-    // are more, and the card says so (CostsAboveWhatItReceives), never while they are no more.
-    public static TheoryData<decimal, decimal, bool> CostsShares => new()
-    {
-        { 8_000m, 0.08m, false },
-        { 100_000m, 1m, false },
-        { 120_000m, 1m, true },
-        { 150_000m, 1m, true },
-    };
-
-    [Theory]
-    [MemberData(nameof(CostsShares))]
-    public void Car_costsAboveWhatItReceives_takeNoMoreThanAllOfItAndSaySo(decimal costs, decimal share, bool above)
-    {
-        var view = Car(ElectricCar.WithCarCosts(costs));
-
-        (view.Drains[0].Key, view.Drains[0].Share, view.CostsAboveWhatItReceives).ShouldBe(("car_costs", (decimal?)share, above));
-    }
-
-    // A company already losing before the car receives nothing to take a share of: no share, no note, and
-    // nothing thrown.
-    [Fact]
-    public void Car_receivingNothing_saysNoShareAndNoNote()
-    {
-        var view = Car(ElectricCar.WithRunningCosts(150_000m));
-
-        (view.PassesOn, view.Drains[0].Share, view.CostsAboveWhatItReceives).ShouldBe(((decimal?)null, (decimal?)null, false));
-    }
-
-    [Fact]
-    public void Car_withoutACar_saysNoNote()
-    {
-        Car(RiverInputs.Example.AddToPlan(OptionalModule.Car)).CostsAboveWhatItReceives.ShouldBeFalse();
-    }
-
-    // What the contribution brings beyond the costs is a figure of its own, none while the costs are at
-    // least the contribution or it is under a cent beyond them, the line a drain list leaves out at €0.00.
-    public static TheoryData<decimal, decimal, decimal?> ContributionsBeyondTheCosts => new()
-    {
-        { 0m, 600m, 600m },
-        { 500m, 600m, 100m },
-        { 0m, 0.01m, 0.01m },
-        { 600m, 600m, null },
-        { 8_000m, 600m, null },
-        { 0m, 0m, null },
-        { 599.996m, 600m, null },
-    };
-
-    [Theory]
-    [MemberData(nameof(ContributionsBeyondTheCosts))]
-    public void Car_contributionBeyondTheCosts_isTheFigureTheSummaryStates(decimal costs, decimal contribution, decimal? beyond)
-    {
-        Car(ElectricCar.WithCarCosts(costs).WithCarContribution(contribution)).ContributionBeyondCosts.ShouldBe(beyond);
+        view.Drains.Select(drain => drain.Share).ShouldAllBe(share => share == null);
     }
 
     // The hand-off stays what it is when the contribution exceeds the costs: the car takes less than
-    // nothing off what the company earns, so it receives less than it passes on, by the 600 the director
-    // pays, and its lines still say the contribution coming back from the pocket and the profit before pay.
+    // nothing off what the company earns, so the company's line after it is more than before it, by the 600
+    // the director pays, and its lines still say the contribution coming back from the pocket.
     [Fact]
     public void Car_contributionAboveItsCosts_stillHandsOnWhatThePocketAdds()
     {
@@ -181,7 +74,6 @@ public class CarViewTests
             {
                 new Drain("car_costs", DrainKind.PaidOut, 0m, "expenses"),
                 new Drain("car_contribution", DrainKind.Back, 600m, "pocket"),
-                new Drain("profit_before_pay", DrainKind.PassedOn, year.ProfitBeforePay, "split"),
             }));
     }
 
@@ -362,14 +254,14 @@ public class CarViewTests
         CarComparison.From(inputs, inputs.Run()).ShouldBeNull();
     }
 
-    // The rent passes what it leaves on to the car once the car is in the plan: the profit before pay
-    // with the car's costs still in it.
+    // The rent passes what it leaves on to the car once the car is in the plan, on the map's company line
+    // (HandOff): the profit before pay with the car's costs still in it.
     [Fact]
     public void Rent_withACar_passesWhatItLeavesOnToTheCar()
     {
         var inputs = ElectricCar.AddToPlan(OptionalModule.Rent).WithCadastralIncome(1_200m).WithShareLet(0.12m).WithRent(1_380m);
 
-        RentView.From(inputs.Run().Year.ShouldNotBeNull(), inputs.Composition).Drains[^1]
+        HandOff.Drain(inputs.Run().Year.ShouldNotBeNull(), OptionalModule.Rent, inputs.Composition)
             .ShouldBe(new Drain("left_after_rent", DrainKind.PassedOn, 98_620m, "car"));
     }
 
@@ -378,7 +270,7 @@ public class CarViewTests
     {
         var inputs = ElectricCar.AddToPlan(OptionalModule.Allowances).WithInternetAllowance(240m);
 
-        AllowanceView.From(inputs.Run().Year.ShouldNotBeNull(), inputs.Composition).Drains[^1]
+        HandOff.Drain(inputs.Run().Year.ShouldNotBeNull(), OptionalModule.Allowances, inputs.Composition)
             .ShouldBe(new Drain("left_after_allowances", DrainKind.PassedOn, 99_760m, "car"));
     }
 
