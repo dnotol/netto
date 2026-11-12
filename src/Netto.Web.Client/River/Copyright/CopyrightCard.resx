@@ -132,20 +132,11 @@
   <data name="Help_WithinLimits" xml:space="preserve">
     <value>At most {0} of the royalty and your gross pay, {1}, and at most {2} for {3}. A royalty stays within {0} while it is at most 3/7 of your gross pay.</value>
   </data>
-  <data name="Figure_TaxedAsPay" xml:space="preserve">
-    <value>Beyond the limits, taxed as your pay</value>
-  </data>
   <data name="Figure_FlatRateCosts" xml:space="preserve">
     <value>Flat-rate costs</value>
   </data>
   <data name="Help_FlatRateCosts" xml:space="preserve">
     <value>With your attestation: {0} of the first {1} and {2} of the next part up to {3}. The {4} and the withholding are on what is left, though all of it reaches your pocket.</value>
-  </data>
-  <data name="Figure_Withheld" xml:space="preserve">
-    <value>Withheld by the company at {0}</value>
-  </data>
-  <data name="Help_Withheld" xml:space="preserve">
-    <value>Your assessment credits it.</value>
   </data>
   <data name="WithTitle" xml:space="preserve">
     <value>With the royalty</value>
@@ -168,21 +159,6 @@
   <data name="Help_KeptAsProfit" xml:space="preserve">
     <value>The company keeps the royalty as profit, taxed and paid out with the dividend.</value>
   </data>
-  <data name="Figure_Gain_More" xml:space="preserve">
-    <value>More in your pocket with the royalty</value>
-  </data>
-  <data name="Figure_Gain_Less" xml:space="preserve">
-    <value>Less in your pocket with the royalty</value>
-  </data>
-  <data name="Figure_Gain_None" xml:space="preserve">
-    <value>No difference in your pocket</value>
-  </data>
-  <data name="Figure_RateWithRoyalty" xml:space="preserve">
-    <value>Smallest pay keeping the reduced rate, with your royalty</value>
-  </data>
-  <data name="Figure_RateWithoutRoyalty" xml:space="preserve">
-    <value>Smallest pay keeping the reduced rate, without your royalty</value>
-  </data>
   <data name="RoyaltyRate_NoPayKeeps" xml:space="preserve">
     <value>No pay keeps the [reduced corporate rate] beside your royalty.</value>
   </data>
@@ -191,5 +167,8 @@
   </data>
   <data name="Term_ReducedRate" xml:space="preserve">
     <value>The lower rate a small company pays on a first slice of its taxable income. From its fifth tax period, it keeps it only if a director's pay reaches a minimum, or its taxable income does not exceed that pay. In every tax period, it loses it once benefits in kind valued at a flat rate, such as a company car's, exceed {0} of that pay, the benefits included.</value>
+  </data>
+  <data name="Figure_WithheldBeyond" xml:space="preserve">
+    <value>Withheld at {0} on the part beyond the limits, credited against the tax on your pay</value>
   </data>
 </root>

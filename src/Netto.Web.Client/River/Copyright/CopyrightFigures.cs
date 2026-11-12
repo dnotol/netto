@@ -5,48 +5,28 @@ namespace Netto.Web.Client.River.Copyright;
 
 // The copyright royalty's figures, line by line, as its card shows them before where its money goes
 // (FigureList), keys of the card's texts with their amounts: how its limits split the royalty and what the
-// company withholds on each part, then the plan with the royalty against the same plan without it. What a
+// company withholds on the part beyond them, then the plan with the royalty against the same plan without
+// it. Each amount is said once: a part that is the whole royalty is no line of its own. What a
 // label cannot say, a line's bubble does (Help); the rules the card no longer says in sentences are in its
 // details, on the steps they are the rules of. The view model selects and orders the engine's figures, and
 // computes none.
 internal static class CopyrightFigures
 {
-    public const string RateWithRoyalty = "Figure_RateWithRoyalty";
-
-    public const string RateWithoutRoyalty = "Figure_RateWithoutRoyalty";
-
-    // What the royalty does to the smallest pay keeping the reduced corporate rate: that pay with the
-    // royalty and without it, the two set beside each other for the lowering to be read, a line each
-    // where some pay keeps the rate. These are bounds, not flows, so a pay of nothing, which any pay
-    // reaches, is a line too.
-    public static IReadOnlyList<FigureLine> RoyaltyRate(RoyaltyRateView rate) =>
-    [
-        .. new[] { (Key: RateWithRoyalty, Pay: rate.With), (Key: RateWithoutRoyalty, Pay: rate.Without) }
-            .Select(line => line.Pay is { } pay ? new FigureLine(line.Key, pay) : null).OfType<FigureLine>(),
-    ];
-
     // The royalty the company pays, whole, which the map's gate says crosses (Tabs/MapGates).
     public const string Paid = "Figure_Royalty";
 
-    // The royalty as the engine took it: the part within its limits, with the limits in its bubble, the
-    // part beyond them taxed as pay, the flat-rate costs that come off the part within before it is taxed,
-    // and what the company withholds on each part at its rate, which the assessment credits. Each rate is
-    // the rule set's own, as it states it. A line of nothing is left out. None without a royalty.
+    // The royalty as the engine took it: while its limits split it, the part within them, with the limits in
+    // its bubble, the sentence under the lines saying which limit set them; the flat-rate costs that come off the part within before it is taxed;
+    // and what the company withholds on the part beyond at its rate, which the tax on pay credits. What it
+    // withholds on the part within is the tax apart itself, the card's drain line, never a second figure.
+    // Each rate is the rule set's own, as it states it. A line of nothing is left out. None without a
+    // royalty.
     public static IReadOnlyList<FigureLine> Royalty(CopyrightResult royalty, CopyrightRules rules) => royalty.Royalty == 0m
         ? []
         :
         [
             new(Paid, royalty.Royalty),
-            .. Some(new FigureLine("Figure_WithinLimits", royalty.WithinLimits)
-            {
-                Help = "Help_WithinLimits",
-                HelpArgs =
-                [
-                    Formats.RuleAmount(rules.RelativeLimit), Formats.Euros(royalty.RelativeLimit), Formats.Euros(royalty.Cap),
-                    rules.IncomeYear.ToString(Formats.Culture),
-                ],
-            }),
-            .. Some(new FigureLine("Figure_TaxedAsPay", royalty.TaxedAsPay)),
+            .. Parts(royalty, rules),
             .. Some(new FigureLine("Figure_FlatRateCosts", royalty.FlatRateCosts == 0m ? 0m : -royalty.FlatRateCosts)
             {
                 Help = "Help_FlatRateCosts",
@@ -57,8 +37,7 @@ internal static class CopyrightFigures
                     Formats.RuleAmount(rules.TaxedApartRate),
                 ],
             }),
-            .. Some(Withheld(royalty.WithheldWithinLimits, rules.WithholdingRate)),
-            .. Some(Withheld(royalty.WithheldBeyondLimits, rules.BeyondLimitsWithholdingRate)),
+            .. Some(new FigureLine("Figure_WithheldBeyond", royalty.WithheldBeyondLimits) { Args = [Formats.RuleAmount(rules.BeyondLimitsWithholdingRate)] }),
         ];
 
     // The plan with its royalty, at the pay set: what reaches the pocket and what goes to the taxes on pay
@@ -79,12 +58,22 @@ internal static class CopyrightFigures
         new("Figure_TaxesOnProfit", comparison.TaxesOnProfitWithout) { Help = "Help_KeptAsProfit" },
     ];
 
-    // What the royalty leaves in the pocket more, less or the same, its amount the difference itself.
-    public static IReadOnlyList<FigureLine> Difference(CopyrightComparison comparison) =>
-        [new(CopyrightCardText.Gain(comparison), Math.Abs(comparison.Gain))];
-
-    private static FigureLine Withheld(decimal amount, RuleAmount rate) =>
-        new("Figure_Withheld", amount) { Args = [Formats.RuleAmount(rate)], Help = "Help_Withheld" };
+    // The part within the limits, a line only while the limits split the royalty; the part beyond is the
+    // card's drain line on to Director pay.
+    private static IEnumerable<FigureLine> Parts(CopyrightResult royalty, CopyrightRules rules) => royalty.WithinLimits == 0m || royalty.TaxedAsPay == 0m
+        ? []
+        :
+        [
+            new FigureLine("Figure_WithinLimits", royalty.WithinLimits)
+            {
+                Help = "Help_WithinLimits",
+                HelpArgs =
+                [
+                    Formats.RuleAmount(rules.RelativeLimit), Formats.Euros(royalty.RelativeLimit), Formats.Euros(royalty.Cap),
+                    rules.IncomeYear.ToString(Formats.Culture),
+                ],
+            },
+        ];
 
     private static IEnumerable<FigureLine> Some(FigureLine line) => line.Amount == 0m ? [] : [line];
 }

@@ -169,7 +169,7 @@
     <value>Source&#160;: {0}</value>
   </data>
   <data name="Drain_copyright_tax" xml:space="preserve">
-    <value>Impôt distinct sur les droits d'auteur</value>
+    <value>Impôt distinct sur les droits d'auteur, retenu à la source par la société</value>
   </data>
   <data name="Drain_copyright_municipal_surcharge" xml:space="preserve">
     <value>Taxe communale additionnelle sur les droits d'auteur</value>

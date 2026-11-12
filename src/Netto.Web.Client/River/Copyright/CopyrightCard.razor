@@ -5,8 +5,8 @@
 @inject IStringLocalizer<CopyrightCard> L
 
 @* A copyright royalty the company pays the director for the rights on works they created, which the
-   card receives and drains and the split pays beside the pay. The card decides it (operator,
-   2026-10-28, reversing 2026-10-23): first whether it follows the pay, what an advance ruling accepts
+   card receives and drains and the split pays beside the pay. The card decides it: first whether it
+   follows the pay, what an advance ruling accepts
    at each pay, or is a fixed amount, typed here, with why a royalty that follows the pay is none; a
    refusal of the amount marks its field. Then the user
    says whether their copyright income of the four previous years averaged at most the year's cap, met
@@ -15,13 +15,15 @@
    follows the pay and the moves read, none until given; the three sit behind one disclosure, « Your
    copyright situation », folded to a line that states them. Its figures come first, as lines
    (CopyrightFigures): the royalty, the part within the limits and the part beyond them, taxed as pay,
-   the flat-rate costs the attestation takes off the first part and what the company withholds on each,
-   with a sentence for which limit set the part within; then what the royalty does to the smallest pay that
-   keeps the reduced corporate rate, that pay with it and without it, or a note that no pay keeps the rate
-   (RoyaltyRateView, the engine's condition: the royalty's, which this card holds); then the plan with the royalty and the same plan
-   without it, each by what reaches the pocket and what goes to the taxes on pay and on profit, and the
-   difference, both at the pay the plan with the royalty runs at, which a note names once the pay set is
-   held below (CopyrightComparison.PayHeld); then where its money goes: its tax apart, what of the part within reaches the pocket and
+   the flat-rate costs the attestation takes off the first part and what the company withholds on the part
+   beyond, which the tax on pay credits; what it withholds on the part within is the tax apart itself, its
+   drain line. A sentence says which limit set the part within, and one that no pay keeps the reduced
+   corporate rate beside the royalty, or without it, where that is so (RoyaltyRateView, the engine's
+   condition: the royalty's, which this card holds); the smallest pays keeping it are Corporate tax's to
+   say. Then the plan with the royalty and the same plan without it, each by what reaches the pocket and
+   what goes to the taxes on pay and on profit, both at the pay the plan with the royalty runs at, which a
+   note names once the pay set is held below (CopyrightComparison.PayHeld), the difference being the
+   summary's; then where its money goes: its tax apart, what of the part within reaches the pocket and
    the part beyond going on to Director pay. The summary says what the royalty adds to the pocket, the
    plan with it less the plan without (LeverGain), and that over the royalty the company pays out. Where no text settles a point, the reading Netto takes is in
    its details, above the sources. An optional module: it shows only while in the plan, and the word at
@@ -79,13 +81,9 @@
         <p class="copyright__note">@L[CopyrightCardText.Limits(result), Formats.Euros(result.Royalty), Formats.Euros(result.WithinLimits),
                                       Formats.Euros(result.RelativeLimit), Formats.Euros(result.Cap), Formats.Euros(result.TaxedAsPay), Inputs.IncomeYear,
                                       Formats.RuleAmount(_rules.RelativeLimit)]</p>
-        @if (_rate is { } rate)
+        @if (_rate is { } rate && CopyrightCardText.RoyaltyRateNote(rate) is { } rateNote)
         {
-            <FigureList Figures="@FigureWords.Of(L, CopyrightFigures.RoyaltyRate(rate))" />
-            @if (CopyrightCardText.RoyaltyRateNote(rate) is { } rateNote)
-            {
-                <p class="copyright__note"><TermSentence Text="@L[rateNote]" Meaning="@L[ReducedRateText.Term, ReducedRateText.Arguments(Inputs.IncomeYear)]" /></p>
-            }
+            <p class="copyright__note"><TermSentence Text="@L[rateNote]" Meaning="@L[ReducedRateText.Term, ReducedRateText.Arguments(Inputs.IncomeYear)]" /></p>
         }
         @if (_comparison is { } comparison)
         {
@@ -98,9 +96,6 @@
                 <FigureList Figures="@FigureWords.Of(L, CopyrightFigures.With(comparison))" />
                 <h3 class="copyright__comparison-title">@L["WithoutTitle"]</h3>
                 <FigureList Figures="@FigureWords.Of(L, CopyrightFigures.Without(comparison))" />
-                <div class="copyright__difference">
-                    <FigureList Figures="@FigureWords.Of(L, CopyrightFigures.Difference(comparison))" />
-                </div>
             </div>
         }
     }

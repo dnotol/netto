@@ -132,20 +132,11 @@
   <data name="Help_WithinLimits" xml:space="preserve">
     <value>Au plus {0} des droits et de votre rémunération brute, {1}, et au plus {2} pour les revenus {3}. Des droits restent dans la limite de {0} tant qu'ils ne dépassent pas les 3/7 de votre rémunération brute.</value>
   </data>
-  <data name="Figure_TaxedAsPay" xml:space="preserve">
-    <value>Au-delà des limites, imposable comme rémunération</value>
-  </data>
   <data name="Figure_FlatRateCosts" xml:space="preserve">
     <value>Frais forfaitaires</value>
   </data>
   <data name="Help_FlatRateCosts" xml:space="preserve">
     <value>Avec votre attestation&#160;: {0} de la première tranche de {1} et {2} de la tranche suivante jusqu'à {3}. L'impôt de {4} et le précompte mobilier portent sur ce qui reste, bien que tout arrive dans votre poche.</value>
-  </data>
-  <data name="Figure_Withheld" xml:space="preserve">
-    <value>Précompte mobilier retenu par la société à {0}</value>
-  </data>
-  <data name="Help_Withheld" xml:space="preserve">
-    <value>Votre avertissement-extrait de rôle l'impute.</value>
   </data>
   <data name="WithTitle" xml:space="preserve">
     <value>Avec les droits d'auteur</value>
@@ -168,21 +159,6 @@
   <data name="Help_KeptAsProfit" xml:space="preserve">
     <value>La société garde les droits comme bénéfice, imposé et distribué avec le dividende.</value>
   </data>
-  <data name="Figure_Gain_More" xml:space="preserve">
-    <value>De plus dans votre poche avec les droits d'auteur</value>
-  </data>
-  <data name="Figure_Gain_Less" xml:space="preserve">
-    <value>De moins dans votre poche avec les droits d'auteur</value>
-  </data>
-  <data name="Figure_Gain_None" xml:space="preserve">
-    <value>Aucune différence dans votre poche</value>
-  </data>
-  <data name="Figure_RateWithRoyalty" xml:space="preserve">
-    <value>Plus petite rémunération qui conserve le taux réduit, avec vos droits d'auteur</value>
-  </data>
-  <data name="Figure_RateWithoutRoyalty" xml:space="preserve">
-    <value>Plus petite rémunération qui conserve le taux réduit, sans vos droits d'auteur</value>
-  </data>
   <data name="RoyaltyRate_NoPayKeeps" xml:space="preserve">
     <value>Aucune rémunération ne conserve le [taux réduit] à côté de vos droits d'auteur.</value>
   </data>
@@ -191,5 +167,8 @@
   </data>
   <data name="Term_ReducedRate" xml:space="preserve">
     <value>Le taux plus bas qu'une petite société paie sur une première tranche de son revenu imposable. À partir de sa cinquième période imposable, elle ne le conserve que si la rémunération d'un dirigeant atteint un minimum, ou si son revenu imposable ne dépasse pas cette rémunération. Dans chaque période imposable, elle le perd dès que les avantages de toute nature évalués de manière forfaitaire, comme ceux d'une voiture de société, dépassent {0} de cette rémunération, avantages compris.</value>
+  </data>
+  <data name="Figure_WithheldBeyond" xml:space="preserve">
+    <value>Précompte mobilier retenu à {0} sur la part au-delà des limites, imputé sur l'impôt sur votre rémunération</value>
   </data>
 </root>

@@ -13,66 +13,66 @@ public class CopyrightFiguresTests
 {
     private static readonly CopyrightRules Rules = CopyrightRules.IncomeYear2026;
 
-    // 10,000 beside 50,000 of pay stays within 30% of 60,000: all of it taxed apart, 15% withheld.
+    // 10,000 beside 50,000 of pay stays within 30% of 60,000: the royalty alone, all of it within, the
+    // sentence under the lines saying so; what the company withholds on it is the tax apart, its drain line.
     [Fact]
-    public void Royalty_withinTheLimits_isAllWithinThemWithWhatIsWithheld()
+    public void Royalty_withinTheLimits_isTheRoyaltyAlone()
     {
-        Lines(CopyrightFigures.Royalty(Compute(10_000m, 50_000m), Rules)).ShouldBe(
-        [
-            ("Figure_Royalty", 10_000m, ""),
-            ("Figure_WithinLimits", 10_000m, ""),
-            ("Figure_Withheld", 1_500m, "15%"),
-        ]);
+        Lines(CopyrightFigures.Royalty(Compute(10_000m, 50_000m), Rules)).ShouldBe([("Figure_Royalty", 10_000m, "")]);
     }
 
-    // 20,000 beside 30,000 of pay passes 30% of 50,000: 15,000 within, 2,250 withheld on it, and 5,000
-    // taxed as pay, 30% withheld on it (Tax-Calc T18's figures).
+    // 20,000 beside 30,000 of pay passes 30% of 50,000: 15,000 within, and 30% withheld on the 5,000 taxed as
+    // pay, which the tax on pay credits (Tax-Calc T18's figures). The 5,000 itself is the drain line on to
+    // Director pay.
     [Fact]
-    public void Royalty_beyondTheLimits_isThePartWithinThePartTaxedAsPayAndWhatIsWithheldOnEach()
+    public void Royalty_beyondTheLimits_isThePartWithinAndWhatIsWithheldOnThePartBeyond()
     {
         Lines(CopyrightFigures.Royalty(Compute(20_000m, 30_000m), Rules)).ShouldBe(
         [
             ("Figure_Royalty", 20_000m, ""),
             ("Figure_WithinLimits", 15_000m, ""),
-            ("Figure_TaxedAsPay", 5_000m, ""),
-            ("Figure_Withheld", 2_250m, "15%"),
-            ("Figure_Withheld", 1_500m, "30%"),
+            ("Figure_WithheldBeyond", 1_500m, "30%"),
         ]);
     }
 
     // With an attestation, half of the 10,000 within comes off as flat-rate costs, a line that takes from
-    // what is taxed: the 15% is withheld on the 5,000 left.
+    // what is taxed.
     [Fact]
     public void Royalty_withAnAttestation_takesItsFlatRateCostsOff()
     {
         Lines(CopyrightFigures.Royalty(Compute(10_000m, 50_000m, attestation: true), Rules)).ShouldBe(
         [
             ("Figure_Royalty", 10_000m, ""),
-            ("Figure_WithinLimits", 10_000m, ""),
             ("Figure_FlatRateCosts", -5_000m, ""),
-            ("Figure_Withheld", 750m, "15%"),
         ]);
     }
 
     // Four previous years above the cap leave nothing within: all of it is taxed as pay, 30% withheld.
     [Fact]
-    public void Royalty_averageAboveTheCap_isAllTaxedAsPay()
+    public void Royalty_averageAboveTheCap_isTheRoyaltyAndWhatIsWithheldOnIt()
     {
         Lines(CopyrightFigures.Royalty(Compute(10_000m, 50_000m, averageWithinCap: false), Rules)).ShouldBe(
         [
             ("Figure_Royalty", 10_000m, ""),
-            ("Figure_TaxedAsPay", 10_000m, ""),
-            ("Figure_Withheld", 3_000m, "30%"),
+            ("Figure_WithheldBeyond", 3_000m, "30%"),
         ]);
     }
 
-    // A rate reads as its rule set states it, decimals kept: a withholding of 15.5% is no 16%.
+    // No line says what is withheld on the part within the limits: it is the tax apart, never a second figure.
+    [Fact]
+    public void Royalty_anyRoyalty_saysNothingWithheldWithinTheLimits()
+    {
+        new[] { Compute(10_000m, 50_000m), Compute(20_000m, 30_000m), Compute(10_000m, 50_000m, attestation: true) }
+            .SelectMany(royalty => CopyrightFigures.Royalty(royalty, Rules)).Select(line => line.Key).ShouldNotContain("Figure_Withheld");
+    }
+
+    // A rate reads as its rule set states it, decimals kept: a withholding of 30.5% is no 31%.
     [Fact]
     public void Royalty_withholdingRate_readsAsItsRuleStatesIt()
     {
-        var rules = Rules with { WithholdingRate = new RuleAmount("copyright_withholding_rate", 0.155m, Rules.WithholdingRate.Source) };
+        var rules = Rules with { BeyondLimitsWithholdingRate = new RuleAmount("copyright_beyond_limits_withholding_rate", 0.305m, Rules.BeyondLimitsWithholdingRate.Source) };
 
-        CopyrightFigures.Royalty(Compute(10_000m, 50_000m), rules).Single(line => line.Key == "Figure_Withheld").Args.ShouldBe(["15.5%"]);
+        CopyrightFigures.Royalty(Compute(20_000m, 30_000m), rules).Single(line => line.Key == "Figure_WithheldBeyond").Args.ShouldBe(["30.5%"]);
     }
 
     [Fact]
@@ -81,8 +81,8 @@ public class CopyrightFiguresTests
         CopyrightFigures.Royalty(CopyrightResult.None, Rules).ShouldBeEmpty();
     }
 
-    // What a label cannot say is in its bubble: the limits with their rate and their amounts, how the
-    // flat-rate costs are counted, at the rules' rates, and that the assessment credits what is withheld.
+    // What a label cannot say is in its bubble: the limits with their rate and their amounts, and how the
+    // flat-rate costs are counted, at the rules' rates.
     [Fact]
     public void Royalty_linesNeedingExplaining_carryTheirBubbles()
     {
@@ -92,16 +92,14 @@ public class CopyrightFiguresTests
         [
             ("Figure_Royalty", null, ""),
             ("Figure_WithinLimits", "Help_WithinLimits", "30%|€15,000.00|€77,220.00|2026"),
-            ("Figure_TaxedAsPay", null, ""),
             ("Figure_FlatRateCosts", "Help_FlatRateCosts", "50%|€20,590.00|25%|€41,180.00|15%"),
-            ("Figure_Withheld", "Help_Withheld", ""),
-            ("Figure_Withheld", "Help_Withheld", ""),
+            ("Figure_WithheldBeyond", null, ""),
         ]);
     }
 
     // The plan with its royalty and the same plan without it, each by what reaches the pocket and what
     // goes to the taxes on pay and on profit; without it, the company keeps the royalty as profit, which
-    // its bubble says.
+    // its bubble says. The difference is the card's summary.
     [Fact]
     public void Comparison_withAndWithout_areThePocketAndTheTaxesOfEach()
     {
@@ -111,24 +109,6 @@ public class CopyrightFiguresTests
             () => Lines(CopyrightFigures.With(comparison)).ShouldBe([("Figure_Pocket", 40_000m, ""), ("Figure_TaxesOnPay", 20_000m, ""), ("Figure_TaxesOnProfit", 10_000m, "")]),
             () => Lines(CopyrightFigures.Without(comparison)).ShouldBe([("Figure_Pocket", 38_000m, ""), ("Figure_TaxesOnPay", 18_000m, ""), ("Figure_TaxesOnProfit", 14_000m, "")]),
             () => CopyrightFigures.Without(comparison).Select(line => line.Help).ShouldBe([null, null, "Help_KeptAsProfit"]));
-    }
-
-    // What the royalty leaves in the pocket against the plan without it, each way it can fall, the amount
-    // being the difference itself.
-    public static TheoryData<decimal, decimal, string, decimal> Differences => new()
-    {
-        { 40_000m, 38_000m, "Figure_Gain_More", 2_000m },
-        { 38_000m, 40_000m, "Figure_Gain_Less", 2_000m },
-        { 40_000m, 40_000m, "Figure_Gain_None", 0m },
-    };
-
-    [Theory]
-    [MemberData(nameof(Differences))]
-    public void Difference_eachWay_isItsLineWithTheDifference(decimal pocketWith, decimal pocketWithout, string key, decimal difference)
-    {
-        var line = CopyrightFigures.Difference(new CopyrightComparison(pocketWith, pocketWithout, 0m, 0m, 0m, 0m)).Single();
-
-        (line.Key, line.Amount, decimal.IsNegative(line.Amount)).ShouldBe((key, difference, false));
     }
 
     private static CopyrightResult Compute(decimal royalty, decimal grossPay, bool averageWithinCap = true, bool attestation = false) =>

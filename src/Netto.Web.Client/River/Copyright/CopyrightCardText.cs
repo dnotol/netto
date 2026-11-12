@@ -34,13 +34,4 @@ internal static class CopyrightCardText
     // The summary says what the royalty adds to the pocket or takes from it, the plan with it less the plan
     // without (LeverGain), or that there is no royalty yet.
     public static string Summary(CopyrightView view, decimal gain) => view.HasRoyalty ? LeverGainText.Summary(gain) : "SummaryNoRoyalty";
-
-    // The line of what the royalty leaves in the pocket against the same plan without it: more, less, or
-    // the same.
-    public static string Gain(CopyrightComparison comparison) => comparison.Gain switch
-    {
-        > 0m => "Figure_Gain_More",
-        < 0m => "Figure_Gain_Less",
-        _ => "Figure_Gain_None",
-    };
 }

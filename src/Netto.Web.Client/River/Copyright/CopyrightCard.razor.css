@@ -46,9 +46,3 @@
     font-size: 1.05rem;
     font-weight: 600;
 }
-
-/* What the royalty leaves in the pocket more or less, apart from the plan without it above. */
-.copyright__difference {
-    margin-top: 0.5rem;
-    font-weight: 500;
-}

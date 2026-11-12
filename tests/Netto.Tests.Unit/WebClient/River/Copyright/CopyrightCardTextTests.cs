@@ -57,20 +57,6 @@ public class CopyrightCardTextTests
             () => CardHtml.SummaryFaults(summary).ShouldBeEmpty());
     }
 
-    // What the royalty leaves against the plan without it, each way it can fall.
-    [Fact]
-    public void CopyrightCardResx_everyDifferenceLine_hasALabel()
-    {
-        var comparisons = new[]
-        {
-            new CopyrightComparison(40_000m, 38_000m, 0m, 0m, 0m, 0m), new CopyrightComparison(38_000m, 40_000m, 0m, 0m, 0m, 0m),
-            new CopyrightComparison(40_000m, 40_000m, 0m, 0m, 0m, 0m),
-        };
-
-        comparisons.Select(CopyrightCardText.Gain).ShouldBe(["Figure_Gain_More", "Figure_Gain_Less", "Figure_Gain_None"]);
-        Resources.Missing(comparisons.Select(CopyrightCardText.Gain)).ShouldBeEmpty();
-    }
-
     // Every line the royalty's figures draw, and what its bubble says, on royalties that take each of them:
     // within its limits, beyond them, with an attestation, all taxed as pay; and the plan with it and
     // without it.
@@ -83,7 +69,7 @@ public class CopyrightCardTextTests
         ];
         var comparison = new CopyrightComparison(40_000m, 38_000m, 20_000m, 18_000m, 10_000m, 14_000m);
         var lines = royalties.SelectMany(royalty => CopyrightFigures.Royalty(CopyrightCalculator.Compute(Rules, royalty, 30_000m).Value.ShouldNotBeNull(), Rules))
-            .Concat(CopyrightFigures.With(comparison)).Concat(CopyrightFigures.Without(comparison)).Concat(CopyrightFigures.Difference(comparison))
+            .Concat(CopyrightFigures.With(comparison)).Concat(CopyrightFigures.Without(comparison))
             .ToList();
 
         Resources.Missing(lines.Select(line => line.Key).Concat(lines.Select(line => line.Help).OfType<string>()).Distinct()).ShouldBeEmpty();

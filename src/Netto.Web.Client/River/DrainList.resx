@@ -169,7 +169,7 @@
     <value>From {0}</value>
   </data>
   <data name="Drain_copyright_tax" xml:space="preserve">
-    <value>Tax apart on the royalty</value>
+    <value>Tax apart on the royalty, withheld at source by the company</value>
   </data>
   <data name="Drain_copyright_municipal_surcharge" xml:space="preserve">
     <value>Municipal surcharge on the royalty</value>

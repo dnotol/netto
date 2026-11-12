@@ -123,34 +123,28 @@ public class CarAndRoyaltyCardsTests
         cards.SelectMany(card => CardHtml.LeakedKeys(CardHtml.Card(html, card))).ShouldBeEmpty();
     }
 
-    // The royalty and how its limits split it, the note of which limit set it, here the 30% limit with the
-    // engine's 18,000 (30% of 60,000), then the smallest pay keeping the reduced rate with it and without it,
-    // then the plan with it and without it, then where its money goes, the drains' own lines.
+    // The royalty, the note of which limit set it, here the 30% limit with the engine's 18,000 (30% of
+    // 60,000), all of it within; then the plan with it and without it, the difference being the summary's;
+    // then where its money goes, the drains' own lines, its tax apart withheld at source among them.
     [Fact]
     public async Task RoyaltyCard_withinItsLimits_drawsItsFiguresThenThePlanWithAndWithoutItThenWhereItGoes()
     {
         var html = await RenderOpenAsync<CopyrightCard>(OptionalModule.Copyright, CopyrightViewTests.Within);
         var comparison = CopyrightComparison.From(CopyrightViewTests.Within, CopyrightViewTests.Within.Run()).ShouldNotBeNull();
         var drains = DrainLines.Shown(CopyrightView.From(CopyrightViewTests.Within.Run().Year.ShouldNotBeNull()).Drains);
-        var rate = RoyaltyRateView.From(CopyrightViewTests.Within.Run().Year).ShouldNotBeNull();
 
         html.ShouldSatisfyAllConditions(
-            () => CardHtml.Lines(html).Take(12).ShouldBe(
+            () => CardHtml.Lines(html).Take(7).ShouldBe(
             [
                 (Royalty("Figure_Royalty"), "€10,000.00", null),
-                (Royalty("Figure_WithinLimits"), "€10,000.00", null),
-                (Royalty("Figure_Withheld", "15%"), "€1,500.00", null),
-                (Royalty("Figure_RateWithRoyalty"), Formats.Euros(rate.With!.Value), null),
-                (Royalty("Figure_RateWithoutRoyalty"), Formats.Euros(rate.Without!.Value), null),
                 (Royalty("Figure_Pocket"), Formats.Euros(comparison.PocketWith), null),
                 (Royalty("Figure_TaxesOnPay"), Formats.Euros(comparison.TaxesOnPayWith), null),
                 (Royalty("Figure_TaxesOnProfit"), Formats.Euros(comparison.TaxesOnProfitWith), null),
                 (Royalty("Figure_Pocket"), Formats.Euros(comparison.PocketWithout), null),
                 (Royalty("Figure_TaxesOnPay"), Formats.Euros(comparison.TaxesOnPayWithout), null),
                 (Royalty("Figure_TaxesOnProfit"), Formats.Euros(comparison.TaxesOnProfitWithout), null),
-                (Royalty("Figure_Gain_More"), Formats.Euros(comparison.Gain), null),
             ]),
-            () => CardHtml.Lines(html).Skip(12).Select(line => line.Label).ShouldBe(drains.Select(drain => CarCardTests.Drains(DrainListText.Drain(drain.Key)))),
+            () => CardHtml.Lines(html).Skip(7).Select(line => line.Label).ShouldBe(drains.Select(drain => CarCardTests.Drains(DrainListText.Drain(drain.Key)))),
             () => CardHtml.Prose(html).ShouldContain(note => note.Contains("€18,000.00", StringComparison.Ordinal)),
             () => CardHtml.LineRuns(html).Select(run => run.List).ShouldBe(["figure", "drain"]));
     }
