@@ -19,10 +19,14 @@ public class MapReceivedViewTests
 
     private static MapReceivedView Of(MapView view, RiverModule module) => MapReceivedView.Of(view, module, end => end.Id);
 
+    // The modules that are no lever: their card states no payout of what they receive.
+    public static TheoryData<RiverModule> FullPlansModulesBesideTheLevers =>
+        new(MapView.ModulesOf(Full).Where(module => RiverModules.Lever(module) is null or OptionalModule.Household));
+
     // Each part is a line of money the map draws into the module from another module, in the map's order, with the amount the
     // map says on it; what comes off the company's line comes from Company year, whose line it is.
     [Theory]
-    [MemberData(nameof(FullPlansModules))]
+    [MemberData(nameof(FullPlansModulesBesideTheLevers))]
     public void Of_aModule_isEveryLineOfMoneyIntoItWithTheAmountTheMapSaysOnIt(RiverModule module)
     {
         var view = MapView.From(Full, Full.Run(), MapNames.English);
@@ -34,17 +38,18 @@ public class MapReceivedViewTests
             .ShouldBe(into.Select(bundle => (Formats.Euros(bundle.Amount!.Value), bundle.From.Lever is null ? bundle.From.Id : "company-year")));
     }
 
-    // A lever receives its share of the company's line, what its card says the company pays, from Company year,
-    // an end the viewer can go to; nothing from the lever above it.
+    // A lever receives money on the map, its share of the company's line or the royalty the split pays, but its
+    // card says that amount as its payout: no line above the card says it a second time.
     [Theory]
     [InlineData(RiverModule.Vouchers)]
     [InlineData(RiverModule.Allowances)]
     [InlineData(RiverModule.Rent)]
-    public void Of_aLever_receivesItsShareFromCompanyYear(RiverModule lever)
+    [InlineData(RiverModule.Copyright)]
+    public void Of_aLever_receivesNothing(RiverModule lever)
     {
-        var share = HandOff.Cost(Full.Run().Year!, RiverModules.Lever(lever)!.Value);
+        var view = MapView.From(Full, Full.Run(), MapNames.English);
 
-        Of(Full, lever).Lines.ShouldBe([new MapReceived(Formats.Euros(share), "company-year", RiverModule.CompanyYear, First: true)]);
+        (view.Bundles().Any(bundle => MapLinkStyle.IsMoney(bundle.Kind) && bundle.To.Module == lever), Of(view, lever).Lines.Count).ShouldBe((true, 0));
     }
 
     // A rule reaching a module, a tax base or a condition, moves no money into it: it is not received.

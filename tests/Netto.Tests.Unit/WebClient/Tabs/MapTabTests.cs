@@ -433,19 +433,19 @@ public class MapTabTests
     }
 
     // A module chosen is pressed, its lines stay and the others fade, and one line over its card says what
-    // it receives and from where, each part the amount the map says on its line: the rent, its share off the
+    // it receives and from where, each part the amount the map says on its line: the split, the end of the
     // company's line, from Company year.
     [Fact]
     public async Task Tab_aModuleChosen_marksItBringsOutItsLinesAndSaysWhatItReceives()
     {
-        var view = MapView.From(Full, Full.Run(), MapNames.English).ShowingFor(MapChoice.Of(RiverModule.Rent));
-        var received = MapReceivedView.Of(view, RiverModule.Rent, end => end.Id).Lines;
+        var view = MapView.From(Full, Full.Run(), MapNames.English).ShowingFor(MapChoice.Of(RiverModule.Split));
+        var received = MapReceivedView.Of(view, RiverModule.Split, end => end.Id).Lines;
 
-        var html = await RenderTabAsync(Full, MapChoice.Of(RiverModule.Rent));
+        var html = await RenderTabAsync(Full, MapChoice.Of(RiverModule.Split));
 
         html.ShouldSatisfyAllConditions(
-            () => Buttons(html).Where(button => button.Pressed == "true").Select(button => button.Module).ShouldBe(["rent"]),
-            () => Regex.Count(html, "<path class=\"map-line[^\"]*map-line--faded").ShouldBe(view.Drawn(MapChoice.Of(RiverModule.Rent)).Count(line => line.Faded)),
+            () => Buttons(html).Where(button => button.Pressed == "true").Select(button => button.Module).ShouldBe(["split"]),
+            () => Regex.Count(html, "<path class=\"map-line[^\"]*map-line--faded").ShouldBe(view.Drawn(MapChoice.Of(RiverModule.Split)).Count(line => line.Faded)),
             () => received.Select(line => line.From).ShouldBe(["company-year"]),
             () => Line(html).ShouldBe($"Receives {received[0].Amount} from {CardTitle(RiverModule.CompanyYear)}"));
     }
@@ -465,12 +465,12 @@ public class MapTabTests
     [Fact]
     public async Task Tab_aModuleChosen_namesTheModulesItReceivesFromAsButtons()
     {
-        var (split, rent, dividend) = (await RenderTabAsync(RiverInputs.Example, MapChoice.Of(RiverModule.Split)), await RenderTabAsync(Full, MapChoice.Of(RiverModule.Rent)),
-            await RenderTabAsync(Full, MapChoice.Of(RiverModule.Dividend)));
+        var (split, corporateTax, dividend) = (await RenderTabAsync(RiverInputs.Example, MapChoice.Of(RiverModule.Split)),
+            await RenderTabAsync(Full, MapChoice.Of(RiverModule.CorporateTax)), await RenderTabAsync(Full, MapChoice.Of(RiverModule.Dividend)));
 
         split.ShouldSatisfyAllConditions(
             () => GoButtons(split).ShouldBe([("company-year", "Company year")]),
-            () => GoButtons(rent).ShouldBe([("company-year", "Company year")]),
+            () => GoButtons(corporateTax).ShouldBe([("split", CardTitle(RiverModule.Split))]),
             () => GoButtons(dividend).ShouldBe([("corporate-tax", CardTitle(RiverModule.CorporateTax))]));
     }
 
@@ -523,7 +523,7 @@ public class MapTabTests
     [Fact]
     public async Task Tab_leavesRoomForTheToolsAndTheCard()
     {
-        var html = await RenderTabAsync(Full, MapChoice.Of(RiverModule.Rent));
+        var html = await RenderTabAsync(Full, MapChoice.Of(RiverModule.CorporateTax));
 
         var order = ToolsAndCard.Select(marker => html.IndexOf(marker, StringComparison.Ordinal)).ToList();
         (order.All(index => index >= 0), order.SequenceEqual(order.Order())).ShouldBe((true, true));
