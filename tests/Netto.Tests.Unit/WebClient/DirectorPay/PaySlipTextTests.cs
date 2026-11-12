@@ -32,6 +32,17 @@ public class PaySlipTextTests
             .ShouldBe(("Net professional income", "Revenu professionnel net"));
     }
 
+    // A month's amount after the withholding alone is not called a net: the year's net, after the contributions
+    // and the final tax, is the card's own « net pay », which the statement's hint points to.
+    [Fact]
+    public void ColumnNetPaid_isWhatIsPaidAfterWithholdingNotANet()
+    {
+        var french = ResxText.French<PaySlip>();
+
+        (Resources.Get("ColumnNetPaid"), french.Get("ColumnNetPaid"), Resources.Get("StatementHint")?.Contains("Net pay"), french.Get("StatementHint")?.Contains("Rémunération nette"))
+            .ShouldBe(("Paid after withholding", "Versé après précompte", true, true));
+    }
+
     private static readonly Dictionary<string, RuleAmount> RatesByOrigin = new()
     {
         ["municipality"] = MunicipalRates.IncomeYear2026.Municipalities[0].Rate,

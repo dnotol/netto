@@ -97,7 +97,7 @@
     <value>Votre rémunération, mois par mois</value>
   </data>
   <data name="StatementHint" xml:space="preserve">
-    <value>Douze mois égaux de rémunération, chacun soumis au précompte professionnel selon la formule-clé de l'administration, avec les règles en vigueur au moment du paiement&#160;; le net payé est le brut moins le précompte. Une vraie fiche de paie peut différer d'un centime selon les arrondis de son logiciel.</value>
+    <value>Douze mois égaux de rémunération, chacun soumis au précompte professionnel selon la formule-clé de l'administration, avec les règles en vigueur au moment du paiement&#160;; ce qui est versé est le brut moins le précompte seulement&#160;: vos cotisations sociales et l'impôt final en sont encore à retirer, ce qui arrive dans votre poche sur l'année est donc la « Rémunération nette » de la carte. Une vraie fiche de paie peut différer d'un centime selon les arrondis de son logiciel.</value>
   </data>
   <data name="ColumnMonth" xml:space="preserve">
     <value>Mois</value>
@@ -118,7 +118,7 @@
     <value>Précompte professionnel</value>
   </data>
   <data name="ColumnNetPaid" xml:space="preserve">
-    <value>Net payé</value>
+    <value>Versé après précompte</value>
   </data>
   <data name="WithholdingMonths" xml:space="preserve">
     <value>Précompte professionnel&#160;: {0} à {1}</value>

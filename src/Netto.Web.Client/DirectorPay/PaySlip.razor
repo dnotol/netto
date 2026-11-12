@@ -68,7 +68,10 @@
                         {
                             <th scope="col">@L["ColumnBenefit"]</th>
                         }
-                        <th scope="col">@L["ColumnTaxablePay"]</th>
+                        @if (_view.Statement.HasTaxablePayColumn)
+                        {
+                            <th scope="col">@L["ColumnTaxablePay"]</th>
+                        }
                         <th scope="col">@L["ColumnWithholding"]</th>
                         <th scope="col">@L["ColumnNetPaid"]</th>
                     </tr>
@@ -87,7 +90,10 @@
                             {
                                 <td data-label="@L["ColumnBenefit"]">@Formats.Euros(month.BenefitInKind)</td>
                             }
-                            <td data-label="@L["ColumnTaxablePay"]">@Formats.Euros(month.TaxablePay)</td>
+                            @if (_view.Statement.HasTaxablePayColumn)
+                            {
+                                <td data-label="@L["ColumnTaxablePay"]">@Formats.Euros(month.TaxablePay)</td>
+                            }
                             <td data-label="@L["ColumnWithholding"]">@Formats.Deduction(month.Withholding)</td>
                             <td data-label="@L["ColumnNetPaid"]" class="statement__net">@Formats.Euros(month.NetPaid)</td>
                         </tr>

@@ -97,7 +97,7 @@
     <value>Your pay, month by month</value>
   </data>
   <data name="StatementHint" xml:space="preserve">
-    <value>Twelve equal months of pay, each withheld on by the administration's key formula with the rules in force when it is paid; the net paid is the gross less the withholding. A real payslip may differ by a cent where its software rounds.</value>
+    <value>Twelve equal months of pay, each withheld on by the administration's key formula with the rules in force when it is paid; what is paid is the gross less the withholding only: your social contributions and the final tax still come off it, so what reaches your pocket over the year is the card's "Net pay". A real payslip may differ by a cent where its software rounds.</value>
   </data>
   <data name="ColumnMonth" xml:space="preserve">
     <value>Month</value>
@@ -118,7 +118,7 @@
     <value>Withholding</value>
   </data>
   <data name="ColumnNetPaid" xml:space="preserve">
-    <value>Net paid</value>
+    <value>Paid after withholding</value>
   </data>
   <data name="WithholdingMonths" xml:space="preserve">
     <value>Withheld from {0} to {1}</value>

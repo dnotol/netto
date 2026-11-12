@@ -120,6 +120,32 @@ public class GrossToNetViewTests
             .ShouldBe((true, 828.54m, 4_995.21m));
     }
 
+    // The taxable pay over twelve is the gross over twelve until the company pays contributions or a benefit
+    // in kind joins it: with neither, the two columns would only repeat each other.
+    [Fact]
+    public void From_gross50000_statementHasNoTaxablePayColumnThatWouldRepeatTheGross()
+    {
+        var statement = View(50_000m).Statement;
+
+        (statement.HasTaxablePayColumn, statement.Months.All(month => month.TaxablePay == month.GrossPay)).ShouldBe((false, true));
+    }
+
+    [Fact]
+    public void From_companyPaysGross50000_statementHasATaxablePayColumnThatDiffersFromTheGross()
+    {
+        var statement = CompanyPaysView(50_000m).Statement;
+
+        (statement.HasTaxablePayColumn, statement.Months.All(month => month.TaxablePay > month.GrossPay)).ShouldBe((true, true));
+    }
+
+    [Fact]
+    public void From_aBenefitInKind_statementHasATaxablePayColumnThatDiffersFromTheGross()
+    {
+        var statement = View(50_000m, TaxPrepayments.AsWithheld, benefit: 2_400m).Statement;
+
+        (statement.HasTaxablePayColumn, statement.Months.All(month => month.TaxablePay > month.GrossPay)).ShouldBe((true, true));
+    }
+
     // One withholding detail for each period of the year's rules, with the months it covers.
     [Fact]
     public void From_gross50000_withholdingHasADetailForEachPeriodWithItsMonths()

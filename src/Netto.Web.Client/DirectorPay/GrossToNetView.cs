@@ -265,6 +265,10 @@ internal sealed record StatementView(
 {
     public bool HasBenefit => Months.Any(month => month.BenefitInKind > 0m);
 
+    // The taxable pay differs from the gross only by what the company pays on the director's behalf and a
+    // benefit in kind, the two other columns: without them it repeats the gross and is not shown.
+    public bool HasTaxablePayColumn => CompanyPaysContributions || HasBenefit;
+
     public static StatementView From(PayStatement statement, bool companyPays) => new(statement.Months, companyPays);
 }
 
