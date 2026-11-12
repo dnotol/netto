@@ -10,31 +10,28 @@ public class BucketBarTextTests
     // The name IStringLocalizer<BucketBar> reads River/BucketBar.resx under.
     private static readonly ResxText Resources = ResxText.For<BucketBar>();
 
-    // Each bucket, with and without a rent among the taxes on pay.
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void BucketBarResx_everyBucket_hasAText(bool taxesOnPayIncludeRent)
+    [Fact]
+    public void BucketBarResx_everyBucket_hasAText()
     {
-        BucketsView.Keys.Select(key => BucketBarText.Bucket(key, taxesOnPayIncludeRent))
+        BucketsView.Keys.Select(BucketBarText.Bucket)
             .Where(key => Resources.Get(key) is null)
             .ShouldBeEmpty();
     }
 
+    // A bucket's name is one text whatever the plan holds: it covers the pay, a rent and a royalty alike.
     [Fact]
-    public void Bucket_taxesOnPayWithRent_hasItsOwnText()
+    public void Bucket_taxesOnPay_isOneKeyWhateverThePlanHolds()
     {
-        (BucketBarText.Bucket("taxes_on_pay", true), BucketBarText.Bucket("pocket", true)).ShouldBe(("Bucket_taxes_on_pay_and_rent", "Bucket_pocket"));
+        (BucketBarText.Bucket("taxes_on_pay"), BucketBarText.Bucket("pocket")).ShouldBe(("Bucket_taxes_on_pay", "Bucket_pocket"));
+        Resources.Get("Bucket_taxes_on_pay_and_rent").ShouldBeNull();
     }
 
-    // The bucket of what leaves the pay names the social contributions with the tax, so the bar reads
-    // without its bubbles; with a rent it names the rent too.
-    [Theory]
-    [InlineData(false, "Contributions and tax on pay")]
-    [InlineData(true, "Contributions and tax on pay and rent")]
-    public void BucketBarResx_taxesOnPay_namesTheContributionsWithTheTax(bool taxesOnPayIncludeRent, string name)
+    // The bucket of what leaves the pay names the social contributions with the income tax, so the bar reads
+    // without its bubbles, and says nothing of a rent or a royalty, which it holds when the plan has them.
+    [Fact]
+    public void BucketBarResx_taxesOnPay_namesTheContributionsWithTheIncomeTax()
     {
-        Resources.Get(BucketBarText.Bucket("taxes_on_pay", taxesOnPayIncludeRent)).ShouldBe(name);
+        Resources.Get(BucketBarText.Bucket("taxes_on_pay")).ShouldBe("Contributions and income tax");
     }
 
     // What each bucket holds, with a copyright royalty's tax apart among the taxes on pay, with or
@@ -159,7 +156,7 @@ public class BucketBarTextTests
     [Fact]
     public void BucketBarResx_expenses_namesTheContributionAndACarsCosts()
     {
-        (Resources.Get(BucketBarText.Bucket("expenses", false)), Resources.Get(BucketBarText.Holds("expenses", false))).ShouldBe((
+        (Resources.Get(BucketBarText.Bucket("expenses")), Resources.Get(BucketBarText.Holds("expenses", false))).ShouldBe((
             "Expenses",
             "What the company spends whatever it pays you: INASTI's yearly company contribution and, with a company car, what the car costs it over the year."));
     }

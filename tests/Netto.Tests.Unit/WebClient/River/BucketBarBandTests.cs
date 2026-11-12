@@ -68,7 +68,7 @@ public class BucketBarBandTests
                 ? (trigger[1].Value.Trim(), trigger[2].Value)
                 : default)
             .ShouldBe([
-                ("bucket__name", "Your pocket"), ("bucket__name", "Contributions and tax on pay"), ("bucket__name", "Taxes on profit"),
+                ("bucket__name", "Your pocket"), ("bucket__name", "Contributions and income tax"), ("bucket__name", "Taxes on profit"),
                 ("bucket__name", "Kept in company"), ("bucket__name", "Expenses"),
             ]);
     }
@@ -183,7 +183,7 @@ public class BucketBarBandTests
         var html = await RenderBandAsync(run, choosing: true);
 
         ChooseButtons(html).ShouldBe(view.Buckets.Select(bucket => (bucket.Key,
-            $"{Formats.Euros(bucket.Amount)} {ResxText.For<BucketBar>().Format(BucketBarText.ChooseWords, ResxText.For<BucketBar>().Get(BucketBarText.Bucket(bucket.Key, view.TaxesOnPayIncludeRent))!)}")));
+            $"{Formats.Euros(bucket.Amount)} {ResxText.For<BucketBar>().Format(BucketBarText.ChooseWords, ResxText.For<BucketBar>().Get(BucketBarText.Bucket(bucket.Key))!)}")));
     }
 
     // Drawn with nothing to choose on, the band's amounts are plain figures.

@@ -160,7 +160,7 @@
     <value>Dans votre poche</value>
   </data>
   <data name="Figure_TaxesOnPay" xml:space="preserve">
-    <value>Cotisations et impôt sur la rémunération</value>
+    <value>Cotisations et impôt des personnes physiques</value>
   </data>
   <data name="Figure_TaxesOnProfit" xml:space="preserve">
     <value>Impôts sur le bénéfice</value>

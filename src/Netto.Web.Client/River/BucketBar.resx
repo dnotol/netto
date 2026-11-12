@@ -16,10 +16,7 @@
     <value>Your pocket</value>
   </data>
   <data name="Bucket_taxes_on_pay" xml:space="preserve">
-    <value>Contributions and tax on pay</value>
-  </data>
-  <data name="Bucket_taxes_on_pay_and_rent" xml:space="preserve">
-    <value>Contributions and tax on pay and rent</value>
+    <value>Contributions and income tax</value>
   </data>
   <data name="Bucket_taxes_on_profit" xml:space="preserve">
     <value>Taxes on profit</value>

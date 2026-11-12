@@ -4,14 +4,14 @@
 @inject IStringLocalizer<MapTab> Map
 
 @* The card of a bucket chosen on the map or in the bar, in the seat of a module's card beside the map
-   (PinnedCard): what fills the bucket, its total and its share of the bar's start in the heading, then a
-   line for each module sending money into it with its amount and its share, €0.00 lines left out. The
-   pocket's card then lists the pocket line's running totals, module by module. It is read-only: no field
+   (PinnedCard): what fills the bucket, its total in the heading, then a line for each module sending money
+   into it with its amount, €0.00 lines left out, or, with one module sending all of it, a note naming it.
+   No share, the bar's reach being the one percentage, and no running total, the map's alone. It is read-only: no field
    and no « Remove … from your plan », a bucket being no module of the plan, and no refusal of its own, an
    amount the engine refuses leaving the bucket no figure, as in the bar. It is always pinned open, takes
    the focus on its heading when the seat says so and holds no fold of the viewer's. *@
 <section id="@($"card-{Bucket}")" class="bucket-card" aria-labelledby="@_titleId">
-    <Fold @ref="_fold" Name="@($"bucket-{Bucket}")" Title="@Title" TitleId="@_titleId" Summary="@Summary" Rate="@Rate" Help="@Help" Pinned="true">
+    <Fold @ref="_fold" Name="@($"bucket-{Bucket}")" Title="@Title" TitleId="@_titleId" Summary="@Summary" Help="@Help" Pinned="true">
         <div class="bucket-card__body">
             @if (_view is null)
             {
@@ -23,14 +23,13 @@
                 {
                     <p class="bucket-card__note">@L[BucketCardText.Nothing]</p>
                 }
+                else if (_view.Lines.Count == 1)
+                {
+                    <p class="bucket-card__note">@L[BucketCardText.OnlyFrom, _lines[0].Label]</p>
+                }
                 else
                 {
                     <FigureList Figures="@_lines" />
-                }
-                @if (_totals.Count > 0)
-                {
-                    <h3 class="bucket-card__title">@L[BucketCardText.PocketLine]</h3>
-                    <FigureList Figures="@_totals" />
                 }
             }
         </div>
@@ -57,21 +56,17 @@
     private Fold? _fold;
     private BucketCardView? _view;
     private IReadOnlyList<Figure> _lines = [];
-    private IReadOnlyList<Figure> _totals = [];
 
-    private string Title => Bar[BucketBarText.Bucket(Bucket, _view?.TaxesOnPayIncludeRent ?? false)].Value;
+    private string Title => Bar[BucketBarText.Bucket(Bucket)].Value;
 
     private string? Help => Bar[BucketBarText.Holds(Bucket, _view?.TaxesOnPayIncludeRent ?? false, _view?.TaxesOnPayIncludeRoyalty ?? false)].Value;
 
     private string? Summary => _view is { } view ? Formats.Euros(view.Amount) : null;
 
-    private string? Rate => _view?.Share is { } share ? L[BucketCardText.Rate, Formats.WholeShare(share)].Value : null;
-
     protected override void OnParametersSet()
     {
         _view = BucketCardView.From(Inputs, Run, Bucket);
-        _lines = [.. (_view?.Lines ?? []).Select(line => new Figure(Map[MapTabText.Module(line.Module)].Value, line.Amount) { Share = line.Share })];
-        _totals = [.. (_view?.RunningTotals ?? []).Select(total => new Figure(Map[MapTabText.Module(total.Module)].Value, total.Total))];
+        _lines = [.. (_view?.Lines ?? []).Select(line => new Figure(Map[MapTabText.Module(line.Module)].Value, line.Amount))];
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

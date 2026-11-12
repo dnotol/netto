@@ -39,7 +39,7 @@ public class FrontPageAndBarInFrenchTests
 
         html.ShouldSatisfyAllConditions(
             () => html.ShouldContain(">Votre poche</button>"),
-            () => html.ShouldContain(">Cotisations et impôt sur la rémunération</button>"),
+            () => html.ShouldContain(">Cotisations et impôt des personnes physiques</button>"),
             () => html.ShouldContain(">Impôts sur le bénéfice</button>"),
             () => html.ShouldContain(">Gardé dans la société</button>"),
             () => html.ShouldContain(">Frais</button>"),
@@ -56,7 +56,7 @@ public class FrontPageAndBarInFrenchTests
     public void BucketBarText_keysBuiltInCode_haveAFrenchText(bool rent, bool royalty)
     {
         var french = ResxText.French<BucketBar>();
-        var keys = BucketsView.Keys.SelectMany(key => new[] { BucketBarText.Bucket(key, rent), BucketBarText.Holds(key, rent, royalty) });
+        var keys = BucketsView.Keys.SelectMany(key => new[] { BucketBarText.Bucket(key), BucketBarText.Holds(key, rent, royalty) });
 
         french.Missing(keys).ShouldBeEmpty();
     }

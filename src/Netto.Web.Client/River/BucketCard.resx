@@ -9,13 +9,10 @@
   <resheader name="reader">
     <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Rate" xml:space="preserve">
-    <value>{0} of the start</value>
-  </data>
   <data name="Nothing" xml:space="preserve">
     <value>Nothing is sent into it in this plan.</value>
   </data>
-  <data name="PocketLine" xml:space="preserve">
-    <value>Down the pocket line: what has reached you after each module</value>
+  <data name="OnlyFrom" xml:space="preserve">
+    <value>All of it comes from {0}.</value>
   </data>
 </root>

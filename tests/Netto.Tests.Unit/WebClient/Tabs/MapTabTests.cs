@@ -194,7 +194,7 @@ public class MapTabTests
 
         html.ShouldSatisfyAllConditions(
             () => BucketButtons(html).Select(button => (button.Bucket, button.Name, button.Pressed)).ShouldBe([
-                ("pocket", "Your pocket", "false"), ("taxes_on_pay", "Contributions and tax on pay and rent", "false"), ("taxes_on_profit", "Taxes on profit", "false"),
+                ("pocket", "Your pocket", "false"), ("taxes_on_pay", "Contributions and income tax", "false"), ("taxes_on_profit", "Taxes on profit", "false"),
                 ("kept_in_company", "Kept in company", "false"), ("expenses", "Expenses", "false")]),
             () => html.IndexOf("data-bucket=\"pocket\"", StringComparison.Ordinal).ShouldBeGreaterThan(html.LastIndexOf("data-module=", StringComparison.Ordinal)));
     }

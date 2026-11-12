@@ -61,7 +61,7 @@
     <value>Kept</value>
   </data>
   <data name="To_taxes_on_pay" xml:space="preserve">
-    <value>to contributions and tax on pay</value>
+    <value>to contributions and income tax</value>
   </data>
   <data name="To_taxes_on_profit" xml:space="preserve">
     <value>to taxes on profit</value>
@@ -70,7 +70,7 @@
     <value>back from taxes on profit, through your tax return</value>
   </data>
   <data name="From_taxes_on_pay" xml:space="preserve">
-    <value>back from contributions and tax on pay, through your tax return</value>
+    <value>back from contributions and income tax, through your tax return</value>
   </data>
   <data name="From_pocket" xml:space="preserve">
     <value>back from your pocket</value>

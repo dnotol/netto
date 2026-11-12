@@ -5,9 +5,9 @@ using static Netto.Tests.WebClient.River.RiverRendering;
 
 namespace Netto.Tests.WebClient.River;
 
-// The bucket of what leaves the director's pay holds their social contributions with the tax on it,
-// and its name says so, so the bar reads without its bubbles: « Contributions and tax on pay », its key
-// keeping its first name, taxes_on_pay. A text that names a bucket names it as the bar does; that no
+// The bucket of what leaves the director's pay holds their social contributions with the income tax on it
+// and on a rent or a royalty, and its one name says so whatever the plan, so the bar reads without its
+// bubbles: « Contributions and income tax », its key keeping its first name, taxes_on_pay. A text that names a bucket names it as the bar does; that no
 // text says its first name is InterfaceTextTests'.
 public class BucketNamesTests
 {
@@ -22,8 +22,8 @@ public class BucketNamesTests
 
     public static TheoryData<RiverInputs, string> Rivers => new()
     {
-        { RiverInputs.Example, "Contributions and tax on pay" },
-        { RentAtTheCap, "Contributions and tax on pay and rent" },
+        { RiverInputs.Example, "Contributions and income tax" },
+        { RentAtTheCap, "Contributions and income tax" },
     };
 
     [Theory]
@@ -61,7 +61,7 @@ public class BucketNamesTests
 
     // A bucket's name in the bar as a sentence says it: « Your pocket » is « your pocket ».
     private static string NameInASentence(string bucket) =>
-        BucketBarResources.Get(BucketBarText.Bucket(bucket, false)) is [var first, .. var rest]
+        BucketBarResources.Get(BucketBarText.Bucket(bucket)) is [var first, .. var rest]
             ? $"{char.ToLowerInvariant(first)}{rest}"
             : bucket;
 

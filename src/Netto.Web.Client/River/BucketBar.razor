@@ -47,7 +47,7 @@
                     <div class="bucket bucket--@key">
                         <dt class="bucket__label">
                             <span class="bucket__swatch" aria-hidden="true"></span>
-                            <InfoBubble Term="@L[BucketBarText.Bucket(key, IncludesRent)]" TriggerClass="bucket__name">@L[BucketBarText.Holds(key, IncludesRent, IncludesRoyalty)]</InfoBubble>
+                            <InfoBubble Term="@L[BucketBarText.Bucket(key)]" TriggerClass="bucket__name">@L[BucketBarText.Holds(key, IncludesRent, IncludesRoyalty)]</InfoBubble>
                             @if (key == "pocket" && Gain is { } gain)
                             {
                                 <span class="bucket__gain bucket__gain--@gain.Kind.ToString().ToLowerInvariant()">@GainShown(gain)</span>
@@ -66,7 +66,7 @@
                         <dd class="bucket__amount">
                             @if (BucketChosen.HasDelegate)
                             {
-                                <button type="button" class="bucket__choose" data-bucket-choose="@key" @onclick="() => BucketChosen.InvokeAsync(key)">@Amount(key)<span class="bucket__choose-words">@(" " + L[BucketBarText.ChooseWords, L[BucketBarText.Bucket(key, IncludesRent)]])</span></button>
+                                <button type="button" class="bucket__choose" data-bucket-choose="@key" @onclick="() => BucketChosen.InvokeAsync(key)">@Amount(key)<span class="bucket__choose-words">@(" " + L[BucketBarText.ChooseWords, L[BucketBarText.Bucket(key)]])</span></button>
                             }
                             else
                             {

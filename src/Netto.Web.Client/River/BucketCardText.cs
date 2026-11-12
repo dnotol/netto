@@ -5,12 +5,10 @@ namespace Netto.Web.Client.River;
 // name from the map's (MapTabText.Module).
 internal static class BucketCardText
 {
-    // Beside the total, worded with the share of the bar's start: « 12% of the start ».
-    public const string Rate = "Rate";
-
     // Under the heading while nothing is sent into the bucket in this plan.
     public const string Nothing = "Nothing";
 
-    // The heading of the pocket line's running totals.
-    public const string PocketLine = "PocketLine";
+    // Under the heading when one module sends all of it, worded with that module's name: its amount is the
+    // heading's, so no line repeats it.
+    public const string OnlyFrom = "OnlyFrom";
 }

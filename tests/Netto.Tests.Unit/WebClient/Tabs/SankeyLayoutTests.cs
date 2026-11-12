@@ -228,7 +228,7 @@ public class SankeyLayoutTests
     private static string Name(SankeyView view, SankeyNode node) => node switch
     {
         { Module: { } module } => MapNames.Drawn(module),
-        { Bucket: { } key } => Texts<BucketBar>().Get(BucketBarText.Bucket(key, view.Bar.TaxesOnPayIncludeRent))!,
+        { Bucket: { } key } => Texts<BucketBar>().Get(BucketBarText.Bucket(key))!,
         _ => Texts<DividendCard>().Get("EarlierLabel")!,
     };
 

@@ -45,11 +45,10 @@ internal static class BucketBarText
     // The same, short, on the pocket's name line: « +€2,551.13 vs Today ».
     public static string GainShown(GainKind kind) => $"GainShown_{kind}";
 
-    // The bucket of what leaves the pay names the social contributions with the tax, and the rent too
-    // once its tax is there; its key keeps its first name, taxes_on_pay. A copyright royalty's tax is
-    // said in what the bucket holds alone (decided unattended).
-    public static string Bucket(string key, bool taxesOnPayIncludeRent) =>
-        $"Bucket_{key}{TaxesOnPayWith(key, taxesOnPayIncludeRent, false)}";
+    // A bucket's name is one text whatever the plan holds: the bucket of what leaves the pay names the social
+    // contributions with the income tax, which covers the pay, a rent and a royalty alike; its key keeps its
+    // first name, taxes_on_pay. What the plan adds to it is said in what the bucket holds (Holds).
+    public static string Bucket(string key) => $"Bucket_{key}";
 
     // What the bucket holds, in the bubble its name opens: the rent's tax and a royalty's too, once
     // there is one.

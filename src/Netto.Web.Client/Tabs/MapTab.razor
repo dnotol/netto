@@ -478,7 +478,7 @@
     private string EndName(MapEnd end) => end switch
     {
         { Module: { } module } => L[MapTabText.Module(module)],
-        { Bucket: { } bucket } => BucketTexts[BucketBarText.Bucket(bucket, _view.TaxesOnPayIncludeRent)],
+        { Bucket: { } bucket } => BucketTexts[BucketBarText.Bucket(bucket)],
         _ => throw new ArgumentOutOfRangeException(nameof(end), "An end with neither a module nor a bucket."),
     };
 

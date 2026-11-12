@@ -8,8 +8,8 @@ using static Netto.Tests.WebClient.River.RiverRendering;
 
 namespace Netto.Tests.WebClient.River;
 
-// A bucket's card as a viewer reads it: read-only, its total and its share of the bar's start in the heading,
-// a line for each module sending money into it.
+// A bucket's card as a viewer reads it: read-only, its total in the heading, a line for each module sending
+// money into it, and no share: the bar's reach is the one percentage.
 public class BucketCardTests
 {
     private static readonly RiverInputs Full = MapLinksTests.Full;
@@ -18,7 +18,7 @@ public class BucketCardTests
         RenderAsync<BucketCard>(new Folds(new BrowserStorage()), new() { ["Inputs"] = river, ["Run"] = river.Run(), ["Bucket"] = bucket });
 
     [Fact]
-    public async Task Card_ofTheExpenses_saysItsTotalItsShareAndALinePerModule()
+    public async Task Card_ofTheExpenses_saysItsTotalAndALinePerModule()
     {
         var run = Full.Run();
         var buckets = BucketsView.From(run)!;
@@ -26,8 +26,7 @@ public class BucketCardTests
 
         var html = await RenderBucketAsync(Full, "expenses");
 
-        (CardHtml.Summary(html), CardHtml.Rate(html))
-            .ShouldBe((Formats.Euros(buckets.AmountOf("expenses")), $"{Formats.WholeShare(view.Share!.Value)} of the start"));
+        (CardHtml.Summary(html), CardHtml.Rate(html)).ShouldBe((Formats.Euros(buckets.AmountOf("expenses")), null));
         CardHtml.Lines(html).Select(line => line.Amount).ToList().ShouldBe(view.Lines.Select(line => Formats.Euros(line.Amount)).ToList());
     }
 
@@ -54,23 +53,66 @@ public class BucketCardTests
             () => html.ShouldContain("tabindex=\"-1\""));
     }
 
+    // One amount per source: the pocket line's running totals stay on the map.
     [Fact]
-    public async Task Card_ofThePocket_listsTheRunningTotalsAfterItsLines()
+    public async Task Card_ofThePocket_hasOneAmountPerSourceAndNoRunningTotals()
     {
         var view = BucketCardView.From(Full, Full.Run(), "pocket")!;
 
         var html = await RenderBucketAsync(Full, "pocket");
 
-        CardHtml.Lines(html).Select(line => line.Amount).ToList()
-            .ShouldBe([.. view.Lines.Select(line => Formats.Euros(line.Amount)), .. view.RunningTotals.Select(total => Formats.Euros(total.Total))]);
+        CardHtml.Lines(html).Select(line => (line.Label, line.Amount)).ToList()
+            .ShouldBe([.. view.Lines.Select(line => (ResxText.For<MapTab>().Get(MapTabText.Module(line.Module))!, Formats.Euros(line.Amount)))]);
+        html.ShouldNotContain("<h3");
+        (CardHtml.LineRuns(html).Count).ShouldBe(1);
+    }
+
+    // The bar's reach is the one share: no bucket's card says one, in the heading or on a line.
+    [Theory]
+    [MemberData(nameof(Buckets))]
+    public async Task Card_ofAnyBucket_givesNoShare(string bucket, bool french)
+    {
+        using var language = french ? InLanguage.French() : null;
+
+        var html = await RenderBucketAsync(Full, bucket);
+
+        html.ShouldSatisfyAllConditions(
+            () => CardHtml.Rate(html).ShouldBeNull(),
+            () => CardHtml.Lines(html).ShouldAllBe(line => line.Share == null),
+            () => System.Net.WebUtility.HtmlDecode(html).ShouldNotContain("%"));
+    }
+
+    public static TheoryData<string, bool> Buckets
+    {
+        get
+        {
+            var data = new TheoryData<string, bool>();
+            foreach (var french in new[] { false, true })
+                foreach (var key in BucketsView.Keys)
+                    data.Add(key, french);
+            return data;
+        }
+    }
+
+    // A source alone is not listed under a header giving its amount: the card says where it all comes from.
+    [Fact]
+    public async Task Card_withASingleSource_namesItInsteadOfRepeatingTheHeader()
+    {
+        var html = await RenderBucketAsync(RiverInputs.Example, "taxes_on_pay");
+
+        html.ShouldSatisfyAllConditions(
+            () => CardHtml.Lines(html).ShouldBeEmpty(),
+            () => CardHtml.Prose(html).ToList().ShouldBe([$"All of it comes from {ResxText.For<MapTab>().Get(MapTabText.Module(RiverModule.DirectorPay))}."]));
     }
 
     [Fact]
-    public async Task Card_ofAnotherBucket_hasNoRunningTotals()
+    public async Task Card_withASingleSource_inFrench_namesItToo()
     {
-        var html = await RenderBucketAsync(Full, "taxes_on_pay");
+        using var french = InLanguage.French();
 
-        CardHtml.LineRuns(html).Count.ShouldBe(1);
+        var html = await RenderBucketAsync(RiverInputs.Example, "taxes_on_pay");
+
+        System.Net.WebUtility.HtmlDecode(CardHtml.Prose(html).Single()).ShouldStartWith("Tout vient de ");
     }
 
     [Fact]
@@ -90,6 +132,6 @@ public class BucketCardTests
         var html = await RenderBucketAsync(Full, "pocket");
 
         CardHtml.LeakedKeys(html).ShouldBeEmpty();
-        System.Net.WebUtility.HtmlDecode(html).ShouldContain("de départ");
+        System.Net.WebUtility.HtmlDecode(html).ShouldNotContain("de départ");
     }
 }

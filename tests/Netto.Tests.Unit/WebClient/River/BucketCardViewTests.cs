@@ -7,7 +7,7 @@ using Shouldly;
 namespace Netto.Tests.WebClient.River;
 
 // What fills a bucket, as its card says it: the map's links into it, one line per module, net of what
-// comes back, in the river's order, and for the pocket the running totals of the gold line.
+// comes back, in the river's order.
 public class BucketCardViewTests
 {
     private static readonly RiverInputs Full = MapLinksTests.Full;
@@ -47,24 +47,14 @@ public class BucketCardViewTests
 
     [Theory]
     [MemberData(nameof(Keys))]
-    public void From_amountAndShare_areTheBarsBucket(string key)
+    public void From_amount_isTheBarsBucket(string key)
     {
         var run = Full.Run();
         var bucket = BucketsView.From(run)!.Buckets.Single(b => b.Key == key);
 
         var view = BucketCardView.From(Full, run, key)!;
 
-        (view.Amount, view.Share).ShouldBe((bucket.Amount, bucket.Share));
-    }
-
-    [Fact]
-    public void From_aLine_hasItsShareOfTheBarsStart()
-    {
-        var run = Full.Run();
-
-        var line = BucketCardView.From(Full, run, "pocket")!.Lines.Single(l => l.Module == RiverModule.DirectorPay);
-
-        line.Share.ShouldBe(Shares.Of(line.Amount, BucketsView.From(run)!.Start));
+        view.Amount.ShouldBe(bucket.Amount);
     }
 
     [Fact]
@@ -96,26 +86,26 @@ public class BucketCardViewTests
         Should.Throw<ArgumentOutOfRangeException>(() => BucketCardView.From(Full, Full.Run(), "nowhere"));
     }
 
+    // The running totals of the pocket line are the map's alone (MapCardsTests): the card states one amount per
+    // source, and no share, the bar's reach being the one percentage.
     [Fact]
-    public void RunningTotals_ofThePocket_endOnThePocket()
+    public void BucketCardView_says_oneAmountPerSource_noRunningTotalAndNoShare()
     {
-        var run = Full.Run();
+        var members = typeof(BucketCardView).GetProperties().Select(property => property.Name)
+            .Concat(typeof(BucketLine).GetProperties().Select(property => property.Name)).ToList();
 
-        BucketCardView.From(Full, run, "pocket")!.RunningTotals[^1].Total.ShouldBe(BucketsView.From(run)!.AmountOf("pocket"));
+        members.ShouldNotContain("RunningTotals");
+        members.ShouldNotContain("Share");
     }
 
-    // Money only leaves the pocket line at the car's point, so the map says no total there: nor does the card.
+    // A bucket with a single source has that source's amount as its own: the card names the source rather than
+    // list it under a header that says the same.
     [Fact]
-    public void RunningTotals_aCarsContributionLeavingThePocketLine_haveNoTotalAtTheCar()
+    public void From_theExamplesTaxesOnPay_areOneLineOfTheBucketsAmount()
     {
-        var river = Full.WithCarContribution(1_000m);
+        var view = View(RiverInputs.Example, "taxes_on_pay");
 
-        View(river, "pocket").RunningTotals.Select(total => total.Module).ShouldNotContain(RiverModule.Car);
-    }
-
-    [Fact]
-    public void RunningTotals_ofAnyOtherBucket_areNone()
-    {
-        BucketsView.Keys.Where(key => key != "pocket").Select(key => View(Full, key).RunningTotals.Count).ShouldAllBe(count => count == 0);
+        view.Lines.Select(line => line.Module).ToList().ShouldBe([RiverModule.DirectorPay]);
+        view.Lines.Sum(line => line.Amount).ShouldBe(view.Amount);
     }
 }
