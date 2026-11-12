@@ -5,6 +5,8 @@ namespace Netto.Web.Client.River;
 // what Formats reads €0.00, the engine's negative zero among it).
 internal static class FigureLines
 {
-    public static IReadOnlyList<FigureLine> Shown(IEnumerable<FigureLine> lines) =>
-        [.. lines.Where(line => Math.Round(line.Amount, 2, MidpointRounding.AwayFromZero) != 0m)];
+    public static IReadOnlyList<FigureLine> Shown(IEnumerable<FigureLine> lines) => [.. lines.Where(line => !IsNothing(line.Amount))];
+
+    // What Formats reads €0.00, whatever its sign: no line is worth showing for it, wherever the line is drawn.
+    public static bool IsNothing(decimal amount) => Math.Round(amount, 2, MidpointRounding.AwayFromZero) == 0m;
 }

@@ -37,7 +37,8 @@ internal sealed record HouseholdCardView(
     private static IReadOnlyList<StepDetail> SourcesOf(GrossToNetResult pay, HouseholdView? joint, DependantsView? dependants) =>
         joint is null && dependants is null
             ? []
-            : [.. pay.Steps.Where(step => step.RuleKey is "income_tax" or "child_tax_credit").Select(StepDetail.From)];
+            : [.. pay.Steps.Where(step => step.RuleKey is "income_tax" || step.RuleKey is "child_tax_credit" && !FigureLines.IsNothing(step.Amount))
+                .Select(step => StepDetail.From(step) with { WithoutAmount = FigureLines.IsNothing(step.Amount) })];
 
     // The quotient, that it attributes nothing, or that the year is taxed separately; how many people are
     // declared, the children under 3 among the children; and what the household saves the river's tax or,
@@ -62,7 +63,7 @@ internal sealed record HouseholdCardView(
             parts.Add(new SummaryPart("Summary_Dependants", [people.ToString(Formats.Culture)]));
         }
 
-        if (Math.Round(saves, 2, MidpointRounding.AwayFromZero) != 0m)
+        if (!FigureLines.IsNothing(saves))
             parts.Add(new SummaryPart(saves > 0m ? "Summary_LessTax" : "Summary_MoreTax", [Formats.Euros(Math.Abs(saves))]));
 
         return parts;

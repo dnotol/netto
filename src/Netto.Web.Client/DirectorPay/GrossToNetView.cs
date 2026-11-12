@@ -1,6 +1,7 @@
 using Netto.Core.DirectorPay;
 using Netto.Core.PersonalTax;
 using Netto.Core.Simulation;
+using Netto.Web.Client.River;
 using Netto.Web.Client.Steps;
 
 namespace Netto.Web.Client.DirectorPay;
@@ -64,7 +65,7 @@ internal sealed record GrossToNetView(
         if (result.BenefitInKind > 0m)
             taxBase.Add(new Line("benefit_in_kind", RowKind.Added, result.BenefitInKind));
         taxBase.AddRange(requalified);
-        taxBase.AddRange(result.Steps.TakeWhile(step => step.RuleKey != "taxable_income").Select(Deduction));
+        taxBase.AddRange(result.Steps.TakeWhile(step => step.RuleKey != "taxable_income").Select(Deduction).Where(line => !FigureLines.IsNothing(line.Amount)));
         taxBase.Add(new Line("taxable_income", RowKind.TaxableIncome, result.TaxableIncome));
 
         var tracks = new[] { (Key: "tax_base", Bars: Bars(taxBase)) };
@@ -164,6 +165,7 @@ internal sealed record GrossToNetView(
     {
         var drawn = parts.Sum(part => Math.Max(0m, part.Amount));
         return parts
+            .Where(part => !FigureLines.IsNothing(part.Amount))
             .Select(part => new NextThousandPart(part.Key, part.Amount, part.Amount / NextSlice, drawn == 0m ? 0m : Math.Max(0m, part.Amount) / drawn))
             .ToList();
     }
@@ -283,6 +285,11 @@ internal sealed record AssessmentView(
 
     // The balance as the slip shows it, without its sign: the kind says which way it goes.
     public decimal Amount => Math.Abs(Balance);
+
+    // The balance is an equation of the final tax and what is set against it: what is of nothing is no line.
+    public bool HasWithheld => !FigureLines.IsNothing(Withheld);
+
+    public bool HasAdvancePayments => !FigureLines.IsNothing(AdvancePayments);
 
     public static AssessmentView From(Assessment assessment, OtherIncomeTax otherIncomeTax, OtherIncomeTax taxedApartTax) => new(
         assessment.FinalTax,

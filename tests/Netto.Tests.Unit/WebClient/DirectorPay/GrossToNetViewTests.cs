@@ -64,7 +64,7 @@ public class GrossToNetViewTests
 
         (next.Select(part => part.Amount), next.Sum(part => part.Share), next.Sum(part => part.Width))
             .ShouldSatisfyAllConditions(
-                parts => parts.Item1.ShouldBe([198.84m, 436.49m, 30.56m, 0m, 0m, 532.95m]),
+                parts => parts.Item1.ShouldBe([198.84m, 436.49m, 30.56m, 532.95m]),
                 parts => parts.Item2.ShouldBe(1.19884m),
                 parts => parts.Item3.ShouldBe(1m));
     }
@@ -84,6 +84,23 @@ public class GrossToNetViewTests
         var statement = View(50_000m).Statement;
 
         statement.Months.Skip(10).Select(month => (month.Month, month.Withholding, month.NetPaid)).ShouldBe([(11, 882.47m, 3_284.20m), (12, 882.47m, 3_284.20m)]);
+    }
+
+    // The balance is an equation of the final tax and what is set against it: a line of nothing is left out.
+    [Fact]
+    public void From_gross50000_balanceHoldsNoAdvancePaymentsLineWhenNoneWerePaid()
+    {
+        var balance = View(50_000m).Balance;
+
+        (balance.HasAdvancePayments, balance.HasWithheld).ShouldBe((false, true));
+    }
+
+    [Fact]
+    public void From_gross50000_balanceHoldsTheAdvancePaymentsLineOnceSomeArePaidAndNoWithheldLineWhenNothingWasWithheld()
+    {
+        var balance = View(50_000m, new TaxPrepayments(0m, new AdvancePayments(12_014m, 0m, 0m, 0m))).Balance;
+
+        (balance.HasAdvancePayments, balance.HasWithheld).ShouldBe((true, false));
     }
 
     [Fact]
@@ -451,7 +468,6 @@ public class GrossToNetViewTests
         {
             ("gross_pay", 100m, 100m),
             ("social_contributions", 0m, 100m),
-            ("flat_rate_costs", 0m, 0m),
             ("taxable_income", 100m, 100m),
         });
     }
@@ -464,6 +480,22 @@ public class GrossToNetViewTests
         var taxBase = View(0m).Tracks[0];
 
         taxBase.Rows[^1].ShouldBe(new FunnelRow("taxable_income", RowKind.TaxableIncome, 0m, 100m, 100m));
+    }
+
+    // A line of nothing is no line: at 0 the flat-rate costs are nothing, and the bar and the row go.
+    [Fact]
+    public void From_gross0_theTrackLeavesOutTheLinesOfNothing()
+    {
+        var rows = View(0m).Tracks[0].Rows;
+
+        rows.Select(row => row.Key).ShouldBe(["gross_pay", "social_contributions", "taxable_income"]);
+    }
+
+    // A part of nothing is no part: the next 1,000 names only the ones that take or give something.
+    [Fact]
+    public void From_gross50000_nextThousandLeavesOutThePartsOfNothing()
+    {
+        View(50_000m).NextThousand.Select(part => part.Key).ShouldBe(["social_contributions", "income_tax", "municipal_surcharge", "net_in_pocket"]);
     }
 
     // The fund's fee at 3.05% is deducted with the contributions (GrossToNetFundFeeTests): the track takes
@@ -514,8 +546,6 @@ public class GrossToNetViewTests
             new NextThousandPart("social_contributions", 165.88m, 0.16588m, 0.16588m),
             new NextThousandPart("income_tax", 364.09m, 0.36409m, 0.36409m),
             new NextThousandPart("municipal_surcharge", 25.48m, 0.02548m, 0.02548m),
-            new NextThousandPart("low_earned_income_credit_lost", 0m, 0m, 0m),
-            new NextThousandPart("income_tax_advance_payments", 0m, 0m, 0m),
             new NextThousandPart("net_in_pocket", 444.55m, 0.44455m, 0.44455m),
         });
     }
@@ -530,22 +560,19 @@ public class GrossToNetViewTests
 
         next.Select(part => (part.Key, part.Amount, part.Share, part.Width)).ShouldBe(new[]
         {
-            ("social_contributions", 0m, 0m, 0m),
-            ("income_tax", 0m, 0m, 0m),
-            ("municipal_surcharge", 0m, 0m, 0m),
             ("low_earned_income_credit_lost", -392.31m, -0.39231m, 0m),
-            ("income_tax_advance_payments", 0m, 0m, 0m),
             ("net_in_pocket", 1_392.31m, 1.39231m, 1m),
         });
     }
 
-    // A part of no width would still draw the gap that separates segments.
+    // A part of no width would still draw the gap that separates segments: the credit lost, which gives
+    // money back, has none, though it is a part.
     [Fact]
-    public void From_gross50000_barLeavesOutThePartsOfNoWidth()
+    public void From_grossWhereCreditRises_barLeavesOutThePartOfNoWidth()
     {
-        var bar = View(50_000m).NextThousandBar;
+        var bar = View(11_000m).NextThousandBar;
 
-        bar.Select(part => part.Key).ShouldBe(["social_contributions", "income_tax", "municipal_surcharge", "net_in_pocket"]);
+        bar.Select(part => part.Key).ShouldBe(["net_in_pocket"]);
     }
 
     [Fact]
@@ -566,7 +593,7 @@ public class GrossToNetViewTests
 
         parts.ShouldSatisfyAllConditions(
             () => parts.Select(part => part.Key).ShouldBe(
-                ["social_contributions", "income_tax", "municipal_surcharge", "low_earned_income_credit_lost", "child_tax_credit_lost", "income_tax_advance_payments", "net_in_pocket"]),
+                ["social_contributions", "income_tax", "municipal_surcharge", "child_tax_credit_lost", "net_in_pocket"]),
             () => parts.Single(part => part.Key == "child_tax_credit_lost").Amount.ShouldBe(241.05m),
             () => parts.Sum(part => part.Amount).ShouldBe(1_000m));
     }

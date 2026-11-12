@@ -94,7 +94,7 @@
                             {
                                 <td data-label="@L["ColumnTaxablePay"]">@Formats.Euros(month.TaxablePay)</td>
                             }
-                            <td data-label="@L["ColumnWithholding"]">@Formats.Deduction(month.Withholding)</td>
+                            <td data-label="@L["ColumnWithholding"]">@(FigureLines.IsNothing(month.Withholding) ? Formats.Euros(month.Withholding) : Formats.Deduction(month.Withholding))</td>
                             <td data-label="@L["ColumnNetPaid"]" class="statement__net">@Formats.Euros(month.NetPaid)</td>
                         </tr>
                     }
@@ -135,10 +135,13 @@
                     <dd>@Formats.Euros(_view.Balance.OnTaxedApart)</dd>
                 </div>
             }
-            <div class="balance__line">
-                <dt>@L[PaySlipText.Withheld(_view.Balance.WithheldGiven)]</dt>
-                <dd>@Formats.Deduction(_view.Balance.Withheld)</dd>
-            </div>
+            @if (_view.Balance.HasWithheld)
+            {
+                <div class="balance__line">
+                    <dt>@L[PaySlipText.Withheld(_view.Balance.WithheldGiven)]</dt>
+                    <dd>@Formats.Deduction(_view.Balance.Withheld)</dd>
+                </div>
+            }
             @if (_view.Balance.WithheldBesidesPay > 0m)
             {
                 <div class="balance__line">
@@ -146,10 +149,13 @@
                     <dd>@Formats.Deduction(_view.Balance.WithheldBesidesPay)</dd>
                 </div>
             }
-            <div class="balance__line">
-                <dt>@L["AdvancePayments"]</dt>
-                <dd>@Formats.Deduction(_view.Balance.AdvancePayments)</dd>
-            </div>
+            @if (_view.Balance.HasAdvancePayments)
+            {
+                <div class="balance__line">
+                    <dt>@L["AdvancePayments"]</dt>
+                    <dd>@Formats.Deduction(_view.Balance.AdvancePayments)</dd>
+                </div>
+            }
             <div class="balance__line balance__line--result">
                 <dt>@L[PaySlipText.Balance(_view.Balance.Kind)]</dt>
                 <dd>@Formats.Euros(_view.Balance.Amount)</dd>
@@ -210,7 +216,7 @@
     protected override void OnParametersSet()
     {
         _view = GrossToNetView.From(Pay);
-        _balance = [_view.Balance.Detail];
+        _balance = [_view.Balance.Detail with { WithoutAmount = true }];
     }
 
     private static string Modifier(RowKind kind) => kind switch

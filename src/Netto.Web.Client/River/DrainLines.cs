@@ -7,5 +7,5 @@ namespace Netto.Web.Client.River;
 internal static class DrainLines
 {
     public static IReadOnlyList<Drain> Shown(IEnumerable<Drain> drains) =>
-        [.. drains.Where(drain => Math.Round(drain.Amount, 2, MidpointRounding.AwayFromZero) != 0m)];
+        [.. drains.Where(drain => !FigureLines.IsNothing(drain.Amount))];
 }

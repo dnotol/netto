@@ -418,7 +418,7 @@ internal sealed record DirectorPayView(
     // move money are drains with their sources in their bubbles, so the breakdown is given once. What is
     // left only takes the tax base down.
     private static List<StepDetail> Sources(GrossToNetResult pay) =>
-        [.. pay.Steps.Where(step => step.Track != Track.PaidOut && Math.Round(step.Amount, 2, MidpointRounding.AwayFromZero) != 0m).Select(StepDetail.From)];
+        [.. pay.Steps.Where(step => step.Track != Track.PaidOut && !FigureLines.IsNothing(step.Amount)).Select(StepDetail.From)];
 
     // The contributions and the fund's fee drains are the same steps of the engine whoever pays; their
     // labels say when the company does.

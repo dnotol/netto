@@ -82,16 +82,30 @@ public class HouseholdCardViewTests
     }
 
     // The card cites the rules behind the amounts its bubbles state. A parent alone has no joint year, yet
-    // the supplements' amounts and the credit for children's cap are still stated, so their steps are cited.
+    // the supplements' amounts are still stated, so the income tax step is cited; the credit for children
+    // gives nothing at this pay, so no line of it states its cap and its step is not listed.
     [Fact]
-    public void Sources_singleParent_areTheIncomeTaxAndChildCreditStepsWithTheSupplementsAmounts()
+    public void Sources_singleParent_areTheIncomeTaxStepWithTheSupplementsAmounts()
     {
         var view = HouseholdCardView.From(SingleParentOfTwo, SingleParentOfTwo.Run());
 
         view.ShouldSatisfyAllConditions(
             () => view.Joint.ShouldBeNull(),
-            () => view.Sources.Select(source => source.RuleKey).ShouldBe(["income_tax", "child_tax_credit"]),
+            () => view.Sources.Select(source => source.RuleKey).ShouldBe(["income_tax"]),
             () => view.Sources[0].Sources.SelectMany(group => group.Amounts).Select(amount => amount.Value).ShouldContain(5_130m));
+    }
+
+    // On a low pay the credit for children is paid and its line states its cap: its step is cited too. The
+    // dependants' supplements still state their amounts when the income tax comes to nothing: its step stays
+    // for them, with no amount of nothing beside it.
+    [Fact]
+    public void Sources_singleParentOnALowPay_areTheIncomeTaxWithoutItsNothingAndChildCreditSteps()
+    {
+        var river = SingleParentOfTwo.SkipCompany().WithDirectorPay(20_000m);
+
+        var sources = HouseholdCardView.From(river, river.Run()).Sources;
+
+        sources.Select(source => (source.RuleKey, source.WithoutAmount)).ShouldBe([("income_tax", true), ("child_tax_credit", false)]);
     }
 
     [Fact]
@@ -101,11 +115,11 @@ public class HouseholdCardViewTests
     }
 
     [Fact]
-    public void Sources_partnerAndChildren_areTheIncomeTaxAndChildCreditSteps()
+    public void Sources_partnerAndChildrenWithNoCreditToPay_areTheIncomeTaxStepAlone()
     {
         var river = WithPartner.WithChildren(2);
 
-        HouseholdCardView.From(river, river.Run()).Sources.Select(source => source.RuleKey).ShouldBe(["income_tax", "child_tax_credit"]);
+        HouseholdCardView.From(river, river.Run()).Sources.Select(source => source.RuleKey).ShouldBe(["income_tax"]);
     }
 
     // Nobody declared and no partner, or an input refused: nothing is stated, so nothing is cited.

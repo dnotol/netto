@@ -21,7 +21,11 @@
                 <span class="step-details__head">
                     @* Razor drops the whitespace between elements: without this space, a screen reader
                        reads the step run into its amount. A flex row does not draw it. *@
-                    <span>@L[StepText.Title(detail.RuleKey)]</span>@(" ")<span class="step-details__amount">@detail.AmountShown</span>
+                    <span>@L[StepText.Title(detail.RuleKey)]</span>
+                    @if (!detail.WithoutAmount)
+                    {
+                        @(" ")<span class="step-details__amount">@detail.AmountShown</span>
+                    }
                 </span>
                 <MudIcon Icon="@Icons.Material.Rounded.ExpandMore" Class="@(open ? "step-details__chevron step-details__chevron--open" : "step-details__chevron")" aria-hidden="true" />
             </button>

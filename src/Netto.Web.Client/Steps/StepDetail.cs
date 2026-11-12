@@ -11,6 +11,10 @@ public sealed record StepDetail(string RuleKey, decimal Amount, IReadOnlyList<So
 {
     public IReadOnlyList<StepLine> Lines { get; init; } = [];
 
+    // A step cited for its rule alone: another line of the card states its amount, or it is nothing, and its
+    // heading draws no amount.
+    public bool WithoutAmount { get; init; }
+
     // Money that comes back: the refund on exempt dividends, the tax credit for low earned income. The engine
     // negates what comes back, so a refund or a credit of nothing is a negative zero, which is not less than
     // zero: the sign bit says so, as it does on the drains (Drain.PaidOutTo, GrossToNetView).

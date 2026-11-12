@@ -67,6 +67,16 @@ public class StepDetailTests
         Regex.IsMatch(html, @"<span class=""step-details__amount""[^>]*>\+€0\.00</span>").ShouldBeTrue();
     }
 
+    // A step cited for its rule alone, because another line states its amount or none is worth stating: its
+    // heading is the rule's name with no amount beside it.
+    [Fact]
+    public async Task StepDetails_aStepWithoutAmount_isDrawnWithNoAmount()
+    {
+        var html = WebUtility.HtmlDecode(await RenderAsync<StepDetails>(new Folds(new BrowserStorage()), new() { ["Details"] = new List<StepDetail> { Detail(12.50m) with { WithoutAmount = true } } }));
+
+        html.ShouldNotContain("step-details__amount");
+    }
+
     // The refund on exempt dividends in a year that pays none: the engine's step is a negative zero, and its
     // detail reads like the drain, an addition of nothing.
     [Fact]
