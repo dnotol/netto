@@ -59,7 +59,7 @@ public class MapTabRulesTests
     public async Task Tab_aModuleChosen_drawsItsRulesLinesAndTheirWordsWhereTheyWerePlaced(RiverModule chosen)
     {
         var view = MapView.From(Full, Full.Run(), MapNames.English);
-        var placed = MapAmounts.Of(view, MapAmountsTests.Say);
+        var placed = MapAmounts.Of(view);
         var rules = view.Bundles().Where(bundle => !MapLinkStyle.IsMoney(bundle.Kind) && bundle.Touches(chosen)).ToList();
         var drawn = view.Bundles().Where(bundle => MapLinkStyle.IsMoney(bundle.Kind) || bundle.Touches(chosen)).ToList();
 

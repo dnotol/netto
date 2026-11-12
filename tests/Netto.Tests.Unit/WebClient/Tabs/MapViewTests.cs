@@ -421,7 +421,7 @@ public class MapViewTests
     public void Amounts_nothingChosen_isEveryLinesWhereItWasPlaced()
     {
         var view = MapView.From(Full, Full.Run(), MapNames.English);
-        var placed = MapAmounts.Of(view, MapAmountsTests.Say);
+        var placed = MapAmounts.Of(view);
 
         view.Amounts(placed).ShouldBe(placed);
     }
@@ -432,7 +432,7 @@ public class MapViewTests
     public void Amounts_aModuleChosen_isItsOwnLinesWhereTheyWerePlaced()
     {
         var view = MapView.From(Full, Full.Run(), MapNames.English);
-        var placed = MapAmounts.Of(view, MapAmountsTests.Say);
+        var placed = MapAmounts.Of(view);
 
         var amounts = view.Amounts(placed, MapChoice.Of(RiverModule.CorporateTax));
 
@@ -549,7 +549,7 @@ public class MapViewTests
     public void Amounts_aBucketChosen_isTheLinesItKeepsWhereTheyWerePlaced(string key)
     {
         var view = MapView.From(Full, Full.Run(), MapNames.English);
-        var placed = MapAmounts.Of(view, MapAmountsTests.Say);
+        var placed = MapAmounts.Of(view);
         var bucket = MapEnd.InBucket(key);
 
         var amounts = view.Amounts(placed, MapChoice.InBucket(key));

@@ -43,7 +43,7 @@
     <value>Conditions</value>
   </data>
   <data name="Gloss_Condition" xml:space="preserve">
-    <value>une condition qu'un module pose à un autre. Ces lignes sont tracées pour le module que vous choisissez&#160;; les modules disent si elle est remplie.</value>
+    <value>une condition qu'un module pose à un autre. Tracée pour le module que vous choisissez, sa règle et son état sont listés à côté de la carte&#160;; une case ne la dit que lorsqu'elle est perdue.</value>
   </data>
   <data name="GlossLine" xml:space="preserve">
     <value>{0}&#160;: {1}</value>

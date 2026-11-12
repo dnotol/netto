@@ -82,31 +82,25 @@ public class MapTabTextTests
         Resources.Get(key).ShouldBe(words);
     }
 
-    // A badge in a module's box, by the key its helper builds, each kind with each variant: which rule and
-    // whether it holds, with the state its line says; what a tax base gains, its amount first. Each fits a
-    // box on one line, 30 characters at most, a tax base's at an amount of millions.
+    // A badge in a module's box, by the key its helper builds: what a condition costs the plan, in words that read
+    // alone in the narrow box; what a tax base gains, its amount first, by the module it reaches, its words mostly
+    // heard rather than seen (MapBadgeWords). None is longer than 60 characters, a tax base's at an amount of millions.
     public static TheoryData<string, string[], string> BadgeWords => new()
     {
-        { MapTabText.PayBadge(holds: true), [], "pay met" },
-        { MapTabText.PayBadge(holds: false), [], "rate lost: pay" },
-        { MapTabText.BenefitsBadge(holds: true), [], "benefits met" },
-        { MapTabText.BenefitsBadge(holds: false), [], "benefits lost" },
-        { MapTabText.RoyaltyBadge(new RoyaltyLowersPayKeepingReducedRate(40_000m, 50_000m, false)), [], "royalty lowers" },
-        { MapTabText.RoyaltyBadge(new RoyaltyLowersPayKeepingReducedRate(40_000m, null, false)), [], "royalty lowers" },
-        { MapTabText.RoyaltyBadge(new RoyaltyLowersPayKeepingReducedRate(51_000m, 51_000m, false)), [], "royalty: none" },
-        { MapTabText.RoyaltyBadge(new RoyaltyLowersPayKeepingReducedRate(null, 50_000m, false)), [], "no pay keeps" },
-        { MapTabText.ReserveBadge(holds: true), [], "reserve met" },
-        { MapTabText.ReserveBadge(holds: false), [], "reserve short" },
-        { MapTabText.TaxBaseBadge, ["€9,999,999.99"], "+€9,999,999.99 to tax base" },
+        { MapTabText.RateLostBadge, [], "rate lost" },
+        { MapTabText.ReserveShortBadge, [], "too much kept" },
+        { MapTabText.TaxBaseBadge(RiverModule.CorporateTax), ["€9,999,999.99"], "+€9,999,999.99 added back as disallowed expenses" },
+        { MapTabText.TaxBaseBadge(RiverModule.DirectorPay), ["€9,999,999.99"], "+€9,999,999.99 added to taxed income" },
+        { MapTabText.TaxBaseBadge(RiverModule.Household), ["€9,999,999.99"], "+€9,999,999.99 of income imputed" },
     };
 
     [Theory]
     [MemberData(nameof(BadgeWords))]
-    public void MapTabResx_aBadge_isWordedByTheKeyItsHelperBuildsInThirtyCharactersAtMost(string key, string[] args, string words)
+    public void MapTabResx_aBadge_isWordedByTheKeyItsHelperBuildsInSixtyCharactersAtMost(string key, string[] args, string words)
     {
         var text = Resources.Format(key, args);
 
-        (text, text.Length <= 30).ShouldBe((words, true));
+        (text, text.Length <= 60).ShouldBe((words, true));
     }
 
     // None of the texts of the list of a module's links, which the map once had beside it, is here any more.

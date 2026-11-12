@@ -136,34 +136,19 @@
   <data name="State_NotCovered" xml:space="preserve">
     <value>not covered</value>
   </data>
-  <data name="Badge_Pay_Met" xml:space="preserve">
-    <value>pay met</value>
+  <data name="Badge_RateLost" xml:space="preserve">
+    <value>rate lost</value>
   </data>
-  <data name="Badge_Pay_Lost" xml:space="preserve">
-    <value>rate lost: pay</value>
+  <data name="Badge_TooMuchKept" xml:space="preserve">
+    <value>too much kept</value>
   </data>
-  <data name="Badge_Benefits_Met" xml:space="preserve">
-    <value>benefits met</value>
+  <data name="Badge_TaxBase_CorporateTax" xml:space="preserve">
+    <value>+{0} added back as disallowed expenses</value>
   </data>
-  <data name="Badge_Benefits_Lost" xml:space="preserve">
-    <value>benefits lost</value>
+  <data name="Badge_TaxBase_DirectorPay" xml:space="preserve">
+    <value>+{0} added to taxed income</value>
   </data>
-  <data name="Badge_Royalty_Lowers" xml:space="preserve">
-    <value>royalty lowers</value>
-  </data>
-  <data name="Badge_Royalty_NoEffect" xml:space="preserve">
-    <value>royalty: none</value>
-  </data>
-  <data name="Badge_Royalty_NoPayKeeps" xml:space="preserve">
-    <value>no pay keeps</value>
-  </data>
-  <data name="Badge_Reserve_Covered" xml:space="preserve">
-    <value>reserve met</value>
-  </data>
-  <data name="Badge_Reserve_NotCovered" xml:space="preserve">
-    <value>reserve short</value>
-  </data>
-  <data name="Badge_TaxBase" xml:space="preserve">
-    <value>+{0} to tax base</value>
+  <data name="Badge_TaxBase_Household" xml:space="preserve">
+    <value>+{0} of income imputed</value>
   </data>
 </root>

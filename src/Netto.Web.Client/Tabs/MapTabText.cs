@@ -26,8 +26,8 @@ internal static class MapTabText
     // the company's.
     public static string Column(MapOwner owner) => $"Column_{owner}";
 
-    // Whether a condition one module sets on another holds, in a word or two, which its line says on the map
-    // (MapLink.State, MapConditions) and its link carries: a test of the corporate rate met or lost, the
+    // Whether a condition one module sets on another holds, in a word or two, which the Effects list says after its
+    // rule (MapLink.State, MapConditions), its link carrying it: a test of the corporate rate met or lost, the
     // office kept, what a royalty does to the pay keeping the rate (lowers it, has no effect on it, or leaves
     // no pay keeping it), the reserve covered or not. The sentences with their figures are the cards': Corporate
     // tax, Split and Dividend say them in their own texts.
@@ -44,26 +44,17 @@ internal static class MapTabText
 
     public static string ReserveState(bool holds) => holds ? "State_Covered" : "State_NotCovered";
 
-    // The badge a condition leaves in the box of the module it acts on (MapBadges): which rule and whether
-    // it holds, in words of its own short enough to read whole in its box on the narrowest map, its icon saying
-    // whether it holds, so two rules on one module are told apart: the pay met or the rate lost by it, the
-    // benefits likewise, what a royalty does to the pay keeping the rate, the reserve met or short. The office
-    // rule, which always holds, leaves none.
-    public static string PayBadge(bool holds) => holds ? "Badge_Pay_Met" : "Badge_Pay_Lost";
+    // The badge a condition leaves in the box of the module it acts on (MapBadges), only for what is lost, in words
+    // short enough to read whole in the box on the narrowest map, its icon beside them: the reduced rate lost, to
+    // the pay, the benefits or a royalty that leaves no pay keeping it, or the amount kept the pay-out cannot cover.
+    // A rule that holds, or a royalty that changes nothing, leaves none: the Effects list says them.
+    public const string RateLostBadge = "Badge_RateLost";
 
-    public static string BenefitsBadge(bool holds) => holds ? "Badge_Benefits_Met" : "Badge_Benefits_Lost";
+    public const string ReserveShortBadge = "Badge_TooMuchKept";
 
-    public static string RoyaltyBadge(RoyaltyLowersPayKeepingReducedRate royalty) => royalty switch
-    {
-        { Holds: true } => "Badge_Royalty_Lowers",
-        { With: null } => "Badge_Royalty_NoPayKeeps",
-        _ => "Badge_Royalty_NoEffect",
-    };
-
-    public static string ReserveBadge(bool holds) => holds ? "Badge_Reserve_Covered" : "Badge_Reserve_NotCovered";
-
-    // What a module's tax base gains, its amount first, the one part of its words seen (MapBadgeWords).
-    public const string TaxBaseBadge = "Badge_TaxBase";
+    // What a module's tax base gains, its amount first, the one part of its words seen (MapBadgeWords), worded by
+    // the module it reaches: what Corporate tax adds back, what Director pay taxes, the income imputed to the partner.
+    public static string TaxBaseBadge(RiverModule module) => $"Badge_TaxBase_{module}";
 
     // The component whose texts word a link (MapLabel.Text): the map's own, a drain list's, or the card
     // whose figure line it is, so the map and the card say the line in the same words.

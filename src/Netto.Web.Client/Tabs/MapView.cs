@@ -295,9 +295,10 @@ internal sealed record MapBundle(MapRoute Route, IReadOnlyList<MapLink> Links)
     // the pocket, nor from one point of the company's line to the next, a stretch of one line.
     public static bool EndsInArrowhead(MapEnd from, MapEnd to) => to.Bucket is null && to.PocketLine is null && (to.Lever is null || from.InPocket);
 
-    // Whether the map says the line's amount on it: every line but one whose amount the map says elsewhere, a
-    // box, the pay's pill or a badge saying it (MapLink.Unsaid, marked by MapView.From).
-    public bool SaysAmount => !Links[0].Unsaid;
+    // Whether the map says the line's amount on it: every line of money or tax base but one whose amount the map says
+    // elsewhere, a box, the pay's pill or a badge saying it (MapLink.Unsaid, marked by MapView.From). A condition's
+    // line has no amount and says no word: its rule and state are the Effects list's and its title's.
+    public bool SaysAmount => Kind != MapLinkKind.Condition && !Links[0].Unsaid;
 
     public bool Touches(RiverModule module) => Links[0].Touches(module);
 

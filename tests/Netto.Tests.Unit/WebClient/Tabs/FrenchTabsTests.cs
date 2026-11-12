@@ -143,40 +143,32 @@ public class FrenchTabsTests
         (text, text?.Length <= 14).ShouldBe((words, true));
     }
 
-    // A condition's badge says which rule and whether it holds in a word or two, short enough to read whole in
-    // its box on the narrowest map (MapBadgesTests): the reserve as « gardé », never « réserve », a legal term.
+    // A condition's badge says what is lost in a word or two, short enough to read whole in its box on the narrowest
+    // map (MapBadgesTests): the rate lost, and the amount kept as « gardé », never « réserve », a legal term. A tax
+    // base's badge says what the base gains by the module it reaches, in the glossary's words.
     [Theory]
-    [InlineData("Badge_Pay_Met", "paie : oui")]
-    [InlineData("Badge_Pay_Lost", "paie : non")]
-    [InlineData("Badge_Benefits_Met", "ATN : oui")]
-    [InlineData("Badge_Benefits_Lost", "ATN : non")]
-    [InlineData("Badge_Royalty_Lowers", "seuil abaissé")]
-    [InlineData("Badge_Royalty_NoEffect", "droits : neutre")]
-    [InlineData("Badge_Royalty_NoPayKeeps", "taux perdu")]
-    [InlineData("Badge_Reserve_Covered", "gardé : oui")]
-    [InlineData("Badge_Reserve_NotCovered", "gardé : non")]
-    public void Badge_inFrench_saysItsRuleAndWhetherItHolds(string key, string words)
+    [InlineData("Badge_RateLost", "taux perdu")]
+    [InlineData("Badge_TooMuchKept", "trop gardé")]
+    [InlineData("Badge_TaxBase_CorporateTax", "+{0} repris en dépenses non admises")]
+    [InlineData("Badge_TaxBase_DirectorPay", "+{0} ajoutés au revenu imposé")]
+    [InlineData("Badge_TaxBase_Household", "+{0} de revenu imputé")]
+    public void Badge_inFrench_saysWhatIsLostOrGained(string key, string words)
     {
-        ResxText.French<MapTab>().Get(key).ShouldBe(words.Replace(" :", $"{NoBreak}:", StringComparison.Ordinal));
+        ResxText.French<MapTab>().Get(key).ShouldBe(words);
     }
 
-    // A badge fits a box on one line, 30 characters at most, a tax base's at an amount of millions.
+    // A badge's words are at most 60 characters, a tax base's at an amount of millions.
     [Theory]
-    [InlineData("Badge_Pay_Met")]
-    [InlineData("Badge_Pay_Lost")]
-    [InlineData("Badge_Benefits_Met")]
-    [InlineData("Badge_Benefits_Lost")]
-    [InlineData("Badge_Royalty_Lowers")]
-    [InlineData("Badge_Royalty_NoEffect")]
-    [InlineData("Badge_Royalty_NoPayKeeps")]
-    [InlineData("Badge_Reserve_Covered")]
-    [InlineData("Badge_Reserve_NotCovered")]
-    [InlineData("Badge_TaxBase")]
-    public void Badge_inFrench_isThirtyCharactersAtMost(string key)
+    [InlineData("Badge_RateLost")]
+    [InlineData("Badge_TooMuchKept")]
+    [InlineData("Badge_TaxBase_CorporateTax")]
+    [InlineData("Badge_TaxBase_DirectorPay")]
+    [InlineData("Badge_TaxBase_Household")]
+    public void Badge_inFrench_isSixtyCharactersAtMost(string key)
     {
         var text = ResxText.French<MapTab>().Format(key, $"9.999.999,99{NoBreak}€");
 
-        text.Length.ShouldBeLessThanOrEqualTo(30);
+        text.Length.ShouldBeLessThanOrEqualTo(60);
     }
 
     // A gate's line says one amount or none, so the amount alone can be drawn apart (MapGateText.Parts), and
@@ -209,6 +201,7 @@ public class FrenchTabsTests
     {
         var french = ResxText.French<MapGateWords>();
 
+        french.Get(MapGateText.Quotient).ShouldBe("imputé");
         (MapGateTextTests.LineWidth(french.Get(MapGateText.Quotient).ShouldNotBeNull()) <= MapLayout.HouseholdRoomPixels,
                 MapGateTextTests.LineWidth(french.Format(MapGateText.QuotientAmount, $"99.999,99{NoBreak}€")) <= MapLayout.HouseholdRoomPixels + 2m * 0.35m * MapLayout.PixelsPerRem)
             .ShouldBe((true, true));

@@ -136,34 +136,19 @@
   <data name="State_NotCovered" xml:space="preserve">
     <value>non couvert</value>
   </data>
-  <data name="Badge_Pay_Met" xml:space="preserve">
-    <value>paie&#160;: oui</value>
-  </data>
-  <data name="Badge_Pay_Lost" xml:space="preserve">
-    <value>paie&#160;: non</value>
-  </data>
-  <data name="Badge_Benefits_Met" xml:space="preserve">
-    <value>ATN&#160;: oui</value>
-  </data>
-  <data name="Badge_Benefits_Lost" xml:space="preserve">
-    <value>ATN&#160;: non</value>
-  </data>
-  <data name="Badge_Royalty_Lowers" xml:space="preserve">
-    <value>seuil abaissé</value>
-  </data>
-  <data name="Badge_Royalty_NoEffect" xml:space="preserve">
-    <value>droits&#160;: neutre</value>
-  </data>
-  <data name="Badge_Royalty_NoPayKeeps" xml:space="preserve">
+  <data name="Badge_RateLost" xml:space="preserve">
     <value>taux perdu</value>
   </data>
-  <data name="Badge_Reserve_Covered" xml:space="preserve">
-    <value>gardé&#160;: oui</value>
+  <data name="Badge_TooMuchKept" xml:space="preserve">
+    <value>trop gardé</value>
   </data>
-  <data name="Badge_Reserve_NotCovered" xml:space="preserve">
-    <value>gardé&#160;: non</value>
+  <data name="Badge_TaxBase_CorporateTax" xml:space="preserve">
+    <value>+{0} repris en dépenses non admises</value>
   </data>
-  <data name="Badge_TaxBase" xml:space="preserve">
-    <value>+{0} à la base</value>
+  <data name="Badge_TaxBase_DirectorPay" xml:space="preserve">
+    <value>+{0} ajoutés au revenu imposé</value>
+  </data>
+  <data name="Badge_TaxBase_Household" xml:space="preserve">
+    <value>+{0} de revenu imputé</value>
   </data>
 </root>

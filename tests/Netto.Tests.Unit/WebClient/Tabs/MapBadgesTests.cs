@@ -32,7 +32,7 @@ public class MapBadgesTests
         badge.ShouldSatisfyAllConditions(
             () => links.Count(link => link is { Kind: MapLinkKind.TaxBase, To.Module: RiverModule.CorporateTax }).ShouldBeGreaterThan(1),
             () => (badge.Words.Text, badge.Words.Key, string.Join('|', badge.Words.Args), badge.Tone)
-                .ShouldBe((MapText.Map, MapTabText.TaxBaseBadge, Formats.Euros(year.DisallowedExpenses), MapBadgeTone.Amount)));
+                .ShouldBe((MapText.Map, MapTabText.TaxBaseBadge(RiverModule.CorporateTax), Formats.Euros(year.DisallowedExpenses), MapBadgeTone.Amount)));
     }
 
     // The car's benefit, taxed with the pay, marks Director pay with its amount.
@@ -44,7 +44,7 @@ public class MapBadgesTests
         var badge = Of(Full).GetValueOrDefault(RiverModule.DirectorPay, []).ShouldHaveSingleItem();
 
         (badge.Kind, Resources.Format(badge.Words.Key, [.. badge.Words.Args]))
-            .ShouldBe((MapLinkKind.TaxBase, $"+{Formats.Euros(link.Amount!.Value)} to tax base"));
+            .ShouldBe((MapLinkKind.TaxBase, $"+{Formats.Euros(link.Amount!.Value)} added to taxed income"));
     }
 
     // A module a tax base reaches with nothing is not marked.
@@ -71,10 +71,10 @@ public class MapBadgesTests
 
         badges.ShouldSatisfyAllConditions(
             () => badges.SelectMany(module => module.Value.Where(badge => badge.Kind == MapLinkKind.Condition).Select(badge => (module.Key, badge)))
-                .ShouldBe(links.Where(link => link.Badge is not null).Select(link => (link.To.Module!.Value, link.Badge!)), ignoreOrder: true),
+                .ShouldBe(links.Where(link => link.Badge is not null).Select(link => (link.To.Module!.Value, link.Badge!)).Distinct(), ignoreOrder: true),
             () => badges.Values.ShouldAllBe(list => list.SkipWhile(badge => badge.Kind == MapLinkKind.Condition).All(badge => badge.Kind == MapLinkKind.TaxBase)),
             () => badges[RiverModule.CorporateTax].Select(badge => (Resources.Format(badge.Words.Key, [.. badge.Words.Args]), badge.Tone))
-                .ShouldContain(("benefits lost", MapBadgeTone.Lost)));
+                .ShouldContain(("rate lost", MapBadgeTone.Lost)));
     }
 
     // The office rule always holds: the rent it acts on has no badge.
@@ -152,8 +152,8 @@ public class MapBadgesTests
             .Select(node => $"{node.End.Id} {node.Badges.Count}").ShouldBeEmpty();
     }
 
-    // Every tone of badge has its class, and an icon of its own but an amount, so a rule lost is told from
-    // one that holds by its icon as by its words, never by the colour alone.
+    // Every tone of badge has its class, and an icon but an amount, a rule lost told by its icon as by its words,
+    // never by the colour alone.
     [Fact]
     public void Style_everyTone_hasItsClassAndAnIconOfItsOwnButAnAmount()
     {
@@ -238,11 +238,11 @@ public class MapBadgesTests
     // button's name, the dotted outline its line has saying what it is, as the key does. A condition's badge is
     // seen whole.
     [Theory]
-    [InlineData("+{0} to tax base", "€3,450.00", "+€3,450.00", " to tax base")]
-    [InlineData("+{0} à la base", "3.450,00 €", "+3.450,00 €", " à la base")]
+    [InlineData("+{0} added to taxed income", "€3,450.00", "+€3,450.00", " added to taxed income")]
+    [InlineData("+{0} ajoutés au revenu imposé", "3.450,00 €", "+3.450,00 €", " ajoutés au revenu imposé")]
     public void Words_aTaxBasesBadge_showsItsAmountAndLeavesItsWordsHeard(string template, string amount, string seen, string heard)
     {
-        var badge = new MapBadge(MapLinkKind.TaxBase, new MapLabel(MapText.Map, MapTabText.TaxBaseBadge, [amount]), MapBadgeTone.Amount);
+        var badge = new MapBadge(MapLinkKind.TaxBase, new MapLabel(MapText.Map, MapTabText.TaxBaseBadge(RiverModule.DirectorPay), [amount]), MapBadgeTone.Amount);
 
         MapBadgeWords.Of(badge, template).ShouldBe((seen, heard));
     }
@@ -250,9 +250,9 @@ public class MapBadgesTests
     [Fact]
     public void Words_aConditionsBadge_isSeenWhole()
     {
-        var badge = new MapBadge(MapLinkKind.Condition, new MapLabel(MapText.Map, MapTabText.ReserveBadge(holds: true), []), MapBadgeTone.Holds);
+        var badge = new MapBadge(MapLinkKind.Condition, new MapLabel(MapText.Map, MapTabText.ReserveShortBadge, []), MapBadgeTone.Lost);
 
-        MapBadgeWords.Of(badge, "reserve met").ShouldBe(("reserve met", ""));
+        MapBadgeWords.Of(badge, "too much kept").ShouldBe(("too much kept", ""));
     }
 
     // What a tax base gains reads whole in the box it marks on the narrowest map, in English and in French, up to
@@ -270,13 +270,13 @@ public class MapBadgesTests
     [MemberData(nameof(TaxBaseLimits))]
     public void Badge_aTaxBasesAmountUpToItsLimitInEitherLanguage_readsWholeInTheBoxItMarks(RiverModule module, string english, string french)
     {
-        var (en, fr) = (Seen(Resources, english), Seen(ResxText.French<MapTab>(), french));
+        var (en, fr) = (Seen(module, Resources, english), Seen(module, ResxText.French<MapTab>(), french));
 
         (en, MapGateTextTests.LineWidth(en) <= MapLayout.BadgeRoom(module, icon: false), fr, MapGateTextTests.LineWidth(fr) <= MapLayout.BadgeRoom(module, icon: false))
             .ShouldBe(($"+{english}", true, $"+{french}", true));
 
-        static string Seen(ResxText texts, string amount) =>
-            MapBadgeWords.Of(new MapBadge(MapLinkKind.TaxBase, new MapLabel(MapText.Map, MapTabText.TaxBaseBadge, [amount]), MapBadgeTone.Amount), texts.Get(MapTabText.TaxBaseBadge).ShouldNotBeNull()).Seen;
+        static string Seen(RiverModule module, ResxText texts, string amount) =>
+            MapBadgeWords.Of(new MapBadge(MapLinkKind.TaxBase, new MapLabel(MapText.Map, MapTabText.TaxBaseBadge(module), [amount]), MapBadgeTone.Amount), texts.Get(MapTabText.TaxBaseBadge(module)).ShouldNotBeNull()).Seen;
     }
 
     // The links of the run, the conditions of its year between modules on the map among them, before a

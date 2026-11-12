@@ -28,7 +28,7 @@
     <value>{0} à payer</value>
   </data>
   <data name="Gate_Quotient" xml:space="preserve">
-    <value>quotient</value>
+    <value>imputé</value>
   </data>
   <data name="Gate_QuotientAmount" xml:space="preserve">
     <value>{0}</value>

@@ -60,40 +60,38 @@ internal static class MapAmounts
     private static readonly decimal[] Letters =
         [0.57m, 0.62m, 0.58m, 0.62m, 0.59m, 0.34m, 0.62m, 0.6m, 0.25m, 0.25m, 0.55m, 0.25m, 0.88m, 0.6m, 0.6m, 0.62m, 0.62m, 0.4m, 0.53m, 0.33m, 0.6m, 0.57m, 0.82m, 0.55m, 0.57m, 0.56m];
 
-    // Every line's amount, or a condition's word or two (say gives its words), placed on the map given, which
-    // is the run's, every link of it.
-    public static IReadOnlyList<MapAmount> Of(MapView view, Func<MapLabel, string> say)
+    // Every line's amount, but a condition's, which says none, placed on the map given, which is the run's, every
+    // link of it.
+    public static IReadOnlyList<MapAmount> Of(MapView view)
     {
         var lines = view.Bundles();
-        return lines.Count == 0 ? [] : new Search(view, lines, say).Place();
+        return lines.Count == 0 ? [] : new Search(view, lines).Place();
     }
 
     // The lines whose amount, every other amount where the search placed it, has no place left on its own line
     // free of every other line: the only ones a rule's line may run along, since one along an amount costs the
     // search ten crossings (RuleAlong).
-    internal static IReadOnlyList<MapBundle> Crowded(MapView view, Func<MapLabel, string> say)
+    internal static IReadOnlyList<MapBundle> Crowded(MapView view)
     {
         var lines = view.Bundles();
-        return lines.Count == 0 ? [] : new Search(view, lines, say).Crowded();
+        return lines.Count == 0 ? [] : new Search(view, lines).Crowded();
     }
 
     // What placing a map's amounts takes, counted rather than timed, so a search grown many times over shows
     // the same on any machine.
-    internal static MapAmountsWork Work(MapView view, Func<MapLabel, string> say)
+    internal static MapAmountsWork Work(MapView view)
     {
         var lines = view.Bundles();
         if (lines.Count == 0)
             return new MapAmountsWork(0, 0, 0);
 
-        var search = new Search(view, lines, say);
+        var search = new Search(view, lines);
         search.Place();
         return search.Work;
     }
 
-    // What a line says: its amount, or a condition's word or two.
-    private static string Text(MapBundle line, Func<MapLabel, string> say) => line.Amount is { } amount
-        ? Formats.Euros(amount)
-        : string.Join(", ", line.Links.Select(link => link.State).OfType<MapLabel>().Select(say));
+    // What a line says: its amount; a condition's line, with none, says nothing.
+    private static string Text(MapBundle line) => line.Amount is { } amount ? Formats.Euros(amount) : "";
 
     // The search, in pixels on the map where it is drawn smallest (MapScale.Smallest), as doubles: a drawing's
     // geometry, no money. A place holds wherever the map is drawn larger, since there every box, line and point
@@ -176,12 +174,12 @@ internal static class MapAmounts
         private readonly List<(double From, double To)> _free = [];
         private readonly List<double> _cuts = [];
 
-        public Search(MapView view, IReadOnlyList<MapBundle> lines, Func<MapLabel, string> say)
+        public Search(MapView view, IReadOnlyList<MapBundle> lines)
         {
             _view = view;
             _lines = lines;
             _stepTops = view.PocketLine().Steps.ToDictionary(step => step.Stretch.Route, step => step.Top);
-            _texts = [.. lines.Select(line => Text(line, say))];
+            _texts = [.. lines.Select(Text)];
             _widths = [.. _texts.Select(Width)];
             var scale = MapScale.Smallest(view.Units);
             (_across, _down) = ((double)scale.X, (double)scale.Y);

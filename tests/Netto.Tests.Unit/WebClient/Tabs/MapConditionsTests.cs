@@ -101,23 +101,35 @@ public class MapConditionsTests
         link.Carries.ShouldBe(link.State);
     }
 
-    // The mark a condition leaves on the module it acts on, a badge in its box: which rule and whether it
-    // holds, in a few words with the state its line says (State), and its tone. One that does not hold and
-    // costs the plan something is lost; the royalty that lowers no pay has no effect, nothing being lost by it.
+    // The mark a condition leaves on the module it acts on, a badge in its box, only for what is lost: the rate the
+    // pay, the benefits or a royalty cost the plan, the reserve the pay-out leaves short. Its words read alone in
+    // the narrow box, the Effects list giving the rule. A rule that holds, or a royalty that changes nothing,
+    // leaves none.
     public static TheoryData<YearCondition, string, string> Badges => new()
     {
-        { new PayKeepsReducedRate(ReducedRateCondition.MinimumPayMet, 51_000m, 60_000m, 40_000m), "pay met", nameof(MapBadgeTone.Holds) },
-        { new PayKeepsReducedRate(ReducedRateCondition.TaxableIncomeNotAbovePay, 51_000m, 50_000m, 50_000m), "pay met", nameof(MapBadgeTone.Holds) },
-        { new PayKeepsReducedRate(ReducedRateCondition.MinimumPayNotMet, 51_000m, 40_000m, 60_000m), "rate lost: pay", nameof(MapBadgeTone.Lost) },
-        { new BenefitsWithinShareOfPay(true, 1_714.29m, 51_714.29m, 0.20m), "benefits met", nameof(MapBadgeTone.Holds) },
-        { new BenefitsWithinShareOfPay(false, 1_714.29m, 6_714.29m, 0.20m), "benefits lost", nameof(MapBadgeTone.Lost) },
-        { new RoyaltyLowersPayKeepingReducedRate(40_000m, 50_000m, false), "royalty lowers", nameof(MapBadgeTone.Holds) },
-        { new RoyaltyLowersPayKeepingReducedRate(40_000m, null, true), "royalty lowers", nameof(MapBadgeTone.Holds) },
-        { new RoyaltyLowersPayKeepingReducedRate(51_000m, 51_000m, false), "royalty: none", nameof(MapBadgeTone.NoEffect) },
-        { new RoyaltyLowersPayKeepingReducedRate(null, null, true), "no pay keeps", nameof(MapBadgeTone.Lost) },
-        { new PayOutCoversReserve(40_000m, 40_000m), "reserve met", nameof(MapBadgeTone.Holds) },
-        { new PayOutCoversReserve(40_000.01m, 40_000m), "reserve short", nameof(MapBadgeTone.Lost) },
+        { new PayKeepsReducedRate(ReducedRateCondition.MinimumPayNotMet, 51_000m, 40_000m, 60_000m), "rate lost", nameof(MapBadgeTone.Lost) },
+        { new BenefitsWithinShareOfPay(false, 1_714.29m, 6_714.29m, 0.20m), "rate lost", nameof(MapBadgeTone.Lost) },
+        { new RoyaltyLowersPayKeepingReducedRate(null, null, true), "rate lost", nameof(MapBadgeTone.Lost) },
+        { new PayOutCoversReserve(40_000.01m, 40_000m), "too much kept", nameof(MapBadgeTone.Lost) },
     };
+
+    public static TheoryData<YearCondition> NoBadge => new()
+    {
+        new PayKeepsReducedRate(ReducedRateCondition.MinimumPayMet, 51_000m, 60_000m, 40_000m),
+        new PayKeepsReducedRate(ReducedRateCondition.TaxableIncomeNotAbovePay, 51_000m, 50_000m, 50_000m),
+        new BenefitsWithinShareOfPay(true, 1_714.29m, 51_714.29m, 0.20m),
+        new RoyaltyLowersPayKeepingReducedRate(40_000m, 50_000m, false),
+        new RoyaltyLowersPayKeepingReducedRate(40_000m, null, true),
+        new RoyaltyLowersPayKeepingReducedRate(51_000m, 51_000m, false),
+        new PayOutCoversReserve(40_000m, 40_000m),
+    };
+
+    [Theory]
+    [MemberData(nameof(NoBadge))]
+    public void Link_aRuleThatHoldsOrChangesNothing_leavesNoBadge(YearCondition condition)
+    {
+        MapConditions.Link(condition).Badge.ShouldBeNull();
+    }
 
     [Theory]
     [MemberData(nameof(Badges))]
@@ -130,8 +142,8 @@ public class MapConditionsTests
 
     public static TheoryData<YearCondition> Badged => new(Badges.Select(row => row.Data.Item1));
 
-    // A badge names its rule in words of its own, in English and in French, so no two badges say the same, and
-    // its icon says whether the rule holds (MapBadgeStyle), its words short enough to read whole in its box
+    // A badge says what is lost in words of its own, in English and in French, none of them a bare « yes » or
+    // « no », its icon beside it (MapBadgeStyle), its words short enough to read whole in its box
     // (MapBadgesTests), never the line's whole state.
     [Fact]
     public void Link_everyConditionsBadge_hasWordsOfItsOwnAndAnIcon()
@@ -146,7 +158,7 @@ public class MapConditionsTests
 
     public static TheoryData<YearCondition> OfficeRules => new(new YearCondition[] { new NoOfficeAllowanceBesideRent(1_380m, 0m), new NoOfficeAllowanceBesideRent(0m, 1_938.44m) });
 
-    // The office rule always holds: it leaves no badge, its line saying it is kept.
+    // The office rule always holds: it leaves no badge.
     [Theory]
     [MemberData(nameof(OfficeRules))]
     public void Link_theOfficeRule_leavesNoBadge(YearCondition condition)

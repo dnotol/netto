@@ -166,7 +166,7 @@ public class MapTabTests
         var badges = ButtonBadges(html);
         badges.ShouldSatisfyAllConditions(
             () => badges.Where(badge => badge.Tone == "amount").Select(badge => (badge.Module, badge.Seen.StartsWith('+'), badge.Seen.Contains(' ', StringComparison.Ordinal), badge.Heard))
-                .ShouldBe([("director-pay", true, false, " to tax base"), ("corporate-tax", true, false, " to tax base")]),
+                .ShouldBe([("director-pay", true, false, " added to taxed income"), ("corporate-tax", true, false, " added back as disallowed expenses")]),
             () => badges.Where(badge => badge.Tone != "amount").ShouldAllBe(badge => badge.Heard.Length == 0 && badge.Seen.Length > 0));
     }
 
@@ -359,7 +359,7 @@ public class MapTabTests
 
         var map = Map(await RenderTabAsync(Full));
 
-        Placed(map).ShouldBe(MapAmounts.Of(view, MapAmountsTests.Say).Where(amount => MapLinkStyle.IsMoney(amount.Bundle.Kind))
+        Placed(map).ShouldBe(MapAmounts.Of(view).Where(amount => MapLinkStyle.IsMoney(amount.Bundle.Kind))
             .Select(amount => (amount.Bundle.Kind.ToString(), Style(amount), "true", amount.Text)), ignoreOrder: true);
     }
 
@@ -395,7 +395,7 @@ public class MapTabTests
     public async Task Tab_aModuleChosen_keepsItsOwnLinesAmountsWhereTheyWereAndNoWords()
     {
         var own = MapView.From(Full, Full.Run(), MapNames.English).Bundles().Where(bundle => bundle.Touches(RiverModule.Car) && bundle.SaysAmount).Select(bundle => bundle.Kind.ToString()).ToList();
-        var placed = MapAmounts.Of(MapView.From(Full, Full.Run(), MapNames.English), MapAmountsTests.Say).Select(amount => (amount.Bundle.Kind.ToString(), Style(amount), "true", amount.Text)).ToList();
+        var placed = MapAmounts.Of(MapView.From(Full, Full.Run(), MapNames.English)).Select(amount => (amount.Bundle.Kind.ToString(), Style(amount), "true", amount.Text)).ToList();
 
         var map = Map(await RenderTabAsync(Full, MapChoice.Of(RiverModule.Car)));
 
@@ -558,7 +558,7 @@ public class MapTabTests
 
         var quotient = Formats.Euros(MapGates.Of(Full.SkipCompany(), Full.SkipCompany().Run()).For(RiverModule.Household)[1].Amount!.Value);
         Buttons(html).Select(button => (button.Module, button.Name, button.Skipped)).ShouldBe(
-            [("company-year", "Company year skipped", true), ("director-pay", "Director pay", false), ("household", $"Household quotient {quotient}", false)]);
+            [("company-year", "Company year skipped", true), ("director-pay", "Director pay", false), ("household", $"Household imputed {quotient}", false)]);
     }
 
     // A skipped Company year chosen: its card goes beside the map, its box is marked chosen, and nothing is

@@ -6,9 +6,9 @@ using Shouldly;
 namespace Netto.Tests.WebClient.Tabs;
 
 // The conditions on the Map tab as a viewer meets them, drawn without a browser (MapRendering): every
-// lever with the costly car, whose benefit is beyond 20% of the pay. Each is a dashed line that says in a
-// word or two on the map, on its line, whether it holds, never by a colour, and a badge on the module it acts
-// on (MapTabTests); its sentence is on no link: the cards say it with their figures (operator, 2026-10-28).
+// lever with the costly car, whose benefit is beyond 20% of the pay. Each is a dashed line that says no word
+// on the map, its rule and state being the Effects list's, and a badge on the module it acts on where it is lost
+// (MapTabTests); its sentence is on no link: the cards say it with their figures (operator, 2026-10-28).
 public class MapConditionsRenderingTests
 {
     private static readonly RiverInputs River = MapViewConditionsTests.CostlyCar;
@@ -34,17 +34,18 @@ public class MapConditionsRenderingTests
         (ConditionWords(html).Count, html.Contains("data-badge-kind=\"Condition\"", StringComparison.Ordinal)).ShouldBe((0, true));
     }
 
-    // Its module chosen, the line still says its word or two on the map.
+    // Its module chosen, the line says no word on the map: its rule and state are the Effects list's and its title's.
     [Fact]
-    public async Task MapTab_theCarChosen_saysItsConditionInAWordOnTheMap()
+    public async Task MapTab_theCarChosen_saysNoWordOnTheConditionsLine()
     {
         var html = await MapRendering.RenderTabAsync(River, MapChoice.Of(RiverModule.Car));
 
         var map = Regex.Match(html, "<div class=\"map\".*?<div class=\"map-tab__side\"", RegexOptions.Singleline).Value;
-        ConditionWords(map).ShouldContain("lost");
+        map.Contains("data-link-kind=\"Condition\"", StringComparison.Ordinal).ShouldBeTrue();
+        ConditionWords(map).ShouldBeEmpty();
     }
 
     // The words on the map of every condition's line, each trimmed.
     private static List<string> ConditionWords(string html) =>
-        [.. Regex.Matches(html, "<span class=\"map-amount map-amount--state\" data-link-kind=\"Condition\"[^>]*>([^<]*)</span>").Select(line => line.Groups[1].Value.Trim())];
+        [.. Regex.Matches(html, "<span class=\"map-amount\" data-link-kind=\"Condition\"[^>]*>([^<]*)</span>").Select(line => line.Groups[1].Value.Trim())];
 }

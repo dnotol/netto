@@ -75,7 +75,6 @@ Fixed once; every file that names one uses it word for word (the card, the map, 
 | a bill (in the Chamber) | un projet de loi |
 | the picture of the plan (the map or the Sankey) · Map · Sankey | l'image du plan · Carte · Sankey |
 | a band (of the Sankey) | une bande |
-| net (a bucket's amount after what came back into it) | net |
 | profits kept from earlier years, after tax (the Sankey's node and the Dividend card's field) | réserves taxées des années précédentes |
 
 # Official terms
@@ -134,7 +133,7 @@ The French is the administration's wording; the source is the filed document in 
 | single parent | isolé avec enfants à charge | avis d'indexation 2027 art. 133 |
 | refundable tax credit for children | le crédit d'impôt remboursable pour enfants à charge | art. 134 §3 |
 | tax credit for low earned income | le crédit d'impôt pour bas revenus d'activités | circulaire 2018; art. 289ter |
-| marital quotient · income imputed to the partner | le quotient conjugal · le revenu imputé au conjoint | avis d'indexation 2027 art. 87; formule-clé n° 11 |
+| marital quotient · income imputed to the partner (the partner's box on the map says only « imputé ») | le quotient conjugal · le revenu imputé au conjoint | avis d'indexation 2027 art. 87; formule-clé n° 11 |
 | taxed jointly · taxed separately | l'imposition commune · imposé isolément | art. 134 |
 | spouse or legal cohabitant · partner | le conjoint ou le cohabitant légal · le conjoint | avis d'indexation 2026 art. 126; formule-clé |
 | State tax · autonomy factor | l'impôt État · le facteur d'autonomie | AR facteur d'autonomie 2017 |

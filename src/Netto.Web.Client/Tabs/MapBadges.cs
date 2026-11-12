@@ -28,7 +28,7 @@ internal static class MapBadges
         {
             var gains = MapBundle.Sum(reached);
             if (reached.Key is { } taxed && gains != 0m)
-                Add(badges, taxed, new MapBadge(MapLinkKind.TaxBase, new MapLabel(MapText.Map, MapTabText.TaxBaseBadge, [Formats.Euros(gains)]), MapBadgeTone.Amount));
+                Add(badges, taxed, new MapBadge(MapLinkKind.TaxBase, new MapLabel(MapText.Map, MapTabText.TaxBaseBadge(taxed), [Formats.Euros(gains)]), MapBadgeTone.Amount));
         }
 
         return badges.ToDictionary(module => module.Key, module => (IReadOnlyList<MapBadge>)module.Value);
@@ -42,7 +42,8 @@ internal static class MapBadges
     {
         if (!badges.TryGetValue(module, out var list))
             badges[module] = list = [];
-        list.Add(badge);
+        if (!list.Contains(badge))
+            list.Add(badge);
     }
 }
 
@@ -64,30 +65,21 @@ internal static class MapBadgeWords
     }
 }
 
-// How a badge is drawn: a condition that holds muted with a check; one that does not hold but loses
-// nothing, the royalty lowering no pay, muted with a dash; one that does not hold and costs the plan its
-// rate or its reserve in the error colour, outlined and with its icon, its words saying it too, never the
-// colour alone; what a tax base gains, an amount, outlined dotted as its line is.
+// How a badge is drawn: what is lost in the error colour, outlined and with its icon, its words saying it too,
+// never the colour alone; what a tax base gains, an amount, outlined dotted as its line is.
 internal enum MapBadgeTone
 {
-    Holds,
-
-    NoEffect,
-
     Lost,
 
     Amount,
 }
 
-// How each tone of badge is drawn, beside its words: the class the stylesheet draws it by, and its icon, a
-// check for a rule that holds, a dash for the royalty lowering no pay, an error mark for a rule lost, none
-// for an amount.
+// How each tone of badge is drawn, beside its words: the class the stylesheet draws it by, and its icon, an error
+// mark for what is lost, none for an amount.
 internal static class MapBadgeStyle
 {
     public static string Class(MapBadgeTone tone) => tone switch
     {
-        MapBadgeTone.Holds => "holds",
-        MapBadgeTone.NoEffect => "no-effect",
         MapBadgeTone.Lost => "lost",
         MapBadgeTone.Amount => "amount",
         _ => throw new ArgumentOutOfRangeException(nameof(tone), tone, "A tone of badge the map has no style for."),
@@ -95,8 +87,6 @@ internal static class MapBadgeStyle
 
     public static string? Icon(MapBadgeTone tone) => tone switch
     {
-        MapBadgeTone.Holds => Icons.Material.Rounded.Check,
-        MapBadgeTone.NoEffect => Icons.Material.Rounded.Remove,
         MapBadgeTone.Lost => Icons.Material.Rounded.ErrorOutline,
         MapBadgeTone.Amount => null,
         _ => throw new ArgumentOutOfRangeException(nameof(tone), tone, "A tone of badge the map has no style for."),

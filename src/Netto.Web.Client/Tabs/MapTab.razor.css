@@ -304,11 +304,6 @@
     color: var(--netto-gold);
 }
 
-/* Whether a condition holds, in a word or two. */
-.map-amount--state {
-    color: var(--netto-text-muted);
-}
-
 /* A column of the map, by whose money it holds: the director's and the company's framed in a dashed line over
    a wash, the ways across between them unframed, each labelled over the top row's boxes, in the room the row
    keeps over them (MapLayout.LabelRem, LabelTopRem), under every line and box, taking no pointer. */

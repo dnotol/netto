@@ -108,6 +108,18 @@ public class MapAmountsTests
             () => amount.ShouldContain("white-space: nowrap;"));
     }
 
+    // A condition's line says no word: « yes », « lowers » or « covered » alone on a dashed line reads as nothing, the
+    // rule and its state being said whole by the Effects list beside the card and by the line's title.
+    [Theory]
+    [MemberData(nameof(Plans))]
+    public void Of_aConditionsLine_saysNoWord(string plan)
+    {
+        var (view, amounts) = Placed(plan);
+
+        (view.Bundles().Where(line => line.Kind == MapLinkKind.Condition).Any(line => line.SaysAmount), amounts.Any(amount => amount.Bundle.Kind == MapLinkKind.Condition))
+            .ShouldBe((false, false));
+    }
+
     // The map's chain row is drawn at most 4.6rem high, the largest size the amounts are held at here.
     [Fact]
     public void MapTabCss_drawsAChainRowAtMostTheLargestTheAmountsAreHeldAt()
@@ -146,7 +158,7 @@ public class MapAmountsTests
     {
         using var french = InLanguage.French();
         var view = View(plan);
-        var amounts = MapAmounts.Of(view, SayInFrench);
+        var amounts = MapAmounts.Of(view);
         var saying = view.Bundles().Where(line => line.SaysAmount).ToList();
 
         amounts.ShouldSatisfyAllConditions(
@@ -154,7 +166,7 @@ public class MapAmountsTests
             () => amounts.Where(amount => !OnItsStretch(amount)).Select(Name).ShouldBeEmpty(),
             () => Sizes(view).SelectMany(scale => Faults(view, amounts, scale)).ShouldBeEmpty(),
             () => Sizes(view).SelectMany(scale => Along(view, amounts, scale)).Select(Name).ShouldBeEmpty(),
-            () => MapAmounts.Crowded(view, SayInFrench).Select(Name).ShouldBeEmpty());
+            () => MapAmounts.Crowded(view).Select(Name).ShouldBeEmpty());
     }
 
     public static TheoryData<string> FrenchPlans() => new(Plans().Select(row => row.Data).Where(plan => plan != LowPay));
@@ -179,13 +191,13 @@ public class MapAmountsTests
     {
         using var french = InLanguage.French();
         var view = View(LowPay);
-        var amounts = MapAmounts.Of(view, SayInFrench);
+        var amounts = MapAmounts.Of(view);
 
         var undrawn = view.Bundles().Where(line => line.SaysAmount && !amounts.Any(amount => ReferenceEquals(amount.Bundle.Route, line.Route))).Select(Name);
 
         amounts.ShouldSatisfyAllConditions(
             () => undrawn.ShouldBe(LowPayTotals, ignoreOrder: true),
-            () => MapAmounts.Crowded(view, SayInFrench).Select(Name).ShouldBe(LowPayTotals, ignoreOrder: true),
+            () => MapAmounts.Crowded(view).Select(Name).ShouldBe(LowPayTotals, ignoreOrder: true),
             () => amounts.Where(amount => !OnItsStretch(amount)).Select(Name).ShouldBeEmpty(),
             () => Sizes(view).SelectMany(scale => Faults(view, amounts, scale)).ShouldBeEmpty(),
             () => Sizes(view).SelectMany(scale => Along(view, amounts, scale)).Select(Name).ShouldBeEmpty());
@@ -201,7 +213,7 @@ public class MapAmountsTests
         var (scale, steps) = (view.Scale, view.PocketLine().Steps);
         var pay = MapArea.Of(view.Modules.Single(node => node.End.Module == RiverModule.DirectorPay).Slot, scale);
 
-        var totals = MapAmounts.Of(view, Say).Where(amount => amount.Bundle.StretchOfThePocketLine).ToList();
+        var totals = MapAmounts.Of(view).Where(amount => amount.Bundle.StretchOfThePocketLine).ToList();
 
         decimal Under(MapAmount total) => total.Area(scale).Top - steps.Single(step => ReferenceEquals(step.Stretch.Route, total.Bundle.Route)).Top * scale.Y;
         totals.ShouldSatisfyAllConditions(
@@ -239,8 +251,7 @@ public class MapAmountsTests
 
     private static string SayInFrench(MapLabel label) => ResxText.French<MapTab>().Format(label.Key, [.. label.Args]);
 
-    // Every line says its amount on it, a condition its word or two, but those whose amount the map says
-    // elsewhere: a line joining the pocket line, its gate's box or the total under it saying it; the pay, its
+    // Every line says its amount on it but those whose amount the map says elsewhere, a condition's line having none: a line joining the pocket line, its gate's box or the total under it saying it; the pay, its
     // pill saying it; what Corporate tax adds back, its badge saying it; money passed on into a gate whose box
     // says that very amount, to the cent: a lever's share off the company's line, the split's royalty, what
     // Corporate tax passes the dividend; and a stretch of the pocket line out of a point no line joins, where money
@@ -289,7 +300,8 @@ public class MapAmountsTests
     // pay's pill, Corporate tax's badge, the box of the gate it passes money into saying that amount; or, a
     // stretch of the pocket line, says none out of a point no line joins or below nothing.
     private static bool SaidElsewhere(MapView view, MapBundle line) =>
-        (line.To.PocketLine is not null && line.From.PocketLine is null)
+        line.Kind == MapLinkKind.Condition
+        || (line.To.PocketLine is not null && line.From.PocketLine is null)
         || (line.From.PocketLine is not null && (line.To.PocketLine is not null || line.To == MapEnd.InBucket("pocket"))
             && (line.Amount < 0m || !view.Bundles().Any(other => other.To == line.From && other.From.PocketLine is null)))
 
@@ -335,7 +347,7 @@ public class MapAmountsTests
 
         along.ShouldSatisfyAllConditions(
             () => along.Select(Name).ShouldBeEmpty(),
-            () => MapAmounts.Crowded(view, Say).Select(Name).ShouldBeEmpty());
+            () => MapAmounts.Crowded(view).Select(Name).ShouldBeEmpty());
     }
 
     // Of the places on its own line, an amount takes one no other line crosses where there is one: a line
@@ -351,7 +363,7 @@ public class MapAmountsTests
         var view = new MapView([], [], 10m) { Links = links };
         var scale = MapScale.Smallest(view.Units);
 
-        var amounts = MapAmounts.Of(view, Say);
+        var amounts = MapAmounts.Of(view);
 
         amounts.ShouldSatisfyAllConditions(
             () => amounts.Count.ShouldBe(2),
@@ -372,7 +384,7 @@ public class MapAmountsTests
     {
         var view = MapView.From(MapLinksTests.Full, MapLinksTests.Full.Run(), MapNames.Drawn);
 
-        var work = MapAmounts.Work(view, Say);
+        var work = MapAmounts.Work(view);
 
         work.ShouldSatisfyAllConditions(
             () => work.Checks.ShouldBeLessThanOrEqualTo(19_000),
@@ -387,7 +399,7 @@ public class MapAmountsTests
     {
         var view = new MapView([], [], 10m) { Links = [Money(RiverModule.DirectorPay, new MapRoute([new MapPoint(10m, 50m), new MapPoint(90m, 50m)])) with { Kind = (MapLinkKind)99 }] };
 
-        Should.Throw<ArgumentOutOfRangeException>(() => MapAmounts.Of(view, Say));
+        Should.Throw<ArgumentOutOfRangeException>(() => MapAmounts.Of(view));
     }
 
     // A refused amount leaves the map no line, and so no amount.
@@ -396,7 +408,7 @@ public class MapAmountsTests
     {
         var river = MapLinksTests.Full.WithReserve(-1m);
 
-        MapAmounts.Of(MapView.From(river, river.Run(), MapNames.Drawn), Say).ShouldBeEmpty();
+        MapAmounts.Of(MapView.From(river, river.Run(), MapNames.Drawn)).ShouldBeEmpty();
     }
 
     // The plans the amounts are held on: every one MapLayoutTests routes, by its levers and those it leaves
@@ -416,7 +428,7 @@ public class MapAmountsTests
     internal static (MapView View, IReadOnlyList<MapAmount> Amounts) Placed(string plan)
     {
         var view = View(plan);
-        return (view, MapAmounts.Of(view, Say));
+        return (view, MapAmounts.Of(view));
     }
 
     // A plan's map, by its name among the plans the amounts are held on.

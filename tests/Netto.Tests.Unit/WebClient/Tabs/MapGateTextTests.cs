@@ -19,7 +19,7 @@ public class MapGateTextTests
         { MapGateText.Untaxed, "untaxed" },
         { MapGateText.Benefit, "{0} benefit" },
         { MapGateText.YouPay, "you pay {0}" },
-        { MapGateText.Quotient, "quotient" },
+        { MapGateText.Quotient, "imputed" },
         { MapGateText.QuotientAmount, "{0}" },
         { MapGateText.Pay(withContributions: false), "Pay · {0}" },
         { MapGateText.Pay(withContributions: true), "Pay + contributions {0}" },

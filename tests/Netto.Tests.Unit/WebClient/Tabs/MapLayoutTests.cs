@@ -49,13 +49,14 @@ public class MapLayoutTests
     public static TheoryData<int> EveryDrainEnds => new(Enumerable.Range(0, DrainEnds.Length));
 
     // The most badges a module's box can hold, which the routes here are worked out with, so its box is the
-    // tallest the map draws: a badge for each condition acting on it (Conditions, the office rule's
-    // leaving none) and one for what its tax base gains, Corporate tax's from the vouchers and the car,
+    // tallest the map draws: a badge for each condition lost acting on it (Conditions: the office rule, a rule
+    // that holds and a royalty lowering the pay keeping the rate leave none, the pay's and the benefits' loss of the
+    // rate being one badge) and one for what its tax base gains, Corporate tax's from the vouchers and the car,
     // Director pay's from the car's benefit. MapBadgesTests holds every plan within it.
     internal static readonly IReadOnlyDictionary<RiverModule, int> MostBadges = new Dictionary<RiverModule, int>
     {
         [RiverModule.Split] = 2,
-        [RiverModule.CorporateTax] = 3,
+        [RiverModule.CorporateTax] = 2,
         [RiverModule.DirectorPay] = 1,
     };
 
@@ -493,8 +494,7 @@ public class MapLayoutTests
         using var french = inFrench ? InLanguage.French() : null;
         var river = MapRendering.River("the company paying the contributions");
         var view = MapView.From(river, river.Run(), inFrench ? MapNames.French : MapNames.English);
-        var texts = inFrench ? ResxText.French<MapTab>() : ResxText.For<MapTab>();
-        var amounts = MapAmounts.Of(view, label => texts.Format(label.Key, [.. label.Args]));
+        var amounts = MapAmounts.Of(view);
 
         var pill = view.Pill.ShouldNotBeNull();
 
@@ -789,7 +789,7 @@ public class MapLayoutTests
     // allowances' 1.75, theirs on two lines, the car's 1.76, the partner's box beside it 0.96 high for its name
     // and the marital quotient's two lines, with the room round it for the quotient's amount and arrowhead; the
     // split's 1.3, a badge; the royalty's 1.6; Corporate tax's 1.9, three badges, which keeps 0.25 under its box;
-    // the band's four rows 1.35, so the buckets' row 0.7 and 1.1, 14.03 chain rows. The example: 1, the split's
+    // the band's four rows 1.35, so the buckets' row 0.7 and 1.1, 14.03 chain rows before the badges of a rule that holds went (2026-11-12), 13.66 now. The example: 1, the split's
     // 1, the royalty's 1.6, Corporate tax's 1.6, the dividend's gate 0.96 keeping 0.32 under it, the buckets'
     // 0.7 and 0.68, 6.58. The company skipped: Company year's row 1.07, its box 0.57 for its name and the state it
     // says under it, Director pay's 1, the buckets' 0.7 and 0.4, 3.17; with the partner in the plan, their row of
@@ -1289,7 +1289,7 @@ public class MapLayoutTests
     // Plans by name, each with the map's height in chain rows the band leaves it.
     public static TheoryData<string, decimal> BandHeights() => new()
     {
-        { "every lever", 14.03m },
+        { "every lever", 13.66m },
         { "the example", 6.58m },
         { "the company skipped", 3.17m },
         { "the company skipped, the partner in the plan", 4.93m },

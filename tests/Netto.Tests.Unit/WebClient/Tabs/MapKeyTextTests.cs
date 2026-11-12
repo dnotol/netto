@@ -48,7 +48,7 @@ public class MapKeyTextTests
             "money that ends in one of the bar's buckets, its line running into it, or that comes back out of a bucket, its line then ending in an arrowhead. The thicker the line, the more money.",
             "what reaches you, in gold: one line down your column into your pocket, saying after each line joining it what has reached you so far.",
             "what changes the amount a tax is worked out on without moving money, a benefit taxed with the pay, what Corporate tax adds back, the marital quotient. Drawn for the module you choose; the boxes say what they add.",
-            "a condition one module sets on another. Drawn for the module you choose; the boxes say whether it holds.",
+            "a condition one module sets on another. Drawn for the module you choose, its rule and whether it holds listed beside the card; a box says it only where it is lost.",
         ]);
     }
 
