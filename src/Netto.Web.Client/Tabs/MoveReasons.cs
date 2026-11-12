@@ -22,10 +22,16 @@ internal static class MoveReasons
             _ => [],
         };
 
-        return [What(move.Move, before, after), .. rate];
+        return [What(move.Move, move.Gain, before, after), .. rate];
     }
 
-    private static MoveReason What(Move move, YearResult before, YearResult after) => move switch
+    // Whether the kind's sentence says a figure the gain beside it is not: what reaches the pocket in vouchers or
+    // rent, or the surcharge a payment takes off, where the gain is what is left of it in the pocket
+    // (What, Bridged). The other kinds say no figure of the pocket, so their gain is read by its own label.
+    public static bool IsBridged(MoveReasonKind kind) => kind is MoveReasonKind.Vouchers or MoveReasonKind.VouchersNotDeducted
+        or MoveReasonKind.Rent or MoveReasonKind.CompanySurcharge or MoveReasonKind.CompanySurchargeCancelled;
+
+    private static MoveReason What(Move move, decimal gain, YearResult before, YearResult after) => move switch
     {
         PayMove => before.Copyright.Royalty == after.Copyright.Royalty
             ? new MoveReason(MoveReasonKind.Pay,
@@ -35,17 +41,27 @@ internal static class MoveReasons
                 before.DirectorPay.GrossPay, after.DirectorPay.GrossPay, before.Copyright.Royalty, after.Copyright.Royalty,
                 before.Dividend.Dividend, after.Dividend.Dividend,
             ]),
-        CompanyAdvancePaymentMove => Surcharge(before.AdvancePayments.Surcharge, after.AdvancePayments.Surcharge,
-            MoveReasonKind.CompanySurcharge, MoveReasonKind.CompanySurchargeCancelled),
+        CompanyAdvancePaymentMove => Bridged(Surcharge(before.AdvancePayments.Surcharge, after.AdvancePayments.Surcharge,
+            MoveReasonKind.CompanySurcharge, MoveReasonKind.CompanySurchargeCancelled), before.AdvancePayments.Surcharge - after.AdvancePayments.Surcharge, gain),
         DirectorAdvancePaymentMove => Surcharge(before.DirectorPay.AdvancePayments.Surcharge, after.DirectorPay.AdvancePayments.Surcharge,
             MoveReasonKind.DirectorSurcharge, MoveReasonKind.DirectorSurchargeCancelled),
-        EcoVouchersMove => Vouchers(after.Vouchers.EcoVouchers - before.Vouchers.EcoVouchers, before, after),
-        SportCultureVouchersMove => Vouchers(after.Vouchers.SportCultureVouchers - before.Vouchers.SportCultureVouchers, before, after),
-        RentMove => new MoveReason(MoveReasonKind.Rent, [before.Rent.Rent, after.Rent.Rent, AfterTax(before), AfterTax(after)]),
+        EcoVouchersMove => Bridged(Vouchers(after.Vouchers.EcoVouchers - before.Vouchers.EcoVouchers, before, after),
+            after.Vouchers.EcoVouchers - before.Vouchers.EcoVouchers, gain),
+        SportCultureVouchersMove => Bridged(Vouchers(after.Vouchers.SportCultureVouchers - before.Vouchers.SportCultureVouchers, before, after),
+            after.Vouchers.SportCultureVouchers - before.Vouchers.SportCultureVouchers, gain),
+        RentMove => Bridged(new MoveReason(MoveReasonKind.Rent, [before.Rent.Rent, after.Rent.Rent, AfterTax(before), AfterTax(after)]),
+            AfterTax(after) - AfterTax(before), gain),
         CopyrightFollowsPayMove => new MoveReason(MoveReasonKind.CopyrightFollowsPay,
             [before.Copyright.Royalty, after.Copyright.Royalty, before.DirectorPay.TaxedApartTax.Total, after.DirectorPay.TaxedApartTax.Total]),
         _ => throw new ArgumentOutOfRangeException(nameof(move), move, "A move the tab has no reason for."),
     };
+
+    // The sentence with what its gain leaves out of the figure it says: the gain less that figure, the rest, and
+    // the gain itself, appended to its amounts, the rest as a size with its direction in Rest. A gain equal to the
+    // figure has nothing to bridge. The one difference of two figures the engine gave: no rule of its own.
+    private static MoveReason Bridged(MoveReason reason, decimal said, decimal gain) => gain - said is var rest && rest == 0m
+        ? reason
+        : reason with { Amounts = [.. reason.Amounts, Math.Abs(rest), gain], Rest = rest < 0m ? MoveReasonRest.Less : MoveReasonRest.More };
 
     // A payment that leaves no surcharge cancels the one there was; otherwise the surcharge before and after.
     private static MoveReason Surcharge(decimal before, decimal after, MoveReasonKind left, MoveReasonKind cancelled) =>
@@ -62,8 +78,24 @@ internal static class MoveReasons
 }
 
 // One sentence of a move's line: what it says (OptimisationTabText.Why), and its amounts, in euros, in the
-// order it names them.
-internal sealed record MoveReason(MoveReasonKind Kind, IReadOnlyList<decimal> Amounts);
+// order it names them; a sentence that says a figure its gain is not ends with the rest and the gain.
+internal sealed record MoveReason(MoveReasonKind Kind, IReadOnlyList<decimal> Amounts)
+{
+    // How the gain stands to the figure the sentence says: none (the same, or a kind that says no pocket figure),
+    // the rest less than it or more than it.
+    public MoveReasonRest Rest { get; init; } = MoveReasonRest.None;
+}
+
+internal enum MoveReasonRest
+{
+    None,
+
+    // The gain is less than the figure: the rest of the pocket gives up the difference.
+    Less,
+
+    // The gain is more than the figure: the rest of the pocket adds the difference.
+    More,
+}
 
 internal enum MoveReasonKind
 {

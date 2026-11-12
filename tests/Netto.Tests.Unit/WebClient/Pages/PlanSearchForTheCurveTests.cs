@@ -9,11 +9,10 @@ namespace Netto.Tests.WebClient.Pages;
 
 // The plan page as the browser runs it (LivePlan, the paint held: none of this is about the moves' search),
 // on the Optimisation tab: the page hands the tab the search across every pay it runs for the river, from
-// which the tab names the river's own best pay under the pay's move (PayNote, OptimisationTabPayNoteTests).
-// The tab runs no search of its own, so what it names is the river's as the page holds it, and the page
-// searches again only when an input other than the pay changes (RiverInputs.SameBesidesPay). What the tab
-// draws of it is OptimisationTabPayNoteTests'; it is read here from the parameters the page handed it.
-public class PlanBestPayNoteTests
+// which the pay curve draws (PayCurveTests). The tab runs no search of its own, so what it draws is the river's
+// as the page holds it, and the page searches again only when an input other than the pay changes
+// (RiverInputs.SameBesidesPay); it is read here from the parameters the page handed the tab.
+public class PlanSearchForTheCurveTests
 {
     private static readonly RiverInputs Today = RiverInputs.Example.WithRevenue(168_000m).WithRunningCosts(20_000m);
 
@@ -32,8 +31,7 @@ public class PlanBestPayNoteTests
     }
 
     // A fact of the river changes from the tab, as « Apply » changes the river: the tab is handed the
-    // search for the river as it is now, not the one found before. The split names 51,000 for the royalty
-    // (PayNoteTests).
+    // search for the river as it is now, not the one found before. The split names 51,000 for the royalty.
     [Fact]
     public async Task Plan_riverChangedFromTheTab_handsTheTabTheSearchOfTheChangedRiver()
     {

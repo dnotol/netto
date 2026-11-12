@@ -46,16 +46,13 @@
     <value>Louer à la société le bureau de votre logement pour {0} par an</value>
   </data>
   <data name="Gain" xml:space="preserve">
-    <value>{0} de plus</value>
+    <value>{0} de plus dans votre poche</value>
   </data>
   <data name="Apply" xml:space="preserve">
     <value>Appliquer</value>
   </data>
   <data name="ApplyLabel" xml:space="preserve">
     <value>Appliquer&#160;: {0}</value>
-  </data>
-  <data name="BestPay" xml:space="preserve">
-    <value>Pour le plan affiché tel qu'il est, la meilleure rémunération est {0}, pas celle-ci.</value>
   </data>
   <data name="Move_CopyrightFollowsPay" xml:space="preserve">
     <value>Aligner vos droits d'auteur sur votre rémunération, au montant qu'une décision anticipée accepte pour {0} de votre temps consacré à la création, votre rémunération restant dans ce que la société peut payer à côté</value>
@@ -95,6 +92,36 @@
   </data>
   <data name="Why_CopyrightFollowsPay" xml:space="preserve">
     <value>Vos droits d'auteur passent de {0} à {1}, et l'impôt distinct qui les frappe, à part de votre rémunération, de {2} à {3}.</value>
+  </data>
+  <data name="Why_Vouchers_RestLess" xml:space="preserve">
+    <value>Vous recevez {0} de plus sans impôt, {2} de moins du reste&#160;: {3} de plus dans votre poche. La société en déduit {1}.</value>
+  </data>
+  <data name="Why_Vouchers_RestMore" xml:space="preserve">
+    <value>Vous recevez {0} de plus sans impôt, {2} de plus du reste&#160;: {3} de plus dans votre poche. La société en déduit {1}.</value>
+  </data>
+  <data name="Why_VouchersNotDeducted_RestLess" xml:space="preserve">
+    <value>Vous recevez {0} de plus sans impôt, {1} de moins du reste&#160;: {2} de plus dans votre poche. La société ne déduit aucun de ces chèques.</value>
+  </data>
+  <data name="Why_VouchersNotDeducted_RestMore" xml:space="preserve">
+    <value>Vous recevez {0} de plus sans impôt, {1} de plus du reste&#160;: {2} de plus dans votre poche. La société ne déduit aucun de ces chèques.</value>
+  </data>
+  <data name="Why_Rent_RestLess" xml:space="preserve">
+    <value>Le loyer que la société vous paie passe de {0} à {1}, et ce qui vous en revient après impôt de {2} à {3}, {4} de moins du reste&#160;: {5} de plus dans votre poche.</value>
+  </data>
+  <data name="Why_Rent_RestMore" xml:space="preserve">
+    <value>Le loyer que la société vous paie passe de {0} à {1}, et ce qui vous en revient après impôt de {2} à {3}, {4} de plus du reste&#160;: {5} de plus dans votre poche.</value>
+  </data>
+  <data name="Why_CompanySurchargeCancelled_RestLess" xml:space="preserve">
+    <value>Cet ajustement supprime la majoration de {0} sur l'impôt des sociétés, {1} de moins une fois le précompte mobilier sur le dividende payé&#160;: {2} de plus dans votre poche.</value>
+  </data>
+  <data name="Why_CompanySurchargeCancelled_RestMore" xml:space="preserve">
+    <value>Cet ajustement supprime la majoration de {0} sur l'impôt des sociétés, {1} de plus du reste&#160;: {2} de plus dans votre poche.</value>
+  </data>
+  <data name="Why_CompanySurcharge_RestLess" xml:space="preserve">
+    <value>La majoration sur l'impôt des sociétés passe de {0} à {1}, {2} de moins une fois le précompte mobilier sur le dividende payé&#160;: {3} de plus dans votre poche.</value>
+  </data>
+  <data name="Why_CompanySurcharge_RestMore" xml:space="preserve">
+    <value>La majoration sur l'impôt des sociétés passe de {0} à {1}, {2} de plus du reste&#160;: {3} de plus dans votre poche.</value>
   </data>
   <data name="Link_director-pay" xml:space="preserve">
     <value>Voir sur la carte Rémunération de dirigeant</value>

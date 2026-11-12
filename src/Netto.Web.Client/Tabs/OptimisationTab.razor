@@ -16,9 +16,9 @@
    unasked. Under the moves, « Tune your pay » draws the curve of the pocket at every pay (PayCurve): a click on it
    or « move to the best pay » sets the plan's own pay, said as such, and is no move applied. Applied, the river is a plan
    the moves were not searched for, so the tab says it looks for them again, and the focus goes to that line;
-   no live region says it, nor that they are found. Under the pay's move a note names the river's own best
-   pay, the curve's below, whenever the river at that pay is not at its best (PayNote), from the search the
-   page hands the tab. The page finds the moves, once per plan and date (MovesSource), after it has painted;
+   no live region says it, nor that they are found. The moves are stacked, so a move's pay is the plan
+   with every move on top, and the curve below, headed as the plan on screen's own, is the pay of the plan as it
+   stands: no move carries a note setting the two against each other. The page finds the moves, once per plan and date (MovesSource), after it has painted;
    until then the tab says it is looking for them, and nothing else. While Netto cannot run the plan, the tab
    says why, and nothing else.
 
@@ -67,16 +67,11 @@
             @foreach (var (move, index) in _view.Moves.Select((move, index) => (move, index)))
             {
                 var link = MoveLinks.To(move.Move, Inputs);
-                var bestPay = PayNote.RiversBestPay(move.Move, Inputs, Search);
                 <li class="moves__move">
                     <span class="moves__number" aria-hidden="true">@(index + 1)</span>
                     <div class="moves__body">
                         <p class="moves__what">@What(move)</p>
                         <p class="moves__why">@Why(move)</p>
-                        @if (bestPay is { } best)
-                        {
-                            <p class="moves__note" id="moves-pay-note">@L["BestPay", Formats.Euros(best)]</p>
-                        }
                         @if (link is not null)
                         {
                             <a class="moves__link" href="@link.Href" @onclick="@(() => OnMoveLinkAsync(link))" aria-label="@L[OptimisationTabText.LinkLabel, L[OptimisationTabText.Link(link)], What(move)]">@L[OptimisationTabText.Link(link)]</a>
@@ -118,8 +113,8 @@
     public EventCallback<RiverInputs> InputsChanged { get; set; }
 
     // The engine's search across every pay for the river as it is, which the page runs again only when an
-    // input other than the pay changes (Plan, RiverInputs.SearchSplit): the tab names the best pay it
-    // finds under the pay's move (PayNote), running none of its own. None while the company's year is
+    // input other than the pay changes (Plan, RiverInputs.SearchSplit): the pay curve draws it, the tab
+    // running none of its own. None while the company's year is
     // skipped or an amount is refused.
     [Parameter]
     public SplitSearchResult? Search { get; set; }
@@ -151,7 +146,7 @@
     // Why the move helps, its sentences one after the other, every amount in euros.
     private string Why(PlannedMove move) =>
         string.Join(" ", MoveReasons.Of(move).Select(reason =>
-            L[OptimisationTabText.Why(reason.Kind), [.. reason.Amounts.Select(amount => (object)Formats.Euros(amount))]].Value));
+            L[OptimisationTabText.Why(reason), [.. reason.Amounts.Select(amount => (object)Formats.Euros(amount))]].Value));
 
     // Applied, the list goes until the moves are found for the plan it leaves, so the focus goes to the line
     // saying they are looked for.

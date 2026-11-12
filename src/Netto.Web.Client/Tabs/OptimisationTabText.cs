@@ -54,7 +54,17 @@ internal static class OptimisationTabText
     public static string State(MovesState state) => $"State_{state}";
 
     // One sentence of why a move helps (MoveReasons): « It cancels the surcharge of {0} on your income tax. »
-    public static string Why(MoveReasonKind kind) => $"Why_{kind}";
+    // One that says a figure its gain is not has a wording for a gain below that figure and one for a gain above
+    // it, which end on the rest and the gain: « …, {1} less from the rest: {2} more in your pocket. »
+    public static string Why(MoveReasonKind kind, MoveReasonRest rest) => rest switch
+    {
+        MoveReasonRest.None => $"Why_{kind}",
+        MoveReasonRest.Less => $"Why_{kind}_RestLess",
+        MoveReasonRest.More => $"Why_{kind}_RestMore",
+        _ => throw new ArgumentOutOfRangeException(nameof(rest), rest, "A rest the tab has no words for."),
+    };
+
+    public static string Why(MoveReason reason) => Why(reason.Kind, reason.Rest);
 
     // Where a move links to, by the card's name or the section's: « See it on The split », « See when to pay ».
     public static string Link(MoveLink link) => link.Card is { } card

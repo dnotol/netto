@@ -75,28 +75,77 @@ public class MoveReasonsTests
             before.Dividend.Dividend, after.Dividend.Dividend)));
     }
 
-    // At the best pay the company's surcharge is 1,336.52, which the payment cancels.
+    // At the best pay the company's surcharge is 1,336.52, which the payment cancels. What reaches the pocket is
+    // less than the surcharge, the dividend it adds being taxed: the sentence says the surcharge, the difference
+    // and the gain, which is what the move shows beside it.
     [Fact]
-    public void Of_companyPaymentCancellingTheSurcharge_saysWhatItCancels()
+    public void Of_companyPaymentCancellingTheSurcharge_saysWhatItCancelsAndWhatReachesTheTaxedPocket()
     {
-        var reason = MoveReasons.Of(Line<CompanyAdvancePaymentMove>(RiverInputs.Example)).Single();
+        var line = Line<CompanyAdvancePaymentMove>(RiverInputs.Example);
+        var surcharge = Year(RiverInputs.Example.WithDirectorPay(20_799m)).AdvancePayments.Surcharge;
 
-        Said(reason).ShouldBe((MoveReasonKind.CompanySurchargeCancelled,
-            Amounts(Year(RiverInputs.Example.WithDirectorPay(20_799m)).AdvancePayments.Surcharge)));
+        var reason = MoveReasons.Of(line).Single();
+
+        (Said(reason), reason.Rest).ShouldBe(((MoveReasonKind.CompanySurchargeCancelled,
+            Amounts(surcharge, surcharge - line.Gain, line.Gain)), MoveReasonRest.Less));
     }
 
-    // A payment that leaves some surcharge says what it was and what is left.
+    // What the surcharge cancelled adds to the pocket is the dividend it lets out, less the tax on that dividend:
+    // the difference the sentence says is that tax, not a guess (the move's gain is the net dividend's rise).
     [Fact]
-    public void Of_companyPaymentLeavingSomeSurcharge_saysItBeforeAndAfter()
+    public void Of_companyPaymentCancellingTheSurcharge_theDifferenceIsTheTaxOnTheDividendItLetsOut()
+    {
+        var line = Line<CompanyAdvancePaymentMove>(RiverInputs.Example);
+        var cancelled = line.Before.AdvancePayments.Surcharge - line.After.AdvancePayments.Surcharge;
+
+        var dividendMore = line.After.Dividend.Dividend - line.Before.Dividend.Dividend;
+        var netMore = line.After.Dividend.NetDividend - line.Before.Dividend.NetDividend;
+
+        (dividendMore, netMore, line.Gain).ShouldBe((cancelled, line.Gain, line.Gain));
+        (cancelled - netMore).ShouldBe(
+            (line.After.Dividend.Withholding - line.Before.Dividend.Withholding) - (line.After.Dividend.ExemptionRefund - line.Before.Dividend.ExemptionRefund));
+    }
+
+    // A gain equal to what the sentence says needs no bridge: nothing is said of the rest.
+    [Fact]
+    public void Of_gainEqualToWhatTheSentenceSays_saysNothingOfTheRest()
+    {
+        var before = Year(RiverInputs.Example);
+        var after = Year(RiverInputs.Example.WithAdvancePayment(0, 25_000m));
+        var said = before.AdvancePayments.Surcharge - after.AdvancePayments.Surcharge;
+
+        var reason = MoveReasons.Of(new PlannedMove(new CompanyAdvancePaymentMove(0, new DateOnly(2026, 12, 21), 25_000m), said, before, after)).Single();
+
+        (reason.Kind, reason.Rest, Said(reason).Amounts).ShouldBe((MoveReasonKind.CompanySurchargeCancelled, MoveReasonRest.None, Amounts(said)));
+    }
+
+    // A gain above what the sentence says is more from the rest, with its own wording.
+    [Fact]
+    public void Of_gainAboveWhatTheSentenceSays_saysMoreFromTheRest()
+    {
+        var before = Year(RiverInputs.Example);
+        var after = Year(RiverInputs.Example.WithAdvancePayment(0, 25_000m));
+        var said = before.AdvancePayments.Surcharge - after.AdvancePayments.Surcharge;
+
+        var reason = MoveReasons.Of(new PlannedMove(new CompanyAdvancePaymentMove(0, new DateOnly(2026, 12, 21), 25_000m), said + 10m, before, after)).Single();
+
+        (reason.Rest, reason.Amounts[^2], reason.Amounts[^1]).ShouldBe((MoveReasonRest.More, 10m, said + 10m));
+    }
+
+    // A payment that leaves some surcharge says what it was and what is left, and, its gain being less than the
+    // surcharge it takes off, what the gain leaves of it.
+    [Fact]
+    public void Of_companyPaymentLeavingSomeSurcharge_saysItBeforeAndAfterAndTheGain()
     {
         var before = Year(RiverInputs.Example);
         var after = Year(RiverInputs.Example.WithAdvancePayment(3, 5_000m));
         var line = new PlannedMove(new CompanyAdvancePaymentMove(3, new DateOnly(2026, 12, 21), 5_000m), 1m, before, after);
+        var taken = before.AdvancePayments.Surcharge - after.AdvancePayments.Surcharge;
 
         var reason = MoveReasons.Of(line).Single();
 
-        (Said(reason), after.AdvancePayments.Surcharge > 0m)
-            .ShouldBe(((MoveReasonKind.CompanySurcharge, Amounts(before.AdvancePayments.Surcharge, after.AdvancePayments.Surcharge)), true));
+        (Said(reason), reason.Rest, after.AdvancePayments.Surcharge > 0m).ShouldBe(((MoveReasonKind.CompanySurcharge,
+            Amounts(before.AdvancePayments.Surcharge, after.AdvancePayments.Surcharge, taken - 1m, 1m)), MoveReasonRest.Less, true));
     }
 
     // Nothing withheld on 50,000 of pay: 486.57 of surcharge on the income tax, which 14,317.50 by
@@ -126,21 +175,27 @@ public class MoveReasonsTests
             .ShouldBe(((MoveReasonKind.DirectorSurcharge, Amounts(486.57m, after.DirectorPay.AdvancePayments.Surcharge)), true));
     }
 
-    // Eco and sport/culture vouchers reach the pocket untaxed, and the company deducts none of them.
+    // Eco and sport/culture vouchers reach the pocket untaxed, and the company deducts none of them. What the
+    // same money would have reached the pocket as otherwise is lost, so the gain is less than the vouchers:
+    // the sentence says the vouchers, the rest, and the gain beside it.
     [Fact]
-    public void Of_ecoVouchers_sayWhatReachesYouAndThatTheCompanyDeductsNone()
+    public void Of_ecoVouchers_sayWhatReachesYouWhatTheRestLosesAndTheGain()
     {
-        var reason = MoveReasons.Of(Line<EcoVouchersMove>(RiverInputs.Example.AddToPlan(OptionalModule.Vouchers))).Single();
+        var line = Line<EcoVouchersMove>(RiverInputs.Example.AddToPlan(OptionalModule.Vouchers));
 
-        Said(reason).ShouldBe((MoveReasonKind.VouchersNotDeducted, Amounts(250m)));
+        var reason = MoveReasons.Of(line).Single();
+
+        (Said(reason), reason.Rest).ShouldBe(((MoveReasonKind.VouchersNotDeducted, Amounts(250m, 250m - line.Gain, line.Gain)), MoveReasonRest.Less));
     }
 
     [Fact]
-    public void Of_sportCultureVouchers_sayWhatReachesYouAndThatTheCompanyDeductsNone()
+    public void Of_sportCultureVouchers_sayWhatReachesYouWhatTheRestLosesAndTheGain()
     {
-        var reason = MoveReasons.Of(Line<SportCultureVouchersMove>(RiverInputs.Example.AddToPlan(OptionalModule.Vouchers))).Single();
+        var line = Line<SportCultureVouchersMove>(RiverInputs.Example.AddToPlan(OptionalModule.Vouchers));
 
-        Said(reason).ShouldBe((MoveReasonKind.VouchersNotDeducted, Amounts(100m)));
+        var reason = MoveReasons.Of(line).Single();
+
+        (Said(reason), reason.Rest).ShouldBe(((MoveReasonKind.VouchersNotDeducted, Amounts(100m, 100m - line.Gain, line.Gain)), MoveReasonRest.Less));
     }
 
     // A line whose years differ in what the company deducts says how much: 4 for each of 200 meal
@@ -154,7 +209,7 @@ public class MoveReasonsTests
 
         var reason = MoveReasons.Of(line).Single();
 
-        Said(reason).ShouldBe((MoveReasonKind.Vouchers, Amounts(250m, after.Vouchers.Deductible)));
+        (Said(reason), reason.Rest).ShouldBe(((MoveReasonKind.Vouchers, Amounts(250m, after.Vouchers.Deductible, 249m, 1m)), MoveReasonRest.Less));
     }
 
     // The home's facts given, Rent in the plan at no rent: the rent goes from nothing to the cap, 1,380, and
@@ -166,7 +221,34 @@ public class MoveReasonsTests
 
         var reason = MoveReasons.Of(line).Single();
 
-        Said(reason).ShouldBe((MoveReasonKind.Rent, Amounts(0m, 1_380.00m, 0m, 1_380.00m - line.After.DirectorPay.OtherIncomeTax.Total)));
+        var afterTax = 1_380.00m - line.After.DirectorPay.OtherIncomeTax.Total;
+        var rest = line.Gain - afterTax;
+        (Said(reason), reason.Rest).ShouldBe(((MoveReasonKind.Rent, Amounts(0m, 1_380.00m, 0m, afterTax, Math.Abs(rest), line.Gain)),
+            rest < 0m ? MoveReasonRest.Less : MoveReasonRest.More));
+    }
+
+    // The rent's gain is less than what reaches the pocket of it: the company that pays it has less to pay out,
+    // so the sentence says the rest the gain is net of.
+    [Fact]
+    public void Of_rent_theGainIsNetOfWhatTheCompanyThenPaysOutLess()
+    {
+        var line = Line<RentMove>(RiverInputs.Example.WithCadastralIncome(1_200m).WithShareLet(0.12m).AddToPlan(OptionalModule.Rent));
+
+        var afterTax = 1_380.00m - line.After.DirectorPay.OtherIncomeTax.Total;
+
+        (line.Gain < afterTax, MoveReasons.Of(line).Single().Rest).ShouldBe((true, MoveReasonRest.Less));
+    }
+
+    // A move whose sentence says the director's own tax, not the pocket, asks no bridge from the engine's gain: only
+    // the gain's label says it is the pocket's.
+    [Fact]
+    public void Of_directorPayment_saysNoRest()
+    {
+        var nothingWithheld = RiverInputs.Example.WithTaxWithheld(0m);
+        var line = new PlannedMove(new DirectorAdvancePaymentMove(3, new DateOnly(2026, 12, 21), 14_317.50m), 400m,
+            Year(nothingWithheld), Year(nothingWithheld.WithTaxAdvancePayment(3, 14_317.50m)));
+
+        MoveReasons.Of(line).Single().Rest.ShouldBe(MoveReasonRest.None);
     }
 
     // At 50,000 of pay a ruling accepts 11,538.46 of royalty for 75% of the time, taxed apart.

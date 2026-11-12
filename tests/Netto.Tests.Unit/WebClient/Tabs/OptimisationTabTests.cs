@@ -146,7 +146,7 @@ public class OptimisationTabTests
 
         var html = await RenderTabAsync(RiverInputs.Example);
 
-        view.Moves.Select((move, index) => html.Contains($"{Formats.Euros(move.Gain)} more")
+        view.Moves.Select((move, index) => html.Contains($"{Formats.Euros(move.Gain)} more in your pocket</span>")
                 && html.Contains($"{Formats.Euros(view.InPocketAfter(index))} in your pocket after it"))
             .ShouldAllBe(said => said);
     }
@@ -160,6 +160,23 @@ public class OptimisationTabTests
         Regex.IsMatch(html, "<p class=\"moves__why\"[^>]*>" + Regex.Escape(
             "Your pay goes from €50,000.00 to €20,799.00, and the dividend paid out from €39,325.00 to €58,064.23. "
             + "With it, the company gives up the reduced rate of corporate tax.") + "</p>").ShouldBeTrue();
+    }
+
+    // A voucher's sentence and the gain beside it agree: the vouchers that reach the pocket, the rest the same
+    // money would have reached it as otherwise, and the gain the move shows, said as the same figure.
+    [Fact]
+    public async Task Optimisation_sportCultureVouchersMove_saysTheRestAndTheGainTheMoveShows()
+    {
+        var plan = RiverInputs.Example.AddToPlan(OptionalModule.Vouchers);
+        var move = MovesView.Of(plan, On22October).Moves.Single(line => line.Move is SportCultureVouchersMove);
+
+        var html = await RenderTabAsync(plan);
+
+        var line = Regex.Matches(html, "<li class=\"moves__move\".*?</li>", RegexOptions.Singleline).Select(match => match.Value)
+            .Single(item => item.Contains("sport and culture vouchers"));
+        (line.Contains($"€100.00 more reaches you tax-free, {Formats.Euros(100m - move.Gain)} less from the rest: {Formats.Euros(move.Gain)} more in your pocket."),
+                line.Contains($"{Formats.Euros(move.Gain)} more in your pocket</span>"))
+            .ShouldBe((true, true));
     }
 
     // A link named first by what it shows, then by the move.
