@@ -60,7 +60,7 @@ public class LeverCardsSummaryTests
 
         var rate = CardHtml.Rate(await RenderOpenAsync(CardOf(lever), lever, Filled));
 
-        rate.ShouldBe(payout is { } paid ? Chrome.Format("OfThePayout", Formats.WholeShare(gain / paid)) : null);
+        rate.ShouldBe(payout is { } paid && gain > 0m ? Chrome.Format("OfThePayout", Formats.WholeShare(gain / paid)) : null);
     }
 
     // What the company has left after a lever, and what the split shares after the last, are on no card.
@@ -85,6 +85,20 @@ public class LeverCardsSummaryTests
         var summary = CardHtml.Summary(await RenderOpenAsync<VoucherCard>(OptionalModule.Vouchers, inputs));
 
         summary.ShouldBe(Texts(OptionalModule.Vouchers).Get("Summary_None"));
+    }
+
+    // A royalty all taxed as pay, its four previous years above the cap on average, leaves less in the pocket
+    // than the company keeping it as profit: its summary says so and ends on no rate, never a negative one.
+    [Fact]
+    public async Task Rate_aLeverTakingFromThePocket_isNone()
+    {
+        var inputs = RiverInputs.Example.AddToPlan(OptionalModule.Copyright).WithRoyalty(10_000m).WithAverageWithinCap(false);
+        var gain = LeverGain.Of(inputs, inputs.Run(), OptionalModule.Copyright).ShouldNotBeNull().Gain;
+
+        var html = await RenderOpenAsync<CopyrightCard>(OptionalModule.Copyright, inputs);
+
+        (gain < 0m, CardHtml.Summary(html), CardHtml.Rate(html))
+            .ShouldBe((true, Texts(OptionalModule.Copyright).Format("Summary_Less", Formats.Euros(-gain)), (string?)null));
     }
 
     [Fact]

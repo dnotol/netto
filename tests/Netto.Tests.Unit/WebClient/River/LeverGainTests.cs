@@ -73,6 +73,21 @@ public class LeverGainTests
         LeverGain.Of(inputs, inputs.Run(), OptionalModule.Vouchers).ShouldBeNull();
     }
 
+    // The rate a lever's summary ends on: what it adds over what it pays out, only while it adds more than
+    // nothing; a lever that takes from the pocket, or changes nothing, ends on no rate.
+    [Theory]
+    [InlineData(250, 1_000, 0.25)]
+    [InlineData(-250, 1_000, null)]
+    [InlineData(0, 1_000, null)]
+    [InlineData(0.004, 1_000, null)]
+    [InlineData(250, 0, null)]
+    public void OfThePayout_aGain_isItsShareOfThePayoutOnlyWhileMoreThanNothing(decimal gain, decimal payout, double? share)
+    {
+        var measured = new LeverGain(100_000m + gain, 100_000m, null, RiverInputs.Example.Run());
+
+        LeverGainText.OfThePayout(measured, payout).ShouldBe((decimal?)share);
+    }
+
     // The card keeps the gain until its inputs change: the same inputs give the same gain, unmeasured
     // again; other inputs measure it again.
     [Fact]

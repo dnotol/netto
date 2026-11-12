@@ -1,7 +1,7 @@
 namespace Netto.Web.Client.River;
 
 // What a lever in the plan adds to the pocket: the pocket of the plan's own run less the pocket of the
-// same river with that lever taken out of the plan, in cash (2026-10-23), the difference of two runs of
+// same river with that lever taken out of the plan, in cash as every gain is, the difference of two runs of
 // the engine and no tax rule of its own. Both run at the pay the plan uses: the pay set, unless the
 // company cannot pay so much beside the lever (YearSimulation.PayCeiling), where the plan holds it; the
 // river without the lever would pay all of it, so it is given the plan's pay, or the difference would be
@@ -28,7 +28,9 @@ internal sealed record LeverGain(decimal PocketWith, decimal PocketWithout, deci
 
 // How a lever's card says its gain, the key of its summary in the card's own texts: more in the pocket, less,
 // or no difference, a gain Formats reads €0.00 being none. The summary states the gain's size, its way in the
-// words; it ends on the gain over what the company pays out for the lever, none while it pays out nothing.
+// words; it ends on the gain over what the company pays out for the lever, only while the lever adds more
+// than nothing: a lever that takes from the pocket, or changes nothing, ends on no rate, never a negative
+// one beside « less », and none while it pays out nothing.
 internal static class LeverGainText
 {
     public static string Summary(decimal gain) => gain switch
@@ -40,7 +42,8 @@ internal static class LeverGainText
 
     public static string Amount(decimal gain) => Formats.Euros(Math.Abs(gain));
 
-    public static decimal? OfThePayout(LeverGain? gain, decimal payout) => gain is null ? null : Shares.Of(gain.Gain, payout);
+    public static decimal? OfThePayout(LeverGain? gain, decimal payout) =>
+        gain is { Gain: > 0m } && !FigureLines.IsNothing(gain.Gain) ? Shares.Of(gain.Gain, payout) : null;
 }
 
 // A card's lever gain, kept until the card's inputs change, so that drawing the card again for anything
