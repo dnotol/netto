@@ -4,8 +4,8 @@ using Shouldly;
 
 namespace Netto.Tests.WebClient.River;
 
-// The household as the user enters it on the Household card: whether they have a partner, a status assumed
-// so until the user says otherwise; the partner's net professional income, money with no default, none
+// The household as the user enters it on the Household card: whether they have a partner, a status the
+// user ticks, none assumed; the partner's net professional income, money with no default, none
 // until typed; whether both partners are 66 on 1 January of the tax year, and whether the year is one the
 // couple is taxed separately in, statuses assumed false; and the dependants, counts the example holds none
 // of, and whether the director raises their children alone, a status assumed false.
