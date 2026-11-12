@@ -19,7 +19,7 @@ public class InterfaceTextTests
     }
 
     // The bucket of what leaves the pay is named for the social contributions it holds with the tax,
-    // « Contributions and tax on pay » (BucketNamesTests): no text of the interface calls it by its first
+    // « Contributions and income tax » (BucketNamesTests): no text of the interface calls it by its first
     // name, « taxes on pay », any more.
     [Fact]
     public void Resources_everyText_namesNoTaxesOnPay()

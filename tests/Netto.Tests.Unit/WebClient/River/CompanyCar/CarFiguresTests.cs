@@ -210,7 +210,7 @@ public class CarFiguresTests
     }
 
     // The plan with the car against the same plan without it: the pocket in each, the cash the car takes,
-    // and what its benefit adds to the contributions and tax on pay, with where they are in its bubble.
+    // and what its benefit adds to the contributions and income tax, with where they are in its bubble.
     [Fact]
     public void Cash_comparison_isThePocketWithAndWithoutTheCashTheCarTakesAndWhatItsBenefitAdds()
     {

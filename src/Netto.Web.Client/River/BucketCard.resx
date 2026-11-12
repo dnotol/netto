@@ -13,6 +13,6 @@
     <value>Nothing is sent into it in this plan.</value>
   </data>
   <data name="OnlyFrom" xml:space="preserve">
-    <value>All of it comes from {0}.</value>
+    <value>All of it comes from the {0} module.</value>
   </data>
 </root>

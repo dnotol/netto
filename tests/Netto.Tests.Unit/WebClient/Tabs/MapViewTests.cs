@@ -297,7 +297,7 @@ public class MapViewTests
     }
 
     // A line holding several of its card's lines is as thick as their sum, thicker than any of them alone:
-    // what Director pay pays into the contributions and tax on pay.
+    // what Director pay pays into the contributions and income tax.
     [Fact]
     public void From_aLineOfSeveral_isAsThickAsTheirSum()
     {

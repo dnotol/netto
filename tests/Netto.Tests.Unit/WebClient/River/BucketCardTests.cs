@@ -102,7 +102,7 @@ public class BucketCardTests
 
         html.ShouldSatisfyAllConditions(
             () => CardHtml.Lines(html).ShouldBeEmpty(),
-            () => CardHtml.Prose(html).ToList().ShouldBe([$"All of it comes from {ResxText.For<MapTab>().Get(MapTabText.Module(RiverModule.DirectorPay))}."]));
+            () => CardHtml.Prose(html).ToList().ShouldBe([$"All of it comes from the {ResxText.For<MapTab>().Get(MapTabText.Module(RiverModule.DirectorPay))} module."]));
     }
 
     [Fact]
@@ -112,7 +112,8 @@ public class BucketCardTests
 
         var html = await RenderBucketAsync(RiverInputs.Example, "taxes_on_pay");
 
-        System.Net.WebUtility.HtmlDecode(CardHtml.Prose(html).Single()).ShouldStartWith("Tout vient de ");
+        System.Net.WebUtility.HtmlDecode(CardHtml.Prose(html).Single())
+            .ShouldBe($"Tout vient du module {ResxText.French<MapTab>().Get(MapTabText.Module(RiverModule.DirectorPay))}.");
     }
 
     [Fact]

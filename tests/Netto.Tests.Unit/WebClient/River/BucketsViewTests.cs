@@ -55,7 +55,7 @@ public class BucketsViewTests
         });
     }
 
-    // The fund's fee leaves the pay with the contributions, into « Contributions and tax on pay », and the
+    // The fund's fee leaves the pay with the contributions, into « Contributions and income tax », and the
     // buckets still add up to what the river starts from.
     [Fact]
     public void From_fundFee_isInTheTaxesOnPay()
