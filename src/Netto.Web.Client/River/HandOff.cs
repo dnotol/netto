@@ -7,7 +7,8 @@ namespace Netto.Web.Client.River;
 // expense allowances, the rent and the car each receive what the levers above leave of what the company
 // earns before it pays its director anything (Before), take what they cost the company (Cost) and pass
 // on the rest (After), the last of them what the split shares between the pay, a royalty and the company
-// (Shared). A module out of the plan costs nothing: the scenario hands the engine none of it.
+// (Shared). A module out of the plan costs nothing: the scenario hands the engine none of it. These are
+// running totals of the company's line, which the map draws (MapLinks) and no card shows.
 internal static class HandOff
 {
     // The levers before the split, in the river's order.
@@ -37,9 +38,9 @@ internal static class HandOff
     // What a lever receives: what it passes on and what it takes.
     public static decimal Before(YearResult year, OptionalModule lever) => After(year, lever) + Cost(year, lever);
 
-    // The line a lever's card ends on: the last lever before the split hands it the profit before pay,
-    // and the royalty too while Copyright royalty is in the plan; any other says what is left after it,
-    // on to the next lever in the plan.
+    // The stretch of the map's company line after a lever: the last lever before the split hands it the
+    // profit before pay, and the royalty too while Copyright royalty is in the plan; any other what is left
+    // after it, on to the next lever in the plan.
     public static Drain Drain(YearResult year, OptionalModule lever, PlanComposition composition) => NextModule.After(lever, composition) switch
     {
         "split" => new Drain(composition.Copyright ? "profit_before_pay_and_royalty" : "profit_before_pay", DrainKind.PassedOn, After(year, lever), "split"),
