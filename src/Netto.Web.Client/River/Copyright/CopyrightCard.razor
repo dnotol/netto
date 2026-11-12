@@ -22,10 +22,11 @@
    without it, each by what reaches the pocket and what goes to the taxes on pay and on profit, and the
    difference, both at the pay the plan with the royalty runs at, which a note names once the pay set is
    held below (CopyrightComparison.PayHeld); then where its money goes: its tax apart, what of the part within reaches the pocket and
-   the part beyond going on to Director pay. Where no text settles a point, the reading Netto takes is in
+   the part beyond going on to Director pay. The summary says what the royalty adds to the pocket, the
+   plan with it less the plan without (LeverGain), and that over the royalty the company pays out. Where no text settles a point, the reading Netto takes is in
    its details, above the sources. An optional module: it shows only while in the plan, and the word at
    its bottom takes it out, its values kept. Skipped with the company. *@
-<ModuleCard Name="@ModuleFolds.Name(OptionalModule.Copyright)" Title="@L["Title"]" Summary="@Summary" ToYou="@_view?.ToYou" Help="@L["Hint", CopyrightCardText.Rate(L, _rules?.WithholdingRate), CopyrightCardText.Rate(L, _rules?.TaxedApartRate)]" Waiting="Inputs.Company is null"
+<ModuleCard Name="@ModuleFolds.Name(OptionalModule.Copyright)" Title="@L["Title"]" Summary="@Summary" OfThePayout="@LeverGainText.OfThePayout(_gain, _view?.Result.Royalty ?? 0m)" Help="@L["Hint", CopyrightCardText.Rate(L, _rules?.WithholdingRate), CopyrightCardText.Rate(L, _rules?.TaxedApartRate)]" Waiting="Inputs.Company is null"
             Refused="@Refused" Details="@Details" Sources="@(_view?.Details ?? [])" IncomeYear="Inputs.IncomeYear" RemoveLabel="@L["Remove"]" OnRemove="Remove">
     <RiverField Label="@L["PolicyLabel"]" Origin="_policy.FollowsPay.Origin" Help="@L["PolicyHint", CopyrightCardText.Rate(L, _rules?.EnvelopeRate)]">
         <div class="copyright__policies">
@@ -137,19 +138,22 @@
     private RoyaltyRateView? _rate;
     private CopyrightRules? _rules;
     private CopyrightSettingsView _settings = default!;
+    private readonly KeptLeverGain _kept = new(OptionalModule.Copyright);
+    private LeverGain? _gain;
 
     protected override void OnParametersSet()
     {
         _policy = CopyrightPolicyView.From(Inputs, Run);
         _view = Run.Year is { } year ? CopyrightView.From(year) : null;
-        _comparison = CopyrightComparison.From(Inputs, Run);
+        _gain = _kept.For(Inputs, Run);
+        _comparison = CopyrightComparison.From(Run, _gain);
         _rate = _view is { HasRoyalty: true } ? RoyaltyRateView.From(Run.Year) : null;
         _rules = CopyrightRules.For(Inputs.IncomeYear);
         _settings = CopyrightSettingsView.From(Inputs, Run);
     }
 
-    private string? Summary => _view is { } view
-        ? L[CopyrightCardText.Summary(view), Formats.Euros(view.AfterTax), Formats.Euros(view.Result.TaxedAsPay)].Value
+    private string? Summary => _view is { } view && _gain is { } gain
+        ? L[CopyrightCardText.Summary(view, gain.Gain), LeverGainText.Amount(gain.Gain)].Value
         : null;
 
 

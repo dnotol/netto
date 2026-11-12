@@ -84,6 +84,15 @@ public class ModuleCardTests
             .ShouldBe((true, true, false, false));
     }
 
+    // A lever's summary ends on what it adds to the pocket over what it pays out, worded once for every lever.
+    [Fact]
+    public async Task OfThePayout_given_endsTheSummaryOnIt()
+    {
+        var html = await RenderOpenAsync(new() { ["Summary"] = "€100.00 more in your pocket", ["OfThePayout"] = 0.25m });
+
+        CardHtml.Rate(html).ShouldBe(Chrome.Format("OfThePayout", "25%"));
+    }
+
     // The card named « test-card », opened with its details by the viewer, its HTML decoded.
     private static async Task<string> RenderOpenAsync(Dictionary<string, object?> parameters)
     {

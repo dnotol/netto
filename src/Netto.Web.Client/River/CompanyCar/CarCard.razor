@@ -22,13 +22,15 @@
    which a note names once the pay set is held below (CarComparison.PayHeld), and, once the user gives what the same car
    would cost them privately, the company car against it, until then that this comparison waits; then
    the costs paid into the company's expenses, with INASTI's company contribution, and the contribution
-   coming back from the pocket, a sentence above them saying so when the costs are more than the card
-   receives, their share then stopping at 100% and the rate at 0%. What the CO2 percentage counts and the administration's reading of
+   coming back from the pocket; what the company has left after the car is the map's company line, never
+   the card's. The summary says what the car adds to the pocket or takes from it, the plan with it less
+   the plan without (LeverGain), and ends on no rate: what the car pays out is its costs, a cost of the
+   company, not money to the director. What the CO2 percentage counts and the administration's reading of
    « fuel » are in its details, above the sources. An optional module: it shows only while in the plan,
    and the word at its bottom takes it out, its values kept. The amounts are taken while typing and carry
    no Min or Max: the engine refuses what the rules do not allow, and the card a negative private cost,
    which the engine never sees. Skipped with the company. *@
-<ModuleCard Name="@ModuleFolds.Name(OptionalModule.Car)" Title="@L["Title"]" Summary="@Summary" PassesOn="@_view?.PassesOn" Help="@L["Hint"]" Waiting="Inputs.Company is null"
+<ModuleCard Name="@ModuleFolds.Name(OptionalModule.Car)" Title="@L["Title"]" Summary="@Summary" Help="@L["Hint"]" Waiting="Inputs.Company is null"
             Refused="@Refused" Details="@Details" Sources="@(_view?.Details ?? [])" IncomeYear="Inputs.IncomeYear" RemoveLabel="@L["Remove"]" OnRemove="Remove">
     <Disclosure Title="@L["CarTitle"]" Values="@SettingWords.Of(L, _settings.Car)" Refused="@CarSettingsView.CarHolds(Refused)"
                 OpenByDefault="@_settings.NeedsFacts">
@@ -180,10 +182,6 @@
     }
     @if (_view is not null)
     {
-        @if (_view.CostsAboveWhatItReceives)
-        {
-            <p class="car__note">@L["CostsAboveReceived"]</p>
-        }
         <DrainList Drains="_view.Drains" />
     }
     @if (_rules is not null)
@@ -215,11 +213,14 @@
     private CarComparison? _comparison;
     private CarRules? _rules;
     private CarSettingsView _settings = default!;
+    private readonly KeptLeverGain _kept = new(OptionalModule.Car);
+    private LeverGain? _gain;
 
     protected override void OnParametersSet()
     {
         _view = Run.Year is { } year ? CarView.From(year, Inputs.Composition) : null;
-        _comparison = CarComparison.From(Inputs, Run);
+        _gain = _kept.For(Inputs, Run);
+        _comparison = CarComparison.From(Inputs, Run, _gain);
         _rules = CarRules.For(Inputs.IncomeYear);
         _settings = CarSettingsView.From(Inputs);
     }
@@ -228,19 +229,10 @@
 
     private string EngineName(CarEngine engine) => L[CarCardText.Engine(engine)];
 
-    // It ends on what the split shares, the royalty in it while it is in the plan. A contribution that
-    // more than covers the costs states what it brings beyond them between the two: the card passes on
-    // that much more than it received, which no share of what it received can say (CarView.PassesOn).
-    private string? Summary => _view switch
-    {
-        null => null,
-        { HasCar: false } view => L[CarCardText.Summary(false, Royalty, false), Formats.Euros(view.SplitShares)].Value,
-        { ContributionBeyondCosts: { } beyond } view =>
-            L[CarCardText.Summary(true, Royalty, true), Formats.Euros(view.Result.Costs), Formats.Euros(beyond), Formats.Euros(view.SplitShares)].Value,
-        var view => L[CarCardText.Summary(true, Royalty, false), Formats.Euros(view.Result.Costs), Formats.Euros(view.SplitShares)].Value,
-    };
-
-    private bool Royalty => Inputs.InPlan(OptionalModule.Copyright);
+    // What the car adds to the pocket or takes from it, or that there is no car yet.
+    private string? Summary => _view is { } view && _gain is { } gain
+        ? L[CarCardText.Summary(view.HasCar, gain.Gain), LeverGainText.Amount(gain.Gain)].Value
+        : null;
 
 
     // When the car was ordered or leased, and which cars the card counts: those ordered or leased by the

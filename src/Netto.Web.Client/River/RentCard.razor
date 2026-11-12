@@ -7,8 +7,10 @@
    cadastral income, the share of it let and the yearly rent; the card shows the year's cap under the
    rent and offers it, how the cap is set in the bubble after the rent's label, then the rent's figure
    as lines, what it is taxed on less its flat charges, which joins the taxable income (RentFigures),
-   and where the money goes: its tax, each line into contributions and income tax, what reaches the
-   pocket, and what is left, passed on. The dwelling's cadastral income and the share let sit behind a
+   and where the money goes: its tax, each line into contributions and income tax, and what reaches the
+   pocket; what the company has left after it is the map's company line, never the card's. The summary
+   says what the rent adds to the pocket, the plan with it less the plan without (LeverGain), and that
+   over the rent the company pays out. The dwelling's cadastral income and the share let sit behind a
    disclosure, folded to a line that states them and opening by itself each time the card is drawn
    while either is nothing, since no rent can be given until a part of the home is let; the rent stays
    in sight.
@@ -16,7 +18,7 @@
    values kept. The amounts are taken while typing, like revenue, and carry no Min or Max: the engine
    refuses what the rules do not allow, and its message is what the user has to see. Skipped with the
    company. *@
-<ModuleCard Name="@ModuleFolds.Name(OptionalModule.Rent)" Title="@L["Title"]" Summary="@Summary" ToYou="@_view?.ToYou" Help="@L["Hint"]" Waiting="Inputs.Company is null"
+<ModuleCard Name="@ModuleFolds.Name(OptionalModule.Rent)" Title="@L["Title"]" Summary="@Summary" OfThePayout="@LeverGainText.OfThePayout(_gain, _view?.Rent ?? 0m)" Help="@L["Hint"]" Waiting="Inputs.Company is null"
             Refused="@Refused" Sources="@(_view?.Details ?? [])" IncomeYear="Inputs.IncomeYear" RemoveLabel="@L["Remove"]" OnRemove="Remove">
     <Disclosure Title="@L["HomeTitle"]" Values="@SettingWords.Of(L, _settings.Home)" Refused="@RentSettingsView.HomeHolds(Refused)"
                 OpenByDefault="@_settings.NeedsFacts">
@@ -83,6 +85,8 @@
     private RentCapView? _cap;
     private RentRules? _rules;
     private RentSettingsView _settings = default!;
+    private readonly KeptLeverGain _kept = new(OptionalModule.Rent);
+    private LeverGain? _gain;
 
     protected override void OnParametersSet()
     {
@@ -90,14 +94,14 @@
         _cap = RentCapView.From(Inputs);
         _rules = RentRules.For(Inputs.IncomeYear);
         _settings = RentSettingsView.From(Inputs);
+        _gain = _kept.For(Inputs, Run);
     }
 
     // The share is a fraction in the river; the field shows it as a percentage.
     private decimal SharePercent => Inputs.Rent.ShareLet.Value * 100m;
 
-    // It ends on what the split shares, the royalty in it while it is in the plan.
-    private string? Summary => _view is { } view
-        ? L[RentCardText.Summary(Inputs.InPlan(OptionalModule.Copyright)), Formats.Euros(view.AfterTax), Formats.Euros(view.SplitShares)].Value
+    private string? Summary => _view is not null && _gain is { } gain
+        ? L[LeverGainText.Summary(gain.Gain), LeverGainText.Amount(gain.Gain)].Value
         : null;
 
 

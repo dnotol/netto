@@ -18,6 +18,9 @@
   <data name="PassesOn" xml:space="preserve">
     <value>{0} passes on</value>
   </data>
+  <data name="OfThePayout" xml:space="preserve">
+    <value>{0} of the payout</value>
+  </data>
   <data name="Waiting" xml:space="preserve">
     <value>Waiting for the company's year.</value>
   </data>

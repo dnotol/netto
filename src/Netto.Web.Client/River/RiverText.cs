@@ -45,6 +45,9 @@ internal static class ModuleCardText
 
     public const string PassesOn = "PassesOn";
 
+    // What a lever adds to the pocket over what it pays out (LeverGain).
+    public const string OfThePayout = "OfThePayout";
+
     // The line a card says while it waits for the company's year.
     public const string Waiting = "Waiting";
 

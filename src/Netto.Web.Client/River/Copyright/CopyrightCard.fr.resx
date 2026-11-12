@@ -15,11 +15,14 @@
   <data name="Title" xml:space="preserve">
     <value>Droits d'auteur</value>
   </data>
-  <data name="Summary" xml:space="preserve">
-    <value>{0} dans votre poche</value>
+  <data name="Summary_More" xml:space="preserve">
+    <value>{0} de plus dans votre poche</value>
   </data>
-  <data name="Summary_AsPay" xml:space="preserve">
-    <value>{0} dans votre poche · {1} de droits imposés comme rémunération</value>
+  <data name="Summary_Less" xml:space="preserve">
+    <value>{0} de moins dans votre poche</value>
+  </data>
+  <data name="Summary_None" xml:space="preserve">
+    <value>Aucune différence dans votre poche</value>
   </data>
   <data name="SummaryNoRoyalty" xml:space="preserve">
     <value>Pas encore de droits d'auteur</value>
@@ -84,9 +87,6 @@
   <data name="Remove" xml:space="preserve">
     <value>Retirer les droits d'auteur de votre plan</value>
   </data>
-  <data name="Summary_AllAsPay" xml:space="preserve">
-    <value>{1} de droits imposés comme rémunération</value>
-  </data>
   <data name="AttestationLabel" xml:space="preserve">
     <value>Je détiens une attestation du travail des arts couvrant ces œuvres</value>
   </data>
@@ -124,7 +124,7 @@
     <value>coefficient de créativité non indiqué, dont des droits qui suivent votre rémunération ont besoin</value>
   </data>
   <data name="Figure_Royalty" xml:space="preserve">
-    <value>Droits d'auteur</value>
+    <value>Versé par la société</value>
   </data>
   <data name="Figure_WithinLimits" xml:space="preserve">
     <value>Dans les limites</value>

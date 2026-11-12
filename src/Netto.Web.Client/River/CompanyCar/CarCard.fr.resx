@@ -15,23 +15,17 @@
   <data name="Title" xml:space="preserve">
     <value>Voiture de société</value>
   </data>
-  <data name="Summary" xml:space="preserve">
-    <value>{0} de frais de voiture · {1} avant votre rémunération</value>
+  <data name="Summary_More" xml:space="preserve">
+    <value>{0} de plus dans votre poche</value>
+  </data>
+  <data name="Summary_Less" xml:space="preserve">
+    <value>{0} de moins dans votre poche</value>
+  </data>
+  <data name="Summary_None" xml:space="preserve">
+    <value>Aucune différence dans votre poche</value>
   </data>
   <data name="SummaryNoCar" xml:space="preserve">
-    <value>Pas encore de voiture · {0} avant votre rémunération</value>
-  </data>
-  <data name="Summary_Royalty" xml:space="preserve">
-    <value>{0} de frais de voiture · {1} avant votre rémunération et vos droits d'auteur</value>
-  </data>
-  <data name="SummaryNoCar_Royalty" xml:space="preserve">
-    <value>Pas encore de voiture · {0} avant votre rémunération et vos droits d'auteur</value>
-  </data>
-  <data name="SummaryBeyond" xml:space="preserve">
-    <value>{0} de frais de voiture · {1} de votre intervention au-delà des frais · {2} avant votre rémunération</value>
-  </data>
-  <data name="SummaryBeyond_Royalty" xml:space="preserve">
-    <value>{0} de frais de voiture · {1} de votre intervention au-delà des frais · {2} avant votre rémunération et vos droits d'auteur</value>
+    <value>Pas encore de voiture</value>
   </data>
   <data name="Hint" xml:space="preserve">
     <value>Une voiture que la société met à votre disposition et que vous utilisez aussi à des fins personnelles. La société paie ses frais sur son bénéfice, avant votre rémunération, et les déduit dans la mesure où sa date de commande, sa motorisation et son CO2 le permettent&#160;; vous êtes imposé sur un avantage de toute nature forfaitaire avec votre rémunération, bien qu'il ne soit jamais payé en espèces.</value>
@@ -86,9 +80,6 @@
   </data>
   <data name="PayHeld" xml:space="preserve">
     <value>Les deux plans retiennent une rémunération de {0}, le maximum que la société peut payer une fois les frais de la voiture payés, si bien que la différence est due à la voiture seule.</value>
-  </data>
-  <data name="CostsAboveReceived" xml:space="preserve">
-    <value>La voiture coûte plus que ce que cette carte reçoit, si bien que ses frais comptent pour tout ce montant et pas davantage.</value>
   </data>
   <data name="Private_Waiting" xml:space="preserve">
     <value>Saisissez-le pour comparer les deux voitures.</value>

@@ -8,16 +8,17 @@
    untaxed and outside INASTI, and the company deducts them in full, like its own running costs, with
    nothing added back to its taxable income: the card's bubble says so. The office, internet and
    computer fields keep their maximum for the year under them, the office allowance's monthly maxima in
-   the bubble after its label; the phone costs have none. Under the fields, what the company pays for
-   them (AllowanceFigures), then where the allowances go,
-   each to the pocket, and what they leave, on to the home office rent when it is in the plan, or the
-   split. An optional module: it shows only while in
+   the bubble after its label; the phone costs have none. The summary says what the allowances add to
+   the pocket, the plan with them less the plan without (LeverGain), and that over what the company pays
+   out for them. Under the fields, what the company pays out for them (AllowanceFigures), then where the
+   allowances go, each to the pocket; what the company has left after them is the map's company line,
+   never the card's. An optional module: it shows only while in
    the plan, and the word at its bottom takes it out, its values kept. The circular's flat amounts
    are not written for directors and Netto cannot see the costs, so the card lists the conditions with
    their texts, the director's own case first. The amounts are taken while typing, like revenue, and
    carry no Min or Max: the engine refuses what the rules do not allow, and its message is what the
    user has to see. Skipped with the company. *@
-<ModuleCard Name="@ModuleFolds.Name(OptionalModule.Allowances)" Title="@L["Title"]" Summary="@Summary" ToYou="@_view?.ToYou" Help="@L["Hint"]" Waiting="Inputs.Company is null"
+<ModuleCard Name="@ModuleFolds.Name(OptionalModule.Allowances)" Title="@L["Title"]" Summary="@Summary" OfThePayout="@LeverGainText.OfThePayout(_gain, _view?.Total ?? 0m)" Help="@L["Hint"]" Waiting="Inputs.Company is null"
             Refused="@Refused" Sources="@(_view?.Details ?? [])" IncomeYear="Inputs.IncomeYear" RemoveLabel="@L["Remove"]" OnRemove="Remove">
     <div class="allowances__fields">
         <RiverField Label="@L["OfficeLabel"]" For="river-office-allowance" Origin="Inputs.Allowances.Office.Origin" Help="@OfficeHelp">
@@ -79,17 +80,20 @@
     [Parameter]
     public Refusal? Refused { get; set; }
 
+    private readonly KeptLeverGain _kept = new(OptionalModule.Allowances);
     private AllowanceView? _view;
     private AllowanceRules? _rules;
+    private LeverGain? _gain;
 
     protected override void OnParametersSet()
     {
         _view = Run.Year is { } year ? AllowanceView.From(year, Inputs.Composition) : null;
         _rules = AllowanceRules.For(Inputs.IncomeYear);
+        _gain = _kept.For(Inputs, Run);
     }
 
-    private string? Summary => _view is { } view
-        ? L["Summary", Formats.Euros(view.Total), Formats.Euros(view.Left)].Value
+    private string? Summary => _view is not null && _gain is { } gain
+        ? L[LeverGainText.Summary(gain.Gain), LeverGainText.Amount(gain.Gain)].Value
         : null;
 
 

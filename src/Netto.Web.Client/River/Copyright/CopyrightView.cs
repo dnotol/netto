@@ -74,11 +74,14 @@ internal sealed record CopyrightComparison(
 
     public decimal Gain => Difference(PocketWith, PocketWithout);
 
-    public static CopyrightComparison? From(RiverInputs inputs, RiverRun run)
+    public static CopyrightComparison? From(RiverInputs inputs, RiverRun run) => From(run, LeverGain.Of(inputs, run, OptionalModule.Copyright));
+
+    // The same from the royalty's gain the card already measured.
+    public static CopyrightComparison? From(RiverRun run, LeverGain? gain)
     {
         // The river without the royalty is the river's own run, so a car or a rent in the plan is in it
         // as in the other, at the pay the run with the royalty took: the royalty's LeverGain.
-        if (run.Year is not { Scenario.Copyright.Any: true } || LeverGain.Of(inputs, run, OptionalModule.Copyright) is not { } gain
+        if (run.Year is not { Scenario.Copyright.Any: true } || gain is null
             || BucketsView.From(run) is not { } with || BucketsView.From(gain.Without) is not { } without)
             return null;
 

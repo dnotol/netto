@@ -26,6 +26,23 @@ internal sealed record LeverGain(decimal PocketWith, decimal PocketWithout, deci
     }
 }
 
+// How a lever's card says its gain, the key of its summary in the card's own texts: more in the pocket, less,
+// or no difference, a gain Formats reads €0.00 being none. The summary states the gain's size, its way in the
+// words; it ends on the gain over what the company pays out for the lever, none while it pays out nothing.
+internal static class LeverGainText
+{
+    public static string Summary(decimal gain) => gain switch
+    {
+        _ when FigureLines.IsNothing(gain) => "Summary_None",
+        > 0m => "Summary_More",
+        _ => "Summary_Less",
+    };
+
+    public static string Amount(decimal gain) => Formats.Euros(Math.Abs(gain));
+
+    public static decimal? OfThePayout(LeverGain? gain, decimal payout) => gain is null ? null : Shares.Of(gain.Gain, payout);
+}
+
 // A card's lever gain, kept until the card's inputs change, so that drawing the card again for anything
 // else runs the river without the lever no more: the run is made only for the card on screen.
 internal sealed class KeptLeverGain(OptionalModule lever)

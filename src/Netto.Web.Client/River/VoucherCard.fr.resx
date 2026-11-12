@@ -15,8 +15,14 @@
   <data name="Title" xml:space="preserve">
     <value>Titres-repas et chèques</value>
   </data>
-  <data name="Summary" xml:space="preserve">
-    <value>{0} dans votre poche · reste {1}</value>
+  <data name="Summary_More" xml:space="preserve">
+    <value>{0} de plus dans votre poche</value>
+  </data>
+  <data name="Summary_Less" xml:space="preserve">
+    <value>{0} de moins dans votre poche</value>
+  </data>
+  <data name="Summary_None" xml:space="preserve">
+    <value>Aucune différence dans votre poche</value>
   </data>
   <data name="Hint" xml:space="preserve">
     <value>Ce que la société peut vous donner en plus de votre rémunération, sans impôt des personnes physiques ni cotisations sociales. Elle les paie sur son bénéfice, avant votre rémunération.</value>
@@ -37,7 +43,7 @@
     <value>Au plus {0} par an.</value>
   </data>
   <data name="Figure_CompanyPays" xml:space="preserve">
-    <value>La société paie</value>
+    <value>Versé par la société</value>
   </data>
   <data name="Figure_AddedBack" xml:space="preserve">
     <value>Repris en dépenses non admises</value>

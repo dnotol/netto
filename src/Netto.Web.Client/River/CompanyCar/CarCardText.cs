@@ -24,12 +24,9 @@ internal static class CarCardText
         _ => "Private_Tie",
     };
 
-    // The summary ends on what the split shares: « before your pay and royalty » while the royalty is in
-    // the plan. A car whose costs the director's contribution more than covers states that excess too
-    // (CarView.ContributionBeyondCosts), since it is no share of what the card receives; a card with no
-    // car has no costs for a contribution to exceed.
-    public static string Summary(bool hasCar, bool royalty, bool beyondCosts) =>
-        (hasCar ? beyondCosts ? "SummaryBeyond" : "Summary" : "SummaryNoCar") + (royalty ? "_Royalty" : "");
+    // The summary says what the car adds to the pocket or takes from it, the plan with it less the plan
+    // without (LeverGain); a card with no car yet says so alone.
+    public static string Summary(bool hasCar, decimal gain) => hasCar ? LeverGainText.Summary(gain) : "SummaryNoCar";
 
     // What drives the car, as the engine select names it.
     public static string Engine(CarEngine engine) => $"Engine_{engine}";

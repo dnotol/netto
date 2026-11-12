@@ -10,22 +10,6 @@ public class RentCardTextTests
     // The name IStringLocalizer<RentCard> reads River/RentCard.resx under.
     private static readonly ResxText Resources = ResxText.For<RentCard>();
 
-    // The rent's summary ends on what the split shares: « before your pay », and « before your pay and
-    // royalty » once the royalty is in the plan.
-    [Fact]
-    public void RentCardResx_everySummary_hasAText()
-    {
-        Resources.Missing([RentCardText.Summary(false), RentCardText.Summary(true)]).ShouldBeEmpty();
-    }
-
-    [Theory]
-    [InlineData(false, "Summary")]
-    [InlineData(true, "Summary_Royalty")]
-    public void RentSummary_royaltyInThePlan_saysBeforeYourPayAndRoyalty(bool royalty, string key)
-    {
-        RentCardText.Summary(royalty).ShouldBe(key);
-    }
-
     // What the cadastral income is and how the cap is set, each in the bubble after its field's label.
     [Fact]
     public void RentCardResx_bubblesOfTheFields_haveTheirTexts()

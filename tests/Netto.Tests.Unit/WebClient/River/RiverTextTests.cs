@@ -184,7 +184,7 @@ public class RiverTextTests
     [Fact]
     public void ModuleCardResx_sharedTexts_haveTheirTexts()
     {
-        ModuleCardResources.Missing([ModuleCardText.ToYou, ModuleCardText.PassesOn, ModuleCardText.Waiting, ModuleCardText.DetailsLabel, ModuleCardText.SourcesTitle])
+        ModuleCardResources.Missing([ModuleCardText.ToYou, ModuleCardText.PassesOn, ModuleCardText.OfThePayout,ModuleCardText.Waiting, ModuleCardText.DetailsLabel, ModuleCardText.SourcesTitle])
             .ShouldBeEmpty();
     }
 }

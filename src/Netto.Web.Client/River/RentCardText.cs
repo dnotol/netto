@@ -9,8 +9,4 @@ internal static class RentCardText
 
     // How the cap under the rent is set, in the bubble after the rent's label.
     public const string CapHelp = "Help_Cap";
-
-    // The summary ends on what the split shares: « before your pay and royalty » while the royalty is
-    // in the plan.
-    public static string Summary(bool royalty) => royalty ? "Summary_Royalty" : "Summary";
 }

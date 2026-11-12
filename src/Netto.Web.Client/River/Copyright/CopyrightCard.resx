@@ -15,11 +15,14 @@
   <data name="Title" xml:space="preserve">
     <value>Copyright royalty</value>
   </data>
-  <data name="Summary" xml:space="preserve">
-    <value>{0} to your pocket</value>
+  <data name="Summary_More" xml:space="preserve">
+    <value>{0} more in your pocket</value>
   </data>
-  <data name="Summary_AsPay" xml:space="preserve">
-    <value>{0} to your pocket · {1} taxed as your pay</value>
+  <data name="Summary_Less" xml:space="preserve">
+    <value>{0} less in your pocket</value>
+  </data>
+  <data name="Summary_None" xml:space="preserve">
+    <value>No difference in your pocket</value>
   </data>
   <data name="SummaryNoRoyalty" xml:space="preserve">
     <value>No royalty yet</value>
@@ -84,9 +87,6 @@
   <data name="Remove" xml:space="preserve">
     <value>Remove the copyright royalty from your plan</value>
   </data>
-  <data name="Summary_AllAsPay" xml:space="preserve">
-    <value>{1} taxed as your pay</value>
-  </data>
   <data name="AttestationLabel" xml:space="preserve">
     <value>I hold an attestation du travail des arts covering these works</value>
   </data>
@@ -124,7 +124,7 @@
     <value>creative share not given, which a royalty that follows your pay needs</value>
   </data>
   <data name="Figure_Royalty" xml:space="preserve">
-    <value>Royalty</value>
+    <value>Paid out by the company</value>
   </data>
   <data name="Figure_WithinLimits" xml:space="preserve">
     <value>Within the limits</value>

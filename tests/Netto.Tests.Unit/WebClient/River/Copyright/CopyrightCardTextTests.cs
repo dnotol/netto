@@ -26,32 +26,31 @@ public class CopyrightCardTextTests
 
     // No royalty yet, a royalty within its limits, one beyond them, and one whose four previous years
     // averaged above the cap.
+    // The summary says what the royalty adds to the pocket or takes from it, the plan with it less the
+    // plan without, or that there is no royalty yet: one all taxed as pay, its four previous years above the
+    // cap on average, leaves less than the company keeping it as profit would.
     [Fact]
     public void CopyrightCardResx_everySummary_hasAText()
     {
         var inputs = RiverInputs.Example.AddToPlan(OptionalModule.Copyright);
-        var views = new[] { inputs, inputs.WithRoyalty(10_000m), inputs.WithRoyalty(30_000m), inputs.WithRoyalty(10_000m).WithAverageWithinCap(false) }
-            .Select(river => CopyrightView.From(river.Run().Year!));
+        var keys = new[] { inputs, inputs.WithRoyalty(10_000m), inputs.WithRoyalty(30_000m), inputs.WithRoyalty(10_000m).WithAverageWithinCap(false) }
+            .Select(river => CopyrightCardText.Summary(CopyrightView.From(river.Run().Year!), LeverGain.Of(river, river.Run(), OptionalModule.Copyright)!.Gain))
+            .ToList();
 
-        views.Select(CopyrightCardText.Summary).ShouldBe(["SummaryNoRoyalty", "Summary", "Summary_AsPay", "Summary_AllAsPay"]);
+        keys.ShouldSatisfyAllConditions(
+            () => keys.ShouldBe(["SummaryNoRoyalty", "Summary_More", "Summary_More", "Summary_Less"]),
+            () => Resources.Missing(["SummaryNoRoyalty", "Summary_More", "Summary_Less", "Summary_None"]).ShouldBeEmpty());
     }
 
-    [Fact]
-    public void CopyrightCardResx_everySummaryKey_hasAText()
-    {
-        Resources.Missing(["SummaryNoRoyalty", "Summary", "Summary_AsPay", "Summary_AllAsPay"]).ShouldBeEmpty();
-    }
-
-    // Figures with their labels: what reaches the pocket after the tax apart, then what is taxed as pay
-    // once there is some, or all of it taxed as pay.
+    // Figures with their labels: what the royalty adds to the pocket or takes from it, or none.
     [Theory]
     [InlineData("SummaryNoRoyalty", "")]
-    [InlineData("Summary", "€8,000.00")]
-    [InlineData("Summary_AsPay", "€8,000.00 €2,000.00")]
-    [InlineData("Summary_AllAsPay", "€2,000.00")]
+    [InlineData("Summary_More", "€8,000.00")]
+    [InlineData("Summary_Less", "€8,000.00")]
+    [InlineData("Summary_None", "")]
     public void Summary_eachWay_isItsFiguresWithTheirLabels(string key, string amounts)
     {
-        var summary = Resources.Format(key, "€8,000.00", "€2,000.00");
+        var summary = Resources.Format(key, "€8,000.00");
 
         summary.ShouldSatisfyAllConditions(
             () => string.Join(' ', CardHtml.Amounts(summary)).ShouldBe(amounts),

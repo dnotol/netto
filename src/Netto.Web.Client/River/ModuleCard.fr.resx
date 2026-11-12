@@ -18,6 +18,9 @@
   <data name="PassesOn" xml:space="preserve">
     <value>{0} transmis</value>
   </data>
+  <data name="OfThePayout" xml:space="preserve">
+    <value>{0} du versement</value>
+  </data>
   <data name="Waiting" xml:space="preserve">
     <value>En attente de l'exercice de la société.</value>
   </data>

@@ -61,73 +61,42 @@ public class CarCardTests
         ]);
     }
 
-    // The words ModuleCard gives the share a card's summary ends on.
-    private static readonly ResxText ModuleTexts = ResxText.For<ModuleCard>();
-
-    // A contribution above the car's costs is no share above 100%: the summary ends on all of what the card
-    // receives, and states the contribution beyond the costs as a figure, between the costs and what the
-    // split shares, so the extra shows where it comes from; the card's lines say the same as ever (the
-    // costs line, €0.00, is left out). No sentence, and no key drawn.
-    [Fact]
-    public async Task Card_contributionAboveTheCosts_endsOnAllItReceivesAndStatesWhatTheContributionAdds()
+    // Whatever its costs and the director's contribution, the royalty in the plan or not, the summary says
+    // what the car adds to the pocket or takes from it, the plan with it less the plan without at the same
+    // pay, in cash, and ends on no rate: what the car pays out is its costs, a cost of the company. No
+    // sentence, and no key drawn.
+    public static TheoryData<string, RiverInputs> Cars => new()
     {
-        var inputs = ElectricCar.WithCarCosts(0m).WithCarContribution(600m);
-        var shared = Formats.Euros(HandOff.Shared(inputs.Run().Year.ShouldNotBeNull()));
-
-        var html = await RenderOpenAsync<CarCard>(OptionalModule.Car, inputs);
-        var summary = CardHtml.Summary(html).ShouldNotBeNull();
-
-        html.ShouldSatisfyAllConditions(
-            () => summary.ShouldBe(Text("SummaryBeyond", "€0.00", "€600.00", shared)),
-            () => CardHtml.Amounts(summary).ShouldBe(["€0.00", "€600.00", shared]),
-            () => CardHtml.Rate(html).ShouldBe(ModuleTexts.Format(ModuleCardText.PassesOn, "100%")),
-            () => CardHtml.SummaryFaults(summary).ShouldBeEmpty(),
-            () => CardHtml.LeakedKeys(html).ShouldBeEmpty(),
-            () => CardHtml.Lines(html).TakeLast(2).ShouldBe(
-            [
-                (Drains("Drain_car_contribution"), "+€600.00", null),
-                (Drains("Drain_profit_before_pay"), shared, null),
-            ]));
-    }
-
-    // The same with the royalty in the plan: the split shares the royalty too, and the summary ends on it.
-    [Fact]
-    public async Task Card_contributionAboveTheCostsWithTheRoyaltyInThePlan_endsOnBeforeYourPayAndRoyalty()
-    {
-        var inputs = ElectricCar.WithCarCosts(500m).WithCarContribution(600m).AddToPlan(OptionalModule.Copyright).WithRoyalty(10_000m);
-        var shared = Formats.Euros(HandOff.Shared(inputs.Run().Year.ShouldNotBeNull()));
-
-        var html = await RenderOpenAsync<CarCard>(OptionalModule.Car, inputs);
-        var summary = CardHtml.Summary(html).ShouldNotBeNull();
-
-        html.ShouldSatisfyAllConditions(
-            () => summary.ShouldBe(Text("SummaryBeyond_Royalty", "€500.00", "€100.00", shared)),
-            () => CardHtml.Rate(html).ShouldBe(ModuleTexts.Format(ModuleCardText.PassesOn, "100%")),
-            () => CardHtml.SummaryFaults(summary).ShouldBeEmpty());
-    }
-
-    // Where the costs are at least the contribution the summary is what it always was: the costs and what
-    // the split shares, ending on what the costs leave of what the card receives, net of the contribution;
-    // equal to the contribution they leave all of it, and no figure is stated for a contribution that
-    // brings nothing beyond them.
-    public static TheoryData<string, decimal, decimal, string> SummariesWhereTheCostsCoverTheContribution => new()
-    {
-        { "costs above the contribution", 8_000m, 600m, "93%" },
-        { "costs and no contribution", 8_000m, 0m, "92%" },
-        { "costs equal to the contribution", 600m, 600m, "100%" },
+        { "costs and no contribution", ElectricCar },
+        { "costs above the contribution", ElectricCar.WithCarContribution(600m) },
+        { "a contribution above the costs", ElectricCar.WithCarCosts(0m).WithCarContribution(600m) },
+        { "a contribution above the costs and a royalty", ElectricCar.WithCarCosts(500m).WithCarContribution(600m).AddToPlan(OptionalModule.Copyright).WithRoyalty(10_000m) },
+        { "costs above what the company earns", ElectricCar.WithCarCosts(150_000m) },
     };
 
     [Theory]
-    [MemberData(nameof(SummariesWhereTheCostsCoverTheContribution))]
-    public async Task Card_costsCoverTheContribution_summaryIsTheCostsAndWhatTheSplitSharesAndTheShareTheyLeave(string _, decimal costs, decimal contribution, string share)
+    [MemberData(nameof(Cars))]
+    public async Task Card_aCar_summaryIsWhatItAddsToThePocketWithNoRate(string _, RiverInputs inputs)
     {
-        var inputs = ElectricCar.WithCarCosts(costs).WithCarContribution(contribution);
-        var shared = Formats.Euros(HandOff.Shared(inputs.Run().Year.ShouldNotBeNull()));
+        var gain = LeverGain.Of(inputs, inputs.Run(), OptionalModule.Car).ShouldNotBeNull().Gain;
 
         var html = await RenderOpenAsync<CarCard>(OptionalModule.Car, inputs);
+        var summary = CardHtml.Summary(html).ShouldNotBeNull();
 
-        (CardHtml.Summary(html), CardHtml.Rate(html))
-            .ShouldBe((Text("Summary", Formats.Euros(costs), shared), ModuleTexts.Format(ModuleCardText.PassesOn, share)));
+        html.ShouldSatisfyAllConditions(
+            () => summary.ShouldBe(Text(LeverGainText.Summary(gain), Formats.Euros(Math.Abs(gain)))),
+            () => CardHtml.Rate(html).ShouldBeNull(),
+            () => CardHtml.SummaryFaults(summary).ShouldBeEmpty(),
+            () => CardHtml.LeakedKeys(html).ShouldBeEmpty());
+    }
+
+    // The example's car takes cash from the pocket: 6,162.66 less than without it.
+    [Fact]
+    public async Task Card_withACar_saysTheCashItTakesFromThePocket()
+    {
+        var html = await RenderOpenAsync<CarCard>(OptionalModule.Car, ElectricCar);
+
+        CardHtml.Summary(html).ShouldBe(Text("Summary_Less", "€6,162.66"));
     }
 
     // A pay set above what the company can pay once the car's costs are paid is held there, and both plans of
@@ -143,33 +112,6 @@ public class CarCardTests
         (CardHtml.Prose(held).Count(sentence => sentence == note), held.IndexOf(note, StringComparison.Ordinal) < held.IndexOf(Text("Figure_WithCar"), StringComparison.Ordinal),
                 CardHtml.Prose(notHeld).Any(sentence => sentence.StartsWith("Both plans run at", StringComparison.Ordinal)))
             .ShouldBe((1, true, false));
-    }
-
-    // Costs above what the card receives, 100,000, take all of it and no more: the rate stops at 0%, the
-    // costs' share at 100.0%, one short note says the car costs more than the card receives, and no
-    // percentage on the card is negative. The note states no amount a line shows, and no key is drawn.
-    [Fact]
-    public async Task Card_costsAboveWhatItReceives_stopsTheRateAtNothingAndTheCostsAtAllOfIt()
-    {
-        var html = await RenderOpenAsync<CarCard>(OptionalModule.Car, ElectricCar.WithCarCosts(150_000m));
-        var note = Text("CostsAboveReceived");
-
-        html.ShouldSatisfyAllConditions(
-            () => CardHtml.Rate(html).ShouldBe(ModuleTexts.Format(ModuleCardText.PassesOn, "0%")),
-            () => CardHtml.Lines(html).Single(line => line.Label == Drains("Drain_car_costs")).Share.ShouldBe("100.0%"),
-            () => CardHtml.Prose(html).Count(sentence => sentence == note).ShouldBe(1),
-            () => Regex.IsMatch(System.Net.WebUtility.HtmlDecode(html), "[−-]\\s?\\d+(\\.\\d+)?%").ShouldBeFalse(),
-            () => CardHtml.Amounts(note).ShouldBeEmpty(),
-            () => CardHtml.LeakedKeys(html).ShouldBeEmpty());
-    }
-
-    // Nothing of the kind while the costs are no more than the card receives.
-    [Fact]
-    public async Task Card_costsWithinWhatItReceives_saysNothingOfTheKind()
-    {
-        var html = await RenderOpenAsync<CarCard>(OptionalModule.Car, ElectricCar);
-
-        CardHtml.Prose(html).ShouldNotContain(Text("CostsAboveReceived"));
     }
 
     // Which cars the card counts is no sentence of its own: it is said in the bubble of « Ordered or

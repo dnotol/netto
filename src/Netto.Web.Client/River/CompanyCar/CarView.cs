@@ -119,9 +119,12 @@ internal sealed record CarComparison(decimal PocketWith, decimal PocketWithout, 
     // seeing it, with the refusal Core declares for it.
     public Refusal? Refused => PrivateCost < 0m ? CarCalculator.PrivateCostNegative : null;
 
-    public static CarComparison? From(RiverInputs inputs, RiverRun run)
+    public static CarComparison? From(RiverInputs inputs, RiverRun run) => From(inputs, run, LeverGain.Of(inputs, run, OptionalModule.Car));
+
+    // The same from the car's gain the card already measured.
+    public static CarComparison? From(RiverInputs inputs, RiverRun run, LeverGain? gain)
     {
-        if (run.Year is not { Scenario.Car.Any: true } with || LeverGain.Of(inputs, run, OptionalModule.Car) is not { Without.Year: { } without } gain)
+        if (run.Year is not { Scenario.Car.Any: true } with || gain is not { Without.Year: { } without })
             return null;
 
         return new CarComparison(gain.PocketWith, gain.PocketWithout, Difference(TaxesOnPay(with), TaxesOnPay(without)))

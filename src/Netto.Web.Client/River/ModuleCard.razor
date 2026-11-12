@@ -11,8 +11,8 @@
    word that takes it out of the plan. A skipped module is drawn dashed: Company year with its own
    word, any other waiting for the company's year (Waiting), which it says instead of its content. The
    summary ends on one share, worded here for every card: what reaches the pocket of what the module
-   receives (ToYou), or, for Corporate tax, what it passes on (PassesOn); none while no money flows
-   through it. *@
+   receives (ToYou), for Corporate tax what it passes on (PassesOn), or for a lever what it adds to the
+   pocket over what it pays out (OfThePayout); none while no money flows through it. *@
 <section id="@($"card-{Name}")" class="module-card @(Skipped || Waiting ? "module-card--skipped" : null)" aria-labelledby="@_titleId">
     <Fold @ref="_fold" Name="@Name" Title="@Title" TitleId="@_titleId" Summary="@Summary" Rate="@Rate" Help="@Help" Refused="@(Refused is not null)" Pinned="@(Seat is not null)">
         <div class="module-card__body">
@@ -66,6 +66,10 @@
     // What the module passes on of what it receives, for one that reaches no pocket itself.
     [Parameter]
     public decimal? PassesOn { get; set; }
+
+    // What a lever adds to the pocket (LeverGain) over what it pays out, for a lever's card.
+    [Parameter]
+    public decimal? OfThePayout { get; set; }
 
     // What the module is, in a bubble at the end of the heading's row.
     [Parameter]
@@ -140,10 +144,11 @@
             await _fold.FocusAsync();
     }
 
-    private string? Rate => (ToYou, PassesOn) switch
+    private string? Rate => (ToYou, PassesOn, OfThePayout) switch
     {
-        ({ } share, _) => L[ModuleCardText.ToYou, Formats.WholeShare(share)].Value,
-        (_, { } share) => L[ModuleCardText.PassesOn, Formats.WholeShare(share)].Value,
+        ({ } share, _, _) => L[ModuleCardText.ToYou, Formats.WholeShare(share)].Value,
+        (_, { } share, _) => L[ModuleCardText.PassesOn, Formats.WholeShare(share)].Value,
+        (_, _, { } share) => L[ModuleCardText.OfThePayout, Formats.WholeShare(share)].Value,
         _ => null,
     };
 }

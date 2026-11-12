@@ -31,14 +31,9 @@ internal static class CopyrightCardText
     // its figure being among the card's lines.
     public static string? Following(CopyrightFollowing following) => following == CopyrightFollowing.AtCeiling ? null : $"Following_{following}";
 
-    // The summary names the part taxed as pay once there is one, and says when all of it is.
-    public static string Summary(CopyrightView view) => view switch
-    {
-        { HasRoyalty: false } => "SummaryNoRoyalty",
-        { Result.WithinLimits: 0m } => "Summary_AllAsPay",
-        { Result.TaxedAsPay: > 0m } => "Summary_AsPay",
-        _ => "Summary",
-    };
+    // The summary says what the royalty adds to the pocket or takes from it, the plan with it less the plan
+    // without (LeverGain), or that there is no royalty yet.
+    public static string Summary(CopyrightView view, decimal gain) => view.HasRoyalty ? LeverGainText.Summary(gain) : "SummaryNoRoyalty";
 
     // The line of what the royalty leaves in the pocket against the same plan without it: more, less, or
     // the same.

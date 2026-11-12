@@ -39,14 +39,11 @@ public class LeverCardsFiguresTests
     // All of what can be paid out goes as a dividend.
     private static readonly NamedRiver NothingKept = Filled.With("nothing kept", inputs => inputs.WithReserve(0m));
 
-    // The amounts each card's summary draws, in order, by its fold's name, on the river it is drawn on.
+    // The amounts each card's summary draws, in order, by its fold's name, on the river it is drawn on. A
+    // lever's summary is what it adds to the pocket (LeverCardsSummaryTests).
     public static TheoryData<string, NamedRiver, string[]> Summaries => new()
     {
         { "company-year", Filled, ["€120,000.00", "€100,000.00"] },
-        { "vouchers", Filled, ["€2,062.00", "€97,938.00"] },
-        { "allowances", Filled, ["€1,000.00", "€96,938.00"] },
-        { "rent", Filled, ["€711.11", "€88,538.00"] },
-        { "rent", NoRoyalty, ["€711.11", "€88,538.00"] },
         { "dividend", Filled, ["€44,978.48", "€37,032.29"] },
     };
 

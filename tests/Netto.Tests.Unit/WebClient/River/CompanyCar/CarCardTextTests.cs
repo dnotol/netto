@@ -72,7 +72,7 @@ public class CarCardTextTests
     [Fact]
     public void CarCardResx_payHeldNote_hasATextNamingThePay()
     {
-        Resources.Missing(["PayHeld", "CostsAboveReceived"]).ShouldBeEmpty();
+        Resources.Missing(["PayHeld"]).ShouldBeEmpty();
         CardHtml.Amounts(Resources.Format("PayHeld", "€80,000.00")).ShouldBe(["€80,000.00"]);
     }
 
@@ -136,37 +136,15 @@ public class CarCardTextTests
         Resources.Missing(lines.Select(line => line.Key).Concat(lines.Select(line => line.Help).OfType<string>()).Distinct()).ShouldBeEmpty();
     }
 
-    // The car's summary ends on what the split shares: « before your pay », and « before your pay and
-    // royalty » once the royalty is in the plan; with a car whose costs the contribution more than
-    // covers, it states that excess between the costs and what the split shares.
-    [Fact]
-    public void CarCardResx_everySummary_hasAText()
-    {
-        Resources.Missing(
-            [
-                CarCardText.Summary(true, false, false), CarCardText.Summary(true, true, false), CarCardText.Summary(true, false, true), CarCardText.Summary(true, true, true),
-                CarCardText.Summary(false, false, false), CarCardText.Summary(false, true, false),
-            ])
-            .ShouldBeEmpty();
-    }
-
+    // The car's summary says what it adds to the pocket or takes from it, or that there is no car yet.
     [Theory]
-    [InlineData(true, false, false, "Summary")]
-    [InlineData(true, true, false, "Summary_Royalty")]
-    [InlineData(true, false, true, "SummaryBeyond")]
-    [InlineData(true, true, true, "SummaryBeyond_Royalty")]
-    [InlineData(false, false, false, "SummaryNoCar")]
-    [InlineData(false, true, false, "SummaryNoCar_Royalty")]
-    public void CarSummary_royaltyInThePlanContributionBeyondTheCosts_saysSoBeforeYourPay(bool hasCar, bool royalty, bool beyondCosts, string key)
+    [InlineData(true, -1_200, "Summary_Less")]
+    [InlineData(true, 300, "Summary_More")]
+    [InlineData(true, 0, "Summary_None")]
+    [InlineData(false, 0, "SummaryNoCar")]
+    public void CarSummary_aCarOrNone_saysWhatItAddsToThePocketOrThatThereIsNone(bool hasCar, decimal gain, string key)
     {
-        CarCardText.Summary(hasCar, royalty, beyondCosts).ShouldBe(key);
-    }
-
-    // A summary with no car has no costs for a contribution to exceed: it names none.
-    [Fact]
-    public void CarSummary_noCar_namesNoContributionBeyondTheCosts()
-    {
-        CarCardText.Summary(false, false, true).ShouldBe("SummaryNoCar");
+        (CarCardText.Summary(hasCar, gain), Resources.Get(key) is not null).ShouldBe((key, true));
     }
 
     // Every way the line of « Your car » reads: each engine, its CO2 given, not given or none
