@@ -17,14 +17,13 @@ namespace Netto.Web.Client.River;
 // What the vouchers bring to the pocket, one drain for each kind once the company grants any, and what
 // the company pays out for them, deducts of them and cannot, from the year's voucher steps. What they
 // leave of what the company earns is no line of the card: the map's company line carries it
-// (HandOff.Drain, read by MapLinks); Left is that amount, which no card shows. The shares, the yearly
-// maximums and the conditions are the year's rules, which the card reads beside it, so they stay while an
-// amount is refused. The plan's composition decides none of the vouchers' own lines.
+// (HandOff.Drain, read by MapLinks). The shares, the yearly maximums and the conditions are the year's
+// rules, which the card reads beside it, so they stay while an amount is refused. The plan's composition
+// decides none of the vouchers' own lines.
 internal sealed record VoucherView(
     decimal Total,
     decimal Deductible,
     decimal Disallowed,
-    decimal Left,
     IReadOnlyList<Drain> Drains,
     IReadOnlyList<StepDetail> Details)
 {
@@ -36,7 +35,6 @@ internal sealed record VoucherView(
             year.Vouchers.Total,
             year.Vouchers.Deductible,
             year.Vouchers.Disallowed,
-            HandOff.After(year, OptionalModule.Vouchers),
             [.. steps.Where(step => step.Track == Track.InPocket).Select(Drain.ToPocket)],
             steps.Select(StepDetail.From).ToList());
     }

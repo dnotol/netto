@@ -709,8 +709,8 @@ public class ModuleViewsTests
     {
         var view = Vouchers(RiverInputs.Example.AddToPlan(OptionalModule.Vouchers));
 
-        (view.Total, view.Deductible, view.Disallowed, view.Left, view.Details.Count, view.Drains.Count)
-            .ShouldBe((0m, 0m, 0m, 100_000m, 0, 0));
+        (view.Total, view.Deductible, view.Disallowed, view.Details.Count, view.Drains.Count)
+            .ShouldBe((0m, 0m, 0m, 0, 0));
     }
 
     // Each kind to the pocket, and no line of what the company has left after them: that is the map's
@@ -743,11 +743,14 @@ public class ModuleViewsTests
             .ShouldBe([("meal_voucher_company_share", 8.91m), ("meal_voucher_holder_share", 1.09m)]);
     }
 
-    // The river runs on: what the vouchers leave is what they leave, whatever the allowances take next.
+    // The river runs on: what the vouchers leave, on the map's company line, is what they leave, whatever the
+    // allowances take next.
     [Fact]
     public void Vouchers_withAllowances_passOnWhatTheVouchersLeave()
     {
-        Vouchers(FlatRateAllowances(AllVouchers)).Left.ShouldBe(97_689.80m);
+        var inputs = FlatRateAllowances(AllVouchers);
+
+        HandOff.After(inputs.Run().Year.ShouldNotBeNull(), OptionalModule.Vouchers).ShouldBe(97_689.80m);
     }
 
     [Fact]

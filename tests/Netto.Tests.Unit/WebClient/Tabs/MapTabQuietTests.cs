@@ -55,7 +55,7 @@ public class MapTabQuietTests
     [Fact]
     public async Task Tab_aQuietRow_drawsNoAmountAndTheLineThroughItSaysItsAmountOnce()
     {
-        var left = Formats.Euros(VoucherView.From(ChainQuiet.Run().Year!, ChainQuiet.Composition).Left);
+        var left = Formats.Euros(HandOff.After(ChainQuiet.Run().Year!, OptionalModule.Vouchers));
 
         var map = Map(await RenderTabAsync(ChainQuiet));
 

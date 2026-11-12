@@ -54,8 +54,8 @@ internal sealed record CarView(
 // unless the company cannot pay so much once the car's costs are paid (YearSimulation.PayCeiling): the
 // river with the car holds it there, but the river without it would pay all of it, so the second run is
 // given the first's pay, or the difference would be the pay's as well as the car's. PayHeld says so, the
-// pay both plans run at, only then. CashCost is what the car takes from the pocket,
-// in cash (operator, 2026-10-23), below zero when the plan with the car leaves more there. Then the
+// pay both plans run at, only then. CashCost is what the car takes from the pocket, in cash as every gain
+// is, below zero when the plan with the car leaves more there. Then the
 // company car against the same car bought privately, once the user gives what that car would cost
 // them for the year (PrivateCost), which no rule reads: AgainstPrivate is that cost less the cash the
 // company car takes, what the company car gains above zero, what it costs more below. The two runs are the
