@@ -324,12 +324,35 @@ public class SankeyViewTests
     }
 
     [Fact]
-    public void Says_companyYear_whatTheCompanyEarns_notTheContributionComingBack()
+    public void Says_companyYear_theCardsProfitBeforeLevers_notWhatTheContributionComesOutOf()
     {
         var river = MapLinksTests.Full;
-        var bar = BucketsView.From(river.Run())!;
+        var run = river.Run();
 
-        SankeyView.From(river, river.Run())!.Says(SankeyNode.Of(RiverModule.CompanyYear)).ShouldBe(bar.Start - bar.EarlierProfits);
+        SankeyView.From(river, run)!.Says(SankeyNode.Of(RiverModule.CompanyYear)).ShouldBe(run.Year!.ProfitBeforeLevers);
+    }
+
+    [Fact]
+    public void Says_corporateTax_theTaxItPays_notTheProfitEnteringIt()
+    {
+        var river = MapLinksTests.Full;
+        var run = river.Run();
+        var view = SankeyView.From(river, run)!;
+        var taxes = Band(view, SankeyNode.Of(RiverModule.CorporateTax), SankeyNode.InBucket("taxes_on_profit"))!;
+
+        (view.Says(SankeyNode.Of(RiverModule.CorporateTax)), taxes.Amount > 0m).ShouldBe((taxes.Amount, true));
+        view.Says(SankeyNode.Of(RiverModule.CorporateTax)).ShouldNotBe(run.Year!.ProfitAfterPay);
+    }
+
+    [Fact]
+    public void Says_dividend_whatIsPaidOut_notWhatCouldBe()
+    {
+        var river = MapLinksTests.Full.WithReserve(1_000m);
+        var run = river.Run();
+        var dividend = DividendView.From(run.Year!);
+
+        dividend.Kept.ShouldBeGreaterThan(0m);
+        SankeyView.From(river, run)!.Says(SankeyNode.Of(RiverModule.Dividend)).ShouldBe(dividend.Dividend);
     }
 
     [Fact]

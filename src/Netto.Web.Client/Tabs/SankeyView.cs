@@ -84,11 +84,17 @@ internal sealed record SankeyView(IReadOnlyList<SankeyNode> Nodes, IReadOnlyList
     // Director pay with the company skipped.
     public bool IsSource(SankeyNode node) => node.Bucket is null && Bands.All(band => band.To != node || band.Loop);
 
-    // The amount a node's label says: a bucket the bar's; a source what it sends of its own, not what the loop
-    // brings back to it; any other module what it receives.
+    // The amount a node's label says is the money its name names: a bucket the bar's; Corporate tax the tax it pays,
+    // which is what it sends into the buckets, not the profit entering it; Dividend what is paid out, what enters it
+    // less what the company keeps; Company year the profit its card says, before the levers, less what leaves it for
+    // the company's expenses; a source what it sends of its own, not what the loop brings back; any other module what
+    // it receives.
     public decimal Says(SankeyNode node) => node switch
     {
         { Bucket: { } key } => Bar.AmountOf(key),
+        { Module: RiverModule.CorporateTax } => Bands.Where(band => band.From == node && band.To.Bucket is not null).Sum(band => band.Amount),
+        { Module: RiverModule.Dividend } => In(node) - Bands.Where(band => band.From == node && band.To == SankeyNode.InBucket("kept_in_company")).Sum(band => band.Amount),
+        { Module: RiverModule.CompanyYear } => Out(node) - In(node) - Bands.Where(band => band.From == node && band.To == SankeyNode.InBucket("expenses")).Sum(band => band.Amount),
         _ when IsSource(node) => Out(node) - In(node),
         _ => In(node),
     };
