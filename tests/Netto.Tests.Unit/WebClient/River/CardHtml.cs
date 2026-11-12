@@ -35,7 +35,7 @@ internal static class CardHtml
     private static readonly HashSet<string> Void = ["area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "source", "track", "wbr"];
 
     // A text a misspelt key leaves, the key itself: words joined by an underscore (Drain_social_contributions,
-    // Summary_Royalty) or run together each with its capital (CostsLabel, SummaryNoCar), which no sentence
+    // Summary_More) or run together each with its capital (CostsLabel, SummaryNoCar), which no sentence
     // of the site holds. A key of one plain word (Title) reads as a word and is not found.
     private static readonly Regex KeyLike = new("\\b(?:[A-Za-z][A-Za-z0-9]*(?:_[A-Za-z0-9]+)+|[A-Z][a-z0-9]+(?:[A-Z][a-z0-9]+)+)\\b");
 

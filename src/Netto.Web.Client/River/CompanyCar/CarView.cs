@@ -5,11 +5,10 @@ using Netto.Web.Client.Steps;
 
 namespace Netto.Web.Client.River.CompanyCar;
 
-// What the company car costs the company, paid into its expenses beside its running costs (operator,
-// 2026-10-23 and 2026-10-28), and the director's contribution coming back from their pocket, from the
-// year's car steps. What it leaves of what the company earns, passed on to the split, is the map's company
-// line, no line of the card, and the card measures nothing against it: no share of it, no rate (operator,
-// 2026-11-12, reversing 2026-10-28). The card reads the car as the engine took it (Result): its benefit,
+// What the company car costs the company, paid into its expenses beside its running costs, and the
+// director's contribution coming back from their pocket, from the year's car steps. What it leaves of what
+// the company earns, passed on to the split, is the map's company line, no line of the card, and the card
+// measures nothing against it: no share of it, no rate. The card reads the car as the engine took it (Result): its benefit,
 // period by period, at its CO2 percentage, at least the minimum, less the contribution, taxed as pay, what
 // the company deducts of its costs, and what it adds back of the benefit, 40% when it pays the private
 // energy, which for a car it charges, electric or plug-in hybrid, is the administration's reading of
