@@ -16,7 +16,7 @@
     <value>Votre poche</value>
   </data>
   <data name="Bucket_taxes_on_pay" xml:space="preserve">
-    <value>Cotisations et impôt des personnes physiques</value>
+    <value>Cotisations et IPP</value>
   </data>
   <data name="Bucket_taxes_on_profit" xml:space="preserve">
     <value>Impôts sur le bénéfice</value>

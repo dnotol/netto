@@ -39,7 +39,7 @@ public class FrontPageAndBarInFrenchTests
 
         html.ShouldSatisfyAllConditions(
             () => html.ShouldContain(">Votre poche</button>"),
-            () => html.ShouldContain(">Cotisations et impôt des personnes physiques</button>"),
+            () => html.ShouldContain(">Cotisations et IPP</button>"),
             () => html.ShouldContain(">Impôts sur le bénéfice</button>"),
             () => html.ShouldContain(">Gardé dans la société</button>"),
             () => html.ShouldContain(">Frais</button>"),

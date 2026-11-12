@@ -41,7 +41,7 @@ Fixed once; every file that names one uses it word for word (the card, the map, 
 | Dividend | Dividende |
 | Income year (the whole river) | Revenus {year}, or « L'année » where no year is shown |
 | Your pocket | Votre poche |
-| Contributions and income tax (one name whatever the plan: the pay, a rent and a royalty) | Cotisations et impôt des personnes physiques |
+| Contributions and income tax (one name whatever the plan: the pay, a rent and a royalty) | Cotisations et IPP (IPP is l'impôt des personnes physiques, spelled out in the bucket's bubble; short, to fit the bar on one line) |
 | Taxes on profit | Impôts sur le bénéfice |
 | Kept in company | Gardé dans la société |
 | Expenses | Frais |
