@@ -20,6 +20,16 @@ public class AllowanceFiguresTests
         Lines(AllowancesPaid).ShouldBe([(AllowanceFigures.CompanyPays, 1_000m)]);
     }
 
+    // The phone costs alone: their one drain line to the pocket carries the payout whole, so no line says it
+    // again. The map reads the payout all the same (Payout).
+    [Fact]
+    public void From_oneAllowance_leavesThePayoutToItsDrainLine()
+    {
+        var inputs = AllowancesInPlan.WithPhoneCosts(600m);
+
+        (Lines(inputs).Count, AllowanceFigures.Payout(View(inputs)).Amount).ShouldBe((0, 600m));
+    }
+
     // Nothing paid: no line of nothing.
     [Fact]
     public void From_noAllowance_isNoLine()

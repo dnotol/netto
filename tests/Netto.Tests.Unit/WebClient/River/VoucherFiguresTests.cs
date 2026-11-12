@@ -21,6 +21,23 @@ public class VoucherFiguresTests
         Lines(AllVouchers).ShouldBe([(VoucherFigures.CompanyPays, 2_310.20m), (VoucherFigures.AddedBack, 1_430.20m)]);
     }
 
+    // Meal vouchers alone: their one drain line to the pocket carries the payout whole, so no line says it
+    // again; what is added back stays. The map reads the payout all the same (Payout).
+    [Fact]
+    public void From_oneKindOfVoucher_leavesThePayoutToItsDrainLine()
+    {
+        var inputs = VouchersInPlan.WithMealVoucherDays(220);
+
+        (string.Join(" ", Lines(inputs).Select(line => line.Key)), VoucherFigures.Payout(View(inputs)).Amount)
+            .ShouldBe((VoucherFigures.AddedBack, View(inputs).Total));
+    }
+
+    [Fact]
+    public void Payout_vouchersGranted_isWhatTheCompanyPaysOut()
+    {
+        (VoucherFigures.Payout(View(AllVouchers)).Key, VoucherFigures.Payout(View(AllVouchers)).Amount).ShouldBe((VoucherFigures.CompanyPays, 2_310.20m));
+    }
+
     // Nothing granted, nothing paid: no line of nothing.
     [Fact]
     public void From_noVouchers_isNoLine()

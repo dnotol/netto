@@ -72,7 +72,7 @@ internal static class MapLinks
 
         return
         [
-            .. Share(RiverModule.Vouchers, MapText.VoucherCard, figures, VoucherFigures.CompanyPays),
+            .. Share(RiverModule.Vouchers, MapText.VoucherCard, [VoucherFigures.Payout(view)], VoucherFigures.CompanyPays),
             .. Drains(RiverModule.Vouchers, [.. view.Drains, HandOff.Drain(year, OptionalModule.Vouchers, composition)]),
             .. TaxBase(RiverModule.Vouchers, MapText.VoucherCard, figures, key => key == VoucherFigures.AddedBack ? RiverModule.CorporateTax : null),
         ];
@@ -85,7 +85,7 @@ internal static class MapLinks
 
         return
         [
-            .. Share(RiverModule.Allowances, MapText.AllowanceCard, AllowanceFigures.From(view), AllowanceFigures.CompanyPays),
+            .. Share(RiverModule.Allowances, MapText.AllowanceCard, [AllowanceFigures.Payout(view)], AllowanceFigures.CompanyPays),
             .. Drains(RiverModule.Allowances, [.. view.Drains, HandOff.Drain(year, OptionalModule.Allowances, composition)]),
         ];
     }
