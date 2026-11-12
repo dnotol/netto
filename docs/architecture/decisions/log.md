@@ -1,5 +1,9 @@
 # Log
 
+## 2026-11-12
+
+- Proposed, from the story « Every figure I read means one thing, and I see none I do not need »: [a lever's card leads with what it adds to the pocket](/2026-11-12-a-levers-card-leads-with-what-it-adds-to-the-pocket.md); [running totals are the map's alone](/2026-11-12-running-totals-are-the-maps-alone.md), which once accepted amends [map lines read from the cards, the pocket line summing them](/2026-10-29-map-lines-read-from-the-cards-the-pocket-line-summing-them.md), superseding nothing.
+
 ## 2026-11-11
 
 - [When to pay is a section of Optimise](/2026-11-11-when-to-pay-is-a-section-of-optimise.md) and [My plan's picture is the map or a Sankey](/2026-11-11-my-plans-picture-is-the-map-or-a-sankey.md) accepted by the operator at landing; the first amends where [three views](/2026-11-11-three-views-one-question-each.md) puts time, superseding nothing.
