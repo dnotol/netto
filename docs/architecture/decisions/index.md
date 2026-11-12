@@ -43,6 +43,7 @@ Every decision taken on Netto, one file each, dated the day it was decided. A de
 - [The user's plans stay in their browser or a file they export, never on a server](/2026-10-22-plans-stay-in-the-browser.md): No accounts and nothing sent to a server; saved plans live in localStorage and move between browsers as an exported JSON file.
 - [Saved plans use a versioned format of their own, read as saved or not at all](/2026-10-22-saved-plans-in-a-strict-versioned-format.md): PlanStorage maps RiverInputs to its own records with a version; a plan is read strictly, never filled with defaults, and an unreadable document is copied aside.
 - [An older saved plan is brought to the current format one version at a time, by frozen literal patches](/2026-10-24-plans-migrated-a-version-at-a-time.md): PlanStorage.Patches add each version's new fields as frozen JSON; StoredPlanDocuments holds a document of every version.
+- [The household opens without a partner: adding it to the plan moves nothing until the viewer ticks the box](/2026-11-12-the-household-opens-without-a-partner.md) *(proposed)*: The example's household status is Alone by default; the v8 to v9 patch gives a plan that held no household the same status; the saved-plan version stays 9 and a plan saved at 9 keeps what it holds.
 
 ## Searches
 

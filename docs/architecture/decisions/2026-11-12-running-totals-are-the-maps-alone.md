@@ -28,4 +28,4 @@ generated: {by: claude-fable-5-2/architecture-views, at: 2026-11-12T18:00:00+01:
 # Consequences
 
 - Once accepted this amends the 2026-10-29 decision, which stays otherwise: the pocket line is no longer the only sum the map draws that no card shows.
-- A bucket's card gives no share: the bar's reach is the one percentage.
+- Once accepted this also amends [a bucket is chosen like a module](/2026-11-06-a-bucket-is-chosen-like-a-module.md): a bucket's card gives no share, the bar's reach being the one percentage, and no running total.
