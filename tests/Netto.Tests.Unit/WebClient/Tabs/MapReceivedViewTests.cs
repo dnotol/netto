@@ -19,14 +19,14 @@ public class MapReceivedViewTests
 
     private static MapReceivedView Of(MapView view, RiverModule module) => MapReceivedView.Of(view, module, end => end.Id);
 
-    // Each part is a line of money the map draws into the module, in the map's order, with the amount the
+    // Each part is a line of money the map draws into the module from another module, in the map's order, with the amount the
     // map says on it; what comes off the company's line comes from Company year, whose line it is.
     [Theory]
     [MemberData(nameof(FullPlansModules))]
     public void Of_aModule_isEveryLineOfMoneyIntoItWithTheAmountTheMapSaysOnIt(RiverModule module)
     {
         var view = MapView.From(Full, Full.Run(), MapNames.English);
-        var into = view.Bundles().Where(bundle => MapLinkStyle.IsMoney(bundle.Kind) && bundle.To.Module == module).ToList();
+        var into = view.Bundles().Where(bundle => MapLinkStyle.IsMoney(bundle.Kind) && bundle.To.Module == module && bundle.From.Bucket is null).ToList();
 
         var received = Of(view, module);
 
@@ -69,12 +69,13 @@ public class MapReceivedViewTests
     }
 
     // The first part is marked so, the line saying a separator before each of the others alone.
-    [Fact]
-    public void Of_aModuleReceivingFromTwoEnds_marksItsFirstPartAlone()
+    [Theory]
+    [MemberData(nameof(FullPlansModules))]
+    public void Of_aModule_marksItsFirstPartAlone(RiverModule module)
     {
-        var received = Of(Full, RiverModule.Dividend);
+        var received = Of(Full, module);
 
-        received.Lines.Select(line => line.First).ShouldBe([true, false]);
+        received.Lines.Select(line => line.First).ShouldBe(received.Lines.Select((_, index) => index == 0));
     }
 
     // The car takes no share of the company's line, and its contribution joins that line: the car receives no
@@ -85,14 +86,24 @@ public class MapReceivedViewTests
         Of(Full, RiverModule.Car).Lines.ShouldBeEmpty();
     }
 
-    // A module on the map is an end the viewer can go to; a bucket, the taxes on profit a credit comes back
-    // out of, is named only.
+    // A module on the map is an end the viewer can go to. A bucket is never an origin: what comes back out of
+    // the taxes on profit (the exempt dividend's refund) is the card's drain line, not money received.
     [Fact]
     public void Of_anEndThatIsAModuleOnTheMap_canBeGoneTo()
     {
         var received = Of(Full, RiverModule.Dividend);
 
-        received.Lines.Select(line => (line.From, line.Module)).ShouldBe([("corporate-tax", RiverModule.CorporateTax), ("taxes_on_profit", null)]);
+        received.Lines.Select(line => (line.From, line.Module)).ShouldBe([("corporate-tax", RiverModule.CorporateTax)]);
+    }
+
+    [Theory]
+    [MemberData(nameof(FullPlansModules))]
+    public void Of_aModule_namesNoBucketAsWhereMoneyComesFrom(RiverModule module)
+    {
+        var view = MapView.From(Full, Full.Run(), MapNames.English);
+        var buckets = view.Bundles().Where(bundle => bundle.From.Bucket is not null).Select(bundle => bundle.From.Id).Distinct().ToList();
+
+        Of(view, module).Lines.Select(line => line.From).ShouldNotContain(origin => buckets.Contains(origin));
     }
 
     // Company year starts the river: it receives nothing.
