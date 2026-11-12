@@ -81,7 +81,4 @@
   <data name="KeepNote" xml:space="preserve">
     <value>Garder ajoute cette piste seule à votre plan&#160;; Optimiser ajuste ensuite le reste.</value>
   </data>
-  <data name="ToAnswer" xml:space="preserve">
-    <value>Reste à répondre&#160;: {0}.</value>
-  </data>
 </root>

@@ -18,9 +18,6 @@ internal static class PisteCardText
     // That Keep adds the idea alone, Optimise retuning the rest.
     public const string KeepNote = "KeepNote";
 
-    // What is still to answer before « Try », the questions' labels joined: « Still to answer: … ».
-    public const string ToAnswer = "ToAnswer";
-
     // Where the idea stands, beside its gain or in its place.
     public static string State(PisteState state) => $"State_{state}";
 

@@ -35,7 +35,7 @@ public class PisteCardTextTests
         new[]
             {
                 PisteCardText.Gain(awaitsYes: false), PisteCardText.Gain(awaitsYes: true), PisteCardText.VouchersGranted, PisteCardText.TrialWithout,
-                PisteCardText.TrialWith, PisteCardText.TrialGain, PisteCardText.KeepNote, PisteCardText.ToAnswer,
+                PisteCardText.TrialWith, PisteCardText.TrialGain, PisteCardText.KeepNote,
             }
             .Where(key => Resources.Get(key) is null)
             .ShouldBeEmpty();
@@ -47,14 +47,6 @@ public class PisteCardTextTests
     public void Trial_aStateNoTrialShows_isRefused(PisteState state)
     {
         Should.Throw<ArgumentOutOfRangeException>(() => PisteCardText.Trial(state));
-    }
-
-    // What is still to answer before Try, in both languages.
-    [Fact]
-    public void ToAnswer_namesWhatIsStillToAnswer()
-    {
-        (Resources.Format(PisteCardText.ToAnswer, "Share let to the company"), French.Format(PisteCardText.ToAnswer, "Part louée à la société"))
-            .ShouldBe(("Still to answer: Share let to the company.", "Reste à répondre\u00a0: Part louée à la société."));
     }
 
     // A priced idea says how it was measured, as one phrase.

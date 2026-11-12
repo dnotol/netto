@@ -66,8 +66,7 @@
     font-variant-numeric: tabular-nums lining-nums;
 }
 
-.piste__state,
-.piste__to-answer {
+.piste__state {
     margin: 0;
     color: var(--netto-text-muted);
     font-size: 0.85rem;

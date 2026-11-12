@@ -81,7 +81,4 @@
   <data name="KeepNote" xml:space="preserve">
     <value>Keep adds this idea alone to your plan; Optimise then retunes the rest.</value>
   </data>
-  <data name="ToAnswer" xml:space="preserve">
-    <value>Still to answer: {0}.</value>
-  </data>
 </root>

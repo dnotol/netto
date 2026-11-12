@@ -3,6 +3,7 @@ using System.Text.RegularExpressions;
 using Netto.Core.Simulation;
 using Netto.Web.Client;
 using Netto.Web.Client.River;
+using Netto.Web.Client.River.Copyright;
 using Netto.Web.Client.Tabs;
 using Shouldly;
 using static Netto.Tests.WebClient.River.RiverRendering;
@@ -48,7 +49,7 @@ public class PistesTabTests
         var vouchers = Card(html, "Vouchers");
         vouchers.ShouldContain("If yes, +€63.00 more in your pocket");
         vouchers.ShouldContain("The company grants them on the conditions of the Vouchers card");
-        vouchers.ShouldContain("Still to answer: The company grants them on the conditions of the Vouchers card.");
+        vouchers.ShouldNotContain("Still to answer");
         Regex.IsMatch(Button(vouchers, "Try"), "disabled").ShouldBeTrue();
     }
 
@@ -74,9 +75,45 @@ public class PistesTabTests
         rent.ShouldContain("id=\"piste-cadastral-income\"");
         rent.ShouldContain("id=\"piste-share-let\"");
         rent.ShouldContain("Gain measured once you answer");
-        rent.ShouldContain("Still to answer: Cadastral income of your home, Share let to the company.");
+        rent.ShouldNotContain("Still to answer");
         Regex.IsMatch(Button(rent, "Try"), "disabled").ShouldBeTrue();
     }
+
+    // An idea asks each question once, with its card's own label (read through the card's localizer): the
+    // fields are the questions, and no line lists them again, in English or French.
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task PistesTab_everyIdea_asksEachQuestionOnce(bool french)
+    {
+        using var language = french ? InLanguage.French() : null;
+        var rent = french ? ResxText.French<RentCard>() : ResxText.For<RentCard>();
+        var copyright = french ? ResxText.French<CopyrightCard>() : ResxText.For<CopyrightCard>();
+
+        var html = await DrawAsync(await MeasuredAsync(RiverInputs.Example));
+
+        var rentAfter = AfterQuestions(Card(html, rent.Get("Title")!));
+        var royaltyAfter = AfterQuestions(Card(html, copyright.Get("Title")!));
+        (rentAfter.Contains(rent.Get("CadastralIncomeLabel")!), rentAfter.Contains(rent.Get("ShareLabel")!),
+                royaltyAfter.Contains(copyright.Get("CreativeShareLabel")!), Card(html, rent.Get("Title")!).Contains(rent.Get("CadastralIncomeLabel")!))
+            .ShouldBe((false, false, false, true));
+    }
+
+    // A disabled Try is described by the card's state line, which says why the gain waits.
+    [Fact]
+    public async Task PistesTab_disabledTry_isDescribedByTheStateLine()
+    {
+        var html = await DrawAsync(await MeasuredAsync(RiverInputs.Example));
+
+        var rent = Card(html, "Home office rent");
+        var describedBy = Regex.Match(Button(rent, "Try"), "aria-describedby=\"([^\"]+)\"").Groups[1].Value;
+        describedBy.ShouldNotBeEmpty();
+        Regex.IsMatch(rent, $"<p[^>]*id=\"{Regex.Escape(describedBy)}\"[^>]*>Gain measured once you answer").ShouldBeTrue();
+    }
+
+    // What the card says after its questions, where its result and state lines are: the questions' labels are
+    // the fields' alone, none is listed again there.
+    private static string AfterQuestions(string card) => card[card.IndexOf("piste__result", StringComparison.Ordinal)..];
 
     // The royalty asks the creative share and its two statuses, as its card does.
     [Fact]
