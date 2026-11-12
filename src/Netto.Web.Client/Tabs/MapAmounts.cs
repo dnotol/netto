@@ -2,7 +2,7 @@ namespace Netto.Web.Client.Tabs;
 
 // Where the map says what each line carries: its amount, on a stretch of its own line or right beside it, so a
 // reader matches it to its line by place. Every line has one but a condition's, which has no amount and no word,
-// and those whose amount the map says elsewhere, a gate's box, the pay's pill or a badge (MapBundle.SaysAmount), placed once
+// and those whose amount the map says elsewhere, a gate's box or the pay's pill (MapBundle.SaysAmount), placed once
 // from every link of the run, so hiding a kind of line or choosing a module moves none.
 
 internal static class MapAmounts
@@ -198,8 +198,9 @@ internal static class MapAmounts
             var strokes = new List<Stroke>();
             for (var index = 0; index < lines.Count; index++)
             {
+                var twin = Twin(lines, index);
                 foreach (var (across, area) in MapLineWidths.Strokes(lines[index].Route, scale, MapLinkStyle.HaloGap))
-                    strokes.Add(new Stroke(Rect.Of(area), index, across, MapLinkStyle.IsMoney(lines[index].Kind)));
+                    strokes.Add(new Stroke(Rect.Of(area), index, across, MapLinkStyle.IsMoney(lines[index].Kind), twin));
             }
 
             _strokes = [.. strokes];
@@ -257,6 +258,22 @@ internal static class MapAmounts
 
             var (x, y, half) = (line.Route.End.X * scale.X, line.Route.End.Y * scale.Y, line.Route.Width / 2m);
             return Rect.Of(new MapArea(x - half, y - half, x + turn, y + turn));
+        }
+
+        // The tax base's line a condition's line runs beside between the same two modules, or none: the condition says no
+        // word, and the amount of the tax base may stand over it.
+        private static int Twin(IReadOnlyList<MapBundle> lines, int index)
+        {
+            if (lines[index].Kind != MapLinkKind.Condition)
+                return -1;
+
+            for (var other = 0; other < lines.Count; other++)
+            {
+                if (lines[other].Kind == MapLinkKind.TaxBase && lines[other].From.Module == lines[index].From.Module && lines[other].To.Module == lines[index].To.Module)
+                    return other;
+            }
+
+            return -1;
         }
 
         // The tracks a line's stretches offer its amount, each with the pieces of it its amount may take.
@@ -370,7 +387,7 @@ internal static class MapAmounts
             foreach (var near in _nearStrokes)
             {
                 var stroke = _strokes[near];
-                if (stroke.Line == index || !track.Beside(stroke.Area, 0))
+                if (stroke.Line == index || stroke.Twin == index || !track.Beside(stroke.Area, 0))
                     continue;
 
                 var (from, to) = track.Along(stroke.Area, 0);
@@ -647,7 +664,9 @@ internal static class MapAmounts
 
     // A stretch of a line as drawn, its halo with it: its line, whether it runs across, and whether its line
     // carries money.
-    private readonly record struct Stroke(Rect Area, int Line, bool Across, bool Money);
+    // A condition's line beside the tax base's of the same two modules is its twin (Twin): one relation drawn twice, whose
+    // amount may stand over it.
+    private readonly record struct Stroke(Rect Area, int Line, bool Across, bool Money, int Twin);
 
     // Where an amount may stand along a stretch: on it or on one side, its box from Low to High across the
     // stretch and Half each side of its middle along it, its middle from Min to Max; the stretch's middle and

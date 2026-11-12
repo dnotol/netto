@@ -108,6 +108,18 @@ public class MapAmountsTests
             () => amount.ShouldContain("white-space: nowrap;"));
     }
 
+    // A tax base's line says its amount, the module it reaches having no badge to say it for it.
+    [Theory]
+    [MemberData(nameof(Plans))]
+    public void Of_aTaxBasesLine_saysItsAmount(string plan)
+    {
+        var (view, amounts) = Placed(plan);
+
+        var taxBases = view.Bundles().Where(line => line.Kind == MapLinkKind.TaxBase).ToList();
+
+        (taxBases.All(line => line.SaysAmount), taxBases.All(line => amounts.Any(amount => ReferenceEquals(amount.Bundle.Route, line.Route)))).ShouldBe((true, true));
+    }
+
     // A condition's line says no word: « yes », « lowers » or « covered » alone on a dashed line reads as nothing, the
     // rule and its state being said whole by the Effects list beside the card and by the line's title.
     [Theory]
@@ -250,7 +262,7 @@ public class MapAmountsTests
     }
 
     // Every line says its amount on it but those whose amount the map says elsewhere, a condition's line having none: a line joining the pocket line, its gate's box or the total under it saying it; the pay, its
-    // pill saying it; what Corporate tax adds back, its badge saying it; money passed on into a gate whose box
+    // pill saying it; money passed on into a gate whose box
     // says that very amount, to the cent: a lever's share off the company's line, the split's royalty, what
     // Corporate tax passes the dividend; and a stretch of the pocket line out of a point no line joins, where money
     // only leaves it, which the next total under a join says, or below nothing, which says no total
@@ -295,7 +307,7 @@ public class MapAmountsTests
     }
 
     // Whether the map says a line's amount somewhere other than on it: its gate's box or the total under it, the
-    // pay's pill, Corporate tax's badge, the box of the gate it passes money into saying that amount; or, a
+    // pay's pill, the box of the gate it passes money into saying that amount; or, a
     // stretch of the pocket line, says none out of a point no line joins or below nothing.
     private static bool SaidElsewhere(MapView view, MapBundle line) =>
         line.Kind == MapLinkKind.Condition
@@ -304,7 +316,6 @@ public class MapAmountsTests
             && (line.Amount < 0m || !view.Bundles().Any(other => other.To == line.From && other.From.PocketLine is null)))
 
         || (line.Kind == MapLinkKind.PassedOn && line.From == MapEnd.Of(RiverModule.Split) && line.To == MapEnd.Of(RiverModule.DirectorPay))
-        || (line.Kind == MapLinkKind.TaxBase && line.To == MapEnd.Of(RiverModule.CorporateTax))
         || (line.Kind == MapLinkKind.PassedOn && line.To.Module is { } into && view.Modules.Single(node => node.End.Module == into) is { Gate: true } box
             && box.Lines.Any(said => said.Amount is { } amount && Formats.Euros(amount) == Formats.Euros(line.Amount!.Value)));
 
@@ -493,9 +504,14 @@ public class MapAmountsTests
     // Every other line with a stretch running along an amount, the same way as the stretch the amount stands
     // on, over it, the map drawn at a scale.
     private static IEnumerable<(MapAmount Amount, MapBundle Other)> Along(MapView view, IEnumerable<MapAmount> amounts, MapScale scale) =>
-        amounts.SelectMany(amount => view.Bundles().Where(other => !ReferenceEquals(other.Route, amount.Bundle.Route))
+        amounts.SelectMany(amount => view.Bundles().Where(other => !ReferenceEquals(other.Route, amount.Bundle.Route) && !IsTwin(amount.Bundle, other))
             .Where(other => Strokes(other, scale).Any(stroke => stroke.Across == Across(amount) && stroke.Area.Overlaps(amount.Area(scale))))
             .Select(other => (amount, other)));
+
+    // A condition's line beside the tax base's of the same two modules: one relation drawn twice, its amount, the tax
+    // base's, free to stand over the condition's, which says no word.
+    private static bool IsTwin(MapBundle line, MapBundle other) =>
+        line.Kind == MapLinkKind.TaxBase && other.Kind == MapLinkKind.Condition && line.From.Module == other.From.Module && line.To.Module == other.To.Module;
 
     private static string Name((MapAmount Amount, MapBundle Other) along) => $"{Name(along.Amount)} along {Name(along.Other)}";
 

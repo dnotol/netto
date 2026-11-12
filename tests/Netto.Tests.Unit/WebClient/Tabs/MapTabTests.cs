@@ -30,14 +30,15 @@ public class MapTabTests
     [Fact]
     public async Task Tab_everyModule_isAButtonNamedByItsCardsTitleItsGatesLinesAndItsBadgesInTheRiversOrder()
     {
-        var badges = MapBadgesTests.Of(Full);
-        var gates = MapGates.Of(Full, Full.Run());
+        var river = MapViewConditionsTests.CostlyCar;
+        var badges = MapBadgesTests.Of(river);
+        var gates = MapGates.Of(river, river.Run());
 
-        var html = await RenderTabAsync(Full);
+        var html = await RenderTabAsync(river);
 
         html.ShouldSatisfyAllConditions(
             () => badges.ShouldNotBeEmpty(),
-            () => Buttons(html).Select(button => (button.Module, button.Name, button.Pressed)).ShouldBe(MapView.ModulesOf(Full).Select(module =>
+            () => Buttons(html).Select(button => (button.Module, button.Name, button.Pressed)).ShouldBe(MapView.ModulesOf(river).Select(module =>
                 (MapModules.Name(module), string.Join(' ', [CardTitle(module), .. gates.For(module).Select(GateWords), .. badges.GetValueOrDefault(module, []).Select(BadgeWords)]),
                     "false"))));
     }
@@ -120,11 +121,11 @@ public class MapTabTests
             () => (MapLayout.LabelTopRem + MapLayout.LabelRem).ShouldBeLessThan((1m - 0.5m) / 2m * MapLayout.SmallestRowRem));
     }
 
-    // Each module a condition or a tax base reaches holds its badges in its box, inside its button, in the
+    // Each module a lost condition acts on holds its badges in its box, inside its button, in the
     // river's order and each module's badges in MapBadges' order, each drawn in its tone: with the costly
     // car the benefits lose Corporate tax its rate.
     [Fact]
-    public async Task Tab_aModuleAConditionOrATaxBaseReaches_drawsItsBadgesInItsButton()
+    public async Task Tab_aModuleAConditionLostActsOn_drawsItsBadgesInItsButton()
     {
         var river = MapViewConditionsTests.CostlyCar;
         var badges = MapBadgesTests.Of(river);
@@ -138,8 +139,7 @@ public class MapTabTests
     }
 
     // A rule lost is said in its words, an icon and an outline, never the colour alone: each badge draws
-    // its tone's icon (MapBadgeStyle), out of a screen reader's hearing, before its words; what a tax base
-    // gains, an amount, none.
+    // its tone's icon (MapBadgeStyle), out of a screen reader's hearing, before its words.
     [Fact]
     public async Task Tab_aBadge_drawsItsTonesIconBeforeItsWords()
     {
@@ -148,41 +148,10 @@ public class MapTabTests
         var badges = ButtonBadges(html);
         badges.ShouldSatisfyAllConditions(
             () => badges.Select(badge => badge.Tone).ShouldContain("lost"),
-            () => badges.Select(badge => badge.Tone).ShouldContain("amount"),
             () => badges.Where(badge => MapBadgeStyle.Icon(Enum.GetValues<MapBadgeTone>().Single(tone => MapBadgeStyle.Class(tone) == badge.Tone)) is { } icon
                     ? !Regex.IsMatch(badge.Icon, "^<svg [^>]*aria-hidden=\"true\"") || !badge.Icon.Contains(icon, StringComparison.Ordinal)
                     : badge.Icon.Length > 0)
                 .Select(badge => $"{badge.Module} {badge.Words}").ShouldBeEmpty());
-    }
-
-    // What a tax base gains shows as its amount alone in the box it marks, so it reads whole on the narrowest map;
-    // its words are heard with it, out of sight, so the button's name keeps them whole. A condition's badge is
-    // seen whole.
-    [Fact]
-    public async Task Tab_aTaxBasesBadge_showsItsAmountAndLeavesItsWordsHeard()
-    {
-        var html = await RenderTabAsync(MapViewConditionsTests.CostlyCar);
-
-        var badges = ButtonBadges(html);
-        badges.ShouldSatisfyAllConditions(
-            () => badges.Where(badge => badge.Tone == "amount").Select(badge => (badge.Module, badge.Seen.StartsWith('+'), badge.Seen.Contains(' ', StringComparison.Ordinal), badge.Heard))
-                .ShouldBe([("director-pay", true, false, " added to taxed income"), ("corporate-tax", true, false, " added back as disallowed expenses")]),
-            () => badges.Where(badge => badge.Tone != "amount").ShouldAllBe(badge => badge.Heard.Length == 0 && badge.Seen.Length > 0));
-    }
-
-    // What a badge leaves heard is out of sight by the very rule that hides a quiet name's state.
-    [Fact]
-    public void MapTabCss_hidesWhatABadgeLeavesHeard()
-    {
-        var css = Stylesheet.Read("src", "Netto.Web.Client", "Tabs", "MapTab.razor.css");
-        var heard = Stylesheet.Block(css, ".map-badge__heard");
-
-        heard.ShouldSatisfyAllConditions(
-            () => Regex.IsMatch(css, @"(?m)^\.map-module__quiet,\s*^\.map-badge__heard \{").ShouldBeTrue(),
-            () => Regex.Count(css, @"(?m)^\.map-badge__heard\b").ShouldBe(1),
-            () => heard.ShouldContain("position: absolute;"),
-            () => heard.ShouldContain("clip-path: inset(50%);"),
-            () => heard.ShouldContain("overflow: hidden;"));
     }
 
     // The buckets are buttons as the modules are, named as the bar names them, none pressed while nothing is
@@ -386,6 +355,19 @@ public class MapTabTests
         var map = Map(await RenderTabAsync(MapViewConditionsTests.CostlyCar));
 
         Bundles(map).Where(text => !Regex.IsMatch(text, "^−?€[0-9,]+\\.[0-9]{2}$") && !states.Contains(text)).ShouldBeEmpty();
+    }
+
+    // The car chosen, its tax-base lines, dotted, say their amounts on the map: no box carries them.
+    [Fact]
+    public async Task Tab_theCarChosen_saysTheAmountsOfItsTaxBaseLines()
+    {
+        var view = MapView.From(Full, Full.Run(), MapNames.English).ShowingFor(MapChoice.Of(RiverModule.Car));
+
+        var map = Map(await RenderTabAsync(Full, MapChoice.Of(RiverModule.Car)));
+
+        var taxBases = view.Bundles().Where(bundle => bundle.Kind == MapLinkKind.TaxBase).Select(bundle => Formats.Euros(bundle.Amount!.Value)).ToList();
+        taxBases.Count.ShouldBeGreaterThan(0);
+        Placed(map).Where(amount => amount.Kind == nameof(MapLinkKind.TaxBase)).Select(amount => amount.Text).ShouldBe(taxBases, ignoreOrder: true);
     }
 
     // A module chosen: its own lines keep their amounts where they were, and no
@@ -596,16 +578,14 @@ public class MapTabTests
             .Select(match => (match.Groups[3].Value, match.Groups[4].Value.Trim(), match.Groups[2].Value, match.Groups[1].Value.Contains("map-bucket--chosen", StringComparison.Ordinal))),
     ];
 
-    // Each badge drawn in a module's button: the module, its tone, the icon before its words, and its words, those
-    // seen and those only heard, out of sight.
-    private static List<(string Module, string Tone, string Icon, string Words, string Seen, string Heard)> ButtonBadges(string html) =>
+    // Each badge drawn in a module's button: the module, its tone, the icon before its words, and its words.
+    private static List<(string Module, string Tone, string Icon, string Words)> ButtonBadges(string html) =>
     [
         .. Regex.Matches(html, "<button type=\"button\" class=\"map-module[^\"]*\"[^>]*data-module=\"([a-z-]+)\"[^>]*>(.*?)</button>", RegexOptions.Singleline)
             .SelectMany(button => Regex.Matches(button.Groups[2].Value,
-                    "<span class=\"map-badge map-badge--([a-z-]+)\"[^>]*>(.*?)<span class=\"map-badge__words\"[^>]*>([^<]*)</span>(?:\\s*<span class=\"map-badge__heard\"[^>]*>([^<]*)</span>)?\\s*</span>",
+                    "<span class=\"map-badge map-badge--([a-z-]+)\"[^>]*>(.*?)<span class=\"map-badge__words\"[^>]*>([^<]*)</span>\\s*</span>",
                     RegexOptions.Singleline)
-                .Select(badge => (button.Groups[1].Value, badge.Groups[1].Value, badge.Groups[2].Value.Trim(), (badge.Groups[3].Value + badge.Groups[4].Value).Trim(),
-                    badge.Groups[3].Value, badge.Groups[4].Value))),
+                .Select(badge => (button.Groups[1].Value, badge.Groups[1].Value, badge.Groups[2].Value.Trim(), badge.Groups[3].Value.Trim()))),
     ];
 
     // A badge's words, as the map's texts say them.

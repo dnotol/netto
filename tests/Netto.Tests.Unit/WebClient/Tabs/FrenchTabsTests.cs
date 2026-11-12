@@ -144,31 +144,24 @@ public class FrenchTabsTests
     }
 
     // A condition's badge says what is lost in a word or two, short enough to read whole in its box on the narrowest
-    // map (MapBadgesTests): the rate lost, and the amount kept as « gardé », never « réserve », a legal term. A tax
-    // base's badge says what the base gains by the module it reaches, in the glossary's words.
+    // map (MapBadgesTests): the rate lost, and the amount kept as « gardé », never « réserve », a legal term.
     [Theory]
     [InlineData("Badge_RateLost", "taux perdu")]
     [InlineData("Badge_TooMuchKept", "trop gardé")]
-    [InlineData("Badge_TaxBase_CorporateTax", "+{0} repris en dépenses non admises")]
-    [InlineData("Badge_TaxBase_DirectorPay", "+{0} ajoutés au revenu imposé")]
-    [InlineData("Badge_TaxBase_Household", "+{0} de revenu imputé")]
-    public void Badge_inFrench_saysWhatIsLostOrGained(string key, string words)
+    public void Badge_inFrench_saysWhatIsLost(string key, string words)
     {
         ResxText.French<MapTab>().Get(key).ShouldBe(words);
     }
 
-    // A badge's words are at most 60 characters, a tax base's at an amount of millions.
+    // A badge's words are at most 30 characters.
     [Theory]
     [InlineData("Badge_RateLost")]
     [InlineData("Badge_TooMuchKept")]
-    [InlineData("Badge_TaxBase_CorporateTax")]
-    [InlineData("Badge_TaxBase_DirectorPay")]
-    [InlineData("Badge_TaxBase_Household")]
-    public void Badge_inFrench_isSixtyCharactersAtMost(string key)
+    public void Badge_inFrench_isThirtyCharactersAtMost(string key)
     {
         var text = ResxText.French<MapTab>().Format(key, $"9.999.999,99{NoBreak}€");
 
-        text.Length.ShouldBeLessThanOrEqualTo(60);
+        text.Length.ShouldBeLessThanOrEqualTo(30);
     }
 
     // A gate's line says one amount or none, so the amount alone can be drawn apart (MapGateText.Parts), and

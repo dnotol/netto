@@ -142,13 +142,4 @@
   <data name="Badge_TooMuchKept" xml:space="preserve">
     <value>too much kept</value>
   </data>
-  <data name="Badge_TaxBase_CorporateTax" xml:space="preserve">
-    <value>+{0} added back as disallowed expenses</value>
-  </data>
-  <data name="Badge_TaxBase_DirectorPay" xml:space="preserve">
-    <value>+{0} added to taxed income</value>
-  </data>
-  <data name="Badge_TaxBase_Household" xml:space="preserve">
-    <value>+{0} of income imputed</value>
-  </data>
 </root>

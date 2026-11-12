@@ -43,15 +43,15 @@
    them so far (MapView.PocketLine), never faded a stretch alone; a line joining it turns down into it on an
    arc and a line leaving it curves out of it the same way, in the flow's direction, neither with a halo where
    they meet it (MapView.HaloPathOf), so nothing cuts the gold line; a line joining it says no amount, its gate's box or
-   the total under it saying it, nor does the pay, its pill saying it, what Corporate tax adds back of a gate,
-   its badge saying it, or a gate's share of the company's line its box already says (MapLink.Unsaid).
+   the total under it saying it, nor does the pay, its pill saying it, or a gate's share of the company's line its
+   box already says (MapLink.Unsaid).
 
    The rules are marks on the module they act on only where they are lost: a condition another module sets on it
    that costs the plan its rate or its reserve is a badge in its box saying what is lost, in words that read alone
-   (the pay's and the benefits' loss of the rate being one), and what its tax base gains is one badge showing its
-   amount, its words, by the module it reaches, heard out of sight (MapBadgeWords), each reading whole on the
-   narrowest map (MapLayout.BadgeRoom), read from every link, so a line left undrawn hides no badge, and the box
-   is a line taller for each (MapLayout). What is lost is in an icon and an outline in the error colour, never the
+   (the pay's and the benefits' loss of the rate being one), each reading whole on the narrowest map
+   (MapLayout.BadgeRoom), read from every link, so a line left undrawn hides no badge, and the box is a line
+   taller for each (MapLayout). What a tax base adds is no badge: its dotted line says its amount while the module
+   is chosen, and the Effects list says it in words. What is lost is in an icon and an outline in the error colour, never the
    colour alone; a rule that holds, the office rule and a royalty lowering no pay or lowering the pay keeping the
    rate leave none, the Effects list beside the card saying every rule and its state. The badges are the
    button's content, so a screen reader hears them with the module's name.
@@ -439,14 +439,12 @@
                 <span class="map-module__badges">
                     @foreach (var badge in node.Badges)
                     {
-                        var (seen, heard) = MapBadgeWords.Of(badge, Template(badge.Words));
                         <span class="map-badge map-badge--@MapBadgeStyle.Class(badge.Tone)" data-badge-kind="@badge.Kind">
                             @if (MapBadgeStyle.Icon(badge.Tone) is { } icon)
                             {
                                 <MudIcon Icon="@icon" Size="Size.Small" aria-hidden="true" />
                             }
-                            <span class="map-badge__words">@seen</span>@if (heard.Length > 0)
-                            {<span class="map-badge__heard">@heard</span>}
+                            <span class="map-badge__words">@Carries(badge.Words)</span>
                         </span>
                     }
                 </span>
@@ -462,10 +460,6 @@
     // What a link carries, in the words of the texts that word its line on its card (MapTabText.Texts), or a
     // condition's state, in the map's, for the Effects list.
     private string Carries(MapLabel label) => TextsOf(label)[label.Key, [.. label.Args]].Value;
-
-    // A label's words as its texts write them, its amount's place among them, which a badge's words are cut at
-    // (MapBadgeWords).
-    private string Template(MapLabel label) => TextsOf(label)[label.Key].Value;
 
     private IStringLocalizer TextsOf(MapLabel label)
     {

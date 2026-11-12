@@ -37,7 +37,7 @@
     <value>Tax base</value>
   </data>
   <data name="Gloss_TaxBase" xml:space="preserve">
-    <value>what changes the amount a tax is worked out on without moving money, a benefit taxed with the pay, what Corporate tax adds back, the marital quotient. Drawn for the module you choose; the boxes say what they add.</value>
+    <value>what changes the amount a tax is worked out on without moving money, a benefit taxed with the pay, what Corporate tax adds back, the marital quotient. Drawn for the module you choose, each line saying its amount.</value>
   </data>
   <data name="Name_Condition" xml:space="preserve">
     <value>Conditions</value>

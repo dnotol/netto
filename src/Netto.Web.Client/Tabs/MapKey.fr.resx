@@ -37,7 +37,7 @@
     <value>Base imposable</value>
   </data>
   <data name="Gloss_TaxBase" xml:space="preserve">
-    <value>ce qui change le montant sur lequel un impôt est calculé sans déplacer d'argent&#160;: un avantage imposé avec la rémunération, ce que le module Impôt des sociétés reprend en dépenses non admises, le quotient conjugal. Ces lignes sont tracées pour le module que vous choisissez&#160;; les modules disent ce qu'elles ajoutent.</value>
+    <value>ce qui change le montant sur lequel un impôt est calculé sans déplacer d'argent&#160;: un avantage imposé avec la rémunération, ce que le module Impôt des sociétés reprend en dépenses non admises, le quotient conjugal. Ces lignes sont tracées pour le module que vous choisissez, chacune disant son montant.</value>
   </data>
   <data name="Name_Condition" xml:space="preserve">
     <value>Conditions</value>

@@ -26,11 +26,11 @@ public class MapViewTests
 
     // The example's height in chain rows: Company year's row, the split's, the royalty's and Corporate tax's, 1, 1,
     // 1.6 and 1.6, and the buckets' row, its box and margin, 0.7, under the band of a whole chain row less what
-    // Corporate tax's row keeps under the dividend's gate, its tallest box: the gate's name and two lines, its
-    // padding and frame, 3.124rem of a 3.25rem row, a height in rows that does not end, 6.5806… in all, worked out
-    // as the layout works it out, row by row.
+    // Corporate tax's row keeps under its tallest box: Corporate tax's own, a name and the two lines it keeps for the
+    // dividend's, 1.1 of a chain row, taller than the dividend's gate, 6.65 in all, worked out as the layout works it
+    // out, row by row.
     private static readonly decimal ExampleUnits =
-        1m + 1m + 1.6m + 1.6m + (0.5m + 0.2m + Math.Max(0.2m, 1m - (1.6m - (0.85m * 1.1m + 2 * 0.68m * 1.15m + 2m * 0.25m + 2m / 16m) / 3.25m) / 2m));
+        1m + 1m + 1.6m + 1.6m + (0.5m + 0.2m + Math.Max(0.2m, 1m - (1.6m - 1.1m) / 2m));
 
     // The pay's pill is what its line says: hidden with it, when the legend hides the money passed on, and drawn
     // with it otherwise.
@@ -351,7 +351,8 @@ public class MapViewTests
     [InlineData(RiverModule.Vouchers)]
     public void ShowingFor_aChoice_isTheMoneyAndTheRulesOfTheModuleChosen(RiverModule? chosen)
     {
-        var view = MapView.From(Full, Full.Run(), MapNames.English);
+        var river = MapViewConditionsTests.CostlyCar;
+        var view = MapView.From(river, river.Run(), MapNames.English);
 
         var shown = view.ShowingFor(MapRendering.Chosen(chosen));
 

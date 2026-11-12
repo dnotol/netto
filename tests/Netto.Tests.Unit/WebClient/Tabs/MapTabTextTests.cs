@@ -83,24 +83,20 @@ public class MapTabTextTests
     }
 
     // A badge in a module's box, by the key its helper builds: what a condition costs the plan, in words that read
-    // alone in the narrow box; what a tax base gains, its amount first, by the module it reaches, its words mostly
-    // heard rather than seen (MapBadgeWords). None is longer than 60 characters, a tax base's at an amount of millions.
+    // alone in the narrow box. None is longer than 30 characters.
     public static TheoryData<string, string[], string> BadgeWords => new()
     {
         { MapTabText.RateLostBadge, [], "rate lost" },
         { MapTabText.ReserveShortBadge, [], "too much kept" },
-        { MapTabText.TaxBaseBadge(RiverModule.CorporateTax), ["€9,999,999.99"], "+€9,999,999.99 added back as disallowed expenses" },
-        { MapTabText.TaxBaseBadge(RiverModule.DirectorPay), ["€9,999,999.99"], "+€9,999,999.99 added to taxed income" },
-        { MapTabText.TaxBaseBadge(RiverModule.Household), ["€9,999,999.99"], "+€9,999,999.99 of income imputed" },
     };
 
     [Theory]
     [MemberData(nameof(BadgeWords))]
-    public void MapTabResx_aBadge_isWordedByTheKeyItsHelperBuildsInSixtyCharactersAtMost(string key, string[] args, string words)
+    public void MapTabResx_aBadge_isWordedByTheKeyItsHelperBuildsInThirtyCharactersAtMost(string key, string[] args, string words)
     {
         var text = Resources.Format(key, args);
 
-        (text, text.Length <= 60).ShouldBe((words, true));
+        (text, text.Length <= 30).ShouldBe((words, true));
     }
 
     // None of the texts of the list of a module's links, which the map once had beside it, is here any more.

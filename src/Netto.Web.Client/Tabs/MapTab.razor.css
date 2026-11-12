@@ -474,10 +474,8 @@
 }
 
 /* What a quiet name says of itself, out of sight: that it holds nothing in this plan, which the row's
-   dashes and muted names show; and what a badge leaves heard, a tax base's words after its amount
-   (MapBadgeWords), part of the button's name. */
-.map-module__quiet,
-.map-badge__heard {
+   dashes and muted names show. */
+.map-module__quiet {
     position: absolute;
     width: 1px;
     height: 1px;
@@ -558,14 +556,6 @@
 .map-badge--lost {
     border-color: var(--netto-error);
     color: var(--netto-error);
-}
-
-/* What a tax base gains: an amount, outlined dotted as its line is. */
-.map-badge--amount {
-    border-style: dotted;
-    border-color: var(--netto-line-input);
-    color: var(--netto-text);
-    font-variant-numeric: tabular-nums;
 }
 
     .map-badge ::deep .mud-icon-root {

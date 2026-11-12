@@ -95,8 +95,7 @@ internal sealed record MapView(IReadOnlyList<MapNode> Modules, IReadOnlyList<Map
     }
 
     // The links with their amounts marked unsaid where the map says them elsewhere (MapLink.Unsaid): a line
-    // joining the pocket line, its gate's box or the total under it saying it; the pay, its pill saying it; what
-    // Corporate tax adds back, its badge saying it; money passed on into a gate whose box says that very amount,
+    // joining the pocket line, its gate's box or the total under it saying it; the pay, its pill saying it; money passed on into a gate whose box says that very amount,
     // to the cent, each line's the sum of its links (MapBundle.Sum): a lever's share off the company's line, the
     // split's royalty, what Corporate tax passes the dividend, which keeps its own where the dividend's box says
     // another or none; and a stretch of the pocket line out of a point where money only leaves it, which the
@@ -111,7 +110,6 @@ internal sealed record MapView(IReadOnlyList<MapNode> Modules, IReadOnlyList<Map
     private static bool Unsaid(MapLink link, decimal amount, MapGates gates, HashSet<MapEnd> joined) =>
         Joins(link)
         || (link.Kind == MapLinkKind.PassedOn && link.From == MapEnd.Of(RiverModule.Split) && link.To == MapEnd.Of(RiverModule.DirectorPay))
-        || (link.Kind == MapLinkKind.TaxBase && link.To == MapEnd.Of(RiverModule.CorporateTax))
         || (link.Kind == MapLinkKind.PassedOn && link.To.Module is { } into && gates.Says(into, amount))
         || (StretchOfThePocketLine(link) && (!joined.Contains(link.From) || amount < 0m));
 
@@ -296,7 +294,7 @@ internal sealed record MapBundle(MapRoute Route, IReadOnlyList<MapLink> Links)
     public static bool EndsInArrowhead(MapEnd from, MapEnd to) => to.Bucket is null && to.PocketLine is null && (to.Lever is null || from.InPocket);
 
     // Whether the map says the line's amount on it: every line of money or tax base but one whose amount the map says
-    // elsewhere, a box, the pay's pill or a badge saying it (MapLink.Unsaid, marked by MapView.From). A condition's
+    // elsewhere, a box or the pay's pill saying it (MapLink.Unsaid, marked by MapView.From). A condition's
     // line has no amount and says no word: its rule and state are the Effects list's and its title's.
     public bool SaysAmount => Kind != MapLinkKind.Condition && !Links[0].Unsaid;
 
@@ -528,7 +526,7 @@ internal sealed record MapLink(MapLinkKind Kind, MapEnd From, MapEnd To, RiverMo
     public IReadOnlyList<RiverModule> Through { get; init; } = [];
 
     // Whether the map says the link's amount elsewhere than on its line, so that its line says none: a gate's
-    // box, the pay's pill or a badge saying it. Every link of a line shares it, as they share their ends.
+    // box or the pay's pill saying it. Every link of a line shares it, as they share their ends.
     public bool Unsaid { get; init; }
 
 

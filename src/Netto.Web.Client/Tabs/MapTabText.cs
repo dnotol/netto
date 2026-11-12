@@ -52,10 +52,6 @@ internal static class MapTabText
 
     public const string ReserveShortBadge = "Badge_TooMuchKept";
 
-    // What a module's tax base gains, its amount first, the one part of its words seen (MapBadgeWords), worded by
-    // the module it reaches: what Corporate tax adds back, what Director pay taxes, the income imputed to the partner.
-    public static string TaxBaseBadge(RiverModule module) => $"Badge_TaxBase_{module}";
-
     // The component whose texts word a link (MapLabel.Text): the map's own, a drain list's, or the card
     // whose figure line it is, so the map and the card say the line in the same words.
     public static Type Texts(MapText text) => text switch

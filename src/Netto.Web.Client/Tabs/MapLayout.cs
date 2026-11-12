@@ -542,8 +542,25 @@ internal static class MapLayout
 
         // A module's box, in chain rows: half a row, or a gate's lines, or the partner's, or the lines of a name
         // that wraps and of the state it says under it, and a line for each of its badges.
-        private decimal BoxOf(RiverModule module) =>
-            Math.Max(BoxUnits, Place(module).Column is MapColumn.Gates or MapColumn.Household ? GateUnits(module) : TitleUnits(module)) + _badgeLines.GetValueOrDefault(module) * BadgeUnits;
+        private decimal BoxOf(RiverModule module)
+        {
+            var box = Math.Max(BoxUnits, Place(module).Column is MapColumn.Gates or MapColumn.Household ? GateUnits(module) : TitleUnits(module)) + _badgeLines.GetValueOrDefault(module) * BadgeUnits;
+            return module switch
+            {
+                RiverModule.DirectorPay when Moves(RiverModule.Car) || Moves(RiverModule.Copyright) => Math.Max(box, PayUnits),
+                RiverModule.CorporateTax when Moves(RiverModule.Dividend) => Math.Max(box, TaxUnits),
+                _ => box,
+            };
+        }
+
+        // Corporate tax's box, with a dividend beside it, at least a name and two lines tall: the lines between the
+        // dividend, the taxes and what is kept need the room its badges once gave it.
+        private const decimal TaxUnits = BoxUnits + 2m * BadgeUnits;
+
+        // Director pay's box, while a car or a royalty moves money, at least a name and a line tall: the pay, a royalty
+        // taxed as pay and the car's benefit reach it side by side, and their arrowheads need the room the car's
+        // benefit's badge once gave it.
+        private const decimal PayUnits = BoxUnits + BadgeUnits;
 
         // A gate's name and lines, its padding and frame, in chain rows at the smallest scale.
         private decimal GateUnits(RiverModule module) =>

@@ -142,13 +142,4 @@
   <data name="Badge_TooMuchKept" xml:space="preserve">
     <value>trop gardé</value>
   </data>
-  <data name="Badge_TaxBase_CorporateTax" xml:space="preserve">
-    <value>+{0} repris en dépenses non admises</value>
-  </data>
-  <data name="Badge_TaxBase_DirectorPay" xml:space="preserve">
-    <value>+{0} ajoutés au revenu imposé</value>
-  </data>
-  <data name="Badge_TaxBase_Household" xml:space="preserve">
-    <value>+{0} de revenu imputé</value>
-  </data>
 </root>

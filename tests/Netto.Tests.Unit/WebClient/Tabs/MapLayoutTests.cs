@@ -51,13 +51,11 @@ public class MapLayoutTests
     // The most badges a module's box can hold, which the routes here are worked out with, so its box is the
     // tallest the map draws: a badge for each condition lost acting on it (Conditions: the office rule, a rule
     // that holds and a royalty lowering the pay keeping the rate leave none, the pay's and the benefits' loss of the
-    // rate being one badge) and one for what its tax base gains, Corporate tax's from the vouchers and the car,
-    // Director pay's from the car's benefit. MapBadgesTests holds every plan within it.
+    // rate being one badge); a tax base marks none. MapBadgesTests holds every plan within it.
     internal static readonly IReadOnlyDictionary<RiverModule, int> MostBadges = new Dictionary<RiverModule, int>
     {
         [RiverModule.Split] = 2,
-        [RiverModule.CorporateTax] = 2,
-        [RiverModule.DirectorPay] = 1,
+        [RiverModule.CorporateTax] = 1,
     };
 
     [Fact]
@@ -293,7 +291,7 @@ public class MapLayoutTests
     [Fact]
     public void Grid_aNameOnTwoLines_growsItsBoxInTheCompanysColumnOrDirectorPays()
     {
-        var modules = MapView.ModulesOf(MapLinksTests.Full);
+        var modules = Bare();
         var english = MapLayout.Grid(modules, MapNames.English);
 
         var grid = MapLayout.Grid(modules, MapNames.French);
@@ -383,7 +381,7 @@ public class MapLayoutTests
     [Fact]
     public void Grid_aBoxsBadges_growItALineEachAndItsRowWithIt()
     {
-        var modules = MapView.ModulesOf(MapLinksTests.Full);
+        var modules = Bare();
         var (without, with) = (MapLayout.Grid(modules, MapNames.Drawn), MapLayout.Grid(modules, MapNames.Drawn, badgeLines: new Dictionary<RiverModule, int> { [RiverModule.Split] = 2 }));
 
         with.ShouldSatisfyAllConditions(
@@ -391,6 +389,27 @@ public class MapLayoutTests
             () => (with.Units - without.Units).ShouldBe(0.6m),
             () => modules.Where(module => module != RiverModule.Split).Select(module => Units(with, module))
                 .ShouldBe(modules.Where(module => module != RiverModule.Split).Select(module => Units(without, module))));
+    }
+
+    // The plan's modules without the car, the royalty and the dividend, whose lines make Director pay's and Corporate
+    // tax's boxes keep room beyond their names and badges.
+    private static List<RiverModule> Bare() => [.. MapView.ModulesOf(MapLinksTests.Full).Where(module => module is not (RiverModule.Car or RiverModule.Copyright or RiverModule.Dividend))];
+
+    // Director pay's box keeps a name and a line, 0.8 of a chain row, while a car or a royalty reaches it, for the
+    // arrowheads of the lines side by side into it; Corporate tax's keeps a name and two lines, 1.1, while a dividend
+    // is beside it, for the lines between the dividend, the taxes and what is kept. Neither is a badge, and neither
+    // box shrinks without them.
+    [Theory]
+    [InlineData(RiverModule.Car, RiverModule.DirectorPay, 0.8)]
+    [InlineData(RiverModule.Copyright, RiverModule.DirectorPay, 0.8)]
+    [InlineData(RiverModule.Dividend, RiverModule.CorporateTax, 1.1)]
+    public void Grid_aBoxLinesAreSideBySideInto_keepsTheRoomItsBadgesOnceGave(RiverModule beside, RiverModule box, double units)
+    {
+        var bare = Bare();
+
+        var (alone, with) = (MapLayout.Grid(bare, MapNames.Drawn), MapLayout.Grid([.. bare, beside], MapNames.Drawn));
+
+        (Units(alone, box), Units(with, box)).ShouldBe((0.5m, (decimal)units));
     }
 
     // Corporate tax's row is taller than its box needs, for the amounts of its many lines: badges grow it only
@@ -402,7 +421,7 @@ public class MapLayoutTests
     [InlineData(3, 0.6)]
     public void Grid_badgesInAStreamsBox_growItsRowOnlyPastItsRoom(int lines, double growth)
     {
-        var modules = MapView.ModulesOf(MapLinksTests.Full);
+        var modules = Bare();
 
         var with = MapLayout.Grid(modules, MapNames.Drawn, badgeLines: new Dictionary<RiverModule, int> { [RiverModule.CorporateTax] = lines });
 
@@ -788,11 +807,11 @@ public class MapLayoutTests
     // dividend. Every lever: 0.25 over Company year's box, its row 1; the gates' 1.46, each 0.96 high for its name and two
     // lines, the allowances' 1.75, theirs on two lines, the rent's 1.61, the car's 1.76, the partner's box beside it
     // 0.96 high for its name and the marital quotient's two lines, with the room round it for the quotient's amount
-    // and arrowhead; the split's 1.22; the royalty's 1.68; Corporate tax's 2.23, its box 0.8 high for its name and
-    // its one badge, the tax base's, the dividend's gate beside it reaching lower; the buckets' 0.5 and the 0.2
-    // under them, 0.25 + 12.71 + 0.5 + 0.2 = 13.66 chain rows. The example: 1, the split's
-    // 1, the royalty's 1.6, Corporate tax's 1.6, the dividend's gate 0.96 keeping 0.32 under it, the buckets'
-    // 0.7 and 0.68, 6.58. The company skipped: Company year's row 1.07, its box 0.57 for its name and the state it
+    // and arrowhead; the split's 1.22; the royalty's 1.68; Corporate tax's 2.3, its box 1.1 high for its name and the
+    // two lines kept for the dividend's, the dividend's gate beside it reaching lower; the buckets' 0.5 and the 0.2
+    // under them, 0.25 + 12.78 + 0.5 + 0.2 = 13.73 chain rows. The example: 1, the split's
+    // 1, the royalty's 1.6, Corporate tax's 1.67 for its box's 1.1, the dividend's gate 0.96 keeping 0.32 under it,
+    // the buckets' 0.7 and 0.68, 6.65. The company skipped: Company year's row 1.07, its box 0.57 for its name and the state it
     // says under it, Director pay's 1, the buckets' 0.7 and 0.4, 3.17; with the partner in the plan, their row of
     // 1.76 over Director pay's, 4.93.
     [Theory]
@@ -1290,8 +1309,8 @@ public class MapLayoutTests
     // Plans by name, each with the map's height in chain rows the band leaves it.
     public static TheoryData<string, decimal> BandHeights() => new()
     {
-        { "every lever", 13.66m },
-        { "the example", 6.58m },
+        { "every lever", 13.73m },
+        { "the example", 6.65m },
         { "the company skipped", 3.17m },
         { "the company skipped, the partner in the plan", 4.93m },
     };

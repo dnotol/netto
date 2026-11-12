@@ -35,10 +35,11 @@ public class MapTabRulesTests
     [Fact]
     public async Task Tab_nothingChosen_drawsTheMoneyAndNoRulesLineButEveryBadge()
     {
-        var view = MapView.From(Full, Full.Run(), MapNames.English);
+        var river = MapViewConditionsTests.CostlyCar;
+        var view = MapView.From(river, river.Run(), MapNames.English);
         var money = view.Bundles().Where(bundle => MapLinkStyle.IsMoney(bundle.Kind)).ToList();
 
-        var html = await RenderTabAsync(Full);
+        var html = await RenderTabAsync(river);
 
         html.ShouldSatisfyAllConditions(
             () => view.Bundles().Select(bundle => bundle.Kind).ShouldContain(MapLinkKind.TaxBase),
