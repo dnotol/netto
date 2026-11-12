@@ -85,21 +85,59 @@ public class CarCardTextTests
         CarCardText.DeductionHelp(car).ShouldBe(key);
     }
 
-    // A part of the benefit's year by its months, a month begun counting whole: the whole year, one month, or
+    // A part of the benefit's year by its months, a month begun counting whole, one of several: one month, or
     // from one month to another.
     [Fact]
     public void CarCardResx_everyPeriodLine_hasALabel()
     {
         var keys = new[]
         {
-            CarCardText.Period(new DateOnly(2026, 1, 1), new DateOnly(2026, 12, 31)),
             CarCardText.Period(new DateOnly(2026, 1, 1), new DateOnly(2026, 1, 31)),
             CarCardText.Period(new DateOnly(2026, 6, 1), new DateOnly(2026, 12, 31)),
         };
 
         keys.ShouldSatisfyAllConditions(
-            () => keys.ShouldBe(["Figure_Period_Year", "Figure_Period_Month", "Figure_Period"]),
+            () => keys.ShouldBe(["Figure_Period_Month", "Figure_Period"]),
             () => Resources.Missing(keys).ShouldBeEmpty());
+    }
+
+    // The CO2 percentage of an electric car is named as the minimum the law gives it; any other car's plainly.
+    [Theory]
+    [InlineData(CarCo2Basis.None, "Figure_Co2_Electric")]
+    [InlineData(CarCo2Basis.Registered, null)]
+    public void Co2Label_eachCar_isItsWords(CarCo2Basis basis, string? label)
+    {
+        CarCardText.Co2Label(CarResult.None with { Co2Basis = basis }).ShouldBe(label);
+    }
+
+    // At the year's minimum, the benefit before a contribution is worded as the minimum, and the benefit taxed
+    // too while no contribution comes off it; on the scale, both keep their keys' words.
+    [Theory]
+    [InlineData(1_690, 1_028.57, 0, "Figure_Benefit_Minimum", "Figure_BenefitTaxed_Minimum")]
+    [InlineData(1_690, 1_028.57, 600, "Figure_Benefit_Minimum", null)]
+    [InlineData(1_714.29, 1_714.29, 0, null, null)]
+    [InlineData(1_714.29, 1_714.29, 600, null, null)]
+    public void BenefitLabels_atTheMinimumOrOnTheScale_areTheirWords(decimal benefit, decimal scale, decimal contribution, string? beforeContribution, string? taxed)
+    {
+        var car = CarResult.None with { BenefitBeforeContribution = benefit, BenefitOnTheScale = scale, Contribution = contribution };
+
+        (CarCardText.BenefitLabel(car), CarCardText.BenefitTaxedLabel(car)).ShouldBe((beforeContribution, taxed));
+    }
+
+    // What the company cannot deduct is worded with the rate it deducts at; there is no such line while it
+    // deducts them all.
+    [Theory]
+    [InlineData(10_000, 5_050, "Figure_NotDeductible_Rate")]
+    [InlineData(10_000, 10_000, null)]
+    public void NotDeductibleLabel_eachWay_isItsWords(decimal costs, decimal deductible, string? label)
+    {
+        CarCardText.NotDeductibleLabel(CarResult.None with { Costs = costs, Deductible = deductible }).ShouldBe(label);
+    }
+
+    [Fact]
+    public void CarCardResx_everyLabelOfItsOwn_hasAText()
+    {
+        Resources.Missing(["Figure_Co2_Electric", "Figure_Benefit_Minimum", "Figure_BenefitTaxed_Minimum", "Figure_NotDeductible_Rate"]).ShouldBeEmpty();
     }
 
     // Every line the car's figures draw, and what its bubble says, on cars that take each of them: new or

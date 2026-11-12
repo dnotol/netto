@@ -321,9 +321,6 @@
   <data name="Help_TaxesOnPay" xml:space="preserve">
     <value>On Director pay, where its benefit is taxed with your pay.</value>
   </data>
-  <data name="Figure_Period_Year" xml:space="preserve">
-    <value>All year, at {2}</value>
-  </data>
   <data name="Figure_BenefitTaxed_Minimum" xml:space="preserve">
     <value>Benefit taxed, the year's minimum</value>
   </data>

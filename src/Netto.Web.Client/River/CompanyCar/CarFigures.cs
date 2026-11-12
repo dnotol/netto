@@ -31,11 +31,9 @@ internal static class CarFigures
         [
             .. car.AtTheMinimum ? [] : Scale(car),
             .. car.Contribution > 0m
-                ? [Minimum(new FigureLine("Figure_Benefit", car.BenefitBeforeContribution), car, "Figure_Benefit_Minimum"), new FigureLine("Figure_Contribution", -car.Contribution)]
+                ? [Minimum(new FigureLine("Figure_Benefit", car.BenefitBeforeContribution), car, CarCardText.BenefitLabel(car)), new FigureLine("Figure_Contribution", -car.Contribution)]
                 : Array.Empty<FigureLine>(),
-            car.Contribution == 0m
-                ? Minimum(new FigureLine(BenefitTaxed, car.Benefit) { Help = "Help_BenefitTaxed" }, car, "Figure_BenefitTaxed_Minimum")
-                : new FigureLine(BenefitTaxed, car.Benefit) { Help = "Help_BenefitTaxed" },
+            Minimum(new FigureLine(BenefitTaxed, car.Benefit) { Help = "Help_BenefitTaxed" }, car, CarCardText.BenefitTaxedLabel(car)),
             .. NotDeducted(car),
             new(AddBack, car.AddBack) { Args = car.AddBackRate is { } rate ? [Formats.RuleAmount(rate)] : [], Help = "Help_AddBack" },
         ];
@@ -54,14 +52,15 @@ internal static class CarFigures
     // are several.
     private static IEnumerable<FigureLine> Scale(CarResult car) =>
     [
-        new("Figure_Co2", car.Co2Percentage) { Format = FigureFormat.Percentage, Label = car.Co2Basis == CarCo2Basis.None ? "Figure_Co2_Electric" : null },
+        new("Figure_Co2", car.Co2Percentage) { Format = FigureFormat.Percentage, Label = CarCardText.Co2Label(car) },
         .. car.Periods.Count > 1 ? car.Periods.Select(Period) : [],
     ];
 
-    // At the year's minimum, the line worded as the minimum, what the scale would give in its bubble.
-    private static FigureLine Minimum(FigureLine line, CarResult car, string label) => car.AtTheMinimum
-        ? line with { Label = label, Help = "Help_Minimum", HelpArgs = [Formats.Euros(car.BenefitOnTheScale)] }
-        : line;
+    // A line worded as the year's minimum (its label, none on the scale), what the scale would give in its
+    // bubble.
+    private static FigureLine Minimum(FigureLine line, CarResult car, string? label) => label is null
+        ? line
+        : line with { Label = label, Help = "Help_Minimum", HelpArgs = [Formats.Euros(car.BenefitOnTheScale)] };
 
     // A part of the year at one age coefficient, by its first and last months, since a month begun counts
     // whole, and its coefficient; its label, one month or from one to another, says those it needs.
@@ -88,7 +87,7 @@ internal static class CarFigures
         [
             new FigureLine(NotDeductible, car.NotDeductibleCosts)
             {
-                Label = "Figure_NotDeductible_Rate", Args = [rate], Help = CarCardText.DeductionHelp(car), HelpArgs = [rate],
+                Label = CarCardText.NotDeductibleLabel(car), Args = [rate], Help = CarCardText.DeductionHelp(car), HelpArgs = [rate],
             },
         ];
     }

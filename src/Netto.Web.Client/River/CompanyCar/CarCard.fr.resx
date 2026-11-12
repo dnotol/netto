@@ -321,9 +321,6 @@
   <data name="Help_TaxesOnPay" xml:space="preserve">
     <value>Dans la carte Rémunération de dirigeant, où son avantage est imposé avec votre rémunération.</value>
   </data>
-  <data name="Figure_Period_Year" xml:space="preserve">
-    <value>Toute l'année, à {2}</value>
-  </data>
   <data name="Figure_BenefitTaxed_Minimum" xml:space="preserve">
     <value>Avantage imposé, minimum de l'année</value>
   </data>

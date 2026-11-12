@@ -49,14 +49,24 @@ internal static class CarCardText
         _ => null,
     };
 
-    // The line of a part of the benefit's year by its months, a month begun counting whole: the whole year,
+    // The line of a part of the benefit's year by its months, a month begun counting whole, one of several:
     // one month, or from one month to another.
-    public static string Period(DateOnly from, DateOnly to) => (from.Month, to.Month) switch
-    {
-        (1, 12) => "Figure_Period_Year",
-        _ when from.Month == to.Month => "Figure_Period_Month",
-        _ => "Figure_Period",
-    };
+    public static string Period(DateOnly from, DateOnly to) => from.Month == to.Month ? "Figure_Period_Month" : "Figure_Period";
+
+    // The words of a figure line that are not its key's, the map reading them the same way (FigureLine.Label);
+    // none where its key's are its words. The CO2 percentage of an electric car, named as the minimum the law
+    // gives it.
+    public static string? Co2Label(CarResult car) => car.Co2Basis == CarCo2Basis.None ? "Figure_Co2_Electric" : null;
+
+    // The benefit before a contribution, at the year's minimum.
+    public static string? BenefitLabel(CarResult car) => car.AtTheMinimum ? "Figure_Benefit_Minimum" : null;
+
+    // The benefit taxed at the year's minimum, while no contribution comes off it, the minimum itself.
+    public static string? BenefitTaxedLabel(CarResult car) => car.AtTheMinimum && car.Contribution == 0m ? "Figure_BenefitTaxed_Minimum" : null;
+
+    // What the company cannot deduct of the costs, worded with the rate it deducts at; none while it deducts
+    // them all, and there is no such line.
+    public static string? NotDeductibleLabel(CarResult car) => car.NotDeductibleCosts == 0m ? null : "Figure_NotDeductible_Rate";
 
     // How the company deducts costs it does not deduct in full, in the bubble of what it cannot deduct: the
     // part equal to the benefit taxed and the contribution alone, or that part and the rest at its rate;
