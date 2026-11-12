@@ -76,19 +76,15 @@ internal sealed record CopyrightComparison(
 
     public static CopyrightComparison? From(RiverInputs inputs, RiverRun run)
     {
-        if (run.Error is not null || run.Year is not { Scenario.Copyright.Any: true } year)
-            return null;
-
         // The river without the royalty is the river's own run, so a car or a rent in the plan is in it
-        // as in the other, at the pay the run with the royalty took.
-        var pay = year.Scenario.DirectorPay;
-        if (BucketsView.From(run) is not { } with
-            || BucketsView.From(inputs.TakeOutOfPlan(OptionalModule.Copyright).WithDirectorPay(pay).Run()) is not { } without)
+        // as in the other, at the pay the run with the royalty took: the royalty's LeverGain.
+        if (run.Year is not { Scenario.Copyright.Any: true } || LeverGain.Of(inputs, run, OptionalModule.Copyright) is not { } gain
+            || BucketsView.From(run) is not { } with || BucketsView.From(gain.Without) is not { } without)
             return null;
 
         return new CopyrightComparison(
             with.AmountOf("pocket"), without.AmountOf("pocket"), with.AmountOf("taxes_on_pay"), without.AmountOf("taxes_on_pay"),
-            with.AmountOf("taxes_on_profit"), without.AmountOf("taxes_on_profit")) { PayHeld = pay < inputs.DirectorPay.Value ? pay : null };
+            with.AmountOf("taxes_on_profit"), without.AmountOf("taxes_on_profit")) { PayHeld = gain.PayHeld };
     }
 
     // A plain zero when the two are the same, never a negative one.

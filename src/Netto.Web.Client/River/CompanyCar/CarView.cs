@@ -99,9 +99,9 @@ internal sealed record CarView(
 // in cash (operator, 2026-10-23), below zero when the plan with the car leaves more there. Then the
 // company car against the same car bought privately, once the user gives what that car would cost
 // them for the year (PrivateCost), which no rule reads: AgainstPrivate is that cost less the cash the
-// company car takes, what the company car gains above zero, what it costs more below. Two runs of the
-// year, the second the river with the car out of the plan; none until a car counts, or while the engine
-// refuses an amount.
+// company car takes, what the company car gains above zero, what it costs more below. The two runs are the
+// car's LeverGain, its second the river with the car out of the plan; none until a car counts, or while
+// the engine refuses an amount.
 internal sealed record CarComparison(decimal PocketWith, decimal PocketWithout, decimal TaxesOnPayAdded)
 {
     // As the user gives it, or none until given.
@@ -121,18 +121,13 @@ internal sealed record CarComparison(decimal PocketWith, decimal PocketWithout, 
 
     public static CarComparison? From(RiverInputs inputs, RiverRun run)
     {
-        if (run.Error is not null || run.Year is not { Scenario.Car.Any: true } with)
+        if (run.Year is not { Scenario.Car.Any: true } with || LeverGain.Of(inputs, run, OptionalModule.Car) is not { Without.Year: { } without } gain)
             return null;
 
-        // The river without the car is the river's own run, at the pay the run with the car took.
-        var pay = with.Scenario.DirectorPay;
-        if (inputs.TakeOutOfPlan(OptionalModule.Car).WithDirectorPay(pay).Run().Year is not { } without)
-            return null;
-
-        return new CarComparison(with.NetInPocket, without.NetInPocket, Difference(TaxesOnPay(with), TaxesOnPay(without)))
+        return new CarComparison(gain.PocketWith, gain.PocketWithout, Difference(TaxesOnPay(with), TaxesOnPay(without)))
         {
             PrivateCost = inputs.Car.PrivateCost.Value,
-            PayHeld = pay < inputs.DirectorPay.Value ? pay : null,
+            PayHeld = gain.PayHeld,
         };
     }
 
