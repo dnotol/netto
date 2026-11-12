@@ -102,14 +102,17 @@
   <data name="Help_OtherIncome" xml:space="preserve">
     <value>Le loyer d'un bureau dans votre logement loué à la société&#160;: un revenu d'une autre catégorie, imposé avec le vôtre, jamais partagé par le quotient conjugal.</value>
   </data>
-  <data name="Figure_YourTaxableIncome" xml:space="preserve">
-    <value>Votre revenu imposable</value>
+  <data name="Figure_YourIncomeOnTheScale" xml:space="preserve">
+    <value>Votre revenu au barème</value>
   </data>
   <data name="Figure_PartnerIncome" xml:space="preserve">
     <value>Revenu professionnel net de votre conjoint</value>
   </data>
-  <data name="Figure_PartnerTaxableIncome" xml:space="preserve">
-    <value>Revenu imposable de votre conjoint</value>
+  <data name="Figure_PartnerIncomeOnTheScale" xml:space="preserve">
+    <value>Revenu au barème de votre conjoint</value>
+  </data>
+  <data name="Help_IncomeOnTheScale" xml:space="preserve">
+    <value>Le revenu professionnel net de chacun, plus ou moins le quotient conjugal, plus ses autres revenus imposés avec lui&#160;: le revenu auquel s'applique le barème progressif.</value>
   </data>
   <data name="Figure_QuotientSaves" xml:space="preserve">
     <value>Économie due au quotient conjugal</value>
@@ -211,7 +214,7 @@
     <value>Ajouté à la quotité exemptée d'impôt de votre conjoint</value>
   </data>
   <data name="Help_SupplementsToPartner" xml:space="preserve">
-    <value>Dans une déclaration commune, les suppléments vont à celui de vous deux qui a le revenu imposable le plus élevé&#160;: cette année, votre conjoint.</value>
+    <value>Dans une déclaration commune, les suppléments vont à celui de vous deux qui a le revenu au barème le plus élevé&#160;: cette année, votre conjoint.</value>
   </data>
   <data name="Figure_ChildTaxCredit" xml:space="preserve">
     <value>Crédit d'impôt remboursable pour enfants à charge</value>

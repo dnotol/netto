@@ -28,8 +28,8 @@ public class HouseholdCardTests
         html.ShouldSatisfyAllConditions(
             () => CardHtml.Lines(html).Select(line => line.Label).ShouldBe(
             [
-                Texts.Format("Figure_YourIncome"), Texts.Format("Figure_QuotientToPartner"), Texts.Format("Figure_YourTaxableIncome"),
-                Texts.Format("Figure_PartnerTaxableIncome"), Texts.Format("Figure_QuotientSaves"), Texts.Format("Figure_HouseholdSaves"),
+                Texts.Format("Figure_YourIncome"), Texts.Format("Figure_QuotientToPartner"), Texts.Format("Figure_YourIncomeOnTheScale"),
+                Texts.Format("Figure_PartnerIncomeOnTheScale"), Texts.Format("Figure_QuotientSaves"), Texts.Format("Figure_HouseholdSaves"),
             ]),
             () => CardHtml.Lines(html)[1].Amount.ShouldBe("−€11,780.00"),
             () => CardHtml.Prose(html).ShouldContain(Texts.Format(HouseholdCardText.Counted)),

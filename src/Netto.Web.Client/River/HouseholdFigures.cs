@@ -2,8 +2,8 @@ namespace Netto.Web.Client.River;
 
 // The Household card's figures as lines (FigureLine), which the card words from its own texts: the
 // director's net professional income, the marital quotient, taken off it for the partner or added to it from
-// theirs, the director's other income taxed with it, a home office's rent, and their taxable income; then the
-// partner's net professional income and their taxable income; and what the quotient saves the pay's tax, or
+// theirs, the director's other income taxed with it, a home office's rent, and their income on the scale (their own,
+// the quotient and the other income); then the partner's net professional income and their income on the scale; and what the quotient saves the pay's tax, or
 // costs it, since it can lower the credit for children more than the tax. A line of nothing is left out
 // (FigureLines). They select the joint assessment's columns, the engine's.
 internal static class HouseholdFigures
@@ -17,9 +17,9 @@ internal static class HouseholdFigures
         new FigureLine("Figure_YourIncome", view.Director.ProfessionalIncome),
         .. Quotient(view) is { } quotient ? [quotient] : Array.Empty<FigureLine>(),
         new FigureLine("Figure_YourOtherIncome", view.Director.OtherIncome) { Help = "Help_OtherIncome" },
-        new FigureLine("Figure_YourTaxableIncome", view.Director.TaxableIncome),
+        new FigureLine("Figure_YourIncomeOnTheScale", view.Director.TaxableIncome) { Help = "Help_IncomeOnTheScale" },
         new FigureLine("Figure_PartnerIncome", view.Partner.ProfessionalIncome),
-        new FigureLine("Figure_PartnerTaxableIncome", view.Partner.TaxableIncome),
+        new FigureLine("Figure_PartnerIncomeOnTheScale", view.Partner.TaxableIncome) { Help = "Help_IncomeOnTheScale" },
         view.QuotientSaves < 0m
             ? new FigureLine("Figure_QuotientCosts", -view.QuotientSaves) { Help = "Help_QuotientSaves" }
             : new FigureLine("Figure_QuotientSaves", view.QuotientSaves) { Help = "Help_QuotientSaves" },

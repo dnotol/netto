@@ -23,10 +23,21 @@ public class HouseholdFiguresTests
         [
             ("Figure_YourIncome", view.Director.ProfessionalIncome),
             ("Figure_QuotientToPartner", -view.Partner.Quotient),
-            ("Figure_YourTaxableIncome", view.Director.ProfessionalIncome - view.Partner.Quotient),
-            ("Figure_PartnerTaxableIncome", view.Partner.Quotient),
+            ("Figure_YourIncomeOnTheScale", view.Director.ProfessionalIncome - view.Partner.Quotient),
+            ("Figure_PartnerIncomeOnTheScale", view.Partner.Quotient),
             ("Figure_QuotientSaves", view.QuotientSaves),
         ]);
+    }
+
+    // Each partner's income on the scale is not the pay's net professional income: it is that income with the
+    // quotient moved, and says so in its bubble.
+    [Fact]
+    public void Of_incomeOnTheScale_isNotYourNetProfessionalIncomeAndExplainsItself()
+    {
+        var lines = HouseholdFigures.Of(View(WithPartner)).ToDictionary(line => line.Key);
+
+        (lines["Figure_YourIncomeOnTheScale"].Amount, lines["Figure_YourIncomeOnTheScale"].Help, lines["Figure_PartnerIncomeOnTheScale"].Help).ShouldBe(
+            (lines["Figure_YourIncome"].Amount - 11_780m, "Help_IncomeOnTheScale", "Help_IncomeOnTheScale"));
     }
 
     // 30% of the example's net professional income, past 40,000, is past the cap of 11,780; with both 66 or
@@ -49,7 +60,7 @@ public class HouseholdFiguresTests
         var view = View(WithPartner.WithPartnerIncome(5_000m));
 
         Lines(HouseholdFigures.Of(view)).Select(line => line.Key).ShouldBe(
-            ["Figure_YourIncome", "Figure_QuotientToPartner", "Figure_YourTaxableIncome", "Figure_PartnerIncome", "Figure_PartnerTaxableIncome", "Figure_QuotientSaves"]);
+            ["Figure_YourIncome", "Figure_QuotientToPartner", "Figure_YourIncomeOnTheScale", "Figure_PartnerIncome", "Figure_PartnerIncomeOnTheScale", "Figure_QuotientSaves"]);
     }
 
     // A partner earning far more attributes part of theirs to a director on a small pay: the line adds to yours.
@@ -73,7 +84,7 @@ public class HouseholdFiguresTests
         view.ShouldSatisfyAllConditions(
             () => HouseholdFigures.Quotient(view).ShouldBeNull(),
             () => Lines(HouseholdFigures.Of(view)).Select(line => line.Key)
-                .ShouldBe(["Figure_YourIncome", "Figure_YourTaxableIncome", "Figure_PartnerIncome", "Figure_PartnerTaxableIncome"]));
+                .ShouldBe(["Figure_YourIncome", "Figure_YourIncomeOnTheScale", "Figure_PartnerIncome", "Figure_PartnerIncomeOnTheScale"]));
     }
 
     // The quotient's bubble says its rate and the cap of the year, the higher one once both are 66 or over.
