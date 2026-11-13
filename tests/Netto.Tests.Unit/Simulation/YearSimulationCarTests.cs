@@ -59,6 +59,26 @@ public class YearSimulationCarTests
             .ShouldBe((92_000m, 291.43m, 42_291.43m, ReducedRateCondition.MinimumPayMet, 8_458.29m, 33_541.71m));
     }
 
+    // Held from 17.9.2026, the car's benefit is 497.85 (CarCalculatorTests, derived from the 2026 amounts):
+    // taxed as pay, 17% of it, 84.63, added back, and its 8,000 of costs still off the 100,000.
+    [Fact]
+    public void Run_2026CarHeldFromSeptember_taxesAndAddsBackItsBenefitForTheDaysHeld()
+    {
+        var result = Run(Scenario(car: ElectricCar with { HeldFrom = new DateOnly(2026, 9, 17) }));
+
+        (result.DirectorPay.BenefitInKind, result.DisallowedExpenses, result.ProfitBeforePay).ShouldBe((497.85m, 84.63m, 92_000m));
+    }
+
+    // Art. 215 al. 3, 5° weighs the benefit for the days held: 497.85 is within 20% of 5,497.85, so the pay
+    // test decides, where the car held all year loses the rate on its benefit.
+    [Fact]
+    public void Run_2026CarHeldFromSeptemberBesideASmallPay_weighsItsBenefitForTheDaysHeld()
+    {
+        var result = Run(Scenario(directorPay: 5_000m, car: ElectricCar with { HeldFrom = new DateOnly(2026, 9, 17) }));
+
+        (result.Company.Condition, result.Company.FlatRateBenefits).ShouldBe((ReducedRateCondition.MinimumPayNotMet, 497.85m));
+    }
+
     // When the company pays the charging for private use, 40%: 685.72.
     [Fact]
     public void Run_2026CarCompanyPaysPrivateCharging_addsBackFortyPercent()

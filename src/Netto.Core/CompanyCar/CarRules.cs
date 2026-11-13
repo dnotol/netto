@@ -183,7 +183,7 @@ public sealed record CarRules(
         Conditions:
         [
             new LeverCondition("ordered_or_leased", [Article66Income2026, Article550Income2026, Circular2024C50]),
-            new LeverCondition("private_use_all_year", [Article36Income2026, CarBenefitFaq]),
+            new LeverCondition("private_use_while_held", [Article36Income2026, CarBenefitFaq]),
             new LeverCondition("fake_hybrid", [Article36Income2026, Article550Income2026, Circular2026C10]),
         ]);
 

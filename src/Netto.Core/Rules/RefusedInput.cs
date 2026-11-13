@@ -42,6 +42,11 @@ public enum RefusedInput
     // The date the car was ordered or leased, which also decides whether a plug-in hybrid's fuel is capped.
     CarAcquired,
 
+    // The day the director has the car from, and the day they give it back on.
+    CarHeldFrom,
+
+    CarReturnedOn,
+
     CarYearlyCosts,
 
     CarContribution,

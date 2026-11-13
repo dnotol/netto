@@ -392,7 +392,7 @@ public class CarViewTests
     {
         var keys = CarView.Conditions(CarRules.IncomeYear2026, engine).Select(condition => condition.Key).ToList();
 
-        (keys.Contains("fake_hybrid"), keys.Contains("ordered_or_leased"), keys.Contains("private_use_all_year")).ShouldBe((listed, true, true));
+        (keys.Contains("fake_hybrid"), keys.Contains("ordered_or_leased"), keys.Contains("private_use_while_held")).ShouldBe((listed, true, true));
     }
 
     private static CarView Car(RiverInputs inputs) => CarView.From(inputs.Run().Year.ShouldNotBeNull(), inputs.Composition);

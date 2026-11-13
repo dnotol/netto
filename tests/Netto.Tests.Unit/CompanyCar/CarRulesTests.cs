@@ -259,7 +259,7 @@ public class CarRulesTests
 
     // The conditions the card lists, each with the texts it comes from: ordered or leased by the date
     // the user gives (art. 66 and 550, circular 2024/C/50), at the director's disposal for private
-    // use all year, which the benefit is computed for (art. 36 and the FAQ), and what makes a plug-in
+    // use on the days held, which the benefit is counted for (art. 36 and the FAQ), and what makes a plug-in
     // hybrid a fake one (art. 36 and 550, circular 2026/C/10).
     [Fact]
     public void Conditions_2026_eachCitesItsText()
@@ -271,8 +271,8 @@ public class CarRulesTests
             ("ordered_or_leased", rules.Deduction),
             ("ordered_or_leased", rules.FormulaDeduction),
             ("ordered_or_leased", rules.Acquisition),
-            ("private_use_all_year", rules.Benefit),
-            ("private_use_all_year", rules.BenefitMethod),
+            ("private_use_while_held", rules.Benefit),
+            ("private_use_while_held", rules.BenefitMethod),
             ("fake_hybrid", rules.Benefit),
             ("fake_hybrid", rules.FormulaDeduction),
             ("fake_hybrid", rules.FakeHybrid),

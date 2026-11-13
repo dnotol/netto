@@ -57,8 +57,8 @@
   <data name="Condition_ordered_or_leased" xml:space="preserve">
     <value>Commandée ou prise en leasing à la date que vous indiquez&#160;: une commande compte à partir de sa propre date, même avant la livraison de la voiture, et un leasing ou une location à partir de celle de son contrat&#160;; prolonger un leasing au-delà de ce que son contrat prévoyait, ou le reprendre, ouvre une nouvelle date. Une voiture électrique commandée ou prise en leasing avant 2027 reste déductible en totalité aussi longtemps que la société la garde.</value>
   </data>
-  <data name="Condition_private_use_all_year" xml:space="preserve">
-    <value>À votre disposition à des fins personnelles pendant toute l'année&#160;: l'avantage est celui d'une année, et une voiture que vous n'avez que pendant une partie de l'année n'est pas encore modélisée.</value>
+  <data name="Condition_private_use_while_held" xml:space="preserve">
+    <value>À votre disposition à des fins personnelles du jour où vous l'avez jusqu'à la veille du jour où vous la restituez&#160;: l'avantage est celui d'une année, compté pour ces jours calendrier, son minimum annuel aussi.</value>
   </data>
   <data name="Condition_fake_hybrid" xml:space="preserve">
     <value>Un hybride rechargeable acheté ou pris en leasing à partir de 2018 est un faux hybride lorsque sa batterie contient moins de 0,5 kWh par 100 kg de la voiture, ou qu'il émet plus de 50 g/km, 75 g/km mesurés selon la norme Euro 6e-bis ou une norme ultérieure&#160;: son avantage de toute nature et sa déduction prennent alors le CO2 de la voiture équivalente fonctionnant au seul carburant, selon la liste du SPF, ou son propre CO2 multiplié par 2,5 s'il n'y en a pas. Vous indiquez si le vôtre en est un.</value>

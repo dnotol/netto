@@ -642,7 +642,7 @@ internal static class RiverErrors
         RefusedInput.OfficeAllowance or RefusedInput.InternetAllowance or RefusedInput.ComputerAllowance or RefusedInput.PhoneCosts => RiverModule.Allowances,
         RefusedInput.CadastralIncome or RefusedInput.ShareLet or RefusedInput.Rent => RiverModule.Rent,
         RefusedInput.CarCatalogueValue or RefusedInput.CarCo2 or RefusedInput.CarMatchingCo2 or RefusedInput.CarAcquired or RefusedInput.CarYearlyCosts
-            or RefusedInput.CarContribution or RefusedInput.CarPrivateCost => RiverModule.Car,
+            or RefusedInput.CarHeldFrom or RefusedInput.CarReturnedOn or RefusedInput.CarContribution or RefusedInput.CarPrivateCost => RiverModule.Car,
         RefusedInput.Royalty or RefusedInput.CreativeShare => RiverModule.Copyright,
         RefusedInput.DirectorPay or RefusedInput.FundFeeRate or RefusedInput.MunicipalRate or RefusedInput.TaxWithheld or RefusedInput.DirectorAdvancePayments => RiverModule.DirectorPay,
         RefusedInput.CompanyAdvancePayments => RiverModule.CorporateTax,

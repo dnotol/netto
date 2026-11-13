@@ -1,3 +1,4 @@
+using Netto.Core;
 using Netto.Core.BenefitsInKind;
 using Netto.Core.CompanyCar;
 using Netto.Core.Rules;
@@ -17,6 +18,8 @@ public class CarCalculatorTests
         decimal contribution = 0m) =>
         new(catalogueValue, firstRegistration, yearlyCosts, privateEnergy, contribution);
 
+    private static DaysHeld HeldAllOf(int year) => DaysHeld.Of(year, null, null).Value.ShouldNotBeNull();
+
     private static CarResult Compute(CarFacts car)
     {
         var (result, error) = CarCalculator.Compute(Rules, car);
@@ -29,13 +32,166 @@ public class CarCalculatorTests
     [Fact]
     public void AgePeriods_faqExampleIn2020_splitsTheYearOnTheFirstDayOfTheRegistrationsMonth()
     {
-        var periods = CarCalculator.AgePeriods(Rules.AgeBands, 2020, new DateOnly(2019, 6, 21));
+        var periods = CarCalculator.AgePeriods(Rules.AgeBands, HeldAllOf(2020), new DateOnly(2019, 6, 21));
 
         periods.Select(period => (period.From, period.To, period.Days, period.AgeCoefficient.Value)).ShouldBe(new[]
         {
             (new DateOnly(2020, 1, 1), new DateOnly(2020, 5, 31), 152, 1.00m),
             (new DateOnly(2020, 6, 1), new DateOnly(2020, 12, 31), 214, 0.94m),
         });
+    }
+
+    // The FAQ's own part-year examples (question 4), their periods as the FAQ gives them: example 1, first
+    // registered 30.8.2020 and held from 17.9.2020, 106 days at 100%; example 2, first registered 20.5.2019
+    // and given back on 8.8.2020, 121 days at 100% then 99 at 94%; example 3, first registered 5.10.2016,
+    // held from 1.3.2020 and given back on 31.3.2020, 30 days at 82%.
+    public static TheoryData<DateOnly, DateOnly?, DateOnly?, (DateOnly, DateOnly, int, decimal)[]> FaqHeldPeriods => new()
+    {
+        { new DateOnly(2020, 8, 30), new DateOnly(2020, 9, 17), null, [(new DateOnly(2020, 9, 17), new DateOnly(2020, 12, 31), 106, 1.00m)] },
+        {
+            new DateOnly(2019, 5, 20), null, new DateOnly(2020, 8, 8),
+            [(new DateOnly(2020, 1, 1), new DateOnly(2020, 4, 30), 121, 1.00m), (new DateOnly(2020, 5, 1), new DateOnly(2020, 8, 7), 99, 0.94m)]
+        },
+        { new DateOnly(2016, 10, 5), new DateOnly(2020, 3, 1), new DateOnly(2020, 3, 31), [(new DateOnly(2020, 3, 1), new DateOnly(2020, 3, 30), 30, 0.82m)] },
+    };
+
+    [Theory]
+    [MemberData(nameof(FaqHeldPeriods))]
+    public void AgePeriods_faqCarHeldPartOfTheYear_countsEachPeriodOnlyForItsDaysHeld(
+        DateOnly firstRegistration, DateOnly? from, DateOnly? returnedOn, (DateOnly, DateOnly, int, decimal)[] expected)
+    {
+        var held = DaysHeld.Of(2020, from, returnedOn).Value.ShouldNotBeNull();
+
+        CarCalculator.AgePeriods(Rules.AgeBands, held, firstRegistration)
+            .Select(period => (period.From, period.To, period.Days, period.AgeCoefficient.Value)).ShouldBe(expected);
+    }
+
+    // The FAQ's own amounts for its three examples, on a copy of the 2026 rules given the amounts of income
+    // year 2020 the FAQ uses (a reference emission of 111 g/km for petrol and 91 for diesel, a minimum of
+    // 1,360): 660.95; 646.09 + 496.90 = 1,142.99; 63.37, raised to 1,360 × 30/366 = 111.48.
+    private static readonly CarRules RulesAsIn2020 = Rules with
+    {
+        IncomeYear = 2020,
+        PetrolReferenceEmission = Rules.PetrolReferenceEmission with { Value = 111m },
+        DieselReferenceEmission = Rules.DieselReferenceEmission with { Value = 91m },
+        MinimumBenefit = Rules.MinimumBenefit with { Value = 1_360m },
+    };
+
+    [Fact]
+    public void Compute_faqExample1_isTheFaqsBenefitForItsDays()
+    {
+        var car = Car(37_500m, new DateOnly(2020, 8, 30)) with { Engine = CarEngine.Petrol, Co2 = 127, HeldFrom = new DateOnly(2020, 9, 17) };
+
+        var result = CarCalculator.Compute(RulesAsIn2020, car).Value.ShouldNotBeNull();
+
+        (result.BenefitOnTheScale, result.BenefitBeforeContribution).ShouldBe((660.95m, 660.95m));
+    }
+
+    [Fact]
+    public void Compute_faqExample2_weighsEachCoefficientByItsDaysHeld()
+    {
+        var car = Car(30_000m, new DateOnly(2019, 5, 20)) with { Engine = CarEngine.Diesel, Co2 = 112, ReturnedOn = new DateOnly(2020, 8, 8) };
+
+        var result = CarCalculator.Compute(RulesAsIn2020, car).Value.ShouldNotBeNull();
+
+        result.Periods.Select(period => period.Benefit).ShouldBe([646.09m, 496.90m]);
+        result.BenefitOnTheScale.ShouldBe(1_142.99m);
+    }
+
+    [Fact]
+    public void Compute_faqExample3_isRaisedToTheMinimumForItsDays()
+    {
+        var car = Car(25_000m, new DateOnly(2016, 10, 5)) with
+        {
+            Engine = CarEngine.Petrol, Co2 = 100, HeldFrom = new DateOnly(2020, 3, 1), ReturnedOn = new DateOnly(2020, 3, 31),
+        };
+
+        var result = CarCalculator.Compute(RulesAsIn2020, car).Value.ShouldNotBeNull();
+
+        (result.BenefitOnTheScale, result.BenefitBeforeContribution, result.MinimumForTheDays, result.AtTheMinimum).ShouldBe((63.37m, 111.48m, 111.48m, true));
+    }
+
+    // Derived from the 2026 amounts on the FAQ's method: 50,000 × 106/365 × 6/7 × 4% = 497.85 for a new
+    // electric car held from 17.9.2026, above the minimum for its days, 1,690 × 106/365 = 490.79.
+    [Fact]
+    public void Compute_carHeldFromADateInTheYear_countsItsDaysFromThatDay()
+    {
+        var result = Compute(Car(50_000m, new DateOnly(2026, 1, 10)) with { HeldFrom = new DateOnly(2026, 9, 17) });
+
+        (result.DaysHeld, result.BenefitOnTheScale, result.MinimumForTheDays, result.BenefitBeforeContribution, result.AtTheMinimum)
+            .ShouldBe((new DaysHeld(new DateOnly(2026, 9, 17), new DateOnly(2026, 12, 31), 106, 365), 497.85m, 490.79m, 497.85m, false));
+    }
+
+    // Derived from the 2026 amounts: 60,000, first registered 20.5.2025 and given back on 8.8.2026, 120 days
+    // at 100% (676.32) and 99 at 94% (524.49).
+    [Fact]
+    public void Compute_carReturnedDuringTheYear_countsUpToTheDayBefore()
+    {
+        var result = Compute(Car(60_000m, new DateOnly(2025, 5, 20)) with { ReturnedOn = new DateOnly(2026, 8, 8) });
+
+        result.Periods.Select(period => (period.Period.To, period.Period.Days, period.Benefit))
+            .ShouldBe([(new DateOnly(2026, 4, 30), 120, 676.32m), (new DateOnly(2026, 8, 7), 99, 524.49m)]);
+        result.BenefitOnTheScale.ShouldBe(1_200.81m);
+    }
+
+    // Derived from the 2026 amounts: 25,000 at 82%, held 30 days in March, 57.77 on the scale, raised to the
+    // minimum for its days, 1,690 × 30/365 = 138.90, which the company adds 17% of back, 23.61.
+    [Fact]
+    public void Compute_carHeldAMonthBelowTheMinimum_isTheMinimumForItsDays()
+    {
+        var result = Compute(Car(25_000m, new DateOnly(2022, 10, 5)) with { HeldFrom = new DateOnly(2026, 3, 1), ReturnedOn = new DateOnly(2026, 3, 31) });
+
+        (result.BenefitOnTheScale, result.BenefitBeforeContribution, result.Benefit, result.AtTheMinimum, result.AddBack)
+            .ShouldBe((57.77m, 138.90m, 138.90m, true, 23.61m));
+    }
+
+    // Held since before the year and given back after it: the year's figures, 1,714.29 and the full minimum.
+    [Fact]
+    public void Compute_datesOutsideTheYear_holdTheCarAllYear()
+    {
+        var result = Compute(Car(50_000m, new DateOnly(2026, 1, 10)) with { HeldFrom = new DateOnly(2024, 3, 3), ReturnedOn = new DateOnly(2028, 6, 1) });
+
+        (result.DaysHeld.ShouldNotBeNull().AllYear, result.BenefitOnTheScale, result.MinimumForTheDays).ShouldBe((true, 1_714.29m, 1_690m));
+    }
+
+    // The add-back and the carve-out follow the benefit for the days held; the costs stay as typed. Derived
+    // from the 2026 amounts: a petrol car of 45,000 at 120 g/km (10.5%) leased in 2026 and held from 17.9,
+    // 1,176.16, of which 17% is added back, 199.95, and that much of its 9,000 of costs carved out.
+    [Fact]
+    public void Compute_fuelCarHeldPartOfTheYear_addsBackAndCarvesOutItsBenefitForTheDays()
+    {
+        var car = Car(45_000m, new DateOnly(2026, 1, 10), yearlyCosts: 9_000m) with
+        {
+            Engine = CarEngine.Petrol, Co2 = 120, Acquired = new DateOnly(2026, 1, 5), HeldFrom = new DateOnly(2026, 9, 17),
+        };
+
+        var result = Compute(car);
+
+        (result.Benefit, result.AddBack, result.Costs, result.CarvedOut, result.Deductible).ShouldBe((1_176.16m, 199.95m, 9_000m, 1_176.16m, 1_176.16m));
+    }
+
+    public static TheoryData<DateOnly?, DateOnly?, Refusal> HeldSpansWithoutADay => new()
+    {
+        { new DateOnly(2027, 1, 1), null, CarCalculator.HeldAfterYear },
+        { null, new DateOnly(2026, 1, 1), CarCalculator.ReturnedBeforeYear },
+        { new DateOnly(2026, 5, 1), new DateOnly(2026, 5, 1), CarCalculator.ReturnedBeforeHeld },
+        { new DateOnly(2026, 5, 1), new DateOnly(2026, 4, 1), CarCalculator.ReturnedBeforeHeld },
+    };
+
+    // A span in which the director has the car on no day of the year is refused on the date that makes it so.
+    [Theory]
+    [MemberData(nameof(HeldSpansWithoutADay))]
+    public void Compute_noDayOfTheYearHeld_isRefusedOnItsDate(DateOnly? from, DateOnly? returnedOn, Refusal expected)
+    {
+        CarCalculator.Compute(Rules, Car(50_000m, new DateOnly(2026, 1, 10)) with { HeldFrom = from, ReturnedOn = returnedOn })
+            .ShouldBe((null, expected));
+    }
+
+    // Without a car, its dates are not read.
+    [Fact]
+    public void Compute_noCarWithDatesThatMakeNoSense_isNoCar()
+    {
+        CarCalculator.Compute(Rules, CarFacts.None with { HeldFrom = new DateOnly(2027, 1, 1) }).ShouldBe((CarResult.None, null));
     }
 
     // 50,000 × 6/7 × 4% = 1,714.29, above the minimum: a car first registered in January 2026 is in

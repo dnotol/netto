@@ -120,6 +120,15 @@
   <data name="Error_car_plug_in_first_half_2023" xml:space="preserve">
     <value>Un hybride rechargeable commandé ou pris en leasing au premier semestre 2023 déduit son essence ou son diesel à 50&#160;% au plus et ses autres frais à un autre taux, et Netto ne répartit pas encore ses frais&#160;: il ne peut pas peser cette voiture pour l'instant.</value>
   </data>
+  <data name="Error_car_held_after_year" xml:space="preserve">
+    <value>Une voiture que vous n'avez qu'après la fin de l'année n'est à votre disposition aucun jour de celle-ci&#160;: saisissez le jour où vous l'avez, dans l'année ou avant, ou laissez-le vide pour toute l'année.</value>
+  </data>
+  <data name="Error_car_returned_before_year" xml:space="preserve">
+    <value>Une voiture restituée le premier jour de l'année ou avant n'est à votre disposition aucun jour de celle-ci&#160;: saisissez le jour où vous la restituez, dans l'année ou après, ou laissez-le vide pour toute l'année.</value>
+  </data>
+  <data name="Error_car_returned_before_held" xml:space="preserve">
+    <value>Le jour où vous restituez la voiture doit suivre celui où vous l'avez&#160;: ce jour-là compte, celui de la restitution pas.</value>
+  </data>
   <data name="Error_car_private_cost_negative" xml:space="preserve">
     <value>Ce que la même voiture vous coûterait à titre privé ne peut pas être négatif.</value>
   </data>

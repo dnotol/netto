@@ -14,14 +14,21 @@ public static class CarCalculator
     public static readonly Refusal AcquiredAfterYear = new("car_acquired_after_year", RefusedInput.CarAcquired);
     public static readonly Refusal PlugInFuelCapped = new("car_plug_in_first_half_2023", RefusedInput.CarAcquired);
 
+    // A span in which the director has the car on no day of the year: from after its end, given back on or
+    // before its first day, or on or before the day it is had from.
+    public static readonly Refusal HeldAfterYear = new("car_held_after_year", RefusedInput.CarHeldFrom);
+    public static readonly Refusal ReturnedBeforeYear = new("car_returned_before_year", RefusedInput.CarReturnedOn);
+    public static readonly Refusal ReturnedBeforeHeld = new("car_returned_before_held", RefusedInput.CarReturnedOn);
+
     // What the same car would cost privately cannot be below nothing. No rule reads it, so the engine never
     // refuses it: the car card does, weighing the company car against it.
     public static readonly Refusal PrivateCostNegative = new("car_private_cost_negative", RefusedInput.CarPrivateCost);
 
     // The car as the rules take it, or what they refuse. The benefit is the FAQ's: each
-    // part of the year at one age coefficient, catalogue value × coefficient × its days out of the
-    // year's × 6/7 × the CO2 percentage, rounded to the cent, then their sum at least the minimum,
-    // less the contribution, never below zero. The company adds back its share of the benefit before
+    // part of the days the director has it at one age coefficient, catalogue value × coefficient × its
+    // days out of the year's × 6/7 × the CO2 percentage, rounded to the cent, then their sum at least the
+    // minimum for the days held (the year's × days held / the year's days, rounded to the cent), less the
+    // contribution, never below zero. A span holding no day of the year is refused on its date. The company adds back its share of the benefit before
     // the contribution, rounded to the cent. It deducts the part of the costs equal to the benefit
     // taxed and the contribution in full, up to the costs (art. 66 §3, 3°), and the rest at the rate
     // the car's order date, engine and CO2 give, rounded to the cent. A car with a combustion engine
@@ -52,15 +59,27 @@ public static class CarCalculator
         if (car.Engine.IsPlugInHybrid() && car.Acquired >= rules.PlugInFuelCappedFrom && car.Acquired <= rules.PlugInFuelCappedUntil)
             return (null, PlugInFuelCapped);
 
+        var (held, fault) = DaysHeld.Of(rules.IncomeYear, car.HeldFrom, car.ReturnedOn);
+        if (held is null)
+        {
+            return (null, fault switch
+            {
+                DaysHeldFault.StartsAfterYear => HeldAfterYear,
+                DaysHeldFault.ReturnedBeforeYear => ReturnedBeforeYear,
+                DaysHeldFault.ReturnedBeforeStart => ReturnedBeforeHeld,
+                _ => throw new InvalidOperationException($"No refusal names the held span's fault {fault}."),
+            });
+        }
+
         var co2 = Co2(rules, car);
         var deduction = Deduction(rules, car, co2);
-        var daysInYear = DateTime.IsLeapYear(rules.IncomeYear) ? 366 : 365;
-        var periods = AgePeriods(rules.AgeBands, rules.IncomeYear, car.FirstRegistration)
+        var periods = AgePeriods(rules.AgeBands, held, car.FirstRegistration)
             .Select(period => new CarBenefitPeriod(period, Money.RoundToCent(
-                car.CatalogueValue * period.AgeCoefficient.Value * period.Days / daysInYear * rules.CatalogueShare.Value * co2.Percentage)))
+                car.CatalogueValue * period.AgeCoefficient.Value * period.Days / held.DaysInYear * rules.CatalogueShare.Value * co2.Percentage)))
             .ToList();
         var onTheScale = periods.Sum(period => period.Benefit);
-        var beforeContribution = Math.Max(onTheScale, rules.MinimumBenefit.Value);
+        var minimum = Money.RoundToCent(held.Prorate(rules.MinimumBenefit.Value));
+        var beforeContribution = Math.Max(onTheScale, minimum);
         var benefit = Math.Max(0m, beforeContribution - car.PersonalContribution);
         var addBackRate = car.CompanyPaysPrivateEnergy ? rules.AddBackRateWithPrivateEnergy : rules.AddBackRate;
         var carvedOut = Math.Min(car.YearlyCosts, benefit + car.PersonalContribution);
@@ -86,6 +105,8 @@ public static class CarCalculator
             CarvedOut = carvedOut,
             DeductionAmounts = deduction.Amounts,
             DeductionSources = deduction.Sources,
+            DaysHeld = held,
+            MinimumForTheDays = minimum,
         }, null);
     }
 
@@ -217,23 +238,29 @@ public static class CarCalculator
     private sealed record Co2Taken(
         CarCo2Basis Basis, decimal Counted, RuleAmount? Reference, decimal Percentage, IReadOnlyList<RuleAmount> Amounts, IReadOnlyList<Source> Sources);
 
-    // The parts of the income year at one age coefficient. The age is counted in months from the
-    // first day of the month of the first registration, that month being the first (a month begun
-    // counts whole), so the coefficient changes on the first day of that month each year. A month
-    // before the registration's counts as the first: the car is held all year.
-    internal static IReadOnlyList<CarAgePeriod> AgePeriods(IReadOnlyList<CarAgeBand> bands, int incomeYear, DateOnly firstRegistration)
+    // The parts of the days held in the income year at one age coefficient. The age is counted in months
+    // from the first day of the month of the first registration, that month being the first (a month begun
+    // counts whole), so the coefficient changes on the first day of that month each year. A month before
+    // the registration's counts as the first. Each month counts only its days held.
+    internal static IReadOnlyList<CarAgePeriod> AgePeriods(IReadOnlyList<CarAgeBand> bands, DaysHeld held, DateOnly firstRegistration)
     {
+        var incomeYear = held.First.Year;
         var periods = new List<CarAgePeriod>();
         for (var month = 1; month <= YearParts.Months; month++)
         {
+            var monthStart = new DateOnly(incomeYear, month, 1);
+            var days = held.Within(monthStart, monthStart.AddMonths(1).AddDays(-1));
+            if (days == 0)
+                continue;
+
             var age = Math.Max(1, (incomeYear - firstRegistration.Year) * YearParts.Months + month - firstRegistration.Month + 1);
             var coefficient = bands.Last(band => band.FromMonth <= age).Coefficient;
-            var from = new DateOnly(incomeYear, month, 1);
-            var to = from.AddMonths(1).AddDays(-1);
+            var from = monthStart > held.First ? monthStart : held.First;
+            var to = from.AddDays(days - 1);
             if (periods.Count > 0 && periods[^1].AgeCoefficient == coefficient)
-                periods[^1] = periods[^1] with { To = to, Days = periods[^1].Days + to.Day };
+                periods[^1] = periods[^1] with { To = to, Days = periods[^1].Days + days };
             else
-                periods.Add(new CarAgePeriod(from, to, to.Day, coefficient));
+                periods.Add(new CarAgePeriod(from, to, days, coefficient));
         }
 
         return periods;

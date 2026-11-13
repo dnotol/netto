@@ -1,11 +1,11 @@
 namespace Netto.Core.CompanyCar;
 
-// The car the company puts at its director's disposal for private use, all year, as the user declares
-// it: its catalogue value as sold new to a private buyer, options and VAT included, discounts
-// excluded; the date of its first registration; what it costs the company in the year, as the company
-// bears it, the VAT it cannot recover included; whether the company pays the energy for private use,
-// for an electric car its charging; and what the director pays the company for that use. None unless
-// given; there is a car only once its catalogue value is more than nothing.
+// The car the company puts at its director's disposal for private use, as the user declares it: its
+// catalogue value as sold new to a private buyer, options and VAT included, discounts excluded; the date
+// of its first registration; what it costs the company in the year, as the company bears it, the VAT it
+// cannot recover included; whether the company pays the energy for private use, for an electric car its
+// charging; and what the director pays the company for that use. None unless given; there is a car only
+// once its catalogue value is more than nothing.
 public sealed record CarFacts(
     decimal CatalogueValue,
     DateOnly FirstRegistration,
@@ -38,4 +38,10 @@ public sealed record CarFacts(
 
     // A natural-gas car under 12 fiscal horsepower, as the user says.
     public bool SmallNaturalGas { get; init; }
+
+    // The day the director has it from, counted, none from the year's first day; and the day they give it
+    // back on, not counted, none to the year's last (DaysHeld).
+    public DateOnly? HeldFrom { get; init; }
+
+    public DateOnly? ReturnedOn { get; init; }
 }
