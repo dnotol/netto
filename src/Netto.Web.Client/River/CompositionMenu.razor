@@ -1,7 +1,8 @@
 @inject IStringLocalizer<CompositionMenu> L
 
-@* « Add to plan »: which optional modules are in the plan, among My plan's tools over the map
-   (MapTab.AddToPlan). A disclosure, not an ARIA menu: the button says « Add to plan », and to a screen
+@* « Edit plan »: which optional modules are in the plan, among My plan's tools over the map
+   (MapTab.AddToPlan). A disclosure, not an ARIA menu: the button says « Edit plan », with a tune icon since the
+   panel removes as well as adds, and to a screen
    reader how many optional modules the plan holds, and opens a panel, a labelled group of one checkbox per optional
    module in the river's order, each saying what it is while out of the plan, what it brings while in
    it, and that the user's values wait while it is out; then the core modules, always there. The panel
@@ -11,7 +12,7 @@
    stays in the page, hidden, for aria-controls to point to. Every amount is the engine's, read through
    CompositionView. *@
 <div class="composition" @onkeydown="OnKeyDown">
-    <MudButton @ref="_button" Variant="Variant.Outlined" Size="Size.Small" Class="composition__button" StartIcon="@Icons.Material.Rounded.Add"
+    <MudButton @ref="_button" Variant="Variant.Outlined" Size="Size.Small" Class="composition__button" StartIcon="@Icons.Material.Rounded.Tune"
                OnClick="Toggle" @onkeydown="OnButtonKeyDown"
                aria-expanded="@(_open ? "true" : "false")" aria-controls="@_panelId" aria-label="@L[CompositionMenuText.ButtonLabel(_view.Count), _view.Count]">
         @L["Button"]
@@ -94,7 +95,7 @@
         }
     }
 
-    // From elsewhere on the page, such as the line under Company year that says where to add a module.
+    // From elsewhere on the page, such as a line that says where to add a module.
     public void Open()
     {
         _open = true;

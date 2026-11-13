@@ -1,4 +1,6 @@
+using System.Net;
 using System.Text.RegularExpressions;
+using MudBlazor;
 using Netto.Web.Client.Pages;
 using Netto.Web.Client.River;
 using Netto.Web.Client.Tabs;
@@ -6,56 +8,86 @@ using Shouldly;
 
 namespace Netto.Tests.WebClient.Pages;
 
-// « Add to plan », which sets the plan's optional modules, on the Plan tab among the map's tools, beside the
-// legend of its lines, and no longer in the band: the Composition menu, its panel of checkboxes as it was,
-// under its new name. The notice of a module taken out outlives the tab it was taken out on, so once Undo or
-// Dismiss takes it away the focus goes to « Add to plan » where the tab draws it, and to the start of the
-// tab's content where it does not.
+// « Edit plan », which adds and removes the plan's optional modules, on the Plan tab among the map's tools,
+// beside the switch of its picture, and not in the band: the Composition menu, its panel of checkboxes. The
+// notice of a module taken out outlives the tab it was taken out on, so once Undo or Dismiss takes it away the
+// focus goes to « Edit plan » where the tab draws it, and to the start of the tab's content where it does not.
 public class PlanAddToPlanTests
 {
-    // Its button is among the map's tools, after the key to the lines, and the band holds none.
+    // Its button is among the map's tools, after the switch of the picture, and the band holds none.
     [Fact]
-    public async Task Plan_onThePlanTab_drawsAddToPlanAmongTheMapsToolsAfterTheKey()
+    public async Task Plan_onThePlanTab_drawsEditPlanAmongTheMapsToolsAfterTheSwitch()
     {
         var html = await RenderPlanAsync();
 
-        var tools = Regex.Match(html, "<div class=\"map-tab__tools\".*?<div class=\"map\" ", RegexOptions.Singleline).Value;
-        var (key, button) = (tools.IndexOf("<ul class=\"map-key\"", StringComparison.Ordinal), tools.IndexOf("composition__button", StringComparison.Ordinal));
-        (Regex.Count(html, "composition__button"), key >= 0, button >= 0, key < button).ShouldBe((1, true, true, true));
+        var tools = Regex.Match(html, "<div class=\"map-tab__tools\".*?<div class=\"map-tab__frame\"", RegexOptions.Singleline).Value;
+        var (picture, button) = (tools.IndexOf("map-picture-switch", StringComparison.Ordinal), tools.IndexOf("composition__button", StringComparison.Ordinal));
+        (Regex.Count(html, "composition__button"), picture >= 0, button >= 0, picture < button)
+            .ShouldBe((1, true, true, true));
     }
 
-    // The other views draw no map, and no « Add to plan »; nor does Optimise at the When to pay section.
+    // The other views draw no map, and no « Edit plan »; nor does Optimise at the When to pay section.
     [Theory]
     [InlineData("optimisation", null)]
     [InlineData("optimisation", "when")]
     [InlineData("pistes", null)]
-    public async Task Plan_onAnotherView_drawsNoAddToPlan(string? tab, string? show)
+    public async Task Plan_onAnotherView_drawsNoEditPlan(string? tab, string? show)
     {
         var html = await PlanPageTests.RenderPlanAsync(new Folds(new BrowserStorage()), tab, show: show);
 
         html.ShouldNotContain("composition__button");
     }
 
-    // Its button says « Add to plan », and to a screen reader how many optional modules the plan holds.
+    // Its button says « Edit plan », and to a screen reader how many optional modules the plan holds.
     [Fact]
-    public async Task Plan_addToPlan_isNamedAddToPlanWithTheModulesThePlanHoldsForAScreenReader()
+    public async Task Plan_editPlan_isNamedEditPlanWithTheModulesThePlanHoldsForAScreenReader()
     {
         var html = await RenderPlanAsync();
 
         var button = Regex.Match(html, "<button [^>]*composition__button[^>]*>(.*?)</button>", RegexOptions.Singleline);
-        (Regex.Match(button.Value, "aria-label=\"([^\"]*)\"").Groups[1].Value, Regex.Replace(Regex.Replace(button.Groups[1].Value, "<[^>]*>", " "), "\\s+", " ").Trim())
-            .ShouldBe(("Add to plan: no optional module in your plan", "Add to plan"));
+        (Regex.Match(button.Value, "aria-label=\"([^\"]*)\"").Groups[1].Value, ButtonText(button))
+            .ShouldBe(("Edit plan: no optional module in your plan", "Edit plan"));
     }
 
-    // On the map the focus goes back to « Add to plan »; where it is not drawn, on another view, to the start of
+    // A tune icon, not the plus of an addition: the panel removes as well.
+    [Fact]
+    public async Task Plan_editPlan_wearsTheTuneIconNotThePlus()
+    {
+        var html = await RenderPlanAsync();
+
+        var button = Regex.Match(html, "<button [^>]*composition__button[^>]*>.*?</button>", RegexOptions.Singleline).Value;
+        (button.Contains(Icons.Material.Rounded.Tune, StringComparison.Ordinal), button.Contains(Icons.Material.Rounded.Add, StringComparison.Ordinal))
+            .ShouldBe((true, false));
+    }
+
+    [Fact]
+    public async Task Plan_editPlan_inFrenchIsModifierLePlan()
+    {
+        using var french = InLanguage.French();
+
+        var html = WebUtility.HtmlDecode(await RenderPlanAsync());
+
+        var button = Regex.Match(html, "<button [^>]*composition__button[^>]*>(.*?)</button>", RegexOptions.Singleline);
+        (Regex.Match(button.Value, "aria-label=\"([^\"]*)\"").Groups[1].Value, ButtonText(button))
+            .ShouldBe(("Modifier le plan : aucun module facultatif dans votre plan", "Modifier le plan"));
+    }
+
+    // The panel's title names what the panel does, as its button does.
+    [Fact]
+    public void Panel_title_saysEditYourPlanInBothLanguages()
+    {
+        (ResxText.For<CompositionMenu>().Get("AddTitle"), ResxText.French<CompositionMenu>().Get("AddTitle")).ShouldBe(("Edit your plan", "Modifier votre plan"));
+    }
+
+    // On the map the focus goes back to « Edit plan »; where it is not drawn, on another view, to the start of
     // the view's content, never to a button no longer on the page.
     [Theory]
     [InlineData(PlanTab.Plan, true)]
     [InlineData(PlanTab.Optimisation, false)]
     [InlineData(PlanTab.Pistes, false)]
-    public void RemovalNoticeFocus_onAView_isAddToPlanWhereItIsDrawnAndTheViewsContentElsewhere(PlanTab tab, bool toAddToPlan)
+    public void RemovalNoticeFocus_onAView_isEditPlanWhereItIsDrawnAndTheViewsContentElsewhere(PlanTab tab, bool toEditPlan)
     {
-        RemovalNoticeFocus.After(tab).ShouldBe(toAddToPlan ? RemovalFocus.AddToPlan : RemovalFocus.TabContent);
+        RemovalNoticeFocus.After(tab).ShouldBe(toEditPlan ? RemovalFocus.AddToPlan : RemovalFocus.TabContent);
     }
 
     // A module taken out on the Plan tab, the notice still showing on Optimisation: Undo puts it back, the
@@ -80,6 +112,9 @@ public class PlanAddToPlanTests
         (notice.Module, (await page.FindAsync<OptimisationTab>()).Inputs.InPlan(OptionalModule.Vouchers), page.Focuses - before, page.Errors.Count)
             .ShouldBe((null, true, 1, 0));
     }
+
+    private static string ButtonText(Match button) =>
+        Regex.Replace(Regex.Replace(button.Groups[1].Value, "<[^>]*>", " "), "\\s+", " ").Trim();
 
     // The plan page drawn on the example, on the tab given, as PlanPageTests draws it.
     private static Task<string> RenderPlanAsync(string? tab = null) => PlanPageTests.RenderPlanAsync(new Folds(new BrowserStorage()), tab);

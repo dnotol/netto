@@ -13,22 +13,22 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Button" xml:space="preserve">
-    <value>Ajouter au plan</value>
+    <value>Modifier le plan</value>
   </data>
   <data name="ButtonLabel_None" xml:space="preserve">
-    <value>Ajouter au plan&#160;: aucun module facultatif dans votre plan</value>
+    <value>Modifier le plan&#160;: aucun module facultatif dans votre plan</value>
   </data>
   <data name="ButtonLabel_One" xml:space="preserve">
-    <value>Ajouter au plan&#160;: 1 module facultatif dans votre plan</value>
+    <value>Modifier le plan&#160;: 1 module facultatif dans votre plan</value>
   </data>
   <data name="ButtonLabel_Many" xml:space="preserve">
-    <value>Ajouter au plan&#160;: {0} modules facultatifs dans votre plan</value>
+    <value>Modifier le plan&#160;: {0} modules facultatifs dans votre plan</value>
   </data>
   <data name="PanelLabel" xml:space="preserve">
     <value>Composition de votre plan</value>
   </data>
   <data name="AddTitle" xml:space="preserve">
-    <value>Ajouter à votre plan</value>
+    <value>Modifier votre plan</value>
   </data>
   <data name="Lede" xml:space="preserve">
     <value>Ce qui est dans votre plan s'affiche et compte&#160;; ce que vous retirez garde vos valeurs pour le jour où vous le rajoutez.</value>
