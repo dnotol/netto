@@ -18,4 +18,19 @@
   <data name="MudInput_Clear" xml:space="preserve">
     <value>Clear</value>
   </data>
+  <data name="Converter_InvalidDateTime" xml:space="preserve">
+    <value>Not a valid date time</value>
+  </data>
+  <data name="MudBaseDatePicker_PrevMonth" xml:space="preserve">
+    <value>Previous month {0}</value>
+  </data>
+  <data name="MudBaseDatePicker_NextMonth" xml:space="preserve">
+    <value>Next month {0}</value>
+  </data>
+  <data name="MudBaseDatePicker_PrevYear" xml:space="preserve">
+    <value>Previous year {0}</value>
+  </data>
+  <data name="MudBaseDatePicker_NextYear" xml:space="preserve">
+    <value>Next year {0}</value>
+  </data>
 </root>

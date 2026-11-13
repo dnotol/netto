@@ -87,14 +87,12 @@
                 </div>
             </RiverField>
             <RiverField Label="@L["HeldFromLabel"]" For="@HeldFromId" Origin="Inputs.Car.HeldFrom.Origin" Help="@L["HeldFromHint"]">
-                <MudDatePicker InputId="@HeldFromId" Date="@AsDate(Inputs.Car.HeldFrom.Value)" DateChanged="OnHeldFromChanged"
-                               Editable="true" Clearable="true" DateFormat="@DayFormat" Culture="Formats.Culture"
-                               Variant="Variant.Outlined" Margin="Margin.Dense" Error="@(Refused?.Input == RefusedInput.CarHeldFrom)" />
+                <RiverDateField InputId="@HeldFromId" Date="@AsDate(Inputs.Car.HeldFrom.Value)" DateChanged="OnHeldFromChanged"
+                                Error="@(Refused?.Input == RefusedInput.CarHeldFrom)" Refusal="@Refused" />
             </RiverField>
             <RiverField Label="@L["ReturnedOnLabel"]" For="@ReturnedOnId" Origin="Inputs.Car.ReturnedOn.Origin" Help="@L["ReturnedOnHint"]">
-                <MudDatePicker InputId="@ReturnedOnId" Date="@AsDate(Inputs.Car.ReturnedOn.Value)" DateChanged="OnReturnedOnChanged"
-                               Editable="true" Clearable="true" DateFormat="@DayFormat" Culture="Formats.Culture"
-                               Variant="Variant.Outlined" Margin="Margin.Dense" Error="@(Refused?.Input == RefusedInput.CarReturnedOn)" />
+                <RiverDateField InputId="@ReturnedOnId" Date="@AsDate(Inputs.Car.ReturnedOn.Value)" DateChanged="OnReturnedOnChanged"
+                                Error="@(Refused?.Input == RefusedInput.CarReturnedOn)" Refusal="@Refused" />
             </RiverField>
             @if (_settings.FakeHybridApplies && Inputs.Car.FakeHybrid.Value)
             {
@@ -283,11 +281,10 @@
     private Task OnAcquiredYearChanged(int year) =>
         InputsChanged.InvokeAsync(Inputs.WithCarAcquired(new DateOnly(Math.Clamp(year, FirstYear, LastYear), Inputs.Car.Acquired.Value.Month, 1)));
 
-    // The days the director has the car, typed or picked as day/month/year in both languages, as Belgian
-    // papers write them; cleared, held all year again. The engine refuses a span holding no day of the year.
+    // The days the director has the car (RiverDateField); cleared, held all year again. The engine refuses a span
+    // holding no day of the year.
     private const string HeldFromId = "river-car-held-from";
     private const string ReturnedOnId = "river-car-returned-on";
-    private const string DayFormat = "dd/MM/yyyy";
 
     private static DateTime? AsDate(DateOnly? day) => day?.ToDateTime(TimeOnly.MinValue);
 

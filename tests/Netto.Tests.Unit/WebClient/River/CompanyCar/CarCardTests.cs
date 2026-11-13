@@ -259,8 +259,9 @@ public class CarCardTests
             .ShouldBe((false, true));
     }
 
-    // A car given back before the day it is had from is refused on the day it is given back, in words, and
-    // « Your car » opens on it: that field is marked, the other not.
+    // A car given back before the day it is had from is refused on the day it is given back, and « Your car »
+    // opens on it: that field is marked and given the engine's words for a screen reader, the other neither,
+    // and the card says them in sight below the fields.
     [Fact]
     public async Task Card_returnedBeforeHeld_marksTheReturnDayWithTheEnginesMessage()
     {
@@ -268,11 +269,11 @@ public class CarCardTests
         var run = inputs.Run();
         var message = Refusals.Get($"Error_{CarCalculator.ReturnedBeforeHeld.Key}").ShouldNotBeNull();
 
-        var html = System.Net.WebUtility.HtmlDecode(
-            await RenderAsync(typeof(CarCard), new Folds(new BrowserStorage()), new() { ["Inputs"] = inputs, ["Run"] = run, ["Refused"] = run.Error }));
+        var html = await RenderAsync(typeof(CarCard), new Folds(new BrowserStorage()), new() { ["Inputs"] = inputs, ["Run"] = run, ["Refused"] = run.Error });
 
-        (run.Error, html.Contains(message, StringComparison.Ordinal), Marked(html, ReturnedOn), Marked(html, HeldFrom))
-            .ShouldBe((CarCalculator.ReturnedBeforeHeld, true, true, false));
+        (run.Error, Marked(html, ReturnedOn), CardHtml.FieldMessage(html, ReturnedOn), Marked(html, HeldFrom), CardHtml.FieldMessage(html, HeldFrom),
+                Regex.Count(System.Net.WebUtility.HtmlDecode(html), Regex.Escape(message)))
+            .ShouldBe((CarCalculator.ReturnedBeforeHeld, true, message, false, null, 2));
     }
 
     // A field MudBlazor draws in error: the input's own frame carries its error class.

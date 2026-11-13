@@ -206,6 +206,24 @@ internal static class CardHtml
         ];
     }
 
+    // What a screen reader is given with a field beside its value: the texts its input, by id, is described by
+    // (aria-describedby, one id or several), read as one line, in sight or not; none when it is described by
+    // nothing or by elements holding no text. A test asking for an input the page does not draw fails.
+    public static string? FieldMessage(string html, string inputId)
+    {
+        var elements = Descendants(Parse(html)).ToList();
+        var input = elements.FirstOrDefault(element => element.Name == "input" && element.Attributes.GetValueOrDefault("id") == inputId);
+        input.ShouldNotBeNull($"The page draws no input of id « {inputId} ».");
+        var ids = (input.Attributes.GetValueOrDefault("aria-describedby") ?? "").Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        var text = string.Join(" ", ids
+            .Select(id => elements.FirstOrDefault(element => element.Attributes.GetValueOrDefault("id") == id))
+            .OfType<Element>()
+            .Select(element => Regex.Replace(string.Concat(element.Children.SelectMany(AllTexts)), "\\s+", " ").Trim())
+            .Where(words => words.Length > 0));
+
+        return text.Length == 0 ? null : text;
+    }
+
     // The element of that id with all it holds, as written; a test asking for one the page does not draw
     // fails.
     private static string ById(string html, string id)

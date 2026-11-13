@@ -18,13 +18,18 @@ public class NettoMudLocalizerTests
 
         var texts = ResxText.For<NettoMudLocalizer>().Entries;
 
-        texts.Count.ShouldBe(2);
+        texts.Count.ShouldBe(7);
         texts.Where(text => mudBlazor.Get(text.Key) != text.Value).ShouldBeEmpty();
     }
 
     [Theory]
     [InlineData("Converter_InvalidNumber", "Nombre non valide")]
     [InlineData("MudInput_Clear", "Effacer")]
+    [InlineData("Converter_InvalidDateTime", "Date non valide")]
+    [InlineData("MudBaseDatePicker_PrevMonth", "Mois précédent {0}")]
+    [InlineData("MudBaseDatePicker_NextMonth", "Mois suivant {0}")]
+    [InlineData("MudBaseDatePicker_PrevYear", "Année précédente {0}")]
+    [InlineData("MudBaseDatePicker_NextYear", "Année suivante {0}")]
     public void MudBlazorsWord_inFrench_isTheFrenchText(string key, string expected)
     {
         using var french = InLanguage.French();
@@ -35,6 +40,8 @@ public class NettoMudLocalizerTests
     [Theory]
     [InlineData("Converter_InvalidNumber", "Not a valid number")]
     [InlineData("MudInput_Clear", "Clear")]
+    [InlineData("Converter_InvalidDateTime", "Not a valid date time")]
+    [InlineData("MudBaseDatePicker_PrevMonth", "Previous month {0}")]
     public void MudBlazorsWord_inEnglish_isMudBlazorsOwn(string key, string expected)
     {
         Words()(key).ShouldBe(expected);
