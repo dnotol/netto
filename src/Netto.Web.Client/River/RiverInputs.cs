@@ -98,7 +98,7 @@ public sealed record RiverInputs(
             new Input<CarEngine>(CarEngine.Electric, InputOrigin.Default), new Input<int>(0, InputOrigin.None), new Input<bool>(false, InputOrigin.Default),
             new Input<DateOnly>(new DateOnly(ExampleYear, 1, 1), InputOrigin.Example), new Input<bool>(false, InputOrigin.Default),
             new Input<int>(0, InputOrigin.None), new Input<bool>(false, InputOrigin.Default), new Input<bool>(false, InputOrigin.Default),
-            CarInputs.NoPrivateCost),
+            CarInputs.NoPrivateCost, CarInputs.HeldAllYear, CarInputs.HeldAllYear),
         new CopyrightInputs(
             ExampleNothing, new Input<bool>(true, InputOrigin.Default), new Input<bool>(true, InputOrigin.Default), new Input<bool>(false, InputOrigin.Default),
             CopyrightInputs.NoCreativeShare),
@@ -190,6 +190,11 @@ public sealed record RiverInputs(
 
     // Cleared, the cost is none again.
     public RiverInputs WithCarPrivateCost(decimal? amount) => this with { Car = Car with { PrivateCost = Yours(amount) } };
+
+    // The day the director has the car from, and the day they give it back on; cleared, held all year again.
+    public RiverInputs WithCarHeldFrom(DateOnly? date) => this with { Car = Car with { HeldFrom = date is null ? CarInputs.HeldAllYear : Yours(date) } };
+
+    public RiverInputs WithCarReturnedOn(DateOnly? date) => this with { Car = Car with { ReturnedOn = date is null ? CarInputs.HeldAllYear : Yours(date) } };
 
     // A royalty typed is a fixed one.
     public RiverInputs WithRoyalty(decimal amount) => this with { Copyright = Copyright with { Royalty = Yours(amount), FollowsPay = Yours(false) } };
@@ -434,8 +439,9 @@ public sealed record RentInputs(Input<decimal> CadastralIncome, Input<decimal> S
 // energy for private use, and the director's own contribution; what drives it, its CO2 or that the
 // registration holds none, and when it was ordered or leased; for a plug-in hybrid, whether it is a
 // fake one and its matching car's CO2, or that it has none; for natural gas, whether it is under 12
-// fiscal horsepower; and what the same car would cost the director privately for the year, which no
-// rule reads: only the card weighs the company car against it, so the engine never sees it (Values).
+// fiscal horsepower; what the same car would cost the director privately for the year, which no
+// rule reads: only the card weighs the company car against it, so the engine never sees it (Values);
+// and the day the director has it from and the day they give it back on, none while held all year.
 public sealed record CarInputs(
     Input<decimal> CatalogueValue,
     Input<DateOnly> FirstRegistration,
@@ -450,11 +456,16 @@ public sealed record CarInputs(
     Input<int> MatchingCarCo2,
     Input<bool> NoMatchingCar,
     Input<bool> SmallNaturalGas,
-    Input<decimal?> PrivateCost)
+    Input<decimal?> PrivateCost,
+    Input<DateOnly?> HeldFrom,
+    Input<DateOnly?> ReturnedOn)
 {
     // The private cost has no default and no example: none until the user gives it, and its origin,
     // the user's, shows only once it is given.
     public static Input<decimal?> NoPrivateCost { get; } = new(null, InputOrigin.Yours);
+
+    // No date the car is had from or given back on: held all year, a status assumed until a date is given.
+    public static Input<DateOnly?> HeldAllYear { get; } = new(null, InputOrigin.Default);
 
     public CarFacts Values => new(CatalogueValue.Value, FirstRegistration.Value, YearlyCosts.Value, CompanyPaysPrivateEnergy.Value, PersonalContribution.Value)
     {
@@ -466,6 +477,8 @@ public sealed record CarInputs(
         MatchingCarCo2 = MatchingCarCo2.Value,
         NoMatchingCar = NoMatchingCar.Value,
         SmallNaturalGas = SmallNaturalGas.Value,
+        HeldFrom = HeldFrom.Value,
+        ReturnedOn = ReturnedOn.Value,
     };
 }
 

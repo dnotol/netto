@@ -75,7 +75,7 @@ public class PlanStorageTests
     // What the example holds none of is stored as the example's, as the builds before stored it: the
     // example as version 6 wrote it, with version 7's band of INASTI's company contribution, the default
     // lower one, after the financial year, its fund fee, none given, and version 8's partner, out of the plan and none, last,
-    // with version 9's partner assumed and no dependants.
+    // with version 9's partner assumed and no dependants, and version 10's car held all year, assumed.
     [Fact]
     public void Store_example_writesWhatItHoldsNoneOfAsTheBuildBeforeDid()
     {
@@ -95,6 +95,8 @@ public class PlanStorageTests
                 }
             }
             """));
+        before["car"]!.AsObject().Add("heldFrom", JsonNode.Parse("""{"value":null,"origin":"Default"}"""));
+        before["car"]!.AsObject().Add("returnedOn", JsonNode.Parse("""{"value":null,"origin":"Default"}"""));
 
         PlanStorage.Store(StoredPlanDocuments.SavedExample).GetRawText().ShouldBe(before.ToJsonString());
     }
@@ -244,11 +246,23 @@ public class PlanStorageTests
         PlanStorage.Read(written).Book.Plans.Single().Inputs.ShouldBe(Everything);
     }
 
-    // Version 9 holds whether there is a partner, and the dependants.
+    // Version 10 holds the days the director has the car.
     [Fact]
-    public void Version_isNine()
+    public void Version_isTen()
     {
-        PlanStorage.Version.ShouldBe(9);
+        PlanStorage.Version.ShouldBe(10);
+    }
+
+    // The day the car is had from and the day it is given back on read back as given, and none as held all year.
+    [Fact]
+    public void Read_written_givesBackTheDaysTheCarIsHeld()
+    {
+        var given = RiverInputs.Example.AddToPlan(OptionalModule.Car).WithCatalogueValue(40_000m)
+            .WithCarHeldFrom(new DateOnly(2026, 3, 1)).WithCarReturnedOn(new DateOnly(2026, 10, 15));
+        var cleared = given.WithCarHeldFrom(null);
+
+        PlanStorage.Read(PlanStorage.Write(Book(("a", "Plan 1", given), ("b", "Plan 2", cleared)))).Book.Plans.Select(plan => plan.Inputs)
+            .ShouldBe([given, cleared]);
     }
 
     // The director alone with their dependants reads back so, the partner's facts kept beside.
@@ -426,6 +440,7 @@ public class PlanStorageTests
     [InlineData(7)]
     [InlineData(8)]
     [InlineData(9)]
+    [InlineData(10)]
     public void Read_documentOfEachVersion_readsEachPlanAsItWasSaved(int version)
     {
         var (read, unreadable) = PlanStorage.Read(StoredPlanDocuments.Of(version));
@@ -447,6 +462,7 @@ public class PlanStorageTests
     [InlineData(7)]
     [InlineData(8)]
     [InlineData(9)]
+    [InlineData(10)]
     public void Write_afterReadingADocumentOfEachVersion_writesEachPlanInThisVersion(int version)
     {
         var rewritten = PlanStorage.Write(PlanStorage.Read(StoredPlanDocuments.Of(version)).Book);
@@ -462,7 +478,7 @@ public class PlanStorageTests
     [Fact]
     public void Write_afterReadingADocumentOfThisVersion_writesItBackAsRead()
     {
-        PlanStorage.Write(PlanStorage.Read(StoredPlanDocuments.Version9).Book).ShouldBe(StoredPlanDocuments.Version9);
+        PlanStorage.Write(PlanStorage.Read(StoredPlanDocuments.Version10).Book).ShouldBe(StoredPlanDocuments.Version10);
     }
 
     // A version's plan carrying a member a later version brought, as that version stored it, is not a plan it
@@ -497,6 +513,9 @@ public class PlanStorageTests
     [InlineData(3, "composition.household", 8)]
     [InlineData(8, "household.status", 9)]
     [InlineData(8, "household.dependants", 9)]
+    [InlineData(9, "car.heldFrom", 10)]
+    [InlineData(9, "car.returnedOn", 10)]
+    [InlineData(2, "car.heldFrom", 10)]
     public void Read_documentOfAVersionWithAMemberALaterVersionBrought_makesThatPlanUnreadable(int version, string member, int broughtBy)
     {
         var brought = Member(PlanInputs(StoredPlanDocuments.Of(broughtBy), 1), member).DeepClone();
@@ -526,6 +545,8 @@ public class PlanStorageTests
     [InlineData(9, "household.dependants")]
     [InlineData(9, "household.dependants.childrenUnder3")]
     [InlineData(9, "household.dependants.singleParent")]
+    [InlineData(10, "car.heldFrom")]
+    [InlineData(10, "car.returnedOn")]
     [InlineData(1, "composition")]
     [InlineData(2, "composition")]
     [InlineData(2, "car")]

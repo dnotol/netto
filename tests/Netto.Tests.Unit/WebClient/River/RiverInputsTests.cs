@@ -1160,7 +1160,28 @@ public class RiverInputsTests
             new Input<decimal>(0m, InputOrigin.None), new Input<bool>(false, InputOrigin.Default), new Input<decimal>(0m, InputOrigin.None),
             new Input<CarEngine>(CarEngine.Electric, InputOrigin.Default), new Input<int>(0, InputOrigin.None), new Input<bool>(false, InputOrigin.Default),
             new Input<DateOnly>(new DateOnly(2026, 1, 1), InputOrigin.Example), new Input<bool>(false, InputOrigin.Default), new Input<int>(0, InputOrigin.None),
-            new Input<bool>(false, InputOrigin.Default), new Input<bool>(false, InputOrigin.Default), new Input<decimal?>(null, InputOrigin.Yours)));
+            new Input<bool>(false, InputOrigin.Default), new Input<bool>(false, InputOrigin.Default), new Input<decimal?>(null, InputOrigin.Yours),
+            CarInputs.HeldAllYear, CarInputs.HeldAllYear));
+    }
+
+    // Held all year is a status, assumed until the user gives a date: (null, Default), the date the user's once
+    // given, and the status assumed again once cleared.
+    [Fact]
+    public void WithCarHeldDates_areTheUsersAndClearedAreAllYearAgain()
+    {
+        var given = RiverInputs.Example.WithCarHeldFrom(new DateOnly(2026, 9, 17)).WithCarReturnedOn(new DateOnly(2027, 3, 1));
+
+        (RiverInputs.Example.Car.HeldFrom, given.Car.HeldFrom, given.Car.ReturnedOn, given.WithCarHeldFrom(null).WithCarReturnedOn(null).Car)
+            .ShouldBe((new Input<DateOnly?>(null, InputOrigin.Default), new Input<DateOnly?>(new DateOnly(2026, 9, 17), InputOrigin.Yours),
+                new Input<DateOnly?>(new DateOnly(2027, 3, 1), InputOrigin.Yours), RiverInputs.Example.Car));
+    }
+
+    [Fact]
+    public void Run_carHeldDatesReachTheEngine()
+    {
+        var inputs = ElectricCar(RiverInputs.Example).WithCarHeldFrom(new DateOnly(2026, 9, 17)).WithCarReturnedOn(new DateOnly(2026, 12, 1));
+
+        (inputs.MoveScenario().Car.HeldFrom, inputs.MoveScenario().Car.ReturnedOn).ShouldBe((new DateOnly(2026, 9, 17), new DateOnly(2026, 12, 1)));
     }
 
     [Fact]
@@ -1169,14 +1190,15 @@ public class RiverInputsTests
         var inputs = RiverInputs.Example.WithCatalogueValue(48_500m).WithFirstRegistration(new DateOnly(2025, 6, 21)).WithCarCosts(9_250.50m)
             .WithPrivateEnergyPaid(true).WithCarContribution(600m).WithCarEngine(CarEngine.DieselPlugInHybrid).WithCarCo2(45).WithNoCo2Data(true)
             .WithCarAcquired(new DateOnly(2025, 3, 1)).WithFakeHybrid(true).WithMatchingCarCo2(150).WithNoMatchingCar(true).WithSmallNaturalGas(true)
-            .WithCarPrivateCost(7_200m);
+            .WithCarPrivateCost(7_200m).WithCarHeldFrom(new DateOnly(2026, 2, 1)).WithCarReturnedOn(new DateOnly(2026, 11, 15));
 
         inputs.Car.ShouldBe(new CarInputs(
             new Input<decimal>(48_500m, InputOrigin.Yours), new Input<DateOnly>(new DateOnly(2025, 6, 21), InputOrigin.Yours),
             new Input<decimal>(9_250.50m, InputOrigin.Yours), new Input<bool>(true, InputOrigin.Yours), new Input<decimal>(600m, InputOrigin.Yours),
             new Input<CarEngine>(CarEngine.DieselPlugInHybrid, InputOrigin.Yours), new Input<int>(45, InputOrigin.Yours), new Input<bool>(true, InputOrigin.Yours),
             new Input<DateOnly>(new DateOnly(2025, 3, 1), InputOrigin.Yours), new Input<bool>(true, InputOrigin.Yours), new Input<int>(150, InputOrigin.Yours),
-            new Input<bool>(true, InputOrigin.Yours), new Input<bool>(true, InputOrigin.Yours), new Input<decimal?>(7_200m, InputOrigin.Yours)));
+            new Input<bool>(true, InputOrigin.Yours), new Input<bool>(true, InputOrigin.Yours), new Input<decimal?>(7_200m, InputOrigin.Yours),
+            new Input<DateOnly?>(new DateOnly(2026, 2, 1), InputOrigin.Yours), new Input<DateOnly?>(new DateOnly(2026, 11, 15), InputOrigin.Yours)));
     }
 
     // What the same car would cost the director privately for the year has no default and no example:

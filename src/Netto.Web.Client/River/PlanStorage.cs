@@ -50,7 +50,9 @@ internal sealed record PlanBook(IReadOnlyList<SavedPlan> Plans, string? Today, s
 // with none given, and versions 1 to 7 no partner, so theirs are read without one, no income given for
 // one and neither of the household's statuses, and versions 1 to 8 no dependants, so theirs are read with
 // none, and no word of whether there is a partner: version 8's household was its partner, so a plan holding
-// it declared one, the user's, and any other has none assumed, as adding the household does. The car's
+// it declared one, the user's, and any other has none assumed, as adding the household does, and versions 1
+// to 9 no day the director has the car from or gives it back on, so theirs hold the car all year, assumed,
+// as they counted it. The car's
 // engine, CO2, order date and statuses joined version 2 without raising it,
 // since version 2 had not left the car's story branch; a plan saved by the car's first build does not
 // open (operator, 2026-10-22). The rest of the royalty's story joins version 3 the same way, and the
@@ -65,14 +67,14 @@ internal static class PlanStorage
     // 2: the company car. 3: the copyright royalty. 4: what the fund bills each quarter. 5: whether the
     // royalty follows the pay. 6: what the same car would cost privately. 7: the band of INASTI's company
     // contribution and the rate of the fund's management fee. 8: the partner. 9: whether there is a partner,
-    // and the dependants.
-    public const int Version = 9;
+    // and the dependants. 10: the days the director has the car.
+    public const int Version = 10;
 
     private const int FirstVersion = 1;
 
     // The patch from each older version to the next: Patches[n - FirstVersion] brings a plan version n
     // stored to version n + 1's shape, or refuses it. A new version adds its own.
-    private static readonly Func<JsonObject, bool>[] Patches = [ToVersion2, ToVersion3, ToVersion4, ToVersion5, ToVersion6, ToVersion7, ToVersion8, ToVersion9];
+    private static readonly Func<JsonObject, bool>[] Patches = [ToVersion2, ToVersion3, ToVersion4, ToVersion5, ToVersion6, ToVersion7, ToVersion8, ToVersion9, ToVersion10];
 
     // A plan of an older version holding a member twice is refused as it is parsed.
     private static readonly JsonDocumentOptions OneOfEachMember = new() { AllowDuplicateProperties = false };
@@ -135,6 +137,9 @@ internal static class PlanStorage
     private const string PartnerDeclared = """{"value": "MarriedOrLegalCohabitant", "origin": "Yours"}""";
 
     private const string PartnerAssumed = """{"value": "Alone", "origin": "Default"}""";
+
+    // No day the car is had from or given back on, which a plan of version 9 never held: held all year, assumed.
+    private const string HeldAllYear = """{"value": null, "origin": "Default"}""";
 
     // An amount with no default, until the user gives it.
     private const string NoneGiven = """{"value": null, "origin": "Yours"}""";
@@ -231,6 +236,10 @@ internal static class PlanStorage
     private static bool ToVersion9(JsonObject plan) =>
         plan["composition"] is JsonObject composition && composition["household"] is JsonValue held && held.TryGetValue<bool>(out var partnerHeld)
         && Add(plan["household"], "status", partnerHeld ? PartnerDeclared : PartnerAssumed) && Add(plan["household"], "dependants", DependantsOfVersion9);
+
+    // Version 10 brought the day the director has the car from and the day they give it back on: none, the car
+    // held all year, as a plan of version 9 counted it.
+    private static bool ToVersion10(JsonObject plan) => Add(plan["car"], "heldFrom", HeldAllYear) && Add(plan["car"], "returnedOn", HeldAllYear);
 
     // Adds a member the version before never held, or refuses a plan that already holds it: that version
     // never wrote one.
@@ -347,12 +356,12 @@ internal static class PlanStorage
     private static StoredCar Stored(CarInputs car) => new(
         Stored(car.CatalogueValue), Stored(car.FirstRegistration), Stored(car.YearlyCosts), Stored(car.CompanyPaysPrivateEnergy), Stored(car.PersonalContribution),
         Stored(car.Engine), Stored(car.Co2), Stored(car.NoCo2Data), Stored(car.Acquired), Stored(car.FakeHybrid), Stored(car.MatchingCarCo2),
-        Stored(car.NoMatchingCar), Stored(car.SmallNaturalGas), Stored(car.PrivateCost));
+        Stored(car.NoMatchingCar), Stored(car.SmallNaturalGas), Stored(car.PrivateCost), Stored(car.HeldFrom), Stored(car.ReturnedOn));
 
     private static CarInputs Input(StoredCar stored) => new(
         Input(stored.CatalogueValue), Input(stored.FirstRegistration), Input(stored.YearlyCosts), Input(stored.CompanyPaysPrivateEnergy), Input(stored.PersonalContribution),
         Input(stored.Engine), Input(stored.Co2), Input(stored.NoCo2Data), Input(stored.Acquired), Input(stored.FakeHybrid), Input(stored.MatchingCarCo2),
-        Input(stored.NoMatchingCar), Input(stored.SmallNaturalGas), Input(stored.PrivateCost));
+        Input(stored.NoMatchingCar), Input(stored.SmallNaturalGas), Input(stored.PrivateCost), Input(stored.HeldFrom), Input(stored.ReturnedOn));
 
     private static StoredCopyright Stored(CopyrightInputs copyright) => new(
         Stored(copyright.Royalty), Stored(copyright.FollowsPay), Stored(copyright.AverageWithinCap), Stored(copyright.HoldsAttestation),
@@ -365,7 +374,7 @@ internal static class PlanStorage
         new(Input(stored.First), Input(stored.Second), Input(stored.Third), Input(stored.Fourth));
 }
 
-// The stored document and plan, version 9. Renaming or removing a member changes the format.
+// The stored document and plan, version 10. Renaming or removing a member changes the format.
 internal sealed record StoredBook(int Version, string? Today, string? Opened, IReadOnlyList<StoredPlan> Plans);
 
 internal sealed record StoredPlan(string Id, string Name, JsonElement Inputs);
@@ -441,7 +450,9 @@ internal sealed record StoredCar(
     StoredValue<int> MatchingCarCo2,
     StoredValue<bool> NoMatchingCar,
     StoredValue<bool> SmallNaturalGas,
-    StoredValue<decimal?> PrivateCost);
+    StoredValue<decimal?> PrivateCost,
+    StoredValue<DateOnly?> HeldFrom,
+    StoredValue<DateOnly?> ReturnedOn);
 
 internal sealed record StoredPayments(StoredValue<decimal> First, StoredValue<decimal> Second, StoredValue<decimal> Third, StoredValue<decimal> Fourth);
 
