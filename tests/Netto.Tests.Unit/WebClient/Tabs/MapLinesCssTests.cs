@@ -24,7 +24,7 @@ public class MapLinesCssTests
     }
 
     // Below the breakpoint the map scrolls sideways inside its column once the window is narrower than it: in
-    // a frame of its own, which holds the map alone, so the tools over it, and the panel of « Add to plan »
+    // a frame of its own, which holds the map alone, so the tools over it, and the panel of « Edit plan »
     // that drops from them, are never clipped by a scroll area, nor the map's column given one (a box that
     // scrolls one way scrolls the other too).
     [Fact]

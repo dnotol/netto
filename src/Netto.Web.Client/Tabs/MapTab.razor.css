@@ -1,10 +1,10 @@
-/* The map of My plan: the map, its tools above it (the key to its lines and « Add to plan »), and
-   beside it from 1,201 px the card of the chosen module (MapPanel); below that width the card goes under the
+/* The map of My plan: the map, its tools above it (the switch of its picture and « Edit plan »), the key to its
+   lines under it, and beside it from 1,201 px the card of the chosen module (MapPanel); below that width the card goes under the
    map. Both keep to the page's column (app.css, --netto-column), the map taking the room the card leaves
    and the card a share of what the column grows past them both, so on a 1,920 px screen the map is about
    950 px wide beside a card of some 570. From 1,201 px the map and its tools stay under the band while the
-   page scrolls past them, never taller than the window leaves, the map shrinking to what its tools leave
-   it; the card beside them is a plain block, scrolled with the page however long it is, so a viewer
+   page scrolls past them, never taller than the window leaves, the map shrinking to what its tools and its key
+   leave it; the card beside them is a plain block, scrolled with the page however long it is, so a viewer
    reaches its last field by scrolling the page, the map staying where it is. */
 
 .map-tab {
@@ -15,9 +15,7 @@
     gap: 2rem;
 }
 
-/* The tools over the map: the key to its lines, then « Add to plan » at the end of its first line. The key
-   takes the room « Add to plan » leaves it, and wraps its items inside that room where it must, so the row is two
-   lines at most where the column is narrowest, never « Add to plan » alone on a line. */
+/* The tools over the map: the switch of its picture, then « Edit plan » at the end of the line. */
 .map-tab__tools {
     display: flex;
     flex-wrap: nowrap;
@@ -27,9 +25,11 @@
     margin-bottom: 0.75rem;
 }
 
+/* The key to the map's lines, one muted line under the map; its items wrap inside the column where they must. */
 .map-tab__key {
-    flex: 1 1 auto;
-    min-width: 0;
+    margin-top: 0.5rem;
+    color: var(--netto-text-muted);
+    font-size: 0.8rem;
 }
 
 .map-tab__add {
@@ -42,7 +42,7 @@
         align-items: start;
     }
 
-    /* Over the card's own controls, so the panel of « Add to plan » drops over them where it reaches
+    /* Over the card's own controls, so the panel of « Edit plan » drops over them where it reaches
        them. */
     .map-tab__map {
         position: sticky;
@@ -54,6 +54,11 @@
     }
 
     .map-tab__tools {
+        flex: none;
+    }
+
+    /* The key takes its own height: the frame and the map in it, which may shrink, give up what it takes. */
+    .map-tab__key {
         flex: none;
     }
 
@@ -157,7 +162,7 @@
 
 /* Below that width the map scrolls sideways once the window is narrower than it, in the frame that holds
    it alone: a box that scrolls one way scrolls the other too, so the tools over the map, and the panel of
-   « Add to plan » that drops from them over it, stay out of any scroll area. */
+   « Edit plan » that drops from them over it, stay out of any scroll area. */
 @media (max-width: 1200px) {
     .map-tab__frame {
         overflow-x: auto;

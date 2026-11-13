@@ -48,20 +48,34 @@ public class MapPanelLayoutTests
             () => Rule(css, ".map").ShouldContain("var(--map-room)"));
     }
 
-    // The tools are one line, the key taking what « Add to plan » leaves it and wrapping its items inside
-    // that room, never « Add to plan » onto a line of its own: so the row is two lines at most where the
-    // column is narrowest, 1,201 px wide.
+    // The tools are one line, the switch of the picture and « Edit plan » at the end of it, never « Edit plan »
+    // onto a line of its own; the key to the lines is no longer among them.
     [Fact]
-    public void Tools_keepAddToPlanOnTheKeysFirstLine()
+    public void Tools_keepTheSwitchAndEditPlanOnOneLine()
     {
         var css = MapTabCss();
 
         css.ShouldSatisfyAllConditions(
             () => Rule(css, ".map-tab__tools").ShouldContain("flex-wrap: nowrap"),
             () => Rule(css, ".map-tab__tools").ShouldNotContain("flex-wrap: wrap"),
-            () => Rule(css, ".map-tab__key").ShouldContain("flex: 1 1 auto"),
-            () => Rule(css, ".map-tab__key").ShouldContain("min-width: 0"),
+            () => Rule(css, ".map-tab__tools").ShouldContain("justify-content: space-between"),
             () => Rule(css, ".map-tab__add").ShouldContain("flex: none"));
+    }
+
+    // The key is one muted line under the map, among what the sticky map holds: it takes its own height
+    // (flex: none) and the frame, which may shrink, and the map in it give up exactly that much, so the map and
+    // its key together never take more than the window leaves under the band.
+    [Fact]
+    public void Key_underTheMap_isOneMutedLineTheFrameMakesRoomFor()
+    {
+        var css = MapTabCss();
+        var wide = Stylesheet.MediaBlock(css, "(min-width: 1201px)");
+
+        css.ShouldSatisfyAllConditions(
+            () => Rule(css, ".map-tab__key").ShouldContain("color: var(--netto-text-muted)"),
+            () => Rule(css, ".map-tab__key").ShouldContain("margin-top"),
+            () => Rule(css, ".map-tab__key").ShouldNotContain("flex: 1 1 auto"),
+            () => Rule(wide, ".map-tab__key").ShouldContain("flex: none"));
     }
 
     // The card beside the map is the page's to scroll: no rule makes the column or the room of the card a

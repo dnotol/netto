@@ -19,10 +19,10 @@ public class MapTabTests
 {
     private static readonly RiverInputs Full = MapLinksTests.Full;
 
-    // What the tab draws, in the order it draws it: the map's tools and the key among them, the map, the
+    // What the tab draws, in the order it draws it: the map's tools, the map, the key to its lines under it, the
     // column beside it, the line of what the chosen module receives and its card. Its head is the page's.
     private static readonly string[] ToolsAndCard =
-        ["class=\"map-tab__tools\"", "map-tab__key", "class=\"map\"", "class=\"map-tab__side\"", "class=\"map-tab__receives\"", "map-tab__panel"];
+        ["class=\"map-tab__tools\"", "class=\"map\"", "map-tab__key", "class=\"map-tab__side\"", "class=\"map-tab__receives\"", "map-tab__panel"];
 
     // Each module is a button named by its card's title, the lines its gate says and the words of the badges in
     // its box, which a screen reader hears with it: every module the map draws, each gate with the lines MapGates

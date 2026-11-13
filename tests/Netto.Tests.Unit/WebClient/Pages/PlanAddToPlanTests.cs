@@ -14,16 +14,17 @@ namespace Netto.Tests.WebClient.Pages;
 // focus goes to « Edit plan » where the tab draws it, and to the start of the tab's content where it does not.
 public class PlanAddToPlanTests
 {
-    // Its button is among the map's tools, after the switch of the picture, and the band holds none.
+    // Its button is among the map's tools, after the switch of the picture, and the band holds none; the key to
+    // the lines is no longer among them.
     [Fact]
-    public async Task Plan_onThePlanTab_drawsEditPlanAmongTheMapsToolsAfterTheSwitch()
+    public async Task Plan_onThePlanTab_drawsEditPlanAmongTheMapsToolsAfterTheSwitchAndNoKey()
     {
         var html = await RenderPlanAsync();
 
         var tools = Regex.Match(html, "<div class=\"map-tab__tools\".*?<div class=\"map-tab__frame\"", RegexOptions.Singleline).Value;
         var (picture, button) = (tools.IndexOf("map-picture-switch", StringComparison.Ordinal), tools.IndexOf("composition__button", StringComparison.Ordinal));
-        (Regex.Count(html, "composition__button"), picture >= 0, button >= 0, picture < button)
-            .ShouldBe((1, true, true, true));
+        (Regex.Count(html, "composition__button"), picture >= 0, button >= 0, picture < button, tools.Contains("map-key", StringComparison.Ordinal))
+            .ShouldBe((1, true, true, true, false));
     }
 
     // The other views draw no map, and no « Edit plan »; nor does Optimise at the When to pay section.

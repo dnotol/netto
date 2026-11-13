@@ -39,8 +39,8 @@ public class MapPictureSwitchTests
         var html = await RenderTabAsync(MapLinksTests.Full);
 
         var tools = Regex.Match(html, "<div class=\"map-tab__tools\"[^>]*>(.*?)<div class=\"map-tab__frame\"", RegexOptions.Singleline).Groups[1].Value;
-        (tools.IndexOf("map-picture-switch", StringComparison.Ordinal), tools.IndexOf("map-tab__key", StringComparison.Ordinal) > 0,
-            html.Contains("<div class=\"map\"", StringComparison.Ordinal), html.Contains("class=\"sankey", StringComparison.Ordinal)).ShouldBe((ToolsStart(tools), true, true, false));
+        (tools.IndexOf("map-picture-switch", StringComparison.Ordinal), tools.Contains("map-tab__key", StringComparison.Ordinal),
+            html.Contains("<div class=\"map\"", StringComparison.Ordinal), html.Contains("class=\"sankey", StringComparison.Ordinal)).ShouldBe((ToolsStart(tools), false, true, false));
     }
 
     [Fact]

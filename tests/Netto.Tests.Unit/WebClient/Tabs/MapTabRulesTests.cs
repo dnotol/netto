@@ -7,7 +7,7 @@ using static Netto.Tests.WebClient.Tabs.MapRendering;
 
 namespace Netto.Tests.WebClient.Tabs;
 
-// The Map tab's key among the map's tools, and the lines it draws: every line of money, always; a tax base's
+// The Map tab's key under the map, and the lines it draws: every line of money, always; a tax base's
 // and a condition's only for the module chosen, those with it at an end, each with its arrowhead and its words
 // where they were placed from every link of the run, nothing chosen none, the boxes saying them in their badges
 // whatever is chosen. The modules, the buckets, the lines and their amounts are where they were whatever is
@@ -21,13 +21,14 @@ public class MapTabRulesTests
     private const string BucketBox = "<button type=\"button\" class=\"map-bucket";
 
     [Fact]
-    public async Task Tab_overTheMap_holdsTheKeyToTheLines()
+    public async Task Tab_underTheMap_holdsTheKeyToTheLines()
     {
         var html = await RenderTabAsync(Full);
 
-        var (slot, key, map) = (html.IndexOf("class=\"map-tab__key\"", StringComparison.Ordinal),
-            html.IndexOf("<ul class=\"map-key\"", StringComparison.Ordinal), html.IndexOf("class=\"map\"", StringComparison.Ordinal));
-        (slot < key, key < map, Regex.Count(html, "<ul class=\"map-key\"")).ShouldBe((true, true, 1));
+        var (slot, key, map, side) = (html.IndexOf("class=\"map-tab__key\"", StringComparison.Ordinal),
+            html.IndexOf("<ul class=\"map-key\"", StringComparison.Ordinal), html.IndexOf("class=\"map\"", StringComparison.Ordinal),
+            html.IndexOf("class=\"map-tab__side\"", StringComparison.Ordinal));
+        (map < slot, slot < key, key < side, Regex.Count(html, "<ul class=\"map-key\"")).ShouldBe((true, true, true, 1));
     }
 
     // Nothing chosen: every line of money and its amount, no line, arrowhead or word of a tax base or a

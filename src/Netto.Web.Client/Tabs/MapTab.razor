@@ -89,8 +89,9 @@
    chosen it is said above the map.
 
    The map is as tall as the window leaves under the band, and stays there while the page scrolls the card
-   beside it, which has no scroll area of its own. Over the map are its tools: the key to its lines (MapKey),
-   saying what each style of line is, and what the page puts there (AddToPlan). Every line of money is drawn;
+   beside it, which has no scroll area of its own. Over the map are its tools: the switch of its picture and what
+   the page puts there (AddToPlan); under it, while it is the map, the key to its lines (MapKey), one muted line
+   saying what each style of line is, whose height the map gives up. Every line of money is drawn;
    a tax base's and a condition's line only for the module chosen, with its arrowhead and its amount or words,
    none while nothing is chosen, their badges saying them on the modules they reach (MapView.ShowingFor). The
    choice leaves everything else where it is: the modules, the buckets, the route of every line and its amount
@@ -103,12 +104,6 @@
     <div class="map-tab__map">
         <div class="map-tab__tools">
             <MapPictureSwitch Current="Pictures.Current" Chosen="OnPictureChosen" />
-            @if (Pictures.Current == PlanPicture.Map)
-            {
-                <div class="map-tab__key">
-                    <MapKey />
-                </div>
-            }
             @if (AddToPlan is not null)
             {
                 <div class="map-tab__add">@AddToPlan</div>
@@ -190,6 +185,14 @@
             </div>
             }
         </div>
+        @* The key to the map's lines, one muted line under it, only while the picture is the map (the Sankey
+           keeps its own key), among what the sticky map holds so that the map gives it its room. *@
+        @if (Pictures.Current == PlanPicture.Map)
+        {
+            <div class="map-tab__key">
+                <MapKey />
+            </div>
+        }
     </div>
     <div class="map-tab__side">
         @if (_received is { Lines.Count: > 0 } received)
@@ -249,7 +252,7 @@
     [Parameter]
     public bool ViewerChose { get; set; }
 
-    // What the page puts among the map's tools, after the key: « Add to plan » (CompositionMenu).
+    // What the page puts among the map's tools, after the switch: « Edit plan » (CompositionMenu).
     [Parameter]
     public RenderFragment? AddToPlan { get; set; }
 
