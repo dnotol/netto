@@ -33,7 +33,7 @@ public class PlanMapChoiceTests
         ((await page.FindAsync<MapTab>()).Chosen, page.Errors.Count).ShouldBe((MapChoice.Of(RiverModule.Split), 0));
     }
 
-    // From « Add to plan » or a move applied: the viewer asked for the lever, so its card opens beside
+    // From « Edit plan » or a move applied: the viewer asked for the lever, so its card opens beside
     // the map to be filled.
     [Fact]
     public async Task Plan_aLeverAddedToThePlan_isChosen()

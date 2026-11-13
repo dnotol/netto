@@ -7,7 +7,7 @@ namespace Netto.Tests.WebClient.River.Equipment;
 
 // The IT and phone as the river holds it: out of the example's plan with nothing in it, each input the user's once
 // typed, handed to the engine only while it is in the plan, its values kept while it is out and back with it, and
-// offered by « Add to plan », which says the values that wait for it.
+// offered by « Edit plan », which says the values that wait for it.
 public class EquipmentInputsTests
 {
     private static readonly RiverInputs Set = EquipmentViewTests.Set;
@@ -65,7 +65,7 @@ public class EquipmentInputsTests
         BucketsView.ExpensesOf(year).ShouldBe(year.CompanyContribution + 1_500m);
     }
 
-    // « Add to plan » offers the IT and phone between the rent and the car; out of the plan with values of the user's,
+    // « Edit plan » offers the IT and phone between the rent and the car; out of the plan with values of the user's,
     // it says they wait; in the plan, it brings what it costs the company a year.
     [Fact]
     public void Composition_offersItBetweenTheRentAndTheCar_andSaysItsValuesWait()

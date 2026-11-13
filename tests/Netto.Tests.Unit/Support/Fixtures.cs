@@ -77,7 +77,7 @@ internal static class Fixtures
     public static Scenario RiverExample => Scenario(advancePayments: AdvancePayments.None, taxPrepayments: TaxPrepayments.AsWithheld);
 
     // The page's example river with a copyright royalty that follows the pay at a creative share of 25%: the
-    // plan of the three views' position paper, on 11 November 2026. The figures tests pin on it are the engine's
+    // plan the position paper of 11 November 2026 measured. The figures tests pin on it are the engine's
     // own, a regression pin and no Tax-Calc value, and match what the band and the Optimise view say: it leaves
     // 62,624.32 in the pocket; the Optimiser adds 3,309.67 (the pay and the company's advance payment), to
     // 65,933.99; the vouchers, added to the plan, take that to 65,996.99, a gain of 63.00.

@@ -20,7 +20,7 @@ internal static class ModuleFolds
     };
 
     // The modules the plan holds after a change that it did not hold before, in the river's order: the
-    // levers the viewer just asked for, from « Add to plan » or by applying a move, whose card the
+    // levers the viewer just asked for, from « Edit plan » or by applying a move, whose card the
     // plan then chooses on the map to be filled.
     public static IReadOnlyList<OptionalModule> Added(PlanComposition before, PlanComposition after) =>
         [.. PlanComposition.Modules.Where(module => after.Holds(module) && !before.Holds(module))];

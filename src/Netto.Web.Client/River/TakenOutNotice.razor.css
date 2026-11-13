@@ -1,6 +1,6 @@
 /* ::deep reaches the MudButton and the MudIconButton, which carry no scope attribute of their own.
 
-   A light pill at the bottom of the screen, above the band and an open « Add to plan » menu
+   A light pill at the bottom of the screen, above the band and an open « Edit plan » menu
    (CompositionMenu), so Undo can be reached from either. The frame lets clicks through while it is empty. */
 .taken-out {
     position: fixed;

@@ -8,7 +8,7 @@ namespace Netto.Tests.WebClient.Pages;
 
 // The notice « … taken out of your plan », with its Undo, on the plan page as the browser runs it (LivePlan,
 // the paint held, since none of this is about the moves' search): a module the viewer takes out, from
-// « Add to plan » or from its card, is announced; a plan opened from Plans replaces the river and is not an
+// « Edit plan » or from its card, is announced; a plan opened from Plans replaces the river and is not an
 // edit of it, so it announces nothing, takes the focus to no Undo and leaves the river on the plan as saved.
 // The notice is read from the parameter the page hands it, the focus from the calls the page makes of the
 // script, and the viewer's clicks are the callbacks the page's components hand each other.
@@ -123,7 +123,7 @@ public class PlanTakenOutNoticeTests
         (notice.Module, page.Focuses - before, page.Errors.Count).ShouldBe((OptionalModule.Vouchers, 0, 0));
     }
 
-    // Undo puts the module back, the notice goes, and the focus goes to « Add to plan », where it was taken out.
+    // Undo puts the module back, the notice goes, and the focus goes to « Edit plan », where it was taken out.
     [Fact]
     public async Task Plan_moduleTakenOutFromTheMenuAndUndone_isBackInThePlan()
     {
@@ -207,7 +207,7 @@ public class PlanTakenOutNoticeTests
         (await page.FindAsync<PlansPanel>()).Inputs.ShouldBe(Inputs(storage, name), $"{name} should be in the river.");
     }
 
-    // The menu's checkbox for the module, « Add to plan » being among the map's tools after the legend's
+    // The menu's checkbox for the module, « Edit plan » being among the map's tools after the legend's
     // boxes, one for each kind of link.
     private static async Task TakeOutOfTheMenuAsync(LivePlan page, OptionalModule module)
     {

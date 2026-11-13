@@ -57,7 +57,7 @@ public class PlanMapPanelTests
         ((await page.FindAllAsync<ModuleCard>()).Count, (await page.FindAsync<MapPanel>()).Chosen, page.Errors.Count).ShouldBe((0, (MapChoice?)null, 0));
     }
 
-    // A lever added from « Add to plan » is chosen, its card beside the map to be filled, and the focus stays
+    // A lever added from « Edit plan » is chosen, its card beside the map to be filled, and the focus stays
     // in its panel, where the viewer may add another.
     [Fact]
     public async Task Plan_aLeverAddedFromTheMenu_isChosenWithoutTakingTheFocus()

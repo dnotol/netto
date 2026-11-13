@@ -20,8 +20,9 @@ namespace Netto.Core.Simulation;
 // taxable income, what it cannot deduct of the levers joins it, corporate tax takes its share, with the
 // surcharge the advance payments did not cover, and the dividend is the profit after tax and the profits
 // kept from earlier years, less the reserve the user keeps in the company, never below zero. In steady
-// state the year pays out its own profit (decided 2026-10-19). No other disallowed expenses and no
-// losses carried forward. Each lever says what it does through one contract (Lever, LeverYear), and the
+// state the year pays out its own profit (decided 2026-10-19). The only disallowed expenses are what the
+// levers leave undeductible (Lever.Disallowed), the share of the car's benefit in kind the company may not
+// deduct among them, added back to the taxable income; no losses carried forward. Each lever says what it does through one contract (Lever, LeverYear), and the
 // year reads a lever's result by its type only where YearResult or PayLevel hands a card a typed result:
 // the vouchers', the rent's, the IT and phone's, the car's and the royalty's.
 public static class YearSimulation
