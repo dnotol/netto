@@ -2,7 +2,8 @@
 type: adr
 title: Running totals are the map's alone: the company's line and the pocket line, never a card
 description: No card shows the profit left after it or the pocket so far; the map's company line reads its stretches from HandOff, its pocket line sums the cards, and MapCardsTests holds both to conservation.
-status: draft
+status: stable
+accepted_by: human:Johnny Amadeus
 decided: 2026-11-12
 tags: [site]
 sources:

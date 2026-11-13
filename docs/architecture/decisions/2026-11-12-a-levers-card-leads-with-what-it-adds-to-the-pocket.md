@@ -2,7 +2,8 @@
 type: adr
 title: A lever's card leads with what the lever adds to the pocket, the plan with it less the plan without
 description: One client view model, LeverGain, measures each lever in the plan as two runs at the same pay; the card's summary leads with that gain and ends on the gain over the payout; the payout is a line.
-status: draft
+status: stable
+accepted_by: human:Johnny Amadeus
 decided: 2026-11-12
 tags: [site]
 sources:

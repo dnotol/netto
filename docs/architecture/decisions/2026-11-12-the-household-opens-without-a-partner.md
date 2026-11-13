@@ -2,7 +2,8 @@
 type: adr
 title: The household opens without a partner: adding it to the plan moves nothing until the viewer ticks the box
 description: The example's household status is Alone by default; the v8 to v9 patch gives a plan that held no household the same status; the saved-plan version stays 9 and a plan saved at 9 keeps what it holds.
-status: draft
+status: stable
+accepted_by: human:Johnny Amadeus
 decided: 2026-11-12
 tags: [site, plans]
 sources:

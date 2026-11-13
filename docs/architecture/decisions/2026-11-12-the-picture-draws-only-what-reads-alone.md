@@ -2,7 +2,8 @@
 type: adr
 title: My plan's picture draws only what reads alone: a badge for what is lost, no word on a condition's line, a Sankey node the money its name names
 description: A map box is badged only for a rule lost; a rule that holds, a tax base and a condition's line carry no badge or word, the Effects list saying them; a tax base's line says its amount; the Sankey has no key and each node says what its name names.
-status: draft
+status: stable
+accepted_by: human:Johnny Amadeus
 decided: 2026-11-12
 tags: [site]
 sources:
