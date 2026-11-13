@@ -44,10 +44,10 @@ internal static class PlanText
     // The note under the list of what is not counted, not one of its lines.
     public const string LimitTaxCalcNote = "LimitTaxCalc";
 
-    // What Netto assumes about the director and the company, a line each, in the order the page draws.
+    // What Netto assumes about the director and the company, a line each, in the order the page draws: the
+    // short, general ones first, the long one about a partner's withholding last.
     public static IReadOnlyList<string> Assumptions { get; } =
     [
-        "AssumedPartnerWithholding",
         "AssumedWallonia",
         "AssumedMainOccupation",
         "AssumedNoSpecialContribution",
@@ -55,6 +55,7 @@ internal static class PlanText
         "AssumedCalendarYear",
         "AssumedSteadyState",
         "AssumedFinalContributions",
+        "AssumedPartnerWithholding",
     ];
 
     // What the figures do not count yet, a line each.

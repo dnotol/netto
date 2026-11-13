@@ -60,6 +60,16 @@ public class PlanTextTests
         PlanText.Assumptions.ShouldBe(inResx, ignoreOrder: true);
     }
 
+    // The short, general assumptions first, the long one about a partner's withholding last.
+    [Fact]
+    public void Assumptions_openOnWalloniaAndEndOnThePartnersWithholding()
+    {
+        PlanText.Assumptions.ShouldBe([
+            "AssumedWallonia", "AssumedMainOccupation", "AssumedNoSpecialContribution", "AssumedLowIncomeCredit",
+            "AssumedCalendarYear", "AssumedSteadyState", "AssumedFinalContributions", "AssumedPartnerWithholding",
+        ]);
+    }
+
     [Fact]
     public void PlanResx_limits_areEveryLimitLineOfTheResxButTheNote()
     {
