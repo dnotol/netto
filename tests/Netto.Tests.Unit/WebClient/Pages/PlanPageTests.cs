@@ -141,17 +141,17 @@ public class PlanPageTests
             .ShouldBe((true, true, true, true, false, false, false));
     }
 
-    // The When to pay section stands under the moves and the pay curve on Optimise, with or without the query
-    // that asks for it: the address only brings it into focus.
+    // When to pay is a sub-tab of Optimise: the query that names it draws the whole calendar, the view's own
+    // address the moves alone.
     [Theory]
-    [InlineData(null)]
-    [InlineData("when")]
-    public async Task Plan_onOptimise_drawsTheWholeCalendarAsASection(string? show)
+    [InlineData(null, false)]
+    [InlineData("when", true)]
+    public async Task Plan_onOptimise_drawsTheWholeCalendarOnItsSubTab(string? show, bool drawn)
     {
         var html = await RenderPlanAsync(new Folds(new BrowserStorage()), "optimisation", show: show);
 
         (html.Contains("calendar__table"), html.Contains("class=\"calendar\""), html.Contains("id=\"when-to-pay-title\""), html.Contains("class=\"map-tab\""))
-            .ShouldBe((true, true, true, false));
+            .ShouldBe((drawn, drawn, drawn, false));
     }
 
     // A bookmark to My plan by date draws nothing before it replaces itself (PlanMovedTests, PlanWhenToPayTests):

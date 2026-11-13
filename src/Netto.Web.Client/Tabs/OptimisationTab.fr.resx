@@ -25,7 +25,7 @@
     <value>Votre plan est déjà le meilleur que Netto trouve avec les faits que vous avez donnés.</value>
   </data>
   <data name="State_Moves" xml:space="preserve">
-    <value>Mesuré depuis le plan affiché. Netto ne touche qu'aux leviers déjà dans votre plan, avec les faits que vous avez donnés&#160;; chaque ajustement s'ajoute à ceux du dessus&#160;:</value>
+    <value>Mesuré depuis le plan affiché. Netto ne touche qu'aux leviers déjà dans votre plan, avec les faits que vous avez donnés.</value>
   </data>
   <data name="Move_Pay" xml:space="preserve">
     <value>Vous verser {0} au lieu de {1}</value>
@@ -142,13 +142,10 @@
     <value>{0}&#160;: {1}</value>
   </data>
   <data name="Figure_Plan" xml:space="preserve">
-    <value>Optimisé</value>
+    <value>optimisé</value>
   </data>
   <data name="Figure_Gain" xml:space="preserve">
     <value>Gain certain</value>
-  </data>
-  <data name="After" xml:space="preserve">
-    <value>{0} dans votre poche après cet ajustement</value>
   </data>
   <data name="State_Searching" xml:space="preserve">
     <value>Recherche des ajustements depuis le plan affiché…</value>
@@ -158,5 +155,35 @@
   </data>
   <data name="ApplyAll" xml:space="preserve">
     <value>Tout appliquer</value>
+  </data>
+  <data name="Sections" xml:space="preserve">
+    <value>Parties d'Optimiser</value>
+  </data>
+  <data name="Section_Moves" xml:space="preserve">
+    <value>Ajustements</value>
+  </data>
+  <data name="Section_Pay" xml:space="preserve">
+    <value>Rémunération</value>
+  </data>
+  <data name="Section_When" xml:space="preserve">
+    <value>Quand payer</value>
+  </data>
+  <data name="Section_MovesCount_One" xml:space="preserve">
+    <value>{0} ajustement</value>
+  </data>
+  <data name="Section_MovesCount" xml:space="preserve">
+    <value>{0} ajustements</value>
+  </data>
+  <data name="Section_NextBy" xml:space="preserve">
+    <value>prochain versement au plus tard le {0}</value>
+  </data>
+  <data name="Stacked" xml:space="preserve">
+    <value>Chaque ajustement s'ajoute à ceux du dessus.</value>
+  </data>
+  <data name="WhyToggle" xml:space="preserve">
+    <value>Pourquoi</value>
+  </data>
+  <data name="WhyToggleLabel" xml:space="preserve">
+    <value>Pourquoi&#160;: {0}</value>
   </data>
 </root>

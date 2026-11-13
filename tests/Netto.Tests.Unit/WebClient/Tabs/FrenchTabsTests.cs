@@ -261,10 +261,15 @@ public class FrenchTabsTests
         html.ShouldSatisfyAllConditions(
             () => html.ShouldContain("Mesuré depuis le plan affiché. Netto ne touche qu'aux leviers déjà dans votre plan, avec les faits que vous avez donnés"),
             () => html.ShouldContain(">Votre plan<"),
-            () => html.ShouldContain(">Optimisé<"),
+            () => html.ShouldContain(">optimisé<"),
             () => html.ShouldContain(">Gain certain<"),
             () => html.ShouldContain("Tout appliquer"),
             () => html.ShouldContain(">Appliquer<"),
+            () => html.ShouldContain("Chaque ajustement s'ajoute à ceux du dessus."),
+            () => html.ShouldMatch("<span[^>]*>Ajustements</span>"),
+            () => html.ShouldMatch("<span[^>]*>Rémunération</span>"),
+            () => html.ShouldMatch("<span[^>]*>Quand payer</span>"),
+            () => html.ShouldContain("aria-label=\"Pourquoi : Vous verser"),
             () => html.ShouldNotContain("Measured from"));
     }
 

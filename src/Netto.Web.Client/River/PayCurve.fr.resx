@@ -16,7 +16,7 @@
     <value>Ajuster votre rémunération pour le plan affiché</value>
   </data>
   <data name="Note" xml:space="preserve">
-    <value>Cette courbe et son bouton valent pour le plan tel qu'il est, pas après les ajustements ci-dessus&#160;: sa meilleure rémunération peut différer de celle d'un ajustement, cherchée avec les ajustements qui l'entourent. Ils agissent sur la rémunération de votre plan, et les ajustements sont recherchés de nouveau dès que vous la changez.</value>
+    <value>Cette courbe et son bouton valent pour le plan tel qu'il est, pas avec les ajustements appliqués&#160;: sa meilleure rémunération peut différer de celle d'un ajustement, cherchée avec les ajustements qui l'entourent. Ils agissent sur la rémunération de votre plan, et les ajustements sont recherchés de nouveau dès que vous la changez.</value>
   </data>
   <data name="CurveHint" xml:space="preserve">
     <value>La ligne dorée est ce qui arrive dans votre poche à chaque rémunération, tout le reste tel que vous l'avez réglé. Pointez-la pour lire une rémunération&#160;; cliquez pour y placer la vôtre.</value>
@@ -110,5 +110,8 @@
   </data>
   <data name="Term_ReducedRate" xml:space="preserve">
     <value>Le taux plus bas qu'une petite société paie sur une première tranche de son revenu imposable. À partir de sa cinquième période imposable, elle ne le conserve que si la rémunération d'un dirigeant atteint un minimum, ou si son revenu imposable ne dépasse pas cette rémunération. Dans chaque période imposable, elle le perd dès que les avantages de toute nature évalués de manière forfaitaire, comme ceux d'une voiture de société, dépassent {0} de cette rémunération, avantages compris.</value>
+  </data>
+  <data name="Unavailable" xml:space="preserve">
+    <value>Netto trace cette courbe dès que votre plan contient l'exercice de la société, avec un bénéfice à partager et aucun montant refusé.</value>
   </data>
 </root>

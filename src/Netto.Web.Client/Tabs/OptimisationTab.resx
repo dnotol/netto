@@ -25,7 +25,7 @@
     <value>Your plan is already the best Netto finds with the facts you gave.</value>
   </data>
   <data name="State_Moves" xml:space="preserve">
-    <value>Measured from the plan on screen. Netto only retunes the levers already in your plan, with the facts you gave; each move on top of the ones above it:</value>
+    <value>Measured from the plan on screen. Netto only retunes the levers already in your plan, with the facts you gave.</value>
   </data>
   <data name="Move_Pay" xml:space="preserve">
     <value>Pay yourself {0} instead of {1}</value>
@@ -142,13 +142,10 @@
     <value>{0}: {1}</value>
   </data>
   <data name="Figure_Plan" xml:space="preserve">
-    <value>Optimised</value>
+    <value>optimised</value>
   </data>
   <data name="Figure_Gain" xml:space="preserve">
     <value>Certain gain</value>
-  </data>
-  <data name="After" xml:space="preserve">
-    <value>{0} in your pocket after it</value>
   </data>
   <data name="State_Searching" xml:space="preserve">
     <value>Looking for the moves from the plan on screen…</value>
@@ -158,5 +155,35 @@
   </data>
   <data name="ApplyAll" xml:space="preserve">
     <value>Apply all</value>
+  </data>
+  <data name="Sections" xml:space="preserve">
+    <value>Optimise sections</value>
+  </data>
+  <data name="Section_Moves" xml:space="preserve">
+    <value>Adjustments</value>
+  </data>
+  <data name="Section_Pay" xml:space="preserve">
+    <value>Pay</value>
+  </data>
+  <data name="Section_When" xml:space="preserve">
+    <value>When to pay</value>
+  </data>
+  <data name="Section_MovesCount_One" xml:space="preserve">
+    <value>{0} adjustment</value>
+  </data>
+  <data name="Section_MovesCount" xml:space="preserve">
+    <value>{0} adjustments</value>
+  </data>
+  <data name="Section_NextBy" xml:space="preserve">
+    <value>next payment by {0}</value>
+  </data>
+  <data name="Stacked" xml:space="preserve">
+    <value>Each adjustment counts on top of the ones above it.</value>
+  </data>
+  <data name="WhyToggle" xml:space="preserve">
+    <value>Why</value>
+  </data>
+  <data name="WhyToggleLabel" xml:space="preserve">
+    <value>Why: {0}</value>
   </data>
 </root>

@@ -35,9 +35,9 @@
 @* The plan page, two views each answering one question (docs/architecture/decisions/2026-11-13-two-views-and-levers-are-found-in-edit-plan.md),
    in the top row of the band (BucketBar), which sums up the river on every one of them: My plan, where I
    stand, the river's modules from above with the money between them and the card of the module chosen
-   beside them, where it is edited (MapTab); Optimise, the moves Netto proposes from the plan on screen,
-   retuning only the levers it holds, then when the plan's payments fall, a section named by a query,
-   ?show=when (OptimisationTab, WhenToPaySection). My plan
+   beside them, where it is edited (MapTab); Optimise, in three sub-tabs each named by the show query
+   (OptimiseSections): the moves Netto proposes from the plan on screen, retuning only the levers it holds, the
+   pay curve (?show=pay) and when the plan's payments fall (?show=when) (OptimisationTab). My plan
    suggests nothing: Optimise appears in it only as the tab's badges. Comparing two saved plans is a mode of the Plans panel, in the band. Each view has its own
    URL (PlanTabRoutes) but they are this one page, so the river's inputs, its run, what the page found and
    the module chosen stay as they are from one view to the next, and Blazor keeps the page when the view
@@ -111,7 +111,7 @@
                 break;
             case PlanTab.Optimisation:
                 <OptimisationTab @ref="_optimisation" Searching="_moves.Searching(Today)" Found="_moves.Found(Today)" Inputs="_inputs" InputsChanged="OnInputsChanged" Search="_search"
-                                 Calendar="calendar" OpensCalendar="PlanTabRoutes.OpensWhenToPay(ShowSection)" />
+                                 Calendar="calendar" Section="OptimiseSections.From(ShowSection)" SectionChosen="OnSectionChosen" />
                 break;
         }
     </MudContainer>
@@ -130,8 +130,8 @@
     [SupplyParameterFromQuery(Name = PlanTabRoutes.LegacyLensQuery)]
     public string? By { get; set; }
 
-    // The section of the Optimise view the address asks for, /plan/optimisation?show=when
-    // (PlanTabRoutes.OpensWhenToPay): the page brings it into focus once per arrival (SectionArrival).
+    // The sub-tab of the Optimise view the address asks for, ?show=pay or ?show=when, the moves for none
+    // (OptimiseSections.From): the page brings it into focus once per arrival (OptimiseArrival).
     [SupplyParameterFromQuery(Name = PlanTabRoutes.ShowQuery)]
     public string? ShowSection { get; set; }
 
@@ -164,9 +164,11 @@
     private bool _focusComposition;
     private MovesSource _moves = default!;
     private readonly CardArrival _arrival = new();
-    private readonly SectionArrival _sectionArrival = new();
-    // The When to pay section is to take the focus at the next render.
-    private bool _focusCalendar;
+    private readonly OptimiseArrival _sectionArrival = new();
+    // The sub-tab of Optimise whose panel is to take the focus at the next render.
+    private OptimiseSection? _focusSection;
+    // A sub-tab was chosen in Optimise's row, its address about to be followed: the focus stays on its link.
+    private bool _sectionChosen;
     private MapChoice? _mapChosen = MapChoice.Of(RiverModule.CompanyYear);
     private bool _viewerChose;
 
@@ -180,8 +182,8 @@
     // The view the URL names, on arriving and at each switch, the page staying the same; a segment Netto has no
     // view for is a page it does not have, and My plan by date, which no longer exists, goes to the section that
     // holds what it showed. On the map, the card the URL names, once per arrival (CardArrival), has its module
-    // chosen on the map, or its bucket. On Optimise, the section the URL names, once per arrival
-    // (SectionArrival), takes the focus.
+    // chosen on the map, or its bucket. On Optimise, the sub-tab the URL names, once per arrival
+    // (OptimiseArrival), takes the focus, unless the viewer chose it in the row, where the focus stays.
     protected override void OnParametersSet()
     {
         if (PlanTabRoutes.From(Tab) is { } tab)
@@ -199,10 +201,11 @@
         SearchSplitForOptimisation();
         if (_arrival.Take(_tab, Card) is { } card && MapChoice.Named(card, MapView.ModulesOf(_inputs)) is { } named)
             (_mapChosen, _viewerChose) = (named, false);
-        if (_sectionArrival.Take(_tab, ShowSection))
-            _focusCalendar = true;
+        if (_sectionArrival.Take(_tab, ShowSection) is { } section)
+            _focusSection = _sectionChosen ? null : section;
         else if (_tab != PlanTab.Optimisation)
-            _focusCalendar = false;
+            _focusSection = null;
+        _sectionChosen = false;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -213,11 +216,11 @@
             await _notice.FocusUndoAsync();
         }
 
-        if (_focusCalendar)
+        if (_focusSection is { } section)
         {
-            _focusCalendar = false;
+            _focusSection = null;
             if (_tab == PlanTab.Optimisation && _optimisation is { } optimisation)
-                await optimisation.FocusCalendarAsync();
+                await optimisation.FocusSectionAsync(section);
         }
 
         if (_focusComposition)
@@ -276,9 +279,13 @@
 
     private string SkipHref => $"{PlanTabRoutes.Href(_tab)}#{TabContentId}";
 
-    // The tab's deadline badge followed: on the section's own address nothing changes under the page, so the
-    // focus is asked for here too (the address of another view brings it by arrival).
-    private void OnDeadlineChosen() => _focusCalendar = true;
+    // The tab's deadline badge followed: on the sub-tab's own address nothing changes under the page, so the
+    // focus is asked for here too (another address brings it by arrival).
+    private void OnDeadlineChosen() => _focusSection = OptimiseSection.When;
+
+    // A sub-tab chosen in Optimise's row, which Blazor tells before it follows the link: the arrival its address
+    // makes leaves the focus on the link.
+    private void OnSectionChosen(OptimiseSection _) => _sectionChosen = true;
 
     // Undo and Dismiss leave with the notice, so the focus goes where the plan's modules are set, « Edit
     // plan », or to the start of the view's content where it is not drawn (RemovalNoticeFocus).

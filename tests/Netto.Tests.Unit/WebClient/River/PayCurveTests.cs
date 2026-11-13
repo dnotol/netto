@@ -59,21 +59,31 @@ public class PayCurveTests
             () => html.ShouldNotContain("<input"));
     }
 
-    // With the company's year skipped, or no pay to search, the page's search is none: the section draws nothing.
+    // With the company's year skipped, or no pay to search, the page's search is none: no curve, but one line
+    // saying what it waits for, which can take the focus from code alone, so the Pay sub-tab is never blank.
     [Fact]
-    public async Task Curve_companySkipped_drawsNothing()
+    public async Task Curve_companySkipped_saysWhatTheCurveWaitsFor()
     {
-        var html = await CurveAsync(RiverInputs.Example.SkipCompany());
+        var html = WebUtility.HtmlDecode(await CurveAsync(RiverInputs.Example.SkipCompany()));
 
-        html.Trim().ShouldBeEmpty();
+        html.Trim().ShouldMatch("^<p class=\"tune__unavailable\" tabindex=\"-1\"[^>]*>Netto draws this curve once your plan holds its company's year, with a profit to share and no amount refused\\.</p>$");
     }
 
     [Fact]
-    public async Task Curve_noSearch_drawsNothing()
+    public async Task Curve_noSearch_saysWhatTheCurveWaitsForAlone()
     {
         var html = await CurveAsync(RiverInputs.Example, search: false);
 
-        html.Trim().ShouldBeEmpty();
+        (html.Contains("tune__unavailable"), html.Contains("<section")).ShouldBe((true, false));
+    }
+
+    // The curve's heading starts the Pay sub-tab: it can take the focus from code alone.
+    [Fact]
+    public async Task Curve_heading_takesTheFocusOnlyByScript()
+    {
+        var html = await CurveAsync(RiverInputs.Example);
+
+        (Regex.IsMatch(html, "<h2 id=\"tune-title\" class=\"tune__title\" tabindex=\"-1\""), html.Contains("tune__unavailable")).ShouldBe((true, false));
     }
 
     // No pay keeps the reserve: the section says how much the company can keep, and draws no button.
@@ -204,7 +214,7 @@ public class PayCurveTests
         Regex.IsMatch(await CurveAsync(RiverInputs.Example), @"<p class=""tune__pointer""[^>]*>\s*</p>").ShouldBeTrue();
     }
 
-    // The curve is the plan on screen's own, not the plan after the moves above it: its heading says so, and
+    // The curve is the plan on screen's own, not the plan with the moves applied: its heading says so, and
     // its note says why its best pay can differ from a move's pay, in English and French.
     [Fact]
     public async Task Curve_heading_saysItIsForThePlanOnScreen()
@@ -213,9 +223,10 @@ public class PayCurveTests
         using var french = InLanguage.French();
         var frenchHtml = WebUtility.HtmlDecode(await CurveAsync(RiverInputs.Example));
 
-        (Regex.Match(english, "<h2[^>]*>([^<]*)</h2>").Groups[1].Value, english.Contains("not after the moves above"),
-                Regex.Match(frenchHtml, "<h2[^>]*>([^<]*)</h2>").Groups[1].Value, frenchHtml.Contains("pas après les ajustements ci-dessus"))
-            .ShouldBe(("Tune your pay for the plan on screen", true, "Ajuster votre rémunération pour le plan affiché", true));
+        (Regex.Match(english, "<h2[^>]*>([^<]*)</h2>").Groups[1].Value, english.Contains("not with the moves applied"),
+                Regex.Match(frenchHtml, "<h2[^>]*>([^<]*)</h2>").Groups[1].Value, frenchHtml.Contains("pas avec les ajustements appliqués"),
+                english.Contains("above"), frenchHtml.Contains("ci-dessus"))
+            .ShouldBe(("Tune your pay for the plan on screen", true, "Ajuster votre rémunération pour le plan affiché", true, false, false));
     }
 
     // The best pay the search finds for the river as it stands.

@@ -34,7 +34,7 @@
     <value>Quand payer, pour le plan affiché</value>
   </data>
   <data name="ForPlan" xml:space="preserve">
-    <value>Ces échéances et ces montants valent pour le plan tel qu'il est, pas après les ajustements ci-dessus&#160;: le versement d'un ajustement est cherché par-dessus ceux qui le précèdent, son montant peut donc différer.</value>
+    <value>Ces échéances et ces montants valent pour le plan tel qu'il est, pas avec les ajustements appliqués&#160;: le versement d'un ajustement est cherché par-dessus ceux qui le précèdent, son montant peut donc différer.</value>
   </data>
   <data name="Refused" xml:space="preserve">
     <value>Les paiements attendent la correction du montant refusé.</value>

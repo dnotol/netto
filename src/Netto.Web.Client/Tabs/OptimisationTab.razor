@@ -6,92 +6,148 @@
 @* The Optimise view: what Netto would retune in the plan on screen to leave more in the pocket, a tab of
    its own beside the river rather than a card in it, since it is no module of the river. The moves are
    measured from the plan on screen, the river the band runs, and retune only the levers already in it, with
-   the facts it holds: none adds a lever or asks a question (MoveSearch, RiverInputs.FindMoves). One page of
-   moves: first what the plan leaves in the pocket, what it leaves with every move and the difference, with
-   « Apply all »; then the engine's moves, in the order it took them, each numbered for the eye (the list says
-   its place to a screen reader), with why it helps (MoveReasons, the engine's figures before and after it),
-   what it adds on top of the ones above it, what the pocket holds after it, and a link to the card or the tab
-   where it acts (MoveLinks), while that card is on the map; their total is the gain above the list, said
-   once. « Apply » sets the river's values to the move's, « Apply all » every move's: nothing is applied
-   unasked. Under the moves, « Tune your pay » draws the curve of the pocket at every pay (PayCurve): a click on it
-   or « move to the best pay » sets the plan's own pay, said as such, and is no move applied. Applied, the river is a plan
-   the moves were not searched for, so the tab says it looks for them again, and the focus goes to that line;
-   no live region says it, nor that they are found. The moves are stacked, so a move's pay is the plan
-   with every move on top, and the curve below, headed as the plan on screen's own, is the pay of the plan as it
-   stands: no move carries a note setting the two against each other. The page finds the moves, once per plan and date (MovesSource), after it has painted;
-   until then the tab says it is looking for them, and nothing else. While Netto cannot run the plan, the tab
-   says why, and nothing else.
+   the facts it holds: none adds a lever or asks a question (MoveSearch, RiverInputs.FindMoves).
 
-   Last comes « When to pay » (WhenToPaySection), the whole payment calendar of the plan on screen: facts, where
-   the moves above are gains, and it applies nothing. Its address is this view asking for it,
-   plan/optimisation?show=when, which the page reads once per arrival and answers by FocusCalendarAsync; a
-   move about a payment links to it, and the tab's badge for the next deadline does too. The link of a move
-   moves the focus itself as well, since it may be followed while the address already names the section. *@
-<TabHead Title="@L["Title"]" Focus="@(!OpensCalendar)" />
-<div class="moves">
-    @if (_view.State is MovesState.Moves or MovesState.AlreadyBest)
-    {
-        <dl class="moves__figures">
-            <div class="moves__pair">
-                <dt class="moves__term">@L[OptimisationTabText.FromInPocket]</dt>
-                <dd class="moves__figure">@Formats.Euros(_view.FromInPocket)</dd>
-            </div>
-            @if (_view.State == MovesState.Moves)
-            {
-                <div class="moves__pair">
-                    <dt class="moves__term">@L[OptimisationTabText.PlanInPocket]</dt>
-                    <dd class="moves__figure">@Formats.Euros(_view.PlanInPocket)</dd>
-                </div>
-                <div class="moves__pair">
-                    <dt class="moves__term">@L[OptimisationTabText.MoreThanFrom]</dt>
-                    <dd class="moves__figure moves__figure--gain">@Formats.Addition(_view.Total)</dd>
-                </div>
-            }
-        </dl>
-        @if (_view.State == MovesState.Moves)
+   Three sub-tabs under one head (docs/architecture/decisions/2026-11-13-optimise-in-three-sub-tabs.md). The
+   head is common to the three: one line, what the plan leaves in the pocket, what it leaves with every move and
+   the difference, a description list so each figure keeps its label for a screen reader (the arrow between the
+   first two is the stylesheet's, said by nobody), with « Apply all » at its end while there are moves; then the
+   state line, which takes the focus once a move is applied, from any sub-tab; then what the figures are measured
+   by, one sentence in sight (ObjectiveNote, which the bar's gain says in a bubble).
+
+   Then the row of sub-tabs, links in a nav, as the band's views are: each is an address (OptimiseSections, the
+   page reading the show query), so Back and Forward walk them; the chosen one says so (aria-current="page").
+   « Adjustments » says how many moves were found, « When to pay » the next open deadline's day, each said in
+   words after the name for a screen reader. A click on one leaves the focus on it, the page told so
+   (SectionChosen); any other arrival at a sub-tab brings its panel's start into focus (FocusSectionAsync).
+   Only the chosen panel is drawn:
+   - the moves, in the order the engine took them, each a compact row numbered for the eye (the list says its
+     place to a screen reader): what it changes, what it adds on top of the ones above it, « Apply », and under
+     the sentence « Why », which opens why it helps (MoveReasons, the engine's figures before and after it) and
+     a link to the card where it acts (MoveLinks), while that card is on the map, or to When to pay; open is
+     plain state of the list, not remembered. Their total is the gain in the head, said once;
+   - the pay: the curve of the pocket at every pay (PayCurve), where a click or « move to the best pay » sets the
+     plan's own pay, said as such, and is no move applied;
+   - When to pay (WhenToPaySection), the whole payment calendar of the plan on screen: facts, applying nothing.
+   « Apply » sets the river's values to the move's, « Apply all » every move's: nothing is applied unasked.
+   Applied, the river is a plan the moves were not searched for, so the head says it looks for them again, and
+   the focus goes to that line; no live region says it, nor that they are found. The page finds the moves once
+   per plan and date (MovesSource), after it has painted; until then the head says it is looking for them. While
+   Netto cannot run the plan, it says why. *@
+<TabHead Title="@L["Title"]" Focus="@(Section == OptimiseSection.Moves)" />
+<div class="optimise">
+    <div class="optimise__head">
+        @if (_view.State is MovesState.Moves or MovesState.AlreadyBest)
         {
-            <div class="moves__all">
-                <MudButton Variant="Variant.Outlined" Size="Size.Small" Class="moves__apply" OnClick="ApplyAll">@L[OptimisationTabText.ApplyAll]</MudButton>
+            <div class="optimise__line">
+                <dl class="moves__figures">
+                    <div class="moves__pair">
+                        <dt class="moves__term">@L[OptimisationTabText.FromInPocket]</dt>
+                        <dd class="moves__figure">@Formats.Euros(_view.FromInPocket)</dd>
+                    </div>
+                    @if (_view.State == MovesState.Moves)
+                    {
+                        <div class="moves__pair moves__pair--plan">
+                            <dt class="moves__term">@L[OptimisationTabText.PlanInPocket]</dt>
+                            <dd class="moves__figure">@Formats.Euros(_view.PlanInPocket)</dd>
+                        </div>
+                        <div class="moves__pair">
+                            <dt class="moves__term moves__term--unseen">@L[OptimisationTabText.MoreThanFrom]</dt>
+                            <dd class="moves__figure moves__figure--gain">@Formats.Addition(_view.Total)</dd>
+                        </div>
+                    }
+                </dl>
+                @if (_view.State == MovesState.Moves)
+                {
+                    <div class="moves__all">
+                        <MudButton Variant="Variant.Outlined" Size="Size.Small" Class="moves__apply" OnClick="ApplyAll">@L[OptimisationTabText.ApplyAll]</MudButton>
+                    </div>
+                }
             </div>
         }
-        @* What the figures are measured by and what they leave out, beside them and in sight: a visitor needs
-           it to read the first recommendation (ObjectiveNote, which the bar's gain says in a bubble). *@
-        <p class="moves__objective"><ObjectiveNote /></p>
-    }
-    @* Where the focus goes once a move is applied: the line that then says the moves are looked for again. *@
-    <p class="moves__state" tabindex="-1" @ref="_state">@L[OptimisationTabText.State(_view.State)]</p>
-    @if (_view.State == MovesState.Moves)
-    {
-        @* A list styled without its markers loses its role in some browsers: it is said again. *@
-        <ol class="moves__list" role="list">
-            @foreach (var (move, index) in _view.Moves.Select((move, index) => (move, index)))
+        @* Where the focus goes once a move is applied, from any sub-tab: the line that then says the moves are
+           looked for again. *@
+        <p class="moves__state" tabindex="-1" @ref="_state">@L[OptimisationTabText.State(_view.State)]</p>
+        @if (_view.State is MovesState.Moves or MovesState.AlreadyBest)
+        {
+            <p class="moves__objective"><ObjectiveNote /></p>
+        }
+    </div>
+
+    <nav class="optimise__sections" aria-label="@L[OptimisationTabText.SectionsLabel]">
+        <ul class="optimise__section-list">
+            @foreach (var section in OptimiseSections.Order)
             {
-                var link = MoveLinks.To(move.Move, Inputs);
-                <li class="moves__move">
-                    <span class="moves__number" aria-hidden="true">@(index + 1)</span>
-                    <div class="moves__body">
-                        <p class="moves__what">@What(move)</p>
-                        <p class="moves__why">@Why(move)</p>
-                        @if (link is not null)
+                var badge = Badge(section);
+                <li>
+                    <a href="@OptimiseSections.Href(section)" class="optimise__section" aria-current="@(section == Section ? "page" : null)"
+                       @onclick="@(() => ChooseAsync(section))">
+                        <span>@L[OptimisationTabText.Section(section)]</span>
+                        @if (badge is { } shown)
                         {
-                            <a class="moves__link" href="@link.Href" @onclick="@(() => OnMoveLinkAsync(link))" aria-label="@L[OptimisationTabText.LinkLabel, L[OptimisationTabText.Link(link)], What(move)]">@L[OptimisationTabText.Link(link)]</a>
+                            @* Razor drops the whitespace next to a code block: without it, a screen reader reads
+                               the name run into what follows. *@
+                            @(" ")<span class="optimise__badge" aria-hidden="true">@shown.Drawn</span>
+                            @(" ")<span class="optimise__spoken">@shown.Spoken</span>
                         }
-                    </div>
-                    <div class="moves__amounts">
-                        <span class="moves__gain">@L["Gain", Formats.Euros(move.Gain)]</span>
-                        <span class="moves__after">@L[OptimisationTabText.After, Formats.Euros(_view.InPocketAfter(index))]</span>
-                    </div>
-                    <div class="moves__action">
-                        <MudButton Variant="Variant.Outlined" Size="Size.Small" Class="moves__apply" OnClick="@(() => Apply(move))"
-                                   aria-label="@L["ApplyLabel", What(move)]">@L["Apply"]</MudButton>
-                    </div>
+                    </a>
                 </li>
             }
-        </ol>
+        </ul>
+    </nav>
+
+    @switch (Section)
+    {
+        case OptimiseSection.Moves:
+            if (_view.State == MovesState.Moves)
+            {
+                <div class="moves">
+                    <p class="moves__stacked">@L[OptimisationTabText.Stacked]</p>
+                    @* A list styled without its markers loses its role in some browsers: it is said again. *@
+                    <ol class="moves__list" role="list">
+                        @foreach (var (move, index) in _view.Moves.Select((move, index) => (move, index)))
+                        {
+                            var link = MoveLinks.To(move.Move, Inputs);
+                            var open = _open.Contains(index);
+                            var bodyId = $"{_id}-{index}";
+                            <li class="moves__move">
+                                <span class="moves__number" aria-hidden="true">@(index + 1)</span>
+                                <div class="moves__body">
+                                    <p class="moves__what">@What(move)</p>
+                                    <button type="button" class="moves__toggle" aria-expanded="@(open ? "true" : "false")" aria-controls="@bodyId"
+                                            aria-label="@L[OptimisationTabText.WhyToggleLabel, What(move)]" @onclick="@(() => Flip(index))">
+                                        @L[OptimisationTabText.WhyToggle]<MudIcon Icon="@Icons.Material.Rounded.ExpandMore" Class="@(open ? "moves__chevron moves__chevron--open" : "moves__chevron")" aria-hidden="true" />
+                                    </button>
+                                    <div id="@bodyId" class="moves__more" hidden="@(!open)">
+                                        @if (open)
+                                        {
+                                            <p class="moves__why">@WhyItHelps(move)</p>
+                                            @if (link is not null)
+                                            {
+                                                <a class="moves__link" href="@link.Href" aria-label="@L[OptimisationTabText.LinkLabel, L[OptimisationTabText.Link(link)], What(move)]">@L[OptimisationTabText.Link(link)]</a>
+                                            }
+                                        }
+                                    </div>
+                                </div>
+                                <span class="moves__gain">@L["Gain", Formats.Euros(move.Gain)]</span>
+                                <div class="moves__action">
+                                    <MudButton Variant="Variant.Outlined" Size="Size.Small" Class="moves__apply" OnClick="@(() => Apply(move))"
+                                               aria-label="@L["ApplyLabel", What(move)]">@L["Apply"]</MudButton>
+                                </div>
+                            </li>
+                        }
+                    </ol>
+                </div>
+            }
+            break;
+        case OptimiseSection.Pay:
+            <PayCurve @ref="_curve" Inputs="Inputs" InputsChanged="InputsChanged" Search="Search" />
+            break;
+        case OptimiseSection.When:
+            <WhenToPaySection @ref="_calendar" Inputs="Inputs" InputsChanged="InputsChanged" Calendar="Calendar" />
+            break;
     }
 </div>
-<PayCurve Inputs="Inputs" InputsChanged="InputsChanged" Search="Search" />
-<WhenToPaySection @ref="_calendar" Inputs="Inputs" InputsChanged="InputsChanged" Calendar="Calendar" />
 
 @code {
     // Whether the page is still to search the moves from the plan on screen, which it does once it has
@@ -114,29 +170,45 @@
 
     // The engine's search across every pay for the river as it is, which the page runs again only when an
     // input other than the pay changes (Plan, RiverInputs.SearchSplit): the pay curve draws it, the tab
-    // running none of its own. None while the company's year is
-    // skipped or an amount is refused.
+    // running none of its own. None while the company's year is skipped or an amount is refused.
     [Parameter]
     public SplitSearchResult? Search { get; set; }
 
     // The payment calendar of the plan on screen for this draw, built once by the page for the tab's badge too
-    // (CalendarView.From); none while Netto cannot run the plan or what the fund bills is refused.
+    // (CalendarView.From); none while Netto cannot run the plan.
     [Parameter]
     public CalendarView? Calendar { get; set; }
 
-    // Whether the address asks for the When to pay section (plan/optimisation?show=when): the section's
-    // heading takes the focus (FocusCalendarAsync), so the title does not.
+    // The sub-tab the address names (OptimiseSections.From, the page reading the show query): the one drawn.
+    // Arriving on another than the moves, its panel takes the focus, so the title does not.
     [Parameter]
-    public bool OpensCalendar { get; set; }
+    public OptimiseSection Section { get; set; }
 
+    // A sub-tab other than the one shown chosen in the row, before its address is followed: the focus stays on
+    // the link, so the page does not move it.
+    [Parameter]
+    public EventCallback<OptimiseSection> SectionChosen { get; set; }
+
+    private readonly string _id = $"move-{Guid.NewGuid():N}";
+    // The moves whose why is open, by their place in the list; a new list of moves opens none.
+    private readonly HashSet<int> _open = [];
+    private PayCurve? _curve;
     private WhenToPaySection? _calendar;
     private MovesView _view = default!;
     private ElementReference _state;
     private bool _focusState;
 
     // The view of what was found, or that the moves are being looked for, which searches nothing.
-    protected override void OnParametersSet() =>
-        _view = Searching ? MovesView.Searching(Inputs) : MovesView.Of(Inputs, Found);
+    protected override void OnParametersSet()
+    {
+        var view = Searching ? MovesView.Searching(Inputs) : MovesView.Of(Inputs, Found);
+        if (_view is null || !view.Moves.Select(Line).SequenceEqual(_view.Moves.Select(Line)))
+            _open.Clear();
+        _view = view;
+    }
+
+    // A move as the list shows it, what it changes and what it adds: the same list keeps its open reasons.
+    private static (Move Move, decimal Gain) Line(PlannedMove move) => (move.Move, move.Gain);
 
     // What the move changes, in words (OptimisationTabText); a move it has none for is refused.
     private string What(PlannedMove move) =>
@@ -144,12 +216,28 @@
             OptimisationTabText.MoveArguments(move.Move, _view.FromPay, _view.From.Copyright.CreativeShare.Value ?? 0m)];
 
     // Why the move helps, its sentences one after the other, every amount in euros.
-    private string Why(PlannedMove move) =>
+    private string WhyItHelps(PlannedMove move) =>
         string.Join(" ", MoveReasons.Of(move).Select(reason =>
             L[OptimisationTabText.Why(reason), [.. reason.Amounts.Select(amount => (object)Formats.Euros(amount))]].Value));
 
-    // Applied, the list goes until the moves are found for the plan it leaves, so the focus goes to the line
-    // saying they are looked for.
+    // What a sub-tab says after its name, drawn short and said in words: how many moves were found, and the next
+    // open deadline of the calendar, as the band's badge reads it (TabBadges); nothing for the pay.
+    private (string Drawn, string Spoken)? Badge(OptimiseSection section) => section switch
+    {
+        OptimiseSection.Moves when _view.State == MovesState.Moves =>
+            ($"{_view.Moves.Count}", L[OptimisationTabText.MovesCount(_view.Moves.Count), _view.Moves.Count]),
+        OptimiseSection.When when Calendar is { BilledRefused: null, Next: { } next } =>
+            (Formats.ShortDay(next.Date), L[OptimisationTabText.NextBy, Formats.Day(next.Date)]),
+        _ => null,
+    };
+
+    private void Flip(int index)
+    {
+        if (!_open.Remove(index))
+            _open.Add(index);
+    }
+
+    // Applied, the moves are looked for again for the plan it leaves, so the focus goes to the line saying so.
     private async Task Apply(PlannedMove move)
     {
         _focusState = true;
@@ -162,20 +250,34 @@
         await InputsChanged.InvokeAsync(_view.ApplyAll(Inputs));
     }
 
-    // A move's link followed: the one to the section moves the focus there itself, the address possibly naming
-    // it already.
-    private async Task OnMoveLinkAsync(MoveLink link)
+    // A sub-tab chosen in the row: Blazor runs this before it follows the link's address, so the page knows
+    // the arrival is the viewer's click and leaves the focus on the link. The one shown changes nothing.
+    private async Task ChooseAsync(OptimiseSection section)
     {
-        if (link.WhenToPay)
-            await FocusCalendarAsync();
+        if (section != Section)
+            await SectionChosen.InvokeAsync(section);
     }
 
-    // Brings the When to pay section into view and focus: its heading, which the browser scrolls to below the
-    // band. Called by the page on arriving at the section and by a move's link to it.
-    public async Task FocusCalendarAsync()
+    // Brings the start of the sub-tab's panel into view and focus, once it is the one drawn: the head's state
+    // line for the moves, the curve's heading, or the calendar's. Called by the page on arriving at a sub-tab
+    // other than by the row. A sub-tab not drawn takes nothing, so no reference to a panel gone is focused.
+    public async Task FocusSectionAsync(OptimiseSection section)
     {
-        if (_calendar is { } calendar)
-            await calendar.FocusAsync();
+        if (section != Section)
+            return;
+
+        switch (section)
+        {
+            case OptimiseSection.Moves:
+                await _state.FocusAsync();
+                break;
+            case OptimiseSection.Pay when _curve is { } curve:
+                await curve.FocusAsync();
+                break;
+            case OptimiseSection.When when _calendar is { } calendar:
+                await calendar.FocusAsync();
+                break;
+        }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

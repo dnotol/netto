@@ -2,7 +2,7 @@
 @using Netto.Core.Simulation
 @inject IStringLocalizer<PayCurve> L
 
-@* The pay curve of the Optimise view, under the moves: the tuning question drawn. The engine's search draws
+@* The pay curve of the Optimise view, its Pay sub-tab: the tuning question drawn. The engine's search draws
    the net in pocket at every pay, with the plan's own pay marked and the best pay marked; pointing at the curve
    reads a pay, in a line that keeps its room while the pointer is away, and a click sets the plan's pay there.
    What the pointer reads is no live region: it changes at every step, and the bar of buckets says what reaches
@@ -11,19 +11,20 @@
    The figures follow, as lines (PayCurveFigures): the best pay and what it leaves against the pay set, a
    sentence saying only how it stands against the reduced corporate rate, or that no pay keeps the reserve.
    While the pay set is not that best pay, a button after them sets it there (BestPayView.MoveTo): the best pay
-   of the plan's own facts, which follows their edits, where the moves above are found once for the plan on
+   of the plan's own facts, which follows their edits, where the moves are found once for the plan on
    screen. Both edit the river, so the moves are looked for again at once, the tab being on screen; the focus
    stays on the figures, which say the pay is then the best, rather than on a button that goes.
 
    The plot stretches to its width (preserveAspectRatio="none"), so its lines keep their width through
    vector-effect, and what must keep its shape (the best pay's dot, the axes' labels) is HTML placed over it in
-   percentages. Nothing is drawn while the engine refuses an amount, the company's year is skipped or there is no
-   profit to share. *@
+   percentages. While the engine refuses an amount, the company's year is skipped or there is no profit to
+   share, no curve is drawn: one line says what it waits for, so the sub-tab is never blank. Its heading, or
+   that line, takes the focus when the page arrives at the sub-tab (FocusAsync). *@
 @if (_search is { } search)
 {
     var curve = search.Curve;
     <section class="tune" aria-labelledby="tune-title">
-        <h2 id="tune-title" class="tune__title">@L["Title"]</h2>
+        <h2 id="tune-title" class="tune__title" tabindex="-1" @ref="_title">@L["Title"]</h2>
         <p class="tune__note">@L["Note"]</p>
         <p class="tune__note">@L["CurveHint"]</p>
         <div class="pay-curve">
@@ -109,6 +110,10 @@
         </div>
     </section>
 }
+else
+{
+    <p class="tune__unavailable" tabindex="-1" @ref="_unavailable">@L["Unavailable"]</p>
+}
 
 @code {
     // The plan on screen, whose own pay the curve sets.
@@ -121,7 +126,7 @@
 
     // The engine's search across every pay for the river as it is, which the page runs again only when an
     // input other than the pay changes (Plan, RiverInputs.SearchSplit). None while the company's year is
-    // skipped or an amount is refused: the section then draws nothing.
+    // skipped or an amount is refused: the section then says what the curve waits for.
     [Parameter]
     public SplitSearchResult? Search { get; set; }
 
@@ -131,7 +136,13 @@
     private decimal _top;
     private PayLevel? _pointer;
     private ElementReference _result;
+    private ElementReference _title;
+    private ElementReference _unavailable;
     private bool _focusResult;
+
+    // Brings the sub-tab's start into view and focus: the curve's heading, or the line saying what it waits for.
+    // The page asks once the sub-tab is drawn, so the one drawn is the one focused.
+    public ValueTask FocusAsync() => _search is null ? _unavailable.FocusAsync() : _title.FocusAsync();
 
     protected override void OnParametersSet()
     {

@@ -92,7 +92,7 @@ public class PayCurveTextTests
             return PayCurveFigures.Best(search, run.Year.ShouldNotBeNull(), view.Royalty, inputs.Reserve.Value);
         }).Select(line => line.Key);
 
-        Resources.Missing(["Title", "Note", "CurveHint", .. keys]).ShouldBeEmpty();
+        Resources.Missing(["Title", "Note", "CurveHint", "Unavailable", .. keys]).ShouldBeEmpty();
     }
 
     // Every text the curve says about the royalty beside the pay, which the Copyright royalty card decides:

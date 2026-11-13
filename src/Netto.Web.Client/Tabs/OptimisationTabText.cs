@@ -16,11 +16,35 @@ internal static class OptimisationTabText
 
     public const string MoreThanFrom = "Figure_Gain";
 
-    // What the pocket holds once a move is taken, with the moves above it: « {0} in your pocket after it ».
-    public const string After = "After";
-
     // The one action applying every move.
     public const string ApplyAll = "ApplyAll";
+
+    // The row of sub-tabs, named for a screen reader: « Optimise sections ».
+    public const string SectionsLabel = "Sections";
+
+    // A sub-tab's name: « Adjustments », « Pay », « When to pay ».
+    public static string Section(OptimiseSection section) => section switch
+    {
+        OptimiseSection.Moves => "Section_Moves",
+        OptimiseSection.Pay => "Section_Pay",
+        OptimiseSection.When => "Section_When",
+        _ => throw new ArgumentOutOfRangeException(nameof(section), section, "A sub-tab the view has no name for."),
+    };
+
+    // How many moves were found, said after the Adjustments sub-tab's name: « 1 adjustment », « {0} adjustments ».
+    public static string MovesCount(int count) => count == 1 ? "Section_MovesCount_One" : "Section_MovesCount";
+
+    // The next open deadline, said after the When to pay sub-tab's name: « next payment by {0} ».
+    public const string NextBy = "Section_NextBy";
+
+    // Said once, above the moves: each counts on top of the ones above it.
+    public const string Stacked = "Stacked";
+
+    // The toggle on a move that opens why it helps and its link: « Why », named with the move for a screen
+    // reader, « Why: {0} ».
+    public const string WhyToggle = "WhyToggle";
+
+    public const string WhyToggleLabel = "WhyToggleLabel";
 
     // What the move changes, in words: « Pay yourself {0} instead of {1} ».
     public static string Move(Move move) => move switch

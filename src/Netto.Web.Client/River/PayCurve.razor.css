@@ -10,6 +10,14 @@
     font-size: 1.15rem;
 }
 
+/* No curve to draw: one muted line in its place, where the sub-tab starts. */
+.tune__unavailable {
+    max-width: 46rem;
+    margin: 1.5rem 0 0;
+    color: var(--netto-text-muted);
+    font-size: 0.9rem;
+}
+
 .tune__note {
     max-width: 46rem;
     margin: 0;

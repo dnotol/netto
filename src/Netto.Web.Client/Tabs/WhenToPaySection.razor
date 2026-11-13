@@ -1,11 +1,11 @@
 @using Netto.Web.Client.River
 @inject IStringLocalizer<WhenToPaySection> L
 
-@* When to pay, a section of the Optimise view under the moves and the pay curve (OptimisationTab): when the
+@* When to pay, the last sub-tab of the Optimise view (OptimisationTab, ?show=when): when the
    plan's payments fall, a view over the whole river, not a module in it, so no card, no rate and no « Remove ».
    It was the When to pay tab, then the by-date lens of My plan; its old addresses lead here (PlanMoved).
-   Its heading is the section's h2, which takes the focus when a link names the section (OptimisationTab,
-   plan/optimisation?show=when), and its parts and the timeline's heading are h3. It reads the river's one
+   Its heading is the section's h2, which takes the focus when the page arrives at the sub-tab other than by
+   its link in the row (OptimisationTab.FocusSectionAsync), and its parts and the timeline's heading are h3. It reads the river's one
    calendar, built once per draw by the page for the tab's badge too (CalendarView over the engine's
    PaymentCalendar): first who pays what next, by which day, with one sentence per tax saying what its
    payments leave and what more cancels the surcharge, as its card says it (the Next panel); then the year
@@ -13,9 +13,9 @@
    advance payments by each deadline as the plan holds them, the past ones marked, and at the first deadline
    still open what more cancels each surcharge; the pay each month, as the pay slip gives it; and after the
    year, what each assessment leaves. The timeline is a picture and the tables are its text equivalent. It
-   applies nothing: the moves above are where a payment is applied. Its heading and the note under it say it
-   is for the plan on screen as it stands, not after the moves above: a move's payment is found on top of the
-   moves above it, so the two can differ. Its one input, what the fund bills, sits
+   applies nothing: the Adjustments sub-tab is where a payment is applied. Its heading and the note under it
+   say it is for the plan on screen as it stands, not with the moves applied: a move's payment is found on top
+   of the moves before it, so the two can differ. Its one input, what the fund bills, sits
    in a field sized to an amount and shows the engine's refusal beside it. The one sentence the section needs
    to be read right, which date it reads, ends the Next panel, where the deadlines are dated. *@
 <section class="calendar" aria-labelledby="when-to-pay-title">

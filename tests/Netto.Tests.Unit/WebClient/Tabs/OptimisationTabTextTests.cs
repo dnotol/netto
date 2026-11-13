@@ -11,14 +11,16 @@ public class OptimisationTabTextTests
     // The name IStringLocalizer<OptimisationTab> reads Tabs/OptimisationTab.resx under.
     private static readonly ResxText Resources = ResxText.For<OptimisationTab>();
 
-    // The three figures, the pocket after each move, Apply all and a link's name.
+    // The three figures, Apply all, a link's name, the row of sub-tabs, the line above the moves and Why.
     [Fact]
     public void OptimisationTabResx_everyFixedKey_hasAText()
     {
         new[]
             {
-                OptimisationTabText.FromInPocket, OptimisationTabText.PlanInPocket, OptimisationTabText.MoreThanFrom, OptimisationTabText.After,
-                OptimisationTabText.ApplyAll, OptimisationTabText.LinkLabel,
+                OptimisationTabText.FromInPocket, OptimisationTabText.PlanInPocket, OptimisationTabText.MoreThanFrom,
+                OptimisationTabText.ApplyAll, OptimisationTabText.LinkLabel, OptimisationTabText.SectionsLabel, OptimisationTabText.NextBy,
+                OptimisationTabText.MovesCount(1), OptimisationTabText.MovesCount(2), OptimisationTabText.Stacked,
+                OptimisationTabText.WhyToggle, OptimisationTabText.WhyToggleLabel,
             }
             .Where(key => Resources.Get(key) is null)
             .ShouldBeEmpty();
@@ -37,16 +39,36 @@ public class OptimisationTabTextTests
     public void Figures_readYourPlanOptimisedAndTheCertainGain()
     {
         new[] { OptimisationTabText.FromInPocket, OptimisationTabText.PlanInPocket, OptimisationTabText.MoreThanFrom }.Select(Resources.Get)
-            .ShouldBe(["Your plan", "Optimised", "Certain gain"]);
+            .ShouldBe(["Your plan", "optimised", "Certain gain"]);
     }
 
-    // The line that opens the list says what the moves are measured from and what they touch, and that they
-    // come one on top of the other: with no introduction above, it is where the viewer reads it.
+    // The head's state line says what the moves are measured from and what they touch; that they come one on
+    // top of the other is said once, above the list.
     [Fact]
     public void State_moves_saysTheyAreMeasuredFromThePlanOnScreenAndRetuneOnlyItsLevers()
     {
-        Resources.Get(OptimisationTabText.State(MovesState.Moves)).ShouldBe(
-            "Measured from the plan on screen. Netto only retunes the levers already in your plan, with the facts you gave; each move on top of the ones above it:");
+        (Resources.Get(OptimisationTabText.State(MovesState.Moves)), Resources.Get(OptimisationTabText.Stacked)).ShouldBe((
+            "Measured from the plan on screen. Netto only retunes the levers already in your plan, with the facts you gave.",
+            "Each adjustment counts on top of the ones above it."));
+    }
+
+    // The sub-tabs, in English and in French as the glossary names them.
+    [Fact]
+    public void Sections_areNamedInBothLanguages()
+    {
+        var french = ResxText.French<OptimisationTab>();
+
+        OptimiseSections.Order.Select(section => (Resources.Get(OptimisationTabText.Section(section)), french.Get(OptimisationTabText.Section(section))))
+            .ShouldBe([("Adjustments", "Ajustements"), ("Pay", "Rémunération"), ("When to pay", "Quand payer")]);
+    }
+
+    // One move is said in the singular, more in the plural.
+    [Theory]
+    [InlineData(1, "1 adjustment")]
+    [InlineData(2, "2 adjustments")]
+    public void MovesCount_saysTheCountInWords(int count, string words)
+    {
+        Resources.Format(OptimisationTabText.MovesCount(count), count).ShouldBe(words);
     }
 
     // Every state speaks of the plan on screen: none names Today, nor asks to save the plan.

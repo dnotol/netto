@@ -39,12 +39,6 @@ internal sealed record MovesView(
             : new MovesView(MovesState.Moves, null, from, pay, plan.Moves, plan.Gain, plan.TodayInPocket, plan.PlanInPocket);
     }
 
-    // What the pocket holds once the move at that place in the list is taken: what the plan leaves, with
-    // the gains of the moves up to it and its own, so the last move's is what every move leaves. It is the
-    // moves' running account, not a run of the moves above alone: a line a later round topped up
-    // (Move.After) holds that round's gain too, measured on top of the moves between.
-    public decimal InPocketAfter(int index) => FromInPocket + Moves.Take(index + 1).Sum(move => move.Gain);
-
     // The plan with the move's values, everything else as it is. Every move retunes a value the plan holds:
     // none adds a lever (MoveSearch.Run). A royalty that follows the pay holds a pay above what the company
     // pays beside it there, as the move does, in the river's own run.

@@ -153,7 +153,7 @@ public class WhenToPaySectionTests
         (html.Contains("fold__toggle"), html.Contains("<h1"), html.Contains("<header")).ShouldBe((false, false, false));
     }
 
-    // The section is for the plan on screen, not the plan after the moves above it: its heading says so and a
+    // The section is for the plan on screen, not the plan with the moves applied: its heading says so and a
     // note under it says why a move's payment can differ, in English and French.
     [Fact]
     public async Task WhenToPay_heading_saysItIsForThePlanOnScreen()
@@ -162,8 +162,8 @@ public class WhenToPaySectionTests
         using var french = InLanguage.French();
         var frenchHtml = await RenderTabAsync(RiverInputs.Example);
 
-        (Regex.Match(english, "<h2[^>]*>([^<]*)</h2>").Groups[1].Value, english.Contains("not after the moves above"),
-                Regex.Match(frenchHtml, "<h2[^>]*>([^<]*)</h2>").Groups[1].Value, frenchHtml.Contains("pas après les ajustements ci-dessus"))
+        (Regex.Match(english, "<h2[^>]*>([^<]*)</h2>").Groups[1].Value, english.Contains("not with the moves applied"),
+                Regex.Match(frenchHtml, "<h2[^>]*>([^<]*)</h2>").Groups[1].Value, frenchHtml.Contains("pas avec les ajustements appliqués"))
             .ShouldBe(("When to pay, for the plan on screen", true, "Quand payer, pour le plan affiché", true));
     }
 

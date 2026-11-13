@@ -162,24 +162,6 @@ public class MovesViewTests
         (view.FromInPocket, view.Total, view.ApplyAll(plan).Run().Year?.NetInPocket).ShouldBe((62_624.32m, 3_309.67m, 65_933.99m));
     }
 
-    // What the pocket holds after each move is the plan's with the gains up to it: the last is the optimised plan's.
-    [Fact]
-    public void InPocketAfter_eachMove_addsTheGainsUpToItToThePlansPocket()
-    {
-        var view = MovesView.Of(RiverInputs.Example, On22October);
-
-        view.Moves.Select((_, index) => view.InPocketAfter(index))
-            .ShouldBe(view.Moves.Select((_, index) => view.FromInPocket + view.Moves.Take(index + 1).Sum(move => move.Gain)));
-    }
-
-    [Fact]
-    public void InPocketAfter_lastMove_isThePlansPocket()
-    {
-        var view = MovesView.Of(RiverInputs.Example, On22October);
-
-        (view.Moves.Count > 1, view.InPocketAfter(view.Moves.Count - 1)).ShouldBe((true, view.PlanInPocket));
-    }
-
     // Nothing to move: the plan's pocket is the optimised one.
     [Fact]
     public void Of_planAlreadyBest_holdsItsPocketAlone()

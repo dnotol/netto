@@ -1,65 +1,154 @@
-/* ::deep reaches the MudButtons, which carry no scope attribute of their own. */
+/* ::deep reaches the MudButtons and icons, which carry no scope attribute of their own. */
 
-/* The tab's body under its head: the three figures, Apply all, what they are measured by, and the moves. */
-.moves {
+/* The view under its title: the head common to the sub-tabs, their row, then the chosen one's panel. */
+.optimise {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: 1rem;
 }
 
-/* The plan's pocket, the optimised plan's and the difference side by side, raised off the page as the moves are;
-   one under the other on a phone. The difference is the key figure: gold. */
-.moves__figures {
+.optimise__head {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 0.75rem 1.5rem;
+    gap: 0.35rem;
+}
+
+/* The head's one line: the three figures read as a sentence, « Your plan 61,975.74 → optimised 65,622.81
+   +3,647.07 », with Apply all at its end; on a narrow screen the button wraps under them. */
+.optimise__line {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem 1.5rem;
+}
+
+.moves__figures {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.25rem 0.9rem;
     margin: 0;
-    padding: 0.9rem 1.1rem;
-    border: 1px solid var(--netto-line);
-    border-radius: 10px;
-    background: var(--netto-surface);
 }
 
 .moves__pair {
-    display: grid;
-    align-content: start;
-    gap: 0.2rem;
+    display: flex;
+    align-items: baseline;
+    gap: 0.4rem;
     min-width: 0;
+}
+
+/* The arrow from the plan to the optimised plan, drawn and said by nobody (its alternative text is empty). */
+.moves__pair--plan::before {
+    content: "→" / "";
+    color: var(--netto-text-muted);
 }
 
 .moves__term {
     color: var(--netto-text-muted);
-    font-size: 0.8rem;
+    font-size: 0.9rem;
     font-weight: 500;
+}
+
+/* The gain's label, for a screen reader only: the gold sign before the figure says it to the eye. */
+.moves__term--unseen {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
 }
 
 .moves__figure {
     margin: 0;
     font-family: "Fraunces", Georgia, serif;
-    font-size: 1.4rem;
+    font-size: 1.25rem;
     font-weight: 500;
     font-variant-numeric: tabular-nums lining-nums;
     white-space: nowrap;
 }
 
+/* The difference is the key figure: gold, as money reaching the director is. */
 .moves__figure--gain {
     color: var(--netto-gold);
 }
 
-/* What the figures are measured by and leave out, one sentence under them: the muted text of the line that
-   opens the moves, no wider than 46rem, so the long sentence stays readable. */
-.moves__objective {
+.moves__state,
+.moves__objective,
+.moves__stacked {
     max-width: 46rem;
     margin: 0;
     color: var(--netto-text-muted);
-    font-size: 0.9rem;
+    font-size: 0.875rem;
     line-height: 1.5;
 }
 
-.moves__state {
+/* The row of sub-tabs, links along a line as the band's views are: muted names, the chosen one in the text
+   colour, heavier, over a gold line, so colour is not its only sign. Each link is as tall as a comfortable
+   target; the site's focus ring is drawn around it (app.css). */
+.optimise__section-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 1.5rem;
     margin: 0;
+    padding: 0;
+    border-bottom: 1px solid var(--netto-line);
+    list-style: none;
+}
+
+.optimise__section {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    min-height: 2.75rem;
+    padding: 0 0.15rem;
     color: var(--netto-text-muted);
     font-size: 0.9rem;
+    font-weight: 500;
+    text-decoration: none;
+    white-space: nowrap;
+    box-shadow: inset 0 -2px 0 transparent;
+}
+
+    .optimise__section:hover {
+        color: var(--netto-text);
+    }
+
+    .optimise__section[aria-current="page"] {
+        color: var(--netto-text);
+        font-weight: 600;
+        box-shadow: inset 0 -2px 0 var(--netto-gold);
+    }
+
+/* What a sub-tab says after its name, short and muted, after a dot nobody says. */
+.optimise__badge {
+    color: var(--netto-text-muted);
+    font-size: 0.8rem;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+}
+
+    .optimise__badge::before {
+        content: "· " / "";
+    }
+
+/* The same, in words, for a screen reader: out of sight. */
+.optimise__spoken {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+.moves {
+    display: grid;
+    gap: 0.5rem;
 }
 
 .moves__list {
@@ -70,16 +159,15 @@
     list-style: none;
 }
 
-/* One row per move, raised off the page: its number, what changes and why with where to see it, what
-   it adds and the pocket after it, and Apply. Below a wide screen, the figures and Apply go under the
-   words. */
+/* One compact row per move, raised off the page: its number, what changes with Why under it, what it adds,
+   and Apply. Below a wide screen, the gain and Apply go under the words. */
 .moves__move {
     display: grid;
     grid-template-columns: auto minmax(0, 1fr) auto auto;
-    grid-template-areas: "number body amounts action";
+    grid-template-areas: "number body gain action";
     align-items: start;
-    gap: 0.5rem 1rem;
-    padding: 0.75rem 0.9rem;
+    gap: 0.4rem 1rem;
+    padding: 0.6rem 0.9rem;
     border: 1px solid var(--netto-line);
     border-radius: 10px;
     background: var(--netto-surface);
@@ -101,7 +189,8 @@
 .moves__body {
     grid-area: body;
     display: grid;
-    gap: 0.3rem;
+    justify-items: start;
+    gap: 0.2rem;
     min-width: 0;
 }
 
@@ -109,6 +198,39 @@
     margin: 0;
     font-size: 0.95rem;
     font-weight: 500;
+}
+
+/* Why, a quiet word with a chevron, down while folded and up while open; it does not move. */
+.moves__toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.15rem;
+    min-height: 1.75rem;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--netto-text-muted);
+    font: inherit;
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
+    .moves__toggle:hover {
+        color: var(--netto-text);
+    }
+
+    .moves__toggle ::deep .moves__chevron {
+        font-size: 1.1rem;
+    }
+
+    .moves__toggle ::deep .moves__chevron--open {
+        transform: rotate(180deg);
+    }
+
+.moves__more {
+    display: grid;
+    justify-items: start;
+    gap: 0.3rem;
 }
 
 .moves__why {
@@ -119,7 +241,6 @@
 }
 
 .moves__link {
-    justify-self: start;
     color: var(--netto-text);
     font-size: 0.85rem;
     text-decoration: underline;
@@ -131,25 +252,12 @@
         text-decoration-color: currentColor;
     }
 
-.moves__amounts {
-    grid-area: amounts;
-    display: grid;
-    justify-items: end;
-    gap: 0.2rem;
-    text-align: right;
-}
-
 /* What a move adds is money reaching the director: the pocket's gold. */
 .moves__gain {
+    grid-area: gain;
+    align-self: center;
     color: var(--netto-gold);
     font-weight: 500;
-    font-variant-numeric: tabular-nums;
-    white-space: nowrap;
-}
-
-.moves__after {
-    color: var(--netto-text-muted);
-    font-size: 0.8rem;
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
 }
@@ -159,20 +267,15 @@
     align-self: center;
 }
 
-/* Apply all, under the figures it lands on, at the start of its line. */
-.moves__all {
-    justify-self: start;
-}
-
 /* Apply, on each move and for all of them. */
-.moves ::deep .moves__apply {
+.optimise ::deep .moves__apply {
     border-color: var(--netto-edge);
     border-radius: 999px;
     color: var(--netto-text);
 }
 
-    .moves ::deep .moves__apply:hover,
-    .moves ::deep .moves__apply:focus-visible {
+    .optimise ::deep .moves__apply:hover,
+    .optimise ::deep .moves__apply:focus-visible {
         border-color: var(--netto-gold);
     }
 
@@ -181,17 +284,10 @@
         grid-template-columns: auto minmax(0, 1fr) auto;
         grid-template-areas:
             "number body body"
-            ". amounts action";
+            ". gain action";
     }
 
-    .moves__amounts {
-        justify-items: start;
-        text-align: left;
-    }
-}
-
-@media (max-width: 599.98px) {
-    .moves__figures {
-        grid-template-columns: minmax(0, 1fr);
+    .moves__gain {
+        justify-self: start;
     }
 }

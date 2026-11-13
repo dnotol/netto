@@ -10,12 +10,14 @@ using static Netto.Tests.WebClient.River.RiverRendering;
 
 namespace Netto.Tests.WebClient.Tabs;
 
-// The Optimisation tab as a viewer meets it, drawn without a browser (RiverRendering): one page of moves
-// that retune the plan on screen, under its own head: what the plan leaves in the pocket, what every move
-// leaves and the gain, Apply all, then each move, numbered, with why it helps, what it adds, the pocket
-// after it, a link to where it acts and « Apply ». What « Apply » and « Apply all » set is MovesViewTests';
-// the figures and sentences are MovesViewTests', MoveReasonsTests' and MoveLinksTests'; when the page
-// searches, MovesSourceTests'.
+// The Optimisation tab as a viewer meets it, drawn without a browser (RiverRendering): under its title, a head
+// common to its three sub-tabs, what the plan leaves in the pocket, what every move leaves and the gain on one
+// line with Apply all, the state line and what the figures are measured by; then the row of sub-tabs, links
+// with the chosen one current; then the chosen one alone: the moves, each a compact row with what it changes,
+// what it adds, « Apply » and « Why » folded over why it helps and a link to where it acts; the pay curve; or
+// When to pay. What « Apply » and « Apply all » set is MovesViewTests'; the figures and sentences are
+// MovesViewTests', MoveReasonsTests' and MoveLinksTests'; when the page searches, MovesSourceTests'; what a click
+// on Why or a sub-tab does, PlanOptimiseSectionsTests'.
 public class OptimisationTabTests
 {
     private static readonly DateOnly On22October = new(2026, 10, 22);
@@ -55,13 +57,17 @@ public class OptimisationTabTests
         (view.Moves.Count > 1, Regex.Count(html, "<li class=\"moves__move\""), Applies(html)).ShouldBe((true, view.Moves.Count, view.Moves.Count));
     }
 
-    // One « Apply all », with the figures it lands on.
-    [Fact]
-    public async Task Optimisation_withMoves_offersApplyAllOnce()
+    // One « Apply all », at the end of the head's line, on every sub-tab.
+    [Theory]
+    [InlineData(OptimiseSection.Moves)]
+    [InlineData(OptimiseSection.Pay)]
+    [InlineData(OptimiseSection.When)]
+    public async Task Optimisation_withMoves_offersApplyAllOnceInTheHeadsLine(OptimiseSection section)
     {
-        var html = await RenderTabAsync(RiverInputs.Example);
+        var html = await RenderSectionAsync(RiverInputs.Example, section);
 
-        Regex.Count(html, "<div class=\"moves__all\"[^>]*>\\s*<button[^>]*>.*?Apply all.*?</button>\\s*</div>", RegexOptions.Singleline).ShouldBe(1);
+        Regex.Count(Head(html), "<div class=\"optimise__line\".*?</dl>\\s*<div class=\"moves__all\"[^>]*>\\s*<button[^>]*>.*?Apply all.*?</button>\\s*</div>\\s*</div>", RegexOptions.Singleline)
+            .ShouldBe(1);
     }
 
     // Nothing to apply: no « Apply all ».
@@ -79,15 +85,17 @@ public class OptimisationTabTests
         (await RenderTabAsync(plan)).Contains("Apply all").ShouldBeFalse();
     }
 
-    // What the moves add together is the tile's gain above the list: the list does not say it a second time.
+    // What the moves add together is the head's gain: no row says what the pocket holds after it, and the list
+    // draws no total.
     [Fact]
-    public async Task Optimisation_withMoves_drawsNoTotalUnderTheList()
+    public async Task Optimisation_withMoves_saysTheTotalOnceInTheHead()
     {
         var view = MovesView.Of(RiverInputs.Example, On22October);
 
         var html = await RenderTabAsync(RiverInputs.Example);
 
-        (html.Contains("moves__total"), html.Contains("Together"), Figures(html)[2].Figure).ShouldBe((false, false, Formats.Addition(view.Total)));
+        (html.Contains("moves__total"), html.Contains("moves__after"), html.Contains("in your pocket after it"), Figures(html)[2].Figure)
+            .ShouldBe((false, false, false, Formats.Addition(view.Total)));
     }
 
     // A tab, not a card: no fold to open, its title the page's h1, and no head above the title.
@@ -100,30 +108,42 @@ public class OptimisationTabTests
             .ShouldBe((false, true, false, false));
     }
 
-    // Three figures first, in a description list: the plan's pocket, the optimised plan's, and the gain.
+    // Three figures first, in a description list, each with its label: the plan's pocket, the optimised plan's,
+    // and the gain, whose label is for a screen reader alone.
     [Fact]
     public async Task Optimisation_withMoves_opensOnThePlanTheOptimisedPlanAndTheGain()
     {
         var view = MovesView.Of(RiverInputs.Example, On22October);
 
-        var figures = Figures(await RenderTabAsync(RiverInputs.Example));
+        var html = await RenderTabAsync(RiverInputs.Example);
 
-        figures.ShouldBe([
-            ("Your plan", Formats.Euros(view.FromInPocket)),
-            ("Optimised", Formats.Euros(view.PlanInPocket)),
-            ("Certain gain", Formats.Addition(view.Total)),
-        ]);
+        html.ShouldSatisfyAllConditions(
+            () => Figures(html).ShouldBe([
+                ("Your plan", Formats.Euros(view.FromInPocket)),
+                ("optimised", Formats.Euros(view.PlanInPocket)),
+                ("Certain gain", Formats.Addition(view.Total)),
+            ]),
+            () => Regex.IsMatch(html, "<dt class=\"moves__term moves__term--unseen\"[^>]*>Certain gain</dt>").ShouldBeTrue());
     }
 
-    // The first line says what the moves are measured from and what they touch.
+    // The arrow between the plan and the optimised plan is the stylesheet's: no text of the markup.
     [Fact]
-    public async Task Optimisation_withMoves_saysTheyAreMeasuredFromThePlanOnScreen()
+    public async Task Optimisation_withMoves_drawsNoArrowInTheMarkup()
     {
         var html = await RenderTabAsync(RiverInputs.Example);
 
-        StateParagraphs(html).ShouldBe([
-            "Measured from the plan on screen. Netto only retunes the levers already in your plan, with the facts you gave; each move on top of the ones above it:",
-        ]);
+        html.Contains('→').ShouldBeFalse();
+    }
+
+    // The head says what the moves are measured from and what they touch; the list, once, that they stack.
+    [Fact]
+    public async Task Optimisation_withMoves_saysTheyAreMeasuredFromThePlanOnScreenThenThatTheyStack()
+    {
+        var html = await RenderTabAsync(RiverInputs.Example);
+
+        (StateParagraphs(html).Single(), Paragraph(html, "moves__stacked"), html.IndexOf("moves__stacked", StringComparison.Ordinal) < html.IndexOf("<ol", StringComparison.Ordinal))
+            .ShouldBe(("Measured from the plan on screen. Netto only retunes the levers already in your plan, with the facts you gave.",
+                "Each adjustment counts on top of the ones above it.", true));
     }
 
     // The moves in the engine's order, numbered for the eye: the list says its own count and place.
@@ -138,64 +158,31 @@ public class OptimisationTabTests
             .ShouldBe(view.Moves.Select((_, index) => $"{index + 1}"));
     }
 
-    // Each move says what it adds and what the pocket holds after it: the last, what the plan leaves.
     [Fact]
-    public async Task Optimisation_withMoves_saysEachGainAndThePocketAfterIt()
+    public async Task Optimisation_withMoves_saysEachGain()
     {
         var view = MovesView.Of(RiverInputs.Example, On22October);
 
         var html = await RenderTabAsync(RiverInputs.Example);
 
-        view.Moves.Select((move, index) => html.Contains($"{Formats.Euros(move.Gain)} more in your pocket</span>")
-                && html.Contains($"{Formats.Euros(view.InPocketAfter(index))} in your pocket after it"))
-            .ShouldAllBe(said => said);
+        view.Moves.Select(move => Regex.IsMatch(html, $"<span class=\"moves__gain\"[^>]*>{Regex.Escape(Formats.Euros(move.Gain))} more in your pocket</span>")).ShouldAllBe(said => said);
     }
 
-    // The pay's move says why it helps, under it: where the money goes, and the rate it gives up.
+    // Why a move helps, and its link, are folded under « Why », a button saying whether it is open and what it
+    // opens, named with its move: folded, neither is drawn, but the frame stays for aria-controls.
     [Fact]
-    public async Task Optimisation_payMove_saysWhyItHelps()
+    public async Task Optimisation_withMoves_foldsWhyEachHelpsUnderWhy()
     {
+        var view = MovesView.Of(RiverInputs.Example, On22October);
+
         var html = await RenderTabAsync(RiverInputs.Example);
 
-        Regex.IsMatch(html, "<p class=\"moves__why\"[^>]*>" + Regex.Escape(
-            "Your pay goes from €50,000.00 to €20,799.00, and the dividend paid out from €39,325.00 to €58,064.23. "
-            + "With it, the company gives up the reduced rate of corporate tax.") + "</p>").ShouldBeTrue();
-    }
-
-    // A voucher's sentence and the gain beside it agree: the vouchers that reach the pocket, the rest the same
-    // money would have reached it as otherwise, and the gain the move shows, said as the same figure.
-    [Fact]
-    public async Task Optimisation_sportCultureVouchersMove_saysTheRestAndTheGainTheMoveShows()
-    {
-        var plan = RiverInputs.Example.AddToPlan(OptionalModule.Vouchers);
-        var move = MovesView.Of(plan, On22October).Moves.Single(line => line.Move is SportCultureVouchersMove);
-
-        var html = await RenderTabAsync(plan);
-
-        var line = Regex.Matches(html, "<li class=\"moves__move\".*?</li>", RegexOptions.Singleline).Select(match => match.Value)
-            .Single(item => item.Contains("sport and culture vouchers"));
-        (line.Contains($"€100.00 more reaches you tax-free, {Formats.Euros(100m - move.Gain)} less from the rest: {Formats.Euros(move.Gain)} more in your pocket."),
-                line.Contains($"{Formats.Euros(move.Gain)} more in your pocket</span>"))
-            .ShouldBe((true, true));
-    }
-
-    // A link named first by what it shows, then by the move.
-    [Fact]
-    public async Task Optimisation_payMove_linksTheDirectorPayCard()
-    {
-        var html = await RenderTabAsync(RiverInputs.Example);
-
-        Regex.IsMatch(html, Regex.Escape("<a class=\"moves__link\" href=\"plan?card=director-pay\" aria-label=\"See it on Director pay: Pay yourself €20,799.00 instead of €50,000.00\"")
-            + "[^>]*>See it on Director pay</a>").ShouldBeTrue();
-    }
-
-    [Fact]
-    public async Task Optimisation_paymentMove_linksTheWhenToPaySection()
-    {
-        var html = await RenderTabAsync(RiverInputs.Example);
-
-        Regex.IsMatch(html, "<a class=\"moves__link\" href=\"plan/optimisation\\?show=when\" aria-label=\"See when to pay: Pay €[\\d,.]+ by 21 December 2026 on the company's corporate tax\"[^>]*>See when to pay</a>")
-            .ShouldBeTrue();
+        html.ShouldSatisfyAllConditions(
+            () => Regex.Count(html, "<button type=\"button\" class=\"moves__toggle\" aria-expanded=\"false\" aria-controls=\"[^\"]+\" aria-label=\"Why: ").ShouldBe(view.Moves.Count),
+            () => Regex.IsMatch(html, "aria-label=\"Why: Pay yourself €20,799.00 instead of €50,000.00\"").ShouldBeTrue(),
+            () => html.ShouldNotContain("moves__why"),
+            () => html.ShouldNotContain("moves__link"),
+            () => Regex.Count(html, "<div id=\"[^\"]+\" class=\"moves__more\" hidden").ShouldBe(view.Moves.Count));
     }
 
     // Vouchers out of the plan: no move adds them, so nothing names them.
@@ -204,19 +191,19 @@ public class OptimisationTabTests
     {
         var html = await RenderTabAsync(RiverInputs.Example);
 
-        (html.Contains("eco vouchers"), html.Contains("See it on Vouchers")).ShouldBe((false, false));
+        html.Contains("eco vouchers").ShouldBeFalse();
     }
 
-    // Vouchers in the plan at none: raising them is a retune, linked to their card.
+    // Vouchers in the plan at none: raising them is a retune.
     [Fact]
-    public async Task Optimisation_vouchersInThePlan_proposesThemAndLinksTheirCard()
+    public async Task Optimisation_vouchersInThePlan_proposesThem()
     {
         var html = await RenderTabAsync(RiverInputs.Example.AddToPlan(OptionalModule.Vouchers));
 
-        (html.Contains("Grant €250.00 of eco vouchers a year"), html.Contains("href=\"plan?card=vouchers\"")).ShouldBe((true, true));
+        html.Contains("Grant €250.00 of eco vouchers a year").ShouldBeTrue();
     }
 
-    // Without moves to show, the tab says why, and shows no figure and no list.
+    // Without moves to show, the head says why, and shows no figure and no list.
     public static TheoryData<string, RiverInputs> Silent => new()
     {
         { "a plan starting at the pay", RiverInputs.Example.SkipCompany() },
@@ -252,33 +239,98 @@ public class OptimisationTabTests
         { "a plan refused", RiverInputs.Example.WithReserve(-1m) },
     };
 
-    // The tab announces nothing: no live region, no status, no alert.
+    // The tab announces nothing, on any sub-tab: no live region, no status, no alert.
     [Theory]
     [MemberData(nameof(States))]
     public async Task Optimisation_anyState_isNoLiveRegion(string _, RiverInputs plan)
     {
-        var html = await RenderTabAsync(plan);
+        foreach (var section in OptimiseSections.Order)
+        {
+            var html = await RenderSectionAsync(plan, section);
 
-        (html.Contains("moves__state"), Regex.IsMatch(html, "aria-live|role=\"(status|alert)\"")).ShouldBe((true, false));
+            (html.Contains("moves__state"), Regex.IsMatch(html, "aria-live|role=\"(status|alert)\"")).ShouldBe((true, false), $"{section}");
+        }
     }
 
-    // The line saying what the tab shows takes the focus once a move is applied, so it can be focused from
-    // code alone.
+    // The line saying what the tab shows takes the focus once a move is applied, from any sub-tab, so it is in
+    // the head and can be focused from code alone.
     [Theory]
     [MemberData(nameof(States))]
-    public async Task Optimisation_anyState_letsTheStateLineTakeTheFocus(string _, RiverInputs plan)
+    public async Task Optimisation_anyState_letsTheStateLineInTheHeadTakeTheFocus(string _, RiverInputs plan)
     {
-        var html = await RenderTabAsync(plan);
+        foreach (var section in OptimiseSections.Order)
+        {
+            var html = await RenderSectionAsync(plan, section);
 
-        Regex.IsMatch(html, "<p class=\"moves__state\" tabindex=\"-1\"").ShouldBeTrue();
+            Regex.IsMatch(Head(html), "<p class=\"moves__state\" tabindex=\"-1\"").ShouldBeTrue($"{section}");
+        }
     }
 
-    // « Tune your pay » is the section under the moves, before When to pay, once the page hands the tab its search: the
-    // curve of the pocket at every pay, also while the moves are looked for, since it reads that search alone.
+    // The row of sub-tabs: links in a nav named for a screen reader, after the head, the chosen one current.
+    [Theory]
+    [InlineData(OptimiseSection.Moves)]
+    [InlineData(OptimiseSection.Pay)]
+    [InlineData(OptimiseSection.When)]
+    public async Task Optimisation_anySubTab_drawsTheRowOfLinksWithTheChosenOneCurrent(OptimiseSection section)
+    {
+        var html = await RenderSectionAsync(RiverInputs.Example, section);
+
+        var links = Regex.Matches(html, "<a href=\"([^\"]+)\" class=\"optimise__section\"( aria-current=\"page\")?[^>]*>\\s*<span[^>]*>([^<]+)</span>")
+            .Select(match => (Href: match.Groups[1].Value, Current: match.Groups[2].Success, Name: match.Groups[3].Value)).ToList();
+        html.ShouldSatisfyAllConditions(
+            () => Regex.IsMatch(html, "<nav class=\"optimise__sections\" aria-label=\"Optimise sections\"").ShouldBeTrue(),
+            () => links.Select(link => (link.Href, link.Name)).ShouldBe([
+                ("plan/optimisation", "Adjustments"), ("plan/optimisation?show=pay", "Pay"), ("plan/optimisation?show=when", "When to pay")]),
+            () => links.Where(link => link.Current).Select(link => link.Href).ShouldBe([OptimiseSections.Href(section)]),
+            () => html.IndexOf("optimise__sections", StringComparison.Ordinal).ShouldBeGreaterThan(html.IndexOf("moves__state", StringComparison.Ordinal)));
+    }
+
+    // Adjustments says how many moves were found, When to pay the next open deadline's day: short to the eye, in
+    // words for a screen reader, after the name; Pay says nothing.
+    [Fact]
+    public async Task Optimisation_withMovesAndACalendar_saysTheCountAndTheNextDeadlineAfterTheirNames()
+    {
+        var view = MovesView.Of(RiverInputs.Example, On22October);
+        var next = CalendarView.From(RiverInputs.Example, RiverInputs.Example.Run(), On22October).ShouldNotBeNull().Next.ShouldNotBeNull();
+
+        var html = await RenderSectionAsync(RiverInputs.Example, OptimiseSection.Moves);
+
+        var badges = Regex.Matches(html, "<span class=\"optimise__badge\" aria-hidden=\"true\"[^>]*>([^<]+)</span>\\s*<span class=\"optimise__spoken\"[^>]*>([^<]+)</span>")
+            .Select(match => (match.Groups[1].Value, match.Groups[2].Value)).ToList();
+        badges.ShouldBe([
+            ($"{view.Moves.Count}", $"{view.Moves.Count} adjustments"),
+            (Formats.ShortDay(next.Date), $"next payment by {Formats.Day(next.Date)}"),
+        ]);
+    }
+
+    // While the moves are looked for, Adjustments says no count.
+    [Fact]
+    public async Task Optimisation_searching_saysNoCount()
+    {
+        var html = await RenderSearchingAsync(RiverInputs.Example);
+
+        html.ShouldNotContain("optimise__badge");
+    }
+
+    // Only the chosen sub-tab is drawn.
+    [Theory]
+    [InlineData(OptimiseSection.Moves, true, false, false)]
+    [InlineData(OptimiseSection.Pay, false, true, false)]
+    [InlineData(OptimiseSection.When, false, false, true)]
+    public async Task Optimisation_aSubTab_drawsItsPanelAlone(OptimiseSection section, bool moves, bool curve, bool calendar)
+    {
+        var html = await RenderSectionAsync(RiverInputs.Example, section);
+
+        (html.Contains("<ol class=\"moves__list\""), html.Contains("class=\"pay-curve__plot\""), html.Contains("id=\"when-to-pay-title\""))
+            .ShouldBe((moves, curve, calendar));
+    }
+
+    // « Tune your pay », the Pay sub-tab, also while the moves are looked for, since it reads the split's search
+    // alone.
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task Optimisation_withTheSearch_drawsTheCurveAfterTheMoves(bool searching)
+    public async Task Optimisation_paySubTab_drawsTheCurve(bool searching)
     {
         var plan = RiverInputs.Example;
 
@@ -286,36 +338,44 @@ public class OptimisationTabTests
 
         html.ShouldSatisfyAllConditions(
             () => html.ShouldContain("<h2 id=\"tune-title\""),
-            () => html.ShouldContain("class=\"pay-curve__plot\""),
-            () => html.IndexOf("class=\"tune\"", StringComparison.Ordinal).ShouldBeGreaterThan(html.IndexOf("class=\"moves\"", StringComparison.Ordinal)));
+            () => html.ShouldContain("class=\"pay-curve__plot\""));
     }
 
-    // « When to pay » is the tab's last section, the whole calendar the plan holds, under the moves and the
-    // pay curve; the head is the one h1, the section the next h2 after the curve's, and its parts h3.
-    [Fact]
-    public async Task Optimisation_withTheCalendar_drawsWhenToPayLastWithHeadingsInOrder()
+    // Each sub-tab's headings: the head is the one h1, then its panel's own h2 and h3.
+    [Theory]
+    [InlineData(OptimiseSection.Moves, new[] { "1" })]
+    [InlineData(OptimiseSection.Pay, new[] { "1", "2" })]
+    [InlineData(OptimiseSection.When, new[] { "1", "2", "3", "3", "3", "3", "3", "3" })]
+    public async Task Optimisation_aSubTab_hasItsHeadingsInOrder(OptimiseSection section, string[] levels)
     {
-        var html = await RenderWithCalendarAsync(RiverInputs.Example, openingIt: false);
+        var html = await RenderSectionAsync(RiverInputs.Example, section);
+
+        Regex.Matches(html, "<h([123])[ >]").Select(match => match.Groups[1].Value).ShouldBe(levels);
+    }
+
+    // When to pay, the calendar the plan holds.
+    [Fact]
+    public async Task Optimisation_whenSubTab_drawsTheWholeCalendar()
+    {
+        var html = await RenderSectionAsync(RiverInputs.Example, OptimiseSection.When);
 
         html.ShouldSatisfyAllConditions(
-            () => Regex.Matches(html, "<h([123])[ >]").Select(match => match.Groups[1].Value).ShouldBe(["1", "2", "2", "3", "3", "3", "3", "3", "3"]),
-            () => html.IndexOf("id=\"when-to-pay-title\"", StringComparison.Ordinal).ShouldBeGreaterThan(html.IndexOf("class=\"tune\"", StringComparison.Ordinal)),
             () => html.ShouldContain("class=\"calendar__table\""),
             () => html.ShouldContain("class=\"timeline\""),
             () => html.ShouldContain("id=\"river-billed-contributions\""));
     }
 
-    // With no search, the company's year skipped or an amount refused, the tab draws no curve.
+    // With no search, the company's year skipped or an amount refused, the Pay sub-tab draws no curve.
     [Fact]
     public async Task Optimisation_noSearch_drawsNoCurve()
     {
-        var html = await RenderTabAsync(RiverInputs.Example);
+        var html = await RenderStateAsync(RiverInputs.Example, RiverInputs.Example.FindMoves(On22October), searching: false, OptimiseSection.Pay);
 
-        html.ShouldNotContain("pay-curve__plot");
+        (html.Contains("pay-curve__plot"), html.Contains("tune__unavailable")).ShouldBe((false, true));
     }
 
-    // While the page looks for the moves, once painted or after an edit, the tab says so under its head, and
-    // nothing else: no figure, no move, nothing to apply.
+    // While the page looks for the moves, once painted or after an edit, the head says so, and nothing else: no
+    // figure, no move, nothing to apply.
     [Fact]
     public async Task Optimisation_searching_saysItLooksForTheMovesAlone()
     {
@@ -337,6 +397,10 @@ public class OptimisationTabTests
     // Every move applied to the example.
     private static RiverInputs EveryMoveApplied() => MovesView.Of(RiverInputs.Example, On22October).ApplyAll(RiverInputs.Example);
 
+    // The head common to the sub-tabs, up to their row.
+    private static string Head(string html) =>
+        Regex.Match(html, "<div class=\"optimise__head\".*?<nav", RegexOptions.Singleline).Value;
+
     // The paragraphs that say what the tab shows, in the order the tab draws them.
     private static IReadOnlyList<string> StateParagraphs(string html) =>
         [.. Regex.Matches(html, "<p class=\"moves__state\"[^>]*>(.*?)</p>").Select(match => match.Groups[1].Value)];
@@ -348,36 +412,38 @@ public class OptimisationTabTests
     // Each term of the description list with its figure.
     private static IReadOnlyList<(string Term, string Figure)> Figures(string html) =>
     [
-        .. Regex.Matches(html, "<dt class=\"moves__term\"[^>]*>(.*?)</dt>\\s*<dd class=\"moves__figure[^\"]*\"[^>]*>(.*?)</dd>")
+        .. Regex.Matches(html, "<dt class=\"moves__term[^\"]*\"[^>]*>(.*?)</dt>\\s*<dd class=\"moves__figure[^\"]*\"[^>]*>(.*?)</dd>")
             .Select(match => (Regex.Replace(match.Groups[1].Value, "<[^>]+>", "").Trim(), match.Groups[2].Value)),
     ];
 
     private static int Applies(string html) => Regex.Count(html, "aria-label=\"Apply: ");
 
-    // The tab with what the page found for the plan on screen on 22 October.
+    // The tab with what the page found for the plan on screen on 22 October, on its moves.
     private static Task<string> RenderTabAsync(RiverInputs plan) => RenderStateAsync(plan, plan.FindMoves(On22October), searching: false);
 
     // The tab while the page looks for the moves from the plan on screen, having found none yet.
     private static Task<string> RenderSearchingAsync(RiverInputs plan) => RenderStateAsync(plan, found: null, searching: true);
 
-    // The tab with the page's search for the plan, for the curve under the moves.
+    // The tab on the Pay sub-tab with the page's search for the plan, for the curve.
     private static async Task<string> RenderWithCurveAsync(RiverInputs plan, bool searching) =>
         WebUtility.HtmlDecode(await RenderAsync<OptimisationTab>(new Folds(new BrowserStorage()), new()
         {
             ["Searching"] = searching, ["Found"] = searching ? null : plan.FindMoves(On22October), ["Inputs"] = plan, ["Search"] = plan.SearchSplit(),
+            ["Section"] = OptimiseSection.Pay,
         }));
 
-    // The tab with the calendar the page built for the plan on its date, and the search for the curve.
-    private static async Task<string> RenderWithCalendarAsync(RiverInputs plan, bool openingIt) =>
+    // The tab on a sub-tab, with what the page found, its search for the curve and the calendar on its date.
+    private static async Task<string> RenderSectionAsync(RiverInputs plan, OptimiseSection section) =>
         WebUtility.HtmlDecode(await RenderAsync<OptimisationTab>(new Folds(new BrowserStorage()), new()
         {
             ["Searching"] = false, ["Found"] = plan.FindMoves(On22October), ["Inputs"] = plan, ["Search"] = plan.SearchSplit(),
-            ["Calendar"] = CalendarView.From(plan, plan.Run(), On22October), ["OpensCalendar"] = openingIt,
+            ["Calendar"] = CalendarView.From(plan, plan.Run(), On22October), ["Section"] = section,
         }));
 
-    private static async Task<string> RenderStateAsync(RiverInputs plan, (MovePlan? Value, Refusal? Error)? found, bool searching) =>
+    private static async Task<string> RenderStateAsync(RiverInputs plan, (MovePlan? Value, Refusal? Error)? found, bool searching,
+        OptimiseSection section = OptimiseSection.Moves) =>
         WebUtility.HtmlDecode(await RenderAsync<OptimisationTab>(new Folds(new BrowserStorage()), new()
         {
-            ["Searching"] = searching, ["Found"] = found, ["Inputs"] = plan,
+            ["Searching"] = searching, ["Found"] = found, ["Inputs"] = plan, ["Section"] = section,
         }));
 }

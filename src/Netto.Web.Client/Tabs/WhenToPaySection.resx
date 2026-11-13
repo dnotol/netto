@@ -34,7 +34,7 @@
     <value>When to pay, for the plan on screen</value>
   </data>
   <data name="ForPlan" xml:space="preserve">
-    <value>These dates and amounts are for the plan as it stands, not after the moves above: a move's payment is found on top of the ones above it, so its amount can differ.</value>
+    <value>These dates and amounts are for the plan as it stands, not with the moves applied: a move's payment is found on top of the moves before it, so its amount can differ.</value>
   </data>
   <data name="Refused" xml:space="preserve">
     <value>The payments wait for the amount the river refuses.</value>

@@ -29,22 +29,3 @@ internal sealed class CardArrival
         return arriving;
     }
 }
-
-// Whether a link arrives at the When to pay section of Optimise (/plan/optimisation?show=when), asked on every
-// set of the page's parameters as a card's arrival is (CardArrival): true once per arrival. The same address
-// given again arrives nowhere more, so the viewer who has moved on is not pulled back; the same link followed
-// after the address named another view or no section is a new arrival.
-internal sealed class SectionArrival
-{
-    // Whether the address named the section when last asked.
-    private bool _named;
-
-    public bool Take(PlanTab tab, string? show)
-    {
-        var named = tab == PlanTab.Optimisation && PlanTabRoutes.OpensWhenToPay(show);
-        var arriving = named && !_named;
-        _named = named;
-
-        return arriving;
-    }
-}

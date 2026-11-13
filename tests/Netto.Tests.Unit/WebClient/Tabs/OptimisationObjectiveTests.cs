@@ -38,23 +38,36 @@ public class OptimisationObjectiveTests
         { "a plan refused", RiverInputs.Example.WithReserve(-1m) },
     };
 
-    // The moves, then under the three figures and above the line that opens them: the figures,
-    // the sentence beside them, the plan the moves are from, the moves.
+    // In the head common to the sub-tabs, under the figures' line and the state line, above the row of
+    // sub-tabs and the moves: the figures, the plan the moves are from, the sentence, the row, the moves.
     [Fact]
-    public async Task Optimisation_withMoves_saysTheObjectiveUnderTheFiguresAndAboveTheMoves()
+    public async Task Optimisation_withMoves_saysTheObjectiveInTheHeadUnderTheStateLine()
     {
         var html = await RenderTabAsync(RiverInputs.Example);
 
         var places = new[]
         {
             html.IndexOf("</dl>", StringComparison.Ordinal),
-            html.IndexOf("<p class=\"moves__objective\"", StringComparison.Ordinal),
             html.IndexOf("<p class=\"moves__state\"", StringComparison.Ordinal),
+            html.IndexOf("<p class=\"moves__objective\"", StringComparison.Ordinal),
+            html.IndexOf("<nav class=\"optimise__sections\"", StringComparison.Ordinal),
             html.IndexOf("<ol", StringComparison.Ordinal),
         };
         places.ShouldSatisfyAllConditions(
             () => places.ShouldAllBe(place => place > -1),
             () => places.ShouldBe([.. places.Order()]));
+    }
+
+    // The sentence is the head's, in sight on every sub-tab.
+    [Theory]
+    [InlineData(OptimiseSection.Pay)]
+    [InlineData(OptimiseSection.When)]
+    public async Task Optimisation_otherSubTab_saysTheObjectiveToo(OptimiseSection section)
+    {
+        var html = await RenderTabAsync(RiverInputs.Example, section: section);
+
+        (Objective(html), html.IndexOf("moves__objective", StringComparison.Ordinal) < html.IndexOf("optimise__sections", StringComparison.Ordinal))
+            .ShouldBe((Sentence, true));
     }
 
     // The tab says the objective once, as the one component words it, with moves or already the best.
@@ -104,12 +117,13 @@ public class OptimisationObjectiveTests
         Regex.Match(html, "<p class=\"moves__objective\"[^>]*>(.*?)</p>", RegexOptions.Singleline).Groups[1].Value.Trim();
 
     // The tab with what the page found for the plan on screen, or while it looks for them.
-    private static async Task<string> RenderTabAsync(RiverInputs plan, bool searching = false) =>
+    private static async Task<string> RenderTabAsync(RiverInputs plan, bool searching = false, OptimiseSection section = OptimiseSection.Moves) =>
         WebUtility.HtmlDecode(await RenderAsync<OptimisationTab>(new Folds(new BrowserStorage()), new()
         {
             ["Searching"] = searching,
             ["Found"] = searching ? null : Found(plan),
             ["Inputs"] = plan,
+            ["Section"] = section,
         }));
 
     private static (MovePlan? Value, Refusal? Error)? Found(RiverInputs plan) => plan.FindMoves(On22October);

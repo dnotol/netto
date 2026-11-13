@@ -16,7 +16,7 @@
     <value>Tune your pay for the plan on screen</value>
   </data>
   <data name="Note" xml:space="preserve">
-    <value>This curve and its button are for the plan as it stands, not after the moves above: its best pay can differ from the pay of a move, which is found with the moves around it. They act on the pay in your plan, and the moves are looked for again once you change it.</value>
+    <value>This curve and its button are for the plan as it stands, not with the moves applied: its best pay can differ from the pay of a move, which is found with the moves around it. They act on the pay in your plan, and the moves are looked for again once you change it.</value>
   </data>
   <data name="CurveHint" xml:space="preserve">
     <value>The gold line is what reaches your pocket at each pay, with everything else as you set it. Point at it to read a pay; click to move yours there.</value>
@@ -110,5 +110,8 @@
   </data>
   <data name="Term_ReducedRate" xml:space="preserve">
     <value>The lower rate a small company pays on a first slice of its taxable income. From its fifth tax period, it keeps it only if a director's pay reaches a minimum, or its taxable income does not exceed that pay. In every tax period, it loses it once benefits in kind valued at a flat rate, such as a company car's, exceed {0} of that pay, the benefits included.</value>
+  </data>
+  <data name="Unavailable" xml:space="preserve">
+    <value>Netto draws this curve once your plan holds its company's year, with a profit to share and no amount refused.</value>
   </data>
 </root>
