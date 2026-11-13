@@ -26,6 +26,11 @@ internal static class SharedSources
         new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/c4b263eb-091c-4a11-8ad0-24e2b11bb7db"),
         "personal-tax/spf-finances_circulaire-2021-c-20-teletravail_2026-09-09.html");
 
+    internal static readonly Source Article18ArIncome2026 = Source.Fisconet(
+        "personal-tax", "18", 2026, new DateOnly(2026, 8, 10), "f3ebfcea-9d61-4d4a-bd76-33f13ef93825", "benefits_in_kind_flat_rates", FisconetCode.ArCir92);
+
+    internal static readonly Source Article31Income2026 = Source.Fisconet("personal-tax", "31", 2026, new DateOnly(2026, 7, 30), "72ee79ba-3c3f-47a6-83a5-f0a1ec0e5209", "benefits_in_kind");
+
     internal static readonly Source Article32Income2025 = Source.Fisconet("personal-tax", "32", 2025, new DateOnly(2024, 12, 2), "adf7c228-083c-4468-b8d1-151c1e03a067", "director_pay");
 
     internal static readonly Source Article32Income2026 = Source.Fisconet("personal-tax", "32", 2026, new DateOnly(2026, 1, 29), "7628aa2c-168a-4bd8-aec4-288108a91757", "director_pay");

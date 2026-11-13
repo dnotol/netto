@@ -60,7 +60,7 @@ public sealed record CarRules(
 {
     private static readonly Source Article36Income2026 = Source.Fisconet("personal-tax", "36", 2026, new DateOnly(2026, 6, 15), "7f4492e1-5ef2-42a9-a179-04fc3bcc5d55", "car_benefit");
 
-    private static readonly Source Article18ArIncome2026 = Source.Fisconet("personal-tax", "18", 2026, new DateOnly(2026, 8, 10), "f3ebfcea-9d61-4d4a-bd76-33f13ef93825", "reference_emission", FisconetCode.ArCir92);
+    private static readonly Source Article18ArIncome2026 = SharedSources.Article18ArIncome2026 with { Passage = "reference_emission" };
 
     private static readonly Source RoyalDecree20251217 = new(
         "reference_emission",
@@ -77,7 +77,7 @@ public sealed record CarRules(
         new Uri("https://www.minfin.fgov.be/myminfin-web/pages/public/fisconet/document/8c873a40-df98-4d8d-832a-6baff8743303"),
         "personal-tax/spf-finances_faq-avantage-vehicule-mis-a-disposition_2022-03-15.html");
 
-    private static readonly Source Article31Income2026 = Source.Fisconet("personal-tax", "31", 2026, new DateOnly(2026, 7, 30), "72ee79ba-3c3f-47a6-83a5-f0a1ec0e5209", "benefits_in_kind");
+    private static readonly Source Article31Income2026 = SharedSources.Article31Income2026;
 
     private static readonly Source RoyalDecree38 = SharedSources.RoyalDecree38;
 
