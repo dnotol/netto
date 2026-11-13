@@ -48,7 +48,6 @@ internal static class PlanText
     // What Netto assumes about the director and the company, a line each, in the order the page draws.
     public static IReadOnlyList<string> Assumptions { get; } =
     [
-        "AssumedSingle",
         "AssumedPartnerWithholding",
         "AssumedWallonia",
         "AssumedMainOccupation",

@@ -39,9 +39,6 @@
   <data name="AssumedSummary" xml:space="preserve">
     <value>{0} assumptions Netto makes</value>
   </data>
-  <data name="AssumedSingle" xml:space="preserve">
-    <value>Single, with no dependants, unless your household, in your plan, has a partner or dependants</value>
-  </data>
   <data name="AssumedWallonia" xml:space="preserve">
     <value>Resident in Wallonia</value>
   </data>
@@ -76,7 +73,7 @@
     <value>The company-law tests on what can be paid out, and the liquidation reserve: profits kept from earlier years are taken as ordinary retained earnings.</value>
   </data>
   <data name="LimitDisallowed" xml:space="preserve">
-    <value>Disallowed expenses other than the vouchers', and losses carried forward from earlier years.</value>
+    <value>Disallowed expenses other than the vouchers' and the company car's non-deductible share, and losses carried forward from earlier years.</value>
   </data>
   <data name="LimitManagementFee" xml:space="preserve">
     <value>Your social insurance fund's management fee, charged on top of the contributions, until you give its rate on Director pay.</value>

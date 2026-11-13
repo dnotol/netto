@@ -39,9 +39,6 @@
   <data name="AssumedSummary" xml:space="preserve">
     <value>{0} hypothèses retenues par Netto</value>
   </data>
-  <data name="AssumedSingle" xml:space="preserve">
-    <value>Isolé, sans personne à charge, sauf si votre ménage, dans votre plan, compte un conjoint ou des personnes à charge</value>
-  </data>
   <data name="AssumedWallonia" xml:space="preserve">
     <value>Résident en Wallonie</value>
   </data>
@@ -76,7 +73,7 @@
     <value>Les tests du droit des sociétés sur ce qui peut être distribué, et la réserve de liquidation&#160;: les réserves taxées des années précédentes sont traitées comme des bénéfices reportés ordinaires.</value>
   </data>
   <data name="LimitDisallowed" xml:space="preserve">
-    <value>Les dépenses non admises autres que celles des titres-repas et chèques, et les pertes reportées des années précédentes.</value>
+    <value>Les dépenses non admises autres que celles des titres-repas et chèques et que la part non déductible de la voiture de société, et les pertes reportées des années précédentes.</value>
   </data>
   <data name="LimitManagementFee" xml:space="preserve">
     <value>Les frais de gestion de votre caisse d'assurances sociales, perçus en plus des cotisations, tant que vous n'en donnez pas le taux dans Rémunération de dirigeant.</value>

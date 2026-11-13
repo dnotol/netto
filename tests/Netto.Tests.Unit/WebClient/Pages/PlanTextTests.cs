@@ -109,13 +109,25 @@ public class PlanTextTests
     public void PlanResx_notes_sayWhatTheyAssumeAndLeaveOutOfTheHousehold()
     {
         Resources.ShouldSatisfyAllConditions(
-            () => Resources.Get("AssumedSingle").ShouldBe("Single, with no dependants, unless your household, in your plan, has a partner or dependants"),
+            () => PlanText.Assumptions.ShouldNotContain("AssumedSingle"),
+            () => Resources.Get("AssumedSingle").ShouldBeNull(),
+            () => ResxText.French<Plan>().Get("AssumedSingle").ShouldBeNull(),
             () => PlanText.Assumptions.ShouldContain("AssumedPartnerWithholding"),
             () => Resources.Get("AssumedPartnerWithholding").ShouldNotBeNull().ShouldContain("dependants"),
             () => Resources.Get("AssumedPartnerWithholding").ShouldNotBeNull().ShouldStartWith("With a partner ticked in your household"),
             () => PlanText.Limits.ShouldContain("LimitPartner"),
             () => Resources.Get("LimitPartner").ShouldNotBeNull().ShouldNotContain("dependants"),
             () => PlanText.Limits.ShouldContain("LimitDependants"));
+    }
+
+    // The company car's non-deductible share is a disallowed expense the figures do count, as the vouchers' is: the
+    // line leaves out only what no lever counts.
+    [Fact]
+    public void PlanResx_limitDisallowed_namesTheCompanyCarsNonDeductibleShareAmongWhatIsCounted()
+    {
+        (Resources.Get("LimitDisallowed"), ResxText.French<Plan>().Get("LimitDisallowed")).ShouldBe((
+            "Disallowed expenses other than the vouchers' and the company car's non-deductible share, and losses carried forward from earlier years.",
+            "Les dépenses non admises autres que celles des titres-repas et chèques et que la part non déductible de la voiture de société, et les pertes reportées des années précédentes."));
     }
 
     private static IEnumerable<string> ResxKeys(string prefix) =>

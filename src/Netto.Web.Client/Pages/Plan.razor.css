@@ -35,56 +35,44 @@
 
 /* The head is the tab's (Tabs/TabHead). */
 
-/* The two notes under the map, Assumed and Not counted yet, one look: a framed fold, folded to one line
-   that counts what it holds (Fold), the same title in the page's own face. ::deep reaches the elements of
-   the Fold, which carry no scope attribute of this page. */
+/* The two notes under the map, Assumed and Not counted yet, are footnotes: one muted look, no frame, folded to one
+   line that counts what it holds (Fold), the same small title in the text's own face. The toggle keeps a target of
+   2rem (at least 24 px, WCAG 2.5.8) and the muted colour, which is AA on the page in both themes. ::deep reaches
+   the elements of the Fold, which carry no scope attribute of this page. */
 
 .assumed,
 .limits {
-    margin-top: 1.5rem;
-    padding: 0.25rem 1.25rem;
-    border: 1px solid var(--netto-line);
-    border-radius: 12px;
+    margin-top: 2rem;
+    color: var(--netto-text-muted);
+}
+
+.assumed ::deep .fold__toggle,
+.limits ::deep .fold__toggle {
+    min-height: 2rem;
+    color: var(--netto-text-muted);
 }
 
 .assumed ::deep .fold__heading--card .fold__title,
 .limits ::deep .fold__heading--card .fold__title {
     font-family: inherit;
-    font-size: 1rem;
-    font-weight: 600;
+    font-size: 0.85rem;
+    font-weight: 500;
     line-height: 1.25;
 }
 
-/* Chips that wrap onto as many lines as the width needs. */
-.assumed__list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin: 0.6rem 0 0;
-    padding: 0;
-    list-style: none;
-}
-
-    .assumed__list li {
-        padding: 0.3rem 0.8rem;
-        border: 1px solid var(--netto-line);
-        border-radius: 999px;
-        color: var(--netto-text-muted);
-        font-size: 0.85rem;
-    }
-
-/* Not counted yet: a list of what the figures leave out. */
-
+/* What Netto assumes and what it leaves out: plain lines. */
+.assumed__list,
 .limits__list {
-    margin: 0.75rem 0 1rem;
+    margin: 0.5rem 0 1rem;
     padding-left: 1.25rem;
     color: var(--netto-text-muted);
+    font-size: 0.85rem;
     line-height: 1.7;
 }
 
 .limits__note {
     margin: 0 0 0.75rem;
     color: var(--netto-text-muted);
-    font-size: 0.88rem;
+    font-size: 0.85rem;
     line-height: 1.6;
 }
