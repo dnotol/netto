@@ -182,7 +182,8 @@ internal sealed record RentSettingsView(IReadOnlyList<SettingPhrase> Home, bool 
 }
 
 // The company car's one disclosure, « Your car »: what the car is, as its papers say, its engine, its
-// catalogue value, its CO2, when it was first registered and when it was ordered or leased, what makes
+// catalogue value, its CO2, when it was first registered and when it was ordered or leased, the days the
+// director has it when not the whole year, what makes
 // a plug-in hybrid a fake one, which the rules ask only of a car ordered or leased from 2018
 // (FakeHybridApplies, the engine's decision), and whether a natural gas car is a small one. What the
 // company pays for it each year, the director's contribution and the private energy the company pays
@@ -205,6 +206,8 @@ internal sealed record CarSettingsView(IReadOnlyList<SettingPhrase> Car, bool Ne
                 .. Co2(car, engine),
                 SettingPhrase.Of("Car_Registered", car.FirstRegistration.Origin, MonthAndYear(car.FirstRegistration.Value)),
                 SettingPhrase.Of("Car_Acquired", car.Acquired.Origin, MonthAndYear(car.Acquired.Value)),
+                .. Held("Car_HeldFrom", car.HeldFrom),
+                .. Held("Car_ReturnedOn", car.ReturnedOn),
                 .. Hybrid(car, engine, rules),
                 .. NaturalGas(car, engine),
             ],
@@ -214,7 +217,13 @@ internal sealed record CarSettingsView(IReadOnlyList<SettingPhrase> Car, bool Ne
 
     // Every refusal of a field inside; the yearly costs and the contribution are in sight.
     public static bool CarHolds(Refusal? refusal) =>
-        refusal?.Input is RefusedInput.CarCatalogueValue or RefusedInput.CarCo2 or RefusedInput.CarMatchingCo2 or RefusedInput.CarAcquired;
+        refusal?.Input is RefusedInput.CarCatalogueValue or RefusedInput.CarCo2 or RefusedInput.CarMatchingCo2 or RefusedInput.CarAcquired
+            or RefusedInput.CarHeldFrom or RefusedInput.CarReturnedOn;
+
+    // A day the car is had from or given back on, by its date; none while held all year, which goes unsaid.
+    private static IEnumerable<SettingPhrase> Held(string key, Input<DateOnly?> date) => date.Value is { } day
+        ? [SettingPhrase.Of(key, date.Origin, Formats.Day(day))]
+        : [];
 
     // Only an engine that burns a fuel has a CO2. A CO2 not given names no origin: the example's
     // nothing is not a value to call an example.

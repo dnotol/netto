@@ -180,6 +180,9 @@ The French is the administration's wording; the source is the filed document in 
 | catalogue value · first registration | la valeur catalogue · la première immatriculation | art. 36 |
 | CO2 percentage · reference emission | le pourcentage CO2 · l'émission de référence CO2 | art. 36 |
 | your contribution | votre intervention (l'intervention du bénéficiaire) | art. 36 |
+| the days you have it · you have it from | les jours de mise à disposition · à votre disposition depuis le | FAQ avantage véhicule, question 4 |
+| you give it back on · given back | restituée le · la restitution | FAQ avantage véhicule, question 4 |
+| prorated by calendar days | réduit prorata temporis sur base des jours calendrier | FAQ avantage véhicule, question 4 |
 | plug-in hybrid · fake hybrid | l'hybride rechargeable · le faux hybride | art. 550; circulaire 2026/C/10 |
 | fiscal horsepower | les chevaux fiscaux | art. 550 |
 | petrol · diesel · LPG · natural gas · electric | essence · diesel · LPG · gaz naturel · électrique | art. 36 |

@@ -50,19 +50,30 @@ internal static class CarCardText
     };
 
     // The line of a part of the benefit's year by its months, a month begun counting whole, one of several:
-    // one month, or from one month to another.
-    public static string Period(DateOnly from, DateOnly to) => from.Month == to.Month ? "Figure_Period_Month" : "Figure_Period";
+    // one month, or from one month to another; for a car held part of the year, by its first and last days
+    // held and its days, the benefit counting them.
+    public static string Period(DateOnly from, DateOnly to, bool heldAllYear) => heldAllYear
+        ? from.Month == to.Month ? "Figure_Period_Month" : "Figure_Period"
+        : "Figure_Period_Days";
+
+    // The car held all year, as there is no car's days to say without a car.
+    public static bool HeldAllYear(CarResult car) => car.DaysHeld?.AllYear ?? true;
+
+    // What the scale gives below the minimum, in the minimum's bubble: the year's, or the days held's.
+    public static string MinimumHelp(CarResult car) => HeldAllYear(car) ? "Help_Minimum" : "Help_MinimumDays";
 
     // The words of a figure line that are not its key's, the map reading them the same way (FigureLine.Label);
     // none where its key's are its words. The CO2 percentage of an electric car, named as the minimum the law
     // gives it.
     public static string? Co2Label(CarResult car) => car.Co2Basis == CarCo2Basis.None ? "Figure_Co2_Electric" : null;
 
-    // The benefit before a contribution, at the year's minimum.
-    public static string? BenefitLabel(CarResult car) => car.AtTheMinimum ? "Figure_Benefit_Minimum" : null;
+    // The benefit before a contribution, at the year's minimum, or the minimum for the days held.
+    public static string? BenefitLabel(CarResult car) => car.AtTheMinimum ? $"Figure_Benefit_{Minimum(car)}" : null;
 
-    // The benefit taxed at the year's minimum, while no contribution comes off it, the minimum itself.
-    public static string? BenefitTaxedLabel(CarResult car) => car.AtTheMinimum && car.Contribution == 0m ? "Figure_BenefitTaxed_Minimum" : null;
+    // The benefit taxed at the minimum, while no contribution comes off it, the minimum itself.
+    public static string? BenefitTaxedLabel(CarResult car) => car.AtTheMinimum && car.Contribution == 0m ? $"Figure_BenefitTaxed_{Minimum(car)}" : null;
+
+    private static string Minimum(CarResult car) => HeldAllYear(car) ? "Minimum" : "MinimumDays";
 
     // What the company cannot deduct of the costs, worded with the rate it deducts at; none while it deducts
     // them all, and there is no such line.

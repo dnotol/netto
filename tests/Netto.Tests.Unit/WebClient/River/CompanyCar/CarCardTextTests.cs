@@ -1,3 +1,4 @@
+using Netto.Core;
 using Netto.Core.CompanyCar;
 using Netto.Web.Client.River;
 using Netto.Web.Client.River.CompanyCar;
@@ -86,19 +87,37 @@ public class CarCardTextTests
     }
 
     // A part of the benefit's year by its months, a month begun counting whole, one of several: one month, or
-    // from one month to another.
+    // from one month to another; a car held part of the year, by its days.
     [Fact]
     public void CarCardResx_everyPeriodLine_hasALabel()
     {
         var keys = new[]
         {
-            CarCardText.Period(new DateOnly(2026, 1, 1), new DateOnly(2026, 1, 31)),
-            CarCardText.Period(new DateOnly(2026, 6, 1), new DateOnly(2026, 12, 31)),
+            CarCardText.Period(new DateOnly(2026, 1, 1), new DateOnly(2026, 1, 31), heldAllYear: true),
+            CarCardText.Period(new DateOnly(2026, 6, 1), new DateOnly(2026, 12, 31), heldAllYear: true),
+            CarCardText.Period(new DateOnly(2026, 9, 17), new DateOnly(2026, 12, 31), heldAllYear: false),
         };
 
         keys.ShouldSatisfyAllConditions(
-            () => keys.ShouldBe(["Figure_Period_Month", "Figure_Period"]),
+            () => keys.ShouldBe(["Figure_Period_Month", "Figure_Period", "Figure_Period_Days"]),
             () => Resources.Missing(keys).ShouldBeEmpty());
+    }
+
+    // A car held part of the year at the minimum: the minimum for its days, worded so, and its bubble saying it.
+    [Theory]
+    [InlineData(0, "Figure_Benefit_MinimumDays", "Figure_BenefitTaxed_MinimumDays")]
+    [InlineData(600, "Figure_Benefit_MinimumDays", null)]
+    public void BenefitLabels_heldPartOfTheYearAtTheMinimum_sayTheDays(decimal contribution, string beforeContribution, string? taxed)
+    {
+        var car = CarResult.None with
+        {
+            BenefitBeforeContribution = 138.90m, BenefitOnTheScale = 57.77m, Contribution = contribution,
+            DaysHeld = new DaysHeld(new DateOnly(2026, 3, 1), new DateOnly(2026, 3, 30), 30, 365),
+        };
+
+        (CarCardText.BenefitLabel(car), CarCardText.BenefitTaxedLabel(car), CarCardText.MinimumHelp(car))
+            .ShouldBe((beforeContribution, taxed, "Help_MinimumDays"));
+        Resources.Missing(["Figure_Benefit_MinimumDays", "Figure_BenefitTaxed_MinimumDays", "Help_MinimumDays", "Help_Minimum"]).ShouldBeEmpty();
     }
 
     // The CO2 percentage of an electric car is named as the minimum the law gives it; any other car's plainly.

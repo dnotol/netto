@@ -313,6 +313,27 @@ public class SettingsViewsTests
         ]);
     }
 
+    // Held all year says nothing; a day the car is had from or given back on is stated after its order.
+    [Fact]
+    public void Car_daysHeldGiven_stateThemAfterTheOrder()
+    {
+        var inputs = RiverInputs.Example.WithCarHeldFrom(new DateOnly(2026, 9, 17)).WithCarReturnedOn(new DateOnly(2027, 3, 1));
+
+        Phrases(CarSettingsView.From(inputs).Car).Skip(4).ShouldBe(
+        [
+            ("Car_HeldFrom", "17 September 2026", null),
+            ("Car_ReturnedOn", "1 March 2027", null),
+        ]);
+    }
+
+    [Fact]
+    public void Car_onlyReturnedOn_statesItAlone()
+    {
+        var inputs = RiverInputs.Example.WithCarReturnedOn(new DateOnly(2026, 8, 8));
+
+        Phrases(CarSettingsView.From(inputs).Car).Skip(4).ShouldBe([("Car_ReturnedOn", "8 August 2026", null)]);
+    }
+
     // An electric car emits none: a CO2 kept from another engine is not stated.
     [Fact]
     public void Car_electricWithACo2Kept_statesNoCo2()
@@ -435,6 +456,9 @@ public class SettingsViewsTests
         { CarCalculator.MatchingCarCo2Missing, true },
         { CarCalculator.AcquiredAfterYear, true },
         { CarCalculator.PlugInFuelCapped, true },
+        { CarCalculator.HeldAfterYear, true },
+        { CarCalculator.ReturnedBeforeYear, true },
+        { CarCalculator.ReturnedBeforeHeld, true },
         { CarCalculator.YearlyCostsNegative, false },
         { CarCalculator.ContributionNegative, false },
         { GrossToNet.GrossPayNegative, false },

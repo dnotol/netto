@@ -55,7 +55,7 @@
     <value>Its yearly costs</value>
   </data>
   <data name="CostsHint" xml:space="preserve">
-    <value>Everything the car costs the company over the year, lease or depreciation, fuel or charging, insurance, upkeep and taxes, as the company bears them, the VAT it cannot recover included.</value>
+    <value>Everything the car costs the company over the year, for the part of it the company has the car, lease or depreciation, fuel or charging, insurance, upkeep and taxes, as the company bears them, the VAT it cannot recover included.</value>
   </data>
   <data name="ContributionLabel" xml:space="preserve">
     <value>Your yearly contribution</value>
@@ -249,6 +249,12 @@
   <data name="Car_Acquired" xml:space="preserve">
     <value>ordered or leased {0} {1}</value>
   </data>
+  <data name="Car_HeldFrom" xml:space="preserve">
+    <value>yours from {0}</value>
+  </data>
+  <data name="Car_ReturnedOn" xml:space="preserve">
+    <value>given back on {0}</value>
+  </data>
   <data name="Car_NotFakeHybrid" xml:space="preserve">
     <value>not a fake hybrid</value>
   </data>
@@ -329,6 +335,30 @@
   </data>
   <data name="Help_Minimum" xml:space="preserve">
     <value>Its catalogue value, at its CO2 percentage and the share its age leaves, gives {0}, less than the minimum the law sets for the year. It is taxed as your pay, though never paid in cash.</value>
+  </data>
+  <data name="Figure_Period_Days" xml:space="preserve">
+    <value>{0} to {1}, {3} days, at {2}</value>
+  </data>
+  <data name="Figure_BenefitTaxed_MinimumDays" xml:space="preserve">
+    <value>Benefit taxed, the minimum for your {0} days</value>
+  </data>
+  <data name="Figure_Benefit_MinimumDays" xml:space="preserve">
+    <value>Car's benefit in kind, the minimum for your {0} days, before your contribution</value>
+  </data>
+  <data name="Help_MinimumDays" xml:space="preserve">
+    <value>Its catalogue value, at its CO2 percentage and the share its age leaves, for the {1} days you have it, gives {0}, less than the year's minimum the law sets, counted for those days. It is taxed as your pay, though never paid in cash.</value>
+  </data>
+  <data name="HeldFromLabel" xml:space="preserve">
+    <value>You have it from</value>
+  </data>
+  <data name="HeldFromHint" xml:space="preserve">
+    <value>The first day the car is at your disposal, which counts. Leave it empty if you have had it since the start of the year or before.</value>
+  </data>
+  <data name="ReturnedOnLabel" xml:space="preserve">
+    <value>You give it back on</value>
+  </data>
+  <data name="ReturnedOnHint" xml:space="preserve">
+    <value>The day you give the car back, which does not count. Leave it empty if you keep it beyond the end of the year.</value>
   </data>
   <data name="Figure_Co2_Electric" xml:space="preserve">
     <value>CO2 percentage of an electric car, the minimum</value>

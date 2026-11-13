@@ -6,7 +6,8 @@
 @* The last lever before the split: a car the company puts at the director's disposal for private use.
    The user gives its catalogue value, the month and year of its first registration, what drives it,
    for a car that burns fuel its CO2 or that none is registered, the month and year it was ordered or
-   leased, for a plug-in hybrid ordered or leased from 2018, when the rule starts (the engine's call,
+   leased, the day the director has it from and the day they give it back on, each empty while held all
+   year, for a plug-in hybrid ordered or leased from 2018, when the rule starts (the engine's call,
    CarCalculator.FakeHybridApplies), whether it is a fake one with its matching car's CO2, for natural gas
    whether it is under 12 fiscal horsepower, its yearly costs to the company, whether the company pays
    the private energy, and their own contribution; a field that does not apply to what drives the car
@@ -84,6 +85,16 @@
                                        Min="FirstYear" Max="LastYear" Format="0" TakenOnLeaving="true" Class="car__year"
                                        Error="@(Refused?.Input == RefusedInput.CarAcquired)" Refusal="@Refused" />
                 </div>
+            </RiverField>
+            <RiverField Label="@L["HeldFromLabel"]" For="@HeldFromId" Origin="Inputs.Car.HeldFrom.Origin" Help="@L["HeldFromHint"]">
+                <MudDatePicker InputId="@HeldFromId" Date="@AsDate(Inputs.Car.HeldFrom.Value)" DateChanged="OnHeldFromChanged"
+                               Editable="true" Clearable="true" DateFormat="@DayFormat" Culture="Formats.Culture"
+                               Variant="Variant.Outlined" Margin="Margin.Dense" Error="@(Refused?.Input == RefusedInput.CarHeldFrom)" />
+            </RiverField>
+            <RiverField Label="@L["ReturnedOnLabel"]" For="@ReturnedOnId" Origin="Inputs.Car.ReturnedOn.Origin" Help="@L["ReturnedOnHint"]">
+                <MudDatePicker InputId="@ReturnedOnId" Date="@AsDate(Inputs.Car.ReturnedOn.Value)" DateChanged="OnReturnedOnChanged"
+                               Editable="true" Clearable="true" DateFormat="@DayFormat" Culture="Formats.Culture"
+                               Variant="Variant.Outlined" Margin="Margin.Dense" Error="@(Refused?.Input == RefusedInput.CarReturnedOn)" />
             </RiverField>
             @if (_settings.FakeHybridApplies && Inputs.Car.FakeHybrid.Value)
             {
@@ -271,6 +282,20 @@
 
     private Task OnAcquiredYearChanged(int year) =>
         InputsChanged.InvokeAsync(Inputs.WithCarAcquired(new DateOnly(Math.Clamp(year, FirstYear, LastYear), Inputs.Car.Acquired.Value.Month, 1)));
+
+    // The days the director has the car, typed or picked as day/month/year in both languages, as Belgian
+    // papers write them; cleared, held all year again. The engine refuses a span holding no day of the year.
+    private const string HeldFromId = "river-car-held-from";
+    private const string ReturnedOnId = "river-car-returned-on";
+    private const string DayFormat = "dd/MM/yyyy";
+
+    private static DateTime? AsDate(DateOnly? day) => day?.ToDateTime(TimeOnly.MinValue);
+
+    private static DateOnly? AsDay(DateTime? date) => date is { } picked ? DateOnly.FromDateTime(picked) : null;
+
+    private Task OnHeldFromChanged(DateTime? date) => InputsChanged.InvokeAsync(Inputs.WithCarHeldFrom(AsDay(date)));
+
+    private Task OnReturnedOnChanged(DateTime? date) => InputsChanged.InvokeAsync(Inputs.WithCarReturnedOn(AsDay(date)));
 
     private Task OnFakeHybridChanged(bool fake) => InputsChanged.InvokeAsync(Inputs.WithFakeHybrid(fake));
 

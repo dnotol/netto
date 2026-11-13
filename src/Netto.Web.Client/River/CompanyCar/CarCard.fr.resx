@@ -55,7 +55,7 @@
     <value>Ses frais annuels</value>
   </data>
   <data name="CostsHint" xml:space="preserve">
-    <value>Tout ce que la voiture coûte à la société sur l'année, leasing ou amortissement, carburant ou recharge, assurance, entretien et taxes, tels que la société les supporte, TVA non récupérable comprise.</value>
+    <value>Tout ce que la voiture coûte à la société sur l'année, pour la partie de celle-ci où la société l'a, leasing ou amortissement, carburant ou recharge, assurance, entretien et taxes, tels que la société les supporte, TVA non récupérable comprise.</value>
   </data>
   <data name="ContributionLabel" xml:space="preserve">
     <value>Votre intervention annuelle</value>
@@ -249,6 +249,12 @@
   <data name="Car_Acquired" xml:space="preserve">
     <value>commande ou leasing en {0} {1}</value>
   </data>
+  <data name="Car_HeldFrom" xml:space="preserve">
+    <value>à votre disposition depuis le {0}</value>
+  </data>
+  <data name="Car_ReturnedOn" xml:space="preserve">
+    <value>restituée le {0}</value>
+  </data>
   <data name="Car_NotFakeHybrid" xml:space="preserve">
     <value>pas un faux hybride</value>
   </data>
@@ -329,6 +335,30 @@
   </data>
   <data name="Help_Minimum" xml:space="preserve">
     <value>Sa valeur catalogue, à son pourcentage CO2 et à la part que laisse son âge, donne {0}, moins que le minimum que la loi fixe pour l'année. Il est imposé comme votre rémunération, bien qu'il ne soit jamais payé en espèces.</value>
+  </data>
+  <data name="Figure_Period_Days" xml:space="preserve">
+    <value>Du {0} au {1}, {3} jours, à {2}</value>
+  </data>
+  <data name="Figure_BenefitTaxed_MinimumDays" xml:space="preserve">
+    <value>Avantage imposé, minimum pour vos {0} jours</value>
+  </data>
+  <data name="Figure_Benefit_MinimumDays" xml:space="preserve">
+    <value>Avantage de toute nature, minimum pour vos {0} jours, avant votre intervention</value>
+  </data>
+  <data name="Help_MinimumDays" xml:space="preserve">
+    <value>Sa valeur catalogue, à son pourcentage CO2 et à la part que laisse son âge, pour les {1} jours où vous l'avez, donne {0}, moins que le minimum annuel que la loi fixe, compté pour ces jours. Il est imposé comme votre rémunération, bien qu'il ne soit jamais payé en espèces.</value>
+  </data>
+  <data name="HeldFromLabel" xml:space="preserve">
+    <value>À votre disposition depuis le</value>
+  </data>
+  <data name="HeldFromHint" xml:space="preserve">
+    <value>Le premier jour où la voiture est à votre disposition, qui compte. Laissez-le vide si vous l'avez depuis le début de l'année ou avant.</value>
+  </data>
+  <data name="ReturnedOnLabel" xml:space="preserve">
+    <value>Restituée le</value>
+  </data>
+  <data name="ReturnedOnHint" xml:space="preserve">
+    <value>Le jour où vous restituez la voiture, qui ne compte pas. Laissez-le vide si vous la gardez au-delà de la fin de l'année.</value>
   </data>
   <data name="Figure_Co2_Electric" xml:space="preserve">
     <value>Pourcentage CO2 d'une voiture électrique, le minimum</value>

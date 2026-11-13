@@ -235,6 +235,54 @@ public class CarCardTests
             () => OriginChips(html).Count(chip => chip == "example").ShouldBe(2));
     }
 
+    // « Your car » asks the day the director has the car from and the day they give it back on, each labelled
+    // and named for its field, empty while held all year, which is assumed: a « default » chip on each.
+    [Fact]
+    public async Task Card_open_asksTheDaysTheCarIsHeld()
+    {
+        var html = System.Net.WebUtility.HtmlDecode(await RenderOpenAsync<CarCard>(OptionalModule.Car, RiverInputs.Example.AddToPlan(OptionalModule.Car)));
+
+        html.ShouldSatisfyAllConditions(
+            () => FieldHead(html, HeldFrom).ShouldContain(Resources.Get("HeldFromLabel").ShouldNotBeNull()),
+            () => FieldHead(html, ReturnedOn).ShouldContain(Resources.Get("ReturnedOnLabel").ShouldNotBeNull()),
+            () => FieldHead(html, HeldFrom).ShouldContain("origin-chip--default"),
+            () => FieldHead(html, ReturnedOn).ShouldContain("origin-chip--default"));
+    }
+
+    // A day given is the user's, and the field shows it.
+    [Fact]
+    public async Task Card_dayGiven_showsItAsTheUsers()
+    {
+        var html = await RenderOpenAsync<CarCard>(OptionalModule.Car, RiverInputs.Example.AddToPlan(OptionalModule.Car).WithCarHeldFrom(new DateOnly(2026, 9, 17)));
+
+        (FieldHead(html, HeldFrom).Contains("origin-chip--default", StringComparison.Ordinal), Regex.IsMatch(html, $"id=\"{HeldFrom}\"[^>]*value=\"17/09/2026\""))
+            .ShouldBe((false, true));
+    }
+
+    // A car given back before the day it is had from is refused on the day it is given back, in words, and
+    // « Your car » opens on it: that field is marked, the other not.
+    [Fact]
+    public async Task Card_returnedBeforeHeld_marksTheReturnDayWithTheEnginesMessage()
+    {
+        var inputs = ElectricCar.WithCarHeldFrom(new DateOnly(2026, 5, 1)).WithCarReturnedOn(new DateOnly(2026, 4, 1));
+        var run = inputs.Run();
+        var message = Refusals.Get($"Error_{CarCalculator.ReturnedBeforeHeld.Key}").ShouldNotBeNull();
+
+        var html = System.Net.WebUtility.HtmlDecode(
+            await RenderAsync(typeof(CarCard), new Folds(new BrowserStorage()), new() { ["Inputs"] = inputs, ["Run"] = run, ["Refused"] = run.Error }));
+
+        (run.Error, html.Contains(message, StringComparison.Ordinal), Marked(html, ReturnedOn), Marked(html, HeldFrom))
+            .ShouldBe((CarCalculator.ReturnedBeforeHeld, true, true, false));
+    }
+
+    // A field MudBlazor draws in error: the input's own frame carries its error class.
+    private static bool Marked(string html, string field) =>
+        Regex.IsMatch(html, $"<div[^>]*class=\"[^\"]*mud-input-error[^\"]*\"[^>]*>(?:(?!</div>).)*?id=\"{field}\"", RegexOptions.Singleline);
+
+    private const string HeldFrom = "river-car-held-from";
+
+    private const string ReturnedOn = "river-car-returned-on";
+
     // A car ordered after the end of the year is refused, in « Your car », which opens on it: its year
     // field is marked as every number field of the river is, the engine's message tied to it beside the
     // card's own, so MudBlazor's validation cannot clear the mark after the next edit (RiverNumericField);

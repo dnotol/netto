@@ -99,6 +99,43 @@ public class CarFiguresTests
             .ShouldBe([("Figure_Period_Month", 167.15m, "January|January|82%"), ("Figure_Period", 1_669.08m, "February|December|76%")]);
     }
 
+    // Held from 17.9.2026 (CarCalculatorTests, derived from the 2026 amounts): its one period is a line, by its
+    // first and last days held, its coefficient and its days, since the benefit no longer counts the year.
+    [Fact]
+    public void Benefit_carHeldFromSeptember_drawsItsPeriodByItsDays()
+    {
+        Lines(CarFigures.Benefit(Compute(ElectricCar with { HeldFrom = new DateOnly(2026, 9, 17) })))
+            .Where(line => line.Key.StartsWith("Figure_Period", StringComparison.Ordinal))
+            .ShouldBe([("Figure_Period_Days", 497.85m, "17 Sep|31 Dec|100%|106")]);
+    }
+
+    // First registered on 20.5.2025 and given back on 8.8.2026: 120 days at 100% and 99 at 94%, each a line.
+    [Fact]
+    public void Benefit_carReturnedDuringTheYear_drawsEachPeriodByItsDays()
+    {
+        var car = ElectricCar with { CatalogueValue = 60_000m, FirstRegistration = new DateOnly(2025, 5, 20), ReturnedOn = new DateOnly(2026, 8, 8) };
+
+        Lines(CarFigures.Benefit(Compute(car))).Where(line => line.Key.StartsWith("Figure_Period", StringComparison.Ordinal))
+            .ShouldBe([("Figure_Period_Days", 676.32m, "1 Jan|30 Apr|100%|120"), ("Figure_Period_Days", 524.49m, "1 May|7 Aug|94%|99")]);
+    }
+
+    // Held 30 days in March below the minimum: the benefit taxed is the minimum for those days, 138.90, worded
+    // so with its days, the 57.77 the scale gives and the days in its bubble.
+    [Fact]
+    public void Benefit_carHeldAMonthBelowTheMinimum_isTheMinimumForItsDays()
+    {
+        var car = ElectricCar with
+        {
+            CatalogueValue = 25_000m, FirstRegistration = new DateOnly(2022, 10, 5), HeldFrom = new DateOnly(2026, 3, 1), ReturnedOn = new DateOnly(2026, 3, 31),
+        };
+
+        var lines = CarFigures.Benefit(Compute(car));
+
+        lines.ShouldSatisfyAllConditions(
+            () => Lines(lines).ShouldBe([("Figure_BenefitTaxed", 138.90m, "30"), ("Figure_AddBack", 23.61m, "17%")]),
+            () => (lines[0].Label, lines[0].Help, string.Join("|", lines[0].HelpArgs)).ShouldBe(("Figure_BenefitTaxed_MinimumDays", "Help_MinimumDays", "€57.77|30")));
+    }
+
     // 30,000 × 6/7 × 4% = 1,028.57 is below the minimum: the benefit taxed is the minimum, 1,690, one line
     // worded as the year's minimum, the 1,028.57 the scale gives in its bubble; no CO2 percentage nor period,
     // which no longer set it.

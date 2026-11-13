@@ -49,31 +49,47 @@ internal static class CarFigures
     ];
 
     // The CO2 percentage, an electric car's named as the lowest the law gives, and the periods while there
-    // are several.
-    private static IEnumerable<FigureLine> Scale(CarResult car) =>
-    [
-        new("Figure_Co2", car.Co2Percentage) { Format = FigureFormat.Percentage, Label = CarCardText.Co2Label(car) },
-        .. car.Periods.Count > 1 ? car.Periods.Select(Period) : [],
-    ];
+    // are several, or while the car is held part of the year, which a period says by its days.
+    private static IEnumerable<FigureLine> Scale(CarResult car)
+    {
+        var allYear = CarCardText.HeldAllYear(car);
 
-    // A line worded as the year's minimum (its label, none on the scale), what the scale would give in its
-    // bubble.
-    private static FigureLine Minimum(FigureLine line, CarResult car, string? label) => label is null
-        ? line
-        : line with { Label = label, Help = "Help_Minimum", HelpArgs = [Formats.Euros(car.BenefitOnTheScale)] };
+        return
+        [
+            new("Figure_Co2", car.Co2Percentage) { Format = FigureFormat.Percentage, Label = CarCardText.Co2Label(car) },
+            .. car.Periods.Count > 1 || !allYear ? car.Periods.Select(period => Period(period, allYear)) : [],
+        ];
+    }
+
+    // A line worded as the minimum (its label, none on the scale), the year's or the days held's with their
+    // number, what the scale would give in its bubble, and the days held.
+    private static FigureLine Minimum(FigureLine line, CarResult car, string? label)
+    {
+        if (label is null)
+            return line;
+
+        var scale = Formats.Euros(car.BenefitOnTheScale);
+        return car.DaysHeld is { AllYear: false } held
+            ? line with { Label = label, Args = [Days(held.Days)], Help = CarCardText.MinimumHelp(car), HelpArgs = [scale, Days(held.Days)] }
+            : line with { Label = label, Help = CarCardText.MinimumHelp(car), HelpArgs = [scale] };
+    }
 
     // A part of the year at one age coefficient, by its first and last months, since a month begun counts
-    // whole, and its coefficient; its label, one month or from one to another, says those it needs.
-    private static FigureLine Period(CarBenefitPeriod period)
+    // whole, and its coefficient; its label, one month or from one to another, says those it needs. Held part
+    // of the year, by its first and last days held, its coefficient and its days.
+    private static FigureLine Period(CarBenefitPeriod period, bool heldAllYear)
     {
         var (from, to) = (period.Period.From, period.Period.To);
+        var coefficient = Formats.RuleAmount(period.Period.AgeCoefficient);
 
-        return new FigureLine(CarCardText.Period(from, to), period.Benefit)
+        return new FigureLine(CarCardText.Period(from, to, heldAllYear), period.Benefit)
         {
-            Args = [Month(from), Month(to), Formats.RuleAmount(period.Period.AgeCoefficient)],
+            Args = heldAllYear ? [Month(from), Month(to), coefficient] : [Formats.ShortDay(from), Formats.ShortDay(to), coefficient, Days(period.Period.Days)],
             Help = "Help_Period",
         };
     }
+
+    private static string Days(int days) => days.ToString(Formats.Culture);
 
     // What the company cannot deduct of the costs, the rate it deducts them at in the label and how in the
     // bubble; nothing while it deducts them all, the costs' own line saying them.
