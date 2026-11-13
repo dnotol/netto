@@ -48,6 +48,9 @@ Fixed once; every file that names one uses it word for word (the card, the map, 
 | Expenses | Frais |
 | My plan · Optimise (the two views of the plan page) | Mon plan · Optimiser |
 | When to pay (the section of Optimise that holds the payment calendar, and the spoken name of its link in the band) | Quand payer |
+| Adjustments · Pay · When to pay (Optimise's three sub-tabs, in this order) · Optimise sections (their row, spoken) | Ajustements · Rémunération · Quand payer · Parties d'Optimiser |
+| {n} adjustment(s) · next payment by {date} (said after a sub-tab's name) | {n} ajustement(s) · prochain versement au plus tard le {date} |
+| Why (the toggle on a move that opens its reasons) | Pourquoi |
 | Compare plans (the Plans panel's button and its comparison) · Back to plans | Comparer les plans · Retour aux plans |
 | next advance payment by {date} (the link to When to pay beside Optimise's tab, spoken after « When to pay: ») | Quand payer : prochain versement anticipé au plus tard le {date} (non-breaking space before the colon) |
 | what the fund bills is refused (the same link, spoken) | Quand payer : le montant facturé par votre caisse est refusé |
