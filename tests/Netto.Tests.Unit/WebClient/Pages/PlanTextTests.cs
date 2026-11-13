@@ -13,11 +13,10 @@ public class PlanTextTests
     private static readonly ResxText Resources = ResxText.For<Plan>();
 
     // The keyboard's first stop on the page, past the bar and its tabs to the tab's own content: the map, the
-    // moves or the ideas.
+    // moves.
     [Theory]
     [InlineData(PlanTab.Plan, "Skip to the map")]
     [InlineData(PlanTab.Optimisation, "Skip to your moves")]
-    [InlineData(PlanTab.Pistes, "Skip to the ideas")]
     public void PlanResx_skipLink_saysWhereItGoesOnEachView(PlanTab tab, string expected)
     {
         Resources.Get(PlanText.SkipTo(tab)).ShouldBe(expected);
@@ -27,7 +26,6 @@ public class PlanTextTests
     [Theory]
     [InlineData(PlanTab.Plan, "My plan: Netto")]
     [InlineData(PlanTab.Optimisation, "Optimise: Netto")]
-    [InlineData(PlanTab.Pistes, "Ideas: Netto")]
     public void PlanResx_pageTitle_namesEachView(PlanTab tab, string expected)
     {
         Resources.Get(PlanText.PageTitle(tab)).ShouldBe(expected);

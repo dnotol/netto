@@ -32,11 +32,10 @@ public class TabHeadTests
     }
 
     // No tab words an eyebrow or an introduction any more: a text of one would be drawn by nobody. The title
-    // of a view is a text of its own, held by PlanTextTests (My plan's) and PistesTabTests.
+    // of a view is a text of its own, held by PlanTextTests (My plan's).
     [Theory]
     [InlineData(typeof(MapTab))]
     [InlineData(typeof(OptimisationTab))]
-    [InlineData(typeof(PistesTab))]
     [InlineData(typeof(WhenToPaySection))]
     [InlineData(typeof(CompareTab))]
     public void TabResx_everyTab_holdsNoEyebrowNorLede(Type tab)

@@ -87,7 +87,7 @@ public class PlanPageTests
     {
         var html = await RenderPlanAsync(new Folds(new BrowserStorage()));
 
-        Links(html).Select(link => (link.Href, link.Name)).ShouldBe([("plan", "My plan"), ("plan/optimisation", "Optimise"), ("plan/pistes", "Ideas")]);
+        Links(html).Select(link => (link.Href, link.Name)).ShouldBe([("plan", "My plan"), ("plan/optimisation", "Optimise")]);
     }
 
     // The view the URL names is the one current, whatever the case it is typed in; Optimise stays the one
@@ -96,8 +96,6 @@ public class PlanPageTests
     [InlineData(null, null, "My plan")]
     [InlineData("optimisation", null, "Optimise")]
     [InlineData("optimisation", "when", "Optimise")]
-    [InlineData("pistes", null, "Ideas")]
-    [InlineData("Pistes", null, "Ideas")]
     public async Task Plan_onAView_marksItAloneCurrent(string? tab, string? show, string current)
     {
         var html = await RenderPlanAsync(new Folds(new BrowserStorage()), tab, show: show);
@@ -110,7 +108,6 @@ public class PlanPageTests
     [InlineData(null, null, "My plan")]
     [InlineData("optimisation", null, "Optimise")]
     [InlineData("optimisation", "when", "Optimise")]
-    [InlineData("pistes", null, "Ideas")]
     public async Task Plan_onAView_opensOnItsTitle(string? tab, string? show, string title)
     {
         var html = await RenderPlanAsync(new Folds(new BrowserStorage()), tab, show: show);
@@ -123,7 +120,6 @@ public class PlanPageTests
     [Theory]
     [InlineData(null)]
     [InlineData("optimisation")]
-    [InlineData("pistes")]
     public async Task Plan_onAView_opensOnItsTitleAlone(string? tab)
     {
         var html = await RenderPlanAsync(new Folds(new BrowserStorage()), tab);
@@ -179,7 +175,6 @@ public class PlanPageTests
 
     [Theory]
     [InlineData("optimisation", "moves__state")]
-    [InlineData("pistes", "Each gain compares your optimised plan with the idea and without it.")]
     public async Task Plan_onAnotherView_showsItsOwnContentWithoutTheMap(string tab, string content)
     {
         var html = await RenderPlanAsync(new Folds(new BrowserStorage()), tab);
@@ -195,7 +190,7 @@ public class PlanPageTests
         var folds = new Folds(new BrowserStorage());
 
         var buckets = new List<string>();
-        foreach (var (tab, show) in new (string?, string?)[] { (null, null), ("optimisation", null), ("optimisation", "when"), ("pistes", null) })
+        foreach (var (tab, show) in new (string?, string?)[] { (null, null), ("optimisation", null), ("optimisation", "when") })
             buckets.Add(Buckets(await RenderPlanAsync(folds, tab, river, show: show)));
 
         var pocket = BucketsView.From(river.Run())!.Buckets.Single(bucket => bucket.Key == "pocket").Amount;
@@ -264,7 +259,6 @@ public class PlanPageTests
     [Theory]
     [InlineData(null)]
     [InlineData("optimisation")]
-    [InlineData("pistes")]
     public async Task Plan_paymentStillToMake_badgesOptimiseWithItsDayAsALinkToTheSection(string? tab)
     {
         var html = await RenderPlanAsync(new Folds(new BrowserStorage()), tab);
@@ -300,13 +294,14 @@ public class PlanPageTests
     }
 
     // Saved plans are compared in the Plans panel, which counts them itself: the tab bar holds no badge for
-    // them; on first draw Ideas says only that its ideas are being measured.
+    // them, and no tab but the two views.
     [Fact]
     public async Task Plan_twoSavedPlans_badgeNoTabForThem()
     {
         var html = await RenderPlanAsync(new Folds(new BrowserStorage()), saved: [RiverInputs.Example, RiverInputs.Example.WithDirectorPay(40_000m)]);
 
-        Links(html).Where(link => link.Name != "My plan" && link.Name != "Optimise").Select(link => link.Badge).ShouldBe(["…"]);
+        Links(html).Select(link => link.Name).ShouldBe(["My plan", "Optimise"]);
+        Links(html).Single(link => link.Name == "My plan").Badge.ShouldBeNull();
     }
 
     // My plan shows the plan alone: nothing stands between its title and the map, not a line pointing at the

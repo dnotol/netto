@@ -8,9 +8,9 @@ namespace Netto.Tests.WebClient.Tabs;
 public class PlanTabRoutesTests
 {
     [Fact]
-    public void Order_isMyPlanThenOptimisationThenPistes()
+    public void Order_isMyPlanThenOptimisation()
     {
-        PlanTabRoutes.Order.ShouldBe([PlanTab.Plan, PlanTab.Optimisation, PlanTab.Pistes]);
+        PlanTabRoutes.Order.ShouldBe([PlanTab.Plan, PlanTab.Optimisation]);
     }
 
     [Fact]
@@ -22,7 +22,6 @@ public class PlanTabRoutesTests
     [Theory]
     [InlineData(PlanTab.Plan, "plan")]
     [InlineData(PlanTab.Optimisation, "plan/optimisation")]
-    [InlineData(PlanTab.Pistes, "plan/pistes")]
     public void Href_eachTab_isItsUrlFromTheBase(PlanTab tab, string href)
     {
         PlanTabRoutes.Href(tab).ShouldBe(href);
@@ -44,7 +43,6 @@ public class PlanTabRoutesTests
     // A URL typed by hand keeps its case: the router matches it whatever the case, and so does the tab.
     [Theory]
     [InlineData("OPTIMISATION", PlanTab.Optimisation)]
-    [InlineData("PISTES", PlanTab.Pistes)]
     public void From_segmentInAnotherCase_isTheTab(string segment, PlanTab tab)
     {
         PlanTabRoutes.From(segment).ShouldBe(tab);
@@ -58,6 +56,8 @@ public class PlanTabRoutesTests
     [InlineData("optimization")]
     [InlineData("when-to-pay")]
     [InlineData("compare")]
+    [InlineData("pistes")]
+    [InlineData("PISTES")]
     [InlineData("")]
     public void From_anyOtherSegment_isNone(string segment)
     {
@@ -71,6 +71,7 @@ public class PlanTabRoutesTests
     [InlineData("Plan/")]
     [InlineData("plan/optimisation")]
     [InlineData("plan/Pistes/")]
+    [InlineData("plan/pistes")]
     [InlineData("plan?by=date")]
     [InlineData("plan/optimisation?show=when")]
     [InlineData("plan/when-to-pay")]
@@ -103,6 +104,8 @@ public class PlanTabRoutesTests
     [InlineData("When-To-Pay", "plan/optimisation?show=when")]
     [InlineData("compare", "plan?plans=compare")]
     [InlineData("COMPARE", "plan?plans=compare")]
+    [InlineData("pistes", "plan")]
+    [InlineData("Pistes", "plan")]
     public void Moved_aFoldedViewsOldSegment_isItsNewPlace(string segment, string href)
     {
         PlanTabRoutes.Moved(segment).ShouldBe(href);
@@ -110,7 +113,6 @@ public class PlanTabRoutesTests
 
     [Theory]
     [InlineData("optimisation")]
-    [InlineData("pistes")]
     [InlineData("when")]
     [InlineData("")]
     [InlineData(null)]

@@ -21,9 +21,6 @@
   <data name="Tab_Optimisation" xml:space="preserve">
     <value>Optimiser</value>
   </data>
-  <data name="Tab_Pistes" xml:space="preserve">
-    <value>Pistes</value>
-  </data>
   <data name="Spoken_Refused" xml:space="preserve">
     <value>un montant est refusé ici</value>
   </data>
@@ -36,28 +33,10 @@
   <data name="Spoken_BilledRefused" xml:space="preserve">
     <value>Quand payer&#160;: le montant facturé par votre caisse est refusé</value>
   </data>
-  <data name="Spoken_Pistes" xml:space="preserve">
-    <value>{0}</value>
-  </data>
   <data name="Spoken_Searching" xml:space="preserve">
     <value>recherche d'ajustements</value>
   </data>
-  <data name="Spoken_PistesSearching" xml:space="preserve">
-    <value>chiffrage des pistes</value>
-  </data>
   <data name="Shown_Searching" xml:space="preserve">
     <value>…</value>
-  </data>
-  <data name="Pistes_Priced_One" xml:space="preserve">
-    <value>{0} chiffrée</value>
-  </data>
-  <data name="Pistes_Priced_Many" xml:space="preserve">
-    <value>{0} chiffrées</value>
-  </data>
-  <data name="Pistes_Questions_One" xml:space="preserve">
-    <value>{0} question</value>
-  </data>
-  <data name="Pistes_Questions_Many" xml:space="preserve">
-    <value>{0} questions</value>
   </data>
 </root>

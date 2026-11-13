@@ -6,8 +6,7 @@ namespace Netto.Tests.WebClient.Tabs;
 
 // What each tab says after its name, from the views its content draws: on Optimisation the moves' total, over
 // the plan on screen, then what its When to pay section says, the next advance payment's date, or that what
-// the fund bills is refused, which wins over a date; on My plan that the river is refused; and on Pistes how
-// many pistes are priced and how many questions wait, once something supplies them.
+// the fund bills is refused, which wins over a date; on My plan that the river is refused.
 public class TabBadgesTests
 {
     // The deadline still open on this date is December's.
@@ -47,7 +46,7 @@ public class TabBadgesTests
         var run = RiverInputs.Example.Run();
         var moves = MovesView.Searching(RiverInputs.Example);
 
-        TabBadges.Of(run, moves, CalendarView.From(RiverInputs.Example, run, On23October), null).GetValueOrDefault(PlanTab.Optimisation).ShouldNotBeNull()[0]
+        TabBadges.Of(run, moves, CalendarView.From(RiverInputs.Example, run, On23October)).GetValueOrDefault(PlanTab.Optimisation).ShouldNotBeNull()[0]
             .ShouldBe(new TabBadge(TabBadgeKind.Searching));
     }
 
@@ -111,49 +110,11 @@ public class TabBadgesTests
             .ShouldBe([new TabBadge(TabBadgeKind.Refused)]);
     }
 
-    // Nothing supplies the pistes yet: Pistes has no badge. Once something does, it says how many are
-    // priced and how many questions wait.
-    [Fact]
-    public void Of_noPistesCount_badgesNoPistes()
-    {
-        Badges(RiverInputs.Example, On23October).ContainsKey(PlanTab.Pistes).ShouldBeFalse();
-    }
-
-    [Fact]
-    public void Of_pistesToSay_badgesPistesWithBothCounts()
-    {
-        Badges(RiverInputs.Example, On23October, new PistesCount(1, 3)).GetValueOrDefault(PlanTab.Pistes)
-            .ShouldBe([new TabBadge(TabBadgeKind.Pistes, Count: 1, Questions: 3)]);
-    }
-
-    [Fact]
-    public void Of_noPisteAndNoQuestion_badgesNoPistes()
-    {
-        Badges(RiverInputs.Example, On23October, new PistesCount(0, 0)).ContainsKey(PlanTab.Pistes).ShouldBeFalse();
-    }
-
-    // A question without a priced piste is still something to say.
-    [Fact]
-    public void Of_onlyQuestions_badgesPistes()
-    {
-        Badges(RiverInputs.Example, On23October, new PistesCount(0, 2)).GetValueOrDefault(PlanTab.Pistes)
-            .ShouldBe([new TabBadge(TabBadgeKind.Pistes, Count: 0, Questions: 2)]);
-    }
-
-    // While an idea is still being measured, the badge says so, as Optimise's does for the moves, and no count
-    // that would change once it is found.
-    [Fact]
-    public void Of_pistesBeingMeasured_badgesPistesAsBeingMeasured()
-    {
-        Badges(RiverInputs.Example, On23October, new PistesCount(1, 3), pistesSearching: true).GetValueOrDefault(PlanTab.Pistes)
-            .ShouldBe([new TabBadge(TabBadgeKind.PistesSearching)]);
-    }
-
     // The moves from the plan on screen.
-    private static IReadOnlyDictionary<PlanTab, IReadOnlyList<TabBadge>> Badges(RiverInputs river, DateOnly date, PistesCount? pistes = null, bool pistesSearching = false)
+    private static IReadOnlyDictionary<PlanTab, IReadOnlyList<TabBadge>> Badges(RiverInputs river, DateOnly date)
     {
         var run = river.Run();
         var moves = MovesView.Of(river, date);
-        return TabBadges.Of(run, moves, CalendarView.From(river, run, date), pistes, pistesSearching);
+        return TabBadges.Of(run, moves, CalendarView.From(river, run, date));
     }
 }

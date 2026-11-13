@@ -16,13 +16,12 @@ internal static class PlanText
         _ => $"PageTitle_{tab}",
     };
 
-    // The skip link, the keyboard's first stop on the page, worded for where it goes on each view: the map, the
-    // moves or the ideas.
+    // The skip link, the keyboard's first stop on the page, worded for where it goes on each view: the map or the
+    // moves.
     public static string SkipTo(PlanTab tab) => tab switch
     {
         PlanTab.Plan => "SkipToMap",
         PlanTab.Optimisation => "SkipToMoves",
-        PlanTab.Pistes => "SkipToPistes",
         _ => throw new ArgumentOutOfRangeException(nameof(tab), tab, null),
     };
 

@@ -48,8 +48,8 @@ public class PlanBucketChoiceTests
     [Fact]
     public async Task Plan_aBucketPressedInTheBandOnAnotherTab_goesToThePlanWithItChosenAndTheTitleFocused()
     {
-        await using var page = LivePlan.At("http://localhost/plan/pistes", new BrowserStorage());
-        await page.LoadAsync("pistes");
+        await using var page = LivePlan.At("http://localhost/plan/optimisation", new BrowserStorage());
+        await page.LoadAsync("optimisation");
 
         await page.PressAsync("data-bucket-choose", "expenses");
         var navigations = page.Navigations.ToList();

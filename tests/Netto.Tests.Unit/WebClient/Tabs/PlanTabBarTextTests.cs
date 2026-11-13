@@ -18,7 +18,7 @@ public class PlanTabBarTextTests
     [Fact]
     public void PlanTabBarResx_everyTab_hasItsName()
     {
-        PlanTabRoutes.Order.Select(tab => Resources.Get(PlanTabBarText.Name(tab))).ShouldBe(["My plan", "Optimise", "Ideas"]);
+        PlanTabRoutes.Order.Select(tab => Resources.Get(PlanTabBarText.Name(tab))).ShouldBe(["My plan", "Optimise"]);
     }
 
     // A badge shows short (+€3,054.18, 21 Dec, an icon) and a screen reader hears it in full, after the
@@ -32,13 +32,6 @@ public class PlanTabBarTextTests
     public void PlanTabBarResx_everyBadge_isSpokenInFull(TabBadgeKind kind, string figure, string expected)
     {
         Resources.Format(PlanTabBarText.Spoken(kind), figure).ShouldBe(expected);
-    }
-
-    // The ideas' badge is said by its counts alone, after the tab's name: « Ideas 1 priced, 3 questions ».
-    [Fact]
-    public void PlanTabBarResx_pistes_isSpokenByItsCounts()
-    {
-        Resources.Format(PlanTabBarText.Spoken(TabBadgeKind.Pistes), "1 priced, 3 questions").ShouldBe("1 priced, 3 questions");
     }
 
     // While the page looks for the moves, the badge shows an ellipsis, which a screen reader skips for the

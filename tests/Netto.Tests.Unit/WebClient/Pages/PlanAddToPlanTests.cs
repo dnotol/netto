@@ -31,7 +31,6 @@ public class PlanAddToPlanTests
     [Theory]
     [InlineData("optimisation", null)]
     [InlineData("optimisation", "when")]
-    [InlineData("pistes", null)]
     public async Task Plan_onAnotherView_drawsNoEditPlan(string? tab, string? show)
     {
         var html = await PlanPageTests.RenderPlanAsync(new Folds(new BrowserStorage()), tab, show: show);
@@ -85,7 +84,6 @@ public class PlanAddToPlanTests
     [Theory]
     [InlineData(PlanTab.Plan, true)]
     [InlineData(PlanTab.Optimisation, false)]
-    [InlineData(PlanTab.Pistes, false)]
     public void RemovalNoticeFocus_onAView_isEditPlanWhereItIsDrawnAndTheViewsContentElsewhere(PlanTab tab, bool toEditPlan)
     {
         RemovalNoticeFocus.After(tab).ShouldBe(toEditPlan ? RemovalFocus.AddToPlan : RemovalFocus.TabContent);

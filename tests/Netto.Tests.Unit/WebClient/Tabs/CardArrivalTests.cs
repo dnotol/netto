@@ -23,7 +23,7 @@ public class CardArrivalTests
     [Fact]
     public void Take_otherTab_arrivesNowhere()
     {
-        new CardArrival().Take(PlanTab.Pistes, "split").ShouldBeNull();
+        new CardArrival().Take(PlanTab.Optimisation, "split").ShouldBeNull();
     }
 
     // The same address again, as Blazor may set the page's parameters again while it stays there: the

@@ -21,14 +21,8 @@
   <data name="PageTitle_Optimisation" xml:space="preserve">
     <value>Optimiser&#160;: Netto</value>
   </data>
-  <data name="PageTitle_Pistes" xml:space="preserve">
-    <value>Pistes&#160;: Netto</value>
-  </data>
   <data name="MyPlanTitle" xml:space="preserve">
     <value>Mon plan</value>
-  </data>
-  <data name="SkipToPistes" xml:space="preserve">
-    <value>Aller aux pistes</value>
   </data>
   <data name="SkipToMoves" xml:space="preserve">
     <value>Aller à vos ajustements</value>

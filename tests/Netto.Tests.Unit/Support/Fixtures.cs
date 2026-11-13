@@ -80,8 +80,7 @@ internal static class Fixtures
     // plan of the three views' position paper, on 11 November 2026. The figures tests pin on it are the engine's
     // own, a regression pin and no Tax-Calc value, and match what the band and the Optimise view say: it leaves
     // 62,624.32 in the pocket; the Optimiser adds 3,309.67 (the pay and the company's advance payment), to
-    // 65,933.99; the vouchers, an idea, take that to 65,996.99, a gain of 63.00. The vouchers' +45.00 and +18.00
-    // are derived by hand in PisteSearchTests.
+    // 65,933.99; the vouchers, added to the plan, take that to 65,996.99, a gain of 63.00.
     public static readonly Netto.Web.Client.River.RiverInputs ExampleWithRoyalty = Netto.Web.Client.River.RiverInputs.Example
         .AddToPlan(Netto.Web.Client.River.OptionalModule.Copyright).WithCreativeShare(0.25m).WithRoyaltyFollowingPay();
 

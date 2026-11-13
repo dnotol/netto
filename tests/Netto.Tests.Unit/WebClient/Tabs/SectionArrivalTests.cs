@@ -22,7 +22,6 @@ public class SectionArrivalTests
     // The section is Optimise's: the query means nothing on another view.
     [Theory]
     [InlineData(PlanTab.Plan)]
-    [InlineData(PlanTab.Pistes)]
     public void Take_otherView_arrivesNowhere(PlanTab tab)
     {
         new SectionArrival().Take(tab, "when").ShouldBeFalse();

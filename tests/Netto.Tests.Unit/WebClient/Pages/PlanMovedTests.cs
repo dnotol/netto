@@ -9,8 +9,9 @@ using static Netto.Tests.WebClient.River.RiverRendering;
 
 namespace Netto.Tests.WebClient.Pages;
 
-// The addresses of the two views the plan page folded in: When to pay, now a section of Optimise, and
-// Compare plans, now a mode of the Plans panel. A bookmark to either replaces itself with the new place as
+// The addresses of the views the plan page folded in or dropped: When to pay, now a section of Optimise,
+// Compare plans, now a mode of the Plans panel, and Ideas, gone (its levers are found in the panel over the
+// map), which sends to My plan. A bookmark to either replaces itself with the new place as
 // it is first drawn, so Back from there goes to what the viewer came from. A static render runs the
 // component's first lifecycle step, which is where it navigates, and goes nowhere, so the navigation is
 // read from a manager that records it. That the browser then shows the place is the browser check's.
@@ -21,6 +22,8 @@ public class PlanMovedTests
     [InlineData("http://localhost/plan/compare", "plan?plans=compare")]
     [InlineData("http://localhost/Plan/Compare/", "plan?plans=compare")]
     [InlineData("http://localhost/plan/when-to-pay?x=1#section", "plan/optimisation?show=when")]
+    [InlineData("http://localhost/plan/pistes", "plan")]
+    [InlineData("http://localhost/Plan/Pistes/", "plan")]
     public async Task PlanMoved_firstDraw_replacesItselfWithTheNewPlaceWithoutReloading(string address, string place)
     {
         var navigation = new RecordingNavigation(address);
@@ -38,7 +41,8 @@ public class PlanMovedTests
     [InlineData("/plan/compare", nameof(PlanMoved), "")]
     [InlineData("/plan/Compare", nameof(PlanMoved), "")]
     [InlineData("/plan/compare/", nameof(PlanMoved), "")]
-    [InlineData("/plan/pistes", nameof(Plan), "Tab=pistes")]
+    [InlineData("/plan/pistes", nameof(PlanMoved), "")]
+    [InlineData("/plan/Pistes/", nameof(PlanMoved), "")]
     [InlineData("/plan/optimisation", nameof(Plan), "Tab=optimisation")]
     [InlineData("/plan", nameof(Plan), "Tab=")]
     [InlineData("/plan?by=date", nameof(Plan), "Tab=")]

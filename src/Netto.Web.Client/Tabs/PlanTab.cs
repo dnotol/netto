@@ -1,15 +1,14 @@
 namespace Netto.Web.Client.Tabs;
 
-// The plan page's three views, each answering one question, in the top row of the bar of buckets: My plan,
+// The plan page's two views, each answering one question, in the top row of the bar of buckets: My plan,
 // where I stand (the plan, its modules from above with the money between them and the card of the one
-// chosen), Optimise, how to do better with the facts I gave (the moves Netto proposes from the plan on
-// screen, and under them when the plan's payments fall), and Ideas, what I could add (« Pistes »). Public
+// chosen), and Optimise, how to do better with the facts I gave (the moves Netto proposes from the plan on
+// screen, and under them when the plan's payments fall). Levers are found in the panel over the map. Public
 // because the tab bar, a component, takes one as a parameter.
 public enum PlanTab
 {
     Plan,
     Optimisation,
-    Pistes,
 }
 
 // Where each view lives: /plan for My plan, /plan/<segment> for the others, one page (Pages/Plan) for
@@ -34,7 +33,7 @@ internal static class PlanTabRoutes
     private const string Compare = "compare";
 
     // The order the tab bar shows them in.
-    public static IReadOnlyList<PlanTab> Order { get; } = [PlanTab.Plan, PlanTab.Optimisation, PlanTab.Pistes];
+    public static IReadOnlyList<PlanTab> Order { get; } = [PlanTab.Plan, PlanTab.Optimisation];
 
     // The tab's address from the page's base (<base href="/">), as a link writes it.
     public static string Href(PlanTab tab) => Segment(tab) is { } segment ? $"plan/{segment}" : "plan";
@@ -56,13 +55,17 @@ internal static class PlanTabRoutes
         ? PlanTab.Plan
         : Order.Where(tab => string.Equals(Segment(tab), segment, StringComparison.OrdinalIgnoreCase)).Cast<PlanTab?>().FirstOrDefault();
 
-    // Where a view folded into another has gone, from its old segment: When to pay is a section of Optimise,
-    // Compare plans a mode of the Plans panel. None for any other segment. Both addresses replace
-    // themselves (Pages/PlanMoved), so a bookmark keeps working.
+    // Where a view that has gone is now, from its old segment: When to pay is a section of Optimise, Compare
+    // plans a mode of the Plans panel, and Ideas (« pistes »), whose levers are found in the panel over the
+    // map, sends to My plan. None for any other segment. All three addresses replace themselves
+    // (Pages/PlanMoved), so a bookmark keeps working.
     public static string? Moved(string? segment)
     {
         if (string.Equals(segment, "when-to-pay", StringComparison.OrdinalIgnoreCase))
             return WhenToPayHref;
+
+        if (string.Equals(segment, "pistes", StringComparison.OrdinalIgnoreCase))
+            return Href(PlanTab.Plan);
 
         return string.Equals(segment, "compare", StringComparison.OrdinalIgnoreCase) ? $"plan?{PlansQuery}={Compare}" : null;
     }
@@ -98,7 +101,6 @@ internal static class PlanTabRoutes
     {
         PlanTab.Plan => null,
         PlanTab.Optimisation => "optimisation",
-        PlanTab.Pistes => "pistes",
         _ => throw new ArgumentOutOfRangeException(nameof(tab), tab, null),
     };
 }

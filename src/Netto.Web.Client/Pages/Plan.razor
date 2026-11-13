@@ -32,18 +32,18 @@
     <a href="@SkipHref" class="skip-link" @onclick="SkipAsync" @onclick:preventDefault>@L[PlanText.SkipTo(_tab)]</a>
 </SectionContent>
 
-@* The plan page, three views each answering one question (docs/architecture/decisions/2026-11-11-three-views-one-question-each.md),
+@* The plan page, two views each answering one question (docs/architecture/decisions/2026-11-13-two-views-and-levers-are-found-in-edit-plan.md),
    in the top row of the band (BucketBar), which sums up the river on every one of them: My plan, where I
    stand, the river's modules from above with the money between them and the card of the module chosen
    beside them, where it is edited (MapTab); Optimise, the moves Netto proposes from the plan on screen,
    retuning only the levers it holds, then when the plan's payments fall, a section named by a query,
-   ?show=when (OptimisationTab, WhenToPaySection); and Ideas, what could be added (Pistes). My plan
-   suggests nothing: the other two appear in it only as the tabs' badges. Comparing two saved plans is a mode of the Plans panel, in the band. Each view has its own
+   ?show=when (OptimisationTab, WhenToPaySection). My plan
+   suggests nothing: Optimise appears in it only as the tab's badges. Comparing two saved plans is a mode of the Plans panel, in the band. Each view has its own
    URL (PlanTabRoutes) but they are this one page, so the river's inputs, its run, what the page found and
    the module chosen stay as they are from one view to the next, and Blazor keeps the page when the view
    changes: the view is a parameter of the route, the section, the card and the Plans panel's mode queries.
-   The old addresses of When to pay (/plan/when-to-pay, /plan?by=date) and Compare plans replace themselves
-   with their new place (PlanMoved, OnParametersSet).
+   The old addresses of When to pay (/plan/when-to-pay, /plan?by=date), Compare plans and the Ideas view
+   (/plan/pistes) replace themselves with their new place (PlanMoved, OnParametersSet).
 
    The river: the year from the company's revenue to the director's pocket, as modules that each edit their
    part of one scenario on their card and draw their view of one run. Every figure comes from Netto.Core;
@@ -54,11 +54,9 @@
    choice on the map, a module or a bucket (MapChoice), is Company year on arriving, or the one the address
    names (CardLinks, plan?card=<name>), from a link of the Optimise view's moves or loaded as it is, or the
    bucket the viewer presses in the band, from any view, which brings them to My plan. *@
-@* The moves and the ideas found for the plan on screen, each built once per draw, for the badges
-   and the views alike. *@
+@* The moves found for the plan on screen, built once per draw, for the badges and the views alike. *@
 @{
     var moves = _moves.View(Today);
-    var pistes = _pistes.View(Today);
     var calendar = CalendarView.From(_inputs, _run, Today);
 }
 <BucketBar Run="_run" Setup="_today?.Run" BucketChosen="OnBucketChosen">
@@ -66,7 +64,7 @@
         <PlansPanel Inputs="_inputs" CanSave="BaselineGain.CanMark(_run)" OnOpen="OnPlanOpened" OnChanged="OnPlansChanged" OpenOnCompare="PlanTabRoutes.OpensCompare(PlansMode)" />
     </ChildContent>
     <Tabs>
-        <PlanTabBar Current="_tab" Badges="Badges(moves, calendar, pistes)" DeadlineChosen="OnDeadlineChosen" />
+        <PlanTabBar Current="_tab" Badges="Badges(moves, calendar)" DeadlineChosen="OnDeadlineChosen" />
     </Tabs>
 </BucketBar>
 <TakenOutNotice @ref="_notice" Module="_takenOut" OnUndo="Undo" OnDismiss="Dismiss" />
@@ -114,9 +112,6 @@
             case PlanTab.Optimisation:
                 <OptimisationTab @ref="_optimisation" Searching="_moves.Searching(Today)" Found="_moves.Found(Today)" Inputs="_inputs" InputsChanged="OnInputsChanged" Search="_search"
                                  Calendar="calendar" OpensCalendar="PlanTabRoutes.OpensWhenToPay(ShowSection)" />
-                break;
-            case PlanTab.Pistes:
-                <PistesTab View="pistes" Answered="_pistes.Answer" Tried="OnPisteTried" Dropped="_pistes.Drop" Kept="OnPisteKept" />
                 break;
         }
     </MudContainer>
@@ -168,7 +163,6 @@
     private bool _focusUndo;
     private bool _focusComposition;
     private MovesSource _moves = default!;
-    private PistesSource _pistes = default!;
     private readonly CardArrival _arrival = new();
     private readonly SectionArrival _sectionArrival = new();
     // The When to pay section is to take the focus at the next render.
@@ -179,7 +173,6 @@
     protected override void OnInitialized()
     {
         _moves = new MovesSource(() => _inputs, () => new ValueTask(Task.Delay(MovesSource.QuietPeriod, Clock)));
-        _pistes = new PistesSource(() => _inputs, date => _moves.Found(date));
         OnPlansChanged();
         Show(State.Inputs);
     }
@@ -241,26 +234,7 @@
         // looks for them (plan-paint.js), and off Optimisation for the edits to pause, then the page draws
         // what it found for the plan on screen (MovesSource).
         if (await _moves.SearchOncePaintedAsync(Today, _tab == PlanTab.Optimisation, () => JS.InvokeVoidAsync("nettoPaint.after")))
-        {
             StateHasChanged();
-            return;
-        }
-
-        // Then the ideas, measured against what the Optimiser found: each costs about a search of the moves,
-        // so one is measured per paint, the page drawing what it found before the next (PistesSource).
-        if (await _pistes.SearchNextOncePaintedAsync(Today, () => JS.InvokeVoidAsync("nettoPaint.after")))
-            StateHasChanged();
-    }
-
-    // « Try » on an idea: measured once the browser has painted, unless found already; the river stays as it is.
-    private void OnPisteTried(LeverKind lever) => _pistes.Try(lever);
-
-    // « Keep »: the river with the lever, its answers and its own moves' values, the page's one edit, which
-    // chooses the lever added as any lever just added is; nothing while the idea is not measured as it stands.
-    private void OnPisteKept(LeverKind lever)
-    {
-        if (_pistes.Keep(lever, Today) is { } river)
-            OnInputsChanged(river);
     }
 
     // A module taken out shows the notice. Taken out from its card, the word that did it is gone with
@@ -369,13 +343,8 @@
     // its badge needs on every view, found once per plan on screen and date (MovesSource),
     // since the search runs the split at every move, and only after the page has painted: until then the
     // badge says they are being looked for. My plan's own says only that the plan is refused.
-    // The Ideas badge says « … » while an idea is still measured, as Optimise's does for the moves.
-    private IReadOnlyDictionary<PlanTab, IReadOnlyList<TabBadge>> Badges(MovesView moves, CalendarView? calendar, PistesView pistes) =>
-        TabBadges.Of(_run, moves, calendar, PistesFound(pistes), pistes.Searching);
-
-    // The ideas found for the plan on screen, for the Ideas badge: how many are priced and
-    // how many still ask, none while one is still measured, so no count changes once it is found.
-    private static PistesCount? PistesFound(PistesView view) => view is { Searching: false } ? new PistesCount(view.Priced, view.Questions) : null;
+    private IReadOnlyDictionary<PlanTab, IReadOnlyList<TabBadge>> Badges(MovesView moves, CalendarView? calendar) =>
+        TabBadges.Of(_run, moves, calendar);
 
     // Whether the map, and its tools, are what the page draws: My plan.
     private bool OnTheMap => _tab == PlanTab.Plan;

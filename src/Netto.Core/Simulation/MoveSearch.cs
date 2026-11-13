@@ -151,8 +151,8 @@ public static class MoveSearch
         new EcoVouchersFinder(), new SportCultureVouchersFinder(), new RentFinder(), new CopyrightFollowsPayFinder(),
     ];
 
-    // The finders that retune a plan holding those levers, in that order: a search with one lever more
-    // in the set is the plan's own with that lever's finders besides.
+    // The finders that retune a plan holding those levers, in that order: the pay, the payments and the finders
+    // of each lever in the plan.
     internal static IReadOnlyList<IMoveFinder> FindersFor(DateOnly date, IReadOnlySet<LeverKind> inPlan) =>
         [.. Finders(date).Where(finder => KindOf(finder, inPlan) == MoveKind.Retune)];
 

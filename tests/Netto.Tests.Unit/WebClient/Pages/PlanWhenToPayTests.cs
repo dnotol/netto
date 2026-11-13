@@ -104,7 +104,7 @@ public class PlanWhenToPayTests
     {
         await using var page = LivePlan.At(Section, new BrowserStorage());
         await page.LoadAsync("optimisation");
-        await page.GoToAsync("http://localhost/plan/pistes", "pistes");
+        await page.GoToAsync("http://localhost/plan", null);
         var before = page.Focuses;
 
         await page.GoToAsync(Section, "optimisation");

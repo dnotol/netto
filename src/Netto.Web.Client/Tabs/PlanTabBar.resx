@@ -21,9 +21,6 @@
   <data name="Tab_Optimisation" xml:space="preserve">
     <value>Optimise</value>
   </data>
-  <data name="Tab_Pistes" xml:space="preserve">
-    <value>Ideas</value>
-  </data>
   <data name="Spoken_Refused" xml:space="preserve">
     <value>an amount here is refused</value>
   </data>
@@ -36,28 +33,10 @@
   <data name="Spoken_BilledRefused" xml:space="preserve">
     <value>When to pay: what the fund bills is refused</value>
   </data>
-  <data name="Spoken_Pistes" xml:space="preserve">
-    <value>{0}</value>
-  </data>
   <data name="Spoken_Searching" xml:space="preserve">
     <value>looking for moves</value>
   </data>
-  <data name="Spoken_PistesSearching" xml:space="preserve">
-    <value>measuring ideas</value>
-  </data>
   <data name="Shown_Searching" xml:space="preserve">
     <value>…</value>
-  </data>
-  <data name="Pistes_Priced_One" xml:space="preserve">
-    <value>{0} priced</value>
-  </data>
-  <data name="Pistes_Priced_Many" xml:space="preserve">
-    <value>{0} priced</value>
-  </data>
-  <data name="Pistes_Questions_One" xml:space="preserve">
-    <value>{0} question</value>
-  </data>
-  <data name="Pistes_Questions_Many" xml:space="preserve">
-    <value>{0} questions</value>
   </data>
 </root>

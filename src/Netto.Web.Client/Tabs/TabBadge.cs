@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Localization;
 using Netto.Web.Client.River;
 
 namespace Netto.Web.Client.Tabs;
@@ -21,64 +20,24 @@ public enum TabBadgeKind
 
     // The moves are being looked for (MovesSource).
     Searching,
-
-    // How many pistes are priced (Count) and how many questions wait (Questions).
-    Pistes,
-
-    // An idea is still being measured (PistesSource).
-    PistesSearching,
 }
 
-// How the ideas' counts are said: short in the badge, « 1 · 2? », and in words, « 1 priced, 2 questions »,
-// only the counts that are not zero, each word agreeing with its number (one or many), in the texts of the
-// component that says them (PlanTabBar, PlanNudges).
-internal static class PistesCountText
-{
-    public static string Short(int priced, int questions) => string.Join(" · ", Parts(priced, questions)
-        .Select(part => part.Priced ? part.Count.ToString(Formats.Culture) : $"{part.Count.ToString(Formats.Culture)}?"));
-
-    public static string Words(IStringLocalizer texts, int priced, int questions) => string.Join(", ", Parts(priced, questions)
-        .Select(part => texts[part.Priced ? Priced(part.Count) : Questions(part.Count), part.Count].Value));
-
-    public static string Priced(int count) => count == 1 ? "Pistes_Priced_One" : "Pistes_Priced_Many";
-
-    public static string Questions(int count) => count == 1 ? "Pistes_Questions_One" : "Pistes_Questions_Many";
-
-    private static IEnumerable<(bool Priced, int Count)> Parts(int priced, int questions)
-    {
-        if (priced > 0)
-            yield return (true, priced);
-        if (questions > 0)
-            yield return (false, questions);
-    }
-}
-
-// One badge of a tab: its kind and the figure it shows, an amount, a date or counts.
-public sealed record TabBadge(TabBadgeKind Kind, decimal Amount = 0m, DateOnly Date = default, int Count = 0, int Questions = 0)
+// One badge of a tab: its kind and the figure it shows, an amount or a date.
+public sealed record TabBadge(TabBadgeKind Kind, decimal Amount = 0m, DateOnly Date = default)
 {
     // Whether the badge is a link of its own, to the When to pay section, beside its tab's link rather than in
     // it: a link cannot hold another.
     public bool LinksToSection => Kind is TabBadgeKind.NextBy or TabBadgeKind.BilledRefused;
 }
 
-// The pistes the Pistes view found for the plan on screen: how many are priced and how many questions wait
-// for the viewer. Supplied by whatever searches them (the page's Pistes); while nothing does there are
-// none to say, and the tab has no badge and the page no nudge. Public, with the badge, for the tab bar.
-public sealed record PistesCount(int Priced, int Questions)
-{
-    public bool IsEmpty => Priced == 0 && Questions == 0;
-}
-
 // The tabs' badges, from the views their contents draw, so a badge says only what its tab shows: on Optimise
 // the moves' total once they add something to the plan on screen (MovesView), or that they are being looked
 // for, then what its When to pay section says, the next advance payment's date while one is left
 // (CalendarView.Next) or that what the fund bills is refused, which wins over a date; on My plan that the
-// river is refused; on Pistes how many are priced and how many questions wait, once something supplies them,
-// or that one is still being measured, as Optimisation's says of the moves, with no count that would change
-// once it is found. A tab with nothing to say has none; one with two says the gain first.
+// river is refused. A tab with nothing to say has none; one with two says the gain first.
 internal static class TabBadges
 {
-    public static IReadOnlyDictionary<PlanTab, IReadOnlyList<TabBadge>> Of(RiverRun run, MovesView moves, CalendarView? calendar, PistesCount? pistes, bool pistesSearching = false)
+    public static IReadOnlyDictionary<PlanTab, IReadOnlyList<TabBadge>> Of(RiverRun run, MovesView moves, CalendarView? calendar)
     {
         var badges = new Dictionary<PlanTab, IReadOnlyList<TabBadge>>();
         if (run.Error is not null)
@@ -95,11 +54,6 @@ internal static class TabBadges
             optimisation.Add(new TabBadge(TabBadgeKind.NextBy, Date: next.Date));
         if (optimisation.Count > 0)
             badges[PlanTab.Optimisation] = optimisation;
-
-        if (pistesSearching)
-            badges[PlanTab.Pistes] = [new TabBadge(TabBadgeKind.PistesSearching)];
-        else if (pistes is { IsEmpty: false } found)
-            badges[PlanTab.Pistes] = [new TabBadge(TabBadgeKind.Pistes, Count: found.Priced, Questions: found.Questions)];
 
         return badges;
     }
