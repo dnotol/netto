@@ -67,6 +67,18 @@ public class MapKeyTests
             () => Stylesheet.Block(css, ".map-key__line").ShouldNotContain("border:"));
     }
 
+    // The names read as quietly as the line holding them: normal weight, the muted text colour; the samples keep
+    // their own inks, set on each.
+    [Fact]
+    public void Stylesheet_theNames_areNormalWeightAndMuted()
+    {
+        var css = Stylesheet.Read("src", "Netto.Web.Client", "Tabs", "MapKey.razor.css");
+
+        var name = Stylesheet.Block(css, ".map-key__name").Split(';').Select(declaration => declaration.Trim())
+            .Where(declaration => declaration.StartsWith("font-weight", StringComparison.Ordinal) || declaration.StartsWith("color", StringComparison.Ordinal));
+        name.ShouldBe(["color: var(--netto-text-muted)", "font-weight: 400"]);
+    }
+
     // Each sample is the map's own line of its style, hidden from a screen reader, which hears the name: its
     // dash, width and ink, and its end, an arrowhead in its ink or a bar its line runs into, a bucket's edge;
     // what reaches the director in the map's gold, running into the pocket.

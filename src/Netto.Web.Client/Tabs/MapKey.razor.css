@@ -39,9 +39,11 @@
         stroke-linecap: round;
     }
 
+/* A line's name, as quiet as the muted line under the map that holds it; its sample keeps its own ink. */
 .map-key__name {
+    color: var(--netto-text-muted);
     font-size: 0.8rem;
-    font-weight: 600;
+    font-weight: 400;
     white-space: nowrap;
 }
 
