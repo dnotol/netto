@@ -2,6 +2,7 @@
 
 ## 2026-11-13
 
+- [IT and phone is a module behind BenefitInKind](/2026-11-13-it-and-phone-is-a-module-behind-benefit-in-kind.md) accepted by the operator at landing.
 - Proposed, from the work items « A company car that arrives or leaves during the year counts only for the days I have it » and « Company-owned PC, phone and internet are weighed in cash at their flat benefit values »: [IT and phone is a module behind BenefitInKind](/2026-11-13-it-and-phone-is-a-module-behind-benefit-in-kind.md).
 - [A lever's card leads with what it adds to the pocket](/2026-11-12-a-levers-card-leads-with-what-it-adds-to-the-pocket.md), [running totals are the map's alone](/2026-11-12-running-totals-are-the-maps-alone.md), [My plan's picture draws only what reads alone](/2026-11-12-the-picture-draws-only-what-reads-alone.md) and [the household opens without a partner](/2026-11-12-the-household-opens-without-a-partner.md) accepted by the operator at landing; each amends the decisions it names, superseding nothing.
 

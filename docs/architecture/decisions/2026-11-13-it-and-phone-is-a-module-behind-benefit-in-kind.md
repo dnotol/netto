@@ -2,7 +2,8 @@
 type: adr
 title: IT and phone is a module behind BenefitInKind, weighed in cash like the car, counted for one period of calendar days
 description: A PC, tablet, phone, subscription and internet line the company provides are one optional lever with its own card, handing the pay their flat values through TaxedWithPay.BenefitInKind; one period for the set, its days counted by the type the car uses; beside the flat allowances for the same costs the plan is refused.
-status: draft
+status: stable
+accepted_by: human:Johnny Amadeus
 decided: 2026-11-13
 tags: [engine, site]
 sources:
