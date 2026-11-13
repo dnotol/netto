@@ -14,7 +14,7 @@
     <p class="eyebrow">Netto · architecture page</p>
     <h1>How one income year runs through the engine</h1>
     <p class="lede">The river a user sees, money flowing from the company's year through the modules to their pocket, is one call in code: <code>YearSimulation.Run(Scenario)</code>. It walks the year in the order the law computes it and returns one <code>YearResult</code> that every card, the bar and the map read. This page shows that walk, what each lever hands the next layer, and where to add a lever or an income year.</p>
-    <p class="atlas-meta"><span>As of <b>feature/calendar-in-optimiser-sankey-toggle a35b944</b></span><span><b>11 November 2026</b></span></p>
+    <p class="atlas-meta"><span>As of <b>feature/part-year-car-and-equipment-benefits c78fb0c</b></span><span><b>13 November 2026</b></span></p>
   </header>
 
   <section aria-labelledby="h-walk">
@@ -108,12 +108,13 @@
           <tr><td><code>VoucherLever</code></td><td>the company's share of the vouchers</td><td>the vouchers</td><td>what it cannot deduct</td><td>nothing</td></tr>
           <tr><td><code>AllowanceLever</code></td><td>the allowances</td><td>the allowances</td><td>nothing</td><td>nothing</td></tr>
           <tr><td><code>RentLever</code></td><td>the rent</td><td>the rent</td><td>nothing</td><td><code>OtherIncome</code>, the net rent; its tax after the pay's</td></tr>
+          <tr><td><code>EquipmentLever</code></td><td>costs less the director's contribution</td><td>minus the contribution</td><td>nothing</td><td><code>BenefitInKind</code></td></tr>
           <tr><td><code>CarLever</code></td><td>costs less the director's contribution</td><td>minus the contribution</td><td>costs not deductible and the add-back</td><td><code>BenefitInKind</code></td></tr>
           <tr><td><code>CopyrightLever</code></td><td>the royalty, at the pay when it follows it</td><td>the part paid apart</td><td>nothing</td><td><code>Movable</code>; its tax apart after the pay's</td></tr>
         </tbody>
       </table>
     </div>
-    <p class="note">Read from <code>Simulation/Levers/*.cs</code>. The car and the royalty compute in their own folders (<code>Core/CompanyCar/</code>, <code>Core/Copyright/</code>) and reach the layers only as plain figures: <a href="decisions/2026-10-22-car-and-royalty-behind-plain-contracts.md">behind plain contracts</a>.</p>
+    <p class="note">Read from <code>Simulation/Levers/*.cs</code>. The car, the IT and phone and the royalty compute in their own folders (<code>Core/CompanyCar/</code>, <code>Core/Equipment/</code>, <code>Core/Copyright/</code>) and reach the layers only as plain figures: <a href="decisions/2026-10-22-car-and-royalty-behind-plain-contracts.md">behind plain contracts</a>, <a href="decisions/2026-11-13-it-and-phone-is-a-module-behind-benefit-in-kind.md">IT and phone is a module behind BenefitInKind</a>. A car or a set held for part of the year counts for its calendar days, which both read from one type, <code>DaysHeld</code>; the two benefits reach the pay summed in <code>TaxedWithPay.BenefitInKind</code>.</p>
   </section>
 
   <section aria-labelledby="h-add">
@@ -134,6 +135,7 @@
   <section aria-labelledby="h-changes">
     <h2 id="h-changes">Changes</h2>
     <ul class="atlas-changes">
+      <li><time datetime="2026-11-13">13.11.2026</time><span>A sixth lever, <code>EquipmentLever</code> (the IT and phone the company provides), between the rent and the car, handing the pay its flat benefit; the car and it count only the days held (<code>DaysHeld</code>); a new condition kind, <code>NoAllowanceBesideEquipment</code> (<a href="decisions/2026-11-13-it-and-phone-is-a-module-behind-benefit-in-kind.md">IT and phone is a module behind BenefitInKind</a>).</span></li>
       <li><time datetime="2026-11-11">11.11.2026</time><span>The payment calendar's reader is the When to pay section of Optimise (<a href="decisions/2026-11-11-when-to-pay-is-a-section-of-optimise.md">when to pay is a section of Optimise</a>).</span></li>
       <li><time datetime="2026-11-11">11.11.2026</time><span>The searches: <code>MoveSearch</code> retunes only the levers in the plan and <code>PisteSearch</code> measures an idea (<a href="decisions/2026-11-11-moves-retune-the-plan-on-screen.md">moves retune the plan on screen</a>, <a href="decisions/2026-11-11-an-ideas-gain-is-optimised-against-optimised.md">an idea's gain is optimised against optimised</a>); the split shares what is left, the node « To share » (<a href="decisions/2026-11-11-the-split-is-a-node-named-for-its-money.md">the split is a node named for its money</a>).</span></li>
       <li><time datetime="2026-10-29">29.10.2026</time><span>Page drawn in the fresh-start pass, from <code>main</code> at <code>29cbc95</code>.</span></li>

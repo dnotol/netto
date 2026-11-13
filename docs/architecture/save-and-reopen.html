@@ -14,7 +14,7 @@
     <p class="eyebrow">Netto · architecture page · flow</p>
     <h1>How a plan is saved and opened again</h1>
     <p class="lede">Saved plans live in the browser, in one versioned document of Netto's own, never the inputs serialised as they are in memory. A plan is read back exactly as it was saved or not at all; an older document is brought forward one version at a time. This page follows a save, the read at start-up, opening a plan, and the export to a file.</p>
-    <p class="atlas-meta"><span>As of <b>feature/three-views 232a941</b></span><span><b>11 November 2026</b></span></p>
+    <p class="atlas-meta"><span>As of <b>feature/part-year-car-and-equipment-benefits c78fb0c</b></span><span><b>13 November 2026</b></span></p>
   </header>
 
   <section aria-labelledby="h-flow">
@@ -70,8 +70,8 @@
         <li><code>SavedPlans.Keep</code> writes the whole book, <code>PlanStorage.Write</code>, to <code>netto.plans</code> through <code>IBrowserStorage</code>, a synchronous call to <code>browser-storage.js</code>.</li>
         <li>The panel tells the page the plans changed: the plan starred Today runs again only if the star moved. Today feeds the band's gain alone: saving or starring re-baselines nothing for Optimise, whose moves are measured from the plan on screen.</li>
         <li>At start-up, the <code>SavedPlans</code> constructor reads <code>netto.plans</code>.</li>
-        <li><code>PlanStorage.Read</code> parses it strictly: no unknown member, no missing one, no duplicate. A plan of version 9 is read; an older one goes through the patches from its version up to 9; a plan that still cannot be read is kept exactly as stored and shown as unreadable, never filled with defaults.</li>
-        <li>A whole document Netto cannot read, malformed or of a version above 9, is copied to <code>netto.plans.unreadable</code> before anything overwrites it, and the panel says so.</li>
+        <li><code>PlanStorage.Read</code> parses it strictly: no unknown member, no missing one, no duplicate. A plan of version 10 is read; an older one goes through the patches from its version up to 10; a plan that still cannot be read is kept exactly as stored and shown as unreadable, never filled with defaults.</li>
+        <li>A whole document Netto cannot read, malformed or of a version above 10, is copied to <code>netto.plans.unreadable</code> before anything overwrites it, and the panel says so.</li>
         <li><code>RiverState</code> starts on the river a switch of language carried across its reload (<code>netto.river</code> in sessionStorage, taken once through <code>IBrowserSession</code>), else on the plan last opened, else on <code>RiverInputs.Example</code>.</li>
         <li>Opening from the panel asks first when the river has unsaved changes; <code>SavedPlans.Open</code> returns the plan's inputs, or nothing for an unreadable plan.</li>
         <li><code>Plan.OnPlanOpened</code> shows the plan; it is no edit of the river, so no « taken out » notice; the plan opened is the plan on screen, so the moves are searched again for it once the page has painted (<code>MovesSource</code>).</li>
@@ -124,12 +124,13 @@
       <li><strong>Export</strong> writes <code>SavedPlans.Export()</code>, the same document as <code>netto.plans</code>, to <code>netto-plans-&lt;date&gt;.json</code> through <code>plan-file.js</code> (a Blob and a temporary download link).</li>
       <li><strong>Import</strong> reads a file of up to 1 MB through Blazor's <code>InputFile</code> and the same <code>PlanStorage.Read</code>, so a file of any version is patched. Readable plans are added with new ids; the file's Today is starred only if none is; unreadable plans are skipped and counted.</li>
     </ul>
-    <p class="note">Known gaps, read from the code: the unreadable copy happens at each start-up into one slot, and nothing reads it back; an unreadable older plan is written back inside a version 9 document, so a later build could not patch it.</p>
+    <p class="note">Known gaps, read from the code: the unreadable copy happens at each start-up into one slot, and nothing reads it back; an unreadable older plan is written back inside a version 10 document, so a later build could not patch it.</p>
   </section>
 
   <section aria-labelledby="h-changes">
     <h2 id="h-changes">Changes</h2>
     <ul class="atlas-changes">
+      <li><time datetime="2026-11-13">13.11.2026</time><span>The saved plan is at version 10: the days the director has the car, and the IT and phone with its place in the composition, added by one patch (<a href="decisions/2026-11-13-it-and-phone-is-a-module-behind-benefit-in-kind.md">IT and phone is a module behind BenefitInKind</a>).</span></li>
       <li><time datetime="2026-11-11">11.11.2026</time><span>The moves are no longer measured from a plan opened or saved: Today feeds the band alone, and the comparison of two plans is a mode of the Plans panel (<a href="decisions/2026-11-11-moves-retune-the-plan-on-screen.md">moves retune the plan on screen</a>, <a href="decisions/2026-11-11-three-views-one-question-each.md">three views, one question each</a>).</span></li>
       <li><time datetime="2026-10-30">30.10.2026</time><span>the language picked (<code>netto.language</code>) and the river carried across a switch of language (<code>netto.river</code>, sessionStorage), read first at start-up (<a href="decisions/2026-10-30-french-by-default-english-beside-it.md">French by default</a>).</span></li>
       <li><time datetime="2026-10-29">29.10.2026</time><span>The map's filter preference gone: <code>netto.map.lines</code> is no longer read (<a href="decisions/2026-10-29-map-lines-read-from-the-cards-the-pocket-line-summing-them.md">map lines read from the cards</a>, <code>main</code> at <code>7dfc6b5</code>).</span></li>
