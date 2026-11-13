@@ -46,23 +46,17 @@ Fixed once; every file that names one uses it word for word (the card, the map, 
 | Taxes on profit | Impôts sur le bénéfice |
 | Kept in company | Gardé dans la société |
 | Expenses | Frais |
-| My plan · Optimise · Ideas (the three views of the plan page) | Mon plan · Optimiser · Pistes |
+| My plan · Optimise (the two views of the plan page) | Mon plan · Optimiser |
 | When to pay (the section of Optimise that holds the payment calendar, and the spoken name of its link in the band) | Quand payer |
 | Compare plans (the Plans panel's button and its comparison) · Back to plans | Comparer les plans · Retour aux plans |
 | next advance payment by {date} (the link to When to pay beside Optimise's tab, spoken after « When to pay: ») | Quand payer : prochain versement anticipé au plus tard le {date} (non-breaking space before the colon) |
 | what the fund bills is refused (the same link, spoken) | Quand payer : le montant facturé par votre caisse est refusé |
-| page titles: My plan · Optimise · Ideas, each followed by « : Netto » | Mon plan · Optimiser · Pistes, each followed by « : Netto » (non-breaking space before the colon) |
+| page titles: My plan · Optimise, each followed by « : Netto » | Mon plan · Optimiser, each followed by « : Netto » (non-breaking space before the colon) |
 | Your plans · Save this plan · Edit plan (the button over the map that adds and removes optional modules) | Vos plans · Enregistrer ce plan · Modifier le plan |
 | Today (the starred plan) | Aujourd'hui (a name, capitalised: « de plus qu'Aujourd'hui ») |
 | the river (the plan on screen) | not translated as a metaphor: « le plan », « le plan affiché » |
 | a move (Optimise) | un ajustement |
 | a lever | un levier |
-| an idea (Ideas: a lever not in the plan) | une piste |
-| Try · Keep · Drop (an idea) | Essayer · Garder · Abandonner |
-| a trial (of an idea, inside the Ideas view) | un essai |
-| if yes (an idea's gain before the viewer's yes) | si oui |
-| measuring ideas (the Ideas badge, spoken, while one is measured) | chiffrage des pistes |
-| not in Netto yet (what Netto does not model, no promise) | pas encore dans Netto |
 | Car's benefit in kind before / after your contribution | Avantage de toute nature de la voiture avant / après votre intervention |
 | IT and phone's benefit in kind before / after your contribution | Avantage de toute nature de l'informatique et téléphonie avant / après votre intervention |
 | tested pay (art. 215) | rémunération prise en compte |
